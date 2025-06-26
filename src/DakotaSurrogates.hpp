@@ -10,16 +10,16 @@
 #ifndef DAKOTA_SURROGATES_H
 #define DAKOTA_SURROGATES_H
 
-#include <memory>
-
 #include "DakotaFieldApproximation.hpp"
 #include "util_data_types.hpp"
+#include <memory>
+
 
 namespace dakota {
-namespace surrogates {
-class Surrogate;
+  namespace surrogates {
+    class Surrogate;
+  }
 }
-}  // namespace dakota
 
 namespace Dakota {
 
@@ -27,26 +27,28 @@ namespace Dakota {
 
 /** Encapsulates common behavior for Surrogates modules, with
     specialization for specific surrogates in derived classes.  */
-class SurrogatesBaseApprox : public FieldApproximation {
- public:
+class SurrogatesBaseApprox: public FieldApproximation
+{
+public:
+
   //
   //- Heading: Constructor and destructor
   //
 
   /// default constructor
-  SurrogatesBaseApprox() {}
-  /// standard constructor for scalar surfaces:
+  SurrogatesBaseApprox() { }
+  /// standard constructor for scalar surfaces: 
   SurrogatesBaseApprox(const ProblemDescDB& problem_db,
-                       const SharedApproxData& shared_data,
-                       const String& approx_label);
-  /// standard constructor for field surfaces:
+		       const SharedApproxData& shared_data,
+		       const String& approx_label);
+  /// standard constructor for field surfaces: 
   SurrogatesBaseApprox(const ProblemDescDB& problem_db,
-                       const SharedApproxData& shared_data,
-                       const StringArray& approx_labels);
+		       const SharedApproxData& shared_data,
+		       const StringArray& approx_labels);
   /// alternate constructor
   SurrogatesBaseApprox(const SharedApproxData& shared_data);
   /// destructor
-  ~SurrogatesBaseApprox() override {}
+  ~SurrogatesBaseApprox() override { }
 
   // diagnostics: all documented at base class
 
@@ -55,21 +57,21 @@ class SurrogatesBaseApprox : public FieldApproximation {
   Real diagnostic(const String& metric_type) override;
 
   RealArray cv_diagnostic(const StringArray& metric_types,
-                          unsigned num_folds) override;
+			  unsigned num_folds) override;
 
   void primary_diagnostics(size_t fn_index) override;
 
   void challenge_diagnostics(size_t fn_index,
-                             const RealMatrix& challenge_points,
+			     const RealMatrix& challenge_points,
                              const RealVector& challenge_responses) override;
 
   // Modify configuration options through the parameterList (non-const)
   dakota::ParameterList& getSurrogateOpts();
 
- protected:
+protected:
+
   /// convert Pecos surrogate data to reshaped Eigen vars/resp matrices
-  void convert_surrogate_data(dakota::MatrixXd& vars, dakota::MatrixXd& resp,
-                              int num_resp = 1);
+  void convert_surrogate_data(dakota::MatrixXd& vars, dakota::MatrixXd& resp, int num_resp=1);
 
   Real value(const Variables& vars) override;
 
@@ -100,13 +102,15 @@ class SurrogatesBaseApprox : public FieldApproximation {
   RealVector map_eval_vars(const Variables& vars);
 
   /// export the model to disk
-  void export_model(const StringArray& var_labels, const String& fn_label,
-                    const String& export_prefix,
-                    const unsigned short export_format) override;
+  void
+  export_model(const StringArray& var_labels, const String& fn_label,
+	       const String& export_prefix,
+	       const unsigned short export_format) override;
 
-  void export_model(const Variables& vars, const String& fn_label,
-                    const String& export_prefix,
-                    const unsigned short export_format) override;
+  void
+  export_model(const Variables& vars, const String& fn_label,
+	       const String& export_prefix,
+	       const unsigned short export_format) override;
 
   /// Key/value config options for underlying surrogate
   dakota::ParameterList surrogateOpts;
@@ -121,5 +125,5 @@ class SurrogatesBaseApprox : public FieldApproximation {
   bool modelIsImported;
 };
 
-}  // namespace Dakota
+} // namespace Dakota
 #endif

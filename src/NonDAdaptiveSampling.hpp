@@ -10,8 +10,8 @@
 #ifndef NOND_ADAPTIVE_SAMPLING_H
 #define NOND_ADAPTIVE_SAMPLING_H
 
-#include "DataMethod.hpp"
 #include "NonDSampling.hpp"
+#include "DataMethod.hpp"
 
 // forward declaration so class size doesn't change conditionally
 class MS_Complex;
@@ -28,20 +28,21 @@ namespace Dakota {
     issue). The method computes scores based on the topology of the
     known data and the topology of the surrogate model.  A number of
     alternate adaption strategies are offered as well. */
-class NonDAdaptiveSampling : public NonDSampling {
- public:
+class NonDAdaptiveSampling: public NonDSampling
+{
+public:
+
   //
   //- Heading: Constructors and destructor
   //
 
   /// standard constructor
-  NonDAdaptiveSampling(ProblemDescDB &problem_db, ParallelLibrary &parallel_lib,
-                       std::shared_ptr<Model> model);
+  NonDAdaptiveSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
 
   /// alternate constructor for sample generation and evaluation "on the fly"
   /// has not been implemented
 
-  ~NonDAdaptiveSampling() override;  ///< destructor
+  ~NonDAdaptiveSampling() override; ///< destructor
 
   //
   //- Heading: Virtual function redefinitions
@@ -49,7 +50,8 @@ class NonDAdaptiveSampling : public NonDSampling {
 
   bool resize() override;
 
- protected:
+protected:
+
   //
   //- Heading: Virtual function redefinitions
   //
@@ -60,22 +62,22 @@ class NonDAdaptiveSampling : public NonDSampling {
 
   void core_run() override;
   Real final_probability();
-  void print_results(std::ostream &s,
-                     short results_state = FINAL_RESULTS) override;
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS) override;
 
- private:
+private:
+
   //
   //- Heading: Data
   //
-
+  
   /// LHS iterator for sampling on the GP
   std::shared_ptr<Iterator> gpEval;
   /// LHS iterator for sampling on the final GP
   std::shared_ptr<Iterator> gpFinalEval;
   /// GP model of response, one approximation per response function
   std::shared_ptr<Model> gpModel;
-
-  /// the number of rounds of additions of size batchSize to add  to the
+  
+  /// the number of rounds of additions of size batchSize to add  to the 
   /// original set of LHS samples
   int numRounds;
   /// the total number of points
@@ -90,14 +92,14 @@ class NonDAdaptiveSampling : public NonDSampling {
   Real finalProb;
   /// Vector to hold the current values of the current sample inputs on the GP
   RealVectorArray gpCvars;
-  /// Vector to hold the current values of the current mean estimates
+  /// Vector to hold the current values of the current mean estimates 
   /// for the sample values on the GP
   RealVectorArray gpMeans;
-  /// Vector to hold the current values of the current variance estimates
+  /// Vector to hold the current values of the current variance estimates 
   /// for the sample values on the GP
   RealVectorArray gpVar;
   /// Vector to hold the scored values for the current GP samples
-  RealVector emulEvalScores;
+  RealVector emulEvalScores; 
   /// Vector to hold the RMSE after each round of adaptively fitting the model
   RealVector predictionErrors;
 
@@ -123,7 +125,7 @@ class NonDAdaptiveSampling : public NonDSampling {
   /// Note: alm and alm_topo_hybrid will fail when used with surrogates other
   /// than global_kriging as it is based on the variance of the surrogate.
   /// At the time of implementation, global_kriging is the only surrogate
-  /// capable of yielding this information
+  /// capable of yielding this information 
   String scoringMetric;
   /// enum describing the initial sample design. Options are:
   /// RANDOM_SAMPLING, FSU_CVT, FSU_HALTON, FSU_HAMMERSLEY
@@ -132,37 +134,37 @@ class NonDAdaptiveSampling : public NonDSampling {
   /// global_kriging, global_mars, global_neural_network, global_polynomial,
   /// globabl_moving_least_squares, global_radial_basis
   String approx_type;
-
+                    
   /// Function to compute the ALM scores for the candidate points
   /// ALM score is the variance computed by the surrogate at the point
-  void calc_score_alm();
+  void calc_score_alm( );
   /// Function to compute the Distance scores for the candidate points
-  /// Distance score is the shortest distance between the candidate and an
+  /// Distance score is the shortest distance between the candidate and an 
   /// existing training point
-  void calc_score_delta_x();
+  void calc_score_delta_x( );
   /// Function to compute the Gradient scores for the candidate points
   /// Gradient score is the function value difference between a candidate's
   /// surrogate response and its nearest evaluated true response from the
   /// training set
-  void calc_score_delta_y();
+  void calc_score_delta_y( );
   /// Function to compute the Bottleneck scores for the candidate points
   /// Bottleneck score is computed by determining the bottleneck distance
   /// between the persistence diagrams of two approximate Morse-Smale complices.
   /// The complices used include one built from only the training data, and
   /// another built from the training data and the single candidate
-  void calc_score_topo_bottleneck();
-  /// Function to compute the Average Change in Persistence scores for the
+  void calc_score_topo_bottleneck( );
+  /// Function to compute the Average Change in Persistence scores for the 
   /// candidate points
   /// Avg_Persistence score is computed as the average change in persistence
   /// each point undergoes between two approximate Morse-Smale complices.
   /// The complices used include one built from only the training data, and
   /// another built from the training data and the single candidate
   void calc_score_topo_avg_persistence(int respFnCount);
-  /// Function to compute the Highest Persistence scores for the candidate
+  /// Function to compute the Highest Persistence scores for the candidate 
   /// points
   /// Highest Persistence score is calculated as a ranking of a set of
-  /// candidates by constructing an approximate Morse-Smale complex over the
-  /// entire set of candidates, using their surrogate responses, and the
+  /// candidates by constructing an approximate Morse-Smale complex over the 
+  /// entire set of candidates, using their surrogate responses, and the 
   /// training data, using their true responses, and ranking points based on the
   /// most topological significance as measured by their persistence values.
   /// In the case where there are no topologically significant points, the
@@ -171,10 +173,10 @@ class NonDAdaptiveSampling : public NonDSampling {
   /// on proximity to extrema, or the most significant extream?
   void calc_score_topo_highest_persistence(int respFnCount);
   /// Function to comptue the Hybrid scores for the candidate points
-  /// Hybrid score is computed the same as Avg_Persistence score except that
+  /// Hybrid score is computed the same as Avg_Persistence score except that 
   /// instead of computing one score, three scores are computing not only a mean
   /// surface, but a mean +/- std. dev. surfaces and then averaging the three
-  /// separate scores.  The hope is that you strike a balance between selecting
+  /// separate scores.  The hope is that you strike a balance between selecting 
   /// points in topologically important areas and areas of high uncertainty
   void calc_score_topo_alm_hybrid(int respFnCount);
 
@@ -199,23 +201,23 @@ class NonDAdaptiveSampling : public NonDSampling {
 
   /// Using the validationSet, compute the RMSE over the surface
   Real compute_rmspe();
-  /// Using the validationSet, compute the approximate Morse-Smale complices
+  /// Using the validationSet, compute the approximate Morse-Smale complices 
   /// of the true model over the validationSet as well as the surrogate model
   /// over the validationSet, and output some topological comparisons
-  void compare_complices(int dim, std::ostream &output);
+  void compare_complices(int dim, std::ostream& output);
   /// Parse misc_options specified in a user input deck
   void parse_options();
 
   /// function to pick the next X value to be evaluated by the Iterated model
-  RealVectorArray drawNewX(int this_k, int respFnCount = 0);
+  RealVectorArray drawNewX(int this_k, int respFnCount=0);
 
-  /// Temporary function for dumping validation data to output files to be
+  /// Temporary function for dumping validation data to output files to be 
   /// visualized in TopoAS
-  void output_round_data(int round, int respFnCount = 0);
+  void output_round_data(int round, int respFnCount=0);
 
   /// Update the approximate Morse-Smale complex based on the training points
   /// and selected candidates.  Uses surrogate function responses
-  void update_amsc(int respFnCount = 0);
+  void update_amsc(int respFnCount=0);
 
   /// The approximate Morse-Smale complex data structure
   MS_Complex *AMSC;
@@ -228,39 +230,43 @@ class NonDAdaptiveSampling : public NonDSampling {
   /// designs.  This can break the fsu_cvt, so it is not used at the moment,
   /// and these designs only affect the initial sample build not the candidate
   /// sets constructed at each round
-  std::shared_ptr<Iterator> construct_fsu_sampler(
-      std::shared_ptr<Model> u_model, int num_samples, int seed,
-      unsigned short sample_type);
+  std::shared_ptr<Iterator> construct_fsu_sampler(std::shared_ptr<Model> u_model, 
+    int num_samples, int seed, unsigned short sample_type);
 
-  /// This function will write an input deck for a multi-start global
-  /// optimization run of DAKOTA by extracting all of the local minima
+  /// This function will write an input deck for a multi-start global 
+  /// optimization run of DAKOTA by extracting all of the local minima 
   /// off the approximate Morse-Smale complex created from the validation set
   /// of the surrogate model
   void output_for_optimization(int dim);
 
   /// compute the median of the sorted values passed in
-  Real median(const RealVector &sorted_data);
+  Real median(const RealVector& sorted_data);
 
   /// Pick new candidates from Emulator
-  void pick_new_candidates();
+  void pick_new_candidates( );
 
   /// Score New candidates based on the chosen metrics
   void score_new_candidates();
 };
 
-inline Real NonDAdaptiveSampling::final_probability() { return finalProb; }
 
-inline Real NonDAdaptiveSampling::median(const RealVector &sorted_data) {
+inline Real NonDAdaptiveSampling::final_probability()
+{ return finalProb; }
+
+
+inline Real NonDAdaptiveSampling::median(const RealVector& sorted_data)
+{
   int num_vals = sorted_data.length();
   if (num_vals % 2 == 0) {
     // even length: average of middle values
     int middle_right = num_vals / 2;
-    return 0.5 * (sorted_data(middle_right - 1) + sorted_data(middle_right));
+    return 0.5*(sorted_data(middle_right-1) + sorted_data(middle_right));
   }
   // odd length: middle value
-  return sorted_data((num_vals - 1) / 2);
+  return sorted_data((num_vals-1)/2);
 }
 
-}  // namespace Dakota
+
+} // namespace Dakota
 
 #endif  // NOND_ADAPTIVE_SAMPLING_H

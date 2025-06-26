@@ -10,12 +10,13 @@
 #ifndef PARAM_RESPONSE_PAIR_H
 #define PARAM_RESPONSE_PAIR_H
 
-#include "DakotaResponse.hpp"
-#include "DakotaVariables.hpp"
-#include "dakota_data_io.hpp"
 #include "dakota_data_types.hpp"
+#include "dakota_data_io.hpp"
+#include "DakotaVariables.hpp"
+#include "DakotaResponse.hpp"
 
 namespace Dakota {
+
 
 /// Container class for a variables object, a response object, and an
 /// evaluation id.
@@ -32,22 +33,24 @@ namespace Dakota {
     assuming that deep copies, I/O, alternate constructors, etc., can
     be adequately addressed.  Boost tuple<> may also be a candidate. */
 
-class ParamResponsePair {
+class ParamResponsePair
+{
   //
   //- Heading: Friends
   //
 
   /// equality operator
-  friend bool operator==(const ParamResponsePair& pair1,
-                         const ParamResponsePair& pair2);
+  friend bool operator==(const ParamResponsePair& pair1, 
+			 const ParamResponsePair& pair2);
   /// inequality operator
-  friend bool operator!=(const ParamResponsePair& pair1,
-                         const ParamResponsePair& pair2);
+  friend bool operator!=(const ParamResponsePair& pair1, 
+			 const ParamResponsePair& pair2);
 
   /// allow boost access to serialize this class
   friend class boost::serialization::access;
 
- public:
+public:
+
   //
   //- Heading: Constructors, destructor, assignment operator
   //
@@ -56,11 +59,11 @@ class ParamResponsePair {
   ParamResponsePair();
   /// alternate constructor for temporaries
   ParamResponsePair(const Variables& vars, const String& interface_id,
-                    const Response& response, bool deep_copy = false);
+		    const Response& response, bool deep_copy = false);
   /// standard constructor for history uses
   ParamResponsePair(const Variables& vars, const String& interface_id,
-                    const Response& response, const int eval_id,
-                    bool deep_copy = true);
+		    const Response& response, const int eval_id,
+		    bool deep_copy = true);
   /// copy constructor
   ParamResponsePair(const ParamResponsePair& pair);
 
@@ -77,7 +80,7 @@ class ParamResponsePair {
   /// read a ParamResponsePair object from an std::istream
   void read(std::istream& s);
   /// write a ParamResponsePair object to an std::ostream
-  void write(std::ostream& s) const;
+  void write(std::ostream& s)           const;
 
   /// read a ParamResponsePair object in annotated format from an std::istream
   void read_annotated(std::istream& s);
@@ -90,12 +93,12 @@ class ParamResponsePair {
 
   /// write PRP labels in tabular format to an std::ostream
   void write_tabular_labels(std::ostream& s,
-                            unsigned short tabular_format) const;
+			    unsigned short tabular_format) const;
 
   /// read a ParamResponsePair object from a packed MPI buffer
   void read(MPIUnpackBuffer& s);
   /// write a ParamResponsePair object to a packed MPI buffer
-  void write(MPIPackBuffer& s) const;
+  void write(MPIPackBuffer& s)     const;
 
   //
   //- Heading: Set and Inquire functions
@@ -136,9 +139,10 @@ class ParamResponsePair {
   /// set the active set object within the response object
   void active_set(const ActiveSet& set);
 
- private:
+private:
+
   /// serialize the PRP: write and read are symmetric for this class
-  template <class Archive>
+  template<class Archive>
   void serialize(Archive& ar, const unsigned int version);
 
   //
@@ -148,7 +152,7 @@ class ParamResponsePair {
   /// the set of parameters for the function evaluation
   Variables prpVariables;
   /// the response set for the function evaluation
-  Response prpResponse;
+  Response  prpResponse;
 
   /// the evalInterfaceIds aggregate
   /** the function evaluation identifier (assigned from Interface::evalIdCntr)
@@ -163,170 +167,185 @@ class ParamResponsePair {
   IntStringPair evalInterfaceIds;
 };
 
-inline ParamResponsePair::ParamResponsePair() {}
+
+inline ParamResponsePair::ParamResponsePair()
+{ }
+
 
 /** Uses of this constructor often employ the standard Variables and
     Response copy constructors to share representations since this
     constructor is commonly used for search_pairs (which are local
     instantiations that go out of scope prior to any changes to
     values; i.e., they are not used for history). */
-inline ParamResponsePair::ParamResponsePair(const Variables& vars,
-                                            const String& interface_id,
-                                            const Response& response,
-                                            bool deep_copy)
-    : prpVariables((deep_copy) ? vars.copy() : vars),
-      prpResponse((deep_copy) ? response.copy() : response),
-      evalInterfaceIds(0, interface_id) {}
+inline ParamResponsePair::
+ParamResponsePair(const Variables& vars, const String& interface_id, 
+		  const Response& response, bool deep_copy):
+  prpVariables( (deep_copy) ? vars.copy()     : vars     ),
+  prpResponse(  (deep_copy) ? response.copy() : response ),
+  evalInterfaceIds(0, interface_id)
+{ }
+
 
 /** Uses of this constructor often do not share representations since
     deep copies are used when history mechanisms (e.g., data_pairs and
     beforeSynchCorePRPQueue) are involved. */
-inline ParamResponsePair::ParamResponsePair(const Variables& vars,
-                                            const String& interface_id,
-                                            const Response& response,
-                                            const int eval_id, bool deep_copy)
-    : prpVariables((deep_copy) ? vars.copy() : vars),
-      prpResponse((deep_copy) ? response.copy() : response),
-      evalInterfaceIds(eval_id, interface_id) {}
+inline ParamResponsePair::
+ParamResponsePair(const Variables& vars, const String& interface_id,
+		  const Response& response, const int eval_id, bool deep_copy):
+  prpVariables( (deep_copy) ? vars.copy()     : vars     ),
+  prpResponse(  (deep_copy) ? response.copy() : response ),
+  evalInterfaceIds(eval_id, interface_id)
+{ }
 
-inline ParamResponsePair::ParamResponsePair(const ParamResponsePair& pair)
-    : prpVariables(pair.prpVariables),
-      prpResponse(pair.prpResponse),
-      evalInterfaceIds(pair.evalInterfaceIds) {}
 
-inline ParamResponsePair& ParamResponsePair::operator=(
-    const ParamResponsePair& pair) {
-  prpVariables = pair.prpVariables;
-  prpResponse = pair.prpResponse;
+inline ParamResponsePair::ParamResponsePair(const ParamResponsePair& pair):
+  prpVariables(pair.prpVariables), prpResponse(pair.prpResponse),
+  evalInterfaceIds(pair.evalInterfaceIds)
+{ }
+
+
+inline ParamResponsePair&
+ParamResponsePair::operator=(const ParamResponsePair& pair)
+{
+  prpVariables     = pair.prpVariables;
+  prpResponse      = pair.prpResponse;
   evalInterfaceIds = pair.evalInterfaceIds;
 
   return *this;
 }
 
-inline ParamResponsePair::~ParamResponsePair() {}
 
-inline int ParamResponsePair::eval_id() const { return evalInterfaceIds.first; }
+inline ParamResponsePair::~ParamResponsePair()
+{ }
 
-inline void ParamResponsePair::eval_id(int id) { evalInterfaceIds.first = id; }
 
-inline const String& ParamResponsePair::interface_id() const {
-  return evalInterfaceIds.second;
-}
+inline int ParamResponsePair::eval_id() const
+{ return evalInterfaceIds.first; }
 
-inline void ParamResponsePair::interface_id(const String& id) {
-  evalInterfaceIds.second = id;
-}
 
-inline const IntStringPair& ParamResponsePair::eval_interface_ids() const {
-  return evalInterfaceIds;
-}
+inline void ParamResponsePair::eval_id(int id)
+{ evalInterfaceIds.first = id; }
 
-inline const Variables& ParamResponsePair::variables() const {
-  return prpVariables;
-}
 
-inline Variables& ParamResponsePair::variables() { return prpVariables; }
+inline const String& ParamResponsePair::interface_id() const
+{ return evalInterfaceIds.second; }
 
-inline void ParamResponsePair::variables(const Variables& vars) {
-  prpVariables = vars;
-}
 
-inline const Response& ParamResponsePair::response() const {
-  return prpResponse;
-}
+inline void ParamResponsePair::interface_id(const String& id)
+{ evalInterfaceIds.second = id; }
 
-inline Response& ParamResponsePair::response() { return prpResponse; }
 
-inline void ParamResponsePair::response(const Response& resp) {
-  prpResponse = resp;
-}
+inline const IntStringPair& ParamResponsePair::eval_interface_ids() const
+{ return evalInterfaceIds; }
 
-inline IntResponsePair ParamResponsePair::response_pair() const {
-  return IntResponsePair(evalInterfaceIds.first, prpResponse);
-}
 
-inline const ActiveSet& ParamResponsePair::active_set() const {
-  return prpResponse.active_set();
-}
+inline const Variables& ParamResponsePair::variables() const
+{ return prpVariables; }
 
-inline void ParamResponsePair::active_set(const ActiveSet& set) {
-  prpResponse.active_set(set);
-}
 
-// The binary read and write operators are used to read from and write to the
+inline Variables& ParamResponsePair::variables()
+{ return prpVariables; }
+
+
+inline void ParamResponsePair::variables(const Variables& vars)
+{ prpVariables = vars; }
+
+
+inline const Response& ParamResponsePair::response() const
+{ return prpResponse; }
+
+
+inline Response& ParamResponsePair::response()
+{ return prpResponse; }
+
+
+inline void ParamResponsePair::response(const Response& resp)
+{ prpResponse = resp; }
+
+
+inline IntResponsePair ParamResponsePair::response_pair() const
+{ return IntResponsePair(evalInterfaceIds.first, prpResponse); }
+
+
+inline const ActiveSet& ParamResponsePair::active_set() const
+{ return prpResponse.active_set(); }
+
+
+inline void ParamResponsePair::active_set(const ActiveSet& set)
+{ prpResponse.active_set(set); }
+
+
+// The binary read and write operators are used to read from and write to the 
 // binary restart file and the ASCII write operator is used to echo a pair
-// read from the restart file to cout (in manage_restart() in main.cpp). The
+// read from the restart file to cout (in manage_restart() in main.cpp). The 
 // ASCII read operator is not currently used. The MPIPackBuffer/MPIUnpackBuffer
 // operators are used to pass a source point for the continuation algorithm.
-inline void ParamResponsePair::read(std::istream& s) {
-  s >> prpVariables >> prpResponse;
-}
+inline void ParamResponsePair::read(std::istream& s)
+{ s >> prpVariables >> prpResponse; }
 
-inline void ParamResponsePair::write(std::ostream& s) const {
+
+inline void ParamResponsePair::write(std::ostream& s) const
+{
   s << "Parameters:\n" << prpVariables;
   if (!(evalInterfaceIds.second.empty() || evalInterfaceIds.second == "NO_ID"))
     s << "\nInterface identifier = " << evalInterfaceIds.second << '\n';
-  s << "\nActive response data:\n" << prpResponse << std::endl;
+  s << "\nActive response data:\n"<< prpResponse << std::endl;
 }
+
 
 /// std::istream extraction operator for ParamResponsePair
-inline std::istream& operator>>(std::istream& s, ParamResponsePair& pair) {
-  pair.read(s);
-  return s;
-}
+inline std::istream& operator>>(std::istream& s, ParamResponsePair& pair)
+{ pair.read(s); return s; }
+
 
 /// std::ostream insertion operator for ParamResponsePair
-inline std::ostream& operator<<(std::ostream& s,
-                                const ParamResponsePair& pair) {
-  pair.write(s);
-  return s;
-}
+inline std::ostream& operator<<(std::ostream& s, const ParamResponsePair& pair)
+{ pair.write(s); return s; }
+
 
 /** interfaceId is omitted since scheduler processor retains interface
     ids and communicates asv and response data only with servers. */
-inline void ParamResponsePair::read(MPIUnpackBuffer& s) {
-  s >> prpVariables >> prpResponse >> evalInterfaceIds.first;
-}
+inline void ParamResponsePair::read(MPIUnpackBuffer& s)
+{ s >> prpVariables >> prpResponse >> evalInterfaceIds.first; }
+
 
 /** interfaceId is omitted since scheduler processor retains interface
     ids and communicates asv and response data only with servers. */
-inline void ParamResponsePair::write(MPIPackBuffer& s) const {
-  s << prpVariables << prpResponse << evalInterfaceIds.first;
-}
+inline void ParamResponsePair::write(MPIPackBuffer& s) const
+{ s << prpVariables << prpResponse << evalInterfaceIds.first; }
+
 
 /// MPIUnpackBuffer extraction operator for ParamResponsePair
-inline MPIUnpackBuffer& operator>>(MPIUnpackBuffer& s,
-                                   ParamResponsePair& pair) {
-  pair.read(s);
-  return s;
-}
+inline MPIUnpackBuffer& operator>>(MPIUnpackBuffer& s, ParamResponsePair& pair)
+{ pair.read(s); return s; }
+
 
 /// MPIPackBuffer insertion operator for ParamResponsePair
-inline MPIPackBuffer& operator<<(MPIPackBuffer& s,
-                                 const ParamResponsePair& pair) {
-  pair.write(s);
-  return s;
-}
+inline MPIPackBuffer& operator<<(MPIPackBuffer& s,const ParamResponsePair& pair)
+{ pair.write(s); return s; }
+
 
 /// equality operator for ParamResponsePair
 inline bool operator==(const ParamResponsePair& pair1,
-                       const ParamResponsePair& pair2) {
+		       const ParamResponsePair& pair2)
+{
   // equality check includes interfaceId; evalId need not match
-  return (pair1.prpVariables == pair2.prpVariables &&
-          pair1.evalInterfaceIds.second == pair2.evalInterfaceIds.second &&
-          pair1.prpResponse == pair2.prpResponse);
+  return (pair1.prpVariables            == pair2.prpVariables &&
+	  pair1.evalInterfaceIds.second == pair2.evalInterfaceIds.second &&
+	  pair1.prpResponse             == pair2.prpResponse);
 }
+
 
 /// inequality operator for ParamResponsePair
 inline bool operator!=(const ParamResponsePair& pair1,
-                       const ParamResponsePair& pair2) {
-  return !(pair1 == pair2);
-}
+		       const ParamResponsePair& pair2)
+{ return !(pair1 == pair2); }
 
-}  // namespace Dakota
+} // namespace Dakota
+
 
 // Since we may serialize this class through a temporary, disallow tracking
-BOOST_CLASS_TRACKING(Dakota::ParamResponsePair,
-                     boost::serialization::track_never)
+BOOST_CLASS_TRACKING(Dakota::ParamResponsePair, 
+		     boost::serialization::track_never)
 
 #endif

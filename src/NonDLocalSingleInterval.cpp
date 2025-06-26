@@ -9,26 +9,30 @@
 
 #include "NonDLocalSingleInterval.hpp"
 
+
 namespace Dakota {
 
-NonDLocalSingleInterval::NonDLocalSingleInterval(ProblemDescDB& problem_db,
-                                                 ParallelLibrary& parallel_lib,
-                                                 std::shared_ptr<Model> model)
-    : NonDLocalInterval(problem_db, parallel_lib, model) {}
+NonDLocalSingleInterval::
+NonDLocalSingleInterval(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  NonDLocalInterval(problem_db, parallel_lib, model)
+{ }
 
-NonDLocalSingleInterval::~NonDLocalSingleInterval() {}
 
-void NonDLocalSingleInterval::initialize() {
-  numCells = 1;
-  statCntr = 0;
-}
+NonDLocalSingleInterval::~NonDLocalSingleInterval()
+{ }
 
-void NonDLocalSingleInterval::post_process_cell_results(bool maximize) {
+
+void NonDLocalSingleInterval::initialize()
+{ numCells = 1; statCntr = 0; }
+
+
+void NonDLocalSingleInterval::post_process_cell_results(bool maximize)
+{
   NonDLocalInterval::post_process_cell_results(maximize);
 
-  const RealVector& fns_star_approx =
-      minMaxOptimizer->response_results().function_values();
+  const RealVector& fns_star_approx
+    = minMaxOptimizer->response_results().function_values();
   finalStatistics.function_value(fns_star_approx[0], statCntr++);
 }
 
-}  // namespace Dakota
+} // namespace Dakota

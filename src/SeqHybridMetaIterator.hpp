@@ -12,7 +12,9 @@
 
 #include "MetaIterator.hpp"
 
+
 namespace Dakota {
+
 
 /// Method for sequential hybrid iteration using multiple
 /// optimization and nonlinear least squares methods on multiple
@@ -29,7 +31,8 @@ namespace Dakota {
     notion of a final solution which can be passed as starting data
     for subsequent iterators. */
 
-class SeqHybridMetaIterator : public MetaIterator {
+class SeqHybridMetaIterator: public MetaIterator
+{
   //
   //- Heading: Friends
   //
@@ -37,22 +40,21 @@ class SeqHybridMetaIterator : public MetaIterator {
   /// protect scheduler callback functions from general access
   friend class IteratorScheduler;
 
- public:
+public:
+  
   //
   //- Heading: Constructors and destructor
   //
 
   /// standard constructor
-  SeqHybridMetaIterator(ProblemDescDB& problem_db,
-                        ParallelLibrary& parallel_lib);
+  SeqHybridMetaIterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
   /// alternate constructor
-  SeqHybridMetaIterator(ProblemDescDB& problem_db,
-                        ParallelLibrary& parallel_lib,
-                        std::shared_ptr<Model> model);
+  SeqHybridMetaIterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
   /// destructor
   ~SeqHybridMetaIterator() override;
 
- protected:
+protected:
+
   //
   //- Heading: Virtual function redefinitions
   //
@@ -60,8 +62,7 @@ class SeqHybridMetaIterator : public MetaIterator {
   /// Performs the hybrid iteration by executing a sequence of iterators,
   /// using a similar sequence of models that may vary in fidelity
   void core_run() override;
-  void print_results(std::ostream& s,
-                     short results_state = FINAL_RESULTS) override;
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS) override;
 
   void derived_init_communicators(ParLevLIter pl_iter) override;
   void derived_set_communicators(ParLevLIter pl_iter) override;
@@ -72,35 +73,32 @@ class SeqHybridMetaIterator : public MetaIterator {
   /// return the final solution from selectedIterators (variables)
   const Variables& variables_results() const override;
   /// return the final solution from selectedIterators (response)
-  const Response& response_results() const override;
+  const Response&  response_results() const override;
 
   void initialize_iterator(int job_index) override;
-  void pack_parameters_buffer(MPIPackBuffer& send_buffer,
-                              int job_index) override;
+  void pack_parameters_buffer(MPIPackBuffer& send_buffer, int job_index) override;
   void unpack_parameters_initialize(MPIUnpackBuffer& recv_buffer,
-                                    int job_index) override;
+				    int job_index) override;
   void pack_results_buffer(MPIPackBuffer& send_buffer, int job_index) override;
-  void unpack_results_buffer(MPIUnpackBuffer& recv_buffer,
-                             int job_index) override;
+  void unpack_results_buffer(MPIUnpackBuffer& recv_buffer, int job_index) override;
   void update_local_results(int job_index) override;
 
   void declare_sources() override;
+private:
 
- private:
   //
   //- Heading: Convenience member functions
   //
 
-  void run_sequential();           ///< run a sequential hybrid
-  void run_sequential_adaptive();  ///< run a sequential adaptive hybrid
+  void run_sequential();          ///< run a sequential hybrid
+  void run_sequential_adaptive(); ///< run a sequential adaptive hybrid
 
   /// convert num_sets and job_index into a start_index and job_size for
   /// extraction from parameterSets
   void partition_sets(size_t num_sets, int job_index, size_t& start_index,
-                      size_t& job_size);
+		      size_t& job_size);
   /// extract partial_param_sets from parameterSets based on job_index
-  void extract_parameter_sets(int job_index,
-                              VariablesArray& partial_param_sets);
+  void extract_parameter_sets(int job_index,VariablesArray& partial_param_sets);
   /// update the partial set of final results from the local iterator execution
   void update_local_results(PRPArray& prp_results, int job_id);
   /// called by unpack_parameters_initialize(MPIUnpackBuffer) and
@@ -111,7 +109,7 @@ class SeqHybridMetaIterator : public MetaIterator {
   //- Heading: Data members
   //
 
-  String seqHybridType;  ///< empty (default) or "adaptive"
+  String   seqHybridType; ///< empty (default) or "adaptive"
 
   /// the list of method pointer or method name identifiers
   StringArray methodStrings;
@@ -142,51 +140,57 @@ class SeqHybridMetaIterator : public MetaIterator {
   VariablesArray parameterSets;
 };
 
-inline const Variables& SeqHybridMetaIterator::variables_results() const {
-  return selectedIterators[methodStrings.size() - 1]->variables_results();
-}
 
-inline const Response& SeqHybridMetaIterator::response_results() const {
-  return selectedIterators[methodStrings.size() - 1]->response_results();
-}
+inline const Variables& SeqHybridMetaIterator::variables_results() const
+{ return selectedIterators[methodStrings.size()-1]->variables_results(); }
 
-inline void SeqHybridMetaIterator::partition_sets(size_t num_sets,
-                                                  int job_index,
-                                                  size_t& start_index,
-                                                  size_t& job_size) {
+
+inline const Response& SeqHybridMetaIterator::response_results() const
+{ return selectedIterators[methodStrings.size()-1]->response_results(); }
+
+
+inline void SeqHybridMetaIterator::
+partition_sets(size_t num_sets, int job_index, size_t& start_index,
+	       size_t& job_size)
+{
   size_t set_remainder = num_sets % iterSched.numIteratorJobs;
   job_size = num_sets / iterSched.numIteratorJobs;
   start_index = job_index * job_size;
-  if (set_remainder) {  // allocate 1 addtnl job to first set_remainder jobs
-    if (set_remainder > job_index) {  // this job is offset and grown
+  if (set_remainder) { // allocate 1 addtnl job to first set_remainder jobs
+    if (set_remainder > job_index) { // this job is offset and grown
       start_index += job_index;
       ++job_size;
-    } else  // this job is only offset
+    }
+    else // this job is only offset
       start_index += set_remainder;
   }
 }
+
 
 /** This convenience function is executed on an iterator leader proc
     (static scheduling) or a meta-iterator leader proc (self scheduling)
     at run initialization time and has access to the full parameterSets
     array (this is All-Reduced for all peers at the completion of each
     cycle in run_sequential()). */
-inline void SeqHybridMetaIterator::extract_parameter_sets(
-    int job_index, VariablesArray& partial_param_sets) {
+inline void SeqHybridMetaIterator::
+extract_parameter_sets(int job_index, VariablesArray& partial_param_sets)
+{
   size_t start_index, job_size;
   partition_sets(parameterSets.size(), job_index, start_index, job_size);
   if (partial_param_sets.size() != job_size)
     partial_param_sets.resize(job_size);
-  for (size_t i = 0; i < job_size; ++i)
-    partial_param_sets[i] = parameterSets[start_index + i];
+  for (size_t i=0; i<job_size; ++i)
+    partial_param_sets[i] = parameterSets[start_index+i];
 }
 
-inline void SeqHybridMetaIterator::update_local_results(int job_index) {
-  update_local_results(prpResults[job_index], job_index + 1);
-}
 
-inline void SeqHybridMetaIterator::initialize_iterator(
-    const VariablesArray& param_sets) {
+inline void SeqHybridMetaIterator::update_local_results(int job_index)
+{ update_local_results(prpResults[job_index], job_index+1); }
+
+
+inline void SeqHybridMetaIterator::
+initialize_iterator(const VariablesArray& param_sets)
+{
   // BMA TODO: This mixed use of pushing data at the Iterator
   // vs. Models likely indicates we should standardize on pushing to
   // the sub-iterators instead of maintaining a handle to the Model.
@@ -199,53 +203,58 @@ inline void SeqHybridMetaIterator::initialize_iterator(
   // > all of parameterSets (numIteratorJobs == 1)
   size_t num_param_sets = param_sets.size();
   if (num_param_sets == 1)
-    selectedModels[seqCount]->current_variables().active_variables(
-        param_sets[0]);
+    selectedModels[seqCount]->current_variables().active_variables(param_sets[0]);
   else if (selectedIterators[seqCount]->accepts_multiple_points())
     selectedIterators[seqCount]->initial_points(param_sets);
   else {
     std::cerr << "Error: bad parameter sets array in SeqHybridMetaIterator::"
-              << "initialize_iterator()" << std::endl;
+	      << "initialize_iterator()" << std::endl;
     abort_handler(-1);
   }
 }
 
-inline void SeqHybridMetaIterator::initialize_iterator(int job_index) {
-  if (seqCount) {  // else default initialization is used
+
+inline void SeqHybridMetaIterator::initialize_iterator(int job_index)
+{
+  if (seqCount) { // else default initialization is used
     VariablesArray partial_param_sets;
     extract_parameter_sets(job_index, partial_param_sets);
     initialize_iterator(partial_param_sets);
   }
 }
 
-inline void SeqHybridMetaIterator::pack_parameters_buffer(
-    MPIPackBuffer& send_buffer, int job_index) {
-  if (seqCount) {  // else default initialization is used
+
+inline void SeqHybridMetaIterator::
+pack_parameters_buffer(MPIPackBuffer& send_buffer, int job_index)
+{
+  if (seqCount) { // else default initialization is used
     VariablesArray partial_param_sets;
     extract_parameter_sets(job_index, partial_param_sets);
     send_buffer << partial_param_sets;
   }
 }
 
-inline void SeqHybridMetaIterator::unpack_parameters_initialize(
-    MPIUnpackBuffer& recv_buffer, int job_index) {
-  if (seqCount) {  // else default initialization is used
+
+inline void SeqHybridMetaIterator::
+unpack_parameters_initialize(MPIUnpackBuffer& recv_buffer, int job_index)
+{
+  if (seqCount) { // else default initialization is used
     VariablesArray param_sets;
-    recv_buffer >> param_sets;  // job_index can be ignored
+    recv_buffer >> param_sets; // job_index can be ignored
     initialize_iterator(param_sets);
   }
 }
 
-inline void SeqHybridMetaIterator::pack_results_buffer(
-    MPIPackBuffer& send_buffer, int job_index) {
-  send_buffer << prpResults[job_index];
-}
 
-inline void SeqHybridMetaIterator::unpack_results_buffer(
-    MPIUnpackBuffer& recv_buffer, int job_index) {
-  recv_buffer >> prpResults[job_index];
-}
+inline void SeqHybridMetaIterator::
+pack_results_buffer(MPIPackBuffer& send_buffer, int job_index)
+{ send_buffer << prpResults[job_index]; }
 
-}  // namespace Dakota
+
+inline void SeqHybridMetaIterator::
+unpack_results_buffer(MPIUnpackBuffer& recv_buffer, int job_index)
+{ recv_buffer >> prpResults[job_index]; }
+
+} // namespace Dakota
 
 #endif

@@ -11,29 +11,29 @@
     \brief file containing a mock simulator main for testing Dakota in
     library mode */
 
-#include "DakotaInterface.hpp"
-#include "DakotaModel.hpp"
-#include "LibraryEnvironment.hpp"
 #include "ParallelLibrary.hpp"
-#include "PluginParallelDirectApplicInterface.hpp"
-#include "PluginSerialDirectApplicInterface.hpp"
 #include "ProblemDescDB.hpp"
+#include "LibraryEnvironment.hpp"
+#include "DakotaModel.hpp"
 #include "model_utils.hpp"
+#include "DakotaInterface.hpp"
+#include "PluginSerialDirectApplicInterface.hpp"
+#include "PluginParallelDirectApplicInterface.hpp"
 
-#ifdef HAVE_AMPL
+#ifdef HAVE_AMPL 
 /** Floating-point initialization from AMPL: switch to 53-bit rounding
     if appropriate, to eliminate some cross-platform differences. */
-extern "C" void fpinit_ASL();
-#endif
+extern "C" void fpinit_ASL(); 
+#endif 
 
 #ifndef DAKOTA_HAVE_MPI
 #define MPI_COMM_WORLD 0
-#endif  // not DAKOTA_HAVE_MPI
+#endif // not DAKOTA_HAVE_MPI
 
 /// Run a Dakota LibraryEnvironment, mode 1: parsing an input file
 void run_dakota_parse(const char* dakota_input_file);
 
-// namespace Dakota {
+//namespace Dakota {
 /// Run a Dakota LibraryEnvironment, mode 2: from C++ API inserted data
 void run_dakota_data();
 //} // namespace Dakota
@@ -42,14 +42,14 @@ void run_dakota_data();
 /// supplemented with additional C++ API adjustments
 void run_dakota_mixed(const char* dakota_input_file, bool mpirun_flag);
 
-/// Convenience function with simplest example of interface plugin: plugin a
-/// serial DirectApplicInterface that can be constructed independent of Dakota's
+/// Convenience function with simplest example of interface plugin: plugin a serial
+/// DirectApplicInterface that can be constructed independent of Dakota's 
 /// configuration details.
 void serial_interface_plugin(Dakota::LibraryEnvironment& env);
 
-/// Convenience function to plug a library client's interface into the
-/// appropriate model, demonstrating use of Dakota parallel configuration in
-/// constructing the plugin Interface on the right MPI_Comm
+/// Convenience function to plug a library client's interface into the appropriate 
+/// model, demonstrating use of Dakota parallel configuration in constructing the 
+/// plugin Interface on the right MPI_Comm
 void parallel_interface_plugin(Dakota::LibraryEnvironment& env);
 
 /** Data structure to pass application-specific values through Dakota
@@ -61,11 +61,12 @@ struct callback_data {
 };
 
 /// Example: user-provided post-parse callback (Dakota::DbCallbackFunction)
-static void callback_function(Dakota::ProblemDescDB* db, void* ptr);
+static void callback_function(Dakota::ProblemDescDB* db, void *ptr);
+
 
 /// A mock simulator main for testing Dakota in library mode.
 
-/** Overall Usage: dakota_library_mode [-mixed] [dakota.in]
+/** Overall Usage: dakota_library_mode [-mixed] [dakota.in] 
 
     Uses alternative instantiation syntax as described in the library
     mode documentation within the Developers Manual.  Tests several
@@ -73,28 +74,29 @@ static void callback_function(Dakota::ProblemDescDB* db, void* ptr);
 
     (1) run_dakota_parse: reads all problem specification data from a
         Dakota input file.  Usage:
-          dakota_library_mode dakota.in
+	  dakota_library_mode dakota.in
 
     (2) run_dakota_data: creates all problem specification from direct
         Data instance instantiations in the C++ code. Usage:
-          dakota_library_mode
+	  dakota_library_mode
 
     (3) run_dakota_mixed: a mixture of input parsing and direct data updates,
         where the data updates occur:
-        (a) via the DB during Environment instantiation, and
+        (a) via the DB during Environment instantiation, and 
         (b) via Iterators/Models following Environment instantiation.
         Usage:
-          dakota_library_mode -mixed            (input from default string)
-          dakota_library_mode -mixed dakota.in  (input from specified file)
+	  dakota_library_mode -mixed            (input from default string)
+	  dakota_library_mode -mixed dakota.in  (input from specified file)
 
     Serial cases use a plugin rosenbrock model, while parallel cases
     use textbook.
 */
-int main(int argc, char* argv[]) {
+int main(int argc, char* argv[])
+{
 #ifdef HAVE_AMPL
   // Switch to 53-bit rounding if appropriate, to eliminate some
   // cross-platform differences.
-  fpinit_ASL();
+  fpinit_ASL();	
 #endif
 
   // whether running in parallel
@@ -104,81 +106,88 @@ int main(int argc, char* argv[]) {
   Dakota::mpi_debug_hold();
 
 #ifdef DAKOTA_HAVE_MPI
-  if (parallel) MPI_Init(&argc, &argv);  // initialize MPI
-#endif                                   // DAKOTA_HAVE_MPI
+  if (parallel)
+    MPI_Init(&argc, &argv); // initialize MPI
+#endif // DAKOTA_HAVE_MPI
 
   // Allow MPI to extract its command line arguments first in detect above,
   // then detect "-mixed" and dakota_input_file
   bool mixed_input = false;
-  const char* dakota_input_file = NULL;
+  const char *dakota_input_file = NULL;
   if (argc > 1) {
-    if (!strcmp(argv[1], "-mixed")) {
+    if (!strcmp(argv[1],"-mixed")) {
       mixed_input = true;
-      if (argc > 2) dakota_input_file = argv[2];
-    } else
+      if (argc > 2)
+	dakota_input_file = argv[2];
+    }
+    else
       dakota_input_file = argv[1];
   }
 
   if (mixed_input)
-    run_dakota_mixed(dakota_input_file, parallel);  // mode 3: mixed
+    run_dakota_mixed(dakota_input_file, parallel); // mode 3: mixed
   else if (dakota_input_file)
-    run_dakota_parse(dakota_input_file);  // mode 1: parse
+    run_dakota_parse(dakota_input_file); // mode 1: parse
   else
-    /*Dakota::*/ run_dakota_data();  // mode 2: data
+    /*Dakota::*/run_dakota_data();       // mode 2: data
 
-    // Note: Dakota objects created in above function calls need to go
-    // out of scope prior to MPI_Finalize so that MPI code in
-    // destructors works properly in library mode.
+  // Note: Dakota objects created in above function calls need to go
+  // out of scope prior to MPI_Finalize so that MPI code in
+  // destructors works properly in library mode.
 
 #ifdef DAKOTA_HAVE_MPI
-  if (parallel) MPI_Finalize();  // finalize MPI
-#endif                           // DAKOTA_HAVE_MPI
+  if (parallel)
+    MPI_Finalize(); // finalize MPI
+#endif // DAKOTA_HAVE_MPI
 
   return 0;
 }
 
-// Default input for mixed cases where input file not used.  The strings may
-// include comments, provided a \n follows each comment.  Before each new
+
+// Default input for mixed cases where input file not used.  The strings may 
+// include comments, provided a \n follows each comment.  Before each new 
 // keyword, some white space (a blank or newline) must appear.
 
 /// Default Dakota input string for serial case (rosenbrock):
-static const char serial_input[] =
-    "	method,"
-    "		optpp_q_newton"
-    "		  max_iterations = 50"
-    "		  convergence_tolerance = 1e-4"
-    "	variables,"
-    "		continuous_design = 2"
-    "		  descriptors 'x1' 'x2'"
-    "	interface,"
-    "		direct"
-    "		  analysis_driver = 'plugin_rosenbrock'"
-    "	responses,"
-    "		num_objective_functions = 1"
-    "		analytic_gradients"
-    "		no_hessians";
+static const char serial_input[] = 
+  "	method,"
+  "		optpp_q_newton"
+  "		  max_iterations = 50"
+  "		  convergence_tolerance = 1e-4"
+  "	variables,"
+  "		continuous_design = 2"
+  "		  descriptors 'x1' 'x2'"
+  "	interface,"
+  "		direct"
+  "		  analysis_driver = 'plugin_rosenbrock'"
+  "	responses,"
+  "		num_objective_functions = 1"
+  "		analytic_gradients"
+  "		no_hessians";
 
 /// Default Dakota input string for parallel case (text_book)
-static const char parallel_input[] =
-    "	method,"
-    "		optpp_q_newton"
-    "		  max_iterations = 50"
-    "		  convergence_tolerance = 1e-4"
-    "	variables,"
-    "		continuous_design = 2"
-    "		  descriptors 'x1' 'x2'"
-    "	interface,"
-    "		direct"
-    "		  analysis_driver = 'plugin_text_book'"
-    "	responses,"
-    "		num_objective_functions = 1"
-    "		num_nonlinear_inequality_constraints = 2"
-    "		analytic_gradients"
-    "		no_hessians";
+static const char parallel_input[] = 
+  "	method,"
+  "		optpp_q_newton"
+  "		  max_iterations = 50"
+  "		  convergence_tolerance = 1e-4"
+  "	variables,"
+  "		continuous_design = 2"
+  "		  descriptors 'x1' 'x2'"
+  "	interface,"
+  "		direct"
+  "		  analysis_driver = 'plugin_text_book'"
+  "	responses,"
+  "		num_objective_functions = 1"
+  "		num_nonlinear_inequality_constraints = 2"
+  "		analytic_gradients"
+  "		no_hessians";
+
 
 /** Simplest library case: this function parses from an input file to define the
     ProblemDescDB data. */
-void run_dakota_parse(const char* dakota_input_file) {
+void run_dakota_parse(const char* dakota_input_file)
+{
   // Parse input and construct Dakota LibraryEnvironment, performing
   // input data checks
   Dakota::ProgramOptions opts;
@@ -201,11 +210,13 @@ void run_dakota_parse(const char* dakota_input_file) {
   env.execute();
 }
 
+
 /** Rather than parsing from an input file, this function populates
     Data class objects directly using a minimal specification and
     relies on constructor defaults and post-processing in
     post_process() to fill in the rest. */
-void /*Dakota::*/ run_dakota_data() {
+void /*Dakota::*/run_dakota_data()
+{
   // Instantiate the LibraryEnvironment and underlying ProblemDescDB
 
   // No input file set --> no parsing.  Could set other command line
@@ -225,11 +236,8 @@ void /*Dakota::*/ run_dakota_data() {
   env.exit_mode("throw");
 
   // Now set the various data to specify the Dakota study
-  Dakota::DataMethod dme;
-  Dakota::DataModel dmo;
-  Dakota::DataVariables dv;
-  Dakota::DataInterface di;
-  Dakota::DataResponses dr;
+  Dakota::DataMethod   dme; Dakota::DataModel    dmo;
+  Dakota::DataVariables dv; Dakota::DataInterface di; Dakota::DataResponses dr;
   Dakota::ParallelLibrary& parallel_lib = env.parallel_library();
   if (parallel_lib.world_rank() == 0) {
     Cout << "Library mode 2: run_dakota_data()\n";
@@ -247,12 +255,13 @@ void /*Dakota::*/ run_dakota_data() {
       dir.analysisDrivers.push_back("plugin_text_book");
       drr.numObjectiveFunctions = 1;
       drr.numNonlinearIneqConstraints = 2;
-    } else {
+    }
+    else {
       dir.analysisDrivers.push_back("plugin_rosenbrock");
       drr.numObjectiveFunctions = 1;
     }
     drr.gradientType = "analytic";
-    drr.hessianType = "none";
+    drr.hessianType  = "none";
   }
   env.insert_nodes(dme, dmo, dv, di, dr);
 
@@ -270,6 +279,8 @@ void /*Dakota::*/ run_dakota_data() {
   env.execute();
 }
 
+
+
 /// Function to encapsulate the Dakota object instantiations for
 /// mode 3: mixed parsing and direct updating
 
@@ -280,13 +291,15 @@ void /*Dakota::*/ run_dakota_data() {
     user-supplied callback function, (2) updates to the DB prior to
     Environment instantiation, (3) updates directly to Iterators/Models
     following Environment instantiation. */
-void run_dakota_mixed(const char* dakota_input_file, bool mpirun_flag) {
+void run_dakota_mixed(const char* dakota_input_file, bool mpirun_flag)
+{
   Dakota::ProgramOptions opts;
   // Could specify output redirection & restart processing in opts if needed
   opts.echo_input(true);
 
   // in this use case, input file may be null:
-  if (dakota_input_file) opts.input_file(dakota_input_file);
+  if (dakota_input_file)
+    opts.input_file(dakota_input_file);
 
   // when no input file, use input string appropraite for MPI mode
   if (!dakota_input_file) {
@@ -295,13 +308,13 @@ void run_dakota_mixed(const char* dakota_input_file, bool mpirun_flag) {
     else
       opts.input_string(serial_input);
   }
-
+  
   // Setup client data to be available during callback: upper variable bound
   callback_data data;
   data.rosen_cdv_upper_bd = 2.0;
 
   // Construct library environment, parsing input file or string, then
-  // calling back to the callback_function, passing data to it.
+  // calling back to the callback_function, passing data to it.  
 
   // However delay braodcast and validation of the db due to further
   // data manipulations below, e.g., to avoid large default vector
@@ -312,20 +325,20 @@ void run_dakota_mixed(const char* dakota_input_file, bool mpirun_flag) {
 
   Dakota::ParallelLibrary& parallel_lib = env.parallel_library();
   int world_rank = parallel_lib.world_rank();
-  if (world_rank == 0) Cout << "Library mode 3: run_dakota_mixed()\n";
+  if (world_rank == 0)
+    Cout << "Library mode 3: run_dakota_mixed()\n";
 
   // Demonstrate changes to DB data initially set by parse_inputs():
   // if we're using rosenbrock, change the initial guess.  This update is
   // performed only on rank 0
-  Dakota::ProblemDescDB& problem_db = env.problem_description_db();
+  Dakota::ProblemDescDB&   problem_db   = env.problem_description_db();
   if (world_rank == 0) {
-    problem_db.resolve_top_method();  // allow DB set/get operations
-    const Dakota::StringArray& drivers =
-        problem_db.get_sa("interface.application.analysis_drivers");
+    problem_db.resolve_top_method(); // allow DB set/get operations
+    const Dakota::StringArray& drivers
+      = problem_db.get_sa("interface.application.analysis_drivers");
     if (drivers.size() == 1 && drivers[0] == "plugin_rosenbrock") {
       Dakota::RealVector ip(2);
-      ip[0] = 1.1;
-      ip[1] = -1.3;
+      ip[0] =  1.1;  ip[1] = -1.3;
       problem_db.set("variables.continuous_design.initial_point", ip);
     }
   }
@@ -346,18 +359,17 @@ void run_dakota_mixed(const char* dakota_input_file, bool mpirun_flag) {
   // extracted; rather, we must update the Environment's Iterators and Models
   // directly.  Iterator updates should be performed only on rank 0 in
   // iteratorComm, but Model updates are performed on all processors.
-  Dakota::ModelList models =
-      env.filtered_model_list("simulation", "direct", "plugin_text_book");
+  Dakota::ModelList models
+    = env.filtered_model_list("simulation", "direct", "plugin_text_book");
   Dakota::ModelLIter ml_iter;
   for (auto& m : models) {
-    const Dakota::StringArray& drivers =
-        m->derived_interface()->analysis_drivers();
+    const Dakota::StringArray& drivers
+      = m->derived_interface()->analysis_drivers();
     if (drivers.size() == 1 && drivers[0] == "plugin_text_book") {
       // Change initial guess:
-      // ml_iter->continuous_variables(T);
+      //ml_iter->continuous_variables(T);
       // Change a lower bound:
-      Dakota::RealVector lb(
-          Dakota::ModelUtils::continuous_lower_bounds(*m));  // copy
+      Dakota::RealVector lb(Dakota::ModelUtils::continuous_lower_bounds(*m)); // copy
       lb[0] += 0.1;
       Dakota::ModelUtils::continuous_lower_bounds(*m, lb);
     }
@@ -367,51 +379,55 @@ void run_dakota_mixed(const char* dakota_input_file, bool mpirun_flag) {
   env.execute();
 }
 
+
 /** Demonstration of simple plugin where client code doesn't require
     access to detailed Dakota data (such as Model-based parallel
     configuration information) to construct the DirectApplicInterface.
     This example plugs-in a derived serial direct application
     interface instance ("plugin_rosenbrock"). */
-void serial_interface_plugin(Dakota::LibraryEnvironment& env) {
-  std::string model_type("");  // demo: empty string will match any model type
+void serial_interface_plugin(Dakota::LibraryEnvironment& env)
+{
+  std::string model_type(""); // demo: empty string will match any model type
   std::string interf_type("direct");
   std::string an_driver("plugin_rosenbrock");
 
   Dakota::ProblemDescDB& problem_db = env.problem_description_db();
   Dakota::ParallelLibrary& parallel_lib = env.parallel_library();
-  Dakota::Interface* serial_iface =
-      new SIM::SerialDirectApplicInterface(problem_db, parallel_lib);
+  Dakota::Interface* serial_iface = 
+    new SIM::SerialDirectApplicInterface(problem_db, parallel_lib);
 
   bool plugged_in =
-      env.plugin_interface(model_type, interf_type, an_driver, serial_iface);
+    env.plugin_interface(model_type, interf_type, an_driver, serial_iface);
 
   if (!plugged_in) {
     Cerr << "Error: no serial interface plugin performed.  Check "
-         << "compatibility between parallel\n       configuration and "
-         << "selected analysis_driver." << std::endl;
+	 << "compatibility between parallel\n       configuration and "
+	 << "selected analysis_driver." << std::endl;
     Dakota::abort_handler(-1);
   }
 }
+
 
 /** From a filtered list of Model candidates, plug-in a derived direct
     application interface instance ("plugin_text_book" for parallel).
     This approach provides more complete access to the Model, e.g.,
     for access to analysis communicators. */
-void parallel_interface_plugin(Dakota::LibraryEnvironment& env) {
+void parallel_interface_plugin(Dakota::LibraryEnvironment& env)
+{
   // get the list of all models matching the specified model, interface, driver:
-  Dakota::ModelList filt_models =
-      env.filtered_model_list("simulation", "direct", "plugin_text_book");
+  Dakota::ModelList filt_models = 
+    env.filtered_model_list("simulation", "direct", "plugin_text_book");
   if (filt_models.empty()) {
     Cerr << "Error: no parallel interface plugin performed.  Check "
-         << "compatibility between parallel\n       configuration and "
-         << "selected analysis_driver." << std::endl;
+	 << "compatibility between parallel\n       configuration and "
+	 << "selected analysis_driver." << std::endl;
     Dakota::abort_handler(-1);
   }
 
   Dakota::ProblemDescDB& problem_db = env.problem_description_db();
   Dakota::ParallelLibrary& parallel_lib = env.parallel_library();
   Dakota::ModelLIter ml_iter;
-  size_t model_index = problem_db.get_db_model_node();  // for restoration
+  size_t model_index = problem_db.get_db_model_node(); // for restoration
   for (auto& fm : filt_models) {
     // set DB nodes to input specification for this Model
     problem_db.set_db_model_nodes(fm->model_id());
@@ -425,17 +441,19 @@ void parallel_interface_plugin(Dakota::LibraryEnvironment& env) {
     const MPI_Comm& analysis_comm = fm->analysis_comm();
 
     // don't increment ref count since no other envelope shares this letter
-    fm->derived_interface(std::make_shared<SIM::ParallelDirectApplicInterface>(
-        problem_db, parallel_lib, analysis_comm));
+    fm->derived_interface(std::make_shared<SIM::ParallelDirectApplicInterface>
+			       (problem_db, parallel_lib, analysis_comm));
   }
-  problem_db.set_db_model_nodes(model_index);  // restore
+  problem_db.set_db_model_nodes(model_index);            // restore
 }
+
 
 /** Example of user-provided callback function (an instance of
     Dakota::DbCallbackFunction) to override input provided by parsed Dakota
     input file or input string data.  */
-static void callback_function(Dakota::ProblemDescDB* db, void* ptr) {
-  callback_data* my_data = (callback_data*)ptr;
+static void callback_function(Dakota::ProblemDescDB* db, void *ptr)
+{
+  callback_data *my_data = (callback_data*)ptr;
   double my_rosen_ub = my_data->rosen_cdv_upper_bd;
 
   // Do something to put the DB in a usable set/get state (unlock and set list
@@ -443,34 +461,33 @@ static void callback_function(Dakota::ProblemDescDB* db, void* ptr) {
   // more advanced usage would require set_db_list_nodes() or equivalent.
   db->resolve_top_method();
 
-  if (!(db->get_ushort("interface.type") & DIRECT_INTERFACE_BIT)) return;
+  if ( !(db->get_ushort("interface.type") & DIRECT_INTERFACE_BIT) )
+    return;
 
   // supply labels, initial_point, and bounds
   // Both Rosenbrock and text_book have the same number of variables (2).
   Dakota::RealVector rv(2);
-  const Dakota::StringArray& drivers =
-      db->get_sa("interface.application.analysis_drivers");
+  const Dakota::StringArray& drivers
+    = db->get_sa("interface.application.analysis_drivers");
   if (Dakota::contains(drivers, "plugin_rosenbrock")) {
     // Rosenbrock
-    rv[0] = -1.2;
-    rv[1] = 1.;
+    rv[0] = -1.2; rv[1] =  1.;
     db->set("variables.continuous_design.initial_point", rv);
-    rv[0] = -2.;
-    rv[1] = -2.;
+    rv[0] = -2.;  rv[1] = -2.;
     db->set("variables.continuous_design.lower_bounds", rv);
-    rv[0] = my_rosen_ub;
-    rv[1] = my_rosen_ub;
+    rv[0] =  my_rosen_ub;
+    rv[1] =  my_rosen_ub;
     db->set("variables.continuous_design.upper_bounds", rv);
-  } else if (Dakota::contains(drivers, "plugin_text_book")) {
+  }
+  else if (Dakota::contains(drivers, "plugin_text_book")) {
     // text_book
-    rv[0] = 0.2;
-    rv[1] = 1.1;
+    rv[0] =  0.2;  rv[1] =  1.1;
     db->set("variables.continuous_design.initial_point", rv);
-    rv[0] = 0.5;
-    rv[1] = -2.9;
+    rv[0] =  0.5;  rv[1] = -2.9;
     db->set("variables.continuous_design.lower_bounds", rv);
-    rv[0] = 5.8;
-    rv[1] = 2.9;
+    rv[0] =  5.8;  rv[1] =  2.9;
     db->set("variables.continuous_design.upper_bounds", rv);
   }
 }
+
+

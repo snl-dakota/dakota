@@ -17,28 +17,29 @@ namespace Dakota {
 
 class SurrBasedLevelData;
 
+
 /// Base class for local/global surrogate-based optimization/least squares.
 
 /** These minimizers use a SurrogateModel to perform optimization based
     either on local trust region methods or global updating methods. */
 
-class SurrBasedMinimizer : public Minimizer {
- protected:
+class SurrBasedMinimizer: public Minimizer
+{
+protected:
+
   //
   //- Heading: Constructor and destructor
   //
 
   /// constructor
-  SurrBasedMinimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
-                     std::shared_ptr<Model> model,
-                     std::shared_ptr<TraitsBase> traits);
+  SurrBasedMinimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model,
+		     std::shared_ptr<TraitsBase> traits);
   /// alternate constructor for instantiations "on the fly"
-  SurrBasedMinimizer(std::shared_ptr<Model> model, size_t max_iter,
-                     size_t max_eval, Real conv_tol,
-                     std::shared_ptr<TraitsBase> traits);
+  SurrBasedMinimizer(std::shared_ptr<Model> model, size_t max_iter, size_t max_eval,
+		     Real conv_tol, std::shared_ptr<TraitsBase> traits);
   /// destructor
   ~SurrBasedMinimizer() override;
-
+    
   //
   //- Heading: Virtual function redefinitions
   //
@@ -47,8 +48,7 @@ class SurrBasedMinimizer : public Minimizer {
   void derived_set_communicators(ParLevLIter pl_iter) override;
   void derived_free_communicators(ParLevLIter pl_iter) override;
 
-  void print_results(std::ostream& s,
-                     short results_state = FINAL_RESULTS) override;
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS) override;
 
   //
   //- Heading: Utility member functions
@@ -59,77 +59,86 @@ class SurrBasedMinimizer : public Minimizer {
 
   /// initialize and update Lagrange multipliers for basic Lagrangian
   void update_lagrange_multipliers(const RealVector& fn_vals,
-                                   const RealMatrix& fn_grads,
-                                   SurrBasedLevelData& tr_data);
+				   const RealMatrix& fn_grads,
+				   SurrBasedLevelData& tr_data);
 
   /// initialize and update the Lagrange multipliers for augmented Lagrangian
   void update_augmented_lagrange_multipliers(const RealVector& fn_vals);
 
   /// (re-)initialize filter from a set of function values
   void initialize_filter(SurrBasedLevelData& tr_data,
-                         const RealVector& fn_vals);
+			 const RealVector& fn_vals);
   /// update filter using a new set of function values
   bool update_filter(SurrBasedLevelData& tr_data, const RealVector& fn_vals);
 
   // compute a filter merit function from a set of function values
-  // Real filter_merit(const RealVector& fns_center, const RealVector&
-  // fns_star);
+  //Real filter_merit(const RealVector& fns_center, const RealVector& fns_star);
 
   /// compute a Lagrangian function from a set of function values
-  Real lagrangian_merit(const RealVector& fn_vals, const BoolDeque& sense,
-                        const RealVector& primary_wts,
-                        const RealVector& nln_ineq_l_bnds,
-                        const RealVector& nln_ineq_u_bnds,
-                        const RealVector& nln_eq_tgts);
+  Real lagrangian_merit(const RealVector& fn_vals,
+			const BoolDeque&  sense, const RealVector& primary_wts,
+			const RealVector& nln_ineq_l_bnds,
+			const RealVector& nln_ineq_u_bnds,
+			const RealVector& nln_eq_tgts);
   /// compute the gradient of the Lagrangian function
   void lagrangian_gradient(const RealVector& fn_vals,
-                           const RealMatrix& fn_grads, const BoolDeque& sense,
-                           const RealVector& primary_wts,
-                           const RealVector& nln_ineq_l_bnds,
-                           const RealVector& nln_ineq_u_bnds,
-                           const RealVector& nln_eq_tgts, RealVector& lag_grad);
+			   const RealMatrix& fn_grads,
+			   const BoolDeque&  sense,
+			   const RealVector& primary_wts,
+			   const RealVector& nln_ineq_l_bnds,
+			   const RealVector& nln_ineq_u_bnds,
+			   const RealVector& nln_eq_tgts,
+			   RealVector& lag_grad);
   /// compute the Hessian of the Lagrangian function
-  void lagrangian_hessian(const RealVector& fn_vals, const RealMatrix& fn_grads,
-                          const RealSymMatrixArray& fn_hessians,
-                          const BoolDeque& sense, const RealVector& primary_wts,
-                          const RealVector& nln_ineq_l_bnds,
-                          const RealVector& nln_ineq_u_bnds,
-                          const RealVector& nln_eq_tgts,
-                          RealSymMatrix& lag_hess);
+  void lagrangian_hessian(const RealVector& fn_vals,
+			  const RealMatrix& fn_grads, 
+			  const RealSymMatrixArray& fn_hessians,
+			  const BoolDeque&  sense,
+			  const RealVector& primary_wts,
+			  const RealVector& nln_ineq_l_bnds,
+			  const RealVector& nln_ineq_u_bnds,
+			  const RealVector& nln_eq_tgts,
+			  RealSymMatrix& lag_hess);
 
   /// compute an augmented Lagrangian function from a set of function values
   Real augmented_lagrangian_merit(const RealVector& fn_vals,
-                                  const BoolDeque& sense,
-                                  const RealVector& primary_wts,
-                                  const RealVector& nln_ineq_l_bnds,
-                                  const RealVector& nln_ineq_u_bnds,
-                                  const RealVector& nln_eq_tgts);
+				  const BoolDeque&  sense,
+				  const RealVector& primary_wts,
+				  const RealVector& nln_ineq_l_bnds,
+				  const RealVector& nln_ineq_u_bnds,
+				  const RealVector& nln_eq_tgts);
   /// compute the gradient of the augmented Lagrangian function
-  void augmented_lagrangian_gradient(
-      const RealVector& fn_vals, const RealMatrix& fn_grads,
-      const BoolDeque& sense, const RealVector& primary_wts,
-      const RealVector& nln_ineq_l_bnds, const RealVector& nln_ineq_u_bnds,
-      const RealVector& nln_eq_tgts, RealVector& alag_grad);
+  void augmented_lagrangian_gradient(const RealVector& fn_vals,
+				     const RealMatrix& fn_grads,
+				     const BoolDeque&  sense,
+				     const RealVector& primary_wts,
+				     const RealVector& nln_ineq_l_bnds,
+				     const RealVector& nln_ineq_u_bnds,
+				     const RealVector& nln_eq_tgts,
+				     RealVector& alag_grad);
   /// compute the Hessian of the augmented Lagrangian function
-  void augmented_lagrangian_hessian(
-      const RealVector& fn_vals, const RealMatrix& fn_grads,
-      const RealSymMatrixArray& fn_hessians, const BoolDeque& sense,
-      const RealVector& primary_wts, const RealVector& nln_ineq_l_bnds,
-      const RealVector& nln_ineq_u_bnds, const RealVector& nln_eq_tgts,
-      RealSymMatrix& alag_hess);
+  void augmented_lagrangian_hessian(const RealVector& fn_vals,
+				    const RealMatrix& fn_grads, 
+				    const RealSymMatrixArray& fn_hessians,
+				    const BoolDeque&  sense,
+				    const RealVector& primary_wts,
+				    const RealVector& nln_ineq_l_bnds,
+				    const RealVector& nln_ineq_u_bnds,
+				    const RealVector& nln_eq_tgts,
+				    RealSymMatrix& alag_hess);
 
   /// compute a penalty function from a set of function values
   Real penalty_merit(const RealVector& fn_vals, const BoolDeque& sense,
-                     const RealVector& primary_wts);
+		     const RealVector& primary_wts);
 
   /// compute the gradient of the penalty function
   void penalty_gradient(const RealVector& fn_vals, const RealMatrix& fn_grads,
-                        const BoolDeque& sense, const RealVector& primary_wts,
-                        RealVector& pen_grad);
+			const BoolDeque& sense, const RealVector& primary_wts,
+			RealVector& pen_grad);
 
   /// compute the constraint violation from a set of function values
   Real constraint_violation(const RealVector& fn_vals,
-                            const Real& constraint_tol);
+			    const Real& constraint_tol);
 
   //
   //- Heading: Data members
@@ -172,6 +181,6 @@ class SurrBasedMinimizer : public Minimizer {
   size_t miPLIndex;
 };
 
-}  // namespace Dakota
+} // namespace Dakota
 
 #endif

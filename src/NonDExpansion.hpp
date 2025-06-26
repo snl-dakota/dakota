@@ -13,6 +13,7 @@
 #include "DakotaNonD.hpp"
 #include "DataFitSurrModel.hpp"
 
+
 namespace Dakota {
 
 /// Base class for polynomial chaos expansions (PCE), stochastic
@@ -22,22 +23,23 @@ namespace Dakota {
     polynomial expansions to approximate the effect of parameter
     uncertainties on response functions of interest. */
 
-class NonDExpansion : public NonD {
- public:
+class NonDExpansion: public NonD
+{
+public:
+
   //
   //- Heading: Constructors and destructor
   //
 
   /// standard constructor
-  NonDExpansion(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
-                std::shared_ptr<Model> model);
+  NonDExpansion(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
   /// alternate constructor
   NonDExpansion(unsigned short method_name, std::shared_ptr<Model> model,
-                const ShortShortPair& approx_view, short exp_coeffs_approach,
-                const RealVector& dim_pref, int seed, short refine_type,
-                short refine_control, short covar_control, Real colloc_ratio,
-                short rule_nest, short rule_growth, bool piecewise_basis,
-                bool use_derivs);
+		const ShortShortPair& approx_view, short exp_coeffs_approach,
+		const RealVector& dim_pref, int seed, short refine_type,
+		short refine_control, short covar_control, Real colloc_ratio,
+		short rule_nest, short rule_growth, bool piecewise_basis,
+		bool use_derivs);
   /// destructor
   ~NonDExpansion() override;
 
@@ -50,17 +52,19 @@ class NonDExpansion : public NonD {
   void derived_set_communicators(ParLevLIter pl_iter) override;
   void derived_free_communicators(ParLevLIter pl_iter) override;
 
-  void nested_variable_mappings(
-      const SizetArray& c_index1, const SizetArray& di_index1,
-      const SizetArray& ds_index1, const SizetArray& dr_index1,
-      const ShortArray& c_target2, const ShortArray& di_target2,
-      const ShortArray& ds_target2, const ShortArray& dr_target2) override;
+  void nested_variable_mappings(const SizetArray& c_index1,
+				const SizetArray& di_index1,
+				const SizetArray& ds_index1,
+				const SizetArray& dr_index1,
+				const ShortArray& c_target2,
+				const ShortArray& di_target2,
+				const ShortArray& ds_target2,
+				const ShortArray& dr_target2) override;
 
   /// perform a forward uncertainty propagation using PCE/SC methods
   void core_run() override;
   /// print the final statistics
-  void print_results(std::ostream& s,
-                     short results_state = FINAL_RESULTS) override;
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS) override;
 
   std::shared_ptr<Model> algorithm_space_model() override;
 
@@ -80,8 +84,8 @@ class NonDExpansion : public NonD {
   /// evaluate allSamples for inclusion in the (PCE regression) approximation
   /// and retain the best set (well spaced) of size batch_size
   virtual void select_refinement_points(
-      const RealVectorArray& candidate_samples, unsigned short batch_size,
-      RealMatrix& best_samples);
+    const RealVectorArray& candidate_samples, unsigned short batch_size,
+    RealMatrix& best_samples);
 
   /// generate numSamplesOnModel, append to approximation data, and update
   /// QoI expansions
@@ -89,10 +93,10 @@ class NonDExpansion : public NonD {
   /// append new data to uSpaceModel and, when appropriate,
   /// update expansion order
   virtual void append_expansion(const RealMatrix& samples,
-                                const IntResponseMap& resp_map);
+				const IntResponseMap& resp_map);
 
-  virtual void infer_pilot_sample(/*Real ratio, */ size_t num_steps,
-                                  SizetArray& delta_N_l);
+  virtual void infer_pilot_sample(/*Real ratio, */size_t num_steps,
+				  SizetArray& delta_N_l);
 
   //
   //- Heading: Member functions
@@ -103,7 +107,8 @@ class NonDExpansion : public NonD {
   /// set maxRefineIterations
   void maximum_refinement_iterations(size_t max_refine_iter);
 
- protected:
+protected:
+
   //
   //- Heading: Virtual functions
   //
@@ -139,8 +144,7 @@ class NonDExpansion : public NonD {
   /// compute 2-norm of change in final statistics
   virtual Real compute_level_mappings_metric(bool revert, bool print_metric);
   // compute 2-norm of change in final statistics
-  // virtual Real compute_final_statistics_metric(bool revert,bool
-  // print_metric);
+  //virtual Real compute_final_statistics_metric(bool revert,bool print_metric);
 
   /// calculate analytic and numerical statistics from the expansion,
   /// supporting {REFINEMENT,INTERMEDIATE,FINAL}_RESULTS modes
@@ -154,20 +158,20 @@ class NonDExpansion : public NonD {
   virtual void initialize_ml_regression(bool& import_pilot);
   /// increment sequence in numSamplesOnModel for multilevel_regression()
   virtual void increment_sample_sequence(size_t new_samp, size_t total_samp,
-                                         size_t step);
+					 size_t step);
   /// accumulate one of the level metrics for {RIP,RANK}_SAMPLING cases
   virtual void sample_allocation_metric(Real& metric, Real power);
   /// compute delta_N_l for {RIP,RANK}_SAMPLING cases
   virtual void compute_sample_increment(const RealVector& lev_metrics,
-                                        const SizetArray& N_l,
-                                        SizetArray& delta_N_l);
+					const SizetArray& N_l,
+					SizetArray& delta_N_l);
   /// finalizations for multilevel_regression()
   virtual void finalize_ml_regression();
 
   /// update numSamplesOnModel after an order increment
-  virtual void update_samples_from_order_increment();
+  virtual void update_samples_from_order_increment();  
   /// update (restore previous) numSamplesOnModel after an order decrement
-  virtual void update_samples_from_order_decrement();
+  virtual void update_samples_from_order_decrement();  
 
   /// print global sensitivity indices
   virtual void print_sobol_indices(std::ostream& s);
@@ -189,13 +193,13 @@ class NonDExpansion : public NonD {
 
   /// verify supported and define default correction / emulation modes
   void assign_modes();
-  /// define the surrogate response mode for an ensemble model in
+  /// define the surrogate response mode for an ensemble model in 
   /// multilevel/multifidelity expansions
   void assign_surrogate_response_mode();
 
   /// manage cost specification and/or online cost recovery
   short initialize_costs(RealVector& cost, BitArray& model_cost_spec,
-                         SizetSizetPairArray& cost_md_indices);
+			 SizetSizetPairArray& cost_md_indices);
 
   /// helper for initializing a numerical integration grid
   void initialize_u_space_grid();
@@ -204,54 +208,48 @@ class NonDExpansion : public NonD {
   void check_dimension_preference(const RealVector& dim_pref) const;
 
   /// assign a NonDCubature instance within u_space_sampler
-  void construct_cubature(std::shared_ptr<Iterator>& u_space_sampler,
-                          std::shared_ptr<Model> g_u_model,
-                          unsigned short cub_int_order);
+  void construct_cubature(std::shared_ptr<Iterator>& u_space_sampler, std::shared_ptr<Model> g_u_model,
+			  unsigned short cub_int_order);
   /// assign a NonDQuadrature instance within u_space_sampler based on
   /// a quad_order specification
-  void construct_quadrature(std::shared_ptr<Iterator>& u_space_sampler,
-                            std::shared_ptr<Model> g_u_model,
-                            unsigned short quad_order,
-                            const RealVector& dim_pref);
+  void construct_quadrature(std::shared_ptr<Iterator>& u_space_sampler, std::shared_ptr<Model> g_u_model,
+			    unsigned short quad_order,
+			    const RealVector& dim_pref);
   /// assign a NonDQuadrature instance within u_space_sampler that
   /// generates a filtered tensor product sample set
-  void construct_quadrature(std::shared_ptr<Iterator>& u_space_sampler,
-                            std::shared_ptr<Model> g_u_model,
-                            unsigned short quad_order,
-                            const RealVector& dim_pref, int filtered_samples);
+  void construct_quadrature(std::shared_ptr<Iterator>& u_space_sampler, std::shared_ptr<Model> g_u_model,
+			    unsigned short quad_order,
+			    const RealVector& dim_pref, int filtered_samples);
   /// assign a NonDQuadrature instance within u_space_sampler that
   /// samples randomly from a tensor product multi-index
-  void construct_quadrature(std::shared_ptr<Iterator>& u_space_sampler,
-                            std::shared_ptr<Model> g_u_model,
-                            unsigned short quad_order,
-                            const RealVector& dim_pref, int random_samples,
-                            int seed);
+  void construct_quadrature(std::shared_ptr<Iterator>& u_space_sampler, std::shared_ptr<Model> g_u_model,
+			    unsigned short quad_order,
+			    const RealVector& dim_pref,
+			    int random_samples, int seed);
   /// assign a NonDSparseGrid instance within u_space_sampler
-  void construct_sparse_grid(std::shared_ptr<Iterator>& u_space_sampler,
-                             std::shared_ptr<Model> g_u_model,
-                             unsigned short ssg_level,
-                             const RealVector& dim_pref);
+  void construct_sparse_grid(std::shared_ptr<Iterator>& u_space_sampler, std::shared_ptr<Model> g_u_model,
+			     unsigned short ssg_level,
+			     const RealVector& dim_pref);
   // assign a NonDIncremLHSSampling instance within u_space_sampler
-  // void construct_incremental_lhs(Iterator& u_space_sampler, Model& u_model,
+  //void construct_incremental_lhs(Iterator& u_space_sampler, Model& u_model,
   //				 int num_samples, int seed, const String& rng);
 
   /// configure exp_orders from inputs
   void configure_expansion_orders(unsigned short exp_order,
-                                  const RealVector& dim_pref,
-                                  UShortArray& exp_orders);
+				  const RealVector& dim_pref,
+				  UShortArray& exp_orders);
 
   /// configure expansion and basis configuration options for Pecos
   /// polynomial approximations
   void configure_pecos_options();
 
   /// construct the expansionSampler for evaluating samples on uSpaceModel
-  void construct_expansion_sampler(
-      unsigned short sample_type, const String& rng,
-      unsigned short integration_refine = NO_INT_REFINE,
-      const IntVector& refine_samples = IntVector(),
-      const String& import_approx_file = String(),
-      unsigned short import_approx_format = TABULAR_ANNOTATED,
-      bool import_approx_active_only = false);
+  void construct_expansion_sampler(unsigned short sample_type,
+    const String& rng, unsigned short integration_refine = NO_INT_REFINE,
+    const IntVector& refine_samples = IntVector(),
+    const String& import_approx_file = String(),
+    unsigned short import_approx_format = TABULAR_ANNOTATED,
+    bool import_approx_active_only = false);
 
   /// construct a multifidelity expansion, across model forms or
   /// discretization levels
@@ -272,9 +270,9 @@ class NonDExpansion : public NonD {
   /// compute increment in samples for multilevel_regression() based
   /// on ESTIMATOR_VARIANCE
   void compute_sample_increment(const RealVector& agg_var,
-                                const RealVector& cost, Real sum_root_var_cost,
-                                Real eps_sq_div_2, const SizetArray& N_l,
-                                SizetArray& delta_N_l);
+				const RealVector& cost, Real sum_root_var_cost,
+				Real eps_sq_div_2, const SizetArray& N_l,
+				SizetArray& delta_N_l);
 
   /// return number of collocation points for index within model sequence
   size_t collocation_points(size_t index) const;
@@ -288,7 +286,7 @@ class NonDExpansion : public NonD {
   void pre_refinement();
   /// advance the refinement strategy one step
   size_t core_refinement(Real& metric, bool revert = false,
-                         bool print_metric = true);
+			 bool print_metric = true);
   /// finalization of expansion refinement, if necessary
   void post_refinement(Real& metric, bool reverted = false);
 
@@ -312,11 +310,10 @@ class NonDExpansion : public NonD {
   /// perform sampler updates after a change to numSamplesOnModel
   /// (shared code from ML/MF updaters)
   void update_u_space_sampler(size_t sequence_index,
-                              const UShortArray& approx_orders);
+			      const UShortArray& approx_orders);
 
   /// update statsMetricMode, here and in Pecos::ExpansionConfigOptions
-  void refinement_statistics_mode(
-      short stats_mode);  //, bool clear_bits = true);
+  void refinement_statistics_mode(short stats_mode);//, bool clear_bits = true);
 
   /// perform any required expansion roll-ups prior to metric computation
   void metric_roll_up(short results_state = FINAL_RESULTS);
@@ -365,10 +362,10 @@ class NonDExpansion : public NonD {
   void print_covariance(std::ostream& s);
   /// print resp_var (response variance vector) using optional pre-pend
   void print_variance(std::ostream& s, const RealVector& resp_var,
-                      const String& prepend = "");
+		      const String& prepend = "");
   /// print resp_covar (response covariance matrix) using optional pre-pend
   void print_covariance(std::ostream& s, const RealSymMatrix& resp_covar,
-                        const String& prepend = "");
+			const String& prepend = "");
 
   /// archive the central moments (numerical and expansion) to ResultsDB
   void archive_moments();
@@ -381,14 +378,14 @@ class NonDExpansion : public NonD {
 
   /// pull lower triangle of symmetric matrix into vector
   void pull_lower_triangle(const RealSymMatrix& mat, RealVector& vec,
-                           size_t offset = 0);
+			   size_t offset = 0);
   /// push vector into lower triangle of symmetric matrix
   void push_lower_triangle(const RealVector& vec, RealSymMatrix& mat,
-                           size_t offset = 0);
+			   size_t offset = 0);
 
   /// convert number of regression terms and collocation ratio to a
   /// number of collocation samples
-  int terms_ratio_to_samples(size_t num_exp_terms, Real colloc_ratio);
+  int  terms_ratio_to_samples(size_t num_exp_terms, Real colloc_ratio);
   /// convert number of regression terms and number of collocation samples
   /// to a collocation ratio
   Real terms_samples_to_ratio(size_t num_exp_terms, int samples);
@@ -548,7 +545,8 @@ class NonDExpansion : public NonD {
   /// number of invocations of core_run()
   size_t numUncertainQuant;
 
- private:
+private:
+
   //
   //- Heading: Convenience function definitions
   //
@@ -566,7 +564,7 @@ class NonDExpansion : public NonD {
 
   /// accumulator of cost metadata per sample batch
   void accumulate_online_cost(const IntResponseMap& resp_map, size_t step,
-                              RealVector& accum_cost, SizetArray& num_cost);
+			      RealVector& accum_cost, SizetArray& num_cost);
 
   /// compute average of total Sobol' indices (from VBD) across the
   /// response set for use as an anisotropy indicator
@@ -587,7 +585,7 @@ class NonDExpansion : public NonD {
   void select_candidate(size_t best_candidate);
   /// promote selected index set candidate into reference grid + expansion
   void select_index_set_candidate(
-      std::set<UShortArray>::const_iterator cit_star);
+    std::set<UShortArray>::const_iterator cit_star);
   /// promote selected refinement increment candidate into reference
   /// grid + expansion
   void select_increment_candidate();
@@ -600,19 +598,19 @@ class NonDExpansion : public NonD {
   void compute_numerical_statistics();
   /// refinements to numerical probability statistics from importanceSampler
   void compute_numerical_stat_refinements(RealVectorArray& imp_sampler_stats,
-                                          RealRealPairArray& min_max_fns);
+					  RealRealPairArray& min_max_fns);
 
   /// helper to define the expansionSampler's data requests when sampling on
   /// the expansion
   void define_sampler_asv(ShortArray& sampler_asv);
   /// helper to run the expansionSampler and compute its statistics
   void run_sampler(const ShortArray& sampler_asv,
-                   RealVector& exp_sampler_stats);
+		   RealVector& exp_sampler_stats);
   /// helper to refine the results from expansionSampler with importance
   /// sampling (for probability levels) or bounds post-processing (for PDFs)
   void refine_sampler(RealVectorArray& imp_sampler_stats,
-                      RealRealPairArray& min_max_fns);
-
+		      RealRealPairArray& min_max_fns);
+  
   /// print expansion and numerical moments
   void print_moments(std::ostream& s);
   /// print local sensitivities evaluated at initialPtU
@@ -632,201 +630,214 @@ class NonDExpansion : public NonD {
   /// maximum number of regression solver iterations (specialization
   /// of maxIterations)
   size_t maxSolverIterations;
-
+  
   /// limits the order of interactions within the component Sobol' indices
   unsigned short vbdOrderLimit;
 
   // sample type for \c expansion_samples approach to estimating PCE
   // coefficients (supports construct_incremental_lhs())
-  // String expansionSampleType;
+  //String expansionSampleType;
 };
 
-inline void NonDExpansion::nested_variable_mappings(
-    const SizetArray& c_index1, const SizetArray& di_index1,
-    const SizetArray& ds_index1, const SizetArray& dr_index1,
-    const ShortArray& c_target2, const ShortArray& di_target2,
-    const ShortArray& ds_target2, const ShortArray& dr_target2) {
+
+inline void NonDExpansion::
+nested_variable_mappings(const SizetArray& c_index1,
+			 const SizetArray& di_index1,
+			 const SizetArray& ds_index1,
+			 const SizetArray& dr_index1,
+			 const ShortArray& c_target2,
+			 const ShortArray& di_target2,
+			 const ShortArray& ds_target2,
+			 const ShortArray& dr_target2)
+{
   uSpaceModel->nested_variable_mappings(c_index1, di_index1, ds_index1,
-                                        dr_index1, c_target2, di_target2,
-                                        ds_target2, dr_target2);
+				       dr_index1, c_target2, di_target2,
+				       ds_target2, dr_target2);
 }
 
-inline size_t NonDExpansion::collocation_points(size_t index) const {
-  if (collocPtsSeqSpec.empty())
-    return SZ_MAX;
+
+inline size_t NonDExpansion::collocation_points(size_t index) const
+{
+  if (collocPtsSeqSpec.empty()) return SZ_MAX;
   else
-    return (index < collocPtsSeqSpec.size()) ? collocPtsSeqSpec[index]
-                                             : collocPtsSeqSpec.back();
+    return (index < collocPtsSeqSpec.size()) ?
+      collocPtsSeqSpec[index] : collocPtsSeqSpec.back();
 }
 
-inline int NonDExpansion::random_seed() const {
-  return randomSeed;
-}  // default (overridden in case of seed_sequence)
 
-inline int NonDExpansion::first_seed() const {
-  return random_seed();
-}  // default (overridden for multilevel)
+inline int NonDExpansion::random_seed() const
+{ return randomSeed; } // default (overridden in case of seed_sequence)
+
+
+inline int NonDExpansion::first_seed() const
+{ return random_seed(); } // default (overridden for multilevel)
+
 
 /** extract an active seed from a seed sequence */
-inline int NonDExpansion::seed_sequence(size_t index) const {
+inline int NonDExpansion::seed_sequence(size_t index) const
+{
   // return 0 for cases where seed is undefined or will not be updated
 
-  if (randomSeedSeqSpec.empty())
-    return 0;          // no spec -> non-repeatable samples
-  else if (fixedSeed)  // continually reset seed to specified value
-    return (index < randomSeedSeqSpec.size()) ? randomSeedSeqSpec[index]
-                                              : randomSeedSeqSpec.back();
+  if (randomSeedSeqSpec.empty()) return 0; // no spec -> non-repeatable samples
+  else if (fixedSeed) // continually reset seed to specified value
+    return (index < randomSeedSeqSpec.size()) ?
+      randomSeedSeqSpec[index] : randomSeedSeqSpec.back();
   // only set sequence of seeds for first pass, then let RNG state continue
-  else if (mlmfIter == 0 &&
-           index < randomSeedSeqSpec.size())  // pilot iter only
+  else if (mlmfIter == 0 && index < randomSeedSeqSpec.size()) // pilot iter only
     return randomSeedSeqSpec[index];
-  else
-    return 0;  // seed sequence exhausted, do not update
+  else return 0; // seed sequence exhausted, do not update
 }
 
-inline size_t NonDExpansion::maximum_refinement_iterations() const {
-  return maxRefineIterations;
-}
 
-inline void NonDExpansion::maximum_refinement_iterations(
-    size_t max_refine_iter) {
-  maxRefineIterations = max_refine_iter;
-}
+inline size_t NonDExpansion::maximum_refinement_iterations() const
+{ return maxRefineIterations; }
 
-inline std::shared_ptr<Model> NonDExpansion::algorithm_space_model() {
-  return uSpaceModel;
-}
 
-inline size_t NonDExpansion::collocation_points() const { return 0; }
+inline void NonDExpansion::maximum_refinement_iterations(size_t max_refine_iter)
+{ maxRefineIterations = max_refine_iter; }
 
-inline Real NonDExpansion::level_cost(size_t step, const RealVector& cost) {
+
+inline std::shared_ptr<Model> NonDExpansion::algorithm_space_model()
+{ return uSpaceModel; }
+
+
+inline size_t NonDExpansion::collocation_points() const
+{ return 0; }
+
+
+inline Real NonDExpansion::level_cost(size_t step, const RealVector& cost)
+{
   if (cost.empty())
     return 0.;
   else {
     Real cost_l = cost[step];
     if (step && multilevDiscrepEmulation == DISTINCT_EMULATION)
-      cost_l += cost[step - 1];  // discrepancies incur 2 level costs
+      cost_l += cost[step-1]; // discrepancies incur 2 level costs
     return cost_l;
   }
 }
 
-inline void NonDExpansion::metric_roll_up(short results_state) {
+
+inline void NonDExpansion::metric_roll_up(short results_state)
+{
   // if COMBINED_EXPANSIONS_STATS, assess refinement candidates using combined
   // stat metrics, which by default require expansion combination (overridden
   // for hierarchical SC)
   if (statsMetricMode == Pecos::COMBINED_EXPANSION_STATS)
     switch (results_state) {
-      case REFINEMENT_RESULTS:
-        // PCE and Nodal SC require combined expansion coefficients for
-        // computing combined stat metrics, but Hierarchical SC can efficiently
-        // compute deltas based only on active expansions (no combination
-        // required)
-        if (expansionBasisType != Pecos::HIERARCHICAL_INTERPOLANT)
-          uSpaceModel->combine_approximation();
-        break;
-      case INTERMEDIATE_RESULTS:
-        uSpaceModel->combine_approximation();
-        break;
-        // FINAL_RESULTS should not occur: no roll up after combined_to_active()
+    case REFINEMENT_RESULTS:
+      // PCE and Nodal SC require combined expansion coefficients for computing
+      // combined stat metrics, but Hierarchical SC can efficiently compute
+      // deltas based only on active expansions (no combination required)
+      if (expansionBasisType != Pecos::HIERARCHICAL_INTERPOLANT)
+	uSpaceModel->combine_approximation();
+      break;
+    case INTERMEDIATE_RESULTS:
+      uSpaceModel->combine_approximation(); break;
+    // FINAL_RESULTS should not occur: no roll up after combined_to_active()
     }
 
   // TO DO: case of level mappings for numerical stats --> sampling on
   //        combined expansion
 }
 
-inline void NonDExpansion::compute_active_covariance() {
+
+inline void NonDExpansion::compute_active_covariance()
+{
   switch (covarianceControl) {
-    case DIAGONAL_COVARIANCE:
-      compute_active_diagonal_variance();
-      break;
-    case FULL_COVARIANCE:
-      compute_active_diagonal_variance();
-      compute_active_off_diagonal_covariance();
-      break;
+  case DIAGONAL_COVARIANCE:
+    compute_active_diagonal_variance(); break;
+  case FULL_COVARIANCE:
+    compute_active_diagonal_variance();
+    compute_active_off_diagonal_covariance(); break;
   }
 }
 
-inline void NonDExpansion::compute_combined_covariance() {
+
+inline void NonDExpansion::compute_combined_covariance()
+{
   switch (covarianceControl) {
-    case DIAGONAL_COVARIANCE:
-      compute_combined_diagonal_variance();
-      break;
-    case FULL_COVARIANCE:
-      compute_combined_diagonal_variance();
-      compute_combined_off_diagonal_covariance();
-      break;
+  case DIAGONAL_COVARIANCE:
+    compute_combined_diagonal_variance(); break;
+  case FULL_COVARIANCE:
+    compute_combined_diagonal_variance();
+    compute_combined_off_diagonal_covariance(); break;
   }
 }
 
-inline void NonDExpansion::compute_off_diagonal_covariance() {
-  if (numFunctions <= 1) return;
+
+inline void NonDExpansion::compute_off_diagonal_covariance()
+{
+  if (numFunctions <= 1)
+    return;
 
   // See also full_covar_stats logic in compute_analytic_statistics() ...
 
   switch (statsMetricMode) {
-    case Pecos::ACTIVE_EXPANSION_STATS:
-      compute_active_off_diagonal_covariance();
-      break;
-    case Pecos::COMBINED_EXPANSION_STATS:
-      compute_combined_off_diagonal_covariance();
-      break;
+  case Pecos::ACTIVE_EXPANSION_STATS:
+    compute_active_off_diagonal_covariance();   break;
+  case Pecos::COMBINED_EXPANSION_STATS:
+    compute_combined_off_diagonal_covariance(); break;
   }
 }
 
-inline void NonDExpansion::compute_covariance() {
+
+inline void NonDExpansion::compute_covariance()
+{
   switch (statsMetricMode) {
-    // multifidelity_expansion() is outer loop:
-    // > use of refine_expansion(): refine individually based on level
-    // covariance > after combine_approx(), combined_to_active() enables use of
-    // active covar
-    case Pecos::ACTIVE_EXPANSION_STATS:
-      compute_active_covariance();
-      break;
-    // if COMBINED_EXPANSIONS_STATS:
-    // > roll up effect of refinement candidate on combined multilevel
-    // covariance,
-    //   avoiding combined_to_active() promotion until end
-    // > limited stats support for combinedExpCoeffs: only compute_covariance()
-    case Pecos::COMBINED_EXPANSION_STATS:
-      compute_combined_covariance();
-      break;
+  // multifidelity_expansion() is outer loop:
+  // > use of refine_expansion(): refine individually based on level covariance
+  // > after combine_approx(), combined_to_active() enables use of active covar
+  case Pecos::ACTIVE_EXPANSION_STATS:
+    compute_active_covariance();   break;
+  // if COMBINED_EXPANSIONS_STATS:
+  // > roll up effect of refinement candidate on combined multilevel covariance,
+  //   avoiding combined_to_active() promotion until end
+  // > limited stats support for combinedExpCoeffs: only compute_covariance()
+  case Pecos::COMBINED_EXPANSION_STATS:
+    compute_combined_covariance(); break;
   }
 }
 
-inline void NonDExpansion::pull_lower_triangle(const RealSymMatrix& mat,
-                                               RealVector& vec, size_t offset) {
+
+inline void NonDExpansion::
+pull_lower_triangle(const RealSymMatrix& mat, RealVector& vec, size_t offset)
+{
   size_t i, j, cntr = offset, nr = mat.numRows(),
-               min_vec_len = offset + (nr * nr + nr) / 2;
+    min_vec_len = offset + (nr*nr + nr)/2;
   if (vec.length() < min_vec_len) vec.resize(min_vec_len);
-  for (i = 0; i < nr; ++i)
-    for (j = 0; j <= i; ++j, ++cntr)
-      vec[cntr] = mat(i, j);  // pull from lower triangle
+  for (i=0; i<nr; ++i)
+    for (j=0; j<=i; ++j, ++cntr)
+      vec[cntr] = mat(i,j); // pull from lower triangle
 }
 
-inline void NonDExpansion::push_lower_triangle(const RealVector& vec,
-                                               RealSymMatrix& mat,
-                                               size_t offset) {
+
+inline void NonDExpansion::
+push_lower_triangle(const RealVector& vec, RealSymMatrix& mat, size_t offset)
+{
   size_t i, j, cntr = offset, nr = mat.numRows(),
-               min_vec_len = offset + (nr * nr + nr) / 2;
+    min_vec_len = offset + (nr*nr + nr)/2;
   if (vec.length() < min_vec_len) {
     Cerr << "Error: insufficient vector length in NonDExpansion::"
-         << "push_lower_triangle()" << std::endl;
+	 << "push_lower_triangle()" << std::endl;
     abort_handler(METHOD_ERROR);
   }
-  for (i = 0; i < nr; ++i)
-    for (j = 0; j <= i; ++j, ++cntr)
-      mat(i, j) = vec[cntr];  // push to lower triangle
+  for (i=0; i<nr; ++i)
+    for (j=0; j<=i; ++j, ++cntr)
+      mat(i,j) = vec[cntr]; // push to lower triangle
 }
 
-inline void NonDExpansion::pull_candidate(RealVector& stats_star) {
-  pull_reference(stats_star);
-}  // default implementation: candidate same as ref
 
-inline void NonDExpansion::push_candidate(const RealVector& stats_star) {
-  push_reference(stats_star);
-}  // default implementation: candidate same as ref
+inline void NonDExpansion::pull_candidate(RealVector& stats_star)
+{ pull_reference(stats_star); } // default implementation: candidate same as ref
 
-inline void NonDExpansion::update_final_statistics() {
+
+inline void NonDExpansion::push_candidate(const RealVector& stats_star)
+{ push_reference(stats_star); } // default implementation: candidate same as ref
+
+
+inline void NonDExpansion::update_final_statistics()
+{
   // aleatory final stats & their grads are updated directly within
   // compute_statistics() (NonD::update_aleatory_final_statistics() is awkward
   // for NonDExpansion since Pecos manages the moment arrays), such that all
@@ -838,33 +849,40 @@ inline void NonDExpansion::update_final_statistics() {
   update_final_statistics_gradients();
 }
 
-inline void NonDExpansion::archive_coefficients() { /* default is no-op */ }
 
-inline void NonDExpansion::check_dimension_preference(
-    const RealVector& dim_pref) const {
+inline void NonDExpansion::archive_coefficients()
+{ /* default is no-op */ }
+
+
+inline void NonDExpansion::
+check_dimension_preference(const RealVector& dim_pref) const
+{
   size_t len = dim_pref.length();
   if (len) {
     if (len != numContinuousVars) {
       Cerr << "Error: length of dimension preference specification (" << len
-           << ") is inconsistent with continuous expansion variables ("
-           << numContinuousVars << ")." << std::endl;
+	   << ") is inconsistent with continuous expansion variables ("
+	   << numContinuousVars << ")." << std::endl;
       abort_handler(METHOD_ERROR);
-    } else
-      for (size_t i = 0; i < len; ++i)
-        if (dim_pref[i] < 0.) {  // allow zero preference
-          Cerr << "Error: bad dimension preference value (" << dim_pref[i]
-               << ")." << std::endl;
-          abort_handler(METHOD_ERROR);
-        }
+    }
+    else
+      for (size_t i=0; i<len; ++i)
+	if (dim_pref[i] < 0.) { // allow zero preference
+	  Cerr << "Error: bad dimension preference value (" << dim_pref[i]
+	       << ")." << std::endl;
+	  abort_handler(METHOD_ERROR);
+	}
   }
 }
 
-inline int NonDExpansion::terms_ratio_to_samples(size_t num_exp_terms,
-                                                 Real colloc_ratio) {
+
+inline int NonDExpansion::
+terms_ratio_to_samples(size_t num_exp_terms, Real colloc_ratio)
+{
   // for under-determined solves (compressed sensing), colloc_ratio can be < 1
   size_t data_per_pt = (useDerivs) ? numContinuousVars + 1 : 1;
   Real min_pts = std::pow((Real)num_exp_terms, termsOrder) / (Real)data_per_pt;
-  int tgt_samples = (int)std::floor(colloc_ratio * min_pts + .5);  // rounded
+  int tgt_samples = (int)std::floor(colloc_ratio*min_pts + .5); // rounded
   if (colloc_ratio >= 1.) {
     // logic is to round to the nearest integral sample count for the given
     // colloc_ratio, but with a lower bound determined by rounding up with a
@@ -872,21 +890,24 @@ inline int NonDExpansion::terms_ratio_to_samples(size_t num_exp_terms,
     // system due to rounding down when the intent is over- or uniquely
     // determined (can only happen with non-integral min_pts due to use of
     // derivative enhancement).
-    int min_samples = (int)std::ceil(min_pts);  // lower bound
+    int min_samples = (int)std::ceil(min_pts); // lower bound
     return std::max(min_samples, tgt_samples);
-  } else
+  }
+  else
     // for under-determined systems, data starvation is not a problem and we
     // just need at least one sample.
     return std::max(tgt_samples, 1);
 }
 
-inline Real NonDExpansion::terms_samples_to_ratio(size_t num_exp_terms,
-                                                  int samples) {
+
+inline Real NonDExpansion::
+terms_samples_to_ratio(size_t num_exp_terms, int samples)
+{
   size_t data_per_pt = (useDerivs) ? numContinuousVars + 1 : 1;
   return (Real)(samples * data_per_pt) /
-         std::pow((Real)num_exp_terms, termsOrder);
+    std::pow((Real)num_exp_terms, termsOrder);
 }
 
-}  // namespace Dakota
+} // namespace Dakota
 
 #endif

@@ -7,24 +7,24 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-#include "RecastModel.hpp"
-
-#include "DataMethod.hpp"
-#include "DataModel.hpp"
-#include "EvaluationStore.hpp"
 #include "dakota_system_defs.hpp"
+#include "RecastModel.hpp"
+#include "EvaluationStore.hpp"
+#include "DataModel.hpp"
+#include "DataMethod.hpp"
 
-static const char rcsId[] =
-    "@(#) $Id: RecastModel.cpp 7029 2010-10-22 00:17:02Z mseldre $";
+static const char rcsId[]="@(#) $Id: RecastModel.cpp 7029 2010-10-22 00:17:02Z mseldre $";
+
 
 using namespace std;
 
 namespace Dakota {
 
-// #define DEBUG
+//#define DEBUG
 
 // init static var
 StringStringPairIntMap RecastModel::recastModelIdCounters;
+
 
 /** Default recast model constructor.  Requires full definition of the
     transformation; if any mappings are NULL, they are assumed to remain
@@ -33,65 +33,62 @@ StringStringPairIntMap RecastModel::recastModelIdCounters;
     in the recast variable space.  Note: recast_secondary_offset is the
     start index for nonlinear equality constraints, typically defined as
     the number of nonlinear inequality constraints. */
-RecastModel::RecastModel(
-    std::shared_ptr<Model> sub_model, const Sizet2DArray& vars_map_indices,
-    const SizetArray& vars_comps_totals, const BitArray& all_relax_di,
-    const BitArray& all_relax_dr, bool nonlinear_vars_mapping,
-    const ShortShortPair& recast_vars_view,
-    void (*variables_map)(const Variables& recast_vars,
-                          Variables& sub_model_vars),
-    void (*set_map)(const Variables& recast_vars, const ActiveSet& recast_set,
-                    ActiveSet& sub_model_set),
-    const Sizet2DArray& primary_resp_map_indices,
-    const Sizet2DArray& secondary_resp_map_indices,
-    size_t recast_secondary_offset, short recast_resp_order,
-    const BoolDequeArray& nonlinear_resp_mapping,
-    void (*primary_resp_map)(const Variables& sub_model_vars,
-                             const Variables& recast_vars,
-                             const Response& sub_model_response,
-                             Response& recast_response),
-    void (*secondary_resp_map)(const Variables& sub_model_vars,
-                               const Variables& recast_vars,
-                               const Response& sub_model_response,
-                               Response& recast_response))
-    : Model(sub_model->problem_description_db(), sub_model->parallel_library(),
-            Model::ModelCtor::LtWt),
-      subModel(sub_model),
-      varsMapIndices(vars_map_indices),
-      nonlinearVarsMapping(nonlinear_vars_mapping),
-      primaryRespMapIndices(primary_resp_map_indices),
-      secondaryRespMapIndices(secondary_resp_map_indices),
-      nonlinearRespMapping(nonlinear_resp_mapping),
-      recastModelEvalCntr(0),
-      variablesMapping(variables_map),
-      setMapping(set_map),
-      primaryRespMapping(primary_resp_map),
-      secondaryRespMapping(secondary_resp_map),
-      invVarsMapping(NULL),
-      invSetMapping(NULL),
-      invPriRespMapping(NULL),
-      invSecRespMapping(NULL) {
+RecastModel::
+RecastModel(std::shared_ptr<Model> sub_model, const Sizet2DArray& vars_map_indices,
+	    const SizetArray& vars_comps_totals, const BitArray& all_relax_di,
+	    const BitArray& all_relax_dr, bool nonlinear_vars_mapping,
+	    const ShortShortPair& recast_vars_view,
+	    void (*variables_map)      (const Variables& recast_vars,
+					Variables& sub_model_vars),
+	    void (*set_map)            (const Variables& recast_vars,
+					const ActiveSet& recast_set,
+					ActiveSet& sub_model_set),
+	    const Sizet2DArray& primary_resp_map_indices,
+	    const Sizet2DArray& secondary_resp_map_indices,
+	    size_t recast_secondary_offset, short recast_resp_order,
+	    const BoolDequeArray& nonlinear_resp_mapping,
+	    void (*primary_resp_map)   (const Variables& sub_model_vars,
+					const Variables& recast_vars,
+					const Response& sub_model_response,
+					Response& recast_response),
+	    void (*secondary_resp_map) (const Variables& sub_model_vars,
+					const Variables& recast_vars,
+					const Response& sub_model_response,
+					Response& recast_response)):
+  Model(sub_model->problem_description_db(),
+	sub_model->parallel_library(), Model::ModelCtor::LtWt),
+  subModel(sub_model), varsMapIndices(vars_map_indices),
+  nonlinearVarsMapping(nonlinear_vars_mapping),
+  primaryRespMapIndices(primary_resp_map_indices),
+  secondaryRespMapIndices(secondary_resp_map_indices),
+  nonlinearRespMapping(nonlinear_resp_mapping), recastModelEvalCntr(0),
+  variablesMapping(variables_map), setMapping(set_map),
+  primaryRespMapping(primary_resp_map),
+  secondaryRespMapping(secondary_resp_map), invVarsMapping(NULL),
+  invSetMapping(NULL), invPriRespMapping(NULL), invSecRespMapping(NULL)
+{
   init_basic();
 
   // For this constructor, mappings are provided up front and special logic
   // can be applied when they are NULL.  Other constructors must alter logic
   // for deferred recasting details.
 
-  const Variables& submodel_vars = subModel->current_variables();
-  const SharedVariablesData& submodel_svd = submodel_vars.shared_data();
+  const Variables&           submodel_vars = subModel->current_variables();
+  const SharedVariablesData& submodel_svd  = submodel_vars.shared_data();
   bool consistent_vars = true,
-       new_vars_view = (recast_vars_view != submodel_vars.view());
-  if (variablesMapping)  // reshape as dictated by variable type changes
+     new_vars_view = (recast_vars_view != submodel_vars.view());
+  if (variablesMapping) // reshape as dictated by variable type changes
     init_variables(recast_vars_view, vars_comps_totals, all_relax_di,
-                   all_relax_dr, consistent_vars);
+		   all_relax_dr, consistent_vars);
   else if (new_vars_view) {
     SharedVariablesData recast_svd(submodel_svd.copy(recast_vars_view));
     currentVariables = submodel_vars.copy(recast_svd);
     numDerivVars = currentVariables.cv();
-  } else {
-    // variables are not mapped: deep copy of vars to allow independence, but
+  }
+  else {
+    // variables are not mapped: deep copy of vars to allow independence, but 
     // shallow copy of svd since types/labels/ids can be kept consistent
-    currentVariables = submodel_vars.copy();  // shared svd
+    currentVariables = submodel_vars.copy(); // shared svd
     numDerivVars = currentVariables.cv();
   }
 
@@ -102,33 +99,31 @@ RecastModel::RecastModel(
   // fns in secondaryRespMapIndices (recast constraints may be defined, e.g.,
   // with no contributing fns), and must therefore be passed.
   size_t num_recast_nln_ineq = recast_secondary_offset,
-         num_recast_nln_eq =
-             secondaryRespMapIndices.size() - num_recast_nln_ineq;
+    num_recast_nln_eq = secondaryRespMapIndices.size() - num_recast_nln_ineq;
   init_constraints(consistent_vars, num_recast_nln_ineq, num_recast_nln_eq);
   init_distribution(consistent_vars);
 
-  if (nonlinearRespMapping.size() !=
+  if (nonlinearRespMapping.size() != 
       primaryRespMapIndices.size() + secondaryRespMapIndices.size()) {
     Cerr << "Error: size mismatch in response mapping configuration." << endl;
     abort_handler(-1);
   }
   if (primaryRespMapping || secondaryRespMapping)
-    init_response(primaryRespMapIndices.size(), secondaryRespMapIndices.size(),
-                  recast_resp_order);
-  // else if (recast_resp_view != currentResponse.view()) {// when resp has
-  // views
-  // }
+    init_response(primaryRespMapIndices.size(), secondaryRespMapIndices.size(), 
+		  recast_resp_order);
+  //else if (recast_resp_view != currentResponse.view()) {// when resp has views
+  //}
   else {
     currentResponse = subModel->current_response().copy();
     numFns = currentResponse.num_functions();
     if (new_vars_view)
       currentResponse.active_set_derivative_vector(
-          currentVariables
-              .continuous_variable_ids());  // reset DVV for view change
+        currentVariables.continuous_variable_ids());// reset DVV for view change
   }
 
   init_metadata();
 }
+
 
 /** This alternate constructor defers initialization of the function pointers
     until a separate call to init_maps(), and accepts the minimum information
@@ -138,54 +133,44 @@ RecastModel::RecastModel(
     of each type of variable {4 types} x {3 domains} in the recast variable
     space. Note: recast_secondary_offset is the start index for equality
     constraints, typically num nonlinear ineq constraints. */
-RecastModel::RecastModel(
-    std::shared_ptr<Model> sub_model,  // size_t num_deriv_vars,
-    const SizetArray& vars_comps_totals, const BitArray& all_relax_di,
-    const BitArray& all_relax_dr, const ShortShortPair& recast_vars_view,
-    size_t num_recast_primary_fns, size_t num_recast_secondary_fns,
-    size_t recast_secondary_offset, short recast_resp_order)
-    : Model(sub_model->problem_description_db(), sub_model->parallel_library(),
-            Model::ModelCtor::LtWt),
-      subModel(sub_model),
-      nonlinearVarsMapping(false),
-      recastModelEvalCntr(0),
-      variablesMapping(NULL),
-      setMapping(NULL),
-      primaryRespMapping(NULL),
-      secondaryRespMapping(NULL),
-      invVarsMapping(NULL),
-      invSetMapping(NULL),
-      invPriRespMapping(NULL),
-      invSecRespMapping(NULL) {
+RecastModel::
+RecastModel(std::shared_ptr<Model> sub_model, //size_t num_deriv_vars,
+	    const SizetArray& vars_comps_totals, const BitArray& all_relax_di,
+	    const BitArray& all_relax_dr,
+	    const ShortShortPair& recast_vars_view,
+	    size_t num_recast_primary_fns, size_t num_recast_secondary_fns,
+	    size_t recast_secondary_offset, short recast_resp_order):
+  Model(sub_model->problem_description_db(),
+	sub_model->parallel_library(), Model::ModelCtor::LtWt),
+  subModel(sub_model), nonlinearVarsMapping(false), recastModelEvalCntr(0),
+  variablesMapping(NULL), setMapping(NULL), primaryRespMapping(NULL),
+  secondaryRespMapping(NULL), invVarsMapping(NULL), invSetMapping(NULL),
+  invPriRespMapping(NULL), invSecRespMapping(NULL)
+{
   init_basic();
 
   // initialize Variables, Response, and Constraints based on sizes
   bool consistent_vars;
   init_sizes(recast_vars_view, vars_comps_totals, all_relax_di, all_relax_dr,
-             num_recast_primary_fns, num_recast_secondary_fns,
-             recast_secondary_offset, recast_resp_order, consistent_vars);
+	     num_recast_primary_fns, num_recast_secondary_fns,
+	     recast_secondary_offset, recast_resp_order, consistent_vars);
   // synchronize output level and grad/Hess settings with subModel
   initialize_data_from_submodel();
   // initialize mvDist
   init_distribution(consistent_vars);
 }
 
+
 /** This alternate constructor only alters the active/inactive view */
-RecastModel::RecastModel(std::shared_ptr<Model> sub_model,
-                         const ShortShortPair& recast_vars_view)
-    : Model(sub_model->problem_description_db(), sub_model->parallel_library(),
-            Model::ModelCtor::LtWt),
-      subModel(sub_model),
-      nonlinearVarsMapping(false),
-      recastModelEvalCntr(0),
-      variablesMapping(NULL),
-      setMapping(NULL),
-      primaryRespMapping(NULL),
-      secondaryRespMapping(NULL),
-      invVarsMapping(NULL),
-      invSetMapping(NULL),
-      invPriRespMapping(NULL),
-      invSecRespMapping(NULL) {
+RecastModel::
+RecastModel(std::shared_ptr<Model> sub_model, const ShortShortPair& recast_vars_view):
+  Model(sub_model->problem_description_db(),
+	sub_model->parallel_library(), Model::ModelCtor::LtWt),
+  subModel(sub_model), nonlinearVarsMapping(false), recastModelEvalCntr(0),
+  variablesMapping(NULL), setMapping(NULL), primaryRespMapping(NULL),
+  secondaryRespMapping(NULL), invVarsMapping(NULL), invSetMapping(NULL),
+  invPriRespMapping(NULL), invSecRespMapping(NULL)
+{
   init_basic();
 
   // For this constructor, mappings are provided up front and special logic
@@ -196,124 +181,118 @@ RecastModel::RecastModel(std::shared_ptr<Model> sub_model,
   const SharedVariablesData& submodel_svd = submodel_vars.shared_data();
   SharedVariablesData recast_svd(submodel_svd.copy(recast_vars_view));
   currentVariables = submodel_vars.copy(recast_svd);
-  numDerivVars = currentVariables.cv();
+  numDerivVars     = currentVariables.cv();
 
   // synchronize output level and grad/Hess settings with subModel
   initialize_data_from_submodel();
 
   bool consistent_vars = true;
-  init_constraints(consistent_vars,
-                   ModelUtils::num_nonlinear_ineq_constraints(*sub_model),
-                   ModelUtils::num_nonlinear_eq_constraints(*sub_model));
+  init_constraints(consistent_vars, ModelUtils::num_nonlinear_ineq_constraints(*sub_model),
+		   ModelUtils::num_nonlinear_eq_constraints(*sub_model));
   init_distribution(consistent_vars);
 
   currentResponse = subModel->current_response().copy();
   currentResponse.active_set_derivative_vector(
-      currentVariables.continuous_variable_ids());  // reset DVV for view change
+    currentVariables.continuous_variable_ids()); // reset DVV for view change
   numFns = currentResponse.num_functions();
 
   init_metadata();
 }
 
-RecastModel::RecastModel(ProblemDescDB& problem_db,
-                         ParallelLibrary& parallel_lib,
-                         std::shared_ptr<Model> sub_model)
-    : Model(problem_db, parallel_lib),
-      subModel(sub_model),
-      recastModelEvalCntr(0),
-      variablesMapping(NULL),
-      setMapping(NULL),
-      primaryRespMapping(NULL),
-      secondaryRespMapping(NULL),
-      invVarsMapping(NULL),
-      invSetMapping(NULL),
-      invPriRespMapping(NULL),
-      invSecRespMapping(NULL) {
+
+RecastModel::RecastModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> sub_model):
+  Model(problem_db, parallel_lib), subModel(sub_model),
+  recastModelEvalCntr(0), variablesMapping(NULL), setMapping(NULL),
+  primaryRespMapping(NULL), secondaryRespMapping(NULL), invVarsMapping(NULL),
+  invSetMapping(NULL), invPriRespMapping(NULL), invSecRespMapping(NULL)
+{
   init_basic();
   // synchronize output level and grad/Hess settings with subModel
   initialize_data_from_submodel();
 }
 
-RecastModel::RecastModel(std::shared_ptr<Model> sub_model)
-    : Model(sub_model->problem_description_db(), sub_model->parallel_library(),
-            Model::ModelCtor::LtWt),
-      subModel(sub_model),
-      recastModelEvalCntr(0),
-      variablesMapping(NULL),
-      setMapping(NULL),
-      primaryRespMapping(NULL),
-      secondaryRespMapping(NULL),
-      invVarsMapping(NULL),
-      invSetMapping(NULL),
-      invPriRespMapping(NULL),
-      invSecRespMapping(NULL) {
+
+RecastModel::RecastModel(std::shared_ptr<Model> sub_model):
+  Model(sub_model->problem_description_db(),
+   	sub_model->parallel_library(), Model::ModelCtor::LtWt),
+  subModel(sub_model), recastModelEvalCntr(0), variablesMapping(NULL),
+  setMapping(NULL), primaryRespMapping(NULL), secondaryRespMapping(NULL),
+  invVarsMapping(NULL), invSetMapping(NULL), invPriRespMapping(NULL),
+  invSecRespMapping(NULL)
+{ 
   init_basic();
-  numFns = ModelUtils::response_size(*sub_model);  // not defined in ctor chain
+  numFns = ModelUtils::response_size(*sub_model); // not defined in ctor chain
 }
 
-void RecastModel::init_basic() {
+
+void RecastModel::init_basic()
+{
   modelType = "recast";
-  supportsEstimDerivs = false;  // subModel estimates derivatives by default
+  supportsEstimDerivs = false; // subModel estimates derivatives by default
   modelId = RecastModel::recast_model_id(root_model_id(), "RECAST");
 }
 
-void RecastModel::init_sizes(const ShortShortPair& recast_vars_view,
-                             const SizetArray& vars_comps_totals,
-                             const BitArray& all_relax_di,
-                             const BitArray& all_relax_dr,
-                             size_t num_recast_primary_fns,
-                             size_t num_recast_secondary_fns,
-                             size_t recast_secondary_offset,
-                             short recast_resp_order, bool& consistent_vars) {
+
+void RecastModel::
+init_sizes(const ShortShortPair& recast_vars_view,
+	   const SizetArray& vars_comps_totals, const BitArray& all_relax_di,
+	   const BitArray& all_relax_dr, size_t num_recast_primary_fns,
+	   size_t num_recast_secondary_fns, size_t recast_secondary_offset,
+	   short recast_resp_order, bool& consistent_vars)
+{
   // recasting of variables; only reshape if change in variable type counts
   init_variables(recast_vars_view, vars_comps_totals, all_relax_di,
-                 all_relax_dr, consistent_vars);
+		 all_relax_dr, consistent_vars); 
 
   size_t num_recast_nln_ineq = recast_secondary_offset,
-         num_recast_nln_eq = num_recast_secondary_fns - num_recast_nln_ineq;
+         num_recast_nln_eq   = num_recast_secondary_fns - num_recast_nln_ineq;
   init_constraints(consistent_vars, num_recast_nln_ineq, num_recast_nln_eq);
 
   // defer this to allow specialized handling in derived classes
-  // init_distribution(consistent_vars);
+  //init_distribution(consistent_vars);
 
   // recasting of response and constraints
-  init_response(num_recast_primary_fns, num_recast_secondary_fns,
-                recast_resp_order);
+  init_response(num_recast_primary_fns, num_recast_secondary_fns, 
+		recast_resp_order);
 
   init_metadata();
 }
 
+
 /** This function is used for late initialization of the recasting
     functions.  It is used in concert with the alternate constructor. */
-void RecastModel::init_maps(
-    const Sizet2DArray& vars_map_indices, bool nonlinear_vars_mapping,
-    void (*variables_map)(const Variables& recast_vars,
-                          Variables& sub_model_vars),
-    void (*set_map)(const Variables& recast_vars, const ActiveSet& recast_set,
-                    ActiveSet& sub_model_set),
-    const Sizet2DArray& primary_resp_map_indices,
-    const Sizet2DArray& secondary_resp_map_indices,
-    const BoolDequeArray& nonlinear_resp_mapping,
-    void (*primary_resp_map)(const Variables& sub_model_vars,
-                             const Variables& recast_vars,
-                             const Response& sub_model_response,
-                             Response& recast_response),
-    void (*secondary_resp_map)(const Variables& sub_model_vars,
-                               const Variables& recast_vars,
-                               const Response& sub_model_response,
-                               Response& recast_response)) {
-  varsMapIndices = vars_map_indices;
-  nonlinearVarsMapping = nonlinear_vars_mapping;
-  variablesMapping = variables_map;
-  setMapping = set_map;
-  primaryRespMapIndices = primary_resp_map_indices;
+void RecastModel::
+init_maps(const Sizet2DArray& vars_map_indices,
+	  bool nonlinear_vars_mapping,
+	  void (*variables_map)      (const Variables& recast_vars,
+				      Variables& sub_model_vars),
+	  void (*set_map)            (const Variables& recast_vars,
+				      const ActiveSet& recast_set,
+				      ActiveSet& sub_model_set),
+	  const Sizet2DArray& primary_resp_map_indices,
+	  const Sizet2DArray& secondary_resp_map_indices,
+	  const BoolDequeArray& nonlinear_resp_mapping,
+	  void (*primary_resp_map)   (const Variables& sub_model_vars,
+				      const Variables& recast_vars,
+				      const Response& sub_model_response,
+				      Response& recast_response),
+	  void (*secondary_resp_map) (const Variables& sub_model_vars,
+				      const Variables& recast_vars,
+				      const Response& sub_model_response,
+				      Response& recast_response))
+{
+  varsMapIndices          = vars_map_indices;
+  nonlinearVarsMapping    = nonlinear_vars_mapping;
+  variablesMapping        = variables_map;
+  setMapping              = set_map;
+  primaryRespMapIndices   = primary_resp_map_indices;
   secondaryRespMapIndices = secondary_resp_map_indices;
-  nonlinearRespMapping = nonlinear_resp_mapping;
-  primaryRespMapping = primary_resp_map;
-  secondaryRespMapping = secondary_resp_map;
+  nonlinearRespMapping    = nonlinear_resp_mapping;
+  primaryRespMapping      = primary_resp_map;
+  secondaryRespMapping    = secondary_resp_map;
 
-  if (nonlinearRespMapping.size() !=
-      primaryRespMapIndices.size() + secondaryRespMapIndices.size()) {
+  if (nonlinearRespMapping.size() != primaryRespMapIndices.size() +
+      secondaryRespMapIndices.size()) {
     Cerr << "Error: size mismatch in response mapping configuration." << endl;
     abort_handler(-1);
   }
@@ -322,33 +301,38 @@ void RecastModel::init_maps(
   // ctors that lack these mappings)
 }
 
-short RecastModel::response_order(const Model& sub_model) {
+
+short RecastModel::response_order(const Model& sub_model)
+{
   const Response& curr_resp = sub_model.current_response();
 
-  short recast_resp_order = 1;  // recast resp order to be same as original resp
+  short recast_resp_order = 1; // recast resp order to be same as original resp
   if (!curr_resp.function_gradients().empty()) recast_resp_order |= 2;
-  if (!curr_resp.function_hessians().empty()) recast_resp_order |= 4;
+  if (!curr_resp.function_hessians().empty())  recast_resp_order |= 4;
 
   return recast_resp_order;
 }
 
-String RecastModel::recast_model_id(const String& root_id, const String& type) {
+
+String RecastModel::recast_model_id(const String &root_id, const String &type) {
   auto key = std::make_pair(root_id, type);
   int id;
-  if (recastModelIdCounters.find(key) == recastModelIdCounters.end())
+  if(recastModelIdCounters.find(key) == recastModelIdCounters.end())
     recastModelIdCounters[key] = id = 1;
   else
     id = ++recastModelIdCounters[key];
   return String("RECAST_") + root_id + "_" + type + "_" + std::to_string(id);
 }
 
-void RecastModel::init_variables(const ShortShortPair& recast_vars_view,
-                                 const SizetArray& vars_comps_totals,
-                                 const BitArray& all_relax_di,
-                                 const BitArray& all_relax_dr,
-                                 bool& consistent_vars) {
-  const Variables& sm_vars = subModel->current_variables();
-  const SharedVariablesData& sm_svd = sm_vars.shared_data();
+
+void RecastModel::
+init_variables(const ShortShortPair& recast_vars_view,
+	       const SizetArray& vars_comps_totals,
+	       const BitArray& all_relax_di, const BitArray& all_relax_dr,
+	       bool& consistent_vars)
+{
+  const Variables&           sm_vars = subModel->current_variables();
+  const SharedVariablesData& sm_svd  = sm_vars.shared_data();
 
   // BMA: We actually don't allow the case of a change in vars_comp_totals but
   // no mapping, but have to allow it here in case mapping not yet provided.
@@ -356,12 +340,13 @@ void RecastModel::init_variables(const ShortShortPair& recast_vars_view,
   // copy variables values only if no change in variables structure
   // > Note: specific cases (e.g. a simple variable scaling) can violate this
   //   simple copy logic, but this is only for value initialization
-  consistent_vars = (vars_comps_totals.empty() ||
-                     sm_svd.components_totals() == vars_comps_totals) &&
-                    (all_relax_di.empty() ||
-                     sm_svd.all_relaxed_discrete_int() == all_relax_di) &&
-                    (all_relax_dr.empty() ||
-                     sm_svd.all_relaxed_discrete_real() == all_relax_dr);
+  consistent_vars = 
+    ( vars_comps_totals.empty() ||
+      sm_svd.components_totals()         == vars_comps_totals ) &&
+    ( all_relax_di.empty() ||
+      sm_svd.all_relaxed_discrete_int()  == all_relax_di )      &&
+    ( all_relax_dr.empty() || 
+      sm_svd.all_relaxed_discrete_real() == all_relax_dr );
 
   bool new_vars_view = (recast_vars_view != sm_vars.view());
 
@@ -369,23 +354,27 @@ void RecastModel::init_variables(const ShortShortPair& recast_vars_view,
   if (consistent_vars) {
     // variables are mapped but not resized: deep copies of both vars and
     // incoming svd, since types may change in transformed space
-    if (new_vars_view) {  // avoid building + then updating views
+    if (new_vars_view) { // avoid building + then updating views
       SharedVariablesData recast_svd(sm_svd.copy(recast_vars_view));
       currentVariables = sm_vars.copy(recast_svd);
-    } else
-      currentVariables = sm_vars.copy(true);  // new independent svd
-  } else {
+    }
+    else
+      currentVariables = sm_vars.copy(true); // new independent svd
+  }
+  else {
     // variables are resized; use new SVD instance and default values
     SharedVariablesData recast_svd(recast_vars_view, vars_comps_totals,
-                                   all_relax_di, all_relax_dr);
-    currentVariables = Variables(recast_svd);  // no copying of values
+				   all_relax_di, all_relax_dr);
+    currentVariables = Variables(recast_svd); // no copying of values
   }
 
   // propagate number of active continuous vars to derivative vars
   numDerivVars = currentVariables.cv();
 }
 
-void RecastModel::init_distribution(bool consistent_vars) {
+
+void RecastModel::init_distribution(bool consistent_vars)
+{
   // check change in character first as mapping may not yet be present...
   if (consistent_vars) {
     // variables are mapped but not resized: deep copies of both vars and
@@ -396,8 +385,9 @@ void RecastModel::init_distribution(bool consistent_vars) {
       // > tramples an mvDist construction from Model(BaseConstructor) ....
       // > populates mvDist for Model(LightWtBaseConstructor)
       // Note: becomes less important w/broader use of ProbabilityTransformModel
-      mvDist = subModel->multivariate_distribution();  // shared rep
-    } else {
+      mvDist = subModel->multivariate_distribution(); // shared rep
+    }
+    else {
       // update MarginalsCorrDistribution::activeVars for change in view
       // (activeCorr fixed by RV type)
       mvDist = subModel->multivariate_distribution().copy();
@@ -407,9 +397,11 @@ void RecastModel::init_distribution(bool consistent_vars) {
   // else rely on default mvDist instantiation (no data)
 }
 
-void RecastModel::init_constraints(bool consistent_vars,
-                                   size_t num_recast_nln_ineq,
-                                   size_t num_recast_nln_eq) {
+
+void RecastModel::
+init_constraints(bool consistent_vars, size_t num_recast_nln_ineq,
+		 size_t num_recast_nln_eq)
+{
   // share SVD with currentVariables, regardless of whether its SVD is new
   // > this ctor: shapes all*Bnds, builds active/inactive views of all*Bnds
   const SharedVariablesData& svd = currentVariables.shared_data();
@@ -422,59 +414,64 @@ void RecastModel::init_constraints(bool consistent_vars,
   // > an active variable recasting affects the linear ineq/eq coeff arrays
   // Nonlinear constraints (count is recastable), not affected by active vars
 
-  const SharedVariablesData& sm_svd =
-      subModel->current_variables().shared_data();
+  const SharedVariablesData& sm_svd
+    = subModel->current_variables().shared_data();
   const ShortShortPair& sm_view = sm_svd.view();
-  const Constraints& sm_cons = subModel->user_defined_constraints();
+  const Constraints&    sm_cons = subModel->user_defined_constraints();
 
   // variable-related (bounds, linear cons)
   if (consistent_vars) {
     userDefinedConstraints.update_variable_bounds(sm_cons);
     userDefinedConstraints.update_linear_constraints(sm_cons);
   }
-  // else if (variablesMapping)
-  //   userDefinedConstraints.reshape_linear(0, 0); // remove linear cons
+  //else if (variablesMapping)
+  //  userDefinedConstraints.reshape_linear(0, 0); // remove linear cons
   if (svd.view() != sm_view)
-    userDefinedConstraints.reshape_update_linear(
-        sm_svd, currentVariables.shared_data());
+    userDefinedConstraints.reshape_update_linear(sm_svd,
+      currentVariables.shared_data());
 
   // response-related (nonlinear cons)
   if (primaryRespMapping || secondaryRespMapping ||
       num_recast_nln_ineq != sm_cons.num_nonlinear_ineq_constraints() ||
-      num_recast_nln_eq != sm_cons.num_nonlinear_eq_constraints())
+      num_recast_nln_eq   != sm_cons.num_nonlinear_eq_constraints())
     userDefinedConstraints.reshape_nonlinear(num_recast_nln_ineq,
-                                             num_recast_nln_eq);
+					     num_recast_nln_eq);
   else
     userDefinedConstraints.update_nonlinear_constraints(sm_cons);
 }
 
-void RecastModel::init_response(size_t num_recast_primary_fns,
-                                size_t num_recast_secondary_fns,
-                                short recast_resp_order) {
+
+void RecastModel::
+init_response(size_t num_recast_primary_fns, size_t num_recast_secondary_fns,
+	      short recast_resp_order)
+{
   numFns = num_recast_primary_fns + num_recast_secondary_fns;
 
   // recasting of response
   const Variables& sub_model_vars = subModel->current_variables();
-  const Response& sub_model_resp = subModel->current_response();
-  bool grad_flag = (recast_resp_order & 2), hess_flag = (recast_resp_order & 4),
-       sm_grad_flag = !sub_model_resp.function_gradients().empty(),
-       sm_hess_flag = !sub_model_resp.function_hessians().empty();
-  if (sub_model_resp.num_functions() != numFns ||
-      sub_model_vars.cv() != numDerivVars || grad_flag != sm_grad_flag ||
-      hess_flag != sm_hess_flag) {
-    currentResponse = sub_model_resp.copy(true);  // deep srd (for deep resp)
+  const Response&  sub_model_resp = subModel->current_response();
+  bool grad_flag = (recast_resp_order & 2),
+       hess_flag = (recast_resp_order & 4),
+    sm_grad_flag = !sub_model_resp.function_gradients().empty(),
+    sm_hess_flag = !sub_model_resp.function_hessians().empty();
+  if ( sub_model_resp.num_functions() != numFns       ||
+       sub_model_vars.cv()            != numDerivVars ||
+       grad_flag != sm_grad_flag || hess_flag != sm_hess_flag ) {
+    currentResponse = sub_model_resp.copy(true); // deep srd (for deep resp)
     currentResponse.reshape(numFns, numDerivVars, grad_flag, hess_flag);
-  } else  // shared srd for now (can be separated downstream if needed)
+  }
+  else // shared srd for now (can be separated downstream if needed)
     currentResponse = sub_model_resp.copy();  // shallow srd (for deep resp)
 
   if (currentVariables.view() != sub_model_vars.view())
     currentResponse.active_set_derivative_vector(
-        currentVariables
-            .continuous_variable_ids());  // reset DVV for view change
+      currentVariables.continuous_variable_ids()); // reset DVV for view change
 }
 
-void RecastModel::reshape_response(size_t num_recast_primary_fns,
-                                   size_t num_recast_secondary_fns) {
+
+void RecastModel::
+reshape_response(size_t num_recast_primary_fns, size_t num_recast_secondary_fns)
+{
   numFns = num_recast_primary_fns + num_recast_secondary_fns;
   bool grad_flag = !currentResponse.function_gradients().empty();
   bool hess_flag = !currentResponse.function_hessians().empty();
@@ -482,29 +479,32 @@ void RecastModel::reshape_response(size_t num_recast_primary_fns,
   currentResponse.reshape(numFns, numDerivVars, grad_flag, hess_flag);
 }
 
+
 void RecastModel::inverse_mappings(
-    void (*inv_vars_map)(const Variables& recast_vars,
-                         Variables& sub_model_vars),
-    void (*inv_set_map)(const Variables& recast_vars,
-                        const ActiveSet& recast_set, ActiveSet& sub_model_set),
-    void (*inv_pri_resp_map)(const Variables& sub_model_vars,
-                             const Variables& recast_vars,
-                             const Response& sub_model_resp,
-                             Response& recast_resp),
-    void (*inv_sec_resp_map)(const Variables& sub_model_vars,
-                             const Variables& recast_vars,
-                             const Response& sub_model_resp,
-                             Response& recast_resp)) {
-  invVarsMapping = inv_vars_map;
-  invSetMapping = inv_set_map;
-  invPriRespMapping = inv_pri_resp_map;
-  invSecRespMapping = inv_sec_resp_map;
+    void (*inv_vars_map)     (const Variables& recast_vars,
+			      Variables& sub_model_vars),
+    void (*inv_set_map)      (const Variables& recast_vars,
+			      const ActiveSet& recast_set,
+			      ActiveSet& sub_model_set),
+    void (*inv_pri_resp_map) (const Variables& sub_model_vars,
+			      const Variables& recast_vars,
+			      const Response& sub_model_resp,
+			      Response& recast_resp),
+    void (*inv_sec_resp_map) (const Variables& sub_model_vars,
+			      const Variables& recast_vars,
+			      const Response& sub_model_resp,
+			      Response& recast_resp))
+{
+  invVarsMapping    = inv_vars_map;     invSetMapping     = inv_set_map;
+  invPriRespMapping = inv_pri_resp_map; invSecRespMapping = inv_sec_resp_map;
 }
+
 
 /** The RecastModel is evaluated by an Iterator for a recast problem
     formulation.  Therefore, the currentVariables, incoming active set,
     and output currentResponse all correspond to the recast inputs/outputs. */
-void RecastModel::derived_evaluate(const ActiveSet& set) {
+void RecastModel::derived_evaluate(const ActiveSet& set)
+{
   ++recastModelEvalCntr;
 
   // transform from recast (Iterator) to sub-model (user) variables
@@ -515,7 +515,7 @@ void RecastModel::derived_evaluate(const ActiveSet& set) {
   ActiveSet sub_model_set;
   transform_set(currentVariables, set, sub_model_set);
 
-  // evaluate the subModel in the original fn set definition.  Doing this here
+  // evaluate the subModel in the original fn set definition.  Doing this here 
   // eliminates the need for eval tracking logic within the separate eval fns.
   subModel->evaluate(sub_model_set);
 
@@ -524,20 +524,21 @@ void RecastModel::derived_evaluate(const ActiveSet& set) {
   currentResponse.active_set(set);
   if (primaryRespMapping || secondaryRespMapping)
     transform_response(currentVariables, subModel->current_variables(),
-                       subModel->current_response(), currentResponse);
+		       subModel->current_response(), currentResponse);
   else
     currentResponse.update(subModel->current_response());
 
 #ifdef DEBUG
-  Cout << "Recast variables:\n"
-       << currentVariables << "subModel variables:\n"
-       << subModel->current_variables() << "subModel response:\n"
-       << subModel->current_response() << "Recast response:\n"
-       << currentResponse;
+  Cout << "Recast variables:\n"   << currentVariables
+       << "subModel variables:\n" << subModel->current_variables()
+       << "subModel response:\n"  << subModel->current_response()
+       << "Recast response:\n"    << currentResponse;
 #endif
 }
 
-void RecastModel::derived_evaluate_nowait(const ActiveSet& set) {
+
+void RecastModel::derived_evaluate_nowait(const ActiveSet& set)
+{
   ++recastModelEvalCntr;
 
   // transform from recast (Iterator) to sub-model (user) variables
@@ -548,7 +549,7 @@ void RecastModel::derived_evaluate_nowait(const ActiveSet& set) {
   ActiveSet sub_model_set;
   transform_set(currentVariables, set, sub_model_set);
 
-  // evaluate the subModel in the original fn set definition.  Doing this here
+  // evaluate the subModel in the original fn set definition.  Doing this here 
   // eliminates the need for eval tracking logic within the separate eval fns.
   subModel->evaluate_nowait(sub_model_set);
   // in almost all cases, use of the subModel eval ids is sufficient, but
@@ -559,77 +560,91 @@ void RecastModel::derived_evaluate_nowait(const ActiveSet& set) {
 
   // bookkeep variables for use in primaryRespMapping/secondaryRespMapping
   if (primaryRespMapping || secondaryRespMapping) {
-    recastSetMap[recastModelEvalCntr] = set;
+    recastSetMap[recastModelEvalCntr]  = set;
     recastVarsMap[recastModelEvalCntr] = currentVariables.copy();
     if (variablesMapping)
-      subModelVarsMap[recastModelEvalCntr] =
-          subModel->current_variables().copy();
+      subModelVarsMap[recastModelEvalCntr]
+	= subModel->current_variables().copy();
   }
 }
 
-const IntResponseMap& RecastModel::derived_synchronize() {
+
+const IntResponseMap& RecastModel::derived_synchronize()
+{
   recastResponseMap.clear();
 
   if (primaryRespMapping || secondaryRespMapping) {
     IntResponseMap resp_map_rekey;
     rekey_synch(*subModel, true, recastIdMap, resp_map_rekey);
     transform_response_map(resp_map_rekey, recastResponseMap);
-  } else
+  }
+  else
     rekey_synch(*subModel, true, recastIdMap, recastResponseMap);
 
   return recastResponseMap;
 }
 
-const IntResponseMap& RecastModel::derived_synchronize_nowait() {
+
+const IntResponseMap& RecastModel::derived_synchronize_nowait()
+{
   recastResponseMap.clear();
 
   if (primaryRespMapping || secondaryRespMapping) {
     IntResponseMap resp_map_rekey;
     rekey_synch(*subModel, false, recastIdMap, resp_map_rekey);
     transform_response_map(resp_map_rekey, recastResponseMap);
-  } else
+  }
+  else
     rekey_synch(*subModel, false, recastIdMap, recastResponseMap);
 
   return recastResponseMap;
 }
 
-void RecastModel::transform_variables(const Variables& recast_vars,
-                                      Variables& sub_model_vars) {
+
+void RecastModel::
+transform_variables(const Variables& recast_vars, Variables& sub_model_vars)
+{
   // typical flow: mapping from recast variables ("iterator space")
   // into the sub-model variables ("user space")
   if (variablesMapping) {
     assign_instance();
     variablesMapping(recast_vars, sub_model_vars);
-  } else
+  }
+  else
     sub_model_vars.map_variables_by_view(recast_vars);
 }
 
-void RecastModel::inverse_transform_variables(const Variables& sub_model_vars,
-                                              Variables& recast_vars) {
+
+void RecastModel::
+inverse_transform_variables(const Variables& sub_model_vars,
+			    Variables& recast_vars)
+{
   // atypical flow: mapping from sub-model variables ("user space")
   // into the recast variables ("iterator space")
   if (invVarsMapping) {
     assign_instance();
     invVarsMapping(sub_model_vars, recast_vars);
-  } else
+  }
+  else
     recast_vars.map_variables_by_view(sub_model_vars);
 }
 
-void RecastModel::transform_set(const Variables& recast_vars,
-                                const ActiveSet& recast_set,
-                                ActiveSet& sub_model_set) {
+
+void RecastModel::
+transform_set(const Variables& recast_vars, const ActiveSet& recast_set,
+	      ActiveSet& sub_model_set)
+{
   // typical flow: mapping from recast set ("iterator space") into the
   // sub-model set ("user space")
 
-  size_t i, j,
-      num_recast_primary_fns = primaryRespMapIndices.size(),
-      num_recast_secondary_fns = secondaryRespMapIndices.size(),
-      num_recast_fns = num_recast_primary_fns + num_recast_secondary_fns;
+  size_t i, j, num_recast_primary_fns = primaryRespMapIndices.size(),
+    num_recast_secondary_fns = secondaryRespMapIndices.size(),
+    num_recast_fns = num_recast_primary_fns + num_recast_secondary_fns;
   const ShortArray& recast_asv = recast_set.request_vector();
   if (recast_asv.size() != num_recast_fns) {
     Cerr << "Error: inconsistent asv sizing in RecastModel::transform_set().\n"
-         << "       recast asv size = " << recast_asv.size() << '\n'
-         << "       recast functions = " << num_recast_fns << endl;
+	 << "       recast asv size = " << recast_asv.size() << '\n'
+	 << "       recast functions = " << num_recast_fns << endl;
     abort_handler(-1);
   }
 
@@ -640,31 +655,31 @@ void RecastModel::transform_set(const Variables& recast_vars,
   // additional data requirements derived from chain rule differentiation.
   // The default sub-model DVV is just a copy of the recast DVV.
   ShortArray sub_model_asv(ModelUtils::response_size(*subModel), 0);
-  for (i = 0; i < num_recast_fns; i++) {
+  for (i=0; i<num_recast_fns; i++) {
     short asv_val = recast_asv[i];
     // For nonlinear variable mappings, gradient required to transform Hessian.
     // A single nonlinear variable mapping affects all function derivatives.
-    if (nonlinearVarsMapping && (asv_val & 4)) asv_val |= 2;
+    if (nonlinearVarsMapping && (asv_val & 4))
+      asv_val |= 2;
     // assign the asv_val to each contributing sub-model function
-    const SizetArray& recast_fn_contributors =
-        (i < num_recast_primary_fns)
-            ? primaryRespMapIndices[i]
-            : secondaryRespMapIndices[i - num_recast_primary_fns];
+    const SizetArray& recast_fn_contributors = (i<num_recast_primary_fns) ?
+      primaryRespMapIndices[i] :
+      secondaryRespMapIndices[i-num_recast_primary_fns];
     size_t num_contributors = recast_fn_contributors.size();
-    for (j = 0; j < num_contributors; j++) {
+    for (j=0; j<num_contributors; j++) {
       short sub_model_asv_val = asv_val;
       // Bit deletions: for NLS recasting for full Newton without LeastSq term
       // Hessians, could remove 4 bit based on {gradient,hessian}Type, but this
       // is better accomplished from an Iterator's configuration using the
-      // setMapping plug-in below (e.g., see Optimizer::gnewton_set_recast()).
+      // setMapping plug-in below (e.g., see Optimizer::gnewton_set_recast()). 
 
       // Bit additions: for nonlinear resp mappings, derivatives require all
       // lower order data. The nonlinearity of each fn contribution is employed.
       if (nonlinearRespMapping[i][j]) {
-        if (asv_val & 4)
-          sub_model_asv_val |= 3;
-        else if (asv_val & 2)
-          sub_model_asv_val |= 1;
+	if (asv_val & 4)
+	  sub_model_asv_val |= 3;
+	else if (asv_val & 2)
+	  sub_model_asv_val |= 1;
       }
       sub_model_asv[recast_fn_contributors[j]] |= sub_model_asv_val;
     }
@@ -673,16 +688,16 @@ void RecastModel::transform_set(const Variables& recast_vars,
 
   // For different views, we still want the same derivative component ids.
   // For variablesMapping, we will assume 1-to-1 at this level.
-  // short active_view = recast_vars.view().first,
+  //short active_view = recast_vars.view().first,
   //   sm_active_view = subModel.current_variables().view().first;
-  // if (active_view == sm_active_view)
+  //if (active_view == sm_active_view)
   sub_model_set.derivative_vector(recast_set.derivative_vector());
-  // else if ( (sm_active_view == RELAXED_ALL || sm_active_view == MIXED_ALL) &&
-  //  	      active_view >= RELAXED_DESIGN ) {
-  // }
-  // else if ( (active_view == RELAXED_ALL || active_view == MIXED_ALL) &&
-  //  	      sm_active_view >= RELAXED_DESIGN ) {
-  // }
+  //else if ( (sm_active_view == RELAXED_ALL || sm_active_view == MIXED_ALL) &&
+  // 	      active_view >= RELAXED_DESIGN ) {
+  //}
+  //else if ( (active_view == RELAXED_ALL || active_view == MIXED_ALL) &&
+  // 	      sm_active_view >= RELAXED_DESIGN ) {
+  //}
 
   // a setMapping (provided in the RecastModel ctor or initialize()) augments
   // the standard mappings.  Current examples include NonD::set_u_to_x_mapping,
@@ -700,9 +715,11 @@ void RecastModel::transform_set(const Variables& recast_vars,
   }
 }
 
-void RecastModel::inverse_transform_set(const Variables& sub_model_vars,
-                                        const ActiveSet& sub_model_set,
-                                        ActiveSet& recast_set) {
+
+void RecastModel::
+inverse_transform_set(const Variables& sub_model_vars,
+		      const ActiveSet& sub_model_set, ActiveSet& recast_set)
+{
   // atypical flow: mapping from sub-model set ("user space") into the
   // recast set ("iterator space")
 
@@ -741,15 +758,15 @@ void RecastModel::inverse_transform_set(const Variables& sub_model_vars,
       // Bit deletions: for NLS recasting for full Newton without LeastSq term
       // Hessians, could remove 4 bit based on {gradient,hessian}Type, but this
       // is better accomplished from an Iterator's configuration using the
-      // setMapping plug-in below (e.g., see Optimizer::gnewton_set_recast()).
+      // setMapping plug-in below (e.g., see Optimizer::gnewton_set_recast()). 
 
       // Bit additions: for nonlinear resp mappings, derivatives require all
       // lower order data. The nonlinearity of each fn contribution is employed.
       if (nonlinearRespMapping[i][j]) {
-        if (asv_val & 4)
-          sub_model_asv_val |= 3;
-        else if (asv_val & 2)
-          sub_model_asv_val |= 1;
+	if (asv_val & 4)
+	  sub_model_asv_val |= 3;
+	else if (asv_val & 2)
+	  sub_model_asv_val |= 1;
       }
       sub_model_asv[recast_fn_contributors[j]] |= sub_model_asv_val;
     }
@@ -767,52 +784,59 @@ void RecastModel::inverse_transform_set(const Variables& sub_model_vars,
   }
 }
 
-void RecastModel::transform_response(const Variables& recast_vars,
-                                     const Variables& sub_model_vars,
-                                     const Response& sub_model_resp,
-                                     Response& recast_resp) {
+
+void RecastModel::
+transform_response(const Variables& recast_vars,
+		   const Variables& sub_model_vars,
+		   const Response&  sub_model_resp, Response& recast_resp)
+{
   // typical flow: mapping from sub-model response ("user space") into
   // the recast response ("iterator space")
 
   size_t num_recast_1_fns = primaryRespMapIndices.size();
 
-  if (primaryRespMapping || secondaryRespMapping) assign_instance();
+  if (primaryRespMapping || secondaryRespMapping)
+    assign_instance();
 
   if (primaryRespMapping)
-    primaryRespMapping(sub_model_vars, recast_vars, sub_model_resp,
-                       recast_resp);
-  else  // number of recast primary = number of sub-model primary
+    primaryRespMapping(sub_model_vars, recast_vars,
+		       sub_model_resp, recast_resp);
+  else // number of recast primary = number of sub-model primary
     recast_resp.update_partial(0, num_recast_1_fns, sub_model_resp, 0);
 
   if (secondaryRespMapping)
-    secondaryRespMapping(sub_model_vars, recast_vars, sub_model_resp,
-                         recast_resp);
+    secondaryRespMapping(sub_model_vars, recast_vars,
+			 sub_model_resp, recast_resp);
   else {
     // number of recast secondary = number of sub-model secondary,
     // but primary offsets may differ
     size_t num_recast_2_fns = secondaryRespMapIndices.size(),
-           num_sm_1_fns = sub_model_resp.num_functions() - num_recast_2_fns;
+           num_sm_1_fns     = sub_model_resp.num_functions() - num_recast_2_fns;
     recast_resp.update_partial(num_recast_1_fns, num_recast_2_fns,
-                               sub_model_resp, num_sm_1_fns);
+			       sub_model_resp, num_sm_1_fns);
   }
 
   // NOTE: Response metadata aren't propagated by default, only in special cases
 }
 
-void RecastModel::inverse_transform_response(const Variables& sub_model_vars,
-                                             const Variables& recast_vars,
-                                             const Response& recast_resp,
-                                             Response& sub_model_resp) {
+
+void RecastModel::
+inverse_transform_response(const Variables& sub_model_vars,
+			   const Variables& recast_vars,
+			   const Response& recast_resp,
+			   Response& sub_model_resp)
+{
   // atypical flow: mapping from the recast response ("iterator space")
   // into the sub-model response ("user space")
 
   size_t num_recast_1_fns = primaryRespMapIndices.size();
 
-  if (invPriRespMapping || invSecRespMapping) assign_instance();
+  if (invPriRespMapping || invSecRespMapping)
+    assign_instance();
 
   if (invPriRespMapping)
     invPriRespMapping(recast_vars, sub_model_vars, recast_resp, sub_model_resp);
-  else  // number of recast primary = number of sub-model primary
+  else // number of recast primary = number of sub-model primary
     sub_model_resp.update_partial(0, num_recast_1_fns, recast_resp, 0);
 
   if (invSecRespMapping)
@@ -821,105 +845,110 @@ void RecastModel::inverse_transform_response(const Variables& sub_model_vars,
     // number of recast secondary = number of sub-model secondary,
     // but primary offsets may differ
     size_t num_recast_2_fns = secondaryRespMapIndices.size(),
-           num_sm_1_fns = sub_model_resp.num_functions() - num_recast_2_fns;
-    sub_model_resp.update_partial(num_sm_1_fns, num_recast_2_fns, recast_resp,
-                                  num_recast_1_fns);
+           num_sm_1_fns     = sub_model_resp.num_functions() - num_recast_2_fns;
+    sub_model_resp.update_partial(num_sm_1_fns, num_recast_2_fns,
+				  recast_resp, num_recast_1_fns);
   }
 
   // NOTE: Response metadata aren't propagated by default, only in special cases
 }
 
-void RecastModel::transform_response_map(const IntResponseMap& old_resp_map,
-                                         IntResponseMap& new_resp_map) {
-  IntRespMCIter r_cit;
-  IntASMIter s_it;
-  IntVarsMIter v_it, sm_v_it;
-  for (r_cit = old_resp_map.begin(); r_cit != old_resp_map.end(); ++r_cit) {
-    int native_id = r_cit->first;
-    s_it = recastSetMap.find(native_id);
-    v_it = recastVarsMap.find(native_id);
-    if (variablesMapping)
-      sm_v_it = subModelVarsMap.find(native_id);
-    else
-      sm_v_it = v_it;
 
-    Response new_resp(currentResponse.copy());  // correct size, labels, etc.
+void RecastModel::
+transform_response_map(const IntResponseMap& old_resp_map,
+		       IntResponseMap& new_resp_map)
+{
+  IntRespMCIter r_cit; IntASMIter s_it; IntVarsMIter v_it, sm_v_it;
+  for (r_cit=old_resp_map.begin(); r_cit!=old_resp_map.end(); ++r_cit) {
+    int native_id = r_cit->first;
+    s_it =  recastSetMap.find(native_id);
+    v_it = recastVarsMap.find(native_id);
+    if (variablesMapping) sm_v_it = subModelVarsMap.find(native_id);
+    else                  sm_v_it = v_it;
+
+    Response new_resp(currentResponse.copy()); // correct size, labels, etc.
     new_resp.active_set(s_it->second);
     transform_response(v_it->second, sm_v_it->second, r_cit->second, new_resp);
     new_resp_map[native_id] = new_resp;
 
     // cleanup
-    recastSetMap.erase(s_it);
-    recastVarsMap.erase(v_it);
+    recastSetMap.erase(s_it);  recastVarsMap.erase(v_it);
     if (variablesMapping) subModelVarsMap.erase(sm_v_it);
   }
 }
 
-void RecastModel::initialize_data_from_submodel() {
+
+void RecastModel::initialize_data_from_submodel()
+{
   // {grad,hess}Id{Analytic,Numerical,Quasi} for responses: Ok under view change
   // fn{Grad,Hess}*StepSize for variables: require mapping for view change
 
   componentParallelMode = SUB_MODEL_MODE;
-  outputLevel = subModel->output_level();
+  outputLevel           = subModel->output_level();
 
-  gradientType = subModel->gradient_type();
-  methodSource = subModel->method_source();
-  ignoreBounds = subModel->ignore_bounds();
-  centralHess = subModel->central_hess();
-  intervalType = subModel->interval_type();
-  fdGradStepType = subModel->fd_gradient_step_type();
-  gradIdAnalytic = subModel->gradient_id_analytic();
-  gradIdNumerical = subModel->gradient_id_numerical();
+  gradientType          = subModel->gradient_type();
+  methodSource          = subModel->method_source();
+  ignoreBounds          = subModel->ignore_bounds();
+  centralHess	          = subModel->central_hess();
+  intervalType          = subModel->interval_type();
+  fdGradStepType        = subModel->fd_gradient_step_type();
+  gradIdAnalytic        = subModel->gradient_id_analytic();
+  gradIdNumerical       = subModel->gradient_id_numerical();
 
-  hessianType = subModel->hessian_type();
-  quasiHessType = subModel->quasi_hessian_type();
-  fdHessStepType = subModel->fd_hessian_step_type();
-  hessIdAnalytic = subModel->hessian_id_analytic();
-  hessIdNumerical = subModel->hessian_id_numerical();
-  hessIdQuasi = subModel->hessian_id_quasi();
+  hessianType           = subModel->hessian_type();
+  quasiHessType         = subModel->quasi_hessian_type();
+  fdHessStepType        = subModel->fd_hessian_step_type();
+  hessIdAnalytic        = subModel->hessian_id_analytic();
+  hessIdNumerical       = subModel->hessian_id_numerical();
+  hessIdQuasi           = subModel->hessian_id_quasi();
 
-  scalingOpts = subModel->scaling_options();
+  scalingOpts           = subModel->scaling_options();
 
-  if (currentVariables.is_null()) {  // some ctor chains defer vars init
-    fdGradStepSize = subModel->fd_gradient_step_size();
-    fdHessByFnStepSize = subModel->fd_hessian_by_fn_step_size();
+  if (currentVariables.is_null()) { // some ctor chains defer vars init
+    fdGradStepSize       = subModel->fd_gradient_step_size();
+    fdHessByFnStepSize   = subModel->fd_hessian_by_fn_step_size();
     fdHessByGradStepSize = subModel->fd_hessian_by_grad_step_size();
-  } else {
-    recast_vector(subModel->fd_gradient_step_size(), fdGradStepSize);
-    recast_vector(subModel->fd_hessian_by_fn_step_size(), fdHessByFnStepSize);
-    recast_vector(subModel->fd_hessian_by_grad_step_size(),
-                  fdHessByGradStepSize);
+  }
+  else {
+    recast_vector(subModel->fd_gradient_step_size(),       fdGradStepSize);
+    recast_vector(subModel->fd_hessian_by_fn_step_size(),  fdHessByFnStepSize);
+    recast_vector(subModel->fd_hessian_by_grad_step_size(),fdHessByGradStepSize);
   }
 }
 
-void RecastModel::recast_vector(const RealVector& submodel_vec,
-                                RealVector& vec) const {
+
+void RecastModel::
+recast_vector(const RealVector& submodel_vec, RealVector& vec) const
+{
   const Variables& sm_vars = subModel->current_variables();
   short active_view = currentVariables.view().first,
-        sm_active_view = sm_vars.view().first;
+     sm_active_view = sm_vars.view().first;
   size_t sm_vec_len = submodel_vec.length();
   if (active_view == sm_active_view || sm_vec_len <= 1)
     vec = submodel_vec;
-  else if ((sm_active_view == RELAXED_ALL || sm_active_view == MIXED_ALL) &&
-           active_view >= RELAXED_DESIGN)  // contract
+  else if ( ( sm_active_view == RELAXED_ALL || sm_active_view == MIXED_ALL ) &&
+	    active_view >= RELAXED_DESIGN) // contract
     copy_data_partial(submodel_vec, currentVariables.cv_start(),
-                      currentVariables.cv(), vec);
-  else if ((active_view == RELAXED_ALL || active_view == MIXED_ALL) &&
-           sm_active_view >= RELAXED_DESIGN) {  // inflate
+		      currentVariables.cv(), vec);
+  else if ( ( active_view == RELAXED_ALL || active_view == MIXED_ALL ) &&
+	    sm_active_view >= RELAXED_DESIGN) { // inflate
     size_t i, sm_cv_start = sm_vars.cv_start(), sm_cv = sm_vars.cv(),
-              cv = currentVariables.cv();
+      cv = currentVariables.cv();
     vec.sizeUninitialized(cv);
-    for (i = 0; i < sm_cv_start; ++i)
-      vec[i] = 0.001;  // default for {fdGrad,fdHessByGrad}StepSize
+    for (i=0; i<sm_cv_start; ++i)
+      vec[i] = 0.001; // default for {fdGrad,fdHessByGrad}StepSize
     copy_data_partial(submodel_vec, vec, sm_cv_start);
-    for (i = sm_cv_start + sm_cv; i < cv; ++i) vec[i] = 0.001;  // default
+    for (i=sm_cv_start+sm_cv; i<cv; ++i)
+      vec[i] = 0.001; // default
   }
 }
+
 
 /** Update inactive values and labels in currentVariables and inactive
     bound constraints in userDefinedConstraints from variables and
     constraints data within subModel. */
-void RecastModel::update_from_model(Model& model) {
+void RecastModel::update_from_model(Model& model)
+{
   // break up into pieces so that derived Recasts can override with subsets
 
   bool update_active_complement = update_variables_from_model(model);
@@ -930,9 +959,11 @@ void RecastModel::update_from_model(Model& model) {
   update_response_from_model(model);
 }
 
-bool RecastModel::update_variables_from_model(Model& model) {
+
+bool RecastModel::update_variables_from_model(Model& model)
+{
   bool update_active_complement = true;
-  if (invVarsMapping) {  // inv mapping provided: sub-model -> recast
+  if (invVarsMapping) { // inv mapping provided: sub-model -> recast
     assign_instance();
 
     // generally restricted to active variables
@@ -941,7 +972,8 @@ bool RecastModel::update_variables_from_model(Model& model) {
     // BMA TODO: there may be cases where we also want to update the
     // constraints and values, but there's currently no mechanism to
     // do so.  The client of a RecastModel must manage this.
-  } else if (variablesMapping) {  // only fwd mapping for recast -> sub-model
+  }
+  else if (variablesMapping) { // only fwd mapping for recast -> sub-model
     // no reasonable default for active vars
 
     // can't just apply variables mapping to values/bounds, since need inverse
@@ -955,21 +987,22 @@ bool RecastModel::update_variables_from_model(Model& model) {
 
     // for mapping of distribution parameters that are part of a variable
     // transformation, see ProbabilityTransformModel::update_transformation()
-  } else {
-    update_active_complement = false;  // can use all view updates below
+  }
+  else {
+    update_active_complement = false; // can use all view updates below
 
     update_all_variables(model);
-    // update_variable_values(model);
-    // update_variable_bounds(model);
-    // update_variable_labels(model);
+    //update_variable_values(model);
+    //update_variable_bounds(model);
+    //update_variable_labels(model);
 
     // uncertain variable distribution data
-    const Pecos::MultivariateDistribution& sm_mvd =
-        model.multivariate_distribution();
+    const Pecos::MultivariateDistribution& sm_mvd
+      = model.multivariate_distribution();
     if (mvDist.multivar_dist_rep() != sm_mvd.multivar_dist_rep())
       // Note: deep copies were used previously for Pecos::DistributionParams
       mvDist.pull_distribution_parameters(sm_mvd);
-    // else rep is shared (no pull required)
+    //else rep is shared (no pull required)
 
     update_linear_constraints(model);
   }
@@ -977,70 +1010,71 @@ bool RecastModel::update_variables_from_model(Model& model) {
   return update_active_complement;
 }
 
-void RecastModel::update_all_variables(const Model& model) {
+
+void RecastModel::update_all_variables(const Model& model)
+{
   // Lacking a variableMapping, all-variable counts should be consistent
   // regardless of recasting an active view
   size_t num_acv = currentVariables.acv(), num_sm_acv = ModelUtils::acv(model);
   if (num_acv == num_sm_acv) {
-    currentVariables.all_continuous_variables(
-        ModelUtils::all_continuous_variables(model));
+    currentVariables.all_continuous_variables(ModelUtils::all_continuous_variables(model));
     userDefinedConstraints.all_continuous_lower_bounds(
-        ModelUtils::all_continuous_lower_bounds(model));
+      ModelUtils::all_continuous_lower_bounds(model));
     userDefinedConstraints.all_continuous_upper_bounds(
-        ModelUtils::all_continuous_upper_bounds(model));
+      ModelUtils::all_continuous_upper_bounds(model));
     currentVariables.all_continuous_variable_labels(
-        ModelUtils::all_continuous_variable_labels(model));
-  } else if (num_acv - currentVariables.cv() ==
-             num_sm_acv - ModelUtils::cv(model))
+      ModelUtils::all_continuous_variable_labels(model));
+  }
+  else if (num_acv - currentVariables.cv() == num_sm_acv - ModelUtils::cv(model))
     update_continuous_variables_active_complement_from_model(model);
 
   update_all_discrete_variables(model);
 }
 
-void RecastModel::update_all_discrete_variables(const Model& model) {
+
+void RecastModel::update_all_discrete_variables(const Model& model)
+{
   // Lacking a variableMapping, all-variable counts should be consistent
   // regardless of recasting an active view
-  size_t num_adiv = currentVariables.adiv(),
-         num_sm_adiv = ModelUtils::adiv(model);
+  size_t num_adiv = currentVariables.adiv(), num_sm_adiv = ModelUtils::adiv(model);
   if (num_adiv == num_sm_adiv) {
     currentVariables.all_discrete_int_variables(
-        ModelUtils::all_discrete_int_variables(model));
+      ModelUtils::all_discrete_int_variables(model));
     userDefinedConstraints.all_discrete_int_lower_bounds(
-        ModelUtils::all_discrete_int_lower_bounds(model));
+      ModelUtils::all_discrete_int_lower_bounds(model));
     userDefinedConstraints.all_discrete_int_upper_bounds(
-        ModelUtils::all_discrete_int_upper_bounds(model));
+      ModelUtils::all_discrete_int_upper_bounds(model));
     currentVariables.all_discrete_int_variable_labels(
-        ModelUtils::all_discrete_int_variable_labels(model));
-  } else if (num_adiv - currentVariables.div() ==
-             num_sm_adiv - ModelUtils::div(model))
+      ModelUtils::all_discrete_int_variable_labels(model));
+  }
+  else if (num_adiv - currentVariables.div() == num_sm_adiv - ModelUtils::div(model))
     update_discrete_int_variables_active_complement_from_model(model);
 
-  size_t num_adsv = currentVariables.adsv(),
-         num_sm_adsv = ModelUtils::adsv(model);
+  size_t num_adsv = currentVariables.adsv(), num_sm_adsv = ModelUtils::adsv(model);
   if (num_adsv == num_sm_adsv) {
     currentVariables.all_discrete_string_variables(
-        ModelUtils::all_discrete_string_variables(model));
+      ModelUtils::all_discrete_string_variables(model));
     currentVariables.all_discrete_string_variable_labels(
-        ModelUtils::all_discrete_string_variable_labels(model));
-  } else if (num_adsv - currentVariables.dsv() ==
-             num_sm_adsv - ModelUtils::dsv(model))
+      ModelUtils::all_discrete_string_variable_labels(model));
+  }
+  else if (num_adsv - currentVariables.dsv() == num_sm_adsv - ModelUtils::dsv(model))
     update_discrete_string_variables_active_complement_from_model(model);
 
-  size_t num_adrv = currentVariables.adrv(),
-         num_sm_adrv = ModelUtils::adrv(model);
+  size_t num_adrv = currentVariables.adrv(), num_sm_adrv = ModelUtils::adrv(model);
   if (num_adrv == num_sm_adrv) {
     currentVariables.all_discrete_real_variables(
-        ModelUtils::all_discrete_real_variables(model));
+      ModelUtils::all_discrete_real_variables(model));
     userDefinedConstraints.all_discrete_real_lower_bounds(
-        ModelUtils::all_discrete_real_lower_bounds(model));
+      ModelUtils::all_discrete_real_lower_bounds(model));
     userDefinedConstraints.all_discrete_real_upper_bounds(
-        ModelUtils::all_discrete_real_upper_bounds(model));
+      ModelUtils::all_discrete_real_upper_bounds(model));
     currentVariables.all_discrete_real_variable_labels(
-        ModelUtils::all_discrete_real_variable_labels(model));
-  } else if (num_adrv - currentVariables.drv() ==
-             num_sm_adrv - ModelUtils::drv(model))
+      ModelUtils::all_discrete_real_variable_labels(model));
+  }
+  else if (num_adrv - currentVariables.drv() == num_sm_adrv - ModelUtils::drv(model))
     update_discrete_real_variables_active_complement_from_model(model);
 }
+
 
 /*
 void RecastModel::update_variable_bounds(const Model& model)
@@ -1087,16 +1121,20 @@ void RecastModel::update_discrete_variable_labels(const Model& model)
 }
 */
 
-void RecastModel::update_variables_active_complement_from_model(
-    const Model& model) {
+
+void RecastModel::
+update_variables_active_complement_from_model(const Model& model)
+{
   update_continuous_variables_active_complement_from_model(model);
   update_discrete_int_variables_active_complement_from_model(model);
   update_discrete_string_variables_active_complement_from_model(model);
   update_discrete_real_variables_active_complement_from_model(model);
 }
 
-void RecastModel::update_continuous_variables_active_complement_from_model(
-    const Model& model) {
+
+void RecastModel::
+update_continuous_variables_active_complement_from_model(const Model& model)
+{
   // Note: this implementation works for different variable views so long
   // as the number of variables within the variablesMapping does not change
   // (e.g. one-to-one or active-to-active).
@@ -1104,35 +1142,34 @@ void RecastModel::update_continuous_variables_active_complement_from_model(
   //   if views are the same
 
   short active_view = currentVariables.view().first,
-        sm_active_view = model.current_variables().view().first;
+     sm_active_view = model.current_variables().view().first;
   int cv_offset = 0, offset_i;
   if (active_view == sm_active_view)
-    cv_offset =
-        ModelUtils::cv(model) - currentVariables.cv();  // > 0 if dim reduction
+    cv_offset = ModelUtils::cv(model) - currentVariables.cv(); // > 0 if dim reduction
   else if (currentVariables.acv() != ModelUtils::acv(model)) {
     // Disallow change in both view and active size
     Cerr << "Error: recasting of both view and active sizes not supported in "
-         << "RecastModel::update_continuous_variables_active_complement_from_"
-         << "model()." << std::endl;
+	 << "RecastModel::update_continuous_variables_active_complement_from_"
+	 << "model()." << std::endl;
     abort_handler(MODEL_ERROR);
   }
   // else retain offsets = 0
 
   size_t i, cv_begin = currentVariables.cv_start(),
-            num_cv = currentVariables.cv(), cv_end = cv_begin + num_cv,
-            num_acv = currentVariables.acv();
+    num_cv  = currentVariables.cv(), cv_end = cv_begin + num_cv,
+    num_acv = currentVariables.acv();
   const RealVector& acv = ModelUtils::all_continuous_variables(model);
   const RealVector& acv_l_bnds = ModelUtils::all_continuous_lower_bounds(model);
   const RealVector& acv_u_bnds = ModelUtils::all_continuous_upper_bounds(model);
-  StringMultiArrayConstView acv_labels =
-      ModelUtils::all_continuous_variable_labels(model);
-  for (i = 0; i < cv_begin; ++i) {
+  StringMultiArrayConstView acv_labels
+    = ModelUtils::all_continuous_variable_labels(model);
+  for (i=0; i<cv_begin; ++i) {
     currentVariables.all_continuous_variable(acv[i], i);
     userDefinedConstraints.all_continuous_lower_bound(acv_l_bnds[i], i);
     userDefinedConstraints.all_continuous_upper_bound(acv_u_bnds[i], i);
     currentVariables.all_continuous_variable_label(acv_labels[i], i);
   }
-  for (i = cv_end; i < num_acv; ++i) {
+  for (i=cv_end; i<num_acv; ++i) {
     offset_i = i + cv_offset;
     currentVariables.all_continuous_variable(acv[offset_i], i);
     userDefinedConstraints.all_continuous_lower_bound(acv_l_bnds[offset_i], i);
@@ -1141,8 +1178,10 @@ void RecastModel::update_continuous_variables_active_complement_from_model(
   }
 }
 
-void RecastModel::update_discrete_int_variables_active_complement_from_model(
-    const Model& model) {
+
+void RecastModel::
+update_discrete_int_variables_active_complement_from_model(const Model& model)
+{
   // Note: this implementation works for different variable views so long
   // as the number of variables within the variablesMapping does not change
   // (e.g. one-to-one or active-to-active).
@@ -1150,48 +1189,49 @@ void RecastModel::update_discrete_int_variables_active_complement_from_model(
   //   if views are the same
 
   short active_view = currentVariables.view().first,
-        sm_active_view = model.current_variables().view().first;
+     sm_active_view = model.current_variables().view().first;
   int div_offset = 0, offset_i;
   if (active_view == sm_active_view)
     div_offset = ModelUtils::div(model) - currentVariables.div();
   else if (currentVariables.adiv() != ModelUtils::adiv(model)) {
     // Disallow change in both view and active size
     Cerr << "Error: recasting of both view and active sizes not supported in "
-         << "RecastModel::update_discrete_int_variables_active_complement_"
-         << "from_model()." << std::endl;
+	 << "RecastModel::update_discrete_int_variables_active_complement_"
+	 << "from_model()." << std::endl;
     abort_handler(MODEL_ERROR);
   }
   // else retain offsets = 0
 
   size_t i, div_begin = currentVariables.div_start(),
-            num_div = currentVariables.div(), div_end = div_begin + num_div,
-            num_adiv = currentVariables.adiv();
+    num_div  = currentVariables.div(), div_end = div_begin + num_div,
+    num_adiv = currentVariables.adiv();
   const IntVector& adiv = ModelUtils::all_discrete_int_variables(model);
-  const IntVector& adiv_l_bnds =
-      ModelUtils::all_discrete_int_lower_bounds(model);
-  const IntVector& adiv_u_bnds =
-      ModelUtils::all_discrete_int_upper_bounds(model);
-  StringMultiArrayConstView adiv_labels =
-      ModelUtils::all_discrete_int_variable_labels(model);
-  for (i = 0; i < div_begin; ++i) {
+  const IntVector& adiv_l_bnds = ModelUtils::all_discrete_int_lower_bounds(model);
+  const IntVector& adiv_u_bnds = ModelUtils::all_discrete_int_upper_bounds(model);
+  StringMultiArrayConstView adiv_labels
+    = ModelUtils::all_discrete_int_variable_labels(model);
+  for (i=0; i<div_begin; ++i) {
     currentVariables.all_discrete_int_variable(adiv[i], i);
     userDefinedConstraints.all_discrete_int_lower_bound(adiv_l_bnds[i], i);
     userDefinedConstraints.all_discrete_int_upper_bound(adiv_u_bnds[i], i);
     currentVariables.all_discrete_int_variable_label(adiv_labels[i], i);
   }
-  for (i = div_end; i < num_adiv; ++i) {
+  for (i=div_end; i<num_adiv; ++i) {
     offset_i = i + div_offset;
     currentVariables.all_discrete_int_variable(adiv[offset_i], i);
     userDefinedConstraints.all_discrete_int_lower_bound(adiv_l_bnds[offset_i],
-                                                        i);
+							i);
     userDefinedConstraints.all_discrete_int_upper_bound(adiv_u_bnds[offset_i],
-                                                        i);
+							i);
     currentVariables.all_discrete_int_variable_label(adiv_labels[offset_i], i);
   }
 }
 
-void RecastModel::update_discrete_string_variables_active_complement_from_model(
-    const Model& model) {
+
+void RecastModel::
+update_discrete_string_variables_active_complement_from_model(
+  const Model& model)
+{
   // Note: this implementation works for different variable views so long
   // as the number of variables within the variablesMapping does not change
   // (e.g. one-to-one or active-to-active).
@@ -1199,40 +1239,41 @@ void RecastModel::update_discrete_string_variables_active_complement_from_model(
   //   if views are the same
 
   short active_view = currentVariables.view().first,
-        sm_active_view = model.current_variables().view().first;
+     sm_active_view = model.current_variables().view().first;
   int dsv_offset = 0, offset_i;
   if (active_view == sm_active_view)
     dsv_offset = ModelUtils::dsv(model) - currentVariables.dsv();
   else if (currentVariables.adsv() != ModelUtils::adsv(model)) {
     // Disallow change in both view and active size
     Cerr << "Error: recasting of both view and active sizes not supported in "
-         << "RecastModel::update_discrete_string_variables_active_complement_"
-         << "from_model()." << std::endl;
+	 << "RecastModel::update_discrete_string_variables_active_complement_"
+	 << "from_model()." << std::endl;
     abort_handler(MODEL_ERROR);
   }
   // else retain offsets = 0
 
   size_t i, dsv_begin = currentVariables.dsv_start(),
-            num_dsv = currentVariables.dsv(), dsv_end = dsv_begin + num_dsv,
-            num_adsv = currentVariables.adsv();
-  StringMultiArrayConstView adsv =
-      ModelUtils::all_discrete_string_variables(model);
-  StringMultiArrayConstView adsv_labels =
-      ModelUtils::all_discrete_string_variable_labels(model);
-  for (i = 0; i < dsv_begin; ++i) {
+    num_dsv  = currentVariables.dsv(), dsv_end = dsv_begin + num_dsv,
+    num_adsv = currentVariables.adsv();
+  StringMultiArrayConstView adsv = ModelUtils::all_discrete_string_variables(model);
+  StringMultiArrayConstView adsv_labels
+    = ModelUtils::all_discrete_string_variable_labels(model);
+  for (i=0; i<dsv_begin; ++i) {
     currentVariables.all_discrete_string_variable(adsv[i], i);
     currentVariables.all_discrete_string_variable_label(adsv_labels[i], i);
   }
-  for (i = dsv_end; i < num_adsv; ++i) {
+  for (i=dsv_end; i<num_adsv; ++i) {
     offset_i = i + dsv_offset;
     currentVariables.all_discrete_string_variable(adsv[offset_i], i);
     currentVariables.all_discrete_string_variable_label(adsv_labels[offset_i],
-                                                        i);
+							i);
   }
 }
 
-void RecastModel::update_discrete_real_variables_active_complement_from_model(
-    const Model& model) {
+
+void RecastModel::
+update_discrete_real_variables_active_complement_from_model(const Model& model)
+{
   // Note: this implementation works for different variable views so long
   // as the number of variables within the variablesMapping does not change
   // (e.g. one-to-one or active-to-active).
@@ -1240,63 +1281,67 @@ void RecastModel::update_discrete_real_variables_active_complement_from_model(
   //   if views are the same
 
   short active_view = currentVariables.view().first,
-        sm_active_view = model.current_variables().view().first;
+     sm_active_view = model.current_variables().view().first;
   int drv_offset = 0, offset_i;
   if (active_view == sm_active_view)
     drv_offset = ModelUtils::drv(model) - currentVariables.drv();
   else if (currentVariables.adrv() != ModelUtils::adrv(model)) {
     // Disallow change in both view and active size
     Cerr << "Error: recasting of both view and active sizes not supported in "
-         << "RecastModel::update_discrete_real_variables_active_complement_"
-         << "from_model()." << std::endl;
+	 << "RecastModel::update_discrete_real_variables_active_complement_"
+	 << "from_model()." << std::endl;
     abort_handler(MODEL_ERROR);
   }
   // else retain offsets = 0
 
   size_t i, drv_begin = currentVariables.drv_start(),
-            num_drv = currentVariables.drv(), drv_end = drv_begin + num_drv,
-            num_adrv = currentVariables.adrv();
+    num_drv  = currentVariables.drv(), drv_end = drv_begin + num_drv,
+    num_adrv = currentVariables.adrv();
   const RealVector& adrv = ModelUtils::all_discrete_real_variables(model);
-  const RealVector& adrv_l_bnds =
-      ModelUtils::all_discrete_real_lower_bounds(model);
-  const RealVector& adrv_u_bnds =
-      ModelUtils::all_discrete_real_upper_bounds(model);
-  StringMultiArrayConstView adrv_labels =
-      ModelUtils::all_discrete_real_variable_labels(model);
-  for (i = 0; i < drv_begin; ++i) {
+  const RealVector& adrv_l_bnds = ModelUtils::all_discrete_real_lower_bounds(model);
+  const RealVector& adrv_u_bnds = ModelUtils::all_discrete_real_upper_bounds(model);
+  StringMultiArrayConstView adrv_labels
+    = ModelUtils::all_discrete_real_variable_labels(model);
+  for (i=0; i<drv_begin; ++i) {
     currentVariables.all_discrete_real_variable(adrv[i], i);
     userDefinedConstraints.all_discrete_real_lower_bound(adrv_l_bnds[i], i);
     userDefinedConstraints.all_discrete_real_upper_bound(adrv_u_bnds[i], i);
     currentVariables.all_discrete_real_variable_label(adrv_labels[i], i);
   }
-  for (i = drv_end; i < num_adrv; ++i) {
+  for (i=drv_end; i<num_adrv; ++i) {
     offset_i = i + drv_offset;
     currentVariables.all_discrete_real_variable(adrv[offset_i], i);
     userDefinedConstraints.all_discrete_real_lower_bound(adrv_l_bnds[offset_i],
-                                                         i);
+							 i);
     userDefinedConstraints.all_discrete_real_upper_bound(adrv_u_bnds[offset_i],
-                                                         i);
+							 i);
     currentVariables.all_discrete_real_variable_label(adrv_labels[offset_i], i);
   }
 }
 
-void RecastModel::update_response_from_model(const Model& model) {
+
+void RecastModel::update_response_from_model(const Model& model)
+{
   if (primaryRespMapping) {
     // response mappings are in opposite direction from variables
     // mappings, so primaryRespMapping could potentially be used to
     // update currentResponse from model primary fns
-  } else
+  }
+  else
     update_primary_response(model);
 
   if (secondaryRespMapping) {
     // response mappings are in opposite direction from variables
     // mappings, so secondaryRespMapping could potentially be used to
     // update currentResponse from model secondary fns
-  } else
+  }
+  else
     update_secondary_response(model);
 }
 
-void RecastModel::update_primary_response(const Model& model) {
+
+void RecastModel::update_primary_response(const Model& model)
+{
   // primary response function weights
   primaryRespFnWts = model.primary_response_fn_weights();
   // primary response function sense (min or max)
@@ -1304,55 +1349,60 @@ void RecastModel::update_primary_response(const Model& model) {
 
   // primary response function labels
   const StringArray& sm_resp_labels = ModelUtils::response_labels(model);
-  size_t i, num_primary =
-                numFns - userDefinedConstraints.num_nonlinear_eq_constraints() -
-                userDefinedConstraints.num_nonlinear_ineq_constraints();
-  for (i = 0; i < num_primary; i++)
+  size_t i, num_primary = numFns 
+    - userDefinedConstraints.num_nonlinear_eq_constraints()
+    - userDefinedConstraints.num_nonlinear_ineq_constraints();
+  for (i=0; i<num_primary; i++)
     currentResponse.shared_data().function_label(sm_resp_labels[i], i);
 }
 
-void RecastModel::update_secondary_response(const Model& model) {
+
+void RecastModel::update_secondary_response(const Model& model)
+{
   // secondary response function labels
   const StringArray& sm_resp_labels = ModelUtils::response_labels(model);
   size_t i,
-      num_nln_con = userDefinedConstraints.num_nonlinear_eq_constraints() +
-                    userDefinedConstraints.num_nonlinear_ineq_constraints(),
-      num_primary = numFns - num_nln_con,
-      num_sm_primary = ModelUtils::response_size(model) - num_nln_con;
-  for (i = 0; i < num_nln_con; i++)
-    currentResponse.shared_data().function_label(
-        sm_resp_labels[num_sm_primary + i], num_primary + i);
+    num_nln_con = userDefinedConstraints.num_nonlinear_eq_constraints() +
+    userDefinedConstraints.num_nonlinear_ineq_constraints(),
+    num_primary    = numFns - num_nln_con,
+    num_sm_primary = ModelUtils::response_size(model) - num_nln_con;
+  for (i=0; i<num_nln_con; i++)
+    currentResponse.shared_data().function_label
+      (sm_resp_labels[num_sm_primary+i], num_primary+i);
 
   // nonlinear constraint bounds/targets
   if (ModelUtils::num_nonlinear_ineq_constraints(model)) {
-    userDefinedConstraints.nonlinear_ineq_constraint_lower_bounds(
-        ModelUtils::nonlinear_ineq_constraint_lower_bounds(model));
-    userDefinedConstraints.nonlinear_ineq_constraint_upper_bounds(
-        ModelUtils::nonlinear_ineq_constraint_upper_bounds(model));
+    userDefinedConstraints.nonlinear_ineq_constraint_lower_bounds
+      (ModelUtils::nonlinear_ineq_constraint_lower_bounds(model));
+    userDefinedConstraints.nonlinear_ineq_constraint_upper_bounds
+      (ModelUtils::nonlinear_ineq_constraint_upper_bounds(model));
   }
   if (ModelUtils::num_nonlinear_eq_constraints(model))
-    userDefinedConstraints.nonlinear_eq_constraint_targets(
-        ModelUtils::nonlinear_eq_constraint_targets(model));
+    userDefinedConstraints.nonlinear_eq_constraint_targets
+      (ModelUtils::nonlinear_eq_constraint_targets(model));
 }
 
-const RealVector& RecastModel::error_estimates() {
+
+const RealVector& RecastModel::error_estimates()
+{
   // linear mappings are fine (see NestedModel), but general nonlinear mappings
   // are problematic.
   if (primaryRespMapping || secondaryRespMapping) {
+
     // preclude nonlinear mappings and multi-component mappings for now.
     // Note: a linear multi-component mapping can be supported by NestedModel::
     //       iterator_error_estimation(), because the mapping coeffs are known.
 
     size_t i, num_recast_fns = nonlinearRespMapping.size();
-    for (i = 0; i < num_recast_fns; ++i) {
+    for (i=0; i<num_recast_fns; ++i) {
       const BoolDeque& nln_resp_map_i = nonlinearRespMapping[i];
       if (nln_resp_map_i.size() > 1 ||
-          std::find(nln_resp_map_i.begin(), nln_resp_map_i.end(), true) !=
-              nln_resp_map_i.end()) {
-        Cerr << "Error: error estimation not currently supported for Recast"
-             << "Model with nonlinear or multi-component response mapping."
-             << std::endl;
-        abort_handler(MODEL_ERROR);
+	  std::find(nln_resp_map_i.begin(), nln_resp_map_i.end(), true) !=
+	            nln_resp_map_i.end()) {
+	Cerr << "Error: error estimation not currently supported for Recast"
+	     << "Model with nonlinear or multi-component response mapping."
+	     << std::endl;
+	abort_handler(MODEL_ERROR);
       }
     }
 
@@ -1361,32 +1411,34 @@ const RealVector& RecastModel::error_estimates() {
     // make dummy responses for use with transform_response()
     const Response& sm_resp = subModel->current_response();
     ActiveSet sm_set = sm_resp.active_set(),
-              recast_set = currentResponse.active_set();
-    sm_set.request_values(1);
-    recast_set.request_values(1);
+          recast_set = currentResponse.active_set();
+    sm_set.request_values(1); recast_set.request_values(1);
     Response sm_error_est(sm_resp.shared_data(), sm_set),
-        recast_error_est(currentResponse.shared_data(), recast_set);
+         recast_error_est(currentResponse.shared_data(), recast_set);
     // transform the error estimates as Response::functionValues
     sm_error_est.function_values(subModel->error_estimates());
-    if (outputLevel >= DEBUG_OUTPUT)  // distinguish ScalingModel debug blocks
+    if (outputLevel >= DEBUG_OUTPUT) // distinguish ScalingModel debug blocks
       Cout << "Transforming Error Estimates:\n";
     transform_response(currentVariables, subModel->current_variables(),
-                       sm_error_est, recast_error_est);
+		       sm_error_est, recast_error_est);
     mappedErrorEstimates = recast_error_est.function_values();
     return mappedErrorEstimates;
-  } else
+  }
+  else
     return subModel->error_estimates();
 }
 
-void RecastModel::resize_response_mapping() {
+
+void RecastModel::resize_response_mapping()
+{
   // reshaping primaryRespMapIndices, secondaryRespMapIndices
-  size_t num_curr_fns = current_response().num_functions(),
+  size_t num_curr_fns       = current_response().num_functions(),
          num_curr_secondary = num_secondary_fns(),
-         num_curr_primary = num_curr_fns - num_curr_secondary,
-         num_sm_fns = ModelUtils::response_size(*subModel),
-         num_sm_secondary = subModel->num_secondary_fns(),
-         num_sm_primary = num_sm_fns - num_sm_secondary, num_replicates,
-         num_ind, offset, i, j, k;
+         num_curr_primary   = num_curr_fns - num_curr_secondary,
+         num_sm_fns         = ModelUtils::response_size(*subModel),
+         num_sm_secondary   = subModel->num_secondary_fns(),
+         num_sm_primary     = num_sm_fns - num_sm_secondary,
+         num_replicates, num_ind, offset, i, j, k;
 
   primaryRespMapIndices.resize(num_sm_primary);
   secondaryRespMapIndices.resize(num_sm_secondary);
@@ -1395,64 +1447,67 @@ void RecastModel::resize_response_mapping() {
   // the number of mappings to replicate corresponds to the number
   // of data sets being aggregated in, e.g., AGGREGATED_MODEL{S,_PAIR} modes
 
-  if (num_sm_primary > num_curr_primary) {  // inflate existing mappings
+  if (num_sm_primary > num_curr_primary) { // inflate existing mappings
     num_replicates = num_sm_primary / num_curr_primary;
     if (num_sm_primary % num_curr_primary) {
       Cerr << "Error: non-integer multiplier for response aggregation in "
-           << "RecastModel::resize_response_mapping()" << std::endl;
+	   << "RecastModel::resize_response_mapping()" << std::endl;
       abort_handler(MODEL_ERROR);
     }
-    for (i = 0; i < num_curr_primary; ++i) {
+    for (i=0; i<num_curr_primary; ++i) {
       // mirror pattern within new response indices, but offset index mapping
       SizetArray& primary_ind_i = primaryRespMapIndices[i];
       num_ind = primary_ind_i.size();
-      for (j = 1; j < num_replicates; ++j) {
-        offset = j * num_curr_primary;
-        SizetArray& primary_ind_j = primaryRespMapIndices[i + offset];
-        primary_ind_j.resize(num_ind);
-        for (k = 0; k < num_ind; ++k)
-          primary_ind_j[k] = primary_ind_i[k] + offset;
+      for (j=1; j<num_replicates; ++j) {
+	offset = j * num_curr_primary;
+	SizetArray& primary_ind_j = primaryRespMapIndices[i + offset];
+	primary_ind_j.resize(num_ind);
+	for (k=0; k<num_ind; ++k)
+	  primary_ind_j[k] = primary_ind_i[k] + offset;
       }
     }
   }
-  if (num_sm_secondary > num_curr_secondary) {  // inflate existing mappings
+  if (num_sm_secondary > num_curr_secondary) { // inflate existing mappings
     num_replicates = num_sm_secondary / num_curr_secondary;
     if (num_sm_secondary % num_curr_secondary) {
       Cerr << "Error: non-integer multiplier for response aggregation in "
-           << "RecastModel::resize_response_mapping()" << std::endl;
+	   << "RecastModel::resize_response_mapping()" << std::endl;
       abort_handler(MODEL_ERROR);
     }
-    for (i = 0; i < num_curr_secondary; ++i) {
+    for (i=0; i<num_curr_secondary; ++i) {
       // mirror pattern within new response indices, but offset index mapping
       SizetArray& secondary_ind_i = secondaryRespMapIndices[i];
       num_ind = secondary_ind_i.size();
-      for (j = 1; j < num_replicates; ++j) {
-        offset = j * num_curr_secondary;
-        SizetArray& secondary_ind_j = secondaryRespMapIndices[i + offset];
-        secondary_ind_j.resize(num_ind);
-        for (k = 0; k < num_ind; ++k)
-          secondary_ind_j[k] = secondary_ind_i[k] + offset;
+      for (j=1; j<num_replicates; ++j) {
+	offset = j * num_curr_secondary;
+	SizetArray& secondary_ind_j = secondaryRespMapIndices[i + offset];
+	secondary_ind_j.resize(num_ind);
+	for (k=0; k<num_ind; ++k)
+	  secondary_ind_j[k]   = secondary_ind_i[k] + offset;
       }
     }
   }
-  if (num_sm_fns > num_curr_fns) {  // inflate existing mappings
+  if (num_sm_fns > num_curr_fns) { // inflate existing mappings
     num_replicates = num_sm_fns / num_curr_fns;
     if (num_sm_fns % num_curr_fns) {
       Cerr << "Error: non-integer multiplier for response aggregation in "
-           << "RecastModel::resize_response_mapping()" << std::endl;
+	   << "RecastModel::resize_response_mapping()" << std::endl;
       abort_handler(MODEL_ERROR);
     }
-    for (i = 0; i < num_curr_fns; ++i) {
+    for (i=0; i<num_curr_fns; ++i) {
       // mirror pattern within new response indices, but offset index mapping
       BoolDeque& nonlin_resp_map_i = nonlinearRespMapping[i];
-      for (j = 1; j < num_replicates; ++j)
-        nonlinearRespMapping[i + j * num_curr_fns] = nonlin_resp_map_i;
+      for (j=1; j<num_replicates; ++j)
+	nonlinearRespMapping[i + j * num_curr_fns] = nonlin_resp_map_i;
     }
   }
 }
 
-bool RecastModel::db_lookup(const Variables& search_vars,
-                            const ActiveSet& search_set, Response& found_resp) {
+
+bool RecastModel::
+db_lookup(const Variables& search_vars, const ActiveSet& search_set,
+	  Response& found_resp)
+{
   // transform from recast (Iterator) to sub-model (user) variables;
   // making copy to avoid modifying submodel state during the lookup
   Variables sub_model_vars(subModel->current_variables().copy());
@@ -1463,14 +1518,15 @@ bool RecastModel::db_lookup(const Variables& search_vars,
   ActiveSet sub_model_set;
   transform_set(search_vars, search_set, sub_model_set);
 
-  // invoke submodel lookup; making copy to avoid modifying submodel state
+  // invoke submodel lookup; making copy to avoid modifying submodel state 
   // during the lookup
   Response sub_model_resp(subModel->current_response().copy());
   // sub_model_resp must have right ASV so lookup's update will pull right data
   sub_model_resp.active_set(sub_model_set);
-  bool eval_found =
-      subModel->db_lookup(sub_model_vars, sub_model_set, sub_model_resp);
-  if (!eval_found) return false;
+  bool eval_found
+    = subModel->db_lookup(sub_model_vars, sub_model_set, sub_model_resp);
+  if (!eval_found)
+    return false;
 
   // recast the subModel response ("user space") into the "iterator space"
   found_resp.active_set(search_set);
@@ -1482,14 +1538,21 @@ bool RecastModel::db_lookup(const Variables& search_vars,
   return eval_found;
 }
 
-void RecastModel::assign_instance() {
-}  // no static instance pointer to assign at base (default is no-op)
 
-void RecastModel::init_metadata() { currentResponse.reshape_metadata(0); }
+void RecastModel::assign_instance()
+{ } // no static instance pointer to assign at base (default is no-op)
 
-String RecastModel::root_model_id() { return subModel->root_model_id(); }
 
-ActiveSet RecastModel::default_active_set() {
+void RecastModel::init_metadata()
+{ currentResponse.reshape_metadata(0); }
+
+
+String RecastModel::root_model_id()
+{ return subModel->root_model_id(); }
+
+
+ActiveSet RecastModel::default_active_set()
+{
   // The "base class" implementation assumes that supportsEstimDerivs is false
   // and that gradients/hessians, if available, are computed by a submodel and
   // hence can be provided by this model.
@@ -1497,22 +1560,26 @@ ActiveSet RecastModel::default_active_set() {
   set.derivative_vector(currentVariables.all_continuous_variable_ids());
   bool has_deriv_vars = set.derivative_vector().size() != 0;
   ShortArray asv(numFns, 1);
-  if (has_deriv_vars) {
-    if (gradientType != "none")
+  if(has_deriv_vars) {
+    if(gradientType != "none")
       // && (gradientType == "analytic" || supportsEstimDerivs))
-      for (auto& a : asv) a |= 2;
+        for(auto &a : asv)
+          a |=  2;
 
-    if (hessianType != "none")
+    if(hessianType != "none")
       // && (hessianType == "analytic" || supportsEstimDerivs))
-      for (auto& a : asv) a |= 4;
+        for(auto &a : asv)
+          a |=  4;
   }
   set.request_vector(asv);
   return set;
 }
 
-void RecastModel::declare_sources() {
+
+void RecastModel::declare_sources()
+{
   evaluationsDB.declare_source(modelId, modelType, subModel->model_id(),
-                               subModel->model_type());
+			       subModel->model_type());
 }
 
-}  // namespace Dakota
+} // namespace Dakota

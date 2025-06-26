@@ -7,12 +7,13 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
+
 /** \file lhs_constants.cpp Test LHS when variables degenerate to constants */
 
-#include <gtest/gtest.h>
-
-#include "LibraryEnvironment.hpp"
 #include "opt_tpl_test.hpp"
+#include "LibraryEnvironment.hpp"
+
+#include <gtest/gtest.h>
 
 std::string lhs_constants_input = R"(
 # Verify LHS operation with some variables that degenerate to
@@ -111,23 +112,26 @@ responses
   no_hessians
 )";
 
+
 void check_constant_col(const Dakota::RealMatrix samples, int col_ind,
-                        double constant_value) {
-  for (size_t i = 0; i < samples.numRows(); ++i)
-    EXPECT_LT(std::fabs(1. - samples(i, col_ind) / constant_value),
-              1.0e-15);  // It was BOOST_TEST with tolerance
+			double constant_value)
+{
+  for (size_t i=0; i<samples.numRows(); ++i)
+    EXPECT_LT(std::fabs(1. - samples(i, col_ind) / constant_value), 1.0e-15 ); // It was BOOST_TEST with tolerance
 }
 
-double column_mean(const Dakota::RealMatrix samples, int col_ind) {
-  double mean = 0.0, num_rows = (double)samples.numRows();
-  for (size_t i = 0; i < samples.numRows(); ++i)
+double column_mean(const Dakota::RealMatrix samples, int col_ind)
+{
+  double mean = 0.0, num_rows = (double) samples.numRows();
+  for (size_t i=0; i<samples.numRows(); ++i)
     mean += samples(i, col_ind) / num_rows;
   return mean;
 }
 
-TEST(lhs_constants_tests, test_lhs_constants) {
-  std::shared_ptr<Dakota::LibraryEnvironment> p_env(
-      Dakota::Opt_TPL_Test::create_env(lhs_constants_input));
+TEST(lhs_constants_tests, test_lhs_constants)
+{
+
+  std::shared_ptr<Dakota::LibraryEnvironment> p_env(Dakota::Opt_TPL_Test::create_env(lhs_constants_input));
 
   // Verify no DP-798 seg fault:
   p_env->execute();
@@ -138,9 +142,7 @@ TEST(lhs_constants_tests, test_lhs_constants) {
   // For now, make sure constants are indeed constant...
   Dakota::RealMatrix samples;
   size_t num_vars = 15, num_resp = 3, num_samples = 60;
-  Dakota::TabularIO::read_data_tabular(
-      "dakota_lhs_constants.dat", "test_lhs_constants", samples, num_samples,
-      num_vars + num_resp, Dakota::TABULAR_NONE, true);
+  Dakota::TabularIO::read_data_tabular("dakota_lhs_constants.dat", "test_lhs_constants", samples, num_samples, num_vars + num_resp, Dakota::TABULAR_NONE, true);
 
   check_constant_col(samples, 0, 1.0);
   check_constant_col(samples, 3, 4.0);
@@ -151,12 +153,9 @@ TEST(lhs_constants_tests, test_lhs_constants) {
   check_constant_col(samples, 14, 0.5);
 
   // And that means don't regress...
-  EXPECT_LT(std::fabs(1. - column_mean(samples, 15) / 1.1403053861e+05),
-            1.0e-6);  // It was BOOST_TEST with tolerance
-  EXPECT_LT(std::fabs(1. - column_mean(samples, 16) / -2.2595567629e-05),
-            1.0e-6);  // It was BOOST_TEST with tolerance
-  EXPECT_LT(std::fabs(1. - column_mean(samples, 17) / 3.5035244300e+00),
-            1.0e-6);  // It was BOOST_TEST with tolerance
+  EXPECT_LT(std::fabs(1. - column_mean(samples, 15) / 1.1403053861e+05), 1.0e-6 ); // It was BOOST_TEST with tolerance
+  EXPECT_LT(std::fabs(1. - column_mean(samples, 16) / -2.2595567629e-05), 1.0e-6 ); // It was BOOST_TEST with tolerance
+  EXPECT_LT(std::fabs(1. - column_mean(samples, 17) / 3.5035244300e+00) , 1.0e-6 ); // It was BOOST_TEST with tolerance
 }
 
 int main(int argc, char **argv) {

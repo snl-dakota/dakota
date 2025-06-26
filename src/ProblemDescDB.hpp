@@ -10,23 +10,23 @@
 #ifndef PROBLEM_DESC_DB_H
 #define PROBLEM_DESC_DB_H
 
+#include "dakota_system_defs.hpp"
+#include "dakota_data_types.hpp"
 #include "DataEnvironment.hpp"
-#include "DataInterface.hpp"
 #include "DataMethod.hpp"
 #include "DataModel.hpp"
-#include "DataResponses.hpp"
 #include "DataVariables.hpp"
-#include "ProblemDescDBUtils.hpp"
+#include "DataInterface.hpp"
+#include "DataResponses.hpp"
 #include "UserModes.hpp"
-#include "dakota_data_types.hpp"
-#include "dakota_system_defs.hpp"
+#include "ProblemDescDBUtils.hpp"
 
 namespace Dakota {
 
 // define the callback function for user updates to the problem DB
 class ProblemDescDB;
-typedef void (*DbCallbackFunctionPtr)(Dakota::ProblemDescDB* db,
-                                      void* data_ptr);
+typedef void(*DbCallbackFunctionPtr)(Dakota::ProblemDescDB* db, void *data_ptr);
+
 
 /// The database containing information parsed from the DAKOTA input file.
 
@@ -37,12 +37,13 @@ typedef void (*DbCallbackFunctionPtr)(Dakota::ProblemDescDB* db,
     DataResponses) */
 
 class ParallelLibrary;
-class ProblemDescDB {
-  friend void ProblemDescDBUtils::check_and_broadcast_pdb(
-      ProblemDescDB& problem_db, const UserModes& user_modes,
-      ParallelLibrary& parallel_lib);
+class ProblemDescDB
+{
+  
+  friend void ProblemDescDBUtils::check_and_broadcast_pdb(ProblemDescDB& problem_db, const UserModes& user_modes, ParallelLibrary& parallel_lib);
 
- public:
+public:
+
   //
   //- Heading: Constructors, destructor, assignment operator
   //
@@ -67,10 +68,10 @@ class ProblemDescDB {
   /// Parses the input file or input string if present and executes
   /// callbacks.  Does not perform any validation.
   void parse_inputs(const std::string_view input_string,
-                    const std::string_view parser_options,
-                    bool command_line_run,
-                    DbCallbackFunctionPtr callback = NULL,
-                    void* callback_data = NULL);
+        const std::string_view parser_options,
+        bool command_line_run,
+		    DbCallbackFunctionPtr callback = NULL,
+		    void* callback_data = NULL);
   /// performs check_input, broadcast, and post_process, but for now,
   /// allowing separate invocation through the public API as well
   void check_and_broadcast(const UserModes& user_modes);
@@ -109,7 +110,7 @@ class ProblemDescDB {
   /// particular method specification (only).
   void set_db_method_node(size_t method_index);
   /// return the index of the active node in dataMethodList
-  size_t get_db_method_node();  // restoration usage: return by value
+  size_t get_db_method_node(); // restoration usage: return by value
 
   /// set the model list iterators (dataModelIter, dataVariablesIter,
   /// dataInterfaceIter, and dataResponsesIter) based on the model
@@ -120,7 +121,7 @@ class ProblemDescDB {
   /// within dataModelList
   void set_db_model_nodes(size_t model_index);
   /// return the index of the active node in dataModelList
-  size_t get_db_model_node();  // restoration usage: return by value
+  size_t get_db_model_node(); // restoration usage: return by value
 
   /// set dataVariablesIter based on the variables identifier string
   void set_db_variables_node(const String& variables_tag);
@@ -133,7 +134,8 @@ class ProblemDescDB {
   //- Heading: Set/Inquire functions
   //
 
- public:
+  public:
+
   /// @brief return the name of the currently selected method
   std::string_view method_id() const;
 
@@ -142,6 +144,7 @@ class ProblemDescDB {
 
   /// @brief return the name of the currently selected interface
   std::string_view interface_id() const;
+
 
   /// @brief return the dbRep
   std::shared_ptr<ProblemDescDB> get_rep() const;
@@ -268,13 +271,13 @@ class ProblemDescDB {
   /// compute minimum partition size for a parallel level based on lower
   /// level overrides
   static int min_procs_per_level(int min_procs_per_server, int pps_spec,
-                                 int num_serv_spec);  //, short sched_spec)
+				 int num_serv_spec);//, short sched_spec)
   /// compute maximum partition size for a parallel level based on lower
   /// level overrides
   static int max_procs_per_level(int max_procs_per_server, int pps_spec,
-                                 int num_serv_spec, short sched_spec,
-                                 int asynch_local_conc, bool peer_dynamic_avail,
-                                 int max_concurrency);
+				 int num_serv_spec, short sched_spec,
+				 int asynch_local_conc, bool peer_dynamic_avail,
+				 int max_concurrency);
 
   /// compute minimum evaluation partition size based on lower level overrides
   int min_procs_per_ea();
@@ -302,7 +305,8 @@ class ProblemDescDB {
   /// function to check dbRep (does this envelope contain a letter)
   bool is_null() const;
 
- protected:
+protected:
+
   //
   //- Heading: Constructors
   //
@@ -318,8 +322,8 @@ class ProblemDescDB {
 
   /// derived class specifics within parse_inputs()
   virtual void derived_parse_inputs(const std::string_view dakota_input,
-                                    const std::string_view parser_options,
-                                    bool command_line_run);
+				    const std::string_view parser_options,
+            bool command_line_run);
   /// derived class specifics within broadcast()
   virtual void derived_broadcast();
   /// derived class specifics within post_process()
@@ -328,7 +332,7 @@ class ProblemDescDB {
   //
   //- Heading: Data
   //
-
+ 
   // The data objects that comprise the problem specification resulting
   // either from kwhandler (parser) or insert_node (library mode) calls.
 
@@ -354,26 +358,27 @@ class ProblemDescDB {
   /// counter for environment specifications used in check_input
   size_t environmentCntr;
 
- private:
+private:
+
   // helpers to map keys to class member data values
 
   /// Encapsulate lookups across Data*Rep types: given lookup tables
   /// mapping strings to pointers to Data*Rep members, and an
   /// entry_name = block.entry_key, return the corresponding member
   /// value from the appropriate Data*Rep in the ProblemDescDB rep.
-  template <typename T>
+  template<typename T>
   T& get(const std::string& context_msg,
-         const std::map<std::string, T DataEnvironmentRep::*>& env_map,
-         const std::map<std::string, T DataMethodRep::*>& met_map,
-         const std::map<std::string, T DataModelRep::*>& mod_map,
-         const std::map<std::string, T DataVariablesRep::*>& var_map,
-         const std::map<std::string, T DataInterfaceRep::*>& int_map,
-         const std::map<std::string, T DataResponsesRep::*>& res_map,
-         const std::string& entry_name,
-         const std::shared_ptr<ProblemDescDB>& db_rep) const;
+	 const std::map<std::string, T DataEnvironmentRep::*>& env_map,
+	 const std::map<std::string, T DataMethodRep::*>& met_map,
+	 const std::map<std::string, T DataModelRep::*>& mod_map,
+	 const std::map<std::string, T DataVariablesRep::*>& var_map,
+	 const std::map<std::string, T DataInterfaceRep::*>& int_map,
+	 const std::map<std::string, T DataResponsesRep::*>& res_map,
+	 const std::string& entry_name,
+	 const std::shared_ptr<ProblemDescDB>& db_rep) const;
 
-  //     void set(const std::string& entry_name,
-  // 	     std::shared_ptr<ProblemDescDB>& db_rep, const T entry_value) const;
+//     void set(const std::string& entry_name,
+// 	     std::shared_ptr<ProblemDescDB>& db_rep, const T entry_value) const;
 
   //
   //- Heading: Private convenience functions
@@ -399,10 +404,11 @@ class ProblemDescDB {
   /// require user-specified block identifiers to be unique
   void enforce_unique_ids();
 
+
   //
   //- Heading: Data
   //
-
+ 
   // Iterators for identifying active list nodes in data object linked lists
 
   /// iterator identifying the active list node in dataMethodList
@@ -416,19 +422,19 @@ class ProblemDescDB {
   /// iterator identifying the active list node in dataResponsesList
   std::list<DataResponses>::iterator dataResponsesIter;
 
-  /// prevents use of get_<type> retrieval and set_<type> update functions
+  /// prevents use of get_<type> retrieval and set_<type> update functions 
   /// prior to setting the list node for the active method specification
   bool methodDBLocked;
-  /// prevents use of get_<type> retrieval and set_<type> update functions
+  /// prevents use of get_<type> retrieval and set_<type> update functions 
   /// prior to setting the list node for the active model specification
   bool modelDBLocked;
-  /// prevents use of get_<type> retrieval and set_<type> update functions
+  /// prevents use of get_<type> retrieval and set_<type> update functions 
   /// prior to setting the list node for the active variables specification
   bool variablesDBLocked;
-  /// prevents use of get_<type> retrieval and set_<type> update functions
+  /// prevents use of get_<type> retrieval and set_<type> update functions 
   /// prior to setting the list node for the active interface specification
   bool interfaceDBLocked;
-  /// prevents use of get_<type> retrieval and set_<type> update functions
+  /// prevents use of get_<type> retrieval and set_<type> update functions 
   /// prior to setting the list node for the active responses specification
   bool responsesDBLocked;
 
@@ -441,23 +447,28 @@ class ProblemDescDB {
   int worldSize;
 };
 
-inline void ProblemDescDB::lock() {
+
+inline void ProblemDescDB::lock()
+{
   if (dbRep)
-    dbRep->methodDBLocked = dbRep->modelDBLocked = dbRep->variablesDBLocked =
-        dbRep->interfaceDBLocked = dbRep->responsesDBLocked = true;
+    dbRep->methodDBLocked = dbRep->modelDBLocked = dbRep->variablesDBLocked
+      = dbRep->interfaceDBLocked = dbRep->responsesDBLocked = true;
   else
-    methodDBLocked = modelDBLocked = variablesDBLocked = interfaceDBLocked =
-        responsesDBLocked = true;
+    methodDBLocked = modelDBLocked = variablesDBLocked = interfaceDBLocked
+      = responsesDBLocked = true;
 }
 
-inline void ProblemDescDB::unlock() {
+
+inline void ProblemDescDB::unlock()
+{
   if (dbRep)
-    dbRep->methodDBLocked = dbRep->modelDBLocked = dbRep->variablesDBLocked =
-        dbRep->interfaceDBLocked = dbRep->responsesDBLocked = false;
+    dbRep->methodDBLocked = dbRep->modelDBLocked = dbRep->variablesDBLocked
+      = dbRep->interfaceDBLocked = dbRep->responsesDBLocked = false;
   else
-    methodDBLocked = modelDBLocked = variablesDBLocked = interfaceDBLocked =
-        responsesDBLocked = false;
+    methodDBLocked = modelDBLocked = variablesDBLocked = interfaceDBLocked
+      = responsesDBLocked = false;
 }
+
 
 inline std::string_view ProblemDescDB::method_id() const {
   return dbRep->dataMethodIter->dataMethodRep->idMethod;
@@ -475,143 +486,166 @@ inline std::shared_ptr<ProblemDescDB> ProblemDescDB::get_rep() const {
   return dbRep;
 }
 
-inline size_t ProblemDescDB::get_db_method_node() {
+inline size_t ProblemDescDB::get_db_method_node()
+{
   if (dbRep)
     return dbRep->get_db_method_node();
   else
-    return (methodDBLocked)
-               ? _NPOS
-               : std::distance(dataMethodList.begin(), dataMethodIter);
+    return (methodDBLocked) ? _NPOS :
+      std::distance(dataMethodList.begin(), dataMethodIter);
 }
 
-inline size_t ProblemDescDB::get_db_model_node() {
+
+inline size_t ProblemDescDB::get_db_model_node()
+{
   if (dbRep)
     return dbRep->get_db_model_node();
   else
-    return (modelDBLocked)
-               ? _NPOS
-               : std::distance(dataModelList.begin(), dataModelIter);
+    return (modelDBLocked) ? _NPOS :
+      std::distance(dataModelList.begin(), dataModelIter);
 }
 
-inline void ProblemDescDB::insert_node(const DataEnvironment& data_env) {
+
+inline void ProblemDescDB::insert_node(const DataEnvironment& data_env)
+{
   if (dbRep) {
     dbRep->environmentSpec = data_env;
     dbRep->environmentCntr++;
-  } else {
+  }
+  else {
     environmentSpec = data_env;
     environmentCntr++;
   }
 }
 
-inline void ProblemDescDB::insert_node(const DataMethod& data_method) {
+
+inline void ProblemDescDB::insert_node(const DataMethod& data_method)
+{
   if (dbRep)
     dbRep->dataMethodList.push_back(data_method);
   else
     dataMethodList.push_back(data_method);
 }
 
-inline void ProblemDescDB::insert_node(const DataModel& data_model) {
+
+inline void ProblemDescDB::insert_node(const DataModel& data_model)
+{
   if (dbRep)
     dbRep->dataModelList.push_back(data_model);
   else
     dataModelList.push_back(data_model);
 }
 
-inline void ProblemDescDB::insert_node(DataVariables& data_variables) {
+
+inline void ProblemDescDB::insert_node(DataVariables& data_variables)
+{
   if (dbRep)
     dbRep->dataVariablesList.push_back(data_variables);
   else
     dataVariablesList.push_back(data_variables);
 }
 
-inline void ProblemDescDB::insert_node(const DataInterface& data_interface) {
+
+inline void ProblemDescDB::insert_node(const DataInterface& data_interface)
+{
   if (dbRep)
     dbRep->dataInterfaceList.push_back(data_interface);
   else
     dataInterfaceList.push_back(data_interface);
 }
 
-inline void ProblemDescDB::insert_node(const DataResponses& data_responses) {
+
+inline void ProblemDescDB::insert_node(const DataResponses& data_responses)
+{
   if (dbRep)
     dbRep->dataResponsesList.push_back(data_responses);
   else
     dataResponsesList.push_back(data_responses);
 }
 
-inline bool ProblemDescDB::method_locked() const {
-  return (dbRep) ? dbRep->methodDBLocked : methodDBLocked;
-}
 
-inline bool ProblemDescDB::model_locked() const {
-  return (dbRep) ? dbRep->modelDBLocked : modelDBLocked;
-}
+inline bool ProblemDescDB::method_locked() const
+{ return (dbRep) ? dbRep->methodDBLocked : methodDBLocked; }
 
-inline bool ProblemDescDB::variables_locked() const {
-  return (dbRep) ? dbRep->variablesDBLocked : variablesDBLocked;
-}
 
-inline bool ProblemDescDB::interface_locked() const {
-  return (dbRep) ? dbRep->interfaceDBLocked : interfaceDBLocked;
-}
+inline bool ProblemDescDB::model_locked() const
+{ return (dbRep) ? dbRep->modelDBLocked : modelDBLocked; }
 
-inline bool ProblemDescDB::responses_locked() const {
-  return (dbRep) ? dbRep->responsesDBLocked : responsesDBLocked;
-}
 
-inline bool ProblemDescDB::is_null() const { return (dbRep) ? false : true; }
+inline bool ProblemDescDB::variables_locked() const
+{ return (dbRep) ? dbRep->variablesDBLocked : variablesDBLocked; }
 
-inline int ProblemDescDB::min_procs_per_level(int min_procs_per_server,
-                                              int pps_spec, int num_serv_spec)
-//, short sched_spec)
+
+inline bool ProblemDescDB::interface_locked() const
+{ return (dbRep) ? dbRep->interfaceDBLocked : interfaceDBLocked; }
+
+
+inline bool ProblemDescDB::responses_locked() const
+{ return (dbRep) ? dbRep->responsesDBLocked : responsesDBLocked; }
+
+
+inline bool ProblemDescDB::is_null() const
+{ return (dbRep) ? false : true; }
+
+
+inline int ProblemDescDB::
+min_procs_per_level(int min_procs_per_server, int pps_spec, int num_serv_spec)
+                    //, short sched_spec)
 {
   int min_procs_per_lev = (pps_spec) ? pps_spec : min_procs_per_server;
-  if (num_serv_spec) min_procs_per_lev *= num_serv_spec;
-  // if (sched_spec == DEDICATED_SCHEDULER_DYNAMIC) ++min_procs_per_lev;
+  if (num_serv_spec)
+    min_procs_per_lev *= num_serv_spec;
+  //if (sched_spec == DEDICATED_SCHEDULER_DYNAMIC) ++min_procs_per_lev;
   return min_procs_per_lev;
 }
 
-inline int ProblemDescDB::max_procs_per_level(
-    int max_procs_per_server, int pps_spec, int num_serv_spec, short sched_spec,
-    int asynch_local_conc, bool peer_dynamic_avail, int max_concurrency) {
+
+inline int ProblemDescDB::
+max_procs_per_level(int max_procs_per_server, int pps_spec, int num_serv_spec,
+		    short sched_spec, int asynch_local_conc,
+		    bool peer_dynamic_avail, int max_concurrency)
+{
   int max_procs_per_lev, max_pps = (pps_spec) ? pps_spec : max_procs_per_server;
 
-  if (num_serv_spec) {  // check for dedicated scheduler
+  if (num_serv_spec) { // check for dedicated scheduler
     max_procs_per_lev = max_pps * num_serv_spec;
     switch (sched_spec) {
-      case DEDICATED_SCHEDULER_DYNAMIC:
-        ++max_procs_per_lev;
-        break;
-      // case PEER_SCHEDULING: case PEER_STATIC_SCHEDULING:
-      // case PEER_DYNAMIC_SCHEDULING:
-      //   break;
-      case DEFAULT_SCHEDULING:  // emulate auto-config logic
-        if (!peer_dynamic_avail && num_serv_spec > 1 &&
-            num_serv_spec * std::max(1, asynch_local_conc) < max_concurrency)
-          ++max_procs_per_lev;
-        break;
+    case DEDICATED_SCHEDULER_DYNAMIC:
+      ++max_procs_per_lev; break;
+    //case PEER_SCHEDULING: case PEER_STATIC_SCHEDULING:
+    //case PEER_DYNAMIC_SCHEDULING:
+    //  break;
+    case DEFAULT_SCHEDULING: // emulate auto-config logic
+      if (!peer_dynamic_avail && num_serv_spec > 1 &&
+	  num_serv_spec * std::max(1, asynch_local_conc) < max_concurrency)
+	++max_procs_per_lev;
+      break;
     }
-  } else {
+  }
+  else {
     max_procs_per_lev = max_pps * max_concurrency;
     // assume peer partition unless explicit override to ded scheduler,
     // since we don't have avail_procs to estimate need for ded scheduler
-    if (sched_spec == DEDICATED_SCHEDULER_DYNAMIC) ++max_procs_per_lev;
+    if (sched_spec == DEDICATED_SCHEDULER_DYNAMIC)
+      ++max_procs_per_lev;
   }
 
   return max_procs_per_lev;
 }
 
-inline bool ProblemDescDB::model_has_interface(
-    const DataModelRep& model_rep) const {
+
+inline bool ProblemDescDB::model_has_interface(const DataModelRep& model_rep) const
+{
   // The following Models pull from the interface specification:
   //   SimulationModel (userDefinedInterface)
   //   NestedModel (optionalInterface)
   //   DataFitSurrModel (approxInterface)
-  return (model_rep.modelType == "simulation" ||
-          model_rep.modelType == "nested" ||
-          (model_rep.modelType == "surrogate" &&
-           model_rep.surrogateType != "ensemble"));
+  return ( model_rep.modelType == "simulation" ||
+	   model_rep.modelType == "nested" ||
+	   ( model_rep.modelType == "surrogate" &&
+	     model_rep.surrogateType != "ensemble") );
 }
 
-}  // namespace Dakota
+} // namespace Dakota
 
 #endif

@@ -10,20 +10,22 @@
 #ifndef SOL_BASE_H
 #define SOL_BASE_H
 
-#include "DakotaModel.hpp"
-#include "dakota_data_types.hpp"
 #include "dakota_system_defs.hpp"
+#include "dakota_data_types.hpp"
+#include "DakotaModel.hpp"
 
-#define CLOSE_IO_UNITS_F77 F77_FUNC(close_io_units, CLOSE_IO_UNITS)
+
+#define CLOSE_IO_UNITS_F77 F77_FUNC(close_io_units,CLOSE_IO_UNITS)
 
 extern "C" {
-void CLOSE_IO_UNITS_F77();
+  void CLOSE_IO_UNITS_F77();
 }
 
 namespace Dakota {
 
-class Minimizer;  // fwd declarations
+class Minimizer; // fwd declarations
 class Model;
+
 
 /// Base class for Stanford SOL software.
 
@@ -32,17 +34,20 @@ class Model;
     quadratic programming algorithms from Stanford University marketed
     by Stanford Business Associates. */
 
-class SOLBase {
- public:
+class SOLBase
+{
+public:
+    
   //
   //- Heading: Constructors and destructor
   //
 
-  SOLBase();                              ///< default constructor
-  SOLBase(std::shared_ptr<Model> model);  ///< standard constructor
-  ~SOLBase();                             ///< destructor
+  SOLBase();             ///< default constructor
+  SOLBase(std::shared_ptr<Model> model); ///< standard constructor
+  ~SOLBase();            ///< destructor
 
- protected:
+protected:
+
   //
   //- Heading: New virtual functions
   //
@@ -60,13 +65,13 @@ class SOLBase {
 
   /// Allocates F77 linear constraint arrays for the SOL algorithms
   void allocate_linear_arrays(int num_cv, const RealMatrix& lin_ineq_coeffs,
-                              const RealMatrix& lin_eq_coeffs);
+			      const RealMatrix& lin_eq_coeffs);
   /// Allocates F77 nonlinear constraint arrays for the SOL algorithms.
   void allocate_nonlinear_arrays(int num_cv, size_t num_nln_con);
   /// Allocates F77 arrays for the SOL algorithms.
   void allocate_arrays(int num_cv, size_t num_nln_con,
-                       const RealMatrix& lin_ineq_coeffs,
-                       const RealMatrix& lin_eq_coeffs);
+		       const RealMatrix& lin_ineq_coeffs,
+		       const RealMatrix& lin_eq_coeffs);
   /// Deallocates memory previously allocated by allocate_arrays().
   void deallocate_arrays();
 
@@ -75,66 +80,70 @@ class SOLBase {
 
   /// Allocates real and integer workspaces for the SOL algorithms.
   void allocate_workspace(int num_cv, int num_nln_con, int num_lin_con,
-                          int num_lsq);
+			  int num_lsq);
 
   /// Sets SOL method options using calls to npoptn2 / nloptn2.
-  void set_options(bool speculative_flag, bool vendor_num_grad_flag,
-                   short output_lev, int verify_lev, Real fn_prec,
-                   Real linesrch_tol, size_t max_iter, Real constr_tol,
-                   Real conv_tol, const std::string& grad_type,
-                   const RealVector& fdss);
+  void set_options(bool speculative_flag, bool vendor_num_grad_flag, 
+		   short output_lev, int verify_lev, Real fn_prec,
+		   Real linesrch_tol, size_t max_iter, Real constr_tol,
+		   Real conv_tol, const std::string& grad_type,
+		   const RealVector& fdss);
 
   /// aggregate variable bounds with linear and nonlinear constraint bounds
-  void aggregate_bounds(
-      const RealVector& cv_lower_bnds, const RealVector& cv_upper_bnds,
-      const RealVector& lin_ineq_l_bnds, const RealVector& lin_ineq_u_bnds,
-      const RealVector& lin_eq_targets, const RealVector& nln_ineq_l_bnds,
-      const RealVector& nln_ineq_u_bnds, const RealVector& nln_eq_targets,
-      RealVector& aggregate_l_bnds, RealVector& aggregate_u_bnds);
+  void aggregate_bounds(const RealVector& cv_lower_bnds,
+			const RealVector& cv_upper_bnds,
+			const RealVector& lin_ineq_l_bnds,
+			const RealVector& lin_ineq_u_bnds,
+			const RealVector& lin_eq_targets,
+			const RealVector& nln_ineq_l_bnds,
+			const RealVector& nln_ineq_u_bnds,
+			const RealVector& nln_eq_targets,
+			RealVector& aggregate_l_bnds,
+			RealVector& aggregate_u_bnds);
 
   /*
   /// augments variable bounds with linear and nonlinear constraint bounds.
   void augment_bounds(RealVector& aggregate_l_bnds,
-                      RealVector& aggregate_u_bnds,
-                      const Model& model);
+		      RealVector& aggregate_u_bnds,
+		      const Model& model);
   /// augments variable bounds with linear and nonlinear constraint bounds.
   void augment_bounds(RealVector& aggregate_l_bnds,
-                      RealVector& aggregate_u_bnds,
-                      const RealVector& lin_ineq_l_bnds,
-                      const RealVector& lin_ineq_u_bnds,
-                      const RealVector& lin_eq_targets,
-                      const RealVector& nln_ineq_l_bnds,
-                      const RealVector& nln_ineq_u_bnds,
-                      const RealVector& nln_eq_targets);
+		      RealVector& aggregate_u_bnds,
+		      const RealVector& lin_ineq_l_bnds,
+		      const RealVector& lin_ineq_u_bnds,
+		      const RealVector& lin_eq_targets,
+		      const RealVector& nln_ineq_l_bnds,
+		      const RealVector& nln_ineq_u_bnds,
+		      const RealVector& nln_eq_targets);
 
   /// update linear constraint arrays
   void replace_linear_arrays(size_t num_cv, size_t num_nln_con,
-                             const RealMatrix& lin_ineq_coeffs,
-                             const RealMatrix& lin_eq_coeffs);
+			     const RealMatrix& lin_ineq_coeffs,
+			     const RealMatrix& lin_eq_coeffs);
   /// update nonlinear constraint arrays
   void replace_nonlinear_arrays(int num_cv, size_t num_lin_con,
-                                size_t num_nln_con);
+				size_t num_nln_con);
 
   /// replace variable bounds within aggregate arrays
   void replace_variable_bounds(size_t num_lin_con, size_t num_nln_con,
-                               RealVector& aggregate_l_bnds,
-                               RealVector& aggregate_u_bnds,
-                               const RealVector& cv_lower_bnds,
-                               const RealVector& cv_upper_bnds);
+			       RealVector& aggregate_l_bnds,
+			       RealVector& aggregate_u_bnds,
+			       const RealVector& cv_lower_bnds,
+			       const RealVector& cv_upper_bnds);
   /// replace linear bounds within aggregate arrays
   void replace_linear_bounds(size_t num_cv, size_t num_nln_con,
-                             RealVector& aggregate_l_bnds,
-                             RealVector& aggregate_u_bnds,
-                             const RealVector& lin_ineq_l_bnds,
-                             const RealVector& lin_ineq_u_bnds,
-                             const RealVector& lin_eq_targets);
+			     RealVector& aggregate_l_bnds,
+			     RealVector& aggregate_u_bnds,
+			     const RealVector& lin_ineq_l_bnds,
+			     const RealVector& lin_ineq_u_bnds,
+			     const RealVector& lin_eq_targets);
   /// replace nonlinear bounds within aggregate arrays
   void replace_nonlinear_bounds(size_t num_cv, size_t num_lin_con,
-                                RealVector& aggregate_l_bnds,
-                                RealVector& aggregate_u_bnds,
-                                const RealVector& nln_ineq_l_bnds,
-                                const RealVector& nln_ineq_u_bnds,
-                                const RealVector& nln_eq_targets);
+				RealVector& aggregate_l_bnds,
+				RealVector& aggregate_u_bnds,
+				const RealVector& nln_ineq_l_bnds,
+				const RealVector& nln_ineq_u_bnds,
+				const RealVector& nln_eq_targets);
   */
 
   //
@@ -144,8 +153,8 @@ class SOLBase {
   /// CONFUN in NPSOL manual: computes the values and first
   /// derivatives of the nonlinear constraint functions
   static void constraint_eval(int& mode, int& ncnln, int& n, int& nrowj,
-                              int* needc, double* x, double* c, double* cjac,
-                              int& nstate);
+			      int* needc, double* x, double* c, double* cjac,
+			      int& nstate);
 
   //
   //- Heading: Data
@@ -158,10 +167,10 @@ class SOLBase {
   /// evaluator functions in order to avoid the need for static data
   static Minimizer* optLSqInstance;
 
-  int realWorkSpaceSize;    ///< size of realWorkSpace
-  int intWorkSpaceSize;     ///< size of intWorkSpace
-  RealArray realWorkSpace;  ///< real work space for NPSOL/NLSSOL
-  IntArray intWorkSpace;    ///< int work space for NPSOL/NLSSOL
+  int       realWorkSpaceSize; ///< size of realWorkSpace
+  int       intWorkSpaceSize;  ///< size of intWorkSpace
+  RealArray realWorkSpace;     ///< real work space for NPSOL/NLSSOL
+  IntArray  intWorkSpace;      ///< int work space for NPSOL/NLSSOL
 
   /// used for non-zero array sizing (nonlinear constraints)
   int nlnConstraintArraySize;
@@ -171,7 +180,7 @@ class SOLBase {
   /// CLAMBDA from NPSOL manual: Langrange multipliers
   RealArray cLambda;
   /// ISTATE from NPSOL manual: constraint status
-  IntArray constraintState;
+  IntArray  constraintState;
 
   /// INFORM from NPSOL manual: optimization status on exit
   int informResult;
@@ -181,17 +190,17 @@ class SOLBase {
   /// nonlinear constraint bounds)
   int boundsArraySize;
 
-  // These 3 matrices must have contiguous memory for passing to Fortran.
+  // These 3 matrices must have contiguous memory for passing to Fortran.  
   // Therefore, the RealMatrix type cannot be used.
   /// [A] matrix from NPSOL manual: linear constraint coefficients
-  double* linConstraintMatrixF77;
+  double *linConstraintMatrixF77;
   /// [R] matrix from NPSOL manual: upper Cholesky factor of the Hessian of
   /// the Lagrangian.
-  double* upperFactorHessianF77;
+  double *upperFactorHessianF77;
   /// [CJAC] matrix from NPSOL manual: nonlinear constraint Jacobian
-  double* constraintJacMatrixF77;
+  double *constraintJacMatrixF77;
 
-  int fnEvalCntr;  ///< counter for testing against maxFunctionEvals
+  int fnEvalCntr; ///< counter for testing against maxFunctionEvals
 
   /// used in constraint_eval() to bridge NLSSOLLeastSq::numLeastSqTerms
   /// and NPSOLOptimizer::numObjectiveFns
@@ -203,25 +212,28 @@ class SOLBase {
   // The numInstances variable counts instances of NPSOL and NLSSOL wrappers,
   // and a subroutine is called to close the files when it reaches 0 (see
   // the SOLBase constructors and destructor).
-
-  /// Track the number of instances of SOLBase and its derived classes.
+  
+  /// Track the number of instances of SOLBase and its derived classes. 
   static size_t numInstances;
+
 };
 
-inline SOLBase::SOLBase()
-    : boundsArraySize(0),
-      linConstraintMatrixF77(NULL),
-      upperFactorHessianF77(NULL),
-      constraintJacMatrixF77(NULL) {
-  numInstances++;
-}
 
-inline SOLBase::~SOLBase() {
+inline SOLBase::SOLBase():
+  boundsArraySize(0), linConstraintMatrixF77(NULL),
+  upperFactorHessianF77(NULL), constraintJacMatrixF77(NULL)
+{ numInstances++;}
+
+
+inline SOLBase::~SOLBase() { 
   numInstances--;
-  if (numInstances == 0) CLOSE_IO_UNITS_F77();
+  if(numInstances == 0)
+    CLOSE_IO_UNITS_F77();
 }
 
-inline void SOLBase::size_bounds_array(size_t new_bnds_size) {
+
+inline void SOLBase::size_bounds_array(size_t new_bnds_size)
+{
   if (boundsArraySize != new_bnds_size) {
     boundsArraySize = new_bnds_size;
     cLambda.resize(boundsArraySize);          // clambda[bnd_size]
@@ -229,15 +241,16 @@ inline void SOLBase::size_bounds_array(size_t new_bnds_size) {
   }
 }
 
+
 /*
 inline void SOLBase::
 replace_linear_arrays(size_t num_cv, size_t num_nln_con,
-                      const RealMatrix& lin_ineq_coeffs,
-                      const RealMatrix& lin_eq_coeffs)
+		      const RealMatrix& lin_ineq_coeffs,
+		      const RealMatrix& lin_eq_coeffs)
 {
   allocate_linear_arrays(num_cv, lin_ineq_coeffs, lin_eq_coeffs);
   size_bounds_array(num_cv + lin_ineq_coeffs.numRows() +
-                    lin_eq_coeffs.numRows() + num_nln_con);
+		    lin_eq_coeffs.numRows() + num_nln_con);
 }
 
 
@@ -251,18 +264,18 @@ replace_nonlinear_arrays(int num_cv, size_t num_lin_con, size_t num_nln_con)
 
 inline void SOLBase::
 augment_bounds(RealVector& aggregate_l_bnds, RealVector& aggregate_u_bnds,
-               const Model& model)
+	       const Model& model)
 {
   augment_bounds(aggregate_l_bnds, aggregate_u_bnds,
-                 ModelUtils::linear_ineq_constraint_lower_bounds(model),
-                 ModelUtils::linear_ineq_constraint_upper_bounds(model),
-                 ModelUtils::linear_eq_constraint_targets(model),
-                 ModelUtils::nonlinear_ineq_constraint_lower_bounds(model),
-                 ModelUtils::nonlinear_ineq_constraint_upper_bounds(model),
-                 ModelUtils::nonlinear_eq_constraint_targets(model));
+		 ModelUtils::linear_ineq_constraint_lower_bounds(model),
+		 ModelUtils::linear_ineq_constraint_upper_bounds(model),
+		 ModelUtils::linear_eq_constraint_targets(model),
+		 ModelUtils::nonlinear_ineq_constraint_lower_bounds(model),
+		 ModelUtils::nonlinear_ineq_constraint_upper_bounds(model),
+		 ModelUtils::nonlinear_eq_constraint_targets(model));
 }
 */
 
-}  // namespace Dakota
+} // namespace Dakota
 
 #endif

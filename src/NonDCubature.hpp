@@ -10,15 +10,16 @@
 #ifndef NOND_CUBATURE_H
 #define NOND_CUBATURE_H
 
-#include "CubatureDriver.hpp"
-#include "NonDIntegration.hpp"
 #include "dakota_data_types.hpp"
+#include "NonDIntegration.hpp"
+#include "CubatureDriver.hpp"
 
 namespace Pecos {
-class MultivariateDistribution;  // fwd declaration
+class MultivariateDistribution; // fwd declaration
 }
 
 namespace Dakota {
+
 
 /// Derived nondeterministic class that generates N-dimensional
 /// numerical cubature points for evaluation of expectation integrals.
@@ -27,8 +28,10 @@ namespace Dakota {
     for general numerical integration of moments.  It employs
     Stroud cubature rules and extensions by D. Xiu. */
 
-class NonDCubature : public NonDIntegration {
- public:
+class NonDCubature: public NonDIntegration
+{
+public:
+
   //
   //- Heading: Constructors and destructor
   //
@@ -36,7 +39,7 @@ class NonDCubature : public NonDIntegration {
   // alternate constructor for instantiations "on the fly"
   NonDCubature(std::shared_ptr<Model> model, unsigned short cub_int_order);
 
-  ~NonDCubature() override;  ///< destructor
+  ~NonDCubature() override;                                       ///< destructor
 
   //
   //- Heading: Member functions
@@ -45,25 +48,23 @@ class NonDCubature : public NonDIntegration {
   /// return cubIntOrder
   unsigned short integrand_order() const;
 
- protected:
+protected:
+
   //
   //- Heading: Constructors and destructor
   //
 
-  NonDCubature(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
-               std::shared_ptr<Model> model);  ///< constructor
+  NonDCubature(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model); ///< constructor
 
   //
   //- Heading: Virtual function redefinitions
   //
 
-  void initialize_grid(
-      const std::vector<Pecos::BasisPolynomial>& poly_basis) override;
+  void initialize_grid(const std::vector<Pecos::BasisPolynomial>& poly_basis) override;
 
   void get_parameter_sets(std::shared_ptr<Model> model) override;
 
-  void sampling_reset(size_t min_samples, bool all_data_flag,
-                      bool stats_flag) override;
+  void sampling_reset(size_t min_samples, bool all_data_flag, bool stats_flag) override;
 
   void increment_grid() override;
   void increment_grid_preference(const RealVector& dim_pref) override;
@@ -74,7 +75,8 @@ class NonDCubature : public NonDIntegration {
 
   size_t num_samples() const override;
 
- private:
+private:
+
   //
   //- Heading: Convenience functions
   //
@@ -90,7 +92,7 @@ class NonDCubature : public NonDIntegration {
   std::shared_ptr<Pecos::CubatureDriver> cubDriver;
 
   // the user specification for the number of Gauss points per dimension
-  // UShortArray cubIntOrderSpec;
+  //UShortArray cubIntOrderSpec;
   /// reference point for Pecos::CubatureDriver::cubIntOrder: the original
   /// user specification for the number of Gauss points per dimension, plus
   /// any refinements posted by increment_grid()
@@ -99,32 +101,33 @@ class NonDCubature : public NonDIntegration {
   unsigned short cubIntRule;
 };
 
-inline void NonDCubature::reset() {
+
+inline void NonDCubature::reset()
+{
   // reset dimensional quadrature order to specification
-  // cubIntOrderRef = cubIntOrderSpec;
+  //cubIntOrderRef = cubIntOrderSpec;
   // clear dist param update trackers
   cubDriver->reset();
 }
 
-inline unsigned short NonDCubature::integrand_order() const {
-  return cubDriver->integrand_order();
-}
+
+inline unsigned short NonDCubature::integrand_order() const
+{ return cubDriver->integrand_order(); }
+
 
 /** Should not be used, but one of virtual function pair must be defined. */
-inline void NonDCubature::increment_grid_preference(
-    const RealVector& dim_pref) {
-  increment_grid();
-}  // ignore dim_pref
+inline void NonDCubature::increment_grid_preference(const RealVector& dim_pref)
+{ increment_grid(); } // ignore dim_pref
+
 
 /** Should not be used, but one of virtual function pair must be defined. */
-inline void NonDCubature::increment_grid_preference() {
-  increment_grid();
-}  // ignore dim_pref
+inline void NonDCubature::increment_grid_preference()
+{ increment_grid(); } // ignore dim_pref
 
-inline size_t NonDCubature::num_samples() const {
-  return cubDriver->grid_size();
-}
 
-}  // namespace Dakota
+inline size_t NonDCubature::num_samples() const
+{ return cubDriver->grid_size(); }
+
+} // namespace Dakota
 
 #endif

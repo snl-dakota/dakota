@@ -10,13 +10,15 @@
 #ifndef NESTED_MODEL_H
 #define NESTED_MODEL_H
 
+#include "DakotaModel.hpp"
 #include "DakotaInterface.hpp"
 #include "DakotaIterator.hpp"
-#include "DakotaModel.hpp"
-#include "DataInterface.hpp"
 #include "DataModel.hpp"
-#include "IteratorScheduler.hpp"
+#include "DataInterface.hpp"
+#include "DataInterface.hpp"
 #include "PRPMultiIndex.hpp"
+#include "IteratorScheduler.hpp"
+
 
 namespace Dakota {
 
@@ -34,7 +36,8 @@ class ParallelLibrary;
     sub-iterator, and a set of mappings for combining sub-iterator and
     optional interface data into a top level response for the model. */
 
-class NestedModel : public Model {
+class NestedModel: public Model
+{
   //
   //- Heading: Friends
   //
@@ -42,23 +45,24 @@ class NestedModel : public Model {
   /// protect scheduler callback functions from general access
   friend class IteratorScheduler;
 
- public:
+public:
+  
   //
   //- Heading: Constructors and destructor
   //
 
-  NestedModel(ProblemDescDB& problem_db,
-              ParallelLibrary& parallel_lib);  ///< constructor
+  NestedModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib); ///< constructor
 
   void declare_sources() override;
 
- protected:
+protected:
+
   //
   //- Heading: Virtual function redefinitions
   //
 
-  // bool initialize_mapping(ParLevLIter pl_iter);
-  // bool finalize_mapping();
+  //bool initialize_mapping(ParLevLIter pl_iter);
+  //bool finalize_mapping();
 
   // Perform the response computation portions specific to this derived class.
   // In this case, this involves running the subIterator on the subModel.
@@ -70,7 +74,7 @@ class NestedModel : public Model {
   /// portion of synchronize() specific to NestedModel
   const IntResponseMap& derived_synchronize() override;
   // portion of synchronize_nowait() specific to NestedModel
-  // const IntResponseMap& derived_synchronize_nowait();
+  //const IntResponseMap& derived_synchronize_nowait();
 
   /// return subIterator
   std::shared_ptr<Iterator> subordinate_iterator() override;
@@ -110,16 +114,16 @@ class NestedModel : public Model {
 
   /// set up optionalInterface and subModel for parallel operations
   void derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
-                                  bool recurse_flag = true) override;
+				  bool recurse_flag = true) override;
   /// set up optionalInterface and subModel for serial operations.
   void derived_init_serial() override;
   /// set active parallel configuration within subModel
   void derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
-                                 bool recurse_flag = true) override;
+				 bool recurse_flag = true) override;
   /// deallocate communicator partitions for the NestedModel
   /// (forwarded to optionalInterface and subModel)
   void derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
-                                  bool recurse_flag = true) override;
+				  bool recurse_flag = true) override;
 
   /// Service optionalInterface and subModel job requests received from
   /// the scheduler.  Completes when a termination message is received from
@@ -143,7 +147,7 @@ class NestedModel : public Model {
   /// print the evaluation summary for the NestedModel
   /// (request forwarded to optionalInterface and subModel)
   void print_evaluation_summary(std::ostream& s, bool minimal_header = false,
-                                bool relative_count = true) const override;
+				bool relative_count = true) const override;
 
   /// set the warm start flag, including actualModel
   void warm_start_flag(const bool flag) override;
@@ -156,14 +160,15 @@ class NestedModel : public Model {
   void pack_parameters_buffer(MPIPackBuffer& send_buffer, int job_index);
   void unpack_parameters_buffer(MPIUnpackBuffer& recv_buffer, int job_index);
   void unpack_parameters_initialize(MPIUnpackBuffer& recv_buffer,
-                                    int job_index);
+				    int job_index);
   void pack_results_buffer(MPIPackBuffer& send_buffer, int job_index);
   void unpack_results_buffer(MPIUnpackBuffer& recv_buffer, int job_index);
   void update_local_results(int job_index);
 
   ActiveSet default_interface_active_set();
 
- private:
+private:
+
   //
   //- Heading: Convenience member functions
   //
@@ -177,30 +182,30 @@ class NestedModel : public Model {
   /// lower level function shared by initialize_iterator(int) and
   /// unpack_parameters_initialize()
   void initialize_iterator(const Variables& vars, const ActiveSet& set,
-                           int eval_id);
+			   int eval_id);
   /// lower level function shared by unpack_parameters_buffer() and
   /// unpack_parameters_initialize()
   void unpack(MPIUnpackBuffer& recv_buffer, int job_index, Variables& vars,
-              ActiveSet& set, int& eval_id);
+	      ActiveSet& set, int& eval_id);
 
   /// compute variable mapping indices corresponding to map1 and update
   /// inactive view if necessary
   void resolve_map1(const String& map1, size_t& ac_index1, size_t& adi_index1,
-                    size_t& ads_index1, size_t& adr_index1, size_t curr_index,
-                    short& inactive_sm_view);
+		    size_t& ads_index1, size_t& adr_index1, size_t curr_index,
+		    short& inactive_sm_view);
 
   /// for a named real mapping, resolve primary index and secondary target
   void resolve_real_variable_mapping(const String& map1, const String& map2,
-                                     size_t curr_index,
-                                     short& inactive_sm_view);
+				     size_t curr_index,
+				     short& inactive_sm_view);
   /// for a named integer mapping, resolve primary index and secondary target
   void resolve_integer_variable_mapping(const String& map1, const String& map2,
-                                        size_t curr_index,
-                                        short& inactive_sm_view);
+					size_t curr_index,
+					short& inactive_sm_view);
   /// for a named string mapping, resolve primary index and secondary target
   void resolve_string_variable_mapping(const String& map1, const String& map2,
-                                       size_t curr_index,
-                                       short& inactive_sm_view);
+				       size_t curr_index,
+				       short& inactive_sm_view);
 
   /// insert r_var into appropriate recipient
   void real_variable_mapping(Real r_var, size_t av_index, short svm_target);
@@ -208,33 +213,33 @@ class NestedModel : public Model {
   void integer_variable_mapping(int i_var, size_t av_index, short svm_target);
   /// insert s_var into appropriate recipient
   void string_variable_mapping(const String& s_var, size_t av_index,
-                               short svm_target);
+			       short svm_target);
 
   /// define the evaluation requirements for the optionalInterface
   /// (interface_set) and the subIterator (sub_iterator_set) from the
   /// total model evaluation requirements (mapped_set)
   void set_mapping(const ActiveSet& mapped_set, ActiveSet& interface_set,
-                   bool& opt_interface_map, ActiveSet& sub_iterator_set,
-                   bool& sub_iterator_map);
+		   bool& opt_interface_map,     ActiveSet& sub_iterator_set,
+		   bool& sub_iterator_map);
 
   /// combine the response from the optional interface evaluation with the
   /// response from the sub-iteration using the primaryCoeffs/secondaryCoeffs
   /// mappings to create the total response for the model
   void response_mapping(const Response& interface_response,
-                        const Response& sub_iterator_response,
-                        Response& mapped_response);
+			const Response& sub_iterator_response,
+			Response& mapped_response);
   /// assign the response from the optional interface evaluation
   /// within the total response for the model
   void interface_response_overlay(const Response& opt_interface_response,
-                                  Response& mapped_response);
+				  Response& mapped_response);
   /// overlay the sub-iteration response within the total response for
   /// the model using the primaryCoeffs/secondaryCoeffs mappings
   void iterator_response_overlay(const Response& sub_iterator_response,
-                                 Response& mapped_response);
+				 Response& mapped_response);
   /// combine error estimates from the sub-iteration to define
   /// mappedErrorEstimates
   void iterator_error_estimation(const RealSymMatrix& sub_iterator_errors,
-                                 RealVector& mapped_errors);
+				 RealVector& mapped_errors);
 
   /// locate existing or allocate new entry in nestedResponseMap
   Response& nested_response(int nested_cntr);
@@ -422,6 +427,7 @@ class NestedModel : public Model {
   RealMatrix secondaryRespCoeffs;
 };
 
+
 /*
 inline bool NestedModel::initialize_mapping(ParLevLIter pl_iter)
 {
@@ -452,93 +458,109 @@ inline bool NestedModel::finalize_mapping()
 }
 */
 
-inline std::shared_ptr<Iterator> NestedModel::subordinate_iterator() {
-  return subIterator;
-}
 
-inline std::shared_ptr<Model> NestedModel::subordinate_model() {
-  return subModel;
-}
+inline std::shared_ptr<Iterator> NestedModel::subordinate_iterator()
+{ return subIterator; }
 
-inline void NestedModel::derived_subordinate_models(ModelList& ml,
-                                                    bool recurse_flag) {
+
+inline std::shared_ptr<Model> NestedModel::subordinate_model()
+{ return subModel; }
+
+
+inline void NestedModel::
+derived_subordinate_models(ModelList& ml, bool recurse_flag)
+{
   ml.push_back(subModel);
-  if (recurse_flag) subModel->derived_subordinate_models(ml, true);
+  if (recurse_flag)
+    subModel->derived_subordinate_models(ml, true);
 }
 
-inline std::shared_ptr<Interface> NestedModel::derived_interface() {
-  return optionalInterface;
-}
 
-inline void NestedModel::derived_interface(std::shared_ptr<Interface> di) {
-  optionalInterface = di;
-}
+inline std::shared_ptr<Interface> NestedModel::derived_interface()
+{ return optionalInterface; }
 
-inline const RealVector& NestedModel::error_estimates() {
+
+inline void NestedModel::derived_interface(std::shared_ptr<Interface> di)
+{ optionalInterface = di; }
+
+
+inline const RealVector& NestedModel::error_estimates()
+{
   // For now, assume no error contributions from optional interface, e.g.,
   // these are deterministic mappings and have no estimator variance.
 
   // *** TO DO: integrate with evaluate and evaluate_nowait()
 
   iterator_error_estimation(subIterator->response_error_estimates(),
-                            mappedErrorEstimates);
-  return mappedErrorEstimates;
+			    mappedErrorEstimates);
+  return mappedErrorEstimates; 
 }
 
-inline void NestedModel::surrogate_response_mode(short mode) {
-  if (mode == BYPASS_SURROGATE) subModel->surrogate_response_mode(mode);
-}
+
+inline void NestedModel::surrogate_response_mode(short mode)
+{ if (mode == BYPASS_SURROGATE) subModel->surrogate_response_mode(mode); }
+
 
 /** Used in setting Model::asynchEvalFlag.  subModel synchronization
     is used for setting asynchEvalFlag within subModel. */
-inline short NestedModel::local_eval_synchronization() {
-  // delegate to optionalInterface if !empty()
-  return (optionalInterface) ? optionalInterface->interface_synchronization()
-                             : SYNCHRONOUS_INTERFACE;
+inline short NestedModel::local_eval_synchronization()
+{
+   // delegate to optionalInterface if !empty()
+  return (optionalInterface) ?
+    optionalInterface->interface_synchronization() : SYNCHRONOUS_INTERFACE;
 }
+
 
 /** Used in setting Model::evaluationCapacity.  subModel concurrency
     is used for setting evaluationCapacity within subModel. */
-inline int NestedModel::local_eval_concurrency() {
-  return (optionalInterface)
-             ? optionalInterface->asynch_local_evaluation_concurrency()
-             : 0;
+inline int NestedModel::local_eval_concurrency()
+{
+  return (optionalInterface) ?
+    optionalInterface->asynch_local_evaluation_concurrency() : 0;
 }
 
-inline void NestedModel::serialize_threshold(size_t thresh) {
-  if (optionalInterface) optionalInterface->serialize_threshold(thresh);
+
+inline void NestedModel::serialize_threshold(size_t thresh)
+{
+  if (optionalInterface)
+    optionalInterface->serialize_threshold(thresh);
 }
+
 
 /** Derived scheduler overload for subModel is handled separately in
     subModel.evaluate() within subIterator->run(). */
-inline bool NestedModel::derived_scheduler_overload() const {
-  bool oi_overload = (optionalInterface &&
-                      optionalInterface->iterator_eval_dedicated_scheduler() &&
-                      optionalInterface->multi_proc_eval()),
-       si_overload = (subIterator &&
-                      subIteratorSched.iteratorScheduling ==
-                          DEDICATED_SCHEDULER_DYNAMIC &&
-                      subIteratorSched.procsPerIterator > 1);
+inline bool NestedModel::derived_scheduler_overload() const
+{
+  bool oi_overload = ( optionalInterface &&
+		       optionalInterface->iterator_eval_dedicated_scheduler() &&
+		       optionalInterface->multi_proc_eval() ),
+    si_overload = ( subIterator && subIteratorSched.iteratorScheduling ==
+		    DEDICATED_SCHEDULER_DYNAMIC && 
+		    subIteratorSched.procsPerIterator > 1 );
   return (oi_overload || si_overload);
 }
 
-inline size_t NestedModel::mi_parallel_level_index() const {
-  return subIteratorSched.miPLIndex;
-}
+inline size_t NestedModel::mi_parallel_level_index() const
+{ return subIteratorSched.miPLIndex; }
 
-inline void NestedModel::stop_servers() { component_parallel_mode(0); }
 
-inline Response& NestedModel::nested_response(int nested_cntr) {
+inline void NestedModel::stop_servers()
+{ component_parallel_mode(0); }
+
+
+inline Response& NestedModel::nested_response(int nested_cntr)
+{
   IntRespMIter r_it = nestedResponseMap.find(nested_cntr);
   if (r_it == nestedResponseMap.end()) {
-    // nestedVarsMap[nestedModelEvalCntr] = currentVariables.copy();
-    Response& nested_resp = nestedResponseMap[nested_cntr];  // empty handle
-    nested_resp = currentResponse.copy();
-    nested_resp.reset();
+    //nestedVarsMap[nestedModelEvalCntr] = currentVariables.copy();
+    Response& nested_resp = nestedResponseMap[nested_cntr]; // empty handle
+    nested_resp = currentResponse.copy(); nested_resp.reset();
     return nested_resp;
-  } else
+  }
+  else
     return r_it->second;
 }
+
 
 /** In the OUU case,
 \verbatim
@@ -561,12 +583,12 @@ inequality constraint upper bounds, and {{g_t},{a_t}} are the top
 level equality constraint targets.
 
 NOTE: optionalInterface/subIterator primary fns (obj/lsq/generic fns)
-overlap but optionalInterface/subIterator secondary fns (ineq/eq
+overlap but optionalInterface/subIterator secondary fns (ineq/eq 
 constraints) do not.  The [W] matrix can be specified so as to allow
 
 \li some purely deterministic primary functions and some combined:
-    [W] filled and [W].num_rows() < {f}.length() [combined first]
-    \e or [W].num_rows() == {f}.length() and [W] contains rows of
+    [W] filled and [W].num_rows() < {f}.length() [combined first] 
+    \e or [W].num_rows() == {f}.length() and [W] contains rows of 
     zeros [combined last]
 \li some combined and some purely stochastic primary functions:
     [W] filled and [W].num_rows() > {f}.length()
@@ -578,92 +600,107 @@ If the need arises, could change constraint definition to allow overlap
 as well: {g_l} <= {g} + [A]{S} <= {g_u} with [A] usage the same as for
 [W] above.
 
-In the UOO case, things are simpler, just compute statistics of each
+In the UOO case, things are simpler, just compute statistics of each 
 optimization response function: [W] = [I], {f}/{g}/[A] are empty. */
-inline void NestedModel::response_mapping(
-    const Response& opt_interface_response,
-    const Response& sub_iterator_response, Response& mapped_response) {
+inline void NestedModel::
+response_mapping(const Response& opt_interface_response,
+		 const Response& sub_iterator_response,
+		 Response& mapped_response)
+{
   check_response_map(mapped_response.active_set_request_vector());
   interface_response_overlay(opt_interface_response, mapped_response);
   iterator_response_overlay(sub_iterator_response, mapped_response);
 }
 
-inline const String& NestedModel::interface_id() const {
-  return optionalInterface ? optionalInterface->interface_id()
-                           : Dakota::ModelUtils::empty_string;
-}
+
+inline const String& NestedModel::interface_id() const
+{ return optionalInterface ? optionalInterface->interface_id() : Dakota::ModelUtils::empty_string; }
+
 
 /** return the top level nested evaluation count.  To get the lower level
     eval count, the subModel must be explicitly queried.  This is
     consistent with the eval counter definitions in surrogate models. */
-inline int NestedModel::derived_evaluation_id() const {
-  return nestedModelEvalCntr;
-}
+inline int NestedModel::derived_evaluation_id() const
+{ return nestedModelEvalCntr; }
 
-inline void NestedModel::set_evaluation_reference() {
-  if (optionalInterface) optionalInterface->set_evaluation_reference();
+
+inline void NestedModel::set_evaluation_reference()
+{
+  if (optionalInterface)
+    optionalInterface->set_evaluation_reference();
 
   // don't recurse this, since the eval reference is for the top level iteration
-  // subModel.set_evaluation_reference();
+  //subModel.set_evaluation_reference();
 
   // may want to add this in time
-  // nestedModelEvalRef = nestedModelEvalCntr;
+  //nestedModelEvalRef = nestedModelEvalCntr;
 }
 
-inline void NestedModel::fine_grained_evaluation_counters() {
+
+inline void NestedModel::fine_grained_evaluation_counters()
+{
   if (optionalInterface) {
-    size_t num_oi_fns =
-        numOptInterfPrimary + numOptInterfIneqCon + numOptInterfEqCon;
+    size_t num_oi_fns
+      = numOptInterfPrimary + numOptInterfIneqCon + numOptInterfEqCon;
     optionalInterface->fine_grained_evaluation_counters(num_oi_fns);
   }
   subModel->fine_grained_evaluation_counters();
 }
 
-inline void NestedModel::print_evaluation_summary(std::ostream& s,
-                                                  bool minimal_header,
-                                                  bool relative_count) const {
+
+inline void NestedModel::
+print_evaluation_summary(std::ostream& s, bool minimal_header,
+			 bool relative_count) const
+{
   if (optionalInterface)
     optionalInterface->print_evaluation_summary(s, minimal_header,
-                                                relative_count);
+					       relative_count);
   // subIterator will reset evaluation references, so do not use relative counts
   subModel->print_evaluation_summary(s, minimal_header, false);
 }
 
-inline void NestedModel::warm_start_flag(const bool flag) {
+
+inline void NestedModel::warm_start_flag(const bool flag)
+{
   warmStartFlag = flag;
   subModel->warm_start_flag(flag);
 }
 
-inline PRPQueueIter NestedModel::job_index_to_queue_iterator(int job_index) {
+
+inline PRPQueueIter NestedModel::job_index_to_queue_iterator(int job_index)
+{
   // This approach is insufficient on remote servers with local PRPQueues:
-  // PRPQueueIter prp_it = subIteratorPRPQueue.begin();
-  // std::advance(prp_it, job_index);
+  //PRPQueueIter prp_it = subIteratorPRPQueue.begin();
+  //std::advance(prp_it, job_index);
 
   // map from job_index to nestedModelEvalCntr:
-  IntIntMIter id_it = subIteratorIdMap.find(job_index + 1);  // index to id
+  IntIntMIter id_it = subIteratorIdMap.find(job_index+1); // index to id
   if (id_it == subIteratorIdMap.end()) {
     Cerr << "Error: map lookup failure for job index " << job_index
-         << " in NestedModel::job_index_to_queue_iterator()" << std::endl;
+	 << " in NestedModel::job_index_to_queue_iterator()" << std::endl;
     abort_handler(MODEL_ERROR);
   }
   // map from nestedModelEvalCntr to queue iterator:
   PRPQueueIter q_it = lookup_by_eval_id(subIteratorPRPQueue, id_it->second);
   if (q_it == subIteratorPRPQueue.end()) {
     Cerr << "Error: queue lookup failure for evaluation id " << id_it->second
-         << " in NestedModel::job_index_to_queue_iterator()" << std::endl;
+	 << " in NestedModel::job_index_to_queue_iterator()" << std::endl;
     abort_handler(MODEL_ERROR);
   }
   return q_it;
 }
 
-inline void NestedModel::initialize_iterator(int job_index) {
+
+inline void NestedModel::initialize_iterator(int job_index)
+{
   PRPQueueIter q_it = job_index_to_queue_iterator(job_index);
   initialize_iterator(q_it->variables(), q_it->active_set(), q_it->eval_id());
 }
 
-inline void NestedModel::initialize_iterator(const Variables& vars,
-                                             const ActiveSet& set,
-                                             int eval_id) {
+
+inline void NestedModel::
+initialize_iterator(const Variables& vars, const ActiveSet& set, int eval_id)
+{
   update_sub_model(vars, userDefinedConstraints);
   subIterator->response_results_active_set(set);
   if (hierarchicalTagging) {
@@ -673,18 +710,23 @@ inline void NestedModel::initialize_iterator(const Variables& vars,
   }
 }
 
-inline void NestedModel::pack_parameters_buffer(MPIPackBuffer& send_buffer,
-                                                int job_index) {
+
+inline void NestedModel::
+pack_parameters_buffer(MPIPackBuffer& send_buffer, int job_index)
+{
   PRPQueueIter q_it = job_index_to_queue_iterator(job_index);
   send_buffer << q_it->variables() << q_it->active_set() << q_it->eval_id();
 }
 
-inline void NestedModel::unpack(MPIUnpackBuffer& recv_buffer, int job_index,
-                                Variables& vars, ActiveSet& set, int& eval_id) {
+
+inline void NestedModel::
+unpack(MPIUnpackBuffer& recv_buffer, int job_index, Variables& vars,
+       ActiveSet& set, int& eval_id)
+{
   recv_buffer >> vars >> set >> eval_id;
 
   // map from job id (index+1) to nestedModelEvalCntr (insert or overwrite)
-  subIteratorIdMap[job_index + 1] = eval_id;
+  subIteratorIdMap[job_index+1] = eval_id;
 
   // add new job to local queue
   Response resp = subIterator->response_results().copy();
@@ -693,55 +735,61 @@ inline void NestedModel::unpack(MPIUnpackBuffer& recv_buffer, int job_index,
   subIteratorPRPQueue.insert(pair);
 }
 
-inline void NestedModel::unpack_parameters_buffer(MPIUnpackBuffer& recv_buffer,
-                                                  int job_index) {
-  Variables vars;
-  ActiveSet set;
-  int eval_id;
+
+inline void NestedModel::
+unpack_parameters_buffer(MPIUnpackBuffer& recv_buffer, int job_index)
+{
+  Variables vars; ActiveSet set; int eval_id;
   unpack(recv_buffer, job_index, vars, set, eval_id);
 }
 
-inline void NestedModel::unpack_parameters_initialize(
-    MPIUnpackBuffer& recv_buffer, int job_index) {
-  Variables vars;
-  ActiveSet set;
-  int eval_id;
+
+inline void NestedModel::
+unpack_parameters_initialize(MPIUnpackBuffer& recv_buffer, int job_index)
+{
+  Variables vars; ActiveSet set; int eval_id;
   unpack(recv_buffer, job_index, vars, set, eval_id);
   initialize_iterator(vars, set, eval_id);
 }
 
-inline void NestedModel::pack_results_buffer(MPIPackBuffer& send_buffer,
-                                             int job_index) {
+
+inline void NestedModel::
+pack_results_buffer(MPIPackBuffer& send_buffer, int job_index)
+{
   PRPQueueIter q_it = job_index_to_queue_iterator(job_index);
   send_buffer << q_it->response();
 
   // local job complete: clean up
-  subIteratorIdMap.erase(job_index + 1);
+  subIteratorIdMap.erase(job_index+1);
   subIteratorPRPQueue.erase(q_it);
 }
 
-inline void NestedModel::unpack_results_buffer(MPIUnpackBuffer& recv_buffer,
-                                               int job_index) {
+
+inline void NestedModel::
+unpack_results_buffer(MPIUnpackBuffer& recv_buffer, int job_index)
+{
   PRPQueueIter q_it = job_index_to_queue_iterator(job_index);
 
   // Bypassing PRPQueue const-ness is OK for the PRP response since this
   // should not affect hash-by-value ordering
-  Response resp = q_it->response();  // shallow copy
+  Response resp = q_it->response(); // shallow copy
   recv_buffer >> resp;
 }
 
-inline void NestedModel::update_local_results(int job_index) {
+
+inline void NestedModel::update_local_results(int job_index)
+{
   PRPQueueIter q_it = job_index_to_queue_iterator(job_index);
 
   // Can't do this since it affects Queue hash-by-value ordering
-  // q_it->variables(subIterator->variables_results());
+  //q_it->variables(subIterator->variables_results());
 
   // Bypassing PRPQueue const-ness is OK for the PRP response since
   // this should not affect hash-by-value ordering
-  Response resp = q_it->response();  // shallow copy
+  Response resp = q_it->response(); // shallow copy
   resp.update(subIterator->response_results());
 }
 
-}  // namespace Dakota
+} // namespace Dakota
 
 #endif

@@ -10,12 +10,11 @@
 #ifndef APPLICATION_INTERFACE_H
 #define APPLICATION_INTERFACE_H
 
-#include <DataInterface.hpp>
-
-#include "DakotaInterface.hpp"
-#include "DataMethod.hpp"
-#include "PRPMultiIndex.hpp"
 #include "ParallelLibrary.hpp"
+#include "DakotaInterface.hpp"
+#include "PRPMultiIndex.hpp"
+#include "DataMethod.hpp"
+#include <DataInterface.hpp>
 
 namespace Dakota {
 
@@ -25,6 +24,8 @@ namespace Dakota {
 class ParamResponsePair;
 class ActiveSet;
 class ParallelLibrary;
+
+
 
 /// Derived class within the interface class hierarchy for supporting
 /// interfaces to simulation codes.
@@ -37,17 +38,19 @@ class ParallelLibrary;
     code invocations using system calls, forks, direct procedure
     calls, or distributed resource facilities. */
 
-class ApplicationInterface : public Interface {
- public:
+class ApplicationInterface: public Interface
+{
+public:
+
   //
   //- Heading: Constructors and destructor
   //
 
-  ApplicationInterface(const ProblemDescDB& problem_db,
-                       ParallelLibrary& parallel_lib);  ///< constructor
-  ~ApplicationInterface() override;                     ///< destructor
+  ApplicationInterface(const ProblemDescDB& problem_db, ParallelLibrary& parallel_lib); ///< constructor
+  ~ApplicationInterface() override;                               ///< destructor
 
- protected:
+protected:
+
   //
   //- Heading: Member functions
   //
@@ -56,11 +59,11 @@ class ApplicationInterface : public Interface {
   //- Heading: Virtual function redefinitions
   //
 
-  void init_communicators(const IntArray& message_lengths,
-                          int max_eval_concurrency) override;
+  void init_communicators(const IntArray& message_lengths, 
+			  int max_eval_concurrency) override;
   void set_communicators(const IntArray& message_lengths,
-                         int max_eval_concurrency) override;
-  // void free_communicators();
+			 int max_eval_concurrency) override;
+  //void free_communicators();
 
   void init_serial() override;
 
@@ -81,8 +84,8 @@ class ApplicationInterface : public Interface {
 
   // Placeholders for external layer of filtering (common I/O operations
   // such as d.v. linking and response time history smoothing)
-  // void filter(const Variables& vars);
-  // void filter(Response& response, const ActiveSet& set);
+  //void filter(const Variables& vars);
+  //void filter(Response& response, const ActiveSet& set);
 
   //
   //- Heading: Member functions (evaluations)
@@ -91,11 +94,11 @@ class ApplicationInterface : public Interface {
   /// Provides a "mapping" of variables to responses using a simulation.
   /// Protected due to Interface letter-envelope idiom.
   void map(const Variables& vars, const ActiveSet& set, Response& response,
-           bool asynch_flag = false) override;
+	   bool asynch_flag = false) override;
 
   /// manages a simulation failure using abort/retry/recover/continuation
   void manage_failure(const Variables& vars, const ActiveSet& set,
-                      Response& response, int failed_eval_id);
+		      Response& response, int failed_eval_id);
 
   /// executes a blocking schedule for asynchronous evaluations in the
   /// beforeSynchCorePRPQueue and returns all jobs
@@ -136,7 +139,7 @@ class ApplicationInterface : public Interface {
   /// in synchronous mode.  The portion of performing an evaluation
   /// that is specific to a derived class.
   virtual void derived_map(const Variables& vars, const ActiveSet& set,
-                           Response& response, int fn_eval_id);
+			   Response& response, int fn_eval_id);
 
   /// Called by map() and other functions to execute the simulation
   /// in asynchronous mode.  The portion of performing an
@@ -157,7 +160,7 @@ class ApplicationInterface : public Interface {
   virtual void test_local_evaluations(PRPQueue& prp_queue);
 
   // clears any bookkeeping in derived classes
-  // virtual void clear_bookkeeping();
+  //virtual void clear_bookkeeping();
 
   /// perform construct-time error checks on the parallel configuration
   virtual void init_communicators_checks(int max_eval_concurrency);
@@ -177,11 +180,11 @@ class ApplicationInterface : public Interface {
   // manage asynchronous analysis jobs on local proc. (not currently
   // elevated to ApplicationInterface since only ForkApplicInterface
   // currently supports this)
-  // void asynchronous_local_analyses(PRPQueue& prp_queue);
+  //void asynchronous_local_analyses(PRPQueue& prp_queue);
   // manage synchronous analysis jobs on local proc. (not currently
   // elevated to ApplicationInterface since only ForkApplicInterface
   // currently uses this)
-  // void synchronous_local_analyses(PRPQueue& prp_queue);
+  //void synchronous_local_analyses(PRPQueue& prp_queue);
 
   // Server routines for message passing parallelism of analyses
   // within function evaluations (employed by derived classes):
@@ -192,7 +195,7 @@ class ApplicationInterface : public Interface {
   // serve the dedicated analysis scheduler and manage multiple asynchronous
   // analysis jobs (not currently elevated to ApplicationInterface since
   // only ForkApplicInterface currently supports this)
-  // void serve_analyses_asynch();
+  //void serve_analyses_asynch();
 
   //
   //- Heading: Virtual functions (analyses)
@@ -219,21 +222,20 @@ class ApplicationInterface : public Interface {
   bool asynchFlag;
 
   /// maintain a count of the batches
-  int batchIdCntr;
+  int batchIdCntr; 
 
   /// flag for suppressing output on server processors
   bool suppressOutput;
 
-  int evalCommSize;  ///< size of evalComm
-  int evalCommRank;  ///< processor rank within evalComm
-  int evalServerId;  ///< evaluation server identifier
+  int evalCommSize;   ///< size of evalComm
+  int evalCommRank;   ///< processor rank within evalComm
+  int evalServerId;   ///< evaluation server identifier
 
-  bool eaDedSchedFlag;     ///< flag for dedicated scheduler partitioning at ea
-                           ///< level
-  int analysisCommSize;    ///< size of analysisComm
-  int analysisCommRank;    ///< processor rank within analysisComm
-  int analysisServerId;    ///< analysis server identifier
-  int numAnalysisServers;  ///< current number of analysis servers
+  bool eaDedSchedFlag;///< flag for dedicated scheduler partitioning at ea level
+  int analysisCommSize; ///< size of analysisComm
+  int analysisCommRank; ///< processor rank within analysisComm
+  int analysisServerId; ///< analysis server identifier
+  int numAnalysisServers;     ///< current number of analysis servers
 
   /// flag for multiprocessor analysis partitions
   bool multiProcAnalysisFlag;
@@ -275,7 +277,8 @@ class ApplicationInterface : public Interface {
   /// more details in screen output
   String failureMessage;
 
- private:
+private:
+
   //
   //- Heading: Member functions (evaluations)
   //
@@ -283,7 +286,7 @@ class ApplicationInterface : public Interface {
   /// checks data_pairs and beforeSynchCorePRPQueue to see if the current
   /// evaluation request has already been performed or queued
   bool duplication_detect(const Variables& vars, Response& response,
-                          bool asynch_flag);
+			  bool asynch_flag);
 
   /// initialize default ASV if needed; this is done at run time due
   /// to post-construct time Response size changes.
@@ -328,16 +331,16 @@ class ApplicationInterface : public Interface {
   void broadcast_evaluation(const ParamResponsePair& pair);
   /// convenience function for broadcasting an evaluation over an evalComm
   void broadcast_evaluation(int fn_eval_id, const Variables& vars,
-                            const ActiveSet& set);
+			    const ActiveSet& set);
 
   /// helper function for sending sendBuffers[buff_index] to server
   void send_evaluation(PRPQueueIter& prp_it, size_t buff_index, int server_id,
-                       bool peer_flag);
+		       bool peer_flag);
   /// helper function for processing recvBuffers[buff_index] within scheduler
   void receive_evaluation(PRPQueueIter& prp_it, size_t buff_index,
-                          int server_id, bool peer_flag);
+			  int server_id, bool peer_flag);
 
-  /// launch an asynchronous local evaluation from a queue iterator
+  /// launch an asynchronous local evaluation from a queue iterator 
   void launch_asynch_local(PRPQueueIter& prp_it);
   /// launch an asynchronous local evaluation from a receive buffer
   void launch_asynch_local(MPIUnpackBuffer& recv_buffer, int fn_eval_id);
@@ -350,11 +353,11 @@ class ApplicationInterface : public Interface {
   /// helper function for creating an initial active local queue by launching
   /// asynch local jobs from local_prp_queue, as limited by server capacity
   void assign_asynch_local_queue(PRPQueue& local_prp_queue,
-                                 PRPQueueIter& local_prp_iter);
+				 PRPQueueIter& local_prp_iter);
   /// helper function for updating an active local queue by backfilling
   /// asynch local jobs from local_prp_queue, as limited by server capacity
   void assign_asynch_local_queue_nowait(PRPQueue& local_prp_queue,
-                                        PRPQueueIter& local_prp_iter);
+					PRPQueueIter& local_prp_iter);
 
   /// helper function for testing active asynch local jobs and then backfilling
   size_t test_local_backfill(PRPQueue& assign_queue, PRPQueueIter& assign_iter);
@@ -401,8 +404,8 @@ class ApplicationInterface : public Interface {
   /// successful "source" evaluation to the failed "target".
   /// Invoked by manage_failure() for failAction == "continuation".
   void continuation(const Variables& target_vars, const ActiveSet& set,
-                    Response& response, const ParamResponsePair& source_pair,
-                    int failed_eval_id);
+		    Response& response, const ParamResponsePair& source_pair,
+		    int failed_eval_id);
 
   /// common input filtering operations, e.g. mesh movement
   void common_input_filtering(const Variables& vars);
@@ -416,14 +419,14 @@ class ApplicationInterface : public Interface {
 
   // Placeholders for external layer of filtering (common I/O operations
   // such as d.v. linking and response time history smoothing)
-  // IOFilter commonInputFilter; // build a new class derived from IOFilter?
-  // IOFilter commonOutputFilter;
+  //IOFilter commonInputFilter; // build a new class derived from IOFilter?
+  //IOFilter commonOutputFilter;
 
-  int worldSize;  ///< size of MPI_COMM_WORLD
-  int worldRank;  ///< processor rank within MPI_COMM_WORLD
+  int worldSize;        ///< size of MPI_COMM_WORLD
+  int worldRank;        ///< processor rank within MPI_COMM_WORLD
 
-  int iteratorCommSize;  ///< size of iteratorComm
-  int iteratorCommRank;  ///< processor rank within iteratorComm
+  int iteratorCommSize; ///< size of iteratorComm
+  int iteratorCommRank; ///< processor rank within iteratorComm
 
   /// flag for message passing at ie scheduling level
   bool ieMessagePass;
@@ -493,7 +496,7 @@ class ApplicationInterface : public Interface {
   /// tolerance value for tolerance-based duplication detection
   Real nearbyTolerance;
 
-  /// used to manage a user request to deactivate the restart file (i.e.,
+  /// used to manage a user request to deactivate the restart file (i.e., 
   /// insertions into write_restart).
   bool restartFileFlag;
 
@@ -564,6 +567,7 @@ class ApplicationInterface : public Interface {
   std::vector<MPI_Request> recvRequests;
 };
 
+
 /** DataInterface.cpp defaults of 0 servers are needed to distinguish an
     explicit user request for 1 server (serialization of a parallelism
     level) from no user request (use parallel auto-config).  This
@@ -572,109 +576,127 @@ class ApplicationInterface : public Interface {
     DirectApplicInterface::derived_map() for NestedModel::optionalInterface).
     This is the reason for this function: to reset certain defaults for
     interface objects that are used serially. */
-inline void ApplicationInterface::init_serial() {
-  init_serial_evaluations();
-  init_serial_analyses();
-}
+inline void ApplicationInterface::init_serial()
+{ init_serial_evaluations(); init_serial_analyses(); }
 
-inline void ApplicationInterface::init_serial_evaluations() {
+
+inline void ApplicationInterface::init_serial_evaluations()
+{
   numEvalServers = asynchLocalEvalConcurrency = 1;
-  multiProcEvalFlag = false;  // for *_communicators_checks()
+  multiProcEvalFlag = false; // for *_communicators_checks()
 }
 // other evaluation defaults OK for serial operations
 
-inline void ApplicationInterface::init_serial_analyses() {
+
+inline void ApplicationInterface::init_serial_analyses()
+{
   numAnalysisServers = asynchLocalAnalysisConcurrency = 1;
-  multiProcAnalysisFlag = false;  // for *_communicators_checks()
+  multiProcAnalysisFlag = false; // for *_communicators_checks()
 }
 // other analysis defaults OK for serial operations
 
-inline int ApplicationInterface::asynch_local_evaluation_concurrency() const {
-  return asynchLocalEvalConcurrency;
-}
 
-inline void ApplicationInterface::serialize_threshold(size_t thresh) {
-  serializeThreshold = thresh;
-}
+inline int ApplicationInterface::asynch_local_evaluation_concurrency() const
+{ return asynchLocalEvalConcurrency; }
 
-inline bool ApplicationInterface::check_asynch_local_evaluations() const {
+
+inline void ApplicationInterface::serialize_threshold(size_t thresh)
+{ serializeThreshold = thresh; }
+
+
+inline bool ApplicationInterface::check_asynch_local_evaluations() const
+{
   // Following initialize_comms --> set_{evaluation,analysis}_comms, local
   // concurrencies have been defaulted to 1 if message passing (hybrid
   // parallelism spec must be explicit)
-  return ((batchEval || asynchFlag) &&
-          (asynchLocalEvalConcurrency > serializeThreshold ||
-           (!ieMessagePass && asynchLocalEvalConcurrency == 0)));
+  return ( ( batchEval || asynchFlag ) &&
+	   ( asynchLocalEvalConcurrency > serializeThreshold ||
+	     ( !ieMessagePass && asynchLocalEvalConcurrency == 0 ) ) );
 }
 
-inline bool ApplicationInterface::check_asynch_local_analyses() const {
+
+inline bool ApplicationInterface::check_asynch_local_analyses() const
+{
   // Following initialize_comms --> set_{evaluation,analysis}_comms, local
   // concurrencies have been defaulted to 1 if message passing (hybrid
   // parallelism spec must be explicit)
-  return (asynchFlag && numAnalysisDrivers > 1 &&
-          // *** TO DO: can batchEval be relevant here?
-          (asynchLocalAnalysisConcurrency > serializeThreshold ||
-           (!eaMessagePass && asynchLocalAnalysisConcurrency == 0)));
+  return ( asynchFlag && numAnalysisDrivers > 1 &&
+	   // *** TO DO: can batchEval be relevant here?
+	   ( asynchLocalAnalysisConcurrency > serializeThreshold ||
+	     ( !eaMessagePass && asynchLocalAnalysisConcurrency == 0 ) ) );
 }
 
-inline short ApplicationInterface::interface_synchronization() const {
+
+inline short ApplicationInterface::interface_synchronization() const
+{
   // Following initialize_comms --> set_{evaluation,analysis}_comms, local
   // concurrencies are fully defined, including mods for hybrid parallel
-  return (check_asynch_local_evaluations() || check_asynch_local_analyses())
-             ? ASYNCHRONOUS_INTERFACE
-             : SYNCHRONOUS_INTERFACE;
+  return ( check_asynch_local_evaluations() || check_asynch_local_analyses() ) ?
+    ASYNCHRONOUS_INTERFACE : SYNCHRONOUS_INTERFACE;
 }
 
-inline bool ApplicationInterface::evaluation_cache() const {
-  return evalCacheFlag;
-}
 
-inline bool ApplicationInterface::restart_file() const {
-  return restartFileFlag;
-}
+inline bool ApplicationInterface::evaluation_cache() const
+{ return evalCacheFlag; }
 
-inline void ApplicationInterface::derived_map(const Variables& vars,
-                                              const ActiveSet& set,
-                                              Response& response,
-                                              int fn_eval_id) {
+
+inline bool ApplicationInterface::restart_file() const
+{ return restartFileFlag; }
+
+
+inline void ApplicationInterface::
+derived_map(const Variables& vars, const ActiveSet& set, Response& response,
+	    int fn_eval_id)
+{
   Cerr << "\nError: no default definition of virtual derived_map() function "
        << "defined in ApplicationInterface\n." << std::endl;
   abort_handler(-1);
 }
 
-inline void ApplicationInterface::derived_map_asynch(
-    const ParamResponsePair& pair) {
+
+inline void ApplicationInterface::
+derived_map_asynch(const ParamResponsePair& pair)
+{
   Cerr << "\nError: no default definition of virtual derived_map_asynch() "
        << "function defined in ApplicationInterface\n." << std::endl;
   abort_handler(-1);
 }
 
-inline void ApplicationInterface::wait_local_evaluations(PRPQueue& prp_queue) {
+
+inline void ApplicationInterface::wait_local_evaluations(PRPQueue& prp_queue)
+{
   Cerr << "\nError: no default definition of virtual wait_local_evaluations() "
        << "function defined in ApplicationInterface\n." << std::endl;
   abort_handler(-1);
 }
 
-inline void ApplicationInterface::test_local_evaluations(PRPQueue& prp_queue) {
+
+inline void ApplicationInterface::test_local_evaluations(PRPQueue& prp_queue)
+{
   Cerr << "\nError: no default definition of virtual test_local_evaluations() "
        << "function defined in ApplicationInterface\n." << std::endl;
   abort_handler(-1);
 }
 
-inline int ApplicationInterface::synchronous_local_analysis(int analysis_id) {
+
+inline int ApplicationInterface::
+synchronous_local_analysis(int analysis_id)
+{
   Cerr << "\nError: no default definition of virtual synchronous_local_analysis"
        << "() function defined in ApplicationInterface\n." << std::endl;
   abort_handler(-1);
   return 0;
 }
 
-inline void ApplicationInterface::broadcast_evaluation(
-    const ParamResponsePair& pair) {
-  broadcast_evaluation(pair.eval_id(), pair.variables(), pair.active_set());
-}
 
-// inline void ApplicationInterface::clear_bookkeeping()
+inline void ApplicationInterface::
+broadcast_evaluation(const ParamResponsePair& pair)
+{ broadcast_evaluation(pair.eval_id(), pair.variables(), pair.active_set()); }
+
+
+//inline void ApplicationInterface::clear_bookkeeping()
 //{ } // virtual function: default behavior does nothing
 
-}  // namespace Dakota
+} // namespace Dakota
 
 #endif

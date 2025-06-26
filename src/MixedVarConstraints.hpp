@@ -13,6 +13,7 @@
 #include "DakotaConstraints.hpp"
 #include "DataVariables.hpp"
 
+
 namespace Dakota {
 
 /// Derived class within the Constraints hierarchy which separates
@@ -25,8 +26,10 @@ namespace Dakota {
     Variables::get_variables(problem_db) for variables type selection;
     variables type is passed to the Constraints constructor in Model). */
 
-class MixedVarConstraints : public Constraints {
- public:
+class MixedVarConstraints: public Constraints
+{
+public:
+
   //
   //- Heading: Constructor and destructor
   //
@@ -35,7 +38,7 @@ class MixedVarConstraints : public Constraints {
   MixedVarConstraints(const SharedVariablesData& svd);
   /// standard constructor
   MixedVarConstraints(const ProblemDescDB& problem_db,
-                      const SharedVariablesData& svd);
+		      const SharedVariablesData& svd);
   /// destructor
   ~MixedVarConstraints() override;
 
@@ -46,22 +49,28 @@ class MixedVarConstraints : public Constraints {
   void write(std::ostream& s) const override;
   void read(std::istream& s) override;
 
- protected:
+protected:
+
   //
   //- Heading: Virtual function redefinitions
   //
 
- private:
+private:
+
   //
   //- Heading: Convenience functions
   //
 };
 
-inline MixedVarConstraints::MixedVarConstraints(const SharedVariablesData& svd)
-    : Constraints(BaseConstructor(), svd) {}
 
-inline MixedVarConstraints::~MixedVarConstraints() {}
+inline MixedVarConstraints::MixedVarConstraints(const SharedVariablesData& svd):
+  Constraints(BaseConstructor(), svd)
+{ }
 
-}  // namespace Dakota
+
+inline MixedVarConstraints::~MixedVarConstraints()
+{ }
+
+} // namespace Dakota
 
 #endif

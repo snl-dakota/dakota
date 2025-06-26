@@ -13,7 +13,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
-
 #include "dakota_dll_api.h"
 
 /// The main program for exercising the DLL API with a simple command-line
@@ -28,7 +27,7 @@ int main(int argc, char* argv[]) {
   // TODO: an improved test would allocate all the runners, then
   // configure, then run them asynchronously, but concurrent Dakota
   // instances in core are likely to be problematic.
-  for (int i = 0; i < ntrials; i++) {
+  for (int i=0; i<ntrials; i++) {
     int id;
     dakota_create(&id, "dakota_dll_tester");
     int retcode = dakota_readInput(id, argv[2]);
@@ -45,7 +44,7 @@ int main(int argc, char* argv[]) {
     // return code will be different if modelcenter not enabled
     if (tmp != 1001)
       std::cout << "Warning: set/get of mc_ptr_int differ; modelcenter not "
-                << "working properly." << std::endl;
+		<< "working properly." << std::endl;
 
     // must be set to zero for subsequent runs or memory corruption will occur
     set_mc_ptr_int(0);
@@ -56,3 +55,4 @@ int main(int argc, char* argv[]) {
 
   return 0;
 }
+

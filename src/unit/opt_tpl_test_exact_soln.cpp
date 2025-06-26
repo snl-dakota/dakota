@@ -7,11 +7,14 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-#include <Teuchos_UnitTestHarness.hpp>
-#include <map>
-#include <string>
 
 #include "opt_tpl_test.hpp"
+
+#include <string>
+#include <map>
+
+#include <Teuchos_UnitTestHarness.hpp> 
+
 
 using namespace Dakota;
 
@@ -20,7 +23,7 @@ using namespace Dakota;
 // TEUCHOS_UNIT_TEST(opt_test_cyl_head_coliny, hopspack)
 // {
 //   /// Default Dakota input string for serial case (cyl_head):
-//   static const char serial_input[] =
+//   static const char serial_input[] = 
 //     " method,"
 //     "   max_iterations = 20000"
 //     "   max_function_evaluations 20000"
@@ -48,9 +51,8 @@ using namespace Dakota;
 //     "   no_gradients"
 //     "   no_hessians";
 
-//   Dakota::LibraryEnvironment * p_env =
-//   Opt_TPL_Test::create_env(serial_input); Dakota::LibraryEnvironment & env =
-//   *p_env;
+//   Dakota::LibraryEnvironment * p_env = Opt_TPL_Test::create_env(serial_input);
+//   Dakota::LibraryEnvironment & env = *p_env;
 
 //   if (env.parallel_library().mpirun_flag())
 //     TEST_ASSERT( false ); // This test only works for serial builds
@@ -63,9 +65,8 @@ using namespace Dakota;
 //   // retrieve the final parameter values
 //   const Variables& vars = env.variables_results();
 
-//   TEST_FLOATING_EQUALITY( vars.continuous_variable(0), 2.1224215765, max_tol
-//   ); TEST_FLOATING_EQUALITY( vars.continuous_variable(1), 1.7659069377,
-//   max_tol );
+//   TEST_FLOATING_EQUALITY( vars.continuous_variable(0), 2.1224215765, max_tol );
+//   TEST_FLOATING_EQUALITY( vars.continuous_variable(1), 1.7659069377, max_tol );
 
 //   // retrieve the final response values
 //   const Response& resp  = env.response_results();
@@ -79,7 +80,7 @@ using namespace Dakota;
 // TEUCHOS_UNIT_TEST(opt_test_herbie_coliny, hopspack)
 // {
 //   /// Default Dakota input string for serial case (cyl_head):
-//   static const char serial_input[] =
+//   static const char serial_input[] = 
 //     " method,"
 //     "   max_iterations = 20000"
 //     "   max_function_evaluations 20000"
@@ -106,9 +107,8 @@ using namespace Dakota;
 //     "   no_gradients"
 //     "   no_hessians";
 
-//   Dakota::LibraryEnvironment * p_env =
-//   Opt_TPL_Test::create_env(serial_input); Dakota::LibraryEnvironment & env =
-//   *p_env;
+//   Dakota::LibraryEnvironment * p_env = Opt_TPL_Test::create_env(serial_input);
+//   Dakota::LibraryEnvironment & env = *p_env;
 
 //   if (env.parallel_library().mpirun_flag())
 //     TEST_ASSERT( false ); // This test only works for serial builds
@@ -121,9 +121,8 @@ using namespace Dakota;
 //   // retrieve the final parameter values
 //   const Variables& vars = env.variables_results();
 
-//   TEST_FLOATING_EQUALITY( vars.continuous_variable(0), -1.04082591, max_tol
-//   ); TEST_FLOATING_EQUALITY( vars.continuous_variable(1),  -1.04082591,
-//   max_tol );
+//   TEST_FLOATING_EQUALITY( vars.continuous_variable(0), -1.04082591, max_tol );
+//   TEST_FLOATING_EQUALITY( vars.continuous_variable(1),  -1.04082591, max_tol );
 
 //   // retrieve the final response values
 //   const Response& resp  = env.response_results();
@@ -137,7 +136,7 @@ using namespace Dakota;
 // TEUCHOS_UNIT_TEST(opt_test_smooth_herbie_coliny, hopspack)
 // {
 //   /// Default Dakota input string for serial case (cyl_head):
-//   static const char serial_input[] =
+//   static const char serial_input[] = 
 //     " method,"
 //     "   max_iterations = 20000"
 //     "   max_function_evaluations 20000"
@@ -164,9 +163,8 @@ using namespace Dakota;
 //     "   no_gradients"
 //     "   no_hessians";
 
-//   Dakota::LibraryEnvironment * p_env =
-//   Opt_TPL_Test::create_env(serial_input); Dakota::LibraryEnvironment & env =
-//   *p_env;
+//   Dakota::LibraryEnvironment * p_env = Opt_TPL_Test::create_env(serial_input);
+//   Dakota::LibraryEnvironment & env = *p_env;
 
 //   if (env.parallel_library().mpirun_flag())
 //     TEST_ASSERT( false ); // This test only works for serial builds
@@ -179,9 +177,8 @@ using namespace Dakota;
 //   // retrieve the final parameter values
 //   const Variables& vars = env.variables_results();
 
-//   TEST_FLOATING_EQUALITY( vars.continuous_variable(0), -1.04082591, max_tol
-//   ); TEST_FLOATING_EQUALITY( vars.continuous_variable(1),  -1.04082591,
-//   max_tol );
+//   TEST_FLOATING_EQUALITY( vars.continuous_variable(0), -1.04082591, max_tol );
+//   TEST_FLOATING_EQUALITY( vars.continuous_variable(1),  -1.04082591, max_tol );
 
 //   // retrieve the final response values
 //   const Response& resp  = env.response_results();
@@ -195,7 +192,7 @@ using namespace Dakota;
 // TEUCHOS_UNIT_TEST(opt_test_text_book_disc_range_coliny, hopspack)
 // {
 //   /// Default Dakota input string for serial case (cyl_head):
-//   static const char serial_input[] =
+//   static const char serial_input[] = 
 //     " method,"
 //     "   max_iterations = 1000"
 //     "   max_function_evaluations 1000"
@@ -222,9 +219,8 @@ using namespace Dakota;
 //     "   no_gradients"
 //     "   no_hessians";
 
-//   Dakota::LibraryEnvironment * p_env =
-//   Opt_TPL_Test::create_env(serial_input); Dakota::LibraryEnvironment & env =
-//   *p_env;
+//   Dakota::LibraryEnvironment * p_env = Opt_TPL_Test::create_env(serial_input);
+//   Dakota::LibraryEnvironment & env = *p_env;
 
 //   if (env.parallel_library().mpirun_flag())
 //     TEST_ASSERT( false ); // This test only works for serial builds
@@ -237,9 +233,8 @@ using namespace Dakota;
 //   // retrieve the final parameter values
 //   const Variables& vars = env.variables_results();
 
-//   TEST_FLOATING_EQUALITY( vars.continuous_variable(0), -1.04082591, max_tol
-//   ); TEST_FLOATING_EQUALITY( vars.continuous_variable(1),  -1.04082591,
-//   max_tol );
+//   TEST_FLOATING_EQUALITY( vars.continuous_variable(0), -1.04082591, max_tol );
+//   TEST_FLOATING_EQUALITY( vars.continuous_variable(1),  -1.04082591, max_tol );
 
 //   // retrieve the final response values
 //   const Response& resp  = env.response_results();
@@ -253,7 +248,7 @@ using namespace Dakota;
 // TEUCHOS_UNIT_TEST(opt_test_text_book_disc_set_coliny, hopspack)
 // {
 //   /// Default Dakota input string for serial case (cyl_head):
-//   static const char serial_input[] =
+//   static const char serial_input[] = 
 //     " method,"
 //     "   max_iterations = 1000"
 //     "   max_function_evaluations 1000"
@@ -281,9 +276,8 @@ using namespace Dakota;
 //     "   no_gradients"
 //     "   no_hessians";
 
-//   Dakota::LibraryEnvironment * p_env =
-//   Opt_TPL_Test::create_env(serial_input); Dakota::LibraryEnvironment & env =
-//   *p_env;
+//   Dakota::LibraryEnvironment * p_env = Opt_TPL_Test::create_env(serial_input);
+//   Dakota::LibraryEnvironment & env = *p_env;
 
 //   if (env.parallel_library().mpirun_flag())
 //     TEST_ASSERT( false ); // This test only works for serial builds
@@ -296,9 +290,8 @@ using namespace Dakota;
 //   // retrieve the final parameter values
 //   const Variables& vars = env.variables_results();
 
-//   TEST_FLOATING_EQUALITY( vars.continuous_variable(0), -1.04082591, max_tol
-//   ); TEST_FLOATING_EQUALITY( vars.continuous_variable(1),  -1.04082591,
-//   max_tol );
+//   TEST_FLOATING_EQUALITY( vars.continuous_variable(0), -1.04082591, max_tol );
+//   TEST_FLOATING_EQUALITY( vars.continuous_variable(1),  -1.04082591, max_tol );
 
 //   // retrieve the final response values
 //   const Response& resp  = env.response_results();
@@ -312,7 +305,7 @@ using namespace Dakota;
 // TEUCHOS_UNIT_TEST(opt_test_text_book_multi_coliny, hopspack)
 // {
 //   /// Default Dakota input string for serial case (cyl_head):
-//   static const char serial_input[] =
+//   static const char serial_input[] = 
 //     " method,"
 //     "   max_function_evaluations 2000"
 //     "   moga"
@@ -342,9 +335,8 @@ using namespace Dakota;
 //     "   no_gradients"
 //     "   no_hessians";
 
-//   Dakota::LibraryEnvironment * p_env =
-//   Opt_TPL_Test::create_env(serial_input); Dakota::LibraryEnvironment & env =
-//   *p_env;
+//   Dakota::LibraryEnvironment * p_env = Opt_TPL_Test::create_env(serial_input);
+//   Dakota::LibraryEnvironment & env = *p_env;
 
 //   if (env.parallel_library().mpirun_flag())
 //     TEST_ASSERT( false ); // This test only works for serial builds
@@ -370,41 +362,42 @@ using namespace Dakota;
 
 //----------------------------------------------------------------
 
-TEUCHOS_UNIT_TEST(opt_test_text_book_multi_disc_set_coliny, hopspack) {
+TEUCHOS_UNIT_TEST(opt_test_text_book_multi_disc_set_coliny, hopspack)
+{
   /// Default Dakota input string for serial case (cyl_head):
-  static const char serial_input[] =
-      " method,"
-      "   max_function_evaluations 10000"
-      "   moga"
-      "     convergence_type metric_tracker"
-      "     percent_change = 1.0e-10 num_generations = 100"
-      "     seed = 10983"
-      "     crossover_type shuffle_random"
-      "     num_offspring = 2 num_parents = 2"
-      "     mutation_type replace_uniform"
-      "     mutation_rate = 0.1"
-      "     fitness_type domination_count"
-      "     replacement_type below_limit = 6"
-      "     shrinkage_fraction = 0.9"
-      " variables,"
-      " discrete_design_set"
-      "   integer = 3"
-      "   initial_point     0    0  0"
-      "   num_set_values = 5 5 5"
-      "   set_values = -4 -2 0 2 4 -4 -2 0 2 4 -4 -2 0 2 4"
-      " interface,"
-      "   direct"
-      "     analysis_driver = 'mogatest1'"
-      " responses,"
-      "   num_objective_functions = 2"
-      "   no_gradients"
-      "   no_hessians";
+  static const char serial_input[] = 
+    " method,"
+    "   max_function_evaluations 10000"
+    "   moga"
+    "     convergence_type metric_tracker"
+    "     percent_change = 1.0e-10 num_generations = 100"
+    "     seed = 10983"
+    "     crossover_type shuffle_random"
+    "     num_offspring = 2 num_parents = 2"
+    "     mutation_type replace_uniform"
+    "     mutation_rate = 0.1"
+    "     fitness_type domination_count"
+    "     replacement_type below_limit = 6"
+    "     shrinkage_fraction = 0.9"
+    " variables,"
+    " discrete_design_set"
+    "   integer = 3"
+    "   initial_point     0    0  0"
+    "   num_set_values = 5 5 5"
+    "   set_values = -4 -2 0 2 4 -4 -2 0 2 4 -4 -2 0 2 4"
+    " interface,"
+    "   direct"
+    "     analysis_driver = 'mogatest1'"
+    " responses,"
+    "   num_objective_functions = 2"
+    "   no_gradients"
+    "   no_hessians";
 
-  Dakota::LibraryEnvironment* p_env = Opt_TPL_Test::create_env(serial_input);
-  Dakota::LibraryEnvironment& env = *p_env;
+  Dakota::LibraryEnvironment * p_env = Opt_TPL_Test::create_env(serial_input);
+  Dakota::LibraryEnvironment & env = *p_env;
 
   if (env.parallel_library().mpirun_flag())
-    TEST_ASSERT(false);  // This test only works for serial builds
+    TEST_ASSERT( false ); // This test only works for serial builds
 
   // Execute the environment
   env.execute();
@@ -414,17 +407,14 @@ TEUCHOS_UNIT_TEST(opt_test_text_book_multi_disc_set_coliny, hopspack) {
   // retrieve the final parameter values
   const Variables& vars = env.variables_results();
 
-  TEST_FLOATING_EQUALITY(((double)vars.discrete_int_variable(0)) + 1.0, 1.0,
-                         max_tol);
-  TEST_FLOATING_EQUALITY(((double)vars.discrete_int_variable(1)) + 1.0, 1.0,
-                         max_tol);
-  TEST_FLOATING_EQUALITY(((double)vars.discrete_int_variable(2)) + 1.0, 1.0,
-                         max_tol);
+  TEST_FLOATING_EQUALITY( ((double)vars.discrete_int_variable(0))+1.0, 1.0, max_tol );
+  TEST_FLOATING_EQUALITY( ((double)vars.discrete_int_variable(1))+1.0,  1.0, max_tol );
+  TEST_FLOATING_EQUALITY( ((double)vars.discrete_int_variable(2))+1.0,  1.0, max_tol );
 
   // retrieve the final response values
-  const Response& resp = env.response_results();
-  // resp.function_values().print(Cout);
-  // resp.write(Cout);
-  TEST_FLOATING_EQUALITY(resp.function_value(0), 6.3212055883e-01, max_tol);
-  TEST_FLOATING_EQUALITY(resp.function_value(1), 6.3212055883e-01, max_tol);
+  const Response& resp  = env.response_results();
+  //resp.function_values().print(Cout);
+  //resp.write(Cout);
+  TEST_FLOATING_EQUALITY( resp.function_value(0), 6.3212055883e-01, max_tol );
+  TEST_FLOATING_EQUALITY( resp.function_value(1), 6.3212055883e-01, max_tol );
 }

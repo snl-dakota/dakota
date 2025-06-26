@@ -5,16 +5,20 @@
 namespace rol_interface {
 
 class LinearInequalityConstraint : public Constraint {
- public:
-  LinearInequalityConstraint(ModelInterface* model_interface,
-                             std::string con_name = "Linear Inequality");
+public:
+
+  LinearInequalityConstraint( ModelInterface* model_interface, 
+                             std::string      con_name = "Linear Inequality" );
 
   virtual ~LinearInequalityConstraint() = default;
 
- protected:
-  void update_from_model(ModelInterface* model_interface) override final;
+protected:
+
+  void update_from_model( ModelInterface* model_interface ) override final;
+
 };
 
-}  // namespace rol_interface
+} // namespace rol_interface
 
-#endif  // DAKOTA_ROL_LINEAR_INEQUALITY_CONSTRAINT_HPP
+
+#endif // DAKOTA_ROL_LINEAR_INEQUALITY_CONSTRAINT_HPP

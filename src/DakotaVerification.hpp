@@ -14,51 +14,56 @@
 
 namespace Dakota {
 
+
 /// Base class for managing common aspects of verification studies.
 
 /** The Verification base class manages common data and functions,
     such as those involving ... */
 
-class Verification : public Analyzer {
- public:
+class Verification: public Analyzer
+{
+public:
+    
   //
   //- Heading: Virtual member function redefinitions
   //
 
   bool resize() override;
 
- protected:
+protected:
+
   //
   //- Heading: Constructors and destructors
   //
 
   /// constructor
-  Verification(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
-               std::shared_ptr<Model> model);
+  Verification(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
   /// alternate constructor for instantiations "on the fly"
   Verification(unsigned short method_name, std::shared_ptr<Model> model);
   /// destructor
   ~Verification() override;
-
+    
   //
   //- Heading: Virtual member function redefinitions
   //
 
-  void print_results(std::ostream& s,
-                     short results_state = FINAL_RESULTS) override;
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS) override;
 
   //
   //- Heading: Member functions
   //
 
- private:
+private:
+
   //
   //- Heading: Data
   //
+
 };
 
-inline Verification::~Verification() {}
 
-}  // namespace Dakota
+inline Verification::~Verification() { }
+
+} // namespace Dakota
 
 #endif

@@ -10,9 +10,9 @@
 #ifndef DAKOTA_UTIL_LINEAR_SOLVERS_HPP
 #define DAKOTA_UTIL_LINEAR_SOLVERS_HPP
 
-#include <memory>
-
 #include "util_data_types.hpp"
+
+#include <memory>
 
 namespace dakota {
 namespace util {

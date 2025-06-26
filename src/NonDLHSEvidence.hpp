@@ -10,33 +10,35 @@
 #ifndef NOND_LHS_EVIDENCE_H
 #define NOND_LHS_EVIDENCE_H
 
-#include "NonDLHSInterval.hpp"
 #include "dakota_data_types.hpp"
+#include "NonDLHSInterval.hpp"
 
 namespace Dakota {
+
 
 /// Class for the Dempster-Shafer Evidence Theory methods within DAKOTA/UQ
 
 /** The NonDEvidence class implements the propagation of epistemic uncertainty
-    using Dempster-Shafer theory of evidence. In this approach, one assigns
-    a set of basic probability assignments (BPA) to intervals defined
+    using Dempster-Shafer theory of evidence. In this approach, one assigns 
+    a set of basic probability assignments (BPA) to intervals defined 
     for the uncertain variables.  Input interval combinations are calculated,
-    along with their BPA.  Currently, the response function is evaluated at
-    a set of sample points, then a response surface is constructed which is
-    sampled extensively to find the minimum and maximum within each input
-    interval cell, corresponding to the belief and plausibility within that
-    cell, respectively.  This data is then aggregated to calculate cumulative
+    along with their BPA.  Currently, the response function is evaluated at 
+    a set of sample points, then a response surface is constructed which is 
+    sampled extensively to find the minimum and maximum within each input 
+    interval cell, corresponding to the belief and plausibility within that 
+    cell, respectively.  This data is then aggregated to calculate cumulative 
     distribution functions for belief and plausibility. */
 
-class NonDLHSEvidence : public NonDLHSInterval {
- public:
+class NonDLHSEvidence: public NonDLHSInterval
+{
+public:
+
   //
   //- Heading: Constructors and destructor
   //
 
-  NonDLHSEvidence(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
-                  std::shared_ptr<Model> model);  ///< constructor
-  ~NonDLHSEvidence() override;                    ///< destructor
+  NonDLHSEvidence(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model); ///< constructor
+  ~NonDLHSEvidence() override;                                       ///< destructor
 
   //
   //- Heading: virtual function redefinitions
@@ -45,12 +47,14 @@ class NonDLHSEvidence : public NonDLHSInterval {
   void initialize() override;
   void post_process_samples() override;
 
- private:
+private:
+
   //
   // - Heading: Data
   //
+
 };
 
-}  // namespace Dakota
+} // namespace Dakota
 
 #endif

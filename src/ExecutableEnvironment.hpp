@@ -20,16 +20,18 @@ namespace Dakota {
     e.g., main.cpp.  It sets up the ParallelLibrary, ProgramOptions,
     and ProblemDescDB objects based on access to command line arguments. */
 
-class ExecutableEnvironment : public Environment {
- public:
+class ExecutableEnvironment: public Environment
+{
+public:
+  
   //
   //- Heading: Constructors and destructor
   //
 
-  ExecutableEnvironment();                        ///< default constructor
-  ExecutableEnvironment(int argc, char* argv[]);  ///< constructor
-  ~ExecutableEnvironment() override;              ///< destructor
-
+  ExecutableEnvironment();                       ///< default constructor
+  ExecutableEnvironment(int argc, char* argv[]); ///< constructor
+  ~ExecutableEnvironment() override;                      ///< destructor
+    
   //
   //- Heading: Virtual function redefinitions
   //
@@ -40,16 +42,19 @@ class ExecutableEnvironment : public Environment {
   //- Heading: Member functions
   //
 
- private:
+
+private:
+
   //
   //- Heading: Convenience member functions
   //
-
+    
   //
   //- Heading: Data members
   //
+
 };
 
-}  // namespace Dakota
+} // namespace Dakota
 
 #endif

@@ -12,7 +12,9 @@
 
 #include "MetaIterator.hpp"
 
+
 namespace Dakota {
+
 
 /// Meta-iterator for hybrid iteration using multiple collaborating
 /// optimization and nonlinear least squares methods.
@@ -21,23 +23,23 @@ namespace Dakota {
     agent-based using the ABO framework; (2) nonagent-based using the
     HOPSPACK framework. */
 
-class CollabHybridMetaIterator : public MetaIterator {
- public:
+class CollabHybridMetaIterator: public MetaIterator
+{
+public:
+  
   //
   //- Heading: Constructors and destructor
   //
 
   /// standard constructor
-  CollabHybridMetaIterator(ProblemDescDB& problem_db,
-                           ParallelLibrary& parallel_lib);
+  CollabHybridMetaIterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
   /// alternate constructor
-  CollabHybridMetaIterator(ProblemDescDB& problem_db,
-                           ParallelLibrary& parallel_lib,
-                           std::shared_ptr<Model> model);
+  CollabHybridMetaIterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
   /// destructor
   ~CollabHybridMetaIterator() override;
-
- protected:
+    
+protected:
+  
   //
   //- Heading: Member functions
   //
@@ -54,14 +56,15 @@ class CollabHybridMetaIterator : public MetaIterator {
   /// return the final solution from the collaborative iteration (variables)
   const Variables& variables_results() const override;
   /// return the final solution from the collaborative iteration (response)
-  const Response& response_results() const override;
+  const Response&  response_results() const override;
 
- private:
+private:
+
   //
   //- Heading: Data members
   //
 
-  String hybridCollabType;  ///< abo or hops
+  String hybridCollabType; ///< abo or hops
 
   /// the list of method pointer or method name identifiers
   StringArray methodStrings;
@@ -81,18 +84,17 @@ class CollabHybridMetaIterator : public MetaIterator {
   // In this hybrid, the best results are not just the final results of the
   // final iterator (they must be captured independently of the iterators)
 
-  Variables bestVariables;  ///< best variables found in collaborative iteration
-  Response bestResponse;    ///< best response  found in collaborative iteration
+  Variables bestVariables; ///< best variables found in collaborative iteration
+  Response  bestResponse;  ///< best response  found in collaborative iteration
 };
 
-inline const Variables& CollabHybridMetaIterator::variables_results() const {
-  return bestVariables;
-}
+inline const Variables& CollabHybridMetaIterator::variables_results() const
+{ return bestVariables; }
 
-inline const Response& CollabHybridMetaIterator::response_results() const {
-  return bestResponse;
-}
 
-}  // namespace Dakota
+inline const Response& CollabHybridMetaIterator::response_results() const
+{ return bestResponse; }
+
+} // namespace Dakota
 
 #endif

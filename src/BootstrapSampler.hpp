@@ -16,15 +16,15 @@
 #ifndef __DAKOTA_BOOTSTRAP_SAMPLER_H__
 #define __DAKOTA_BOOTSTRAP_SAMPLER_H__
 
-#include <boost/random/uniform_int_distribution.hpp>
-#include <cstring>
+
 #include <iostream>
 #include <stdexcept>
+#include <cstring>
 #include <vector>
-
-#include "Teuchos_SerialDenseHelpers.hpp"
-#include "Teuchos_SerialDenseVector.hpp"
 #include "dakota_mersenne_twister.hpp"
+#include <boost/random/uniform_int_distribution.hpp>
+#include "Teuchos_SerialDenseVector.hpp"
+#include "Teuchos_SerialDenseHelpers.hpp"
 
 namespace Dakota {
 
@@ -34,25 +34,35 @@ namespace Dakota {
     and handles initialization of the random variate generation used by the
     bootstrap. Functor is templated on the data type, but does not actually
     define a data member. */
-template <typename Data>
-class BootstrapSamplerBase {
- public:
+template<typename Data>
+class BootstrapSamplerBase
+{
+public:
+
   //
   //- Heading: Static methods for access to random variate generation
   //
 
-  static void set_seed(size_t seed) { bootstrapRNG.seed(seed); }
+  static void set_seed(size_t seed)
+  {
+    bootstrapRNG.seed(seed);
+  }
 
   //
   //- Heading: Constructors and destructor
   //
 
   /// Constructor for the bootstrap functor base
-  BootstrapSamplerBase(size_t data_size, Data orig_data)
-      : dataSize(data_size), origData(orig_data), sampler(0, data_size - 1) {}
+  BootstrapSamplerBase(size_t data_size, Data orig_data) : dataSize(data_size),
+                          origData(orig_data), sampler(0, data_size - 1)
+  {
+  }
 
   /// Destructor
-  virtual ~BootstrapSamplerBase() { /* empty destructor */ }
+  virtual ~BootstrapSamplerBase()
+  {
+    /* empty destructor */
+  }
 
   //
   //- Heading: Public members functions that perform for bootstrap sampling
@@ -62,21 +72,27 @@ class BootstrapSamplerBase {
   virtual void operator()(size_t num_samp, Data& bootstrapped_sample) = 0;
 
   /// Obatin the number of samples used in the empirical distribution
-  virtual size_t getDataSize() { return dataSize; }
+  virtual size_t getDataSize()
+  {
+    return dataSize;
+  }
 
   /// Generate and store an dataSize out of dataSize bootstrap sample
-  virtual void operator()(Data& bootstrapped_sample) {
+  virtual void operator()(Data& bootstrapped_sample)
+  {
     (*this)(dataSize, bootstrapped_sample);
   }
 
   /// Return bootstrapped sample
-  virtual Data operator()() {
+  virtual Data operator()()
+  {
     Data sample(origData);
     (*this)(dataSize, sample);
     return sample;
   }
 
- protected:
+protected:
+
   // Internal static members for random variate generation
 
   // Using Boost MT since need it anyway for unif int dist
@@ -98,16 +114,19 @@ class BootstrapSamplerBase {
 };
 
 /// The boostrap random number generator
-template <typename Data>
+template<typename Data>
 boost::random::mt19937 BootstrapSamplerBase<Data>::bootstrapRNG;
+
 
 /// Actual boostrap sampler implementation for common data types
 
 /** Template requires the given type to support an STL-like interface, including
     a size method and begin and end methods returning random access iterators */
-template <typename Data>
-class BootstrapSampler : public BootstrapSamplerBase<Data> {
- public:
+template<typename Data>
+class BootstrapSampler : public BootstrapSamplerBase<Data>
+{
+public:
+
   //
   //- Heading: Type definitions and aliases
   //
@@ -119,53 +138,63 @@ class BootstrapSampler : public BootstrapSamplerBase<Data> {
   //
 
   /// Constructor for the sampler
-  BootstrapSampler(const Data& orig_data, size_t block_size = 1)
-      : BootstrapSamplerBase<Data>::BootstrapSamplerBase(
-            block_size ? orig_data.size() / block_size : orig_data.size(),
-            orig_data),
-        blockSize(block_size ? block_size : 1) {
-    if (block_size &&
-        (block_size > this->dataSize || orig_data.size() % block_size != 0))
-      throw "Bootstrap sampler data size must be a multiple of block size.";
+  BootstrapSampler(const Data& orig_data, size_t block_size = 1) :
+    BootstrapSamplerBase<Data>::BootstrapSamplerBase(
+      block_size ? orig_data.size()/block_size : orig_data.size(), orig_data),
+      blockSize(block_size ? block_size : 1)
+  {
+    if(block_size &&
+      (block_size > this->dataSize || orig_data.size() % block_size != 0))
+        throw "Bootstrap sampler data size must be a multiple of block size.";
   }
 
   /// Destructor
-  ~BootstrapSampler() override { /* empty destructor */ }
+  ~BootstrapSampler() override
+  {
+    /* empty destructor */
+  }
 
   //
   //- Heading: Public members functions that perform for bootstrap sampling
   //
 
-  void operator()(size_t num_samp, Data& bootstrapped_sample) override {
-    if (num_samp > bootstrapped_sample.size() / blockSize)
-      throw std::out_of_range(
-          "Number of samples exceeds the size of container");
+  void operator()(size_t num_samp, Data& bootstrapped_sample) override
+  {
+    if(num_samp > bootstrapped_sample.size()/blockSize)
+      throw
+        std::out_of_range("Number of samples exceeds the size of container");
 
     typename Data::iterator beg_data = this->origData.begin();
-    for (typename Data::iterator sample = bootstrapped_sample.begin();
-         sample != bootstrapped_sample.end(); sample += blockSize) {
-      typename Data::iterator beg_block =
-          beg_data + this->sampler(this->bootstrapRNG) * blockSize;
-      for (size_t i = 0; i < blockSize; ++i) {
+    for(typename Data::iterator sample = bootstrapped_sample.begin();
+        sample != bootstrapped_sample.end(); sample += blockSize)
+    {
+      typename Data::iterator beg_block = beg_data + 
+	      this->sampler(this->bootstrapRNG) * blockSize;
+      for(size_t i = 0; i < blockSize; ++i)
+      {
         *(sample + i) = *(beg_block + i);
       }
     }
   }
 
- protected:
+protected:
+
   // Internal instance members
 
   /// Size of the block defining a sample
   size_t blockSize;
 };
 
+
 /// Bootstrap sampler that is specialized to allow for the bootstrapping of
 /// RealMatrix
-template <typename OrdinalType, typename ScalarType>
-class BootstrapSampler<Teuchos::SerialDenseMatrix<OrdinalType, ScalarType> >
-    : public BootstrapSamplerBase<
-          Teuchos::SerialDenseMatrix<OrdinalType, ScalarType> > {
- public:
+template<typename OrdinalType, typename ScalarType>
+class BootstrapSampler<Teuchos::SerialDenseMatrix<OrdinalType, ScalarType> > :
+  public BootstrapSamplerBase<Teuchos::
+                              SerialDenseMatrix<OrdinalType, ScalarType> >
+{
+public:
+
   //
   //- Heading: Type definitions and aliases
   //
@@ -176,52 +205,62 @@ class BootstrapSampler<Teuchos::SerialDenseMatrix<OrdinalType, ScalarType> >
   using BootstrapSamplerBase<MatType>::operator();
 
   /// Constructor for the sampler.
-  BootstrapSampler(const MatType& orig_data, size_t block_size = 1)
-      : BootstrapSamplerBase<MatType>::BootstrapSamplerBase(
-            block_size ? orig_data.numCols() / block_size : orig_data.numCols(),
-            orig_data),
-        blockSize(block_size ? block_size : 1) {
-    if (block_size &&
-        (block_size > this->dataSize || orig_data.numCols() % block_size != 0))
-      throw "Bootstrap sampler data size must be a multiple of block size.";
+  BootstrapSampler(const MatType& orig_data, size_t block_size = 1) :
+    BootstrapSamplerBase<MatType>::BootstrapSamplerBase(
+      block_size ? orig_data.numCols()/block_size : orig_data.numCols(),
+      orig_data),
+      blockSize(block_size ? block_size : 1)
+  {
+    if(block_size &&
+      (block_size > this->dataSize || orig_data.numCols() % block_size != 0))
+        throw "Bootstrap sampler data size must be a multiple of block size.";
   }
 
   /// Destructor
-  ~BootstrapSampler() override { /* empty destructor */ }
+  ~BootstrapSampler() override
+  {
+    /* empty destructor */
+  }
 
   //
   //- Heading: Public members functions that perform bootstrap sampling
   //
 
-  void operator()(size_t num_samp, MatType& bootstrapped_sample) override {
+  void operator()(size_t num_samp, MatType& bootstrapped_sample) override
+  {
     OrdinalType stride = this->origData.stride();
-    if (stride != bootstrapped_sample.stride())
-      throw std::out_of_range(
-          "Dimension of a bootstrapped sample differs from "
-          "the dimension of the original dataset");
+    if(stride != bootstrapped_sample.stride())
+      throw
+          std::out_of_range("Dimension of a bootstrapped sample differs from "
+                            "the dimension of the original dataset");
 
-    if (num_samp > bootstrapped_sample.numCols() / blockSize)
-      throw std::out_of_range(
-          "Number of samples exceeds the size of container");
+    if(num_samp > bootstrapped_sample.numCols()/blockSize)
+      throw
+        std::out_of_range("Number of samples exceeds the size of container");
 
-    for (int i = 0; i < num_samp * blockSize; i += blockSize) {
+    for(int i = 0; i < num_samp * blockSize; i += blockSize)
+    {
       std::memcpy(bootstrapped_sample[i],
-                  this->origData[this->sampler(this->bootstrapRNG) * blockSize],
-                  blockSize * stride * sizeof(ScalarType));
+        this->origData[this->sampler(this->bootstrapRNG) * blockSize],
+        blockSize * stride * sizeof(ScalarType));
     }
   }
 
- protected:
+protected:
+
   // Internal instance members
 
   /// Size of the block defining a sample
   size_t blockSize;
 };
 
+
 /// A derived sampler to allow for user specification of the accessor methods
-template <typename Data, typename Getter, typename Setter>
-class BootstrapSamplerWithGS : public BootstrapSampler<Data> {
- public:
+template<typename Data, typename Getter, typename Setter>
+class BootstrapSamplerWithGS : public BootstrapSampler<Data>
+{
+public:
+
   //
   //- Heading: Type definitions and aliases
   //
@@ -233,14 +272,20 @@ class BootstrapSamplerWithGS : public BootstrapSampler<Data> {
   //
 
   /// Constructor with extra arguments for the accessor methods
-  BootstrapSamplerWithGS(const Data& orig_data, Getter getter_method,
-                         Setter setter_method)
-      : BootstrapSampler<Data>::BootstrapSampler(orig_data),
-        getterMethod(getter_method),
-        setterMethod(setter_method) {}
+  BootstrapSamplerWithGS(const Data& orig_data,
+                         Getter getter_method,
+                         Setter setter_method) :
+                         BootstrapSampler<Data>::BootstrapSampler(orig_data),
+                         getterMethod(getter_method),
+                         setterMethod(setter_method)
+  {
+  }
 
   /// Destructor
-  virtual ~BootstrapSamplerWithGS() { /* empty destructor */ }
+ virtual  ~BootstrapSamplerWithGS()
+  {
+    /* empty destructor */
+  }
 
   //
   //- Heading: Public members functions that perform for bootstrap sampling
@@ -248,15 +293,17 @@ class BootstrapSamplerWithGS : public BootstrapSampler<Data> {
 
   /// Generate and store a new bootstrapped sample into bootstrapped_sample
   /// TODO: bounds checking
-  virtual void operator()(size_t num_samp, Data& bootstrapped_sample) {
-    for (size_t i = 0; i < num_samp; ++i) {
-      setterMethod(
-          i, getterMethod(this->sampler(this->bootstrapRNG), this->origData),
-          bootstrapped_sample);
+  virtual void operator()(size_t num_samp, Data& bootstrapped_sample)
+  {
+    for(size_t i = 0; i < num_samp; ++i)
+    {
+      setterMethod(i, getterMethod(this->sampler(this->bootstrapRNG),
+                                   this->origData), bootstrapped_sample);
     }
   }
 
- protected:
+protected:
+
   // Internal instance members
 
   /// Function to obtain a single sample from a Data object. Function should
@@ -270,6 +317,6 @@ class BootstrapSamplerWithGS : public BootstrapSampler<Data> {
   Setter setterMethod;
 };
 
-}  // namespace Dakota
+}
 
-#endif  // __DAKOTA_BOOTSTRAP_SAMPLER_H__
+#endif // __DAKOTA_BOOTSTRAP_SAMPLER_H__

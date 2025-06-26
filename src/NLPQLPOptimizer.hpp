@@ -12,6 +12,7 @@
 
 #include "DakotaOptimizer.hpp"
 
+
 namespace Dakota {
 
 /// Wrapper class for the NLPQLP optimization library, Version 2.0.
@@ -46,15 +47,15 @@ namespace Dakota {
     a new iterate. Also the modified line search algorithm guarantees
     convergence under the same assumptions as before.
 
-    For the new version, a non-monotone line search is implemented which
-    allows to increase the merit function in case of instabilities, for
+    For the new version, a non-monotone line search is implemented which 
+    allows to increase the merit function in case of instabilities, for 
     example caused by round-off errors, errors in gradient approximations,
     etc.
 
     The subroutine contains the option to predetermine initial
     guesses for the multipliers or the Hessian of the Lagrangian
     function and is called by reverse communication.
-
+ 
     ********************************************************************* */
 
 /**
@@ -62,13 +63,15 @@ namespace Dakota {
  *
  */
 
-class NLPQLPTraits : public TraitsBase {
- public:
+class NLPQLPTraits: public TraitsBase
+{
+  public:
+
   /// default constructor
-  NLPQLPTraits() {}
+  NLPQLPTraits() { }
 
   /// destructor
-  ~NLPQLPTraits() override {}
+  ~NLPQLPTraits() override { }
 
   /// A temporary query used in the refactor
   bool is_derived() override { return true; }
@@ -89,20 +92,22 @@ class NLPQLPTraits : public TraitsBase {
   bool supports_nonlinear_inequality() override { return true; }
 
   /// Return the format used for nonlinear inequality constraints
-  NONLINEAR_INEQUALITY_FORMAT nonlinear_inequality_format() override {
-    return NONLINEAR_INEQUALITY_FORMAT::ONE_SIDED_LOWER;
-  }
+  NONLINEAR_INEQUALITY_FORMAT nonlinear_inequality_format() override
+    { return NONLINEAR_INEQUALITY_FORMAT::ONE_SIDED_LOWER; }
+
 };
 
-class NLPQLPOptimizer : public Optimizer {
- public:
+
+class NLPQLPOptimizer: public Optimizer
+{
+public:
+
   //
   //- Heading: Constructors and destructor
   //
 
   /// standard constructor
-  NLPQLPOptimizer(ProblemDescDB &problem_db, ParallelLibrary &parallel_lib,
-                  std::shared_ptr<Model> model);
+  NLPQLPOptimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
   /// alternate constructor
   NLPQLPOptimizer(std::shared_ptr<Model> model);
   /// destructor
@@ -114,7 +119,8 @@ class NLPQLPOptimizer : public Optimizer {
 
   void core_run() override;
 
- protected:
+protected:
+
   //
   //- Heading: Virtual member function redefinitions
   //
@@ -122,21 +128,21 @@ class NLPQLPOptimizer : public Optimizer {
   /// performs run-time set up
   void initialize_run() override;
 
- private:
+private:
+
   //
   //- Heading: Convenience member functions
   //
 
-  void initialize();  ///< Shared constructor code
+  void initialize();           ///< Shared constructor code
 
-  void allocate_workspace();  ///< Allocates workspace for the optimizer
+  void allocate_workspace();   ///< Allocates workspace for the optimizer
 
-  void deallocate_workspace();  ///< Releases workspace memory
+  void deallocate_workspace(); ///< Releases workspace memory
 
-  void allocate_constraints();  ///< Allocates constraint mappings
+  void allocate_constraints(); ///< Allocates constraint mappings
 
-  void check_sub_iterator_conflict()
-      override;  ///< prevent Fortran solver nesting
+  void check_sub_iterator_conflict() override; ///< prevent Fortran solver nesting
 
   /// L :       Number of parallel systems, i.e. function calls during
   ///           line search at predetermined iterates.
@@ -168,7 +174,7 @@ class NLPQLPOptimizer : public Optimizer {
   ///           the row dimension of X has to be equal to NMAX.
   ///           X is used internally to store L different arguments for which
   ///           function values should be computed simultaneously.
-  double *X;
+  double *X; 
 
   /// F(L) :    On return, F(1) contains the final objective function value.
   ///           F is used also to store L different objective function
@@ -248,7 +254,7 @@ class NLPQLPOptimizer : public Optimizer {
   ///           gradients (e.g. 100).
   int MAXIT;
 
-  /// MAX_NM :  Stack size for storing merit function values at previous
+  /// MAX_NM :  Stack size for storing merit function values at previous 
   ///           iterations for non-monotone line search (e.g. 10). In case of
   ///           MAX_NM=0, monotone line search is performed.
   int MAX_NM;
@@ -311,7 +317,7 @@ class NLPQLPOptimizer : public Optimizer {
   ///    IFAIL > 100 : The solution of the quadratic programming
   ///                  subproblem has been terminated with
   ///                  an error message and IFAIL is set to IFQL+100,
-  ///                  where IFQL denotes the index of an inconsistent
+  ///                  where IFQL denotes the index of an inconsistent 
   ///                  constraint.
   int IFAIL;
 
@@ -354,15 +360,16 @@ class NLPQLPOptimizer : public Optimizer {
   RealList linIneqConMappingOffsets;
 };
 
+
 #ifdef HAVE_DYNLIB_FACTORIES
 // ---------------------------------------------------------
 // Factory functions for dynamic loading of solver libraries
 // ---------------------------------------------------------
 
-NLPQLPOptimizer *new_NLPQLPOptimizer(ProblemDescDB &problem_db, Model &model);
-NLPQLPOptimizer *new_NLPQLPOptimizer(Model &model);
-#endif  // HAVE_DYNLIB_FACTORIES
+NLPQLPOptimizer* new_NLPQLPOptimizer(ProblemDescDB& problem_db, Model& model);
+NLPQLPOptimizer* new_NLPQLPOptimizer(Model& model);
+#endif // HAVE_DYNLIB_FACTORIES
 
-}  // namespace Dakota
+} // namespace Dakota
 
-#endif  // NLPQLP_OPTIMIZER_H
+#endif // NLPQLP_OPTIMIZER_H

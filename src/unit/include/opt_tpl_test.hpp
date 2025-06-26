@@ -10,32 +10,36 @@
 #ifndef OPT_TPL_TEST_H
 #define OPT_TPL_TEST_H
 
-#include <Teuchos_UnitTestHarness.hpp>
-#include <map>
-#include <string>
-
 #include "APPSOptimizer.hpp"
-#include "DakotaInterface.hpp"
-#include "DakotaModel.hpp"
-#include "LibraryEnvironment.hpp"
+
 #include "ParallelLibrary.hpp"
-#include "PluginSerialDirectApplicInterface.hpp"
 #include "ProblemDescDB.hpp"
+#include "LibraryEnvironment.hpp"
+#include "DakotaModel.hpp"
+#include "DakotaInterface.hpp"
+#include "PluginSerialDirectApplicInterface.hpp"
 #include "TestDriverInterface.hpp"
+
+#include <string>
+#include <map>
+
+#include <Teuchos_UnitTestHarness.hpp> 
+
 
 namespace Dakota {
 
 namespace Opt_TPL_Test {
 
-static Dakota::LibraryEnvironment* create_env(const String& in_string);
+  static Dakota::LibraryEnvironment * create_env(const String& in_string);
 
-}  // namespace Opt_TPL_Test
-}  // namespace Dakota
+} // namespace Opt_TPL_Test_Apps
+} // namespace Dakota
+
 
 //----------------------------------------------------------------
 
-static Dakota::LibraryEnvironment* Dakota::Opt_TPL_Test::create_env(
-    const String& in_string) {
+static Dakota::LibraryEnvironment * Dakota::Opt_TPL_Test::create_env(const String& in_string)
+{
   // No input file set --> no parsing.  Could set other command line
   // options such as restart in opts:
   Dakota::ProgramOptions opts;
@@ -48,9 +52,8 @@ static Dakota::LibraryEnvironment* Dakota::Opt_TPL_Test::create_env(
   bool check_bcast_construct = false;
 
   // set up a Dakota instance
-  Dakota::LibraryEnvironment* p_env = new Dakota::LibraryEnvironment(
-      MPI_COMM_WORLD, opts, check_bcast_construct);
-  Dakota::LibraryEnvironment& env = *p_env;
+  Dakota::LibraryEnvironment * p_env = new Dakota::LibraryEnvironment(MPI_COMM_WORLD, opts, check_bcast_construct);
+  Dakota::LibraryEnvironment & env = *p_env;
   Dakota::ParallelLibrary& parallel_lib = env.parallel_library();
 
   // configure Dakota to throw a std::runtime_error instead of calling exit
@@ -61,4 +64,4 @@ static Dakota::LibraryEnvironment* Dakota::Opt_TPL_Test::create_env(
 
   return p_env;
 }
-#endif
+ #endif

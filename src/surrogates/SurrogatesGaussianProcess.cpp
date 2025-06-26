@@ -27,11 +27,9 @@ GaussianProcess::GaussianProcess(const ParameterList& param_list) {
 
 // Constructor that sets user-defined params but does not build.
 GaussianProcess::GaussianProcess(const std::string& param_list_yaml_filename) {
-#ifdef DISABLE_YAML_SURROGATES_CONFIG
-  throw std::runtime_error(
-      "Configuring a surrogate using a YAML file not supported by this build "
-      "of Dakota");
-#endif
+  #ifdef DISABLE_YAML_SURROGATES_CONFIG
+    throw std::runtime_error("Configuring a surrogate using a YAML file not supported by this build of Dakota");
+  #endif
   default_options();
   auto param_list =
       Teuchos::getParametersFromYamlFile(param_list_yaml_filename);
@@ -52,11 +50,9 @@ GaussianProcess::GaussianProcess(const MatrixXd& samples,
 GaussianProcess::GaussianProcess(const MatrixXd& samples,
                                  const MatrixXd& response,
                                  const std::string& param_list_yaml_filename) {
-#ifdef DISABLE_YAML_SURROGATES_CONFIG
-  throw std::runtime_error(
-      "Configuring a surrogate using a YAML file not supported by this build "
-      "of Dakota");
-#endif
+  #ifdef DISABLE_YAML_SURROGATES_CONFIG
+    throw std::runtime_error("Configuring a surrogate using a YAML file not supported by this build of Dakota");
+  #endif
   default_options();
   auto param_list =
       Teuchos::getParametersFromYamlFile(param_list_yaml_filename);
@@ -174,47 +170,43 @@ void GaussianProcess::build(const MatrixXd& samples, const MatrixXd& response) {
       Teuchos::rcp(new ParameterList("GP_MLE_Optimization"));
   setup_default_optimization_params(gp_mle_rol_params);
 
-  //  auto obj = std::make_shared<GP_Objective>(*this);
-  auto obj_ptr = ROL::makePtr<GP_Objective>(*this);
-  auto& obj = *obj_ptr;
+//  auto obj = std::make_shared<GP_Objective>(*this);
+  auto obj_ptr = ROL::makePtr<GP_Objective>(*this); auto& obj = *obj_ptr;
   int dim = numVariables + 1 + numPolyTerms + numNuggetTerms;
 
-  auto make_ROLVectorXd = [](auto&&... args) {
+  auto make_ROLVectorXd = []( auto&&... args ) {
     return ROL::makePtr<ROLVectorXd>(std::forward<decltype(args)>(args)...);
   };
 
   /* set up parameter vectors and bounds */
-  auto x_ptr = make_ROLVectorXd(dim, true);
-  auto& x = *x_ptr;
-  auto lo_ptr = make_ROLVectorXd(dim, true);
-  auto& lo = *lo_ptr;
-  auto hi_ptr = make_ROLVectorXd(dim, true);
-  auto& hi = *hi_ptr;
+  auto x_ptr  = make_ROLVectorXd(dim,true); auto& x  = *x_ptr;
+  auto lo_ptr = make_ROLVectorXd(dim,true); auto& lo = *lo_ptr;
+  auto hi_ptr = make_ROLVectorXd(dim,true); auto& hi = *hi_ptr;
 
-  auto bounds_ptr = ROL::makePtr<ROL::Bounds<double>>(lo_ptr, hi_ptr);
+  auto bounds_ptr = ROL::makePtr<ROL::Bounds<double>>(lo_ptr,hi_ptr);
   auto& bounds = *bounds_ptr;
 
   constexpr int LO{0}, HI{1};
 
-  for (int bnd : {LO, HI}) {
+  for( int bnd : {LO,HI} ) {
     auto& vec = bnd == LO ? lo : hi;
     vec(0) = log(sigma_bounds(bnd));
-    if (length_scale_bounds.rows() > 1) {
-      vec.segment(1, numVariables) = length_scale_bounds.col(bnd).array().log();
-    } else {
-      vec.segment(1, numVariables)
-          .setConstant(log(length_scale_bounds(0, bnd)));
+    if( length_scale_bounds.rows() > 1 ) {
+      vec.segment(1,numVariables) = length_scale_bounds.col(bnd).array().log();
+    } 
+    else {
+      vec.segment(1,numVariables).setConstant(log(length_scale_bounds(0, bnd)));
     }
-
-    if (estimateTrend) {
-      vec.segment(numVariables + 1, numPolyTerms) = beta_bounds.col(bnd);
+    
+    if( estimateTrend ) {
+      vec.segment(numVariables+1,numPolyTerms) = beta_bounds.col(bnd);
     }
-    if (estimateNugget) {
+    if( estimateNugget ) {
       vec(dim - 1) = log(nugget_bounds(bnd));
     }
   }
 
-  //  std::vector<std::string> output;
+//  std::vector<std::string> output;
 
   objectiveFunctionHistory.resize(num_restarts);
   objectiveGradientHistory.resize(num_restarts, dim);
@@ -223,14 +215,14 @@ void GaussianProcess::build(const MatrixXd& samples, const MatrixXd& response) {
   double final_obj_value;
   VectorXd final_obj_gradient(dim);
 
-  auto prob_ptr = ROL::makePtr<ROL::Problem<double>>(obj_ptr, x_ptr);
+  auto prob_ptr = ROL::makePtr<ROL::Problem<double>>(obj_ptr,x_ptr);
   prob_ptr->addBoundConstraint(bounds_ptr);
 
-  ROL::Solver<double> rol_solver(prob_ptr, *gp_mle_rol_params);
+  ROL::Solver<double> rol_solver(prob_ptr,*gp_mle_rol_params); 
 
   for (int i = 0; i < num_restarts; i++) {
     x = initial_guesses.row(i);
-    rol_solver.solve(*outStream, ROL::nullPtr, true);
+    rol_solver.solve(*outStream,ROL::nullPtr,true);
     thetaValues = x.head(numVariables + 1);
     if (estimateTrend) {
       for (int j = 0; j < numPolyTerms; ++j) {
@@ -284,6 +276,7 @@ void GaussianProcess::build(const MatrixXd& samples, const MatrixXd& response) {
 }
 
 VectorXd GaussianProcess::value(const MatrixXd& eval_points) {
+
   if (eval_points.cols() != numVariables) {
     throw(
         std::runtime_error("Gaussian Process value inputs are not consistent."
@@ -323,6 +316,7 @@ VectorXd GaussianProcess::value(const MatrixXd& eval_points) {
 }
 
 MatrixXd GaussianProcess::gradient(const MatrixXd& eval_points) {
+
   if (eval_points.cols() != numVariables) {
     throw(std::runtime_error(
         "Gaussian Process gradient inputs are not consistent."
@@ -367,6 +361,7 @@ MatrixXd GaussianProcess::gradient(const MatrixXd& eval_points) {
 }
 
 MatrixXd GaussianProcess::hessian(const MatrixXd& eval_point) {
+
   if (eval_point.rows() != 1) {
     throw(std::runtime_error(
         "Gaussian Process Hessian evaluation is for a single point."
@@ -551,7 +546,7 @@ int GaussianProcess::get_num_opt_variables() {
 
 int GaussianProcess::get_num_variables() const { return numVariables; }
 
-void GaussianProcess::set_opt_params(const VectorXd& opt_params) {
+  void GaussianProcess::set_opt_params(const VectorXd& opt_params) {
   // Copy the first numVariables + 1 elements to thetaValues
   thetaValues = opt_params.head(numVariables + 1);
 
@@ -623,24 +618,22 @@ void GaussianProcess::default_options() {
   defaultConfigOptions.set("verbosity", 1, "console output verbosity");
   /* Nugget */
   auto& nlist = defaultConfigOptions.sublist("Nugget");
-  nlist.set("fixed nugget", 1.0e-10, "fixed nugget term");
-  nlist.set("estimate nugget", false, "estimate a nugget term");
-  nlist.sublist("Bounds").set("lower bound", nugget_lower_bound,
-                              "nugget term lower bound");
-  nlist.sublist("Bounds").set("upper bound", nugget_upper_bound,
-                              "nugget term upper bound");
+  nlist.set("fixed nugget", 1.0e-10,"fixed nugget term");
+  nlist.set("estimate nugget", false,"estimate a nugget term");
+  nlist.sublist("Bounds").set("lower bound", nugget_lower_bound, "nugget term lower bound");
+  nlist.sublist("Bounds").set("upper bound", nugget_upper_bound, "nugget term upper bound");
 
   /* Polynomial Trend */
   auto& trend_list = defaultConfigOptions.sublist("Trend");
-  trend_list.set("estimate trend", false, "estimate a trend term");
-
+  trend_list.set("estimate trend", false,"estimate a trend term");
+                                            
   auto& opt_list = trend_list.sublist("Options");
-  opt_list.set("max degree", 2, "Maximum polynomial order");
-  opt_list.set("reduced basis", false, "Use Reduced Basis");
-  opt_list.set("p-norm", 1.0, "P-Norm in hyperbolic cross");
-  opt_list.set("scaler type", "none", "Type of data scaling");
-  opt_list.set("regression solver type", "SVD", "Type of regression solver");
-  opt_list.set("verbosity", 1, "console output verbosity");
+  opt_list.set("max degree",             2,      "Maximum polynomial order");
+  opt_list.set("reduced basis",          false,  "Use Reduced Basis");
+  opt_list.set("p-norm",                 1.0,    "P-Norm in hyperbolic cross");
+  opt_list.set("scaler type",            "none", "Type of data scaling");
+  opt_list.set("regression solver type", "SVD",  "Type of regression solver");
+  opt_list.set("verbosity",              1,      "console output verbosity");
 }
 
 void GaussianProcess::compute_build_dists() {
@@ -754,12 +747,13 @@ void GaussianProcess::generate_initial_guesses(
 
 void GaussianProcess::setup_default_optimization_params(
     Teuchos::RCP<ParameterList> rol_params) {
+
   auto& sec_list = rol_params->sublist("General").sublist("Secant");
-  sec_list.set("Type", "Limited-Memory BFGS");
+  sec_list.set("Type","Limited-Memory BFGS");
   sec_list.set("Maximum Storage", 20);
 
-  auto& step_list = rol_params->sublist("General").sublist("Step");
-  step_list.set("Type", "Line Search");
+  auto& step_list = rol_params->sublist("General").sublist("Step"); 
+  step_list.set("Type","Line Search");
 
   auto& ls_list = step_list.sublist("Line Search");
   ls_list.set("Function Evaluation Limit", 3);

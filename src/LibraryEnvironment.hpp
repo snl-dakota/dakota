@@ -14,6 +14,7 @@
 
 namespace Dakota {
 
+
 /// Environment corresponding to execution as an embedded library.
 
 /** This environment corresponds to use of Dakota as a library within
@@ -21,8 +22,10 @@ namespace Dakota {
     the ParallelLibrary and ProblemDescDB objects without access to
     command line arguments. */
 
-class LibraryEnvironment : public Environment {
- public:
+class LibraryEnvironment: public Environment
+{
+public:
+  
   //
   //- Heading: Constructors and destructor
   //
@@ -35,34 +38,35 @@ class LibraryEnvironment : public Environment {
   /// function to be invoked after parsing.  Set check_bcast_construct
   /// if performing late updates and later calling done_modifying_db().
   LibraryEnvironment(ProgramOptions prog_opts,
-                     bool check_bcast_construct = true,
-                     DbCallbackFunctionPtr callback = NULL,
-                     void* callback_data = NULL);
+		     bool check_bcast_construct = true,
+		     DbCallbackFunctionPtr callback = NULL,
+		     void* callback_data = NULL);
 
   /// Alternate constructor accepting communicator, same options as primary
   LibraryEnvironment(MPI_Comm dakota_mpi_comm,
-                     ProgramOptions prog_opts = ProgramOptions(),
-                     bool check_bcast_construct = true,
-                     DbCallbackFunctionPtr callback = NULL,
-                     void* callback_data = NULL);
+		     ProgramOptions prog_opts = ProgramOptions(),
+		     bool check_bcast_construct = true,
+		     DbCallbackFunctionPtr callback = NULL,
+		     void* callback_data = NULL);
 
   /// destructor
   ~LibraryEnvironment() override;
+
 
   //
   //- Heading: Virtual function redefinitions
   //
 
-  // void execute(); // base class implementation is sufficient
+  //void execute(); // base class implementation is sufficient
 
   //
   //- Heading: Member functions
   //
 
   /// Insert DB nodes for a {Method,Model,Variables,Interface,Responses} set
-  void insert_nodes(Dakota::DataMethod& dme, Dakota::DataModel& dmo,
-                    Dakota::DataVariables& dv, Dakota::DataInterface& di,
-                    Dakota::DataResponses& dr);
+  void insert_nodes(Dakota::DataMethod&   dme, Dakota::DataModel&    dmo,
+		    Dakota::DataVariables& dv, Dakota::DataInterface& di,
+		    Dakota::DataResponses& dr);
 
   /// Check database contents, broadcast, and construct iterators
   void done_modifying_db();
@@ -71,37 +75,42 @@ class LibraryEnvironment : public Environment {
   /// Plug-in the passed interface into any interface matching the
   /// specified (possibly empty) model, interface, and driver strings;
   /// returns true if a plugin was performed
-  bool plugin_interface(const String& model_type, const String& interf_type,
-                        const String& an_driver, Interface* plugin_iface);
+  bool plugin_interface(const String& model_type,
+			const String& interf_type,
+			const String& an_driver,
+			Interface* plugin_iface);
 
   /// Plug-in the passed interface into any interface matching the
   /// specified (possibly empty) model, interface, and driver strings;
   /// returns true if a plugin was performed
-  bool plugin_interface(const String& model_type, const String& interf_type,
-                        const String& an_driver,
-                        std::shared_ptr<Interface> plugin_iface);
+  bool plugin_interface(const String& model_type,
+			const String& interf_type,
+			const String& an_driver,
+			std::shared_ptr<Interface> plugin_iface);
 
   /// filter the available Interface instances based on matching interface
   /// type and analysis drivers (empty String matches any)
   InterfaceList filtered_interface_list(const String& interf_type,
-                                        const String& an_driver);
+					const String& an_driver);
 
   /// filter the available Model instances based on matching model
   /// type, interface type, and analysis drivers (empty String matches any)
   ModelList filtered_model_list(const String& model_type,
-                                const String& interf_type,
-                                const String& an_driver);
+				const String& interf_type,
+				const String& an_driver);
 
- private:
+private:
+
   //
   //- Heading: Convenience member functions
   //
-
+    
   //
   //- Heading: Data members
   //
+
 };
 
-}  // namespace Dakota
+} // namespace Dakota
 
 #endif

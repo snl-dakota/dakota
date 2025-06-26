@@ -10,11 +10,11 @@
 #ifndef RANDOM_FIELD_MODEL_H
 #define RANDOM_FIELD_MODEL_H
 
+#include "ReducedBasis.hpp"
 #include "DakotaApproximation.hpp"
+#include "RecastModel.hpp"
 #include "DakotaIterator.hpp"
 #include "DataModel.hpp"
-#include "RecastModel.hpp"
-#include "ReducedBasis.hpp"
 
 namespace Dakota {
 
@@ -30,8 +30,10 @@ class ProblemDescDB;
     and auxialliary uncertain variables reduced space.  This
     RandomFieldModel wraps the random field propagation model (not the
     RF-generating model) */
-class RandomFieldModel : public RecastModel {
- public:
+class RandomFieldModel: public RecastModel
+{
+public:
+  
   //
   //- Heading: Constructor and destructor
   //
@@ -45,10 +47,11 @@ class RandomFieldModel : public RecastModel {
 
   /// for KL models, the model is augmented with the random coeffs of the KL
   bool initialize_mapping(ParLevLIter pl_iter) override;
-  // bool finalize_mapping();
+  //bool finalize_mapping();
   bool resize_pending() const override;
 
- protected:
+protected:
+
   //
   //- Heading: Virtual function redefinitions
   //
@@ -58,13 +61,13 @@ class RandomFieldModel : public RecastModel {
 
   /*
   void derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
-                                  bool recurse_flag);
+				  bool recurse_flag);
 
   void derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
-                                 bool recurse_flag);
+				 bool recurse_flag);
 
   void derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
-                                  bool recurse_flag);
+				  bool recurse_flag);
   */
 
   void assign_instance() override;
@@ -74,14 +77,14 @@ class RandomFieldModel : public RecastModel {
   // ---
 
   /// retrieve the sub-Model from the DB to pass up the constructor chain
-  std::shared_ptr<Model> get_sub_model(ProblemDescDB& problem_db,
-                                       ParallelLibrary& parallel_lib);
+  std::shared_ptr<Model> get_sub_model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
 
   /// initialize the RF-generating sampler
   void init_dace_iterator(ProblemDescDB& problem_db);
 
   /// validate the build controls and set defaults
   void validate_inputs();
+
 
   // ---
   // Convenience functions for reading and decomposing the field
@@ -112,6 +115,7 @@ class RandomFieldModel : public RecastModel {
   /// additional N(0,1) variables; set up mvDist for the N(0,1)'s
   void initialize_rf_coeffs();
 
+  
   // ---
   // Callback functions that perform data transform during the Recast
   // operations (forward propagation mode)
@@ -119,13 +123,13 @@ class RandomFieldModel : public RecastModel {
 
   /// map the active continuous recast variables to the active
   /// submodel variables (linear transformation)
-  static void vars_mapping(const Variables& recast_xi_vars,
-                           Variables& sub_model_x_vars);
+  static void vars_mapping(const Variables& recast_xi_vars, 
+			   Variables& sub_model_x_vars);
 
   /// map the inbound ActiveSet to the sub-model (map derivative variables)
   static void set_mapping(const Variables& recast_vars,
-                          const ActiveSet& recast_set,
-                          ActiveSet& sub_model_set);
+			  const ActiveSet& recast_set,
+			  ActiveSet& sub_model_set);
 
   /// generate a random field realization, then evaluate the submodel
   void derived_evaluate(const ActiveSet& set) override;
@@ -163,6 +167,7 @@ class RandomFieldModel : public RecastModel {
   std::shared_ptr<Iterator> daceIterator;
 
   /// unsigned short analyticCovForm;
+
 
   // ---
   // Build controls (generate the RF representation) process
@@ -203,10 +208,11 @@ class RandomFieldModel : public RecastModel {
   /// approximate models used to map the uncertain vars through the PCA approx
   std::vector<Approximation> gpApproximations;
 
+
   // ---
   // Propagation (sub) model
   // ---
-
+  
   // propModel: don't need to store: it's the subModel of the RecastModel
 
   // ---
@@ -218,15 +224,17 @@ class RandomFieldModel : public RecastModel {
 
   // the index of the active metaiterator-iterator parallelism level
   // (corresponding to ParallelConfiguration::miPLIters) used at runtime
-  // size_t miPLIndex;
+  //size_t miPLIndex;
 };
 
-inline bool RandomFieldModel::resize_pending() const {
-  return (expansionForm == RF_KARHUNEN_LOEVE && !mappingInitialized);
-}
 
-inline void RandomFieldModel::assign_instance() { rfmInstance = this; }
+inline bool RandomFieldModel::resize_pending() const
+{ return (expansionForm == RF_KARHUNEN_LOEVE && !mappingInitialized); }
 
-}  // namespace Dakota
+
+inline void RandomFieldModel::assign_instance()
+{ rfmInstance = this; }
+
+} // namespace Dakota
 
 #endif

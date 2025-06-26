@@ -10,9 +10,9 @@
 #ifndef DAKOTA_SURROGATES_GP_KERNELS_HPP
 #define DAKOTA_SURROGATES_GP_KERNELS_HPP
 
-#include <memory>
-
 #include "util_data_types.hpp"
+
+#include <memory>
 
 namespace dakota {
 namespace surrogates {

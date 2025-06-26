@@ -7,38 +7,41 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-#include <gtest/gtest.h>
+
+#include "dakota_data_util.hpp"
+#include "dakota_data_io.hpp"
 
 #include <string>
 
-#include "dakota_data_io.hpp"
-#include "dakota_data_util.hpp"
+#include <gtest/gtest.h>
 
 using namespace Dakota;
 using dakota::MatrixXd;
 
 namespace {
 
-RealVectorArray create_test_array(int num_entries, int dim = 1,
-                                  bool rand = false) {
-  RealVectorArray test_array(num_entries);
+  RealVectorArray 
+    create_test_array(int num_entries, int dim = 1, bool rand = false) {
+      RealVectorArray test_array(num_entries);
 
-  for (int i = 0; i < num_entries; ++i) {
-    RealVector &test_vec = test_array[i];
-    test_vec.sizeUninitialized(dim);
-    if (rand) test_vec.random();
-    // For now, just fill values using counting numbers - user can modify
-    // afterward
-    else
-      for (int i = 0; i < test_vec.length(); ++i) test_vec(i) = double(i);
-  }
-  return test_array;
+      for( int i = 0; i < num_entries; ++i ) {
+        RealVector & test_vec = test_array[i];
+        test_vec.sizeUninitialized(dim);
+        if( rand )
+          test_vec.random();
+        // For now, just fill values using counting numbers - user can modify afterward
+        else
+          for( int i=0; i < test_vec.length(); ++i )
+            test_vec(i) = double(i);
+      }
+      return test_array;
+    }
 }
-}  // namespace
 
 //----------------------------------------------------------------
 
-TEST(data_conversions_tests, test_data_conversion_rva2rm) {
+TEST(data_conversions_tests, test_data_conversion_rva2rm)
+{
   const int NROWS = 5;
   const int NCOLS = 3;
   RealVectorArray test_rva = create_test_array(NROWS, NCOLS, true);
@@ -49,18 +52,19 @@ TEST(data_conversions_tests, test_data_conversion_rva2rm) {
   /////////////////  What we want to test
 
   // Verify correct dimensions
-  EXPECT_TRUE((NROWS == test_rm.numRows()));
-  EXPECT_TRUE((NCOLS == test_rm.numCols()));
+  EXPECT_TRUE(( NROWS == test_rm.numRows() ));
+  EXPECT_TRUE(( NCOLS == test_rm.numCols() ));
 
   // Verify contents of what we wrote and what we read
-  for (size_t i = 0; i < NROWS; ++i)
-    for (int j = 0; j < NCOLS; ++j)
-      EXPECT_LT(std::fabs(1. - test_rva[i][j] / test_rm(i, j)), 1.e-12 / 100.);
+  for( size_t i=0; i<NROWS; ++i )
+    for( int j=0; j<NCOLS; ++j )
+    EXPECT_LT(std::fabs(1. - test_rva[i][j] / test_rm(i,j)), 1.e-12/100. );
 }
 
 //----------------------------------------------------------------
 
-TEST(data_conversions_tests, test_data_conversion_mat2mat) {
+TEST(data_conversions_tests, test_data_conversion_mat2mat)
+{
   const int NROWS = 5;
   const int NCOLS = 3;
   RealMatrix test_mat(NROWS, NCOLS);
@@ -72,23 +76,24 @@ TEST(data_conversions_tests, test_data_conversion_mat2mat) {
   /////////////////  What we want to test
 
   // Verify correct dimensions
-  EXPECT_TRUE((NROWS == dest_mat.numRows()));
-  EXPECT_TRUE((NCOLS == dest_mat.numCols()));
+  EXPECT_TRUE(( NROWS == dest_mat.numRows() ));
+  EXPECT_TRUE(( NCOLS == dest_mat.numCols() ));
 
   // Verify contents of what we wrote and what we read
-  for (size_t i = 0; i < NROWS; ++i)
-    for (int j = 0; j < NCOLS; ++j)
-      EXPECT_LT(std::fabs(1. - test_mat(i, j) / dest_mat(i, j)), 1.e-12 / 100.);
+  for( size_t i=0; i<NROWS; ++i )
+    for( int j=0; j<NCOLS; ++j )
+    EXPECT_LT(std::fabs(1. - test_mat(i,j) / dest_mat(i,j)), 1.e-12/100. );
 
   // Verifiy that the copy is a deep copy
-  dest_mat(1, 1) *= 1.5;
-  double diff = dest_mat(1, 1) - test_mat(1, 1);
-  EXPECT_LT(std::fabs(1. - diff / (0.5 * test_mat(1, 1))), 1.e-12 / 100.);
+  dest_mat(1,1) *= 1.5;
+  double diff = dest_mat(1,1) - test_mat(1,1);
+  EXPECT_LT(std::fabs(1. - diff / (0.5*test_mat(1,1))), 1.e-12/100. );
 }
 
 //----------------------------------------------------------------
 
-TEST(data_conversions_tests, test_data_conversion_mat2mat_sub) {
+TEST(data_conversions_tests, test_data_conversion_mat2mat_sub)
+{
   const int NROWS = 5;
   const int NCOLS = 3;
   RealMatrix test_mat(NROWS, NCOLS);
@@ -101,30 +106,29 @@ TEST(data_conversions_tests, test_data_conversion_mat2mat_sub) {
   /////////////////  What we want to test
   copy_data(test_mat, dest_mat,
             /* num_rows */ 3,
-            /* num_cols */ 2, roffset, coffset);
+            /* num_cols */ 2,
+            roffset, coffset );
   /////////////////  What we want to test
 
   // Verify correct dimensions
-  EXPECT_TRUE((3 == dest_mat.numRows()));
-  EXPECT_TRUE((2 == dest_mat.numCols()));
+  EXPECT_TRUE(( 3 == dest_mat.numRows() ));
+  EXPECT_TRUE(( 2 == dest_mat.numCols() ));
 
   // Verify contents of what we wrote and what we read
-  for (int i = 0; i < dest_mat.numRows(); ++i)
-    for (int j = 0; j < dest_mat.numCols(); ++j)
-      EXPECT_LT(
-          std::fabs(1. - test_mat(i + roffset, j + coffset) / dest_mat(i, j)),
-          1.e-12 / 100.);
+  for( int i=0; i<dest_mat.numRows(); ++i )
+    for( int j=0; j<dest_mat.numCols(); ++j )
+    EXPECT_LT(std::fabs(1. - test_mat(i+roffset,j+coffset) / dest_mat(i,j)), 1.e-12/100. );
 
   // Verifiy that the copy is a deep copy
-  dest_mat(1, 1) *= 1.5;
-  double diff = dest_mat(1, 1) - test_mat(1 + roffset, 1 + coffset);
-  EXPECT_LT(std::fabs(1. - diff / (0.5 * test_mat(1 + roffset, 1 + coffset))),
-            1.e-12 / 100.);
+  dest_mat(1,1) *= 1.5;
+  double diff = dest_mat(1,1) - test_mat(1+roffset,1+coffset);
+  EXPECT_LT(std::fabs(1. - diff / (0.5*test_mat(1+roffset,1+coffset))), 1.e-12/100. );
 }
 
 //----------------------------------------------------------------
 
-TEST(data_conversions_tests, test_data_conversion_mat2mat_sym) {
+TEST(data_conversions_tests, test_data_conversion_mat2mat_sym)
+{
   const int NROWS = 3;
   const int NCOLS = NROWS;
   RealSymMatrix test_mat(NROWS, NCOLS);
@@ -136,58 +140,62 @@ TEST(data_conversions_tests, test_data_conversion_mat2mat_sym) {
   /////////////////  What we want to test
 
   // Verify correct dimensions
-  EXPECT_TRUE((NROWS == dest_mat.numRows()));
-  EXPECT_TRUE((NCOLS == dest_mat.numCols()));
+  EXPECT_TRUE(( NROWS == dest_mat.numRows() ));
+  EXPECT_TRUE(( NCOLS == dest_mat.numCols() ));
 
   // Verify contents of what we wrote and what we read
-  for (size_t i = 0; i < NROWS; ++i)
-    for (int j = 0; j < NCOLS; ++j)
-      EXPECT_LT(std::fabs(1. - test_mat(i, j) / dest_mat(i, j)), 1.e-12 / 100.);
+  for( size_t i=0; i<NROWS; ++i )
+    for( int j=0; j<NCOLS; ++j )
+    EXPECT_LT(std::fabs(1. - test_mat(i,j) / dest_mat(i,j)), 1.e-12/100. );
 
   // Verifiy that the copy is a deep copy
-  dest_mat(1, 1) *= 1.5;
-  double diff = dest_mat(1, 1) - test_mat(1, 1);
-  EXPECT_LT(std::fabs(1. - diff / (0.5 * test_mat(1, 1))), 1.e-12 / 100.);
+  dest_mat(1,1) *= 1.5;
+  double diff = dest_mat(1,1) - test_mat(1,1);
+  EXPECT_LT(std::fabs(1. - diff / (0.5*test_mat(1,1))), 1.e-12/100. );
 }
 
 //----------------------------------------------------------------
 
-TEST(data_conversions_tests, test_data_conversion_mat_swap) {
-  RealMatrix mat(5, 5);
+TEST(data_conversions_tests, test_data_conversion_mat_swap)
+{
+  RealMatrix mat( 5, 5 );
   mat.random();
   RealMatrix copy_mat(Teuchos::Copy, mat);
 
-  RealMatrix mat_swap(2, 3);
+  RealMatrix mat_swap( 2, 3 );
   mat_swap.random();
   RealMatrix copy_mat_swap(Teuchos::Copy, mat_swap);
 
-  // Cout <<  "swap() -- swap the values and attributes of two matrices ";
+  //Cout <<  "swap() -- swap the values and attributes of two matrices ";
   mat_swap.swap(mat);
-  bool op_result = ((mat_swap == copy_mat) && (mat == copy_mat_swap));
-  // Cout << "shallow swap results -- "<< (op_result ? "successful" : "failed"
-  // )<<std::endl;
-  if (!op_result) FAIL();
+  bool op_result = ( (mat_swap == copy_mat) && (mat == copy_mat_swap) );
+  //Cout << "shallow swap results -- "<< (op_result ? "successful" : "failed" )<<std::endl;
+  if( !op_result )
+    FAIL();
 }
 
 //----------------------------------------------------------------
 
-TEST(data_conversions_tests, test_data_conversion_sym_mat_swap) {
-  RealSymMatrix mat(5);
+TEST(data_conversions_tests, test_data_conversion_sym_mat_swap)
+{
+  RealSymMatrix mat( 5 );
   mat.random();
   RealSymMatrix copy_mat(mat);
 
-  RealSymMatrix mat_swap(3);
+  RealSymMatrix mat_swap( 3 );
   mat_swap.random();
   RealSymMatrix copy_mat_swap(mat_swap);
 
   mat_swap.swap(mat);
-  bool op_result = ((mat_swap == copy_mat) && (mat == copy_mat_swap));
-  if (!op_result) FAIL();
+  bool op_result = ( (mat_swap == copy_mat) && (mat == copy_mat_swap) );
+  if( !op_result )
+    FAIL();
 }
 
 //----------------------------------------------------------------
 
-TEST(data_conversions_tests, test_data_conversion_apply_matrix) {
+TEST(data_conversions_tests, test_data_conversion_apply_matrix)
+{
   const int NROWS = 5;
   const int NCOLS = 3;
   RealMatrix mat(NROWS, NCOLS);
@@ -201,44 +209,52 @@ TEST(data_conversions_tests, test_data_conversion_apply_matrix) {
   /////////////////  What we want to test
 
   // Verify correct dimensions
-  EXPECT_TRUE((NROWS == v2.size()));
+  EXPECT_TRUE(( NROWS == v2.size() ));
 
   // Verify correct values
   Real sum = 0.0;
-  for (size_t i = 0; i < NROWS; ++i) {
+  for( size_t i=0; i<NROWS; ++i )
+  {
     sum = 0.0;
-    for (int j = 0; j < NCOLS; ++j) sum += mat(i, j);
-    EXPECT_LT(std::fabs(1. - sum / v2[i]), 1.e-12 / 100.);
+    for( int j=0; j<NCOLS; ++j )
+      sum += mat(i,j);
+    EXPECT_LT(std::fabs(1. - sum / v2[i]), 1.e-12/100. );
   }
 
   // Now test partial behavior
 
-  std::vector<Real> v3(2 * NCOLS, 2.0);
-  std::vector<Real> v4(2 * NROWS);
+  std::vector<Real> v3(2*NCOLS, 2.0);
+  std::vector<Real> v4(2*NROWS);
 
-  for (size_t i = 0; i < v4.size(); ++i) v4[i] = (Real)i;
+  for( size_t i=0; i<v4.size(); ++i )
+    v4[i] = (Real)i;
 
   /////////////////  What we want to test
   apply_matrix_partial(mat, v3, v4);
   /////////////////  What we want to test
 
   // Verify correct dimensions
-  EXPECT_TRUE((2 * NROWS == v4.size()));
+  EXPECT_TRUE(( 2*NROWS == v4.size() ));
 
   // Verify correct values
-  for (size_t i = 0; i < v4.size(); ++i) {
-    if (i < NROWS) {
+  for( size_t i=0; i<v4.size(); ++i )
+  {
+    if( i<NROWS )
+    {
       sum = 0.0;
-      for (int j = 0; j < NCOLS; ++j) sum += mat(i, j);
-      EXPECT_LT(std::fabs(1. - 2.0 * sum / v4[i]), 1.e-12 / 100.);
-    } else
-      EXPECT_LT(std::fabs(1. - (Real)i / v4[i]), 1.e-12 / 100.);
+      for( int j=0; j<NCOLS; ++j )
+        sum += mat(i,j);
+      EXPECT_LT(std::fabs(1. - 2.0*sum / v4[i]), 1.e-12/100. );
+    }
+    else
+      EXPECT_LT(std::fabs(1. - (Real)i / v4[i]), 1.e-12/100. );
   }
 }
 
 //----------------------------------------------------------------
 
-TEST(data_conversions_tests, test_data_conversion_apply_matrix_transpose) {
+TEST(data_conversions_tests, test_data_conversion_apply_matrix_transpose)
+{
   const int NROWS = 5;
   const int NCOLS = 3;
   RealMatrix mat(NROWS, NCOLS);
@@ -252,44 +268,52 @@ TEST(data_conversions_tests, test_data_conversion_apply_matrix_transpose) {
   /////////////////  What we want to test
 
   // Verify correct dimensions
-  EXPECT_TRUE((NCOLS == v2.size()));
+  EXPECT_TRUE(( NCOLS == v2.size() ));
 
   // Verify correct values
   Real sum = 0.0;
-  for (size_t i = 0; i < NCOLS; ++i) {
+  for( size_t i=0; i<NCOLS; ++i )
+  {
     sum = 0.0;
-    for (int j = 0; j < NROWS; ++j) sum += mat(j, i);
-    EXPECT_LT(std::fabs(1. - sum / v2[i]), 1.e-12 / 100.);
+    for( int j=0; j<NROWS; ++j )
+      sum += mat(j,i);
+    EXPECT_LT(std::fabs(1. - sum / v2[i]), 1.e-12/100. );
   }
 
   // Now test partial behavior
 
-  std::vector<Real> v3(2 * NROWS, 2.0);
-  std::vector<Real> v4(2 * NCOLS);
+  std::vector<Real> v3(2*NROWS, 2.0);
+  std::vector<Real> v4(2*NCOLS);
 
-  for (size_t i = 0; i < v4.size(); ++i) v4[i] = (Real)i;
+  for( size_t i=0; i<v4.size(); ++i )
+    v4[i] = (Real)i;
 
   /////////////////  What we want to test
   apply_matrix_transpose_partial(mat, v3, v4);
   /////////////////  What we want to test
 
   // Verify correct dimensions
-  EXPECT_TRUE((2 * NCOLS == v4.size()));
+  EXPECT_TRUE(( 2*NCOLS == v4.size() ));
 
   // Verify correct values
-  for (size_t i = 0; i < v4.size(); ++i) {
-    if (i < NCOLS) {
+  for( size_t i=0; i<v4.size(); ++i )
+  {
+    if( i<NCOLS )
+    {
       sum = 0.0;
-      for (int j = 0; j < NROWS; ++j) sum += mat(j, i);
-      EXPECT_LT(std::fabs(1. - 2.0 * sum / v4[i]), 1.e-12 / 100.);
-    } else
-      EXPECT_LT(std::fabs(1. - (Real)i / v4[i]), 1.e-12 / 100.);
+      for( int j=0; j<NROWS; ++j )
+        sum += mat(j,i);
+      EXPECT_LT(std::fabs(1. - 2.0*sum / v4[i]), 1.e-12/100. );
+    }
+    else
+      EXPECT_LT(std::fabs(1. - (Real)i / v4[i]), 1.e-12/100. );
   }
 }
 
 //----------------------------------------------------------------
 
-TEST(data_conversions_tests, test_data_conversion_rm2eigM) {
+TEST(data_conversions_tests, test_data_conversion_rm2eigM)
+{
   const int NROWS = 5;
   const int NCOLS = 3;
   RealMatrix rm(NROWS, NCOLS);
@@ -302,13 +326,14 @@ TEST(data_conversions_tests, test_data_conversion_rm2eigM) {
   /////////////////  What we want to test
 
   // Verify correct dimensions
-  EXPECT_TRUE((NROWS == test_mat.rows()));
-  EXPECT_TRUE((NCOLS == test_mat.cols()));
+  EXPECT_TRUE(( NROWS == test_mat.rows() ));
+  EXPECT_TRUE(( NCOLS == test_mat.cols() ));
 
   // Verify contents
-  for (size_t i = 0; i < NROWS; ++i)
-    for (int j = 0; j < NCOLS; ++j)
-      EXPECT_LT(std::fabs(1. - test_mat(i, j) / rm(i, j)), 1.e-12 / 100.);
+  for( size_t i=0; i<NROWS; ++i )
+    for( int j=0; j<NCOLS; ++j )
+    EXPECT_LT(std::fabs(1. - test_mat(i,j) / rm(i,j)), 1.e-12/100. );
+
 
   // Store the original norm to see if we change it via a view
   const Real orig_norm = rm.normOne();
@@ -322,12 +347,13 @@ TEST(data_conversions_tests, test_data_conversion_rm2eigM) {
 
   // Verify correct behavior of view
   const Real new_norm = rm.normOne();
-  EXPECT_LT(std::fabs(1. - 3.14 * orig_norm / new_norm), 1.e-10 / 100.);
+  EXPECT_LT(std::fabs(1. - 3.14*orig_norm / new_norm), 1.e-10/100. );
 }
 
 //----------------------------------------------------------------
 
-TEST(data_conversions_tests, test_data_conversion_eigM2rm) {
+TEST(data_conversions_tests, test_data_conversion_eigM2rm)
+{
   const int NROWS = 5;
   const int NCOLS = 3;
   MatrixXd em = MatrixXd::Random(NROWS, NCOLS);
@@ -339,13 +365,13 @@ TEST(data_conversions_tests, test_data_conversion_eigM2rm) {
   /////////////////  What we want to test
 
   // Verify correct dimensions
-  EXPECT_TRUE((NROWS == test_mat.numRows()));
-  EXPECT_TRUE((NCOLS == test_mat.numCols()));
+  EXPECT_TRUE(( NROWS == test_mat.numRows() ));
+  EXPECT_TRUE(( NCOLS == test_mat.numCols() ));
 
   // Verify contents
-  for (size_t i = 0; i < NROWS; ++i)
-    for (int j = 0; j < NCOLS; ++j)
-      EXPECT_LT(std::fabs(1. - test_mat(i, j) / em(i, j)), 1.e-12 / 100.);
+  for( size_t i=0; i<NROWS; ++i )
+    for( int j=0; j<NCOLS; ++j )
+    EXPECT_LT(std::fabs(1. - test_mat(i,j) / em(i,j)), 1.e-12/100. );
 }
 
 //----------------------------------------------------------------

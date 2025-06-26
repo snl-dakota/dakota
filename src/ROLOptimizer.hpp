@@ -15,47 +15,49 @@
 #define ROL_OPTIMIZER_H
 
 // Dakota headers
-#include "DakotaModel.hpp"
 #include "DakotaOptimizer.hpp"
+#include "DakotaModel.hpp"
 #include "DakotaTraitsBase.hpp"
 
 // ROL headers
-#include "ROL_OptimizationSolver.hpp"
-#include "ROL_StdConstraint.hpp"
 #include "ROL_StdObjective.hpp"
+#include "ROL_StdConstraint.hpp"
+#include "ROL_OptimizationSolver.hpp"
 
 // Semi-standard headers
 #include <boost/iostreams/filter/line.hpp>
 
 namespace Dakota {
 
-// Global enums for use by all classes in this file
-// Evaluation type: 1=function, 2=gradient, 4=Hessian
-// Problem type: 1=unconstrained, 2=bound constrained,
-//               3=equality constrained,
-//               4=equality and bound constrained
+  // Global enums for use by all classes in this file
+  // Evaluation type: 1=function, 2=gradient, 4=Hessian
+  // Problem type: 1=unconstrained, 2=bound constrained,
+  //               3=equality constrained,
+  //               4=equality and bound constrained
 
-enum { AS_FUNC = 1, AS_GRAD = 2, AS_HESS = 4 };
-enum { TYPE_U = 1, TYPE_B = 2, TYPE_E = 3, TYPE_EB = 4 };
+  enum {AS_FUNC=1, AS_GRAD=2, AS_HESS=4};
+  enum {TYPE_U=1, TYPE_B=2, TYPE_E=3, TYPE_EB=4};
+
 
 // -----------------------------------------------------------------
 /** ROLOptimizer specializes DakotaOptimizer to construct and run a
     ROL solver appropriate for the type of problem specified by the
     user. */
 
-class ROLOptimizer : public Optimizer {
- public:
+class ROLOptimizer : public Optimizer
+{
+public:
+
   //
   //- Heading: Constructors and destructor
   //
 
   /// Standard constructor
-  ROLOptimizer(ProblemDescDB &problem_db, ParallelLibrary &parallel_lib,
-               std::shared_ptr<Model> model);
+  ROLOptimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
 
   /// Alternate constructor for Iterator instantiations by name
-  ROLOptimizer(const String &method_name, std::shared_ptr<Model> model);
-
+  ROLOptimizer(const String& method_name, std::shared_ptr<Model> model);
+  
   /// Destructor
   ~ROLOptimizer() override {}
 
@@ -71,13 +73,14 @@ class ROLOptimizer : public Optimizer {
   void core_run() override;
 
   /// Support resetting ROL solver options
-  void reset_solver_options(
-      const Teuchos::ParameterList &);  // ROL solver settings
+  void reset_solver_options(const Teuchos::ParameterList &); // ROL solver settings
 
   /// Accessor for the underlying ROL Problem
-  ROL::OptimizationProblem<Real> &get_rol_problem() { return optProblem; }
+  ROL::OptimizationProblem<Real> & get_rol_problem()
+  { return optProblem; }
 
- protected:
+protected:
+
   //
   //- Heading: constructor convenience member functions
   //
@@ -100,37 +103,40 @@ class ROLOptimizer : public Optimizer {
   /// ROL problem type
   unsigned short problemType;
 
-  /// Handle to ROL's solution vector
+  /// Handle to ROL's solution vector 
   Teuchos::RCP<std::vector<Real> > rolX;
 
-  /// Handle to ROL's lower bounds vector
+  /// Handle to ROL's lower bounds vector 
   Teuchos::RCP<ROL::StdVector<Real> > lowerBounds;
 
-  /// Handle to ROL's upper bounds vector
+  /// Handle to ROL's upper bounds vector 
   Teuchos::RCP<ROL::StdVector<Real> > upperBounds;
 
   /// Handle to ROL::OptimizationProblem, part of ROL's simplified
-  /// interface
+  /// interface 
   ROL::OptimizationProblem<Real> optProblem;
 
-};  // class ROLOptimizer
+}; // class ROLOptimizer
+
 
 // -----------------------------------------------------------------
 /** ROLTraits defines the types of problems and data formats ROL
     supports by overriding the default traits accessors in
     TraitsBase. */
 
-class ROLTraits : public TraitsBase {
- public:
+class ROLTraits: public TraitsBase
+{
+public:
+
   //
   //- Heading: Constructor and destructor
   //
 
   /// Default constructor
-  ROLTraits() {}
+  ROLTraits() { }
 
   /// Destructor
-  ~ROLTraits() override {}
+  ~ROLTraits() override { }
 
   /// ROL default data type to be used by Dakota data adapters
   typedef std::vector<Real> VecT;
@@ -152,80 +158,89 @@ class ROLTraits : public TraitsBase {
   bool supports_nonlinear_equality() override { return true; }
 
   /// Return ROL format for nonlinear equality constraints
-  NONLINEAR_EQUALITY_FORMAT nonlinear_equality_format() override {
-    return NONLINEAR_EQUALITY_FORMAT::TRUE_EQUALITY;
-  }
+  NONLINEAR_EQUALITY_FORMAT nonlinear_equality_format() override
+   { return NONLINEAR_EQUALITY_FORMAT::TRUE_EQUALITY; }
 
   /// Return flag indicating ROL supports nonlinear inequalities
   bool supports_nonlinear_inequality() override { return true; }
 
   /// Return ROL format for nonlinear inequality constraints
-  NONLINEAR_INEQUALITY_FORMAT nonlinear_inequality_format() override {
-    return NONLINEAR_INEQUALITY_FORMAT::TWO_SIDED;
-  }
+  NONLINEAR_INEQUALITY_FORMAT nonlinear_inequality_format() override
+   { return NONLINEAR_INEQUALITY_FORMAT::TWO_SIDED; }
 
-};  // class ROLTraits
+}; // class ROLTraits
+
 
 // -----------------------------------------------------------------
 /** DakotaROLObjective is derived from the ROL objective class.
     It overrides the member functions to provide Dakota-specific
-    implementations of function evaluations. */
+    implementations of function evaluations. */ 
 
-class DakotaROLObjective : public ROL::StdObjective<Real> {
- public:
+class DakotaROLObjective : public ROL::StdObjective<Real>
+{
+public:
+
   //
   //- Heading: Constructor and destructor
   //
 
   /// Constructor
-  DakotaROLObjective(Model &model);
+  DakotaROLObjective(Model & model);
 
   //
   //- Heading: Virtual member function redefinitions
   //
 
   /// Function to return the objective value (response) to ROL
-  Real value(const std::vector<Real> &x, Real &tol) override;
+  Real value(const std::vector<Real> &x,
+	     Real &tol) override;
 
   //
   //- Heading: Data
   //
 
   /// Dakota problem data provided by user
-  Model &dakotaModel;
+  Model & dakotaModel;
 
- private:
-};  // class DakotaROLObjective
+private:
+
+}; // class DakotaROLObjective
+
 
 // -----------------------------------------------------------------
 /** DakotaROLObjectiveGrad is derived from DakotaROLObjective.  It
     implements overrides of ROL member functions to provide a
     Dakota-specific Gradient support for the objective function. This
     separate class is needed to allow for the option of utilizing
-    ROL's finite-differenced gradients */
+    ROL's finite-differenced gradients */ 
 
-class DakotaROLObjectiveGrad : public DakotaROLObjective {
- public:
+class DakotaROLObjectiveGrad : public DakotaROLObjective
+{
+public:
+
   //
   //- Heading: Constructor and destructor
   //
 
   /// Constructor
-  DakotaROLObjectiveGrad(Model &model);
+  DakotaROLObjectiveGrad(Model & model);
 
   /// Destructor
-  ~DakotaROLObjectiveGrad() override {}
+  ~DakotaROLObjectiveGrad() override { }
 
   //
   //- Heading: Virtual member function redefinitions
   //
 
   /// Function to return the response gradient to ROL
-  void gradient(std::vector<Real> &g, const std::vector<Real> &x,
-                Real &tol) override;
+  void gradient(std::vector<Real> &g,
+    const std::vector<Real> &x,
+    Real &tol) override;
 
- private:
-};  // class DakotaROLObjectiveGrad
+private:
+
+}; // class DakotaROLObjectiveGrad
+
 
 // -----------------------------------------------------------------
 /** DakotaROLObjectiveHess is derived from DakotaROLObjectiveGrad. It
@@ -234,19 +249,21 @@ class DakotaROLObjectiveGrad : public DakotaROLObjective {
     separate class is needed (rather than putting the product into
     DakotaROLObjective) because logic in ROL does not always protect
     against calling the Hessian-vector product in cases where there
-    is not actually a Hessian provided. */
+    is not actually a Hessian provided. */ 
 
-class DakotaROLObjectiveHess : public DakotaROLObjectiveGrad {
- public:
+class DakotaROLObjectiveHess : public DakotaROLObjectiveGrad
+{
+public:
+
   //
   //- Heading: Constructor and destructor
   //
 
   /// Constructor
-  DakotaROLObjectiveHess(Model &model);
+  DakotaROLObjectiveHess(Model & model);
 
   /// Destructor
-  ~DakotaROLObjectiveHess() override {}
+  ~DakotaROLObjectiveHess() override { }
 
   //
   //- Heading: Virtual member function redefinitions
@@ -254,16 +271,22 @@ class DakotaROLObjectiveHess : public DakotaROLObjectiveGrad {
 
   /// Function to return Hessian-vector product needed by ROL when
   /// using user/Dakota-supplied Hessians
-  void hessVec(std::vector<Real> &hv, const std::vector<Real> &v,
-               const std::vector<Real> &x, Real &tol) override;
+  void hessVec(std::vector<Real> &hv,
+	       const std::vector<Real> &v,
+	       const std::vector<Real> &x,
+	       Real &tol) override;
 
   /// This function is not used by ROL algorithms currently supported
   /// by Dakota but is included to protect against unexpected behavior
-  void invHessVec(std::vector<Real> &hv, const std::vector<Real> &v,
-                  const std::vector<Real> &x, Real &tol) override;
+  void invHessVec(std::vector<Real> &hv,
+		  const std::vector<Real> &v,
+		  const std::vector<Real> &x,
+		  Real &tol) override;
 
- private:
-};  // class DakotaROLObjectiveHess
+private:
+
+}; // class DakotaROLObjectiveHess
+
 
 // -----------------------------------------------------------------
 /** DakotaROLIneqConstraints is derived from the ROL constraint
@@ -271,35 +294,40 @@ class DakotaROLObjectiveHess : public DakotaROLObjectiveGrad {
     Dakota-specific implementations of inequality constraint
     evaluation. */
 
-class DakotaROLIneqConstraints : public ROL::StdConstraint<Real> {
- public:
+class DakotaROLIneqConstraints : public ROL::StdConstraint<Real>
+{
+public:
+
   //
   //- Heading: Constructor and destructor
   //
 
   /// Constructor
-  DakotaROLIneqConstraints(Model &model);
+  DakotaROLIneqConstraints(Model & model);
 
   //
   //- Heading: Virtual member function redefinitions
   //
 
   /// Function to return the constraint value to ROL
-  void value(std::vector<Real> &c, const std::vector<Real> &x,
-             Real &tol) override;
+  void value(std::vector<Real> &c,
+       const std::vector<Real> &x,
+       Real &tol) override;
 
- protected:
+protected:
+
   //
   //- Heading: Data
   //
 
   /// Dakota problem data provided by user
-  Model &dakotaModel;
+  Model & dakotaModel;
 
   /// Whether or not problem has nonlinear inequality constraints
   bool haveNlnConst;
 
-};  // class DakotaROLIneqConstraints
+}; // class DakotaROLIneqConstraints
+
 
 // -----------------------------------------------------------------
 /** DakotaROLIneqConstraintsGrad is derived from
@@ -309,17 +337,19 @@ class DakotaROLIneqConstraints : public ROL::StdConstraint<Real> {
     separate class is needed to allow for the option of utilizing
     ROL's finite-differenced gradients */
 
-class DakotaROLIneqConstraintsGrad : public DakotaROLIneqConstraints {
- public:
+class DakotaROLIneqConstraintsGrad : public DakotaROLIneqConstraints
+{
+public:
+
   //
   //- Heading: Constructor and destructor
   //
 
   /// Constructor
-  DakotaROLIneqConstraintsGrad(Model &model);
+  DakotaROLIneqConstraintsGrad(Model & model);
 
   /// Destructor
-  ~DakotaROLIneqConstraintsGrad() override {}
+  ~DakotaROLIneqConstraintsGrad() override { }
 
   //
   //- Heading: Virtual member function redefinitions
@@ -327,16 +357,22 @@ class DakotaROLIneqConstraintsGrad : public DakotaROLIneqConstraints {
 
   /// Function to return the result of applying the constraint
   /// gradient on an arbitrary vector to ROL
-  void applyJacobian(std::vector<Real> &jv, const std::vector<Real> &v,
-                     const std::vector<Real> &x, Real &tol) override;
+  void applyJacobian(std::vector<Real> &jv,
+         const std::vector<Real> &v,
+         const std::vector<Real> &x,
+         Real &tol) override;
 
   /// Function to return the result of applying the constraint adjoint
   /// to an arbitrary vector to ROL
-  void applyAdjointJacobian(std::vector<Real> &ajv, const std::vector<Real> &v,
-                            const std::vector<Real> &x, Real &tol) override;
+  void applyAdjointJacobian(std::vector<Real> &ajv,
+          const std::vector<Real> &v,
+          const std::vector<Real> &x,
+          Real &tol) override;
 
- private:
-};  // class DakotaROLIneqConstraintsGrad
+private:
+
+}; // class DakotaROLIneqConstraintsGrad
+
 
 // -----------------------------------------------------------------
 /** DakotaROLIneqConstraintsHess is derived from
@@ -348,17 +384,19 @@ class DakotaROLIneqConstraintsGrad : public DakotaROLIneqConstraints {
     protect against calling the adjoint Hessian-vector product in
     cases where there is not actually a Hessian provided. */
 
-class DakotaROLIneqConstraintsHess : public DakotaROLIneqConstraintsGrad {
- public:
+class DakotaROLIneqConstraintsHess : public DakotaROLIneqConstraintsGrad
+{
+public:
+
   //
   //- Heading: Constructor and destructor
   //
 
   /// Constructor
-  DakotaROLIneqConstraintsHess(Model &model);
+  DakotaROLIneqConstraintsHess(Model & model);
 
   /// Destructor
-  ~DakotaROLIneqConstraintsHess() override {}
+  ~DakotaROLIneqConstraintsHess() override { }
 
   //
   //- Heading: Virtual member function redefinitions
@@ -366,48 +404,57 @@ class DakotaROLIneqConstraintsHess : public DakotaROLIneqConstraintsGrad {
 
   /// Function to return the result of applying the constraint adjoint
   /// Hessian to an arbitrary vector to ROL
-  void applyAdjointHessian(std::vector<Real> &ahuv, const std::vector<Real> &u,
-                           const std::vector<Real> &v,
-                           const std::vector<Real> &x, Real &tol) override;
+  void applyAdjointHessian( std::vector<Real>       & ahuv,
+                            const std::vector<Real> & u, 
+                            const std::vector<Real> & v,
+                            const std::vector<Real> & x,
+                            Real &tol ) override;
 
- private:
-};  // class DakotaROLIneqConstraintsHess
+private:
+
+}; // class DakotaROLIneqConstraintsHess
+
 
 // -----------------------------------------------------------------
 /** DakotaROLEqConstraints is derived from the ROL constraint class.
     It overrides the member functions to provide Dakota-specific
     implementations of equality constraint evaluation and the
-    application of the equality constraint Jacobian to a vector. */
+    application of the equality constraint Jacobian to a vector. */ 
 
-class DakotaROLEqConstraints : public ROL::StdConstraint<Real> {
- public:
+class DakotaROLEqConstraints : public ROL::StdConstraint<Real>
+{
+public:
+
   //
   //- Heading: Constructor and destructor
   //
 
   /// Constructor
-  DakotaROLEqConstraints(Model &model);
+  DakotaROLEqConstraints(Model & model);
 
   //
   //- Heading: Virtual member function redefinitions
   //
 
   /// Function to return the constaint value to ROL
-  void value(std::vector<Real> &c, const std::vector<Real> &x,
-             Real &tol) override;
+  void value(std::vector<Real> &c,
+	     const std::vector<Real> &x,
+	     Real &tol) override;
 
- protected:
+protected:
+
   //
   //- Heading: Data
   //
 
   /// Dakota problem data provided by user
-  Model &dakotaModel;
+  Model & dakotaModel;
 
   /// Whether or not problem has nonlinear equality constraints
   bool haveNlnConst;
 
-};  // class DakotaROLEqConstraints
+}; // class DakotaROLEqConstraints
+
 
 // -----------------------------------------------------------------
 /** DakotaROLEqConstraintsGrad is derived from
@@ -417,17 +464,19 @@ class DakotaROLEqConstraints : public ROL::StdConstraint<Real> {
     separate class is needed to allow for the option of utilizing
     ROL's finite-differenced gradients */
 
-class DakotaROLEqConstraintsGrad : public DakotaROLEqConstraints {
- public:
+class DakotaROLEqConstraintsGrad : public DakotaROLEqConstraints
+{
+public:
+
   //
   //- Heading: Constructor and destructor
   //
 
   /// Constructor
-  DakotaROLEqConstraintsGrad(Model &model);
+  DakotaROLEqConstraintsGrad(Model & model);
 
   /// Destructor
-  ~DakotaROLEqConstraintsGrad() override {}
+  ~DakotaROLEqConstraintsGrad() override { }
 
   //
   //- Heading: Virtual member function redefinitions
@@ -435,20 +484,26 @@ class DakotaROLEqConstraintsGrad : public DakotaROLEqConstraints {
 
   /// Function to return the result of applying the constraint
   /// gradient to an arbitrary vector to ROL
-  void applyJacobian(std::vector<Real> &jv, const std::vector<Real> &v,
-                     const std::vector<Real> &x, Real &tol) override;
+  void applyJacobian(std::vector<Real> &jv,
+         const std::vector<Real> &v,
+         const std::vector<Real> &x,
+         Real &tol) override;
 
   /// Function to return the result of applying the constraint adjoint
   /// to an arbitrary vector to ROL
-  void applyAdjointJacobian(std::vector<Real> &ajv, const std::vector<Real> &v,
-                            const std::vector<Real> &x, Real &tol) override;
+  void applyAdjointJacobian(std::vector<Real> &ajv,
+          const std::vector<Real> &v,
+          const std::vector<Real> &x,
+          Real &tol) override;
 
- private:
+private:
+
   //
   //- Heading: Data
   //
 
-};  // class DakotaROLIneqConstraintsGrad
+}; // class DakotaROLIneqConstraintsGrad
+
 
 // -----------------------------------------------------------------
 /** DakotaROLEqConstraintsHess is derived from
@@ -460,17 +515,19 @@ class DakotaROLEqConstraintsGrad : public DakotaROLEqConstraints {
     protect against calling the adjoint Hessian-vector product in
     cases where there is not actually a Hessian provided. */
 
-class DakotaROLEqConstraintsHess : public DakotaROLEqConstraintsGrad {
- public:
+class DakotaROLEqConstraintsHess : public DakotaROLEqConstraintsGrad
+{
+public:
+
   //
   //- Heading: Constructor and destructor
   //
 
   /// Constructor
-  DakotaROLEqConstraintsHess(Model &model);
+  DakotaROLEqConstraintsHess(Model & model);
 
   /// Destructor
-  ~DakotaROLEqConstraintsHess() override {}
+  ~DakotaROLEqConstraintsHess() override { }
 
   //
   //- Heading: Virtual member function redefinitions
@@ -478,41 +535,48 @@ class DakotaROLEqConstraintsHess : public DakotaROLEqConstraintsGrad {
 
   /// Function to return the result of applying the constraint adjoint
   /// Hessian to an arbitrary vector to ROL
-  void applyAdjointHessian(std::vector<Real> &ahuv, const std::vector<Real> &u,
-                           const std::vector<Real> &v,
-                           const std::vector<Real> &x, Real &tol) override;
+  void applyAdjointHessian( std::vector<Real>       & ahuv,
+                            const std::vector<Real> & u, 
+                            const std::vector<Real> & v,
+                            const std::vector<Real> & x,
+                            Real &tol ) override;
 
- private:
+private:
+
   //
   //- Heading: Data
   //
 
-};  // class DakotaROLIneqConstraintsHess
+}; // class DakotaROLIneqConstraintsHess
+
 
 // -----------------------------------------------------------------
 /** PrefixingLineFilter is dervied from a Boost stream filter class in
     order to preface output with specified text.  In this case, the
-    intent is to distinguish ROL output. */
+    intent is to distinguish ROL output. */ 
 
-class PrefixingLineFilter : public boost::iostreams::line_filter {
- public:
+class PrefixingLineFilter : public boost::iostreams::line_filter
+{
+public:
+
   //
   //- Heading: Constructor and destructor
   //
 
   /// Constructor
-  explicit PrefixingLineFilter(const std::string &prefix_in)
-      : linePrefix(prefix_in) { /* empty ctor */ }
+  explicit PrefixingLineFilter(const std::string& prefix_in):
+    linePrefix(prefix_in)
+  { /* empty ctor */ }
 
- private:
+private:
+
   //
   //- Heading: Virtual member function redefinitions
   //
 
   /// "Filter" the line by adding the prefix
-  std::string do_filter(const std::string &line) override {
-    return linePrefix + line;
-  }
+  std::string do_filter(const std::string& line) override
+  { return linePrefix + line; }
 
   //
   //- Heading: Data
@@ -521,8 +585,8 @@ class PrefixingLineFilter : public boost::iostreams::line_filter {
   /// Prefix for each line
   std::string linePrefix;
 
-};  // class PrefixingLineFilter
+}; // class PrefixingLineFilter
 
-}  // namespace Dakota
+} // namespace Dakota
 
 #endif

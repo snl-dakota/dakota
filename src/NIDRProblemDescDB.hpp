@@ -10,12 +10,11 @@
 #ifndef NIDR_PROBLEM_DESC_DB_H
 #define NIDR_PROBLEM_DESC_DB_H
 
+#include "ProblemDescDB.hpp"
 #include <external/nidr/nidr.h>
 
-#include "ProblemDescDB.hpp"
-
 namespace Dakota {
-
+ 
 /// The derived input file database utilizing the new IDR parser.
 
 /** The NIDRProblemDescDB class is derived from ProblemDescDB for use
@@ -28,8 +27,10 @@ namespace Dakota {
     routines declared herein is NIDRProblemDescDB.cpp, in which most
     routines are so short that a description seems unnecessary. */
 
-class NIDRProblemDescDB : public ProblemDescDB {
- public:
+class NIDRProblemDescDB: public ProblemDescDB
+{
+public:
+
   //
   //- Heading: Constructors and Destructor
   //
@@ -46,8 +47,7 @@ class NIDRProblemDescDB : public ProblemDescDB {
   /// parses the input file and populates the problem description
   /// database using NIDR.
   void derived_parse_inputs(const std::string_view dakota_input,
-                            const std::string_view parser_options,
-                            bool command_line_run) override;
+			    const std::string_view parser_options, bool command_line_run) override;
   /// perform any data processing that must be coordinated with DB buffer
   /// broadcasting (performed prior to broadcasting the DB buffer on rank 0
   /// and after receiving the DB buffer on other processor ranks)
@@ -63,48 +63,59 @@ class NIDRProblemDescDB : public ProblemDescDB {
   /// kwhandler functions in order to avoid the need for static data.
   /// Only initialized when parsing an input file; will be NULL for
   /// cases of direct DB population only.
-  static NIDRProblemDescDB *pDDBInstance;
+  static NIDRProblemDescDB* pDDBInstance;
 
- private:
+private:
+
   /// List of Var_Info pointers, one per Variables instance
-  std::list<void *> VIL;
+  std::list<void*> VIL;
 
   /// check a single variables node; input argument v is Var_Info*
-  static void check_variables_node(void *v);
-
+  static void check_variables_node(void* v);
+  
   /// tokenize and try to validate the presence of an analysis driver,
   /// potentially included in the linked or copied template files
-  static int check_driver(const String &an_driver,
-                          const StringArray &link_files,
-                          const StringArray &copy_files);
+  static int check_driver(const String& an_driver,
+			  const StringArray& link_files,
+			  const StringArray& copy_files);
 
- public:
+public:
+
   /// number of parse error encountered
   static int nerr;
   /// print and error message and immediately abort
   static void botch(const char *fmt, ...);
   /// check each node in a list of DataVariables, first mapping
   /// DataVariables members back to flat NIDR arrays if needed.
-  static void check_variables(std::list<DataVariables> *);
-  static void check_responses(std::list<DataResponses> *);
-  /// Validate format user-supplied descriptors
+  static void check_variables(std::list<DataVariables>*);
+  static void check_responses(std::list<DataResponses>*);
+  /// Validate format user-supplied descriptors 
   static void check_descriptor_format(const StringArray &labels);
   /// Ensure no response descriptors are repeated
   static void check_descriptors_for_repeats(const StringArray &labels);
   /// Ensure no variable descriptors are repeated
   static void check_descriptors_for_repeats(
-      const StringArray &cd_labels, const StringArray &ddr_labels,
-      const StringArray &ddsi_labels, const StringArray &ddss_labels,
-      const StringArray &ddsr_labels, const StringArray &cs_labels,
-      const StringArray &dsr_labels, const StringArray &dssi_labels,
-      const StringArray &dsss_labels, const StringArray &dssr_labels,
-      const StringArray &cau_labels, const StringArray &diau_labels,
-      const StringArray &dsau_labels, const StringArray &drau_labels,
-      const StringArray &ceu_labels, const StringArray &dieu_labels,
-      const StringArray &dseu_labels, const StringArray &dreu_labels);
+                               const StringArray &cd_labels,
+                               const StringArray &ddr_labels,
+                               const StringArray &ddsi_labels,
+                               const StringArray &ddss_labels,
+                               const StringArray &ddsr_labels,
+                               const StringArray &cs_labels,
+                               const StringArray &dsr_labels,
+                               const StringArray &dssi_labels,
+                               const StringArray &dsss_labels,
+                               const StringArray &dssr_labels,
+                               const StringArray &cau_labels,
+                               const StringArray &diau_labels,
+                               const StringArray &dsau_labels,
+                               const StringArray &drau_labels,
+                               const StringArray &ceu_labels,
+                               const StringArray &dieu_labels,
+                               const StringArray &dseu_labels,
+                               const StringArray &dreu_labels);
   /// Bounds and initial point check and inferred bounds generation
-  static void make_variable_defaults(std::list<DataVariables> *);
-  static void make_response_defaults(std::list<DataResponses> *);
+  static void make_variable_defaults(std::list<DataVariables>*);
+  static void make_response_defaults(std::list<DataResponses>*);
   /// print an error message and increment nerr, but continue
   static void squawk(const char *fmt, ...);
   /// print a warning
@@ -118,8 +129,7 @@ class NIDRProblemDescDB : public ProblemDescDB {
   // (would probably have to enable preprocessor in Doxygen)
   /// /cond
 
-#define KWH(x) \
-  static void x(const char *keyname, Values *val, void **g, void *v)
+#define KWH(x) static void x(const char *keyname, Values *val, void **g, void *v)
 
   KWH(iface_Real);
   KWH(iface_Rlit);
@@ -212,10 +222,10 @@ class NIDRProblemDescDB : public ProblemDescDB {
   KWH(resp_utype);
   KWH(resp_augment_utype);
 
-  // KWH(env_Real);
-  // KWH(env_RealL);
+  //KWH(env_Real);
+  //KWH(env_RealL);
   KWH(env_int);
-  // KWH(env_lit);
+  //KWH(env_lit);
   KWH(env_start);
   KWH(env_str);
   KWH(env_strL);
@@ -257,20 +267,24 @@ class NIDRProblemDescDB : public ProblemDescDB {
   /// /endcond
 };
 
+
 /// Free convenience function that flatten sizes of an array of std
 /// containers; takes an array of containers and returns an IntArray
 /// containing the sizes of each container in the input array.  Note:
 /// Did not specialize for vector<RealVector> as no current use cases.
 template <class ContainerT>
-inline void flatten_num_array(const std::vector<ContainerT> &input_array,
-                              IntArray **pia) {
+inline void 
+flatten_num_array(const std::vector<ContainerT>& input_array, IntArray** pia)
+{
   size_t input_len = input_array.size();
   IntArray *ia;
 
   *pia = ia = new IntArray(input_len);
-  for (size_t i = 0; i < input_len; ++i) (*ia)[i] = input_array[i].size();
+  for(size_t i = 0; i < input_len; ++i)
+    (*ia)[i] = input_array[i].size();
 }
 
-}  // namespace Dakota
+
+} // namespace Dakota
 
 #endif

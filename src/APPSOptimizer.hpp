@@ -10,22 +10,26 @@
 #ifndef APPS_OPTIMIZER_H
 #define APPS_OPTIMIZER_H
 
-#include "APPSEvalMgr.hpp"
 #include "DakotaOptimizer.hpp"
-#include "DakotaTraitsBase.hpp"
-#include "HOPSPACK_Hopspack.hpp"
-#include "HOPSPACK_LinConstr.hpp"
+#include "APPSEvalMgr.hpp"
+
 #include "HOPSPACK_ParameterList.hpp"
+#include "HOPSPACK_LinConstr.hpp"
+#include "HOPSPACK_Hopspack.hpp"
 #include "HOPSPACK_float.hpp"
+#include "DakotaTraitsBase.hpp"
+
 
 namespace Dakota {
 
 /// HOPSPACK-specific traits class.
 
-/** AppsTraits specializes some traits accessors by over-riding the default
+/** AppsTraits specializes some traits accessors by over-riding the default 
 accessors in TraitsBase. */
-class AppsTraits : public TraitsBase {
- public:
+class AppsTraits: public TraitsBase
+{
+  public:
+
   /// default constructor
   AppsTraits();
 
@@ -35,12 +39,10 @@ class AppsTraits : public TraitsBase {
 
   static double noValue();
 
-  // Allows Dakota to use a single call that gets redirected to a unique
-  // Optimizer
-  static double getBestObj(const OptT&);
+  // Allows Dakota to use a single call that gets redirected to a unique Optimizer
+  static double getBestObj(const OptT &);
 
-  static void copy_matrix_data(const RealMatrix& source,
-                               HOPSPACK::Matrix& target);
+  static void copy_matrix_data(const RealMatrix& source, HOPSPACK::Matrix& target);
 
   /// destructor
   ~AppsTraits() override;
@@ -64,37 +66,43 @@ class AppsTraits : public TraitsBase {
   bool supports_nonlinear_equality() override { return true; }
 
   /// Return the format used for nonlinear equality constraints
-  NONLINEAR_EQUALITY_FORMAT nonlinear_equality_format() override {
-    return NONLINEAR_EQUALITY_FORMAT::TRUE_EQUALITY;
-  }
+  NONLINEAR_EQUALITY_FORMAT nonlinear_equality_format() override
+    { return NONLINEAR_EQUALITY_FORMAT::TRUE_EQUALITY; }
 
   /// Return the flag indicating whether method supports nonlinear inequalities
   bool supports_nonlinear_inequality() override { return true; }
 
   /// Return the format used for nonlinear inequality constraints
-  NONLINEAR_INEQUALITY_FORMAT nonlinear_inequality_format() override {
-    return NONLINEAR_INEQUALITY_FORMAT::ONE_SIDED_LOWER;
-  }
+  NONLINEAR_INEQUALITY_FORMAT nonlinear_inequality_format() override
+    { return NONLINEAR_INEQUALITY_FORMAT::ONE_SIDED_LOWER; }
+
 };
 
-inline AppsTraits::~AppsTraits() {}
+inline AppsTraits::~AppsTraits()
+{ }
 
-inline double AppsTraits::noValue() { return HOPSPACK::dne(); }
 
-inline void AppsTraits::copy_matrix_data(const RealMatrix& source,
-                                         HOPSPACK::Matrix& target) {
+inline double AppsTraits::noValue()
+{ return HOPSPACK::dne(); }
+
+
+inline void AppsTraits::copy_matrix_data(const RealMatrix& source, HOPSPACK::Matrix& target)
+{
   HOPSPACK::Vector tmp_vector;
-  for (int i = 0; i < source.numRows(); ++i) {
+  for (int i=0; i<source.numRows(); ++i) {
     copy_row_vector(source, i, tmp_vector);
     target.addRow(tmp_vector);
   }
 }
 
-inline double AppsTraits::getBestObj(const OptT& optimizer) {
+
+inline double AppsTraits::getBestObj(const OptT & optimizer)
+{
   return optimizer.getBestF();
 }
 
-/// Wrapper class for HOPSPACK
+
+/// Wrapper class for HOPSPACK 
 
 /** The APPSOptimizer class provides a wrapper for HOPSPACK, a
     Sandia-developed C++ library for generalized pattern search.
@@ -115,21 +123,22 @@ inline double AppsTraits::getBestObj(const OptT& optimizer) {
     Parameter", and "Penalty Smoothing Value" data attributes.  Refer
     to the HOPS web site (https://software.sandia.gov/trac/hopspack)
     for additional information on HOPS objects and controls. */
-class APPSOptimizer : public Optimizer {
- public:
+class APPSOptimizer : public Optimizer
+{
+public:
+
   //
   //- Heading: Constructors and destructor
   //
 
   /// constructor
-  APPSOptimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
-                std::shared_ptr<Model> model);
+  APPSOptimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
 
   /// alternate constructor for on-the-fly instantiation without ProblemDescDB
   APPSOptimizer(std::shared_ptr<Model> model);
 
   /// alternate constructor for even more rudimentary on-the-fly instantiation
-  APPSOptimizer() : Optimizer(std::shared_ptr<TraitsBase>(new AppsTraits())) {}
+  APPSOptimizer():Optimizer(std::shared_ptr<TraitsBase>(new AppsTraits())) { }
 
   /// destructor
   ~APPSOptimizer() override {
@@ -140,15 +149,15 @@ class APPSOptimizer : public Optimizer {
   //- Heading: Virtual function redefinitions
   //
 
-  // Allows us to initialize constraints in a different order than the default
-  // behavior
+  // Allows us to initialize constraints in a different order than the default behavior
   //    Could be replaced with better use of traits - RWH
   void initialize_run() override;
 
   /// compute the optimal solution
   void core_run() override;
 
- protected:
+protected:
+
   //
   //- Heading: Member functions
   //
@@ -170,7 +179,7 @@ class APPSOptimizer : public Optimizer {
   int numTotalVars;
 
   /// Pointer to APPS parameter list
-  HOPSPACK::ParameterList params;
+  HOPSPACK::ParameterList  params;
 
   /// Pointer to APPS problem parameter sublist
   HOPSPACK::ParameterList* problemParams;
@@ -188,5 +197,5 @@ class APPSOptimizer : public Optimizer {
   APPSEvalMgr* evalMgr;
 };
 
-}  // namespace Dakota
+} // namespace Dakota
 #endif

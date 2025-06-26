@@ -10,8 +10,9 @@
 #ifndef GETLONGOPT_H
 #define GETLONGOPT_H
 
-#include "dakota_global_defs.hpp"
 #include "dakota_system_defs.hpp"
+#include "dakota_global_defs.hpp"
+
 
 namespace Dakota {
 
@@ -23,14 +24,15 @@ namespace Dakota {
     ambiguity. If an option requires a value, the value should be
     separated from the option either by whitespace or an "=". */
 
-class GetLongOpt {
- public:
+class GetLongOpt
+{
+public:
   /// enum for different types of values associated with command line options.
-  enum OptType {
+  enum OptType { 
     Valueless,      ///< option that may never have a value
-    OptionalValue,  ///< option with optional value
+    OptionalValue,  ///< option with optional value 
     MandatoryValue  ///< option with required value
-  };
+   };
 
   /// Constructor
   /** Constructor for GetLongOpt takes an optional argument: the option
@@ -38,19 +40,19 @@ class GetLongOpt {
       Unix option marker. */
   GetLongOpt(const char optmark = '-');
 
-  ~GetLongOpt();  ///< Destructor
-
+  ~GetLongOpt(); ///< Destructor
+  
   /// parse the command line args (argc, argv).
   /** A return value < 1 represents a parse error. Appropriate error
       messages are printed when errors are seen. parse returns the the
       optind (see getopt(3)) if parsing is successful. */
-  int parse(int argc, char *const *argv);
+  int parse(int argc, char * const *argv);
   /// parse a string of options (typically given from the environment).
   /** A return value < 1 represents a parse error. Appropriate error
       messages are printed when errors are seen. parse takes two
       strings: the first one is the string to be parsed and the second
       one is a string to be prefixed to the parse errors. */
-  int parse(char *const str, char *const p);
+  int parse(char * const str, char * const p);
 
   /// Add an option to the list of valid command options.
   /** enroll adds option specifications to its internal database. The
@@ -66,9 +68,9 @@ class GetLongOpt {
       option is not specified. For flags (options with Valueless), use
       "" (empty string, or in fact any arbitrary string) for
       specifying TRUE and 0 (null pointer) to specify FALSE. */
-  int enroll(const char *const opt, const OptType t, const char *const desc,
-             const char *const val);
-
+  int enroll(const char * const opt, const OptType t,
+	     const char * const desc, const char * const val);
+  
   /// Retrieve value of option
   /** The values of the options that are enrolled in the database can
       be retrieved using retrieve. This returns a string and this
@@ -80,7 +82,7 @@ class GetLongOpt {
       enrolled last. For example, -{v} will expand to {-verify}.  If
       you try to retrieve something you didn't enroll, you will get a
       warning message. */
-  const char *retrieve(const char *const opt) const;
+  const char *retrieve(const char * const opt) const;
 
   /// Print usage information to outfile
   void usage(std::ostream &outfile = Cout) const;
@@ -89,44 +91,43 @@ class GetLongOpt {
   /** GetLongOpt::usage is overloaded. If passed a string "str", it sets the
       internal usage string to "str". Otherwise it simply prints the
       command usage. */
-  void usage(const char *str) { ustring = str; }
+  void usage(const char *str)		{ ustring = str; }
 
   /// Store a specified option value
   void store(const char *name, const char *value);
 
- private:
+private:
   struct Cell {
-    const char *option;       ///< option name
-    OptType type;             ///< option type
-    const char *description;  ///< a description of option
-    const char *value;        ///< value of option (string)
-    Cell *next;               ///< pointer to the next cell
+     const char *option;	///< option name
+     OptType type;		///< option type
+     const char *description;	///< a description of option
+     const char *value;	        ///< value of option (string)
+     Cell *next;		///< pointer to the next cell
+     
+     Cell() { option = description = value = 0; next = 0; }
+   };
 
-    Cell() {
-      option = description = value = 0;
-      next = 0;
-    }
-  };
-
-  Cell *table;          ///< option table
-  const char *ustring;  ///< usage message
-  char *pname;          ///< program basename
-  char optmarker;       ///< option marker
-
-  int enroll_done;  ///< finished enrolling
-  Cell *last;       ///< last entry in option table
+  Cell *table;				///< option table
+  const char *ustring;			///< usage message
+  char *pname;				///< program basename
+  char optmarker;			///< option marker
+  
+  int enroll_done;			///< finished enrolling
+  Cell *last;				///< last entry in option table 
 
   /// extract the base name from a string as delimited by '/'
-  char *basename(char *const p) const;
+  char *basename(char * const p) const;
   /// internal convenience function for setting Cell::value
   int setcell(Cell *c, char *valtoken, char *nexttoken, const char *p);
 };
+
 
 //- Class:       CommandLineHandler
 //- Description: CommandLineHandler provides additional functionality that
 //-              is specific to Dakota's needs beyond that of the base class,
 //-              GetLongOpt.
 //- Owner:       Bill Bohnhoff
+
 
 /// Utility class for managing command line inputs to DAKOTA.
 
@@ -135,8 +136,10 @@ class GetLongOpt {
     command line options.  Inheritance is used to allow the class to
     have all the functionality of the base class, GetLongOpt. */
 
-class CommandLineHandler : public GetLongOpt {
- public:
+class CommandLineHandler: public GetLongOpt
+{
+public:
+
   //
   //- Heading: Constructor and destructor
   //
@@ -144,17 +147,17 @@ class CommandLineHandler : public GetLongOpt {
   /// default constructor, requires check_usage() call for parsing
   CommandLineHandler();
   /// constructor with parsing
-  CommandLineHandler(int argc, char **argv, int world_rank);
+  CommandLineHandler(int argc, char** argv, int world_rank);
   /// destructor
   ~CommandLineHandler();
 
   //
   //- Heading: Methods
-  //
+  //   
 
   /// Verifies that DAKOTA is called with the correct command usage.
   /// Prints a descriptive message and exits the program if incorrect.
-  void check_usage(int argc, char **argv);
+  void check_usage(int argc, char** argv);
 
   /// Returns the number of evaluations to be read from the restart
   /// file (as specified on the DAKOTA command line) as an integer
@@ -164,41 +167,46 @@ class CommandLineHandler : public GetLongOpt {
   /// Print usage information to outfile, conditionally on rank
   void usage(std::ostream &outfile = Cout) const;
 
- private:
+private:
+
   //
   //- Heading: Methods
   //
 
   /// enrolls the supported command line inputs.
   void initialize_options();
-
+  
   /// output only on Dakota worldRank 0 if possible
-  void output_helper(const std::string &message, std::ostream &os) const;
-
-  /// Rank of this process within Dakota's allocation; manages conditional
-  /// output
+  void output_helper(const std::string& message, std::ostream &os) const;
+  
+  /// Rank of this process within Dakota's allocation; manages conditional output
   int worldRank;
+
 };
 
-inline CommandLineHandler::CommandLineHandler() : worldRank(0) {
-  initialize_options();
-}
 
-inline CommandLineHandler::CommandLineHandler(int argc, char **argv,
-                                              int world_rank)
-    : worldRank(world_rank) {
-  initialize_options();
-  check_usage(argc, argv);
-}
+inline CommandLineHandler::CommandLineHandler():
+  worldRank(0)
+{ initialize_options(); }
 
-inline CommandLineHandler::~CommandLineHandler() {}
 
-inline int CommandLineHandler::read_restart_evals() const {
-  const char *stop_restart_str = retrieve("stop_restart");
+inline CommandLineHandler::
+CommandLineHandler(int argc, char** argv, int world_rank):
+  worldRank(world_rank)
+{ initialize_options(); check_usage(argc, argv); }
+
+
+inline CommandLineHandler::~CommandLineHandler() { }
+
+
+inline int CommandLineHandler::read_restart_evals() const
+{
+  const char* stop_restart_str = retrieve("stop_restart");
   // stop_restart_str is a NULL pointer if no command line input
   return (stop_restart_str) ? std::atoi(stop_restart_str) : 0;
 }
 
-}  // namespace Dakota
 
-#endif  // GETLONGOPT_H
+} // namespace Dakota
+
+#endif // GETLONGOPT_H

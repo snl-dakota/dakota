@@ -28,6 +28,6 @@ extern UInt64 joe_kuo_d1024_t32_m32[][1024];
 /// Order 2 Sobol generating matrices [source?]
 extern UInt64 sobol_d250_t64_m32[][250];
 
-}  // namespace Dakota
+} // namespace Dakota
 
 #endif

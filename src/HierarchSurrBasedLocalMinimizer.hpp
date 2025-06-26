@@ -10,31 +10,34 @@
 #ifndef HIERARCH_SURR_BASED_LOCAL_MINIMIZER_H
 #define HIERARCH_SURR_BASED_LOCAL_MINIMIZER_H
 
-#include "DakotaModel.hpp"
-#include "EnsembleSurrModel.hpp"
-#include "SurrBasedLevelData.hpp"
 #include "SurrBasedLocalMinimizer.hpp"
+#include "EnsembleSurrModel.hpp"
+#include "DakotaModel.hpp"
+#include "SurrBasedLevelData.hpp"
 
 namespace Dakota {
+
 
 /// Class for multilevel-multifidelity optimization algorithm
 
 /** This minimizer uses SurrogateModel(s) to perform minimization leveraging
     multiple model forms and discretization levels. */
 
+
 /**
- * \brief A version of TraitsBase specialized for multilevel-multifidelity
- * minimizer
+ * \brief A version of TraitsBase specialized for multilevel-multifidelity minimizer
  *
  */
 
-class HierarchSurrBasedLocalTraits : public TraitsBase {
- public:
+class HierarchSurrBasedLocalTraits: public TraitsBase
+{
+  public:
+
   /// default constructor
-  HierarchSurrBasedLocalTraits() {}
+  HierarchSurrBasedLocalTraits() { }
 
   /// destructor
-  ~HierarchSurrBasedLocalTraits() override {}
+  ~HierarchSurrBasedLocalTraits() override { }
 
   /// A temporary query used in the refactor
   bool is_derived() override { return true; }
@@ -55,20 +58,22 @@ class HierarchSurrBasedLocalTraits : public TraitsBase {
   bool supports_nonlinear_inequality() override { return true; }
 };
 
-class HierarchSurrBasedLocalMinimizer : public SurrBasedLocalMinimizer {
- public:
+
+class HierarchSurrBasedLocalMinimizer: public SurrBasedLocalMinimizer
+{
+public:
+
   //
   //- Heading: Constructor and destructor
   //
 
   /// constructor
-  HierarchSurrBasedLocalMinimizer(ProblemDescDB& problem_db,
-                                  ParallelLibrary& parallel_lib,
-                                  std::shared_ptr<Model> model);
+  HierarchSurrBasedLocalMinimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
   /// destructor
   ~HierarchSurrBasedLocalMinimizer() override;
 
- protected:
+protected:
+
   //
   //- Heading: Virtual function redefinitions
   //
@@ -86,7 +91,8 @@ class HierarchSurrBasedLocalMinimizer : public SurrBasedLocalMinimizer {
 
   unsigned short converged() override;
 
- private:
+private:
+
   //
   //- Heading: Convenience member functions
   //
@@ -132,13 +138,13 @@ class HierarchSurrBasedLocalMinimizer : public SurrBasedLocalMinimizer {
 
   // MG/Opt functions:
 
-  RealVector multigrid_recursion(const RealVector& xk, int k);
+  RealVector multigrid_recursion(const RealVector &xk, int k);
 
-  void multigrid_driver(const Variables& x0);
+  void multigrid_driver(const Variables &x0);
 
-  RealVector optimize(const RealVector& x, size_t max_iter, int index);
+  RealVector optimize(const RealVector &x, size_t max_iter, int index);
 
-  RealVector linesearch(const RealVector& xk, const RealVector& pk,
+  RealVector linesearch(const RealVector &xk, const RealVector &pk,
                         double alpha0);
 
   //
@@ -161,28 +167,32 @@ class HierarchSurrBasedLocalMinimizer : public SurrBasedLocalMinimizer {
   bool nestedTrustRegions;
 
   // pointer to MLMF instance used in static member functions
-  // static HierarchSurrBasedLocalMinimizer* mlmfInstance;
+  //static HierarchSurrBasedLocalMinimizer* mlmfInstance;
 };
 
-inline SurrBasedLevelData& HierarchSurrBasedLocalMinimizer::trust_region() {
-  return trustRegions[minimizeIndex];
-}
 
-inline void HierarchSurrBasedLocalMinimizer::set_active_model(size_t tr_index) {
-  iteratedModel->active_model_key(trustRegions[tr_index].paired_key());
-}
+inline SurrBasedLevelData& HierarchSurrBasedLocalMinimizer::trust_region()
+{ return trustRegions[minimizeIndex]; }
 
-inline void HierarchSurrBasedLocalMinimizer::update_trust_region() {
-  update_trust_region(trustRegions.size() - 1);
-}
 
-inline void HierarchSurrBasedLocalMinimizer::verify() { verify(minimizeIndex); }
+inline void HierarchSurrBasedLocalMinimizer::set_active_model(size_t tr_index)
+{ iteratedModel->active_model_key(trustRegions[tr_index].paired_key()); }
 
-inline unsigned short HierarchSurrBasedLocalMinimizer::converged() {
+
+inline void HierarchSurrBasedLocalMinimizer::update_trust_region()
+{ update_trust_region(trustRegions.size() - 1); }
+
+
+inline void HierarchSurrBasedLocalMinimizer::verify()
+{ verify(minimizeIndex); }
+
+
+inline unsigned short HierarchSurrBasedLocalMinimizer::converged()
+{
   size_t last_tr = trustRegions.size() - 1;
-  return trustRegions[last_tr].converged();  // TR state at truth level
+  return trustRegions[last_tr].converged(); // TR state at truth level
 }
 
-}  // namespace Dakota
+} // namespace Dakota
 
 #endif

@@ -21,8 +21,10 @@ namespace Dakota {
     separate for simplicity for now). This class provides a simple
     constructor that forwards to the more complicated RecastModel
     API */
-class WeightingModel : public RecastModel {
- public:
+class WeightingModel: public RecastModel
+{
+public:
+  
   //
   //- Heading: Constructor and destructor
   //
@@ -33,35 +35,40 @@ class WeightingModel : public RecastModel {
   /// destructor
   ~WeightingModel() override;
 
- protected:
+
+protected:
+
   //
   //- Heading: Virtual function redefinitions
   //
 
   void assign_instance() override;
 
-  void init_metadata() override { /* no-op to leave metadata intact */ }
+  void init_metadata() override { /* no-op to leave metadata intact */}
 
   //
   //- Heading: Member functions
   //
 
   static void primary_resp_weighter(const Variables& sub_model_vars,
-                                    const Variables& recast_vars,
-                                    const Response& sub_model_response,
-                                    Response& weighted_response);
+				    const Variables& recast_vars,
+				    const Response& sub_model_response,
+				    Response& weighted_response);
 
   static void primary_resp_unweighter(const Variables& recast_vars,
-                                      const Variables& sub_model_vars,
-                                      const Response& weighted_resp,
-                                      Response& unweighted_resp) = delete;
+				      const Variables& sub_model_vars,
+				      const Response& weighted_resp,
+				      Response& unweighted_resp) = delete;
 
- private:
+private:
+
   /// static pointer to this class for use in static callbacks
   static WeightingModel* weightModelInstance;
 };
 
-inline void WeightingModel::assign_instance() { weightModelInstance = this; }
+
+inline void WeightingModel::assign_instance()
+{ weightModelInstance = this; }
 
 }  // namespace Dakota
 

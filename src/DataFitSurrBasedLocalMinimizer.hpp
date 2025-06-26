@@ -10,11 +10,12 @@
 #ifndef DATA_FIT_SURR_BASED_LOCAL_MINIMIZER_H
 #define DATA_FIT_SURR_BASED_LOCAL_MINIMIZER_H
 
+#include "SurrBasedLocalMinimizer.hpp"
 #include "DakotaModel.hpp"
 #include "SurrBasedLevelData.hpp"
-#include "SurrBasedLocalMinimizer.hpp"
 
 namespace Dakota {
+
 
 /// Class for provably-convergent local surrogate-based optimization
 /// and nonlinear least squares.
@@ -24,19 +25,21 @@ namespace Dakota {
     convergence through the use of a sequence of trust regions and the
     application of surrogate corrections at the trust region centers. */
 
+
 /**
- * \brief A version of TraitsBase specialized for local surrogate-based
- * minimizer
+ * \brief A version of TraitsBase specialized for local surrogate-based minimizer
  *
  */
 
-class DataFitSurrBasedLocalTraits : public TraitsBase {
- public:
+class DataFitSurrBasedLocalTraits: public TraitsBase
+{
+  public:
+
   /// default constructor
-  DataFitSurrBasedLocalTraits() {}
+  DataFitSurrBasedLocalTraits() { }
 
   /// destructor
-  ~DataFitSurrBasedLocalTraits() override {}
+  ~DataFitSurrBasedLocalTraits() override { }
 
   /// A temporary query used in the refactor
   bool is_derived() override { return true; }
@@ -57,27 +60,29 @@ class DataFitSurrBasedLocalTraits : public TraitsBase {
   bool supports_nonlinear_inequality() override { return true; }
 };
 
-class DataFitSurrBasedLocalMinimizer : public SurrBasedLocalMinimizer {
- public:
+
+class DataFitSurrBasedLocalMinimizer: public SurrBasedLocalMinimizer
+{
+public:
+
   //
   //- Heading: Constructor and destructor
   //
 
   /// constructor
-  DataFitSurrBasedLocalMinimizer(ProblemDescDB& problem_db,
-                                 ParallelLibrary& parallel_lib,
-                                 std::shared_ptr<Model> model);
+  DataFitSurrBasedLocalMinimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
   /// alternate constructor for instantiations "on the fly"
   DataFitSurrBasedLocalMinimizer(std::shared_ptr<Model> model, short merit_fn,
-                                 short accept_logic, short constr_relax,
-                                 Real tr_factor, size_t max_iter,
-                                 size_t max_eval, Real conv_tol,
-                                 unsigned short soft_conv_limit,
-                                 bool use_derivs);
+				 short accept_logic, short constr_relax,
+				 Real tr_factor, size_t max_iter,
+				 size_t max_eval, Real conv_tol,
+				 unsigned short soft_conv_limit,
+				 bool use_derivs);
   /// destructor
   ~DataFitSurrBasedLocalMinimizer() override;
 
- protected:
+protected:
+
   //
   //- Heading: Virtual function redefinitions
   //
@@ -110,7 +115,7 @@ class DataFitSurrBasedLocalMinimizer : public SurrBasedLocalMinimizer {
 
   /// helper for shared ctor code
   void initialize_trust_region_data(const String& approx_type,
-                                    short corr_order);
+				    short corr_order);
 
   /// retrieve responseCenterTruth if possible, evaluate it if not
   void find_center_truth();
@@ -135,9 +140,9 @@ class DataFitSurrBasedLocalMinimizer : public SurrBasedLocalMinimizer {
 
   // flag indicating inclusion of the center point in the DACE
   // evaluations for global approximations (CCD, Box-Behnken)
-  // bool daceCenterPtFlag;
+  //bool daceCenterPtFlag;
   // secondary flag indicating daceCenterPtFlag and no bounds truncation
-  // bool daceCenterEvalFlag;
+  //bool daceCenterEvalFlag;
 
   /// flags the simultaneous presence of two conditions: (1) additional
   /// layerings w/i actual_model (e.g., surrogateModel = layered/nested/layered
@@ -150,20 +155,22 @@ class DataFitSurrBasedLocalMinimizer : public SurrBasedLocalMinimizer {
   bool useDerivsFlag;
 };
 
-inline DataFitSurrBasedLocalMinimizer::~DataFitSurrBasedLocalMinimizer() {}
 
-inline SurrBasedLevelData& DataFitSurrBasedLocalMinimizer::trust_region() {
-  return trustRegionData;
-}
+inline DataFitSurrBasedLocalMinimizer::~DataFitSurrBasedLocalMinimizer()
+{ }
 
-inline void DataFitSurrBasedLocalMinimizer::update_trust_region() {
-  update_trust_region_data(trustRegionData, globalLowerBnds, globalUpperBnds);
-}
 
-inline unsigned short DataFitSurrBasedLocalMinimizer::converged() {
-  return trustRegionData.converged();
-}
+inline SurrBasedLevelData& DataFitSurrBasedLocalMinimizer::trust_region()
+{ return trustRegionData; }
 
-}  // namespace Dakota
+
+inline void DataFitSurrBasedLocalMinimizer::update_trust_region()
+{ update_trust_region_data(trustRegionData, globalLowerBnds, globalUpperBnds); }
+
+
+inline unsigned short DataFitSurrBasedLocalMinimizer::converged()
+{ return trustRegionData.converged(); }
+
+} // namespace Dakota
 
 #endif

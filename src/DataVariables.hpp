@@ -10,110 +10,56 @@
 #ifndef DATA_VARIABLES_H
 #define DATA_VARIABLES_H
 
-#include "MPIPackBuffer.hpp"
-#include "dakota_data_types.hpp"
-#include "dakota_global_defs.hpp"  // for Cerr
 #include "dakota_system_defs.hpp"
+#include "dakota_global_defs.hpp"  // for Cerr
+#include "dakota_data_types.hpp"
+#include "MPIPackBuffer.hpp"
 
 namespace Dakota {
 
 // special values for domain: Relaxed or Mixed
-enum { DEFAULT_DOMAIN = 0, RELAXED_DOMAIN, MIXED_DOMAIN };
+enum { DEFAULT_DOMAIN=0, RELAXED_DOMAIN, MIXED_DOMAIN };
 // special values for active view: All, Design, {A+E,A,E} Uncertain, or State
-enum {
-  DEFAULT_VIEW = 0,
-  ALL_VIEW,
-  DESIGN_VIEW,
-  UNCERTAIN_VIEW,
-  ALEATORY_UNCERTAIN_VIEW,
-  EPISTEMIC_UNCERTAIN_VIEW,
-  STATE_VIEW
-};
+enum { DEFAULT_VIEW=0, ALL_VIEW, DESIGN_VIEW, UNCERTAIN_VIEW,
+       ALEATORY_UNCERTAIN_VIEW, EPISTEMIC_UNCERTAIN_VIEW, STATE_VIEW };
 // special values for active and inactive views include EMPTY_VIEW plus the
 // 12 combinations of All, Design, {A+E,A,E} Uncertain, or State active view
 // [6 total] and Relaxed or Mixed domain [2 total].
-enum {
-  EMPTY_VIEW = 0,
-  RELAXED_ALL,
-  MIXED_ALL,
-  RELAXED_DESIGN,
-  RELAXED_UNCERTAIN,
-  RELAXED_ALEATORY_UNCERTAIN,
-  RELAXED_EPISTEMIC_UNCERTAIN,
-  RELAXED_STATE,
-  MIXED_DESIGN,
-  MIXED_UNCERTAIN,
-  MIXED_ALEATORY_UNCERTAIN,
-  MIXED_EPISTEMIC_UNCERTAIN,
-  MIXED_STATE
-};
+enum { EMPTY_VIEW=0, RELAXED_ALL, MIXED_ALL,
+       RELAXED_DESIGN, RELAXED_UNCERTAIN, RELAXED_ALEATORY_UNCERTAIN,
+       RELAXED_EPISTEMIC_UNCERTAIN, RELAXED_STATE,
+       MIXED_DESIGN, MIXED_UNCERTAIN, MIXED_ALEATORY_UNCERTAIN,
+       MIXED_EPISTEMIC_UNCERTAIN, MIXED_STATE };
 
 /// values differentiating subsets of variables for I/O
-enum { ALL_VARS = 0, ACTIVE_VARS, INACTIVE_VARS };
+enum { ALL_VARS=0, ACTIVE_VARS, INACTIVE_VARS};
 
 // special values for SharedVariablesData::variablesComponents and
 // SharedVariablesData::all*Types (Note: these differ from the
 // pecos_global_defs.hpp enumeration, which is focused on ranVarTypesX/U)
-enum {
-  EMPTY_TYPE = 0,
-  CONTINUOUS_DESIGN,
-  DISCRETE_DESIGN_RANGE,
-  DISCRETE_DESIGN_SET_INT,
-  DISCRETE_DESIGN_SET_STRING,
-  DISCRETE_DESIGN_SET_REAL,
-  NORMAL_UNCERTAIN,
-  LOGNORMAL_UNCERTAIN,
-  UNIFORM_UNCERTAIN,
-  LOGUNIFORM_UNCERTAIN,
-  TRIANGULAR_UNCERTAIN,
-  EXPONENTIAL_UNCERTAIN,
-  BETA_UNCERTAIN,
-  GAMMA_UNCERTAIN,
-  GUMBEL_UNCERTAIN,
-  FRECHET_UNCERTAIN,
-  WEIBULL_UNCERTAIN,
-  HISTOGRAM_BIN_UNCERTAIN,
-  POISSON_UNCERTAIN,
-  BINOMIAL_UNCERTAIN,
-  NEGATIVE_BINOMIAL_UNCERTAIN,
-  GEOMETRIC_UNCERTAIN,
-  HYPERGEOMETRIC_UNCERTAIN,
-  HISTOGRAM_POINT_UNCERTAIN_INT,
-  HISTOGRAM_POINT_UNCERTAIN_STRING,
-  HISTOGRAM_POINT_UNCERTAIN_REAL,
-  CONTINUOUS_INTERVAL_UNCERTAIN,
-  DISCRETE_INTERVAL_UNCERTAIN,
-  DISCRETE_UNCERTAIN_SET_INT,
-  DISCRETE_UNCERTAIN_SET_STRING,
-  DISCRETE_UNCERTAIN_SET_REAL,
-  CONTINUOUS_STATE,
-  DISCRETE_STATE_RANGE,
-  DISCRETE_STATE_SET_INT,
-  DISCRETE_STATE_SET_STRING,
-  DISCRETE_STATE_SET_REAL
-};
+enum { EMPTY_TYPE=0, CONTINUOUS_DESIGN, DISCRETE_DESIGN_RANGE,
+       DISCRETE_DESIGN_SET_INT, DISCRETE_DESIGN_SET_STRING,
+       DISCRETE_DESIGN_SET_REAL, NORMAL_UNCERTAIN, LOGNORMAL_UNCERTAIN,
+       UNIFORM_UNCERTAIN, LOGUNIFORM_UNCERTAIN, TRIANGULAR_UNCERTAIN,
+       EXPONENTIAL_UNCERTAIN, BETA_UNCERTAIN, GAMMA_UNCERTAIN, GUMBEL_UNCERTAIN,
+       FRECHET_UNCERTAIN, WEIBULL_UNCERTAIN, HISTOGRAM_BIN_UNCERTAIN,
+       POISSON_UNCERTAIN, BINOMIAL_UNCERTAIN, NEGATIVE_BINOMIAL_UNCERTAIN,
+       GEOMETRIC_UNCERTAIN, HYPERGEOMETRIC_UNCERTAIN,
+       HISTOGRAM_POINT_UNCERTAIN_INT, HISTOGRAM_POINT_UNCERTAIN_STRING,
+       HISTOGRAM_POINT_UNCERTAIN_REAL, CONTINUOUS_INTERVAL_UNCERTAIN,
+       DISCRETE_INTERVAL_UNCERTAIN, DISCRETE_UNCERTAIN_SET_INT,
+       DISCRETE_UNCERTAIN_SET_STRING, DISCRETE_UNCERTAIN_SET_REAL,
+       CONTINUOUS_STATE, DISCRETE_STATE_RANGE, DISCRETE_STATE_SET_INT,
+       DISCRETE_STATE_SET_STRING, DISCRETE_STATE_SET_REAL };
 
 // special values for indexing of SharedVariablesData::variablesCompsTotals;
 // last value is used for sizing arrays of vars_comps_totals
-enum {
-  TOTAL_CDV = 0,
-  TOTAL_DDIV,
-  TOTAL_DDSV,
-  TOTAL_DDRV,
-  TOTAL_CAUV,
-  TOTAL_DAUIV,
-  TOTAL_DAUSV,
-  TOTAL_DAURV,
-  TOTAL_CEUV,
-  TOTAL_DEUIV,
-  TOTAL_DEUSV,
-  TOTAL_DEURV,
-  TOTAL_CSV,
-  TOTAL_DSIV,
-  TOTAL_DSSV,
-  TOTAL_DSRV,
-  NUM_VC_TOTALS
-};
+enum { TOTAL_CDV=0, TOTAL_DDIV,  TOTAL_DDSV,  TOTAL_DDRV,
+       TOTAL_CAUV,  TOTAL_DAUIV, TOTAL_DAUSV, TOTAL_DAURV,
+       TOTAL_CEUV,  TOTAL_DEUIV, TOTAL_DEUSV, TOTAL_DEURV,
+       TOTAL_CSV,   TOTAL_DSIV,  TOTAL_DSSV,  TOTAL_DSRV,
+       NUM_VC_TOTALS };
+
 
 /// Body class for variables specification data.
 
@@ -123,7 +69,8 @@ enum {
     maintaining set/get functions, but is still encapsulated within
     ProblemDescDB since ProblemDescDB::dataVariablesList is private. */
 
-class DataVariablesRep {
+class DataVariablesRep
+{
   //
   //- Heading: Friends
   //
@@ -131,9 +78,10 @@ class DataVariablesRep {
   /// the handle class can access attributes of the body class directly
   friend class DataVariables;
 
-  // private:
- public:
-  ~DataVariablesRep();  ///< destructor
+//private:
+public:
+
+  ~DataVariablesRep(); ///< destructor
 
   //
   //- Heading: Data
@@ -262,7 +210,7 @@ class DataVariablesRep {
   /// initial values for the continuous design variables array (from
   /// the \c continuous_design \c initial_point specification in \ref VarDV)
   RealVector continuousDesignVars;
-  /// lower bounds array for the continuous design variables (from the
+  /// lower bounds array for the continuous design variables (from the 
   /// \c continuous_design \c lower_bounds specification in \ref VarDV)
   RealVector continuousDesignLowerBnds;
   /// upper bounds array for the continuous design variables (from the
@@ -319,7 +267,7 @@ class DataVariablesRep {
   BitArray discreteDesignSetIntCat;
   /// is each ddsr var strictly categorical (true) or relaxable (false)
   BitArray discreteDesignSetRealCat;
-
+  
   /// Adjacency matrices for each of the discrete design variables defined
   /// by an integer set (from the \c discrete_design_set integer
   /// \c categorical \c adjacency specification in \ref VarDV
@@ -568,7 +516,7 @@ class DataVariablesRep {
   IntVector histogramPointIntUncVars;
   /// is each hupi var strictly categorical (true) or relaxable (false)
   BitArray histogramUncPointIntCat;
-
+ 
   /// An array for each string-valued point-based histogram uncertain
   /// variable. Each array entry is a map from a string value to its
   /// probability. (See discrete histogram in LHS manual; from the \c
@@ -657,7 +605,7 @@ class DataVariablesRep {
   /// initial values for the continuous state variables array (from
   /// the \c continuous_state \c initial_point specification in \ref VarSV)
   RealVector continuousStateVars;
-  /// lower bounds array for the continuous state variables (from the
+  /// lower bounds array for the continuous state variables (from the 
   /// \c continuous_state \c lower_bounds specification in \ref VarSV)
   RealVector continuousStateLowerBnds;
   /// upper bounds array for the continuous state variables (from the
@@ -886,7 +834,8 @@ class DataVariablesRep {
   /// linear_equality_scales specification in \ref MethodIndControl)
   RealVector linearEqScales;
 
- private:
+private:
+
   //
   //- Heading: Private functions
   //
@@ -904,9 +853,13 @@ class DataVariablesRep {
   //
   //- Heading: Private data members
   //
+
 };
 
-inline DataVariablesRep::~DataVariablesRep() {}
+
+inline DataVariablesRep::~DataVariablesRep()
+{ }
+
 
 /// Handle class for variables specification data.
 
@@ -918,7 +871,8 @@ inline DataVariablesRep::~DataVariablesRep() {}
     ProblemDescDB::dataVariablesList, one for each variables
     specification in an input file. */
 
-class DataVariables {
+class DataVariables
+{
   //
   //- Heading: Friends
   //
@@ -928,21 +882,21 @@ class DataVariables {
   // the NIDR derived problem description database
   friend class NIDRProblemDescDB;
 
- public:
+public:
+
   /// compares the idVariables attribute of DataVariables objects
-  static bool id_compare(const DataVariables& dv, const std::string& id) {
-    return id == dv.dataVarsRep->idVariables;
-  }
+  static bool id_compare(const DataVariables& dv, const std::string& id)
+  { return id == dv.dataVarsRep->idVariables; }
 
   //
   //- Heading: Constructors, destructor, operators
   //
 
-  DataVariables();                      ///< constructor
-  DataVariables(const DataVariables&);  ///< copy constructor
-  ~DataVariables();                     ///< destructor
+  DataVariables();                                ///< constructor
+  DataVariables(const DataVariables&);            ///< copy constructor
+  ~DataVariables();                               ///< destructor
 
-  DataVariables operator=(const DataVariables&);  ///< assignment operator
+  DataVariables operator=(const DataVariables&); ///< assignment operator
   bool operator==(const DataVariables&);          ///< equality operator
 
   //
@@ -965,79 +919,67 @@ class DataVariables {
   /// return total number of design variables
   size_t continuous_design() { return dataVarsRep->numContinuousDesVars; }
   /// return total number of design variables
-  size_t discrete_design() {
-    return dataVarsRep->numDiscreteDesRangeVars +
-           dataVarsRep->numDiscreteDesSetIntVars +
-           dataVarsRep->numDiscreteDesSetStrVars +
-           dataVarsRep->numDiscreteDesSetRealVars;
-  }
+  size_t discrete_design() { return dataVarsRep->numDiscreteDesRangeVars +
+    dataVarsRep->numDiscreteDesSetIntVars +
+    dataVarsRep->numDiscreteDesSetStrVars +
+    dataVarsRep->numDiscreteDesSetRealVars; }
   /// return total number of continuous aleatory uncertain variables
-  size_t continuous_aleatory_uncertain() {
-    return dataVarsRep->numNormalUncVars + dataVarsRep->numLognormalUncVars +
-           dataVarsRep->numUniformUncVars + dataVarsRep->numLoguniformUncVars +
-           dataVarsRep->numTriangularUncVars +
-           dataVarsRep->numExponentialUncVars + dataVarsRep->numBetaUncVars +
-           dataVarsRep->numGammaUncVars + dataVarsRep->numGumbelUncVars +
-           dataVarsRep->numFrechetUncVars + dataVarsRep->numWeibullUncVars +
-           dataVarsRep->numHistogramBinUncVars;
-  }
+  size_t continuous_aleatory_uncertain()
+  { return dataVarsRep->numNormalUncVars +
+    dataVarsRep->numLognormalUncVars + dataVarsRep->numUniformUncVars +
+    dataVarsRep->numLoguniformUncVars + dataVarsRep->numTriangularUncVars +
+    dataVarsRep->numExponentialUncVars + dataVarsRep->numBetaUncVars +
+    dataVarsRep->numGammaUncVars + dataVarsRep->numGumbelUncVars +
+    dataVarsRep->numFrechetUncVars + dataVarsRep->numWeibullUncVars +
+    dataVarsRep->numHistogramBinUncVars; }
   /// return total number of continuous aleatory uncertain variables
-  size_t discrete_aleatory_uncertain() {
-    return dataVarsRep->numPoissonUncVars + dataVarsRep->numBinomialUncVars +
-           dataVarsRep->numNegBinomialUncVars +
-           dataVarsRep->numGeometricUncVars + dataVarsRep->numHyperGeomUncVars +
-           dataVarsRep->numHistogramPtIntUncVars +
-           dataVarsRep->numHistogramPtStrUncVars +
-           dataVarsRep->numHistogramPtRealUncVars;
-  }
+  size_t discrete_aleatory_uncertain()
+  { return dataVarsRep->numPoissonUncVars + dataVarsRep->numBinomialUncVars +
+    dataVarsRep->numNegBinomialUncVars + dataVarsRep->numGeometricUncVars +
+    dataVarsRep->numHyperGeomUncVars + dataVarsRep->numHistogramPtIntUncVars +
+    dataVarsRep->numHistogramPtStrUncVars +
+    dataVarsRep->numHistogramPtRealUncVars; }
   /// return total number of epistemic uncertain variables
-  size_t continuous_epistemic_uncertain() {
-    return dataVarsRep->numContinuousIntervalUncVars;
-  }
+  size_t continuous_epistemic_uncertain()
+  { return dataVarsRep->numContinuousIntervalUncVars; }
   /// return total number of epistemic uncertain variables
-  size_t discrete_epistemic_uncertain() {
-    return dataVarsRep->numDiscreteIntervalUncVars +
-           dataVarsRep->numDiscreteUncSetIntVars +
-           dataVarsRep->numDiscreteUncSetStrVars +
-           dataVarsRep->numDiscreteUncSetRealVars;
-  }
+  size_t discrete_epistemic_uncertain()
+  { return dataVarsRep->numDiscreteIntervalUncVars +
+    dataVarsRep->numDiscreteUncSetIntVars +
+    dataVarsRep->numDiscreteUncSetStrVars +
+    dataVarsRep->numDiscreteUncSetRealVars; }
   /// return total number of state variables
   size_t continuous_state() { return dataVarsRep->numContinuousStateVars; }
   /// return total number of state variables
-  size_t discrete_state() {
-    return dataVarsRep->numDiscreteStateRangeVars +
-           dataVarsRep->numDiscreteStateSetIntVars +
-           dataVarsRep->numDiscreteStateSetStrVars +
-           dataVarsRep->numDiscreteStateSetRealVars;
-  }
+  size_t discrete_state() { return dataVarsRep->numDiscreteStateRangeVars +
+    dataVarsRep->numDiscreteStateSetIntVars +
+    dataVarsRep->numDiscreteStateSetStrVars +
+    dataVarsRep->numDiscreteStateSetRealVars; }
   /// return total number of design variables
   size_t design() { return continuous_design() + discrete_design(); }
   /// return total number of aleatory uncertain variables
-  size_t aleatory_uncertain() {
-    return continuous_aleatory_uncertain() + discrete_aleatory_uncertain();
-  }
+  size_t aleatory_uncertain()
+  { return continuous_aleatory_uncertain() + discrete_aleatory_uncertain(); }
   /// return total number of epistemic uncertain variables
-  size_t epistemic_uncertain() {
-    return continuous_epistemic_uncertain() + discrete_epistemic_uncertain();
-  }
+  size_t epistemic_uncertain()
+  { return continuous_epistemic_uncertain() + discrete_epistemic_uncertain(); }
   /// return total number of uncertain variables
   size_t uncertain() { return aleatory_uncertain() + epistemic_uncertain(); }
   /// return total number of state variables
   size_t state() { return continuous_state() + discrete_state(); }
   /// return total number of continuous variables
-  size_t continuous_variables() {
-    return continuous_design() + continuous_aleatory_uncertain() +
-           continuous_epistemic_uncertain() + continuous_state();
-  }
+  size_t continuous_variables() { return continuous_design() +
+    continuous_aleatory_uncertain() + continuous_epistemic_uncertain() +
+    continuous_state(); }
   /// return total number of discrete variables
-  size_t discrete_variables() {
-    return discrete_design() + discrete_aleatory_uncertain() +
-           discrete_epistemic_uncertain() + discrete_state();
-  }
+  size_t discrete_variables()
+  { return discrete_design() + discrete_aleatory_uncertain() +
+    discrete_epistemic_uncertain() + discrete_state(); }
   /// return total number of variables
   size_t total_variables() { return design() + uncertain() + state(); }
 
- private:
+private:
+
   //
   //- Heading: Data
   //
@@ -1046,44 +988,46 @@ class DataVariables {
   std::shared_ptr<DataVariablesRep> dataVarsRep;
 };
 
-inline std::shared_ptr<DataVariablesRep> DataVariables::data_rep() {
-  return dataVarsRep;
-}
 
-inline bool DataVariables::operator==(const DataVariables& data_vars) {
+inline std::shared_ptr<DataVariablesRep> DataVariables::data_rep()
+{return dataVarsRep; }
+
+
+inline bool DataVariables::operator==(const DataVariables& data_vars)
+{
   Cerr << "Warning:  This is not a full equality operator for the "
        << "DataVariables class" << std::endl;
   return (data_vars.dataVarsRep->idVariables == dataVarsRep->idVariables);
 }
 
+
+
 /// MPIPackBuffer insertion operator for DataVariables
-inline MPIPackBuffer& operator<<(MPIPackBuffer& s, const DataVariables& data) {
-  data.write(s);
-  return s;
-}
+inline MPIPackBuffer& operator<<(MPIPackBuffer& s, const DataVariables& data)
+{ data.write(s); return s;}
+
 
 /// MPIUnpackBuffer extraction operator for DataVariables
-inline MPIUnpackBuffer& operator>>(MPIUnpackBuffer& s, DataVariables& data) {
-  data.read(s);
-  return s;
-}
+inline MPIUnpackBuffer& operator>>(MPIUnpackBuffer& s, DataVariables& data)
+{ data.read(s); return s;}
+
 
 /// std::ostream insertion operator for DataVariables
-inline std::ostream& operator<<(std::ostream& s, const DataVariables& data) {
-  data.write(s);
-  return s;
-}
+inline std::ostream& operator<<(std::ostream& s, const DataVariables& data)
+{ data.write(s); return s;}
 
-inline void DataVariables::write(std::ostream& s) const {
-  dataVarsRep->write(s);
-}
 
-inline void DataVariables::read(MPIUnpackBuffer& s) { dataVarsRep->read(s); }
+inline void DataVariables::write(std::ostream& s) const
+{ dataVarsRep->write(s); }
 
-inline void DataVariables::write(MPIPackBuffer& s) const {
-  dataVarsRep->write(s);
-}
 
-}  // namespace Dakota
+inline void DataVariables::read(MPIUnpackBuffer& s)
+{ dataVarsRep->read(s); }
+
+
+inline void DataVariables::write(MPIPackBuffer& s) const
+{ dataVarsRep->write(s); }
+
+} // namespace Dakota
 
 #endif

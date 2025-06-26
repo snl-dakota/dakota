@@ -36,10 +36,10 @@ double GP_Objective::value(const ROL::Vector<double>& p, double& tol) {
 void GP_Objective::gradient(ROL::Vector<double>& g,
                             const ROL::Vector<double>& p, double& tol) {
   silence_unused_args(tol);
-
+  
   const auto& x = as_VectorXd(p);
   auto& gvec = as_VectorXd(g);
-
+  
   double obj_val;
   gp.set_opt_params(x);
   gp.negative_marginal_log_likelihood(true, pdiff(x), obj_val, gvec);

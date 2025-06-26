@@ -10,9 +10,9 @@
 #ifndef COMMAND_SHELL_H
 #define COMMAND_SHELL_H
 
+#include "dakota_system_defs.hpp"
 #include <string>
 
-#include "dakota_system_defs.hpp"
 
 namespace Dakota {
 
@@ -23,8 +23,10 @@ namespace Dakota {
     convenience operators for building a command string and then
     passing it to the shell. */
 
-class CommandShell {
- public:
+class CommandShell
+{
+public:
+
   //
   //- Heading: Constructor and destructor
   //
@@ -46,13 +48,14 @@ class CommandShell {
   /// "flushes" the shell; i.e. executes the sysCommand
   CommandShell& flush();
 
-  void asynch_flag(const bool flag);  ///< set the asynchFlag
-  bool asynch_flag() const;           ///< get the asynchFlag
+  void asynch_flag(const bool flag);          ///< set the asynchFlag
+  bool asynch_flag() const;                   ///< get the asynchFlag
 
-  void suppress_output_flag(const bool flag);  ///< set the suppressOutputFlag
-  bool suppress_output_flag() const;           ///< get the suppressOutputFlag
+  void suppress_output_flag(const bool flag); ///< set the suppressOutputFlag
+  bool suppress_output_flag() const;          ///< get the suppressOutputFlag
 
- private:
+private:
+
   //
   //- Heading: Data members
   //
@@ -68,27 +71,30 @@ class CommandShell {
   bool suppressOutputFlag;
 };
 
+
 /// constructor
-inline CommandShell::CommandShell()
-    : asynchFlag(false), suppressOutputFlag(false) {}
+inline CommandShell::CommandShell() :
+  asynchFlag(false), suppressOutputFlag(false)
+{ }
 
 /// destructor
-inline CommandShell::~CommandShell() {}
+inline CommandShell::~CommandShell()
+{ }
 
 /// convenience operator:  allows passing of the flush func to the shell via <<
-inline CommandShell& CommandShell::operator<<(
-    CommandShell& (*f)(CommandShell&)) {
-  return (*f)(*this);
-}
+inline CommandShell& CommandShell::operator<<(CommandShell& (*f)(CommandShell&))
+{ return (*f)(*this); }
 
 /// convenient operator:  appends string to the commandString to be executed
-inline CommandShell& CommandShell::operator<<(const char* cmd) {
+inline CommandShell& CommandShell::operator<<(const char* cmd)
+{
   sysCommand += cmd;
   return *this;
 }
 
 /// convenient operator:  appends string to the commandString to be executed
-inline CommandShell& CommandShell::operator<<(const std::string& cmd) {
+inline CommandShell& CommandShell::operator<<(const std::string& cmd)
+{
   sysCommand += cmd;
   return *this;
 }
@@ -96,18 +102,18 @@ inline CommandShell& CommandShell::operator<<(const std::string& cmd) {
 /// convenient shell manipulator function to "flush" the shell
 CommandShell& flush(CommandShell& shell);
 
-inline void CommandShell::asynch_flag(const bool flag) { asynchFlag = flag; }
+inline void CommandShell::asynch_flag(const bool flag)
+{ asynchFlag = flag; }
+ 
+inline bool CommandShell::asynch_flag() const
+{ return asynchFlag; }
 
-inline bool CommandShell::asynch_flag() const { return asynchFlag; }
+inline void CommandShell::suppress_output_flag(const bool flag)
+{ suppressOutputFlag = flag; }
+ 
+inline bool CommandShell::suppress_output_flag() const
+{ return suppressOutputFlag; }
 
-inline void CommandShell::suppress_output_flag(const bool flag) {
-  suppressOutputFlag = flag;
-}
-
-inline bool CommandShell::suppress_output_flag() const {
-  return suppressOutputFlag;
-}
-
-}  // namespace Dakota
+} // namespace Dakota
 
 #endif

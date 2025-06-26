@@ -8,38 +8,38 @@
     _______________________________________________________________________ */
 
 #include "NonDCalibration.hpp"
-
 #include "DakotaModel.hpp"
 #include "ProblemDescDB.hpp"
 
-static const char rcsId[] = "@(#) $Id$";
+static const char rcsId[]="@(#) $Id$";
+
 
 namespace Dakota {
 
-/** This constructor is called for a standard letter-envelope iterator
-    instantiation.  In this case, set_db_list_nodes has been called and
+/** This constructor is called for a standard letter-envelope iterator 
+    instantiation.  In this case, set_db_list_nodes has been called and 
     probDescDB can be queried for settings from the method specification. */
-NonDCalibration::NonDCalibration(ProblemDescDB& problem_db,
-                                 ParallelLibrary& parallel_lib,
-                                 std::shared_ptr<Model> model)
-    : NonD(problem_db, parallel_lib, model),
-      calibrationData(
-          probDescDB.get_bool("responses.calibration_data") ||
-          !probDescDB.get_string("responses.scalar_data_filename").empty()),
-      expData(problem_db, iteratedModel->current_response().shared_data(),
-              outputLevel) {
-  // Read in all of the experimental data, including any x configuration
-  // variables, y observations, and covariance information if available
-  // if (outputLevel > NORMAL_OUTPUT)
+NonDCalibration::NonDCalibration(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  NonD(problem_db, parallel_lib, model),
+  calibrationData(probDescDB.get_bool("responses.calibration_data") ||
+    !probDescDB.get_string("responses.scalar_data_filename").empty()),
+  expData(problem_db, iteratedModel->current_response().shared_data(), 
+	  outputLevel)
+{ 
+  // Read in all of the experimental data, including any x configuration 
+  // variables, y observations, and covariance information if available 
+  //if (outputLevel > NORMAL_OUTPUT)
   //  Cout << "Read data from file " << calibrationData << '\n';
   if (calibrationData)
     expData.load_data("NonDCalibration", iteratedModel->current_variables());
   else if (outputLevel > SILENT_OUTPUT)
     Cout << "No experiment data from files.\nCalibration is assuming the "
-         << "simulation is returning the residuals" << std::endl;
+	 << "simulation is returning the residuals" << std::endl;
 }
 
-bool NonDCalibration::resize() {
+
+bool NonDCalibration::resize()
+{
   bool parent_reinit_comms = NonD::resize();
 
   Cerr << "\nError: Resizing is not yet supported in method "
@@ -49,7 +49,9 @@ bool NonDCalibration::resize() {
   return parent_reinit_comms;
 }
 
-// void NonDCalibration::print_results(std::ostream& s, short results_state)
+
+//void NonDCalibration::print_results(std::ostream& s, short results_state)
 //{ Cout << "Posterior sample results " << '\n'; }
 
-}  // namespace Dakota
+
+} // namespace Dakota

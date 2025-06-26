@@ -38,7 +38,8 @@ namespace util {
 /// silence unused parameter warning; use to indicate those parameters
 /// are intentionally unused
 template <typename... Ts>
-void silence_unused_args(const Ts...) { /* empty body */ }
+void silence_unused_args(const Ts...) { /* empty body */
+}
 
 // TODO: May want to have distinct Dakota names such as EigMatrixXd
 

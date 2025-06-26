@@ -8,7 +8,7 @@
     _______________________________________________________________________ */
 
 //- Description:  Derived interface class for performing analysis via
-//-               linked Matlab engine, permitting single startup/shutdown of
+//-               linked Matlab engine, permitting single startup/shutdown of 
 //-               Matlab engine for the whole set of function evaluations.
 //-               Initially created November 2005.
 //- Owner:        Brian Adams
@@ -21,28 +21,31 @@
 #include "engine.h"
 
 // Would prefer, but can't get forward declarations working
-// struct engine;  //forward declaration for engine pointer
-// struct mxArray; //forward declaration for mxArray argument
+//struct engine;  //forward declaration for engine pointer
+//struct mxArray; //forward declaration for mxArray argument
 
 namespace Dakota {
 
-/** Specialization of DirectApplicInterface to link to Matlab analysis
+/** Specialization of DirectApplicInterface to link to Matlab analysis 
     drivers.  Includes convenience functions to map data to/from Matlab */
-class MatlabInterface : public DirectApplicInterface {
- public:
+class MatlabInterface: public DirectApplicInterface
+{
+
+public:
+
   /// Constructor: start Matlab engine
-  MatlabInterface(const ProblemDescDB& problem_db,
-                  ParallelLibrary& parallel_lib);
+  MatlabInterface(const ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
 
   /// Destructor: close Matlab engine
   ~MatlabInterface();
 
- protected:
+protected:
+
   /// execute an analysis code portion of a direct evaluation invocation
   virtual int derived_map_ac(const String& ac_name);
 
   /// pointer to the MATLAB engine used for direct evaluations
-  engine* matlabEngine;
+  engine *matlabEngine;
 
   // TODO: Separate Matlab send, execute, retreive
 
@@ -54,8 +57,8 @@ class MatlabInterface : public DirectApplicInterface {
   /// add if necessary; free structure memory in preparation for new alloc
   int matlab_field_prep(mxArray* dakota_matlab, const char* field_name);
 
-};  // class MatlabInterface
+}; // class MatlabInterface
 
-}  // namespace Dakota
+} // namespace Dakota
 
 #endif  // MATLAB_INTERFACE_H

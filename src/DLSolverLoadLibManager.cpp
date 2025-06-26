@@ -16,11 +16,11 @@
 // code has been de-activated and moved into this source file for posterity.
 //
 // Assuming we do want to maintain "DL LoadManagement" capabability, these
-// typedefs/functions/"iterator" prototypes should be re-designed and
+// typedefs/functions/"iterator" prototypes should be re-designed and 
 // implemented in a new component for DAKOTA (e.g. DynLoadLib Manager?).
 
-#include "dakota_global_defs.hpp"
 #include "dakota_system_defs.hpp"
+#include "dakota_global_defs.hpp"
 
 /* WJB: re-enable dependencies class-wrappers only if necessary
 #ifdef HAVE_DOT
@@ -30,13 +30,12 @@
 #include "NLPQLPOptimizer.hpp"
 #endif
 #ifdef HAVE_NPSOL
-#include "NLSSOLLeastSq.hpp"
 #include "NPSOLOptimizer.hpp"
+#include "NLSSOLLeastSq.hpp"
 #endif
 // WJB: end of re-enable dependencies comment */
 
-#if (defined(HAVE_DOT) || defined(HAVE_JEGA) || defined(HAVE_NLPQL) || \
-     defined(HAVE_NPSOL))
+#if(defined(HAVE_DOT) || defined(HAVE_JEGA) || defined(HAVE_NLPQL) ||               defined(HAVE_NPSOL)) 
 
 #ifdef DAKOTA_SHLIB
 #undef DAKOTA_DYNLIB
@@ -46,81 +45,87 @@ typedef void (*p_vf)(void);
 // WJB - ToDo: prefer function over macro
 #ifdef _WIN32
 #include "util_windows.hpp"
-#define find_dlsym(a, b, c) (a = (p_vf)GetProcAddress((HINSTANCE)(b), c))
+#define find_dlsym(a,b,c) (a = (p_vf)GetProcAddress((HINSTANCE)(b),c))
 #define NO_DLERROR
 #else
 #include <dlfcn.h>
-#define find_dlsym(a, b, c) (a = dlsym(b, c))
+#define find_dlsym(a,b,c) (a = dlsym(b,c))
 #undef NO_DLERROR
 #endif
 
-typedef struct Libentry {
+
+typedef struct Libentry
+{
   const char *name;
   p_vf f;
 } Libentry;
 
-typedef struct SharedLib {
+typedef struct SharedLib
+{
   const char *libname;
   size_t nentries;
   Libentry *Entries;
 } SharedLib;
 
 struct NIDR_KWlib;
-extern "C" NIDR_KWlib *nidr_lib_record(void *, const char *);
-extern "C" void *nidr_dlopen(const char *);
+extern "C" NIDR_KWlib *nidr_lib_record(void *, const char*);
+extern "C" void *nidr_dlopen(const char*);
 
-static p_vf Lib_load(SharedLib *L, int k) {
+
+static p_vf Lib_load(SharedLib *L, int k)
+{
   Libentry *e, *ee;
   const char *lname;
 
-  void *h = nidr_dlopen(lname = L->libname);
+  void* h = nidr_dlopen(lname = L->libname);
   if (!h) {
 #ifndef NO_DLERROR
-    if ((const char *s = dlerror()))
+    if ((const char* s = dlerror()))
       std::cerr << "Cannot open library \"" << lname << "\":\n\t" << s;
     else
 #endif
       std::cerr << "Cannot open library \"" << lname << "\n";
     std::exit(1);
   }
-  nidr_lib_record(h,
-                  L->libname);  // for cleanup (e.g., dlclose()) at endOf exec
+  nidr_lib_record(h, L->libname); // for cleanup (e.g., dlclose()) at endOf exec
   e = L->Entries;
   ee = e + L->nentries;
 
-  for (ee = e + L->nentries; e < ee; ++e)
+  for(ee = e + L->nentries; e < ee; ++e)
     if (!find_dlsym(e->f, h, e->name)) {
-      std::cerr << "Could not find " << e->name << " in library " << lname
-                << "\n";
+      std::cerr << "Could not find " << e->name << " in library "
+                << lname << "\n";
       std::exit(2);
     }
 
   return L->Entries[k].f;
 }
 
-static Libentry Dot_entries[] = {{"dot_"}, {"dot510_"}},
-                Npsol_entries[] = {{"npsol_"}, {"nlssol_"}, {"npoptn2_"}},
-                Nlpql_entries[] = {{"nlpqlp_"}, {"ql_"}};
 
-#define NumberOf(x) (sizeof(x) / sizeof(x[0]))
+static Libentry
+  Dot_entries[] = { {"dot_"}, {"dot510_"} },
+  Npsol_entries[] = { {"npsol_"}, {"nlssol_"}, {"npoptn2_"} },
+  Nlpql_entries[] = { {"nlpqlp_"}, {"ql_"} };
 
-static SharedLib Dot_lib = {"libdot.dll", NumberOf(Dot_entries), Dot_entries},
-                 Npsol_lib = {"libnpsol.dll", NumberOf(Npsol_entries),
-                              Npsol_entries},
-                 Nlpql_lib = {"libnlpql.dll", NumberOf(Nlpql_entries),
-                              Nlpql_entries};
+#define NumberOf(x) (sizeof(x)/sizeof(x[0]))
+
+static SharedLib
+  Dot_lib = { "libdot.dll", NumberOf(Dot_entries), Dot_entries },
+  Npsol_lib = { "libnpsol.dll", NumberOf(Npsol_entries), Npsol_entries },
+  Nlpql_lib = { "libnlpql.dll", NumberOf(Nlpql_entries), Nlpql_entries };
+
 
 // WJB - Dakota C++ style: obtain prototypes from their respective header files
-#define DOT F77_FUNC(dot, DOT)
-#define DOT510 F77_FUNC(dot510, DOT510)
-#define NPSOL F77_FUNC(npsol, NPSOL)
-#define NLSSOL F77_FUNC(nlssol, NLSSOL)
+#define DOT F77_FUNC(dot,DOT)
+#define DOT510 F77_FUNC(dot510,DOT510)
+#define NPSOL F77_FUNC(npsol,NPSOL)
+#define NLSSOL F77_FUNC(nlssol,NLSSOL)
 // BMA (20160315): Changed to use Fortran 2003 ISO C bindings.
 // The Fortran symbol will be lowercase with same name as if in C
-// #define NPOPTN2 F77_FUNC(npoptn2,NPOPTN2)
+//#define NPOPTN2 F77_FUNC(npoptn2,NPOPTN2)
 #define NPOPTN2 npoptn2
-#define NLPQLP F77_FUNC(nlpqlp, NLPQLP)
-#define QL F77_FUNC(ql, QL)
+#define NLPQLP F77_FUNC(nlpqlp,NLPQLP)
+#define QL F77_FUNC(ql,QL)
 
 /* WJB - ToDo:  verify redeclaration of an existing function and REMOVE!
 extern "C" void DOT(int *info, int *ngotoz, int *method,
@@ -213,9 +218,9 @@ t *mnn2,
 {
         typedef void (*NLPQLP_t)(int *, int *, int *, int *, int *, int *,
                         int *mnn2, double *, double *, double *, double *,
-                        double *, double *, double *, double *, double *, double
-*, double *, double *, double *, int *, int *, int *, double *, int *, int *,
-int *, int *, double *, int *, int *, int *, int *, int *, int *, p_vf);
+                        double *, double *, double *, double *, double *,                               double *, double *, double *, double *, int *, int *,
+                        int *, double *, int *, int *, int *, int *, double *,
+                        int *, int *, int *, int *, int *, int *, p_vf);
         NLPQLP_t F;
         if (!(F = (NLPQLP_t)Nlpql_entries[0].f))
                 F = (NLPQLP_t)Lib_load(&Nlpql_lib, 0);
@@ -241,5 +246,6 @@ extern "C" void QL(int *m, int *me, int *mmax, int *n, int *nmax, int *mnn,
 }
 // WJB: end of long ToDo verify redeclaration comment block */
 
-#endif  // DAKOTA_SHLIB
-#endif  // HAVE_DOT or NPSOL or JEGA or NPPQL
+#endif // DAKOTA_SHLIB
+#endif // HAVE_DOT or NPSOL or JEGA or NPPQL
+

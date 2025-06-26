@@ -21,8 +21,8 @@ template <class Archive>
 void serialize(Archive& ar, const unsigned int version) {
   Eigen::Index rows = derived().rows();
   Eigen::Index cols = derived().cols();
-  ar & rows;
-  ar & cols;
+  ar& rows;
+  ar& cols;
   if (rows != derived().rows() || cols != derived().cols())
     derived().resize(rows, cols);
   if (derived().size() != 0)

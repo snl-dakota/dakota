@@ -12,7 +12,9 @@
 
 #include "ProcessApplicInterface.hpp"
 
+
 namespace Dakota {
+
 
 /// Derived application interface class which spawns simulation codes
 /// using system calls.
@@ -20,17 +22,19 @@ namespace Dakota {
 /** system() is part of the C API and can be used on both Windows and
     Unix systems. */
 
-class SysCallApplicInterface : public ProcessApplicInterface {
- public:
+class SysCallApplicInterface: public ProcessApplicInterface
+{
+public:
+
   //
   //- Heading: Constructor and destructor
   //
 
-  SysCallApplicInterface(const ProblemDescDB& problem_db,
-                         ParallelLibrary& parallel_lib);  ///< constructor
-  ~SysCallApplicInterface() override;                     ///< destructor
+  SysCallApplicInterface(const ProblemDescDB& problem_db, ParallelLibrary& parallel_lib); ///< constructor
+  ~SysCallApplicInterface() override;                               ///< destructor
 
- protected:
+protected:
+
   //
   //- Heading: Virtual function redefinitions
   //
@@ -51,7 +55,8 @@ class SysCallApplicInterface : public ProcessApplicInterface {
   //- Heading: Data
   //
 
- private:
+private:
+
   //
   //- Heading: Methods
   //
@@ -76,48 +81,59 @@ class SysCallApplicInterface : public ProcessApplicInterface {
   /// set of function evaluation id's for active asynchronous
   /// system call evaluations
   IntSet sysCallSet;
-
+    
   /// map linking function evaluation id's to number of response read failures
-  IntShortMap failCountMap;
+  IntShortMap failCountMap; 
 };
 
-inline SysCallApplicInterface::~SysCallApplicInterface() {}
+
+inline SysCallApplicInterface::~SysCallApplicInterface() 
+{ }
+
 
 /** Check for completion of active asynch jobs (tracked with sysCallSet).
     Wait for at least one completion and complete all jobs that have returned.
     This satisifies a "fairness" principle, in the sense that a completed job
-    will _always_ be processed (whereas accepting only a single completion
+    will _always_ be processed (whereas accepting only a single completion 
     could always accept the same completion - the case of very inexpensive fn.
     evals. - and starve some servers). */
-inline void SysCallApplicInterface::wait_local_evaluation_sequence(
-    PRPQueue& prp_queue) {
-  while (completionSet.empty())  // complete at least one job
+inline void SysCallApplicInterface::
+wait_local_evaluation_sequence(PRPQueue& prp_queue)
+{
+  while (completionSet.empty()) // complete at least one job
     test_local_evaluation_sequence(prp_queue);
 }
 
-/** This code provides the derived function used by
+
+/** This code provides the derived function used by 
     ApplicationInterface::serve_analyses_synch(). */
-inline int SysCallApplicInterface::synchronous_local_analysis(int analysis_id) {
+inline int SysCallApplicInterface::synchronous_local_analysis(int analysis_id)
+{
   spawn_analysis_to_shell(analysis_id, BLOCK);
-  return 0;  // used for failure codes in DirectFn case
+  return 0; // used for failure codes in DirectFn case
 }
+
 
 /** No derived interface plug-ins, so perform construct-time checks.
     However, process init issues as warnings since some contexts (e.g.,
     EnsembleSurrModel) initialize more configurations than will be used. */
-inline void SysCallApplicInterface::init_communicators_checks(
-    int max_eval_concurrency) {
+inline void SysCallApplicInterface::
+init_communicators_checks(int max_eval_concurrency)
+{
   bool warn = true;
   check_multiprocessor_analysis(warn);
 }
 
+
 /** Process run-time issues as hard errors. */
-inline void SysCallApplicInterface::set_communicators_checks(
-    int max_eval_concurrency) {
+inline void SysCallApplicInterface::
+set_communicators_checks(int max_eval_concurrency)
+{
   bool warn = false;
-  if (check_multiprocessor_analysis(warn)) abort_handler(-1);
+  if (check_multiprocessor_analysis(warn))
+    abort_handler(-1);
 }
 
-}  // namespace Dakota
+} // namespace Dakota
 
 #endif

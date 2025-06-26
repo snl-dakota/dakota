@@ -130,7 +130,7 @@ PYBIND11_MODULE(surrogates, m) {
 
       // field
       .def("values", py::detail::overload_cast_impl<const Eigen::MatrixXd&>()(
-                         &dakota::surrogates::Surrogate::values))
+                        &dakota::surrogates::Surrogate::values))
 
       // scalar
       .def("gradient", py::detail::overload_cast_impl<const Eigen::MatrixXd&>()(
@@ -146,8 +146,9 @@ PYBIND11_MODULE(surrogates, m) {
                           &dakota::surrogates::Surrogate::hessian))
 
       // field
-      .def("hessians", py::detail::overload_cast_impl<const Eigen::MatrixXd&>()(
-                           &dakota::surrogates::Surrogate::hessians))
+      .def("hessians",
+           py::detail::overload_cast_impl<const Eigen::MatrixXd&>()(
+               &dakota::surrogates::Surrogate::hessians))
 
       .def("variable_labels",
            py::detail::overload_cast_impl<>()(

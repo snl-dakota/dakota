@@ -14,8 +14,10 @@
 
 namespace Dakota {
 
-class DakotaBuildInfo {
- public:
+class DakotaBuildInfo
+{
+public:
+
   /// Release number such as 5.4, 5.4+, or 5.3.1
   static std::string get_release_num();
   /// Repository revision number
@@ -27,7 +29,8 @@ class DakotaBuildInfo {
   /// Compilation time
   static std::string get_build_time();
 
- private:
+private:
+
   // Cached data - updated by the build system
 
   /// Release number such as 5.4, 5.4+, or 5.3.1
@@ -39,15 +42,18 @@ class DakotaBuildInfo {
   static std::string revision;
 };
 
+
 inline std::string DakotaBuildInfo::get_release_num() { return releaseNum; }
-inline std::string DakotaBuildInfo::get_rev_number() { return revision; }
-inline std::string DakotaBuildInfo::get_release_date() {
-  if (releaseDate.empty()) return __DATE__;
+inline std::string DakotaBuildInfo::get_rev_number()  { return revision; }
+inline std::string DakotaBuildInfo::get_release_date()  
+{ 
+  if (releaseDate.empty())
+    return __DATE__; 
   return releaseDate;
 }
-inline std::string DakotaBuildInfo::get_build_date() { return __DATE__; }
-inline std::string DakotaBuildInfo::get_build_time() { return __TIME__; }
+inline std::string DakotaBuildInfo::get_build_date()  { return __DATE__; }
+inline std::string DakotaBuildInfo::get_build_time()  { return __TIME__; }
 
-}  // namespace Dakota
+} // namespace Dakota
 
 #endif  // DAKOTA_BUILD_INFO_H

@@ -7,12 +7,13 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
+
 /** \file redirect_regexs.cpp Verify regexs used to parse input file
     redirection options. */
 
-#include <gtest/gtest.h>
-
 #include "OutputManager.hpp"
+
+#include <gtest/gtest.h>
 
 // These examples should cause redirects
 std::string valid_redirs = R"(
@@ -71,6 +72,7 @@ some_other_keyword
   error_fileC "dakota.err" # trailing comment
 )";
 
+
 // This mess shouldn't cause a redirect
 // TODO: Or should it? Not yet tested.
 std::string no_redirs_junk = R"(
@@ -86,11 +88,12 @@ error_file
 )";
 // for syntax highlighting: '
 
-TEST(redirect_regexs_tests, test_valid_redirs) {
+TEST(redirect_regexs_tests, test_valid_redirs)
+{
   // TODO: Parameterized test
-  std::vector<std::string> valid_inputs = {valid_redirs, valid_spaceless_redirs,
-                                           valid_redirs_comments,
-                                           valid_redirs_intervening_lines};
+  std::vector<std::string> valid_inputs =
+    { valid_redirs, valid_spaceless_redirs, valid_redirs_comments,
+      valid_redirs_intervening_lines };
   for (const auto& input_text : valid_inputs) {
     std::string outfile, errfile;
     std::istringstream infile(input_text);
@@ -100,8 +103,8 @@ TEST(redirect_regexs_tests, test_valid_redirs) {
     EXPECT_TRUE((errfile == "dakota.err"));
   }
 
-  std::vector<std::string> invalid_inputs = {no_redirs_comments,
-                                             no_redirs_adjacentword};
+  std::vector<std::string> invalid_inputs =
+    { no_redirs_comments , no_redirs_adjacentword };
   for (const auto& input_text : invalid_inputs) {
     std::string outfile, errfile;
     std::istringstream infile(input_text);
@@ -112,7 +115,8 @@ TEST(redirect_regexs_tests, test_valid_redirs) {
   }
 }
 
-int main(int argc, char** argv) {
+int main(int argc, char **argv) {
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }
+

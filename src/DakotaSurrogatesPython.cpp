@@ -15,55 +15,67 @@
 
 // Headers from Surrogates module
 #include "SurrogatesPython.hpp"
-
+ 
 using dakota::MatrixXd;
 
 namespace Dakota {
 
-SurrogatesPythonApprox::SurrogatesPythonApprox(
-    const ProblemDescDB& problem_db, const SharedApproxData& shared_data,
-    const String& approx_label)
-    : SurrogatesBaseApprox(problem_db, shared_data, approx_label) {
+
+SurrogatesPythonApprox::
+SurrogatesPythonApprox(const ProblemDescDB& problem_db,
+		const SharedApproxData& shared_data,
+		const String& approx_label):
+  SurrogatesBaseApprox(problem_db, shared_data, approx_label)
+{
   moduleFile = problem_db.get_string("model.surrogate.class_path_and_name");
-  //  surrogateOpts.set("advanced_options_file",
-  //		    problem_db.get_string("model.advanced_options_file"));
+//  surrogateOpts.set("advanced_options_file",
+//		    problem_db.get_string("model.advanced_options_file"));
 
   // validate supported metrics - can this be ascertained from python? RWH
-  std::set<std::string> allowed_metrics = {
-      "sum_squared",     "mean_squared",     "root_mean_squared",
-      "sum_abs",         "mean_abs",         "max_abs",
-      "sum_abs_percent", "mean_abs_percent",  // APE, MAPE
-      "rsquared"};
+  std::set<std::string> allowed_metrics =
+    { "sum_squared", "mean_squared", "root_mean_squared",
+      "sum_abs", "mean_abs", "max_abs",
+      "sum_abs_percent", "mean_abs_percent", // APE, MAPE
+      "rsquared" };
   std::shared_ptr<SharedSurfpackApproxData> shared_surf_data_rep =
-      std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep);
+    std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep);
   shared_surf_data_rep->validate_metrics(allowed_metrics);
 }
 
-SurrogatesPythonApprox::SurrogatesPythonApprox(
-    const ProblemDescDB& problem_db, const SharedApproxData& shared_data,
-    const StringArray& approx_labels)
-    : SurrogatesBaseApprox(problem_db, shared_data, approx_labels) {
+
+SurrogatesPythonApprox::
+SurrogatesPythonApprox(const ProblemDescDB& problem_db,
+		const SharedApproxData& shared_data,
+		const StringArray& approx_labels):
+  SurrogatesBaseApprox(problem_db, shared_data, approx_labels)
+{
   moduleFile = problem_db.get_string("model.surrogate.class_path_and_name");
-  //  surrogateOpts.set("advanced_options_file",
-  //		    problem_db.get_string("model.advanced_options_file"));
+//  surrogateOpts.set("advanced_options_file",
+//		    problem_db.get_string("model.advanced_options_file"));
 
   // validate supported metrics - can this be ascertained from python? RWH
-  std::set<std::string> allowed_metrics = {
-      "sum_squared",     "mean_squared",     "root_mean_squared",
-      "sum_abs",         "mean_abs",         "max_abs",
-      "sum_abs_percent", "mean_abs_percent",  // APE, MAPE
-      "rsquared"};
+  std::set<std::string> allowed_metrics =
+    { "sum_squared", "mean_squared", "root_mean_squared",
+      "sum_abs", "mean_abs", "max_abs",
+      "sum_abs_percent", "mean_abs_percent", // APE, MAPE
+      "rsquared" };
   std::shared_ptr<SharedSurfpackApproxData> shared_surf_data_rep =
-      std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep);
+    std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep);
   shared_surf_data_rep->validate_metrics(allowed_metrics);
 }
+
 
 /// On-the-fly constructor
-SurrogatesPythonApprox::SurrogatesPythonApprox(
-    const SharedApproxData& shared_data)
-    : SurrogatesBaseApprox(shared_data) {}
+SurrogatesPythonApprox::
+SurrogatesPythonApprox(const SharedApproxData& shared_data):
+  SurrogatesBaseApprox(shared_data)
+{
+}
 
-int SurrogatesPythonApprox::min_coefficients() const {
+
+int
+SurrogatesPythonApprox::min_coefficients() const
+{
   // TODO (with @dtseidl): This should be based on minimum points
   // needed to build the trend, when present, or some other reasonable
   // default
@@ -71,11 +83,13 @@ int SurrogatesPythonApprox::min_coefficients() const {
   return sharedDataRep->numVars + 1;
 }
 
-void SurrogatesPythonApprox::build() {
+void
+SurrogatesPythonApprox::build()
+{
   // clear any imported model mapping
   modelIsImported = false;
-  std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep)
-      ->varsMapIndices.clear();
+  std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep)->
+    varsMapIndices.clear();
 
   MatrixXd vars, resp;
   convert_surrogate_data(vars, resp);
@@ -84,11 +98,14 @@ void SurrogatesPythonApprox::build() {
   model.reset(new dakota::surrogates::Python(vars, resp, moduleFile));
 }
 
-void SurrogatesPythonApprox::build(int num_resp) {
+
+void
+SurrogatesPythonApprox::build(int num_resp)
+{
   // clear any imported model mapping
   modelIsImported = false;
-  std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep)
-      ->varsMapIndices.clear();
+  std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep)->
+    varsMapIndices.clear();
 
   MatrixXd vars, resp;
   convert_surrogate_data(vars, resp, num_resp);
@@ -97,4 +114,5 @@ void SurrogatesPythonApprox::build(int num_resp) {
   model.reset(new dakota::surrogates::Python(vars, resp, moduleFile));
 }
 
-}  // namespace Dakota
+
+} // namespace Dakota

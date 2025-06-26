@@ -7,21 +7,23 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-#ifndef SURFPACK_APPROXIMATION_H
-#define SURFPACK_APPROXIMATION_H
+
+#ifndef SURFPACK_APPROXIMATION_H 
+#define SURFPACK_APPROXIMATION_H 
 
 #include "DakotaApproximation.hpp"
+
 
 // Pertinent classes from Surfpack
 class SurfData;
 class SurfpackModel;
 class SurfpackModelFactory;
-template <typename T>
-class SurfpackMatrix;
+template< typename T > class SurfpackMatrix;
 
 namespace Dakota {
 
 class SharedApproxData;
+
 
 /// Derived approximation class for Surfpack approximation classes.
 /// Interface between Surfpack and Dakota.
@@ -34,8 +36,10 @@ class SharedApproxData;
     artificial neural networks, radial basis function network, or
     multivariate adaptaive regression splines (MARS). */
 
-class SurfpackApproximation : public Approximation {
- public:
+class SurfpackApproximation: public Approximation
+{
+public:
+
   //
   //- Heading: Constructor and destructor
   //
@@ -44,42 +48,46 @@ class SurfpackApproximation : public Approximation {
   SurfpackApproximation();
   /// standard constructor: Surfpack surface of appropriate type will be created
   SurfpackApproximation(const ProblemDescDB& problem_db,
-                        const SharedApproxData& shared_data,
+			const SharedApproxData& shared_data,
                         const String& approx_label);
   /// alternate constructor
   SurfpackApproximation(const SharedApproxData& shared_data);
   /// destructor
-  ~SurfpackApproximation() override {}
+  ~SurfpackApproximation() override { }
 
- protected:
+protected:
+
   //
   //- Heading: Virtual function redefinitions
   //
 
   int min_coefficients() const override;
   int recommended_coefficients() const override;
-  // int num_constraints() const; // use default implementation
+  //int num_constraints() const; // use default implementation
 
   /// SurfData object will be created from Dakota's SurrogateData,
   /// and the appropriate Surfpack build method will be invoked
   void build() override;
+
 
   /// validate imported labels and initialize map if needed
   void map_variable_labels(const Variables& vars) override;
 
   /// export the Surpack model to disk or console
   void export_model(const StringArray& var_labels, const String& fn_label,
-                    const String& export_prefix,
+		    const String& export_prefix,
                     const unsigned short export_format) override;
 
-  void export_model(const Variables& vars, const String& fn_label,
-                    const String& export_prefix,
-                    const unsigned short export_format) override;
+  void
+  export_model(const Variables& vars, const String& fn_label,
+	       const String& export_prefix,
+	       const unsigned short export_format) override;
+
 
   // return #coefficients
-  // RealVector approximation_coefficients(bool normalized) const;
+  //RealVector approximation_coefficients(bool normalized) const;
   // set #coefficients
-  // void approximation_coefficients(const RealVector& approx_coeffs,
+  //void approximation_coefficients(const RealVector& approx_coeffs,
   //                                bool normalized);
 
   /// Return the value of the Surfpack surface for a given parameter vector x
@@ -91,7 +99,7 @@ class SurfpackApproximation : public Approximation {
   /// retrieve the variance of the predicted value for a given parameter set x
   /// (KrigingModel only)
   Real prediction_variance(const Variables& vars) override;
-
+    
   /// Return the value of the Surfpack surface for a given parameter vector x
   Real value(const RealVector& c_vars) override;
   /// retrieve the approximate function gradient for a given parameter vector x
@@ -110,27 +118,27 @@ class SurfpackApproximation : public Approximation {
   /// retrieve a single diagnostic metric for the diagnostic type specified
   /// on the given model and data - not inherited
   Real diagnostic(const String& metric_type, const SurfpackModel& model,
-                  const SurfData& data);
+		  const SurfData& data);
 
-  /// compute and print all requested diagnostics and cross-validation
+  /// compute and print all requested diagnostics and cross-validation 
   void primary_diagnostics(size_t fn_index) override;
   /// compute and print all requested diagnostics for user provided
   /// challenge pts
   void challenge_diagnostics(size_t fn_index,
-                             const RealMatrix& challenge_points,
+			     const RealMatrix& challenge_points,
                              const RealVector& challenge_responses) override;
 
   /// compute and return cross-validation for metric_type with num_folds
-  RealArray cv_diagnostic(const StringArray& metric_types,
-                          unsigned num_folds) override;
-
+  RealArray cv_diagnostic(const StringArray& metric_types, unsigned num_folds) override;
+  
   /// compute and print all requested diagnostics for user provided
   /// challenge pts
-  RealArray challenge_diagnostic(
-      const StringArray& metric_types, const RealMatrix& challenge_points,
-      const RealVector& challenge_responses) override;
+  RealArray challenge_diagnostic(const StringArray& metric_types,
+			    const RealMatrix& challenge_points,
+                            const RealVector& challenge_responses) override;
+ 
+private:
 
- private:
   //
   //- Heading: Convenience functions
   //
@@ -144,8 +152,8 @@ class SurfpackApproximation : public Approximation {
   /// set the anchor point (including gradient and hessian if present)
   /// into surf_data
   void add_constraints_to_surfdata(const Pecos::SurrogateDataVars& anchor_vars,
-                                   const Pecos::SurrogateDataResp& anchor_resp,
-                                   short fail_code);
+				   const Pecos::SurrogateDataResp& anchor_resp,
+				   short fail_code);
 
   /// extract active or all view as vector, mapping if needed for import
   RealArray map_eval_vars(const Variables& vars);
@@ -157,7 +165,7 @@ class SurfpackApproximation : public Approximation {
   // Vector representation of the Approximation (e.g., polynomial coefficients
   // for linear regression or trained neural network weights).  The format of
   // such a vector has not been defined for all Surfpack classes
-  // RealVector coefficients;
+  //RealVector coefficients;
 
   /// The native Surfpack approximation
   std::shared_ptr<SurfpackModel> spModel;
@@ -167,26 +175,31 @@ class SurfpackApproximation : public Approximation {
   std::shared_ptr<SurfData> surfData;
 
   // convenience pointer to shared data representation
-  // std::shared_ptr<SharedSurfpackApproxData> sharedSurfDataRep;
+  //std::shared_ptr<SharedSurfpackApproxData> sharedSurfDataRep;
 
   /// whether model serialized in from disk
   bool modelIsImported;
 };
 
-inline SurfpackApproximation::SurfpackApproximation()  // : sharedDataRep(NULL)
-{}
 
-inline bool SurfpackApproximation::diagnostics_available() { return true; }
+inline SurfpackApproximation::SurfpackApproximation() // : sharedDataRep(NULL)
+{ }
+
+
+inline bool SurfpackApproximation::diagnostics_available()
+{ return true; }
+
 
 /* The value returned from this function is currently meaningless.
    \todo: Provide an appropriate list of coefficients for each surface type */
-// inline RealVector SurfpackApproximation::
-// approximation_coefficients(bool normalized) const
+//inline RealVector SurfpackApproximation::
+//approximation_coefficients(bool normalized) const
 //{ return coefficients; }
 
-// inline void SurfpackApproximation::
-// approximation_coefficients(const RealVector& approx_coeffs, bool normalized)
+
+//inline void SurfpackApproximation::
+//approximation_coefficients(const RealVector& approx_coeffs, bool normalized)
 //{ coefficients = approx_coeffs; }
 
-}  // namespace Dakota
+} // namespace Dakota
 #endif

@@ -11,31 +11,31 @@
 #define DAKOTA_SYSTEM_DEFS_H
 
 #if defined(HAVE_CONFIG_H) && !defined(DISABLE_DAKOTA_CONFIG_H)
-// Unfortunately, STILL need to set HAVE_CONFIG_H since it is used in many
-// TPL header files included while building Dakota/src (even in the CMake
-// build!) so use a "disable config header" conditional to help manage the
-// transition (so, far pecos/surfpack are DONE and ddace, opt++ are close).
-#include "dakota_config.h"
-#endif  // HAVE_CONFIG_H
+  // Unfortunately, STILL need to set HAVE_CONFIG_H since it is used in many
+  // TPL header files included while building Dakota/src (even in the CMake
+  // build!) so use a "disable config header" conditional to help manage the
+  // transition (so, far pecos/surfpack are DONE and ddace, opt++ are close).
+  #include "dakota_config.h"
+#endif // HAVE_CONFIG_H
 
 // C++ headers
 
+#include <iostream>
 #include <fstream>
 #include <iomanip>
-#include <iostream>
 
 // C++ compiler using new, h-less standard C headers
-#include <cassert>
+#include <cstdlib>
+#include <cstdint>
+#include <cstdio>
+#include <cstring>
 #include <cctype>
-#include <cerrno>
 #include <cfloat>
 #include <climits>
 #include <cmath>
+#include <cassert>
 #include <csignal>
-#include <cstdint>
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
+#include <cerrno>
 #include <ctime>
 
-#endif  // DAKOTA_SYSTEM_DEFS_H
+#endif // DAKOTA_SYSTEM_DEFS_H

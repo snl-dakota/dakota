@@ -7,14 +7,13 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-#include <gtest/gtest.h>
-
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-
 #include "UtilDataScaler.hpp"
 #include "util_common.hpp"
 #include "util_data_types.hpp"
+
+#include <gtest/gtest.h>
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
 
 using namespace dakota;
 using namespace dakota::util;
@@ -44,8 +43,8 @@ MatrixXd create_multiple_features_matrix() {
 // Unit tests //
 ////////////////
 
-TEST(DataScalarTest_tests,
-     util_NormalizationScaler_getScaledFeatures_TestMeanNormalizationTrue) {
+TEST(DataScalarTest_tests, 
+    util_NormalizationScaler_getScaledFeatures_TestMeanNormalizationTrue) {
   const double norm_factor = 1.0;
   MatrixXd unscaled_features = create_single_feature_matrix();
   NormalizationScaler ns(unscaled_features, true, norm_factor);
@@ -62,8 +61,8 @@ TEST(DataScalarTest_tests,
   EXPECT_TRUE(matrix_equals(matrix_actual, matrix_expected, 1.0e-4));
 }
 
-TEST(DataScalarTest_tests,
-     util_NormalizationScaler_getScaledFeatures_TestMeanNormalizationFalse) {
+TEST(DataScalarTest_tests, 
+    util_NormalizationScaler_getScaledFeatures_TestMeanNormalizationFalse) {
   const double norm_factor = 1.0;
   MatrixXd unscaled_features = create_single_feature_matrix();
   NormalizationScaler ns(unscaled_features, false, norm_factor);
@@ -80,8 +79,7 @@ TEST(DataScalarTest_tests,
   EXPECT_TRUE(matrix_equals(matrix_actual, matrix_expected, 1.0e-4));
 }
 
-TEST(
-    DataScalarTest_tests,
+TEST(DataScalarTest_tests, 
     util_NormalizationScaler_getScaledFeatures_TestMeanNormalizationFalseWithMultipleSamples) {
   const double norm_factor = 1.0;
   MatrixXd unscaled_features = create_multiple_features_matrix();
@@ -102,8 +100,7 @@ TEST(
   EXPECT_TRUE(matrix_equals(matrix_actual, matrix_expected, 1.0e-4));
 }
 
-TEST(DataScalarTest_tests,
-     util_NormalizationScaler_getScaledFeatures_TestNormFactor) {
+TEST(DataScalarTest_tests, util_NormalizationScaler_getScaledFeatures_TestNormFactor) {
   const double norm_factor = 2.0;
   MatrixXd unscaled_features = create_single_feature_matrix();
   NormalizationScaler ns(unscaled_features, true, norm_factor);
@@ -121,8 +118,7 @@ TEST(DataScalarTest_tests,
   EXPECT_TRUE(matrix_equals(matrix_actual, matrix_expected, 1.0e-4));
 }
 
-TEST(DataScalarTest_tests,
-     util_StandardizationScaler_getScaledFeatures_TestDefault) {
+TEST(DataScalarTest_tests, util_StandardizationScaler_getScaledFeatures_TestDefault) {
   MatrixXd unscaled_features = create_single_feature_matrix();
   StandardizationScaler ss(unscaled_features);
 
@@ -140,12 +136,11 @@ TEST(DataScalarTest_tests,
   EXPECT_TRUE((std::abs(matrix_actual.col(0).mean()) < 1.0e-14));
   // For StandardizationScaler, variance should be effectively one.
   const double UNIT_VARIANCE = 1.0;
-  EXPECT_TRUE(
-      (std::abs(variance(matrix_actual.col(0)) - UNIT_VARIANCE) < 1.0e-14));
+  EXPECT_TRUE((std::abs(variance(matrix_actual.col(0)) - UNIT_VARIANCE) <
+              1.0e-14));
 }
 
-TEST(DataScalarTest_tests,
-     util_StandardizationScaler_getScaledFeatures_TestMultipleSamples) {
+TEST(DataScalarTest_tests, util_StandardizationScaler_getScaledFeatures_TestMultipleSamples) {
   MatrixXd unscaled_features = create_multiple_features_matrix();
   StandardizationScaler ss(unscaled_features);
 
@@ -169,12 +164,12 @@ TEST(DataScalarTest_tests,
   EXPECT_TRUE((std::abs(matrix_actual.col(2).mean()) < 1.0e-14));
   // For StandardizationScaler, variance should be effectively one.
   const double UNIT_VARIANCE = 1.0;
-  EXPECT_TRUE(
-      (std::abs(variance(matrix_actual.col(0)) - UNIT_VARIANCE) < 1.0e-14));
-  EXPECT_TRUE(
-      (std::abs(variance(matrix_actual.col(1)) - UNIT_VARIANCE) < 1.0e-14));
-  EXPECT_TRUE(
-      (std::abs(variance(matrix_actual.col(2)) - UNIT_VARIANCE) < 1.0e-14));
+  EXPECT_TRUE((std::abs(variance(matrix_actual.col(0)) - UNIT_VARIANCE) <
+              1.0e-14));
+  EXPECT_TRUE((std::abs(variance(matrix_actual.col(1)) - UNIT_VARIANCE) <
+              1.0e-14));
+  EXPECT_TRUE((std::abs(variance(matrix_actual.col(2)) - UNIT_VARIANCE) <
+              1.0e-14));
 }
 
 TEST(DataScalarTest_tests, util_StandardizationScaler_scaleSamples) {
@@ -202,11 +197,11 @@ TEST(DataScalarTest_tests, util_StandardizationScaler_scaleSamples) {
   // For StandardizationScaler, variance should be effectively one.
   const double UNIT_VARIANCE = 1.0;
   EXPECT_TRUE((std::abs(variance(matrix_actual_scaled.col(0)) - UNIT_VARIANCE) <
-               1.0e-14));
+              1.0e-14));
   EXPECT_TRUE((std::abs(variance(matrix_actual_scaled.col(1)) - UNIT_VARIANCE) <
-               1.0e-14));
+              1.0e-14));
   EXPECT_TRUE((std::abs(variance(matrix_actual_scaled.col(2)) - UNIT_VARIANCE) <
-               1.0e-14));
+              1.0e-14));
 }
 
 TEST(DataScalarTest_tests, util_StandardizationScaler_scaleSamples_wrongSize) {

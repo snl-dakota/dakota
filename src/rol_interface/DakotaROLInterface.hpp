@@ -11,6 +11,7 @@
 #include "ROL_LinearOperator.hpp"
 #include "ROL_Solver.hpp"
 
+
 namespace rol_interface {
 
 // Forward declaration
@@ -26,17 +27,20 @@ class NonlinearInequalityConstraint;
 class Hessian;
 class Optimizer;
 
-}  // namespace rol_interface
+
+} // namespace rol_interface
+
 
 // Dakota-ROL Interface Includes
-#include "DakotaROLConstraint.hpp"
-#include "DakotaROLHessian.hpp"
-#include "DakotaROLModelInterface.hpp"
-#include "DakotaROLObjective.hpp"
-#include "DakotaROLOptimizer.hpp"
 #include "DakotaROLOutputStreamFilter.hpp"
 #include "DakotaROLTraits.hpp"
 #include "DakotaROLVector.hpp"
+#include "DakotaROLModelInterface.hpp"
+#include "DakotaROLConstraint.hpp"
+#include "DakotaROLObjective.hpp"
+#include "DakotaROLHessian.hpp"
+#include "DakotaROLOptimizer.hpp"
+
 #include "constraint/DakotaROLConstraint.hpp"
 #include "constraint/DakotaROLLinearConstraint.hpp"
 #include "constraint/DakotaROLLinearEqualityConstraint.hpp"
@@ -44,8 +48,11 @@ class Optimizer;
 #include "constraint/DakotaROLNonlinearEqualityConstraint.hpp"
 #include "constraint/DakotaROLNonlinearInequalityConstraint.hpp"
 
-namespace Dakota {
-using ROLOptimizer = rol_interface::Optimizer;
-}  // namespace Dakota
 
-#endif  // DAKOTA_ROL_INTERFACE_HPP
+namespace Dakota {
+  using ROLOptimizer = rol_interface::Optimizer;
+} // namespace Dakota
+
+
+
+#endif // DAKOTA_ROL_INTERFACE_HPP

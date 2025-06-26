@@ -11,8 +11,10 @@
 #define CONCURRENT_META_ITERATOR_H
 
 #include "MetaIterator.hpp"
-#include "ParamResponsePair.hpp"
 #include "dakota_data_io.hpp"
+#include "ParamResponsePair.hpp"
+
+
 
 namespace Dakota {
 
@@ -27,7 +29,8 @@ namespace Dakota {
     provided.  This pareto set is mapped through running an optimizer
     multiple times for different sets of multiobjective weightings. */
 
-class ConcurrentMetaIterator : public MetaIterator {
+class ConcurrentMetaIterator: public MetaIterator
+{
   //
   //- Heading: Friends
   //
@@ -35,22 +38,21 @@ class ConcurrentMetaIterator : public MetaIterator {
   /// protect scheduler callback functions from general access
   friend class IteratorScheduler;
 
- public:
+public:
+
   //
   //- Heading: Constructors and destructor
   //
 
   /// standard constructor
-  ConcurrentMetaIterator(ProblemDescDB& problem_db,
-                         ParallelLibrary& parallel_lib);
+  ConcurrentMetaIterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
   /// alternate constructor
-  ConcurrentMetaIterator(ProblemDescDB& problem_db,
-                         ParallelLibrary& parallel_lib,
-                         std::shared_ptr<Model> model);
+  ConcurrentMetaIterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
   /// destructor
   ~ConcurrentMetaIterator() override;
 
- protected:
+protected:
+
   //
   //- Heading: Virtual function redefinitions
   //
@@ -59,8 +61,7 @@ class ConcurrentMetaIterator : public MetaIterator {
   /// Performs the concurrent iteration by executing selectedIterator on
   /// iteratedModel multiple times in parallel for different parameter sets
   void core_run() override;
-  void print_results(std::ostream& s,
-                     short results_state = FINAL_RESULTS) override;
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS) override;
 
   void derived_init_communicators(ParLevLIter pl_iter) override;
   void derived_set_communicators(ParLevLIter pl_iter) override;
@@ -69,20 +70,19 @@ class ConcurrentMetaIterator : public MetaIterator {
   IntIntPair estimate_partition_bounds() override;
 
   void initialize_iterator(int job_index) override;
-  void pack_parameters_buffer(MPIPackBuffer& send_buffer,
-                              int job_index) override;
+  void pack_parameters_buffer(MPIPackBuffer& send_buffer, int job_index) override;
   void unpack_parameters_initialize(MPIUnpackBuffer& recv_buffer,
-                                    int job_index) override;
+				    int job_index) override;
   void pack_results_buffer(MPIPackBuffer& send_buffer, int job_index) override;
-  void unpack_results_buffer(MPIUnpackBuffer& recv_buffer,
-                             int job_index) override;
+  void unpack_results_buffer(MPIUnpackBuffer& recv_buffer, int job_index) override;
   void update_local_results(int job_index) override;
 
   std::shared_ptr<Model> algorithm_space_model() override;
 
   void declare_sources() override;
 
- private:
+private:
+
   //
   //- Heading: Convenience member functions
   //
@@ -99,8 +99,7 @@ class ConcurrentMetaIterator : public MetaIterator {
   //- Heading: Data members
   //
 
-  std::shared_ptr<Iterator>
-      selectedIterator;  ///< the iterator selected for concurrent iteration
+  std::shared_ptr<Iterator> selectedIterator; ///< the iterator selected for concurrent iteration
 
   /// the initial continuous variables for restoring the starting
   /// point in the Pareto set minimization
@@ -122,53 +121,60 @@ class ConcurrentMetaIterator : public MetaIterator {
   PRPArray prpResults;
 };
 
-inline std::shared_ptr<Model> ConcurrentMetaIterator::algorithm_space_model() {
-  return iteratedModel;
-}
 
-inline void ConcurrentMetaIterator::initialize_iterator(
-    const RealVector& param_set) {
+inline std::shared_ptr<Model> ConcurrentMetaIterator::algorithm_space_model()
+{ return iteratedModel; }
+
+
+inline void ConcurrentMetaIterator::
+initialize_iterator(const RealVector& param_set)
+{
   if (methodName == MULTI_START)
     ModelUtils::continuous_variables(*iteratedModel, param_set);
   else {
-    ModelUtils::continuous_variables(*iteratedModel, initialPt);  // reset
+    ModelUtils::continuous_variables(*iteratedModel, initialPt); // reset
     iteratedModel->primary_response_fn_weights(param_set);
   }
 }
 
-inline void ConcurrentMetaIterator::initialize_iterator(int job_index) {
-  initialize_iterator(parameterSets[job_index]);
-}
 
-inline void ConcurrentMetaIterator::pack_parameters_buffer(
-    MPIPackBuffer& send_buffer, int job_index) {
-  send_buffer << parameterSets[job_index];
-}
+inline void ConcurrentMetaIterator::initialize_iterator(int job_index)
+{ initialize_iterator(parameterSets[job_index]); }
 
-inline void ConcurrentMetaIterator::unpack_parameters_initialize(
-    MPIUnpackBuffer& recv_buffer, int job_index) {
+
+inline void ConcurrentMetaIterator::
+pack_parameters_buffer(MPIPackBuffer& send_buffer, int job_index)
+{ send_buffer << parameterSets[job_index]; }
+
+
+inline void ConcurrentMetaIterator::
+unpack_parameters_initialize(MPIUnpackBuffer& recv_buffer, int job_index)
+{
   RealVector param_set;
-  recv_buffer >> param_set;  // job_index can be ignored
+  recv_buffer >> param_set; // job_index can be ignored
   initialize_iterator(param_set);
 }
 
-inline void ConcurrentMetaIterator::pack_results_buffer(
-    MPIPackBuffer& send_buffer, int job_index) {
-  send_buffer << prpResults[job_index];
+
+inline void ConcurrentMetaIterator::
+pack_results_buffer(MPIPackBuffer& send_buffer, int job_index)
+{ send_buffer << prpResults[job_index]; }
+
+
+inline void ConcurrentMetaIterator::
+unpack_results_buffer(MPIUnpackBuffer& recv_buffer, int job_index)
+{ recv_buffer >> prpResults[job_index]; }
+
+
+inline void ConcurrentMetaIterator::update_local_results(int job_index)
+{
+  prpResults[job_index]
+    = ParamResponsePair(selectedIterator->variables_results(),
+			iteratedModel->interface_id(),
+			selectedIterator->response_results(),
+			job_index+1); // deep copy
 }
 
-inline void ConcurrentMetaIterator::unpack_results_buffer(
-    MPIUnpackBuffer& recv_buffer, int job_index) {
-  recv_buffer >> prpResults[job_index];
-}
-
-inline void ConcurrentMetaIterator::update_local_results(int job_index) {
-  prpResults[job_index] = ParamResponsePair(
-      selectedIterator->variables_results(), iteratedModel->interface_id(),
-      selectedIterator->response_results(),
-      job_index + 1);  // deep copy
-}
-
-}  // namespace Dakota
+} // namespace Dakota
 
 #endif

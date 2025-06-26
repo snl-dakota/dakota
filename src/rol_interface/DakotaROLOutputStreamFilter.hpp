@@ -8,33 +8,38 @@
 namespace rol_interface {
 
 // -----------------------------------------------------------------------------
-/** OutputStreamFilter wraps a pointer to a std::ostream and prepends "ROL: " to
-   the beginning of each new line
+/** OutputStreamFilter wraps a pointer to a std::ostream and prepends "ROL: " to the 
+    beginning of each new line 
 
     NOTE: This is known to be compatible with Boost 1.69, but not 1.81
 */
 
 class OutputStreamFilter {
- public:
-  OutputStreamFilter(std::ostream& os) {
+public:
+  OutputStreamFilter( std::ostream& os ) {
     filterStream.push(LineFilter());
     filterStream.push(os);
   }
 
-  ~OutputStreamFilter() { filterStream.flush(); }
+  ~OutputStreamFilter() {
+    filterStream.flush();
+  }
+    
+  boost::iostreams::filtering_ostream& stream() {
+    return filterStream;
+  }
 
-  boost::iostreams::filtering_ostream& stream() { return filterStream; }
+private:
 
- private:
-  class LineFilter : public boost::iostreams::line_filter {
-    std::string do_filter(const std::string& line) override {
+  class LineFilter : public boost::iostreams::line_filter  {
+    std::string do_filter( const std::string& line ) override {
       return "ROL: " + line;
     }
   };
 
   boost::iostreams::filtering_ostream filterStream;
-};
+}; 
 
-}  // namespace rol_interface
+} // namespace rol_interface
 
-#endif  // DAKOTA_ROL_OUTPUT_STREAM
+#endif // DAKOTA_ROL_OUTPUT_STREAM

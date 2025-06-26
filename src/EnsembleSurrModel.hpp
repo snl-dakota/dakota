@@ -10,18 +10,14 @@
 #ifndef ENSEMBLE_SURR_MODEL_H
 #define ENSEMBLE_SURR_MODEL_H
 
-#include "DataModel.hpp"
 #include "SurrogateModel.hpp"
+#include "DataModel.hpp"
 
 namespace Dakota {
 
-enum {
-  DEFAULT_CORRECTION = 0,
-  SINGLE_CORRECTION,
-  FULL_MODEL_FORM_CORRECTION,
-  FULL_SOLUTION_LEVEL_CORRECTION,
-  SEQUENCE_CORRECTION
-};
+enum { DEFAULT_CORRECTION = 0, SINGLE_CORRECTION, FULL_MODEL_FORM_CORRECTION,
+       FULL_SOLUTION_LEVEL_CORRECTION, SEQUENCE_CORRECTION };
+
 
 /// Derived model class within the surrogate model branch for managing
 /// a truth model alongside approximation models of varying fidelity.
@@ -34,20 +30,23 @@ enum {
 
 class ParallelLibrary;
 
-class EnsembleSurrModel : public SurrogateModel {
- public:
+class EnsembleSurrModel: public SurrogateModel
+{
+public:
+
   //
   //- Heading: Constructors and destructor
   //
 
-  EnsembleSurrModel(ProblemDescDB& problem_db,
-                    ParallelLibrary& parallel_lib);  ///< constructor
+  EnsembleSurrModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib); ///< constructor
 
   //
   //- Heading: Member functions
   //
 
- protected:
+
+protected:
+
   //
   //- Heading: Virtual function redefinitions
   //
@@ -62,11 +61,14 @@ class EnsembleSurrModel : public SurrogateModel {
 
   void init_model(Model& model) override;
 
-  void nested_variable_mappings(
-      const SizetArray& c_index1, const SizetArray& di_index1,
-      const SizetArray& ds_index1, const SizetArray& dr_index1,
-      const ShortArray& c_target2, const ShortArray& di_target2,
-      const ShortArray& ds_target2, const ShortArray& dr_target2) override;
+  void nested_variable_mappings(const SizetArray& c_index1,
+				const SizetArray& di_index1,
+				const SizetArray& ds_index1,
+				const SizetArray& dr_index1,
+				const ShortArray& c_target2,
+				const ShortArray& di_target2,
+				const ShortArray& ds_target2,
+				const ShortArray& dr_target2) override;
 
   const SizetArray& nested_acv1_indices() const override;
   const ShortArray& nested_acv2_targets() const override;
@@ -84,8 +86,7 @@ class EnsembleSurrModel : public SurrogateModel {
   bool multilevel_multifidelity() const override;
 
   short ensemble_precedence() const override;
-  void ensemble_precedence(short mlmf_prec,
-                           bool update_default = true) override;
+  void ensemble_precedence(short mlmf_prec, bool update_default = true) override;
 
   /// set responseMode and pass any bypass request on to the high
   /// fidelity model for any lower-level surrogate recursions
@@ -95,19 +96,18 @@ class EnsembleSurrModel : public SurrogateModel {
   void surrogate_function_indices(const SizetSet& surr_fn_indices) override;
 
   // return truthModel interface identifier?
-  // const String& interface_id() const;
+  //const String& interface_id() const;
 
   /// set the evaluation counter reference points for the EnsembleSurrModel
   /// (request forwarded to truth and surrogate models)
   void set_evaluation_reference() override;
 
   void create_tabular_datastream() override;
-  void derived_auto_graphics(const Variables& vars,
-                             const Response& resp) override;
+  void derived_auto_graphics(const Variables& vars, const Response& resp) override;
 
   size_t insert_response_start(size_t position) override;
   void insert_metadata(const RealArray& md, size_t position,
-                       Response& agg_response) override;
+		       Response& agg_response) override;
 
   DiscrepancyCorrection& discrepancy_correction() override;
   void correction_type(short corr_type) override;
@@ -120,8 +120,7 @@ class EnsembleSurrModel : public SurrogateModel {
   /// correction of the low fidelity model results
   void build_approximation() override;
   // Uses the c_vars/response anchor point to define highFidResponse
-  // bool build_approximation(const RealVector& c_vars,const Response&
-  // response);
+  //bool build_approximation(const RealVector& c_vars,const Response& response);
 
   /// return approxModels[i]
   std::shared_ptr<Model> surrogate_model(size_t i = _NPOS) override;
@@ -142,8 +141,7 @@ class EnsembleSurrModel : public SurrogateModel {
   std::shared_ptr<Model> active_surrogate_model(size_t i = _NPOS) override;
   /// return the model corresponding to surrModelKeys[i] (spanning either
   /// model forms or resolutions)
-  std::shared_ptr<const Model> active_surrogate_model(
-      size_t i = _NPOS) const override;
+  std::shared_ptr<const Model> active_surrogate_model(size_t i = _NPOS) const override;
   /// return the model corresponding to truthModelKey
   std::shared_ptr<Model> active_truth_model() override;
   /// return the model corresponding to truthModelKey
@@ -230,11 +228,11 @@ class EnsembleSurrModel : public SurrogateModel {
   //
 
   void derived_synchronize_sequential(
-      IntResponseMapArray& model_resp_maps_rekey, bool block);
+    IntResponseMapArray& model_resp_maps_rekey, bool block);
   void derived_synchronize_combine(IntResponseMapArray& model_resp_maps,
-                                   IntResponseMap& combined_resp_map);
+    IntResponseMap& combined_resp_map);
   void derived_synchronize_combine_nowait(IntResponseMapArray& model_resp_maps,
-                                          IntResponseMap& combined_resp_map);
+    IntResponseMap& combined_resp_map);
 
   /// return the model from {approxModels,truthModel} corresponding to m_index
   std::shared_ptr<Model> model_from_index(unsigned short m_index);
@@ -243,8 +241,7 @@ class EnsembleSurrModel : public SurrogateModel {
   /// return approxModels[m_index]
   std::shared_ptr<Model> approx_model_from_index(unsigned short m_index);
   /// return approxModels[m_index]
-  std::shared_ptr<const Model> approx_model_from_index(
-      unsigned short m_index) const;
+  std::shared_ptr<const Model> approx_model_from_index(unsigned short m_index) const;
 
   /// return the key from {truthModel,surrModel}Key{,s} corresponding to k_index
   Pecos::ActiveKey& key_from_index(size_t k_index);
@@ -254,7 +251,7 @@ class EnsembleSurrModel : public SurrogateModel {
 
   /// distributes the incoming orig_asv among actual_asv and approx_asv
   void asv_split(const ShortArray& orig_asv, ShortArray& approx_asv,
-                 ShortArray& actual_asv, bool build_flag = false);
+		 ShortArray& actual_asv, bool build_flag = false);
   /// distributes the incoming orig_asv among actual_asv and approx_asv
   void asv_split(const ShortArray& orig_asv, Short2DArray& indiv_asv);
 
@@ -311,7 +308,7 @@ class EnsembleSurrModel : public SurrogateModel {
   short ensemblePrecedence;
 
   // store aggregate model key that is active in component_parallel_mode()
-  // Pecos::ActiveKey componentParallelKey;
+  //Pecos::ActiveKey componentParallelKey;
   /// size of MPI buffer containing responseMode and an aggregated activeKey
   int modeKeyBufferSize;
 
@@ -337,18 +334,19 @@ class EnsembleSurrModel : public SurrogateModel {
   SizetArray primaryADRVarMapIndices;
   // "secondary" all continuous variable mapping targets flowed down
   // from higher level iteration
-  // ShortArray secondaryACVarMapTargets;
+  //ShortArray secondaryACVarMapTargets;
   // "secondary" all discrete int variable mapping targets flowed down
   // from higher level iteration
-  // ShortArray secondaryADIVarMapTargets;
+  //ShortArray secondaryADIVarMapTargets;
   // "secondary" all discrete string variable mapping targets flowed down
   // from higher level iteration
-  // ShortArray secondaryADSVarMapTargets;
+  //ShortArray secondaryADSVarMapTargets;
   // "secondary" all discrete real variable mapping targets flowed down
   // from higher level iteration
-  // ShortArray secondaryADRVarMapTargets;
+  //ShortArray secondaryADRVarMapTargets;
 
- private:
+private:
+
   //
   //- Heading: Convenience functions
   //
@@ -358,22 +356,22 @@ class EnsembleSurrModel : public SurrogateModel {
   /// synchronize the LF model's solution level control with surrModelKey
   void assign_surrogate_key(size_t i);
   // assign the resolution level for the model form indicated by the key
-  // void assign_key(const Pecos::ActiveKey& key);
+  //void assign_key(const Pecos::ActiveKey& key);
   /// assign the resolution level for the i-th model key
   void assign_key(size_t i);
 
   /// define truth and surrogate keys from incoming active key.  In case of
   /// singleton, use responseMode to disambiguate.
   void extract_truth_key(const Pecos::ActiveKey& active_key,
-                         Pecos::ActiveKey& truth_key);
+			 Pecos::ActiveKey& truth_key);
   /// define truth and surrogate keys from incoming active key.  In case of
   /// singleton, use responseMode to disambiguate.
   void extract_subordinate_keys(const Pecos::ActiveKey& active_key,
-                                std::vector<Pecos::ActiveKey>& surr_keys,
-                                Pecos::ActiveKey& truth_key);
+				std::vector<Pecos::ActiveKey>& surr_keys,
+				Pecos::ActiveKey& truth_key);
   // define truth and surrogate keys from incoming active key.  In case of
   // singleton, use component parallel mode to disambiguate.
-  // void extract_subordinate_keys(const Pecos::ActiveKey& active_key,
+  //void extract_subordinate_keys(const Pecos::ActiveKey& active_key,
   //			          std::vector<Pecos::ActiveKey>& surr_keys,
   //			          Pecos::ActiveKey& truth_key,
   //			          short parallel_mode);
@@ -397,7 +395,7 @@ class EnsembleSurrModel : public SurrogateModel {
 
   /// replicate a label array when resizing a response
   void inflate(const StringArray& labels, size_t num_replicates,
-               StringArray& new_labels) const;
+	       StringArray& new_labels) const;
 
   /// check whether incoming ASV has any active content
   bool test_asv(const ShortArray& asv);
@@ -414,7 +412,7 @@ class EnsembleSurrModel : public SurrogateModel {
   /// helper function for applying a single response correction corresponding
   /// to deltaCorr[paired_key]
   void single_apply(const Variables& vars, Response& resp,
-                    const Pecos::ActiveKey& paired_key) override;
+		    const Pecos::ActiveKey& paired_key) override;
   /// helper function for applying a correction across a sequence of
   /// model forms or discretization levels
   void recursive_apply(const Variables& vars, Response& resp) override;
@@ -429,7 +427,7 @@ class EnsembleSurrModel : public SurrogateModel {
   /// one of {DEFAULT,SINGLE,FULL_SOLUTION_LEVEL,FULL_MODEL_FORM}_CORRECTION
   unsigned short correctionMode;
   // sequence of discrepancy corrections to apply in SEQUENCE_CORRECTION mode
-  // std::vector<Pecos::ActiveKey> corrSequence;
+  //std::vector<Pecos::ActiveKey> corrSequence;
 
   /// map of reference truth (high fidelity) responses computed in
   /// build_approximation() and used for calculating corrections
@@ -472,146 +470,176 @@ class EnsembleSurrModel : public SurrogateModel {
   std::map<Pecos::ActiveKey, RealVector> referenceDRUBnds;
 };
 
-inline size_t EnsembleSurrModel::qoi() const {
+
+inline size_t EnsembleSurrModel::qoi() const
+{
   // resize_response() aggregates {truth,approx} model response fns
   switch (responseMode) {
-    case AGGREGATED_MODELS:
-    case AGGREGATED_MODEL_PAIR:
-      return truthModel->qoi();
-      break;
-    default:
-      return current_response().num_functions();
-      break;
+  case AGGREGATED_MODELS:  case AGGREGATED_MODEL_PAIR:
+    return truthModel->qoi();  break;
+  default:
+    return current_response().num_functions();   break;
   }
 }
 
-inline void EnsembleSurrModel::inflate(const StringArray& labels,
-                                       size_t num_replicates,
-                                       StringArray& new_labels) const {
+
+inline void EnsembleSurrModel::
+inflate(const StringArray& labels, size_t num_replicates,
+	StringArray& new_labels) const
+{
   size_t i, num_labels = labels.size(), num_new = num_labels * num_replicates;
   new_labels.resize(num_new);
-  for (size_t i = 0; i < num_new; ++i) new_labels[i] = labels[i % num_labels];
+  for (size_t i=0; i<num_new; ++i)
+    new_labels[i] = labels[i % num_labels];
 }
 
-inline void EnsembleSurrModel::nested_variable_mappings(
-    const SizetArray& c_index1, const SizetArray& di_index1,
-    const SizetArray& ds_index1, const SizetArray& dr_index1,
-    const ShortArray& c_target2, const ShortArray& di_target2,
-    const ShortArray& ds_target2, const ShortArray& dr_target2) {
-  primaryACVarMapIndices = c_index1;
+
+inline void EnsembleSurrModel::
+nested_variable_mappings(const SizetArray& c_index1,
+			 const SizetArray& di_index1,
+			 const SizetArray& ds_index1,
+			 const SizetArray& dr_index1,
+			 const ShortArray& c_target2,
+			 const ShortArray& di_target2,
+			 const ShortArray& ds_target2,
+			 const ShortArray& dr_target2)
+{
+  primaryACVarMapIndices  = c_index1;
   primaryADIVarMapIndices = di_index1;
   primaryADSVarMapIndices = ds_index1;
   primaryADRVarMapIndices = dr_index1;
-  // secondaryACVarMapTargets  = c_target2;
-  // secondaryADIVarMapTargets = di_target2;
-  // secondaryADSVarMapTargets = ds_target2;
-  // secondaryADRVarMapTargets = dr_target2;
+  //secondaryACVarMapTargets  = c_target2;
+  //secondaryADIVarMapTargets = di_target2;
+  //secondaryADSVarMapTargets = ds_target2;
+  //secondaryADRVarMapTargets = dr_target2;
 
   size_t i, num_approx = approxModels.size();
-  for (i = 0; i < num_approx; ++i)
+  for (i=0; i<num_approx; ++i)
     approxModels[i]->nested_variable_mappings(c_index1, di_index1, ds_index1,
-                                              dr_index1, c_target2, di_target2,
-                                              ds_target2, dr_target2);
+					     dr_index1, c_target2, di_target2,
+					     ds_target2, dr_target2);
 
   truthModel->nested_variable_mappings(c_index1, di_index1, ds_index1,
-                                       dr_index1, c_target2, di_target2,
-                                       ds_target2, dr_target2);
+				      dr_index1, c_target2, di_target2,
+				      ds_target2, dr_target2);
 }
 
-inline const SizetArray& EnsembleSurrModel::nested_acv1_indices() const {
-  return primaryACVarMapIndices;
+
+inline const SizetArray& EnsembleSurrModel::nested_acv1_indices() const
+{ return primaryACVarMapIndices; }
+
+
+inline const ShortArray& EnsembleSurrModel::nested_acv2_targets() const
+{ return truthModel->nested_acv2_targets(); }//secondaryACVarMapTargets
+
+
+inline short EnsembleSurrModel::
+query_distribution_parameter_derivatives() const
+{ return truthModel->query_distribution_parameter_derivatives(); }
+
+
+inline bool EnsembleSurrModel::force_rebuild()
+{
+  return check_rebuild(referenceICVars[truthModelKey],
+    referenceIDIVars[truthModelKey], referenceIDSVars[truthModelKey],
+    referenceIDRVars[truthModelKey], referenceCLBnds[truthModelKey],
+    referenceCUBnds[truthModelKey],  referenceDILBnds[truthModelKey],
+    referenceDIUBnds[truthModelKey], referenceDRLBnds[truthModelKey],
+    referenceDRUBnds[truthModelKey]);
 }
 
-inline const ShortArray& EnsembleSurrModel::nested_acv2_targets() const {
-  return truthModel->nested_acv2_targets();
-}  // secondaryACVarMapTargets
 
-inline short EnsembleSurrModel::query_distribution_parameter_derivatives()
-    const {
-  return truthModel->query_distribution_parameter_derivatives();
-}
-
-inline bool EnsembleSurrModel::force_rebuild() {
-  return check_rebuild(
-      referenceICVars[truthModelKey], referenceIDIVars[truthModelKey],
-      referenceIDSVars[truthModelKey], referenceIDRVars[truthModelKey],
-      referenceCLBnds[truthModelKey], referenceCUBnds[truthModelKey],
-      referenceDILBnds[truthModelKey], referenceDIUBnds[truthModelKey],
-      referenceDRLBnds[truthModelKey], referenceDRUBnds[truthModelKey]);
-}
-
-inline void EnsembleSurrModel::check_submodel_compatibility(
-    const Model& sub_model) {
+inline void EnsembleSurrModel::
+check_submodel_compatibility(const Model& sub_model)
+{
   bool err1 = check_active_variables(sub_model),
        err2 = check_inactive_variables(sub_model),
        err3 = check_response_qoi(sub_model);
 
-  if (err1 || err2 || err3) abort_handler(MODEL_ERROR);
+  if (err1 || err2 || err3)
+    abort_handler(MODEL_ERROR);
 }
 
-inline bool EnsembleSurrModel::multifidelity() const {
+
+inline bool EnsembleSurrModel::multifidelity() const
+{
   // This function is used when we don't want to alter logic at run-time based
   // on a deactivated key (as for same{Model,Interface}Instance)
   // > we rely on ensemblePrecedence passed from NonDExpansion::
   //   configure_sequence() based on the ML/MF algorithm selection;
   //   otherwise defaults to true
 
-  return (approxModels.size() &&
-          (ensemblePrecedence == MULTIFIDELITY_PRECEDENCE ||
-           truthModel->solution_levels() <= 1));
+  return ( approxModels.size() &&
+	   ( ensemblePrecedence == MULTIFIDELITY_PRECEDENCE ||
+	     truthModel->solution_levels() <= 1 ) );
 }
 
-inline bool EnsembleSurrModel::multilevel() const {
-  return (
-      truthModel->solution_levels() > 1 &&
-      (ensemblePrecedence == MULTILEVEL_PRECEDENCE || approxModels.empty()));
+
+inline bool EnsembleSurrModel::multilevel() const
+{
+  return ( truthModel->solution_levels() > 1 &&
+	   ( ensemblePrecedence == MULTILEVEL_PRECEDENCE ||
+	     approxModels.empty() ) );
 }
 
-inline bool EnsembleSurrModel::multilevel_multifidelity() const {
-  return (!approxModels.empty() && truthModel->solution_levels() > 1 &&
-          (ensemblePrecedence != MULTILEVEL_PRECEDENCE &&
-           ensemblePrecedence != MULTIFIDELITY_PRECEDENCE));
+
+inline bool EnsembleSurrModel::multilevel_multifidelity() const
+{
+  return ( !approxModels.empty() && truthModel->solution_levels() > 1 &&
+	   ( ensemblePrecedence != MULTILEVEL_PRECEDENCE &&
+	     ensemblePrecedence != MULTIFIDELITY_PRECEDENCE) );
 }
 
-inline short EnsembleSurrModel::ensemble_precedence() const {
-  return ensemblePrecedence;
-}
 
-inline void EnsembleSurrModel::ensemble_precedence(short mlmf_prec,
-                                                   bool update_default) {
+inline short EnsembleSurrModel::ensemble_precedence() const
+{ return ensemblePrecedence; }
+
+
+inline void EnsembleSurrModel::
+ensemble_precedence(short mlmf_prec, bool update_default)
+{
   if (ensemblePrecedence != mlmf_prec) {
     ensemblePrecedence = mlmf_prec;
     if (update_default) assign_default_keys(responseMode);
   }
 }
 
-inline void EnsembleSurrModel::set_evaluation_reference() {
-  // surrogate_model()->set_evaluation_reference();
+
+inline void EnsembleSurrModel::set_evaluation_reference()
+{
+  //surrogate_model()->set_evaluation_reference();
 
   // don't recurse this, since the eval reference is for the top level iteration
-  // if (responseMode == BYPASS_SURROGATE)
+  //if (responseMode == BYPASS_SURROGATE)
   //  truthModel.set_evaluation_reference();
 
   // may want to add this in time
-  // surrModelEvalRef = surrModelEvalCntr;
+  //surrModelEvalRef = surrModelEvalCntr;
 }
 
-inline bool EnsembleSurrModel::test_id_maps(const IntIntMapArray& id_maps) {
+
+inline bool EnsembleSurrModel::test_id_maps(const IntIntMapArray& id_maps)
+{
   size_t i, num_map = id_maps.size();
-  for (i = 0; i < num_map; ++i)
-    if (!id_maps[i].empty()) return true;
+  for (i=0; i<num_map; ++i)
+    if (!id_maps[i].empty())
+      return true;
   return false;
 }
 
-inline size_t EnsembleSurrModel::count_id_maps(const IntIntMapArray& id_maps) {
+
+inline size_t EnsembleSurrModel::count_id_maps(const IntIntMapArray& id_maps)
+{
   size_t i, num_map = id_maps.size(), cntr = 0;
-  for (i = 0; i < num_map; ++i)
-    if (!id_maps[i].empty()) ++cntr;
+  for (i=0; i<num_map; ++i)
+    if (!id_maps[i].empty())
+      ++cntr;
   return cntr;
 }
 
-inline void EnsembleSurrModel::surrogate_response_mode(
-    short mode)  //, bool update_keys)
+
+inline void EnsembleSurrModel::
+surrogate_response_mode(short mode)//, bool update_keys)
 {
   if (responseMode == mode) return;
 
@@ -622,8 +650,8 @@ inline void EnsembleSurrModel::surrogate_response_mode(
   // create_tabular_datastream() requires care due to this ordering.
   //
   // tests for outgoing mode:
-  // bool resize_for_mode = false;
-  // if (responseMode == AGGREGATED_MODELS ||
+  //bool resize_for_mode = false;
+  //if (responseMode == AGGREGATED_MODELS ||
   //    responseMode == AGGREGATED_MODEL_PAIR)
   //  resize_for_mode = true;
 
@@ -632,85 +660,95 @@ inline void EnsembleSurrModel::surrogate_response_mode(
 
   // updates for incoming mode:
   switch (mode) {
-    case AUTO_CORRECTED_SURROGATE:
-    case MODEL_DISCREPANCY:
-      // Trap the omission of a correction specification
-      if (!corrType) {
-        Cerr << "Error: activation of mode ";
-        if (mode == AUTO_CORRECTED_SURROGATE)
-          Cerr << "AUTO_CORRECTED_SURROGATE";
-        else
-          Cerr << "MODEL_DISCREPANCY";
-        Cerr << " requires specification of a correction type." << std::endl;
-        abort_handler(MODEL_ERROR);
-      }
-      break;
-    case BYPASS_SURROGATE:
-      // don't propagate to approx models since point of a surrogate bypass
-      // is to get a surrogate-free truth evaluation
-      truthModel->surrogate_response_mode(mode);
-      break;
-      // case AGGREGATED_MODELS: case AGGREGATED_MODEL_PAIR:
-      //   resize_for_mode = true;                    break;
+  case AUTO_CORRECTED_SURROGATE: case MODEL_DISCREPANCY:
+    // Trap the omission of a correction specification
+    if (!corrType) {
+      Cerr << "Error: activation of mode ";
+      if (mode == AUTO_CORRECTED_SURROGATE) Cerr << "AUTO_CORRECTED_SURROGATE";
+      else                                  Cerr << "MODEL_DISCREPANCY";
+      Cerr << " requires specification of a correction type." << std::endl;
+      abort_handler(MODEL_ERROR);
+    }
+    break;
+  case BYPASS_SURROGATE:
+    // don't propagate to approx models since point of a surrogate bypass
+    // is to get a surrogate-free truth evaluation
+    truthModel->surrogate_response_mode(mode);  break;
+  //case AGGREGATED_MODELS: case AGGREGATED_MODEL_PAIR:
+  //  resize_for_mode = true;                    break;
   }
 
   // if no keys yet, assign default ones for purposes of initialization;
   // these will be replaced at run time
   // > unnecessary if ctor call to assign_default_keys() is active
-  // if (update_keys)
-  if (truthModelKey.empty() && surrModelKeys.empty()) assign_default_keys(mode);
+  //if (update_keys)
+  if (truthModelKey.empty() && surrModelKeys.empty())
+    assign_default_keys(mode);
 
   // Defer: surrogate_response_mode() generally precedes activation of keys
-  // if (resize_for_mode)
+  //if (resize_for_mode)
   //  { resize_response(); resize_maps(); }
 }
 
-inline int EnsembleSurrModel::server_buffer_size(short mode,
-                                                 const Pecos::ActiveKey& key) {
+
+inline int EnsembleSurrModel::
+server_buffer_size(short mode, const Pecos::ActiveKey& key)
+{
   MPIPackBuffer send_buff;
-  send_buff << mode << key;  // serve_run() recvs single | aggregate key
+  send_buff << mode << key; // serve_run() recvs single | aggregate key
   return send_buff.size();
 }
 
-inline void EnsembleSurrModel::initialize_correction() {
+
+inline void EnsembleSurrModel::initialize_correction()
+{
   // Correction is required for some responseModes.  Enforcement of a
   // correction type for these modes occurs in surrogate_response_mode().
-  if (corrType) {  // initialize DiscrepancyCorrection using active key
-    DiscrepancyCorrection& delta_corr = deltaCorr[activeKey];  // per data group
+  if (corrType) { // initialize DiscrepancyCorrection using active key
+    DiscrepancyCorrection& delta_corr = deltaCorr[activeKey]; // per data group
     if (!delta_corr.initialized())
       delta_corr.initialize(active_surrogate_model(0).get(), surrogateFnIndices,
-                            corrType, corrOrder);
+			    corrType, corrOrder);
   }
-  // truthResponseRef[truthModelKey] = currentResponse.copy();
+  //truthResponseRef[truthModelKey] = currentResponse.copy();
 }
 
-inline void EnsembleSurrModel::surrogate_function_indices(
-    const SizetSet& surr_fn_indices) {
-  surrogateFnIndices = surr_fn_indices;
-}
 
-inline void EnsembleSurrModel::stop_servers() { component_parallel_mode(0); }
+inline void EnsembleSurrModel::
+surrogate_function_indices(const SizetSet& surr_fn_indices)
+{ surrogateFnIndices = surr_fn_indices; }
 
-inline bool EnsembleSurrModel::matching_all_interface_ids() {
+
+inline void EnsembleSurrModel::stop_servers()
+{ component_parallel_mode(0); }
+
+
+inline bool EnsembleSurrModel::matching_all_interface_ids()
+{
   size_t i, num_approx = approxModels.size();
-  const String& hf_id = truthModel->interface_id();
-  for (i = 0; i < num_approx; ++i)
-    if (approxModels[i]->interface_id() != hf_id) return false;
+  const String& hf_id  = truthModel->interface_id();
+  for (i=0; i<num_approx; ++i)
+    if (approxModels[i]->interface_id() != hf_id)
+      return false;
   return true;
 }
 
-inline bool EnsembleSurrModel::matching_active_interface_ids() {
-  size_t i, num_approx = surrModelKeys.size();
-  unsigned short lf_form;
-  const String& hf_id = truthModel->interface_id();
-  for (i = 0; i < num_approx; ++i) {
+
+inline bool EnsembleSurrModel::matching_active_interface_ids()
+{
+  size_t i, num_approx = surrModelKeys.size();  unsigned short lf_form;
+  const String& hf_id  = truthModel->interface_id();
+  for (i=0; i<num_approx; ++i) {
     lf_form = surrModelKeys[i].retrieve_model_form();
-    if (model_from_index(lf_form)->interface_id() != hf_id) return false;
+    if (model_from_index(lf_form)->interface_id() != hf_id)
+      return false;
   }
   return true;
 }
 
-inline void EnsembleSurrModel::check_model_interface_instance() {
+
+inline void EnsembleSurrModel::check_model_interface_instance()
+{
   unsigned short hf_form = truthModelKey.retrieve_model_form();
 
   size_t i, num_approx = surrModelKeys.size();
@@ -718,24 +756,24 @@ inline void EnsembleSurrModel::check_model_interface_instance() {
     sameModelInstance = sameInterfaceInstance = false;
   else {
     sameModelInstance = true;
-    for (i = 0; i < num_approx; ++i)
-      if (surrModelKeys[i].retrieve_model_form() != hf_form) {
-        sameModelInstance = false;
-        break;
-      }
-    sameInterfaceInstance =
-        (sameModelInstance) ? true : matching_active_interface_ids();
+    for (i=0; i<num_approx; ++i)
+      if (surrModelKeys[i].retrieve_model_form() != hf_form)
+	{ sameModelInstance = false; break; }
+    sameInterfaceInstance = (sameModelInstance) ? true :
+      matching_active_interface_ids();
   }
 }
 
-inline size_t EnsembleSurrModel::insert_response_start(size_t position) {
+
+inline size_t EnsembleSurrModel::insert_response_start(size_t position)
+{
   size_t i, start = 0, num_approx = surrModelKeys.size();
   if (position > num_approx) {
     Cerr << "Error: invalid position (" << position << ") in EnsembleSurrModel"
-         << "::insert_response_start()" << std::endl;
+	 << "::insert_response_start()" << std::endl;
     abort_handler(MODEL_ERROR);
   }
-  for (i = 0; i < position; ++i) {
+  for (i=0; i<position; ++i) {
     unsigned short form = surrModelKeys[i].retrieve_model_form();
     auto model_i = model_from_index(form);
     start += model_i->current_response().active_set_request_vector().size();
@@ -743,16 +781,17 @@ inline size_t EnsembleSurrModel::insert_response_start(size_t position) {
   return start;
 }
 
-inline void EnsembleSurrModel::insert_metadata(const RealArray& md,
-                                               size_t position,
-                                               Response& agg_response) {
+
+inline void EnsembleSurrModel::
+insert_metadata(const RealArray& md, size_t position, Response& agg_response)
+{
   size_t i, start = 0, num_approx = surrModelKeys.size();
   if (position > num_approx) {
     Cerr << "Error: invalid position (" << position << ") in EnsembleSurrModel"
-         << "::insert_response_start()" << std::endl;
+	 << "::insert_response_start()" << std::endl;
     abort_handler(MODEL_ERROR);
   }
-  for (i = 0; i < position; ++i) {
+  for (i=0; i<position; ++i) {
     unsigned short form = surrModelKeys[i].retrieve_model_form();
     auto model_i = model_from_index(form);
     start += model_i->current_response().metadata().size();
@@ -760,111 +799,129 @@ inline void EnsembleSurrModel::insert_metadata(const RealArray& md,
   agg_response.metadata(md, start);
 }
 
-inline Pecos::ActiveKey& EnsembleSurrModel::key_from_index(size_t k_index) {
+
+inline Pecos::ActiveKey& EnsembleSurrModel::key_from_index(size_t k_index)
+{
   size_t num_approx = surrModelKeys.size();
-  if (k_index < num_approx)
-    return surrModelKeys[k_index];
-  else if (k_index == num_approx)
-    return truthModelKey;
-  else {  // includes _NPOS
+  if      (k_index <  num_approx) return surrModelKeys[k_index];
+  else if (k_index == num_approx) return truthModelKey;
+  else { // includes _NPOS
     Cerr << "Error: key index (" << k_index << ") out of range in "
-         << "EnsembleSurrModel::key_from_index()" << std::endl;
-    abort_handler(MODEL_ERROR);
-    return truthModelKey;
+	 << "EnsembleSurrModel::key_from_index()" << std::endl;
+    abort_handler(MODEL_ERROR);  return truthModelKey;
   }
 }
 
-inline bool EnsembleSurrModel::find_model_in_keys(unsigned short m_index) {
+
+
+inline bool EnsembleSurrModel::find_model_in_keys(unsigned short m_index)
+{
   if (!truthModelKey.empty() && truthModelKey.retrieve_model_form() == m_index)
     return true;
   size_t k, num_k = surrModelKeys.size();
-  for (k = 0; k < num_k; ++k)
-    if (surrModelKeys[k].retrieve_model_form() == m_index) return true;
+  for (k=0; k<num_k; ++k)
+    if (surrModelKeys[k].retrieve_model_form() == m_index)
+      return true;
 
   return false;
 }
 
+
 /* active cases are Key-based */
-inline unsigned short EnsembleSurrModel::active_surrogate_model_form(
-    size_t i) const {
+inline unsigned short EnsembleSurrModel::
+active_surrogate_model_form(size_t i) const
+{
   if (i == _NPOS)
-    return USHRT_MAX;  // defer error/warning/mitigation to calling code
-  else if (i >= surrModelKeys.size()) {  // hard error
+    return USHRT_MAX; // defer error/warning/mitigation to calling code
+  else if (i >= surrModelKeys.size()) { // hard error
     Cerr << "Error: model form index (" << i << ") out of range ("
-         << surrModelKeys.size() << " active surrogate models) in "
-         << "EnsembleSurrModel::active_surrogate_model_form()" << std::endl;
+	 << surrModelKeys.size() << " active surrogate models) in "
+	 << "EnsembleSurrModel::active_surrogate_model_form()" << std::endl;
     abort_handler(MODEL_ERROR);
   }
   return surrModelKeys[i].retrieve_model_form();
 }
 
-inline std::shared_ptr<Model> EnsembleSurrModel::surrogate_model(size_t i) {
-  return (i == _NPOS) ? approx_model_from_index(0) : approx_model_from_index(i);
+
+inline std::shared_ptr<Model> EnsembleSurrModel::surrogate_model(size_t i)
+{
+  return (i == _NPOS) ? approx_model_from_index(0)
+                      : approx_model_from_index(i);
 }
 
-inline std::shared_ptr<const Model> EnsembleSurrModel::surrogate_model(
-    size_t i) const {
-  return (i == _NPOS) ? approx_model_from_index(0) : approx_model_from_index(i);
+
+inline std::shared_ptr<const Model> EnsembleSurrModel::surrogate_model(size_t i) const
+{
+  return (i == _NPOS) ? approx_model_from_index(0)
+                      : approx_model_from_index(i);
 }
 
-inline unsigned short EnsembleSurrModel::active_truth_model_form() const {
-  return truthModelKey.retrieve_model_form();
-}
 
-inline std::shared_ptr<Model> EnsembleSurrModel::active_truth_model() {
+inline unsigned short EnsembleSurrModel::active_truth_model_form() const
+{ return truthModelKey.retrieve_model_form(); }
+
+
+inline std::shared_ptr<Model> EnsembleSurrModel::active_truth_model()
+{
   // In ensemble cases, truthModelKey will return truthModel
   // In paired cases, truthModelKey will return the active HF in the pair
-  // return truthModel;
+  //return truthModel;
 
   unsigned short hf_form = active_truth_model_form();
-  if (hf_form == USHRT_MAX) {  // should not happen
+  if (hf_form == USHRT_MAX) { // should not happen
     Cerr << "Warning: resorting to default model form in EnsembleSurrModel::"
-         << "truth_model()" << std::endl;
+	 << "truth_model()" << std::endl;
     return truthModel;
-  } else
-    return model_from_index(hf_form);
+  }
+  else return model_from_index(hf_form);
 }
 
-inline std::shared_ptr<const Model> EnsembleSurrModel::active_truth_model()
-    const {
+
+inline std::shared_ptr<const Model> EnsembleSurrModel::active_truth_model() const
+{
   unsigned short hf_form = active_truth_model_form();
-  if (hf_form == USHRT_MAX) {  // should not happen
+  if (hf_form == USHRT_MAX) { // should not happen
     Cerr << "Warning: resorting to default model form in EnsembleSurrModel::"
-         << "truth_model()" << std::endl;
+	 << "truth_model()" << std::endl;
     return truthModel;
-  } else
-    return model_from_index(hf_form);
+  }
+  else return model_from_index(hf_form);
 }
 
-inline bool EnsembleSurrModel::active_truth_key() const {
-  return !truthModelKey.empty();
-}
 
-inline size_t EnsembleSurrModel::active_surrogate_keys() const {
-  return surrModelKeys.size();
-}
+inline bool EnsembleSurrModel::active_truth_key() const
+{ return !truthModelKey.empty(); }
 
-inline std::shared_ptr<Model> EnsembleSurrModel::truth_model() {
-  return truthModel;
-}
 
-inline std::shared_ptr<const Model> EnsembleSurrModel::truth_model() const {
-  return truthModel;
-}
+inline size_t EnsembleSurrModel::active_surrogate_keys() const
+{ return surrModelKeys.size(); }
 
-inline void EnsembleSurrModel::assign_truth_key() {
+
+inline std::shared_ptr<Model> EnsembleSurrModel::truth_model()
+{ return truthModel; }
+
+
+inline std::shared_ptr<const Model> EnsembleSurrModel::truth_model() const
+{ return truthModel; }
+
+
+inline void EnsembleSurrModel::assign_truth_key()
+{
   unsigned short hf_form = truthModelKey.retrieve_model_form();
   if (hf_form != USHRT_MAX)
     model_from_index(hf_form)->solution_level_cost_index(
-        truthModelKey.retrieve_resolution_level());
+      truthModelKey.retrieve_resolution_level());
 }
 
-inline void EnsembleSurrModel::assign_surrogate_key(size_t i) {
+
+inline void EnsembleSurrModel::assign_surrogate_key(size_t i)
+{
   unsigned short lf_form = surrModelKeys[i].retrieve_model_form();
   if (lf_form != USHRT_MAX)
     model_from_index(lf_form)->solution_level_cost_index(
-        surrModelKeys[i].retrieve_resolution_level());
+      surrModelKeys[i].retrieve_resolution_level());
 }
+
 
 /*
 inline void EnsembleSurrModel::assign_key(const Pecos::ActiveKey& key)
@@ -876,60 +933,63 @@ inline void EnsembleSurrModel::assign_key(const Pecos::ActiveKey& key)
 }
 */
 
-inline void EnsembleSurrModel::assign_key(size_t i) {
-  if (i < surrModelKeys.size())
-    assign_surrogate_key(i);
-  else if (i != _NPOS)
-    assign_truth_key();
+
+inline void EnsembleSurrModel::assign_key(size_t i)
+{
+  if      (i  < surrModelKeys.size()) assign_surrogate_key(i);
+  else if (i != _NPOS)                assign_truth_key();
 }
 
-inline void EnsembleSurrModel::clear_model_keys() {
+
+inline void EnsembleSurrModel::clear_model_keys()
+{
   size_t i, num_approx = approxModels.size();
-  for (i = 0; i < num_approx; ++i) approxModels[i]->clear_model_keys();
+  for (i=0; i<num_approx; ++i)
+    approxModels[i]->clear_model_keys();
   truthModel->clear_model_keys();
 }
 
-inline void EnsembleSurrModel::extract_subordinate_keys(
-    const Pecos::ActiveKey& active_key,
-    std::vector<Pecos::ActiveKey>& surr_keys, Pecos::ActiveKey& truth_key) {
-  if (active_key.aggregated())  // AGGREGATED_MODELS, MODEL_DISCREPANCY
+
+inline void EnsembleSurrModel::
+extract_subordinate_keys(const Pecos::ActiveKey& active_key,
+			 std::vector<Pecos::ActiveKey>& surr_keys,
+			 Pecos::ActiveKey& truth_key)
+{
+  if (active_key.aggregated()) // AGGREGATED_MODELS, MODEL_DISCREPANCY
     active_key.extract_keys(surr_keys, truth_key);
-  else  // singleton key: assign to truth | surr based on responseMode
+  else // singleton key: assign to truth | surr based on responseMode
     switch (responseMode) {
-      case UNCORRECTED_SURROGATE:
-      case AUTO_CORRECTED_SURROGATE:
-        surr_keys.assign(1, active_key);
-        truth_key.clear();
-        break;
-      default:  // {BYPASS,NO}_SURROGATE
-        truth_key = active_key;
-        surr_keys.clear();
-        break;
+    case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
+      surr_keys.assign(1, active_key); truth_key.clear();  break;
+    default: // {BYPASS,NO}_SURROGATE
+      truth_key = active_key;          surr_keys.clear();  break;
     }
 }
 
-inline void EnsembleSurrModel::extract_truth_key(
-    const Pecos::ActiveKey& active_key, Pecos::ActiveKey& truth_key) {
-  if (active_key.aggregated()) {  // AGGREGATED_MODELS, MODEL_DISCREPANCY
-    size_t truth_index = active_key.data_size() - 1;  // last key for #keys > 1
+
+inline void EnsembleSurrModel::
+extract_truth_key(const Pecos::ActiveKey& active_key,
+		  Pecos::ActiveKey& truth_key)
+{
+  if (active_key.aggregated()) { // AGGREGATED_MODELS, MODEL_DISCREPANCY
+    size_t truth_index = active_key.data_size() - 1; // last key for #keys > 1
     active_key.extract_key(truth_index, truth_key);
-  } else  // singleton key: assign to truth based on responseMode
+  }
+  else // singleton key: assign to truth based on responseMode
     switch (responseMode) {
-      case UNCORRECTED_SURROGATE:
-      case AUTO_CORRECTED_SURROGATE:
-        truth_key.clear();
-        break;
-      default:  // {BYPASS,NO}_SURROGATE
-        truth_key = active_key;
-        break;
+    case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
+      truth_key.clear();      break;
+    default: // {BYPASS,NO}_SURROGATE
+      truth_key = active_key; break;
     }
 }
+
 
 /*
 inline void EnsembleSurrModel::
 extract_subordinate_keys(const Pecos::ActiveKey& active_key,
-                         std::vector<Pecos::ActiveKey>& surr_keys,
-                         Pecos::ActiveKey& truth_key, short parallel_mode)
+			 std::vector<Pecos::ActiveKey>& surr_keys,
+			 Pecos::ActiveKey& truth_key, short parallel_mode)
 {
   if (active_key.aggregated())
     active_key.extract_keys(surr_keys, truth_key);
@@ -954,192 +1014,220 @@ inline bool EnsembleSurrModel::multilevel_from_keys() const
   for (i=0; i<num_approx; ++i) {
     const Pecos::ActiveKey& surr_key = surrModelKeys[i];
     if (surr_key.retrieve_model_form()       == hf_form &&
-        surr_key.retrieve_resolution_level() != hf_lev)
+	surr_key.retrieve_resolution_level() != hf_lev)
       return true;
   }
   return false;
 }
 */
 
-inline void EnsembleSurrModel::resize_maps() {
+
+inline void EnsembleSurrModel::resize_maps()
+{
   size_t num_steps = surrModelKeys.size();
   if (!truthModelKey.empty()) num_steps += 1;
-  if (modelIdMaps.size() != num_steps) modelIdMaps.resize(num_steps);
+  if (modelIdMaps.size()    != num_steps)    modelIdMaps.resize(num_steps);
   if (cachedRespMaps.size() != num_steps) cachedRespMaps.resize(num_steps);
 }
 
-inline bool EnsembleSurrModel::test_asv(const ShortArray& asv) {
+
+inline bool EnsembleSurrModel::test_asv(const ShortArray& asv)
+{
   size_t i, num_fns = asv.size();
-  for (i = 0; i < num_fns; ++i)
-    if (asv[i]) return true;
+  for (i=0; i<num_fns; ++i)
+    if (asv[i])
+      return true;
   return false;
 }
 
-inline void EnsembleSurrModel::derived_subordinate_models(ModelList& ml,
-                                                          bool recurse_flag) {
+
+inline void EnsembleSurrModel::
+derived_subordinate_models(ModelList& ml, bool recurse_flag)
+{
   size_t i, num_approx = approxModels.size();
-  for (i = 0; i < num_approx; ++i) {
+  for (i=0; i<num_approx; ++i) {
     ml.push_back(approxModels[i]);
-    if (recurse_flag) approxModels[i]->derived_subordinate_models(ml, true);
+    if (recurse_flag)
+      approxModels[i]->derived_subordinate_models(ml, true);
   }
   // models are ordered low to high, so append truth last
   ml.push_back(truthModel);
-  if (recurse_flag) truthModel->derived_subordinate_models(ml, true);
+  if (recurse_flag)
+    truthModel->derived_subordinate_models(ml, true);
 }
 
-inline void EnsembleSurrModel::resize_from_subordinate_model(size_t depth) {
+
+inline void EnsembleSurrModel::resize_from_subordinate_model(size_t depth)
+{
   bool all_approx_resize = false, approx0_resize = false, truth_resize = false;
   switch (responseMode) {
-    case AGGREGATED_MODELS:
-      all_approx_resize = truth_resize = true;
-      break;
-    case BYPASS_SURROGATE:
-    case NO_SURROGATE:
-      truth_resize = true;
-      break;
-    case MODEL_DISCREPANCY:
-      approx0_resize = truth_resize = true;
-      break;
-    case UNCORRECTED_SURROGATE:
-    case AUTO_CORRECTED_SURROGATE:
-      approx0_resize = true;
-      break;
+  case AGGREGATED_MODELS:
+    all_approx_resize = truth_resize = true; break;
+  case BYPASS_SURROGATE: case NO_SURROGATE:
+    truth_resize = true;                     break;
+  case MODEL_DISCREPANCY:
+    approx0_resize = truth_resize = true;    break;
+  case UNCORRECTED_SURROGATE: case AUTO_CORRECTED_SURROGATE:
+    approx0_resize = true;                   break;
   }
 
   // bottom-up data flow, so recurse first
   size_t i, num_approx = 0;
-  if (all_approx_resize)
-    num_approx = surrModelKeys.size();
-  else if (approx0_resize)
-    num_approx = 1;
-  for (i = 0; i < num_approx; ++i) {
+  if   (all_approx_resize) num_approx = surrModelKeys.size();
+  else if (approx0_resize) num_approx = 1;
+  for (i=0; i<num_approx; ++i) {
     auto model_i = active_surrogate_model(i);
     if (depth == SZ_MAX)
-      model_i->resize_from_subordinate_model(
-          depth);  // retain special val (inf)
+      model_i->resize_from_subordinate_model(depth);// retain special val (inf)
     else if (depth)
       model_i->resize_from_subordinate_model(depth - 1);
   }
   if (truth_resize) {
     auto truth_model = active_truth_model();
     if (depth == SZ_MAX)
-      truth_model->resize_from_subordinate_model(
-          depth);  // retain special value
+      truth_model->resize_from_subordinate_model(depth);// retain special value
     else if (depth)
       truth_model->resize_from_subordinate_model(depth - 1);
   }
   // now resize this Model's response
   if (all_approx_resize || approx0_resize || truth_resize)
-    resize_response();  // resize_maps() ?
+    resize_response(); // resize_maps() ?
 }
 
-inline void EnsembleSurrModel::update_from_subordinate_model(size_t depth) {
+
+inline void EnsembleSurrModel::update_from_subordinate_model(size_t depth)
+{
   // bottom-up data flow: recurse first, then pull updates from subordinate
-  auto sub_model = (responseMode == UNCORRECTED_SURROGATE ||
-                    responseMode == AUTO_CORRECTED_SURROGATE)
-                       ? active_surrogate_model(0)
-                       : active_truth_model();
+  auto sub_model = ( responseMode ==    UNCORRECTED_SURROGATE ||
+		       responseMode == AUTO_CORRECTED_SURROGATE ) ?
+    active_surrogate_model(0) : active_truth_model();
   if (depth == SZ_MAX)
-    sub_model->update_from_subordinate_model(depth);  // retain special value
+    sub_model->update_from_subordinate_model(depth); // retain special value
   else if (depth)
     sub_model->update_from_subordinate_model(depth - 1);
   update_from_model(sub_model);
 }
 
-inline void EnsembleSurrModel::primary_response_fn_weights(
-    const RealVector& wts, bool recurse_flag) {
+
+inline void EnsembleSurrModel::
+primary_response_fn_weights(const RealVector& wts, bool recurse_flag)
+{
   primaryRespFnWts = wts;
   if (recurse_flag) {
     size_t i, num_approx = approxModels.size();
-    for (i = 0; i < num_approx; ++i)
+    for (i=0; i<num_approx; ++i)
       approxModels[i]->primary_response_fn_weights(wts, recurse_flag);
     truthModel->primary_response_fn_weights(wts, recurse_flag);
   }
 }
 
-inline void EnsembleSurrModel::derived_init_serial() {
+
+inline void EnsembleSurrModel::derived_init_serial()
+{
   size_t i, num_approx = approxModels.size();
-  for (i = 0; i < num_approx; ++i) approxModels[i]->init_serial();
+  for (i=0; i<num_approx; ++i)
+    approxModels[i]->init_serial();
   truthModel->init_serial();
 }
 
-inline void EnsembleSurrModel::inactive_view(short view, bool recurse_flag) {
+inline void EnsembleSurrModel::inactive_view(short view, bool recurse_flag)
+{
   currentVariables.inactive_view(view);
   userDefinedConstraints.inactive_view(view);
   if (recurse_flag) {
     size_t i, num_approx = approxModels.size();
-    for (i = 0; i < num_approx; ++i)
+    for (i=0; i<num_approx; ++i)
       approxModels[i]->inactive_view(view, recurse_flag);
     truthModel->inactive_view(view, recurse_flag);
   }
 }
 
-inline bool EnsembleSurrModel::evaluation_cache(bool recurse_flag) const {
+
+inline bool EnsembleSurrModel::evaluation_cache(bool recurse_flag) const
+{
   if (recurse_flag) {
-    if (truthModel->evaluation_cache(recurse_flag)) return true;
+    if (truthModel->evaluation_cache(recurse_flag))
+      return true;
     size_t i, num_approx = approxModels.size();
-    for (i = 0; i < num_approx; ++i)
-      if (approxModels[i]->evaluation_cache(recurse_flag)) return true;
+    for (i=0; i<num_approx; ++i)
+      if (approxModels[i]->evaluation_cache(recurse_flag))
+	return true;
     return false;
-  } else
+  }
+  else
     return false;
 }
 
-inline bool EnsembleSurrModel::restart_file(bool recurse_flag) const {
+
+inline bool EnsembleSurrModel::restart_file(bool recurse_flag) const
+{
   if (recurse_flag) {
-    if (truthModel->restart_file(recurse_flag)) return true;
+    if (truthModel->restart_file(recurse_flag))
+      return true;
     size_t i, num_approx = approxModels.size();
-    for (i = 0; i < num_approx; ++i)
-      if (approxModels[i]->restart_file(recurse_flag)) return true;
+    for (i=0; i<num_approx; ++i)
+      if (approxModels[i]->restart_file(recurse_flag))
+	return true;
     return false;
-  } else
+  }
+  else
     return false;
 }
 
-inline void EnsembleSurrModel::fine_grained_evaluation_counters() {
+
+inline void EnsembleSurrModel::fine_grained_evaluation_counters()
+{
   size_t i, num_approx = approxModels.size();
-  for (i = 0; i < num_approx; ++i)
+  for (i=0; i<num_approx; ++i)
     approxModels[i]->fine_grained_evaluation_counters();
   truthModel->fine_grained_evaluation_counters();
 }
 
-inline void EnsembleSurrModel::print_evaluation_summary(
-    std::ostream& s, bool minimal_header, bool relative_count) const {
+
+inline void EnsembleSurrModel::
+print_evaluation_summary(std::ostream& s, bool minimal_header,
+                         bool relative_count) const
+{
   size_t i, num_approx = approxModels.size();
-  for (i = 0; i < num_approx; ++i)
-    approxModels[i]->print_evaluation_summary(s, minimal_header,
-                                              relative_count);
+  for (i=0; i<num_approx; ++i)
+    approxModels[i]->print_evaluation_summary(s, minimal_header, relative_count);
   // emulate low to high ordering
   truthModel->print_evaluation_summary(s, minimal_header, relative_count);
 }
 
-inline void EnsembleSurrModel::warm_start_flag(const bool flag) {
+
+inline void EnsembleSurrModel::warm_start_flag(const bool flag)
+{
   // Note: supportsEstimDerivs prevents quasi-Newton Hessian accumulations
-  warmStartFlag = flag;  // for completeness
+  warmStartFlag = flag; // for completeness
 
   size_t i, num_approx = approxModels.size();
-  for (i = 0; i < num_approx; ++i) approxModels[i]->warm_start_flag(flag);
+  for (i=0; i<num_approx; ++i)
+    approxModels[i]->warm_start_flag(flag);
   truthModel->warm_start_flag(flag);
 }
 
-inline DiscrepancyCorrection& EnsembleSurrModel::discrepancy_correction() {
-  return deltaCorr[activeKey];
-}
 
-inline void EnsembleSurrModel::correction_type(short corr_type) {
+inline DiscrepancyCorrection& EnsembleSurrModel::discrepancy_correction()
+{ return deltaCorr[activeKey]; }
+
+
+inline void EnsembleSurrModel::correction_type(short corr_type)
+{
   corrType = corr_type;
   std::map<Pecos::ActiveKey, DiscrepancyCorrection>::iterator it;
-  for (auto& d : deltaCorr) d.second.correction_type(corr_type);
+  for (auto& d : deltaCorr)
+    d.second.correction_type(corr_type);
 }
 
-inline unsigned short EnsembleSurrModel::correction_mode() const {
-  return correctionMode;
-}
 
-inline void EnsembleSurrModel::correction_mode(unsigned short corr_mode) {
-  correctionMode = corr_mode;
-}
+inline unsigned short EnsembleSurrModel::correction_mode() const
+{ return correctionMode; }
 
-}  // namespace Dakota
+
+inline void EnsembleSurrModel::correction_mode(unsigned short corr_mode)
+{ correctionMode = corr_mode; }
+
+} // namespace Dakota
 
 #endif

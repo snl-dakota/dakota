@@ -8,40 +8,35 @@
     _______________________________________________________________________ */
 
 #include "SNLLLeastSq.hpp"
-
 #include "DakotaModel.hpp"
-#include "NLF.h"
-#include "NLP.h"
+#include "ScalingModel.hpp"
+#include "ProblemDescDB.hpp"
+#include "ParamResponsePair.hpp"
+#include "PRPMultiIndex.hpp"
+#include "OptNewton.h"
+#include "OptNewtonLike.h"
 #include "OptBCNewton.h"
 #include "OptBCNewtonLike.h"
 #include "OptDHNIPS.h"
 #include "OptNIPSLike.h"
-#include "OptNewton.h"
-#include "OptNewtonLike.h"
+#include "NLF.h"
+#include "NLP.h"
 #include "OptppArray.h"
-#include "PRPMultiIndex.hpp"
-#include "ParamResponsePair.hpp"
-#include "ProblemDescDB.hpp"
-#include "ScalingModel.hpp"
 
-static const char rcsId[] =
-    "@(#) $Id: SNLLLeastSq.cpp 7029 2010-10-22 00:17:02Z mseldre $";
+static const char rcsId[]="@(#) $Id: SNLLLeastSq.cpp 7029 2010-10-22 00:17:02Z mseldre $";
+
 
 namespace Dakota {
-extern PRPCache data_pairs;  // global container
+extern PRPCache data_pairs; // global container
 
 SNLLLeastSq* SNLLLeastSq::snllLSqInstance(NULL);
 
-SNLLLeastSq::SNLLLeastSq(ProblemDescDB& problem_db,
-                         ParallelLibrary& parallel_lib,
-                         std::shared_ptr<Model> model)
-    : LeastSq(problem_db, parallel_lib, model,
-              std::shared_ptr<TraitsBase>(new SNLLLeastSqTraits())),
-      SNLLBase(problem_db),
-      nlfObjective(NULL),
-      nlfConstraint(NULL),
-      nlpConstraint(NULL),
-      theOptimizer(NULL) {
+
+SNLLLeastSq::SNLLLeastSq(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  LeastSq(problem_db, parallel_lib, model, std::shared_ptr<TraitsBase>(new SNLLLeastSqTraits())),
+  SNLLBase(problem_db), nlfObjective(NULL),
+  nlfConstraint(NULL), nlpConstraint(NULL), theOptimizer(NULL)
+{
   // historical default convergence tolerance
   if (convergenceTol < 0.0) convergenceTol = 1.0e-4;
 
@@ -53,62 +48,64 @@ SNLLLeastSq::SNLLLeastSq(ProblemDescDB& problem_db,
   // Gauss-Newton: unconstrained, bound-constrained, & nonlinear interior-point
   if (methodName != OPTPP_G_NEWTON) {
     Cerr << "Method name " << method_enum_to_string(methodName)
-         << " currently unavailable within\nDAKOTA's SNLLLeastSq "
-         << "implementation of OPT++." << std::endl;
+	 << " currently unavailable within\nDAKOTA's SNLLLeastSq "
+	 << "implementation of OPT++." << std::endl;
     abort_handler(-1);
   }
 
   // Gauss-Newton uses the full Newton optimizer with the addition of
   // code which computes f, df/dx, and d^2f/dx^2 as a function of the least
-  // squares residuals and their Jacobian matrix (see nlf2_evaluator_gn).
+  // squares residuals and their Jacobian matrix (see nlf2_evaluator_gn).  
   // In order to support the finer granularity of data needed to exploit the
-  // problem structure, Response is made up of numLeastSqTerms
+  // problem structure, Response is made up of numLeastSqTerms 
   // and constraints, rather than objective function(s) and constraints.
 
   if (vendorNumericalGradFlag) {
-    Cerr << "Gauss-Newton does not support vendor numerical gradients.\n"
-         << "Select dakota as method_source instead." << std::endl;
+    Cerr << "Gauss-Newton does not support vendor numerical gradients.\n" 
+	 << "Select dakota as method_source instead." << std::endl;
     abort_handler(-1);
   }
 
   nlf2 = new OPTPP::NLF2(numContinuousVars, nlf2_evaluator_gn, init_fn);
   nlfObjective = nlf2;
   nlfObjective->setModeOverride(true);
-  if (numConstraints) {  // nonlinear interior-point
+  if (numConstraints) { // nonlinear interior-point
     // **********************************************************************
     // NOTE: The combination of nlf2_evaluator_gn() with
     //       constraint1_evaluator_gn() has consistent derivative levels.
     //       OPT++ supports a mixed mode in which
     //       the optimization Hessian uses the Gauss-Newton approximation
-    //       (full Newton optimizer) and the constraint Hessians use a
+    //       (full Newton optimizer) and the constraint Hessians use a 
     //       quasi-Newton approximation (quasi-Newton optimizer).
     // **********************************************************************
     if (outputLevel == DEBUG_OUTPUT)
       Cout << "Instantiating OptDHNIPS optimizer with NLF2 Gauss-Newton "
-           << "evaluator.\n";
+	   << "evaluator.\n";
     optdhnips = new OPTPP::OptDHNIPS(nlf2);
-    // optdhnips->setSearchStrategy(searchStrat); // not supported
+    //optdhnips->setSearchStrategy(searchStrat); // not supported
     optdhnips->setMeritFcn(meritFn);
     optdhnips->setStepLengthToBdry(stepLenToBndry);
     optdhnips->setCenteringParameter(centeringParam);
     theOptimizer = optdhnips;
 
     nlf1Con = new OPTPP::NLF1(numContinuousVars, numNonlinearConstraints,
-                              constraint1_evaluator_gn, init_fn);
+			      constraint1_evaluator_gn, init_fn);
     nlfConstraint = nlf1Con;
     nlpConstraint = new OPTPP::NLP(nlf1Con);
-  } else if (boundConstraintFlag) {  // bound-constrained
+  }
+  else if (boundConstraintFlag) { // bound-constrained
     if (outputLevel == DEBUG_OUTPUT)
       Cout << "Instantiating OptBCNewton optimizer with NLF2 Gauss-Newton "
-           << "evaluator.\n";
+	   << "evaluator.\n";
     optbcnewton = new OPTPP::OptBCNewton(nlf2);
     optbcnewton->setSearchStrategy(searchStrat);
     if (searchStrat == OPTPP::TrustRegion) optbcnewton->setTRSize(maxStep);
     theOptimizer = optbcnewton;
-  } else {  // unconstrained
+  }
+  else { // unconstrained
     if (outputLevel == DEBUG_OUTPUT)
       Cout << "Instantiating OptNewton optimizer with NLF2 Gauss-Newton "
-           << "evaluator.\n";
+	   << "evaluator.\n";
     optnewton = new OPTPP::OptNewton(nlf2);
     optnewton->setSearchStrategy(searchStrat);
     if (searchStrat == OPTPP::TrustRegion) optnewton->setTRSize(maxStep);
@@ -117,22 +114,19 @@ SNLLLeastSq::SNLLLeastSq(ProblemDescDB& problem_db,
 
   // convenience function from SNLLBase
   snll_post_instantiate(numContinuousVars, vendorNumericalGradFlag,
-                        iteratedModel->interval_type(),
-                        iteratedModel->fd_gradient_step_size(), maxIterations,
-                        maxFunctionEvals, convergenceTol, gradientTol, maxStep,
-                        boundConstraintFlag, numConstraints, outputLevel,
-                        theOptimizer, nlfObjective, NULL, NULL);
+			iteratedModel->interval_type(),
+			iteratedModel->fd_gradient_step_size(), maxIterations,
+			maxFunctionEvals, convergenceTol, gradientTol, maxStep,
+			boundConstraintFlag, numConstraints, outputLevel,
+			theOptimizer, nlfObjective, NULL, NULL);
 }
 
-SNLLLeastSq::SNLLLeastSq(const String& method_name,
-                         std::shared_ptr<Model> model)
-    : LeastSq(OPTPP_G_NEWTON, model,
-              std::shared_ptr<TraitsBase>(
-                  new SNLLLeastSqTraits())),  // use default SNLLBase ctor
-      nlfObjective(NULL),
-      nlfConstraint(NULL),
-      nlpConstraint(NULL),
-      theOptimizer(NULL) {
+
+SNLLLeastSq::SNLLLeastSq(const String& method_name, std::shared_ptr<Model> model):
+  LeastSq(OPTPP_G_NEWTON, model, std::shared_ptr<TraitsBase>(new SNLLLeastSqTraits())), // use default SNLLBase ctor
+  nlfObjective(NULL), nlfConstraint(NULL), nlpConstraint(NULL),
+  theOptimizer(NULL)
+{
   // convenience function from SNLLBase
   snll_pre_instantiate(boundConstraintFlag, numConstraints);
 
@@ -141,91 +135,97 @@ SNLLLeastSq::SNLLLeastSq(const String& method_name,
   // Gauss-Newton: unconstrained, bound-constrained, & nonlinear interior-point
   if (method_name != "optpp_g_newton") {
     Cerr << "Error: Method name " << method_name << " unsupported in "
-         << "SNLLLeastSq lightweight construction by name." << std::endl;
+	 << "SNLLLeastSq lightweight construction by name." << std::endl;
     abort_handler(-1);
   }
 
   // Gauss-Newton uses the full Newton optimizer with the addition of
   // code which computes f, df/dx, and d^2f/dx^2 as a function of the least
-  // squares residuals and their Jacobian matrix (see nlf2_evaluator_gn).
+  // squares residuals and their Jacobian matrix (see nlf2_evaluator_gn).  
   // In order to support the finer granularity of data needed to exploit the
-  // problem structure, Response is made up of numLeastSqTerms
+  // problem structure, Response is made up of numLeastSqTerms 
   // and constraints, rather than objective function(s) and constraints.
 
   if (vendorNumericalGradFlag) {
-    Cerr << "Gauss-Newton does not support vendor numerical gradients.\n"
-         << "Select dakota as method_source instead." << std::endl;
+    Cerr << "Gauss-Newton does not support vendor numerical gradients.\n" 
+	 << "Select dakota as method_source instead." << std::endl;
     abort_handler(-1);
   }
 
   nlf2 = new OPTPP::NLF2(numContinuousVars, nlf2_evaluator_gn, init_fn);
   nlfObjective = nlf2;
   nlfObjective->setModeOverride(true);
-  if (numConstraints) {  // nonlinear interior-point
+  if (numConstraints) { // nonlinear interior-point
     // **********************************************************************
     // NOTE: The combination of nlf2_evaluator_gn() with
     //       constraint1_evaluator_gn() has consistent derivative levels.
     //       OPT++ supports a mixed mode in which
     //       the optimization Hessian uses the Gauss-Newton approximation
-    //       (full Newton optimizer) and the constraint Hessians use a
+    //       (full Newton optimizer) and the constraint Hessians use a 
     //       quasi-Newton approximation (quasi-Newton optimizer).
     // **********************************************************************
     if (outputLevel == DEBUG_OUTPUT)
       Cout << "Instantiating OptDHNIPS optimizer with NLF2 Gauss-Newton "
-           << "evaluator.\n";
+	   << "evaluator.\n";
     optdhnips = new OPTPP::OptDHNIPS(nlf2);
-    // optdhnips->setSearchStrategy(searchStrat);      // not supported
-    optdhnips->setMeritFcn(meritFn);                   // ArgaezTapia
-    optdhnips->setStepLengthToBdry(stepLenToBndry);    // 0.99995
-    optdhnips->setCenteringParameter(centeringParam);  // 0.2
+    //optdhnips->setSearchStrategy(searchStrat);      // not supported
+    optdhnips->setMeritFcn(meritFn);                  // ArgaezTapia
+    optdhnips->setStepLengthToBdry(stepLenToBndry);   // 0.99995
+    optdhnips->setCenteringParameter(centeringParam); // 0.2
     theOptimizer = optdhnips;
 
     nlf1Con = new OPTPP::NLF1(numContinuousVars, numNonlinearConstraints,
-                              constraint1_evaluator_gn, init_fn);
+			      constraint1_evaluator_gn, init_fn);
     nlfConstraint = nlf1Con;
     nlpConstraint = new OPTPP::NLP(nlf1Con);
-  } else if (boundConstraintFlag) {  // bound-constrained
+  }
+  else if (boundConstraintFlag) { // bound-constrained
     if (outputLevel == DEBUG_OUTPUT)
       Cout << "Instantiating OptBCNewton optimizer with NLF2 Gauss-Newton "
-           << "evaluator.\n";
+	   << "evaluator.\n";
     optbcnewton = new OPTPP::OptBCNewton(nlf2);
-    optbcnewton->setSearchStrategy(searchStrat);  // see snll_pre_instantiate
+    optbcnewton->setSearchStrategy(searchStrat); // see snll_pre_instantiate
     if (searchStrat == OPTPP::TrustRegion)
-      optbcnewton->setTRSize(maxStep);  // 1000.
+      optbcnewton->setTRSize(maxStep); // 1000.
     theOptimizer = optbcnewton;
-  } else {  // unconstrained
+  }
+  else { // unconstrained
     if (outputLevel == DEBUG_OUTPUT)
       Cout << "Instantiating OptNewton optimizer with NLF2 Gauss-Newton "
-           << "evaluator.\n";
+	   << "evaluator.\n";
     optnewton = new OPTPP::OptNewton(nlf2);
-    optnewton->setSearchStrategy(searchStrat);  // see snll_pre_instantiate
+    optnewton->setSearchStrategy(searchStrat); // see snll_pre_instantiate
     if (searchStrat == OPTPP::TrustRegion)
-      optnewton->setTRSize(maxStep);  // 1000.
+      optnewton->setTRSize(maxStep); // 1000.
     theOptimizer = optnewton;
   }
 
   // convenience function from SNLLBase
   snll_post_instantiate(numContinuousVars, vendorNumericalGradFlag,
-                        iteratedModel->interval_type(),
-                        iteratedModel->fd_gradient_step_size(), maxIterations,
-                        maxFunctionEvals, convergenceTol, 1.e-4, 1000.,
-                        boundConstraintFlag, numConstraints, outputLevel,
-                        theOptimizer, nlfObjective, NULL, NULL);
+			iteratedModel->interval_type(),
+			iteratedModel->fd_gradient_step_size(),
+			maxIterations, maxFunctionEvals, convergenceTol, 1.e-4,
+			1000., boundConstraintFlag, numConstraints, outputLevel,
+			theOptimizer, nlfObjective, NULL, NULL);
 }
 
-SNLLLeastSq::~SNLLLeastSq() {
+
+SNLLLeastSq::~SNLLLeastSq()
+{
   // free allocated memory
 
   // OPT++ uses virtual destructors, so the delete can be performed at the
-  // base class level.
-  theOptimizer->cleanup();
+  // base class level. 
+  theOptimizer->cleanup(); 
   delete nlfObjective;
   // TO DO: deallocate constraint attribute pointers (needed w/ SmartPtr?).
-  if (nlfConstraint) delete nlfConstraint;
-  // if (nlpConstraint)
-  //   delete nlpConstraint;
+  if (nlfConstraint)
+    delete nlfConstraint;
+  //if (nlpConstraint)
+  //  delete nlpConstraint;
   delete theOptimizer;
 }
+
 
 /** This nlf2 evaluator function is used for the Gauss-Newton method
     in order to exploit the special structure of the nonlinear least
@@ -235,9 +235,10 @@ SNLLLeastSq::~SNLLLeastSq() {
     function and its gradient vector and Hessian matrix are computed
     directly from the residual functions and their derivatives (which
     are returned from the Response object). */
-void SNLLLeastSq::nlf2_evaluator_gn(int mode, int n, const RealVector& x,
-                                    double& f, RealVector& grad_f,
-                                    RealSymMatrix& hess_f, int& result_mode) {
+void SNLLLeastSq::
+nlf2_evaluator_gn(int mode, int n, const RealVector& x, double& f,
+		  RealVector& grad_f, RealSymMatrix& hess_f, int& result_mode)
+{
   if (snllLSqInstance->outputLevel == DEBUG_OUTPUT)
     Cout << "\nSNLLLeastSq::nlf2_evaluator_gn called with mode = " << mode
          << '\n';
@@ -249,26 +250,21 @@ void SNLLLeastSq::nlf2_evaluator_gn(int mode, int n, const RealVector& x,
   // caused by 1,2,4 mode request ordering.
   short lsq_mode;
   switch (mode) {
-    case 0:
-    case 1:
-    case 3:  // no modification needed
-      lsq_mode = mode;
-      break;
-    case 2:
-    case 5:
-    case 6:
-    case 7:  // local_fn_vals & local_fn_grads both needed
-      lsq_mode = 3;
-      break;
-    case 4:  // only local_fn_grads needed in hess_f computation
-      lsq_mode = 2;
-      break;
-    default:
-      Cerr << "Bad mode input from OPT++ in nlf2_evaluator_gn." << std::endl;
-      abort_handler(-1);
+  case 0: case 1: case 3: // no modification needed
+    lsq_mode = mode;
+    break;
+  case 2: case 5: case 6: case 7: // local_fn_vals & local_fn_grads both needed
+    lsq_mode = 3;
+    break;
+  case 4: // only local_fn_grads needed in hess_f computation
+    lsq_mode = 2;
+    break;
+  default:
+    Cerr << "Bad mode input from OPT++ in nlf2_evaluator_gn." << std::endl;
+    abort_handler(-1);
   }
-  // Cout << "New nlf2_evaluator_gn call: mode = " << mode
-  //      << ", asv_mode required = " << lsq_mode << '\n';
+  //Cout << "New nlf2_evaluator_gn call: mode = " << mode 
+  //     << ", asv_mode required = " << lsq_mode << '\n';
 
   // Emulates NPSOLOptimizer::objective_f_eval() when nonlinear constraints are
   // present.  Unlike NPSOL, verify that mode and vars are consistent since
@@ -291,71 +287,74 @@ void SNLLLeastSq::nlf2_evaluator_gn(int mode, int n, const RealVector& x,
     // evaluator).  NOTE: with the addition of the disaggregated Hessian NIPS
     // capability, evaluating constraints requires the use of a mode which
     // drops the Hessian bit.
-    for (i = snllLSqInstance->numLeastSqTerms;
-         i < snllLSqInstance->numFunctions; i++)
-      local_asv[i] = 0;  // mode & 3; // nonlinear constraints (if present)
+    for (i=snllLSqInstance->numLeastSqTerms;
+	 i<snllLSqInstance->numFunctions; i++)
+      local_asv[i] = 0; //mode & 3; // nonlinear constraints (if present)
 
     snllLSqInstance->activeSet.request_vector(local_asv);
     snllLSqInstance->iteratedModel->evaluate(snllLSqInstance->activeSet);
     lastFnEvalLocn = NLF_EVALUATOR;
   }
-  const Response& local_response =
-      snllLSqInstance->iteratedModel->current_response();
+  const Response& local_response
+    = snllLSqInstance->iteratedModel->current_response();
 
   // Go ahead and always retrieve the references even though this data may not
   // have been requested in the local_asv (in which case it contains 0's).
-  const RealVector& local_fn_vals = local_response.function_values();
+  const RealVector& local_fn_vals  = local_response.function_values();
   const RealMatrix& local_fn_grads = local_response.function_gradients();
 
   // Sum the squared residuals to get the objective function = {R}'{R}.
-  if (mode & 1) {  // 1st bit is present, mode = 1, 3, 5, or 7
+  if (mode & 1) { // 1st bit is present, mode = 1, 3, 5, or 7
     f = 0.;
-    for (i = 0; i < snllLSqInstance->numLeastSqTerms; i++)
+    for (i=0; i<snllLSqInstance->numLeastSqTerms; i++)
       f += local_fn_vals[i] * local_fn_vals[i];
     if (snllLSqInstance->outputLevel > NORMAL_OUTPUT)
-      Cout << "    nlf2_evaluator_gn results: objective fn. =\n   "
-           << std::setw(write_precision + 7) << f << '\n';
+      Cout << "    nlf2_evaluator_gn results: objective fn. =\n   " 
+	   << std::setw(write_precision+7) << f << '\n';
     result_mode = OPTPP::NLPFunction;
   }
 
   // Get the gradient of the objective = 2*[J]'{R}.
-  if (mode & 2) {  // 2nd bit is present, mode = 2, 3, 6, or 7
+  if (mode & 2) { // 2nd bit is present, mode = 2, 3, 6, or 7
     if (snllLSqInstance->outputLevel > NORMAL_OUTPUT)
       Cout << "    nlf2_evaluator_gn results: objective fn. gradient =\n [ ";
-    for (i = 0; i < n; i++) {
+    for (i=0; i<n; i++) {
       grad_f(i) = 0.;
-      for (j = 0; j < snllLSqInstance->numLeastSqTerms; j++)
-        grad_f(i) += 2. * local_fn_grads(i, j) * local_fn_vals[j];
+      for (j=0; j<snllLSqInstance->numLeastSqTerms; j++)
+        grad_f(i) += 2. * local_fn_grads(i,j) * local_fn_vals[j];
       if (snllLSqInstance->outputLevel > NORMAL_OUTPUT)
-        Cout << std::setw(write_precision + 7) << grad_f(i) << ' ';
+	Cout << std::setw(write_precision+7) << grad_f(i) << ' ';
     }
-    if (snllLSqInstance->outputLevel > NORMAL_OUTPUT) Cout << "]\n";
+    if (snllLSqInstance->outputLevel > NORMAL_OUTPUT)
+      Cout << "]\n";
     result_mode |= OPTPP::NLPGradient;
   }
 
   // Get a Hessian approximation = 2*[J]'[J].
-  if (mode & 4) {  // 3rd bit is present, mode >= 4
-    for (i = 0; i < n; i++) {
-      for (j = 0; j <= i; j++) {
+  if (mode & 4) { // 3rd bit is present, mode >= 4
+    for (i=0; i<n; i++) {
+      for (j=0; j<=i; j++) {
         Real dtmp = 0.;
-        for (k = 0; k < snllLSqInstance->numLeastSqTerms; k++)
-          dtmp += 2. * local_fn_grads(i, k) * local_fn_grads(j, k);
+        for (k=0; k<snllLSqInstance->numLeastSqTerms; k++)
+          dtmp += 2. * local_fn_grads(i,k) * local_fn_grads(j,k);
         hess_f(i, j) = dtmp;
       }
-      // for (j=0; j<i; j++)
-      //   hess_f(j, i) = hess_f(i, j); // fill in symmetric values
+      //for (j=0; j<i; j++)
+      //  hess_f(j, i) = hess_f(i, j); // fill in symmetric values
     }
     if (snllLSqInstance->outputLevel > NORMAL_OUTPUT)
       Cout << "    nlf2_evaluator_gn results: objective fn. Hessian =\n"
-           << hess_f;
+	   << hess_f;
     result_mode |= OPTPP::NLPHessian;
   }
   Cout << std::endl;
 }
 
-void SNLLLeastSq::constraint1_evaluator_gn(int mode, int n, const RealVector& x,
-                                           RealVector& g, RealMatrix& grad_g,
-                                           int& result_mode) {
+
+void SNLLLeastSq::
+constraint1_evaluator_gn(int mode, int n, const RealVector& x, RealVector& g,
+			 RealMatrix& grad_g, int& result_mode)
+{ 
   if (snllLSqInstance->outputLevel == DEBUG_OUTPUT)
     Cout << "\nSNLLLeastSq::constraint1_evaluator_gn called with mode = "
          << mode;
@@ -363,52 +362,54 @@ void SNLLLeastSq::constraint1_evaluator_gn(int mode, int n, const RealVector& x,
   // Set lsq_mode for ASV value for least squares terms
   short lsq_mode;
   switch (mode) {
-    case 0:
-    case 1:
-    case 3:  // no modification needed
-      lsq_mode = mode;
-      break;
-    case 2:  // local_fn_vals & local_fn_grads both needed
-      lsq_mode = 3;
-      break;
-    default:
-      Cerr << "Bad mode input from OPT++ in nlf2_evaluator_gn." << std::endl;
-      abort_handler(-1);
+  case 0: case 1: case 3: // no modification needed
+    lsq_mode = mode;
+    break;
+  case 2: // local_fn_vals & local_fn_grads both needed
+    lsq_mode = 3;
+    break;
+  default:
+    Cerr << "Bad mode input from OPT++ in nlf2_evaluator_gn." << std::endl;
+    abort_handler(-1);
   }
 
   // set model variables and asv prior to evaluate()
   if (snllLSqInstance->outputLevel == DEBUG_OUTPUT)
-    Cout << "\nSNLLLeastSq::constraint1_evaluator_gn vars = \n" << x;
+    Cout << "\nSNLLLeastSq::constraint1_evaluator_gn vars = \n"
+         << x;
   ModelUtils::continuous_variables(*snllLSqInstance->iteratedModel, x);
 
   size_t i;
   ShortArray local_asv(snllLSqInstance->numFunctions, lsq_mode);
-  for (i = snllLSqInstance->numLeastSqTerms; i < snllLSqInstance->numFunctions;
-       i++)
-    local_asv[i] = mode;  // nonlinear constraints
+  for (i=snllLSqInstance->numLeastSqTerms; i<snllLSqInstance->numFunctions; i++)
+    local_asv[i] = mode; // nonlinear constraints
   snllLSqInstance->activeSet.request_vector(local_asv);
   snllLSqInstance->iteratedModel->evaluate(snllLSqInstance->activeSet);
   lastFnEvalLocn = CON_EVALUATOR;
-  lastEvalMode = lsq_mode;
-  lastEvalVars = x;
+  lastEvalMode   = lsq_mode;
+  lastEvalVars   = x;
 
-  const Response& local_response =
-      snllLSqInstance->iteratedModel->current_response();
-  if (mode & 1) {  // 1st bit is present, mode = 1, 3, 5, or 7
+  const Response& local_response
+    = snllLSqInstance->iteratedModel->current_response();
+  if (mode & 1) { // 1st bit is present, mode = 1, 3, 5, or 7
     snllLSqInstance->copy_con_vals_dak_to_optpp(
-        local_response.function_values(), g, snllLSqInstance->numLeastSqTerms);
+      local_response.function_values(), g, snllLSqInstance->numLeastSqTerms);
     result_mode = OPTPP::NLPFunction;
   }
-  if (mode & 2) {  // 2nd bit is present, mode = 2, 3, 6, or 7
+  if (mode & 2) { // 2nd bit is present, mode = 2, 3, 6, or 7
     snllLSqInstance->copy_con_grad(local_response.function_gradients(), grad_g,
-                                   snllLSqInstance->numLeastSqTerms);
+				   snllLSqInstance->numLeastSqTerms);
     result_mode |= OPTPP::NLPGradient;
   }
 }
 
-void SNLLLeastSq::constraint2_evaluator_gn(
-    int mode, int n, const RealVector& x, RealVector& g, RealMatrix& grad_g,
-    OPTPP::OptppArray<RealSymMatrix>& hess_g, int& result_mode) {
+
+void SNLLLeastSq::
+constraint2_evaluator_gn(int mode, int n, const RealVector& x, RealVector& g,
+			 RealMatrix& grad_g,
+			 OPTPP::OptppArray<RealSymMatrix>& hess_g,
+			 int& result_mode)
+{ 
   if (snllLSqInstance->outputLevel == DEBUG_OUTPUT)
     Cout << "\nSNLLLeastSq::constraint2_evaluator_gn called with mode = "
          << mode;
@@ -423,83 +424,81 @@ void SNLLLeastSq::constraint2_evaluator_gn(
   // Set lsq_mode for ASV value for least squares terms
   short lsq_mode;
   switch (mode) {
-    case 0:
-    case 1:
-    case 3:  // no modification needed
-      lsq_mode = mode;
-      break;
-    case 2:
-    case 5:
-    case 6:
-    case 7:  // local_fn_vals & local_fn_grads both needed
-      lsq_mode = 3;
-      break;
-    case 4:  // only local_fn_grads needed in hess_f computation
-      lsq_mode = 2;
-      break;
-    default:
-      Cerr << "Bad mode input from OPT++ in nlf2_evaluator_gn." << std::endl;
-      abort_handler(-1);
+  case 0: case 1: case 3: // no modification needed
+    lsq_mode = mode;
+    break;
+  case 2: case 5: case 6: case 7: // local_fn_vals & local_fn_grads both needed
+    lsq_mode = 3;
+    break;
+  case 4: // only local_fn_grads needed in hess_f computation
+    lsq_mode = 2;
+    break;
+  default:
+    Cerr << "Bad mode input from OPT++ in nlf2_evaluator_gn." << std::endl;
+    abort_handler(-1);
   }
 
   // set model variables and asv prior to evaluate()
   if (snllLSqInstance->outputLevel == DEBUG_OUTPUT)
-    Cout << "\nSNLLLeastSq::constraint2_evaluator_gn vars = \n" << x;
+    Cout << "\nSNLLLeastSq::constraint2_evaluator_gn vars = \n"
+         << x;
   ModelUtils::continuous_variables(*snllLSqInstance->iteratedModel, x);
 
   size_t i;
   ShortArray local_asv(snllLSqInstance->numFunctions, lsq_mode);
-  for (i = snllLSqInstance->numLeastSqTerms; i < snllLSqInstance->numFunctions;
-       i++)
-    local_asv[i] = mode;  // nonlinear constraints
+  for (i=snllLSqInstance->numLeastSqTerms; i<snllLSqInstance->numFunctions; i++)
+    local_asv[i] = mode; // nonlinear constraints
   snllLSqInstance->activeSet.request_vector(local_asv);
   snllLSqInstance->iteratedModel->evaluate(snllLSqInstance->activeSet);
   lastFnEvalLocn = CON_EVALUATOR;
-  lastEvalMode = lsq_mode;
-  lastEvalVars = x;
+  lastEvalMode   = lsq_mode;
+  lastEvalVars   = x;
 
-  const Response& local_response =
-      snllLSqInstance->iteratedModel->current_response();
-  if (mode & 1) {  // 1st bit is present, mode = 1, 3, 5, or 7
-    snllLSqInstance->copy_con_vals_dak_to_optpp(
-        local_response.function_values(), g, snllLSqInstance->numLeastSqTerms);
+  const Response& local_response
+    = snllLSqInstance->iteratedModel->current_response();
+  if (mode & 1) { // 1st bit is present, mode = 1, 3, 5, or 7
+    snllLSqInstance->
+      copy_con_vals_dak_to_optpp(local_response.function_values(), g,
+				 snllLSqInstance->numLeastSqTerms);
     result_mode = OPTPP::NLPFunction;
   }
-  if (mode & 2) {  // 2nd bit is present, mode = 2, 3, 6, or 7
+  if (mode & 2) { // 2nd bit is present, mode = 2, 3, 6, or 7
     snllLSqInstance->copy_con_grad(local_response.function_gradients(), grad_g,
-                                   snllLSqInstance->numLeastSqTerms);
+				   snllLSqInstance->numLeastSqTerms);
     result_mode |= OPTPP::NLPGradient;
   }
-  if (mode & 4) {  // 3rd bit is present, mode >= 4
+  if (mode & 4) { // 3rd bit is present, mode >= 4
     snllLSqInstance->copy_con_hess(local_response.function_hessians(), hess_g,
-                                   snllLSqInstance->numLeastSqTerms);
+				   snllLSqInstance->numLeastSqTerms);
     result_mode |= OPTPP::NLPHessian;
   }
 }
 
-void SNLLLeastSq::initialize_run() {
+
+void SNLLLeastSq::initialize_run()
+{
   LeastSq::initialize_run();
 
   // set the object instance pointer for use within the static member fns
   prevSnllLSqInstance = snllLSqInstance;
-  optLSqInstance = snllLSqInstance = this;
+  optLSqInstance      = snllLSqInstance = this;
 
   // convenience function from SNLLBase
-  snll_initialize_run(
-      nlfObjective, nlpConstraint,
-      ModelUtils::continuous_variables(*iteratedModel), boundConstraintFlag,
-      ModelUtils::continuous_lower_bounds(*iteratedModel),
-      ModelUtils::continuous_upper_bounds(*iteratedModel),
-      ModelUtils::linear_ineq_constraint_coeffs(*iteratedModel),
-      ModelUtils::linear_ineq_constraint_lower_bounds(*iteratedModel),
-      ModelUtils::linear_ineq_constraint_upper_bounds(*iteratedModel),
-      ModelUtils::linear_eq_constraint_coeffs(*iteratedModel),
-      ModelUtils::linear_eq_constraint_targets(*iteratedModel),
-      ModelUtils::nonlinear_ineq_constraint_lower_bounds(*iteratedModel),
-      ModelUtils::nonlinear_ineq_constraint_upper_bounds(*iteratedModel),
-      ModelUtils::nonlinear_eq_constraint_targets(*iteratedModel));
+  snll_initialize_run(nlfObjective, nlpConstraint,
+		      ModelUtils::continuous_variables(*iteratedModel), 
+		      boundConstraintFlag, 
+		      ModelUtils::continuous_lower_bounds(*iteratedModel),
+		      ModelUtils::continuous_upper_bounds(*iteratedModel),
+		      ModelUtils::linear_ineq_constraint_coeffs(*iteratedModel),
+		      ModelUtils::linear_ineq_constraint_lower_bounds(*iteratedModel),
+		      ModelUtils::linear_ineq_constraint_upper_bounds(*iteratedModel),
+		      ModelUtils::linear_eq_constraint_coeffs(*iteratedModel),
+		      ModelUtils::linear_eq_constraint_targets(*iteratedModel),
+		      ModelUtils::nonlinear_ineq_constraint_lower_bounds(*iteratedModel),
+		      ModelUtils::nonlinear_ineq_constraint_upper_bounds(*iteratedModel),
+		      ModelUtils::nonlinear_eq_constraint_targets(*iteratedModel));
 
-  // set modeOverrideFlag based on method/search strategy, speculative
+  // set modeOverrideFlag based on method/search strategy, speculative 
   // gradient, or constant asv selections.  Notes:
   // > GNewton override is always desirable, and mode override now works
   //   for constraint2 evaluators (previously, OptppArray of Hessian matrices
@@ -508,17 +507,19 @@ void SNLLLeastSq::initialize_run() {
   //   objective and constraint evaluator calls, which previously led to bad
   //   data when the objective evaluator assumed that the constraint evaluator
   //   was called previously with the same mode (more checks are now in place).
-  // if ( speculativeFlag || constantASVFlag || numNonlinearConstraints ||
+  //if ( speculativeFlag || constantASVFlag || numNonlinearConstraints ||
   //     methodName == OPTPP_G_NEWTON )
   modeOverrideFlag = true;
 }
 
-void SNLLLeastSq::core_run() {
+
+void SNLLLeastSq::core_run()
+{
   theOptimizer->optimize();
 
-  // BMA NOTE: casting away the constness as done historically in DakotaString
+  // BMA NOTE: casting away the constness as done historically in DakotaString  
   String status("Solution from Opt++");
-  char* nonconst_status = (char*)status.c_str();
+  char* nonconst_status = (char *) status.c_str();
   theOptimizer->printStatus(nonconst_status);
 
   // Retrieve the best design point and corresponding response data for use at
@@ -544,21 +545,25 @@ void SNLLLeastSq::core_run() {
   if (numNonlinearConstraints) {
     RealVector best_fns = bestResponseArray.front().function_values_view();
     copy_con_vals_optpp_to_dak(nlfObjective->getConstraintValue(), best_fns,
-                               numUserPrimaryFns);
+			       numUserPrimaryFns);
   }
 }
 
-void SNLLLeastSq::finalize_run() {
-  reset();  // MSE: PDH supports trying to move this up into pre_run() ...
+
+void SNLLLeastSq::finalize_run()
+{
+  reset(); // MSE: PDH supports trying to move this up into pre_run() ...
 
   // restore in case of recursion
-  optLSqInstance = prevMinInstance;
+  optLSqInstance  = prevMinInstance;
   snllLSqInstance = prevSnllLSqInstance;
 
   LeastSq::finalize_run();
 }
 
-void SNLLLeastSq::reset() {
+
+void SNLLLeastSq::reset()
+{
   // reset in case of recursion
   theOptimizer->reset();
 
@@ -569,4 +574,4 @@ void SNLLLeastSq::reset() {
   reset_base();
 }
 
-}  // namespace Dakota
+} // namespace Dakota

@@ -10,78 +10,58 @@
 #ifndef DATA_INTERFACE_H
 #define DATA_INTERFACE_H
 
-#include "MPIPackBuffer.hpp"
+#include "dakota_system_defs.hpp"
 #include "dakota_data_types.hpp"
 #include "dakota_global_defs.hpp"
-#include "dakota_system_defs.hpp"
+#include "MPIPackBuffer.hpp"
 
 namespace Dakota {
+
 
 /// offset for external process interface types
 #define PROCESS_INTERFACE_BIT 8
 /// offset for direct coupled interface types
-#define DIRECT_INTERFACE_BIT 16
+#define DIRECT_INTERFACE_BIT  16
 
 /// special values for interface type
-enum {
+enum { 
   // default is for algebraic-only and all other interface types
-  DEFAULT_INTERFACE = 0,
-  APPROX_INTERFACE,
+  DEFAULT_INTERFACE=0, APPROX_INTERFACE,
   // external process interfaces
-  FORK_INTERFACE = PROCESS_INTERFACE_BIT,
-  SYSTEM_INTERFACE,
-  GRID_INTERFACE,
+  FORK_INTERFACE=PROCESS_INTERFACE_BIT, SYSTEM_INTERFACE, GRID_INTERFACE,
   // direct coupled interfaces
-  TEST_INTERFACE = DIRECT_INTERFACE_BIT,
-  PLUGIN_INTERFACE,
-  MATLAB_INTERFACE,
-  PYTHON_INTERFACE,
-  SCILAB_INTERFACE
+  TEST_INTERFACE=DIRECT_INTERFACE_BIT, PLUGIN_INTERFACE,
+  MATLAB_INTERFACE, PYTHON_INTERFACE, SCILAB_INTERFACE
 };
 
 // put this helper function here to encourage sync with enum above
-inline String interface_enum_to_string(unsigned short interface_type) {
+inline String interface_enum_to_string(unsigned short interface_type) 
+{
   switch (interface_type) {
-    case DEFAULT_INTERFACE:
-      return String("default");
-      break;
-    case APPROX_INTERFACE:
-      return String("approximation");
-      break;
-    case FORK_INTERFACE:
-      return String("fork");
-      break;
-    case SYSTEM_INTERFACE:
-      return String("system");
-      break;
-    case GRID_INTERFACE:
-      return String("grid");
-      break;
-    case TEST_INTERFACE:
-      return String("direct");
-      break;
-    case MATLAB_INTERFACE:
-      return String("matlab");
-      break;
-    case PYTHON_INTERFACE:
-      return String("pybind11");
-      break;
-    case SCILAB_INTERFACE:
-      return String("scilab");
-      break;
-    default:
-      Cerr << "\nError: Unknown interface enum " << interface_type << std::endl;
-      abort_handler(-1);
-      return String();
-      break;
+  case DEFAULT_INTERFACE: return String("default");       break;
+  case APPROX_INTERFACE:  return String("approximation"); break;
+  case FORK_INTERFACE:    return String("fork");          break;
+  case SYSTEM_INTERFACE:  return String("system");        break;
+  case GRID_INTERFACE:    return String("grid");          break;
+  case TEST_INTERFACE:    return String("direct");        break;
+  case MATLAB_INTERFACE:  return String("matlab");        break;
+  case PYTHON_INTERFACE:  return String("pybind11");      break;
+  case SCILAB_INTERFACE:  return String("scilab");        break;
+  default:
+    Cerr << "\nError: Unknown interface enum " << interface_type << std::endl;
+    abort_handler(-1); 
+    return String();
+    break;
   }
 }
 
-/// interface synchronization types
+
+/// interface synchronization types 
 enum { SYNCHRONOUS_INTERFACE, ASYNCHRONOUS_INTERFACE };
 
 /// define algebraic function types
 enum { OBJECTIVE, INEQUALITY_CONSTRAINT, EQUALITY_CONSTRAINT };
+
 
 /// Body class for interface specification data.
 
@@ -93,7 +73,8 @@ enum { OBJECTIVE, INEQUALITY_CONSTRAINT, EQUALITY_CONSTRAINT };
 
 class DataInterface;
 
-class DataInterfaceRep {
+class DataInterfaceRep
+{
   //
   //- Heading: Friends
   //
@@ -101,8 +82,9 @@ class DataInterfaceRep {
   /// the handle class can access attributes of the body class directly
   friend class DataInterface;
 
- public:
-  ~DataInterfaceRep();  ///< destructor
+public:
+
+  ~DataInterfaceRep(); ///< destructor
 
   //
   //- Heading: Data
@@ -160,10 +142,10 @@ class DataInterfaceRep {
   bool fileSaveFlag;
   // names of host machines for a grid interface (from the
   // \c hostnames specification in \ref InterfApplicG)
-  // StringArray gridHostNames;
+  //StringArray gridHostNames;
   // processors per host machine for a grid interface (from the \c
   // processors_per_host specification in \ref InterfApplicG)
-  // IntArray gridProcsPerHost;
+  //IntArray gridProcsPerHost;
   /// Batch or sequential evaluation mode (true for batch)
   bool batchEvalFlag;
   /// parallel mode for a simulation-based interface: true for
@@ -184,7 +166,7 @@ class DataInterfaceRep {
   /// (from the \c evaluation_servers specification in \ref InterfIndControl)
   int evalServers;
   /// the scheduling approach to be used for concurrent evaluations
-  /// within an iterator: {DEFAULT,MASTER,PEER_DYNAMIC,PEER_STATIC}_SCHEDULING
+  /// within an iterator: {DEFAULT,MASTER,PEER_DYNAMIC,PEER_STATIC}_SCHEDULING 
   /// (from the \c evaluation_scheduling specification in \ref InterfIndControl)
   short evalScheduling;
   /// processors per parallel evaluation within the parallel configuration
@@ -193,7 +175,7 @@ class DataInterfaceRep {
   /// number of analysis servers to be used in the parallel configuration
   /// (from the \c analysis_servers specification in \ref InterfIndControl)
   int analysisServers;
-  /// the scheduling approach to be used for concurrent analyses within
+   /// the scheduling approach to be used for concurrent analyses within
   /// a function evaluation: {DEFAULT,MASTER,PEER}_SCHEDULING (from the
   /// \c analysis_scheduling specification in \ref InterfIndControl)
   short analysisScheduling;
@@ -248,7 +230,8 @@ class DataInterfaceRep {
   /// Python interface: use NumPy data structures (default is list data)
   bool numpyFlag;
 
- private:
+private:
+
   //
   //- Heading: Constructors, destructor, operators
   //
@@ -270,9 +253,13 @@ class DataInterfaceRep {
   //
   //- Heading: Private data members
   //
+
 };
 
-inline DataInterfaceRep::~DataInterfaceRep() {}
+
+inline DataInterfaceRep::~DataInterfaceRep()
+{ }
+
 
 /// Handle class for interface specification data.
 
@@ -284,7 +271,8 @@ inline DataInterfaceRep::~DataInterfaceRep() {}
     ProblemDescDB::dataInterfaceList, one for each interface
     specification in an input file. */
 
-class DataInterface {
+class DataInterface
+{
   //
   //- Heading: Friends
   //
@@ -294,21 +282,21 @@ class DataInterface {
   // the NIDR derived problem description database
   friend class NIDRProblemDescDB;
 
- public:
+public:
+
   /// compares the idInterface attribute of DataInterface objects
-  static bool id_compare(const DataInterface& di, const std::string& id) {
-    return id == di.dataIfaceRep->idInterface;
-  }
+  static bool id_compare(const DataInterface& di, const std::string& id)
+  { return id == di.dataIfaceRep->idInterface; }
 
   //
   //- Heading: Constructors, destructor, operators
   //
 
-  DataInterface();                      ///< constructor
-  DataInterface(const DataInterface&);  ///< copy constructor
-  ~DataInterface();                     ///< destructor
+  DataInterface();                                ///< constructor
+  DataInterface(const DataInterface&);            ///< copy constructor
+  ~DataInterface();                               ///< destructor
 
-  DataInterface& operator=(const DataInterface&);  ///< assignment operator
+  DataInterface& operator=(const DataInterface&); ///< assignment operator
 
   //
   //- Heading: Member methods
@@ -325,7 +313,8 @@ class DataInterface {
   /// return dataIfaceRep
   std::shared_ptr<DataInterfaceRep> data_rep();
 
- private:
+private:
+
   //
   //- Heading: Data
   //
@@ -334,38 +323,37 @@ class DataInterface {
   std::shared_ptr<DataInterfaceRep> dataIfaceRep;
 };
 
-inline std::shared_ptr<DataInterfaceRep> DataInterface::data_rep() {
-  return dataIfaceRep;
-}
+
+inline std::shared_ptr<DataInterfaceRep> DataInterface::data_rep()
+{return dataIfaceRep; }
+
 
 /// MPIPackBuffer insertion operator for DataInterface
-inline MPIPackBuffer& operator<<(MPIPackBuffer& s, const DataInterface& data) {
-  data.write(s);
-  return s;
-}
+inline MPIPackBuffer& operator<<(MPIPackBuffer& s, const DataInterface& data)
+{ data.write(s); return s;}
+
 
 /// MPIUnpackBuffer extraction operator for DataInterface
-inline MPIUnpackBuffer& operator>>(MPIUnpackBuffer& s, DataInterface& data) {
-  data.read(s);
-  return s;
-}
+inline MPIUnpackBuffer& operator>>(MPIUnpackBuffer& s, DataInterface& data)
+{ data.read(s); return s;}
+
 
 /// std::ostream insertion operator for DataInterface
-inline std::ostream& operator<<(std::ostream& s, const DataInterface& data) {
-  data.write(s);
-  return s;
-}
+inline std::ostream& operator<<(std::ostream& s, const DataInterface& data)
+{ data.write(s); return s;}
 
-inline void DataInterface::write(std::ostream& s) const {
-  dataIfaceRep->write(s);
-}
 
-inline void DataInterface::read(MPIUnpackBuffer& s) { dataIfaceRep->read(s); }
+inline void DataInterface::write(std::ostream& s) const
+{ dataIfaceRep->write(s); }
 
-inline void DataInterface::write(MPIPackBuffer& s) const {
-  dataIfaceRep->write(s);
-}
 
-}  // namespace Dakota
+inline void DataInterface::read(MPIUnpackBuffer& s)
+{ dataIfaceRep->read(s); }
+
+
+inline void DataInterface::write(MPIPackBuffer& s) const
+{ dataIfaceRep->write(s); }
+
+} // namespace Dakota
 
 #endif

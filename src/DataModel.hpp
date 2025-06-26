@@ -10,9 +10,9 @@
 #ifndef DATA_MODEL_H
 #define DATA_MODEL_H
 
-#include "MPIPackBuffer.hpp"
-#include "dakota_data_types.hpp"
 #include "dakota_system_defs.hpp"
+#include "dakota_data_types.hpp"
+#include "MPIPackBuffer.hpp"
 
 namespace Dakota {
 
@@ -20,80 +20,50 @@ namespace Dakota {
 enum { DEFAULT_POINTS, MINIMUM_POINTS, RECOMMENDED_POINTS, TOTAL_POINTS };
 
 /// define special values for SurrogateModel::responseMode
-enum {
-  DEFAULT_SURROGATE_RESP_MODE = 0,
-  NO_SURROGATE,
-  UNCORRECTED_SURROGATE,
-  AUTO_CORRECTED_SURROGATE,
-  BYPASS_SURROGATE,
-  MODEL_DISCREPANCY,
-  AGGREGATED_MODEL_PAIR,
-  AGGREGATED_MODELS
-};
+enum { DEFAULT_SURROGATE_RESP_MODE=0, NO_SURROGATE, UNCORRECTED_SURROGATE,
+       AUTO_CORRECTED_SURROGATE, BYPASS_SURROGATE, MODEL_DISCREPANCY,
+       AGGREGATED_MODEL_PAIR, AGGREGATED_MODELS };
 
 /// define special values for approxCorrectionType
-enum {
-  NO_CORRECTION = 0,
-  ADDITIVE_CORRECTION,
-  MULTIPLICATIVE_CORRECTION,
-  COMBINED_CORRECTION
-};
+enum { NO_CORRECTION=0,  ADDITIVE_CORRECTION, MULTIPLICATIVE_CORRECTION,
+       COMBINED_CORRECTION };
 
 /// define types of random field approximations
-enum { RF_KARHUNEN_LOEVE = 0, RF_PCA_GP, RF_ICA };
+enum { RF_KARHUNEN_LOEVE=0, RF_PCA_GP, RF_ICA };
 
 /// define types of analytic covariance functions
-enum { NOCOVAR = 0, EXP_L2, EXP_L1 };
+enum { NOCOVAR=0, EXP_L2, EXP_L1 };
 
 /// define special values for active subspace normalizations
-enum {
-  SUBSPACE_NORM_DEFAULT = 0,
-  SUBSPACE_NORM_MEAN_VALUE,
-  SUBSPACE_NORM_MEAN_GRAD,
-  SUBSPACE_NORM_LOCAL_GRAD
-};
+enum { SUBSPACE_NORM_DEFAULT=0, SUBSPACE_NORM_MEAN_VALUE,
+       SUBSPACE_NORM_MEAN_GRAD, SUBSPACE_NORM_LOCAL_GRAD }; 
 
 /// define special values for componentParallelMode
 /// (active model for parallel scheduling)
-enum {
-  NO_PARALLEL_MODE = 0,
-  SURROGATE_MODEL_MODE,
-  TRUTH_MODEL_MODE,
-  SUB_MODEL_MODE,
-  INTERFACE_MODE
-};
+enum { NO_PARALLEL_MODE=0, SURROGATE_MODEL_MODE, TRUTH_MODEL_MODE,
+       SUB_MODEL_MODE, INTERFACE_MODE };
 
 /// define special values for distParamDerivs
-enum { NO_DERIVS = 0, ALL_DERIVS, MIXED_DERIVS };
+enum { NO_DERIVS=0, ALL_DERIVS, MIXED_DERIVS }; 
 
 /// define special values for mlmfPrecedence
-enum {
-  DEFAULT_PRECEDENCE = 0,
-  MULTILEVEL_PRECEDENCE,
-  MULTIFIDELITY_PRECEDENCE,
-  MULTILEVEL_MULTIFIDELITY_PRECEDENCE,
-  ENUMERATION_PRECEDENCE
-};
+enum { DEFAULT_PRECEDENCE=0, MULTILEVEL_PRECEDENCE, MULTIFIDELITY_PRECEDENCE,
+       MULTILEVEL_MULTIFIDELITY_PRECEDENCE, ENUMERATION_PRECEDENCE };
 
 // define special values for regressionType in C3 FT (outside of Pecos).
 // Note that C3 and Pecos are mutually exclusive: use of values from multiple
 // enums should not conflict
-enum { FT_LS, FT_RLS2 };  //, FT_RLSD2, FT_RLSRKHS, FT_RLS1 };
+enum { FT_LS, FT_RLS2 };//, FT_RLSD2, FT_RLSRKHS, FT_RLS1 };
 // define special values for c3AdvanceType
-enum {
-  NO_C3_ADVANCEMENT = 0,
-  START_RANK_ADVANCEMENT,
-  START_ORDER_ADVANCEMENT,
-  MAX_RANK_ADVANCEMENT,
-  MAX_ORDER_ADVANCEMENT,
-  MAX_RANK_ORDER_ADVANCEMENT
-};
+enum { NO_C3_ADVANCEMENT=0, START_RANK_ADVANCEMENT, START_ORDER_ADVANCEMENT,
+       MAX_RANK_ADVANCEMENT, MAX_ORDER_ADVANCEMENT, MAX_RANK_ORDER_ADVANCEMENT};
 
 // -----------------------
 // AdaptedBasis
 // -----------------------
 // define special values for generating the basis adaptation rotation matrix
-enum { ROTATION_METHOD_UNRANKED, ROTATION_METHOD_RANKED };
+enum { ROTATION_METHOD_UNRANKED, ROTATION_METHOD_RANKED };    
+
 
 /// Body class for model specification data.
 
@@ -103,7 +73,8 @@ enum { ROTATION_METHOD_UNRANKED, ROTATION_METHOD_RANKED };
     set/get functions, but is still encapsulated within ProblemDescDB
     since ProblemDescDB::dataModelList is private. */
 
-class DataModelRep {
+class DataModelRep
+{
   //
   //- Heading: Friends
   //
@@ -111,8 +82,9 @@ class DataModelRep {
   /// the handle class can access attributes of the body class directly
   friend class DataModel;
 
- public:
-  ~DataModelRep();  ///< destructor
+public:
+
+  ~DataModelRep(); ///< destructor
 
   //
   //- Heading: Data
@@ -205,11 +177,11 @@ class DataModelRep {
 
   // the file name from the \c import_approx_points_file specification in
   // \ref ModelSurrG
-  // String importApproxPtsFile;
+  //String importApproxPtsFile;
   // tabular format for the approx point import file
-  // unsigned short importApproxFormat;
+  //unsigned short importApproxFormat;
   // whether to import active variables only
-  // bool importApproxActive;
+  //bool importApproxActive;
 
   /// the file name from the \c export_approx_points_file specification in
   /// \ref ModelSurrG
@@ -256,7 +228,7 @@ class DataModelRep {
   /// (1=linear, 2=quadratic, 3=cubic; from the \c polynomial specification
   /// in \ref ModelSurrG)
   short polynomialOrder;
-  /// vector of correlations used in building a kriging approximation
+  /// vector of correlations used in building a kriging approximation 
   /// (from the \c correlations specification in \ref ModelSurrG)
   RealVector krigingCorrelations;
   /// optimization method to use in finding optimal correlation parameters:
@@ -315,7 +287,7 @@ class DataModelRep {
   String trendOrder;
   /// flag indicating the use of point selection in the Gaussian process
   bool pointSelection;
-  /// List of diagnostic metrics the user requests to assess the
+  /// List of diagnostic metrics the user requests to assess the 
   /// goodness of fit for a surrogate model.
   StringArray diagMetrics;
   /// flag indicating the use of cross validation on the metrics specified
@@ -428,8 +400,7 @@ class DataModelRep {
   /// maximum rank considered by cross validation subspace dimension id method
   int subspaceCVMaxRank;
 
-  /// flag to use incremental dimension estimation in the cross validation
-  /// metric
+  /// flag to use incremental dimension estimation in the cross validation metric
   bool subspaceCVIncremental;
 
   /// Contains which cutoff method to use in the cross validation metric
@@ -471,15 +442,15 @@ class DataModelRep {
   bool adaptRank;
   /// maximum number of cross-validation candidates for adaptRank
   size_t maxCVRankCandidates;
-  /// maximum number of cross-validation candidates for adaptOrder
+  ///maximum number of cross-validation candidates for adaptOrder
   unsigned short maxCVOrderCandidates;
   /// quantity to increment (start rank, start order, max rank, max order,
   /// max rank + max order) for FT (uniform) p-refinement
   short c3AdvanceType;
   // refinement type for stochastic expansions: P_REFINEMENT, H_REFINEMENT
-  // short refinementType;
+  //short refinementType;
   // refinement control for stochastic expansions: UNIFORM, DIMENSION_ADAPTIVE
-  // short refinementControl;
+  //short refinementControl;
 
   /// number of data points used in FT construction by regression
   size_t collocationPoints;
@@ -506,16 +477,16 @@ class DataModelRep {
   /// collocation ratio for low-order PCE used to compute rotation
   /// matrix within adapted basis approach to dimension reduction
   Real adaptedBasisCollocRatio;
-
+  
   short method_rotation;
   Real adaptedBasisTruncationTolerance;
 
   // random field models
 
-  /// Contains which type of random field model
+  /// Contains which type of random field model 
   unsigned short randomFieldIdForm;
 
-  /// Contains which type of analytic covariance function
+  /// Contains which type of analytic covariance function 
   unsigned short analyticCovIdForm;
 
   /// truncation tolerance on build process: percent variance explained
@@ -526,7 +497,8 @@ class DataModelRep {
   /// File from which to build the random field
   String rfDataFileName;
 
- private:
+private:
+
   //
   //- Heading: Constructors, destructor, operators
   //
@@ -541,16 +513,19 @@ class DataModelRep {
   void write(std::ostream& s) const;
 
   /// read a DataModelRep object from a packed MPI buffer
-  void read(MPIUnpackBuffer& s);
+  void read(MPIUnpackBuffer& s); 
   /// write a DataModelRep object to a packed MPI buffer
   void write(MPIPackBuffer& s) const;
 
   //
   //- Heading: Private convenience functions
   //
+
 };
 
-inline DataModelRep::~DataModelRep() {}
+
+inline DataModelRep::~DataModelRep() { }
+
 
 /// Handle class for model specification data.
 
@@ -561,7 +536,8 @@ inline DataModelRep::~DataModelRep() {}
     objects is maintained in ProblemDescDB::dataModelList, one for
     each model specification in an input file. */
 
-class DataModel {
+class DataModel
+{
   //
   //- Heading: Friends
   //
@@ -571,21 +547,21 @@ class DataModel {
   // the NIDR derived problem description database
   friend class NIDRProblemDescDB;
 
- public:
+public:
+
   /// compares the idModel attribute of DataModel objects
-  static bool id_compare(const DataModel& dm, const std::string& id) {
-    return id == dm.dataModelRep->idModel;
-  }
+  static bool id_compare(const DataModel& dm, const std::string& id)
+  { return id == dm.dataModelRep->idModel; }
 
   //
   //- Heading: Constructors, destructor, operators
   //
 
-  DataModel();                  ///< constructor
-  DataModel(const DataModel&);  ///< copy constructor
-  ~DataModel();                 ///< destructor
+  DataModel();                               ///< constructor
+  DataModel(const DataModel&);               ///< copy constructor
+  ~DataModel();                              ///< destructor
 
-  DataModel& operator=(const DataModel&);  ///< assignment operator
+  DataModel& operator=(const DataModel&); ///< assignment operator
 
   //
   //- Heading: Member methods
@@ -602,7 +578,8 @@ class DataModel {
   /// return dataModelRep
   std::shared_ptr<DataModelRep> data_rep();
 
- private:
+private:
+
   //
   //- Heading: Data
   //
@@ -611,34 +588,36 @@ class DataModel {
   std::shared_ptr<DataModelRep> dataModelRep;
 };
 
-inline std::shared_ptr<DataModelRep> DataModel::data_rep() {
-  return dataModelRep;
-}
+
+inline std::shared_ptr<DataModelRep> DataModel::data_rep()
+{return dataModelRep; }
+
 
 /// MPIPackBuffer insertion operator for DataModel
-inline MPIPackBuffer& operator<<(MPIPackBuffer& s, const DataModel& data) {
-  data.write(s);
-  return s;
-}
+inline MPIPackBuffer& operator<<(MPIPackBuffer& s, const DataModel& data)
+{ data.write(s); return s; }
+
 
 /// MPIUnpackBuffer extraction operator for DataModel
-inline MPIUnpackBuffer& operator>>(MPIUnpackBuffer& s, DataModel& data) {
-  data.read(s);
-  return s;
-}
+inline MPIUnpackBuffer& operator>>(MPIUnpackBuffer& s, DataModel& data)
+{ data.read(s); return s; }
+
 
 /// std::ostream insertion operator for DataModel
-inline std::ostream& operator<<(std::ostream& s, const DataModel& data) {
-  data.write(s);
-  return s;
-}
+inline std::ostream& operator<<(std::ostream& s, const DataModel& data)
+{ data.write(s); return s; }
 
-inline void DataModel::write(std::ostream& s) const { dataModelRep->write(s); }
+inline void DataModel::write(std::ostream& s) const
+{ dataModelRep->write(s); }
 
-inline void DataModel::read(MPIUnpackBuffer& s) { dataModelRep->read(s); }
 
-inline void DataModel::write(MPIPackBuffer& s) const { dataModelRep->write(s); }
+inline void DataModel::read(MPIUnpackBuffer& s)
+{ dataModelRep->read(s); }
 
-}  // namespace Dakota
+
+inline void DataModel::write(MPIPackBuffer& s) const
+{ dataModelRep->write(s); }
+
+} // namespace Dakota
 
 #endif

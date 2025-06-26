@@ -8,7 +8,7 @@
     _______________________________________________________________________ */
 
 //- Description:  Derived interface class for performing analysis via
-//-               linked Scilab API, permitting single startup/shutdown of
+//-               linked Scilab API, permitting single startup/shutdown of 
 //-               Scilab for the whole set of function evaluations.
 //-               Original authors: Yann Collette and STUDENT TBD
 //- Owner:        Brian Adams
@@ -21,17 +21,20 @@
 
 namespace Dakota {
 
-/** Specialization of DirectApplicInterface to link to Scilab analysis
+/** Specialization of DirectApplicInterface to link to Scilab analysis 
     drivers.  Includes convenience functions to map data to/from Scilab */
-class ScilabInterface : public DirectApplicInterface {
- public:
+class ScilabInterface: public DirectApplicInterface
+{
+public:
+
   /// Constructor: start Scilab engine
   ScilabInterface(const ProblemDescDB& problem_db, ParallelLib& parallel_lib);
 
   /// Destructor: close Scilab engine
   ~ScilabInterface();
 
- protected:
+protected:
+
   /// execute an analysis code portion of a direct evaluation invocation
   virtual int derived_map_ac(const String& ac_name);
 
@@ -42,8 +45,8 @@ class ScilabInterface : public DirectApplicInterface {
   /// principal Scilab execute function
   int scilab_engine_run(const String& ac_name);
 
-};  // class ScilabInterface
+}; // class ScilabInterface
 
-}  // namespace Dakota
+} // namespace Dakota
 
-#endif  // SCILAB_INTERFACE_H
+#endif // SCILAB_INTERFACE_H

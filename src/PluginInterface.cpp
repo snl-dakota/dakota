@@ -8,7 +8,6 @@
     _______________________________________________________________________ */
 
 #include "PluginInterface.hpp"
-
 #include "ProblemDescDB.hpp"
 
 #if BOOST_VERSION >= 107000
@@ -25,11 +24,12 @@
 #define dakota_boost_dll_import boost::dll::import
 #endif
 
+
 namespace Dakota {
 
 void copy_gradient(int const fun_idx,
-                   std::vector<std::vector<double>> const& source,
-                   RealMatrix& dest) {
+  std::vector<std::vector<double>> const& source,
+  RealMatrix& dest) {
   int const dim = source[fun_idx].size();
   for (int i = 0; i < dim; ++i) {
     dest(i, fun_idx) = source[fun_idx][i];
@@ -37,7 +37,7 @@ void copy_gradient(int const fun_idx,
 }
 
 void copy_hessian(std::vector<std::vector<double>> const& source,
-                  RealSymMatrix& dest) {
+  RealSymMatrix& dest) {
   int const dim = dest.numRows();
   for (int i = 0; i < dim; ++i) {
     for (int j = 0; j <= i; ++j) {
@@ -46,43 +46,51 @@ void copy_hessian(std::vector<std::vector<double>> const& source,
   }
 }
 
-PluginInterface::PluginInterface(const ProblemDescDB& problem_db,
-                                 ParallelLibrary& parallel_lib)
-    : ApplicationInterface(problem_db, parallel_lib),
-      pluginPath(problem_db.get_string("interface.plugin_library_path")),
-      analysisDrivers(
-          problem_db.get_sa("interface.application.analysis_drivers")) {
+PluginInterface::PluginInterface(const ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
+  ApplicationInterface(problem_db, parallel_lib),
+  pluginPath(problem_db.get_string("interface.plugin_library_path")),
+  analysisDrivers(
+    problem_db.get_sa("interface.application.analysis_drivers"))
+{
   check_plugin_exists();
 }
 
-PluginInterface::~PluginInterface() {}
+
+PluginInterface::~PluginInterface()
+{
+}
+
 
 // not sure active set passed in is consistent with response
 void PluginInterface::derived_map(const Variables& vars, const ActiveSet& set,
-                                  Response& response, int fn_eval_id) {
+				  Response& response, int fn_eval_id)
+{
   // loading at first map to head off conflicting Python issues
   load_plugin();
 
   // NOTE: May want to persist the request across input filter,
   // driver(s), output filter
   const DakotaPlugins::EvalRequest plugin_request =
-      form_eval_request(vars, set, fn_eval_id);
+    form_eval_request(vars, set, fn_eval_id);
   DakotaPlugins::EvalResponse plugin_response =
-      pluginInterface->evaluate(plugin_request);
+    pluginInterface->evaluate(plugin_request);
   populate_response(plugin_response, response);
 }
 
-void PluginInterface::derived_map_asynch(const ParamResponsePair& pair) {
+void PluginInterface::derived_map_asynch(const ParamResponsePair& pair)
+{
   // This interface only supports bulk synchronous batch evals for now
   // TODO: Catch this at construct time
   if (!batchEval) {
     Cerr << "\nError: Plugin interfaces support single or batch evaluations, "
-         << "but not\nasynchronous.\n";
+	 << "but not\nasynchronous.\n";
     abort_handler(INTERFACE_ERROR);
   }
 }
 
-void PluginInterface::wait_local_evaluations(PRPQueue& prp_queue) {
+
+void PluginInterface::wait_local_evaluations(PRPQueue& prp_queue)
+{
   // loading at first map to head off conflicting Python issues
   load_plugin();
 
@@ -90,8 +98,8 @@ void PluginInterface::wait_local_evaluations(PRPQueue& prp_queue) {
   std::vector<DakotaPlugins::EvalRequest> plugin_requests;
   plugin_requests.reserve(prp_queue.size());
   for (const auto& prp : prp_queue)
-    plugin_requests.push_back(
-        form_eval_request(prp.variables(), prp.active_set(), prp.eval_id()));
+    plugin_requests.push_back
+      (form_eval_request(prp.variables(), prp.active_set(), prp.eval_id()));
 
   // evaluate
   const auto plugin_responses = pluginInterface->evaluate(plugin_requests);
@@ -108,22 +116,23 @@ void PluginInterface::wait_local_evaluations(PRPQueue& prp_queue) {
   }
 }
 
+
 /** Load plugin if not already active */
-void PluginInterface::load_plugin() {
+void PluginInterface::load_plugin()
+{
   if (pluginInterface) return;
   try {
 #if BOOST_VERSION < 107600
-    pluginInterface = boost::dll::import <DakotaPlugins::DakotaInterfaceAPI>
+    pluginInterface = boost::dll::import<DakotaPlugins::DakotaInterfaceAPI>
 #else
-    pluginInterface =
-        boost::dll::import_symbol<DakotaPlugins::DakotaInterfaceAPI>
+    pluginInterface = boost::dll::import_symbol<DakotaPlugins::DakotaInterfaceAPI>
 #endif
-        (pluginPath,
-         "dakota_interface_plugin"  // name of the symbol to import
-                                    // TODO: append .dll, .so, .dylib via
-                                    // boost::dll::load_mode::append_decorations
-                                    //     boost::dll::load_mode::rtld_now
-        );
+      (pluginPath,
+	 "dakota_interface_plugin"  // name of the symbol to import
+	 // TODO: append .dll, .so, .dylib via
+	 //boost::dll::load_mode::append_decorations
+	 //     boost::dll::load_mode::rtld_now
+	 );
   }
 #if BOOST_VERSION >= 107000
   catch (const std::filesystem::filesystem_error& e) {
@@ -131,9 +140,9 @@ void PluginInterface::load_plugin() {
   catch (const boost::system::system_error& e) {
 #endif
     Cerr << "\nError: Could not load symbol dakota_interface_plugin from "
-         << "specified plugin \ninterface library '" << pluginPath
-         << "'\nDetails:\n"
-         << e.what() << std::endl;
+	 << "specified plugin \ninterface library '" << pluginPath
+	 << "'\nDetails:\n"
+	 << e.what() << std::endl;
     abort_handler(INTERFACE_ERROR);
   }
   if (outputLevel >= VERBOSE_OUTPUT)
@@ -142,8 +151,10 @@ void PluginInterface::load_plugin() {
   pluginInterface->initialize();
 }
 
-DakotaPlugins::EvalRequest PluginInterface::form_eval_request(
-    const Variables& vars, const ActiveSet& set, int fn_eval_id) const {
+
+DakotaPlugins::EvalRequest PluginInterface::form_eval_request
+(const Variables& vars, const ActiveSet& set, int fn_eval_id) const
+{
   DakotaPlugins::EvalRequest req;
   // TODO: do we want to use the legacy copy_data or another means?
   copy_data(vars.all_continuous_variables(), req.continuousVars);
@@ -153,8 +164,7 @@ DakotaPlugins::EvalRequest PluginInterface::form_eval_request(
 
   copy_data(vars.all_continuous_variable_labels(), req.continuousLabels);
   copy_data(vars.all_discrete_int_variable_labels(), req.discreteIntLabels);
-  copy_data(vars.all_discrete_string_variable_labels(),
-            req.discreteStringLabels);
+  copy_data(vars.all_discrete_string_variable_labels(), req.discreteStringLabels);
   copy_data(vars.all_discrete_real_variable_labels(), req.discreteRealLabels);
 
   req.activeSet = set.request_vector();
@@ -166,10 +176,11 @@ DakotaPlugins::EvalRequest PluginInterface::form_eval_request(
   return req;
 }
 
+
 // pass active set in here too
-void PluginInterface::populate_response(
-    const DakotaPlugins::EvalResponse& plugin_response,
-    Response& response) const {
+void PluginInterface::populate_response
+(const DakotaPlugins::EvalResponse& plugin_response, Response& response) const
+{
   auto const& asv = response.active_set_request_vector();
 
   // TODO: this is abuse, getting a reference to a non-const view...
@@ -189,16 +200,20 @@ void PluginInterface::populate_response(
       copy_hessian(plugin_response.hessians[i], resp_hessians[i]);
     }
   }
+
 }
 
-void PluginInterface::check_plugin_exists() {
+
+void PluginInterface::check_plugin_exists()
+{
   // This only accounts for user-provided path case
   // TODO: locate plugin in default locations such as dakota/bin or dakota/lib
   if (!std::filesystem::exists(pluginPath)) {
     Cerr << "\nError: Specified plugin interface library \n  '" << pluginPath
-         << "'\ndoes not exist.\n";
+	 << "'\ndoes not exist.\n";
     abort_handler(INTERFACE_ERROR);
   }
 }
 
-}  // namespace Dakota
+
+}

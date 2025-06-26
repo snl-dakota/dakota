@@ -10,15 +10,16 @@
 #ifndef SIMULATION_RESPONSE_H
 #define SIMULATION_RESPONSE_H
 
-#include "DakotaResponse.hpp"
-#include "dakota_data_types.hpp"
 #include "dakota_system_defs.hpp"
+#include "dakota_data_types.hpp"
+#include "DakotaResponse.hpp"
 
 namespace Dakota {
 
 class ProblemDescDB;
 
-/// Container class for response functions and their derivatives.
+
+/// Container class for response functions and their derivatives.  
 /// SimulationResponse provides the body class.
 
 /** The SimulationResponse class is the "representation" of the
@@ -36,8 +37,10 @@ class ProblemDescDB;
     shallow copies (shared representation) versus deep copies
     (separate representation used for history mechanisms). */
 
-class SimulationResponse : public Response {
- public:
+class SimulationResponse: public Response
+{
+public:
+
   //
   //- Heading: Constructors and destructor
   //
@@ -55,25 +58,33 @@ class SimulationResponse : public Response {
   /// destructor
   ~SimulationResponse() override;
 
- protected:
+protected:
+
   //
   //- Heading: member functions
   //
 
- private:
+private:
+
   //
   //- Heading: Private data members
   //
+
 };
 
-inline SimulationResponse::SimulationResponse() {}
 
-inline SimulationResponse::~SimulationResponse() {}
+inline SimulationResponse::SimulationResponse()
+{ }
 
-}  // namespace Dakota
+
+inline SimulationResponse::~SimulationResponse()
+{ }
+
+} // namespace Dakota
+
 
 // Since we may serialize this class through a temporary, disallow tracking
-BOOST_CLASS_TRACKING(Dakota::SimulationResponse,
-                     boost::serialization::track_never)
+BOOST_CLASS_TRACKING(Dakota::SimulationResponse, 
+		     boost::serialization::track_never)
 
-#endif  // !SIMULATION_RESPONSE_H
+#endif // !SIMULATION_RESPONSE_H

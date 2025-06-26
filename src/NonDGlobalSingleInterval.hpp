@@ -15,6 +15,7 @@
 
 namespace Dakota {
 
+
 /// Class for using global nongradient-based optimization approaches
 /// to calculate interval bounds for epistemic uncertainty quantification
 
@@ -27,20 +28,21 @@ namespace Dakota {
     variances, or percentile levels.  The preliminary implementation
     will use a Gaussian process surrogate to determine interval bounds. */
 
-class NonDGlobalSingleInterval : public NonDGlobalInterval {
- public:
+class NonDGlobalSingleInterval: public NonDGlobalInterval
+{
+public:
+
   //
   //- Heading: Constructors and destructor
   //
 
   /// constructor
-  NonDGlobalSingleInterval(ProblemDescDB& problem_db,
-                           ParallelLibrary& parallel_lib,
-                           std::shared_ptr<Model> model);
+  NonDGlobalSingleInterval(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
   /// destructor
   ~NonDGlobalSingleInterval() override;
 
- protected:
+protected:
+
   //
   //- Heading: Virtual function redefinitions
   //
@@ -49,7 +51,8 @@ class NonDGlobalSingleInterval : public NonDGlobalInterval {
   void post_process_cell_results(bool maximize) override;
   void get_best_sample(bool maximize, bool eval_approx) override;
 
- private:
+private:
+
   //
   //- Heading: Data
   //
@@ -58,6 +61,6 @@ class NonDGlobalSingleInterval : public NonDGlobalInterval {
   size_t statCntr;
 };
 
-}  // namespace Dakota
+} // namespace Dakota
 
 #endif

@@ -20,6 +20,7 @@ typedef unsigned int u_int;
 typedef unsigned long u_long;
 typedef long long long_long;
 
+
 //---------------------------------------------------------------------
 //
 // MPIPackBuffer
@@ -39,18 +40,15 @@ typedef long long long_long;
 */
 
 class MPIPackBuffer {
- public:
-  /// Constructor, which allows the default buffer size to be set.
-  MPIPackBuffer(int size_ = 1024) {
-    Index = 0;
-    Size = size_;
-    Buffer = new char[size_];
-  }
-  /// Desctructor.
-  ~MPIPackBuffer() {
-    if (Buffer) delete[] Buffer;
-  }
 
+public:
+ 
+  /// Constructor, which allows the default buffer size to be set.
+  MPIPackBuffer(int size_ = 1024)
+    { Index = 0; Size = size_; Buffer = new char [size_]; }
+  /// Desctructor.
+  ~MPIPackBuffer() { if (Buffer) delete [] Buffer; }
+ 
   /// Returns a pointer to the internal buffer that has been packed.
   const char* buf() { return Buffer; }
   /// The number of bytes of packed data.
@@ -88,33 +86,34 @@ class MPIPackBuffer {
   void pack(const bool* data, const int num = 1);
 
   /// Pack a \b int
-  void pack(const int& data) { pack(&data); }
+  void pack(const int& data) 		{ pack(&data); }
   /// Pack a \b unsigned \b int
-  void pack(const u_int& data) { pack(&data); }
+  void pack(const u_int& data)		{ pack(&data); }
   /// Pack a \b long
-  void pack(const long& data) { pack(&data); }
+  void pack(const long& data) 		{ pack(&data); }
   /// Pack a \b unsigned \b long
-  void pack(const u_long& data) { pack(&data); }
+  void pack(const u_long& data)		{ pack(&data); }
   /// Pack a long long
   void pack(const long long& data) { pack(&data); }
   /// Pack a unsigned long long
   void pack(const unsigned long long& data) { pack(&data); }
   /// Pack a \b short
-  void pack(const short& data) { pack(&data); }
+  void pack(const short& data) 		{ pack(&data); }
   /// Pack a \b unsigned \b short
-  void pack(const u_short& data) { pack(&data); }
+  void pack(const u_short& data)	{ pack(&data); }
   /// Pack a \b char
-  void pack(const char& data) { pack(&data); }
+  void pack(const char& data) 		{ pack(&data); }
   /// Pack a \b unsigned \b char
-  void pack(const u_char& data) { pack(&data); }
+  void pack(const u_char& data)		{ pack(&data); }
   /// Pack a \b double
-  void pack(const double& data) { pack(&data); }
+  void pack(const double& data) 	{ pack(&data); }
   /// Pack a \b float
-  void pack(const float& data) { pack(&data); }
+  void pack(const float& data) 		{ pack(&data); }
   /// Pack a \b bool
-  void pack(const bool& data) { pack(&data); }
+  void pack(const bool& data) 		{ pack(&data); }
 
- protected:
+protected:
+
   /// Resizes the internal buffer
   void resize(const int newsize);
 
@@ -126,72 +125,47 @@ class MPIPackBuffer {
   int Size;
 };
 
+
 /// insert an int
-inline MPIPackBuffer& operator<<(MPIPackBuffer& buff, const int& data) {
-  buff.pack(data);
-  return buff;
-}
+inline MPIPackBuffer& operator<< (MPIPackBuffer& buff, const int& data)
+{ buff.pack(data); return buff; }
 /// insert a u_int
-inline MPIPackBuffer& operator<<(MPIPackBuffer& buff, const u_int& data) {
-  buff.pack(data);
-  return buff;
-}
+inline MPIPackBuffer& operator<< (MPIPackBuffer& buff, const u_int& data)
+{ buff.pack(data); return buff; }
 /// insert a long
-inline MPIPackBuffer& operator<<(MPIPackBuffer& buff, const long& data) {
-  buff.pack(data);
-  return buff;
-}
+inline MPIPackBuffer& operator<< (MPIPackBuffer& buff, const long& data)
+{ buff.pack(data); return buff; }
 /// insert a u_long
-inline MPIPackBuffer& operator<<(MPIPackBuffer& buff, const u_long& data) {
-  buff.pack(data);
-  return buff;
-}
+inline MPIPackBuffer& operator<< (MPIPackBuffer& buff, const u_long& data)
+{ buff.pack(data); return buff; }
 /// insert a long long
-inline MPIPackBuffer& operator<<(MPIPackBuffer& buff, const long long& data) {
-  buff.pack(data);
-  return buff;
-}
+inline MPIPackBuffer& operator<< (MPIPackBuffer& buff, const long long& data)
+{ buff.pack(data); return buff; }
 /// insert a unsigned long long
-inline MPIPackBuffer& operator<<(MPIPackBuffer& buff,
-                                 const unsigned long long& data) {
-  buff.pack(data);
-  return buff;
-}
+inline MPIPackBuffer& operator<< (MPIPackBuffer& buff, const unsigned long long& data)
+{ buff.pack(data); return buff; }
 /// insert a short
-inline MPIPackBuffer& operator<<(MPIPackBuffer& buff, const short& data) {
-  buff.pack(data);
-  return buff;
-}
+inline MPIPackBuffer& operator<< (MPIPackBuffer& buff, const short& data)
+{ buff.pack(data); return buff; }
 /// insert a u_short
-inline MPIPackBuffer& operator<<(MPIPackBuffer& buff, const u_short& data) {
-  buff.pack(data);
-  return buff;
-}
+inline MPIPackBuffer& operator<< (MPIPackBuffer& buff, const u_short& data)
+{ buff.pack(data); return buff; }
 /// insert a char
-inline MPIPackBuffer& operator<<(MPIPackBuffer& buff, const char& data) {
-  buff.pack(data);
-  return buff;
-}
+inline MPIPackBuffer& operator<< (MPIPackBuffer& buff, const char& data)
+{ buff.pack(data); return buff; }
 /// insert a u_char
-inline MPIPackBuffer& operator<<(MPIPackBuffer& buff, const u_char& data) {
-  buff.pack(data);
-  return buff;
-}
+inline MPIPackBuffer& operator<< (MPIPackBuffer& buff, const u_char& data)
+{ buff.pack(data); return buff; }
 /// insert a double
-inline MPIPackBuffer& operator<<(MPIPackBuffer& buff, const double& data) {
-  buff.pack(data);
-  return buff;
-}
+inline MPIPackBuffer& operator<< (MPIPackBuffer& buff, const double& data)
+{ buff.pack(data); return buff; }
 /// insert a float
-inline MPIPackBuffer& operator<<(MPIPackBuffer& buff, const float& data) {
-  buff.pack(data);
-  return buff;
-}
+inline MPIPackBuffer& operator<< (MPIPackBuffer& buff, const float& data)
+{ buff.pack(data); return buff; }
 /// insert a bool
-inline MPIPackBuffer& operator<<(MPIPackBuffer& buff, const bool& data) {
-  buff.pack(data);
-  return buff;
-}
+inline MPIPackBuffer& operator<< (MPIPackBuffer& buff, const bool& data)
+{ buff.pack(data); return buff; }
+
 
 //---------------------------------------------------------------------
 //
@@ -207,25 +181,23 @@ inline MPIPackBuffer& operator<<(MPIPackBuffer& buff, const bool& data) {
     utilib/src/io/PackBuf.[cpp,h] */
 
 class MPIUnpackBuffer {
- public:
+ 
+public:
+
   /// Method that does the setup for the constructors
   void setup(char* buf_, int size_, bool flag_ = false);
 
   /// Default constructor.
-  MPIUnpackBuffer() : Buffer(NULL), ownFlag(false) { setup(NULL, 0, false); }
+  MPIUnpackBuffer() : Buffer(NULL), ownFlag(false)
+    { setup(NULL, 0, false); }
   /// Constructor that specifies the size of the buffer
-  MPIUnpackBuffer(int size_) : Buffer(NULL), ownFlag(false) {
-    setup(new char[size_], size_, true);
-  }
+  MPIUnpackBuffer(int size_) : Buffer(NULL), ownFlag(false)
+    { setup(new char [size_], size_, true); }
   /// Constructor that sets the internal buffer to the given array
-  MPIUnpackBuffer(char* buf_, int size_, bool flag_ = false)
-      : Buffer(NULL), ownFlag(false) {
-    setup(buf_, size_, flag_);
-  }
+  MPIUnpackBuffer(char* buf_, int size_, bool flag_ = false) :
+    Buffer(NULL), ownFlag(false) { setup(buf_, size_, flag_); }
   /// Destructor.
-  ~MPIUnpackBuffer() {
-    if (Buffer && ownFlag) delete[] Buffer;
-  }
+  ~MPIUnpackBuffer() { if (Buffer && ownFlag) delete [] Buffer; }
 
   /// Resizes the internal buffer
   void resize(const int newsize);
@@ -266,33 +238,34 @@ class MPIUnpackBuffer {
   void unpack(bool* data, const int num = 1);
 
   /// Unpack a \b int
-  void unpack(int& data) { unpack(&data); }
+  void unpack(int& data) 		{ unpack(&data); }
   /// Unpack a \b unsigned \b int
-  void unpack(u_int& data) { unpack(&data); }
+  void unpack(u_int& data)		{ unpack(&data); }
   /// Unpack a \b long
-  void unpack(long& data) { unpack(&data); }
+  void unpack(long& data) 		{ unpack(&data); }
   /// Unpack a \b unsigned \b long
-  void unpack(u_long& data) { unpack(&data); }
+  void unpack(u_long& data)		{ unpack(&data); }
   /// Unpack a long long
   void unpack(long long& data) { unpack(&data); }
   /// Unpack a unsigned long long
   void unpack(unsigned long long& data) { unpack(&data); }
   /// Unpack a \b short
-  void unpack(short& data) { unpack(&data); }
+  void unpack(short& data) 		{ unpack(&data); }
   /// Unpack a \b unsigned \b short
-  void unpack(u_short& data) { unpack(&data); }
+  void unpack(u_short& data)		{ unpack(&data); }
   /// Unpack a \b char
-  void unpack(char& data) { unpack(&data); }
+  void unpack(char& data) 		{ unpack(&data); }
   /// Unpack a \b unsigned \b char
-  void unpack(u_char& data) { unpack(&data); }
+  void unpack(u_char& data)		{ unpack(&data); }
   /// Unpack a \b double
-  void unpack(double& data) { unpack(&data); }
+  void unpack(double& data) 		{ unpack(&data); }
   /// Unpack a \b float
-  void unpack(float& data) { unpack(&data); }
+  void unpack(float& data) 		{ unpack(&data); }
   /// Unpack a \b bool
-  void unpack(bool& data) { unpack(&data); }
+  void unpack(bool& data) 		{ unpack(&data); }
 
- protected:
+protected:
+ 
   /// The internal buffer for unpacking
   char* Buffer;
   /// The index into the current buffer
@@ -303,72 +276,47 @@ class MPIUnpackBuffer {
   bool ownFlag;
 };
 
+
 /// extract an int
-inline MPIUnpackBuffer& operator>>(MPIUnpackBuffer& buff, int& data) {
-  buff.unpack(data);
-  return buff;
-}
+inline MPIUnpackBuffer& operator>> (MPIUnpackBuffer& buff, int& data)
+{ buff.unpack(data); return buff; }
 /// extract a u_int
-inline MPIUnpackBuffer& operator>>(MPIUnpackBuffer& buff, u_int& data) {
-  buff.unpack(data);
-  return buff;
-}
+inline MPIUnpackBuffer& operator>> (MPIUnpackBuffer& buff, u_int& data)
+{ buff.unpack(data); return buff; }
 /// extract a long
-inline MPIUnpackBuffer& operator>>(MPIUnpackBuffer& buff, long& data) {
-  buff.unpack(data);
-  return buff;
-}
+inline MPIUnpackBuffer& operator>> (MPIUnpackBuffer& buff, long& data)
+{ buff.unpack(data); return buff; }
 /// extract a u_long
-inline MPIUnpackBuffer& operator>>(MPIUnpackBuffer& buff, u_long& data) {
-  buff.unpack(data);
-  return buff;
-}
+inline MPIUnpackBuffer& operator>> (MPIUnpackBuffer& buff, u_long& data)
+{ buff.unpack(data); return buff; }
 /// extract a long long
-inline MPIUnpackBuffer& operator>>(MPIUnpackBuffer& buff, long long& data) {
-  buff.unpack(data);
-  return buff;
-}
+inline MPIUnpackBuffer& operator>> (MPIUnpackBuffer& buff, long long& data)
+{ buff.unpack(data); return buff; }
 /// extract an unsigned long long
-inline MPIUnpackBuffer& operator>>(MPIUnpackBuffer& buff,
-                                   unsigned long long& data) {
-  buff.unpack(data);
-  return buff;
-}
+inline MPIUnpackBuffer& operator>> (MPIUnpackBuffer& buff, unsigned long long& data)
+{ buff.unpack(data); return buff; }
 /// extract a short
-inline MPIUnpackBuffer& operator>>(MPIUnpackBuffer& buff, short& data) {
-  buff.unpack(data);
-  return buff;
-}
+inline MPIUnpackBuffer& operator>> (MPIUnpackBuffer& buff, short& data)
+{ buff.unpack(data); return buff; }
 /// extract a u_short
-inline MPIUnpackBuffer& operator>>(MPIUnpackBuffer& buff, u_short& data) {
-  buff.unpack(data);
-  return buff;
-}
+inline MPIUnpackBuffer& operator>> (MPIUnpackBuffer& buff, u_short& data)
+{ buff.unpack(data); return buff; }
 /// extract a char
-inline MPIUnpackBuffer& operator>>(MPIUnpackBuffer& buff, char& data) {
-  buff.unpack(data);
-  return buff;
-}
+inline MPIUnpackBuffer& operator>> (MPIUnpackBuffer& buff, char& data)
+{ buff.unpack(data); return buff; }
 /// extract a u_char
-inline MPIUnpackBuffer& operator>>(MPIUnpackBuffer& buff, u_char& data) {
-  buff.unpack(data);
-  return buff;
-}
+inline MPIUnpackBuffer& operator>> (MPIUnpackBuffer& buff, u_char& data)
+{ buff.unpack(data); return buff; }
 /// extract a double
-inline MPIUnpackBuffer& operator>>(MPIUnpackBuffer& buff, double& data) {
-  buff.unpack(data);
-  return buff;
-}
+inline MPIUnpackBuffer& operator>> (MPIUnpackBuffer& buff, double& data)
+{ buff.unpack(data); return buff; }
 /// extract a float
-inline MPIUnpackBuffer& operator>>(MPIUnpackBuffer& buff, float& data) {
-  buff.unpack(data);
-  return buff;
-}
+inline MPIUnpackBuffer& operator>> (MPIUnpackBuffer& buff, float& data)
+{ buff.unpack(data); return buff; }
 /// extract a bool
-inline MPIUnpackBuffer& operator>>(MPIUnpackBuffer& buff, bool& data) {
-  buff.unpack(data);
-  return buff;
-}
+inline MPIUnpackBuffer& operator>> (MPIUnpackBuffer& buff, bool& data)
+{ buff.unpack(data); return buff; }
+
 
 //---------------------------------------------------------------------
 //
@@ -403,6 +351,7 @@ int MPIPackSize(const float& data, const int num = 1);
 /// return packed size of a bool
 int MPIPackSize(const bool& data, const int num = 1);
 
-}  // namespace Dakota
 
-#endif  // MPI_PACK_BUFFER_H
+} // namespace Dakota
+
+#endif // MPI_PACK_BUFFER_H

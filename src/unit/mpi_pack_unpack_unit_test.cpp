@@ -7,15 +7,16 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-#include <gtest/gtest.h>
-
 #include "dakota_data_io.hpp"
 #include "dakota_global_defs.hpp"
+
+#include <gtest/gtest.h>
 
 namespace Dakota {
 namespace TestBinStream {
 
-struct DataBundle {
+struct DataBundle
+{
   static char ch;
   static double dbl;
   static float flt;
@@ -41,7 +42,8 @@ unsigned long DataBundle::uln = 654321;
 unsigned short DataBundle::ush = 4321;
 
 #ifdef DAKOTA_HAVE_MPI
-void test_mpi_send_receive() {
+void test_mpi_send_receive()
+{
   DataBundle dat_bundle;
 
   // Create a send buffer and pack the data into it
@@ -52,40 +54,32 @@ void test_mpi_send_receive() {
               << dat_bundle.ush;
 
   // Create a buffer to unpack that is a copy of send_buffer
-  Dakota::MPIUnpackBuffer recv_buffer(const_cast<char *>(send_buffer.buf()),
+  Dakota::MPIUnpackBuffer recv_buffer(const_cast<char*>(send_buffer.buf()),
                                       send_buffer.size(), false);
 
-  char ch2;
-  double dbl2;
-  float flt2;
-  int nt2;
-  long lng2;
-  short shrt2;
-  unsigned char uch2;
-  unsigned int uin2;
-  unsigned long uln2;
-  unsigned short ush2;
+  char ch2; double dbl2; float flt2; int nt2; long lng2; short shrt2;
+  unsigned char uch2; unsigned int uin2; unsigned long uln2; unsigned short ush2;
 
   // Unpack the data
-  recv_buffer >> ch2 >> dbl2 >> flt2 >> nt2 >> lng2 >> shrt2 >> uch2 >> uin2 >>
-      uln2 >> ush2;
+  recv_buffer >> ch2 >> dbl2 >> flt2 >> nt2 >> lng2 >> shrt2 >> uch2
+              >> uin2 >> uln2 >> ush2;
 
   // check for data matches using assert
-  EXPECT_TRUE((dat_bundle.ch == ch2));
-  EXPECT_TRUE((dat_bundle.dbl == dbl2));
-  EXPECT_TRUE((dat_bundle.flt == flt2));
-  EXPECT_TRUE((dat_bundle.nt == nt2));
-  EXPECT_TRUE((dat_bundle.lng == lng2));
-  EXPECT_TRUE((dat_bundle.shrt == shrt2));
-  EXPECT_TRUE((dat_bundle.uch == uch2));
-  EXPECT_TRUE((dat_bundle.uin == uin2));
-  EXPECT_TRUE((dat_bundle.uln == uln2));
-  EXPECT_TRUE((dat_bundle.ush == ush2));
+  EXPECT_TRUE(( dat_bundle.ch == ch2 ));
+  EXPECT_TRUE(( dat_bundle.dbl == dbl2 ));
+  EXPECT_TRUE(( dat_bundle.flt == flt2 ));
+  EXPECT_TRUE(( dat_bundle.nt == nt2 ));
+  EXPECT_TRUE(( dat_bundle.lng == lng2 ));
+  EXPECT_TRUE(( dat_bundle.shrt == shrt2 ));
+  EXPECT_TRUE(( dat_bundle.uch == uch2 ));
+  EXPECT_TRUE(( dat_bundle.uin == uin2 ));
+  EXPECT_TRUE(( dat_bundle.uln == uln2 ));
+  EXPECT_TRUE(( dat_bundle.ush == ush2 ));
 }
 #endif
 
-}  // end namespace TestBinStream
-}  // end namespace Dakota
+} // end namespace TestBinStream
+} // end namespace Dakota
 
 #ifdef DAKOTA_HAVE_MPI
 #include "mpi.h"
@@ -93,7 +87,8 @@ void test_mpi_send_receive() {
 
 //____________________________________________________________________________//
 
-TEST(mpi_pack_unpack_unit_test_tests, all_tests) {
+TEST(mpi_pack_unpack_unit_test_tests, all_tests)
+{
 #ifdef DAKOTA_HAVE_MPI
   MPI_Init(&argc, &argv);
   Dakota::TestBinStream::test_mpi_send_receive();
@@ -105,3 +100,4 @@ int main(int argc, char **argv) {
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }
+

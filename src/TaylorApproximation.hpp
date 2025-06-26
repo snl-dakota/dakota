@@ -12,19 +12,22 @@
 
 #include "DakotaApproximation.hpp"
 
+
 namespace Dakota {
 
 /// Derived approximation class for first- or second-order Taylor
 /// series (a local approximation).
 
-/** The TaylorApproximation class provides a local approximation based
+/** The TaylorApproximation class provides a local approximation based 
     on data from a single point in parameter space.  It uses a zeroth-,
     first- or second-order Taylor series expansion: f(x) = f(x_c) for
     zeroth-order, plus grad(x_c)' (x - x_c) for first- and second-order,
     and plus (x - x_c)' Hess(x_c) (x - x_c) / 2 for second-order. */
 
-class TaylorApproximation : public Approximation {
- public:
+class TaylorApproximation: public Approximation
+{
+public:
+
   //
   //- Heading: Constructor and destructor
   //
@@ -33,21 +36,22 @@ class TaylorApproximation : public Approximation {
   TaylorApproximation();
   /// standard constructor
   TaylorApproximation(ProblemDescDB& problem_db,
-                      const SharedApproxData& shared_data,
+		      const SharedApproxData& shared_data,
                       const String& approx_label);
   /// alternate constructor
   TaylorApproximation(const SharedApproxData& shared_data);
   /// destructor
   ~TaylorApproximation() override;
 
- protected:
+protected:
+
   //
   //- Heading: Virtual function redefinitions
   //
 
   int min_coefficients() const override;
 
-  // int num_constraints() const; // use default implementation
+  //int num_constraints() const; // use default implementation
 
   void build() override;
 
@@ -57,20 +61,28 @@ class TaylorApproximation : public Approximation {
 
   const RealSymMatrix& hessian(const Variables& vars) override;
 
- private:
+private:
+
   //
   //- Heading: Data
   //
+
 };
 
-inline TaylorApproximation::TaylorApproximation() {}
 
-inline TaylorApproximation::TaylorApproximation(
-    const SharedApproxData& shared_data)
-    : Approximation(NoDBBaseConstructor(), shared_data) {}
+inline TaylorApproximation::TaylorApproximation()
+{ }
 
-inline TaylorApproximation::~TaylorApproximation() {}
 
-}  // namespace Dakota
+inline TaylorApproximation::
+TaylorApproximation(const SharedApproxData& shared_data):
+  Approximation(NoDBBaseConstructor(), shared_data)
+{ }
+
+
+inline TaylorApproximation::~TaylorApproximation()
+{ }
+
+} // namespace Dakota
 
 #endif

@@ -5,17 +5,21 @@
 namespace rol_interface {
 
 class NonlinearInequalityConstraint : public Constraint {
- public:
-  NonlinearInequalityConstraint(ModelInterface* model_interface,
-                                std::string con_name = "Nonlinear Inequality");
+public:
+
+  NonlinearInequalityConstraint( ModelInterface* model_interface,
+                                 std::string     con_name = "Nonlinear Inequality" );
 
   virtual ~NonlinearInequalityConstraint() = default;
 
- protected:
-  void update_from_model(ModelInterface* model_interface) override final;
+protected:
 
-};  // class NonlinearInequalityConstraint
+  void update_from_model( ModelInterface* model_interface ) override final;
 
-}  // namespace rol_interface
+}; // class NonlinearInequalityConstraint       
 
-#endif  // DAKOTA_ROL_NONLINEAR_INEQUALITY_CONSTRAINT_HPP
+
+} // namespace rol_interface
+
+
+#endif // DAKOTA_ROL_NONLINEAR_INEQUALITY_CONSTRAINT_HPP

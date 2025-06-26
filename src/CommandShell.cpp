@@ -8,19 +8,19 @@
     _______________________________________________________________________ */
 
 #include "CommandShell.hpp"
-
 #include "WorkdirHelper.hpp"
 #include "dakota_global_defs.hpp"
 
-static const char rcsId[] =
-    "@(#) $Id: CommandShell.cpp 7021 2010-10-12 22:19:01Z wjbohnh $";
+static const char rcsId[]="@(#) $Id: CommandShell.cpp 7021 2010-10-12 22:19:01Z wjbohnh $";
+
 
 namespace Dakota {
 
 /** Executes the sysCommand by passing it to system().  Appends an
     "&" if asynchFlag is set (background system call) and echos the
     sysCommand to Cout if suppressOutputFlag is not set. */
-CommandShell& CommandShell::flush() {
+CommandShell& CommandShell::flush()
+{
   if (asynchFlag) {
 #if !defined(_MSC_VER)
     sysCommand += " &";
@@ -45,11 +45,13 @@ CommandShell& CommandShell::flush() {
   return *this;
 }
 
+
 /** global convenience function for manipulating the shell; invokes
     the class member flush function. */
-CommandShell& flush(CommandShell& shell) {
+CommandShell& flush(CommandShell& shell)
+{
   shell.flush();
   return shell;
 }
 
-}  // namespace Dakota
+} // namespace Dakota

@@ -10,35 +10,36 @@
 #ifndef NOND_GLOBAL_EVIDENCE_H
 #define NOND_GLOBAL_EVIDENCE_H
 
-#include "DakotaIterator.hpp"
-#include "DakotaModel.hpp"
-#include "NonDGlobalInterval.hpp"
 #include "dakota_data_types.hpp"
+#include "NonDGlobalInterval.hpp"
+#include "DakotaModel.hpp"
+#include "DakotaIterator.hpp"
 
 namespace Dakota {
 
 /// Class for the Dempster-Shafer Evidence Theory methods within DAKOTA/UQ
 
 /** The NonDEvidence class implements the propagation of epistemic uncertainty
-    using Dempster-Shafer theory of evidence. In this approach, one assigns
-    a set of basic probability assignments (BPA) to intervals defined
+    using Dempster-Shafer theory of evidence. In this approach, one assigns 
+    a set of basic probability assignments (BPA) to intervals defined 
     for the uncertain variables.  Input interval combinations are calculated,
-    along with their BPA.  Currently, the response function is evaluated at
-    a set of sample points, then a response surface is constructed which is
-    sampled extensively to find the minimum and maximum within each input
-    interval cell, corresponding to the belief and plausibility within that
-    cell, respectively.  This data is then aggregated to calculate cumulative
+    along with their BPA.  Currently, the response function is evaluated at 
+    a set of sample points, then a response surface is constructed which is 
+    sampled extensively to find the minimum and maximum within each input 
+    interval cell, corresponding to the belief and plausibility within that 
+    cell, respectively.  This data is then aggregated to calculate cumulative 
     distribution functions for belief and plausibility. */
 
-class NonDGlobalEvidence : public NonDGlobalInterval {
- public:
+class NonDGlobalEvidence: public NonDGlobalInterval
+{
+public:
+
   //
   //- Heading: Constructors and destructor
   //
 
-  NonDGlobalEvidence(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
-                     std::shared_ptr<Model> model);  ///< constructor
-  ~NonDGlobalEvidence() override;                    ///< destructor
+  NonDGlobalEvidence(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model); ///< constructor
+  ~NonDGlobalEvidence() override;                                       ///< destructor
 
   //
   //- Heading: Virtual function redefinitions
@@ -51,12 +52,14 @@ class NonDGlobalEvidence : public NonDGlobalInterval {
   void post_process_response_fn_results() override;
   void post_process_final_results() override;
 
- private:
+private:
+
   //
   //- Heading: Data
   //
+
 };
 
-}  // namespace Dakota
+} // namespace 
 
 #endif

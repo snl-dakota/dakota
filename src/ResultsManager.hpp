@@ -10,23 +10,25 @@
 #ifndef RESULTS_MANAGER_H
 #define RESULTS_MANAGER_H
 
-#include <boost/any.hpp>
-#include <memory>
-
+#include "dakota_results_types.hpp"
 #include "ResultsDBBase.hpp"
 #include "dakota_data_util.hpp"
-#include "dakota_results_types.hpp"
+#include <memory>
+#include <boost/any.hpp>
+
 
 namespace Dakota {
 
 /// List of valid names for iterator results
 /** All data in the ResultsNames class is public, basically just a struct */
 class ResultsNames {
- public:
-  /// Default constructor
-  ResultsNames() { /* no-op */ }
 
-  size_t namesVersion = 0;  //< Version number of the results names
+public:
+
+  /// Default constructor
+  ResultsNames()  { /* no-op */}
+
+  size_t namesVersion = 0; //< Version number of the results names
 
   // optimization
   std::string best_cv = "Best Continuous Variables";
@@ -72,6 +74,7 @@ class ResultsNames {
   std::string fn_labels = "Function Labels";
 };
 
+
 /// Results manager for iterator final data
 /** The results manager provides the API for posting and retrieving
     iterator results data (and eventually run config/statistics).  It
@@ -83,18 +86,21 @@ class ResultsNames {
 
     For now, using concrete types for most insertion, since underlying
     databases like HDF5 might need concrete types; though template
-    parameter for array allocation and retrieval.
+    parameter for array allocation and retrieval. 
 
     All insertions overwrite any previous data.
 */
-class ResultsManager {
-  /// ResultsEntry is a friend of ResultsManager
-  template <typename StoredType>
-  friend class ResultsEntry;
+class ResultsManager
+{
 
- public:
+  /// ResultsEntry is a friend of ResultsManager
+  template <typename StoredType> friend class ResultsEntry;
+
+public:
+
   /// default constructor: no databases active until they are added
-  ResultsManager() { /* no-op*/ }
+  ResultsManager()
+  { /* no-op*/ }
 
   /// Delete all databases
   void clear_databases();
@@ -116,62 +122,67 @@ class ResultsManager {
   // Methods to support HDF5
   // ##############################################################
 
-  /// Insert using dimension scales and attributes (DimScaleMap and
+
+  /// Insert using dimension scales and attributes (DimScaleMap and 
   /// AttributeArray in dakota_results_types.hpp)
-  template <typename StoredType>
-  void insert(const StrStrSizet &iterator_id, const StringArray &location,
-              const StoredType &sent_data,
+  template<typename StoredType>
+  void insert(const StrStrSizet& iterator_id,
+              const StringArray &location,
+              const StoredType& sent_data,
               const DimScaleMap &scales = DimScaleMap(),
               const AttributeArray &attrs = AttributeArray(),
-              const bool &transpose = false) const {
-    for (auto &db : resultsDBs)
+              const bool &transpose = false) const
+  {
+    for( auto & db : resultsDBs )
       db->insert(iterator_id, location, sent_data, scales, attrs, transpose);
   }
 
-  /// Pre-allocate a matrix and (optionally) attach dimension scales and
-  /// attributes. Insert rows or columns using insert_into(...)
-  void allocate_matrix(const StrStrSizet &iterator_id,
-                       const StringArray &location,
-                       ResultsOutputType stored_type, const int &num_rows,
-                       const int &num_cols,
-                       const DimScaleMap &scales = DimScaleMap(),
-                       const AttributeArray &attrs = AttributeArray());
-
-  /// Pre-allocate a vector and (optionally) attach dimension scales and
-  /// attributes. Insert elements insert_into(...)
-  void allocate_vector(const StrStrSizet &iterator_id,
-                       const StringArray &location,
-                       ResultsOutputType stored_type, const int &len,
-                       const DimScaleMap &scales = DimScaleMap(),
-                       const AttributeArray &attrs = AttributeArray());
-
-  /// Insert a row or column into a matrix that was pre-allocated using
-  /// allocate_matrix
-  template <typename StoredType>
-  void insert_into(const StrStrSizet &iterator_id, const StringArray &location,
-                   const StoredType &data, const int &index,
-                   const bool &row = true) const {
-    for (auto &db : resultsDBs)
+  /// Pre-allocate a matrix and (optionally) attach dimension scales and attributes. Insert
+  /// rows or columns using insert_into(...)
+  void allocate_matrix(const StrStrSizet& iterator_id,
+              const StringArray &location,
+              ResultsOutputType stored_type, 
+              const int &num_rows, const int &num_cols,
+              const DimScaleMap &scales = DimScaleMap(),
+              const AttributeArray &attrs = AttributeArray());
+ 
+  /// Pre-allocate a vector and (optionally) attach dimension scales and attributes. Insert
+  /// elements insert_into(...)
+  void allocate_vector(const StrStrSizet& iterator_id,
+              const StringArray &location,
+              ResultsOutputType stored_type, 
+              const int &len,
+              const DimScaleMap &scales = DimScaleMap(),
+              const AttributeArray &attrs = AttributeArray());
+ 
+  /// Insert a row or column into a matrix that was pre-allocated using allocate_matrix
+  template<typename StoredType>
+  void insert_into(const StrStrSizet& iterator_id,
+              const StringArray &location,
+              const StoredType &data,
+              const int &index,
+              const bool &row = true) const {
+    for( auto & db : resultsDBs )
       db->insert_into(iterator_id, location, data, index, row);
   }
 
-  /// Associate key:value metadata with all the results and executions of a
-  /// method
-  void add_metadata_to_method(const StrStrSizet &iterator_id,
-                              const AttributeArray &attrs);
 
-  /// Associate key:value metadata with all the results for this execution of a
-  /// method
-  void add_metadata_to_execution(const StrStrSizet &iterator_id,
-                                 const AttributeArray &attrs);
+  /// Associate key:value metadata with all the results and executions of a method
+  void add_metadata_to_method(const StrStrSizet& iterator_id,
+                               const AttributeArray &attrs);
+
+  /// Associate key:value metadata with all the results for this execution of a method
+  void add_metadata_to_execution(const StrStrSizet& iterator_id,
+                                  const AttributeArray &attrs);
 
   /// Associate key:value metadata with the object at the location
-  void add_metadata_to_object(const StrStrSizet &iterator_id,
-                              const StringArray &location,
-                              const AttributeArray &attrs);
+  void add_metadata_to_object(const StrStrSizet& iterator_id,
+                               const StringArray &location,
+                               const AttributeArray &attrs);
 
   /// Associate key:value metadata with the object at the location
   void add_metadata_to_study(const AttributeArray &attrs);
+
 
   // ##############################################################
   // Methods and variables to support legacy text output
@@ -182,109 +193,121 @@ class ResultsManager {
 
   /// allocate an entry with array of StoredType of array_size for
   /// future insertion; likely move to non-templated accessors for these
-  template <typename StoredType>
-  void array_allocate(const StrStrSizet &iterator_id,
-                      const std::string &data_name, size_t array_size,
-                      const MetaDataType metadata = MetaDataType()) {
-    for (auto &db : resultsDBs)
-      db->array_allocate<StoredType>(iterator_id, data_name, array_size,
-                                     metadata);
+  template<typename StoredType>
+  void
+  array_allocate(const StrStrSizet& iterator_id,
+		 const std::string& data_name, 
+		 size_t array_size,
+		 const MetaDataType metadata = MetaDataType())
+  {
+    for( auto & db : resultsDBs )
+      db->array_allocate<StoredType>(iterator_id, data_name, array_size, metadata);
   }
 
   /// insert into a previously allocated array of StoredType at index
   /// specified; metadata must be specified at allocation
-  template <typename StoredType>
-  void array_insert(const StrStrSizet &iterator_id,
-                    const std::string &data_name, size_t index,
-                    const StoredType &sent_data) {
-    for (auto &db : resultsDBs)
+  template<typename StoredType>
+  void
+  array_insert(const StrStrSizet& iterator_id,
+	       const std::string& data_name,
+	       size_t index,
+	       const StoredType& sent_data)
+  {
+    for( auto & db : resultsDBs )
       db->array_insert<StoredType>(iterator_id, data_name, index, sent_data);
   }
 
   /// specialization: insert a SMACV into a previously allocated array
   /// of StringArrayStoredType at index specified; metadata must be
   /// specified at allocation
-  template <typename StoredType>
-  void array_insert(const StrStrSizet &iterator_id,
-                    const std::string &data_name, size_t index,
-                    StringMultiArrayConstView sent_data) {
-    if (active()) {
+  template<typename StoredType>
+  void
+  array_insert(const StrStrSizet& iterator_id,
+	       const std::string& data_name,
+	       size_t index,
+	       StringMultiArrayConstView sent_data)
+  {
+    if( active() ) {
       // copy the data to native container for storage
       StringArray sent_data_sa;
       copy_data(sent_data, sent_data_sa);
 
-      for (auto &db : resultsDBs)
-        db->array_insert<StoredType>(iterator_id, data_name, index,
-                                     sent_data_sa);
+      for( auto & db : resultsDBs )
+        db->array_insert<StoredType>(iterator_id, data_name, index, sent_data_sa);
     }
   }
 
+
   /// insert data
-  template <typename StoredType>
-  void insert(const StrStrSizet &iterator_id, const std::string &data_name,
-              const StoredType &sent_data,
-              const MetaDataType metadata = MetaDataType()) {
-    for (auto &db : resultsDBs)
+  template<typename StoredType>
+  void insert(const StrStrSizet& iterator_id,
+	      const std::string& data_name,
+	      const StoredType& sent_data,
+	      const MetaDataType metadata = MetaDataType())
+  {
+    for( auto & db : resultsDBs )
       db->insert(iterator_id, data_name, sent_data, metadata);
   }
-
+  
   // TODO: can't seem to pass SMACV by const ref...
-  void insert(const StrStrSizet &iterator_id, const std::string &data_name,
-              StringMultiArrayConstView sma_labels,
-              const MetaDataType metadata = MetaDataType());
+  void insert(const StrStrSizet& iterator_id,
+	      const std::string& data_name,
+	      StringMultiArrayConstView sma_labels,
+	      const MetaDataType metadata = MetaDataType());
 
- private:
+
+private:
+
   std::vector<std::unique_ptr<ResultsDBBase> > resultsDBs;
 
-  ResultsManager(const ResultsManager &) { return; }
+  ResultsManager(const ResultsManager&) {return;}
 
-  //  /// retrieve in-core entry given by id and name
-  //  template<typename StoredType>
-  //  StoredType core_lookup(const StrStrSizet& iterator_id,
-  //			 const std::string& data_name) const
-  //  {
-  //    return coreDB->get_data<StoredType>(iterator_id, data_name);
-  //  }
-  //
-  //  /// retrieve data via pointer to avoid copy; work-around for Boost
-  //  /// any use of pointer (could use utilib::Any)
-  //  template<typename StoredType>
-  //  StoredType* core_lookup_ptr(const StrStrSizet& iterator_id,
-  //			      const std::string& data_name) const
-  //  {
-  //    return coreDB->get_data_ptr<StoredType>(iterator_id, data_name);
-  //  }
-  //
-  //  /// retrieve data from in-core array of StoredType at given index
-  //  template<typename StoredType>
-  //  StoredType core_lookup(const StrStrSizet& iterator_id,
-  //			 const std::string& data_name,
-  //			 size_t index) const
-  //  {
-  //    return coreDB->get_array_data<StoredType>(iterator_id, data_name,
-  //    index);
-  //  }
-  //
-  //  /// retrieve data via pointer to entry in in-core array
-  //  template<typename StoredType>
-  //  const StoredType* core_lookup_ptr(const StrStrSizet& iterator_id,
-  //				    const std::string& data_name,
-  //				    size_t index) const
-  //  {
-  //    return coreDB->get_array_data_ptr<StoredType>(iterator_id, data_name,
-  //    index);
-  //  }
-  //
-  //  /// retrieve requested data into provided db_data StoredType
-  //  template<typename StoredType>
-  //  void file_lookup(StoredType& db_data,
-  //		   const StrStrSizet& iterator_id,
-  //		   const std::string& data_name) const
-  //  {
-  //    abort_handler(-1);
-  //    return;
-  //    //db_data = hdf5DB.lookup(iterator_id data_name);
-  //  }
+//  /// retrieve in-core entry given by id and name
+//  template<typename StoredType>
+//  StoredType core_lookup(const StrStrSizet& iterator_id,
+//			 const std::string& data_name) const
+//  {
+//    return coreDB->get_data<StoredType>(iterator_id, data_name);
+//  }
+//
+//  /// retrieve data via pointer to avoid copy; work-around for Boost
+//  /// any use of pointer (could use utilib::Any)
+//  template<typename StoredType>
+//  StoredType* core_lookup_ptr(const StrStrSizet& iterator_id,
+//			      const std::string& data_name) const
+//  {
+//    return coreDB->get_data_ptr<StoredType>(iterator_id, data_name);
+//  }
+//
+//  /// retrieve data from in-core array of StoredType at given index
+//  template<typename StoredType>
+//  StoredType core_lookup(const StrStrSizet& iterator_id,
+//			 const std::string& data_name,
+//			 size_t index) const
+//  {
+//    return coreDB->get_array_data<StoredType>(iterator_id, data_name, index);
+//  }
+//
+//  /// retrieve data via pointer to entry in in-core array
+//  template<typename StoredType>
+//  const StoredType* core_lookup_ptr(const StrStrSizet& iterator_id,
+//				    const std::string& data_name,
+//				    size_t index) const
+//  {
+//    return coreDB->get_array_data_ptr<StoredType>(iterator_id, data_name, index);
+//  }
+//
+//  /// retrieve requested data into provided db_data StoredType
+//  template<typename StoredType>
+//  void file_lookup(StoredType& db_data,
+//		   const StrStrSizet& iterator_id,
+//		   const std::string& data_name) const
+//  {
+//    abort_handler(-1);
+//    return;
+//    //db_data = hdf5DB.lookup(iterator_id data_name);
+//  }
+
 
   // ----
   // Data
@@ -292,9 +315,11 @@ class ResultsManager {
 
   // TODO: consider removing or renaming flags based on HDF5 needs
 
+
 };  // class ResultsManager
 
-#if 0  // This code appears to capture ideas but is not used anywhere
+
+#if 0 // This code appears to capture ideas but is not used anywhere
 
 // Notes on ResultsEntry: 
 // * Would want to generalize this to be able to possibly a templated

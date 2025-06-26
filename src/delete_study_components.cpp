@@ -1,8 +1,7 @@
 #include "delete_study_components.hpp"
-
-#include "DakotaInterface.hpp"
 #include "DakotaIterator.hpp"
 #include "DakotaModel.hpp"
+#include "DakotaInterface.hpp"
 
 namespace Dakota {
 
@@ -14,4 +13,5 @@ void delete_study_components(const ProblemDescDB& problem_db) {
   Response::remove_cached_response(problem_db);
 }
 
-}  // namespace Dakota
+}
+

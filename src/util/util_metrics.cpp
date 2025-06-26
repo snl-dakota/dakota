@@ -9,10 +9,10 @@
 
 #include "util_metrics.hpp"
 
+#include "util_common.hpp"
+
 #include <boost/assign.hpp>
 #include <boost/bimap.hpp>
-
-#include "util_common.hpp"
 
 namespace dakota {
 namespace util {

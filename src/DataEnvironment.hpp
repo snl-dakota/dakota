@@ -10,11 +10,12 @@
 #ifndef DATA_ENVIRONMENT_H
 #define DATA_ENVIRONMENT_H
 
-#include "MPIPackBuffer.hpp"
-#include "dakota_data_types.hpp"
 #include "dakota_system_defs.hpp"
+#include "dakota_data_types.hpp"
+#include "MPIPackBuffer.hpp"
 
 namespace Dakota {
+
 
 /// Body class for environment specification data.
 
@@ -24,7 +25,8 @@ namespace Dakota {
     set/get functions, but is still encapsulated within ProblemDescDB
     since ProblemDescDB::environmentSpec is private. */
 
-class DataEnvironmentRep {
+class DataEnvironmentRep
+{
   //
   //- Heading: Friends
   //
@@ -32,8 +34,9 @@ class DataEnvironmentRep {
   /// the handle class can access attributes of the body class directly
   friend class DataEnvironment;
 
- public:
-  ~DataEnvironmentRep();  ///< destructor (public for shared_ptr)
+public:
+
+  ~DataEnvironmentRep(); ///< destructor (public for shared_ptr)
 
   //
   //- Heading: Data
@@ -53,16 +56,16 @@ class DataEnvironmentRep {
   /// file name for restart write (overrides command-line)
   String writeRestart;
 
-  bool preRunFlag;   ///< flags invocation with command line option -pre_run
-  bool runFlag;      ///< flags invocation with command line option -run
-  bool postRunFlag;  ///< flags invocation with command line option -post_run
+  bool preRunFlag;      ///< flags invocation with command line option -pre_run
+  bool runFlag;         ///< flags invocation with command line option -run
+  bool postRunFlag;     ///< flags invocation with command line option -post_run
 
-  String preRunInput;    ///< filename for pre_run input
-  String preRunOutput;   ///< filename for pre_run output
-  String runInput;       ///< filename for run input
-  String runOutput;      ///< filename for run output
-  String postRunInput;   ///< filename for post_run input
-  String postRunOutput;  ///< filename for post_run output
+  String preRunInput;   ///< filename for pre_run input
+  String preRunOutput;  ///< filename for pre_run output
+  String runInput;      ///< filename for run input
+  String runOutput;     ///< filename for run output
+  String postRunInput;  ///< filename for post_run input
+  String postRunOutput; ///< filename for post_run output
 
   unsigned short preRunOutputFormat;  ///< tabular format for pre_run output
   unsigned short postRunInputFormat;  ///< tabular format for post_run input
@@ -96,7 +99,8 @@ class DataEnvironmentRep {
   /// specification
   String topMethodPointer;
 
- private:
+private:
+
   //
   //- Heading: Constructors, destructor, operators
   //
@@ -118,9 +122,12 @@ class DataEnvironmentRep {
   //
   //- Heading: Private data members
   //
+
 };
 
-inline DataEnvironmentRep::~DataEnvironmentRep() {}
+
+inline DataEnvironmentRep::~DataEnvironmentRep() { }
+
 
 /// Handle class for environment specification data.
 
@@ -130,7 +137,8 @@ inline DataEnvironmentRep::~DataEnvironmentRep() {}
     ProblemDescDB::get_<datatype>() functions.  A single DataEnvironment
     object is maintained in ProblemDescDB::environmentSpec. */
 
-class DataEnvironment {
+class DataEnvironment
+{
   //
   //- Heading: Friends
   //
@@ -140,16 +148,17 @@ class DataEnvironment {
   // the NIDR derived problem description database
   friend class NIDRProblemDescDB;
 
- public:
+public:
+
   //
   //- Heading: Constructors, destructor, operators
   //
 
-  DataEnvironment();                        ///< constructor
-  DataEnvironment(const DataEnvironment&);  ///< copy constructor
-  ~DataEnvironment();                       ///< destructor
+  DataEnvironment();                                ///< constructor
+  DataEnvironment(const DataEnvironment&);             ///< copy constructor
+  ~DataEnvironment();                               ///< destructor
 
-  DataEnvironment& operator=(const DataEnvironment&);  ///< assignment operator
+  DataEnvironment& operator=(const DataEnvironment&); ///< assignment operator
 
   //
   //- Heading: Member methods
@@ -166,7 +175,8 @@ class DataEnvironment {
   /// return dataEnvRep
   std::shared_ptr<DataEnvironmentRep> data_rep();
 
- private:
+private:
+
   //
   //- Heading: Data
   //
@@ -175,39 +185,37 @@ class DataEnvironment {
   std::shared_ptr<DataEnvironmentRep> dataEnvRep;
 };
 
-inline std::shared_ptr<DataEnvironmentRep> DataEnvironment::data_rep() {
-  return dataEnvRep;
-}
+
+inline std::shared_ptr<DataEnvironmentRep> DataEnvironment::data_rep()
+{return dataEnvRep; }
+
 
 /// MPIPackBuffer insertion operator for DataEnvironment
-inline MPIPackBuffer& operator<<(MPIPackBuffer& s,
-                                 const DataEnvironment& data) {
-  data.write(s);
-  return s;
-}
+inline MPIPackBuffer& operator<<(MPIPackBuffer& s, const DataEnvironment& data)
+{ data.write(s); return s;}
+
 
 /// MPIUnpackBuffer extraction operator for DataEnvironment
-inline MPIUnpackBuffer& operator>>(MPIUnpackBuffer& s, DataEnvironment& data) {
-  data.read(s);
-  return s;
-}
+inline MPIUnpackBuffer& operator>>(MPIUnpackBuffer& s, DataEnvironment& data)
+{ data.read(s); return s;}
+
 
 /// std::ostream insertion operator for DataEnvironment
-inline std::ostream& operator<<(std::ostream& s, const DataEnvironment& data) {
-  data.write(s);
-  return s;
-}
+inline std::ostream& operator<<(std::ostream& s, const DataEnvironment& data)
+{ data.write(s); return s;}
 
-inline void DataEnvironment::write(std::ostream& s) const {
-  dataEnvRep->write(s);
-}
 
-inline void DataEnvironment::read(MPIUnpackBuffer& s) { dataEnvRep->read(s); }
+inline void DataEnvironment::write(std::ostream& s) const
+{ dataEnvRep->write(s); }
 
-inline void DataEnvironment::write(MPIPackBuffer& s) const {
-  dataEnvRep->write(s);
-}
 
-}  // namespace Dakota
+inline void DataEnvironment::read(MPIUnpackBuffer& s)
+{ dataEnvRep->read(s); }
+
+
+inline void DataEnvironment::write(MPIPackBuffer& s) const
+{ dataEnvRep->write(s); }
+
+} // namespace Dakota
 
 #endif

@@ -10,10 +10,11 @@
 #ifndef NOND_INTERVAL_H
 #define NOND_INTERVAL_H
 
-#include "DakotaNonD.hpp"
 #include "dakota_data_types.hpp"
+#include "DakotaNonD.hpp"
 
 namespace Dakota {
+
 
 /// Base class for interval-based methods within DAKOTA/UQ
 
@@ -30,26 +31,26 @@ namespace Dakota {
     This data is then aggregated to calculate cumulative distribution
     functions for belief and plausibility. */
 
-class NonDInterval : public NonD {
- public:
+class NonDInterval: public NonD
+{
+public:
+
   //
   //- Heading: Constructors and destructor
   //
 
-  NonDInterval(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
-               std::shared_ptr<Model> model);  ///< constructor
-  ~NonDInterval() override;                    ///< destructor
+  NonDInterval(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model); ///< constructor
+  ~NonDInterval() override;                                       ///< destructor
 
   //
   //- Heading: Virtual member function redefinitions
   //
 
   // performs an epistemic uncertainty propagation using interval propagation
-  // void core_run();
+  //void core_run();
 
   /// print the cumulative distribution functions for belief and plausibility
-  void print_results(std::ostream& s,
-                     short results_state = FINAL_RESULTS) override;
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS) override;
 
   //
   //- Heading: Virtual member function redefinitions
@@ -57,7 +58,8 @@ class NonDInterval : public NonD {
 
   bool resize() override;
 
- protected:
+protected:
+
   //
   //- Heading: Virtual member function redefinitions
   //
@@ -65,7 +67,7 @@ class NonDInterval : public NonD {
   /// initialize finalStatistics for belief/plausibility results sets
   void initialize_final_statistics() override;
 
-  /// method for computing belief and plausibility values for response levels
+  /// method for computing belief and plausibility values for response levels 
   /// or vice-versa
   void compute_evidence_statistics();
 
@@ -80,7 +82,7 @@ class NonDInterval : public NonD {
   /// function to compute (complementary) distribution functions on belief and
   /// plausibility replaces CCBFPF_F77 from wrapper calculate_cum_belief_plaus()
   void calculate_cbf_cpf(bool complementary = true);
-
+  
   //
   //- Heading: Data
   //
@@ -130,9 +132,9 @@ class NonDInterval : public NonD {
   /// cell counter
   size_t cellCntr;
   /// total number of interval combinations
-  size_t numCells;
+  size_t numCells;	
 };
 
-}  // namespace Dakota
+} // namespace Dakota
 
 #endif

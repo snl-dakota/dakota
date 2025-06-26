@@ -10,12 +10,12 @@
 #ifndef DAKOTA_MODEL_H
 #define DAKOTA_MODEL_H
 
-#include "DakotaConstraints.hpp"
-#include "DakotaVariables.hpp"
-#include "MPIManager.hpp"
 #include "dakota_data_types.hpp"
 #include "model_utils.hpp"
-// #include "DakotaInterface.hpp"
+#include "MPIManager.hpp"
+#include "DakotaVariables.hpp"
+#include "DakotaConstraints.hpp"
+//#include "DakotaInterface.hpp"
 #include "DakotaResponse.hpp"
 #include "MultivariateDistribution.hpp"
 #include "ScalingOptions.hpp"
@@ -24,7 +24,7 @@ namespace Pecos { /* forward declarations */
 class SurrogateData;
 class ProbabilityTransformation;
 class ActiveKey;
-}  // namespace Pecos
+}
 
 namespace Dakota {
 
@@ -43,8 +43,9 @@ class SharedApproxData;
 class DiscrepancyCorrection;
 class EvaluationStore;
 
-extern ParallelLibrary dummy_lib;  // defined in dakota_global_defs.cpp
-extern ProblemDescDB dummy_db;     // defined in dakota_global_defs.cpp
+extern ParallelLibrary dummy_lib;       // defined in dakota_global_defs.cpp
+extern ProblemDescDB   dummy_db;        // defined in dakota_global_defs.cpp
+
 
 /// Base class for the model class hierarchy.
 
@@ -54,33 +55,34 @@ extern ProblemDescDB dummy_db;     // defined in dakota_global_defs.cpp
     iterator operates on the model to map the variables into responses
     using the interface. */
 
-class Model {
- public:
+class Model
+{
+
+public:
+
   // enum to disambiguate protected ctor used for on-the-fly construction
-  enum class ModelCtor { LtWt };
+  enum class ModelCtor{ LtWt };
 
   // Functions and data for instantiating and caching Models
 
   /// @brief retrieve an existing Model, if it exists, or instantiate a new one
   /// @return pointer to existing or newly created Model
-  static std::shared_ptr<Model> get_model(ProblemDescDB& problem_db,
-                                          ParallelLibrary& parallel_lib);
+  static std::shared_ptr<Model> get_model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
 
   /// @brief return the model cache for the study
-  /// @param problem_db
+  /// @param problem_db 
   /// @return model cache
-  static std::list<std::shared_ptr<Model>>& model_cache(
-      ProblemDescDB& problem_db);
+  static std::list<std::shared_ptr<Model>>& model_cache(ProblemDescDB& problem_db);
 
   /// @brief remove a cached Model for the study
   static void remove_cached_model(const ProblemDescDB& problem_db);
 
- private:
+private:
   /// @brief Cache of Models created for each study
-  static std::map<const ProblemDescDB*, std::list<std::shared_ptr<Model>>>
-      modelCache;
+  static std::map<const ProblemDescDB*, std::list<std::shared_ptr<Model>>> modelCache;
 
- public:
+public:
+
   //
   //- Heading: Constructors, destructor, assignment operator
   //
@@ -120,12 +122,12 @@ class Model {
   /// SimulationModel::userDefinedInterface, DataFitSurrModel::approxInterface,
   /// or NestedModel::optionalInterface
   virtual std::shared_ptr<Interface> derived_interface();
-  virtual void derived_interface(std::shared_ptr<Interface>);
+  virtual void derived_interface(std::shared_ptr<Interface> );
 
   /// set the relative weightings for multiple objective functions or least
   /// squares terms
-  virtual void primary_response_fn_weights(const RealVector& wts,
-                                           bool recurse_flag = true);
+  virtual void primary_response_fn_weights(const RealVector& wts, 
+					   bool recurse_flag = true);
 
   /// Perform any global updates prior to individual evaluate() calls;
   /// returns true if the variables size has changed
@@ -201,7 +203,7 @@ class Model {
 
   /// Update tabular/graphics data with latest variables/response data
   virtual void derived_auto_graphics(const Variables& vars,
-                                     const Response& resp);
+				     const Response& resp);
 
   /// update the Model's active view based on a higher level context
   virtual void active_view(short view, bool recurse_flag = true);
@@ -224,8 +226,8 @@ class Model {
   virtual void fine_grained_evaluation_counters();
   /// Print an evaluation summary for the Model
   virtual void print_evaluation_summary(std::ostream& s,
-                                        bool minimal_header = false,
-                                        bool relative_count = true) const;
+					bool minimal_header = false,
+					bool relative_count = true) const;
 
   /// set the hierarchical eval ID tag prefix
   virtual void eval_tag_prefix(const String& eval_id_str);
@@ -233,8 +235,8 @@ class Model {
   /// search the eval database (during derivative estimation); derived
   /// may need to reimplement due to problem transformations
   /// (RecastModel); return true if found in DB
-  virtual bool db_lookup(const Variables& search_vars,
-                         const ActiveSet& search_set, Response& found_resp);
+  virtual bool db_lookup(const Variables& search_vars, 
+			 const ActiveSet& search_set, Response& found_resp);
 
   /// set the warm start flag (warmStartFlag)
   virtual void warm_start_flag(const bool flag);
@@ -244,11 +246,14 @@ class Model {
 
   /// set primaryA{C,DI,DS,DR}VarMapIndices, secondaryA{C,DI,DS,DR}VarMapTargets
   /// (coming from a higher-level NestedModel context to inform derivative est.)
-  virtual void nested_variable_mappings(
-      const SizetArray& c_index1, const SizetArray& di_index1,
-      const SizetArray& ds_index1, const SizetArray& dr_index1,
-      const ShortArray& c_target2, const ShortArray& di_target2,
-      const ShortArray& ds_target2, const ShortArray& dr_target2);
+  virtual void nested_variable_mappings(const SizetArray& c_index1,
+					const SizetArray& di_index1,
+					const SizetArray& ds_index1,
+					const SizetArray& dr_index1,
+					const ShortArray& c_target2,
+					const ShortArray& di_target2,
+					const ShortArray& ds_target2,
+					const ShortArray& dr_target2);
   /// return primaryACVarMapIndices
   virtual const SizetArray& nested_acv1_indices() const;
   /// return secondaryACVarMapTargets
@@ -277,26 +282,26 @@ class Model {
 
   /// transform x-space gradient vector to u-space
   virtual void trans_grad_X_to_U(const RealVector& fn_grad_x,
-                                 RealVector& fn_grad_u,
-                                 const RealVector& x_vars);
+				 RealVector& fn_grad_u,
+				 const RealVector& x_vars);
   /// transform u-space gradient vector to x-space
   virtual void trans_grad_U_to_X(const RealVector& fn_grad_u,
-                                 RealVector& fn_grad_x,
-                                 const RealVector& x_vars);
+				 RealVector& fn_grad_x,
+				 const RealVector& x_vars);
   /// transform x-space gradient vector to gradient with respect to inserted
   /// distribution parameters
   virtual void trans_grad_X_to_S(const RealVector& fn_grad_x,
-                                 RealVector& fn_grad_s,
-                                 const RealVector& x_vars);
+				 RealVector& fn_grad_s,
+				 const RealVector& x_vars);
   /// transform x-space Hessian matrix to u-space
   virtual void trans_hess_X_to_U(const RealSymMatrix& fn_hess_x,
-                                 RealSymMatrix& fn_hess_u,
-                                 const RealVector& x_vars,
-                                 const RealVector& fn_grad_x);
+				 RealSymMatrix& fn_hess_u,
+				 const RealVector& x_vars,
+				 const RealVector& fn_grad_x);
+
 
   // *** SURROGATE MODELS (BOTH DATA FIT AND ENSEMBLE)
-  // *** Note: RecastModels will implement forwards (TO DO: verify there is no
-  // interaction with recasting)
+  // *** Note: RecastModels will implement forwards (TO DO: verify there is no interaction with recasting)
 
   /// return number of unique response functions (managing any aggregations)
   virtual size_t qoi() const;
@@ -318,8 +323,7 @@ class Model {
   /// return the i-th active approximation sub-model in surrogate models
   virtual std::shared_ptr<Model> active_surrogate_model(size_t i = _NPOS);
   /// return the i-th active approximation sub-model in surrogate models
-  virtual std::shared_ptr<const Model> active_surrogate_model(
-      size_t i = _NPOS) const;
+  virtual std::shared_ptr<const Model> active_surrogate_model(size_t i = _NPOS) const;
   /// return the active truth sub-model in surrogate models
   virtual std::shared_ptr<Model> active_truth_model();
   /// return the active truth sub-model in surrogate models
@@ -350,7 +354,7 @@ class Model {
   /// based on changes in the inactive data
   virtual bool force_rebuild();
 
-  /// set the (currently active) surrogate function index set
+    /// set the (currently active) surrogate function index set
   virtual void surrogate_function_indices(const SizetSet& surr_fn_indices);
 
   /// set response computation mode used in SurrogateModels for
@@ -376,12 +380,13 @@ class Model {
   /// set correctionMode
   virtual void correction_mode(unsigned short corr_mode);
 
+
   // *** DATA FIT SURROGATE MODELS
 
   /// build a new SurrogateModel approximation using/enforcing
   /// anchor response at vars; rebuild if needed
   virtual bool build_approximation(const Variables& vars,
-                                   const IntResponsePair& response_pr);
+				   const IntResponsePair& response_pr);
 
   /// incremental rebuild of an existing SurrogateModel approximation
   virtual void rebuild_approximation();
@@ -394,46 +399,46 @@ class Model {
   /// based on data updates propagated elsewhere
   virtual void update_approximation(bool rebuild_flag);
   /// replace the anchor point data within an existing surrogate
-  virtual void update_approximation(const Variables& vars,
-                                    const IntResponsePair& response_pr,
-                                    bool rebuild_flag);
+  virtual void update_approximation(const Variables& vars, 
+				    const IntResponsePair& response_pr,
+				    bool rebuild_flag);
   /// replace the data points within an existing surrogate
   virtual void update_approximation(const VariablesArray& vars_array,
-                                    const IntResponseMap& resp_map,
-                                    bool rebuild_flag);
+				    const IntResponseMap& resp_map,
+				    bool rebuild_flag);
   /// replace the data points within an existing surrogate
   virtual void update_approximation(const RealMatrix& samples,
-                                    const IntResponseMap& resp_map,
-                                    bool rebuild_flag);
+				    const IntResponseMap& resp_map,
+				    bool rebuild_flag);
 
   /// append to the existing approximation data within a surrogate
   /// based on data updates propagated elsewhere
   virtual void append_approximation(bool rebuild_flag);
   /// append a single point to an existing surrogate's data
-  virtual void append_approximation(const Variables& vars,
-                                    const IntResponsePair& response_pr,
-                                    bool rebuild_flag);
+  virtual void append_approximation(const Variables& vars, 
+				    const IntResponsePair& response_pr,
+				    bool rebuild_flag);
   /// append multiple points to an existing surrogate's data
   virtual void append_approximation(const RealMatrix& samples,
-                                    const IntResponseMap& resp_map,
-                                    bool rebuild_flag);
+				    const IntResponseMap& resp_map,
+				    bool rebuild_flag);
   /// append multiple points to an existing surrogate's data
   virtual void append_approximation(const VariablesArray& vars_array,
-                                    const IntResponseMap& resp_map,
-                                    bool rebuild_flag);
+				    const IntResponseMap& resp_map,
+				    bool rebuild_flag);
   /// append multiple points to an existing surrogate's data
   virtual void append_approximation(const IntVariablesMap& vars_map,
-                                    const IntResponseMap& resp_map,
-                                    bool rebuild_flag);
+				    const IntResponseMap&  resp_map,
+				    bool rebuild_flag);
 
   /// replace the response for a single point (based on eval id from
   /// response_pr) within an existing surrogate's data
   virtual void replace_approximation(const IntResponsePair& response_pr,
-                                     bool rebuild_flag);
+				     bool rebuild_flag);
   /// replace the responses for a set of points (based on eval ids from
   /// resp_map) within an existing surrogate's data
   virtual void replace_approximation(const IntResponseMap& resp_map,
-                                     bool rebuild_flag);
+				     bool rebuild_flag);
   /// assigns a flag to track evaluation ids within surrogate data,
   /// enabling id-based lookups for data replacement
   virtual void track_evaluation_ids(bool track);
@@ -442,7 +447,7 @@ class Model {
   /// to a previous append_approximation() call); flag manages storing
   /// of surrogate data for use in a subsequent push_approximation()
   virtual void pop_approximation(bool save_surr_data,
-                                 bool rebuild_flag = false);
+				 bool rebuild_flag = false);
 
   /// push a previous approximation data state; reverse of pop_approximation
   virtual void push_approximation();
@@ -472,9 +477,9 @@ class Model {
   virtual void run_dace();
 
   // retrieve the variables used to build a surrogate model
-  // virtual const VariablesArray build_variables() const;
+  //virtual const VariablesArray build_variables() const;
   // retrieve the responses used to build a surrogate model
-  // virtual const ResponseArray build_responses() const;
+  //virtual const ResponseArray build_responses() const;
 
   /// retrieve the shared approximation data within the ApproximationInterface
   /// of a DataFitSurrModel
@@ -488,12 +493,12 @@ class Model {
 
   /// retrieve the approximation coefficients from each Approximation
   /// within a DataFitSurrModel
-  virtual const RealVectorArray& approximation_coefficients(
-      bool normalized = false);
+  virtual const RealVectorArray&
+    approximation_coefficients(bool normalized = false);
   /// set the approximation coefficients for each Approximation within
   /// a DataFitSurrModel
   virtual void approximation_coefficients(const RealVectorArray& approx_coeffs,
-                                          bool normalized = false);
+					  bool normalized = false);
 
   /// retrieve the prediction variances from each Approximation within
   /// a DataFitSurrModel
@@ -504,10 +509,11 @@ class Model {
   virtual void discrepancy_emulation_mode(short mode);
   // return discrepancy emulation mode used in SurrogateModels for
   // approximating response differences
-  // virtual short discrepancy_emulation_mode() const;
+  //virtual short discrepancy_emulation_mode() const;
 
   // link together more than one SurrogateData instance (DataFitSurrModel)
-  // virtual void link_multilevel_approximation_data();
+  //virtual void link_multilevel_approximation_data();
+
 
   // *** ENSEMBLE SURROGATE MODELS
 
@@ -525,15 +531,16 @@ class Model {
   /// assign precedence for ensemble definition (model forms or
   /// resolution levels or both) as determined from algorithm context
   virtual void ensemble_precedence(short mlmf_prec,
-                                   bool update_default = false);
+				   bool update_default = false);
 
   /// apply a DiscrepancyCorrection to correct an approximation within
   /// an EnsembleSurrModel
   virtual void single_apply(const Variables& vars, Response& resp,
-                            const Pecos::ActiveKey& paired_key);
-  /// apply a sequence of DiscrepancyCorrections to recursively correct an
+			    const Pecos::ActiveKey& paired_key);
+  /// apply a sequence of DiscrepancyCorrections to recursively correct an 
   /// approximation within an EnsembleSurrModel
   virtual void recursive_apply(const Variables& vars, Response& resp);
+
 
   // *** SIMULATION MODELS
 
@@ -559,14 +566,15 @@ class Model {
   virtual size_t solution_control_discrete_variable_index() const;
 
   /// return the active (integer) value of the solution control
-  virtual int solution_level_int_value() const;
+  virtual int    solution_level_int_value() const;
   /// return the active (string) value of the solution control
   virtual String solution_level_string_value() const;
   /// return the active (real) value of the solution control
-  virtual Real solution_level_real_value() const;
+  virtual Real   solution_level_real_value() const;
 
   /// return index of online cost estimates within metadata
   virtual size_t cost_metadata_index() const;
+
 
   // *** RECAST MODELS
 
@@ -574,13 +582,16 @@ class Model {
   /// sizing-based initialization should be deferred
   virtual bool resize_pending() const;
 
+
   // *** PROBABILITY TRANSFORM MODELS
 
   // see weakly recursive list for base Model above
 
+
   // *** NESTED MODELS
 
   // see recursive list for base Model above
+
 
   //
   //- Heading: Member functions
@@ -599,10 +610,10 @@ class Model {
   /// Compute the Response at currentVariables (specified ActiveSet).
   void evaluate(const ActiveSet& set);
 
-  /// Spawn an asynchronous job (or jobs) that computes the value of the
+  /// Spawn an asynchronous job (or jobs) that computes the value of the 
   /// Response at currentVariables (default ActiveSet).
   void evaluate_nowait();
-  /// Spawn an asynchronous job (or jobs) that computes the value of the
+  /// Spawn an asynchronous job (or jobs) that computes the value of the 
   /// Response at currentVariables (specified ActiveSet).
   void evaluate_nowait(const ActiveSet& set);
 
@@ -626,19 +637,19 @@ class Model {
   /// allocate communicator partitions for a model and store
   /// configuration in modelPCIterMap
   void init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
-                          bool recurse_flag = true);
+			  bool recurse_flag = true);
   /// for cases where init_communicators() will not be called,
   /// modify some default settings to behave properly in serial.
   void init_serial();
   /// set active parallel configuration for the model (set modelPCIter
   /// from modelPCIterMap)
   void set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
-                         bool recurse_flag = true);
+			 bool recurse_flag = true);
   /// deallocate communicator partitions for a model
   void free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
-                          bool recurse_flag = true);
+			  bool recurse_flag = true);
 
-  /// retrieve the MPI communicator on which this model is configured to
+  /// retrieve the MPI communicator on which this model is configured to 
   /// conduct function evaluation analyses (provided for library clients)
   MPI_Comm analysis_comm() const;
 
@@ -663,24 +674,23 @@ class Model {
   /// employ the model recursion to transform from bottom level
   /// user-space data to top level iterator-space data
   void user_space_to_iterator_space(const Variables& user_vars,
-                                    const Response& user_resp,
-                                    Variables& iter_vars, Response& iter_resp);
+				    const Response&  user_resp,
+				    Variables& iter_vars, Response& iter_resp);
   /// employ the model recursion to transform from top level
   /// iterator-space variables to bottom level user-space variables
   void iterator_space_to_user_space(Variables& vars);
   /// employ the model recursion to transform from top level
   /// iterator-space data to bottom level user-space data
   void iterator_space_to_user_space(const Variables& iter_vars,
-                                    const Response& iter_resp,
-                                    Variables& user_vars, Response& user_resp);
-
+				    const Response&  iter_resp,
+				    Variables& user_vars, Response& user_resp);
+ 
   /// return mvDist
   Pecos::MultivariateDistribution& multivariate_distribution();
   /// return mvDist
   const Pecos::MultivariateDistribution& multivariate_distribution() const;
   // set mvDist
-  // void multivariate_distribution(const Pecos::MultivariateDistribution&
-  // dist);
+  //void multivariate_distribution(const Pecos::MultivariateDistribution& dist);
 
   /// return the current variables (currentVariables) as const
   /// reference (preferred)
@@ -818,28 +828,29 @@ class Model {
   static void inactive_variables(const RealVector& config_vars, Model& model);
 
   static void inactive_variables(const RealVector& config_vars, Model& model,
-                                 Variables& updated_vars);
+				 Variables& updated_vars);
 
   /// Bulk synchronously evaluate the model for each column (of active
   /// variables) in the samples matrix and return as columns of the
   /// response matrix
-  static void evaluate(const RealMatrix& samples_matrix, Model& model,
-                       RealMatrix& resp_matrix);
+  static void evaluate(const RealMatrix& samples_matrix,
+		       Model& model, RealMatrix& resp_matrix);
 
   /// Bulk synchronously evaluate the model for each entry (of active
   /// variables) in the samples vector and return as columns of the
   /// response matrix
-  static void evaluate(const VariablesArray& sample_vars, Model& model,
-                       RealMatrix& resp_matrix);
+  static void evaluate(const VariablesArray& sample_vars,
+		       Model& model, RealMatrix& resp_matrix);
 
-  /// Return the model ID of the "innermost" model.
+  /// Return the model ID of the "innermost" model. 
   /// For all derived Models except RecastModels, return modelId.
   /// The RecastModel override returns the root_model_id() of the subModel.
   virtual String root_model_id();
 
   virtual ActiveSet default_active_set();
 
- protected:
+protected:
+
   //
   //- Heading: Constructors
   //
@@ -851,15 +862,14 @@ class Model {
 
   /// constructor initializing base class for derived model class instances
   /// constructed on the fly
-  Model(const ShortShortPair& vars_view, const SharedVariablesData& svd,
-        bool share_svd, const SharedResponseData& srd, bool share_srd,
-        const ActiveSet& set, short output_level,
-        ProblemDescDB& problem_db = dummy_db,
-        ParallelLibrary& parallel_lib = dummy_lib);
+  Model(const ShortShortPair& vars_view,
+	const SharedVariablesData& svd, bool share_svd,
+	const SharedResponseData& srd, bool share_srd, const ActiveSet& set,
+	short output_level, ProblemDescDB& problem_db = dummy_db,
+	ParallelLibrary& parallel_lib = dummy_lib);
 
   /// constructor initializing base class for recast model instances
-  Model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
-        ModelCtor dummy);
+  Model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, ModelCtor dummy);
 
   //
   //- Heading: Virtual functions
@@ -879,18 +889,18 @@ class Model {
 
   /// portion of init_communicators() specific to derived model classes
   virtual void derived_init_communicators(ParLevLIter pl_iter,
-                                          int max_eval_concurrency,
-                                          bool recurse_flag = true);
+					  int max_eval_concurrency,
+					  bool recurse_flag = true);
   /// portion of init_serial() specific to derived model classes
   virtual void derived_init_serial();
   /// portion of set_communicators() specific to derived model classes
   virtual void derived_set_communicators(ParLevLIter pl_iter,
-                                         int max_eval_concurrency,
-                                         bool recurse_flag = true);
+					 int max_eval_concurrency,
+					 bool recurse_flag = true);
   /// portion of free_communicators() specific to derived model classes
   virtual void derived_free_communicators(ParLevLIter pl_iter,
-                                          int max_eval_concurrency,
-                                          bool recurse_flag = true);
+					  int max_eval_concurrency,
+					  bool recurse_flag = true);
 
   //
   //- Heading: Member functions
@@ -910,13 +920,13 @@ class Model {
   static String no_spec_id();
 
   /// initialize distribution types from problemDescDB
-  void initialize_distribution(Pecos::MultivariateDistribution& mv_dist,
-                               bool active_only = false);
+  void initialize_distribution(
+    Pecos::MultivariateDistribution& mv_dist, bool active_only = false);
   /// initialize distribution types from problemDescDB
   void initialize_active_types(Pecos::MultivariateDistribution& mv_dist);
   /// initialize distribution parameters from problemDescDB
   void initialize_distribution_parameters(
-      Pecos::MultivariateDistribution& mv_dist, bool active_only = false);
+    Pecos::MultivariateDistribution& mv_dist, bool active_only = false);
 
   /// default logic for defining asynchEvalFlag and evaluationCapacity
   /// based on ie_pl settings
@@ -924,63 +934,61 @@ class Model {
 
   /// assign all of the longest possible string values into vars
   void assign_max_strings(const Pecos::MultivariateDistribution& mv_dist,
-                          Variables& vars);
+			  Variables& vars);
   /// return iterator for longest string value found in string set
-  SSCIter max_string(const StringSet& ss);
+  SSCIter  max_string(const StringSet& ss);
   /// return iterator for longest string value found in string map
   SRMCIter max_string(const StringRealMap& srm);
 
   /// Initialize data needed for computing finite differences
   /// (active/inactive, center point, and bounds)
-  SizetMultiArrayConstView initialize_x0_bounds(const SizetArray& original_dvv,
-                                                bool& active_derivs,
-                                                bool& inactive_derivs,
-                                                RealVector& x0,
-                                                RealVector& fd_lb,
-                                                RealVector& fd_ub) const;
+  SizetMultiArrayConstView
+  initialize_x0_bounds(const SizetArray& original_dvv, bool& active_derivs, 
+                       bool& inactive_derivs, RealVector& x0, RealVector& fd_lb,
+                       RealVector& fd_ub) const;
 
   /// Compute the forward step for a finite difference gradient;
   /// updates shortStep
-  Real forward_grad_step(size_t num_deriv_vars, size_t xj_index, Real x0_j,
-                         Real lb_j, Real ub_j);
+  Real forward_grad_step(size_t num_deriv_vars, size_t xj_index,
+                         Real x0_j, Real lb_j, Real ub_j);
 
   /// Return the interface flag for the EvaluationsDB state
-  EvaluationsDBState evaluations_db_state(const Interface& interface);
+  EvaluationsDBState evaluations_db_state(const Interface &interface);
   /// Return the model flag for the EvaluationsDB state
-  EvaluationsDBState evaluations_db_state(const Model& model);
+  EvaluationsDBState evaluations_db_state(const Model &model);
 
   /// Store the response portion of an interface evaluation.
   /// Called from rekey_response_map()
-  void asynch_eval_store(const Interface& interface, const int& id,
-                         const Response& response);
+  void asynch_eval_store(const Interface &interface, const int &id,
+			 const Response &response);
   /// Exists to support storage of interface evaluations.
   /// No-op so that rekey_response_map<Model> can be generated.
-  void asynch_eval_store(const Model& model, const int& id,
-                         const Response& response);
+  void asynch_eval_store(const Model &model, const int &id,
+			 const Response &response);
 
   /// rekey returned jobs matched in array of id_maps into array of
   /// resp_maps_rekey; unmatched jobs can be cached within the meta_object
   template <typename MetaType>
   void rekey_response_map(MetaType& meta_object, IntIntMapArray& id_maps,
-                          IntResponseMapArray& resp_maps_rekey, bool deep_copy);
+			  IntResponseMapArray& resp_maps_rekey, bool deep_copy);
   /// rekey returned jobs matched in id_map into resp_map_rekey;
   /// unmatched jobs can be cached within the meta_object
   template <typename MetaType>
   void rekey_response_map(MetaType& meta_object, IntIntMap& id_map,
-                          IntResponseMap& resp_map_rekey, bool deep_copy);
+			  IntResponseMap& resp_map_rekey, bool deep_copy);
 
   /// synchronize via meta_object and rekey returned jobs matched in array of
   /// id_maps into array of resp_maps_rekey; unmatched jobs are cached within
   /// the meta_object
   template <typename MetaType>
   void rekey_synch(MetaType& meta_object, bool block, IntIntMapArray& id_maps,
-                   IntResponseMapArray& resp_maps_rekey,
-                   bool deep_copy = false);
+		   IntResponseMapArray& resp_maps_rekey,
+		   bool deep_copy = false);
   /// synchronize via meta_object and rekey returned jobs matched in id_map
   /// into resp_map_rekey; unmatched jobs are cached within the meta_object
   template <typename MetaType>
   void rekey_synch(MetaType& meta_object, bool block, IntIntMap& id_map,
-                   IntResponseMap& resp_map_rekey, bool deep_copy = false);
+		   IntResponseMap& resp_map_rekey, bool deep_copy = false);
 
   //
   //- Heading: Data
@@ -999,7 +1007,7 @@ class Model {
   size_t numDerivVars;
 
   // presence of a Interface now varies by derived model class
-  // Interface userDefinedInterface;
+  //Interface userDefinedInterface;
 
   /// the set of current responses that holds the results of model
   /// function evaluations
@@ -1041,11 +1049,11 @@ class Model {
   /// absolute - step length is what is specified
   /// bounds   - step length is relative to range of x
   String fdGradStepType;
-  /// relative finite difference step size for numerical Hessians estimated
+  /// relative finite difference step size for numerical Hessians estimated 
   /// using first-order differences of gradients
   /** For vendor numerical Hessian algorithms, a scalar value is used. */
   RealVector fdHessByGradStepSize;
-  /// relative finite difference step size for numerical Hessians estimated
+  /// relative finite difference step size for numerical Hessians estimated 
   /// using second-order differences of function values
   /** For vendor numerical Hessian algorithms, a scalar value is used. */
   RealVector fdHessByFnStepSize;
@@ -1066,11 +1074,11 @@ class Model {
   /// quasi-Hessian type: bfgs, damped_bfgs, sr1
   String quasiHessType;
 
-  IntSet gradIdAnalytic;   ///< analytic id's for mixed gradients
-  IntSet gradIdNumerical;  ///< numerical id's for mixed gradients
-  IntSet hessIdAnalytic;   ///< analytic id's for mixed Hessians
-  IntSet hessIdNumerical;  ///< numerical id's for mixed Hessians
-  IntSet hessIdQuasi;      ///< quasi id's for mixed Hessians
+  IntSet gradIdAnalytic;  ///< analytic id's for mixed gradients
+  IntSet gradIdNumerical; ///< numerical id's for mixed gradients
+  IntSet hessIdAnalytic;  ///< analytic id's for mixed Hessians
+  IntSet hessIdNumerical; ///< numerical id's for mixed Hessians
+  IntSet hessIdQuasi;     ///< quasi id's for mixed Hessians
 
   /// Whether to write model evals to the evaluations DB
   EvaluationsDBState modelEvaluationsDBState;
@@ -1153,9 +1161,10 @@ class Model {
   String evalTagPrefix;
 
   /// reference to the global evaluation database
-  EvaluationStore& evaluationsDB;
+  EvaluationStore &evaluationsDB;
 
- private:
+private:
+ 
   //
   //- Heading: Member functions
   //
@@ -1166,45 +1175,45 @@ class Model {
   /// routine is selected with "method_source dakota" (the default
   /// method_source) in the numerical gradient specification.
   int estimate_derivatives(const ShortArray& map_asv,
-                           const ShortArray& fd_grad_asv,
-                           const ShortArray& fd_hess_asv,
-                           const ShortArray& quasi_hess_asv,
-                           const ActiveSet& original_set,
-                           const bool asynch_flag);
+			   const ShortArray& fd_grad_asv,
+			   const ShortArray& fd_hess_asv,
+			   const ShortArray& quasi_hess_asv,
+			   const ActiveSet& original_set,
+			   const bool asynch_flag);
 
   /// combine results from an array of finite difference response
   /// objects (fd_grad_responses) into a single response (new_response)
   void synchronize_derivatives(const Variables& vars,
-                               const IntResponseMap& fd_responses,
-                               Response& new_response,
-                               const ShortArray& fd_grad_asv,
-                               const ShortArray& fd_hess_asv,
-                               const ShortArray& quasi_hess_asv,
-                               const ActiveSet& original_set);
+			       const IntResponseMap& fd_responses, 
+			       Response& new_response,
+			       const ShortArray& fd_grad_asv,
+			       const ShortArray& fd_hess_asv,
+			       const ShortArray& quasi_hess_asv,
+			       const ActiveSet& original_set);
 
   /// overlay results to update a response object
   void update_response(const Variables& vars, Response& new_response,
-                       const ShortArray& fd_grad_asv,
-                       const ShortArray& fd_hess_asv,
-                       const ShortArray& quasi_hess_asv,
-                       const ActiveSet& original_set,
-                       Response& initial_map_response,
-                       const RealMatrix& new_fn_grads,
-                       const RealSymMatrixArray& new_fn_hessians);
+		       const ShortArray& fd_grad_asv,
+		       const ShortArray& fd_hess_asv,
+		       const ShortArray& quasi_hess_asv,
+		       const ActiveSet& original_set,
+		       Response& initial_map_response,
+		       const RealMatrix& new_fn_grads,
+		       const RealSymMatrixArray& new_fn_hessians);
 
   /// perform quasi-Newton Hessian updates
   void update_quasi_hessians(const Variables& vars, Response& new_response,
-                             const ActiveSet& original_set);
+			     const ActiveSet& original_set);
 
   /// Coordinates usage of estimate_derivatives() calls based on asv_in
-  bool manage_asv(const ActiveSet& original_set, ShortArray& map_asv_out,
-                  ShortArray& fd_grad_asv_out, ShortArray& fd_hess_asv_out,
-                  ShortArray& quasi_hess_asv_out);
+  bool manage_asv(const ActiveSet& original_set, ShortArray& map_asv_out, 
+		  ShortArray& fd_grad_asv_out, ShortArray& fd_hess_asv_out,
+		  ShortArray& quasi_hess_asv_out);
 
   /// function to determine initial finite difference h (before step
   /// length adjustment) based on type of step desired
   Real initialize_h(Real x_j, Real lb_j, Real ub_j, Real step_size,
-                    String step_type) const;
+		    String step_type) const;
   /// function returning finite-difference step size (affected by bounds)
   Real FDstep1(Real x0_j, Real lb_j, Real ub_j, Real h_mag);
   /// function returning second central-difference step size (affected
@@ -1302,201 +1311,288 @@ class Model {
   static size_t noSpecIdNum;
 };
 
-inline int Model::evaluation_id() const { return modelEvalCntr; }
 
-inline bool Model::recastings() const { return !recastFlags.empty(); }
+inline int Model::evaluation_id() const
+{ return modelEvalCntr; }
 
-inline Pecos::MultivariateDistribution& Model::multivariate_distribution() {
-  return mvDist;
-}
 
-inline const Pecos::MultivariateDistribution& Model::multivariate_distribution()
-    const {
-  return mvDist;
-}
+inline bool Model::recastings() const
+{ return !recastFlags.empty(); }
 
-inline const Variables& Model::current_variables() const {
-  return currentVariables;
-}
 
-inline Variables& Model::current_variables() { return currentVariables; }
+inline Pecos::MultivariateDistribution& Model::multivariate_distribution()
+{ return mvDist; }
 
-inline const Constraints& Model::user_defined_constraints() const {
+
+inline const Pecos::MultivariateDistribution& Model::
+multivariate_distribution() const
+{ return mvDist; }
+
+
+inline const Variables& Model::current_variables() const
+{ return currentVariables; }
+
+
+inline Variables& Model::current_variables()
+{ return currentVariables; }
+
+
+inline const Constraints& Model::user_defined_constraints() const
+{
   return userDefinedConstraints;
 }
 
-inline Constraints& Model::user_defined_constraints() {
+
+inline Constraints& Model::user_defined_constraints()
+{
   return userDefinedConstraints;
 }
 
-inline const Response& Model::current_response() const {
-  return currentResponse;
+
+inline const Response& Model::current_response() const
+{ return currentResponse; }
+
+
+inline Response& Model::current_response()
+{ return currentResponse; }
+
+
+inline ProblemDescDB& Model::problem_description_db() const
+{ return probDescDB; }
+
+
+inline ParallelLibrary& Model::parallel_library() const
+{ return parallelLib; }
+
+
+inline const String& Model::model_type() const
+{ return modelType; }
+
+
+inline const String& Model::surrogate_type() const
+{ return surrogateType; }
+
+
+inline const String& Model::model_id() const
+{ return modelId; }
+
+
+inline size_t Model::num_secondary_fns() const
+{
+  return
+    ModelUtils::num_nonlinear_ineq_constraints(*this) + 
+    ModelUtils::num_nonlinear_eq_constraints(*this);
 }
 
-inline Response& Model::current_response() { return currentResponse; }
 
-inline ProblemDescDB& Model::problem_description_db() const {
-  return probDescDB;
+inline size_t Model::num_primary_fns() const
+{
+  return
+    current_response().num_functions() - num_secondary_fns();
 }
 
-inline ParallelLibrary& Model::parallel_library() const { return parallelLib; }
 
-inline const String& Model::model_type() const { return modelType; }
+inline const String& Model::gradient_type() const
+{ return gradientType; }
 
-inline const String& Model::surrogate_type() const { return surrogateType; }
 
-inline const String& Model::model_id() const { return modelId; }
+inline const String& Model::method_source() const
+{ return methodSource; }
 
-inline size_t Model::num_secondary_fns() const {
-  return ModelUtils::num_nonlinear_ineq_constraints(*this) +
-         ModelUtils::num_nonlinear_eq_constraints(*this);
-}
 
-inline size_t Model::num_primary_fns() const {
-  return current_response().num_functions() - num_secondary_fns();
-}
+inline const String& Model::interval_type() const
+{ return intervalType; }
 
-inline const String& Model::gradient_type() const { return gradientType; }
 
-inline const String& Model::method_source() const { return methodSource; }
+inline bool Model::ignore_bounds() const
+{ return ignoreBounds; }
 
-inline const String& Model::interval_type() const { return intervalType; }
 
-inline bool Model::ignore_bounds() const { return ignoreBounds; }
+inline bool Model::central_hess() const
+{ return centralHess; }
 
-inline bool Model::central_hess() const { return centralHess; }
 
-inline const RealVector& Model::fd_gradient_step_size() const {
-  return fdGradStepSize;
-}
+inline const RealVector& Model::fd_gradient_step_size() const
+{ return fdGradStepSize; }
 
-inline const String& Model::fd_gradient_step_type() const {
-  return fdGradStepType;
-}
 
-inline const IntSet& Model::gradient_id_analytic() const {
-  return gradIdAnalytic;
-}
+inline const String& Model::fd_gradient_step_type() const
+{ return fdGradStepType; }
 
-inline const IntSet& Model::gradient_id_numerical() const {
-  return gradIdNumerical;
-}
 
-inline const String& Model::hessian_type() const { return hessianType; }
+inline const IntSet& Model::gradient_id_analytic() const
+{ return gradIdAnalytic; }
 
-inline const String& Model::quasi_hessian_type() const { return quasiHessType; }
 
-inline const RealVector& Model::fd_hessian_by_grad_step_size() const {
-  return fdHessByGradStepSize;
-}
+inline const IntSet& Model::gradient_id_numerical() const
+{ return gradIdNumerical; }
 
-inline const RealVector& Model::fd_hessian_by_fn_step_size() const {
-  return fdHessByFnStepSize;
-}
 
-inline const String& Model::fd_hessian_step_type() const {
-  return fdHessStepType;
-}
+inline const String& Model::hessian_type() const
+{ return hessianType; }
 
-inline const IntSet& Model::hessian_id_analytic() const {
-  return hessIdAnalytic;
-}
 
-inline const IntSet& Model::hessian_id_numerical() const {
-  return hessIdNumerical;
-}
+inline const String& Model::quasi_hessian_type() const
+{ return quasiHessType; }
 
-inline const IntSet& Model::hessian_id_quasi() const { return hessIdQuasi; }
 
-inline void Model::primary_response_fn_sense(const BoolDeque& sense) {
+inline const RealVector& Model::fd_hessian_by_grad_step_size() const
+{ return fdHessByGradStepSize; }
+
+
+inline const RealVector& Model::fd_hessian_by_fn_step_size() const
+{ return fdHessByFnStepSize; }
+
+
+inline const String& Model::fd_hessian_step_type() const
+{ return fdHessStepType; }
+
+
+inline const IntSet& Model::hessian_id_analytic() const
+{ return hessIdAnalytic; }
+
+
+inline const IntSet& Model::hessian_id_numerical() const
+{ return hessIdNumerical; }
+
+
+inline const IntSet& Model::hessian_id_quasi() const
+{ return hessIdQuasi; }
+
+
+inline void Model::primary_response_fn_sense(const BoolDeque& sense)
+{
   primaryRespFnSense = sense;
 }
 
-inline const BoolDeque& Model::primary_response_fn_sense() const {
-  return primaryRespFnSense;
+
+inline const BoolDeque& Model::primary_response_fn_sense() const
+{ return primaryRespFnSense; }
+
+
+inline const RealVector& Model::primary_response_fn_weights() const
+{ return primaryRespFnWts; }
+
+
+inline const ScalingOptions& Model::scaling_options() const
+{ return scalingOpts; }
+
+
+inline short Model::primary_fn_type() const
+{ 
+  return
+    currentResponse.shared_data().primary_fn_type(); 
 }
 
-inline const RealVector& Model::primary_response_fn_weights() const {
-  return primaryRespFnWts;
-}
-
-inline const ScalingOptions& Model::scaling_options() const {
-  return scalingOpts;
-}
-
-inline short Model::primary_fn_type() const {
-  return currentResponse.shared_data().primary_fn_type();
-}
-
-inline void Model::primary_fn_type(short type) {
+inline void Model::primary_fn_type(short type)
+{
   currentResponse.shared_data().primary_fn_type(type);
 }
 
-inline bool Model::derivative_estimation() {
-  return ((gradientType == "numerical" || gradientType == "mixed") ||
-          (hessianType == "numerical" || hessianType == "mixed" ||
-           hessianType == "quasi"));
+
+inline bool Model::derivative_estimation()
+{
+  return
+    ( (gradientType == "numerical" || gradientType == "mixed") ||
+      (hessianType == "numerical" || hessianType == "mixed" ||
+       hessianType == "quasi") );
 }
 
-inline void Model::supports_derivative_estimation(bool sed_flag) {
+
+inline void Model::supports_derivative_estimation(bool sed_flag)
+{
   supportsEstimDerivs = sed_flag;
 }
 
-inline void Model::init_comms_bcast_flag(bool icb_flag) {
+
+inline void Model::init_comms_bcast_flag(bool icb_flag) 
+{
   initCommsBcastFlag = icb_flag;
 }
 
-inline int Model::evaluation_capacity() const { return evaluationCapacity; }
 
-inline bool Model::asynch_flag() const { return asynchEvalFlag; }
+inline int Model::evaluation_capacity() const
+{ return evaluationCapacity; }
 
-inline void Model::asynch_flag(const bool flag) { asynchEvalFlag = flag; }
 
-inline short Model::output_level() const { return outputLevel; }
+inline bool Model::asynch_flag() const
+{ return asynchEvalFlag; }
 
-inline void Model::output_level(const short level) { outputLevel = level; }
 
-inline const IntArray& Model::message_lengths() const { return messageLengths; }
+inline void Model::asynch_flag(const bool flag)
+{
+  asynchEvalFlag = flag;
+}
 
-inline bool Model::mapping_initialized() const { return mappingInitialized; }
 
-inline void Model::parallel_configuration_iterator(ParConfigLIter pc_iter) {
+inline short Model::output_level() const
+{ return outputLevel; }
+
+
+inline void Model::output_level(const short level)
+{
+  outputLevel = level;
+}
+
+
+inline const IntArray& Model::message_lengths() const
+{ return messageLengths; }
+
+
+inline bool Model::mapping_initialized() const
+{ return mappingInitialized; }
+
+
+inline void Model::parallel_configuration_iterator(ParConfigLIter pc_iter)
+{
   modelPCIter = pc_iter;
 }
 
-inline ParConfigLIter Model::parallel_configuration_iterator() const {
-  return modelPCIter;
-}
 
-inline void Model::auto_graphics(const bool flag) {
+inline ParConfigLIter Model::parallel_configuration_iterator() const
+{ return modelPCIter; }
+
+
+inline void Model::auto_graphics(const bool flag)
+{
   modelAutoGraphicsFlag = flag;
 }
 
-inline bool Model::auto_graphics() const { return modelAutoGraphicsFlag; }
+inline bool Model::auto_graphics() const
+{
+  return modelAutoGraphicsFlag;
+}
 
-inline SSCIter Model::max_string(const StringSet& ss) {
-  SSCIter ss_it = ss.begin(), max_it = ss_it;
-  ++ss_it;
-  for (; ss_it != ss.end(); ++ss_it)
-    if (ss_it->size() > max_it->size()) max_it = ss_it;
+
+inline SSCIter Model::max_string(const StringSet& ss)
+{
+  SSCIter ss_it = ss.begin(),  max_it = ss_it;  ++ss_it;
+  for (; ss_it!=ss.end(); ++ss_it)
+    if (ss_it->size() > max_it->size())
+      max_it = ss_it;
   return max_it;
 }
 
-inline SRMCIter Model::max_string(const StringRealMap& srm) {
-  SRMCIter srm_it = srm.begin(), max_it = srm_it;
-  ++srm_it;
-  for (; srm_it != srm.end(); ++srm_it)
-    if (srm_it->first.size() > max_it->first.size()) max_it = srm_it;
+
+inline SRMCIter Model::max_string(const StringRealMap& srm)
+{
+  SRMCIter srm_it = srm.begin(),  max_it = srm_it;  ++srm_it;
+  for (; srm_it!=srm.end(); ++srm_it)
+    if (srm_it->first.size() > max_it->first.size())
+      max_it = srm_it;
   return max_it;
 }
 
-inline IntResponseMap& Model::response_map() { return responseMap; }
+
+inline IntResponseMap& Model::response_map()
+{ return responseMap; }
+
 
 /*
 inline void Model::
 rekey_response_map(const IntResponseMap& resp_map, IntIntMap& id_map,
-                   IntResponseMap& resp_map_rekey,
-                   IntResponseMap& cached_resp_map, bool deep_copy)
+		   IntResponseMap& resp_map_rekey,
+		   IntResponseMap& cached_resp_map, bool deep_copy)
 {
   // rekey registered evals
   resp_map_rekey.clear();
@@ -1507,7 +1603,7 @@ rekey_response_map(const IntResponseMap& resp_map, IntIntMap& id_map,
     id_it = id_map.find(r_cit->first); // Note: no iterator hint API
     if (id_it != id_map.end()) {
       resp_map_rekey[id_it->second] = (deep_copy) ?
-        r_cit->second.copy() : r_cit->second;
+	r_cit->second.copy() : r_cit->second;
       id_map.erase(id_it);
     }
     // insert unmatched resp_map jobs into cache (may be from another Model
@@ -1519,7 +1615,7 @@ rekey_response_map(const IntResponseMap& resp_map, IntIntMap& id_map,
       cached_resp_map[r_cit->first] = r_cit->second;
       // Approach 2: virtual fn approach could accomplish a migration and
       // avoid duplication, but it lacks level clarity (SimulationModel:
-      // augment its own cache or delegate to userDefinedInterface?)
+      // augment its own cache or delegate to userDefinedInterface?) 
       //cache_unmatched_response(r_cit->first); // virtual fn
       // Approach 3: resolve level clarity by passing a meta-object in a
       // template.  Consistency: use meta-object to synchronize and cache,
@@ -1529,113 +1625,113 @@ rekey_response_map(const IntResponseMap& resp_map, IntIntMap& id_map,
 }
 */
 
-template <typename MetaType>
-void Model::rekey_response_map(MetaType& meta_object, IntIntMapArray& id_maps,
-                               IntResponseMapArray& resp_maps_rekey,
-                               bool deep_copy) {
+
+template <typename MetaType> void Model::
+rekey_response_map(MetaType& meta_object, IntIntMapArray& id_maps,
+		   IntResponseMapArray& resp_maps_rekey, bool deep_copy)
+{
   // rekey the IntResponseMap evals matched in id_maps, else move to cache
   IntResponseMap& orig_resp_map = meta_object.response_map();
   IntRespMIter r_it = orig_resp_map.begin();
   size_t i, num_maps = id_maps.size(), resp_eval_id;
-  std::vector<IntIntMIter> id_iters(num_maps);
-  IntIntMIter id_ite;
-  for (i = 0; i < num_maps; ++i) id_iters[i] = id_maps[i].begin();
-  resp_maps_rekey.clear();
-  resp_maps_rekey.resize(num_maps);
+  std::vector<IntIntMIter> id_iters(num_maps);  IntIntMIter id_ite;
+  for (i=0; i<num_maps; ++i)
+    id_iters[i] = id_maps[i].begin();
+  resp_maps_rekey.clear();  resp_maps_rekey.resize(num_maps);
 
   // Single traversal of orig_resp_map and all id_maps
   bool found, active_id_maps = true;
   while (r_it != orig_resp_map.end() && active_id_maps) {
     resp_eval_id = r_it->first;
     found = active_id_maps = false;
-    for (i = 0; i < num_maps; ++i) {
-      IntIntMap& id_map = id_maps[i];
-      IntIntMIter& id_it = id_iters[i];
-      id_ite = id_map.end();
-      while (id_it != id_ite && id_it->first < resp_eval_id) ++id_it;
-      if (id_it != id_ite && id_it->first == resp_eval_id) {
-        // process match and increment both iterators
-        Response& resp = r_it->second;
-        resp_maps_rekey[i][id_it->second] = (deep_copy) ? resp.copy() : resp;
-        if (evaluations_db_state(meta_object) == EvaluationsDBState::ACTIVE)
-          asynch_eval_store(meta_object, id_it->first, resp);
-        id_map.erase(id_it++);        // postfix increment
-        orig_resp_map.erase(r_it++);  // postfix increment
-        found = true;
+    for (i=0; i<num_maps; ++i) {
+      IntIntMap&   id_map = id_maps[i];
+      IntIntMIter& id_it  = id_iters[i];  id_ite = id_map.end();
+      while (id_it != id_ite && id_it->first <  resp_eval_id) ++id_it;
+      if    (id_it != id_ite && id_it->first == resp_eval_id) {
+	// process match and increment both iterators
+	Response& resp = r_it->second;
+	resp_maps_rekey[i][id_it->second] = (deep_copy) ? resp.copy() : resp;
+	if (evaluations_db_state(meta_object) == EvaluationsDBState::ACTIVE)
+	  asynch_eval_store(meta_object, id_it->first, resp);
+	id_map.erase(id_it++);      // postfix increment
+	orig_resp_map.erase(r_it++);// postfix increment 
+	found = true;
       }
-      // if (found) break;// interferes with active_id_maps and only defers ++it
+      //if (found) break;// interferes with active_id_maps and only defers ++it
       if (id_it != id_ite) active_id_maps = true;
     }
-    if (!found) ++r_it;  // else already advanced
+    if (!found) ++r_it; // else already advanced
   }
 
   // insert unmatched resp_map jobs into cache (may be from another Model
   // using a shared Interface instance).  Neither deep copy nor rekey are
   // performed until id is matched above (on a subsequent pass).
-  if (!orig_resp_map.empty()) meta_object.cache_unmatched_responses();
+  if (!orig_resp_map.empty())
+    meta_object.cache_unmatched_responses();
 }
 
-template <typename MetaType>
-void Model::rekey_synch(MetaType& meta_object, bool block,
-                        IntIntMapArray& id_maps,
-                        IntResponseMapArray& resp_maps_rekey, bool deep_copy) {
-  if (block)
-    meta_object.synchronize();
-  else
-    meta_object.synchronize_nowait();
+
+template <typename MetaType> void Model::
+rekey_synch(MetaType& meta_object, bool block, IntIntMapArray& id_maps,
+	    IntResponseMapArray& resp_maps_rekey, bool deep_copy)
+{
+  if (block) meta_object.synchronize();
+  else       meta_object.synchronize_nowait();
   rekey_response_map(meta_object, id_maps, resp_maps_rekey, deep_copy);
 }
 
-template <typename MetaType>
-void Model::rekey_response_map(MetaType& meta_object, IntIntMap& id_map,
-                               IntResponseMap& resp_map_rekey, bool deep_copy) {
+
+template <typename MetaType> void Model::
+rekey_response_map(MetaType& meta_object, IntIntMap& id_map,
+		   IntResponseMap& resp_map_rekey, bool deep_copy)
+{
   // rekey the IntResponseMap evals matched in id_map, else move to cache
   IntResponseMap& orig_resp_map = meta_object.response_map();
   IntRespMIter r_it = orig_resp_map.begin();
-  IntIntMIter id_it = id_map.begin();
+  IntIntMIter id_it =        id_map.begin();
   size_t i, orig_eval_id, resp_eval_id;
   resp_map_rekey.clear();
 
   // Single traversal of orig_resp_map and id_map
   while (id_it != id_map.end() && r_it != orig_resp_map.end()) {
     orig_eval_id = id_it->first;
-    resp_eval_id = r_it->first;
-    if (orig_eval_id < resp_eval_id)
-      ++id_it;
-    else if (orig_eval_id > resp_eval_id)
-      ++r_it;
-    else {  // equal: process match and increment both iterators
+    resp_eval_id =  r_it->first;
+    if      (orig_eval_id < resp_eval_id) ++id_it;
+    else if (orig_eval_id > resp_eval_id)  ++r_it;
+    else { // equal: process match and increment both iterators
       Response& resp = r_it->second;
       resp_map_rekey[id_it->second] = (deep_copy) ? resp.copy() : resp;
       if (evaluations_db_state(meta_object) == EvaluationsDBState::ACTIVE)
-        asynch_eval_store(meta_object, orig_eval_id, resp);
-      id_map.erase(id_it++);  // postfix increment avoids iter invalidation
-      orig_resp_map.erase(
-          r_it++);  // postfix increment avoids iter invalidation
+	asynch_eval_store(meta_object, orig_eval_id, resp);
+      id_map.erase(id_it++);      // postfix increment avoids iter invalidation
+      orig_resp_map.erase(r_it++);// postfix increment avoids iter invalidation
     }
   }
 
   // insert unmatched resp_map jobs into cache (may be from another Model
   // using a shared Interface instance).  Neither deep copy nor rekey are
   // performed until id is matched above (on a subsequent pass).
-  if (!orig_resp_map.empty()) meta_object.cache_unmatched_responses();
+  if (!orig_resp_map.empty())
+    meta_object.cache_unmatched_responses();
 }
 
-template <typename MetaType>
-void Model::rekey_synch(MetaType& meta_object, bool block, IntIntMap& id_map,
-                        IntResponseMap& resp_map_rekey, bool deep_copy) {
-  if (block)
-    meta_object.synchronize();
-  else
-    meta_object.synchronize_nowait();
+
+template <typename MetaType> void Model::
+rekey_synch(MetaType& meta_object, bool block, IntIntMap& id_map,
+	    IntResponseMap& resp_map_rekey, bool deep_copy)
+{
+  if (block) meta_object.synchronize();
+  else       meta_object.synchronize_nowait();
   rekey_response_map(meta_object, id_map, resp_map_rekey, deep_copy);
 }
 
-/// global comparison function for Model
-inline bool model_id_compare(const Model& model, const void* id) {
-  return (*(const String*)id == model.model_id());
-}
 
-}  // namespace Dakota
+/// global comparison function for Model
+inline bool model_id_compare(const Model& model, const void* id)
+{ return ( *(const String*)id == model.model_id() ); }
+
+
+} // namespace Dakota
 
 #endif

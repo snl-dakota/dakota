@@ -10,32 +10,34 @@
 #ifndef NOND_LHS_SINGLE_INTERVAL_H
 #define NOND_LHS_SINGLE_INTERVAL_H
 
-#include "DakotaIterator.hpp"
-#include "DakotaModel.hpp"
-#include "NonDLHSInterval.hpp"
 #include "dakota_data_types.hpp"
+#include "NonDLHSInterval.hpp"
+#include "DakotaModel.hpp"
+#include "DakotaIterator.hpp"
 
 namespace Dakota {
+
 
 /// Class for pure interval propagation using LHS
 
 /** The NonDSingleInterval class implements the propagation of epistemic
     uncertainty using ... */
 
-class NonDLHSSingleInterval : public NonDLHSInterval {
- public:
+class NonDLHSSingleInterval: public NonDLHSInterval
+{
+public:
+
   //
   //- Heading: Constructors and destructor
   //
 
   /// constructor
-  NonDLHSSingleInterval(ProblemDescDB& problem_db,
-                        ParallelLibrary& parallel_lib,
-                        std::shared_ptr<Model> model);
+  NonDLHSSingleInterval(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
   /// destructor
   ~NonDLHSSingleInterval() override;
 
- protected:
+protected:
+
   //
   //- Heading: virtual function redefinitions
   //
@@ -43,7 +45,8 @@ class NonDLHSSingleInterval : public NonDLHSInterval {
   void initialize() override;
   void post_process_samples() override;
 
- private:
+private:
+
   //
   // - Heading: Data
   //
@@ -52,6 +55,6 @@ class NonDLHSSingleInterval : public NonDLHSInterval {
   size_t statCntr;
 };
 
-}  // namespace Dakota
+} // namespace Dakota
 
 #endif

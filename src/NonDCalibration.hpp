@@ -15,30 +15,33 @@
 
 namespace Dakota {
 
-///
+
+/// 
 
 /** This class ...  */
 
-class NonDCalibration : public NonD {
- public:
+class NonDCalibration: public NonD
+{
+public:
+
   //
   //- Heading: Constructors and destructor
   //
 
   /// standard constructor
-  NonDCalibration(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
-                  std::shared_ptr<Model> model);
+  NonDCalibration(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
   /// destructor
   ~NonDCalibration() override;
 
   //
   //- Heading: Virtual function redefinitions
   //
-
+  
   bool resize() override;
 
- protected:
-  // void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
+protected:
+
+  //void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
 
   //
   //- Heading: Data
@@ -50,7 +53,8 @@ class NonDCalibration : public NonD {
   /// Container for experimental data to which to calibrate model
   ExperimentData expData;
 
- private:
+private:
+
   //
   //- Heading: Member functions
   //
@@ -58,10 +62,13 @@ class NonDCalibration : public NonD {
   //
   //- Heading: Data
   //
+
 };
 
-inline NonDCalibration::~NonDCalibration() {}
 
-}  // namespace Dakota
+inline NonDCalibration::~NonDCalibration()
+{ }
+
+} // namespace Dakota
 
 #endif

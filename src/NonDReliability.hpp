@@ -14,6 +14,7 @@
 
 namespace Dakota {
 
+
 /// Base class for the reliability methods within DAKOTA/UQ
 
 /** The NonDReliability class provides a base class for
@@ -22,29 +23,34 @@ namespace Dakota {
     global limit state search using Gaussian process models in
     combination with multimodal importance sampling. */
 
-class NonDReliability : public NonD {
- public:
- protected:
+class NonDReliability: public NonD
+{
+public:
+
+protected:
+
   //
   //- Heading: Constructors and destructor
   //
 
-  NonDReliability(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
-                  std::shared_ptr<Model> model);  ///< constructor
-  ~NonDReliability() override;                    ///< destructor
+  NonDReliability(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model); ///< constructor
+  ~NonDReliability() override;                                       ///< destructor
 
   //
   //- Heading: Virtual function redefinitions
   //
 
-  void nested_variable_mappings(
-      const SizetArray& c_index1, const SizetArray& di_index1,
-      const SizetArray& ds_index1, const SizetArray& dr_index1,
-      const ShortArray& c_target2, const ShortArray& di_target2,
-      const ShortArray& ds_target2, const ShortArray& dr_target2) override;
+  void nested_variable_mappings(const SizetArray& c_index1,
+				const SizetArray& di_index1,
+				const SizetArray& ds_index1,
+				const SizetArray& dr_index1,
+				const ShortArray& c_target2,
+				const ShortArray& di_target2,
+				const ShortArray& ds_target2,
+				const ShortArray& dr_target2) override;
 
   bool resize() override;
-  // void pre_run();
+  //void pre_run();
   void post_run(std::ostream& s) override;
 
   std::shared_ptr<Model> algorithm_space_model() override;
@@ -72,9 +78,9 @@ class NonDReliability : public NonD {
   /// provided by \c refinement specification
   unsigned short integrationRefinement;
   // number of samples for integration refinement
-  // int refinementSamples;
+  //int refinementSamples;
   // random seed for integration refinement
-  // int refinementSeed;
+  //int refinementSeed;
 
   /// number of invocations of core_run()
   size_t numRelAnalyses;
@@ -99,21 +105,27 @@ class NonDReliability : public NonD {
   Real requestedTargetLevel;
 };
 
-inline std::shared_ptr<Model> NonDReliability::algorithm_space_model() {
-  return uSpaceModel;
-}
 
-inline void NonDReliability::nested_variable_mappings(
-    const SizetArray& c_index1, const SizetArray& di_index1,
-    const SizetArray& ds_index1, const SizetArray& dr_index1,
-    const ShortArray& c_target2, const ShortArray& di_target2,
-    const ShortArray& ds_target2, const ShortArray& dr_target2) {
-  if (uSpaceModel)
+inline std::shared_ptr<Model> NonDReliability::algorithm_space_model()
+{ return uSpaceModel; }
+
+
+inline void NonDReliability::
+nested_variable_mappings(const SizetArray& c_index1,
+			 const SizetArray& di_index1,
+			 const SizetArray& ds_index1,
+			 const SizetArray& dr_index1,
+			 const ShortArray& c_target2,
+			 const ShortArray& di_target2,
+			 const ShortArray& ds_target2,
+			 const ShortArray& dr_target2)
+{
+  if(uSpaceModel)
     uSpaceModel->nested_variable_mappings(c_index1, di_index1, ds_index1,
-                                          dr_index1, c_target2, di_target2,
-                                          ds_target2, dr_target2);
+				       dr_index1, c_target2, di_target2,
+				       ds_target2, dr_target2);
 }
 
-}  // namespace Dakota
+} // namespace Dakota
 
 #endif

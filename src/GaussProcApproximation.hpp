@@ -10,21 +10,20 @@
 #ifndef GAUSS_PROC_APPROXIMATION_H
 #define GAUSS_PROC_APPROXIMATION_H
 
-#include "DakotaApproximation.hpp"
 #include "dakota_data_types.hpp"
-// #include "SNLLOptimizer.hpp"
-// #include "DakotaNonD.hpp"
+#include "DakotaApproximation.hpp"
+//#include "SNLLOptimizer.hpp"
+//#include "DakotaNonD.hpp"
 
 #include "Teuchos_SerialSpdDenseSolver.hpp"
 
 #ifdef HAVE_OPTPP
-namespace Teuchos {
-template <typename OrdinalType, typename ScalarType>
-class SerialDenseVector;
-template <typename OrdinalType, typename ScalarType>
-class SerialDenseMatrix;
-}  // namespace Teuchos
-#endif  // HAVE_OPTPP
+namespace Teuchos { 
+  template<typename OrdinalType, typename ScalarType> class SerialDenseVector;
+  template<typename OrdinalType, typename ScalarType> class SerialDenseMatrix;
+}
+#endif // HAVE_OPTPP
+
 
 namespace Dakota {
 
@@ -32,14 +31,16 @@ class ProblemDescDB;
 
 /// Derived approximation class for Gaussian Process implementation
 
-/** The GaussProcApproximation class provides a global approximation
-    (surrogate) based on a Gaussian process.  The Gaussian process is built
-    after normalizing the function values, with zero mean.  Opt++ is used
-    to determine the optimal values of the covariance parameters, those
-    which minimize the negative log likelihood function.*/
+/** The GaussProcApproximation class provides a global approximation 
+    (surrogate) based on a Gaussian process.  The Gaussian process is built 
+    after normalizing the function values, with zero mean.  Opt++ is used 
+    to determine the optimal values of the covariance parameters, those 
+    which minimize the negative log likelihood function.*/ 
 
-class GaussProcApproximation : public Approximation {
- public:
+class GaussProcApproximation: public Approximation
+{
+public:
+
   //
   //- Heading: Constructors and destructor
   //
@@ -50,19 +51,20 @@ class GaussProcApproximation : public Approximation {
   GaussProcApproximation(const SharedApproxData& shared_data);
   /// standard constructor
   GaussProcApproximation(const ProblemDescDB& problem_db,
-                         const SharedApproxData& shared_data,
+			 const SharedApproxData& shared_data,
                          const String& approx_label);
   /// destructor
   ~GaussProcApproximation() override;
 
- protected:
+protected:
+
   //
   //- Heading: Virtual function redefinitions
   //
 
   int min_coefficients() const override;
 
-  // int num_constraints() const;
+  //int num_constraints() const;
 
   /// find the covariance parameters governing the Gaussian process response
   void build() override;
@@ -70,14 +72,15 @@ class GaussProcApproximation : public Approximation {
   /// retrieve the function value for a given parameter set
   Real value(const Variables& vars) override;
 
-  /// retrieve the function gradient at the predicted value
+  /// retrieve the function gradient at the predicted value 
   /// for a given parameter set
   const RealVector& gradient(const Variables& vars) override;
 
   /// retrieve the variance of the predicted value for a given parameter set
   Real prediction_variance(const Variables& vars) override;
 
- private:
+private: 
+
   //
   //- Heading: Member functions
   //
@@ -89,68 +92,65 @@ class GaussProcApproximation : public Approximation {
   /** The response value is computed at the design point specified
       by the RealVector function argument.*/
   void GPmodel_apply(const RealVector& new_x, bool variance_flag,
-                     bool gradients_flag);
+		     bool gradients_flag);
 
   /// Normalizes the initial inputs upon which the GP surface is based
   void normalize_training_data();
   /// Gets the trend (basis) functions for the calculation of the mean of the GP
-  /// If the order = 0, the trend is a constant, if the order = 1, trend is
+  /// If the order = 0, the trend is a constant, if the order = 1, trend is 
   /// linear, if order = 2, trend is quadratic.
   void get_trend();
-  /// Gets the beta coefficients for the calculation of the mean of the GP
+  /// Gets the beta coefficients for the calculation of the mean of the GP 
   void get_beta_coefficients();
   /// Gets the Cholesky factorization of the covariance matrix, with
   /// error checking
   int get_cholesky_factor();
-  /// Gets the estimate of the process variance given the values of beta and
-  /// the correlation lengthscales
+  /// Gets the estimate of the process variance given the values of beta and 
+  /// the correlation lengthscales  
   void get_process_variance();
   /// calculates the covariance matrix for a given set of input points
   void get_cov_matrix();
-  /// calculates the covariance vector between a new point x and the
+  /// calculates the covariance vector between a new point x and the 
   /// set of inputs upon which the GP is based
   void get_cov_vector();
-  /// sets up and performs the optimization of the negative
+  /// sets up and performs the optimization of the negative 
   /// log likelihood to determine the optimal values of the covariance
   /// parameters using NCSUDirect
   void optimize_theta_global();
-  /// sets up and performs the optimization of the negative
+  /// sets up and performs the optimization of the negative 
   /// log likelihood to determine the optimal values of the covariance
   /// parameters using a gradient-based solver and multiple starting points
   void optimize_theta_multipoint();
   /// Calculates the predicted new response value for x in normalized space
   void predict(bool variance_flag, bool gradients_flag);
-  /// calculates the negative log likelihood function (based on covariance
+  /// calculates the negative log likelihood function (based on covariance 
   /// matrix)
   Real calc_nll();
-  /// Gets the gradient of the negative log likelihood function with respect
-  /// to the correlation lengthscales, theta
+  /// Gets the gradient of the negative log likelihood function with respect 
+  /// to the correlation lengthscales, theta  
   void calc_grad_nll();
   /// Calculate the derivatives of the covariance vector, with respect
   /// to each componeent of x.
   void get_grad_cov_vector();
 
 #ifdef HAVE_OPTPP
-  /// static function used by OPT++ as the objective function to
+  /// static function used by OPT++ as the objective function to 
   /// optimize the hyperparameters in the covariance of the GP
   /// by minimizing the negative log likelihood
-  static void negloglik(int mode, int n,
-                        const Teuchos::SerialDenseVector<int, double>& X,
-                        Real& fx,
-                        Teuchos::SerialDenseVector<int, double>& grad_x,
-                        int& result_mode);
+  static void negloglik(int mode, int n, const Teuchos::SerialDenseVector<int,double>& X,
+			Real& fx, Teuchos::SerialDenseVector<int,double>& grad_x,
+			int& result_mode);
 
-  /// static function used by OPT++ as the constraint function
-  /// in the optimization of the negative log likelihood. Currently
-  /// this function is empty:  it is an unconstrained optimization.
-  static void constraint_eval(int mode, int n,
-                              const Teuchos::SerialDenseVector<int, double>& X,
-                              Teuchos::SerialDenseVector<int, double>& g,
-                              Teuchos::SerialDenseMatrix<int, double>& gradC,
-                              int& result_mode);
+  /// static function used by OPT++ as the constraint function 
+  /// in the optimization of the negative log likelihood. Currently 
+  /// this function is empty:  it is an unconstrained optimization. 
+  static void constraint_eval(int mode, int n, const Teuchos::SerialDenseVector<int,double>& X,
+			      Teuchos::SerialDenseVector<int,double>& g,
+			      Teuchos::SerialDenseMatrix<int,double>& gradC, int& result_mode);
 #endif
   /// function used by NCSUOptimizer to optimize negloglik objective
-  static double negloglikNCSU(const RealVector& x);
+  static double negloglikNCSU(const RealVector &x);
+
 
   /// Runs the point selection algorithm, which will choose a subset
   /// of the training set with which to construct the GP model, and
@@ -193,7 +193,7 @@ class GaussProcApproximation : public Approximation {
   /// value of the approximation returned by prediction_variance()
   Real approxVariance;
 
-  /// A 2-D array (num sample sites = rows, num vars = columns)
+  /// A 2-D array (num sample sites = rows, num vars = columns) 
   /// used to create the Gaussian process
   RealMatrix trainPoints;
   /// An array of response values; one response value per sample site
@@ -208,16 +208,16 @@ class GaussProcApproximation : public Approximation {
   RealMatrix trendFunction;
   /// matrix to hold the beta coefficients for the trend function
   RealMatrix betaCoeffs;
-  /// The covariance matrix where each element (i,j) is the covariance
+  /// The covariance matrix where each element (i,j) is the covariance 
   /// between points Xi and Xj in the initial set of samples
   RealSymMatrix covMatrix;
   /// The covariance vector where each element (j,0) is the covariance
-  /// between a new point X and point Xj from the initial set of samples
+  /// between a new point X and point Xj from the initial set of samples 
   RealMatrix covVector;
   /// Point at which a prediction is requested.  This is currently a
   /// single point, but it could be generalized to be a vector of points.
   RealMatrix approxPoint;
-  /// matrix to hold the gradient of the negative log likelihood
+  /// matrix to hold the gradient of the negative log likelihood 
   /// with respect to the theta correlation terms
   RealMatrix gradNegLogLikTheta;
   /// The global solver for all computations involving the inverse of
@@ -239,23 +239,23 @@ class GaussProcApproximation : public Approximation {
   size_t numObs;
   /// The original number of observations
   size_t numObsAll;
-  /// The number of variables in each X variable (number of dimensions
+  /// The number of variables in each X variable (number of dimensions 
   /// of the problem).
-  // size_t numVars;
+  //size_t numVars;
   /// The order of the basis function for the mean of the GP
-  /// If the order = 0, the trend is a constant, if the order = 1, trend is
+  /// If the order = 0, the trend is a constant, if the order = 1, trend is 
   /// linear, if order = 2, trend is quadratic.
   short trendOrder;
-  /// Theta is the vector of covariance parameters for the GP.
+  /// Theta is the vector of covariance parameters for the GP. 
   /// We determine the values of theta by optimization
-  /// Currently, the covariance function is
-  /// theta[0]*exp(-0.5*sume)+delta*pow(sige,2).  sume is the
-  /// sum squared of weighted distances; it involves a sum of
+  /// Currently, the covariance function is 
+  /// theta[0]*exp(-0.5*sume)+delta*pow(sige,2).  sume is the 
+  /// sum squared of weighted distances; it involves a sum of 
   /// theta[1](Xi(1)-Xj(1))^2 + theta[2](Xi(2)-Xj(2))^2 + ...
-  /// where Xi(1) is the first dimension value of multi-dimensional
-  /// variable Xi.  delta*pow(sige,2) is a jitter term used to
-  /// improve matrix computations. delta is zero for the covariance
-  /// between different points and 1 for the covariance between the
+  /// where Xi(1) is the first dimension value of multi-dimensional 
+  /// variable Xi.  delta*pow(sige,2) is a jitter term used to 
+  /// improve matrix computations. delta is zero for the covariance 
+  /// between different points and 1 for the covariance between the 
   /// same point.  sige is the underlying process error.
   RealVector thetaParams;
   /// The process variance, the multiplier of the correlation matrix
@@ -267,23 +267,28 @@ class GaussProcApproximation : public Approximation {
   int cholFlag;
   /// a flag to indicate the use of point selection
   bool usePointSelection;
-  // bool afterOptNLL;
+  //bool afterOptNLL;
 };
+
 
 /** alternate constructor used by EffGlobalOptimization and
     NonDGlobalReliability that does not use a problem database defaults
     here are no point selectinn and quadratic trend function. */
-inline GaussProcApproximation::GaussProcApproximation()
-    : trendOrder(2), usePointSelection(false) {}
+inline GaussProcApproximation::GaussProcApproximation():
+  trendOrder(2), usePointSelection(false)
+{ }
 
-inline GaussProcApproximation::GaussProcApproximation(
-    const SharedApproxData& shared_data)
-    : Approximation(NoDBBaseConstructor(), shared_data),
-      trendOrder(2),
-      usePointSelection(false) {}
 
-inline GaussProcApproximation::~GaussProcApproximation() {}
+inline GaussProcApproximation::
+GaussProcApproximation(const SharedApproxData& shared_data):
+  Approximation(NoDBBaseConstructor(), shared_data), trendOrder(2),
+  usePointSelection(false)
+{ }
 
-}  // namespace Dakota
+
+inline GaussProcApproximation::~GaussProcApproximation()
+{ }
+
+} // namespace Dakota
 
 #endif

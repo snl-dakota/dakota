@@ -10,13 +10,13 @@
 #ifndef DAKOTA_ITERATOR_H
 #define DAKOTA_ITERATOR_H
 
-#include <memory>
-
+#include "dakota_data_types.hpp"
 #include "DakotaModel.hpp"
-#include "DakotaTraitsBase.hpp"
 #include "DataMethod.hpp"
 #include "ResultsManager.hpp"
-#include "dakota_data_types.hpp"
+#include "DakotaTraitsBase.hpp"
+#include <memory>
+
 
 namespace Dakota {
 
@@ -33,8 +33,10 @@ class EvaluationStore;
     iterative algorithms which use repeated execution of simulations
     as function evaluations. **/
 
-class Iterator {
- public:
+class Iterator
+{
+public:
+
   /// convert a method name enumeration value to a string
   static String method_enum_to_string(unsigned short method_enum);
   /// convert a method name string to an enumeration value
@@ -42,60 +44,55 @@ class Iterator {
   /// convert a sub-method name enumeration value to a string
   static String submethod_enum_to_string(unsigned short submethod_enum);
 
-  // Functions and variables for getting (cached) Iterators for a study
-  // (ProblemDescDB instance)
+  // Functions and variables for getting (cached) Iterators for a study (ProblemDescDB instance)
 
   /// @brief retrieve existing Iterator if it exists or instantiate a new one
   /// @param problem_db Instantiate from this database
   /// @param parallel_lib Parallel library to use
   /// @return Pointer to the cached or new Iterator
-  static std::shared_ptr<Iterator> get_iterator(ProblemDescDB& problem_db,
-                                                ParallelLibrary& parallel_lib);
+  static std::shared_ptr<Iterator> get_iterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
 
+    
   /// @brief retrieve existing Iterator if it exists or instantiate a new one
   /// @param problem_db Instantiate from this database
   /// @param model If Iterator is instantiated, construct using this model
   /// @return Pointer to the cached or new Iterator
-  static std::shared_ptr<Iterator> get_iterator(ProblemDescDB& problem_db,
-                                                ParallelLibrary& parallel_lib,
-                                                std::shared_ptr<Model> model);
+  static std::shared_ptr<Iterator> get_iterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model);
 
-  /// @brief retrieve existing Iterator (that matches name and model) if it
-  /// exists or instantiate a new one
+  /// @brief retrieve existing Iterator (that matches name and model) if it exists or instantiate a new one
   /// @param method_name Name (i.e. type) of the method
-  /// @param model Cached Iterator must use this model; also, if Iterator is
-  /// instantiated, construct using this model
+  /// @param model Cached Iterator must use this model; also, if Iterator is instantiated, construct using this model
   /// @return Pointer to the cached or new Iterator
-  static std::shared_ptr<Iterator> get_iterator(const String& method_name,
-                                                std::shared_ptr<Model> model);
+  static std::shared_ptr<Iterator> get_iterator( 
+    const String& method_name, std::shared_ptr<Model> model);
+
 
   /// @brief Return a reference to the instantiated Iterators for a study
-  /// @param problem_db
+  /// @param problem_db 
   /// @return Instantiated iterators
-  static std::list<std::shared_ptr<Iterator>>& iterator_cache(
-      ProblemDescDB& problem_db);
+  static std::list<std::shared_ptr<Iterator>>& iterator_cache(ProblemDescDB& problem_db);
 
   /// @brief Remove cached Iterators associated with the study
   /// @param problem_db Study "key"
   static void remove_cached_iterator(const ProblemDescDB& problem_db);
 
- private:
+private:
   /// @brief Cache of Iterators, mapped to study database
-  static std::map<const ProblemDescDB*, std::list<std::shared_ptr<Iterator>>>
-      iteratorCache;
+  static std::map<const ProblemDescDB*, std::list<std::shared_ptr<Iterator>>> iteratorCache;
   /// @brief Cache of Iterators
-  // It's not necessary to map from a ProblemDescDB* because the model, which is
-  // study-specific, is used as a key
+  // It's not necessary to map from a ProblemDescDB* because the model, which is study-specific, is
+  // used as a key
   static std::list<std::shared_ptr<Iterator>> iteratorByNameCache;
 
- public:
+public:
+
   //
   //- Heading: Constructors, destructor, assignment operator
   //
 
   /// default constructor
   Iterator(std::shared_ptr<TraitsBase> traits =
-               std::shared_ptr<TraitsBase>(new TraitsBase()));
+	   std::shared_ptr<TraitsBase>(new TraitsBase()) );
   /// copy constructor
   Iterator(const Iterator& iterator) = delete;
 
@@ -140,7 +137,7 @@ class Iterator {
   virtual void pre_output();
   /// read tabular data for post-run mode
   virtual void post_input();
-
+  
   /// restore initial state for repeated sub-iterator executions
   virtual void reset();
 
@@ -148,48 +145,51 @@ class Iterator {
   /// within derived Iterators; supports computation of higher-level
   /// sensitivities in nested contexts (e.g., derivatives of statistics
   /// w.r.t. inserted design variables)
-  virtual void nested_variable_mappings(
-      const SizetArray& c_index1, const SizetArray& di_index1,
-      const SizetArray& ds_index1, const SizetArray& dr_index1,
-      const ShortArray& c_target2, const ShortArray& di_target2,
-      const ShortArray& ds_target2, const ShortArray& dr_target2);
+  virtual void nested_variable_mappings(const SizetArray& c_index1,
+					const SizetArray& di_index1,
+					const SizetArray& ds_index1,
+					const SizetArray& dr_index1,
+					const ShortArray& c_target2,
+					const ShortArray& di_target2,
+					const ShortArray& ds_target2,
+					const ShortArray& dr_target2);
   /// set primaryResponseCoefficients, secondaryResponseCoefficients
-  /// within derived Iterators; Necessary for scalarization case in
+  /// within derived Iterators; Necessary for scalarization case in 
   /// MLMC NonDMultilevelSampling to map scalarization in nested context
   virtual void nested_response_mappings(const RealMatrix& primary_coeffs,
-                                        const RealMatrix& secondary_coeffs);
+					const RealMatrix& secondary_coeffs);
 
   /// used by IteratorScheduler to set the starting data for a run
   virtual void initialize_iterator(int job_index);
   /// used by IteratorScheduler to pack starting data for an iterator run
   virtual void pack_parameters_buffer(MPIPackBuffer& send_buffer,
-                                      int job_index);
+				      int job_index);
   /// used by IteratorScheduler to unpack starting data for an iterator run
   virtual void unpack_parameters_buffer(MPIUnpackBuffer& recv_buffer,
-                                        int job_index);
+					int job_index);
   /// used by IteratorScheduler to unpack starting data and initialize
   /// an iterator run
   virtual void unpack_parameters_initialize(MPIUnpackBuffer& recv_buffer,
-                                            int job_index);
+					    int job_index);
   /// used by IteratorScheduler to pack results data from an iterator run
   virtual void pack_results_buffer(MPIPackBuffer& send_buffer, int job_index);
   /// used by IteratorScheduler to unpack results data from an iterator run
   virtual void unpack_results_buffer(MPIUnpackBuffer& recv_buffer,
-                                     int job_index);
+				     int job_index);
   /// used by IteratorScheduler to update local results arrays
   virtual void update_local_results(int job_index);
 
   /// return a single final iterator solution (variables)
   virtual const Variables& variables_results() const;
   /// return a single final iterator solution (response)
-  virtual const Response& response_results() const;
+  virtual const Response&  response_results() const;
 
   /// return multiple final iterator solutions (variables).  This should
   /// only be used if returns_multiple_points() returns true.
   virtual const VariablesArray& variables_array_results();
   /// return multiple final iterator solutions (response).  This should
   /// only be used if returns_multiple_points() returns true.
-  virtual const ResponseArray& response_array_results();
+  virtual const ResponseArray&  response_array_results();
 
   /// set the requested data for the final iterator response results
   virtual void response_results_active_set(const ActiveSet& set);
@@ -219,13 +219,12 @@ class Iterator {
 
   /// assign variable values and bounds and constraint coefficients and bounds
   /// for this iterator (user-functions mode for which iteratedModel is null)
-  virtual void update_callback_data(
-      const RealVector& cv_initial, const RealVector& cv_lower_bnds,
-      const RealVector& cv_upper_bnds, const RealMatrix& lin_ineq_coeffs,
-      const RealVector& lin_ineq_lb, const RealVector& lin_ineq_ub,
-      const RealMatrix& lin_eq_coeffs, const RealVector& lin_eq_tgt,
-      const RealVector& nln_ineq_lb, const RealVector& nln_ineq_ub,
-      const RealVector& nln_eq_tgt);
+  virtual void update_callback_data(const RealVector& cv_initial,
+    const RealVector& cv_lower_bnds,   const RealVector& cv_upper_bnds,
+    const RealMatrix& lin_ineq_coeffs, const RealVector& lin_ineq_lb,
+    const RealVector& lin_ineq_ub,     const RealMatrix& lin_eq_coeffs,
+    const RealVector& lin_eq_tgt,      const RealVector& nln_ineq_lb,
+    const RealVector& nln_ineq_ub,     const RealVector& nln_eq_tgt);
   /// return linear constraint coefficients for this iterator (user-functions
   /// mode for which iteratedModel is null)
   virtual const RealMatrix& callback_linear_ineq_coefficients() const;
@@ -241,7 +240,7 @@ class Iterator {
 
   /// print the final iterator results
   virtual void print_results(std::ostream& s,
-                             short results_state = FINAL_RESULTS);
+			     short results_state = FINAL_RESULTS);
 
   /// return the result of any recasting or surrogate model recursion
   /// layered on top of iteratedModel by the derived Iterator ctor chain
@@ -258,16 +257,16 @@ class Iterator {
   /// return the complete set of evaluated variables
   virtual const VariablesArray& all_variables();
   /// return the complete set of evaluated samples
-  virtual const RealMatrix& all_samples();
+  virtual const RealMatrix&     all_samples();
   /// return the complete set of computed responses
   virtual const IntResponseMap& all_responses() const;
 
   /// get the current number of samples
   virtual size_t num_samples() const;
   /// reset sampling iterator to use at least min_samples
-  virtual void sampling_reset(size_t min_samples, bool all_data_flag,
-                              bool stats_flag);
-  /// set reference number of samples, which is a lower bound during reset
+  virtual void sampling_reset(size_t min_samples, bool all_data_flag, 
+			      bool stats_flag);
+  /// set reference number of samples, which is a lower bound during reset 
   virtual void sampling_reference(size_t samples_ref);
 
   /// increment to next in sequence of refinement samples
@@ -311,7 +310,7 @@ class Iterator {
   ParConfigLIter parallel_configuration_iterator() const;
   /// set methodPCIterMap
   void parallel_configuration_iterator_map(
-      std::map<size_t, ParConfigLIter> pci_map);
+    std::map<size_t, ParConfigLIter> pci_map);
   /// return methodPCIterMap
   std::map<size_t, ParConfigLIter> parallel_configuration_iterator_map() const;
 
@@ -325,7 +324,7 @@ class Iterator {
   void iterated_model(std::shared_ptr<Model> model);
   /// return the iteratedModel (iterators & meta-iterators using a single
   /// model instance)
-  std::shared_ptr<Model> iterated_model();
+  std::shared_ptr<Model>iterated_model();
 
   /// return the problem description database (probDescDB)
   ProblemDescDB& problem_description_db() const;
@@ -393,6 +392,7 @@ class Iterator {
   /// set the hierarchical eval ID tag prefix
   virtual void eval_tag_prefix(const String& eval_id_str);
 
+
   /// returns methodTraits for access to derived class member functions
   /// that are not mapped to the top TraitsBase level
   std::shared_ptr<TraitsBase> traits() const;
@@ -404,15 +404,16 @@ class Iterator {
   // Possible future implementation for enhanced granularity in
   // Iterator virtual function.  Could be very useful for Strategy
   // level control!
-  // virtual void operator++();  // increment operator
-  // virtual void operator--();  // decrement operator
+  //virtual void operator++();  // increment operator
+  //virtual void operator--();  // decrement operator
 
   /// Return whether the iterator is the top level iterator
   bool top_level();
   /// Set the iterator's top level flag
   void top_level(bool tflag);
 
- protected:
+protected:
+
   //
   //- Heading: Constructors
   //
@@ -420,25 +421,24 @@ class Iterator {
   /// constructor initializes the base class part of letter classes
   /// (BaseConstructor overloading avoids infinite recursion in the
   /// derived class constructors - Coplien, p. 139)
-  Iterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
-           std::shared_ptr<TraitsBase> traits =
-               std::shared_ptr<TraitsBase>(new TraitsBase()));
+  Iterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, 
+	   std::shared_ptr<TraitsBase> traits =
+	   std::shared_ptr<TraitsBase>(new TraitsBase()));
 
   /// alternate constructor for base iterator classes constructed on the fly
   Iterator(unsigned short method_name, std::shared_ptr<Model> model,
-           std::shared_ptr<TraitsBase> traits =
-               std::shared_ptr<TraitsBase>(new TraitsBase()));
+	   std::shared_ptr<TraitsBase> traits =
+	   std::shared_ptr<TraitsBase>(new TraitsBase()));
 
   /// alternate constructor for base iterator classes constructed on the fly
   Iterator(unsigned short method_name,
-           std::shared_ptr<TraitsBase> traits =
-               std::shared_ptr<TraitsBase>(new TraitsBase()));
+	   std::shared_ptr<TraitsBase> traits =
+	   std::shared_ptr<TraitsBase>(new TraitsBase()));
 
   /// alternate envelope constructor for instantiations without ProblemDescDB
   Iterator(std::shared_ptr<Model> model, size_t max_iter, size_t max_eval,
-           Real conv_tol,
-           std::shared_ptr<TraitsBase> traits =
-               std::shared_ptr<TraitsBase>(new TraitsBase()));
+	   Real conv_tol, std::shared_ptr<TraitsBase> traits =
+	   std::shared_ptr<TraitsBase>(new TraitsBase()));
 
   //
   //- Heading: Virtual functions
@@ -463,8 +463,8 @@ class Iterator {
   /// conversion of request vector values for the Gauss-Newton Hessian
   /// approximation
   static void gnewton_set_recast(const Variables& recast_vars,
-                                 const ActiveSet& recast_set,
-                                 ActiveSet& sub_model_set);
+				 const ActiveSet& recast_set,
+				 ActiveSet& sub_model_set);
 
   /// helper function that encapsulates initialization operations,
   /// modular on incoming Model instance
@@ -493,17 +493,17 @@ class Iterator {
   /// the active ParallelConfiguration used by this Iterator instance
   ParConfigLIter methodPCIter;
   // index for the active ParallelLevel within ParallelConfiguration::miPLIters
-  // size_t miPLIndex;
+  //size_t miPLIndex;
 
   /// number of Models locally (in Iterator or derived classes)
   /// wrapped around the initially passed in Model
   size_t myModelLayers;
 
-  unsigned short methodName;  ///< name of the iterator (the user's method spec)
+  unsigned short methodName; ///< name of the iterator (the user's method spec)
 
-  Real convergenceTol;      ///< iteration convergence tolerance
-  size_t maxIterations;     ///< maximum number of iterations for the method
-  size_t maxFunctionEvals;  ///< maximum number of fn evaluations for the method
+  Real convergenceTol;  ///< iteration convergence tolerance
+  size_t maxIterations;    ///< maximum number of iterations for the method
+  size_t maxFunctionEvals; ///< maximum number of fn evaluations for the method
 
   /// maximum number of concurrent model evaluations
   /** This is important for parallel configuration init/set/free and may be
@@ -563,7 +563,8 @@ class Iterator {
   /// (bitwise) format(s) to export
   unsigned short surrExportFormat = NO_MODEL_FORMAT;
 
- private:
+private:
+
   //
   //- Heading: Member functions
   //
@@ -577,6 +578,7 @@ class Iterator {
   //
   //- Heading: Data
   //
+  
 
   /// method identifier string from the input file, or an
   /// auto-generated ID, such that each instance of an Iterator has a
@@ -598,119 +600,169 @@ class Iterator {
   /// (init_communicators) and are available for activation at run
   /// time (set_communicators)
   std::map<size_t, ParConfigLIter> methodPCIterMap;
+
 };
 
-inline std::shared_ptr<TraitsBase> Iterator::traits() const {
-  return methodTraits;
+
+inline std::shared_ptr<TraitsBase> Iterator::traits() const
+{
+    return methodTraits;
 }
 
-inline void Iterator::parallel_configuration_iterator(ParConfigLIter pc_iter) {
+
+inline void Iterator::parallel_configuration_iterator(ParConfigLIter pc_iter)
+{
   methodPCIter = pc_iter;
 }
 
-inline ParConfigLIter Iterator::parallel_configuration_iterator() const {
-  return methodPCIter;
-}
 
-inline void Iterator::parallel_configuration_iterator_map(
-    std::map<size_t, ParConfigLIter> pci_map) {
+inline ParConfigLIter Iterator::parallel_configuration_iterator() const
+{ return methodPCIter; }
+
+
+inline void Iterator::
+parallel_configuration_iterator_map(std::map<size_t, ParConfigLIter> pci_map)
+{
   methodPCIterMap = pci_map;
 }
 
-inline std::map<size_t, ParConfigLIter>
-Iterator::parallel_configuration_iterator_map() const {
-  return methodPCIterMap;
+
+inline std::map<size_t, ParConfigLIter> Iterator::
+parallel_configuration_iterator_map() const
+{ return methodPCIterMap; }
+
+
+inline void Iterator::iterated_model(std::shared_ptr<Model> model)
+{
+  iteratedModel = model; 
 }
 
-inline void Iterator::iterated_model(std::shared_ptr<Model> model) {
-  iteratedModel = model;
-}
 
-inline std::shared_ptr<Model> Iterator::iterated_model() {
-  return iteratedModel;
-}
+inline std::shared_ptr<Model> Iterator::iterated_model()
+{ return iteratedModel; }
 
-inline ProblemDescDB& Iterator::problem_description_db() const {
-  return probDescDB;
-}
 
-inline ParallelLibrary& Iterator::parallel_library() const {
-  return parallelLib;
-}
+inline ProblemDescDB& Iterator::problem_description_db() const
+{ return probDescDB; }
 
-inline void Iterator::method_name(unsigned short m_name) {
+
+inline ParallelLibrary& Iterator::parallel_library() const
+{ return parallelLib; }
+
+
+inline void Iterator::method_name(unsigned short m_name)
+{
   methodName = m_name;
 }
 
-inline unsigned short Iterator::method_name() const { return methodName; }
 
-inline void Iterator::method_string(const String& m_str) {
+inline unsigned short Iterator::method_name() const
+{ return methodName; }
+
+
+inline void Iterator::method_string(const String& m_str)
+{
   methodName = method_string_to_enum(m_str);
 }
 
-inline String Iterator::method_string() const {
+
+inline String Iterator::method_string() const
+{
   return method_enum_to_string(methodName);
 }
 
-inline const String& Iterator::method_id() const { return methodId; }
 
-inline int Iterator::maximum_evaluation_concurrency() const {
-  return maxEvalConcurrency;
-}
+inline const String& Iterator::method_id() const
+{ return methodId; }
 
-inline void Iterator::maximum_evaluation_concurrency(int max_conc) {
+
+inline int Iterator::maximum_evaluation_concurrency() const
+{ return maxEvalConcurrency; }
+
+
+inline void Iterator::maximum_evaluation_concurrency(int max_conc)
+{
   maxEvalConcurrency = max_conc;
 }
 
-inline size_t Iterator::maximum_iterations() const { return maxIterations; }
 
-inline void Iterator::maximum_iterations(size_t max_iter) {
+inline size_t Iterator::maximum_iterations() const
+{ return maxIterations; }
+
+
+inline void Iterator::maximum_iterations(size_t max_iter)
+{
   maxIterations = max_iter;
 }
 
-inline void Iterator::convergence_tolerance(Real conv_tol) {
-  convergenceTol = conv_tol;
+
+inline void Iterator::convergence_tolerance(Real conv_tol)
+{
+  convergenceTol = conv_tol; 
 }
 
-inline Real Iterator::convergence_tolerance() const { return convergenceTol; }
 
-inline void Iterator::output_level(short out_lev) { outputLevel = out_lev; }
+inline Real Iterator::convergence_tolerance() const
+{ return convergenceTol; }
 
-inline short Iterator::output_level() const { return outputLevel; }
 
-inline void Iterator::summary_output(bool summary_output_flag) {
-  summaryOutputFlag = summary_output_flag;
+inline void Iterator::output_level(short out_lev)
+{
+  outputLevel = out_lev; 
 }
 
-inline size_t Iterator::num_final_solutions() const {
-  return numFinalSolutions;
+
+inline short Iterator::output_level() const
+{ return outputLevel; }
+
+
+inline void Iterator::summary_output(bool summary_output_flag)
+{ 
+  summaryOutputFlag = summary_output_flag; 
 }
 
-inline void Iterator::num_final_solutions(size_t num_final) {
+
+inline size_t Iterator::num_final_solutions() const
+{ return numFinalSolutions; }
+
+
+inline void Iterator::num_final_solutions(size_t num_final)
+{ 
   numFinalSolutions = num_final;
 }
 
-inline void Iterator::active_set(const ActiveSet& set) { activeSet = set; }
 
-inline const ActiveSet& Iterator::active_set() const { return activeSet; }
+inline void Iterator::active_set(const ActiveSet& set)
+{
+  activeSet = set;
+}
 
-inline void Iterator::active_set_request_vector(const ShortArray& asv) {
+
+inline const ActiveSet& Iterator::active_set() const
+{ return activeSet; }
+
+
+inline void Iterator::active_set_request_vector(const ShortArray& asv)
+{
   activeSet.request_vector(asv);
 }
 
-inline const ShortArray& Iterator::active_set_request_vector() const {
+
+inline const ShortArray& Iterator::active_set_request_vector() const
+{
   return activeSet.request_vector();
 }
 
-inline void Iterator::active_set_request_values(short asv_val) {
+
+inline void Iterator::active_set_request_values(short asv_val)
+{
   activeSet.request_values(asv_val);
 }
 
 /// global comparison function for Iterator
-inline bool method_id_compare(const Iterator& iterator, const void* id) {
-  return (*(const String*)id == iterator.method_id());
-}
+inline bool method_id_compare(const Iterator& iterator, const void* id)
+{ return ( *(const String*)id == iterator.method_id() ); }
 
-}  // namespace Dakota
+} // namespace Dakota
 
 #endif

@@ -10,11 +10,13 @@
 #ifndef COLIN_OPTIMIZER_H
 #define COLIN_OPTIMIZER_H
 
-#include <colin/ApplicationMngr.h>
-#include <colin/SolverMngr.h>
-
-#include "COLINApplication.hpp"
 #include "DakotaOptimizer.hpp"
+
+#include <colin/SolverMngr.h>
+#include <colin/ApplicationMngr.h>
+
+// forward declarations
+class COLINApplication;
 
 namespace Dakota {
 
@@ -22,19 +24,20 @@ namespace Dakota {
  * \brief A version of TraitsBase specialized for COLIN optimizers
  *
  */
-class COLINTraits : public TraitsBase {
- public:
+class COLINTraits: public TraitsBase
+{
+  public:
+
   /// default constructor
-  COLINTraits() {}
+  COLINTraits() { }
 
   /// destructor
-  ~COLINTraits() override {}
+  ~COLINTraits() override { }
 
   /// A temporary query used in the refactor
   bool is_derived() override { return true; }
 
-  // Traits are chosen to be the most common ones across a majority of methods
-  // within this TPL.
+  // Traits are chosen to be the most common ones across a majority of methods within this TPL.
 
   /// Return the flag indicating whether method supports continuous variables
   bool supports_continuous_variables() override { return true; }
@@ -46,12 +49,13 @@ class COLINTraits : public TraitsBase {
   bool supports_nonlinear_inequality() override { return true; }
 
   /// Return the format used for nonlinear inequality constraints
-  NONLINEAR_INEQUALITY_FORMAT nonlinear_inequality_format() override {
-    return NONLINEAR_INEQUALITY_FORMAT::TWO_SIDED;
-  }
+  NONLINEAR_INEQUALITY_FORMAT nonlinear_inequality_format() override
+    { return NONLINEAR_INEQUALITY_FORMAT::TWO_SIDED; }
+
 };
 
-/// Wrapper class for optimizers defined using COLIN
+
+/// Wrapper class for optimizers defined using COLIN 
 
 /** The COLINOptimizer class wraps COLIN, a Sandia-developed C++
     optimization interface library.  A variety of COLIN optimizers are
@@ -72,27 +76,28 @@ class COLINTraits : public TraitsBase {
     \c debug attribute to 10000 for the DEBUG output level. Refer to
     [Hart, W.E., 2006] for additional information on COLIN objects and
     controls. */
-class COLINOptimizer : public Optimizer {
- public:
+class COLINOptimizer : public Optimizer
+{
+public:
+
   //
   //- Heading: Constructors and destructor
   //
 
   /// standard constructor
-  COLINOptimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
-                 std::shared_ptr<Model> model);
+  COLINOptimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
   /// alternate constructor for on-the-fly instantiations
-  COLINOptimizer(const String& method_name, std::shared_ptr<Model> model,
-                 int seed, size_t max_iter, size_t max_eval);
+  COLINOptimizer(const String& method_name, std::shared_ptr<Model> model, int seed,
+		 size_t max_iter, size_t max_eval);
   /// alternate constructor for Iterator instantiations by name
   COLINOptimizer(const String& method_name, std::shared_ptr<Model> model);
   /// destructor
   ~COLINOptimizer() override {
     if (rng) delete rng;
-    // colin::CacheFactory().unregister_cache("useThisCache");
-    // String unique_cache_name(method_id());
-    // unique_cache_name += methodName;
-    // colin::CacheFactory().unregister_cache(unique_cache_name);
+    //colin::CacheFactory().unregister_cache("useThisCache");
+    //String unique_cache_name(method_id());
+    //unique_cache_name += methodName;
+    //colin::CacheFactory().unregister_cache(unique_cache_name);
   }
 
   //
@@ -106,16 +111,17 @@ class COLINOptimizer : public Optimizer {
   void core_run() override;
 
   // COLIN methods cannot yet accept multiple initial points
-  // bool accepts_multiple_points() const;
+  //bool accepts_multiple_points() const;
 
   /// some COLIN methods can return multiple points
   bool returns_multiple_points() const override;
 
- protected:
+protected:
+
   //
   //- Heading: constructor convenience member functions
   //
-
+  
   /// convenience function for setting up the particular COLIN solver
   /// and appropriate Application
   void solver_setup(unsigned short method_name);
@@ -139,9 +145,10 @@ class COLINOptimizer : public Optimizer {
 
   /// Retrieve response from Colin AppResponse, return pair indicating
   /// success for <objective, constraints>
-  std::pair<bool, bool> colin_cache_lookup(
-      const colin::AppResponse& colinResponse, Response& tmpResponseHolder);
-
+  std::pair<bool, bool> 
+  colin_cache_lookup(const colin::AppResponse& colinResponse,
+		     Response& tmpResponseHolder);
+  
   /// Compute constraint violation, based on nonlinear constraints in
   /// iteratedModel and provided Response data
   double constraint_violation(const Response& tmpResponseHolder);
@@ -164,7 +171,7 @@ class COLINOptimizer : public Optimizer {
 
   /// random number generator pointer
   utilib::RNG* rng;
-
+  
   /// the \c synchronization setting: true if \c blocking, false if
   /// \c nonblocking
   bool blockingSynch;
@@ -176,8 +183,10 @@ class COLINOptimizer : public Optimizer {
   bool constant_penalty;
 };
 
-inline void COLINOptimizer::reset() { colinSolver->reset(); }
 
-}  // namespace Dakota
+inline void COLINOptimizer::reset()
+{ colinSolver->reset(); }
+
+} // namespace Dakota
 
 #endif

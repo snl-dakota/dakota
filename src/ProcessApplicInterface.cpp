@@ -7,23 +7,21 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
+#include "DakotaResponse.hpp"
+#include "ParamResponsePair.hpp"
 #include "ProcessApplicInterface.hpp"
-
+#include "ProblemDescDB.hpp"
+#include "ParallelLibrary.hpp"
+#include "WorkdirHelper.hpp"
+#include "ParametersFileWriter.hpp"
+#include "ResultsFileReader.hpp"
 #include <algorithm>
 #include <nlohmann/json.hpp>
 
-#include "DakotaResponse.hpp"
-#include "ParallelLibrary.hpp"
-#include "ParamResponsePair.hpp"
-#include "ParametersFileWriter.hpp"
-#include "ProblemDescDB.hpp"
-#include "ResultsFileReader.hpp"
-#include "WorkdirHelper.hpp"
-
 using json = nlohmann::json;
-/*
+/* 
     Work directory TODO
-
+    
     * Doc: we will search for drivers in PATH, workdir (.), RUNDIR
 
     * Remove legacy utilities (once concepts migrated)
@@ -41,7 +39,7 @@ using json = nlohmann::json;
     - Verify template files exist at parse and that workdir parent exists
 
     - Verify behavior when directory exists
-
+  
     - Allow recursive copy to descend to overwrite leaf nodes when
       directories already exist
 
@@ -57,8 +55,7 @@ using json = nlohmann::json;
       dir?!?  I think arg_adjust is removing the directory args that
       aren't needed.
 
-    - Consider making the class members for directories and files
-   std::filesystem::paths
+    - Consider making the class members for directories and files std::filesystem::paths
 
     - Behavior of file_save when directory not saved
 
@@ -83,12 +80,13 @@ using json = nlohmann::json;
     - TODO: pass environment to exec as separate pointer
 
    TESTING NEEDS
-    - Allow nested quotes in driver, at least one level:
+    - Allow nested quotes in driver, at least one level: 
       analysis_driver = 'ad.sh "-opt foo -opt1 goo"' p.in.1 r.out.1
 
     - Env vars will be carried along for now, not expanded before
       eval; set some helpful env vars before the eval.
 */
+
 
 namespace Dakota {
 
@@ -98,55 +96,54 @@ boost::regex PARAMS_TOKEN("\\{PARAMETERS\\}");
 boost::regex RESULTS_TOKEN("\\{RESULTS\\}");
 
 /// Substitute parameters and results file names into driver strings
-String substitute_params_and_results(const String& driver, const String& params,
-                                     const String& results) {
-  String params_subbed = boost::regex_replace(driver, PARAMS_TOKEN, params);
-  String results_subbed =
-      boost::regex_replace(params_subbed, RESULTS_TOKEN, results);
-  return results_subbed;
+String substitute_params_and_results(const String &driver, const String &params, const String &results) {
+  String params_subbed  = boost::regex_replace(driver, PARAMS_TOKEN,  params);
+  String results_subbed = boost::regex_replace(params_subbed, RESULTS_TOKEN,  results);
+  return results_subbed;  
 }
 
-ProcessApplicInterface::ProcessApplicInterface(const ProblemDescDB& problem_db,
-                                               ParallelLibrary& parallel_lib)
-    : ApplicationInterface(problem_db, parallel_lib),
-      fileTagFlag(problem_db.get_bool("interface.application.file_tag")),
-      fileSaveFlag(problem_db.get_bool("interface.application.file_save")),
-      commandLineArgs(!problem_db.get_bool("interface.application.verbatim")),
-      paramsFileWriter(ParametersFileWriter::get_writer(problem_db.get_ushort(
-          "interface.application.parameters_file_format"))),
-      resultsFileReader(ResultsFileReader::get_reader(
-          problem_db.get_ushort("interface.application.results_file_format"),
-          problem_db.get_bool("interface.labeled_results"))),
-      multipleParamsFiles(false),
-      iFilterName(problem_db.get_string("interface.application.input_filter")),
-      oFilterName(problem_db.get_string("interface.application.output_filter")),
-      programNames(problem_db.get_sa("interface.application.analysis_drivers")),
-      specifiedParamsFileName(
-          problem_db.get_string("interface.application.parameters_file")),
-      specifiedResultsFileName(
-          problem_db.get_string("interface.application.results_file")),
-      allowExistingResults(
-          problem_db.get_bool("interface.allow_existing_results")),
-      useWorkdir(problem_db.get_bool("interface.useWorkdir")),
-      workDirName(problem_db.get_string("interface.workDir")),
-      dirTag(problem_db.get_bool("interface.dirTag")),
-      dirSave(problem_db.get_bool("interface.dirSave")),
-      linkFiles(problem_db.get_sa("interface.linkFiles")),
-      copyFiles(problem_db.get_sa("interface.copyFiles")),
-      templateReplace(problem_db.get_bool("interface.templateReplace")) {
+
+ProcessApplicInterface::
+ProcessApplicInterface(const ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
+  ApplicationInterface(problem_db, parallel_lib), 
+  fileTagFlag(problem_db.get_bool("interface.application.file_tag")),
+  fileSaveFlag(problem_db.get_bool("interface.application.file_save")),
+  commandLineArgs(!problem_db.get_bool("interface.application.verbatim")),
+  paramsFileWriter(ParametersFileWriter::get_writer(problem_db.get_ushort("interface.application.parameters_file_format"))),
+  resultsFileReader(ResultsFileReader::get_reader(
+    problem_db.get_ushort("interface.application.results_file_format"),
+    problem_db.get_bool("interface.labeled_results")
+  )),
+  multipleParamsFiles(false),
+  iFilterName(problem_db.get_string("interface.application.input_filter")),
+  oFilterName(problem_db.get_string("interface.application.output_filter")),
+  programNames(problem_db.get_sa("interface.application.analysis_drivers")),
+  specifiedParamsFileName(
+    problem_db.get_string("interface.application.parameters_file")),
+  specifiedResultsFileName(
+    problem_db.get_string("interface.application.results_file")),
+  allowExistingResults(problem_db.get_bool("interface.allow_existing_results")),
+  useWorkdir(problem_db.get_bool("interface.useWorkdir")),
+  workDirName(problem_db.get_string("interface.workDir")),
+  dirTag(problem_db.get_bool("interface.dirTag")),
+  dirSave(problem_db.get_bool("interface.dirSave")),
+  linkFiles(problem_db.get_sa("interface.linkFiles")),
+  copyFiles(problem_db.get_sa("interface.copyFiles")),
+  templateReplace(problem_db.get_bool("interface.templateReplace"))
+{
   // When using work directory, relative analysis drivers starting
   // with . or .. may need to be converted to absolute so they work
   // from the work directory.  While inefficient, we convert them in
   // place as strings (could leave tokenized for Fork/Spawn, but
   // assemble the string for SysCall Interfaces
   if (useWorkdir) {
-    StringArray::iterator pn_it = programNames.begin();
+    StringArray::iterator pn_it  = programNames.begin();
     StringArray::iterator pn_end = programNames.end();
-    for (; pn_it != pn_end; ++pn_it)
-      if (WorkdirHelper::resolve_driver_path(*pn_it) &&
-          outputLevel >= DEBUG_OUTPUT)
-        Cout << "Adjusted relative analysis_driver to absolute path:\n  "
-             << *pn_it << std::endl;
+    for ( ; pn_it != pn_end; ++pn_it)
+      if (WorkdirHelper::resolve_driver_path(*pn_it) && 
+	  outputLevel >= DEBUG_OUTPUT)
+	Cout << "Adjusted relative analysis_driver to absolute path:\n  " 
+	     << *pn_it << std::endl;
   }
 
   size_t num_programs = programNames.size();
@@ -171,67 +168,74 @@ ProcessApplicInterface::ProcessApplicInterface(const ProblemDescDB& problem_db,
   // configuration in set_communicators.
 
   bool require_unique =
-      (interface_synchronization() == ASYNCHRONOUS_INTERFACE &&
-       asynchLocalEvalConcSpec > serializeThreshold && !batchEval);
+    (interface_synchronization() == ASYNCHRONOUS_INTERFACE &&
+     asynchLocalEvalConcSpec > serializeThreshold && !batchEval);
 
   if (require_unique) {
     if (useWorkdir) {
       if (!dirTag && !workDirName.empty()) {
-        Cout << "\nWarning: Concurrent local evaluations with named "
-             << "work_directory require\n         directory_tag; "
-             << "enabling directory_tag." << std::endl;
-        dirTag = true;
+	Cout << "\nWarning: Concurrent local evaluations with named " 
+	     << "work_directory require\n         directory_tag; "
+	     << "enabling directory_tag." << std::endl;
+	dirTag = true;
       }
       // even with a work_directory, there might be absolute
       // params/results paths...
       std::filesystem::path spf_path(specifiedParamsFileName);
       std::filesystem::path srf_path(specifiedResultsFileName);
       // an empty path is not absolute, so no need to check empty
-      bool exist_abs_filenames =
-          spf_path.is_absolute() || srf_path.is_absolute();
+      bool exist_abs_filenames = 
+	spf_path.is_absolute() || srf_path.is_absolute(); 
       if (!fileTagFlag && exist_abs_filenames) {
-        Cout << "\nWarning: Concurrent local evaluations with absolute named "
-             << "parameters_file or\n         results_file require file_tag; "
-             << "enabling file_tag." << std::endl;
-        fileTagFlag = true;
+	Cout << "\nWarning: Concurrent local evaluations with absolute named " 
+	     << "parameters_file or\n         results_file require file_tag; "
+	     << "enabling file_tag." << std::endl;
+	fileTagFlag = true;
       }
-    } else if (!fileTagFlag && (!specifiedParamsFileName.empty() ||
-                                !specifiedResultsFileName.empty())) {
-      Cout << "\nWarning: Concurrent local evaluations with named "
-           << "parameters_file or\n         results_file require file_tag; "
-           << "enabling file_tag." << std::endl;
+    }
+    else if (!fileTagFlag && 
+	     (!specifiedParamsFileName.empty() || 
+	      !specifiedResultsFileName.empty()) ) {
+      Cout << "\nWarning: Concurrent local evaluations with named " 
+	   << "parameters_file or\n         results_file require file_tag; "
+	   << "enabling file_tag." << std::endl;
       fileTagFlag = true;
     }
   }
+
 }
 
-ProcessApplicInterface::~ProcessApplicInterface() { /* empty dtor */ }
+
+ProcessApplicInterface::~ProcessApplicInterface() 
+{  /* empty dtor */  }
+
 
 // -------------------------------------------------------
 // Begin derived functions for evaluation level schedulers
 // -------------------------------------------------------
-void ProcessApplicInterface::derived_map(const Variables& vars,
-                                         const ActiveSet& set,
-                                         Response& response, int fn_eval_id) {
+void ProcessApplicInterface::
+derived_map(const Variables& vars, const ActiveSet& set, Response& response,
+	    int fn_eval_id)
+{
   // This function may be executed by a multiprocessor evalComm.
 
-  define_filenames(final_eval_id_tag(fn_eval_id));  // all evalComm
+  define_filenames(final_eval_id_tag(fn_eval_id)); // all evalComm
   if (evalCommRank == 0)
     write_parameters_files(vars, set, response, fn_eval_id);
 
   // execute the simulator application -- blocking call
   create_evaluation_process(BLOCK);
 
-  try {
+  try { 
     if (evalCommRank == 0)
       read_results_files(response, fn_eval_id, final_eval_id_tag(fn_eval_id));
   }
 
   // catch exception for ResultsFileError or TabularDataTruncated;
   // TODO: need to verify that tabular failure can happen
-  catch (const FileReadException& fr_except) {
+  catch(const FileReadException& fr_except) {
     // a FileReadException means detection of an incomplete file/data
-    // set.  In the synchronous case, there is no potential for an incomplete
+    // set.  In the synchronous case, there is no potential for an incomplete 
     // file resulting from a race condition -> echo the error and abort.
     Cerr << fr_except.what() << std::endl;
     abort_handler(INTERFACE_ERROR);
@@ -249,21 +253,23 @@ void ProcessApplicInterface::derived_map(const Variables& vars,
   // having catch(FileReadException) here and having
   // catch(FunctionEvalFailure) rethrow, we eliminate unnecessary
   // proliferation of catch(FileReadException).
-  catch (const FunctionEvalFailure& fneval_except) {
+  catch(const FunctionEvalFailure& fneval_except) { 
     // failure capture exception thrown by response.read()
-    // Cout << "Rethrowing FunctionEvalFailure; message: "
+    //Cout << "Rethrowing FunctionEvalFailure; message: " 
     //     << fneval_except.what() << std::endl;
-    throw;  // from this catch to the outer one in manage_failure
+    throw; // from this catch to the outer one in manage_failure
   }
 }
 
-void ProcessApplicInterface::derived_map_asynch(const ParamResponsePair& pair) {
+
+void ProcessApplicInterface::derived_map_asynch(const ParamResponsePair& pair)
+{
   // This function may not be executed by a multiprocessor evalComm.
-  if (!batchEval) {
+  if(!batchEval) {
     int fn_eval_id = pair.eval_id();
-    define_filenames(final_eval_id_tag(fn_eval_id));  // all evalComm
-    write_parameters_files(pair.variables(), pair.active_set(), pair.response(),
-                           fn_eval_id);
+    define_filenames(final_eval_id_tag(fn_eval_id)); // all evalComm
+    write_parameters_files(pair.variables(), pair.active_set(),
+			 pair.response(),  fn_eval_id);
     // execute the simulator application -- nonblocking call
     pid_t pid = create_evaluation_process(FALL_THROUGH);
     // bind process id with eval id for use in synchronization
@@ -271,34 +277,37 @@ void ProcessApplicInterface::derived_map_asynch(const ParamResponsePair& pair) {
   }
 }
 
-void ProcessApplicInterface::wait_local_evaluations(PRPQueue& prp_queue) {
-  if (batchEval)
-    wait_local_evaluation_batch(prp_queue);
-  else
-    wait_local_evaluation_sequence(prp_queue);
+
+void ProcessApplicInterface::wait_local_evaluations(PRPQueue& prp_queue)
+{
+  if (batchEval) wait_local_evaluation_batch(prp_queue);
+  else           wait_local_evaluation_sequence(prp_queue);
 }
 
-void ProcessApplicInterface::test_local_evaluations(PRPQueue& prp_queue) {
-  if (batchEval)
-    test_local_evaluation_batch(prp_queue);
-  else
-    test_local_evaluation_sequence(prp_queue);
+
+void ProcessApplicInterface::test_local_evaluations(PRPQueue& prp_queue)
+{
+  if (batchEval) test_local_evaluation_batch(prp_queue);
+  else           test_local_evaluation_sequence(prp_queue);
 }
 
-void ProcessApplicInterface::wait_local_evaluation_batch(PRPQueue& prp_queue) {
+
+void ProcessApplicInterface::wait_local_evaluation_batch(PRPQueue& prp_queue)
+{
+
   batchIdCntr++;
   // define_filenames sets paramsFileWritten and resultsFileWritten, taking
   // into consideration all the myriad settings the user could have provided,
   // hierarchical tagging, etc.
   String batch_id_tag = final_batch_id_tag();
   define_filenames(batch_id_tag);
-  if (!allowExistingResults) std::remove(resultsFileWritten.c_str());
+  if(!allowExistingResults)
+    std::remove(resultsFileWritten.c_str());
   std::vector<String> an_comps;
-  if (!analysisComponents.empty()) copy_data(analysisComponents, an_comps);
+  if(!analysisComponents.empty())
+    copy_data(analysisComponents, an_comps);
   std::remove(paramsFileWritten.c_str());
-  paramsFileWriter->write_parameters_file(prp_queue, programNames[0], an_comps,
-                                          evalTagPrefix, batchIdCntr,
-                                          paramsFileWritten);
+  paramsFileWriter->write_parameters_file(prp_queue, programNames[0], an_comps, evalTagPrefix, batchIdCntr, paramsFileWritten);
 
   // In this case, individual jobs have not been launched and we launch the
   // user's analysis driver once for the complete batch:
@@ -309,30 +318,29 @@ void ProcessApplicInterface::wait_local_evaluation_batch(PRPQueue& prp_queue) {
   // The strategy here is to consume the results file one evaluation at a time,
   // placing the content for one evaluation into a stringstream, which will be
   // passed to Response.read(). The # character at the beginning of a line is
-  // presumed to separate evaluations (content that follows on that line will
-  // be dropped), and the evaluations are presumed to be in the same order as
+  // presumed to separate evaluations (content that follows on that line will 
+  // be dropped), and the evaluations are presumed to be in the same order as 
   // prp_queue. Probably not a very robust way of doing things, but for purposes
   // of prototyping, it'll do.
   try {
-    resultsFileReader->read_results_file(prp_queue, resultsFileWritten,
-                                         batchIdCntr, completionSet);
-  } catch (const FunctionBatchEvalFailure& e) {
-    manage_failure(e.prp.variables(), e.response.active_set(), e.response,
-                   e.prp.eval_id());
+    resultsFileReader->read_results_file(prp_queue, resultsFileWritten, batchIdCntr, completionSet);
+  } catch(const FunctionBatchEvalFailure& e) {
+    manage_failure(e.prp.variables(), e.response.active_set(), e.response, e.prp.eval_id());
   }
+ 
+  file_and_workdir_cleanup(paramsFileWritten, resultsFileWritten, createdDir, batch_id_tag);
 
-  file_and_workdir_cleanup(paramsFileWritten, resultsFileWritten, createdDir,
-                           batch_id_tag);
 }
 
-void ProcessApplicInterface::test_local_evaluation_batch(PRPQueue& prp_queue) {
-  wait_local_evaluation_batch(prp_queue);
-}
+void ProcessApplicInterface::test_local_evaluation_batch(PRPQueue& prp_queue)
+{ wait_local_evaluation_batch(prp_queue); }
+
 
 // ------------------------
 // Begin file I/O utilities
 // ------------------------
-void ProcessApplicInterface::define_filenames(const String& eval_id_tag) {
+void ProcessApplicInterface::define_filenames(const String& eval_id_tag)
+{
   // Define modified file names by handling Unix temp file and tagging options.
   // These names are used in writing the parameters file, in defining the
   // Command Shell behavior in SysCallProcessApplicInterface.cpp, in
@@ -350,21 +358,20 @@ void ProcessApplicInterface::define_filenames(const String& eval_id_tag) {
   // specified.
 
   const ParallelConfiguration& pc = parallelLib.parallel_configuration();
-  int eval_comm_rank = parallelLib.ie_parallel_level_defined()
-                           ? pc.ie_parallel_level().server_communicator_rank()
-                           : 0;
+  int eval_comm_rank   = parallelLib.ie_parallel_level_defined()
+	? pc.ie_parallel_level().server_communicator_rank() : 0;
   int analysis_servers = parallelLib.ea_parallel_level_defined()
-                             ? pc.ea_parallel_level().num_servers()
-                             : 1;
+	? pc.ea_parallel_level().num_servers() : 1;
 
   // technically don't need to broadcast in some useWorkdir subcases
   // like absolute params/results filenames
-  bool dynamic_filenames = specifiedParamsFileName.empty() ||
-                           specifiedResultsFileName.empty() || useWorkdir;
+  bool dynamic_filenames = specifiedParamsFileName.empty() || 
+    specifiedResultsFileName.empty() || useWorkdir;
 
-  bool bcast_flag = (analysis_servers > 1 && dynamic_filenames);
+  bool bcast_flag = ( analysis_servers > 1 &&  dynamic_filenames );
 
   if (eval_comm_rank == 0 || !bcast_flag) {
+
     // eval_tag_prefix will be empty if no hierarchical tagging
     fullEvalId = eval_id_tag;
 
@@ -389,7 +396,7 @@ void ProcessApplicInterface::define_filenames(const String& eval_id_tag) {
       createdDir.clear();
 
     // define paramsFleName for use in write_parameters_files
-
+    
     std::filesystem::path params_path(specifiedParamsFileName);
 
     // no user spec -> use temp files, possibly in workdir; generate relative
@@ -411,19 +418,22 @@ void ProcessApplicInterface::define_filenames(const String& eval_id_tag) {
     paramsFileName = paramsFileWritten = params_path.string();
     if (params_path.is_relative()) {
       if (useWorkdir) {
-        paramsFileWritten = (curWorkdir / params_path).string();
-        if (outputLevel >= DEBUG_OUTPUT)
-          Cout << "\nAdjusting parameters_file to " << paramsFileName
-               << " due to work_directory usage." << std::endl;
-      } else if (specifiedParamsFileName.empty()) {
-        // historically temp files go in /tmp or C:\temp, not rundir
-        paramsFileName =
-            (WorkdirHelper::system_tmp_path() / params_path).string();
-        paramsFileWritten = paramsFileName;
-      } else
-        paramsFileName = params_path.string();
-    } else
+	paramsFileWritten = (curWorkdir / params_path).string();
+	if (outputLevel >= DEBUG_OUTPUT)
+	  Cout << "\nAdjusting parameters_file to " << paramsFileName 
+	       << " due to work_directory usage." << std::endl;
+      }
+      else if (specifiedParamsFileName.empty()) {
+	// historically temp files go in /tmp or C:\temp, not rundir
+	paramsFileName = (WorkdirHelper::system_tmp_path()/params_path).string();
+	paramsFileWritten = paramsFileName;
+      }
+      else
+	paramsFileName = params_path.string();
+    }
+    else
       paramsFileName = params_path.string();
+    
 
     // define resultsFileName for use in write_parameters_files
 
@@ -442,19 +452,22 @@ void ProcessApplicInterface::define_filenames(const String& eval_id_tag) {
     resultsFileName = resultsFileWritten = results_path.string();
     if (results_path.is_relative()) {
       if (useWorkdir) {
-        resultsFileWritten = (curWorkdir / results_path).string();
-        if (outputLevel >= DEBUG_OUTPUT)
-          Cout << "\nAdjusting results_file to " << resultsFileName
-               << " due to work_directory usage." << std::endl;
-      } else if (specifiedResultsFileName.empty()) {
-        // historically temp files go in /tmp or C:\temp, not rundir
-        resultsFileName =
-            (WorkdirHelper::system_tmp_path() / results_path).string();
-        resultsFileWritten = resultsFileName;
-      } else
-        resultsFileName = results_path.string();
-    } else
+	resultsFileWritten = (curWorkdir / results_path).string();
+	if (outputLevel >= DEBUG_OUTPUT)
+	  Cout << "\nAdjusting results_file to " << resultsFileName 
+	       << " due to work_directory usage." <<std::endl;
+      }
+      else if (specifiedResultsFileName.empty()) {
+	// historically temp files go in /tmp or C:\temp, not rundir
+	resultsFileName = (WorkdirHelper::system_tmp_path()/results_path).string();
+	resultsFileWritten = resultsFileName;
+      }
+      else
+	resultsFileName = results_path.string();
+    }
+    else
       resultsFileName = results_path.string();
+
   }
 
   // Not broadcasting curWorkdir as we don't want other ranks to
@@ -473,7 +486,8 @@ void ProcessApplicInterface::define_filenames(const String& eval_id_tag) {
       parallelLib.bcast_e(buffer_len);
       // broadcast actual buffer
       parallelLib.bcast_e(send_buffer);
-    } else {
+    }
+    else {
       // receive incoming buffer length and allocate space for MPIUnpackBuffer
       int buffer_len;
       parallelLib.bcast_e(buffer_len);
@@ -485,10 +499,11 @@ void ProcessApplicInterface::define_filenames(const String& eval_id_tag) {
   }
 }
 
-void ProcessApplicInterface::write_parameters_files(const Variables& vars,
-                                                    const ActiveSet& set,
-                                                    const Response& response,
-                                                    const int id) {
+
+void ProcessApplicInterface::
+write_parameters_files(const Variables& vars,    const ActiveSet& set,
+		       const Response& response, const int id)
+{
   PathTriple file_names(paramsFileWritten, resultsFileWritten, createdDir);
 
   // If a new evaluation, insert the modified file names into map for use in
@@ -507,7 +522,8 @@ void ProcessApplicInterface::write_parameters_files(const Variables& vars,
     WorkdirHelper::recursive_remove(rfile_path, FILEOP_WARN);
     // replace file names in map, avoiding 2nd lookup
     map_iter->second = file_names;
-  } else  // insert new filenames.
+  }
+  else // insert new filenames.
     fileNameMap[id] = file_names;
 
   /* Uncomment for filename debugging
@@ -522,38 +538,40 @@ void ProcessApplicInterface::write_parameters_files(const Variables& vars,
   // multiple sets of analysisComponents are not used.
   size_t num_programs = programNames.size();
   if (!multipleParamsFiles || !iFilterName.empty()) {
-    std::string prog;  // empty default indicates generic attribution of AC_i
+    std::string prog; // empty default indicates generic attribution of AC_i
     // populate prog string in cases where attribution is clear
     if (num_programs == 1 && iFilterName.empty())
-      prog = programNames[0];  // this file corresponds to sole analysis driver
+      prog = programNames[0]; // this file corresponds to sole analysis driver
     else if (!iFilterName.empty() && multipleParamsFiles)
-      prog = iFilterName;  // this file corresponds to ifilter
+      prog = iFilterName;     // this file corresponds to ifilter
     std::vector<String> all_an_comps;
     if (!analysisComponents.empty())
       copy_data(analysisComponents, all_an_comps);
-    if (!allowExistingResults) std::remove(resultsFileWritten.c_str());
-    paramsFileWriter->write_parameters_file(
-        vars, set, response, prog, all_an_comps, fullEvalId, paramsFileWritten);
+    if (!allowExistingResults)
+      std::remove(resultsFileWritten.c_str());
+      paramsFileWriter->write_parameters_file(vars, set, response, prog, all_an_comps, fullEvalId,
+			  paramsFileWritten);
   }
   // If analysis components are used for multiple analysis drivers, then the
   // parameters filename is tagged with program number, e.g. params.in.20.2
   // provides the parameters for the 2nd analysis for the 20th fn eval.
-  if (multipleParamsFiles) {  // append prog counter
-    for (size_t i = 0; i < num_programs; ++i) {
-      std::string prog_num("." + std::to_string(i + 1));
+  if (multipleParamsFiles) { // append prog counter
+    for (size_t i=0; i<num_programs; ++i) {
+      std::string prog_num("." + std::to_string(i+1));
       std::string tag_results_fname = resultsFileWritten + prog_num;
-      std::string tag_params_fname = paramsFileWritten + prog_num;
-      if (!allowExistingResults) std::remove(tag_results_fname.c_str());
-      paramsFileWriter->write_parameters_file(
-          vars, set, response, programNames[i], analysisComponents[i],
-          fullEvalId, tag_params_fname);
+      std::string tag_params_fname  = paramsFileWritten  + prog_num;
+      if (!allowExistingResults)
+	std::remove(tag_results_fname.c_str());
+      paramsFileWriter->write_parameters_file(vars, set, response, programNames[i],
+			    analysisComponents[i], fullEvalId, tag_params_fname);
     }
   }
 }
 
-void ProcessApplicInterface::read_results_files(Response& response,
-                                                const int id,
-                                                const String& eval_id_tag) {
+
+void ProcessApplicInterface::
+read_results_files(Response& response, const int id, const String& eval_id_tag)
+{
   // Retrieve parameters & results file names using fn. eval. id.  A map of
   // filenames is used because the names of tmp files must be available here
   // and asynch_recv operations can perform output filtering out of order
@@ -561,7 +579,7 @@ void ProcessApplicInterface::read_results_files(Response& response,
   // ProcessApplicInterface or rebuilding the file name from the root name
   // plus the counter).
   std::map<int, PathTriple>::iterator map_iter = fileNameMap.find(id);
-  const std::filesystem::path& params_path = (map_iter->second).get<0>();
+  const std::filesystem::path& params_path  = (map_iter->second).get<0>();
   const std::filesystem::path& results_path = (map_iter->second).get<1>();
   const std::filesystem::path& workdir_path = (map_iter->second).get<2>();
 
@@ -578,105 +596,107 @@ void ProcessApplicInterface::read_results_files(Response& response,
   if (num_programs > 1 && oFilterName.empty()) {
     response.reset();
     Response partial_response = response.copy();
-    for (size_t i = 0; i < num_programs; ++i) {
-      const std::string prog_num("." + std::to_string(i + 1));
-      std::filesystem::path prog_tagged_results =
-          WorkdirHelper::concat_path(results_path, prog_num);
-      resultsFileReader->read_results_file(partial_response,
-                                           prog_tagged_results, id);
+    for (size_t i=0; i<num_programs; ++i) {
+      const std::string prog_num("." + std::to_string(i+1));
+      std::filesystem::path prog_tagged_results
+	= WorkdirHelper::concat_path(results_path, prog_num);
+      resultsFileReader->read_results_file(partial_response, prog_tagged_results, id);
       response.overlay(partial_response);
     }
-  } else
-    resultsFileReader->read_results_file(response, results_path, id);
+  }
+  else 
+    resultsFileReader->read_results_file(response,results_path,id);
 
-  file_and_workdir_cleanup(params_path, results_path, workdir_path,
-                           eval_id_tag);
+  file_and_workdir_cleanup(params_path, results_path, workdir_path, eval_id_tag);
   // Remove the evaluation which has been processed from the bookkeeping
   fileNameMap.erase(map_iter);
 }
 
+
 /** Move specified params and results files to unique tagged versions
     when needed */
-void ProcessApplicInterface::autotag_files(
-    const std::filesystem::path& params_path,
-    const std::filesystem::path& results_path, const String& eval_id_tag
-    //, const std::filesystem::path dest_dir
-) const
+void ProcessApplicInterface::autotag_files(const std::filesystem::path& params_path, 
+					   const std::filesystem::path& results_path,
+					   const String& eval_id_tag
+					   //, const std::filesystem::path dest_dir
+					   ) const
 
 {
   size_t num_programs = programNames.size();
 
-  if ((!specifiedParamsFileName.empty() || !specifiedParamsFileName.empty()) &&
+  if ((!specifiedParamsFileName.empty() || !specifiedParamsFileName.empty()) && 
       !suppressOutput && outputLevel > NORMAL_OUTPUT)
     Cout << "Files with nonunique names will be tagged for file_save:\n";
 
   if (!specifiedParamsFileName.empty()) {
-    std::filesystem::path eval_tagged_params =
-        WorkdirHelper::concat_path(params_path, eval_id_tag);
+    std::filesystem::path eval_tagged_params = 
+      WorkdirHelper::concat_path(params_path, eval_id_tag);
 
     if (!multipleParamsFiles || !iFilterName.empty()) {
       if (!suppressOutput && outputLevel > NORMAL_OUTPUT)
-        Cout << "Moving " << params_path << " to " << eval_tagged_params
-             << '\n';
+	Cout << "Moving " << params_path << " to " << eval_tagged_params << '\n';
       WorkdirHelper::rename(params_path, eval_tagged_params, FILEOP_WARN);
     }
-    if (multipleParamsFiles) {  // append program counters to old/new strings
-      for (size_t i = 0; i < num_programs; ++i) {
-        const std::string prog_num("." + std::to_string(i + 1));
-        const std::filesystem::path prog_tagged_old =
-            WorkdirHelper::concat_path(params_path, prog_num);
-        const std::filesystem::path eval_prog_tagged_new =
-            WorkdirHelper::concat_path(eval_tagged_params, prog_num);
-        if (!suppressOutput && outputLevel > NORMAL_OUTPUT)
-          Cout << "Moving " << prog_tagged_old << " to " << eval_prog_tagged_new
-               << '\n';
-        WorkdirHelper::rename(prog_tagged_old, eval_prog_tagged_new,
-                              FILEOP_WARN);
+    if (multipleParamsFiles) { // append program counters to old/new strings
+      for (size_t i=0; i<num_programs; ++i) {
+	const std::string prog_num("." + std::to_string(i+1));
+	const std::filesystem::path prog_tagged_old = 
+	  WorkdirHelper::concat_path(params_path, prog_num);
+	const std::filesystem::path eval_prog_tagged_new = 
+	  WorkdirHelper::concat_path(eval_tagged_params, prog_num);
+	if (!suppressOutput && outputLevel > NORMAL_OUTPUT)
+	  Cout << "Moving " << prog_tagged_old << " to " << eval_prog_tagged_new
+	       << '\n';
+	WorkdirHelper::
+	  rename(prog_tagged_old, eval_prog_tagged_new, FILEOP_WARN);
       }
     }
   }
 
   if (!specifiedResultsFileName.empty()) {
-    std::filesystem::path eval_tagged_results =
-        WorkdirHelper::concat_path(results_path, eval_id_tag);
+    std::filesystem::path eval_tagged_results = 
+      WorkdirHelper::concat_path(results_path, eval_id_tag);
 
     if (num_programs == 1 || !oFilterName.empty()) {
       if (!suppressOutput && outputLevel > NORMAL_OUTPUT)
-        Cout << "Moving " << results_path << " to " << eval_tagged_results
-             << '\n';
+	Cout << "Moving " << results_path << " to "
+	     << eval_tagged_results << '\n';
       WorkdirHelper::rename(results_path, eval_tagged_results, FILEOP_WARN);
     }
-    if (num_programs > 1) {  // append program counters to old/new strings
-      for (size_t i = 0; i < num_programs; ++i) {
-        const std::string prog_num("." + std::to_string(i + 1));
-        const std::filesystem::path prog_tagged_old =
-            WorkdirHelper::concat_path(results_path, prog_num);
-        const std::filesystem::path eval_prog_tagged_new =
-            WorkdirHelper::concat_path(eval_tagged_results, prog_num);
-        if (!suppressOutput && outputLevel > NORMAL_OUTPUT)
-          Cout << "Moving " << prog_tagged_old << " to " << eval_prog_tagged_new
-               << '\n';
-        WorkdirHelper::rename(prog_tagged_old, eval_prog_tagged_new,
-                              FILEOP_WARN);
+    if (num_programs > 1) { // append program counters to old/new strings
+      for (size_t i=0; i<num_programs; ++i) {
+	const std::string prog_num("." + std::to_string(i+1));
+	const std::filesystem::path prog_tagged_old = 
+	  WorkdirHelper::concat_path(results_path, prog_num);
+	const std::filesystem::path eval_prog_tagged_new = 
+	  WorkdirHelper::concat_path(eval_tagged_results, prog_num);
+	if (!suppressOutput && outputLevel > NORMAL_OUTPUT)
+	  Cout << "Moving " << prog_tagged_old << " to " << eval_prog_tagged_new
+	       << '\n';
+	WorkdirHelper::rename(prog_tagged_old, eval_prog_tagged_new, FILEOP_WARN);
       }
     }
   }
+
 }
 
-void ProcessApplicInterface::remove_params_results_files(
-    const std::filesystem::path& params_path,
-    const std::filesystem::path& results_path) const {
+void ProcessApplicInterface::
+remove_params_results_files(const std::filesystem::path& params_path, 
+			    const std::filesystem::path& results_path) const
+{
   size_t num_programs = programNames.size();
 
   if (!suppressOutput && outputLevel > NORMAL_OUTPUT) {
     Cout << "Removing " << params_path;
     if (multipleParamsFiles) {
-      if (!iFilterName.empty()) Cout << " and " << params_path;
+      if (!iFilterName.empty())
+	Cout << " and " << params_path;
       Cout << ".[1-" << num_programs << ']';
     }
     Cout << " and " << results_path;
     if (num_programs > 1) {
-      if (!oFilterName.empty()) Cout << " and " << results_path;
+      if (!oFilterName.empty())
+	Cout << " and " << results_path;
       Cout << ".[1-" << num_programs << ']';
     }
     Cout << '\n';
@@ -686,10 +706,10 @@ void ProcessApplicInterface::remove_params_results_files(
     WorkdirHelper::recursive_remove(params_path, FILEOP_WARN);
 
   if (multipleParamsFiles) {
-    for (size_t i = 0; i < num_programs; ++i) {
-      const std::string prog_num("." + std::to_string(i + 1));
-      const std::filesystem::path tagged_params =
-          WorkdirHelper::concat_path(params_path, prog_num);
+    for (size_t i=0; i<num_programs; ++i) {
+      const std::string prog_num("." + std::to_string(i+1));
+      const std::filesystem::path tagged_params = 
+	WorkdirHelper::concat_path(params_path, prog_num);
       WorkdirHelper::recursive_remove(tagged_params, FILEOP_WARN);
     }
   }
@@ -698,42 +718,42 @@ void ProcessApplicInterface::remove_params_results_files(
     WorkdirHelper::recursive_remove(results_path, FILEOP_WARN);
 
   if (num_programs > 1)
-    for (size_t i = 0; i < num_programs; ++i) {
-      const std::string prog_num("." + std::to_string(i + 1));
-      const std::filesystem::path tagged_results =
-          WorkdirHelper::concat_path(results_path, prog_num);
+    for (size_t i=0; i<num_programs; ++i) {
+      const std::string prog_num("." + std::to_string(i+1));
+      const std::filesystem::path tagged_results = 
+	WorkdirHelper::concat_path(results_path, prog_num);
       WorkdirHelper::recursive_remove(tagged_results, FILEOP_WARN);
     }
 }
 
-/** Remove any files and directories still referenced in the fileNameMap */
-void ProcessApplicInterface::file_cleanup() const {
-  if (fileSaveFlag && dirSave) return;
 
-  std::map<int, PathTriple>::const_iterator file_name_map_it =
-                                                fileNameMap.begin(),
-                                            file_name_map_end =
-                                                fileNameMap.end();
-  for (; file_name_map_it != file_name_map_end; ++file_name_map_it) {
+/** Remove any files and directories still referenced in the fileNameMap */
+void ProcessApplicInterface::file_cleanup() const
+{
+  if (fileSaveFlag && dirSave)
+    return;
+
+  std::map<int, PathTriple>::const_iterator
+    file_name_map_it  = fileNameMap.begin(),
+    file_name_map_end = fileNameMap.end();
+  for(; file_name_map_it != file_name_map_end; ++file_name_map_it) {
     const std::filesystem::path& parfile = (file_name_map_it->second).get<0>();
     const std::filesystem::path& resfile = (file_name_map_it->second).get<1>();
     const std::filesystem::path& wd_path = (file_name_map_it->second).get<2>();
     if (!fileSaveFlag) {
       if (!multipleParamsFiles || !iFilterName.empty()) {
-        WorkdirHelper::recursive_remove(parfile, FILEOP_SILENT);
-        WorkdirHelper::recursive_remove(resfile, FILEOP_SILENT);
+	WorkdirHelper::recursive_remove(parfile, FILEOP_SILENT);
+	WorkdirHelper::recursive_remove(resfile, FILEOP_SILENT);
       }
       if (multipleParamsFiles) {
-        size_t i, num_programs = programNames.size();
-        for (i = 1; i <= num_programs; ++i) {
-          std::string prog_num("." + std::to_string(i));
-          std::filesystem::path pname =
-              WorkdirHelper::concat_path(parfile, prog_num);
-          WorkdirHelper::recursive_remove(pname, FILEOP_SILENT);
-          std::filesystem::path rname =
-              WorkdirHelper::concat_path(resfile, prog_num);
-          WorkdirHelper::recursive_remove(rname, FILEOP_SILENT);
-        }
+	size_t i, num_programs = programNames.size();
+	for(i=1; i<=num_programs; ++i) {
+	  std::string prog_num("." + std::to_string(i));
+          std::filesystem::path pname = WorkdirHelper::concat_path(parfile, prog_num);
+	  WorkdirHelper::recursive_remove(pname, FILEOP_SILENT);
+          std::filesystem::path rname = WorkdirHelper::concat_path(resfile, prog_num);
+	  WorkdirHelper::recursive_remove(rname, FILEOP_SILENT);
+	}
       }
     }
     // a non-empty entry here indicates the directory was created for this eval
@@ -742,24 +762,29 @@ void ProcessApplicInterface::file_cleanup() const {
   }
 }
 
+
 // get the current work directory name
-std::filesystem::path ProcessApplicInterface::get_workdir_name() {
+std::filesystem::path ProcessApplicInterface::get_workdir_name()
+{
   // PDH suggets making in rundir instead of tmp area...
-  std::filesystem::path wd_name =
-      workDirName.empty() ? (WorkdirHelper::system_tmp_path() /
-                             WorkdirHelper::system_tmp_file("dakota_work"))
-                          : std::filesystem::path(workDirName);
+  std::filesystem::path wd_name = workDirName.empty() ? 
+    ( WorkdirHelper::system_tmp_path() / 
+      WorkdirHelper::system_tmp_file("dakota_work") ) :
+    std::filesystem::path(workDirName);
 
   // we allow tagging of tmp dirs in case the user's script needs the tag
-  if (dirTag) return WorkdirHelper::concat_path(wd_name, fullEvalId);
+  if (dirTag)
+    return WorkdirHelper::concat_path(wd_name, fullEvalId);
 
   return wd_name;
 }
 
+
 /** Guidance: environment (PATH, current directory) should be set
     immediately before Dakota spawns a process and reset immediately
     afterwards (except fork which never returns) */
-void ProcessApplicInterface::prepare_process_environment() {
+void ProcessApplicInterface::prepare_process_environment()
+{
   // If not using workdir, just put . and startupPWD on PATH.  If
   // using workdir, also put the absolute path to the workdir on the
   // PATH (. should suffice; this is conservative).  It doesn't help
@@ -767,21 +792,24 @@ void ProcessApplicInterface::prepare_process_environment() {
   // directory into it, so the helper makes the path absolute.
   if (useWorkdir) {
     if (outputLevel >= DEBUG_OUTPUT)
-      Cout << "Prepending environment PATH with work_directory " << curWorkdir
-           << "." << std::endl;
+      Cout << "Prepending environment PATH with work_directory " 
+	   << curWorkdir << "." << std::endl;
     WorkdirHelper::set_preferred_path(curWorkdir);
     if (outputLevel >= VERBOSE_OUTPUT)
       Cout << "Changing directory to " << curWorkdir << std::endl;
     WorkdirHelper::change_directory(curWorkdir);
-  } else
+  }
+  else
     WorkdirHelper::set_preferred_path();
 
   WorkdirHelper::set_environment("DAKOTA_PARAMETERS_FILE", paramsFileName);
   WorkdirHelper::set_environment("DAKOTA_RESULTS_FILE", resultsFileName);
 }
 
+
 /** Undo anything done prior to spawn */
-void ProcessApplicInterface::reset_process_environment() {
+void ProcessApplicInterface::reset_process_environment()
+{
   // BMA TODO: consider unsetting environment variables previously set
 
   // No need to reset in non-workdir case, as long as PATH doesn't get
@@ -789,21 +817,25 @@ void ProcessApplicInterface::reset_process_environment() {
   if (useWorkdir) {
     if (outputLevel >= VERBOSE_OUTPUT)
       Cout << "Changing directory back to " << WorkdirHelper::startup_pwd()
-           << std::endl;
+	   << std::endl;
     if (outputLevel >= DEBUG_OUTPUT)
       Cout << "Resetting environment PATH." << std::endl;
     WorkdirHelper::reset();
   }
 }
 
-void ProcessApplicInterface::file_and_workdir_cleanup(
-    const std::filesystem::path& params_path,
-    const std::filesystem::path& results_path,
-    const std::filesystem::path& workdir_path, const String& tag) const {
+void ProcessApplicInterface::
+file_and_workdir_cleanup(const std::filesystem::path &params_path,
+    const std::filesystem::path &results_path,
+    const std::filesystem::path &workdir_path, 
+    const String &tag) const
+{
+  
   // remove the workdir if in the map and we're not saving
   bool removing_workdir = (!workdir_path.empty() && !dirSave);
   if (fileSaveFlag) {
-    // Prevent overwriting of files with reused names for which a file_save
+
+    // Prevent overwriting of files with reused names for which a file_save 
     // request has been given.  Assume tmp files always unique.
 
     // Cases (work in progress):
@@ -814,28 +846,32 @@ void ProcessApplicInterface::file_and_workdir_cleanup(
     //    - workdir, not saved --> tag and move to rundir
     //  * when workdir and absolute path to files tag in abs path
 
-    if (useWorkdir) {
-      if (dirSave) {
-        // if saving the directory, just need to make sure filenames are unique
-        // use legacy tagging mechanism within the workdir
-        // TODO: don't need to tag if workdir is unique per eval...
-        if (!fileTagFlag && !dirTag && !workDirName.empty())
-          autotag_files(params_path, results_path, tag);
-      } else {
-        // work_directory getting removed; unique tag the files into the rundir
-        // take the filename off the path and use with rundir
-        // TODO: do we even need to support this?
-        // TODO: distinguish between params in vs. not in (absolute
-        // path) the workdir
-        // autotag_files(params_path, results_path, eval_id_tag,
-        // 	      std::filesystem::current_path());
+    if ( useWorkdir ) {
+      if ( dirSave ) {
+	// if saving the directory, just need to make sure filenames are unique
+	// use legacy tagging mechanism within the workdir
+	// TODO: don't need to tag if workdir is unique per eval...
+	if (!fileTagFlag && !dirTag && !workDirName.empty())
+	  autotag_files(params_path, results_path, tag);
       }
-    } else {
+      else {
+	// work_directory getting removed; unique tag the files into the rundir
+	// take the filename off the path and use with rundir
+	// TODO: do we even need to support this?
+	// TODO: distinguish between params in vs. not in (absolute
+	// path) the workdir
+	// autotag_files(params_path, results_path, eval_id_tag,
+	// 	      std::filesystem::current_path());
+      }
+    }
+    else {
       // simple case; no workdir --> old behavior, tagging if needed
       // in place (whether relative or absolute)
-      if (!fileTagFlag) autotag_files(params_path, results_path, tag);
+      if (!fileTagFlag)
+	autotag_files(params_path, results_path, tag);
     }
-  } else
+  }
+  else
     remove_params_results_files(params_path, results_path);
 
   // Now that files are handled, conditionally remove the work directory
@@ -844,6 +880,7 @@ void ProcessApplicInterface::file_and_workdir_cleanup(
       Cout << "Removing work_directory " << workdir_path << std::endl;
     WorkdirHelper::recursive_remove(workdir_path, FILEOP_ERROR);
   }
+
 }
 
-}  // namespace Dakota
+} // namespace Dakota

@@ -8,23 +8,22 @@
     _______________________________________________________________________ */
 
 #include "ConcurrentMetaIterator.hpp"
-
-#include "EvaluationStore.hpp"
-#include "NonDLHSSampling.hpp"
+#include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
 #include "ParamResponsePair.hpp"
-#include "ProblemDescDB.hpp"
+#include "NonDLHSSampling.hpp"
+#include "EvaluationStore.hpp"
 
-static const char rcsId[] =
-    "@(#) $Id: ConcurrentMetaIterator.cpp 7018 2010-10-12 02:25:22Z mseldre $";
+static const char rcsId[]="@(#) $Id: ConcurrentMetaIterator.cpp 7018 2010-10-12 02:25:22Z mseldre $";
+
 
 namespace Dakota {
 
-ConcurrentMetaIterator::ConcurrentMetaIterator(ProblemDescDB& problem_db,
-                                               ParallelLibrary& parallel_lib)
-    : MetaIterator(problem_db, parallel_lib),
-      numRandomJobs(probDescDB.get_int("method.concurrent.random_jobs")),
-      randomSeed(probDescDB.get_int("method.random_seed")) {
+ConcurrentMetaIterator::ConcurrentMetaIterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
+  MetaIterator(problem_db, parallel_lib),
+  numRandomJobs(probDescDB.get_int("method.concurrent.random_jobs")),
+  randomSeed(probDescDB.get_int("method.random_seed"))
+{
   // ***************************************************************************
   // TO DO: support concurrent meta-iteration for both Minimizer & Analyzer:
   // one step within general purpose module for sequencing with concurrency.
@@ -39,38 +38,40 @@ ConcurrentMetaIterator::ConcurrentMetaIterator(ProblemDescDB& problem_db,
   // ***************************************************************************
 
   // pull these from the DB before any resetting of DB nodes
-  const RealVector& raw_param_sets =
-      problem_db.get_rv("method.concurrent.parameter_sets");
+  const RealVector& raw_param_sets
+    = problem_db.get_rv("method.concurrent.parameter_sets");
 
-  const String& sub_meth_ptr =
-      problem_db.get_string("method.sub_method_pointer");
+  const String& sub_meth_ptr
+    = problem_db.get_string("method.sub_method_pointer");
   const String& sub_meth_name = problem_db.get_string("method.sub_method_name");
-  const String& sub_model_ptr =
-      problem_db.get_string("method.sub_model_pointer");
+  const String& sub_model_ptr
+    = problem_db.get_string("method.sub_model_pointer");
 
   // store/restore the method/model indices separately (the current state of the
   // iterator/model DB nodes may not be synched due to Model ctor recursions in
   // process)
-  size_t method_index, model_index;  // Note: _NPOS is a valid restoration value
+  size_t method_index, model_index; // Note: _NPOS is a valid restoration value
   bool restore_method = false, restore_model = false;
-  bool print_rank = (parallelLib.world_rank() == 0);  // prior to lead_rank()
+  bool print_rank = (parallelLib.world_rank() == 0); // prior to lead_rank()
   if (!sub_meth_ptr.empty()) {
     restore_method = restore_model = true;
-    method_index = problem_db.get_db_method_node();  // for restoration
-    model_index = problem_db.get_db_model_node();    // for restoration
+    method_index = problem_db.get_db_method_node(); // for restoration
+    model_index  = problem_db.get_db_model_node();  // for restoration
     problem_db.set_db_list_nodes(sub_meth_ptr);
-  } else if (!sub_meth_name.empty()) {
+  }
+  else if (!sub_meth_name.empty()) {
     // if sub_model_ptr is defined, activate this model spec;
     // if sub_model_ptr is empty, identify default model using empty string.
     // Note: inheriting a prev model spec could be desirable in some contexts,
     //       but not this ctor since a top-level/non-subordinate MetaIterator.
     restore_model = true;
-    model_index = problem_db.get_db_model_node();  // for restoration
+    model_index   = problem_db.get_db_model_node(); // for restoration
     problem_db.set_db_model_nodes(sub_model_ptr);
-  } else {
+  }
+  else {
     if (print_rank)
       Cerr << "Error: insufficient method identification in "
-           << "ConcurrentMetaIterator." << std::endl;
+	   << "ConcurrentMetaIterator." << std::endl;
     abort_handler(-1);
   }
 
@@ -83,50 +84,51 @@ ConcurrentMetaIterator::ConcurrentMetaIterator(ProblemDescDB& problem_db,
 
   // estimation of paramSetLen is dependent on the iteratedModel
   // --> concurrent iterator partitioning is pushed downstream a bit
-  maxIteratorConcurrency = iterSched.numIteratorJobs =
-      parameterSets.size() + numRandomJobs;
-  if (!maxIteratorConcurrency) {  // verify at least 1 job has been specified
+  maxIteratorConcurrency = iterSched.numIteratorJobs
+    = parameterSets.size() + numRandomJobs;
+  if (!maxIteratorConcurrency) { // verify at least 1 job has been specified
     if (print_rank)
       Cerr << "Error: concurrent meta-iterator must have at least 1 job.  "
-           << "Please specify either a\n       list of parameter sets or a "
-           << "number of random jobs." << std::endl;
+	   << "Please specify either a\n       list of parameter sets or a "
+	   << "number of random jobs." << std::endl;
     abort_handler(-1);
   }
 
   // restore list nodes
   if (restore_method) problem_db.set_db_method_node(method_index);
-  if (restore_model) problem_db.set_db_model_nodes(model_index);
+  if (restore_model)  problem_db.set_db_model_nodes(model_index);
 }
 
-ConcurrentMetaIterator::ConcurrentMetaIterator(ProblemDescDB& problem_db,
-                                               ParallelLibrary& parallel_lib,
-                                               std::shared_ptr<Model> model)
-    : MetaIterator(problem_db, parallel_lib, model),
-      numRandomJobs(probDescDB.get_int("method.concurrent.random_jobs")),
-      randomSeed(probDescDB.get_int("method.random_seed")) {
-  const RealVector& raw_param_sets =
-      problem_db.get_rv("method.concurrent.parameter_sets");
+
+ConcurrentMetaIterator::
+ConcurrentMetaIterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  MetaIterator(problem_db, parallel_lib, model),
+  numRandomJobs(probDescDB.get_int("method.concurrent.random_jobs")),
+  randomSeed(probDescDB.get_int("method.random_seed"))
+{
+  const RealVector& raw_param_sets
+    = problem_db.get_rv("method.concurrent.parameter_sets");
 
   // ensure consistency between model and any method/model pointers
   check_model(problem_db.get_string("method.sub_method_pointer"),
-              problem_db.get_string("method.sub_model_pointer"));
+	      problem_db.get_string("method.sub_model_pointer"));
   // For this ctor with an incoming model, we can simplify DB node assignment
   // and mirror logic in check_model()
   size_t model_index = problem_db.get_db_model_node();  // for restoration
   problem_db.set_db_model_nodes(iteratedModel->model_id());
 
-  initialize_model();  // uses DB lookup for model data (number of obj fns)
+  initialize_model(); // uses DB lookup for model data (number of obj fns)
 
   // user-specified jobs
   copy_data(raw_param_sets, parameterSets, 0, paramSetLen);
 
-  maxIteratorConcurrency = iterSched.numIteratorJobs =
-      parameterSets.size() + numRandomJobs;
-  if (!maxIteratorConcurrency) {  // verify at least 1 job has been specified
-    if (parallelLib.world_rank() == 0)  // prior to lead_rank()
+  maxIteratorConcurrency = iterSched.numIteratorJobs
+    = parameterSets.size() + numRandomJobs;
+  if (!maxIteratorConcurrency) { // verify at least 1 job has been specified
+    if (parallelLib.world_rank() == 0) // prior to lead_rank()
       Cerr << "Error: concurrent meta-iterator must have at least 1 job.  "
-           << "Please specify either a\n       list of parameter sets or a "
-           << "number of random jobs." << std::endl;
+	   << "Please specify either a\n       list of parameter sets or a "
+	   << "number of random jobs." << std::endl;
     abort_handler(-1);
   }
 
@@ -134,40 +136,47 @@ ConcurrentMetaIterator::ConcurrentMetaIterator(ProblemDescDB& problem_db,
   problem_db.set_db_model_nodes(model_index);
 }
 
+
 void ConcurrentMetaIterator::declare_sources() {
-  evaluationsDB.declare_source(method_id(), "iterator",
-                               selectedIterator->method_id(), "iterator");
+  evaluationsDB.declare_source(method_id(), 
+                               "iterator",
+                               selectedIterator->method_id(),
+                               "iterator");
 }
 
-ConcurrentMetaIterator::~ConcurrentMetaIterator() {}
+ConcurrentMetaIterator::~ConcurrentMetaIterator()
+{ }
 
-void ConcurrentMetaIterator::derived_init_communicators(ParLevLIter pl_iter) {
-  const String& sub_meth_ptr =
-      probDescDB.get_string("method.sub_method_pointer");
+
+void ConcurrentMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
+{
+  const String& sub_meth_ptr
+    = probDescDB.get_string("method.sub_method_pointer");
   const String& sub_meth_name = probDescDB.get_string("method.sub_method_name");
-  // const String& sub_model_ptr
-  //   = probDescDB.get_string("method.sub_model_pointer");
+  //const String& sub_model_ptr
+  //  = probDescDB.get_string("method.sub_model_pointer");
 
   // Model recursions may update method or model nodes and restoration may not
   // occur until the recursion completes, so don't assume that method and
   // model indices are in sync.
-  size_t method_index, model_index;  // Note: _NPOS is a valid restoration value
+  size_t method_index, model_index; // Note: _NPOS is a valid restoration value
   bool restore_method = false, restore_model = false,
-       lightwt_ctor = sub_meth_ptr.empty();
+    lightwt_ctor = sub_meth_ptr.empty();
   if (lightwt_ctor) {
     restore_model = true;
-    model_index = probDescDB.get_db_model_node();  // for restoration
+    model_index = probDescDB.get_db_model_node(); // for restoration
     probDescDB.set_db_model_nodes(iteratedModel->model_id());
-  } else {
+  }
+  else {
     restore_method = restore_model = true;
-    method_index = probDescDB.get_db_method_node();  // for restoration
-    model_index = probDescDB.get_db_model_node();    // for restoration
+    method_index = probDescDB.get_db_method_node(); // for restoration
+    model_index  = probDescDB.get_db_model_node();  // for restoration
     probDescDB.set_db_list_nodes(sub_meth_ptr);
   }
 
   iterSched.update(methodPCIter);
 
-  // It is not practical to estimate the evaluation concurrency without
+  // It is not practical to estimate the evaluation concurrency without 
   // instantiating the iterator (see, e.g., NonDPolynomialChaos), and here we
   // have a circular dependency: we need the evaluation concurrency from the
   // iterator to estimate the max_ppi for input to the mi_pl partition, but
@@ -178,11 +187,10 @@ void ConcurrentMetaIterator::derived_init_communicators(ParLevLIter pl_iter) {
   // as through the lookup in problem_db_get_iterator() (method_ptr case); this
   // requires that no calls to init_comms occur at construct time, since the
   // mi_pl basis for this is not yet available.
-  IntIntPair ppi_pr =
-      (lightwt_ctor)
-          ? iterSched.configure(probDescDB, sub_meth_name, selectedIterator,
-                                iteratedModel)
-          : iterSched.configure(probDescDB, selectedIterator, iteratedModel);
+  IntIntPair ppi_pr = (lightwt_ctor) ?
+    iterSched.configure(probDescDB, sub_meth_name, selectedIterator,
+			iteratedModel) :
+    iterSched.configure(probDescDB, selectedIterator, iteratedModel);
   iterSched.partition(maxIteratorConcurrency, ppi_pr);
   summaryOutputFlag = iterSched.lead_rank();
 
@@ -193,39 +201,45 @@ void ConcurrentMetaIterator::derived_init_communicators(ParLevLIter pl_iter) {
   if (iterSched.iteratorServerId <= iterSched.numIteratorServers) {
     // Instantiate the iterator
     if (lightwt_ctor) {
-      iterSched.init_iterator(sub_meth_name, selectedIterator, iteratedModel);
+      iterSched.init_iterator(sub_meth_name, selectedIterator,
+			      iteratedModel);
       if (summaryOutputFlag && outputLevel >= VERBOSE_OUTPUT)
-        Cout << "Concurrent Iterator = " << sub_meth_name << std::endl;
-    } else {
+	Cout << "Concurrent Iterator = " << sub_meth_name << std::endl;
+    }
+    else {
       iterSched.init_iterator(probDescDB, selectedIterator, iteratedModel);
       if (summaryOutputFlag && outputLevel >= VERBOSE_OUTPUT)
-        Cout << "Concurrent Iterator = "
-             << method_enum_to_string(probDescDB.get_ushort("method.algorithm"))
-             << std::endl;
+	Cout << "Concurrent Iterator = "
+	     << method_enum_to_string(probDescDB.get_ushort("method.algorithm"))
+	     << std::endl;
     }
   }
 
   // restore list nodes
   if (restore_method) probDescDB.set_db_method_node(method_index);
-  if (restore_model) probDescDB.set_db_model_nodes(model_index);
+  if (restore_model)  probDescDB.set_db_model_nodes(model_index);
 }
 
-void ConcurrentMetaIterator::derived_set_communicators(ParLevLIter pl_iter) {
+
+void ConcurrentMetaIterator::derived_set_communicators(ParLevLIter pl_iter)
+{
   size_t mi_pl_index = methodPCIter->mi_parallel_level_index(pl_iter) + 1;
   iterSched.update(methodPCIter, mi_pl_index);
   if (iterSched.iteratorServerId <= iterSched.numIteratorServers) {
-    ParLevLIter si_pl_iter =
-        methodPCIter->mi_parallel_level_iterator(mi_pl_index);
+    ParLevLIter si_pl_iter
+      = methodPCIter->mi_parallel_level_iterator(mi_pl_index);
     iterSched.set_iterator(*selectedIterator, si_pl_iter);
   }
 }
 
-void ConcurrentMetaIterator::derived_free_communicators(ParLevLIter pl_iter) {
+
+void ConcurrentMetaIterator::derived_free_communicators(ParLevLIter pl_iter)
+{
   size_t mi_pl_index = methodPCIter->mi_parallel_level_index(pl_iter) + 1;
   iterSched.update(methodPCIter, mi_pl_index);
   if (iterSched.iteratorServerId <= iterSched.numIteratorServers) {
-    ParLevLIter si_pl_iter =
-        methodPCIter->mi_parallel_level_iterator(mi_pl_index);
+    ParLevLIter si_pl_iter
+      = methodPCIter->mi_parallel_level_iterator(mi_pl_index);
     iterSched.free_iterator(*selectedIterator, si_pl_iter);
   }
 
@@ -233,7 +247,9 @@ void ConcurrentMetaIterator::derived_free_communicators(ParLevLIter pl_iter) {
   iterSched.free_iterator_parallelism();
 }
 
-IntIntPair ConcurrentMetaIterator::estimate_partition_bounds() {
+
+IntIntPair ConcurrentMetaIterator::estimate_partition_bounds()
+{
   // Note: ConcurrentMetaIterator::derived_init_communicators() calls
   // IteratorScheduler::configure() to estimate_partition_bounds() on the
   // subIterator, not the MetaIterator.  When ConcurrentMetaIterator is a
@@ -243,52 +259,51 @@ IntIntPair ConcurrentMetaIterator::estimate_partition_bounds() {
   // This function is already rank protected as far as partitioning has occurred
   // to this point.  However, this call may precede derived_init_communicators
   // when the ConcurrentMetaIterator is a sub-iterator.
-  iterSched.construct_sub_iterator(
-      probDescDB, parallelLib, selectedIterator, iteratedModel,
-      probDescDB.get_string("method.sub_method_pointer"),
-      probDescDB.get_string("method.sub_method_name"),
-      probDescDB.get_string("method.sub_model_pointer"));
-  IntIntPair min_max,
-      si_min_max = selectedIterator->estimate_partition_bounds();
+  iterSched.construct_sub_iterator(probDescDB, parallelLib, selectedIterator, iteratedModel,
+    probDescDB.get_string("method.sub_method_pointer"),
+    probDescDB.get_string("method.sub_method_name"),
+    probDescDB.get_string("method.sub_model_pointer"));
+  IntIntPair min_max, si_min_max = selectedIterator->estimate_partition_bounds();
 
   // now apply scheduling data for this level (recursion is complete)
-  min_max.first = ProblemDescDB::min_procs_per_level(
-      si_min_max.first, iterSched.procsPerIterator,
-      iterSched.numIteratorServers);
-  min_max.second = ProblemDescDB::max_procs_per_level(
-      si_min_max.second, iterSched.procsPerIterator,
-      iterSched.numIteratorServers, iterSched.iteratorScheduling, 1, false,
-      maxIteratorConcurrency);
+  min_max.first = ProblemDescDB::min_procs_per_level(si_min_max.first,
+    iterSched.procsPerIterator, iterSched.numIteratorServers);
+  min_max.second = ProblemDescDB::max_procs_per_level(si_min_max.second,
+    iterSched.procsPerIterator, iterSched.numIteratorServers,
+    iterSched.iteratorScheduling, 1, false, maxIteratorConcurrency);
   return min_max;
 }
 
-void ConcurrentMetaIterator::initialize_model() {
+
+void ConcurrentMetaIterator::initialize_model()
+{
   if (methodName == PARETO_SET) {
     paramSetLen = probDescDB.get_sizet("responses.num_objective_functions");
     // define dummy weights to trigger model recasting in iterator construction
     // (replaced at run-time with weight sets from specification)
     if (iteratedModel->primary_response_fn_weights().empty()) {
       RealVector initial_wts(paramSetLen, false);
-      initial_wts = 1. / (Real)paramSetLen;
-      iteratedModel->primary_response_fn_weights(
-          initial_wts);  // trigger recast
+      initial_wts = 1./(Real)paramSetLen;
+      iteratedModel->primary_response_fn_weights(initial_wts); // trigger recast
     }
-  } else
+  }
+  else
     paramSetLen = ModelUtils::cv(*iteratedModel);
 }
 
-void ConcurrentMetaIterator::pre_run() {
+
+void ConcurrentMetaIterator::pre_run()
+{
   if (iterSched.iteratorCommRank > 0 ||
       iterSched.iteratorServerId > iterSched.numIteratorServers)
     return;
 
   // initialize initialPt
   if (methodName != MULTI_START)
-    copy_data(ModelUtils::continuous_variables(*iteratedModel),
-              initialPt);  // view->copy
+    copy_data(ModelUtils::continuous_variables(*iteratedModel), initialPt); // view->copy
 
   // estimate params_msg_len & results_msg_len and publish to IteratorScheduler
-  int params_msg_len = 0, results_msg_len;  // peer sched doesn't send params
+  int params_msg_len = 0, results_msg_len; // peer sched doesn't send params
   if (iterSched.iteratorScheduling == DEDICATED_SCHEDULER_DYNAMIC) {
     // define params_msg_len
     RealVector rv(paramSetLen);
@@ -296,8 +311,7 @@ void ConcurrentMetaIterator::pre_run() {
     send_buffer << rv;
     params_msg_len = send_buffer.size();
     // define results_msg_len
-    if (iterSched.iteratorServerId ==
-        0)  // scheduler proc: init_comms not called
+    if (iterSched.iteratorServerId == 0)// scheduler proc: init_comms not called
       iteratedModel->estimate_message_lengths();
   }
   results_msg_len = iteratedModel->message_lengths()[3];
@@ -306,79 +320,78 @@ void ConcurrentMetaIterator::pre_run() {
   // -------------------------------------------------------------------------
   // Define parameterSets from the combination of user-specified & random jobs
   // -------------------------------------------------------------------------
-  if (iterSched.iteratorServerId == 0 ||                  // ded scheduler
-      iterSched.iteratorScheduling == PEER_SCHEDULING) {  // peer server
+  if ( iterSched.iteratorServerId   == 0 ||                // ded scheduler
+       iterSched.iteratorScheduling == PEER_SCHEDULING ) { // peer server
 
     // random jobs
-    if (numRandomJobs) {  // random jobs specified
+    if (numRandomJobs) { // random jobs specified
       size_t i, j;
       RealVectorArray random_jobs;
       if (iterSched.lead_rank()) {
-        // set up bounds for uniform sampling
-        RealVector lower_bnds, upper_bnds;
-        if (methodName == MULTI_START) {
-          lower_bnds =
-              ModelUtils::continuous_lower_bounds(*iteratedModel);  // view OK
-          upper_bnds =
-              ModelUtils::continuous_upper_bounds(*iteratedModel);  // view OK
-        } else {
-          lower_bnds.sizeUninitialized(paramSetLen);
-          lower_bnds = 0.;
-          upper_bnds.sizeUninitialized(paramSetLen);
-          upper_bnds = 1.;
-        }
-        // invoke NonDLHSSampling as either old or new LHS is always available.
-        // We don't use a dace_method_pointer spec since we aren't sampling over
-        // the variables specification in all cases.  In particular, we're
-        // sampling over multiobj. weight sets in the Pareto-set case.  This
-        // hard-wiring currently restricts us to uniform, uncorrelated samples.
-        unsigned short sample_type = SUBMETHOD_DEFAULT;
-        String rng;  // empty string: use default
-        NonDLHSSampling lhs_sampler(sample_type, numRandomJobs, randomSeed, rng,
-                                    lower_bnds, upper_bnds);
-        const RealMatrix& all_samples = lhs_sampler.all_samples();
-        random_jobs.resize(numRandomJobs);
-        for (i = 0; i < numRandomJobs; ++i)
-          copy_data(all_samples[i], paramSetLen, random_jobs[i]);
+	// set up bounds for uniform sampling
+	RealVector lower_bnds, upper_bnds;
+	if (methodName == MULTI_START) {
+	  lower_bnds = ModelUtils::continuous_lower_bounds(*iteratedModel); // view OK
+	  upper_bnds = ModelUtils::continuous_upper_bounds(*iteratedModel); // view OK
+	}
+	else {
+	  lower_bnds.sizeUninitialized(paramSetLen); lower_bnds = 0.;
+	  upper_bnds.sizeUninitialized(paramSetLen); upper_bnds = 1.;
+	}
+	// invoke NonDLHSSampling as either old or new LHS is always available.
+	// We don't use a dace_method_pointer spec since we aren't sampling over
+	// the variables specification in all cases.  In particular, we're
+	// sampling over multiobj. weight sets in the Pareto-set case.  This
+	// hard-wiring currently restricts us to uniform, uncorrelated samples.
+	unsigned short sample_type = SUBMETHOD_DEFAULT;
+	String rng; // empty string: use default
+	NonDLHSSampling lhs_sampler(sample_type, numRandomJobs, randomSeed,
+				    rng, lower_bnds, upper_bnds);
+	const RealMatrix& all_samples = lhs_sampler.all_samples();
+	random_jobs.resize(numRandomJobs);
+	for (i=0; i<numRandomJobs; ++i)
+	  copy_data(all_samples[i], paramSetLen, random_jobs[i]);
       }
 
       if (iterSched.iteratorScheduling == PEER_SCHEDULING &&
-          iterSched.numIteratorServers > 1) {
-        const ParallelLevel& mi_pl =
-            methodPCIter->mi_parallel_level(iterSched.miPLIndex);
-        // For static scheduling, bcast all random jobs over mi_intra_comm (not
-        // necessary for dedicated-scheduler as jobs are assigned from the
-        // scheduler).
-        if (iterSched.lead_rank()) {
-          MPIPackBuffer send_buffer;
-          send_buffer << random_jobs;
-          int buffer_len = send_buffer.size();
-          parallelLib.bcast_hs(buffer_len, mi_pl);
-          parallelLib.bcast_hs(send_buffer, mi_pl);
-        } else {
-          int buffer_len;
-          parallelLib.bcast_hs(buffer_len, mi_pl);
-          MPIUnpackBuffer recv_buffer(buffer_len);
-          parallelLib.bcast_hs(recv_buffer, mi_pl);
-          recv_buffer >> random_jobs;
-        }
+	  iterSched.numIteratorServers > 1) {
+	const ParallelLevel& mi_pl
+	  = methodPCIter->mi_parallel_level(iterSched.miPLIndex);
+	// For static scheduling, bcast all random jobs over mi_intra_comm (not 
+	// necessary for dedicated-scheduler as jobs are assigned from the
+	// scheduler).
+	if (iterSched.lead_rank()) {
+	  MPIPackBuffer send_buffer;
+	  send_buffer << random_jobs;
+	  int buffer_len = send_buffer.size();
+	  parallelLib.bcast_hs(buffer_len, mi_pl);
+	  parallelLib.bcast_hs(send_buffer, mi_pl);
+	}
+	else {
+	  int buffer_len;
+	  parallelLib.bcast_hs(buffer_len, mi_pl);
+	  MPIUnpackBuffer recv_buffer(buffer_len);
+	  parallelLib.bcast_hs(recv_buffer, mi_pl);
+	  recv_buffer >> random_jobs;
+	}
       }
 
       // rescale (if needed) and append to parameterSets
       size_t cntr = parameterSets.size();
       parameterSets.resize(iterSched.numIteratorJobs);
-      for (i = 0; i < numRandomJobs; ++i, ++cntr) {
+      for (i=0; i<numRandomJobs; ++i, ++cntr) {
         if (methodName == MULTI_START)
           parameterSets[cntr] = random_jobs[i];
-        else {  // scale: multi-objective weights should add to 1
+        else { // scale: multi-objective weights should add to 1
           // NOTE: there is a better way to do this; i.e., mixture experimental
           // design (e.g., Ch. 11 in Myers and Montgomery), but scaling an LHS
           // design is sufficient as a first cut.
           Real sum = 0.0;
-          for (j = 0; j < paramSetLen; j++) sum += random_jobs[i][j];
+          for (j=0; j<paramSetLen; j++)
+            sum += random_jobs[i][j];
           parameterSets[cntr].sizeUninitialized(paramSetLen);
-          for (j = 0; j < paramSetLen; j++)
-            parameterSets[cntr][j] = random_jobs[i][j] / sum;
+          for (j=0; j<paramSetLen; j++)
+            parameterSets[cntr][j] = random_jobs[i][j]/sum;
         }
       }
     }
@@ -395,7 +408,9 @@ void ConcurrentMetaIterator::pre_run() {
   prpResults.resize(iterSched.numIteratorJobs);
 }
 
-void ConcurrentMetaIterator::core_run() {
+
+void ConcurrentMetaIterator::core_run()
+{
   // For graphics data, limit to iterator server comm leaders; this is further
   // segregated within initialize_graphics(): all iterator schedulers stream
   // tabular data, but only iterator server 1 generates a graphics window.
@@ -408,27 +423,28 @@ void ConcurrentMetaIterator::core_run() {
   iterSched.schedule_iterators(*this, *selectedIterator);
 }
 
-void ConcurrentMetaIterator::print_results(std::ostream& s,
-                                           short results_state) {
+
+void ConcurrentMetaIterator::print_results(std::ostream& s, short results_state)
+{
   using std::setw;
   s << "\n<<<<< Results summary:\n";
 
   // Table header:
-  StringMultiArrayConstView cv_labels =
-      prpResults[0].variables().continuous_variable_labels();
-  StringMultiArrayConstView div_labels =
-      prpResults[0].variables().discrete_int_variable_labels();
-  StringMultiArrayConstView dsv_labels =
-      prpResults[0].variables().discrete_string_variable_labels();
-  StringMultiArrayConstView drv_labels =
-      prpResults[0].variables().discrete_real_variable_labels();
-  const StringArray& fn_labels = prpResults[0].response().function_labels();
-  size_t i, num_cv = cv_labels.size(), num_div = div_labels.size(),
-            num_dsv = dsv_labels.size(), num_drv = drv_labels.size(),
-            num_fns = fn_labels.size();
-  s << "   set_id ";           // matlab comment syntax
-  StringArray weight_strings;  // used to store pareto_set results
-  for (i = 0; i < paramSetLen; ++i) {
+  StringMultiArrayConstView cv_labels
+    = prpResults[0].variables().continuous_variable_labels();
+  StringMultiArrayConstView div_labels
+    = prpResults[0].variables().discrete_int_variable_labels();
+  StringMultiArrayConstView dsv_labels
+    = prpResults[0].variables().discrete_string_variable_labels();  
+  StringMultiArrayConstView drv_labels
+    = prpResults[0].variables().discrete_real_variable_labels();
+  const StringArray& fn_labels = prpResults[0].response().function_labels();  
+  size_t i, num_cv  = cv_labels.size(),  num_div = div_labels.size(),
+    num_dsv = dsv_labels.size(), num_drv = drv_labels.size(), 
+    num_fns = fn_labels.size();
+  s << "   set_id "; // matlab comment syntax
+  StringArray weight_strings; // used to store pareto_set results
+  for (i=0; i<paramSetLen; ++i) {
     if (methodName == MULTI_START)
       s << setw(14) << cv_labels[i].data() << ' ';
     else {
@@ -438,39 +454,40 @@ void ConcurrentMetaIterator::print_results(std::ostream& s,
       s << setw(14) << string << ' ';
     }
   }
-  for (i = 0; i < num_cv; i++) {
-    String label =
-        (methodName == MULTI_START) ? cv_labels[i] + String("*") : cv_labels[i];
+  for (i=0; i<num_cv; i++) {
+    String label = (methodName == MULTI_START) ?
+      cv_labels[i] + String("*") : cv_labels[i];
     s << setw(14) << label.data() << ' ';
   }
-  for (i = 0; i < num_div; i++) {
-    String label = (methodName == MULTI_START) ? div_labels[i] + String("*")
-                                               : div_labels[i];
+  for (i=0; i<num_div; i++) {
+    String label = (methodName == MULTI_START) ?
+      div_labels[i] + String("*") : div_labels[i];
     s << setw(14) << label.data() << ' ';
   }
-  for (i = 0; i < num_dsv; i++) {
-    String label = (methodName == MULTI_START) ? dsv_labels[i] + String("*")
-                                               : dsv_labels[i];
+  for (i=0; i<num_dsv; i++) {
+    String label = (methodName == MULTI_START) ?
+      dsv_labels[i] + String("*") : dsv_labels[i];
     s << setw(14) << label.data() << ' ';
   }
-  for (i = 0; i < num_drv; i++) {
-    String label = (methodName == MULTI_START) ? drv_labels[i] + String("*")
-                                               : drv_labels[i];
+  for (i=0; i<num_drv; i++) {
+    String label = (methodName == MULTI_START) ?
+      drv_labels[i] + String("*") : drv_labels[i];
     s << setw(14) << label.data() << ' ';
   }
-  for (i = 0; i < num_fns; i++) s << setw(14) << fn_labels[i].data() << ' ';
+  for (i=0; i<num_fns; i++)
+    s << setw(14) << fn_labels[i].data() << ' ';
   s << '\n';
 
   // Table data:
   size_t num_results = prpResults.size();
-  for (i = 0; i < num_results; ++i) {
+  for (i=0; i<num_results; ++i) {
     const ParamResponsePair& prp_result = prpResults[i];
     s << std::setprecision(10) << std::resetiosflags(std::ios::floatfield)
-      << setw(9) << prp_result.eval_id() << ' ';
-    for (size_t j = 0; j < paramSetLen; ++j)
+         << setw(9) << prp_result.eval_id() << ' ';
+    for (size_t j=0; j<paramSetLen; ++j)
       s << setw(14) << parameterSets[i][j] << ' ';
     const Variables& prp_vars = prp_result.variables();
-    // prp_vars.write_tabular(s) not used since active vars, not all vars
+    //prp_vars.write_tabular(s) not used since active vars, not all vars
     write_data_tabular(s, prp_vars.continuous_variables());
     write_data_tabular(s, prp_vars.discrete_int_variables());
     write_data_tabular(s, prp_vars.discrete_string_variables());
@@ -479,7 +496,7 @@ void ConcurrentMetaIterator::print_results(std::ostream& s,
   }
   s << '\n';
   // Write results to DB
-  if (resultsDB.active()) {
+  if(resultsDB.active()) {
     const auto iterator_id = run_identifier();
     // set_ids for dimnension scales
     IntArray set_ids(num_results);
@@ -489,91 +506,78 @@ void ConcurrentMetaIterator::print_results(std::ostream& s,
     DimScaleMap pset_scales;
     StringArray pset_location;
     pset_scales.emplace(0, IntegerScale("set_ids", set_ids));
-    if (methodName == MULTI_START) {
+    if(methodName == MULTI_START) {
       pset_scales.emplace(1, StringScale("variables", cv_labels));
       pset_location = {String("starting_points"), String("continuous")};
     } else {
       pset_scales.emplace(1, StringScale("weights", weight_strings));
       pset_location.push_back("weights");
     }
-    resultsDB.allocate_matrix(iterator_id, pset_location,
-                              Dakota::ResultsOutputType::REAL, num_results,
-                              paramSetLen, pset_scales);
-    for (int i = 0; i < num_results; ++i)
-      resultsDB.insert_into(iterator_id, pset_location, parameterSets[i], i);
-    // Store best continuous variables
-    if (num_cv) {  // should always be true
+    resultsDB.allocate_matrix(iterator_id, pset_location, 
+        Dakota::ResultsOutputType::REAL, num_results, paramSetLen, pset_scales);
+    for(int i = 0; i < num_results; ++i)
+      resultsDB.insert_into(iterator_id, pset_location, parameterSets[i],i);
+    // Store best continuous variables 
+    if(num_cv) {  // should always be true
       DimScaleMap best_parameters_scales;
       best_parameters_scales.emplace(0, IntegerScale("set_id", set_ids));
       best_parameters_scales.emplace(1, StringScale("variables", cv_labels));
       StringArray location = {String("best_parameters"), String("continuous")};
-      resultsDB.allocate_matrix(iterator_id, location,
-                                Dakota::ResultsOutputType::REAL, num_results,
-                                num_cv, best_parameters_scales);
-      for (int i = 0; i < num_results; ++i)
+      resultsDB.allocate_matrix(iterator_id, location, Dakota::ResultsOutputType::REAL, 
+          num_results, num_cv, best_parameters_scales);
+      for(int i = 0; i < num_results; ++i)
         resultsDB.insert_into(iterator_id, location,
-                              prpResults[i].variables().continuous_variables(),
-                              i);
+            prpResults[i].variables().continuous_variables(), i);
     }
     // Store best discrete ints
-    if (num_div) {
+    if(num_div) {
       DimScaleMap best_parameters_scales;
       best_parameters_scales.emplace(0, IntegerScale("set_ids", set_ids));
       best_parameters_scales.emplace(1, StringScale("variables", div_labels));
-      StringArray location = {String("best_parameters"),
-                              String("discrete_integer")};
-      resultsDB.allocate_matrix(iterator_id, location,
-                                Dakota::ResultsOutputType::INTEGER, num_results,
-                                num_div, best_parameters_scales);
-      for (int i = 0; i < num_results; ++i)
-        resultsDB.insert_into(
-            iterator_id, location,
+      StringArray location = {String("best_parameters"), String("discrete_integer")};
+      resultsDB.allocate_matrix(iterator_id, location, Dakota::ResultsOutputType::INTEGER, 
+          num_results, num_div, best_parameters_scales);
+      for(int i = 0; i < num_results; ++i)
+        resultsDB.insert_into(iterator_id, location,
             prpResults[i].variables().discrete_int_variables(), i);
     }
     // Store best discrete strings
-    if (num_dsv) {
+    if(num_dsv) {
       DimScaleMap best_parameters_scales;
       best_parameters_scales.emplace(0, IntegerScale("set_ids", set_ids));
       best_parameters_scales.emplace(1, StringScale("variables", dsv_labels));
-      StringArray location = {String("best_parameters"),
-                              String("discrete_string")};
-      resultsDB.allocate_matrix(iterator_id, location,
-                                Dakota::ResultsOutputType::STRING, num_results,
-                                num_dsv, best_parameters_scales);
-      for (int i = 0; i < num_results; ++i)
-        resultsDB.insert_into(
-            iterator_id, location,
+      StringArray location = {String("best_parameters"), String("discrete_string")};
+      resultsDB.allocate_matrix(iterator_id, location, Dakota::ResultsOutputType::STRING, 
+          num_results, num_dsv, best_parameters_scales);
+      for(int i = 0; i < num_results; ++i)
+        resultsDB.insert_into(iterator_id, location,
             prpResults[i].variables().discrete_string_variables(), i);
     }
     // Store best discrete reals
-    if (num_drv) {
+    if(num_drv) {
       DimScaleMap best_parameters_scales;
       best_parameters_scales.emplace(0, IntegerScale("set_ids", set_ids));
       best_parameters_scales.emplace(1, StringScale("variables", drv_labels));
-      StringArray location = {String("best_parameters"),
-                              String("discrete_real")};
-      resultsDB.allocate_matrix(iterator_id, location,
-                                Dakota::ResultsOutputType::REAL, num_results,
-                                num_drv, best_parameters_scales);
-      for (int i = 0; i < num_results; ++i)
-        resultsDB.insert_into(
-            iterator_id, location,
+      StringArray location = {String("best_parameters"), String("discrete_real")};
+      resultsDB.allocate_matrix(iterator_id, location, Dakota::ResultsOutputType::REAL, 
+          num_results, num_drv, best_parameters_scales);
+      for(int i = 0; i < num_results; ++i)
+        resultsDB.insert_into(iterator_id, location,
             prpResults[i].variables().discrete_real_variables(), i);
     }
     // Store best responses
-    if (num_fns) {
+    if(num_fns) {
       DimScaleMap best_responses_scales;
       best_responses_scales.emplace(0, IntegerScale("set_ids", set_ids));
       best_responses_scales.emplace(1, StringScale("responses", fn_labels));
       StringArray location = {String("best_responses")};
-      resultsDB.allocate_matrix(iterator_id, location,
-                                Dakota::ResultsOutputType::REAL, num_results,
-                                num_fns, best_responses_scales);
-      for (int i = 0; i < num_results; ++i)
+      resultsDB.allocate_matrix(iterator_id, location, Dakota::ResultsOutputType::REAL, 
+          num_results, num_fns, best_responses_scales);
+      for(int i = 0; i < num_results; ++i)
         resultsDB.insert_into(iterator_id, location,
-                              prpResults[i].response().function_values(), i);
+            prpResults[i].response().function_values(), i);
     }
   }
 }
 
-}  // namespace Dakota
+} // namespace Dakota

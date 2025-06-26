@@ -17,50 +17,62 @@ namespace Dakota {
 
 // This class provides a common interface for the sampler drivers
 class SamplerDriver {
- public:
-  // Destructor
-  virtual ~SamplerDriver() = default;
+public:
+    // Destructor
+    virtual ~SamplerDriver() = default;
 
-  // Common methods for sampler drivers
-  virtual void generate_uniform_samples(const RealVector& lowerBounds,
-                                        const RealVector& upperBounds,
-                                        RealSymMatrix& correlationMatrix,
-                                        size_t numSamples,
-                                        RealMatrix& samplesArray) = 0;
+    // Common methods for sampler drivers
+    virtual void generate_uniform_samples(
+        const RealVector& lowerBounds,
+        const RealVector& upperBounds,
+        RealSymMatrix& correlationMatrix,
+        size_t numSamples,
+        RealMatrix& samplesArray
+    ) = 0;
 
-  virtual void generate_normal_samples(const RealVector& means,
-                                       const RealVector& standardDeviations,
-                                       const RealVector& lowerBounds,
-                                       const RealVector& upperBounds,
-                                       RealSymMatrix& correlationMatrix,
-                                       size_t numSamples,
-                                       RealMatrix& samplesArray) = 0;
+    virtual void generate_normal_samples(
+        const RealVector& means,
+        const RealVector& standardDeviations,
+        const RealVector& lowerBounds,
+        const RealVector& upperBounds,
+        RealSymMatrix& correlationMatrix,
+        size_t numSamples,
+        RealMatrix& samplesArray
+    ) = 0;
 
-  virtual void generate_unique_samples(std::shared_ptr<Model> model,
-                                       size_t numSamples,
-                                       RealMatrix& samplesArray,
-                                       RealMatrix& sampleRanks,
-                                       const BitArray& activeVariables,
-                                       const BitArray& activeCorrelations) = 0;
+    virtual void generate_unique_samples(
+        std::shared_ptr<Model> model,
+        size_t numSamples,
+        RealMatrix& samplesArray,
+        RealMatrix& sampleRanks,
+        const BitArray& activeVariables,
+        const BitArray& activeCorrelations
+    ) = 0;
 
-  virtual void generate_samples(std::shared_ptr<Model> model, size_t numSamples,
-                                RealMatrix& samplesArray,
-                                RealMatrix& sampleRanks,
-                                const BitArray& activeVariables,
-                                const BitArray& activeCorrelations) = 0;
+    virtual void generate_samples(
+        std::shared_ptr<Model> model,
+        size_t numSamples,
+        RealMatrix& samplesArray,
+        RealMatrix& sampleRanks,
+        const BitArray& activeVariables,
+        const BitArray& activeCorrelations
+    ) = 0;
 
-  virtual void rng(String rngName) = 0;
+    virtual void rng(String rngName) = 0;
 
-  virtual void seed(int randomSeed) = 0;
+    virtual void seed(int randomSeed) = 0;
 
-  virtual void advance_seed_sequence() = 0;
+    virtual void advance_seed_sequence() = 0;
 
-  virtual int seed() = 0;
+    virtual int seed() = 0;
 
-  virtual void initialize(const String& sampleType, short sampleRanksMode,
-                          bool reports) = 0;
+    virtual void initialize(
+        const String& sampleType,
+		short sampleRanksMode,
+        bool reports
+    ) = 0;
 };
 
-}  // Namespace Dakota
+} // Namespace Dakota
 
 #endif

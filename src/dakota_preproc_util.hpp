@@ -14,13 +14,15 @@
 
 namespace Dakota {
 
+
 /// utility to write an input string to a tmpfile in PWD
 std::string string_to_tmpfile(const std::string& dump_string);
 
 /// run pyprepro on the user-provided input file and return generated tmp output
 std::string pyprepro_input(const std::string& template_file,
-                           const std::string& preproc_cmd = "pyprepro.py");
+		           const std::string& preproc_cmd = "pyprepro.py");
+
 
 }  // namespace Dakota
 
-#endif  // include guard
+#endif // include guard

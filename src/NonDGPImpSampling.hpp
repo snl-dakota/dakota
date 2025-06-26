@@ -10,36 +10,37 @@
 #ifndef NOND_GP_IMP_SAMPLING_H
 #define NOND_GP_IMP_SAMPLING_H
 
-#include "DataMethod.hpp"
 #include "NonDSampling.hpp"
+#include "DataMethod.hpp"
 
 namespace Dakota {
 
-/// Class for the Gaussian Process-based Importance Sampling method
+/// Class for the Gaussian Process-based Importance Sampling method 
 
-/** The NonDGPImpSampling implements a method developed by Keith Dalbey
-    that uses a Gaussian process surrogate in the calculation of the
-    importance density.  Specifically, the mean and variance of the
-    GP prediction are used to calculate an expected value that
-    a particular point fails, and that is used as part of the
-    computation of the "draw distribution."  The normalization constants
-    and the mixture distribution used are defined in (need to get
+/** The NonDGPImpSampling implements a method developed by Keith Dalbey 
+    that uses a Gaussian process surrogate in the calculation of the 
+    importance density.  Specifically, the mean and variance of the 
+    GP prediction are used to calculate an expected value that 
+    a particular point fails, and that is used as part of the 
+    computation of the "draw distribution."  The normalization constants 
+    and the mixture distribution used are defined in (need to get 
     SAND report). */
 
-class NonDGPImpSampling : public NonDSampling {
- public:
+class NonDGPImpSampling: public NonDSampling
+{
+public:
+
   //
   //- Heading: Constructors and destructor
   //
 
   /// standard constructor
-  NonDGPImpSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
-                    std::shared_ptr<Model> model);
+  NonDGPImpSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
 
   // alternate constructor for sample generation and evaluation "on the fly"
-  // NonDGPImpSampling(std::shared_ptr<Model> model, const String& sample_type,
+  //NonDGPImpSampling(std::shared_ptr<Model> model, const String& sample_type,
   //		      int samples, int seed, const String& rng,
-  //		      short sampling_vars_mode = ACTIVE,
+  //		      short sampling_vars_mode = ACTIVE, 
   //                  const RealVector& lower_bnds,
   //                  const RealVector& upper_bnds);
 
@@ -57,10 +58,9 @@ class NonDGPImpSampling : public NonDSampling {
 
   /// perform the GP importance sampling and return probability of failure
   void core_run() override;
-
+  
   /// print the final statistics
-  void print_results(std::ostream& s,
-                     short results_state = FINAL_RESULTS) override;
+  void print_results(std::ostream& s, short results_state = FINAL_RESULTS) override;
 
   //
   //- Heading: Member functions
@@ -69,8 +69,10 @@ class NonDGPImpSampling : public NonDSampling {
   /// returns the probability calculated by the importance sampling
   Real final_probability();
 
- protected:
- private:
+protected:
+ 
+private:
+
   //
   //- Heading: Data
   //
@@ -81,9 +83,9 @@ class NonDGPImpSampling : public NonDSampling {
   std::shared_ptr<Iterator> gpEval;
   /// GP model of response, one approximation per response function
   std::shared_ptr<Model> gpModel;
-  /// LHS iterator for sampling from the rhoOneDistribution
+  /// LHS iterator for sampling from the rhoOneDistribution 
   std::shared_ptr<Iterator> sampleRhoOne;
-
+  
   /// the number of points added to the original set of LHS samples
   int numPtsAdd;
   /// the total number of points
@@ -94,46 +96,45 @@ class NonDGPImpSampling : public NonDSampling {
   Real finalProb;
   /// Vector to hold the current values of the current sample inputs on the GP
   RealVectorArray gpCvars;
-  /// Vector to hold the current values of the current mean estimates
+  /// Vector to hold the current values of the current mean estimates 
   /// for the sample values on the GP
   RealVectorArray gpMeans;
-  /// Vector to hold the current values of the current variance estimates
+  /// Vector to hold the current values of the current variance estimates 
   /// for the sample values on the GP
   RealVectorArray gpVar;
   /// Vector to hold the expected indicator values for the current GP samples
-  RealVector expIndicator;
+  RealVector expIndicator; 
   /// Vector to hold the rhoDraw values for the current GP samples
-  RealVector rhoDraw;
-  /// Vector to hold the normalization constant calculated for each
+  RealVector rhoDraw; 
+  /// Vector to hold the normalization constant calculated for each 
   /// point added
   RealVector normConst;
   /// IntVector to hold indicator for actual simulation values vs. threshold
   RealVector indicator;
-  /// xDrawThis, appended to locally to hold the X values of emulator points
-  /// chosen
-  RealVectorArray xDrawThis;
-  /// expIndThis, appended locally to hold the expected indicator
-  RealVector expIndThis;
-  /// rhoDrawThis, appended locally to hold the rhoDraw density for calculating
-  /// draws
-  RealVector rhoDrawThis;
+  /// xDrawThis, appended to locally to hold the X values of emulator points chosen
+  RealVectorArray xDrawThis; 
+  /// expIndThis, appended locally to hold the expected indicator 
+  RealVector expIndThis; 
+  /// rhoDrawThis, appended locally to hold the rhoDraw density for calculating draws
+  RealVector rhoDrawThis; 
   /// rhoMix, mixture density
-  RealVector rhoMix;
+  RealVector rhoMix; 
   /// rhoOne, original importance density
-  RealVector rhoOne;
+  RealVector rhoOne; 
   /// function to calculate the expected indicator probabilities
   RealVector calcExpIndicator(const int respFnCount, const Real respThresh);
   /// function to calculate the expected indicator probabilities for one point
-  Real calcExpIndPoint(const int respFnCount, const Real respThresh,
-                       const RealVector this_mean, const RealVector this_var);
+  Real calcExpIndPoint(const int respFnCount, const Real respThresh, const RealVector this_mean, const RealVector this_var);
   /// function to update the rhoDraw data, adding x values and rho draw values
   void calcRhoDraw();
   /// function to pick the next X value to be evaluated by the Iterated model
   RealVector drawNewX(int this_k);
 };
 
-inline Real NonDGPImpSampling::final_probability() { return finalProb; }
 
-}  // namespace Dakota
+inline Real NonDGPImpSampling::final_probability()
+{ return finalProb; }
+
+} // namespace Dakota
 
 #endif

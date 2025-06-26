@@ -8,7 +8,6 @@
     _______________________________________________________________________ */
 
 #include "ProgramOptions.hpp"
-
 #include "CommandLineHandler.hpp"
 #include "ProblemDescDB.hpp"
 
@@ -16,8 +15,7 @@ namespace Dakota {
 
 // BMA TODO: review default settings from parallel library
 // checkFlag(false),
-// runModes.preRun(true), runModes.run(true), runModes.postRun(true),
-// runModes.user_modes()(false),
+// runModes.preRun(true), runModes.run(true), runModes.postRun(true), runModes.user_modes()(false),
 
 // BMA TODO: some of this should be conditional on rank
 
@@ -25,49 +23,40 @@ namespace Dakota {
 // constructs and then makes additional sessings?  Could the copy ctor
 // and assignment be used to validate when passed into Environment ctor?
 
-ProgramOptions::ProgramOptions()
-    : worldRank(0),
-      echoInput(true),
-      preprocInput(false),
-      stopRestartEvals(0),
-      helpFlag(false),
-      versionFlag(false),
-      checkFlag(false),
-      stdinInput(false) {
+
+ProgramOptions::ProgramOptions():
+  worldRank(0),
+  echoInput(true), preprocInput(false), stopRestartEvals(0),
+  helpFlag(false), versionFlag(false), checkFlag(false), 
+  stdinInput(false)
+{
   // environment settings are overridden by command line options
   parse_environment_options();
   validate();
 }
 
-ProgramOptions::ProgramOptions(int world_rank)
-    : worldRank(world_rank),
-      echoInput(true),
-      preprocInput(false),
-      stopRestartEvals(0),
-      helpFlag(false),
-      versionFlag(false),
-      checkFlag(false),
-      stdinInput(false) {
+ProgramOptions::ProgramOptions(int world_rank):
+  worldRank(world_rank),
+  echoInput(true), preprocInput(false), stopRestartEvals(0),
+  helpFlag(false), versionFlag(false), checkFlag(false), 
+  stdinInput(false)
+{
   // environment settings are overridden by command line options
   parse_environment_options();
   validate();
 }
 
-ProgramOptions::ProgramOptions(int argc, char* argv[], int world_rank)
-    : worldRank(world_rank),
-      echoInput(true),
-      preprocInput(false),
-      stopRestartEvals(0),
-      helpFlag(false),
-      versionFlag(false),
-      checkFlag(false),
-      stdinInput(false) {
+ProgramOptions::ProgramOptions(int argc, char* argv[], int world_rank):
+  worldRank(world_rank),
+  echoInput(true), preprocInput(false), stopRestartEvals(0),
+  helpFlag(false), versionFlag(false), checkFlag(false), stdinInput(false)
+{
   // environment settings are overridden by command line options
   parse_environment_options();
 
   // encapsulate CLH here; world_rank manages conditional output
   CommandLineHandler clh(argc, argv, world_rank);
-
+  
   helpFlag = clh.retrieve("help");
   versionFlag = clh.retrieve("version");
   checkFlag = clh.retrieve("check");
@@ -75,9 +64,10 @@ ProgramOptions::ProgramOptions(int argc, char* argv[], int world_rank)
   // Need to catch the NULL case; this will clean up when GetLongOpt
   // gets refactored
 
-  if (clh.retrieve("input")) inputFile = clh.retrieve("input");
-
-  if (inputFile == "-") {
+  if (clh.retrieve("input"))
+    inputFile = clh.retrieve("input");
+  
+  if(inputFile == "-") {
     stdinInput = true;
     inputFile = "";
   }
@@ -85,17 +75,21 @@ ProgramOptions::ProgramOptions(int argc, char* argv[], int world_rank)
   if (clh.retrieve("preproc")) {
     preprocInput = true;
     preprocCmd = clh.retrieve("preproc");
-    if (preprocCmd.empty()) preprocCmd = "pyprepro.py";
+    if (preprocCmd.empty())
+      preprocCmd = "pyprepro.py";
   }
 
-  if (clh.retrieve("output")) outputFile = clh.retrieve("output");
-  if (clh.retrieve("error")) errorFile = clh.retrieve("error");
+  if (clh.retrieve("output"))
+    outputFile = clh.retrieve("output");
+  if (clh.retrieve("error"))
+    errorFile = clh.retrieve("error");
 
   // only specify this file if the user passed the option
   if (clh.retrieve("read_restart")) {
     readRestartFile = clh.retrieve("read_restart");
     // check for specified, but without arg; use default restart filename
-    if (readRestartFile.empty()) readRestartFile = "dakota.rst";
+    if (readRestartFile.empty())
+      readRestartFile = "dakota.rst";
   }
 
   // CLH no longer sets the default value dakota.rst; see
@@ -106,169 +100,198 @@ ProgramOptions::ProgramOptions(int argc, char* argv[], int world_rank)
 
   manage_run_modes(clh);
 
-  if (clh.retrieve("parser")) parserOptions = clh.retrieve("parser");
+  if (clh.retrieve("parser"))
+    parserOptions = clh.retrieve("parser");
 
-  if (clh.retrieve("no_input_echo")) echoInput = false;
+  if (clh.retrieve("no_input_echo"))
+    echoInput = false;
 
   validate();
 }
 
-const String& ProgramOptions::input_file() const { return inputFile; }
 
-const String& ProgramOptions::input_string() const { return inputString; }
+const String& ProgramOptions::input_file() const
+{ return inputFile; }
 
-bool ProgramOptions::stdin_input() const { return stdinInput; }
+const String& ProgramOptions::input_string() const
+{ return inputString; }
 
-bool ProgramOptions::echo_input() const { return echoInput; }
+bool ProgramOptions::stdin_input() const
+{ return stdinInput; }
 
-bool ProgramOptions::preproc_input() const { return preprocInput; }
+bool ProgramOptions::echo_input() const
+{ return echoInput; }
 
-const String& ProgramOptions::preproc_cmd() const { return preprocCmd; }
+bool ProgramOptions::preproc_input() const
+{ return preprocInput; }
 
-const String& ProgramOptions::preprocessed_file() const {
-  return preprocFilename;
-}
+const String& ProgramOptions::preproc_cmd() const
+{ return preprocCmd; }
 
-const String& ProgramOptions::parser_options() const { return parserOptions; }
+const String& ProgramOptions::preprocessed_file() const
+{ return preprocFilename; }
 
-String ProgramOptions::output_file() const {
-  return outputFile.empty() ? "dakota.out" : outputFile;
-}
+const String& ProgramOptions::parser_options() const
+{ return parserOptions; }
 
-const String& ProgramOptions::error_file() const { return errorFile; }
+String ProgramOptions::output_file() const
+{ return outputFile.empty() ? "dakota.out" : outputFile; }
 
-const String& ProgramOptions::exit_mode() const { return exitMode; }
+const String& ProgramOptions::error_file() const
+{ return errorFile; }
 
-const String& ProgramOptions::read_restart_file() const {
-  return readRestartFile;
-}
+const String& ProgramOptions::exit_mode() const
+{ return exitMode; }
 
-size_t ProgramOptions::stop_restart_evals() const { return stopRestartEvals; }
+const String& ProgramOptions::read_restart_file() const
+{ return readRestartFile; }
 
-String ProgramOptions::write_restart_file() const {
-  return writeRestartFile.empty() ? "dakota.rst" : writeRestartFile;
-}
+size_t ProgramOptions::stop_restart_evals() const
+{ return stopRestartEvals; }
 
-bool ProgramOptions::help() const { return helpFlag; }
+String ProgramOptions::write_restart_file() const
+{ return writeRestartFile.empty() ? "dakota.rst" : writeRestartFile; }
 
-bool ProgramOptions::version() const { return versionFlag; }
 
-bool ProgramOptions::check() const { return checkFlag; }
+bool ProgramOptions::help() const
+{ return helpFlag; }
 
-const UserModes& ProgramOptions::user_modes() const { return userModes; }
+bool ProgramOptions::version() const
+{ return versionFlag; }
 
-bool ProgramOptions::proceed_to_instantiate() const {
-  if (helpFlag || versionFlag) return false;
+bool ProgramOptions::check() const
+{ return checkFlag; }
+
+const UserModes& ProgramOptions::user_modes() const
+{ return userModes; }
+
+bool ProgramOptions::proceed_to_instantiate() const
+{
+  if (helpFlag || versionFlag)
+    return false;
   return true;
 }
 
-bool ProgramOptions::proceed_to_run() const {
-  if (helpFlag || versionFlag || checkFlag) return false;
+
+bool ProgramOptions::proceed_to_run() const
+{
+  if (helpFlag || versionFlag || checkFlag)
+    return false;
   return true;
 }
 
-bool ProgramOptions::user_stdout_redirect() const {
-  return !outputFile.empty();
+
+bool ProgramOptions::user_stdout_redirect() const 
+{ return !outputFile.empty(); }
+
+bool ProgramOptions::user_stderr_redirect() const 
+{ return !errorFile.empty(); }
+
+
+void ProgramOptions::world_rank(int world_rank)
+{
+  worldRank = world_rank;
 }
 
-bool ProgramOptions::user_stderr_redirect() const { return !errorFile.empty(); }
 
-void ProgramOptions::world_rank(int world_rank) { worldRank = world_rank; }
-
-void ProgramOptions::input_file(const String& in_file) {
-  inputFile = in_file;
+void ProgramOptions::input_file(const String& in_file)
+{ 
+  inputFile = in_file; 
   // not an error if client later resolves
-  if (!inputFile.empty() && inputFile != "-" && !inputString.empty() &&
-      worldRank == 0)
+  if ( !inputFile.empty()   && 
+       inputFile != "-"     &&
+       !inputString.empty() && 
+       worldRank == 0)
     Cout << "Warning (ProgramOptions): both input file and string specified."
-         << std::endl;
+	 << std::endl;
 }
 
-void ProgramOptions::input_string(const String& in_string) {
+void ProgramOptions::input_string(const String& in_string)
+{  
   inputString = in_string;
   // not an error if client later resolves
-  if (!inputFile.empty() && inputFile != "-" && !inputString.empty() &&
-      worldRank == 0)
+  if ( !inputFile.empty()   && 
+       inputFile != "-"     &&
+       !inputString.empty() && 
+       worldRank == 0)
     Cout << "Warning (ProgramOptions): both input file and string specified."
-         << std::endl;
+	 << std::endl;
 }
 
-void ProgramOptions::echo_input(bool echo_flag) { echoInput = echo_flag; }
+void ProgramOptions::echo_input(bool echo_flag)
+{ echoInput = echo_flag; }
 
-void ProgramOptions::preproc_input(bool pp_flag) { preprocInput = pp_flag; }
+void ProgramOptions::preproc_input(bool pp_flag)
+{ preprocInput = pp_flag; }
 
-void ProgramOptions::preproc_cmd(const String& pp_cmd) { preprocCmd = pp_cmd; }
+void ProgramOptions::preproc_cmd(const String& pp_cmd)
+{ preprocCmd = pp_cmd; }
 
-void ProgramOptions::preprocessed_file(const String& prepro_file) {
-  preprocFilename = prepro_file;
-}
+void ProgramOptions::preprocessed_file(const String& prepro_file)
+{ preprocFilename = prepro_file; }
 
-void ProgramOptions::output_file(const String& out_file) {
-  outputFile = out_file;
-}
+void ProgramOptions::output_file(const String& out_file)
+{ outputFile = out_file; }
 
-void ProgramOptions::error_file(const String& err_file) {
-  errorFile = err_file;
-}
+void ProgramOptions::error_file(const String& err_file)
+{ errorFile = err_file; }
 
-void ProgramOptions::exit_mode(const String& mode) { exitMode = mode; }
+void ProgramOptions::exit_mode(const String& mode)
+{ exitMode = mode; }
 
-void ProgramOptions::read_restart_file(const String& read_rst) {
-  readRestartFile = read_rst;
-}
+void ProgramOptions::read_restart_file(const String& read_rst)
+{ readRestartFile = read_rst; }
 
-void ProgramOptions::stop_restart_evals(size_t stop_rst) {
-  stopRestartEvals = stop_rst;
-}
+void ProgramOptions::stop_restart_evals(size_t stop_rst)
+{ stopRestartEvals = stop_rst; }
 
-void ProgramOptions::write_restart_file(const String& write_rst) {
-  writeRestartFile = write_rst;
-}
+void ProgramOptions::write_restart_file(const String& write_rst)
+{ writeRestartFile = write_rst; }
 
-void ProgramOptions::help(bool help_flag) { helpFlag = help_flag; }
 
-void ProgramOptions::version(bool version_flag) { versionFlag = version_flag; }
+void ProgramOptions::help(bool help_flag)
+{ helpFlag = help_flag; }
 
-void ProgramOptions::check(bool check_flag) { checkFlag = check_flag; }
+void ProgramOptions::version(bool version_flag)
+{ versionFlag = version_flag; }
 
-void ProgramOptions::pre_run(bool pre_run_flag) {
-  userModes.preRun = pre_run_flag;
-}
+void ProgramOptions::check(bool check_flag)
+{ checkFlag = check_flag; }
 
-void ProgramOptions::run(bool run_flag) { userModes.run = run_flag; }
+void ProgramOptions::pre_run(bool pre_run_flag)
+{ userModes.preRun = pre_run_flag; }
 
-void ProgramOptions::post_run(bool post_run_flag) {
-  userModes.postRun = post_run_flag;
-}
+void ProgramOptions::run(bool run_flag)
+{ userModes.run = run_flag; }
 
-void ProgramOptions::pre_run_input(const String& pre_run_in) {
-  userModes.preRunInput = pre_run_in;
-}
+void ProgramOptions::post_run(bool post_run_flag)
+{ userModes.postRun = post_run_flag; }
 
-void ProgramOptions::pre_run_output(const String& pre_run_out) {
-  userModes.preRunOutput = pre_run_out;
-}
 
-void ProgramOptions::run_input(const String& run_in) {
-  userModes.runInput = run_in;
-}
+void ProgramOptions::pre_run_input(const String& pre_run_in)
+{ userModes.preRunInput = pre_run_in; }
 
-void ProgramOptions::run_output(const String& run_out) {
-  userModes.runOutput = run_out;
-}
+void ProgramOptions::pre_run_output(const String& pre_run_out)
+{ userModes.preRunOutput = pre_run_out; }
 
-void ProgramOptions::post_run_input(const String& post_run_in) {
-  userModes.postRunInput = post_run_in;
-}
+void ProgramOptions::run_input(const String& run_in)
+{ userModes.runInput = run_in; }
 
-void ProgramOptions::post_run_output(const String& post_run_out) {
-  userModes.postRunOutput = post_run_out;
-}
+void ProgramOptions::run_output(const String& run_out)
+{ userModes.runOutput = run_out; }
 
-void ProgramOptions::parse(const ProblemDescDB& problem_db) {
+void ProgramOptions::post_run_input(const String& post_run_in)
+{ userModes.postRunInput = post_run_in; }
+
+void ProgramOptions::post_run_output(const String& post_run_out)
+{ userModes.postRunOutput = post_run_out; }
+
+
+void ProgramOptions::parse(const ProblemDescDB& problem_db)
+{
   // command line options can override those in the input file, so
   // warn if both exist; DB should be valid on all ranks at this point
-
+  
   // we don't offer an option to override input echo in the input file
   // since we want to echo the input prior to parsing to help with
   // debugging
@@ -283,8 +306,8 @@ void ProgramOptions::parse(const ProblemDescDB& problem_db) {
       stopRestartEvals = stoprst;
     else if (worldRank == 0)
       Cout << "Warning: stop restart evals specified in input file and passed "
-           << "options; option\n         specifying '" << stopRestartEvals
-           << "' takes precedence over input file value." << std::endl;
+	   << "options; option\n         specifying '" << stopRestartEvals
+	   << "' takes precedence over input file value." << std::endl;
   }
 
   set_option(problem_db, "write_restart", writeRestartFile);
@@ -295,17 +318,20 @@ void ProgramOptions::parse(const ProblemDescDB& problem_db) {
     checkFlag = check_flag;
   }
 
+
   const bool& pre_run = problem_db.get_bool("environment.pre_run");
   const bool& run = problem_db.get_bool("environment.run");
   const bool& post_run = problem_db.get_bool("environment.post_run");
-
+  
   // if command line options already set, ignore all input file pre/run/post
   if (pre_run || run || post_run) {
     if (userModes.requestedUserModes) {
       if (worldRank == 0)
-        Cout << "Warning: run mode options already passed; input file run "
-             << "modes will be ignored." << std::endl;
-    } else {
+	Cout << "Warning: run mode options already passed; input file run " 
+	     << "modes will be ignored." << std::endl;
+    }
+    else {
+
       userModes.preRun = pre_run;
       userModes.run = run;
       userModes.postRun = post_run;
@@ -317,66 +343,83 @@ void ProgramOptions::parse(const ProblemDescDB& problem_db) {
       set_option(problem_db, "post_run_input", userModes.postRunInput);
       set_option(problem_db, "post_run_output", userModes.postRunOutput);
 
-      userModes.preRunOutputFormat =
-          problem_db.get_ushort("environment.pre_run_output_format");
-      userModes.postRunInputFormat =
-          problem_db.get_ushort("environment.post_run_input_format");
+      userModes.preRunOutputFormat = 
+	problem_db.get_ushort("environment.pre_run_output_format");
+      userModes.postRunInputFormat = 
+	problem_db.get_ushort("environment.post_run_input_format");
+
     }
 
     // only call this when user modes haven't already been parsed
     validate_run_modes();
+
   }
+
 }
 
-void ProgramOptions::read(MPIUnpackBuffer& s) {
+
+void ProgramOptions::read(MPIUnpackBuffer& s) 
+{
   // core files and options
-  s >> inputFile >> inputString >> echoInput >> parserOptions >> outputFile >>
-      errorFile >> readRestartFile >> stopRestartEvals >> writeRestartFile;
+  s >> inputFile >> inputString >> echoInput >> parserOptions 
+    >> outputFile >> errorFile 
+    >> readRestartFile >> stopRestartEvals >> writeRestartFile;
   // run mode controls
   s >> helpFlag >> versionFlag >> checkFlag >> userModes;
 }
 
-void ProgramOptions::write(MPIPackBuffer& s) const {
+
+void ProgramOptions::write(MPIPackBuffer& s) const
+{
   // core files and options
-  s << inputFile << inputString << echoInput << parserOptions << outputFile
-    << errorFile << readRestartFile << stopRestartEvals << writeRestartFile;
+  s << inputFile << inputString << echoInput << parserOptions 
+    << outputFile << errorFile 
+    << readRestartFile << stopRestartEvals << writeRestartFile;
   // run mode controls
   s << helpFlag << versionFlag << checkFlag << userModes;
 }
 
+
 // any environment variables affecting global behavior go here
 // TODO: decide precedence of these vs. CLOpts and input file
 void ProgramOptions::parse_environment_options() {
+
   if (parserOptions.empty()) {
     const char* parser_options = std::getenv("DAKOTA_PARSER");
-    if (parser_options) parserOptions = parser_options;
+    if (parser_options)
+      parserOptions = parser_options;
   }
+  
 }
 
-void ProgramOptions::manage_run_modes(const CommandLineHandler& clh) {
+
+void ProgramOptions::manage_run_modes(const CommandLineHandler& clh)
+{
   // If filenames empty, do not define defaults; user might not want.
-
+  
   // populate the filenames as necessary
-  if ((userModes.preRun = (clh.retrieve("pre_run")) != NULL))
-    split_filenames(clh.retrieve("pre_run"), userModes.preRunInput,
-                    userModes.preRunOutput);
-  if ((userModes.run = (clh.retrieve("run")) != NULL))
-    split_filenames(clh.retrieve("run"), userModes.runInput,
-                    userModes.runOutput);
-  if ((userModes.postRun = (clh.retrieve("post_run")) != NULL))
+  if ( (userModes.preRun = (clh.retrieve("pre_run")) != NULL))
+    split_filenames(clh.retrieve("pre_run"), userModes.preRunInput, 
+		    userModes.preRunOutput);      
+  if ( (userModes.run = (clh.retrieve("run")) != NULL))
+    split_filenames(clh.retrieve("run"), userModes.runInput, userModes.runOutput);
+  if ( (userModes.postRun = (clh.retrieve("post_run")) != NULL))
     split_filenames(clh.retrieve("post_run"), userModes.postRunInput,
-                    userModes.postRunOutput);
+      userModes.postRunOutput);
+
 }
+
 
 /// Tokenize colon-delimited input and output filenames, returns
 /// unchanged strings if tokens not found
-void ProgramOptions::split_filenames(const char* filenames,
-                                     std::string& input_filename,
-                                     std::string& output_filename) {
-  // Initial cut doesn't warn/error on invalid input, since pre and post
+void ProgramOptions::split_filenames(const char * filenames, 
+				     std::string& input_filename,
+				     std::string& output_filename)
+{
+  // Initial cut doesn't warn/error on invalid input, since pre and post 
   // are special cases in terms of permitted files.  For now admit all specs
   // and silently ignore.
-  // NOTE: zero-length (omitted) strings are allowed, but the double colon is
+  // NOTE: zero-length (omitted) strings are allowed, but the double colon is 
   // required if the output argument is specified, so, for instance.
   // -pre ::pre.out
   // -post post.in
@@ -387,57 +430,67 @@ void ProgramOptions::split_filenames(const char* filenames,
       input_filename = runarg.substr(0, pos);
       pos = runarg.find_first_not_of("::", pos);
       if (pos != std::string::npos)
-        output_filename = runarg.substr(pos, std::string::npos);
-    } else
+	output_filename = runarg.substr(pos, std::string::npos);
+    }
+    else
       input_filename = runarg;
   }
 }
 
+
 void ProgramOptions::validate() {
+
   // BMA: This was a stub of an idea, but isn't true in library mode
   // if (run_flag() && inputFile.empty()) {
   //   Cerr << "when running input is needed";
   // }
 
-  if (!inputFile.empty() && !inputString.empty()) {
+  if ( !inputFile.empty() && !inputString.empty() ) {
     if (worldRank == 0)
       Cerr << "\nError: both input file and string specified in ProgramOptions"
-           << std::endl;
+	   << std::endl;
     abort_handler(-1);
   }
 
   validate_run_modes();
 }
 
+
 void ProgramOptions::validate_run_modes() {
+
   if (userModes.preRun && !userModes.run && userModes.postRun) {
-    Cerr << "\nError: Run phase 'run' is required when specifying both "
-         << "'pre_run' and 'post_run'.";
+    Cerr << "\nError: Run phase 'run' is required when specifying both " 
+	 << "'pre_run' and 'post_run'.";
     abort_handler(-1);
   }
 
   // if no phases were given, assume default that all are active
-  if (!userModes.preRun && !userModes.run && !userModes.postRun) {
+  if ( !userModes.preRun && !userModes.run && !userModes.postRun ) {
     userModes.preRun = userModes.run = userModes.postRun = true;
-    userModes.requestedUserModes = false;  // no active user-specified modes
-  } else
-    userModes.requestedUserModes =
-        true;  // one or more active user-specified modes
+    userModes.requestedUserModes = false; // no active user-specified modes
+  }
+  else
+    userModes.requestedUserModes = true;  // one or more active user-specified modes
+
 }
 
-void ProgramOptions::set_option(const ProblemDescDB& problem_db,
-                                const String& db_name, String& data_member) {
+
+void ProgramOptions::
+set_option(const ProblemDescDB& problem_db, const String& db_name,
+	   String& data_member) {
+    
   String lookup_prefix("environment.");
   const String& db_str = problem_db.get_string(lookup_prefix + db_name);
-
+  
   if (!db_str.empty()) {
     if (data_member.empty())
       data_member = db_str;
     else if (worldRank == 0)
       Cout << "Warning: " << db_name << " specified in input file and passed "
-           << "options; option\n         specifying '" << data_member
-           << "' takes precedence over input file value." << std::endl;
+	   << "options; option\n         specifying '" << data_member
+	   << "' takes precedence over input file value." << std::endl;
   }
 }
+
 
 }  // namespace Dakota

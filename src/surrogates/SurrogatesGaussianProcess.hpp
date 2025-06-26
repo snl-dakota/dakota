@@ -10,14 +10,14 @@
 #ifndef DAKOTA_SURROGATES_GAUSSIAN_PROCESS_HPP
 #define DAKOTA_SURROGATES_GAUSSIAN_PROCESS_HPP
 
-#include <boost/serialization/base_object.hpp>
-#include <boost/serialization/vector.hpp>
-
 #include "SurrogatesBase.hpp"
 #include "SurrogatesGPKernels.hpp"
 #include "SurrogatesPolynomialRegression.hpp"
 #include "Teuchos_YamlParameterListCoreHelpers.hpp"
 #include "UtilDataScaler.hpp"
+
+#include <boost/serialization/base_object.hpp>
+#include <boost/serialization/vector.hpp>
 
 namespace dakota {
 
@@ -112,7 +112,7 @@ class GaussianProcess : public Surrogate {
   /**
    *  \brief Evaluate the scalar Gaussian Process at a set of prediction points.
    * \param[in] eval_points Matrix for prediction points -
-   * (num_points by num_features).
+   * (num_points by num_features). 
    *  \returns Mean of the Gaussian process at the prediction points.
    */
   VectorXd value(const MatrixXd& eval_points) override;
@@ -122,14 +122,14 @@ class GaussianProcess : public Surrogate {
    * prediction points. \param[in] eval_points Coordinates of
    * the prediction points - (num_pts by num_features). \returns
    * Matrix of gradient vectors at the prediction points - (num_pts
-   * by num_features).
+   * by num_features). 
    * */
   MatrixXd gradient(const MatrixXd& eval_points) override;
 
   /**
-   *  \brief Evaluate the Hessian of the scalar Gaussian process at a single
-   * point. \param[in] eval_point Coordinates of the prediction point - (1 by
-   * num_features). \returns Hessian matrix at the prediction point -
+   *  \brief Evaluate the Hessian of the scalar Gaussian process at a single point.
+   * \param[in] eval_point Coordinates of the prediction point -
+   * (1 by num_features). \returns Hessian matrix at the prediction point -
    *  (num_features by num_features).
    */
   MatrixXd hessian(const MatrixXd& eval_point) override;
@@ -431,21 +431,21 @@ void GaussianProcess::serialize(Archive& archive, const unsigned int version) {
   archive& boost::serialization::base_object<Surrogate>(*this);
 
   // BMA: Initial cut is aggressive, serializing most members
-  archive & cwiseDists2;
-  archive & thetaValues;
-  archive & fixedNuggetValue;
-  archive & estimateNugget;
-  archive & estimatedNuggetValue;
-  archive & estimateTrend;
-  archive & scaledBuildPoints;
-  archive & targetValues;
-  archive & basisMatrix;
-  archive & betaValues;
-  archive & verbosity;
-  archive & objectiveFunctionHistory;
-  archive & objectiveGradientHistory;
-  archive & thetaHistory;
-  archive & kernel_type;
+  archive& cwiseDists2;
+  archive& thetaValues;
+  archive& fixedNuggetValue;
+  archive& estimateNugget;
+  archive& estimatedNuggetValue;
+  archive& estimateTrend;
+  archive& scaledBuildPoints;
+  archive& targetValues;
+  archive& basisMatrix;
+  archive& betaValues;
+  archive& verbosity;
+  archive& objectiveFunctionHistory;
+  archive& objectiveGradientHistory;
+  archive& thetaHistory;
+  archive& kernel_type;
   if (Archive::is_loading::value) {
     kernel = kernel_factory(kernel_type);
   }
@@ -460,7 +460,7 @@ void GaussianProcess::serialize(Archive& archive, const unsigned int version) {
 
   // DTS: Set false so that the Cholesky factorization is recomputed after load
   hasBestCholFact = false;
-  archive & hasBestCholFact;
+  archive& hasBestCholFact;
   if (Archive::is_saving::value)
     writeParameterListToYamlFile(configOptions, "GaussianProcess.yaml");
 }

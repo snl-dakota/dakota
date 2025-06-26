@@ -10,27 +10,28 @@
 #ifndef NOND_WASABI_BAYES_CALIBRATION_H
 #define NOND_WASABI_BAYES_CALIBRATION_H
 
-#include "GaussianKDE.hpp"
 #include "NonDBayesCalibration.hpp"
+#include "GaussianKDE.hpp"
 #include "dakota_mersenne_twister.hpp"
 
 namespace Dakota {
 
-/// WASABI - Weighted Adaptive Surrogate Approximations for Bayesian Inference
+
+/// WASABI - Weighted Adaptive Surrogate Approximations for Bayesian Inference 
 
 /** This class performs Bayesian calibration using the WASABI approach
- */
+    */
 
-class NonDWASABIBayesCalibration : public NonDBayesCalibration {
- public:
+class NonDWASABIBayesCalibration: public NonDBayesCalibration
+{
+public:
+
   //
   //- Heading: Constructors and destructor
   //
 
   /// standard constructor
-  NonDWASABIBayesCalibration(ProblemDescDB &problem_db,
-                             ParallelLibrary &parallel_lib,
-                             std::shared_ptr<Model> model);
+  NonDWASABIBayesCalibration(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
   /// destructor
   ~NonDWASABIBayesCalibration() override;
 
@@ -39,38 +40,41 @@ class NonDWASABIBayesCalibration : public NonDBayesCalibration {
   //
 
   /// initializer for problem size characteristics in WASABI
-  static void problem_size(int &chain_num, int &cr_num, int &gen_num,
-                           int &pair_num, int &par_num);
+  static void 
+  problem_size (int &chain_num, int &cr_num, int &gen_num, int &pair_num, 
+		int &par_num);
 
   /// Filename and data initializer for WASABI
-  static void problem_value(std::string *chain_filename,
-                            std::string *gr_filename, double &gr_threshold,
-                            int &jumpstep, double limits[], int par_num,
-                            int &printstep, std::string *restart_read_filename,
-                            std::string *restart_write_filename);
+  static void 
+  problem_value (std::string *chain_filename, std::string *gr_filename,
+		 double &gr_threshold, int &jumpstep, double limits[], 
+		 int par_num, int &printstep, std::string *restart_read_filename, 
+		 std::string *restart_write_filename);
 
-  void compute_responses(RealMatrix &samples, RealMatrix &responses);
+  void compute_responses(RealMatrix & samples, RealMatrix & responses);
 
- protected:
+protected:
+
   //
   //- Heading: Virtual function redefinitions
   //
 
   void calibrate() override;
-  void print_results(std::ostream &s,
-                     short results_state = FINAL_RESULTS) override;
+  void print_results(std::ostream& s, 
+      short results_state = FINAL_RESULTS) override;
   void compute_statistics() override {}
 
   /// Extract a subset of samples for posterior eval according to the
   /// indices in points_to_keep
-  void extract_selected_posterior_samples(
-      const std::vector<int> &points_to_keep,
-      const RealMatrix &samples_for_posterior_eval,
-      const RealVector &posterior_density, RealMatrix &posterior_data) const;
+  void extract_selected_posterior_samples(const std::vector<int> &points_to_keep,
+				   const RealMatrix &samples_for_posterior_eval,
+				   const RealVector &posterior_density,
+				   RealMatrix &posterior_data ) const;
 
   /// Export posterior_data to file
-  void export_posterior_samples_to_file(const std::string filename,
-                                        const RealMatrix &posterior_data) const;
+  void export_posterior_samples_to_file( const std::string filename, 
+					 const RealMatrix &posterior_data) const;
+  
 
   //
   //- Heading: Data
@@ -85,22 +89,22 @@ class NonDWASABIBayesCalibration : public NonDBayesCalibration {
   std::string dataDistFilename;
   /// The type of covariance data provided ("diagonal","matrix")
   std::string dataDistCovType;
-  /// The filename of the import file containing samples at which the
+  /// The filename of the import file containing samples at which the 
   /// posterior will be evaluated
   std::string posteriorSamplesImportFile;
   /// Format of imported posterior samples file
   unsigned short posteriorSamplesImportFormat;
-  /// The filename of the export file containing an arbitrary set of samples and
+  /// The filename of the export file containing an arbitrary set of samples and 
   /// their corresponding density values
   std::string exportPosteriorDensityFile;
-  /// The filename of the export file containing samples from the posterior and
+  /// The filename of the export file containing samples from the posterior and 
   /// their corresponding density values
   std::string exportPosteriorSamplesFile;
   /// Format of imported posterior samples and values file
   unsigned short exportFileFormat;
   /// Flag specifying whether to generate random samples from the posterior
   bool generateRandomPosteriorSamples;
-  /// Flag specifying whether to evaluate the posterior density at a
+  /// Flag specifying whether to evaluate the posterior density at a 
   /// set of samples
   bool evaluatePosteriorDensity;
 
@@ -111,17 +115,19 @@ class NonDWASABIBayesCalibration : public NonDBayesCalibration {
 
   /// random number engine for sampling the prior
   boost::mt19937 rnumGenerator;
-
-  /// Matrix for moment statistics.  Note that posterior values have density
+ 
+  /// Matrix for moment statistics.  Note that posterior values have density 
   /// associated with them so we can't use the compute_moments in NonDSampling
   RealMatrix momentStatistics;
 
- private:
+private:
+
   //
   // - Heading: Data
-  //
+  // 
+
 };
 
-}  // namespace Dakota
+} // namespace Dakota
 
 #endif

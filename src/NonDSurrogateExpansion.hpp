@@ -14,22 +14,23 @@
 
 namespace Dakota {
 
+
 /// Generic uncertainty quantification with Model-based stochastic expansions
 
 /** The NonDSurrogateExpansion class leverages a Model specification for
     stochastic expansions (PCE, SC, FT) to build a stochastic emulator and
     then queries the emulator to generate the set of requested statistics. */
 
-class NonDSurrogateExpansion : public NonDExpansion {
- public:
+class NonDSurrogateExpansion: public NonDExpansion
+{
+public:
+
   //
   //- Heading: Constructors and destructor
   //
 
   /// standard constructor
-  NonDSurrogateExpansion(ProblemDescDB& problem_db,
-                         ParallelLibrary& parallel_lib,
-                         std::shared_ptr<Model> model);
+  NonDSurrogateExpansion(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
   /// destructor
   ~NonDSurrogateExpansion() override;
 
@@ -38,9 +39,10 @@ class NonDSurrogateExpansion : public NonDExpansion {
   //
 
   // perform a forward uncertainty propagation using PCE/SC/FT DataFitSurrModel
-  // void core_run();
+  //void core_run();
 
- protected:
+protected:
+
   //
   //- Heading: Virtual function redefinitions
   //
@@ -51,12 +53,14 @@ class NonDSurrogateExpansion : public NonDExpansion {
   //- Heading: Member function definitions
   //
 
- private:
+private:
+
   //
   //- Heading: Data
   //
-};
 
-}  // namespace Dakota
+};
+    
+} // namespace Dakota
 
 #endif

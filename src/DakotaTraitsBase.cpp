@@ -7,21 +7,20 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-#include "DakotaTraitsBase.hpp"
-
+#include "dakota_system_defs.hpp"
+#include "dakota_data_io.hpp"
 #include "DakotaModel.hpp"
 #include "DataTransformModel.hpp"
-#include "PRPMultiIndex.hpp"
-#include "ParamResponsePair.hpp"
 #include "ScalingModel.hpp"
-#include "dakota_data_io.hpp"
-#include "dakota_system_defs.hpp"
+#include "DakotaTraitsBase.hpp"
+#include "ParamResponsePair.hpp"
+#include "PRPMultiIndex.hpp"
 
-static const char rcsId[] =
-    "@(#) $Id: DakotaOptTraits.hpp 0001 2017-02-21 10:35:14Z mkhalil $";
+static const char rcsId[]="@(#) $Id: DakotaOptTraits.hpp 0001 2017-02-21 10:35:14Z mkhalil $";
 
 namespace Dakota {
 
-TraitsBase::TraitsBase() { /* empty ctor */ }
+TraitsBase::TraitsBase()
+{ /* empty ctor */ }
 
-}  // namespace Dakota
+} // namespace Dakota

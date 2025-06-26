@@ -20,13 +20,15 @@ namespace Dakota {
  *
  */
 
-class NonlinearCGTraits : public TraitsBase {
- public:
+class NonlinearCGTraits: public TraitsBase
+{
+  public:
+
   /// default constructor
-  NonlinearCGTraits() {}
+  NonlinearCGTraits() { }
 
   /// destructor
-  ~NonlinearCGTraits() override {}
+  ~NonlinearCGTraits() override { }
 
   /// A temporary query used in the refactor
   bool is_derived() override { return true; }
@@ -35,80 +37,78 @@ class NonlinearCGTraits : public TraitsBase {
   bool supports_continuous_variables() override { return true; }
 };
 
+
 /// NonlinearCG update options
-enum CG_UPDATETYPE {
-  CG_STEEPEST,
-  CG_FLETCHER_REEVES,
-  CG_POLAK_RIBIERE,
-  CG_POLAK_RIBIERE_PLUS,
-  CG_HESTENES_STIEFEL
-};
+enum CG_UPDATETYPE {CG_STEEPEST, CG_FLETCHER_REEVES, CG_POLAK_RIBIERE, 
+		    CG_POLAK_RIBIERE_PLUS, CG_HESTENES_STIEFEL};
 
 /// NonlinearCG linesearch options
-enum CG_LINESEARCHTYPE {
-  CG_FIXED_STEP,
-  CG_LS_SIMPLE,
-  CG_LS_BRENT,
-  CG_LS_WOLFE
-};
+enum CG_LINESEARCHTYPE {CG_FIXED_STEP, CG_LS_SIMPLE, CG_LS_BRENT,
+			CG_LS_WOLFE};
+
 
 /** Experimental implementation of nonlinear CG optimization */
-class NonlinearCGOptimizer : public Optimizer {
- public:
+class NonlinearCGOptimizer: public Optimizer
+{
+
+public:
+
   //
   //- Heading: Constructor and destructor
   //
 
   /// standard constructor
-  NonlinearCGOptimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
-                       std::shared_ptr<Model> model);
-  /// destructor
+  NonlinearCGOptimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
+  /// destructor      
   ~NonlinearCGOptimizer() override;
 
   /// evaluate the objective function given a particular step size
   /// (public for use in boost_ls_eval functor; could use friend)
-  Real linesearch_eval(const Real& trial_step, short req_val = 1);
+  Real linesearch_eval(const Real& trial_step, short req_val = 1); 
 
- protected:
+protected:
+
   //
   //- Heading: Virtual member function redefinitions
   //
 
   void core_run() override;
 
- private:
+private:
+
   /// constructor helper function to parse misc_options from ProblemDescDB
   void parse_options();
 
   /// compute next direction via choice of method
   void compute_direction();
-
+  
   /// compute step: fixed, simple decrease, sufficient decrease
   bool compute_step();
 
   /// bracket the 1-D minimum in the linesearch
-  void bracket_min(Real& xa, Real& xb, Real& xc, Real& fa, Real& fb, Real& fc);
+  void bracket_min(Real& xa, Real& xb, Real& xc,
+		   Real& fa, Real& fb, Real& fc); 
 
   /// Perform 1-D minimization for the stepLength using Brent's method
   Real brent_minimize(Real a, Real b, Real tol);
-
+  
   // method controls (TODO: dynamic initial step -- based on gradient)
 
-  Real initialStep;             ///< initial step length
-  Real linesearchTolerance;     ///< approximate accuracy of absissca in LS
-  unsigned linesearchType;      ///< type of line search (if any)
-  unsigned maxLinesearchIters;  ///< maximum evaluations in line search
-  Real relFunctionTol;          ///< stopping criterion for rel change in fn
-  Real relGradientTol;          ///< stopping criterion for rel reduction in g
-  bool resetStep;               ///< whether to reset step with each linesearch
-  unsigned restartIter;         ///< iter at which to reset to steepest descent
-  unsigned updateType;          ///< type of CG direction update
+  Real initialStep;            ///< initial step length
+  Real linesearchTolerance;  ///< approximate accuracy of absissca in LS
+  unsigned linesearchType;     ///< type of line search (if any)
+  unsigned maxLinesearchIters; ///< maximum evaluations in line search
+  Real relFunctionTol;         ///< stopping criterion for rel change in fn
+  Real relGradientTol;         ///< stopping criterion for rel reduction in g
+  bool resetStep;              ///< whether to reset step with each linesearch
+  unsigned restartIter;        ///< iter at which to reset to steepest descent
+  unsigned updateType;         ///< type of CG direction update
 
   // method state
 
   /// current iteration number
   unsigned iterCurr;
-
+  
   /// current decision variables in the major iteration
   RealVector designVars;
 
@@ -129,7 +129,7 @@ class NonlinearCGOptimizer : public Optimizer {
 
   /// temporary for gradient difference (gradCurr - gradPrev)
   RealVector gradDiff;
-
+  
   /// current aggregate search direction
   RealVector searchDirection;
 
@@ -141,12 +141,13 @@ class NonlinearCGOptimizer : public Optimizer {
 
   /// gradCurr dot gradCurr
   Real gradDotGrad_curr;
-
+  
   /// gradPrev dot gradPrev
   Real gradDotGrad_prev;
 
-};  // class NonlinearCGOptimizer
 
-}  // namespace Dakota
+}; // class NonlinearCGOptimizer
 
-#endif  // NONLINEARCGOPTIMIZER_H
+} // namespace Dakota
+
+#endif // NONLINEARCGOPTIMIZER_H

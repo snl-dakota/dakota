@@ -10,12 +10,13 @@
 #ifndef NOND_SPARSE_GRID_H
 #define NOND_SPARSE_GRID_H
 
+#include "dakota_data_types.hpp"
 #include "DataMethod.hpp"
 #include "NonDIntegration.hpp"
 #include "SparseGridDriver.hpp"
-#include "dakota_data_types.hpp"
 
 namespace Dakota {
+
 
 /// Derived nondeterministic class that generates N-dimensional
 /// Smolyak sparse grids for numerical evaluation of expectation
@@ -26,22 +27,24 @@ namespace Dakota {
     integration of moments.  It employs 1-D Clenshaw-Curtis and Gaussian
     quadrature rules within Smolyak sparse grids. */
 
-class NonDSparseGrid : public NonDIntegration {
- public:
+class NonDSparseGrid: public NonDIntegration
+{
+public:
+
   //
   //- Heading: Constructors and destructor
   //
 
   // alternate constructor for instantiations "on the fly"
   NonDSparseGrid(std::shared_ptr<Model> model, unsigned short ssg_level,
-                 const RealVector& dim_pref, short exp_coeffs_soln_approach,
-                 short driver_mode,
-                 short growth_rate = Pecos::MODERATE_RESTRICTED_GROWTH,
-                 // short refine_type  = Pecos::NO_REFINEMENT,
-                 short refine_control = Pecos::NO_CONTROL,
-                 bool track_uniq_prod_wts = true);
+		 const RealVector& dim_pref,
+		 short exp_coeffs_soln_approach, short driver_mode,
+		 short growth_rate = Pecos::MODERATE_RESTRICTED_GROWTH,
+		 //short refine_type  = Pecos::NO_REFINEMENT,
+		 short refine_control = Pecos::NO_CONTROL,
+		 bool track_uniq_prod_wts = true);
 
-  ~NonDSparseGrid() override;  ///< destructor
+  ~NonDSparseGrid() override;                                       ///< destructor
 
   //
   //- Heading: Virtual function redefinitions
@@ -95,32 +98,29 @@ class NonDSparseGrid : public NonDIntegration {
   /// invokes SparseGridDriver::update_sets()
   void update_sets(const UShortArray& set_star);
   /// invokes SparseGridDriver::finalize_sets()
-  void finalize_sets(bool output_sets, bool converged_within_tol,
-                     bool reverted);
+  void finalize_sets(bool output_sets, bool converged_within_tol,bool reverted);
 
   size_t num_samples() const override;
 
- protected:
+protected:
+
   //
   //- Heading: Constructors and destructor
   //
 
-  NonDSparseGrid(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
-                 std::shared_ptr<Model> model);  ///< constructor
+  NonDSparseGrid(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model); ///< constructor
 
   //
   //- Heading: Virtual function redefinitions
   //
 
-  void initialize_grid(
-      const std::vector<Pecos::BasisPolynomial>& poly_basis) override;
+  void initialize_grid(const std::vector<Pecos::BasisPolynomial>& poly_basis) override;
 
   void get_parameter_sets(std::shared_ptr<Model> model) override;
 
-  // void check_variables(const Pecos::ShortArray& x_types);
+  //void check_variables(const Pecos::ShortArray& x_types);
 
-  void sampling_reset(size_t min_samples, bool all_data_flag,
-                      bool stats_flag) override;
+  void sampling_reset(size_t min_samples, bool all_data_flag, bool stats_flag) override;
 
   //
   //- Heading: Member functions
@@ -128,7 +128,8 @@ class NonDSparseGrid : public NonDIntegration {
 
   const RealVector& anisotropic_weights() const;
 
- private:
+private:
+
   //
   //- Heading: Data
   //
@@ -147,16 +148,17 @@ class NonDSparseGrid : public NonDIntegration {
   unsigned short ssgLevelPrev;
 };
 
-inline void NonDSparseGrid::increment_grid_weights() {
-  increment_grid_weights(ssgDriver->anisotropic_weights());
-}
 
-inline void NonDSparseGrid::sparse_grid_level(unsigned short ssg_level) {
-  ssgLevelSpec = ssg_level;
-  reset();
-}
+inline void NonDSparseGrid::increment_grid_weights()
+{ increment_grid_weights(ssgDriver->anisotropic_weights()); }
 
-inline void NonDSparseGrid::reset() {
+
+inline void NonDSparseGrid::sparse_grid_level(unsigned short ssg_level)
+{ ssgLevelSpec = ssg_level; reset(); }
+
+
+inline void NonDSparseGrid::reset()
+{
   // reset the grid for the current active key to its original user spec,
   // prior to any grid refinement
   // > also invokes SparseGridDriver::clear_size() if change is induced
@@ -174,7 +176,9 @@ inline void NonDSparseGrid::reset() {
   // when distribution param updates invalidate this history
 }
 
-inline void NonDSparseGrid::reset_all() {
+
+inline void NonDSparseGrid::reset_all()
+{
   // This "nuclear option" is not currently used
 
   ssgDriver->clear_keys();
@@ -182,72 +186,83 @@ inline void NonDSparseGrid::reset_all() {
   reset();
 }
 
-inline const std::set<UShortArray>& NonDSparseGrid::active_multi_index() const {
-  return ssgDriver->active_multi_index();
-}
 
-inline void NonDSparseGrid::print_smolyak_multi_index() const {
-  return ssgDriver->print_smolyak_multi_index();
-}
+inline const std::set<UShortArray>& NonDSparseGrid::active_multi_index() const
+{ return ssgDriver->active_multi_index(); }
 
-inline void NonDSparseGrid::initialize_sets() { ssgDriver->initialize_sets(); }
 
-inline void NonDSparseGrid::update_reference() {
-  ssgDriver->update_reference();
-}
+inline void NonDSparseGrid::print_smolyak_multi_index() const
+{ return ssgDriver->print_smolyak_multi_index(); }
 
-inline void NonDSparseGrid::increment_set(const UShortArray& set) {
-  ssgDriver->increment_smolyak_multi_index(set);
-}
 
-inline int NonDSparseGrid::increment_size() const {
-  return ssgDriver->unique_trial_points();
-}
+inline void NonDSparseGrid::initialize_sets()
+{ ssgDriver->initialize_sets(); }
 
-inline void NonDSparseGrid::push_set() { ssgDriver->push_set(); }
 
-inline void NonDSparseGrid::evaluate_set() {
+inline void NonDSparseGrid::update_reference()
+{ ssgDriver->update_reference(); }
+
+
+inline void NonDSparseGrid::increment_set(const UShortArray& set)
+{ ssgDriver->increment_smolyak_multi_index(set); }
+
+
+inline int NonDSparseGrid::increment_size() const
+{ return ssgDriver->unique_trial_points(); }
+
+
+inline void NonDSparseGrid::push_set()
+{ ssgDriver->push_set(); }
+
+
+inline void NonDSparseGrid::evaluate_set()
+{
   ssgDriver->compute_trial_grid(allSamples);
   evaluate_parameter_sets(*iteratedModel);
   ++numIntegrations;
 }
 
-inline void NonDSparseGrid::decrement_set() { ssgDriver->pop_set(); }
 
-inline void NonDSparseGrid::update_sets(const UShortArray& set_star) {
-  ssgDriver->update_sets(set_star);
-}
+inline void NonDSparseGrid::decrement_set()
+{ ssgDriver->pop_set(); }
 
-inline void NonDSparseGrid::finalize_sets(bool output_sets,
-                                          bool converged_within_tol,
-                                          bool reverted) {
-  ssgDriver->finalize_sets(output_sets, converged_within_tol, reverted);
-}
 
-inline void NonDSparseGrid::evaluate_grid_increment() {
+inline void NonDSparseGrid::update_sets(const UShortArray& set_star)
+{ ssgDriver->update_sets(set_star); }
+
+
+inline void NonDSparseGrid::
+finalize_sets(bool output_sets, bool converged_within_tol, bool reverted)
+{ ssgDriver->finalize_sets(output_sets, converged_within_tol, reverted); }
+
+
+inline void NonDSparseGrid::evaluate_grid_increment()
+{
   ssgDriver->compute_increment(allSamples);
   evaluate_parameter_sets(*iteratedModel);
   ++numIntegrations;
 }
 
-inline void NonDSparseGrid::push_grid_increment() {
-  ssgDriver->push_increment();
-}
 
-inline void NonDSparseGrid::pop_grid_increment() { ssgDriver->pop_increment(); }
+inline void NonDSparseGrid::push_grid_increment()
+{ ssgDriver->push_increment(); }
 
-inline void NonDSparseGrid::merge_grid_increment() {
-  ssgDriver->merge_unique();
-}
 
-inline size_t NonDSparseGrid::num_samples() const {
-  return ssgDriver->grid_size();
-}
+inline void NonDSparseGrid::pop_grid_increment()
+{ ssgDriver->pop_increment(); }
 
-inline const RealVector& NonDSparseGrid::anisotropic_weights() const {
-  return ssgDriver->anisotropic_weights();
-}
 
-}  // namespace Dakota
+inline void NonDSparseGrid::merge_grid_increment()
+{ ssgDriver->merge_unique(); }
+
+
+inline size_t NonDSparseGrid::num_samples() const
+{ return ssgDriver->grid_size(); }
+
+
+inline const RealVector& NonDSparseGrid::anisotropic_weights() const
+{ return ssgDriver->anisotropic_weights(); }
+
+} // namespace Dakota
 
 #endif

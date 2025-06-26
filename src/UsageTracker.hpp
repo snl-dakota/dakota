@@ -10,9 +10,8 @@
 #ifndef USAGE_TRACKER_H
 #define USAGE_TRACKER_H
 
-#include <memory>
-
 #include "dakota_system_defs.hpp"
+#include <memory>
 
 namespace Dakota {
 
@@ -26,8 +25,10 @@ class TrackerHTTP;
     operations are no-op in this wrapper if not enabling
     tracking... */
 class UsageTracker {
- public:
-  /// default construction: no output
+
+public:
+
+  /// default construction: no output 
   UsageTracker();
 
   /// standard constructor; will output on rank 0
@@ -37,18 +38,20 @@ class UsageTracker {
   void post_start(ProblemDescDB& problem_db);
 
   /// post the completion of an analysis including elapsed time
-  void post_finish(unsigned runtime = 0);
+  void post_finish(unsigned runtime = 0); 
 
- private:
+private:
+
   /// copy construction is disallowed
   UsageTracker(const UsageTracker&);
 
   /// posts usage data to Web server; using shared_ptr due to
   /// potentially incomplete type and requirements for checked_delete
   /// in debug builds (scoped_ptr would suffice)
-  std::shared_ptr<TrackerHTTP> pTrackerHTTP;
+  std::shared_ptr<TrackerHTTP> pTrackerHTTP; 
+
 };
 
-}  // namespace Dakota
+} // namespace Dakota
 
-#endif  // USAGE_TRACKER_H
+#endif // USAGE_TRACKER_H

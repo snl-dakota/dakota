@@ -10,14 +10,14 @@
 #ifndef DAKOTA_ENVIRONMENT_H
 #define DAKOTA_ENVIRONMENT_H
 
-#include "DakotaIterator.hpp"
+#include "dakota_data_types.hpp"
 #include "MPIManager.hpp"
+#include "ProgramOptions.hpp"
 #include "OutputManager.hpp"
 #include "ParallelLibrary.hpp"
 #include "ProblemDescDB.hpp"
-#include "ProgramOptions.hpp"
+#include "DakotaIterator.hpp"
 #include "UsageTracker.hpp"
-#include "dakota_data_types.hpp"
 
 /// The primary namespace for DAKOTA
 
@@ -27,6 +27,7 @@
     core classes reside in Dakota/src as *.[ch]pp. */
 
 namespace Dakota {
+
 
 /// Base class for the environment class hierarchy.
 
@@ -39,21 +40,23 @@ namespace Dakota {
     serves as the envelope and one of the derived classes (selected in
     Environment::get_environment()) serves as the letter. */
 
-class Environment {
- public:
+class Environment
+{
+public:
+
   //
   //- Heading: Constructors, destructor, assignment operator
   //
 
   /// default constructor: empty envelope
   Environment();
-  /// envelope constructor for ExecutableEnvironment letter
+  /// envelope constructor for ExecutableEnvironment letter 
   Environment(int argc, char* argv[]);
-  // envelope constructor for LibraryEnvironment letter
+  // envelope constructor for LibraryEnvironment letter 
   Environment(ProgramOptions prog_opts);
-  // envelope constructor for LibraryEnvironment letter
-  Environment(MPI_Comm dakota_mpi_comm,
-              ProgramOptions prog_opts = ProgramOptions());
+  // envelope constructor for LibraryEnvironment letter 
+  Environment(MPI_Comm dakota_mpi_comm, 
+	      ProgramOptions prog_opts = ProgramOptions());
   /// envelope constructor for letter type identifed by String
   Environment(const String& env_type);
   /// copy constructor
@@ -77,7 +80,7 @@ class Environment {
   //- Heading: Member functions
   //
 
-  /// Print status of check and return true if in a "check" mode, including
+  /// Print status of check and return true if in a "check" mode, including 
   /// version and help.  Return false if proceeding to a run mode.
   bool check() const;
 
@@ -96,12 +99,13 @@ class Environment {
   /// return the final environment solution (variables)
   const Variables& variables_results() const;
   /// return the final environment solution (response)
-  const Response& response_results() const;
+  const Response&  response_results() const;
 
   /// allow environment clients to set Dakota exit behavior (throw vs. exit)
   void exit_mode(const String& mode = "exit");
 
- protected:
+protected:
+
   //
   //- Heading: Constructors
   //
@@ -112,7 +116,7 @@ class Environment {
   Environment(BaseConstructor, int argc, char* argv[]);
   /// constructor initializes the base class part of library letter classes
   Environment(BaseConstructor, ProgramOptions prog_opts,
-              MPI_Comm dakota_mpi_comm = MPI_COMM_WORLD);
+	      MPI_Comm dakota_mpi_comm = MPI_COMM_WORLD);
 
   //
   //- Heading: Member functions
@@ -123,8 +127,8 @@ class Environment {
   void preprocess_inputs();
 
   /// parse inputs, callbacks, and optionally check and broadcast
-  void parse(bool check_bcast_database = true,
-             DbCallbackFunctionPtr callback = NULL, void* callback_data = NULL);
+  void parse(bool check_bcast_database = true, 
+	     DbCallbackFunctionPtr callback = NULL, void* callback_data = NULL);
 
   /// Instantiate topLevelIterator
   void construct();
@@ -141,20 +145,20 @@ class Environment {
   // Note: pushing these down into derived class allows initializer list usage.
   // Alternative is to separate construction from initialization.
 
-  MPIManager mpiManager;          ///< the MPI manager instance
-  ProgramOptions programOptions;  ///< the command line options manager
-  OutputManager outputManager;    ///< (tagged) output stream manager
+  MPIManager      mpiManager;     ///< the MPI manager instance
+  ProgramOptions  programOptions; ///< the command line options manager
+  OutputManager   outputManager;  ///< (tagged) output stream manager
 
-  ParallelLibrary parallelLib;  ///< the parallel library instance
-  ProblemDescDB probDescDB;     ///< the parser database instance
+  ParallelLibrary parallelLib; ///< the parallel library instance
+  ProblemDescDB   probDescDB;  ///< the parser database instance
 
-  std::shared_ptr<Iterator>
-      topLevelIterator;  ///< the top level (meta-)iterator
+  std::shared_ptr<Iterator> topLevelIterator;  ///< the top level (meta-)iterator
 
   /// tool for Dakota usage tracking (this is a thin wrapper class)
   UsageTracker usageTracker;
 
- private:
+private:
+
   //
   //- Heading: Member functions
   //
@@ -170,38 +174,45 @@ class Environment {
   std::shared_ptr<Environment> environmentRep;
 };
 
-inline MPIManager& Environment::mpi_manager() {
-  return (environmentRep) ? environmentRep->mpiManager : mpiManager;
+
+inline MPIManager& Environment::mpi_manager()
+{ return (environmentRep) ? environmentRep->mpiManager : mpiManager; }
+
+
+inline ProgramOptions& Environment::program_options()
+{ return (environmentRep) ? environmentRep->programOptions : programOptions; }
+
+
+inline OutputManager& Environment::output_manager()
+{ return (environmentRep) ? environmentRep->outputManager : outputManager; }
+
+
+inline ParallelLibrary& Environment::parallel_library()
+{ return (environmentRep) ? environmentRep->parallelLib : parallelLib; }
+
+
+inline ProblemDescDB& Environment::problem_description_db()
+{ return (environmentRep) ? environmentRep->probDescDB : probDescDB; }
+
+
+inline const Variables& Environment::variables_results() const
+{
+  return (environmentRep) ?
+    environmentRep->topLevelIterator->variables_results() :
+    topLevelIterator->variables_results();
 }
 
-inline ProgramOptions& Environment::program_options() {
-  return (environmentRep) ? environmentRep->programOptions : programOptions;
+
+inline const Response& Environment::response_results() const
+{
+  return (environmentRep) ?
+    environmentRep->topLevelIterator->response_results() :
+    topLevelIterator->response_results();
 }
 
-inline OutputManager& Environment::output_manager() {
-  return (environmentRep) ? environmentRep->outputManager : outputManager;
-}
 
-inline ParallelLibrary& Environment::parallel_library() {
-  return (environmentRep) ? environmentRep->parallelLib : parallelLib;
-}
-
-inline ProblemDescDB& Environment::problem_description_db() {
-  return (environmentRep) ? environmentRep->probDescDB : probDescDB;
-}
-
-inline const Variables& Environment::variables_results() const {
-  return (environmentRep)
-             ? environmentRep->topLevelIterator->variables_results()
-             : topLevelIterator->variables_results();
-}
-
-inline const Response& Environment::response_results() const {
-  return (environmentRep) ? environmentRep->topLevelIterator->response_results()
-                          : topLevelIterator->response_results();
-}
-
-inline bool Environment::assign_model_pointer() const {
+inline bool Environment::assign_model_pointer() const
+{
   // meta-iterators may need to activate a default model spec
   if (probDescDB.get_ushort("method.algorithm") & PARALLEL_BIT)
 
@@ -211,20 +222,20 @@ inline bool Environment::assign_model_pointer() const {
          !probDescDB.get_string("method.sub_method_name").empty() &&
           probDescDB.get_string("method.sub_model_pointer").empty() )
      || ( // SeqHybridMI, CollabHybridMI:
-         !probDescDB.get_sa("method.hybrid.method_names").empty() &&
-          probDescDB.get_sa("method.hybrid.model_pointers").empty() )
+	 !probDescDB.get_sa("method.hybrid.method_names").empty() &&
+	  probDescDB.get_sa("method.hybrid.model_pointers").empty() )
      || ( // EmbedHybridMI:
-         !probDescDB.get_string("method.hybrid.global_method_name").empty() &&
-          probDescDB.get_string("method.hybrid.global_model_pointer").empty() )
+	 !probDescDB.get_string("method.hybrid.global_method_name").empty() &&
+	  probDescDB.get_string("method.hybrid.global_model_pointer").empty() )
      || (!probDescDB.get_string("method.hybrid.local_method_name").empty() &&
-          probDescDB.get_string("method.hybrid.local_model_pointer").empty()) );
+	  probDescDB.get_string("method.hybrid.local_model_pointer").empty()) );
     */
 
     return false;
-  else  // standard iterator requires setting of DB model nodes
+  else // standard iterator requires setting of DB model nodes
     return true;
 }
 
-}  // namespace Dakota
+} // namespace Dakota
 
 #endif

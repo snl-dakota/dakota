@@ -7,55 +7,60 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-#ifndef EXPERIMENT_DATA_H
-#define EXPERIMENT_DATA_H
+#ifndef EXPERIMENT_DATA_H 
+#define EXPERIMENT_DATA_H 
 
-#include "ExperimentDataUtils.hpp"
+#include "dakota_system_defs.hpp"
+#include "dakota_data_types.hpp"
+#include "dakota_tabular_io.hpp"
 #include "ExperimentResponse.hpp"
+#include "ExperimentDataUtils.hpp"
 #include "SharedResponseData.hpp"
 #include "SimulationResponse.hpp"
-#include "dakota_data_types.hpp"
-#include "dakota_system_defs.hpp"
-#include "dakota_tabular_io.hpp"
 
 namespace Dakota {
 
-using boost::extents;
 using boost::multi_array;
+using boost::extents;
 
-/// special values for sigmaType
+/// special values for sigmaType 
 enum sigtype { NO_SIGMA, SCALAR_SIGMA, DIAGONAL_SIGMA, MATRIX_SIGMA };
-/// special values for experimental data type
-enum edtype { SCALAR_DATA, FUNCTIONAL_DATA };
+/// special values for experimental data type 
+enum edtype { SCALAR_DATA, FUNCTIONAL_DATA } ;
 
-// Interpolation method for interpolating between experimental and model data.
+
+// Interpolation method for interpolating between experimental and model data. 
 // I need to work on inputs/outputs to this method.  For now, this assumes
-// interpolation of functional data.
+// interpolation of functional data. 
 /* void interpolate(RealVector2DArray& functionalCoordinates,
                     RealVectorArray& experimentFunctionalData,
-                    RealVector2DArray& modelCoordinates,
-                    RealVectorArray& modelFunctionalData,
-                    RealVectorArray& interpolatedResults); */
-// As Brian suggested, this class has the experimental data (coordinates and
+		    RealVector2DArray& modelCoordinates,
+		    RealVectorArray& modelFunctionalData,
+		    RealVectorArray& interpolatedResults); */ 
+// As Brian suggested, this class has the experimental data (coordinates and 
 // functional data) and can store the interpolated results.  So, we may want a
-// simpler interpolate definition given in the line below:
+// simpler interpolate definition given in the line below: 
 /* void interpolate(RealVector2DArray& modelCoordinates,
                     RealVectorArray& modelFunctionalData); */
-// RealVectorArray interpolatedResults;
+// RealVectorArray interpolatedResults; 
+  
 
-/** The ExperimentData class is used to read and populate data
+/** The ExperimentData class is used to read and populate data 
     (currently from user-specified files and/or the input spec)
-    relating to experimental (physical observations) data for
-    the purposes of calibration.  Such data may include (for example):
-    number of experiments, configuration variables,
+    relating to experimental (physical observations) data for 
+    the purposes of calibration.  Such data may include (for example): 
+    number of experiments, configuration variables, 
     type of data (scalar vs. functional), treatment of sigma (experimental
-    uncertainties).  This class also provides an interpolation capability to
-    interpolate between simulation or experimental data so that the
-    differencing between simulation and experimental data may
+    uncertainties).  This class also provides an interpolation capability to 
+    interpolate between simulation or experimental data so that the 
+    differencing between simulation and experimental data may 
     be performed properly. */
 
-class ExperimentData {
- public:
+class ExperimentData
+{
+
+public:
+
   //
   //- Heading: Constructors, destructor, operators
   //
@@ -64,46 +69,48 @@ class ExperimentData {
   ExperimentData();
 
   /// typical DB-based constructor
-  ExperimentData(const ProblemDescDB& prob_desc_db,
+  ExperimentData(const ProblemDescDB& prob_desc_db, 
                  const SharedResponseData& srd, short output_level);
 
   /// temporary? constructor for testing
-  ExperimentData(size_t num_experiments, size_t num_config_vars,
+  ExperimentData(size_t num_experiments, size_t num_config_vars, 
                  const std::filesystem::path& data_prefix,
                  const SharedResponseData& srd,
-                 const StringArray& variance_types, short output_level,
+                 const StringArray& variance_types,
+                 short output_level,
                  std::string scalarDataFilename = "");
-
+ 
   /// Bayesian experimental design constructor. Passed SVD has
   /// calibration parameters as active and config vars as inactive
   /// variables. Passed configVars have config vars as active.
   ExperimentData(size_t num_experiments, const SharedVariablesData& svd,
-                 const SharedResponseData& srd,
-                 const VariablesArray& configVars,
-                 const IntResponseMap& all_responses, short output_level);
+		 const SharedResponseData& srd,
+                 const VariablesArray& configVars, 
+                 const IntResponseMap& all_responses, short output_level); 
 
-  // ExperimentData(const ExperimentData&);            ///< copy constructor
+  //ExperimentData(const ExperimentData&);            ///< copy constructor
   //~ExperimentData();                               ///< destructor
-  // ExperimentData& operator=(const ExperimentData&);  ///< assignment operator
+  //ExperimentData& operator=(const ExperimentData&);  ///< assignment operator
 
   //
   //- Heading: Member methods
   //
-
+ 
   /// Load experiments from data files (simple scalar or field)
   void load_data(const std::string& context_message,
-                 const Variables& vars_with_state_as_config);
+		 const Variables& vars_with_state_as_config);
   /// Add one data point to the experimental data set. Used for
   /// Bayesian experimental design. Passed SVD has calibration
   /// parameters as active and config vars as inactive
   /// variables. Passed configVars have config vars as active.
-  void add_data(const SharedVariablesData& svd, const Variables& one_configvars,
-                const Response& one_response);
+  void add_data(const SharedVariablesData& svd,
+		const Variables& one_configvars, const Response& one_response);
 
   /// retrieve the number of experiments
-  size_t num_experiments() const { return allExperiments.size(); }
+  size_t num_experiments() const
+    { return allExperiments.size(); }
 
-  /// retrieve the total number of experimental data points
+  /// retrieve the total number of experimental data points 
   /// over all experiments
   size_t num_total_exppoints() const;
 
@@ -126,7 +133,7 @@ class ExperimentData {
   /// return contiguous vector of all data (scalar, followed by field)
   /// for the specified experiment
   const RealVector& all_data(size_t experiment);
-
+  
   /// return response for the specified experiment
   const Response& response(size_t experiment);
 
@@ -138,15 +145,15 @@ class ExperimentData {
   const IntVector& field_lengths(size_t experiment) const;
 
   /// retrieve the data value for the given response, for the given
-  /// experiment
+  /// experiment 
   Real scalar_data(size_t response, size_t experiment);
 
   /// retrieve a view of the field data for the given response, for the given
-  /// experiment
+  /// experiment 
   RealVector field_data_view(size_t response, size_t experiment) const;
 
-  /// retrieve a view of the field data coordinates for the given response, for
-  /// the given experiment
+  /// retrieve a view of the field data coordinates for the given response, for the given
+  /// experiment 
   RealMatrix field_coords_view(size_t response, size_t experiment) const;
 
   /// populate the passed array with num_total_exppoints labels
@@ -162,22 +169,24 @@ class ExperimentData {
   /// v'*inv(C)*v for the given experiment
   Real apply_covariance(const RealVector& residuals, size_t experiment) const;
   /// apply inverse sqrt of the covariance to compute weighted residuals
-  void apply_covariance_inv_sqrt(const RealVector& residuals, size_t experiment,
-                                 RealVector& weighted_residuals) const;
+  void apply_covariance_inv_sqrt(const RealVector& residuals, 
+				 size_t experiment, 
+				 RealVector& weighted_residuals) const;
   /// apply inverse sqrt of the covariance to compute weighted gradients
-  void apply_covariance_inv_sqrt(const RealMatrix& gradients, size_t experiment,
-                                 RealMatrix& weighted_gradients) const;
+  void apply_covariance_inv_sqrt(const RealMatrix& gradients, 
+				 size_t experiment, 
+				 RealMatrix& weighted_gradients) const;
   /// apply inverse sqrt of the covariance to compute weighted Hessians
-  void apply_covariance_inv_sqrt(const RealSymMatrixArray& hessians,
-                                 size_t experiment,
-                                 RealSymMatrixArray& weighted_hessians) const;
+  void apply_covariance_inv_sqrt(const RealSymMatrixArray& hessians, 
+				 size_t experiment, 
+				 RealSymMatrixArray& weighted_hessians) const;
   /// apply simulation error to experiment data
   void apply_simulation_error(const RealVector& simulation_error,
                               size_t experiment);
 
   /// return a (copy) vector containing the main diagonal entries of a specified
   /// experimental covariance matrix
-  void get_main_diagonal(RealVector& diagonal, size_t experiment) const;
+  void get_main_diagonal( RealVector &diagonal, size_t experiment ) const;
 
   /// get the standard deviation of the observation error process, one
   /// vector per experiment
@@ -193,39 +202,40 @@ class ExperimentData {
   /// form residuals for all experiments, interpolating if necessary;
   /// one simulation response maps to all experiments
   void form_residuals(const Response& sim_resp, Response& residual_resp) const;
-
+    
   /// Populate the portion of residual_resp corresponding to
   /// experiment curr_exp; the passed simulation response maps only to
   /// the specified experiment
   void form_residuals(const Response& sim_resp, const size_t curr_exp,
-                      Response& residual_resp) const;
+		      Response& residual_resp) const;
 
-  /// form residuals for an individual experiment, interpolating if necessary
-  void form_residuals(const Response& sim_resp, size_t exp_num,
-                      const ShortArray& total_asv, size_t residual_resp_offset,
-                      Response& residual_resp) const;
+  /// form residuals for an individual experiment, interpolating if necessary 
+  void form_residuals(const Response& sim_resp, size_t exp_num, 
+		      const ShortArray &total_asv, size_t residual_resp_offset,
+		      Response &residual_resp) const; 
 
   /// recover original model from the first experiment block in a full
   /// set of residuals; works in no interpolation case only (sizes same)
   void recover_model(size_t num_pri_fns, RealVector& model_fns) const;
 
-  /// flag for interpolation.  If 0, no interpolation.
-  /// If 1, interpolate.
+  /// flag for interpolation.  If 0, no interpolation. 
+  /// If 1, interpolate. 
   bool interpolate_flag() const;
 
   /// Interpolate simulation data (values, gradients and hessians) onto
   /// the coordinates of the experimental data
-  void interpolate_simulation_data(const Response& sim_resp, size_t exp_num,
-                                   const ShortArray& total_asv,
-                                   size_t exp_offset,
-                                   Response& interp_resp) const;
+  void interpolate_simulation_data( const Response &sim_resp, 
+				    size_t exp_num,
+				    const ShortArray &total_asv, 
+				    size_t exp_offset,
+				    Response &interp_resp ) const; 
 
   /// Apply the experiment data covariance to the residual data (scale
   /// functions by Gamma_d^{-1/2}), returning in scaled_residuals
-  void scale_residuals(const Response& residual_response,
-                       RealVector& scaled_residuals) const;
+  void scale_residuals(const Response& residual_response, 
+		       RealVector& scaled_residuals) const;
 
-  /// Apply the experiment data covariance to the residual data in-place
+  /// Apply the experiment data covariance to the residual data in-place 
   /// (scale functions, gradients, and Hessians by Gamma_d^{-1/2})
   void scale_residuals(Response& residual_response) const;
 
@@ -234,101 +244,107 @@ class ExperimentData {
   /// Build the gradient of the ssr from residuals and function gradients
   /// based on the response's active set request vector
   void build_gradient_of_sum_square_residuals(const Response& resp,
-                                              RealVector& ssr_gradient);
+					      RealVector &ssr_gradient);
   /// Build the gradient of the ssr from residuals and function gradients
   /// using the passed active set request vector (overrides the response's
   /// request vector)
   void build_gradient_of_sum_square_residuals(const Response& resp,
-                                              const ShortArray& asrv,
-                                              RealVector& ssr_gradient);
+					      const ShortArray& asrv,
+					      RealVector &ssr_gradient);
 
   /// Update the gradient of ssr with the values from the gradient associated
   /// with a single experiment
-  void build_gradient_of_sum_square_residuals_from_response(
-      const Response& resp, const ShortArray& asrv, int exp_ind,
-      RealVector& ssr_gradient);
+  void build_gradient_of_sum_square_residuals_from_response( 
+						    const Response& resp, 
+						    const ShortArray& asrv,
+						    int exp_ind,
+						    RealVector &ssr_gradient);
 
   /** \brief Construct the gradient of the sum of squares of residuals
-   *
+   *  
    * \param func_gradients A matrix containing the gradients of the
    * residual vector
    * \param residuals A vector of residuals (mismatch between experimental data
    * and the corresponding function values
    * \param asrv The active set request vector
-   */
+   */  
   void build_gradient_of_sum_square_residuals_from_function_data(
-      const RealMatrix& func_gradients, const RealVector& residuals,
-      RealVector& ssr_gradient, const ShortArray& asrv);
+    const RealMatrix &func_gradients, const RealVector &residuals,
+    RealVector &ssr_gradient, const ShortArray& asrv);
 
   /// Build the hessian of the ssr from residuals, function gradients and
   /// function hessians based on the response's active set request vector
   void build_hessian_of_sum_square_residuals(const Response& resp,
-                                             RealSymMatrix& ssr_hessian);
+					     RealSymMatrix &ssr_hessian);
   /// Build the hessian of the ssr from residuals, function gradients and
   /// function hessians using the passed active set request vector (overrides
   /// the response's request vector)
   void build_hessian_of_sum_square_residuals(const Response& resp,
-                                             const ShortArray& asrv,
-                                             RealSymMatrix& ssr_hessian);
+					     const ShortArray& asrv,
+					     RealSymMatrix &ssr_hessian);
 
   /// Update the hessian of ssr with the values from the hessian associated
   /// with a single experiment
-  void build_hessian_of_sum_square_residuals_from_response(
-      const Response& resp, const ShortArray& asrv, int exp_ind,
-      RealSymMatrix& ssr_hessian);
+  void build_hessian_of_sum_square_residuals_from_response( 
+						    const Response& resp, 
+						    const ShortArray& asrv,
+						    int exp_ind,
+						    RealSymMatrix &ssr_hessian);
 
   /** \brief Construct the hessian of the sum of squares of residuals
-   *
-   * \param func_hessians A list of matrices containing the Hessians of the
+   *  
+   * \param func_hessians A list of matrices containing the Hessians of the 
    * function elements in the residual vector
    * \param func_gradients A matrix containing the gradients of the
    * residual vector
    * \param residuals A vector of residuals (mismatch between experimental data
    * and the corresponding function values
    * \param asrv The active set request vector
-   */
+   */  
   void build_hessian_of_sum_square_residuals_from_function_data(
-      const RealSymMatrixArray& func_hessians, const RealMatrix& func_gradients,
-      const RealVector& residuals, RealSymMatrix& ssr_hessian,
-      const ShortArray& asrv);
+    const RealSymMatrixArray &func_hessians, 
+    const RealMatrix &func_gradients, const RealVector &residuals,
+    RealSymMatrix &ssr_hessian, const ShortArray& asrv);
 
   /// in-place scale the residual response (functions, gradients,
   /// Hessians) by sqrt(multipliers), according to blocks indicated by
   /// multiplier mode
-  void scale_residuals(const RealVector& multipliers,
-                       unsigned short multiplier_mode, size_t num_calib_params,
-                       Response& residual_response) const;
+  void scale_residuals(const RealVector& multipliers, 
+		       unsigned short multiplier_mode, size_t num_calib_params,
+		       Response& residual_response) const;
+
 
   /// returns the determinant of (covariance block-scaled by the
   /// passed multipliers)
-  Real cov_determinant(const RealVector& multipliers,
+  Real cov_determinant(const RealVector& multipliers, 
                        unsigned short multiplier_mode) const;
 
   /// returns the log of the determinant of (covariance block-scaled
   /// by the passed multipliers)
-  Real half_log_cov_determinant(const RealVector& multipliers,
-                                unsigned short multiplier_mode) const;
-
+  Real half_log_cov_determinant(const RealVector& multipliers, 
+				unsigned short multiplier_mode) const;
+  
   /// populated the passed gradient with derivatives w.r.t. the
   /// hyper-parameter multipliers, starting at hyper_offset (must be
   /// sized)
-  void half_log_cov_det_gradient(const RealVector& multipliers,
-                                 unsigned short multiplier_mode,
-                                 size_t hyper_offset,
-                                 RealVector& gradient) const;
+  void half_log_cov_det_gradient(const RealVector& multipliers, 
+				 unsigned short multiplier_mode,
+				 size_t hyper_offset,
+				 RealVector& gradient) const;
 
   /// populated the passed Hessian with derivatives w.r.t. the
   /// hyper-parameter multipliers, starting at hyper_offset (must be
   /// sized)
-  void half_log_cov_det_hessian(const RealVector& multipliers,
-                                unsigned short multiplier_mode,
-                                size_t hyper_offset,
-                                RealSymMatrix& hessian) const;
+  void half_log_cov_det_hessian(const RealVector& multipliers, 
+				unsigned short multiplier_mode, 
+				size_t hyper_offset,
+				RealSymMatrix& hessian) const;
 
   /// generate variable labels for the covariance (error) multiplier hyperparams
   StringArray hyperparam_labels(unsigned short multiplier_mode) const;
 
- protected:
+protected:
+
   /// Perform check on the active request vector to make sure
   /// it is amenable to interpolation of simulation data and application
   /// of apply covariance
@@ -346,14 +362,15 @@ class ExperimentData {
                             RealVector& expanded_multipliers) const;
 
   void resid2mult_map(unsigned short multiplier_mode,
-                      IntVector& resid2mult_indices) const;
+		      IntVector& resid2mult_indices) const;
 
- private:
+private:
+
   // initialization helpers
 
   /// shared body of constructor initialization
-  void initialize(const StringArray& variance_types,
-                  const SharedResponseData& srd);
+  void initialize(const StringArray& variance_types, 
+		  const SharedResponseData& srd);
 
   /// parse user-provided sigma type strings and populate enums
   void parse_sigma_types(const StringArray& sigma_types);
@@ -365,38 +382,38 @@ class ExperimentData {
   // data loading helpers
 
   /// Load a single experiment exp_index into exp_resp
-  void load_experiment(size_t exp_index, std::ifstream& scalar_data_stream,
-                       size_t num_field_sigma_matrices,
-                       size_t num_field_sigma_diagonals,
-                       size_t num_field_sigma_scalars,
-                       size_t num_field_sigma_none, Response& exp_resp);
+  void load_experiment(size_t exp_index, std::ifstream& scalar_data_stream, 
+		       size_t num_field_sigma_matrices, 
+		       size_t num_field_sigma_diagonals, 
+		       size_t num_field_sigma_scalars, 
+		       size_t num_field_sigma_none, Response& exp_resp);
 
   /// read or default populate the scalar sigma
-  void read_scalar_sigma(std::ifstream& scalar_data_stream,
-                         RealVector& sigma_scalars,
-                         IntVector& scalar_map_indices);
+  void read_scalar_sigma(std::ifstream& scalar_data_stream, 
+			 RealVector& sigma_scalars, 
+			 IntVector& scalar_map_indices);
+
 
   /// Return a view (to allowing updaing in place) of the residuals associated
   /// with a given experiment, from a vector contaning residuals from
   /// all experiments
-  RealVector residuals_view(const RealVector& residuals,
-                            size_t experiment) const;
-
+  RealVector residuals_view(const RealVector& residuals, size_t experiment) const;
+  
   /// Return a view (to allowing updaing in place) of the gradients associated
   /// with a given experiment, from a matrix contaning gradients from
   /// all experiments
-  RealMatrix gradients_view(const RealMatrix& gradients,
-                            size_t experiment) const;
-
+  RealMatrix gradients_view( const RealMatrix &gradients, size_t experiment) const;
+  
   /// Return a view (to allowing updaing in place) of the hessians associated
-  /// with a given experiment, from an array contaning the hessians from
+  /// with a given experiment, from an array contaning the hessians from 
   /// all experiments
-  RealSymMatrixArray hessians_view(const RealSymMatrixArray& hessians,
-                                   size_t experiment) const;
+  RealSymMatrixArray hessians_view(const RealSymMatrixArray &hessians, 
+				   size_t experiment) const;
 
   //
   //- Heading: Data
   //
+
 
   // configuration and sizing information
 
@@ -405,7 +422,7 @@ class ExperimentData {
 
   /// the total number of experiments
   size_t numExperiments;
-
+ 
   /// number of configuration (state) variables to read for each experiment
   size_t numConfigVars;
 
@@ -413,10 +430,10 @@ class ExperimentData {
   /// group; empty varianceType indicates none specified by user
   UShortArray varianceTypes;
 
-  /// cached product of each experiment covariance's determinant
+  /// cached product of each experiment covariance's determinant 
   Real covarianceDeterminant;
 
-  /// cached sum of each experiment covariance's log determinant
+  /// cached sum of each experiment covariance's log determinant 
   Real logCovarianceDeterminant;
 
   /// path to prepend to any data file names
@@ -426,7 +443,7 @@ class ExperimentData {
 
   /// the user-specied scalar data filename
   String scalarDataFilename;
-
+  
   /// tabular format of the simple scalar data file; supports
   /// TABULAR_NONE, TABULAR_HEADER, TABULAR_EVAL_ID, TABULAR_EXPER_ANNOT
   unsigned short scalarDataFormat;
@@ -443,7 +460,7 @@ class ExperimentData {
   /// which might not be correct)
   SharedResponseData simulationSRD;
 
-  /// flag for interpolation.
+  /// flag for interpolation.  
   bool interpolateFlag;
   /// output verbosity level
   short outputLevel;
@@ -453,7 +470,7 @@ class ExperimentData {
   /// Vector of numExperiments ExperimentResponses, holding the
   /// observed data and error (sigma/covariance) for each experiment.
   std::vector<Response> allExperiments;
-
+  
   /// Vector of numExperiments configurations at which data were
   /// gathered; empty if no configurations specified. The inactive
   /// state variables are used to store the configuration settings.
@@ -465,38 +482,44 @@ class ExperimentData {
   IntVector expOffsets;
 };
 
-inline size_t ExperimentData::num_config_vars() const { return numConfigVars; }
 
-inline const std::vector<Variables>& ExperimentData::configuration_variables()
-    const {
-  return allConfigVars;
-}
+inline size_t ExperimentData::num_config_vars() const
+{ return numConfigVars; }
 
-inline std::vector<Variables>& ExperimentData::configuration_variables() {
-  return allConfigVars;
-}
 
-inline size_t ExperimentData::num_scalar_primary() const {
-  if (simulationSRD.is_null())
-    throw std::runtime_error(
-        "ExperimentData is incorrectly (or not) initialized.");
+inline const std::vector<Variables>& ExperimentData::
+configuration_variables() const
+{ return allConfigVars; }
+
+
+inline std::vector<Variables>& ExperimentData::configuration_variables()
+{ return allConfigVars; }
+
+
+inline size_t ExperimentData::num_scalar_primary() const
+{
+  if( simulationSRD.is_null() )
+    throw std::runtime_error("ExperimentData is incorrectly (or not) initialized.");
 
   return simulationSRD.num_scalar_primary();
 }
 
-inline size_t ExperimentData::num_fields() const {
-  if (simulationSRD.is_null())
-    throw std::runtime_error(
-        "ExperimentData is incorrectly (or not) initialized.");
 
-  return simulationSRD.num_field_response_groups();
+inline size_t ExperimentData::num_fields() const
+{
+  if( simulationSRD.is_null() )
+    throw std::runtime_error("ExperimentData is incorrectly (or not) initialized.");
+
+  return  simulationSRD.num_field_response_groups();
 }
 
-inline const IntVector& ExperimentData::field_lengths(size_t experiment) const {
-  return allExperiments[experiment].field_lengths();
-}
 
-inline const RealVector& ExperimentData::all_data(size_t experiment) {
+inline const IntVector& ExperimentData::field_lengths(size_t experiment) const
+{ return allExperiments[experiment].field_lengths(); }
+
+
+inline const RealVector& ExperimentData::all_data(size_t experiment)
+{
   if (experiment >= allExperiments.size()) {
     Cerr << "\nError: invalid experiment index " << experiment << std::endl;
     abort_handler(-1);
@@ -504,7 +527,9 @@ inline const RealVector& ExperimentData::all_data(size_t experiment) {
   return allExperiments[experiment].function_values();
 }
 
-inline const Response& ExperimentData::response(size_t experiment) {
+
+inline const Response& ExperimentData::response(size_t experiment)
+{
   if (experiment >= allExperiments.size()) {
     Cerr << "\nError: invalid experiment index " << experiment << std::endl;
     abort_handler(-1);
@@ -512,69 +537,88 @@ inline const Response& ExperimentData::response(size_t experiment) {
   return allExperiments[experiment];
 }
 
-inline void ExperimentData::per_exp_length(IntVector& per_length) const {
-  per_length.resize(allExperiments.size());
-  // Cout << "num experiments " << num_experiments();
 
-  for (size_t i = 0; i < num_experiments(); i++)
+inline void ExperimentData::per_exp_length(IntVector& per_length) const
+{
+  per_length.resize(allExperiments.size());
+  //Cout << "num experiments " << num_experiments();
+
+  for (size_t i=0; i<num_experiments(); i++)
     per_length(i) = allExperiments[i].shared_data().num_primary_functions();
-  // Cout << "per length " << per_length;
+  //Cout << "per length " << per_length;
 }
 
-inline size_t ExperimentData::num_total_exppoints() const {
+
+inline size_t ExperimentData::num_total_exppoints() const
+{
   size_t res_size = 0;
-  for (size_t i = 0; i < num_experiments(); i++) {
+  for (size_t i=0; i<num_experiments(); i++) {
     // this omits constraints:
     res_size += allExperiments[i].shared_data().num_primary_functions();
   }
   return res_size;
 }
 
-inline Real ExperimentData::scalar_data(size_t response, size_t experiment) {
-  // if (allExperiments[response].experimentType != SCALAR_DATA) {
-  //   Cerr << "Error (ExperimentData): invalid query of scalar data." <<
-  //   std::endl; abort_handler(-1);
-  // }
+
+inline Real ExperimentData::
+scalar_data(size_t response, size_t experiment)
+{
+  //if (allExperiments[response].experimentType != SCALAR_DATA) {
+  //  Cerr << "Error (ExperimentData): invalid query of scalar data." << std::endl;
+  //  abort_handler(-1);
+  //}
   return allExperiments[experiment].function_value(response);
 }
 
-inline RealVector ExperimentData::field_data_view(size_t response,
-                                                  size_t experiment) const {
-  return allExperiments[experiment].field_values_view(response);
+
+inline RealVector ExperimentData::
+field_data_view(size_t response, size_t experiment) const
+{ return allExperiments[experiment].field_values_view(response); }
+
+
+inline RealMatrix ExperimentData::
+field_coords_view(size_t response, size_t experiment) const
+{ return allExperiments[experiment].field_coords_view(response); }
+
+
+inline bool ExperimentData::variance_type_active(short variance_type) const
+{
+  return std::find(varianceTypes.begin(), varianceTypes.end(), variance_type)
+    != varianceTypes.end();
 }
 
-inline RealMatrix ExperimentData::field_coords_view(size_t response,
-                                                    size_t experiment) const {
-  return allExperiments[experiment].field_coords_view(response);
+
+inline bool ExperimentData::variance_active() const
+{
+  return (variance_type_active(SCALAR_SIGMA)   ||
+	  variance_type_active(DIAGONAL_SIGMA) ||
+	  variance_type_active(MATRIX_SIGMA));
 }
 
-inline bool ExperimentData::variance_type_active(short variance_type) const {
-  return std::find(varianceTypes.begin(), varianceTypes.end(), variance_type) !=
-         varianceTypes.end();
-}
 
-inline bool ExperimentData::variance_active() const {
-  return (variance_type_active(SCALAR_SIGMA) ||
-          variance_type_active(DIAGONAL_SIGMA) ||
-          variance_type_active(MATRIX_SIGMA));
-}
+inline bool ExperimentData::interpolate_flag() const
+{ return interpolateFlag; }
 
-inline bool ExperimentData::interpolate_flag() const { return interpolateFlag; }
 
-inline void ExperimentData::build_gradient_of_sum_square_residuals(
-    const Response& resp, RealVector& ssr_gradient) {
+inline void ExperimentData::
+build_gradient_of_sum_square_residuals( const Response& resp, 
+					RealVector &ssr_gradient )
+{
   // default to asrv in resp (no override)
-  build_gradient_of_sum_square_residuals(resp, resp.active_set_request_vector(),
-                                         ssr_gradient);
+  build_gradient_of_sum_square_residuals( resp,
+					  resp.active_set_request_vector(),
+					  ssr_gradient);
 }
 
-inline void ExperimentData::build_hessian_of_sum_square_residuals(
-    const Response& resp, RealSymMatrix& ssr_hessian) {
+inline void ExperimentData::
+build_hessian_of_sum_square_residuals( const Response& resp, 
+				       RealSymMatrix &ssr_hessian )
+{
   // default to asrv in resp (no override)
-  build_hessian_of_sum_square_residuals(resp, resp.active_set_request_vector(),
-                                        ssr_hessian);
+  build_hessian_of_sum_square_residuals( resp, resp.active_set_request_vector(),
+					 ssr_hessian);
 }
 
-}  // namespace Dakota
+} // namespace Dakota
 
 #endif

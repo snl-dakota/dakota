@@ -8,129 +8,126 @@
     _______________________________________________________________________ */
 
 #include "CollabHybridMetaIterator.hpp"
-
-#include "ParallelLibrary.hpp"
 #include "ProblemDescDB.hpp"
+#include "ParallelLibrary.hpp"
 
-static const char rcsId[] =
-    "@(#) $Id: CollabHybridMetaIterator.cpp 6715 2010-04-02 21:58:15Z wjbohnh "
-    "$";
+static const char rcsId[]="@(#) $Id: CollabHybridMetaIterator.cpp 6715 2010-04-02 21:58:15Z wjbohnh $";
+
 
 namespace Dakota {
 
-CollabHybridMetaIterator::CollabHybridMetaIterator(
-    ProblemDescDB& problem_db, ParallelLibrary& parallel_lib)
-    : MetaIterator(problem_db, parallel_lib),
-      singlePassedModel(false)
-// hybridCollabType(
-//   problem_db.get_string("method.hybrid.collaborative_type"))
+CollabHybridMetaIterator::CollabHybridMetaIterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
+  MetaIterator(problem_db, parallel_lib), singlePassedModel(false)
+  //hybridCollabType(
+  //  problem_db.get_string("method.hybrid.collaborative_type"))
 {
-  const StringArray& method_ptrs =
-      problem_db.get_sa("method.hybrid.method_pointers");
-  const StringArray& method_names =
-      problem_db.get_sa("method.hybrid.method_names");
+  const StringArray& method_ptrs
+    = problem_db.get_sa("method.hybrid.method_pointers");
+  const StringArray& method_names
+    = problem_db.get_sa("method.hybrid.method_names");
 
-  if (!method_ptrs.empty()) {
-    lightwtMethodCtor = false;
-    methodStrings = method_ptrs;
-  } else if (!method_names.empty()) {
-    lightwtMethodCtor = true;
-    methodStrings = method_names;
+  if (!method_ptrs.empty())
+    { lightwtMethodCtor = false; methodStrings = method_ptrs;  }
+  else if (!method_names.empty()) {
+    lightwtMethodCtor = true;    methodStrings = method_names;
     modelStrings = problem_db.get_sa("method.hybrid.model_pointers");
     // define an array of null strings to use for set_db_model_nodes()
     if (modelStrings.empty()) modelStrings.resize(method_names.size());
     // allow input of single string
-    else
-      Pecos::inflate_scalar(modelStrings, method_names.size());
-  } else {
-    Cerr << "Error: incomplete hybrid meta-iterator specification."
-         << std::endl;
+    else      Pecos::inflate_scalar(modelStrings, method_names.size());
+  }
+  else {
+    Cerr << "Error: incomplete hybrid meta-iterator specification."<< std::endl;
     abort_handler(METHOD_ERROR);
   }
 
   maxIteratorConcurrency = methodStrings.size();
-  if (!maxIteratorConcurrency) {        // verify at least one method in list
-    if (parallelLib.world_rank() == 0)  // prior to lead_rank()
+  if (!maxIteratorConcurrency) { // verify at least one method in list
+    if (parallelLib.world_rank() == 0) // prior to lead_rank()
       Cerr << "Error: hybrid method list must have a least one entry."
-           << std::endl;
+	   << std::endl;
     abort_handler(-1);
   }
 }
 
-CollabHybridMetaIterator::CollabHybridMetaIterator(
-    ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
-    std::shared_ptr<Model> model)
-    : MetaIterator(problem_db, parallel_lib, model),
-      singlePassedModel(true)
-// hybridCollabType(
-//   problem_db.get_string("method.hybrid.collaborative_type"))
+
+CollabHybridMetaIterator::
+CollabHybridMetaIterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  MetaIterator(problem_db, parallel_lib, model), singlePassedModel(true)
+  //hybridCollabType(
+  //  problem_db.get_string("method.hybrid.collaborative_type"))
 {
-  const StringArray& method_ptrs =
-      problem_db.get_sa("method.hybrid.method_pointers");
-  const StringArray& method_names =
-      problem_db.get_sa("method.hybrid.method_names");
-  const StringArray& model_ptrs =
-      problem_db.get_sa("method.hybrid.model_pointers");
+  const StringArray& method_ptrs
+    = problem_db.get_sa("method.hybrid.method_pointers");
+  const StringArray& method_names
+    = problem_db.get_sa("method.hybrid.method_names");
+  const StringArray& model_ptrs
+    = problem_db.get_sa("method.hybrid.model_pointers");
 
   // process and validate method and model strings
-  size_t i, num_iterators;
-  String empty_str;
+  size_t i, num_iterators; String empty_str;
   if (!method_ptrs.empty()) {
     lightwtMethodCtor = false;
     num_iterators = method_ptrs.size();
-    for (i = 0; i < num_iterators; ++i) check_model(method_ptrs[i], empty_str);
+    for (i=0; i<num_iterators; ++i)
+      check_model(method_ptrs[i], empty_str);
     methodStrings = method_ptrs;
-  } else if (!method_names.empty()) {
+  }
+  else if (!method_names.empty()) {
     lightwtMethodCtor = true;
     methodStrings = method_names;
     num_iterators = method_names.size();
     // define an array of strings to use for set_db_model_nodes()
-    if (model_ptrs.empty())  // assign array using id from iteratedModel
+    if (model_ptrs.empty()) // assign array using id from iteratedModel
       modelStrings.assign(num_iterators, iteratedModel->model_id());
     else {
       size_t num_models = model_ptrs.size();
-      for (i = 0; i < num_models; ++i) check_model(empty_str, model_ptrs[i]);
+      for (i=0; i<num_models; ++i)
+	check_model(empty_str, model_ptrs[i]);
       modelStrings = model_ptrs;
-      Pecos::inflate_scalar(modelStrings, num_iterators);  // allow single input
+      Pecos::inflate_scalar(modelStrings, num_iterators); // allow single input
     }
-  } else {
-    Cerr << "Error: incomplete hybrid meta-iterator specification."
-         << std::endl;
+  }
+  else {
+    Cerr << "Error: incomplete hybrid meta-iterator specification."<< std::endl;
     abort_handler(METHOD_ERROR);
   }
 
-  if (!num_iterators) {                 // verify at least one method in list
-    if (parallelLib.world_rank() == 0)  // prior to lead_rank()
+  if (!num_iterators) { // verify at least one method in list
+    if (parallelLib.world_rank() == 0) // prior to lead_rank()
       Cerr << "Error: hybrid method list must have a least one entry."
-           << std::endl;
+	   << std::endl;
     abort_handler(-1);
   }
 
   maxIteratorConcurrency = num_iterators;
 }
 
-CollabHybridMetaIterator::~CollabHybridMetaIterator() {}
 
-void CollabHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter) {
+CollabHybridMetaIterator::~CollabHybridMetaIterator()
+{ }
+
+
+void CollabHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
+{
   size_t i, num_iterators = methodStrings.size();
-  selectedIterators.resize(
-      num_iterators);  // servers also need for run_iterator
-  if (!singlePassedModel) selectedModels.resize(num_iterators);
+  selectedIterators.resize(num_iterators); // servers also need for run_iterator
+  if (!singlePassedModel)
+    selectedModels.resize(num_iterators);
 
   iterSched.update(methodPCIter);
 
   IntIntPair ppi_pr_i, ppi_pr(INT_MAX, 0);
   String empty_str;
-  for (i = 0; i < num_iterators; ++i) {
+  for (i=0; i<num_iterators; ++i) {
     // compute min/max processors per iterator for each method
     auto the_iterator = selectedIterators[i];
     auto the_model = (singlePassedModel) ? iteratedModel : selectedModels[i];
-    ppi_pr_i =
-        (lightwtMethodCtor)
-            ? estimate_by_name(methodStrings[i], modelStrings[i], the_iterator,
-                               the_model)
-            : estimate_by_pointer(methodStrings[i], the_iterator, the_model);
-    if (ppi_pr_i.first < ppi_pr.first) ppi_pr.first = ppi_pr_i.first;
+    ppi_pr_i = (lightwtMethodCtor) ?
+      estimate_by_name(methodStrings[i], modelStrings[i], the_iterator,
+		       the_model) :
+      estimate_by_pointer(methodStrings[i], the_iterator, the_model);
+    if (ppi_pr_i.first  < ppi_pr.first)  ppi_pr.first  = ppi_pr_i.first;
     if (ppi_pr_i.second > ppi_pr.second) ppi_pr.second = ppi_pr_i.second;
   }
 
@@ -140,14 +137,15 @@ void CollabHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter) {
   // An idle partition need not instantiate iterators/models (empty Iterator
   // envelopes are adequate for serve_iterators()), so return now.  A dedicated
   // scheduler processor is managed in IteratorScheduler::init_iterator().
-  if (iterSched.iteratorServerId > iterSched.numIteratorServers) return;
+  if (iterSched.iteratorServerId > iterSched.numIteratorServers)
+    return;
 
   // Instantiate all Models and Iterators
-  for (i = 0; i < num_iterators; ++i) {
+  for (i=0; i<num_iterators; ++i) {
     auto the_model = (singlePassedModel) ? iteratedModel : selectedModels[i];
     if (lightwtMethodCtor)
-      allocate_by_name(methodStrings[i], modelStrings[i], selectedIterators[i],
-                       the_model);
+      allocate_by_name(methodStrings[i], modelStrings[i],
+		       selectedIterators[i], the_model);
     else
       allocate_by_pointer(methodStrings[i], selectedIterators[i], the_model);
   }
@@ -158,26 +156,30 @@ void CollabHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter) {
   // instantiations and would support a shared processing queue.
 }
 
-void CollabHybridMetaIterator::derived_set_communicators(ParLevLIter pl_iter) {
+
+void CollabHybridMetaIterator::derived_set_communicators(ParLevLIter pl_iter)
+{
   size_t mi_pl_index = methodPCIter->mi_parallel_level_index(pl_iter) + 1;
   iterSched.update(methodPCIter, mi_pl_index);
   if (iterSched.iteratorServerId <= iterSched.numIteratorServers) {
-    ParLevLIter si_pl_iter =
-        methodPCIter->mi_parallel_level_iterator(mi_pl_index);
+    ParLevLIter si_pl_iter
+      = methodPCIter->mi_parallel_level_iterator(mi_pl_index);
     size_t i, num_iterators = methodStrings.size();
-    for (i = 0; i < num_iterators; ++i)
+    for (i=0; i<num_iterators; ++i)
       iterSched.set_iterator(*selectedIterators[i], si_pl_iter);
   }
 }
 
-void CollabHybridMetaIterator::derived_free_communicators(ParLevLIter pl_iter) {
+
+void CollabHybridMetaIterator::derived_free_communicators(ParLevLIter pl_iter)
+{
   size_t mi_pl_index = methodPCIter->mi_parallel_level_index(pl_iter) + 1;
   iterSched.update(methodPCIter, mi_pl_index);
   if (iterSched.iteratorServerId <= iterSched.numIteratorServers) {
-    ParLevLIter si_pl_iter =
-        methodPCIter->mi_parallel_level_iterator(mi_pl_index);
+    ParLevLIter si_pl_iter
+      = methodPCIter->mi_parallel_level_iterator(mi_pl_index);
     size_t i, num_iterators = methodStrings.size();
-    for (i = 0; i < num_iterators; ++i)
+    for (i=0; i<num_iterators; ++i)
       iterSched.free_iterator(*selectedIterators[i], si_pl_iter);
   }
 
@@ -185,17 +187,20 @@ void CollabHybridMetaIterator::derived_free_communicators(ParLevLIter pl_iter) {
   iterSched.free_iterator_parallelism();
 }
 
-void CollabHybridMetaIterator::core_run() {
+
+void CollabHybridMetaIterator::core_run()
+{
   // THIS CODE IS JUST A PLACEHOLDER
 
   bool lead_rank = iterSched.lead_rank();
   size_t i, num_iterators = methodStrings.size();
-  int server_id = iterSched.iteratorServerId;
-  bool rank0 = (iterSched.iteratorCommRank == 0);
-  for (i = 0; i < num_iterators; i++) {
+  int server_id =  iterSched.iteratorServerId;
+  bool    rank0 = (iterSched.iteratorCommRank == 0);
+  for (i=0; i<num_iterators; i++) {
+
     if (lead_rank)
       Cout << "\n>>>>> Running Collaborative Hybrid with iterator "
-           << methodStrings[i] << ".\n";
+	   << methodStrings[i] << ".\n";
 
     Iterator& curr_iterator = *selectedIterators[i];
 
@@ -209,35 +214,32 @@ void CollabHybridMetaIterator::core_run() {
   }
 }
 
-IntIntPair CollabHybridMetaIterator::estimate_partition_bounds() {
-  int min_procs = INT_MAX, max_procs = 0;
-  IntIntPair min_max;
-  size_t i, num_meth = selectedIterators.size();
-  String empty_str;
-  for (i = 0; i < num_meth; ++i) {
+IntIntPair CollabHybridMetaIterator::estimate_partition_bounds()
+{
+  int min_procs = INT_MAX, max_procs = 0;       IntIntPair min_max;
+  size_t i, num_meth = selectedIterators.size();  String empty_str;
+  for (i=0; i<num_meth; ++i)  {
     auto model = (singlePassedModel) ? iteratedModel : selectedModels[i];
     if (lightwtMethodCtor)
-      iterSched.construct_sub_iterator(probDescDB, parallelLib,
-                                       selectedIterators[i], model, empty_str,
-                                       methodStrings[i],  // ptr, name
-                                       modelStrings[i]);  // ptr
+      iterSched.construct_sub_iterator(probDescDB, parallelLib, selectedIterators[i], model,
+				       empty_str, methodStrings[i], // ptr, name
+				       modelStrings[i]); // ptr
     else
-      iterSched.construct_sub_iterator(probDescDB, parallelLib,
-                                       selectedIterators[i], model,
-                                       methodStrings[i], empty_str, empty_str);
+      iterSched.construct_sub_iterator(probDescDB, parallelLib, selectedIterators[i], model,
+				       methodStrings[i], empty_str, empty_str);
 
     min_max = selectedIterators[i]->estimate_partition_bounds();
-    if (min_max.first < min_procs) min_procs = min_max.first;
+    if (min_max.first  < min_procs) min_procs = min_max.first;
     if (min_max.second > max_procs) max_procs = min_max.second;
   }
 
   // now apply scheduling data for this level (recursion is complete)
-  min_max.first = ProblemDescDB::min_procs_per_level(
-      min_procs, iterSched.procsPerIterator, iterSched.numIteratorServers);
-  min_max.second = ProblemDescDB::max_procs_per_level(
-      max_procs, iterSched.procsPerIterator, iterSched.numIteratorServers,
-      iterSched.iteratorScheduling, 1, false, maxIteratorConcurrency);
+  min_max.first = ProblemDescDB::min_procs_per_level(min_procs,
+    iterSched.procsPerIterator, iterSched.numIteratorServers);
+  min_max.second = ProblemDescDB::max_procs_per_level(max_procs,
+    iterSched.procsPerIterator, iterSched.numIteratorServers,
+    iterSched.iteratorScheduling, 1, false, maxIteratorConcurrency);
   return min_max;
 }
 
-}  // namespace Dakota
+} // namespace Dakota

@@ -10,43 +10,40 @@
 #ifndef SURR_BASED_LEVEL_DATA_H
 #define SURR_BASED_LEVEL_DATA_H
 
-#include "DakotaResponse.hpp"
-#include "DakotaVariables.hpp"
 #include "dakota_system_defs.hpp"
+#include "DakotaVariables.hpp"
+#include "DakotaResponse.hpp"
 
 namespace Dakota {
 
 // values for response type
-enum { APPROX_RESPONSE = 1, TRUTH_RESPONSE };
+enum { APPROX_RESPONSE=1, TRUTH_RESPONSE };
 // values for corrected response type
-enum {
-  CORR_APPROX_RESPONSE = 1,
-  UNCORR_APPROX_RESPONSE,
-  CORR_TRUTH_RESPONSE,
-  UNCORR_TRUTH_RESPONSE
-};
+enum { CORR_APPROX_RESPONSE=1, UNCORR_APPROX_RESPONSE,
+       CORR_TRUTH_RESPONSE,    UNCORR_TRUTH_RESPONSE };
 // bits for trust region status
-enum {
-  NEW_CANDIDATE = 1,
-  CANDIDATE_ACCEPTED = 2,
-  // CANDIDATE_REJECTED =    4,
-  CANDIDATE_STATE = (NEW_CANDIDATE | CANDIDATE_ACCEPTED),  // | _REJECTED
-  NEW_CENTER = 8,
-  CENTER_BUILT = 16,
-  // CENTER_PENDING     =   32,
-  CENTER_STATE = (NEW_CENTER | CENTER_BUILT),  // | CENTER_PENDING
-  NEW_TR_FACTOR = 64,
-  NEW_TRUST_REGION = (NEW_CENTER | NEW_TR_FACTOR),
-  HARD_CONVERGED = 128,
-  SOFT_CONVERGED = 256,
-  MIN_TR_CONVERGED = 512,
-  MAX_ITER_CONVERGED = 1024,
-  CONVERGED =
-      (HARD_CONVERGED | SOFT_CONVERGED | MIN_TR_CONVERGED | MAX_ITER_CONVERGED)
-};
+enum { NEW_CANDIDATE      =    1,
+       CANDIDATE_ACCEPTED =    2,
+     //CANDIDATE_REJECTED =    4,
+       CANDIDATE_STATE    = (NEW_CANDIDATE | CANDIDATE_ACCEPTED),// | _REJECTED
+       NEW_CENTER         =    8,
+       CENTER_BUILT       =   16,
+     //CENTER_PENDING     =   32,
+       CENTER_STATE       = (NEW_CENTER | CENTER_BUILT),// | CENTER_PENDING
+       NEW_TR_FACTOR      =   64,
+       NEW_TRUST_REGION   = (NEW_CENTER | NEW_TR_FACTOR),
+       HARD_CONVERGED     =  128,
+       SOFT_CONVERGED     =  256,
+       MIN_TR_CONVERGED   =  512,
+       MAX_ITER_CONVERGED = 1024,
+       CONVERGED          = (HARD_CONVERGED   | SOFT_CONVERGED |
+			     MIN_TR_CONVERGED | MAX_ITER_CONVERGED) };
 
-class SurrBasedLevelData {
- public:
+
+class SurrBasedLevelData
+{
+public:
+
   /// default constructor
   SurrBasedLevelData();
   /// destructor
@@ -56,7 +53,7 @@ class SurrBasedLevelData {
   void initialize_bounds(size_t num_c_vars);
   /// initialize response objects via copy
   void initialize_data(const Variables& vars, const Response& approx_resp,
-                       const Response& truth_resp, bool uncorr = true);
+		       const Response& truth_resp, bool uncorr = true);
 
   /// return pairedKey
   const Pecos::ActiveKey& paired_key() const;
@@ -64,8 +61,8 @@ class SurrBasedLevelData {
   void paired_key(const Pecos::ActiveKey& aggregate_key);
   /// initialize pairedKey from model forms and discretization levels
   void paired_key(unsigned short group, unsigned short approx_form,
-                  size_t approx_level, unsigned short truth_form,
-                  size_t truth_level, unsigned short reduction);
+		  size_t approx_level,  unsigned short truth_form,
+		  size_t truth_level,   unsigned short reduction);
 
   /// perform several reset operations to restore initialized state
   void reset();
@@ -100,8 +97,8 @@ class SurrBasedLevelData {
   void c_vars_star(const RealVector& c_vars);
   void c_var_star(Real c_var, size_t i);
 
-  // const Response& response_star(short corr_response_type) const;
-  // const Response& response_center(short corr_response_type) const;
+  //const Response& response_star(short corr_response_type) const;
+  //const Response& response_center(short corr_response_type) const;
   Response& response_star(short corr_response_type);
   Response& response_center(short corr_response_type);
 
@@ -118,9 +115,9 @@ class SurrBasedLevelData {
   void response_center_pair(IntResponsePair& pair, short corr_response_type);
 
   void response_star_pair(int eval_id, const Response& resp,
-                          short corr_response_type);
+			  short corr_response_type);
   void response_center_pair(int eval_id, const Response& resp,
-                            short corr_response_type);
+			    short corr_response_type);
 
   void reset_filter();
   void initialize_filter(Real new_f, Real new_g);
@@ -139,13 +136,13 @@ class SurrBasedLevelData {
 
   const ActiveSet& active_set_center(short response_type) const;
   void active_set_center(const ActiveSet& set, short response_type,
-                         bool uncorr = true);
+			 bool uncorr = true);
   void active_set_center(short request, short response_type,
-                         bool uncorr = true);
+			 bool uncorr = true);
 
   const ActiveSet& active_set_star(short response_type) const;
   void active_set_star(const ActiveSet& set, short response_type,
-                       bool uncorr = true);
+		       bool uncorr = true);
   void active_set_star(short request, short response_type, bool uncorr = true);
 
   unsigned short data_group();
@@ -166,9 +163,10 @@ class SurrBasedLevelData {
   void tr_upper_bounds(const RealVector& bounds);
   void tr_upper_bound(Real bound, size_t i);
 
- private:
-  Variables varsStar;    ///< variables at the new solution iterate
-  Variables varsCenter;  ///< variables at the trust region center
+private:
+
+  Variables varsStar;   ///< variables at the new solution iterate
+  Variables varsCenter; ///< variables at the trust region center
 
   /// uncorrected approximate response at the new solution iterate
   Response responseStarApproxUncorrected;
@@ -194,7 +192,7 @@ class SurrBasedLevelData {
   Real trustRegionFactor;
 
   /// collection of status bits:
-  /// NEW_CANDIDATE: indicates the availability of a candidate point that,
+  /// NEW_CANDIDATE: indicates the availability of a candidate point that, 
   ///                once verified, can be accepted as a NEW_CENTER.
   /// NEW_CENTER:    indicates the acceptance of a candidate point and the
   ///                existence of a new trust region center
@@ -208,7 +206,7 @@ class SurrBasedLevelData {
   ///                   minimum allowable
   /// MAX_ITER_CONVERGED: indicates that he number of iterations at this level
   ///                     has reached the maximum allowable
-  unsigned short trustRegionStatus;  // or use BitArray
+  unsigned short trustRegionStatus; // or use BitArray
 
   /// Pareto set of (objective, constraint violation) pairs defining a
   /// (slanting) filter for iterate selection/rejection
@@ -227,262 +225,290 @@ class SurrBasedLevelData {
   RealVector trUpperBounds;
 };
 
-inline SurrBasedLevelData::SurrBasedLevelData()
-    : trustRegionFactor(1.),
-      trustRegionStatus(NEW_CENTER | NEW_TR_FACTOR),
-      softConvCount(0) {
-  responseStarTruthCorrected.first = responseCenterTruthCorrected.first = 0;
+
+inline SurrBasedLevelData::SurrBasedLevelData():
+  trustRegionFactor(1.), trustRegionStatus(NEW_CENTER | NEW_TR_FACTOR),
+  softConvCount(0)
+{ responseStarTruthCorrected.first = responseCenterTruthCorrected.first = 0; }
+
+
+inline SurrBasedLevelData::~SurrBasedLevelData()
+{ }
+
+
+inline void SurrBasedLevelData::initialize_bounds(size_t num_c_vars)
+{
+  trLowerBounds.sizeUninitialized(num_c_vars); // assign -dbl_inf?
+  trUpperBounds.sizeUninitialized(num_c_vars); // assign  dbl_inf?
 }
 
-inline SurrBasedLevelData::~SurrBasedLevelData() {}
 
-inline void SurrBasedLevelData::initialize_bounds(size_t num_c_vars) {
-  trLowerBounds.sizeUninitialized(num_c_vars);  // assign -dbl_inf?
-  trUpperBounds.sizeUninitialized(num_c_vars);  // assign  dbl_inf?
+inline const Pecos::ActiveKey& SurrBasedLevelData::paired_key() const
+{ return pairedKey; }
+
+
+inline void SurrBasedLevelData::
+paired_key(const Pecos::ActiveKey& aggregate_key)
+{ pairedKey = aggregate_key; } // shared rep
+
+
+inline void SurrBasedLevelData::
+paired_key(unsigned short group, unsigned short approx_form,
+	   size_t approx_level,  unsigned short truth_form,
+	   size_t truth_level,   unsigned short reduction)
+{
+  pairedKey.form_key(group, approx_form, approx_level,
+		     truth_form, truth_level, reduction);
 }
 
-inline const Pecos::ActiveKey& SurrBasedLevelData::paired_key() const {
-  return pairedKey;
-}
 
-inline void SurrBasedLevelData::paired_key(
-    const Pecos::ActiveKey& aggregate_key) {
-  pairedKey = aggregate_key;
-}  // shared rep
+inline unsigned short SurrBasedLevelData::status()
+{ return trustRegionStatus; }
 
-inline void SurrBasedLevelData::paired_key(
-    unsigned short group, unsigned short approx_form, size_t approx_level,
-    unsigned short truth_form, size_t truth_level, unsigned short reduction) {
-  pairedKey.form_key(group, approx_form, approx_level, truth_form, truth_level,
-                     reduction);
-}
 
-inline unsigned short SurrBasedLevelData::status() { return trustRegionStatus; }
+inline bool SurrBasedLevelData::status(unsigned short bits)
+{ return (trustRegionStatus & bits) == bits; }
 
-inline bool SurrBasedLevelData::status(unsigned short bits) {
-  return (trustRegionStatus & bits) == bits;
-}
+  
+inline void SurrBasedLevelData::set_status_bits(unsigned short bits)
+{ trustRegionStatus |= bits; }
 
-inline void SurrBasedLevelData::set_status_bits(unsigned short bits) {
-  trustRegionStatus |= bits;
-}
 
-inline void SurrBasedLevelData::reset_status_bits(unsigned short bits) {
-  trustRegionStatus &= ~bits;
-}
+inline void SurrBasedLevelData::reset_status_bits(unsigned short bits)
+{ trustRegionStatus &= ~bits; }
 
-inline unsigned short SurrBasedLevelData::converged() {
-  return (trustRegionStatus & CONVERGED);
-}
 
-inline const Variables& SurrBasedLevelData::vars_center() const {
-  return varsCenter;
-}
+inline unsigned short SurrBasedLevelData::converged()
+{ return (trustRegionStatus & CONVERGED); }
 
-inline Variables& SurrBasedLevelData::vars_center() { return varsCenter; }
+  
+inline const Variables& SurrBasedLevelData::vars_center() const
+{ return varsCenter; }
 
-inline void SurrBasedLevelData::vars_center(const Variables& vars) {
+
+inline Variables& SurrBasedLevelData::vars_center()
+{ return varsCenter; }
+
+
+inline void SurrBasedLevelData::vars_center(const Variables& vars)
+{
   varsCenter.active_variables(vars);
   // TODO: check for change in point? (DFSBLM manages update in TR center...)
   reset_status_bits(CENTER_STATE | CANDIDATE_STATE);
   set_status_bits(NEW_CENTER);
 }
 
-inline const RealVector& SurrBasedLevelData::c_vars_center() const {
-  return varsCenter.continuous_variables();
-}
 
-inline Real SurrBasedLevelData::c_var_center(size_t i) const {
-  return varsCenter.continuous_variable(i);
-}
+inline const RealVector& SurrBasedLevelData::c_vars_center() const
+{ return varsCenter.continuous_variables(); }
 
-inline void SurrBasedLevelData::c_vars_center(const RealVector& c_vars) {
+
+inline Real SurrBasedLevelData::c_var_center(size_t i) const
+{ return varsCenter.continuous_variable(i); }
+
+
+inline void SurrBasedLevelData::c_vars_center(const RealVector& c_vars)
+{
   varsCenter.continuous_variables(c_vars);
   reset_status_bits(CENTER_STATE | CANDIDATE_STATE);
   set_status_bits(NEW_CENTER);
 }
 
-inline void SurrBasedLevelData::c_var_center(Real c_var, size_t i) {
+
+inline void SurrBasedLevelData::c_var_center(Real c_var, size_t i)
+{
   varsCenter.continuous_variable(c_var, i);
   reset_status_bits(CENTER_STATE | CANDIDATE_STATE);
   set_status_bits(NEW_CENTER);
 }
 
-inline const Variables& SurrBasedLevelData::vars_star() const {
-  return varsStar;
-}
 
-inline Variables& SurrBasedLevelData::vars_star() { return varsStar; }
+inline const Variables& SurrBasedLevelData::vars_star() const
+{ return varsStar; }
 
-inline void SurrBasedLevelData::vars_star(const Variables& vars) {
+
+inline Variables& SurrBasedLevelData::vars_star()
+{ return varsStar; }
+
+
+inline void SurrBasedLevelData::vars_star(const Variables& vars)
+{
   varsStar.active_variables(vars);
   // TODO: check for change in point? (DFSBLM manages update in TR center...)
   reset_status_bits(CENTER_STATE | CANDIDATE_STATE);
   set_status_bits(NEW_CANDIDATE);
 }
 
-inline const RealVector& SurrBasedLevelData::c_vars_star() const {
-  return varsStar.continuous_variables();
-}
 
-inline Real SurrBasedLevelData::c_var_star(size_t i) const {
-  return varsStar.continuous_variable(i);
-}
+inline const RealVector& SurrBasedLevelData::c_vars_star() const
+{ return varsStar.continuous_variables(); }
 
-inline void SurrBasedLevelData::c_vars_star(const RealVector& c_vars) {
+
+inline Real SurrBasedLevelData::c_var_star(size_t i) const
+{ return varsStar.continuous_variable(i); }
+
+
+inline void SurrBasedLevelData::c_vars_star(const RealVector& c_vars)
+{
   varsStar.continuous_variables(c_vars);
   reset_status_bits(CENTER_STATE | CANDIDATE_STATE);
   set_status_bits(NEW_CANDIDATE);
 }
 
-inline void SurrBasedLevelData::c_var_star(Real c_var, size_t i) {
+
+inline void SurrBasedLevelData::c_var_star(Real c_var, size_t i)
+{
   varsStar.continuous_variable(c_var, i);
   reset_status_bits(CENTER_STATE | CANDIDATE_STATE);
   set_status_bits(NEW_CANDIDATE);
 }
 
-inline const ActiveSet& SurrBasedLevelData::active_set_center(
-    short response_type) const {
-  return (response_type == TRUTH_RESPONSE)
-             ? responseCenterTruthCorrected.second.active_set()
-             : responseCenterApproxCorrected
-                   .active_set();  // response_type APPROX_RESPONSE
+
+inline const ActiveSet& SurrBasedLevelData::
+active_set_center(short response_type) const
+{
+  return (response_type == TRUTH_RESPONSE) ?
+    responseCenterTruthCorrected.second.active_set() :
+    responseCenterApproxCorrected.active_set(); // response_type APPROX_RESPONSE
 }
 
-inline void SurrBasedLevelData::active_set_center(short request,
-                                                  short response_type,
-                                                  bool uncorr) {
-  ActiveSet new_set = active_set_center(response_type);  // copy
+
+inline void SurrBasedLevelData::
+active_set_center(short request, short response_type, bool uncorr)
+{
+  ActiveSet new_set = active_set_center(response_type); // copy
   new_set.request_values(request);
   active_set_center(new_set, response_type, uncorr);
 }
 
-inline const ActiveSet& SurrBasedLevelData::active_set_star(
-    short response_type) const {
-  return (response_type == TRUTH_RESPONSE)
-             ? responseStarTruthCorrected.second.active_set()
-             : responseStarApproxCorrected
-                   .active_set();  // response_type APPROX_RESPONSE
+
+inline const ActiveSet& SurrBasedLevelData::
+active_set_star(short response_type) const
+{
+  return (response_type == TRUTH_RESPONSE) ?
+    responseStarTruthCorrected.second.active_set() :
+    responseStarApproxCorrected.active_set(); // response_type APPROX_RESPONSE
 }
 
-inline void SurrBasedLevelData::active_set_star(short request,
-                                                short response_type,
-                                                bool uncorr) {
-  ActiveSet new_set = active_set_star(response_type);  // copy
+
+inline void SurrBasedLevelData::
+active_set_star(short request, short response_type, bool uncorr)
+{
+  ActiveSet new_set = active_set_star(response_type); // copy
   new_set.request_values(request);
   active_set_star(new_set, response_type, uncorr);
 }
 
-inline void SurrBasedLevelData::response_star_pair(IntResponsePair& pair,
-                                                   short corr_response_type) {
-  response_star_pair(pair.first, pair.second, corr_response_type);
-}
 
-inline void SurrBasedLevelData::response_center_pair(IntResponsePair& pair,
-                                                     short corr_response_type) {
-  response_center_pair(pair.first, pair.second, corr_response_type);
-}
+inline void SurrBasedLevelData::
+response_star_pair(IntResponsePair& pair, short corr_response_type)
+{ response_star_pair(pair.first, pair.second, corr_response_type); }
 
-inline unsigned short SurrBasedLevelData::data_group() {
-  return pairedKey.id();
-}  // USHRT_MAX if empty key
 
-inline unsigned short SurrBasedLevelData::approx_model_form() {
-  return pairedKey.retrieve_model_form(0);
-}  // {d,m}_index=0
+inline void SurrBasedLevelData::
+response_center_pair(IntResponsePair& pair, short corr_response_type)
+{ response_center_pair(pair.first, pair.second, corr_response_type); }
 
-inline size_t SurrBasedLevelData::approx_model_level() {
-  return pairedKey.retrieve_resolution_level(0);
-}  // {d,hp}_index=0
 
-inline unsigned short SurrBasedLevelData::truth_model_form() {
-  return pairedKey.retrieve_model_form(1);
-}  // d_index=1,m_index=0
+inline unsigned short SurrBasedLevelData::data_group()
+{ return pairedKey.id(); } // USHRT_MAX if empty key
 
-inline size_t SurrBasedLevelData::truth_model_level() {
-  return pairedKey.retrieve_resolution_level(1);
-}  // d_index=1,hp_index=0
 
-inline void SurrBasedLevelData::reset_filter() { paretoFilter.clear(); }
+inline unsigned short SurrBasedLevelData::approx_model_form()
+{ return pairedKey.retrieve_model_form(0); } // {d,m}_index=0
 
-inline void SurrBasedLevelData::initialize_filter(Real new_f, Real new_g) {
-  reset_filter();
-  paretoFilter.insert(RealRealPair(new_f, new_g));
-}
 
-inline void SurrBasedLevelData::initialize_filter(Real new_f) {
-  reset_filter();
-  paretoFilter.insert(RealRealPair(new_f, 0.));
-}
+inline size_t SurrBasedLevelData::approx_model_level()
+{ return pairedKey.retrieve_resolution_level(0); } // {d,hp}_index=0
 
-inline size_t SurrBasedLevelData::filter_size() const {
-  return paretoFilter.size();
-}
 
-inline Real SurrBasedLevelData::trust_region_factor() {
-  return trustRegionFactor;
-}
+inline unsigned short SurrBasedLevelData::truth_model_form()
+{ return pairedKey.retrieve_model_form(1); } // d_index=1,m_index=0
 
-inline void SurrBasedLevelData::trust_region_factor(Real val) {
-  trustRegionFactor = val;
-  set_status_bits(NEW_TR_FACTOR);
-}
 
-inline void SurrBasedLevelData::scale_trust_region_factor(Real val) {
-  trustRegionFactor *= val;
-  set_status_bits(NEW_TR_FACTOR);
-}
+inline size_t SurrBasedLevelData::truth_model_level()
+{ return pairedKey.retrieve_resolution_level(1); } // d_index=1,hp_index=0
 
-inline unsigned short SurrBasedLevelData::soft_convergence_count() {
-  return softConvCount;
-}
 
-inline void SurrBasedLevelData::reset_soft_convergence_count() {
-  softConvCount = 0;
-}
+inline void SurrBasedLevelData::reset_filter()
+{ paretoFilter.clear(); }
 
-inline void SurrBasedLevelData::increment_soft_convergence_count() {
-  ++softConvCount;
-}
 
-inline void SurrBasedLevelData::reset() {
+inline void SurrBasedLevelData::initialize_filter(Real new_f, Real new_g)
+{ reset_filter(); paretoFilter.insert(RealRealPair(new_f, new_g)); }
+
+
+inline void SurrBasedLevelData::initialize_filter(Real new_f)
+{ reset_filter(); paretoFilter.insert(RealRealPair(new_f, 0.)); }
+
+
+inline size_t SurrBasedLevelData::filter_size() const
+{ return paretoFilter.size(); }
+
+
+inline Real SurrBasedLevelData::trust_region_factor()
+{ return trustRegionFactor; }
+
+
+inline void SurrBasedLevelData::trust_region_factor(Real val)
+{ trustRegionFactor  = val; set_status_bits(NEW_TR_FACTOR); }
+
+
+inline void SurrBasedLevelData::scale_trust_region_factor(Real val)
+{ trustRegionFactor *= val; set_status_bits(NEW_TR_FACTOR); }
+
+
+inline unsigned short SurrBasedLevelData::soft_convergence_count()
+{ return softConvCount; }
+
+
+inline void SurrBasedLevelData::reset_soft_convergence_count()
+{ softConvCount = 0; }
+
+
+inline void SurrBasedLevelData::increment_soft_convergence_count()
+{ ++softConvCount; }
+
+
+inline void SurrBasedLevelData::reset()
+{
   reset_soft_convergence_count();
   reset_status_bits(CONVERGED);
   reset_filter();
 }
 
-inline const RealVector& SurrBasedLevelData::tr_lower_bounds() const {
-  return trLowerBounds;
-}
 
-inline Real SurrBasedLevelData::tr_lower_bound(size_t i) const {
-  return trLowerBounds[i];
-}
+inline const RealVector& SurrBasedLevelData::tr_lower_bounds() const
+{ return trLowerBounds; }
 
-inline void SurrBasedLevelData::tr_lower_bounds(const RealVector& bounds) {
-  trLowerBounds.assign(bounds);
-}
 
-inline void SurrBasedLevelData::tr_lower_bound(Real bound, size_t i) {
-  trLowerBounds[i] = bound;
-}
+inline Real SurrBasedLevelData::tr_lower_bound(size_t i) const
+{ return trLowerBounds[i]; }
 
-inline const RealVector& SurrBasedLevelData::tr_upper_bounds() const {
-  return trUpperBounds;
-}
 
-inline Real SurrBasedLevelData::tr_upper_bound(size_t i) const {
-  return trUpperBounds[i];
-}
+inline void SurrBasedLevelData::tr_lower_bounds(const RealVector& bounds)
+{ trLowerBounds.assign(bounds); }
 
-inline void SurrBasedLevelData::tr_upper_bounds(const RealVector& bounds) {
-  trUpperBounds.assign(bounds);
-}
 
-inline void SurrBasedLevelData::tr_upper_bound(Real bound, size_t i) {
-  trUpperBounds[i] = bound;
-}
+inline void SurrBasedLevelData::tr_lower_bound(Real bound, size_t i)
+{ trLowerBounds[i] = bound; }
 
-}  // namespace Dakota
+
+inline const RealVector& SurrBasedLevelData::tr_upper_bounds() const
+{ return trUpperBounds; }
+
+
+inline Real SurrBasedLevelData::tr_upper_bound(size_t i) const
+{ return trUpperBounds[i]; }
+
+
+inline void SurrBasedLevelData::tr_upper_bounds(const RealVector& bounds)
+{ trUpperBounds.assign(bounds); }
+
+
+inline void SurrBasedLevelData::tr_upper_bound(Real bound, size_t i)
+{ trUpperBounds[i] = bound; }
+
+} // namespace Dakota
 
 #endif

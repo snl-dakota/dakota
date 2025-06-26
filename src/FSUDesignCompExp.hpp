@@ -7,6 +7,7 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
+
 #ifndef FSU_DESIGN_COMP_EXP_H
 #define FSU_DESIGN_COMP_EXP_H
 
@@ -25,47 +26,48 @@ namespace Dakota {
     generated samples and their corresponding responses as well as the
     best sample found. */
 
-class FSUDesignCompExp : public PStudyDACE {
- public:
+class FSUDesignCompExp: public PStudyDACE
+{
+public:
+
   //
   //- Heading: Constructors and destructors
   //
-
+    
   /// primary constructor for building a standard DACE iterator
-  FSUDesignCompExp(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
-                   std::shared_ptr<Model> model);
+  FSUDesignCompExp(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
   /// alternate constructor for building a DACE iterator on-the-fly
   FSUDesignCompExp(std::shared_ptr<Model> model, int samples, int seed,
-                   unsigned short sampling_method);
+		   unsigned short sampling_method);
   /// destructor
   ~FSUDesignCompExp() override;
 
   //
   //- Heading: Virtual function redefinitions
   //
-
+  
   bool resize() override;
+    
+protected:
 
- protected:
   //
   //- Heading: Virtual function redefinitions
   //
-
+  
   void pre_run() override;
   void core_run() override;
   void post_input() override;
   void post_run(std::ostream& s) override;
   size_t num_samples() const override;
-  void sampling_reset(size_t min_samples, bool all_data_flag,
-                      bool stats_flag) override;
+  void sampling_reset(size_t min_samples, bool all_data_flag, bool stats_flag) override;
   unsigned short sampling_scheme() const override;
   void vary_pattern(bool pattern_flag) override;
   void get_parameter_sets(std::shared_ptr<Model> model) override;
-  void get_parameter_sets(std::shared_ptr<Model> model,
-                          const size_t num_samples,
-                          RealMatrix& design_matrix) override;
+  void get_parameter_sets(std::shared_ptr<Model> model, const size_t num_samples, 
+			  RealMatrix& design_matrix) override;
 
- private:
+private:
+
   //
   //- Heading: Convenience functions
   //
@@ -121,7 +123,7 @@ class FSUDesignCompExp : public PStudyDACE {
   // initialization type in CVT.  Specifies where the initial points
   // are placed for consideration.  One of init_grid (2), init_halton (1),
   // init_uniform (1), or init_random (-1).  Default is init_random.
-  // int initType;
+  //int initType;
   /// Trial type in CVT.  Specifies where the points are placed for
   /// consideration relative to the centroids.  Choices are grid (2),
   /// halton (1), uniform (0), or random (-1).  Default is random.
@@ -129,11 +131,14 @@ class FSUDesignCompExp : public PStudyDACE {
   /// initialize statistical post processing
 };
 
-inline size_t FSUDesignCompExp::num_samples() const { return numSamples; }
 
-inline void FSUDesignCompExp::sampling_reset(size_t min_samples,
-                                             bool all_data_flag,
-                                             bool stats_flag) {
+inline size_t FSUDesignCompExp::num_samples() const
+{ return numSamples; }
+
+
+inline void FSUDesignCompExp::
+sampling_reset(size_t min_samples, bool all_data_flag, bool stats_flag)
+{
   // allow sample reduction relative to previous sampling_reset() calls
   // (that is, numSamples may be increased or decreased by min_samples), but
   // not relative to the original specification (samplesSpec is a hard lower
@@ -144,17 +149,17 @@ inline void FSUDesignCompExp::sampling_reset(size_t min_samples,
   // decrease relative to previous value
 
   allDataFlag = all_data_flag;
-  // statsFlag   = stats_flag; // currently no statsFlag in FSUDesignCompExp
+  //statsFlag   = stats_flag; // currently no statsFlag in FSUDesignCompExp
 }
 
-inline unsigned short FSUDesignCompExp::sampling_scheme() const {
-  return methodName;
-}
 
-inline void FSUDesignCompExp::vary_pattern(bool pattern_flag) {
-  varyPattern = pattern_flag;
-}
+inline unsigned short FSUDesignCompExp::sampling_scheme() const
+{ return methodName; }
 
-}  // namespace Dakota
+
+inline void FSUDesignCompExp::vary_pattern(bool pattern_flag)
+{ varyPattern = pattern_flag; }
+
+} // namespace Dakota
 
 #endif

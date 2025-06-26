@@ -14,6 +14,7 @@
 
 namespace Dakota {
 
+
 /// Class for using local gradient-based optimization approaches to
 /// calculate interval bounds for epistemic uncertainty quantification
 
@@ -25,20 +26,21 @@ namespace Dakota {
     "inner loop" aleatory analysis such as intervals on means,
     variances, or percentile levels. */
 
-class NonDLocalSingleInterval : public NonDLocalInterval {
- public:
+class NonDLocalSingleInterval: public NonDLocalInterval
+{
+public:
+
   //
   //- Heading: Constructors and destructor
   //
 
   /// constructor
-  NonDLocalSingleInterval(ProblemDescDB& problem_db,
-                          ParallelLibrary& parallel_lib,
-                          std::shared_ptr<Model> model);
+  NonDLocalSingleInterval(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
   /// destructor
   ~NonDLocalSingleInterval() override;
 
- protected:
+protected:
+
   //
   //- Heading: Virtual function redefinitions
   //
@@ -46,7 +48,8 @@ class NonDLocalSingleInterval : public NonDLocalInterval {
   void initialize() override;
   void post_process_cell_results(bool maximize) override;
 
- private:
+private:
+
   //
   //- Heading: Data
   //
@@ -55,6 +58,6 @@ class NonDLocalSingleInterval : public NonDLocalInterval {
   size_t statCntr;
 };
 
-}  // namespace Dakota
+} // namespace Dakota
 
 #endif
