@@ -10,8 +10,8 @@
 #ifndef ADAPTED_BASIS_MODEL_H
 #define ADAPTED_BASIS_MODEL_H
 
-#include "SubspaceModel.hpp"
 #include "DakotaIterator.hpp"
+#include "SubspaceModel.hpp"
 
 namespace Dakota {
 
@@ -20,15 +20,12 @@ class NonDPolynomialChaos;
 class ParallelLibrary;
 class ProblemDescDB;
 
-
 /// Adapted basis model for input (variable space) reduction
 
 /** Specialization of a RecastModel that creates an adapted basis model
     during build phase and creates a RecastModel in the reduced space */
-class AdaptedBasisModel: public SubspaceModel
-{
-public:
-
+class AdaptedBasisModel : public SubspaceModel {
+ public:
   //
   //- Heading: Constructor and destructor
   //
@@ -36,8 +33,7 @@ public:
   /// Problem database constructor
   AdaptedBasisModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
 
-protected:
-
+ protected:
   //
   //- Heading: Virtual function redefinitions
   //
@@ -56,7 +52,8 @@ protected:
   // ---
 
   /// retrieve the sub-Model from the DB to pass up the constructor chain
-  std::shared_ptr<Model> get_sub_model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
+  std::shared_ptr<Model> get_sub_model(ProblemDescDB& problem_db,
+                                       ParallelLibrary& parallel_lib);
 
   // ---
   // Subspace identification functions: rank-revealing build phase
@@ -76,7 +73,7 @@ protected:
   /// translate the characterization of uncertain variables in the
   /// native_model to the reduced space of the transformed model
   void uncertain_vars_to_subspace() override;
-  
+
   void validate_inputs() override;
 
   // ---
@@ -86,9 +83,8 @@ protected:
   /// map the active continuous recast variables to the active
   /// submodel variables (linear transformation)
   static void variables_mapping(const Variables& recast_xi_vars,
-				Variables& sub_model_x_vars);
-  
-  
+                                Variables& sub_model_x_vars);
+
   /// store the rotation_method input specification, prior to run-time
   /// Options right now:
   ///   - linear = use the linear PCE coefficients
@@ -96,7 +92,7 @@ protected:
   short method_rotation;
   // Threshold level for the selection of the rank in the basis adaptation
   Real adaptedBasisTruncationTolerance;
-  
+
   int subspaceDimension;
 
   // ---
@@ -120,6 +116,6 @@ protected:
   std::shared_ptr<Iterator> pcePilotExpansion;
 };
 
-} // namespace Dakota
+}  // namespace Dakota
 
 #endif

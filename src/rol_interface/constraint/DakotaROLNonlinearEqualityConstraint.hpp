@@ -5,20 +5,17 @@
 namespace rol_interface {
 
 class NonlinearEqualityConstraint : public Constraint {
-public:
-  
-  NonlinearEqualityConstraint( ModelInterface* model_interface,
-                               std::string     con_name = "Nonlinear Equality" );
+ public:
+  NonlinearEqualityConstraint(ModelInterface* model_interface,
+                              std::string con_name = "Nonlinear Equality");
 
   virtual ~NonlinearEqualityConstraint() = default;
 
-protected:
+ protected:
+  void update_from_model(ModelInterface* model_interface) override final;
 
-  void update_from_model( ModelInterface* model_interface ) override final;
+};  // class NonlinearEqualityConstraint
 
-}; // class NonlinearEqualityConstraint
+}  // namespace rol_interface
 
-} // namespace rol_interface
-
-
-#endif // DAKOTA_ROL_NONLINEAR_EQUALITY_CONSTRAINT_HPP
+#endif  // DAKOTA_ROL_NONLINEAR_EQUALITY_CONSTRAINT_HPP

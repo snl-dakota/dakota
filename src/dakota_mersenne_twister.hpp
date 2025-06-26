@@ -16,7 +16,7 @@
 
 #include <boost/version.hpp>
 #if (BOOST_VERSION < 107000) && !defined(BOOST_ALLOW_DEPRECATED_HEADERS)
-//could alternately use: #define BOOST_PENDING_INTEGER_LOG2_HPP 1
+// could alternately use: #define BOOST_PENDING_INTEGER_LOG2_HPP 1
 #define BOOST_ALLOW_DEPRECATED_HEADERS 1
 #include <boost/random/mersenne_twister.hpp>
 #undef BOOST_ALLOW_DEPRECATED_HEADERS

@@ -12,22 +12,19 @@
 
 #include "DakotaOptimizer.hpp"
 
-
 namespace Dakota {
 
 /**
  * \brief A version of TraitsBase specialized for NCSU optimizers
  *
  */
-class NCSUTraits: public TraitsBase
-{
-  public:
-
+class NCSUTraits : public TraitsBase {
+ public:
   /// default constructor
-  NCSUTraits() { }
+  NCSUTraits() {}
 
   /// destructor
-  ~NCSUTraits() override { }
+  ~NCSUTraits() override {}
 
   /// A temporary query used in the refactor
   bool is_derived() override { return true; }
@@ -36,80 +33,70 @@ class NCSUTraits: public TraitsBase
   bool supports_continuous_variables() override { return true; }
 };
 
-
 /// Wrapper class for the NCSU DIRECT optimization library.
 
 /** The NCSUOptimizer class provides a wrapper for a Fortran 77
     implementation of the DIRECT algorithm developed at North Carolina
-    State University. It uses a function pointer approach for which passed 
-    functions must be either global functions or static member functions.  
-    Any attribute used within static member functions must be either local 
+    State University. It uses a function pointer approach for which passed
+    functions must be either global functions or static member functions.
+    Any attribute used within static member functions must be either local
     to that function or accessed through a static pointer. */
 
-class NCSUOptimizer: public Optimizer
-{
-public:
-
+class NCSUOptimizer : public Optimizer {
+ public:
   //
   //- Heading: Constructors and destructor
   //
 
   /// standard constructor
-  NCSUOptimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
+  NCSUOptimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
+                std::shared_ptr<Model> model);
 
   /// alternate constructor for instantiations "on the fly"
   NCSUOptimizer(std::shared_ptr<Model> model, size_t max_iter, size_t max_eval,
-		double min_box_size = -1., double vol_box_size = -1.,
-		double solution_target = -DBL_MAX);
+                double min_box_size = -1., double vol_box_size = -1.,
+                double solution_target = -DBL_MAX);
 
   /// alternate constructor for Iterator instantiations by name
   NCSUOptimizer(std::shared_ptr<Model> model);
 
   /// alternate constructor for instantiations "on the fly"
-  NCSUOptimizer(//const RealVector& initial_pt,
-		const RealVector& var_l_bnds, const RealVector& var_u_bnds,
-		const RealMatrix& lin_ineq_coeffs,
-		const RealVector& lin_ineq_l_bnds,
-		const RealVector& lin_ineq_u_bnds,
-		const RealMatrix& lin_eq_coeffs, const RealVector& lin_eq_tgts,
-		const RealVector& nln_ineq_l_bnds,
-		const RealVector& nln_ineq_u_bnds,
-		const RealVector& nln_eq_tgts, size_t max_iter, size_t max_eval,
-  	        double (*user_obj_eval) (const RealVector &x),
-		double min_box_size = -1., double vol_box_size = -1.,
-		double solution_target = -DBL_MAX);
+  NCSUOptimizer(  // const RealVector& initial_pt,
+      const RealVector& var_l_bnds, const RealVector& var_u_bnds,
+      const RealMatrix& lin_ineq_coeffs, const RealVector& lin_ineq_l_bnds,
+      const RealVector& lin_ineq_u_bnds, const RealMatrix& lin_eq_coeffs,
+      const RealVector& lin_eq_tgts, const RealVector& nln_ineq_l_bnds,
+      const RealVector& nln_ineq_u_bnds, const RealVector& nln_eq_tgts,
+      size_t max_iter, size_t max_eval,
+      double (*user_obj_eval)(const RealVector& x), double min_box_size = -1.,
+      double vol_box_size = -1., double solution_target = -DBL_MAX);
 
-  ~NCSUOptimizer() override; ///< destructor
-    
+  ~NCSUOptimizer() override;  ///< destructor
+
   //
   //- Heading: Virtual function redefinitions
   //
 
-  //void initialize_run();
+  // void initialize_run();
   void core_run() override;
 
   void declare_sources() override;
 
   void check_sub_iterator_conflict() override;
 
-  //void initial_point(const RealVector& pt);
-  void update_callback_data(const RealVector& cv_initial,
-			    const RealVector& cv_lower_bnds,
-			    const RealVector& cv_upper_bnds,
-			    const RealMatrix& lin_ineq_coeffs,
-			    const RealVector& lin_ineq_l_bnds,
-			    const RealVector& lin_ineq_u_bnds,
-			    const RealMatrix& lin_eq_coeffs,
-			    const RealVector& lin_eq_targets,
-			    const RealVector& nln_ineq_l_bnds,
-			    const RealVector& nln_ineq_u_bnds,
-			    const RealVector& nln_eq_targets) override;
+  // void initial_point(const RealVector& pt);
+  void update_callback_data(
+      const RealVector& cv_initial, const RealVector& cv_lower_bnds,
+      const RealVector& cv_upper_bnds, const RealMatrix& lin_ineq_coeffs,
+      const RealVector& lin_ineq_l_bnds, const RealVector& lin_ineq_u_bnds,
+      const RealMatrix& lin_eq_coeffs, const RealVector& lin_eq_targets,
+      const RealVector& nln_ineq_l_bnds, const RealVector& nln_ineq_u_bnds,
+      const RealVector& nln_eq_targets) override;
   const RealMatrix& callback_linear_ineq_coefficients() const override;
   const RealVector& callback_linear_ineq_lower_bounds() const override;
   const RealVector& callback_linear_ineq_upper_bounds() const override;
 
-private:
-
+ private:
   //
   //- Heading: Static member function passed by pointer to NCSUDirect
   //
@@ -117,19 +104,19 @@ private:
   /// 'fep' in Griffin-modified NCSUDirect: computes the value of the
   /// objective function (potentially at multiple points, passed by function
   /// pointer to NCSUDirect).  Include unscaling from DIRECT.
-  static int objective_eval(int *n, double c[], double l[], double u[],
-		            int point[], int *maxI, int *start, int *maxfunc,
-			    double fvec[], int iidata[], int *iisize,
-			    double ddata[], int *idsize, char cdata[],
-			    int *icsize);
+  static int objective_eval(int* n, double c[], double l[], double u[],
+                            int point[], int* maxI, int* start, int* maxfunc,
+                            double fvec[], int iidata[], int* iisize,
+                            double ddata[], int* idsize, char cdata[],
+                            int* icsize);
 
   //
   //- Heading: Convenience member functions
   //
 
-  void initialize(); ///< shared code among model-based constructors
+  void initialize();  ///< shared code among model-based constructors
 
-  void check_inputs(); ///< verify problem respects NCSU DIRECT Fortran limits
+  void check_inputs();  ///< verify problem respects NCSU DIRECT Fortran limits
 
   //
   //- Heading: Data
@@ -150,13 +137,13 @@ private:
   /// hold the minimum volume boxsize
   Real volBoxSize;
   /// holds the solution target minimum to drive towards
-  Real solutionTarget; 
+  Real solutionTarget;
   /// holds function pointer for objective function evaluator passed in for
   /// "user_functions" mode.
-  double (*userObjectiveEval) (const RealVector &x);
+  double (*userObjectiveEval)(const RealVector& x);
 
   // initial point used in "user_functions" mode (no starting point for DIRECT)
-  //RealVector initialPoint;
+  // RealVector initialPoint;
   /// variable lower bounds used in "user_functions" mode
   RealVector lowerBounds;
   /// variable upper bounds used in "user_functions" mode
@@ -179,21 +166,21 @@ private:
   RealVector nlnEqTargets;
 };
 
+inline const RealMatrix& NCSUOptimizer::callback_linear_ineq_coefficients()
+    const {
+  return linIneqCoeffs;
+}
 
-inline const RealMatrix& NCSUOptimizer::
-callback_linear_ineq_coefficients() const
-{ return linIneqCoeffs; }
+inline const RealVector& NCSUOptimizer::callback_linear_ineq_lower_bounds()
+    const {
+  return linIneqLowerBnds;
+}
 
+inline const RealVector& NCSUOptimizer::callback_linear_ineq_upper_bounds()
+    const {
+  return linIneqUpperBnds;
+}
 
-inline const RealVector& NCSUOptimizer::
-callback_linear_ineq_lower_bounds() const
-{ return linIneqLowerBnds; }
-
-
-inline const RealVector& NCSUOptimizer::
-callback_linear_ineq_upper_bounds() const
-{ return linIneqUpperBnds; }
-
-} // namespace Dakota
+}  // namespace Dakota
 
 #endif

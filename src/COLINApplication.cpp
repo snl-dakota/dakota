@@ -18,20 +18,18 @@
 //- Version: $Id: COLINApplication.cpp 6829 2010-06-18 23:10:23Z pdhough $
 //
 
-#include "dakota_system_defs.hpp"
 #include "DakotaModel.hpp"
+#include "dakota_system_defs.hpp"
 #include "model_utils.hpp"
 // Needed for adapter utils
-#include "DakotaOptimizer.hpp"
-
-
 #include <utilib/TypeManager.h>
+
+#include "DakotaOptimizer.hpp"
 using utilib::TypeManager;
 #include <utilib/Any.h>
 using utilib::Any;
 #include <utilib/MixedIntVars.h>
 using utilib::MixedIntVars;
-
 
 #include <colin/AppResponseInfo.h>
 using colin::mf_info;
@@ -50,16 +48,17 @@ using std::make_pair;
 
 namespace Dakota {
 
-COLINApplication::COLINApplication(std::shared_ptr<Model> model) :
-  blockingSynch(true) // updated from COLINOptimizer
-{ set_problem(model);}
+COLINApplication::COLINApplication(std::shared_ptr<Model> model)
+    : blockingSynch(true)  // updated from COLINOptimizer
+{
+  set_problem(model);
+}
 
-  /** Set variable bounds and linear and nonlinear constraints.  This
-      avoids using probDescDB, so it is called by both the standard
-      and the on-the-fly COLINOptimizer constructors.*/
+/** Set variable bounds and linear and nonlinear constraints.  This
+    avoids using probDescDB, so it is called by both the standard
+    and the on-the-fly COLINOptimizer constructors.*/
 
 void COLINApplication::set_problem(std::shared_ptr<Model> model) {
-
   iteratedModel = model;
   activeSet = model->current_response().active_set();
 
@@ -70,8 +69,7 @@ void COLINApplication::set_problem(std::shared_ptr<Model> model) {
   // Get the upper and lower bounds on the continuous variables.
 
   _num_real_vars = ModelUtils::cv(*model);
-  if (num_real_vars > 0)
-  {
+  if (num_real_vars > 0) {
     _real_lower_bounds = ModelUtils::continuous_lower_bounds(*model);
     _real_upper_bounds = ModelUtils::continuous_upper_bounds(*model);
   }
@@ -83,49 +81,52 @@ void COLINApplication::set_problem(std::shared_ptr<Model> model) {
 
   // Get the upper and lower bounds on the discrete variables.
 
-  size_t i, j, num_div = ModelUtils::div(*model), num_drv = ModelUtils::drv(*model),
-    num_dsv = ModelUtils::dsv(*model), num_dv = num_div + num_drv + num_dsv;
+  size_t i, j,
+      num_div = ModelUtils::div(*model), num_drv = ModelUtils::drv(*model),
+      num_dsv = ModelUtils::dsv(*model), num_dv = num_div + num_drv + num_dsv;
   _num_int_vars = num_dv;
   if (num_dv) {
-    const BitArray&       di_set_bits = ModelUtils::discrete_int_sets(*model);
-    const IntVector&      lower_bnds  = ModelUtils::discrete_int_lower_bounds(*model);
-    const IntVector&      upper_bnds  = ModelUtils::discrete_int_upper_bounds(*model);
-    const IntSetArray&    dsiv_values = ModelUtils::discrete_set_int_values(*model);
-    const RealSetArray&   dsrv_values = ModelUtils::discrete_set_real_values(*model);
-    const StringSetArray& dssv_values = ModelUtils::discrete_set_string_values(*model);
+    const BitArray& di_set_bits = ModelUtils::discrete_int_sets(*model);
+    const IntVector& lower_bnds = ModelUtils::discrete_int_lower_bounds(*model);
+    const IntVector& upper_bnds = ModelUtils::discrete_int_upper_bounds(*model);
+    const IntSetArray& dsiv_values =
+        ModelUtils::discrete_set_int_values(*model);
+    const RealSetArray& dsrv_values =
+        ModelUtils::discrete_set_real_values(*model);
+    const StringSetArray& dssv_values =
+        ModelUtils::discrete_set_string_values(*model);
     // Need temporary storage in which to consolidate all types of
     // discrete variables;
 
     IntVector lower(num_dv), upper(num_dv);
 
     size_t dsi_cntr = 0;
-    for (i=0; i<num_div; ++i) {
+    for (i = 0; i < num_div; ++i) {
       if (di_set_bits[i]) {
-	// this active discrete int var is a set type: map to integer
-	// index sequence [0,num_items-1].
-	lower[i] = 0;
-	upper[i] = dsiv_values[dsi_cntr].size() - 1;
-	++dsi_cntr;
-      }
-      else {
-	// this active discrete int var is a range type: use range bounds
-	lower[i] = lower_bnds[i];
-	upper[i] = upper_bnds[i];
+        // this active discrete int var is a set type: map to integer
+        // index sequence [0,num_items-1].
+        lower[i] = 0;
+        upper[i] = dsiv_values[dsi_cntr].size() - 1;
+        ++dsi_cntr;
+      } else {
+        // this active discrete int var is a range type: use range bounds
+        lower[i] = lower_bnds[i];
+        upper[i] = upper_bnds[i];
       }
     }
 
     // For real set variables, map to integer index sequence
     // [0,num_items-1].
-    for (i=0; i<num_drv; ++i) {
-      lower[i+num_div] = 0;
-      upper[i+num_div] = dsrv_values[i].size() - 1;
+    for (i = 0; i < num_drv; ++i) {
+      lower[i + num_div] = 0;
+      upper[i + num_div] = dsrv_values[i].size() - 1;
     }
 
     // For string set variables, map to integer index sequence
     // [0,num_items-1].
-    for (i=0; i<num_dsv; ++i) {
-      lower[i+num_div+num_drv] = 0;
-      upper[i+num_div+num_drv] = dssv_values[i].size() - 1;
+    for (i = 0; i < num_dsv; ++i) {
+      lower[i + num_div + num_drv] = 0;
+      upper[i + num_div + num_drv] = dssv_values[i].size() - 1;
     }
 
     // Now assign to the COLIN vectors.
@@ -139,20 +140,20 @@ void COLINApplication::set_problem(std::shared_ptr<Model> model) {
   // For multiobjective, this will be taken from the RecastModel and
   // will be consistent with the COLIN iterator's view
 
-  //_num_objectives = 
+  //_num_objectives =
   //  model.num_functions() - num_nonlinear_constraints.as<size_t>();
   size_t numObj = model->num_primary_fns();
   _num_objectives = numObj;
- 
+
   const BoolDeque& max_sense = model->primary_response_fn_sense();
   if (!max_sense.empty()) {
     // COLINApplication derived from a (general) multi-objective problem type of
     // Application<MO_MINLP2_problem>, so don't need to manage a scalar sense.
-    //if (numObjectiveFns == 1)
+    // if (numObjectiveFns == 1)
     //  _sense = (max_sense[0]) ? colin::maximization : colin::minimization;
-    //else {
+    // else {
     std::vector<colin::optimizationSense> min_max(numObj);
-    for (i=0; i<numObj; ++i)
+    for (i = 0; i < numObj; ++i)
       min_max[i] = (max_sense[i]) ? colin::maximization : colin::minimization;
     _sense = min_max;
     //}
@@ -162,22 +163,21 @@ void COLINApplication::set_problem(std::shared_ptr<Model> model) {
   // constraints.
 
   if (num_nonlinear_constraints > 0) {
-
     // Need temporary storage in which to consolidate inequality
     // bounds and equality targets.
 
     RealVector bounds(num_nonlinear_constraints.as<size_t>());
-    RealVector ineq_lower; // will be sized in adapter call
-    RealVector ineq_upper; // will be sized in adapter call
-    RealVector eq_targets; // will be sized in adapter call
+    RealVector ineq_lower;  // will be sized in adapter call
+    RealVector ineq_upper;  // will be sized in adapter call
+    RealVector eq_targets;  // will be sized in adapter call
 
-    get_nonlinear_bounds( *model, ineq_lower, ineq_upper, eq_targets);
-    copy_data_partial(ineq_lower, bounds, 0 );
-    copy_data_partial(eq_targets, bounds, ineq_lower.length() );
+    get_nonlinear_bounds(*model, ineq_lower, ineq_upper, eq_targets);
+    copy_data_partial(ineq_lower, bounds, 0);
+    copy_data_partial(eq_targets, bounds, ineq_lower.length());
     _nonlinear_constraint_lower_bounds = bounds;
 
-    copy_data_partial(ineq_upper, bounds, 0 );
-    copy_data_partial(eq_targets, bounds, ineq_upper.length() );
+    copy_data_partial(ineq_upper, bounds, 0);
+    copy_data_partial(eq_targets, bounds, ineq_upper.length());
     _nonlinear_constraint_upper_bounds = bounds;
   }
 
@@ -187,66 +187,67 @@ void COLINApplication::set_problem(std::shared_ptr<Model> model) {
   // handle linear constraints and how.
 
   _num_linear_constraints = ModelUtils::num_linear_ineq_constraints(*model) +
-    ModelUtils::num_linear_eq_constraints(*model);
+                            ModelUtils::num_linear_eq_constraints(*model);
 
   if (num_linear_constraints > 0) {
+    RealMatrix linear_coeffs(num_linear_constraints.as<size_t>(),
+                             domain_size.as<size_t>());
 
-    RealMatrix linear_coeffs( num_linear_constraints.as<size_t>(), 
-                              domain_size.as<size_t>() );
-
-    const RealMatrix& linear_ineq_coeffs = ModelUtils::linear_ineq_constraint_coeffs(*model);
-    const RealMatrix& linear_eq_coeffs = ModelUtils::linear_eq_constraint_coeffs(*model);
+    const RealMatrix& linear_ineq_coeffs =
+        ModelUtils::linear_ineq_constraint_coeffs(*model);
+    const RealMatrix& linear_eq_coeffs =
+        ModelUtils::linear_eq_constraint_coeffs(*model);
 
     // Populate the coefficient matrix, first with inequality
     // coefficients, then with equality coefficients.
 
     size_t ndx = 0, ndy = 0;
-    for (i=0; i<ModelUtils::num_linear_ineq_constraints(*model); i++) {
-      for (j=0; domain_size>j; j++)
-	linear_coeffs(ndx,ndy++) = linear_ineq_coeffs(i,j);
+    for (i = 0; i < ModelUtils::num_linear_ineq_constraints(*model); i++) {
+      for (j = 0; domain_size > j; j++)
+        linear_coeffs(ndx, ndy++) = linear_ineq_coeffs(i, j);
       ndx++;
     }
 
-    for (i=0; i<ModelUtils::num_linear_eq_constraints(*model); i++) {
-      for (j=0; domain_size>j; j++)
-	linear_coeffs(ndx,ndy++) = linear_eq_coeffs(i,j);
+    for (i = 0; i < ModelUtils::num_linear_eq_constraints(*model); i++) {
+      for (j = 0; domain_size > j; j++)
+        linear_coeffs(ndx, ndy++) = linear_eq_coeffs(i, j);
       ndx++;
     }
- 
-   _linear_constraint_matrix = linear_coeffs;
 
-   RealVector bounds(num_linear_constraints.as<size_t>());
+    _linear_constraint_matrix = linear_coeffs;
 
-   const RealVector& lin_ineq_lower
-     = ModelUtils::linear_ineq_constraint_lower_bounds(*model);
-   const RealVector& lin_ineq_upper
-     = ModelUtils::linear_ineq_constraint_upper_bounds(*model);
-   const RealVector& lin_eq_targets
-     = ModelUtils::linear_eq_constraint_targets(*model);
+    RealVector bounds(num_linear_constraints.as<size_t>());
 
-   // Lower bounds and equality targets go together in COLIN lower
-   // bounds.
+    const RealVector& lin_ineq_lower =
+        ModelUtils::linear_ineq_constraint_lower_bounds(*model);
+    const RealVector& lin_ineq_upper =
+        ModelUtils::linear_ineq_constraint_upper_bounds(*model);
+    const RealVector& lin_eq_targets =
+        ModelUtils::linear_eq_constraint_targets(*model);
 
-   for (i=0; i<ModelUtils::num_linear_ineq_constraints(*model); i++) 
-     bounds[i] = lin_ineq_lower[i];
+    // Lower bounds and equality targets go together in COLIN lower
+    // bounds.
 
-   ndx = ModelUtils::num_linear_ineq_constraints(*model);
-   for (i=0; i<ModelUtils::num_linear_eq_constraints(*model); i++, ndx++)
-     bounds[ndx] = lin_eq_targets[i];
+    for (i = 0; i < ModelUtils::num_linear_ineq_constraints(*model); i++)
+      bounds[i] = lin_ineq_lower[i];
 
-   _linear_constraint_lower_bounds = bounds;
+    ndx = ModelUtils::num_linear_ineq_constraints(*model);
+    for (i = 0; i < ModelUtils::num_linear_eq_constraints(*model); i++, ndx++)
+      bounds[ndx] = lin_eq_targets[i];
 
-   // Upper bounds and equality targets go together in COLIN upper
-   // bounds.
+    _linear_constraint_lower_bounds = bounds;
 
-   for (i=0; i<ModelUtils::num_linear_ineq_constraints(*model); i++) 
-     bounds[i] = lin_ineq_upper[i];
+    // Upper bounds and equality targets go together in COLIN upper
+    // bounds.
 
-   ndx = ModelUtils::num_linear_ineq_constraints(*model);
-   for (i=0; i<ModelUtils::num_linear_eq_constraints(*model); i++, ndx++)
-     bounds[ndx] = lin_eq_targets[i];
+    for (i = 0; i < ModelUtils::num_linear_ineq_constraints(*model); i++)
+      bounds[i] = lin_ineq_upper[i];
 
-   _linear_constraint_upper_bounds = bounds;
+    ndx = ModelUtils::num_linear_ineq_constraints(*model);
+    for (i = 0; i < ModelUtils::num_linear_eq_constraints(*model); i++, ndx++)
+      bounds[ndx] = lin_eq_targets[i];
+
+    _linear_constraint_upper_bounds = bounds;
   }
 }
 
@@ -256,11 +257,9 @@ void COLINApplication::set_problem(std::shared_ptr<Model> model) {
     Model supports asynch evals.  The domain point is guaranteed to be
     compatible with data type specified by map_domain(...) */
 
-utilib::Any COLINApplication::
-spawn_evaluation_impl(const utilib::Any &domain,
-		 const colin::AppRequest::request_map_t &requests,
-		 utilib::seed_t &seed)
-{
+utilib::Any COLINApplication::spawn_evaluation_impl(
+    const utilib::Any& domain, const colin::AppRequest::request_map_t& requests,
+    utilib::seed_t& seed) {
   // Transform COLIN request to point for which DAKOTA executes an
   // evaluation, launch the evaluation, and return the DAKOTA ID.
 
@@ -268,7 +267,7 @@ spawn_evaluation_impl(const utilib::Any &domain,
 
   iteratedModel->evaluate_nowait();
 
-  return(iteratedModel->evaluation_id());
+  return (iteratedModel->evaluation_id());
 }
 
 /** Perform an evaluation at a specified domain point.  Wait for and
@@ -277,12 +276,9 @@ spawn_evaluation_impl(const utilib::Any &domain,
     support asynch evals.  The domain point is guaranteed to be
     compatible with data type specified by map_domain(...) */
 
-void COLINApplication::
-perform_evaluation_impl(const utilib::Any &domain,
-                   const colin::AppRequest::request_map_t &requests,
-                   utilib::seed_t &seed,
-		   colin::AppResponse::response_map_t &colin_responses)
-{
+void COLINApplication::perform_evaluation_impl(
+    const utilib::Any& domain, const colin::AppRequest::request_map_t& requests,
+    utilib::seed_t& seed, colin::AppResponse::response_map_t& colin_responses) {
   // Transform COLIN request to point for which DAKOTA executes an
   // evaluation, launch the evaluation, wait for the response, and
   // transform it to a COLIN response.
@@ -291,39 +287,34 @@ perform_evaluation_impl(const utilib::Any &domain,
 
   iteratedModel->evaluate();
 
-  dakota_response_to_colin_response(iteratedModel->current_response(), colin_responses);
+  dakota_response_to_colin_response(iteratedModel->current_response(),
+                                    colin_responses);
 }
 
 /** Check to see if any asynchronous evaluations have finished.  This
     is only called by COLIN's concurrent evaluator, which is only
     instantiated when the Model supports asynch evals. */
 
-bool COLINApplication::
-evaluation_available()
-{
+bool COLINApplication::evaluation_available() {
   // If there are already responses sitting around in the response
   // map, return true.  Otherwise, call synchronize() to collect
   // completed eval, populating response map in the process.
 
   if (dakota_responses.empty()) {
+    dakota_responses = (blockingSynch) ? iteratedModel->synchronize()
+                                       : iteratedModel->synchronize_nowait();
 
-    dakota_responses = (blockingSynch) ?
-      iteratedModel->synchronize() : iteratedModel->synchronize_nowait();
-
-    if (dakota_responses.empty())
-      return false;
+    if (dakota_responses.empty()) return false;
   }
-  
+
   return true;
 }
 
 /** Collect the next completed evaluation from DAKOTA.  Always returns
     the evalid of the response returned. */
 
-utilib::Any COLINApplication::
-collect_evaluation_impl(colin::AppResponse::response_map_t &colin_responses,
-		   utilib::seed_t &seed)
-{
+utilib::Any COLINApplication::collect_evaluation_impl(
+    colin::AppResponse::response_map_t& colin_responses, utilib::seed_t& seed) {
   // Get the first response off the list.
 
   int dakota_id = dakota_responses.begin()->first;
@@ -335,16 +326,14 @@ collect_evaluation_impl(colin::AppResponse::response_map_t &colin_responses,
   dakota_response_to_colin_response(first_response, colin_responses);
   dakota_responses.erase(dakota_id);
 
-  return(dakota_id);
+  return (dakota_id);
 }
 
-  /** Map COLIN info requests to DAKOTA objectives and constraints. */
+/** Map COLIN info requests to DAKOTA objectives and constraints. */
 
-void COLINApplication::
-colin_request_to_dakota_request(const utilib::Any &domain,
-                   const colin::AppRequest::request_map_t &requests,
-                   utilib::seed_t &seed)
-{
+void COLINApplication::colin_request_to_dakota_request(
+    const utilib::Any& domain, const colin::AppRequest::request_map_t& requests,
+    utilib::seed_t& seed) {
   // Get the mixed variables for the point.
 
   const utilib::MixedIntVars& miv = domain.expose<MixedIntVars>();
@@ -363,10 +352,13 @@ colin_request_to_dakota_request(const utilib::Any &domain,
   // One specification type for discrete variables is a set of values.
   // Get that list of values if the user provided one.
 
-  const     BitArray&   di_set_bits = ModelUtils::discrete_int_sets(*iteratedModel);
-  const IntSetArray&    dsiv_values = ModelUtils::discrete_set_int_values(*iteratedModel);
-  const RealSetArray&   dsrv_values = ModelUtils::discrete_set_real_values(*iteratedModel);
-  const StringSetArray& dssv_values = ModelUtils::discrete_set_string_values(*iteratedModel);
+  const BitArray& di_set_bits = ModelUtils::discrete_int_sets(*iteratedModel);
+  const IntSetArray& dsiv_values =
+      ModelUtils::discrete_set_int_values(*iteratedModel);
+  const RealSetArray& dsrv_values =
+      ModelUtils::discrete_set_real_values(*iteratedModel);
+  const StringSetArray& dssv_values =
+      ModelUtils::discrete_set_string_values(*iteratedModel);
 
   // Assign COLIN integer variables to DAKOTA discrete integer variables.
   // Remember, COLIN is operating on the index for the set discrete
@@ -374,27 +366,28 @@ colin_request_to_dakota_request(const utilib::Any &domain,
   // assign them to DAKOTA integer variables.
 
   size_t j, dsi_cntr, num_div = ModelUtils::div(*iteratedModel),
-    num_drv = ModelUtils::drv(*iteratedModel), num_dsv = ModelUtils::dsv(*iteratedModel);
-  for (j=0, dsi_cntr=0; j<num_div; ++j) {
-    if (di_set_bits[j]) { // this active discrete int var is a set type
+                      num_drv = ModelUtils::drv(*iteratedModel),
+                      num_dsv = ModelUtils::dsv(*iteratedModel);
+  for (j = 0, dsi_cntr = 0; j < num_div; ++j) {
+    if (di_set_bits[j]) {  // this active discrete int var is a set type
       int dakota_value = set_index_to_value(ddv[j], dsiv_values[dsi_cntr]);
       ModelUtils::discrete_int_variable(*iteratedModel, dakota_value, j);
       ++dsi_cntr;
-    }
-    else                  // this active discrete int var is a range type
+    } else  // this active discrete int var is a range type
       ModelUtils::discrete_int_variable(*iteratedModel, ddv[j], j);
   }
 
   // Likewise for the real set discrete variables.
 
-  for (size_t j=0; j<num_drv; ++j) {
-    Real dakota_value = set_index_to_value(ddv[j+num_div], dsrv_values[j]);
+  for (size_t j = 0; j < num_drv; ++j) {
+    Real dakota_value = set_index_to_value(ddv[j + num_div], dsrv_values[j]);
     ModelUtils::discrete_real_variable(*iteratedModel, dakota_value, j);
   }
 
   // Likelikewise for the string set discrete variables
-  for (size_t j=0; j<num_dsv; ++j) {
-    String dakota_value = set_index_to_value(ddv[j+num_div+num_drv], dssv_values[j]);
+  for (size_t j = 0; j < num_dsv; ++j) {
+    String dakota_value =
+        set_index_to_value(ddv[j + num_div + num_drv], dssv_values[j]);
     ModelUtils::discrete_string_variable(*iteratedModel, dakota_value, j);
   }
 
@@ -406,40 +399,36 @@ colin_request_to_dakota_request(const utilib::Any &domain,
 
   ShortArray asv(ModelUtils::response_size(*iteratedModel));
 
-  AppRequest::request_map_t::const_iterator req_it  = requests.begin();
+  AppRequest::request_map_t::const_iterator req_it = requests.begin();
   AppRequest::request_map_t::const_iterator req_end = requests.end();
   size_t numObj = num_objectives;
   size_t numCons = num_nonlinear_constraints;
   for (; req_it != req_end; ++req_it) {
-    
     // mf_info: all multiobjective functions
 
     if (req_it->first == mf_info)
-      for(size_t i=0; i<numObj; i++)
-	asv[i] = 1;    
-  
+      for (size_t i = 0; i < numObj; i++) asv[i] = 1;
+
     // nlcf_info (lb <= g(x) <= ub)
 
     else if (req_it->first == nlcf_info)
-      for(size_t i=0; i<numCons; i++)
-	asv[i+numObj] = 1;
+      for (size_t i = 0; i < numCons; i++) asv[i + numObj] = 1;
 
     else
       // No linear constraints since we'll send A and bounds.
       // No gradients/Hessians for now.
 
-      EXCEPTION_MNGR(std::runtime_error,"invalid request from COLIN:"  
-		     << colin::AppResponseInfo().name(req_it->first) );
+      EXCEPTION_MNGR(std::runtime_error,
+                     "invalid request from COLIN:"
+                         << colin::AppResponseInfo().name(req_it->first));
   }
 }
 
-  /** Map DAKOTA objective and constraint values to COLIN response. */
+/** Map DAKOTA objective and constraint values to COLIN response. */
 
-void COLINApplication::
-dakota_response_to_colin_response(const Response &dakota_response,
-				  colin::AppResponse::response_map_t &colin_responses)
-{
-
+void COLINApplication::dakota_response_to_colin_response(
+    const Response& dakota_response,
+    colin::AppResponse::response_map_t& colin_responses) {
   const ShortArray& asv = dakota_response.active_set_request_vector();
 
   // If the DAKOTA response included functions, return them.  COLIN
@@ -450,10 +439,10 @@ dakota_response_to_colin_response(const Response &dakota_response,
   bool fns = true;
   size_t numObj = num_objectives;
   utilib::Any fnvals;
-  RealVector &fnvals_v = fnvals.set<RealVector>();
+  RealVector& fnvals_v = fnvals.set<RealVector>();
   fnvals_v.resize(numObj);
-  for(size_t i=0; i<numObj; i++) {
-    if ( ! (asv[i] & 1) ) {
+  for (size_t i = 0; i < numObj; i++) {
+    if (!(asv[i] & 1)) {
       fns = false;
       break;
     }
@@ -467,32 +456,30 @@ dakota_response_to_colin_response(const Response &dakota_response,
   // will always expect a full set of functions, so break as soon as
   // any is missing.
 
-  bool cons= true;
+  bool cons = true;
   size_t numCons = num_nonlinear_constraints;
-  RealVector &cons_v = fnvals.set<RealVector>();
+  RealVector& cons_v = fnvals.set<RealVector>();
   cons_v.resize(numCons);
-  for(size_t i=0; i<numCons; i++) {
-    if ( ! (asv[i+numObj] & 1) ) {
+  for (size_t i = 0; i < numCons; i++) {
+    if (!(asv[i + numObj] & 1)) {
       cons = false;
       break;
     }
-    cons_v[i] = dakota_response.function_value(i+numObj);
+    cons_v[i] = dakota_response.function_value(i + numObj);
   }
   if (cons) {
     colin_responses.insert(make_pair(nlcf_info, fnvals));
   }
 }
 
-  /** Map the domain point into data type desired by this application
-      context (utilib::MixedIntVars).  This data type can be exposed
-      from the Any &domain presented to spawn and collect. */
+/** Map the domain point into data type desired by this application
+    context (utilib::MixedIntVars).  This data type can be exposed
+    from the Any &domain presented to spawn and collect. */
 
-bool COLINApplication::map_domain (const utilib::Any &src, utilib::Any &native,
-				   bool forward) const 
-{ 
+bool COLINApplication::map_domain(const utilib::Any& src, utilib::Any& native,
+                                  bool forward) const {
   static_cast<void>(forward);
   return TypeManager()->lexical_cast(src, native, typeid(MixedIntVars)) == 0;
 }
 
-
-} // namespace Dakota
+}  // namespace Dakota

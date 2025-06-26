@@ -17,8 +17,9 @@
 #endif
 
 #include <gtest/gtest.h>
-#include <filesystem>
+
 #include <cmath>
+#include <filesystem>
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -31,8 +32,7 @@
 using namespace Dakota;
 
 // generate PRP with just 1 var and resp
-PRPArray generate_minimal_prps(const int num_evals, RestartWriter &rst_writer)
-{
+PRPArray generate_minimal_prps(const int num_evals, RestartWriter &rst_writer) {
   // Mock up a single variable
   SizetArray vc_totals(NUM_VC_TOTALS);
   vc_totals[0] = 1;
@@ -51,8 +51,8 @@ PRPArray generate_minimal_prps(const int num_evals, RestartWriter &rst_writer)
 
   PRPArray prps_out;
   for (int eval_id = 1; eval_id <= num_evals; ++eval_id) {
-    vars.continuous_variable(M_LOG2E + (Real) (eval_id-1), 0);
-    resp.function_value(M_PI + (Real) (eval_id-1), 0);
+    vars.continuous_variable(M_LOG2E + (Real)(eval_id - 1), 0);
+    resp.function_value(M_PI + (Real)(eval_id - 1), 0);
     // TODO: code is not robust to writing empty PRP (seg fault)
     // NOTE: This makes a deep copy of vars/resp by default:
     ParamResponsePair prp_out(vars, iface_id, resp, eval_id);
@@ -63,82 +63,82 @@ PRPArray generate_minimal_prps(const int num_evals, RestartWriter &rst_writer)
   return prps_out;
 }
 
-/// generate num_evals PRPs, write to the passed RestartWriter, and return in array
-PRPArray generate_and_write_prps(const int num_evals, RestartWriter &rst_writer)
-{
+/// generate num_evals PRPs, write to the passed RestartWriter, and return in
+/// array
+PRPArray generate_and_write_prps(const int num_evals,
+                                 RestartWriter &rst_writer) {
   // Mock up one of each variable
-    SizetArray vc_totals(NUM_VC_TOTALS, 1);
-    vc_totals.assign(NUM_VC_TOTALS, 1);
-    std::pair<short, short> view(MIXED_ALL, EMPTY_VIEW);
-    SharedVariablesData svd(view, vc_totals);
-    Variables vars(svd);
-    for (size_t i=0; i<vars.acv(); ++i)
-      vars.all_continuous_variable(M_LOG2E + (Real) i, i);
-    for (size_t i=0; i<vars.adiv(); ++i)
-      vars.all_discrete_int_variable(i, i);
-    for (size_t i=0; i<vars.adsv(); ++i)
-      vars.all_discrete_string_variable(String("sv") + std::to_string(i), i);
-    for (size_t i=0; i<vars.adrv(); ++i)
-      vars.all_discrete_real_variable(100.0 + (Real) i, i);
+  SizetArray vc_totals(NUM_VC_TOTALS, 1);
+  vc_totals.assign(NUM_VC_TOTALS, 1);
+  std::pair<short, short> view(MIXED_ALL, EMPTY_VIEW);
+  SharedVariablesData svd(view, vc_totals);
+  Variables vars(svd);
+  for (size_t i = 0; i < vars.acv(); ++i)
+    vars.all_continuous_variable(M_LOG2E + (Real)i, i);
+  for (size_t i = 0; i < vars.adiv(); ++i) vars.all_discrete_int_variable(i, i);
+  for (size_t i = 0; i < vars.adsv(); ++i)
+    vars.all_discrete_string_variable(String("sv") + std::to_string(i), i);
+  for (size_t i = 0; i < vars.adrv(); ++i)
+    vars.all_discrete_real_variable(100.0 + (Real)i, i);
 
-    // active set with 12 var / 2 resp, including gradients, Hessians
-    int num_resp = 2;
-    ActiveSet as(num_resp, NUM_VC_TOTALS);
-    as.request_values(7);
-    as.derivative_start_value(0);
+  // active set with 12 var / 2 resp, including gradients, Hessians
+  int num_resp = 2;
+  ActiveSet as(num_resp, NUM_VC_TOTALS);
+  as.request_values(7);
+  as.derivative_start_value(0);
 
-    // TODO: can't default construct srd...
-    // Also the Response doesn't get the right size...
-    // SharedResponseData srd(as);
-    // srd.response_type(SIMULATION_RESPONSE);
-    //  Response resp(srd);
+  // TODO: can't default construct srd...
+  // Also the Response doesn't get the right size...
+  // SharedResponseData srd(as);
+  // srd.response_type(SIMULATION_RESPONSE);
+  //  Response resp(srd);
 
-    // TODO: A number of Response constructors are partial, and may
-    // leave the resulting object in a bad state.  Have to use this ctor
-    // for it to work.
-    Response resp(SIMULATION_RESPONSE, as);
+  // TODO: A number of Response constructors are partial, and may
+  // leave the resulting object in a bad state.  Have to use this ctor
+  // for it to work.
+  Response resp(SIMULATION_RESPONSE, as);
 
-    resp.function_value(M_PI, 0);
-    resp.function_value(2*M_PI, 1);
+  resp.function_value(M_PI, 0);
+  resp.function_value(2 * M_PI, 1);
 
-    // This calls srand, but should be limited to this test
-    // TODO: utilities to use Boost RNG to populate matrices
-    Teuchos::ScalarTraits<Real>::seedrandom(12345);
+  // This calls srand, but should be limited to this test
+  // TODO: utilities to use Boost RNG to populate matrices
+  Teuchos::ScalarTraits<Real>::seedrandom(12345);
 
-    RealMatrix gradient(NUM_VC_TOTALS, num_resp);
-    gradient.random();
-    resp.function_gradients(gradient);
+  RealMatrix gradient(NUM_VC_TOTALS, num_resp);
+  gradient.random();
+  resp.function_gradients(gradient);
 
-    RealSymMatrix hess0(NUM_VC_TOTALS, NUM_VC_TOTALS);
-    hess0.random();
-    resp.function_hessian(hess0, 0);
+  RealSymMatrix hess0(NUM_VC_TOTALS, NUM_VC_TOTALS);
+  hess0.random();
+  resp.function_hessian(hess0, 0);
 
-    RealSymMatrix hess1(NUM_VC_TOTALS, NUM_VC_TOTALS);
-    hess1.random();
-    resp.function_hessian(hess1, 1);
+  RealSymMatrix hess1(NUM_VC_TOTALS, NUM_VC_TOTALS);
+  hess1.random();
+  resp.function_hessian(hess1, 1);
 
-    String iface_id = "RST_IFACE";
-    int eval_id = 1;
+  String iface_id = "RST_IFACE";
+  int eval_id = 1;
 
-    // TODO: code is not robust to writing empty PRP (seg fault)
-    PRPArray prps_out;
+  // TODO: code is not robust to writing empty PRP (seg fault)
+  PRPArray prps_out;
 
-    for (int eval_id = 1; eval_id <= num_evals; ++eval_id) {
-      // For now this just make a small tweak so variables/resp are unique
-      vars.continuous_variable(M_LOG2E + (Real) (eval_id-1), 0);
-      resp.function_value(M_PI + (Real) (eval_id-1), 0);
-      // NOTE: This makes a deep copy of vars/resp by default:
-      ParamResponsePair prp_out(vars, iface_id, resp, eval_id);
-      prps_out.push_back(prp_out);
-      rst_writer.append_prp(prp_out);
-    }
+  for (int eval_id = 1; eval_id <= num_evals; ++eval_id) {
+    // For now this just make a small tweak so variables/resp are unique
+    vars.continuous_variable(M_LOG2E + (Real)(eval_id - 1), 0);
+    resp.function_value(M_PI + (Real)(eval_id - 1), 0);
+    // NOTE: This makes a deep copy of vars/resp by default:
+    ParamResponsePair prp_out(vars, iface_id, resp, eval_id);
+    prps_out.push_back(prp_out);
+    rst_writer.append_prp(prp_out);
+  }
 
-    return prps_out;
+  return prps_out;
 }
 
 /// read PRPs from specified restart file to an array and return
-PRPArray read_prps(const int num_evals, boost::archive::binary_iarchive& restart_input_archive)
-{
+PRPArray read_prps(const int num_evals,
+                   boost::archive::binary_iarchive &restart_input_archive) {
   PRPArray prps_in;
   for (int eval_id = 1; eval_id <= num_evals; ++eval_id) {
     ParamResponsePair prp_in;
@@ -149,8 +149,7 @@ PRPArray read_prps(const int num_evals, boost::archive::binary_iarchive& restart
 }
 
 /** In-core test with 1 variable/response */
-TEST(restart_test_tests, test_io_restart_1var)
-{
+TEST(restart_test_tests, test_io_restart_1var) {
   // NOTE: A possible problem with a stringstream is it isn't
   // explicitly a binary stream (std::ios::binary)
   std::stringstream rst_stream;
@@ -178,8 +177,7 @@ TEST(restart_test_tests, test_io_restart_1var)
 }
 
 /** File-based test with multiple variables/responses */
-TEST(restart_test_tests, test_io_restart_allvar)
-{
+TEST(restart_test_tests, test_io_restart_allvar) {
   std::string rst_filename("restart_allvar.rst");
   std::filesystem::remove(rst_filename);
 
@@ -209,10 +207,8 @@ TEST(restart_test_tests, test_io_restart_allvar)
   std::filesystem::remove(rst_filename);
 }
 
-
 // Verify can detect reading an old (pre-versioning) restart file
-TEST(restart_test_tests, test_io_restart_read_oldfile)
-{
+TEST(restart_test_tests, test_io_restart_read_oldfile) {
   std::string rst_filename("old.rst");
   std::filesystem::remove(rst_filename);
 
@@ -233,14 +229,15 @@ TEST(restart_test_tests, test_io_restart_read_oldfile)
 
     RestartVersion rst_ver;
     inarch & rst_ver;
-  
+
     std::cout << "Reading pre-Dakota " << rst_ver.firstSupportedDakotaVersion()
-	      << " restart file with assumed version "
-	      << rst_ver.friendly_rst_version() << "; " << rst_ver.dakotaRelease
-	      << ", " << rst_ver.dakotaSHA1 << std::endl;
+              << " restart file with assumed version "
+              << rst_ver.friendly_rst_version() << "; " << rst_ver.dakotaRelease
+              << ", " << rst_ver.dakotaSHA1 << std::endl;
 
     // make sure we're reading an old file
-    EXPECT_TRUE((rst_ver.restartVersion < RestartVersion::restartFirstVersionNumber));
+    EXPECT_TRUE(
+        (rst_ver.restartVersion < RestartVersion::restartFirstVersionNumber));
     EXPECT_TRUE((rst_ver.dakotaRelease == "<unknown>"));
     EXPECT_TRUE((rst_ver.dakotaSHA1 == "<unknown>"));
 
@@ -253,15 +250,14 @@ TEST(restart_test_tests, test_io_restart_read_oldfile)
   std::filesystem::remove(rst_filename);
 }
 
-
 // Verify can detect reading an old (pre-versioning) restart file
 // when the contained PRP is minimal
-TEST(restart_test_tests, test_io_restart_read_minimal_oldfile)
-{
+TEST(restart_test_tests, test_io_restart_read_minimal_oldfile) {
   std::string rst_filename("minimal_old.rst");
   std::filesystem::remove(rst_filename);
 
-  // an old restart file started with a PRP, instead of versioning, so mock one up
+  // an old restart file started with a PRP, instead of versioning, so mock one
+  // up
   const int num_evals = 1;
   PRPArray prps_out, prps_in;
   // scope to force destruction of writer and close the file
@@ -279,12 +275,13 @@ TEST(restart_test_tests, test_io_restart_read_minimal_oldfile)
     inarch & rst_ver;
 
     std::cout << "Reading pre-Dakota " << rst_ver.firstSupportedDakotaVersion()
-	      << " restart file with assumed version "
-	      << rst_ver.friendly_rst_version() << "; " << rst_ver.dakotaRelease
-	      << ", " << rst_ver.dakotaSHA1  << std::endl;
+              << " restart file with assumed version "
+              << rst_ver.friendly_rst_version() << "; " << rst_ver.dakotaRelease
+              << ", " << rst_ver.dakotaSHA1 << std::endl;
 
     // make sure we're reading an old file, which didn't contain versioning info
-    EXPECT_TRUE((rst_ver.restartVersion < RestartVersion::restartFirstVersionNumber));
+    EXPECT_TRUE(
+        (rst_ver.restartVersion < RestartVersion::restartFirstVersionNumber));
     EXPECT_TRUE((rst_ver.dakotaRelease == "<unknown>"));
     EXPECT_TRUE((rst_ver.dakotaSHA1 == "<unknown>"));
 
@@ -297,8 +294,7 @@ TEST(restart_test_tests, test_io_restart_read_minimal_oldfile)
   std::filesystem::remove(rst_filename);
 }
 
-TEST(restart_test_tests, test_io_restart_read_newfile)
-{
+TEST(restart_test_tests, test_io_restart_read_newfile) {
   std::string rst_filename("new.rst");
   std::filesystem::remove(rst_filename);
 
@@ -320,12 +316,13 @@ TEST(restart_test_tests, test_io_restart_read_newfile)
     inarch & rst_ver;
 
     std::cout << "Reading Dakota " << rst_ver.dakotaRelease
-	      << " restart file with version " << rst_ver.friendly_rst_version()
-	      << "; " << rst_ver.dakotaRelease << ", " << rst_ver.dakotaSHA1
-	      << std::endl;
+              << " restart file with version " << rst_ver.friendly_rst_version()
+              << "; " << rst_ver.dakotaRelease << ", " << rst_ver.dakotaSHA1
+              << std::endl;
 
     // make sure we're reading a new file
-    EXPECT_TRUE((rst_ver.restartVersion >= RestartVersion::restartFirstVersionNumber));
+    EXPECT_TRUE(
+        (rst_ver.restartVersion >= RestartVersion::restartFirstVersionNumber));
     EXPECT_TRUE((rst_ver.dakotaRelease == "6.16.0+"));
     EXPECT_TRUE((rst_ver.dakotaSHA1 == "a1b2c3d4e5f6"));
 

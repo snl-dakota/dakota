@@ -8,18 +8,18 @@
     _______________________________________________________________________ */
 
 #include "PecosApproximation.hpp"
-#include "ProblemDescDB.hpp"
+
 #include "NonDIntegration.hpp"
+#include "ProblemDescDB.hpp"
 #include "SharedPecosApproxData.hpp"
 
-//#define DEBUG
-
+// #define DEBUG
 
 namespace Dakota {
 
-PecosApproximation::PecosApproximation(const SharedApproxData& shared_data):
-  Approximation(NoDBBaseConstructor(), shared_data)
-  //sharedPecosDataRep((SharedPecosApproxData*)sharedDataRep)
+PecosApproximation::PecosApproximation(const SharedApproxData& shared_data)
+    : Approximation(NoDBBaseConstructor(), shared_data)
+// sharedPecosDataRep((SharedPecosApproxData*)sharedDataRep)
 {
   // Dakota::PecosApproximation manages the Pecos::BasisApproximation instance,
   // and Dakota::SharedPecosApproxData manages the Pecos::SharedBasisApproxData
@@ -27,27 +27,25 @@ PecosApproximation::PecosApproximation(const SharedApproxData& shared_data):
   // initialize the former approximation instance, which retains a pointer to
   // the shared data representation.
 
-  std::shared_ptr<SharedPecosApproxData> shared_pecos_data_rep
-    = std::static_pointer_cast<SharedPecosApproxData>(sharedDataRep);
-  pecosBasisApprox
-    = Pecos::BasisApproximation(shared_pecos_data_rep->pecos_shared_data());
+  std::shared_ptr<SharedPecosApproxData> shared_pecos_data_rep =
+      std::static_pointer_cast<SharedPecosApproxData>(sharedDataRep);
+  pecosBasisApprox =
+      Pecos::BasisApproximation(shared_pecos_data_rep->pecos_shared_data());
 
   // Make a shallow copy of approxData instance (shared rep).
   // Note: this SurrogateData instance is empty at construct time.
   pecosBasisApprox.surrogate_data(approxData);
 
   // convenience pointer (we use PolynomialApproximation exclusively)
-  polyApproxRep = std::static_pointer_cast<Pecos::PolynomialApproximation>
-    (pecosBasisApprox.approx_rep());
+  polyApproxRep = std::static_pointer_cast<Pecos::PolynomialApproximation>(
+      pecosBasisApprox.approx_rep());
 }
 
-
-PecosApproximation::
-PecosApproximation(ProblemDescDB& problem_db,
-		   const SharedApproxData& shared_data,
-                   const String& approx_label):
-  Approximation(BaseConstructor(), problem_db, shared_data, approx_label)
-  //sharedPecosDataRep((SharedPecosApproxData*)sharedDataRep)
+PecosApproximation::PecosApproximation(ProblemDescDB& problem_db,
+                                       const SharedApproxData& shared_data,
+                                       const String& approx_label)
+    : Approximation(BaseConstructor(), problem_db, shared_data, approx_label)
+// sharedPecosDataRep((SharedPecosApproxData*)sharedDataRep)
 {
   // Dakota::PecosApproximation manages the Pecos::BasisApproximation instance,
   // and Dakota::SharedPecosApproxData manages the Pecos::SharedBasisApproxData
@@ -55,20 +53,19 @@ PecosApproximation(ProblemDescDB& problem_db,
   // initialize the former approximation instance, which retains a pointer to
   // the shared data representation.
 
-  std::shared_ptr<SharedPecosApproxData> shared_pecos_data_rep
-    = std::static_pointer_cast<SharedPecosApproxData>(sharedDataRep);
-  pecosBasisApprox
-    = Pecos::BasisApproximation(shared_pecos_data_rep->pecos_shared_data());
+  std::shared_ptr<SharedPecosApproxData> shared_pecos_data_rep =
+      std::static_pointer_cast<SharedPecosApproxData>(sharedDataRep);
+  pecosBasisApprox =
+      Pecos::BasisApproximation(shared_pecos_data_rep->pecos_shared_data());
 
   // Make a shallow copy of approxData instance (shared rep).
   // Note: this SurrogateData instance is empty at construct time.
   pecosBasisApprox.surrogate_data(approxData);
 
   // convenience pointer (we use PolynomialApproximation exclusively)
-  polyApproxRep = std::static_pointer_cast<Pecos::PolynomialApproximation>
-  (pecosBasisApprox.approx_rep());
+  polyApproxRep = std::static_pointer_cast<Pecos::PolynomialApproximation>(
+      pecosBasisApprox.approx_rep());
 }
-
 
 /*
 void PecosApproximation::link_multilevel_surrogate_data()
@@ -97,4 +94,4 @@ void PecosApproximation::link_multilevel_surrogate_data()
 }
 */
 
-} // namespace Dakota
+}  // namespace Dakota

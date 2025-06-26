@@ -12,37 +12,33 @@
 
 #include "DakotaSurrogates.hpp"
 
-
 namespace Dakota {
 
 /// Derived approximation class for Surrogates Python approximation classes.
 
 /** This class interfaces Dakota to the Dakota Surrogates Python Module. */
-class SurrogatesPythonApprox: public SurrogatesBaseApprox
-{
-public:
-
+class SurrogatesPythonApprox : public SurrogatesBaseApprox {
+ public:
   //
   //- Heading: Constructor and destructor
   //
 
   /// default constructor
-  SurrogatesPythonApprox() { }
-  /// standard constructor for scalar surfaces: 
+  SurrogatesPythonApprox() {}
+  /// standard constructor for scalar surfaces:
   SurrogatesPythonApprox(const ProblemDescDB& problem_db,
-		         const SharedApproxData& shared_data,
-		         const String& approx_label);
-  /// standard constructor for field surfaces: 
+                         const SharedApproxData& shared_data,
+                         const String& approx_label);
+  /// standard constructor for field surfaces:
   SurrogatesPythonApprox(const ProblemDescDB& problem_db,
-		         const SharedApproxData& shared_data,
-		         const StringArray& approx_labels);
+                         const SharedApproxData& shared_data,
+                         const StringArray& approx_labels);
   /// alternate constructor
   SurrogatesPythonApprox(const SharedApproxData& shared_data);
   /// destructor
-  ~SurrogatesPythonApprox() { }
+  ~SurrogatesPythonApprox() {}
 
-protected:
-
+ protected:
   // Minimum number of data points required to build
   int min_coefficients() const override;
 
@@ -56,5 +52,5 @@ protected:
   String moduleFile;
 };
 
-} // namespace Dakota
+}  // namespace Dakota
 #endif

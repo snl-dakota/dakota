@@ -12,27 +12,24 @@
 
 #include "DakotaInterfaceAPI.hpp"
 
-
 /** Demo plug-in that returns f_i(x) = x_i for all i */
-class PluginIdentityMap: public DakotaPlugins::DakotaInterfaceAPI
-{
-public:
+class PluginIdentityMap : public DakotaPlugins::DakotaInterfaceAPI {
+ public:
   DakotaPlugins::EvalResponse evaluate(
       DakotaPlugins::EvalRequest const& request) override;
 
-private:
+ private:
   void evaluate_functions(size_t const idx,
-      DakotaPlugins::EvalRequest const& request,
-      DakotaPlugins::EvalResponse& response);
+                          DakotaPlugins::EvalRequest const& request,
+                          DakotaPlugins::EvalResponse& response);
 
   void evaluate_gradients(size_t const idx,
-      DakotaPlugins::EvalRequest const& request,
-      DakotaPlugins::EvalResponse& response);
+                          DakotaPlugins::EvalRequest const& request,
+                          DakotaPlugins::EvalResponse& response);
 
   void evaluate_hessians(size_t const idx,
-      DakotaPlugins::EvalRequest const& request,
-      DakotaPlugins::EvalResponse& response);
+                         DakotaPlugins::EvalRequest const& request,
+                         DakotaPlugins::EvalResponse& response);
 };
-
 
 #endif

@@ -7,54 +7,58 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-#include "dakota_system_defs.hpp"
 #include "dakota_data_io.hpp"
-//#include "dakota_tabular_io.hpp"
-#include "dakota_linear_algebra.hpp"
+#include "dakota_system_defs.hpp"
+// #include "dakota_tabular_io.hpp"
+#include "ActiveKey.hpp"
+#include "DakotaIterator.hpp"
 #include "DakotaModel.hpp"
 #include "DakotaResponse.hpp"
 #include "NonDMultilevBLUESampling.hpp"
 #include "ProblemDescDB.hpp"
-#include "ActiveKey.hpp"
-#include "DakotaIterator.hpp"
 #include "SharedPolyApproxData.hpp"
+#include "dakota_linear_algebra.hpp"
 
-static const char rcsId[]="@(#) $Id: NonDMultilevBLUESampling.cpp 7035 2010-10-22 21:45:39Z mseldre $";
+static const char rcsId[] =
+    "@(#) $Id: NonDMultilevBLUESampling.cpp 7035 2010-10-22 21:45:39Z mseldre "
+    "$";
 
 namespace Dakota {
 
-
-/** This constructor is called for a standard letter-envelope iterator 
-    instantiation.  In this case, set_db_list_nodes has been called and 
+/** This constructor is called for a standard letter-envelope iterator
+    instantiation.  In this case, set_db_list_nodes has been called and
     probDescDB can be queried for settings from the method specification. */
-NonDMultilevBLUESampling::
-NonDMultilevBLUESampling(ProblemDescDB& problem_db,
-			 ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
-  NonDNonHierarchSampling(problem_db, parallel_lib, model),
-  pilotGroupSampling(problem_db.get_short("method.nond.pilot_samples.mode")),
-  groupThrottleType(problem_db.get_short("method.nond.group_throttle_type")),
-  groupSizeThrottle(problem_db.get_ushort("method.nond.group_size_throttle")),
-  rCondBestThrottle(problem_db.get_sizet("method.nond.rcond_best_throttle")),
-  rCondTolThrottle(problem_db.get_real("method.nond.rcond_tol_throttle"))
-{
-  analyticEstVarDerivs = true; // ML BLUE estvar soln has analytic derivatives
-  //hardenNumericSoln  = true; // now adopted for all non-hierarch estimators
+NonDMultilevBLUESampling::NonDMultilevBLUESampling(
+    ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
+    std::shared_ptr<Model> model)
+    : NonDNonHierarchSampling(problem_db, parallel_lib, model),
+      pilotGroupSampling(
+          problem_db.get_short("method.nond.pilot_samples.mode")),
+      groupThrottleType(
+          problem_db.get_short("method.nond.group_throttle_type")),
+      groupSizeThrottle(
+          problem_db.get_ushort("method.nond.group_size_throttle")),
+      rCondBestThrottle(
+          problem_db.get_sizet("method.nond.rcond_best_throttle")),
+      rCondTolThrottle(problem_db.get_real("method.nond.rcond_tol_throttle")) {
+  analyticEstVarDerivs = true;  // ML BLUE estvar soln has analytic derivatives
+  // hardenNumericSoln  = true; // now adopted for all non-hierarch estimators
 
   mlmfSubMethod = problem_db.get_ushort("method.sub_method");
 
   // SDP versus conventional NLP handled by optSubProblemSolver
-  //optSubProblemSolver = sub_optimizer_select(
+  // optSubProblemSolver = sub_optimizer_select(
   //  probDescDB.get_ushort("method.nond.opt_subproblem_solver"),SUBMETHOD_SDP);
 
-  if (maxFunctionEvals == SZ_MAX) // accuracy constraint (convTol)
+  if (maxFunctionEvals == SZ_MAX)  // accuracy constraint (convTol)
     optSubProblemForm = N_GROUP_LINEAR_OBJECTIVE;
-  else                     // budget constraint (maxFunctionEvals)
+  else  // budget constraint (maxFunctionEvals)
     optSubProblemForm = N_GROUP_LINEAR_CONSTRAINT;
 
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "ML BLUE sub-method selection = " << mlmfSubMethod
-	 << " sub-method formulation = " << optSubProblemForm
-	 << " sub-problem solver = "     << optSubProblemSolver << std::endl;
+         << " sub-method formulation = " << optSubProblemForm
+         << " sub-problem solver = " << optSubProblemSolver << std::endl;
 
   // groupThrottleType is inferred for scalar spec so XML can be flattened
   if (!groupThrottleType) {
@@ -67,104 +71,113 @@ NonDMultilevBLUESampling(ProblemDescDB& problem_db,
   }
 
   switch (groupThrottleType) {
+      // case DAG_DEPTH_THROTTLE:   // Emulate ACV
+      // case DAG_BREADTH_THROTTLE: // Emulate MFMC
+      //  all approx --> nominal dags --> enforce constraints --> unique groups
 
-  //case DAG_DEPTH_THROTTLE:   // Emulate ACV
-  //case DAG_BREADTH_THROTTLE: // Emulate MFMC
-    // all approx --> nominal dags --> enforce constraints --> unique groups
+    case MFMC_ESTIMATOR_GROUPS:
+      // Some avg_eval_ratios from an analytic pairwise CVMC initial_guess will
+      // be dropped.  MFMC is of course Ok.
+      numGroups = numApprox + 1;
+      modelGroups.resize(numGroups);
+      for (size_t g = 0; g < numGroups; ++g)
+        mfmc_model_group(g, modelGroups[g]);
+      break;
 
-  case MFMC_ESTIMATOR_GROUPS:
-    // Some avg_eval_ratios from an analytic pairwise CVMC initial_guess will
-    // be dropped.  MFMC is of course Ok.
-    numGroups = numApprox + 1;
-    modelGroups.resize(numGroups);
-    for (size_t g=0; g<numGroups; ++g)
-      mfmc_model_group(g, modelGroups[g]);
-    break;
-
-  case COMMON_ESTIMATOR_GROUPS: {
-    // overlay hierarchical and peer groups (linear growth: 3M - duplicates)
-    UShortArray group;  UShortArraySet unique_groups;  size_t g;
-    for (g=0; g<numApprox; ++g) { // defer all groups to override set ordering
-      cvmc_model_group(g, group); // singletons: increments in pair-wise CVMC
-      unique_groups.insert(group);
-      mfmc_model_group(g, group); // pyramid groups as in MFMC/ACV-MF
-      unique_groups.insert(group);
-    }
-    for (g=0; g<=numApprox; ++g) {
-      mlmc_model_group(g, group); // paired  groups as in MLMC/ACV-RD
-      unique_groups.insert(group);
-    }
-    singleton_model_group(numApprox, group); // not the last CVMC group
-    unique_groups.insert(group);    
-    size_t unique_len = unique_groups.size();  UShortArraySet::iterator it;
-    numGroups = unique_len + 1;
-    modelGroups.resize(numGroups);
-    for (it=unique_groups.begin(), g=0; it!=unique_groups.end(); ++it, ++g)
-      modelGroups[g] = *it;
-    // for consistency with other cases, force all-model case to be last group
-    mfmc_model_group(numApprox, modelGroups[unique_len]);
-    break;
-  }
-
-  case GROUP_SIZE_THROTTLE: { // simplest throttle
-    size_t m, num_models = numApprox+1;
-    // tensor product of order 1 to enumerate approximation groups
-    UShort2DArray tp;  UShortArray tp_orders(num_models, 1);
-    Pecos::SharedPolyApproxData::
-      tensor_product_multi_index(tp_orders, tp, true);
-    tp.erase(tp.begin()); // discard empty group (all 0's)
-
-    size_t num_tp = tp.size(), g, g_size, g_index;
-    UShortArray group_g;
-    for (g=0; g<num_tp; ++g) {
-      const UShortArray& tp_g = tp[g];
-      g_size = std::count(tp_g.begin(), tp_g.end(), 1);
-      if (g_size <= groupSizeThrottle) {
-	group_g.resize(g_size);
-	for (m=0, g_index=0; m<num_models; ++m)
-	  if (tp_g[m]) { group_g[g_index] = m; ++g_index; }
-	modelGroups.push_back(group_g);
+    case COMMON_ESTIMATOR_GROUPS: {
+      // overlay hierarchical and peer groups (linear growth: 3M - duplicates)
+      UShortArray group;
+      UShortArraySet unique_groups;
+      size_t g;
+      for (g = 0; g < numApprox;
+           ++g) {  // defer all groups to override set ordering
+        cvmc_model_group(g, group);  // singletons: increments in pair-wise CVMC
+        unique_groups.insert(group);
+        mfmc_model_group(g, group);  // pyramid groups as in MFMC/ACV-MF
+        unique_groups.insert(group);
       }
+      for (g = 0; g <= numApprox; ++g) {
+        mlmc_model_group(g, group);  // paired  groups as in MLMC/ACV-RD
+        unique_groups.insert(group);
+      }
+      singleton_model_group(numApprox, group);  // not the last CVMC group
+      unique_groups.insert(group);
+      size_t unique_len = unique_groups.size();
+      UShortArraySet::iterator it;
+      numGroups = unique_len + 1;
+      modelGroups.resize(numGroups);
+      for (it = unique_groups.begin(), g = 0; it != unique_groups.end();
+           ++it, ++g)
+        modelGroups[g] = *it;
+      // for consistency with other cases, force all-model case to be last group
+      mfmc_model_group(numApprox, modelGroups[unique_len]);
+      break;
     }
-    // augment with all-group where needed:
-    // SHARED_PILOT or local/competed_local initial guesses from MFMC/CVMC
-    // > since this is subtle / awkward to document / potentially bug-inducing
-    //   downstream, we include the all_group w/ all size throttles for now
-    // > Note 1: there is only one group with all models, so this renders
-    //   size throttle = numApprox the same as no throttle.
-    // > Note 2: size throttle < numApprox means some avg_eval_ratios from an
-    //   analytic MFMC initial_guess will be dropped.  Pairwise CVMC is Ok.
-    if ( groupSizeThrottle < num_models ) {
-	 // && ( pilotGroupSampling == SHARED_PILOT ||
-	 // varianceMinimizers.size() == 1) ) {// local w/ MFMC/CVMC pre-solve
-      group_g.resize(num_models);
-      for (m=0; m<num_models; ++m)
-	group_g[m] = m;
-      modelGroups.push_back(group_g);
-    }
-    numGroups = modelGroups.size();
-    break;
-  }
 
-  default: { // NO_GROUP_THROTTLE, RCOND_*_THROTTLE
-    // tensor product of order 1 to enumerate approximation groups
-    // > modelGroups are not currently ordered by numbers of models,
-    //   i.e. all 1-model cases, followed by all 2-model cases, etc.
-    UShort2DArray tp;  UShortArray tp_orders(numApprox+1, 1);
-    Pecos::SharedPolyApproxData::
-      tensor_product_multi_index(tp_orders, tp, true);
-    tp.erase(tp.begin()); // discard empty group (all 0's)
+    case GROUP_SIZE_THROTTLE: {  // simplest throttle
+      size_t m, num_models = numApprox + 1;
+      // tensor product of order 1 to enumerate approximation groups
+      UShort2DArray tp;
+      UShortArray tp_orders(num_models, 1);
+      Pecos::SharedPolyApproxData::tensor_product_multi_index(tp_orders, tp,
+                                                              true);
+      tp.erase(tp.begin());  // discard empty group (all 0's)
 
-    numGroups = tp.size();  modelGroups.resize(numGroups);
-    size_t g, m;
-    for (g=0; g<numGroups; ++g) {
-      const UShortArray& tp_g = tp[g];
-      UShortArray&    group_g = modelGroups[g];
-      for (m=0; m<=numApprox; ++m)
-	if (tp_g[m]) group_g.push_back(m);
+      size_t num_tp = tp.size(), g, g_size, g_index;
+      UShortArray group_g;
+      for (g = 0; g < num_tp; ++g) {
+        const UShortArray& tp_g = tp[g];
+        g_size = std::count(tp_g.begin(), tp_g.end(), 1);
+        if (g_size <= groupSizeThrottle) {
+          group_g.resize(g_size);
+          for (m = 0, g_index = 0; m < num_models; ++m)
+            if (tp_g[m]) {
+              group_g[g_index] = m;
+              ++g_index;
+            }
+          modelGroups.push_back(group_g);
+        }
+      }
+      // augment with all-group where needed:
+      // SHARED_PILOT or local/competed_local initial guesses from MFMC/CVMC
+      // > since this is subtle / awkward to document / potentially bug-inducing
+      //   downstream, we include the all_group w/ all size throttles for now
+      // > Note 1: there is only one group with all models, so this renders
+      //   size throttle = numApprox the same as no throttle.
+      // > Note 2: size throttle < numApprox means some avg_eval_ratios from an
+      //   analytic MFMC initial_guess will be dropped.  Pairwise CVMC is Ok.
+      if (groupSizeThrottle < num_models) {
+        // && ( pilotGroupSampling == SHARED_PILOT ||
+        // varianceMinimizers.size() == 1) ) {// local w/ MFMC/CVMC pre-solve
+        group_g.resize(num_models);
+        for (m = 0; m < num_models; ++m) group_g[m] = m;
+        modelGroups.push_back(group_g);
+      }
+      numGroups = modelGroups.size();
+      break;
     }
-    break;
-  }
+
+    default: {  // NO_GROUP_THROTTLE, RCOND_*_THROTTLE
+      // tensor product of order 1 to enumerate approximation groups
+      // > modelGroups are not currently ordered by numbers of models,
+      //   i.e. all 1-model cases, followed by all 2-model cases, etc.
+      UShort2DArray tp;
+      UShortArray tp_orders(numApprox + 1, 1);
+      Pecos::SharedPolyApproxData::tensor_product_multi_index(tp_orders, tp,
+                                                              true);
+      tp.erase(tp.begin());  // discard empty group (all 0's)
+
+      numGroups = tp.size();
+      modelGroups.resize(numGroups);
+      size_t g, m;
+      for (g = 0; g < numGroups; ++g) {
+        const UShortArray& tp_g = tp[g];
+        UShortArray& group_g = modelGroups[g];
+        for (m = 0; m <= numApprox; ++m)
+          if (tp_g[m]) group_g.push_back(m);
+      }
+      break;
+    }
   }
 
   if (costSource == USER_COST_SPEC) update_model_group_costs();
@@ -177,57 +190,59 @@ NonDMultilevBLUESampling(ProblemDescDB& problem_db,
       groupThrottleType != RCOND_BEST_COUNT_THROTTLE)
     update_search_algorithm();
 
-  load_pilot_sample(problem_db.get_sza("method.nond.pilot_samples"),
-		    numGroups, pilotSamples);
+  load_pilot_sample(problem_db.get_sza("method.nond.pilot_samples"), numGroups,
+                    pilotSamples);
 
   size_t max_ps = find_max(pilotSamples);
   if (max_ps) maxEvalConcurrency *= max_ps;
 
   // Initialize response container
-  for (auto groupNumber=0; groupNumber < numGroups; ++groupNumber) {
-    responseContainer.addModelGroup(modelGroups[groupNumber], numFunctions, 4); // For actual samples
-    pilotResponseContainer.addModelGroup(modelGroups[groupNumber], numFunctions, 4); // For pilot samples
+  for (auto groupNumber = 0; groupNumber < numGroups; ++groupNumber) {
+    responseContainer.addModelGroup(modelGroups[groupNumber], numFunctions,
+                                    4);  // For actual samples
+    pilotResponseContainer.addModelGroup(modelGroups[groupNumber], numFunctions,
+                                         4);  // For pilot samples
   }
 }
 
+NonDMultilevBLUESampling::~NonDMultilevBLUESampling() {}
 
-NonDMultilevBLUESampling::~NonDMultilevBLUESampling()
-{ }
-
-
-void NonDMultilevBLUESampling::pre_run()
-{
+void NonDMultilevBLUESampling::pre_run() {
   NonDNonHierarchSampling::pre_run();
   responseContainer.reset();
   pilotResponseContainer.reset();
 }
 
-
-void NonDMultilevBLUESampling::core_run()
-{
+void NonDMultilevBLUESampling::core_run() {
   retainedModelGroups.clear();
 
   switch (pilotMgmtMode) {
-  case ONLINE_PILOT: // iterated ML BLUE (default)
-    // ESTIMATOR_PERFORMANCE case differs from ONLINE_PILOT_PROJECTION
-    ml_blue_online_pilot();     break;
-  case OFFLINE_PILOT: // non-iterated allocation from offline/Oracle correlation
-    switch (finalStatsType) {
-    // since offline is not iterated, the ESTIMATOR_PERFORMANCE case is the
-    // same as OFFLINE_PILOT_PROJECTION --> bypass IntMaps, simplify code
-    case ESTIMATOR_PERFORMANCE:  ml_blue_pilot_projection();  break;
-    default:                     ml_blue_offline_pilot();     break;
-    }
-    break;
-  case ONLINE_PILOT_PROJECTION:  case OFFLINE_PILOT_PROJECTION:
-    ml_blue_pilot_projection(); break;
+    case ONLINE_PILOT:  // iterated ML BLUE (default)
+      // ESTIMATOR_PERFORMANCE case differs from ONLINE_PILOT_PROJECTION
+      ml_blue_online_pilot();
+      break;
+    case OFFLINE_PILOT:  // non-iterated allocation from offline/Oracle
+                         // correlation
+      switch (finalStatsType) {
+        // since offline is not iterated, the ESTIMATOR_PERFORMANCE case is the
+        // same as OFFLINE_PILOT_PROJECTION --> bypass IntMaps, simplify code
+        case ESTIMATOR_PERFORMANCE:
+          ml_blue_pilot_projection();
+          break;
+        default:
+          ml_blue_offline_pilot();
+          break;
+      }
+      break;
+    case ONLINE_PILOT_PROJECTION:
+    case OFFLINE_PILOT_PROJECTION:
+      ml_blue_pilot_projection();
+      break;
   }
 }
 
-
 /** This function performs ML BLUE using an iterated approach. */
-void NonDMultilevBLUESampling::ml_blue_online_pilot()
-{
+void NonDMultilevBLUESampling::ml_blue_online_pilot() {
   // Online iteration does not work the same way since complete group increments
   // (as opposed to only incrementing the shared sample set) will exhaust the
   // budget on the first solve (excepting sample roundoff effects). Subsequent
@@ -284,17 +299,19 @@ void NonDMultilevBLUESampling::ml_blue_online_pilot()
   //   under_relax_recursive = Real (recursive per iter on unity partition)
 
   // retrieve cost estimates across soln levels for a particular model form
-  IntRealMatrixArrayMap sum_G;          IntRealSymMatrix2DArrayMap sum_GG;
-  initialize_group_sums(sum_G, sum_GG); initialize_group_counts(NGroupActual);
-  SizetArray delta_N_G = pilotSamples; // sized by load_pilot_samples()
+  IntRealMatrixArrayMap sum_G;
+  IntRealSymMatrix2DArrayMap sum_GG;
+  initialize_group_sums(sum_G, sum_GG);
+  initialize_group_counts(NGroupActual);
+  SizetArray delta_N_G = pilotSamples;  // sized by load_pilot_samples()
   NGroupAlloc.assign(numGroups, 0);
 
   // online iterations for shared covariance estimation:
   if (pilotGroupSampling == SHARED_PILOT) {
-    size_t all_group = numGroups - 1; // last group = all models
+    size_t all_group = numGroups - 1;  // last group = all models
     NGroupAlloc[all_group] = delta_N_G[all_group];
     shared_covariance_iteration(sum_G, sum_GG, delta_N_G);
-    reset_relaxation(); // for initial increments for all other groups
+    reset_relaxation();  // for initial increments for all other groups
   }
   // online iteration for independent covariance estimation:
   independent_covariance_iteration(sum_G, sum_GG, delta_N_G);
@@ -302,31 +319,33 @@ void NonDMultilevBLUESampling::ml_blue_online_pilot()
   // Only QOI_STATISTICS requires application of oversample ratios and
   // estimation of moments; ESTIMATOR_PERFORMANCE can bypass this expense.
   if (finalStatsType == QOI_STATISTICS)
-    blue_raw_moments(sum_G, sum_GG, NGroupActual); // online version
+    blue_raw_moments(sum_G, sum_GG, NGroupActual);  // online version
 
-  if (!zeros(delta_N_G)) // exceeded maxIterations
+  if (!zeros(delta_N_G))  // exceeded maxIterations
     increment_equivalent_cost(delta_N_G, modelGroupCost,
-			      sequenceCost[numApprox], deltaEquivHF);
+                              sequenceCost[numApprox], deltaEquivHF);
   finalize_counts(NGroupActual, NGroupAlloc);
 }
 
-
 /** This function performs ML BLUE using an offline pilot approach. */
-void NonDMultilevBLUESampling::ml_blue_offline_pilot()
-{
+void NonDMultilevBLUESampling::ml_blue_offline_pilot() {
   // --------------------------------------------------------------
   // Compute covar GG from (oracle) pilot treated as "offline" cost
   // --------------------------------------------------------------
-  IntRealMatrixArrayMap sum_G_pilot; IntRealSymMatrix2DArrayMap sum_GG_pilot;
+  IntRealMatrixArrayMap sum_G_pilot;
+  IntRealSymMatrix2DArrayMap sum_GG_pilot;
   Sizet2DArray N_pilot;
   evaluate_pilot(sum_G_pilot, sum_GG_pilot, N_pilot, false);
 
   // -----------------------------------
   // Compute "online" sample increments:
   // -----------------------------------
-  IntRealMatrixArrayMap sum_G;          IntRealSymMatrix2DArrayMap sum_GG;
-  initialize_group_sums(sum_G, sum_GG); initialize_group_counts(NGroupActual);
-  SizetArray delta_N_G;  NGroupAlloc.assign(numGroups, 0);
+  IntRealMatrixArrayMap sum_G;
+  IntRealSymMatrix2DArrayMap sum_GG;
+  initialize_group_sums(sum_G, sum_GG);
+  initialize_group_counts(NGroupActual);
+  SizetArray delta_N_G;
+  NGroupAlloc.assign(numGroups, 0);
 
   // compute the LF/HF evaluation ratios from shared samples and compute
   // ratio of MC and ACV mean sq errors (which incorporates anticipated
@@ -342,45 +361,44 @@ void NonDMultilevBLUESampling::ml_blue_offline_pilot()
   // ml_blue_pilot_projection() to also bypass IntMaps.
 
   // perform the shared increment for the online sample profile
-  group_increments(delta_N_G, "blue_"); // spans ALL models, blocking
+  group_increments(delta_N_G, "blue_");  // spans ALL models, blocking
   accumulate_blue_sums(sum_G, sum_GG, NGroupActual, batchResponsesMap);
 
   // Accumulate samples
   responseContainer.addSamples(batchResponsesMap);
 
-  increment_equivalent_cost(delta_N_G, modelGroupCost,
-			    sequenceCost[numApprox], equivHFEvals);
+  increment_equivalent_cost(delta_N_G, modelGroupCost, sequenceCost[numApprox],
+                            equivHFEvals);
   clear_batches();
   // extract moments
-  blue_raw_moments(sum_G_pilot, sum_GG_pilot, N_pilot, // offline for covar
-		   sum_G, sum_GG, NGroupActual);       // online for mu-hat
+  blue_raw_moments(sum_G_pilot, sum_GG_pilot, N_pilot,  // offline for covar
+                   sum_G, sum_GG, NGroupActual);        // online for mu-hat
   // finalize
   finalize_counts(NGroupActual, NGroupAlloc);
 }
 
-
 /** This function performs ML BLUE using a pilot projection approach. */
-void NonDMultilevBLUESampling::ml_blue_pilot_projection()
-{
+void NonDMultilevBLUESampling::ml_blue_pilot_projection() {
   // --------------------------------------------------------------------
   // Evaluate shared increment and update correlations, {eval,EstVar}_ratios
   // --------------------------------------------------------------------
-  RealMatrixArray sum_G; RealSymMatrix2DArray sum_GG;
-  if (pilotMgmtMode == OFFLINE_PILOT || // redirected here for ESTIMATOR_PERF
+  RealMatrixArray sum_G;
+  RealSymMatrix2DArray sum_GG;
+  if (pilotMgmtMode == OFFLINE_PILOT ||  // redirected here for ESTIMATOR_PERF
       pilotMgmtMode == OFFLINE_PILOT_PROJECTION) {
     // accumulate offline counts
     Sizet2DArray N_pilot;
     evaluate_pilot(sum_G, sum_GG, N_pilot, false);
     // initialize online counts
-    initialize_group_counts(NGroupActual);  NGroupAlloc.assign(numGroups, 0);
-  }
-  else { // ONLINE_PILOT_PROJECTION
+    initialize_group_counts(NGroupActual);
+    NGroupAlloc.assign(numGroups, 0);
+  } else {  // ONLINE_PILOT_PROJECTION
     if (pilotGroupSampling == SHARED_PILOT) {
       NGroupAlloc.assign(numGroups, 0);
-      size_t all_group = numGroups - 1; // last group = all models
+      size_t all_group = numGroups - 1;  // last group = all models
       NGroupAlloc[all_group] = pilotSamples[all_group];
-    }
-    else NGroupAlloc = pilotSamples;
+    } else
+      NGroupAlloc = pilotSamples;
     // initialize + accumulate online counts
     evaluate_pilot(sum_G, sum_GG, NGroupActual, true);
   }
@@ -397,26 +415,23 @@ void NonDMultilevBLUESampling::ml_blue_pilot_projection()
   ++mlmfIter;
 
   // No final moments for pilot projection
-  increment_equivalent_cost(delta_N_G, modelGroupCost,
-			    sequenceCost[numApprox], deltaEquivHF);
+  increment_equivalent_cost(delta_N_G, modelGroupCost, sequenceCost[numApprox],
+                            deltaEquivHF);
   finalize_counts(NGroupActual, NGroupAlloc);
   // No need for updating estimator variance given deltaNActualHF since
   // NonDNonHierarchSampling::ensemble_numerical_solution() recovers N*
   // from the numerical solve and computes projected estVariance{s,Ratios}
 }
 
-
-void NonDMultilevBLUESampling::
-shared_covariance_iteration(IntRealMatrixArrayMap& sum_G,
-			    IntRealSymMatrix2DArrayMap& sum_GG,
-			    SizetArray& delta_N_G)
-{
-  size_t all_group = numGroups - 1; // last group = all models
+void NonDMultilevBLUESampling::shared_covariance_iteration(
+    IntRealMatrixArrayMap& sum_G, IntRealSymMatrix2DArrayMap& sum_GG,
+    SizetArray& delta_N_G) {
+  size_t all_group = numGroups - 1;  // last group = all models
   numSamples = delta_N_G[all_group];
 
   if (outputLevel >= NORMAL_OUTPUT)
     Cout << "\n>>>>> multilevel_blue: online iteration for shared covariance."
-	 << std::endl;
+         << std::endl;
   while (numSamples && mlmfIter <= maxIterations) {
     // -----------------------------------------------
     // Evaluate shared increment and update covariance
@@ -433,36 +448,36 @@ shared_covariance_iteration(IntRealMatrixArrayMap& sum_G,
 
     // update covariances, recomputing model group pruning if active
     compute_GG_covariance(sum_G[1][all_group], sum_GG[1][all_group],
-			  NGroupActual[all_group], covGG, covGGinv);
+                          NGroupActual[all_group], covGG, covGGinv);
 
-    if (mlmfIter == 0 && costSource != USER_COST_SPEC)
-      { recover_online_cost(allResponses); update_model_group_costs(); }
-    increment_equivalent_cost(numSamples, sequenceCost, 0, numApprox+1,
-			      equivHFEvals);
+    if (mlmfIter == 0 && costSource != USER_COST_SPEC) {
+      recover_online_cost(allResponses);
+      update_model_group_costs();
+    }
+    increment_equivalent_cost(numSamples, sequenceCost, 0, numApprox + 1,
+                              equivHFEvals);
 
     // --------------------
     // Solve for allocation
     // --------------------
-    prune_model_groups(); // redefined from scatch each iteration
+    prune_model_groups();  // redefined from scatch each iteration
     // Numerical soln is subject to latest group pruning (rcond throttles), but
     // all_group retention is enforced in prune_model_groups() for this case
     compute_allocations(blueSolnData, NGroupActual, NGroupAlloc, delta_N_G);
     // only increment NGroupAlloc[all_group]
     increment_allocations(blueSolnData, NGroupAlloc, delta_N_G, all_group);
     numSamples = delta_N_G[all_group];
-    ++mlmfIter;  advance_relaxation();
+    ++mlmfIter;
+    advance_relaxation();
   }
 }
 
-
-void NonDMultilevBLUESampling::
-independent_covariance_iteration(IntRealMatrixArrayMap& sum_G,
-				 IntRealSymMatrix2DArrayMap& sum_GG,
-				 SizetArray& delta_N_G)
-{
+void NonDMultilevBLUESampling::independent_covariance_iteration(
+    IntRealMatrixArrayMap& sum_G, IntRealSymMatrix2DArrayMap& sum_GG,
+    SizetArray& delta_N_G) {
   // resetting counter for independent iteration allows separated throttling,
   // but also resets the numerical solve initial guess process (expensive)
-  //mlmfIter = 0;
+  // mlmfIter = 0;
 
   // either leftover delta from shared_covariance_iteration() or initial pilot
   increment_allocations(blueSolnData, NGroupAlloc, delta_N_G);
@@ -471,53 +486,54 @@ independent_covariance_iteration(IntRealMatrixArrayMap& sum_G,
   // but other groups will be nonzero prior to full convergence
   if (outputLevel >= NORMAL_OUTPUT)
     Cout << "\n>>>>> multilevel_blue: online iteration for independent "
-	 << "covariance." << std::endl;
+         << "covariance." << std::endl;
 
   SizetArray N_G_ref;
   if (pilotGroupSampling == SHARED_PILOT)
-    N_G_ref = NGroupActual[numGroups - 1]; // for compute_GG_covariance()
+    N_G_ref = NGroupActual[numGroups - 1];  // for compute_GG_covariance()
 
   while (!zeros(delta_N_G) && mlmfIter <= maxIterations) {
-
     // -----------------------------------------------
     // Evaluate shared increment and update covariance
     // -----------------------------------------------
-    group_increments(delta_N_G, "blue_"); // spans ALL model groups, blocking
+    group_increments(delta_N_G, "blue_");  // spans ALL model groups, blocking
     accumulate_blue_sums(sum_G, sum_GG, NGroupActual, batchResponsesMap);
 
     // Accumulate independent samples
     responseContainer.addSamples(batchResponsesMap);
 
-    compute_GG_covariance(sum_G[1], sum_GG[1], NGroupActual,
-			  covGG, covGGinv, false, 1, N_G_ref);
+    compute_GG_covariance(sum_G[1], sum_GG[1], NGroupActual, covGG, covGGinv,
+                          false, 1, N_G_ref);
     // While online cost recovery could be continuously updated, we restrict
     // to the pilot and do not not update on subsequent iterations.  We could
     // potentially mirror the covariance updates with cost updates, but seems
     // likely to induce thrash when run times are not robust.
     if (mlmfIter == 0 && costSource != USER_COST_SPEC)
-        /* && pilotGroupSampling == INDEPENDENT_PILOT */
-      { recover_online_cost(batchResponsesMap); update_model_group_costs(); }
+    /* && pilotGroupSampling == INDEPENDENT_PILOT */
+    {
+      recover_online_cost(batchResponsesMap);
+      update_model_group_costs();
+    }
     increment_equivalent_cost(delta_N_G, modelGroupCost,
-			      sequenceCost[numApprox], equivHFEvals);
+                              sequenceCost[numApprox], equivHFEvals);
     clear_batches();
 
     // --------------------
     // Solve for allocation
     // --------------------
-    prune_model_groups(); // redefined from scatch each iteration
+    prune_model_groups();  // redefined from scatch each iteration
     compute_allocations(blueSolnData, NGroupActual, NGroupAlloc, delta_N_G);
     increment_allocations(blueSolnData, NGroupAlloc, delta_N_G);
-    ++mlmfIter;  advance_relaxation();
+    ++mlmfIter;
+    advance_relaxation();
   }
 }
 
-
-void NonDMultilevBLUESampling::
-evaluate_pilot(RealMatrixArray& sum_G_pilot, RealSymMatrix2DArray& sum_GG_pilot,
-	       Sizet2DArray& N_shared_pilot, bool incr_cost)
-{
+void NonDMultilevBLUESampling::evaluate_pilot(
+    RealMatrixArray& sum_G_pilot, RealSymMatrix2DArray& sum_GG_pilot,
+    Sizet2DArray& N_shared_pilot, bool incr_cost) {
   initialize_group_sums(sum_G_pilot, sum_GG_pilot);
-  initialize_group_counts(N_shared_pilot);//, N_GG_pilot);
+  initialize_group_counts(N_shared_pilot);  //, N_GG_pilot);
 
   // ----------------------------------------
   // Compute var L,H & covar LL,LH from pilot
@@ -530,13 +546,13 @@ evaluate_pilot(RealMatrixArray& sum_G_pilot, RealSymMatrix2DArray& sum_GG_pilot,
   //   but shared pilot only reused once (all-model group).  Saves cost for
   //   groups that are not selected for investment.
   if (pilotGroupSampling == SHARED_PILOT) {
-    size_t all_group = numGroups - 1; // last group = all models
+    size_t all_group = numGroups - 1;  // last group = all models
     numSamples = pilotSamples[all_group];
     shared_increment("blue_");
     // accumulate for one group only and reuse for group covariances
-    RealMatrix&          sum_G_sh =    sum_G_pilot[all_group];
-    RealSymMatrixArray& sum_GG_sh =   sum_GG_pilot[all_group];
-    SizetArray&              N_sh = N_shared_pilot[all_group];
+    RealMatrix& sum_G_sh = sum_G_pilot[all_group];
+    RealSymMatrixArray& sum_GG_sh = sum_GG_pilot[all_group];
+    SizetArray& N_sh = N_shared_pilot[all_group];
     accumulate_blue_sums(sum_G_sh, sum_GG_sh, N_sh, all_group, allResponses);
 
     // Accumulate shared pilot samples
@@ -545,41 +561,42 @@ evaluate_pilot(RealMatrixArray& sum_G_pilot, RealSymMatrix2DArray& sum_GG_pilot,
     pilotResponseContainer.addSamples(batchedSamples);
 
     compute_GG_covariance(sum_G_sh, sum_GG_sh, N_sh, covGG, covGGinv, true);
-    if (costSource != USER_COST_SPEC)
-      { recover_online_cost(allResponses); update_model_group_costs(); }
+    if (costSource != USER_COST_SPEC) {
+      recover_online_cost(allResponses);
+      update_model_group_costs();
+    }
     if (incr_cost)
-      increment_equivalent_cost(numSamples, sequenceCost, 0, numApprox+1,
-				equivHFEvals);
-  }
-  else {
-    group_increments(pilotSamples, "blue_"); // all groups, independent samples
+      increment_equivalent_cost(numSamples, sequenceCost, 0, numApprox + 1,
+                                equivHFEvals);
+  } else {
+    group_increments(pilotSamples, "blue_");  // all groups, independent samples
     accumulate_blue_sums(sum_G_pilot, sum_GG_pilot, N_shared_pilot,
-			 batchResponsesMap);
+                         batchResponsesMap);
 
     // Accumulate independent pilot samples
     pilotResponseContainer.addSamples(batchResponsesMap);
 
-    compute_GG_covariance(sum_G_pilot, sum_GG_pilot, N_shared_pilot,
-			  covGG, covGGinv, true);
+    compute_GG_covariance(sum_G_pilot, sum_GG_pilot, N_shared_pilot, covGG,
+                          covGGinv, true);
 
-    if (costSource != USER_COST_SPEC)
-      { recover_online_cost(batchResponsesMap); update_model_group_costs(); }
+    if (costSource != USER_COST_SPEC) {
+      recover_online_cost(batchResponsesMap);
+      update_model_group_costs();
+    }
     if (incr_cost)
       increment_equivalent_cost(pilotSamples, modelGroupCost,
-				sequenceCost[numApprox], equivHFEvals);
+                                sequenceCost[numApprox], equivHFEvals);
     clear_batches();
   }
   prune_model_groups();
 }
 
-
-void NonDMultilevBLUESampling::
-evaluate_pilot(IntRealMatrixArrayMap& sum_G_pilot,
-	       IntRealSymMatrix2DArrayMap& sum_GG_pilot,
-	       Sizet2DArray& N_shared_pilot, bool incr_cost)
-{
+void NonDMultilevBLUESampling::evaluate_pilot(
+    IntRealMatrixArrayMap& sum_G_pilot,
+    IntRealSymMatrix2DArrayMap& sum_GG_pilot, Sizet2DArray& N_shared_pilot,
+    bool incr_cost) {
   initialize_group_sums(sum_G_pilot, sum_GG_pilot);
-  initialize_group_counts(N_shared_pilot);//, N_GG_pilot);
+  initialize_group_counts(N_shared_pilot);  //, N_GG_pilot);
 
   // ----------------------------------------
   // Compute var L,H & covar LL,LH from pilot
@@ -592,12 +609,12 @@ evaluate_pilot(IntRealMatrixArrayMap& sum_G_pilot,
   //   but shared pilot only reused once (all-model group).  Saves cost for
   //   groups that are not selected for investment.
   if (pilotGroupSampling == SHARED_PILOT) {
-    size_t all_group = numGroups - 1; // last group = all models
+    size_t all_group = numGroups - 1;  // last group = all models
     numSamples = pilotSamples[all_group];
     shared_increment("blue_");
     // accumulate for one group only and reuse for group covariances
     accumulate_blue_sums(sum_G_pilot, sum_GG_pilot, N_shared_pilot, all_group,
-			 allResponses);
+                         allResponses);
 
     // Accumulate shared pilot samples
     IntIntResponse2DMap batchedSamples;
@@ -605,185 +622,175 @@ evaluate_pilot(IntRealMatrixArrayMap& sum_G_pilot,
     pilotResponseContainer.addSamples(batchedSamples);
 
     compute_GG_covariance(sum_G_pilot[1][all_group], sum_GG_pilot[1][all_group],
-			  N_shared_pilot[all_group], covGG, covGGinv, true);
+                          N_shared_pilot[all_group], covGG, covGGinv, true);
 
-    if (costSource != USER_COST_SPEC)
-      { recover_online_cost(allResponses); update_model_group_costs(); }
+    if (costSource != USER_COST_SPEC) {
+      recover_online_cost(allResponses);
+      update_model_group_costs();
+    }
     if (incr_cost)
-      increment_equivalent_cost(numSamples, sequenceCost, 0, numApprox+1,
-				equivHFEvals);
-  }
-  else {
-    group_increments(pilotSamples, "blue_"); // all groups, independent samples
+      increment_equivalent_cost(numSamples, sequenceCost, 0, numApprox + 1,
+                                equivHFEvals);
+  } else {
+    group_increments(pilotSamples, "blue_");  // all groups, independent samples
     accumulate_blue_sums(sum_G_pilot, sum_GG_pilot, N_shared_pilot,
-			 batchResponsesMap);
+                         batchResponsesMap);
 
     // Accumulate independent pilot samples
     pilotResponseContainer.addSamples(batchResponsesMap);
 
-    compute_GG_covariance(sum_G_pilot[1], sum_GG_pilot[1], N_shared_pilot, covGG, covGGinv, true);
+    compute_GG_covariance(sum_G_pilot[1], sum_GG_pilot[1], N_shared_pilot,
+                          covGG, covGGinv, true);
 
-    if (costSource != USER_COST_SPEC)
-      { recover_online_cost(batchResponsesMap); update_model_group_costs(); }
+    if (costSource != USER_COST_SPEC) {
+      recover_online_cost(batchResponsesMap);
+      update_model_group_costs();
+    }
     if (incr_cost)
       increment_equivalent_cost(pilotSamples, modelGroupCost,
-				sequenceCost[numApprox], equivHFEvals);
+                                sequenceCost[numApprox], equivHFEvals);
     clear_batches();
   }
   prune_model_groups();
 }
 
-
-void NonDMultilevBLUESampling::
-numerical_solution_counts(size_t& num_cdv, size_t& num_lin_con,
-			  size_t& num_nln_con)
-{
+void NonDMultilevBLUESampling::numerical_solution_counts(size_t& num_cdv,
+                                                         size_t& num_lin_con,
+                                                         size_t& num_nln_con) {
   num_cdv = num_active_groups();
   bool offline = (pilotMgmtMode == OFFLINE_PILOT ||
-		  pilotMgmtMode == OFFLINE_PILOT_PROJECTION);
+                  pilotMgmtMode == OFFLINE_PILOT_PROJECTION);
   switch (optSubProblemForm) {
-  case N_GROUP_LINEAR_CONSTRAINT:
-    num_lin_con = (offline) ? 2 : 1;  num_nln_con = 0;  break;
-  case N_GROUP_LINEAR_OBJECTIVE:
-    num_lin_con = (offline) ? 1 : 0;  num_nln_con = 1;  break;
+    case N_GROUP_LINEAR_CONSTRAINT:
+      num_lin_con = (offline) ? 2 : 1;
+      num_nln_con = 0;
+      break;
+    case N_GROUP_LINEAR_OBJECTIVE:
+      num_lin_con = (offline) ? 1 : 0;
+      num_nln_con = 1;
+      break;
   }
 }
 
-
-void NonDMultilevBLUESampling::
-numerical_solution_bounds_constraints(const MFSolutionData& soln,
-				      RealVector& x0, RealVector& x_lb,
-				      RealVector& x_ub, RealVector& lin_ineq_lb,
-				      RealVector& lin_ineq_ub,
-				      RealVector& lin_eq_tgt,
-				      RealVector& nln_ineq_lb,
-				      RealVector& nln_ineq_ub,
-				      RealVector& nln_eq_tgt,
-				      RealMatrix& lin_ineq_coeffs,
-				      RealMatrix& lin_eq_coeffs)
-{
+void NonDMultilevBLUESampling::numerical_solution_bounds_constraints(
+    const MFSolutionData& soln, RealVector& x0, RealVector& x_lb,
+    RealVector& x_ub, RealVector& lin_ineq_lb, RealVector& lin_ineq_ub,
+    RealVector& lin_eq_tgt, RealVector& nln_ineq_lb, RealVector& nln_ineq_ub,
+    RealVector& nln_eq_tgt, RealMatrix& lin_ineq_coeffs,
+    RealMatrix& lin_eq_coeffs) {
   // --------------------------------------
   // Formulate the optimization sub-problem: initial pt, bnds, constraints
   // --------------------------------------
 
   specify_parameter_bounds(x_lb, x_ub);
-  enforce_nudge(x_lb); // nudge away from 0 if needed
+  enforce_nudge(x_lb);  // nudge away from 0 if needed
 
   specify_initial_parameters(soln, x0, x_lb, x_ub);
-  //enforce_augmented_linear_ineq_constraints(x_lb); // difficult a priori
-  enforce_bounds(x0, x_lb, x_ub);// for example, x0 can undershoot lb if OFFLINE
+  // enforce_augmented_linear_ineq_constraints(x_lb); // difficult a priori
+  enforce_bounds(x0, x_lb,
+                 x_ub);  // for example, x0 can undershoot lb if OFFLINE
 
   specify_linear_constraints(lin_ineq_lb, lin_ineq_ub, lin_eq_tgt,
-			     lin_ineq_coeffs, lin_eq_coeffs);
+                             lin_ineq_coeffs, lin_eq_coeffs);
   specify_nonlinear_constraints(nln_ineq_lb, nln_ineq_ub, nln_eq_tgt);
 }
 
-
-void NonDMultilevBLUESampling::
-specify_parameter_bounds(RealVector& x_lb, RealVector& x_ub)
-{
+void NonDMultilevBLUESampling::specify_parameter_bounds(RealVector& x_lb,
+                                                        RealVector& x_ub) {
   // Solver parameter bounds.  Note: some minimizers require finite
   // bounds --> these updates are performed in finite_solution_bounds()
 
-  x_ub = DBL_MAX; // no upper bounds for groups
+  x_ub = DBL_MAX;  // no upper bounds for groups
   if (pilotMgmtMode == OFFLINE_PILOT ||
       pilotMgmtMode == OFFLINE_PILOT_PROJECTION)
-    x_lb = 0.; // no group lower bounds for OFFLINE (NUDGE applied downstream)
+    x_lb = 0.;  // no group lower bounds for OFFLINE (NUDGE applied downstream)
   else {
     // Assign sunk cost to full group and optimize w/ this as a constraint.
     // > One could argue for only lower-bounding with actual incurred samples,
     //   but have elected elsewhere to be consistent with backfill logic.
     // > Note: only NGroup*[all_group] is advanced in shared_covariance_iter()
     size_t g, v, num_v = x_lb.length();
-    for (v=0; v<num_v; ++v) {
+    for (v = 0; v < num_v; ++v) {
       g = active_to_all_group(v);
-      x_lb[v] = (backfillFailures) ?
-	average(NGroupActual[g]) : (Real)NGroupAlloc[g];
+      x_lb[v] =
+          (backfillFailures) ? average(NGroupActual[g]) : (Real)NGroupAlloc[g];
     }
   }
 }
 
-
-void NonDMultilevBLUESampling::
-specify_initial_parameters(const MFSolutionData& soln, RealVector& x0,
-			   const RealVector& x_lb, const RealVector& x_ub)
-{
+void NonDMultilevBLUESampling::specify_initial_parameters(
+    const MFSolutionData& soln, RealVector& x0, const RealVector& x_lb,
+    const RealVector& x_ub) {
   const RealVector& soln_vars = soln.solution_variables();
-  if (soln_vars.empty()) x0 = x_lb;
+  if (soln_vars.empty())
+    x0 = x_lb;
   else {
     size_t num_v = num_active_groups();
-    if (soln_vars.length() != num_v) deflate(soln_vars,retainedModelGroups,x0);
-    else                             x0 = soln_vars;
+    if (soln_vars.length() != num_v)
+      deflate(soln_vars, retainedModelGroups, x0);
+    else
+      x0 = soln_vars;
   }
 }
 
-
-void NonDMultilevBLUESampling::
-specify_linear_constraints(RealVector& lin_ineq_lb, RealVector& lin_ineq_ub,
-			   RealVector& lin_eq_tgt,  RealMatrix& lin_ineq_coeffs,
-			   RealMatrix& lin_eq_coeffs)
-{
+void NonDMultilevBLUESampling::specify_linear_constraints(
+    RealVector& lin_ineq_lb, RealVector& lin_ineq_ub, RealVector& lin_eq_tgt,
+    RealMatrix& lin_ineq_coeffs, RealMatrix& lin_eq_coeffs) {
   switch (optSubProblemForm) {
-  case N_GROUP_LINEAR_CONSTRAINT: { // linear inequality constraint on budget:
-    // \Sum_grp_i w_grp_i        N_grp_i <= equiv_HF * w_HF
-    // \Sum_grp_i w_grp_i / w_HF N_grp_i <= equivHF
-    size_t g, v, num_v = num_active_groups();
-    lin_ineq_lb[0] = -DBL_MAX; // no lb
-    lin_ineq_ub[0] = activeBudget;
-    Real cost_H = sequenceCost[numApprox];
-    for (v=0; v<num_v; ++v) {
-      g = active_to_all_group(v);
-      lin_ineq_coeffs(0, v) = modelGroupCost[g] / cost_H;
+    case N_GROUP_LINEAR_CONSTRAINT: {  // linear inequality constraint on
+                                       // budget:
+      // \Sum_grp_i w_grp_i        N_grp_i <= equiv_HF * w_HF
+      // \Sum_grp_i w_grp_i / w_HF N_grp_i <= equivHF
+      size_t g, v, num_v = num_active_groups();
+      lin_ineq_lb[0] = -DBL_MAX;  // no lb
+      lin_ineq_ub[0] = activeBudget;
+      Real cost_H = sequenceCost[numApprox];
+      for (v = 0; v < num_v; ++v) {
+        g = active_to_all_group(v);
+        lin_ineq_coeffs(0, v) = modelGroupCost[g] / cost_H;
+      }
+      break;
     }
-    break;
-  }
   }
 }
 
-
-void NonDMultilevBLUESampling::
-specify_nonlinear_constraints(RealVector& nln_ineq_lb, RealVector& nln_ineq_ub,
-			      RealVector& nln_eq_tgt)
-{
+void NonDMultilevBLUESampling::specify_nonlinear_constraints(
+    RealVector& nln_ineq_lb, RealVector& nln_ineq_ub, RealVector& nln_eq_tgt) {
   switch (optSubProblemForm) {
-  case N_GROUP_LINEAR_OBJECTIVE: // nonlinear accuracy constraint: ub on estvar
-    nln_ineq_lb = -DBL_MAX;   // no lower bnd
-    nln_ineq_ub = (convergenceTolType == ABSOLUTE_CONVERGENCE_TOLERANCE) ?
-      std::log(convergenceTol) : std::log(convergenceTol * estVarMetric0);
-    break;
+    case N_GROUP_LINEAR_OBJECTIVE:  // nonlinear accuracy constraint: ub on
+                                    // estvar
+      nln_ineq_lb = -DBL_MAX;       // no lower bnd
+      nln_ineq_ub = (convergenceTolType == ABSOLUTE_CONVERGENCE_TOLERANCE)
+                        ? std::log(convergenceTol)
+                        : std::log(convergenceTol * estVarMetric0);
+      break;
   }
 }
 
-
-void NonDMultilevBLUESampling::
-derived_finite_solution_bounds(const RealVector& x0, RealVector& x_lb,
-			       RealVector& x_ub, Real budget)
-{
+void NonDMultilevBLUESampling::derived_finite_solution_bounds(
+    const RealVector& x0, RealVector& x_lb, RealVector& x_ub, Real budget) {
   // Extreme N_g is all refinement budget allocated to one group:
   //   delta_N_g cost_g = budget_cost - equivHFEvals
-  size_t g, v, num_v = x0.length();  Real cost_H = sequenceCost[numApprox];
+  size_t g, v, num_v = x0.length();
+  Real cost_H = sequenceCost[numApprox];
   if (equivHFEvals > 0.) {
     Real remaining_cost = (budget - equivHFEvals) * cost_H;
-    for (v=0; v<num_v; ++v) {
+    for (v = 0; v < num_v; ++v) {
       g = active_to_all_group(v);
       x_ub[v] = x0[v] + remaining_cost / modelGroupCost[g];
     }
-  }
-  else { // in this case, avoid offline_N_lwr,RATIO_NUDGE within x0
+  } else {  // in this case, avoid offline_N_lwr,RATIO_NUDGE within x0
     Real budget_cost = budget * cost_H;
-    for (v=0; v<num_v; ++v) {
+    for (v = 0; v < num_v; ++v) {
       g = active_to_all_group(v);
       x_ub[v] = budget_cost / modelGroupCost[g];
     }
   }
 }
 
-
-void NonDMultilevBLUESampling::
-augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
-				RealVector& lin_ineq_lb,
-				RealVector& lin_ineq_ub)
-{
+void NonDMultilevBLUESampling::augment_linear_ineq_constraints(
+    RealMatrix& lin_ineq_coeffs, RealVector& lin_ineq_lb,
+    RealVector& lin_ineq_ub) {
   // Note: could be collapsed within numerical_solution_bounds_constraints()
   // above to reduce function declarations, but we stick with the convention
   // that augment_linear_ineq_constraints() augments the core problem definition
@@ -793,25 +800,24 @@ augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
 
   if (pilotMgmtMode == OFFLINE_PILOT ||
       pilotMgmtMode == OFFLINE_PILOT_PROJECTION) {
-    size_t v, g, num_v = lin_ineq_coeffs.numCols(), lin_ineq_offset
-      = (optSubProblemForm == N_GROUP_LINEAR_CONSTRAINT) ? 1 : 0;
+    size_t v, g, num_v = lin_ineq_coeffs.numCols(),
+                 lin_ineq_offset =
+                     (optSubProblemForm == N_GROUP_LINEAR_CONSTRAINT) ? 1 : 0;
     // Ensure that we have at least one sample for one of the groups containing
     // the HF reference model.  This is already satisfied by pilot sampling for
     // current group definitions used by online/projection modes.
     lin_ineq_lb[lin_ineq_offset] = 1.;
     lin_ineq_ub[lin_ineq_offset] = DBL_MAX;
-    for (v=0; v<num_v; ++v) {
+    for (v = 0; v < num_v; ++v) {
       g = active_to_all_group(v);
-      if (contains(modelGroups[g], numApprox)) // HF model is part of group
-	lin_ineq_coeffs(lin_ineq_offset, v) = 1.;
+      if (contains(modelGroups[g], numApprox))  // HF model is part of group
+        lin_ineq_coeffs(lin_ineq_offset, v) = 1.;
     }
   }
 }
 
-
-void NonDMultilevBLUESampling::
-enforce_bounds_linear_constraints(RealVector& soln_vars)
-{
+void NonDMultilevBLUESampling::enforce_bounds_linear_constraints(
+    RealVector& soln_vars) {
   // This function applies ML BLUE requirements to an (analytic) initial guess
   // from another estimator (MFMC, CVMC).  These requirements are focused on
   // having the matrix solution be well-posed, rather than enforcing constraints
@@ -820,25 +826,23 @@ enforce_bounds_linear_constraints(RealVector& soln_vars)
   size_t num_v = num_active_groups();
   RealVector x_lb(num_v), x_ub(num_v);
   specify_parameter_bounds(x_lb, x_ub);
-  enforce_nudge(x_lb); // nudge away from 0 if needed
+  enforce_nudge(x_lb);  // nudge away from 0 if needed
   enforce_bounds(soln_vars, x_lb, x_ub);
   enforce_augmented_linear_ineq_constraints(soln_vars);
 }
 
-
-void NonDMultilevBLUESampling::
-enforce_augmented_linear_ineq_constraints(RealVector& soln_vars)
-{
+void NonDMultilevBLUESampling::enforce_augmented_linear_ineq_constraints(
+    RealVector& soln_vars) {
   // Ensure that we have at least one sample for one of the groups containing
   // the HF reference model.  This is already satisfied by pilot sampling for
   // current group definitions used by online modes.
-  if ( pilotMgmtMode == ONLINE_PILOT ||
-       pilotMgmtMode == ONLINE_PILOT_PROJECTION ) // no augmented linear ineq
+  if (pilotMgmtMode == ONLINE_PILOT ||
+      pilotMgmtMode == ONLINE_PILOT_PROJECTION)  // no augmented linear ineq
     return;
 
   int v, num_v = soln_vars.length(), last_v = num_v - 1,
-    offset = (optSubProblemForm == N_GROUP_LINEAR_CONSTRAINT) ? 1 : 0,
-    num_lin_ineq = 1 + offset;
+         offset = (optSubProblemForm == N_GROUP_LINEAR_CONSTRAINT) ? 1 : 0,
+         num_lin_ineq = 1 + offset;
   RealMatrix lin_ineq_coeffs(num_lin_ineq, num_v);
   RealVector lin_ineq_lb(num_lin_ineq), lin_ineq_ub(num_lin_ineq);
   augment_linear_ineq_constraints(lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub);
@@ -847,36 +851,40 @@ enforce_augmented_linear_ineq_constraints(RealVector& soln_vars)
   // Assess presence of at least 1 sample in a HF group (any partial
   // contributions are discarded in a way that linear ineq cannot support)
   bool hf_sampled = false;
-  for (v=last_v; v>=0; --v)
-    if (lin_ineq_coeffs(offset, v) == 1. && // active group contains HF
-	soln_vars[v] >= lb)                 // active group is sampled
-      { hf_sampled = true; break; }
-
-  if (!hf_sampled)
-    switch (groupThrottleType) {
-    case RCOND_TOLERANCE_THROTTLE: case RCOND_BEST_COUNT_THROTTLE: {
-      // > prune_model_groups() has already added a HF group if necessary
-      // > Note that the best conditioned will usually be the HF-only group
-      //   with group covariance rcond = 1
-      v = all_to_active_group(best_conditioned_hf_group());
-      soln_vars[v] += lb;
+  for (v = last_v; v >= 0; --v)
+    if (lin_ineq_coeffs(offset, v) == 1. &&  // active group contains HF
+        soln_vars[v] >= lb)                  // active group is sampled
+    {
+      hf_sampled = true;
       break;
     }
-    default:
-      // no rcond ranking: work backwards from last v to first
-      // (subsumes all_group cases)
-      for (v=last_v; v>=0; --v)
-	if (lin_ineq_coeffs(offset, v) == 1.) // active group contains HF
-	  { soln_vars[v] += lb; break; }      // preserve any previous nudge
-      break;
+
+  if (!hf_sampled) switch (groupThrottleType) {
+      case RCOND_TOLERANCE_THROTTLE:
+      case RCOND_BEST_COUNT_THROTTLE: {
+        // > prune_model_groups() has already added a HF group if necessary
+        // > Note that the best conditioned will usually be the HF-only group
+        //   with group covariance rcond = 1
+        v = all_to_active_group(best_conditioned_hf_group());
+        soln_vars[v] += lb;
+        break;
+      }
+      default:
+        // no rcond ranking: work backwards from last v to first
+        // (subsumes all_group cases)
+        for (v = last_v; v >= 0; --v)
+          if (lin_ineq_coeffs(offset, v) == 1.)  // active group contains HF
+          {
+            soln_vars[v] += lb;
+            break;
+          }  // preserve any previous nudge
+        break;
     }
 }
 
-
-void NonDMultilevBLUESampling::
-compute_allocations(MFSolutionData& soln, const Sizet2DArray& N_G_actual,
-		    SizetArray& N_G_alloc, SizetArray& delta_N_G)
-{
+void NonDMultilevBLUESampling::compute_allocations(
+    MFSolutionData& soln, const Sizet2DArray& N_G_actual, SizetArray& N_G_alloc,
+    SizetArray& delta_N_G) {
   // Solve the optimization sub-problem using an initial guess from either
   // related analytic solutions (iter == 0) or warm started from the previous
   // solutions (iter >= 1)
@@ -884,203 +892,225 @@ compute_allocations(MFSolutionData& soln, const Sizet2DArray& N_G_actual,
   bool budget_constrained = (maxFunctionEvals != SZ_MAX), no_solve = false;
   // no_solve for any iteration:
   if (budget_constrained)
-    no_solve = (equivHFEvals >= (Real)maxFunctionEvals); // budget exhausted
+    no_solve = (equivHFEvals >= (Real)maxFunctionEvals);  // budget exhausted
 
   if (mlmfIter == 0) {
-    if (retainedModelGroups.empty()) soln.solution_variables(pilotSamples);
+    if (retainedModelGroups.empty())
+      soln.solution_variables(pilotSamples);
     else {
-      RealVector x0; deflate(pilotSamples, retainedModelGroups, x0);
+      RealVector x0;
+      deflate(pilotSamples, retainedModelGroups, x0);
       soln.solution_variables(x0);
     }
 
     if (pilotMgmtMode == ONLINE_PILOT ||
-	pilotMgmtMode == ONLINE_PILOT_PROJECTION) { // cache estVarIter0
+        pilotMgmtMode == ONLINE_PILOT_PROJECTION) {  // cache estVarIter0
       estimator_variances(soln.solution_variables(), estVarIter0);
-      MFSolutionData::update_estimator_variance_metric(estVarMetricType,
-	estVarMetricNormOrder, estVarIter0, estVarMetric0);
+      MFSolutionData::update_estimator_variance_metric(
+          estVarMetricType, estVarMetricNormOrder, estVarIter0, estVarMetric0);
       // no_solve augmentation for online iter 0:
-      if (!budget_constrained) // accuracy controlled by convergenceTol
-	no_solve = (convergenceTolType == RELATIVE_CONVERGENCE_TOLERANCE) ?
-	  (convergenceTol >= 1.) : (estVarMetric0  <= convergenceTol);
+      if (!budget_constrained)  // accuracy controlled by convergenceTol
+        no_solve = (convergenceTolType == RELATIVE_CONVERGENCE_TOLERANCE)
+                       ? (convergenceTol >= 1.)
+                       : (estVarMetric0 <= convergenceTol);
     }
     // Offline accuracy-constrained is allowed with absolute tol, but is
     // not available in advance of numerical solve (estVarMetric appears
     // in nln_ineq_con, but pilot estVarMetric0 is not tracked)
 
-    if (no_solve) // bypass numerical solution
-      { no_solve_variances(soln); delta_N_G.assign(numGroups, 0); return; }
+    if (no_solve)  // bypass numerical solution
+    {
+      no_solve_variances(soln);
+      delta_N_G.assign(numGroups, 0);
+      return;
+    }
 
     // Run a competition among related analytic approaches (MFMC or pairwise
     // CVMC) for best initial guess, where each initial gues may additionally
     // employ multiple varianceMinimizers in ensemble_numerical_solution()
-    switch (optSubProblemSolver) { // no initial guess
-    // global and sequenced global+local methods:
-    case SUBMETHOD_DIRECT_NPSOL_OPTPP:  case SUBMETHOD_DIRECT_NPSOL:
-    case SUBMETHOD_DIRECT_OPTPP:        case SUBMETHOD_DIRECT:
-    case SUBMETHOD_EGO:  case SUBMETHOD_SBGO:  case SUBMETHOD_EA:
-      ensemble_numerical_solution(soln);
-      break;
-    default: { // competed initial guesses with (competed) local methods
-      // use pyramid sample definitions for hierarchical groups as init guess,
-      // even though they are not independent sample sets in MFMC
-      size_t g = numGroups - 1;// don't mix sample sets: use group w/ all models
-      RealMatrix rho2_LH;  covariance_to_correlation_sq(covGG[g], rho2_LH);
-      MFSolutionData mf_soln, cv_soln;
-      analytic_initialization_from_mfmc(rho2_LH, mf_soln);
-      analytic_initialization_from_ensemble_cvmc(rho2_LH, cv_soln);
-      competed_initial_guesses(mf_soln, cv_soln, soln);
-      break;
+    switch (optSubProblemSolver) {  // no initial guess
+      // global and sequenced global+local methods:
+      case SUBMETHOD_DIRECT_NPSOL_OPTPP:
+      case SUBMETHOD_DIRECT_NPSOL:
+      case SUBMETHOD_DIRECT_OPTPP:
+      case SUBMETHOD_DIRECT:
+      case SUBMETHOD_EGO:
+      case SUBMETHOD_SBGO:
+      case SUBMETHOD_EA:
+        ensemble_numerical_solution(soln);
+        break;
+      default: {  // competed initial guesses with (competed) local methods
+        // use pyramid sample definitions for hierarchical groups as init guess,
+        // even though they are not independent sample sets in MFMC
+        size_t g =
+            numGroups - 1;  // don't mix sample sets: use group w/ all models
+        RealMatrix rho2_LH;
+        covariance_to_correlation_sq(covGG[g], rho2_LH);
+        MFSolutionData mf_soln, cv_soln;
+        analytic_initialization_from_mfmc(rho2_LH, mf_soln);
+        analytic_initialization_from_ensemble_cvmc(rho2_LH, cv_soln);
+        competed_initial_guesses(mf_soln, cv_soln, soln);
+        break;
+      }
     }
+  } else {         // subsequent iterations
+    if (no_solve)  // leave soln at previous values
+    {
+      delta_N_G.assign(numGroups, 0);
+      return;
     }
-  }
-  else { // subsequent iterations
-    if (no_solve) // leave soln at previous values
-      { delta_N_G.assign(numGroups, 0); return; }
 
     // warm start from previous solution (for active or one-and-only DAG)
     ensemble_numerical_solution(soln);
   }
 
   process_group_allocations(soln, N_G_actual, N_G_alloc, delta_N_G);
-  if (outputLevel >= NORMAL_OUTPUT)
-    print_group_allocations(Cout, soln);
+  if (outputLevel >= NORMAL_OUTPUT) print_group_allocations(Cout, soln);
 }
 
-
-void NonDMultilevBLUESampling::
-analytic_initialization_from_mfmc(const RealMatrix& rho2_LH,
-				  MFSolutionData& soln)
-{
-  RealVector avg_eval_ratios; // defined over numApprox, not numGroups
-  SizetArray approx_sequence;  UShortArray approx_set(numApprox);
-  for (size_t i=0; i<numApprox; ++i) approx_set[i] = i;
+void NonDMultilevBLUESampling::analytic_initialization_from_mfmc(
+    const RealMatrix& rho2_LH, MFSolutionData& soln) {
+  RealVector avg_eval_ratios;  // defined over numApprox, not numGroups
+  SizetArray approx_sequence;
+  UShortArray approx_set(numApprox);
+  for (size_t i = 0; i < numApprox; ++i) approx_set[i] = i;
   // Allow r<1 since only an initial guess (valid MFMC estvar not needed)
   bool lower_bounded_r = false, monotonic_r = false;
-  if (ordered_approx_sequence(rho2_LH)) // for all QoI across all Approx
+  if (ordered_approx_sequence(rho2_LH))  // for all QoI across all Approx
     mfmc_analytic_solution(approx_set, rho2_LH, sequenceCost, avg_eval_ratios,
-			   lower_bounded_r, monotonic_r);
-  else // compute reordered MFMC for averaged rho; monotonic r not required
-       // > any rho2_LH re-ordering from MFMC init guess can be ignored (later
-       //   gets replaced with r_i ordering for approx_increments() sampling)
+                           lower_bounded_r, monotonic_r);
+  else  // compute reordered MFMC for averaged rho; monotonic r not required
+        // > any rho2_LH re-ordering from MFMC init guess can be ignored (later
+        //   gets replaced with r_i ordering for approx_increments() sampling)
     mfmc_reordered_analytic_solution(approx_set, rho2_LH, sequenceCost,
-				     approx_sequence, avg_eval_ratios,
-				     lower_bounded_r, monotonic_r);
+                                     approx_sequence, avg_eval_ratios,
+                                     lower_bounded_r, monotonic_r);
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "Initial guess from analytic MFMC (unscaled eval ratios):\n"
-	 << avg_eval_ratios << std::endl;
+         << avg_eval_ratios << std::endl;
 
   // Convert to BLUE solution using MFMC "groups": let profile emerge from
   // pilot on MFMC groups, but deduct pilot cost for non-MFMC groups
-  SizetArray ratios_to_groups(numApprox+1); UShortArray group; size_t g_index;
+  SizetArray ratios_to_groups(numApprox + 1);
+  UShortArray group;
+  size_t g_index;
   bool no_retain_throttle = retainedModelGroups.empty();
-  for (size_t r=0; r<=numApprox; ++r) {
-    mfmc_model_group(r, group); // the r-th MFMC group
+  for (size_t r = 0; r <= numApprox; ++r) {
+    mfmc_model_group(r, group);  // the r-th MFMC group
     g_index = find_index(modelGroups, group);
-    ratios_to_groups[r] = (no_retain_throttle || retainedModelGroups[g_index])
-                        ? g_index : _NPOS;
+    ratios_to_groups[r] =
+        (no_retain_throttle || retainedModelGroups[g_index]) ? g_index : _NPOS;
   }
-  analytic_ratios_to_solution_variables(avg_eval_ratios,ratios_to_groups,soln);
+  analytic_ratios_to_solution_variables(avg_eval_ratios, ratios_to_groups,
+                                        soln);
 }
 
-
-void NonDMultilevBLUESampling::
-analytic_initialization_from_ensemble_cvmc(const RealMatrix& rho2_LH,
-					   MFSolutionData& soln)
-{
+void NonDMultilevBLUESampling::analytic_initialization_from_ensemble_cvmc(
+    const RealMatrix& rho2_LH, MFSolutionData& soln) {
   // An ensemble of independent pairwise CVMCs, rescaled to an aggregate budget.
   // This is ACV-like in that it is not recursive, but it neglects covariance C
   // among approximations.  It is also insensitive to model sequencing.
 
   // Allow r<1 since only an initial guess for unbounded groups
-  RealVector avg_eval_ratios;  bool lower_bounded_r = false;
+  RealVector avg_eval_ratios;
+  bool lower_bounded_r = false;
   cvmc_ensemble_solutions(rho2_LH, sequenceCost, avg_eval_ratios,
-			  lower_bounded_r);
+                          lower_bounded_r);
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "Initial guess from ensemble CVMC (unscaled eval ratios):\n"
-	 << avg_eval_ratios << std::endl;
+         << avg_eval_ratios << std::endl;
 
   // Convert to BLUE solution using MFMC "groups": let profile emerge from
   // pilot on MFMC groups, but deduct pilot cost for non-MFMC groups
-  SizetArray ratios_to_groups(numApprox+1);  UShortArray group;  size_t g_index;
+  SizetArray ratios_to_groups(numApprox + 1);
+  UShortArray group;
+  size_t g_index;
   bool no_retain_throttle = retainedModelGroups.empty();
-  for (size_t r=0; r<=numApprox; ++r) {
-    cvmc_model_group(r, group); // the r-th CVMC group
+  for (size_t r = 0; r <= numApprox; ++r) {
+    cvmc_model_group(r, group);  // the r-th CVMC group
     g_index = find_index(modelGroups, group);
-    ratios_to_groups[r] = (no_retain_throttle || retainedModelGroups[g_index])
-                        ? g_index : _NPOS;
+    ratios_to_groups[r] =
+        (no_retain_throttle || retainedModelGroups[g_index]) ? g_index : _NPOS;
   }
-  analytic_ratios_to_solution_variables(avg_eval_ratios,ratios_to_groups,soln);
+  analytic_ratios_to_solution_variables(avg_eval_ratios, ratios_to_groups,
+                                        soln);
 }
 
-
-void NonDMultilevBLUESampling::
-analytic_ratios_to_solution_variables(RealVector& avg_eval_ratios,
-				      const SizetArray& ratios_to_groups,
-				      MFSolutionData& soln)
-{
+void NonDMultilevBLUESampling::analytic_ratios_to_solution_variables(
+    RealVector& avg_eval_ratios, const SizetArray& ratios_to_groups,
+    MFSolutionData& soln) {
   // For analytic MFMC/CVMC initial guesses, the best ref for avg_eval_ratios
   // is all_group, which is enforced to be present for all throttle cases.
-  size_t all_group = numGroups - 1; // for all throttles
+  size_t all_group = numGroups - 1;  // for all throttles
 
   Real hf_target;
-  if (maxFunctionEvals == SZ_MAX) { // accuracy-constrained
+  if (maxFunctionEvals == SZ_MAX) {  // accuracy-constrained
     // As for {ACV,GenACV}, employ ML BLUE's native estvar for accuracy scaling
-    RealVector soln_vars, mlblue_ev, mlblue_ev_ratios;//ratios remain empty
-    SizetArray N_shared;  Real metric;  size_t metric_index;
+    RealVector soln_vars, mlblue_ev, mlblue_ev_ratios;  // ratios remain empty
+    SizetArray N_shared;
+    Real metric;
+    size_t metric_index;
     // Rather than estimating hf_target for MFMC/CVMC (based on estvar and
     // estVarIter0 from MFMC/CVMC), we instead employ pilot_samp to provide a
     // baseline estvar for ML BLUE, and then scale toward an hf_target for
     // ML BLUE based on this estvar relative to estVarIter0.
     size_t pilot_samp = pilotSamples[all_group];
     ratios_target_to_solution_variables(avg_eval_ratios, (Real)pilot_samp,
-					ratios_to_groups, soln_vars);
-    enforce_bounds_linear_constraints(soln_vars); // for valid estvar
-    estimator_variances(soln_vars, mlblue_ev); // compute ML BLUE estvar
-    MFSolutionData::update_estimator_variance_metric(estVarMetricType,
-      estVarMetricNormOrder, mlblue_ev_ratios, mlblue_ev, metric, metric_index);
+                                        ratios_to_groups, soln_vars);
+    enforce_bounds_linear_constraints(soln_vars);  // for valid estvar
+    estimator_variances(soln_vars, mlblue_ev);     // compute ML BLUE estvar
+    MFSolutionData::update_estimator_variance_metric(
+        estVarMetricType, estVarMetricNormOrder, mlblue_ev_ratios, mlblue_ev,
+        metric, metric_index);
     // the assumed scaling with N_sh is not generally valid for ML BLUE,
     // but is reasonable for emulation of MFMC
-    N_shared.assign(numFunctions, pilot_samp); // online
-    hf_target = (convergenceTolType == ABSOLUTE_CONVERGENCE_TOLERANCE) ?
-      update_hf_target(mlblue_ev, metric_index, N_shared) :
-      update_hf_target(mlblue_ev, metric_index, N_shared, estVarIter0);
-  }
-  else { // budget-constrained -> online or offline
+    N_shared.assign(numFunctions, pilot_samp);  // online
+    hf_target =
+        (convergenceTolType == ABSOLUTE_CONVERGENCE_TOLERANCE)
+            ? update_hf_target(mlblue_ev, metric_index, N_shared)
+            : update_hf_target(mlblue_ev, metric_index, N_shared, estVarIter0);
+  } else {  // budget-constrained -> online or offline
     bool offline = (pilotMgmtMode == OFFLINE_PILOT ||
-		    pilotMgmtMode == OFFLINE_PILOT_PROJECTION);
+                    pilotMgmtMode == OFFLINE_PILOT_PROJECTION);
     size_t pilot_all = pilotSamples[all_group];
     Real budget = (Real)maxFunctionEvals, offline_N_lwr = 1.,
-      N_shared = (offline) ? offline_N_lwr : (Real)pilot_all;
+         N_shared = (offline) ? offline_N_lwr : (Real)pilot_all;
     if (!offline) {
-      BitArray active_g(numGroups); // init to false
-      size_t g, r, num_r = ratios_to_groups.size(); // numApprox+1
-      for (r=0; r<num_r; ++r) {
-	g = ratios_to_groups[r];
-	if (g != _NPOS) active_g.set(g); // flip bit to on
+      BitArray active_g(numGroups);                  // init to false
+      size_t g, r, num_r = ratios_to_groups.size();  // numApprox+1
+      for (r = 0; r < num_r; ++r) {
+        g = ratios_to_groups[r];
+        if (g != _NPOS) active_g.set(g);  // flip bit to on
       }
       // For analytic initial guesses, mirror the budget deductions used in
       // active_budget() for ensemble_numerical_solution()
       switch (pilotGroupSampling) {
-      case SHARED_PILOT: {
-	BitArray active_m;  retained_groups_to_models(active_g, active_m);
-	budget -= inactive_model_costs(active_m, pilot_all);     break;
-      }
-      case INDEPENDENT_PILOT: // budget deductions are group-based
-	budget -= inactive_group_costs(active_g, pilotSamples);  break;
+        case SHARED_PILOT: {
+          BitArray active_m;
+          retained_groups_to_models(active_g, active_m);
+          budget -= inactive_model_costs(active_m, pilot_all);
+          break;
+        }
+        case INDEPENDENT_PILOT:  // budget deductions are group-based
+          budget -= inactive_group_costs(active_g, pilotSamples);
+          break;
       }
     }
     if (budget > 0.)
       // scale_to_target() employs allocate_budget() and rescales for lower bnds
       scale_to_target(N_shared, sequenceCost, avg_eval_ratios, hf_target,
-		      budget, offline_N_lwr);
-    else // budget exhausted
-      { hf_target = N_shared; avg_eval_ratios = 1.; }
+                      budget, offline_N_lwr);
+    else  // budget exhausted
+    {
+      hf_target = N_shared;
+      avg_eval_ratios = 1.;
+    }
   }
 
   RealVector mlblue_vars;
   ratios_target_to_solution_variables(avg_eval_ratios, hf_target,
-				      ratios_to_groups, mlblue_vars);
-  enforce_bounds_linear_constraints(mlblue_vars); // enforce again
+                                      ratios_to_groups, mlblue_vars);
+  enforce_bounds_linear_constraints(mlblue_vars);  // enforce again
   soln.solution_variables(mlblue_vars);
 
   if (outputLevel >= DEBUG_OUTPUT) {
@@ -1089,13 +1119,9 @@ analytic_ratios_to_solution_variables(RealVector& avg_eval_ratios,
   }
 }
 
-
-void NonDMultilevBLUESampling::
-ratios_target_to_solution_variables(const RealVector& avg_eval_ratios,
-				    Real hf_target,
-				    const SizetArray& ratios_to_groups,
-				    RealVector& soln_vars)
-{
+void NonDMultilevBLUESampling::ratios_target_to_solution_variables(
+    const RealVector& avg_eval_ratios, Real hf_target,
+    const SizetArray& ratios_to_groups, RealVector& soln_vars) {
   // Convert avg_{eval_ratios,hf_target} for MFMC/CVMC to soln_vars for ML BLUE
   // > We assume for now that the MFMC/CVMC groups for which eval ratios are
   //   defined are ordered consistently as a subset of ML BLUE's modelGroups,
@@ -1106,44 +1132,42 @@ ratios_target_to_solution_variables(const RealVector& avg_eval_ratios,
 
   // Initialize soln_vars
   size_t v, num_v = num_active_groups(), g;
-  if (soln_vars.length() != num_v) soln_vars.size(num_v); // init to 0
-  else                             soln_vars = 0.;
+  if (soln_vars.length() != num_v)
+    soln_vars.size(num_v);  // init to 0
+  else
+    soln_vars = 0.;
   if (pilotMgmtMode == ONLINE_PILOT ||
       pilotMgmtMode == ONLINE_PILOT_PROJECTION) {
     if (pilotGroupSampling == SHARED_PILOT) {
       // last group = all models is always present in modelGroups,
       // but may be omitted due to active group throttling
       size_t all_group = numGroups - 1;
-      v = all_to_active_group(all_group); // group g -> active v
-      if (v != _NPOS)
-	soln_vars[v] = (Real)pilotSamples[all_group];
-    }
-    else // INDEPENDENT_PILOT
-      for (v=0; v<num_v; ++v) {
-	g = active_to_all_group(v);       // active v -> group g
-	if (g != _NPOS)
-	  soln_vars[v] = (Real)pilotSamples[g];
+      v = all_to_active_group(all_group);  // group g -> active v
+      if (v != _NPOS) soln_vars[v] = (Real)pilotSamples[all_group];
+    } else  // INDEPENDENT_PILOT
+      for (v = 0; v < num_v; ++v) {
+        g = active_to_all_group(v);  // active v -> group g
+        if (g != _NPOS) soln_vars[v] = (Real)pilotSamples[g];
       }
   }
 
   // Define soln_vars for active groups using avg_{eval_ratios,hf_target}
-  size_t r, num_r = avg_eval_ratios.length();  Real N_samp;
-  for (r=0; r<=num_r; ++r) {
-    g = ratios_to_groups[r];      // eval ratio r -> group g
+  size_t r, num_r = avg_eval_ratios.length();
+  Real N_samp;
+  for (r = 0; r <= num_r; ++r) {
+    g = ratios_to_groups[r];  // eval ratio r -> group g
     if (g != _NPOS) {
-      v = all_to_active_group(g); // group g -> active v
+      v = all_to_active_group(g);  // group g -> active v
       N_samp = hf_target;
-      if (r < num_r)             N_samp *= avg_eval_ratios[r];
-      if (N_samp > soln_vars[v]) soln_vars[v] = N_samp; // emerge from pilot
+      if (r < num_r) N_samp *= avg_eval_ratios[r];
+      if (N_samp > soln_vars[v]) soln_vars[v] = N_samp;  // emerge from pilot
     }
   }
 }
 
-
-void NonDMultilevBLUESampling::
-process_group_allocations(MFSolutionData& soln, const Sizet2DArray& N_G_actual,
-			  const SizetArray& N_G_alloc, SizetArray& delta_N_G)
-{
+void NonDMultilevBLUESampling::process_group_allocations(
+    MFSolutionData& soln, const Sizet2DArray& N_G_actual,
+    const SizetArray& N_G_alloc, SizetArray& delta_N_G) {
   // compute sample increment for HF from current to target:
 
   // first relax on real values and then round to delta_N_G
@@ -1154,7 +1178,7 @@ process_group_allocations(MFSolutionData& soln, const Sizet2DArray& N_G_actual,
   if (backfillFailures)
     one_sided_delta(N_G_actual, inflated_vars, delta_N_G, relaxFactor);
   else
-    one_sided_delta(N_G_alloc,  inflated_vars, delta_N_G, relaxFactor);
+    one_sided_delta(N_G_alloc, inflated_vars, delta_N_G, relaxFactor);
 
   // Employ projected MC estvar as reference to the projected ML BLUE estvar
   // from N* (where N* may include a num_samples increment not yet performed).
@@ -1164,67 +1188,67 @@ process_group_allocations(MFSolutionData& soln, const Sizet2DArray& N_G_actual,
   // 2. For equivalent HF, emply var_H / (equivHFEvals + deltaEquivHF)
   size_t ref_group, ref_model_index;
   switch (pilotMgmtMode) {
-  case OFFLINE_PILOT:  case OFFLINE_PILOT_PROJECTION:
-    // no online samp, so use delta for max projection (covGG assumed accurate)
-    find_hf_sample_reference(delta_N_G,  ref_group, ref_model_index);  break;
-  default: // define online ref from group with max HF samples (best varH)
-    find_hf_sample_reference(N_G_actual, ref_group, ref_model_index);  break;
+    case OFFLINE_PILOT:
+    case OFFLINE_PILOT_PROJECTION:
+      // no online samp, so use delta for max projection (covGG assumed
+      // accurate)
+      find_hf_sample_reference(delta_N_G, ref_group, ref_model_index);
+      break;
+    default:  // define online ref from group with max HF samples (best varH)
+      find_hf_sample_reference(N_G_actual, ref_group, ref_model_index);
+      break;
   }
 
   // Recompute full estvar vectors for final solution since numerical solves
   // target average over QoI (don't update vectors on every eval since last
   // eval may differ from final optimal soln)
-  RealVector estvar;//, cd_vars; solution_to_design_vars(soln, cd_vars);
-  estimator_variances(/*cd_vars*/soln.solution_variables(), estvar);
+  RealVector estvar;  //, cd_vars; solution_to_design_vars(soln, cd_vars);
+  estimator_variances(/*cd_vars*/ soln.solution_variables(), estvar);
   soln.estimator_variances(estvar);
 
-  if (ref_group == _NPOS) { // no online HF samples
+  if (ref_group == _NPOS) {  // no online HF samples
     Real q_nan = std::numeric_limits<Real>::quiet_NaN();
-    projEstVarHF = q_nan; // all QoI
-    projNActualHF.size(numFunctions); // set to 0
-    soln.initialize_estimator_variance_ratios(numFunctions, q_nan); 
-  }
-  else {
+    projEstVarHF = q_nan;              // all QoI
+    projNActualHF.size(numFunctions);  // set to 0
+    soln.initialize_estimator_variance_ratios(numFunctions, q_nan);
+  } else {
     // Note: estvar is nan for 1 HF sample since bessel corr divides by 0
     project_mc_estimator_variance(covGG[ref_group], ref_model_index,
-				  N_G_actual[ref_group], delta_N_G[ref_group],
-				  projEstVarHF, projNActualHF);
+                                  N_G_actual[ref_group], delta_N_G[ref_group],
+                                  projEstVarHF, projNActualHF);
     // Recompute full estvar vectors for final solution since minimizers
     // target average over QoI (don't store on every eval since last eval
     // may differ from final optimal soln)
     soln.initialize_estimator_variance_ratios(numFunctions);
-    for (size_t qoi=0; qoi<numFunctions; ++qoi)
-      soln.estimator_variance_ratio(estvar[qoi] / projEstVarHF[qoi], qoi); 
+    for (size_t qoi = 0; qoi < numFunctions; ++qoi)
+      soln.estimator_variance_ratio(estvar[qoi] / projEstVarHF[qoi], qoi);
   }
 
-  soln.update_estimator_variance_metric(estVarMetricType,estVarMetricNormOrder);
+  soln.update_estimator_variance_metric(estVarMetricType,
+                                        estVarMetricNormOrder);
 }
 
-
-void NonDMultilevBLUESampling::
-print_group_allocations(std::ostream& s, const MFSolutionData& soln)
-{
+void NonDMultilevBLUESampling::print_group_allocations(
+    std::ostream& s, const MFSolutionData& soln) {
   print_group_solution_variables(s, soln);
 
   if (maxFunctionEvals == SZ_MAX)
     s << "Estimator cost allocation = " << soln.equivalent_hf_allocation()
-      << "\nequivHFEvals = " << equivHFEvals << " deltaEquivHF = "
-      << deltaEquivHF << std::endl;
+      << "\nequivHFEvals = " << equivHFEvals
+      << " deltaEquivHF = " << deltaEquivHF << std::endl;
   else {
     s << "Estimator variance metric = " << soln.estimator_variance_metric()
       << std::endl;
   }
 }
 
-
-void NonDMultilevBLUESampling::
-print_group_solution_variables(std::ostream& s, const MFSolutionData& soln)
-{
+void NonDMultilevBLUESampling::print_group_solution_variables(
+    std::ostream& s, const MFSolutionData& soln) {
   const RealVector& soln_vars = soln.solution_variables();
   size_t g, num_g = modelGroups.size(), cntr = 0;
   bool no_retain_throttle = retainedModelGroups.empty();
   s << "Numerical solution for samples per model group:\n";
-  for (g=0; g<num_g; ++g) {
+  for (g = 0; g < num_g; ++g) {
     if (no_retain_throttle || retainedModelGroups[g]) {
       s << "  Group " << g << " samples = " << soln_vars[cntr++];
       print_group(s, g);
@@ -1232,77 +1256,73 @@ print_group_solution_variables(std::ostream& s, const MFSolutionData& soln)
   }
 }
 
-
-void NonDMultilevBLUESampling::
-finalize_counts(const Sizet2DArray& N_G_actual, const SizetArray& N_G_alloc)
-{
+void NonDMultilevBLUESampling::finalize_counts(const Sizet2DArray& N_G_actual,
+                                               const SizetArray& N_G_alloc) {
   // post final sample counts back to NLev{Actual,Alloc} (for final summaries)
 
   // For now, overlay group samples into model-resolution instance samples
   size_t g, m, num_models, q, mf, rl, m_index;
   const Pecos::ActiveKey& active_key = iteratedModel->active_model_key();
-  for (g=0; g<numGroups; ++g) {
+  for (g = 0; g < numGroups; ++g) {
     const UShortArray& group_g = modelGroups[g];
     num_models = group_g.size();
 
     const SizetArray& N_G_actual_g = N_G_actual[g];
-    size_t            N_G_alloc_g  = N_G_alloc[g];
-    for (m=0; m<num_models; ++m) {
+    size_t N_G_alloc_g = N_G_alloc[g];
+    for (m = 0; m < num_models; ++m) {
       m_index = group_g[m];
       mf = active_key.retrieve_model_form(m_index);
       rl = active_key.retrieve_resolution_level(m_index);
 
       NLevAlloc[mf][rl] += N_G_alloc_g;
       SizetArray& N_l_actual_fl = NLevActual[mf][rl];
-      if (N_l_actual_fl.empty()) N_l_actual_fl = N_G_actual_g;
-      else     increment_samples(N_l_actual_fl,  N_G_actual_g);
+      if (N_l_actual_fl.empty())
+        N_l_actual_fl = N_G_actual_g;
+      else
+        increment_samples(N_l_actual_fl, N_G_actual_g);
     }
   }
 }
 
-
-void NonDMultilevBLUESampling::
-blue_raw_moments(const IntRealMatrixArrayMap& sum_G_online,
-		 const IntRealSymMatrix2DArrayMap& sum_GG_online,
-		 const Sizet2DArray& N_G_online)
-{
+void NonDMultilevBLUESampling::blue_raw_moments(
+    const IntRealMatrixArrayMap& sum_G_online,
+    const IntRealSymMatrix2DArrayMap& sum_GG_online,
+    const Sizet2DArray& N_G_online) {
   // For ONLINE_PILOT where covar and sums use latest accumulations
 
-  RealMatrix H_raw_mom(4, numFunctions);  RealVectorArray mu_hat;
-  for (int mom=1; mom<=4; ++mom) {
+  RealMatrix H_raw_mom(4, numFunctions);
+  RealVectorArray mu_hat;
+  for (int mom = 1; mom <= 4; ++mom) {
     if (outputLevel >= NORMAL_OUTPUT)
       Cout << "Moment " << mom << " estimator:\n";
-    const RealMatrixArray&       sum_G_online_m  = sum_G_online.at(mom);
+    const RealMatrixArray& sum_G_online_m = sum_G_online.at(mom);
     const RealSymMatrix2DArray& sum_GG_online_m = sum_GG_online.at(mom);
 
-    if (mom == 1) // Use online covar + online sum to solve for mean
+    if (mom == 1)  // Use online covar + online sum to solve for mean
       compute_mu_hat(covGGinv, sum_G_online_m, N_G_online, mu_hat, mom);
-    else { // compute covariances for higher-order moment solves
+    else {  // compute covariances for higher-order moment solves
       RealSymMatrix2DArray cov_GG, cov_GG_inv;
-      compute_GG_covariance(sum_G_online_m, sum_GG_online_m, N_G_online,
-			    cov_GG, cov_GG_inv, false, mom);
-      //prune_model_groups(); // "Against" selected
+      compute_GG_covariance(sum_G_online_m, sum_GG_online_m, N_G_online, cov_GG,
+                            cov_GG_inv, false, mom);
+      // prune_model_groups(); // "Against" selected
       compute_mu_hat(cov_GG_inv, sum_G_online_m, N_G_online, mu_hat, mom);
     }
 
-    for (size_t qoi=0; qoi<numFunctions; ++qoi)
-      H_raw_mom(mom-1, qoi) = mu_hat[qoi][numApprox]; // last model
+    for (size_t qoi = 0; qoi < numFunctions; ++qoi)
+      H_raw_mom(mom - 1, qoi) = mu_hat[qoi][numApprox];  // last model
   }
 
   convert_moments(H_raw_mom, momentStats);
-  compute_mean_confidence_intervals(momentStats,
-    final_solution_data().estimator_variances(), meanCIs);
+  compute_mean_confidence_intervals(
+      momentStats, final_solution_data().estimator_variances(), meanCIs);
 }
 
-
-void NonDMultilevBLUESampling::
-blue_raw_moments(const IntRealMatrixArrayMap& sum_G_offline,
-		 const IntRealSymMatrix2DArrayMap& sum_GG_offline,
-		 const Sizet2DArray& N_G_offline,
-		 const IntRealMatrixArrayMap& sum_G_online,
-		 const IntRealSymMatrix2DArrayMap& sum_GG_online,
-		 const Sizet2DArray& N_G_online)
-{
+void NonDMultilevBLUESampling::blue_raw_moments(
+    const IntRealMatrixArrayMap& sum_G_offline,
+    const IntRealSymMatrix2DArrayMap& sum_GG_offline,
+    const Sizet2DArray& N_G_offline, const IntRealMatrixArrayMap& sum_G_online,
+    const IntRealSymMatrix2DArrayMap& sum_GG_online,
+    const Sizet2DArray& N_G_online) {
   // For OFFLINE_PILOT where covar is offline and sums are online
 
   // Ambiguity arises when ML BLUE reuses covGG for moment solves (also occurs
@@ -1314,12 +1334,13 @@ blue_raw_moments(const IntRealMatrixArrayMap& sum_G_offline,
   //   but mu-hat solves are inconsistent in online/offline data.
   // Prefer to avoid additional padding in linear constraints for online opt.
 
-  RealMatrix H_raw_mom(4, numFunctions);  RealVectorArray mu_hat;
+  RealMatrix H_raw_mom(4, numFunctions);
+  RealVectorArray mu_hat;
   size_t all_group = numGroups - 1;
-  for (int mom=1; mom<=4; ++mom) {
+  for (int mom = 1; mom <= 4; ++mom) {
     if (outputLevel >= NORMAL_OUTPUT)
       Cout << "Moment " << mom << " estimator:\n";
-    const RealMatrixArray&       sum_G_online_m  = sum_G_online.at(mom);
+    const RealMatrixArray& sum_G_online_m = sum_G_online.at(mom);
     const RealSymMatrix2DArray& sum_GG_online_m = sum_GG_online.at(mom);
 
     // This approach has consistency in that it uses the same var/covar data
@@ -1327,21 +1348,20 @@ blue_raw_moments(const IntRealMatrixArrayMap& sum_G_offline,
     // online sums for compute_mu_hat(). Note: could precompute offline covar
     // for all moments or store offline sums for these covariances, deferring
     // computation until needed here.  Using the latter approach for now.
-    if (mom == 1) // Use offline covar + online sum to solve for mean
+    if (mom == 1)  // Use offline covar + online sum to solve for mean
       compute_mu_hat(covGGinv, sum_G_online_m, N_G_online, mu_hat, mom);
     else {
-      const RealMatrixArray&       sum_G_offline_m  = sum_G_offline.at(mom);
+      const RealMatrixArray& sum_G_offline_m = sum_G_offline.at(mom);
       const RealSymMatrix2DArray& sum_GG_offline_m = sum_GG_offline.at(mom);
       // compute covariances for higher-order moments using offline sums
       RealSymMatrix2DArray cov_GG, cov_GG_inv;
       if (pilotGroupSampling == SHARED_PILOT) {
-	compute_GG_covariance( sum_G_offline_m[all_group],
-			      sum_GG_offline_m[all_group],
-			      N_G_offline[all_group], cov_GG, cov_GG_inv, true, mom);
-      }
-      else {
-	compute_GG_covariance(sum_G_offline_m, sum_GG_offline_m, N_G_offline,
-			      cov_GG, cov_GG_inv, true, mom);
+        compute_GG_covariance(
+            sum_G_offline_m[all_group], sum_GG_offline_m[all_group],
+            N_G_offline[all_group], cov_GG, cov_GG_inv, true, mom);
+      } else {
+        compute_GG_covariance(sum_G_offline_m, sum_GG_offline_m, N_G_offline,
+                              cov_GG, cov_GG_inv, true, mom);
       }
       // Update model group pruning or stick with set from final iteration?
       // (Psi solve still needed although optimization cycles are complete.)
@@ -1349,31 +1369,28 @@ blue_raw_moments(const IntRealMatrixArrayMap& sum_G_offline,
       //          offline: online dataset differs, perhaps significantly
       // Against: sample allocations were based on final iteration's pruning
       //          and we should utilize this final set for the final moments
-      //prune_model_groups(); // "Against" selected
+      // prune_model_groups(); // "Against" selected
 
       // solve for mu-hat using online sums
       compute_mu_hat(cov_GG_inv, sum_G_online_m, N_G_online, mu_hat, mom);
     }
 
-    for (size_t qoi=0; qoi<numFunctions; ++qoi)
-      H_raw_mom(mom-1, qoi) = mu_hat[qoi][numApprox]; // last model
+    for (size_t qoi = 0; qoi < numFunctions; ++qoi)
+      H_raw_mom(mom - 1, qoi) = mu_hat[qoi][numApprox];  // last model
   }
 
   convert_moments(H_raw_mom, momentStats);
-  compute_mean_confidence_intervals(momentStats,
-    final_solution_data().estimator_variances(), meanCIs);
+  compute_mean_confidence_intervals(
+      momentStats, final_solution_data().estimator_variances(), meanCIs);
 }
 
-
-void NonDMultilevBLUESampling::
-print_multigroup_summary(std::ostream& s, const String& summary_type,
-			 bool projections) const
-{
-  size_t wpp7 = write_precision + 7, g, num_groups = NGroupAlloc.size(),
-    m, num_models;
+void NonDMultilevBLUESampling::print_multigroup_summary(
+    std::ostream& s, const String& summary_type, bool projections) const {
+  size_t wpp7 = write_precision + 7, g, num_groups = NGroupAlloc.size(), m,
+         num_models;
 
   s << "<<<<< " << summary_type << "allocation of samples per model group:\n";
-  for (g=0; g<num_groups; ++g) {
+  for (g = 0; g < num_groups; ++g) {
     s << "                     " << std::setw(wpp7) << NGroupAlloc[g]
       << "  QoI_group" << g;
     print_group(s, g);
@@ -1381,47 +1398,51 @@ print_multigroup_summary(std::ostream& s, const String& summary_type,
 
   if (projections || differ(NLevAlloc, NLevActual)) {
     s << "<<<<< Online accumulated samples per model group:\n";
-    for (g=0; g<num_groups; ++g) {
+    for (g = 0; g < num_groups; ++g) {
       const SizetArray& N_G_g = NGroupActual[g];
       if (!N_G_g.empty()) {
-	s << "                     " << std::setw(wpp7) << N_G_g[0];
-	if (!homogeneous(N_G_g)) { // print all counts in this 1D array
-	  size_t q, num_q = N_G_g.size();
-	  for (size_t q=1; q<num_q; ++q)
-	    s << ' ' << N_G_g[q];
-	}
-	s << "  QoI_group" << g;
-	print_group(s, g);
+        s << "                     " << std::setw(wpp7) << N_G_g[0];
+        if (!homogeneous(N_G_g)) {  // print all counts in this 1D array
+          size_t q, num_q = N_G_g.size();
+          for (size_t q = 1; q < num_q; ++q) s << ' ' << N_G_g[q];
+        }
+        s << "  QoI_group" << g;
+        print_group(s, g);
       }
     }
   }
 }
 
-
-void NonDMultilevBLUESampling::print_variance_reduction(std::ostream& s) const
-{
-  const RealVector&  mlblue_est_var = blueSolnData.estimator_variances();
-  const RealVector&  mlblue_ratios  = blueSolnData.estimator_variance_ratios();
-  const StringArray& labels = ModelUtils::response_labels(*iteratedModel->truth_model());
+void NonDMultilevBLUESampling::print_variance_reduction(std::ostream& s) const {
+  const RealVector& mlblue_est_var = blueSolnData.estimator_variances();
+  const RealVector& mlblue_ratios = blueSolnData.estimator_variance_ratios();
+  const StringArray& labels =
+      ModelUtils::response_labels(*iteratedModel->truth_model());
   Real mlblue_est_var_q, mlblue_ratio_q, proj_equiv_estvar_q;
-  size_t qoi, wpp7 = write_precision+7,
-    proj_equiv_hf = (size_t)std::floor(equivHFEvals + deltaEquivHF + .5);
+  size_t qoi,
+      wpp7 = write_precision + 7,
+      proj_equiv_hf = (size_t)std::floor(equivHFEvals + deltaEquivHF + .5);
   String method = " ML BLUE",
-     pilot_type = (pilotGroupSampling == SHARED_PILOT) ? "share" : "indep",
-           type = (pilotMgmtMode ==  ONLINE_PILOT_PROJECTION ||
-		   pilotMgmtMode == OFFLINE_PILOT_PROJECTION)
-                ? "Projected" : "   Online";
+         pilot_type = (pilotGroupSampling == SHARED_PILOT) ? "share" : "indep",
+         type = (pilotMgmtMode == ONLINE_PILOT_PROJECTION ||
+                 pilotMgmtMode == OFFLINE_PILOT_PROJECTION)
+                    ? "Projected"
+                    : "   Online";
   bool online = (pilotMgmtMode == ONLINE_PILOT ||
-		 pilotMgmtMode == ONLINE_PILOT_PROJECTION),
-    mc_only_ref = !zeros(projNActualHF);
+                 pilotMgmtMode == ONLINE_PILOT_PROJECTION),
+       mc_only_ref = !zeros(projNActualHF);
 
   // search for the most refined covGG[g][qoi](H,H)
   size_t ref_group, ref_model_index, all_group = numGroups - 1;
   switch (pilotMgmtMode) {
-  case OFFLINE_PILOT:  case OFFLINE_PILOT_PROJECTION:
-    ref_group = numGroups - 1;  ref_model_index = numApprox;             break;
-  default: // define online ref from group with max HF samples (best varH)
-    find_hf_sample_reference(NGroupActual, ref_group, ref_model_index);  break;
+    case OFFLINE_PILOT:
+    case OFFLINE_PILOT_PROJECTION:
+      ref_group = numGroups - 1;
+      ref_model_index = numApprox;
+      break;
+    default:  // define online ref from group with max HF samples (best varH)
+      find_hf_sample_reference(NGroupActual, ref_group, ref_model_index);
+      break;
   }
   // As described in process_group_allocations(), we have two MC references:
   // projected HF-only samples and projected equivalent HF samples.
@@ -1430,347 +1451,339 @@ void NonDMultilevBLUESampling::print_variance_reduction(std::ostream& s) const
                                 deltaEquivHF, proj_equiv_estvar);
 
   s << "<<<<< Variance for mean estimator:\n";
-  for (qoi=0; qoi<numFunctions; ++qoi) {
-    s << std::setw(14) << labels[qoi] << ":\n"; // mirror print_moments()
+  for (qoi = 0; qoi < numFunctions; ++qoi) {
+    s << std::setw(14) << labels[qoi] << ":\n";  // mirror print_moments()
 
-    mlblue_est_var_q    = mlblue_est_var[qoi];
-    mlblue_ratio_q      = mlblue_ratios[qoi];
+    mlblue_est_var_q = mlblue_est_var[qoi];
+    mlblue_ratio_q = mlblue_ratios[qoi];
     proj_equiv_estvar_q = proj_equiv_estvar[qoi];
 
     if (online)
       s << "    Initial pilot (" << std::setw(3) << pilotSamples[all_group]
-	<< " " << pilot_type << " samples):  " << std::setw(wpp7)
-	<< estVarIter0[qoi] << '\n';
+        << " " << pilot_type << " samples):  " << std::setw(wpp7)
+        << estVarIter0[qoi] << '\n';
     if (mc_only_ref)
       s << "  " << type << " MC    (" << std::setw(6) << projNActualHF[qoi]
-	<< " HF samples):  " << std::setw(wpp7) << projEstVarHF[qoi] << '\n';
-    s << "  " << type << method << "  (sample profile):  "
-      << std::setw(wpp7) << mlblue_est_var_q << '\n';
+        << " HF samples):  " << std::setw(wpp7) << projEstVarHF[qoi] << '\n';
+    s << "  " << type << method << "  (sample profile):  " << std::setw(wpp7)
+      << mlblue_est_var_q << '\n';
     if (mc_only_ref && valid_variance(mlblue_ratio_q))
-      s << "  " << type << method << " ratio   (1 - R^2):  "
-	<< std::setw(wpp7) << mlblue_ratio_q << '\n';
+      s << "  " << type << method << " ratio   (1 - R^2):  " << std::setw(wpp7)
+        << mlblue_ratio_q << '\n';
     s << " Equivalent MC    (" << std::setw(6) << proj_equiv_hf
       << " HF samples):  " << std::setw(wpp7) << proj_equiv_estvar_q << '\n';
     if (valid_variance(mlblue_est_var_q) && valid_variance(proj_equiv_estvar_q))
       s << " Equivalent" << method << " ratio:              " << std::setw(wpp7)
-	<< mlblue_est_var_q / proj_equiv_estvar_q << '\n';
+        << mlblue_est_var_q / proj_equiv_estvar_q << '\n';
   }
 }
 
-
-void NonDMultilevBLUESampling::
-project_mc_estimator_variance(const RealSymMatrixArray& cov_GG_g,
-			      size_t H_index, const SizetArray& N_H_actual,
-			      size_t delta_N_H, RealVector& proj_est_var,
-			      SizetVector& proj_N_H) const
-{
+void NonDMultilevBLUESampling::project_mc_estimator_variance(
+    const RealSymMatrixArray& cov_GG_g, size_t H_index,
+    const SizetArray& N_H_actual, size_t delta_N_H, RealVector& proj_est_var,
+    SizetVector& proj_N_H) const {
   // Defines projected estvar for use as a consistent reference
   proj_est_var.sizeUninitialized(numFunctions);
   proj_N_H.sizeUninitialized(numFunctions);
   size_t qoi, N_l_q;
-  for (qoi=0; qoi<numFunctions; ++qoi) {
+  for (qoi = 0; qoi < numFunctions; ++qoi) {
     N_l_q = proj_N_H[qoi] = N_H_actual[qoi] + delta_N_H;
-    proj_est_var[qoi] = (N_l_q) ? cov_GG_g[qoi](H_index,H_index) / N_l_q :
-      std::numeric_limits<Real>::quiet_NaN(); // 0 / 0
+    proj_est_var[qoi] = (N_l_q)
+                            ? cov_GG_g[qoi](H_index, H_index) / N_l_q
+                            : std::numeric_limits<Real>::quiet_NaN();  // 0 / 0
   }
 }
 
-
-void NonDMultilevBLUESampling::
-project_mc_estimator_variance(const RealSymMatrixArray& cov_GG_g,
-			      size_t H_index, Real N_H_actual, Real delta_N_H,
-			      RealVector& proj_est_var) const
-{
+void NonDMultilevBLUESampling::project_mc_estimator_variance(
+    const RealSymMatrixArray& cov_GG_g, size_t H_index, Real N_H_actual,
+    Real delta_N_H, RealVector& proj_est_var) const {
   // Defines projected estvar for use as a consistent reference
   proj_est_var.sizeUninitialized(numFunctions);
-  size_t qoi; Real N_l_q = N_H_actual + delta_N_H;
-  for (qoi=0; qoi<numFunctions; ++qoi)
-    proj_est_var[qoi] = (N_l_q > 0.) ? cov_GG_g[qoi](H_index,H_index) / N_l_q :
-      std::numeric_limits<Real>::quiet_NaN(); // 0 / 0
+  size_t qoi;
+  Real N_l_q = N_H_actual + delta_N_H;
+  for (qoi = 0; qoi < numFunctions; ++qoi)
+    proj_est_var[qoi] = (N_l_q > 0.)
+                            ? cov_GG_g[qoi](H_index, H_index) / N_l_q
+                            : std::numeric_limits<Real>::quiet_NaN();  // 0 / 0
 }
 
-
 /** Multi-moment map-based version used by online pilot */
-void NonDMultilevBLUESampling::
-accumulate_blue_sums(IntRealMatrixArrayMap& sum_G,
-		     IntRealSymMatrix2DArrayMap& sum_GG, Sizet2DArray& num_G,
-		     const IntIntResponse2DMap& batch_resp_map)
-{
+void NonDMultilevBLUESampling::accumulate_blue_sums(
+    IntRealMatrixArrayMap& sum_G, IntRealSymMatrix2DArrayMap& sum_GG,
+    Sizet2DArray& num_G, const IntIntResponse2DMap& batch_resp_map) {
   IntIntResponse2DMap::const_iterator b_it;
   size_t g, num_groups = modelGroups.size();
-  for (g=0; g<num_groups; ++g) {
-    b_it = batch_resp_map.find(g); // index g corresponds to group_id key
-    if (b_it != batch_resp_map.end()) // else no new evals for this group
+  for (g = 0; g < num_groups; ++g) {
+    b_it = batch_resp_map.find(g);     // index g corresponds to group_id key
+    if (b_it != batch_resp_map.end())  // else no new evals for this group
       accumulate_blue_sums(sum_G, sum_GG, num_G, g, b_it->second);
   }
 }
 
-
 /** Multi-moment map-based version used by online pilot */
-void NonDMultilevBLUESampling::
-accumulate_blue_sums(IntRealMatrixArrayMap& sum_G,
-		     IntRealSymMatrix2DArrayMap& sum_GG, Sizet2DArray& num_G,
-		     size_t group, const IntResponseMap& resp_map)
-{
-  using std::isfinite;  bool all_finite;
+void NonDMultilevBLUESampling::accumulate_blue_sums(
+    IntRealMatrixArrayMap& sum_G, IntRealSymMatrix2DArrayMap& sum_GG,
+    Sizet2DArray& num_G, size_t group, const IntResponseMap& resp_map) {
+  using std::isfinite;
+  bool all_finite;
   Real g1_fn, g2_fn, g1_prod, g2_prod;
-  IntRespMCIter r_cit;  IntRMAMIter g_it;  IntRSM2AMIter gg_it;
+  IntRespMCIter r_cit;
+  IntRMAMIter g_it;
+  IntRSM2AMIter gg_it;
   int g_ord, gg_ord, active_ord, ord;
   size_t qoi, m, m2, g1_index, g2_index;
 
-  SizetArray&        num_G_g =       num_G[group];
+  SizetArray& num_G_g = num_G[group];
   const UShortArray& group_g = modelGroups[group];
-  size_t          num_models = group_g.size();
+  size_t num_models = group_g.size();
 
-  for (r_cit=resp_map.begin(); r_cit!=resp_map.end(); ++r_cit) {
-    const Response&   resp    = r_cit->second;
+  for (r_cit = resp_map.begin(); r_cit != resp_map.end(); ++r_cit) {
+    const Response& resp = r_cit->second;
     const RealVector& fn_vals = resp.function_values();
-    const ShortArray& asv     = resp.active_set_request_vector();
+    const ShortArray& asv = resp.active_set_request_vector();
 
-    for (qoi=0; qoi<numFunctions; ++qoi) {
-
+    for (qoi = 0; qoi < numFunctions; ++qoi) {
       // see Bessel correction notes in NonDNonHierarchSampling::
       // compute_correlation(): population mean and variance should be
       // computed from the same sample set
       all_finite = true;
-      for (m=0; m<num_models; ++m) {
-	g1_index = group_g[m] * numFunctions + qoi;
-	if ( (asv[g1_index] & 1) == 0 ) {
-	  Cerr << "Error: missing data for group " << group+1 << " model "
-	       << group_g[m]+1 << '.' << std::endl;
-	  abort_handler(METHOD_ERROR);
-	}
-	if ( !isfinite(fn_vals[g1_index]) )
-	  all_finite = false; //break;
+      for (m = 0; m < num_models; ++m) {
+        g1_index = group_g[m] * numFunctions + qoi;
+        if ((asv[g1_index] & 1) == 0) {
+          Cerr << "Error: missing data for group " << group + 1 << " model "
+               << group_g[m] + 1 << '.' << std::endl;
+          abort_handler(METHOD_ERROR);
+        }
+        if (!isfinite(fn_vals[g1_index])) all_finite = false;  // break;
       }
       if (!all_finite) continue;
 
-      ++num_G_g[qoi]; // shared due to fault tol logic
-      for (m=0; m<num_models; ++m) {
-	g1_index = group_g[m] * numFunctions + qoi;
-	g1_fn = fn_vals[g1_index];
+      ++num_G_g[qoi];  // shared due to fault tol logic
+      for (m = 0; m < num_models; ++m) {
+        g1_index = group_g[m] * numFunctions + qoi;
+        g1_fn = fn_vals[g1_index];
 
-	g_it    = sum_G.begin();  gg_it = sum_GG.begin();
-	g_ord   = (g_it  ==  sum_G.end()) ? 0 :  g_it->first;
-	gg_ord  = (gg_it == sum_GG.end()) ? 0 : gg_it->first;
-	g1_prod = g1_fn;  active_ord = 1;
-	while (g_ord || gg_ord) {
-    
-	  if (g_ord == active_ord) { // support general key sequence
-	    g_it->second[group](qoi,m) += g1_prod;
-	    ++g_it;  g_ord = (g_it == sum_G.end()) ? 0 : g_it->first;
-	  }
-	  if (gg_ord == active_ord) { // support general key sequence
-	    RealSymMatrix& sum_GG_gq = gg_it->second[group][qoi];
-	    sum_GG_gq(m,m) += g1_prod * g1_prod;
-	    // Off-diagonal of C matrix:
-	    for (m2=0; m2<m; ++m2) {
-	      g2_index = group_g[m2] * numFunctions + qoi;
-	      // regenerate g2_prod i/o storing off-diagonal combinations
-	      g2_prod = g2_fn = fn_vals[g2_index];
-	      for (ord=1; ord<active_ord; ++ord)
-		g2_prod *= g2_fn;
-	      sum_GG_gq(m,m2) += g1_prod * g2_prod;
-	    }
-	    ++gg_it; gg_ord = (gg_it == sum_GG.end()) ? 0 : gg_it->first;
-	  }
+        g_it = sum_G.begin();
+        gg_it = sum_GG.begin();
+        g_ord = (g_it == sum_G.end()) ? 0 : g_it->first;
+        gg_ord = (gg_it == sum_GG.end()) ? 0 : gg_it->first;
+        g1_prod = g1_fn;
+        active_ord = 1;
+        while (g_ord || gg_ord) {
+          if (g_ord == active_ord) {  // support general key sequence
+            g_it->second[group](qoi, m) += g1_prod;
+            ++g_it;
+            g_ord = (g_it == sum_G.end()) ? 0 : g_it->first;
+          }
+          if (gg_ord == active_ord) {  // support general key sequence
+            RealSymMatrix& sum_GG_gq = gg_it->second[group][qoi];
+            sum_GG_gq(m, m) += g1_prod * g1_prod;
+            // Off-diagonal of C matrix:
+            for (m2 = 0; m2 < m; ++m2) {
+              g2_index = group_g[m2] * numFunctions + qoi;
+              // regenerate g2_prod i/o storing off-diagonal combinations
+              g2_prod = g2_fn = fn_vals[g2_index];
+              for (ord = 1; ord < active_ord; ++ord) g2_prod *= g2_fn;
+              sum_GG_gq(m, m2) += g1_prod * g2_prod;
+            }
+            ++gg_it;
+            gg_ord = (gg_it == sum_GG.end()) ? 0 : gg_it->first;
+          }
 
-	  g1_prod *= g1_fn;  ++active_ord;
-	}
+          g1_prod *= g1_fn;
+          ++active_ord;
+        }
       }
     }
   }
 }
 
-
 /** Single moment version used by offline-pilot and pilot-projection */
-void NonDMultilevBLUESampling::
-accumulate_blue_sums(RealMatrixArray& sum_G, RealSymMatrix2DArray& sum_GG,
-		     Sizet2DArray& num_G,
-		     const IntIntResponse2DMap& batch_resp_map)
-{
+void NonDMultilevBLUESampling::accumulate_blue_sums(
+    RealMatrixArray& sum_G, RealSymMatrix2DArray& sum_GG, Sizet2DArray& num_G,
+    const IntIntResponse2DMap& batch_resp_map) {
   IntIntResponse2DMap::const_iterator b_it;
   size_t g, num_groups = modelGroups.size();
-  for (g=0; g<num_groups; ++g) {
-    b_it = batch_resp_map.find(g); // index g corresponds to group_id key
+  for (g = 0; g < num_groups; ++g) {
+    b_it = batch_resp_map.find(g);  // index g corresponds to group_id key
     if (b_it != batch_resp_map.end())
       accumulate_blue_sums(sum_G[g], sum_GG[g], num_G[g], g, b_it->second);
   }
 }
 
-
 /** Single-moment, single-group version for accumulations following a
     shared pilot sample */
-void NonDMultilevBLUESampling::
-accumulate_blue_sums(RealMatrix& sum_G_g, RealSymMatrixArray& sum_GG_g,
-		     SizetArray& num_G_g, size_t group,
-		     const IntResponseMap& resp_map)
-{
-  using std::isfinite;  bool all_finite;
-  IntRespMCIter r_cit;  Real g1_fn;
+void NonDMultilevBLUESampling::accumulate_blue_sums(
+    RealMatrix& sum_G_g, RealSymMatrixArray& sum_GG_g, SizetArray& num_G_g,
+    size_t group, const IntResponseMap& resp_map) {
+  using std::isfinite;
+  bool all_finite;
+  IntRespMCIter r_cit;
+  Real g1_fn;
   const UShortArray& group_g = modelGroups[group];
   size_t qoi, m, m2, g1_index, g2_index, num_models = group_g.size();
 
   // here we process resp_map from shared_increment()
-  for (r_cit=resp_map.begin(); r_cit!=resp_map.end(); ++r_cit) {
-    const Response&   resp    = r_cit->second;
+  for (r_cit = resp_map.begin(); r_cit != resp_map.end(); ++r_cit) {
+    const Response& resp = r_cit->second;
     const RealVector& fn_vals = resp.function_values();
-    const ShortArray& asv     = resp.active_set_request_vector();
+    const ShortArray& asv = resp.active_set_request_vector();
 
-    for (qoi=0; qoi<numFunctions; ++qoi) {
-
+    for (qoi = 0; qoi < numFunctions; ++qoi) {
       // see fault tol notes in NonDNonHierarchSampling::compute_correlation():
       // population mean and variance should be computed from same sample set
       all_finite = true;
-      for (m=0; m<num_models; ++m) {
-	g1_index = group_g[m] * numFunctions + qoi;
-	if ( (asv[g1_index] & 1) == 0 ) {
-	  Cerr << "Error: missing data for group " << group+1 << " model "
-	       << group_g[m]+1 << '.' << std::endl;
-	  abort_handler(METHOD_ERROR);
-	}
-	if ( !isfinite(fn_vals[g1_index]) )
-	  all_finite = false; //break;
+      for (m = 0; m < num_models; ++m) {
+        g1_index = group_g[m] * numFunctions + qoi;
+        if ((asv[g1_index] & 1) == 0) {
+          Cerr << "Error: missing data for group " << group + 1 << " model "
+               << group_g[m] + 1 << '.' << std::endl;
+          abort_handler(METHOD_ERROR);
+        }
+        if (!isfinite(fn_vals[g1_index])) all_finite = false;  // break;
       }
       if (!all_finite) continue;
 
-      ++num_G_g[qoi]; // shared due to fault tol logic
+      ++num_G_g[qoi];  // shared due to fault tol logic
       RealSymMatrix& sum_GG_gq = sum_GG_g[qoi];
-      for (m=0; m<num_models; ++m) {
-	g1_index = group_g[m] * numFunctions + qoi;
-	g1_fn = fn_vals[g1_index];
+      for (m = 0; m < num_models; ++m) {
+        g1_index = group_g[m] * numFunctions + qoi;
+        g1_fn = fn_vals[g1_index];
 
-	sum_G_g(qoi,m) += g1_fn;
-	sum_GG_gq(m,m) += g1_fn * g1_fn;
+        sum_G_g(qoi, m) += g1_fn;
+        sum_GG_gq(m, m) += g1_fn * g1_fn;
 
-	// Off-diagonal of covariance matrix:
-	for (m2=0; m2<m; ++m2) {
-	  g2_index = group_g[m2] * numFunctions + qoi;
-	  sum_GG_gq(m,m2) += g1_fn * fn_vals[g2_index];
-	}
+        // Off-diagonal of covariance matrix:
+        for (m2 = 0; m2 < m; ++m2) {
+          g2_index = group_g[m2] * numFunctions + qoi;
+          sum_GG_gq(m, m2) += g1_fn * fn_vals[g2_index];
+        }
       }
     }
   }
 
   if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "In accumulate_blue_sums(), sum_G[" << group << "]:\n" << sum_G_g
-	 << "sum_GG[" << group << "]:\n" << sum_GG_g
-	 << "num_G["  << group << "]:\n" << num_G_g << std::endl;
+    Cout << "In accumulate_blue_sums(), sum_G[" << group << "]:\n"
+         << sum_G_g << "sum_GG[" << group << "]:\n"
+         << sum_GG_g << "num_G[" << group << "]:\n"
+         << num_G_g << std::endl;
 }
 
-
 /** overload version for independent group samples */
-void NonDMultilevBLUESampling::
-compute_GG_covariance(const RealMatrixArray& sum_G,
-		      const RealSymMatrix2DArray& sum_GG,
-		      const Sizet2DArray& num_G, RealSymMatrix2DArray& cov_GG,
-		      RealSymMatrix2DArray& cov_GG_inv, bool pilot, int moment,
-		      const SizetArray& N_G_ref)
-{
-  initialize_rsm2a(cov_GG);  initialize_rsm2a(cov_GG_inv); // bypass if sized
+void NonDMultilevBLUESampling::compute_GG_covariance(
+    const RealMatrixArray& sum_G, const RealSymMatrix2DArray& sum_GG,
+    const Sizet2DArray& num_G, RealSymMatrix2DArray& cov_GG,
+    RealSymMatrix2DArray& cov_GG_inv, bool pilot, int moment,
+    const SizetArray& N_G_ref) {
+  initialize_rsm2a(cov_GG);
+  initialize_rsm2a(cov_GG_inv);  // bypass if sized
 
   size_t g, m, m2, num_models, qoi, num_G_gq;
-  Real sum_G_gqm;  RealVector rcond(numFunctions);
-  bool rcond_throttle  = (groupThrottleType == RCOND_TOLERANCE_THROTTLE ||
-			  groupThrottleType == RCOND_BEST_COUNT_THROTTLE),
+  Real sum_G_gqm;
+  RealVector rcond(numFunctions);
+  bool rcond_throttle = (groupThrottleType == RCOND_TOLERANCE_THROTTLE ||
+                         groupThrottleType == RCOND_BEST_COUNT_THROTTLE),
        relative_update = !N_G_ref.empty();
   if (rcond_throttle) groupCovCondMap.clear();
 
-  for (g=0; g<numGroups; ++g) {
+  for (g = 0; g < numGroups; ++g) {
     num_models = modelGroups[g].size();
-    const SizetArray&        num_G_g =      num_G[g];
-    const RealMatrix&        sum_G_g =      sum_G[g];
-    RealSymMatrixArray&     cov_GG_g =     cov_GG[g];
+    const SizetArray& num_G_g = num_G[g];
+    const RealMatrix& sum_G_g = sum_G[g];
+    RealSymMatrixArray& cov_GG_g = cov_GG[g];
     RealSymMatrixArray& cov_GG_inv_g = cov_GG_inv[g];
-    for (qoi=0; qoi<numFunctions; ++qoi) {
+    for (qoi = 0; qoi < numFunctions; ++qoi) {
       num_G_gq = num_G_g[qoi];
       // ONLINE_PILOT + SHARED_PILOT: only update to independent covar if equal
       // or greater samples than shared.  This sticks with the shared covariance
       // approximation during iterative allocations, until superceded.  Final
       // moment estimation instead relies on final online covariances.
-      if ( ( relative_update && num_G_gq >= N_G_ref[qoi]) ||
-	   (!relative_update && num_G_gq >  1) ) { // sufficient to define new: *** group covariance omitted for active lb of HF group at 1 online sample ***
-	const RealSymMatrix& sum_GG_gq = sum_GG[g][qoi];
-	RealSymMatrix&       cov_GG_gq = cov_GG_g[qoi];
-	if (cov_GG_gq.empty()) cov_GG_gq.shape(num_models);
-	for (m=0; m<num_models; ++m) {
-	  sum_G_gqm = sum_G_g(qoi,m);
-	  for (m2=0; m2<=m; ++m2) {
-	    // compute_covariance(sum_G_gqm, sum_G_g(qoi,m2), sum_GG_gq(m,m2),
-			//        num_G_gq, cov_GG_gq(m,m2));
-      if (pilot) {
-        cov_GG_gq(m, m2) = pilotResponseContainer.getCovariance(g, m, m2, qoi, moment);
+      if ((relative_update && num_G_gq >= N_G_ref[qoi]) ||
+          (!relative_update &&
+           num_G_gq >
+               1)) {  // sufficient to define new: *** group covariance omitted
+                      // for active lb of HF group at 1 online sample ***
+        const RealSymMatrix& sum_GG_gq = sum_GG[g][qoi];
+        RealSymMatrix& cov_GG_gq = cov_GG_g[qoi];
+        if (cov_GG_gq.empty()) cov_GG_gq.shape(num_models);
+        for (m = 0; m < num_models; ++m) {
+          sum_G_gqm = sum_G_g(qoi, m);
+          for (m2 = 0; m2 <= m; ++m2) {
+            // compute_covariance(sum_G_gqm, sum_G_g(qoi,m2), sum_GG_gq(m,m2),
+            //        num_G_gq, cov_GG_gq(m,m2));
+            if (pilot) {
+              cov_GG_gq(m, m2) =
+                  pilotResponseContainer.getCovariance(g, m, m2, qoi, moment);
+            } else {
+              cov_GG_gq(m, m2) =
+                  responseContainer.getCovariance(g, m, m2, qoi, moment);
+            }
+          }
+        }
+        compute_C_inverse(cov_GG_gq, cov_GG_inv_g[qoi], g, qoi, rcond[qoi]);
+      } else if (!relative_update)  // inadequate samples to define covar
+      {
+        cov_GG_g[qoi].shape(0);
+        cov_GG_inv_g[qoi].shape(0);
+        rcond[qoi] = 0.;
       }
-      else {
-        cov_GG_gq(m, m2) = responseContainer.getCovariance(g, m, m2, qoi, moment);
-      }
-    }
-	}
-	compute_C_inverse(cov_GG_gq, cov_GG_inv_g[qoi], g, qoi, rcond[qoi]);
-      }
-      else if (!relative_update) // inadequate samples to define covar
-	{
-    cov_GG_g[qoi].shape(0); cov_GG_inv_g[qoi].shape(0); rcond[qoi] = 0.; 
-  }
-      //else: leave as previous shared covariance and covariance-inverse
+      // else: leave as previous shared covariance and covariance-inverse
       if (rcond_throttle)
-        groupCovCondMap.insert(std::pair<Real,size_t>(average(rcond), g));
+        groupCovCondMap.insert(std::pair<Real, size_t>(average(rcond), g));
     }
   }
 }
 
 /** overload version for shared group samples */
-void NonDMultilevBLUESampling::
-compute_GG_covariance(const RealMatrix& sum_G_g,
-		      const RealSymMatrixArray& sum_GG_g,
-		      const SizetArray& num_G_g,
-		      RealSymMatrix2DArray& cov_GG,
-		      RealSymMatrix2DArray& cov_GG_inv, bool pilot, int moment)
-{
+void NonDMultilevBLUESampling::compute_GG_covariance(
+    const RealMatrix& sum_G_g, const RealSymMatrixArray& sum_GG_g,
+    const SizetArray& num_G_g, RealSymMatrix2DArray& cov_GG,
+    RealSymMatrix2DArray& cov_GG_inv, bool pilot, int moment) {
   initialize_rsm2a(cov_GG);
 
   size_t qoi, m1, m2, num_models = numApprox + 1, num_mapped, g, g1,
-    all_group = numGroups - 1;
-  Real sum_G_gqm;  size_t num_G_gq;
-  RealSymMatrixArray&     cov_GG_g = cov_GG[all_group];// last group, all models
-  for (qoi=0; qoi<numFunctions; ++qoi) {
+                      all_group = numGroups - 1;
+  Real sum_G_gqm;
+  size_t num_G_gq;
+  RealSymMatrixArray& cov_GG_g = cov_GG[all_group];  // last group, all models
+  for (qoi = 0; qoi < numFunctions; ++qoi) {
     const RealSymMatrix& sum_GG_gq = sum_GG_g[qoi];
-    RealSymMatrix&       cov_GG_gq = cov_GG_g[qoi];
-    num_G_gq                       =  num_G_g[qoi];
+    RealSymMatrix& cov_GG_gq = cov_GG_g[qoi];
+    num_G_gq = num_G_g[qoi];
     if (num_G_gq > 1) {
       if (cov_GG_gq.numRows() != num_models) cov_GG_gq.shape(num_models);
-      for (m1=0; m1<num_models; ++m1) {
-	sum_G_gqm = sum_G_g(qoi,m1);
-	for (m2=0; m2<=m1; ++m2) {
-	  // compute_covariance(sum_G_gqm, sum_G_g(qoi,m2), sum_GG_gq(m1,m2),
-			    //  num_G_gq, cov_GG_gq(m1,m2));
-           if (pilot) {
-            cov_GG_gq(m1, m2) = pilotResponseContainer.getCovariance(all_group, m1, m2, qoi, moment);
-           }
-           else {
-            cov_GG_gq(m1, m2) = responseContainer.getCovariance(all_group, m1, m2, qoi, moment);
-           }
-  }
+      for (m1 = 0; m1 < num_models; ++m1) {
+        sum_G_gqm = sum_G_g(qoi, m1);
+        for (m2 = 0; m2 <= m1; ++m2) {
+          // compute_covariance(sum_G_gqm, sum_G_g(qoi,m2), sum_GG_gq(m1,m2),
+          //  num_G_gq, cov_GG_gq(m1,m2));
+          if (pilot) {
+            cov_GG_gq(m1, m2) = pilotResponseContainer.getCovariance(
+                all_group, m1, m2, qoi, moment);
+          } else {
+            cov_GG_gq(m1, m2) =
+                responseContainer.getCovariance(all_group, m1, m2, qoi, moment);
+          }
+        }
       }
       // map shared covariance into partial groups
-      for (g=0; g<all_group; ++g) {
-	RealSymMatrix& cov_GG_mapped = cov_GG[g][qoi];
-	const UShortArray& group_g = modelGroups[g];
-	num_mapped = group_g.size();
-	if (cov_GG_mapped.numRows() != num_mapped)
-	  cov_GG_mapped.shape(num_mapped);
-	for (m1=0; m1<num_mapped; ++m1) {
-	  g1 = group_g[m1];
-	  for (m2=0; m2<=m1; ++m2) {
-	    cov_GG_mapped(m1,m2) = cov_GG_gq(g1, group_g[m2]);
-    }
-	}
+      for (g = 0; g < all_group; ++g) {
+        RealSymMatrix& cov_GG_mapped = cov_GG[g][qoi];
+        const UShortArray& group_g = modelGroups[g];
+        num_mapped = group_g.size();
+        if (cov_GG_mapped.numRows() != num_mapped)
+          cov_GG_mapped.shape(num_mapped);
+        for (m1 = 0; m1 < num_mapped; ++m1) {
+          g1 = group_g[m1];
+          for (m2 = 0; m2 <= m1; ++m2) {
+            cov_GG_mapped(m1, m2) = cov_GG_gq(g1, group_g[m2]);
+          }
+        }
       }
-    }
-    else {
+    } else {
       cov_GG_gq.shape(0);
-      for (g=0; g<all_group; ++g) {
-	      cov_GG[g][qoi].shape(0);
+      for (g = 0; g < all_group; ++g) {
+        cov_GG[g][qoi].shape(0);
       }
     }
   }
@@ -1780,14 +1793,11 @@ compute_GG_covariance(const RealMatrix& sum_G_g,
   compute_C_inverse(cov_GG, cov_GG_inv);
 }
 
-
-
-
 /*
 void NonDMultilevBLUESampling::
 compute_G_variance(const RealMatrixArray& sum_G,
-		   const RealSymMatrix2DArray& sum_GG,
-		   const Sizet2DArray& num_G, RealMatrixArray& var_G)
+                   const RealSymMatrix2DArray& sum_GG,
+                   const Sizet2DArray& num_G, RealMatrixArray& var_G)
 {
   size_t qoi, g, m, num_models;
   if (var_G.size() != numGroups) {
@@ -1805,20 +1815,23 @@ compute_G_variance(const RealMatrixArray& sum_G,
     for (qoi=0; qoi<numFunctions; ++qoi) {
       const RealSymMatrix&   sum_GG_gq = sum_GG_g[qoi];
       for (m=0; m<num_models; ++m)
-	compute_variance(sum_G_g(qoi,m), sum_GG_gq(m,m), num_G_g[qoi],
-			 var_G_g(qoi,m));
+        compute_variance(sum_G_g(qoi,m), sum_GG_gq(m,m), num_G_g[qoi],
+                         var_G_g(qoi,m));
     }
   }
 }
 */
 
-
-void NonDMultilevBLUESampling::
-compute_C_inverse(RealSymMatrix& cov_GG_gq, RealSymMatrix& cov_GG_inv_gq,
-		  size_t group, size_t qoi, Real& rcond)
-{
-  if (cov_GG_gq.empty()) // insufficient samples to define cov_GG
-    { cov_GG_inv_gq.shape(0); rcond = 0.; return; }
+void NonDMultilevBLUESampling::compute_C_inverse(RealSymMatrix& cov_GG_gq,
+                                                 RealSymMatrix& cov_GG_inv_gq,
+                                                 size_t group, size_t qoi,
+                                                 Real& rcond) {
+  if (cov_GG_gq.empty())  // insufficient samples to define cov_GG
+  {
+    cov_GG_inv_gq.shape(0);
+    rcond = 0.;
+    return;
+  }
 
   // Alternatives:
   // > Pseudo-inverse for covariances: is symmetric_eigenvalue_decomp()
@@ -1831,29 +1844,35 @@ compute_C_inverse(RealSymMatrix& cov_GG_gq, RealSymMatrix& cov_GG_inv_gq,
   // > SDP solvers (helps only with Psi solve --> issues with C-inverse must
   //   be addressed separately)
 
-  if (hardenNumericSoln) { // SVD is more robust, yielding full or pseudo-
-                           // inverse based on singular value truncation
+  if (hardenNumericSoln) {  // SVD is more robust, yielding full or pseudo-
+                            // inverse based on singular value truncation
     pseudo_inverse(cov_GG_gq, cov_GG_inv_gq, rcond);
     if (outputLevel >= DEBUG_OUTPUT)
       Cout << "In compute_C_inverse() for group " << group << " QoI " << qoi
-	   << ", covariance =\n" << cov_GG_gq << "Pseudo-inverse by truncated "
-	   << "SVD: rcond = " << rcond << ", inverse covariance =\n"
-	   << cov_GG_inv_gq << "\n--------------\n" << std::endl;
+           << ", covariance =\n"
+           << cov_GG_gq << "Pseudo-inverse by truncated "
+           << "SVD: rcond = " << rcond << ", inverse covariance =\n"
+           << cov_GG_inv_gq << "\n--------------\n"
+           << std::endl;
 
     // Note: retainedModelGroups defined from rcond in prune_model_groups()
-  }
-  else { // currently inactive, but can be cheaper + more exact (no truncation)
-         // for well-behaved cases
+  } else {  // currently inactive, but can be cheaper + more exact (no
+            // truncation) for well-behaved cases
 
     size_t m, num_m = cov_GG_gq.numRows();
     RealMatrix cov_GG_inv_rm(num_m, num_m, false), I(num_m, num_m);
-    for (m=0; m<num_m; ++m) I(m,m) = 1.;
+    for (m = 0; m < num_m; ++m) I(m, m) = 1.;
     int code = cholesky_solve(cov_GG_gq, cov_GG_inv_rm, I, true, false, false);
     // For failed solve, clearing matrix results in (a) dropping group
     // contribution to Psi in compute_Psi() and (b) dropping design var in
     // prune_model_groups() using retainedModelGroups
-    if (code) { cov_GG_inv_gq.shape(0);                  rcond = 0.; }
-    else      { copy_data(cov_GG_inv_rm, cov_GG_inv_gq); rcond = 1.; }
+    if (code) {
+      cov_GG_inv_gq.shape(0);
+      rcond = 0.;
+    } else {
+      copy_data(cov_GG_inv_rm, cov_GG_inv_gq);
+      rcond = 1.;
+    }
 
     /* This approach has not been effective for ill-conditioned cov_GG:
     int r, nr = cov_GG_gq.numRows();
@@ -1884,9 +1903,9 @@ compute_C_inverse(RealSymMatrix& cov_GG_gq, RealSymMatrix& cov_GG_inv_gq,
     //int   inv_code = spd_solver.invert(); // in place
     if (fact_code) { // only traps extreme cases
       Cerr << "Warning: discarding group " << group << " for QoI " << qoi
-	   << " due to covariance factorization failure\n         (LAPACK "
-	   << "error: leading minor of order " << fact_code
-	   << " is not positive definite)." << std::endl;
+           << " due to covariance factorization failure\n         (LAPACK "
+           << "error: leading minor of order " << fact_code
+           << " is not positive definite)." << std::endl;
       cov_GG_inv_gq.shape(0);
       // This (a) drops the group contribution to Psi in compute_Psi() and (b)
       // drops the design var in prune_model_groups() using retainedModelGroups
@@ -1894,8 +1913,8 @@ compute_C_inverse(RealSymMatrix& cov_GG_gq, RealSymMatrix& cov_GG_inv_gq,
     else { // bad inverses can still occur
       spd_solver.invert(); // reuses factorization
       if (outputLevel >= DEBUG_OUTPUT)
-	Cout << "LL^T inverse for group " << group << " QoI " << qoi << ":\n"
-	     << cov_GG_inv_gq << std::endl;
+        Cout << "LL^T inverse for group " << group << " QoI " << qoi << ":\n"
+             << cov_GG_inv_gq << std::endl;
     }
     */
 
@@ -1931,35 +1950,32 @@ compute_C_inverse(RealSymMatrix& cov_GG_gq, RealSymMatrix& cov_GG_inv_gq,
       cov_GG_inv_gq(n,n) += 1.;
     if (outputLevel >= DEBUG_OUTPUT)
       Cout << "Pseudo-inverse by SYEV for group " << group << " QoI " << qoi
-	   << ":\n" << cov_GG_inv_gq << std::endl;
+           << ":\n" << cov_GG_inv_gq << std::endl;
     */
   }
 }
 
-
-void NonDMultilevBLUESampling::
-invert_Psi(RealSymMatrix& Psi, RealMatrix& Psi_inv)
-{
+void NonDMultilevBLUESampling::invert_Psi(RealSymMatrix& Psi,
+                                          RealMatrix& Psi_inv) {
   // Psi-inverse is used for computing both estimator variance (during numerical
   // solve) and y-hat / mu-hat (after solve), so invert now without a RHS so
   // Psi-inverse can be used in multiple places without additional tracking
 
   int r, nr = Psi.numRows();
-  RealMatrix I(nr, nr);  for (r=0; r<nr; ++r) I(r,r) = 1.; // identity
+  RealMatrix I(nr, nr);
+  for (r = 0; r < nr; ++r) I(r, r) = 1.;  // identity
   Psi_inv.shapeUninitialized(nr, nr);
 
-  cholesky_solve(Psi, Psi_inv, I, true, false);//copy A, overwrite B, hard error
-  //if (outputLevel >= DEBUG_OUTPUT)
-  //  Cout << "In invert_Psi(), Psi:\n" << Psi << "Psi_inv:\n" << Psi_inv
+  cholesky_solve(Psi, Psi_inv, I, true,
+                 false);  // copy A, overwrite B, hard error
+  // if (outputLevel >= DEBUG_OUTPUT)
+  //   Cout << "In invert_Psi(), Psi:\n" << Psi << "Psi_inv:\n" << Psi_inv
   //	   << std::endl;
 }
 
-
-void NonDMultilevBLUESampling::
-compute_mu_hat(const RealSymMatrix2DArray& cov_GG_inv,
-	       const RealMatrixArray& sum_G, const Sizet2DArray& N_G,
-	       RealVectorArray& mu_hat, int moment)
-{
+void NonDMultilevBLUESampling::compute_mu_hat(
+    const RealSymMatrix2DArray& cov_GG_inv, const RealMatrixArray& sum_G,
+    const Sizet2DArray& N_G, RealVectorArray& mu_hat, int moment) {
   // accumulate Psi but don't invert in place
   RealSymMatrixArray Psi;
   compute_Psi(cov_GG_inv, N_G, Psi);
@@ -1976,9 +1992,9 @@ compute_mu_hat(const RealSymMatrix2DArray& cov_GG_inv,
       for (auto model = 0; model < numModels; ++model) {
         auto numSamples = responseContainer.numSamples(group);
         if (numSamples > 0) {
-          my_sum_G[group](qoi, model) = responseContainer.getMean(group, model, qoi, moment) * numSamples;
-        }
-        else {
+          my_sum_G[group](qoi, model) =
+              responseContainer.getMean(group, model, qoi, moment) * numSamples;
+        } else {
           my_sum_G[group](qoi, model) = 0;
         }
       }
@@ -1990,40 +2006,41 @@ compute_mu_hat(const RealSymMatrix2DArray& cov_GG_inv,
   compute_y(cov_GG_inv, my_sum_G, y);
   initialize_rva(mu_hat, false);
   size_t q, r, c, g, num_groups = modelGroups.size();
-  if (hardenNumericSoln) { // SVD
-    RealMatrix Psi_inv;  Real rcond;
-    for (q=0; q<numFunctions; ++q) {
+  if (hardenNumericSoln) {  // SVD
+    RealMatrix Psi_inv;
+    Real rcond;
+    for (q = 0; q < numFunctions; ++q) {
       pseudo_inverse(Psi[q], Psi_inv, rcond);
       mu_hat[q].multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1., Psi_inv,
-			 y[q], 0.);
+                         y[q], 0.);
       if (outputLevel >= DEBUG_OUTPUT)
-	Cout << "Pseudo-inverse solve for mu_hat for QoI " << q << ":\n"
-	     << mu_hat[q] << std::endl;
+        Cout << "Pseudo-inverse solve for mu_hat for QoI " << q << ":\n"
+             << mu_hat[q] << std::endl;
     }
-  }
-  else
-    for (q=0; q<numFunctions; ++q) {
+  } else
+    for (q = 0; q < numFunctions; ++q) {
       cholesky_solve(Psi[q], mu_hat[q], y[q]);
       if (outputLevel >= DEBUG_OUTPUT)
-	Cout << "Cholesky solve for mu_hat for QoI " << q << ":\n"
-	     << mu_hat[q] << std::endl;
+        Cout << "Cholesky solve for mu_hat for QoI " << q << ":\n"
+             << mu_hat[q] << std::endl;
     }
 }
 
-
-void NonDMultilevBLUESampling::
-estimator_variances(const RealVector& cd_vars, RealVector& est_var)
-{
+void NonDMultilevBLUESampling::estimator_variances(const RealVector& cd_vars,
+                                                   RealVector& est_var) {
   if (est_var.length() != numFunctions) est_var.sizeUninitialized(numFunctions);
 
   RealSymMatrixArray Psi;
   compute_Psi(covGGinv, cd_vars, Psi);
 
-  RealMatrix Psi_inv;  Real rcond;
-  for (size_t q=0; q<numFunctions; ++q) {
-    if (hardenNumericSoln) pseudo_inverse(Psi[q], Psi_inv, rcond);
-    else                       invert_Psi(Psi[q], Psi_inv);
-    est_var[q] = Psi_inv(numApprox,numApprox);
+  RealMatrix Psi_inv;
+  Real rcond;
+  for (size_t q = 0; q < numFunctions; ++q) {
+    if (hardenNumericSoln)
+      pseudo_inverse(Psi[q], Psi_inv, rcond);
+    else
+      invert_Psi(Psi[q], Psi_inv);
+    est_var[q] = Psi_inv(numApprox, numApprox);
   }
 
   /*
@@ -2047,46 +2064,48 @@ estimator_variances(const RealVector& cd_vars, RealVector& est_var)
   */
 
   if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "Solve at sample allocations:\n" << cd_vars
-	 << "for QoI estimator variances:\n" << est_var << std::endl;
+    Cout << "Solve at sample allocations:\n"
+         << cd_vars << "for QoI estimator variances:\n"
+         << est_var << std::endl;
 
   /* Special debug output for comparing forward finite diff grads to analytic
   int x_len = cd_vars.length();
   if (fdCntr < 0) // f at x0, prior to FD offsets
     Cout << "x0:\n" << cd_vars << "f0 = " << est_var[0]
-	 << "\nFD offsets to follow:\n";
+         << "\nFD offsets to follow:\n";
   else if (fdCntr < x_len)// FD gradient offset
     Cout << cd_vars[fdCntr] << ' ' << est_var[0] << '\n';
   ++fdCntr;
   */
 }
 
-
-void NonDMultilevBLUESampling::
-estimator_variance_gradients(const RealVector& cd_vars, RealMatrix& ev_grads)
-{
-  size_t g, q, v, num_v = num_active_groups(), num_m = numApprox+1;
+void NonDMultilevBLUESampling::estimator_variance_gradients(
+    const RealVector& cd_vars, RealMatrix& ev_grads) {
+  size_t g, q, v, num_v = num_active_groups(), num_m = numApprox + 1;
   if (ev_grads.numRows() != num_v || ev_grads.numCols() != numFunctions)
     ev_grads.shapeUninitialized(num_v, numFunctions);
 
   RealSymMatrixArray Psi;
   compute_Psi(covGGinv, cd_vars, Psi);
 
-  RealMatrix Psi_inv;  Real rcond;
+  RealMatrix Psi_inv;
+  Real rcond;
   RealSymMatrix dPsi_dN(num_m, false), trip_prod(num_m, false);
-  for (q=0; q<numFunctions; ++q) {
-    if (hardenNumericSoln) pseudo_inverse(Psi[q], Psi_inv, rcond);
-    else                       invert_Psi(Psi[q], Psi_inv);
+  for (q = 0; q < numFunctions; ++q) {
+    if (hardenNumericSoln)
+      pseudo_inverse(Psi[q], Psi_inv, rcond);
+    else
+      invert_Psi(Psi[q], Psi_inv);
 
     // form triple product dPsi_inv/dN_k = - Psi_inv dPsi/dN_k Psi_inv,
     // where dPsi/dN_k = C_k_inv (inflated to Psi)
-    for (v=0; v<num_v; ++v) {
-      g = active_to_all_group(v); // active v to index of all groups
-      //inflate(covGGinv[g][q], mask, dPsi_dN); // mask not convenient here
+    for (v = 0; v < num_v; ++v) {
+      g = active_to_all_group(v);  // active v to index of all groups
+      // inflate(covGGinv[g][q], mask, dPsi_dN); // mask not convenient here
       assign_sub_matrix(covGGinv[g][q], modelGroups[g], dPsi_dN);
       Teuchos::symMatTripleProduct(Teuchos::NO_TRANS, -1., dPsi_dN, Psi_inv,
-				   trip_prod);
-      ev_grads(v, q) = trip_prod(numApprox,numApprox);
+                                   trip_prod);
+      ev_grads(v, q) = trip_prod(numApprox, numApprox);
     }
   }
 
@@ -2098,18 +2117,18 @@ estimator_variance_gradients(const RealVector& cd_vars, RealMatrix& ev_grads)
     RealMatrix lhs(num_m, num_m, false), trip_prod(num_m, num_m, false);
     for (q=0; q<numFunctions; ++q) {
       for (v=0; v<num_v; ++v) {
-	g = active_to_all_group(v); // active v to index of all groups
-	assign_sub_matrix(covGGinv[g][q], modelGroups[g], dPsi_dN);
-	cholesky_solve(Psi[q], lhs, dPsi_dN, true, true);
+        g = active_to_all_group(v); // active v to index of all groups
+        assign_sub_matrix(covGGinv[g][q], modelGroups[g], dPsi_dN);
+        cholesky_solve(Psi[q], lhs, dPsi_dN, true, true);
 
-	RealMatrix rhs(lhs, Teuchos::TRANS);
-	cholesky_solve(Psi[q], trip_prod, rhs, true, false);
+        RealMatrix rhs(lhs, Teuchos::TRANS);
+        cholesky_solve(Psi[q], trip_prod, rhs, true, false);
 
-	ev_grads(v, q) = -trip_prod(numApprox,numApprox);
-	//if (outputLevel >= DEBUG_OUTPUT)
-	//  Cout << "group " << g << " dPsi_dN =\n" << dPsi_dN << "LHS1 solve ="
-	//       << '\n' << lhs1_evg << "LHS2 trip_prod =\n" << trip_prod
-	//       << "ev_grads(" << v << ',' << q << ") = "<<ev_grads(v,q)<<'\n';
+        ev_grads(v, q) = -trip_prod(numApprox,numApprox);
+        //if (outputLevel >= DEBUG_OUTPUT)
+        //  Cout << "group " << g << " dPsi_dN =\n" << dPsi_dN << "LHS1 solve ="
+        //       << '\n' << lhs1_evg << "LHS2 trip_prod =\n" << trip_prod
+        //       << "ev_grads(" << v << ',' << q << ") = "<<ev_grads(v,q)<<'\n';
       }
     }
   }
@@ -2119,16 +2138,14 @@ estimator_variance_gradients(const RealVector& cd_vars, RealMatrix& ev_grads)
   // from first-order terms, similar to Gauss-Newton
 
   if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "Solve at sample allocations:\n" << cd_vars
-	 << "for QoI estimator variance gradients:\n" << ev_grads << std::endl;
+    Cout << "Solve at sample allocations:\n"
+         << cd_vars << "for QoI estimator variance gradients:\n"
+         << ev_grads << std::endl;
 }
 
-
-void NonDMultilevBLUESampling::
-estimator_variances_and_gradients(const RealVector& cd_vars,
-				  RealVector& est_var, RealMatrix& ev_grads)
-{
-  size_t g, q, v, num_v = num_active_groups(), num_m = numApprox+1;
+void NonDMultilevBLUESampling::estimator_variances_and_gradients(
+    const RealVector& cd_vars, RealVector& est_var, RealMatrix& ev_grads) {
+  size_t g, q, v, num_v = num_active_groups(), num_m = numApprox + 1;
   if (est_var.empty()) est_var.sizeUninitialized(numFunctions);
   if (ev_grads.numRows() != num_v || ev_grads.numCols() != numFunctions)
     ev_grads.shapeUninitialized(num_v, numFunctions);
@@ -2136,100 +2153,106 @@ estimator_variances_and_gradients(const RealVector& cd_vars,
   RealSymMatrixArray Psi;
   compute_Psi(covGGinv, cd_vars, Psi);
 
-  RealMatrix Psi_inv;  Real rcond;
+  RealMatrix Psi_inv;
+  Real rcond;
   RealSymMatrix dPsi_dN(num_m, false), trip_prod(num_m, false);
-  for (q=0; q<numFunctions; ++q) {
-    if (hardenNumericSoln) pseudo_inverse(Psi[q], Psi_inv, rcond);
-    else                       invert_Psi(Psi[q], Psi_inv);
-    est_var[q] = Psi_inv(numApprox,numApprox);
+  for (q = 0; q < numFunctions; ++q) {
+    if (hardenNumericSoln)
+      pseudo_inverse(Psi[q], Psi_inv, rcond);
+    else
+      invert_Psi(Psi[q], Psi_inv);
+    est_var[q] = Psi_inv(numApprox, numApprox);
 
     // form triple product dPsi_inv/dN_k = - Psi_inv dPsi/dN_k Psi_inv,
     // where dPsi/dN_k = C_k_inv (inflated to Psi)
-    for (v=0; v<num_v; ++v) {
-      g = active_to_all_group(v); // active v to index of all groups
-      //inflate(covGGinv[g][q], mask, dPsi_dN); // mask not convenient here
+    for (v = 0; v < num_v; ++v) {
+      g = active_to_all_group(v);  // active v to index of all groups
+      // inflate(covGGinv[g][q], mask, dPsi_dN); // mask not convenient here
       assign_sub_matrix(covGGinv[g][q], modelGroups[g], dPsi_dN);
       Teuchos::symMatTripleProduct(Teuchos::NO_TRANS, -1., dPsi_dN, Psi_inv,
-				   trip_prod);
-      ev_grads(v, q) = trip_prod(numApprox,numApprox);
+                                   trip_prod);
+      ev_grads(v, q) = trip_prod(numApprox, numApprox);
     }
   }
 
   if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "Solve at sample allocations:\n" << cd_vars
-	 << "for QoI estimator variances:\n" << est_var
-	 << "and estimator variance gradients:\n"  << ev_grads << std::endl;
+    Cout << "Solve at sample allocations:\n"
+         << cd_vars << "for QoI estimator variances:\n"
+         << est_var << "and estimator variance gradients:\n"
+         << ev_grads << std::endl;
 }
 
-
-void NonDMultilevBLUESampling::prune_model_groups()
-{
-  if ( hardenNumericSoln &&
-       ( groupThrottleType != RCOND_BEST_COUNT_THROTTLE &&
-	 groupThrottleType != RCOND_TOLERANCE_THROTTLE ) )
-      { retainedModelGroups.clear(); retainedModels.clear(); return; }
+void NonDMultilevBLUESampling::prune_model_groups() {
+  if (hardenNumericSoln && (groupThrottleType != RCOND_BEST_COUNT_THROTTLE &&
+                            groupThrottleType != RCOND_TOLERANCE_THROTTLE)) {
+    retainedModelGroups.clear();
+    retainedModels.clear();
+    return;
+  }
 
   if (retainedModelGroups.size() != numGroups)
     retainedModelGroups.resize(numGroups);
 
   if (hardenNumericSoln) {
-    retainedModelGroups.reset(); // deactivate all
+    retainedModelGroups.reset();  // deactivate all
     std::multimap<Real, size_t>::iterator rc_it = groupCovCondMap.begin();
 
     switch (groupThrottleType) {
-    case RCOND_BEST_COUNT_THROTTLE: {
-      if (numGroups <= rCondBestThrottle) return;
-      Cout << "Pruning model groups from " << numGroups << " to best "
-	   << rCondBestThrottle << " based on group covariance conditioning.\n";
+      case RCOND_BEST_COUNT_THROTTLE: {
+        if (numGroups <= rCondBestThrottle) return;
+        Cout << "Pruning model groups from " << numGroups << " to best "
+             << rCondBestThrottle
+             << " based on group covariance conditioning.\n";
 
-      size_t skip_front = numGroups - rCondBestThrottle;
-      std::advance(rc_it, skip_front);
+        size_t skip_front = numGroups - rCondBestThrottle;
+        std::advance(rc_it, skip_front);
 
-      if (outputLevel >= DEBUG_OUTPUT)
-	for (std::multimap<Real, size_t>::iterator it=groupCovCondMap.begin();
-	     it != rc_it; ++it)
-	  Cout << "Discard: rcond = "<< it->first << " group = "
-	       << it->second << '\n';
+        if (outputLevel >= DEBUG_OUTPUT)
+          for (std::multimap<Real, size_t>::iterator it =
+                   groupCovCondMap.begin();
+               it != rc_it; ++it)
+            Cout << "Discard: rcond = " << it->first
+                 << " group = " << it->second << '\n';
 
-      for (; rc_it!=groupCovCondMap.end(); ++rc_it) {
-	if (outputLevel >= DEBUG_OUTPUT)
-	  Cout << "Retain: rcond = " << rc_it->first << " group = "
-	       << rc_it->second << '\n';
-	retainedModelGroups.set(rc_it->second);
+        for (; rc_it != groupCovCondMap.end(); ++rc_it) {
+          if (outputLevel >= DEBUG_OUTPUT)
+            Cout << "Retain: rcond = " << rc_it->first
+                 << " group = " << rc_it->second << '\n';
+          retainedModelGroups.set(rc_it->second);
+        }
+        break;
       }
-      break;
-    }
-    case RCOND_TOLERANCE_THROTTLE:
-      Cout << "Pruning model groups based on rcond tolerance = "
-	   << rCondTolThrottle << " for group covariances.\n";
+      case RCOND_TOLERANCE_THROTTLE:
+        Cout << "Pruning model groups based on rcond tolerance = "
+             << rCondTolThrottle << " for group covariances.\n";
 
-      for (; rc_it!=groupCovCondMap.end(); ++rc_it)
-	if (rc_it->first < rCondTolThrottle) {
-	  if (outputLevel >= DEBUG_OUTPUT)
-	    Cout << "Discard: rcond = " << rc_it->first << " group = "
-		 << rc_it->second << '\n';
-	}
-	else break; // out of for loop
+        for (; rc_it != groupCovCondMap.end(); ++rc_it)
+          if (rc_it->first < rCondTolThrottle) {
+            if (outputLevel >= DEBUG_OUTPUT)
+              Cout << "Discard: rcond = " << rc_it->first
+                   << " group = " << rc_it->second << '\n';
+          } else
+            break;  // out of for loop
 
-      for (; rc_it!=groupCovCondMap.end(); ++rc_it) {
-	if (outputLevel >= DEBUG_OUTPUT)
-	  Cout << "Retain: rcond = " << rc_it->first << " group = "
-	       << rc_it->second << '\n';
-	retainedModelGroups.set(rc_it->second);
-      }
-      break;
+        for (; rc_it != groupCovCondMap.end(); ++rc_it) {
+          if (outputLevel >= DEBUG_OUTPUT)
+            Cout << "Retain: rcond = " << rc_it->first
+                 << " group = " << rc_it->second << '\n';
+          retainedModelGroups.set(rc_it->second);
+        }
+        break;
     }
-  }
-  else { // no rcond control for Cholesky --> propagate empty covGGinv
-    retainedModelGroups.set(); // activate all
+  } else {  // no rcond control for Cholesky --> propagate empty covGGinv
+    retainedModelGroups.set();  // activate all
     size_t g, q;
-    for (g=0; g<numGroups; ++g) {
+    for (g = 0; g < numGroups; ++g) {
       bool remove = false;
-      for (q=0; q<numFunctions; ++q)
-	if (covGGinv[g][q].empty())
-	  { remove = true; break; }
-      if (remove)
-	retainedModelGroups.reset(g); // deactivate
+      for (q = 0; q < numFunctions; ++q)
+        if (covGGinv[g][q].empty()) {
+          remove = true;
+          break;
+        }
+      if (remove) retainedModelGroups.reset(g);  // deactivate
     }
   }
 
@@ -2239,16 +2262,15 @@ void NonDMultilevBLUESampling::prune_model_groups()
   // > this group always has shared/indep pilot samples for online, but
   //   covariance may be poorly conditioned
   bool online = (pilotMgmtMode == ONLINE_PILOT ||
-		 pilotMgmtMode == ONLINE_PILOT_PROJECTION);
+                 pilotMgmtMode == ONLINE_PILOT_PROJECTION);
   if (!hardenNumericSoln) {
     // no mitigation for failed Cholesky, so trap error of missing HF
     if (!hf_group_retained()) {
       Cerr << "Error: Cholesky solve failure for all groups containing HF.\n"
-	   << "Consider hardened SVD solutions." << std::endl;
+           << "Consider hardened SVD solutions." << std::endl;
       abort_handler(METHOD_ERROR);
     }
-  }
-  else if (online && pilotGroupSampling == SHARED_PILOT) { // common case
+  } else if (online && pilotGroupSampling == SHARED_PILOT) {  // common case
     // logic for both online modes is to leverage disproportionate investment
     // in all_group, irregardless of its conditioning.  Further, ONLINE_PILOT
     // mode iterates based on increments to the shared all_group in
@@ -2256,7 +2278,7 @@ void NonDMultilevBLUESampling::prune_model_groups()
     size_t all_group = numGroups - 1;
     if (!retainedModelGroups[all_group]) {
       if (outputLevel >= DEBUG_OUTPUT)
-	Cout << "Augment: add HF group = " << all_group << '\n';
+        Cout << "Augment: add HF group = " << all_group << '\n';
       retainedModelGroups.set(all_group);
     }
     // *** TO DO: could adopt APPROACH 2 below and reassign the shared sample
@@ -2273,8 +2295,8 @@ void NonDMultilevBLUESampling::prune_model_groups()
     // rcond cutoff, else augment with best HF discard
     if (!retainedModelGroups[hf_group]) {
       if (outputLevel >= DEBUG_OUTPUT)
-	Cout << "Augment: add HF group = " << hf_group << '\n';
-      retainedModelGroups.set(hf_group); // Augment
+        Cout << "Augment: add HF group = " << hf_group << '\n';
+      retainedModelGroups.set(hf_group);  // Augment
     }
   }
 
@@ -2286,26 +2308,25 @@ void NonDMultilevBLUESampling::prune_model_groups()
       Cout << "All groups retained\n";
     else {
       Cout << "Retained group count = " << retainedModelGroups.count() << '\n';
-      for (size_t g=0; g<numGroups; ++g)
-	if (retainedModelGroups[g])
-	  Cout << "Retained group " << g << ":\n" << modelGroups[g];
+      for (size_t g = 0; g < numGroups; ++g)
+        if (retainedModelGroups[g])
+          Cout << "Retained group " << g << ":\n" << modelGroups[g];
     }
-    if (retainedModels.empty() || retainedModels.count() == numApprox+1)
+    if (retainedModels.empty() || retainedModels.count() == numApprox + 1)
       Cout << "Within retained groups, all models retained\n";
     else {
       Cout << "Retained model count = " << retainedModels.count() << '\n';
-      for (size_t m=0; m<=numApprox; ++m)
-	if (retainedModels[m])
-	  Cout << "Retained model " << m << '\n';
+      for (size_t m = 0; m <= numApprox; ++m)
+        if (retainedModels[m]) Cout << "Retained model " << m << '\n';
     }
   }
 
   // leave numGroups synchronized with modelGroups and retrieve active count
   // using num_active_groups()
-  //numGroups = retainedModelGroups.count();
+  // numGroups = retainedModelGroups.count();
 
   // this update performed in ctor for static group allocations
   update_search_algorithm();
 }
 
-} // namespace Dakota
+}  // namespace Dakota

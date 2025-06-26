@@ -8,80 +8,82 @@
     _______________________________________________________________________ */
 
 #include "DakotaResponse.hpp"
-#include "SimulationResponse.hpp"
-#include "ExperimentResponse.hpp"
-#include "DakotaVariables.hpp"
-#include "ProblemDescDB.hpp"
-#include "dakota_data_io.hpp"
-#include "JSONResultsParser.hpp"
-#include <algorithm>
-#include <sstream>
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/serialization/vector.hpp>
-#include <boost/serialization/export.hpp>
 
-static const char rcsId[]="@(#) $Id: DakotaResponse.cpp 7029 2010-10-22 00:17:02Z mseldre $";
+#include <algorithm>
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/serialization/export.hpp>
+#include <boost/serialization/vector.hpp>
+#include <sstream>
+
+#include "DakotaVariables.hpp"
+#include "ExperimentResponse.hpp"
+#include "JSONResultsParser.hpp"
+#include "ProblemDescDB.hpp"
+#include "SimulationResponse.hpp"
+#include "dakota_data_io.hpp"
+
+static const char rcsId[] =
+    "@(#) $Id: DakotaResponse.cpp 7029 2010-10-22 00:17:02Z mseldre $";
 
 BOOST_CLASS_EXPORT(Dakota::Response)
 
 namespace Dakota {
 
-  const Response& Dakota::Response::get_response(ProblemDescDB& problem_db, short type, const Variables& vars) {
+const Response& Dakota::Response::get_response(ProblemDescDB& problem_db,
+                                               short type,
+                                               const Variables& vars) {
+  ProblemDescDB* const study_ptr = problem_db.get_rep().get();
+  auto& study_cache = Response::responseCache[study_ptr];
 
-    ProblemDescDB* const study_ptr = problem_db.get_rep().get(); 
-    auto& study_cache = Response::responseCache[study_ptr];
-  
-    // Have to worry about loss of encapsulation and use of context _above_ this
-    // specification, i.e., any dependence on iterator/model/variables/interface
-    // specifications (dependence on the environment specification is OK since
-    // there is only one).
-    // > mismatch in vars attributes (cv(),continuous_variable_ids()) should be OK
-    //   since derivative arrays are dynamically resized based on current active
-    //   set content
+  // Have to worry about loss of encapsulation and use of context _above_ this
+  // specification, i.e., any dependence on iterator/model/variables/interface
+  // specifications (dependence on the environment specification is OK since
+  // there is only one).
+  // > mismatch in vars attributes (cv(),continuous_variable_ids()) should be OK
+  //   since derivative arrays are dynamically resized based on current active
+  //   set content
 
-    // The DB list nodes are set prior to calling get_response():
-    // >    responses_ptr spec -> id_responses must be defined
-    // > no responses_ptr spec -> id_responses ignored, resp spec = last parsed
-    //const String& id_responses
-    //  = dbRep->dataResponsesIter->dataRespRep->idResponses;
+  // The DB list nodes are set prior to calling get_response():
+  // >    responses_ptr spec -> id_responses must be defined
+  // > no responses_ptr spec -> id_responses ignored, resp spec = last parsed
+  // const String& id_responses
+  //  = dbRep->dataResponsesIter->dataRespRep->idResponses;
 
-    // Turn off response reuse for now, even though it has not yet been
-    // problematic.  In general, response object reuse should be fine for objects
-    // with peer relationships, but are questionable for use among nested/layered
-    // levels.  Need a way to detect peer vs. nested/layered relationships.
-    study_cache.emplace_back(type, vars, problem_db);
-    return study_cache.back();
+  // Turn off response reuse for now, even though it has not yet been
+  // problematic.  In general, response object reuse should be fine for objects
+  // with peer relationships, but are questionable for use among nested/layered
+  // levels.  Need a way to detect peer vs. nested/layered relationships.
+  study_cache.emplace_back(type, vars, problem_db);
+  return study_cache.back();
+}
+
+std::list<Response>& Response::response_cache(ProblemDescDB& problem_db) {
+  const ProblemDescDB* const study_ptr = problem_db.get_rep().get();
+  try {
+    return Response::responseCache.at(study_ptr);
+  } catch (std::out_of_range) {
+    Cerr << "Response::response_cache() called with nonexistent study!\n";
+    throw;
   }
-  
-  std::list<Response>& Response::response_cache(ProblemDescDB& problem_db) {
-    const ProblemDescDB* const study_ptr = problem_db.get_rep().get();
-    try {
-      return Response::responseCache.at(study_ptr);
-    } catch(std::out_of_range) {
-      Cerr << "Response::response_cache() called with nonexistent study!\n";
-      throw;
-    }
-  }
-  
-  void Response::remove_cached_response(const ProblemDescDB& problem_db) {
-    const ProblemDescDB* const study_ptr = problem_db.get_rep().get();
-    Response::responseCache.erase(study_ptr);
-  }
-  
-  std::map<const ProblemDescDB*, std::list<Response>> Response::responseCache{};
+}
+
+void Response::remove_cached_response(const ProblemDescDB& problem_db) {
+  const ProblemDescDB* const study_ptr = problem_db.get_rep().get();
+  Response::responseCache.erase(study_ptr);
+}
+
+std::map<const ProblemDescDB*, std::list<Response>> Response::responseCache{};
 
 /** This constructor is the one which must build the base class data for all
     derived classes.  get_response() instantiates a derived class letter
-    and the derived constructor selects this base class constructor in its 
+    and the derived constructor selects this base class constructor in its
     initialization list (to avoid the recursion of the base class constructor
-    calling get_response() again).  Since the letter IS the representation, 
+    calling get_response() again).  Since the letter IS the representation,
     its representation pointer is set to NULL. */
-Response::
-Response(BaseConstructor, const Variables& vars,
-	 const ProblemDescDB& problem_db):
-  sharedRespData(problem_db)
-{
+Response::Response(BaseConstructor, const Variables& vars,
+                   const ProblemDescDB& problem_db)
+    : sharedRespData(problem_db) {
   // the derivative arrays must accomodate either active or inactive variables,
   // but the default is active variables.  Derivative arrays are resized if a
   // DVV of different length is set within responseActiveSet.
@@ -90,48 +92,62 @@ Response(BaseConstructor, const Variables& vars,
   // Resize & initialize response data
   // Conserve memory by checking DB info prior to sizing grad/hessian arrays
   bool grad_flag = (problem_db.get_string("responses.gradient_type") != "none");
-  bool hess_flag = (problem_db.get_string("responses.hessian_type")  != "none");
-  functionValues.size(num_fns); // init to 0
+  bool hess_flag = (problem_db.get_string("responses.hessian_type") != "none");
+  functionValues.size(num_fns);  // init to 0
   short asv_value = 1;
   if (grad_flag) {
     asv_value |= 2;
-    functionGradients.shape(num_params, num_fns); // init to 0
+    functionGradients.shape(num_params, num_fns);  // init to 0
   }
   if (hess_flag) {
     asv_value |= 4;
     functionHessians.resize(num_fns);
-    for (size_t i=0; i<num_fns; i++)
-      functionHessians[i].shape(num_params); // init to 0
+    for (size_t i = 0; i < num_fns; i++)
+      functionHessians[i].shape(num_params);  // init to 0
   }
 
   // set up the response ActiveSet.  This object is copied by Iterator for its
   // initial activeSet and used by Model for MPI buffer size estimation.
-  //responseActiveSet.reshape(num_fns, num_params);
+  // responseActiveSet.reshape(num_fns, num_params);
   ShortArray asv(num_fns, asv_value);
   responseActiveSet.request_vector(asv);
   responseActiveSet.derivative_vector(vars.continuous_variable_ids());
 
   if (problem_db.get_bool("responses.read_field_coordinates")) {
-    size_t num_fields = shared_data().num_field_response_groups(); 
+    size_t num_fields = shared_data().num_field_response_groups();
     const StringArray& field_labels = shared_data().field_group_labels();
-    std::filesystem::path data_path_prefix = problem_db.get_string("responses.data_directory");
+    std::filesystem::path data_path_prefix =
+        problem_db.get_string("responses.data_directory");
 
     for (size_t field_index = 0; field_index < num_fields; ++field_index) {
       const String& field_name = field_labels[field_index];
       std::string coord_file = field_name + ".coords";
       std::filesystem::path coord_path_and_file = data_path_prefix / coord_file;
-      if ( std::filesystem::is_regular_file(coord_path_and_file) ) {
+      if (std::filesystem::is_regular_file(coord_path_and_file)) {
         RealMatrix coord_values;
         read_coord_values(coord_path_and_file.string(), coord_values);
-    //Cout << "coord_file " << coord_file << " coord_values:" << coord_values;
-        field_coords(coord_values,field_index);
-      }  
+        // Cout << "coord_file " << coord_file << " coord_values:" <<
+        // coord_values;
+        field_coords(coord_values, field_index);
+      }
     }
   }
 
   metaData.resize(sharedRespData.metadata_labels().size());
 }
 
+/** BaseConstructor must build the base class data for all derived classes.
+    This version is used for building a response object of the correct size
+    on the fly (e.g., by analysis servers performing execute() on a
+    local_response).  SharedResponseData::functionLabels is not needed for
+    MPI send/recv buffers, but is needed for NPSOLOptimizer's user-defined
+    functions option to support I/O in bestResponseArray.front(). */
+Response::Response(BaseConstructor, const SharedResponseData& srd,
+                   const ActiveSet& set)
+    : sharedRespData(srd), responseActiveSet(set) {
+  shape_rep(set);
+  metaData.resize(sharedRespData.metadata_labels().size());
+}
 
 /** BaseConstructor must build the base class data for all derived classes.
     This version is used for building a response object of the correct size
@@ -139,230 +155,202 @@ Response(BaseConstructor, const Variables& vars,
     local_response).  SharedResponseData::functionLabels is not needed for
     MPI send/recv buffers, but is needed for NPSOLOptimizer's user-defined
     functions option to support I/O in bestResponseArray.front(). */
-Response::
-Response(BaseConstructor, const SharedResponseData& srd, const ActiveSet& set):
-  sharedRespData(srd), responseActiveSet(set)
-{
+Response::Response(BaseConstructor, const ActiveSet& set)
+    : sharedRespData(set),  // minimal unshared definition
+      responseActiveSet(set) {
   shape_rep(set);
   metaData.resize(sharedRespData.metadata_labels().size());
 }
-
-
-/** BaseConstructor must build the base class data for all derived classes.
-    This version is used for building a response object of the correct size
-    on the fly (e.g., by analysis servers performing execute() on a
-    local_response).  SharedResponseData::functionLabels is not needed for
-    MPI send/recv buffers, but is needed for NPSOLOptimizer's user-defined
-    functions option to support I/O in bestResponseArray.front(). */
-Response::Response(BaseConstructor, const ActiveSet& set):
-  sharedRespData(set), // minimal unshared definition
-  responseActiveSet(set)
-{
-  shape_rep(set);
-  metaData.resize(sharedRespData.metadata_labels().size());
-}
-
 
 /** BaseConstructor must build the base class data for all derived
     classes.  This version is used for building a response object of
     the correct size on the fly and sharing an instance of
     SharedResponseData. */
-Response::Response(BaseConstructor, const SharedResponseData& srd):
-  sharedRespData(srd), functionValues(srd.num_functions()),
-  responseActiveSet(functionValues.length())
-{ /* empty ctor */ }
-
+Response::Response(BaseConstructor, const SharedResponseData& srd)
+    : sharedRespData(srd),
+      functionValues(srd.num_functions()),
+      responseActiveSet(functionValues.length()) { /* empty ctor */ }
 
 /** The default constructor: responseRep is NULL in this case (a populated
     problem_db is needed to build a meaningful Response object). */
-Response::Response()
-{ /* empty ctor */ }
-
+Response::Response() { /* empty ctor */ }
 
 /** This is the primary envelope constructor which uses problem_db to
     build a fully populated response object.  It only needs to
     extract enough data to properly execute get_response(problem_db),
     since the constructor overloaded with BaseConstructor builds the
     actual base class data inherited by the derived classes. */
-Response::
-Response(short type, const Variables& vars, const ProblemDescDB& problem_db):
-  // Set the rep pointer to the appropriate derived response class
-  responseRep(get_response(type, vars, problem_db))
-{
-  if (!responseRep) // bad type or insufficient memory
+Response::Response(short type, const Variables& vars,
+                   const ProblemDescDB& problem_db)
+    :  // Set the rep pointer to the appropriate derived response class
+      responseRep(get_response(type, vars, problem_db)) {
+  if (!responseRep)  // bad type or insufficient memory
     abort_handler(-1);
 }
-
 
 /** This is an alternate envelope constructor for instantiations on
     the fly.  This constructor executes get_response(type, set), which
     invokes the derived constructor corresponding to type. */
-Response::Response(const SharedResponseData& srd, const ActiveSet& set):
-  // for responseRep, instantiate the appropriate derived response class
-  responseRep(get_response(srd, set))
-{
-  if (!responseRep) // bad type or insufficient memory
+Response::Response(const SharedResponseData& srd, const ActiveSet& set)
+    :  // for responseRep, instantiate the appropriate derived response class
+      responseRep(get_response(srd, set)) {
+  if (!responseRep)  // bad type or insufficient memory
     abort_handler(-1);
 }
-
 
 /** This is an alternate envelope constructor for instantiations on
     the fly.  This constructor executes get_response(type, set), which
     invokes the derived constructor corresponding to type. */
-Response::Response(short type, const ActiveSet& set):
-  // for responseRep, instantiate the appropriate derived response class
-  responseRep(get_response(type, set))
-{
-  if (!responseRep) // bad type or insufficient memory
+Response::Response(short type, const ActiveSet& set)
+    :  // for responseRep, instantiate the appropriate derived response class
+      responseRep(get_response(type, set)) {
+  if (!responseRep)  // bad type or insufficient memory
     abort_handler(-1);
 }
-
 
 /** This is an alternate envelope constructor for instantiations on
     the fly.  This constructor executes get_response(type, set), which
     invokes the derived constructor corresponding to type. */
-Response::Response(const SharedResponseData& srd):
-  // for responseRep, instantiate the appropriate derived response class
-  responseRep(get_response(srd))
-{
-  if (!responseRep) // bad type or insufficient memory
+Response::Response(const SharedResponseData& srd)
+    :  // for responseRep, instantiate the appropriate derived response class
+      responseRep(get_response(srd)) {
+  if (!responseRep)  // bad type or insufficient memory
     abort_handler(-1);
 }
-
 
 /** Copy constructor manages sharing of responseRep. */
-Response::Response(const Response& resp):
-  responseRep(resp.responseRep)
-{ /* empty ctor */ }
+Response::Response(const Response& resp)
+    : responseRep(resp.responseRep) { /* empty ctor */ }
 
-
-Response Response::operator=(const Response& resp)
-{
+Response Response::operator=(const Response& resp) {
   responseRep = resp.responseRep;
-  return *this; // calls copy constructor since returned by value
+  return *this;  // calls copy constructor since returned by value
 }
 
-
-Response::~Response()
-{ /* empty dtor */ }
-
+Response::~Response() { /* empty dtor */ }
 
 /** Initializes responseRep to the appropriate derived type, as given
     by problem_db attributes.  The standard derived class constructors
     are invoked.  */
-std::shared_ptr<Response> Response::
-get_response(short type, const Variables& vars,
-	     const ProblemDescDB& problem_db) const
-{
+std::shared_ptr<Response> Response::get_response(
+    short type, const Variables& vars, const ProblemDescDB& problem_db) const {
   // This get_response version invokes the standard constructor.
   switch (type) {
-  case SIMULATION_RESPONSE:
-    return std::make_shared<SimulationResponse>(vars, problem_db); break;
-  case EXPERIMENT_RESPONSE:
-    return std::make_shared<ExperimentResponse>(vars, problem_db); break;
-  case BASE_RESPONSE:
-    return std::shared_ptr<Response>
-      (new Response(BaseConstructor(), vars, problem_db));
-    break;
-  default:
-    Cerr << "Response type " << type << " not currently supported in derived "
-	 << "Response classes." << std::endl;
-    return std::shared_ptr<Response>(); break;
+    case SIMULATION_RESPONSE:
+      return std::make_shared<SimulationResponse>(vars, problem_db);
+      break;
+    case EXPERIMENT_RESPONSE:
+      return std::make_shared<ExperimentResponse>(vars, problem_db);
+      break;
+    case BASE_RESPONSE:
+      return std::shared_ptr<Response>(
+          new Response(BaseConstructor(), vars, problem_db));
+      break;
+    default:
+      Cerr << "Response type " << type << " not currently supported in derived "
+           << "Response classes." << std::endl;
+      return std::shared_ptr<Response>();
+      break;
   }
 }
-
 
 /** Initializes responseRep to the appropriate derived type, as given
     by SharedResponseData::responseType. */
-std::shared_ptr<Response> Response::
-get_response(const SharedResponseData& srd, const ActiveSet& set) const
-{
+std::shared_ptr<Response> Response::get_response(const SharedResponseData& srd,
+                                                 const ActiveSet& set) const {
   switch (srd.response_type()) {
-  case SIMULATION_RESPONSE:
-    return std::make_shared<SimulationResponse>(srd, set); break;
-  case EXPERIMENT_RESPONSE:
-    return std::make_shared<ExperimentResponse>(srd, set); break;
-  case BASE_RESPONSE:
-    return std::shared_ptr<Response>(new Response(BaseConstructor(), srd, set));
-    break;
-  default:
-    Cerr << "Response type " << srd.response_type() << " not currently "
-	 << "supported in derived Response classes." << std::endl;
-    return std::shared_ptr<Response>(); break;
+    case SIMULATION_RESPONSE:
+      return std::make_shared<SimulationResponse>(srd, set);
+      break;
+    case EXPERIMENT_RESPONSE:
+      return std::make_shared<ExperimentResponse>(srd, set);
+      break;
+    case BASE_RESPONSE:
+      return std::shared_ptr<Response>(
+          new Response(BaseConstructor(), srd, set));
+      break;
+    default:
+      Cerr << "Response type " << srd.response_type() << " not currently "
+           << "supported in derived Response classes." << std::endl;
+      return std::shared_ptr<Response>();
+      break;
   }
 }
-
 
 /** Initializes responseRep to the appropriate derived class, as given
     by type. */
-std::shared_ptr<Response>
-Response::get_response(short type, const ActiveSet& set) const
-{
+std::shared_ptr<Response> Response::get_response(short type,
+                                                 const ActiveSet& set) const {
   switch (type) {
-  case SIMULATION_RESPONSE:
-    return std::make_shared<SimulationResponse>(set); break;
-  case EXPERIMENT_RESPONSE:
-    return std::make_shared<ExperimentResponse>(set); break;
-  case BASE_RESPONSE:
-    return std::shared_ptr<Response>(new Response(BaseConstructor(), set));
-    break;
-  default:
-    Cerr << "Response type " << type << " not currently supported in derived "
-	 << "Response classes." << std::endl;
-    return std::shared_ptr<Response>(); break;
+    case SIMULATION_RESPONSE:
+      return std::make_shared<SimulationResponse>(set);
+      break;
+    case EXPERIMENT_RESPONSE:
+      return std::make_shared<ExperimentResponse>(set);
+      break;
+    case BASE_RESPONSE:
+      return std::shared_ptr<Response>(new Response(BaseConstructor(), set));
+      break;
+    default:
+      Cerr << "Response type " << type << " not currently supported in derived "
+           << "Response classes." << std::endl;
+      return std::shared_ptr<Response>();
+      break;
   }
 }
-
 
 /** Initializes responseRep to the appropriate derived type, as given
     by SharedResponseData::responseType. */
-std::shared_ptr<Response>
-Response::get_response(const SharedResponseData& srd) const
-{
+std::shared_ptr<Response> Response::get_response(
+    const SharedResponseData& srd) const {
   switch (srd.response_type()) {
-  case SIMULATION_RESPONSE:
-    return std::make_shared<SimulationResponse>(srd); break;
-  case EXPERIMENT_RESPONSE:
-    return std::make_shared<ExperimentResponse>(srd); break;
-  case BASE_RESPONSE:
-    return std::shared_ptr<Response>(new Response(BaseConstructor(), srd));
-    break;
-  default:
-    Cerr << "Response type " << srd.response_type() << " not currently "
-	 << "supported in derived Response classes." << std::endl;
-    return std::shared_ptr<Response>(); break;
+    case SIMULATION_RESPONSE:
+      return std::make_shared<SimulationResponse>(srd);
+      break;
+    case EXPERIMENT_RESPONSE:
+      return std::make_shared<ExperimentResponse>(srd);
+      break;
+    case BASE_RESPONSE:
+      return std::shared_ptr<Response>(new Response(BaseConstructor(), srd));
+      break;
+    default:
+      Cerr << "Response type " << srd.response_type() << " not currently "
+           << "supported in derived Response classes." << std::endl;
+      return std::shared_ptr<Response>();
+      break;
   }
 }
-
 
 /** Initializes responseRep to the appropriate derived type, as given
     by type. */
-std::shared_ptr<Response> Response::get_response(short type) const
-{
+std::shared_ptr<Response> Response::get_response(short type) const {
   switch (type) {
-  case SIMULATION_RESPONSE:
-    return std::make_shared<SimulationResponse>(); break;
-  case EXPERIMENT_RESPONSE:
-    return std::make_shared<ExperimentResponse>(); break;
-  case BASE_RESPONSE:
-    return std::make_shared<Response>();           break;
-  default:
-    Cerr << "Response type " << type << " not currently supported in "
-	 << "derived Response classes." << std::endl;
-    return std::shared_ptr<Response>(); break;
+    case SIMULATION_RESPONSE:
+      return std::make_shared<SimulationResponse>();
+      break;
+    case EXPERIMENT_RESPONSE:
+      return std::make_shared<ExperimentResponse>();
+      break;
+    case BASE_RESPONSE:
+      return std::make_shared<Response>();
+      break;
+    default:
+      Cerr << "Response type " << type << " not currently supported in "
+           << "derived Response classes." << std::endl;
+      return std::shared_ptr<Response>();
+      break;
   }
 }
 
-
-Response Response::copy(bool deep_srd) const
-{
-  Response response; // empty envelope: responseRep=NULL
+Response Response::copy(bool deep_srd) const {
+  Response response;  // empty envelope: responseRep=NULL
 
   if (responseRep) {
     // allocate a responseRep letter, copy data attributes, share the srd
-    response.responseRep = deep_srd ?
-      get_response(responseRep->sharedRespData.copy()) : // deep SRD copy
-      get_response(responseRep->sharedRespData);      // shallow SRD copy
+    response.responseRep =
+        deep_srd ? get_response(responseRep->sharedRespData.copy())
+                 :                                      // deep SRD copy
+            get_response(responseRep->sharedRespData);  // shallow SRD copy
     // allow derived classes to specialize copy_rep if they augment
     // the base class data
     response.responseRep->copy_rep(responseRep);
@@ -371,17 +359,14 @@ Response Response::copy(bool deep_srd) const
   return response;
 }
 
-
-void Response::copy_rep(std::shared_ptr<Response> source_resp_rep)
-{
-  functionValues    = source_resp_rep->functionValues;
+void Response::copy_rep(std::shared_ptr<Response> source_resp_rep) {
+  functionValues = source_resp_rep->functionValues;
   functionGradients = source_resp_rep->functionGradients;
-  functionHessians  = source_resp_rep->functionHessians;
-  fieldCoords       = source_resp_rep->fieldCoords;
+  functionHessians = source_resp_rep->functionHessians;
+  fieldCoords = source_resp_rep->fieldCoords;
   responseActiveSet = source_resp_rep->responseActiveSet;
-  metaData          = source_resp_rep->metaData;
+  metaData = source_resp_rep->metaData;
 }
-
 
 // I/O Notes:
 
@@ -400,22 +385,16 @@ void Response::copy_rep(std::shared_ptr<Response> source_resp_rep)
 // eval. to eval.).  For example, assigning empty gradient/Hessian matrices to
 // Model::currentResponse in a restart operation would cause problems.
 
-
-
-
-
-void Response::read_core(std::istream& s,
-                          const bool labeled,
-                          std::ostringstream& errors)
-{
+void Response::read_core(std::istream& s, const bool labeled,
+                         std::ostringstream& errors) {
   // std::function is overkill, but perhaps clearer than bind or lambda
-  std::function<void(Response&, std::istream& s, const ShortArray &asv,
-		     size_t, std::ostringstream &errors)> value_reader;
-  if(labeled)
-     value_reader = &Response::read_labeled_fn_vals;
+  std::function<void(Response&, std::istream & s, const ShortArray& asv, size_t,
+                     std::ostringstream& errors)>
+      value_reader;
+  if (labeled)
+    value_reader = &Response::read_labeled_fn_vals;
   else
-     value_reader = &Response::read_flexible_fn_vals;
-  
+    value_reader = &Response::read_flexible_fn_vals;
 
   // A segmented parser until we do an all-at-once parse of the file.
   // This implementation is fragile w.r.t. kinds of errors it can detect.
@@ -423,24 +402,21 @@ void Response::read_core(std::istream& s,
   // ASV (populated or empty) and num_metadata control how many fns
   // and/or metadata are read.
   const ShortArray& asv = responseActiveSet.request_vector();
-  if(expect_derivatives(asv)) {
-    value_reader(*this, s, asv, 0, errors); // fns only
+  if (expect_derivatives(asv)) {
+    value_reader(*this, s, asv, 0, errors);  // fns only
     read_gradients(s, asv, !metaData.empty(), errors);
     read_hessians(s, asv, !metaData.empty(), errors);
-    value_reader(*this, s, ShortArray(), metaData.size(), errors); // md only
-  }
-  else {
-    value_reader(*this, s, asv, metaData.size(), errors); // fns and md
+    value_reader(*this, s, ShortArray(), metaData.size(), errors);  // md only
+  } else {
+    value_reader(*this, s, asv, metaData.size(), errors);  // fns and md
     // TODO: validate that derivatives don't errantly appear after metadata:
     read_gradients(s, asv, false, errors);
     read_hessians(s, asv, false, errors);
   }
 }
 
-void Response::read_core(const json& j,
-                          const bool labeled,
-                          std::ostringstream& errors)
-{
+void Response::read_core(const json& j, const bool labeled,
+                         std::ostringstream& errors) {
   const ShortArray& asv = active_set().request_vector();
   const StringArray& fn_labels = function_labels();
   const StringArray& md_labels = shared_data().metadata_labels();
@@ -449,95 +425,94 @@ void Response::read_core(const json& j,
   try {
     JSONResultsParser p(j);
     // Set the functions, gradients, and hessians where requested
-    for(size_t i = 0; i < nf; ++i) {
-      if(asv[i] & 1)
-        function_value(p.function(fn_labels[i]), i);
-      if(asv[i] & 2)
-        function_gradient(p.gradient(fn_labels[i]), i);
-      if(asv[i] & 4)
-        function_hessian(p.hessian(fn_labels[i]), i);
+    for (size_t i = 0; i < nf; ++i) {
+      if (asv[i] & 1) function_value(p.function(fn_labels[i]), i);
+      if (asv[i] & 2) function_gradient(p.gradient(fn_labels[i]), i);
+      if (asv[i] & 4) function_hessian(p.hessian(fn_labels[i]), i);
     }
     // set the metadata, if requested
     std::vector<RespMetadataT> md;
-    std::transform(md_labels.begin(), md_labels.end(), std::back_inserter(md),
-      [&p](const std::string& label){return p.metadata(label);});
+    std::transform(
+        md_labels.begin(), md_labels.end(), std::back_inserter(md),
+        [&p](const std::string& label) { return p.metadata(label); });
     metadata(md);
-  } catch(const JSONResultsParserError& e) {
+  } catch (const JSONResultsParserError& e) {
     errors << e.what();
   }
 }
 
-
-bool Response::expect_derivatives(const ShortArray& asv){
+bool Response::expect_derivatives(const ShortArray& asv) {
   return std::any_of(asv.begin(), asv.end(),
-		     [](short a){ return (a & 2 || a & 4); });
+                     [](short a) { return (a & 2 || a & 4); });
 }
 
-
-void Response::read_labeled_fn_vals(std::istream& s, const ShortArray &asv, 
-          size_t num_metadata, std::ostringstream &errors) {
+void Response::read_labeled_fn_vals(std::istream& s, const ShortArray& asv,
+                                    size_t num_metadata,
+                                    std::ostringstream& errors) {
   const StringArray fn_labels = sharedRespData.function_labels();
   const size_t nf = asv.size();
   // "metadata" for each expected response. First item is the index
   // in asv; second item is whether response has been encountered in s
   typedef std::pair<size_t, bool> Rmeta;
-  // Initialize map of expected_responses and their metadata 
-  std::map<String,Rmeta> expected_responses;
-  for(size_t i=0; i<nf; ++i) {
-    if(asv[i] & 1)
-      expected_responses[fn_labels[i]] = Rmeta(i, false);
+  // Initialize map of expected_responses and their metadata
+  std::map<String, Rmeta> expected_responses;
+  for (size_t i = 0; i < nf; ++i) {
+    if (asv[i] & 1) expected_responses[fn_labels[i]] = Rmeta(i, false);
   }
-  for(size_t i=0; i<num_metadata; ++i)
-    expected_responses[shared_data().metadata_labels()[i]] = Rmeta(nf+i, false);
+  for (size_t i = 0; i < num_metadata; ++i)
+    expected_responses[shared_data().metadata_labels()[i]] =
+        Rmeta(nf + i, false);
   // Use std::map.find() to learn whether a token extracted from s is an
   // expected label. find() returns an iterator to the first matching item.
   // If no match was found, the iterator refers to the end.
-  std::map<String,Rmeta>::const_iterator ere = expected_responses.end();
+  std::map<String, Rmeta>::const_iterator ere = expected_responses.end();
   // lists of responses for which there were errors
   StringArray missing_values, repeated_labels, missing_responses;
   // max asv index encountered so far. bookkeeping to detect out-of-order
   // responses
   size_t max_index = 0;
-  bool out_of_order = false; // error flag for out of order responses
-  size_t num_found = 0; //number of resps found, used only for error reporting
+  bool out_of_order = false;  // error flag for out of order responses
+  size_t num_found = 0;  // number of resps found, used only for error reporting
   size_t pos1, pos2;
   String token1, token2;
   pos1 = s.tellg();
   s >> token1;
   pos2 = s.tellg();
   s >> token2;
-  // Extract pairs of tokens. 
+  // Extract pairs of tokens.
   // o If the first token is a floating point value and the second is an
   //   expected label then record the value
   // o If the first token matches the label of an expected response, then
   //   record a "missing value" error.
   // o Otherwise, there is some unhandled formatting issue. Throw an
   //   exception.
-  while(!token1.empty() && token1[0] != '[') { //loop until EOF or gradient found
-    if(isfloat(token1) &&  
-                expected_responses.find(token2) != ere) { //valid format
-      if(expected_responses[token2].second)
+  while (!token1.empty() &&
+         token1[0] != '[') {  // loop until EOF or gradient found
+    if (isfloat(token1) &&
+        expected_responses.find(token2) != ere) {  // valid format
+      if (expected_responses[token2].second)
         repeated_labels.push_back("\"" + token2 + "\"");
-      if(expected_responses[token2].first < max_index) 
+      if (expected_responses[token2].first < max_index)
         out_of_order = true;
       else
         max_index = expected_responses[token2].first;
       expected_responses[token2].second = true;
       num_found++;
       if (expected_responses[token2].first < nf)
-	functionValues[expected_responses[token2].first] = std::stod(token1);
+        functionValues[expected_responses[token2].first] = std::stod(token1);
       else
-	metaData[expected_responses[token2].first - nf] = std::stod(token1);
-      token1.clear(); token2.clear();
+        metaData[expected_responses[token2].first - nf] = std::stod(token1);
+      token1.clear();
+      token2.clear();
       pos1 = s.tellg();
       s >> token1;
       pos2 = s.tellg();
       s >> token2;
-    } else if(expected_responses.find(token1) != ere) { // missing value
+    } else if (expected_responses.find(token1) != ere) {  // missing value
       missing_values.push_back("\"" + token1 + "\"");
-      if(expected_responses[token1].second) // may also be repeated label
+      if (expected_responses[token1].second)  // may also be repeated label
         repeated_labels.push_back("\"" + token1 + "\"");
-      if(expected_responses[token1].first < max_index) // also check for order
+      if (expected_responses[token1].first < max_index)  // also check for order
         out_of_order = true;
       else
         max_index = expected_responses[token1].first;
@@ -549,106 +524,111 @@ void Response::read_labeled_fn_vals(std::istream& s, const ShortArray &asv,
       pos2 = s.tellg();
       token2.clear();
       s >> token2;
-    } else { // unrecognized format problem
+    } else {  // unrecognized format problem
       throw ResultsFileError("Unexpected data found after reading " +
-			     std::to_string(num_found) + " function value(s).");
+                             std::to_string(num_found) + " function value(s).");
     }
   }
-  s.seekg(pos1); //rewind to (potentially) before [
+  s.seekg(pos1);  // rewind to (potentially) before [
   // Any responses missing?
-  for(std::map<String,Rmeta>::iterator mi = expected_responses.begin();
-      mi != expected_responses.end(); ++mi) {
-    if(!mi->second.second)
+  for (std::map<String, Rmeta>::iterator mi = expected_responses.begin();
+       mi != expected_responses.end(); ++mi) {
+    if (!mi->second.second)
       missing_responses.push_back("\"" + mi->first + "\"");
   }
   // Add error messages to errors as needed
-  if(out_of_order) {
+  if (out_of_order) {
     errors << "-- Function values were not in the expected order.";
   }
-  if(!missing_responses.empty()) {
+  if (!missing_responses.empty()) {
     errors << "-- Missing function value(s): ";
-    std::copy(missing_responses.begin(), missing_responses.end()-1,
-              std::ostream_iterator<String>(errors,", "));
+    std::copy(missing_responses.begin(), missing_responses.end() - 1,
+              std::ostream_iterator<String>(errors, ", "));
     errors << missing_responses.back() << ".";
   }
-  if(!missing_values.empty()) {
-    if(!errors.str().empty()) errors << "\n";
+  if (!missing_values.empty()) {
+    if (!errors.str().empty()) errors << "\n";
     errors << "-- Function value label(s) with missing result(s): ";
-    std::copy(missing_values.begin(), missing_values.end()-1,
-              std::ostream_iterator<String>(errors,", "));
+    std::copy(missing_values.begin(), missing_values.end() - 1,
+              std::ostream_iterator<String>(errors, ", "));
     errors << missing_values.back() << ".";
   }
-  if(!repeated_labels.empty()) {
-    if(!errors.str().empty()) errors << "\n";
+  if (!repeated_labels.empty()) {
+    if (!errors.str().empty()) errors << "\n";
     errors << "-- Function values appearing more than once: ";
-    std::copy(repeated_labels.begin(), repeated_labels.end()-1,
-              std::ostream_iterator<String>(errors,", "));
+    std::copy(repeated_labels.begin(), repeated_labels.end() - 1,
+              std::ostream_iterator<String>(errors, ", "));
     errors << repeated_labels.back() << ".";
   }
 }
 
-
-void Response::read_flexible_fn_vals(std::istream& s, const ShortArray &asv, 
-          size_t num_metadata, std::ostringstream &errors) {
+void Response::read_flexible_fn_vals(std::istream& s, const ShortArray& asv,
+                                     size_t num_metadata,
+                                     std::ostringstream& errors) {
   String token1, token2;
   size_t pos1, pos2;
   size_t nf = asv.size();
   size_t num_expected = 0, num_found = 0;
-  for(size_t i=0; i<nf; ++i) // count the requested responses for error checking
-    if(asv[i] & 1) ++num_expected;
+  for (size_t i = 0; i < nf;
+       ++i)  // count the requested responses for error checking
+    if (asv[i] & 1) ++num_expected;
   num_expected += num_metadata;
 
-  size_t asv_idx = 0; //functionValues/asv index; advanced as fn vals are stored
+  size_t asv_idx =
+      0;  // functionValues/asv index; advanced as fn vals are stored
   size_t md_idx = 0;
   pos1 = s.tellg();
   s >> token1;
   pos2 = s.tellg();
   s >> token2;
   // Keep reading until we run out of function values, indicated by empty token
-  // or '['. Two tokens must be read to get the value and (potentially) the label.
-  while(!token1.empty() && token1[0] != '[') {
+  // or '['. Two tokens must be read to get the value and (potentially) the
+  // label.
+  while (!token1.empty() && token1[0] != '[') {
     // Advance asv_idx to index of the next requested fn val.
-    while(asv_idx < nf && !(asv[asv_idx] & 1)) asv_idx++;
+    while (asv_idx < nf && !(asv[asv_idx] & 1)) asv_idx++;
 
-    if(isfloat(token1)) {
+    if (isfloat(token1)) {
       ++num_found;
-      if(num_found <= num_expected) {
-	if(asv_idx < nf)
-	  functionValues[asv_idx] = std::stod(token1);
-	else
-	  metaData[md_idx++] = std::stod(token1);
+      if (num_found <= num_expected) {
+        if (asv_idx < nf)
+          functionValues[asv_idx] = std::stod(token1);
+        else
+          metaData[md_idx++] = std::stod(token1);
       }
     } else {
-      throw ResultsFileError("Item \"" + token1 + "\" found while reading "
+      throw ResultsFileError(
+          "Item \"" + token1 +
+          "\" found while reading "
           "function values is not a valid floating point number.");
     }
-    if(!token2.empty() && (isfloat(token2) || token2[0] == '[')) {
-        token1=token2;
-        pos1 = pos2;
-        pos2 = s.tellg();
-        token2.clear();
-        s >> token2;
-    } else { // token2 contains a label
-      token1.clear(); token2.clear();
+    if (!token2.empty() && (isfloat(token2) || token2[0] == '[')) {
+      token1 = token2;
+      pos1 = pos2;
+      pos2 = s.tellg();
+      token2.clear();
+      s >> token2;
+    } else {  // token2 contains a label
+      token1.clear();
+      token2.clear();
       pos1 = s.tellg();
       s >> token1;
       pos2 = s.tellg();
       s >> token2;
     }
-    asv_idx++; // not necessary once asv_idx >= nf, but harmless
+    asv_idx++;  // not necessary once asv_idx >= nf, but harmless
   }
-  s.seekg(pos1); // rewind to just before the [. If EOF was set,
-                 // future reads will still "fail".
+  s.seekg(pos1);  // rewind to just before the [. If EOF was set,
+                  // future reads will still "fail".
   // Report an error if needed
-  if(num_found != num_expected) {
-    if(!errors.str().empty())
-        errors << "\n";
-    errors << "-- Expected " << num_expected << " function value(s) but found " 
-      << num_found << ".";
+  if (num_found != num_expected) {
+    if (!errors.str().empty()) errors << "\n";
+    errors << "-- Expected " << num_expected << " function value(s) but found "
+           << num_found << ".";
   }
 }
 
-/*void Response::read_freeform_fn_vals(std::istream& s, const ShortArray &asv, 
+/*void Response::read_freeform_fn_vals(std::istream& s, const ShortArray &asv,
           std::ostringstream &errors) {
   String token;
   size_t pos;
@@ -686,18 +666,18 @@ void Response::read_flexible_fn_vals(std::istream& s, const ShortArray &asv,
   if(num_found != num_expected) {
     if(!errors.str().empty())
         errors << "\n";
-    errors << "-- Expected " << num_expected << " function values but found " 
+    errors << "-- Expected " << num_expected << " function values but found "
       << num_found << ".";
   }
 }
 */
-void Response::read_gradients(std::istream& s, const ShortArray &asv,
-			      bool expect_metadata, std::ostringstream &errors)
-{
+void Response::read_gradients(std::istream& s, const ShortArray& asv,
+                              bool expect_metadata,
+                              std::ostringstream& errors) {
   size_t nf = asv.size();
   size_t num_expected = 0, num_found = 0;
-  for(size_t i=0; i<nf; ++i)
-    if(asv[i] & 2) ++num_expected;
+  for (size_t i = 0; i < nf; ++i)
+    if (asv[i] & 2) ++num_expected;
 
   // Get function gradients as governed by ASV requests
   // For brackets, chars are used rather than token strings to allow optional
@@ -711,162 +691,163 @@ void Response::read_gradients(std::istream& s, const ShortArray &asv,
   s >> l_bracket1;
   pos2 = s.tellg();
   s >> l_bracket2;
-  // Keep reading until we run out of file or encounter a hessian. Determine 
+  // Keep reading until we run out of file or encounter a hessian. Determine
   // the actual number of gradients in the file; if this is more or less
   // than what was expected, report as an error.
- 
-  while(l_bracket1 == '[' && l_bracket2 != '[') {
+
+  while (l_bracket1 == '[' && l_bracket2 != '[') {
     s.seekg(pos2);
-    while(asv_idx < nf && !(asv[asv_idx] & 2)) asv_idx++;
+    while (asv_idx < nf && !(asv[asv_idx] & 2)) asv_idx++;
     num_found++;
-    if(num_found <= num_expected) {
-      read_col_vector_trans(s, (int)asv_idx, functionGradients); // fault tolerant
-    } else { // get and discard 
-      s.ignore(std::numeric_limits<int>::max(),']');
-      s.putback(']'); // doesn't clear EOF
+    if (num_found <= num_expected) {
+      read_col_vector_trans(s, (int)asv_idx,
+                            functionGradients);  // fault tolerant
+    } else {                                     // get and discard
+      s.ignore(std::numeric_limits<int>::max(), ']');
+      s.putback(']');  // doesn't clear EOF
     }
     r_bracket = '\0';
     s >> r_bracket;
-    if(r_bracket != ']') {
-      throw ResultsFileError("Closing bracket ']' not found in " 
-			     "expected position for function gradient " +
-			     std::to_string(num_found) + ".");
+    if (r_bracket != ']') {
+      throw ResultsFileError(
+          "Closing bracket ']' not found in "
+          "expected position for function gradient " +
+          std::to_string(num_found) + ".");
     }
     asv_idx++;
-    l_bracket1 = '\0'; l_bracket2 = '\0';
+    l_bracket1 = '\0';
+    l_bracket2 = '\0';
     pos1 = s.tellg();
     s >> l_bracket1;
     pos2 = s.tellg();
     s >> l_bracket2;
   }
   s.seekg(pos1);
-  // l_bracket1 and 2 are expected to both contain [ (start of hessian) or  \0 
-  // (eof). If they don't, there was unexpected junk following the last 
-  // gradient. The case of no gradients + unexpected junk following the last 
+  // l_bracket1 and 2 are expected to both contain [ (start of hessian) or  \0
+  // (eof). If they don't, there was unexpected junk following the last
+  // gradient. The case of no gradients + unexpected junk following the last
   // fn val is handled by the fn val reading functions.
   bool hessian_follows = (l_bracket1 == '[' && l_bracket2 == '[');
   bool at_eof = (l_bracket1 == '\0' && l_bracket2 == '\0');
-  if( ! (hessian_follows || at_eof || expect_metadata) ) {
+  if (!(hessian_follows || at_eof || expect_metadata)) {
     throw ResultsFileError("Unexpected data found after reading " +
-			   std::to_string(num_found) +
-			   " function gradient(s).");
+                           std::to_string(num_found) +
+                           " function gradient(s).");
   }
 
   // Report an error if needed
-  if(num_found != num_expected) {
-    if(!errors.str().empty())
-        errors << "\n";
-    errors << "Expected " << num_expected << " gradients but found " 
-      << num_found << ".";
+  if (num_found != num_expected) {
+    if (!errors.str().empty()) errors << "\n";
+    errors << "Expected " << num_expected << " gradients but found "
+           << num_found << ".";
   }
 }
 
-void Response::read_hessians(std::istream& s, const ShortArray &asv,
-			     bool expect_metadata, std::ostringstream &errors)
-{
+void Response::read_hessians(std::istream& s, const ShortArray& asv,
+                             bool expect_metadata, std::ostringstream& errors) {
   size_t nf = asv.size();
   size_t num_expected = 0, num_found = 0;
-  for(size_t i=0; i<nf; ++i)
-    if(asv[i] & 4) ++num_expected;
+  for (size_t i = 0; i < nf; ++i)
+    if (asv[i] & 4) ++num_expected;
 
   // Get function gradients as governed by ASV requests
   // For brackets, chars are used rather than token strings to allow optional
   // white space between brackets and values.
 
   // s is expected to be either at eof or pointing at [.
-  
-  char l_bracket[2] = {'\0','\0'};
-  char r_bracket[2] = {'\0','\0'};
+
+  char l_bracket[2] = {'\0', '\0'};
+  char r_bracket[2] = {'\0', '\0'};
   size_t pos1 = s.tellg();
   size_t asv_idx = 0;
   s >> l_bracket[0] >> l_bracket[1];
-  // Keep reading until we run out of Hessians 
-  while(l_bracket[0]  == '[' && l_bracket[1] == '[') {
+  // Keep reading until we run out of Hessians
+  while (l_bracket[0] == '[' && l_bracket[1] == '[') {
     // advance asv_idx to the next response for which Hessian is required
-    while(asv_idx < nf && !(asv[asv_idx] & 4)) asv_idx++;
+    while (asv_idx < nf && !(asv[asv_idx] & 4)) asv_idx++;
     num_found++;
-    if(num_found <= num_expected) {
-      Dakota::read_data(s, functionHessians[asv_idx]); // fault tolerant
-    } else { // get and discard 
-      s.ignore(std::numeric_limits<int>::max(),']');
+    if (num_found <= num_expected) {
+      Dakota::read_data(s, functionHessians[asv_idx]);  // fault tolerant
+    } else {                                            // get and discard
+      s.ignore(std::numeric_limits<int>::max(), ']');
       s.putback(']');
     }
-    r_bracket[0] = '\0'; r_bracket[1] = '\0';
+    r_bracket[0] = '\0';
+    r_bracket[1] = '\0';
     s >> r_bracket[0] >> r_bracket[1];
-    if( !(r_bracket[0] == ']' && r_bracket[1] == ']') ) {
-      throw ResultsFileError("Closing brackets ']]' not found in expected "
-			     "position for function Hessian "
-			     + std::to_string(num_found) + "." );
+    if (!(r_bracket[0] == ']' && r_bracket[1] == ']')) {
+      throw ResultsFileError(
+          "Closing brackets ']]' not found in expected "
+          "position for function Hessian " +
+          std::to_string(num_found) + ".");
     }
     asv_idx++;
-    l_bracket[0] = '\0'; l_bracket[1] = '\0';
+    l_bracket[0] = '\0';
+    l_bracket[1] = '\0';
     pos1 = s.tellg();
     s >> l_bracket[0] >> l_bracket[1];
   }
   s.seekg(pos1);
   bool at_eof = (l_bracket[0] == '\0');
-  if( ! (at_eof || expect_metadata) )
+  if (!(at_eof || expect_metadata))
     throw ResultsFileError("Unexpected data found after reading " +
-			   std::to_string(num_found) + " function Hessian(s).");
+                           std::to_string(num_found) + " function Hessian(s).");
 
   // Report an error if needed
-  if(num_found != num_expected) {
-    if(!errors.str().empty())
-        errors << "\n";
-    errors << "Expected " << num_expected << " Hessians but found " 
-      << num_found << ".";
+  if (num_found != num_expected) {
+    if (!errors.str().empty()) errors << "\n";
+    errors << "Expected " << num_expected << " Hessians but found " << num_found
+           << ".";
   }
 }
-
 
 bool Response::failure_reported(std::istream& s) {
   char fail_char;
   std::string fail_string("fail");
-  s >> fail_char; // advance to first char
-  if(s)
-    s.putback(fail_char);
-  for (size_t i=0; i<4; i++) {
+  s >> fail_char;  // advance to first char
+  if (s) s.putback(fail_char);
+  for (size_t i = 0; i < 4; i++) {
     fail_char = '\0';
     s.get(fail_char);
-    if (tolower(fail_char) != fail_string[i]) { // FAIL, Fail, fail, etc.
-      s.seekg(0); // Reset stream to beginning
-      return false; // exit for loop
+    if (tolower(fail_char) != fail_string[i]) {  // FAIL, Fail, fail, etc.
+      s.seekg(0);                                // Reset stream to beginning
+      return false;                              // exit for loop
     }
   }
   return true;
 }
 
-
 bool Response::failure_reported(const json& j) {
   return JSONResultsParser(j).failed();
 }
 
-
 /** ASCII version of write. */
-void Response::write(std::ostream& s) const
-{
+void Response::write(std::ostream& s) const {
   // if envelope, forward to letter
-  if (responseRep)
-    { responseRep->write(s); return; }
+  if (responseRep) {
+    responseRep->write(s);
+    return;
+  }
 
   const ShortArray& asv = responseActiveSet.request_vector();
   const SizetArray& dvv = responseActiveSet.derivative_vector();
   size_t i, nf = asv.size();
   bool deriv_flag = false;
-  for (i=0; i<nf; ++i)
-    if (asv[i] & 6)
-      { deriv_flag = true; break; }
+  for (i = 0; i < nf; ++i)
+    if (asv[i] & 6) {
+      deriv_flag = true;
+      break;
+    }
 
   // Write ASV/DVV information
   s << "Active set vector = { ";
   array_write_annotated(s, asv, false);
-  if (deriv_flag) { // dvv != vars.continuous_variable_ids() ?,
-                    // outputLevel > NORMAL_OUTPUT ?
+  if (deriv_flag) {  // dvv != vars.continuous_variable_ids() ?,
+                     // outputLevel > NORMAL_OUTPUT ?
     s << "} Deriv vars vector = { ";
     array_write_annotated(s, dvv, false);
     s << "}\n";
-  }
-  else
+  } else
     s << "}\n";
 
   // Make sure a valid set of function labels exists. This has been a problem
@@ -879,15 +860,15 @@ void Response::write(std::ostream& s) const
   }
 
   // Write the function values if present
-  for (i=0; i<nf; ++i)
-    if (asv[i] & 1) // & 1 masks off 2nd and 3rd bit
-      s << "                     " << std::setw(write_precision+7) 
+  for (i = 0; i < nf; ++i)
+    if (asv[i] & 1)  // & 1 masks off 2nd and 3rd bit
+      s << "                     " << std::setw(write_precision + 7)
         << functionValues[i] << ' ' << fn_labels[i] << '\n';
 
   // Write the function gradients if present
   size_t ng = functionGradients.numCols();
-  for (i=0; i<ng; ++i) {
-    if (asv[i] & 2) { // & 2 masks off 1st and 3rd bit
+  for (i = 0; i < ng; ++i) {
+    if (asv[i] & 2) {  // & 2 masks off 1st and 3rd bit
       // NOTE: col_vec is WRITTEN-out like a row_vec for historical consistency
       write_col_vector_trans(s, (int)i, functionGradients, true, true, false);
       s << fn_labels[i] << " gradient\n";
@@ -896,42 +877,37 @@ void Response::write(std::ostream& s) const
 
   // Write the function Hessians if present
   size_t nh = functionHessians.size();
-  for (i=0; i<nh; ++i) {
-    if (asv[i] & 4) { // & 4 masks off 1st and 2nd bit
+  for (i = 0; i < nh; ++i) {
+    if (asv[i] & 4) {  // & 4 masks off 1st and 2nd bit
       Dakota::write_data(s, functionHessians[i], true, true, false);
       s << fn_labels[i] << " Hessian\n";
     }
   }
 
   // Write the metadata
-  for (i=0; i<metaData.size(); ++i)
-    s << "                     " << std::setw(write_precision+7)
+  for (i = 0; i < metaData.size(); ++i)
+    s << "                     " << std::setw(write_precision + 7)
       << metaData[i] << ' ' << sharedRespData.metadata_labels()[i] << '\n';
 
   s << std::endl;
 }
 
-
-void Response::read_annotated(std::istream& s)
-{
+void Response::read_annotated(std::istream& s) {
   short type;
   s >> type;
 
-  if (responseRep) { // allow reuse in loaded Response objects
+  if (responseRep) {  // allow reuse in loaded Response objects
     if (responseRep->sharedRespData.is_null() ||
-	type != responseRep->sharedRespData.response_type())
+        type != responseRep->sharedRespData.response_type())
       responseRep = get_response(type);
-  }
-  else // read into empty envelope: responseRep must be instantiated
+  } else  // read into empty envelope: responseRep must be instantiated
     responseRep = get_response(type);
 
-  responseRep->read_annotated_rep(s); // fwd to new/existing rep
+  responseRep->read_annotated_rep(s);  // fwd to new/existing rep
   responseRep->sharedRespData.response_type(type);
 }
 
-
-void Response::write_annotated(std::ostream& s) const
-{
+void Response::write_annotated(std::ostream& s) const {
   if (responseRep)
     responseRep->write_annotated(s);
   else {
@@ -940,12 +916,10 @@ void Response::write_annotated(std::ostream& s) const
   }
 }
 
-
 /** read_annotated() is used for neutral file translation of restart files.
     Since objects are built solely from this data, annotations are used.
     This version closely mirrors the BiStream version. */
-void Response::read_annotated_rep(std::istream& s)
-{
+void Response::read_annotated_rep(std::istream& s) {
   // Read sizing data
   size_t i, num_fns, num_params, num_metadata;
   bool grad_flag, hess_flag;
@@ -964,35 +938,36 @@ void Response::read_annotated_rep(std::istream& s)
 
   // Get fn. values as governed by ASV requests
   const ShortArray& asv = responseActiveSet.request_vector();
-  std::string token; // used with atof() to handle +/-inf & nan
-  for (i=0; i<num_fns; ++i)
-    if (asv[i] & 1) // & 1 masks off 2nd and 3rd bit
-      { s >> token; functionValues[i] = std::atof(token.c_str()); }
+  std::string token;  // used with atof() to handle +/-inf & nan
+  for (i = 0; i < num_fns; ++i)
+    if (asv[i] & 1)  // & 1 masks off 2nd and 3rd bit
+    {
+      s >> token;
+      functionValues[i] = std::atof(token.c_str());
+    }
 
   // Get function gradients as governed by ASV requests
   size_t nv = functionGradients.numRows();
-  for (i=0; i<num_fns; ++i)
-    if (asv[i] & 2) // & 2 masks off 1st and 3rd bit
-      read_col_vector_trans(s, (int)i, functionGradients); // fault tolerant
+  for (i = 0; i < num_fns; ++i)
+    if (asv[i] & 2)  // & 2 masks off 1st and 3rd bit
+      read_col_vector_trans(s, (int)i, functionGradients);  // fault tolerant
 
   // Get function Hessians as governed by ASV requests
-  for (i=0; i<num_fns; ++i)
-    if (asv[i] & 4) // & 4 masks off 1st and 2nd bit
-      read_lower_triangle(s, functionHessians[i]); // fault tolerant
+  for (i = 0; i < num_fns; ++i)
+    if (asv[i] & 4)  // & 4 masks off 1st and 2nd bit
+      read_lower_triangle(s, functionHessians[i]);  // fault tolerant
 
   metaData.resize(num_metadata);
   s >> metaData;
 }
 
-
 /** write_annotated() is used for neutral file translation of restart files.
     Since objects need to be build solely from this data, annotations are used.
     This version closely mirrors the BoStream version, with the exception of
     the use of white space between fields. */
-void Response::write_annotated_rep(std::ostream& s) const
-{
+void Response::write_annotated_rep(std::ostream& s) const {
   const ShortArray& asv = responseActiveSet.request_vector();
-  size_t i, num_fns = asv.size() ;
+  size_t i, num_fns = asv.size();
 
   // Write Response sizing data
   s << num_fns << ' ' << responseActiveSet.derivative_vector().size() << ' '
@@ -1006,31 +981,29 @@ void Response::write_annotated_rep(std::ostream& s) const
   array_write_annotated(s, sharedRespData.metadata_labels(), false);
 
   // Write the function values if present
-  for (i=0; i<num_fns; ++i)
-    if (asv[i] & 1) // & 1 masks off 2nd and 3rd bit
+  for (i = 0; i < num_fns; ++i)
+    if (asv[i] & 1)  // & 1 masks off 2nd and 3rd bit
       s << functionValues[i] << ' ';
 
   // Write the function gradients if present
-  for (i=0; i<num_fns; ++i)
-    if (asv[i] & 2) // & 2 masks off 1st and 3rd bit
+  for (i = 0; i < num_fns; ++i)
+    if (asv[i] & 2)  // & 2 masks off 1st and 3rd bit
       write_col_vector_trans(s, (int)i, functionGradients, false, false, false);
 
   // Write the function Hessians if present
-  for (i=0; i<num_fns; ++i)
-    if (asv[i] & 4) // & 4 masks off 1st and 2nd bit
+  for (i = 0; i < num_fns; ++i)
+    if (asv[i] & 4)  // & 4 masks off 1st and 2nd bit
       write_lower_triangle(s, functionHessians[i], false);
 
   array_write_annotated(s, metaData, false);
 }
-
 
 /** read_tabular is used to read functionValues in tabular format.  It
     is currently only used by ApproximationInterfaces in reading samples
     from a file.  There is insufficient data in a tabular file to build
     complete response objects; rather, the response object must be
     constructed a priori and then its functionValues can be set. */
-void Response::read_tabular(std::istream& s)
-{
+void Response::read_tabular(std::istream& s) {
   // if envelope, forward to letter
   if (responseRep)
     responseRep->read_tabular(s);
@@ -1039,21 +1012,20 @@ void Response::read_tabular(std::istream& s)
     // format, there must be a field read even when data is inactive.
     size_t i, num_fns = functionValues.length();
     std::string token;
-    for (i=0; i<num_fns; ++i)
-      if (s)
-	{ s >> token; functionValues[i] = std::atof(token.c_str()); }
-      else
-	throw TabularDataTruncated("At EOF: insufficient data for RealVector[" +
-				   std::to_string(i) + "]");
+    for (i = 0; i < num_fns; ++i)
+      if (s) {
+        s >> token;
+        functionValues[i] = std::atof(token.c_str());
+      } else
+        throw TabularDataTruncated("At EOF: insufficient data for RealVector[" +
+                                   std::to_string(i) + "]");
   }
 }
 
-
 /** write_tabular is used for output of functionValues in a tabular
     format for convenience in post-processing/plotting of DAKOTA results. */
-void Response::write_tabular(std::ostream& s, bool eol) const
-{
-  if (responseRep) // envelope forward to letter
+void Response::write_tabular(std::ostream& s, bool eol) const {
+  if (responseRep)  // envelope forward to letter
     responseRep->write_tabular(s, eol);
   else {
     // Print a field for each of the function values, even if inactive (since
@@ -1063,58 +1035,55 @@ void Response::write_tabular(std::ostream& s, bool eol) const
     // the correct meaning visually, but both cause problems with data import.
     size_t i, num_fns = functionValues.length();
     const ShortArray& asv = responseActiveSet.request_vector();
-    s << std::setprecision(write_precision) 
+    s << std::setprecision(write_precision)
       << std::resetiosflags(std::ios::floatfield);
-    for (i=0; i<num_fns; ++i)
+    for (i = 0; i < num_fns; ++i)
       if (asv[i] & 1)
-	s << std::setw(write_precision+4) << functionValues[i] << ' ';
+        s << std::setw(write_precision + 4) << functionValues[i] << ' ';
       else
-	s << std::setw(write_precision+4) << "N/A" << ' '; // N/A for inactive
-      // BMA TODO: write something that can be read back in for tabular...
-      //s << std::numeric_limits<double>::quiet_NaN(); // inactive data
-      //s << "EMPTY"; // inactive data
+        s << std::setw(write_precision + 4) << "N/A"
+          << ' ';  // N/A for inactive
+    // BMA TODO: write something that can be read back in for tabular...
+    // s << std::numeric_limits<double>::quiet_NaN(); // inactive data
+    // s << "EMPTY"; // inactive data
     // TODO: Unclear if we want metadata in tabular files and if yes,
     // need to make sure re-imports still work.
-    //if (eol) ?!?
+    // if (eol) ?!?
     //  for (const auto& md : metaData)
     //    s << std::setw(write_precision+4) << md << ' ';
-    if (eol) s << std::endl; // table row completed
+    if (eol) s << std::endl;  // table row completed
   }
 }
 
-
 /** write_tabular is used for output of functionValues in a tabular
     format for convenience in post-processing/plotting of DAKOTA results. */
-void Response::
-write_tabular_partial(std::ostream& s, size_t start_index,
-		      size_t num_items) const
-{
-  if (responseRep) // envelope forward to letter
+void Response::write_tabular_partial(std::ostream& s, size_t start_index,
+                                     size_t num_items) const {
+  if (responseRep)  // envelope forward to letter
     responseRep->write_tabular_partial(s, start_index, num_items);
   else {
     size_t i, num_fns = functionValues.length(),
-      end = std::min(num_fns, start_index + num_items);
+              end = std::min(num_fns, start_index + num_items);
     const ShortArray& asv = responseActiveSet.request_vector();
-    s << std::setprecision(write_precision) 
+    s << std::setprecision(write_precision)
       << std::resetiosflags(std::ios::floatfield);
-    for (i=start_index; i<end; ++i)
+    for (i = start_index; i < end; ++i)
       if (asv[i] & 1)
-	s << std::setw(write_precision+4) << functionValues[i] << ' ';
+        s << std::setw(write_precision + 4) << functionValues[i] << ' ';
       else
-	s << std::setw(write_precision+4) << "N/A" << ' '; // N/A for inactive
-      // BMA TODO: write something that can be read back in for tabular...
-      //s << std::numeric_limits<double>::quiet_NaN(); // inactive data
-      //s << "EMPTY"; // inactive data
+        s << std::setw(write_precision + 4) << "N/A"
+          << ' ';  // N/A for inactive
+    // BMA TODO: write something that can be read back in for tabular...
+    // s << std::numeric_limits<double>::quiet_NaN(); // inactive data
+    // s << "EMPTY"; // inactive data
     // TODO: Unclear if we want metadata in tabular files and if yes,
     // need to make sure re-imports still work.
-    //for (const auto& md : metaData)
+    // for (const auto& md : metaData)
     //  s << std::setw(write_precision+4) << md << ' ';
   }
 }
 
-
-void Response::write_tabular_labels(std::ostream& s, bool eol) const
-{
+void Response::write_tabular_labels(std::ostream& s, bool eol) const {
   // if envelope, forward to letter
   if (responseRep)
     responseRep->write_tabular_labels(s, eol);
@@ -1123,40 +1092,34 @@ void Response::write_tabular_labels(std::ostream& s, bool eol) const
       s << std::setw(14) << fn_label << ' ';
     // TODO: Unclear if we want metadata in tabular files and if yes,
     // need to make sure re-imports still work.
-    //if (eol)
+    // if (eol)
     //  for (const auto& md_label : sharedRespData.metadata_labels())
     //    s << std::setw(14) << md_label << ' ';
-    if (eol) s << std::endl; // table row completed
+    if (eol) s << std::endl;  // table row completed
   }
 }
 
-
-void Response::read(MPIUnpackBuffer& s)
-{
+void Response::read(MPIUnpackBuffer& s) {
   bool has_rep;
   s >> has_rep;
-  if (has_rep) { // response is not an empty handle
+  if (has_rep) {  // response is not an empty handle
     short type;
     s >> type;
 
     if (responseRep) {  // allow reuse in received Response objects
       if (responseRep->sharedRespData.is_null() ||
-	  type != responseRep->sharedRespData.response_type())
-	responseRep = get_response(type);
-    }
-    else
+          type != responseRep->sharedRespData.response_type())
+        responseRep = get_response(type);
+    } else
       responseRep = get_response(type);
 
-    responseRep->read_rep(s); // fwd to rep
+    responseRep->read_rep(s);  // fwd to rep
     responseRep->sharedRespData.response_type(type);
-  }
-  else if (responseRep)
+  } else if (responseRep)
     responseRep.reset();
 }
 
-
-void Response::write(MPIPackBuffer& s) const
-{
+void Response::write(MPIPackBuffer& s) const {
   s << !is_null();
   if (responseRep) {
     s << responseRep->sharedRespData.response_type();
@@ -1164,12 +1127,10 @@ void Response::write(MPIPackBuffer& s) const
   }
 }
 
-
 /** UnpackBuffer version differs from BiStream version in the omission
     of functionLabels.  Scheduler processor retains labels and interface
     ids and communicates asv and response data only with servers. */
-void Response::read_rep(MPIUnpackBuffer& s)
-{
+void Response::read_rep(MPIUnpackBuffer& s) {
   // Read derivative sizing data and responseActiveSet
   bool grad_flag, hess_flag;
   size_t num_metadata;
@@ -1177,40 +1138,38 @@ void Response::read_rep(MPIUnpackBuffer& s)
 
   // build shared counts and (default) functionLabels
   if (sharedRespData.is_null())
-    sharedRespData = SharedResponseData(responseActiveSet); // not shared
+    sharedRespData = SharedResponseData(responseActiveSet);  // not shared
 
   // reshape response arrays and reset all data to zero
   const ShortArray& asv = responseActiveSet.request_vector();
   size_t i, num_fns = asv.size();
-  reshape(num_fns, responseActiveSet.derivative_vector().size(),
-	  grad_flag, hess_flag);
+  reshape(num_fns, responseActiveSet.derivative_vector().size(), grad_flag,
+          hess_flag);
   reset();
 
   // Get fn. values as governed by ASV requests
-  for (i=0; i<num_fns; ++i)
-    if (asv[i] & 1) // & 1 masks off 2nd and 3rd bit
+  for (i = 0; i < num_fns; ++i)
+    if (asv[i] & 1)  // & 1 masks off 2nd and 3rd bit
       s >> functionValues[i];
 
   // Get function gradients as governed by ASV requests
-  for (i=0; i<num_fns; ++i)
-    if (asv[i] & 2) // & 2 masks off 1st and 3rd bit
+  for (i = 0; i < num_fns; ++i)
+    if (asv[i] & 2)  // & 2 masks off 1st and 3rd bit
       read_col_vector_trans(s, (int)i, functionGradients);
 
   // Get function Hessians as governed by ASV requests
-  for (i=0; i<num_fns; ++i)
-    if (asv[i] & 4) // & 4 masks off 1st and 2nd bit
+  for (i = 0; i < num_fns; ++i)
+    if (asv[i] & 4)  // & 4 masks off 1st and 2nd bit
       read_lower_triangle(s, functionHessians[i]);
 
   metaData.resize(num_metadata);
   s >> metaData;
 }
 
-
 /** MPIPackBuffer version differs from BoStream version only in the
     omission of functionLabels.  The scheduler processor retains labels
     and ids and communicates asv and response data only with servers. */
-void Response::write_rep(MPIPackBuffer& s) const
-{
+void Response::write_rep(MPIPackBuffer& s) const {
   // Write sizing data and responseActiveSet
   s << !functionGradients.empty() << !functionHessians.empty()
     << responseActiveSet << metaData.size();
@@ -1219,37 +1178,35 @@ void Response::write_rep(MPIPackBuffer& s) const
   size_t i, num_fns = asv.size();
 
   // Write the function values if present
-  for (i=0; i<num_fns; ++i)
-    if (asv[i] & 1) // & 1 masks off 2nd and 3rd bit
+  for (i = 0; i < num_fns; ++i)
+    if (asv[i] & 1)  // & 1 masks off 2nd and 3rd bit
       s << functionValues[i];
 
   // Write the function gradients if present
-  for (i=0; i<num_fns; ++i)
-    if (asv[i] & 2) // & 2 masks off 1st and 3rd bit
+  for (i = 0; i < num_fns; ++i)
+    if (asv[i] & 2)  // & 2 masks off 1st and 3rd bit
       write_col_vector_trans(s, (int)i, functionGradients);
 
   // Write the function Hessians if present
-  for (i=0; i<num_fns; ++i)
-    if (asv[i] & 4) // & 4 masks off 1st and 2nd bit
+  for (i = 0; i < num_fns; ++i)
+    if (asv[i] & 4)  // & 4 masks off 1st and 2nd bit
       write_lower_triangle(s, functionHessians[i]);
 
   s << metaData;
 }
 
-
-int Response::data_size()
-{
+int Response::data_size() {
   if (responseRep)
     return responseRep->data_size();
   else {
-    // return the number of doubles active in response for sizing double* 
+    // return the number of doubles active in response for sizing double*
     // response_data arrays passed into read_data and write_data
     int size = 0;
     const ShortArray& asv = responseActiveSet.request_vector();
     size_t i, num_fns = functionValues.length(),
-      grad_size = responseActiveSet.derivative_vector().size(),
-      hess_size = grad_size*(grad_size+1)/2; // (n^2+n)/2
-    for (i=0; i<num_fns; ++i) {
+              grad_size = responseActiveSet.derivative_vector().size(),
+              hess_size = grad_size * (grad_size + 1) / 2;  // (n^2+n)/2
+    for (i = 0; i < num_fns; ++i) {
       if (asv[i] & 1) ++size;
       if (asv[i] & 2) size += grad_size;
       if (asv[i] & 4) size += hess_size;
@@ -1258,138 +1215,123 @@ int Response::data_size()
   }
 }
 
-
-void Response::read_data(double* response_data)
-{
+void Response::read_data(double* response_data) {
   if (responseRep)
     responseRep->read_data(response_data);
   else {
     // read from an incoming double* array
     const ShortArray& asv = responseActiveSet.request_vector();
     size_t i, j, k, cntr = 0, num_fns = functionValues.length(),
-      num_params = responseActiveSet.derivative_vector().size();
-    for (i=0; i<num_fns; ++i)
-      if (asv[i] & 1)
-	functionValues[i] = response_data[cntr++];
+                    num_params = responseActiveSet.derivative_vector().size();
+    for (i = 0; i < num_fns; ++i)
+      if (asv[i] & 1) functionValues[i] = response_data[cntr++];
     num_fns = functionGradients.numCols();
-    for (i=0; i<num_fns; ++i)
+    for (i = 0; i < num_fns; ++i)
       if (asv[i] & 2) {
-	Real* fn_grad_i = functionGradients[i];
-	for (j=0; j<num_params; ++j, ++cntr)
-	  fn_grad_i[j] = response_data[cntr];
+        Real* fn_grad_i = functionGradients[i];
+        for (j = 0; j < num_params; ++j, ++cntr)
+          fn_grad_i[j] = response_data[cntr];
       }
     num_fns = functionHessians.size();
-    for (i=0; i<num_fns; ++i)
+    for (i = 0; i < num_fns; ++i)
       if (asv[i] & 4) {
-	RealSymMatrix& fn_hess_i = functionHessians[i];
-	for (j=0; j<num_params; ++j)
-	  for (k=0; k<=j; ++k, ++cntr)
-	    fn_hess_i(j,k) = response_data[cntr];
+        RealSymMatrix& fn_hess_i = functionHessians[i];
+        for (j = 0; j < num_params; ++j)
+          for (k = 0; k <= j; ++k, ++cntr)
+            fn_hess_i(j, k) = response_data[cntr];
       }
   }
 }
 
-
-void Response::write_data(double* response_data)
-{
+void Response::write_data(double* response_data) {
   if (responseRep)
     responseRep->write_data(response_data);
   else {
     // write to an incoming double* array
     const ShortArray& asv = responseActiveSet.request_vector();
     size_t i, j, k, cntr = 0, num_fns = functionValues.length(),
-      num_params = responseActiveSet.derivative_vector().size();
-    for (i=0; i<num_fns; ++i)
-      if (asv[i] & 1)
-	response_data[cntr++] = functionValues[i];
+                    num_params = responseActiveSet.derivative_vector().size();
+    for (i = 0; i < num_fns; ++i)
+      if (asv[i] & 1) response_data[cntr++] = functionValues[i];
     num_fns = functionGradients.numCols();
-    for (i=0; i<num_fns; ++i)
+    for (i = 0; i < num_fns; ++i)
       if (asv[i] & 2) {
-	const Real* fn_grad_i = functionGradients[i];
-	for (j=0; j<num_params; j++, ++cntr)
-	  response_data[cntr] = fn_grad_i[j];
+        const Real* fn_grad_i = functionGradients[i];
+        for (j = 0; j < num_params; j++, ++cntr)
+          response_data[cntr] = fn_grad_i[j];
       }
     num_fns = functionHessians.size();
-    for (i=0; i<num_fns; ++i)
+    for (i = 0; i < num_fns; ++i)
       if (asv[i] & 4) {
-	const RealSymMatrix& fn_hess_i = functionHessians[i];
-	for (j=0; j<num_params; ++j)
-	  for (k=0; k<=j; ++k, ++cntr)
-	    response_data[cntr] = fn_hess_i(j,k);
+        const RealSymMatrix& fn_hess_i = functionHessians[i];
+        for (j = 0; j < num_params; ++j)
+          for (k = 0; k <= j; ++k, ++cntr)
+            response_data[cntr] = fn_hess_i(j, k);
       }
   }
 }
 
-
-void Response::overlay(const Response& response)
-{
+void Response::overlay(const Response& response) {
   if (responseRep)
     responseRep->overlay(response);
   else {
     // add incoming response to functionValues/Gradients/Hessians
     const ShortArray& asv = responseActiveSet.request_vector();
     size_t i, j, k, num_fns = asv.size(),
-      num_params = responseActiveSet.derivative_vector().size();
-    for (i=0; i<num_fns; ++i)
-      if (asv[i] & 1)
-	functionValues[i] += response.function_value(i);
+                    num_params = responseActiveSet.derivative_vector().size();
+    for (i = 0; i < num_fns; ++i)
+      if (asv[i] & 1) functionValues[i] += response.function_value(i);
     num_fns = functionGradients.numCols();
-    for (i=0; i<num_fns; ++i)
+    for (i = 0; i < num_fns; ++i)
       if (asv[i] & 2) {
-	const Real* partial_fn_grad = response.function_gradient(i);
-	Real* fn_grad = functionGradients[i];
-	for (j=0; j<num_params; ++j)
-	  fn_grad[j] += partial_fn_grad[j];
+        const Real* partial_fn_grad = response.function_gradient(i);
+        Real* fn_grad = functionGradients[i];
+        for (j = 0; j < num_params; ++j) fn_grad[j] += partial_fn_grad[j];
       }
     num_fns = functionHessians.size();
-    for (i=0; i<num_fns; ++i)
+    for (i = 0; i < num_fns; ++i)
       if (asv[i] & 4) {
-	const RealSymMatrix& partial_fn_hess = response.function_hessian(i);
-	RealSymMatrix& fn_hess = functionHessians[i];
-	for (j=0; j<num_params; ++j)
-	  for (k=0; k<=j; ++k)
-	    fn_hess(j,k) += partial_fn_hess(j,k);
+        const RealSymMatrix& partial_fn_hess = response.function_hessian(i);
+        RealSymMatrix& fn_hess = functionHessians[i];
+        for (j = 0; j < num_params; ++j)
+          for (k = 0; k <= j; ++k) fn_hess(j, k) += partial_fn_hess(j, k);
       }
   }
 }
 
-
 /** Copy function values/gradients/Hessians data _only_.  Prevents unwanted
     overwriting of responseActiveSet, functionLabels, etc.  Also, care is
     taken to account for differences in derivative variable matrix sizing. */
-void Response::
-update(const RealVector& source_fn_vals, const RealMatrix& source_fn_grads,
-       const RealSymMatrixArray& source_fn_hessians,
-       const ActiveSet& source_set)
-{
+void Response::update(const RealVector& source_fn_vals,
+                      const RealMatrix& source_fn_grads,
+                      const RealSymMatrixArray& source_fn_hessians,
+                      const ActiveSet& source_set) {
   if (responseRep) {
-    responseRep->
-      update(source_fn_vals, source_fn_grads, source_fn_hessians, source_set);
+    responseRep->update(source_fn_vals, source_fn_grads, source_fn_hessians,
+                        source_set);
     return;
   }
 
   // current response data
   const ShortArray& asv = responseActiveSet.request_vector();
-  size_t i, j, k, num_fns = asv.size(), 
-    num_params = responseActiveSet.derivative_vector().size();
+  size_t i, j, k, num_fns = asv.size(),
+                  num_params = responseActiveSet.derivative_vector().size();
   bool grad_flag = false, hess_flag = false;
-  for (i=0; i<num_fns; i++) {
-    if (asv[i] & 2)
-      grad_flag = true;
-    if (asv[i] & 4)
-      hess_flag = true;
+  for (i = 0; i < num_fns; i++) {
+    if (asv[i] & 2) grad_flag = true;
+    if (asv[i] & 4) hess_flag = true;
   }
 
   // verify that incoming data is of sufficient size
   if (source_set.request_vector().size() < num_fns) {
     Cerr << "Error: insufficient number of response functions to copy "
-	 << "response results in Response::update()." << std::endl;
+         << "response results in Response::update()." << std::endl;
     abort_handler(-1);
   }
-  if ( (grad_flag || hess_flag) && 
-       source_set.derivative_vector().size() < num_params) {
+  if ((grad_flag || hess_flag) &&
+      source_set.derivative_vector().size() < num_params) {
     Cerr << "Error: insufficient number of derivative variables to copy "
-	 << "response results in Response::update()." << std::endl;
+         << "response results in Response::update()." << std::endl;
     abort_handler(-1);
   }
 
@@ -1399,12 +1341,12 @@ update(const RealVector& source_fn_vals, const RealMatrix& source_fn_grads,
   // extreme case in which the incoming derivative arrays may have zero size
   // (e.g., this can happen in a multilevel strategy where a captured duplicate
   // came from the evals of a previous nongradient-based algorithm).
-  //functionValues    = source_fn_vals;
-  //functionGradients = source_fn_grads;
-  //functionHessians  = source_fn_hessians;
+  // functionValues    = source_fn_vals;
+  // functionGradients = source_fn_grads;
+  // functionHessians  = source_fn_hessians;
 
-  for (i=0; i<num_fns; i++)
-    if (asv[i] & 1) // assign each entry since size may differ
+  for (i = 0; i < num_fns; i++)
+    if (asv[i] & 1)  // assign each entry since size may differ
       functionValues[i] = source_fn_vals[i];
 
   // copy source_fn_grads and source_fn_hessians.  For now, a mapping from
@@ -1413,86 +1355,81 @@ update(const RealVector& source_fn_vals, const RealMatrix& source_fn_grads,
   if (grad_flag) {
     if (source_fn_grads.numCols() < num_fns) {
       Cerr << "Error: insufficient incoming gradient size to copy response "
-	   << "results required in Response::update()." << std::endl;
+           << "results required in Response::update()." << std::endl;
       abort_handler(-1);
     }
-    for (i=0; i<num_fns; i++)
-      if (asv[i] & 2) // assign each entry since size may differ
-	for (j=0; j<num_params; j++)
-	  functionGradients(j,i) = source_fn_grads(j,i);
+    for (i = 0; i < num_fns; i++)
+      if (asv[i] & 2)  // assign each entry since size may differ
+        for (j = 0; j < num_params; j++)
+          functionGradients(j, i) = source_fn_grads(j, i);
   }
   if (hess_flag) {
     if (source_fn_hessians.size() < num_fns) {
       Cerr << "Error: insufficient incoming Hessian size to copy response "
-	   << "results required in Response::update()." << std::endl;
+           << "results required in Response::update()." << std::endl;
       abort_handler(-1);
     }
-    for (i=0; i<num_fns; i++)
-      if (asv[i] & 4) // assign each entry since size may differ
-	for (j=0; j<num_params; j++)
-	  for (k=0; k<=j; k++)
-	    functionHessians[i](j,k) = source_fn_hessians[i](j,k);
+    for (i = 0; i < num_fns; i++)
+      if (asv[i] & 4)  // assign each entry since size may differ
+        for (j = 0; j < num_params; j++)
+          for (k = 0; k <= j; k++)
+            functionHessians[i](j, k) = source_fn_hessians[i](j, k);
   }
 
   // Remove any data retrieved from response but not reqd by responseActiveSet
   // (id_vars_set_compare will detect duplication when the current asv is a
   // subset of the database asv and more can be retrieved than requested).
-  if (responseActiveSet != source_set) // only reset if needed
+  if (responseActiveSet != source_set)  // only reset if needed
     reset_inactive();
 }
-
 
 /** Copy function values/gradients/Hessians data _only_.  Prevents unwanted
     overwriting of responseActiveSet, functionLabels, etc.  Also, care is
     taken to account for differences in derivative variable matrix sizing. */
-void Response::
-update_partial(size_t start_index_target, size_t num_items,
-	       const RealVector& source_fn_vals,
-	       const RealMatrix& source_fn_grads,
-	       const RealSymMatrixArray& source_fn_hessians,
-	       const ActiveSet& source_set, size_t start_index_source)
-{
+void Response::update_partial(size_t start_index_target, size_t num_items,
+                              const RealVector& source_fn_vals,
+                              const RealMatrix& source_fn_grads,
+                              const RealSymMatrixArray& source_fn_hessians,
+                              const ActiveSet& source_set,
+                              size_t start_index_source) {
   if (responseRep) {
     responseRep->update_partial(start_index_target, num_items, source_fn_vals,
-				source_fn_grads, source_fn_hessians, source_set,
-				start_index_source);
+                                source_fn_grads, source_fn_hessians, source_set,
+                                start_index_source);
     return;
   }
 
-  if (!num_items)
-    return;
+  if (!num_items) return;
 
   // current response data
   const ShortArray& asv = responseActiveSet.request_vector();
-  size_t i, j, k, num_fns = asv.size(), 
-    num_params = responseActiveSet.derivative_vector().size();
+  size_t i, j, k, num_fns = asv.size(),
+                  num_params = responseActiveSet.derivative_vector().size();
   bool grad_flag = false, hess_flag = false;
-  for (i=0; i<num_fns; i++) {
-    if (asv[i] & 2)
-      grad_flag = true;
-    if (asv[i] & 4)
-      hess_flag = true;
+  for (i = 0; i < num_fns; i++) {
+    if (asv[i] & 2) grad_flag = true;
+    if (asv[i] & 4) hess_flag = true;
   }
 
   // verify that incoming data is of sufficient size
   if (start_index_target + num_items > num_fns ||
-      start_index_source + num_items > source_set.request_vector().size() ) {
+      start_index_source + num_items > source_set.request_vector().size()) {
     Cerr << "Error: insufficient number of response functions to update partial"
-	 << " response results in Response::update_partial()." << std::endl;
+         << " response results in Response::update_partial()." << std::endl;
     abort_handler(-1);
   }
-  if ( (grad_flag || hess_flag) && 
-       source_set.derivative_vector().size() < num_params) {
+  if ((grad_flag || hess_flag) &&
+      source_set.derivative_vector().size() < num_params) {
     Cerr << "Error: insufficient number of derivative variables to update "
-	 << "partial response derivative results in Response::"
-	 << "update_partial()." << std::endl;
+         << "partial response derivative results in Response::"
+         << "update_partial()." << std::endl;
     abort_handler(-1);
   }
 
-  for (i=0; i<num_items; i++)
-    if (asv[start_index_target+i] & 1)
-      functionValues[start_index_target+i]
-	= source_fn_vals[start_index_source+i];
+  for (i = 0; i < num_items; i++)
+    if (asv[start_index_target + i] & 1)
+      functionValues[start_index_target + i] =
+          source_fn_vals[start_index_source + i];
 
   // copy source_fn_grads and source_fn_hessians.  For now, a mapping from
   // responseActiveSet.derivative_vector() to source_set.derivative_vector()
@@ -1500,44 +1437,43 @@ update_partial(size_t start_index_target, size_t num_items,
   if (grad_flag) {
     if (source_fn_grads.numCols() < start_index_source + num_items) {
       Cerr << "Error: insufficient incoming gradient size to update partial "
-	   << "response gradient results required in Response::"
-	   << "update_partial()." << std::endl;
+           << "response gradient results required in Response::"
+           << "update_partial()." << std::endl;
       abort_handler(-1);
     }
-    for (i=0; i<num_items; i++)
-      if (asv[start_index_target+i] & 2)
-	for (j=0; j<num_params; j++)
-	  functionGradients(j,start_index_target+i)
-	    = source_fn_grads(j,start_index_source+i);
+    for (i = 0; i < num_items; i++)
+      if (asv[start_index_target + i] & 2)
+        for (j = 0; j < num_params; j++)
+          functionGradients(j, start_index_target + i) =
+              source_fn_grads(j, start_index_source + i);
   }
   if (hess_flag) {
     if (source_fn_hessians.size() < start_index_source + num_items) {
       Cerr << "Error: insufficient incoming Hessian size to update partial "
-	   << "response Hessian results required in Response::"
-	   << "update_partial()." << std::endl;
+           << "response Hessian results required in Response::"
+           << "update_partial()." << std::endl;
       abort_handler(-1);
     }
-    for (i=0; i<num_items; i++)
-      if (asv[start_index_target+i] & 4)
-	for (j=0; j<num_params; j++)
-	  for (k=0; k<=j; k++)
-	    functionHessians[start_index_target+i](j,k)
-	      = source_fn_hessians[start_index_source+i](j,k);
+    for (i = 0; i < num_items; i++)
+      if (asv[start_index_target + i] & 4)
+        for (j = 0; j < num_params; j++)
+          for (k = 0; k <= j; k++)
+            functionHessians[start_index_target + i](j, k) =
+                source_fn_hessians[start_index_source + i](j, k);
   }
 
   // Remove any data retrieved from response but not reqd by responseActiveSet
   // (id_vars_set_compare will detect duplication when the current asv is a
   // subset of the database asv and more can be retrieved than requested).
-  if (responseActiveSet != source_set) // only reset if needed
-    reset_inactive();// active data not included in partial update are not reset
+  if (responseActiveSet != source_set)  // only reset if needed
+    reset_inactive();  // active data not included in partial update are not
+                       // reset
 }
-
 
 /** Reshape functionValues, functionGradients, and functionHessians
     according to num_fns, num_params, grad_flag, and hess_flag. */
-void Response::
-reshape(size_t num_fns, size_t num_params, bool grad_flag, bool hess_flag)
-{
+void Response::reshape(size_t num_fns, size_t num_params, bool grad_flag,
+                       bool hess_flag) {
   if (responseRep)
     responseRep->reshape(num_fns, num_params, grad_flag, hess_flag);
   else {
@@ -1547,11 +1483,9 @@ reshape(size_t num_fns, size_t num_params, bool grad_flag, bool hess_flag)
   }
 }
 
-
 /** Reshape functionValues, functionGradients, and functionHessians
     according to num_fns, num_params, grad_flag, and hess_flag. */
-void Response::reshape_metadata(size_t num_meta)
-{
+void Response::reshape_metadata(size_t num_meta) {
   if (responseRep)
     responseRep->reshape_metadata(num_meta);
   else {
@@ -1561,10 +1495,8 @@ void Response::reshape_metadata(size_t num_meta)
   }
 }
 
-
-void Response::field_lengths(const IntVector& field_lens)
-{
-  if (responseRep) 
+void Response::field_lengths(const IntVector& field_lens) {
+  if (responseRep)
     responseRep->field_lengths(field_lens);
   else {
     // resize shared data based on new field lengths
@@ -1572,146 +1504,125 @@ void Response::field_lengths(const IntVector& field_lens)
 
     // then resize my arrays using *new* num_functions, only
     // allocating grad, hess if already sized
-    reshape_rep(sharedRespData.num_functions(), 
-		responseActiveSet.derivative_vector().size(), false, false);
+    reshape_rep(sharedRespData.num_functions(),
+                responseActiveSet.derivative_vector().size(), false, false);
   }
 }
 
-
-void Response::shape_rep(const ActiveSet& set, bool initialize)
-{
+void Response::shape_rep(const ActiveSet& set, bool initialize) {
   // Set flags according to asv content.
   const ShortArray& asv = set.request_vector();
-  size_t i, num_fns = asv.size(),
-    num_params = set.derivative_vector().size();
+  size_t i, num_fns = asv.size(), num_params = set.derivative_vector().size();
   bool grad_flag = false, hess_flag = false;
-  for (i=0; i<num_fns; i++) {
+  for (i = 0; i < num_fns; i++) {
     if (asv[i] & 2) grad_flag = true;
     if (asv[i] & 4) hess_flag = true;
   }
 
   if (initialize) {
-    functionValues.size(num_fns);                   // init to 0
-    if (grad_flag)
-      functionGradients.shape(num_params, num_fns); // init to 0
+    functionValues.size(num_fns);                                 // init to 0
+    if (grad_flag) functionGradients.shape(num_params, num_fns);  // init to 0
     if (hess_flag) {
       functionHessians.resize(num_fns);
-      for (i=0; i<num_fns; i++)
-	functionHessians[i].shape(num_params);      // init to 0
+      for (i = 0; i < num_fns; i++)
+        functionHessians[i].shape(num_params);  // init to 0
     }
-  }
-  else {
+  } else {
     functionValues.sizeUninitialized(num_fns);
-    if (grad_flag)
-      functionGradients.shapeUninitialized(num_params, num_fns);
+    if (grad_flag) functionGradients.shapeUninitialized(num_params, num_fns);
     if (hess_flag) {
       functionHessians.resize(num_fns);
-      for (i=0; i<num_fns; i++)
-	functionHessians[i].shapeUninitialized(num_params);
+      for (i = 0; i < num_fns; i++)
+        functionHessians[i].shapeUninitialized(num_params);
     }
   }
 }
 
-
-void Response::
-reshape_rep(size_t num_fns, size_t num_params, bool grad_flag, bool hess_flag)
-{
-  if (responseActiveSet.request_vector().size()    != num_fns || 
+void Response::reshape_rep(size_t num_fns, size_t num_params, bool grad_flag,
+                           bool hess_flag) {
+  if (responseActiveSet.request_vector().size() != num_fns ||
       responseActiveSet.derivative_vector().size() != num_params)
     responseActiveSet.reshape(num_fns, num_params);
 
-  if (functionValues.length() != num_fns)
-    functionValues.resize(num_fns);
+  if (functionValues.length() != num_fns) functionValues.resize(num_fns);
 
   if (grad_flag) {
-    if (functionGradients.numRows() != num_params || 
-	functionGradients.numCols() != num_fns)
+    if (functionGradients.numRows() != num_params ||
+        functionGradients.numCols() != num_fns)
       functionGradients.reshape(num_params, num_fns);
-  }
-  else if (!functionGradients.empty())
-    functionGradients.shape(0,0);
+  } else if (!functionGradients.empty())
+    functionGradients.shape(0, 0);
 
   if (hess_flag) {
-    if (functionHessians.size() != num_fns)
-      functionHessians.resize(num_fns);
-    for (size_t i=0; i<num_fns; ++i) {
+    if (functionHessians.size() != num_fns) functionHessians.resize(num_fns);
+    for (size_t i = 0; i < num_fns; ++i) {
       if (functionHessians[i].numRows() != num_params)
-	functionHessians[i].reshape(num_params);
+        functionHessians[i].reshape(num_params);
     }
-  }
-  else if (!functionHessians.empty())
+  } else if (!functionHessians.empty())
     functionHessians.clear();
 }
 
-
 /** Reset all numerical response data (not labels, ids, or active set)
     to zero. */
-void Response::reset()
-{
+void Response::reset() {
   if (responseRep)
     responseRep->reset();
   else {
     functionValues = 0.;
     functionGradients = 0.;
     size_t nh = functionHessians.size();
-    for (size_t i=0; i<nh; i++)
-      functionHessians[i] = 0.;
+    for (size_t i = 0; i < nh; i++) functionHessians[i] = 0.;
     std::fill(metaData.begin(), metaData.end(), RespMetadataT());
   }
 }
 
-
 /** Used to clear out any inactive data left over from previous evaluations. */
-void Response::reset_inactive()
-{
+void Response::reset_inactive() {
   if (responseRep)
     responseRep->reset_inactive();
   else {
     const ShortArray& asv = responseActiveSet.request_vector();
     size_t i, asv_len = asv.size(), ng = functionGradients.numCols(),
-      nh = functionHessians.size();
-    for (i=0; i<asv_len; ++i)
-      if ( !(asv[i] & 1) ) // value bit is omitted
-	functionValues[i] = 0.;
-    for (int i=0; i<ng; ++i)
-      if ( !(asv[i] & 2) ) { // gradient bit is omitted
-	std::fill_n(functionGradients[i], functionGradients.numRows(), 0.);
+              nh = functionHessians.size();
+    for (i = 0; i < asv_len; ++i)
+      if (!(asv[i] & 1))  // value bit is omitted
+        functionValues[i] = 0.;
+    for (int i = 0; i < ng; ++i)
+      if (!(asv[i] & 2)) {  // gradient bit is omitted
+        std::fill_n(functionGradients[i], functionGradients.numRows(), 0.);
       }
-    for (i=0; i<nh; ++i)
-      if ( !(asv[i] & 4) ) // Hessian bit is omitted
-	functionHessians[i] = 0.;  // the i_th Hessian (all rows & columns)
+    for (i = 0; i < nh; ++i)
+      if (!(asv[i] & 4))           // Hessian bit is omitted
+        functionHessians[i] = 0.;  // the i_th Hessian (all rows & columns)
   }
 }
 
-
 /// equality operator for Response
-bool operator==(const Response& resp1, const Response& resp2)
-{
+bool operator==(const Response& resp1, const Response& resp2) {
   std::shared_ptr<Response> rep1 = resp1.responseRep, rep2 = resp2.responseRep;
-  if (rep1 && rep2) // both envelope; compare letter member data
+  if (rep1 && rep2)  // both envelope; compare letter member data
     return (rep1->responseActiveSet == rep2->responseActiveSet &&
-	    rep1->functionValues    == rep2->functionValues    &&
-	    rep1->functionGradients == rep2->functionGradients &&
-	    rep1->functionHessians  == rep2->functionHessians);
-  else if (!rep1 && !rep2) // both letters
+            rep1->functionValues == rep2->functionValues &&
+            rep1->functionGradients == rep2->functionGradients &&
+            rep1->functionHessians == rep2->functionHessians);
+  else if (!rep1 && !rep2)  // both letters
     return (resp1.responseActiveSet == resp2.responseActiveSet &&
-	    resp1.functionValues    == resp2.functionValues    &&
-	    resp1.functionGradients == resp2.functionGradients &&
-	    resp1.functionHessians  == resp2.functionHessians);
-  else // letter/envelope mismatch
+            resp1.functionValues == resp2.functionValues &&
+            resp1.functionGradients == resp2.functionGradients &&
+            resp1.functionHessians == resp2.functionHessians);
+  else  // letter/envelope mismatch
     return false;
 }
 
-
-void Response::active_set_request_vector(const ShortArray& asrv)
-{
+void Response::active_set_request_vector(const ShortArray& asrv) {
   if (responseRep)
     return responseRep->active_set_request_vector(asrv);
   else {
     // a change in ASV length is not currently allowed
     if (responseActiveSet.request_vector().size() != asrv.size()) {
       Cerr << "Error: total number of response functions may not be changed in "
-	   << "Response::active_set_request_vector(ShortArray&)." << std::endl;
+           << "Response::active_set_request_vector(ShortArray&)." << std::endl;
       abort_handler(-1);
     }
     // assign the new request vector
@@ -1719,9 +1630,7 @@ void Response::active_set_request_vector(const ShortArray& asrv)
   }
 }
 
-
-void Response::active_set_derivative_vector(const SizetArray& asdv)
-{
+void Response::active_set_derivative_vector(const SizetArray& asdv) {
   if (responseRep)
     responseRep->active_set_derivative_vector(asdv);
   else {
@@ -1734,9 +1643,7 @@ void Response::active_set_derivative_vector(const SizetArray& asdv)
   }
 }
 
-
-void Response::active_set_derivative_vector(SizetMultiArrayConstView asdv)
-{
+void Response::active_set_derivative_vector(SizetMultiArrayConstView asdv) {
   if (responseRep)
     responseRep->active_set_derivative_vector(asdv);
   else {
@@ -1749,88 +1656,82 @@ void Response::active_set_derivative_vector(SizetMultiArrayConstView asdv)
   }
 }
 
-
-void Response::reshape_active_derivs(size_t num_deriv_vars)
-{
+void Response::reshape_active_derivs(size_t num_deriv_vars) {
   if (responseRep)
     responseRep->reshape_active_derivs(num_deriv_vars);
   else {
     // This differs from reshape_rep in that DVV can change more frequently;
     // therefore, we are less aggressive about clearing arrays
     size_t num_fns = responseActiveSet.request_vector().size();
-    if (!functionGradients.empty()) // gradients are active
+    if (!functionGradients.empty())  // gradients are active
       functionGradients.reshape(num_deriv_vars, num_fns);
-    if (!functionHessians.empty())   // Hessians are active
-      for (size_t i=0; i<num_fns; i++)
-	functionHessians[i].reshape(num_deriv_vars);
+    if (!functionHessians.empty())  // Hessians are active
+      for (size_t i = 0; i < num_fns; i++)
+        functionHessians[i].reshape(num_deriv_vars);
   }
 }
 
-
-void Response::
-map_dvv_indices(const SizetArray& assign_dvv, SizetArray& assign_indices,
-		SizetArray& curr_indices)
-{
+void Response::map_dvv_indices(const SizetArray& assign_dvv,
+                               SizetArray& assign_indices,
+                               SizetArray& curr_indices) {
   if (responseRep)
     responseRep->map_dvv_indices(assign_dvv, assign_indices, curr_indices);
   else {
     // For assigning derivatives using the incoming DVV ids, define the
     // source and target indices by matching with the current DVV
     const SizetArray& curr_dvv = responseActiveSet.derivative_vector();
-    size_t assign_index = 0, curr_index = 0,
-      num_assign_dvv = assign_dvv.size(), num_curr_dvv = curr_dvv.size(),
-      assign_dvv_val = (num_assign_dvv) ? assign_dvv[assign_index] : SZ_MAX,
-      curr_dvv_val   = (num_curr_dvv)   ?   curr_dvv[curr_index]   : SZ_MAX;
-    assign_indices.reserve(num_curr_dvv);  curr_indices.reserve(num_curr_dvv);
+    size_t assign_index = 0, curr_index = 0, num_assign_dvv = assign_dvv.size(),
+           num_curr_dvv = curr_dvv.size(),
+           assign_dvv_val =
+               (num_assign_dvv) ? assign_dvv[assign_index] : SZ_MAX,
+           curr_dvv_val = (num_curr_dvv) ? curr_dvv[curr_index] : SZ_MAX;
+    assign_indices.reserve(num_curr_dvv);
+    curr_indices.reserve(num_curr_dvv);
     while (assign_index < num_assign_dvv || curr_index < num_curr_dvv) {
-      if (assign_dvv_val < curr_dvv_val) // skip: available component not needed
-	assign_dvv_val = (++assign_index < num_assign_dvv) ?
-	  assign_dvv[assign_index] : SZ_MAX;
+      if (assign_dvv_val <
+          curr_dvv_val)  // skip: available component not needed
+        assign_dvv_val = (++assign_index < num_assign_dvv)
+                             ? assign_dvv[assign_index]
+                             : SZ_MAX;
       else if (curr_dvv_val < assign_dvv_val) {  // error: need unavailable comp
-	Cerr << "Error: required derivative component (" << curr_dvv_val
-	     << ") not present in Response::map_dvv_indices()." << std::endl;
-	abort_handler(RESP_ERROR);
-      }
-      else {                                  // match: need available component
-	assign_indices.push_back(assign_index);
-	curr_indices.push_back(curr_index);
-	assign_dvv_val = (++assign_index < num_assign_dvv) ?
-	  assign_dvv[assign_index] : SZ_MAX;
-	curr_dvv_val   = (++curr_index   < num_curr_dvv)   ?
-	  curr_dvv[curr_index]     : SZ_MAX;
+        Cerr << "Error: required derivative component (" << curr_dvv_val
+             << ") not present in Response::map_dvv_indices()." << std::endl;
+        abort_handler(RESP_ERROR);
+      } else {  // match: need available component
+        assign_indices.push_back(assign_index);
+        curr_indices.push_back(curr_index);
+        assign_dvv_val = (++assign_index < num_assign_dvv)
+                             ? assign_dvv[assign_index]
+                             : SZ_MAX;
+        curr_dvv_val =
+            (++curr_index < num_curr_dvv) ? curr_dvv[curr_index] : SZ_MAX;
       }
     }
     // Note: curr_indices should always be {0,...,num_curr_dvv-1}
     if (curr_indices.size() != num_curr_dvv) {
       Cerr << "Error: size mismatch following DVV index mapping in Response::"
-	   << "map_dvv_indices() indices." << std::endl;
+           << "map_dvv_indices() indices." << std::endl;
       abort_handler(RESP_ERROR);
     }
   }
 }
 
-
-void Response::
-function_gradient(const RealVector& assign_grad, int fn_index,
-		  const SizetArray& assign_indices,
-		  const SizetArray&   curr_indices)
-{
+void Response::function_gradient(const RealVector& assign_grad, int fn_index,
+                                 const SizetArray& assign_indices,
+                                 const SizetArray& curr_indices) {
   if (responseRep)
     responseRep->function_gradient(assign_grad, fn_index, assign_indices,
-				   curr_indices);
+                                   curr_indices);
   else {
     Real* curr_grad = functionGradients[fn_index];
     size_t i, num_curr_ind = curr_indices.size();
-    for (i=0; i<num_curr_ind; ++i)
+    for (i = 0; i < num_curr_ind; ++i)
       curr_grad[curr_indices[i]] = assign_grad[assign_indices[i]];
   }
 }
 
-
-void Response::
-function_gradient(const RealVector& assign_grad, int fn_index,
-		  const SizetArray& assign_dvv)
-{
+void Response::function_gradient(const RealVector& assign_grad, int fn_index,
+                                 const SizetArray& assign_dvv) {
   if (responseRep)
     responseRep->function_gradient(assign_grad, fn_index, assign_dvv);
   else {
@@ -1839,74 +1740,70 @@ function_gradient(const RealVector& assign_grad, int fn_index,
       Teuchos::setCol(assign_grad, fn_index, functionGradients);
     else {
       size_t num_assign_dvv = assign_dvv.size(), num_curr_dvv = curr_dvv.size(),
-	assign_index = 0, curr_index = 0,
-	assign_dvv_val = (num_assign_dvv) ? assign_dvv[assign_index] : SZ_MAX,
-	curr_dvv_val   = (num_curr_dvv)   ? curr_dvv[curr_index]     : SZ_MAX;
+             assign_index = 0, curr_index = 0,
+             assign_dvv_val =
+                 (num_assign_dvv) ? assign_dvv[assign_index] : SZ_MAX,
+             curr_dvv_val = (num_curr_dvv) ? curr_dvv[curr_index] : SZ_MAX;
       Real* curr_grad = functionGradients[fn_index];
       while (assign_index < num_assign_dvv || curr_index < num_curr_dvv) {
-	if (assign_dvv_val < curr_dvv_val)    // skip: available comp not needed
-	  assign_dvv_val = (++assign_index < num_assign_dvv) ?
-	    assign_dvv[assign_index] : SZ_MAX;
-	else if (curr_dvv_val < assign_dvv_val) {// error: need unavailable comp
-	  Cerr << "Error: required derivative component (" << curr_dvv_val
-	       << ") not present in assigned gradient vector." << std::endl;
-	  abort_handler(RESP_ERROR);
-	}
-	else {                                // match: need available component
-	  curr_grad[curr_index] = assign_grad[assign_index];
-	  assign_dvv_val = (++assign_index < num_assign_dvv) ?
-	    assign_dvv[assign_index] : SZ_MAX;
-	  curr_dvv_val   = (++curr_index   < num_curr_dvv)   ?
-	    curr_dvv[curr_index]     : SZ_MAX;
-	}
+        if (assign_dvv_val < curr_dvv_val)  // skip: available comp not needed
+          assign_dvv_val = (++assign_index < num_assign_dvv)
+                               ? assign_dvv[assign_index]
+                               : SZ_MAX;
+        else if (curr_dvv_val <
+                 assign_dvv_val) {  // error: need unavailable comp
+          Cerr << "Error: required derivative component (" << curr_dvv_val
+               << ") not present in assigned gradient vector." << std::endl;
+          abort_handler(RESP_ERROR);
+        } else {  // match: need available component
+          curr_grad[curr_index] = assign_grad[assign_index];
+          assign_dvv_val = (++assign_index < num_assign_dvv)
+                               ? assign_dvv[assign_index]
+                               : SZ_MAX;
+          curr_dvv_val =
+              (++curr_index < num_curr_dvv) ? curr_dvv[curr_index] : SZ_MAX;
+        }
       }
     }
   }
 }
 
-
-void Response::
-function_hessian(const RealSymMatrix& assign_hessian, size_t fn_index,
-		 const SizetArray&    assign_indices,
-		 const SizetArray&      curr_indices)
-{
+void Response::function_hessian(const RealSymMatrix& assign_hessian,
+                                size_t fn_index,
+                                const SizetArray& assign_indices,
+                                const SizetArray& curr_indices) {
   if (responseRep)
-    responseRep->function_hessian(assign_hessian, fn_index,
-				  assign_indices, curr_indices);
+    responseRep->function_hessian(assign_hessian, fn_index, assign_indices,
+                                  curr_indices);
   else {
     RealSymMatrix& curr_hessian = functionHessians[fn_index];
     size_t r, c, curr_index_r, assign_index_r, num_v = curr_indices.size();
-    for (r=0; r<num_v; ++r) {
-      curr_index_r = curr_indices[r];  assign_index_r = assign_indices[r];
-      for (c=0; c<=r; ++c)
-	curr_hessian(curr_index_r, curr_indices[c])
-	  = assign_hessian(assign_index_r, assign_indices[c]);
+    for (r = 0; r < num_v; ++r) {
+      curr_index_r = curr_indices[r];
+      assign_index_r = assign_indices[r];
+      for (c = 0; c <= r; ++c)
+        curr_hessian(curr_index_r, curr_indices[c]) =
+            assign_hessian(assign_index_r, assign_indices[c]);
     }
   }
 }
 
-
-void Response::
-function_hessian(const RealSymMatrix& assign_hessian, size_t fn_index,
-		 const SizetArray&    assign_dvv)
-{
+void Response::function_hessian(const RealSymMatrix& assign_hessian,
+                                size_t fn_index, const SizetArray& assign_dvv) {
   if (responseRep)
     responseRep->function_hessian(assign_hessian, fn_index, assign_dvv);
   else {
     if (assign_dvv == responseActiveSet.derivative_vector())
-      copy_data(assign_hessian, functionHessians[fn_index]); // override view
+      copy_data(assign_hessian, functionHessians[fn_index]);  // override view
     else {
       SizetArray assign_indices, curr_indices;
       map_dvv_indices(assign_dvv, assign_indices, curr_indices);
-      function_hessian(assign_hessian, fn_index,
-		       assign_indices, curr_indices);
+      function_hessian(assign_hessian, fn_index, assign_indices, curr_indices);
     }
   }
 }
 
-
-void Response::set_scalar_covariance(RealVector& scalars)
-{
+void Response::set_scalar_covariance(RealVector& scalars) {
   if (responseRep)
     responseRep->set_scalar_covariance(scalars);
   else {
@@ -1916,18 +1813,16 @@ void Response::set_scalar_covariance(RealVector& scalars)
   }
 }
 
-
-void Response::set_full_covariance(std::vector<RealMatrix> &matrices,
-                                   std::vector<RealVector> &diagonals,
-                                   RealVector &scalars,
+void Response::set_full_covariance(std::vector<RealMatrix>& matrices,
+                                   std::vector<RealVector>& diagonals,
+                                   RealVector& scalars,
                                    IntVector matrix_map_indices,
                                    IntVector diagonal_map_indices,
-                                   IntVector scalar_map_indices )
-{
+                                   IntVector scalar_map_indices) {
   if (responseRep)
-    responseRep->
-      set_full_covariance(matrices, diagonals, scalars, matrix_map_indices,
-			  diagonal_map_indices, scalar_map_indices);
+    responseRep->set_full_covariance(matrices, diagonals, scalars,
+                                     matrix_map_indices, diagonal_map_indices,
+                                     scalar_map_indices);
   else {
     Cerr << "\nError: set_full_covariance() not defined for this response "
          << std::endl;
@@ -1935,9 +1830,7 @@ void Response::set_full_covariance(std::vector<RealMatrix> &matrices,
   }
 }
 
-
-const ExperimentCovariance& Response::experiment_covariance() const
-{
+const ExperimentCovariance& Response::experiment_covariance() const {
   if (responseRep)
     return responseRep->experiment_covariance();
   else {
@@ -1947,9 +1840,7 @@ const ExperimentCovariance& Response::experiment_covariance() const
   }
 }
 
-
-Real Response::apply_covariance(const RealVector &residual) const
-{
+Real Response::apply_covariance(const RealVector& residual) const {
   if (responseRep)
     return responseRep->apply_covariance(residual);
   else {
@@ -1960,9 +1851,8 @@ Real Response::apply_covariance(const RealVector &residual) const
   }
 }
 
-void Response::apply_covariance_inv_sqrt(const RealVector& residuals, 
-					 RealVector& weighted_residuals) const
-{
+void Response::apply_covariance_inv_sqrt(const RealVector& residuals,
+                                         RealVector& weighted_residuals) const {
   if (responseRep)
     responseRep->apply_covariance_inv_sqrt(residuals, weighted_residuals);
   else {
@@ -1972,9 +1862,8 @@ void Response::apply_covariance_inv_sqrt(const RealVector& residuals,
   }
 }
 
-void Response::apply_covariance_inv_sqrt(const RealMatrix& gradients, 
-					 RealMatrix& weighted_gradients) const
-{
+void Response::apply_covariance_inv_sqrt(const RealMatrix& gradients,
+                                         RealMatrix& weighted_gradients) const {
   if (responseRep)
     responseRep->apply_covariance_inv_sqrt(gradients, weighted_gradients);
   else {
@@ -1984,9 +1873,9 @@ void Response::apply_covariance_inv_sqrt(const RealMatrix& gradients,
   }
 }
 
-void Response::apply_covariance_inv_sqrt(const RealSymMatrixArray& hessians,
-					 RealSymMatrixArray& weighted_hessians) const
-{
+void Response::apply_covariance_inv_sqrt(
+    const RealSymMatrixArray& hessians,
+    RealSymMatrixArray& weighted_hessians) const {
   if (responseRep)
     responseRep->apply_covariance_inv_sqrt(hessians, weighted_hessians);
   else {
@@ -1996,10 +1885,9 @@ void Response::apply_covariance_inv_sqrt(const RealSymMatrixArray& hessians,
   }
 }
 
-void Response::get_covariance_diagonal( RealVector &diagonal) const
-{
+void Response::get_covariance_diagonal(RealVector& diagonal) const {
   if (responseRep)
-    responseRep->get_covariance_diagonal( diagonal );
+    responseRep->get_covariance_diagonal(diagonal);
   else {
     Cerr << "\nError: get_covariance_diagonal not defined for this response "
          << std::endl;
@@ -2007,9 +1895,7 @@ void Response::get_covariance_diagonal( RealVector &diagonal) const
   }
 }
 
-
-Real Response::covariance_determinant() const
-{
+Real Response::covariance_determinant() const {
   if (responseRep)
     return responseRep->covariance_determinant();
   else {
@@ -2019,9 +1905,7 @@ Real Response::covariance_determinant() const
   }
 }
 
-
-Real Response::log_covariance_determinant() const
-{
+Real Response::log_covariance_determinant() const {
   if (responseRep)
     return responseRep->log_covariance_determinant();
   else {
@@ -2031,32 +1915,27 @@ Real Response::log_covariance_determinant() const
   }
 }
 
-
 /** Implementation of serialization load for the Response handle */
-template<class Archive>
-void Response::load(Archive& ar, const unsigned int version)
-{
+template <class Archive>
+void Response::load(Archive& ar, const unsigned int version) {
   short type;
   ar & type;
 
-  if (responseRep) { // should not occur in current usage
+  if (responseRep) {  // should not occur in current usage
     // BMA TODO: Leaving this logic as was required for MPIUnpackBuffer case
     if (responseRep->sharedRespData.is_null() ||
-	type != responseRep->sharedRespData.response_type())
+        type != responseRep->sharedRespData.response_type())
       responseRep = get_response(type);
-  }
-  else // read from restart: responseRep must be instantiated
+  } else  // read from restart: responseRep must be instantiated
     responseRep = get_response(type);
 
-  responseRep->load_rep(ar, version); // fwd to new/existing rep
+  responseRep->load_rep(ar, version);  // fwd to new/existing rep
   responseRep->sharedRespData.response_type(type);
 }
 
-
 /** Implementation of serialization save for the Response handle */
-template<class Archive>
-void Response::save(Archive& ar, const unsigned int version) const
-{
+template <class Archive>
+void Response::save(Archive& ar, const unsigned int version) const {
   if (responseRep)
     responseRep->save(ar, version);
   else {
@@ -2066,17 +1945,15 @@ void Response::save(Archive& ar, const unsigned int version) const
   }
 }
 
-
 /** Binary version differs from ASCII version in 2 primary ways:
     (1) it lacks formatting.
     (2) the Response has not been sized a priori.  In reading data from
         the binary restart file, a ParamResponsePair was constructed with
-        its default constructor which called the Response default 
-        constructor.  Therefore, we must first read sizing data and resize 
+        its default constructor which called the Response default
+        constructor.  Therefore, we must first read sizing data and resize
         all of the arrays. */
-template<class Archive> 
-void Response::load_rep(Archive& ar, const unsigned int version)
-{
+template <class Archive>
+void Response::load_rep(Archive& ar, const unsigned int version) {
   // First read sharedRespData.  The shared data is serialized through
   // the SRD handle, with pointer tracking for the SRD body (rep)
   ar & sharedRespData;
@@ -2096,24 +1973,22 @@ void Response::load_rep(Archive& ar, const unsigned int version)
   reset();
 
   // Get fn. values as governed by ASV requests
-  for (size_t i=0; i<num_fns; ++i)
-    if (asv[i] & 1) // & 1 masks off 2nd and 3rd bit
-      ar & functionValues[i];
+  for (size_t i = 0; i < num_fns; ++i)
+    if (asv[i] & 1)  // & 1 masks off 2nd and 3rd bit
+      ar& functionValues[i];
 
   // Get function gradients as governed by ASV requests
-  for (int i=0; i<num_fns; ++i)
-    if (asv[i] & 2) // & 2 masks off 1st and 3rd bit
+  for (int i = 0; i < num_fns; ++i)
+    if (asv[i] & 2)  // & 2 masks off 1st and 3rd bit
       read_sdm_col(ar, i, functionGradients);
-    
+
   // Get function Hessians as governed by ASV requests
-  for (size_t i=0; i<num_fns; ++i)
-    if (asv[i] & 4) // & 4 masks off 1st and 2nd bit
-      ar & functionHessians[i];
+  for (size_t i = 0; i < num_fns; ++i)
+    if (asv[i] & 4)  // & 4 masks off 1st and 2nd bit
+      ar& functionHessians[i];
 
-  if (version >= 1)
-    ar & metaData;
+  if (version >= 1) ar & metaData;
 }
-
 
 /** Binary version differs from ASCII version in 2 primary ways:
     (1) It lacks formatting.
@@ -2121,17 +1996,16 @@ void Response::load_rep(Archive& ar, const unsigned int version)
         constructed with their default constructor which calls the Response
         default constructor.  Therefore, we must first write sizing data so
         that Response::read(BoStream& s) can resize the arrays. */
-template<class Archive> 
-void Response::save_rep(Archive& ar, const unsigned int version) const
-{    
-  // First write sharedRespData.  The shared data is serialized through 
+template <class Archive>
+void Response::save_rep(Archive& ar, const unsigned int version) const {
+  // First write sharedRespData.  The shared data is serialized through
   // the SRD handle, with pointer tracking for the SRD body (rep)
   ar & sharedRespData;
 
   // Write responseActiveSet and flags for sizing the response
   ar & responseActiveSet;
-  bool grad_flag = !functionGradients.empty(), 
-    hess_flag = !functionHessians.empty();
+  bool grad_flag = !functionGradients.empty(),
+       hess_flag = !functionHessians.empty();
   ar & grad_flag;
   ar & hess_flag;
 
@@ -2139,66 +2013,61 @@ void Response::save_rep(Archive& ar, const unsigned int version) const
   size_t num_fns = asv.size();
 
   // Write the function values if present
-  for (size_t i=0; i<num_fns; ++i)
-    if (asv[i] & 1) // & 1 masks off 2nd and 3rd bit
-      ar & functionValues[i];
+  for (size_t i = 0; i < num_fns; ++i)
+    if (asv[i] & 1)  // & 1 masks off 2nd and 3rd bit
+      ar& functionValues[i];
 
   // Write the function gradients if present
-  for (int i=0; i<num_fns; ++i)
-    if (asv[i] & 2) // & 2 masks off 1st and 3rd bit
+  for (int i = 0; i < num_fns; ++i)
+    if (asv[i] & 2)  // & 2 masks off 1st and 3rd bit
       write_sdm_col(ar, i, functionGradients);
 
   // Write the function Hessians if present
-  for (size_t i=0; i<num_fns; ++i)
-    if (asv[i] & 4) // & 4 masks off 1st and 2nd bit
-      ar & functionHessians[i];
+  for (size_t i = 0; i < num_fns; ++i)
+    if (asv[i] & 4)  // & 4 masks off 1st and 2nd bit
+      ar& functionHessians[i];
 
   ar & metaData;
 }
 
 /// convenience fnction to write a serial dense matrix column to an Archive
-template<class Archive, typename OrdinalType, typename ScalarType>
-void Response::write_sdm_col
-(Archive& ar, int col,
- const Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& sdm) const
-{
-  OrdinalType nr = sdm.numRows(); 
-  const ScalarType* sdm_c = sdm[col]; // column vector 
-  for (OrdinalType row=0; row<nr; ++row) 
-    ar & sdm_c[row];
+template <class Archive, typename OrdinalType, typename ScalarType>
+void Response::write_sdm_col(
+    Archive& ar, int col,
+    const Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& sdm) const {
+  OrdinalType nr = sdm.numRows();
+  const ScalarType* sdm_c = sdm[col];  // column vector
+  for (OrdinalType row = 0; row < nr; ++row) ar& sdm_c[row];
 }
 
 /// convenience fnction to read a serial dense matrix column from an Archive
-template<class Archive, typename OrdinalType, typename ScalarType>
-void Response::read_sdm_col
-(Archive& ar, int col, Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& sdm)
-{
-  OrdinalType nr = sdm.numRows(); 
-  ScalarType* sdm_c = sdm[col]; // column vector
-  for (OrdinalType row=0; row<nr; ++row) 
-    ar & sdm_c[row];
+template <class Archive, typename OrdinalType, typename ScalarType>
+void Response::read_sdm_col(
+    Archive& ar, int col,
+    Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& sdm) {
+  OrdinalType nr = sdm.numRows();
+  ScalarType* sdm_c = sdm[col];  // column vector
+  for (OrdinalType row = 0; row < nr; ++row) ar& sdm_c[row];
 }
 
 // These shouldn't be necessary, but using to avoid static linking
 // issues until can find the right Boost macro ordering
-template void Response:: 
-load<boost::archive::binary_iarchive>(boost::archive::binary_iarchive& ar, 
-				      const unsigned int version); 
-template void Response:: 
-save<boost::archive::binary_oarchive>(boost::archive::binary_oarchive& ar, 
-				      const unsigned int version) const; 
+template void Response::load<boost::archive::binary_iarchive>(
+    boost::archive::binary_iarchive& ar, const unsigned int version);
+template void Response::save<boost::archive::binary_oarchive>(
+    boost::archive::binary_oarchive& ar, const unsigned int version) const;
 
 /*
 // These shouldn't be necessary, but using to avoid static linking
 // issues until can find the right Boost macro ordering
 template void Response::
-load_rep<boost::archive::binary_iarchive>(boost::archive::binary_iarchive& ar, 
-				      const unsigned int version);
+load_rep<boost::archive::binary_iarchive>(boost::archive::binary_iarchive& ar,
+                                      const unsigned int version);
 
 template void Response::
-save_rep<boost::archive::binary_oarchive>(boost::archive::binary_oarchive& ar, 
-				      const unsigned int version) const;
+save_rep<boost::archive::binary_oarchive>(boost::archive::binary_oarchive& ar,
+                                      const unsigned int version) const;
 
 */
 
-} // namespace Dakota
+}  // namespace Dakota

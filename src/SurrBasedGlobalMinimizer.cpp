@@ -8,41 +8,48 @@
     _______________________________________________________________________ */
 
 #include "SurrBasedGlobalMinimizer.hpp"
-#include "ProblemDescDB.hpp"
-#include "ParallelLibrary.hpp"
-#include "ParamResponsePair.hpp"
-#include "DakotaGraphics.hpp"
-#include "dakota_system_defs.hpp"
-#include "DakotaInterface.hpp"
-#include "DakotaApproximation.hpp"
+
 #include <algorithm>
 #include <iostream>
 #include <string>
 
-static const char rcsId[]="@(#) $Id: SurrBasedGlobalMinimizer.cpp 7031 2010-10-22 16:23:52Z mseldre $";
+#include "DakotaApproximation.hpp"
+#include "DakotaGraphics.hpp"
+#include "DakotaInterface.hpp"
+#include "ParallelLibrary.hpp"
+#include "ParamResponsePair.hpp"
+#include "ProblemDescDB.hpp"
+#include "dakota_system_defs.hpp"
+
+static const char rcsId[] =
+    "@(#) $Id: SurrBasedGlobalMinimizer.cpp 7031 2010-10-22 16:23:52Z mseldre "
+    "$";
 
 namespace Dakota {
 
-
-SurrBasedGlobalMinimizer::
-SurrBasedGlobalMinimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
-  SurrBasedMinimizer(problem_db, parallel_lib, model, std::shared_ptr<TraitsBase>(new SurrBasedGlobalTraits())),
-  replacePoints(probDescDB.get_bool("method.sbg.replace_points"))
-{
+SurrBasedGlobalMinimizer::SurrBasedGlobalMinimizer(
+    ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
+    std::shared_ptr<Model> model)
+    : SurrBasedMinimizer(
+          problem_db, parallel_lib, model,
+          std::shared_ptr<TraitsBase>(new SurrBasedGlobalTraits())),
+      replacePoints(probDescDB.get_bool("method.sbg.replace_points")) {
   // Verify that iteratedModel is a surrogate model so that
   // approximation-related functions are defined.
   if (iteratedModel->model_type() != "surrogate") {
     Cerr << "Error: SurrBasedGlobalMinimizer::iteratedModel must be a "
-	 << "surrogate model." << std::endl;
+         << "surrogate model." << std::endl;
     abort_handler(-1);
   }
 
   if (!iteratedModel->truth_model()) {
-    Cerr << "Method surrogate_based_global requires a surrogate model that "
-            "has an underlying truth model via truth_model_pointer or indirectly "
-            "through dace_method_pointer. To optimize on build-once surrogates, "
-            "e.g., from imported training data, apply a normal global optimizer "
-            "like the moga or soga method to the surrogate model directly.\n";
+    Cerr
+        << "Method surrogate_based_global requires a surrogate model that "
+           "has an underlying truth model via truth_model_pointer or "
+           "indirectly "
+           "through dace_method_pointer. To optimize on build-once surrogates, "
+           "e.g., from imported training data, apply a normal global optimizer "
+           "like the moga or soga method to the surrogate model directly.\n";
     abort_handler(METHOD_ERROR);
   }
 
@@ -52,49 +59,45 @@ SurrBasedGlobalMinimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_li
   // While this copy will be replaced in best update, initialize here
   // since relied on in Minimizer::initialize_run when a sub-iterator
   bestVariablesArray.push_back(
-    iteratedModel->truth_model()->current_variables().copy());
+      iteratedModel->truth_model()->current_variables().copy());
 
   // Instantiate the approximate sub-problem minimizer
-  const String& approx_method_ptr
-    = probDescDB.get_string("method.sub_method_pointer");
-  const String& approx_method_name
-    = probDescDB.get_string("method.sub_method_name");
+  const String& approx_method_ptr =
+      probDescDB.get_string("method.sub_method_pointer");
+  const String& approx_method_name =
+      probDescDB.get_string("method.sub_method_name");
   if (!approx_method_ptr.empty()) {
     // Approach 1: method spec support for approxSubProbMinimizer
     const String& model_ptr = probDescDB.get_string("method.model_pointer");
-    size_t method_index = probDescDB.get_db_method_node(); // for restoration
-    probDescDB.set_db_method_node(approx_method_ptr); // method only
+    size_t method_index = probDescDB.get_db_method_node();  // for restoration
+    probDescDB.set_db_method_node(approx_method_ptr);       // method only
     // sub-problem minimizer will use shallow copy of iteratedModel
     // (from Model::get_model(problem_db)
-    approxSubProbMinimizer = Iterator::get_iterator(probDescDB, parallelLib);//(iteratedModel);
+    approxSubProbMinimizer =
+        Iterator::get_iterator(probDescDB, parallelLib);  //(iteratedModel);
     // suppress DB ctor default and don't output summary info
     approxSubProbMinimizer->summary_output(false);
     // verify approx method's modelPointer is empty or consistent
     const String& am_model_ptr = probDescDB.get_string("method.model_pointer");
     if (!am_model_ptr.empty() && am_model_ptr != model_ptr)
       Cerr << "Warning: SBO approx_method_pointer specification includes an\n"
-	   << "         inconsistent model_pointer that will be ignored."
-	   << std::endl;
-    probDescDB.set_db_method_node(method_index); // restore method only
-  }
-  else if (!approx_method_name.empty())
+           << "         inconsistent model_pointer that will be ignored."
+           << std::endl;
+    probDescDB.set_db_method_node(method_index);  // restore method only
+  } else if (!approx_method_name.empty())
     // Approach 2: instantiate on-the-fly w/o method spec support
-    approxSubProbMinimizer
-      = Iterator::get_iterator(approx_method_name, iteratedModel);
+    approxSubProbMinimizer =
+        Iterator::get_iterator(approx_method_name, iteratedModel);
 }
 
+SurrBasedGlobalMinimizer::~SurrBasedGlobalMinimizer() {}
 
-SurrBasedGlobalMinimizer::~SurrBasedGlobalMinimizer()
-{ }
-
-
-void SurrBasedGlobalMinimizer::core_run()
-{
+void SurrBasedGlobalMinimizer::core_run() {
   // Extract subIterator/subModel(s) from the SurrogateModel
-  Model&    truth_model   = *iteratedModel->truth_model();
-  Model&    approx_model  = *iteratedModel->surrogate_model();
+  Model& truth_model = *iteratedModel->truth_model();
+  Model& approx_model = *iteratedModel->surrogate_model();
   auto dace_iterator = iteratedModel->subordinate_iterator();
-  
+
   // This flag controls the method by which we introduce new results data
   // into the surrogate for updating.  Right now, there are two methods
   // supported.  The first is to create each subsequent surrogate using every
@@ -106,8 +109,7 @@ void SurrBasedGlobalMinimizer::core_run()
   // Update DACE settings for global approximations.  Check that dace_iterator
   // is defined (a dace_iterator specification is not required when the data
   // samples are read in from a file rather than obtained from sampling).
-  if (dace_iterator)
-    dace_iterator->active_set_request_values(1);
+  if (dace_iterator) dace_iterator->active_set_request_values(1);
 
   // get data points using sampling, file read, or whatever.
   iteratedModel->build_approximation();
@@ -118,13 +120,12 @@ void SurrBasedGlobalMinimizer::core_run()
 
   bool returns_multipoint = approxSubProbMinimizer->returns_multiple_points(),
        accepts_multipoint = approxSubProbMinimizer->accepts_multiple_points(),
-       truth_asynch_flag  = truth_model.asynch_flag();
+       truth_asynch_flag = truth_model.asynch_flag();
 
   // This flag will be used to indicate when we are finished iterating.  An
   // iteration is a solution of the approximate model followed by an update
   // of the surrogate.
   while (globalIterCount < maxIterations) {
-
     // Test how well the surrogate matches up with the truth model.  For this
     // test, we currently use R-squared as a measure of goodness of fit,
     // although we can easily generalize it.  Also, currently we state that if
@@ -132,28 +133,27 @@ void SurrBasedGlobalMinimizer::core_run()
     // abnormal cases for surrogates that are not polynomial regression models),
     // we stop the surrogate-based global minimization process because it will
     // not work with such an inaccurate model.
-    std::vector<Approximation>& approxs
-      = approx_model.derived_interface()->approximations();
+    std::vector<Approximation>& approxs =
+        approx_model.derived_interface()->approximations();
     std::vector<Approximation>::iterator it;
-    for (it=approxs.begin(); it!=approxs.end(); ++it) {
+    for (it = approxs.begin(); it != approxs.end(); ++it) {
       if (it->diagnostics_available()) {
+        // Start the check with the r-squared value.
+        Real r2_diagnostic = it->diagnostic("rsquared");
+        if (outputLevel > NORMAL_OUTPUT)
+          Cout << "R-squared = " << r2_diagnostic << std::endl;
 
-	// Start the check with the r-squared value.
-	Real r2_diagnostic = it->diagnostic("rsquared");
-	if (outputLevel > NORMAL_OUTPUT)
-	  Cout << "R-squared = " << r2_diagnostic << std::endl;
+        // If outside of tolerable range, report and abort.
+        // TODO: report function index along with diagnostic.
+        if (r2_diagnostic < 0.5 || r2_diagnostic > 1.1) {
+          Cerr << "Surrogate approximation is not accurate enough for "
+               << "the surrogate-based global minimization.\n"
+               << "The minimization has quit before the requested number "
+               << "of iterations due to poor surrogate fit." << std::endl;
+          abort_handler(-1);
+        }
 
-	// If outside of tolerable range, report and abort.
-	// TODO: report function index along with diagnostic.
-	if (r2_diagnostic < 0.5 || r2_diagnostic > 1.1) {
-	  Cerr << "Surrogate approximation is not accurate enough for " 
-	       << "the surrogate-based global minimization.\n" 
-	       << "The minimization has quit before the requested number " 
-	       << "of iterations due to poor surrogate fit." << std::endl;
-	  abort_handler(-1);
-	}
-
-	// Add some additional diagnostics?
+        // Add some additional diagnostics?
       }
     }
 
@@ -177,7 +177,7 @@ void SurrBasedGlobalMinimizer::core_run()
     // the variable results with the truth model.
     iteratedModel->component_parallel_mode(TRUTH_MODEL_MODE);
     IntResponseMap truth_resp_results;
-    for (i=0; i<num_results; i++) {
+    for (i = 0; i < num_results; i++) {
       // set the current values of the active variables in the truth model
       ModelUtils::active_variables(truth_model, vars_results[i]);
 
@@ -186,14 +186,13 @@ void SurrBasedGlobalMinimizer::core_run()
         truth_model.evaluate_nowait();
       else {
         truth_model.evaluate();
-	truth_resp_results[truth_model.evaluation_id()]
-	  = truth_model.current_response().copy();
+        truth_resp_results[truth_model.evaluation_id()] =
+            truth_model.current_response().copy();
       }
     }
     // If we did our evaluations asynchronously, use synchronize to block
     // until all the results are available and then store these responses.
-    if (truth_asynch_flag)
-      truth_resp_results = truth_model.synchronize();
+    if (truth_asynch_flag) truth_resp_results = truth_model.synchronize();
 
     // Beyond this point, we will want to know if this is the last iteration.
     // We will use this information to prevent updating of the surrogate since
@@ -205,54 +204,54 @@ void SurrBasedGlobalMinimizer::core_run()
       // file so that we can easily compare them with the surrogate values of
       // the points returned by the iterator.
       std::string ofname("finaldatatruth" + std::to_string(globalIterCount) +
-			 ".dat");
+                         ".dat");
       std::ofstream ofile(ofname);
       ofile.precision(12);
       IntRespMCIter it = truth_resp_results.begin();
-      for (i=0; i<num_results; ++i, ++it) {
-	const RealVector&  c_vars = vars_results[i].continuous_variables();
-	const IntVector&  di_vars = vars_results[i].discrete_int_variables();
-	const RealVector& dr_vars = vars_results[i].discrete_real_variables();
-	const RealVector& fn_vals = it->second.function_values();
-	std::copy(c_vars.values(), c_vars.values() + c_vars.length(),
-	          std::ostream_iterator<Real>(ofile,"\t"));
-	std::copy(di_vars.values(), di_vars.values() + di_vars.length(),
-	          std::ostream_iterator<int>(ofile,"\t"));
-	std::copy(dr_vars.values(), dr_vars.values() + dr_vars.length(),
-	          std::ostream_iterator<Real>(ofile,"\t"));
-	std::copy(fn_vals.values(), fn_vals.values() + fn_vals.length(),
-	          std::ostream_iterator<Real>(ofile,"\t"));
-	ofile << '\n';
+      for (i = 0; i < num_results; ++i, ++it) {
+        const RealVector& c_vars = vars_results[i].continuous_variables();
+        const IntVector& di_vars = vars_results[i].discrete_int_variables();
+        const RealVector& dr_vars = vars_results[i].discrete_real_variables();
+        const RealVector& fn_vals = it->second.function_values();
+        std::copy(c_vars.values(), c_vars.values() + c_vars.length(),
+                  std::ostream_iterator<Real>(ofile, "\t"));
+        std::copy(di_vars.values(), di_vars.values() + di_vars.length(),
+                  std::ostream_iterator<int>(ofile, "\t"));
+        std::copy(dr_vars.values(), dr_vars.values() + dr_vars.length(),
+                  std::ostream_iterator<Real>(ofile, "\t"));
+        std::copy(fn_vals.values(), fn_vals.values() + fn_vals.length(),
+                  std::ostream_iterator<Real>(ofile, "\t"));
+        ofile << '\n';
       }
       ofile.close();
     }
 
-    // See if we are done  
-    if (last_iter) { // catalogue final results in best{Variables,Response}Array
+    // See if we are done
+    if (last_iter) {  // catalogue final results in
+                      // best{Variables,Response}Array
       if (returns_multipoint) {
-	bestVariablesArray = vars_results;
-	copy_data(truth_resp_results, bestResponseArray);
+        bestVariablesArray = vars_results;
+        copy_data(truth_resp_results, bestResponseArray);
+      } else {
+        bestVariablesArray.front().active_variables(vars_results.front());
+        bestResponseArray.front().function_values(
+            approxSubProbMinimizer->response_results().function_values());
       }
-      else {
-	bestVariablesArray.front().active_variables(vars_results.front());
-	bestResponseArray.front().function_values(
-	  approxSubProbMinimizer->response_results().function_values());
-      }
-    }
-    else {
+    } else {
       // restore state prior to previous append_approximation()
       if (replacePoints && globalIterCount > 1)
-	approx_model.pop_approximation(false);// don't store SDP set; no restore
+        approx_model.pop_approximation(
+            false);  // don't store SDP set; no restore
       // update the data set and rebuild the approximation
       approx_model.append_approximation(vars_results, truth_resp_results, true);
 
       // pass iterator's final vars for use as next set of initial points
       if (accepts_multipoint)
-	approxSubProbMinimizer->initial_points(vars_results);
+        approxSubProbMinimizer->initial_points(vars_results);
       else
-	ModelUtils::active_variables(approx_model, vars_results.front());
+        ModelUtils::active_variables(approx_model, vars_results.front());
     }
   }
 }
 
-} // namespace Dakota
+}  // namespace Dakota

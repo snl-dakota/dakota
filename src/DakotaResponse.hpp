@@ -10,11 +10,12 @@
 #ifndef DAKOTA_RESPONSE_H
 #define DAKOTA_RESPONSE_H
 
-#include "DataResponses.hpp"
+#include <nlohmann/json.hpp>
+
 #include "DakotaActiveSet.hpp"
+#include "DataResponses.hpp"
 #include "SharedResponseData.hpp"
 #include "Teuchos_SerialDenseHelpers.hpp"
-#include <nlohmann/json.hpp>
 
 using json = nlohmann::json;
 
@@ -23,8 +24,7 @@ namespace Dakota {
 class ProblemDescDB;
 using RespMetadataT = double;
 
-
-/// Container class for response functions and their derivatives.  
+/// Container class for response functions and their derivatives.
 /// Response provides the enveloper base class.
 
 /** The Response class is a container class for an abstract set of
@@ -43,25 +43,25 @@ using RespMetadataT = double;
     as the envelope and one of its derived classes serves as the
     letter. */
 
-class Response
-{
-  public:
+class Response {
+ public:
   // Functions and data for instantiating and caching Responses
 
-  /// @brief retrieve an existing Response, if it exists, or instantiate a new one
+  /// @brief retrieve an existing Response, if it exists, or instantiate a new
+  /// one
   /// @return pointer to existing or newly created Response
-  static const Response& get_response(ProblemDescDB& problem_db, short type, const Variables& vars);
-
+  static const Response& get_response(ProblemDescDB& problem_db, short type,
+                                      const Variables& vars);
 
   /// @brief return the response cache for the study
-  /// @param problem_db 
+  /// @param problem_db
   /// @return response cache
   static std::list<Response>& response_cache(ProblemDescDB& problem_db);
 
   /// @brief remove a cached Response for the study
   static void remove_cached_response(const ProblemDescDB& problem_db);
 
-  private:
+ private:
   /// @brief Cache of Responses created for each study
   static std::map<const ProblemDescDB*, std::list<Response>> responseCache;
 
@@ -74,8 +74,7 @@ class Response
   /// inequality operator
   friend bool operator!=(const Response& resp1, const Response& resp2);
 
-public:
-
+ public:
   //
   //- Heading: Constructors and destructor
   //
@@ -102,7 +101,7 @@ public:
 
   /// assignment operator
   Response operator=(const Response& response);
-  
+
   //
   //- Heading: Member functions
   //
@@ -179,11 +178,11 @@ public:
   void function_gradient(const RealVector& assign_grad, int fn_index);
   /// set a function gradient, managing dissimilar DVV
   void function_gradient(const RealVector& assign_grad, int fn_index,
-			 const SizetArray& assign_indices,
-			 const SizetArray&   curr_indices);
+                         const SizetArray& assign_indices,
+                         const SizetArray& curr_indices);
   /// set a function gradient, managing dissimilar DVV
   void function_gradient(const RealVector& assign_grad, int fn_index,
-			 const SizetArray& assign_dvv);
+                         const SizetArray& assign_dvv);
   /// set all function gradients
   void function_gradients(const RealMatrix& fn_grads);
 
@@ -207,18 +206,18 @@ public:
   void function_hessian(const RealSymMatrix& assign_hessian, size_t fn_index);
   /// set a function Hessian, using DVV index mappings
   void function_hessian(const RealSymMatrix& assign_hessian, size_t fn_index,
-			const SizetArray&    assign_indices,
-			const SizetArray&      curr_indices);
+                        const SizetArray& assign_indices,
+                        const SizetArray& curr_indices);
   /// set a function Hessian, managing dissimilar DVV
-  void function_hessian(const RealSymMatrix& assign_hessian,
-			size_t fn_index, const SizetArray& assign_dvv);
+  void function_hessian(const RealSymMatrix& assign_hessian, size_t fn_index,
+                        const SizetArray& assign_dvv);
   /// set all function Hessians
   void function_hessians(const RealSymMatrixArray& fn_hessians);
 
   /// define source and target indices for updating derivatives by matching
   /// assign_dvv against the current DVV
   void map_dvv_indices(const SizetArray& assign_dvv, SizetArray& assign_indices,
-		       SizetArray& curr_indices);
+                       SizetArray& curr_indices);
 
   // NOTE: Responses are stored:
   // [primary_scalar, primary_field, nonlinear_inequality, nonlinear_equality]
@@ -275,7 +274,7 @@ public:
     analysis failures (resulting from nonconvergence, instability, etc.). */
 
   /// Read results into the Response from Input s.
-  template<class Input>
+  template <class Input>
   void read(Input& s, const bool labeled = false);
 
   /// write a response object to a std::ostream
@@ -293,7 +292,7 @@ public:
   /// write portion of responseRep::functionValues in tabular format
   /// to a std::ostream
   void write_tabular_partial(std::ostream& s, size_t start_index,
-			     size_t num_items) const;
+                             size_t num_items) const;
   /// write the response labels in tabular format to a std::ostream
   void write_tabular_labels(std::ostream& s, bool eol = true) const;
 
@@ -307,7 +306,7 @@ public:
   /// default)
   Response copy(bool deep_srd = false) const;
 
-  /// return the number of doubles active in response.  Used for sizing 
+  /// return the number of doubles active in response.  Used for sizing
   /// double* response_data arrays passed into read_data and write_data.
   int data_size();
   /// read from an incoming double* array
@@ -324,25 +323,25 @@ public:
   /// Overloaded form which allows update from components of a response
   /// object.  Care is taken to allow different derivative array sizing.
   void update(const RealVector& source_fn_vals,
-	      const RealMatrix& source_fn_grads,
-	      const RealSymMatrixArray& source_fn_hessians,
-	      const ActiveSet& source_set);
+              const RealMatrix& source_fn_grads,
+              const RealSymMatrixArray& source_fn_hessians,
+              const ActiveSet& source_set);
   /// partial update of this response object from another response object.
   /// The response objects may have different numbers of response functions.
   void update_partial(size_t start_index_target, size_t num_items,
-		      const Response& response, size_t start_index_source);
-  /// Overloaded form which allows partial update from components of a 
+                      const Response& response, size_t start_index_source);
+  /// Overloaded form which allows partial update from components of a
   /// response object.  The response objects may have different numbers
   /// of response functions.
   void update_partial(size_t start_index_target, size_t num_items,
-		      const RealVector& source_fn_vals,
-		      const RealMatrix& source_fn_grads,
-		      const RealSymMatrixArray& source_fn_hessians,
-		      const ActiveSet& source_set, size_t start_index_source);
+                      const RealVector& source_fn_vals,
+                      const RealMatrix& source_fn_grads,
+                      const RealSymMatrixArray& source_fn_hessians,
+                      const ActiveSet& source_set, size_t start_index_source);
 
   /// rehapes response data arrays
   void reshape(size_t num_fns, size_t num_params, bool grad_flag,
-	       bool hess_flag);
+               bool hess_flag);
   /// rehapes response metadata arrays
   void reshape_metadata(size_t num_meta);
   /// resets all response data to zero
@@ -352,29 +351,30 @@ public:
 
   /// function to check responseRep (does this handle contain a body)
   bool is_null() const;
- 
+
   /// method to set the covariance matrix defined for ExperimentResponse
   virtual void set_scalar_covariance(RealVector& scalars);
   /// retrieve the ExperimentCovariance structure
   virtual const ExperimentCovariance& experiment_covariance() const;
   /// method to set the full covariance matrices for ExperimentResponse
-  virtual void set_full_covariance(std::vector<RealMatrix> &matrices, 
-                           std::vector<RealVector> &diagonals,
-                           RealVector &scalars,
-                           IntVector matrix_map_indices,                      
-                           IntVector diagonal_map_indices, 
-                           IntVector scalar_map_indices ); 
+  virtual void set_full_covariance(std::vector<RealMatrix>& matrices,
+                                   std::vector<RealVector>& diagonals,
+                                   RealVector& scalars,
+                                   IntVector matrix_map_indices,
+                                   IntVector diagonal_map_indices,
+                                   IntVector scalar_map_indices);
   /// method to compute the triple product v'*inv(C)*v.
-  virtual Real apply_covariance(const RealVector &residuals) const;
+  virtual Real apply_covariance(const RealVector& residuals) const;
   /// method to compute (v'*inv(C)^1/2), to compute weighted residual
-  virtual void apply_covariance_inv_sqrt(const RealVector &residuals, 
-					 RealVector& weighted_residuals) const;
-  virtual void apply_covariance_inv_sqrt(const RealMatrix& gradients, 
-					 RealMatrix& weighted_gradients) const;
-  virtual void apply_covariance_inv_sqrt(const RealSymMatrixArray& hessians,
-					 RealSymMatrixArray& weighted_hessians) const;
+  virtual void apply_covariance_inv_sqrt(const RealVector& residuals,
+                                         RealVector& weighted_residuals) const;
+  virtual void apply_covariance_inv_sqrt(const RealMatrix& gradients,
+                                         RealMatrix& weighted_gradients) const;
+  virtual void apply_covariance_inv_sqrt(
+      const RealSymMatrixArray& hessians,
+      RealSymMatrixArray& weighted_hessians) const;
 
-  virtual void get_covariance_diagonal( RealVector &diagonal ) const;
+  virtual void get_covariance_diagonal(RealVector& diagonal) const;
 
   /// covariance determinant for one experiment (default 1.0)
   virtual Real covariance_determinant() const;
@@ -382,8 +382,7 @@ public:
   /// log of covariance determinant for one experiment (default 0.0)
   virtual Real log_covariance_determinant() const;
 
-protected:
-
+ protected:
   //
   //- Heading: Constructors
   //
@@ -392,12 +391,12 @@ protected:
   /// (BaseConstructor overloading avoids infinite recursion in the
   /// derived class constructors - Coplien, p. 139)
   Response(BaseConstructor, const Variables& vars,
-	   const ProblemDescDB& problem_db);
+           const ProblemDescDB& problem_db);
   /// constructor initializes the base class part of letter classes
   /// (BaseConstructor overloading avoids infinite recursion in the
   /// derived class constructors - Coplien, p. 139)
   Response(BaseConstructor, const SharedResponseData& srd,
-	   const ActiveSet& set);
+           const ActiveSet& set);
   /// constructor initializes the base class part of letter classes
   /// (BaseConstructor overloading avoids infinite recursion in the
   /// derived class constructors - Coplien, p. 139)
@@ -413,7 +412,7 @@ protected:
 
   /// Implementation of data copy for Response letters (specialized by
   /// some derived letter types); pulls base class data from
-  /// source_resp_rep into the this object.  
+  /// source_resp_rep into the this object.
   virtual void copy_rep(std::shared_ptr<Response> source_resp_rep);
 
   //
@@ -435,7 +434,7 @@ protected:
   /// second derivatives of the response functions
   RealSymMatrixArray functionHessians;
   /// coordinates (independent vars like x,t) on which field values depend
-  IntRealMatrixMap fieldCoords; // not all field have associated coords - RWH
+  IntRealMatrixMap fieldCoords;  // not all field have associated coords - RWH
 
   /// copy of the ActiveSet used by the Model to generate a Response instance
   ActiveSet responseActiveSet;
@@ -443,48 +442,47 @@ protected:
   /// metadata storage
   std::vector<RespMetadataT> metaData;
 
-private:
-
+ private:
   friend class boost::serialization::access;
 
   /// write a column of a SerialDenseMatrix
-  template<class Archive, typename OrdinalType, typename ScalarType>
-  void write_sdm_col
-  (Archive& ar, int col,
-   const Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& sdm) const;
+  template <class Archive, typename OrdinalType, typename ScalarType>
+  void write_sdm_col(
+      Archive& ar, int col,
+      const Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& sdm) const;
 
   /// read a column of a SerialDenseMatrix
-  template<class Archive, typename OrdinalType, typename ScalarType>
-  void read_sdm_col(Archive& ar, int col, 
-		    Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& sdm);
+  template <class Archive, typename OrdinalType, typename ScalarType>
+  void read_sdm_col(Archive& ar, int col,
+                    Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& sdm);
 
   /// read a Response from an archive<class Archive>
-  template<class Archive>
+  template <class Archive>
   void load(Archive& ar, const unsigned int version);
 
   /// read a Response letter object from an archive
-  template<class Archive> 
+  template <class Archive>
   void load_rep(Archive& ar, const unsigned int version);
 
   /// write a Response to an archive
-  template<class Archive>
+  template <class Archive>
   void save(Archive& ar, const unsigned int version) const;
 
   /// write a Response letter object to an archive
-  template<class Archive> 
+  template <class Archive>
   void save_rep(Archive& ar, const unsigned int version) const;
 
   BOOST_SERIALIZATION_SPLIT_MEMBER()
 
-
   /// Used by standard envelope constructor to instantiate a new letter class
-  std::shared_ptr<Response>get_response(short type, const Variables& vars,
-					const ProblemDescDB& problem_db) const;
+  std::shared_ptr<Response> get_response(short type, const Variables& vars,
+                                         const ProblemDescDB& problem_db) const;
   /// Used by alternate envelope constructor to instantiate a new letter class
   std::shared_ptr<Response> get_response(const SharedResponseData& srd,
-					 const ActiveSet& set) const;
+                                         const ActiveSet& set) const;
   /// Used by alternate envelope constructor to instantiate a new letter class
-  std::shared_ptr<Response> get_response(short type, const ActiveSet& set) const;
+  std::shared_ptr<Response> get_response(short type,
+                                         const ActiveSet& set) const;
   /// Used by copy() to instantiate a new letter class
   std::shared_ptr<Response> get_response(const SharedResponseData& srd) const;
   /// Used by read functions to instantiate a new letter class
@@ -503,54 +501,51 @@ private:
   void shape_rep(const ActiveSet& set, bool initialize = true);
   /// resizes the representation's containers
   void reshape_rep(size_t num_fns, size_t num_params, bool grad_flag,
-		   bool hess_flag);
+                   bool hess_flag);
 
   /// reshape function{Gradients,Hessians} if needed to sync with DVV
   void reshape_active_derivs(size_t num_deriv_vars);
 
   /// Populate the Response with the contents of s
-  void read_core(std::istream& s,
-                  const bool labeled,
-                  std::ostringstream& errors);
+  void read_core(std::istream& s, const bool labeled,
+                 std::ostringstream& errors);
 
   /// Populate the Response with the contents of j
-  void read_core(const json& j,
-                  const bool labeled,
-                  std::ostringstream& errors);
+  void read_core(const json& j, const bool labeled, std::ostringstream& errors);
 
   bool expect_derivatives(const ShortArray& asv);
 
   /// Read gradients from a freeform stream. Insert error messages
   // into errors stream.
-  void read_gradients(std::istream& s, const ShortArray &asv,
-		      bool expect_metadata, std::ostringstream &error);
+  void read_gradients(std::istream& s, const ShortArray& asv,
+                      bool expect_metadata, std::ostringstream& error);
 
   /// Read Hessians from a freeform stream. Insert error messages
   // into errors stream.
-  void read_hessians(std::istream& s, const ShortArray &asv,
-		     bool expect_metadata, std::ostringstream &error);
+  void read_hessians(std::istream& s, const ShortArray& asv,
+                     bool expect_metadata, std::ostringstream& error);
 
   /// Read function values from an annotated stream. Insert error messages
-  // into errors stream. 
-  void read_labeled_fn_vals(std::istream &s, const ShortArray &asv,
-			    size_t num_metadata, std::ostringstream &errors);
-
-  /// Read function values from a stream in a "flexible" way -- ignoring 
-  /// any labels. Insert error messages into errors stream.
-  void read_flexible_fn_vals(std::istream &s, const ShortArray &asv,
-			    size_t num_metadata, std::ostringstream &errors);
-
-/*  /// Read function values from a freeform stream. Insert error messages
   // into errors stream.
-  void read_freeform_fn_vals(std::istream& s, const ShortArray &asv, 
-      std::ostringstream &error);
-*/
+  void read_labeled_fn_vals(std::istream& s, const ShortArray& asv,
+                            size_t num_metadata, std::ostringstream& errors);
+
+  /// Read function values from a stream in a "flexible" way -- ignoring
+  /// any labels. Insert error messages into errors stream.
+  void read_flexible_fn_vals(std::istream& s, const ShortArray& asv,
+                             size_t num_metadata, std::ostringstream& errors);
+
+  /*  /// Read function values from a freeform stream. Insert error messages
+    // into errors stream.
+    void read_freeform_fn_vals(std::istream& s, const ShortArray &asv,
+        std::ostringstream &error);
+  */
 
   /// Check for FAIL in stream
-  bool failure_reported(std::istream &s);
+  bool failure_reported(std::istream& s);
 
   /// Check for fail in JSON
-  bool failure_reported(const json &);
+  bool failure_reported(const json&);
 
   //
   //- Heading: Private data members
@@ -560,570 +555,510 @@ private:
   std::shared_ptr<Response> responseRep;
 };
 
-template<class Input>
-void Response::read(Input& s, const bool labeled)
-{
+template <class Input>
+void Response::read(Input& s, const bool labeled) {
   // if envelope, forward to letter
-  if (responseRep)
-    { responseRep->read(s, labeled); return; }
+  if (responseRep) {
+    responseRep->read(s, labeled);
+    return;
+  }
 
   // If a failure is detected, throw an error
-  if (failure_reported(s)) 
+  if (failure_reported(s))
     throw FunctionEvalFailure(String("failure captured"));
-  
+
   // Destroy old values and set to zero (so that else assignments are not needed
   // below). The arrays have been properly sized by the Response constructor.
   reset();
-  
-  std::ostringstream errors; // all helper funcs can append messages to errors
+
+  std::ostringstream errors;  // all helper funcs can append messages to errors
 
   read_core(s, labeled, errors);
 
-  if(!errors.str().empty())
-    throw ResultsFileError(errors.str());
+  if (!errors.str().empty()) throw ResultsFileError(errors.str());
 }
 
-
-inline const SharedResponseData& Response::shared_data() const
-{ return (responseRep) ? responseRep->sharedRespData : sharedRespData; }
-
-
-inline SharedResponseData& Response::shared_data()
-{ return (responseRep) ? responseRep->sharedRespData : sharedRespData; }
-
-
-inline size_t Response::num_functions() const
-{
-  return (responseRep) ? responseRep->functionValues.length() :
-    functionValues.length();
+inline const SharedResponseData& Response::shared_data() const {
+  return (responseRep) ? responseRep->sharedRespData : sharedRespData;
 }
 
-
-inline const Real& Response::function_value(size_t i) const
-{
-  if (responseRep) return responseRep->functionValues[i];
-  else             return functionValues[i];
+inline SharedResponseData& Response::shared_data() {
+  return (responseRep) ? responseRep->sharedRespData : sharedRespData;
 }
 
-
-inline Real& Response::function_value_view(size_t i)
-{
-  if (responseRep) return responseRep->functionValues[i];
-  else             return functionValues[i];
+inline size_t Response::num_functions() const {
+  return (responseRep) ? responseRep->functionValues.length()
+                       : functionValues.length();
 }
 
-
-inline const RealVector& Response::function_values() const
-{
-  if (responseRep) return responseRep->functionValues;
-  else             return functionValues;
+inline const Real& Response::function_value(size_t i) const {
+  if (responseRep)
+    return responseRep->functionValues[i];
+  else
+    return functionValues[i];
 }
 
+inline Real& Response::function_value_view(size_t i) {
+  if (responseRep)
+    return responseRep->functionValues[i];
+  else
+    return functionValues[i];
+}
 
-inline RealVector Response::field_values_view(size_t i) const
-{
+inline const RealVector& Response::function_values() const {
+  if (responseRep)
+    return responseRep->functionValues;
+  else
+    return functionValues;
+}
+
+inline RealVector Response::field_values_view(size_t i) const {
   if (responseRep)
     return responseRep->field_values_view(i);
   else {
     size_t j, cntr = sharedRespData.num_scalar_primary();
     const IntVector& field_len = sharedRespData.field_lengths();
-    for (j=0; j<i; j++)
-      cntr += field_len[j];
+    for (j = 0; j < i; j++) cntr += field_len[j];
     return RealVector(Teuchos::View, const_cast<Real*>(&functionValues[cntr]),
-		      field_len[i]);
+                      field_len[i]);
   }
 }
 
-inline RealVector Response::field_values_view(size_t i)
-{
+inline RealVector Response::field_values_view(size_t i) {
   if (responseRep)
     return responseRep->field_values_view(i);
   else {
     size_t j, cntr = sharedRespData.num_scalar_primary();
     const IntVector& field_len = sharedRespData.field_lengths();
-    for (j=0; j<i; j++)
-      cntr += field_len[j];
+    for (j = 0; j < i; j++) cntr += field_len[j];
     return RealVector(Teuchos::View, &functionValues[cntr], field_len[i]);
   }
 }
 
-inline RealMatrix Response::field_coords_view(size_t i)
-{
+inline RealMatrix Response::field_coords_view(size_t i) {
   if (responseRep)
     return responseRep->field_coords_view(i);
   else {
-    if( fieldCoords.find(i) == fieldCoords.end() )
-      return RealMatrix(); // return empty matrix?  error out? - RWH
+    if (fieldCoords.find(i) == fieldCoords.end())
+      return RealMatrix();  // return empty matrix?  error out? - RWH
     else
       return RealMatrix(Teuchos::View, fieldCoords[i], fieldCoords[i].numRows(),
-			fieldCoords[i].numCols());
+                        fieldCoords[i].numCols());
   }
 }
 
-
-inline const RealMatrix Response::field_coords_view(size_t i) const
-{
+inline const RealMatrix Response::field_coords_view(size_t i) const {
   const RealMatrix matrix = const_cast<Response*>(this)->field_coords_view(i);
   return matrix;
 }
 
-
-inline RealVector Response::function_values_view()
-{
-  return (responseRep) ?
-    RealVector(Teuchos::View, responseRep->functionValues.values(),
-	       responseRep->functionValues.length()) :
-    RealVector(Teuchos::View, functionValues.values(), functionValues.length());
+inline RealVector Response::function_values_view() {
+  return (responseRep)
+             ? RealVector(Teuchos::View, responseRep->functionValues.values(),
+                          responseRep->functionValues.length())
+             : RealVector(Teuchos::View, functionValues.values(),
+                          functionValues.length());
 }
 
-
-inline RealVector Response::function_values_view() const
-{
+inline RealVector Response::function_values_view() const {
   // Note: this const version is largely subsumed by const RealVector&
   // function_values().  We include it just for consistency with other
   // function_*_view().
-  return (responseRep) ?
-    RealVector(Teuchos::View, responseRep->functionValues.values(),
-	       responseRep->functionValues.length()) :
-    RealVector(Teuchos::View, const_cast<Real*>(functionValues.values()),
-	       functionValues.length());
+  return (responseRep)
+             ? RealVector(Teuchos::View, responseRep->functionValues.values(),
+                          responseRep->functionValues.length())
+             : RealVector(Teuchos::View,
+                          const_cast<Real*>(functionValues.values()),
+                          functionValues.length());
 }
 
-
-inline void Response::function_value(const Real& fn_val, size_t i)
-{
-  if (responseRep) responseRep->functionValues[i] = fn_val;
-  else             functionValues[i] = fn_val;
+inline void Response::function_value(const Real& fn_val, size_t i) {
+  if (responseRep)
+    responseRep->functionValues[i] = fn_val;
+  else
+    functionValues[i] = fn_val;
 }
 
-
-inline void Response::field_values(const RealVector& field_vals, size_t i)
-{
+inline void Response::field_values(const RealVector& field_vals, size_t i) {
   if (responseRep)
     responseRep->field_values(field_vals, i);
   else {
     const IntVector& field_len = sharedRespData.field_lengths();
     size_t j, cntr = sharedRespData.num_scalar_primary();
-    for (j=0; j<i; j++)
-      cntr += field_len[j];
+    for (j = 0; j < i; j++) cntr += field_len[j];
     size_t len_i = field_len[i];
-    for (j=0; j<len_i; ++j, ++cntr)
-      functionValues[cntr] = field_vals[j];
+    for (j = 0; j < len_i; ++j, ++cntr) functionValues[cntr] = field_vals[j];
   }
 }
 
-
-inline void Response::field_coords(const RealMatrix& coords, size_t i)
-{
-  if (responseRep) responseRep->field_coords(coords, i);
-  else             fieldCoords[i] = coords;
+inline void Response::field_coords(const RealMatrix& coords, size_t i) {
+  if (responseRep)
+    responseRep->field_coords(coords, i);
+  else
+    fieldCoords[i] = coords;
 }
 
-
-inline void Response::function_values(const RealVector& fn_vals)
-{
+inline void Response::function_values(const RealVector& fn_vals) {
   // take care to avoid assuming a vector view
-  if (responseRep) copy_data(fn_vals, responseRep->functionValues);
-  else             copy_data(fn_vals, functionValues);
+  if (responseRep)
+    copy_data(fn_vals, responseRep->functionValues);
+  else
+    copy_data(fn_vals, functionValues);
 }
 
-
-inline const Real* Response::function_gradient(int i) const
-{
-  if (responseRep) return responseRep->functionGradients[i];
-  else             return functionGradients[i];
+inline const Real* Response::function_gradient(int i) const {
+  if (responseRep)
+    return responseRep->functionGradients[i];
+  else
+    return functionGradients[i];
 }
 
-
-inline RealVector Response::function_gradient_view(int i)
-{   
+inline RealVector Response::function_gradient_view(int i) {
   if (responseRep)
     return Teuchos::getCol(Teuchos::View, responseRep->functionGradients, i);
   else
     return Teuchos::getCol(Teuchos::View, functionGradients, i);
 }
 
-
-inline RealVector Response::function_gradient_view(int i) const
-{   
+inline RealVector Response::function_gradient_view(int i) const {
   if (responseRep)
     return Teuchos::getCol(Teuchos::View, responseRep->functionGradients, i);
   else
     return RealVector(Teuchos::View, const_cast<Real*>(functionGradients[i]),
-		      functionGradients.numRows());
+                      functionGradients.numRows());
 }
 
-
-inline RealVector Response::function_gradient_copy(int i) const
-{
+inline RealVector Response::function_gradient_copy(int i) const {
   if (responseRep)
     return Teuchos::getCol(Teuchos::Copy, responseRep->functionGradients, i);
   else
     return RealVector(Teuchos::Copy, const_cast<Real*>(functionGradients[i]),
-		      functionGradients.numRows());
+                      functionGradients.numRows());
 }
 
+inline const RealMatrix& Response::function_gradients() const {
+  return (responseRep) ? responseRep->functionGradients : functionGradients;
+}
 
-inline const RealMatrix& Response::function_gradients() const
-{ return (responseRep) ? responseRep->functionGradients : functionGradients; }
-
-
-inline RealMatrix Response::function_gradients_view()
-{
+inline RealMatrix Response::function_gradients_view() {
   if (responseRep)
     return RealMatrix(Teuchos::View, responseRep->functionGradients,
-		      responseRep->functionGradients.numRows(),
-		      responseRep->functionGradients.numCols());
+                      responseRep->functionGradients.numRows(),
+                      responseRep->functionGradients.numCols());
   else
     return RealMatrix(Teuchos::View, functionGradients,
-		      functionGradients.numRows(), functionGradients.numCols());
+                      functionGradients.numRows(), functionGradients.numCols());
 }
 
-inline RealMatrix Response::function_gradients_view() const
-{
+inline RealMatrix Response::function_gradients_view() const {
   if (responseRep)
     return RealMatrix(Teuchos::View, responseRep->functionGradients,
-		      responseRep->functionGradients.numRows(),
-		      responseRep->functionGradients.numCols());
+                      responseRep->functionGradients.numRows(),
+                      responseRep->functionGradients.numCols());
   else
     return RealMatrix(Teuchos::View, functionGradients,
-		      functionGradients.numRows(), functionGradients.numCols());
+                      functionGradients.numRows(), functionGradients.numCols());
 }
 
-
-inline void Response::
-function_gradient(const RealVector& fn_grad, int i)
-{
-  if (responseRep) Teuchos::setCol(fn_grad, i, responseRep->functionGradients);
-  else             Teuchos::setCol(fn_grad, i, functionGradients);
+inline void Response::function_gradient(const RealVector& fn_grad, int i) {
+  if (responseRep)
+    Teuchos::setCol(fn_grad, i, responseRep->functionGradients);
+  else
+    Teuchos::setCol(fn_grad, i, functionGradients);
 }
 
-
-inline void Response::function_gradients(const RealMatrix& fn_grads)
-{
+inline void Response::function_gradients(const RealMatrix& fn_grads) {
   // take care to avoid assuming a vector view
-  if (responseRep) copy_data(fn_grads, responseRep->functionGradients);
-  else             copy_data(fn_grads, functionGradients);
+  if (responseRep)
+    copy_data(fn_grads, responseRep->functionGradients);
+  else
+    copy_data(fn_grads, functionGradients);
 }
 
-
-inline const RealSymMatrix& Response::function_hessian(size_t i) const
-{
-  if (responseRep) return responseRep->functionHessians[i];
-  else             return functionHessians[i];
+inline const RealSymMatrix& Response::function_hessian(size_t i) const {
+  if (responseRep)
+    return responseRep->functionHessians[i];
+  else
+    return functionHessians[i];
 }
 
-
-inline RealSymMatrix Response::function_hessian_view(size_t i)
-{
+inline RealSymMatrix Response::function_hessian_view(size_t i) {
   // Note: there is no implementation difference from the const version in
   // this case, such that maintaining just the stricter const version would
   // be sufficient.  Maintaining the distinction is just for consistency with
   // other function_*_view().
   if (responseRep)
     return RealSymMatrix(Teuchos::View, responseRep->functionHessians[i],
-			 responseRep->functionHessians[i].numRows());
+                         responseRep->functionHessians[i].numRows());
   else
     return RealSymMatrix(Teuchos::View, functionHessians[i],
-			 functionHessians[i].numRows());
+                         functionHessians[i].numRows());
 }
 
-
-inline RealSymMatrix Response::function_hessian_view(size_t i) const
-{
+inline RealSymMatrix Response::function_hessian_view(size_t i) const {
   if (responseRep)
     return RealSymMatrix(Teuchos::View, responseRep->functionHessians[i],
-			 responseRep->functionHessians[i].numRows());
+                         responseRep->functionHessians[i].numRows());
   else
     return RealSymMatrix(Teuchos::View, functionHessians[i],
-			 functionHessians[i].numRows());
+                         functionHessians[i].numRows());
 }
 
-
-inline const RealSymMatrixArray& Response::function_hessians() const
-{
-  if (responseRep) return responseRep->functionHessians;
-  else             return functionHessians;
+inline const RealSymMatrixArray& Response::function_hessians() const {
+  if (responseRep)
+    return responseRep->functionHessians;
+  else
+    return functionHessians;
 }
 
-
-inline RealSymMatrixArray Response::function_hessians_view()
-{
+inline RealSymMatrixArray Response::function_hessians_view() {
   if (responseRep)
     return responseRep->function_hessians_view();
   else {
     size_t i, num_hess = functionHessians.size();
     RealSymMatrixArray fn_hessians_view(num_hess);
-    for (i=0; i<num_hess; ++i)
+    for (i = 0; i < num_hess; ++i)
       fn_hessians_view[i] = RealSymMatrix(Teuchos::View, functionHessians[i],
-					  functionHessians[i].numRows());
+                                          functionHessians[i].numRows());
     return fn_hessians_view;
   }
 }
 
-inline RealSymMatrixArray Response::function_hessians_view() const
-{
+inline RealSymMatrixArray Response::function_hessians_view() const {
   if (responseRep)
     return responseRep->function_hessians_view();
   else {
     size_t i, num_hess = functionHessians.size();
     RealSymMatrixArray fn_hessians_view(num_hess);
-    for (i=0; i<num_hess; ++i)
+    for (i = 0; i < num_hess; ++i)
       fn_hessians_view[i] = RealSymMatrix(Teuchos::View, functionHessians[i],
-					  functionHessians[i].numRows());
+                                          functionHessians[i].numRows());
     return fn_hessians_view;
   }
 }
 
-
-inline void Response::
-function_hessian(const RealSymMatrix& fn_hessian, size_t i)
-{
+inline void Response::function_hessian(const RealSymMatrix& fn_hessian,
+                                       size_t i) {
   // take care to avoid assuming a vector view
-  if (responseRep) copy_data(fn_hessian, responseRep->functionHessians[i]);
-  else             copy_data(fn_hessian, functionHessians[i]);
+  if (responseRep)
+    copy_data(fn_hessian, responseRep->functionHessians[i]);
+  else
+    copy_data(fn_hessian, functionHessians[i]);
 }
 
-
-inline void Response::
-function_hessians(const RealSymMatrixArray& fn_hessians)
-{
-  if (responseRep) responseRep->function_hessians(fn_hessians);
+inline void Response::function_hessians(const RealSymMatrixArray& fn_hessians) {
+  if (responseRep)
+    responseRep->function_hessians(fn_hessians);
   else {
     // take care to avoid assuming a vector view
     size_t i, num_hess = fn_hessians.size();
-    if (functionHessians.size() != num_hess)
-      functionHessians.resize(num_hess);
-    for (i=0; i<num_hess; ++i)
+    if (functionHessians.size() != num_hess) functionHessians.resize(num_hess);
+    for (i = 0; i < num_hess; ++i)
       copy_data(fn_hessians[i], functionHessians[i]);
   }
 }
 
-
-inline const IntVector& Response::field_lengths() const
-{
-  if (responseRep) return responseRep->sharedRespData.field_lengths();
-  else             return sharedRespData.field_lengths();
+inline const IntVector& Response::field_lengths() const {
+  if (responseRep)
+    return responseRep->sharedRespData.field_lengths();
+  else
+    return sharedRespData.field_lengths();
 }
 
-
-inline const IntVector& Response::num_coords_per_field() const
-{
-  if (responseRep) return responseRep->sharedRespData.num_coords_per_field();
-  else             return sharedRespData.num_coords_per_field();
+inline const IntVector& Response::num_coords_per_field() const {
+  if (responseRep)
+    return responseRep->sharedRespData.num_coords_per_field();
+  else
+    return sharedRespData.num_coords_per_field();
 }
 
-
-inline const StringArray& Response::function_labels() const
-{
-  if (responseRep) return responseRep->sharedRespData.function_labels();
-  else             return sharedRespData.function_labels();
+inline const StringArray& Response::function_labels() const {
+  if (responseRep)
+    return responseRep->sharedRespData.function_labels();
+  else
+    return sharedRespData.function_labels();
 }
 
-
-inline void Response::function_labels(const StringArray& fn_labels)
-{
-  if (responseRep) responseRep->sharedRespData.function_labels(fn_labels);
-  else             sharedRespData.function_labels(fn_labels);
+inline void Response::function_labels(const StringArray& fn_labels) {
+  if (responseRep)
+    responseRep->sharedRespData.function_labels(fn_labels);
+  else
+    sharedRespData.function_labels(fn_labels);
 }
 
-
-inline const StringArray& Response::field_group_labels()
-{
-  if (responseRep) 
+inline const StringArray& Response::field_group_labels() {
+  if (responseRep)
     return responseRep->sharedRespData.field_group_labels();
-  else             
+  else
     return sharedRespData.field_group_labels();
 }
 
-
-inline const std::vector<RespMetadataT>& Response::metadata() const
-{
+inline const std::vector<RespMetadataT>& Response::metadata() const {
   if (responseRep)
     return responseRep->metaData;
   else
     return metaData;
 }
 
-
-inline RespMetadataT Response::metadata(size_t index) const
-{
+inline RespMetadataT Response::metadata(size_t index) const {
   if (responseRep)
     return responseRep->metaData[index];
   else
     return metaData[index];
 }
 
-
-inline void Response::metadata(const std::vector<RespMetadataT>& md)
-{
+inline void Response::metadata(const std::vector<RespMetadataT>& md) {
   if (responseRep)
     responseRep->metaData = md;
   else
     metaData = md;
 }
 
-
-inline void Response::
-metadata(const std::vector<RespMetadataT>& md, size_t start)
-{
+inline void Response::metadata(const std::vector<RespMetadataT>& md,
+                               size_t start) {
   if (responseRep)
     responseRep->metadata(md, start);
   else {
     size_t i, num_md = md.size(), end = start + num_md, cntr;
     if (metaData.size() < end) {
       Cerr << "Error: insufficient size (" << metaData.size()
-	   << ") in partial metadata update." << std::endl;
+           << ") in partial metadata update." << std::endl;
       abort_handler(RESP_ERROR);
     }
-    for (i=0, cntr=start; i<num_md; ++i, ++cntr)
-      metaData[cntr] = md[i];
+    for (i = 0, cntr = start; i < num_md; ++i, ++cntr) metaData[cntr] = md[i];
   }
 }
 
+inline const ActiveSet& Response::active_set() const {
+  return (responseRep) ? responseRep->responseActiveSet : responseActiveSet;
+}
 
-inline const ActiveSet& Response::active_set() const
-{ return (responseRep) ? responseRep->responseActiveSet : responseActiveSet; }
-
-
-inline void Response::active_set(const ActiveSet& set)
-{
+inline void Response::active_set(const ActiveSet& set) {
   if (responseRep) {
     responseRep->active_set_request_vector(set.request_vector());
     responseRep->active_set_derivative_vector(set.derivative_vector());
-  }
-  else {
+  } else {
     active_set_request_vector(set.request_vector());
     active_set_derivative_vector(set.derivative_vector());
   }
 }
 
-
-inline const ShortArray& Response::active_set_request_vector() const
-{
-  if (responseRep) return responseRep->responseActiveSet.request_vector();
-  else             return responseActiveSet.request_vector();
+inline const ShortArray& Response::active_set_request_vector() const {
+  if (responseRep)
+    return responseRep->responseActiveSet.request_vector();
+  else
+    return responseActiveSet.request_vector();
 }
 
-
-inline ShortArray& Response::active_set_request_vector()
-{
-  if (responseRep) return responseRep->responseActiveSet.request_vector();
-  else             return responseActiveSet.request_vector();
+inline ShortArray& Response::active_set_request_vector() {
+  if (responseRep)
+    return responseRep->responseActiveSet.request_vector();
+  else
+    return responseActiveSet.request_vector();
 }
 
-
-inline const SizetArray& Response::active_set_derivative_vector() const
-{
-  if (responseRep) return responseRep->responseActiveSet.derivative_vector();
-  else             return responseActiveSet.derivative_vector();
+inline const SizetArray& Response::active_set_derivative_vector() const {
+  if (responseRep)
+    return responseRep->responseActiveSet.derivative_vector();
+  else
+    return responseActiveSet.derivative_vector();
 }
 
-
-inline SizetArray& Response::active_set_derivative_vector()
-{
-  if (responseRep) return responseRep->responseActiveSet.derivative_vector();
-  else             return responseActiveSet.derivative_vector();
+inline SizetArray& Response::active_set_derivative_vector() {
+  if (responseRep)
+    return responseRep->responseActiveSet.derivative_vector();
+  else
+    return responseActiveSet.derivative_vector();
 }
 
-
-inline void Response::update(const Response& response, bool pull_metadata)
-{
+inline void Response::update(const Response& response, bool pull_metadata) {
   // rep forward handled downstream
   update(response.function_values(), response.function_gradients(),
-	 response.function_hessians(), response.active_set());
+         response.function_hessians(), response.active_set());
   if (pull_metadata) metadata(response.metadata());
 }
 
-
-inline void Response::
-update_partial(size_t start_index_target, size_t num_items,
-	       const Response& response, size_t start_index_source)
-{
+inline void Response::update_partial(size_t start_index_target,
+                                     size_t num_items, const Response& response,
+                                     size_t start_index_source) {
   // rep forward handled downstream
   update_partial(start_index_target, num_items, response.function_values(),
-		 response.function_gradients(), response.function_hessians(),
-		 response.active_set(), start_index_source);
+                 response.function_gradients(), response.function_hessians(),
+                 response.active_set(), start_index_source);
 }
 
+inline bool Response::is_null() const { return (responseRep == NULL); }
 
-inline bool Response::is_null() const
-{ return (responseRep == NULL); }
-
-
-inline RealMatrix Response::field_gradients_view(size_t i) const
-{
+inline RealMatrix Response::field_gradients_view(size_t i) const {
   if (responseRep)
     return responseRep->field_gradients_view(i);
   else {
     size_t j, cntr = sharedRespData.num_scalar_primary();
     const IntVector& field_len = sharedRespData.field_lengths();
-    for (j=0; j<i; j++)
-      cntr += field_len[j];
-    return RealMatrix(Teuchos::View, functionGradients, 
-		      functionGradients.numRows(), field_len[i],
-		      0, cntr);
+    for (j = 0; j < i; j++) cntr += field_len[j];
+    return RealMatrix(Teuchos::View, functionGradients,
+                      functionGradients.numRows(), field_len[i], 0, cntr);
   }
 }
 
-
-inline RealSymMatrixArray Response::field_hessians_view(size_t i) const
-{
+inline RealSymMatrixArray Response::field_hessians_view(size_t i) const {
   if (responseRep)
     return responseRep->field_hessians_view(i);
   else {
     const IntVector& field_len = sharedRespData.field_lengths();
-    size_t j, num_field_hess = field_len[i], 
-      cntr = sharedRespData.num_scalar_primary();;
-    for (j=0; j<i; j++)
-      cntr += field_len[j];
+    size_t j, num_field_hess = field_len[i],
+              cntr = sharedRespData.num_scalar_primary();
+    ;
+    for (j = 0; j < i; j++) cntr += field_len[j];
     RealSymMatrixArray fn_hessians_view(num_field_hess);
-    for (j=0; j<num_field_hess; ++j)
-      fn_hessians_view[j]
-	= RealSymMatrix(Teuchos::View,functionHessians[cntr+j],
-			functionHessians[j].numRows());
+    for (j = 0; j < num_field_hess; ++j)
+      fn_hessians_view[j] =
+          RealSymMatrix(Teuchos::View, functionHessians[cntr + j],
+                        functionHessians[j].numRows());
     return fn_hessians_view;
   }
 }
 
-
 /// global comparison function for Response
-inline bool responses_id_compare(const Response& resp, const void* id)
-{ return ( *(const String*)id == resp.shared_data().responses_id() ); }
-
+inline bool responses_id_compare(const Response& resp, const void* id) {
+  return (*(const String*)id == resp.shared_data().responses_id());
+}
 
 /// std::istream extraction operator for Response.  Calls read(std::istream&).
-inline std::istream& operator>>(std::istream& s, Response& response)
-{ response.read(s); return s; }
-
+inline std::istream& operator>>(std::istream& s, Response& response) {
+  response.read(s);
+  return s;
+}
 
 /// std::ostream insertion operator for Response.  Calls write(std::ostream&).
-inline std::ostream& operator<<(std::ostream& s, const Response& response)
-{ response.write(s); return s; }
-
+inline std::ostream& operator<<(std::ostream& s, const Response& response) {
+  response.write(s);
+  return s;
+}
 
 /// MPIUnpackBuffer extraction operator for Response.  Calls
 /// read(MPIUnpackBuffer&).
-inline MPIUnpackBuffer& operator>>(MPIUnpackBuffer& s, Response& response)
-{ response.read(s); return s; }
-
+inline MPIUnpackBuffer& operator>>(MPIUnpackBuffer& s, Response& response) {
+  response.read(s);
+  return s;
+}
 
 /// MPIPackBuffer insertion operator for Response.  Calls write(MPIPackBuffer&).
-inline MPIPackBuffer& operator<<(MPIPackBuffer& s, const Response& response)
-{ response.write(s); return s; }
-
+inline MPIPackBuffer& operator<<(MPIPackBuffer& s, const Response& response) {
+  response.write(s);
+  return s;
+}
 
 /// inequality operator for Response
-inline bool operator!=(const Response& resp1, const Response& resp2)
-{ return !(resp1 == resp2); }
+inline bool operator!=(const Response& resp1, const Response& resp2) {
+  return !(resp1 == resp2);
+}
 
-} // namespace Dakota
-
+}  // namespace Dakota
 
 // Since we may serialize this class through a temporary, disallow tracking
-BOOST_CLASS_TRACKING(Dakota::Response, 
-		     boost::serialization::track_never)
+BOOST_CLASS_TRACKING(Dakota::Response, boost::serialization::track_never)
 // Version 1 adds metadata
 BOOST_CLASS_VERSION(Dakota::Response, 1)
 
-#endif // !DAKOTA_RESPONSE_H
+#endif  // !DAKOTA_RESPONSE_H

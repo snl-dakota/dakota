@@ -10,30 +10,28 @@
 #ifndef DART_SERIAL_DIRECT_APPLIC_INTERFACE_H
 #define DART_SERIAL_DIRECT_APPLIC_INTERFACE_H
 
-#include "DirectApplicInterface.hpp"
 #include "DakotaUtils.hpp"
+#include "DirectApplicInterface.hpp"
 
 namespace DART {
 
-class DartSerialDirectApplicInterface: public Dakota::DirectApplicInterface
-{
-public:
-
+class DartSerialDirectApplicInterface : public Dakota::DirectApplicInterface {
+ public:
   /// constructor
-  DartSerialDirectApplicInterface(const Dakota::ProblemDescDB& problem_db, DakotaFunctor* f);
+  DartSerialDirectApplicInterface(const Dakota::ProblemDescDB& problem_db,
+                                  DakotaFunctor* f);
   /// destructor
   ~DartSerialDirectApplicInterface();
 
-protected:
-
+ protected:
   // execute the input filter portion of a direct evaluation invocation
-  //int derived_map_if(const Dakota::String& if_name);
+  // int derived_map_if(const Dakota::String& if_name);
 
   /// execute an analysis code portion of a direct evaluation invocation
   int derived_map_ac(const Dakota::String& ac_name);
 
   // execute the output filter portion of a direct evaluation invocation
-  //int derived_map_of(const Dakota::String& of_name);
+  // int derived_map_of(const Dakota::String& of_name);
 
   /// no-op hides base error; job batching occurs within
   /// wait_local_evaluations()
@@ -47,8 +45,7 @@ protected:
   /// no-op hides default run-time error checks at DirectApplicInterface level
   void set_communicators_checks(int max_iterator_concurrency);
 
-private:
-
+ private:
   //
   //- Heading: Convenience functions
   //
@@ -59,9 +56,9 @@ private:
   //
   //- Heading: Data
   //
-  DakotaFunctor *functor;
+  DakotaFunctor* functor;
 };
 
-} // namespace DART
+}  // namespace DART
 
 #endif

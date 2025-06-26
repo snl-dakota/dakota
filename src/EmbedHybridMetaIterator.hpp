@@ -12,9 +12,7 @@
 
 #include "MetaIterator.hpp"
 
-
 namespace Dakota {
-
 
 /// Meta-iterator for closely-coupled hybrid iteration, typically
 /// involving the embedding of local search methods within global
@@ -25,23 +23,23 @@ namespace Dakota {
     global minimizer (the local search minimizer refines candidate
     minima which are fed back to the global minimizer). */
 
-class EmbedHybridMetaIterator: public MetaIterator
-{
-public:
-  
+class EmbedHybridMetaIterator : public MetaIterator {
+ public:
   //
   //- Heading: Constructors and destructor
   //
 
   /// standard constructor
-  EmbedHybridMetaIterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
+  EmbedHybridMetaIterator(ProblemDescDB& problem_db,
+                          ParallelLibrary& parallel_lib);
   /// alternate constructor
-  EmbedHybridMetaIterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
+  EmbedHybridMetaIterator(ProblemDescDB& problem_db,
+                          ParallelLibrary& parallel_lib,
+                          std::shared_ptr<Model> model);
   /// destructor
   ~EmbedHybridMetaIterator() override;
-    
-protected:
-  
+
+ protected:
   //
   //- Heading: Member functions
   //
@@ -59,10 +57,9 @@ protected:
   /// return the final solution from the embedded hybrid (variables)
   const Variables& variables_results() const override;
   /// return the final solution from the embedded hybrid (response)
-  const Response&  response_results() const override;
+  const Response& response_results() const override;
 
-private:
-
+ private:
   //
   //- Heading: Data members
   //
@@ -85,14 +82,14 @@ private:
   Real localSearchProb;
 };
 
+inline const Variables& EmbedHybridMetaIterator::variables_results() const {
+  return globalIterator->variables_results();
+}
 
-inline const Variables& EmbedHybridMetaIterator::variables_results() const
-{ return globalIterator->variables_results(); }
+inline const Response& EmbedHybridMetaIterator::response_results() const {
+  return globalIterator->response_results();
+}
 
-
-inline const Response& EmbedHybridMetaIterator::response_results() const
-{ return globalIterator->response_results(); }
-
-} // namespace Dakota
+}  // namespace Dakota
 
 #endif

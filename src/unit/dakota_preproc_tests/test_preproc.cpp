@@ -11,13 +11,13 @@
 // tools and PATH settings? Maybe configure_file(pyprepro.py) and set env
 // Maybe CMake Test property for ENVIRONMENT
 
-#include "dakota_preproc_util.hpp"
 #include <gtest/gtest.h>
 
 #include <fstream>
 
-TEST(test_preproc_tests, test_pyprepro)
-{
+#include "dakota_preproc_util.hpp"
+
+TEST(test_preproc_tests, test_pyprepro) {
   // generate an input and diff against the baseline
   std::string tmpl_file("preproc_dakota.tmpl");
   std::string gen_file = Dakota::pyprepro_input(tmpl_file);
@@ -27,7 +27,7 @@ TEST(test_preproc_tests, test_pyprepro)
   std::ifstream test_ifs(gen_file);
   std::istream_iterator<char> base_it(base_ifs), base_end;
   std::istream_iterator<char> test_it(test_ifs), test_end;
-  //BOOST_CHECK_EQUAL_COLLECTIONS(base_it, base_end, test_it, test_end);
+  // BOOST_CHECK_EQUAL_COLLECTIONS(base_it, base_end, test_it, test_end);
   for (; (base_it != base_end) && (test_it != test_end); ++base_it, ++test_it) {
     EXPECT_EQ(*base_it, *test_it);
   }

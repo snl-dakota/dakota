@@ -7,10 +7,10 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
+#include <gtest/gtest.h>
+
 #include "surrogates_tools.hpp"
 #include "util_common.hpp"
-
-#include <gtest/gtest.h>
 
 ///////////////
 // Namespace //
@@ -38,7 +38,8 @@ TEST(SurrogatesToolsTest_tests, test_surrogates_size_level_index_vector) {
 
 // ------------------------------------------------------------
 
-TEST(SurrogatesToolsTest_tests, test_surrogates_hyperbolic_subdim_level_indices) {
+TEST(SurrogatesToolsTest_tests,
+     test_surrogates_hyperbolic_subdim_level_indices) {
   // These values were used in manual comparisons with
   // Pecos::util::compute_hyperbolic_level_subdim_indices
   double p = 1.0;

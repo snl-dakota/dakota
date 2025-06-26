@@ -10,25 +10,21 @@
 #ifndef DISCREPANCY_CORRECTION_H
 #define DISCREPANCY_CORRECTION_H
 
-#include "SharedApproxData.hpp"
 #include "DakotaApproximation.hpp"
 #include "DakotaModel.hpp"
 #include "DataModel.hpp"
 #include "DiscrepancyCalculator.hpp"
-
+#include "SharedApproxData.hpp"
 
 namespace Dakota {
-
 
 /// Base class for discrepancy corrections
 
 /** The DiscrepancyCorrection class provides common functions for
     computing and applying corrections to approximations. */
 
-class DiscrepancyCorrection
-{
-public:
-
+class DiscrepancyCorrection {
+ public:
   //
   //- Heading: Constructor and destructor
   //
@@ -37,14 +33,14 @@ public:
   DiscrepancyCorrection();
   /// standard constructor
   DiscrepancyCorrection(Model* surr_model, const SizetSet& surr_fn_indices,
-			short    corr_type, short corr_order,
-			String approx_type  = "local_taylor",
-			short  approx_order = SHRT_MAX);
+                        short corr_type, short corr_order,
+                        String approx_type = "local_taylor",
+                        short approx_order = SHRT_MAX);
   /// alternate constructor
   DiscrepancyCorrection(const SizetSet& surr_fn_indices, size_t num_fns,
-			size_t num_vars, short corr_type, short corr_order,
-			String approx_type  = "local_taylor",
-			short  approx_order = SHRT_MAX);
+                        size_t num_vars, short corr_type, short corr_order,
+                        String approx_type = "local_taylor",
+                        short approx_order = SHRT_MAX);
   /// destructor
   ~DiscrepancyCorrection();
 
@@ -54,38 +50,38 @@ public:
 
   /// initialize the DiscrepancyCorrection data
   void initialize(Model* surr_model, const SizetSet& surr_fn_indices,
-		  short    corr_type, short corr_order,
-		  String approx_type  = "local_taylor",
-		  short  approx_order = SHRT_MAX);
+                  short corr_type, short corr_order,
+                  String approx_type = "local_taylor",
+                  short approx_order = SHRT_MAX);
   /// initialize the DiscrepancyCorrection data
   void initialize(const SizetSet& surr_fn_indices, size_t num_fns,
-		  size_t num_vars, short corr_type, short corr_order,
-		  String approx_type  = "local_taylor",
-		  short  approx_order = SHRT_MAX);
+                  size_t num_vars, short corr_type, short corr_order,
+                  String approx_type = "local_taylor",
+                  short approx_order = SHRT_MAX);
 
   /// compute the correction required to bring approx_response into
   /// agreement with truth_response and store in {add,mult}Corrections
-  void compute(const Variables& vars, const Response& truth_response, 
-	       const Response& approx_response, bool quiet_flag = false);
+  void compute(const Variables& vars, const Response& truth_response,
+               const Response& approx_response, bool quiet_flag = false);
   /// compute the correction required to bring approx_response into
   /// agreement with truth_response and store in discrepancy_response
-  void compute(//const Variables& vars,
-	       const Response& truth_response, const Response& approx_response,
-	       Response& discrepancy_response, bool quiet_flag = false);
+  void compute(  // const Variables& vars,
+      const Response& truth_response, const Response& approx_response,
+      Response& discrepancy_response, bool quiet_flag = false);
   /// compute the correction required to bring approx_response into
   /// agreement with truth_response as a function of the variables
   /// and store in {add,mult}Corrections
-  void compute(const VariablesArray& vars_array, const ResponseArray& 
-               truth_response_array, const ResponseArray& approx_response, 
-	       bool quiet_flag = false);
+  void compute(const VariablesArray& vars_array,
+               const ResponseArray& truth_response_array,
+               const ResponseArray& approx_response, bool quiet_flag = false);
 
   /// apply the correction computed in compute() to approx_response
   void apply(const Variables& vars, Response& approx_response,
-	     bool quiet_flag = false);
+             bool quiet_flag = false);
 
   /// compute the variance of approx_response
-  void compute_variance(const VariablesArray& vars_array, RealMatrix& 
-      			approx_variance, bool quiet_flag = false); 
+  void compute_variance(const VariablesArray& vars_array,
+                        RealMatrix& approx_variance, bool quiet_flag = false);
 
   /// update correctionType
   void correction_type(short corr_type);
@@ -105,8 +101,7 @@ public:
   /// return initializedFlag
   bool initialized() const;
 
-protected:
-
+ protected:
   //
   //- Heading: Data
   //
@@ -138,42 +133,40 @@ protected:
   /// number of continuous variables active in the correction
   size_t numVars;
 
-private:
-
+ private:
   //
   //- Heading: Convenience functions
   //
 
   /// initialize types and orders
-  void initialize(short    corr_type, short   corr_order,
-		  String approx_type, short approx_order);
+  void initialize(short corr_type, short corr_order, String approx_type,
+                  short approx_order);
   /// internal convenience function shared by overloaded initialize() variants
   void initialize_corrections();
-  
+
   /// define badScalingFlag
   bool check_multiplicative(const RealVector& truth_fns,
-			    const RealVector& approx_fns);
+                            const RealVector& approx_fns);
 
   /// internal convenience function for computing additive corrections
   /// between truth and approximate responses
   void compute_additive(const Response& truth_response,
-			const Response& approx_response, int index,
-			Real& discrep_fn, RealVector& discrep_grad,
-			RealSymMatrix& discrep_hess);
+                        const Response& approx_response, int index,
+                        Real& discrep_fn, RealVector& discrep_grad,
+                        RealSymMatrix& discrep_hess);
   /// internal convenience function for computing multiplicative corrections
   /// between truth and approximate responses
   void compute_multiplicative(const Response& truth_response,
-			      const Response& approx_response, int index,
-			      Real& discrep_fn, RealVector& discrep_grad,
-			      RealSymMatrix& discrep_hess);
+                              const Response& approx_response, int index,
+                              Real& discrep_fn, RealVector& discrep_grad,
+                              RealSymMatrix& discrep_hess);
 
   /// internal convenience function for applying additive corrections
   /// to an approximate response
   void apply_additive(const Variables& vars, Response& approx_response);
   /// internal convenience function for applying multiplicative
   /// corrections to an approximate response
-  void apply_multiplicative(const Variables& vars,
-			    Response& approx_response);
+  void apply_multiplicative(const Variables& vars, Response& approx_response);
 
   /// internal convenience function for applying additive corrections
   /// to a set of response functions
@@ -183,8 +176,8 @@ private:
   void apply_multiplicative(const Variables& vars, RealVector& approx_fns);
 
   /// search data_pairs for missing approximation data
-  const Response& search_db(const  Variables& search_vars,
-			    const ShortArray& search_asv);
+  const Response& search_db(const Variables& search_vars,
+                            const ShortArray& search_asv);
 
   //
   //- Heading: Data
@@ -220,7 +213,7 @@ private:
 
   /// shallow copy of the surrogate model instance as returned by
   /// Model::surrogate_model() (the DataFitSurrModel or or one of
-  /// EnsembleSurrModel::approxModels) 
+  /// EnsembleSurrModel::approxModels)
   Model* surrModel{nullptr};
 
   /// factors for combining additive and multiplicative corrections.
@@ -234,7 +227,7 @@ private:
 
   // point in parameter space where the current correction is calculated
   // (often the center of the current trust region)
-  //RealVector correctionCenterPt;
+  // RealVector correctionCenterPt;
   /// copy of center point from the previous correction cycle
   Variables correctionPrevCenterPt;
   /// truth function values at the current correction point
@@ -249,88 +242,78 @@ private:
   RealVector approxFnsPrevCenter;
 };
 
+inline DiscrepancyCorrection::DiscrepancyCorrection()
+    : initializedFlag(false),
+      correctionType(NO_CORRECTION),
+      correctionOrder(0),
+      dataOrder(1),
+      correctionComputed(false),
+      computeAdditive(false),
+      computeMultiplicative(false),
+      addAnchor(true) {}
 
-inline DiscrepancyCorrection::DiscrepancyCorrection():
-  initializedFlag(false), correctionType(NO_CORRECTION), 
-  correctionOrder(0), dataOrder(1), correctionComputed(false),
-  computeAdditive(false), computeMultiplicative(false), addAnchor(true)
-{ }
-
-
-inline DiscrepancyCorrection::
-DiscrepancyCorrection(Model* surr_model, const SizetSet& surr_fn_indices,
-		      short    corr_type, short   corr_order,
-		      String approx_type, short approx_order)
-{
-  initialize(surr_model, surr_fn_indices, corr_type, corr_order,
-	     approx_type, approx_order);
+inline DiscrepancyCorrection::DiscrepancyCorrection(
+    Model* surr_model, const SizetSet& surr_fn_indices, short corr_type,
+    short corr_order, String approx_type, short approx_order) {
+  initialize(surr_model, surr_fn_indices, corr_type, corr_order, approx_type,
+             approx_order);
 }
 
-
-inline DiscrepancyCorrection::
-DiscrepancyCorrection(const SizetSet& surr_fn_indices, size_t num_fns,
-		      size_t num_vars, short corr_type, short corr_order,
-		      String approx_type, short approx_order)
+inline DiscrepancyCorrection::DiscrepancyCorrection(
+    const SizetSet& surr_fn_indices, size_t num_fns, size_t num_vars,
+    short corr_type, short corr_order, String approx_type, short approx_order)
 
 {
   initialize(surr_fn_indices, num_fns, num_vars, corr_type, corr_order,
-	     approx_type, approx_order);
+             approx_type, approx_order);
 }
 
+inline DiscrepancyCorrection::~DiscrepancyCorrection() {}
 
-inline DiscrepancyCorrection::~DiscrepancyCorrection()
-{ }
+inline void DiscrepancyCorrection::correction_type(short corr_type) {
+  correctionType = corr_type;
+}
 
+inline short DiscrepancyCorrection::correction_type() const {
+  return correctionType;
+}
 
-inline void DiscrepancyCorrection::correction_type(short corr_type)
-{ correctionType = corr_type; }
+inline void DiscrepancyCorrection::correction_order(short order) {
+  correctionOrder = order;
+}
 
+inline short DiscrepancyCorrection::correction_order() const {
+  return correctionOrder;
+}
 
-inline short DiscrepancyCorrection::correction_type() const
-{ return correctionType; }
+inline void DiscrepancyCorrection::data_order(short order) {
+  dataOrder = order;
+}
 
+inline short DiscrepancyCorrection::data_order() const { return dataOrder; }
 
-inline void DiscrepancyCorrection::correction_order(short order)
-{ correctionOrder = order; }
+inline bool DiscrepancyCorrection::computed() const {
+  return correctionComputed;
+}
 
+inline bool DiscrepancyCorrection::initialized() const {
+  return initializedFlag;
+}
 
-inline short DiscrepancyCorrection::correction_order() const
-{ return correctionOrder; }
-
-
-inline void DiscrepancyCorrection::data_order(short order)
-{ dataOrder = order; }
-
-
-inline short DiscrepancyCorrection::data_order() const
-{ return dataOrder; }
-
-
-inline bool DiscrepancyCorrection::computed() const
-{ return correctionComputed; }
-
-
-inline bool DiscrepancyCorrection::initialized() const
-{ return initializedFlag; }
-
-
-inline void DiscrepancyCorrection::
-apply_additive(const Variables& vars, RealVector& approx_fns)
-{
-  for (StSIter it=surrogateFnIndices.begin();
-       it!=surrogateFnIndices.end(); ++it)
+inline void DiscrepancyCorrection::apply_additive(const Variables& vars,
+                                                  RealVector& approx_fns) {
+  for (StSIter it = surrogateFnIndices.begin(); it != surrogateFnIndices.end();
+       ++it)
     approx_fns[*it] += addCorrections[*it].value(vars);
 }
 
-
-inline void DiscrepancyCorrection::
-apply_multiplicative(const Variables& vars, RealVector& approx_fns)
-{
-  for (StSIter it=surrogateFnIndices.begin();
-       it!=surrogateFnIndices.end(); ++it)
+inline void DiscrepancyCorrection::apply_multiplicative(
+    const Variables& vars, RealVector& approx_fns) {
+  for (StSIter it = surrogateFnIndices.begin(); it != surrogateFnIndices.end();
+       ++it)
     approx_fns[*it] *= multCorrections[*it].value(vars);
 }
 
-} // namespace Dakota
+}  // namespace Dakota
 
 #endif

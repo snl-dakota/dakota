@@ -10,12 +10,11 @@
 #ifndef NOND_INTEGRATION_H
 #define NOND_INTEGRATION_H
 
-#include "dakota_data_types.hpp"
 #include "DakotaNonD.hpp"
 #include "IntegrationDriver.hpp"
+#include "dakota_data_types.hpp"
 
 namespace Dakota {
-
 
 /// Derived nondeterministic class that generates N-dimensional
 /// numerical integration points for evaluation of expectation integrals
@@ -23,17 +22,15 @@ namespace Dakota {
 /** This class provides a base class for shared code among
     NonDQuadrature and NonDSparseGrid. */
 
-class NonDIntegration: public NonD
-{
-public:
-
+class NonDIntegration : public NonD {
+ public:
   //
   //- Heading: Virtual functions
   //
 
   /// initialize integration grid by drawing from polynomial basis settings
   virtual void initialize_grid(
-    const std::vector<Pecos::BasisPolynomial>& poly_basis) = 0;
+      const std::vector<Pecos::BasisPolynomial>& poly_basis) = 0;
 
   /// increment SSG level/TPQ order
   virtual void increment_grid() = 0;
@@ -56,7 +53,7 @@ public:
   virtual void pop_grid_increment();
   /// merges a grid increment into the reference grid
   virtual void merge_grid_increment();
-  
+
   /// update reference grid within adaptive grid refinement procedures
   virtual void update_reference();
 
@@ -73,10 +70,10 @@ public:
   const Pecos::IntegrationDriver& driver() const;
 
   // return product weights corresponding to each of the collocation points
-  //const RealVector& weight_products() const;
+  // const RealVector& weight_products() const;
 
   // return the number of unique points in the current grid
-  //size_t grid_size();
+  // size_t grid_size();
 
   //
   //- Heading: Virtual function redefinitions
@@ -84,19 +81,19 @@ public:
 
   bool resize() override;
 
-protected:
-
+ protected:
   //
   //- Heading: Constructors and destructor
   //
 
   /// constructor
-  NonDIntegration(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
+  NonDIntegration(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
+                  std::shared_ptr<Model> model);
   /// alternate constructor for instantiations "on the fly"
   NonDIntegration(unsigned short method_name, std::shared_ptr<Model> model);
   /// alternate constructor for instantiations "on the fly"
   NonDIntegration(unsigned short method_name, std::shared_ptr<Model> model,
-		  const RealVector& dim_pref);
+                  const RealVector& dim_pref);
   /// destructor
   ~NonDIntegration() override;
 
@@ -111,7 +108,7 @@ protected:
   //
 
   // verify self-consistency of variables data
-  //void check_variables(const std::vector<Pecos::RandomVariable>& x_ran_vars);
+  // void check_variables(const std::vector<Pecos::RandomVariable>& x_ran_vars);
 
   /// output integration points and weights to a tabular file
   void print_points_weights(const String& tabular_name);
@@ -130,34 +127,32 @@ protected:
   /// the user specification for anisotropic dimension preference
   RealVector dimPrefSpec;
 
-private:
-
+ private:
   //
   //- Heading: Data
   //
 };
 
+inline const Pecos::IntegrationDriver& NonDIntegration::driver() const {
+  return numIntDriver;
+}
 
-inline const Pecos::IntegrationDriver& NonDIntegration::driver() const
-{ return numIntDriver; }
+inline const std::vector<Pecos::BasisPolynomial>&
+NonDIntegration::polynomial_basis() const {
+  return numIntDriver.polynomial_basis();
+}
 
+inline std::vector<Pecos::BasisPolynomial>&
+NonDIntegration::polynomial_basis() {
+  return numIntDriver.polynomial_basis();
+}
 
-inline const std::vector<Pecos::BasisPolynomial>& NonDIntegration::
-polynomial_basis() const
-{ return numIntDriver.polynomial_basis(); }
-
-
-inline std::vector<Pecos::BasisPolynomial>& NonDIntegration::polynomial_basis()
-{ return numIntDriver.polynomial_basis(); }
-
-
-//inline const Pecos::RealVector& NonDIntegration::weight_products() const
+// inline const Pecos::RealVector& NonDIntegration::weight_products() const
 //{ return numIntDriver.weight_sets(); }
 
-
-//inline size_t NonDIntegration::grid_size()
+// inline size_t NonDIntegration::grid_size()
 //{ return numIntDriver.grid_size(); }
 
-} // namespace Dakota
+}  // namespace Dakota
 
 #endif

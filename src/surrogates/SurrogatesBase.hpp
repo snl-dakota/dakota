@@ -10,9 +10,6 @@
 #ifndef DAKOTA_SURROGATES_BASE_HPP
 #define DAKOTA_SURROGATES_BASE_HPP
 
-#include "UtilDataScaler.hpp"
-#include "util_data_types.hpp"
-
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/codecvt_null.hpp>
@@ -26,6 +23,9 @@
 #include <boost/serialization/vector.hpp>
 #include <fstream>
 #include <locale>
+
+#include "UtilDataScaler.hpp"
+#include "util_data_types.hpp"
 
 namespace dakota {
 namespace surrogates {
@@ -86,17 +86,17 @@ class Surrogate {
   virtual VectorXd value(const MatrixXd& eval_points);
 
   /**
-   *  \brief Evaluate the Surrogate at a set of prediction points for field QoIs.
-   *  \param[in] eval_points Vector of prediction points - (num_features).
+   *  \brief Evaluate the Surrogate at a set of prediction points for field
+   * QoIs. \param[in] eval_points Vector of prediction points - (num_features).
    *  \returns Values of the Surrogate at the prediction points - (num_pts).
    */
   virtual VectorXd values(const MatrixXd& eval_points);
 
   /**
-   *  \brief Evaluate the gradient of the scalar Surrogate at a set of prediction
-   * points. \param[in] eval_points Matrix of prediction points - (num_pts by
-   * num_features). \returns Matrix of
-   * gradient vectors at the prediction points - (num_pts by num_features).
+   *  \brief Evaluate the gradient of the scalar Surrogate at a set of
+   * prediction points. \param[in] eval_points Matrix of prediction points -
+   * (num_pts by num_features). \returns Matrix of gradient vectors at the
+   * prediction points - (num_pts by num_features).
    */
   virtual MatrixXd gradient(const MatrixXd& eval_points);
 
@@ -200,9 +200,7 @@ class Surrogate {
   //  Surrogate(infile, binary)
 
   // Allow diagnostics enable/disable
-  virtual bool diagnostics_available() {
-    return true;
-  }
+  virtual bool diagnostics_available() { return true; }
 
   /// Evalute metrics at specified points (within surrogates)
   VectorXd evaluate_metrics(const StringArray& mnames, const MatrixXd& points,
@@ -328,13 +326,13 @@ void Surrogate::serialize(Archive& archive, const unsigned int version) {
   // For future extension such as archiving final config options (will
   // require writing a serializer that maps to ParameterList
   // serialization)
-  archive& dataScaler;
-  archive& numSamples;
-  archive& numVariables;
-  archive& variableLabels;
-  archive& responseLabels;
-  archive& responseOffset;
-  archive& responseScaleFactor;
+  archive & dataScaler;
+  archive & numSamples;
+  archive & numVariables;
+  archive & variableLabels;
+  archive & responseLabels;
+  archive & responseOffset;
+  archive & responseScaleFactor;
   // archive & configOptions;
 }
 

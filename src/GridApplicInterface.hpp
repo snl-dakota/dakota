@@ -12,21 +12,19 @@
 
 #include "SysCallApplicationInterface.hpp"
 
-
 namespace Dakota {
 
 extern "C" {
 /// definition of start grid computing type (function pointer)
-typedef int  (*start_grid_computing_t)(char *analysis_driver_script,
-				       char *params_file, char *results_file);
+typedef int (*start_grid_computing_t)(char* analysis_driver_script,
+                                      char* params_file, char* results_file);
 /// definition of perform analysis type (function pointer)
-typedef int  (*perform_analysis_t)(char *iteration_num);
+typedef int (*perform_analysis_t)(char* iteration_num);
 /// definition of get completed jobs type (function pointer)
 typedef int* (*get_jobs_completed_t)();
 /// definition of stop grid computing type (function pointer)
-typedef int  (*stop_grid_computing_t)();
+typedef int (*stop_grid_computing_t)();
 }
-
 
 /// Derived application interface class which spawns simulation codes
 /// using grid services such as Condor or Globus.
@@ -35,16 +33,15 @@ typedef int  (*stop_grid_computing_t)();
     adapted for use with an external grid dervices library which was
     dynamically linked using dlopen() services. */
 
-class GridApplicInterface: public SysCallApplicInterface
-{
-public:
-
+class GridApplicInterface : public SysCallApplicInterface {
+ public:
   //
   //- Heading: Constructors and destructor
   //
 
   /// constructor
-  GridApplicInterface(const ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
+  GridApplicInterface(const ProblemDescDB& problem_db,
+                      ParallelLibrary& parallel_lib);
 
   /// destructor
   ~GridApplicInterface();
@@ -55,17 +52,15 @@ public:
 
   ///
   void derived_map(const Variables& vars, const ActiveSet& set,
-		   Response& response, int fn_eval_id);
+                   Response& response, int fn_eval_id);
 
   ///
   void derived_map_asynch(const ParamResponsePair& pair);
 
   ///
-  void wait_local_evaluation_sequence(PRPQueue& prp_queue)
-	{
-  	while (completionSet.empty())
-          test_local_evaluation_sequence(prp_queue);
-	}
+  void wait_local_evaluation_sequence(PRPQueue& prp_queue) {
+    while (completionSet.empty()) test_local_evaluation_sequence(prp_queue);
+  }
 
   ///
   void test_local_evaluation_sequence(PRPQueue& prp_queue);
@@ -73,22 +68,20 @@ public:
   /** This code provides the derived function used by
    *  ApplicationInterface::serve_analyses_synch().
    */
-  int synchronous_local_analysis(int analysis_id)
-	{
-	///
-	/// TODO - allow local analyses?????
-	///
-  	spawn_analysis_to_shell(analysis_id, BLOCK);
-  	return 0; // used for failure codes in DirectFn case
-	}
+  int synchronous_local_analysis(int analysis_id) {
+    ///
+    /// TODO - allow local analyses?????
+    ///
+    spawn_analysis_to_shell(analysis_id, BLOCK);
+    return 0;  // used for failure codes in DirectFn case
+  }
 
-protected:
-
+ protected:
   //
   //- Heading: Methods
   //
 
-  /// test file(s) for existence based on root_file name 
+  /// test file(s) for existence based on root_file name
   bool grid_file_test(const String& root_file);
 
   //
@@ -100,18 +93,18 @@ protected:
   IntSet idSet;
 
   /// map linking function evaluation id's to number of response read failures
-  IntShortMap failCountMap; 
+  IntShortMap failCountMap;
 
   /// handle to dynamically linked start_grid_computing function
   start_grid_computing_t start_grid_computing;
   /// handle to dynamically linked perform_analysis grid function
-  perform_analysis_t     perform_analysis;
+  perform_analysis_t perform_analysis;
   /// handle to dynamically linked get_jobs_completed grid function
-  get_jobs_completed_t   get_jobs_completed;
+  get_jobs_completed_t get_jobs_completed;
   /// handle to dynamically linked stop_grid_computing function
-  stop_grid_computing_t  stop_grid_computing;
+  stop_grid_computing_t stop_grid_computing;
 };
 
-} // namespace Dakota
+}  // namespace Dakota
 
 #endif

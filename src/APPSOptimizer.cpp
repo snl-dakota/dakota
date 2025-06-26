@@ -7,36 +7,38 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-#include "ProblemDescDB.hpp"
 #include "APPSOptimizer.hpp"
+
+#include "ProblemDescDB.hpp"
 
 namespace Dakota {
 
-
-APPSOptimizer::APPSOptimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
-  Optimizer(problem_db, parallel_lib, model, std::shared_ptr<TraitsBase>(new AppsTraits()))
-{
+APPSOptimizer::APPSOptimizer(ProblemDescDB& problem_db,
+                             ParallelLibrary& parallel_lib,
+                             std::shared_ptr<Model> model)
+    : Optimizer(problem_db, parallel_lib, model,
+                std::shared_ptr<TraitsBase>(new AppsTraits())) {
   // (iteratedModel initialized in Optimizer(Model&))
 
   evalMgr = new APPSEvalMgr(*this, iteratedModel);
-  set_apps_parameters(); // set specification values using DB
+  set_apps_parameters();  // set specification values using DB
 }
 
-APPSOptimizer::APPSOptimizer(std::shared_ptr<Model> model):
-  Optimizer(ASYNCH_PATTERN_SEARCH, model, std::shared_ptr<TraitsBase>(new AppsTraits()))
-{
+APPSOptimizer::APPSOptimizer(std::shared_ptr<Model> model)
+    : Optimizer(ASYNCH_PATTERN_SEARCH, model,
+                std::shared_ptr<TraitsBase>(new AppsTraits())) {
   // (iteratedModel initialized in Optimizer(Model&))
 
   evalMgr = new APPSEvalMgr(*this, iteratedModel);
-  set_apps_parameters(); // set specification values using DB
+  set_apps_parameters();  // set specification values using DB
 }
 
 /** Allows us to initialize nonlinear equality constraint maps
-    before inequality ones, ie a workaround in need of traits to 
+    before inequality ones, ie a workaround in need of traits to
     specify constraint maps packing order - RWH */
-void APPSOptimizer::initialize_run()
-{
-  configure_equality_constraints(CONSTRAINT_TYPE::NONLINEAR, numNonlinearIneqConstraints);
+void APPSOptimizer::initialize_run() {
+  configure_equality_constraints(CONSTRAINT_TYPE::NONLINEAR,
+                                 numNonlinearIneqConstraints);
 
   Optimizer::initialize_run();
 }
@@ -46,8 +48,7 @@ void APPSOptimizer::initialize_run()
     then executes minimize() on the HOPS optimizer, and finally
     catalogues the results. */
 
-void APPSOptimizer::core_run()
-{
+void APPSOptimizer::core_run() {
   // Tell the evalMgr whether or not to do asynchronous evaluations
   // and maximum available concurrency.
 
@@ -71,39 +72,36 @@ void APPSOptimizer::core_run()
   std::vector<double> bestX(numTotalVars);
   bool state = optimizer.getBestX(bestX);
 
-//PDH: Set final solution.
-//     Think the code from here to the end of the method
-//     can be greatly simplified with data adapters built
-//     on top of data tranfers.
-//     Would like to just do something like
-//     setBestVariables(...)
-//     setBestResponses(...)
+  // PDH: Set final solution.
+  //      Think the code from here to the end of the method
+  //      can be greatly simplified with data adapters built
+  //      on top of data tranfers.
+  //      Would like to just do something like
+  //      setBestVariables(...)
+  //      setBestResponses(...)
 
   set_variables<>(bestX, *iteratedModel, bestVariablesArray.front());
 
   // Retrieve the best responses and convert from HOPS vector to
   // DAKOTA vector.
 
-//PDH: std::vector<double> -> RealVector
-//     Has to respect Dakota's ordering of inequality and equality constraints.
-//     Has to map format of constraints.
-//     Then populate bestResponseArray.
+  // PDH: std::vector<double> -> RealVector
+  //      Has to respect Dakota's ordering of inequality and equality
+  //      constraints. Has to map format of constraints. Then populate
+  //      bestResponseArray.
 
   // else local_objective_recast_retrieve() is used in Optimizer::post_run()
   bool set_objectives = !localObjectiveRecast;
-  set_best_responses<AppsTraits>( optimizer, *iteratedModel,
-				  set_objectives, numUserPrimaryFns,
-				  constraintMapIndices,
-				  constraintMapMultipliers,
-				  constraintMapOffsets,
-				  bestResponseArray);
+  set_best_responses<AppsTraits>(optimizer, *iteratedModel, set_objectives,
+                                 numUserPrimaryFns, constraintMapIndices,
+                                 constraintMapMultipliers, constraintMapOffsets,
+                                 bestResponseArray);
 }
 
 /** Set all of the HOPS algorithmic parameters as specified in the
     DAKOTA input deck.  This is called at construction time. */
 
-void APPSOptimizer::set_apps_parameters()
-{
+void APPSOptimizer::set_apps_parameters() {
   // Get pointers to parameter sublists.
 
   problemParams = &(params.getOrSetSublist("Problem Definition"));
@@ -114,60 +112,55 @@ void APPSOptimizer::set_apps_parameters()
   // Set amount of output to display.
 
   switch (outputLevel) {
-  case DEBUG_OUTPUT:
-    problemParams->setParameter("Display", 2);
-    linearParams->setParameter("Display", 2);
-    mediatorParams->setParameter("Display", 5);
-    if (numNonlinearConstraints > 0) {
-      citizenParams->setParameter("Display", 2);
-      citizenParams->setParameter("Display Subproblem", 3);
-    }
-    else
-      citizenParams->setParameter("Display", 3);
-    break;
-  case VERBOSE_OUTPUT:
-    problemParams->setParameter("Display", 1);
-    linearParams->setParameter("Display", 1);
-    mediatorParams->setParameter("Display", 4);
-    if (numNonlinearConstraints > 0) {
-      citizenParams->setParameter("Display", 1);
-      citizenParams->setParameter("Display Subproblem", 2);
-    }
-    else
-      citizenParams->setParameter("Display", 2);
-    break;
-  case NORMAL_OUTPUT:
-    problemParams->setParameter("Display", 0);
-    linearParams->setParameter("Display", 0);
-    mediatorParams->setParameter("Display", 3);
-    if (numNonlinearConstraints > 0) {
-      citizenParams->setParameter("Display", 0);
-      citizenParams->setParameter("Display Subproblem", 1);
-    }
-    else
-      citizenParams->setParameter("Display", 1);
-    break;
-  case QUIET_OUTPUT:
-    problemParams->setParameter("Display", 0);
-    linearParams->setParameter("Display", 0);
-    mediatorParams->setParameter("Display", 2);
-    if (numNonlinearConstraints > 0) {
-      citizenParams->setParameter("Display", 0);
-      citizenParams->setParameter("Display Subproblem", 0);
-    }
-    else
-      citizenParams->setParameter("Display", 0);
-    break;
-  case SILENT_OUTPUT:
-    problemParams->setParameter("Display", 0);
-    linearParams->setParameter("Display", 0);
-    mediatorParams->setParameter("Display", 1);
-    if (numNonlinearConstraints > 0) {
-      citizenParams->setParameter("Display", 0);
-      citizenParams->setParameter("Display Subproblem", 0);
-    }
-    else
-      citizenParams->setParameter("Display", 0);
+    case DEBUG_OUTPUT:
+      problemParams->setParameter("Display", 2);
+      linearParams->setParameter("Display", 2);
+      mediatorParams->setParameter("Display", 5);
+      if (numNonlinearConstraints > 0) {
+        citizenParams->setParameter("Display", 2);
+        citizenParams->setParameter("Display Subproblem", 3);
+      } else
+        citizenParams->setParameter("Display", 3);
+      break;
+    case VERBOSE_OUTPUT:
+      problemParams->setParameter("Display", 1);
+      linearParams->setParameter("Display", 1);
+      mediatorParams->setParameter("Display", 4);
+      if (numNonlinearConstraints > 0) {
+        citizenParams->setParameter("Display", 1);
+        citizenParams->setParameter("Display Subproblem", 2);
+      } else
+        citizenParams->setParameter("Display", 2);
+      break;
+    case NORMAL_OUTPUT:
+      problemParams->setParameter("Display", 0);
+      linearParams->setParameter("Display", 0);
+      mediatorParams->setParameter("Display", 3);
+      if (numNonlinearConstraints > 0) {
+        citizenParams->setParameter("Display", 0);
+        citizenParams->setParameter("Display Subproblem", 1);
+      } else
+        citizenParams->setParameter("Display", 1);
+      break;
+    case QUIET_OUTPUT:
+      problemParams->setParameter("Display", 0);
+      linearParams->setParameter("Display", 0);
+      mediatorParams->setParameter("Display", 2);
+      if (numNonlinearConstraints > 0) {
+        citizenParams->setParameter("Display", 0);
+        citizenParams->setParameter("Display Subproblem", 0);
+      } else
+        citizenParams->setParameter("Display", 0);
+      break;
+    case SILENT_OUTPUT:
+      problemParams->setParameter("Display", 0);
+      linearParams->setParameter("Display", 0);
+      mediatorParams->setParameter("Display", 1);
+      if (numNonlinearConstraints > 0) {
+        citizenParams->setParameter("Display", 0);
+        citizenParams->setParameter("Display Subproblem", 0);
+      } else
+        citizenParams->setParameter("Display", 0);
   }
 
   // Set number of citizens (i.e. algorithms) and maximum total number
@@ -198,91 +191,94 @@ void APPSOptimizer::set_apps_parameters()
     // Instantiate on-the-fly.
     // Rely on internal HOPS defaults for the most part, but set any
     // default overrides (including enforcement of DAKOTA defaults).
-  }
-  else {
-
+  } else {
     // Set synchronous or asynchronous GSS behavior.
     // A null string is the DB default and nonblocking is the HOPS default, so
     // the flag is true only for an explicit blocking user specification.
 
     if (probDescDB.get_short("method.synchronization") ==
-	BLOCKING_SYNCHRONIZATION) {
+        BLOCKING_SYNCHRONIZATION) {
       mediatorParams->setParameter("Synchronous Evaluations", true);
       citizenParams->setParameter("Use Random Order", false);
       evalMgr->set_blocking_synch(true);
-    }
-    else
+    } else
       mediatorParams->setParameter("Synchronous Evaluations", false);
 
     // Set GSS algorithm control parameters.
 
-    const Real& init_step_length
-      = probDescDB.get_real("method.asynch_pattern_search.initial_delta");
+    const Real& init_step_length =
+        probDescDB.get_real("method.asynch_pattern_search.initial_delta");
     if (init_step_length > 0.0)
       citizenParams->setParameter("Initial Step", init_step_length);
     else
       Cout << "\nWarning: initial_delta must be greater than 0.0."
-	   << "\n         Using default value of 1.0.\n\n";
+           << "\n         Using default value of 1.0.\n\n";
 
-    const Real& contract_step_length
-      = probDescDB.get_real("method.asynch_pattern_search.contraction_factor");
+    const Real& contract_step_length =
+        probDescDB.get_real("method.asynch_pattern_search.contraction_factor");
     if (contract_step_length > 0.0 && contract_step_length < 1.0)
       citizenParams->setParameter("Contraction Factor", contract_step_length);
     else
-      Cout << "\nWarning: contraction_factor must be between 0.0 and 1.0, noninclusive."
-	   << "\n         Using default value of 0.5.\n\n";
+      Cout << "\nWarning: contraction_factor must be between 0.0 and 1.0, "
+              "noninclusive."
+           << "\n         Using default value of 0.5.\n\n";
 
-    const Real& thresh_step_length
-      = probDescDB.get_real("method.variable_tolerance");
+    const Real& thresh_step_length =
+        probDescDB.get_real("method.variable_tolerance");
     if (thresh_step_length >= 4.4e-16)
       citizenParams->setParameter("Step Tolerance", thresh_step_length);
     else
-      Cout << "\nWarning: variable_tolerance must be between greater than or equal to 4.4e-16."
-	   << "\n         Using default value of 0.01.\n\n";
+      Cout << "\nWarning: variable_tolerance must be between greater than or "
+              "equal to 4.4e-16."
+           << "\n         Using default value of 0.01.\n\n";
 
-    const Real& solution_target
-      = probDescDB.get_real("method.solution_target");
+    const Real& solution_target = probDescDB.get_real("method.solution_target");
     if (solution_target > -DBL_MAX)
       problemParams->setParameter("Objective Target", solution_target);
 
     // For nonlinearly constrained problems, set penalty-related parameters.
 
     if (numNonlinearConstraints > 0) {
-      const String merit_function = probDescDB.get_string("method.asynch_pattern_search.merit_function");
+      const String merit_function =
+          probDescDB.get_string("method.asynch_pattern_search.merit_function");
       if (merit_function == "merit_max")
-	citizenParams->setParameter("Penalty Function", "L_inf");
+        citizenParams->setParameter("Penalty Function", "L_inf");
       else if (merit_function == "merit_max_smooth")
-	citizenParams->setParameter("Penalty Function", "L_inf (smoothed)");
+        citizenParams->setParameter("Penalty Function", "L_inf (smoothed)");
       else if (merit_function == "merit1")
-	citizenParams->setParameter("Penalty Function", "L1");
+        citizenParams->setParameter("Penalty Function", "L1");
       else if (merit_function == "merit1_smooth")
-	citizenParams->setParameter("Penalty Function", "L1 (smoothed)");
+        citizenParams->setParameter("Penalty Function", "L1 (smoothed)");
       else if (merit_function == "merit2")
-	citizenParams->setParameter("Penalty Function", "L2");
+        citizenParams->setParameter("Penalty Function", "L2");
       else if (merit_function == "merit2_smooth")
-	citizenParams->setParameter("Penalty Function", "L2 (smoothed)");
+        citizenParams->setParameter("Penalty Function", "L2 (smoothed)");
       else if (merit_function == "merit2_squared")
-	citizenParams->setParameter("Penalty Function", "L2 Squared");
+        citizenParams->setParameter("Penalty Function", "L2 Squared");
       else
-	Cout << "\nWarning: merit_function invalid."
-	     << "\n         Using default L2 Squared.\n\n";
+        Cout << "\nWarning: merit_function invalid."
+             << "\n         Using default L2 Squared.\n\n";
 
-      Real constr_penalty = probDescDB.get_real("method.asynch_pattern_search.constraint_penalty");
+      Real constr_penalty = probDescDB.get_real(
+          "method.asynch_pattern_search.constraint_penalty");
       if (constr_penalty >= 0.0)
-	citizenParams->setParameter("Penalty Parameter", constr_penalty);
+        citizenParams->setParameter("Penalty Parameter", constr_penalty);
       else
-	Cout << "\nWarning: constraint_penalty must be between greater than or equal to 0.0."
-	     << "\n         Using default value of 1.0.\n\n";
+        Cout << "\nWarning: constraint_penalty must be between greater than or "
+                "equal to 0.0."
+             << "\n         Using default value of 1.0.\n\n";
 
-      Real smooth_factor = probDescDB.get_real("method.asynch_pattern_search.smoothing_factor");
+      Real smooth_factor =
+          probDescDB.get_real("method.asynch_pattern_search.smoothing_factor");
       if (smooth_factor >= 0.0 && smooth_factor <= 1.0)
-	citizenParams->setParameter("Penalty Smoothing Value", smooth_factor);
+        citizenParams->setParameter("Penalty Smoothing Value", smooth_factor);
       else
-	Cout << "\nWarning: smoothing_factor must be between 0.0 and 1.0, inclusive."
-	     << "\n         Using default value of 0.0.\n\n";
+        Cout << "\nWarning: smoothing_factor must be between 0.0 and 1.0, "
+                "inclusive."
+             << "\n         Using default value of 0.0.\n\n";
     }
 
-    maxEvalConcurrency *= 2*numContinuousVars;
+    maxEvalConcurrency *= 2 * numContinuousVars;
 
     // ----------------------------------------------------------------
     // Current HOPS is hardwired for coordinate bases, no expansion,
@@ -294,8 +290,8 @@ void APPSOptimizer::set_apps_parameters()
     // HOPS wish list:
     //   basis control (only coordinate now supported due to simplified
     //     constraint management)
-    //   some form of load balancing (total size preferred; Tammy says 
-    //     that pattern augmentation can be done, but would not account 
+    //   some form of load balancing (total size preferred; Tammy says
+    //     that pattern augmentation can be done, but would not account
     //     for cache management)
     // ----------------------------------------------------------------
   }
@@ -304,45 +300,45 @@ void APPSOptimizer::set_apps_parameters()
 /** Set the variables and constraints as specified in the DAKOTA input
     deck.  This is done at run time. */
 
-void APPSOptimizer::initialize_variables_and_constraints()
-{
+void APPSOptimizer::initialize_variables_and_constraints() {
   // Initialize variables and bounds.  This is performed in core_run
   // in order to capture any reassignment at the strategy layer (after
-  // iterator construction).  
+  // iterator construction).
 
-//PDH: This initializes everything for HOPSPACK.
-//     RealVector, IntVector -> std::vector
-//     RealMatrix -> ??? (need to look this up)
-//     Don't want any references to iteratedModel.
-//     Need to handle discrete variable mapping.
-//     Need to respect equality, inequality constraint ordering.
-//     Need to handle constraint mapping.
+  // PDH: This initializes everything for HOPSPACK.
+  //      RealVector, IntVector -> std::vector
+  //      RealMatrix -> ??? (need to look this up)
+  //      Don't want any references to iteratedModel.
+  //      Need to handle discrete variable mapping.
+  //      Need to respect equality, inequality constraint ordering.
+  //      Need to handle constraint mapping.
 
-  numTotalVars = numContinuousVars + numDiscreteIntVars 
-             + numDiscreteRealVars + numDiscreteStringVars;
+  numTotalVars = numContinuousVars + numDiscreteIntVars + numDiscreteRealVars +
+                 numDiscreteStringVars;
 
   HOPSPACK::Vector init_point(numTotalVars);
   HOPSPACK::Vector lower(numTotalVars), upper(numTotalVars);
 
   vector<char> variable_types(numTotalVars, 'C');
 
-  // For now this requires that the target vector, eg init_point, be allocated properly.
+  // For now this requires that the target vector, eg init_point, be allocated
+  // properly.
   get_variables<HOPSPACK::Vector>(*iteratedModel, init_point);
 
-  bool setScales = !get_variable_bounds_from_dakota<AppsTraits>( lower, upper );
+  bool setScales = !get_variable_bounds_from_dakota<AppsTraits>(lower, upper);
 
-  problemParams->setParameter("Number Unknowns", (int) numTotalVars);
+  problemParams->setParameter("Number Unknowns", (int)numTotalVars);
   problemParams->setParameter("Variable Types", variable_types);
   problemParams->setParameter("Initial X", init_point);
   problemParams->setParameter("Lower Bounds", lower);
   problemParams->setParameter("Upper Bounds", upper);
 
-  // If there are no bound constraints (ie if any are missing?), HOPSPACK requires that scaling be provided.
+  // If there are no bound constraints (ie if any are missing?), HOPSPACK
+  // requires that scaling be provided.
 
   if (setScales) {
     HOPSPACK::Vector scales(numContinuousVars);
-    for (int i=0; i<numContinuousVars; i++)
-      scales[i] = 1.0;
+    for (int i = 0; i < numContinuousVars; i++) scales[i] = 1.0;
     problemParams->setParameter("Scaling", scales);
   }
 
@@ -353,13 +349,11 @@ void APPSOptimizer::initialize_variables_and_constraints()
   HOPSPACK::Vector lin_eq_targets(numLinearEqConstraints);
   HOPSPACK::Matrix lin_ineq_coeffs, lin_eq_coeffs;
 
-  // Need to make pre-allocation requirement consistent, eg vectors are allocated, matrices are not
+  // Need to make pre-allocation requirement consistent, eg vectors are
+  // allocated, matrices are not
   get_linear_constraints_and_bounds<AppsTraits>(
-                                        lin_ineq_lower_bnds,
-                                        lin_ineq_upper_bnds,
-                                        lin_eq_targets,
-                                        lin_ineq_coeffs,
-                                        lin_eq_coeffs);
+      lin_ineq_lower_bnds, lin_ineq_upper_bnds, lin_eq_targets, lin_ineq_coeffs,
+      lin_eq_coeffs);
 
   linearParams->setParameter("Inequality Matrix", lin_ineq_coeffs);
   linearParams->setParameter("Inequality Lower", lin_ineq_lower_bnds);
@@ -369,10 +363,13 @@ void APPSOptimizer::initialize_variables_and_constraints()
 
   // Define nonlinear equality and inequality constraints.
 
-  // This is now done in initialize_run so that the arrays get populated in the expected order - RWH
-  //configure_equality_constraints(CONSTRAINT_TYPE::NONLINEAR, numNonlinearIneqConstraints);
+  // This is now done in initialize_run so that the arrays get populated in the
+  // expected order - RWH
+  // configure_equality_constraints(CONSTRAINT_TYPE::NONLINEAR,
+  // numNonlinearIneqConstraints);
 
-  int numAPPSNonlinearIneqConstraints = (int)constraintMapIndices.size()-numNonlinearEqConstraints;
+  int numAPPSNonlinearIneqConstraints =
+      (int)constraintMapIndices.size() - numNonlinearEqConstraints;
 
   // HOPSPACK expects nonlinear equality constraints to be of the form
   // c(x) = 0 and nonlinear inequality constraints to be of the form
@@ -382,12 +379,12 @@ void APPSOptimizer::initialize_variables_and_constraints()
   // (indices, multipliers, offsets) between the DAKOTA constraints
   // and the HOPSPACK constraints.
 
-
-  problemParams->setParameter("Number Nonlinear Eqs", (int) numNonlinearEqConstraints);
-  problemParams->setParameter("Number Nonlinear Ineqs", (int) numAPPSNonlinearIneqConstraints);
+  problemParams->setParameter("Number Nonlinear Eqs",
+                              (int)numNonlinearEqConstraints);
+  problemParams->setParameter("Number Nonlinear Ineqs",
+                              (int)numAPPSNonlinearIneqConstraints);
 }
 
-AppsTraits::AppsTraits()
-{ /* empty ctor */ }
+AppsTraits::AppsTraits() { /* empty ctor */ }
 
-} // namespace Dakota
+}  // namespace Dakota

@@ -8,47 +8,43 @@
     _______________________________________________________________________ */
 
 #include "NonDLHSSingleInterval.hpp"
+
 #include "dakota_data_types.hpp"
 #include "dakota_system_defs.hpp"
 
-//#define DEBUG
+// #define DEBUG
 
 namespace Dakota {
 
+NonDLHSSingleInterval::NonDLHSSingleInterval(ProblemDescDB& problem_db,
+                                             ParallelLibrary& parallel_lib,
+                                             std::shared_ptr<Model> model)
+    : NonDLHSInterval(problem_db, parallel_lib, model) {}
 
-NonDLHSSingleInterval::
-NonDLHSSingleInterval(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
-  NonDLHSInterval(problem_db, parallel_lib, model)
-{ }
+NonDLHSSingleInterval::~NonDLHSSingleInterval() {}
 
+void NonDLHSSingleInterval::initialize() { statCntr = 0; }
 
-NonDLHSSingleInterval::~NonDLHSSingleInterval()
-{ }
-
-
-void NonDLHSSingleInterval::initialize()
-{ statCntr = 0; }
-
-
-void NonDLHSSingleInterval::post_process_samples()
-{
+void NonDLHSSingleInterval::post_process_samples() {
   const IntResponseMap& all_responses = lhsSampler->all_responses();
-  Real lwr, upr; IntRespMCIter r_it;
-  for (respFnCntr=0; respFnCntr<numFunctions; ++respFnCntr) {
+  Real lwr, upr;
+  IntRespMCIter r_it;
+  for (respFnCntr = 0; respFnCntr < numFunctions; ++respFnCntr) {
     Cout << ">>>>> Identifying minimum and maximum samples for response "
-	 << "function " << respFnCntr+1 << '\n';
+         << "function " << respFnCntr + 1 << '\n';
     r_it = all_responses.begin();
-    lwr = upr = r_it->second.function_value(respFnCntr); ++r_it;
-    for (; r_it!=all_responses.end(); ++r_it) {
+    lwr = upr = r_it->second.function_value(respFnCntr);
+    ++r_it;
+    for (; r_it != all_responses.end(); ++r_it) {
       const Real& fn_val = r_it->second.function_value(respFnCntr);
       if (fn_val < lwr)
-	lwr = fn_val;
+        lwr = fn_val;
       else if (fn_val > upr)
-	upr = fn_val;
+        upr = fn_val;
     }
     finalStatistics.function_value(lwr, statCntr++);
     finalStatistics.function_value(upr, statCntr++);
   }
 }
 
-} // namespace Dakota
+}  // namespace Dakota

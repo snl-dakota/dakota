@@ -10,20 +10,19 @@
 #ifndef SHARED_APPROX_DATA_H
 #define SHARED_APPROX_DATA_H
 
-#include "dakota_data_util.hpp"
 #include "ActiveKey.hpp"
+#include "dakota_data_util.hpp"
 
 namespace Pecos {
 class MultivariateDistribution;
 class ExpansionConfigOptions;
 class BasisConfigOptions;
 class RegressionConfigOptions;
-}
+}  // namespace Pecos
 
 namespace Dakota {
 
 class ProblemDescDB;
-
 
 /// Base class for the shared approximation data class hierarchy.
 
@@ -35,8 +34,7 @@ class ProblemDescDB;
     envelope and one of the derived classes (selected in
     SharedApproxData::get_shared_data()) serves as the letter. */
 
-class SharedApproxData
-{
+class SharedApproxData {
   //
   //- Heading: Friends
   //
@@ -51,19 +49,19 @@ class SharedApproxData
   friend class PecosApproximation;
 #ifdef HAVE_C3
   friend class C3Approximation;
-#endif // HAVE_C3
+#endif  // HAVE_C3
 #ifdef HAVE_SURFPACK
   friend class SurfpackApproximation;
-#endif // HAVE_SURFPACK
+#endif  // HAVE_SURFPACK
 #ifdef HAVE_DAKOTA_SURROGATES
-  friend class SurrogatesGPApprox; // consolidate these into the base only - RWH
+  friend class SurrogatesGPApprox;  // consolidate these into the base only -
+                                    // RWH
   friend class SurrogatesBaseApprox;
   friend class SurrogatesPolyApprox;
   friend class SurrogatesPythonApprox;
-#endif // HAVE_DAKOTA_SURROGATES
+#endif  // HAVE_DAKOTA_SURROGATES
 
-public:
-
+ public:
   //
   //- Heading: Constructors, destructor, assignment operator
   //
@@ -72,9 +70,9 @@ public:
   SharedApproxData();
   /// standard constructor for envelope
   SharedApproxData(ProblemDescDB& problem_db, size_t num_vars);
-   /// alternate constructor for envelope
+  /// alternate constructor for envelope
   SharedApproxData(const String& approx_type, const UShortArray& approx_order,
-		   size_t num_vars, short data_order, short output_level);
+                   size_t num_vars, short data_order, short output_level);
   /// copy constructor
   SharedApproxData(const SharedApproxData& approx);
 
@@ -95,7 +93,7 @@ public:
 
   // define data keys and active data index for aggregated response data
   // (SharedPecosApproxData)
-  //virtual void link_multilevel_surrogate_data();
+  // virtual void link_multilevel_surrogate_data();
 
   /// set integration driver for structured grid approximations
   virtual void integration_iterator(const Iterator& iterator);
@@ -108,15 +106,15 @@ public:
 
   /// rebuilds the shared approximation data incrementally
   virtual void rebuild();
-  /// back out the previous increment to the shared approximation data 
+  /// back out the previous increment to the shared approximation data
   virtual void pop(bool save_surr_data);
   /// queries availability of pushing data associated with a trial set
   virtual bool push_available();
   /// return index for restoring trial set within stored data sets
   virtual size_t push_index(const Pecos::ActiveKey& key);
-  /// push a previous state of the shared approximation data 
+  /// push a previous state of the shared approximation data
   virtual void pre_push();
-  /// clean up popped bookkeeping following push 
+  /// clean up popped bookkeeping following push
   virtual void post_push();
   /// return index of i-th trial set within restorable bookkeeping sets
   virtual size_t finalize_index(size_t i, const Pecos::ActiveKey& key);
@@ -148,17 +146,17 @@ public:
   /// propagate updates to random variable distribution parameters to a
   /// polynomial basis
   virtual void update_basis_distribution_parameters(
-    const Pecos::MultivariateDistribution& mvd);
+      const Pecos::MultivariateDistribution& mvd);
 
   /// set ExpansionConfigOptions instance as a group specification
   virtual void configuration_options(
-    const Pecos::ExpansionConfigOptions& ec_options);
+      const Pecos::ExpansionConfigOptions& ec_options);
   /// set BasisConfigOptions instance as a group specification
   virtual void configuration_options(
-    const Pecos::BasisConfigOptions& bc_options);
+      const Pecos::BasisConfigOptions& bc_options);
   /// set BasisConfigOptions instance as a group specification
   virtual void configuration_options(
-    const Pecos::RegressionConfigOptions& rc_options);
+      const Pecos::RegressionConfigOptions& rc_options);
 
   /// assign key identifying a subset of variables that are to be
   /// treated as random for statistical purposes (e.g. expectation)
@@ -176,7 +174,7 @@ public:
   //
 
   // return the number of variables used in the approximation
-  //int num_variables() const;
+  // int num_variables() const;
 
   /// return active multi-index key
   const Pecos::ActiveKey& active_model_key() const;
@@ -192,16 +190,15 @@ public:
   void formulation_updated(bool update);
 
   /// set approximation lower and upper bounds (currently only used by graphics)
-  void set_bounds(const RealVector&  c_l_bnds, const RealVector&  c_u_bnds,
-		  const IntVector&  di_l_bnds, const IntVector&  di_u_bnds,
-		  const RealVector& dr_l_bnds, const RealVector& dr_u_bnds);
+  void set_bounds(const RealVector& c_l_bnds, const RealVector& c_u_bnds,
+                  const IntVector& di_l_bnds, const IntVector& di_u_bnds,
+                  const RealVector& dr_l_bnds, const RealVector& dr_u_bnds);
 
   /// returns dataRep for access to derived class member functions
   /// that are not mapped to the top SharedApproxData level
   std::shared_ptr<SharedApproxData> data_rep() const;
 
-protected:
-
+ protected:
   //
   //- Heading: Constructors
   //
@@ -215,7 +212,7 @@ protected:
   /// (BaseConstructor overloading avoids infinite recursion in the
   /// derived class constructors - Coplien, p. 139)
   SharedApproxData(NoDBBaseConstructor, const String& approx_type,
-		   size_t num_vars, short data_order, short output_level);
+                   size_t num_vars, short data_order, short output_level);
 
   //
   //- Heading: Data
@@ -245,7 +242,7 @@ protected:
   Pecos::ActiveKey activeKey;
   // set of multi-index model keys to enumerate when updating the
   // SurrogateData for each Approximation
-  //UShort2DArray approxDataKeys;
+  // UShort2DArray approxDataKeys;
 
   /// approach for emulating response differences:
   /// {DEFAULT,DISTINCT,RECURSIVE}_EMULATION
@@ -275,22 +272,21 @@ protected:
   /// (used by DataFitSurrModel::rebuild_approximation())
   std::map<Pecos::ActiveKey, bool> formUpdated;
 
-private:
-
+ private:
   //
   //- Heading: Member functions
   //
 
   /// Used only by the standard envelope constructor to initialize
   /// dataRep to the appropriate derived type.
-  std::shared_ptr<SharedApproxData>
-  get_shared_data(ProblemDescDB& problem_db, size_t num_vars);
+  std::shared_ptr<SharedApproxData> get_shared_data(ProblemDescDB& problem_db,
+                                                    size_t num_vars);
 
   /// Used only by the alternate envelope constructor to initialize
   /// dataRep to the appropriate derived type.
-  std::shared_ptr<SharedApproxData>
-  get_shared_data(const String& approx_type, const UShortArray& approx_order,
-		  size_t num_vars, short data_order, short output_level);
+  std::shared_ptr<SharedApproxData> get_shared_data(
+      const String& approx_type, const UShortArray& approx_order,
+      size_t num_vars, short data_order, short output_level);
 
   //
   //- Heading: Data
@@ -300,43 +296,41 @@ private:
   std::shared_ptr<SharedApproxData> dataRep;
 };
 
-
-//inline int SharedApproxData::num_variables() const
+// inline int SharedApproxData::num_variables() const
 //{ return (dataRep) ? dataRep->numVars : numVars; }
 
-
-inline const Pecos::ActiveKey& SharedApproxData::active_model_key() const
-{ return (dataRep) ? dataRep->activeKey : activeKey; }
-
-
-inline void SharedApproxData::discrepancy_emulation_mode(short mode)
-{
-  if (dataRep) dataRep->discrepEmulationMode = mode;
-  else                  discrepEmulationMode = mode;
+inline const Pecos::ActiveKey& SharedApproxData::active_model_key() const {
+  return (dataRep) ? dataRep->activeKey : activeKey;
 }
 
+inline void SharedApproxData::discrepancy_emulation_mode(short mode) {
+  if (dataRep)
+    dataRep->discrepEmulationMode = mode;
+  else
+    discrepEmulationMode = mode;
+}
 
-inline short SharedApproxData::discrepancy_emulation_mode() const
-{ return (dataRep) ? dataRep->discrepEmulationMode : discrepEmulationMode; }
+inline short SharedApproxData::discrepancy_emulation_mode() const {
+  return (dataRep) ? dataRep->discrepEmulationMode : discrepEmulationMode;
+}
 
-
-inline void SharedApproxData::
-set_bounds(const RealVector&  c_l_bnds, const RealVector&  c_u_bnds,
-	   const IntVector&  di_l_bnds, const IntVector&  di_u_bnds,
-	   const RealVector& dr_l_bnds, const RealVector& dr_u_bnds)
-{
+inline void SharedApproxData::set_bounds(const RealVector& c_l_bnds,
+                                         const RealVector& c_u_bnds,
+                                         const IntVector& di_l_bnds,
+                                         const IntVector& di_u_bnds,
+                                         const RealVector& dr_l_bnds,
+                                         const RealVector& dr_u_bnds) {
   // enforce deep copies since lower/upper may be active views
   if (dataRep) {
-    copy_data(c_l_bnds,  dataRep->approxCLowerBnds);
-    copy_data(c_u_bnds,  dataRep->approxCUpperBnds);
+    copy_data(c_l_bnds, dataRep->approxCLowerBnds);
+    copy_data(c_u_bnds, dataRep->approxCUpperBnds);
     copy_data(di_l_bnds, dataRep->approxDILowerBnds);
     copy_data(di_u_bnds, dataRep->approxDIUpperBnds);
     copy_data(dr_l_bnds, dataRep->approxDRLowerBnds);
     copy_data(dr_u_bnds, dataRep->approxDRUpperBnds);
-  }
-  else {
-    copy_data(c_l_bnds,  approxCLowerBnds);
-    copy_data(c_u_bnds,  approxCUpperBnds);
+  } else {
+    copy_data(c_l_bnds, approxCLowerBnds);
+    copy_data(c_u_bnds, approxCUpperBnds);
     copy_data(di_l_bnds, approxDILowerBnds);
     copy_data(di_u_bnds, approxDIUpperBnds);
     copy_data(dr_l_bnds, approxDRLowerBnds);
@@ -344,10 +338,10 @@ set_bounds(const RealVector&  c_l_bnds, const RealVector&  c_u_bnds,
   }
 }
 
+inline std::shared_ptr<SharedApproxData> SharedApproxData::data_rep() const {
+  return dataRep;
+}
 
-inline std::shared_ptr<SharedApproxData> SharedApproxData::data_rep() const
-{ return dataRep; }
-
-} // namespace Dakota
+}  // namespace Dakota
 
 #endif

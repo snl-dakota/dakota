@@ -10,9 +10,8 @@
 #ifndef NOND_LHS_SAMPLING_H
 #define NOND_LHS_SAMPLING_H
 
-#include "NonDSampling.hpp"
 #include "DataMethod.hpp"
-
+#include "NonDSampling.hpp"
 
 namespace Dakota {
 
@@ -26,7 +25,7 @@ namespace Dakota {
     correlations through use of a mixing routine.  The NonDLHSSampling
     class provides a C++ wrapper for the LHS library and is used for
     performing forward propagations of parameter uncertainties into
-    response statistics. 
+    response statistics.
 
     Batch generation options, including D-Optimal and incremental LHS
     are provided.
@@ -39,30 +38,29 @@ namespace Dakota {
     original sample of size n, allows one to double the size of the
     sample.
 */
-class NonDLHSSampling: public NonDSampling
-{
-public:
-
+class NonDLHSSampling : public NonDSampling {
+ public:
   //
   //- Heading: Constructors and destructor
   //
 
   /// standard constructor
-  NonDLHSSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
+  NonDLHSSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
+                  std::shared_ptr<Model> model);
   /// alternate constructor for sample generation and evaluation "on the fly"
   NonDLHSSampling(std::shared_ptr<Model> model, unsigned short sample_type,
-		  int samples, int seed, const String& rng,
-		  bool vary_pattern = true, short sampling_vars_mode = ACTIVE);
+                  int samples, int seed, const String& rng,
+                  bool vary_pattern = true, short sampling_vars_mode = ACTIVE);
   /// alternate constructor for uniform sample generation "on the fly"
   NonDLHSSampling(unsigned short sample_type, int samples, int seed,
-		  const String& rng, const RealVector& lower_bnds,
-		  const RealVector& upper_bnds);
+                  const String& rng, const RealVector& lower_bnds,
+                  const RealVector& upper_bnds);
   /// alternate constructor for sample generation of correlated normals
   /// "on the fly"
   NonDLHSSampling(unsigned short sample_type, int samples, int seed,
-		  const String& rng, const RealVector& means, 
+                  const String& rng, const RealVector& means,
                   const RealVector& std_devs, const RealVector& lower_bnds,
-		  const RealVector& upper_bnds, RealSymMatrix& correl);
+                  const RealVector& upper_bnds, RealSymMatrix& correl);
   /// destructor
   ~NonDLHSSampling() override;
 
@@ -94,7 +92,8 @@ public:
   void compute_pca(std::ostream& s);
 
   /// print the final statistics
-  void print_results(std::ostream& s, short results_state = FINAL_RESULTS) override;
+  void print_results(std::ostream& s,
+                     short results_state = FINAL_RESULTS) override;
 
   //
   //- Heading: Member functions
@@ -103,13 +102,13 @@ public:
   /// generate a d-optimal parameter set, leaving the first
   /// previous_samples columns intact and adding new_samples new
   /// columns following them
-  void d_optimal_parameter_set(int previous_samples, int new_samples, 
+  void d_optimal_parameter_set(int previous_samples, int new_samples,
                                RealMatrix& full_samples);
 
   /// Populate the first new_samples columns of allSamples with an LHS
   /// design and update the stored ranks
-  void initial_increm_lhs_set(int new_samples, 
-                              RealMatrix& full_samples, IntMatrix& full_ranks);
+  void initial_increm_lhs_set(int new_samples, RealMatrix& full_samples,
+                              IntMatrix& full_ranks);
 
   /// generate a new batch that is Latin w.r.t. the previous samples
   void increm_lhs_parameter_set(int previous_samples, int new_samples,
@@ -117,14 +116,14 @@ public:
 
   /// store the ranks of the last generated sample for continuous
   /// (based on sampleRanks) and calculate/store discrete ranks
-  void store_ranks(const RealMatrix& sample_values, IntMatrix &sample_ranks);
+  void store_ranks(const RealMatrix& sample_values, IntMatrix& sample_ranks);
 
   /// store the combined ranks from sampleRanks to leading submatrix
   /// local cached ranks matrix
   void store_ranks(IntMatrix& full_ranks);
 
   /// merge the discrete ranks into a submatrix of sampleRanks
-  void combine_discrete_ranks(const RealMatrix& initial_values, 
+  void combine_discrete_ranks(const RealMatrix& initial_values,
                               const RealMatrix& increm_values);
 
   /// sort algorithm to compute ranks for rank correlations
@@ -135,14 +134,13 @@ public:
 
   /// Archive all results
   void archive_results(int num_samples, size_t ind_inc = 0);
-  
+
   /// Store samples in a matrix for bootstrapping
   void store_evaluations();
 
   Real bootstrap_covariance(const size_t qoi);
 
-private:
-
+ private:
   //
   //- Heading: Data
   //
@@ -168,12 +166,13 @@ private:
   /// sampling method for computing variance-based decomposition indices
   unsigned short vbdViaSamplingMethod;
 
-  /// number of bins for using with the Mahadevan sampling method for computing variance-based decomposition indices
+  /// number of bins for using with the Mahadevan sampling method for computing
+  /// variance-based decomposition indices
   int vbdViaSamplingNumBins;
 
   /// flag to specify the calculation of principal components
   bool pcaFlag;
-  /// Threshold to keep number of principal components that explain 
+  /// Threshold to keep number of principal components that explain
   /// this much variance
   Real percentVarianceExplained;
 
@@ -181,6 +180,6 @@ private:
   RealMatrix qoiSamplesMatrix;
 };
 
-} // namespace Dakota
+}  // namespace Dakota
 
 #endif

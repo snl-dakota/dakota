@@ -12,40 +12,35 @@
 
 #include "DakotaSurrogates.hpp"
 
-
 namespace Dakota {
 
 /// Derived approximation class for Surrogates Polynomial approximation classes.
 
 /** This class interfaces Dakota to the Dakota Surrogates Polynomial Module. */
-class SurrogatesPolyApprox: public SurrogatesBaseApprox
-{
-public:
-
+class SurrogatesPolyApprox : public SurrogatesBaseApprox {
+ public:
   //
   //- Heading: Constructor and destructor
   //
 
   /// default constructor
-  SurrogatesPolyApprox() { }
-  /// standard constructor: 
+  SurrogatesPolyApprox() {}
+  /// standard constructor:
   SurrogatesPolyApprox(const ProblemDescDB& problem_db,
-		       const SharedApproxData& shared_data,
-		       const String& approx_label);
+                       const SharedApproxData& shared_data,
+                       const String& approx_label);
   /// alternate constructor
   SurrogatesPolyApprox(const SharedApproxData& shared_data);
   /// destructor
-  ~SurrogatesPolyApprox() override { }
+  ~SurrogatesPolyApprox() override {}
 
-protected:
-
+ protected:
   // Minimum number of data points required to build
   int min_coefficients() const override;
 
   ///  Do the build
   void build() override;
-
 };
 
-} // namespace Dakota
+}  // namespace Dakota
 #endif

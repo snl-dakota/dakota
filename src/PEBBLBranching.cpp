@@ -11,53 +11,40 @@
 
 namespace Dakota {
 // MAIN PROBLEM CLASS
-PebbldBranching::PebbldBranching()
-{
+PebbldBranching::PebbldBranching() {
   // Reset has to be called here.  Otherwise, something doesn't get
   // initialized appropriately in PEBBL and results in a crash.
   branchingInit(minimization);
   pebbl::branching::reset();
 }
 
-PebbldBranching::~PebbldBranching()
-{}
+PebbldBranching::~PebbldBranching() {}
 
 // Creates a new empty Sub Branch, as specified in PEBBLE
 // documentation
-pebbl::branchSub* PebbldBranching::blankSub()
-{
+pebbl::branchSub* PebbldBranching::blankSub() {
   PebbldBranchSub* newDakotaSub = new PebbldBranchSub();
   newDakotaSub->setGlobalInfo(this);
   return newDakotaSub;
 }
 
 // BRANCH CLASS
-PebbldBranchSub::PebbldBranchSub()
-{}
+PebbldBranchSub::PebbldBranchSub() {}
 
-PebbldBranchSub::~PebbldBranchSub()
-{}
+PebbldBranchSub::~PebbldBranchSub() {}
 
 // Enable access to the sub-problem global data
-PebbldBranching* PebbldBranchSub::global() const
-{
-  return globalPtr;
-}
+PebbldBranching* PebbldBranchSub::global() const { return globalPtr; }
 
-pebbl::branching* PebbldBranchSub::bGlobal() const
-{
-  return global();
-}
+pebbl::branching* PebbldBranchSub::bGlobal() const { return global(); }
 
 // Set pointer to the sub-problem global data
-void PebbldBranchSub::setGlobalInfo(PebbldBranching* _global)
-{
+void PebbldBranchSub::setGlobalInfo(PebbldBranching* _global) {
   globalPtr = _global;
 }
 
 // Set up the problem at the root node
-void PebbldBranchSub::setRootComputation()
-{
+void PebbldBranchSub::setRootComputation() {
   // Use this model and solver
   subModel = globalPtr->parentModel;
   subNLPSolver = globalPtr->nlpSolver;
@@ -71,16 +58,17 @@ void PebbldBranchSub::setRootComputation()
   cont_vars.resize(ModelUtils::continuous_variables(*subModel).length());
   lower_bounds.resize(ModelUtils::continuous_lower_bounds(*subModel).length());
   upper_bounds.resize(ModelUtils::continuous_upper_bounds(*subModel).length());
-  for (int i=0; i<ModelUtils::continuous_variables(*subModel).length(); i++)
+  for (int i = 0; i < ModelUtils::continuous_variables(*subModel).length(); i++)
     cont_vars[i] = ModelUtils::continuous_variables(*subModel)[i];
-  for (int i=0; i<ModelUtils::continuous_lower_bounds(*subModel).length(); i++)
+  for (int i = 0; i < ModelUtils::continuous_lower_bounds(*subModel).length();
+       i++)
     lower_bounds[i] = ModelUtils::continuous_lower_bounds(*subModel)[i];
-  for (int i=0; i<ModelUtils::continuous_upper_bounds(*subModel).length(); i++)
+  for (int i = 0; i < ModelUtils::continuous_upper_bounds(*subModel).length();
+       i++)
     upper_bounds[i] = ModelUtils::continuous_upper_bounds(*subModel)[i];
 }
 
-void PebbldBranchSub::boundComputation(double* controlParam)
-{
+void PebbldBranchSub::boundComputation(double* controlParam) {
   // Calculate the bound -- Solve Problem Relaxation.
   // The Discrete Domain is relaxed into a Continuous Domain.
 
@@ -94,20 +82,20 @@ void PebbldBranchSub::boundComputation(double* controlParam)
 
   Variables _variables = subNLPSolver->variables_results();
   Response _response = subNLPSolver->response_results();
-     
-  // Considering that the problem is relaxed, all variables should be continuous.
+
+  // Considering that the problem is relaxed, all variables should be
+  // continuous.
   RealVector _finalVars = _variables.continuous_variables();
-  RealVector _functions = _response.function_values();     
-   
+  RealVector _functions = _response.function_values();
+
   // Load variable results into new_x
   candidate_x.resize(_finalVars.length());
-  for(int i=0;i<_finalVars.length();i++)
-    candidate_x[i] = _finalVars[i];
+  for (int i = 0; i < _finalVars.length(); i++) candidate_x[i] = _finalVars[i];
 
   // _functions[0] is the ObjFn
   candidate_objFn = _functions[0];
   bound = candidate_objFn;
-   
+
   // When Bounding is over, call
   // If state is not set to bounded, boundComputation will be called again
   setState(bounded);
@@ -115,30 +103,26 @@ void PebbldBranchSub::boundComputation(double* controlParam)
 
 // In this case, a Candidate Solution is one in which the Discrete
 // variables are actually Discrete after Relaxation
-bool PebbldBranchSub::candidateSolution()
-{
+bool PebbldBranchSub::candidateSolution() {
   const SharedVariablesData& svd = subModel->current_variables().shared_data();
   const BitArray int_relaxed = svd.all_relaxed_discrete_int();
   int num_int_vars = int_relaxed.size();
   int num_cont_vars = ModelUtils::cv(*subModel) - num_int_vars;
 
-  for(int i=num_cont_vars;i<num_cont_vars+num_int_vars;i++)
-  {
-    if(fmod(candidate_x[i],1)!=0.0)
-      return false;
-   }
+  for (int i = num_cont_vars; i < num_cont_vars + num_int_vars; i++) {
+    if (fmod(candidate_x[i], 1) != 0.0) return false;
+  }
   return true;
 }
 
-pebbl::solution* PebbldBranchSub::extractSolution()
-{
+pebbl::solution* PebbldBranchSub::extractSolution() {
   // To Consider: Creating a Custom Solution Object.
-  return new pebbl::arraySolution<double> (candidate_objFn, candidate_x, globalPtr);
+  return new pebbl::arraySolution<double>(candidate_objFn, candidate_x,
+                                          globalPtr);
 }
 
 // Simple binary splitting, that's why the method returns always 2.
-int PebbldBranchSub::splitComputation()
-{
+int PebbldBranchSub::splitComputation() {
   const SharedVariablesData& svd = subModel->current_variables().shared_data();
   const BitArray int_relaxed = svd.all_relaxed_discrete_int();
   int num_int_vars = int_relaxed.size();
@@ -146,41 +130,39 @@ int PebbldBranchSub::splitComputation()
 
   // Assuming that in the relaxed problem, the Binary/Integer
   // elements of the domain are first.
-  for(int i=num_cont_vars;i<num_cont_vars+num_int_vars;i++) 
-  {
-    if(fmod(candidate_x[i],1)!=0.0)
-    {
+  for (int i = num_cont_vars; i < num_cont_vars + num_int_vars; i++) {
+    if (fmod(candidate_x[i], 1) != 0.0) {
       splitVar = i;
       break;
     }
   }
 
-  if (splitVar>=num_cont_vars)
-  {
+  if (splitVar >= num_cont_vars) {
     setState(separated);
     return 2;
-  }
-  else
-  {
+  } else {
     setState(dead);
     return 0;
   }
 }
 
 // Given a child index, return the corresponding branch.
-pebbl::branchSub* PebbldBranchSub::makeChild(int whichChild) 
-{
+pebbl::branchSub* PebbldBranchSub::makeChild(int whichChild) {
   // if whichChild is 0, it's lower bound; else, it's upper bound
-  PebbldBranchSub *temp = new PebbldBranchSub();
+  PebbldBranchSub* temp = new PebbldBranchSub();
   // Child won't have access to the current variable values and
   // bounds, so pass them through.
-  temp->pebbldSubAsChildOf(this, splitVar, whichChild, candidate_x, lower_bounds, upper_bounds);
+  temp->pebbldSubAsChildOf(this, splitVar, whichChild, candidate_x,
+                           lower_bounds, upper_bounds);
   return temp;
 }
 
-// Set up all the data for the subproblem.     
-void PebbldBranchSub::pebbldSubAsChildOf(PebbldBranchSub* parent, int _splitVar, int whichChild, std::vector<double> _candidate_x, RealVector _lower_bounds, RealVector _upper_bounds)
-{
+// Set up all the data for the subproblem.
+void PebbldBranchSub::pebbldSubAsChildOf(PebbldBranchSub* parent, int _splitVar,
+                                         int whichChild,
+                                         std::vector<double> _candidate_x,
+                                         RealVector _lower_bounds,
+                                         RealVector _upper_bounds) {
   // Use this model and solver. Note that the model is the same as
   // that used at the parent node and for all other sub-problems.
   // Since the only things that change are initial variable values and
@@ -199,27 +181,26 @@ void PebbldBranchSub::pebbldSubAsChildOf(PebbldBranchSub* parent, int _splitVar,
   cont_vars.resize(ModelUtils::continuous_variables(*subModel).length());
   lower_bounds.resize(ModelUtils::continuous_lower_bounds(*subModel).length());
   upper_bounds.resize(ModelUtils::continuous_upper_bounds(*subModel).length());
-  for (int i=0; i<ModelUtils::continuous_variables(*subModel).length(); i++)
+  for (int i = 0; i < ModelUtils::continuous_variables(*subModel).length(); i++)
     cont_vars[i] = _candidate_x[i];
-  for (int i=0; i<ModelUtils::continuous_lower_bounds(*subModel).length(); i++)
+  for (int i = 0; i < ModelUtils::continuous_lower_bounds(*subModel).length();
+       i++)
     lower_bounds[i] = _lower_bounds[i];
-  for (int i=0; i<ModelUtils::continuous_upper_bounds(*subModel).length(); i++)
+  for (int i = 0; i < ModelUtils::continuous_upper_bounds(*subModel).length();
+       i++)
     upper_bounds[i] = _upper_bounds[i];
 
   // Reset the bounds for this sub-problem.  Also move the initial
   // variable value to feasible if necessary.
-  if(whichChild==0)
-  {
+  if (whichChild == 0) {
     upper_bounds[_splitVar] = floor(cont_vars[_splitVar]);
-    if(cont_vars[_splitVar]>upper_bounds[_splitVar]) 
+    if (cont_vars[_splitVar] > upper_bounds[_splitVar])
       cont_vars[_splitVar] = upper_bounds[_splitVar];
-  }
-  else 
-  {
+  } else {
     lower_bounds[_splitVar] = ceil(cont_vars[_splitVar]);
-    if(cont_vars[_splitVar]<lower_bounds[_splitVar])
+    if (cont_vars[_splitVar] < lower_bounds[_splitVar])
       cont_vars[_splitVar] = lower_bounds[_splitVar];
   }
 }
 
-}
+}  // namespace Dakota

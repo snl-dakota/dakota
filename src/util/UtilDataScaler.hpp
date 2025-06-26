@@ -10,10 +10,10 @@
 #ifndef DAKOTA_UTIL_DATA_SCALER_HPP
 #define DAKOTA_UTIL_DATA_SCALER_HPP
 
-#include "util_data_types.hpp"
-
 #include <boost/serialization/serialization.hpp>
 #include <memory>
+
+#include "util_data_types.hpp"
 
 namespace dakota {
 namespace util {
@@ -129,9 +129,9 @@ template <class Archive>
 void DataScaler::serialize(Archive& archive, const unsigned int version) {
   silence_unused_args(version);
 
-  archive& hasScaling;
-  archive& scalerFeaturesOffsets;
-  archive& scalerFeaturesScaleFactors;
+  archive & hasScaling;
+  archive & scalerFeaturesOffsets;
+  archive & scalerFeaturesScaleFactors;
 }
 
 /**

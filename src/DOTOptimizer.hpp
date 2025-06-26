@@ -12,7 +12,6 @@
 
 #include "DakotaOptimizer.hpp"
 
-
 namespace Dakota {
 
 /// Wrapper class for the DOT optimization library.
@@ -41,15 +40,13 @@ namespace Dakota {
  *
  */
 
-class DOTTraits: public TraitsBase
-{
-  public:
-
+class DOTTraits : public TraitsBase {
+ public:
   /// default constructor
-  DOTTraits() { }
+  DOTTraits() {}
 
   /// destructor
-  ~DOTTraits() override { }
+  ~DOTTraits() override {}
 
   /// A temporary query used in the refactor
   bool is_derived() override { return true; }
@@ -64,8 +61,9 @@ class DOTTraits: public TraitsBase
   bool supports_linear_inequality() override { return true; }
 
   /// Return the format used for linear inequality constraints
-  LINEAR_INEQUALITY_FORMAT linear_inequality_format() override
-    { return LINEAR_INEQUALITY_FORMAT::ONE_SIDED_UPPER; }
+  LINEAR_INEQUALITY_FORMAT linear_inequality_format() override {
+    return LINEAR_INEQUALITY_FORMAT::ONE_SIDED_UPPER;
+  }
 
   /// Return the flag indicating whether method supports nonlinear equalities
   bool supports_nonlinear_equality() override { return true; }
@@ -74,35 +72,32 @@ class DOTTraits: public TraitsBase
   bool supports_nonlinear_inequality() override { return true; }
 
   /// Return the format used for nonlinear inequality constraints
-  NONLINEAR_INEQUALITY_FORMAT nonlinear_inequality_format() override
-    { return NONLINEAR_INEQUALITY_FORMAT::ONE_SIDED_UPPER; }
-
+  NONLINEAR_INEQUALITY_FORMAT nonlinear_inequality_format() override {
+    return NONLINEAR_INEQUALITY_FORMAT::ONE_SIDED_UPPER;
+  }
 };
 
-
-class DOTOptimizer: public Optimizer
-{
-public:
-  
+class DOTOptimizer : public Optimizer {
+ public:
   //
   //- Heading: Constructors and destructor
   //
 
   /// standard constructor
-  DOTOptimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
+  DOTOptimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
+               std::shared_ptr<Model> model);
   /// alternate constructor; construct without ProblemDescDB
   DOTOptimizer(const String& method_string, std::shared_ptr<Model> model);
   /// destructor
   ~DOTOptimizer() override;
-    
+
   //
   //- Heading: Virtual function redefinitions
   //
 
   void core_run() override;
 
-protected:
-
+ protected:
   //
   //- Heading: Virtual function redefinitions
   //
@@ -110,17 +105,16 @@ protected:
   void initialize_run() override;
   void check_sub_iterator_conflict() override;
 
-private:
-
+ private:
   //
   //- Heading: Convenience functions
   //
-    
-  void initialize();           ///< Shared constructor code
 
-  void allocate_workspace();   ///< Allocates workspace for the optimizer
+  void initialize();  ///< Shared constructor code
 
-  void allocate_constraints(); ///< Allocates constraint mappings
+  void allocate_workspace();  ///< Allocates workspace for the optimizer
+
+  void allocate_constraints();  ///< Allocates constraint mappings
 
   //
   //- Heading: Data members
@@ -138,7 +132,7 @@ private:
   int dotFDSinfo;
 
   /// METHOD from DOT manual
-  /** For nonlinear constraints: 0/1 = dot_mmfd, 2 = dot_slp, 3 = dot_sqp.  
+  /** For nonlinear constraints: 0/1 = dot_mmfd, 2 = dot_slp, 3 = dot_sqp.
       For unconstrained:         0/1 = dot_bfgs, 2 = dot_frcg. */
   int dotMethod;
 
@@ -151,7 +145,7 @@ private:
   RealArray realCntlParmArray;
   /// IPRM from DOT manual
   /** Array of integer control parameters. */
-  IntArray  intCntlParmArray;
+  IntArray intCntlParmArray;
 
   /// array of design variable values passed to DOT
   RealVector designVars;
@@ -165,10 +159,10 @@ private:
       a transformation from 2-sided inequalities and equalities). */
   RealVector constraintValues;
 
-  int       realWorkSpaceSize; ///< size of realWorkSpace
-  int       intWorkSpaceSize;  ///< size of intWorkSpace
-  RealArray realWorkSpace;     ///< real work space for DOT
-  IntArray  intWorkSpace;      ///< int work space for DOT
+  int realWorkSpaceSize;    ///< size of realWorkSpace
+  int intWorkSpaceSize;     ///< size of intWorkSpace
+  RealArray realWorkSpace;  ///< real work space for DOT
+  IntArray intWorkSpace;    ///< int work space for DOT
 
   /// total number of nonlinear constraints seen by DOT
   int numDotNlnConstr;
@@ -178,7 +172,6 @@ private:
   int numDotConstr;
 };
 
-
 #ifdef HAVE_DYNLIB_FACTORIES
 // ---------------------------------------------------------
 // Factory functions for dynamic loading of solver libraries
@@ -186,8 +179,8 @@ private:
 
 DOTOptimizer* new_DOTOptimizer(ProblemDescDB& problem_db, Model& model);
 DOTOptimizer* new_DOTOptimizer(Model& model);
-#endif // HAVE_DYNLIB_FACTORIES
+#endif  // HAVE_DYNLIB_FACTORIES
 
-} // namespace Dakota
+}  // namespace Dakota
 
-#endif // DOT_OPTIMIZER_H
+#endif  // DOT_OPTIMIZER_H

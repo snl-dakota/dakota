@@ -10,15 +10,14 @@
 #ifndef APPSEvalMgr_H
 #define APPSEvalMgr_H
 
+#include "DakotaOptimizer.hpp"
 #include "HOPSPACK_Executor.hpp"
 #include "HOPSPACK_Vector.hpp"
-
-#include "DakotaOptimizer.hpp"
 #include "dakota_data_types.hpp"
 
 namespace Dakota {
 
-/// Evaluation manager class for APPSPACK 
+/// Evaluation manager class for APPSPACK
 
 /** The APPSEvalMgr class is derived from APPSPACK's Executor class.
     It implements the methods of that class in such away that allows
@@ -26,11 +25,8 @@ namespace Dakota {
     Iterate and response values are passed between Dakota and APPSPACK
     via this interface. */
 
-class APPSEvalMgr : public HOPSPACK::Executor
-{
-
-public:
-  
+class APPSEvalMgr : public HOPSPACK::Executor {
+ public:
   //
   //- Heading: Constructor and destructor
   //
@@ -40,22 +36,22 @@ public:
 
   /// destructor
   ~APPSEvalMgr() override {};
-    
+
   //
   //- Heading: Virtual function redefinitions
   //
 
-  /// tells APPS whether or not there is a processor available to perform a function evaluation
+  /// tells APPS whether or not there is a processor available to perform a
+  /// function evaluation
   bool isReadyForWork() const override;
 
   /// performs a function evaluation at APPS-provided x_in
   bool submit(const int apps_tag, const HOPSPACK::Vector& apps_xtrial,
-	      const HOPSPACK::EvalRequestType apps_request) override;
+              const HOPSPACK::EvalRequestType apps_request) override;
 
   /// returns a function value to APPS
-  int recv(int& apps_tag, HOPSPACK::Vector& apps_f,
-	   HOPSPACK::Vector& apps_cEqs, HOPSPACK::Vector& apps_cIneqs,
-	   string& apps_msg) override;
+  int recv(int& apps_tag, HOPSPACK::Vector& apps_f, HOPSPACK::Vector& apps_cEqs,
+           HOPSPACK::Vector& apps_cIneqs, string& apps_msg) override;
 
   /// return the type of the Dakota linked evaluator
   std::string getEvaluatorType(void) const override;
@@ -70,20 +66,21 @@ public:
   //
 
   /// publishes whether or not to do asynchronous evaluations
-  void set_asynch_flag(const bool dakotaAsynchFlag)
-  {modelAsynchFlag = dakotaAsynchFlag;}
+  void set_asynch_flag(const bool dakotaAsynchFlag) {
+    modelAsynchFlag = dakotaAsynchFlag;
+  }
 
   /// publishes whether or not APPS is operating synchronously
-  void set_blocking_synch(const bool blockingSynchFlag)
-  {blockingSynch = blockingSynchFlag;}
+  void set_blocking_synch(const bool blockingSynchFlag) {
+    blockingSynch = blockingSynchFlag;
+  }
 
   /// publishes the number of processors available for function evaluations
-  void set_total_workers(const int numDakotaWorkers)
-  {numWorkersTotal = numDakotaWorkers;}
+  void set_total_workers(const int numDakotaWorkers) {
+    numWorkersTotal = numDakotaWorkers;
+  }
 
-
-private:
-
+ private:
   //
   //- Heading: Private data
   //
@@ -110,16 +107,15 @@ private:
   RealVector xTrial;
 
   /// map of DAKOTA eval id to APPS eval id (for asynchronous evaluations)
-  std::map<int,int> tagList;
+  std::map<int, int> tagList;
 
   /// map of APPS eval id to responses (for synchronous evaluations)
-  std::map<int,RealVector> functionList;
+  std::map<int, RealVector> functionList;
 
   /// map of DAKOTA responses returned by synchronize_nowait()
   IntResponseMap dakotaResponseMap;
-
 };
 
-} //namespace Dakota
+}  // namespace Dakota
 
 #endif

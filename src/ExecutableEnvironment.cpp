@@ -8,32 +8,28 @@
     _______________________________________________________________________ */
 
 #include "ExecutableEnvironment.hpp"
+
 #include "ProblemDescDB.hpp"
 
-static const char rcsId[]="@(#) $Id: ExecutableEnvironment.cpp 6492 2009-12-19 00:04:28Z briadam $";
-
+static const char rcsId[] =
+    "@(#) $Id: ExecutableEnvironment.cpp 6492 2009-12-19 00:04:28Z briadam $";
 
 namespace Dakota {
 
-ExecutableEnvironment::ExecutableEnvironment():
-  Environment(BaseConstructor())
-{ }
+ExecutableEnvironment::ExecutableEnvironment()
+    : Environment(BaseConstructor()) {}
 
-
-ExecutableEnvironment::ExecutableEnvironment(int argc, char* argv[]):
-  Environment(BaseConstructor(), argc, argv)
-{
+ExecutableEnvironment::ExecutableEnvironment(int argc, char* argv[])
+    : Environment(BaseConstructor(), argc, argv) {
   preprocess_inputs();
 
   // could we wait to do redirection and any output here?
   // might get entangled with CL usage...
-  if (programOptions.version())
-    outputManager.output_version();
+  if (programOptions.version()) outputManager.output_version();
 
   // After command line parsing and before input DB parsing: if just
   // getting version or help, don't instantiate anything.
   if (programOptions.proceed_to_instantiate()) {
-
     outputManager.output_startup_message();
 
     // parse input, check, and sync across ranks
@@ -45,18 +41,14 @@ ExecutableEnvironment::ExecutableEnvironment(int argc, char* argv[]):
   }
 }
 
-
-ExecutableEnvironment::~ExecutableEnvironment()
-{
+ExecutableEnvironment::~ExecutableEnvironment() {
   // destruction order of core objects:
   //  * ParallelLibrary closes things it opens, e.g., restart
-  //  * OutputManager knows what it rebinds, so closes in dtor 
+  //  * OutputManager knows what it rebinds, so closes in dtor
   //  * MPIManager calls MPI_Finalize only if needed
 }
 
-
-void ExecutableEnvironment::execute()
-{
+void ExecutableEnvironment::execute() {
 #ifndef _WIN32
   // workaround: some callers of DAKOTA, e.g., mpirun might register a handler
   // for SIGCHLD, but never reset it, which interferes with our fork interface
@@ -71,4 +63,4 @@ void ExecutableEnvironment::execute()
 #endif
 }
 
-} // namespace Dakota
+}  // namespace Dakota

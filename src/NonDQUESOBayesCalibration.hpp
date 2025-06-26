@@ -14,26 +14,33 @@
 
 // forward declare here to isolate QUESO includes to Dakota .cpp files
 namespace QUESO {
-  class GslVector;
-  class GslMatrix;
-  class EnvOptionsValues;
-  class FullEnvironment;
-  template<class V, class M> class VectorSpace;
-  template<class V, class M> class BoxSubset;
-  template<class V, class M> class GenericScalarFunction;
-  template<class V, class M> class BaseVectorRV;
-  template<class V, class M> class GenericVectorRV;
-  template<class V, class M> class StatisticalInverseProblem;
-  class SipOptionsValues;
-  class MhOptionsValues;
-}
+class GslVector;
+class GslMatrix;
+class EnvOptionsValues;
+class FullEnvironment;
+template <class V, class M>
+class VectorSpace;
+template <class V, class M>
+class BoxSubset;
+template <class V, class M>
+class GenericScalarFunction;
+template <class V, class M>
+class BaseVectorRV;
+template <class V, class M>
+class GenericVectorRV;
+template <class V, class M>
+class StatisticalInverseProblem;
+class SipOptionsValues;
+class MhOptionsValues;
+}  // namespace QUESO
 
 namespace Dakota {
 
 // forward declarations of Dakota specializations
-template <class V, class M> class DerivInformedPropCovTK;
-template <class V, class M> class DerivInformedPropCovLogitTK;
-
+template <class V, class M>
+class DerivInformedPropCovTK;
+template <class V, class M>
+class DerivInformedPropCovLogitTK;
 
 /// Bayesian inference using the QUESO library from UT Austin
 
@@ -42,21 +49,21 @@ template <class V, class M> class DerivInformedPropCovLogitTK;
     the Predictive Science Academic Alliance Program (PSAAP)-funded
     Predictive Engineering and Computational Sciences (PECOS) Center
     at UT Austin. */
-class NonDQUESOBayesCalibration: public NonDBayesCalibration
-{
+class NonDQUESOBayesCalibration : public NonDBayesCalibration {
   /// Random walk transition kernel needs callback access to QUESO details
   friend class DerivInformedPropCovTK<QUESO::GslVector, QUESO::GslMatrix>;
   /// Logit random walk transition kernel needs callback access to QUESO details
   friend class DerivInformedPropCovLogitTK<QUESO::GslVector, QUESO::GslMatrix>;
 
-public:
-
+ public:
   //
   //- Heading: Constructors and destructor
   //
 
   /// standard constructor
-  NonDQUESOBayesCalibration(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
+  NonDQUESOBayesCalibration(ProblemDescDB& problem_db,
+                            ParallelLibrary& parallel_lib,
+                            std::shared_ptr<Model> model);
   /// destructor
   ~NonDQUESOBayesCalibration();
 
@@ -64,26 +71,25 @@ public:
   //- Heading: public member functions
   //
 
-protected:
-
+ protected:
   //
   //- Heading: Virtual function redefinitions
   //
 
   void calibrate() override;
-  void print_results(std::ostream& s, short 
-      results_state = FINAL_RESULTS) override;
+  void print_results(std::ostream& s,
+                     short results_state = FINAL_RESULTS) override;
 
   /// initialize the QUESO FullEnvironment on the Dakota MPIComm
   void init_queso_environment();
 
   /// initialize the ASV value for preconditioned cases
   void init_precond_request_value();
-  
+
   /// intialize the QUESO parameter space, min, max, initial, domain, and prior
   /// define solver options, likelihood callback, posterior RV, and
   /// inverse problem
-  void specify_prior() override; 
+  void specify_prior() override;
   void specify_likelihood() override;
   void init_bayesian_solver() override;
   void specify_posterior() override;
@@ -118,30 +124,30 @@ protected:
   void prior_proposal_covariance();
 
   /// Set proposal covariance from user-provided diagonal or matrix
-  void user_proposal_covariance(const String& input_fmt, 
-				const RealVector& cov_data, 
-				const String& cov_filename);
+  void user_proposal_covariance(const String& input_fmt,
+                                const RealVector& cov_data,
+                                const String& cov_filename);
 
   // perform sanity checks on proposalCovMatrix
   void validate_proposal();
 
   /// Set inverse problem options calIpOptionsValues common to all solvers
-  void set_ip_options(); 
+  void set_ip_options();
   /// Set MH-specific inverse problem options calIpMhOptionsValues
   void set_mh_options();
   /// update MH-specific inverse problem options calIpMhOptionsValues
   void update_chain_size(unsigned int size);
 
-  //The likelihood routine is in the format that QUESO requires, 
-  //with a particular argument list that QUESO expects. 
-  //We are not using all of these arguments but may in the future.
+  // The likelihood routine is in the format that QUESO requires,
+  // with a particular argument list that QUESO expects.
+  // We are not using all of these arguments but may in the future.
   /// Log Likelihood function for call-back from QUESO to DAKOTA for evaluation
   static double dakotaLogLikelihood(const QUESO::GslVector& paramValues,
-				    const QUESO::GslVector* paramDirection,
-				    const void*             functionDataPtr,
-				    QUESO::GslVector*       gradVector,
-				    QUESO::GslMatrix*       hessianMatrix,
-				    QUESO::GslVector*       hessianEffect);
+                                    const QUESO::GslVector* paramDirection,
+                                    const void* functionDataPtr,
+                                    QUESO::GslVector* gradVector,
+                                    QUESO::GslMatrix* hessianMatrix,
+                                    QUESO::GslVector* hessianEffect);
 
   /// local copy_data utility from GslVector to RealVector
   void copy_gsl(const QUESO::GslVector& qv, RealVector& rv);
@@ -149,11 +155,11 @@ protected:
   void copy_gsl(const RealVector& rv, QUESO::GslVector& qv);
 
   /// local copy_data utility from portion of GslVector to RealVector
-  void copy_gsl_partial(const QUESO::GslVector& qv, size_t start, 
-			RealVector& rv);
+  void copy_gsl_partial(const QUESO::GslVector& qv, size_t start,
+                        RealVector& rv);
   /// local copy_data utility from RealVector to portion of GslVector
   void copy_gsl_partial(const RealVector& rv, QUESO::GslVector& qv,
-			size_t start);
+                        size_t start);
 
   /// local copy_data utility from GslVector to column in RealMatrix
   void copy_gsl(const QUESO::GslVector& qv, RealMatrix& rm, int i);
@@ -165,8 +171,8 @@ protected:
   //- Heading: Data
   //
 
-  /// MCMC type ("dram" or "delayed_rejection" or "adaptive_metropolis" 
-  /// or "metropolis_hastings" or "multilevel",  within QUESO) 
+  /// MCMC type ("dram" or "delayed_rejection" or "adaptive_metropolis"
+  /// or "metropolis_hastings" or "multilevel",  within QUESO)
   String mcmcType;
   /// period (number of accepted chain samples) for proposal covariance update
   int propCovUpdatePeriod;
@@ -187,26 +193,26 @@ protected:
 
   /// top-level QUESO Environment
   std::shared_ptr<QUESO::FullEnvironment> quesoEnv;
-  
+
   /// QUESO parameter space based on number of calibrated parameters
-  std::shared_ptr<QUESO::VectorSpace<QUESO::GslVector,QUESO::GslMatrix> > 
-  paramSpace;
+  std::shared_ptr<QUESO::VectorSpace<QUESO::GslVector, QUESO::GslMatrix> >
+      paramSpace;
 
   /// QUESO parameter domain: hypercube based on min/max values
-  std::shared_ptr<QUESO::BoxSubset<QUESO::GslVector,QUESO::GslMatrix> >
-  paramDomain;
+  std::shared_ptr<QUESO::BoxSubset<QUESO::GslVector, QUESO::GslMatrix> >
+      paramDomain;
 
   /// initial parameter values at which to start chain
   std::shared_ptr<QUESO::GslVector> paramInitials;
 
   /// random variable for the prior
-  std::shared_ptr<QUESO::BaseVectorRV<QUESO::GslVector,QUESO::GslMatrix> >
-    priorRv;
+  std::shared_ptr<QUESO::BaseVectorRV<QUESO::GslVector, QUESO::GslMatrix> >
+      priorRv;
 
   /// proposal covariance for DRAM
   std::shared_ptr<QUESO::GslMatrix> proposalCovMatrix;
 
-  /// optional multiplier to scale prior-based proposal covariance 
+  /// optional multiplier to scale prior-based proposal covariance
   double priorPropCovMult;
 
   /// general inverse problem options
@@ -215,16 +221,18 @@ protected:
   /// MH-specific inverse problem options
   std::shared_ptr<QUESO::MhOptionsValues> calIpMhOptionsValues;
 
-  std::shared_ptr<QUESO::GenericScalarFunction<QUESO::GslVector,
-    QUESO::GslMatrix> > likelihoodFunctionObj;
+  std::shared_ptr<
+      QUESO::GenericScalarFunction<QUESO::GslVector, QUESO::GslMatrix> >
+      likelihoodFunctionObj;
 
   /// random variable for the posterior
-  std::shared_ptr<QUESO::GenericVectorRV<QUESO::GslVector,QUESO::GslMatrix> >
-    postRv;
+  std::shared_ptr<QUESO::GenericVectorRV<QUESO::GslVector, QUESO::GslMatrix> >
+      postRv;
 
   /// QUESO inverse problem solver
-  std::shared_ptr<QUESO::StatisticalInverseProblem<QUESO::GslVector,
-    QUESO::GslMatrix> > inverseProb;
+  std::shared_ptr<
+      QUESO::StatisticalInverseProblem<QUESO::GslVector, QUESO::GslMatrix> >
+      inverseProb;
 
   /// advanced options file name (GPMSA only); settings from this file
   /// override any C++ / Dakota input file settings
@@ -233,14 +241,12 @@ protected:
   /// Pointer to current class instance for use in static callback functions
   static NonDQUESOBayesCalibration* nonDQUESOInstance;
 
-private:
-
+ private:
   //
   // - Heading: Data
-  // 
-  
+  //
 };
 
-} // namespace Dakota
+}  // namespace Dakota
 
 #endif

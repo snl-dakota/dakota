@@ -19,8 +19,7 @@ class NLF2;
 class OptNewton;
 class OptBCNewton;
 class OptDHNIPS;
-}
-
+}  // namespace OPTPP
 
 namespace Dakota {
 
@@ -28,16 +27,14 @@ namespace Dakota {
  * \brief A version of TraitsBase specialized for SNLLLeastSq
  *
  */
- 
-class SNLLLeastSqTraits: public TraitsBase
-{
-  public:
 
+class SNLLLeastSqTraits : public TraitsBase {
+ public:
   /// default constructor
-  SNLLLeastSqTraits() { }
+  SNLLLeastSqTraits() {}
 
   /// destructor
-  ~SNLLLeastSqTraits() override { }
+  ~SNLLLeastSqTraits() override {}
 
   /// A temporary query used in the refactor
   bool is_derived() override { return true; }
@@ -57,7 +54,6 @@ class SNLLLeastSqTraits: public TraitsBase
   /// Return the flag indicating whether method supports nonlinear inequalities
   bool supports_nonlinear_inequality() override { return true; }
 };
-
 
 /// Wrapper class for the OPT++ optimization library.
 
@@ -88,21 +84,20 @@ class SNLLLeastSqTraits: public TraitsBase
     gradient_based_line_search.  Refer to [Meza, J.C., 1994] and to
     the OPT++ source in the Dakota/packages/OPTPP directory for
     information on OPT++ class member functions. */
-class SNLLLeastSq: public LeastSq, public SNLLBase
-{
-public:
-  
+class SNLLLeastSq : public LeastSq, public SNLLBase {
+ public:
   //
   //- Heading: Constructors and destructor
   //
 
   /// standard constructor
-  SNLLLeastSq(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model>);
+  SNLLLeastSq(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
+              std::shared_ptr<Model>);
   /// alternate constructor for instantiations without ProblemDescDB support
   SNLLLeastSq(const String& method_name, std::shared_ptr<Model>);
   /// destructor
   ~SNLLLeastSq() override;
-    
+
   //
   //- Heading: Virtual member function redefinitions
   //
@@ -112,8 +107,7 @@ public:
 
   void reset() override;
 
-protected:
-
+ protected:
   //
   //- Heading: Virtual member function redefinitions
   //
@@ -121,11 +115,10 @@ protected:
   /// invokes LeastSq::initialize_run(),
   /// SNLLBase::snll_initialize_run(), and performs other set-up
   void initialize_run() override;
-  /// restores instances 
+  /// restores instances
   void finalize_run() override;
 
-private:
-
+ private:
   //
   //- Heading: Static member functions required by opt++
   //
@@ -137,8 +130,8 @@ private:
   /// gradients for least square terms and computes objective function
   /// value, gradient, and Hessian using the Gauss-Newton approximation.
   static void nlf2_evaluator_gn(int mode, int n, const RealVector& x, double& f,
-				RealVector& grad_f, RealSymMatrix& hess_f,
-				int& result_mode);
+                                RealVector& grad_f, RealSymMatrix& hess_f,
+                                int& result_mode);
 
   //- Constraint evaluation routines that invoke Model::compute_response
 
@@ -149,8 +142,8 @@ private:
       modes for the least squares terms.  This constraint evaluator function
       is used with diaggregated Hessian NIPS and is currently active. */
   static void constraint1_evaluator_gn(int mode, int n, const RealVector& x,
-				       RealVector& g, RealMatrix& grad_g,
-				       int& result_mode);
+                                       RealVector& g, RealMatrix& grad_g,
+                                       int& result_mode);
 
   /// constraint evaluator function which provides constraint
   /// values, gradients, and Hessians to OPT++ Gauss-Newton methods.
@@ -159,9 +152,9 @@ private:
       modes for the least squares terms.  This constraint evaluator function
       is used with full Newton NIPS and is currently inactive. */
   static void constraint2_evaluator_gn(int mode, int n, const RealVector& x,
-				       RealVector& g, RealMatrix& grad_g,
-				       OPTPP::OptppArray<RealSymMatrix>& hess_g,
-				       int& result_mode);
+                                       RealVector& g, RealMatrix& grad_g,
+                                       OPTPP::OptppArray<RealSymMatrix>& hess_g,
+                                       int& result_mode);
 
   //
   //- Heading: Data
@@ -175,25 +168,25 @@ private:
   SNLLLeastSq* prevSnllLSqInstance;
 
   // Base class pointers to OPT++ objects
-  OPTPP::NLP0 *nlfObjective;  ///< objective  NLF base class pointer
-  OPTPP::NLP0 *nlfConstraint; ///< constraint NLF base class pointer
-  OPTPP::NLP  *nlpConstraint; ///< constraint NLP pointer
+  OPTPP::NLP0* nlfObjective;   ///< objective  NLF base class pointer
+  OPTPP::NLP0* nlfConstraint;  ///< constraint NLF base class pointer
+  OPTPP::NLP* nlpConstraint;   ///< constraint NLP pointer
 
   // additional pointers needed for option specification
   /// pointer to objective NLF for full Newton optimizers
-  OPTPP::NLF2 *nlf2;
+  OPTPP::NLF2* nlf2;
   /// pointer to constraint NLF for full Newton optimizers
-  OPTPP::NLF2 *nlf2Con;
+  OPTPP::NLF2* nlf2Con;
   /// pointer to constraint NLF for Quasi Newton optimizers
-  OPTPP::NLF1 *nlf1Con;  
+  OPTPP::NLF1* nlf1Con;
 
-  OPTPP::OptimizeClass *theOptimizer; ///< optimizer base class pointer
+  OPTPP::OptimizeClass* theOptimizer;  ///< optimizer base class pointer
   // additional pointers needed for option specification
-  OPTPP::OptNewton   *optnewton;   ///< Newton optimizer pointer
-  OPTPP::OptBCNewton *optbcnewton; ///< Bound constrained Newton optimizer ptr
-  OPTPP::OptDHNIPS   *optdhnips;   ///< Disaggregated Hessian NIPS optimizer ptr
+  OPTPP::OptNewton* optnewton;      ///< Newton optimizer pointer
+  OPTPP::OptBCNewton* optbcnewton;  ///< Bound constrained Newton optimizer ptr
+  OPTPP::OptDHNIPS* optdhnips;  ///< Disaggregated Hessian NIPS optimizer ptr
 };
 
-} // namespace Dakota
+}  // namespace Dakota
 
 #endif

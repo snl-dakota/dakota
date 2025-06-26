@@ -10,9 +10,8 @@
 #ifndef NOND_HIERARCHICAL_SAMPLING_H
 #define NOND_HIERARCHICAL_SAMPLING_H
 
-#include "NonDEnsembleSampling.hpp"
 #include "DataMethod.hpp"
-
+#include "NonDEnsembleSampling.hpp"
 
 namespace Dakota {
 
@@ -22,16 +21,15 @@ namespace Dakota {
     that utilitizes lower fidelity simulations that have response QoI
     that are correlated with the high-fidelity response QoI. */
 
-class NonDHierarchSampling: public NonDEnsembleSampling
-{
-public:
-
+class NonDHierarchSampling : public NonDEnsembleSampling {
+ public:
   //
   //- Heading: Constructors and destructor
   //
 
   /// standard constructor
-  NonDHierarchSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
+  NonDHierarchSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
+                       std::shared_ptr<Model> model);
   /// destructor (virtual declaration should be redundant with ~Iterator,
   /// but this is top of MLMF diamond so doesn't hurt to be explicit)
   ~NonDHierarchSampling() override;
@@ -40,18 +38,17 @@ public:
   //- Heading: Virtual function redefinitions
   //
 
-  //bool resize();
+  // bool resize();
 
-protected:
-
+ protected:
   //
   //- Heading: Virtual function redefinitions
   //
 
-  //void pre_run();
-  //void core_run();
-  //void post_run(std::ostream& s);
-  //void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
+  // void pre_run();
+  // void core_run();
+  // void post_run(std::ostream& s);
+  // void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
 
   //
   //- Heading: Member functions
@@ -59,13 +56,13 @@ protected:
 
   /// queue a batch of samples to be performed for the active model subset
   void ensemble_sample_batch(const String& prepend, int batch_id,
-			     bool new_samples = true);
+                             bool new_samples = true);
   /// set request = 1 for QoI in (lev-1,lev)
   void ml_active_set(size_t lev, size_t offset = 0, bool clear_req = true);
 
   /// export allSamples to tagged tabular file
-  void export_all_samples(String root_prepend, const Model& model,
-			  size_t iter, int batch_id);
+  void export_all_samples(String root_prepend, const Model& model, size_t iter,
+                          int batch_id);
 
   //
   //- Heading: Data
@@ -76,18 +73,14 @@ protected:
   /// setting for inactive model dimension not traversed by loop over numSteps
   size_t secondaryIndex;
 
-private:
-
+ private:
   //
   //- Heading: Helper functions
   //
-
 };
 
-
-inline void NonDHierarchSampling::
-ml_active_set(size_t lev, size_t offset, bool clear_req)
-{
+inline void NonDHierarchSampling::ml_active_set(size_t lev, size_t offset,
+                                                bool clear_req) {
   if (clear_req) activeSet.request_values(0);
 
   if (lev) {
@@ -100,6 +93,6 @@ ml_active_set(size_t lev, size_t offset, bool clear_req)
   activeSet.request_values(1, offset, offset + numFunctions);
 }
 
-} // namespace Dakota
+}  // namespace Dakota
 
 #endif

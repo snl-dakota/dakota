@@ -12,7 +12,6 @@
 
 #include "DakotaMinimizer.hpp"
 
-
 namespace Dakota {
 
 /// Base class for the nonlinear least squares branch of the iterator hierarchy.
@@ -20,12 +19,9 @@ namespace Dakota {
 /** The LeastSq class provides common data and functionality for
     least squares solvers (including NL2OL, NLSSOLLeastSq, and SNLLLeastSq. */
 
-class LeastSq: public Minimizer
-{
-public:
-
-protected:
-
+class LeastSq : public Minimizer {
+ public:
+ protected:
   //
   //- Heading: Constructors and destructor
   //
@@ -33,9 +29,11 @@ protected:
   /// default constructor
   LeastSq(std::shared_ptr<TraitsBase> traits);
   /// standard constructor
-  LeastSq(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model, std::shared_ptr<TraitsBase> traits);
+  LeastSq(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
+          std::shared_ptr<Model> model, std::shared_ptr<TraitsBase> traits);
   /// alternate "on the fly" constructor
-  LeastSq(unsigned short method_name, std::shared_ptr<Model> model, std::shared_ptr<TraitsBase> traits);
+  LeastSq(unsigned short method_name, std::shared_ptr<Model> model,
+          std::shared_ptr<TraitsBase> traits);
   /// destructor
   ~LeastSq() override;
 
@@ -46,7 +44,8 @@ protected:
   void initialize_run() override;
   void post_run(std::ostream& s) override;
   void finalize_run() override;
-  void print_results(std::ostream& s, short results_state = FINAL_RESULTS) override;
+  void print_results(std::ostream& s,
+                     short results_state = FINAL_RESULTS) override;
 
   //
   //- Heading: New virtual member functions
@@ -54,13 +53,13 @@ protected:
 
   /// Calculate confidence intervals on estimated parameters
   void get_confidence_intervals(const Variables& native_vars,
-				const Response& iter_resp);
+                                const Response& iter_resp);
 
   //
   //- Heading: Data
   //
 
-  size_t numLeastSqTerms; ///< number of least squares terms
+  size_t numLeastSqTerms;  ///< number of least squares terms
 
   /// pointer to LeastSq instance used in static member functions
   static LeastSq* leastSqInstance;
@@ -81,8 +80,7 @@ protected:
   /// retrieved (possibly by a derived class)
   bool retrievedIterPriFns;
 
-private:
-
+ private:
   //
   //- Heading: Convenience/Helper functions
   //
@@ -92,32 +90,25 @@ private:
 
   void archive_best_results() override;
   /// Write the confidence intervals to the results output
-//  void archive_confidence_intervals();
+  //  void archive_confidence_intervals();
 
   //
   //- Heading: Data
   //
 };
 
+inline LeastSq::LeastSq(std::shared_ptr<TraitsBase> traits)
+    : Minimizer(traits), weightFlag(false) {}
 
-inline LeastSq::LeastSq(std::shared_ptr<TraitsBase> traits) :
-  Minimizer(traits),
-  weightFlag(false)
-{ }
+inline LeastSq::~LeastSq() {}
 
-
-inline LeastSq::~LeastSq()
-{ }
-
-
-inline void LeastSq::finalize_run()
-{
+inline void LeastSq::finalize_run() {
   // Restore previous object instance in case of recursion.
   leastSqInstance = prevLSqInstance;
-  
+
   Minimizer::finalize_run();
 }
 
-} // namespace Dakota
+}  // namespace Dakota
 
 #endif

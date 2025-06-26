@@ -10,11 +10,10 @@
 #ifndef SURR_BASED_LOCAL_MINIMIZER_H
 #define SURR_BASED_LOCAL_MINIMIZER_H
 
-#include "SurrBasedMinimizer.hpp"
 #include "DakotaModel.hpp"
+#include "SurrBasedMinimizer.hpp"
 
 namespace Dakota {
-
 
 /// Class for provably-convergent local surrogate-based optimization
 /// and nonlinear least squares.
@@ -24,28 +23,28 @@ namespace Dakota {
     convergence through the use of a sequence of trust regions and the
     application of surrogate corrections at the trust region centers. */
 
-class SurrBasedLocalMinimizer: public SurrBasedMinimizer
-{
-public:
-
+class SurrBasedLocalMinimizer : public SurrBasedMinimizer {
+ public:
   //
   //- Heading: Constructor and destructor
   //
 
   /// constructor
-  SurrBasedLocalMinimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model,
-			  std::shared_ptr<TraitsBase> traits);
+  SurrBasedLocalMinimizer(ProblemDescDB& problem_db,
+                          ParallelLibrary& parallel_lib,
+                          std::shared_ptr<Model> model,
+                          std::shared_ptr<TraitsBase> traits);
   /// alternate constructor for instantiations "on the fly"
-  SurrBasedLocalMinimizer(std::shared_ptr<Model> model, short merit_fn, short accept_logic,
-			  short constr_relax, const RealVector& tr_factors,
-			  size_t max_iter, size_t max_eval, Real conv_tol,
-			  unsigned short soft_conv_limit,
-			  std::shared_ptr<TraitsBase> traits);
+  SurrBasedLocalMinimizer(std::shared_ptr<Model> model, short merit_fn,
+                          short accept_logic, short constr_relax,
+                          const RealVector& tr_factors, size_t max_iter,
+                          size_t max_eval, Real conv_tol,
+                          unsigned short soft_conv_limit,
+                          std::shared_ptr<TraitsBase> traits);
   /// destructor
   ~SurrBasedLocalMinimizer() override;
 
-protected:
-
+ protected:
   //
   //- Heading: Virtual function redefinitions
   //
@@ -106,8 +105,8 @@ protected:
 
   /// update the trust region bounds, strictly contained within global bounds
   void update_trust_region_data(SurrBasedLevelData& tr_data,
-				const RealVector& parent_l_bnds,
-				const RealVector& parent_u_bnds);
+                                const RealVector& parent_l_bnds,
+                                const RealVector& parent_u_bnds);
 
   /// update variables and bounds within approxSubProbModel
   void update_approx_sub_problem(SurrBasedLevelData& tr_data);
@@ -115,39 +114,40 @@ protected:
   /// compute trust region ratio (for SBLM iterate acceptance and trust
   /// region resizing) and check for soft convergence (diminishing returns)
   void compute_trust_region_ratio(SurrBasedLevelData& tr_data,
-				  bool check_interior = false);
+                                  bool check_interior = false);
 
   /// check for hard convergence (norm of projected gradient of merit
   /// function < tolerance)
   void hard_convergence_check(SurrBasedLevelData& tr_data,
-			      const RealVector& lower_bnds,
-			      const RealVector& upper_bnds);
+                              const RealVector& lower_bnds,
+                              const RealVector& upper_bnds);
 
   /// print out the state corresponding to the code returned by converged()
   void print_convergence_code(std::ostream& s, unsigned short code);
 
   /// initialize and update the penaltyParameter
   void update_penalty(const RealVector& fns_center_truth,
-		      const RealVector& fns_star_truth);
+                      const RealVector& fns_star_truth);
 
   /// static function used to define the approximate subproblem objective.
   static void approx_subprob_objective_eval(const Variables& surrogate_vars,
-					    const Variables& recast_vars,
-					    const Response& surrogate_response,
-					    Response& recast_response);
+                                            const Variables& recast_vars,
+                                            const Response& surrogate_response,
+                                            Response& recast_response);
   /// static function used to define the approximate subproblem constraints.
   static void approx_subprob_constraint_eval(const Variables& surrogate_vars,
-					     const Variables& recast_vars,
-					     const Response& surrogate_response,
-					     Response& recast_response);
+                                             const Variables& recast_vars,
+                                             const Response& surrogate_response,
+                                             Response& recast_response);
 
   /// locate an approximate response with the data_pairs cache
-  bool find_approx_response(const Variables& search_vars,Response& search_resp);
+  bool find_approx_response(const Variables& search_vars,
+                            Response& search_resp);
   /// locate a truth response with the data_pairs cache
   bool find_truth_response(const Variables& search_vars, Response& search_resp);
   /// locate a response with the data_pairs cache
   bool find_response(const Variables& search_vars, Response& search_resp,
-		     const String& search_id, short set_request);
+                     const String& search_id, short set_request);
 
   /// relax constraints by updating bounds when current iterate is infeasible
   void relax_constraints(SurrBasedLevelData& tr_data);
@@ -155,12 +155,12 @@ protected:
   /// static function used by NPSOL as the objective function in the
   /// homotopy constraint relaxation formulation.
   static void hom_objective_eval(int& mode, int& n, double* tau_and_x,
-				 double& f, double* grad_f, int&);
+                                 double& f, double* grad_f, int&);
   /// static function used by NPSOL as the constraint function in the
   /// homotopy constraint relaxation formulation.
   static void hom_constraint_eval(int& mode, int& ncnln, int& n, int& nrowj,
-				  int* needc, double* tau_and_x, double* c,
-				  double* cjac, int& nstate);
+                                  int* needc, double* tau_and_x, double* c,
+                                  double* cjac, int& nstate);
 
   //
   //- Heading: Data members
@@ -220,7 +220,7 @@ protected:
 
   /// starting point prior to sequence of SBLM iterations
   RealVector initialPoint;
-  
+
   /// Global lower bounds
   RealVector globalLowerBnds;
   /// Global Upper bounds
@@ -242,47 +242,41 @@ protected:
   static SurrBasedLocalMinimizer* sblmInstance;
 };
 
-
-inline bool SurrBasedLocalMinimizer::
-find_approx_response(const Variables& search_vars, Response& search_resp)
-{
+inline bool SurrBasedLocalMinimizer::find_approx_response(
+    const Variables& search_vars, Response& search_resp) {
   return find_response(search_vars, search_resp,
-		       iteratedModel->surrogate_model()->interface_id(),
-		       approxSetRequest);
+                       iteratedModel->surrogate_model()->interface_id(),
+                       approxSetRequest);
 }
 
-
-inline bool SurrBasedLocalMinimizer::
-find_truth_response(const Variables& search_vars, Response& search_resp)
-{
+inline bool SurrBasedLocalMinimizer::find_truth_response(
+    const Variables& search_vars, Response& search_resp) {
   return find_response(search_vars, search_resp,
-		       iteratedModel->truth_model()->interface_id(),
-		       truthSetRequest);
+                       iteratedModel->truth_model()->interface_id(),
+                       truthSetRequest);
 }
 
+inline void SurrBasedLocalMinimizer::reset_penalties() {
+  penaltyIterOffset = -200;
+  penaltyParameter = 5.;
 
-inline void SurrBasedLocalMinimizer::reset_penalties()
-{
-  penaltyIterOffset = -200; penaltyParameter = 5.;
-
-  eta = 1.; alphaEta = 0.1; betaEta = 0.9;
-  etaSequence = eta * std::pow(2.*penaltyParameter, -alphaEta);
+  eta = 1.;
+  alphaEta = 0.1;
+  betaEta = 0.9;
+  etaSequence = eta * std::pow(2. * penaltyParameter, -alphaEta);
 }
 
-
-inline void SurrBasedLocalMinimizer::reset_multipliers()
-{
-  //lagrangeMult  = 0.; // not necessary since redefined each time
-  augLagrangeMult = 0.; // necessary since += used
+inline void SurrBasedLocalMinimizer::reset_multipliers() {
+  // lagrangeMult  = 0.; // not necessary since redefined each time
+  augLagrangeMult = 0.;  // necessary since += used
 }
 
-
-inline void SurrBasedLocalMinimizer::reset()
-{
+inline void SurrBasedLocalMinimizer::reset() {
   globalIterCount = minimizeCycles = 0;
-  reset_penalties(); reset_multipliers();
+  reset_penalties();
+  reset_multipliers();
 }
 
-} // namespace Dakota
+}  // namespace Dakota
 
 #endif

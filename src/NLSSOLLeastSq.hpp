@@ -13,22 +13,20 @@
 #include "DakotaLeastSq.hpp"
 #include "SOLBase.hpp"
 
-
 namespace Dakota {
 
 /**
- * \brief A version of TraitsBase specialized for NLSSOL nonlinear least squares library
+ * \brief A version of TraitsBase specialized for NLSSOL nonlinear least squares
+ * library
  *
  */
-class NLSSOLLeastSqTraits: public TraitsBase
-{
-  public:
-
+class NLSSOLLeastSqTraits : public TraitsBase {
+ public:
   /// default constructor
-  NLSSOLLeastSqTraits() { }
+  NLSSOLLeastSqTraits() {}
 
   /// destructor
-  ~NLSSOLLeastSqTraits() override { }
+  ~NLSSOLLeastSqTraits() override {}
 
   /// A temporary query used in the refactor
   bool is_derived() override { return true; }
@@ -48,7 +46,6 @@ class NLSSOLLeastSqTraits: public TraitsBase
   /// Return the flag indicating whether method supports nonlinear inequalities
   bool supports_nonlinear_inequality() override { return true; }
 };
-
 
 /// Wrapper class for the NLSSOL nonlinear least squares library.
 
@@ -74,16 +71,15 @@ class NLSSOLLeastSqTraits: public TraitsBase
     sol_optn_wrapper.f file). Refer to [Gill, P.E., Murray, W.,
     Saunders, M.A., and Wright, M.H., 1986] for information on NLSSOL's
     optional input parameters and the nloptn() subroutine. */
-class NLSSOLLeastSq: public LeastSq, public SOLBase
-{
-public:
-
+class NLSSOLLeastSq : public LeastSq, public SOLBase {
+ public:
   //
   //- Heading: Constructors and destructor
   //
- 
+
   /// standard constructor
-  NLSSOLLeastSq(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
+  NLSSOLLeastSq(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
+                std::shared_ptr<Model> model);
   /// alternate constructor
   NLSSOLLeastSq(std::shared_ptr<Model> model);
   /// destructor
@@ -93,17 +89,15 @@ public:
   //- Heading: Virtual function redefinitions
   //
 
-  //void pre_run();
+  // void pre_run();
   void core_run() override;
 
   void check_sub_iterator_conflict() override;
 
-protected:
-
+ protected:
   void send_sol_option(std::string sol_option) override;
 
-private:
-
+ private:
   //
   //- Heading: Convenience member functions
   //
@@ -115,7 +109,7 @@ private:
   /// Evaluator for NLSSOL: computes the values and first derivatives of the
   /// least squares terms (passed by function pointer to NLSSOL).
   static void least_sq_eval(int& mode, int& m, int& n, int& nrowfj, double* x,
-			    double* f, double* gradf, int& nstate);
+                            double* f, double* gradf, int& nstate);
 
   //
   //- Heading: Data
@@ -126,6 +120,6 @@ private:
   static NLSSOLLeastSq* nlssolInstance;
 };
 
-} // namespace Dakota
+}  // namespace Dakota
 
 #endif

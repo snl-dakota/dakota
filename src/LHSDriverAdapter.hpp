@@ -10,74 +10,60 @@
 #ifndef LHS_DRIVER_ADAPTER_H
 #define LHS_DRIVER_ADAPTER_H
 
-#include "dakota_data_types.hpp"
 #include "LHSDriver.hpp"
 #include "SamplerDriver.hpp"
+#include "dakota_data_types.hpp"
 
 namespace Dakota {
 
 // Adapter for LHSDriver
 class LHSDriverAdapter : public SamplerDriver {
-private:
-    // Composition, contains an instance of LHSDriver
-    Pecos::LHSDriver lhsDriver;
+ private:
+  // Composition, contains an instance of LHSDriver
+  Pecos::LHSDriver lhsDriver;
 
-public:
-    // Constructor
-    LHSDriverAdapter();
+ public:
+  // Constructor
+  LHSDriverAdapter();
 
-    // Override methods from SamplerAdapter
-    void generate_uniform_samples(
-        const RealVector& lowerBounds,
-        const RealVector& upperBounds,
-        RealSymMatrix& correlationMatrix,
-        size_t numSamples,
-        RealMatrix& samplesArray
-    ) override;
+  // Override methods from SamplerAdapter
+  void generate_uniform_samples(const RealVector& lowerBounds,
+                                const RealVector& upperBounds,
+                                RealSymMatrix& correlationMatrix,
+                                size_t numSamples,
+                                RealMatrix& samplesArray) override;
 
-    void generate_normal_samples(
-        const RealVector& means,
-        const RealVector& standardDeviations,
-        const RealVector& lowerBounds,
-        const RealVector& upperBounds,
-        RealSymMatrix& correlationMatrix,
-        size_t numSamples,
-        RealMatrix& samplesArray
-    ) override;
+  void generate_normal_samples(const RealVector& means,
+                               const RealVector& standardDeviations,
+                               const RealVector& lowerBounds,
+                               const RealVector& upperBounds,
+                               RealSymMatrix& correlationMatrix,
+                               size_t numSamples,
+                               RealMatrix& samplesArray) override;
 
-    void generate_unique_samples(
-        std::shared_ptr<Model> model,
-        size_t numSamples,
-        RealMatrix& samplesArray,
-        RealMatrix& sampleRanks,
-        const BitArray& activeVariables,
-        const BitArray& activeCorrelations
-    ) override;
+  void generate_unique_samples(std::shared_ptr<Model> model, size_t numSamples,
+                               RealMatrix& samplesArray,
+                               RealMatrix& sampleRanks,
+                               const BitArray& activeVariables,
+                               const BitArray& activeCorrelations) override;
 
-    void generate_samples(
-        std::shared_ptr<Model> model,
-        size_t numSamples,
-        RealMatrix& samplesArray,
-        RealMatrix& sampleRanks,
-        const BitArray& activeVariables,
-        const BitArray& activeCorrelations
-    ) override;
+  void generate_samples(std::shared_ptr<Model> model, size_t numSamples,
+                        RealMatrix& samplesArray, RealMatrix& sampleRanks,
+                        const BitArray& activeVariables,
+                        const BitArray& activeCorrelations) override;
 
-    void rng(String rngName) override;
+  void rng(String rngName) override;
 
-    void seed(int randomSeed) override;
+  void seed(int randomSeed) override;
 
-    void advance_seed_sequence() override;
+  void advance_seed_sequence() override;
 
-    int seed() override;
+  int seed() override;
 
-    void initialize(
-        const String& sampleType,
-		short sampleRanksMode,
-        bool reports
-    ) override;
+  void initialize(const String& sampleType, short sampleRanksMode,
+                  bool reports) override;
 };
 
-} // Namespace Dakota
+}  // Namespace Dakota
 
 #endif

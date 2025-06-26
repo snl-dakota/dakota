@@ -15,7 +15,6 @@
 
 namespace Dakota {
 
-
 /// Class for using global nongradient-based optimization approaches
 /// to calculate interval bounds for epistemic uncertainty quantification
 
@@ -28,16 +27,15 @@ namespace Dakota {
     variances, or percentile levels.  The preliminary implementation
     will use a Gaussian process surrogate to determine interval bounds. */
 
-class NonDGlobalInterval: public NonDInterval
-{
-public:
-
+class NonDGlobalInterval : public NonDInterval {
+ public:
   //
   //- Heading: Constructors and destructor
   //
 
-  NonDGlobalInterval(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model); ///< constructor
-  ~NonDGlobalInterval() override;                                       ///< destructor
+  NonDGlobalInterval(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
+                     std::shared_ptr<Model> model);  ///< constructor
+  ~NonDGlobalInterval() override;                    ///< destructor
 
   //
   //- Heading: Virtual function redefinitions
@@ -53,8 +51,7 @@ public:
 
   std::shared_ptr<Model> algorithm_space_model() override;
 
-protected:
-
+ protected:
   //
   //- Heading: New virtual functions
   //
@@ -95,7 +92,7 @@ protected:
   /// optimizer for solving surrogate-based subproblem: NCSU DIRECT optimizer
   /// for maximizing expected improvement or mixed EA if discrete variables.
   std::shared_ptr<Iterator> intervalOptimizer;
-  /// recast model which formulates the surrogate-based optimization 
+  /// recast model which formulates the surrogate-based optimization
   /// subproblem (recasts as design problem; may assimilate mean and
   /// variance to enable max(expected improvement))
   std::shared_ptr<Model> intervalOptModel;
@@ -105,8 +102,7 @@ protected:
   /// minimum/maximum truth response function value
   Real truthFnStar;
 
-private:
-
+ private:
   //
   //- Heading: Convenience functions
   //
@@ -114,23 +110,23 @@ private:
   /// static function used as the objective function in the
   /// Expected Improvement Function (EIF) for minimizing the GP
   static void EIF_objective_min(const Variables& sub_model_vars,
-				const Variables& recast_vars,
-				const Response& sub_model_response,
-				Response& recast_response);
+                                const Variables& recast_vars,
+                                const Response& sub_model_response,
+                                Response& recast_response);
   /// static function used as the objective function in the
   /// Expected Improvement Function (EIF) for maximizing the GP
   static void EIF_objective_max(const Variables& sub_model_vars,
-				const Variables& recast_vars,
-				const Response& sub_model_response,
-				Response& recast_response);
+                                const Variables& recast_vars,
+                                const Response& sub_model_response,
+                                Response& recast_response);
 
   /// static function used to extract the active objective function
   /// when optimizing for an interval lower or upper bound (non-EIF
   /// formulations).  The sense of the optimization is set separately.
   static void extract_objective(const Variables& sub_model_vars,
-				const Variables& recast_vars,
-				const Response& sub_model_response,
-				Response& recast_response);
+                                const Variables& recast_vars,
+                                const Response& sub_model_response,
+                                Response& recast_response);
 
   //
   //- Heading: Data
@@ -140,9 +136,9 @@ private:
   /// functions in order to avoid the need for static data
   static NonDGlobalInterval* nondGIInstance;
 
-  const int seedSpec;   ///< the user seed specification (default is 0)     
-  int       numSamples; ///< the number of samples used in the surrogate
-  String    rngName;	///< name of the random number generator
+  const int seedSpec;  ///< the user seed specification (default is 0)
+  int numSamples;      ///< the number of samples used in the surrogate
+  String rngName;      ///< name of the random number generator
 
   /// flag indicating use of GP surrogate emulation
   bool gpModelFlag;
@@ -187,10 +183,10 @@ private:
   short dataOrder;
 };
 
+inline std::shared_ptr<Model> NonDGlobalInterval::algorithm_space_model() {
+  return fHatModel;
+}
 
-inline std::shared_ptr<Model> NonDGlobalInterval::algorithm_space_model()
-{ return fHatModel; }
-
-} // namespace Dakota
+}  // namespace Dakota
 
 #endif

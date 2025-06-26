@@ -10,9 +10,9 @@
 #ifndef RANK_1_LATTICE_H
 #define RANK_1_LATTICE_H
 
-#include "dakota_data_types.hpp"
 #include "LowDiscrepancySequence.hpp"
 #include "NonDSampling.hpp"
+#include "dakota_data_types.hpp"
 
 namespace Dakota {
 
@@ -23,46 +23,33 @@ enum Rank1LatticeOrdering {
 };
 
 /// Class for rank-1 lattice rules in Dakota
-class Rank1Lattice : public LowDiscrepancySequence
-{
-public:
-
+class Rank1Lattice : public LowDiscrepancySequence {
+ public:
   /// Default constructor
-  Rank1Lattice(
-    const UInt32Vector& generatingVector, /// Generating vector
-    int mMax,                             /// log2 of maximum number of points
-    bool randomShiftFlag,                 /// Use random shift if true
-    int seedValue,                        /// Random seed value
-    Rank1LatticeOrdering ordering,        /// Order of the lattice points
-    short outputLevel                     /// Verbosity
+  Rank1Lattice(const UInt32Vector& generatingVector,  /// Generating vector
+               int mMax,              /// log2 of maximum number of points
+               bool randomShiftFlag,  /// Use random shift if true
+               int seedValue,         /// Random seed value
+               Rank1LatticeOrdering ordering,  /// Order of the lattice points
+               short outputLevel               /// Verbosity
   );
 
   /// A constructor that uses radical inverse ordering and a random shift
-  Rank1Lattice(
-    const UInt32Vector& generatingVector,
-    int mMax
-  );
+  Rank1Lattice(const UInt32Vector& generatingVector, int mMax);
 
   /// A constructor with only the random seed as argument
-  Rank1Lattice(
-    int seedValue
-  );
+  Rank1Lattice(int seedValue);
 
   /// A constructor with no arguments
   Rank1Lattice();
 
   /// A constructor that takes a problem description database
-  Rank1Lattice(
-    ProblemDescDB& problem_db
-  );
+  Rank1Lattice(ProblemDescDB& problem_db);
 
   /// A constructor that takes a tuple and a problem description database
   /// The tuple contains the generating vector and corresponding log2 of the
   /// maximum number of points
-  Rank1Lattice(
-    std::tuple<UInt32Vector, int> data,
-    ProblemDescDB& problem_db
-  );
+  Rank1Lattice(std::tuple<UInt32Vector, int> data, ProblemDescDB& problem_db);
 
   /// Destructor
   ~Rank1Lattice();
@@ -76,8 +63,7 @@ public:
   /// Do not randomly shift this rank-1 lattice rule
   void no_random_shift() { random_shift(-1); }
 
-private:
-
+ private:
   /// Generating vector of this rank-1 lattice rule
   UInt32Vector generatingVector;
 
@@ -95,54 +81,40 @@ private:
 
   /// Extract the generating vector and log2 of the maximum number of points
   /// from the given problem description database
-  std::tuple<UInt32Vector, int> get_data(
-    ProblemDescDB& problem_db
-  );
+  std::tuple<UInt32Vector, int> get_data(ProblemDescDB& problem_db);
 
   /// Case I: the generating vector is provided in an external file
   const std::tuple<UInt32Vector, int> get_generating_vector_from_file(
-    ProblemDescDB& problem_db
-  );
+      ProblemDescDB& problem_db);
 
   /// Case II: the generating vector is provided in the input file
   const std::tuple<UInt32Vector, int> get_inline_generating_vector(
-    ProblemDescDB& problem_db
-  );
+      ProblemDescDB& problem_db);
 
   /// Case III: a default generating vector has been selected
   const std::tuple<UInt32Vector, int> get_default_generating_vector(
-    ProblemDescDB& problem_db
-  );
+      ProblemDescDB& problem_db);
 
   /// Apply random shift to this rank-1 lattice rule
   /// Uses the given seed to initialize the RNG
   /// When the seed is < 0, the random shift will be removed
-  void random_shift(
-    int seed
-  );
+  void random_shift(int seed);
 
   /// Generates rank-1 lattice points without error checking
-  void unsafe_get_points(
-    const size_t nMin,
-    const size_t nMax,
-    RealMatrix& points
-  ) override;
+  void unsafe_get_points(const size_t nMin, const size_t nMax,
+                         RealMatrix& points) override;
 
   /// Position of the `k`th lattice point in RANK_1_LATTICE_NATURAL_ORDERING
-  inline UInt32 reorder_natural(
-    UInt32 k
-  );
+  inline UInt32 reorder_natural(UInt32 k);
 
-  /// Position of the `k`th lattice point in RANK_1_LATTICE_RADICAL_INVERSE_ORDERING
-  inline UInt32 reorder_radical_inverse(
-    UInt32 k
-  );
+  /// Position of the `k`th lattice point in
+  /// RANK_1_LATTICE_RADICAL_INVERSE_ORDERING
+  inline UInt32 reorder_radical_inverse(UInt32 k);
 
   /// Function pointer to the chosen order of the points
   UInt32 (Rank1Lattice::*reorder)(UInt32);
-
 };
 
-} // namespace Dakota
+}  // namespace Dakota
 
 #endif

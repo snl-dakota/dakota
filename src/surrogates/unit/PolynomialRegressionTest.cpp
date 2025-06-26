@@ -7,15 +7,14 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
+#include <boost/version.hpp>
+#include <filesystem>
+
 #include "SurrogatesPolynomialRegression.hpp"
 #include "Teuchos_XMLParameterListCoreHelpers.hpp"
 #include "UtilLinearSolvers.hpp"
 #include "surrogates_tools.hpp"
 #include "util_common.hpp"
-
-#include <filesystem>
-
-#include <boost/version.hpp>
 #if (BOOST_VERSION < 107000) && !defined(BOOST_ALLOW_DEPRECATED_HEADERS)
 // could alternately use: #define BOOST_PENDING_INTEGER_LOG2_HPP 1
 #define BOOST_ALLOW_DEPRECATED_HEADERS 1
@@ -95,41 +94,36 @@ void cubic_bivariate_function(const MatrixXd& samples, MatrixXd& func_vals,
   for (int i = 0; i < samples.rows(); ++i) {
     double x = samples(i, 0);
     double y = samples(i, 1);
-    func_vals(i, 0) = 1 + x + y + scale_cross * (x * y) +
-      // This term has degree 4, so removing :
-      //              scale_cross * (std::pow(x, 2) * std::pow(y, 2)) +
-                      scale_cross * (std::pow(x, 2) * y) +
-                      scale_cross * (std::pow(y, 2) * x) + std::pow(x, 3) +
-                      std::pow(y, 3);
+    func_vals(i, 0) =
+        1 + x + y + scale_cross * (x * y) +
+        // This term has degree 4, so removing :
+        //              scale_cross * (std::pow(x, 2) * std::pow(y, 2)) +
+        scale_cross * (std::pow(x, 2) * y) +
+        scale_cross * (std::pow(y, 2) * x) + std::pow(x, 3) + std::pow(y, 3);
   }
 }
 
 // Gradient includes cross-terms
-MatrixXd cubic_bivariate_withcross_gradient(const MatrixXd& samples)
-{
+MatrixXd cubic_bivariate_withcross_gradient(const MatrixXd& samples) {
   MatrixXd gradients(samples.rows(), samples.cols());
   for (int i = 0; i < samples.rows(); ++i) {
     double x = samples(i, 0);
     double y = samples(i, 1);
-    gradients(i, 0) = 1 + y + 2*x*y + y*y +3*x*x;
-    gradients(i, 1) = 1 + x + 2*x*y + x*x +3*y*y;
+    gradients(i, 0) = 1 + y + 2 * x * y + y * y + 3 * x * x;
+    gradients(i, 1) = 1 + x + 2 * x * y + x * x + 3 * y * y;
   }
   return gradients;
 }
 
 // Hessian includes cross-terms
-MatrixXd cubic_bivariate_withcross_hessian(const MatrixXd& sample)
-{
+MatrixXd cubic_bivariate_withcross_hessian(const MatrixXd& sample) {
   double x = sample(0, 0);
   double y = sample(0, 1);
 
-  MatrixXd hessian(2,2);
-  hessian <<
-    2*y + 6*x,      1 + 2*x + 2*y,
-    1 + 2*x + 2*y,  2*x + 6*y;
+  MatrixXd hessian(2, 2);
+  hessian << 2 * y + 6 * x, 1 + 2 * x + 2 * y, 1 + 2 * x + 2 * y, 2 * x + 6 * y;
   return hessian;
 }
-
 
 /* Unit tests */
 
@@ -161,10 +155,11 @@ void PolynomialRegressionSurrogate_straight_line_fit(std::string scaler_type) {
   double actual_constant_term = polynomial_coeffs(0, 0);
   double actual_first_term = polynomial_coeffs(1, 0);
 
-  EXPECT_TRUE((std::abs(expected_constant_term - actual_constant_term) < 1.0e-4));
+  EXPECT_TRUE(
+      (std::abs(expected_constant_term - actual_constant_term) < 1.0e-4));
   EXPECT_TRUE((std::abs(expected_first_term - actual_first_term) < 1.0e-4));
   EXPECT_TRUE((std::abs(expected_polynomial_intercept - polynomial_intercept) <
-              1.0e-4));
+               1.0e-4));
 
   VectorXd unscaled_eval_pts = VectorXd::LinSpaced(100, 0, 1);
   VectorXd expected_approx_values(100);
@@ -322,7 +317,8 @@ void PolynomialRegressionSurrogate_gradient_and_hessian() {
   gradient = pr.gradient(samples.topRows(2));
   hessian = pr.hessian(samples.topRows(1));
 
-  MatrixXd gold_gradient = cubic_bivariate_withcross_gradient(samples.topRows(2));
+  MatrixXd gold_gradient =
+      cubic_bivariate_withcross_gradient(samples.topRows(2));
   MatrixXd gold_hessian = cubic_bivariate_withcross_hessian(samples.topRows(1));
 
   EXPECT_TRUE(matrix_equals(gold_gradient, gradient, 1.0e-10));
@@ -344,7 +340,8 @@ void PolynomialRegressionSurrogate_parameter_list_import() {
   gradient = pr.gradient(samples.topRows(2));
   hessian = pr.hessian(samples.topRows(1));
 
-  MatrixXd gold_gradient = cubic_bivariate_withcross_gradient(samples.topRows(2));
+  MatrixXd gold_gradient =
+      cubic_bivariate_withcross_gradient(samples.topRows(2));
   MatrixXd gold_hessian = cubic_bivariate_withcross_hessian(samples.topRows(1));
 
   EXPECT_TRUE(matrix_equals(gold_gradient, gradient, 1.0e-9));
@@ -399,8 +396,8 @@ void PolynomialRegression_SaveLoad() {
     auto pr4 = std::dynamic_pointer_cast<PolynomialRegression>(surr_in);
 
     EXPECT_TRUE((pr3->get_num_terms() == pr4->get_num_terms()));
-    EXPECT_TRUE((pr3->get_polynomial_intercept() ==
-                pr4->get_polynomial_intercept()));
+    EXPECT_TRUE(
+        (pr3->get_polynomial_intercept() == pr4->get_polynomial_intercept()));
     EXPECT_TRUE((pr3->get_polynomial_coeffs() == pr4->get_polynomial_coeffs()));
 
     // tests on the loaded surrogate based on original unit test
@@ -419,8 +416,7 @@ void PolynomialRegression_SaveLoad() {
 
 // --------------------------------------------------------------------------------
 
-TEST(PolynomialRegressionTest_tests, all_tests)
-{
+TEST(PolynomialRegressionTest_tests, all_tests) {
   // Univariate tests
   PolynomialRegressionSurrogate_straight_line_fit("none");
   PolynomialRegressionSurrogate_straight_line_fit("mean normalization");
@@ -430,10 +426,10 @@ TEST(PolynomialRegressionTest_tests, all_tests)
   PolynomialRegressionSurrogate_multivariate_regression_builder();
   PolynomialRegressionSurrogate_gradient_and_hessian();
 
-  // ParameterList import test
-  #ifndef DISABLE_YAML_SURROGATES_CONFIG
-    PolynomialRegressionSurrogate_parameter_list_import();
-  #endif
+// ParameterList import test
+#ifndef DISABLE_YAML_SURROGATES_CONFIG
+  PolynomialRegressionSurrogate_parameter_list_import();
+#endif
 
   // Serialization tests
   PolynomialRegression_SaveLoad();
@@ -441,7 +437,7 @@ TEST(PolynomialRegressionTest_tests, all_tests)
   SUCCEED();
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

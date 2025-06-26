@@ -8,30 +8,32 @@
     _______________________________________________________________________ */
 
 #include "DakotaUtils.hpp"
+
 #include "DartSerialDirectApplicInterface.hpp"
 #include "PRPMultiIndex.hpp"
 
 using namespace Dakota;
 
-void DART::connect_plugin(Dakota::ProblemDescDB *problem_db, DART::DakotaFunctor *f) {
+void DART::connect_plugin(Dakota::ProblemDescDB* problem_db,
+                          DART::DakotaFunctor* f) {
   ModelList& models = Dakota::Model::model_cache(*problem_db);
-  for (ModelLIter ml_iter = models.begin(); ml_iter != models.end(); ml_iter++){
+  for (ModelLIter ml_iter = models.begin(); ml_iter != models.end();
+       ml_iter++) {
     Interface& interface = ml_iter->derived_interface();
     if ((interface.interface_type() & DIRECT_INTERFACE_BIT) &&
-	 contains(interface.analysis_drivers(), "plugin_dart") ) {
+        contains(interface.analysis_drivers(), "plugin_dart")) {
       // set the DB nodes to that of the existing Model specification
       problem_db->set_db_model_nodes(ml_iter->model_id());
       // plug in the new derived Interface object
-      interface.assign_rep(new DartSerialDirectApplicInterface(*problem_db, f), false);
+      interface.assign_rep(new DartSerialDirectApplicInterface(*problem_db, f),
+                           false);
     }
   }
 }
 
 namespace Dakota {
 
-  extern PRPCache data_pairs;
+extern PRPCache data_pairs;
 };
 
-void DART::clear_prp_cache() {
-  data_pairs.clear();
-}
+void DART::clear_prp_cache() { data_pairs.clear(); }

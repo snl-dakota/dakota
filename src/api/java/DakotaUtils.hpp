@@ -10,26 +10,28 @@
 #ifndef DAKOTA_JNI_UTILS_H
 #define DAKOTA_JNI_UTILS_H
 
+#include "DakotaInterface.hpp"
+#include "DakotaModel.hpp"
 #include "ParallelLibrary.hpp"
 #include "ProblemDescDB.hpp"
-#include "DakotaModel.hpp"
-#include "DakotaInterface.hpp"
 
 namespace DART {
-  // Stub
-  class DakotaFunctor {
-  public:
-    virtual void setContinuousRealVariables(std::vector<double>, std::vector<std::string>) = 0;
-    virtual void setDiscreteIntegerVariables(std::vector<int>, std::vector<std::string>) = 0;
-    virtual void setDiscreteRealVariables(std::vector<double>, std::vector<std::string>) = 0;
-    virtual void setResponseLabels(std::vector<std::string>) = 0;
-    virtual int evalFunction(std::vector<double>&, int evalId) = 0;
-  };
-
-  void connect_plugin(Dakota::ProblemDescDB *problem_db, DakotaFunctor *f);
-
-  void clear_prp_cache();
+// Stub
+class DakotaFunctor {
+ public:
+  virtual void setContinuousRealVariables(std::vector<double>,
+                                          std::vector<std::string>) = 0;
+  virtual void setDiscreteIntegerVariables(std::vector<int>,
+                                           std::vector<std::string>) = 0;
+  virtual void setDiscreteRealVariables(std::vector<double>,
+                                        std::vector<std::string>) = 0;
+  virtual void setResponseLabels(std::vector<std::string>) = 0;
+  virtual int evalFunction(std::vector<double> &, int evalId) = 0;
 };
 
+void connect_plugin(Dakota::ProblemDescDB *problem_db, DakotaFunctor *f);
 
-#endif // DAKOTA_JNI_UTILS_H
+void clear_prp_cache();
+};  // namespace DART
+
+#endif  // DAKOTA_JNI_UTILS_H

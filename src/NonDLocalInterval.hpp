@@ -15,7 +15,6 @@
 
 namespace Dakota {
 
-
 /// Class for using local gradient-based optimization approaches to
 /// calculate interval bounds for epistemic uncertainty quantification
 
@@ -27,16 +26,15 @@ namespace Dakota {
     "inner loop" aleatory analysis such as intervals on means,
     variances, or percentile levels. */
 
-class NonDLocalInterval: public NonDInterval
-{
-public:
-
+class NonDLocalInterval : public NonDInterval {
+ public:
   //
   //- Heading: Constructors and destructor
   //
 
-  NonDLocalInterval(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model); ///< constructor
-  ~NonDLocalInterval() override;                                       ///< destructor
+  NonDLocalInterval(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
+                    std::shared_ptr<Model> model);  ///< constructor
+  ~NonDLocalInterval() override;                    ///< destructor
 
   //
   //- Heading: Virtual function redefinitions
@@ -55,8 +53,7 @@ public:
   unsigned short uses_method() const override;
   void method_recourse(unsigned short method_name) override;
 
-protected:
-
+ protected:
   //
   //- Heading: New virtual functions
   //
@@ -83,8 +80,7 @@ protected:
   /// recast model which extracts the active objective function
   std::shared_ptr<Model> minMaxModel;
 
-private:
-
+ private:
   //
   //- Heading: Convenience functions
   //
@@ -92,9 +88,9 @@ private:
   /// static function used to extract the active objective function
   /// when optimizing for an interval lower or upper bound
   static void extract_objective(const Variables& sub_model_vars,
-				const Variables& recast_vars,
-				const Response& sub_model_response,
-				Response& recast_response);
+                                const Variables& recast_vars,
+                                const Response& sub_model_response,
+                                Response& recast_response);
 
   //
   //- Heading: Data
@@ -109,10 +105,10 @@ private:
   bool npsolFlag;
 };
 
+inline unsigned short NonDLocalInterval::uses_method() const {
+  return (npsolFlag) ? SUBMETHOD_NPSOL : SUBMETHOD_OPTPP;
+}
 
-inline unsigned short NonDLocalInterval::uses_method() const
-{ return (npsolFlag) ? SUBMETHOD_NPSOL : SUBMETHOD_OPTPP; }
-
-} // namespace Dakota
+}  // namespace Dakota
 
 #endif

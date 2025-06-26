@@ -13,7 +13,6 @@
 #include "DakotaConstraints.hpp"
 #include "DataVariables.hpp"
 
-
 namespace Dakota {
 
 /// Derived class within the Constraints hierarchy which employs
@@ -27,10 +26,8 @@ namespace Dakota {
     Variables::get_variables(problem_db) for variables type selection;
     variables type is passed to the Constraints constructor in Model). */
 
-class RelaxedVarConstraints: public Constraints
-{
-public:
-
+class RelaxedVarConstraints : public Constraints {
+ public:
   //
   //- Heading: Constructor and destructor
   //
@@ -39,7 +36,7 @@ public:
   RelaxedVarConstraints(const SharedVariablesData& svd);
   /// standard constructor
   RelaxedVarConstraints(const ProblemDescDB& problem_db,
-			const SharedVariablesData& svd);
+                        const SharedVariablesData& svd);
   /// destructor
   ~RelaxedVarConstraints() override;
 
@@ -50,29 +47,23 @@ public:
   void write(std::ostream& s) const override;
   void read(std::istream& s) override;
 
-protected:
-
+ protected:
   //
   //- Heading: Virtual function redefinitions
   //
 
-private:
-
+ private:
   //
   //- Heading: Convenience functions
   //
 };
 
+inline RelaxedVarConstraints::RelaxedVarConstraints(
+    const SharedVariablesData& svd)
+    : Constraints(BaseConstructor(), svd) {}
 
-inline RelaxedVarConstraints::
-RelaxedVarConstraints(const SharedVariablesData& svd):
-  Constraints(BaseConstructor(), svd)
-{ }
+inline RelaxedVarConstraints::~RelaxedVarConstraints() {}
 
-
-inline RelaxedVarConstraints::~RelaxedVarConstraints()
-{ }
-
-} // namespace Dakota
+}  // namespace Dakota
 
 #endif

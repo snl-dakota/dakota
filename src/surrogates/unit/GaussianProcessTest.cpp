@@ -7,18 +7,19 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-#include "SurrogatesGaussianProcess.hpp"
-#include "surrogates_tools.hpp"
-#include "util_common.hpp"
-#include "util_data_types.hpp"
-
 #include <gtest/gtest.h>
+
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <filesystem>
 #include <fstream>
+
+#include "SurrogatesGaussianProcess.hpp"
+#include "surrogates_tools.hpp"
+#include "util_common.hpp"
+#include "util_data_types.hpp"
 
 // BMA TODO: Review with team for best practice
 using namespace dakota;
@@ -297,7 +298,8 @@ TEST(GaussianProcessTest_tests, test_surrogates_1D_gp_constructor_types) {
   }
 }
 
-TEST(GaussianProcessTest_tests, test_surrogates_1D_gp_with_trend_values_and_derivs) {
+TEST(GaussianProcessTest_tests,
+     test_surrogates_1D_gp_with_trend_values_and_derivs) {
   bool print_output = false;
 
   MatrixXd samples, cov, gold_cov, length_scale_bounds;
@@ -430,7 +432,8 @@ TEST(GaussianProcessTest_tests, test_surrogates_2D_gp_no_trend) {
   EXPECT_TRUE(relative_allclose(cov, gold_cov, 100 * rel_float_tol));
 }
 
-TEST(GaussianProcessTest_tests, test_surrogates_2D_gp_with_trend_values_derivs_and_save_load) {
+TEST(GaussianProcessTest_tests,
+     test_surrogates_2D_gp_with_trend_values_derivs_and_save_load) {
   bool print_output = false;
 
   MatrixXd samples, cov, gold_cov, length_scale_bounds, eval_pts;
@@ -456,9 +459,9 @@ TEST(GaussianProcessTest_tests, test_surrogates_2D_gp_with_trend_values_derivs_a
   VectorXd nugget_bounds(2);
   nugget_bounds << 3.17e-8, 1.0e-2;
   param_list.sublist("Nugget").sublist("Bounds").set("lower bound",
-                                                  nugget_bounds(0));
+                                                     nugget_bounds(0));
   param_list.sublist("Nugget").sublist("Bounds").set("upper bound",
-                                                  nugget_bounds(1));
+                                                     nugget_bounds(1));
 
   /* gold data for test */
   get_2D_gp_golds_no_trend(gold_mean, gold_std_dev, gold_cov, true);
@@ -890,7 +893,7 @@ TEST(GaussianProcessTest_tests, test_surrogates_gp_read_from_parameterlist) {
 
   const ParameterList plist_nugget = plist.get<ParameterList>("Nugget");
   EXPECT_LT(std::fabs(1. - plist_nugget.get<double>("fixed nugget") / 1.0e-14),
-                         100.0*rel_float_tol/100. );
+            100.0 * rel_float_tol / 100.);
   EXPECT_TRUE((plist_nugget.get<bool>("estimate nugget") == false));
 
   const ParameterList plist_trend = plist.get<ParameterList>("Trend");
@@ -899,14 +902,14 @@ TEST(GaussianProcessTest_tests, test_surrogates_gp_read_from_parameterlist) {
   const ParameterList plist_options = plist_trend.get<ParameterList>("Options");
   EXPECT_TRUE((plist_options.get<int>("max degree") == 2));
   EXPECT_LT(std::fabs(1. - plist_options.get<double>("p-norm") / 1.0),
-                         100.0*rel_float_tol/100. );
+            100.0 * rel_float_tol / 100.);
   EXPECT_TRUE((plist_options.get<std::string>("scaler type") == "none"));
-  EXPECT_TRUE((plist_options.get<std::string>("regression solver type") ==
-                "SVD"));
+  EXPECT_TRUE(
+      (plist_options.get<std::string>("regression solver type") == "SVD"));
 }
 #endif
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

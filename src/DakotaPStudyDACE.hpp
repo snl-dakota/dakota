@@ -22,34 +22,33 @@ namespace Dakota {
     such as those involving the best solutions located during the
     parameter set evaluations or the printing of final results. */
 
-class PStudyDACE: public Analyzer
-{
-public:
-    
+class PStudyDACE : public Analyzer {
+ public:
   //
   //- Heading: Virtual member function redefinitions
   //
 
   bool resize() override;
 
-protected:
-
+ protected:
   //
   //- Heading: Constructors and destructors
   //
 
   /// constructor
-  PStudyDACE(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
+  PStudyDACE(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
+             std::shared_ptr<Model> model);
   /// alternate constructor for instantiations "on the fly"
   PStudyDACE(unsigned short method_name, std::shared_ptr<Model> model);
   /// destructor
   ~PStudyDACE() override;
-    
+
   //
   //- Heading: Virtual member function redefinitions
   //
 
-  void print_results(std::ostream& s, short results_state = FINAL_RESULTS) override;
+  void print_results(std::ostream& s,
+                     short results_state = FINAL_RESULTS) override;
 
   //
   //- Heading: Member functions
@@ -71,11 +70,11 @@ protected:
   /// sampling method for computing variance-based decomposition indices
   unsigned short vbdViaSamplingMethod;
 
-  /// number of bins for using with the Mahadevan sampling method for computing variance-based decomposition indices
+  /// number of bins for using with the Mahadevan sampling method for computing
+  /// variance-based decomposition indices
   int vbdViaSamplingNumBins;
 
-private:
-
+ private:
   //
   //- Heading: Data
   //
@@ -90,6 +89,6 @@ private:
   double tauMeas;
 };
 
-} // namespace Dakota
+}  // namespace Dakota
 
 #endif

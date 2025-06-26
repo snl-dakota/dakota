@@ -10,18 +10,17 @@
 #ifndef EXPERIMENT_RESPONSE_H
 #define EXPERIMENT_RESPONSE_H
 
-#include "dakota_system_defs.hpp"
-#include "dakota_data_types.hpp"
 #include "DakotaResponse.hpp"
 #include "ExperimentDataUtils.hpp"
+#include "dakota_data_types.hpp"
 #include "dakota_global_defs.hpp"
+#include "dakota_system_defs.hpp"
 
 namespace Dakota {
 
 class ProblemDescDB;
 
-
-/// Container class for response functions and their derivatives.  
+/// Container class for response functions and their derivatives.
 /// ExperimentResponse provides the body class.
 
 /** The ExperimentResponse class is the "representation" of the
@@ -39,10 +38,8 @@ class ProblemDescDB;
     shallow copies (shared representation) versus deep copies
     (separate representation used for history mechanisms). */
 
-class ExperimentResponse: public Response
-{
-public:
-
+class ExperimentResponse : public Response {
+ public:
   //
   //- Heading: Constructors and destructor
   //
@@ -64,21 +61,21 @@ public:
 
   const ExperimentCovariance& experiment_covariance() const override;
 
-  void set_full_covariance(std::vector<RealMatrix> &matrices,
-                           std::vector<RealVector> &diagonals,
-                           RealVector &scalars,
-                           IntVector matrix_map_indices,
+  void set_full_covariance(std::vector<RealMatrix>& matrices,
+                           std::vector<RealVector>& diagonals,
+                           RealVector& scalars, IntVector matrix_map_indices,
                            IntVector diagonal_map_indices,
-                           IntVector scalar_map_indices ) override;
-  
-  Real apply_covariance(const RealVector &residual) const override;
-  void apply_covariance_inv_sqrt(const RealVector& residuals, 
-				 RealVector& weighted_residuals) const override;
-  void apply_covariance_inv_sqrt(const RealMatrix& gradients, 
-				 RealMatrix& weighted_gradients) const override;
-  void apply_covariance_inv_sqrt(const RealSymMatrixArray& hessians,
-				 RealSymMatrixArray& weighted_hessians) const override;
-  void get_covariance_diagonal( RealVector &diagonal ) const override;
+                           IntVector scalar_map_indices) override;
+
+  Real apply_covariance(const RealVector& residual) const override;
+  void apply_covariance_inv_sqrt(const RealVector& residuals,
+                                 RealVector& weighted_residuals) const override;
+  void apply_covariance_inv_sqrt(const RealMatrix& gradients,
+                                 RealMatrix& weighted_gradients) const override;
+  void apply_covariance_inv_sqrt(
+      const RealSymMatrixArray& hessians,
+      RealSymMatrixArray& weighted_hessians) const override;
+  void get_covariance_diagonal(RealVector& diagonal) const override;
 
   /// covariance determinant for this experiment (default 1.0)
   Real covariance_determinant() const override;
@@ -86,8 +83,7 @@ public:
   /// log covariance determinant for this experiment (default 0.0)
   Real log_covariance_determinant() const override;
 
-protected:
-
+ protected:
   //
   //- Heading: virtual member functions redefinitions
   //
@@ -96,29 +92,23 @@ protected:
   /// derived specific data from the source rep into the this object.
   void copy_rep(std::shared_ptr<Response> source_resp_rep) override;
 
-private:
-
+ private:
   //
   //- Heading: Private data members
   //
 
-  /// sigma terms... 
- ExperimentCovariance expDataCovariance;
+  /// sigma terms...
+  ExperimentCovariance expDataCovariance;
 };
 
+inline ExperimentResponse::ExperimentResponse() {}
 
-inline ExperimentResponse::ExperimentResponse()
-{ }
+inline ExperimentResponse::~ExperimentResponse() {}
 
-
-inline ExperimentResponse::~ExperimentResponse()
-{ }
-
-} // namespace Dakota
-
+}  // namespace Dakota
 
 // Since we may serialize this class through a temporary, disallow tracking
-BOOST_CLASS_TRACKING(Dakota::ExperimentResponse, 
-		     boost::serialization::track_never)
+BOOST_CLASS_TRACKING(Dakota::ExperimentResponse,
+                     boost::serialization::track_never)
 
-#endif // !EXPERIMENT_RESPONSE_H
+#endif  // !EXPERIMENT_RESPONSE_H

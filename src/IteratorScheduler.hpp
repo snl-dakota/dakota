@@ -10,7 +10,7 @@
 #ifndef ITERATOR_SCHEDULER_H
 #define ITERATOR_SCHEDULER_H
 
-//#include "Scheduler.hpp"
+// #include "Scheduler.hpp"
 #include "DataMethod.hpp"
 #include "ParallelLibrary.hpp"
 
@@ -20,7 +20,6 @@ class Iterator;
 class Model;
 class ProblemDescDB;
 
-
 /// This class encapsulates scheduling operations for concurrent
 /// sub-iteration within an outer level context (e.g., meta-iteration,
 /// nested models).
@@ -28,43 +27,48 @@ class ProblemDescDB;
 /** In time, a Scheduler class hierarchy is envisioned, but for now,
     this class is not part of a hierarchy. */
 
-class IteratorScheduler //: public Scheduler
+class IteratorScheduler  //: public Scheduler
 {
-public:
-  
+ public:
   //
   //- Heading: Constructors and destructor
   //
 
   // default constructor
-  //IteratorScheduler();
+  // IteratorScheduler();
   /// constructor
   IteratorScheduler(ParallelLibrary& parallel_lib, bool peer_assign_jobs,
-		    int num_servers = 0, int procs_per_iterator = 0,
-		    short scheduling = DEFAULT_SCHEDULING);
+                    int num_servers = 0, int procs_per_iterator = 0,
+                    short scheduling = DEFAULT_SCHEDULING);
   /// destructor
   ~IteratorScheduler();
-    
+
   //
   //- Heading: Static member functions
   //
 
   // convenience function for serializing the concurrent iterator
   // parallelism level
-  //static void init_serial_iterators(ParallelLibrary& parallel_lib);
+  // static void init_serial_iterators(ParallelLibrary& parallel_lib);
 
   /// convenience function for allocation of an iterator and (parallel)
   /// initialization of its comms
-  static void init_iterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Iterator>& sub_iterator,
-			    ParLevLIter pl_iter);
+  static void init_iterator(ProblemDescDB& problem_db,
+                            ParallelLibrary& parallel_lib,
+                            std::shared_ptr<Iterator>& sub_iterator,
+                            ParLevLIter pl_iter);
   /// convenience function for allocation of an iterator and (parallel)
   /// initialization of its comms
-  static void init_iterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Iterator>& sub_iterator,
-			    std::shared_ptr<Model> sub_model, ParLevLIter pl_iter);
+  static void init_iterator(ProblemDescDB& problem_db,
+                            ParallelLibrary& parallel_lib,
+                            std::shared_ptr<Iterator>& sub_iterator,
+                            std::shared_ptr<Model> sub_model,
+                            ParLevLIter pl_iter);
   /// convenience function for lightweight allocation of an iterator
   /// and (parallel) initialization of its comms
-  static void init_iterator(const String& method_string, std::shared_ptr<Iterator>& sub_iterator,
-			    std::shared_ptr<Model>, ParLevLIter pl_iter);
+  static void init_iterator(const String& method_string,
+                            std::shared_ptr<Iterator>& sub_iterator,
+                            std::shared_ptr<Model>, ParLevLIter pl_iter);
 
   /// convenience function for setting comms prior to running an iterator
   static void set_iterator(Iterator& sub_iterator, ParLevLIter pl_iter);
@@ -82,34 +86,41 @@ public:
   //
 
   /// instantiate sub_iterator on the current rank if not already constructed
-  void construct_sub_iterator(ProblemDescDB& problem_db, ParallelLibrary &parallel_lib,
-            std::shared_ptr<Iterator>& sub_iterator,
-			      std::shared_ptr<Model> sub_model, const String& method_ptr,
-			      const String& method_name,
-			      const String& model_ptr);
+  void construct_sub_iterator(ProblemDescDB& problem_db,
+                              ParallelLibrary& parallel_lib,
+                              std::shared_ptr<Iterator>& sub_iterator,
+                              std::shared_ptr<Model> sub_model,
+                              const String& method_ptr,
+                              const String& method_name,
+                              const String& model_ptr);
 
   /// performs sufficient initialization to define partitioning controls
   /// (min and max processors per iterator server)
-  IntIntPair configure(ProblemDescDB& problem_db, std::shared_ptr<Iterator>& sub_iterator,
-		       std::shared_ptr<Model> sub_model);
+  IntIntPair configure(ProblemDescDB& problem_db,
+                       std::shared_ptr<Iterator>& sub_iterator,
+                       std::shared_ptr<Model> sub_model);
   /// performs sufficient initialization to define partitioning controls
   /// (min and max processors per iterator server)
   IntIntPair configure(ProblemDescDB& problem_db, const String& method_string,
-		       std::shared_ptr<Iterator>& sub_iterator, std::shared_ptr<Model> sub_model);
+                       std::shared_ptr<Iterator>& sub_iterator,
+                       std::shared_ptr<Model> sub_model);
   /// performs sufficient initialization to define partitioning controls
   /// (min and max processors per iterator server)
-  IntIntPair configure(ProblemDescDB& problem_db, std::shared_ptr<Iterator>& sub_iterator);
+  IntIntPair configure(ProblemDescDB& problem_db,
+                       std::shared_ptr<Iterator>& sub_iterator);
 
   /// convenience function for initializing iterator communicators, setting
   /// parallel configuration attributes, and managing outputs and restart.
   void partition(int max_iterator_concurrency, IntIntPair& ppi_pr);
 
   /// invokes static version of this function with appropriate parallelism level
-  void init_iterator(ProblemDescDB& problem_db, std::shared_ptr<Iterator>& sub_iterator,
-		     std::shared_ptr<Model> sub_model);
+  void init_iterator(ProblemDescDB& problem_db,
+                     std::shared_ptr<Iterator>& sub_iterator,
+                     std::shared_ptr<Model> sub_model);
   /// invokes static version of this function with appropriate parallelism level
   void init_iterator(const String& method_string,
-		     std::shared_ptr<Iterator>& sub_iterator, std::shared_ptr<Model> sub_model);
+                     std::shared_ptr<Iterator>& sub_iterator,
+                     std::shared_ptr<Model> sub_model);
   /// invokes static version of this function with appropriate parallelism level
   void set_iterator(Iterator& sub_iterator);
   /// invokes static version of this function with appropriate parallelism level
@@ -139,7 +150,7 @@ public:
   /// executed on iterator peers to manage a static schedule of iterator jobs
   template <typename MetaType>
   void peer_static_schedule_iterators(MetaType& meta_object,
-				      Iterator& sub_iterator);
+                                      Iterator& sub_iterator);
 
   /// update schedPCIter
   void update(ParConfigLIter pc_iter);
@@ -159,30 +170,29 @@ public:
   //- Heading: Data members
   //
 
-  ParallelLibrary& parallelLib; ///< reference to the ParallelLibrary instance
+  ParallelLibrary& parallelLib;  ///< reference to the ParallelLibrary instance
 
-  int   numIteratorJobs;    ///< number of iterator executions to schedule
-  int   numIteratorServers; ///< number of concurrent iterator partitions
-  int   procsPerIterator;   ///< partition size request
-  //int minProcsPerIterator; //  lower bound on iterator partition size
-  //int maxProcsPerIterator; //  upper bound on iterator partition size
-  int   iteratorCommRank;   ///< processor rank in iteratorComm
-  int   iteratorCommSize;   ///< number of processors in iteratorComm
-  int   iteratorServerId;   ///< identifier for an iterator server
+  int numIteratorJobs;     ///< number of iterator executions to schedule
+  int numIteratorServers;  ///< number of concurrent iterator partitions
+  int procsPerIterator;    ///< partition size request
+  // int minProcsPerIterator; //  lower bound on iterator partition size
+  // int maxProcsPerIterator; //  upper bound on iterator partition size
+  int iteratorCommRank;  ///< processor rank in iteratorComm
+  int iteratorCommSize;  ///< number of processors in iteratorComm
+  int iteratorServerId;  ///< identifier for an iterator server
 
-  bool  messagePass;        ///< flag for message passing among iterator servers
-  short iteratorScheduling; ///< DEDICATED_SCHEDULER,DEFAULT,PEER*
-  //int maxIteratorConcurrency; // max concurrency possible in meta-algorithm
-  bool peerAssignJobs;      ///< flag indicating need for peer 1 to assign jobs
-                            ///< to peers 2-n
+  bool messagePass;  ///< flag for message passing among iterator servers
+  short iteratorScheduling;  ///< DEDICATED_SCHEDULER,DEFAULT,PEER*
+  // int maxIteratorConcurrency; // max concurrency possible in meta-algorithm
+  bool peerAssignJobs;  ///< flag indicating need for peer 1 to assign jobs
+                        ///< to peers 2-n
 
-  ParConfigLIter schedPCIter; ///< iterator for active parallel configuration
-  size_t miPLIndex;         ///< index of active parallel level (corresponding
-                            ///< to ParallelConfiguration::miPLIters) to use
-                            ///< for parallelLib send/recv
+  ParConfigLIter schedPCIter;  ///< iterator for active parallel configuration
+  size_t miPLIndex;  ///< index of active parallel level (corresponding
+                     ///< to ParallelConfiguration::miPLIters) to use
+                     ///< for parallelLib send/recv
 
-private:
-
+ private:
   //
   //- Heading: Convenience member functions
   //
@@ -191,41 +201,34 @@ private:
   //- Heading: Data members
   //
 
-  int  paramsMsgLen; ///< length of MPI buffer for parameter input instance(s)
-  int resultsMsgLen; ///< length of MPI buffer for results  output instance(s)
+  int paramsMsgLen;   ///< length of MPI buffer for parameter input instance(s)
+  int resultsMsgLen;  ///< length of MPI buffer for results  output instance(s)
 };
 
-
-//inline IteratorScheduler::IteratorScheduler():
-//  numIteratorServers(1), numIteratorJobs(1), maxIteratorConcurrency(1)
+// inline IteratorScheduler::IteratorScheduler():
+//   numIteratorServers(1), numIteratorJobs(1), maxIteratorConcurrency(1)
 //{ }
 
+inline IteratorScheduler::~IteratorScheduler() {}
 
-inline IteratorScheduler::~IteratorScheduler()
-{ }
-
-
-inline void IteratorScheduler::
-init_iterator(ProblemDescDB& problem_db, std::shared_ptr<Iterator>& sub_iterator,
-	      std::shared_ptr<Model> sub_model)
-{
+inline void IteratorScheduler::init_iterator(
+    ProblemDescDB& problem_db, std::shared_ptr<Iterator>& sub_iterator,
+    std::shared_ptr<Model> sub_model) {
   ParLevLIter pl_iter = schedPCIter->mi_parallel_level_iterator(miPLIndex);
   // if dedicated scheduler overload, no iterator jobs can run on scheduler,
   // so no init/set/free --> need to match init_comms() on iterator servers
   if (pl_iter->dedicated_scheduler() && pl_iter->processors_per_server() > 1 &&
       pl_iter->server_id() == 0) {
     parallelLib.parallel_configuration_iterator(schedPCIter);
-    parallelLib.print_configuration(); // match init_comms() on iterator servers
-  }
-  else
+    parallelLib
+        .print_configuration();  // match init_comms() on iterator servers
+  } else
     init_iterator(problem_db, parallelLib, sub_iterator, sub_model, pl_iter);
 }
 
-
-inline void IteratorScheduler::
-init_iterator(const String& method_string,
-	      std::shared_ptr<Iterator>& sub_iterator, std::shared_ptr<Model> sub_model)
-{
+inline void IteratorScheduler::init_iterator(
+    const String& method_string, std::shared_ptr<Iterator>& sub_iterator,
+    std::shared_ptr<Model> sub_model) {
   ParLevLIter pl_iter = schedPCIter->mi_parallel_level_iterator(miPLIndex);
   // if dedicated scheduler overload, no iterator jobs can run on scheduler,
   // so no init/set/free --> need to match init_comms() on iterator servers
@@ -233,103 +236,92 @@ init_iterator(const String& method_string,
       pl_iter->server_id() == 0) {
     parallelLib.parallel_configuration_iterator(schedPCIter);
     parallelLib.print_configuration();
-  }
-  else
+  } else
     init_iterator(method_string, sub_iterator, sub_model, pl_iter);
 }
 
-
-inline void IteratorScheduler::set_iterator(Iterator& sub_iterator)
-{
+inline void IteratorScheduler::set_iterator(Iterator& sub_iterator) {
   set_iterator(sub_iterator,
-	       schedPCIter->mi_parallel_level_iterator(miPLIndex));
+               schedPCIter->mi_parallel_level_iterator(miPLIndex));
 }
 
-
-inline void IteratorScheduler::run_iterator(Iterator& sub_iterator)
-{
+inline void IteratorScheduler::run_iterator(Iterator& sub_iterator) {
   run_iterator(sub_iterator,
-	       schedPCIter->mi_parallel_level_iterator(miPLIndex));
+               schedPCIter->mi_parallel_level_iterator(miPLIndex));
 }
 
-
-inline void IteratorScheduler::free_iterator(Iterator& sub_iterator)
-{
+inline void IteratorScheduler::free_iterator(Iterator& sub_iterator) {
   free_iterator(sub_iterator,
-		schedPCIter->mi_parallel_level_iterator(miPLIndex));
+                schedPCIter->mi_parallel_level_iterator(miPLIndex));
 }
 
+inline void IteratorScheduler::update(ParConfigLIter pc_iter) {
+  schedPCIter = pc_iter;
+}
 
-inline void IteratorScheduler::update(ParConfigLIter pc_iter)
-{ schedPCIter = pc_iter; }
-
-
-inline void IteratorScheduler::update(size_t index)
-{
+inline void IteratorScheduler::update(size_t index) {
   // Note: update(ParConfigLIter) must precede this update for access to mi_pl
 
   miPLIndex = index;
   const ParallelLevel& mi_pl = schedPCIter->mi_parallel_level(index);
 
   // retrieve the partition data
-  //dedicatedScheduler = mi_pl.dedicated_scheduler();
-  messagePass        = mi_pl.message_pass();
-  iteratorCommRank   = mi_pl.server_communicator_rank();
-  iteratorCommSize   = mi_pl.server_communicator_size();
-  iteratorServerId   = mi_pl.server_id();
+  // dedicatedScheduler = mi_pl.dedicated_scheduler();
+  messagePass = mi_pl.message_pass();
+  iteratorCommRank = mi_pl.server_communicator_rank();
+  iteratorCommSize = mi_pl.server_communicator_size();
+  iteratorServerId = mi_pl.server_id();
 
   // update requests with actual
   numIteratorServers = mi_pl.num_servers();
   iteratorScheduling = (mi_pl.dedicated_scheduler())
-                     ? DEDICATED_SCHEDULER_DYNAMIC : PEER_SCHEDULING;
+                           ? DEDICATED_SCHEDULER_DYNAMIC
+                           : PEER_SCHEDULING;
 }
 
-
-inline void IteratorScheduler::update(ParConfigLIter pc_iter, size_t index)
-{ update(pc_iter); update(index); }
-
+inline void IteratorScheduler::update(ParConfigLIter pc_iter, size_t index) {
+  update(pc_iter);
+  update(index);
+}
 
 /** This implementation supports the scheduling of multiple jobs using
     a single iterator/model pair.  Additional future (overloaded)
     implementations could involve independent iterator instances. */
-template <typename MetaType> void IteratorScheduler::
-schedule_iterators(MetaType& meta_object, Iterator& sub_iterator)
-{
+template <typename MetaType>
+void IteratorScheduler::schedule_iterators(MetaType& meta_object,
+                                           Iterator& sub_iterator) {
   // As for invocations of an Interface (see SimulationModel.hpp and
   // NestedModel.[ch]pp), we wrap job scheduling with store/set/restore
   ParConfigLIter curr_pc_iter = parallelLib.parallel_configuration_iterator();
   parallelLib.parallel_configuration_iterator(
-    meta_object.parallel_configuration_iterator());
+      meta_object.parallel_configuration_iterator());
 
-  if (iteratorScheduling == DEDICATED_SCHEDULER_DYNAMIC) {//(dedicateScheduler){
-    if (lead_rank()) { // strategy dedicated scheduler
+  if (iteratorScheduling ==
+      DEDICATED_SCHEDULER_DYNAMIC) {  //(dedicateScheduler){
+    if (lead_rank()) {                // strategy dedicated scheduler
       dedicated_dynamic_scheduler_iterators(meta_object);
       stop_iterator_servers();
-    }
-    else // iterator servers
+    } else  // iterator servers
       serve_iterators(meta_object, sub_iterator);
-  }
-  else { // static scheduling of iterator jobs
+  } else {  // static scheduling of iterator jobs
     if (iteratorServerId <= numIteratorServers) {
       // jobs are not assigned by messages: stop_iterator_servers() is only
       // required for an idle server partition
       peer_static_schedule_iterators(meta_object, sub_iterator);
       if (lead_rank())
-	stop_iterator_servers(); // stop an idle server partition, if present
-    }
-    else // for occupying an idle server partition (no jobs)
+        stop_iterator_servers();  // stop an idle server partition, if present
+    } else  // for occupying an idle server partition (no jobs)
       serve_iterators(meta_object, sub_iterator);
   }
 
-  parallelLib.parallel_configuration_iterator(curr_pc_iter); // restore
+  parallelLib.parallel_configuration_iterator(curr_pc_iter);  // restore
 }
-
 
 /** This function is adapted from
     ApplicationInterface::dedicated_dynamic_scheduler_evaluations(). */
-template <typename MetaType> void IteratorScheduler::
-dedicated_dynamic_scheduler_iterators(MetaType& meta_object)
-{
+template <typename MetaType>
+void IteratorScheduler::dedicated_dynamic_scheduler_iterators(
+    MetaType& meta_object) {
   int i, j, num_sends = std::min(numIteratorServers, numIteratorJobs);
   Cout << "Dedicated scheduler: first pass assigning " << num_sends
        << " iterator jobs among " << numIteratorServers << " servers\n";
@@ -337,70 +329,74 @@ dedicated_dynamic_scheduler_iterators(MetaType& meta_object)
   auto send_buffers{std::vector<MPIPackBuffer>(num_sends)};
   auto recv_buffers{std::vector<MPIUnpackBuffer>(numIteratorJobs)};
   auto recv_requests{std::vector<MPI_Request>(num_sends)};
-  MPI_Request                  send_request; // only 1 needed since no test/wait on sends
+  MPI_Request send_request;  // only 1 needed since no test/wait on sends
 
   // assign 1st num_sends jobs
-  for (i=0, j=1; i<num_sends; ++i, ++j) {
+  for (i = 0, j = 1; i < num_sends; ++i, ++j) {
     // pack the ith parameter set
     meta_object.pack_parameters_buffer(send_buffers.at(i), i);
 
     // pre-post receives
     recv_buffers.at(i).resize(resultsMsgLen);
-    parallelLib.irecv_mi(recv_buffers.at(i), j, j, recv_requests.at(i), miPLIndex);
+    parallelLib.irecv_mi(recv_buffers.at(i), j, j, recv_requests.at(i),
+                         miPLIndex);
     // nonblocking sends: scheduler quickly assigns first num_sends jobs
     parallelLib.isend_mi(send_buffers.at(i), j, j, send_request, miPLIndex);
-    parallelLib.free(send_request); // no test/wait on send_request
+    parallelLib.free(send_request);  // no test/wait on send_request
   }
 
   // schedule remaining jobs
   if (num_sends < numIteratorJobs) {
     Cout << "Dedicated scheduler: second pass scheduling "
-	 << numIteratorJobs-num_sends << " remaining iterator jobs\n";
+         << numIteratorJobs - num_sends << " remaining iterator jobs\n";
     int send_cntr = num_sends, recv_cntr = 0, out_count;
 
     auto status_array{std::vector<MPI_Status>(num_sends)};
     auto index_array{std::vector<int>(num_sends)};
 
     while (recv_cntr < numIteratorJobs) {
-      parallelLib.waitsome(num_sends, recv_requests, out_count, index_array, status_array);
+      parallelLib.waitsome(num_sends, recv_requests, out_count, index_array,
+                           status_array);
       recv_cntr += out_count;
-      for (i=0; i<out_count; ++i) {
-        int server_index = index_array.at(i); // index of completed recv_request
-        int server_id    = server_index + 1;        // 1 to numIteratorServers
-        int job_id       = status_array.at(i).MPI_TAG; // 1 to numIteratorJobs
-        int job_index    = job_id - 1;              // 0 to numIteratorJobs-1
-	meta_object.unpack_results_buffer(recv_buffers[job_index], job_index);
+      for (i = 0; i < out_count; ++i) {
+        int server_index =
+            index_array.at(i);             // index of completed recv_request
+        int server_id = server_index + 1;  // 1 to numIteratorServers
+        int job_id = status_array.at(i).MPI_TAG;  // 1 to numIteratorJobs
+        int job_index = job_id - 1;               // 0 to numIteratorJobs-1
+        meta_object.unpack_results_buffer(recv_buffers[job_index], job_index);
         if (send_cntr < numIteratorJobs) {
-          send_buffers[server_index].reset();// reuse send_buffers/recv_requests
-	  meta_object.pack_parameters_buffer(send_buffers[server_index],
-					     send_cntr);
-	  // pre-post receive
+          send_buffers[server_index]
+              .reset();  // reuse send_buffers/recv_requests
+          meta_object.pack_parameters_buffer(send_buffers[server_index],
+                                             send_cntr);
+          // pre-post receive
           recv_buffers[send_cntr].resize(resultsMsgLen);
-          parallelLib.irecv_mi(recv_buffers[send_cntr], server_id, send_cntr+1, 
-                               recv_requests[server_index], miPLIndex);
+          parallelLib.irecv_mi(recv_buffers[send_cntr], server_id,
+                               send_cntr + 1, recv_requests[server_index],
+                               miPLIndex);
           // send next job to open server
           parallelLib.isend_mi(send_buffers[server_index], server_id,
-                               send_cntr+1, send_request, miPLIndex);
-          parallelLib.free(send_request); // no test/wait on send_request
+                               send_cntr + 1, send_request, miPLIndex);
+          parallelLib.free(send_request);  // no test/wait on send_request
           send_cntr++;
         }
       }
     }
-  }
-  else { // all jobs assigned in first pass
+  } else {  // all jobs assigned in first pass
     Cout << "Dedicated scheduler: waiting on all iterator jobs." << std::endl;
     parallelLib.waitall(numIteratorJobs, recv_requests);
     // All buffers received, now generate rawResponseArray
-    for (i=0; i<numIteratorJobs; ++i)
+    for (i = 0; i < numIteratorJobs; ++i)
       meta_object.unpack_results_buffer(recv_buffers.at(i), i);
   }
 }
 
-
-template <typename MetaType> void IteratorScheduler::
-peer_static_schedule_iterators(MetaType& meta_object, Iterator& sub_iterator)
-{
-  bool rank0 = (iteratorCommRank == 0); int i;
+template <typename MetaType>
+void IteratorScheduler::peer_static_schedule_iterators(MetaType& meta_object,
+                                                       Iterator& sub_iterator) {
+  bool rank0 = (iteratorCommRank == 0);
+  int i;
 
   // Some clients require job assignment, whereas other define jobs from a
   // shared specification (or a combination in case of spec + random jobs)
@@ -408,41 +404,39 @@ peer_static_schedule_iterators(MetaType& meta_object, Iterator& sub_iterator)
     if (rank0) {
       // transmit number of jobs to all peer leaders
       parallelLib.bcast_mi(numIteratorJobs, miPLIndex);
-      // Assign jobs 
-      if (iteratorServerId > 1) { // peers 2-n: recv job from peer 1
-	for (i=iteratorServerId-1; i<numIteratorJobs; i+=numIteratorServers) {
-	  MPI_Status status;
-	  MPIUnpackBuffer recv_buffer(paramsMsgLen);
-	  parallelLib.recv_mi(recv_buffer, 0, i+1, status, miPLIndex);
-	  meta_object.unpack_parameters_buffer(recv_buffer, i);
-	}
-      }
-      else if (numIteratorServers > 1) { // peer 1: recv results from peers 2-n
-	for (i=1; i<numIteratorJobs; ++i) { // skip 0 since this is peer 1
-	  int dest = i%numIteratorServers;
-	  if (dest) { // parameter set assigned to peers 2-n
-	    MPIPackBuffer send_buffer;//(paramsMsgLen);
-	    meta_object.pack_parameters_buffer(send_buffer, i);
-	    parallelLib.send_mi(send_buffer, dest, i+1, miPLIndex);
-	  }
-	}
+      // Assign jobs
+      if (iteratorServerId > 1) {  // peers 2-n: recv job from peer 1
+        for (i = iteratorServerId - 1; i < numIteratorJobs;
+             i += numIteratorServers) {
+          MPI_Status status;
+          MPIUnpackBuffer recv_buffer(paramsMsgLen);
+          parallelLib.recv_mi(recv_buffer, 0, i + 1, status, miPLIndex);
+          meta_object.unpack_parameters_buffer(recv_buffer, i);
+        }
+      } else if (numIteratorServers >
+                 1) {  // peer 1: recv results from peers 2-n
+        for (i = 1; i < numIteratorJobs; ++i) {  // skip 0 since this is peer 1
+          int dest = i % numIteratorServers;
+          if (dest) {                   // parameter set assigned to peers 2-n
+            MPIPackBuffer send_buffer;  //(paramsMsgLen);
+            meta_object.pack_parameters_buffer(send_buffer, i);
+            parallelLib.send_mi(send_buffer, dest, i + 1, miPLIndex);
+          }
+        }
       }
     }
     // now transmit number of jobs from iterator comm leaders to other ranks
     // (needed for proper execution of loop by all ranks)
-    if (iteratorCommSize > 1)
-      parallelLib.bcast_i(numIteratorJobs, miPLIndex);
+    if (iteratorCommSize > 1) parallelLib.bcast_i(numIteratorJobs, miPLIndex);
   }
 
   // Execute the iterator jobs using round robin assignment
-  for (i=iteratorServerId-1; i<numIteratorJobs; i+=numIteratorServers) {
-
+  for (i = iteratorServerId - 1; i < numIteratorJobs; i += numIteratorServers) {
     // Set starting point or obj fn weighting set
     Real iterator_start_time;
     if (rank0) {
       meta_object.initialize_iterator(i);
-      if (messagePass)
-        iterator_start_time = parallelLib.parallel_time();
+      if (messagePass) iterator_start_time = parallelLib.parallel_time();
     }
 
     // Run the iterator on the model for this iterator job
@@ -453,9 +447,10 @@ peer_static_schedule_iterators(MetaType& meta_object, Iterator& sub_iterator)
       // report iterator timings (to tagged output if concurrent iterators)
       if (messagePass) {
         Real iterator_end_time = parallelLib.parallel_time();
-        Cout << "\nParameter set " << i+1 << " elapsed time = "
-             << iterator_end_time - iterator_start_time << " (start: "
-             << iterator_start_time << ", end: " << iterator_end_time << ")\n";
+        Cout << "\nParameter set " << i + 1
+             << " elapsed time = " << iterator_end_time - iterator_start_time
+             << " (start: " << iterator_start_time
+             << ", end: " << iterator_end_time << ")\n";
       }
       meta_object.update_local_results(i);
     }
@@ -467,20 +462,21 @@ peer_static_schedule_iterators(MetaType& meta_object, Iterator& sub_iterator)
   // completed).  If no synchronization was applied, then the timings would
   // reflect only the completion of the first iterator server.
   if (rank0) {
-    if (iteratorServerId > 1) { // peers 2-n: send results to peer 1
-      for (i=iteratorServerId-1; i<numIteratorJobs; i+=numIteratorServers) {
-        MPIPackBuffer send_buffer;//(resultsMsgLen);
+    if (iteratorServerId > 1) {  // peers 2-n: send results to peer 1
+      for (i = iteratorServerId - 1; i < numIteratorJobs;
+           i += numIteratorServers) {
+        MPIPackBuffer send_buffer;  //(resultsMsgLen);
         meta_object.pack_results_buffer(send_buffer, i);
-        parallelLib.send_mi(send_buffer, 0, i+1, miPLIndex);
+        parallelLib.send_mi(send_buffer, 0, i + 1, miPLIndex);
       }
-    }
-    else if (numIteratorServers > 1) { // peer 1: receive results from peers 2-n
-      for (i=1; i<numIteratorJobs; ++i) { // skip 0 since this is peer 1
-        int source = i%numIteratorServers;
-        if (source) { // parameter set evaluated on peers 2-n
+    } else if (numIteratorServers >
+               1) {  // peer 1: receive results from peers 2-n
+      for (i = 1; i < numIteratorJobs; ++i) {  // skip 0 since this is peer 1
+        int source = i % numIteratorServers;
+        if (source) {  // parameter set evaluated on peers 2-n
           MPI_Status status;
           MPIUnpackBuffer recv_buffer(resultsMsgLen);
-          parallelLib.recv_mi(recv_buffer, source, i+1, status, miPLIndex);
+          parallelLib.recv_mi(recv_buffer, source, i + 1, status, miPLIndex);
           meta_object.unpack_results_buffer(recv_buffer, i);
         }
       }
@@ -488,16 +484,14 @@ peer_static_schedule_iterators(MetaType& meta_object, Iterator& sub_iterator)
   }
 }
 
-
 /** This function is similar in structure to
     ApplicationInterface::serve_evaluations_synch(). */
-template <typename MetaType> void IteratorScheduler::
-serve_iterators(MetaType& meta_object, Iterator& sub_iterator)
-{
+template <typename MetaType>
+void IteratorScheduler::serve_iterators(MetaType& meta_object,
+                                        Iterator& sub_iterator) {
   RealArray param_set;
   int job_id = 1;
   while (job_id) {
-
     // server receives job from scheduler
     if (iteratorCommRank == 0) {
       MPI_Status status;
@@ -505,50 +499,50 @@ serve_iterators(MetaType& meta_object, Iterator& sub_iterator)
       parallelLib.recv_mi(recv_buffer, 0, MPI_ANY_TAG, status, miPLIndex);
       job_id = status.MPI_TAG;
       if (job_id)
-	      meta_object.unpack_parameters_initialize(recv_buffer, job_id-1);
+        meta_object.unpack_parameters_initialize(recv_buffer, job_id - 1);
     }
-    if (iteratorCommSize > 1) // must Bcast job_id over iteratorComm
+    if (iteratorCommSize > 1)  // must Bcast job_id over iteratorComm
       parallelLib.bcast_i(job_id, miPLIndex);
 
     if (job_id) {
-
       // Set starting point or obj fn weighting set
       Real iterator_start_time;
       if (iteratorCommRank == 0)
-	      iterator_start_time = parallelLib.parallel_time();
+        iterator_start_time = parallelLib.parallel_time();
 
       // Run the iterator on the model for the received job
       run_iterator(sub_iterator);
 
       if (iteratorCommRank == 0) {
         Real iterator_end_time = parallelLib.parallel_time();
-        Cout << "\nParameter set " << job_id << " elapsed time = "
-            << iterator_end_time - iterator_start_time << " (start: "
-            << iterator_start_time << ", end: " << iterator_end_time <<")\n";
+        Cout << "\nParameter set " << job_id
+             << " elapsed time = " << iterator_end_time - iterator_start_time
+             << " (start: " << iterator_start_time
+             << ", end: " << iterator_end_time << ")\n";
         int job_index = job_id - 1;
         meta_object.update_local_results(job_index);
-              MPIPackBuffer send_buffer(resultsMsgLen);
+        MPIPackBuffer send_buffer(resultsMsgLen);
         meta_object.pack_results_buffer(send_buffer, job_index);
-              parallelLib.send_mi(send_buffer, 0, job_id, miPLIndex);
+        parallelLib.send_mi(send_buffer, 0, job_id, miPLIndex);
       }
     }
   }
 }
 
-
-inline void IteratorScheduler::
-iterator_message_lengths(int params_msg_len, int results_msg_len)
-{ paramsMsgLen = params_msg_len; resultsMsgLen = results_msg_len; }
-
-
-inline bool IteratorScheduler::lead_rank() const
-{
-  return ( iteratorCommRank == 0 && ( !messagePass ||
-    ( iteratorScheduling == DEDICATED_SCHEDULER_DYNAMIC &&
-      iteratorServerId == 0 ) ||
-    ( iteratorScheduling == PEER_SCHEDULING && iteratorServerId == 1 ) ) );
+inline void IteratorScheduler::iterator_message_lengths(int params_msg_len,
+                                                        int results_msg_len) {
+  paramsMsgLen = params_msg_len;
+  resultsMsgLen = results_msg_len;
 }
 
-} // namespace Dakota
+inline bool IteratorScheduler::lead_rank() const {
+  return (iteratorCommRank == 0 &&
+          (!messagePass ||
+           (iteratorScheduling == DEDICATED_SCHEDULER_DYNAMIC &&
+            iteratorServerId == 0) ||
+           (iteratorScheduling == PEER_SCHEDULING && iteratorServerId == 1)));
+}
+
+}  // namespace Dakota
 
 #endif

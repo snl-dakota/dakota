@@ -7,13 +7,13 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-#include "util_windows.hpp"
+#include <gtest/gtest.h>
+
 #include "util_common.hpp"
 #include "util_data_types.hpp"
 #include "util_math_tools.hpp"
 #include "util_metrics.hpp"
-
-#include <gtest/gtest.h>
+#include "util_windows.hpp"
 
 using namespace dakota;
 using namespace dakota::util;

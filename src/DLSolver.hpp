@@ -8,7 +8,7 @@
     _______________________________________________________________________ */
 
 #ifndef DLSolver.hpp
-#define DLSolver.hpp
+#define DLSolver .hpp
 
 #include "DakotaOptimizer.hpp"
 
@@ -19,15 +19,13 @@ namespace Dakota {
  *
  */
 
-class DLSolverTraits: public TraitsBase
-{
-  public:
-
+class DLSolverTraits : public TraitsBase {
+ public:
   /// default constructor
-  DLSolverTraits() { }
+  DLSolverTraits() {}
 
   /// destructor
-  virtual ~DLSolverTraits() { }
+  virtual ~DLSolverTraits() {}
 
   /// A temporary query used in the refactor
   virtual bool is_derived() { return true; }
@@ -48,53 +46,51 @@ class DLSolverTraits: public TraitsBase
   bool supports_nonlinear_inequality() { return true; }
 
   /// Return the format used for nonlinear inequality constraints
-  NONLINEAR_INEQUALITY_FORMAT nonlinear_inequality_format()
-    { return NONLINEAR_INEQUALITY_FORMAT::TWO_SIDED; }
-
+  NONLINEAR_INEQUALITY_FORMAT nonlinear_inequality_format() {
+    return NONLINEAR_INEQUALITY_FORMAT::TWO_SIDED;
+  }
 };
 
 struct Dakota_funcs;
 
-class Optimizer1: public Optimizer
-{
-public:
-	char *options;
-	Dakota_funcs *DF;
-	Model *M, *M0;
-	inline Optimizer1(Model &M1, std::shared_ptr<TraitsBase> traits):
-		Optimizer(DL_SOLVER, M1, traits), DF(0), M0(&M1) {}
-	inline ActiveSet *activeSet_() { return &activeSet; }
-	inline Model *iteratedModel_() { return &iteratedModel; }
-	inline Variables *bestVariables_() { return &bestVariablesArray.front(); }
-	inline Response  *bestResponse_() { return &bestResponseArray.front(); }
-	inline int maxFunctionEvals_() { return maxFunctionEvals; }
-	inline int localObjectiveRecast_() { return localObjectiveRecast; }
-	inline int numContinuousVars_() { return numContinuousVars; }
-	inline int numFunctions_() { return numFunctions; }
-	inline int numLinearConstraints_() { return numLinearConstraints; }
-	inline int numNonlinearConstraints_() { return numNonlinearConstraints; }
-	inline int numObjectiveFunctions_() { return numObjectiveFns; }
-	inline int vendorNumericalGradFlag_() { return vendorNumericalGradFlag; }
-	};
-
-class DLSolver: public Optimizer1
-{
-public:
-	DLSolver(std::shared_ptr<Model> model);
-	~DLSolver();
-	void core_run();
-
-private:
-	char *details;
-	void *dlLib;
-	void **pdlLib;
-	void *dl_Optimizer;
-	void (*dl_core_run)(void*, Optimizer1*, char*);
-	void (*dl_destructor)(void**);
-	void botch(const char*,...);
-	void cleanup();
+class Optimizer1 : public Optimizer {
+ public:
+  char *options;
+  Dakota_funcs *DF;
+  Model *M, *M0;
+  inline Optimizer1(Model &M1, std::shared_ptr<TraitsBase> traits)
+      : Optimizer(DL_SOLVER, M1, traits), DF(0), M0(&M1) {}
+  inline ActiveSet *activeSet_() { return &activeSet; }
+  inline Model *iteratedModel_() { return &iteratedModel; }
+  inline Variables *bestVariables_() { return &bestVariablesArray.front(); }
+  inline Response *bestResponse_() { return &bestResponseArray.front(); }
+  inline int maxFunctionEvals_() { return maxFunctionEvals; }
+  inline int localObjectiveRecast_() { return localObjectiveRecast; }
+  inline int numContinuousVars_() { return numContinuousVars; }
+  inline int numFunctions_() { return numFunctions; }
+  inline int numLinearConstraints_() { return numLinearConstraints; }
+  inline int numNonlinearConstraints_() { return numNonlinearConstraints; }
+  inline int numObjectiveFunctions_() { return numObjectiveFns; }
+  inline int vendorNumericalGradFlag_() { return vendorNumericalGradFlag; }
 };
 
-} // namespace Dakota
+class DLSolver : public Optimizer1 {
+ public:
+  DLSolver(std::shared_ptr<Model> model);
+  ~DLSolver();
+  void core_run();
 
-#endif // DLSolver.hpp
+ private:
+  char *details;
+  void *dlLib;
+  void **pdlLib;
+  void *dl_Optimizer;
+  void (*dl_core_run)(void *, Optimizer1 *, char *);
+  void (*dl_destructor)(void **);
+  void botch(const char *, ...);
+  void cleanup();
+};
+
+}  // namespace Dakota
+
+#endif  // DLSolver.hpp

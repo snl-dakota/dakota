@@ -16,17 +16,18 @@
 // suffice.
 
 #ifdef DAKOTA_PLUGINS_USE_BOOST
-#  include <boost/config.hpp>
-#  define DAKOTA_SYMBOL_EXPORT BOOST_SYMBOL_EXPORT
+#include <boost/config.hpp>
+#define DAKOTA_SYMBOL_EXPORT BOOST_SYMBOL_EXPORT
 #else
-#  if (defined(_WIN32) || defined(__WIN32__) || defined(WIN32)) && !defined(__CYGWIN__)
-#    define DAKOTA_SYMBOL_EXPORT __attribute__((__dllexport__))
-#  elif defined(__INTEL_COMPILER)
-#    define DAKOTA_SYMBOL_EXPORT __attribute__((visibility("default")))
-#  else
+#if (defined(_WIN32) || defined(__WIN32__) || defined(WIN32)) && \
+    !defined(__CYGWIN__)
+#define DAKOTA_SYMBOL_EXPORT __attribute__((__dllexport__))
+#elif defined(__INTEL_COMPILER)
+#define DAKOTA_SYMBOL_EXPORT __attribute__((visibility("default")))
+#else
 //   gcc, clang
-#    define DAKOTA_SYMBOL_EXPORT __attribute__((__visibility__("default")))
-#  endif
+#define DAKOTA_SYMBOL_EXPORT __attribute__((__visibility__("default")))
+#endif
 #endif
 
 #endif

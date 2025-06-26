@@ -7,30 +7,31 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-#include "dakota_system_defs.hpp"
-#include "dakota_data_io.hpp"
 #include "DiscrepancyCorrection.hpp"
-#include "ParamResponsePair.hpp"
-#include "PRPMultiIndex.hpp"
-#include "SurrogateData.hpp"
+
 #include "DataMethod.hpp"
+#include "PRPMultiIndex.hpp"
+#include "ParamResponsePair.hpp"
+#include "SurrogateData.hpp"
+#include "dakota_data_io.hpp"
+#include "dakota_system_defs.hpp"
 
-static const char rcsId[]="@(#) $Id: DiscrepancyCorrection.cpp 7024 2010-10-16 01:24:42Z mseldre $";
+static const char rcsId[] =
+    "@(#) $Id: DiscrepancyCorrection.cpp 7024 2010-10-16 01:24:42Z mseldre $";
 
-//#define DEBUG
-
+// #define DEBUG
 
 namespace Dakota {
 
-extern PRPCache data_pairs; // global container
+extern PRPCache data_pairs;  // global container
 
-void DiscrepancyCorrection::
-initialize(Model* surr_model, const SizetSet& surr_fn_indices,
-	   short    corr_type, short   corr_order,
-	   String approx_type, short approx_order)
-{
+void DiscrepancyCorrection::initialize(Model* surr_model,
+                                       const SizetSet& surr_fn_indices,
+                                       short corr_type, short corr_order,
+                                       String approx_type, short approx_order) {
   surrModel = surr_model;
-  numFns = surr_model->qoi(); numVars = ModelUtils::cv(*surr_model);
+  numFns = surr_model->qoi();
+  numVars = ModelUtils::cv(*surr_model);
 
   surrogateFnIndices = surr_fn_indices;
   // = surrModel->surrogate_function_indices() would work for DataFitSurrModel,
@@ -39,74 +40,75 @@ initialize(Model* surr_model, const SizetSet& surr_fn_indices,
   initialize(corr_type, corr_order, approx_type, approx_order);
 }
 
-
-void DiscrepancyCorrection::
-initialize(const SizetSet& surr_fn_indices, size_t num_fns, size_t num_vars,
-	   short    corr_type, short   corr_order,
-	   String approx_type, short approx_order)
-{
+void DiscrepancyCorrection::initialize(const SizetSet& surr_fn_indices,
+                                       size_t num_fns, size_t num_vars,
+                                       short corr_type, short corr_order,
+                                       String approx_type, short approx_order) {
   // in this case, surrModel is null and must be protected
 
   surrogateFnIndices = surr_fn_indices;
-  numFns = num_fns; numVars = num_vars;
+  numFns = num_fns;
+  numVars = num_vars;
 
   initialize(corr_type, corr_order, approx_type, approx_order);
 }
 
-
-void DiscrepancyCorrection::
-initialize(short    corr_type, short   corr_order,
-	   String approx_type, short approx_order)
-{
-  correctionType  = corr_type;
+void DiscrepancyCorrection::initialize(short corr_type, short corr_order,
+                                       String approx_type, short approx_order) {
+  correctionType = corr_type;
   correctionOrder = corr_order;
   approxOrder = (approx_order == SHRT_MAX) ? correctionOrder : approx_order;
-  approxType  = (approx_type.empty()) ? "local_taylor" : approx_type;
-  addAnchor   = !strbegins(approxType, "global_"); // local, multipoint
+  approxType = (approx_type.empty()) ? "local_taylor" : approx_type;
+  addAnchor = !strbegins(approxType, "global_");  // local, multipoint
 
   initialize_corrections();
 
   initializedFlag = true;
 }
 
-
-void DiscrepancyCorrection::initialize_corrections()
-{
+void DiscrepancyCorrection::initialize_corrections() {
   // initialize correction data
   correctionComputed = badScalingFlag = false;
-  if (correctionType == ADDITIVE_CORRECTION)
-    { computeAdditive = true;  computeMultiplicative = false; }
-  else if (correctionType == MULTIPLICATIVE_CORRECTION)
-    { computeAdditive = false; computeMultiplicative = true; }
-  else if (correctionType == COMBINED_CORRECTION) {
+  if (correctionType == ADDITIVE_CORRECTION) {
+    computeAdditive = true;
+    computeMultiplicative = false;
+  } else if (correctionType == MULTIPLICATIVE_CORRECTION) {
+    computeAdditive = false;
+    computeMultiplicative = true;
+  } else if (correctionType == COMBINED_CORRECTION) {
     computeAdditive = computeMultiplicative = true;
     combineFactors.resize(numFns);
-    combineFactors = 1.; // used on 1st cycle prior to existence of prev pt.
+    combineFactors = 1.;  // used on 1st cycle prior to existence of prev pt.
   }
   UShortArray approx_orders(numVars, approxOrder);
   switch (correctionOrder) {
-  case 2: dataOrder = 7; break;
-  case 1: dataOrder = 3; break;
-  case 0: default: dataOrder = 1; break;
+    case 2:
+      dataOrder = 7;
+      break;
+    case 1:
+      dataOrder = 3;
+      break;
+    case 0:
+    default:
+      dataOrder = 1;
+      break;
   }
-  sharedData = SharedApproxData(approxType, approx_orders, numVars,
-				dataOrder, NORMAL_OUTPUT);
+  sharedData = SharedApproxData(approxType, approx_orders, numVars, dataOrder,
+                                NORMAL_OUTPUT);
 
   StSIter it;
   if (computeAdditive) {
     addCorrections.resize(numFns);
-    for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it)
+    for (it = surrogateFnIndices.begin(); it != surrogateFnIndices.end(); ++it)
       addCorrections[*it] = Approximation(sharedData);
   }
   if (computeMultiplicative) {
     multCorrections.resize(numFns);
-    for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it)
+    for (it = surrogateFnIndices.begin(); it != surrogateFnIndices.end(); ++it)
       multCorrections[*it] = Approximation(sharedData);
   }
-  if(surrModel)
-    correctionPrevCenterPt = surrModel->current_variables().copy();
+  if (surrModel) correctionPrevCenterPt = surrModel->current_variables().copy();
 }
-
 
 /** Compute an additive or multiplicative correction that corrects the
     approx_response to have 0th-order consistency (matches values),
@@ -116,10 +118,10 @@ void DiscrepancyCorrection::initialize_corrections()
     region).  The 0th-order, 1st-order, and 2nd-order corrections use
     scalar values, linear scaling functions, and quadratic scaling
     functions, respectively, for each response function. */
-void DiscrepancyCorrection::
-compute(const Variables& vars, const Response& truth_response, 
-	const Response& approx_response, bool quiet_flag)
-{
+void DiscrepancyCorrection::compute(const Variables& vars,
+                                    const Response& truth_response,
+                                    const Response& approx_response,
+                                    bool quiet_flag) {
   // The incoming approx_response is assumed to be uncorrected (i.e.,
   // correction has not been applied to it previously).  In this case,
   // it is not necessary to back out a previous correction, and the
@@ -130,109 +132,119 @@ compute(const Variables& vars, const Response& truth_response,
   // require additional fn evaluation of previous pt on current surrogate.
   // This could combine with DB lookups within apply_multiplicative()
   // (approx re-evaluated if not found in DB search).
-  int index; size_t j, k; StSIter it;
+  int index;
+  size_t j, k;
+  StSIter it;
   if (correctionType == COMBINED_CORRECTION && correctionComputed) {
     approxFnsPrevCenter = approxFnsCenter;
-    truthFnsPrevCenter  = truthFnsCenter;
+    truthFnsPrevCenter = truthFnsCenter;
     it = surrogateFnIndices.begin();
-    const Pecos::SurrogateDataVars& anchor_sdv
-      = (computeAdditive || badScalingFlag) ?
-      addCorrections[*it].surrogate_data().anchor_variables() :
-      multCorrections[*it].surrogate_data().anchor_variables();
+    const Pecos::SurrogateDataVars& anchor_sdv =
+        (computeAdditive || badScalingFlag)
+            ? addCorrections[*it].surrogate_data().anchor_variables()
+            : multCorrections[*it].surrogate_data().anchor_variables();
     correctionPrevCenterPt.continuous_variables(
-      anchor_sdv.continuous_variables());
+        anchor_sdv.continuous_variables());
     correctionPrevCenterPt.discrete_int_variables(
-      anchor_sdv.discrete_int_variables());
+        anchor_sdv.discrete_int_variables());
     correctionPrevCenterPt.discrete_real_variables(
-      anchor_sdv.discrete_real_variables());
+        anchor_sdv.discrete_real_variables());
   }
   // update current center data arrays
-  const RealVector&  truth_fns =  truth_response.function_values();
+  const RealVector& truth_fns = truth_response.function_values();
   const RealVector& approx_fns = approx_response.function_values();
-  bool fall_back
-    = (computeMultiplicative && correctionOrder >= 1 && !surrModel);
+  bool fall_back =
+      (computeMultiplicative && correctionOrder >= 1 && !surrModel);
   if (correctionType == COMBINED_CORRECTION) truthFnsCenter = truth_fns;
   if (correctionType == COMBINED_CORRECTION || fall_back)
     approxFnsCenter = approx_fns;
   if (fall_back) approxGradsCenter = approx_response.function_gradients();
 
   // detect numerical issues with multiplicative scaling
-  badScalingFlag = (computeMultiplicative) ?
-    discrepCalc.check_multiplicative(truth_fns, approx_fns, correctionOrder) :
-    false;
+  badScalingFlag = (computeMultiplicative)
+                       ? discrepCalc.check_multiplicative(truth_fns, approx_fns,
+                                                          correctionOrder)
+                       : false;
   if (badScalingFlag) {
     Cerr << "\nWarning: Multiplicative correction temporarily deactivated "
-	 << "due to functions near zero.\n         Additive correction will "
-	 << "be used.\n";
+         << "due to functions near zero.\n         Additive correction will "
+         << "be used.\n";
     if (addCorrections.empty()) {
       addCorrections.resize(numFns);
-      for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it)
-	addCorrections[*it] = Approximation(sharedData);
+      for (it = surrogateFnIndices.begin(); it != surrogateFnIndices.end();
+           ++it)
+        addCorrections[*it] = Approximation(sharedData);
     }
   }
 
-  Pecos::SurrogateDataVars sdv(vars.continuous_variables(),
-    vars.discrete_int_variables(), vars.discrete_real_variables(),
-    Pecos::DEEP_COPY);
-  int eval_id = INT_MAX; // suppress eval id tracking for this use case
+  Pecos::SurrogateDataVars sdv(
+      vars.continuous_variables(), vars.discrete_int_variables(),
+      vars.discrete_real_variables(), Pecos::DEEP_COPY);
+  int eval_id = INT_MAX;  // suppress eval id tracking for this use case
   if (computeAdditive || badScalingFlag) {
-    for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it) {
+    for (it = surrogateFnIndices.begin(); it != surrogateFnIndices.end();
+         ++it) {
       index = *it;
       Pecos::SurrogateDataResp sdr(dataOrder, numVars);
       if (dataOrder & 1)
-	discrepCalc.compute_additive(truth_response.function_value(index),
-	  approx_response.function_value(index), sdr.response_function_view());
+        discrepCalc.compute_additive(truth_response.function_value(index),
+                                     approx_response.function_value(index),
+                                     sdr.response_function_view());
       if (dataOrder & 2) {
-	RealVector sdr_grad(sdr.response_gradient_view()); // compiler reqmt
-	discrepCalc.compute_additive(
-	  truth_response.function_gradient_view(index),
-	  approx_response.function_gradient_view(index), sdr_grad);
+        RealVector sdr_grad(sdr.response_gradient_view());  // compiler reqmt
+        discrepCalc.compute_additive(
+            truth_response.function_gradient_view(index),
+            approx_response.function_gradient_view(index), sdr_grad);
       }
       if (dataOrder & 4) {
-	RealSymMatrix sdr_hess(sdr.response_hessian_view()); // compiler reqmt
-	discrepCalc.compute_additive(truth_response.function_hessian(index),
-	  approx_response.function_hessian(index), sdr_hess);
+        RealSymMatrix sdr_hess(sdr.response_hessian_view());  // compiler reqmt
+        discrepCalc.compute_additive(truth_response.function_hessian(index),
+                                     approx_response.function_hessian(index),
+                                     sdr_hess);
       }
-      if (!quiet_flag)
-	Cout << "\nAdditive correction computed:\n" << sdr;
+      if (!quiet_flag) Cout << "\nAdditive correction computed:\n" << sdr;
 
       // shallow copy of vars/resp into the active SurrogateData instance
       Approximation& add_corr = addCorrections[index];
-      if (addAnchor) add_corr.clear_current_active_data(); // Taylor,TANA,QMEA
-      add_corr.add(sdv, false, sdr, false, addAnchor, eval_id);// shallow x2
+      if (addAnchor) add_corr.clear_current_active_data();  // Taylor,TANA,QMEA
+      add_corr.add(sdv, false, sdr, false, addAnchor, eval_id);  // shallow x2
     }
   }
 
   if (computeMultiplicative && !badScalingFlag) {
-    for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it) {
+    for (it = surrogateFnIndices.begin(); it != surrogateFnIndices.end();
+         ++it) {
       index = *it;
       Pecos::SurrogateDataResp sdr(dataOrder, numVars);
       if (dataOrder & 1)
-	discrepCalc.compute_multiplicative(truth_response.function_value(index),
-	  approx_response.function_value(index), sdr.response_function_view());
+        discrepCalc.compute_multiplicative(
+            truth_response.function_value(index),
+            approx_response.function_value(index),
+            sdr.response_function_view());
       if (dataOrder & 2) {
-	RealVector sdr_grad(sdr.response_gradient_view()); // compiler reqmt
-	discrepCalc.compute_multiplicative(truth_response.function_value(index),
-	  truth_response.function_gradient_view(index),
-	  approx_response.function_value(index),
-	  approx_response.function_gradient_view(index), sdr_grad);
+        RealVector sdr_grad(sdr.response_gradient_view());  // compiler reqmt
+        discrepCalc.compute_multiplicative(
+            truth_response.function_value(index),
+            truth_response.function_gradient_view(index),
+            approx_response.function_value(index),
+            approx_response.function_gradient_view(index), sdr_grad);
       }
       if (dataOrder & 4) {
-	RealSymMatrix sdr_hess(sdr.response_hessian_view());  // compiler reqmt
-	discrepCalc.compute_multiplicative(truth_response.function_value(index),
-	  truth_response.function_gradient_view(index),
-	  truth_response.function_hessian(index),
-	  approx_response.function_value(index),
-	  approx_response.function_gradient_view(index),
-	  approx_response.function_hessian(index), sdr_hess);
+        RealSymMatrix sdr_hess(sdr.response_hessian_view());  // compiler reqmt
+        discrepCalc.compute_multiplicative(
+            truth_response.function_value(index),
+            truth_response.function_gradient_view(index),
+            truth_response.function_hessian(index),
+            approx_response.function_value(index),
+            approx_response.function_gradient_view(index),
+            approx_response.function_hessian(index), sdr_hess);
       }
-      if (!quiet_flag)
-	Cout << "\nMultiplicative correction computed:\n" << sdr;
+      if (!quiet_flag) Cout << "\nMultiplicative correction computed:\n" << sdr;
 
       // update anchor data; shallow cp of vars/resp into active SurrogateData
       Approximation& mult_corr = multCorrections[index];
-      if (addAnchor) mult_corr.clear_current_active_data(); // Taylor,TANA,QMEA
-      mult_corr.add(sdv, false, sdr, false, addAnchor, eval_id);// shallow x2
+      if (addAnchor) mult_corr.clear_current_active_data();  // Taylor,TANA,QMEA
+      mult_corr.add(sdv, false, sdr, false, addAnchor, eval_id);  // shallow x2
     }
   }
 
@@ -243,49 +255,45 @@ compute(const Variables& vars, const Response& truth_response,
   if (correctionType == COMBINED_CORRECTION && correctionComputed &&
       !badScalingFlag) {
     RealVector alpha_corr_fns(approxFnsPrevCenter),
-                beta_corr_fns(approxFnsPrevCenter);
+        beta_corr_fns(approxFnsPrevCenter);
     apply_additive(correctionPrevCenterPt, alpha_corr_fns);
     apply_multiplicative(correctionPrevCenterPt, beta_corr_fns);
-    for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it) {
+    for (it = surrogateFnIndices.begin(); it != surrogateFnIndices.end();
+         ++it) {
       index = *it;
       Real numer = truthFnsPrevCenter[index] - beta_corr_fns[index];
-      Real denom =     alpha_corr_fns[index] - beta_corr_fns[index];
-      combineFactors[index] = (!Pecos::is_small(denom)) ?
-	numer/denom : 1.;
+      Real denom = alpha_corr_fns[index] - beta_corr_fns[index];
+      combineFactors[index] = (!Pecos::is_small(denom)) ? numer / denom : 1.;
 #ifdef DEBUG
       Cout << "truth prev = " << truthFnsPrevCenter[index]
-	   << " additive prev = " << alpha_corr_fns[index]
-	   << " multiplicative prev = " << beta_corr_fns[index]
-	   << "\nnumer = " << numer << " denom = " << denom << '\n';
+           << " additive prev = " << alpha_corr_fns[index]
+           << " multiplicative prev = " << beta_corr_fns[index]
+           << "\nnumer = " << numer << " denom = " << denom << '\n';
 #endif
     }
     if (!quiet_flag)
       Cout << "\nCombined correction computed: combination factors =\n"
-	   << combineFactors << '\n';
+           << combineFactors << '\n';
 
 #ifdef DEBUG
     Cout << "Testing final match at previous point\n";
     Response approx_copy = approx_response.copy();
-    ActiveSet fns_set = approx_response.active_set(); // copy
-    fns_set.request_values(1); // correct fn values only
+    ActiveSet fns_set = approx_response.active_set();  // copy
+    fns_set.request_values(1);                         // correct fn values only
     approx_copy.active_set(fns_set);
     approx_copy.function_values(approxFnsPrevCenter);
     apply(correctionPrevCenterPt, approx_copy);
 #endif
   }
 
-  if (computeAdditive || computeMultiplicative)
-    correctionComputed = true;
+  if (computeAdditive || computeMultiplicative) correctionComputed = true;
 }
 
-
-void DiscrepancyCorrection::
-compute(//const Variables& vars,
-	const Response& truth_response, const Response& approx_response,
-	Response& discrep_response,
-        //Response& add_discrep_response, Response& mult_discrep_response,
-	bool quiet_flag)
-{
+void DiscrepancyCorrection::compute(  // const Variables& vars,
+    const Response& truth_response, const Response& approx_response,
+    Response& discrep_response,
+    // Response& add_discrep_response, Response& mult_discrep_response,
+    bool quiet_flag) {
   // The incoming approx_response is assumed to be uncorrected (i.e.,
   // correction has not been applied to it previously).  In this case,
   // it is not necessary to back out a previous correction, and the
@@ -296,7 +304,7 @@ compute(//const Variables& vars,
   if (discrep_response.is_null()) {
     if (truth_response.active_set() != approx_response.active_set()) {
       Cerr << "Error: active set inconsistency between truth and approx in "
-	   << "DiscrepancyCorrection::compute()." << std::endl;
+           << "DiscrepancyCorrection::compute()." << std::endl;
       abort_handler(-1);
     }
     discrep_response = truth_response.copy();
@@ -307,88 +315,94 @@ compute(//const Variables& vars,
   // require additional fn evaluation of previous pt on current surrogate.
   // This could combine with DB lookups within apply_multiplicative()
   // (approx re-evaluated if not found in DB search).
-  int index; size_t j, k; StSIter it;
-  //if (correctionType == COMBINED_CORRECTION && correctionComputed) {
-  //  correctionPrevCenterPt = correctionCenterPt;
-  //  approxFnsPrevCenter    = approxFnsCenter;
-  //  truthFnsPrevCenter     = truthFnsCenter;
-  //}
-  // update current center data arrays (deep copies for history)
-  const RealVector&  truth_fns =  truth_response.function_values();
+  int index;
+  size_t j, k;
+  StSIter it;
+  // if (correctionType == COMBINED_CORRECTION && correctionComputed) {
+  //   correctionPrevCenterPt = correctionCenterPt;
+  //   approxFnsPrevCenter    = approxFnsCenter;
+  //   truthFnsPrevCenter     = truthFnsCenter;
+  // }
+  //  update current center data arrays (deep copies for history)
+  const RealVector& truth_fns = truth_response.function_values();
   const RealVector& approx_fns = approx_response.function_values();
-  bool fall_back
-    = (computeMultiplicative && correctionOrder >= 1 && !surrModel);
-  //if (correctionType == COMBINED_CORRECTION)
-  //  { copy_data(c_vars, correctionCenterPt); truthFnsCenter = truth_fns; }
+  bool fall_back =
+      (computeMultiplicative && correctionOrder >= 1 && !surrModel);
+  // if (correctionType == COMBINED_CORRECTION)
+  //   { copy_data(c_vars, correctionCenterPt); truthFnsCenter = truth_fns; }
   if (/*correctionType == COMBINED_CORRECTION ||*/ fall_back)
     approxFnsCenter = approx_fns;
   if (fall_back) approxGradsCenter = approx_response.function_gradients();
 
   // detect numerical issues with multiplicative scaling
-  badScalingFlag = (computeMultiplicative) ?
-    discrepCalc.check_multiplicative(truth_fns, approx_fns, correctionOrder) :
-    false;
+  badScalingFlag = (computeMultiplicative)
+                       ? discrepCalc.check_multiplicative(truth_fns, approx_fns,
+                                                          correctionOrder)
+                       : false;
   if (badScalingFlag)
     Cerr << "\nWarning: Multiplicative correction temporarily deactivated "
-	 << "due to functions near zero.\n         Additive correction will "
-	 << "be used.\n";
+         << "due to functions near zero.\n         Additive correction will "
+         << "be used.\n";
 
   // compute additive/multiplicative discrepancy and store in discrep_response
   const ShortArray& discrep_asv = discrep_response.active_set_request_vector();
-  for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it) {
+  for (it = surrogateFnIndices.begin(); it != surrogateFnIndices.end(); ++it) {
     index = *it;
     if (computeAdditive || badScalingFlag) {
-      if ( (dataOrder & 1) && (discrep_asv[index] & 1) )
-	discrepCalc.compute_additive(truth_response.function_value(index),
-	  approx_response.function_value(index),
-	  discrep_response.function_value_view(index));
-      if ( (dataOrder & 2) && (discrep_asv[index] & 2) ) {
-	RealVector discrep_grad(discrep_response.function_gradient_view(index));
-	discrepCalc.compute_additive(
-	  truth_response.function_gradient_view(index),
-	  approx_response.function_gradient_view(index), discrep_grad);
+      if ((dataOrder & 1) && (discrep_asv[index] & 1))
+        discrepCalc.compute_additive(
+            truth_response.function_value(index),
+            approx_response.function_value(index),
+            discrep_response.function_value_view(index));
+      if ((dataOrder & 2) && (discrep_asv[index] & 2)) {
+        RealVector discrep_grad(discrep_response.function_gradient_view(index));
+        discrepCalc.compute_additive(
+            truth_response.function_gradient_view(index),
+            approx_response.function_gradient_view(index), discrep_grad);
       }
-      if ( (dataOrder & 4) && (discrep_asv[index] & 4) ) {
-	RealSymMatrix
-	  discrep_hess(discrep_response.function_hessian_view(index));
-	discrepCalc.compute_additive(truth_response.function_hessian(index),
-	  approx_response.function_hessian(index), discrep_hess);
+      if ((dataOrder & 4) && (discrep_asv[index] & 4)) {
+        RealSymMatrix discrep_hess(
+            discrep_response.function_hessian_view(index));
+        discrepCalc.compute_additive(truth_response.function_hessian(index),
+                                     approx_response.function_hessian(index),
+                                     discrep_hess);
       }
-    }
-    else if (correctionType == COMBINED_CORRECTION) {
+    } else if (correctionType == COMBINED_CORRECTION) {
       // for a single discrep_response, only a single correction type can be
       // applied (corrections can be combined when applying but must be stored
       // separately when computing)
       Cerr << "Error: combined corrections not currently supported for compute"
-	   << "() applied to a single response discrepancy." << std::endl;
+           << "() applied to a single response discrepancy." << std::endl;
       abort_handler(-1);
-      //compute_additive(truth_response, approx_response, index,
+      // compute_additive(truth_response, approx_response, index,
       //	         add_discrep_fn, add_discrep_grad, add_discrep_hess);
-      //compute_multiplicative(truth_response, approx_response, index,
+      // compute_multiplicative(truth_response, approx_response, index,
       //		       mult_discrep_fn, mult_discrep_grad,
-      // 		       mult_discrep_hess);
-    }
-    else if (computeMultiplicative) {
-      if ( (dataOrder & 1) && (discrep_asv[index] & 1) )
-	discrepCalc.compute_multiplicative(truth_response.function_value(index),
-	  approx_response.function_value(index),
-	  discrep_response.function_value_view(index));
-      if ( (dataOrder & 2) && (discrep_asv[index] & 2) ) {
-	RealVector discrep_grad(discrep_response.function_gradient_view(index));
-	discrepCalc.compute_multiplicative(truth_response.function_value(index),
-	  truth_response.function_gradient_view(index),
-	  approx_response.function_value(index),
-	  approx_response.function_gradient_view(index), discrep_grad);
+      //  		       mult_discrep_hess);
+    } else if (computeMultiplicative) {
+      if ((dataOrder & 1) && (discrep_asv[index] & 1))
+        discrepCalc.compute_multiplicative(
+            truth_response.function_value(index),
+            approx_response.function_value(index),
+            discrep_response.function_value_view(index));
+      if ((dataOrder & 2) && (discrep_asv[index] & 2)) {
+        RealVector discrep_grad(discrep_response.function_gradient_view(index));
+        discrepCalc.compute_multiplicative(
+            truth_response.function_value(index),
+            truth_response.function_gradient_view(index),
+            approx_response.function_value(index),
+            approx_response.function_gradient_view(index), discrep_grad);
       }
-      if ( (dataOrder & 4) && (discrep_asv[index] & 4) ) {
-	RealSymMatrix
-	  discrep_hess(discrep_response.function_hessian_view(index));
-	discrepCalc.compute_multiplicative(truth_response.function_value(index),
-	  truth_response.function_gradient_view(index),
-	  truth_response.function_hessian(index),
-	  approx_response.function_value(index),
-	  approx_response.function_gradient_view(index),
-	  approx_response.function_hessian(index), discrep_hess);
+      if ((dataOrder & 4) && (discrep_asv[index] & 4)) {
+        RealSymMatrix discrep_hess(
+            discrep_response.function_hessian_view(index));
+        discrepCalc.compute_multiplicative(
+            truth_response.function_value(index),
+            truth_response.function_gradient_view(index),
+            truth_response.function_hessian(index),
+            approx_response.function_value(index),
+            approx_response.function_gradient_view(index),
+            approx_response.function_hessian(index), discrep_hess);
       }
     }
   }
@@ -400,74 +414,72 @@ compute(//const Variables& vars,
       Cout << "\nMultiplicative correction computed:\n" << discrep_response;
   }
 
-  //if (correctionType == COMBINED_CORRECTION && correctionComputed &&
-  //    !badScalingFlag)
-  //  compute_combine_factors(add_discrep_response, mult_discrep_response);
+  // if (correctionType == COMBINED_CORRECTION && correctionComputed &&
+  //     !badScalingFlag)
+  //   compute_combine_factors(add_discrep_response, mult_discrep_response);
 }
 
-
-void DiscrepancyCorrection::
-compute(const VariablesArray& vars_array, const ResponseArray& 
-        truth_response_array, const ResponseArray& approx_response_array, 
-	bool quiet_flag)
-{
+void DiscrepancyCorrection::compute(const VariablesArray& vars_array,
+                                    const ResponseArray& truth_response_array,
+                                    const ResponseArray& approx_response_array,
+                                    bool quiet_flag) {
   // The incoming approx_response is assumed to be uncorrected (i.e.,
   // correction has not been applied to it previously).  In this case,
   // it is not necessary to back out a previous correction, and the
   // computation of the new correction is straightforward.
 
-  size_t i, index; StSIter it;
-  
-  for (i=0; i<vars_array.size(); i++)
-    compute(vars_array[i], truth_response_array[i], approx_response_array[i], 
-	    quiet_flag);
+  size_t i, index;
+  StSIter it;
 
-  for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it) {
+  for (i = 0; i < vars_array.size(); i++)
+    compute(vars_array[i], truth_response_array[i], approx_response_array[i],
+            quiet_flag);
+
+  for (it = surrogateFnIndices.begin(); it != surrogateFnIndices.end(); ++it) {
     index = *it;
     addCorrections[index].build();
-    //const String GPstring = "modDiscrep";
-    //const String GPPrefix = "GP";
-    //addCorrections[index].export_model(GPstring, GPPrefix, ALGEBRAIC_FILE);
+    // const String GPstring = "modDiscrep";
+    // const String GPPrefix = "GP";
+    // addCorrections[index].export_model(GPstring, GPPrefix, ALGEBRAIC_FILE);
   }
 }
-
 
 /*
 void DiscrepancyCorrection::
 compute_additive(const Response& truth_response,
-		 const Response& approx_response, int index,
-		 Real& discrep_fn, RealVector& discrep_grad,
-		 RealSymMatrix& discrep_hess)
+                 const Response& approx_response, int index,
+                 Real& discrep_fn, RealVector& discrep_grad,
+                 RealSymMatrix& discrep_hess)
 {
   // -----------------------------
   // Additive 0th order correction
   // -----------------------------
   if (dataOrder & 1)
     discrepCalc.compute_additive(truth_response.function_value(index)
-				 approx_response.function_value(index),
-				 discrep_fn);
+                                 approx_response.function_value(index),
+                                 discrep_fn);
   // -----------------------------
   // Additive 1st order correction
   // -----------------------------
   if (dataOrder & 2)
     discrepCalc.compute_additive(truth_response.function_gradient_view(index);
-				 approx_response.function_gradient_view(index),
-				 discrep_grad);
+                                 approx_response.function_gradient_view(index),
+                                 discrep_grad);
   // -----------------------------
   // Additive 2nd order correction
   // -----------------------------
   if (dataOrder & 4)
     discrepCalc.compute_additive(truth_response.function_hessian(index);
-				 approx_response.function_hessian(index),
-				 discrep_hess);
+                                 approx_response.function_hessian(index),
+                                 discrep_hess);
 }
 
 
 void DiscrepancyCorrection::
 compute_multiplicative(const Response& truth_response,
-		       const Response& approx_response, int index,
-		       Real& discrep_fn, RealVector& discrep_grad,
-		       RealSymMatrix& discrep_hess)
+                       const Response& approx_response, int index,
+                       Real& discrep_fn, RealVector& discrep_grad,
+                       RealSymMatrix& discrep_hess)
 {
   // -----------------------------------
   // Multiplicative 2nd order correction
@@ -499,9 +511,9 @@ compute_multiplicative(const Response& truth_response,
 
 void DiscrepancyCorrection::
 compute_additive(const Response& truth_response,
-		 const Response& approx_response, int index,
-		 Real& discrep_fn, RealVector& discrep_grad,
-		 RealSymMatrix& discrep_hess)
+                 const Response& approx_response, int index,
+                 Real& discrep_fn, RealVector& discrep_grad,
+                 RealSymMatrix& discrep_hess)
 {
   // -----------------------------
   // Additive 0th order correction
@@ -525,10 +537,10 @@ compute_additive(const Response& truth_response,
     if ( (dataOrder & 4) && !discrep_hess.empty() ) {
       const RealSymMatrix&  truth_hess = truth_response.function_hessian(index);
       const RealSymMatrix& approx_hess
-	= approx_response.function_hessian(index);
+        = approx_response.function_hessian(index);
       for (size_t j=0; j<numVars; ++j)
         for (size_t k=0; k<=j; ++k) // lower half
-	  discrep_hess(j,k) = truth_hess(j,k) - approx_hess(j,k);
+          discrep_hess(j,k) = truth_hess(j,k) - approx_hess(j,k);
     }
   }
 }
@@ -536,9 +548,9 @@ compute_additive(const Response& truth_response,
 
 void DiscrepancyCorrection::
 compute_multiplicative(const Response& truth_response,
-		       const Response& approx_response, int index,
-		       Real& discrep_fn, RealVector& discrep_grad,
-		       RealSymMatrix& discrep_hess)
+                       const Response& approx_response, int index,
+                       Real& discrep_fn, RealVector& discrep_grad,
+                       RealSymMatrix& discrep_hess)
 {
   // -----------------------------------
   // Multiplicative 0th order correction
@@ -574,10 +586,10 @@ compute_multiplicative(const Response& truth_response,
     Real f_lo_2 = approx_fn * approx_fn;
     for (size_t j=0; j<numVars; ++j)
       for (size_t k=0; k<=j; ++k) // lower half
-	discrep_hess(j,k) = ( truth_hess(j,k) * approx_fn - truth_fn *
-	  approx_hess(j,k) + 2. * ratio * approx_grad[j] * approx_grad[k] -
-	  truth_grad[j] * approx_grad[k] - approx_grad[j] * truth_grad[k] )
-	  / f_lo_2;
+        discrep_hess(j,k) = ( truth_hess(j,k) * approx_fn - truth_fn *
+          approx_hess(j,k) + 2. * ratio * approx_grad[j] * approx_grad[k] -
+          truth_grad[j] * approx_grad[k] - approx_grad[j] * truth_grad[k] )
+          / f_lo_2;
   }
 }
 
@@ -599,65 +611,65 @@ check_multiplicative(const RealVector& truth_fns, const RealVector& approx_fns)
   for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it) {
     index = *it;
     if ( std::fabs(approx_fns[index]) < Pecos::SMALL_NUMBER ||
-	 ( correctionOrder == 0 &&
-	   std::fabs(truth_fns[index]) < Pecos::SMALL_NUMBER ) )
+         ( correctionOrder == 0 &&
+           std::fabs(truth_fns[index]) < Pecos::SMALL_NUMBER ) )
       { bad_scaling = true; break; }
   }
   if (bad_scaling)
     Cerr << "\nWarning: Multiplicative correction temporarily deactivated "
-	 << "due to functions near zero.\n         Additive correction will "
-	 << "be used.\n";
+         << "due to functions near zero.\n         Additive correction will "
+         << "be used.\n";
   return bad_scaling;
 }
 */
 
-
-void DiscrepancyCorrection::
-apply(const Variables& vars, Response& approx_response, bool quiet_flag)
-{
-  if (!correctionType || !correctionComputed)
-    return;
+void DiscrepancyCorrection::apply(const Variables& vars,
+                                  Response& approx_response, bool quiet_flag) {
+  if (!correctionType || !correctionComputed) return;
 
   // update approx_response with the alpha/beta/combined corrected data
-  if (correctionType == ADDITIVE_CORRECTION || badScalingFlag) // use alpha
+  if (correctionType == ADDITIVE_CORRECTION || badScalingFlag)  // use alpha
     apply_additive(vars, approx_response);
-  else if (correctionType == MULTIPLICATIVE_CORRECTION) // use beta
+  else if (correctionType == MULTIPLICATIVE_CORRECTION)  // use beta
     apply_multiplicative(vars, approx_response);
-  else if (correctionType == COMBINED_CORRECTION) { // use both alpha and beta
+  else if (correctionType == COMBINED_CORRECTION) {  // use both alpha and beta
 
     // compute {add,mult}_response contributions to combined correction
     Response add_response = approx_response.copy(),
-            mult_response = approx_response.copy();
+             mult_response = approx_response.copy();
     apply_additive(vars, add_response);
     apply_multiplicative(vars, mult_response);
 
     // compute convex combination of add_response and mult_response
-    StSIter it; int index; size_t j, k;
+    StSIter it;
+    int index;
+    size_t j, k;
     const ShortArray& asv = approx_response.active_set_request_vector();
-    for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it) {
+    for (it = surrogateFnIndices.begin(); it != surrogateFnIndices.end();
+         ++it) {
       index = *it;
       Real cf = combineFactors[index], ccf = 1. - cf;
       if (asv[index] & 1) {
-	Real corrected_fn =  cf *  add_response.function_value(index)
-	                  + ccf * mult_response.function_value(index);
-	approx_response.function_value(corrected_fn, index);
+        Real corrected_fn = cf * add_response.function_value(index) +
+                            ccf * mult_response.function_value(index);
+        approx_response.function_value(corrected_fn, index);
       }
       if (asv[index] & 2) {
-	RealVector corrected_grad
-	  = approx_response.function_gradient_view(index);
-	const Real*  add_grad =  add_response.function_gradient(index);
-	const Real* mult_grad = mult_response.function_gradient(index);
-	for (j=0; j<numVars; j++)
-	  corrected_grad[j] = cf * add_grad[j] + ccf * mult_grad[j];
+        RealVector corrected_grad =
+            approx_response.function_gradient_view(index);
+        const Real* add_grad = add_response.function_gradient(index);
+        const Real* mult_grad = mult_response.function_gradient(index);
+        for (j = 0; j < numVars; j++)
+          corrected_grad[j] = cf * add_grad[j] + ccf * mult_grad[j];
       }
       if (asv[index] & 4) {
-	RealSymMatrix corrected_hess
-	  = approx_response.function_hessian_view(index);
-	const RealSymMatrix&  add_hess =  add_response.function_hessian(index);
-	const RealSymMatrix& mult_hess = mult_response.function_hessian(index);
-	for (j=0; j<numVars; ++j)
-	  for (k=0; k<=j; ++k)
-	    corrected_hess(j,k) = cf * add_hess(j,k) + ccf * mult_hess(j,k);
+        RealSymMatrix corrected_hess =
+            approx_response.function_hessian_view(index);
+        const RealSymMatrix& add_hess = add_response.function_hessian(index);
+        const RealSymMatrix& mult_hess = mult_response.function_hessian(index);
+        for (j = 0; j < numVars; ++j)
+          for (k = 0; k <= j; ++k)
+            corrected_hess(j, k) = cf * add_hess(j, k) + ccf * mult_hess(j, k);
       }
     }
   }
@@ -666,18 +678,17 @@ apply(const Variables& vars, Response& approx_response, bool quiet_flag)
     Cout << "\nCorrection applied: corrected response =\n" << approx_response;
 }
 
-
-void DiscrepancyCorrection::
-apply_additive(const Variables& vars, Response& approx_response)
-{
-  size_t index; StSIter it;
+void DiscrepancyCorrection::apply_additive(const Variables& vars,
+                                           Response& approx_response) {
+  size_t index;
+  StSIter it;
   const ShortArray& asv = approx_response.active_set_request_vector();
-  for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it) {
+  for (it = surrogateFnIndices.begin(); it != surrogateFnIndices.end(); ++it) {
     index = *it;
     Approximation& add_corr = addCorrections[index];
     if (asv[index] & 1)
-      approx_response.function_value(approx_response.function_value(index) +
-				     add_corr.value(vars), index);
+      approx_response.function_value(
+          approx_response.function_value(index) + add_corr.value(vars), index);
     if (correctionOrder >= 1 && asv[index] & 2) {
       // update view (no reassignment):
       RealVector approx_grad = approx_response.function_gradient_view(index);
@@ -691,26 +702,28 @@ apply_additive(const Variables& vars, Response& approx_response)
   }
 }
 
-
-void DiscrepancyCorrection::
-apply_multiplicative(const Variables& vars, Response& approx_response)
-{
+void DiscrepancyCorrection::apply_multiplicative(const Variables& vars,
+                                                 Response& approx_response) {
   // Determine needs for retrieving uncorrected data due to cases where
   // the data required to apply the correction is different from the
   // active data being corrected.
   bool fn_db_search = false, grad_db_search = false;
   const ShortArray& asv = approx_response.active_set_request_vector();
-  ShortArray fn_db_asv, grad_db_asv; StSIter it; size_t j, k, index;
-  for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it) {
+  ShortArray fn_db_asv, grad_db_asv;
+  StSIter it;
+  size_t j, k, index;
+  for (it = surrogateFnIndices.begin(); it != surrogateFnIndices.end(); ++it) {
     index = *it;
-    if ( !(asv[index] & 1) && ( ((asv[index] & 2) && correctionOrder >= 1) ||
-				((asv[index] & 4) && correctionOrder == 2) ) ) {
+    if (!(asv[index] & 1) && (((asv[index] & 2) && correctionOrder >= 1) ||
+                              ((asv[index] & 4) && correctionOrder == 2))) {
       if (fn_db_asv.empty()) fn_db_asv.assign(numFns, 0);
-      fn_db_asv[index] = 1; fn_db_search = true;
+      fn_db_asv[index] = 1;
+      fn_db_search = true;
     }
-    if ( !(asv[index] & 2) && (asv[index] & 4) && correctionOrder >= 1) {
+    if (!(asv[index] & 2) && (asv[index] & 4) && correctionOrder >= 1) {
       if (grad_db_asv.empty()) grad_db_asv.assign(numFns, 0);
-      grad_db_asv[index] = 2; grad_db_search = true;
+      grad_db_asv[index] = 2;
+      grad_db_search = true;
     }
   }
   // Retrieve any uncorrected fn values/gradients required for use in gradient
@@ -723,121 +736,121 @@ apply_multiplicative(const Variables& vars, Response& approx_response)
   // is not initialized, we fall back to using uncorrected data from the center
   // of the current trust region (TR).  This still satisifies the required
   // consistency at the TR center, but is less accurate over the rest of the TR.
-  RealVector uncorr_fns; RealMatrix uncorr_grads; RealVector empty_rv;
+  RealVector uncorr_fns;
+  RealMatrix uncorr_grads;
+  RealVector empty_rv;
   if (fn_db_search) {
     uncorr_fns.sizeUninitialized(numFns);
-    if (!surrModel) { // fallback position
+    if (!surrModel) {  // fallback position
       Cerr << "Warning: original function values not available at the current "
-	   << "point.\n         Multiplicative correction falling back to "
-	   << "function values from the correction point." << std::endl;
-      for (size_t i=0; i<numFns; ++i)
-	if (fn_db_asv[i])
-	  uncorr_fns[i] = approxFnsCenter[i];
-    }
-    else {
+           << "point.\n         Multiplicative correction falling back to "
+           << "function values from the correction point." << std::endl;
+      for (size_t i = 0; i < numFns; ++i)
+        if (fn_db_asv[i]) uncorr_fns[i] = approxFnsCenter[i];
+    } else {
       const Response& db_resp = search_db(vars, fn_db_asv);
-      for (size_t i=0; i<numFns; ++i)
-	if (fn_db_asv[i])
-	  uncorr_fns[i] = db_resp.function_value(i);
+      for (size_t i = 0; i < numFns; ++i)
+        if (fn_db_asv[i]) uncorr_fns[i] = db_resp.function_value(i);
     }
   }
   if (grad_db_search) {
     uncorr_grads.shapeUninitialized(numVars, numFns);
-    if (!surrModel) { // fallback position
+    if (!surrModel) {  // fallback position
       Cerr << "Warning: original function gradients not available at the "
-	   << "current point.\n         Multiplicative correction falling back "
-	   << "to function gradients from the correction point." << std::endl;
-      for (int i=0; i<numFns; ++i)
-	if (grad_db_asv[i])
-	  Teuchos::setCol(Teuchos::getCol(Teuchos::View, approxGradsCenter, i),
-			  i, uncorr_grads);
-    }
-    else {
+           << "current point.\n         Multiplicative correction falling back "
+           << "to function gradients from the correction point." << std::endl;
+      for (int i = 0; i < numFns; ++i)
+        if (grad_db_asv[i])
+          Teuchos::setCol(Teuchos::getCol(Teuchos::View, approxGradsCenter, i),
+                          i, uncorr_grads);
+    } else {
       const Response& db_resp = search_db(vars, grad_db_asv);
-      for (int i=0; i<numFns; ++i)
-	if (grad_db_asv[i])
-	  Teuchos::setCol(db_resp.function_gradient_view(i), i, uncorr_grads);
+      for (int i = 0; i < numFns; ++i)
+        if (grad_db_asv[i])
+          Teuchos::setCol(db_resp.function_gradient_view(i), i, uncorr_grads);
     }
   }
 
-  for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it) {
+  for (it = surrogateFnIndices.begin(); it != surrogateFnIndices.end(); ++it) {
     index = *it;
-    Approximation&    mult_corr = multCorrections[index];
-    Real                fn_corr = mult_corr.value(vars);
-    const RealVector& grad_corr = (correctionOrder >= 1 && (asv[index] & 6)) ?
-      mult_corr.gradient(vars) : empty_rv;
+    Approximation& mult_corr = multCorrections[index];
+    Real fn_corr = mult_corr.value(vars);
+    const RealVector& grad_corr = (correctionOrder >= 1 && (asv[index] & 6))
+                                      ? mult_corr.gradient(vars)
+                                      : empty_rv;
     // apply corrections in descending derivative order to avoid
     // disturbing original approx fn/grad values
     if (asv[index] & 4) {
       // update view (no reassignment):
       RealSymMatrix approx_hess = approx_response.function_hessian_view(index);
-      const Real*   approx_grad = (grad_db_search) ? uncorr_grads[index] :
-	approx_response.function_gradient(index);
+      const Real* approx_grad = (grad_db_search)
+                                    ? uncorr_grads[index]
+                                    : approx_response.function_gradient(index);
       switch (correctionOrder) {
-      case 2: {
-	const RealSymMatrix& hess_corr = mult_corr.hessian(vars);
-	const Real& approx_fn = (fn_db_search) ? uncorr_fns[index] :
-	  approx_response.function_value(index);
-	for (j=0; j<numVars; ++j)
-	  for (k=0; k<=j; ++k)
-	    approx_hess(j,k) = approx_hess(j,k) * fn_corr
-	      + hess_corr(j,k) * approx_fn + grad_corr[j] * approx_grad[k]
-	      + grad_corr[k] * approx_grad[j];
-	break;
-      }
-      case 1:
-	for (j=0; j<numVars; ++j)
-	  for (k=0; k<=j; ++k)
-	    approx_hess(j,k) = approx_hess(j,k) * fn_corr
-	      + grad_corr[j] * approx_grad[k] + grad_corr[k] * approx_grad[j];
-	break;
-      case 0:
-	approx_hess *= fn_corr;
-	break;
+        case 2: {
+          const RealSymMatrix& hess_corr = mult_corr.hessian(vars);
+          const Real& approx_fn = (fn_db_search)
+                                      ? uncorr_fns[index]
+                                      : approx_response.function_value(index);
+          for (j = 0; j < numVars; ++j)
+            for (k = 0; k <= j; ++k)
+              approx_hess(j, k) =
+                  approx_hess(j, k) * fn_corr + hess_corr(j, k) * approx_fn +
+                  grad_corr[j] * approx_grad[k] + grad_corr[k] * approx_grad[j];
+          break;
+        }
+        case 1:
+          for (j = 0; j < numVars; ++j)
+            for (k = 0; k <= j; ++k)
+              approx_hess(j, k) = approx_hess(j, k) * fn_corr +
+                                  grad_corr[j] * approx_grad[k] +
+                                  grad_corr[k] * approx_grad[j];
+          break;
+        case 0:
+          approx_hess *= fn_corr;
+          break;
       }
     }
     if (asv[index] & 2) {
       // update view (no reassignment):
       RealVector approx_grad = approx_response.function_gradient_view(index);
-      const Real& approx_fn  = (fn_db_search) ? uncorr_fns[index] :
-	approx_response.function_value(index);
-      approx_grad *= fn_corr; // all correction orders
+      const Real& approx_fn = (fn_db_search)
+                                  ? uncorr_fns[index]
+                                  : approx_response.function_value(index);
+      approx_grad *= fn_corr;  // all correction orders
       if (correctionOrder >= 1)
-	for (j=0; j<numVars; ++j)
-	  approx_grad[j] += grad_corr[j] * approx_fn;
+        for (j = 0; j < numVars; ++j)
+          approx_grad[j] += grad_corr[j] * approx_fn;
     }
     if (asv[index] & 1)
-      approx_response.function_value(approx_response.function_value(index) *
-				     fn_corr, index);
+      approx_response.function_value(
+          approx_response.function_value(index) * fn_corr, index);
   }
 }
 
-
-void DiscrepancyCorrection::
-compute_variance(const VariablesArray& vars_array, RealMatrix& approx_variance,
-    		 bool quiet_flag)
-{
-  int index; StSIter it;
+void DiscrepancyCorrection::compute_variance(const VariablesArray& vars_array,
+                                             RealMatrix& approx_variance,
+                                             bool quiet_flag) {
+  int index;
+  StSIter it;
   RealVector pred_var(vars_array.size());
-  //Cout << "Vars array size = " << vars_array.size();
-  for (it=surrogateFnIndices.begin(); it!=surrogateFnIndices.end(); ++it) {
+  // Cout << "Vars array size = " << vars_array.size();
+  for (it = surrogateFnIndices.begin(); it != surrogateFnIndices.end(); ++it) {
     index = *it;
-    for (int i=0; i < vars_array.size(); i++) {
-      //std::cout << "vars array = " << vars_array[i] << std::endl;
+    for (int i = 0; i < vars_array.size(); i++) {
+      // std::cout << "vars array = " << vars_array[i] << std::endl;
       pred_var[i] = addCorrections[index].prediction_variance(vars_array[i]);
     }
     Teuchos::setCol(pred_var, index, approx_variance);
   }
 
-  // KAM: turn this back on? 
-  //if (!quiet_flag)
-    //Cout << "\nCorrection variances computed:\n" << approx_variance;
+  // KAM: turn this back on?
+  // if (!quiet_flag)
+  // Cout << "\nCorrection variances computed:\n" << approx_variance;
 }
 
-
-const Response& DiscrepancyCorrection::
-search_db(const Variables& search_vars, const ShortArray& search_asv)
-{
+const Response& DiscrepancyCorrection::search_db(const Variables& search_vars,
+                                                 const ShortArray& search_asv) {
   // Retrieve missing uncorrected approximate data for use in derivative
   // multiplicative corrections.  The correct approach is to retrieve the
   // missing data for the current point in parameter space, and this approach
@@ -850,19 +863,18 @@ search_db(const Variables& search_vars, const ShortArray& search_asv)
   // neither of these data sets are catalogued in data_pairs.
 
   // query data_pairs to extract the response at the current pt
-  ActiveSet search_set = surrModel->current_response().active_set(); // copy
+  ActiveSet search_set = surrModel->current_response().active_set();  // copy
   search_set.request_vector(search_asv);
   PRPCacheHIter cache_it = lookup_by_val(data_pairs, surrModel->interface_id(),
-					 search_vars, search_set);
+                                         search_vars, search_set);
 
   if (cache_it == data_pairs.get<hashed>().end()) {
     // perform approx fn eval to retrieve missing data
     ModelUtils::active_variables(*surrModel, search_vars);
     surrModel->evaluate(search_set);
     return surrModel->current_response();
-  }
-  else
+  } else
     return cache_it->response();
 }
 
-} // namespace Dakota
+}  // namespace Dakota

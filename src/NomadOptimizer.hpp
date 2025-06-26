@@ -7,61 +7,56 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-
 #include <DakotaOptimizer.hpp>
 #include <ProblemDescDB.hpp>
-
 #include <algorithm>
-#include <sstream>
-
 #include <nomad.hpp>
+#include <sstream>
 
 // Forward Declarations
 class NomadOptimizer;
 
 namespace Dakota {
 
-  /// Wrapper class for NOMAD Optimizer
+/// Wrapper class for NOMAD Optimizer
 
-  /**  NOMAD (is a Nonlinear Optimization by Mesh Adaptive Direct 
-       search) is a simulation-based optimization package designed
-       to efficiently explore a design space using Mesh Adaptive 
-       Search.
-	  
-       Mesh Adaptive Direct Search uses Meshes, discretizations of
-       the domain space of variables. It generates multiple meshes,
-       and as its name implies, it also adapts the refinement of
-       the meshes in order to find the best solution of a problem.
-	  
-       The objective of each iteration is to find points in a mesh
-       that improves the current solution. If a better solution is
-       not found, the next iteration is done over a finer mesh.
-	  
-       Each iteration is composed of two steps: Search and Poll.
-       The Search step finds any point in the mesh in an attempt
-       to find an improvement; while the Poll step generates trial
-       mesh points surrounding the current best current solution.
-	  
-       The NomadOptimizer is a wrapper for the NOMAD library. It
-       features the following attributes: \c max_function_evaluations,
-       \c display_format, \c display_all_evaluations, \c function_precision,
-       \c max_iterations.
-  */
+/**  NOMAD (is a Nonlinear Optimization by Mesh Adaptive Direct
+     search) is a simulation-based optimization package designed
+     to efficiently explore a design space using Mesh Adaptive
+     Search.
+
+     Mesh Adaptive Direct Search uses Meshes, discretizations of
+     the domain space of variables. It generates multiple meshes,
+     and as its name implies, it also adapts the refinement of
+     the meshes in order to find the best solution of a problem.
+
+     The objective of each iteration is to find points in a mesh
+     that improves the current solution. If a better solution is
+     not found, the next iteration is done over a finer mesh.
+
+     Each iteration is composed of two steps: Search and Poll.
+     The Search step finds any point in the mesh in an attempt
+     to find an improvement; while the Poll step generates trial
+     mesh points surrounding the current best current solution.
+
+     The NomadOptimizer is a wrapper for the NOMAD library. It
+     features the following attributes: \c max_function_evaluations,
+     \c display_format, \c display_all_evaluations, \c function_precision,
+     \c max_iterations.
+*/
 
 /**
  * \brief A version of TraitsBase specialized for Nomad
  *
  */
 
-class NomadTraits: public TraitsBase
-{
-  public:
-
+class NomadTraits : public TraitsBase {
+ public:
   /// default constructor
-  NomadTraits() { }
+  NomadTraits() {}
 
   /// destructor
-  ~NomadTraits() override { }
+  ~NomadTraits() override {}
 
   /// A temporary query used in the refactor
   bool is_derived() override { return true; }
@@ -76,51 +71,50 @@ class NomadTraits: public TraitsBase
   bool supports_nonlinear_equality() override { return true; }
 
   /// Return the format used for nonlinear equality constraints
-  NONLINEAR_EQUALITY_FORMAT nonlinear_equality_format() override
-    { return NONLINEAR_EQUALITY_FORMAT::TRUE_EQUALITY; }
+  NONLINEAR_EQUALITY_FORMAT nonlinear_equality_format() override {
+    return NONLINEAR_EQUALITY_FORMAT::TRUE_EQUALITY;
+  }
 
   /// Return the flag indicating whether method supports nonlinear inequalities
   bool supports_nonlinear_inequality() override { return true; }
 
   /// Return the format used for nonlinear inequality constraints
-  NONLINEAR_INEQUALITY_FORMAT nonlinear_inequality_format() override
-    { return NONLINEAR_INEQUALITY_FORMAT::ONE_SIDED_UPPER; }
+  NONLINEAR_INEQUALITY_FORMAT nonlinear_inequality_format() override {
+    return NONLINEAR_INEQUALITY_FORMAT::ONE_SIDED_UPPER;
+  }
 };
 
-
-class NomadOptimizer : public Optimizer
-{
-public:
-
+class NomadOptimizer : public Optimizer {
+ public:
   /// Constructor
   /** NOMAD Optimizer Constructor
       @param model DAKOTA Model object
   */
-  NomadOptimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
+  NomadOptimizer(ProblemDescDB &problem_db, ParallelLibrary &parallel_lib,
+                 std::shared_ptr<Model> model);
 
   /// alternate constructor for Iterator instantiations without DB
   NomadOptimizer(std::shared_ptr<Model> model);
-	       
+
   /// Destructor
   ~NomadOptimizer() override;
-	       
+
   //
   //- Heading: Virtual member function redefinitions
   //
-	       
+
   /// Calls the NOMAD solver
   void core_run() override;
 
-  void initial_point(const RealVector& pt) override;
+  void initial_point(const RealVector &pt) override;
 
-private:
-  
+ private:
   // Forward Declaration
   class Evaluator;
   class Extended_Poll;
-	       
+
   /// Convenience function for Parameter loading.
-  /** This function takes the Parameters provided by the user 
+  /** This function takes the Parameters provided by the user
       in the DAKOTA model.
         @param model NOMAD Model object
       Variables for the stuff that must go in the parameters.
@@ -135,9 +129,9 @@ private:
   /// Number of nonlinear inequality constraints after
   /// put into the format required by NOMAD
   int numNomadNonlinearIneqConstraints;
-	       
+
   /// Algorithm control parameters passed to NOMAD
-  int randomSeed;//, maxBlackBoxEvals, maxIterations;
+  int randomSeed;  //, maxBlackBoxEvals, maxIterations;
   NOMAD::Double initMesh, minMesh, epsilon, vns;
 
   /// Output control parameters passed to NOMAD
@@ -148,8 +142,8 @@ private:
   int numHops;
   BitArray discreteSetIntCat, discreteSetRealCat;
   RealMatrixArray discreteSetIntAdj, discreteSetRealAdj, discreteSetStrAdj;
-  RealMatrixArray categoricalAdjacency;       
-	       
+  RealMatrixArray categoricalAdjacency;
+
   /// Pointer to Nomad initial point
   NOMAD::Point initialPoint;
 
@@ -163,15 +157,11 @@ private:
   std::string useSurrogate;
 };
 
-
-inline void NomadOptimizer::initial_point(const RealVector& pt)
-{
+inline void NomadOptimizer::initial_point(const RealVector &pt) {
   size_t i, len = pt.length();
   initialPoint.resize(len);
-  for (i=0; i<len; ++i)
-    initialPoint[i] = pt[i];
+  for (i = 0; i < len; ++i) initialPoint[i] = pt[i];
 }
-
 
 ///  NOMAD-based Evaluator class.
 
@@ -180,7 +170,7 @@ inline void NomadOptimizer::initial_point(const RealVector& pt)
      of this call, NOMAD executes the black box executable,
      which proceeds to write a file in a NOMAD-compatible
      format, which NOMAD reads to continue the process.
-	  
+
      Because DAKOTA files are different form NOMAD files,
      and the simulations processed by DAKOTA already produce
      DAKOTA-compatible files, we cannot use this method for
@@ -191,19 +181,17 @@ inline void NomadOptimizer::initial_point(const RealVector& pt)
      further analysis.
 */
 
-class NomadOptimizer::Evaluator : public NOMAD::Evaluator
-{
-private:
-
+class NomadOptimizer::Evaluator : public NOMAD::Evaluator {
+ private:
   /// map NOMAD evaluation point to Dakota model
   void set_variables(const NOMAD::Eval_Point &x) const;
   /// evaluate the Dakota model (block or not, but don't collect response)
-  void eval_model(bool allow_asynch, const NOMAD::Eval_Point& x) const;
+  void eval_model(bool allow_asynch, const NOMAD::Eval_Point &x) const;
   /// map Dakota model responses to NOMAD evaluation point
-  void get_responses(const RealVector& ftn_vals, NOMAD::Eval_Point &x) const;
+  void get_responses(const RealVector &ftn_vals, NOMAD::Eval_Point &x) const;
 
-  Model& _model;
-  int n_cont,n_disc_int, n_disc_real;
+  Model &_model;
+  int n_cont, n_disc_int, n_disc_real;
 
   /// Number of nonlinear constraints after put into Nomad format
   int numNomadNonlinearIneqConstr, numNomadNonlinearEqConstr;
@@ -220,84 +208,79 @@ private:
   /// defines use of surrogate in NOMAD
   std::string useSgte;
 
-public:
-
+ public:
   /// Constructor
   /** NOMAD Evaluator Constructor
         @param p NOMAD Parameters object
-	@param model DAKOTA Model object
+        @param model DAKOTA Model object
   */
-  Evaluator(const NOMAD::Parameters &p, Model& model);
-	       
+  Evaluator(const NOMAD::Parameters &p, Model &model);
+
   /// Destructor
   ~Evaluator(void) override;
-	       
+
   /// Main Evaluation Method
-  /** Method that handles the communication between 
+  /** Method that handles the communication between
       the NOMAD search process and the Black Box
       Evaluation managed by DAKOTA's Interface.
-	@param x Object that contains the points that
-	         need to evaluated. Once the evaluation
-		 is completed, this object also stores
-		 the output back to be read by NOMAD.
-	@param h_max Current value of the barrier
-	             parameter. Not used in this
-		     implementation.
-	@param count_eval Flag that indicates whether
-	                  this evaluation counts
-			  towards the max number of
-			  evaluations, often set to
-			  \c false when the evaluation
-			  does not meet certain costs
-			  during expensive evaluations.
-			  Not used in this
-			  implementation.
-	@return \c true if the evaluation was successful;
-	        \c false otherwise.
+        @param x Object that contains the points that
+                 need to evaluated. Once the evaluation
+                 is completed, this object also stores
+                 the output back to be read by NOMAD.
+        @param h_max Current value of the barrier
+                     parameter. Not used in this
+                     implementation.
+        @param count_eval Flag that indicates whether
+                          this evaluation counts
+                          towards the max number of
+                          evaluations, often set to
+                          \c false when the evaluation
+                          does not meet certain costs
+                          during expensive evaluations.
+                          Not used in this
+                          implementation.
+        @return \c true if the evaluation was successful;
+                \c false otherwise.
   */
-  bool eval_x (NOMAD::Eval_Point &x,
-	       const NOMAD::Double &h_max,
-	       bool &count_eval) const override;
+  bool eval_x(NOMAD::Eval_Point &x, const NOMAD::Double &h_max,
+              bool &count_eval) const override;
 
   /// multi-point variant of evaluator
-  bool eval_x ( std::list<NOMAD::Eval_Point *>& x,
-		const NOMAD::Double& h_max,
-		std::list<bool>& count_eval ) const override;
+  bool eval_x(std::list<NOMAD::Eval_Point *> &x, const NOMAD::Double &h_max,
+              std::list<bool> &count_eval) const override;
 
   /// publishes constraint transformation
-  void set_constraint_map (int numNomadNonlinearIneqConstraints,
-			   int numNomadNonlinearEqConstraints,
-			   std::vector<int> constraintMapIndices,
-			   std::vector<double> constraintMapMultipliers,
-			   std::vector<double> constraintMapOffsets)
-  { numNomadNonlinearIneqConstr = numNomadNonlinearIneqConstraints;
+  void set_constraint_map(int numNomadNonlinearIneqConstraints,
+                          int numNomadNonlinearEqConstraints,
+                          std::vector<int> constraintMapIndices,
+                          std::vector<double> constraintMapMultipliers,
+                          std::vector<double> constraintMapOffsets) {
+    numNomadNonlinearIneqConstr = numNomadNonlinearIneqConstraints;
     numNomadNonlinearEqConstr = numNomadNonlinearEqConstraints,
-      constrMapIndices = constraintMapIndices;
+    constrMapIndices = constraintMapIndices;
     constrMapMultipliers = constraintMapMultipliers;
-    constrMapOffsets = constraintMapOffsets;}
+    constrMapOffsets = constraintMapOffsets;
+  }
 
   /// publishes surrogate usage
-  void set_surrogate_usage (std::string useSurrogate)
-  { useSgte = useSurrogate;}
+  void set_surrogate_usage(std::string useSurrogate) { useSgte = useSurrogate; }
 };
 
-class NomadOptimizer::Extended_Poll : public NOMAD::Extended_Poll
-{
-private:
-
+class NomadOptimizer::Extended_Poll : public NOMAD::Extended_Poll {
+ private:
   RealMatrixArray &adjacency_matrix;
   int nHops;
 
-public:
-
+ public:
   /// Constructor
   Extended_Poll(NOMAD::Parameters &p, RealMatrixArray &categoricalAdjacency,
-		int numHops) : NOMAD::Extended_Poll(p),
-			       adjacency_matrix(categoricalAdjacency),
-			       nHops(numHops) {};
+                int numHops)
+      : NOMAD::Extended_Poll(p),
+        adjacency_matrix(categoricalAdjacency),
+        nHops(numHops) {};
 
   /// Destructor
-  ~Extended_Poll(void) override{};
+  ~Extended_Poll(void) override {};
 
   /// Construct the extended poll points.  Called by NOMAD.
   void construct_extended_points(const NOMAD::Eval_Point &nomad_point) override;
@@ -306,9 +289,9 @@ public:
   /// derived from adjacency matrices and returned to
   /// construct_extended_points.
   void construct_multihop_neighbors(NOMAD::Point &base_point,
-				    NOMAD::Signature point_signature,
-				    RealMatrixArray::iterator rma_iter,
-				    size_t last_cat_index, int num_hops);
+                                    NOMAD::Signature point_signature,
+                                    RealMatrixArray::iterator rma_iter,
+                                    size_t last_cat_index, int num_hops);
 };
 
-}  // namespace DAKOTA
+}  // namespace Dakota

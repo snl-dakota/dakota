@@ -9,9 +9,8 @@ namespace rol_interface {
     supports by overriding the default traits accessors in
     TraitsBase. */
 
-class Traits: public Dakota::TraitsBase {
-public:
-
+class Traits : public Dakota::TraitsBase {
+ public:
   //
   //- Heading: Constructor and destructor
   //
@@ -20,7 +19,7 @@ public:
   Traits() = default;
 
   /// Destructor
-  virtual ~Traits()  = default;
+  virtual ~Traits() = default;
 
   //
   //- Heading: Virtual member function redefinitions
@@ -55,8 +54,8 @@ public:
     return std::make_shared<Traits>();
   }
 
-}; // class Traits
+};  // class Traits
 
-} // namespace rol_interface
+}  // namespace rol_interface
 
-#endif // DAKOTA_ROL_TRAITS_H
+#endif  // DAKOTA_ROL_TRAITS_H

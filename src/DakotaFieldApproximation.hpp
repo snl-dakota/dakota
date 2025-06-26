@@ -16,10 +16,8 @@ namespace Dakota {
 
 /// Base class for the field-based approximation class hierarchy.
 
-class FieldApproximation: public Approximation
-{
-public:
-
+class FieldApproximation : public Approximation {
+ public:
   //
   //- Heading: Constructors, destructor, assignment operator
   //
@@ -28,7 +26,7 @@ public:
   /// (BaseConstructor overloading avoids infinite recursion in the
   /// derived class constructors - Coplien, p. 139)
   FieldApproximation(BaseConstructor, const ProblemDescDB& problem_db,
-                     const SharedApproxData& shared_data, 
+                     const SharedApproxData& shared_data,
                      const StringArray& approx_label);
 
   /// constructor initializes the base class part of letter classes
@@ -50,20 +48,15 @@ public:
   void build(int num_resp) override;
 
   /// return the number of approximation components
-  size_t num_components() const override
-  { return numComponents; }
+  size_t num_components() const override { return numComponents; }
 
   /// set active field component
-  void active_component(int comp)
-  { activeComponent = comp; }
+  void active_component(int comp) { activeComponent = comp; }
 
   /// get active field component
-  int active_component(int comp) const
-  { return activeComponent; }
+  int active_component(int comp) const { return activeComponent; }
 
-
-protected:
-
+ protected:
   //
   //- Heading: Data
   //
@@ -72,19 +65,18 @@ protected:
 
   size_t numComponents;
 
-private:
-
+ private:
   //
   //- Heading: Member functions
   //
 
   /// Used only by the standard envelope constructor to initialize
   /// approxRep to the appropriate derived type.
-  std::shared_ptr<FieldApproximation>
-  get_field_approx(ProblemDescDB& problem_db, const SharedApproxData& shared_data,
-	           const StringArray& approx_label);
+  std::shared_ptr<FieldApproximation> get_field_approx(
+      ProblemDescDB& problem_db, const SharedApproxData& shared_data,
+      const StringArray& approx_label);
 };
 
-} // namespace Dakota
+}  // namespace Dakota
 
 #endif

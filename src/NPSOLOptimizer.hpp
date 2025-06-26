@@ -13,7 +13,6 @@
 #include "DakotaOptimizer.hpp"
 #include "SOLBase.hpp"
 
-
 namespace Dakota {
 
 /// Wrapper class for the NPSOL optimization library.
@@ -46,15 +45,13 @@ namespace Dakota {
  *
  */
 
-class NPSOLTraits: public TraitsBase
-{
-  public:
-
+class NPSOLTraits : public TraitsBase {
+ public:
   /// default constructor
-  NPSOLTraits() { }
+  NPSOLTraits() {}
 
   /// destructor
-  ~NPSOLTraits() override { }
+  ~NPSOLTraits() override {}
 
   /// A temporary query used in the refactor
   bool is_derived() override { return true; }
@@ -75,56 +72,52 @@ class NPSOLTraits: public TraitsBase
   bool supports_nonlinear_inequality() override { return true; }
 
   /// Return the format used for nonlinear inequality constraints
-  NONLINEAR_INEQUALITY_FORMAT nonlinear_inequality_format() override
-    { return NONLINEAR_INEQUALITY_FORMAT::TWO_SIDED; }
-
+  NONLINEAR_INEQUALITY_FORMAT nonlinear_inequality_format() override {
+    return NONLINEAR_INEQUALITY_FORMAT::TWO_SIDED;
+  }
 };
 
-
-class NPSOLOptimizer: public Optimizer, public SOLBase
-{
-public:
-
+class NPSOLOptimizer : public Optimizer, public SOLBase {
+ public:
   //
   //- Heading: Constructors and destructor
   //
 
   /// standard constructor
-  NPSOLOptimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
+  NPSOLOptimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
+                 std::shared_ptr<Model> model);
 
   /// alternate constructor for Iterator instantiations by name
   NPSOLOptimizer(std::shared_ptr<Model> model);
 
   /// alternate constructor for instantiations "on the fly"
-  NPSOLOptimizer(std::shared_ptr<Model> model, int derivative_level, Real conv_tol);
+  NPSOLOptimizer(std::shared_ptr<Model> model, int derivative_level,
+                 Real conv_tol);
 
   /// alternate constructor for instantiations "on the fly"
-  NPSOLOptimizer(const RealVector& cv_initial,
-		 const RealVector& cv_lower_bnds,
-		 const RealVector& cv_upper_bnds,
-		 const RealMatrix& lin_ineq_coeffs,
-		 const RealVector& lin_ineq_lower_bnds,
-		 const RealVector& lin_ineq_upper_bnds,
-		 const RealMatrix& lin_eq_coeffs,
-		 const RealVector& lin_eq_targets,
-		 const RealVector& nonlin_ineq_lower_bnds,
-		 const RealVector& nonlin_ineq_upper_bnds,
-		 const RealVector& nonlin_eq_targets,
-		 void (*user_obj_eval) (int&, int&, double*, double&,
-					double*, int&),
-		 void (*user_con_eval) (int&, int&, int&, int&, int*,
-					double*, double*, double*, int&),
-		 int derivative_level, Real conv_tol = 0., size_t max_iter = 0,
-		 Real fdss = 0., Real fn_precision = 0., Real feas_tol = 0.,
-		 Real lin_feas_tol = 0., Real nonlin_feas_tol = 0.);
+  NPSOLOptimizer(
+      const RealVector& cv_initial, const RealVector& cv_lower_bnds,
+      const RealVector& cv_upper_bnds, const RealMatrix& lin_ineq_coeffs,
+      const RealVector& lin_ineq_lower_bnds,
+      const RealVector& lin_ineq_upper_bnds, const RealMatrix& lin_eq_coeffs,
+      const RealVector& lin_eq_targets,
+      const RealVector& nonlin_ineq_lower_bnds,
+      const RealVector& nonlin_ineq_upper_bnds,
+      const RealVector& nonlin_eq_targets,
+      void (*user_obj_eval)(int&, int&, double*, double&, double*, int&),
+      void (*user_con_eval)(int&, int&, int&, int&, int*, double*, double*,
+                            double*, int&),
+      int derivative_level, Real conv_tol = 0., size_t max_iter = 0,
+      Real fdss = 0., Real fn_precision = 0., Real feas_tol = 0.,
+      Real lin_feas_tol = 0., Real nonlin_feas_tol = 0.);
 
-  ~NPSOLOptimizer() override; ///< destructor
-    
+  ~NPSOLOptimizer() override;  ///< destructor
+
   //
   //- Heading: Virtual function redefinitions
   //
 
-  //void pre_run();
+  // void pre_run();
   void core_run() override;
 
   void declare_sources() override;
@@ -134,31 +127,25 @@ public:
   // updaters for user-functions mode:
 
   void initial_point(const RealVector& pt) override;
-  void update_callback_data(const RealVector& cv_initial,
-			    const RealVector& cv_lower_bnds,
-			    const RealVector& cv_upper_bnds,
-			    const RealMatrix& lin_ineq_coeffs,
-			    const RealVector& lin_ineq_l_bnds,
-			    const RealVector& lin_ineq_u_bnds,
-			    const RealMatrix& lin_eq_coeffs,
-			    const RealVector& lin_eq_targets,
-			    const RealVector& nln_ineq_l_bnds,
-			    const RealVector& nln_ineq_u_bnds,
-			    const RealVector& nln_eq_targets) override;
+  void update_callback_data(
+      const RealVector& cv_initial, const RealVector& cv_lower_bnds,
+      const RealVector& cv_upper_bnds, const RealMatrix& lin_ineq_coeffs,
+      const RealVector& lin_ineq_l_bnds, const RealVector& lin_ineq_u_bnds,
+      const RealMatrix& lin_eq_coeffs, const RealVector& lin_eq_targets,
+      const RealVector& nln_ineq_l_bnds, const RealVector& nln_ineq_u_bnds,
+      const RealVector& nln_eq_targets) override;
   const RealMatrix& callback_linear_ineq_coefficients() const override;
-  //const RealVector& callback_linear_ineq_lower_bounds() const;
-  //const RealVector& callback_linear_ineq_upper_bounds() const;
+  // const RealVector& callback_linear_ineq_lower_bounds() const;
+  // const RealVector& callback_linear_ineq_upper_bounds() const;
 
-protected:
-
+ protected:
   //
   //- Heading: Member functions
   //
 
   void send_sol_option(std::string sol_option) override;
 
-private:
-
+ private:
   //
   //- Heading: Convenience member functions
   //
@@ -175,7 +162,7 @@ private:
   /// OBJFUN in NPSOL manual: computes the value and first derivatives of the
   /// objective function (passed by function pointer to NPSOL).
   static void objective_eval(int& mode, int& n, double* x, double& f,
-			     double* gradf, int& nstate);
+                             double* gradf, int& nstate);
 
   //
   //- Heading: Data
@@ -203,29 +190,28 @@ private:
   RealMatrix linEqCoeffs;
   /// holds function pointer for objective function evaluator passed in for
   /// "user_functions" mode.
-  void (*userObjectiveEval)  (int&, int&, double*, double&, double*, int&);
+  void (*userObjectiveEval)(int&, int&, double*, double&, double*, int&);
   /// holds function pointer for constraint function evaluator passed in for
   /// "user_functions" mode.
-  void (*userConstraintEval) (int&, int&, int&, int&, int*, double*, double*,
-			      double*, int&);
+  void (*userConstraintEval)(int&, int&, int&, int&, int*, double*, double*,
+                             double*, int&);
 };
 
+inline void NPSOLOptimizer::initial_point(const RealVector& pt) {
+  copy_data(pt, initialPoint);
+}  // protect from incoming view
 
-inline void NPSOLOptimizer::initial_point(const RealVector& pt)
-{ copy_data(pt, initialPoint); } // protect from incoming view
-
-
-inline const RealMatrix& NPSOLOptimizer::
-callback_linear_ineq_coefficients() const
-{ return linIneqCoeffs; }
-
+inline const RealMatrix& NPSOLOptimizer::callback_linear_ineq_coefficients()
+    const {
+  return linIneqCoeffs;
+}
 
 /*
 inline const RealVector& NPSOLOptimizer::
 callback_linear_ineq_lower_bounds() const
 {
   return RealVector(Teuchos::View, &lowerBounds[numContinuousVars],
-		    numLinearIneqConstraints);
+                    numLinearIneqConstraints);
 }
 
 
@@ -233,10 +219,9 @@ inline const RealVector& NPSOLOptimizer::
 callback_linear_ineq_upper_bounds() const
 {
   return RealVector(Teuchos::View, &upperBounds[numContinuousVars],
-		    numLinearIneqConstraints);
+                    numLinearIneqConstraints);
 }
 */
-
 
 #ifdef HAVE_DYNLIB_FACTORIES
 // ---------------------------------------------------------
@@ -246,24 +231,21 @@ callback_linear_ineq_upper_bounds() const
 NPSOLOptimizer* new_NPSOLOptimizer(ProblemDescDB& problem_db, Model& model);
 NPSOLOptimizer* new_NPSOLOptimizer(Model& model);
 NPSOLOptimizer* new_NPSOLOptimizer(Model& model, int, Real);
-NPSOLOptimizer* new_NPSOLOptimizer(const RealVector& cv_initial,
-    const RealVector& cv_lower_bnds,
-    const RealVector& cv_upper_bnds,
-    const RealMatrix& lin_ineq_coeffs,
+NPSOLOptimizer* new_NPSOLOptimizer(
+    const RealVector& cv_initial, const RealVector& cv_lower_bnds,
+    const RealVector& cv_upper_bnds, const RealMatrix& lin_ineq_coeffs,
     const RealVector& lin_ineq_lower_bnds,
-    const RealVector& lin_ineq_upper_bnds,
-    const RealMatrix& lin_eq_coeffs,
-    const RealVector& lin_eq_targets,
-    const RealVector& nonlin_ineq_lower_bnds,
+    const RealVector& lin_ineq_upper_bnds, const RealMatrix& lin_eq_coeffs,
+    const RealVector& lin_eq_targets, const RealVector& nonlin_ineq_lower_bnds,
     const RealVector& nonlin_ineq_upper_bnds,
-    const RealVector& nonlin_eq_targets, 
-    void (*user_obj_eval) (int&, int&, double*, double&, double*, int&),
-    void (*user_con_eval) (int&, int&, int&, int&, int*, double*, double*,
-			   double*, int&),
+    const RealVector& nonlin_eq_targets,
+    void (*user_obj_eval)(int&, int&, double*, double&, double*, int&),
+    void (*user_con_eval)(int&, int&, int&, int&, int*, double*, double*,
+                          double*, int&),
     int derivative_level, Real conv_tol);
 
-#endif // HAVE_DYNLIB_FACTORIES
+#endif  // HAVE_DYNLIB_FACTORIES
 
-} // namespace Dakota
+}  // namespace Dakota
 
-#endif // NPSOL_OPTIMIZER_H
+#endif  // NPSOL_OPTIMIZER_H

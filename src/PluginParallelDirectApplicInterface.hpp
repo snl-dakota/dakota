@@ -15,8 +15,7 @@
 #include <mpi.h>
 #else
 typedef int MPI_Comm;
-#endif // DAKOTA_HAVE_MPI
-
+#endif  // DAKOTA_HAVE_MPI
 
 namespace SIM {
 
@@ -28,34 +27,32 @@ namespace SIM {
     response mappings. It is used to demonstrate plugging in a
     parallel direct analysis driver into Dakota in library mode.  Test
     input files can then use an analysis_driver of "plugin_textbook". */
-class ParallelDirectApplicInterface: public Dakota::DirectApplicInterface
-{
-public:
-
+class ParallelDirectApplicInterface : public Dakota::DirectApplicInterface {
+ public:
   //
   //- Heading: Constructor and destructor
   //
 
   /// constructor
-  ParallelDirectApplicInterface(const Dakota::ProblemDescDB& problem_db, Dakota::ParallelLibrary& parallel_lib,
-				const MPI_Comm& analysis_comm);
+  ParallelDirectApplicInterface(const Dakota::ProblemDescDB& problem_db,
+                                Dakota::ParallelLibrary& parallel_lib,
+                                const MPI_Comm& analysis_comm);
   /// destructor
   ~ParallelDirectApplicInterface() override;
 
-protected:
-
+ protected:
   //
   //- Heading: Virtual function redefinitions
   //
 
   // execute the input filter portion of a direct evaluation invocation
-  //int derived_map_if(const Dakota::String& if_name);
+  // int derived_map_if(const Dakota::String& if_name);
 
   /// execute an analysis code portion of a direct evaluation invocation
   int derived_map_ac(const Dakota::String& ac_name) override;
 
   // execute the output filter portion of a direct evaluation invocation
-  //int derived_map_of(const Dakota::String& of_name);
+  // int derived_map_of(const Dakota::String& of_name);
 
   /// no-op hides base error; job batching occurs within
   /// wait_local_evaluations()
@@ -69,49 +66,42 @@ protected:
   /// no-op hides default run-time error checks at DirectApplicInterface level
   void set_communicators_checks(int max_eval_concurrency) override;
 
-private:
-
+ private:
   //
   //- Heading: Data
   //
 
   // intracommunicator for a multiprocessor analysis server
-  //MPI_Comm analysisComm;
+  // MPI_Comm analysisComm;
 
   /// demo evaluator function for parallel plug-ins
   int text_book(const Dakota::RealVector& c_vars, const Dakota::ShortArray& asv,
-		Dakota::RealVector& fn_vals, Dakota::RealMatrix& fn_grads,
-		Dakota::RealSymMatrixArray& fn_hessians);
+                Dakota::RealVector& fn_vals, Dakota::RealMatrix& fn_grads,
+                Dakota::RealSymMatrixArray& fn_hessians);
 };
 
+inline ParallelDirectApplicInterface::~ParallelDirectApplicInterface() {}
 
-inline ParallelDirectApplicInterface::~ParallelDirectApplicInterface()
-{ }
-
-
-inline void ParallelDirectApplicInterface::
-derived_map_asynch(const Dakota::ParamResponsePair& pair)
-{
+inline void ParallelDirectApplicInterface::derived_map_asynch(
+    const Dakota::ParamResponsePair& pair) {
   // no-op (just hides base class error throw). Jobs are run exclusively within
   // wait_local_evaluations(), prior to there existing true batch processing
   // facilities.
 }
 
-
 /** For use by ApplicationInterface::serve_evaluations_asynch(), which can
     provide a batch processing capability within message passing schedulers
     (called using chain ApplicationInterface::serve_evaluations() from
     Model::serve() from IteratorScheduler::run_iterator()). */
-inline void ParallelDirectApplicInterface::
-test_local_evaluations(Dakota::PRPQueue& prp_queue)
-{ wait_local_evaluations(prp_queue); }
-
+inline void ParallelDirectApplicInterface::test_local_evaluations(
+    Dakota::PRPQueue& prp_queue) {
+  wait_local_evaluations(prp_queue);
+}
 
 // Hide default run-time error checks at DirectApplicInterface level
-inline void ParallelDirectApplicInterface::
-set_communicators_checks(int max_eval_concurrency)
-{ }
+inline void ParallelDirectApplicInterface::set_communicators_checks(
+    int max_eval_concurrency) {}
 
-} // namespace Dakota
+}  // namespace SIM
 
 #endif

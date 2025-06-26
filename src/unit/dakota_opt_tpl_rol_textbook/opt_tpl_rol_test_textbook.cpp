@@ -7,16 +7,15 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-#include "opt_tpl_test.hpp"
-#include <string>
-#include <map>
-
-#include "util_windows.hpp"
-
 #include <gtest/gtest.h>
+
+#include <map>
+#include <string>
 
 #include "ROLOptimizer.hpp"
 #include "model_utils.hpp"
+#include "opt_tpl_test.hpp"
+#include "util_windows.hpp"
 
 using namespace Dakota;
 
@@ -24,36 +23,36 @@ using namespace Dakota;
 /// Unconstrained 3D textbook problem with known solution of
 /// {1,1,1}
 
-TEST(opt_tol_rol_test_textbook_tests, test_text_book_base)
-{
+TEST(opt_tol_rol_test_textbook_tests, test_text_book_base) {
   /// Dakota input string:
   static const char text_book_input[] =
-    " environment "
-    "     write_restart 'test_text_book_base.rst' "
-    " method,"
-    "   rol"
-    "     gradient_tolerance 1.0e-6"
-    "     constraint_tolerance 1.0e-6"
-    "     variable_tolerance 1.0e-6"
-    "     max_iterations 20"
-    "     output silent \n"
-    " variables,"
-    "   continuous_design = 3"
-    "     initial_point  0.5    0.5   0.5"
-    "     descriptors 'x_1'  'x_2'  'x_3'"
-    " interface,"
-    "   direct"
-    "     analysis_driver = 'text_book'"
-    " responses,"
-    "   num_objective_functions = 1"
-    "   analytic_gradients"
-    "   no_hessians";
+      " environment "
+      "     write_restart 'test_text_book_base.rst' "
+      " method,"
+      "   rol"
+      "     gradient_tolerance 1.0e-6"
+      "     constraint_tolerance 1.0e-6"
+      "     variable_tolerance 1.0e-6"
+      "     max_iterations 20"
+      "     output silent \n"
+      " variables,"
+      "   continuous_design = 3"
+      "     initial_point  0.5    0.5   0.5"
+      "     descriptors 'x_1'  'x_2'  'x_3'"
+      " interface,"
+      "   direct"
+      "     analysis_driver = 'text_book'"
+      " responses,"
+      "   num_objective_functions = 1"
+      "   analytic_gradients"
+      "   no_hessians";
 
-  std::shared_ptr<Dakota::LibraryEnvironment> p_env(Opt_TPL_Test::create_env(text_book_input));
-  Dakota::LibraryEnvironment & env = *p_env;
+  std::shared_ptr<Dakota::LibraryEnvironment> p_env(
+      Opt_TPL_Test::create_env(text_book_input));
+  Dakota::LibraryEnvironment& env = *p_env;
 
   if (env.parallel_library().mpirun_flag())
-    FAIL(); // This test only works for serial builds
+    FAIL();  // This test only works for serial builds
 
   // Execute the environment
   env.execute();
@@ -68,28 +67,27 @@ TEST(opt_tol_rol_test_textbook_tests, test_text_book_base)
 
   target = 1.0;
   max_tol = 1.e-2;
-  rel_err = fabs((vars.continuous_variable(0) - target) );
+  rel_err = fabs((vars.continuous_variable(0) - target));
   EXPECT_LT(rel_err, max_tol);
 
   target = 1.0;
   max_tol = 1.e-2;
-  rel_err = fabs((vars.continuous_variable(1) - target) );
+  rel_err = fabs((vars.continuous_variable(1) - target));
   EXPECT_LT(rel_err, max_tol);
 
   target = 1.0;
   max_tol = 1.e-2;
-  rel_err = fabs((vars.continuous_variable(2) - target) );
+  rel_err = fabs((vars.continuous_variable(2) - target));
   EXPECT_LT(rel_err, max_tol);
 
   // retrieve the final response values
-  const Response& resp  = env.response_results();
+  const Response& resp = env.response_results();
 
   target = 0.0;
   max_tol = 1.e-2;
   rel_err = fabs((resp.function_value(0) - target));
   EXPECT_LT(rel_err, max_tol);
 }
-
 
 //----------------------------------------------------------------
 /// Unconstrained 3D textbook problem with known solution of
@@ -99,38 +97,38 @@ TEST(opt_tol_rol_test_textbook_tests, test_text_book_base)
 /// tolerances for this test and the looser ones for the above
 /// test
 
-TEST(opt_tol_rol_test_textbook_tests, test_text_book_options_file)
-{
+TEST(opt_tol_rol_test_textbook_tests, test_text_book_options_file) {
   /// Dakota input string:
 
   static const char text_book_input[] =
-    " environment "
-    "     write_restart 'test_text_book_options_file.rst' "
-    " method,"
-    "   rol"
-    "     gradient_tolerance 1.0e-3"
-    "     constraint_tolerance 1.0e-3"
-    "     variable_tolerance 1.0e-3"
-    "     max_iterations 20"
-    "     options_file 'opt_tpl_test_files/opt_rol-text_book.xml'"
-    "   output silent \n"
-    " variables,"
-    "   continuous_design = 3"
-    "     initial_point  0.5    0.5   0.5"
-    "     descriptors 'x_1'  'x_2'  'x_3'"
-    " interface,"
-    "   direct"
-    "     analysis_driver = 'text_book'"
-    " responses,"
-    "   num_objective_functions = 1"
-    "   analytic_gradients"
-    "   no_hessians";
+      " environment "
+      "     write_restart 'test_text_book_options_file.rst' "
+      " method,"
+      "   rol"
+      "     gradient_tolerance 1.0e-3"
+      "     constraint_tolerance 1.0e-3"
+      "     variable_tolerance 1.0e-3"
+      "     max_iterations 20"
+      "     options_file 'opt_tpl_test_files/opt_rol-text_book.xml'"
+      "   output silent \n"
+      " variables,"
+      "   continuous_design = 3"
+      "     initial_point  0.5    0.5   0.5"
+      "     descriptors 'x_1'  'x_2'  'x_3'"
+      " interface,"
+      "   direct"
+      "     analysis_driver = 'text_book'"
+      " responses,"
+      "   num_objective_functions = 1"
+      "   analytic_gradients"
+      "   no_hessians";
 
-  std::shared_ptr<Dakota::LibraryEnvironment> p_env(Opt_TPL_Test::create_env(text_book_input));
-  Dakota::LibraryEnvironment & env = *p_env;
+  std::shared_ptr<Dakota::LibraryEnvironment> p_env(
+      Opt_TPL_Test::create_env(text_book_input));
+  Dakota::LibraryEnvironment& env = *p_env;
 
   if (env.parallel_library().mpirun_flag())
-    FAIL(); // This test only works for serial builds
+    FAIL();  // This test only works for serial builds
 
   // Execute the environment
   env.execute();
@@ -145,21 +143,21 @@ TEST(opt_tol_rol_test_textbook_tests, test_text_book_options_file)
 
   target = 1.0;
   max_tol = 1.e-2;
-  rel_err = fabs((vars.continuous_variable(0) - target) );
+  rel_err = fabs((vars.continuous_variable(0) - target));
   EXPECT_LT(rel_err, max_tol);
 
   target = 1.0;
   max_tol = 1.e-2;
-  rel_err = fabs((vars.continuous_variable(1) - target) );
+  rel_err = fabs((vars.continuous_variable(1) - target));
   EXPECT_LT(rel_err, max_tol);
 
   target = 1.0;
   max_tol = 1.e-2;
-  rel_err = fabs((vars.continuous_variable(2) - target) );
+  rel_err = fabs((vars.continuous_variable(2) - target));
   EXPECT_LT(rel_err, max_tol);
 
   // retrieve the final response values
-  const Response& resp  = env.response_results();
+  const Response& resp = env.response_results();
 
   target = 0.0;
   max_tol = 1.e-2;
@@ -174,38 +172,38 @@ TEST(opt_tol_rol_test_textbook_tests, test_text_book_options_file)
 /// for the unconstrained problem; other two variables have
 /// expected best value of 1 with a best objective 0f 0.5^4
 
-TEST(opt_tol_rol_test_textbook_tests, test_text_book_bound_const)
-{
+TEST(opt_tol_rol_test_textbook_tests, test_text_book_bound_const) {
   /// Dakota input string:
   static const char text_book_input[] =
-    " environment "
-    "   write_restart 'test_text_book_bound_const.rst' "
-    " method,"
-    "   rol"
-    "     gradient_tolerance 1.0e-6"
-    "     constraint_tolerance 1.0e-6"
-    "     variable_tolerance 1.0e-6"
-    "     max_iterations 20"
-    "   output silent"
-    " variables,"
-    "   continuous_design = 3"
-    "     initial_point  0.5    0.0   0.5"
-    "     upper_bounds  2.0   0.5  2.0"
-    "     lower_bounds     0.0  0.0 0.0"
-    "     descriptors 'x_1'  'x_2'  'x_3'"
-    " interface,"
-    "   direct"
-    "     analysis_driver = 'text_book'"
-    " responses,"
-    "   num_objective_functions = 1"
-    "   analytic_gradients"
-    "   no_hessians";
+      " environment "
+      "   write_restart 'test_text_book_bound_const.rst' "
+      " method,"
+      "   rol"
+      "     gradient_tolerance 1.0e-6"
+      "     constraint_tolerance 1.0e-6"
+      "     variable_tolerance 1.0e-6"
+      "     max_iterations 20"
+      "   output silent"
+      " variables,"
+      "   continuous_design = 3"
+      "     initial_point  0.5    0.0   0.5"
+      "     upper_bounds  2.0   0.5  2.0"
+      "     lower_bounds     0.0  0.0 0.0"
+      "     descriptors 'x_1'  'x_2'  'x_3'"
+      " interface,"
+      "   direct"
+      "     analysis_driver = 'text_book'"
+      " responses,"
+      "   num_objective_functions = 1"
+      "   analytic_gradients"
+      "   no_hessians";
 
-  std::shared_ptr<Dakota::LibraryEnvironment> p_env(Opt_TPL_Test::create_env(text_book_input));
-  Dakota::LibraryEnvironment & env = *p_env;
+  std::shared_ptr<Dakota::LibraryEnvironment> p_env(
+      Opt_TPL_Test::create_env(text_book_input));
+  Dakota::LibraryEnvironment& env = *p_env;
 
   if (env.parallel_library().mpirun_flag())
-    FAIL(); // This test only works for serial builds
+    FAIL();  // This test only works for serial builds
 
   // Execute the environment
   env.execute();
@@ -220,21 +218,21 @@ TEST(opt_tol_rol_test_textbook_tests, test_text_book_bound_const)
 
   target = 1.0;
   max_tol = 1.e-2;
-  rel_err = fabs((vars.continuous_variable(0) - target) );
+  rel_err = fabs((vars.continuous_variable(0) - target));
   EXPECT_LT(rel_err, max_tol);
 
   target = 0.5;
   max_tol = 1.e-2;
-  rel_err = fabs((vars.continuous_variable(1) - target) );
+  rel_err = fabs((vars.continuous_variable(1) - target));
   EXPECT_LT(rel_err, max_tol);
 
   target = 1.0;
   max_tol = 1.e-2;
-  rel_err = fabs((vars.continuous_variable(2) - target) );
+  rel_err = fabs((vars.continuous_variable(2) - target));
   EXPECT_LT(rel_err, max_tol);
 
   // retrieve the final response values
-  const Response& resp  = env.response_results();
+  const Response& resp = env.response_results();
 
   target = 0.0625;
   max_tol = 1.e-2;
@@ -250,38 +248,38 @@ TEST(opt_tol_rol_test_textbook_tests, test_text_book_bound_const)
 /// expected best value of 1 with a best objective 0f 0.5^4
 /// This variant uses an analytic Hessian.
 
-TEST(opt_tol_rol_test_textbook_tests, test_text_book_bound_const_hessian)
-{
+TEST(opt_tol_rol_test_textbook_tests, test_text_book_bound_const_hessian) {
   /// Dakota input string:
   static const char text_book_input[] =
-    " environment "
-    "   write_restart 'test_text_book_bound_const_hessian.rst' "
-    " method,"
-    "   rol"
-    "     gradient_tolerance 1.0e-6"
-    "     constraint_tolerance 1.0e-6"
-    "     variable_tolerance 1.0e-6"
-    "     max_iterations 20"
-    "   output silent"
-    " variables,"
-    "   continuous_design = 3"
-    "     initial_point  0.5    0.0   0.5"
-    "     upper_bounds  2.0   0.5  2.0"
-    "     lower_bounds     0.0  0.0 0.0"
-    "     descriptors 'x_1'  'x_2'  'x_3'"
-    " interface,"
-    "   direct"
-    "     analysis_driver = 'text_book'"
-    " responses,"
-    "   num_objective_functions = 1"
-    "   analytic_gradients"
-    "   analytic_hessians";
+      " environment "
+      "   write_restart 'test_text_book_bound_const_hessian.rst' "
+      " method,"
+      "   rol"
+      "     gradient_tolerance 1.0e-6"
+      "     constraint_tolerance 1.0e-6"
+      "     variable_tolerance 1.0e-6"
+      "     max_iterations 20"
+      "   output silent"
+      " variables,"
+      "   continuous_design = 3"
+      "     initial_point  0.5    0.0   0.5"
+      "     upper_bounds  2.0   0.5  2.0"
+      "     lower_bounds     0.0  0.0 0.0"
+      "     descriptors 'x_1'  'x_2'  'x_3'"
+      " interface,"
+      "   direct"
+      "     analysis_driver = 'text_book'"
+      " responses,"
+      "   num_objective_functions = 1"
+      "   analytic_gradients"
+      "   analytic_hessians";
 
-  std::shared_ptr<Dakota::LibraryEnvironment> p_env(Opt_TPL_Test::create_env(text_book_input));
-  Dakota::LibraryEnvironment & env = *p_env;
+  std::shared_ptr<Dakota::LibraryEnvironment> p_env(
+      Opt_TPL_Test::create_env(text_book_input));
+  Dakota::LibraryEnvironment& env = *p_env;
 
   if (env.parallel_library().mpirun_flag())
-    FAIL(); // This test only works for serial builds
+    FAIL();  // This test only works for serial builds
 
   // Execute the environment
   env.execute();
@@ -296,21 +294,21 @@ TEST(opt_tol_rol_test_textbook_tests, test_text_book_bound_const_hessian)
 
   target = 1.0;
   max_tol = 1.e-2;
-  rel_err = fabs((vars.continuous_variable(0) - target) );
+  rel_err = fabs((vars.continuous_variable(0) - target));
   EXPECT_LT(rel_err, max_tol);
 
   target = 0.5;
   max_tol = 1.e-2;
-  rel_err = fabs((vars.continuous_variable(1) - target) );
+  rel_err = fabs((vars.continuous_variable(1) - target));
   EXPECT_LT(rel_err, max_tol);
 
   target = 1.0;
   max_tol = 1.e-2;
-  rel_err = fabs((vars.continuous_variable(2) - target) );
+  rel_err = fabs((vars.continuous_variable(2) - target));
   EXPECT_LT(rel_err, max_tol);
 
   // retrieve the final response values
-  const Response& resp  = env.response_results();
+  const Response& resp = env.response_results();
 
   target = 0.0625;
   max_tol = 1.e-2;
@@ -321,45 +319,46 @@ TEST(opt_tol_rol_test_textbook_tests, test_text_book_bound_const_hessian)
 //----------------------------------------------------------------
 /// 3D textbook problem with active bound constraints and use of reset
 /// of ROL problem and solver to test re-entrant capability: The 2nd
-/// and 3rd variables have best values at the corresponding upper bound constraint
-/// of 0.3 and 0.6, resp. (in comparison to a best value of 1 for the unconstrained
-/// problem; other two variables have expected best value of 1 with a
-/// best objective 0f 0.5^4
+/// and 3rd variables have best values at the corresponding upper bound
+/// constraint of 0.3 and 0.6, resp. (in comparison to a best value of 1 for the
+/// unconstrained problem; other two variables have expected best value of 1
+/// with a best objective 0f 0.5^4
 
-TEST(opt_tol_rol_test_textbook_tests, test_text_book_bound_const_reset)
-{
+TEST(opt_tol_rol_test_textbook_tests, test_text_book_bound_const_reset) {
   /// Dakota input string:
   static const char text_book_input[] =
-    " environment "
-    "   write_restart 'test_text_book_bound_const_reset.rst' "
-    " method,"
-    "   rol"
-    "     gradient_tolerance 1.0e-6"
-    "     constraint_tolerance 1.0e-6"
-    "     variable_tolerance 1.0e-6"
-    "     max_iterations 20"
-    "   output silent"
-    " variables,"
-    "   continuous_design = 3"
-    "     initial_point  0.5    0.0   0.5"
-    "     upper_bounds  2.0   0.5  2.0"
-    "     lower_bounds     0.0  0.0 0.0"
-    "     descriptors 'x_1'  'x_2'  'x_3'"
-    " interface,"
-    "   direct"
-    "     analysis_driver = 'text_book'"
-    " responses,"
-    "   num_objective_functions = 1"
-    "   analytic_gradients"
-    "   no_hessians";
+      " environment "
+      "   write_restart 'test_text_book_bound_const_reset.rst' "
+      " method,"
+      "   rol"
+      "     gradient_tolerance 1.0e-6"
+      "     constraint_tolerance 1.0e-6"
+      "     variable_tolerance 1.0e-6"
+      "     max_iterations 20"
+      "   output silent"
+      " variables,"
+      "   continuous_design = 3"
+      "     initial_point  0.5    0.0   0.5"
+      "     upper_bounds  2.0   0.5  2.0"
+      "     lower_bounds     0.0  0.0 0.0"
+      "     descriptors 'x_1'  'x_2'  'x_3'"
+      " interface,"
+      "   direct"
+      "     analysis_driver = 'text_book'"
+      " responses,"
+      "   num_objective_functions = 1"
+      "   analytic_gradients"
+      "   no_hessians";
 
-  std::shared_ptr<Dakota::LibraryEnvironment> p_env(Opt_TPL_Test::create_env(text_book_input));
-  Dakota::LibraryEnvironment & env = *p_env;
+  std::shared_ptr<Dakota::LibraryEnvironment> p_env(
+      Opt_TPL_Test::create_env(text_book_input));
+  Dakota::LibraryEnvironment& env = *p_env;
 
   if (env.parallel_library().mpirun_flag())
-    FAIL(); // This test only works for serial builds
+    FAIL();  // This test only works for serial builds
 
-  // Execute the environment - this solves the problem as previously without any reset
+  // Execute the environment - this solves the problem as previously without any
+  // reset
   env.execute();
 
   // Now get the ROL Optimizer and test various reset functionality
@@ -369,8 +368,9 @@ TEST(opt_tol_rol_test_textbook_tests, test_text_book_bound_const_reset)
   Cout << "The iterator is a : " << dak_iter->method_string() << endl;
   dak_iter->print_results(Cout);
   Dakota::ROLOptimizer& rol_optimizer =
-    *std::dynamic_pointer_cast<Dakota::ROLOptimizer>(dak_iter);
-  //Cout << "The iterator is also a ROLOptimizer --> " << ((NULL != rol_optimizer) ? true : false) << endl;
+      *std::dynamic_pointer_cast<Dakota::ROLOptimizer>(dak_iter);
+  // Cout << "The iterator is also a ROLOptimizer --> " << ((NULL !=
+  // rol_optimizer) ? true : false) << endl;
 
   // retrieve the final parameter values
   const Variables& vars = env.variables_results();
@@ -378,10 +378,12 @@ TEST(opt_tol_rol_test_textbook_tests, test_text_book_bound_const_reset)
   // We will reset various entities by modifying model contents
   std::shared_ptr<Dakota::Model> model = dak_iter->iterated_model();
 
-  // Let's see if we can reset the initial and bounds values using the registered solution with ROL 
-  // and owned by ROLOptimizer and then re-solve ... RWH
+  // Let's see if we can reset the initial and bounds values using the
+  // registered solution with ROL and owned by ROLOptimizer and then re-solve
+  // ... RWH
   RealVector new_initial_vals(vars.cv());
-  new_initial_vals[0] = 0.0; // These values require more ROL iterations and allow testing of new options below.
+  new_initial_vals[0] = 0.0;  // These values require more ROL iterations and
+                              // allow testing of new options below.
   new_initial_vals[1] = 0.0;
   new_initial_vals[2] = 0.0;
   ModelUtils::continuous_variables(*model, new_initial_vals);
@@ -414,21 +416,21 @@ TEST(opt_tol_rol_test_textbook_tests, test_text_book_bound_const_reset)
 
   target = 1.0;
   max_tol = 1.e-2;
-  rel_err = fabs((vars.continuous_variable(0) - target) );
+  rel_err = fabs((vars.continuous_variable(0) - target));
   EXPECT_LT(rel_err, max_tol);
 
   target = 0.3;
   max_tol = 1.e-2;
-  rel_err = fabs((vars.continuous_variable(1) - target) );
+  rel_err = fabs((vars.continuous_variable(1) - target));
   EXPECT_LT(rel_err, max_tol);
 
   target = 0.6;
   max_tol = 1.e-2;
-  rel_err = fabs((vars.continuous_variable(2) - target) );
+  rel_err = fabs((vars.continuous_variable(2) - target));
   EXPECT_LT(rel_err, max_tol);
 
   // retrieve the final response values
-  const Response& resp  = env.response_results();
+  const Response& resp = env.response_results();
 
   target = 0.2657;
   max_tol = 1.e-2;
@@ -447,39 +449,39 @@ TEST(opt_tol_rol_test_textbook_tests, test_text_book_bound_const_reset)
 /// value and therefore each should have a best value of 0.5 with
 /// a corresponding best objective of 16.125
 
-TEST(opt_tol_rol_test_textbook_tests, test_text_book_lin_eq_const)
-{
+TEST(opt_tol_rol_test_textbook_tests, test_text_book_lin_eq_const) {
   /// Dakota input string:
   static const char text_book_input[] =
-    " environment "
-    "   write_restart 'test_text_book_lin_eq_const.rst' "
-    " method,"
-    "   rol"
-    "     gradient_tolerance 1.0e-1"
-    "     constraint_tolerance 1.0e-1"
-    "     variable_tolerance 1.0e-1"
-    "     max_iterations 20"
-    "   output silent"
-    " variables,"
-    "   continuous_design = 3"
-    "     initial_point  0.0    0.0   3.5"
-    "     descriptors 'x_1'  'x_2'  'x_3'"
-    "     linear_equality_constraint_matrix = 1. 1. 1."
-    "                                         0. 0. 1."
-    "     linear_equality_targets = 4.0 3.0"
-    " interface,"
-    "   direct"
-    "     analysis_driver = 'text_book'"
-    " responses,"
-    "   num_objective_functions = 1"
-    "   analytic_gradients"
-    "   no_hessians";
+      " environment "
+      "   write_restart 'test_text_book_lin_eq_const.rst' "
+      " method,"
+      "   rol"
+      "     gradient_tolerance 1.0e-1"
+      "     constraint_tolerance 1.0e-1"
+      "     variable_tolerance 1.0e-1"
+      "     max_iterations 20"
+      "   output silent"
+      " variables,"
+      "   continuous_design = 3"
+      "     initial_point  0.0    0.0   3.5"
+      "     descriptors 'x_1'  'x_2'  'x_3'"
+      "     linear_equality_constraint_matrix = 1. 1. 1."
+      "                                         0. 0. 1."
+      "     linear_equality_targets = 4.0 3.0"
+      " interface,"
+      "   direct"
+      "     analysis_driver = 'text_book'"
+      " responses,"
+      "   num_objective_functions = 1"
+      "   analytic_gradients"
+      "   no_hessians";
 
-  std::shared_ptr<Dakota::LibraryEnvironment> p_env(Opt_TPL_Test::create_env(text_book_input));
-  Dakota::LibraryEnvironment & env = *p_env;
+  std::shared_ptr<Dakota::LibraryEnvironment> p_env(
+      Opt_TPL_Test::create_env(text_book_input));
+  Dakota::LibraryEnvironment& env = *p_env;
 
   if (env.parallel_library().mpirun_flag())
-    FAIL(); // This test only works for serial builds
+    FAIL();  // This test only works for serial builds
 
   // Execute the environment
   env.execute();
@@ -494,25 +496,25 @@ TEST(opt_tol_rol_test_textbook_tests, test_text_book_lin_eq_const)
 
   target = 0.5;
   max_tol = 1.e-2;
-  rel_err = fabs((vars.continuous_variable(0) - target) );
+  rel_err = fabs((vars.continuous_variable(0) - target));
   EXPECT_LT(rel_err, max_tol);
 
   target = 0.5;
   max_tol = 1.e-2;
-  rel_err = fabs((vars.continuous_variable(1) - target) );
+  rel_err = fabs((vars.continuous_variable(1) - target));
   EXPECT_LT(rel_err, max_tol);
 
   target = 3.0;
   max_tol = 1.e-2;
-  rel_err = fabs((vars.continuous_variable(2) - target) );
+  rel_err = fabs((vars.continuous_variable(2) - target));
   EXPECT_LT(rel_err, max_tol);
 
   // retrieve the final response values
-  const Response& resp  = env.response_results();
+  const Response& resp = env.response_results();
 
   target = 16.125;
   max_tol = 1.e-2;
-  rel_err = fabs((resp.function_value(0) - target) );
+  rel_err = fabs((resp.function_value(0) - target));
   EXPECT_LT(rel_err, max_tol);
 }
 
@@ -531,38 +533,38 @@ TEST(opt_tol_rol_test_textbook_tests, test_text_book_lin_eq_const)
 /// 1.163577604324929. The corresponding best objective is
 /// 3.884217188745469e-03
 
-TEST(opt_tol_rol_test_textbook_tests, test_text_book_nln_eq_const)
-{
+TEST(opt_tol_rol_test_textbook_tests, test_text_book_nln_eq_const) {
   /// Dakota input string:
   static const char text_book_input[] =
-    " environment "
-    "   write_restart 'test_text_book_nln_eq_const.rst' "
-    " method,"
-    "   rol"
-    "     gradient_tolerance 1.0e-6"
-    "     constraint_tolerance 1.0e-6"
-    "     variable_tolerance 1.0e-6"
-    "     max_iterations 20"
-    "   output silent"
-    " variables,"
-    "   continuous_design = 3"
-    "     initial_point  0.3    0.8   0.5"
-    "     descriptors 'x_1'  'x_2'  'x_3'"
-    " interface,"
-    "   direct"
-    "     analysis_driver = 'text_book'"
-    " responses,"
-    "   num_objective_functions = 1"
-    "   nonlinear_equality_constraints = 1"
-    "   nonlinear_equality_targets = 0.0"
-    "   analytic_gradients"
-    "   no_hessians";
+      " environment "
+      "   write_restart 'test_text_book_nln_eq_const.rst' "
+      " method,"
+      "   rol"
+      "     gradient_tolerance 1.0e-6"
+      "     constraint_tolerance 1.0e-6"
+      "     variable_tolerance 1.0e-6"
+      "     max_iterations 20"
+      "   output silent"
+      " variables,"
+      "   continuous_design = 3"
+      "     initial_point  0.3    0.8   0.5"
+      "     descriptors 'x_1'  'x_2'  'x_3'"
+      " interface,"
+      "   direct"
+      "     analysis_driver = 'text_book'"
+      " responses,"
+      "   num_objective_functions = 1"
+      "   nonlinear_equality_constraints = 1"
+      "   nonlinear_equality_targets = 0.0"
+      "   analytic_gradients"
+      "   no_hessians";
 
-  std::shared_ptr<Dakota::LibraryEnvironment> p_env(Opt_TPL_Test::create_env(text_book_input));
-  Dakota::LibraryEnvironment & env = *p_env;
+  std::shared_ptr<Dakota::LibraryEnvironment> p_env(
+      Opt_TPL_Test::create_env(text_book_input));
+  Dakota::LibraryEnvironment& env = *p_env;
 
   if (env.parallel_library().mpirun_flag())
-    FAIL(); // This test only works for serial builds
+    FAIL();  // This test only works for serial builds
 
   // Execute the environment
   env.execute();
@@ -578,26 +580,26 @@ TEST(opt_tol_rol_test_textbook_tests, test_text_book_nln_eq_const)
   target = 0.762750812626551;
   // BMA: Needs review
   max_tol = 1.0e-2;
-  rel_err = fabs((vars.continuous_variable(0) - target) );
+  rel_err = fabs((vars.continuous_variable(0) - target));
   EXPECT_LT(rel_err, max_tol);
 
   target = 1.163577604324929;
   max_tol = 1.e-2;
-  rel_err = fabs((vars.continuous_variable(1) - target) );
+  rel_err = fabs((vars.continuous_variable(1) - target));
   EXPECT_LT(rel_err, max_tol);
 
   target = 1.0;
   // BMA: Needs review
   max_tol = 1.0e-2;
-  rel_err = fabs((vars.continuous_variable(2) - target) );
+  rel_err = fabs((vars.continuous_variable(2) - target));
   EXPECT_LT(rel_err, max_tol);
 
   // retrieve the final response values
-  const Response& resp  = env.response_results();
+  const Response& resp = env.response_results();
 
   target = 3.884217188745469e-03;
   max_tol = 1.e-2;
-  rel_err = fabs((resp.function_value(0) - target) );
+  rel_err = fabs((resp.function_value(0) - target));
   EXPECT_LT(rel_err, max_tol);
 }
 
@@ -611,40 +613,40 @@ TEST(opt_tol_rol_test_textbook_tests, test_text_book_nln_eq_const)
 /// third variable is expected to have a best value of 1 and
 /// therefore best objective is 1
 
-TEST(opt_tol_rol_test_textbook_tests, test_text_book_nln_lin_eq_const)
-{
+TEST(opt_tol_rol_test_textbook_tests, test_text_book_nln_lin_eq_const) {
   /// Dakota input string:
   static const char text_book_input[] =
-    " environment "
-    "   write_restart 'test_text_book_nln_lin_eq_const.rst' "
-    " method,"
-    "   rol"
-    "     gradient_tolerance 1.0e-6"
-    "     constraint_tolerance 1.0e-6"
-    "     variable_tolerance 1.0e-6"
-    "     max_iterations 20"
-    "   output silent"
-    " variables,"
-    "   continuous_design = 3"
-    "     initial_point  0.5    0.5   0.5"
-    "     descriptors 'x_1'  'x_2'  'x_3'"
-    "     linear_equality_constraint_matrix = 1. 0. 0."
-    "     linear_equality_targets = 1.0"
-    " interface,"
-    "   direct"
-    "     analysis_driver = 'text_book'"
-    " responses,"
-    "   num_objective_functions = 1"
-    "   nonlinear_equality_constraints = 1"
-    "   nonlinear_equality_targets = 1.0"
-    "   analytic_gradients"
-    "   no_hessians";
+      " environment "
+      "   write_restart 'test_text_book_nln_lin_eq_const.rst' "
+      " method,"
+      "   rol"
+      "     gradient_tolerance 1.0e-6"
+      "     constraint_tolerance 1.0e-6"
+      "     variable_tolerance 1.0e-6"
+      "     max_iterations 20"
+      "   output silent"
+      " variables,"
+      "   continuous_design = 3"
+      "     initial_point  0.5    0.5   0.5"
+      "     descriptors 'x_1'  'x_2'  'x_3'"
+      "     linear_equality_constraint_matrix = 1. 0. 0."
+      "     linear_equality_targets = 1.0"
+      " interface,"
+      "   direct"
+      "     analysis_driver = 'text_book'"
+      " responses,"
+      "   num_objective_functions = 1"
+      "   nonlinear_equality_constraints = 1"
+      "   nonlinear_equality_targets = 1.0"
+      "   analytic_gradients"
+      "   no_hessians";
 
-  std::shared_ptr<Dakota::LibraryEnvironment> p_env(Opt_TPL_Test::create_env(text_book_input));
-  Dakota::LibraryEnvironment & env = *p_env;
+  std::shared_ptr<Dakota::LibraryEnvironment> p_env(
+      Opt_TPL_Test::create_env(text_book_input));
+  Dakota::LibraryEnvironment& env = *p_env;
 
   if (env.parallel_library().mpirun_flag())
-    FAIL(); // This test only works for serial builds
+    FAIL();  // This test only works for serial builds
 
   // Execute the environment
   env.execute();
@@ -659,7 +661,7 @@ TEST(opt_tol_rol_test_textbook_tests, test_text_book_nln_lin_eq_const)
 
   target = 1.0;
   max_tol = 1.e-2;
-  rel_err = fabs((vars.continuous_variable(0) - target) );
+  rel_err = fabs((vars.continuous_variable(0) - target));
   EXPECT_LT(rel_err, max_tol);
 
   target = 0.0;
@@ -670,15 +672,15 @@ TEST(opt_tol_rol_test_textbook_tests, test_text_book_nln_lin_eq_const)
   target = 1.0;
   // BMA: Needs review
   max_tol = 1.e-1;
-  rel_err = fabs((vars.continuous_variable(2) - target) );
+  rel_err = fabs((vars.continuous_variable(2) - target));
   EXPECT_LT(rel_err, max_tol);
 
   // retrieve the final response values
-  const Response& resp  = env.response_results();
+  const Response& resp = env.response_results();
 
   target = 1.0;
   max_tol = 1.e-2;
-  rel_err = fabs((resp.function_value(0) - target) );
+  rel_err = fabs((resp.function_value(0) - target));
   EXPECT_LT(rel_err, max_tol);
 }
 
@@ -692,40 +694,40 @@ TEST(opt_tol_rol_test_textbook_tests, test_text_book_nln_lin_eq_const)
 /// the best x_3 is 3 and x_1 = x_2 = 0.5 with a corresponding best
 /// objective of 16.125
 
-TEST(opt_tol_rol_test_textbook_tests, test_text_book_1_lin_ineq_const)
-{
+TEST(opt_tol_rol_test_textbook_tests, test_text_book_1_lin_ineq_const) {
   /// Dakota input string:
   static const char text_book_input[] =
-    " environment "
-    "   write_restart 'test_text_book_1_lin_ineq_const.rst' "
-    " method,"
-    "   rol"
-    "     gradient_tolerance 1.0e-2"
-    "     constraint_tolerance 1.0e-2"
-    "     variable_tolerance 1.0e-2"
-    "     max_iterations 20"
-    "   output silent"
-    " variables,"
-    "   continuous_design = 3"
-    "     initial_point  0.0    0.0   3.5"
-    "     descriptors 'x_1'  'x_2'  'x_3'"
-    "     linear_inequality_constraint_matrix = 1. 1. 0."
-    "                                         0. 0. 1."
-    "     linear_inequality_upper_bounds = 1.0 4.0"
-    "     linear_inequality_lower_bounds = 0.0 3.0"
-    " interface,"
-    "   direct"
-    "     analysis_driver = 'text_book'"
-    " responses,"
-    "   num_objective_functions = 1"
-    "   analytic_gradients"
-    "   no_hessians";
+      " environment "
+      "   write_restart 'test_text_book_1_lin_ineq_const.rst' "
+      " method,"
+      "   rol"
+      "     gradient_tolerance 1.0e-2"
+      "     constraint_tolerance 1.0e-2"
+      "     variable_tolerance 1.0e-2"
+      "     max_iterations 20"
+      "   output silent"
+      " variables,"
+      "   continuous_design = 3"
+      "     initial_point  0.0    0.0   3.5"
+      "     descriptors 'x_1'  'x_2'  'x_3'"
+      "     linear_inequality_constraint_matrix = 1. 1. 0."
+      "                                         0. 0. 1."
+      "     linear_inequality_upper_bounds = 1.0 4.0"
+      "     linear_inequality_lower_bounds = 0.0 3.0"
+      " interface,"
+      "   direct"
+      "     analysis_driver = 'text_book'"
+      " responses,"
+      "   num_objective_functions = 1"
+      "   analytic_gradients"
+      "   no_hessians";
 
-  std::shared_ptr<Dakota::LibraryEnvironment> p_env(Opt_TPL_Test::create_env(text_book_input));
-  Dakota::LibraryEnvironment & env = *p_env;
+  std::shared_ptr<Dakota::LibraryEnvironment> p_env(
+      Opt_TPL_Test::create_env(text_book_input));
+  Dakota::LibraryEnvironment& env = *p_env;
 
   if (env.parallel_library().mpirun_flag())
-    FAIL(); // This test only works for serial builds
+    FAIL();  // This test only works for serial builds
 
   // Execute the environment
   env.execute();
@@ -740,25 +742,25 @@ TEST(opt_tol_rol_test_textbook_tests, test_text_book_1_lin_ineq_const)
 
   target = 0.5;
   max_tol = 1.e-2;
-  rel_err = fabs((vars.continuous_variable(0) - target) );
+  rel_err = fabs((vars.continuous_variable(0) - target));
   EXPECT_LT(rel_err, max_tol);
 
   target = 0.5;
   max_tol = 1.e-2;
-  rel_err = fabs((vars.continuous_variable(1) - target) );
+  rel_err = fabs((vars.continuous_variable(1) - target));
   EXPECT_LT(rel_err, max_tol);
 
   target = 3.0;
   max_tol = 1.e-2;
-  rel_err = fabs((vars.continuous_variable(2) - target) );
+  rel_err = fabs((vars.continuous_variable(2) - target));
   EXPECT_LT(rel_err, max_tol);
 
   // retrieve the final response values
-  const Response& resp  = env.response_results();
+  const Response& resp = env.response_results();
 
   target = 16.125;
   max_tol = 1.e0;
-  rel_err = fabs((resp.function_value(0) - target) );
+  rel_err = fabs((resp.function_value(0) - target));
   EXPECT_LT(rel_err, max_tol);
 }
 
@@ -773,40 +775,40 @@ TEST(opt_tol_rol_test_textbook_tests, test_text_book_1_lin_ineq_const)
 /// the best x_3 is 3 and x_1 = x_2 = 0.5 with a corresponding best
 /// objective of 16.125
 
-TEST(opt_tol_rol_test_textbook_tests, test_text_book_2_lin_ineq_const)
-{
+TEST(opt_tol_rol_test_textbook_tests, test_text_book_2_lin_ineq_const) {
   /// Dakota input string:
   static const char text_book_input[] =
-    " environment "
-    "   write_restart 'test_text_book_2_lin_ineq_const.rst' "
-    " method,"
-    "   rol"
-    "     gradient_tolerance 1.0e-2"
-    "     constraint_tolerance 1.0e-2"
-    "     variable_tolerance 1.0e-2"
-    "     max_iterations 20"
-    "   output silent"
-    " variables,"
-    "   continuous_design = 3"
-    "     initial_point  0.0    0.0   3.5"
-    "     descriptors 'x_1'  'x_2'  'x_3'"
-    "     linear_inequality_constraint_matrix = 1. 1. 1."
-    "                                         0. 0. 1."
-    "     linear_inequality_upper_bounds = 4.0 4.0"
-    "     linear_inequality_lower_bounds = 3.0 3.0"
-    " interface,"
-    "   direct"
-    "     analysis_driver = 'text_book'"
-    " responses,"
-    "   num_objective_functions = 1"
-    "   analytic_gradients"
-    "   no_hessians";
+      " environment "
+      "   write_restart 'test_text_book_2_lin_ineq_const.rst' "
+      " method,"
+      "   rol"
+      "     gradient_tolerance 1.0e-2"
+      "     constraint_tolerance 1.0e-2"
+      "     variable_tolerance 1.0e-2"
+      "     max_iterations 20"
+      "   output silent"
+      " variables,"
+      "   continuous_design = 3"
+      "     initial_point  0.0    0.0   3.5"
+      "     descriptors 'x_1'  'x_2'  'x_3'"
+      "     linear_inequality_constraint_matrix = 1. 1. 1."
+      "                                         0. 0. 1."
+      "     linear_inequality_upper_bounds = 4.0 4.0"
+      "     linear_inequality_lower_bounds = 3.0 3.0"
+      " interface,"
+      "   direct"
+      "     analysis_driver = 'text_book'"
+      " responses,"
+      "   num_objective_functions = 1"
+      "   analytic_gradients"
+      "   no_hessians";
 
-  std::shared_ptr<Dakota::LibraryEnvironment> p_env(Opt_TPL_Test::create_env(text_book_input));
-  Dakota::LibraryEnvironment & env = *p_env;
+  std::shared_ptr<Dakota::LibraryEnvironment> p_env(
+      Opt_TPL_Test::create_env(text_book_input));
+  Dakota::LibraryEnvironment& env = *p_env;
 
   if (env.parallel_library().mpirun_flag())
-    FAIL(); // This test only works for serial builds
+    FAIL();  // This test only works for serial builds
 
   // Execute the environment
   env.execute();
@@ -821,25 +823,25 @@ TEST(opt_tol_rol_test_textbook_tests, test_text_book_2_lin_ineq_const)
 
   target = 0.5;
   max_tol = 1.e-2;
-  rel_err = fabs((vars.continuous_variable(0) - target) );
+  rel_err = fabs((vars.continuous_variable(0) - target));
   EXPECT_LT(rel_err, max_tol);
 
   target = 0.5;
   max_tol = 1.e-2;
-  rel_err = fabs((vars.continuous_variable(1) - target) );
+  rel_err = fabs((vars.continuous_variable(1) - target));
   EXPECT_LT(rel_err, max_tol);
 
   target = 3.0;
   max_tol = 1.e-2;
-  rel_err = fabs((vars.continuous_variable(2) - target) );
+  rel_err = fabs((vars.continuous_variable(2) - target));
   EXPECT_LT(rel_err, max_tol);
 
   // retrieve the final response values
-  const Response& resp  = env.response_results();
+  const Response& resp = env.response_results();
 
   target = 16.125;
   max_tol = 1.e0;
-  rel_err = fabs((resp.function_value(0) - target) );
+  rel_err = fabs((resp.function_value(0) - target));
   EXPECT_LT(rel_err, max_tol);
 }
 
@@ -861,39 +863,39 @@ TEST(opt_tol_rol_test_textbook_tests, test_text_book_2_lin_ineq_const)
 /// 1.125437799721614. The corresponding best objective is
 /// 1.442520331911729e-03
 
-TEST(opt_tol_rol_test_textbook_tests, test_text_book_nln_ineq_const)
-{
+TEST(opt_tol_rol_test_textbook_tests, test_text_book_nln_ineq_const) {
   /// Dakota input string:
   static const char text_book_input[] =
-    " environment "
-    "   write_restart 'test_text_book_nln_ineq_const.rst' "
-    " method,"
-    "   rol"
-    "     gradient_tolerance 1.0e-6"
-    "     constraint_tolerance 1.0e-6"
-    "     variable_tolerance 1.0e-6"
-    "     max_iterations 20"
-    "   output silent"
-    " variables,"
-    "   continuous_design = 3"
-    "     initial_point  0.3    0.6   0.5"
-    "     descriptors 'x_1'  'x_2'  'x_3'"
-    " interface,"
-    "   direct"
-    "     analysis_driver = 'text_book'"
-    " responses,"
-    "   num_objective_functions = 1"
-    "   nonlinear_inequality_constraints = 1"
-    "   nonlinear_inequality_upper_bounds = 0.1"
-    "   nonlinear_inequality_lower_bounds = -0.1"
-    "   analytic_gradients"
-    "   no_hessians";
+      " environment "
+      "   write_restart 'test_text_book_nln_ineq_const.rst' "
+      " method,"
+      "   rol"
+      "     gradient_tolerance 1.0e-6"
+      "     constraint_tolerance 1.0e-6"
+      "     variable_tolerance 1.0e-6"
+      "     max_iterations 20"
+      "   output silent"
+      " variables,"
+      "   continuous_design = 3"
+      "     initial_point  0.3    0.6   0.5"
+      "     descriptors 'x_1'  'x_2'  'x_3'"
+      " interface,"
+      "   direct"
+      "     analysis_driver = 'text_book'"
+      " responses,"
+      "   num_objective_functions = 1"
+      "   nonlinear_inequality_constraints = 1"
+      "   nonlinear_inequality_upper_bounds = 0.1"
+      "   nonlinear_inequality_lower_bounds = -0.1"
+      "   analytic_gradients"
+      "   no_hessians";
 
-  std::shared_ptr<Dakota::LibraryEnvironment> p_env(Opt_TPL_Test::create_env(text_book_input));
-  Dakota::LibraryEnvironment & env = *p_env;
+  std::shared_ptr<Dakota::LibraryEnvironment> p_env(
+      Opt_TPL_Test::create_env(text_book_input));
+  Dakota::LibraryEnvironment& env = *p_env;
 
   if (env.parallel_library().mpirun_flag())
-    FAIL(); // This test only works for serial builds
+    FAIL();  // This test only works for serial builds
 
   // Execute the environment
   env.execute();
@@ -908,26 +910,26 @@ TEST(opt_tol_rol_test_textbook_tests, test_text_book_nln_ineq_const)
 
   target = 0.8140754878147402;
   max_tol = 1.e-2;
-  rel_err = fabs((vars.continuous_variable(0) - target) );
+  rel_err = fabs((vars.continuous_variable(0) - target));
   EXPECT_LT(rel_err, max_tol);
 
   target = 1.125437799721614;
   max_tol = 1.e-2;
-  rel_err = fabs((vars.continuous_variable(1) - target) );
+  rel_err = fabs((vars.continuous_variable(1) - target));
   EXPECT_LT(rel_err, max_tol);
 
   target = 1.0;
   // BMA: Needs review
   max_tol = 1.0e-2;
-  rel_err = fabs((vars.continuous_variable(2) - target) );
+  rel_err = fabs((vars.continuous_variable(2) - target));
   EXPECT_LT(rel_err, max_tol);
 
   // retrieve the final response values
-  const Response& resp  = env.response_results();
+  const Response& resp = env.response_results();
 
   target = 1.442520331911729e-03;
   max_tol = 1.e-6;
-  rel_err = fabs((resp.function_value(0) - target) );
+  rel_err = fabs((resp.function_value(0) - target));
   EXPECT_LT(rel_err, max_tol);
 }
 
@@ -949,42 +951,42 @@ TEST(opt_tol_rol_test_textbook_tests, test_text_book_nln_ineq_const)
 /// 1.125437799721614. The corresponding best objective is
 /// 1.001442520331912
 
-TEST(opt_tol_rol_test_textbook_tests, test_text_book_nln_lin_ineq_const)
-{
+TEST(opt_tol_rol_test_textbook_tests, test_text_book_nln_lin_ineq_const) {
   /// Dakota input string:
   static const char text_book_input[] =
-    " environment "
-    "   write_restart 'test_text_book_nln_lin_ineq_const.rst' "
-    " method,"
-    "   rol"
-    "     gradient_tolerance 1.0e-2"
-    "     constraint_tolerance 1.0e-2"
-    "     variable_tolerance 1.0e-2"
-    "     max_iterations 20"
-    "   output silent"
-    " variables,"
-    "   continuous_design = 3"
-    "     initial_point  0.3    0.6   1.5"
-    "     descriptors 'x_1'  'x_2'  'x_3'"
-    "     linear_inequality_constraint_matrix = 0. 0. 1."
-    "     linear_inequality_upper_bounds = 3.0"
-    "     linear_inequality_lower_bounds = 2.0"
-    " interface,"
-    "   direct"
-    "     analysis_driver = 'text_book'"
-    " responses,"
-    "   num_objective_functions = 1"
-    "   nonlinear_inequality_constraints = 1"
-    "   nonlinear_inequality_upper_bounds = 0.1"
-    "   nonlinear_inequality_lower_bounds = -0.1"
-    "   analytic_gradients"
-    "   no_hessians";
+      " environment "
+      "   write_restart 'test_text_book_nln_lin_ineq_const.rst' "
+      " method,"
+      "   rol"
+      "     gradient_tolerance 1.0e-2"
+      "     constraint_tolerance 1.0e-2"
+      "     variable_tolerance 1.0e-2"
+      "     max_iterations 20"
+      "   output silent"
+      " variables,"
+      "   continuous_design = 3"
+      "     initial_point  0.3    0.6   1.5"
+      "     descriptors 'x_1'  'x_2'  'x_3'"
+      "     linear_inequality_constraint_matrix = 0. 0. 1."
+      "     linear_inequality_upper_bounds = 3.0"
+      "     linear_inequality_lower_bounds = 2.0"
+      " interface,"
+      "   direct"
+      "     analysis_driver = 'text_book'"
+      " responses,"
+      "   num_objective_functions = 1"
+      "   nonlinear_inequality_constraints = 1"
+      "   nonlinear_inequality_upper_bounds = 0.1"
+      "   nonlinear_inequality_lower_bounds = -0.1"
+      "   analytic_gradients"
+      "   no_hessians";
 
-  std::shared_ptr<Dakota::LibraryEnvironment> p_env(Opt_TPL_Test::create_env(text_book_input));
-  Dakota::LibraryEnvironment & env = *p_env;
+  std::shared_ptr<Dakota::LibraryEnvironment> p_env(
+      Opt_TPL_Test::create_env(text_book_input));
+  Dakota::LibraryEnvironment& env = *p_env;
 
   if (env.parallel_library().mpirun_flag())
-    FAIL(); // This test only works for serial builds
+    FAIL();  // This test only works for serial builds
 
   // Execute the environment
   env.execute();
@@ -999,7 +1001,7 @@ TEST(opt_tol_rol_test_textbook_tests, test_text_book_nln_lin_ineq_const)
 
   target = 0.8140754878147402;
   max_tol = 1.e-2;
-  rel_err = fabs((vars.continuous_variable(0) - target) );
+  rel_err = fabs((vars.continuous_variable(0) - target));
   EXPECT_LT(rel_err, max_tol);
 
   target = 1.125437799721614;
@@ -1009,15 +1011,15 @@ TEST(opt_tol_rol_test_textbook_tests, test_text_book_nln_lin_ineq_const)
 
   target = 2.0;
   max_tol = 1.e-2;
-  rel_err = fabs((vars.continuous_variable(2) - target) );
+  rel_err = fabs((vars.continuous_variable(2) - target));
   EXPECT_LT(rel_err, max_tol);
 
   // retrieve the final response values
-  const Response& resp  = env.response_results();
+  const Response& resp = env.response_results();
 
   target = 1.001442520331912;
   max_tol = 1.e-1;
-  rel_err = fabs((resp.function_value(0) - target) );
+  rel_err = fabs((resp.function_value(0) - target));
   EXPECT_LT(rel_err, max_tol);
 }
 
@@ -1032,7 +1034,7 @@ TEST(opt_tol_rol_test_textbook_tests, test_text_book_nln_lin_ineq_const)
 /// (1) & (2): 1 < x_1 + x_2 < 2 (5)
 /// (4) & (5): 1 < 2 x_2^2 + x_2 < 2 (6)
 /// (4) & (3): -0.1 < 4 x_2^4 - x_2/2 < 0.1 (7)
-/// (6) & root finding: (-1.280776406404415 < x_2 < -1) OR 
+/// (6) & root finding: (-1.280776406404415 < x_2 < -1) OR
 ///                 (0.5 < x_2 < 0.7807764064044151) (8)
 /// (7) & root finding: (-0.189650762381091 < x_2 < 0.218102125965436) OR
 ///                 (0.395256237746866 < x_2 < 0.554094667611217) (9)
@@ -1051,46 +1053,46 @@ TEST(opt_tol_rol_test_textbook_tests, test_text_book_nln_lin_ineq_const)
 /// x_3 = 2.831863531038414, along with a best objective of
 /// 11.322607724274398, with all constraints satisfied (and active).
 
-TEST(opt_tol_rol_test_textbook_tests, test_text_book_nln_lin_eq_ineq_const)
-{
+TEST(opt_tol_rol_test_textbook_tests, test_text_book_nln_lin_eq_ineq_const) {
   /// Dakota input string:
   static const char text_book_input[] =
-    " environment "
-    "   write_restart 'test_text_book_nln_lin_eq_ineq_const.rst' "
-    " method,"
-    "   rol"
-    "     gradient_tolerance 1.0e-3"
-    "     constraint_tolerance 1.0e-3"
-    "     variable_tolerance 1.0e-3"
-    "     max_iterations 20"
-    "   output silent"
-    " variables,"
-    "   continuous_design = 3"
-    "     initial_point  0.1    0.0   2.3"
-    "     descriptors 'x_1'  'x_2'  'x_3'"
-    "     linear_equality_constraint_matrix = 1. 1. 1."
-    "     linear_equality_targets = 4.0"
-    "     linear_inequality_constraint_matrix = 0. 0. 1."
-    "     linear_inequality_upper_bounds = 3.0"
-    "     linear_inequality_lower_bounds = 2.0"
-    " interface,"
-    "   direct"
-    "     analysis_driver = 'text_book'"
-    " responses,"
-    "   num_objective_functions = 1"
-    "   nonlinear_inequality_constraints = 1"
-    "   nonlinear_inequality_upper_bounds = 0.1"
-    "   nonlinear_inequality_lower_bounds = -0.1"
-    "   nonlinear_equality_constraints = 1"
-    "   nonlinear_equality_targets = 0.0"
-    "   analytic_gradients"
-    "   no_hessians";
+      " environment "
+      "   write_restart 'test_text_book_nln_lin_eq_ineq_const.rst' "
+      " method,"
+      "   rol"
+      "     gradient_tolerance 1.0e-3"
+      "     constraint_tolerance 1.0e-3"
+      "     variable_tolerance 1.0e-3"
+      "     max_iterations 20"
+      "   output silent"
+      " variables,"
+      "   continuous_design = 3"
+      "     initial_point  0.1    0.0   2.3"
+      "     descriptors 'x_1'  'x_2'  'x_3'"
+      "     linear_equality_constraint_matrix = 1. 1. 1."
+      "     linear_equality_targets = 4.0"
+      "     linear_inequality_constraint_matrix = 0. 0. 1."
+      "     linear_inequality_upper_bounds = 3.0"
+      "     linear_inequality_lower_bounds = 2.0"
+      " interface,"
+      "   direct"
+      "     analysis_driver = 'text_book'"
+      " responses,"
+      "   num_objective_functions = 1"
+      "   nonlinear_inequality_constraints = 1"
+      "   nonlinear_inequality_upper_bounds = 0.1"
+      "   nonlinear_inequality_lower_bounds = -0.1"
+      "   nonlinear_equality_constraints = 1"
+      "   nonlinear_equality_targets = 0.0"
+      "   analytic_gradients"
+      "   no_hessians";
 
-  std::shared_ptr<Dakota::LibraryEnvironment> p_env(Opt_TPL_Test::create_env(text_book_input));
-  Dakota::LibraryEnvironment & env = *p_env;
+  std::shared_ptr<Dakota::LibraryEnvironment> p_env(
+      Opt_TPL_Test::create_env(text_book_input));
+  Dakota::LibraryEnvironment& env = *p_env;
 
   if (env.parallel_library().mpirun_flag())
-    FAIL(); // This test only works for serial builds
+    FAIL();  // This test only works for serial builds
 
   // Execute the environment
   env.execute();
@@ -1105,7 +1107,7 @@ TEST(opt_tol_rol_test_textbook_tests, test_text_book_nln_lin_eq_ineq_const)
 
   target = 0.614041801350369;
   max_tol = 1.e-2;
-  rel_err = fabs((vars.continuous_variable(0) - target) );
+  rel_err = fabs((vars.continuous_variable(0) - target));
   EXPECT_LT(rel_err, max_tol);
 
   target = 5.5409525784e-01;
@@ -1115,53 +1117,52 @@ TEST(opt_tol_rol_test_textbook_tests, test_text_book_nln_lin_eq_ineq_const)
 
   target = 2.831863531038414;
   max_tol = 1.e-2;
-  rel_err = fabs((vars.continuous_variable(2) - target) );
+  rel_err = fabs((vars.continuous_variable(2) - target));
   EXPECT_LT(rel_err, max_tol);
 
   // retrieve the final response values
-  const Response& resp  = env.response_results();
+  const Response& resp = env.response_results();
 
   target = 11.322607724274398;
   max_tol = 1.e-1;
-  rel_err = fabs((resp.function_value(0) - target) );
+  rel_err = fabs((resp.function_value(0) - target));
   EXPECT_LT(rel_err, max_tol);
 }
-
 
 //----------------------------------------------------------------
 /// Unconstrained 3D textbook problem with known solution of
 /// {1,1,1} and utilizing Hessians from the problem
 
-TEST(opt_tol_rol_test_textbook_tests, test_text_book_base_hessian)
-{
+TEST(opt_tol_rol_test_textbook_tests, test_text_book_base_hessian) {
   /// Dakota input string:
   static const char text_book_input[] =
-    " environment "
-    "   write_restart 'test_text_book_base_hessian.rst' "
-    " method,"
-    "   rol"
-    "     gradient_tolerance 1.0e-6"
-    "     constraint_tolerance 1.0e-6"
-    "     variable_tolerance 1.0e-6"
-    "     max_iterations 20"
-    "   output silent"
-    " variables,"
-    "   continuous_design = 3"
-    "     initial_point  0.5    0.5   0.5"
-    "     descriptors 'x_1'  'x_2'  'x_3'"
-    " interface,"
-    "   direct"
-    "     analysis_driver = 'text_book'"
-    " responses,"
-    "   num_objective_functions = 1"
-    "   analytic_gradients"
-    "   analytic_hessians";
+      " environment "
+      "   write_restart 'test_text_book_base_hessian.rst' "
+      " method,"
+      "   rol"
+      "     gradient_tolerance 1.0e-6"
+      "     constraint_tolerance 1.0e-6"
+      "     variable_tolerance 1.0e-6"
+      "     max_iterations 20"
+      "   output silent"
+      " variables,"
+      "   continuous_design = 3"
+      "     initial_point  0.5    0.5   0.5"
+      "     descriptors 'x_1'  'x_2'  'x_3'"
+      " interface,"
+      "   direct"
+      "     analysis_driver = 'text_book'"
+      " responses,"
+      "   num_objective_functions = 1"
+      "   analytic_gradients"
+      "   analytic_hessians";
 
-  std::shared_ptr<Dakota::LibraryEnvironment> p_env(Opt_TPL_Test::create_env(text_book_input));
-  Dakota::LibraryEnvironment & env = *p_env;
+  std::shared_ptr<Dakota::LibraryEnvironment> p_env(
+      Opt_TPL_Test::create_env(text_book_input));
+  Dakota::LibraryEnvironment& env = *p_env;
 
   if (env.parallel_library().mpirun_flag())
-    FAIL(); // This test only works for serial builds
+    FAIL();  // This test only works for serial builds
 
   // Execute the environment
   env.execute();
@@ -1176,21 +1177,21 @@ TEST(opt_tol_rol_test_textbook_tests, test_text_book_base_hessian)
 
   target = 1.0;
   max_tol = 1.e-2;
-  rel_err = fabs((vars.continuous_variable(0) - target) );
+  rel_err = fabs((vars.continuous_variable(0) - target));
   EXPECT_LT(rel_err, max_tol);
 
   target = 1.0;
   max_tol = 1.e-2;
-  rel_err = fabs((vars.continuous_variable(1) - target) );
+  rel_err = fabs((vars.continuous_variable(1) - target));
   EXPECT_LT(rel_err, max_tol);
 
   target = 1.0;
   max_tol = 1.e-2;
-  rel_err = fabs((vars.continuous_variable(2) - target) );
+  rel_err = fabs((vars.continuous_variable(2) - target));
   EXPECT_LT(rel_err, max_tol);
 
   // retrieve the final response values
-  const Response& resp  = env.response_results();
+  const Response& resp = env.response_results();
 
   target = 0.0;
   max_tol = 1.e-2;
@@ -1198,7 +1199,7 @@ TEST(opt_tol_rol_test_textbook_tests, test_text_book_base_hessian)
   EXPECT_LT(rel_err, max_tol);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

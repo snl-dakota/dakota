@@ -10,52 +10,54 @@
 #ifndef NOWPAC_OPTIMIZER_H
 #define NOWPAC_OPTIMIZER_H
 
-#include "DakotaOptimizer.hpp"
 #include <BlackBoxBaseClass.hpp>
 #include <NOWPAC.hpp>
+
+#include "DakotaOptimizer.hpp"
 
 namespace Dakota {
 
 /// Derived class for plugging Dakota evaluations into NOWPAC solver
 
-class NOWPACBlackBoxEvaluator: public BlackBoxBaseClass
-{
-public:
-
+class NOWPACBlackBoxEvaluator : public BlackBoxBaseClass {
+ public:
   /// constructor
   NOWPACBlackBoxEvaluator(Model& model);
 
-  void evaluate(std::vector<double> const &x, // incoming params in user space
-		std::vector<double> &vals, // 1 obj + len-1 nln ineq constr <= 0
-		void *param); // general pass through from NOWPAC
+  void evaluate(
+      std::vector<double> const& x,  // incoming params in user space
+      std::vector<double>& vals,     // 1 obj + len-1 nln ineq constr <= 0
+      void* param);                  // general pass through from NOWPAC
   // alternate evaluate requires an estimate of noise in 1 obj + len-1
   // nonlin ineq constr (this is tied to SNOWPAC stochastic_optimization)
-  void evaluate(std::vector<double> const &x, // incoming params in user space
-		std::vector<double> &vals, // 1 obj + len-1 nln ineq constr <= 0
-		std::vector<double> &noise,// 1 obj + len-1 nln ineq constr <= 0
-		void *param); // general pass through from NOWPAC
+  void evaluate(
+      std::vector<double> const& x,  // incoming params in user space
+      std::vector<double>& vals,     // 1 obj + len-1 nln ineq constr <= 0
+      std::vector<double>& noise,    // 1 obj + len-1 nln ineq constr <= 0
+      void* param);                  // general pass through from NOWPAC
 
-  double evaluate_samples ( std::vector<double> const &samples, const unsigned int index, std::vector<double>const& x );
+  double evaluate_samples(std::vector<double> const& samples,
+                          const unsigned int index,
+                          std::vector<double> const& x);
   // TO DO: queue() + synchronize()
 
   void allocate_constraints();
 
   int num_ineq_constraints() const;
 
-  const SizetList& nonlinear_inequality_mapping_indices()     const;
-  const RealList&  nonlinear_inequality_mapping_multipliers() const;
-  const RealList&  nonlinear_inequality_mapping_offsets()     const;
+  const SizetList& nonlinear_inequality_mapping_indices() const;
+  const RealList& nonlinear_inequality_mapping_multipliers() const;
+  const RealList& nonlinear_inequality_mapping_offsets() const;
 
   /// set {lower,upper}Bounds
   void set_unscaled_bounds(const RealVector& l_bnds, const RealVector& u_bnds);
 
   /// perform scaling from [lower,upper] to [0,1]
-  void scale(const RealVector& unscaled_x, RealArray& scaled_x)   const;
+  void scale(const RealVector& unscaled_x, RealArray& scaled_x) const;
   /// invert scaling to return from [0,1] to [lower,upper]
   void unscale(const RealArray& scaled_x, RealVector& unscaled_x) const;
 
-private:
-
+ private:
   /// cache a local copy of the Model
   Model iteratedModel;
 
@@ -88,57 +90,51 @@ private:
   RealList linIneqConMappingOffsets;
 };
 
+inline NOWPACBlackBoxEvaluator::NOWPACBlackBoxEvaluator(Model& model)
+    : iteratedModel(model) {}
 
-inline NOWPACBlackBoxEvaluator::NOWPACBlackBoxEvaluator(Model& model):
-  iteratedModel(model)
-{ }
-
-
-inline int NOWPACBlackBoxEvaluator::num_ineq_constraints() const
-{ return numNowpacIneqConstr; }
-
-
-inline const SizetList& NOWPACBlackBoxEvaluator::
-nonlinear_inequality_mapping_indices() const
-{ return nonlinIneqConMappingIndices; }
-
-
-inline const RealList& NOWPACBlackBoxEvaluator::
-nonlinear_inequality_mapping_multipliers() const
-{ return nonlinIneqConMappingMultipliers; }
-
-
-inline const RealList& NOWPACBlackBoxEvaluator::
-nonlinear_inequality_mapping_offsets() const
-{ return nonlinIneqConMappingOffsets; }
-
-
-inline void NOWPACBlackBoxEvaluator::
-set_unscaled_bounds(const RealVector& l_bnds, const RealVector& u_bnds)
-{ copy_data(l_bnds, lowerBounds); copy_data(u_bnds, upperBounds); }
-
-
-inline void NOWPACBlackBoxEvaluator::
-scale(const RealVector& unscaled_x, RealArray& scaled_x) const
-{ 
-  size_t v, num_v = unscaled_x.length();
-  if (scaled_x.size() != num_v)
-    scaled_x.resize(num_v);
-  for (v=0; v<num_v; ++v)
-    scaled_x[v] = (  unscaled_x[v] - lowerBounds[v] )
-                / ( upperBounds[v] - lowerBounds[v] ) * 2. - 1;
+inline int NOWPACBlackBoxEvaluator::num_ineq_constraints() const {
+  return numNowpacIneqConstr;
 }
 
+inline const SizetList&
+NOWPACBlackBoxEvaluator::nonlinear_inequality_mapping_indices() const {
+  return nonlinIneqConMappingIndices;
+}
 
-inline void NOWPACBlackBoxEvaluator::
-unscale(const RealArray& scaled_x, RealVector& unscaled_x) const
-{ 
+inline const RealList&
+NOWPACBlackBoxEvaluator::nonlinear_inequality_mapping_multipliers() const {
+  return nonlinIneqConMappingMultipliers;
+}
+
+inline const RealList&
+NOWPACBlackBoxEvaluator::nonlinear_inequality_mapping_offsets() const {
+  return nonlinIneqConMappingOffsets;
+}
+
+inline void NOWPACBlackBoxEvaluator::set_unscaled_bounds(
+    const RealVector& l_bnds, const RealVector& u_bnds) {
+  copy_data(l_bnds, lowerBounds);
+  copy_data(u_bnds, upperBounds);
+}
+
+inline void NOWPACBlackBoxEvaluator::scale(const RealVector& unscaled_x,
+                                           RealArray& scaled_x) const {
+  size_t v, num_v = unscaled_x.length();
+  if (scaled_x.size() != num_v) scaled_x.resize(num_v);
+  for (v = 0; v < num_v; ++v)
+    scaled_x[v] = (unscaled_x[v] - lowerBounds[v]) /
+                      (upperBounds[v] - lowerBounds[v]) * 2. -
+                  1;
+}
+
+inline void NOWPACBlackBoxEvaluator::unscale(const RealArray& scaled_x,
+                                             RealVector& unscaled_x) const {
   size_t v, num_v = scaled_x.size();
-  if (unscaled_x.length() != num_v)
-    unscaled_x.sizeUninitialized(num_v);
-  for (v=0; v<num_v; ++v)
-    unscaled_x[v] = lowerBounds[v]
-                  + 0.5 * (scaled_x[v] + 1.) * ( upperBounds[v] - lowerBounds[v] );
+  if (unscaled_x.length() != num_v) unscaled_x.sizeUninitialized(num_v);
+  for (v = 0; v < num_v; ++v)
+    unscaled_x[v] = lowerBounds[v] + 0.5 * (scaled_x[v] + 1.) *
+                                         (upperBounds[v] - lowerBounds[v]);
 }
 
 /**
@@ -146,15 +142,13 @@ unscale(const RealArray& scaled_x, RealVector& unscaled_x) const
  *
  */
 
-class NOWPACTraits: public TraitsBase
-{
-  public:
-
+class NOWPACTraits : public TraitsBase {
+ public:
   /// default constructor
-  NOWPACTraits() { }
+  NOWPACTraits() {}
 
   /// destructor
-  virtual ~NOWPACTraits() { }
+  virtual ~NOWPACTraits() {}
 
   /// A temporary query used in the refactor
   virtual bool is_derived() { return true; }
@@ -169,24 +163,23 @@ class NOWPACTraits: public TraitsBase
   bool supports_nonlinear_inequality() { return true; }
 
   /// Return the format used for nonlinear inequality constraints
-  NONLINEAR_INEQUALITY_FORMAT nonlinear_inequality_format()
-    { return NONLINEAR_INEQUALITY_FORMAT::ONE_SIDED_LOWER; }
+  NONLINEAR_INEQUALITY_FORMAT nonlinear_inequality_format() {
+    return NONLINEAR_INEQUALITY_FORMAT::ONE_SIDED_LOWER;
+  }
 };
-
 
 /// Wrapper class for the (S)NOWPAC optimization algorithms from
 /// Florian Augustin (MIT)
 
-class NOWPACOptimizer: public Optimizer
-{
-public:
-
+class NOWPACOptimizer : public Optimizer {
+ public:
   //
   //- Heading: Constructors and destructor
   //
 
   /// standard constructor
-  NOWPACOptimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
+  NOWPACOptimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
+                  std::shared_ptr<Model> model);
   /// alternate constructor
   NOWPACOptimizer(std::shared_ptr<Model> model);
   /// destructor
@@ -198,22 +191,20 @@ public:
 
   void core_run();
 
-protected:
-
+ protected:
   //
   //- Heading: Virtual member function redefinitions
   //
 
   // performs run-time set up
-  //void initialize_run();
+  // void initialize_run();
 
-private:
-
+ private:
   //
   //- Heading: Convenience member functions
   //
 
-  void initialize_options();   ///< Shared constructor code
+  void initialize_options();  ///< Shared constructor code
 
   //
   //- Heading: Data
@@ -224,7 +215,6 @@ private:
   NOWPACBlackBoxEvaluator nowpacEvaluator;
 };
 
-
 #ifdef HAVE_DYNLIB_FACTORIES
 // ---------------------------------------------------------
 // Factory functions for dynamic loading of solver libraries
@@ -232,8 +222,8 @@ private:
 
 NOWPACOptimizer* new_NOWPACOptimizer(ProblemDescDB& problem_db, Model& model);
 NOWPACOptimizer* new_NOWPACOptimizer(Model& model);
-#endif // HAVE_DYNLIB_FACTORIES
+#endif  // HAVE_DYNLIB_FACTORIES
 
-} // namespace Dakota
+}  // namespace Dakota
 
-#endif // NOWPAC_OPTIMIZER_H
+#endif  // NOWPAC_OPTIMIZER_H

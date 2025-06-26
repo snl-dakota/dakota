@@ -7,15 +7,16 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
+#include "NonDCubature.hpp"
+
+#include "DakotaModel.hpp"
+#include "MarginalsCorrDistribution.hpp"
+#include "ProblemDescDB.hpp"
 #include "dakota_data_types.hpp"
 #include "dakota_system_defs.hpp"
-#include "NonDCubature.hpp"
-#include "DakotaModel.hpp"
-#include "ProblemDescDB.hpp"
-#include "MarginalsCorrDistribution.hpp"
 
-static const char rcsId[]="@(#) $Id: NonDCubature.cpp,v 1.57 2004/06/21 19:57:32 mseldre Exp $";
-
+static const char rcsId[] =
+    "@(#) $Id: NonDCubature.cpp,v 1.57 2004/06/21 19:57:32 mseldre Exp $";
 
 namespace Dakota {
 
@@ -24,62 +25,56 @@ namespace Dakota {
     and probDescDB can be queried for settings from the method
     specification.  It is not currently used, as there is not yet a
     separate nond_cubature method specification. */
-NonDCubature::NonDCubature(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
-  NonDIntegration(problem_db, parallel_lib, model),
-  cubIntOrderRef(probDescDB.get_ushort("method.nond.cubature_integrand"))
-{
+NonDCubature::NonDCubature(ProblemDescDB& problem_db,
+                           ParallelLibrary& parallel_lib,
+                           std::shared_ptr<Model> model)
+    : NonDIntegration(problem_db, parallel_lib, model),
+      cubIntOrderRef(probDescDB.get_ushort("method.nond.cubature_integrand")) {
   // initialize the numerical integration driver
-  numIntDriver =  Pecos::IntegrationDriver(Pecos::CUBATURE);
-  cubDriver    = std::static_pointer_cast<Pecos::CubatureDriver>
-    (numIntDriver.driver_rep());
+  numIntDriver = Pecos::IntegrationDriver(Pecos::CUBATURE);
+  cubDriver = std::static_pointer_cast<Pecos::CubatureDriver>(
+      numIntDriver.driver_rep());
 
   // additional initializations in NonDIntegration ctor
   Pecos::MultivariateDistribution& mv_dist = model->multivariate_distribution();
-  assign_rule(mv_dist); // assign cubIntRule
+  assign_rule(mv_dist);  // assign cubIntRule
 
   // update CubatureDriver::{numVars,cubIntOrder,integrationRule}
   cubDriver->initialize_grid(mv_dist, cubIntOrderRef, cubIntRule);
   maxEvalConcurrency *= cubDriver->grid_size();
 }
 
-
 /** This alternate constructor is used for on-the-fly generation and
     evaluation of numerical cubature points. */
-NonDCubature::
-NonDCubature(std::shared_ptr<Model> model, unsigned short cub_int_order): 
-  NonDIntegration(CUBATURE_INTEGRATION, model), cubIntOrderRef(cub_int_order)
-{
+NonDCubature::NonDCubature(std::shared_ptr<Model> model,
+                           unsigned short cub_int_order)
+    : NonDIntegration(CUBATURE_INTEGRATION, model),
+      cubIntOrderRef(cub_int_order) {
   // initialize the numerical integration driver
-  numIntDriver =  Pecos::IntegrationDriver(Pecos::CUBATURE);
-  cubDriver    = std::static_pointer_cast<Pecos::CubatureDriver>
-    (numIntDriver.driver_rep());
+  numIntDriver = Pecos::IntegrationDriver(Pecos::CUBATURE);
+  cubDriver = std::static_pointer_cast<Pecos::CubatureDriver>(
+      numIntDriver.driver_rep());
   cubDriver->integrand_order(cubIntOrderRef);
 
   assign_rule(model->multivariate_distribution());
 }
 
-
-void NonDCubature::
-initialize_grid(const std::vector<Pecos::BasisPolynomial>& poly_basis)
-{
+void NonDCubature::initialize_grid(
+    const std::vector<Pecos::BasisPolynomial>& poly_basis) {
   cubDriver->initialize_grid(poly_basis);
   maxEvalConcurrency *= cubDriver->grid_size();
 }
 
+NonDCubature::~NonDCubature() {}
 
-NonDCubature::~NonDCubature()
-{ }
-
-  
-void NonDCubature::
-assign_rule(const Pecos::MultivariateDistribution& mvd)
-{
+void NonDCubature::assign_rule(const Pecos::MultivariateDistribution& mvd) {
   const ShortArray& rv_types = mvd.random_variable_types();
-  short rv_type0 = rv_types[0];  size_t i, num_rv = rv_types.size();
-  for (size_t i=1; i<num_rv; ++i)
+  short rv_type0 = rv_types[0];
+  size_t i, num_rv = rv_types.size();
+  for (size_t i = 1; i < num_rv; ++i)
     if (rv_types[i] != rv_type0) {
       Cerr << "Error: homogeneity required in random variable types for "
-	   << "NonDCubature integration." << std::endl;
+           << "NonDCubature integration." << std::endl;
       abort_handler(METHOD_ERROR);
     }
 
@@ -87,30 +82,34 @@ assign_rule(const Pecos::MultivariateDistribution& mvd)
   // in Pecos::CubatureDriver::initialize_grid_parameters()
 
   switch (rv_type0) {
-  case Pecos::STD_NORMAL:
-    cubIntRule = Pecos::GAUSS_HERMITE;      break;
-  case Pecos::STD_UNIFORM:
-    cubIntRule = Pecos::GAUSS_LEGENDRE;     break;
-  case Pecos::STD_EXPONENTIAL:
-    cubIntRule = Pecos::GAUSS_LAGUERRE;     break;
-  case Pecos::STD_BETA:
-    cubIntRule = Pecos::GAUSS_JACOBI;       break;
-  case Pecos::STD_GAMMA:
-    cubIntRule = Pecos::GEN_GAUSS_LAGUERRE; break;
-  default:
-    cubIntRule = Pecos::GOLUB_WELSCH;       break;
+    case Pecos::STD_NORMAL:
+      cubIntRule = Pecos::GAUSS_HERMITE;
+      break;
+    case Pecos::STD_UNIFORM:
+      cubIntRule = Pecos::GAUSS_LEGENDRE;
+      break;
+    case Pecos::STD_EXPONENTIAL:
+      cubIntRule = Pecos::GAUSS_LAGUERRE;
+      break;
+    case Pecos::STD_BETA:
+      cubIntRule = Pecos::GAUSS_JACOBI;
+      break;
+    case Pecos::STD_GAMMA:
+      cubIntRule = Pecos::GEN_GAUSS_LAGUERRE;
+      break;
+    default:
+      cubIntRule = Pecos::GOLUB_WELSCH;
+      break;
   }
 }
 
-
-void NonDCubature::get_parameter_sets(std::shared_ptr<Model> model)
-{
+void NonDCubature::get_parameter_sets(std::shared_ptr<Model> model) {
   // capture any distribution parameter insertions
   Pecos::MultivariateDistribution& mv_dist = model->multivariate_distribution();
   if (!numIntegrations || subIteratorFlag)
     cubDriver->initialize_grid_parameters(mv_dist);
 
-  //cubDriver->precompute_rules(); // not implemented
+  // cubDriver->precompute_rules(); // not implemented
 
   size_t i, j, num_cub_points = cubDriver->grid_size();
   Cout << "\nCubature integrand order = " << cubDriver->integrand_order()
@@ -122,13 +121,11 @@ void NonDCubature::get_parameter_sets(std::shared_ptr<Model> model)
     print_points_weights("dakota_cubature_tabular.dat");
 }
 
-
 /** used by DataFitSurrModel::build_global() to publish the minimum
     number of points needed from the cubature routine in order to
     build a particular global approximation. */
-void NonDCubature::
-sampling_reset(size_t min_samples, bool all_data_flag, bool stats_flag)
-{
+void NonDCubature::sampling_reset(size_t min_samples, bool all_data_flag,
+                                  bool stats_flag) {
   // cubature order may be increased ***or decreased*** to provide at least
   // min_samples, but the original user specification (cubIntOrderSpec) is a
   // hard lower bound.  With the introduction of uniform/adaptive refinements,
@@ -139,10 +136,10 @@ sampling_reset(size_t min_samples, bool all_data_flag, bool stats_flag)
   // do not need to worry about tracking multiple reference points.
 
   // should be cubIntOrderRef already, unless min_samples previously enforced
-  //cubDriver->integrand_order(cubIntOrderRef);
+  // cubDriver->integrand_order(cubIntOrderRef);
 
   // determine minimum integrand order that provides at least min_samples
-  unsigned short min_order = cubDriver->integrand_order();//cubIntOrderRef;
+  unsigned short min_order = cubDriver->integrand_order();  // cubIntOrderRef;
   while (cubDriver->grid_size() < min_samples)
     cubDriver->integrand_order(++min_order);
   // leave cubDriver at min_order; do not update cubIntOrderRef
@@ -151,16 +148,18 @@ sampling_reset(size_t min_samples, bool all_data_flag, bool stats_flag)
   // depends on having the same value at ctor/run/dtor times.
 
   // not currently used by this class:
-  //allDataFlag = all_data_flag;
-  //statsFlag   = stats_flag;
+  // allDataFlag = all_data_flag;
+  // statsFlag   = stats_flag;
 }
 
+void NonDCubature::increment_grid() {
+  ++cubIntOrderRef;
+  cubDriver->integrand_order(cubIntOrderRef);
+}
 
-void NonDCubature::increment_grid()
-{ ++cubIntOrderRef; cubDriver->integrand_order(cubIntOrderRef); }
+void NonDCubature::decrement_grid() {
+  --cubIntOrderRef;
+  cubDriver->integrand_order(cubIntOrderRef);
+}
 
-
-void NonDCubature::decrement_grid()
-{ --cubIntOrderRef; cubDriver->integrand_order(cubIntOrderRef); }
-
-} // namespace Dakota
+}  // namespace Dakota

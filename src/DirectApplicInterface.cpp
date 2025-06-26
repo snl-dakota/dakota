@@ -8,23 +8,29 @@
     _______________________________________________________________________ */
 
 #include "DirectApplicInterface.hpp"
+
+#include <algorithm>
+
+#include "ParallelLibrary.hpp"
 #include "ParamResponsePair.hpp"
 #include "ProblemDescDB.hpp"
-#include "ParallelLibrary.hpp"
-#include <algorithm>
 
 namespace Dakota {
 
-DirectApplicInterface::
-DirectApplicInterface(const ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
-  ApplicationInterface(problem_db, parallel_lib),
-  iFilterName(problem_db.get_string("interface.application.input_filter")),
-  oFilterName(problem_db.get_string("interface.application.output_filter")),
-  gradFlag(false), hessFlag(false), numFns(0), numVars(0), numDerivVars(0),
-  analysisDrivers(
-    problem_db.get_sa("interface.application.analysis_drivers")),
-  prevVarsId("NO_MATCH_DUMMY_ID"), prevRespId("NO_MATCH_DUMMY_ID")
-{
+DirectApplicInterface::DirectApplicInterface(const ProblemDescDB& problem_db,
+                                             ParallelLibrary& parallel_lib)
+    : ApplicationInterface(problem_db, parallel_lib),
+      iFilterName(problem_db.get_string("interface.application.input_filter")),
+      oFilterName(problem_db.get_string("interface.application.output_filter")),
+      gradFlag(false),
+      hessFlag(false),
+      numFns(0),
+      numVars(0),
+      numDerivVars(0),
+      analysisDrivers(
+          problem_db.get_sa("interface.application.analysis_drivers")),
+      prevVarsId("NO_MATCH_DUMMY_ID"),
+      prevRespId("NO_MATCH_DUMMY_ID") {
   // "interface direct" always instantiates a TestDriverInterface, but
   // eventually support "interface plugin", which would
   // instantiate only this base class, to be replaced by the plug-in
@@ -33,7 +39,7 @@ DirectApplicInterface(const ProblemDescDB& problem_db, ParallelLibrary& parallel
   // e.g., TestDriverInterface, can supplement with additional options for
   // driverType, such as a tester or request different active data views
 
-  // register the missing driver type with the empty driver name string 
+  // register the missing driver type with the empty driver name string
   std::string empty;
   driverTypeMap[empty] = NO_DRIVER;
 
@@ -44,34 +50,28 @@ DirectApplicInterface(const ProblemDescDB& problem_db, ParallelLibrary& parallel
   // initialize all drivers to none
   iFilterType = NO_DRIVER;
   analysisDriverTypes.resize(numAnalysisDrivers);
-  for (size_t i=0; i<numAnalysisDrivers; ++i)
+  for (size_t i = 0; i < numAnalysisDrivers; ++i)
     analysisDriverTypes[i] = NO_DRIVER;
   oFilterType = NO_DRIVER;
 
-  //if (outputLevel > NORMAL_OUTPUT)
-  //  Cerr << "No specific direct interface requested; assuming subsequent "
-  //       << "plug-in" << std::endl;
-     
+  // if (outputLevel > NORMAL_OUTPUT)
+  //   Cerr << "No specific direct interface requested; assuming subsequent "
+  //        << "plug-in" << std::endl;
 }
 
+DirectApplicInterface::~DirectApplicInterface() {}
 
-DirectApplicInterface::~DirectApplicInterface()
-{ }
-
-
-void DirectApplicInterface::
-derived_map(const Variables& vars, const ActiveSet& set, Response& response,
-	    int fn_eval_id)
-{
+void DirectApplicInterface::derived_map(const Variables& vars,
+                                        const ActiveSet& set,
+                                        Response& response, int fn_eval_id) {
   // Check for erroneous concurrent analysis specification:
   if (asynchLocalAnalysisFlag && evalCommRank == 0 && evalServerId == 1)
     Cerr << "Warning: multiple threads not yet supported in direct interfaces."
-	 << "\n         Asynchronous analysis request will be ignored.\n";
+         << "\n         Asynchronous analysis request will be ignored.\n";
 
   if (evalCommRank == 0 && !suppressOutput && outputLevel > SILENT_OUTPUT) {
-
-    bool curly_braces = ( numAnalysisDrivers > 1 || iFilterType || oFilterType )
-      ? true : false;
+    bool curly_braces =
+        (numAnalysisDrivers > 1 || iFilterType || oFilterType) ? true : false;
 
     // A printing-friendly (capitalized) name for the interface type
     String interface_type(interface_enum_to_string(interfaceType));
@@ -83,20 +83,15 @@ derived_map(const Variables& vars, const ActiveSet& set, Response& response,
       Cout << interface_type << " interface: static scheduling ";
     else
       Cout << interface_type << " interface: invoking ";
-    if (curly_braces)
-      Cout << "{ ";
-    if (iFilterType)
-      Cout << iFilterName << ' ';
-    for (size_t i=0; i<numAnalysisDrivers; ++i)
+    if (curly_braces) Cout << "{ ";
+    if (iFilterType) Cout << iFilterName << ' ';
+    for (size_t i = 0; i < numAnalysisDrivers; ++i)
       Cout << analysisDrivers[i] << ' ';
-    if (oFilterType)
-      Cout << oFilterName << ' ';
-    if (curly_braces)
-      Cout << "} ";
+    if (oFilterType) Cout << oFilterName << ' ';
+    if (curly_braces) Cout << "} ";
     if (numAnalysisServers > 1)
       Cout << "among " << numAnalysisServers << " analysis servers.";
     Cout << std::endl;
-
   }
 
   // Goes before input filter to set up variables data:
@@ -113,32 +108,30 @@ derived_map(const Variables& vars, const ActiveSet& set, Response& response,
   // analysis drivers.  For example, remeshing might be performed once per
   // evaluation and would be part of derived_map_if, whereas aprepro might be
   // used for each analysis and would be part of derived_map_ac.
-  if (iFilterType && evalCommRank == 0)
-    derived_map_if(iFilterName);
+  if (iFilterType && evalCommRank == 0) derived_map_if(iFilterName);
 
   // ----------------
   // Analysis portion
   // ----------------
-  if (eaDedSchedFlag) { // set up dedicated scheduler
+  if (eaDedSchedFlag) {  // set up dedicated scheduler
     if (evalCommRank == 0)
       dedicated_dynamic_scheduler_analyses();
     else
       serve_analyses_synch();
-  }
-  else { // simple static schedule (all peer cases including single analysis)
+  } else {  // simple static schedule (all peer cases including single analysis)
 #ifdef MPI_DEBUG
-    Cout << "analysisServerId = "    << analysisServerId
-	 << " numAnalysisDrivers = " << numAnalysisDrivers
-	 << " numAnalysisServers = " << numAnalysisServers << std::endl;
-#endif // MPI_DEBUG
+    Cout << "analysisServerId = " << analysisServerId
+         << " numAnalysisDrivers = " << numAnalysisDrivers
+         << " numAnalysisServers = " << numAnalysisServers << std::endl;
+#endif  // MPI_DEBUG
 
     // For execution of local jobs on a dedicated scheduler (e.g., for a serial
     // value computation amongst parallel numerical gradient computations),
     // ApplicationInterface::init_serial_analyses() updates numAnalysisServers
     // from its default (0) to a serial setting (1).
-    for (analysisDriverIndex =  analysisServerId-1;
-	 analysisDriverIndex <  numAnalysisDrivers;
-	 analysisDriverIndex += numAnalysisServers)
+    for (analysisDriverIndex = analysisServerId - 1;
+         analysisDriverIndex < numAnalysisDrivers;
+         analysisDriverIndex += numAnalysisServers)
       derived_map_ac(analysisDrivers[analysisDriverIndex]);
     // NOTE: no synchronization enforced in static case (some procs may lag)
   }
@@ -153,10 +146,9 @@ derived_map(const Variables& vars, const ActiveSet& set, Response& response,
     // Provide synchronization if there's an oFilter and a static schedule
     // was used since evalCommRank 0 must postprocess all results (MPI_Reduce
     // provides synchronization in overlay() for the case of no oFilter).
-    if (evalCommSize > 1 && !eaDedSchedFlag) // static schedule
-      parallelLib.barrier_e(); // evalCommRank 0 waits for analyses to complete
-    if (evalCommRank == 0)
-      derived_map_of(oFilterName);
+    if (evalCommSize > 1 && !eaDedSchedFlag)  // static schedule
+      parallelLib.barrier_e();  // evalCommRank 0 waits for analyses to complete
+    if (evalCommRank == 0) derived_map_of(oFilterName);
   }
   // OLD: Goes after ofilter since ofilter maps raw analysis data to
   // Response data, which is then overlaid into a combined response below.
@@ -165,44 +157,41 @@ derived_map(const Variables& vars, const ActiveSet& set, Response& response,
   // can be used to enact nonstandard overlays (e.g., sqrt(sum_sq)) and are
   // therefore responsible for mapping results.out.[eval#].[1->numPrograms] to
   // results.out.[eval#]
-  else // mutually exclusive overlay/ofilter
-    overlay_response(response); // MPI_Reduce provides synchronization
+  else                           // mutually exclusive overlay/ofilter
+    overlay_response(response);  // MPI_Reduce provides synchronization
 }
 
-
-int DirectApplicInterface::derived_map_if(const String& if_name)
-{
+int DirectApplicInterface::derived_map_if(const String& if_name) {
   int fail_code = 0;
-  //if (if_name == "text_book_if") {
-    //fail_code = text_book_if();
+  // if (if_name == "text_book_if") {
+  // fail_code = text_book_if();
   //}
-  //else {
-    Cerr << if_name << " is not available as an input filter within "
-         << "DirectApplicInterface." << std::endl;
-    abort_handler(INTERFACE_ERROR);
+  // else {
+  Cerr << if_name << " is not available as an input filter within "
+       << "DirectApplicInterface." << std::endl;
+  abort_handler(INTERFACE_ERROR);
   //}
 
-  //std::map<String, driver_t>::iterator sd_iter = driverTypeMap.find(if_name);
-  //driver_t if_type
-  //  = (sd_iter!=driverTypeMap.end()) ? sd_iter->second : NO_DRIVER;
-  //switch (if_type) {
-  //case TEXT_BOOK_IF:
-  //  fail_code = text_book_if(); break;
-  //default:
-  //  Cerr << "Bad if_type..." << std::endl;
-  //  abort_handler(-1);
-  //}
+  // std::map<String, driver_t>::iterator sd_iter = driverTypeMap.find(if_name);
+  // driver_t if_type
+  //   = (sd_iter!=driverTypeMap.end()) ? sd_iter->second : NO_DRIVER;
+  // switch (if_type) {
+  // case TEXT_BOOK_IF:
+  //   fail_code = text_book_if(); break;
+  // default:
+  //   Cerr << "Bad if_type..." << std::endl;
+  //   abort_handler(-1);
+  // }
 
   // Failure capturing
-    if (fail_code) {
-      std::string err_msg("Error evaluating direct input filter ");
-      err_msg += if_name;
-      throw FunctionEvalFailure(err_msg);
-    }
+  if (fail_code) {
+    std::string err_msg("Error evaluating direct input filter ");
+    err_msg += if_name;
+    throw FunctionEvalFailure(err_msg);
+  }
 
   return 0;
 }
-
 
 /** When a direct analysis/filter is a member function, the (vars,set,response)
     data does not need to be passed through the API.  If, however, non-member
@@ -215,53 +204,50 @@ int DirectApplicInterface::derived_map_if(const String& if_name)
     if (ac_name == "sim")
       fail_code = sim(directFnVars, directFnActSet, directFnResponse);
     \endcode */
-int DirectApplicInterface::derived_map_ac(const String& ac_name)
-{
+int DirectApplicInterface::derived_map_ac(const String& ac_name) {
   // NOTE: a Factory pattern might be appropriate in the future to manage the
   // conditional presence of linked subroutines in DirectApplicInterface.
 
 #ifdef MPI_DEBUG
-    Cout << "analysis server " << analysisServerId << " invoking " << ac_name
-         << " within DirectApplicInterface." << std::endl;
-#endif // MPI_DEBUG
+  Cout << "analysis server " << analysisServerId << " invoking " << ac_name
+       << " within DirectApplicInterface." << std::endl;
+#endif  // MPI_DEBUG
   int fail_code = 0;
   Cerr << ac_name << " is not available as an analysis driver within "
        << "DirectApplicInterface." << std::endl;
   abort_handler(INTERFACE_ERROR);
 
   // Failure capturing
-  if (fail_code)  {
+  if (fail_code) {
     std::string err_msg("Error evaluating direct analysis_driver ");
     err_msg += ac_name;
     throw FunctionEvalFailure(err_msg);
   }
-  
+
   return 0;
 }
 
-
-int DirectApplicInterface::derived_map_of(const String& of_name)
-{
+int DirectApplicInterface::derived_map_of(const String& of_name) {
   int fail_code = 0;
-  //if (of_name == "text_book_of") {
-    //fail_code = text_book_of();
+  // if (of_name == "text_book_of") {
+  // fail_code = text_book_of();
   //}
-  //else {
-    Cerr << of_name << " is not available as an output filter within "
-         << "DirectApplicInterface." << std::endl;
-    abort_handler(INTERFACE_ERROR);
+  // else {
+  Cerr << of_name << " is not available as an output filter within "
+       << "DirectApplicInterface." << std::endl;
+  abort_handler(INTERFACE_ERROR);
   //}
 
-  //std::map<String, driver_t>::iterator sd_iter = driverTypeMap.find(of_name);
-  //driver_t of_type
-  //  = (sd_iter!=driverTypeMap.end()) ? sd_iter->second : NO_DRIVER;
-  //switch (of_type) {
-  //case TEXT_BOOK_OF:
-  //  fail_code = text_book_of(); break;
-  //default:
-  //  Cerr << "Bad of_type..." << std::endl;
-  //  abort_handler(-1);
-  //}
+  // std::map<String, driver_t>::iterator sd_iter = driverTypeMap.find(of_name);
+  // driver_t of_type
+  //   = (sd_iter!=driverTypeMap.end()) ? sd_iter->second : NO_DRIVER;
+  // switch (of_type) {
+  // case TEXT_BOOK_OF:
+  //   fail_code = text_book_of(); break;
+  // default:
+  //   Cerr << "Bad of_type..." << std::endl;
+  //   abort_handler(-1);
+  // }
 
   // Failure capturing
   if (fail_code) {
@@ -273,15 +259,13 @@ int DirectApplicInterface::derived_map_of(const String& of_name)
   return 0;
 }
 
-
-void DirectApplicInterface::derived_map_asynch(const ParamResponsePair& pair)
-{
+void DirectApplicInterface::derived_map_asynch(const ParamResponsePair& pair) {
   Cerr << "Error: asynchronous capability (multiple threads) not installed in"
        << "\nDirectApplicInterface." << std::endl;
   abort_handler(-1);
 
-  //pthread_create/thr_create(derived_map(...)) launches a new thread
-  //threadIdMap[tid] = fn_eval_id;
+  // pthread_create/thr_create(derived_map(...)) launches a new thread
+  // threadIdMap[tid] = fn_eval_id;
 
   // Design note, 10/2013: the heavy fork() approach that already exists in
   // ProcessHandleApplicInterface::create_evaluation_process() would be a
@@ -294,9 +278,7 @@ void DirectApplicInterface::derived_map_asynch(const ParamResponsePair& pair)
   // idea away from the state of low risk / high payoff.
 }
 
-
-void DirectApplicInterface::wait_local_evaluations(PRPQueue& prp_queue)
-{
+void DirectApplicInterface::wait_local_evaluations(PRPQueue& prp_queue) {
   Cerr << "Error: asynchronous capability (multiple threads) not installed in"
        << "\nDirectApplicInterface." << std::endl;
   abort_handler(-1);
@@ -305,7 +287,7 @@ void DirectApplicInterface::wait_local_evaluations(PRPQueue& prp_queue)
   PRPQueueIter queue_it = lookup_by_eval_id(prp_queue, fn_eval_id);
   if (queue_it == prp_queue.end()) {
     Cerr << "Error: failure in queue lookup within DirectApplicInterface::"
-	 << "wait_local_evaluations()." << std::endl;
+         << "wait_local_evaluations()." << std::endl;
     abort_handler(-1);
   }
   int fail_code = 0, id = queue_it->eval_id();
@@ -314,13 +296,13 @@ void DirectApplicInterface::wait_local_evaluations(PRPQueue& prp_queue)
 
   // pthread_join/thr_join(target_thread, ..., status) recovers threads.
   // status provides a mechanism to return failure codes from analyses.
-  // The Solaris thr_join allows completion of any thread in the set if 
+  // The Solaris thr_join allows completion of any thread in the set if
   // target_thread is set to 0; unfortunately, this does not appear to be part
   // of the POSIX standard (pthread_join must complete a valid target_thread).
 
   // Possible better solution: look at OpenMP ??
 
-  // For the asynch case, Direct (unlike SysCall) can manage failures w/o 
+  // For the asynch case, Direct (unlike SysCall) can manage failures w/o
   // throwing exceptions.  See ApplicationInterface::manage_failure for notes.
   if (fail_code)
     manage_failure(vars, response.active_set(), response, id);
@@ -330,25 +312,21 @@ void DirectApplicInterface::wait_local_evaluations(PRPQueue& prp_queue)
   */
 }
 
-
-void DirectApplicInterface::test_local_evaluations(PRPQueue& prp_queue)
-{
+void DirectApplicInterface::test_local_evaluations(PRPQueue& prp_queue) {
   Cerr << "Error: asynchronous capability (multiple threads) not installed in"
        << "\nDirectApplicInterface." << std::endl;
   abort_handler(-1);
 }
 
-
 // -----------------------------------
 // Begin utilities used by derived_map
 // -----------------------------------
-void DirectApplicInterface::
-set_local_data(const Variables& vars, const ActiveSet& set)
-{
+void DirectApplicInterface::set_local_data(const Variables& vars,
+                                           const ActiveSet& set) {
   // This function is performed once per evaluation, which may involve multiple
   // analyses.  Since the data has class scope, it has persistence from one
-  // function evaluation to the next.  Old data must be zeroed, current 
-  // variable values must be assigned to xC/xD, and variable and response 
+  // function evaluation to the next.  Old data must be zeroed, current
+  // variable values must be assigned to xC/xD, and variable and response
   // arrays are resized (if necessary).
 
   // ------------------------
@@ -360,8 +338,8 @@ set_local_data(const Variables& vars, const ActiveSet& set)
   // inactive vars would not be properly captured); rather, all of vars must be
   // mapped through.  This is important in particular for OUU since the inactive
   // variables are carrying data from the outer loop.
-  numACV  = vars.acv();
-  numADIV = vars.adiv(); 
+  numACV = vars.acv();
+  numADIV = vars.adiv();
   numADRV = vars.adrv();
   numADSV = vars.adsv();
   numVars = numACV + numADIV + numADRV + numADSV;
@@ -370,43 +348,42 @@ set_local_data(const Variables& vars, const ActiveSet& set)
   bool update_labels = (vars_id != prevVarsId);
 
   // Initialize copies of incoming data
-  //directFnVars = vars; // shared rep
+  // directFnVars = vars; // shared rep
   if (localDataView & VARIABLES_MAP) {
     size_t i;
     // set labels when required (all processors)
     if (update_labels) {
-      StringMultiArrayConstView acv_labels
-	= vars.all_continuous_variable_labels();
-      StringMultiArrayConstView adiv_labels
-	= vars.all_discrete_int_variable_labels();
-      StringMultiArrayConstView adrv_labels
-	= vars.all_discrete_real_variable_labels();
-      StringMultiArrayConstView adsv_labels
-	= vars.all_discrete_string_variable_labels();
+      StringMultiArrayConstView acv_labels =
+          vars.all_continuous_variable_labels();
+      StringMultiArrayConstView adiv_labels =
+          vars.all_discrete_int_variable_labels();
+      StringMultiArrayConstView adrv_labels =
+          vars.all_discrete_real_variable_labels();
+      StringMultiArrayConstView adsv_labels =
+          vars.all_discrete_string_variable_labels();
       xCMLabels.resize(numACV);
       xDIMLabels.resize(numADIV);
       xDRMLabels.resize(numADRV);
       xDSMLabels.resize(numADSV);
       // Map labels in a*v_labels to var_t enum in x*Labels through varTypeMap
-      map_labels_to_enum( acv_labels, xCMLabels);
-      map_labels_to_enum(adiv_labels,xDIMLabels);
-      map_labels_to_enum(adrv_labels,xDRMLabels);
-      map_labels_to_enum(adsv_labels,xDSMLabels);
+      map_labels_to_enum(acv_labels, xCMLabels);
+      map_labels_to_enum(adiv_labels, xDIMLabels);
+      map_labels_to_enum(adrv_labels, xDRMLabels);
+      map_labels_to_enum(adsv_labels, xDSMLabels);
     }
     // set variable values on every evaluation
-    const RealVector& acv  = vars.all_continuous_variables();
-    const IntVector&  adiv = vars.all_discrete_int_variables();
+    const RealVector& acv = vars.all_continuous_variables();
+    const IntVector& adiv = vars.all_discrete_int_variables();
     const RealVector& adrv = vars.all_discrete_real_variables();
     StringMultiArrayConstView adsv = vars.all_discrete_string_variables();
-    xCM.clear(); xDIM.clear(); xDRM.clear(); xDSM.clear(); // start over
-    for (i=0; i<numACV; ++i)
-      xCM[xCMLabels[i]] = acv[i];
-    for (i=0; i<numADIV; ++i)
-      xDIM[xDIMLabels[i]] = adiv[i];
-    for (i=0; i<numADRV; ++i)
-      xDRM[xDRMLabels[i]] = adrv[i];
-    for (i=0; i<numADSV; ++i)
-      xDSM[xDSMLabels[i]] = adsv[i];
+    xCM.clear();
+    xDIM.clear();
+    xDRM.clear();
+    xDSM.clear();  // start over
+    for (i = 0; i < numACV; ++i) xCM[xCMLabels[i]] = acv[i];
+    for (i = 0; i < numADIV; ++i) xDIM[xDIMLabels[i]] = adiv[i];
+    for (i = 0; i < numADRV; ++i) xDRM[xDRMLabels[i]] = adrv[i];
+    for (i = 0; i < numADSV; ++i) xDSM[xDSMLabels[i]] = adsv[i];
   }
   if (localDataView & VARIABLES_VECTOR) {
     // set labels when required (all processors)
@@ -420,11 +397,11 @@ set_local_data(const Variables& vars, const ActiveSet& set)
       xDSLabels.resize(boost::extents[numADSV]);
       xDSLabels = vars.all_discrete_string_variable_labels();
     }
-    xC  = vars.all_continuous_variables();    // view OK
-    xDI = vars.all_discrete_int_variables();  // view OK
-    xDR = vars.all_discrete_real_variables(); // view OK
+    xC = vars.all_continuous_variables();      // view OK
+    xDI = vars.all_discrete_int_variables();   // view OK
+    xDR = vars.all_discrete_real_variables();  // view OK
     xDS.resize(boost::extents[numADSV]);
-    xDS = vars.all_discrete_string_variables(); // view OK
+    xDS = vars.all_discrete_string_variables();  // view OK
   }
 
   // DTS: was not initialized in demo study when put in conditional above
@@ -436,47 +413,41 @@ set_local_data(const Variables& vars, const ActiveSet& set)
   // -------------------------
   // Set local active set data
   // -------------------------
-  //directFnActSet = set;                // copy
-  directFnASV = set.request_vector();    // copy
-  directFnDVV = set.derivative_vector(); // copy
+  // directFnActSet = set;                // copy
+  directFnASV = set.request_vector();     // copy
+  directFnDVV = set.derivative_vector();  // copy
   numDerivVars = directFnDVV.size();
   if (localDataView & VARIABLES_MAP) {
     SizetMultiArrayConstView acv_ids = vars.all_continuous_variable_ids();
     varTypeDVV.resize(numDerivVars);
-    for (size_t i=0; i<numDerivVars; ++i) {
+    for (size_t i = 0; i < numDerivVars; ++i) {
       size_t acv_index = find_index(acv_ids, directFnDVV[i]);
       if (acv_index == _NPOS) {
-	Cerr << "Error: dvv value " << directFnDVV[i] << " not present in all "
-	     << "continuous variable ids." << std::endl;
-	abort_handler(INTERFACE_ERROR);
-      }
-      else
-	varTypeDVV[i] = xCMLabels[acv_index];
+        Cerr << "Error: dvv value " << directFnDVV[i] << " not present in all "
+             << "continuous variable ids." << std::endl;
+        abort_handler(INTERFACE_ERROR);
+      } else
+        varTypeDVV[i] = xCMLabels[acv_index];
     }
   }
 }
 
-
-void DirectApplicInterface::set_local_data(const Response& response)
-{
+void DirectApplicInterface::set_local_data(const Response& response) {
   // -----------------------
   // Set local response data
   // -----------------------
-  //directFnResponse = response; // shared rep
+  // directFnResponse = response; // shared rep
   numFns = directFnASV.size();
   gradFlag = false;
   hessFlag = false;
   size_t i;
-  for (i=0; i<numFns; ++i) {
-    if (directFnASV[i] & 2)
-      gradFlag = true;
-    if (directFnASV[i] & 4)
-      hessFlag = true;
+  for (i = 0; i < numFns; ++i) {
+    if (directFnASV[i] & 2) gradFlag = true;
+    if (directFnASV[i] & 4) hessFlag = true;
   }
 
   // Resize and clear required data constructs
-  if (fnVals.length() != numFns)
-    fnVals.resize(numFns);
+  if (fnVals.length() != numFns) fnVals.resize(numFns);
   fnVals = 0.;
 
   if (gradFlag) {
@@ -486,9 +457,8 @@ void DirectApplicInterface::set_local_data(const Response& response)
   }
 
   if (hessFlag) {
-    if (fnHessians.size() != numFns) 
-      fnHessians.resize(numFns);
-    for (i=0; i<numFns; ++i) {
+    if (fnHessians.size() != numFns) fnHessians.resize(numFns);
+    for (i = 0; i < numFns; ++i) {
       if (fnHessians[i].numRows() != numDerivVars)
         fnHessians[i].reshape(numDerivVars);
       fnHessians[i] = 0.;
@@ -501,18 +471,16 @@ void DirectApplicInterface::set_local_data(const Response& response)
   const SharedResponseData& srd = response.shared_data();
   const String& resp_id = srd.responses_id();
   if (resp_id != prevRespId) {
-    fnLabels       = srd.function_labels();
+    fnLabels = srd.function_labels();
     metaDataLabels = srd.metadata_labels();
-    prevRespId     = resp_id;
+    prevRespId = resp_id;
   }
 }
 
-
-void DirectApplicInterface::overlay_response(Response& response)
-{
-  // Individual analysis servers are allowed to divide up the function 
-  // evaluation in whatever way is convenient.  It need not be by function 
-  // number (although this simple approach is used in text_book1/2/3).  The 
+void DirectApplicInterface::overlay_response(Response& response) {
+  // Individual analysis servers are allowed to divide up the function
+  // evaluation in whatever way is convenient.  It need not be by function
+  // number (although this simple approach is used in text_book1/2/3).  The
   // overlay_response function uses MPI_Reduce over evalAnalysisIntraComm to
   // add all contributions to the response object from analysisComm leaders.
 
@@ -520,8 +488,7 @@ void DirectApplicInterface::overlay_response(Response& response)
   // total response.  Note that an evaluation dedicated scheduler must
   // participate in the reduction (even though it contributes no response data)
   // since it is the final destination of the evaluation result.
-  if (analysisCommRank)
-    return;
+  if (analysisCommRank) return;
 
   // set response data for analysisComm leaders (excluding dedicated scheduler
   // if present)
@@ -534,51 +501,48 @@ void DirectApplicInterface::overlay_response(Response& response)
   }
 
   // For all dedicated scheduler cases & peer cases with numAnalysisServers>1,
-  // response components from analysis servers must be overlaid using 
-  // MPI_Reduce(..., MPI_SUM, ...).  This is performed using a mapping of 
+  // response components from analysis servers must be overlaid using
+  // MPI_Reduce(..., MPI_SUM, ...).  This is performed using a mapping of
   // response->double*->Reduce(double*)->response.
   if (numAnalysisServers > 1 || eaDedSchedFlag) {
-    int num_doubles   = response.data_size();
-    double* local_fns = new double [num_doubles];
-    if (analysisServerId) // analysis leaders
+    int num_doubles = response.data_size();
+    double* local_fns = new double[num_doubles];
+    if (analysisServerId)  // analysis leaders
       response.write_data(local_fns);
-    else { // evaluation dedicated scheduler (if present)
-      for (size_t i=0; i<num_doubles; ++i)
-        local_fns[i] = 0.0;
+    else {  // evaluation dedicated scheduler (if present)
+      for (size_t i = 0; i < num_doubles; ++i) local_fns[i] = 0.0;
     }
     // sum response data over evalAnalysisIntraComm.  This is more efficient
     // than performing the reduction over evalComm since only analysisComm
     // leaders have data to reduce.  evalCommRank 0 then returns the results
     // to the iterator in ApplicationInterface::serve_evaluations().
-    double* sum_fns = (evalCommRank) ? NULL : new double [num_doubles];
+    double* sum_fns = (evalCommRank) ? NULL : new double[num_doubles];
     parallelLib.reduce_sum_ea(local_fns, sum_fns, num_doubles);
-    delete [] local_fns;
+    delete[] local_fns;
     if (evalCommRank == 0) {
       response.read_data(sum_fns);
-      delete [] sum_fns;
+      delete[] sum_fns;
     }
   }
 }
 
-
-void DirectApplicInterface::map_labels_to_enum(StringMultiArrayConstView &src, 
-  std::vector<var_t> &dest) {
+void DirectApplicInterface::map_labels_to_enum(StringMultiArrayConstView& src,
+                                               std::vector<var_t>& dest) {
   // Helper to map variable labels (in src) to var_t enums (in dest); dest
   // used to set mapped variable values for use in test functions
   // See, e.g., cantilever.
   size_t num_vars = dest.size();
   std::map<String, var_t>::iterator v_iter;
-  for (size_t i=0; i<num_vars; ++i) {
-    //label_i = toLower(acv_labels[i]);
-    v_iter = varTypeMap.find(src[i]);//(label_i);
+  for (size_t i = 0; i < num_vars; ++i) {
+    // label_i = toLower(acv_labels[i]);
+    v_iter = varTypeMap.find(src[i]);  //(label_i);
     if (v_iter == varTypeMap.end()) {
-      Cerr << "Error: label \"" << src[i]//label_i
+      Cerr << "Error: label \"" << src[i]  // label_i
            << "\" not supported in analysis driver." << std::endl;
       abort_handler(INTERFACE_ERROR);
-    }
-    else
+    } else
       dest[i] = v_iter->second;
   }
 }
 
-} // namespace Dakota
+}  // namespace Dakota

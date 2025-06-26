@@ -7,11 +7,11 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
+#include <gtest/gtest.h>
+
 #include "UtilLinearSolvers.hpp"
 #include "util_common.hpp"
 #include "util_math_tools.hpp"
-
-#include <gtest/gtest.h>
 
 using namespace dakota;
 using namespace dakota::util;
@@ -45,8 +45,7 @@ MatrixXd create_symmetric_matrix() {
 
 // -------------------------------------
 
-void test_solver(LinearSolverBase& solver)
-{
+void test_solver(LinearSolverBase& solver) {
   MatrixXd A = create_simple_invertible_matrix();
   MatrixXd b = create_uniform_random_double_matrix(A.cols(), 1, 23);
   MatrixXd x(A.cols(), 1);
@@ -65,8 +64,7 @@ void test_solver(SOLVER_TYPE type) {
 
 // -------------------------------------
 
-void test_solver_symmetric(LinearSolverBase& solver)
-{
+void test_solver_symmetric(LinearSolverBase& solver) {
   MatrixXd A = create_symmetric_matrix();
   MatrixXd b = create_uniform_random_double_matrix(A.cols(), 1, 24);
   MatrixXd x(A.cols(), 1);
@@ -78,8 +76,7 @@ void test_solver_symmetric(LinearSolverBase& solver)
 
 // -------------------------------------
 
-void test_solver_symmetric(SOLVER_TYPE type)
-{
+void test_solver_symmetric(SOLVER_TYPE type) {
   std::shared_ptr<LinearSolverBase> solver = solver_factory(type);
   return test_solver_symmetric(*solver);
 }
@@ -135,7 +132,7 @@ TEST(LinearSolverTest_tests, util_solver_cholesky) {
 
 // --------------------------------------------------------------------------------
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

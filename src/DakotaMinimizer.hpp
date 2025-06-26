@@ -23,8 +23,7 @@ namespace Dakota {
 /** The Minimizer class provides common data and functionality
     for Optimizer and LeastSq. */
 
-class Minimizer: public Iterator
-{
+class Minimizer : public Iterator {
   //
   //- Heading: Friends
   //
@@ -36,8 +35,7 @@ class Minimizer: public Iterator
   /// access to iterator hierarchy data (to avoid attribute replication)
   friend class SNLLBase;
 
-public:
-
+ public:
   //
   //- Heading: Member functions
   //
@@ -54,9 +52,8 @@ public:
 
   /// print num_terms residuals and misfit for final results
   static void print_residuals(size_t num_terms, const RealVector& best_terms,
-                              const RealVector& weights,
-                              size_t num_best, size_t best_index,
-                              std::ostream& s);
+                              const RealVector& weights, size_t num_best,
+                              size_t best_index, std::ostream& s);
 
   /// print the original user model resp in the case of data transformations
   static void print_model_resp(size_t num_pri_fns, const RealVector& best_fns,
@@ -66,13 +63,13 @@ public:
   /// print best evaluation matching vars and set, or partial matches
   /// with matching variables only.
   static void print_best_eval_ids(const String& interface_id,
-				  const Variables& best_vars,
-				  const ActiveSet& active_set,
-				  std::ostream& s);
+                                  const Variables& best_vars,
+                                  const ActiveSet& active_set, std::ostream& s);
 
   // Accessor for data transfer helper/adapters
-  std::shared_ptr<TPLDataTransfer> get_data_transfer_helper() const
-    { return dataTransferHandler; }
+  std::shared_ptr<TPLDataTransfer> get_data_transfer_helper() const {
+    return dataTransferHandler;
+  }
 
   //
   //- Heading: Virtual member function redefinitions
@@ -84,33 +81,34 @@ public:
   // ... used for refactoring
   // bool check_model_consistency() const;
 
-protected:
-
+ protected:
   //
   //- Heading: Constructors and destructor
   //
 
   /// default constructor
-  Minimizer(std::shared_ptr<TraitsBase> traits = 
-      std::shared_ptr<TraitsBase>(new TraitsBase()));
+  Minimizer(std::shared_ptr<TraitsBase> traits =
+                std::shared_ptr<TraitsBase>(new TraitsBase()));
   /// standard constructor
-  Minimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model, 
-      std::shared_ptr<TraitsBase> traits =
-      std::shared_ptr<TraitsBase>(new TraitsBase()));
+  Minimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
+            std::shared_ptr<Model> model,
+            std::shared_ptr<TraitsBase> traits =
+                std::shared_ptr<TraitsBase>(new TraitsBase()));
 
   /// alternate constructor for "on the fly" instantiations
-  Minimizer(unsigned short method_name, std::shared_ptr<Model> model, 
-      std::shared_ptr<TraitsBase> traits = 
-      std::shared_ptr<TraitsBase>(new TraitsBase()));
+  Minimizer(unsigned short method_name, std::shared_ptr<Model> model,
+            std::shared_ptr<TraitsBase> traits =
+                std::shared_ptr<TraitsBase>(new TraitsBase()));
   /// alternate constructor for "on the fly" instantiations
   Minimizer(unsigned short method_name, size_t num_lin_ineq, size_t num_lin_eq,
-	    size_t num_nln_ineq, size_t num_nln_eq, 
-            std::shared_ptr<TraitsBase> traits = 
-            std::shared_ptr<TraitsBase>(new TraitsBase()));
+            size_t num_nln_ineq, size_t num_nln_eq,
+            std::shared_ptr<TraitsBase> traits =
+                std::shared_ptr<TraitsBase>(new TraitsBase()));
   /// alternate constructor for "on the fly" instantiations
-  Minimizer(std::shared_ptr<Model> model, size_t max_iter, size_t max_eval, Real conv_tol,
-	    std::shared_ptr<TraitsBase> traits = 
-	    std::shared_ptr<TraitsBase>(new TraitsBase()));
+  Minimizer(std::shared_ptr<Model> model, size_t max_iter, size_t max_eval,
+            Real conv_tol,
+            std::shared_ptr<TraitsBase> traits =
+                std::shared_ptr<TraitsBase>(new TraitsBase()));
 
   /// destructor
   ~Minimizer() override;
@@ -153,7 +151,7 @@ protected:
 
   /// Return a shallow copy of the original model this Iterator was
   /// originally passed, optionally leaving recasts_left on top of it
-  std::shared_ptr<Model> original_model(unsigned short recasts_left = 0) const; 
+  std::shared_ptr<Model> original_model(unsigned short recasts_left = 0) const;
 
   /// Wrap iteratedModel in a RecastModel that subtracts provided
   /// observed data from the primary response functions (variables and
@@ -169,39 +167,39 @@ protected:
 
   /// compute a composite objective value from one or more primary functions
   Real objective(const RealVector& fn_vals, const BoolDeque& max_sense,
-		 const RealVector& primary_wts) const;
+                 const RealVector& primary_wts) const;
 
   /// compute a composite objective with specified number of source
   /// primary functions, instead of userPrimaryFns
   Real objective(const RealVector& fn_vals, size_t num_fns,
-		 const BoolDeque& max_sense,
-		 const RealVector& primary_wts) const;
+                 const BoolDeque& max_sense,
+                 const RealVector& primary_wts) const;
 
   /// compute the gradient of the composite objective function
   void objective_gradient(const RealVector& fn_vals, const RealMatrix& fn_grads,
-			  const BoolDeque& max_sense,
-			  const RealVector& primary_wts,
-			  RealVector& obj_grad) const;
+                          const BoolDeque& max_sense,
+                          const RealVector& primary_wts,
+                          RealVector& obj_grad) const;
   /// compute the gradient of the composite objective function
   void objective_gradient(const RealVector& fn_vals, size_t num_fns,
-			  const RealMatrix& fn_grads,
-			  const BoolDeque& max_sense,
-			  const RealVector& primary_wts,
-			  RealVector& obj_grad) const;
+                          const RealMatrix& fn_grads,
+                          const BoolDeque& max_sense,
+                          const RealVector& primary_wts,
+                          RealVector& obj_grad) const;
 
   /// compute the Hessian of the composite objective function
   void objective_hessian(const RealVector& fn_vals, const RealMatrix& fn_grads,
-			 const RealSymMatrixArray& fn_hessians,
-			 const BoolDeque& max_sense,
-			 const RealVector& primary_wts,
-			 RealSymMatrix& obj_hess) const;
+                         const RealSymMatrixArray& fn_hessians,
+                         const BoolDeque& max_sense,
+                         const RealVector& primary_wts,
+                         RealSymMatrix& obj_hess) const;
   /// compute the Hessian of the composite objective function
   void objective_hessian(const RealVector& fn_vals, size_t num_fns,
-			 const RealMatrix& fn_grads,
-			 const RealSymMatrixArray& fn_hessians,
-			 const BoolDeque& max_sense,
-			 const RealVector& primary_wts,
-			 RealSymMatrix& obj_hess) const;
+                         const RealMatrix& fn_grads,
+                         const RealSymMatrixArray& fn_hessians,
+                         const BoolDeque& max_sense,
+                         const RealVector& primary_wts,
+                         RealSymMatrix& obj_hess) const;
 
   /// top-level archival method
   virtual void archive_best_results();
@@ -214,7 +212,7 @@ protected:
 
   /// archive the index'th set of constraints
   void archive_best_constraints() const;
-  
+
   /// Archive residuals when calibration terms are used
   void archive_best_residuals() const;
 
@@ -239,13 +237,13 @@ protected:
 
   // Isolate complexity by letting Model::currentVariables/currentResponse
   // manage details.  Then Iterator only needs the following:
-  size_t numFunctions;          ///< number of response functions
-  size_t numContinuousVars;     ///< number of active continuous vars
-  size_t numDiscreteIntVars;    ///< number of active discrete integer vars
-  size_t numDiscreteStringVars; ///< number of active discrete string vars
-  size_t numDiscreteRealVars;   ///< number of active discrete real vars
+  size_t numFunctions;           ///< number of response functions
+  size_t numContinuousVars;      ///< number of active continuous vars
+  size_t numDiscreteIntVars;     ///< number of active discrete integer vars
+  size_t numDiscreteStringVars;  ///< number of active discrete string vars
+  size_t numDiscreteRealVars;    ///< number of active discrete real vars
 
-  Real constraintTol;   ///< optimizer/least squares constraint tolerance
+  Real constraintTol;  ///< optimizer/least squares constraint tolerance
 
   /// cutoff value for inequality constraint and continuous variable bounds
   Real bigRealBoundSize;
@@ -284,21 +282,21 @@ protected:
   /// constraints.  Used for method selection and error checking.
   bool boundConstraintFlag;
 
-  bool speculativeFlag; ///< flag for speculative gradient evaluations
+  bool speculativeFlag;  ///< flag for speculative gradient evaluations
 
   /// flag indicating whether user-supplied calibration data is active
   bool calibrationDataFlag;
-  /// Container for experimental data to which to calibrate model 
+  /// Container for experimental data to which to calibrate model
   /// using least squares or other formulations which minimize SSE
   ExperimentData expData;
   /// number of experiments
-  size_t numExperiments; 
-  /// number of total calibration terms (sum over experiments of 
+  size_t numExperiments;
+  /// number of total calibration terms (sum over experiments of
   /// number of experimental data per experiment, including field data)
   size_t numTotalCalibTerms;
   /// Shallow copy of the data transformation model, when present
   /// (cached in case further wrapped by other transformations)
-  std::shared_ptr<Model> dataTransformModel; 
+  std::shared_ptr<Model> dataTransformModel;
 
   /// whether Iterator-level scaling is active
   bool scaleFlag;
@@ -314,11 +312,11 @@ protected:
   /// convenience flag for gradient_type == numerical && method_source == vendor
   bool vendorNumericalGradFlag;
 
-  /// Emerging helper class for handling data transfers to/from Dakota and the underlying TPL
+  /// Emerging helper class for handling data transfers to/from Dakota and the
+  /// underlying TPL
   std::shared_ptr<TPLDataTransfer> dataTransferHandler;
 
-private:
-
+ private:
   //
   //- Heading: Convenience/Helper functions
   //
@@ -326,110 +324,93 @@ private:
   //
   //- Heading: Data
   //
-
 };
 
+inline Minimizer::Minimizer(std::shared_ptr<TraitsBase> traits)
+    : Iterator(traits), calibrationDataFlag(false), scaleFlag(false) {}
 
-inline Minimizer::Minimizer(std::shared_ptr<TraitsBase> traits): 
-  Iterator(traits), calibrationDataFlag(false), scaleFlag(false)
-{ }
+inline Minimizer::~Minimizer() {}
 
+inline void Minimizer::constraint_tolerance(Real constr_tol) {
+  constraintTol = constr_tol;
+}
 
-inline Minimizer::~Minimizer() { }
-
-
-inline void Minimizer::constraint_tolerance(Real constr_tol)
-{ constraintTol = constr_tol; }
-
-
-inline Real Minimizer::constraint_tolerance() const
-{ return constraintTol; }
-
+inline Real Minimizer::constraint_tolerance() const { return constraintTol; }
 
 /** default definition that gets redefined in selected derived Minimizers */
-inline std::shared_ptr<Model> Minimizer::algorithm_space_model()
-{ return iteratedModel; }
+inline std::shared_ptr<Model> Minimizer::algorithm_space_model() {
+  return iteratedModel;
+}
 
-
-inline void Minimizer::enforce_null_model()
-{
+inline void Minimizer::enforce_null_model() {
   // This function is only for updates in "user functions" mode (NPSOL & OPT++)
   if (iteratedModel) {
     Cerr << "Error: callback updaters should not be used when Model data "
-	 << "available." << std::endl;
+         << "available." << std::endl;
     abort_handler(METHOD_ERROR);
   }
 }
 
-
-inline void Minimizer::reshape_best(size_t num_cv, size_t num_fns)
-{
+inline void Minimizer::reshape_best(size_t num_cv, size_t num_fns) {
   // This function is only for updates in "user functions" mode (NPSOL & OPT++)
   size_t i, num_best = bestVariablesArray.size();
   if (bestResponseArray.size() != num_best) {
     Cerr << "Error: inconsistent best array sizing in Minimizer::"
-	 << "reshape_best()." << std::endl;
+         << "reshape_best()." << std::endl;
     abort_handler(METHOD_ERROR);
   }
 
   // assume single SVD shared among all enries in bestVariablesArray
-  const SharedVariablesData& old_svd
-    = bestVariablesArray.front().shared_data();
-  SizetArray vc_totals = old_svd.components_totals(); // copy
-  vc_totals[TOTAL_CDV] = num_cv; // update
+  const SharedVariablesData& old_svd = bestVariablesArray.front().shared_data();
+  SizetArray vc_totals = old_svd.components_totals();  // copy
+  vc_totals[TOTAL_CDV] = num_cv;                       // update
   // SVD has a limited API, so rather than copy+reshape, build a new one
   SharedVariablesData new_svd(old_svd.view(), vc_totals,
-			      old_svd.all_relaxed_discrete_int(),
-			      old_svd.all_relaxed_discrete_real());
-  for (i=0; i<num_best; ++i) {
-    bestVariablesArray[i].reshape(new_svd); // pulls sizing from new svd
+                              old_svd.all_relaxed_discrete_int(),
+                              old_svd.all_relaxed_discrete_real());
+  for (i = 0; i < num_best; ++i) {
+    bestVariablesArray[i].reshape(new_svd);  // pulls sizing from new svd
     bestResponseArray[i].reshape(num_fns, num_cv, false, false);
   }
 }
-
 
 // inline bool Minimizer::check_model_consistency() const
 // {
 //   return (iteratedModel != NULL) && (iteratedModel == &iteratedModel);
 // }
 
-//inline void Minimizer::initialize_iterator(int job_index)
+// inline void Minimizer::initialize_iterator(int job_index)
 //{ } // default = no-op
-
 
 /* This virtual function redefinition is executed on the dedicated scheduler
    processor for self scheduling.  It is not used for peer partitions. */
-//inline void Minimizer::
-//pack_parameters_buffer(MPIPackBuffer& send_buffer, int job_index)
+// inline void Minimizer::
+// pack_parameters_buffer(MPIPackBuffer& send_buffer, int job_index)
 //{ } // default = no-op
-
 
 /* This virtual function redefinition is executed on an iterator server for
    dedicated scheduler self scheduling.  It is not used for  peer partitions. */
-//inline void Minimizer::
-//unpack_parameters_initialize(MPIUnpackBuffer& recv_buffer)
+// inline void Minimizer::
+// unpack_parameters_initialize(MPIUnpackBuffer& recv_buffer)
 //{ } // default = no-op
-
 
 /* This virtual function redefinition is executed either on an iterator server
    for dedicated scheduler self scheduling or on peers 2 through n for static
    scheduling. */
-//inline void Minimizer::
-//pack_results_buffer(MPIPackBuffer& send_buffer, int job_index)
+// inline void Minimizer::
+// pack_results_buffer(MPIPackBuffer& send_buffer, int job_index)
 //{ } // default = no-op
-
 
 /** This virtual function redefinition is executed on an environment leader
     (either the dedicated scheduler processor for self scheduling or peer 1
     for static scheduling). */
-//inline void Minimizer::
-//unpack_results_buffer(MPIUnpackBuffer& recv_buffer, int job_index)
+// inline void Minimizer::
+// unpack_results_buffer(MPIUnpackBuffer& recv_buffer, int job_index)
 //{ } // default = no-op
 
-
-//inline void Minimizer::update_local_results(int job_index)
+// inline void Minimizer::update_local_results(int job_index)
 //{ } // default = no-op
 
-} // namespace Dakota
+}  // namespace Dakota
 
 #endif

@@ -11,9 +11,9 @@
 #define DIRECT_APPLIC_INTERFACE_H
 
 #include "ApplicationInterface.hpp"
-//#ifndef OSF
-//#include <pthread.h>
-//#endif
+// #ifndef OSF
+// #include <pthread.h>
+// #endif
 
 namespace Dakota {
 
@@ -23,85 +23,152 @@ namespace Dakota {
 // interfaces like Matlab
 
 /// enumeration of possible variable types (to index to names)
-enum var_t { VAR_x1, VAR_x2, VAR_x3, // generic (Rosenbrock, Ishigami)
-	     VAR_b, VAR_h, VAR_P, VAR_M, VAR_Y, // short column
-	     VAR_w, VAR_t, VAR_R, VAR_E, VAR_X, VAR_area_type, /* VAR_Y, */ // cantilever beam
-	     VAR_Fs, VAR_P1, VAR_P2, VAR_P3, VAR_B, VAR_D, VAR_H,
-	     VAR_F0, VAR_d, /* VAR_b, VAR_h, VAR_E */ // steel column
-	     VAR_MForm, // mf_*() test functions, tunable model
-	     VAR_x, VAR_xi, VAR_Af, VAR_Ac, //Problem18
-             VAR_y, VAR_theta, VAR_theta1, VAR_theta2,
-	     VAR_delta, VAR_gamma }; // tunable model
-//enum x3_var_t  { X1, X2, X3 }; // generic up to 3 dimensions
-//enum shc_var_t { SHC_B, SHC_H, SHC_P, SHC_M, SHC_Y }; // short column
-//enum cb_var_t  { CB_W, CB_T, CB_R, CB_E, CB_X, CB_Y }; // cantilever beam
-//enum stc_var_t { STC_FS, STC_P1, STC_P2, STC_P3, STC_B, STC_D, STC_H,
+enum var_t {
+  VAR_x1,
+  VAR_x2,
+  VAR_x3,  // generic (Rosenbrock, Ishigami)
+  VAR_b,
+  VAR_h,
+  VAR_P,
+  VAR_M,
+  VAR_Y,  // short column
+  VAR_w,
+  VAR_t,
+  VAR_R,
+  VAR_E,
+  VAR_X,
+  VAR_area_type,
+  /* VAR_Y, */  // cantilever beam
+  VAR_Fs,
+  VAR_P1,
+  VAR_P2,
+  VAR_P3,
+  VAR_B,
+  VAR_D,
+  VAR_H,
+  VAR_F0,
+  VAR_d,
+  /* VAR_b, VAR_h, VAR_E */  // steel column
+  VAR_MForm,                 // mf_*() test functions, tunable model
+  VAR_x,
+  VAR_xi,
+  VAR_Af,
+  VAR_Ac,  // Problem18
+  VAR_y,
+  VAR_theta,
+  VAR_theta1,
+  VAR_theta2,
+  VAR_delta,
+  VAR_gamma
+};  // tunable model
+// enum x3_var_t  { X1, X2, X3 }; // generic up to 3 dimensions
+// enum shc_var_t { SHC_B, SHC_H, SHC_P, SHC_M, SHC_Y }; // short column
+// enum cb_var_t  { CB_W, CB_T, CB_R, CB_E, CB_X, CB_Y }; // cantilever beam
+// enum stc_var_t { STC_FS, STC_P1, STC_P2, STC_P3, STC_B, STC_D, STC_H,
 //		   STC_F0, STC_E }; // steel column
 
 /// enumeration of possible direct driver types (to index to names)
-enum driver_t { NO_DRIVER=0, CANTILEVER_BEAM, MOD_CANTILEVER_BEAM,
-                CANTILEVER_BEAM_ML, CYLINDER_HEAD, EXTENDED_ROSENBROCK,
-		GENERALIZED_ROSENBROCK, LF_ROSENBROCK, EXTRA_LF_ROSENBROCK,
-		MF_ROSENBROCK, MODIFIED_ROSENBROCK, ROSENBROCK, LF_POLY_PROD,
-		POLY_PROD, GERSTNER, SCALABLE_GERSTNER, LOGNORMAL_RATIO,
-		MULTIMODAL, PLUGIN_ROSENBROCK, PLUGIN_TEXT_BOOK,
-		SHORT_COLUMN, LF_SHORT_COLUMN, MF_SHORT_COLUMN,
-		SIDE_IMPACT_COST, SIDE_IMPACT_PERFORMANCE,
-		SOBOL_RATIONAL, SOBOL_G_FUNCTION, SOBOL_ISHIGAMI,
-		STEEL_COLUMN_COST, STEEL_COLUMN_PERFORMANCE, TEXT_BOOK,
-		TEXT_BOOK1, TEXT_BOOK2, TEXT_BOOK3, TEXT_BOOK_OUU,
-		SCALABLE_TEXT_BOOK, SCALABLE_MONOMIALS,
-		MOGATEST1, MOGATEST2, MOGATEST3, ILLUMINATION,
-		BARNES, BARNES_LF, HERBIE, SMOOTH_HERBIE, SHUBERT,
-		SALINAS, MODELCENTER, GENZ, DAMPED_OSCILLATOR,
-		ANISOTROPIC_QUADRATIC_FORM , BAYES_LINEAR,
-		STEADY_STATE_DIFFUSION_1D, SS_DIFFUSION_DISCREPANCY,
-		TRANSIENT_DIFFUSION_1D,	PREDATOR_PREY, PROBLEM18,
-		TUNABLE_MODEL };
+enum driver_t {
+  NO_DRIVER = 0,
+  CANTILEVER_BEAM,
+  MOD_CANTILEVER_BEAM,
+  CANTILEVER_BEAM_ML,
+  CYLINDER_HEAD,
+  EXTENDED_ROSENBROCK,
+  GENERALIZED_ROSENBROCK,
+  LF_ROSENBROCK,
+  EXTRA_LF_ROSENBROCK,
+  MF_ROSENBROCK,
+  MODIFIED_ROSENBROCK,
+  ROSENBROCK,
+  LF_POLY_PROD,
+  POLY_PROD,
+  GERSTNER,
+  SCALABLE_GERSTNER,
+  LOGNORMAL_RATIO,
+  MULTIMODAL,
+  PLUGIN_ROSENBROCK,
+  PLUGIN_TEXT_BOOK,
+  SHORT_COLUMN,
+  LF_SHORT_COLUMN,
+  MF_SHORT_COLUMN,
+  SIDE_IMPACT_COST,
+  SIDE_IMPACT_PERFORMANCE,
+  SOBOL_RATIONAL,
+  SOBOL_G_FUNCTION,
+  SOBOL_ISHIGAMI,
+  STEEL_COLUMN_COST,
+  STEEL_COLUMN_PERFORMANCE,
+  TEXT_BOOK,
+  TEXT_BOOK1,
+  TEXT_BOOK2,
+  TEXT_BOOK3,
+  TEXT_BOOK_OUU,
+  SCALABLE_TEXT_BOOK,
+  SCALABLE_MONOMIALS,
+  MOGATEST1,
+  MOGATEST2,
+  MOGATEST3,
+  ILLUMINATION,
+  BARNES,
+  BARNES_LF,
+  HERBIE,
+  SMOOTH_HERBIE,
+  SHUBERT,
+  SALINAS,
+  MODELCENTER,
+  GENZ,
+  DAMPED_OSCILLATOR,
+  ANISOTROPIC_QUADRATIC_FORM,
+  BAYES_LINEAR,
+  STEADY_STATE_DIFFUSION_1D,
+  SS_DIFFUSION_DISCREPANCY,
+  TRANSIENT_DIFFUSION_1D,
+  PREDATOR_PREY,
+  PROBLEM18,
+  TUNABLE_MODEL
+};
 
 /// enumeration for how local variables are stored (values must employ
 /// a bit representation)
-enum local_data_t { VARIABLES_MAP=1, VARIABLES_VECTOR=2 };
-
+enum local_data_t { VARIABLES_MAP = 1, VARIABLES_VECTOR = 2 };
 
 /// Derived application interface class which spawns simulation codes
 /// and testers using direct procedure calls.
 
 /** DirectApplicInterface uses a few linkable simulation codes and several
     internal member functions to perform parameter to response mappings. */
-class DirectApplicInterface: public ApplicationInterface
-{
-public:
-
+class DirectApplicInterface : public ApplicationInterface {
+ public:
   //
   //- Heading: Constructor and destructor
   //
 
-  DirectApplicInterface(const ProblemDescDB& problem_db, ParallelLibrary& parallel_lib); ///< constructor
-  ~DirectApplicInterface() override;                               ///< destructor
+  DirectApplicInterface(const ProblemDescDB& problem_db,
+                        ParallelLibrary& parallel_lib);  ///< constructor
+  ~DirectApplicInterface() override;                     ///< destructor
 
   //
   //- Heading: Virtual function redefinitions
   //
 
   void derived_map(const Variables& vars, const ActiveSet& set,
-		   Response& response, int fn_eval_id) override;
+                   Response& response, int fn_eval_id) override;
   void derived_map_asynch(const ParamResponsePair& pair) override;
 
   void wait_local_evaluations(PRPQueue& prp_queue) override;
   void test_local_evaluations(PRPQueue& prp_queue) override;
 
-  int  synchronous_local_analysis(int analysis_id) override;
+  int synchronous_local_analysis(int analysis_id) override;
 
   const StringArray& analysis_drivers() const override;
 
   void init_communicators_checks(int max_eval_concurrency) override;
-  void  set_communicators_checks(int max_eval_concurrency) override;
+  void set_communicators_checks(int max_eval_concurrency) override;
 
-  //void clear_bookkeeping(); // clears threadIdMap
+  // void clear_bookkeeping(); // clears threadIdMap
 
-protected:
-
+ protected:
   //
   //- Heading: New virtual fns (redefined by derived interface plug-ins)
   //
@@ -129,7 +196,7 @@ protected:
   /// variable, active set, and response attributes; derived classes
   /// reimplementing this likely need to invoke the base class API
   virtual void set_local_data(const Variables& vars, const ActiveSet& set,
-			      const Response& response);
+                              const Response& response);
 
   /// convenience function for local test simulators which overlays
   /// response contributions from multiple analyses using MPI_Reduce
@@ -139,25 +206,25 @@ protected:
   //- Heading: Data
   //
 
-  String iFilterName; ///< name of the direct function input filter
-  String oFilterName; ///< name of the direct function output filter
-  driver_t iFilterType; ///< enum type of the direct function input filter
-  driver_t oFilterType; ///< enum type of the direct function output filter
+  String iFilterName;    ///< name of the direct function input filter
+  String oFilterName;    ///< name of the direct function output filter
+  driver_t iFilterType;  ///< enum type of the direct function input filter
+  driver_t oFilterType;  ///< enum type of the direct function output filter
 
   // map of pthread id's to function evaluation id's for asynch evaluations
-  //std::map<pthread_t, int> threadIdMap;
+  // std::map<pthread_t, int> threadIdMap;
 
   // data used by direct fns is class scope to allow common utility usage
   bool gradFlag;  ///< signals use of fnGrads in direct simulator functions
   bool hessFlag;  ///< signals use of fnHessians in direct simulator functions
 
-  size_t numFns;  ///< number of functions in fnVals
-  size_t numVars; ///< total number of continuous and discrete variables
-  size_t numACV;  ///< total number of continuous variables
-  size_t numADIV;  ///< total number of discete integer variables
-  size_t numADRV;  ///< total number of discete real variables
-  size_t numADSV;  ///< total number of discete string variables
-  size_t numDerivVars; ///< number of active derivative variables
+  size_t numFns;        ///< number of functions in fnVals
+  size_t numVars;       ///< total number of continuous and discrete variables
+  size_t numACV;        ///< total number of continuous variables
+  size_t numADIV;       ///< total number of discete integer variables
+  size_t numADRV;       ///< total number of discete real variables
+  size_t numADSV;       ///< total number of discete string variables
+  size_t numDerivVars;  ///< number of active derivative variables
 
   /// bit-wise record of which local data views are active;
   /// see enum local_data_t
@@ -167,26 +234,27 @@ protected:
   // with SysCall and ForkApplicInterface in virtual functions (since SysCall
   // and Fork don't need vars/asv/response outside of write_parameters/
   // read_responses.
-  //Variables directFnVars; ///< class scope variables object
-  RealVector xC;  ///< continuous variables used within direct simulator fns
-  IntVector  xDI; ///< discrete int variables used within direct simulator fns
-  RealVector xDR; ///< discrete real variables used within direct simulator fns
-  StringMultiArray xDS; ///< discrete string variables used within direct simulator fns
-  StringMultiArray xCLabels;  ///< continuous variable labels
-  StringMultiArray xDILabels; ///< discrete integer variable labels
-  StringMultiArray xDRLabels; ///< discrete real variable labels
-  StringMultiArray xDSLabels; ///< discrete string variable labels
-  StringArray      xAllLabels; ///< all variable labels in input spec order
+  // Variables directFnVars; ///< class scope variables object
+  RealVector xC;   ///< continuous variables used within direct simulator fns
+  IntVector xDI;   ///< discrete int variables used within direct simulator fns
+  RealVector xDR;  ///< discrete real variables used within direct simulator fns
+  StringMultiArray
+      xDS;  ///< discrete string variables used within direct simulator fns
+  StringMultiArray xCLabels;   ///< continuous variable labels
+  StringMultiArray xDILabels;  ///< discrete integer variable labels
+  StringMultiArray xDRLabels;  ///< discrete real variable labels
+  StringMultiArray xDSLabels;  ///< discrete string variable labels
+  StringArray xAllLabels;      ///< all variable labels in input spec order
 
-  RealArray   metaData;       ///< real-valued metadata
-  StringArray metaDataLabels; ///< labels for optional metadata
+  RealArray metaData;          ///< real-valued metadata
+  StringArray metaDataLabels;  ///< labels for optional metadata
 
-  std::map<String, var_t>       varTypeMap; ///< map from variable label to enum
-  std::map<String, driver_t> driverTypeMap; ///< map from driver name to enum
-  std::map<var_t, Real>   xCM;  ///< map from var_t enum to continuous value
-  std::map<var_t, int>    xDIM; ///< map from var_t enum to discrete int value
-  std::map<var_t, Real>   xDRM; ///< map from var_t enum to discrete real value
-  std::map<var_t, String> xDSM; ///< map from var_t enum to discrete string val
+  std::map<String, var_t> varTypeMap;  ///< map from variable label to enum
+  std::map<String, driver_t> driverTypeMap;  ///< map from driver name to enum
+  std::map<var_t, Real> xCM;     ///< map from var_t enum to continuous value
+  std::map<var_t, int> xDIM;     ///< map from var_t enum to discrete int value
+  std::map<var_t, Real> xDRM;    ///< map from var_t enum to discrete real value
+  std::map<var_t, String> xDSM;  ///< map from var_t enum to discrete string val
 
   /// var_t enumerations corresponding to DVV components
   std::vector<var_t> varTypeDVV;
@@ -199,14 +267,14 @@ protected:
   /// var_t enumerations corresponding to discrete string variable labels
   std::vector<var_t> xDSMLabels;
 
-  //ActiveSet directFnActSet; // class scope ActiveSet object
-  ShortArray directFnASV; ///< class scope active set vector
-  SizetArray directFnDVV; ///< class scope derivative variables vector
+  // ActiveSet directFnActSet; // class scope ActiveSet object
+  ShortArray directFnASV;  ///< class scope active set vector
+  SizetArray directFnDVV;  ///< class scope derivative variables vector
 
-  //Response  directFnResponse; // class scope response object
-  RealVector      fnVals;    ///< response fn values within direct simulator fns
-  RealMatrix      fnGrads;   ///< response fn gradients w/i direct simulator fns
-  RealSymMatrixArray fnHessians; ///< response fn Hessians within direct fns
+  // Response  directFnResponse; // class scope response object
+  RealVector fnVals;   ///< response fn values within direct simulator fns
+  RealMatrix fnGrads;  ///< response fn gradients w/i direct simulator fns
+  RealSymMatrixArray fnHessians;  ///< response fn Hessians within direct fns
 
   /// the set of analyses within each function evaluation (from the
   /// analysis_drivers interface specification)
@@ -217,15 +285,14 @@ protected:
   /// the index of the active analysis driver within analysisDrivers
   size_t analysisDriverIndex;
 
-private:
-
+ private:
   //
   //- Heading: Methods
   //
 
   /// map labels in src to var_t in dest
-  void map_labels_to_enum(StringMultiArrayConstView &src,
-      std::vector<var_t> &dest);
+  void map_labels_to_enum(StringMultiArrayConstView& src,
+                          std::vector<var_t>& dest);
 
   //
   //- Heading: Data
@@ -237,52 +304,45 @@ private:
   String prevRespId;
 };
 
-
 /** This code provides the derived function used by
     ApplicationInterface::serve_analyses_synch(). */
-inline int DirectApplicInterface::synchronous_local_analysis(int analysis_id)
-{
-  analysisDriverIndex = analysis_id-1;
+inline int DirectApplicInterface::synchronous_local_analysis(int analysis_id) {
+  analysisDriverIndex = analysis_id - 1;
   return derived_map_ac(analysisDrivers[analysisDriverIndex]);
 }
 
-
-inline const StringArray& DirectApplicInterface::analysis_drivers() const
-{ return analysisDrivers; }
-
+inline const StringArray& DirectApplicInterface::analysis_drivers() const {
+  return analysisDrivers;
+}
 
 /** Process init issues as warnings since some contexts (e.g.,
     EnsembleSurrModel) initialize more configurations than will be
     used and DirectApplicInterface allows override by derived plug-ins. */
-inline void DirectApplicInterface::
-init_communicators_checks(int max_eval_concurrency)
-{
+inline void DirectApplicInterface::init_communicators_checks(
+    int max_eval_concurrency) {
   bool warn = true;
   check_asynchronous(warn, max_eval_concurrency);
   check_multiprocessor_asynchronous(warn, max_eval_concurrency);
 }
 
-
 /** Process run-time issues as hard errors. */
-inline void DirectApplicInterface::
-set_communicators_checks(int max_eval_concurrency)
-{
-  bool warn = false,  mp1 = check_asynchronous(warn, max_eval_concurrency),
+inline void DirectApplicInterface::set_communicators_checks(
+    int max_eval_concurrency) {
+  bool warn = false, mp1 = check_asynchronous(warn, max_eval_concurrency),
        mp2 = check_multiprocessor_asynchronous(warn, max_eval_concurrency);
-  if (mp1 || mp2)
-    abort_handler(-1);
+  if (mp1 || mp2) abort_handler(-1);
 }
 
-
-//inline void DirectApplicInterface::clear_bookkeeping()
+// inline void DirectApplicInterface::clear_bookkeeping()
 //{ threadIdMap.clear(); }
 
+inline void DirectApplicInterface::set_local_data(const Variables& vars,
+                                                  const ActiveSet& set,
+                                                  const Response& response) {
+  set_local_data(vars, set);
+  set_local_data(response);
+}
 
-inline void DirectApplicInterface::
-set_local_data(const Variables& vars, const ActiveSet& set,
-	       const Response& response)
-{ set_local_data(vars, set); set_local_data(response); }
-
-} // namespace Dakota
+}  // namespace Dakota
 
 #endif

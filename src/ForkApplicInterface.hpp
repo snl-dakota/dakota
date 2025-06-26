@@ -12,7 +12,6 @@
 
 #include "ProcessHandleApplicInterface.hpp"
 
-
 namespace Dakota {
 
 /// Derived application interface class which spawns simulation codes
@@ -21,21 +20,19 @@ namespace Dakota {
 /** ForkApplicInterface is used on Unix systems and is a peer to
     SpawnApplicInterface for Windows systems. */
 
-class ForkApplicInterface: public ProcessHandleApplicInterface
-{
-public:
-
+class ForkApplicInterface : public ProcessHandleApplicInterface {
+ public:
   //
   //- Heading: Constructors and destructor
   //
 
   /// constructor
-  ForkApplicInterface(const ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
+  ForkApplicInterface(const ProblemDescDB& problem_db,
+                      ParallelLibrary& parallel_lib);
   /// destructor
   ~ForkApplicInterface() override;
 
-protected:
-
+ protected:
   //
   //- Heading: Virtual function redefinitions
   //
@@ -54,9 +51,9 @@ protected:
   void join_evaluation_process_group(bool new_group) override;
   void join_analysis_process_group(bool new_group) override;
 
-  void  evaluation_process_group_id(pid_t pgid) override;
+  void evaluation_process_group_id(pid_t pgid) override;
   pid_t evaluation_process_group_id() const override;
-  void  analysis_process_group_id(pid_t pgid) override;
+  void analysis_process_group_id(pid_t pgid) override;
   pid_t analysis_process_group_id() const override;
 
   //
@@ -73,15 +70,14 @@ protected:
   /// check the exit status of setpgid and abort if an error code was returned
   void check_group(int err, pid_t proc_group_id);
 
-private:
-
+ private:
   //
   //- Heading: Methods
   //
 
   /// core code used by wait_{evaluation,analysis}()
   pid_t wait(pid_t proc_group_id, std::map<pid_t, int>& process_id_map,
-	     bool block_flag);
+             bool block_flag);
 
   /// core code used by join_{evaluation,analysis}_process_group()
   void join_process_group(pid_t& process_group_id, bool new_group);
@@ -100,42 +96,40 @@ private:
   pid_t analysisProcGroupId;
 };
 
+inline ForkApplicInterface::~ForkApplicInterface() {}
 
-inline ForkApplicInterface::~ForkApplicInterface() 
-{ }
+inline pid_t ForkApplicInterface::wait_evaluation(bool block_flag) {
+  return wait(evalProcGroupId, evalProcessIdMap, block_flag);
+}
 
+inline pid_t ForkApplicInterface::wait_analysis(bool block_flag) {
+  return wait(analysisProcGroupId, analysisProcessIdMap, block_flag);
+}
 
-inline pid_t ForkApplicInterface::wait_evaluation(bool block_flag)
-{ return wait(evalProcGroupId, evalProcessIdMap, block_flag); }
+inline void ForkApplicInterface::join_evaluation_process_group(bool new_group) {
+  join_process_group(evalProcGroupId, new_group);
+}
 
+inline void ForkApplicInterface::join_analysis_process_group(bool new_group) {
+  join_process_group(analysisProcGroupId, new_group);
+}
 
-inline pid_t ForkApplicInterface::wait_analysis(bool block_flag)
-{ return wait(analysisProcGroupId, analysisProcessIdMap, block_flag); }
+inline void ForkApplicInterface::evaluation_process_group_id(pid_t pgid) {
+  evalProcGroupId = pgid;
+}
 
+inline pid_t ForkApplicInterface::evaluation_process_group_id() const {
+  return evalProcGroupId;
+}
 
-inline void ForkApplicInterface::join_evaluation_process_group(bool new_group)
-{ join_process_group(evalProcGroupId, new_group); }
+inline void ForkApplicInterface::analysis_process_group_id(pid_t pgid) {
+  analysisProcGroupId = pgid;
+}
 
+inline pid_t ForkApplicInterface::analysis_process_group_id() const {
+  return analysisProcGroupId;
+}
 
-inline void ForkApplicInterface::join_analysis_process_group(bool new_group)
-{ join_process_group(analysisProcGroupId, new_group); }
-
-
-inline void ForkApplicInterface::evaluation_process_group_id(pid_t pgid)
-{ evalProcGroupId = pgid; }
-
-
-inline pid_t ForkApplicInterface::evaluation_process_group_id() const
-{ return evalProcGroupId; }
-
-
-inline void ForkApplicInterface::analysis_process_group_id(pid_t pgid)
-{ analysisProcGroupId = pgid; }
-
-
-inline pid_t ForkApplicInterface::analysis_process_group_id() const
-{ return analysisProcGroupId; }
-
-} // namespace Dakota
+}  // namespace Dakota
 
 #endif

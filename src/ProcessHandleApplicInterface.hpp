@@ -10,8 +10,9 @@
 #ifndef PROCESS_HANDLE_APPLIC_INTERFACE_H
 #define PROCESS_HANDLE_APPLIC_INTERFACE_H
 
-#include "ProcessApplicInterface.hpp"
 #include <boost/shared_array.hpp>
+
+#include "ProcessApplicInterface.hpp"
 
 namespace Dakota {
 
@@ -22,22 +23,19 @@ namespace Dakota {
 /** ProcessHandleApplicInterface is subclassed for fork/execvp/waitpid
     (Unix) and spawnvp (Windows). */
 
-
-class ProcessHandleApplicInterface: public ProcessApplicInterface
-{
-public:
-
+class ProcessHandleApplicInterface : public ProcessApplicInterface {
+ public:
   //
   //- Heading: Constructors and destructor
   //
 
   /// constructor
-  ProcessHandleApplicInterface(const ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
+  ProcessHandleApplicInterface(const ProblemDescDB& problem_db,
+                               ParallelLibrary& parallel_lib);
   /// destructor
   ~ProcessHandleApplicInterface() override;
 
-protected:
-
+ protected:
   //
   //- Heading: Virtual function redefinitions
   //
@@ -87,7 +85,7 @@ protected:
   /// Common processing code used by {wait,test}_local_evaluations
   void process_local_evaluation(PRPQueue& prp_queue, const pid_t pid);
 
-  //void clear_bookkeeping(); // virtual fn redefinition: clear processIdMap
+  // void clear_bookkeeping(); // virtual fn redefinition: clear processIdMap
 
   /// check the exit status of a forked process and abort if an error code
   /// was returned
@@ -109,9 +107,8 @@ protected:
   /// parse argList into argument array av suitable for passing to
   /// execvp, appending parameters and results filenames if requested
   /// by commandLineArgs
-  void create_command_arguments(boost::shared_array<const char*>& av, 
-				StringArray& driver_and_args); 
-
+  void create_command_arguments(boost::shared_array<const char*>& av,
+                                StringArray& driver_and_args);
 
   //
   //- Heading: Data
@@ -127,8 +124,7 @@ protected:
   /// These are converted to an array of const char*'s in fork_program().
   std::vector<std::string> argList;
 
-private:
-
+ private:
   //
   //- Heading: Data
   //
@@ -137,72 +133,61 @@ private:
   // for analysis drivers.
 };
 
-
 /** This code provides the derived function used by ApplicationInterface::
     serve_analyses_synch() as well as a convenience function for
     ProcessHandleApplicInterface::synchronous_local_analyses() below. */
-inline int ProcessHandleApplicInterface::
-synchronous_local_analysis(int analysis_id)
-{
+inline int ProcessHandleApplicInterface::synchronous_local_analysis(
+    int analysis_id) {
 #ifdef MPI_DEBUG
-  Cout << "Blocking fork to analysis " << analysis_id << std::endl; // flush buf
-#endif // MPI_DEBUG
+  Cout << "Blocking fork to analysis " << analysis_id
+       << std::endl;  // flush buf
+#endif                // MPI_DEBUG
   driver_argument_list(analysis_id);
   create_analysis_process(BLOCK, false);
-  return 0; // used for failure codes in DirectFn case
+  return 0;  // used for failure codes in DirectFn case
 }
-
 
 /** No derived interface plug-ins, so perform construct-time checks.
     However, process init issues as warnings since some contexts (e.g.,
     EnsembleSurrModel) initialize more configurations than will be used. */
-inline void ProcessHandleApplicInterface::
-init_communicators_checks(int max_eval_concurrency)
-{
+inline void ProcessHandleApplicInterface::init_communicators_checks(
+    int max_eval_concurrency) {
   bool warn = true;
   check_multiprocessor_analysis(warn);
   check_multiprocessor_asynchronous(warn, max_eval_concurrency);
 }
 
-
 /** Process run-time issues as hard errors. */
-inline void ProcessHandleApplicInterface::
-set_communicators_checks(int max_eval_concurrency)
-{
+inline void ProcessHandleApplicInterface::set_communicators_checks(
+    int max_eval_concurrency) {
   bool warn = false, mp1 = check_multiprocessor_analysis(warn),
-    mp2 = check_multiprocessor_asynchronous(warn, max_eval_concurrency);
-  if (mp1 || mp2)
-    abort_handler(-1);
+       mp2 = check_multiprocessor_asynchronous(warn, max_eval_concurrency);
+  if (mp1 || mp2) abort_handler(-1);
 }
 
-
-//inline void ProcessHandleApplicInterface::clear_bookkeeping()
+// inline void ProcessHandleApplicInterface::clear_bookkeeping()
 //{ evalProcessIdMap.clear(); }
 
-
-inline void ProcessHandleApplicInterface::ifilter_argument_list()
-{
+inline void ProcessHandleApplicInterface::ifilter_argument_list() {
   argList[0] = iFilterName;
   argList[1] = paramsFileName;
   argList[2] = resultsFileName;
 }
 
-
-inline void ProcessHandleApplicInterface::ofilter_argument_list()
-{
+inline void ProcessHandleApplicInterface::ofilter_argument_list() {
   argList[0] = oFilterName;
   argList[1] = paramsFileName;
   argList[2] = resultsFileName;
 }
 
-
-inline void ProcessHandleApplicInterface::driver_argument_list(int analysis_id)
-{
+inline void ProcessHandleApplicInterface::driver_argument_list(
+    int analysis_id) {
   std::string tag_str = "." + std::to_string(analysis_id);
-  argList[0] = programNames[analysis_id-1];
-  argList[1] = (multipleParamsFiles) ? paramsFileName+tag_str : paramsFileName;
-  argList[2] = (programNames.size() > 1) ? resultsFileName+tag_str :
-    resultsFileName;
+  argList[0] = programNames[analysis_id - 1];
+  argList[1] =
+      (multipleParamsFiles) ? paramsFileName + tag_str : paramsFileName;
+  argList[2] =
+      (programNames.size() > 1) ? resultsFileName + tag_str : resultsFileName;
 
 #ifdef DEBUG
   Cout << "argList: " << argList[0] << ' ' << argList[1] << ' ' << argList[2]
@@ -210,6 +195,6 @@ inline void ProcessHandleApplicInterface::driver_argument_list(int analysis_id)
 #endif
 }
 
-} // namespace Dakota
+}  // namespace Dakota
 
 #endif

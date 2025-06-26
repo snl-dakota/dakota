@@ -10,8 +10,8 @@
 #ifndef NOND_LOCAL_RELIABILITY_H
 #define NOND_LOCAL_RELIABILITY_H
 
-#include "NonDReliability.hpp"
 #include "DakotaApproximation.hpp"
+#include "NonDReliability.hpp"
 #include "NormalRandomVariable.hpp"
 
 #ifdef HAVE_OPTPP
@@ -19,7 +19,6 @@
 #endif
 
 namespace Dakota {
-
 
 /// Class for the reliability methods within DAKOTA/UQ
 
@@ -36,19 +35,18 @@ namespace Dakota {
     point (MPP).  The MPP search may be formulated as the reliability
     index approach (RIA) for mapping response levels to
     reliabilities/probabilities or as the performance measure approach
-    (PMA) for performing the inverse mapping of reliability/probability 
+    (PMA) for performing the inverse mapping of reliability/probability
     levels to response levels. */
 
-class NonDLocalReliability: public NonDReliability
-{
-public:
-
+class NonDLocalReliability : public NonDReliability {
+ public:
   //
   //- Heading: Constructors and destructor
   //
 
   /// constructor
-  NonDLocalReliability(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
+  NonDLocalReliability(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
+                       std::shared_ptr<Model> model);
   /// destructor
   ~NonDLocalReliability() override;
 
@@ -65,14 +63,14 @@ public:
 
   void pre_run() override;
   void core_run() override;
-  void print_results(std::ostream& s, short results_state = FINAL_RESULTS) override;
+  void print_results(std::ostream& s,
+                     short results_state = FINAL_RESULTS) override;
 
   void check_sub_iterator_conflict() override;
   unsigned short uses_method() const override;
   void method_recourse(unsigned short method_name) override;
 
-private:
-
+ private:
   //
   //- Heading: Objective/constraint/set mappings passed to RecastModel
   //
@@ -82,50 +80,50 @@ private:
   /// optimization problem performs the search for the most probable point
   /// (MPP) with the objective function of (norm u)^2.
   static void RIA_objective_eval(const Variables& sub_model_vars,
-				 const Variables& recast_vars,
-				 const Response& sub_model_response,
-				 Response& recast_response);
+                                 const Variables& recast_vars,
+                                 const Response& sub_model_response,
+                                 Response& recast_response);
 
   /// static function used as the constraint function in the Reliability
   /// Index Approach (RIA) problem formulation.  This equality-constrained
   /// optimization problem performs the search for the most probable point
   /// (MPP) with the constraint of G(u) = response level.
   static void RIA_constraint_eval(const Variables& sub_model_vars,
-				  const Variables& recast_vars,
-				  const Response& sub_model_response,
-				  Response& recast_response);
+                                  const Variables& recast_vars,
+                                  const Response& sub_model_response,
+                                  Response& recast_response);
 
   /// static function used as the objective function in the Performance
   /// Measure Approach (PMA) problem formulation.  This equality-constrained
   /// optimization problem performs the search for the most probable point
   /// (MPP) with the objective function of G(u).
   static void PMA_objective_eval(const Variables& sub_model_vars,
-				 const Variables& recast_vars,
-				 const Response& sub_model_response,
-				 Response& recast_response);
+                                 const Variables& recast_vars,
+                                 const Response& sub_model_response,
+                                 Response& recast_response);
 
   /// static function used as the constraint function in the first-order
   /// Performance Measure Approach (PMA) problem formulation.  This
   /// optimization problem performs the search for the most probable
   /// point (MPP) with the equality constraint of (norm u)^2 = (beta-bar)^2.
   static void PMA_constraint_eval(const Variables& sub_model_vars,
-				  const Variables& recast_vars,
-				  const Response& sub_model_response,
-				  Response& recast_response);
+                                  const Variables& recast_vars,
+                                  const Response& sub_model_response,
+                                  Response& recast_response);
   /// static function used as the constraint function in the second-order
   /// Performance Measure Approach (PMA) problem formulation.  This
   /// optimization problem performs the search for the most probable
   /// point (MPP) with the equality constraint of beta* = beta*-bar.
   static void PMA2_constraint_eval(const Variables& sub_model_vars,
-				   const Variables& recast_vars,
-				   const Response& sub_model_response,
-				   Response& recast_response);
+                                   const Variables& recast_vars,
+                                   const Response& sub_model_response,
+                                   Response& recast_response);
 
   /// static function used to augment the sub-model ASV requests for
   /// second-order PMA
   static void PMA2_set_mapping(const Variables& recast_vars,
-			       const ActiveSet& recast_set,
-			       ActiveSet& sub_model_set);
+                               const ActiveSet& recast_set,
+                               ActiveSet& sub_model_set);
 
   //
   //- Heading: Convenience functions
@@ -157,7 +155,7 @@ private:
   /// convenience function for updating MPP search data for each
   /// z/p/beta level for each response function
   void update_mpp_search_data(const Variables& vars_star,
-			      const Response& resp_star);
+                              const Response& resp_star);
 
   /// convenience function for updating z/p/beta level data and final
   /// statistics following MPP convergence
@@ -166,7 +164,7 @@ private:
   /// update pmaMaximizeG from prescribed probabilities or prescribed
   /// generalized reliabilities by inverting second-order integrations
   void update_pma_maximize(const RealVector& mpp_u, const RealVector& fn_grad_u,
-			   const RealSymMatrix& fn_hess_u);
+                           const RealSymMatrix& fn_hess_u);
 
   /// convenience function for passing the latest variables/response data
   /// to the data fit embedded within uSpaceModel
@@ -178,12 +176,11 @@ private:
 
   // convenience function for evaluating fnVal(u), fnGradU(u), and fnHessU(u)
   // as required by RIA_constraint_eval() and PMA_objective_eval()
-  //void g_eval(int& mode, const RealVector& u);
+  // void g_eval(int& mode, const RealVector& u);
 
   /// convenience function for evaluating dg/ds
-  void dg_ds_eval(const RealVector& x_vars,
-		  const RealVector& fn_grad_x,
-		  RealVector& final_stat_grad);
+  void dg_ds_eval(const RealVector& x_vars, const RealVector& fn_grad_x,
+                  RealVector& final_stat_grad);
 
   /// compute factor for derivative of second-order probability with respect to
   /// reliability index (from differentiating BREITUNG or HOHENRACK expressions)
@@ -199,23 +196,23 @@ private:
 
   /// convert norm of mpp_u (u-space solution) to a signed reliability index
   Real signed_norm(const RealVector& mpp_u, const RealVector& fn_grad_u,
-		   bool cdf_flag);
+                   bool cdf_flag);
   /// convert norm of u-space vector to a signed reliability index
   Real signed_norm(Real norm_mpp_u);
   /// shared helper function
   Real signed_norm(Real norm_mpp_u, const RealVector& mpp_u,
-		   const RealVector& fn_grad_u, bool cdf_flag);
+                   const RealVector& fn_grad_u, bool cdf_flag);
 
   /// Convert reliability to probability using a first-order integration
   Real probability(Real beta);
   /// Convert computed reliability to probability using either a
   /// first-order or second-order integration
   Real probability(bool cdf_flag, const RealVector& mpp_u,
-		   const RealVector& fn_grad_u, const RealSymMatrix& fn_hess_u);
+                   const RealVector& fn_grad_u, const RealSymMatrix& fn_hess_u);
   /// Convert provided reliability to probability using either a
   /// first-order or second-order integration
   Real probability(Real beta, bool cdf_flag, const RealVector& mpp_u,
-		   const RealVector& fn_grad_u, const RealSymMatrix& fn_hess_u);
+                   const RealVector& fn_grad_u, const RealSymMatrix& fn_hess_u);
 
   /// Convert probability to reliability using the inverse of a
   /// first-order integration
@@ -223,25 +220,25 @@ private:
   /// Convert probability to reliability using the inverse of a
   /// first-order or second-order integration
   Real reliability(Real p, bool cdf_flag, const RealVector& mpp_u,
-		   const RealVector& fn_grad_u, const RealSymMatrix& fn_hess_u);
+                   const RealVector& fn_grad_u, const RealSymMatrix& fn_hess_u);
   /// compute the residual for inversion of second-order probability
   /// corrections using Newton's method (called by reliability(p))
   bool reliability_residual(const Real& p, const Real& beta,
-			    const RealVector& kappa, Real& res);
+                            const RealVector& kappa, Real& res);
   /// compute the residual derivative for inversion of second-order
   /// probability corrections using Newton's method (called by reliability(p))
   Real reliability_residual_derivative(const Real& p, const Real& beta,
-				       const RealVector& kappa);
+                                       const RealVector& kappa);
 
   /// Compute the kappaU vector of principal curvatures from fnHessU
   void principal_curvatures(const RealVector& mpp_u,
-			    const RealVector& fn_grad_u,
-			    const RealSymMatrix& fn_hess_u,
-			    RealVector& kappa_u);
+                            const RealVector& fn_grad_u,
+                            const RealSymMatrix& fn_hess_u,
+                            RealVector& kappa_u);
 
   /// scale copy of principal curvatures by -1 if needed; else take a view
   void scale_curvature(Real beta, bool cdf_flag, const RealVector& kappa,
-		       RealVector& scaled_kappa);
+                       RealVector& scaled_kappa);
 
   //
   //- Heading: Data members
@@ -253,7 +250,7 @@ private:
 
   // Approximation instance used for TANA-3 and Taylor series limit
   // state approximations
-  //Approximation limitStateSurrogate;
+  // Approximation limitStateSurrogate;
 
   /// output response level calculated
   Real computedRespLevel;
@@ -286,7 +283,7 @@ private:
   RealSymMatrixArray fnHessiansMeanX;
   // response function values evaluated at u=0 (for first-order integration,
   // p=0.5 -> median function values).  Used to determine the sign of beta.
-  //RealVector medianFnVals;
+  // RealVector medianFnVals;
 
   /// vector of means for all uncertain random variables in x-space
   RealVector ranVarMeansX;
@@ -352,75 +349,68 @@ private:
   unsigned short warningBits;
 };
 
-
-inline unsigned short NonDLocalReliability::uses_method() const
-{
-  if (mppSearchType) return (npsolFlag) ? SUBMETHOD_NPSOL : SUBMETHOD_OPTPP;
-  else               return SUBMETHOD_NONE;
+inline unsigned short NonDLocalReliability::uses_method() const {
+  if (mppSearchType)
+    return (npsolFlag) ? SUBMETHOD_NPSOL : SUBMETHOD_OPTPP;
+  else
+    return SUBMETHOD_NONE;
 }
 
+inline Real NonDLocalReliability::signed_norm(const RealVector& mpp_u,
+                                              const RealVector& fn_grad_u,
+                                              bool cdf_flag) {
+  return signed_norm(mpp_u.normFrobenius(), mpp_u, fn_grad_u, cdf_flag);
+}
 
-inline Real NonDLocalReliability::
-signed_norm(const RealVector& mpp_u, const RealVector& fn_grad_u, bool cdf_flag)
-{ return signed_norm(mpp_u.normFrobenius(), mpp_u, fn_grad_u, cdf_flag); }
-
-
-inline Real NonDLocalReliability::signed_norm(Real norm_mpp_u)
-{ return signed_norm(norm_mpp_u, mostProbPointU, fnGradU, cdfFlag); }
-
+inline Real NonDLocalReliability::signed_norm(Real norm_mpp_u) {
+  return signed_norm(norm_mpp_u, mostProbPointU, fnGradU, cdfFlag);
+}
 
 // generalized reliability --> probability
 // or     FORM reliability --> probability
-inline Real NonDLocalReliability::probability(Real beta)
-{ return Pecos::NormalRandomVariable::std_cdf(-beta); }
+inline Real NonDLocalReliability::probability(Real beta) {
+  return Pecos::NormalRandomVariable::std_cdf(-beta);
+}
 
-
-inline Real NonDLocalReliability::
-probability(bool cdf_flag, const RealVector& mpp_u, const RealVector& fn_grad_u,
-	    const RealSymMatrix& fn_hess_u)
-{
+inline Real NonDLocalReliability::probability(bool cdf_flag,
+                                              const RealVector& mpp_u,
+                                              const RealVector& fn_grad_u,
+                                              const RealSymMatrix& fn_hess_u) {
   Real beta = signed_norm(mpp_u, fn_grad_u, cdf_flag);
   return probability(beta, cdf_flag, mpp_u, fn_grad_u, fn_hess_u);
 }
 
-
 //    probability --> generalized reliability
 // or probability --> FORM reliability
-inline Real NonDLocalReliability::reliability(Real p)
-{
+inline Real NonDLocalReliability::reliability(Real p) {
   if (p < 0.0 || 1.0 < p) {
     Cerr << "\nError: invalid probability value in NonDLocalReliability::"
-	 << "reliability()." << std::endl; 
+         << "reliability()." << std::endl;
     abort_handler(-1);
-    return  0.;
-  }
-  else if (p < std::numeric_limits<double>::min()) {
+    return 0.;
+  } else if (p < std::numeric_limits<double>::min()) {
     Cerr << "\nWarning: zero probability passed in NonDLocalReliability::"
-	 << "reliability().\n"; 
-    return  Pecos::LARGE_NUMBER;// DBL_MAX;
-  }
-  else if ( 1.0 - std::numeric_limits<double>::epsilon() < p ) {
+         << "reliability().\n";
+    return Pecos::LARGE_NUMBER;  // DBL_MAX;
+  } else if (1.0 - std::numeric_limits<double>::epsilon() < p) {
     Cerr << "\nWarning: unit probability passed in NonDLocalReliability::"
-	 << "reliability().\n"; 
-    return -Pecos::LARGE_NUMBER;//-DBL_MAX;
+         << "reliability().\n";
+    return -Pecos::LARGE_NUMBER;  //-DBL_MAX;
   }
 
   return -Pecos::NormalRandomVariable::inverse_std_cdf(p);
 }
 
-
-inline void NonDLocalReliability::
-scale_curvature(Real beta, bool cdf_flag, const RealVector& kappa,
-		RealVector& scaled_kappa)
-{
-  if ( (cdf_flag && beta < 0.) || (!cdf_flag && beta >= 0.) ) { // copy
+inline void NonDLocalReliability::scale_curvature(Real beta, bool cdf_flag,
+                                                  const RealVector& kappa,
+                                                  RealVector& scaled_kappa) {
+  if ((cdf_flag && beta < 0.) || (!cdf_flag && beta >= 0.)) {  // copy
     scaled_kappa = RealVector(Teuchos::Copy, kappa.values(), kappa.length());
     scaled_kappa.scale(-1.);
-  }
-  else                                                          // view
+  } else  // view
     scaled_kappa = RealVector(Teuchos::View, kappa.values(), kappa.length());
 }
 
-} // namespace Dakota
+}  // namespace Dakota
 
 #endif

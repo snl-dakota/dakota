@@ -6,37 +6,37 @@
     This software is distributed under the GNU Lesser General Public License.
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
-    
+
 #include "UserModes.hpp"
+
 #include "dakota_data_io.hpp"
 
 namespace Dakota {
-    /// MPIUnpackBuffer extraction operator
-MPIUnpackBuffer& operator>>(MPIUnpackBuffer& s, UserModes& u)
-{ 
+/// MPIUnpackBuffer extraction operator
+MPIUnpackBuffer& operator>>(MPIUnpackBuffer& s, UserModes& u) {
   u.read(s);
-  return s; 
+  return s;
 }
 
 /// MPIPackBuffer insertion operator
-MPIPackBuffer& operator<<(MPIPackBuffer& s, const UserModes& u)
-{ 
+MPIPackBuffer& operator<<(MPIPackBuffer& s, const UserModes& u) {
   u.write(s);
-  return s; 
+  return s;
 }
 
 void UserModes::read(MPIUnpackBuffer& is)
 
 {
-    is >> preRun >> run >> postRun >> preRunInput >> preRunOutput >> 
-    runInput >> runOutput >> postRunInput >> postRunOutput >> 
-    preRunOutputFormat >> postRunInputFormat;
+  is >> preRun >> run >> postRun >> preRunInput >> preRunOutput >> runInput >>
+      runOutput >> postRunInput >> postRunOutput >> preRunOutputFormat >>
+      postRunInputFormat;
 }
 
 void UserModes::write(MPIPackBuffer& is) const {
-    is << preRun << run << postRun;
-    is << preRunInput << preRunOutput << runInput << runOutput << postRunInput << postRunOutput;
-    is << preRunOutputFormat << postRunInputFormat;
+  is << preRun << run << postRun;
+  is << preRunInput << preRunOutput << runInput << runOutput << postRunInput
+     << postRunOutput;
+  is << preRunOutputFormat << postRunInputFormat;
 }
 
-}
+}  // namespace Dakota

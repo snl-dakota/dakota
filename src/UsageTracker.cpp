@@ -7,7 +7,6 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-
 #include "UsageTracker.hpp"
 #ifdef DAKOTA_USAGE_TRACKING
 #include "TrackerHTTP.hpp"
@@ -15,36 +14,29 @@
 
 namespace Dakota {
 
-UsageTracker::UsageTracker()
-{ /* empty ctor */ }
+UsageTracker::UsageTracker() { /* empty ctor */ }
 
 /** standard constructor; will output on rank 0 and only initializes
     if tracking compiled in and not disable by environment */
-UsageTracker::UsageTracker(int world_rank) 
-{
+UsageTracker::UsageTracker(int world_rank) {
 #ifdef DAKOTA_USAGE_TRACKING
   // Avoid tracking if user specified none via env var or on rank > 0
-  char *ptr_notrack = std::getenv("DAKOTA_NO_TRACKING");
+  char* ptr_notrack = std::getenv("DAKOTA_NO_TRACKING");
   if (ptr_notrack == NULL && world_rank == 0)
-    pTrackerHTTP.reset( new TrackerHTTP(world_rank) );
+    pTrackerHTTP.reset(new TrackerHTTP(world_rank));
 #endif
 }
 
-void UsageTracker::post_start(ProblemDescDB& problem_db)
-{
+void UsageTracker::post_start(ProblemDescDB& problem_db) {
 #ifdef DAKOTA_USAGE_TRACKING
-  if (pTrackerHTTP.get() != NULL)
-    pTrackerHTTP->post_start(problem_db);
+  if (pTrackerHTTP.get() != NULL) pTrackerHTTP->post_start(problem_db);
 #endif
 }
 
-void UsageTracker::post_finish(unsigned runtime)
-{
+void UsageTracker::post_finish(unsigned runtime) {
 #ifdef DAKOTA_USAGE_TRACKING
-  if (pTrackerHTTP.get() != NULL)
-    pTrackerHTTP->post_finish(runtime);
+  if (pTrackerHTTP.get() != NULL) pTrackerHTTP->post_finish(runtime);
 #endif
 }
-
 
 }  // namespace Dakota

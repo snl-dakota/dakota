@@ -12,41 +12,39 @@
 
 #include "DakotaVerification.hpp"
 
-
 namespace Dakota {
-
 
 /// Class for Richardson extrapolation for code and solution verification
 
 /** The RichExtrapVerification class contains several algorithms for
     performing Richardson extrapolation. */
 
-class RichExtrapVerification: public Verification
-{
-public:
-
+class RichExtrapVerification : public Verification {
+ public:
   //
   //- Heading: Constructors and destructors
   //
 
   /// constructor
-  RichExtrapVerification(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
+  RichExtrapVerification(ProblemDescDB& problem_db,
+                         ParallelLibrary& parallel_lib,
+                         std::shared_ptr<Model> model);
   /// destructor
   ~RichExtrapVerification() override;
-    
+
   //
   //- Heading: Virtual member function redefinitions
   //
 
-  //void initialize_run();
-  //void pre_run();
+  // void initialize_run();
+  // void pre_run();
   void core_run() override;
-  //void post_run(std::ostream& s);
-  //void finalize_run();
-  void print_results(std::ostream& s, short results_state = FINAL_RESULTS) override;
+  // void post_run(std::ostream& s);
+  // void finalize_run();
+  void print_results(std::ostream& s,
+                     short results_state = FINAL_RESULTS) override;
 
-private:
-
+ private:
   //
   //- Heading: Convenience/internal member functions
   //
@@ -62,7 +60,7 @@ private:
   /// predict the converged value based on the convergence rate and
   /// the value of Phi
   void extrapolate_result(const RealVector& refine_triple,
-			  const RealMatrix& qoi_triples);
+                          const RealMatrix& qoi_triples);
 
   //
   //- Heading: Data
@@ -79,7 +77,7 @@ private:
   /// the index of the active factor
   size_t factorIndex;
   // total number of extrapolation study evaluations
-  //size_t numEvals;
+  // size_t numEvals;
   /// rate of mesh refinement (default = 2.)
   Real refinementRate;
 
@@ -96,10 +94,8 @@ private:
   RealVector refinementRefPt;
 };
 
+inline RichExtrapVerification::~RichExtrapVerification() {}
 
-inline RichExtrapVerification::~RichExtrapVerification()
-{}
-
-} // namespace Dakota
+}  // namespace Dakota
 
 #endif

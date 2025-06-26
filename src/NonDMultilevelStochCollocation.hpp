@@ -12,9 +12,7 @@
 
 #include "NonDStochCollocation.hpp"
 
-
 namespace Dakota {
-
 
 /// Nonintrusive stochastic collocation approaches to uncertainty
 /// quantification
@@ -25,22 +23,26 @@ namespace Dakota {
     InterpPolyApproximation class to manage multidimensional Lagrange
     polynomial interpolants. */
 
-class NonDMultilevelStochCollocation: public NonDStochCollocation
-{
-public:
-
+class NonDMultilevelStochCollocation : public NonDStochCollocation {
+ public:
   //
   //- Heading: Constructors and destructor
   //
 
   /// standard constructor
-  NonDMultilevelStochCollocation(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
+  NonDMultilevelStochCollocation(ProblemDescDB& problem_db,
+                                 ParallelLibrary& parallel_lib,
+                                 std::shared_ptr<Model> model);
   /// alternate constructor
-  NonDMultilevelStochCollocation(std::shared_ptr<Model> model, short exp_coeffs_approach,
-    const UShortArray& num_int_seq, const RealVector& dim_pref,
-    short u_space_type, short refine_type, short refine_control,
-    short covar_control, short ml_alloc_cntl, short ml_discrep,
-    short rule_nest, short rule_growth, bool piecewise_basis, bool use_derivs);
+  NonDMultilevelStochCollocation(std::shared_ptr<Model> model,
+                                 short exp_coeffs_approach,
+                                 const UShortArray& num_int_seq,
+                                 const RealVector& dim_pref, short u_space_type,
+                                 short refine_type, short refine_control,
+                                 short covar_control, short ml_alloc_cntl,
+                                 short ml_discrep, short rule_nest,
+                                 short rule_growth, bool piecewise_basis,
+                                 bool use_derivs);
   /// destructor
   ~NonDMultilevelStochCollocation() override;
 
@@ -50,8 +52,7 @@ public:
 
   bool resize() override;
 
-protected:
-
+ protected:
   //
   //- Heading: Virtual function redefinitions
   //
@@ -66,16 +67,15 @@ protected:
   void assign_specification_sequence() override;
   void increment_specification_sequence() override;
 
-  //void combined_to_active();
+  // void combined_to_active();
 
-  void print_results(std::ostream& s, short results_state = FINAL_RESULTS) override;
+  void print_results(std::ostream& s,
+                     short results_state = FINAL_RESULTS) override;
 
-private:
-
+ private:
   //
   //- Heading: Utility functions
   //
-
 
   //
   //- Heading: Data
@@ -90,14 +90,14 @@ private:
   size_t sequenceIndex;
 };
 
+inline int NonDMultilevelStochCollocation::random_seed() const {
+  return NonDExpansion::seed_sequence(sequenceIndex);
+}
 
-inline int NonDMultilevelStochCollocation::random_seed() const
-{ return NonDExpansion::seed_sequence(sequenceIndex); }
+inline int NonDMultilevelStochCollocation::first_seed() const {
+  return NonDExpansion::seed_sequence(0);
+}
 
-
-inline int NonDMultilevelStochCollocation::first_seed() const
-{ return NonDExpansion::seed_sequence(0); }
-
-} // namespace Dakota
+}  // namespace Dakota
 
 #endif

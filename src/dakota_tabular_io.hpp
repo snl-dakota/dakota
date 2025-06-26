@@ -20,7 +20,7 @@
     augment (and leverage) those in data_util.h
 
     Design/capability goals:
-    * Ability to read / write data with row/col headers or in free-form 
+    * Ability to read / write data with row/col headers or in free-form
     * Detect premature end of file, report if extra data
     * More consistent and reliable checks for file open errors
     * Require right number of cols in header mode; only total data
@@ -32,7 +32,7 @@
     * Allow reading into the transpose of the data structure
 */
 
-/* 
+/*
    Could consider class with attributes
    * filename
    * read/write
@@ -52,7 +52,6 @@
     * avoid temp vectors that aren't needed (copy overhead)
 */
 
-
 namespace Dakota {
 
 class SharedVariablesData;
@@ -67,13 +66,13 @@ namespace TabularIO {
 String format_name(unsigned short tabular_format);
 
 /// Describe the expected data file format based on passed parameters
-void print_expected_format(std::ostream& s, unsigned short tabular_format, 
-			   size_t num_rows, size_t num_cols);
+void print_expected_format(std::ostream& s, unsigned short tabular_format,
+                           size_t num_rows, size_t num_cols);
 
 /// Print a warning if there's extra data in the file
 void print_unexpected_data(std::ostream& s, const String& filename,
-			   const String& context_message, 
-			   unsigned short tabular_format);
+                           const String& context_message,
+                           unsigned short tabular_format);
 
 //
 //- Utilities for opening and closing tabular files
@@ -81,100 +80,98 @@ void print_unexpected_data(std::ostream& s, const String& filename,
 
 /// open the file specified by name for reading, using passed input
 /// stream, presenting context-specific error on failure
-void open_file(std::ifstream& data_file, const std::string& input_filename, 
-	       const std::string& context_message);
+void open_file(std::ifstream& data_file, const std::string& input_filename,
+               const std::string& context_message);
 
 /// open the file specified by name for writing, using passed output
 /// stream, presenting context-specific error on failure
-void open_file(std::ofstream& data_file, const std::string& output_filename, 
-	       const std::string& context_message);
+void open_file(std::ofstream& data_file, const std::string& output_filename,
+               const std::string& context_message);
 
 /// close the file specified by name after reading, using passed input
 /// stream, presenting context-specific error on failure
-void close_file(std::ifstream& data_file, const std::string& input_filename, 
-		const std::string& context_message);
+void close_file(std::ifstream& data_file, const std::string& input_filename,
+                const std::string& context_message);
 
 /// close the file specified by name after writing, using passed output
 /// stream, presenting context-specific error on failure
-void close_file(std::ofstream& data_file, const std::string& output_filename, 
-		const std::string& context_message);
+void close_file(std::ofstream& data_file, const std::string& output_filename,
+                const std::string& context_message);
 
 //
 //- Utilities for tabular write
 //
 
 /// Write the leading fields for the tabular header
-void write_header_tabular(std::ostream& tabular_ostream, 
-			  const std::string& eval_label,
-			  const std::string& iface_label,
-			  unsigned short tabular_format);
+void write_header_tabular(std::ostream& tabular_ostream,
+                          const std::string& eval_label,
+                          const std::string& iface_label,
+                          unsigned short tabular_format);
 /// Write the leading fields for the tabular header
-void write_header_tabular(std::ostream& tabular_ostream, 
-			  const std::string& eval_label,
-			  const StringArray& iface_labels,
-			  unsigned short tabular_format);
+void write_header_tabular(std::ostream& tabular_ostream,
+                          const std::string& eval_label,
+                          const StringArray& iface_labels,
+                          unsigned short tabular_format);
 /// Output the header row (labels) for a tabular data file for
 /// variables and responses, with variables in input spec order.
 /// Conditionally include interface ID.  Primary uses: environment
 /// tabular data, pre-run output, surrogate approx evals
 void write_header_tabular(std::ostream& tabular_ostream, const Variables& vars,
-			  const Response& response,
-			  const std::string& eval_label,
-			  const std::string& interface_label,
-			  unsigned short tabular_format);
+                          const Response& response,
+                          const std::string& eval_label,
+                          const std::string& interface_label,
+                          unsigned short tabular_format);
 /// Output the header row (labels) for a tabular data file for
 /// variables and additional labels not tied to a response.  Variables
 /// are in input spec order.  Conditionally include interface ID.
 /// Primary uses: MCMC chain export, including calibration sigmas.
 void write_header_tabular(std::ostream& tabular_ostream, const Variables& vars,
-			  const StringArray& addtnl_labels,
-			  const std::string& eval_label,
-			  const std::string& interface_label,
-			  unsigned short tabular_format);
+                          const StringArray& addtnl_labels,
+                          const std::string& eval_label,
+                          const std::string& interface_label,
+                          unsigned short tabular_format);
 
 /// append variable labels to the tabular header
-void append_header_tabular(std::ostream& tabular_ostream, 
-			   const Variables& vars,
-			   unsigned short tabular_format);
+void append_header_tabular(std::ostream& tabular_ostream, const Variables& vars,
+                           unsigned short tabular_format);
 /// append range of variable labels to the tabular header
-void append_header_tabular(std::ostream& tabular_ostream, 
-			   const Variables& vars, size_t start_index,
-			   size_t num_items, unsigned short tabular_format);
+void append_header_tabular(std::ostream& tabular_ostream, const Variables& vars,
+                           size_t start_index, size_t num_items,
+                           unsigned short tabular_format);
 /// append an additional set of labels to the tabular header
-void append_header_tabular(std::ostream& tabular_ostream, 
-			   const StringArray& labels,
-			   unsigned short tabular_format);
+void append_header_tabular(std::ostream& tabular_ostream,
+                           const StringArray& labels,
+                           unsigned short tabular_format);
 /// append response labels to the tabular header
-void append_header_tabular(std::ostream& tabular_ostream, 
-			   const Response& response,
-			   unsigned short tabular_format, bool eol = true);
+void append_header_tabular(std::ostream& tabular_ostream,
+                           const Response& response,
+                           unsigned short tabular_format, bool eol = true);
 
 /// lower level helper for writing an evaluation id
 void write_leading_columns(std::ostream& tabular_ostream, size_t eval_id);
 
 /// lower level helper for writing an interface id
 void write_leading_columns(std::ostream& tabular_ostream,
-			   const String& iface_id);
+                           const String& iface_id);
 
 /// Write the leading columns with an evaluation identifier and an
 /// interface identifier, as indicated by format bits
-void write_leading_columns(std::ostream& tabular_ostream, size_t eval_id, 
-			   const String& iface_id, 
-			   unsigned short tabular_format);
+void write_leading_columns(std::ostream& tabular_ostream, size_t eval_id,
+                           const String& iface_id,
+                           unsigned short tabular_format);
 
 /// Write the leading columns with an evaluation identifier and one or
 /// more interface identifiers, as controlled by format bits
-void write_leading_columns(std::ostream& tabular_ostream, size_t eval_id, 
-			   const StringArray& iface_ids, 
-			   unsigned short tabular_format);
+void write_leading_columns(std::ostream& tabular_ostream, size_t eval_id,
+                           const StringArray& iface_ids,
+                           unsigned short tabular_format);
 
 /// Output a scalar as part of a row of tabular data
-template<class T>
-void write_scalar_tabular(std::ostream& tabular_ostream, T val)
-{
-  tabular_ostream << std::setprecision(write_precision) 
-		  << std::resetiosflags(std::ios::floatfield)
-		  << std::setw(write_precision+4) << val << ' '; // no EOL
+template <class T>
+void write_scalar_tabular(std::ostream& tabular_ostream, T val) {
+  tabular_ostream << std::setprecision(write_precision)
+                  << std::resetiosflags(std::ios::floatfield)
+                  << std::setw(write_precision + 4) << val << ' ';  // no EOL
 }
 
 /// complete tabular row with EOL
@@ -182,43 +179,41 @@ void write_eol(std::ostream& tabular_ostream);
 
 /// Output a row of tabular data from a variables object.  All active/inactive
 /// variables written in input spec order.
-void write_data_tabular(std::ostream& tabular_ostream, 
-			const Variables& vars);
+void write_data_tabular(std::ostream& tabular_ostream, const Variables& vars);
 /// Output a row of tabular data from a variables object.  All active/inactive
 /// variables written in input spec order.
 void write_data_tabular(std::ostream& tabular_ostream, const Variables& vars,
-			size_t start_index, size_t num_items);
+                        size_t start_index, size_t num_items);
 
 /// Output a row of tabular data from a response object
 void write_data_tabular(std::ostream& tabular_ostream, const Response& response,
-			bool eol = true);
+                        bool eol = true);
 /// Output a row of tabular data from a portion of a response object
 void write_data_tabular(std::ostream& tabular_ostream, const Response& response,
-			size_t start_index, size_t num_items);
+                        size_t start_index, size_t num_items);
 
 /// Output a row of tabular data from a variables object.  All active/inactive
 /// variables written in input spec order.  Conditionally include interface ID.
 /// Primary uses: output of sampling sets.
-void write_data_tabular(std::ostream& tabular_ostream, 
-			const Variables& vars, const String& iface, 
-			size_t counter, unsigned short tabular_format);
+void write_data_tabular(std::ostream& tabular_ostream, const Variables& vars,
+                        const String& iface, size_t counter,
+                        unsigned short tabular_format);
 
 /// Output a row of tabular data from variables and response objects.
 /// All active/inactive variables written in input spec order.
 /// Conditionally include interface ID.  Primary uses: environment
 /// tabular data, pre-run output, surrogate approx evals.
-void write_data_tabular(std::ostream& tabular_ostream, 
-			const Variables& vars, const String& iface, 
-			const Response& response, size_t counter,
-			unsigned short tabular_format);
+void write_data_tabular(std::ostream& tabular_ostream, const Variables& vars,
+                        const String& iface, const Response& response,
+                        size_t counter, unsigned short tabular_format);
 
 /// PCE export: write freeform format file with whitespace-separated
 /// data where each row has num_fns reals from coeffs, followed
 /// by num_vars unsigned shorts from indices
-void write_data_tabular(const std::string& output_filename, 
-			const std::string& context_message,
-			const RealVectorArray& output_coeffs, 
-			const UShort2DArray& output_indices);
+void write_data_tabular(const std::string& output_filename,
+                        const std::string& context_message,
+                        const RealVectorArray& output_coeffs,
+                        const UShort2DArray& output_indices);
 
 //
 //- Utilities for tabular read
@@ -229,15 +224,15 @@ bool exists_extra_data(std::istream& tabular_file);
 
 /// read and discard header line from the stream
 StringArray read_header_tabular(std::istream& input_stream,
-				unsigned short tabular_format);
+                                unsigned short tabular_format);
 
 /// read leading columns [ int eval_id [ String iface_id ] ]
 void read_leading_columns(std::istream& input_stream,
-			  unsigned short tabular_format);
+                          unsigned short tabular_format);
 /// read leading columns [ int eval_id [ String iface_id ] ]
 void read_leading_columns(std::istream& input_stream,
-			  unsigned short tabular_format,
-			  int& eval_id, String& iface_id);
+                          unsigned short tabular_format, int& eval_id,
+                          String& iface_id);
 
 // TODO: The following need review, rework, and consolidation
 
@@ -248,52 +243,51 @@ void read_leading_columns(std::istream& input_stream,
 /// read possibly header-annotated whitespace-separated data into a
 /// vector of length num_entries; if annotated then it's a column
 /// vector for now
-void read_data_tabular(const std::string& input_filename, 
-		       const std::string& context_message,
-		       RealVector& input_data, size_t num_entries,
-		       unsigned short tabular_format);
+void read_data_tabular(const std::string& input_filename,
+                       const std::string& context_message,
+                       RealVector& input_data, size_t num_entries,
+                       unsigned short tabular_format);
 
 /// Tabular read for ApproximationInterface challenge data: read
-/// possibly header-annotated whitespace-separated data of possible mixed Variables,
-/// followed by num_fns, each into RealMatrix with minimal error checking
-void read_data_tabular(const std::string& input_filename, 
-		       const std::string& context_message,
-		       Variables vars, size_t num_fns,
-		       RealMatrix& vars_matrix, RealMatrix& resp_matrix, 
-                       unsigned short tabular_format,
-		       bool verbose=false, bool use_var_labels=false,
-		       bool active_only=false);
+/// possibly header-annotated whitespace-separated data of possible mixed
+/// Variables, followed by num_fns, each into RealMatrix with minimal error
+/// checking
+void read_data_tabular(const std::string& input_filename,
+                       const std::string& context_message, Variables vars,
+                       size_t num_fns, RealMatrix& vars_matrix,
+                       RealMatrix& resp_matrix, unsigned short tabular_format,
+                       bool verbose = false, bool use_var_labels = false,
+                       bool active_only = false);
 
 /// Tabular read for PCE import: read possibly header-annotated
 /// whitespace-separated data of unknown length where each row has
 /// num_fns reals followed by num_vars unsigned shorts; append data to
 /// arrays passed by reference
-void read_data_tabular(const std::string& input_filename, 
-		       const std::string& context_message,
-		       RealVectorArray& input_coeffs, 
-		       UShort2DArray& input_indices, 
-		       unsigned short tabular_format,
-		       size_t num_vars, size_t num_fns);
+void read_data_tabular(const std::string& input_filename,
+                       const std::string& context_message,
+                       RealVectorArray& input_coeffs,
+                       UShort2DArray& input_indices,
+                       unsigned short tabular_format, size_t num_vars,
+                       size_t num_fns);
 
 /// Tabular read for DataFitSurrModel (build points): read
 /// whitespace-separated data with optional row and column headers
 /// into lists of Variables and Responses until out of data
-void read_data_tabular(const std::string& input_filename, 
-		       const std::string& context_message,
-		       Variables vars, Response resp, PRPList& input_prp,
-		       unsigned short tabular_format,
-		       bool verbose=false, bool use_var_labels=false,
-		       bool active_only=false);
+void read_data_tabular(const std::string& input_filename,
+                       const std::string& context_message, Variables vars,
+                       Response resp, PRPList& input_prp,
+                       unsigned short tabular_format, bool verbose = false,
+                       bool use_var_labels = false, bool active_only = false);
 
 /// Tabular read for import_approx_points_file: read
 /// whitespace-separated data with optional row and column headers
 /// into a single matrix, with length of record as specified and
 /// number of records to be determined by file content.  The matrix is
 /// stored as record_len rows by num_records columns.
-void read_data_tabular(const std::string& input_filename, 
-		       const std::string& context_message,
-		       RealMatrix& input_matrix, size_t record_len,
-		       unsigned short tabular_format, bool verbose=false);
+void read_data_tabular(const std::string& input_filename,
+                       const std::string& context_message,
+                       RealMatrix& input_matrix, size_t record_len,
+                       unsigned short tabular_format, bool verbose = false);
 
 // BMA: Probably retire in favor of new data readers, rather than
 // propagating to other Bayesian calibration and deterministic least
@@ -301,31 +295,31 @@ void read_data_tabular(const std::string& input_filename,
 /// Tabular read for GPMSA data: read whitespace-separated data with
 /// optional row and column headers into a single matrix, with size as
 /// specified (one experiment per row)
-void read_data_tabular(const std::string& input_filename, 
-		       const std::string& context_message,
-		       RealMatrix& input_matrix, 
-		       size_t num_rows, size_t num_cols,
-		       unsigned short tabular_format, bool verbose=false);
+void read_data_tabular(const std::string& input_filename,
+                       const std::string& context_message,
+                       RealMatrix& input_matrix, size_t num_rows,
+                       size_t num_cols, unsigned short tabular_format,
+                       bool verbose = false);
 
 // special reader for list parameter studies: probably move back to ParamStudy
 /// Tabular read for ParamStudy: read specified input data file into
 /// arrays with sizes specified by the passed vc_totals array
-size_t read_data_tabular(const std::string& input_filename, 
-			 const std::string& context_message,
-			 RealVectorArray& cva, IntVectorArray& diva, 
-			 StringMulti2DArray& dsva, RealVectorArray& drva,
-			 unsigned short tabular_format,
-			 bool active_only, Variables vars);
+size_t read_data_tabular(const std::string& input_filename,
+                         const std::string& context_message,
+                         RealVectorArray& cva, IntVectorArray& diva,
+                         StringMulti2DArray& dsva, RealVectorArray& drva,
+                         unsigned short tabular_format, bool active_only,
+                         Variables vars);
 
 /// Read up to max_configs configuration variables into config_array.
-std::pair<size_t, bool>
-read_data_tabular(const std::string& input_filename, 
-		  const std::string& context_message,
-		  size_t max_configs, VariablesArray& config_array,
-		  unsigned short tabular_format);
+std::pair<size_t, bool> read_data_tabular(const std::string& input_filename,
+                                          const std::string& context_message,
+                                          size_t max_configs,
+                                          VariablesArray& config_array,
+                                          unsigned short tabular_format);
 
-} // namespace TabularIO
+}  // namespace TabularIO
 
-} // namespace Dakota
+}  // namespace Dakota
 
-#endif // DAKOTA_TABULAR_IO_H
+#endif  // DAKOTA_TABULAR_IO_H

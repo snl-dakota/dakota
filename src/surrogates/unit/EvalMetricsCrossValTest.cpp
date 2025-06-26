@@ -10,15 +10,16 @@
 #ifdef HAVE_ROL
 #include "SurrogatesGaussianProcess.hpp"
 #endif
-#include "SurrogatesPolynomialRegression.hpp"
-
 #include <gtest/gtest.h>
+
+#include "SurrogatesPolynomialRegression.hpp"
 
 using namespace dakota;
 using namespace dakota::util;
 using namespace dakota::surrogates;
 
-TEST(EvalMetricsCrossValTest_tests, test_surrogates_eval_metrics_and_cross_validation) {
+TEST(EvalMetricsCrossValTest_tests,
+     test_surrogates_eval_metrics_and_cross_validation) {
   /* num_samples x num_features */
   MatrixXd xs_u(7, 1);
   /* num_samples x num_qoi */

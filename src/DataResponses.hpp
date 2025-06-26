@@ -7,20 +7,20 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-#ifndef DATA_RESPONSES_H 
-#define DATA_RESPONSES_H 
+#ifndef DATA_RESPONSES_H
+#define DATA_RESPONSES_H
 
-#include "dakota_system_defs.hpp"
-#include "dakota_data_types.hpp"
 #include "MPIPackBuffer.hpp"
+#include "dakota_data_types.hpp"
+#include "dakota_system_defs.hpp"
 
 namespace Dakota {
 
 /// special values for derived Response type
-enum { BASE_RESPONSE=0, SIMULATION_RESPONSE, EXPERIMENT_RESPONSE };
+enum { BASE_RESPONSE = 0, SIMULATION_RESPONSE, EXPERIMENT_RESPONSE };
 
 /// values for primary response types
-enum {GENERIC_FNS = 0, OBJECTIVE_FNS, CALIB_TERMS };
+enum { GENERIC_FNS = 0, OBJECTIVE_FNS, CALIB_TERMS };
 
 /// Body class for responses specification data.
 
@@ -30,8 +30,7 @@ enum {GENERIC_FNS = 0, OBJECTIVE_FNS, CALIB_TERMS };
     maintaining set/get functions, but is still encapsulated within
     ProblemDescDB since ProblemDescDB::dataResponsesList is private. */
 
-class DataResponsesRep
-{
+class DataResponsesRep {
   //
   //- Heading: Friends
   //
@@ -39,9 +38,8 @@ class DataResponsesRep
   /// the handle class can access attributes of the body class directly
   friend class DataResponses;
 
-public:
-
-  ~DataResponsesRep();                               ///< destructor
+ public:
+  ~DataResponsesRep();  ///< destructor
 
   //
   //- Heading: Data
@@ -119,7 +117,7 @@ public:
   /// vector of nonlinear equality constraint targets (from the \c
   /// nonlinear_equality_targets specification in \ref RespFnOpt)
   RealVector nonlinearEqTargets;
- 
+
   // scaling data
 
   /// vector of primary response function scaling types (from the \c
@@ -156,7 +154,8 @@ public:
   RealVector expConfigVars;
   /// list of variances of errors to be added to simulation responses
   RealVector simVariance;
-  /// whether one should interpolate between the experiment and simulation field data 
+  /// whether one should interpolate between the experiment and simulation field
+  /// data
   bool interpolateFlag;
 
   // next two can be retired?
@@ -188,7 +187,7 @@ public:
   /// Temporary(?) option to use old 2nd-order diffs when computing
   /// finite-difference Hessians; default is forward differences.
   bool centralHess;
-  /// quasi-Hessian type: bfgs, damped_bfgs, or sr1 (from the \c bfgs 
+  /// quasi-Hessian type: bfgs, damped_bfgs, or sr1 (from the \c bfgs
   /// and \c sr1 specifications in \ref RespHess)
   String quasiHessianType;
   /// numerical gradient method source: dakota or vendor (from the \c
@@ -244,20 +243,19 @@ public:
   IntVector numCoordsPerField;
   /// Field data related storage:  whether to read simulation field coordinates
   bool readFieldCoords;
-   /// Array which specifies the sigma type per response (none, one 
+  /// Array which specifies the sigma type per response (none, one
   /// constant value, one per response (vector) or a full covariance matrix
-  StringArray varianceType; 
+  StringArray varianceType;
 
   /// descriptors for each metadata field
   StringArray metadataLabels;
 
-private:
-
+ private:
   //
   //- Heading: Constructors, destructor, operators
   //
 
-  DataResponsesRep();                                ///< constructor
+  DataResponsesRep();  ///< constructor
 
   //
   //- Heading: Member methods
@@ -267,20 +265,16 @@ private:
   void write(std::ostream& s) const;
 
   /// read a DataResponsesRep object from a packed MPI buffer
-  void read(MPIUnpackBuffer& s); 
+  void read(MPIUnpackBuffer& s);
   /// write a DataResponsesRep object to a packed MPI buffer
   void write(MPIPackBuffer& s) const;
 
   //
   //- Heading: Private data members
   //
+};
 
-};   
-
-
-inline DataResponsesRep::~DataResponsesRep()
-{ }
-
+inline DataResponsesRep::~DataResponsesRep() {}
 
 /// Handle class for responses specification data.
 
@@ -292,8 +286,7 @@ inline DataResponsesRep::~DataResponsesRep()
     ProblemDescDB::dataResponsesList, one for each responses
     specification in an input file. */
 
-class DataResponses
-{
+class DataResponses {
   //
   //- Heading: Friends
   //
@@ -303,21 +296,21 @@ class DataResponses
   // the NIDR derived problem description database
   friend class NIDRProblemDescDB;
 
-public:
-
+ public:
   /// compares the idResponses attribute of DataResponses objects
-  static bool id_compare(const DataResponses& dr, const std::string& id)
-  { return id == dr.dataRespRep->idResponses; }
+  static bool id_compare(const DataResponses& dr, const std::string& id) {
+    return id == dr.dataRespRep->idResponses;
+  }
 
   //
   //- Heading: Constructors, destructor, operators
   //
 
-  DataResponses();                                ///< constructor
-  DataResponses(const DataResponses&);            ///< copy constructor
-  ~DataResponses();                               ///< destructor
+  DataResponses();                      ///< constructor
+  DataResponses(const DataResponses&);  ///< copy constructor
+  ~DataResponses();                     ///< destructor
 
-  DataResponses& operator=(const DataResponses&);   ///< assignment operator
+  DataResponses& operator=(const DataResponses&);  ///< assignment operator
 
   //
   //- Heading: Member methods
@@ -334,8 +327,7 @@ public:
   /// return dataRespRep
   std::shared_ptr<DataResponsesRep> data_rep();
 
-private:
-
+ private:
   //
   //- Heading: Data
   //
@@ -344,36 +336,38 @@ private:
   std::shared_ptr<DataResponsesRep> dataRespRep;
 };
 
-
-inline std::shared_ptr<DataResponsesRep> DataResponses::data_rep()
-{return dataRespRep; }
-
+inline std::shared_ptr<DataResponsesRep> DataResponses::data_rep() {
+  return dataRespRep;
+}
 
 /// MPIPackBuffer insertion operator for DataResponses
-inline MPIPackBuffer& operator<<(MPIPackBuffer& s, const DataResponses& data)
-{ data.write(s); return s;}
-
+inline MPIPackBuffer& operator<<(MPIPackBuffer& s, const DataResponses& data) {
+  data.write(s);
+  return s;
+}
 
 /// MPIUnpackBuffer extraction operator for DataResponses
-inline MPIUnpackBuffer& operator>>(MPIUnpackBuffer& s, DataResponses& data)
-{ data.read(s); return s;}
-
+inline MPIUnpackBuffer& operator>>(MPIUnpackBuffer& s, DataResponses& data) {
+  data.read(s);
+  return s;
+}
 
 /// std::ostream insertion operator for DataResponses
-inline std::ostream& operator<<(std::ostream& s, const DataResponses& data)
-{ data.write(s); return s;}
+inline std::ostream& operator<<(std::ostream& s, const DataResponses& data) {
+  data.write(s);
+  return s;
+}
 
-inline void DataResponses::write(std::ostream& s) const
-{ dataRespRep->write(s); }
+inline void DataResponses::write(std::ostream& s) const {
+  dataRespRep->write(s);
+}
 
+inline void DataResponses::read(MPIUnpackBuffer& s) { dataRespRep->read(s); }
 
-inline void DataResponses::read(MPIUnpackBuffer& s)
-{ dataRespRep->read(s); }
+inline void DataResponses::write(MPIPackBuffer& s) const {
+  dataRespRep->write(s);
+}
 
-
-inline void DataResponses::write(MPIPackBuffer& s) const
-{ dataRespRep->write(s); }
-
-} // namespace Dakota
+}  // namespace Dakota
 
 #endif

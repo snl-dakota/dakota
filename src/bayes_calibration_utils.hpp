@@ -13,8 +13,9 @@ namespace Dakota {
 
 void batch_means_interval(RealMatrix& mcmc_matrix, RealMatrix& interval_matrix,
                           RealMatrix& means_matrix, int moment, Real alpha);
-void batch_means_percentile(RealMatrix& mcmc_matrix, RealMatrix& 
-                            interval_matrix, RealMatrix& means_matrix, Real 
-                            percentile, Real alpha);
+void batch_means_percentile(RealMatrix& mcmc_matrix,
+                            RealMatrix& interval_matrix,
+                            RealMatrix& means_matrix, Real percentile,
+                            Real alpha);
 
-} // namespace Dakota
+}  // namespace Dakota

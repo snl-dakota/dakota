@@ -10,8 +10,8 @@
 #ifndef ACTIVE_SUBSPACE_MODEL_H
 #define ACTIVE_SUBSPACE_MODEL_H
 
-#include "SubspaceModel.hpp"
 #include "DakotaIterator.hpp"
+#include "SubspaceModel.hpp"
 
 namespace Dakota {
 
@@ -48,10 +48,8 @@ class ParallelLibrary;
 /** Specialization of a RecastModel that identifies an active subspace
     during build phase and creates a RecastModel in the reduced space */
 
-class ActiveSubspaceModel: public SubspaceModel
-{
-public:
-
+class ActiveSubspaceModel : public SubspaceModel {
+ public:
   //
   //- Heading: Constructor and destructor
   //
@@ -61,21 +59,20 @@ public:
 
   /// lightweight constructor
   ActiveSubspaceModel(std::shared_ptr<Model> sub_model, unsigned int dimension,
-                      const RealMatrix &rotation_matrix, short output_level);
+                      const RealMatrix& rotation_matrix, short output_level);
 
   //
   //- Heading: Virtual function redefinitions
   //
 
-  //bool initialize_mapping(ParLevLIter pl_iter);
-  //bool finalize_mapping();
-  //bool resize_pending() const;
+  // bool initialize_mapping(ParLevLIter pl_iter);
+  // bool finalize_mapping();
+  // bool resize_pending() const;
 
-  //void stop_init_mapping(ParLevLIter pl_iter);
-  //int serve_init_mapping(ParLevLIter pl_iter);
+  // void stop_init_mapping(ParLevLIter pl_iter);
+  // int serve_init_mapping(ParLevLIter pl_iter);
 
-protected:
-
+ protected:
   //
   //- Heading: Virtual function redefinitions
   //
@@ -115,11 +112,11 @@ protected:
   // ---
 
   /// retrieve the sub-Model from the DB to pass up the constructor chain
-  std::shared_ptr<Model> get_sub_model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
+  std::shared_ptr<Model> get_sub_model(ProblemDescDB& problem_db,
+                                       ParallelLibrary& parallel_lib);
 
   /// initialize the native problem space Monte Carlo sampler
   void init_fullspace_sampler(unsigned short sample_type);
-
 
   // ---
   // Subspace identification functions: rank-revealing build phase
@@ -161,26 +158,23 @@ protected:
   unsigned int compute_cross_validation_metric();
 
   /// Build moving least squares surrogate over candidate active subspace
-  Real build_cv_surrogate(Model &cv_surr_model, RealMatrix training_x,
-                          IntResponseMap training_y,
-                          RealMatrix test_x, IntResponseMap test_y);
-
+  Real build_cv_surrogate(Model& cv_surr_model, RealMatrix training_x,
+                          IntResponseMap training_y, RealMatrix test_x,
+                          IntResponseMap test_y);
 
   // Helper functions for the cross validation metric:
 
-  unsigned int determine_rank_cv(const std::vector<Real> &cv_error);
+  unsigned int determine_rank_cv(const std::vector<Real>& cv_error);
 
-  unsigned int min_index(const std::vector<Real> &cv_error);
+  unsigned int min_index(const std::vector<Real>& cv_error);
 
-  unsigned int tolerance_met_index(const std::vector<Real> &cv_error,
-                                   Real tolerance, bool &tol_met);
+  unsigned int tolerance_met_index(const std::vector<Real>& cv_error,
+                                   Real tolerance, bool& tol_met);
 
-  std::vector<Real> negative_diff(const std::vector<Real> &cv_error);
-
+  std::vector<Real> negative_diff(const std::vector<Real>& cv_error);
 
   /// Build surrogate over active subspace
   void build_surrogate();
-
 
   // ---
   // Problem transformation functions
@@ -201,7 +195,7 @@ protected:
   /// map the active continuous recast variables to the active
   /// submodel variables (linear transformation)
   static void variables_mapping(const Variables& recast_xi_vars,
-				Variables& sub_model_x_vars);
+                                Variables& sub_model_x_vars);
 
   // ---
   // Member data
@@ -237,7 +231,6 @@ protected:
 
   /// Normalization to use in the case of multiple QoI's
   unsigned short subspaceNormalization;
-
 
   // Data for numerical representation
 
@@ -291,7 +284,6 @@ protected:
   /// Number of refinement samples to use when building a surrogate
   int refinementSamples;
 
-
   // Helper members
 
   /// Monte Carlo sampler for the full parameter space
@@ -306,51 +298,49 @@ protected:
   IntIntMap surrIdMap;
 };
 
+inline void ActiveSubspaceModel::assign_instance() {
+  asmInstance = this;
+  SubspaceModel::assign_instance();
+}
 
-inline void ActiveSubspaceModel::assign_instance()
-{ asmInstance = this; SubspaceModel::assign_instance(); }
-
-
-inline unsigned int ActiveSubspaceModel::
-min_index(const std::vector<Real> &cv_error)
-{
-  if (cv_error.empty()) // Return full rank since this shouldn't be empty
-    return numFullspaceVars-1;
+inline unsigned int ActiveSubspaceModel::min_index(
+    const std::vector<Real>& cv_error) {
+  if (cv_error.empty())  // Return full rank since this shouldn't be empty
+    return numFullspaceVars - 1;
 
   Real min_val = cv_error[0];
   unsigned int ii, min_ind = 0;
   for (ii = 1; ii < cv_error.size(); ii++)
-    if (cv_error[ii] < min_val)
-      { min_val = cv_error[ii]; min_ind = ii; }
+    if (cv_error[ii] < min_val) {
+      min_val = cv_error[ii];
+      min_ind = ii;
+    }
 
   return min_ind;
 }
 
-
-inline unsigned int ActiveSubspaceModel::
-tolerance_met_index(const std::vector<Real> &cv_error, Real tolerance,
-                    bool &tol_met)
-{
+inline unsigned int ActiveSubspaceModel::tolerance_met_index(
+    const std::vector<Real>& cv_error, Real tolerance, bool& tol_met) {
   tol_met = false;
   for (unsigned int ii = 0; ii < cv_error.size(); ii++)
-    if (cv_error[ii] < tolerance)
-      { tol_met = true; return ii; }
+    if (cv_error[ii] < tolerance) {
+      tol_met = true;
+      return ii;
+    }
 
   // Return full rank since tolerance is not met
-  return numFullspaceVars-1;
+  return numFullspaceVars - 1;
 }
 
-
-inline std::vector<Real> ActiveSubspaceModel::
-negative_diff(const std::vector<Real> &cv_error)
-{
-  std::vector<Real> neg_diff(cv_error.size()-1);
+inline std::vector<Real> ActiveSubspaceModel::negative_diff(
+    const std::vector<Real>& cv_error) {
+  std::vector<Real> neg_diff(cv_error.size() - 1);
   for (unsigned int ii = 0; ii < neg_diff.size(); ii++)
-    neg_diff[ii] = cv_error[ii] - cv_error[ii+1];
+    neg_diff[ii] = cv_error[ii] - cv_error[ii + 1];
 
   return neg_diff;
 }
 
-} // namespace Dakota
+}  // namespace Dakota
 
 #endif

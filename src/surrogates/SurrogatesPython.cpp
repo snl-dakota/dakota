@@ -8,34 +8,29 @@
     _______________________________________________________________________ */
 
 #include "SurrogatesPython.hpp"
+
 #include "surrogates_tools.hpp"
 
 namespace dakota {
 namespace surrogates {
 
-Python::Python(const std::string& module_and_class_name) :
-  moduleAndClassName(module_and_class_name),
-  ownPython(false),
-  pyModuleActive(false)
-{
+Python::Python(const std::string& module_and_class_name)
+    : moduleAndClassName(module_and_class_name),
+      ownPython(false),
+      pyModuleActive(false) {
   initialize_python();
 }
 
-
-Python::Python(const MatrixXd& samples,
-               const MatrixXd& response,
-               const std::string& module_and_class_name) :
-  moduleAndClassName(module_and_class_name),
-  ownPython(false),
-  pyModuleActive(false)
-{
+Python::Python(const MatrixXd& samples, const MatrixXd& response,
+               const std::string& module_and_class_name)
+    : moduleAndClassName(module_and_class_name),
+      ownPython(false),
+      pyModuleActive(false) {
   initialize_python();
   build(samples, response);
 }
 
-
-void Python::initialize_python()
-{
+void Python::initialize_python() {
   // Consider adding meaningful parameters... RWH
   configOptions.set("verbosity", 1, "console output verbosity");
 
@@ -46,28 +41,26 @@ void Python::initialize_python()
     ownPython = true;
     if (!Py_IsInitialized())
       throw(std::runtime_error(
-            "Error: Could not initialize Python for surrogates use."));
+          "Error: Could not initialize Python for surrogates use."));
   }
   if (!pyModuleActive) {
     try {
       size_t p = moduleAndClassName.find_last_of(".");
-      if( std::string::npos == p )
+      if (std::string::npos == p)
         throw(std::runtime_error(
-              "Invalid surrogate python module_and_class_name.\n\tUse \"module.classname\""));
+            "Invalid surrogate python module_and_class_name.\n\tUse "
+            "\"module.classname\""));
       auto module_name = moduleAndClassName.substr(0, p);
-      auto class_name  = moduleAndClassName.substr(p+1);
+      auto class_name = moduleAndClassName.substr(p + 1);
       py::object pyModule = py::module_::import(module_name.c_str());
       pySurrogate = pyModule.attr(class_name.c_str())();
-    }
-    catch(py::error_already_set &e) {
+    } catch (py::error_already_set& e) {
       if (e.matches(PyExc_ModuleNotFoundError)) {
         std::cerr << "Could not load the required module '"
                   << moduleAndClassName << "'" << std::endl;
         throw;
-      }
-      else {
-        std::cerr << "Caught a python exception:\n"
-                  << e.what() << std::endl;
+      } else {
+        std::cerr << "Caught a python exception:\n" << e.what() << std::endl;
       }
     }
     pyModuleActive = true;
@@ -75,30 +68,27 @@ void Python::initialize_python()
 
   // Check that needed methods exist in the module
   // ... We could allow the user to register these... RWH
-  std::vector<std::string> req_attrs = { "construct", "predict" };
+  std::vector<std::string> req_attrs = {"construct", "predict"};
   bool is_module_valid = true;
-  for( auto const & req_at : req_attrs ) {
+  for (auto const& req_at : req_attrs) {
     try {
       py::object py_fn = pySurrogate.attr(req_at.c_str());
-    }
-    catch(py::error_already_set &e) {
+    } catch (py::error_already_set& e) {
       if (e.matches(PyExc_AttributeError)) {
         std::cerr << "Module '" << moduleAndClassName << "' does not "
-          << "contain required method '" << req_at << "'"
-          << std::endl;
+                  << "contain required method '" << req_at << "'" << std::endl;
       }
-      is_module_valid = false;;
+      is_module_valid = false;
+      ;
     }
   }
-  if( !is_module_valid )
+  if (!is_module_valid)
     throw(std::runtime_error("Invalid python module for surrogates"));
 }
 
-void Python::build(const MatrixXd& samples,
-                   const MatrixXd& response)
-{
-  assert( pyModuleActive );
-  assert( Py_IsInitialized() );
+void Python::build(const MatrixXd& samples, const MatrixXd& response) {
+  assert(pyModuleActive);
+  assert(Py_IsInitialized());
 
   verbosity = configOptions.get<int>("verbosity");
 
@@ -109,8 +99,7 @@ void Python::build(const MatrixXd& samples,
       std::cout << "\nBuilding Python surrogate with module.method\n"
                 << moduleAndClassName << "." << "construct" << "\n";
     } else
-      throw(
-          std::runtime_error("Invalid verbosity int for Python surrogate"));
+      throw(std::runtime_error("Invalid verbosity int for Python surrogate"));
   }
   // Hard-coded method for now; could expose to user - RWH
   const std::string fn_name("construct");
@@ -120,14 +109,11 @@ void Python::build(const MatrixXd& samples,
   isField = (response.cols() > 1);
 }
 
-bool Python::diagnostics_available()
-{ return !isField; }
-
+bool Python::diagnostics_available() { return !isField; }
 
 VectorXd Python::value(const MatrixXd& eval_points) {
-
-  assert( pyModuleActive );
-  assert( Py_IsInitialized() );
+  assert(pyModuleActive);
+  assert(Py_IsInitialized());
 
   // Hard-coded method for now; could expose to user - RWH
   const std::string fn_name("predict");
@@ -135,15 +121,13 @@ VectorXd Python::value(const MatrixXd& eval_points) {
 
   auto vals = py_surr_eval(eval_points).cast<VectorXd>();
 
-  return vals;//.col(0);
-  //return py_surr_eval(eval_points).cast<VectorXd>();
+  return vals;  //.col(0);
+  // return py_surr_eval(eval_points).cast<VectorXd>();
 }
 
-
 VectorXd Python::values(const MatrixXd& eval_points) {
-
-  assert( pyModuleActive );
-  assert( Py_IsInitialized() );
+  assert(pyModuleActive);
+  assert(Py_IsInitialized());
 
   // Hard-coded method for now; could expose to user - RWH
   const std::string fn_name("predict");
@@ -152,13 +136,12 @@ VectorXd Python::values(const MatrixXd& eval_points) {
   auto vals = py_surr_eval(eval_points).cast<MatrixXd>();
 
   return vals.row(0);
-  //return py_surr_eval(eval_points).cast<VectorXd>();
+  // return py_surr_eval(eval_points).cast<VectorXd>();
 }
 
-
 MatrixXd Python::gradient(const MatrixXd& eval_points) {
-  assert( pyModuleActive );
-  assert( Py_IsInitialized() );
+  assert(pyModuleActive);
+  assert(Py_IsInitialized());
 
   // Hard-coded method for now; could expose to user - RWH
   // We could add a check for this method (attribute) above in the
@@ -167,12 +150,10 @@ MatrixXd Python::gradient(const MatrixXd& eval_points) {
   py::object py_surr_grad;
   try {
     py_surr_grad = pySurrogate.attr(fn_name.c_str());
-  }
-  catch(py::error_already_set &e) {
+  } catch (py::error_already_set& e) {
     if (e.matches(PyExc_AttributeError)) {
       std::cerr << "Module '" << moduleAndClassName << "' does not "
-        << "contain required method '" << fn_name << "'"
-        << std::endl;
+                << "contain required method '" << fn_name << "'" << std::endl;
       throw;
     }
   }
@@ -180,11 +161,9 @@ MatrixXd Python::gradient(const MatrixXd& eval_points) {
   return py_surr_grad(eval_points).cast<MatrixXd>();
 }
 
-
 MatrixXd Python::hessian(const MatrixXd& eval_point) {
-
-  assert( pyModuleActive );
-  assert( Py_IsInitialized() );
+  assert(pyModuleActive);
+  assert(Py_IsInitialized());
 
   // Hard-coded method for now; could expose to user - RWH
   // We could add a check for this method (attribute) above in the
@@ -193,12 +172,10 @@ MatrixXd Python::hessian(const MatrixXd& eval_point) {
   py::object py_surr_hess;
   try {
     py_surr_hess = pySurrogate.attr(fn_name.c_str());
-  }
-  catch(py::error_already_set &e) {
+  } catch (py::error_already_set& e) {
     if (e.matches(PyExc_AttributeError)) {
       std::cerr << "Module '" << moduleAndClassName << "' does not "
-        << "contain required method '" << fn_name << "'"
-        << std::endl;
+                << "contain required method '" << fn_name << "'" << std::endl;
       throw;
     }
   }
@@ -209,4 +186,4 @@ MatrixXd Python::hessian(const MatrixXd& eval_point) {
 }  // namespace surrogates
 }  // namespace dakota
 
-//BOOST_CLASS_EXPORT_IMPLEMENT(dakota::surrogates::Python)
+// BOOST_CLASS_EXPORT_IMPLEMENT(dakota::surrogates::Python)

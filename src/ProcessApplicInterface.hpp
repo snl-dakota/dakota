@@ -10,8 +10,9 @@
 #ifndef PROCESS_APPLIC_INTERFACE_H
 #define PROCESS_APPLIC_INTERFACE_H
 
-#include "ApplicationInterface.hpp"
 #include <memory>
+
+#include "ApplicationInterface.hpp"
 
 #ifdef _WIN32
 typedef intptr_t pid_t;
@@ -21,17 +22,17 @@ typedef intptr_t pid_t;
 
 namespace Dakota {
 
-
 class ParametersFileWriter;
 class ResultsFileReader;
 
 /// Substitute parameters and results file names into driver strings
-String substitute_params_and_results(const String &driver, const String &params, const String &results);
+String substitute_params_and_results(const String& driver, const String& params,
+                                     const String& results);
 
-
-/// Triplet of filesystem paths: e.g., params, results, workdir 
-typedef boost::tuple<std::filesystem::path, std::filesystem::path, std::filesystem::path> PathTriple;
-
+/// Triplet of filesystem paths: e.g., params, results, workdir
+typedef boost::tuple<std::filesystem::path, std::filesystem::path,
+                     std::filesystem::path>
+    PathTriple;
 
 /// Derived application interface class that spawns a simulation code
 /// using a separate process and communicates with it through files.
@@ -39,27 +40,25 @@ typedef boost::tuple<std::filesystem::path, std::filesystem::path, std::filesyst
 /** ProcessApplicInterface is subclassed for process handles or file
     completion testing. */
 
-class ProcessApplicInterface: public ApplicationInterface
-{
-public:
-
+class ProcessApplicInterface : public ApplicationInterface {
+ public:
   //
   //- Heading: Constructors and destructor
   //
 
   /// constructor
-  ProcessApplicInterface(const ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
+  ProcessApplicInterface(const ProblemDescDB& problem_db,
+                         ParallelLibrary& parallel_lib);
   /// destructor
   ~ProcessApplicInterface() override;
 
-protected:
-
+ protected:
   //
   //- Heading: Virtual function redefinitions
   //
 
   void derived_map(const Variables& vars, const ActiveSet& set,
-		   Response& response, int fn_eval_id) override;
+                   Response& response, int fn_eval_id) override;
   void derived_map_asynch(const ParamResponsePair& pair) override;
 
   void wait_local_evaluations(PRPQueue& prp_queue) override;
@@ -69,26 +68,25 @@ protected:
 
   void file_cleanup() const override;
 
-  void file_and_workdir_cleanup(const std::filesystem::path &params_path,
-      const std::filesystem::path &results_path,
-      const std::filesystem::path &workdir_path,
-      const String &tag) const;
+  void file_and_workdir_cleanup(const std::filesystem::path& params_path,
+                                const std::filesystem::path& results_path,
+                                const std::filesystem::path& workdir_path,
+                                const String& tag) const;
 
   /// Remove (potentially autotagged for multiple programs) parameters
   /// and results files with passed root names
-  void remove_params_results_files(const std::filesystem::path& params_path, 
-				   const std::filesystem::path& results_path) const;
-
+  void remove_params_results_files(
+      const std::filesystem::path& params_path,
+      const std::filesystem::path& results_path) const;
 
   /// Utility to automatically tag parameters and results files with
   /// passed root names (the files may already need per-program
   /// tagging)
-  void autotag_files(const std::filesystem::path& params_path, 
-		     const std::filesystem::path& results_path,
-		     const String& eval_id_tag
-		     //, const std::filesystem::path dest_dir = std::filesystem::path()
-		     ) const;
-
+  void autotag_files(
+      const std::filesystem::path& params_path,
+      const std::filesystem::path& results_path, const String& eval_id_tag
+      //, const std::filesystem::path dest_dir = std::filesystem::path()
+  ) const;
 
   //
   //- Heading: New virtual functions
@@ -117,10 +115,10 @@ protected:
   /// batch version of test_local_evaluations()
   void test_local_evaluation_batch(PRPQueue& prp_queue);
 
-/// execute analyses synchronously on the local processor
+  /// execute analyses synchronously on the local processor
   void synchronous_local_analyses(int start, int end, int step);
 
-  //void clear_bookkeeping(); // virtual fn redefinition: clear processIdMap
+  // void clear_bookkeeping(); // virtual fn redefinition: clear processIdMap
 
   /// define modified filenames from user input by handling Unix temp
   /// file and optionally tagging with given eval_id_tag
@@ -128,17 +126,17 @@ protected:
 
   /// write the parameters data and response request data to one or
   /// more parameters files
-  void write_parameters_files(const Variables& vars,     const ActiveSet& set,
-			      const Response&  response, const int id);
+  void write_parameters_files(const Variables& vars, const ActiveSet& set,
+                              const Response& response, const int id);
 
   /// read the response object from one or more results files using
   /// full eval_id_tag passed
   void read_results_files(Response& response, const int id,
-			  const String& eval_id_tag);
+                          const String& eval_id_tag);
 
   /// construct a work directory name (tmp or named), with optional tag
   std::filesystem::path get_workdir_name();
-  
+
   /// set PATH, environment variables, and change directory prior to
   /// fork/system/spawn
   void prepare_process_environment();
@@ -232,8 +230,7 @@ protected:
   /// whether to replace existing files
   bool templateReplace;
 
-private:
-
+ private:
   //
   //- Heading: Convenience functions
   //
@@ -241,24 +238,22 @@ private:
   //
   //- Heading: Data
   //
-
 };
-
 
 /** Execute analyses synchronously in succession on the local
     processor (start to end in step increments).  Modeled after
     ApplicationInterface::synchronous_local_evaluations(). */
-inline void ProcessApplicInterface::
-synchronous_local_analyses(int start, int end, int step)
-{
-  for (int analysis_id=start; analysis_id<=end; analysis_id+=step)
+inline void ProcessApplicInterface::synchronous_local_analyses(int start,
+                                                               int end,
+                                                               int step) {
+  for (int analysis_id = start; analysis_id <= end; analysis_id += step)
     synchronous_local_analysis(analysis_id);
 }
 
+inline const StringArray& ProcessApplicInterface::analysis_drivers() const {
+  return programNames;
+}
 
-inline const StringArray& ProcessApplicInterface::analysis_drivers() const
-{ return programNames; }
-
-} // namespace Dakota
+}  // namespace Dakota
 
 #endif

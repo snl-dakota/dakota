@@ -10,11 +10,11 @@
 #ifndef DAKOTA_SURROGATES_GP_OBJECTIVE_HPP
 #define DAKOTA_SURROGATES_GP_OBJECTIVE_HPP
 
+#include <ROL_Objective.hpp>
+
 #include "ROLVectorXd.hpp"
 #include "SurrogatesGaussianProcess.hpp"
 #include "util_data_types.hpp"
-
-#include <ROL_Objective.hpp>
 
 namespace dakota {
 namespace surrogates {

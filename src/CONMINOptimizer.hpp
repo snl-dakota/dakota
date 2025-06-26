@@ -12,22 +12,19 @@
 
 #include "DakotaOptimizer.hpp"
 
-
 namespace Dakota {
 
 /**
  * \brief A version of TraitsBase specialized for CONMIN optimizers
  *
  */
-class CONMINTraits: public TraitsBase
-{
-  public:
-
+class CONMINTraits : public TraitsBase {
+ public:
   /// default constructor
-  CONMINTraits() { }
+  CONMINTraits() {}
 
   /// destructor
-  ~CONMINTraits() override { }
+  ~CONMINTraits() override {}
 
   /// A temporary query used in the refactor
   bool is_derived() override { return true; }
@@ -42,8 +39,9 @@ class CONMINTraits: public TraitsBase
   bool supports_linear_inequality() override { return true; }
 
   /// Return the format used for linear inequality constraints
-  LINEAR_INEQUALITY_FORMAT linear_inequality_format() override
-    { return LINEAR_INEQUALITY_FORMAT::ONE_SIDED_UPPER; }
+  LINEAR_INEQUALITY_FORMAT linear_inequality_format() override {
+    return LINEAR_INEQUALITY_FORMAT::ONE_SIDED_UPPER;
+  }
 
   /// Return the flag indicating whether method supports nonlinear equalities
   bool supports_nonlinear_equality() override { return true; }
@@ -52,10 +50,10 @@ class CONMINTraits: public TraitsBase
   bool supports_nonlinear_inequality() override { return true; }
 
   /// Return the format used for nonlinear inequality constraints
-  NONLINEAR_INEQUALITY_FORMAT nonlinear_inequality_format() override
-    { return NONLINEAR_INEQUALITY_FORMAT::ONE_SIDED_UPPER; }
+  NONLINEAR_INEQUALITY_FORMAT nonlinear_inequality_format() override {
+    return NONLINEAR_INEQUALITY_FORMAT::ONE_SIDED_UPPER;
+  }
 };
-
 
 /// Wrapper class for the CONMIN optimization library.
 
@@ -78,18 +76,17 @@ class CONMINTraits: public TraitsBase
     finite difference step size is mapped into CONMIN's \c FDCH and \c
     FDCHM parameters.  Refer to [Vanderplaats, 1978] for additional
     information on CONMIN parameters. */
-class CONMINOptimizer: public Optimizer
-{
-public:
-  
+class CONMINOptimizer : public Optimizer {
+ public:
   //
   //- Heading: Constructors and destructor
   //
 
   /// standard constructor
-  CONMINOptimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
+  CONMINOptimizer(ProblemDescDB &problem_db, ParallelLibrary &parallel_lib,
+                  std::shared_ptr<Model> model);
   /// alternate constructor; construct without ProblemDescDB
-  CONMINOptimizer(const String& method_string, std::shared_ptr<Model> model);
+  CONMINOptimizer(const String &method_string, std::shared_ptr<Model> model);
   /// destructor
   ~CONMINOptimizer() override;
 
@@ -99,8 +96,7 @@ public:
 
   void core_run() override;
 
-protected:
-
+ protected:
   //
   //- Heading: Virtual member function redefinitions
   //
@@ -109,26 +105,25 @@ protected:
 
   void check_sub_iterator_conflict() override;
 
-private:
-
+ private:
   //
   //- Heading: Convenience member functions
   //
-    
-  void initialize();           ///< Shared constructor code
 
-  void allocate_workspace();   ///< Allocates workspace for the optimizer
+  void initialize();  ///< Shared constructor code
 
-  void deallocate_workspace(); ///< Releases workspace memory
+  void allocate_workspace();  ///< Allocates workspace for the optimizer
 
-  void allocate_constraints(); ///< Allocates constraint mappings
+  void deallocate_workspace();  ///< Releases workspace memory
+
+  void allocate_constraints();  ///< Allocates constraint mappings
 
   //
   //- Heading: Data members
   //
 
   /// INFO from CONMIN manual
-  /** Information requested by CONMIN: 
+  /** Information requested by CONMIN:
       1 = evaluate objective and constraints,
       2 = evaluate gradients of objective and constraints. */
   int conminInfo;
@@ -140,7 +135,7 @@ private:
       2 = all of #1 plus function value and design vars at each iteration,
       3 = all of #2 plus constraint values and direction vectors,
       4 = all of #3 plus gradients of the objective function and constraints,
-      5 = all of #4 plus proposed design vector, plus objective and 
+      5 = all of #4 plus proposed design vector, plus objective and
           constraint functions from the 1-D search */
   int printControl;
 
@@ -184,14 +179,14 @@ private:
   /// Finite difference flag.
   int NFDG;
   /// Flag to control amount of output data.
-  int IPRINT;  
+  int IPRINT;
   /// Flag to specify the maximum number of iterations.
-  int ITMAX;  
+  int ITMAX;
   /// Relative finite difference step size.
-  double FDCH; 
+  double FDCH;
   /// Absolute finite difference step size.
   double FDCHM;
-  /// Constraint thickness parameter 
+  /// Constraint thickness parameter
   /** The value of CT decreases in magnitude during optimization.*/
   double CT;
   /// Minimum absolute value of CT used during optimization.
@@ -202,7 +197,7 @@ private:
   double CTLMIN;
   /// Relative convergence criterion threshold.
   /*** Threshold for the minimum relative change in the objective function. */
-  double DELFUN; 
+  double DELFUN;
   /// Absolute convergence criterion threshold.
   /*** Threshold for the minimum relative change in the objective function. */
   double DABFUN;
@@ -214,42 +209,42 @@ private:
   /// Array of upper bounds used by CONMIN (length N1 = numdv+2)
   double *conminUpperBnds;
 
-  ///Internal CONMIN array.
+  /// Internal CONMIN array.
   /** Move direction in N-dimensional space.*/
   double *S;
-  ///Internal CONMIN array.
+  /// Internal CONMIN array.
   /** Temporary storage of constraint values.*/
   double *G1;
-  ///Internal CONMIN array.
+  /// Internal CONMIN array.
   /** Temporary storage of constraint values.*/
   double *G2;
-  ///Internal CONMIN array.
+  /// Internal CONMIN array.
   /** Temporary storage for computations involving array S.*/
   double *B;
-  ///Internal CONMIN array.
+  /// Internal CONMIN array.
   /** Temporary storage for use with arrays B and S.*/
   double *C;
-  ///Internal CONMIN array.
+  /// Internal CONMIN array.
   /** Temporary storage for use with arrays B and S.*/
   int *MS1;
-  ///Internal CONMIN array.
+  /// Internal CONMIN array.
   /** Vector of scaling parameters for design parameter values.*/
   double *SCAL;
-  ///Internal CONMIN array.
+  /// Internal CONMIN array.
   /** Temporary storage for analytic gradient data.*/
   double *DF;
-  ///Internal CONMIN array.
+  /// Internal CONMIN array.
   /** Temporary 2-D array for storage of constraint gradients.*/
   double *A;
-  ///Internal CONMIN array.
-  /** Array of flags to identify linear constraints. (not used in this 
+  /// Internal CONMIN array.
+  /** Array of flags to identify linear constraints. (not used in this
       implementation of CONMIN) */
   int *ISC;
-  ///Internal CONMIN array.
+  /// Internal CONMIN array.
   /** Array of flags to identify active and violated constraints */
   int *IC;
 };
 
-} // namespace Dakota
+}  // namespace Dakota
 
 #endif

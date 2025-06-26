@@ -12,25 +12,22 @@
 
 #include "DakotaLeastSq.hpp"
 
-
 namespace Dakota {
 
 typedef void (*Vf)();
 
-
 /**
- * \brief A version of TraitsBase specialized for NL2SOL nonlinear least squares library
+ * \brief A version of TraitsBase specialized for NL2SOL nonlinear least squares
+ * library
  *
  */
-class NL2SOLLeastSqTraits: public TraitsBase
-{
-  public:
-
+class NL2SOLLeastSqTraits : public TraitsBase {
+ public:
   /// default constructor
-  NL2SOLLeastSqTraits() { }
+  NL2SOLLeastSqTraits() {}
 
   /// destructor
-  ~NL2SOLLeastSqTraits() override { }
+  ~NL2SOLLeastSqTraits() override {}
 
   /// A temporary query used in the refactor
   bool is_derived() override { return true; }
@@ -38,7 +35,6 @@ class NL2SOLLeastSqTraits: public TraitsBase
   /// Return the flag indicating whether method supports continuous variables
   bool supports_continuous_variables() override { return true; }
 };
-
 
 /// Wrapper class for the NL2SOL nonlinear least squares library.
 
@@ -48,16 +44,15 @@ class NL2SOLLeastSqTraits: public TraitsBase
     The Fortran from Port has been turned into C by f2c.
     NL2SOL uses a function pointer approach for which passed functions
     must be either global functions or static member functions. */
-class NL2SOLLeastSq: public LeastSq
-{
-public:
-
+class NL2SOLLeastSq : public LeastSq {
+ public:
   //
   //- Heading: Constructors and destructor
   //
 
   /// standard constructor
-  NL2SOLLeastSq(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
+  NL2SOLLeastSq(ProblemDescDB &problem_db, ParallelLibrary &parallel_lib,
+                std::shared_ptr<Model> model);
   /// alternate constructor
   NL2SOLLeastSq(std::shared_ptr<Model> model);
   /// destructor
@@ -69,19 +64,18 @@ public:
 
   void core_run() override;
 
-private:
-
+ private:
   //
   //- Heading: Static member functions passed by pointer to NL2SOL
   //
 
   /// evaluator function for residual vector
   static void calcr(int *np, int *pp, Real *x, int *nfp, Real *r, int *ui,
-		    void *ur, Vf vf);
+                    void *ur, Vf vf);
 
   /// evaluator function for residual Jacobian
   static void calcj(int *np, int *pp, Real *x, int *nfp, Real *J, int *ui,
-		    void *ur, Vf vf);
+                    void *ur, Vf vf);
 
   //
   //- Heading: Data
@@ -89,7 +83,7 @@ private:
 
   /// pointer to the active object instance used within the static
   /// evaluator functions
-  static NL2SOLLeastSq* nl2solInstance;
+  static NL2SOLLeastSq *nl2solInstance;
 
   // For more details on the following data, see "Usage Summary for Selected
   // Optimization Routines" by David M. Gay, Computing Science Technical Report
@@ -98,46 +92,47 @@ private:
 
   // These NL2SOL options are mapped from other existing DAKOTA inputs:
 
-  int  auxprt; ///< auxilary printing bits (see Dakota Ref Manual): sum of
-	       ///<	1  = x0prt  (print initial guess)
-	       ///<	2  = solprt (print final solution)
-	       ///<	4  = statpr (print solution statistics)
-	       ///<	8  = parprt (print nondefault parameters)
-	       ///<	16 = dradpr (print bound constraint drops/adds)
+  int auxprt;  ///< auxilary printing bits (see Dakota Ref Manual): sum of
+               ///<	1  = x0prt  (print initial guess)
+               ///<	2  = solprt (print final solution)
+               ///<	4  = statpr (print solution statistics)
+               ///<	8  = parprt (print nondefault parameters)
+               ///<	16 = dradpr (print bound constraint drops/adds)
                ///< debug/verbose/normal use default = 31 (everything),
                ///< quiet uses 3, silent uses 0.
-  int  outlev; ///< frequency of output summary lines in number of iterations
+  int outlev;  ///< frequency of output summary lines in number of iterations
                ///< (debug/verbose/normal/quiet use default = 1, silent uses 0)
 
-  Real dltfdj; ///< finite-diff step size for computing Jacobian approximation
-               ///< (\c fd_gradient_step_size)
-  Real delta0; ///< finite-diff step size for gradient differences for H
-               ///< (a component of some covariance approximations, if desired)
-               ///< (\c fd_hessian_step_size)
-  Real dltfdc; ///< finite-diff step size for function differences for H
-               ///< (\c fd_hessian_step_size)
+  Real dltfdj;  ///< finite-diff step size for computing Jacobian approximation
+                ///< (\c fd_gradient_step_size)
+  Real delta0;  ///< finite-diff step size for gradient differences for H
+                ///< (a component of some covariance approximations, if desired)
+                ///< (\c fd_hessian_step_size)
+  Real dltfdc;  ///< finite-diff step size for function differences for H
+                ///< (\c fd_hessian_step_size)
 
-  int  mxfcal; ///< function-evaluation limit (\c max_function_evaluations)
-  int  mxiter; ///< iteration limit (\c max_iterations)
+  int mxfcal;  ///< function-evaluation limit (\c max_function_evaluations)
+  int mxiter;  ///< iteration limit (\c max_iterations)
 
-  Real rfctol; ///< relative fn convergence tolerance (\c convergence_tolerance)
+  Real
+      rfctol;  ///< relative fn convergence tolerance (\c convergence_tolerance)
 
   // These options are defined from the NL2SOL input specification:
 
-  Real afctol; ///< absolute fn convergence tolerance (\c absolute_conv_tol)
-  Real xctol;  ///< x-convergence tolerance (\c x_conv_tol)
-  Real sctol;  ///< singular convergence tolerance (\c singular_conv_tol)
-  Real lmaxs;  ///< radius for singular-convergence test (\c singular_radius)
-  Real xftol;  ///< false-convergence tolerance (\c false_conv_tol)
+  Real afctol;  ///< absolute fn convergence tolerance (\c absolute_conv_tol)
+  Real xctol;   ///< x-convergence tolerance (\c x_conv_tol)
+  Real sctol;   ///< singular convergence tolerance (\c singular_conv_tol)
+  Real lmaxs;   ///< radius for singular-convergence test (\c singular_radius)
+  Real xftol;   ///< false-convergence tolerance (\c false_conv_tol)
 
-  int  covreq; ///< kind of covariance required (\c covariance):
-	       ///<	1 or -1 ==> sigma^2 H^-1 J^T J H^-1
-	       ///<	2 or -2 ==> sigma^2 H^-1
-	       ///<	3 or -3 ==> sigma^2 (J^T J)^-1
-	       ///<	1 or  2 ==> use gradient diffs to estimate H
-	       ///<    -1 or -2 ==> use function diffs to estimate H
-	       ///< default = 0     (no covariance)
-  int  rdreq;  ///< whether to compute the regression diagnostic vector
+  int covreq;  ///< kind of covariance required (\c covariance):
+               ///<	1 or -1 ==> sigma^2 H^-1 J^T J H^-1
+               ///<	2 or -2 ==> sigma^2 H^-1
+               ///<	3 or -3 ==> sigma^2 (J^T J)^-1
+               ///<	1 or  2 ==> use gradient diffs to estimate H
+               ///<    -1 or -2 ==> use function diffs to estimate H
+               ///< default = 0     (no covariance)
+  int rdreq;   ///< whether to compute the regression diagnostic vector
                ///< (\c regression_diagnostics)
 
   Real fprec;  ///< expected response function precision (\c function_precision)
@@ -145,6 +140,6 @@ private:
   Real lmax0;  ///< initial trust-region radius (\c initial_trust_radius)
 };
 
-} // namespace Dakota
+}  // namespace Dakota
 
 #endif

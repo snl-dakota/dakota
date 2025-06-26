@@ -12,7 +12,6 @@
 
 #include "DakotaApproximation.hpp"
 
-
 namespace Dakota {
 
 /// Derived approximation class for TANA-3 two-point exponential
@@ -23,10 +22,8 @@ namespace Dakota {
     the current and previous iterates) in parameter space.  It forms an
     exponential approximation in terms of intervening variables. */
 
-class TANA3Approximation: public Approximation
-{
-public:
-
+class TANA3Approximation : public Approximation {
+ public:
   //
   //- Heading: Constructor and destructor
   //
@@ -35,22 +32,21 @@ public:
   TANA3Approximation();
   /// standard constructor
   TANA3Approximation(ProblemDescDB& problem_db,
-		     const SharedApproxData& shared_data,
+                     const SharedApproxData& shared_data,
                      const String& approx_label);
   /// alternate constructor
   TANA3Approximation(const SharedApproxData& shared_data);
   /// destructor
   ~TANA3Approximation() override;
 
-protected:
-
+ protected:
   //
   //- Heading: Virtual function redefinitions
   //
 
   int min_coefficients() const override;
 
-  //int num_constraints() const;
+  // int num_constraints() const;
 
   void build() override;
 
@@ -58,12 +54,11 @@ protected:
 
   const RealVector& gradient(const Variables& vars) override;
 
-  //const RealMatrix& hessian(const Variables& vars);
+  // const RealMatrix& hessian(const Variables& vars);
 
   void clear_current_active_data() override;
 
-private:
-
+ private:
   //
   //- Heading: Convenience functions
   //
@@ -79,39 +74,31 @@ private:
   //- Heading: Data
   //
 
-  RealVector pExp; ///< vector of exponent values
-  RealVector minX; ///< vector of minimum param values used for offset/scaling
-  RealVector scX1; ///< vector of scaled and/or offset x1 values
-  RealVector scX2; ///< vector of scaled and/or offset x2 values
-  Real H; ///< the scalar Hessian value in the TANA-3 approximation
+  RealVector pExp;  ///< vector of exponent values
+  RealVector minX;  ///< vector of minimum param values used for offset/scaling
+  RealVector scX1;  ///< vector of scaled and/or offset x1 values
+  RealVector scX2;  ///< vector of scaled and/or offset x2 values
+  Real H;           ///< the scalar Hessian value in the TANA-3 approximation
 };
 
+inline TANA3Approximation::TANA3Approximation() {}
 
-inline TANA3Approximation::TANA3Approximation()
-{ }
-
-
-inline TANA3Approximation::
-TANA3Approximation(const SharedApproxData& shared_data):
-  // as Hessian data cannot be used, do not accept 4 bit since it could
-  // affect data requirement estimations in Approximation base class
-  Approximation(NoDBBaseConstructor(), shared_data)
-{
+inline TANA3Approximation::TANA3Approximation(
+    const SharedApproxData& shared_data)
+    :  // as Hessian data cannot be used, do not accept 4 bit since it could
+       // affect data requirement estimations in Approximation base class
+      Approximation(NoDBBaseConstructor(), shared_data) {
   if (sharedDataRep->buildDataOrder != 3) {
     Cerr << "Error: response values and gradients required in "
-	 << "TANA3Approximation." << std::endl;
+         << "TANA3Approximation." << std::endl;
     abort_handler(-1);
   }
 }
 
-
-inline TANA3Approximation::~TANA3Approximation()
-{ }
-
+inline TANA3Approximation::~TANA3Approximation() {}
 
 /** Redefine default implementation to support history mechanism. */
-inline void TANA3Approximation::clear_current_active_data()
-{
+inline void TANA3Approximation::clear_current_active_data() {
   approxData.clear_anchor_index();
   approxData.history_target(1, sharedDataRep->activeKey);
 
@@ -125,6 +112,6 @@ inline void TANA3Approximation::clear_current_active_data()
   */
 }
 
-} // namespace Dakota
+}  // namespace Dakota
 
 #endif

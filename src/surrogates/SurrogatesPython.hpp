@@ -10,20 +10,20 @@
 #ifndef DAKOTA_SURROGATES_PYTHON_HPP
 #define DAKOTA_SURROGATES_PYTHON_HPP
 
-#include <pybind11/pybind11.h>
 #include <pybind11/eigen.h>
 #include <pybind11/embed.h>
 #include <pybind11/numpy.h>
+#include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 namespace py = pybind11;
+
+#include <boost/serialization/base_object.hpp>
 
 #include "SurrogatesBase.hpp"
 #include "Teuchos_YamlParameterListCoreHelpers.hpp"
 #include "UtilDataScaler.hpp"
 #include "UtilLinearSolvers.hpp"
 #include "util_data_types.hpp"
-
-#include <boost/serialization/base_object.hpp>
 
 namespace dakota {
 namespace surrogates {
@@ -33,13 +33,12 @@ namespace surrogates {
  */
 
 class Python : public Surrogate {
-
  public:
-
   /**
    * \brief Constructor that sets moduleAndClassName and does not build.
    *
-   * \param[in] module_and_class_name Name of python module file containing callback functions
+   * \param[in] module_and_class_name Name of python module file containing
+   * callback functions
    */
   Python(const std::string& module_and_class_name);
 
@@ -53,15 +52,13 @@ class Python : public Surrogate {
    * containing callback functions
    */
   Python(const MatrixXd& samples, const MatrixXd& response,
-                       const std::string& module_and_class_name);
+         const std::string& module_and_class_name);
 
   /// Default destructor
-  ~Python() { }
+  ~Python() {}
 
   /// Construct and populate the defaultConfigOptions.
-  void default_options() override {
-    return initialize_python();
-  }
+  void default_options() override { return initialize_python(); }
 
   // Allow disabling for field surrogates for now - RWH
   virtual bool diagnostics_available() override;
@@ -95,15 +92,15 @@ class Python : public Surrogate {
   /**
    *  \brief Evaluate the gradient of the python scalar surrogate at a set of
    * prediction points. \param[in] eval_points Coordinates of
-   * the prediction points - (num_pts by num_features). 
+   * the prediction points - (num_pts by num_features).
    * \returns Matrix of gradient
    * vectors at the prediction points - (num_pts by num_features).
    */
   MatrixXd gradient(const MatrixXd& eval_points) override;
 
   /**
-   *  \brief Evaluate the Hessian of the python scalar surrogate at a single point.
-   *  \param[in] eval_point Coordinates of the prediction point - (1 by
+   *  \brief Evaluate the Hessian of the python scalar surrogate at a single
+   * point. \param[in] eval_point Coordinates of the prediction point - (1 by
    * num_features). \returns Hessian matrix at the prediction point -
    *  (num_features by num_features).
    */
@@ -114,7 +111,6 @@ class Python : public Surrogate {
   }
 
  private:
-
   // --------------- Python Setup --------------------
 
   /// Name of python callback module file
@@ -131,7 +127,6 @@ class Python : public Surrogate {
 
   /// flag for field-based surrogates
   bool isField;
-
 
   // -------------------------------------------------
 

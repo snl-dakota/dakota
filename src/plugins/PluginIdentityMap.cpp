@@ -8,12 +8,12 @@
     _______________________________________________________________________ */
 
 #include "PluginIdentityMap.hpp"
+
 #include "dakota_symbol_visibility.hpp"
 
 namespace DP = DakotaPlugins;
 
 DP::EvalResponse PluginIdentityMap::evaluate(DP::EvalRequest const& request) {
-
   DP::EvalResponse response;
   resize_response_arrays(request, response);
 
@@ -33,21 +33,17 @@ DP::EvalResponse PluginIdentityMap::evaluate(DP::EvalRequest const& request) {
   }
 
   return response;
-
 }
 
 void PluginIdentityMap::evaluate_functions(size_t const idx,
-    DP::EvalRequest const& request,
-    DP::EvalResponse& response) {
-
+                                           DP::EvalRequest const& request,
+                                           DP::EvalResponse& response) {
   response.functions[idx] = request.continuousVars[idx];
-
 }
 
 void PluginIdentityMap::evaluate_gradients(size_t const idx,
-    DP::EvalRequest const& request,
-    DP::EvalResponse& response) {
-
+                                           DP::EvalRequest const& request,
+                                           DP::EvalResponse& response) {
   size_t const num_derivs = request.derivativeVars.size();
 
   for (size_t k = 0; k < num_derivs; ++k) {
@@ -57,13 +53,11 @@ void PluginIdentityMap::evaluate_gradients(size_t const idx,
       response.gradients[k][idx] = 0.;
     }
   }
-
 }
 
 void PluginIdentityMap::evaluate_hessians(size_t const idx,
-    DP::EvalRequest const& request,
-    DP::EvalResponse& response) {
-
+                                          DP::EvalRequest const& request,
+                                          DP::EvalResponse& response) {
   size_t const num_derivs = request.derivativeVars.size();
 
   // only filling in the lower triangular part
@@ -72,7 +66,6 @@ void PluginIdentityMap::evaluate_hessians(size_t const idx,
       response.hessians[idx][i][j] = 0.;
     }
   }
-
 }
 
 extern "C" DAKOTA_SYMBOL_EXPORT PluginIdentityMap dakota_interface_plugin;

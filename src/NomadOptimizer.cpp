@@ -14,13 +14,13 @@
 //- Checked by:
 //- Version: $Id$
 
-#include <ProblemDescDB.hpp>
+#include "NomadOptimizer.hpp"
 
+#include <ProblemDescDB.hpp>
 #include <algorithm>
+#include <nomad.hpp>
 #include <sstream>
 
-#include <nomad.hpp>
-#include "NomadOptimizer.hpp"
 #include "model_utils.hpp"
 
 using namespace std;
@@ -29,154 +29,167 @@ namespace Dakota {
 
 // Main Class: NomadOptimizer
 
-NomadOptimizer::NomadOptimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
-  Optimizer(problem_db, parallel_lib, model, std::shared_ptr<TraitsBase>(new NomadTraits()))
-{     
+NomadOptimizer::NomadOptimizer(ProblemDescDB& problem_db,
+                               ParallelLibrary& parallel_lib,
+                               std::shared_ptr<Model> model)
+    : Optimizer(problem_db, parallel_lib, model,
+                std::shared_ptr<TraitsBase>(new NomadTraits())) {
   // Set initial mesh size
   initMesh = probDescDB.get_real("method.mesh_adaptive_search.initial_delta");
 
   // Set minimum mesh size
-  minMesh = probDescDB.get_real("method.mesh_adaptive_search.variable_tolerance");
+  minMesh =
+      probDescDB.get_real("method.mesh_adaptive_search.variable_tolerance");
 
   // Set Rnd Seed
   randomSeed = probDescDB.get_int("method.random_seed");
-          
+
   // Set Max # of BB Evaluations
-  //maxBlackBoxEvals = probDescDB.get_sizet("method.max_function_evaluations");
-          
-  // STATS_FILE -- File Output    
-  outputFormat = 
-    probDescDB.get_string("method.mesh_adaptive_search.display_format");
+  // maxBlackBoxEvals = probDescDB.get_sizet("method.max_function_evaluations");
+
+  // STATS_FILE -- File Output
+  outputFormat =
+      probDescDB.get_string("method.mesh_adaptive_search.display_format");
 
   // DISPLAY_ALL_EVAL -- If set, shows all evaluation points during
   // Outputs, instead of just improvements
-  displayAll = 
-    probDescDB.get_bool("method.mesh_adaptive_search.display_all_evaluations");
-     
+  displayAll = probDescDB.get_bool(
+      "method.mesh_adaptive_search.display_all_evaluations");
+
   // Expected precision of the function.  Any differences less than
   // this are noise.
   epsilon = probDescDB.get_real("method.function_precision");
 
   // Maximum number of iterations.
-  //maxIterations = probDescDB.get_sizet("method.max_iterations");
-          
+  // maxIterations = probDescDB.get_sizet("method.max_iterations");
+
   // VNS = Variable Neighbor Search, it is used to escape local minima
   // if VNS >0.0, the NOMAD Parameter must be set with a Real number.
-  vns = 
-    probDescDB.get_real("method.mesh_adaptive_search.variable_neighborhood_search");
+  vns = probDescDB.get_real(
+      "method.mesh_adaptive_search.variable_neighborhood_search");
 
   // Number of dimensions up to which should be perturbed (according
   // to adjacency matrices) to determine categorical neighbors.
   numHops = probDescDB.get_int("method.mesh_adaptive_search.neighbor_order");
-          
+
   // Set the History File, which will contain all the evaluations history
-  historyFile =  
-    probDescDB.get_string("method.mesh_adaptive_search.history_file"); 
+  historyFile =
+      probDescDB.get_string("method.mesh_adaptive_search.history_file");
 
   // Identify which integer set variables are categorical.
-  discreteSetIntCat = 
-    probDescDB.get_ba("variables.discrete_design_set_int.categorical");
+  discreteSetIntCat =
+      probDescDB.get_ba("variables.discrete_design_set_int.categorical");
 
   // Identify which real set variables are categorical.
-  discreteSetRealCat = 
-    probDescDB.get_ba("variables.discrete_design_set_real.categorical");
+  discreteSetRealCat =
+      probDescDB.get_ba("variables.discrete_design_set_real.categorical");
 
   // Adjacency matrices for integer categorical variables.
-  discreteSetIntAdj = 
-    probDescDB.get_rma("variables.discrete_design_set_int.adjacency_matrix");
+  discreteSetIntAdj =
+      probDescDB.get_rma("variables.discrete_design_set_int.adjacency_matrix");
 
   // Adjacency matrices for real categorical variables.
-  discreteSetRealAdj = 
-    probDescDB.get_rma("variables.discrete_design_set_real.adjacency_matrix");
+  discreteSetRealAdj =
+      probDescDB.get_rma("variables.discrete_design_set_real.adjacency_matrix");
 
   // Adjacency matrices for string variables.
-  discreteSetStrAdj = 
-    probDescDB.get_rma("variables.discrete_design_set_str.adjacency_matrix");
+  discreteSetStrAdj =
+      probDescDB.get_rma("variables.discrete_design_set_str.adjacency_matrix");
 
   // Definition for how to use surrogate model.
-  useSurrogate = probDescDB.get_string("method.mesh_adaptive_search.use_surrogate");
+  useSurrogate =
+      probDescDB.get_string("method.mesh_adaptive_search.use_surrogate");
 }
 
-NomadOptimizer::NomadOptimizer(std::shared_ptr<Model> model):
-  Optimizer(MESH_ADAPTIVE_SEARCH, model, std::shared_ptr<TraitsBase>(new NomadTraits()))
-{
-}
+NomadOptimizer::NomadOptimizer(std::shared_ptr<Model> model)
+    : Optimizer(MESH_ADAPTIVE_SEARCH, model,
+                std::shared_ptr<TraitsBase>(new NomadTraits())) {}
 
 // Driver, this class runs the Mads algorithm.  This is the stuff that
 // normally went into the main of the sample programs
 
-void NomadOptimizer::core_run()
-{
+void NomadOptimizer::core_run() {
   // Set up Output (NOMAD::Display)
-  NOMAD::Display out (std::cout);
-  out.precision (NOMAD::DISPLAY_PRECISION_STD);
-     
+  NOMAD::Display out(std::cout);
+  out.precision(NOMAD::DISPLAY_PRECISION_STD);
+
   // This is only used when using NOMAD with MPI
-  NOMAD::begin ( 0 , NULL );  
-     
+  NOMAD::begin(0, NULL);
+
   // Create parameters
-  NOMAD::Parameters p (out);
+  NOMAD::Parameters p(out);
 
   // Verify that user has requested surrogate model construction
   // when use_surrogate is defined.
-  if ((iteratedModel->model_type() != "surrogate") && 
-    ((useSurrogate.compare("inform_search") == 0) || (useSurrogate.compare("optimize") == 0))) {
-  Cerr << "Error: Specified use_surrogate without requesting surrogate model "
-    << "construction." << std::endl;
+  if ((iteratedModel->model_type() != "surrogate") &&
+      ((useSurrogate.compare("inform_search") == 0) ||
+       (useSurrogate.compare("optimize") == 0))) {
+    Cerr << "Error: Specified use_surrogate without requesting surrogate model "
+         << "construction." << std::endl;
     abort_handler(-1);
   }
 
   // Overwriting dummy default needed for error catching
-  if (useSurrogate.compare("none") == 0){
+  if (useSurrogate.compare("none") == 0) {
     useSurrogate = "optimize";
   }
-     
+
   // If model is a surrogate, build it. Subsequently, tell NOMAD to make
   // use of it if use_surrogate is set to inform_search
   if (iteratedModel->model_type() == "surrogate") {
     iteratedModel->build_approximation();
 
-    if (useSurrogate.compare("inform_search") == 0){
-    p.set_HAS_SGTE(true);
+    if (useSurrogate.compare("inform_search") == 0) {
+      p.set_HAS_SGTE(true);
     }
   }
 
   // Map dakota output levels to NOMAD's four different levels
   // of display. Default is set to normal NOMAD output level
   // (see NORMAL_DISPLAY setting in NOMAD manual)
-  switch (outputLevel)
-  {
-      case SILENT_OUTPUT: p.set_DISPLAY_DEGREE ( 0 ); break;
-      case QUIET_OUTPUT: p.set_DISPLAY_DEGREE ( 1 ); break;
-      case NORMAL_OUTPUT: p.set_DISPLAY_DEGREE ( 2  ); break;
-      case DEBUG_OUTPUT: p.set_DISPLAY_DEGREE ( 3  ); break;
-      case VERBOSE_OUTPUT: p.set_DISPLAY_DEGREE ( 3  ); break;
-      default: p.set_DISPLAY_DEGREE ( 1  );
+  switch (outputLevel) {
+    case SILENT_OUTPUT:
+      p.set_DISPLAY_DEGREE(0);
+      break;
+    case QUIET_OUTPUT:
+      p.set_DISPLAY_DEGREE(1);
+      break;
+    case NORMAL_OUTPUT:
+      p.set_DISPLAY_DEGREE(2);
+      break;
+    case DEBUG_OUTPUT:
+      p.set_DISPLAY_DEGREE(3);
+      break;
+    case VERBOSE_OUTPUT:
+      p.set_DISPLAY_DEGREE(3);
+      break;
+    default:
+      p.set_DISPLAY_DEGREE(1);
   }
 
   // Load Input Parameters
-  numTotalVars = numContinuousVars + numDiscreteIntVars 
-               + numDiscreteRealVars + numDiscreteStringVars;
+  numTotalVars = numContinuousVars + numDiscreteIntVars + numDiscreteRealVars +
+                 numDiscreteStringVars;
   p.set_DIMENSION(this->numTotalVars);
   this->load_parameters(*iteratedModel, p);
-     
+
   // Set up response types
-  vector<NOMAD::bb_output_type> 
-    bb_responses(1+numNomadNonlinearIneqConstraints+numNonlinearEqConstraints);
+  vector<NOMAD::bb_output_type> bb_responses(
+      1 + numNomadNonlinearIneqConstraints + numNonlinearEqConstraints);
   bb_responses[0] = NOMAD::OBJ;
-  for(int i=0; i<this->numNomadNonlinearIneqConstraints;i++)
-    bb_responses[i+1] = NOMAD::PB;
-  for(int i=0; i<this->numNonlinearEqConstraints;i++)
-    bb_responses[i+1+this->numNomadNonlinearIneqConstraints] = NOMAD::EB;
-         
+  for (int i = 0; i < this->numNomadNonlinearIneqConstraints; i++)
+    bb_responses[i + 1] = NOMAD::PB;
+  for (int i = 0; i < this->numNonlinearEqConstraints; i++)
+    bb_responses[i + 1 + this->numNomadNonlinearIneqConstraints] = NOMAD::EB;
+
   // Set output and inputs.
-  p.set_BB_OUTPUT_TYPE (bb_responses);
-  p.set_X0 (this->initialPoint);
+  p.set_BB_OUTPUT_TYPE(bb_responses);
+  p.set_X0(this->initialPoint);
   p.set_LOWER_BOUND(this->lowerBound);
   p.set_UPPER_BOUND(this->upperBound);
-     
+
   // Set Max # of BB Evaluations
-  p.set_MAX_BB_EVAL(maxFunctionEvals);//(maxBlackBoxEvals);
+  p.set_MAX_BB_EVAL(maxFunctionEvals);  //(maxBlackBoxEvals);
 
   // DISPLAY_STATS -- Standard Output
   // STATS_FILE -- File Output
@@ -197,7 +210,7 @@ void NomadOptimizer::core_run()
   // STAT_SUM	SUM statistic, defined in BB_OUTPUT_TYPE
   // TIME		Wall clock time
   // VARi 		Value of Variable i (0-based)
-     
+
   p.set_DISPLAY_STATS(outputFormat);
   p.set_DISPLAY_ALL_EVAL(displayAll);
 
@@ -210,122 +223,133 @@ void NomadOptimizer::core_run()
 
   // VNS = Variable Neighbor Search, it is used to escape local minima
   // if VNS >0.0, the NOMAD Parameter must be set with a Real number.
-  if(vns>0.0) {
+  if (vns > 0.0) {
     if (vns > 1.0) {
       Cerr << "\nWarning: variable_neighborhood_search outside acceptable "
-	   << "range of (0,1].\nUsing default value of 0.75.\n\n";
+           << "range of (0,1].\nUsing default value of 0.75.\n\n";
       vns = 0.75;
     }
     p.set_VNS_SEARCH(vns);
   }
-     
-  // Set the History File, which will contain all the evaluations history
-  p.set_HISTORY_FILE( historyFile );
 
-  // Allow as many simultaneous evaluations as NOMAD wishes and let Dakota schedule
-  if (iteratedModel->asynch_flag())
-    p.set_BB_MAX_BLOCK_SIZE(INT_MAX);
+  // Set the History File, which will contain all the evaluations history
+  p.set_HISTORY_FILE(historyFile);
+
+  // Allow as many simultaneous evaluations as NOMAD wishes and let Dakota
+  // schedule
+  if (iteratedModel->asynch_flag()) p.set_BB_MAX_BLOCK_SIZE(INT_MAX);
 
   // Check the parameters -- Required by NOMAD for execution
   p.check();
-     
-  // Create Evaluator object and communicate constraint mapping and surrogate usage.
-  NomadOptimizer::Evaluator ev (p, *iteratedModel);
 
-//PDH: May be able to get rid of setting the constraint map once we
-//have something in place that everyone can access.
+  // Create Evaluator object and communicate constraint mapping and surrogate
+  // usage.
+  NomadOptimizer::Evaluator ev(p, *iteratedModel);
 
-  ev.set_constraint_map(numNomadNonlinearIneqConstraints, numNonlinearEqConstraints, constraintMapIndices, constraintMapMultipliers, constraintMapOffsets);
+  // PDH: May be able to get rid of setting the constraint map once we
+  // have something in place that everyone can access.
+
+  ev.set_constraint_map(numNomadNonlinearIneqConstraints,
+                        numNonlinearEqConstraints, constraintMapIndices,
+                        constraintMapMultipliers, constraintMapOffsets);
   ev.set_surrogate_usage(useSurrogate);
 
   // Construct Extended Poll object to form categorical neighbors.
-  NomadOptimizer::Extended_Poll ep (p,categoricalAdjacency,numHops);
-     
+  NomadOptimizer::Extended_Poll ep(p, categoricalAdjacency, numHops);
+
   // Create Algorithm ( NOMAD::Mads mads ( params, &evaluator ) )
-  NOMAD::Mads mads (p,&ev,&ep,NULL,NULL);
+  NOMAD::Mads mads(p, &ev, &ep, NULL, NULL);
   // Use Dakota's recast model for multi-objective for now.  Enable
   // NOMAD's native support for multi-objective later.
   NOMAD::Mads::set_flag_check_bimads(false);
- 
+
   // Run!
   mads.run();
 
   // Retrieve best iterate and convert from NOMAD to DAKOTA
   // vector.
 
-  const NOMAD::Eval_Point * bestX;
+  const NOMAD::Eval_Point* bestX;
   bestX = mads.get_best_feasible();
   if (!bestX) {
     Cout << "WARNING: No feasible solution was found. "
-	 << "Best point shown is best infeasible point.\n" << std::endl;
+         << "Best point shown is best infeasible point.\n"
+         << std::endl;
     bestX = mads.get_best_infeasible();
   }
 
-//PDH: Set final solution.
-//     Includes mappings of discrete variables.
-//     Similar to APPSPACK but need to look into NOMAD's Point more.
-//     Think the code from here to the end of the method
-//     can be greatly simplified with data adapters built
-//     on top of data tranfers.
-//     Would like to just do something like
-//     setBestVariables(...)
-//     setBestResponses(...)
+  // PDH: Set final solution.
+  //      Includes mappings of discrete variables.
+  //      Similar to APPSPACK but need to look into NOMAD's Point more.
+  //      Think the code from here to the end of the method
+  //      can be greatly simplified with data adapters built
+  //      on top of data tranfers.
+  //      Would like to just do something like
+  //      setBestVariables(...)
+  //      setBestResponses(...)
 
   RealVector contVars(numContinuousVars);
-  IntVector  discIntVars(numDiscreteIntVars);
+  IntVector discIntVars(numDiscreteIntVars);
   RealVector discRealVars(numDiscreteRealVars);
 
   const BitArray& int_set_bits = ModelUtils::discrete_int_sets(*iteratedModel);
-  const IntSetArray& set_int_vars = ModelUtils::discrete_set_int_values(*iteratedModel);
-  const RealSetArray& set_real_vars = ModelUtils::discrete_set_real_values(*iteratedModel);
-  const StringSetArray& set_string_vars = ModelUtils::discrete_set_string_values(*iteratedModel);
+  const IntSetArray& set_int_vars =
+      ModelUtils::discrete_set_int_values(*iteratedModel);
+  const RealSetArray& set_real_vars =
+      ModelUtils::discrete_set_real_values(*iteratedModel);
+  const StringSetArray& set_string_vars =
+      ModelUtils::discrete_set_string_values(*iteratedModel);
 
   size_t j, dsi_cntr;
 
-  for(j=0; j<numContinuousVars; j++)
-    contVars[j] = (*bestX)[j].value();
+  for (j = 0; j < numContinuousVars; j++) contVars[j] = (*bestX)[j].value();
   bestVariablesArray.front().continuous_variables(contVars);
 
-  for(j=0, dsi_cntr=0; j<numDiscreteIntVars; j++)
-  { 
+  for (j = 0, dsi_cntr = 0; j < numDiscreteIntVars; j++) {
     // This active discrete int var is a set type
     // Map from index back to value.
     if (int_set_bits[j]) {
-      discIntVars[j] = 
-	set_index_to_value((*bestX)[j+numContinuousVars].value(), set_int_vars[dsi_cntr]);
+      discIntVars[j] = set_index_to_value(
+          (*bestX)[j + numContinuousVars].value(), set_int_vars[dsi_cntr]);
       ++dsi_cntr;
     }
     // This active discrete int var is a range type
     else
-      discIntVars[j] = (*bestX)[j+numContinuousVars].value();
+      discIntVars[j] = (*bestX)[j + numContinuousVars].value();
   }
 
   // For real sets and strings, map from index back to value.
   bestVariablesArray.front().discrete_int_variables(discIntVars);
-  for (j=0; j<numDiscreteRealVars; j++)
-    discRealVars = 
-      set_index_to_value((*bestX)[j+numContinuousVars+numDiscreteIntVars].value(), set_real_vars[j]);
+  for (j = 0; j < numDiscreteRealVars; j++)
+    discRealVars = set_index_to_value(
+        (*bestX)[j + numContinuousVars + numDiscreteIntVars].value(),
+        set_real_vars[j]);
   bestVariablesArray.front().discrete_real_variables(discRealVars);
 
-  for (j=0; j<numDiscreteStringVars; j++)
-    bestVariablesArray.front().discrete_string_variable(set_index_to_value((*bestX)[j+numContinuousVars+numDiscreteIntVars+numDiscreteRealVars].value(), set_string_vars[j]), j);
+  for (j = 0; j < numDiscreteStringVars; j++)
+    bestVariablesArray.front().discrete_string_variable(
+        set_index_to_value((*bestX)[j + numContinuousVars + numDiscreteIntVars +
+                                    numDiscreteRealVars]
+                               .value(),
+                           set_string_vars[j]),
+        j);
 
-//PDH: Similar to APPSPACK but need to look into NOMAD's Point more.
-//     Has to respect Dakota's ordering of inequality and equality constraints.
-//     Has to map format of constraints.
-//     Then populate bestResponseArray.
+  // PDH: Similar to APPSPACK but need to look into NOMAD's Point more.
+  //      Has to respect Dakota's ordering of inequality and equality
+  //      constraints. Has to map format of constraints. Then populate
+  //      bestResponseArray.
 
   // Retrieve the best responses and convert from NOMAD to
   // DAKOTA vector.h
   RealVector best_fns(bestResponseArray.front().num_functions());
-  const NOMAD::Point & bestFs = bestX->get_bb_outputs();
+  const NOMAD::Point& bestFs = bestX->get_bb_outputs();
   if (!localObjectiveRecast) {
     // else local_objective_recast_retrieve() is used in Optimizer::post_run()
-    if(iteratedModel) {
+    if (iteratedModel) {
       const BoolDeque& max_sense = iteratedModel->primary_response_fn_sense();
       // Map objective appropriately based on minimizing or maximizing.
-      best_fns[0] = (!max_sense.empty() && max_sense[0]) ?
-        -bestFs[0].value() : bestFs[0].value();
+      best_fns[0] = (!max_sense.empty() && max_sense[0]) ? -bestFs[0].value()
+                                                         : bestFs[0].value();
     } else {
       best_fns[0] = bestFs[0].value();
     }
@@ -333,36 +357,35 @@ void NomadOptimizer::core_run()
 
   // Map linear and nonlinear constraints according to constraint map.
   if (numNonlinearIneqConstraints > 0) {
-    for (int i=0; i<numNomadNonlinearIneqConstraints; i++) {
-	best_fns[constraintMapIndices[i]+numUserPrimaryFns] =
-	  (bestFs[i+1].value() - constraintMapOffsets[i]) /
-	  constraintMapMultipliers[i];
+    for (int i = 0; i < numNomadNonlinearIneqConstraints; i++) {
+      best_fns[constraintMapIndices[i] + numUserPrimaryFns] =
+          (bestFs[i + 1].value() - constraintMapOffsets[i]) /
+          constraintMapMultipliers[i];
     }
   }
   if (numNonlinearEqConstraints > 0) {
-    for (int i=0; i<numNonlinearEqConstraints; i++)
-	best_fns[constraintMapIndices[i+numNomadNonlinearIneqConstraints] + 
-		 numUserPrimaryFns] = 
-	  (bestFs[i+numNomadNonlinearIneqConstraints+1].value() -
-	   constraintMapOffsets[i+numNomadNonlinearIneqConstraints]) /
-	  constraintMapMultipliers[i+numNomadNonlinearIneqConstraints];
+    for (int i = 0; i < numNonlinearEqConstraints; i++)
+      best_fns[constraintMapIndices[i + numNomadNonlinearIneqConstraints] +
+               numUserPrimaryFns] =
+          (bestFs[i + numNomadNonlinearIneqConstraints + 1].value() -
+           constraintMapOffsets[i + numNomadNonlinearIneqConstraints]) /
+          constraintMapMultipliers[i + numNomadNonlinearIneqConstraints];
   }
   bestResponseArray.front().function_values(best_fns);
 
   // Stop NOMAD output.  Required.
-  NOMAD::Slave::stop_slaves ( out );
+  NOMAD::Slave::stop_slaves(out);
   NOMAD::end();
 }
 
 // Sub Class: EvaluatorCreator, this class creates an Evaluator
 // using a Dakota Model
 
-// Sub Class: Evaluator, this class bridges NOMAD-style inputs with 
+// Sub Class: Evaluator, this class bridges NOMAD-style inputs with
 // DAKOTA style communication w/Black Box program.
 
-NomadOptimizer::Evaluator::Evaluator(const NOMAD::Parameters &p, Model& model)
-                         : NOMAD::Evaluator (p),_model(model)
-{
+NomadOptimizer::Evaluator::Evaluator(const NOMAD::Parameters& p, Model& model)
+    : NOMAD::Evaluator(p), _model(model) {
   // Here we should take the parameters and get the problem information
   // Like # of variables and types, # and types of constrs
   /*
@@ -374,34 +397,29 @@ NomadOptimizer::Evaluator::Evaluator(const NOMAD::Parameters &p, Model& model)
   // We can also access the parameters through _p
   vector<NOMAD::bb_input_type> input_types;
   input_types = _p.get_bb_input_type();
-	  
+
   n_cont = 0;
   n_disc_int = 0;
   n_disc_real = 0;
 
-  for(int i=0;i<input_types.size();i++)
-  {
-    if(input_types[i]==NOMAD::CONTINUOUS)
-    {
+  for (int i = 0; i < input_types.size(); i++) {
+    if (input_types[i] == NOMAD::CONTINUOUS) {
       n_cont++;
-    }
-    else
-    {
-      n_disc_int++; 
+    } else {
+      n_disc_int++;
     }
   }
 }
-	  
-NomadOptimizer::Evaluator::~Evaluator(void){};
 
-bool NomadOptimizer::Evaluator::eval_x ( std::list<NOMAD::Eval_Point *>& x,
-					 const NOMAD::Double& h_max,
-					 std::list<bool>& count_eval ) const
-{
+NomadOptimizer::Evaluator::~Evaluator(void) {};
+
+bool NomadOptimizer::Evaluator::eval_x(std::list<NOMAD::Eval_Point*>& x,
+                                       const NOMAD::Double& h_max,
+                                       std::list<bool>& count_eval) const {
   for (auto xi : x) {
     set_variables(*xi);
     bool allow_asynch = true;
-    eval_model(allow_asynch, *xi); // calls evaluate() or evaluate_nowait()
+    eval_model(allow_asynch, *xi);  // calls evaluate() or evaluate_nowait()
     // collect and store if blocking
     if (!_model.asynch_flag())
       get_responses(_model.current_response().function_values(), *xi);
@@ -417,7 +435,7 @@ bool NomadOptimizer::Evaluator::eval_x ( std::list<NOMAD::Eval_Point *>& x,
     IntRespMCIter evalid_resp = resp_map.begin();
     auto xi = x.begin();
     auto cnt_eval = count_eval.begin();
-    for ( ; xi != x.end(); ++evalid_resp, ++xi, ++cnt_eval) {
+    for (; xi != x.end(); ++evalid_resp, ++xi, ++cnt_eval) {
       get_responses(evalid_resp->second.function_values(), **xi);
       *cnt_eval = true;
     }
@@ -426,11 +444,9 @@ bool NomadOptimizer::Evaluator::eval_x ( std::list<NOMAD::Eval_Point *>& x,
   return true;
 }
 
-	  
-bool NomadOptimizer::Evaluator::eval_x ( NOMAD::Eval_Point &x,
-					 const NOMAD::Double &h_max,
-					 bool &count_eval) const
-{
+bool NomadOptimizer::Evaluator::eval_x(NOMAD::Eval_Point& x,
+                                       const NOMAD::Double& h_max,
+                                       bool& count_eval) const {
   set_variables(x);
   // Compute the Response using Dakota Interface
   // if single point eval is called, always want to block
@@ -442,83 +458,87 @@ bool NomadOptimizer::Evaluator::eval_x ( NOMAD::Eval_Point &x,
   return true;
 }
 
-
-void NomadOptimizer::Evaluator::set_variables(const NOMAD::Eval_Point &x) const
-{
-  //PDH: Set current iterate values for evaluation.
-  //     Similar to APPSPACK but need to look into NOMAD Point more.
-  //     Think this code can be greatly simplified with data adapters
-  //     built on top of data transfers.  Would like to just do
-  //     something like
-  //     setEvalVariables(...)
+void NomadOptimizer::Evaluator::set_variables(
+    const NOMAD::Eval_Point& x) const {
+  // PDH: Set current iterate values for evaluation.
+  //      Similar to APPSPACK but need to look into NOMAD Point more.
+  //      Think this code can be greatly simplified with data adapters
+  //      built on top of data transfers.  Would like to just do
+  //      something like
+  //      setEvalVariables(...)
 
   int n_cont_vars = ModelUtils::cv(_model);
   int n_disc_int_vars = ModelUtils::div(_model);
   int n_disc_real_vars = ModelUtils::drv(_model);
   int n_disc_string_vars = ModelUtils::dsv(_model);
-	  
+
   // Prepare Vectors for Dakota model.
   RealVector contVars(n_cont_vars);
-  IntVector  discIntVars(n_disc_int_vars);
+  IntVector discIntVars(n_disc_int_vars);
   RealVector discRealVars(n_disc_real_vars);
 
   const BitArray& int_set_bits = ModelUtils::discrete_int_sets(_model);
-  const IntSetArray&  set_int_vars = ModelUtils::discrete_set_int_values(_model);
-  const RealSetArray& set_real_vars = ModelUtils::discrete_set_real_values(_model);
-  const StringSetArray& set_string_vars = ModelUtils::discrete_set_string_values(_model);
+  const IntSetArray& set_int_vars = ModelUtils::discrete_set_int_values(_model);
+  const RealSetArray& set_real_vars =
+      ModelUtils::discrete_set_real_values(_model);
+  const StringSetArray& set_string_vars =
+      ModelUtils::discrete_set_string_values(_model);
 
   size_t i, dsi_cntr;
 
   // Parameters contain Problem Information (variable: _p)
-	  
-  // Here we are going to fetch the input information in x in a format that can be read by DAKOTA
-  // Transform values in x into something DAKOTA can read...
-	  
+
+  // Here we are going to fetch the input information in x in a format that can
+  // be read by DAKOTA Transform values in x into something DAKOTA can read...
+
   // In the NOMAD parameters model:
   // 1. Continuous Variables = NOMAD::CONTINUOUS
   // 2. Discrete Integer Variables = NOMAD::INTEGER and NOMAD::BINARY
   // 3. Discrete Real Variables = NOMAD::CATEGORICAL (??)
-	 
+
   // x.get_n() = # of BB Inputs
   // x.get_m() = # of BB Outputs
-  for(i=0; i<n_cont_vars; i++)
-  {
+  for (i = 0; i < n_cont_vars; i++) {
     ModelUtils::continuous_variable(_model, x[i].value(), i);
   }
 
-  for(i=0, dsi_cntr=0; i<n_disc_int_vars; i++)
-  { 
+  for (i = 0, dsi_cntr = 0; i < n_disc_int_vars; i++) {
     // This active discrete int var is a set type
     // Map from index to value.
     if (int_set_bits[i]) {
-      int dakota_value = set_index_to_value(x[i+n_cont_vars].value(), 
-					    set_int_vars[dsi_cntr]);
+      int dakota_value = set_index_to_value(x[i + n_cont_vars].value(),
+                                            set_int_vars[dsi_cntr]);
       ModelUtils::discrete_int_variable(_model, dakota_value, i);
       ++dsi_cntr;
     }
     // This active discrete int var is a range type
-    else  {
-      ModelUtils::discrete_int_variable(_model, x[i+n_cont_vars].value(), i);
+    else {
+      ModelUtils::discrete_int_variable(_model, x[i + n_cont_vars].value(), i);
     }
   }
 
   // For real set and strings, map from index to value.
-  for (i=0; i<n_disc_real_vars; i++) {
-    Real dakota_value = set_index_to_value(x[i+n_cont_vars+n_disc_int_vars].value(), set_real_vars[i]);
+  for (i = 0; i < n_disc_real_vars; i++) {
+    Real dakota_value = set_index_to_value(
+        x[i + n_cont_vars + n_disc_int_vars].value(), set_real_vars[i]);
     ModelUtils::discrete_real_variable(_model, dakota_value, i);
   }
 
-  for (i=0; i<n_disc_string_vars; i++) {
-    ModelUtils::discrete_string_variable(_model, set_index_to_value(x[i+n_cont_vars+n_disc_int_vars+n_disc_real_vars].value(), set_string_vars[i]), i);
+  for (i = 0; i < n_disc_string_vars; i++) {
+    ModelUtils::discrete_string_variable(
+        _model,
+        set_index_to_value(
+            x[i + n_cont_vars + n_disc_int_vars + n_disc_real_vars].value(),
+            set_string_vars[i]),
+        i);
   }
-
 }
 
-
-void NomadOptimizer::Evaluator::eval_model(bool allow_asynch, const NOMAD::Eval_Point& x) const
-{
+void NomadOptimizer::Evaluator::eval_model(bool allow_asynch,
+                                           const NOMAD::Eval_Point& x) const {
   // Compute the Response using Dakota Interface
-  if ((_model.model_type() == "surrogate") && (x.get_eval_type() != NOMAD::SGTE) &&
+  if ((_model.model_type() == "surrogate") &&
+      (x.get_eval_type() != NOMAD::SGTE) &&
       (useSgte.compare("inform_search") == 0)) {
     short orig_resp_mode = _model.surrogate_response_mode();
     _model.surrogate_response_mode(BYPASS_SURROGATE);
@@ -528,8 +548,7 @@ void NomadOptimizer::Evaluator::eval_model(bool allow_asynch, const NOMAD::Eval_
     else
       _model.evaluate();
     _model.surrogate_response_mode(orig_resp_mode);
-  }
-  else {
+  } else {
     if (allow_asynch && _model.asynch_flag())
       _model.evaluate_nowait();
     else
@@ -537,311 +556,287 @@ void NomadOptimizer::Evaluator::eval_model(bool allow_asynch, const NOMAD::Eval_
   }
 }
 
-
 void NomadOptimizer::Evaluator::get_responses(const RealVector& ftn_vals,
-					      NOMAD::Eval_Point &x) const
-{
-  //PDH: NOMAD response values set one at a time.
-  //     Has to respect ordering of inequality and equality constraints.
-  //     Has to map format of constraints.
+                                              NOMAD::Eval_Point& x) const {
+  // PDH: NOMAD response values set one at a time.
+  //      Has to respect ordering of inequality and equality constraints.
+  //      Has to map format of constraints.
 
   // Map objective according to minimizing or maximizing.
   const BoolDeque& sense = _model.primary_response_fn_sense();
   bool max_flag = (!sense.empty() && sense[0]);
   Real obj_fcn = (max_flag) ? -ftn_vals[0] : ftn_vals[0];
-  x.set_bb_output  ( 0 , NOMAD::Double(obj_fcn) );
+  x.set_bb_output(0, NOMAD::Double(obj_fcn));
 
   // Map constraints according to constraint map.
-  int numTotalConstr = numNomadNonlinearIneqConstr+numNomadNonlinearEqConstr;
-  for(int i=1;i<=numTotalConstr;i++)
-  {
-    Real constr_value = constrMapOffsets[i-1] +
-      constrMapMultipliers[i-1]*ftn_vals[constrMapIndices[i-1]+1];
-    x.set_bb_output  ( i , NOMAD::Double(constr_value)  );
+  int numTotalConstr = numNomadNonlinearIneqConstr + numNomadNonlinearEqConstr;
+  for (int i = 1; i <= numTotalConstr; i++) {
+    Real constr_value =
+        constrMapOffsets[i - 1] +
+        constrMapMultipliers[i - 1] * ftn_vals[constrMapIndices[i - 1] + 1];
+    x.set_bb_output(i, NOMAD::Double(constr_value));
   }
-	    
 }
 
-
 // Called by NOMAD to provide a list of categorical neighbors.
-void NomadOptimizer::Extended_Poll::
-construct_extended_points(const NOMAD::Eval_Point &nomad_point)
-{
+void NomadOptimizer::Extended_Poll::construct_extended_points(
+    const NOMAD::Eval_Point& nomad_point) {
   NOMAD::Point current_point = nomad_point;
-  NOMAD::Signature *nomad_signature = nomad_point.get_signature();
+  NOMAD::Signature* nomad_signature = nomad_point.get_signature();
 
   // Call this recursive function for multi-dimensional neighbors.
-  construct_multihop_neighbors(current_point, *nomad_signature, 
-			       adjacency_matrix.begin(), -1, nHops);
+  construct_multihop_neighbors(current_point, *nomad_signature,
+                               adjacency_matrix.begin(), -1, nHops);
 }
 
 // Recursive helper function to determine multi-dimensional neighbors.
-void NomadOptimizer::Extended_Poll::
-construct_multihop_neighbors(NOMAD::Point &base_point, 
-NOMAD::Signature point_signature, RealMatrixArray::iterator 
-rma_iter, size_t last_cat_index, int num_hops)
-{
+void NomadOptimizer::Extended_Poll::construct_multihop_neighbors(
+    NOMAD::Point& base_point, NOMAD::Signature point_signature,
+    RealMatrixArray::iterator rma_iter, size_t last_cat_index, int num_hops) {
   size_t i, j, k;
 
   RealMatrixArray::iterator pass_through_iter(rma_iter), tmp_iter;
-  const std::vector<NOMAD::bb_input_type>& input_types = point_signature.get_input_types();
+  const std::vector<NOMAD::bb_input_type>& input_types =
+      point_signature.get_input_types();
 
   // Iterate through point from last categorical variable.
-  for (i=last_cat_index+1, tmp_iter=rma_iter; i<point_signature.get_n(); i++)
-  {
-    if (input_types[i] == NOMAD::CATEGORICAL)
-    {
+  for (i = last_cat_index + 1, tmp_iter = rma_iter; i < point_signature.get_n();
+       i++) {
+    if (input_types[i] == NOMAD::CATEGORICAL) {
       NOMAD::Point neighbor = base_point;
-      j = (size_t) base_point[i].value();
+      j = (size_t)base_point[i].value();
       pass_through_iter++;
-      for (k=0; k<(*tmp_iter).numCols(); k++)
-      {
-	if ((*tmp_iter)[j][k]>0 && j!=k)
-	{
-	  neighbor[i] = k;
-	  add_extended_poll_point(neighbor, point_signature);
-	  if (num_hops > 1)
-	  {
-	    construct_multihop_neighbors(neighbor, point_signature, pass_through_iter, i, num_hops-1);
-	  }
-	}
+      for (k = 0; k < (*tmp_iter).numCols(); k++) {
+        if ((*tmp_iter)[j][k] > 0 && j != k) {
+          neighbor[i] = k;
+          add_extended_poll_point(neighbor, point_signature);
+          if (num_hops > 1) {
+            construct_multihop_neighbors(neighbor, point_signature,
+                                         pass_through_iter, i, num_hops - 1);
+          }
+        }
       }
       tmp_iter++;
     }
   }
 }
 
-void NomadOptimizer::load_parameters(Model &model, NOMAD::Parameters &p)
-{
-//PDH: This initializes everything for NOMAD.
-//     Similar to APPSPACK but need to look into NOMAD Point more.
-//     Don't want any references to iteratedModel.
-//     Need to handle discrete variable mapping.
-//     Need to respect equality, inequality constraint ordering.
-//     Need to handle constraint mapping.
+void NomadOptimizer::load_parameters(Model& model, NOMAD::Parameters& p) {
+  // PDH: This initializes everything for NOMAD.
+  //      Similar to APPSPACK but need to look into NOMAD Point more.
+  //      Don't want any references to iteratedModel.
+  //      Need to handle discrete variable mapping.
+  //      Need to respect equality, inequality constraint ordering.
+  //      Need to handle constraint mapping.
 
   //     numTotalVars = numContinuousVars +
   //                    numDiscreteIntVars + numDiscreteRealVars;
-    
+
   // Define Input Types and Bounds
-     
-  NOMAD::Point _initial_point (numTotalVars);
-  NOMAD::Point _upper_bound (numTotalVars);
-  NOMAD::Point _lower_bound (numTotalVars);
-     
-  const RealVector& initial_point_cont = ModelUtils::continuous_variables(model);
-  const RealVector& lower_bound_cont = ModelUtils::continuous_lower_bounds(model);
-  const RealVector& upper_bound_cont = ModelUtils::continuous_upper_bounds(model);
 
-  const IntVector& initial_point_int = ModelUtils::discrete_int_variables(model);
-  const IntVector& lower_bound_int = ModelUtils::discrete_int_lower_bounds(model);
-  const IntVector& upper_bound_int = ModelUtils::discrete_int_upper_bounds(model);
+  NOMAD::Point _initial_point(numTotalVars);
+  NOMAD::Point _upper_bound(numTotalVars);
+  NOMAD::Point _lower_bound(numTotalVars);
 
-  const RealVector& initial_point_real = ModelUtils::discrete_real_variables(model);
-  const RealVector& lower_bound_real = ModelUtils::discrete_real_lower_bounds(model);
-  const RealVector& upper_bound_real = ModelUtils::discrete_real_upper_bounds(model);
+  const RealVector& initial_point_cont =
+      ModelUtils::continuous_variables(model);
+  const RealVector& lower_bound_cont =
+      ModelUtils::continuous_lower_bounds(model);
+  const RealVector& upper_bound_cont =
+      ModelUtils::continuous_upper_bounds(model);
 
-  const StringMultiArrayConstView initial_point_string = 
-    ModelUtils::discrete_string_variables(model);
+  const IntVector& initial_point_int =
+      ModelUtils::discrete_int_variables(model);
+  const IntVector& lower_bound_int =
+      ModelUtils::discrete_int_lower_bounds(model);
+  const IntVector& upper_bound_int =
+      ModelUtils::discrete_int_upper_bounds(model);
+
+  const RealVector& initial_point_real =
+      ModelUtils::discrete_real_variables(model);
+  const RealVector& lower_bound_real =
+      ModelUtils::discrete_real_lower_bounds(model);
+  const RealVector& upper_bound_real =
+      ModelUtils::discrete_real_upper_bounds(model);
+
+  const StringMultiArrayConstView initial_point_string =
+      ModelUtils::discrete_string_variables(model);
 
   const BitArray& int_set_bits = ModelUtils::discrete_int_sets(*iteratedModel);
-  const IntSetArray& initial_point_set_int = 
-    ModelUtils::discrete_set_int_values(*iteratedModel);
-  const RealSetArray& initial_point_set_real = 
-    ModelUtils::discrete_set_real_values(*iteratedModel);
-  const StringSetArray& initial_point_set_string = 
-    ModelUtils::discrete_set_string_values(*iteratedModel);
+  const IntSetArray& initial_point_set_int =
+      ModelUtils::discrete_set_int_values(*iteratedModel);
+  const RealSetArray& initial_point_set_real =
+      ModelUtils::discrete_set_real_values(*iteratedModel);
+  const StringSetArray& initial_point_set_string =
+      ModelUtils::discrete_set_string_values(*iteratedModel);
 
   RealMatrix tmp_categorical_adjacency;
 
   size_t i, j, k, index, dsi_cntr;
-    
-  for(i=0;i<numContinuousVars;i++)
-  {
+
+  for (i = 0; i < numContinuousVars; i++) {
     _initial_point[i] = initial_point_cont[i];
     if (lower_bound_cont[i] > -bigRealBoundSize)
       _lower_bound[i] = lower_bound_cont[i];
     else {
       Cerr << "\nError: NomadOptimizer::load_parameters\n"
-	   << "mesh_adaptive_search requires lower bounds "
-	   << "for all continuous variables" << std::endl;
+           << "mesh_adaptive_search requires lower bounds "
+           << "for all continuous variables" << std::endl;
       abort_handler(-1);
     }
     if (upper_bound_cont[i] < bigRealBoundSize)
       _upper_bound[i] = upper_bound_cont[i];
     else {
       Cerr << "\nError: NomadOptimizer::load_parameters\n"
-	   << "mesh_adaptive_search requires upper bounds "
-	   << "for all continuous variables" << std::endl;
+           << "mesh_adaptive_search requires upper bounds "
+           << "for all continuous variables" << std::endl;
       abort_handler(-1);
     }
-    p.set_BB_INPUT_TYPE(i,NOMAD::CONTINUOUS);
+    p.set_BB_INPUT_TYPE(i, NOMAD::CONTINUOUS);
   }
-  for(i=0, dsi_cntr=0; i<numDiscreteIntVars; i++)
-  {
+  for (i = 0, dsi_cntr = 0; i < numDiscreteIntVars; i++) {
     if (int_set_bits[i]) {
-      index = set_value_to_index(initial_point_int[i], 
-				 initial_point_set_int[dsi_cntr]);
+      index = set_value_to_index(initial_point_int[i],
+                                 initial_point_set_int[dsi_cntr]);
       if (index == _NPOS) {
-	Cerr << "\nError: failure in discrete integer set lookup within "
-	     << "NomadOptimizer::load_parameters(Model &model)" << std::endl;
-	abort_handler(-1);
+        Cerr << "\nError: failure in discrete integer set lookup within "
+             << "NomadOptimizer::load_parameters(Model &model)" << std::endl;
+        abort_handler(-1);
+      } else {
+        _initial_point[i + numContinuousVars] = (int)index;
       }
-      else {
-	_initial_point[i+numContinuousVars] = (int)index;
-      }
-      if (!discreteSetIntCat.empty() && discreteSetIntCat[dsi_cntr] == 1)
-      {
-	p.set_BB_INPUT_TYPE(i+numContinuousVars,NOMAD::CATEGORICAL);
-	if (!discreteSetIntAdj.empty())
-	  categoricalAdjacency.push_back(discreteSetIntAdj[dsi_cntr]);
-	else
-	{
-	  tmp_categorical_adjacency.reshape(initial_point_set_int[dsi_cntr].size(), 
-					    initial_point_set_int[dsi_cntr].size());
-	  for (j=0; j<initial_point_set_int[dsi_cntr].size(); j++)
-	  {
-	    for (k=0; k<initial_point_set_int[dsi_cntr].size(); k++)
-	    {
-	      if (k==j-1 || k==j || k==j+1)
-		tmp_categorical_adjacency[j][k] = 1;
-	      else
-		tmp_categorical_adjacency[j][k] = 0;
-	    }
-	  }
-	  categoricalAdjacency.push_back(tmp_categorical_adjacency);
-	}
-      }
-      else
-      {
-	p.set_BB_INPUT_TYPE(i+numContinuousVars,NOMAD::INTEGER);
-	_lower_bound[i+numContinuousVars] = 0;
-	_upper_bound[i+numContinuousVars] = 
-	  initial_point_set_int[dsi_cntr].size() - 1;
+      if (!discreteSetIntCat.empty() && discreteSetIntCat[dsi_cntr] == 1) {
+        p.set_BB_INPUT_TYPE(i + numContinuousVars, NOMAD::CATEGORICAL);
+        if (!discreteSetIntAdj.empty())
+          categoricalAdjacency.push_back(discreteSetIntAdj[dsi_cntr]);
+        else {
+          tmp_categorical_adjacency.reshape(
+              initial_point_set_int[dsi_cntr].size(),
+              initial_point_set_int[dsi_cntr].size());
+          for (j = 0; j < initial_point_set_int[dsi_cntr].size(); j++) {
+            for (k = 0; k < initial_point_set_int[dsi_cntr].size(); k++) {
+              if (k == j - 1 || k == j || k == j + 1)
+                tmp_categorical_adjacency[j][k] = 1;
+              else
+                tmp_categorical_adjacency[j][k] = 0;
+            }
+          }
+          categoricalAdjacency.push_back(tmp_categorical_adjacency);
+        }
+      } else {
+        p.set_BB_INPUT_TYPE(i + numContinuousVars, NOMAD::INTEGER);
+        _lower_bound[i + numContinuousVars] = 0;
+        _upper_bound[i + numContinuousVars] =
+            initial_point_set_int[dsi_cntr].size() - 1;
       }
       ++dsi_cntr;
-    }
-    else 
-    {
-      _initial_point[i+numContinuousVars] = initial_point_int[i];
+    } else {
+      _initial_point[i + numContinuousVars] = initial_point_int[i];
       if (lower_bound_int[i] > -bigIntBoundSize)
-	_lower_bound[i+numContinuousVars] = lower_bound_int[i];
-      else
-      {
-	Cerr << "\nError: NomadOptimizer::load_parameters\n"
-	     << "mesh_adaptive_search requires lower bounds "
-	     << "for all discrete range variables" << std::endl;
-	abort_handler(-1);
+        _lower_bound[i + numContinuousVars] = lower_bound_int[i];
+      else {
+        Cerr << "\nError: NomadOptimizer::load_parameters\n"
+             << "mesh_adaptive_search requires lower bounds "
+             << "for all discrete range variables" << std::endl;
+        abort_handler(-1);
       }
       if (upper_bound_int[i] < bigIntBoundSize)
-	_upper_bound[i+numContinuousVars] = upper_bound_int[i];
-      else
-      {
-	Cerr << "\nError: NomadOptimizer::load_parameters\n"
-	     << "mesh_adaptive_search requires upper bounds "
-	     << "for all discrete range variables" << std::endl;
-	abort_handler(-1);
+        _upper_bound[i + numContinuousVars] = upper_bound_int[i];
+      else {
+        Cerr << "\nError: NomadOptimizer::load_parameters\n"
+             << "mesh_adaptive_search requires upper bounds "
+             << "for all discrete range variables" << std::endl;
+        abort_handler(-1);
       }
-      p.set_BB_INPUT_TYPE(i+numContinuousVars,NOMAD::INTEGER);
+      p.set_BB_INPUT_TYPE(i + numContinuousVars, NOMAD::INTEGER);
     }
   }
-  for (i=0; i<numDiscreteRealVars; i++) {
-    index = set_value_to_index(initial_point_real[i], 
-			       initial_point_set_real[i]);
+  for (i = 0; i < numDiscreteRealVars; i++) {
+    index =
+        set_value_to_index(initial_point_real[i], initial_point_set_real[i]);
     if (index == _NPOS) {
       Cerr << "\nError: failure in discrete real set lookup within "
-	   << "NomadOptimizer::load_parameters(Model &model)" << std::endl;
+           << "NomadOptimizer::load_parameters(Model &model)" << std::endl;
       abort_handler(-1);
+    } else {
+      _initial_point[i + numContinuousVars + numDiscreteIntVars] = (int)index;
     }
-    else {
-      _initial_point[i+numContinuousVars+numDiscreteIntVars] = (int)index;
-    }
-    if (!discreteSetRealCat.empty() && discreteSetRealCat[i] == 1)
-    {
-      p.set_BB_INPUT_TYPE(i+numContinuousVars+numDiscreteIntVars,
-			  NOMAD::CATEGORICAL);
+    if (!discreteSetRealCat.empty() && discreteSetRealCat[i] == 1) {
+      p.set_BB_INPUT_TYPE(i + numContinuousVars + numDiscreteIntVars,
+                          NOMAD::CATEGORICAL);
       if (!discreteSetRealAdj.empty())
-	categoricalAdjacency.push_back(discreteSetRealAdj[i]);
-      else
-      {
-	tmp_categorical_adjacency.reshape(initial_point_set_real[i].size(), 
-					  initial_point_set_real[i].size());
-	for (j=0; j<initial_point_set_real[i].size(); j++)
-	{
-	  for (k=0; k<initial_point_set_real[i].size(); k++)
-	  {
-	    if (k==j-1 || k==j || k==j+1)
-	      tmp_categorical_adjacency[j][k] = 1;
-	    else
-	      tmp_categorical_adjacency[j][k] = 0;
-	  }
-	}
-	categoricalAdjacency.push_back(tmp_categorical_adjacency);
+        categoricalAdjacency.push_back(discreteSetRealAdj[i]);
+      else {
+        tmp_categorical_adjacency.reshape(initial_point_set_real[i].size(),
+                                          initial_point_set_real[i].size());
+        for (j = 0; j < initial_point_set_real[i].size(); j++) {
+          for (k = 0; k < initial_point_set_real[i].size(); k++) {
+            if (k == j - 1 || k == j || k == j + 1)
+              tmp_categorical_adjacency[j][k] = 1;
+            else
+              tmp_categorical_adjacency[j][k] = 0;
+          }
+        }
+        categoricalAdjacency.push_back(tmp_categorical_adjacency);
       }
-    }
-    else
-    {
-      p.set_BB_INPUT_TYPE(i+numContinuousVars+numDiscreteIntVars,
-			  NOMAD::INTEGER);
-      _lower_bound[i+numContinuousVars+numDiscreteIntVars] = 0;
-      _upper_bound[i+numContinuousVars+numDiscreteIntVars] = 
-	initial_point_set_real[i].size() - 1;
+    } else {
+      p.set_BB_INPUT_TYPE(i + numContinuousVars + numDiscreteIntVars,
+                          NOMAD::INTEGER);
+      _lower_bound[i + numContinuousVars + numDiscreteIntVars] = 0;
+      _upper_bound[i + numContinuousVars + numDiscreteIntVars] =
+          initial_point_set_real[i].size() - 1;
     }
   }
-  for (i=0; i<numDiscreteStringVars; i++) {
-    index = set_value_to_index(initial_point_string[i], 
-			       initial_point_set_string[i]);
+  for (i = 0; i < numDiscreteStringVars; i++) {
+    index = set_value_to_index(initial_point_string[i],
+                               initial_point_set_string[i]);
     if (index == _NPOS) {
       Cerr << "\nError: failure in discrete string set lookup within "
-	   << "NomadOptimizer::load_parameters(Model &model)" << std::endl;
+           << "NomadOptimizer::load_parameters(Model &model)" << std::endl;
       abort_handler(-1);
+    } else {
+      _initial_point[i + numContinuousVars + numDiscreteIntVars +
+                     numDiscreteRealVars] = (int)index;
     }
-    else {
-      _initial_point[i+numContinuousVars+numDiscreteIntVars+numDiscreteRealVars] =
-	(int)index;
-    }
-    p.set_BB_INPUT_TYPE(i+numContinuousVars+numDiscreteIntVars+
-			numDiscreteRealVars,NOMAD::CATEGORICAL);
+    p.set_BB_INPUT_TYPE(
+        i + numContinuousVars + numDiscreteIntVars + numDiscreteRealVars,
+        NOMAD::CATEGORICAL);
     if (!discreteSetStrAdj.empty())
       categoricalAdjacency.push_back(discreteSetStrAdj[i]);
-    else
-    {
-      tmp_categorical_adjacency.reshape(initial_point_set_string[i].size(), 
-					initial_point_set_string[i].size());
-      for (j=0; j<initial_point_set_string[i].size(); j++)
-      {
-	for (k=0; k<initial_point_set_string[i].size(); k++)
-	{
-	  if (k==j-1 || k==j || k==j+1)
-	    tmp_categorical_adjacency[j][k] = 1;
-	  else
-	    tmp_categorical_adjacency[j][k] = 0;
-	}
+    else {
+      tmp_categorical_adjacency.reshape(initial_point_set_string[i].size(),
+                                        initial_point_set_string[i].size());
+      for (j = 0; j < initial_point_set_string[i].size(); j++) {
+        for (k = 0; k < initial_point_set_string[i].size(); k++) {
+          if (k == j - 1 || k == j || k == j + 1)
+            tmp_categorical_adjacency[j][k] = 1;
+          else
+            tmp_categorical_adjacency[j][k] = 0;
+        }
       }
       categoricalAdjacency.push_back(tmp_categorical_adjacency);
     }
   }
-     
+
   initialPoint = _initial_point;
   lowerBound = _lower_bound;
   upperBound = _upper_bound;
-     
+
   // Define Output Types
   // responses.
   //		objective_functions
   //		nonlinear_inequality_constraints
   //		nonlinear_equality_constraints
 
-  const RealVector& nln_eq_targets
-    = ModelUtils::nonlinear_eq_constraint_targets(*iteratedModel);
+  const RealVector& nln_eq_targets =
+      ModelUtils::nonlinear_eq_constraint_targets(*iteratedModel);
 
   numNomadNonlinearIneqConstraints = numNonlinearIneqConstraintsFound;
 
-  configure_equality_constraints(CONSTRAINT_TYPE::NONLINEAR, numNonlinearIneqConstraints);
+  configure_equality_constraints(CONSTRAINT_TYPE::NONLINEAR,
+                                 numNonlinearIneqConstraints);
 }
 
 NomadOptimizer::~NomadOptimizer() {};
 
-}
-
-
+}  // namespace Dakota

@@ -10,36 +10,34 @@
 #ifndef NOND_ADAPT_IMP_SAMPLING_H
 #define NOND_ADAPT_IMP_SAMPLING_H
 
-#include "dakota_data_types.hpp"
-#include "NonDSampling.hpp"
-#include "DakotaModel.hpp"
 #include "DakotaIterator.hpp"
+#include "DakotaModel.hpp"
+#include "NonDSampling.hpp"
+#include "dakota_data_types.hpp"
 
 namespace Dakota {
 
-
 /// Class for the Adaptive Importance Sampling methods within DAKOTA
 
-/** The NonDAdaptImpSampling implements the multi-modal adaptive importance 
-    sampling used for reliability calculations.  (eventually we will want 
+/** The NonDAdaptImpSampling implements the multi-modal adaptive importance
+    sampling used for reliability calculations.  (eventually we will want
     to broaden this).  Need to add more detail to this description. */
 
-class NonDAdaptImpSampling: public NonDSampling
-{
-public:
-
+class NonDAdaptImpSampling : public NonDSampling {
+ public:
   //
   //- Heading: Constructors and destructor
   //
 
   /// standard constructor
-  NonDAdaptImpSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
+  NonDAdaptImpSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
+                       std::shared_ptr<Model> model);
   /// alternate constructor for on-the-fly instantiations
-  NonDAdaptImpSampling(std::shared_ptr<Model> model, unsigned short sample_type, int samples,
-		       int seed, const String& rng, bool vary_pattern,
-		       unsigned short is_type, bool cdf_flag,
-		       bool x_space_model, bool use_model_bounds,
-		       bool track_extreme);
+  NonDAdaptImpSampling(std::shared_ptr<Model> model, unsigned short sample_type,
+                       int samples, int seed, const String& rng,
+                       bool vary_pattern, unsigned short is_type, bool cdf_flag,
+                       bool x_space_model, bool use_model_bounds,
+                       bool track_extreme);
   /// destructor
   ~NonDAdaptImpSampling() override;
 
@@ -52,20 +50,18 @@ public:
   void derived_set_communicators(ParLevLIter pl_iter) override;
   void derived_free_communicators(ParLevLIter pl_iter) override;
 
-  void nested_variable_mappings(const SizetArray& c_index1,
-				const SizetArray& di_index1,
-				const SizetArray& ds_index1,
-				const SizetArray& dr_index1,
-				const ShortArray& c_target2,
-				const ShortArray& di_target2,
-				const ShortArray& ds_target2,
-				const ShortArray& dr_target2) override;
+  void nested_variable_mappings(
+      const SizetArray& c_index1, const SizetArray& di_index1,
+      const SizetArray& ds_index1, const SizetArray& dr_index1,
+      const ShortArray& c_target2, const ShortArray& di_target2,
+      const ShortArray& ds_target2, const ShortArray& dr_target2) override;
 
   /// performs adaptive importance sampling and computes probability of failure
   void core_run() override;
 
   /// print the final statistics
-  void print_results(std::ostream& s, short results_state = FINAL_RESULTS) override;
+  void print_results(std::ostream& s,
+                     short results_state = FINAL_RESULTS) override;
 
   /// return importanceSamplingType
   unsigned short sampling_scheme() const override;
@@ -80,27 +76,25 @@ public:
   /// of points around which to sample, a failure threshold, an
   /// initial probability to refine, and flags to control transformations
   void initialize(const RealVectorArray& full_points, bool x_space_data,
-		  size_t resp_index, Real initial_prob, Real failure_threshold);
+                  size_t resp_index, Real initial_prob, Real failure_threshold);
   /// initializes data needed for importance sampling: an initial set
   /// of points around which to sample, a failure threshold, an
   /// initial probability to refine, and flags to control transformations
   void initialize(const RealMatrix& full_points, bool x_space_data,
-		  size_t resp_index, Real initial_prob, Real failure_threshold);
+                  size_t resp_index, Real initial_prob, Real failure_threshold);
   /// initializes data needed for importance sampling: an initial
   /// point around which to sample, a failure threshold, an
   /// initial probability to refine, and flags to control transformations
   void initialize(const RealVector& full_point, bool x_space_data,
-		  size_t resp_index, Real initial_prob, Real failure_threshold);
+                  size_t resp_index, Real initial_prob, Real failure_threshold);
 
   /// returns the final probability calculated by the importance sampling
   Real final_probability();
   /// return extremeValues
   const RealRealPairArray& extreme_values() const;
 
-protected:
-
-private:
-
+ protected:
+ private:
   //
   //- Heading: Convenience functions
   //
@@ -111,7 +105,7 @@ private:
 
   /// select representative points from a set of samples
   void select_rep_points(const RealVectorArray& var_samples_u,
-			 const RealVector& fn_samples);
+                         const RealVector& fn_samples);
 
   /// iteratively generate samples and select representative points
   /// until probability and (optionally) coefficient of variation converge
@@ -121,21 +115,21 @@ private:
   void generate_samples(RealVectorArray& var_samples_u);
   /// evaluate the model at the sample points and store the responses
   void evaluate_samples(const RealVectorArray& var_samples_u,
-		        RealVector& fn_samples);
+                        RealVector& fn_samples);
 
   /// calculate the probability of exceeding the failure threshold and
   /// the coefficent of variation (if requested)
   void calculate_statistics(const RealVectorArray& var_samples_u,
-			    const RealVector& fn_samples, size_t total_samples,
-			    Real& sum_prob, Real& prob, bool compute_cov,
-			    Real& sum_var, Real& cov);
+                            const RealVector& fn_samples, size_t total_samples,
+                            Real& sum_prob, Real& prob, bool compute_cov,
+                            Real& sum_var, Real& cov);
 
   /// compute Euclidean distance between points a and b
   Real distance(const RealVector& a, const RealVector& b);
-  /// compute density between a representative point 
+  /// compute density between a representative point
   /// and a sample point, assuming (bounded) standard normal
   Real recentered_density(const RealVector& sample_point,
-			  const RealRealPairArray& cauv_u_bnds);
+                          const RealRealPairArray& cauv_u_bnds);
 
   //
   //- Heading: Data members
@@ -185,59 +179,49 @@ private:
   Real failThresh;
 };
 
+inline NonDAdaptImpSampling::~NonDAdaptImpSampling() {}
 
-inline NonDAdaptImpSampling::~NonDAdaptImpSampling()
-{ }
-
-
-inline void NonDAdaptImpSampling::
-nested_variable_mappings(const SizetArray& c_index1,
-			 const SizetArray& di_index1,
-			 const SizetArray& ds_index1,
-			 const SizetArray& dr_index1,
-			 const ShortArray& c_target2,
-			 const ShortArray& di_target2,
-			 const ShortArray& ds_target2,
-			 const ShortArray& dr_target2)
-{
+inline void NonDAdaptImpSampling::nested_variable_mappings(
+    const SizetArray& c_index1, const SizetArray& di_index1,
+    const SizetArray& ds_index1, const SizetArray& dr_index1,
+    const ShortArray& c_target2, const ShortArray& di_target2,
+    const ShortArray& ds_target2, const ShortArray& dr_target2) {
   uSpaceModel->nested_variable_mappings(c_index1, di_index1, ds_index1,
-				       dr_index1, c_target2, di_target2,
-				       ds_target2, dr_target2);
+                                        dr_index1, c_target2, di_target2,
+                                        ds_target2, dr_target2);
 }
 
+inline unsigned short NonDAdaptImpSampling::sampling_scheme() const {
+  return importanceSamplingType;
+}
 
-inline unsigned short NonDAdaptImpSampling::sampling_scheme() const
-{ return importanceSamplingType; }
+inline int NonDAdaptImpSampling::refinement_samples() const {
+  return refineSamples;
+}
 
+inline Real NonDAdaptImpSampling::final_probability() { return probEstimate; }
 
-inline int NonDAdaptImpSampling::refinement_samples() const
-{ return refineSamples; }
+inline const RealRealPairArray& NonDAdaptImpSampling::extreme_values() const {
+  return extremeValues;
+}
 
-
-inline Real NonDAdaptImpSampling::final_probability()
-{ return probEstimate; }
-
-
-inline const RealRealPairArray& NonDAdaptImpSampling::extreme_values() const
-{ return extremeValues; }
-
-
-inline Real NonDAdaptImpSampling::
-distance(const RealVector& a, const RealVector& b)
-{
+inline Real NonDAdaptImpSampling::distance(const RealVector& a,
+                                           const RealVector& b) {
   size_t len = a.length();
   if (b.length() != len) {
     Cerr << "Error: inconsistent vector length in NonDAdaptImpSampling::"
-	 << "distance()" << std::endl;
+         << "distance()" << std::endl;
     abort_handler(-1);
   }
 
   Real amb, dist_sq = 0.;
-  for (size_t j=0; j<len; ++j)
-    { amb = a[j] - b[j]; dist_sq += amb * amb; }
+  for (size_t j = 0; j < len; ++j) {
+    amb = a[j] - b[j];
+    dist_sq += amb * amb;
+  }
   return std::sqrt(dist_sq);
 }
 
-} // namespace Dakota
+}  // namespace Dakota
 
 #endif

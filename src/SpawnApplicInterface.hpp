@@ -12,7 +12,6 @@
 
 #include "ProcessHandleApplicInterface.hpp"
 
-
 namespace Dakota {
 
 /// Derived application interface class which spawns simulation codes
@@ -21,21 +20,19 @@ namespace Dakota {
 /** SpawnApplicInterface is used on Windows systems and is a peer to
     ForkApplicInterface for Unix systems. */
 
-class SpawnApplicInterface: public ProcessHandleApplicInterface
-{
-public:
-
+class SpawnApplicInterface : public ProcessHandleApplicInterface {
+ public:
   //
   //- Heading: Constructors and destructor
   //
 
   /// constructor
-  SpawnApplicInterface(const ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
+  SpawnApplicInterface(const ProblemDescDB& problem_db,
+                       ParallelLibrary& parallel_lib);
   /// destructor
   ~SpawnApplicInterface();
 
-protected:
-
+ protected:
   //
   //- Heading: Virtual function redefinitions
   //
@@ -51,10 +48,8 @@ protected:
   //
   //- Heading: Data
   //
-
 };
 
-} // namespace Dakota
+}  // namespace Dakota
 
 #endif
-

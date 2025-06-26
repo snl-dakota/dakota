@@ -10,11 +10,11 @@
 #ifndef DAKOTA_PROGRAM_OPTIONS_H
 #define DAKOTA_PROGRAM_OPTIONS_H
 
-#include "dakota_data_io.hpp"
 #include "UserModes.hpp"
+#include "dakota_data_io.hpp"
 
 // ProgramOptions is currently default constructible and we pass it by
-// value to the Environment constructors.  If it becomes larger or more 
+// value to the Environment constructors.  If it becomes larger or more
 // complex, we will consider using handle/body idiom to manage the memory.
 
 // BMA TODO: define enum for run phases/modes and use <=, >, etc.
@@ -30,16 +30,14 @@ class ProblemDescDB;
 /// user; initially valid only on worldRank = 0, but then broadcast in
 /// ParallelLibrary::push_output_tag()
 class ProgramOptions {
-
-public:
-
+ public:
   //- Constructors
 
   /// default constructor (needed for default environment ctors and
   /// could be used by library clients to late update data)
   ProgramOptions();
 
-  /// constructor that accepts world rank to help with I/O control; allows 
+  /// constructor that accepts world rank to help with I/O control; allows
   /// default constructed ProgramOptions to get rank in library mode
   ProgramOptions(int world_rank);
 
@@ -47,12 +45,12 @@ public:
   /// user options
   ProgramOptions(int argc, char* argv[], int world_rank);
 
-
   //- Query functions
 
   /// Dakota input file base name (no tag)
   const String& input_file() const;
-  /// alternate Dakota input string literal; also set when input is read from stdin
+  /// alternate Dakota input string literal; also set when input is read from
+  /// stdin
   const String& input_string() const;
   /// is input from stdin?
   bool stdin_input() const;
@@ -68,14 +66,14 @@ public:
 
   /// (deprecated) NIDR parser options
   const String& parser_options() const;
-  
+
   /// output (user-provided or default) file base name (no tag)
   String output_file() const;
   /// error file base name (no tag)
   const String& error_file() const;
   /// behavior of abort_handler (throw or exit)
   const String& exit_mode() const;
-  
+
   /// restart file base name (no tag)
   const String& read_restart_file() const;
   /// eval ID at which to stop reading restart
@@ -105,9 +103,8 @@ public:
   /// whether the user/client code requested a redirect of stderr
   bool user_stderr_redirect() const;
 
-
   //- Set functions
-  
+
   /// set the world rank to govern early conditional output
   void world_rank(int world_rank);
 
@@ -172,8 +169,7 @@ public:
   /// helper function for writing some class data to MPI buffer
   void write(MPIPackBuffer& s) const;
 
-private:
-
+ private:
   /// any environment variables affecting global behavior get read here
   void parse_environment_options();
 
@@ -181,8 +177,8 @@ private:
   void manage_run_modes(const CommandLineHandler& clh);
 
   /// manage pre/run/post filenames
-  void split_filenames(const char * filenames, std::string& input_filename,
-		       std::string& output_filename);
+  void split_filenames(const char* filenames, std::string& input_filename,
+                       std::string& output_filename);
 
   /// verify consistency of user settings (helpful for library mode especially)
   void validate();
@@ -192,8 +188,8 @@ private:
 
   /// retrieve environment.db_name from the problem db and update
   /// data_member, warning if needed
-  void set_option(const ProblemDescDB& problem_db, const String& db_name, 
-		  String& data_member);
+  void set_option(const ProblemDescDB& problem_db, const String& db_name,
+                  String& data_member);
 
   /// cache the world rank to help with conditional output
   int worldRank;
@@ -208,48 +204,45 @@ private:
   String inputString;
   /// @brief true when user indicated input from stdin (inputFile == "-)
   bool stdinInput;
-  bool echoInput;         ///< whether to echo client's input file at parse 
+  bool echoInput;  ///< whether to echo client's input file at parse
 
-  bool preprocInput;      ///< whether to pre-process input with pyprepro/etc.
-  String preprocCmd;      ///< pre-processing command (default pyprepro.py)
-  String preprocFilename; ///< pre-processed input file
+  bool preprocInput;       ///< whether to pre-process input with pyprepro/etc.
+  String preprocCmd;       ///< pre-processing command (default pyprepro.py)
+  String preprocFilename;  ///< pre-processed input file
 
-  String parserOptions;   ///< Deprecated option for NIDR parser options
-  String exitMode;        ///< Abort or throw on error
+  String parserOptions;  ///< Deprecated option for NIDR parser options
+  String exitMode;       ///< Abort or throw on error
 
-  String outputFile;      ///< Dakota output base file name, e.g., "dakota.out"
-  String errorFile;       ///< Dakota error base file name, e.g., "dakota.err"
+  String outputFile;  ///< Dakota output base file name, e.g., "dakota.out"
+  String errorFile;   ///< Dakota error base file name, e.g., "dakota.err"
 
-  String readRestartFile;    ///< e.g., "dakota.old.rst"
-  size_t stopRestartEvals;   ///< eval number at which to stop restart read
-  String writeRestartFile;   ///< e.g., "dakota.new.rst"
+  String readRestartFile;   ///< e.g., "dakota.old.rst"
+  size_t stopRestartEvals;  ///< eval number at which to stop restart read
+  String writeRestartFile;  ///< e.g., "dakota.new.rst"
 
   // Run mode flags; intially only valid on rank 0.
   // Could condense flags into a bit-wise short, but using bool for
   // now for clarity; could use map or vector with enum for Strings
-  bool helpFlag;        ///< whether to print help message and exit
-  bool versionFlag;     ///< whether to print version message and exit
-  bool checkFlag;       ///< flags invocation with command line option -check
+  bool helpFlag;     ///< whether to print help message and exit
+  bool versionFlag;  ///< whether to print version message and exit
+  bool checkFlag;    ///< flags invocation with command line option -check
 
   // Prerun, run, and postrun settings
   UserModes userModes{};
 };  // class ProgramOptions
 
-
 /// MPIUnpackBuffer extraction operator
-inline MPIUnpackBuffer& operator>>(MPIUnpackBuffer& s, ProgramOptions& p_opt)
-{ 
+inline MPIUnpackBuffer& operator>>(MPIUnpackBuffer& s, ProgramOptions& p_opt) {
   p_opt.read(s);
-  return s; 
+  return s;
 }
 
 /// MPIPackBuffer insertion operator
-inline MPIPackBuffer& operator<<(MPIPackBuffer& s, const ProgramOptions& p_opt)
-{ 
+inline MPIPackBuffer& operator<<(MPIPackBuffer& s,
+                                 const ProgramOptions& p_opt) {
   p_opt.write(s);
-  return s; 
+  return s;
 }
-
 
 }  // namespace Dakota
 

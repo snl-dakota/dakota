@@ -21,40 +21,47 @@ extern "C" {
  * Method:    loadSurrogate
  * Signature: (Ljava/lang/String;Z)J
  */
-JNIEXPORT jlong JNICALL Java_gov_sandia_dakota_jni_surrogates_java_DakotaSurrogates_loadSurrogate
-  (JNIEnv *, jobject, jstring, jboolean);
+JNIEXPORT jlong JNICALL
+Java_gov_sandia_dakota_jni_surrogates_java_DakotaSurrogates_loadSurrogate(
+    JNIEnv *, jobject, jstring, jboolean);
 
 /*
  * Class:     gov_sandia_dakota_jni_surrogates_java_DakotaSurrogates
  * Method:    getVariables
  * Signature: (J)[Ljava/lang/Object;
  */
-JNIEXPORT jobjectArray JNICALL Java_gov_sandia_dakota_jni_surrogates_java_DakotaSurrogates_getVariables
-  (JNIEnv *, jobject, jlong);
+JNIEXPORT jobjectArray JNICALL
+Java_gov_sandia_dakota_jni_surrogates_java_DakotaSurrogates_getVariables(
+    JNIEnv *, jobject, jlong);
 
 /*
  * Class:     gov_sandia_dakota_jni_surrogates_java_DakotaSurrogates
  * Method:    getResponses
  * Signature: (J)[Ljava/lang/Object;
  */
-JNIEXPORT jobjectArray JNICALL Java_gov_sandia_dakota_jni_surrogates_java_DakotaSurrogates_getResponses
-  (JNIEnv *, jobject, jlong);
+JNIEXPORT jobjectArray JNICALL
+Java_gov_sandia_dakota_jni_surrogates_java_DakotaSurrogates_getResponses(
+    JNIEnv *, jobject, jlong);
 
 /*
  * Class:     gov_sandia_dakota_jni_surrogates_java_DakotaSurrogates
  * Method:    value
  * Signature: (J[D)D
  */
-JNIEXPORT jdouble JNICALL Java_gov_sandia_dakota_jni_surrogates_java_DakotaSurrogates_value
-  (JNIEnv *, jobject, jlong, jdoubleArray);
+JNIEXPORT jdouble JNICALL
+Java_gov_sandia_dakota_jni_surrogates_java_DakotaSurrogates_value(JNIEnv *,
+                                                                  jobject,
+                                                                  jlong,
+                                                                  jdoubleArray);
 
 /*
  * Class:     gov_sandia_dakota_jni_surrogates_java_DakotaSurrogates
  * Method:    nativeDeleteSurrogate
  * Signature: (J)V
  */
-JNIEXPORT void JNICALL Java_gov_sandia_dakota_jni_surrogates_java_DakotaSurrogates_nativeDeleteSurrogate
-  (JNIEnv *, jobject, jlong);
+JNIEXPORT void JNICALL
+Java_gov_sandia_dakota_jni_surrogates_java_DakotaSurrogates_nativeDeleteSurrogate(
+    JNIEnv *, jobject, jlong);
 
 #ifdef __cplusplus
 }

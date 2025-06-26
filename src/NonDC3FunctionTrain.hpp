@@ -20,21 +20,19 @@ namespace Dakota {
 
 /** The NonDC3FunctionTrain class uses ... */
 
-class NonDC3FunctionTrain: public NonDExpansion
-{
-public:
-
+class NonDC3FunctionTrain : public NonDExpansion {
+ public:
   //
   //- Heading: Constructors and destructor
   //
 
   /// standard constructor
-  NonDC3FunctionTrain(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
+  NonDC3FunctionTrain(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
+                      std::shared_ptr<Model> model);
   /// destructor
   ~NonDC3FunctionTrain();
 
-protected:
-
+ protected:
   //
   //- Heading: Constructors
   //
@@ -43,7 +41,7 @@ protected:
   /// (method_name is not necessary, rather it is just a convenient overload
   /// allowing the derived ML FT class to bypass the standard FT ctor)
   NonDC3FunctionTrain(unsigned short method_name, ProblemDescDB& problem_db,
-		      std::shared_ptr<Model> model);
+                      std::shared_ptr<Model> model);
 
   //
   //- Heading: Virtual function redefinitions
@@ -55,13 +53,13 @@ protected:
   size_t collocation_points() const;
 
   // TODO
-  //void compute_expansion();
+  // void compute_expansion();
   // perform a forward uncertainty propagation using PCE/SC methods
-  //void core_run();
+  // void core_run();
 
   void push_increment();
   void update_samples_from_order_increment();
-  //void update_samples_from_order_decrement();
+  // void update_samples_from_order_decrement();
   void sample_allocation_metric(Real& regress_metric, Real power);
 
   /// override certain print functions
@@ -81,7 +79,8 @@ protected:
   /// configure u_space_sampler and approx_type based on regression
   /// specification
   bool config_regression(size_t colloc_pts, size_t regress_size, int seed,
-			 std::shared_ptr<Iterator>& u_space_sampler, std::shared_ptr<Model> g_u_model);
+                         std::shared_ptr<Iterator>& u_space_sampler,
+                         std::shared_ptr<Model> g_u_model);
 
   /// Publish options from C3 input specification (not needed if model-driven
   /// specification: already extracted by iteratedModel)
@@ -128,8 +127,7 @@ protected:
   /// MAX_{RANK,ORDER,RANK_ORDER}
   short c3AdvancementType;
 
-private:
-
+ private:
   //
   //- Heading: Member function definitions
   //
@@ -137,10 +135,10 @@ private:
   /// return the regression size used for different refinement options
   size_t regression_size();
 
-  //static int qoi_eval(size_t num_samp,        // number of evaluations
-  // 			const double* var_sets, // num_vars x num_evals
-  // 			double* qoi_sets,       // num_fns x num_evals
-  // 			void* args);            // optional arguments
+  // static int qoi_eval(size_t num_samp,        // number of evaluations
+  //  			const double* var_sets, // num_vars x num_evals
+  //  			double* qoi_sets,       // num_fns x num_evals
+  //  			void* args);            // optional arguments
 
   //
   //- Heading: Data
@@ -150,17 +148,17 @@ private:
   size_t collocPtsSpec;
 
   // for decremented order without recomputation from previous ranks
-  //int prevSamplesOnModel;
+  // int prevSamplesOnModel;
 
   // pointer to the active object instance used within the static evaluator
   // functions in order to avoid the need for static data
-  //static NonDC3FunctionTrain* c3Instance;
+  // static NonDC3FunctionTrain* c3Instance;
 };
 
+inline size_t NonDC3FunctionTrain::collocation_points() const {
+  return collocPtsSpec;
+}
 
-inline size_t NonDC3FunctionTrain::collocation_points() const
-{ return collocPtsSpec; }
-
-} // namespace Dakota
+}  // namespace Dakota
 
 #endif

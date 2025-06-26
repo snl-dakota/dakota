@@ -7,12 +7,12 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-#include "util_windows.hpp"
+#include <gtest/gtest.h>
 
 #include "Teuchos_SerialDenseHelpers.hpp"
-#include <gtest/gtest.h>
 #include "util_common.hpp"
 #include "util_data_types.hpp"
+#include "util_windows.hpp"
 
 using MatrixMap = Eigen::Map<Eigen::MatrixXd>;
 using VectorMap = Eigen::Map<Eigen::VectorXd>;

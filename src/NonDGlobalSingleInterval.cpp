@@ -8,48 +8,46 @@
     _______________________________________________________________________ */
 
 #include "NonDGlobalSingleInterval.hpp"
-#include "dakota_system_defs.hpp"
-#include "DakotaModel.hpp"
+
 #include "DakotaApproximation.hpp"
+#include "DakotaModel.hpp"
+#include "dakota_system_defs.hpp"
 
-//#define DEBUG
-
+// #define DEBUG
 
 namespace Dakota {
 
-NonDGlobalSingleInterval::
-NonDGlobalSingleInterval(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
-  NonDGlobalInterval(problem_db, parallel_lib, model)
-{ }
+NonDGlobalSingleInterval::NonDGlobalSingleInterval(
+    ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
+    std::shared_ptr<Model> model)
+    : NonDGlobalInterval(problem_db, parallel_lib, model) {}
 
+NonDGlobalSingleInterval::~NonDGlobalSingleInterval() {}
 
-NonDGlobalSingleInterval::~NonDGlobalSingleInterval()
-{ }
+void NonDGlobalSingleInterval::initialize() {
+  numCells = 1;
+  statCntr = 0;
+}
 
-
-void NonDGlobalSingleInterval::initialize()
-{ numCells = 1; statCntr = 0; }
-
-
-void NonDGlobalSingleInterval::get_best_sample(bool maximize, bool eval_approx)
-{
+void NonDGlobalSingleInterval::get_best_sample(bool maximize,
+                                               bool eval_approx) {
   // Pull the samples and responses from data used to build latest GP
   // to determine truthFnStar for use in the expected improvement function
-  const Pecos::SurrogateData& gp_data
-    = fHatModel->approximation_data(respFnCntr);
+  const Pecos::SurrogateData& gp_data =
+      fHatModel->approximation_data(respFnCntr);
   const Pecos::SDVArray& sdv_array = gp_data.variables_data();
   const Pecos::SDRArray& sdr_array = gp_data.response_data();
 
   size_t i, index_star, num_data_pts = gp_data.points();
   truthFnStar = (maximize) ? -DBL_MAX : DBL_MAX;
-  for (i=0; i<num_data_pts; ++i) {
+  for (i = 0; i < num_data_pts; ++i) {
     Real truth_fn = sdr_array[i].response_function();
 #ifdef DEBUG
-    Cout << "GP response function[" << i+1 << "] = " << truth_fn << std::endl;
-#endif // DEBUG
-    if ( (  maximize && truth_fn > truthFnStar ) ||
-	 ( !maximize && truth_fn < truthFnStar ) ) {
-      index_star  = i;
+    Cout << "GP response function[" << i + 1 << "] = " << truth_fn << std::endl;
+#endif  // DEBUG
+    if ((maximize && truth_fn > truthFnStar) ||
+        (!maximize && truth_fn < truthFnStar)) {
+      index_star = i;
       truthFnStar = truth_fn;
     }
   }
@@ -60,18 +58,21 @@ void NonDGlobalSingleInterval::get_best_sample(bool maximize, bool eval_approx)
     if (numContIntervalVars)
       ModelUtils::continuous_variables(*fHatModel, sdv.continuous_variables());
     if (numDiscIntervalVars || numDiscSetIntUncVars)
-      ModelUtils::discrete_int_variables(*fHatModel, sdv.discrete_int_variables());
+      ModelUtils::discrete_int_variables(*fHatModel,
+                                         sdv.discrete_int_variables());
     if (numDiscSetRealUncVars)
-      ModelUtils::discrete_real_variables(*fHatModel, sdv.discrete_real_variables());
+      ModelUtils::discrete_real_variables(*fHatModel,
+                                          sdv.discrete_real_variables());
     ActiveSet set = fHatModel->current_response().active_set();
-    set.request_values(0); set.request_value(1, respFnCntr);
+    set.request_values(0);
+    set.request_value(1, respFnCntr);
     fHatModel->evaluate(set);
     approxFnStar = fHatModel->current_response().function_value(respFnCntr);
   }
 }
 
+void NonDGlobalSingleInterval::post_process_cell_results(bool maximize) {
+  finalStatistics.function_value(truthFnStar, statCntr++);
+}
 
-void NonDGlobalSingleInterval::post_process_cell_results(bool maximize)
-{ finalStatistics.function_value(truthFnStar, statCntr++); }
-
-} // namespace Dakota
+}  // namespace Dakota

@@ -25,42 +25,36 @@ namespace Dakota {
     supports PCE coefficient estimation via sampling, quadrature,
     point-collocation, and file import. */
 
-class NonDMultilevelPolynomialChaos: public NonDPolynomialChaos
-{
-public:
-
+class NonDMultilevelPolynomialChaos : public NonDPolynomialChaos {
+ public:
   //
   //- Heading: Constructors and destructor
   //
- 
+
   /// standard constructor
-  NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model>  model);
+  NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db,
+                                ParallelLibrary& parallel_lib,
+                                std::shared_ptr<Model> model);
   /// alternate constructor for numerical integration (tensor, sparse, cubature)
-  NonDMultilevelPolynomialChaos(/*unsigned short method_name,*/ std::shared_ptr<Model> model,
-				short exp_coeffs_approach,
-				const UShortArray& num_int_seq,
-				const RealVector& dim_pref, short u_space_type,
-				short refine_type, short refine_control,
-				short covar_control, short ml_alloc_cntl,
-				short ml_discrep, short rule_nest,
-				short rule_growth, bool piecewise_basis,
-				bool use_derivs);
+  NonDMultilevelPolynomialChaos(
+      /*unsigned short method_name,*/ std::shared_ptr<Model> model,
+      short exp_coeffs_approach, const UShortArray& num_int_seq,
+      const RealVector& dim_pref, short u_space_type, short refine_type,
+      short refine_control, short covar_control, short ml_alloc_cntl,
+      short ml_discrep, short rule_nest, short rule_growth,
+      bool piecewise_basis, bool use_derivs);
   /// alternate constructor for regression (least squares, CS, OLI)
-  NonDMultilevelPolynomialChaos(unsigned short method_name, std::shared_ptr<Model> model,
-				short exp_coeffs_approach,
-				const UShortArray& exp_order_seq,
-				const RealVector& dim_pref,
-				const SizetArray& colloc_pts_seq,
-				Real colloc_ratio, const SizetArray& seed_seq,
-				short u_space_type, short refine_type,
-				short refine_control, short covar_control,
-				short ml_alloc_cntl, short ml_discrep,
-				//short rule_nest, short rule_growth,
-				bool piecewise_basis, bool use_derivs,
-				bool cv_flag,
-				const String& import_build_pts_file,
-				unsigned short import_build_format,
-				bool import_build_active_only);
+  NonDMultilevelPolynomialChaos(
+      unsigned short method_name, std::shared_ptr<Model> model,
+      short exp_coeffs_approach, const UShortArray& exp_order_seq,
+      const RealVector& dim_pref, const SizetArray& colloc_pts_seq,
+      Real colloc_ratio, const SizetArray& seed_seq, short u_space_type,
+      short refine_type, short refine_control, short covar_control,
+      short ml_alloc_cntl, short ml_discrep,
+      // short rule_nest, short rule_growth,
+      bool piecewise_basis, bool use_derivs, bool cv_flag,
+      const String& import_build_pts_file, unsigned short import_build_format,
+      bool import_build_active_only);
   /// destructor
   ~NonDMultilevelPolynomialChaos() override;
 
@@ -68,10 +62,9 @@ public:
   //- Heading: Virtual function redefinitions
   //
 
-  //bool resize();
+  // bool resize();
 
-protected:
-
+ protected:
   //
   //- Heading: Virtual function redefinitions
   //
@@ -87,14 +80,16 @@ protected:
   int first_seed() const override;
 
   void initialize_ml_regression(bool& import_pilot) override;
-  void infer_pilot_sample(/*Real ratio, */size_t num_steps,
-			  SizetArray& delta_N_l) override;
+  void infer_pilot_sample(/*Real ratio, */ size_t num_steps,
+                          SizetArray& delta_N_l) override;
   void increment_sample_sequence(size_t new_samp, size_t total_samp,
-				 size_t step) override;
+                                 size_t step) override;
   void compute_sample_increment(const RealVector& sparsity,
-				const SizetArray& N_l, SizetArray& delta_N_l) override;
+                                const SizetArray& N_l,
+                                SizetArray& delta_N_l) override;
 
-  void print_results(std::ostream& s, short results_state = FINAL_RESULTS) override;
+  void print_results(std::ostream& s,
+                     short results_state = FINAL_RESULTS) override;
 
   //
   //- Heading: Member functions
@@ -104,8 +99,7 @@ protected:
   /// regression approaches)
   void assign_allocation_control();
 
-private:
-
+ private:
   //
   //- Heading: Utility functions
   //
@@ -123,7 +117,7 @@ private:
   /// perform specification updates (shared code from
   // {assign,increment}_specification_sequence())
   void update_from_specification(bool update_exp, bool update_sampler,
-				 bool update_from_ratio);
+                                 bool update_from_ratio);
 
   //
   //- Heading: Data
@@ -142,74 +136,70 @@ private:
   size_t sequenceIndex;
 };
 
-
-inline size_t NonDMultilevelPolynomialChaos::collocation_points() const
-{ return NonDExpansion::collocation_points(sequenceIndex); }
-
-
-inline int NonDMultilevelPolynomialChaos::random_seed() const
-{ return NonDExpansion::seed_sequence(sequenceIndex); }
-
-
-inline int NonDMultilevelPolynomialChaos::first_seed() const
-{ return NonDExpansion::seed_sequence(0); }
-
-
-inline size_t NonDMultilevelPolynomialChaos::
-expansion_samples(size_t index) const
-{
-  if (expSamplesSeqSpec.empty()) return SZ_MAX;
-  else
-    return (index < expSamplesSeqSpec.size()) ?
-      expSamplesSeqSpec[index] : expSamplesSeqSpec.back();
+inline size_t NonDMultilevelPolynomialChaos::collocation_points() const {
+  return NonDExpansion::collocation_points(sequenceIndex);
 }
 
-
-inline unsigned short NonDMultilevelPolynomialChaos::
-expansion_order(size_t index) const
-{
-  if (expOrderSeqSpec.empty()) return USHRT_MAX;
-  else
-    return (index < expOrderSeqSpec.size()) ?
-      expOrderSeqSpec[index] : expOrderSeqSpec.back();
+inline int NonDMultilevelPolynomialChaos::random_seed() const {
+  return NonDExpansion::seed_sequence(sequenceIndex);
 }
 
-
-inline unsigned short NonDMultilevelPolynomialChaos::
-quadrature_order(size_t index) const
-{
-  if (quadOrderSeqSpec.empty()) return USHRT_MAX;
-  else
-    return (index < quadOrderSeqSpec.size()) ?
-      quadOrderSeqSpec[index] : quadOrderSeqSpec.back();
+inline int NonDMultilevelPolynomialChaos::first_seed() const {
+  return NonDExpansion::seed_sequence(0);
 }
 
-
-inline unsigned short NonDMultilevelPolynomialChaos::
-sparse_grid_level(size_t index) const
-{
-  if (ssgLevelSeqSpec.empty()) return USHRT_MAX;
+inline size_t NonDMultilevelPolynomialChaos::expansion_samples(
+    size_t index) const {
+  if (expSamplesSeqSpec.empty())
+    return SZ_MAX;
   else
-    return (index < ssgLevelSeqSpec.size()) ?
-      ssgLevelSeqSpec[index] : ssgLevelSeqSpec.back();
+    return (index < expSamplesSeqSpec.size()) ? expSamplesSeqSpec[index]
+                                              : expSamplesSeqSpec.back();
 }
 
+inline unsigned short NonDMultilevelPolynomialChaos::expansion_order(
+    size_t index) const {
+  if (expOrderSeqSpec.empty())
+    return USHRT_MAX;
+  else
+    return (index < expOrderSeqSpec.size()) ? expOrderSeqSpec[index]
+                                            : expOrderSeqSpec.back();
+}
 
-inline size_t NonDMultilevelPolynomialChaos::expansion_samples() const
-{ return expansion_samples(sequenceIndex); }
+inline unsigned short NonDMultilevelPolynomialChaos::quadrature_order(
+    size_t index) const {
+  if (quadOrderSeqSpec.empty())
+    return USHRT_MAX;
+  else
+    return (index < quadOrderSeqSpec.size()) ? quadOrderSeqSpec[index]
+                                             : quadOrderSeqSpec.back();
+}
 
+inline unsigned short NonDMultilevelPolynomialChaos::sparse_grid_level(
+    size_t index) const {
+  if (ssgLevelSeqSpec.empty())
+    return USHRT_MAX;
+  else
+    return (index < ssgLevelSeqSpec.size()) ? ssgLevelSeqSpec[index]
+                                            : ssgLevelSeqSpec.back();
+}
 
-inline unsigned short NonDMultilevelPolynomialChaos::expansion_order() const
-{ return expansion_order(sequenceIndex); }
+inline size_t NonDMultilevelPolynomialChaos::expansion_samples() const {
+  return expansion_samples(sequenceIndex);
+}
 
+inline unsigned short NonDMultilevelPolynomialChaos::expansion_order() const {
+  return expansion_order(sequenceIndex);
+}
 
-inline unsigned short NonDMultilevelPolynomialChaos::quadrature_order() const
-{ return quadrature_order(sequenceIndex); }
+inline unsigned short NonDMultilevelPolynomialChaos::quadrature_order() const {
+  return quadrature_order(sequenceIndex);
+}
 
+inline unsigned short NonDMultilevelPolynomialChaos::sparse_grid_level() const {
+  return sparse_grid_level(sequenceIndex);
+}
 
-inline unsigned short NonDMultilevelPolynomialChaos::sparse_grid_level() const
-{ return sparse_grid_level(sequenceIndex); }
-
-} // namespace Dakota
+}  // namespace Dakota
 
 #endif

@@ -12,23 +12,20 @@ namespace rol_interface {
  *  used by both LinearEqualityConstraint and LinearInequalityConstraint */
 
 class LinearConstraint : public Constraint {
-public:
-
+ public:
   virtual ~LinearConstraint() = default;
 
-  virtual void value(       Dakota::RealVector& c,
-                      const Dakota::RealVector& x,
-                            Dakota::Real&       tol ) override;
+  virtual void value(Dakota::RealVector& c, const Dakota::RealVector& x,
+                     Dakota::Real& tol) override;
 
-  void applyAdjointHessian(       ROL::Vector<Dakota::Real>& ahuv,
-                            const ROL::Vector<Dakota::Real>& u,
-                            const ROL::Vector<Dakota::Real>& v,
-                            const ROL::Vector<Dakota::Real>& x,
-                                  Dakota::Real&              tol ) override final;
+  void applyAdjointHessian(ROL::Vector<Dakota::Real>& ahuv,
+                           const ROL::Vector<Dakota::Real>& u,
+                           const ROL::Vector<Dakota::Real>& v,
+                           const ROL::Vector<Dakota::Real>& x,
+                           Dakota::Real& tol) override final;
 
-}; // LinearConstraint 
+};  // LinearConstraint
 
-} // namespace rol_interface
+}  // namespace rol_interface
 
-#endif // DAKOTA_ROL_LINEAR_CONSTRAINT_HPP
-
+#endif  // DAKOTA_ROL_LINEAR_CONSTRAINT_HPP

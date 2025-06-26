@@ -7,10 +7,10 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
+#include <gtest/gtest.h>
+
 #include "util_common.hpp"
 #include "util_math_tools.hpp"
-
-#include <gtest/gtest.h>
 
 using namespace dakota;
 using namespace dakota::util;
@@ -78,7 +78,8 @@ TEST(MathToolsTest_tests, util_p_norm) {
   Eigen::VectorXd vals(10);
   vals << 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0;
 
-  EXPECT_LT(std::fabs(1. - 140.50736087767584 / p_norm(vals, 0.7)), 1.e-8/100.);
+  EXPECT_LT(std::fabs(1. - 140.50736087767584 / p_norm(vals, 0.7)),
+            1.e-8 / 100.);
 }
 
 TEST(MathToolsTest_tests, util_random_permutation) {
@@ -157,7 +158,7 @@ TEST(MathToolsTest_tests, util_create_random_real_matrices) {
                             tight_tol));
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

@@ -15,10 +15,8 @@
 #ifdef HAVE_AMPL
 /** Floating-point initialization from AMPL: switch to 53-bit rounding
     if appropriate, to eliminate some cross-platform differences. */
-  extern "C" void fpinit_ASL();
+extern "C" void fpinit_ASL();
 #endif
-
-
 
 /// The main DAKOTA program.
 
@@ -26,12 +24,11 @@
     streams, and top level parallel iterator communicators.  Instantiate
     the ExecutableEnvironment and invoke its execute() virtual function. */
 
-int main(int argc, char* argv[])
-{
+int main(int argc, char* argv[]) {
 #ifdef HAVE_AMPL
   // Switch to 53-bit rounding if appropriate, to eliminate some
   // cross-platform differences.
-  fpinit_ASL();	
+  fpinit_ASL();
 #endif
 
   // Tie signals to Dakota's abort_handler
@@ -44,8 +41,7 @@ int main(int argc, char* argv[])
   Dakota::ExecutableEnvironment env(argc, argv);
 
   // Check or execute the environment
-  if (!env.check())
-    env.execute();
+  if (!env.check()) env.execute();
 
   return 0;
 }

@@ -29,9 +29,11 @@ PolynomialRegression::PolynomialRegression(const ParameterList& param_list) {
 
 PolynomialRegression::PolynomialRegression(
     const std::string& param_list_yaml_filename) {
-  #ifdef DISABLE_YAML_SURROGATES_CONFIG
-    throw std::runtime_error("Configuring a surrogate using a YAML file not supported by this build of Dakota");
-  #endif
+#ifdef DISABLE_YAML_SURROGATES_CONFIG
+  throw std::runtime_error(
+      "Configuring a surrogate using a YAML file not supported by this build "
+      "of Dakota");
+#endif
   default_options();
   auto param_list =
       Teuchos::getParametersFromYamlFile(param_list_yaml_filename);
@@ -50,9 +52,11 @@ PolynomialRegression::PolynomialRegression(const MatrixXd& samples,
 PolynomialRegression::PolynomialRegression(
     const MatrixXd& samples, const MatrixXd& response,
     const std::string& param_list_yaml_filename) {
-  #ifdef DISABLE_YAML_SURROGATES_CONFIG
-    throw std::runtime_error("Configuring a surrogate using a YAML file not supported by this build of Dakota");
-  #endif
+#ifdef DISABLE_YAML_SURROGATES_CONFIG
+  throw std::runtime_error(
+      "Configuring a surrogate using a YAML file not supported by this build "
+      "of Dakota");
+#endif
   default_options();
   auto param_list =
       Teuchos::getParametersFromYamlFile(param_list_yaml_filename);
@@ -145,7 +149,6 @@ void PolynomialRegression::build(const MatrixXd& samples,
 }
 
 VectorXd PolynomialRegression::value(const MatrixXd& eval_points) {
-
   VectorXd approx_values;
 
   /* Construct the basis matrix for the eval points */
@@ -182,7 +185,6 @@ void PolynomialRegression::default_options() {
 }
 
 MatrixXd PolynomialRegression::gradient(const MatrixXd& eval_points) {
-
   MatrixXd basis_indices = basisIndices.cast<double>();
   basis_indices.transposeInPlace();
   MatrixXd deriv_coeffs = MatrixXd::Zero(numTerms, numVariables);
@@ -219,7 +221,6 @@ MatrixXd PolynomialRegression::gradient(const MatrixXd& eval_points) {
 }
 
 MatrixXd PolynomialRegression::hessian(const MatrixXd& eval_point) {
-
   if (eval_point.rows() != 1) {
     throw(std::runtime_error(
         "Polynomial Hessian evaluation is for a single point."

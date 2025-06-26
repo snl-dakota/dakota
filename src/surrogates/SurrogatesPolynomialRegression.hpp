@@ -10,13 +10,13 @@
 #ifndef DAKOTA_SURROGATES_POLYNOMIAL_REGRESSION_HPP
 #define DAKOTA_SURROGATES_POLYNOMIAL_REGRESSION_HPP
 
+#include <boost/serialization/base_object.hpp>
+
 #include "SurrogatesBase.hpp"
 #include "Teuchos_YamlParameterListCoreHelpers.hpp"
 #include "UtilDataScaler.hpp"
 #include "UtilLinearSolvers.hpp"
 #include "util_data_types.hpp"
-
-#include <boost/serialization/base_object.hpp>
 
 namespace dakota {
 namespace surrogates {
@@ -108,25 +108,24 @@ class PolynomialRegression : public Surrogate {
   void build(const MatrixXd& samples, const MatrixXd& response) override;
 
   /**
-   *  \brief Evaluate the scalar polynomial surrogate at a set of prediction points.
-   * \param[in] eval_points Matrix of prediction points - (num_pts
-   * by num_features). \returns Values
-   * of the polynomial surrogate at the prediction points - (num_pts)
+   *  \brief Evaluate the scalar polynomial surrogate at a set of prediction
+   * points. \param[in] eval_points Matrix of prediction points - (num_pts by
+   * num_features). \returns Values of the polynomial surrogate at the
+   * prediction points - (num_pts)
    */
   VectorXd value(const MatrixXd& eval_points) override;
 
   /**
-   *  \brief Evaluate the gradient of the scalar polynomial surrogate at a set of
-   * prediction points. \param[in] eval_points Coordinates of
+   *  \brief Evaluate the gradient of the scalar polynomial surrogate at a set
+   * of prediction points. \param[in] eval_points Coordinates of the prediction
+   * points - (num_pts by num_features). \returns Matrix of gradient vectors at
    * the prediction points - (num_pts by num_features).
-   * \returns Matrix of gradient
-   * vectors at the prediction points - (num_pts by num_features).
    */
   MatrixXd gradient(const MatrixXd& eval_points) override;
 
   /**
-   *  \brief Evaluate the Hessian of the scalar polynomial surrogate at a single point.
-   *  \param[in] eval_point Coordinates of the prediction point - (1 by
+   *  \brief Evaluate the Hessian of the scalar polynomial surrogate at a single
+   * point. \param[in] eval_point Coordinates of the prediction point - (1 by
    * num_features). \returns Hessian matrix at the prediction point -
    *  (num_features by num_features).
    */
@@ -181,11 +180,11 @@ void PolynomialRegression::serialize(Archive& archive,
   silence_unused_args(version);
 
   archive& boost::serialization::base_object<Surrogate>(*this);
-  archive& numTerms;
-  archive& basisIndices;
-  archive& polynomialCoeffs;
-  archive& polynomialIntercept;
-  archive& verbosity;
+  archive & numTerms;
+  archive & basisIndices;
+  archive & polynomialCoeffs;
+  archive & polynomialIntercept;
+  archive & verbosity;
   if (Archive::is_saving::value)
     writeParameterListToYamlFile(configOptions, "PolynomialRegression.yaml");
 }

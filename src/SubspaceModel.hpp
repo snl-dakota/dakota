@@ -15,39 +15,37 @@
 namespace Dakota {
 
 // define special values for componentParallelMode
-#define CONFIG_PHASE  0
+#define CONFIG_PHASE 0
 #define OFFLINE_PHASE 1
-#define ONLINE_PHASE  2
+#define ONLINE_PHASE 2
 
 /// forward declarations
 class ProblemDescDB;
-
 
 /// Subspace model for input (variable space) reduction
 
 /** Specialization of a RecastModel that identifies a subspace during
     build phase and creates a RecastModel in the reduced space */
-class SubspaceModel: public RecastModel
-{
-public:
-
+class SubspaceModel : public RecastModel {
+ public:
   //
   //- Heading: Constructor and destructor
   //
 
   /// Problem database constructor
-  SubspaceModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> sub_model);
+  SubspaceModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
+                std::shared_ptr<Model> sub_model);
 
   /// lightweight constructor
   SubspaceModel(std::shared_ptr<Model>, unsigned int dimension,
-		short output_level);
+                short output_level);
 
   //
   //- Heading: Virtual function redefinitions
   //
 
   bool initialize_mapping(ParLevLIter pl_iter) override;
-  //bool finalize_mapping();
+  // bool finalize_mapping();
   bool resize_pending() const override;
 
   /// called from IteratorScheduler::init_iterator() for iteratorComm rank 0 to
@@ -65,8 +63,7 @@ public:
   /// return reducedBasis
   const RealMatrix& reduced_basis() const;
 
-protected:
-
+ protected:
   //
   //- Heading: Virtual function redefinitions
   //
@@ -97,7 +94,6 @@ protected:
   /// validate the build controls and set defaults
   virtual void validate_inputs();
 
-
   // ---
   // Subspace identification functions: rank-revealing build phase
   // ---
@@ -119,15 +115,14 @@ protected:
 
   /// Initialize the base class RecastModel with reduced space variable sizes
   void initialize_base_recast(
-    void (*variables_map)      (const Variables& recast_vars,
-				Variables& sub_model_vars),
-    void (*set_map)            (const Variables& recast_vars,
-				const ActiveSet& recast_set,
-				ActiveSet& sub_model_set),
-    void (*primary_resp_map)   (const Variables& sub_model_vars,
-				const Variables& recast_vars,
-				const Response& sub_model_response,
-				Response& recast_response));
+      void (*variables_map)(const Variables& recast_vars,
+                            Variables& sub_model_vars),
+      void (*set_map)(const Variables& recast_vars, const ActiveSet& recast_set,
+                      ActiveSet& sub_model_set),
+      void (*primary_resp_map)(const Variables& sub_model_vars,
+                               const Variables& recast_vars,
+                               const Response& sub_model_response,
+                               Response& recast_response));
 
   /// Create a variables components totals array with the reduced space
   /// size for continuous variables
@@ -139,7 +134,6 @@ protected:
 
   /// update variable labels
   void update_var_labels();
-
 
   // ---
   // Callback functions that perform data transform during the Recast operations
@@ -184,22 +178,20 @@ protected:
   static SubspaceModel* smInstance;
 };
 
+inline void SubspaceModel::assign_instance() { smInstance = this; }
 
-inline void SubspaceModel::assign_instance()
-{ smInstance = this; }
+inline bool SubspaceModel::resize_pending() const {
+  return !mappingInitialized;
+}
 
+inline const RealMatrix& SubspaceModel::reduced_basis() const {
+  return reducedBasis;
+}
 
-inline bool SubspaceModel::resize_pending() const
-{ return !mappingInitialized; }
+inline void SubspaceModel::stop_servers() {
+  component_parallel_mode(CONFIG_PHASE);
+}
 
-
-inline const RealMatrix& SubspaceModel::reduced_basis() const
-{ return reducedBasis; }
-
-
-inline void SubspaceModel::stop_servers()
-{ component_parallel_mode(CONFIG_PHASE); }
-
-} // namespace Dakota
+}  // namespace Dakota
 
 #endif

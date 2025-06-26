@@ -10,8 +10,7 @@
 #include "DakotaMinimizer.hpp"
 #include "PEBBLBranching.hpp"
 
-namespace Dakota
-{
+namespace Dakota {
 /// Wrapper class for experimental PebbldMinimizer.
 
 /**
@@ -19,15 +18,13 @@ namespace Dakota
  *
  */
 
-class PebbldTraits: public TraitsBase
-{
-  public:
-
+class PebbldTraits : public TraitsBase {
+ public:
   /// default constructor
-  PebbldTraits() { }
+  PebbldTraits() {}
 
   /// destructor
-  ~PebbldTraits() override { }
+  ~PebbldTraits() override {}
 
   /// A temporary query used in the refactor
   bool is_derived() override { return true; }
@@ -45,44 +42,44 @@ class PebbldTraits: public TraitsBase
   bool supports_nonlinear_inequality() override { return true; }
 };
 
+class PebbldMinimizer : public Minimizer {
+ public:
+  /// standard constructor
+  PebbldMinimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
+                  std::shared_ptr<Model> model);
+  /// Constructor
+  /** PebbldMinimizer Constructor
+      @param model DAKOTA Model object
+      */
+  PebbldMinimizer(std::shared_ptr<Model> model);
+  /// Constructor
+  /** PebbldMinimizer Constructor
+      @param model DAKOTA Model object
+      @param random_seed Random Seed
+      @param max_iter Maximum number of iterations
+      @param max_eval Maximum number of Black Box Evaluations
+      */
+  PebbldMinimizer(std::shared_ptr<Model> model, int random_seed,
+                  size_t max_iter, size_t max_eval);
+  /// Destructor
+  ~PebbldMinimizer() override {
+    if (branchAndBound) delete branchAndBound;
+  }
 
-class PebbldMinimizer : public Minimizer
-{
-public:
-        /// standard constructor
-        PebbldMinimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model);
-	/// Constructor
-	/** PebbldMinimizer Constructor
-	    @param model DAKOTA Model object
-	    */
-	PebbldMinimizer(std::shared_ptr<Model> model);
-	/// Constructor
-	/** PebbldMinimizer Constructor
-	    @param model DAKOTA Model object
-	    @param random_seed Random Seed
-	    @param max_iter Maximum number of iterations
-	    @param max_eval Maximum number of Black Box Evaluations
-	    */
-	 PebbldMinimizer(std::shared_ptr<Model> model, int random_seed,
-			 size_t max_iter, size_t max_eval);
-	 /// Destructor
-         ~PebbldMinimizer() override
-         { if (branchAndBound) delete branchAndBound; }
+ protected:
+  /// Calls the Pebbl Branch and Bound solver
+  void core_run() override;
 
-protected:
+  /// Redefinition of default results printing.
+  void print_results(std::ostream& s,
+                     short results_state = FINAL_RESULTS) override;
 
-        /// Calls the Pebbl Branch and Bound solver
-        void core_run() override;
+ private:
+  /// Object that implements the branching and bounding logic.
+  PebbldBranching* branchAndBound;
 
-        /// Redefinition of default results printing.
-        void print_results(std::ostream& s, short results_state = FINAL_RESULTS) override;
-
-private:
-        /// Object that implements the branching and bounding logic.
-        PebbldBranching* branchAndBound;
-
-        /// Minimizer used to solve the subproblem on each branch.
-        std::shared_ptr<Iterator> subProbMinimizer;
+  /// Minimizer used to solve the subproblem on each branch.
+  std::shared_ptr<Iterator> subProbMinimizer;
 };
 
-}     // namespace
+}  // namespace Dakota

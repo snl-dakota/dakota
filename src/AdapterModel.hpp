@@ -14,19 +14,16 @@
 
 namespace Dakota {
 
-
 /// Derived model class which wraps call-back functions for solving
 /// minimization sub-problems.
-  
+
 /** The AdapterModel class uses C-style function pointers to:
     (a) allow use of existing Iterator constructor APIs that utilize
     an incoming Model to extract sub-problem data, and (b) enable Model
     recursions on top of these call-backs. */
 
-class AdapterModel: public Model
-{
-public:
-
+class AdapterModel : public Model {
+ public:
   //
   //- Heading: Constructor and destructor
   //
@@ -35,14 +32,14 @@ public:
   /// doubles as a partial constructor given default value for response
   /// mapping function pointer
   AdapterModel(const Variables& initial_pt, const Constraints& cons,
-	       const Response& resp,
-	       void (*resp_map) (const Variables& vars, const ActiveSet& set,
-				 Response& response) = NULL);
+               const Response& resp,
+               void (*resp_map)(const Variables& vars, const ActiveSet& set,
+                                Response& response) = NULL);
 
   /// alternate partial constructor; constructs response map but
   /// requires subsequent init_minimizer_data() call
-  AdapterModel(void (*resp_map) (const Variables& vars, const ActiveSet& set,
-				 Response& response));
+  AdapterModel(void (*resp_map)(const Variables& vars, const ActiveSet& set,
+                                Response& response));
 
   /// destructor
   ~AdapterModel() override;
@@ -52,27 +49,26 @@ public:
   //
 
   /// initialize map callbacks after alternate construction
-  void initialize_response_map(void (*resp_map) (const Variables& vars,
-						 const ActiveSet& set,
-						 Response& response));
+  void initialize_response_map(void (*resp_map)(const Variables& vars,
+                                                const ActiveSet& set,
+                                                Response& response));
 
   /*
   /// perform transformation of Response (sub-model --> recast)
   void transform_response(const Variables& recast_vars,
-			  const Variables& sub_model_vars,
-			  const Response& sub_model_resp,
-			  Response& recast_resp);
+                          const Variables& sub_model_vars,
+                          const Response& sub_model_resp,
+                          Response& recast_resp);
   /// invoke transform_response() on each response within old_resp_map
   /// to create new_resp_map
   void transform_response_map(const IntResponseMap& old_resp_map,
-			      IntResponseMap& new_resp_map);
+                              IntResponseMap& new_resp_map);
 
   ActiveSet default_active_set();
   void declare_sources();
   */
 
-protected:
-
+ protected:
   //
   //- Heading: Virtual function redefinitions
   //
@@ -106,15 +102,15 @@ protected:
 
   /// set up AdapterModel for parallel operations
   void derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
-				  bool recurse_flag = true);
+                                  bool recurse_flag = true);
   /// set up AdapterModel for serial operations
   void derived_init_serial();
   /// set active parallel configuration within subModel
   void derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
-				 bool recurse_flag = true);
+                                 bool recurse_flag = true);
   /// deallocate communicator partitions for the AdapterModel
   void derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
-				  bool recurse_flag = true);
+                                  bool recurse_flag = true);
 
   /// Service subModel job requests received from the scheduler.
   /// Completes when a termination message is received from stop_servers().
@@ -126,7 +122,7 @@ protected:
   /// print the evaluation summary for the AdapterModel (request
   /// forwarded to subModel)
   void print_evaluation_summary(std::ostream& s, bool minimal_header = false,
-				bool relative_count = true) const;
+                                bool relative_count = true) const;
 
   /// set the hierarchical eval ID tag prefix
   void eval_tag_prefix(const String& eval_id_str);
@@ -142,16 +138,16 @@ protected:
   /// initialize currentVariables and related info from the passed
   /// size/type info
   bool init_variables(const ShortShortPair& recast_vars_view,
-		      const SizetArray& vars_comps_totals,
-		      const BitArray& all_relax_di, 
-		      const BitArray& all_relax_dr);
+                      const SizetArray& vars_comps_totals,
+                      const BitArray& all_relax_di,
+                      const BitArray& all_relax_dr);
   /// initialize currentResponse from the passed size info
-  void init_response(size_t num_recast_primary_fns, 
-		     size_t num_recast_secondary_fns, 
-		     short recast_resp_order, bool reshape_vars);
+  void init_response(size_t num_recast_primary_fns,
+                     size_t num_recast_secondary_fns,
+                     short recast_resp_order, bool reshape_vars);
   /// initialize userDefinedConstraints from the passed size info
   void init_constraints(size_t num_recast_secondary_fns,
-			size_t recast_secondary_offset, bool reshape_vars);
+                        size_t recast_secondary_offset, bool reshape_vars);
   */
 
   //
@@ -171,8 +167,7 @@ protected:
   /// derived_synchronize_nowait()
   IntResponseMap adapterRespMap;
 
-private:
-
+ private:
   //
   //- Heading: Convenience member functions
   //
@@ -183,25 +178,20 @@ private:
 
   /// holds pointer for primary response mapping function passed in
   /// ctor/initialize
-  void (*respMapping) (const Variables& vars, const ActiveSet& set,
-		       Response& response);
+  void (*respMapping)(const Variables& vars, const ActiveSet& set,
+                      Response& response);
 };
 
+inline AdapterModel::~AdapterModel() {}
 
-inline AdapterModel::~AdapterModel()
-{ }
+inline void AdapterModel::initialize_response_map(void (*resp_map)(
+    const Variables& vars, const ActiveSet& set, Response& response)) {
+  respMapping = resp_map;
+}  // includes NULL default
 
-
-inline void AdapterModel::
-initialize_response_map(void (*resp_map) (const Variables& vars,
-					  const ActiveSet& set,
-					  Response& response))
-{ respMapping = resp_map; } // includes NULL default
-
-
-inline int AdapterModel::derived_evaluation_id() const
-{ return adapterModelEvalCntr; }
-
+inline int AdapterModel::derived_evaluation_id() const {
+  return adapterModelEvalCntr;
+}
 
 /*
 inline bool AdapterModel::initialize_mapping(ParLevLIter pl_iter)
@@ -273,7 +263,7 @@ inline bool AdapterModel::derived_scheduler_overload() const
 
 inline void AdapterModel::
 derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
-			   bool recurse_flag)
+                           bool recurse_flag)
 {
   if (recurse_flag)
     subModel.init_communicators(pl_iter, max_eval_concurrency);
@@ -286,7 +276,7 @@ inline void AdapterModel::derived_init_serial()
 
 inline void AdapterModel::
 derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
-			  bool recurse_flag)
+                          bool recurse_flag)
 {
   if (recurse_flag) {
     subModel.set_communicators(pl_iter, max_eval_concurrency);
@@ -301,7 +291,7 @@ derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 
 inline void AdapterModel::
 derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
-			   bool recurse_flag)
+                           bool recurse_flag)
 {
   if (recurse_flag)
     subModel.free_communicators(pl_iter, max_eval_concurrency);
@@ -328,7 +318,7 @@ inline const String& AdapterModel::interface_id() const
 
 inline void AdapterModel::
 print_evaluation_summary(std::ostream& s, bool minimal_header,
-			 bool relative_count) const
+                         bool relative_count) const
 { subModel.print_evaluation_summary(s, minimal_header, relative_count); }
 
 
@@ -336,6 +326,6 @@ inline void AdapterModel::eval_tag_prefix(const String& eval_id_str)
 { subModel.eval_tag_prefix(eval_id_str); }
 */
 
-} // namespace Dakota
+}  // namespace Dakota
 
 #endif

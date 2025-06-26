@@ -10,14 +10,12 @@
 #ifndef META_ITERATOR_H
 #define META_ITERATOR_H
 
-#include "dakota_data_types.hpp"
 #include "DakotaIterator.hpp"
 #include "DakotaModel.hpp"
 #include "IteratorScheduler.hpp"
-
+#include "dakota_data_types.hpp"
 
 namespace Dakota {
-
 
 /// Base class for meta-iterators.
 
@@ -26,18 +24,15 @@ namespace Dakota {
     set iteration and the latter supports sequential, embedded, and
     collaborative hybrids. */
 
-class MetaIterator: public Iterator
-{
-public:
-
+class MetaIterator : public Iterator {
+ public:
   //
   //- Heading: Virtual function redefinitions
   //
 
   bool resize() override;
-  
-protected:
-  
+
+ protected:
   //
   //- Heading: Constructors and destructor
   //
@@ -45,7 +40,8 @@ protected:
   /// standard constructor
   MetaIterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
   /// alternate constructor
-  MetaIterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
+  MetaIterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
+               std::shared_ptr<Model> model);
   /// destructor
   ~MetaIterator() override;
 
@@ -64,27 +60,29 @@ protected:
   void check_model(const String& method_ptr, const String& model_ptr);
 
   /// initialize the_iterator and the_model based on method_ptr
-  void allocate_by_pointer(const String& method_ptr, std::shared_ptr<Iterator>& the_iterator,
-			   std::shared_ptr<Model>& the_model);
+  void allocate_by_pointer(const String& method_ptr,
+                           std::shared_ptr<Iterator>& the_iterator,
+                           std::shared_ptr<Model>& the_model);
   /// initialize the_iterator based on method_string
   void allocate_by_name(const String& method_string, const String& model_ptr,
-			std::shared_ptr<Iterator>& the_iterator,	std::shared_ptr<Model>& the_model);
+                        std::shared_ptr<Iterator>& the_iterator,
+                        std::shared_ptr<Model>& the_model);
 
   /// estimate minimum and maximum processors per iterator needed for
   /// init_iterator_parallelism(); instantiates the_iterator and the_model
   /// as needed, but on minimal processor ranks (is later augmented by
   /// allocate_by_pointer())
-  std::pair<int, int> estimate_by_pointer(const String& method_ptr,
-					  std::shared_ptr<Iterator>& the_iterator,
-					  std::shared_ptr<Model>& the_model);
+  std::pair<int, int> estimate_by_pointer(
+      const String& method_ptr, std::shared_ptr<Iterator>& the_iterator,
+      std::shared_ptr<Model>& the_model);
   /// estimate minimum and maximum processors per iterator needed for
   /// init_iterator_parallelism(); instantiates the_iterator and the_model
   /// as needed, but on minimal processor ranks (is later augmented by
   /// allocate_by_name())
   std::pair<int, int> estimate_by_name(const String& method_string,
-				       const String& model_ptr,
-				       std::shared_ptr<Iterator>& the_iterator,
-				       std::shared_ptr<Model>& the_model);
+                                       const String& model_ptr,
+                                       std::shared_ptr<Iterator>& the_iterator,
+                                       std::shared_ptr<Model>& the_model);
 
   //
   //- Heading: Data members
@@ -96,14 +94,12 @@ protected:
   /// maximum number of concurrent sub-iterator executions
   int maxIteratorConcurrency;
 
-private:
-
+ private:
   //
   //- Heading: Convenience member functions
   //
-
 };
 
-} // namespace Dakota
+}  // namespace Dakota
 
 #endif

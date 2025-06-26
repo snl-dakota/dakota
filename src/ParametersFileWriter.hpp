@@ -10,10 +10,11 @@
 #pragma once
 
 #include <memory>
-#include <vector>
 #include <string>
-#include "dakota_data_types.hpp"
+#include <vector>
+
 #include "PRPMultiIndex.hpp"
+#include "dakota_data_types.hpp"
 
 namespace Dakota {
 
@@ -21,51 +22,41 @@ class Variables;
 class ActiveSet;
 class Response;
 
-
 class ParametersFileWriter {
-    public:
-        /// Return pointer to derived class
-        static std::unique_ptr<ParametersFileWriter> get_writer(unsigned short params_file_format);
+ public:
+  /// Return pointer to derived class
+  static std::unique_ptr<ParametersFileWriter> get_writer(
+      unsigned short params_file_format);
 
-        /// Write a parameters file for a single evaluation
-        virtual void write_parameters_file(const Variables& vars, const ActiveSet& set,
-                                        const Response& response, const std::string& prog,
-                                        const std::vector<std::string>& an_comps,
-                                        const std::string& full_eval_id,
-                                        const std::string& params_fname) const;
+  /// Write a parameters file for a single evaluation
+  virtual void write_parameters_file(
+      const Variables& vars, const ActiveSet& set, const Response& response,
+      const std::string& prog, const std::vector<std::string>& an_comps,
+      const std::string& full_eval_id, const std::string& params_fname) const;
 
-        /// Write a parameters file for a batch of evalulations
-        virtual void write_parameters_file(const PRPQueue& prp_queue,
-                                        const std::string &prog,
-                                        const std::vector<std::string>& an_comps,
-                                        const std::string& eval_prefix_tag,
-                                        int batch_id,
-                                        const std::string & params_fname) const;
-    protected:
+  /// Write a parameters file for a batch of evalulations
+  virtual void write_parameters_file(const PRPQueue& prp_queue,
+                                     const std::string& prog,
+                                     const std::vector<std::string>& an_comps,
+                                     const std::string& eval_prefix_tag,
+                                     int batch_id,
+                                     const std::string& params_fname) const;
 
-        /// Write individual parameter set to stream
-        virtual void write_evaluation_to_stream(const Variables& vars,
-                                        const ActiveSet& set,
-                                        const Response& response,
-                                        const std::vector<std::string>& an_comps,
-                                        const StringArray& asv_labels, 
-                                        const StringArray& dvv_labels,
-                                        const StringArray& ac_labels,
-                                        const StringArray& md_tags,
-                                        const std::string full_eval_id,
-                                        std::ofstream& parameter_stream) const;
+ protected:
+  /// Write individual parameter set to stream
+  virtual void write_evaluation_to_stream(
+      const Variables& vars, const ActiveSet& set, const Response& response,
+      const std::vector<std::string>& an_comps, const StringArray& asv_labels,
+      const StringArray& dvv_labels, const StringArray& ac_labels,
+      const StringArray& md_tags, const std::string full_eval_id,
+      std::ofstream& parameter_stream) const;
 
-        /// create labels for use in aprepro and dakota format parameters files
-        void populate_labels(const Variables& vars,
-                            const ActiveSet& set,
-                            const Response& response,
-                            const std::string prog,
-                            const std::vector<std::string>& an_comps,
-                            StringArray& asv_labels,
-                            StringArray& dvv_labels,
-                            StringArray& ac_labels,
-                            StringArray& md_tags) const;
-
+  /// create labels for use in aprepro and dakota format parameters files
+  void populate_labels(const Variables& vars, const ActiveSet& set,
+                       const Response& response, const std::string prog,
+                       const std::vector<std::string>& an_comps,
+                       StringArray& asv_labels, StringArray& dvv_labels,
+                       StringArray& ac_labels, StringArray& md_tags) const;
 };
 
-}
+}  // namespace Dakota

@@ -13,34 +13,33 @@
 //- Owner:        Moe Khalil
 //- Version: $Id: DakotaTraitsBase.hpp 0001 2017-02-21 10:35:14Z mkhalil $
 
-
 #ifndef DAKOTA_TRAITS_BASE_H
 #define DAKOTA_TRAITS_BASE_H
 
 namespace Dakota {
 
-  enum class LINEAR_INEQUALITY_FORMAT    { NONE,
-                                           TWO_SIDED,
-                                           ONE_SIDED_LOWER,
-                                           ONE_SIDED_UPPER };
+enum class LINEAR_INEQUALITY_FORMAT {
+  NONE,
+  TWO_SIDED,
+  ONE_SIDED_LOWER,
+  ONE_SIDED_UPPER
+};
 
-  enum class NONLINEAR_EQUALITY_FORMAT   { NONE,
-                                           TRUE_EQUALITY,
-                                           TWO_INEQUALITY };
+enum class NONLINEAR_EQUALITY_FORMAT { NONE, TRUE_EQUALITY, TWO_INEQUALITY };
 
-  enum class NONLINEAR_INEQUALITY_FORMAT { NONE,
-                                           ONE_SIDED_UPPER,
-                                           ONE_SIDED_LOWER,
-                                           TWO_SIDED };
+enum class NONLINEAR_INEQUALITY_FORMAT {
+  NONE,
+  ONE_SIDED_UPPER,
+  ONE_SIDED_LOWER,
+  TWO_SIDED
+};
 
 /// Base class for traits.
 
 /** TraitsBase provides default traits through various accessors . */
 
-class TraitsBase
-{
-public:
-
+class TraitsBase {
+ public:
   /// default constructor
   TraitsBase();
 
@@ -60,22 +59,25 @@ public:
   virtual bool supports_linear_inequality() { return false; }
 
   /// Return the format used for linear inequality constraints
-  virtual LINEAR_INEQUALITY_FORMAT linear_inequality_format()
-    { return LINEAR_INEQUALITY_FORMAT::NONE; }
+  virtual LINEAR_INEQUALITY_FORMAT linear_inequality_format() {
+    return LINEAR_INEQUALITY_FORMAT::NONE;
+  }
 
   /// Return the flag indicating whether method supports nonlinear equalities
   virtual bool supports_nonlinear_equality() { return false; }
 
   /// Return the format used for nonlinear equality constraints
-  virtual NONLINEAR_EQUALITY_FORMAT nonlinear_equality_format()
-    { return NONLINEAR_EQUALITY_FORMAT::NONE; }
+  virtual NONLINEAR_EQUALITY_FORMAT nonlinear_equality_format() {
+    return NONLINEAR_EQUALITY_FORMAT::NONE;
+  }
 
   /// Return the flag indicating whether method supports nonlinear inequalities
   virtual bool supports_nonlinear_inequality() { return false; }
 
   /// Return the format used for nonlinear inequality constraints
-  virtual NONLINEAR_INEQUALITY_FORMAT nonlinear_inequality_format()
-    { return NONLINEAR_INEQUALITY_FORMAT::NONE; }
+  virtual NONLINEAR_INEQUALITY_FORMAT nonlinear_inequality_format() {
+    return NONLINEAR_INEQUALITY_FORMAT::NONE;
+  }
 
   /// Return the flag indicating whether method expects nonlinear inequality
   /// constraints followed by nonlinear equality constraints
@@ -112,9 +114,8 @@ public:
   virtual bool provides_final_hessian() { return false; }
 };
 
-inline TraitsBase::~TraitsBase()
-{ }
+inline TraitsBase::~TraitsBase() {}
 
-} // namespace Dakota
+}  // namespace Dakota
 
 #endif

@@ -12,11 +12,10 @@
 
 #include "DirectApplicInterface.hpp"
 
-
-/// A sample namespace for derived classes that use assign_rep() to 
+/// A sample namespace for derived classes that use assign_rep() to
 /// plug facilities into DAKOTA.
 
-/** A typical use of plug-ins with assign_rep() is to publish a 
+/** A typical use of plug-ins with assign_rep() is to publish a
     simulation interface for use in library mode  See \ref DakLibrary
     for more information. */
 
@@ -30,33 +29,31 @@ namespace SIM {
     response mappings.  It is used to demonstrate plugging in a serial
     direct analysis driver into Dakota in library mode.  Test input
     files can then use an analysis_driver of "plugin_rosenbrock". */
-class SerialDirectApplicInterface: public Dakota::DirectApplicInterface
-{
-public:
-
+class SerialDirectApplicInterface : public Dakota::DirectApplicInterface {
+ public:
   //
   //- Heading: Constructor and destructor
   //
 
   /// constructor
-  SerialDirectApplicInterface(const Dakota::ProblemDescDB& problem_db, Dakota::ParallelLibrary& parallel_lib);
+  SerialDirectApplicInterface(const Dakota::ProblemDescDB& problem_db,
+                              Dakota::ParallelLibrary& parallel_lib);
   /// destructor
   ~SerialDirectApplicInterface() override;
 
-protected:
-
+ protected:
   //
   //- Heading: Virtual function redefinitions
   //
 
   // execute the input filter portion of a direct evaluation invocation
-  //int derived_map_if(const Dakota::String& if_name);
+  // int derived_map_if(const Dakota::String& if_name);
 
   /// execute an analysis code portion of a direct evaluation invocation
   int derived_map_ac(const Dakota::String& ac_name) override;
 
   // execute the output filter portion of a direct evaluation invocation
-  //int derived_map_of(const Dakota::String& of_name);
+  // int derived_map_of(const Dakota::String& of_name);
 
   /// no-op hides base error; job batching occurs within
   /// wait_local_evaluations()
@@ -70,58 +67,49 @@ protected:
   /// no-op hides default run-time error checks at DirectApplicInterface level
   void set_communicators_checks(int max_eval_concurrency) override;
 
-private:
-
+ private:
   //
   //- Heading: Convenience functions
   //
 
   /// Rosenbrock plug-in test function
   int rosenbrock(const Dakota::RealVector& c_vars, short asv,
-		 Dakota::Real& fn_val, Dakota::RealVector& fn_grad,
-		 Dakota::RealSymMatrix& fn_hess);
+                 Dakota::Real& fn_val, Dakota::RealVector& fn_grad,
+                 Dakota::RealSymMatrix& fn_hess);
 
   //
   //- Heading: Data
   //
-
 };
 
+inline SerialDirectApplicInterface::SerialDirectApplicInterface(
+    const Dakota::ProblemDescDB& problem_db,
+    Dakota::ParallelLibrary& parallel_lib)
+    : Dakota::DirectApplicInterface(problem_db, parallel_lib) {}
 
-inline SerialDirectApplicInterface::
-SerialDirectApplicInterface(const Dakota::ProblemDescDB& problem_db, Dakota::ParallelLibrary& parallel_lib):
-  Dakota::DirectApplicInterface(problem_db, parallel_lib)
-{ }
+inline SerialDirectApplicInterface::~SerialDirectApplicInterface() {}
 
-
-inline SerialDirectApplicInterface::~SerialDirectApplicInterface()
-{ }
-
-
-inline void SerialDirectApplicInterface::
-derived_map_asynch(const Dakota::ParamResponsePair& pair)
-{
+inline void SerialDirectApplicInterface::derived_map_asynch(
+    const Dakota::ParamResponsePair& pair) {
   // no-op (just hides base class error throw). Jobs are run exclusively within
   // wait_local_evaluations(), prior to there existing true batch processing
   // facilities.
 }
-
 
 /** For use by ApplicationInterface::serve_evaluations_asynch(), which can
     provide a batch processing capability within message passing schedulers
     (called using chain IteratorScheduler::run_iterator() --> Model::serve()
     --> ApplicationInterface::serve_evaluations()
     --> ApplicationInterface::serve_evaluations_asynch()). */
-inline void SerialDirectApplicInterface::
-test_local_evaluations(Dakota::PRPQueue& prp_queue)
-{ wait_local_evaluations(prp_queue); }
-
+inline void SerialDirectApplicInterface::test_local_evaluations(
+    Dakota::PRPQueue& prp_queue) {
+  wait_local_evaluations(prp_queue);
+}
 
 // Hide default run-time error checks at DirectApplicInterface level
-inline void SerialDirectApplicInterface::
-set_communicators_checks(int max_eval_concurrency)
-{ }
+inline void SerialDirectApplicInterface::set_communicators_checks(
+    int max_eval_concurrency) {}
 
-} // namespace Dakota
+}  // namespace SIM
 
 #endif

@@ -29,8 +29,7 @@ class OptBCFDNewton;
 class OptNIPS;
 class OptQNIPS;
 class OptFDNIPS;
-}
-
+}  // namespace OPTPP
 
 namespace Dakota {
 
@@ -38,20 +37,19 @@ namespace Dakota {
  * \brief A version of TraitsBase specialized for SNLL optimizers
  *
  */
-class SNLLTraits: public TraitsBase
-{
-  public:
-
+class SNLLTraits : public TraitsBase {
+ public:
   /// default constructor
-  SNLLTraits() { }
+  SNLLTraits() {}
 
   /// destructor
-  ~SNLLTraits() override { }
+  ~SNLLTraits() override {}
 
   /// A temporary query used in the refactor
   bool is_derived() override { return true; }
 
-  // Traits are chosen to be the most common ones across a majority of methods within this TPL.
+  // Traits are chosen to be the most common ones across a majority of methods
+  // within this TPL.
 
   /// Return the value of supportsContinuousVariables
   bool supports_continuous_variables() override { return true; }
@@ -69,11 +67,10 @@ class SNLLTraits: public TraitsBase
   bool supports_nonlinear_inequality() override { return true; }
 
   /// Return the format used for nonlinear inequality constraints
-  NONLINEAR_INEQUALITY_FORMAT nonlinear_inequality_format() override
-    { return NONLINEAR_INEQUALITY_FORMAT::TWO_SIDED; }
-
+  NONLINEAR_INEQUALITY_FORMAT nonlinear_inequality_format() override {
+    return NONLINEAR_INEQUALITY_FORMAT::TWO_SIDED;
+  }
 };
-
 
 /// Wrapper class for the OPT++ optimization library.
 
@@ -104,82 +101,87 @@ class SNLLTraits: public TraitsBase
     gradient_based_line_search.  Refer to [Meza, J.C., 1994] and to
     the OPT++ source in the Dakota/packages/OPTPP directory for
     information on OPT++ class member functions. */
-class SNLLOptimizer: public Optimizer, public SNLLBase
-{
-public:
-  
+class SNLLOptimizer : public Optimizer, public SNLLBase {
+ public:
   //
   //- Heading: Constructors and destructor
   //
 
   /// standard constructor
-  SNLLOptimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model>);
+  SNLLOptimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
+                std::shared_ptr<Model>);
 
   /// alternate constructor for instantiations "on the fly"
   SNLLOptimizer(const String& method_string, std::shared_ptr<Model>);
 
   /// alternate constructor for objective/constraint call-backs;
   /// analytic gradient case
-  SNLLOptimizer(const RealVector& initial_pt,
-    const RealVector& var_l_bnds,      const RealVector& var_u_bnds,
-    const RealMatrix& lin_ineq_coeffs, const RealVector& lin_ineq_l_bnds,
-    const RealVector& lin_ineq_u_bnds, const RealMatrix& lin_eq_coeffs,
-    const RealVector& lin_eq_tgts,     const RealVector& nln_ineq_l_bnds,
-    const RealVector& nln_ineq_u_bnds, const RealVector& nln_eq_tgts,
-    void (*nlf1_obj_eval) (int mode, int n, const RealVector& x, double& f,
-			   RealVector& grad_f, int& result_mode),
-    void (*nlf1_con_eval) (int mode, int n, const RealVector& x, RealVector& g,
-			   RealMatrix& grad_g, int& result_mode),
-    size_t max_iter = 100, size_t max_eval = 1000, Real conv_tol = 1.e-4,
-    Real grad_tol = 1.e-4, Real   max_step = 1000.);
+  SNLLOptimizer(
+      const RealVector& initial_pt, const RealVector& var_l_bnds,
+      const RealVector& var_u_bnds, const RealMatrix& lin_ineq_coeffs,
+      const RealVector& lin_ineq_l_bnds, const RealVector& lin_ineq_u_bnds,
+      const RealMatrix& lin_eq_coeffs, const RealVector& lin_eq_tgts,
+      const RealVector& nln_ineq_l_bnds, const RealVector& nln_ineq_u_bnds,
+      const RealVector& nln_eq_tgts,
+      void (*nlf1_obj_eval)(int mode, int n, const RealVector& x, double& f,
+                            RealVector& grad_f, int& result_mode),
+      void (*nlf1_con_eval)(int mode, int n, const RealVector& x, RealVector& g,
+                            RealMatrix& grad_g, int& result_mode),
+      size_t max_iter = 100, size_t max_eval = 1000, Real conv_tol = 1.e-4,
+      Real grad_tol = 1.e-4, Real max_step = 1000.);
   /// alternate constructor for objective/constraint call-backs;
   /// mixed gradient case: numerical objective, analytic constraints
-  SNLLOptimizer(const RealVector& initial_pt,
-    const RealVector& var_l_bnds,      const RealVector& var_u_bnds,
-    const RealMatrix& lin_ineq_coeffs, const RealVector& lin_ineq_l_bnds,
-    const RealVector& lin_ineq_u_bnds, const RealMatrix& lin_eq_coeffs,
-    const RealVector& lin_eq_tgts,     const RealVector& nln_ineq_l_bnds,
-    const RealVector& nln_ineq_u_bnds, const RealVector& nln_eq_tgts,
-    void (*nlf0_obj_eval) (int n, const RealVector& x, double& f,
-			   int& result_mode),
-    void (*nlf1_con_eval) (int mode, int n, const RealVector& x, RealVector& g,
-			   RealMatrix& grad_g, int& result_mode),
-    const RealVector& fdss, const String& interval_type,
-    size_t max_iter = 100, size_t max_eval = 1000, Real conv_tol = 1.e-4,
-    Real grad_tol = 1.e-4, Real   max_step = 1000.);
+  SNLLOptimizer(
+      const RealVector& initial_pt, const RealVector& var_l_bnds,
+      const RealVector& var_u_bnds, const RealMatrix& lin_ineq_coeffs,
+      const RealVector& lin_ineq_l_bnds, const RealVector& lin_ineq_u_bnds,
+      const RealMatrix& lin_eq_coeffs, const RealVector& lin_eq_tgts,
+      const RealVector& nln_ineq_l_bnds, const RealVector& nln_ineq_u_bnds,
+      const RealVector& nln_eq_tgts,
+      void (*nlf0_obj_eval)(int n, const RealVector& x, double& f,
+                            int& result_mode),
+      void (*nlf1_con_eval)(int mode, int n, const RealVector& x, RealVector& g,
+                            RealMatrix& grad_g, int& result_mode),
+      const RealVector& fdss, const String& interval_type,
+      size_t max_iter = 100, size_t max_eval = 1000, Real conv_tol = 1.e-4,
+      Real grad_tol = 1.e-4, Real max_step = 1000.);
   /// alternate constructor for objective/constraint call-backs;
   /// mixed gradient case: analytic objective, numerical constraints
-  SNLLOptimizer(const RealVector& initial_pt,
-    const RealVector& var_l_bnds,      const RealVector& var_u_bnds,
-    const RealMatrix& lin_ineq_coeffs, const RealVector& lin_ineq_l_bnds,
-    const RealVector& lin_ineq_u_bnds, const RealMatrix& lin_eq_coeffs,
-    const RealVector& lin_eq_tgts,     const RealVector& nln_ineq_l_bnds,
-    const RealVector& nln_ineq_u_bnds, const RealVector& nln_eq_tgts,
-    void (*nlf1_obj_eval) (int mode, int n, const RealVector& x, double& f,
-			   RealVector& grad_f, int& result_mode),
-    void (*nlf0_con_eval) (int n, const RealVector& x, RealVector& g,
-			   int& result_mode),
-    const RealVector& fdss, const String& interval_type,
-    size_t max_iter = 100, size_t max_eval = 1000, Real conv_tol = 1.e-4,
-    Real grad_tol = 1.e-4, Real   max_step = 1000.);
+  SNLLOptimizer(
+      const RealVector& initial_pt, const RealVector& var_l_bnds,
+      const RealVector& var_u_bnds, const RealMatrix& lin_ineq_coeffs,
+      const RealVector& lin_ineq_l_bnds, const RealVector& lin_ineq_u_bnds,
+      const RealMatrix& lin_eq_coeffs, const RealVector& lin_eq_tgts,
+      const RealVector& nln_ineq_l_bnds, const RealVector& nln_ineq_u_bnds,
+      const RealVector& nln_eq_tgts,
+      void (*nlf1_obj_eval)(int mode, int n, const RealVector& x, double& f,
+                            RealVector& grad_f, int& result_mode),
+      void (*nlf0_con_eval)(int n, const RealVector& x, RealVector& g,
+                            int& result_mode),
+      const RealVector& fdss, const String& interval_type,
+      size_t max_iter = 100, size_t max_eval = 1000, Real conv_tol = 1.e-4,
+      Real grad_tol = 1.e-4, Real max_step = 1000.);
   /// alternate constructor for objective/constraint call-backs;
   /// numerical gradient case
-  SNLLOptimizer(const RealVector& initial_pt,
-    const RealVector& var_l_bnds,      const RealVector& var_u_bnds,
-    const RealMatrix& lin_ineq_coeffs, const RealVector& lin_ineq_l_bnds,
-    const RealVector& lin_ineq_u_bnds, const RealMatrix& lin_eq_coeffs,
-    const RealVector& lin_eq_tgts,     const RealVector& nln_ineq_l_bnds,
-    const RealVector& nln_ineq_u_bnds, const RealVector& nln_eq_tgts,
-    void (*nlf0_obj_eval) (int n, const RealVector& x, double& f,
-			   int& result_mode),
-    void (*nlf0_con_eval) (int n, const RealVector& x, RealVector& g,
-			   int& result_mode),
-    const RealVector& fdss, const String& interval_type,
-    size_t max_iter = 100, size_t max_eval = 1000, Real conv_tol = 1.e-4,
-    Real grad_tol = 1.e-4, Real   max_step = 1000.);
+  SNLLOptimizer(const RealVector& initial_pt, const RealVector& var_l_bnds,
+                const RealVector& var_u_bnds, const RealMatrix& lin_ineq_coeffs,
+                const RealVector& lin_ineq_l_bnds,
+                const RealVector& lin_ineq_u_bnds,
+                const RealMatrix& lin_eq_coeffs, const RealVector& lin_eq_tgts,
+                const RealVector& nln_ineq_l_bnds,
+                const RealVector& nln_ineq_u_bnds,
+                const RealVector& nln_eq_tgts,
+                void (*nlf0_obj_eval)(int n, const RealVector& x, double& f,
+                                      int& result_mode),
+                void (*nlf0_con_eval)(int n, const RealVector& x, RealVector& g,
+                                      int& result_mode),
+                const RealVector& fdss, const String& interval_type,
+                size_t max_iter = 100, size_t max_eval = 1000,
+                Real conv_tol = 1.e-4, Real grad_tol = 1.e-4,
+                Real max_step = 1000.);
 
-  ~SNLLOptimizer() override; ///< destructor
-    
+  ~SNLLOptimizer() override;  ///< destructor
+
   //
   //- Heading: Virtual member function redefinitions
   //
@@ -192,23 +194,18 @@ public:
   void declare_sources() override;
 
   void initial_point(const RealVector& pt) override;
-  void update_callback_data(const RealVector& cv_initial,
-			    const RealVector& cv_lower_bnds,
-			    const RealVector& cv_upper_bnds,
-			    const RealMatrix& lin_ineq_coeffs,
-			    const RealVector& lin_ineq_l_bnds,
-			    const RealVector& lin_ineq_u_bnds,
-			    const RealMatrix& lin_eq_coeffs,
-			    const RealVector& lin_eq_targets,
-			    const RealVector& nln_ineq_l_bnds,
-			    const RealVector& nln_ineq_u_bnds,
-			    const RealVector& nln_eq_targets) override;
+  void update_callback_data(
+      const RealVector& cv_initial, const RealVector& cv_lower_bnds,
+      const RealVector& cv_upper_bnds, const RealMatrix& lin_ineq_coeffs,
+      const RealVector& lin_ineq_l_bnds, const RealVector& lin_ineq_u_bnds,
+      const RealMatrix& lin_eq_coeffs, const RealVector& lin_eq_targets,
+      const RealVector& nln_ineq_l_bnds, const RealVector& nln_ineq_u_bnds,
+      const RealVector& nln_eq_targets) override;
   const RealMatrix& callback_linear_ineq_coefficients() const override;
   const RealVector& callback_linear_ineq_lower_bounds() const override;
   const RealVector& callback_linear_ineq_upper_bounds() const override;
 
-protected:
-
+ protected:
   //
   //- Heading: Virtual member function redefinitions
   //
@@ -223,8 +220,7 @@ protected:
   /// performs cleanup, restores instances and calls parent finalize
   void finalize_run() override;
 
-private:
-
+ private:
   //
   //- Heading: Helper functions
   //
@@ -234,28 +230,28 @@ private:
 
   /// instantiate an OPTPP_Q_NEWTON solver using standard settings
   void default_instantiate_q_newton(
-    void (*obj_eval) (int mode, int n, const RealVector& x, double& f,
-		      RealVector& grad_f, int& result_mode) );
+      void (*obj_eval)(int mode, int n, const RealVector& x, double& f,
+                       RealVector& grad_f, int& result_mode));
   /// instantiate an OPTPP_Q_NEWTON solver using standard settings
-  void default_instantiate_q_newton(
-    void (*obj_eval) (int n, const RealVector& x, double& f, int& result_mode));
+  void default_instantiate_q_newton(void (*obj_eval)(int n, const RealVector& x,
+                                                     double& f,
+                                                     int& result_mode));
   /// instantiate constraint objectives using standard settings
   void default_instantiate_constraint(
-    void (*con_eval) (int mode, int n, const RealVector& x, RealVector& g,
-		      RealMatrix& grad_g, int& result_mode) );
+      void (*con_eval)(int mode, int n, const RealVector& x, RealVector& g,
+                       RealMatrix& grad_g, int& result_mode));
   /// instantiate constraint objectives using standard settings
-  void default_instantiate_constraint(
-    void (*con_eval) (int n, const RealVector& x, RealVector& g,
-		      int& result_mode) );
+  void default_instantiate_constraint(void (*con_eval)(
+      int n, const RealVector& x, RealVector& g, int& result_mode));
   /// instantiate an OPTPP_NEWTON solver using standard settings
   void default_instantiate_newton(
-    void (*obj_eval) (int mode, int n, const RealVector& x, double& f,
-		      RealVector& grad_f, RealSymMatrix& hess_f,
-		      int& result_mode),
-    void (*con_eval) (int mode, int n, const RealVector& x, RealVector& g,
-		      RealMatrix& grad_g, 
-		      OPTPP::OptppArray<RealSymMatrix >& hess_g,
-		      int& result_mode) );
+      void (*obj_eval)(int mode, int n, const RealVector& x, double& f,
+                       RealVector& grad_f, RealSymMatrix& hess_f,
+                       int& result_mode),
+      void (*con_eval)(int mode, int n, const RealVector& x, RealVector& g,
+                       RealMatrix& grad_g,
+                       OPTPP::OptppArray<RealSymMatrix>& hess_g,
+                       int& result_mode));
 
   //
   //- Heading: Static member functions required by opt++
@@ -267,38 +263,38 @@ private:
   /// objective function evaluator function for OPT++ methods which
   /// require only function values.
   static void nlf0_evaluator(int n, const RealVector& x, double& f,
-			     int& result_mode);
+                             int& result_mode);
 
   /// objective function evaluator function which provides function
   /// values and gradients to OPT++ methods.
-  static void nlf1_evaluator(int mode, int n, const RealVector& x,
-			     double& f, RealVector& grad_f, int& result_mode);
+  static void nlf1_evaluator(int mode, int n, const RealVector& x, double& f,
+                             RealVector& grad_f, int& result_mode);
 
   /// objective function evaluator function which provides function
   /// values, gradients, and Hessians to OPT++ methods.
-  static void nlf2_evaluator(int mode, int n, const RealVector& x,
-			     double& f, RealVector& grad_f,
-			     RealSymMatrix& hess_f, int& result_mode);
+  static void nlf2_evaluator(int mode, int n, const RealVector& x, double& f,
+                             RealVector& grad_f, RealSymMatrix& hess_f,
+                             int& result_mode);
 
   //- Constraint evaluation routines that invoke Model::compute_response
 
   /// constraint evaluator function for OPT++ methods which require
   /// only constraint values.
-  static void constraint0_evaluator(int n, const RealVector& x, 
-				    RealVector& g, int& result_mode);
+  static void constraint0_evaluator(int n, const RealVector& x, RealVector& g,
+                                    int& result_mode);
 
   /// constraint evaluator function which provides constraint
   /// values and gradients to OPT++ methods.
-  static void constraint1_evaluator(int mode, int n, const RealVector& x, 
-				    RealVector& g, RealMatrix& grad_g,
-				    int& result_mode);
+  static void constraint1_evaluator(int mode, int n, const RealVector& x,
+                                    RealVector& g, RealMatrix& grad_g,
+                                    int& result_mode);
 
   /// constraint evaluator function which provides constraint
   /// values, gradients, and Hessians to OPT++ methods.
-  static void constraint2_evaluator(int mode, int n, const RealVector& x, 
-				    RealVector& g, RealMatrix& grad_g, 
-				    OPTPP::OptppArray<RealSymMatrix >& hess_g,
-				    int& result_mode);
+  static void constraint2_evaluator(int mode, int n, const RealVector& x,
+                                    RealVector& g, RealMatrix& grad_g,
+                                    OPTPP::OptppArray<RealSymMatrix>& hess_g,
+                                    int& result_mode);
 
   //
   //- Heading: Data
@@ -312,40 +308,40 @@ private:
   SNLLOptimizer* prevSnllOptInstance;
 
   //- Base class pointers to OPT++ objects
-  OPTPP::NLP0   *nlfObjective;  ///< objective  NLF base class pointer
-  OPTPP::NLP0   *nlfConstraint; ///< constraint NLF base class pointer
-  OPTPP::NLP    *nlpConstraint; ///< constraint NLP pointer
+  OPTPP::NLP0* nlfObjective;   ///< objective  NLF base class pointer
+  OPTPP::NLP0* nlfConstraint;  ///< constraint NLF base class pointer
+  OPTPP::NLP* nlpConstraint;   ///< constraint NLP pointer
 
   //- additional pointers needed for option specification
   /// pointer to objective NLF for nongradient optimizers
-  OPTPP::NLF0   *nlf0;
+  OPTPP::NLF0* nlf0;
   /// pointer to objective NLF for (analytic) gradient-based optimizers
-  OPTPP::NLF1   *nlf1;
+  OPTPP::NLF1* nlf1;
   /// pointer to constraint NLF for (analytic) gradient-based optimizers
-  OPTPP::NLF1   *nlf1Con;
+  OPTPP::NLF1* nlf1Con;
   /// pointer to objective NLF for (finite diff) gradient-based optimizers
-  OPTPP::FDNLF1 *fdnlf1;
+  OPTPP::FDNLF1* fdnlf1;
   /// pointer to constraint NLF for (finite diff) gradient-based optimizers
-  OPTPP::FDNLF1 *fdnlf1Con;
+  OPTPP::FDNLF1* fdnlf1Con;
   /// pointer to objective NLF for full Newton optimizers
-  OPTPP::NLF2   *nlf2;
+  OPTPP::NLF2* nlf2;
   /// pointer to constraint NLF for full Newton optimizers
-  OPTPP::NLF2   *nlf2Con;
-    
-  OPTPP::OptimizeClass *theOptimizer; ///< optimizer base class pointer
+  OPTPP::NLF2* nlf2Con;
+
+  OPTPP::OptimizeClass* theOptimizer;  ///< optimizer base class pointer
   //- additional pointers needed for option specification
-  OPTPP::OptPDS        *optpds;       ///< PDS optimizer pointer
-  OPTPP::OptCG         *optcg;        ///< CG optimizer pointer
-  OPTPP::OptLBFGS      *optlbfgs;     ///< L-BFGS optimizer pointer
-  OPTPP::OptNewton     *optnewton;    ///< Newton optimizer pointer
-  OPTPP::OptQNewton    *optqnewton;   ///< Quasi-Newton optimizer pointer
-  OPTPP::OptFDNewton   *optfdnewton;  ///< Finite Difference Newton opt pointer
-  OPTPP::OptBCNewton   *optbcnewton;  ///< Bound constrained Newton opt pointer
-  OPTPP::OptBCQNewton  *optbcqnewton; ///< Bnd constrained Quasi-Newton opt ptr
-  OPTPP::OptBCFDNewton *optbcfdnewton;///< Bnd constrained FD-Newton opt ptr
-  OPTPP::OptNIPS       *optnips;      ///< NIPS optimizer pointer
-  OPTPP::OptQNIPS      *optqnips;     ///< Quasi-Newton NIPS optimizer pointer
-  OPTPP::OptFDNIPS     *optfdnips;    ///< Finite Difference NIPS opt pointer
+  OPTPP::OptPDS* optpds;              ///< PDS optimizer pointer
+  OPTPP::OptCG* optcg;                ///< CG optimizer pointer
+  OPTPP::OptLBFGS* optlbfgs;          ///< L-BFGS optimizer pointer
+  OPTPP::OptNewton* optnewton;        ///< Newton optimizer pointer
+  OPTPP::OptQNewton* optqnewton;      ///< Quasi-Newton optimizer pointer
+  OPTPP::OptFDNewton* optfdnewton;    ///< Finite Difference Newton opt pointer
+  OPTPP::OptBCNewton* optbcnewton;    ///< Bound constrained Newton opt pointer
+  OPTPP::OptBCQNewton* optbcqnewton;  ///< Bnd constrained Quasi-Newton opt ptr
+  OPTPP::OptBCFDNewton* optbcfdnewton;  ///< Bnd constrained FD-Newton opt ptr
+  OPTPP::OptNIPS* optnips;              ///< NIPS optimizer pointer
+  OPTPP::OptQNIPS* optqnips;            ///< Quasi-Newton NIPS optimizer pointer
+  OPTPP::OptFDNIPS* optfdnips;          ///< Finite Difference NIPS opt pointer
 
   /// flag for iteration mode: "model" (normal usage) or "user_functions"
   /// (user-supplied functions mode for "on the fly" instantiations).
@@ -383,45 +379,46 @@ private:
   String fdIntervalType;
 
   /// cache zeroth-order objective call-back function
-  void (*userObjective0) (int n, const RealVector& x, double& f,
-			  int& result_mode);
+  void (*userObjective0)(int n, const RealVector& x, double& f,
+                         int& result_mode);
   /// cache first-order objective call-back function
-  void (*userObjective1) (int mode, int n, const RealVector& x, double& f,
-			  RealVector& grad_f, int& result_mode);
-  //void (*userObjective2) (int mode, int n, const RealVector& x, double& f,
-  //                        RealVector& grad_f, RealSymMatrix& hess_f,
-  //                        int& result_mode);
-  /// cache zeroth-order constraint call-back function
-  void (*userConstraint0) (int n, const RealVector& x, RealVector& g,
-			   int& result_mode);
-  /// cache first-order constraint call-back function
-  void (*userConstraint1) (int mode, int n, const RealVector& x, RealVector& g,
-			   RealMatrix& grad_g, int& result_mode);
-  //void (*userConstraint2) (int mode, int n, const RealVector& x,RealVector& g,
-  //                         RealMatrix& grad_g,
-  //                         OPTPP::OptppArray<RealSymMatrix >& hess_g,
+  void (*userObjective1)(int mode, int n, const RealVector& x, double& f,
+                         RealVector& grad_f, int& result_mode);
+  // void (*userObjective2) (int mode, int n, const RealVector& x, double& f,
+  //                         RealVector& grad_f, RealSymMatrix& hess_f,
   //                         int& result_mode);
+  /// cache zeroth-order constraint call-back function
+  void (*userConstraint0)(int n, const RealVector& x, RealVector& g,
+                          int& result_mode);
+  /// cache first-order constraint call-back function
+  void (*userConstraint1)(int mode, int n, const RealVector& x, RealVector& g,
+                          RealMatrix& grad_g, int& result_mode);
+  // void (*userConstraint2) (int mode, int n, const RealVector& x,RealVector&
+  // g,
+  //                          RealMatrix& grad_g,
+  //                          OPTPP::OptppArray<RealSymMatrix >& hess_g,
+  //                          int& result_mode);
 };
 
+inline void SNLLOptimizer::initial_point(const RealVector& pt) {
+  copy_data(pt, initialPoint);
+}  // protect from incoming view
 
-inline void SNLLOptimizer::initial_point(const RealVector& pt)
-{ copy_data(pt, initialPoint); } // protect from incoming view
+inline const RealMatrix& SNLLOptimizer::callback_linear_ineq_coefficients()
+    const {
+  return linIneqCoeffs;
+}
 
+inline const RealVector& SNLLOptimizer::callback_linear_ineq_lower_bounds()
+    const {
+  return linIneqLowerBnds;
+}
 
-inline const RealMatrix& SNLLOptimizer::
-callback_linear_ineq_coefficients() const
-{ return linIneqCoeffs; }
+inline const RealVector& SNLLOptimizer::callback_linear_ineq_upper_bounds()
+    const {
+  return linIneqUpperBnds;
+}
 
-
-inline const RealVector& SNLLOptimizer::
-callback_linear_ineq_lower_bounds() const
-{ return linIneqLowerBnds; }
-
-
-inline const RealVector& SNLLOptimizer::
-callback_linear_ineq_upper_bounds() const
-{ return linIneqUpperBnds; }
-
-} // namespace Dakota
+}  // namespace Dakota
 
 #endif

@@ -7,7 +7,6 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-
 #ifndef DDACE_DESIGN_COMP_EXP_H
 #define DDACE_DESIGN_COMP_EXP_H
 
@@ -28,30 +27,28 @@ namespace Dakota {
     a Model.  It returns all generated samples and their corresponding
     responses as well as the best sample found. */
 
-class DDACEDesignCompExp: public PStudyDACE
-{
-public:
-
+class DDACEDesignCompExp : public PStudyDACE {
+ public:
   //
   //- Heading: Constructors and destructors
   //
-    
+
   /// primary constructor for building a standard DACE iterator
-  DDACEDesignCompExp(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
+  DDACEDesignCompExp(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
+                     std::shared_ptr<Model> model);
   /// alternate constructor used for building approximations
-  DDACEDesignCompExp(std::shared_ptr<Model> model, int samples, int symbols, int seed, 
-		     unsigned short sampling_method);
+  DDACEDesignCompExp(std::shared_ptr<Model> model, int samples, int symbols,
+                     int seed, unsigned short sampling_method);
   /// destructor
   ~DDACEDesignCompExp() override;
-  
+
   //
   //- Heading: Virtual member function redefinitions
   //
 
   bool resize() override;
-    
-protected:
 
+ protected:
   //
   //- Heading: Virtual member function redefinitions
   //
@@ -61,14 +58,16 @@ protected:
   void post_input() override;
   void post_run(std::ostream& s) override;
   size_t num_samples() const override;
-  void sampling_reset(size_t min_samples, bool all_data_flag, bool stats_flag) override;
+  void sampling_reset(size_t min_samples, bool all_data_flag,
+                      bool stats_flag) override;
   unsigned short sampling_scheme() const override;
   void vary_pattern(bool pattern_flag) override;
   void get_parameter_sets(std::shared_ptr<Model> model) override;
-  void get_parameter_sets(std::shared_ptr<Model> model, const size_t num_samples, 
-			  RealMatrix& design_matrix) override;
-private:
+  void get_parameter_sets(std::shared_ptr<Model> model,
+                          const size_t num_samples,
+                          RealMatrix& design_matrix) override;
 
+ private:
   //
   //- Heading: Member functions
   //
@@ -82,7 +81,6 @@ private:
   /// convenience function for resolving number of samples and
   /// number of symbols from input.
   void resolve_samples_symbols();
-
 
   //
   //- Heading: Data
@@ -115,18 +113,15 @@ private:
   bool varyPattern;
   /// flag which specifies main effects
   bool mainEffectsFlag;
-  /// mapping of symbols for main effects calculations 
+  /// mapping of symbols for main effects calculations
   std::vector<std::vector<int> > symbolMapping;
 };
 
+inline size_t DDACEDesignCompExp::num_samples() const { return numSamples; }
 
-inline size_t DDACEDesignCompExp::num_samples() const
-{ return numSamples; }
-
-
-inline void DDACEDesignCompExp::
-sampling_reset(size_t min_samples, bool all_data_flag, bool stats_flag)
-{
+inline void DDACEDesignCompExp::sampling_reset(size_t min_samples,
+                                               bool all_data_flag,
+                                               bool stats_flag) {
   // allow sample reduction relative to previous sampling_reset() calls
   // (that is, numSamples may be increased or decreased to match min_samples),
   // but not relative to the original user specification (samplesSpec is a hard
@@ -138,24 +133,23 @@ sampling_reset(size_t min_samples, bool all_data_flag, bool stats_flag)
     // At this point, numSamples is a user/surrogate requirement, which may be
     // updated in resolve_samples_symbols().
     numSymbols = numSamples = min_samples;
-  }
-  else { // reset (may have been updated previously)
+  } else {  // reset (may have been updated previously)
     numSamples = samplesSpec;
     numSymbols = symbolsSpec;
   }
 
   allDataFlag = all_data_flag;
-  //statsFlag = stats_flag; // currently no statsFlag in DDACEDesignCompExp
+  // statsFlag = stats_flag; // currently no statsFlag in DDACEDesignCompExp
 }
 
+inline unsigned short DDACEDesignCompExp::sampling_scheme() const {
+  return daceMethod;
+}
 
-inline unsigned short DDACEDesignCompExp::sampling_scheme() const
-{ return daceMethod; }
+inline void DDACEDesignCompExp::vary_pattern(bool pattern_flag) {
+  varyPattern = pattern_flag;
+}
 
-
-inline void DDACEDesignCompExp::vary_pattern(bool pattern_flag)
-{ varyPattern = pattern_flag; }
-
-} // namespace Dakota
+}  // namespace Dakota
 
 #endif

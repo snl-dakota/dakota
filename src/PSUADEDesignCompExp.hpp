@@ -7,7 +7,6 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-
 #ifndef PSUADE_DESIGN_COMP_EXP_H
 #define PSUADE_DESIGN_COMP_EXP_H
 
@@ -22,19 +21,18 @@ namespace Dakota {
     design of experiments library from Lawrence Livermore National Laboratory.
     Currently this class only includes the PSUADE Morris One-at-a-time (MOAT)
     method to uniformly sample the parameter space spanned by the active bounds
-    of the current Model.  It returns all generated samples and their 
+    of the current Model.  It returns all generated samples and their
     corresponding responses as well as the best sample found. */
 
-class PSUADEDesignCompExp: public PStudyDACE
-{
-public:
-
+class PSUADEDesignCompExp : public PStudyDACE {
+ public:
   //
   //- Heading: Constructors and destructors
   //
-    
+
   /// primary constructor for building a standard DACE iterator
-  PSUADEDesignCompExp(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
+  PSUADEDesignCompExp(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
+                      std::shared_ptr<Model> model);
   /// destructor
   ~PSUADEDesignCompExp() override;
 
@@ -43,9 +41,8 @@ public:
   //
 
   bool resize() override;
-    
-protected:
 
+ protected:
   //
   //- Heading: Virtual function redefinitions
   //
@@ -56,13 +53,13 @@ protected:
   void post_run(std::ostream& s) override;
 
   size_t num_samples() const override;
-  void sampling_reset(size_t min_samples, bool all_data_flag, bool stats_flag) override;
+  void sampling_reset(size_t min_samples, bool all_data_flag,
+                      bool stats_flag) override;
   unsigned short sampling_scheme() const override;
   void vary_pattern(bool pattern_flag) override;
   void get_parameter_sets(std::shared_ptr<Model> model) override;
 
-private:
-
+ private:
   //
   //- Heading: Convenience functions
   //
@@ -103,17 +100,13 @@ private:
 
   // MOATSampling *psuadeSampler;
   // MOATAnalyzer *psuadeAnalyzer;
-
 };
 
+inline size_t PSUADEDesignCompExp::num_samples() const { return numSamples; }
 
-inline size_t PSUADEDesignCompExp::num_samples() const
-{ return numSamples; }
-
-
-inline void PSUADEDesignCompExp::
-sampling_reset(size_t min_samples, bool all_data_flag, bool stats_flag)
-{
+inline void PSUADEDesignCompExp::sampling_reset(size_t min_samples,
+                                                bool all_data_flag,
+                                                bool stats_flag) {
   // allow sample reduction relative to previous sampling_reset() calls
   // (that is, numSamples may be increased or decreased by min_samples), but
   // not relative to the original specification (samplesSpec is a hard lower
@@ -124,19 +117,17 @@ sampling_reset(size_t min_samples, bool all_data_flag, bool stats_flag)
   // decrease relative to previous value
 
   allDataFlag = all_data_flag;
-  //statsFlag   = stats_flag; // currently no statsFlag in PSUADEDesignCompExp
+  // statsFlag   = stats_flag; // currently no statsFlag in PSUADEDesignCompExp
 }
 
+inline unsigned short PSUADEDesignCompExp::sampling_scheme() const {
+  return methodName;
+}
 
-inline unsigned short PSUADEDesignCompExp::sampling_scheme() const
-{ return methodName; }
+inline void PSUADEDesignCompExp::vary_pattern(bool pattern_flag) {
+  varyPattern = pattern_flag;
+}
 
-
-inline void PSUADEDesignCompExp::vary_pattern(bool pattern_flag)
-{ varyPattern = pattern_flag; }
-
-
-
-} // namespace Dakota
+}  // namespace Dakota
 
 #endif

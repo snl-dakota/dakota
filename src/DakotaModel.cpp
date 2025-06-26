@@ -7,43 +7,44 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-#include "dakota_system_defs.hpp"
-#include "ParamResponsePair.hpp"
-#include "model_utils.hpp"
-#include "PRPMultiIndex.hpp"
-#include "ParallelLibrary.hpp"
-#include "ProblemDescDB.hpp"
-#include "SimulationModel.hpp"
-#include "NestedModel.hpp"
-#include "DataFitSurrModel.hpp"
-#include "EnsembleSurrModel.hpp"
 #include "ActiveSubspaceModel.hpp"
 #include "AdaptedBasisModel.hpp"
-#include "RandomFieldModel.hpp"
-#include "MarginalsCorrDistribution.hpp"
 #include "DakotaGraphics.hpp"
-#include "pecos_stat_util.hpp"
+#include "DataFitSurrModel.hpp"
+#include "EnsembleSurrModel.hpp"
 #include "EvaluationStore.hpp"
+#include "MarginalsCorrDistribution.hpp"
+#include "NestedModel.hpp"
+#include "PRPMultiIndex.hpp"
+#include "ParallelLibrary.hpp"
+#include "ParamResponsePair.hpp"
+#include "ProblemDescDB.hpp"
+#include "RandomFieldModel.hpp"
+#include "SimulationModel.hpp"
+#include "dakota_system_defs.hpp"
+#include "model_utils.hpp"
+#include "pecos_stat_util.hpp"
 
-static const char rcsId[]="@(#) $Id: DakotaModel.cpp 7029 2010-10-22 00:17:02Z mseldre $";
+static const char rcsId[] =
+    "@(#) $Id: DakotaModel.cpp 7029 2010-10-22 00:17:02Z mseldre $";
 
-
-namespace Dakota 
-{
-extern PRPCache        data_pairs;
-extern EvaluationStore evaluation_store_db; // defined in dakota_global_defs.cpp
+namespace Dakota {
+extern PRPCache data_pairs;
+extern EvaluationStore
+    evaluation_store_db;  // defined in dakota_global_defs.cpp
 
 // These globals defined here rather than in dakota_global_defs.cpp in order to
 // minimize dakota_restart_util object file dependencies
-Iterator  dummy_iterator;  ///< dummy Iterator object used for mandatory
-                           ///< reference initialization or default virtual
-                           ///< function return by reference when a real
-                           ///< Iterator instance is unavailable
+Iterator dummy_iterator;  ///< dummy Iterator object used for mandatory
+                          ///< reference initialization or default virtual
+                          ///< function return by reference when a real
+                          ///< Iterator instance is unavailable
 
 // Initialization of static model ID counters
 size_t Model::noSpecIdNum = 0;
 
-std::shared_ptr<Model> Model::get_model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib) {
+std::shared_ptr<Model> Model::get_model(ProblemDescDB& problem_db,
+                                        ParallelLibrary& parallel_lib) {
   // Check for a cached Model
   ProblemDescDB* const study_ptr = problem_db.get_rep().get();
   auto& study_cache = Model::modelCache[study_ptr];
@@ -59,12 +60,13 @@ std::shared_ptr<Model> Model::get_model(ProblemDescDB& problem_db, ParallelLibra
   // >    model_ptr spec -> id_model must be defined
   // > no model_ptr spec -> id_model is ignored, model spec is last parsed
   auto id_model = problem_db.model_id();
-  if(id_model.empty()) {
+  if (id_model.empty()) {
     id_model = "NO_MODEL_ID";
   }
-  auto m_it
-    = std::find_if(study_cache.begin(), study_cache.end(),
-                   [&id_model](std::shared_ptr<Model> m) {return m->model_id() == id_model;});
+  auto m_it = std::find_if(study_cache.begin(), study_cache.end(),
+                           [&id_model](std::shared_ptr<Model> m) {
+                             return m->model_id() == id_model;
+                           });
   if (m_it == study_cache.end()) {
     study_cache.push_back(ModelUtils::get_model(problem_db, parallel_lib));
     m_it = --study_cache.end();
@@ -72,11 +74,12 @@ std::shared_ptr<Model> Model::get_model(ProblemDescDB& problem_db, ParallelLibra
   return *m_it;
 }
 
-std::list<std::shared_ptr<Model>>& Model::model_cache(ProblemDescDB& problem_db) {
+std::list<std::shared_ptr<Model>>& Model::model_cache(
+    ProblemDescDB& problem_db) {
   const ProblemDescDB* const study_ptr = problem_db.get_rep().get();
   try {
     return Model::modelCache.at(study_ptr);
-  } catch(std::out_of_range) {
+  } catch (std::out_of_range) {
     Cerr << "Model::model_cache() called with nonexistent study!\n";
     throw;
   }
@@ -87,8 +90,8 @@ void Model::remove_cached_model(const ProblemDescDB& problem_db) {
   Model::modelCache.erase(study_ptr);
 }
 
-std::map<const ProblemDescDB*, std::list<std::shared_ptr<Model>>> Model::modelCache{};
-
+std::map<const ProblemDescDB*, std::list<std::shared_ptr<Model>>>
+    Model::modelCache{};
 
 /** This constructor builds the base class data for all inherited
     models.  get_model() instantiates a derived class and the derived
@@ -96,76 +99,86 @@ std::map<const ProblemDescDB*, std::list<std::shared_ptr<Model>>> Model::modelCa
     list (to avoid the recursion of the base class constructor calling
     get_model() again).  Since the letter IS the representation, its
     representation pointer is set to NULL. */
-Model::Model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
-  currentVariables(Variables::get_variables(problem_db)),
-  numDerivVars(currentVariables.cv()),
-  currentResponse(
-    Response::get_response(problem_db, SIMULATION_RESPONSE, currentVariables)
-  ),
-  numFns(currentResponse.num_functions()),
-  userDefinedConstraints(problem_db, currentVariables.shared_data()),
-  evaluationsDB(evaluation_store_db),
-  modelType(problem_db.get_string("model.type")),
-  surrogateType(problem_db.get_string("model.surrogate.type")),
-  gradientType(problem_db.get_string("responses.gradient_type")),
-  methodSource(problem_db.get_string("responses.method_source")),
-  intervalType(problem_db.get_string("responses.interval_type")),
-  fdGradStepSize(problem_db.get_rv("responses.fd_gradient_step_size")),
-  fdGradStepType(problem_db.get_string("responses.fd_gradient_step_type")),
-  gradIdAnalytic(problem_db.get_is("responses.gradients.mixed.id_analytic")),
-  gradIdNumerical(problem_db.get_is("responses.gradients.mixed.id_numerical")),
-  hessianType(problem_db.get_string("responses.hessian_type")),
-  quasiHessType(problem_db.get_string("responses.quasi_hessian_type")),
-  fdHessByFnStepSize(problem_db.get_rv("responses.fd_hessian_step_size")),
-  fdHessByGradStepSize(problem_db.get_rv("responses.fd_hessian_step_size")),
-  fdHessStepType(problem_db.get_string("responses.fd_hessian_step_type")),
-  hessIdAnalytic(problem_db.get_is("responses.hessians.mixed.id_analytic")),
-  hessIdNumerical(problem_db.get_is("responses.hessians.mixed.id_numerical")),
-  hessIdQuasi(problem_db.get_is("responses.hessians.mixed.id_quasi")),
-  warmStartFlag(false), supportsEstimDerivs(true), mappingInitialized(false),
-  probDescDB(problem_db), parallelLib(parallel_lib),
-  modelPCIter(parallelLib.parallel_configuration_iterator()),
-  componentParallelMode(NO_PARALLEL_MODE), asynchEvalFlag(false),
-  evaluationCapacity(1), 
-  // See base constructor in DakotaIterator.cpp for full discussion of output
-  // verbosity.  For models, QUIET_OUTPUT turns off response reporting and
-  // SILENT_OUTPUT additionally turns off fd_gradient parameter set reporting.
-  outputLevel(problem_db.get_short("method.output")),
-  primaryRespFnWts(probDescDB.get_rv("responses.primary_response_fn_weights")),
-  hierarchicalTagging(probDescDB.get_bool("model.hierarchical_tags")),
-  scalingOpts(problem_db, currentResponse.shared_data()),
-  modelEvaluationsDBState(EvaluationsDBState::UNINITIALIZED),
-  interfEvaluationsDBState(EvaluationsDBState::UNINITIALIZED),
-  modelId(problem_db.get_string("model.id")), modelEvalCntr(0),
-  estDerivsFlag(false), initCommsBcastFlag(false), modelAutoGraphicsFlag(false)
-{
+Model::Model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib)
+    : currentVariables(Variables::get_variables(problem_db)),
+      numDerivVars(currentVariables.cv()),
+      currentResponse(Response::get_response(problem_db, SIMULATION_RESPONSE,
+                                             currentVariables)),
+      numFns(currentResponse.num_functions()),
+      userDefinedConstraints(problem_db, currentVariables.shared_data()),
+      evaluationsDB(evaluation_store_db),
+      modelType(problem_db.get_string("model.type")),
+      surrogateType(problem_db.get_string("model.surrogate.type")),
+      gradientType(problem_db.get_string("responses.gradient_type")),
+      methodSource(problem_db.get_string("responses.method_source")),
+      intervalType(problem_db.get_string("responses.interval_type")),
+      fdGradStepSize(problem_db.get_rv("responses.fd_gradient_step_size")),
+      fdGradStepType(problem_db.get_string("responses.fd_gradient_step_type")),
+      gradIdAnalytic(
+          problem_db.get_is("responses.gradients.mixed.id_analytic")),
+      gradIdNumerical(
+          problem_db.get_is("responses.gradients.mixed.id_numerical")),
+      hessianType(problem_db.get_string("responses.hessian_type")),
+      quasiHessType(problem_db.get_string("responses.quasi_hessian_type")),
+      fdHessByFnStepSize(problem_db.get_rv("responses.fd_hessian_step_size")),
+      fdHessByGradStepSize(problem_db.get_rv("responses.fd_hessian_step_size")),
+      fdHessStepType(problem_db.get_string("responses.fd_hessian_step_type")),
+      hessIdAnalytic(problem_db.get_is("responses.hessians.mixed.id_analytic")),
+      hessIdNumerical(
+          problem_db.get_is("responses.hessians.mixed.id_numerical")),
+      hessIdQuasi(problem_db.get_is("responses.hessians.mixed.id_quasi")),
+      warmStartFlag(false),
+      supportsEstimDerivs(true),
+      mappingInitialized(false),
+      probDescDB(problem_db),
+      parallelLib(parallel_lib),
+      modelPCIter(parallelLib.parallel_configuration_iterator()),
+      componentParallelMode(NO_PARALLEL_MODE),
+      asynchEvalFlag(false),
+      evaluationCapacity(1),
+      // See base constructor in DakotaIterator.cpp for full discussion of
+      // output verbosity.  For models, QUIET_OUTPUT turns off response
+      // reporting and SILENT_OUTPUT additionally turns off fd_gradient
+      // parameter set reporting.
+      outputLevel(problem_db.get_short("method.output")),
+      primaryRespFnWts(
+          probDescDB.get_rv("responses.primary_response_fn_weights")),
+      hierarchicalTagging(probDescDB.get_bool("model.hierarchical_tags")),
+      scalingOpts(problem_db, currentResponse.shared_data()),
+      modelEvaluationsDBState(EvaluationsDBState::UNINITIALIZED),
+      interfEvaluationsDBState(EvaluationsDBState::UNINITIALIZED),
+      modelId(problem_db.get_string("model.id")),
+      modelEvalCntr(0),
+      estDerivsFlag(false),
+      initCommsBcastFlag(false),
+      modelAutoGraphicsFlag(false) {
   initialize_distribution(mvDist);
   initialize_distribution_parameters(mvDist);
 
   // weights have length group if given; expand if fields present
-  expand_for_fields_sdv(currentResponse.shared_data(),
-    probDescDB.get_rv("responses.primary_response_fn_weights"),
-    "primary response weights", false, primaryRespFnWts);
+  expand_for_fields_sdv(
+      currentResponse.shared_data(),
+      probDescDB.get_rv("responses.primary_response_fn_weights"),
+      "primary response weights", false, primaryRespFnWts);
 
-  if (modelId.empty())
-    modelId = user_auto_id();
+  if (modelId.empty()) modelId = user_auto_id();
 
-  // TODO: Latent bug here as sense will be size 1 or group (must acct for fields)
-  // Define primaryRespFnSense BoolDeque from DB StringArray
-  StringArray db_sense
-    = problem_db.get_sa("responses.primary_response_fn_sense");
+  // TODO: Latent bug here as sense will be size 1 or group (must acct for
+  // fields) Define primaryRespFnSense BoolDeque from DB StringArray
+  StringArray db_sense =
+      problem_db.get_sa("responses.primary_response_fn_sense");
   if (!db_sense.empty()) {
     size_t i, num_sense = db_sense.size(), num_primary = num_primary_fns();
     primaryRespFnSense.resize(num_primary);
     if (num_sense == num_primary)
-      for (i=0; i<num_primary; ++i)
-	primaryRespFnSense[i] = strbegins(strtolower(db_sense[i]), "max");
+      for (i = 0; i < num_primary; ++i)
+        primaryRespFnSense[i] = strbegins(strtolower(db_sense[i]), "max");
     else if (num_sense == 1)
-      primaryRespFnSense.assign(num_primary, 
-				strbegins(strtolower(db_sense[0]), "max"));
+      primaryRespFnSense.assign(num_primary,
+                                strbegins(strtolower(db_sense[0]), "max"));
     else {
       Cerr << "Error: wrong length in sense array.  Expected 0, 1, or "
-	   << num_primary << " but saw " << num_sense << "." << std::endl;
+           << num_primary << " but saw " << num_sense << "." << std::endl;
       abort_handler(MODEL_ERROR);
     }
   }
@@ -174,16 +187,16 @@ Model::Model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
   // Promote fdGradStepSize/fdHessByFnStepSize/fdHessByGradStepSize to defaults
   // if needed.  Note: the fdStepSize arrays specialize by variable, whereas
   // mixed grads/Hessians specialize by function.
-  if ( gradientType == "numerical" ||
-       ( gradientType == "mixed" && !gradIdNumerical.empty() ) ) {
+  if (gradientType == "numerical" ||
+      (gradientType == "mixed" && !gradIdNumerical.empty())) {
     estimating_derivs = true;
     if (fdGradStepSize.empty()) {
       fdGradStepSize.resize(1);
       fdGradStepSize[0] = 0.001;
     }
   }
-  if ( hessianType == "numerical" ||
-       ( hessianType == "mixed" && !hessIdNumerical.empty() ) ) {
+  if (hessianType == "numerical" ||
+      (hessianType == "mixed" && !hessIdNumerical.empty())) {
     estimating_derivs = true;
     // fdHessByFnStepSize and fdHessByGradStepSize can only differ currently
     // in the case of assignment of default values, since the same
@@ -218,33 +231,33 @@ Model::Model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
   if (gradientType == "numerical") {
     if (methodSource == "vendor") {
       const RealVector& fdgss
-	= probDescDB.get_rv("responses.fd_gradient_step_size");
+        = probDescDB.get_rv("responses.fd_gradient_step_size");
       if (fdgss.length()) // else use default from initializer list
-	fdGradStepSize = fdgss[0];
+        fdGradStepSize = fdgss[0];
     }
     if (outputLevel >= VERBOSE_OUTPUT)
       Cout << "Numerical gradients using " << intervalType
-	   << " differences\nto be calculated by the " << methodSource
-	   << " finite difference routine.\n";
+           << " differences\nto be calculated by the " << methodSource
+           << " finite difference routine.\n";
   }
   else if (gradientType == "mixed" && outputLevel >= VERBOSE_OUTPUT) {
     // Vendor numerical is no good in mixed mode except maybe for NPSOL/NLSSOL
     if (methodSource == "vendor") {
       Cerr << "Error: Mixed gradient specification not currently valid with "
            << "vendor numerical.\nSelect dakota as method_source instead."
-	   << std::endl;
+           << std::endl;
       abort_handler(MODEL_ERROR);
     }
     Cout << "Mixed gradients: analytic gradients for functions { ";
     for (ILCIter cit=mixed_grad_analytic_ids.begin();
-	 cit!=mixed_grad_analytic_ids.end(); cit++)
+         cit!=mixed_grad_analytic_ids.end(); cit++)
       Cout << *cit << ' ';
     Cout << "} and\nnumerical gradients for functions { ";
     for (ILCIter cit=mixed_grad_numerical_ids.begin();
-	 cit!=mixed_grad_numerical_ids.end(); cit++)
+         cit!=mixed_grad_numerical_ids.end(); cit++)
       Cout << *cit << ' ';
     Cout << "} using " << intervalType << " differences\ncalculated by the "
-	 << methodSource << " routine.\n";
+         << methodSource << " routine.\n";
   }
   Cout << "hessianType = " << hessianType << '\n';
   if ( hessianType == "numerical" || ( hessianType == "mixed" &&
@@ -257,75 +270,85 @@ Model::Model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
   */
 }
 
-
-Model::
-Model(const ShortShortPair& vars_view,
-      const SharedVariablesData& svd, bool share_svd,
-      const SharedResponseData&  srd, bool share_srd,
-      const ActiveSet& set, short output_level, ProblemDescDB& problem_db,
-      ParallelLibrary& parallel_lib):
-  numDerivVars(set.derivative_vector().size()),
-  numFns(set.request_vector().size()), evaluationsDB(evaluation_store_db),
-  fdGradStepType("relative"), fdHessStepType("relative"), warmStartFlag(false), 
-  supportsEstimDerivs(true), mappingInitialized(false), probDescDB(problem_db),
-  parallelLib(parallel_lib),
-  modelPCIter(parallel_lib.parallel_configuration_iterator()),
-  componentParallelMode(NO_PARALLEL_MODE), asynchEvalFlag(false),
-  evaluationCapacity(1), outputLevel(output_level),
-  mvDist(Pecos::MARGINALS_CORRELATIONS), hierarchicalTagging(false),
-  modelEvaluationsDBState(EvaluationsDBState::UNINITIALIZED),
-  interfEvaluationsDBState(EvaluationsDBState::UNINITIALIZED),
-  modelId(no_spec_id()), // to be replaced by derived ctors
-  modelEvalCntr(0), estDerivsFlag(false), initCommsBcastFlag(false),
-  modelAutoGraphicsFlag(false)
-{
+Model::Model(const ShortShortPair& vars_view, const SharedVariablesData& svd,
+             bool share_svd, const SharedResponseData& srd, bool share_srd,
+             const ActiveSet& set, short output_level,
+             ProblemDescDB& problem_db, ParallelLibrary& parallel_lib)
+    : numDerivVars(set.derivative_vector().size()),
+      numFns(set.request_vector().size()),
+      evaluationsDB(evaluation_store_db),
+      fdGradStepType("relative"),
+      fdHessStepType("relative"),
+      warmStartFlag(false),
+      supportsEstimDerivs(true),
+      mappingInitialized(false),
+      probDescDB(problem_db),
+      parallelLib(parallel_lib),
+      modelPCIter(parallel_lib.parallel_configuration_iterator()),
+      componentParallelMode(NO_PARALLEL_MODE),
+      asynchEvalFlag(false),
+      evaluationCapacity(1),
+      outputLevel(output_level),
+      mvDist(Pecos::MARGINALS_CORRELATIONS),
+      hierarchicalTagging(false),
+      modelEvaluationsDBState(EvaluationsDBState::UNINITIALIZED),
+      interfEvaluationsDBState(EvaluationsDBState::UNINITIALIZED),
+      modelId(no_spec_id()),  // to be replaced by derived ctors
+      modelEvalCntr(0),
+      estDerivsFlag(false),
+      initCommsBcastFlag(false),
+      modelAutoGraphicsFlag(false) {
   bool same_view = (svd.view() == vars_view);
   if (share_svd && same_view) {
-    currentVariables       =   Variables(svd);
+    currentVariables = Variables(svd);
     userDefinedConstraints = Constraints(svd);
-  }
-  else { // create new svd to be shared by currentVariables/userDefinedConstr
+  } else {  // create new svd to be shared by currentVariables/userDefinedConstr
     SharedVariablesData new_svd(svd.copy());
     if (!same_view) new_svd.view(vars_view);
-    currentVariables       =   Variables(new_svd);
+    currentVariables = Variables(new_svd);
     userDefinedConstraints = Constraints(new_svd);
   }
 
-  currentResponse = (share_srd) ?
-    Response(srd, set) : Response(srd.response_type(), set);
+  currentResponse =
+      (share_srd) ? Response(srd, set) : Response(srd.response_type(), set);
 
   // TODO: unsure if this is too aggressive due to supportsEstimDerivs = true:
   //  currentResponse.reshape_metadata(0)
 }
 
-
 /** This constructor also builds the base class data for inherited models.
     However, it is used for derived models which are instantiated on the fly.
     Therefore it only initializes a small subset of attributes. */
-Model::Model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, Model::ModelCtor dummy):
-  warmStartFlag(false), supportsEstimDerivs(true), mappingInitialized(false),
-  probDescDB(problem_db), parallelLib(parallel_lib),
-  evaluationsDB(evaluation_store_db),
-  modelPCIter(parallel_lib.parallel_configuration_iterator()),
-  componentParallelMode(NO_PARALLEL_MODE), asynchEvalFlag(false),
-  evaluationCapacity(1), outputLevel(NORMAL_OUTPUT),
-  mvDist(Pecos::MARGINALS_CORRELATIONS), hierarchicalTagging(false),
-  modelEvaluationsDBState(EvaluationsDBState::UNINITIALIZED),
-  interfEvaluationsDBState(EvaluationsDBState::UNINITIALIZED),
-  modelId(no_spec_id()), // to be replaced by derived ctors
-  modelEvalCntr(0), estDerivsFlag(false),
-  initCommsBcastFlag(false), modelAutoGraphicsFlag(false)
-{ /* empty ctor */ }
-
+Model::Model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
+             Model::ModelCtor dummy)
+    : warmStartFlag(false),
+      supportsEstimDerivs(true),
+      mappingInitialized(false),
+      probDescDB(problem_db),
+      parallelLib(parallel_lib),
+      evaluationsDB(evaluation_store_db),
+      modelPCIter(parallel_lib.parallel_configuration_iterator()),
+      componentParallelMode(NO_PARALLEL_MODE),
+      asynchEvalFlag(false),
+      evaluationCapacity(1),
+      outputLevel(NORMAL_OUTPUT),
+      mvDist(Pecos::MARGINALS_CORRELATIONS),
+      hierarchicalTagging(false),
+      modelEvaluationsDBState(EvaluationsDBState::UNINITIALIZED),
+      interfEvaluationsDBState(EvaluationsDBState::UNINITIALIZED),
+      modelId(no_spec_id()),  // to be replaced by derived ctors
+      modelEvalCntr(0),
+      estDerivsFlag(false),
+      initCommsBcastFlag(false),
+      modelAutoGraphicsFlag(false) { /* empty ctor */ }
 
 /** The default constructor is used in vector<Model> instantiations and for
     default initialization of Model objects.  modelRep is NULL in this case
     (a populated problem_db is needed to build a meaningful Model object). */
-Model::Model():
-  probDescDB(dummy_db), parallelLib(dummy_lib),
-  evaluationsDB(evaluation_store_db)
-{ /* empty ctor */ }
-
+Model::Model()
+    : probDescDB(dummy_db),
+      parallelLib(dummy_lib),
+      evaluationsDB(evaluation_store_db) { /* empty ctor */ }
 
 // /** Copy constructor manages sharing of modelRep. */
 // Model::Model(const Model& model): probDescDB(model.problem_description_db()),
@@ -333,13 +356,10 @@ Model::Model():
 //   evaluationsDB(evaluation_store_db)
 // { /* empty ctor */ }
 
-
 /** Build random variable distribution types and active subset.  This
     function is used when the Model variables are in x-space. */
-void Model::
-initialize_distribution(Pecos::MultivariateDistribution& mv_dist,
-			bool active_only)
-{
+void Model::initialize_distribution(Pecos::MultivariateDistribution& mv_dist,
+                                    bool active_only) {
   // Notes:
   // > Model base instantiates the x-space MultivariateDistribution, while
   //   derived ProbabilityTransformModel manages a ProbabilityTransform
@@ -348,22 +368,25 @@ initialize_distribution(Pecos::MultivariateDistribution& mv_dist,
   //   in non-UQ contexts.
 
   // Previous (transformation-based) logic was restricted to active continuous:
-  //ShortArray x_types(currentVariables.cv()); // active cont
-  //ShortArray rv_types(probDescDB.get_sizet("variables.uncertain")); c/d uv
-  size_t num_rv = (active_only) ?
-    currentVariables.cv()  + currentVariables.div() +
-    currentVariables.dsv() + currentVariables.drv() :
-    currentVariables.tv(); // all vars (active subset defined using BitArray)
-  ShortArray rv_types(num_rv);  BitArray active_vars(num_rv);// init bits to 0
+  // ShortArray x_types(currentVariables.cv()); // active cont
+  // ShortArray rv_types(probDescDB.get_sizet("variables.uncertain")); c/d uv
+  size_t num_rv =
+      (active_only)
+          ? currentVariables.cv() + currentVariables.div() +
+                currentVariables.dsv() + currentVariables.drv()
+          : currentVariables
+                .tv();  // all vars (active subset defined using BitArray)
+  ShortArray rv_types(num_rv);
+  BitArray active_vars(num_rv);  // init bits to 0
 
   bool cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv;
-  currentVariables.shared_data().active_subsets(cdv,  ddv,  cauv, dauv,
-						ceuv, deuv, csv,  dsv);
+  currentVariables.shared_data().active_subsets(cdv, ddv, cauv, dauv, ceuv,
+                                                deuv, csv, dsv);
   size_t i, start_rv = 0;
 
   // Implied by call to this function ... ?
-  //switch (mv_dist.type()) {
-  //case Pecos::MARGINALS_CORRELATIONS: {
+  // switch (mv_dist.type()) {
+  // case Pecos::MARGINALS_CORRELATIONS: {
 
   // Continuous design
 
@@ -411,35 +434,37 @@ initialize_distribution(Pecos::MultivariateDistribution& mv_dist,
     Real dbl_inf = std::numeric_limits<Real>::infinity();
     num_rv = probDescDB.get_sizet("variables.normal_uncertain");
     if (num_rv) {
-      const RealVector& n_l_bnds
-	= probDescDB.get_rv("variables.normal_uncertain.lower_bounds");
-      const RealVector& n_u_bnds
-	= probDescDB.get_rv("variables.normal_uncertain.upper_bounds");
+      const RealVector& n_l_bnds =
+          probDescDB.get_rv("variables.normal_uncertain.lower_bounds");
+      const RealVector& n_u_bnds =
+          probDescDB.get_rv("variables.normal_uncertain.upper_bounds");
       bool l_bnds = !n_l_bnds.empty(), u_bnds = !n_u_bnds.empty();
-      if (!l_bnds && !u_bnds) // won't happen: parser -> +/-inf
-	assign_value(rv_types, Pecos::NORMAL, start_rv, num_rv);
+      if (!l_bnds && !u_bnds)  // won't happen: parser -> +/-inf
+        assign_value(rv_types, Pecos::NORMAL, start_rv, num_rv);
       else
-	for (i=0; i<num_rv; ++i)
-	  rv_types[start_rv+i] = ( ( l_bnds && n_l_bnds[i] > -dbl_inf ) ||
-				   ( u_bnds && n_u_bnds[i] <  dbl_inf ) ) ?
-	    Pecos::BOUNDED_NORMAL : Pecos::NORMAL;
+        for (i = 0; i < num_rv; ++i)
+          rv_types[start_rv + i] = ((l_bnds && n_l_bnds[i] > -dbl_inf) ||
+                                    (u_bnds && n_u_bnds[i] < dbl_inf))
+                                       ? Pecos::BOUNDED_NORMAL
+                                       : Pecos::NORMAL;
       if (cauv) assign_value(active_vars, true, start_rv, num_rv);
       start_rv += num_rv;
     }
     num_rv = probDescDB.get_sizet("variables.lognormal_uncertain");
     if (num_rv) {
-      const RealVector& ln_l_bnds
-	= probDescDB.get_rv("variables.lognormal_uncertain.lower_bounds");
-      const RealVector& ln_u_bnds
-	= probDescDB.get_rv("variables.lognormal_uncertain.upper_bounds");
+      const RealVector& ln_l_bnds =
+          probDescDB.get_rv("variables.lognormal_uncertain.lower_bounds");
+      const RealVector& ln_u_bnds =
+          probDescDB.get_rv("variables.lognormal_uncertain.upper_bounds");
       bool l_bnds = !ln_l_bnds.empty(), u_bnds = !ln_u_bnds.empty();
-      if (!l_bnds && !u_bnds) // won't happen: parser -> 0/inf
-	assign_value(rv_types, Pecos::LOGNORMAL, start_rv, num_rv);
+      if (!l_bnds && !u_bnds)  // won't happen: parser -> 0/inf
+        assign_value(rv_types, Pecos::LOGNORMAL, start_rv, num_rv);
       else
-	for (i=0; i<num_rv; ++i)
-	  rv_types[start_rv+i] = ( ( l_bnds && ln_l_bnds[i] > 0. ) ||
-				   ( u_bnds && ln_u_bnds[i] < dbl_inf ) ) ?
-	    Pecos::BOUNDED_LOGNORMAL : Pecos::LOGNORMAL;
+        for (i = 0; i < num_rv; ++i)
+          rv_types[start_rv + i] = ((l_bnds && ln_l_bnds[i] > 0.) ||
+                                    (u_bnds && ln_u_bnds[i] < dbl_inf))
+                                       ? Pecos::BOUNDED_LOGNORMAL
+                                       : Pecos::LOGNORMAL;
       if (cauv) assign_value(active_vars, true, start_rv, num_rv);
       start_rv += num_rv;
     }
@@ -566,8 +591,8 @@ initialize_distribution(Pecos::MultivariateDistribution& mv_dist,
   if (!active_only || ceuv) {
     num_rv = probDescDB.get_sizet("variables.continuous_interval_uncertain");
     if (num_rv) {
-      assign_value(rv_types, Pecos::CONTINUOUS_INTERVAL_UNCERTAIN,
-		   start_rv, num_rv);
+      assign_value(rv_types, Pecos::CONTINUOUS_INTERVAL_UNCERTAIN, start_rv,
+                   num_rv);
       if (ceuv) assign_value(active_vars, true, start_rv, num_rv);
       start_rv += num_rv;
     }
@@ -578,26 +603,29 @@ initialize_distribution(Pecos::MultivariateDistribution& mv_dist,
   if (!active_only || deuv) {
     num_rv = probDescDB.get_sizet("variables.discrete_interval_uncertain");
     if (num_rv) {
-      assign_value(rv_types,Pecos::DISCRETE_INTERVAL_UNCERTAIN,start_rv,num_rv);
+      assign_value(rv_types, Pecos::DISCRETE_INTERVAL_UNCERTAIN, start_rv,
+                   num_rv);
       if (deuv) assign_value(active_vars, true, start_rv, num_rv);
       start_rv += num_rv;
     }
     num_rv = probDescDB.get_sizet("variables.discrete_uncertain_set_int");
     if (num_rv) {
-      assign_value(rv_types, Pecos::DISCRETE_UNCERTAIN_SET_INT,start_rv,num_rv);
+      assign_value(rv_types, Pecos::DISCRETE_UNCERTAIN_SET_INT, start_rv,
+                   num_rv);
       if (deuv) assign_value(active_vars, true, start_rv, num_rv);
       start_rv += num_rv;
     }
     num_rv = probDescDB.get_sizet("variables.discrete_uncertain_set_string");
     if (num_rv) {
-      assign_value(rv_types, Pecos::DISCRETE_UNCERTAIN_SET_STRING,
-		   start_rv, num_rv);
+      assign_value(rv_types, Pecos::DISCRETE_UNCERTAIN_SET_STRING, start_rv,
+                   num_rv);
       if (deuv) assign_value(active_vars, true, start_rv, num_rv);
       start_rv += num_rv;
     }
     num_rv = probDescDB.get_sizet("variables.discrete_uncertain_set_real");
     if (num_rv) {
-      assign_value(rv_types,Pecos::DISCRETE_UNCERTAIN_SET_REAL,start_rv,num_rv);
+      assign_value(rv_types, Pecos::DISCRETE_UNCERTAIN_SET_REAL, start_rv,
+                   num_rv);
       if (deuv) assign_value(active_vars, true, start_rv, num_rv);
       start_rv += num_rv;
     }
@@ -618,434 +646,491 @@ initialize_distribution(Pecos::MultivariateDistribution& mv_dist,
     if (!active_only || dsv) {
       num_rv = probDescDB.get_sizet("variables.discrete_state_range");
       if (num_rv) {
-	assign_value(rv_types, Pecos::DISCRETE_RANGE, start_rv, num_rv);
-	if (dsv) assign_value(active_vars, true, start_rv, num_rv);
-	start_rv += num_rv;
+        assign_value(rv_types, Pecos::DISCRETE_RANGE, start_rv, num_rv);
+        if (dsv) assign_value(active_vars, true, start_rv, num_rv);
+        start_rv += num_rv;
       }
       num_rv = probDescDB.get_sizet("variables.discrete_state_set_int");
       if (num_rv) {
-	assign_value(rv_types, Pecos::DISCRETE_SET_INT, start_rv, num_rv);
-	if (dsv) assign_value(active_vars, true, start_rv, num_rv);
-	start_rv += num_rv;
+        assign_value(rv_types, Pecos::DISCRETE_SET_INT, start_rv, num_rv);
+        if (dsv) assign_value(active_vars, true, start_rv, num_rv);
+        start_rv += num_rv;
       }
       num_rv = probDescDB.get_sizet("variables.discrete_state_set_string");
       if (num_rv) {
-	assign_value(rv_types, Pecos::DISCRETE_SET_STRING, start_rv, num_rv);
-	if (dsv) assign_value(active_vars, true, start_rv, num_rv);
-	start_rv += num_rv;
+        assign_value(rv_types, Pecos::DISCRETE_SET_STRING, start_rv, num_rv);
+        if (dsv) assign_value(active_vars, true, start_rv, num_rv);
+        start_rv += num_rv;
       }
       num_rv = probDescDB.get_sizet("variables.discrete_state_set_real");
       if (num_rv) {
-	assign_value(rv_types, Pecos::DISCRETE_SET_REAL, start_rv, num_rv);
-	if (dsv) assign_value(active_vars, true, start_rv, num_rv);
-	//start_rv += num_rv;
+        assign_value(rv_types, Pecos::DISCRETE_SET_REAL, start_rv, num_rv);
+        if (dsv) assign_value(active_vars, true, start_rv, num_rv);
+        // start_rv += num_rv;
       }
     }
   }
 
   mv_dist = Pecos::MultivariateDistribution(Pecos::MARGINALS_CORRELATIONS);
   std::shared_ptr<Pecos::MarginalsCorrDistribution> mvd_rep =
-    std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
-    (mv_dist.multivar_dist_rep());
+      std::static_pointer_cast<Pecos::MarginalsCorrDistribution>(
+          mv_dist.multivar_dist_rep());
   mvd_rep->initialize_types(rv_types, active_vars);
 }
 
-
 /** Build random variable distribution types and active subset.  This
     function is used when the Model variables are in x-space. */
-void Model::
-initialize_active_types(Pecos::MultivariateDistribution& mv_dist)
-{
+void Model::initialize_active_types(Pecos::MultivariateDistribution& mv_dist) {
   std::shared_ptr<Pecos::MarginalsCorrDistribution> mvd_rep =
-    std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
-    (mv_dist.multivar_dist_rep());
+      std::static_pointer_cast<Pecos::MarginalsCorrDistribution>(
+          mv_dist.multivar_dist_rep());
 
   mvd_rep->initialize_active_variables(
-    currentVariables.shared_data().active_to_all_mask());
+      currentVariables.shared_data().active_to_all_mask());
 }
 
-
-void Model::
-initialize_distribution_parameters(Pecos::MultivariateDistribution& mv_dist,
-				   bool active_only)
-{
+void Model::initialize_distribution_parameters(
+    Pecos::MultivariateDistribution& mv_dist, bool active_only) {
   // Implied by call to this function ... ?
-  //switch (mv_dist.type()) {
-  //case Pecos::MARGINALS_CORRELATIONS: {
+  // switch (mv_dist.type()) {
+  // case Pecos::MARGINALS_CORRELATIONS: {
 
-    std::shared_ptr<Pecos::MarginalsCorrDistribution> mvd_rep =
-      std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
-      (mv_dist.multivar_dist_rep());
-    size_t start_rv = 0, num_rv = (active_only) ?
-      currentVariables.cv()  + currentVariables.div() +
-      currentVariables.dsv() + currentVariables.drv() :
-      currentVariables.tv(); // all vars (active subset defined using BitArray)
-    BitArray active_corr(num_rv); // init bits to 0; activate c/d auv below
+  std::shared_ptr<Pecos::MarginalsCorrDistribution> mvd_rep =
+      std::static_pointer_cast<Pecos::MarginalsCorrDistribution>(
+          mv_dist.multivar_dist_rep());
+  size_t start_rv = 0,
+         num_rv = (active_only)
+                      ? currentVariables.cv() + currentVariables.div() +
+                            currentVariables.dsv() + currentVariables.drv()
+                      : currentVariables.tv();  // all vars (active subset
+                                                // defined using BitArray)
+  BitArray active_corr(num_rv);  // init bits to 0; activate c/d auv below
 
-    bool cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv;
-    currentVariables.shared_data().active_subsets(cdv,  ddv,  cauv, dauv,
-						  ceuv, deuv, csv,  dsv);
+  bool cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv;
+  currentVariables.shared_data().active_subsets(cdv, ddv, cauv, dauv, ceuv,
+                                                deuv, csv, dsv);
 
-    // Continuous design
-    // RANGE type could be design or state, so use count-based API
+  // Continuous design
+  // RANGE type could be design or state, so use count-based API
 
-    if (!active_only || cdv) {
-      num_rv = probDescDB.get_sizet("variables.continuous_design");
-      if (num_rv) {
-	mvd_rep->push_parameters(start_rv, num_rv, Pecos::CR_LWR_BND,
-	  probDescDB.get_rv("variables.continuous_design.lower_bounds"));
-	mvd_rep->push_parameters(start_rv, num_rv, Pecos::CR_UPR_BND,
-	  probDescDB.get_rv("variables.continuous_design.upper_bounds"));
-	start_rv += num_rv;
-      }
+  if (!active_only || cdv) {
+    num_rv = probDescDB.get_sizet("variables.continuous_design");
+    if (num_rv) {
+      mvd_rep->push_parameters(
+          start_rv, num_rv, Pecos::CR_LWR_BND,
+          probDescDB.get_rv("variables.continuous_design.lower_bounds"));
+      mvd_rep->push_parameters(
+          start_rv, num_rv, Pecos::CR_UPR_BND,
+          probDescDB.get_rv("variables.continuous_design.upper_bounds"));
+      start_rv += num_rv;
     }
+  }
 
-    // Discrete design
-    // RANGE and SET types could be design or state, so use count-based API
+  // Discrete design
+  // RANGE and SET types could be design or state, so use count-based API
 
-    if (!active_only || ddv) {
-      num_rv = probDescDB.get_sizet("variables.discrete_design_range");
-      if (num_rv) {
-	mvd_rep->push_parameters(start_rv, num_rv, Pecos::DR_LWR_BND,
+  if (!active_only || ddv) {
+    num_rv = probDescDB.get_sizet("variables.discrete_design_range");
+    if (num_rv) {
+      mvd_rep->push_parameters(
+          start_rv, num_rv, Pecos::DR_LWR_BND,
           probDescDB.get_iv("variables.discrete_design_range.lower_bounds"));
-	mvd_rep->push_parameters(start_rv, num_rv, Pecos::DR_UPR_BND,
+      mvd_rep->push_parameters(
+          start_rv, num_rv, Pecos::DR_UPR_BND,
           probDescDB.get_iv("variables.discrete_design_range.upper_bounds"));
-	start_rv += num_rv;
-      }
-      num_rv = probDescDB.get_sizet("variables.discrete_design_set_int");
-      if (num_rv) {
-	mvd_rep->push_parameters(start_rv, num_rv, Pecos::DSI_VALUES,
+      start_rv += num_rv;
+    }
+    num_rv = probDescDB.get_sizet("variables.discrete_design_set_int");
+    if (num_rv) {
+      mvd_rep->push_parameters(
+          start_rv, num_rv, Pecos::DSI_VALUES,
           probDescDB.get_isa("variables.discrete_design_set_int.values"));
-	start_rv += num_rv;
-      }
-      num_rv = probDescDB.get_sizet("variables.discrete_design_set_string");
-      if (num_rv) {
-	mvd_rep->push_parameters(start_rv, num_rv, Pecos::DSS_VALUES,
+      start_rv += num_rv;
+    }
+    num_rv = probDescDB.get_sizet("variables.discrete_design_set_string");
+    if (num_rv) {
+      mvd_rep->push_parameters(
+          start_rv, num_rv, Pecos::DSS_VALUES,
           probDescDB.get_ssa("variables.discrete_design_set_string.values"));
-	start_rv += num_rv;
-      }
-      num_rv = probDescDB.get_sizet("variables.discrete_design_set_real");
-      if (num_rv) {
-	mvd_rep->push_parameters(start_rv, num_rv, Pecos::DSR_VALUES,
+      start_rv += num_rv;
+    }
+    num_rv = probDescDB.get_sizet("variables.discrete_design_set_real");
+    if (num_rv) {
+      mvd_rep->push_parameters(
+          start_rv, num_rv, Pecos::DSR_VALUES,
           probDescDB.get_rsa("variables.discrete_design_set_real.values"));
-	start_rv += num_rv;
-      }
+      start_rv += num_rv;
     }
+  }
 
-    // Continuous aleatory
+  // Continuous aleatory
 
-    if (!active_only || cauv) {
-      // RV type could be {,BOUNDED_}NORMAL, so use count-based API
-      num_rv = probDescDB.get_sizet("variables.normal_uncertain");
-      if (num_rv) {
-	mvd_rep->push_parameters(start_rv, num_rv, Pecos::N_MEAN,
+  if (!active_only || cauv) {
+    // RV type could be {,BOUNDED_}NORMAL, so use count-based API
+    num_rv = probDescDB.get_sizet("variables.normal_uncertain");
+    if (num_rv) {
+      mvd_rep->push_parameters(
+          start_rv, num_rv, Pecos::N_MEAN,
           probDescDB.get_rv("variables.normal_uncertain.means"));
-	mvd_rep->push_parameters(start_rv, num_rv, Pecos::N_STD_DEV,
+      mvd_rep->push_parameters(
+          start_rv, num_rv, Pecos::N_STD_DEV,
           probDescDB.get_rv("variables.normal_uncertain.std_deviations"));
-	mvd_rep->push_parameters(start_rv, num_rv, Pecos::N_LWR_BND,
+      mvd_rep->push_parameters(
+          start_rv, num_rv, Pecos::N_LWR_BND,
           probDescDB.get_rv("variables.normal_uncertain.lower_bounds"));
-	mvd_rep->push_parameters(start_rv, num_rv, Pecos::N_UPR_BND,
+      mvd_rep->push_parameters(
+          start_rv, num_rv, Pecos::N_UPR_BND,
           probDescDB.get_rv("variables.normal_uncertain.upper_bounds"));
-	//N_LOCATION,N_SCALE not mapped from ProblemDescDB
-	assign_value(active_corr, true, start_rv, num_rv);
-	start_rv += num_rv;
-      }
-      // RV type could be {,BOUNDED_}LOGNORMAL, so use count-based API
-      num_rv = probDescDB.get_sizet("variables.lognormal_uncertain");
-      if (num_rv) {
-	mvd_rep->push_parameters(start_rv, num_rv, Pecos::LN_MEAN,
+      // N_LOCATION,N_SCALE not mapped from ProblemDescDB
+      assign_value(active_corr, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
+    // RV type could be {,BOUNDED_}LOGNORMAL, so use count-based API
+    num_rv = probDescDB.get_sizet("variables.lognormal_uncertain");
+    if (num_rv) {
+      mvd_rep->push_parameters(
+          start_rv, num_rv, Pecos::LN_MEAN,
           probDescDB.get_rv("variables.lognormal_uncertain.means"));
-	mvd_rep->push_parameters(start_rv, num_rv, Pecos::LN_STD_DEV,
+      mvd_rep->push_parameters(
+          start_rv, num_rv, Pecos::LN_STD_DEV,
           probDescDB.get_rv("variables.lognormal_uncertain.std_deviations"));
-	mvd_rep->push_parameters(start_rv, num_rv, Pecos::LN_LAMBDA,
+      mvd_rep->push_parameters(
+          start_rv, num_rv, Pecos::LN_LAMBDA,
           probDescDB.get_rv("variables.lognormal_uncertain.lambdas"));
-	mvd_rep->push_parameters(start_rv, num_rv, Pecos::LN_ZETA,
+      mvd_rep->push_parameters(
+          start_rv, num_rv, Pecos::LN_ZETA,
           probDescDB.get_rv("variables.lognormal_uncertain.zetas"));
-	mvd_rep->push_parameters(start_rv, num_rv, Pecos::LN_ERR_FACT,
+      mvd_rep->push_parameters(
+          start_rv, num_rv, Pecos::LN_ERR_FACT,
           probDescDB.get_rv("variables.lognormal_uncertain.error_factors"));
-	mvd_rep->push_parameters(start_rv, num_rv, Pecos::LN_LWR_BND,
+      mvd_rep->push_parameters(
+          start_rv, num_rv, Pecos::LN_LWR_BND,
           probDescDB.get_rv("variables.lognormal_uncertain.lower_bounds"));
-	mvd_rep->push_parameters(start_rv, num_rv, Pecos::LN_UPR_BND,
+      mvd_rep->push_parameters(
+          start_rv, num_rv, Pecos::LN_UPR_BND,
           probDescDB.get_rv("variables.lognormal_uncertain.upper_bounds"));
-	assign_value(active_corr, true, start_rv, num_rv);
-	start_rv += num_rv;
-      }
-      num_rv = probDescDB.get_sizet("variables.uniform_uncertain");
-      if (num_rv) {
-	mvd_rep->push_parameters(Pecos::UNIFORM, Pecos::U_LWR_BND,
+      assign_value(active_corr, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
+    num_rv = probDescDB.get_sizet("variables.uniform_uncertain");
+    if (num_rv) {
+      mvd_rep->push_parameters(
+          Pecos::UNIFORM, Pecos::U_LWR_BND,
           probDescDB.get_rv("variables.uniform_uncertain.lower_bounds"));
-	mvd_rep->push_parameters(Pecos::UNIFORM, Pecos::U_UPR_BND,
+      mvd_rep->push_parameters(
+          Pecos::UNIFORM, Pecos::U_UPR_BND,
           probDescDB.get_rv("variables.uniform_uncertain.upper_bounds"));
-	//U_LOCATION,U_SCALE not mapped from ProblemDescDB
-	assign_value(active_corr, true, start_rv, num_rv);
-	start_rv += num_rv;
-      }
-      num_rv = probDescDB.get_sizet("variables.loguniform_uncertain");
-      if (num_rv) {
-	mvd_rep->push_parameters(Pecos::LOGUNIFORM, Pecos::LU_LWR_BND,
+      // U_LOCATION,U_SCALE not mapped from ProblemDescDB
+      assign_value(active_corr, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
+    num_rv = probDescDB.get_sizet("variables.loguniform_uncertain");
+    if (num_rv) {
+      mvd_rep->push_parameters(
+          Pecos::LOGUNIFORM, Pecos::LU_LWR_BND,
           probDescDB.get_rv("variables.loguniform_uncertain.lower_bounds"));
-	mvd_rep->push_parameters(Pecos::LOGUNIFORM, Pecos::LU_UPR_BND,
+      mvd_rep->push_parameters(
+          Pecos::LOGUNIFORM, Pecos::LU_UPR_BND,
           probDescDB.get_rv("variables.loguniform_uncertain.upper_bounds"));
-	assign_value(active_corr, true, start_rv, num_rv);
-	start_rv += num_rv;
-      }
-      num_rv = probDescDB.get_sizet("variables.triangular_uncertain");
-      if (num_rv) {
-	mvd_rep->push_parameters(Pecos::TRIANGULAR, Pecos::T_MODE,
+      assign_value(active_corr, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
+    num_rv = probDescDB.get_sizet("variables.triangular_uncertain");
+    if (num_rv) {
+      mvd_rep->push_parameters(
+          Pecos::TRIANGULAR, Pecos::T_MODE,
           probDescDB.get_rv("variables.triangular_uncertain.modes"));
-	mvd_rep->push_parameters(Pecos::TRIANGULAR, Pecos::T_LWR_BND,
+      mvd_rep->push_parameters(
+          Pecos::TRIANGULAR, Pecos::T_LWR_BND,
           probDescDB.get_rv("variables.triangular_uncertain.lower_bounds"));
-	mvd_rep->push_parameters(Pecos::TRIANGULAR, Pecos::T_UPR_BND,
+      mvd_rep->push_parameters(
+          Pecos::TRIANGULAR, Pecos::T_UPR_BND,
           probDescDB.get_rv("variables.triangular_uncertain.upper_bounds"));
-	//T_LOCATION,T_SCALE not mapped from ProblemDescDB
-	assign_value(active_corr, true, start_rv, num_rv);
-	start_rv += num_rv;
-      }
-      num_rv = probDescDB.get_sizet("variables.exponential_uncertain");
-      if (num_rv) {
-	mvd_rep->push_parameters(Pecos::EXPONENTIAL, Pecos::E_BETA,
+      // T_LOCATION,T_SCALE not mapped from ProblemDescDB
+      assign_value(active_corr, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
+    num_rv = probDescDB.get_sizet("variables.exponential_uncertain");
+    if (num_rv) {
+      mvd_rep->push_parameters(
+          Pecos::EXPONENTIAL, Pecos::E_BETA,
           probDescDB.get_rv("variables.exponential_uncertain.betas"));
-	assign_value(active_corr, true, start_rv, num_rv);
-	start_rv += num_rv;
-      }
-      num_rv = probDescDB.get_sizet("variables.beta_uncertain");
-      if (num_rv) {
-	mvd_rep->push_parameters(Pecos::BETA, Pecos::BE_ALPHA,
+      assign_value(active_corr, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
+    num_rv = probDescDB.get_sizet("variables.beta_uncertain");
+    if (num_rv) {
+      mvd_rep->push_parameters(
+          Pecos::BETA, Pecos::BE_ALPHA,
           probDescDB.get_rv("variables.beta_uncertain.alphas"));
-	mvd_rep->push_parameters(Pecos::BETA, Pecos::BE_BETA,
+      mvd_rep->push_parameters(
+          Pecos::BETA, Pecos::BE_BETA,
           probDescDB.get_rv("variables.beta_uncertain.betas"));
-	mvd_rep->push_parameters(Pecos::BETA, Pecos::BE_LWR_BND,
+      mvd_rep->push_parameters(
+          Pecos::BETA, Pecos::BE_LWR_BND,
           probDescDB.get_rv("variables.beta_uncertain.lower_bounds"));
-	mvd_rep->push_parameters(Pecos::BETA, Pecos::BE_UPR_BND,
+      mvd_rep->push_parameters(
+          Pecos::BETA, Pecos::BE_UPR_BND,
           probDescDB.get_rv("variables.beta_uncertain.upper_bounds"));
-	assign_value(active_corr, true, start_rv, num_rv);
-	start_rv += num_rv;
-      }
-      num_rv = probDescDB.get_sizet("variables.gamma_uncertain");
-      if (num_rv) {
-	mvd_rep->push_parameters(Pecos::GAMMA, Pecos::GA_ALPHA,
+      assign_value(active_corr, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
+    num_rv = probDescDB.get_sizet("variables.gamma_uncertain");
+    if (num_rv) {
+      mvd_rep->push_parameters(
+          Pecos::GAMMA, Pecos::GA_ALPHA,
           probDescDB.get_rv("variables.gamma_uncertain.alphas"));
-	mvd_rep->push_parameters(Pecos::GAMMA, Pecos::GA_BETA,
+      mvd_rep->push_parameters(
+          Pecos::GAMMA, Pecos::GA_BETA,
           probDescDB.get_rv("variables.gamma_uncertain.betas"));
-	assign_value(active_corr, true, start_rv, num_rv);
-	start_rv += num_rv;
-      }
+      assign_value(active_corr, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
 
-      // Inverse gamma is not part of variable spec (calibration hyperparameter)
+    // Inverse gamma is not part of variable spec (calibration hyperparameter)
 
-      num_rv = probDescDB.get_sizet("variables.gumbel_uncertain");
-      if (num_rv) {
-	mvd_rep->push_parameters(Pecos::GUMBEL, Pecos::GU_ALPHA,
+    num_rv = probDescDB.get_sizet("variables.gumbel_uncertain");
+    if (num_rv) {
+      mvd_rep->push_parameters(
+          Pecos::GUMBEL, Pecos::GU_ALPHA,
           probDescDB.get_rv("variables.gumbel_uncertain.alphas"));
-	mvd_rep->push_parameters(Pecos::GUMBEL, Pecos::GU_BETA,
+      mvd_rep->push_parameters(
+          Pecos::GUMBEL, Pecos::GU_BETA,
           probDescDB.get_rv("variables.gumbel_uncertain.betas"));
-	assign_value(active_corr, true, start_rv, num_rv);
-	start_rv += num_rv;
-      }
-      num_rv = probDescDB.get_sizet("variables.frechet_uncertain");
-      if (num_rv) {
-	mvd_rep->push_parameters(Pecos::FRECHET, Pecos::F_ALPHA,
+      assign_value(active_corr, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
+    num_rv = probDescDB.get_sizet("variables.frechet_uncertain");
+    if (num_rv) {
+      mvd_rep->push_parameters(
+          Pecos::FRECHET, Pecos::F_ALPHA,
           probDescDB.get_rv("variables.frechet_uncertain.alphas"));
-	mvd_rep->push_parameters(Pecos::FRECHET, Pecos::F_BETA,
+      mvd_rep->push_parameters(
+          Pecos::FRECHET, Pecos::F_BETA,
           probDescDB.get_rv("variables.frechet_uncertain.betas"));
-	assign_value(active_corr, true, start_rv, num_rv);
-	start_rv += num_rv;
-      }
-      num_rv = probDescDB.get_sizet("variables.weibull_uncertain");
-      if (num_rv) {
-	mvd_rep->push_parameters(Pecos::WEIBULL, Pecos::W_ALPHA,
+      assign_value(active_corr, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
+    num_rv = probDescDB.get_sizet("variables.weibull_uncertain");
+    if (num_rv) {
+      mvd_rep->push_parameters(
+          Pecos::WEIBULL, Pecos::W_ALPHA,
           probDescDB.get_rv("variables.weibull_uncertain.alphas"));
-	mvd_rep->push_parameters(Pecos::WEIBULL, Pecos::W_BETA,
+      mvd_rep->push_parameters(
+          Pecos::WEIBULL, Pecos::W_BETA,
           probDescDB.get_rv("variables.weibull_uncertain.betas"));
-	assign_value(active_corr, true, start_rv, num_rv);
-	start_rv += num_rv;
-      }
-      num_rv = probDescDB.get_sizet("variables.histogram_uncertain.bin");
-      if (num_rv) {
-	mvd_rep->push_parameters(Pecos::HISTOGRAM_BIN, Pecos::H_BIN_PAIRS,
+      assign_value(active_corr, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
+    num_rv = probDescDB.get_sizet("variables.histogram_uncertain.bin");
+    if (num_rv) {
+      mvd_rep->push_parameters(
+          Pecos::HISTOGRAM_BIN, Pecos::H_BIN_PAIRS,
           probDescDB.get_rrma("variables.histogram_uncertain.bin_pairs"));
-	assign_value(active_corr, true, start_rv, num_rv);
-	start_rv += num_rv;
-      }
+      assign_value(active_corr, true, start_rv, num_rv);
+      start_rv += num_rv;
     }
+  }
 
-    // Discrete aleatory
+  // Discrete aleatory
 
-    if (!active_only || dauv) {
-      num_rv = probDescDB.get_sizet("variables.poisson_uncertain");
-      if (num_rv) {
-	mvd_rep->push_parameters(Pecos::POISSON, Pecos::P_LAMBDA,
+  if (!active_only || dauv) {
+    num_rv = probDescDB.get_sizet("variables.poisson_uncertain");
+    if (num_rv) {
+      mvd_rep->push_parameters(
+          Pecos::POISSON, Pecos::P_LAMBDA,
           probDescDB.get_rv("variables.poisson_uncertain.lambdas"));
-	assign_value(active_corr, true, start_rv, num_rv);
-	start_rv += num_rv;
-      }
-      num_rv = probDescDB.get_sizet("variables.binomial_uncertain");
-      if (num_rv) {
-	mvd_rep->push_parameters(Pecos::BINOMIAL, Pecos::BI_P_PER_TRIAL,
+      assign_value(active_corr, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
+    num_rv = probDescDB.get_sizet("variables.binomial_uncertain");
+    if (num_rv) {
+      mvd_rep->push_parameters(
+          Pecos::BINOMIAL, Pecos::BI_P_PER_TRIAL,
           probDescDB.get_rv("variables.binomial_uncertain.prob_per_trial"));
-	UIntArray num_tr;
-	copy_data(probDescDB.get_iv(
-	  "variables.binomial_uncertain.num_trials"), num_tr);
-	mvd_rep->push_parameters(Pecos::BINOMIAL, Pecos::BI_TRIALS, num_tr);
-	assign_value(active_corr, true, start_rv, num_rv);
-	start_rv += num_rv;
-      }
-      num_rv = probDescDB.get_sizet("variables.negative_binomial_uncertain");
-      if (num_rv) {
-	mvd_rep->push_parameters(Pecos::NEGATIVE_BINOMIAL,
-	  Pecos::NBI_P_PER_TRIAL, probDescDB.get_rv(
-          "variables.negative_binomial_uncertain.prob_per_trial"));
-	UIntArray num_tr;
-	copy_data(probDescDB.get_iv(
-	  "variables.negative_binomial_uncertain.num_trials"), num_tr);
-	mvd_rep->
-	  push_parameters(Pecos::NEGATIVE_BINOMIAL, Pecos::NBI_TRIALS, num_tr);
-	assign_value(active_corr, true, start_rv, num_rv);
-	start_rv += num_rv;
-      }
-      num_rv = probDescDB.get_sizet("variables.geometric_uncertain");
-      if (num_rv) {
-	mvd_rep->push_parameters(Pecos::GEOMETRIC, Pecos::GE_P_PER_TRIAL,
+      UIntArray num_tr;
+      copy_data(probDescDB.get_iv("variables.binomial_uncertain.num_trials"),
+                num_tr);
+      mvd_rep->push_parameters(Pecos::BINOMIAL, Pecos::BI_TRIALS, num_tr);
+      assign_value(active_corr, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
+    num_rv = probDescDB.get_sizet("variables.negative_binomial_uncertain");
+    if (num_rv) {
+      mvd_rep->push_parameters(
+          Pecos::NEGATIVE_BINOMIAL, Pecos::NBI_P_PER_TRIAL,
+          probDescDB.get_rv(
+              "variables.negative_binomial_uncertain.prob_per_trial"));
+      UIntArray num_tr;
+      copy_data(
+          probDescDB.get_iv("variables.negative_binomial_uncertain.num_trials"),
+          num_tr);
+      mvd_rep->push_parameters(Pecos::NEGATIVE_BINOMIAL, Pecos::NBI_TRIALS,
+                               num_tr);
+      assign_value(active_corr, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
+    num_rv = probDescDB.get_sizet("variables.geometric_uncertain");
+    if (num_rv) {
+      mvd_rep->push_parameters(
+          Pecos::GEOMETRIC, Pecos::GE_P_PER_TRIAL,
           probDescDB.get_rv("variables.geometric_uncertain.prob_per_trial"));
-	assign_value(active_corr, true, start_rv, num_rv);
-	start_rv += num_rv;
-      }
-      num_rv = probDescDB.get_sizet("variables.hypergeometric_uncertain");
-      if (num_rv) {
-	UIntArray tot_pop, sel_pop, num_drawn;
-	copy_data(probDescDB.get_iv(
-	  "variables.hypergeometric_uncertain.total_population"), tot_pop);
-	copy_data(probDescDB.get_iv(
-          "variables.hypergeometric_uncertain.selected_population"), sel_pop);
-	copy_data(probDescDB.get_iv(
-	  "variables.hypergeometric_uncertain.num_drawn"), num_drawn);
-	mvd_rep->
-	  push_parameters(Pecos::HYPERGEOMETRIC, Pecos::HGE_TOT_POP, tot_pop);
-	mvd_rep->
-	  push_parameters(Pecos::HYPERGEOMETRIC, Pecos::HGE_SEL_POP, sel_pop);
-	mvd_rep->
-	  push_parameters(Pecos::HYPERGEOMETRIC, Pecos::HGE_DRAWN, num_drawn);
-	assign_value(active_corr, true, start_rv, num_rv);
-	start_rv += num_rv;
-      }
-      num_rv = probDescDB.get_sizet("variables.histogram_uncertain.point_int");
-      if (num_rv) {
-	mvd_rep->push_parameters(Pecos::HISTOGRAM_PT_INT, Pecos::H_PT_INT_PAIRS,
+      assign_value(active_corr, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
+    num_rv = probDescDB.get_sizet("variables.hypergeometric_uncertain");
+    if (num_rv) {
+      UIntArray tot_pop, sel_pop, num_drawn;
+      copy_data(probDescDB.get_iv(
+                    "variables.hypergeometric_uncertain.total_population"),
+                tot_pop);
+      copy_data(probDescDB.get_iv(
+                    "variables.hypergeometric_uncertain.selected_population"),
+                sel_pop);
+      copy_data(
+          probDescDB.get_iv("variables.hypergeometric_uncertain.num_drawn"),
+          num_drawn);
+      mvd_rep->push_parameters(Pecos::HYPERGEOMETRIC, Pecos::HGE_TOT_POP,
+                               tot_pop);
+      mvd_rep->push_parameters(Pecos::HYPERGEOMETRIC, Pecos::HGE_SEL_POP,
+                               sel_pop);
+      mvd_rep->push_parameters(Pecos::HYPERGEOMETRIC, Pecos::HGE_DRAWN,
+                               num_drawn);
+      assign_value(active_corr, true, start_rv, num_rv);
+      start_rv += num_rv;
+    }
+    num_rv = probDescDB.get_sizet("variables.histogram_uncertain.point_int");
+    if (num_rv) {
+      mvd_rep->push_parameters(
+          Pecos::HISTOGRAM_PT_INT, Pecos::H_PT_INT_PAIRS,
           probDescDB.get_irma("variables.histogram_uncertain.point_int_pairs"));
-	assign_value(active_corr, true, start_rv, num_rv);
-	start_rv += num_rv;
-      }
-      num_rv = probDescDB.get_sizet(
-	"variables.histogram_uncertain.point_string");
-      if (num_rv) {
-	mvd_rep->push_parameters(Pecos::HISTOGRAM_PT_STRING,
-	  Pecos::H_PT_STR_PAIRS, probDescDB.get_srma(
-	  "variables.histogram_uncertain.point_string_pairs"));
-	assign_value(active_corr, true, start_rv, num_rv);
-	start_rv += num_rv;
-      }
-      num_rv = probDescDB.get_sizet("variables.histogram_uncertain.point_real");
-      if (num_rv) {
-	mvd_rep->push_parameters(Pecos::HISTOGRAM_PT_REAL,
-	  Pecos::H_PT_REAL_PAIRS, probDescDB.get_rrma(
-	  "variables.histogram_uncertain.point_real_pairs"));
-	assign_value(active_corr, true, start_rv, num_rv);
-	start_rv += num_rv;
-      }
+      assign_value(active_corr, true, start_rv, num_rv);
+      start_rv += num_rv;
     }
-
-    // Continuous epistemic
-
-    if (!active_only || ceuv) {
-      num_rv = probDescDB.get_sizet("variables.continuous_interval_uncertain");
-      if (num_rv) {
-	mvd_rep->push_parameters(Pecos::CONTINUOUS_INTERVAL_UNCERTAIN,
-          Pecos::CIU_BPA, probDescDB.get_rrrma(
-          "variables.continuous_interval_uncertain.basic_probs"));
-	start_rv += num_rv;
-      }
+    num_rv = probDescDB.get_sizet("variables.histogram_uncertain.point_string");
+    if (num_rv) {
+      mvd_rep->push_parameters(
+          Pecos::HISTOGRAM_PT_STRING, Pecos::H_PT_STR_PAIRS,
+          probDescDB.get_srma(
+              "variables.histogram_uncertain.point_string_pairs"));
+      assign_value(active_corr, true, start_rv, num_rv);
+      start_rv += num_rv;
     }
-
-    // Discrete epistemic
-
-    if (!active_only || deuv) {
-      num_rv = probDescDB.get_sizet("variables.discrete_interval_uncertain");
-      if (num_rv) {
-	mvd_rep->push_parameters(Pecos::DISCRETE_INTERVAL_UNCERTAIN,
-          Pecos::DIU_BPA, probDescDB.get_iirma(
-          "variables.discrete_interval_uncertain.basic_probs"));
-	start_rv += num_rv;
-      }
-      num_rv = probDescDB.get_sizet("variables.discrete_uncertain_set_int");
-      if (num_rv) {
-	mvd_rep->push_parameters(Pecos::DISCRETE_UNCERTAIN_SET_INT,
-          Pecos::DUSI_VALUES_PROBS, probDescDB.get_irma(
-          "variables.discrete_uncertain_set_int.values_probs"));
-	start_rv += num_rv;
-      }
-      num_rv = probDescDB.get_sizet("variables.discrete_uncertain_set_string");
-      if (num_rv) {
-	mvd_rep->push_parameters(Pecos::DISCRETE_UNCERTAIN_SET_STRING,
-          Pecos::DUSS_VALUES_PROBS, probDescDB.get_srma(
-          "variables.discrete_uncertain_set_string.values_probs"));
-	start_rv += num_rv;
-      }
-      num_rv = probDescDB.get_sizet("variables.discrete_uncertain_set_real");
-      if (num_rv) {
-	mvd_rep->push_parameters(Pecos::DISCRETE_UNCERTAIN_SET_REAL,
-          Pecos::DUSR_VALUES_PROBS, probDescDB.get_rrma(
-          "variables.discrete_uncertain_set_real.values_probs"));
-	start_rv += num_rv;
-      }
+    num_rv = probDescDB.get_sizet("variables.histogram_uncertain.point_real");
+    if (num_rv) {
+      mvd_rep->push_parameters(
+          Pecos::HISTOGRAM_PT_REAL, Pecos::H_PT_REAL_PAIRS,
+          probDescDB.get_rrma(
+              "variables.histogram_uncertain.point_real_pairs"));
+      assign_value(active_corr, true, start_rv, num_rv);
+      start_rv += num_rv;
     }
+  }
 
-    // Continuous state
-    // RANGE type could be design or state, so use count-based API
+  // Continuous epistemic
 
-    if (!active_only || csv) {
-      num_rv = probDescDB.get_sizet("variables.continuous_state");
-      if (num_rv) {
-	mvd_rep->push_parameters(start_rv, num_rv, Pecos::CR_LWR_BND,
+  if (!active_only || ceuv) {
+    num_rv = probDescDB.get_sizet("variables.continuous_interval_uncertain");
+    if (num_rv) {
+      mvd_rep->push_parameters(
+          Pecos::CONTINUOUS_INTERVAL_UNCERTAIN, Pecos::CIU_BPA,
+          probDescDB.get_rrrma(
+              "variables.continuous_interval_uncertain.basic_probs"));
+      start_rv += num_rv;
+    }
+  }
+
+  // Discrete epistemic
+
+  if (!active_only || deuv) {
+    num_rv = probDescDB.get_sizet("variables.discrete_interval_uncertain");
+    if (num_rv) {
+      mvd_rep->push_parameters(
+          Pecos::DISCRETE_INTERVAL_UNCERTAIN, Pecos::DIU_BPA,
+          probDescDB.get_iirma(
+              "variables.discrete_interval_uncertain.basic_probs"));
+      start_rv += num_rv;
+    }
+    num_rv = probDescDB.get_sizet("variables.discrete_uncertain_set_int");
+    if (num_rv) {
+      mvd_rep->push_parameters(
+          Pecos::DISCRETE_UNCERTAIN_SET_INT, Pecos::DUSI_VALUES_PROBS,
+          probDescDB.get_irma(
+              "variables.discrete_uncertain_set_int.values_probs"));
+      start_rv += num_rv;
+    }
+    num_rv = probDescDB.get_sizet("variables.discrete_uncertain_set_string");
+    if (num_rv) {
+      mvd_rep->push_parameters(
+          Pecos::DISCRETE_UNCERTAIN_SET_STRING, Pecos::DUSS_VALUES_PROBS,
+          probDescDB.get_srma(
+              "variables.discrete_uncertain_set_string.values_probs"));
+      start_rv += num_rv;
+    }
+    num_rv = probDescDB.get_sizet("variables.discrete_uncertain_set_real");
+    if (num_rv) {
+      mvd_rep->push_parameters(
+          Pecos::DISCRETE_UNCERTAIN_SET_REAL, Pecos::DUSR_VALUES_PROBS,
+          probDescDB.get_rrma(
+              "variables.discrete_uncertain_set_real.values_probs"));
+      start_rv += num_rv;
+    }
+  }
+
+  // Continuous state
+  // RANGE type could be design or state, so use count-based API
+
+  if (!active_only || csv) {
+    num_rv = probDescDB.get_sizet("variables.continuous_state");
+    if (num_rv) {
+      mvd_rep->push_parameters(
+          start_rv, num_rv, Pecos::CR_LWR_BND,
           probDescDB.get_rv("variables.continuous_state.lower_bounds"));
-	mvd_rep->push_parameters(start_rv, num_rv, Pecos::CR_UPR_BND,
+      mvd_rep->push_parameters(
+          start_rv, num_rv, Pecos::CR_UPR_BND,
           probDescDB.get_rv("variables.continuous_state.upper_bounds"));
-	start_rv += num_rv;
-      }
+      start_rv += num_rv;
     }
+  }
 
-    // Discrete state
-    // RANGE and SET types could be design or state, so use count-based API
+  // Discrete state
+  // RANGE and SET types could be design or state, so use count-based API
 
-    if (!active_only || dsv) {
-      num_rv = probDescDB.get_sizet("variables.discrete_state_range");
-      if (num_rv) {
-	mvd_rep->push_parameters(start_rv, num_rv, Pecos::DR_LWR_BND,
+  if (!active_only || dsv) {
+    num_rv = probDescDB.get_sizet("variables.discrete_state_range");
+    if (num_rv) {
+      mvd_rep->push_parameters(
+          start_rv, num_rv, Pecos::DR_LWR_BND,
           probDescDB.get_iv("variables.discrete_state_range.lower_bounds"));
-	mvd_rep->push_parameters(start_rv, num_rv, Pecos::DR_UPR_BND,
+      mvd_rep->push_parameters(
+          start_rv, num_rv, Pecos::DR_UPR_BND,
           probDescDB.get_iv("variables.discrete_state_range.upper_bounds"));
-	start_rv += num_rv;
-      }
-      num_rv = probDescDB.get_sizet("variables.discrete_state_set_int");
-      if (num_rv) {
-	mvd_rep->push_parameters(start_rv, num_rv, Pecos::DSI_VALUES,
-          probDescDB.get_isa("variables.discrete_state_set_int.values"));
-	start_rv += num_rv;
-      }
-      num_rv = probDescDB.get_sizet("variables.discrete_state_set_string");
-      if (num_rv) {
-	mvd_rep->push_parameters(start_rv, num_rv, Pecos::DSS_VALUES,
-          probDescDB.get_ssa("variables.discrete_state_set_string.values"));
-	start_rv += num_rv;
-      }
-      num_rv = probDescDB.get_sizet("variables.discrete_state_set_real");
-      if (num_rv) {
-	mvd_rep->push_parameters(start_rv, num_rv, Pecos::DSR_VALUES,
-          probDescDB.get_rsa("variables.discrete_state_set_real.values"));
-	//start_rv += num_rv;
-      }
+      start_rv += num_rv;
     }
+    num_rv = probDescDB.get_sizet("variables.discrete_state_set_int");
+    if (num_rv) {
+      mvd_rep->push_parameters(
+          start_rv, num_rv, Pecos::DSI_VALUES,
+          probDescDB.get_isa("variables.discrete_state_set_int.values"));
+      start_rv += num_rv;
+    }
+    num_rv = probDescDB.get_sizet("variables.discrete_state_set_string");
+    if (num_rv) {
+      mvd_rep->push_parameters(
+          start_rv, num_rv, Pecos::DSS_VALUES,
+          probDescDB.get_ssa("variables.discrete_state_set_string.values"));
+      start_rv += num_rv;
+    }
+    num_rv = probDescDB.get_sizet("variables.discrete_state_set_real");
+    if (num_rv) {
+      mvd_rep->push_parameters(
+          start_rv, num_rv, Pecos::DSR_VALUES,
+          probDescDB.get_rsa("variables.discrete_state_set_real.values"));
+      // start_rv += num_rv;
+    }
+  }
 
-    mvd_rep->initialize_correlations(
+  mvd_rep->initialize_correlations(
       probDescDB.get_rsm("variables.uncertain.correlation_matrix"),
       active_corr);
 
@@ -1053,75 +1138,92 @@ initialize_distribution_parameters(Pecos::MultivariateDistribution& mv_dist,
   //}
 }
 
-
-SizetMultiArrayConstView
-Model::initialize_x0_bounds(const SizetArray& original_dvv, 
-			    bool& active_derivs, bool& inactive_derivs, 
-			    RealVector& x0, 
-			    RealVector& fd_lb, RealVector& fd_ub) const
-{
+SizetMultiArrayConstView Model::initialize_x0_bounds(
+    const SizetArray& original_dvv, bool& active_derivs, bool& inactive_derivs,
+    RealVector& x0, RealVector& fd_lb, RealVector& fd_ub) const {
   // Are derivatives w.r.t. active or inactive variables?
   active_derivs = inactive_derivs = false;
   if (original_dvv == currentVariables.continuous_variable_ids()) {
     active_derivs = true;
-    copy_data(currentVariables.continuous_variables(), x0);        // view->copy
-  }
-  else if (original_dvv ==
-	   currentVariables.inactive_continuous_variable_ids()) {
+    copy_data(currentVariables.continuous_variables(), x0);  // view->copy
+  } else if (original_dvv ==
+             currentVariables.inactive_continuous_variable_ids()) {
     inactive_derivs = true;
-    copy_data(currentVariables.inactive_continuous_variables(), x0);//view->copy
-  }
-  else // general derivatives
-    copy_data(currentVariables.all_continuous_variables(), x0);    // view->copy
+    copy_data(currentVariables.inactive_continuous_variables(),
+              x0);  // view->copy
+  } else            // general derivatives
+    copy_data(currentVariables.all_continuous_variables(), x0);  // view->copy
 
   // define c_l_bnds, c_u_bnds, cv_ids, cv_types
-  const RealVector& c_l_bnds = (active_derivs) ? ModelUtils::continuous_lower_bounds(*this) :
-    ( (inactive_derivs) ? ModelUtils::inactive_continuous_lower_bounds(*this) :
-      ModelUtils::all_continuous_lower_bounds(*this) );
-  const RealVector& c_u_bnds = (active_derivs) ? ModelUtils::continuous_upper_bounds(*this) :
-    ( (inactive_derivs) ? ModelUtils::inactive_continuous_upper_bounds(*this) :
-      ModelUtils::all_continuous_upper_bounds(*this) );
-  SizetMultiArrayConstView cv_ids = (active_derivs) ?
-    current_variables().continuous_variable_ids() :
-    ( (inactive_derivs) ? current_variables().inactive_continuous_variable_ids() : 
-      current_variables().all_continuous_variable_ids() );
-  UShortMultiArrayConstView cv_types = (active_derivs) ? 
-    current_variables().continuous_variable_types() : 
-    ( (inactive_derivs) ? current_variables().inactive_continuous_variable_types() : 
-      current_variables().all_continuous_variable_types() );
+  const RealVector& c_l_bnds =
+      (active_derivs)
+          ? ModelUtils::continuous_lower_bounds(*this)
+          : ((inactive_derivs)
+                 ? ModelUtils::inactive_continuous_lower_bounds(*this)
+                 : ModelUtils::all_continuous_lower_bounds(*this));
+  const RealVector& c_u_bnds =
+      (active_derivs)
+          ? ModelUtils::continuous_upper_bounds(*this)
+          : ((inactive_derivs)
+                 ? ModelUtils::inactive_continuous_upper_bounds(*this)
+                 : ModelUtils::all_continuous_upper_bounds(*this));
+  SizetMultiArrayConstView cv_ids =
+      (active_derivs)
+          ? current_variables().continuous_variable_ids()
+          : ((inactive_derivs)
+                 ? current_variables().inactive_continuous_variable_ids()
+                 : current_variables().all_continuous_variable_ids());
+  UShortMultiArrayConstView cv_types =
+      (active_derivs)
+          ? current_variables().continuous_variable_types()
+          : ((inactive_derivs)
+                 ? current_variables().inactive_continuous_variable_types()
+                 : current_variables().all_continuous_variable_types());
 
   // if not respecting bounds, leave at +/- infinity
   size_t num_deriv_vars = original_dvv.size();
-  fd_lb.resize(num_deriv_vars);  fd_ub.resize(num_deriv_vars);
+  fd_lb.resize(num_deriv_vars);
+  fd_ub.resize(num_deriv_vars);
   Real dbl_inf = std::numeric_limits<Real>::infinity();
-  if (ignoreBounds)
-    { fd_lb = -dbl_inf;  fd_ub = dbl_inf; }
-  else { // manage global/inferred vs. distribution bounds
+  if (ignoreBounds) {
+    fd_lb = -dbl_inf;
+    fd_ub = dbl_inf;
+  } else {  // manage global/inferred vs. distribution bounds
     std::shared_ptr<Pecos::MarginalsCorrDistribution> mvd_rep =
-      std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
-      (mvDist.multivar_dist_rep());
-    for (size_t j=0; j<num_deriv_vars; j++) {
+        std::static_pointer_cast<Pecos::MarginalsCorrDistribution>(
+            mvDist.multivar_dist_rep());
+    for (size_t j = 0; j < num_deriv_vars; j++) {
       size_t cv_index = find_index(cv_ids, original_dvv[j]);
       switch (cv_types[cv_index]) {
-      case NORMAL_UNCERTAIN: {    // +/-infinity or user-specified
-	size_t rv_index = original_dvv[j] - 1;// id to index (full variable set)
-	fd_lb[j] = mvd_rep->pull_parameter<Real>(rv_index, Pecos::N_LWR_BND);
-	fd_ub[j] = mvd_rep->pull_parameter<Real>(rv_index, Pecos::N_UPR_BND);
-	break;
-      }
-      case LOGNORMAL_UNCERTAIN: { // 0/inf or user-specified
-	size_t rv_index = original_dvv[j] - 1;// id to index (full variable set)
-	fd_lb[j] = mvd_rep->pull_parameter<Real>(rv_index, Pecos::LN_LWR_BND);
-	fd_ub[j] = mvd_rep->pull_parameter<Real>(rv_index, Pecos::LN_UPR_BND);
-	break;
-      }
-      case EXPONENTIAL_UNCERTAIN: case GAMMA_UNCERTAIN:
-      case FRECHET_UNCERTAIN:     case WEIBULL_UNCERTAIN:
-	fd_lb[j] = c_l_bnds[cv_index]; fd_ub[j] = dbl_inf;            break;
-      case GUMBEL_UNCERTAIN:
-	fd_lb[j] = -dbl_inf;           fd_ub[j] = dbl_inf;            break;
-      default:
-	fd_lb[j] = c_l_bnds[cv_index]; fd_ub[j] = c_u_bnds[cv_index]; break;
+        case NORMAL_UNCERTAIN: {  // +/-infinity or user-specified
+          size_t rv_index =
+              original_dvv[j] - 1;  // id to index (full variable set)
+          fd_lb[j] = mvd_rep->pull_parameter<Real>(rv_index, Pecos::N_LWR_BND);
+          fd_ub[j] = mvd_rep->pull_parameter<Real>(rv_index, Pecos::N_UPR_BND);
+          break;
+        }
+        case LOGNORMAL_UNCERTAIN: {  // 0/inf or user-specified
+          size_t rv_index =
+              original_dvv[j] - 1;  // id to index (full variable set)
+          fd_lb[j] = mvd_rep->pull_parameter<Real>(rv_index, Pecos::LN_LWR_BND);
+          fd_ub[j] = mvd_rep->pull_parameter<Real>(rv_index, Pecos::LN_UPR_BND);
+          break;
+        }
+        case EXPONENTIAL_UNCERTAIN:
+        case GAMMA_UNCERTAIN:
+        case FRECHET_UNCERTAIN:
+        case WEIBULL_UNCERTAIN:
+          fd_lb[j] = c_l_bnds[cv_index];
+          fd_ub[j] = dbl_inf;
+          break;
+        case GUMBEL_UNCERTAIN:
+          fd_lb[j] = -dbl_inf;
+          fd_ub[j] = dbl_inf;
+          break;
+        default:
+          fd_lb[j] = c_l_bnds[cv_index];
+          fd_ub[j] = c_u_bnds[cv_index];
+          break;
       }
     }
   }
@@ -1129,47 +1231,43 @@ Model::initialize_x0_bounds(const SizetArray& original_dvv,
   return cv_ids;
 }
 
-
 // compute a forward step for fd gradients; can't be const
-Real Model::forward_grad_step(size_t num_deriv_vars, size_t xj_index,
-			      Real x0_j, Real lb_j, Real ub_j)
-{
+Real Model::forward_grad_step(size_t num_deriv_vars, size_t xj_index, Real x0_j,
+                              Real lb_j, Real ub_j) {
   // Compute the offset for the ith gradient variable.
   // Enforce a minimum delta of fdgss*.01
   Real fdgss = (fdGradStepSize.length() == num_deriv_vars)
-    ? fdGradStepSize[xj_index] : fdGradStepSize[0];
-  //Real h = FDstep1(x0_j, lb_j, ub_j, fdgss*std::max(std::fabs(x0_j),.01));
+                   ? fdGradStepSize[xj_index]
+                   : fdGradStepSize[0];
+  // Real h = FDstep1(x0_j, lb_j, ub_j, fdgss*std::max(std::fabs(x0_j),.01));
   Real h = FDstep1(x0_j, lb_j, ub_j,
-		   initialize_h(x0_j, lb_j, ub_j, fdgss, fdGradStepType));
+                   initialize_h(x0_j, lb_j, ub_j, fdgss, fdGradStepType));
   return h;
 }
 
-
-
-void Model::evaluate()
-{
+void Model::evaluate() {
   ++modelEvalCntr;
   if (modelEvaluationsDBState == EvaluationsDBState::UNINITIALIZED) {
-    modelEvaluationsDBState = evaluationsDB.model_allocate(modelId, modelType,
-      currentVariables, mvDist, currentResponse, default_active_set());
+    modelEvaluationsDBState = evaluationsDB.model_allocate(
+        modelId, modelType, currentVariables, mvDist, currentResponse,
+        default_active_set());
     if (modelEvaluationsDBState == EvaluationsDBState::ACTIVE)
       declare_sources();
   }
-  
-  // Define default ActiveSet for iterators which don't pass one
-  ActiveSet temp_set = currentResponse.active_set(); // copy
-  temp_set.request_values(1); // function values only
 
-  if(modelEvaluationsDBState == EvaluationsDBState::ACTIVE)
+  // Define default ActiveSet for iterators which don't pass one
+  ActiveSet temp_set = currentResponse.active_set();  // copy
+  temp_set.request_values(1);                         // function values only
+
+  if (modelEvaluationsDBState == EvaluationsDBState::ACTIVE)
     evaluationsDB.store_model_variables(modelId, modelType, modelEvalCntr,
-          temp_set, currentVariables);
+                                        temp_set, currentVariables);
 
   if (derived_scheduler_overload()) {
     // prevents error of trying to run a multiproc direct job on the scheduler
     derived_evaluate_nowait(temp_set);
     currentResponse = derived_synchronize().begin()->second;
-  }
-  else // perform a normal synchronous map
+  } else  // perform a normal synchronous map
     derived_evaluate(temp_set);
 
   if (modelAutoGraphicsFlag)
@@ -1177,54 +1275,50 @@ void Model::evaluate()
 
   if (modelEvaluationsDBState == EvaluationsDBState::ACTIVE)
     evaluationsDB.store_model_response(modelId, modelType, modelEvalCntr,
-          currentResponse);
-  
+                                       currentResponse);
 }
 
-
-void Model::evaluate(const ActiveSet& set)
-{
+void Model::evaluate(const ActiveSet& set) {
   ++modelEvalCntr;
 
   if (modelEvaluationsDBState == EvaluationsDBState::UNINITIALIZED) {
-    modelEvaluationsDBState = evaluationsDB.model_allocate(modelId, modelType,
-      currentVariables, mvDist, currentResponse, default_active_set());
+    modelEvaluationsDBState = evaluationsDB.model_allocate(
+        modelId, modelType, currentVariables, mvDist, currentResponse,
+        default_active_set());
     if (modelEvaluationsDBState == EvaluationsDBState::ACTIVE)
       declare_sources();
   }
 
   if (modelEvaluationsDBState == EvaluationsDBState::ACTIVE)
-    evaluationsDB.store_model_variables(modelId, modelType, modelEvalCntr,
-          set, currentVariables);
+    evaluationsDB.store_model_variables(modelId, modelType, modelEvalCntr, set,
+                                        currentVariables);
 
   // Derivative estimation support goes here and is not replicated in the
   // default asv version of evaluate -> a good reason for using an
   // overloaded function design rather than a default parameter design.
-  ShortArray map_asv(numFns, 0), fd_grad_asv(numFns, 0),
-    fd_hess_asv(numFns, 0), quasi_hess_asv(numFns, 0);
+  ShortArray map_asv(numFns, 0), fd_grad_asv(numFns, 0), fd_hess_asv(numFns, 0),
+      quasi_hess_asv(numFns, 0);
   // Manage map/estimate_derivs for a particular asv based on responses spec.
-  bool use_est_deriv = manage_asv(set, map_asv, fd_grad_asv,
-          fd_hess_asv, quasi_hess_asv);
+  bool use_est_deriv =
+      manage_asv(set, map_asv, fd_grad_asv, fd_hess_asv, quasi_hess_asv);
 
   if (use_est_deriv) {
     // Compute requested derivatives not available from the simulation (also
     // perform initial map for parallel load balance).  estimate_derivatives()
     // may involve asynch evals depending on asynchEvalFlag.
-    estimate_derivatives(map_asv, fd_grad_asv, fd_hess_asv, quasi_hess_asv,
-			 set, asynchEvalFlag);
-    if (asynchEvalFlag) { // concatenate asynch map calls into 1 response
+    estimate_derivatives(map_asv, fd_grad_asv, fd_hess_asv, quasi_hess_asv, set,
+                         asynchEvalFlag);
+    if (asynchEvalFlag) {  // concatenate asynch map calls into 1 response
       const IntResponseMap& fd_responses = derived_synchronize();
       synchronize_derivatives(currentVariables, fd_responses, currentResponse,
-      fd_grad_asv, fd_hess_asv, quasi_hess_asv, set);
+                              fd_grad_asv, fd_hess_asv, quasi_hess_asv, set);
     }
-  }
-  else if (derived_scheduler_overload()) {
+  } else if (derived_scheduler_overload()) {
     // This map must be asynchronous since it prevents the error of trying
     // to run a multiprocessor direct job on the scheduler
     derived_evaluate_nowait(set);
     currentResponse = derived_synchronize().begin()->second;
-  }
-  else
+  } else
     // Perform synchronous eval
     derived_evaluate(set);
 
@@ -1233,54 +1327,51 @@ void Model::evaluate(const ActiveSet& set)
 
   if (modelEvaluationsDBState == EvaluationsDBState::ACTIVE)
     evaluationsDB.store_model_response(modelId, modelType, modelEvalCntr,
-          currentResponse);
+                                       currentResponse);
 }
 
-
-void Model::evaluate_nowait()
-{
+void Model::evaluate_nowait() {
   ++modelEvalCntr;
-  if(modelEvaluationsDBState == EvaluationsDBState::UNINITIALIZED) {
-    modelEvaluationsDBState = evaluationsDB.model_allocate(modelId, modelType,
-        currentVariables, mvDist, currentResponse, default_active_set());
-    if(modelEvaluationsDBState == EvaluationsDBState::ACTIVE)
+  if (modelEvaluationsDBState == EvaluationsDBState::UNINITIALIZED) {
+    modelEvaluationsDBState = evaluationsDB.model_allocate(
+        modelId, modelType, currentVariables, mvDist, currentResponse,
+        default_active_set());
+    if (modelEvaluationsDBState == EvaluationsDBState::ACTIVE)
       declare_sources();
   }
 
   // Define default ActiveSet for iterators which don't pass one
-  ActiveSet temp_set = currentResponse.active_set(); // copy
-  temp_set.request_values(1); // function values only
+  ActiveSet temp_set = currentResponse.active_set();  // copy
+  temp_set.request_values(1);                         // function values only
 
-  if(modelEvaluationsDBState == EvaluationsDBState::ACTIVE)
+  if (modelEvaluationsDBState == EvaluationsDBState::ACTIVE)
     evaluationsDB.store_model_variables(modelId, modelType, modelEvalCntr,
-        temp_set, currentVariables);
+                                        temp_set, currentVariables);
   // perform an asynchronous parameter-to-response mapping
   derived_evaluate_nowait(temp_set);
 
   rawEvalIdMap[derived_evaluation_id()] = modelEvalCntr;
-  numFDEvalsMap[modelEvalCntr] = -1;//no deriv est; distinguish from QN update
+  numFDEvalsMap[modelEvalCntr] = -1;  // no deriv est; distinguish from QN
+                                      // update
 
   // history of vars must be catalogued for use in synchronize()
-  if (modelAutoGraphicsFlag)
-    varsMap[modelEvalCntr] = currentVariables.copy();
-  
+  if (modelAutoGraphicsFlag) varsMap[modelEvalCntr] = currentVariables.copy();
 }
 
-
-void Model::evaluate_nowait(const ActiveSet& set)
-{
+void Model::evaluate_nowait(const ActiveSet& set) {
   ++modelEvalCntr;
 
-  if(modelEvaluationsDBState == EvaluationsDBState::UNINITIALIZED) {
-    modelEvaluationsDBState = evaluationsDB.model_allocate(modelId, modelType,
-        currentVariables, mvDist, currentResponse, default_active_set());
-    if(modelEvaluationsDBState == EvaluationsDBState::ACTIVE)
+  if (modelEvaluationsDBState == EvaluationsDBState::UNINITIALIZED) {
+    modelEvaluationsDBState = evaluationsDB.model_allocate(
+        modelId, modelType, currentVariables, mvDist, currentResponse,
+        default_active_set());
+    if (modelEvaluationsDBState == EvaluationsDBState::ACTIVE)
       declare_sources();
   }
 
-  if(modelEvaluationsDBState == EvaluationsDBState::ACTIVE)
-    evaluationsDB.store_model_variables(modelId, modelType, modelEvalCntr,
-        set, currentVariables);
+  if (modelEvaluationsDBState == EvaluationsDBState::ACTIVE)
+    evaluationsDB.store_model_variables(modelId, modelType, modelEvalCntr, set,
+                                        currentVariables);
 
   // derived evaluation_id() not yet incremented (for first of several if est
   // derivs); want the key for id map to be the first raw eval of the set
@@ -1288,10 +1379,10 @@ void Model::evaluate_nowait(const ActiveSet& set)
 
   // Manage use of estimate_derivatives() for a particular asv based on
   // the user's gradients/Hessians spec.
-  ShortArray map_asv(numFns, 0),    fd_grad_asv(numFns, 0),
-          fd_hess_asv(numFns, 0), quasi_hess_asv(numFns, 0);
-  bool use_est_deriv = manage_asv(set, map_asv, fd_grad_asv,
-          fd_hess_asv, quasi_hess_asv);
+  ShortArray map_asv(numFns, 0), fd_grad_asv(numFns, 0), fd_hess_asv(numFns, 0),
+      quasi_hess_asv(numFns, 0);
+  bool use_est_deriv =
+      manage_asv(set, map_asv, fd_grad_asv, fd_hess_asv, quasi_hess_asv);
   int num_fd_evals;
   if (use_est_deriv) {
     // Compute requested derivatives not available from the simulation.
@@ -1299,106 +1390,113 @@ void Model::evaluate_nowait(const ActiveSet& set)
     // calls prior to synchronize()/synchronize_derivatives(), we must perform
     // some additional bookkeeping so that the response arrays can be properly
     // recombined into estimated gradients/Hessians.
-    estDerivsFlag = true; // flipped once per set of asynch evals
-    asvList.push_back(fd_grad_asv);     asvList.push_back(fd_hess_asv);
-    asvList.push_back(quasi_hess_asv);  setList.push_back(set);
-    num_fd_evals
-= estimate_derivatives(map_asv, fd_grad_asv, fd_hess_asv,
-            quasi_hess_asv, set, true); // always asynch
-  }
-  else {
+    estDerivsFlag = true;  // flipped once per set of asynch evals
+    asvList.push_back(fd_grad_asv);
+    asvList.push_back(fd_hess_asv);
+    asvList.push_back(quasi_hess_asv);
+    setList.push_back(set);
+    num_fd_evals =
+        estimate_derivatives(map_asv, fd_grad_asv, fd_hess_asv, quasi_hess_asv,
+                             set, true);  // always asynch
+  } else {
     derived_evaluate_nowait(set);
-    num_fd_evals = -1; // no deriv est; distinguish from QN update
+    num_fd_evals = -1;  // no deriv est; distinguish from QN update
   }
   numFDEvalsMap[modelEvalCntr] = num_fd_evals;
 
   // history of vars must be catalogued for use in synchronize
   if (modelAutoGraphicsFlag || num_fd_evals >= 0)
     varsMap[modelEvalCntr] = currentVariables.copy();
-  
 }
 
-
-const IntResponseMap& Model::synchronize()
-{
+const IntResponseMap& Model::synchronize() {
   responseMap.clear();
 
   const IntResponseMap& raw_resp_map = derived_synchronize();
-  IntVarsMIter v_it; IntRespMCIter r_cit; IntIntMIter id_it;
+  IntVarsMIter v_it;
+  IntRespMCIter r_cit;
+  IntIntMIter id_it;
 
-  if (estDerivsFlag) { // merge several responses into response gradients
+  if (estDerivsFlag) {  // merge several responses into response gradients
     if (outputLevel > QUIET_OUTPUT)
-      Cout <<"-----------------------------------------\n"
-            << "Raw asynchronous response data captured.\n"
-      << "Merging data to estimate derivatives:\n"
-      << "----------------------------------------\n\n";
-    id_it = rawEvalIdMap.begin(); IntIntMIter fd_it = numFDEvalsMap.begin();
+      Cout << "-----------------------------------------\n"
+           << "Raw asynchronous response data captured.\n"
+           << "Merging data to estimate derivatives:\n"
+           << "----------------------------------------\n\n";
+    id_it = rawEvalIdMap.begin();
+    IntIntMIter fd_it = numFDEvalsMap.begin();
     while (id_it != rawEvalIdMap.end() && fd_it != numFDEvalsMap.end()) {
-int raw_id = id_it->first;
-r_cit = raw_resp_map.find(raw_id);
-if (r_cit != raw_resp_map.end()) {
-  int model_id = fd_it->first, num_fd_evals = fd_it->second;
-  if (num_fd_evals >= 0) {
-    // estimate_derivatives() was used: merge raw FD responses into 1
-    // response or augment response with quasi-Hessian updating
-    if (outputLevel > QUIET_OUTPUT) {
-      //if (num_fd_evals > 1) // inconclusive due to initial_map lookup
-  Cout << "Merging asynchronous responses " << raw_id
-        << " through " << raw_id + num_fd_evals - 1 << '\n';
-      //else
-      //  Cout << "Augmenting asynchronous response " << raw_id
-      //       << " with quasi-Hessian updating\n";
-    }
-    v_it = varsMap.find(model_id);
-    IntRespMCIter re = r_cit; std::advance(re, num_fd_evals);
-    IntResponseMap tmp_response_map(r_cit, re);
-    // Recover fd_grad/fd_hess/quasi_hess asv's from asvList and
-    // orig_set from setList
-    ShortArray fd_grad_asv    = asvList.front(); asvList.pop_front();
-    ShortArray fd_hess_asv    = asvList.front(); asvList.pop_front();
-    ShortArray quasi_hess_asv = asvList.front(); asvList.pop_front();
-    ActiveSet  orig_set       = setList.front(); setList.pop_front();
-    synchronize_derivatives(v_it->second, tmp_response_map,
-          responseMap[model_id], fd_grad_asv,
-          fd_hess_asv, quasi_hess_asv, orig_set);
-    // cleanup
-    if (!modelAutoGraphicsFlag) varsMap.erase(v_it);
-  }
-  else { // number of maps==1, derivs not estimated
-    if (outputLevel > QUIET_OUTPUT)
-      Cout << "Asynchronous response " << raw_id
-      << " does not require merging.\n";
-    responseMap[model_id] = r_cit->second;
-  }
-  // cleanup: postfix increment manages iterator invalidation
-  numFDEvalsMap.erase(fd_it++); rawEvalIdMap.erase(id_it++);
-}
-else // preserve bookkeeping for a subsequent synchronization pass
-  { ++fd_it; ++id_it; }
+      int raw_id = id_it->first;
+      r_cit = raw_resp_map.find(raw_id);
+      if (r_cit != raw_resp_map.end()) {
+        int model_id = fd_it->first, num_fd_evals = fd_it->second;
+        if (num_fd_evals >= 0) {
+          // estimate_derivatives() was used: merge raw FD responses into 1
+          // response or augment response with quasi-Hessian updating
+          if (outputLevel > QUIET_OUTPUT) {
+            // if (num_fd_evals > 1) // inconclusive due to initial_map lookup
+            Cout << "Merging asynchronous responses " << raw_id << " through "
+                 << raw_id + num_fd_evals - 1 << '\n';
+            // else
+            //   Cout << "Augmenting asynchronous response " << raw_id
+            //        << " with quasi-Hessian updating\n";
+          }
+          v_it = varsMap.find(model_id);
+          IntRespMCIter re = r_cit;
+          std::advance(re, num_fd_evals);
+          IntResponseMap tmp_response_map(r_cit, re);
+          // Recover fd_grad/fd_hess/quasi_hess asv's from asvList and
+          // orig_set from setList
+          ShortArray fd_grad_asv = asvList.front();
+          asvList.pop_front();
+          ShortArray fd_hess_asv = asvList.front();
+          asvList.pop_front();
+          ShortArray quasi_hess_asv = asvList.front();
+          asvList.pop_front();
+          ActiveSet orig_set = setList.front();
+          setList.pop_front();
+          synchronize_derivatives(v_it->second, tmp_response_map,
+                                  responseMap[model_id], fd_grad_asv,
+                                  fd_hess_asv, quasi_hess_asv, orig_set);
+          // cleanup
+          if (!modelAutoGraphicsFlag) varsMap.erase(v_it);
+        } else {  // number of maps==1, derivs not estimated
+          if (outputLevel > QUIET_OUTPUT)
+            Cout << "Asynchronous response " << raw_id
+                 << " does not require merging.\n";
+          responseMap[model_id] = r_cit->second;
+        }
+        // cleanup: postfix increment manages iterator invalidation
+        numFDEvalsMap.erase(fd_it++);
+        rawEvalIdMap.erase(id_it++);
+      } else  // preserve bookkeeping for a subsequent synchronization pass
+      {
+        ++fd_it;
+        ++id_it;
+      }
     }
     // reset flags
     estDerivsFlag = false;
-  }
-  else // no calls to estimate_derivatives()
+  } else  // no calls to estimate_derivatives()
     // rekey the raw response map (lower level evaluation ids may be offset
     // from modelEvalCntr if previous finite differencing occurred)
-    //rekey_response_map(raw_resp_map, rawEvalIdMap, responseMap);
+    // rekey_response_map(raw_resp_map, rawEvalIdMap, responseMap);
     for (r_cit = raw_resp_map.begin(); r_cit != raw_resp_map.end(); ++r_cit) {
-id_it = rawEvalIdMap.find(r_cit->first);
-if (id_it != rawEvalIdMap.end()) {
-  int model_id = id_it->second;
-  responseMap[model_id] = r_cit->second;
-  rawEvalIdMap.erase(id_it);
-  numFDEvalsMap.erase(model_id);
-}
+      id_it = rawEvalIdMap.find(r_cit->first);
+      if (id_it != rawEvalIdMap.end()) {
+        int model_id = id_it->second;
+        responseMap[model_id] = r_cit->second;
+        rawEvalIdMap.erase(id_it);
+        numFDEvalsMap.erase(model_id);
+      }
     }
 
   // update graphics
   if (modelAutoGraphicsFlag) {
     for (r_cit = responseMap.begin(); r_cit != responseMap.end(); ++r_cit) {
-v_it = varsMap.find(r_cit->first);
-derived_auto_graphics(v_it->second, r_cit->second);
-varsMap.erase(v_it);
+      v_it = varsMap.find(r_cit->first);
+      derived_auto_graphics(v_it->second, r_cit->second);
+      varsMap.erase(v_it);
     }
   }
 
@@ -1409,19 +1507,16 @@ varsMap.erase(v_it);
   responseMap.insert(cachedResponseMap.begin(), cachedResponseMap.end());
   cachedResponseMap.clear();
 
-  if(modelEvaluationsDBState == EvaluationsDBState::ACTIVE) {
-    for(const auto  &id_r : responseMap)
+  if (modelEvaluationsDBState == EvaluationsDBState::ACTIVE) {
+    for (const auto& id_r : responseMap)
       evaluationsDB.store_model_response(modelId, modelType, id_r.first,
-            id_r.second); 
+                                         id_r.second);
   }
   // return final map
   return responseMap;
-  
 }
 
-
-const IntResponseMap& Model::synchronize_nowait()
-{
+const IntResponseMap& Model::synchronize_nowait() {
   responseMap.clear();
 
   if (estDerivsFlag) {
@@ -1431,7 +1526,7 @@ const IntResponseMap& Model::synchronize_nowait()
     // all gradient-based methods use blocking synchronization (you'd need
     // something like a parallel greedy gradient-based line search).
     Cerr << "Error: finite differencing within asynch evaluations not "
-    << "currently supported by Model::synchronize_nowait()" << std::endl;
+         << "currently supported by Model::synchronize_nowait()" << std::endl;
     abort_handler(MODEL_ERROR);
   }
 
@@ -1442,14 +1537,15 @@ const IntResponseMap& Model::synchronize_nowait()
   // and synchronize_nowait(), since the former can introduce offsets.
   // Note 2: if estimate_derivatives() support is added, then rawEvalIdMap
   // data input must be expanded to include FD evals.
-  IntRespMCIter r_cit; IntIntMIter id_it;
+  IntRespMCIter r_cit;
+  IntIntMIter id_it;
   for (r_cit = raw_resp_map.begin(); r_cit != raw_resp_map.end(); ++r_cit) {
     id_it = rawEvalIdMap.find(r_cit->first);
     if (id_it != rawEvalIdMap.end()) {
-int model_id = id_it->second;
-responseMap[model_id] = r_cit->second;
-rawEvalIdMap.erase(id_it);
-numFDEvalsMap.erase(model_id);
+      int model_id = id_it->second;
+      responseMap[model_id] = r_cit->second;
+      rawEvalIdMap.erase(id_it);
+      numFDEvalsMap.erase(model_id);
     }
   }
 
@@ -1466,18 +1562,19 @@ numFDEvalsMap.erase(model_id);
     // search for next response set(s) in sequence
     bool found = true;
     while (found) {
-int graphics_cntr = parallelLib.output_manager().graphics_counter();
-// find() is not really necessary due to Map ordering
-//g_it = graphicsRespMap.begin();
-//if (g_it == graphicsRespMap.end() || g_it->first != graphics_cntr)
-IntRespMIter g_it = graphicsRespMap.find(graphics_cntr);
-if (g_it == graphicsRespMap.end())
-  found = false;
-else {
-  IntVarsMIter v_it = varsMap.find(graphics_cntr);
-  derived_auto_graphics(v_it->second, g_it->second);
-  varsMap.erase(v_it); graphicsRespMap.erase(g_it);
-}
+      int graphics_cntr = parallelLib.output_manager().graphics_counter();
+      // find() is not really necessary due to Map ordering
+      // g_it = graphicsRespMap.begin();
+      // if (g_it == graphicsRespMap.end() || g_it->first != graphics_cntr)
+      IntRespMIter g_it = graphicsRespMap.find(graphics_cntr);
+      if (g_it == graphicsRespMap.end())
+        found = false;
+      else {
+        IntVarsMIter v_it = varsMap.find(graphics_cntr);
+        derived_auto_graphics(v_it->second, g_it->second);
+        varsMap.erase(v_it);
+        graphicsRespMap.erase(g_it);
+      }
     }
   }
 
@@ -1487,38 +1584,34 @@ else {
   // using Model::cache_unmatched_response().
   responseMap.insert(cachedResponseMap.begin(), cachedResponseMap.end());
   cachedResponseMap.clear();
-  if(modelEvaluationsDBState == EvaluationsDBState::ACTIVE) {
-    for(const auto  &id_r : responseMap)
+  if (modelEvaluationsDBState == EvaluationsDBState::ACTIVE) {
+    for (const auto& id_r : responseMap)
       evaluationsDB.store_model_response(modelId, modelType, id_r.first,
-            id_r.second);
+                                         id_r.second);
   }
   return responseMap;
 }
 
-
 /** Auxiliary function to determine initial finite difference h
     (before step length adjustment) based on type of step desired. */
-Real Model::initialize_h(Real x_j, Real lb_j, Real ub_j, Real step_size, 
-			 String step_type) const
-{
+Real Model::initialize_h(Real x_j, Real lb_j, Real ub_j, Real step_size,
+                         String step_type) const {
   Real h;
   if (step_type == "absolute")
     h = std::max(step_size, std::sqrt(DBL_MIN));
   else if (step_type == "bounds")
-    h = step_size*std::max((ub_j-lb_j), std::sqrt(DBL_MIN));
-  else     // relative
-    h = step_size*std::max(std::fabs(x_j),.01);
+    h = step_size * std::max((ub_j - lb_j), std::sqrt(DBL_MIN));
+  else  // relative
+    h = step_size * std::max(std::fabs(x_j), .01);
 
   return h;
 }
-
 
 /** Auxiliary function to compute forward or first central-difference
     step size, honoring bounds.  The first step is away from zero,
     when possible.  Flips the direction or updates shortStep if can't
     take the full requested step h_mag. */
-Real Model::FDstep1(Real x0_j, Real lb_j, Real ub_j, Real h_mag)
-{
+Real Model::FDstep1(Real x0_j, Real lb_j, Real ub_j, Real h_mag) {
   Real h;
   shortStep = false;
   if (x0_j < 0.) {
@@ -1530,8 +1623,7 @@ Real Model::FDstep1(Real x0_j, Real lb_j, Real ub_j, Real h_mag)
       else
         shortStep = true;
     }
-  }
-  else {
+  } else {
     h = h_mag;
     if (!ignoreBounds && x0_j + h > ub_j) {
       // step would exceed upper bound; try flipping, else shorten
@@ -1542,7 +1634,7 @@ Real Model::FDstep1(Real x0_j, Real lb_j, Real ub_j, Real h_mag)
       }
     }
   }
-  
+
   if (shortStep) {
     // take the step to the furthest boundary
     Real h1 = x0_j - lb_j;
@@ -1556,16 +1648,14 @@ Real Model::FDstep1(Real x0_j, Real lb_j, Real ub_j, Real h_mag)
   return h;
 }
 
-
 /** Auxiliary function to compute the second central-difference step size,
     honoring bounds. */
-Real Model::FDstep2(Real x0_j, Real lb_j, Real ub_j, Real h)
-{
+Real Model::FDstep2(Real x0_j, Real lb_j, Real ub_j, Real h) {
   Real h2 = -h;  // default is to take same size step in opposite direction
 
   // if taking a shorter step to a boundary, the second step is half of it
   if (shortStep)
-    h2 = 0.5*h;
+    h2 = 0.5 * h;
   else if (!ignoreBounds) {
     Real h1;
     if (h2 < 0.) {
@@ -1577,15 +1667,14 @@ Real Model::FDstep2(Real x0_j, Real lb_j, Real ub_j, Real h)
         if (x0_j + h1 <= ub_j)
           h2 = h1;
         else {
-          h1 = 1.5*h;
+          h1 = 1.5 * h;
           if (x0_j + h1 <= ub_j)
             h2 = h1;
           else
-            h2 = 0.5*h;
+            h2 = 0.5 * h;
         }
       }
-    }
-    else {
+    } else {
       if (x0_j + h2 > ub_j) {
         // step would exceed upper bound; try full step in opposite
         // direction; contracting until in-bounds
@@ -1594,11 +1683,11 @@ Real Model::FDstep2(Real x0_j, Real lb_j, Real ub_j, Real h)
         if (x0_j + h1 >= lb_j)
           h2 = h1;
         else {
-          h1 = 1.5*h;
+          h1 = 1.5 * h;
           if (x0_j + h1 >= lb_j)
             h2 = h1;
           else
-            h2 = 0.5*h;
+            h2 = 0.5 * h;
         }
       }
     }
@@ -1606,22 +1695,21 @@ Real Model::FDstep2(Real x0_j, Real lb_j, Real ub_j, Real h)
   return h2;
 }
 
-
 /** Estimate derivatives by computing finite difference gradients, finite
     difference Hessians, and/or quasi-Newton Hessians.  The total number of
     finite difference evaluations is returned for use by synchronize() to
     track response arrays, and it could be used to improve management of
     max_function_evaluations within the iterators. */
-int Model::
-estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
-		     const ShortArray& fd_hess_asv,
-		     const ShortArray& quasi_hess_asv,
-		     const ActiveSet& original_set, const bool asynch_flag)
-{
+int Model::estimate_derivatives(const ShortArray& map_asv,
+                                const ShortArray& fd_grad_asv,
+                                const ShortArray& fd_hess_asv,
+                                const ShortArray& quasi_hess_asv,
+                                const ActiveSet& original_set,
+                                const bool asynch_flag) {
   if (outputLevel > SILENT_OUTPUT)
     Cout << "\n------------------------------------------\n"
-         <<   "Begin Dakota derivative estimation routine\n"
-         <<   "------------------------------------------\n\n";
+         << "Begin Dakota derivative estimation routine\n"
+         << "------------------------------------------\n\n";
 
   // -----------------------------------------------
   // Retrieve/evaluate fn_vals_x0 and/or fn_grads_x0
@@ -1637,32 +1725,30 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
   // a database search when appropriate to retrieve the data instead of relying
   // solely on duplication detection.
   bool initial_map = false, augmented_data_flag = false, db_capture = false,
-    fd_grad_flag = false, fd_hess_flag = false, fd_hess_by_fn_flag = false,
-    fd_hess_by_grad_flag = false;
+       fd_grad_flag = false, fd_hess_flag = false, fd_hess_by_fn_flag = false,
+       fd_hess_by_grad_flag = false;
   const ShortArray& orig_asv = original_set.request_vector();
   const SizetArray& orig_dvv = original_set.derivative_vector();
   size_t i, j, k, map_counter = 0, num_deriv_vars = orig_dvv.size();
   size_t ifg, nfg = 0;
 
-  for (i=0; i<numFns; i++) {
+  for (i = 0; i < numFns; i++) {
     if (map_asv[i]) {
       initial_map = true;
-      if ( ( (map_asv[i] & 1) && !(orig_asv[i] & 1) ) ||
-           ( (map_asv[i] & 2) && !(orig_asv[i] & 2) ) )
-        augmented_data_flag = true; // orig_asv val/grad requests augmented
+      if (((map_asv[i] & 1) && !(orig_asv[i] & 1)) ||
+          ((map_asv[i] & 2) && !(orig_asv[i] & 2)))
+        augmented_data_flag = true;  // orig_asv val/grad requests augmented
     }
     if (fd_grad_asv[i])
-      fd_grad_flag = true;           // gradient finite differencing needed
+      fd_grad_flag = true;  // gradient finite differencing needed
     if (fd_hess_asv[i]) {
-      fd_hess_flag = true;           // Hessian finite differencing needed ...
+      fd_hess_flag = true;  // Hessian finite differencing needed ...
       if (fd_hess_asv[i] & 1)
-        fd_hess_by_fn_flag = true;   // ... by 2nd-order function differences
-      if (fd_hess_asv[i] & 2)
-        ++nfg;                       // ... by 1st-order gradient differences
+        fd_hess_by_fn_flag = true;    // ... by 2nd-order function differences
+      if (fd_hess_asv[i] & 2) ++nfg;  // ... by 1st-order gradient differences
     }
   }
-  if (nfg)
-    fd_hess_by_grad_flag = true;
+  if (nfg) fd_hess_by_grad_flag = true;
 
   ActiveSet new_set(map_asv, orig_dvv);
   Response initial_map_response(currentResponse.shared_data(), new_set);
@@ -1677,14 +1763,14 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
     if (db_lookup(currentVariables, new_set, initial_map_response)) {
       if (outputLevel > SILENT_OUTPUT)
         Cout << ">>>>> map at X performed previously and results retrieved\n\n";
-      initial_map = false; // reset
+      initial_map = false;  // reset
       if (asynch_flag) {
         db_capture = true;
         dbResponseList.push_back(initial_map_response);
       }
     }
   }
-  if (asynch_flag) { // communicate settings to synchronize_derivatives()
+  if (asynch_flag) {  // communicate settings to synchronize_derivatives()
     initialMapList.push_back(initial_map);
     dbCaptureList.push_back(db_capture);
   }
@@ -1693,15 +1779,13 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
     if (outputLevel > SILENT_OUTPUT) {
       Cout << ">>>>> Initial map for analytic portion of response";
       if (augmented_data_flag)
-	Cout << "\n      augmented with data requirements for differencing";
+        Cout << "\n      augmented with data requirements for differencing";
       Cout << ":\n";
     }
     if (asynch_flag) {
       derived_evaluate_nowait(new_set);
-      if (outputLevel > SILENT_OUTPUT)
-	Cout << "\n\n";
-    }
-    else {
+      if (outputLevel > SILENT_OUTPUT) Cout << "\n\n";
+    } else {
       derived_evaluate(new_set);
       initial_map_response.update(currentResponse);
     }
@@ -1720,40 +1804,37 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
   }
   RealSymMatrixArray new_fn_hessians;
   if (fd_hess_flag) {
-    if (fd_hess_by_fn_flag && !centralHess)
-      dx.resize(num_deriv_vars);
+    if (fd_hess_by_fn_flag && !centralHess) dx.resize(num_deriv_vars);
     if (!asynch_flag) {
       new_fn_hessians.resize(numFns);
-      for (i=0; i<numFns; i++) {
+      for (i = 0; i < numFns; i++) {
         new_fn_hessians[i].reshape(num_deriv_vars);
         new_fn_hessians[i] = 0.;
       }
-      if (fd_hess_by_fn_flag && !centralHess)
-        fx.resize(num_deriv_vars);
+      if (fd_hess_by_fn_flag && !centralHess) fx.resize(num_deriv_vars);
       if (fd_hess_by_grad_flag) {
-        fg.resize(ifg = nfg*num_deriv_vars);
-        while(ifg > 0)
-          fg[--ifg].resize(num_deriv_vars);
+        fg.resize(ifg = nfg * num_deriv_vars);
+        while (ifg > 0) fg[--ifg].resize(num_deriv_vars);
       }
     }
   }
   if (fd_grad_flag || fd_hess_flag) {
-
     // define lower/upper bounds for finite differencing and cv_ids
     RealVector x0, fd_lb, fd_ub;
-    bool active_derivs, inactive_derivs; // derivs w.r.t. {active,inactive} vars
-    SizetMultiArrayConstView cv_ids = 
-      initialize_x0_bounds(orig_dvv, active_derivs, inactive_derivs, x0,
-			   fd_lb, fd_ub);
+    bool active_derivs,
+        inactive_derivs;  // derivs w.r.t. {active,inactive} vars
+    SizetMultiArrayConstView cv_ids = initialize_x0_bounds(
+        orig_dvv, active_derivs, inactive_derivs, x0, fd_lb, fd_ub);
 
-    const RealVector& fn_vals_x0  = initial_map_response.function_values();
+    const RealVector& fn_vals_x0 = initial_map_response.function_values();
     const RealMatrix& fn_grads_x0 = initial_map_response.function_gradients();
 
     // ------------------------
     // Loop over num_deriv_vars
     // ------------------------
-    RealVector x = x0; 
-    for (j=0; j<num_deriv_vars; j++) { // difference the 1st num_deriv_vars vars
+    RealVector x = x0;
+    for (j = 0; j < num_deriv_vars;
+         j++) {  // difference the 1st num_deriv_vars vars
 
       size_t xj_index = find_index(cv_ids, orig_dvv[j]);
       Real x0_j = x0[xj_index], lb_j = fd_lb[j], ub_j = fd_ub[j];
@@ -1763,9 +1844,8 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
           if (asynch_flag)
             deltaList.push_back(0.);
           else
-            for (i=0; i<numFns; i++)
-              if (fd_grad_asv[i])
-                new_fn_grads(j,i) = 0.;
+            for (i = 0; i < numFns; i++)
+              if (fd_grad_asv[i]) new_fn_grads(j, i) = 0.;
           continue;
         }
         new_set.request_vector(fd_grad_asv);
@@ -1773,7 +1853,7 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
         // Compute the offset for the ith gradient variable.
         Real h = forward_grad_step(num_deriv_vars, xj_index, x0_j, lb_j, ub_j);
 
-        if (asynch_flag) // communicate settings to synchronize_derivatives()
+        if (asynch_flag)  // communicate settings to synchronize_derivatives()
           deltaList.push_back(h);
 
         // -------------------------
@@ -1783,7 +1863,7 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
         x[xj_index] = x0_j + h;
         if (outputLevel > SILENT_OUTPUT)
           Cout << ">>>>> Dakota finite difference gradient evaluation for x["
-               << j+1 << "] + h:\n";
+               << j + 1 << "] + h:\n";
         if (active_derivs)
           currentVariables.continuous_variables(x);
         else if (inactive_derivs)
@@ -1792,18 +1872,16 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
           currentVariables.all_continuous_variables(x);
         if (asynch_flag) {
           derived_evaluate_nowait(new_set);
-          if (outputLevel > SILENT_OUTPUT)
-            Cout << "\n\n";
-        }
-        else {
+          if (outputLevel > SILENT_OUTPUT) Cout << "\n\n";
+        } else {
           derived_evaluate(new_set);
           fn_vals_x_plus_h = currentResponse.function_values();
           if (intervalType == "forward") {
-            for (i=0; i<numFns; i++)
+            for (i = 0; i < numFns; i++)
               // prevent erroneous difference of vals present in fn_vals_x0 but
               // not in fn_vals_x_plus_h because of map/fd_grad asv differences
               if (fd_grad_asv[i])
-                new_fn_grads(j,i) = (fn_vals_x_plus_h[i] - fn_vals_x0[i])/h;
+                new_fn_grads(j, i) = (fn_vals_x_plus_h[i] - fn_vals_x0[i]) / h;
           }
         }
         ++map_counter;
@@ -1816,7 +1894,7 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
           x[xj_index] = x0_j + h2;
           if (outputLevel > SILENT_OUTPUT)
             Cout << ">>>>> Dakota finite difference gradient evaluation for x["
-                 << j+1 << "] - h:\n";
+                 << j + 1 << "] - h:\n";
           if (active_derivs)
             currentVariables.continuous_variables(x);
           else if (inactive_derivs)
@@ -1826,27 +1904,25 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
           if (asynch_flag) {
             deltaList.push_back(h2);
             derived_evaluate_nowait(new_set);
-            if (outputLevel > SILENT_OUTPUT)
-              Cout << "\n\n";
-          }
-          else {
+            if (outputLevel > SILENT_OUTPUT) Cout << "\n\n";
+          } else {
             derived_evaluate(new_set);
-            const RealVector& fn_vals_x_minus_h
-              = currentResponse.function_values();
+            const RealVector& fn_vals_x_minus_h =
+                currentResponse.function_values();
             // no need to check fd_grad_asv since it was used for both evals
             if (shortStep) {
-              Real h12 = h*h, h22 = h2*h2;
-              h1 = h*h2*(h2-h);
-              for(i = 0; i < numFns; ++i)
-                new_fn_grads(j,i)
-                  = ( h22*(fn_vals_x_plus_h[i]  - fn_vals_x0[i]) -
-		      h12*(fn_vals_x_minus_h[i] - fn_vals_x0[i]) ) / h1;
-            }
-            else {
+              Real h12 = h * h, h22 = h2 * h2;
+              h1 = h * h2 * (h2 - h);
+              for (i = 0; i < numFns; ++i)
+                new_fn_grads(j, i) =
+                    (h22 * (fn_vals_x_plus_h[i] - fn_vals_x0[i]) -
+                     h12 * (fn_vals_x_minus_h[i] - fn_vals_x0[i])) /
+                    h1;
+            } else {
               h1 = h - h2;
-              for (i=0; i<numFns; i++)
-                new_fn_grads(j,i)
-                  = (fn_vals_x_plus_h[i] - fn_vals_x_minus_h[i]) / h1;
+              for (i = 0; i < numFns; i++)
+                new_fn_grads(j, i) =
+                    (fn_vals_x_plus_h[i] - fn_vals_x_minus_h[i]) / h1;
             }
           }
           ++map_counter;
@@ -1876,10 +1952,12 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
             // Compute the 2nd-order Hessian offset for the ith variable.
             // Enforce a minimum delta of fdhss*.01
             Real fdhbfss = (fdHessByFnStepSize.length() == num_deriv_vars)
-              ? fdHessByFnStepSize[xj_index] : fdHessByFnStepSize[0];
+                               ? fdHessByFnStepSize[xj_index]
+                               : fdHessByFnStepSize[0];
             Real h_mag = fdhbfss * std::max(std::fabs(x0_j), .01);
-            Real h = (x0_j < 0.) ? -h_mag : h_mag; // h has same sign as x0_j
-            if (asynch_flag)// communicate settings to synchronize_derivatives()
+            Real h = (x0_j < 0.) ? -h_mag : h_mag;  // h has same sign as x0_j
+            if (asynch_flag)                        // communicate settings to
+                                                    // synchronize_derivatives()
               deltaList.push_back(h);
 
             // evaluate diagonal term
@@ -1887,10 +1965,10 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
             // --------------------------
             // Evaluate fn_vals_x_plus_2h
             // --------------------------
-            x[xj_index] = x0[xj_index] + 2.*h;
+            x[xj_index] = x0[xj_index] + 2. * h;
             if (outputLevel > SILENT_OUTPUT)
               Cout << ">>>>> Dakota finite difference Hessian evaluation for x["
-                   << j+1 << "] + 2h:\n";
+                   << j + 1 << "] + 2h:\n";
             if (active_derivs)
               currentVariables.continuous_variables(x);
             else if (inactive_derivs)
@@ -1899,10 +1977,8 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
               currentVariables.all_continuous_variables(x);
             if (asynch_flag) {
               derived_evaluate_nowait(new_set);
-              if (outputLevel > SILENT_OUTPUT)
-                Cout << "\n\n";
-            }
-            else {
+              if (outputLevel > SILENT_OUTPUT) Cout << "\n\n";
+            } else {
               derived_evaluate(new_set);
               fn_vals_x_plus_2h = currentResponse.function_values();
             }
@@ -1910,10 +1986,10 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
             // ---------------------------
             // Evaluate fn_vals_x_minus_2h
             // ---------------------------
-            x[xj_index] = x0[xj_index] - 2.*h;
+            x[xj_index] = x0[xj_index] - 2. * h;
             if (outputLevel > SILENT_OUTPUT)
               Cout << ">>>>> Dakota finite difference Hessian evaluation for x["
-                   << j+1 << "] - 2h:\n";
+                   << j + 1 << "] - 2h:\n";
             if (active_derivs)
               currentVariables.continuous_variables(x);
             else if (inactive_derivs)
@@ -1922,30 +1998,30 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
               currentVariables.all_continuous_variables(x);
             if (asynch_flag) {
               derived_evaluate_nowait(new_set);
-              if (outputLevel > SILENT_OUTPUT)
-                Cout << "\n\n";
-            }
-            else {
+              if (outputLevel > SILENT_OUTPUT) Cout << "\n\n";
+            } else {
               derived_evaluate(new_set);
               fn_vals_x_minus_2h = currentResponse.function_values();
             }
 
             map_counter += 2;
             if (!asynch_flag) {
-              for (i=0; i<numFns; i++)
+              for (i = 0; i < numFns; i++)
                 // prevent error in differencing vals present in fn_vals_x0 but
                 // not in fn_vals_x_(plus/minus)_2h due to map/fd_hess asv diffs
                 if (fd_hess_asv[i] & 1)
-                  new_fn_hessians[i](j,j) = (fn_vals_x_plus_2h[i]
-                     - 2.*fn_vals_x0[i] +  fn_vals_x_minus_2h[i])/(4.*h*h);
+                  new_fn_hessians[i](j, j) =
+                      (fn_vals_x_plus_2h[i] - 2. * fn_vals_x0[i] +
+                       fn_vals_x_minus_2h[i]) /
+                      (4. * h * h);
             }
 
             // evaluate off-diagonal terms
 
-            for (k=j+1; k<num_deriv_vars; k++) {
+            for (k = j + 1; k < num_deriv_vars; k++) {
               size_t xk_index = find_index(cv_ids, orig_dvv[k]);
-              RealVector fn_vals_x_plus_h_plus_h,  fn_vals_x_plus_h_minus_h,
-                fn_vals_x_minus_h_plus_h, fn_vals_x_minus_h_minus_h;
+              RealVector fn_vals_x_plus_h_plus_h, fn_vals_x_plus_h_minus_h,
+                  fn_vals_x_minus_h_plus_h, fn_vals_x_minus_h_minus_h;
 
               // --------------------------------
               // Evaluate fn_vals_x_plus_h_plus_h
@@ -1954,7 +2030,7 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
               x[xk_index] = x0[xk_index] + h;
               if (outputLevel > SILENT_OUTPUT)
                 Cout << ">>>>> Dakota finite difference Hessian evaluation for "
-                     << "x[" << j+1 << "] + h, x[" << k+1 << "] + h:\n";
+                     << "x[" << j + 1 << "] + h, x[" << k + 1 << "] + h:\n";
               if (active_derivs)
                 currentVariables.continuous_variables(x);
               else if (inactive_derivs)
@@ -1963,21 +2039,19 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
                 currentVariables.all_continuous_variables(x);
               if (asynch_flag) {
                 derived_evaluate_nowait(new_set);
-                if (outputLevel > SILENT_OUTPUT)
-                  Cout << "\n\n";
-              }
-              else {
+                if (outputLevel > SILENT_OUTPUT) Cout << "\n\n";
+              } else {
                 derived_evaluate(new_set);
                 fn_vals_x_plus_h_plus_h = currentResponse.function_values();
               }
               // ---------------------------------
               // Evaluate fn_vals_x_plus_h_minus_h
               // ---------------------------------
-              //x[xj_index] = x0[xj_index] + h;
+              // x[xj_index] = x0[xj_index] + h;
               x[xk_index] = x0[xk_index] - h;
               if (outputLevel > SILENT_OUTPUT)
                 Cout << ">>>>> Dakota finite difference Hessian evaluation for "
-                     << "x[" << j+1 << "] + h, x[" << k+1 << "] - h:\n";
+                     << "x[" << j + 1 << "] + h, x[" << k + 1 << "] - h:\n";
               if (active_derivs)
                 currentVariables.continuous_variables(x);
               else if (inactive_derivs)
@@ -1986,10 +2060,8 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
                 currentVariables.all_continuous_variables(x);
               if (asynch_flag) {
                 derived_evaluate_nowait(new_set);
-                if (outputLevel > SILENT_OUTPUT)
-                  Cout << "\n\n";
-              }
-              else {
+                if (outputLevel > SILENT_OUTPUT) Cout << "\n\n";
+              } else {
                 derived_evaluate(new_set);
                 fn_vals_x_plus_h_minus_h = currentResponse.function_values();
               }
@@ -2000,7 +2072,7 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
               x[xk_index] = x0[xk_index] + h;
               if (outputLevel > SILENT_OUTPUT)
                 Cout << ">>>>> Dakota finite difference Hessian evaluation for "
-                     << "x[" << j+1 << "] - h, x[" << k+1 << "] + h:\n";
+                     << "x[" << j + 1 << "] - h, x[" << k + 1 << "] + h:\n";
               if (active_derivs)
                 currentVariables.continuous_variables(x);
               else if (inactive_derivs)
@@ -2009,21 +2081,19 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
                 currentVariables.all_continuous_variables(x);
               if (asynch_flag) {
                 derived_evaluate_nowait(new_set);
-                if (outputLevel > SILENT_OUTPUT)
-                  Cout << "\n\n";
-              }
-              else {
+                if (outputLevel > SILENT_OUTPUT) Cout << "\n\n";
+              } else {
                 derived_evaluate(new_set);
                 fn_vals_x_minus_h_plus_h = currentResponse.function_values();
               }
               // ----------------------------------
               // Evaluate fn_vals_x_minus_h_minus_h
               // ----------------------------------
-              //x[xj_index] = x0[xj_index] - h;
+              // x[xj_index] = x0[xj_index] - h;
               x[xk_index] = x0[xk_index] - h;
               if (outputLevel > SILENT_OUTPUT)
                 Cout << ">>>>> Dakota finite difference Hessian evaluation for "
-                     << "x[" << j+1 << "] - h, x[" << k+1 << "] - h:\n";
+                     << "x[" << j + 1 << "] - h, x[" << k + 1 << "] - h:\n";
               if (active_derivs)
                 currentVariables.continuous_variables(x);
               else if (inactive_derivs)
@@ -2032,43 +2102,44 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
                 currentVariables.all_continuous_variables(x);
               if (asynch_flag) {
                 derived_evaluate_nowait(new_set);
-                if (outputLevel > SILENT_OUTPUT)
-                  Cout << "\n\n";
-              }
-              else {
+                if (outputLevel > SILENT_OUTPUT) Cout << "\n\n";
+              } else {
                 derived_evaluate(new_set);
                 fn_vals_x_minus_h_minus_h = currentResponse.function_values();
               }
 
               map_counter += 4;
               if (!asynch_flag)
-                for (i=0; i<numFns; i++)
+                for (i = 0; i < numFns; i++)
                   // no need to check fd_hess_asv since used for each eval
                   // NOTE: symmetry is naturally satisfied.  Teuchos maps
                   // new_fn_hessians[i](j,k) and new_fn_hessians[i](k,j)
                   // to the same memory cell.
-                  new_fn_hessians[i](j,k)
-                    = (fn_vals_x_plus_h_plus_h[i] - fn_vals_x_plus_h_minus_h[i]
-                       -  fn_vals_x_minus_h_plus_h[i]
-                       +  fn_vals_x_minus_h_minus_h[i] ) / (4.*h*h);
+                  new_fn_hessians[i](j, k) = (fn_vals_x_plus_h_plus_h[i] -
+                                              fn_vals_x_plus_h_minus_h[i] -
+                                              fn_vals_x_minus_h_plus_h[i] +
+                                              fn_vals_x_minus_h_minus_h[i]) /
+                                             (4. * h * h);
 
               x[xk_index] = x0[xk_index];
             }
-          }
-          else { //!! new logic
+          } else {  //!! new logic
             RealVector fn_vals_x1, fn_vals_x12, fn_vals_x2;
 
             // Compute the 2nd-order Hessian offset for the ith variable.
             // Enforce a minimum delta of fdhss*.01
             Real fdhbfss = (fdHessByFnStepSize.length() == num_deriv_vars)
-              ? fdHessByFnStepSize[xj_index] : fdHessByFnStepSize[0];
+                               ? fdHessByFnStepSize[xj_index]
+                               : fdHessByFnStepSize[0];
             //	    Real h1 = FDstep1(x0_j, lb_j, ub_j, 2. * fdhbfss *
             //			      std::max(std::fabs(x0_j), .01));
-            Real h1 = FDstep1(x0_j, lb_j, ub_j,
-	      initialize_h(x0_j, lb_j, ub_j, 2.*fdhbfss, fdHessStepType));
+            Real h1 = FDstep1(
+                x0_j, lb_j, ub_j,
+                initialize_h(x0_j, lb_j, ub_j, 2. * fdhbfss, fdHessStepType));
             Real h2 = FDstep2(x0_j, lb_j, ub_j, h1);
             Real denom, hdiff;
-            if (asynch_flag) { // transfer settings to synchronize_derivatives()
+            if (asynch_flag) {  // transfer settings to
+                                // synchronize_derivatives()
               deltaList.push_back(h1);
               deltaList.push_back(h2);
             }
@@ -2082,7 +2153,7 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
             x[xj_index] = x0[xj_index] + h1;
             if (outputLevel > SILENT_OUTPUT)
               Cout << ">>>>> Dakota finite difference Hessian evaluation for x["
-                   << j+1 << "] + 2h:\n";
+                   << j + 1 << "] + 2h:\n";
             if (active_derivs)
               currentVariables.continuous_variables(x);
             else if (inactive_derivs)
@@ -2091,10 +2162,8 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
               currentVariables.all_continuous_variables(x);
             if (asynch_flag) {
               derived_evaluate_nowait(new_set);
-              if (outputLevel > SILENT_OUTPUT)
-                Cout << "\n\n";
-            }
-            else {
+              if (outputLevel > SILENT_OUTPUT) Cout << "\n\n";
+            } else {
               derived_evaluate(new_set);
               fx[j] = fn_vals_x1 = currentResponse.function_values();
             }
@@ -2105,7 +2174,7 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
             x[xj_index] = x0[xj_index] + h2;
             if (outputLevel > SILENT_OUTPUT)
               Cout << ">>>>> Dakota finite difference Hessian evaluation for x["
-                   << j+1 << "] - 2h:\n";
+                   << j + 1 << "] - 2h:\n";
             if (active_derivs)
               currentVariables.continuous_variables(x);
             else if (inactive_derivs)
@@ -2114,10 +2183,8 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
               currentVariables.all_continuous_variables(x);
             if (asynch_flag) {
               derived_evaluate_nowait(new_set);
-              if (outputLevel > SILENT_OUTPUT)
-                Cout << "\n\n";
-            }
-            else {
+              if (outputLevel > SILENT_OUTPUT) Cout << "\n\n";
+            } else {
               derived_evaluate(new_set);
               fn_vals_x2 = currentResponse.function_values();
             }
@@ -2125,23 +2192,23 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
             map_counter += 2;
             if (!asynch_flag) {
               if (h1 + h2 == 0.) {
-                denom = h1*h1;
+                denom = h1 * h1;
                 for (i = 0; i < numFns; i++)
                   // prevent erroneous difference of vals in fn_vals_x0 but not
                   // in fn_vals_x_(plus/minus)_2h due to map/fd_hess asv diffs
                   if (fd_hess_asv[i] & 1)
-                    new_fn_hessians[i](j,j)
-                      = (fn_vals_x1[i] - 2.*fn_vals_x0[i] + fn_vals_x2[i])
-                      / denom;
-              }
-              else {
+                    new_fn_hessians[i](j, j) =
+                        (fn_vals_x1[i] - 2. * fn_vals_x0[i] + fn_vals_x2[i]) /
+                        denom;
+              } else {
                 hdiff = h1 - h2;
-                denom = 0.5*h1*h2*hdiff;
+                denom = 0.5 * h1 * h2 * hdiff;
                 for (i = 0; i < numFns; i++)
                   if (fd_hess_asv[i] & 1)
-                    new_fn_hessians[i](j,j)
-                      = (h2*fn_vals_x1[i] + hdiff*fn_vals_x0[i] -
-                         h1*fn_vals_x2[i])/denom;
+                    new_fn_hessians[i](j, j) =
+                        (h2 * fn_vals_x1[i] + hdiff * fn_vals_x0[i] -
+                         h1 * fn_vals_x2[i]) /
+                        denom;
               }
             }
 
@@ -2158,7 +2225,7 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
               x[xk_index] = x0[xk_index] + h2;
               if (outputLevel > SILENT_OUTPUT)
                 Cout << ">>>>> Dakota finite difference Hessian evaluation for "
-                     << "x[" << j+1 << "] + h, x[" << k+1 << "] + h:\n";
+                     << "x[" << j + 1 << "] + h, x[" << k + 1 << "] + h:\n";
               if (active_derivs)
                 currentVariables.continuous_variables(x);
               else if (inactive_derivs)
@@ -2167,17 +2234,16 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
                 currentVariables.all_continuous_variables(x);
               if (asynch_flag) {
                 derived_evaluate_nowait(new_set);
-                if (outputLevel > SILENT_OUTPUT)
-                  Cout << "\n\n";
-              }
-              else {
+                if (outputLevel > SILENT_OUTPUT) Cout << "\n\n";
+              } else {
                 derived_evaluate(new_set);
                 fn_vals_x12 = currentResponse.function_values();
-                denom = h1*h2;
+                denom = h1 * h2;
                 const RealVector& f2 = fx[k];
-                for (i=0; i<numFns; ++i)
-                  new_fn_hessians[i](j,k) = (fn_vals_x12[i] - fn_vals_x1[i] -
-                                             f2[i] + fn_vals_x0[i]) / denom;
+                for (i = 0; i < numFns; ++i)
+                  new_fn_hessians[i](j, k) =
+                      (fn_vals_x12[i] - fn_vals_x1[i] - f2[i] + fn_vals_x0[i]) /
+                      denom;
               }
 
               ++map_counter;
@@ -2187,16 +2253,17 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
         }
 
         if (fd_hess_by_grad_flag) {
-
           // Compute the 1st-order Hessian offset for the ith variable.
           // Enforce a minimum delta of fdhss*.01
           Real fdhbgss = (fdHessByGradStepSize.length() == num_deriv_vars)
-            ? fdHessByGradStepSize[xj_index] : fdHessByGradStepSize[0];
+                             ? fdHessByGradStepSize[xj_index]
+                             : fdHessByGradStepSize[0];
           //	  Real h = FDstep1(x0_j, lb_j, ub_j, fdhbgss *
           //			   std::max(std::fabs(x0_j), .01));
-          Real h = FDstep1(x0_j, lb_j, ub_j,
-            initialize_h(x0_j, lb_j, ub_j, fdhbgss, fdHessStepType));
-          if (asynch_flag) // communicate settings to synchronize_derivatives()
+          Real h =
+              FDstep1(x0_j, lb_j, ub_j,
+                      initialize_h(x0_j, lb_j, ub_j, fdhbgss, fdHessStepType));
+          if (asynch_flag)  // communicate settings to synchronize_derivatives()
             deltaList.push_back(h);
 
           // --------------------------
@@ -2205,7 +2272,7 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
           x[xj_index] = x0[xj_index] + h;
           if (outputLevel > SILENT_OUTPUT)
             Cout << ">>>>> Dakota finite difference Hessian evaluation for x["
-                 << j+1 << "] + h:\n";
+                 << j + 1 << "] + h:\n";
           if (active_derivs)
             currentVariables.continuous_variables(x);
           else if (inactive_derivs)
@@ -2214,23 +2281,22 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
             currentVariables.all_continuous_variables(x);
           if (asynch_flag) {
             derived_evaluate_nowait(new_set);
-            if (outputLevel > SILENT_OUTPUT)
-              Cout << "\n\n";
-          }
-          else {
+            if (outputLevel > SILENT_OUTPUT) Cout << "\n\n";
+          } else {
             derived_evaluate(new_set);
-            const RealMatrix& fn_grads_x_plus_h
-              = currentResponse.function_gradients();
+            const RealMatrix& fn_grads_x_plus_h =
+                currentResponse.function_gradients();
             ifg = j;
-            for (i=0; i<numFns; i++)
+            for (i = 0; i < numFns; i++)
               // prevent erroneous difference of grads present in fn_grads_x0
               // but not in fn_grads_x_plus_h due to map_asv & fd_hess_asv diffs
               // NOTE: symmetry NOT enforced [could replace with 1/2 (H + H^T)]
 
               if (fd_hess_asv[i] & 2) {
-                //fg[ifg] = (fn_grads_x_plus_h[i] - fn_grads_x0[i]) / h;
-                for(k = 0; k < num_deriv_vars; ++k)
-                  fg[ifg][k] = (fn_grads_x_plus_h[i][k] - fn_grads_x0[i][k])/ h;
+                // fg[ifg] = (fn_grads_x_plus_h[i] - fn_grads_x0[i]) / h;
+                for (k = 0; k < num_deriv_vars; ++k)
+                  fg[ifg][k] =
+                      (fn_grads_x_plus_h[i][k] - fn_grads_x0[i][k]) / h;
                 ifg += num_deriv_vars;
               }
           }
@@ -2257,10 +2323,11 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
     if (fd_hess_by_grad_flag)
       for (i = ifg = 0; i < numFns; i++)
         if (fd_hess_asv[i] & 2) {
-          for (j=0; j<num_deriv_vars; j++) {
+          for (j = 0; j < num_deriv_vars; j++) {
             for (k = 0; k < j; k++)
-              new_fn_hessians[i](j,k) = 0.5 * (fg[ifg+j][k] + fg[ifg+k][j]);
-            new_fn_hessians[i](j,j) = fg[ifg+j][j];
+              new_fn_hessians[i](j, k) =
+                  0.5 * (fg[ifg + j][k] + fg[ifg + k][j]);
+            new_fn_hessians[i](j, j) = fg[ifg + j][j];
           }
           ifg += num_deriv_vars;
         }
@@ -2273,41 +2340,37 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
   return map_counter;
 }
 
-
 /** Merge an array of fd_responses into a single new_response.  This
     function is used both by synchronous evaluate() for the
     case of asynchronous estimate_derivatives() and by synchronize()
     for the case where one or more evaluate_nowait() calls has
     employed asynchronous estimate_derivatives(). */
-void Model::
-synchronize_derivatives(const Variables& vars,
-			const IntResponseMap& fd_responses,
-			Response& new_response, const ShortArray& fd_grad_asv,
-			const ShortArray& fd_hess_asv,
-			const ShortArray& quasi_hess_asv,
-			const ActiveSet& original_set)
-{
+void Model::synchronize_derivatives(const Variables& vars,
+                                    const IntResponseMap& fd_responses,
+                                    Response& new_response,
+                                    const ShortArray& fd_grad_asv,
+                                    const ShortArray& fd_hess_asv,
+                                    const ShortArray& quasi_hess_asv,
+                                    const ActiveSet& original_set) {
   const SizetArray& orig_dvv = original_set.derivative_vector();
   size_t i, j, k, num_deriv_vars = orig_dvv.size();
   bool fd_grad_flag = false, fd_hess_flag = false, fd_hess_by_fn_flag = false,
-    fd_hess_by_grad_flag = false;
+       fd_hess_by_grad_flag = false;
   RealVector dx;
   std::vector<const RealVector*> fx;
   size_t ifg, nfg = 0;
 
-  for (i=0; i<numFns; i++) {
+  for (i = 0; i < numFns; i++) {
     if (fd_grad_asv[i])
-      fd_grad_flag = true;           // gradient finite differencing used
+      fd_grad_flag = true;  // gradient finite differencing used
     if (fd_hess_asv[i]) {
-      fd_hess_flag = true;           // Hessian finite differencing used ...
+      fd_hess_flag = true;  // Hessian finite differencing used ...
       if (fd_hess_asv[i] & 1)
-        fd_hess_by_fn_flag = true;   // ... with 2nd-order function differences
-      if (fd_hess_asv[i] & 2)
-        ++nfg;                       // ... with 1st-order gradient differences
+        fd_hess_by_fn_flag = true;    // ... with 2nd-order function differences
+      if (fd_hess_asv[i] & 2) ++nfg;  // ... with 1st-order gradient differences
     }
   }
-  if (nfg)
-    fd_hess_by_grad_flag = true;
+  if (nfg) fd_hess_by_grad_flag = true;
 
   RealMatrix new_fn_grads;
   if (fd_grad_flag) {
@@ -2318,12 +2381,11 @@ synchronize_derivatives(const Variables& vars,
   RealVectorArray fg;
   if (fd_hess_flag) {
     if (fd_hess_by_grad_flag) {
-      fg.resize(ifg = nfg*num_deriv_vars);
-      while(ifg > 0)
-        fg[--ifg].resize(num_deriv_vars);
+      fg.resize(ifg = nfg * num_deriv_vars);
+      while (ifg > 0) fg[--ifg].resize(num_deriv_vars);
     }
     new_fn_hessians.resize(numFns);
-    for (i=0; i<numFns; i++) {
+    for (i = 0; i < numFns; i++) {
       new_fn_hessians[i].reshape(num_deriv_vars);
       new_fn_hessians[i] = 0.;
     }
@@ -2331,23 +2393,23 @@ synchronize_derivatives(const Variables& vars,
 
   // Get non-finite-diff. portion of the response from 1st fd_responses
   // or from a DB capture in estimate_derivatives()
-  bool initial_map = initialMapList.front(); initialMapList.pop_front();
-  bool db_capture  = dbCaptureList.front();  dbCaptureList.pop_front();
+  bool initial_map = initialMapList.front();
+  initialMapList.pop_front();
+  bool db_capture = dbCaptureList.front();
+  dbCaptureList.pop_front();
   Response initial_map_response;
   IntRespMCIter fd_resp_cit = fd_responses.begin();
   if (initial_map) {
-    initial_map_response = fd_resp_cit->second; 
+    initial_map_response = fd_resp_cit->second;
     ++fd_resp_cit;
-  }
-  else if (db_capture) {
-    initial_map_response = dbResponseList.front(); 
+  } else if (db_capture) {
+    initial_map_response = dbResponseList.front();
     dbResponseList.pop_front();
-  }
-  else { // construct an empty initial_map_response
+  } else {  // construct an empty initial_map_response
     ShortArray asv(numFns, 0);
     ActiveSet initial_map_set(asv, orig_dvv);
-    initial_map_response
-      = Response(currentResponse.shared_data(), initial_map_set);
+    initial_map_response =
+        Response(currentResponse.shared_data(), initial_map_set);
   }
 
   if (fd_hess_flag && fd_hess_by_fn_flag && !centralHess) {
@@ -2361,166 +2423,171 @@ synchronize_derivatives(const Variables& vars,
     if (orig_dvv == currentVariables.continuous_variable_ids()) {
       cv_ids.resize(boost::extents[current_variables().cv()]);
       cv_ids = currentVariables.continuous_variable_ids();
-    }
-    else if (orig_dvv == currentVariables.inactive_continuous_variable_ids()) {
+    } else if (orig_dvv ==
+               currentVariables.inactive_continuous_variable_ids()) {
       cv_ids.resize(boost::extents[current_variables().icv()]);
       cv_ids = currentVariables.inactive_continuous_variable_ids();
-    }
-    else { // general derivatives
+    } else {  // general derivatives
       cv_ids.resize(boost::extents[current_variables().acv()]);
       cv_ids = currentVariables.all_continuous_variable_ids();
     }
-    const RealVector& fn_vals_x0  = initial_map_response.function_values();
+    const RealVector& fn_vals_x0 = initial_map_response.function_values();
     const RealMatrix& fn_grads_x0 = initial_map_response.function_gradients();
-    for (j=0; j<num_deriv_vars; j++) {
+    for (j = 0; j < num_deriv_vars; j++) {
       size_t xj_index = find_index(cv_ids, orig_dvv[j]);
 
-      if (fd_grad_flag) { // numerical gradients
-        Real h = deltaList.front(); deltaList.pop_front();// first in, first out
+      if (fd_grad_flag) {  // numerical gradients
+        Real h = deltaList.front();
+        deltaList.pop_front();  // first in, first out
 
-        if (h == 0.) // lower bound == upper bound; report 0 gradient
-          for (i=0; i<numFns; i++)
-            new_fn_grads(j,i) = 0.;
+        if (h == 0.)  // lower bound == upper bound; report 0 gradient
+          for (i = 0; i < numFns; i++) new_fn_grads(j, i) = 0.;
         else {
-          const RealVector& fn_vals_x_plus_h
-            = fd_resp_cit->second.function_values();
+          const RealVector& fn_vals_x_plus_h =
+              fd_resp_cit->second.function_values();
           ++fd_resp_cit;
           if (intervalType == "central") {
             Real h1, h12, h2, h22;
-            const RealVector& fn_vals_x_minus_h
-              = fd_resp_cit->second.function_values();
+            const RealVector& fn_vals_x_minus_h =
+                fd_resp_cit->second.function_values();
             ++fd_resp_cit;
-            h2 = deltaList.front(); deltaList.pop_front();
+            h2 = deltaList.front();
+            deltaList.pop_front();
             // no need to check fd_grad_asv since it was used for both map calls
             if (h + h2 == 0.) {
               h1 = h - h2;
-              for (i=0; i<numFns; ++i)
-                new_fn_grads(j,i)
-                  = (fn_vals_x_plus_h[i] - fn_vals_x_minus_h[i])/h1;
+              for (i = 0; i < numFns; ++i)
+                new_fn_grads(j, i) =
+                    (fn_vals_x_plus_h[i] - fn_vals_x_minus_h[i]) / h1;
+            } else {
+              h12 = h * h;
+              h22 = h2 * h2;
+              h1 = h * h2 * (h2 - h);
+              for (i = 0; i < numFns; ++i)
+                new_fn_grads(j, i) =
+                    (h22 * (fn_vals_x_plus_h[i] - fn_vals_x0[i]) -
+                     h12 * (fn_vals_x_minus_h[i] - fn_vals_x0[i])) /
+                    h1;
             }
-            else {
-              h12 = h*h;
-              h22 = h2*h2;
-              h1  = h*h2*(h2-h);
-              for (i=0; i<numFns; ++i)
-                new_fn_grads(j,i)
-                  = ( h22*(fn_vals_x_plus_h[i]  - fn_vals_x0[i]) -
-                      h12*(fn_vals_x_minus_h[i] - fn_vals_x0[i]) ) / h1;
-            }
-          }
-          else {
-            for (i=0; i<numFns; i++)
+          } else {
+            for (i = 0; i < numFns; i++)
               // prevent erroneous difference of vals present in fn_vals_x0 but
               // not in fn_vals_x_plus_h due to map_asv & fd_grad_asv diffs
               if (fd_grad_asv[i])
-                new_fn_grads(j,i) = (fn_vals_x_plus_h[i] - fn_vals_x0[i])/h;
+                new_fn_grads(j, i) = (fn_vals_x_plus_h[i] - fn_vals_x0[i]) / h;
           }
         }
       }
 
-      if (fd_hess_flag) { // numerical Hessians
+      if (fd_hess_flag) {  // numerical Hessians
 
-        if (fd_hess_by_fn_flag) { // 2nd-order function differences
+        if (fd_hess_by_fn_flag) {  // 2nd-order function differences
           if (centralHess) {
-            Real h = deltaList.front(); deltaList.pop_front();// 1st in, 1st out
+            Real h = deltaList.front();
+            deltaList.pop_front();  // 1st in, 1st out
 
             // diagonal term
 
-            const RealVector& fn_vals_x_plus_2h
-              = fd_resp_cit->second.function_values();
+            const RealVector& fn_vals_x_plus_2h =
+                fd_resp_cit->second.function_values();
             ++fd_resp_cit;
-            const RealVector& fn_vals_x_minus_2h
-              = fd_resp_cit->second.function_values();
+            const RealVector& fn_vals_x_minus_2h =
+                fd_resp_cit->second.function_values();
             ++fd_resp_cit;
-            for (i=0; i<numFns; i++)
+            for (i = 0; i < numFns; i++)
               // prevent erroneous difference of vals present in fn_vals_x0 but
               // not in fn_vals_x_(plus/minus)_2h due to map/fd_hess asv diffs
               if (fd_hess_asv[i] & 1)
-                new_fn_hessians[i](j,j) = 
-                  (fn_vals_x_plus_2h[i] - 2.*fn_vals_x0[i] + 
-                   fn_vals_x_minus_2h[i])/(4.*h*h);
+                new_fn_hessians[i](j, j) =
+                    (fn_vals_x_plus_2h[i] - 2. * fn_vals_x0[i] +
+                     fn_vals_x_minus_2h[i]) /
+                    (4. * h * h);
 
             // off-diagonal terms
 
-            for (k=j+1; k<num_deriv_vars; k++) {
+            for (k = j + 1; k < num_deriv_vars; k++) {
               size_t xk_index = find_index(cv_ids, orig_dvv[k]);
-              const RealVector& fn_vals_x_plus_h_plus_h
-                = fd_resp_cit->second.function_values();
+              const RealVector& fn_vals_x_plus_h_plus_h =
+                  fd_resp_cit->second.function_values();
               ++fd_resp_cit;
-              const RealVector& fn_vals_x_plus_h_minus_h
-                = fd_resp_cit->second.function_values();
+              const RealVector& fn_vals_x_plus_h_minus_h =
+                  fd_resp_cit->second.function_values();
               ++fd_resp_cit;
-              const RealVector& fn_vals_x_minus_h_plus_h
-                = fd_resp_cit->second.function_values();
+              const RealVector& fn_vals_x_minus_h_plus_h =
+                  fd_resp_cit->second.function_values();
               ++fd_resp_cit;
-              const RealVector& fn_vals_x_minus_h_minus_h
-                = fd_resp_cit->second.function_values();
+              const RealVector& fn_vals_x_minus_h_minus_h =
+                  fd_resp_cit->second.function_values();
               ++fd_resp_cit;
-              for (i=0; i<numFns; i++)
+              for (i = 0; i < numFns; i++)
                 // no need to check fd_hess_asv since it was used for each eval
                 // NOTE: symmetry is naturally satisfied.
-                new_fn_hessians[i](j,k)
-                  = new_fn_hessians[i](k,j)
-                  = (fn_vals_x_plus_h_plus_h[i]  - fn_vals_x_plus_h_minus_h[i]
-                  -  fn_vals_x_minus_h_plus_h[i] + fn_vals_x_minus_h_minus_h[i])
-                  / (4.*h*h);
+                new_fn_hessians[i](j, k) = new_fn_hessians[i](k, j) =
+                    (fn_vals_x_plus_h_plus_h[i] - fn_vals_x_plus_h_minus_h[i] -
+                     fn_vals_x_minus_h_plus_h[i] +
+                     fn_vals_x_minus_h_minus_h[i]) /
+                    (4. * h * h);
             }
-          }
-          else { //!!
+          } else {  //!!
             Real denom, h1, h2, hdiff;
             const RealVector *fx1, *fx12, *fx2;
 
-            dx[j] = h1 = deltaList.front(); deltaList.pop_front();
-            h2 = deltaList.front(); deltaList.pop_front();
+            dx[j] = h1 = deltaList.front();
+            deltaList.pop_front();
+            h2 = deltaList.front();
+            deltaList.pop_front();
             fx[j] = fx1 = &fd_resp_cit->second.function_values();
             ++fd_resp_cit;
             fx2 = &fd_resp_cit->second.function_values();
             ++fd_resp_cit;
             if (h1 + h2 == 0.) {
-              denom = h1*h1;
-              for(i = 0; i < numFns; ++i)
+              denom = h1 * h1;
+              for (i = 0; i < numFns; ++i)
                 if (fd_hess_asv[i] & 1)
-                  new_fn_hessians[i](j,j)
-                    = ((*fx1)[i] - 2.*fn_vals_x0[i] + (*fx2)[i]) / denom;
-            }
-            else {
+                  new_fn_hessians[i](j, j) =
+                      ((*fx1)[i] - 2. * fn_vals_x0[i] + (*fx2)[i]) / denom;
+            } else {
               hdiff = h1 - h2;
-              denom = 0.5*h1*h2*hdiff;
+              denom = 0.5 * h1 * h2 * hdiff;
               for (i = 0; i < numFns; i++)
                 if (fd_hess_asv[i] & 1)
-                  new_fn_hessians[i](j,j)
-                    = (h2*(*fx1)[i] + hdiff*fn_vals_x0[i] - h1*(*fx2)[i])/denom;
+                  new_fn_hessians[i](j, j) =
+                      (h2 * (*fx1)[i] + hdiff * fn_vals_x0[i] -
+                       h1 * (*fx2)[i]) /
+                      denom;
             }
 
             // off-diagonal terms
 
-            for(k = 0; k < j; ++k) {
+            for (k = 0; k < j; ++k) {
               size_t xk_index = find_index(cv_ids, orig_dvv[k]);
               h2 = dx[k];
-              denom = h1*h2;
+              denom = h1 * h2;
               fx2 = fx[k];
               fx12 = &fd_resp_cit->second.function_values();
               ++fd_resp_cit;
               for (i = 0; i < numFns; i++)
-                new_fn_hessians[i](j,k) =
-                  ((*fx12)[i] - (*fx1)[i] - (*fx2)[i] + fn_vals_x0[i]) / denom;
+                new_fn_hessians[i](j, k) =
+                    ((*fx12)[i] - (*fx1)[i] - (*fx2)[i] + fn_vals_x0[i]) /
+                    denom;
             }
           }
         }
-        if (fd_hess_by_grad_flag) { // 1st-order gradient differences
-          Real h = deltaList.front(); deltaList.pop_front(); // 1st in, 1st out
+        if (fd_hess_by_grad_flag) {  // 1st-order gradient differences
+          Real h = deltaList.front();
+          deltaList.pop_front();  // 1st in, 1st out
 
-          const RealMatrix& fn_grads_x_plus_h
-            = fd_resp_cit->second.function_gradients();
+          const RealMatrix& fn_grads_x_plus_h =
+              fd_resp_cit->second.function_gradients();
           ++fd_resp_cit;
           ifg = j;
-          for (i=0; i<numFns; i++)
+          for (i = 0; i < numFns; i++)
             // prevent erroneous difference of grads present in fn_grads_x0 but
             // not in fn_grads_x_plus_h due to map_asv & fd_hess_asv diffs
             // NOTE: symmetry must be enforced below.
             if (fd_hess_asv[i] & 2) {
-              //fg[ifg] = (fn_grads_x_plus_h[i] - fn_grads_x0[i]) / h;
-              for(k = 0; k < num_deriv_vars; ++k)
+              // fg[ifg] = (fn_grads_x_plus_h[i] - fn_grads_x0[i]) / h;
+              for (k = 0; k < num_deriv_vars; ++k)
                 fg[ifg][k] = (fn_grads_x_plus_h[i][k] - fn_grads_x0[i][k]) / h;
               ifg += num_deriv_vars;
             }
@@ -2532,14 +2599,15 @@ synchronize_derivatives(const Variables& vars,
   // Enforce symmetry in the case of FD Hessians from 1st-order gradient
   // differences by averaging off-diagonal terms: H' = 1/2 (H + H^T)
   if (fd_hess_by_grad_flag)
-    for (i=0; i<numFns; i++)
+    for (i = 0; i < numFns; i++)
       if (fd_hess_asv[i] & 2)
         for (i = ifg = 0; i < numFns; i++)
           if (fd_hess_asv[i] & 2) {
-            for (j=0; j<num_deriv_vars; j++) {
+            for (j = 0; j < num_deriv_vars; j++) {
               for (k = 0; k < j; k++)
-                new_fn_hessians[i](j,k) = 0.5 * (fg[ifg+j][k] + fg[ifg+k][j]);
-              new_fn_hessians[i](j,j) = fg[ifg+j][j];
+                new_fn_hessians[i](j, k) =
+                    0.5 * (fg[ifg + j][k] + fg[ifg + k][j]);
+              new_fn_hessians[i](j, j) = fg[ifg + j][j];
             }
             ifg += num_deriv_vars;
           }
@@ -2549,20 +2617,20 @@ synchronize_derivatives(const Variables& vars,
                   new_fn_hessians);
 }
 
-
 /** Overlay the initial_map_response with numerically estimated new_fn_grads
     and new_fn_hessians to populate new_response as governed by asv vectors.
     Quasi-Newton secant Hessian updates are also performed here, since this
     is where the gradient data needed for the updates is first consolidated.
     Convenience function used by estimate_derivatives() for the synchronous
     case and by synchronize_derivatives() for the asynchronous case. */
-void Model::
-update_response(const Variables& vars, Response& new_response,
-		const ShortArray& fd_grad_asv, const ShortArray& fd_hess_asv,
-		const ShortArray& quasi_hess_asv, const ActiveSet& original_set,
-		Response& initial_map_response, const RealMatrix& new_fn_grads,
-		const RealSymMatrixArray& new_fn_hessians)
-{
+void Model::update_response(const Variables& vars, Response& new_response,
+                            const ShortArray& fd_grad_asv,
+                            const ShortArray& fd_hess_asv,
+                            const ShortArray& quasi_hess_asv,
+                            const ActiveSet& original_set,
+                            Response& initial_map_response,
+                            const RealMatrix& new_fn_grads,
+                            const RealSymMatrixArray& new_fn_hessians) {
   // ----------
   // Initialize
   // ----------
@@ -2571,31 +2639,27 @@ update_response(const Variables& vars, Response& new_response,
   // default constructor and has a NULL rep.  In this case, allocate a new
   // response by copying currentResponse.  This is a convenient way to carry
   // over fnTags and interfaceId to the new response.
-  if (new_response.is_null())
-    new_response = currentResponse.copy();
+  if (new_response.is_null()) new_response = currentResponse.copy();
 
   size_t i;
   bool initial_map = false, initial_map_fn_flag = false,
        initial_map_grad_flag = false, initial_map_hess_flag = false,
        fd_grad_flag = false, fd_hess_flag = false, quasi_hess_flag = false;
-  const ShortArray& initial_map_asv
-    = initial_map_response.active_set_request_vector();
-  for (i=0; i<numFns; i++) {
+  const ShortArray& initial_map_asv =
+      initial_map_response.active_set_request_vector();
+  for (i = 0; i < numFns; i++) {
     if (initial_map_asv[i]) {
       initial_map = true;
-      if (initial_map_asv[i] & 1)
-	initial_map_fn_flag = true;
-      if (initial_map_asv[i] & 2)
-	initial_map_grad_flag = true;
-      if (initial_map_asv[i] & 4)
-	initial_map_hess_flag = true;
+      if (initial_map_asv[i] & 1) initial_map_fn_flag = true;
+      if (initial_map_asv[i] & 2) initial_map_grad_flag = true;
+      if (initial_map_asv[i] & 4) initial_map_hess_flag = true;
     }
     if (fd_grad_asv[i])
-      fd_grad_flag = true; // gradient finite differencing used
+      fd_grad_flag = true;  // gradient finite differencing used
     if (fd_hess_asv[i])
-      fd_hess_flag = true; // Hessian finite differencing used
+      fd_hess_flag = true;  // Hessian finite differencing used
     if (quasi_hess_asv[i])
-      quasi_hess_flag = true; // quasi-Hessians needed in new_response
+      quasi_hess_flag = true;  // quasi-Hessians needed in new_response
   }
 
   // ----------------------
@@ -2611,28 +2675,27 @@ update_response(const Variables& vars, Response& new_response,
   // -------------------------
 
   if (initial_map) {
-    if (fd_grad_flag) { // merge new_fn_grads with initial map grads
+    if (fd_grad_flag) {  // merge new_fn_grads with initial map grads
       RealMatrix partial_fn_grads;
       if (initial_map_grad_flag)
-	partial_fn_grads = initial_map_response.function_gradients();
+        partial_fn_grads = initial_map_response.function_gradients();
       else
-	partial_fn_grads.shape(new_fn_grads.numRows(), new_fn_grads.numCols());
-      for (i=0; i<numFns; ++i) {
-	// overwrite partial_fn_grads with new_fn_grads based on fd_grad_asv
-	// (needed for case of mixed gradients)
-	if (fd_grad_asv[i]) {
-	  RealVector new_fn_gradi_col_vector = Teuchos::getCol(Teuchos::View,
-	    const_cast<RealMatrix&>(new_fn_grads), (int)i);
-	  Teuchos::setCol(new_fn_gradi_col_vector, (int)i, partial_fn_grads);
+        partial_fn_grads.shape(new_fn_grads.numRows(), new_fn_grads.numCols());
+      for (i = 0; i < numFns; ++i) {
+        // overwrite partial_fn_grads with new_fn_grads based on fd_grad_asv
+        // (needed for case of mixed gradients)
+        if (fd_grad_asv[i]) {
+          RealVector new_fn_gradi_col_vector = Teuchos::getCol(
+              Teuchos::View, const_cast<RealMatrix&>(new_fn_grads), (int)i);
+          Teuchos::setCol(new_fn_gradi_col_vector, (int)i, partial_fn_grads);
         }
       }
       new_response.function_gradients(partial_fn_grads);
-    }
-    else if (initial_map_grad_flag) // no merge: initial map grads are complete
+    } else if (initial_map_grad_flag)  // no merge: initial map grads are
+                                       // complete
       new_response.function_gradients(
-        initial_map_response.function_gradients());
-  }
-  else if (fd_grad_flag) // no merge: new_fn_grads are complete
+          initial_map_response.function_gradients());
+  } else if (fd_grad_flag)  // no merge: new_fn_grads are complete
     new_response.function_gradients(new_fn_grads);
 
   // ------------------------
@@ -2642,12 +2705,12 @@ update_response(const Variables& vars, Response& new_response,
   // perform quasi-Newton updates if quasi_hessians have been specified by the
   // user, the response data is uncorrected, and the DVV is set to the active
   // continuous variables (the default).
-  if ( supportsEstimDerivs && 
-       surrogate_response_mode() != AUTO_CORRECTED_SURROGATE &&
-       original_set.derivative_vector() ==
-       currentVariables.continuous_variable_ids() &&
-       ( hessianType == "quasi" ||
-	 ( hessianType == "mixed" && !hessIdQuasi.empty() ) ) )
+  if (supportsEstimDerivs &&
+      surrogate_response_mode() != AUTO_CORRECTED_SURROGATE &&
+      original_set.derivative_vector() ==
+          currentVariables.continuous_variable_ids() &&
+      (hessianType == "quasi" ||
+       (hessianType == "mixed" && !hessIdQuasi.empty())))
     update_quasi_hessians(vars, new_response, original_set);
 
   // overlay Hessian data as needed
@@ -2656,23 +2719,21 @@ update_response(const Variables& vars, Response& new_response,
     if (fd_hess_flag || quasi_hess_flag) {
       RealSymMatrixArray partial_fn_hessians;
       if (initial_map_hess_flag)
-	partial_fn_hessians = initial_map_response.function_hessians();
+        partial_fn_hessians = initial_map_response.function_hessians();
       else
-	partial_fn_hessians.resize(numFns);
-      for (i=0; i<numFns; i++) {
-	if (fd_hess_asv[i])    // overwrite with FD Hessians
-	  partial_fn_hessians[i] = new_fn_hessians[i]; // full matrix
-	if (quasi_hess_asv[i]) // overwrite with quasi-Hessians
-	  partial_fn_hessians[i] = quasiHessians[i];   // full matrix
+        partial_fn_hessians.resize(numFns);
+      for (i = 0; i < numFns; i++) {
+        if (fd_hess_asv[i])  // overwrite with FD Hessians
+          partial_fn_hessians[i] = new_fn_hessians[i];  // full matrix
+        if (quasi_hess_asv[i])  // overwrite with quasi-Hessians
+          partial_fn_hessians[i] = quasiHessians[i];  // full matrix
       }
       new_response.function_hessians(partial_fn_hessians);
-    }
-    else if (initial_map_hess_flag)
+    } else if (initial_map_hess_flag)
       new_response.function_hessians(initial_map_response.function_hessians());
-  }
-  else if (fd_hess_flag)    // no merge necessary
+  } else if (fd_hess_flag)  // no merge necessary
     new_response.function_hessians(new_fn_hessians);
-  else if (quasi_hess_flag) // no merge necessary
+  else if (quasi_hess_flag)  // no merge necessary
     new_response.function_hessians(quasiHessians);
 
   // --------
@@ -2681,7 +2742,7 @@ update_response(const Variables& vars, Response& new_response,
 
   // update newly rebuilt new_response with the original asv request
   new_response.active_set_request_vector(original_set.request_vector());
-  new_response.reset_inactive(); // clear out any left overs
+  new_response.reset_inactive();  // clear out any left overs
 
   // Output header for the rebuilt new_response
   if (outputLevel > QUIET_OUTPUT) {
@@ -2693,224 +2754,212 @@ update_response(const Variables& vars, Response& new_response,
   }
 }
 
-
 /** quasi-Newton updates are performed for approximating response
     function Hessians using BFGS or SR1 formulations.  These Hessians
     are supported only for the active continuous variables, and a
     check is performed on the DVV prior to invoking the function. */
-void Model::
-update_quasi_hessians(const Variables& vars, Response& new_response,
-		      const ActiveSet& original_set)
-{
+void Model::update_quasi_hessians(const Variables& vars, Response& new_response,
+                                  const ActiveSet& original_set) {
   size_t i, j, k;
-  const RealVector& x        = vars.continuous_variables(); // view
+  const RealVector& x = vars.continuous_variables();  // view
   const ShortArray& orig_asv = original_set.request_vector();
   const RealMatrix& fn_grads = new_response.function_gradients();
 
   // if necessary, initialize quasi-Hessians before populating
-  if ( numQuasiUpdates.empty() ) {
+  if (numQuasiUpdates.empty()) {
     if (outputLevel == DEBUG_OUTPUT)
       Cout << "Reshaping quasiHessians in modelType = " << modelType
-	   << std::endl;
+           << std::endl;
     xPrev.resize(numFns);
     fnGradsPrev.reshape(numDerivVars, numFns);
     quasiHessians.resize(numFns);
-    for (size_t i=0; i<numFns; i++) {
-      if ( hessianType == "quasi" ||
-	   ( hessianType == "mixed" && contains(hessIdQuasi, i+1) ) ) {
-	quasiHessians[i].reshape(numDerivVars);
-	quasiHessians[i] = 0.;
-	// leave as zero matrix so that any early use of quasi-Hessian has
-	// no effect.  The initial scaling updates to nonzero values at the
-	// appropriate time.
-	//for (size_t j=0; j<numDerivVars; j++)
-	//  quasiHessians[i][j][j] = 1.; // initialize to identity
+    for (size_t i = 0; i < numFns; i++) {
+      if (hessianType == "quasi" ||
+          (hessianType == "mixed" && contains(hessIdQuasi, i + 1))) {
+        quasiHessians[i].reshape(numDerivVars);
+        quasiHessians[i] = 0.;
+        // leave as zero matrix so that any early use of quasi-Hessian has
+        // no effect.  The initial scaling updates to nonzero values at the
+        // appropriate time.
+        // for (size_t j=0; j<numDerivVars; j++)
+        //  quasiHessians[i][j][j] = 1.; // initialize to identity
       }
     }
     numQuasiUpdates.assign(numFns, 0);
   }
 
-  for (i=0; i<numFns; ++i) {
-
+  for (i = 0; i < numFns; ++i) {
     // perform i-th quasi-Hessian update if a new grad vector is present,
     // regardless of whether the quasi-Hessian is active on this eval.
-    if ( !quasiHessians[i].empty() && (orig_asv[i] & 2) ) {
-
+    if (!quasiHessians[i].empty() && (orig_asv[i] & 2)) {
       // quasi-Hessian updates require a history of at least 2 gradient evals
       Real norm_s = 0.;
       if (numQuasiUpdates[i]) {
+        RealVector s(numDerivVars), y(numDerivVars);
+        Real sj, yj, norm_s_sq = 0., norm_y_sq = 0.;
+        for (j = 0; j < numDerivVars; ++j) {
+          s[j] = sj = x[j] - xPrev[i][j];                  // s = step
+          y[j] = yj = fn_grads[i][j] - fnGradsPrev[i][j];  // y = yield
+          norm_s_sq += sj * sj;  // avoid repeated indexing
+          norm_y_sq += yj * yj;  // avoid repeated indexing
+        }
+        norm_s = std::sqrt(norm_s_sq);
+        Real norm_y = std::sqrt(norm_y_sq);
+        if (outputLevel == DEBUG_OUTPUT)
+          Cout << "Quasi-Hessian step/yield:\ns =\n"
+               << s << "y =\n"
+               << y << "norm_s = " << norm_s << " norm_y = " << norm_y << '\n';
 
-	RealVector s(numDerivVars), y(numDerivVars);
-	Real sj, yj, norm_s_sq = 0., norm_y_sq = 0.;
-	for (j=0; j<numDerivVars; ++j) {
-	  s[j] = sj = x[j]           - xPrev[i][j];       // s = step
-	  y[j] = yj = fn_grads[i][j] - fnGradsPrev[i][j]; // y = yield
-	  norm_s_sq += sj*sj; // avoid repeated indexing
-	  norm_y_sq += yj*yj; // avoid repeated indexing
-	}
-	norm_s = std::sqrt(norm_s_sq);
-	Real norm_y = std::sqrt(norm_y_sq);
-	if (outputLevel == DEBUG_OUTPUT)
-	  Cout << "Quasi-Hessian step/yield:\ns =\n" << s << "y =\n" << y
-	       << "norm_s = " << norm_s << " norm_y = " << norm_y << '\n';
+        // Verify that there's a non-zero step (zero yield is acceptable).
+        // Don't update anything (including history) if step is zero.
+        if (!Pecos::is_small(norm_s)) {
+          // -------------------------------------------
+          // Apply initial scaling prior to first update
+          // -------------------------------------------
+          //   Gay:             y's/s's I  (scaling1/norm_s_sq)
+          //   Dennis/Schnabel: y's/s'Hs I (same as Gay if initial H = I)
+          //   Shanno/Phua:     y'y/y's I  (current selection)
+          if (numQuasiUpdates[i] == 1) {
+            Real scaling1 = 0.;
+            for (j = 0; j < numDerivVars; j++) scaling1 += y[j] * s[j];
+            // step is nonzero but yield may reasonably be zero, so safeguard
+            // numerics.  In the case of no yield in gradients (no observed
+            // curvature), 0 is assigned as the initial scaling.
+            Real scaling2 = 0.;
+            if (!Pecos::is_small(norm_y))
+              scaling2 = (!Pecos::is_small(std::sqrt(std::fabs(scaling1))))
+                             ? norm_y_sq / scaling1
+                             : 1.;
+            for (j = 0; j < numDerivVars; j++)
+              quasiHessians[i](j, j) = scaling2;
+            if (outputLevel == DEBUG_OUTPUT)
+              Cout << "initial scaling =\n" << quasiHessians[i] << '\n';
+          }
 
-	// Verify that there's a non-zero step (zero yield is acceptable).
-	// Don't update anything (including history) if step is zero.
-	if (!Pecos::is_small(norm_s)) {
-
-	  // -------------------------------------------
-	  // Apply initial scaling prior to first update
-	  // -------------------------------------------
-	  //   Gay:             y's/s's I  (scaling1/norm_s_sq)
-	  //   Dennis/Schnabel: y's/s'Hs I (same as Gay if initial H = I)
-	  //   Shanno/Phua:     y'y/y's I  (current selection)
-	  if (numQuasiUpdates[i] == 1) {
-	    Real scaling1 = 0.;
-	    for (j=0; j<numDerivVars; j++)
-	      scaling1 += y[j]*s[j];
-	    // step is nonzero but yield may reasonably be zero, so safeguard
-	    // numerics.  In the case of no yield in gradients (no observed
-	    // curvature), 0 is assigned as the initial scaling.
-	    Real scaling2 = 0.;
-	    if (!Pecos::is_small(norm_y))
-	      scaling2 = (!Pecos::is_small(std::sqrt(std::fabs(scaling1))))
-                       ? norm_y_sq/scaling1 : 1.;
-	    for (j=0; j<numDerivVars; j++)
-	      quasiHessians[i](j,j) = scaling2;
-	    if (outputLevel == DEBUG_OUTPUT)
-	      Cout << "initial scaling =\n" << quasiHessians[i] << '\n';
-	  }
-
-	  // ----------------------
-	  // Symmetric Rank 1 (SR1)
-	  // ----------------------
-	  if (quasiHessType == "sr1") {
-	    RealVector ymBs(numDerivVars);
-	    Real scaling = 0.;
-	    for (j=0; j<numDerivVars; j++) {
-	      Real Bs = 0.;
-	      for (k=0; k<numDerivVars; k++)
-		Bs += quasiHessians[i](j,k)*s[k];
-	      ymBs[j] = y[j] - Bs;
-	      scaling += ymBs[j]*s[j];
-	    }
-	    // use standard safeguard against orthogonality in denominator.
-	    // skip update if denominator magnitude is insufficient.  Guanghui
-	    // Liu thesis uses 1.e-4 (p. 57) and Nocedal and Wright uses 1.e-8
-	    // (pp. 203-4).  Here we split the difference with 1.e-6.
-	    Real norm_ymBs = 0.;
-	    for (j=0; j<numDerivVars; j++)
-	      norm_ymBs += ymBs[j]*ymBs[j];
-	    norm_ymBs = std::sqrt(norm_ymBs);
-	    // perform update
-	    if (std::fabs(scaling) > 1.e-6*norm_s*norm_ymBs) {
-	      for (j=0; j<numDerivVars; j++) {
-		// exploit hereditary symmetry: compute upper half of matrix
-		quasiHessians[i](j,j) += ymBs[j]*ymBs[j]/scaling;
-		for (k=j+1; k<numDerivVars; k++)
-		  quasiHessians[i](k,j) = quasiHessians[i](j,k) +=
-		    ymBs[j]*ymBs[k]/scaling;
-	      }
-	      if (outputLevel == DEBUG_OUTPUT)
-		Cout << "SR1: B = " << quasiHessians[i] << '\n';
-	    }
-	    else if (outputLevel == DEBUG_OUTPUT)
-	      Cout << "SR1: update skipped\n";
-	  }
-	  // ---------------------------------------
-	  // Broyden-Fletcher-Goldfarb-Shanno (BFGS)
-	  // ---------------------------------------
-	  else {
-	    bool damped_bfgs = (quasiHessType == "damped_bfgs") ? true : false;
-	    RealVector Bs(numDerivVars, true);
-	    Real scaling1 = 0., scaling2 = 0.;
-	    for (j=0; j<numDerivVars; j++) {
-	      scaling1 += y[j]*s[j];
-	      for (k=0; k<numDerivVars; k++)
-		Bs[j] += quasiHessians[i](j,k)*s[k];
-	      scaling2 += s[j]*Bs[j];
-	    }
-	    // These two approaches appear in the literature for enforcing the
-	    // curvature condition when the steps are generated by a Newton
-	    // optimizer:
-	    //   damp: if (scaling1 >=  0.2*scaling2) { update } else { damp }
-	    //   skip: if (scaling1 >= 1e-6*scaling2) { update }
-	    // These approaches appear to be inappropriate when the steps are
-	    // not directly Newton-generated (e.g., from trust-region SBO) since
-	    // the curvature condition is violated too frequently.  In this
-	    // case, a minimal approach can be used which only protects the
-	    // denominator magnitude.  The BFGS update can lose positive
-	    // definiteness in this case -> use fabs on scaling2 triple product.
-	    using std::fabs;
-	    if ( ( !damped_bfgs && fabs(scaling1) > 1.e-6*fabs(scaling2) ) ||
-		 (  damped_bfgs && scaling1 >= 0.2*scaling2 ) ) {
-	      // standard BFGS (in damped formulation: theta=1 and r=y)
-	      for (j=0; j<numDerivVars; j++) {
-		// exploit hereditary symmetry: compute upper half of matrix
-		quasiHessians[i](j,j) +=  y[j]* y[j]/scaling1
-                                       -  Bs[j]*Bs[j]/scaling2;
-		for (k=j+1; k<numDerivVars; k++)
-		  quasiHessians[i](k,j) = quasiHessians[i](j,k) +=
-		    y[j]*y[k]/scaling1 - Bs[j]*Bs[k]/scaling2;
-	      }
-	      if (outputLevel == DEBUG_OUTPUT)
-		Cout << "BFGS: y's = " << scaling1 << " s'Bs = " << scaling2
-		     << "\nB = " << quasiHessians[i] << '\n';
-	    }
-	    else if (damped_bfgs) {
-	      // damped BFGS is a standard safeguard against violation of the
-	      // curvature condition (y's should be > 0).  See Nocedal & Wright
-	      // (pp. 540-1) or Guanghui Liu thesis (p. 57), among others.
-	      RealVector r(numDerivVars);
-	      Real theta = 0.8*scaling2/(scaling2 - scaling1);
-	      //Cout << "Damped BFGS:   y's = " << scaling1 << " s'Bs = "
-              //     << scaling2 << " theta = " << theta;
-	      scaling1 = 0.;
-	      for (j=0; j<numDerivVars; j++) {
-		r[j] = theta*y[j] + (1.-theta)*Bs[j];
-		scaling1 += r[j]*s[j];
-	      }
-	      for (j=0; j<numDerivVars; j++) {
-		// exploit hereditary symmetry: compute upper half of matrix
-		quasiHessians[i](j,j) +=  r[j]* r[j]/scaling1
-                                       -  Bs[j]*Bs[j]/scaling2;
-		for (k=j+1; k<numDerivVars; k++)
-		  quasiHessians[i](k,j) = quasiHessians[i](j,k) +=
-		    r[j]*r[k]/scaling1 - Bs[j]*Bs[k]/scaling2;
-	      }
-	      if (outputLevel == DEBUG_OUTPUT)
-		Cout << "Damped BFGS: r's = " << scaling1 << "\nB = "
-		     << quasiHessians[i] << '\n';
-	    }
-	    else if (outputLevel == DEBUG_OUTPUT)
-	      Cout << "Undamped BFGS: update skipped\n";
-	  }
-	}
+          // ----------------------
+          // Symmetric Rank 1 (SR1)
+          // ----------------------
+          if (quasiHessType == "sr1") {
+            RealVector ymBs(numDerivVars);
+            Real scaling = 0.;
+            for (j = 0; j < numDerivVars; j++) {
+              Real Bs = 0.;
+              for (k = 0; k < numDerivVars; k++)
+                Bs += quasiHessians[i](j, k) * s[k];
+              ymBs[j] = y[j] - Bs;
+              scaling += ymBs[j] * s[j];
+            }
+            // use standard safeguard against orthogonality in denominator.
+            // skip update if denominator magnitude is insufficient.  Guanghui
+            // Liu thesis uses 1.e-4 (p. 57) and Nocedal and Wright uses 1.e-8
+            // (pp. 203-4).  Here we split the difference with 1.e-6.
+            Real norm_ymBs = 0.;
+            for (j = 0; j < numDerivVars; j++) norm_ymBs += ymBs[j] * ymBs[j];
+            norm_ymBs = std::sqrt(norm_ymBs);
+            // perform update
+            if (std::fabs(scaling) > 1.e-6 * norm_s * norm_ymBs) {
+              for (j = 0; j < numDerivVars; j++) {
+                // exploit hereditary symmetry: compute upper half of matrix
+                quasiHessians[i](j, j) += ymBs[j] * ymBs[j] / scaling;
+                for (k = j + 1; k < numDerivVars; k++)
+                  quasiHessians[i](k, j) = quasiHessians[i](j, k) +=
+                      ymBs[j] * ymBs[k] / scaling;
+              }
+              if (outputLevel == DEBUG_OUTPUT)
+                Cout << "SR1: B = " << quasiHessians[i] << '\n';
+            } else if (outputLevel == DEBUG_OUTPUT)
+              Cout << "SR1: update skipped\n";
+          }
+          // ---------------------------------------
+          // Broyden-Fletcher-Goldfarb-Shanno (BFGS)
+          // ---------------------------------------
+          else {
+            bool damped_bfgs = (quasiHessType == "damped_bfgs") ? true : false;
+            RealVector Bs(numDerivVars, true);
+            Real scaling1 = 0., scaling2 = 0.;
+            for (j = 0; j < numDerivVars; j++) {
+              scaling1 += y[j] * s[j];
+              for (k = 0; k < numDerivVars; k++)
+                Bs[j] += quasiHessians[i](j, k) * s[k];
+              scaling2 += s[j] * Bs[j];
+            }
+            // These two approaches appear in the literature for enforcing the
+            // curvature condition when the steps are generated by a Newton
+            // optimizer:
+            //   damp: if (scaling1 >=  0.2*scaling2) { update } else { damp }
+            //   skip: if (scaling1 >= 1e-6*scaling2) { update }
+            // These approaches appear to be inappropriate when the steps are
+            // not directly Newton-generated (e.g., from trust-region SBO) since
+            // the curvature condition is violated too frequently.  In this
+            // case, a minimal approach can be used which only protects the
+            // denominator magnitude.  The BFGS update can lose positive
+            // definiteness in this case -> use fabs on scaling2 triple product.
+            using std::fabs;
+            if ((!damped_bfgs && fabs(scaling1) > 1.e-6 * fabs(scaling2)) ||
+                (damped_bfgs && scaling1 >= 0.2 * scaling2)) {
+              // standard BFGS (in damped formulation: theta=1 and r=y)
+              for (j = 0; j < numDerivVars; j++) {
+                // exploit hereditary symmetry: compute upper half of matrix
+                quasiHessians[i](j, j) +=
+                    y[j] * y[j] / scaling1 - Bs[j] * Bs[j] / scaling2;
+                for (k = j + 1; k < numDerivVars; k++)
+                  quasiHessians[i](k, j) = quasiHessians[i](j, k) +=
+                      y[j] * y[k] / scaling1 - Bs[j] * Bs[k] / scaling2;
+              }
+              if (outputLevel == DEBUG_OUTPUT)
+                Cout << "BFGS: y's = " << scaling1 << " s'Bs = " << scaling2
+                     << "\nB = " << quasiHessians[i] << '\n';
+            } else if (damped_bfgs) {
+              // damped BFGS is a standard safeguard against violation of the
+              // curvature condition (y's should be > 0).  See Nocedal & Wright
+              // (pp. 540-1) or Guanghui Liu thesis (p. 57), among others.
+              RealVector r(numDerivVars);
+              Real theta = 0.8 * scaling2 / (scaling2 - scaling1);
+              // Cout << "Damped BFGS:   y's = " << scaling1 << " s'Bs = "
+              //      << scaling2 << " theta = " << theta;
+              scaling1 = 0.;
+              for (j = 0; j < numDerivVars; j++) {
+                r[j] = theta * y[j] + (1. - theta) * Bs[j];
+                scaling1 += r[j] * s[j];
+              }
+              for (j = 0; j < numDerivVars; j++) {
+                // exploit hereditary symmetry: compute upper half of matrix
+                quasiHessians[i](j, j) +=
+                    r[j] * r[j] / scaling1 - Bs[j] * Bs[j] / scaling2;
+                for (k = j + 1; k < numDerivVars; k++)
+                  quasiHessians[i](k, j) = quasiHessians[i](j, k) +=
+                      r[j] * r[k] / scaling1 - Bs[j] * Bs[k] / scaling2;
+              }
+              if (outputLevel == DEBUG_OUTPUT)
+                Cout << "Damped BFGS: r's = " << scaling1
+                     << "\nB = " << quasiHessians[i] << '\n';
+            } else if (outputLevel == DEBUG_OUTPUT)
+              Cout << "Undamped BFGS: update skipped\n";
+          }
+        }
       }
 
       // history updates for next iteration
-      if ( numQuasiUpdates[i] == 0 || !Pecos::is_small(norm_s) ) {
-	// store previous data independently for each response fn.  So long
-	// as at least one previous data pt has been stored, we do not need
-	// to track the presence of active grads in particular responses.
-	copy_data(x, xPrev[i]); // view->copy
-	RealVector tmp_col_vector = Teuchos::getCol(Teuchos::View,
-	  const_cast<RealMatrix&>(fn_grads), (int)i);
-	Teuchos::setCol(tmp_col_vector, (int)i, fnGradsPrev);
-	++numQuasiUpdates[i];
+      if (numQuasiUpdates[i] == 0 || !Pecos::is_small(norm_s)) {
+        // store previous data independently for each response fn.  So long
+        // as at least one previous data pt has been stored, we do not need
+        // to track the presence of active grads in particular responses.
+        copy_data(x, xPrev[i]);  // view->copy
+        RealVector tmp_col_vector = Teuchos::getCol(
+            Teuchos::View, const_cast<RealMatrix&>(fn_grads), (int)i);
+        Teuchos::setCol(tmp_col_vector, (int)i, fnGradsPrev);
+        ++numQuasiUpdates[i];
       }
     }
   }
 }
 
-
-void Model::update_model_active_variables(Model& sub_model)
-{
+void Model::update_model_active_variables(Model& sub_model) {
   // Run-time update of model variables managing dissimilar view cases
 
   Variables& sm_vars = sub_model.current_variables();
   short active_view = currentVariables.view().first,
-     sm_active_view = sm_vars.view().first;
+        sm_active_view = sm_vars.view().first;
   // Note 1: inactive vals/bnds/labels and linear/nonlinear constr coeffs/bnds
   //   updated in init_model()
   // Note 2: bounds updating isn't strictly required for local/multipoint, but
@@ -2930,8 +2979,8 @@ void Model::update_model_active_variables(Model& sub_model)
     sm_vars.active_variables(currentVariables);
   else {
     bool active_all = (active_view == RELAXED_ALL || active_view == MIXED_ALL),
-      sm_active_all = (sm_active_view == RELAXED_ALL ||
-		       sm_active_view == MIXED_ALL);
+         sm_active_all =
+             (sm_active_view == RELAXED_ALL || sm_active_view == MIXED_ALL);
     if (!active_all && sm_active_all)
       // update active sub_model vars using "All" view of currentVariables
       sm_vars.all_to_active_variables(currentVariables);
@@ -2941,12 +2990,11 @@ void Model::update_model_active_variables(Model& sub_model)
     // TO DO: extend for aleatory/epistemic uncertain views
     else {
       Cerr << "Error: unsupported variable view differences in Model::"
-	   << "update_model_active_variables()." << std::endl;
+           << "update_model_active_variables()." << std::endl;
       abort_handler(MODEL_ERROR);
     }
   }
 }
-
 
 /** Splits asv_in total request into map_asv_out, fd_grad_asv_out,
     fd_hess_asv_out, and quasi_hess_asv_out as governed by the
@@ -2956,10 +3004,9 @@ void Model::update_model_active_variables(Model& sub_model)
     Hessian evals, and quasi-Hessian updates, respectively.  If the
     returned use_est_deriv is false, then only map_asv_out is used. */
 bool Model::manage_asv(const ActiveSet& original_set, ShortArray& map_asv_out,
-		       ShortArray& fd_grad_asv_out, ShortArray& fd_hess_asv_out,
-		       ShortArray& quasi_hess_asv_out)
-{
-  const ShortArray& asv_in   = original_set.request_vector();
+                       ShortArray& fd_grad_asv_out, ShortArray& fd_hess_asv_out,
+                       ShortArray& quasi_hess_asv_out) {
+  const ShortArray& asv_in = original_set.request_vector();
   const SizetArray& orig_dvv = original_set.derivative_vector();
 
   // *_asv_out[i] have all been initialized to zero
@@ -2968,31 +3015,28 @@ bool Model::manage_asv(const ActiveSet& original_set, ShortArray& map_asv_out,
   // interface object, only subordinate models), pass the ActiveSet through to
   // the sub-models in one piece and do not break it apart here. This preserves
   // sub-model parallelism.
-  if (!supportsEstimDerivs)
-    return false;
+  if (!supportsEstimDerivs) return false;
 
   bool use_est_deriv = false, fd_grad_flag = false;
   size_t i, asv_len = asv_in.size();
-  for (i=0; i<asv_len; ++i) {
-
+  for (i = 0; i < asv_len; ++i) {
     // Function value requests
-    if (asv_in[i] & 1)
-      map_asv_out[i] = 1;
+    if (asv_in[i] & 1) map_asv_out[i] = 1;
 
     // Function gradient requests
     if (asv_in[i] & 2) {
-      if ( gradientType == "analytic" ||
-           ( gradientType == "mixed" && contains(gradIdAnalytic, i+1) ) )
-        map_asv_out[i] |= 2; // activate 2nd bit
-      else if ( methodSource == "dakota" && ( gradientType == "numerical" ||
-		( gradientType == "mixed" && contains(gradIdNumerical, i+1)))) {
+      if (gradientType == "analytic" ||
+          (gradientType == "mixed" && contains(gradIdAnalytic, i + 1)))
+        map_asv_out[i] |= 2;  // activate 2nd bit
+      else if (methodSource == "dakota" &&
+               (gradientType == "numerical" ||
+                (gradientType == "mixed" &&
+                 contains(gradIdNumerical, i + 1)))) {
         fd_grad_asv_out[i] = 1;
         fd_grad_flag = true;
-        if (intervalType == "forward")
-          map_asv_out[i] |= 1; // activate 1st bit
+        if (intervalType == "forward") map_asv_out[i] |= 1;  // activate 1st bit
         use_est_deriv = true;
-      }
-      else { // could happen if an iterator requiring gradients is selected
+      } else {  // could happen if an iterator requiring gradients is selected
         // with no_gradients or unsupported vendor numerical gradients
         // and lacks a separate error check.
         Cerr << "Error: Model '" << model_id()
@@ -3000,37 +3044,35 @@ bool Model::manage_asv(const ActiveSet& original_set, ShortArray& map_asv_out,
              << "Model::manage_asv." << std::endl;
         abort_handler(MODEL_ERROR);
       }
-      if ( surrogate_response_mode() != AUTO_CORRECTED_SURROGATE &&
-           ( hessianType == "quasi" ||
-             ( hessianType == "mixed" && contains(hessIdQuasi, i+1) ) ) )
+      if (surrogate_response_mode() != AUTO_CORRECTED_SURROGATE &&
+          (hessianType == "quasi" ||
+           (hessianType == "mixed" && contains(hessIdQuasi, i + 1))))
         use_est_deriv = true;
     }
 
     // Function Hessian requests
     if (asv_in[i] & 4) {
-      if ( hessianType == "analytic" ||
-           ( hessianType == "mixed" && contains(hessIdAnalytic, i+1) ) )
-        map_asv_out[i] |= 4; // activate 3rd bit
-      else if ( hessianType == "numerical" ||
-                ( hessianType == "mixed" && contains(hessIdNumerical, i+1) ) ) {
-        if ( gradientType == "analytic" ||
-             ( gradientType == "mixed" && contains(gradIdAnalytic, i+1) ) ) {
+      if (hessianType == "analytic" ||
+          (hessianType == "mixed" && contains(hessIdAnalytic, i + 1)))
+        map_asv_out[i] |= 4;  // activate 3rd bit
+      else if (hessianType == "numerical" ||
+               (hessianType == "mixed" && contains(hessIdNumerical, i + 1))) {
+        if (gradientType == "analytic" ||
+            (gradientType == "mixed" && contains(gradIdAnalytic, i + 1))) {
           // numerical Hessians from 1st-order gradient differences
           fd_hess_asv_out[i] = 2;
-          map_asv_out[i] |= 2; // activate 2nd bit
-        }
-        else { // numerical Hessians from 2nd-order function differences
+          map_asv_out[i] |= 2;  // activate 2nd bit
+        } else {  // numerical Hessians from 2nd-order function differences
           fd_hess_asv_out[i] = 1;
-          map_asv_out[i] |= 1; // activate 1st bit
+          map_asv_out[i] |= 1;  // activate 1st bit
         }
         use_est_deriv = true;
-      }
-      else if ( hessianType == "quasi" ||
-                (hessianType == "mixed" && contains(hessIdQuasi, i+1))) {
-        quasi_hess_asv_out[i] = 2; // value not currently used
-        use_est_deriv = true; // update_response needed even if no secant update
-      }
-      else { // could happen if an iterator requiring Hessians is selected
+      } else if (hessianType == "quasi" ||
+                 (hessianType == "mixed" && contains(hessIdQuasi, i + 1))) {
+        quasi_hess_asv_out[i] = 2;  // value not currently used
+        use_est_deriv =
+            true;  // update_response needed even if no secant update
+      } else {     // could happen if an iterator requiring Hessians is selected
         // with no_hessians and it lacks a separate error check.
         Cerr << "Error: Model '" << model_id()
              << "' received unsupported Hessian request from ASV in "
@@ -3042,60 +3084,56 @@ bool Model::manage_asv(const ActiveSet& original_set, ShortArray& map_asv_out,
 
   // Depending on bounds-respecting differencing, finite difference gradients
   // may require f(x0).  The following computes the step and updates shortStep.
-  if (fd_grad_flag && !ignoreBounds) { // protect call to forward_grad_step
+  if (fd_grad_flag && !ignoreBounds) {  // protect call to forward_grad_step
     size_t num_deriv_vars = orig_dvv.size();
 
     // define lower/upper bounds for finite differencing and cv_ids
     RealVector x0, fd_lb, fd_ub;
-    bool active_derivs, inactive_derivs; // derivs w.r.t. {active,inactive} vars
-    SizetMultiArrayConstView cv_ids = 
-      initialize_x0_bounds(orig_dvv, active_derivs, inactive_derivs, x0,
-			   fd_lb, fd_ub);
+    bool active_derivs,
+        inactive_derivs;  // derivs w.r.t. {active,inactive} vars
+    SizetMultiArrayConstView cv_ids = initialize_x0_bounds(
+        orig_dvv, active_derivs, inactive_derivs, x0, fd_lb, fd_ub);
 
     // Accumulate short step over all derivative variables
     bool short_step = false;
-    for (size_t j=0; j<num_deriv_vars; j++) {
+    for (size_t j = 0; j < num_deriv_vars; j++) {
       size_t xj_index = find_index(cv_ids, orig_dvv[j]);
       Real x0_j = x0[xj_index], lb_j = fd_lb[j], ub_j = fd_ub[j];
-      
+
       // NOTE: resets shortStep to false for each variable
       Real h = forward_grad_step(num_deriv_vars, xj_index, x0_j, lb_j, ub_j);
-      if (intervalType == "central")
-        Real h2 = FDstep2(x0_j, lb_j, ub_j, h);
-      
-      if (shortStep)
-        short_step = true;
+      if (intervalType == "central") Real h2 = FDstep2(x0_j, lb_j, ub_j, h);
+
+      if (shortStep) short_step = true;
     }
-    
+
     // update ASV with f(x0) requests needed for shortStep
-    for (i=0; i<asv_len; ++i)
-      if ( (fd_grad_asv_out[i] & 1) && short_step) 
-        map_asv_out[i] |= 1; // activate 1st bit
+    for (i = 0; i < asv_len; ++i)
+      if ((fd_grad_asv_out[i] & 1) && short_step)
+        map_asv_out[i] |= 1;  // activate 1st bit
   }
 
   return use_est_deriv;
 }
 
-
 /** Constructor helper to manage model recastings for data import/export. */
-bool Model::manage_data_recastings()
-{
+bool Model::manage_data_recastings() {
   // Test for any recasting or nesting within actualModel: we assume that
   // user data import is post-nesting, but pre-recast.
   // (1) data is imported at the user-space level but then must be applied
   //     within the transformed space.  Transform imported data at run time
   //     in order to capture latest initialize() calls to RecastModels.
   // (2) stop the recursion if a nested model is encountered: we will apply
-  //     any recastings that occur following the last nesting. 
+  //     any recastings that occur following the last nesting.
   // (3) Additional surrogates in this recursion hierarchy are ignored.
-  ModelList& sub_models = subordinate_models(); // populates/returns modelList
+  ModelList& sub_models = subordinate_models();  // populates/returns modelList
   bool manage_recasting = false;
   recastFlags.assign(sub_models.size(), false);
   // detect recasting needs top down
   size_t i{};
-  for(auto& sm : sub_models) {
+  for (auto& sm : sub_models) {
     const String& m_type = sm->model_type();
-    if (m_type == "recast" || // covers Scaling,Weighting,DataTransform
+    if (m_type == "recast" ||  // covers Scaling,Weighting,DataTransform
         m_type == "probability_transform")
       manage_recasting = recastFlags[i] = true;
     else if (m_type == "nested")
@@ -3107,398 +3145,323 @@ bool Model::manage_data_recastings()
   return manage_recasting;
 }
 
-
-void Model::user_space_to_iterator_space(Variables& vars)
-{
+void Model::user_space_to_iterator_space(Variables& vars) {
   // apply recastings bottom up (e.g., for data import)
   // modelList assigned in manage_data_recastings() -> subordinate_models()
   // (don't want to incur this overhead for every import/export)
-  Variables prev_vars = vars; // shallow copy / shared rep
-  size_t i{modelList.size()-1};
-  for (auto ml_rit = modelList.rbegin();
-      ml_rit!=modelList.rend(); ++ml_rit, --i) {
+  Variables prev_vars = vars;  // shallow copy / shared rep
+  size_t i{modelList.size() - 1};
+  for (auto ml_rit = modelList.rbegin(); ml_rit != modelList.rend();
+       ++ml_rit, --i) {
     if (recastFlags[i]) {
-      Variables recast_vars = (*ml_rit)->current_variables(); // shallow copy
+      Variables recast_vars = (*ml_rit)->current_variables();  // shallow copy
       // to propagate vars bottom up, inverse of std transform is reqd
       auto recast_model = std::static_pointer_cast<RecastModel>(*ml_rit);
       // mappings handle view differences:
       recast_model->inverse_transform_variables(prev_vars, recast_vars);
-      prev_vars = recast_vars; // reassign rep (original vars unmodified)
+      prev_vars = recast_vars;  // reassign rep (original vars unmodified)
     }
   }
   // Allow update in view from user-space to iterator-space:
-  //vars = prev_vars.copy(); // don't share rep with last recast_vars
+  // vars = prev_vars.copy(); // don't share rep with last recast_vars
   // Preserve original user-space view:
   vars.map_variables_by_view(prev_vars);
 }
 
-
-void Model::
-user_space_to_iterator_space(const Variables& user_vars,
-			     const Response&  user_resp,
-			     Variables& iter_vars, Response& iter_resp)
-{
-
-  Variables prev_vars = user_vars; // shallow copy / shared rep
-  Response  prev_resp = user_resp; // shallow copy / shared rep
+void Model::user_space_to_iterator_space(const Variables& user_vars,
+                                         const Response& user_resp,
+                                         Variables& iter_vars,
+                                         Response& iter_resp) {
+  Variables prev_vars = user_vars;  // shallow copy / shared rep
+  Response prev_resp = user_resp;   // shallow copy / shared rep
 
   // apply recastings bottom up (e.g., for data import)
   // modelList assigned in manage_data_recastings() -> subordinate_models()
   size_t i = modelList.size() - 1;
-  for (auto ml_rit =modelList.rbegin();
-        ml_rit!=modelList.rend(); ++ml_rit, --i) {
+  for (auto ml_rit = modelList.rbegin(); ml_rit != modelList.rend();
+       ++ml_rit, --i) {
     if (recastFlags[i]) {
       // utilize RecastModel::current{Variables,Response} to xform data
-      Variables recast_vars = (*ml_rit)->current_variables(); // shallow copy
-      Response  recast_resp = (*ml_rit)->current_response();  // shallow copy
-      ActiveSet recast_set  = recast_resp.active_set();    // copy
+      Variables recast_vars = (*ml_rit)->current_variables();  // shallow copy
+      Response recast_resp = (*ml_rit)->current_response();    // shallow copy
+      ActiveSet recast_set = recast_resp.active_set();         // copy
       // to propagate vars bottom up, inverse of std transform is reqd
-      auto recast_model =
-        std::static_pointer_cast<RecastModel>(*ml_rit);
+      auto recast_model = std::static_pointer_cast<RecastModel>(*ml_rit);
       recast_model->inverse_transform_variables(prev_vars, recast_vars);
-      recast_model->inverse_transform_set(prev_vars,
-        prev_resp.active_set(), recast_set);
+      recast_model->inverse_transform_set(prev_vars, prev_resp.active_set(),
+                                          recast_set);
       // to propagate response bottom up, std transform is used
       recast_resp.active_set(recast_set);
-      recast_model->transform_response(recast_vars, prev_vars,
-            prev_resp, recast_resp);
-      prev_vars = recast_vars; // reassign rep (original user_vars unmodified)
-      prev_resp = recast_resp; // reassign rep (original user_resp unmodified)
+      recast_model->transform_response(recast_vars, prev_vars, prev_resp,
+                                       recast_resp);
+      prev_vars = recast_vars;  // reassign rep (original user_vars unmodified)
+      prev_resp = recast_resp;  // reassign rep (original user_resp unmodified)
     }
   }
   // don't share reps with last recast_{vars,resp}
-  if (iter_vars.is_null()) iter_vars = prev_vars.copy();
-  else                     iter_vars.map_variables_by_view(prev_vars);
-  if (iter_resp.is_null()) iter_resp = prev_resp.copy();
-  else                     iter_resp.update(prev_resp);
+  if (iter_vars.is_null())
+    iter_vars = prev_vars.copy();
+  else
+    iter_vars.map_variables_by_view(prev_vars);
+  if (iter_resp.is_null())
+    iter_resp = prev_resp.copy();
+  else
+    iter_resp.update(prev_resp);
 }
 
-
-void Model::
-iterator_space_to_user_space(Variables& vars)
-{
+void Model::iterator_space_to_user_space(Variables& vars) {
   // apply recastings top down (e.g., for data export)
   // modelList assigned in manage_data_recastings() -> subordinate_models()
   // (don't want to incur this overhead for every import/export)
-  Variables prev_vars = vars; // shallow copy / shared rep
+  Variables prev_vars = vars;  // shallow copy / shared rep
   size_t i{};
-  for(auto& sm : modelList) {
-  //for (ml_it=modelList.begin(), i=0; ml_it!=modelList.end(); ++ml_it, ++i) {
+  for (auto& sm : modelList) {
+    // for (ml_it=modelList.begin(), i=0; ml_it!=modelList.end(); ++ml_it, ++i)
+    // {
     if (recastFlags[i]) {
       // utilize RecastModel::current{Variables,Response} to xform data
-      Variables recast_vars = sm->current_variables(); // shallow copy
+      Variables recast_vars = sm->current_variables();  // shallow copy
       // to propagate vars top down, forward transform is reqd
-      auto recast_model =
-        std::static_pointer_cast<RecastModel>(sm);
+      auto recast_model = std::static_pointer_cast<RecastModel>(sm);
       recast_model->transform_variables(prev_vars, recast_vars);
-      prev_vars = recast_vars; // reassign rep (original vars unmodified)
+      prev_vars = recast_vars;  // reassign rep (original vars unmodified)
     }
     ++i;
   }
   // Allow update in view from iterator-space to user-space:
-  //vars = prev_vars.copy(); // don't share rep with last recast_vars
+  // vars = prev_vars.copy(); // don't share rep with last recast_vars
   // Preserve original iterator-space view:
   vars.map_variables_by_view(prev_vars);
 }
 
-
-void Model::
-iterator_space_to_user_space(const Variables& iter_vars,
-			     const Response&  iter_resp,
-			     Variables& user_vars, Response& user_resp)
-{
-  Variables prev_vars = iter_vars; // shallow copy / shared rep
-  Response  prev_resp = iter_resp; // shallow copy / shared rep
+void Model::iterator_space_to_user_space(const Variables& iter_vars,
+                                         const Response& iter_resp,
+                                         Variables& user_vars,
+                                         Response& user_resp) {
+  Variables prev_vars = iter_vars;  // shallow copy / shared rep
+  Response prev_resp = iter_resp;   // shallow copy / shared rep
 
   // apply recastings top down (e.g., for data export)
   // modelList assigned in manage_data_recastings() -> subordinate_models()
   size_t i{};
-  for(auto& sm : modelList) {
-  //for (ml_it=modelList.begin(), i=0; ml_it!=modelList.end(); ++ml_it, ++i) {
+  for (auto& sm : modelList) {
+    // for (ml_it=modelList.begin(), i=0; ml_it!=modelList.end(); ++ml_it, ++i)
+    // {
     if (recastFlags[i]) {
       // utilize RecastModel::current{Variables,Response} to xform data
-      Variables recast_vars = sm->current_variables(); // shallow copy
-      Response  recast_resp = sm->current_response();  // shallow copy
-      ActiveSet recast_set  = recast_resp.active_set();   // copy
+      Variables recast_vars = sm->current_variables();  // shallow copy
+      Response recast_resp = sm->current_response();    // shallow copy
+      ActiveSet recast_set = recast_resp.active_set();  // copy
       // to propagate vars top down, forward transform is reqd
-      auto recast_model =
-        std::static_pointer_cast<RecastModel>(sm);
+      auto recast_model = std::static_pointer_cast<RecastModel>(sm);
       recast_model->transform_variables(prev_vars, recast_vars);
       recast_model->transform_set(prev_vars, prev_resp.active_set(),
-                    recast_set);
+                                  recast_set);
       // to propagate response top down, inverse transform is used.  Note:
       // derivatives are not currently exported --> a no-op for Nataf.
       recast_resp.active_set(recast_set);
       recast_model->inverse_transform_response(recast_vars, prev_vars,
-                    prev_resp, recast_resp);
-      prev_vars = recast_vars; // reassign rep (original user_vars unmodified)
-      prev_resp = recast_resp; // reassign rep (original user_resp unmodified)
+                                               prev_resp, recast_resp);
+      prev_vars = recast_vars;  // reassign rep (original user_vars unmodified)
+      prev_resp = recast_resp;  // reassign rep (original user_resp unmodified)
     }
     ++i;
   }
   // don't share reps with last recast_{vars,resp}
-  if (user_vars.is_null()) user_vars = prev_vars.copy();
-  else                     user_vars.map_variables_by_view(prev_vars);
-  if (user_resp.is_null()) user_resp = prev_resp.copy();
-  else                     user_resp.update(prev_resp);
-
+  if (user_vars.is_null())
+    user_vars = prev_vars.copy();
+  else
+    user_vars.map_variables_by_view(prev_vars);
+  if (user_resp.is_null())
+    user_resp = prev_resp.copy();
+  else
+    user_resp.update(prev_resp);
 }
 
-
-void Model::derived_evaluate(const ActiveSet& set)
-{
+void Model::derived_evaluate(const ActiveSet& set) {
   Cerr << "Error: Letter lacking redefinition of virtual derived_compute_"
-        << "response() function.\nNo default defined at base class."
-  << std::endl;
+       << "response() function.\nNo default defined at base class."
+       << std::endl;
   abort_handler(MODEL_ERROR);
 }
 
-
-void Model::derived_evaluate_nowait(const ActiveSet& set)
-{
+void Model::derived_evaluate_nowait(const ActiveSet& set) {
   Cerr << "Error: Letter lacking redefinition of virtual derived_asynch_"
-        << "evaluate() function.\nNo default defined at base class."
-        << std::endl;
+       << "evaluate() function.\nNo default defined at base class."
+       << std::endl;
   abort_handler(MODEL_ERROR);
 }
 
-
-const IntResponseMap& Model::derived_synchronize()
-{
+const IntResponseMap& Model::derived_synchronize() {
   Cerr << "Error: Letter lacking redefinition of virtual derived_synchronize"
-        << "() function.\n       derived_synchronize is not available for this"
-        << " Model." << std::endl;
+       << "() function.\n       derived_synchronize is not available for this"
+       << " Model." << std::endl;
   abort_handler(MODEL_ERROR);
-  throw MODEL_ERROR; // never reached; prevents MSVS from squawking about lack of function return
+  throw MODEL_ERROR;  // never reached; prevents MSVS from squawking about lack
+                      // of function return
 }
 
-
-const IntResponseMap& Model::derived_synchronize_nowait()
-{
+const IntResponseMap& Model::derived_synchronize_nowait() {
   Cerr << "Error: Letter lacking redefinition of virtual derived_synchronize"
-      << "_nowait() function.\n       derived_synchronize_nowait is not "
-      << "available for this Model." << std::endl;
-    abort_handler(MODEL_ERROR);
-  throw MODEL_ERROR; // never reached; prevents MSVS from squawking about lack of function return
+       << "_nowait() function.\n       derived_synchronize_nowait is not "
+       << "available for this Model." << std::endl;
+  abort_handler(MODEL_ERROR);
+  throw MODEL_ERROR;  // never reached; prevents MSVS from squawking about lack
+                      // of function return
 }
 
-
-bool Model::derived_scheduler_overload() const
-{
-  return false; // default for Surrogate models
+bool Model::derived_scheduler_overload() const {
+  return false;  // default for Surrogate models
 }
 
-
-void Model::create_2d_plots()
-{
+void Model::create_2d_plots() {
   parallelLib.output_manager().graphics().create_plots_2d(currentVariables,
-							    currentResponse);
+                                                          currentResponse);
 }
 
-
-void Model::create_tabular_datastream()
-{
+void Model::create_tabular_datastream() {
   OutputManager& mgr = parallelLib.output_manager();
   mgr.open_tabular_datastream();
   mgr.create_tabular_header(currentVariables, currentResponse);
 }
 
-
-void Model::
-derived_auto_graphics(const Variables& vars, const Response& resp)
-{
+void Model::derived_auto_graphics(const Variables& vars, const Response& resp) {
   parallelLib.output_manager().add_tabular_data(vars, interface_id(), resp);
 }
 
+/** return by reference requires use of dummy objects, but is
+    important to allow use of assign_rep() since this operation must
+    be performed on the original envelope object. */
+std::shared_ptr<Iterator> Model::subordinate_iterator() {
+  return nullptr;  // return null/empty envelope
+}
 
 /** return by reference requires use of dummy objects, but is
     important to allow use of assign_rep() since this operation must
     be performed on the original envelope object. */
-std::shared_ptr<Iterator> Model::subordinate_iterator()
-{
-  return nullptr; // return null/empty envelope
+std::shared_ptr<Model> Model::subordinate_model() {
+  return nullptr;  // return null/empty envelope
 }
 
-
-/** return by reference requires use of dummy objects, but is
-    important to allow use of assign_rep() since this operation must
-    be performed on the original envelope object. */
-std::shared_ptr<Model> Model::subordinate_model()
-{
-  return nullptr; // return null/empty envelope
-}
-
-
-void Model::active_model_key(const Pecos::ActiveKey& key)
-{
+void Model::active_model_key(const Pecos::ActiveKey& key) {
   Cerr << "Error: Letter lacking redefinition of virtual active_model_key() "
-      << "function.\n       model key activation is not supported by this "
-      << "Model class." << std::endl;
+       << "function.\n       model key activation is not supported by this "
+       << "Model class." << std::endl;
   abort_handler(MODEL_ERROR);
 }
 
-
-const Pecos::ActiveKey& Model::active_model_key() const
-{
+const Pecos::ActiveKey& Model::active_model_key() const {
   Cerr << "Error: Letter lacking redefinition of virtual active_model_key() "
-      << "function.\n       model keys are not available from this Model "
-      << "class." << std::endl;
+       << "function.\n       model keys are not available from this Model "
+       << "class." << std::endl;
   abort_handler(MODEL_ERROR);
-  throw MODEL_ERROR; // never reached; prevents MSVS from squawking about lack of function return
+  throw MODEL_ERROR;  // never reached; prevents MSVS from squawking about lack
+                      // of function return
 }
 
+void Model::clear_model_keys() { /* NO OP*/ }
 
-void Model::clear_model_keys()
-{ /* NO OP*/ }
-
-
-size_t Model::qoi() const
-{
-  return current_response().num_functions();
-}
-
+size_t Model::qoi() const { return current_response().num_functions(); }
 
 /** return by reference requires use of dummy objects, but is
     important to allow use of assign_rep() since this operation must
     be performed on the original envelope object. */
-std::shared_ptr<Model> Model::surrogate_model(size_t i)
-{
-  return nullptr; // default is no surrogate -> return empty envelope
+std::shared_ptr<Model> Model::surrogate_model(size_t i) {
+  return nullptr;  // default is no surrogate -> return empty envelope
 }
 
-
-std::shared_ptr<const Model> Model::surrogate_model(size_t i) const
-{
+std::shared_ptr<const Model> Model::surrogate_model(size_t i) const {
   return nullptr;
 }
 
+/** return by reference requires use of dummy objects, but is
+    important to allow use of assign_rep() since this operation must
+    be performed on the original envelope object. */
+std::shared_ptr<Model> Model::truth_model() {
+  return nullptr;  // default is no surrogate -> return nullptr
+}
+
+std::shared_ptr<const Model> Model::truth_model() const {
+  return nullptr;  // default is no surrogate -> return nullptr
+}
+
+unsigned short Model::active_surrogate_model_form(size_t i) const {
+  return 0;  // default (two models)
+}
+
+unsigned short Model::active_truth_model_form() const {
+  return 1;  // default (two models)
+}
 
 /** return by reference requires use of dummy objects, but is
     important to allow use of assign_rep() since this operation must
     be performed on the original envelope object. */
-std::shared_ptr<Model> Model::truth_model()
-{
-  return nullptr; // default is no surrogate -> return nullptr
+std::shared_ptr<Model> Model::active_surrogate_model(size_t i) {
+  return surrogate_model(i);  // default is no active distinction
 }
 
-
-std::shared_ptr<const Model> Model::truth_model() const
-{
-  return nullptr; // default is no surrogate -> return nullptr
+std::shared_ptr<const Model> Model::active_surrogate_model(size_t i) const {
+  return surrogate_model(i);  // default is no active distinction
 }
-
-
-unsigned short Model::active_surrogate_model_form(size_t i) const
-{
-  return 0; // default (two models)
-}
-
-
-unsigned short Model::active_truth_model_form() const
-{
-  return 1; // default (two models)
-}
-
 
 /** return by reference requires use of dummy objects, but is
     important to allow use of assign_rep() since this operation must
     be performed on the original envelope object. */
-std::shared_ptr<Model> Model::active_surrogate_model(size_t i)
-{
-  return surrogate_model(i); // default is no active distinction
+std::shared_ptr<Model> Model::active_truth_model() {
+  return truth_model();  // default is no active distinction
 }
 
-
-std::shared_ptr<const Model> Model::active_surrogate_model(size_t i) const
-{
-  return surrogate_model(i); // default is no active distinction
+std::shared_ptr<const Model> Model::active_truth_model() const {
+  return truth_model();  // default is no active distinction
 }
 
-
-/** return by reference requires use of dummy objects, but is
-    important to allow use of assign_rep() since this operation must
-    be performed on the original envelope object. */
-std::shared_ptr<Model> Model::active_truth_model()
-{
-  return truth_model(); // default is no active distinction
+bool Model::active_truth_key() const {
+  return true;  // mirror active_truth_model() default (DFSModel::actualModel)
 }
 
-
-std::shared_ptr<const Model> Model::active_truth_model() const
-{
-  return truth_model(); // default is no active distinction
+size_t Model::active_surrogate_keys() const {
+  return 1;  // mirror active_surrogate_model() default (for DFSModel)
 }
 
-
-bool Model::active_truth_key() const
-{
-  return true; // mirror active_truth_model() default (DFSModel::actualModel)
+bool Model::multifidelity() const {
+  return false;  // default
 }
 
-
-size_t Model::active_surrogate_keys() const
-{
-  return 1; // mirror active_surrogate_model() default (for DFSModel)
+bool Model::multilevel() const {
+  return false;  // default
 }
 
-
-bool Model::multifidelity() const
-{
-  return false; // default
+bool Model::multilevel_multifidelity() const {
+  return false;  // default
 }
 
+short Model::ensemble_precedence() const { return DEFAULT_PRECEDENCE; }
 
-bool Model::multilevel() const
-{
-  return false; // default
-}
-
-
-bool Model::multilevel_multifidelity() const
-{
-  return false; // default
-}
-
-
-short Model::ensemble_precedence() const
-{
-  return DEFAULT_PRECEDENCE;
-}
-
-
-void Model::ensemble_precedence(short mlmf_prec, bool update_default)
-{
+void Model::ensemble_precedence(short mlmf_prec, bool update_default) {
   Cerr << "Error: Letter lacking redefinition of virtual ensemble_precedence"
-  	 << "() function.\n       ensemble precedence is not supported by this "
-	   << "Model class." << std::endl;
+       << "() function.\n       ensemble precedence is not supported by this "
+       << "Model class." << std::endl;
   abort_handler(MODEL_ERROR);
 }
-
 
 /** since modelList is built with list insertions (using envelope
     copies), these models may not be used for model.assign_rep() since
     this operation must be performed on the original envelope object.
     They may, however, be used for letter-based operations (including
     assign_rep() on letter contents such as an interface). */
-ModelList& Model::subordinate_models(bool recurse_flag)
-{
+ModelList& Model::subordinate_models(bool recurse_flag) {
   modelList.clear();
   derived_subordinate_models(modelList, recurse_flag);
   return modelList;
 }
 
-
-void Model::derived_subordinate_models(ModelList& ml, bool recurse_flag)
-{
+void Model::derived_subordinate_models(ModelList& ml, bool recurse_flag) {
   // NO OP
 }
 
-
-void Model::resize_from_subordinate_model(size_t depth)
-{
+void Model::resize_from_subordinate_model(size_t depth) {
   // NO OP
 }
-
 
 /** used only for instantiate-on-the-fly model recursions (all RecastModel
     instantiations and alternate DataFitSurrModel instantiations).  Simulation,
@@ -3507,499 +3470,397 @@ void Model::resize_from_subordinate_model(size_t depth)
     will stop as soon as it encounters a Model that was instantiated normally,
     which is appropriate since ProblemDescDB-constructed Models use top-down
     information flow and do not require bottom-up updating. */
-void Model::update_from_subordinate_model(size_t depth)
-{
+void Model::update_from_subordinate_model(size_t depth) {
   // NO OP
 }
-
 
 /** return by reference requires use of dummy objects, but is
     important to allow use of assign_rep() since this operation must
     be performed on the original envelope object. */
-std::shared_ptr<Interface> Model::derived_interface()
-{
+std::shared_ptr<Interface> Model::derived_interface() {
   return std::shared_ptr<Interface>(nullptr);
 }
 
-
-void Model::derived_interface(std::shared_ptr<Interface> di)
-{
+void Model::derived_interface(std::shared_ptr<Interface> di) {
   // no-op
 }
 
 /** return the number of levels within a solution / discretization hierarchy. */
-size_t Model::solution_levels() const
-{
-  return 1; // default (see SimulationModel::
-            // initialize_solution_control())
+size_t Model::solution_levels() const {
+  return 1;  // default (see SimulationModel::
+             // initialize_solution_control())
 }
 
-
 /** activate a particular level within a solution / discretization hierarchy. */
-void Model::solution_level_cost_index(size_t index)
-{
+void Model::solution_level_cost_index(size_t index) {
   if (index != _NPOS) {
     // letter lacking redefinition of virtual fn (for case that requires fwd)
     Cerr << "Error: Letter lacking redefinition of virtual solution_level_"
-	    << "cost_index() function.\n       solution_level_cost_index is not "
-	    << "supported by this Model class." << std::endl;
+         << "cost_index() function.\n       solution_level_cost_index is not "
+         << "supported by this Model class." << std::endl;
     abort_handler(MODEL_ERROR);
   }
 }
 
-
-size_t Model::solution_level_cost_index() const
-{
-  return _NPOS; // not defined (default)
+size_t Model::solution_level_cost_index() const {
+  return _NPOS;  // not defined (default)
 }
 
-
-RealVector Model::solution_level_costs() const
-{
+RealVector Model::solution_level_costs() const {
   Cerr << "Error: Letter lacking redefinition of virtual solution_level_costs"
-      << "() function.\n       solution_level_costs is not supported by "
-	    << "this Model class." << std::endl;
+       << "() function.\n       solution_level_costs is not supported by "
+       << "this Model class." << std::endl;
   abort_handler(MODEL_ERROR);
-  throw MODEL_ERROR; // never reached; prevents MSVS from squawking about lack of function return
+  throw MODEL_ERROR;  // never reached; prevents MSVS from squawking about lack
+                      // of function return
 }
 
-
-Real Model::solution_level_cost() const
-{
+Real Model::solution_level_cost() const {
   Cerr << "Error: Letter lacking redefinition of virtual solution_level_cost"
-      << "() function.\n       solution_level_cost is not supported by this "
-      << "Model class." << std::endl;
+       << "() function.\n       solution_level_cost is not supported by this "
+       << "Model class." << std::endl;
   abort_handler(MODEL_ERROR);
-  throw MODEL_ERROR; // never reached; prevents MSVS from squawking about lack of function return
+  throw MODEL_ERROR;  // never reached; prevents MSVS from squawking about lack
+                      // of function return
 }
 
-
-short Model::solution_control_variable_type() const
-{
-  
+short Model::solution_control_variable_type() const {
   Cerr << "Error: Letter lacking redefinition of virtual solution_control_"
-      << "variable_type() function.\n       solution_control_variable_"
-      << "type() is not supported by this Model class." << std::endl;
+       << "variable_type() function.\n       solution_control_variable_"
+       << "type() is not supported by this Model class." << std::endl;
   abort_handler(MODEL_ERROR);
-  throw MODEL_ERROR; // never reached; prevents MSVS from squawking about lack of function return
+  throw MODEL_ERROR;  // never reached; prevents MSVS from squawking about lack
+                      // of function return
 }
 
-
-size_t Model::solution_control_variable_index() const
-{
-
+size_t Model::solution_control_variable_index() const {
   Cerr << "Error: Letter lacking redefinition of virtual solution_control_"
-	    << "variable_index() function.\n       solution_control_variable_"
-	    << "index() is not supported by this Model class." << std::endl;
-    abort_handler(MODEL_ERROR);
-  throw MODEL_ERROR; // never reached; prevents MSVS from squawking about lack of function return
+       << "variable_index() function.\n       solution_control_variable_"
+       << "index() is not supported by this Model class." << std::endl;
+  abort_handler(MODEL_ERROR);
+  throw MODEL_ERROR;  // never reached; prevents MSVS from squawking about lack
+                      // of function return
 }
 
-
-size_t Model::solution_control_discrete_variable_index() const
-{
+size_t Model::solution_control_discrete_variable_index() const {
   Cerr << "Error: Letter lacking redefinition of virtual solution_control_"
-      << "discrete_variable_index() function.\n       solution_control_"
-	    << "discrete_variable_index() is not supported by this Model class."
-	    << std::endl;
-    abort_handler(MODEL_ERROR);
-  throw MODEL_ERROR; // never reached; prevents MSVS from squawking about lack of function return
-}
-
-
-int Model::solution_level_int_value() const
-{
-  Cerr << "Error: Letter lacking redefinition of virtual solution_level_"
-      << "int_value() function.\n       solution_level_int_value is not "
-	    << "supported by this Model class." << std::endl;
+       << "discrete_variable_index() function.\n       solution_control_"
+       << "discrete_variable_index() is not supported by this Model class."
+       << std::endl;
   abort_handler(MODEL_ERROR);
-  throw MODEL_ERROR; // never reached; prevents MSVS from squawking about lack of function return
+  throw MODEL_ERROR;  // never reached; prevents MSVS from squawking about lack
+                      // of function return
 }
 
-
-String Model::solution_level_string_value() const
-{
+int Model::solution_level_int_value() const {
   Cerr << "Error: Letter lacking redefinition of virtual solution_level_"
-      << "string_value() function.\n       solution_level_string_value is "
-      << "not supported by this Model class." << std::endl;
+       << "int_value() function.\n       solution_level_int_value is not "
+       << "supported by this Model class." << std::endl;
   abort_handler(MODEL_ERROR);
-  throw MODEL_ERROR; // never reached; prevents MSVS from squawking about lack of function return
+  throw MODEL_ERROR;  // never reached; prevents MSVS from squawking about lack
+                      // of function return
 }
 
-
-Real Model::solution_level_real_value() const
-{
+String Model::solution_level_string_value() const {
   Cerr << "Error: Letter lacking redefinition of virtual solution_level_"
-	    << "real_value() function.\n       solution_level_real_value is not "
-	    << "supported by this Model class." << std::endl;
+       << "string_value() function.\n       solution_level_string_value is "
+       << "not supported by this Model class." << std::endl;
   abort_handler(MODEL_ERROR);
-  throw MODEL_ERROR; // never reached; prevents MSVS from squawking about lack of function return
+  throw MODEL_ERROR;  // never reached; prevents MSVS from squawking about lack
+                      // of function return
 }
 
+Real Model::solution_level_real_value() const {
+  Cerr << "Error: Letter lacking redefinition of virtual solution_level_"
+       << "real_value() function.\n       solution_level_real_value is not "
+       << "supported by this Model class." << std::endl;
+  abort_handler(MODEL_ERROR);
+  throw MODEL_ERROR;  // never reached; prevents MSVS from squawking about lack
+                      // of function return
+}
 
-size_t Model::cost_metadata_index() const
-{
+size_t Model::cost_metadata_index() const {
   Cerr << "Error: Letter lacking redefinition of virtual cost_metadata_index"
-	    << "() function.\n       cost_metadata_index() is not supported by "
-	    << "this Model class." << std::endl;
+       << "() function.\n       cost_metadata_index() is not supported by "
+       << "this Model class." << std::endl;
   abort_handler(MODEL_ERROR);
-  throw MODEL_ERROR; // never reached; prevents MSVS from squawking about lack of function return
+  throw MODEL_ERROR;  // never reached; prevents MSVS from squawking about lack
+                      // of function return
 }
-
 
 /** return by reference requires use of dummy objects, but is
     important to allow use of assign_rep() since this operation must
     be performed on the original envelope object. */
-const String& Model::interface_id() const
-{
-  return ModelUtils::empty_string;
-}
+const String& Model::interface_id() const { return ModelUtils::empty_string; }
 
-
-void Model::
-primary_response_fn_weights(const RealVector& wts, bool recurse_flag)
-{
+void Model::primary_response_fn_weights(const RealVector& wts,
+                                        bool recurse_flag) {
   primaryRespFnWts = wts;
 }
 
-
-void Model::surrogate_function_indices(const SizetSet& surr_fn_indices)
-{
+void Model::surrogate_function_indices(const SizetSet& surr_fn_indices) {
   // NO OP
 }
-
 
 /** This function assumes derivatives with respect to the active
     continuous variables.  Therefore, concurrency with respect to the
     inactive continuous variables is not captured. */
-int Model::derivative_concurrency() const
-{
+int Model::derivative_concurrency() const {
   int deriv_conc = 1;
-  if ( (gradientType=="numerical" || gradientType=="mixed") &&
-      methodSource == "dakota" )
-    deriv_conc += (intervalType == "central") ? 2*numDerivVars : numDerivVars;
-  if ( hessianType == "numerical" ||
-      ( hessianType == "mixed" && !hessIdNumerical.empty())) {
+  if ((gradientType == "numerical" || gradientType == "mixed") &&
+      methodSource == "dakota")
+    deriv_conc += (intervalType == "central") ? 2 * numDerivVars : numDerivVars;
+  if (hessianType == "numerical" ||
+      (hessianType == "mixed" && !hessIdNumerical.empty())) {
     if (gradientType == "analytic")
       deriv_conc += numDerivVars;
     else if (gradientType == "numerical")
-      deriv_conc += 2*numDerivVars*numDerivVars;
+      deriv_conc += 2 * numDerivVars * numDerivVars;
     else if (gradientType == "mixed") {
       bool first_order = false, second_order = false;
-      if (hessianType == "mixed") { // mixed Hessians with mixed gradients
-        for (ISCIter cit=hessIdNumerical.begin();
-          cit!=hessIdNumerical.end(); ++cit) {
+      if (hessianType == "mixed") {  // mixed Hessians with mixed gradients
+        for (ISCIter cit = hessIdNumerical.begin();
+             cit != hessIdNumerical.end(); ++cit) {
           if (contains(gradIdAnalytic, *cit))
-            first_order  = true;
+            first_order = true;
           else
             second_order = true;
         }
-      } else // numerical Hessians with mixed gradients
+      } else  // numerical Hessians with mixed gradients
         first_order = second_order = true;
       // First and second order differences are not mutually exclusive
       if (first_order)  // 1st-order forward gradient differences
         deriv_conc += numDerivVars;
-      if (second_order) // 2nd-order central function differences
-        deriv_conc += 2*numDerivVars*numDerivVars;
+      if (second_order)  // 2nd-order central function differences
+        deriv_conc += 2 * numDerivVars * numDerivVars;
     }
   }
   return deriv_conc;
 }
 
-
-Pecos::ProbabilityTransformation& Model::probability_transformation()
-{
+Pecos::ProbabilityTransformation& Model::probability_transformation() {
   Cerr << "Error: Letter lacking redefinition of virtual probability_"
-      << "transformation() function.\n       Probability transformations "
-      << "are not supported by this Model class." << std::endl;
+       << "transformation() function.\n       Probability transformations "
+       << "are not supported by this Model class." << std::endl;
   abort_handler(MODEL_ERROR);
-  throw MODEL_ERROR; // never reached; prevents MSVS from squawking about lack of function return
+  throw MODEL_ERROR;  // never reached; prevents MSVS from squawking about lack
+                      // of function return
 }
 
-
-bool Model::initialize_mapping(ParLevLIter pl_iter)
-{
+bool Model::initialize_mapping(ParLevLIter pl_iter) {
   // restore initial states for re-entrancy
-  currentResponse.reset(); // for completeness
+  currentResponse.reset();  // for completeness
   if (!warmStartFlag) {
     // Dakota::Variables does not support reset() since initial points are not
     // cached in Model/Variables -- they are generally (re)set from Iterator.
-    //currentVariables.reset(); // not supported
+    // currentVariables.reset(); // not supported
 
     if (!quasiHessians.empty()) {
-      for (size_t i=0; i<numFns; ++i)
-        quasiHessians[i] = 0.;
-      numQuasiUpdates.assign(numFns, 0);// {x,fnGrads}Prev will be overwritten
+      for (size_t i = 0; i < numFns; ++i) quasiHessians[i] = 0.;
+      numQuasiUpdates.assign(numFns, 0);  // {x,fnGrads}Prev will be overwritten
     }
   }
 
   mappingInitialized = true;
-  return false; // size did not change
+  return false;  // size did not change
 }
 
-
-bool Model::finalize_mapping()
-{
+bool Model::finalize_mapping() {
   mappingInitialized = false;
-  return false; // size did not change
+  return false;  // size did not change
 }
 
+bool Model::resize_pending() const { return false; }
 
-bool Model::resize_pending() const
-{
-  return false;
-}
-
-
-void Model::build_approximation()
-{
+void Model::build_approximation() {
   Cerr << "Error: Letter lacking redefinition of virtual build_approximation"
-      << "() function.\nThis model does not support approximation "
-	    << "construction." << std::endl;
+       << "() function.\nThis model does not support approximation "
+       << "construction." << std::endl;
   abort_handler(MODEL_ERROR);
 }
 
-
-bool Model::
-build_approximation(const Variables& vars, const IntResponsePair& response_pr)
-{
+bool Model::build_approximation(const Variables& vars,
+                                const IntResponsePair& response_pr) {
   Cerr << "Error: Letter lacking redefinition of virtual build_approximation"
        << "(Variables, IntResponsePair) function.\nThis model does not "
-    	 << "support constrained approximation construction." << std::endl;
-    abort_handler(MODEL_ERROR);
-  throw MODEL_ERROR; // never reached; prevents MSVS from squawking about lack of function return
+       << "support constrained approximation construction." << std::endl;
+  abort_handler(MODEL_ERROR);
+  throw MODEL_ERROR;  // never reached; prevents MSVS from squawking about lack
+                      // of function return
 }
 
-
-void Model::rebuild_approximation()
-{
-  build_approximation(); // default: build from scratch
+void Model::rebuild_approximation() {
+  build_approximation();  // default: build from scratch
 }
 
-
-void Model::rebuild_approximation(const IntResponsePair& response_pr)
-{
+void Model::rebuild_approximation(const IntResponsePair& response_pr) {
   Cerr << "Error: Letter lacking redefinition of virtual rebuild_"
-	    << "approximation(IntResponsePair) function.\nThis model does not "
-	    << "support approximation rebuilding." << std::endl;
+       << "approximation(IntResponsePair) function.\nThis model does not "
+       << "support approximation rebuilding." << std::endl;
   abort_handler(MODEL_ERROR);
 }
 
-
-void Model::rebuild_approximation(const IntResponseMap& resp_map)
-{
+void Model::rebuild_approximation(const IntResponseMap& resp_map) {
   Cerr << "Error: Letter lacking redefinition of virtual rebuild_"
-      << "approximation(IntResponseMap) function.\nThis model does not "
-	    << "support approximation rebuilding." << std::endl;
+       << "approximation(IntResponseMap) function.\nThis model does not "
+       << "support approximation rebuilding." << std::endl;
   abort_handler(MODEL_ERROR);
 }
 
-
-void Model::update_approximation(bool rebuild_flag)
-{
+void Model::update_approximation(bool rebuild_flag) {
   Cerr << "Error: Letter lacking redefinition of virtual update_"
-      << "approximation(bool) function.\nThis model does not support "
-	    << "approximation updating." << std::endl;
+       << "approximation(bool) function.\nThis model does not support "
+       << "approximation updating." << std::endl;
   abort_handler(MODEL_ERROR);
 }
 
-
-void Model::
-update_approximation(const Variables& vars, const IntResponsePair& response_pr,
-		     bool rebuild_flag)
-{
+void Model::update_approximation(const Variables& vars,
+                                 const IntResponsePair& response_pr,
+                                 bool rebuild_flag) {
   Cerr << "Error: Letter lacking redefinition of virtual update_approximation"
-      << "(Variables, IntResponsePair) function.\nThis model does not "
-	    << "support approximation updating." << std::endl;
+       << "(Variables, IntResponsePair) function.\nThis model does not "
+       << "support approximation updating." << std::endl;
   abort_handler(MODEL_ERROR);
 }
 
-
-void Model::
-update_approximation(const VariablesArray& vars_array,
-		     const IntResponseMap& resp_map, bool rebuild_flag)
-{
+void Model::update_approximation(const VariablesArray& vars_array,
+                                 const IntResponseMap& resp_map,
+                                 bool rebuild_flag) {
   Cerr << "Error: Letter lacking redefinition of virtual update_approximation"
-      << "(VariablesArray, IntResponseMap) function.\nThis model does not "
-      << "support approximation updating." << std::endl;
+       << "(VariablesArray, IntResponseMap) function.\nThis model does not "
+       << "support approximation updating." << std::endl;
   abort_handler(MODEL_ERROR);
 }
 
-
-void Model::
-update_approximation(const RealMatrix& samples, const IntResponseMap& resp_map,
-		     bool rebuild_flag)
-{
+void Model::update_approximation(const RealMatrix& samples,
+                                 const IntResponseMap& resp_map,
+                                 bool rebuild_flag) {
   Cerr << "Error: Letter lacking redefinition of virtual update_approximation"
-      << "(RealMatrix, IntResponseMap) function.\nThis model does not "
-      << "support approximation updating." << std::endl;
+       << "(RealMatrix, IntResponseMap) function.\nThis model does not "
+       << "support approximation updating." << std::endl;
   abort_handler(MODEL_ERROR);
 }
 
-
-void Model::append_approximation(bool rebuild_flag)
-{
+void Model::append_approximation(bool rebuild_flag) {
   Cerr << "Error: Letter lacking redefinition of virtual append_"
-      << "approximation(bool) function.\nThis model does not support "
-      << "approximation appending." << std::endl;
+       << "approximation(bool) function.\nThis model does not support "
+       << "approximation appending." << std::endl;
   abort_handler(MODEL_ERROR);
 }
 
-
-void Model::
-append_approximation(const Variables& vars, const IntResponsePair& response_pr,
-		     bool rebuild_flag)
-{
+void Model::append_approximation(const Variables& vars,
+                                 const IntResponsePair& response_pr,
+                                 bool rebuild_flag) {
   Cerr << "Error: Letter lacking redefinition of virtual append_approximation"
-      << "(Variables, IntResponsePair) function.\nThis model does not "
-	    << "support approximation appending." << std::endl;
+       << "(Variables, IntResponsePair) function.\nThis model does not "
+       << "support approximation appending." << std::endl;
   abort_handler(MODEL_ERROR);
 }
 
-
-void Model::
-append_approximation(const RealMatrix& samples, const IntResponseMap& resp_map,
-		     bool rebuild_flag)
-{
+void Model::append_approximation(const RealMatrix& samples,
+                                 const IntResponseMap& resp_map,
+                                 bool rebuild_flag) {
   Cerr << "Error: Letter lacking redefinition of virtual append_approximation"
-      << "(RealMatrix, IntResponseMap) function.\nThis model does not "
-      << "support approximation appending." << std::endl;
+       << "(RealMatrix, IntResponseMap) function.\nThis model does not "
+       << "support approximation appending." << std::endl;
   abort_handler(MODEL_ERROR);
 }
 
-
-void Model::
-append_approximation(const VariablesArray& vars_array,
-		     const IntResponseMap& resp_map, bool rebuild_flag)
-{
+void Model::append_approximation(const VariablesArray& vars_array,
+                                 const IntResponseMap& resp_map,
+                                 bool rebuild_flag) {
   Cerr << "Error: Letter lacking redefinition of virtual append_approximation"
-      << "(VariablesArray, IntResponseMap) function.\nThis model does not "
-      << "support approximation appending." << std::endl;
+       << "(VariablesArray, IntResponseMap) function.\nThis model does not "
+       << "support approximation appending." << std::endl;
   abort_handler(MODEL_ERROR);
 }
 
-
-void Model::
-append_approximation(const IntVariablesMap& vars_map,
-		     const IntResponseMap&  resp_map, bool rebuild_flag)
-{
+void Model::append_approximation(const IntVariablesMap& vars_map,
+                                 const IntResponseMap& resp_map,
+                                 bool rebuild_flag) {
   Cerr << "Error: Letter lacking redefinition of virtual append_approximation"
-      << "(IntVariablesMap, IntResponseMap) function.\nThis model does not "
-      << "support approximation appending." << std::endl;
+       << "(IntVariablesMap, IntResponseMap) function.\nThis model does not "
+       << "support approximation appending." << std::endl;
   abort_handler(MODEL_ERROR);
 }
 
-
-void Model::
-replace_approximation(const IntResponsePair& response_pr, bool rebuild_flag)
-{
+void Model::replace_approximation(const IntResponsePair& response_pr,
+                                  bool rebuild_flag) {
   Cerr << "Error: Letter lacking redefinition of virtual replace_"
-      << "approximation(IntResponsePair) function.\nThis model does not "
-	    << "support approximation data replacement." << std::endl;
+       << "approximation(IntResponsePair) function.\nThis model does not "
+       << "support approximation data replacement." << std::endl;
   abort_handler(MODEL_ERROR);
 }
 
-
-void Model::
-replace_approximation(const IntResponseMap& resp_map, bool rebuild_flag)
-{
+void Model::replace_approximation(const IntResponseMap& resp_map,
+                                  bool rebuild_flag) {
   Cerr << "Error: Letter lacking redefinition of virtual replace_"
-      << "approximation(IntResponseMap) function.\nThis model does not "
-      << "support approximation data replacement." << std::endl;
+       << "approximation(IntResponseMap) function.\nThis model does not "
+       << "support approximation data replacement." << std::endl;
   abort_handler(MODEL_ERROR);
 }
 
-
-void Model::track_evaluation_ids(bool track)
-{
+void Model::track_evaluation_ids(bool track) {
   Cerr << "Error: Letter lacking redefinition of virtual track_evaluation_"
-      << "ids() function.\n       This model does not support evaluation "
-	    << "tracking." << std::endl;
+       << "ids() function.\n       This model does not support evaluation "
+       << "tracking." << std::endl;
   abort_handler(MODEL_ERROR);
 }
 
-
-void Model::pop_approximation(bool save_surr_data, bool rebuild_flag)
-{
+void Model::pop_approximation(bool save_surr_data, bool rebuild_flag) {
   Cerr << "Error: Letter lacking redefinition of virtual pop_approximation"
-      << "(bool, bool) function.\n       This model does not support "
-      << "approximation data removal." << std::endl;
+       << "(bool, bool) function.\n       This model does not support "
+       << "approximation data removal." << std::endl;
   abort_handler(MODEL_ERROR);
-
 }
 
-
-void Model::push_approximation()
-{
+void Model::push_approximation() {
   Cerr << "Error: Letter lacking redefinition of virtual push_approximation()"
-      << " function.\n       This model does not support approximation"
-      << " augmentation." << std::endl;
+       << " function.\n       This model does not support approximation"
+       << " augmentation." << std::endl;
   abort_handler(MODEL_ERROR);
 }
 
+bool Model::push_available() { return false; }
 
-bool Model::push_available()
-{ return false; }
-
-
-void Model::finalize_approximation()
-{
+void Model::finalize_approximation() {
   Cerr << "Error: Letter lacking redefinition of virtual finalize_"
-      << "approximation() function.\n       This model does not support "
-      << "approximation finalization." << std::endl;
+       << "approximation() function.\n       This model does not support "
+       << "approximation finalization." << std::endl;
   abort_handler(MODEL_ERROR);
 }
 
-
-void Model::combine_approximation()
-{
+void Model::combine_approximation() {
   Cerr << "Error: Letter lacking redefinition of virtual combine_"
-      << "approximation() function.\n       This model does not support "
-      << "approximation combination." << std::endl;
+       << "approximation() function.\n       This model does not support "
+       << "approximation combination." << std::endl;
   abort_handler(MODEL_ERROR);
 }
 
-
-void Model::combined_to_active(bool clear_combined)
-{
+void Model::combined_to_active(bool clear_combined) {
   Cerr << "Error: Letter lacking redefinition of virtual combined_to_active()"
-      << " function.\n       This model does not support approximation"
-      << " combination." << std::endl;
+       << " function.\n       This model does not support approximation"
+       << " combination." << std::endl;
   abort_handler(MODEL_ERROR);
 }
 
-
-void Model::clear_inactive()
-{
+void Model::clear_inactive() {
   // NO OP
 }
 
+bool Model::advancement_available() { return true; }
 
-bool Model::advancement_available()
-{
-  return true;
-}
+bool Model::formulation_updated() const { return false; }
 
-
-bool Model::formulation_updated() const
-{
-  return false;
-}
-
-
-void Model::formulation_updated(bool update)
-{
+void Model::formulation_updated(bool update) {
   // NO OP
 }
 
-
-void Model::run_dace()
-{
+void Model::run_dace() {
   Cerr << "Error: Letter lacking redefinition of virtual run_dace() function."
-      << "\n       This model does not support DACE executions."<< std::endl;
-  abort_handler(MODEL_ERROR); 
+       << "\n       This model does not support DACE executions." << std::endl;
+  abort_handler(MODEL_ERROR);
 }
-
 
 /*
 const VariablesArray Model::build_variables() const
@@ -4009,7 +3870,7 @@ const VariablesArray Model::build_variables() const
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual build_variables()"
          << "\n       This model does not support build variables retrieval."
-	 << std::endl;
+         << std::endl;
     abort_handler(MODEL_ERROR);
   }
 }
@@ -4022,107 +3883,86 @@ const ResponseArray Model::build_responses() const
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual build_responses()"
          << "\n       This model does not support build responses retrieval."
-	 << std::endl;
+         << std::endl;
     abort_handler(MODEL_ERROR);
   }
 }
 */
 
+bool Model::force_rebuild() { return false; }
 
-bool Model::force_rebuild()
-{
-  return false;
-}
-
-
-SharedApproxData& Model::shared_approximation()
-{
+SharedApproxData& Model::shared_approximation() {
   Cerr << "Error: Letter lacking redefinition of virtual shared_approximation"
-      << "() function.\nThis model does not support approximations."
-      << std::endl;
+       << "() function.\nThis model does not support approximations."
+       << std::endl;
   abort_handler(MODEL_ERROR);
-  throw MODEL_ERROR; // never reached; prevents MSVS from squawking about lack of function return
+  throw MODEL_ERROR;  // never reached; prevents MSVS from squawking about lack
+                      // of function return
 }
 
-
-std::vector<Approximation>& Model::approximations()
-{  
+std::vector<Approximation>& Model::approximations() {
   Cerr << "Error: Letter lacking redefinition of virtual approximations() "
-      << "function.\nThis model does not support approximations."
-      << std::endl;
+       << "function.\nThis model does not support approximations." << std::endl;
   abort_handler(MODEL_ERROR);
-  throw MODEL_ERROR; // never reached; prevents MSVS from squawking about lack of function return
+  throw MODEL_ERROR;  // never reached; prevents MSVS from squawking about lack
+                      // of function return
 }
 
-
-const RealVectorArray& Model::approximation_coefficients(bool normalized)
-{
+const RealVectorArray& Model::approximation_coefficients(bool normalized) {
   Cerr << "Error: Letter lacking redefinition of virtual approximation_"
-      << "coefficients() function.\nThis model does not support "
-      << "approximations." << std::endl;
+       << "coefficients() function.\nThis model does not support "
+       << "approximations." << std::endl;
   abort_handler(MODEL_ERROR);
-  throw MODEL_ERROR; // never reached; prevents MSVS from squawking about lack of function return
+  throw MODEL_ERROR;  // never reached; prevents MSVS from squawking about lack
+                      // of function return
 }
 
-
-void Model::
-approximation_coefficients(const RealVectorArray& approx_coeffs,
-			   bool normalized)
-{
+void Model::approximation_coefficients(const RealVectorArray& approx_coeffs,
+                                       bool normalized) {
   Cerr << "Error: Letter lacking redefinition of virtual approximation_"
-      << "coefficients() function.\n       This model does not support "
-      << "approximations." << std::endl;
+       << "coefficients() function.\n       This model does not support "
+       << "approximations." << std::endl;
   abort_handler(MODEL_ERROR);
 }
 
-
-const RealVector& Model::approximation_variances(const Variables& vars)
-{
+const RealVector& Model::approximation_variances(const Variables& vars) {
   Cerr << "Error: Letter lacking redefinition of virtual approximation_"
-      << "variances() function.\nThis model does not support "
-      << "approximations." << std::endl;
+       << "variances() function.\nThis model does not support "
+       << "approximations." << std::endl;
   abort_handler(MODEL_ERROR);
-  throw MODEL_ERROR; // never reached; prevents MSVS from squawking about lack of function return
+  throw MODEL_ERROR;  // never reached; prevents MSVS from squawking about lack
+                      // of function return
 }
 
-
-const RealVector& Model::error_estimates()
-{
+const RealVector& Model::error_estimates() {
   Cerr << "Error: Letter lacking redefinition of virtual error_estimates() "
-      << "function.\n       This model does not support error estimation."
-      << std::endl;
+       << "function.\n       This model does not support error estimation."
+       << std::endl;
   abort_handler(MODEL_ERROR);
-  throw MODEL_ERROR; // never reached; prevents MSVS from squawking about lack of function return
+  throw MODEL_ERROR;  // never reached; prevents MSVS from squawking about lack
+                      // of function return
 }
 
-
-const Pecos::SurrogateData& Model::approximation_data(size_t fn_index)
-{
+const Pecos::SurrogateData& Model::approximation_data(size_t fn_index) {
   Cerr << "Error: Letter lacking redefinition of virtual approximation_data()"
-      << " function.\nThis model does not support approximations."
-      << std::endl;
+       << " function.\nThis model does not support approximations."
+       << std::endl;
   abort_handler(MODEL_ERROR);
-  throw MODEL_ERROR; // never reached; prevents MSVS from squawking about lack of function return
+  throw MODEL_ERROR;  // never reached; prevents MSVS from squawking about lack
+                      // of function return
 }
 
-
-void Model::surrogate_response_mode(short mode)
-{
+void Model::surrogate_response_mode(short mode) {
   // NO OP
 }
 
-
-short Model::surrogate_response_mode() const
-{
-  return 0; // default for non-surrogate models
+short Model::surrogate_response_mode() const {
+  return 0;  // default for non-surrogate models
 }
 
-
-void Model::discrepancy_emulation_mode(short mode)
-{
+void Model::discrepancy_emulation_mode(short mode) {
   // NO OP
 }
-
 
 /*
 short Model::discrepancy_emulation_mode() const
@@ -4140,95 +3980,75 @@ void Model::link_multilevel_approximation_data()
     modelRep->link_multilevel_approximation_data();
   else { // letter lacking redefinition of virtual fn.
     Cerr << "Error: Letter lacking redefinition of virtual link_multilevel_"
-	 << "approximation_data() function.\nThis model does not support "
-	 << "multilevel data." << std::endl;
+         << "approximation_data() function.\nThis model does not support "
+         << "multilevel data." << std::endl;
     abort_handler(MODEL_ERROR);
   }
 }
 */
 
-
-DiscrepancyCorrection& Model::discrepancy_correction()
-{
+DiscrepancyCorrection& Model::discrepancy_correction() {
   Cerr << "Error: Letter lacking redefinition of virtual discrepancy_"
-      << "correction() function.\nThis model does not support corrections."
-      << std::endl;
+       << "correction() function.\nThis model does not support corrections."
+       << std::endl;
   abort_handler(MODEL_ERROR);
-  throw MODEL_ERROR; // never reached; prevents MSVS from squawking about lack of function return
+  throw MODEL_ERROR;  // never reached; prevents MSVS from squawking about lack
+                      // of function return
 }
 
-
-short Model::correction_type() const
-{
-  return NO_CORRECTION; // default for non-surrogate models
+short Model::correction_type() const {
+  return NO_CORRECTION;  // default for non-surrogate models
 }
 
-
-void Model::correction_type(short corr_type)
-{
+void Model::correction_type(short corr_type) {
   // NO OP
 }
 
-
-short Model::correction_order() const
-{
-  return -1; // special value for no correction (0 = value correction)
+short Model::correction_order() const {
+  return -1;  // special value for no correction (0 = value correction)
 }
 
-
-unsigned short Model::correction_mode() const
-{
-  return DEFAULT_CORRECTION; // default for non-surrogate models
+unsigned short Model::correction_mode() const {
+  return DEFAULT_CORRECTION;  // default for non-surrogate models
 }
 
-
-void Model::correction_mode(unsigned short corr_mode)
-{
+void Model::correction_mode(unsigned short corr_mode) {
   // NO OP
 }
-
 
 void Model::single_apply(const Variables& vars, Response& resp,
-			 const Pecos::ActiveKey& paired_key)
-{
+                         const Pecos::ActiveKey& paired_key) {
   Cerr << "Error: Letter lacking redefinition of virtual single_apply() "
-      << "function.\n." << std::endl;
+       << "function.\n." << std::endl;
   abort_handler(MODEL_ERROR);
 }
 
-
-void Model::recursive_apply(const Variables& vars, Response& resp)
-{
+void Model::recursive_apply(const Variables& vars, Response& resp) {
   Cerr << "Error: Letter lacking redefinition of virtual recursive_apply() "
-	    << "function.\n." << std::endl;
+       << "function.\n." << std::endl;
   abort_handler(MODEL_ERROR);
 }
 
-
-void Model::component_parallel_mode(short mode)
-{
+void Model::component_parallel_mode(short mode) {
   // NO OP
 }
 
-
-IntIntPair Model::estimate_partition_bounds(int max_eval_concurrency)
-{
+IntIntPair Model::estimate_partition_bounds(int max_eval_concurrency) {
   Cerr << "Error: Letter lacking redefinition of virtual "
-      << "estimate_partition_bounds() function.\n." << std::endl;
+       << "estimate_partition_bounds() function.\n." << std::endl;
   abort_handler(MODEL_ERROR);
-  throw MODEL_ERROR; // never reached; prevents MSVS from squawking about lack of function return
+  throw MODEL_ERROR;  // never reached; prevents MSVS from squawking about lack
+                      // of function return
 }
 
-
-size_t Model::mi_parallel_level_index() const
-{
-  return modelPCIter->mi_parallel_level_last_index(); // default definition
-                   // (for Models without additional mi_pl recursions)
+size_t Model::mi_parallel_level_index() const {
+  return modelPCIter
+      ->mi_parallel_level_last_index();  // default definition
+                                         // (for Models without additional mi_pl
+                                         // recursions)
 }
 
-
-void Model::cache_unmatched_response(int raw_id)
-{
+void Model::cache_unmatched_response(int raw_id) {
   IntRespMIter rr_it = responseMap.find(raw_id);
   if (rr_it != responseMap.end()) {
     // insert unmatched record into cache:
@@ -4238,15 +4058,12 @@ void Model::cache_unmatched_response(int raw_id)
   }
 }
 
-
-void Model::cache_unmatched_responses()
-{
+void Model::cache_unmatched_responses() {
   // cache all remaining entries in responseMap, as they were not successfuly
   // migrated to another bookkeeping construct (e.g. in rekey_response_map())
   cachedResponseMap.insert(responseMap.begin(), responseMap.end());
   responseMap.clear();
 }
-
 
 /** SimulationModels and EnsembleSurrModels redefine this virtual function.
     A default value of "synchronous" prevents asynch local operations for:
@@ -4254,63 +4071,51 @@ void Model::cache_unmatched_responses()
     but not asynch local.
 \li DataFitSurrModels: while asynch evals on approximations will work due
     to some added bookkeeping, avoiding them is preferable. */
-short Model::local_eval_synchronization()
-{
-  return SYNCHRONOUS_INTERFACE; // default value
+short Model::local_eval_synchronization() {
+  return SYNCHRONOUS_INTERFACE;  // default value
 }
-
 
 /** SimulationModels and EnsembleSurrModels redefine this virtual function. */
-int Model::local_eval_concurrency()
-{
-  return 0; // default value
+int Model::local_eval_concurrency() {
+  return 0;  // default value
 }
 
-
-void Model::serialize_threshold(size_t thresh)
-{
+void Model::serialize_threshold(size_t thresh) {
   // default is no-op
 }
 
-
-void Model::serve_run(ParLevLIter pl_iter, int max_eval_concurrency)
-{
+void Model::serve_run(ParLevLIter pl_iter, int max_eval_concurrency) {
   Cerr << "Error: Letter lacking redefinition of virtual serve_run() function"
-      << ".\nThis model does not support server operations." << std::endl;
+       << ".\nThis model does not support server operations." << std::endl;
   abort_handler(MODEL_ERROR);
 }
 
-
-void Model::stop_servers()
-{
+void Model::stop_servers() {
   Cerr << "Error: Letter lacking redefinition of virtual stop_servers() "
-      << "function.\nThis model does not support server operations."
-      << std::endl;
+       << "function.\nThis model does not support server operations."
+       << std::endl;
   abort_handler(MODEL_ERROR);
 }
-
 
 /** The init_communicators() and derived_init_communicators() functions are
     stuctured to avoid performing the messageLengths estimation more than once.
     init_communicators() (not virtual) performs the estimation and then
     forwards the results to derived_init_communicators (virtual) which uses
     the data in different contexts. */
-void Model::
-init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
-		   bool recurse_flag)
-{
+void Model::init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
+                               bool recurse_flag) {
   // Undefined mi_pl can happen for IteratorScheduler::configure(), as
   // estimation of concurrency involves instantiation of Iterators
   // prior to IteratorScheduler::partition(), and some Iterators invoke
   // init_communicators() for contained helper iterators.  Abandoning a
   // parallel configuration means that these iterator instances should
   // be discarded and replaced once the mi_pl context is available.
-  //if (!parallelLib.mi_parallel_level_defined())
+  // if (!parallelLib.mi_parallel_level_defined())
   //  return;
   // Note for updated design: could replace with check miPLIters.size() <= 1,
   // but w_pl has now been expanded to be a sufficient starting pt for ie/ea
   // (meta-iterator partitioning is no longer required) --> leave commented
-  // out for now. 
+  // out for now.
 
   // matches bcast in Model::serve_init() called from
   // IteratorScheduler::init_iterator().  bcastFlag assures that, when Model
@@ -4320,8 +4125,7 @@ init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
     parallelLib.bcast(max_eval_concurrency, *pl_iter);
 
   // estimate messageLengths
-  if (messageLengths.empty())
-    estimate_message_lengths();
+  if (messageLengths.empty()) estimate_message_lengths();
 
   // since the same Model instance may be reused in multiple contexts
   // (involving multiple calls to init_communicators()), multiple parallel
@@ -4329,14 +4133,14 @@ init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
   // concurrency level as the lookup key.  Creation of a new parallel
   // configuration is avoided if an equivalent one already exists.
   SizetIntPair key(parallelLib.parallel_level_index(pl_iter),
-        max_eval_concurrency);
-  std::map<SizetIntPair, ParConfigLIter>::iterator map_iter
-    = modelPCIterMap.find(key);
+                   max_eval_concurrency);
+  std::map<SizetIntPair, ParConfigLIter>::iterator map_iter =
+      modelPCIterMap.find(key);
 
   // NOTE: modelPCIter update belongs in set_communicators().  However, also
   // updating it here allows passing of analysisComm into a parallel plugin
   // interface constructor (see main.cpp).
-  if (map_iter == modelPCIterMap.end()) { // this config does not yet exist
+  if (map_iter == modelPCIterMap.end()) {  // this config does not yet exist
 
     // increment the PC every time (the first PC instance is wasted), such
     // that each Model points to its corresponding configuration, even if
@@ -4344,32 +4148,28 @@ init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
     // incomplete results in a shared complete configuration between top
     // level Model and subModel, and erroneous settings in top level
     // set_communicators()).
-    //if ( parallelLib.num_parallel_configurations() > 1 ||
+    // if ( parallelLib.num_parallel_configurations() > 1 ||
     //     parallelLib.parallel_configuration_is_complete() )
     parallelLib.increment_parallel_configuration(pl_iter);
 
     // Setting modelPCIter here is insufficient; it must be set at run time
     // (within set_communicators()) according to the iterator context.
-    modelPCIterMap[key] = modelPCIter
-      = parallelLib.parallel_configuration_iterator();
+    modelPCIterMap[key] = modelPCIter =
+        parallelLib.parallel_configuration_iterator();
     derived_init_communicators(pl_iter, max_eval_concurrency, recurse_flag);
   } else
     modelPCIter = map_iter->second;
-    // Parallel configuration already exists within the Model for this
-    // concurrency level.  Configurations must also exist for any sub-models
-    // -> no call to derived_init_communicators() needed.
+  // Parallel configuration already exists within the Model for this
+  // concurrency level.  Configurations must also exist for any sub-models
+  // -> no call to derived_init_communicators() needed.
 }
 
-
-void Model::stop_init_communicators(ParLevLIter pl_iter)
-{
+void Model::stop_init_communicators(ParLevLIter pl_iter) {
   int term_code = 0;
   parallelLib.bcast(term_code, *pl_iter);
 }
 
-
-int Model::serve_init_communicators(ParLevLIter pl_iter)
-{
+int Model::serve_init_communicators(ParLevLIter pl_iter) {
   int max_eval_concurrency = 1, last_eval_concurrency = 1;
   while (max_eval_concurrency) {
     parallelLib.bcast(max_eval_concurrency, *pl_iter);
@@ -4381,57 +4181,36 @@ int Model::serve_init_communicators(ParLevLIter pl_iter)
   return last_eval_concurrency;
 }
 
-
-void Model::stop_init_mapping(ParLevLIter pl_iter)
-{
+void Model::stop_init_mapping(ParLevLIter pl_iter) {
   // NO OP
 }
 
+int Model::serve_init_mapping(ParLevLIter pl_iter) { return 0; }
 
-int Model::serve_init_mapping(ParLevLIter pl_iter)
-{
-  return 0;
-}
-
-
-void Model::stop_finalize_mapping(ParLevLIter pl_iter)
-{
+void Model::stop_finalize_mapping(ParLevLIter pl_iter) {
   // NO OP
 }
 
+int Model::serve_finalize_mapping(ParLevLIter pl_iter) { return 0; }
 
-int Model::serve_finalize_mapping(ParLevLIter pl_iter)
-{
-  return 0;
-}
-
-
-void Model::warm_start_flag(const bool flag)
-{
-  warmStartFlag = flag;
-}
-
+void Model::warm_start_flag(const bool flag) { warmStartFlag = flag; }
 
 void Model::declare_sources() {
   // NO OP
 }
 
-
-void Model::
-set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
-		  bool recurse_flag)
-{
+void Model::set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
+                              bool recurse_flag) {
   SizetIntPair key(parallelLib.parallel_level_index(pl_iter),
-        max_eval_concurrency);
-  std::map<SizetIntPair, ParConfigLIter>::iterator map_iter
-    = modelPCIterMap.find(key);
-  if (map_iter == modelPCIterMap.end()) { // this config does not exist
+                   max_eval_concurrency);
+  std::map<SizetIntPair, ParConfigLIter>::iterator map_iter =
+      modelPCIterMap.find(key);
+  if (map_iter == modelPCIterMap.end()) {  // this config does not exist
     Cerr << "Error: failure in parallel configuration lookup in "
-          << "Model::set_communicators() for key(" << key.first << ", "
-          << key.second << ")." << std::endl;
+         << "Model::set_communicators() for key(" << key.first << ", "
+         << key.second << ")." << std::endl;
     abort_handler(MODEL_ERROR);
-  }
-  else
+  } else
     modelPCIter = map_iter->second;
 
   // Unlike init_comms, set_comms DOES need to be recursed each time
@@ -4439,9 +4218,7 @@ set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
   derived_set_communicators(pl_iter, max_eval_concurrency, recurse_flag);
 }
 
-
-void Model::set_ie_asynchronous_mode(int max_eval_concurrency)
-{
+void Model::set_ie_asynchronous_mode(int max_eval_concurrency) {
   // no rep forward required: called from derived classes
 
   // Set asynchEvalFlag for either evaluation message passing or asynch local
@@ -4456,118 +4233,110 @@ void Model::set_ie_asynchronous_mode(int max_eval_concurrency)
     const ParallelLevel& ie_pl = modelPCIter->ie_parallel_level();
 
     // Note: local_eval_synchronization() handles case of eval concurrency==1
-    bool message_passing = ie_pl.message_pass(), asynch_local_eval
-      = (local_eval_synchronization() == ASYNCHRONOUS_INTERFACE);
-    if ( message_passing || asynch_local_eval )
-      asynchEvalFlag = true;
+    bool message_passing = ie_pl.message_pass(),
+         asynch_local_eval =
+             (local_eval_synchronization() == ASYNCHRONOUS_INTERFACE);
+    if (message_passing || asynch_local_eval) asynchEvalFlag = true;
 
     // Set evaluationCapacity for use by iterators (e.g., COLINY).
     int local_eval_conc = local_eval_concurrency();
-    if (message_passing) { // message passing mode
+    if (message_passing) {  // message passing mode
       evaluationCapacity = ie_pl.num_servers();
-      if (local_eval_conc) // hybrid mode: capacity augmented
-	      evaluationCapacity *= local_eval_conc;
-    } else if (asynch_local_eval) // asynch local mode: capacity limited
-      evaluationCapacity = (local_eval_conc)
-	      ?  local_eval_conc : max_eval_concurrency;
+      if (local_eval_conc)  // hybrid mode: capacity augmented
+        evaluationCapacity *= local_eval_conc;
+    } else if (asynch_local_eval)  // asynch local mode: capacity limited
+      evaluationCapacity =
+          (local_eval_conc) ? local_eval_conc : max_eval_concurrency;
   }
 }
 
-
-void Model::
-free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
-		   bool recurse_flag)
-{
+void Model::free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
+                               bool recurse_flag) {
   // Note: deallocations do not utilize reference counting -> the _first_
   // call to free a particular configuration deallocates it and all
   // subsequent calls are ignored (to prevent multiple deallocations).
   SizetIntPair key(parallelLib.parallel_level_index(pl_iter),
-        max_eval_concurrency);
-  std::map<SizetIntPair, ParConfigLIter>::iterator map_iter
-    = modelPCIterMap.find(key);
-  if (map_iter != modelPCIterMap.end()) { // this config still exists
+                   max_eval_concurrency);
+  std::map<SizetIntPair, ParConfigLIter>::iterator map_iter =
+      modelPCIterMap.find(key);
+  if (map_iter != modelPCIterMap.end()) {  // this config still exists
     modelPCIter = map_iter->second;
     derived_free_communicators(pl_iter, max_eval_concurrency, recurse_flag);
     modelPCIterMap.erase(key);
   }
 }
 
-
-MPI_Comm Model::analysis_comm() const
-{
+MPI_Comm Model::analysis_comm() const {
   return modelPCIter->ea_parallel_level().server_intra_communicator();
 }
-
 
 /** This functionality has been pulled out of init_communicators() and
     defined separately so that it may be used in those cases when
     messageLengths is needed but model.init_communicators() is not
     called, e.g., for the ded scheduler processor in the self-scheduling
     of a concurrent iterator strategy. */
-void Model::estimate_message_lengths()
-{
-    // currently, every processor does this estimation (no Bcast needed)
-    messageLengths.assign(4, 0);
+void Model::estimate_message_lengths() {
+  // currently, every processor does this estimation (no Bcast needed)
+  messageLengths.assign(4, 0);
 
-    if (parallelLib.mpirun_flag()) {
-      MPIPackBuffer buff;
+  if (parallelLib.mpirun_flag()) {
+    MPIPackBuffer buff;
 
-      // A Variables object could later be larger if it has string set
-      // elements that are longer than the current value.  Create a
-      // new Variables object and set the string variables to the
-      // worst case before packing. Variables aren't aware of the set
-      // elements, so set them here with helper functions.
-      Variables new_vars(currentVariables.copy());
-      assign_max_strings(mvDist, new_vars);
+    // A Variables object could later be larger if it has string set
+    // elements that are longer than the current value.  Create a
+    // new Variables object and set the string variables to the
+    // worst case before packing. Variables aren't aware of the set
+    // elements, so set them here with helper functions.
+    Variables new_vars(currentVariables.copy());
+    assign_max_strings(mvDist, new_vars);
 
-      buff << new_vars;
-      messageLengths[0] = buff.size(); // length of message containing vars
+    buff << new_vars;
+    messageLengths[0] = buff.size();  // length of message containing vars
 
-      // The grad/Hessian arrays in currentResponse get dynamically resized as
-      // needed.  Thesefore, the buffer estimation must assume the worst case.
-      size_t num_deriv_vars = std::max(currentVariables.cv(),
-                                       currentVariables.icv());
-      Response new_response;
-      if (num_deriv_vars >
-	      currentResponse.active_set_derivative_vector().size()) {
-	      new_response = currentResponse.copy(); // deep copy
-	      ActiveSet new_set(numFns, num_deriv_vars);
-	      new_response.active_set(new_set); // resizes grad/Hessian arrays
-      } else
-        new_response = currentResponse; // shallow copy (shared representation)
+    // The grad/Hessian arrays in currentResponse get dynamically resized as
+    // needed.  Thesefore, the buffer estimation must assume the worst case.
+    size_t num_deriv_vars =
+        std::max(currentVariables.cv(), currentVariables.icv());
+    Response new_response;
+    if (num_deriv_vars >
+        currentResponse.active_set_derivative_vector().size()) {
+      new_response = currentResponse.copy();  // deep copy
+      ActiveSet new_set(numFns, num_deriv_vars);
+      new_response.active_set(new_set);  // resizes grad/Hessian arrays
+    } else
+      new_response = currentResponse;  // shallow copy (shared representation)
 
-      buff << new_response.active_set();
-      messageLengths[1] = buff.size(); // length of message containing vars/set
-      buff.reset();
-      buff << new_response;
-      messageLengths[2] = buff.size(); // length of message containing response
-      buff.reset();
-      ParamResponsePair current_pair(new_vars, interface_id(), new_response);
-      buff << current_pair;
-      messageLengths[3] = buff.size(); // length of message containing a PRPair
+    buff << new_response.active_set();
+    messageLengths[1] = buff.size();  // length of message containing vars/set
+    buff.reset();
+    buff << new_response;
+    messageLengths[2] = buff.size();  // length of message containing response
+    buff.reset();
+    ParamResponsePair current_pair(new_vars, interface_id(), new_response);
+    buff << current_pair;
+    messageLengths[3] = buff.size();  // length of message containing a PRPair
 #ifdef MPI_DEBUG
-      Cout << "Message Lengths:\n" << messageLengths << std::endl;
-#endif // MPI_DEBUG
-    }
+    Cout << "Message Lengths:\n" << messageLengths << std::endl;
+#endif  // MPI_DEBUG
+  }
 }
 
-
-void Model::
-assign_max_strings(const Pecos::MultivariateDistribution& mv_dist,
-		   Variables& vars)
-{
+void Model::assign_max_strings(const Pecos::MultivariateDistribution& mv_dist,
+                               Variables& vars) {
   std::shared_ptr<Pecos::MarginalsCorrDistribution> mvd_rep =
-    std::static_pointer_cast<Pecos::MarginalsCorrDistribution>
-    (mv_dist.multivar_dist_rep());
+      std::static_pointer_cast<Pecos::MarginalsCorrDistribution>(
+          mv_dist.multivar_dist_rep());
   const SharedVariablesData& svd = vars.shared_data();
-  StringSet ss; StringRealMap srm;
-  size_t rv, start_rv, end_rv, adsv_index = 0,
-    num_cv, num_div, num_dsv, num_drv;
+  StringSet ss;
+  StringRealMap srm;
+  size_t rv, start_rv, end_rv, adsv_index = 0, num_cv, num_div, num_dsv,
+                               num_drv;
 
   // discrete design set string
   svd.design_counts(num_cv, num_div, num_dsv, num_drv);
-  start_rv = num_cv + num_div;  end_rv = start_rv + num_dsv;
-  for (rv=start_rv; rv<end_rv; ++rv, ++adsv_index) {
+  start_rv = num_cv + num_div;
+  end_rv = start_rv + num_dsv;
+  for (rv = start_rv; rv < end_rv; ++rv, ++adsv_index) {
     mvd_rep->pull_parameter<StringSet>(rv, Pecos::DSS_VALUES, ss);
     SSCIter max_it = max_string(ss);
     vars.all_discrete_string_variable(*max_it, adsv_index);
@@ -4576,8 +4345,9 @@ assign_max_strings(const Pecos::MultivariateDistribution& mv_dist,
 
   // histogram pt string
   svd.aleatory_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
-  start_rv += num_cv + num_div;  end_rv = start_rv + num_dsv;
-  for (rv=start_rv; rv<end_rv; ++rv, ++adsv_index) {
+  start_rv += num_cv + num_div;
+  end_rv = start_rv + num_dsv;
+  for (rv = start_rv; rv < end_rv; ++rv, ++adsv_index) {
     mvd_rep->pull_parameter<StringRealMap>(rv, Pecos::H_BIN_PAIRS, srm);
     SRMCIter max_it = max_string(srm);
     vars.all_discrete_string_variable(max_it->first, adsv_index);
@@ -4586,8 +4356,9 @@ assign_max_strings(const Pecos::MultivariateDistribution& mv_dist,
 
   // discrete epistemic set string
   svd.epistemic_uncertain_counts(num_cv, num_div, num_dsv, num_drv);
-  start_rv += num_cv + num_div;  end_rv = start_rv + num_dsv;
-  for (rv=start_rv; rv<end_rv; ++rv, ++adsv_index) {
+  start_rv += num_cv + num_div;
+  end_rv = start_rv + num_dsv;
+  for (rv = start_rv; rv < end_rv; ++rv, ++adsv_index) {
     mvd_rep->pull_parameter<StringRealMap>(rv, Pecos::DUSS_VALUES_PROBS, srm);
     SRMCIter max_it = max_string(srm);
     vars.all_discrete_string_variable(max_it->first, adsv_index);
@@ -4596,222 +4367,173 @@ assign_max_strings(const Pecos::MultivariateDistribution& mv_dist,
 
   // discrete state set string
   svd.state_counts(num_cv, num_div, num_dsv, num_drv);
-  start_rv += num_cv + num_div;  end_rv = start_rv + num_dsv;
-  for (rv=start_rv; rv<end_rv; ++rv, ++adsv_index) {
+  start_rv += num_cv + num_div;
+  end_rv = start_rv + num_dsv;
+  for (rv = start_rv; rv < end_rv; ++rv, ++adsv_index) {
     mvd_rep->pull_parameter<StringSet>(rv, Pecos::DSS_VALUES, ss);
     SSCIter max_it = max_string(ss);
     vars.all_discrete_string_variable(*max_it, adsv_index);
   }
-  //start_rv = end_rv + num_drv;
+  // start_rv = end_rv + num_drv;
 }
-
 
 /** The init_serial() and derived_init_serial() functions are
     stuctured to separate base class (common) operations from derived
     class (specialized) operations. */
-void Model::init_serial()
-{
+void Model::init_serial() {
   derived_init_serial();
 
   // restricted parallelism support: allow local asynchronous
   // operations but not message passing parallelism.
-  if ( local_eval_synchronization() == ASYNCHRONOUS_INTERFACE )
+  if (local_eval_synchronization() == ASYNCHRONOUS_INTERFACE)
     asynchEvalFlag = true;
 }
 
-
-void Model::
-derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
-			   bool recurse_flag)
-{
+void Model::derived_init_communicators(ParLevLIter pl_iter,
+                                       int max_eval_concurrency,
+                                       bool recurse_flag) {
   Cerr << "Error: Letter lacking redefinition of virtual derived_init_"
-      << "communicators() function.\n       This model does not support "
-      << "communicator operations." << std::endl;
+       << "communicators() function.\n       This model does not support "
+       << "communicator operations." << std::endl;
   abort_handler(MODEL_ERROR);
 }
 
-
-void Model::derived_init_serial()
-{
+void Model::derived_init_serial() {
   Cerr << "Error: Letter lacking redefinition of virtual derived_init_serial"
-      << "() function.\nNo default defined at base class." << std::endl;
+       << "() function.\nNo default defined at base class." << std::endl;
   abort_handler(MODEL_ERROR);
 }
 
-
-void Model::
-derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
-			  bool recurse_flag)
-{
+void Model::derived_set_communicators(ParLevLIter pl_iter,
+                                      int max_eval_concurrency,
+                                      bool recurse_flag) {
   // NO OP
 }
 
-
-void Model::
-derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
-			   bool recurse_flag)
-{
+void Model::derived_free_communicators(ParLevLIter pl_iter,
+                                       int max_eval_concurrency,
+                                       bool recurse_flag) {
   // NO OP
 }
 
-
-void Model::
-nested_variable_mappings(const SizetArray& c_index1,
-			 const SizetArray& di_index1,
-			 const SizetArray& ds_index1,
-			 const SizetArray& dr_index1,
-			 const ShortArray& c_target2,
-			 const ShortArray& di_target2,
-			 const ShortArray& ds_target2,
-			 const ShortArray& dr_target2)
-{
+void Model::nested_variable_mappings(
+    const SizetArray& c_index1, const SizetArray& di_index1,
+    const SizetArray& ds_index1, const SizetArray& dr_index1,
+    const ShortArray& c_target2, const ShortArray& di_target2,
+    const ShortArray& ds_target2, const ShortArray& dr_target2) {
   // NO OP
 }
 
-
-const SizetArray& Model::nested_acv1_indices() const
-{
+const SizetArray& Model::nested_acv1_indices() const {
   Cerr << "Error: Letter lacking redefinition of virtual nested_acv1_indices"
-      << "() function.\nNo default defined at base class." << std::endl;
+       << "() function.\nNo default defined at base class." << std::endl;
   abort_handler(MODEL_ERROR);
-  throw MODEL_ERROR; // never reached; prevents MSVS from squawking about lack of function return
+  throw MODEL_ERROR;  // never reached; prevents MSVS from squawking about lack
+                      // of function return
 }
 
-
-const ShortArray& Model::nested_acv2_targets() const
-{
+const ShortArray& Model::nested_acv2_targets() const {
   Cerr << "Error: Letter lacking redefinition of virtual nested_acv2_targets"
-      << "() function.\nNo default defined at base class." << std::endl;
+       << "() function.\nNo default defined at base class." << std::endl;
   abort_handler(MODEL_ERROR);
-  throw MODEL_ERROR; // never reached; prevents MSVS from squawking about lack of function return
+  throw MODEL_ERROR;  // never reached; prevents MSVS from squawking about lack
+                      // of function return
 }
 
-
-short Model::query_distribution_parameter_derivatives() const
-{
+short Model::query_distribution_parameter_derivatives() const {
   return NO_DERIVS;
 }
 
-
-void Model::activate_distribution_parameter_derivatives()
-{
+void Model::activate_distribution_parameter_derivatives() {
   // NO OP
 }
 
-
-void Model::deactivate_distribution_parameter_derivatives()
-{
+void Model::deactivate_distribution_parameter_derivatives() {
   // NO OP
 }
 
-
-void Model::
-trans_X_to_U(const RealVector& x_c_vars, RealVector& u_c_vars)
-{
+void Model::trans_X_to_U(const RealVector& x_c_vars, RealVector& u_c_vars) {
   Cerr << "Error: Letter lacking redefinition of virtual trans_X_to_U() "
-      << "function.\n       No default defined at base class." << std::endl;
+       << "function.\n       No default defined at base class." << std::endl;
   abort_handler(MODEL_ERROR);
-
 }
 
-
-void Model::
-trans_U_to_X(const RealVector& u_c_vars, RealVector& x_c_vars)
-{
+void Model::trans_U_to_X(const RealVector& u_c_vars, RealVector& x_c_vars) {
   Cerr << "Error: Letter lacking redefinition of virtual trans_U_to_X() "
-      << "function.\n       No default defined at base class." << std::endl;
+       << "function.\n       No default defined at base class." << std::endl;
   abort_handler(MODEL_ERROR);
 }
 
-
-void Model::
-trans_grad_X_to_U(const RealVector& fn_grad_x, RealVector& fn_grad_u,
-		  const RealVector& x_vars)
-{
+void Model::trans_grad_X_to_U(const RealVector& fn_grad_x,
+                              RealVector& fn_grad_u, const RealVector& x_vars) {
   Cerr << "Error: Letter lacking redefinition of virtual trans_grad_X_to_U"
-      << "() function.\nNo default defined at base class." << std::endl;
+       << "() function.\nNo default defined at base class." << std::endl;
   abort_handler(MODEL_ERROR);
 }
 
-
-void Model::
-trans_grad_U_to_X(const RealVector& fn_grad_u, RealVector& fn_grad_x,
-		  const RealVector& x_vars)
-{
+void Model::trans_grad_U_to_X(const RealVector& fn_grad_u,
+                              RealVector& fn_grad_x, const RealVector& x_vars) {
   Cerr << "Error: Letter lacking redefinition of virtual trans_grad_U_to_X"
-      << "() function.\nNo default defined at base class." << std::endl;
+       << "() function.\nNo default defined at base class." << std::endl;
   abort_handler(MODEL_ERROR);
 }
 
-
-void Model::
-trans_grad_X_to_S(const RealVector& fn_grad_x, RealVector& fn_grad_s,
-		  const RealVector& x_vars)
-{
+void Model::trans_grad_X_to_S(const RealVector& fn_grad_x,
+                              RealVector& fn_grad_s, const RealVector& x_vars) {
   Cerr << "Error: Letter lacking redefinition of virtual trans_grad_X_to_S"
-      << "() function.\nNo default defined at base class." << std::endl;
+       << "() function.\nNo default defined at base class." << std::endl;
   abort_handler(MODEL_ERROR);
 }
 
-
-void Model::
-trans_hess_X_to_U(const RealSymMatrix& fn_hess_x, RealSymMatrix& fn_hess_u,
-		  const RealVector& x_vars, const RealVector& fn_grad_x)
-{
+void Model::trans_hess_X_to_U(const RealSymMatrix& fn_hess_x,
+                              RealSymMatrix& fn_hess_u,
+                              const RealVector& x_vars,
+                              const RealVector& fn_grad_x) {
   Cerr << "Error: Letter lacking redefinition of virtual trans_hess_X_to_U"
-        << "() function.\nNo default defined at base class." << std::endl;
+       << "() function.\nNo default defined at base class." << std::endl;
   abort_handler(MODEL_ERROR);
 }
 
-
-ActiveSet Model::default_active_set()
-{
+ActiveSet Model::default_active_set() {
   // This member fn is called from Model::evaluate(_no_wait) and the
   // ActiveSet returned is used to allocate evaluation storage in HDF5
 
-  ActiveSet set; 
+  ActiveSet set;
   set.derivative_vector(currentVariables.all_continuous_variable_ids());
   ShortArray asv(numFns, 1);
   if (!set.derivative_vector().empty()) {
-    if ( gradientType != "none" &&
-    ( gradientType == "analytic" || supportsEstimDerivs ) )
-for(auto &a : asv)
-  a |=  2;
+    if (gradientType != "none" &&
+        (gradientType == "analytic" || supportsEstimDerivs))
+      for (auto& a : asv) a |= 2;
 
-    if ( hessianType != "none" &&
-    ( hessianType == "analytic" || supportsEstimDerivs ) )
-for(auto &a : asv)
-  a |=  4;
+    if (hessianType != "none" &&
+        (hessianType == "analytic" || supportsEstimDerivs))
+      for (auto& a : asv) a |= 4;
   }
 
   set.request_vector(asv);
   return set;
 }
 
-
-void Model::active_view(short view, bool recurse_flag)
-{
+void Model::active_view(short view, bool recurse_flag) {
   currentVariables.active_view(view);
   userDefinedConstraints.active_view(view);
 
   // TO DO: review other resizing needs in derived Model data
-  numDerivVars = currentVariables.cv(); // update
+  numDerivVars = currentVariables.cv();  // update
   if (!quasiHessians.empty()) {
     size_t i, num_qh = quasiHessians.size();
-    for (i=0; i<num_qh; ++i) { 
-      quasiHessians[i].reshape(numDerivVars);  quasiHessians[i] = 0.; 
+    for (i = 0; i < num_qh; ++i) {
+      quasiHessians[i].reshape(numDerivVars);
+      quasiHessians[i] = 0.;
     }
   }
 }
 
-
-void Model::inactive_view(short view, bool recurse_flag)
-{
+void Model::inactive_view(short view, bool recurse_flag) {
   currentVariables.inactive_view(view);
   userDefinedConstraints.inactive_view(view);
 }
-
-
 
 /*
 const BitArray& Model::discrete_string_sets()
@@ -4836,177 +4558,166 @@ const BitArray& Model::discrete_real_sets()
 }
 */
 
-
-int Model::derived_evaluation_id() const
-{
+int Model::derived_evaluation_id() const {
   Cerr << "Error: Letter lacking redefinition of virtual "
-  	  << "derived_evaluation_id() function.\n" << std::endl;
+       << "derived_evaluation_id() function.\n"
+       << std::endl;
   abort_handler(MODEL_ERROR);
-  throw MODEL_ERROR; // never reached; prevents MSVS from squawking about lack of function return
+  throw MODEL_ERROR;  // never reached; prevents MSVS from squawking about lack
+                      // of function return
 }
-
 
 /** Only Models including ApplicationInterfaces support an evaluation cache:
-    surrogate, nested, and recast mappings are not stored in the cache. 
+    surrogate, nested, and recast mappings are not stored in the cache.
     Possible exceptions: EnsembleSurrModel, NestedModel::optionalInterface. */
-bool Model::evaluation_cache(bool recurse_flag) const
-{
-  return false; // default
+bool Model::evaluation_cache(bool recurse_flag) const {
+  return false;  // default
 }
 
-
-/** Only Models including ApplicationInterfaces interact with the restart 
-    file: surrogate, nested, and recast mappings are not stored in restart. 
+/** Only Models including ApplicationInterfaces interact with the restart
+    file: surrogate, nested, and recast mappings are not stored in restart.
     Possible exceptions: DataFitSurrModel::import_points(),
     NestedModel::optionalInterface. */
-bool Model::restart_file(bool recurse_flag) const
-{
-  return false; // default
+bool Model::restart_file(bool recurse_flag) const {
+  return false;  // default
 }
 
-
-void Model::set_evaluation_reference()
-{
+void Model::set_evaluation_reference() {
   Cerr << "Error: Letter lacking redefinition of virtual set_evaluation_"
-	    << "reference() function.\n" << std::endl;
+       << "reference() function.\n"
+       << std::endl;
   abort_handler(MODEL_ERROR);
 }
 
-
-void Model::fine_grained_evaluation_counters()
-{
+void Model::fine_grained_evaluation_counters() {
   Cerr << "Error: Letter lacking redefinition of virtual fine_grained_"
-	    << "evaluation_counters() function.\n" << std::endl;
+       << "evaluation_counters() function.\n"
+       << std::endl;
   abort_handler(MODEL_ERROR);
 }
 
-
-void Model::
-print_evaluation_summary(std::ostream& s, bool minimal_header,
-			 bool relative_count) const
-{
+void Model::print_evaluation_summary(std::ostream& s, bool minimal_header,
+                                     bool relative_count) const {
   Cerr << "Error: Letter lacking redefinition of virtual print_evaluation_"
-      << "summary() function.\n" << std::endl;
+       << "summary() function.\n"
+       << std::endl;
   abort_handler(MODEL_ERROR);
 }
 
 /// Derived classes containing additional models or interfaces should
 /// implement this function to pass along to their sub Models/Interfaces
-void Model::eval_tag_prefix(const String& eval_id_str)
-{
+void Model::eval_tag_prefix(const String& eval_id_str) {
   evalTagPrefix = eval_id_str;  // default is to set at base only
 }
 
-
 bool Model::db_lookup(const Variables& search_vars, const ActiveSet& search_set,
-		      Response& found_resp)
-{
+                      Response& found_resp) {
   // dependence on interface_id() restricts successful find() operation to
   // cases where response is generated by a single non-approximate interface
   // at this level.  For Nested and Surrogate models, duplication detection
   // must occur at a lower level.
-  PRPCacheHIter cache_it
-    = lookup_by_val(data_pairs, interface_id(), search_vars, search_set);
+  PRPCacheHIter cache_it =
+      lookup_by_val(data_pairs, interface_id(), search_vars, search_set);
   if (cache_it != data_pairs.get<hashed>().end()) {
     found_resp.active_set(search_set);
-    found_resp.update(cache_it->response(), true); // update metadata
+    found_resp.update(cache_it->response(), true);  // update metadata
     return true;
   }
   return false;
 }
 
-
 /** config_vars consists of [continuous, integer, string, real]. */
-void Model::active_variables(const RealVector& config_vars, Model& model)
-{
+void Model::active_variables(const RealVector& config_vars, Model& model) {
   // TODO: If (as hoped) we convert the configuration reader to read
   // values instead of indices for strings (and actually read
   // integers), we can avoid the conversions below.
 
   size_t offset = 0;  // current index into configuration variables
 
-  RealVector ccv(Teuchos::View, config_vars.values() + offset, ModelUtils::cv(model));
+  RealVector ccv(Teuchos::View, config_vars.values() + offset,
+                 ModelUtils::cv(model));
   ModelUtils::continuous_variables(model, ccv);
   offset += ModelUtils::cv(model);
 
-  RealVector dicv(Teuchos::View, config_vars.values() + offset, ModelUtils::div(model));
+  RealVector dicv(Teuchos::View, config_vars.values() + offset,
+                  ModelUtils::div(model));
   IntVector dicv_as_int(ModelUtils::div(model));
   iround(dicv, dicv_as_int);
   ModelUtils::discrete_int_variables(model, dicv_as_int);
   offset += ModelUtils::div(model);
 
-  RealVector dscv(Teuchos::View, config_vars.values() + offset, ModelUtils::dsv(model));
-  const StringSetArray& discrete_str_vals = ModelUtils::discrete_set_string_values(model);
-  for (size_t i=0; i<ModelUtils::dsv(model); ++i) {
-    String str_value = 
-      set_index_to_value(boost::math::iround(dscv[i]), discrete_str_vals[i]);
+  RealVector dscv(Teuchos::View, config_vars.values() + offset,
+                  ModelUtils::dsv(model));
+  const StringSetArray& discrete_str_vals =
+      ModelUtils::discrete_set_string_values(model);
+  for (size_t i = 0; i < ModelUtils::dsv(model); ++i) {
+    String str_value =
+        set_index_to_value(boost::math::iround(dscv[i]), discrete_str_vals[i]);
     ModelUtils::discrete_string_variable(model, str_value, i);
   }
   offset += ModelUtils::dsv(model);
 
-  RealVector drcv(Teuchos::View, config_vars.values() + offset, ModelUtils::drv(model));
+  RealVector drcv(Teuchos::View, config_vars.values() + offset,
+                  ModelUtils::drv(model));
   ModelUtils::discrete_real_variables(model, drcv);
-  //offset += ModelUtils::drv(model);
+  // offset += ModelUtils::drv(model);
 }
 
-
-
 /** config_vars consists of [continuous, integer, string, real]. */
-void Model::inactive_variables(const RealVector& config_vars, Model& model)
-{
+void Model::inactive_variables(const RealVector& config_vars, Model& model) {
   inactive_variables(config_vars, model, model.current_variables());
 }
 
-
 /** config_vars consists of [continuous, integer, string, real]. */
 void Model::inactive_variables(const RealVector& config_vars, Model& model,
-			       Variables& vars)
-{
+                               Variables& vars) {
   // TODO: If (as hoped) we convert the configuration reader to read
   // values instead of indices for strings (and actually read
   // integers), we can avoid the conversions below.
 
   size_t offset = 0;  // current index into configuration variables
 
-  RealVector ccv(Teuchos::View, config_vars.values() + offset, ModelUtils::icv(model));
+  RealVector ccv(Teuchos::View, config_vars.values() + offset,
+                 ModelUtils::icv(model));
   vars.inactive_continuous_variables(ccv);
   offset += ModelUtils::icv(model);
 
-  RealVector dicv(Teuchos::View, config_vars.values() + offset, ModelUtils::idiv(model));
+  RealVector dicv(Teuchos::View, config_vars.values() + offset,
+                  ModelUtils::idiv(model));
   IntVector dicv_as_int(ModelUtils::idiv(model));
   iround(dicv, dicv_as_int);
   vars.inactive_discrete_int_variables(dicv_as_int);
   offset += ModelUtils::idiv(model);
 
-  RealVector dscv(Teuchos::View, config_vars.values() + offset, ModelUtils::idsv(model));
+  RealVector dscv(Teuchos::View, config_vars.values() + offset,
+                  ModelUtils::idsv(model));
   // the admissible _inactive_ discrete string values
   const StringSetArray& discrete_str_vals =
-    ModelUtils::discrete_set_string_values(model, model.current_variables().view().second);
-  for (size_t i=0; i<ModelUtils::idsv(model); ++i) {
-    String str_value = 
-      set_index_to_value(boost::math::iround(dscv[i]), discrete_str_vals[i]);
+      ModelUtils::discrete_set_string_values(
+          model, model.current_variables().view().second);
+  for (size_t i = 0; i < ModelUtils::idsv(model); ++i) {
+    String str_value =
+        set_index_to_value(boost::math::iround(dscv[i]), discrete_str_vals[i]);
     vars.inactive_discrete_string_variable(str_value, i);
   }
   offset += ModelUtils::idsv(model);
 
-  RealVector drcv(Teuchos::View, config_vars.values() + offset, ModelUtils::idrv(model));
+  RealVector drcv(Teuchos::View, config_vars.values() + offset,
+                  ModelUtils::idrv(model));
   vars.inactive_discrete_real_variables(drcv);
-  //offset += ModelUtils::idrv(model);
+  // offset += ModelUtils::idrv(model);
 }
 
-
-void Model::evaluate(const RealMatrix& samples_matrix,
-		     Model& model, RealMatrix& resp_matrix)
-{
+void Model::evaluate(const RealMatrix& samples_matrix, Model& model,
+                     RealMatrix& resp_matrix) {
   // TODO: option for setting its active or inactive variables
 
   RealMatrix::ordinalType i, num_evals = samples_matrix.numCols();
   resp_matrix.shape(ModelUtils::response_size(model), num_evals);
 
-  for (i=0; i<num_evals; ++i) {
-
-    const RealVector sample_i =
-      Teuchos::getCol(Teuchos::View, const_cast<RealMatrix&>(samples_matrix), i);
+  for (i = 0; i < num_evals; ++i) {
+    const RealVector sample_i = Teuchos::getCol(
+        Teuchos::View, const_cast<RealMatrix&>(samples_matrix), i);
     Model::active_variables(sample_i, model);
 
     if (model.asynch_flag())
@@ -5022,21 +4733,19 @@ void Model::evaluate(const RealMatrix& samples_matrix,
   if (model.asynch_flag()) {
     const IntResponseMap& resp_map = model.synchronize();
     IntRespMCIter r_cit;
-    for (i=0, r_cit=resp_map.begin(); r_cit!=resp_map.end(); ++i, ++r_cit)
+    for (i = 0, r_cit = resp_map.begin(); r_cit != resp_map.end(); ++i, ++r_cit)
       Teuchos::setCol(r_cit->second.function_values(), i, resp_matrix);
   }
 }
 
-
-void Model::evaluate(const VariablesArray& sample_vars,
-		     Model& model, RealMatrix& resp_matrix)
-{
+void Model::evaluate(const VariablesArray& sample_vars, Model& model,
+                     RealMatrix& resp_matrix) {
   // TODO: option for setting its active or inactive variables
 
   RealMatrix::ordinalType i, num_evals = sample_vars.size();
   resp_matrix.shape(ModelUtils::response_size(model), num_evals);
 
-  for (i=0; i<num_evals; ++i) {
+  for (i = 0; i < num_evals; ++i) {
     ModelUtils::active_variables(model, sample_vars[i]);
     if (model.asynch_flag())
       model.evaluate_nowait();
@@ -5051,30 +4760,34 @@ void Model::evaluate(const VariablesArray& sample_vars,
   if (model.asynch_flag()) {
     const IntResponseMap& resp_map = model.synchronize();
     IntRespMCIter r_cit;
-    for (i=0, r_cit=resp_map.begin(); r_cit!=resp_map.end(); ++i, ++r_cit)
+    for (i = 0, r_cit = resp_map.begin(); r_cit != resp_map.end(); ++i, ++r_cit)
       Teuchos::setCol(r_cit->second.function_values(), i, resp_matrix);
   }
 }
 
-
-// Called from rekey_response_map to allow Models to store their interfaces asynchronous
-// evaluations. When the meta_object is a model, no action is performed.
-void Model::asynch_eval_store(const Model &model, const int &id, const Response &response) {
+// Called from rekey_response_map to allow Models to store their interfaces
+// asynchronous evaluations. When the meta_object is a model, no action is
+// performed.
+void Model::asynch_eval_store(const Model& model, const int& id,
+                              const Response& response) {
   return;
 }
 
-// Called from rekey_response_map to allow Models to store their interfaces asynchronous
-// evaluations. I strongly suspect that there's a better design for this.
-void Model::asynch_eval_store(const Interface &interface, const int &id, const Response &response) {
-  evaluationsDB.store_interface_response(modelId, interface.interface_id(), id, response);
+// Called from rekey_response_map to allow Models to store their interfaces
+// asynchronous evaluations. I strongly suspect that there's a better design for
+// this.
+void Model::asynch_eval_store(const Interface& interface, const int& id,
+                              const Response& response) {
+  evaluationsDB.store_interface_response(modelId, interface.interface_id(), id,
+                                         response);
 }
 
 /// Return the interface flag for the EvaluationsDB state
-EvaluationsDBState Model::evaluations_db_state(const Interface &interface) {
+EvaluationsDBState Model::evaluations_db_state(const Interface& interface) {
   return interfEvaluationsDBState;
 }
-  /// Return the model flag for the EvaluationsDB state
-EvaluationsDBState Model::evaluations_db_state(const Model &model) {
+/// Return the model flag for the EvaluationsDB state
+EvaluationsDBState Model::evaluations_db_state(const Model& model) {
   // always return INACTIVE because models don't store evaluations of their
   // submodels
   return EvaluationsDBState::INACTIVE;
@@ -5083,14 +4796,13 @@ EvaluationsDBState Model::evaluations_db_state(const Model &model) {
 /** Rationale: The parser allows multiple user-specified models with
     empty (unspecified) ID. However, only a single Model with empty
     ID can be constructed (if it's the only one present, or the "last
-    one parsed"). Therefore decided to prefer NO_MODEL_ID over 
-    NO_MODEL_ID_<num> for (some) consistency with interface 
+    one parsed"). Therefore decided to prefer NO_MODEL_ID over
+    NO_MODEL_ID_<num> for (some) consistency with interface
     NO_ID convention. _MODEL_ was inserted in the middle to distinguish
-    "anonymous" MODELS from methods and interfaces in the hdf5 output. 
-    Note that this function is not used to name recast models; see their 
+    "anonymous" MODELS from methods and interfaces in the hdf5 output.
+    Note that this function is not used to name recast models; see their
     constructors for how its done. */
-String Model::user_auto_id()
-{
+String Model::user_auto_id() {
   // // increment and then use the current ID value
   // return String("NO_ID_") + std::to_string(++userAutoIdNum);
   return String("NO_MODEL_ID");
@@ -5100,21 +4812,18 @@ String Model::user_auto_id()
     id="NO_SPECIFICATION" used for internally-constructed
     Models. Longer-term, consider auto-generating an ID that
     includes the context from which the method is constructed, e.g.,
-    the parent method or model's ID, together with its name. 
-    Note that this function is not used to name recast models; see 
+    the parent method or model's ID, together with its name.
+    Note that this function is not used to name recast models; see
     their constructors for how its done.
 **/
-String Model::no_spec_id()
-{
+String Model::no_spec_id() {
   // increment and then use the current ID value
   return String("NOSPEC_MODEL_ID_") + std::to_string(++noSpecIdNum);
 }
 
-// This is overridden by RecastModel so that it and its derived classes return 
-// the root_model_id() of their subModels. The base Model class version terminates
-// the "recursion" for models of other types.
-String Model::root_model_id() {
-  return modelId;
-}
+// This is overridden by RecastModel so that it and its derived classes return
+// the root_model_id() of their subModels. The base Model class version
+// terminates the "recursion" for models of other types.
+String Model::root_model_id() { return modelId; }
 
-} // namespace Dakota
+}  // namespace Dakota

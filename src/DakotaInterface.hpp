@@ -10,16 +10,19 @@
 #ifndef DAKOTA_INTERFACE_H
 #define DAKOTA_INTERFACE_H
 
-#include "dakota_system_defs.hpp"
-#include "dakota_global_defs.hpp"
 #include "dakota_data_types.hpp"
+#include "dakota_global_defs.hpp"
+#include "dakota_system_defs.hpp"
 
 // forward declarations
 
 // always declare ASL rather than have a conditionally included class member
 struct ASL;
 
-namespace Pecos { class SurrogateData; class ActiveKey; }
+namespace Pecos {
+class SurrogateData;
+class ActiveKey;
+}  // namespace Pecos
 
 namespace Dakota {
 
@@ -34,7 +37,6 @@ class Model;
 class Approximation;
 class SharedApproxData;
 
-
 /// Base class for the interface class hierarchy.
 
 /** The Interface class hierarchy provides the part of a Model that is
@@ -42,35 +44,38 @@ class SharedApproxData;
     The mapping is performed using either a simulation-based application
     interface or a surrogate-based approximation interface. */
 
-class Interface
-{
-public:
-
+class Interface {
+ public:
   // Functions and data for instantiating and caching Interfaces
 
-  /// @brief retrieve an existing Interface, if it exists, or instantiate a new one
+  /// @brief retrieve an existing Interface, if it exists, or instantiate a new
+  /// one
   /// @return pointer to existing or newly created Interface
-  static std::shared_ptr<Interface> get_interface(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
+  static std::shared_ptr<Interface> get_interface(
+      ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
 
   /// @brief return the interface cache for the study
-  /// @param problem_db 
+  /// @param problem_db
   /// @return interface cache
-  static std::list<std::shared_ptr<Interface>>& interface_cache(ProblemDescDB& problem_db);
+  static std::list<std::shared_ptr<Interface>>& interface_cache(
+      ProblemDescDB& problem_db);
 
   /// @brief remove a cached Interface for the study
   static void remove_cached_interface(const ProblemDescDB& problem_db);
 
-private:
+ private:
   /// @brief Clean up files for all interfaces (used by abort handler)
   static void clean_up_all_interfaces();
 
-  // attorney class to permit access to clean_up_all_interfaces to abort_handler()
+  // attorney class to permit access to clean_up_all_interfaces to
+  // abort_handler()
   friend class CleanUpAllInterfacesAttorney;
 
   /// @brief Cache of Interfaces created for each study
-  static std::map<const ProblemDescDB*, std::list<std::shared_ptr<Interface>>> interfaceCache;
+  static std::map<const ProblemDescDB*, std::list<std::shared_ptr<Interface>>>
+      interfaceCache;
 
-public:
+ public:
   //
   //- Heading: Constructors, destructor, assignment operator
   //
@@ -91,12 +96,12 @@ public:
   /// the function evaluator: provides a "mapping" from the
   /// variables to the responses.
   virtual void map(const Variables& vars, const ActiveSet& set,
-		   Response& response, bool asynch_flag = false);
+                   Response& response, bool asynch_flag = false);
 
   /// recovers data from a series of asynchronous evaluations (blocking)
-  virtual const IntResponseMap& synchronize(); 
+  virtual const IntResponseMap& synchronize();
   /// recovers data from a series of asynchronous evaluations (nonblocking)
-  virtual const IntResponseMap& synchronize_nowait(); 
+  virtual const IntResponseMap& synchronize_nowait();
 
   /// evaluation server function for multiprocessor executions
   virtual void serve_evaluations();
@@ -106,17 +111,17 @@ public:
 
   /// allocate communicator partitions for concurrent evaluations within an
   /// iterator and concurrent multiprocessor analyses within an evaluation.
-  virtual void init_communicators(const IntArray& message_lengths, 
-				  int max_eval_concurrency);
+  virtual void init_communicators(const IntArray& message_lengths,
+                                  int max_eval_concurrency);
 
   /// set the local parallel partition data for an interface
   /// (the partitions are already allocated in ParallelLibrary).
   virtual void set_communicators(const IntArray& message_lengths,
-				 int max_eval_concurrency);
+                                 int max_eval_concurrency);
 
   // deallocate communicator partitions for concurrent evaluations within an
   // iterator and concurrent multiprocessor analyses within an evaluation.
-  //virtual void free_communicators();
+  // virtual void free_communicators();
 
   /// reset certain defaults for serial interface objects.
   virtual void init_serial();
@@ -144,35 +149,35 @@ public:
   virtual void clear_model_keys();
 
   /// set the (currently active) approximation function index set
-  virtual void
-    approximation_function_indices(const SizetSet& approx_fn_indices);
+  virtual void approximation_function_indices(
+      const SizetSet& approx_fn_indices);
 
   // link together more than one SurrogateData instance within an
   // ApproximationInterface
-  //virtual void link_multilevel_approximation_data();
+  // virtual void link_multilevel_approximation_data();
 
   /// updates the anchor point for an approximation
   virtual void update_approximation(const Variables& vars,
-				    const IntResponsePair& response_pr);
+                                    const IntResponsePair& response_pr);
   /// updates the current data points for an approximation
   virtual void update_approximation(const RealMatrix& samples,
-				    const IntResponseMap& resp_map);
+                                    const IntResponseMap& resp_map);
   /// updates the current data points for an approximation
   virtual void update_approximation(const VariablesArray& vars_array,
-				    const IntResponseMap& resp_map);
+                                    const IntResponseMap& resp_map);
 
   /// appends a single point to an existing approximation
   virtual void append_approximation(const Variables& vars,
-				    const IntResponsePair& response_pr);
+                                    const IntResponsePair& response_pr);
   /// appends multiple points to an existing approximation
   virtual void append_approximation(const RealMatrix& samples,
-				    const IntResponseMap& resp_map);
+                                    const IntResponseMap& resp_map);
   /// appends multiple points to an existing approximation
   virtual void append_approximation(const VariablesArray& vars_array,
-				    const IntResponseMap& resp_map);
+                                    const IntResponseMap& resp_map);
   /// appends multiple points to an existing approximation
   virtual void append_approximation(const IntVariablesMap& vars_map,
-				    const IntResponseMap&  resp_map);
+                                    const IntResponseMap& resp_map);
 
   /// replace the response for a single point within an existing approximation
   virtual void replace_approximation(const IntResponsePair& response_pr);
@@ -184,9 +189,11 @@ public:
 
   /// builds the approximation
   virtual void build_approximation(const RealVector& c_l_bnds,
-    const RealVector&  c_u_bnds, const IntVector&  di_l_bnds,
-    const IntVector&  di_u_bnds, const RealVector& dr_l_bnds,
-    const RealVector& dr_u_bnds);
+                                   const RealVector& c_u_bnds,
+                                   const IntVector& di_l_bnds,
+                                   const IntVector& di_u_bnds,
+                                   const RealVector& dr_l_bnds,
+                                   const RealVector& dr_u_bnds);
 
   /// export the approximation to disk
   virtual void export_approximation();
@@ -221,11 +228,11 @@ public:
   virtual void formulation_updated(bool update);
 
   /// approximation cross-validation quality metrics per response function
-  virtual Real2DArray cv_diagnostics(const StringArray& metric_types, 
-				     unsigned num_folds);
+  virtual Real2DArray cv_diagnostics(const StringArray& metric_types,
+                                     unsigned num_folds);
   /// approximation challenge data metrics per response function
   virtual RealArray challenge_diagnostics(const String& metric_type,
-					  const RealMatrix& challenge_pts);
+                                          const RealMatrix& challenge_pts);
 
   /// clears current data from an approximation interface
   virtual void clear_current_active_data();
@@ -242,12 +249,12 @@ public:
 
   /// retrieve the approximation coefficients from each Approximation
   /// within an ApproximationInterface
-  virtual const RealVectorArray&
-    approximation_coefficients(bool normalized = false);
+  virtual const RealVectorArray& approximation_coefficients(
+      bool normalized = false);
   /// set the approximation coefficients within each Approximation
   /// within an ApproximationInterface
   virtual void approximation_coefficients(const RealVectorArray& approx_coeffs,
-					  bool normalized = false);
+                                          bool normalized = false);
   /// retrieve the approximation variances from each Approximation
   /// within an ApproximationInterface
   virtual const RealVector& approximation_variances(const Variables& vars);
@@ -300,7 +307,7 @@ public:
 
   /// print an evaluation summary for the interface
   void print_evaluation_summary(std::ostream& s, bool minimal_header,
-				bool relative_count) const;
+                                bool relative_count) const;
 
   /// returns a flag signaling the use of multiprocessor evaluation partitions
   bool multi_proc_eval() const;
@@ -312,8 +319,7 @@ public:
   /// set the evaluation tag prefix (does not recurse)
   void eval_tag_prefix(const String& eval_id_str, bool append_iface_id = true);
 
-protected:
-
+ protected:
   //
   //- Heading: Constructors
   //
@@ -336,7 +342,7 @@ protected:
   /// (algebraic_set) and the core Application/Approximation mapping (core_set)
   /// from the total Interface evaluation requirements (total_set)
   void asv_mapping(const ActiveSet& total_set, ActiveSet& algebraic_set,
-		   ActiveSet& core_set);
+                   ActiveSet& core_set);
 
   /// map an algebraic ASV back to original total ordering for asynch recovery
   void asv_mapping(const ActiveSet& algebraic_set, ActiveSet& total_set);
@@ -344,13 +350,13 @@ protected:
   /// evaluate the algebraic_response using the AMPL solver library
   /// and the data extracted from the algebraic_mappings file
   void algebraic_mappings(const Variables& vars, const ActiveSet& algebraic_set,
-			  Response& algebraic_response);
+                          Response& algebraic_response);
 
   /// combine the response from algebraic_mappings() with the response
   /// from derived_map() to create the total response
   void response_mapping(const Response& algebraic_response,
-			const Response& core_response,
-			Response& total_response);
+                        const Response& core_response,
+                        Response& total_response);
 
   /// form and return the final evaluation ID tag, appending iface ID if needed
   virtual String final_eval_id_tag(int fn_eval_id);
@@ -386,25 +392,25 @@ protected:
 
   /// controls use of fn val/grad/hess counters for detailed evaluation report
   bool fineGrainEvalCounters;
-  int evalIdCntr;     ///< total interface evaluation counter
-  int newEvalIdCntr;  ///< new (non-duplicate) interface evaluation counter
-  int evalIdRefPt;    ///< iteration reference point for evalIdCntr
-  int newEvalIdRefPt; ///< iteration reference point for newEvalIdCntr
+  int evalIdCntr;      ///< total interface evaluation counter
+  int newEvalIdCntr;   ///< new (non-duplicate) interface evaluation counter
+  int evalIdRefPt;     ///< iteration reference point for evalIdCntr
+  int newEvalIdRefPt;  ///< iteration reference point for newEvalIdCntr
   // counter arrays provide more detailed reporting if output level >=
   // verbose; these are initalized on-demand in map() as sizes may
   // change due to fields or RecastModels
-  IntArray fnValCounter;     ///< number of value evaluations by resp fn
-  IntArray fnGradCounter;    ///< number of gradient evaluations by resp fn
-  IntArray fnHessCounter;    ///< number of Hessian evaluations by resp fn
-  IntArray newFnValCounter;  ///< number of new value evaluations by resp fn
-  IntArray newFnGradCounter; ///< number of new gradient evaluations by resp fn
-  IntArray newFnHessCounter; ///< number of new Hessian evaluations by resp fn
-  IntArray fnValRefPt;       ///< iteration reference point for fnValCounter
-  IntArray fnGradRefPt;      ///< iteration reference point for fnGradCounter
-  IntArray fnHessRefPt;      ///< iteration reference point for fnHessCounter
-  IntArray newFnValRefPt;    ///< iteration reference point for newFnValCounter
-  IntArray newFnGradRefPt;   ///< iteration reference point for newFnGradCounter
-  IntArray newFnHessRefPt;   ///< iteration reference point for newFnHessCounter
+  IntArray fnValCounter;      ///< number of value evaluations by resp fn
+  IntArray fnGradCounter;     ///< number of gradient evaluations by resp fn
+  IntArray fnHessCounter;     ///< number of Hessian evaluations by resp fn
+  IntArray newFnValCounter;   ///< number of new value evaluations by resp fn
+  IntArray newFnGradCounter;  ///< number of new gradient evaluations by resp fn
+  IntArray newFnHessCounter;  ///< number of new Hessian evaluations by resp fn
+  IntArray fnValRefPt;        ///< iteration reference point for fnValCounter
+  IntArray fnGradRefPt;       ///< iteration reference point for fnGradCounter
+  IntArray fnHessRefPt;       ///< iteration reference point for fnHessCounter
+  IntArray newFnValRefPt;     ///< iteration reference point for newFnValCounter
+  IntArray newFnGradRefPt;  ///< iteration reference point for newFnGradCounter
+  IntArray newFnHessRefPt;  ///< iteration reference point for newFnHessCounter
 
   /// Set of responses returned by either a blocking or nonblocking schedule
   /** The map is a full/partial set of completions which are identified through
@@ -436,8 +442,7 @@ protected:
   /// Analysis components for interface types that support them
   String2DArray analysisComponents;
 
-private:
-
+ private:
   //
   //- Heading: Member functions
   //
@@ -471,7 +476,7 @@ private:
   /// set of function tags from AMPL stub.row
   StringArray algebraicFnTags;
   /// function type: > 0 = objective, < 0 = constraint
-  /// |value|-1 is the objective (constraint) index when making 
+  /// |value|-1 is the objective (constraint) index when making
   /// AMPL objval (conival) calls
   IntArray algebraicFnTypes;
   /// set of indices mapping AMPL algebraic objective functions to
@@ -483,48 +488,38 @@ private:
   int numAlgebraicResponses;
 
   /// pointer to an AMPL solver library (ASL) object
-  ASL *asl;
+  ASL* asl;
 };
 
-
-inline IntResponseMap& Interface::response_map()
-{ return rawResponseMap; }
-
+inline IntResponseMap& Interface::response_map() { return rawResponseMap; }
 
 // nonvirtual functions can access letter attributes directly (only need to fwd
 // member function call when the function could be redefined).
-inline unsigned short Interface::interface_type() const
-{ return interfaceType; }
+inline unsigned short Interface::interface_type() const {
+  return interfaceType;
+}
 
+inline const String& Interface::interface_id() const { return interfaceId; }
 
-inline const String& Interface::interface_id() const
-{ return interfaceId; }
+inline int Interface::evaluation_id() const { return evalIdCntr; }
 
+inline bool Interface::multi_proc_eval() const { return multiProcEvalFlag; }
 
-inline int Interface::evaluation_id() const
-{ return evalIdCntr; }
-
-
-inline bool Interface::multi_proc_eval() const
-{ return multiProcEvalFlag; }
-
-
-inline bool Interface::iterator_eval_dedicated_scheduler() const
-{ return ieDedSchedFlag; }
-
+inline bool Interface::iterator_eval_dedicated_scheduler() const {
+  return ieDedSchedFlag;
+}
 
 /// global comparison function for Interface
-inline bool interface_id_compare(const Interface& interface_in, const void* id)
-{ return ( *(const String*)id == interface_in.interface_id() ); }
-
+inline bool interface_id_compare(const Interface& interface_in,
+                                 const void* id) {
+  return (*(const String*)id == interface_in.interface_id());
+}
 
 class CleanUpAllInterfacesAttorney {
-  static void execute() {
-    Interface::clean_up_all_interfaces();
-  }
+  static void execute() { Interface::clean_up_all_interfaces(); }
   friend void abort_handler(int);
 };
 
-} // namespace Dakota
+}  // namespace Dakota
 
 #endif

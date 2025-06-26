@@ -7,45 +7,45 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-#include "dakota_system_defs.hpp"
 #include "NonDSurrogateExpansion.hpp"
+
+#include "DakotaResponse.hpp"
 #include "DataFitSurrModel.hpp"
 #include "ProbabilityTransformModel.hpp"
-#include "DakotaResponse.hpp"
 #include "ProblemDescDB.hpp"
 #include "dakota_data_io.hpp"
+#include "dakota_system_defs.hpp"
 #include "dakota_tabular_io.hpp"
-//#define DEBUG
+// #define DEBUG
 
 namespace Dakota {
 
-
 /** This constructor is called for a standard letter-envelope iterator
     instantiation using the ProblemDescDB. */
-NonDSurrogateExpansion::
-NonDSurrogateExpansion(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
-  NonDExpansion(problem_db, parallel_lib, model)
-  // base classes extract generic UQ spec for stochastic expansions
+NonDSurrogateExpansion::NonDSurrogateExpansion(ProblemDescDB& problem_db,
+                                               ParallelLibrary& parallel_lib,
+                                               std::shared_ptr<Model> model)
+    : NonDExpansion(problem_db, parallel_lib, model)
+// base classes extract generic UQ spec for stochastic expansions
 {
   // ----------------
   // Resolve settings
   // ----------------
-  //short data_order,
+  // short data_order,
   //  u_space_type = probDescDB.get_short("method.nond.expansion_type");
-  //resolve_inputs(u_space_type, data_order);
+  // resolve_inputs(u_space_type, data_order);
 
   if (iteratedModel->model_type() != "surrogate") {
     Cerr << "Error: NonDSurrogateExpansion requires a surrogate model "
-	 << "specification." << std::endl;
+         << "specification." << std::endl;
     abort_handler(METHOD_ERROR);
   }
 
   const String& surr_type = iteratedModel->surrogate_type();
-  if (surr_type == "global_function_train") {// || surr_type == "global_"
+  if (surr_type == "global_function_train") {  // || surr_type == "global_"
     // transformation, DataFit, and DACE configuration performed by Model spec
     // All expansion config settings are pulled in that ctor chain
 
-    
     uSpaceModel = std::static_pointer_cast<DataFitSurrModel>(iteratedModel);
 
     // Notes on managing the u-space transformation:
@@ -80,34 +80,31 @@ NonDSurrogateExpansion(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
 
     // publish random variable types
     // TO DO: needs to be integrated within Model-driven workflow
-    //initialize_data_fit_surrogate(iteratedModel);
-  }
-  else {
+    // initialize_data_fit_surrogate(iteratedModel);
+  } else {
     Cerr << "Error: surrogate model specification of type '" << surr_type
-	 << "' not supported in NonDSurrogateExpansion." << std::endl;
+         << "' not supported in NonDSurrogateExpansion." << std::endl;
     abort_handler(METHOD_ERROR);
   }
 
   // -------------------------------
   // Construct expSampler, if needed
   // -------------------------------
-  construct_expansion_sampler(problem_db.get_ushort("method.sample_type"),
-    problem_db.get_string("method.random_number_generator"),
-    problem_db.get_ushort("method.nond.integration_refinement"),
-    problem_db.get_iv("method.nond.refinement_samples"),
-    probDescDB.get_string("method.import_approx_points_file"),
-    probDescDB.get_ushort("method.import_approx_format"), 
-    probDescDB.get_bool("method.import_approx_active_only"));
+  construct_expansion_sampler(
+      problem_db.get_ushort("method.sample_type"),
+      problem_db.get_string("method.random_number_generator"),
+      problem_db.get_ushort("method.nond.integration_refinement"),
+      problem_db.get_iv("method.nond.refinement_samples"),
+      probDescDB.get_string("method.import_approx_points_file"),
+      probDescDB.get_ushort("method.import_approx_format"),
+      probDescDB.get_bool("method.import_approx_active_only"));
 
   // update concurrency
-  //if (numSamples) // samples is optional (default = 0)
+  // if (numSamples) // samples is optional (default = 0)
   //  maxEvalConcurrency *= numSamples;
 }
 
-
-NonDSurrogateExpansion::~NonDSurrogateExpansion()
-{ }
-
+NonDSurrogateExpansion::~NonDSurrogateExpansion() {}
 
 /* Base class implementation is sufficient for single-level
 void NonDSurrogateExpansion::core_run()
@@ -122,10 +119,8 @@ void NonDSurrogateExpansion::core_run()
 }
 */
 
-
-void NonDSurrogateExpansion::print_results(std::ostream& s)
-{
-  if (//iteratedModel.subordinate_models(false).size() == 1 &&
+void NonDSurrogateExpansion::print_results(std::ostream& s) {
+  if (  // iteratedModel.subordinate_models(false).size() == 1 &&
       iteratedModel->truth_model()->solution_levels() > 1) {
     s << "<<<<< Samples per solution level:\n";
     print_multilevel_evaluation_summary(s, NLev);
@@ -136,4 +131,4 @@ void NonDSurrogateExpansion::print_results(std::ostream& s)
   NonDExpansion::print_results(s);
 }
 
-} // namespace Dakota
+}  // namespace Dakota

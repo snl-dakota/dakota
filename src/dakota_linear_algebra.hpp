@@ -21,28 +21,27 @@
 
 /* Functions to consider integrating here:
 
-DakotaLeastSq:  
+DakotaLeastSq:
   la.GEQRF(M,N,Jmatrix,LDA,tau,work,N,&info);
-  la.TRTRI(uplo, unitdiag, N, Jmatrix, LDA, &info); 
- 
+  la.TRTRI(uplo, unitdiag, N, Jmatrix, LDA, &info);
+
 NonDLocalReliability:
   la.SYEV('N', A.UPLO(), num_kappa, A.values(), A.stride(), kappa_u.values(),
           work, lwork, &info);
 
 ActiveSubspaceModel
-  teuchos_blas.GEMV(Teuchos::TRANS, m, n, alpha, reducedBasis.values(), m, 
-  		    mu_x.values(), incx, beta, mu_xi.values(), incy);
+  teuchos_blas.GEMV(Teuchos::TRANS, m, n, alpha, reducedBasis.values(), m,
+                    mu_x.values(), incx, beta, mu_xi.values(), incy);
 
 ExpDataUtils:
-  la.TRTRI( covCholFactor_.UPLO(), 'N', 
-  	    numDOF_, cholFactorInv_.values(), 
-	    cholFactorInv_.stride(), &info );
+  la.TRTRI( covCholFactor_.UPLO(), 'N',
+            numDOF_, cholFactorInv_.values(),
+            cholFactorInv_.stride(), &info );
 
-  la.SYEV( jobz, uplo, N, eigenvectors.values(), eigenvectors.stride(), 
-	   eigenvalues.values(), work.values(), lwork, &info );
+  la.SYEV( jobz, uplo, N, eigenvectors.values(), eigenvectors.stride(),
+           eigenvalues.values(), work.values(), lwork, &info );
 
 */
-
 
 namespace Dakota {
 
@@ -55,7 +54,7 @@ namespace Dakota {
    singular vectors in v_trans.
  */
 void singular_value_decomp(RealMatrix& matrix, RealVector& singular_vals,
-			   RealMatrix& v_trans, bool compute_vectors = true);
+                           RealMatrix& v_trans, bool compute_vectors = true);
 
 /// compute the singular values without storing any singular vectors
 /// (A will be destroyed)
@@ -70,8 +69,8 @@ void pseudo_inverse(const RealSymMatrix& A, RealSymMatrix& A_inv, Real& rcond);
 
 /// Perform a Cholesky factorization and solve; propagate LAPACK return codes
 int cholesky_solve(RealSymMatrix& A, RealMatrix& X, RealMatrix& B,
-		   bool copy_A = false, bool copy_B = false,
-		   bool hard_error = true);
+                   bool copy_A = false, bool copy_B = false,
+                   bool hard_error = true);
 
 /**
  * \brief Compute an in-place QR factorization A = QR
@@ -94,13 +93,13 @@ double det_AtransA(RealMatrix& A);
 
 /**
  * \brief Computes the eigenvalues and, optionally, eigenvectors of a
- *  real symmetric matrix A. 
- * 
+ *  real symmetric matrix A.
+ *
  * Eigenvalues are returned in ascending order.
  */
-void symmetric_eigenvalue_decomposition( const RealSymMatrix &matrix, 
-					 RealVector &eigenvalues, 
-					 RealMatrix &eigenvectors );
+void symmetric_eigenvalue_decomposition(const RealSymMatrix& matrix,
+                                        RealVector& eigenvalues,
+                                        RealMatrix& eigenvectors);
 
 }  // namespace Dakota
 

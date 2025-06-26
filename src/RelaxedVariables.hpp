@@ -26,10 +26,8 @@ namespace Dakota {
     branch and bound method uses this approach (see
     Variables::get_variables(problem_db)). */
 
-class RelaxedVariables: public Variables
-{
-public:
-
+class RelaxedVariables : public Variables {
+ public:
   //
   //- Heading: Constructors and destructor
   //
@@ -41,65 +39,59 @@ public:
   /// destructor
   ~RelaxedVariables() override;
 
-protected:
-
+ protected:
   //
   //- Heading: Virtual function redefinitions
   //
 
   void read(std::istream& s) override;
-  void read_tabular(std::istream& s, unsigned short vars_part = ALL_VARS) override;
+  void read_tabular(std::istream& s,
+                    unsigned short vars_part = ALL_VARS) override;
 
-  void write(std::ostream& s, unsigned short vars_part = ALL_VARS) const override;
+  void write(std::ostream& s,
+             unsigned short vars_part = ALL_VARS) const override;
   void write_aprepro(std::ostream& s) const override;
   void write_json(json& s) const override;
   void write_tabular(std::ostream& s,
-		     unsigned short vars_part = ALL_VARS) const override;
+                     unsigned short vars_part = ALL_VARS) const override;
   void write_tabular_partial(std::ostream& s, size_t start_index,
-			     size_t num_items) const override;
+                             size_t num_items) const override;
 
   void write_tabular_labels(std::ostream& s,
                             unsigned short vars_part = ALL_VARS) const override;
   void write_tabular_partial_labels(std::ostream& s, size_t start_index,
-				    size_t num_items) const override;
+                                    size_t num_items) const override;
 
   /// Implementation of reading various formats using the specified
   /// read handler, accounting for reordering due to relaxation
-  template<typename Reader>
+  template <typename Reader>
   void read_core(std::istream& s, Reader read_handler,
-		 unsigned short vars_part);
+                 unsigned short vars_part);
   /// Implementation of writing various formats using the specified
   /// write handler, accounting for reordering due to relaxation
-  template<typename Writer, typename Stream>
+  template <typename Writer, typename Stream>
   void write_core(Stream& s, Writer write_handler,
                   unsigned short vars_part) const;
   /// Implementation for partial writing in various formats using the
   /// specified write handler
-  template<typename Writer, typename Stream>
-  bool write_partial_core(Stream& s, Writer write_handler,
-			  size_t start_index, size_t end_index,
-			  size_t& acv_offset, size_t& adiv_offset,
-			  size_t& adsv_offset, size_t& adrv_offset,
-			  size_t& av_cntr, size_t num_cv, size_t num_div,
-			  size_t num_dsv, size_t num_drv) const;
+  template <typename Writer, typename Stream>
+  bool write_partial_core(Stream& s, Writer write_handler, size_t start_index,
+                          size_t end_index, size_t& acv_offset,
+                          size_t& adiv_offset, size_t& adsv_offset,
+                          size_t& adrv_offset, size_t& av_cntr, size_t num_cv,
+                          size_t num_div, size_t num_dsv, size_t num_drv) const;
 
-private:
-
+ private:
   //
   //- Heading: Private data members
   //
-
 };
 
+inline RelaxedVariables::RelaxedVariables(const SharedVariablesData& svd)
+    : Variables(BaseConstructor(), svd) {}
 
-inline RelaxedVariables::RelaxedVariables(const SharedVariablesData& svd):
-  Variables(BaseConstructor(), svd)
-{ }
+inline RelaxedVariables::~RelaxedVariables() {}
 
-
-inline RelaxedVariables::~RelaxedVariables()
-{ }
-
-} // namespace Dakota
+}  // namespace Dakota
 
 #endif

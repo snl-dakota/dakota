@@ -17,48 +17,47 @@ namespace QUESO {
 //   //  template<typename T> struct SharedPtr;
 //   template<typename T>
 //   struct SharedPtr { typedef SPType<T> Type; }
-  class GPMSAOptions;
-  template<class V, class M> class GPMSAFactory;
-}
+class GPMSAOptions;
+template <class V, class M>
+class GPMSAFactory;
+}  // namespace QUESO
 
 namespace Dakota {
 
-/// Generates posterior distribution on model parameters given experiment data 
+/// Generates posterior distribution on model parameters given experiment data
 
-
-/** This class provides a wrapper for the functionality provided in 
-    the Los Alamos National Laboratory code called GPM/SA (Gaussian 
-    Process Models for Simulation Analysis).  Although this is a 
-    code that provides input/output mapping, it DOES NOT provide the 
-    mapping that we usually think of in the NonDeterministic class 
-    hierarchy in DAKOTA, where uncertainty in parameter inputs are mapped to 
-    uncertainty in simulation responses.  Instead, this class takes 
-    a pre-existing set of simulation data as well as experimental data, and 
-    maps priors on input parameters to posterior distributions on those 
-    input parameters, according to a likelihood function.  The goal of the 
-    MCMC sampling is to produce posterior values of parameter estimates 
-    which will produce simulation response values that "match well" to the 
-    experimental data.  The MCMC is an integral part of the calibration. 
-    The data structures in GPM/SA are fairly detailed and nested.  
-    Part of this prototyping exercise is to determine what data 
-    structures need to be specified and initialized in DAKOTA and sent 
+/** This class provides a wrapper for the functionality provided in
+    the Los Alamos National Laboratory code called GPM/SA (Gaussian
+    Process Models for Simulation Analysis).  Although this is a
+    code that provides input/output mapping, it DOES NOT provide the
+    mapping that we usually think of in the NonDeterministic class
+    hierarchy in DAKOTA, where uncertainty in parameter inputs are mapped to
+    uncertainty in simulation responses.  Instead, this class takes
+    a pre-existing set of simulation data as well as experimental data, and
+    maps priors on input parameters to posterior distributions on those
+    input parameters, according to a likelihood function.  The goal of the
+    MCMC sampling is to produce posterior values of parameter estimates
+    which will produce simulation response values that "match well" to the
+    experimental data.  The MCMC is an integral part of the calibration.
+    The data structures in GPM/SA are fairly detailed and nested.
+    Part of this prototyping exercise is to determine what data
+    structures need to be specified and initialized in DAKOTA and sent
     to GPM/SA, and what data structures will be returned.  */
 
-class NonDGPMSABayesCalibration: public NonDQUESOBayesCalibration
-{
-public:
-
+class NonDGPMSABayesCalibration : public NonDQUESOBayesCalibration {
+ public:
   //
   //- Heading: Constructors and destructor
   //
 
   /// constructor
-  NonDGPMSABayesCalibration(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
+  NonDGPMSABayesCalibration(ProblemDescDB& problem_db,
+                            ParallelLibrary& parallel_lib,
+                            std::shared_ptr<Model> model);
   /// destructor
   ~NonDGPMSABayesCalibration();
 
-protected:
-
+ protected:
   //
   //- Heading: Virtual function redefinitions
   //
@@ -67,10 +66,10 @@ protected:
   void derived_set_communicators(ParLevLIter pl_iter);
   void derived_free_communicators(ParLevLIter pl_iter);
 
-  /// performs a forward uncertainty propagation by using GPM/SA to 
-  /// generate a posterior distribution on parameters given a set of 
-  /// simulation parameter/response data, a set of experimental data, and 
-  /// additional variables to be specified here. 
+  /// performs a forward uncertainty propagation by using GPM/SA to
+  /// generate a posterior distribution on parameters given a set of
+  /// simulation parameter/response data, a set of experimental data, and
+  /// additional variables to be specified here.
   void calibrate();
 
   /// specialization to initialize the inverse problem and posterior
@@ -96,7 +95,7 @@ protected:
 
   /// retrieve the chain from QUESO and populate acceptanceChain /
   /// acceptedFnVals
-  void cache_acceptance_chain(); 
+  void cache_acceptance_chain();
 
   // print the final statistics
   void print_results(std::ostream& s, short results_state = FINAL_RESULTS);
@@ -131,39 +130,37 @@ protected:
   bool gpmsaNormalize;
 
   /// vector space defining the scenario (configuration) variables
-  std::shared_ptr<QUESO::VectorSpace<QUESO::GslVector, QUESO::GslMatrix> > 
-  configSpace;
+  std::shared_ptr<QUESO::VectorSpace<QUESO::GslVector, QUESO::GslMatrix> >
+      configSpace;
 
   /// vector space defining the output (response) space for the simulations
   std::shared_ptr<QUESO::VectorSpace<QUESO::GslVector, QUESO::GslMatrix> >
-  nEtaSpace;
+      nEtaSpace;
 
   /// vector space defining the output (response) space for the experiments
   std::shared_ptr<QUESO::VectorSpace<QUESO::GslVector, QUESO::GslMatrix> >
-  experimentSpace;
+      experimentSpace;
 
   /// Configuration options for the GPMSA solver
   std::shared_ptr<QUESO::GPMSAOptions> gpmsaOptions;
 
   /// core factory that manages a GP-based likelihood
   std::shared_ptr<QUESO::GPMSAFactory<QUESO::GslVector, QUESO::GslMatrix> >
-  gpmsaFactory; 
+      gpmsaFactory;
 
-
-private:
-
+ private:
   //
   //- Heading: Data
   //
 
-  //short emulatorType;
- 
+  // short emulatorType;
+
   /// Pointer to current class instance for use in static callback functions
   static NonDGPMSABayesCalibration* nonDGPMSAInstance;
-  /// LHS iterator for generating samples for GP 
+  /// LHS iterator for generating samples for GP
   std::unique_ptr<Iterator> lhsIter;
 };
 
-} // namespace Dakota
+}  // namespace Dakota
 
 #endif

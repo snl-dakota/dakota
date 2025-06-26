@@ -12,20 +12,21 @@
 #include <string>
 
 namespace Dakota {
-    class Iterator;
-    class Model;
-    class ProblemDescDB;
-    class ParallelLibrary;
+class Iterator;
+class Model;
+class ProblemDescDB;
+class ParallelLibrary;
 
-    namespace IteratorUtils {
-        /// Used by the envelope to instantiate the correct letter class
-        std::shared_ptr<Iterator>
-        get_iterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
-        /// Used by the envelope to instantiate the correct letter class
-        std::shared_ptr<Iterator>
-        get_iterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model);
-        /// Used by the envelope to instantiate the correct letter class
-        std::shared_ptr<Iterator>
-        get_iterator(const std::string& method_string, std::shared_ptr<Model> model);
-    }
-}
+namespace IteratorUtils {
+/// Used by the envelope to instantiate the correct letter class
+std::shared_ptr<Iterator> get_iterator(ProblemDescDB& problem_db,
+                                       ParallelLibrary& parallel_lib);
+/// Used by the envelope to instantiate the correct letter class
+std::shared_ptr<Iterator> get_iterator(ProblemDescDB& problem_db,
+                                       ParallelLibrary& parallel_lib,
+                                       std::shared_ptr<Model> model);
+/// Used by the envelope to instantiate the correct letter class
+std::shared_ptr<Iterator> get_iterator(const std::string& method_string,
+                                       std::shared_ptr<Model> model);
+}  // namespace IteratorUtils
+}  // namespace Dakota
