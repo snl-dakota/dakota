@@ -1965,9 +1965,10 @@ JEGAOptimizer::~JEGAOptimizer(
     delete this->_theEvalCreator;
     delete this->_theParamDB;
     this->numInstances--;
+#ifdef JEGA_LOGGING_ON
     if(this->numInstances == 0) // Force JEGA's global log file to close. See the comment on numInstances. 
       JEGA::Logging::Logger::Global().Gate().get_log().get_first_log().close_stream();
-    
+#endif
 }
 
 
