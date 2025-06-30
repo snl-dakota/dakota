@@ -3,7 +3,7 @@ include(ExternalProject)
 # Forward Dakota Boost entries to the plugins (for Python plugins)
 set(boost_cache_entries "")
 foreach(boost_var BOOST_ROOT BOOSTROOT BOOST_INCLUDEDIR BOOST_LIBRARYDIR
-  Boost_NO_SYSTEM_PATHS Boost_NO_BOOST_CMAKE)
+  Boost_INCLUDE_DIR Boost_LIBRARY_DIR Boost_NO_SYSTEM_PATHS Boost_NO_BOOST_CMAKE)
   if (DEFINED ${boost_var})
     list(APPEND boost_cache_entries "-D${boost_var}:STRING=${${boost_var}}")
   endif()
