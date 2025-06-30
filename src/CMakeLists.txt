@@ -940,6 +940,15 @@ if(HAVE_AMPL)
   add_dependencies(dakota_src amplsolver)
 endif()
 
+if( HAVE_ROL )
+  list(APPEND DAKOTA_INCDIRS ${ROL_INCLUDE_DIRS})
+  add_definitions("-DHAVE_ROL")
+  #  add_subdirectory(rol_interface)
+  #  target_link_libraries(dakota_src rol_interface)
+  #  list(APPEND EXPORT_TARGETS rol_interface)
+  #  list(APPEND DAKOTA_LIBS rol_interface)
+endif()
+
 # Enforce library ordering
 list (APPEND DAKOTA_LIBS dakota_src dakota_src_fortran)
 
