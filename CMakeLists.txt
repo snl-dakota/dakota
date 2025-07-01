@@ -37,7 +37,7 @@ elseif(NOT IS_DIRECTORY "${Dakota_SOURCE_DIR}/packages/external/nidr")
     )
 endif()
 
-# Dakota requires C++11
+# Dakota requires C++17
 include(DakotaCxxOptions)
 dakota_cxx_standard()
 

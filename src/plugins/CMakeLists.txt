@@ -20,7 +20,7 @@ find_package(Python COMPONENTS Interpreter Development)
 add_subdirectory(pybind11)
 
 add_library(generic_python_plugin SHARED DakotaPythonPlugin.cpp)
-set_target_properties(generic_python_plugin PROPERTIES CXX_STANDARD 11)
+set_target_properties(generic_python_plugin PROPERTIES CXX_STANDARD 17)
 set_target_properties(generic_python_plugin PROPERTIES CXX_VISIBILITY_PRESET hidden)
 target_link_libraries(generic_python_plugin
   PUBLIC Boost::boost Boost::filesystem
@@ -41,7 +41,7 @@ target_compile_definitions(generic_python_plugin PRIVATE
 add_library(identity_map SHARED PluginIdentityMap.cpp)
 
 set_target_properties(identity_map PROPERTIES
-                      CXX_STANDARD 11
+                      CXX_STANDARD 17
                       CXX_STANDARD_REQUIRED TRUE
                       CXX_VISIBILITY_PRESET hidden)
 
