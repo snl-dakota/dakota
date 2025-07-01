@@ -121,6 +121,9 @@
 #ifdef HAVE_MUQ 
 #include "NonDMUQBayesCalibration.hpp"
 #endif
+#ifdef HAVE_EXT_PYTHON_METHOD
+#include "DakotaExtPythonMethod.hpp"
+#endif
 #include "OptDartsOptimizer.hpp"
 #include "NonDWASABIBayesCalibration.hpp"
 
@@ -447,6 +450,10 @@ namespace Dakota {
         #ifdef HAVE_DEMO_TPL
         case DEMO_TPL:
             return std::make_shared<DemoTPLOptimizer>(problem_db, parallel_lib, model); break;
+        #endif
+        #ifdef HAVE_EXT_PYTHON_METHOD
+        case EXTERNAL_PYTHON:
+            return std::make_shared<ExtPythonMethod>(problem_db, parallel_lib, model); break;
         #endif
         default:
             switch (method_name) {

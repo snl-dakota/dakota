@@ -35,6 +35,7 @@ namespace Dakota {
 // define special values for method name.  Special bit selections enable
 // identification of method groupings based on the value.
 enum { DEFAULT_METHOD=0,
+       EXTERNAL_PYTHON,
        // Meta-Iterators:
        HYBRID=(META_BIT | PARALLEL_BIT), PARETO_SET, MULTI_START,
        //       BRANCH_AND_BOUND,

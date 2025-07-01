@@ -8,6 +8,7 @@
 #  _______________________________________________________________________
 
 import numpy as np
+import random as rnd
 
 use_list_return_type = True
 
@@ -207,3 +208,62 @@ def text_book_batch(list_of_params):
         else:
             retvals.append(text_book_numpy(param_dict))
     return retvals
+
+
+#############################################
+#       Demo Python Method --> Optimizer    #
+#############################################
+
+def demo_opt_fn(params):
+
+    print(params)
+
+    retval = {}
+
+    # Hard-coded optimizer settings that could be configured by user
+    max_evals = 100
+    fn_tol = 1.e-4
+
+    target = 0.0
+
+    # Crude "optimization" based on random sampling over parameter space
+    i = 0
+    best_x = [0]
+    best_f = 1e32
+    while  i<=max_evals and best_f>fn_tol:
+        x = [rnd.uniform(-2.0, 2.0)]
+        params['cv'] = x
+        f = text_book_list(params)['fns'][0]
+        # Need something like this for responses
+        #f = dakopt.compute_fn(x)
+        #print(i, f)
+
+        if abs(f-target) < best_f:
+            best_x = x
+            best_f = abs(f-target)
+        i=i+1
+
+    retval['fns']    = [best_f]
+    retval['best_x'] = best_x
+    if True:
+        print("Found best_f = ", best_f)
+        print("Using x = ", best_x)
+
+    return retval
+
+
+
+# Simple test driver for sanity checking
+if __name__ == "__main__":
+
+    params = { 'functions' : 1   ,
+               'asv'       : [1] ,
+               'cv'        : [2.2]
+             }
+    retval = text_book_list(params)
+    demo_opt_fn(params)
+
+    print(retval)
+
+    
+

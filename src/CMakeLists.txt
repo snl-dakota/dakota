@@ -830,6 +830,11 @@ if(HAVE_DEMO_TPL)
   add_definitions("-DHAVE_DEMO_TPL")
 endif(HAVE_DEMO_TPL)
 
+if(HAVE_EXT_PYTHON_METHOD)
+  set(iterator_src ${iterator_src} ${Dakota_SOURCE_DIR}/src/DakotaExtPythonMethod.cpp)
+  add_definitions("-DHAVE_EXT_PYTHON_METHOD")
+endif(HAVE_EXT_PYTHON_METHOD)
+
 CheckPackage(PSUADE)
 if(HAVE_PSUADE)
   list(APPEND interface_src PSUADEDesignCompExp.cpp)

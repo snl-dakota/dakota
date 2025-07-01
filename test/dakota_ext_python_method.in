@@ -1,0 +1,23 @@
+#@ s*: Label=FastTest                                                                                                                                                                                                                                                                                                                             
+#@ *: DakotaConfig=HAVE_EXT_PYTHON_METHOD
+#@ *: ReqFiles=driver_text_book.py
+
+method,
+    external_python
+
+variables,
+    continuous_design = 1
+    initial_point      -1.0
+    upper_bounds	10.0
+    lower_bounds       -10.0
+    descriptors	        'x1'
+
+interface,
+    direct
+    analysis_driver = 'text_book'
+
+responses,
+    objective_functions = 1
+    no_gradients
+    no_hessians
+

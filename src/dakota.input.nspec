@@ -332,6 +332,10 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
    )
   |
+  ( external_python {N_mdm(utype,methodName_EXTERNAL_PYTHON)}
+    [ class_path_and_name STRING {N_mom(str,moduleAndClassName)} ]
+   )
+  |
   ( npsol_sqp {N_mdm(utype,methodName_NPSOL_SQP)}
     [ verify_level INTEGER {N_mdm(int,verifyLevel)} ]
     [ function_precision REAL {N_mdm(Real,functionPrecision)} ]
