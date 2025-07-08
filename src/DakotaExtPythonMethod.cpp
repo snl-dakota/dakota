@@ -73,6 +73,8 @@ void ExtPythonMethod::core_run()
   assert( py11Active );
   assert( Py_IsInitialized() );
 
+  ModelExecutor executor = ModelExecutor(iteratedModel);
+
   try  {
 
     ShortArray fnASV = {1};
@@ -84,9 +86,9 @@ void ExtPythonMethod::core_run()
         );
 
     // Call the method
-    py::dict ret_val = py11CallBack(kwargs);
+    py::dict ret_val = py11CallBack(kwargs, executor);
 
-    // Exrtact the single scalar result and best parameter
+    // Extract the single scalar result and best parameter
     if (ret_val.contains("fns")) {
       int i=0;
       auto best_x = ret_val["best_x"].cast<std::vector<double>>();
@@ -114,6 +116,38 @@ void ExtPythonMethod::core_run()
   }
 
 } // core_run
+
+// -----------------------------------------------------------------
+// Model Executor
+// -----------------------------------------------------------------
+
+ModelExecutor::ModelExecutor(std::shared_ptr<Model> & model) :
+  model_(model)
+{ }
+
+Real
+ModelExecutor::value(Real x)
+{
+  Real result = 0;
+  model_->current_variables().continuous_variable(x, 0);
+  //model_->current_variables().continuous_variable(x[1], 1);
+  model_->evaluate();
+  const Response& test_resp  = model_->current_response();
+  result = test_resp.function_value(0);
+
+  Cout << "ModelExecutor::value : x = " << x << ", f = " << result << std::endl;
+  return result;
+}
+
+PYBIND11_MODULE(ext_method, m) {
+
+  // Executor wrapper
+  py::class_<Dakota::ModelExecutor>(m, "Executor")
+    .def("function_value", &Dakota::ModelExecutor::value
+         , "Return function value for passed parameter value"
+         , py::arg("x"))
+    ;
+}
 
 } // namespace Dakota
 

@@ -833,6 +833,14 @@ endif(HAVE_DEMO_TPL)
 if(HAVE_EXT_PYTHON_METHOD)
   set(iterator_src ${iterator_src} ${Dakota_SOURCE_DIR}/src/DakotaExtPythonMethod.cpp)
   add_definitions("-DHAVE_EXT_PYTHON_METHOD")
+
+  pybind11_add_module(ext_method DakotaExtPythonMethod.cpp)
+  target_link_libraries(ext_method PRIVATE dakota_src
+    ${Dakota_LIBRARIES} ${Dakota_TPL_LIBRARIES}
+    )
+
+    # The extra foo needed below for the python "environment" module
+    # may be needed here too (?) RWH
 endif(HAVE_EXT_PYTHON_METHOD)
 
 CheckPackage(PSUADE)

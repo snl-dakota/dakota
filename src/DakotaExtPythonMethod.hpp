@@ -122,6 +122,25 @@ public:
 
 }; // class ExtPythonTraits
 
+// -----------------------------------------------------------------
+
+class ModelExecutor
+{
+  public:
+
+    /// Constructor
+    ModelExecutor(std::shared_ptr<Model> & model);
+
+    /// model evaluator
+    Real value(Real x);
+
+  private:
+
+    // wrapped model
+    std::shared_ptr<Model> model_;
+
+}; // class ModelExecutor
+
 } // namespace Dakota
 
 #endif

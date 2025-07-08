@@ -214,7 +214,9 @@ def text_book_batch(list_of_params):
 #       Demo Python Method --> Optimizer    #
 #############################################
 
-def demo_opt_fn(params):
+import ext_method
+
+def demo_opt_fn(params, executor):
 
     print(params)
 
@@ -233,9 +235,9 @@ def demo_opt_fn(params):
     while  i<=max_evals and best_f>fn_tol:
         x = [rnd.uniform(-2.0, 2.0)]
         params['cv'] = x
-        f = text_book_list(params)['fns'][0]
+        #f = text_book_list(params)['fns'][0]
         # Need something like this for responses
-        #f = dakopt.compute_fn(x)
+        f = executor.function_value(x[0])
         #print(i, f)
 
         if abs(f-target) < best_f:
