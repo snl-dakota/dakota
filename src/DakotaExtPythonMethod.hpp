@@ -132,7 +132,7 @@ class ModelExecutor
     ModelExecutor(std::shared_ptr<Model> & model);
 
     /// model evaluator
-    Real value(Real x);
+    std::vector<double> value(std::vector<double> & x);
 
   private:
 

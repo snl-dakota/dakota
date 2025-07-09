@@ -219,6 +219,9 @@ import ext_method
 def demo_opt_fn(params, executor):
 
     print(params)
+    n_vars = params['variables']
+    l_bounds = params['lower_bounds']
+    u_bounds = params['upper_bounds']
 
     retval = {}
 
@@ -230,24 +233,24 @@ def demo_opt_fn(params, executor):
 
     # Crude "optimization" based on random sampling over parameter space
     i = 0
-    best_x = [0]
-    best_f = 1e32
+    best_f = 1e32 # Hard-coded to single response for now
     while  i<=max_evals and best_f>fn_tol:
-        x = [rnd.uniform(-2.0, 2.0)]
-        params['cv'] = x
+        x = []
+        for j in range(n_vars):
+            x.append(rnd.uniform(l_bounds[j], u_bounds[j]))
+        #params['cv'] = x
         #f = text_book_list(params)['fns'][0]
-        # Need something like this for responses
-        f = executor.function_value(x[0])
-        #print(i, f)
+        f = executor.function_value(x)
 
-        if abs(f-target) < best_f:
+        if abs(f[0]-target) < best_f:
             best_x = x
-            best_f = abs(f-target)
+            best_f = abs(f[0]-target)
         i=i+1
 
     retval['fns']    = [best_f]
     retval['best_x'] = best_x
-    if True:
+
+    if False:
         print("Found best_f = ", best_f)
         print("Using x = ", best_x)
 
@@ -258,12 +261,13 @@ def demo_opt_fn(params, executor):
 # Simple test driver for sanity checking
 if __name__ == "__main__":
 
-    params = { 'functions' : 1   ,
+    params = { 'variables' : 2   ,
+               'functions' : 1   ,
                'asv'       : [1] ,
-               'cv'        : [2.2]
+               'cv'        : [2.2, 1.3]
              }
     retval = text_book_list(params)
-    demo_opt_fn(params)
+    demo_opt_fn(params, None)
 
     print(retval)
 

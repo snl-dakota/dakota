@@ -79,10 +79,18 @@ void ExtPythonMethod::core_run()
 
     ShortArray fnASV = {1};
     py::list asv = copy_array_to_pybind11<py::list,ShortArray,int>(fnASV);
+
+    const RealVector& cv_lower_bounds = ModelUtils::continuous_lower_bounds(*iteratedModel);
+    const RealVector& cv_upper_bounds = ModelUtils::continuous_upper_bounds(*iteratedModel);
+    py::list lower_bounds = copy_array_to_pybind11<py::list>(cv_lower_bounds);
+    py::list upper_bounds = copy_array_to_pybind11<py::list>(cv_upper_bounds);
+
     py::dict kwargs = py::dict(
-        "variables"_a             = 1 /* numVars */,
+        "variables"_a             = iteratedModel->current_variables().cv() /* numVars */,
+        "lower_bounds"_a          = lower_bounds,
+        "upper_bounds"_a          = upper_bounds,
         "asv"_a                   = asv,
-        "functions"_a             = 1
+        "functions"_a             = 1 // hard-coded to 1 for now
         );
 
     // Call the method
@@ -94,8 +102,8 @@ void ExtPythonMethod::core_run()
       auto best_x = ret_val["best_x"].cast<std::vector<double>>();
       auto values = ret_val["fns"].cast<std::vector<double>>();
       for (auto const & f : values) {
-	Cout << "ExtPythonMethod::core_run(), value --> " << f
-             << " at best_x = " << best_x[i++]
+	Cout << "ExtPythonMethod::core_run(), best_f --> " << f
+             << " at best_x = " << best_x
              << std::endl;
       }
     }
@@ -125,18 +133,21 @@ ModelExecutor::ModelExecutor(std::shared_ptr<Model> & model) :
   model_(model)
 { }
 
-Real
-ModelExecutor::value(Real x)
+std::vector<double>
+ModelExecutor::value(std::vector<double>& x)
 {
   Real result = 0;
-  model_->current_variables().continuous_variable(x, 0);
-  //model_->current_variables().continuous_variable(x[1], 1);
+  for (int i=0; i<x.size(); ++i)
+    model_->current_variables().continuous_variable(x[i], i);
   model_->evaluate();
-  const Response& test_resp  = model_->current_response();
-  result = test_resp.function_value(0);
 
-  Cout << "ModelExecutor::value : x = " << x << ", f = " << result << std::endl;
-  return result;
+  const Response& test_resp = model_->current_response();
+  std::vector<double> resp(test_resp.num_functions());
+  for (int i=0; i<resp.size(); ++i)
+    resp[i] = test_resp.function_value(i);
+
+  //Cout << "ModelExecutor::value : x = " << x << ", f = " << resp << std::endl;
+  return resp;
 }
 
 PYBIND11_MODULE(ext_method, m) {
