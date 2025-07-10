@@ -8,6 +8,7 @@
     _______________________________________________________________________ */
 
 #include "DakotaExtPythonMethod.hpp"
+#include "ProblemDescDB.hpp"
 
 using namespace pybind11::literals; // to bring in the `_a` literal
 
@@ -25,6 +26,8 @@ ExtPythonMethod::ExtPythonMethod(ProblemDescDB& problem_db,
   ownPython(false),
   py11Active(false)
 {
+  moduleAndClassName = problem_db.get_string("method.class_path_and_name");
+
   if (!Py_IsInitialized()) {
     py::initialize_interpreter();
     ownPython = true;
@@ -57,16 +60,30 @@ void ExtPythonMethod::core_run()
 {
   //initialize_variables_and_constraints();
 
-  // Hard-coded for now ... 
-  const std::string dummy_ac_name("driver_text_book:demo_opt_fn");
   if( !py11Active )
   {
-    size_t pos = dummy_ac_name.find(":");
-    std::string module_name = dummy_ac_name.substr(0,pos);
-    std::string function_name = dummy_ac_name.substr(pos+1);
+    try {
+      size_t p = moduleAndClassName.find_last_of(".");
+      if( std::string::npos == p )
+        throw(std::runtime_error(
+              "Invalid method python module_and_class_name.\n\tUse \"module.classname\""));
+      auto module_name = moduleAndClassName.substr(0,p);
+      auto method_name = moduleAndClassName.substr(p+1);
 
-    py::object module = py::module_::import(module_name.c_str());
-    py11CallBack = module.attr(function_name.c_str());
+      py::object module = py::module_::import(module_name.c_str());
+      py11CallBack = module.attr(method_name.c_str());
+    }
+    catch(py::error_already_set &e) {
+      if (e.matches(PyExc_ModuleNotFoundError)) {
+        std::cerr << "Could not load the required module '"
+                  << moduleAndClassName << "'" << std::endl;
+        throw;
+      }
+      else {
+        std::cerr << "Caught a python exception:\n"
+                  << e.what() << std::endl;
+      }
+    }
     py11Active = true;
   }
 
@@ -111,14 +128,14 @@ void ExtPythonMethod::core_run()
   catch (const std::runtime_error& e) {
     // (py::error_already_set is caught here too)
     std::string err_msg("Error evaluating Python analysis_driver ");
-    err_msg += dummy_ac_name + ":\n";
+    err_msg += moduleAndClassName + ":\n";
     err_msg += e.what();
     Cerr << err_msg << std::endl;
     throw FunctionEvalFailure(err_msg);
   }
   catch (...) {
     std::string err_msg("Error evaluating Python analysis_driver ");
-    err_msg += dummy_ac_name;
+    err_msg += moduleAndClassName;
     Cerr << err_msg << std::endl;
     throw FunctionEvalFailure(err_msg);
   }

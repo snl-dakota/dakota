@@ -2450,7 +2450,7 @@
         </keyword>
 
         <keyword  id="external_python" name="external_python" code="{N_mdm(utype,methodName_EXTERNAL_PYTHON)}" label="external_python" help="" >
-          <keyword  id="class_path_and_name" name="class_path_and_name" code="{N_mom(str,moduleAndClassName)}" label="Python Module File and Class Name"  minOccurs="0" >
+          <keyword  id="class_path_and_name" name="class_path_and_name" code="{N_mdm(str,moduleAndClassName)}" label="Python Module File and Class Name"  minOccurs="1" >
             <param type="INPUT_FILE" />
           </keyword>
           <!-- store method name AND incoming STRING -->

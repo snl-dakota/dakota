@@ -4,13 +4,14 @@
 
 method,
     external_python
+      class_path_and_name = "driver_text_book.demo_optimizer"
 
 variables,
-    continuous_design = 1
-    initial_point      -1.0
-    upper_bounds	10.0
-    lower_bounds       -10.0
-    descriptors	        'x1'
+    continuous_design = 2
+    initial_point      -1.0     1.0
+    upper_bounds	2.0     2.0
+    lower_bounds       -2.0    -2.0
+    descriptors	        'x1'    'x2'
 
 interface,
     direct

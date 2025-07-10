@@ -6872,6 +6872,7 @@ static UShortArray
 static String
         MP_(advancedOptionsFilename),
         MP_(betaSolverName),
+        MP_(moduleAndClassName),
         MP_(dataDistFile),
         MP_(displayFormat),
         MP_(diliHessianType),

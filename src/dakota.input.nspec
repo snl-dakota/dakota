@@ -333,7 +333,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
    )
   |
   ( external_python {N_mdm(utype,methodName_EXTERNAL_PYTHON)}
-    [ class_path_and_name STRING {N_mom(str,moduleAndClassName)} ]
+    class_path_and_name STRING {N_mdm(str,moduleAndClassName)}
    )
   |
   ( npsol_sqp {N_mdm(utype,methodName_NPSOL_SQP)}

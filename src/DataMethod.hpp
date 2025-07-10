@@ -666,6 +666,8 @@ public:
   String patternBasis;
   /// beta solvers don't need documentation
   String betaSolverName;
+  /// the \c class_path_and_name specification for the Python External method
+  String moduleAndClassName;
 
   // COLINY and APPS
 

@@ -51,6 +51,9 @@ class ExtPythonMethod : public Iterator
   /// callback function for analysis driver
   py::function py11CallBack;
 
+  /// Python module filename and class/function
+  String moduleAndClassName;
+
   bool py11Active;
 
   template<typename RetT, class ArrayT, typename T>

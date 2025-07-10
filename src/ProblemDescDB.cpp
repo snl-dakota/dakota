@@ -1729,6 +1729,7 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
       {"advanced_options_file", P_MET advancedOptionsFilename},
       {"asynch_pattern_search.merit_function", P_MET meritFunction},
       {"batch_selection", P_MET batchSelectionType},
+      {"class_path_and_name", P_MET moduleAndClassName},
       {"coliny.beta_solver_name", P_MET betaSolverName},
       {"coliny.division", P_MET boxDivision},
       {"coliny.exploratory_moves", P_MET exploratoryMoves},

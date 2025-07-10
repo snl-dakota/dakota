@@ -216,7 +216,7 @@ def text_book_batch(list_of_params):
 
 import ext_method
 
-def demo_opt_fn(params, executor):
+def demo_optimizer(params, executor):
 
     print(params)
     n_vars = params['variables']
