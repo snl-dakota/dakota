@@ -9,6 +9,7 @@
 
 
 #include "NonDBayesCalibration.hpp"
+#include "NonDSampling.hpp"
 #include "dakota_data_io.hpp"
 #include "dakota_tabular_io.hpp"
 #include "bayes_calibration_utils.hpp"
@@ -169,6 +170,56 @@ TEST(stat_utils_tests, test_stat_utils_batch_means_percentile)
   Real gold_upper_int = 1.7926345922e+00;
   EXPECT_LT(std::fabs(1. - interval_matrix[0][0] / gold_lower_int), 1.e-3/100. );
   EXPECT_LT(std::fabs(1. - interval_matrix[0][1] / gold_upper_int), 1.e-3/100. );
+}
+
+//------------------------------------
+
+TEST(stat_utils_tests, test_compute_moments)
+{
+  //std::random_device rd{};
+  //std::mt19937 gen{rd()};
+  std::mt19937 gen;
+  gen.seed(12321);
+
+  // Gaussians with:          mean  stddev
+  std::normal_distribution d0{ 2.5,  2.0};
+  std::normal_distribution d1{ 5.0,  1.0};
+  std::normal_distribution d2{ 7.5,  3.0};
+
+  const int N_QOIS    = 3;
+  const int N_SAMPLES = 2000;
+
+  RealMatrix matrix;
+  matrix.shapeUninitialized(N_QOIS, N_SAMPLES);
+  for( int i=0; i<N_SAMPLES; ++i ) {
+    matrix(0,i) = d0(gen); 
+    matrix(1,i) = d1(gen); 
+    matrix(2,i) = d2(gen); 
+  }
+
+  RealMatrix stats;
+  NonDSampling::compute_moments(matrix, stats, Pecos::STANDARD_MOMENTS);
+
+  if( false ) // change this for verbose output
+  {
+    StringArray dummy_labels = {"r1", "r2", "r3"};
+    NonDSampling::print_moments(Cout, stats, RealMatrix(), 
+        "unit test dummy variable", Pecos::STANDARD_MOMENTS, dummy_labels, false); 
+  }
+
+  // Correctness checks
+  EXPECT_EQ( N_QOIS, stats.numCols() );
+  EXPECT_EQ( 4     , stats.numRows() ); // 4 moments
+
+  // Means
+  EXPECT_LT(std::fabs(2.5 - stats(0,0)) / 2.5, 1.0/100. ); // 1% error
+  EXPECT_LT(std::fabs(5.0 - stats(0,1)) / 5.0, 1.0/100. ); // 1% error
+  EXPECT_LT(std::fabs(7.5 - stats(0,2)) / 7.5, 1.0/100. ); // 1% error
+
+  // Std Devs
+  EXPECT_LT(std::fabs(2.0 - stats(1,0)) / 2.0, 1.0/100. ); // 1% error
+  EXPECT_LT(std::fabs(1.0 - stats(1,1)) / 1.0, 2.0/100. ); // 2% error
+  EXPECT_LT(std::fabs(3.0 - stats(1,2)) / 3.0, 1.0/100. ); // 1% error
 }
 
 //------------------------------------
