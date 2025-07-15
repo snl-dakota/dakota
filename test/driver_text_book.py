@@ -216,45 +216,54 @@ def text_book_batch(list_of_params):
 
 import ext_method
 
-def demo_optimizer(params, executor):
+class SimplePyOpt:
 
-    print(params)
-    n_vars = params['variables']
-    l_bounds = params['lower_bounds']
-    u_bounds = params['upper_bounds']
+    def __init__(self, params=None):
 
-    retval = {}
+        print("python SimplePyOpt class constructer...")
+        self.coeffs = None
+        if params is not None:
+            self.params = params
 
-    # Hard-coded optimizer settings that could be configured by user
-    max_evals = 100
-    fn_tol = 1.e-4
+    def core_run(self, params, executor):
 
-    target = 0.0
+        print(params)
+        n_vars = params['variables']
+        l_bounds = params['lower_bounds']
+        u_bounds = params['upper_bounds']
 
-    # Crude "optimization" based on random sampling over parameter space
-    i = 0
-    best_f = 1e32 # Hard-coded to single response for now
-    while  i<=max_evals and best_f>fn_tol:
-        x = []
-        for j in range(n_vars):
-            x.append(rnd.uniform(l_bounds[j], u_bounds[j]))
-        #params['cv'] = x
-        #f = text_book_list(params)['fns'][0]
-        f = executor.function_value(x)
+        retval = {}
 
-        if abs(f[0]-target) < best_f:
-            best_x = x
-            best_f = abs(f[0]-target)
-        i=i+1
+        # Hard-coded optimizer settings that could be configured by user
+        max_evals = 100
+        fn_tol = 1.e-4
 
-    retval['fns']    = [best_f]
-    retval['best_x'] = best_x
+        target = 0.0
 
-    if False:
-        print("Found best_f = ", best_f)
-        print("Using x = ", best_x)
+        # Crude "optimization" based on random sampling over parameter space
+        i = 0
+        best_f = 1e32 # Hard-coded to single response for now
+        while  i<=max_evals and best_f>fn_tol:
+            x = []
+            for j in range(n_vars):
+                x.append(rnd.uniform(l_bounds[j], u_bounds[j]))
+            #params['cv'] = x
+            #f = text_book_list(params)['fns'][0]
+            f = executor.function_value(x)
 
-    return retval
+            if abs(f[0]-target) < best_f:
+                best_x = x
+                best_f = abs(f[0]-target)
+            i=i+1
+
+        retval['fns']    = [best_f]
+        retval['best_x'] = best_x
+
+        if False:
+            print("Found best_f = ", best_f)
+            print("Using x = ", best_x)
+
+        return retval
 
 
 

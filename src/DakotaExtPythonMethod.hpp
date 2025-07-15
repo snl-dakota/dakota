@@ -44,12 +44,15 @@ class ExtPythonMethod : public Iterator
 
   protected:
 
+  /// Initialize python interpreter and Method module
+  void initialize_python();
+
   /// whether the user requested numpy data structures in the input file
   bool userNumpyFlag;
   /// true if this class created the interpreter instance
   bool ownPython;
-  /// callback function for analysis driver
-  py::function py11CallBack;
+  /// python Method class
+  py::object pyMethod;
 
   /// Python module filename and class/function
   String moduleAndClassName;

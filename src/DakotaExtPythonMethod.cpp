@@ -27,7 +27,16 @@ ExtPythonMethod::ExtPythonMethod(ProblemDescDB& problem_db,
   py11Active(false)
 {
   moduleAndClassName = problem_db.get_string("method.class_path_and_name");
+  initialize_python();
 
+  iteratedModel = model;
+  update_from_model(*iteratedModel);
+}
+
+// -----------------------------------------------------------------
+
+void ExtPythonMethod::initialize_python()
+{
   if (!Py_IsInitialized()) {
     py::initialize_interpreter();
     ownPython = true;
@@ -43,23 +52,6 @@ ExtPythonMethod::ExtPythonMethod(ProblemDescDB& problem_db,
     }
   }
 
-  iteratedModel = model;
-  update_from_model(*iteratedModel);
-}
-
-// -----------------------------------------------------------------
-
-void ExtPythonMethod::initialize_run()
-{
-  Iterator::initialize_run();
-}
-
-// -----------------------------------------------------------------
-
-void ExtPythonMethod::core_run()
-{
-  //initialize_variables_and_constraints();
-
   if( !py11Active )
   {
     try {
@@ -71,7 +63,7 @@ void ExtPythonMethod::core_run()
       auto method_name = moduleAndClassName.substr(p+1);
 
       py::object module = py::module_::import(module_name.c_str());
-      py11CallBack = module.attr(method_name.c_str());
+      pyMethod = module.attr(method_name.c_str())();
     }
     catch(py::error_already_set &e) {
       if (e.matches(PyExc_ModuleNotFoundError)) {
@@ -86,6 +78,42 @@ void ExtPythonMethod::core_run()
     }
     py11Active = true;
   }
+
+  // Check that needed method(s) exist in the module
+  std::vector<std::string> req_attrs = { "core_run" };
+  bool is_module_valid = true;
+  for( auto const & req_at : req_attrs ) {
+    try {
+      py::object py_fn = pyMethod.attr(req_at.c_str());
+    }
+    catch(py::error_already_set &e) {
+      if (e.matches(PyExc_AttributeError)) {
+        std::cerr << "Module '" << moduleAndClassName << "' does not "
+          << "contain required method '" << req_at << "'"
+          << std::endl;
+      }
+      is_module_valid = false;;
+    }
+  }
+  if( !is_module_valid ) {
+      Cerr << "Error: Invalid python method module." << std::endl;
+      abort_handler(-1);
+  }
+
+}
+
+// -----------------------------------------------------------------
+
+void ExtPythonMethod::initialize_run()
+{
+  Iterator::initialize_run();
+}
+
+// -----------------------------------------------------------------
+
+void ExtPythonMethod::core_run()
+{
+  //initialize_variables_and_constraints();
 
   assert( py11Active );
   assert( Py_IsInitialized() );
@@ -111,7 +139,9 @@ void ExtPythonMethod::core_run()
         );
 
     // Call the method
-    py::dict ret_val = py11CallBack(kwargs, executor);
+    const std::string fn_name("core_run");
+    py::object py_run = pyMethod.attr(fn_name.c_str());
+    py::dict ret_val = py_run(kwargs, executor);
 
     // Extract the single scalar result and best parameter
     if (ret_val.contains("fns")) {
