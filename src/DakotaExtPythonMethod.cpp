@@ -56,9 +56,11 @@ void ExtPythonMethod::initialize_python()
   {
     try {
       size_t p = moduleAndClassName.find_last_of(".");
-      if( std::string::npos == p )
-        throw(std::runtime_error(
-              "Invalid method python module_and_class_name.\n\tUse \"module.classname\""));
+      if( std::string::npos == p ) {
+        Cerr << "Invalid method python module_and_class_name."
+             << "\n\tUse \"module.classname\"";
+        abort_handler(-1);
+      }
       auto module_name = moduleAndClassName.substr(0,p);
       auto method_name = moduleAndClassName.substr(p+1);
 
@@ -67,13 +69,14 @@ void ExtPythonMethod::initialize_python()
     }
     catch(py::error_already_set &e) {
       if (e.matches(PyExc_ModuleNotFoundError)) {
-        std::cerr << "Could not load the required module '"
-                  << moduleAndClassName << "'" << std::endl;
-        throw;
+        Cerr << "Could not load the required module '"
+             << moduleAndClassName << "'" << std::endl;
+        abort_handler(-1);
       }
       else {
-        std::cerr << "Caught a python exception:\n"
-                  << e.what() << std::endl;
+        Cerr << "Caught a python exception:\n"
+             << e.what() << std::endl;
+        abort_handler(-1);
       }
     }
     py11Active = true;
@@ -125,17 +128,20 @@ void ExtPythonMethod::core_run()
     ShortArray fnASV = {1};
     py::list asv = copy_array_to_pybind11<py::list,ShortArray,int>(fnASV);
 
+    const RealVector& cv_initial_points = ModelUtils::continuous_variables(*iteratedModel);
     const RealVector& cv_lower_bounds = ModelUtils::continuous_lower_bounds(*iteratedModel);
     const RealVector& cv_upper_bounds = ModelUtils::continuous_upper_bounds(*iteratedModel);
+    py::list initial_pts  = copy_array_to_pybind11<py::list>(cv_initial_points);
     py::list lower_bounds = copy_array_to_pybind11<py::list>(cv_lower_bounds);
     py::list upper_bounds = copy_array_to_pybind11<py::list>(cv_upper_bounds);
 
     py::dict kwargs = py::dict(
         "variables"_a             = iteratedModel->current_variables().cv() /* numVars */,
+        "initial_values"_a        = initial_pts,
         "lower_bounds"_a          = lower_bounds,
         "upper_bounds"_a          = upper_bounds,
         "asv"_a                   = asv,
-        "functions"_a             = 1 // hard-coded to 1 for now
+        "functions"_a             = ModelUtils::response_size(*iteratedModel)
         );
 
     // Call the method
@@ -155,19 +161,19 @@ void ExtPythonMethod::core_run()
       }
     }
   }
-  catch (const std::runtime_error& e) {
+  catch (const std::exception& e) {
     // (py::error_already_set is caught here too)
-    std::string err_msg("Error evaluating Python analysis_driver ");
+    std::string err_msg("Error evaluating Python method ");
     err_msg += moduleAndClassName + ":\n";
     err_msg += e.what();
     Cerr << err_msg << std::endl;
-    throw FunctionEvalFailure(err_msg);
+    abort_handler(-1);
   }
   catch (...) {
-    std::string err_msg("Error evaluating Python analysis_driver ");
+    std::string err_msg("Error evaluating Python method ");
     err_msg += moduleAndClassName;
     Cerr << err_msg << std::endl;
-    throw FunctionEvalFailure(err_msg);
+    abort_handler(-1);
   }
 
 } // core_run

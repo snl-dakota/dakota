@@ -229,8 +229,13 @@ class SimplePyOpt:
 
         print(params)
         n_vars = params['variables']
+        n_fns  = params['functions']
+        init_pts = params['initial_values']
         l_bounds = params['lower_bounds']
         u_bounds = params['upper_bounds']
+
+        if n_fns != 1:
+            raise RuntimeError("SimplyPyOpt only supports a single response")
 
         retval = {}
 
@@ -242,7 +247,8 @@ class SimplePyOpt:
 
         # Crude "optimization" based on random sampling over parameter space
         i = 0
-        best_f = 1e32 # Hard-coded to single response for now
+        best_x = init_pts
+        best_f = executor.function_value(init_pts)[0]
         while  i<=max_evals and best_f>fn_tol:
             x = []
             for j in range(n_vars):

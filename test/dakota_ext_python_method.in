@@ -4,7 +4,7 @@
 
 method,
     external_python
-      class_path_and_name = "driver_text_book.demo_optimizer"
+      class_path_and_name = "driver_text_book.SimplePyOpt"
 
 variables,
     continuous_design = 2
