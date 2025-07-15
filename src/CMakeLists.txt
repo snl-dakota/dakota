@@ -1124,7 +1124,7 @@ if(DAKOTA_PYTHON_WRAPPER)
 
   if (APPLE)
     set_target_properties(environment PROPERTIES INSTALL_RPATH
-      "@rpath;@rpath/../../../../../lib;@rpath/../../../../../lib64;@@rpath/../../../../../bin")
+      "@rpath;@rpath/../../../../../lib;@rpath/../../../../../lib64;@rpath/../../../../../bin")
   elseif (UNIX)
     set_target_properties(environment PROPERTIES INSTALL_RPATH
       "\$ORIGIN;\$ORIGIN/../../../../../lib;\$ORIGIN/../../../../../lib64;\$ORIGIN/../../../../../bin")
