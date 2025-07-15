@@ -1137,10 +1137,10 @@ if(DAKOTA_PYTHON_WRAPPER)
 
   if (APPLE)
     set_target_properties(environment PROPERTIES INSTALL_RPATH
-      "@rpath;@rpath/../../../../../lib;@rpath/../../../../../bin")
+      "@rpath;@rpath/../../../../../lib;@rpath/../../../../../lib64;@rpath/../../../../../bin")
   elseif (UNIX)
     set_target_properties(environment PROPERTIES INSTALL_RPATH
-      "\$ORIGIN;\$ORIGIN/../../../../../lib;\$ORIGIN/../../../../../bin")
+      "\$ORIGIN;\$ORIGIN/../../../../../lib;\$ORIGIN/../../../../../lib64;\$ORIGIN/../../../../../bin")
   endif()
   install(TARGETS environment EXPORT ${ExportTarget}
     DESTINATION share/dakota/Python/dakota/environment/)
