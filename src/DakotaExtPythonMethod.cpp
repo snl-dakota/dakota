@@ -154,10 +154,13 @@ void ExtPythonMethod::core_run()
       int i=0;
       auto best_x = ret_val["best_x"].cast<std::vector<double>>();
       auto values = ret_val["fns"].cast<std::vector<double>>();
+      StringMultiArrayConstView cv_labels =
+        ModelUtils::continuous_variable_labels(*iteratedModel);
       for (auto const & f : values) {
-	Cout << "ExtPythonMethod::core_run(), best_f --> " << f
-             << " at best_x = " << best_x
-             << std::endl;
+	Cout << "ExtPythonMethod::core_run()\n"
+             << "\tbest_f: " << f << ", at:" << std::endl;
+        for( size_t i=0; i<cv_labels.size(); ++i )
+          Cout << "\t" << cv_labels[i].data() << ": " << best_x[i] << std::endl;
       }
     }
   }
