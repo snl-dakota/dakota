@@ -1,14 +1,15 @@
-#@ s*: Label=FastTest                                                                                                                                                                                                                                                                                                                             
+#@ s*: Label=FastTest
 #@ *: DakotaConfig=HAVE_EXT_PYTHON_METHOD
 #@ *: ReqFiles=driver_text_book.py
 
 method,
     external_python
-      class_path_and_name = "driver_text_book.SimplePyOpt"
+      class_path_and_name = "driver_text_book.SimplePyOpt"      #s0
+#      class_path_and_name = "driver_text_book.RandomSample"    #s1
 
 variables,
     continuous_design = 2
-    initial_point      -1.0     1.0
+    initial_point       0.5     0.5
     upper_bounds	2.0     2.0
     lower_bounds       -2.0    -2.0
     descriptors	        'x1'    'x2'
@@ -18,7 +19,8 @@ interface,
     analysis_driver = 'text_book'
 
 responses,
-    objective_functions = 1
+    objective_functions = 1     #s0
+#    objective_functions = 3    #s1
     no_gradients
     no_hessians
 
