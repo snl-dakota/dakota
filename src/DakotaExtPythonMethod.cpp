@@ -87,19 +87,10 @@ void ExtPythonMethod::initialize_python()
   // Check that needed method(s) exist in the module
   std::vector<std::string> req_attrs = { "core_run" };
   bool is_module_valid = true;
-  for( auto const & req_at : req_attrs ) {
-    try {
-      py::object py_fn = pyMethod.attr(req_at.c_str());
-    }
-    catch(py::error_already_set &e) {
-      if (e.matches(PyExc_AttributeError)) {
-        std::cerr << "Module '" << moduleAndClassName << "' does not "
-          << "contain required method '" << req_at << "'"
-          << std::endl;
-      }
-      is_module_valid = false;;
-    }
-  }
+  for( auto const & req_at : req_attrs )
+    is_module_valid = is_module_valid &&
+                      PythonUtils::check_for_attr(pyMethod, req_at, moduleAndClassName);
+
   if( !is_module_valid ) {
       Cerr << "Error: Invalid python method module." << std::endl;
       abort_handler(-1);
@@ -111,7 +102,27 @@ void ExtPythonMethod::initialize_python()
 
 void ExtPythonMethod::initialize_run()
 {
-  Iterator::initialize_run();
+  // Create the callback executor (model wrapper)
+  executor_ = std::make_shared<ModelExecutor>(iteratedModel);
+
+  // Check and do if optional method exists
+  std::string chk_attr = "initialize_run";
+  if( PythonUtils::check_for_attr(pyMethod, chk_attr, moduleAndClassName) ) {
+    py::object py_run = pyMethod.attr(chk_attr.c_str());
+    py_run(*executor_);
+  }
+}
+
+// -----------------------------------------------------------------
+
+void ExtPythonMethod::pre_run()
+{
+  // Check and do if optional method exists
+  std::string chk_attr = "pre_run";
+  if( PythonUtils::check_for_attr(pyMethod, chk_attr, moduleAndClassName) ) {
+    py::object py_run = pyMethod.attr(chk_attr.c_str());
+    py_run(*executor_);
+  }
 }
 
 // -----------------------------------------------------------------
@@ -123,8 +134,6 @@ void ExtPythonMethod::core_run()
   assert( py11Active );
   assert( Py_IsInitialized() );
 
-  ModelExecutor executor = ModelExecutor(iteratedModel);
-
   try  {
 
     ShortArray fnASV = {1};
@@ -133,7 +142,7 @@ void ExtPythonMethod::core_run()
     // Call the method
     const std::string fn_name("core_run");
     py::object py_run = pyMethod.attr(fn_name.c_str());
-    py::dict ret_val = py_run(executor);
+    py::dict ret_val = py_run(*executor_);
 
     // A special case for an optimizer
     //     extract the single scalar result and best parameters
@@ -152,7 +161,7 @@ void ExtPythonMethod::core_run()
     }
     // For debugging output utility
     //if (ret_val.contains("fns")) {
-    //  executor.compute_and_print_moments(ret_val["fns"].cast<std::vector<std::vector<double>>>());
+    //  executor_.compute_and_print_moments(ret_val["fns"].cast<std::vector<std::vector<double>>>());
     //}
   }
   catch (const std::exception& e) {
@@ -171,6 +180,31 @@ void ExtPythonMethod::core_run()
   }
 
 } // core_run
+
+// -----------------------------------------------------------------
+
+void ExtPythonMethod::post_run(std::ostream& s)
+{
+  // Check and do if optional method exists
+  std::string chk_attr = "post_run";
+  if( PythonUtils::check_for_attr(pyMethod, chk_attr, moduleAndClassName) ) {
+    py::object py_run = pyMethod.attr(chk_attr.c_str());
+    py_run(*executor_);
+  }
+}
+
+// -----------------------------------------------------------------
+
+void ExtPythonMethod::finalize_run()
+{
+  // Check and do if optional method exists
+  std::string chk_attr = "finalize_run";
+  if( PythonUtils::check_for_attr(pyMethod, chk_attr, moduleAndClassName) ) {
+    py::object py_run = pyMethod.attr(chk_attr.c_str());
+    py_run(*executor_);
+  }
+}
+
 
 // -----------------------------------------------------------------
 // Model Executor

@@ -417,6 +417,10 @@ if(DAKOTA_HAVE_HDF5)
   list(APPEND util_src HDF5_IO.cpp ResultsDBHDF5.cpp )
 endif()
 
+if(DAKOTA_PYTHON_DIRECT_INTERFACE)
+  list(APPEND util_src python_utils.cpp )
+endif()
+
 if(DAKOTA_DL_SOLVER)
   list(APPEND util_src DLSolver.cpp)
 endif(DAKOTA_DL_SOLVER)

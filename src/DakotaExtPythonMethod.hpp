@@ -25,6 +25,31 @@ namespace Dakota {
 
 // -----------------------------------------------------------------
 
+class ModelExecutor
+{
+  public:
+
+    /// Constructor
+    ModelExecutor(std::shared_ptr<Model> & model);
+
+    /// model evaluator
+    std::vector<double> value(std::vector<double> & x);
+
+    /// compute and print response central moments
+    void compute_and_print_moments(const std::vector<std::vector<double>> &);
+
+    const Model& model() const
+      { return *model_; }
+
+  private:
+
+    // wrapped model
+    std::shared_ptr<Model> model_;
+
+}; // class ModelExecutor
+
+// -----------------------------------------------------------------
+
 class ExtPythonMethod : public Iterator
 {
   public:
@@ -38,28 +63,39 @@ class ExtPythonMethod : public Iterator
     /// Destructor
     ~ExtPythonMethod() {}
 
-    /// Initializes the Method
+    /// Optional initialization
     void initialize_run() override;
 
-    /// Executes the Method
+    /// Optional
+    void pre_run() override;
+
+    /// REQUIRED method execution
     void core_run() override;
+
+    /// Optional
+    void post_run(std::ostream& s) override;
+
+    /// Optional
+    void finalize_run() override;
 
   protected:
 
-  /// Initialize python interpreter and Method module
-  void initialize_python();
+    /// Initialize python interpreter and Method module
+    void initialize_python();
 
-  /// whether the user requested numpy data structures in the input file
-  bool userNumpyFlag;
-  /// true if this class created the interpreter instance
-  bool ownPython;
-  /// python Method class
-  py::object pyMethod;
+    /// whether the user requested numpy data structures in the input file
+    bool userNumpyFlag;
+    /// true if this class created the interpreter instance
+    bool ownPython;
+    /// python Method class
+    py::object pyMethod;
 
-  /// Python module filename and class/function
-  String moduleAndClassName;
+    /// Python module filename and class/function
+    String moduleAndClassName;
 
-  bool py11Active;
+    bool py11Active;
+
+    std::shared_ptr<ModelExecutor> executor_;
 
 }; // class ExtPythonMethod
 
@@ -113,30 +149,6 @@ public:
 
 }; // class ExtPythonTraits
 
-// -----------------------------------------------------------------
-
-class ModelExecutor
-{
-  public:
-
-    /// Constructor
-    ModelExecutor(std::shared_ptr<Model> & model);
-
-    /// model evaluator
-    std::vector<double> value(std::vector<double> & x);
-
-    /// compute and print response central moments
-    void compute_and_print_moments(const std::vector<std::vector<double>> &);
-
-    const Model& model() const
-      { return *model_; }
-
-  private:
-
-    // wrapped model
-    std::shared_ptr<Model> model_;
-
-}; // class ModelExecutor
 
 } // namespace Dakota
 

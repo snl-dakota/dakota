@@ -9,6 +9,8 @@
 
 #pragma once
 #include "dakota_data_util.hpp"
+#include <pybind11/numpy.h>
+namespace py = pybind11;
 
 namespace Dakota {
     
@@ -32,7 +34,8 @@ namespace Dakota {
           copy_data(src, tmp_vec);
           return py::cast(tmp_vec);
         }
-        /// dummy default empty string
-        static const String empty_string = "";
+
+      bool check_for_attr(py::object & pyObj, const std::string& attr,
+                          std::string name="");
     }
 }

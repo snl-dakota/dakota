@@ -221,7 +221,6 @@ class SimplePyOpt:
     def __init__(self, params=None):
 
         print("python SimplePyOpt class constructer...")
-        self.coeffs = None
         if params is not None:
             self.params = params
 
@@ -278,7 +277,6 @@ class RandomSample:
     def __init__(self, params=None):
 
         print("python RandomSample class constructer...")
-        self.coeffs = None
         if params is not None:
             self.params = params
 
@@ -302,21 +300,18 @@ class RandomSample:
         i = 1
         x = init_pts
         xvals = []
-        fns = []
+        self.fns = []
         while  i<=max_evals:
             xvals.append(x)
-            fns.append(executor.function_value(x))
+            self.fns.append(executor.function_value(x))
             x = []
             for j in range(n_vars):
                 x.append(rnd.uniform(l_bounds[j], u_bounds[j]))
             i=i+1
 
         retval['x']   = x
-        retval['fns'] = fns
-        retval['fns_np'] = np.array(fns).astype(np.float64)
-
-        # Output using Dakota formatting
-        executor.output_central_moments(fns)
+        retval['fns'] = self.fns
+        #retval['fns_np'] = np.array(fns).astype(np.float64)
 
         #print("fns_np = ", retval['fns_np'])
 
@@ -325,6 +320,16 @@ class RandomSample:
             print("x = ", xvals)
 
         return retval
+
+
+    def post_run(self, executor):
+
+        # Not sure how to use this yet
+        #print(type(s))
+
+        # Output using Dakota formatting
+        executor.output_central_moments(self.fns)
+
 
 
 ############################################################
@@ -336,7 +341,6 @@ class RandomSampleMixed:
     def __init__(self, params=None):
 
         print("python RandomSample class constructer...")
-        self.coeffs = None
         if params is not None:
             self.params = params
 
