@@ -128,6 +128,9 @@ class ModelExecutor
     /// compute and print response central moments
     void compute_and_print_moments(const std::vector<std::vector<double>> &);
 
+    const Model& model() const
+      { return *model_; }
+
   private:
 
     // wrapped model

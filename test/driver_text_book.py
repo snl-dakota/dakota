@@ -272,6 +272,68 @@ class SimplePyOpt:
         return retval
 
 
+#############################################
+#       Demo Python Method --> Sampling     #
+#############################################
+
+class RandomSample:
+
+    def __init__(self, params=None):
+
+        print("python RandomSample class constructer...")
+        self.coeffs = None
+        if params is not None:
+            self.params = params
+
+    def core_run(self, params, executor):
+
+        print(params)
+        n_vars = params['variables']
+        n_fns  = params['functions']
+        init_pts = params['initial_values']
+        l_bounds = params['lower_bounds']
+        u_bounds = params['upper_bounds']
+
+        retval = {}
+
+        # Hard-coded setting that could be configured by user
+        max_evals = 25
+
+        # Crude random sampling over parameter space
+        i = 1
+        x = init_pts
+        xvals = []
+        fns = []
+        while  i<=max_evals:
+            xvals.append(x)
+            fns.append(executor.function_value(x))
+            x = []
+            for j in range(n_vars):
+                x.append(rnd.uniform(l_bounds[j], u_bounds[j]))
+            i=i+1
+
+        retval['x']   = x
+        retval['fns'] = fns
+        retval['fns_np'] = np.array(fns).astype(np.float64)
+
+        executor.output_central_moments(fns)
+
+        print("fns_np = ", retval['fns_np'])
+
+        if False:
+            print("fns = ", fns)
+            print("x = ", xvals)
+
+        return retval
+
+
+    def test_np_array(self):
+
+        arr = np.array([1.1, 2.2, 3.3])
+        print(arr)
+        return arr
+
+
 
 # Simple test driver for sanity checking
 if __name__ == "__main__":
@@ -282,7 +344,6 @@ if __name__ == "__main__":
                'cv'        : [2.2, 1.3]
              }
     retval = text_book_list(params)
-    demo_opt_fn(params, None)
 
     print(retval)
 

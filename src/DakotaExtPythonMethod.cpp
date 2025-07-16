@@ -130,26 +130,10 @@ void ExtPythonMethod::core_run()
     ShortArray fnASV = {1};
     py::list asv = PythonUtils::copy_array_to_pybind11<py::list,ShortArray,int>(fnASV);
 
-    const RealVector& cv_initial_points = ModelUtils::continuous_variables(*iteratedModel);
-    const RealVector& cv_lower_bounds   = ModelUtils::continuous_lower_bounds(*iteratedModel);
-    const RealVector& cv_upper_bounds   = ModelUtils::continuous_upper_bounds(*iteratedModel);
-    py::list initial_pts  = PythonUtils::copy_array_to_pybind11<py::list>(cv_initial_points);
-    py::list lower_bounds = PythonUtils::copy_array_to_pybind11<py::list>(cv_lower_bounds);
-    py::list upper_bounds = PythonUtils::copy_array_to_pybind11<py::list>(cv_upper_bounds);
-
-    py::dict kwargs = py::dict(
-        "variables"_a             = iteratedModel->current_variables().cv() /* numVars */,
-        "initial_values"_a        = initial_pts,
-        "lower_bounds"_a          = lower_bounds,
-        "upper_bounds"_a          = upper_bounds,
-        "asv"_a                   = asv,
-        "functions"_a             = ModelUtils::response_size(*iteratedModel)
-        );
-
     // Call the method
     const std::string fn_name("core_run");
     py::object py_run = pyMethod.attr(fn_name.c_str());
-    py::dict ret_val = py_run(kwargs, executor);
+    py::dict ret_val = py_run(executor);
 
     // A special case for an optimizer
     //     extract the single scalar result and best parameters
@@ -241,18 +225,63 @@ ModelExecutor::compute_and_print_moments(const std::vector<std::vector<double>> 
 
 PYBIND11_MODULE(ext_method, m) {
 
-  // Executor value wrapper
+  // Executor value helper
   py::class_<Dakota::ModelExecutor>(m, "Executor")
     .def("function_value", &Dakota::ModelExecutor::value
          , "Return function value for passed parameter value"
          , py::arg("x"))
     
-  // Executor output utility wrapper
+  // Executor output helper
     .def("output_central_moments", &Dakota::ModelExecutor::compute_and_print_moments
          , "Compute and print central moments for response array"
          , py::arg("resp"))
+
+  // Executor helper
+    .def("initial_values",
+        [](const Dakota::ModelExecutor &me) {
+            return PythonUtils::copy_array_to_pybind11<py::list>(
+                ModelUtils::continuous_variables(me.model()));
+        })
+
+
+  // --------------
+  // Model wrappers
+  // --------------
+
+    .def("tv",
+        [](const Dakota::ModelExecutor &me) {
+            return ModelUtils::tv(me.model());
+        })
+
+    .def("response_size",
+        [](const Dakota::ModelExecutor &me) {
+            return ModelUtils::response_size(me.model());
+        })
+
+    .def("continuous_variable_labels",
+        [](const Dakota::ModelExecutor &me) {
+            return PythonUtils::copy_array_to_pybind11<py::list,StringMultiArray,String>(
+                ModelUtils::continuous_variable_labels(me.model()));
+        })
+
+    .def("continuous_variables",
+        [](const Dakota::ModelExecutor &me) {
+            return PythonUtils::copy_array_to_pybind11<py::list>(
+                ModelUtils::continuous_variables(me.model()));
+        })
+
+    .def("continuous_lower_bounds",
+        [](const Dakota::ModelExecutor &me) {
+            return PythonUtils::copy_array_to_pybind11<py::list>(
+                ModelUtils::continuous_lower_bounds(me.model()));
+        })
+
+    .def("continuous_upper_bounds",
+        [](const Dakota::ModelExecutor &me) {
+            return PythonUtils::copy_array_to_pybind11<py::list>(
+                ModelUtils::continuous_upper_bounds(me.model()));
+        })
     ;
 }
 
 } // namespace Dakota
-
