@@ -73,14 +73,6 @@ class Pybind11Interface: public DirectApplicInterface
 
     bool py11Active;
 
-    /// copy Dakota arrays to pybind11 lists via std::vector<> copy
-    template<typename RetT, class ArrayT, typename T>
-    RetT copy_array_to_pybind11(const ArrayT & src) const;
-
-    /// specialized copy Dakota arrays to pybind11 lists via std::vector<> copy
-    template<typename RetT, typename OrdinalType, typename ScalarType> 
-    RetT copy_array_to_pybind11(const Teuchos::SerialDenseVector<OrdinalType,ScalarType> & src) const;
-
     /// Translate Dakota parameters into returned Python dictionary in
     /// numpy or array format.
     py::dict params_to_dict() const;

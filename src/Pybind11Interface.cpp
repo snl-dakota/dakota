@@ -14,6 +14,7 @@
 #include "dakota_global_defs.hpp"
 #include "DataMethod.hpp"
 #include "ProblemDescDB.hpp"
+#include "python_utils.hpp"
 
 using namespace pybind11::literals; // to bring in the `_a` literal
 
@@ -192,24 +193,6 @@ void Pybind11Interface::initialize_driver(const String& ac_name)
 }
 
 
-template<typename RetT, class ArrayT, typename T>
-RetT Pybind11Interface::copy_array_to_pybind11(const ArrayT & src) const
-{
-  std::vector<T> tmp_vec;
-  for( auto const & a : src )
-    tmp_vec.push_back(a);
-  return py::cast(tmp_vec);
-}
-
-template<typename RetT, class O, class S>
-RetT Pybind11Interface::copy_array_to_pybind11(const Teuchos::SerialDenseVector<O,S> & src) const
-{
-  std::vector<S> tmp_vec;
-  copy_data(src, tmp_vec);
-  return py::cast(tmp_vec);
-}
-
-
 py::dict Pybind11Interface::params_to_dict() const
 {
   py::dict kwargs;
@@ -224,22 +207,22 @@ py::dict Pybind11Interface::params_to_dict() const
 template<typename py_arrayT>
 py::dict Pybind11Interface::pack_kwargs() const
 {
-  py::list  all_var_labels   = copy_array_to_pybind11<py::list,StringArray,String>(xAllLabels);
-  py_arrayT cv           = copy_array_to_pybind11<py_arrayT>(xC);
-  py::list  cv_labels    = copy_array_to_pybind11<py::list,StringMultiArray,String>(xCLabels);
-  py_arrayT div          = copy_array_to_pybind11<py_arrayT>(xDI);
-  py::list  div_labels   = copy_array_to_pybind11<py::list,StringMultiArray,String>(xDILabels);
-  py_arrayT dsv          = copy_array_to_pybind11<py::list,StringMultiArray,String>(xDS);
-  py::list  dsv_labels   = copy_array_to_pybind11<py::list,StringMultiArray,String>(xDSLabels);
-  py_arrayT drv          = copy_array_to_pybind11<py_arrayT>(xDR);
-  py::list  drv_labels   = copy_array_to_pybind11<py::list,StringMultiArray,String>(xDRLabels);
-  py_arrayT asv          = copy_array_to_pybind11<py_arrayT,ShortArray,int>(directFnASV);
-  py_arrayT dvv          = copy_array_to_pybind11<py_arrayT,SizetArray,size_t>(directFnDVV);
-  py_arrayT an_comps     = (analysisComponents.size() > 0)
-                          ?  copy_array_to_pybind11<py_arrayT,StringArray,String>(analysisComponents[analysisDriverIndex])
-                          :  py_arrayT();
-  py::list fn_labels     = copy_array_to_pybind11<py::list,StringArray,String>(fnLabels);
-  py::list md_labels     = copy_array_to_pybind11<py::list,StringArray,String>(metaDataLabels);
+  py::list  all_var_labels   = PythonUtils::copy_array_to_pybind11<py::list,StringArray,String>(xAllLabels);
+  py_arrayT cv               = PythonUtils::copy_array_to_pybind11<py_arrayT>(xC);
+  py::list  cv_labels        = PythonUtils::copy_array_to_pybind11<py::list,StringMultiArray,String>(xCLabels);
+  py_arrayT div              = PythonUtils::copy_array_to_pybind11<py_arrayT>(xDI);
+  py::list  div_labels       = PythonUtils::copy_array_to_pybind11<py::list,StringMultiArray,String>(xDILabels);
+  py_arrayT dsv              = PythonUtils::copy_array_to_pybind11<py::list,StringMultiArray,String>(xDS);
+  py::list  dsv_labels       = PythonUtils::copy_array_to_pybind11<py::list,StringMultiArray,String>(xDSLabels);
+  py_arrayT drv              = PythonUtils::copy_array_to_pybind11<py_arrayT>(xDR);
+  py::list  drv_labels       = PythonUtils::copy_array_to_pybind11<py::list,StringMultiArray,String>(xDRLabels);
+  py_arrayT asv              = PythonUtils::copy_array_to_pybind11<py_arrayT,ShortArray,int>(directFnASV);
+  py_arrayT dvv              = PythonUtils::copy_array_to_pybind11<py_arrayT,SizetArray,size_t>(directFnDVV);
+  py_arrayT an_comps         = (analysisComponents.size() > 0)
+                               ?  PythonUtils::copy_array_to_pybind11<py_arrayT,StringArray,String>(analysisComponents[analysisDriverIndex])
+                               :  py_arrayT();
+  py::list fn_labels         = PythonUtils::copy_array_to_pybind11<py::list,StringArray,String>(fnLabels);
+  py::list md_labels         = PythonUtils::copy_array_to_pybind11<py::list,StringArray,String>(metaDataLabels);
 
   std::string eval_id(eval_id_string());
 
