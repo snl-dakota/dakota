@@ -12,7 +12,9 @@
 #define EXTERNAL_PYTHON_METHOD_H
 
 #include <pybind11/pybind11.h>
+#include <pybind11/eigen.h>
 #include <pybind11/embed.h>
+#include <pybind11/numpy.h>
 #include <pybind11/stl.h>
 namespace py = pybind11;
 
