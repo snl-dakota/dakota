@@ -225,14 +225,13 @@ class SimplePyOpt:
         if params is not None:
             self.params = params
 
-    def core_run(self, params, executor):
+    def core_run(self, executor):
 
-        print(params)
-        n_vars = params['variables']
-        n_fns  = params['functions']
-        init_pts = params['initial_values']
-        l_bounds = params['lower_bounds']
-        u_bounds = params['upper_bounds']
+        n_vars = executor.tv()
+        n_fns  = executor.response_size()
+        init_pts = executor.initial_values()
+        l_bounds = executor.continuous_lower_bounds()
+        u_bounds = executor.continuous_upper_bounds()
 
         if n_fns != 1:
             raise RuntimeError("SimplyPyOpt only supports a single response")
@@ -253,8 +252,6 @@ class SimplePyOpt:
             x = []
             for j in range(n_vars):
                 x.append(rnd.uniform(l_bounds[j], u_bounds[j]))
-            #params['cv'] = x
-            #f = text_book_list(params)['fns'][0]
             f = executor.function_value(x)
 
             if abs(f[0]-target) < best_f:
@@ -285,14 +282,13 @@ class RandomSample:
         if params is not None:
             self.params = params
 
-    def core_run(self, params, executor):
+    def core_run(self, executor):
 
-        print(params)
-        n_vars = params['variables']
-        n_fns  = params['functions']
-        init_pts = params['initial_values']
-        l_bounds = params['lower_bounds']
-        u_bounds = params['upper_bounds']
+        n_vars = executor.tv()
+        n_fns  = executor.response_size()
+        init_pts = executor.initial_values()
+        l_bounds = executor.continuous_lower_bounds()
+        u_bounds = executor.continuous_upper_bounds()
 
         retval = {}
 
