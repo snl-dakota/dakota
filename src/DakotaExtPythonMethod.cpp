@@ -10,6 +10,7 @@
 #include "DakotaExtPythonMethod.hpp"
 #include "NonDSampling.hpp"
 #include "ProblemDescDB.hpp"
+#include "python_utils.hpp"
 
 using namespace pybind11::literals; // to bring in the `_a` literal
 
@@ -127,14 +128,14 @@ void ExtPythonMethod::core_run()
   try  {
 
     ShortArray fnASV = {1};
-    py::list asv = copy_array_to_pybind11<py::list,ShortArray,int>(fnASV);
+    py::list asv = PythonUtils::copy_array_to_pybind11<py::list,ShortArray,int>(fnASV);
 
     const RealVector& cv_initial_points = ModelUtils::continuous_variables(*iteratedModel);
     const RealVector& cv_lower_bounds   = ModelUtils::continuous_lower_bounds(*iteratedModel);
     const RealVector& cv_upper_bounds   = ModelUtils::continuous_upper_bounds(*iteratedModel);
-    py::list initial_pts  = copy_array_to_pybind11<py::list>(cv_initial_points);
-    py::list lower_bounds = copy_array_to_pybind11<py::list>(cv_lower_bounds);
-    py::list upper_bounds = copy_array_to_pybind11<py::list>(cv_upper_bounds);
+    py::list initial_pts  = PythonUtils::copy_array_to_pybind11<py::list>(cv_initial_points);
+    py::list lower_bounds = PythonUtils::copy_array_to_pybind11<py::list>(cv_lower_bounds);
+    py::list upper_bounds = PythonUtils::copy_array_to_pybind11<py::list>(cv_upper_bounds);
 
     py::dict kwargs = py::dict(
         "variables"_a             = iteratedModel->current_variables().cv() /* numVars */,

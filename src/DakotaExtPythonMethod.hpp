@@ -61,23 +61,6 @@ class ExtPythonMethod : public Iterator
 
   bool py11Active;
 
-  template<typename RetT, class ArrayT, typename T>
-  RetT copy_array_to_pybind11(const ArrayT & src) const
-  {
-    std::vector<T> tmp_vec;
-    for( auto const & a : src )
-      tmp_vec.push_back(a);
-    return py::cast(tmp_vec);
-  };
-
-  template<typename RetT, class O, class S>
-  RetT copy_array_to_pybind11(const Teuchos::SerialDenseVector<O,S> & src) const
-  {
-    std::vector<S> tmp_vec;
-    copy_data(src, tmp_vec);
-    return py::cast(tmp_vec);
-  };
-
 }; // class ExtPythonMethod
 
 
