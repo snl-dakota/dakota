@@ -4,22 +4,51 @@
 
 method,
     external_python
-      class_path_and_name = "driver_text_book.SimplePyOpt"      #s0
-#      class_path_and_name = "driver_text_book.RandomSample"    #s1
+      class_path_and_name = "driver_text_book.SimplePyOpt"           #s0
+#      class_path_and_name = "driver_text_book.RandomSample"         #s1
+#      class_path_and_name = "driver_text_book.RandomSampleMixed"    #s2
 
 variables,
-    continuous_design = 2
-    initial_point       0.5     0.5
-    upper_bounds	2.0     2.0
-    lower_bounds       -2.0    -2.0
-    descriptors	        'x1'    'x2'
+    continuous_design = 2                                            #s0,#s1
+    initial_point       0.5     0.5                                  #s0,#s1
+    upper_bounds	2.0     2.0                                  #s0,#s1
+    lower_bounds       -2.0    -2.0                                  #s0,#s1
+    descriptors	        'x1'    'x2'                                 #s0,#s1
+#    continuous_design = 3                                           #s2
+#      initial_point   -1.0    1.5   2.0                             #s2
+#      upper_bounds    10.0   10.0  10.0                             #s2
+#      lower_bounds   -10.0  -10.0 -10.0                             #s2
+#      descriptors      'x1'  'x2'  'x3'                             #s2
+#    discrete_design_range = 2                                       #s2
+#      initial_point      2     2                                    #s2
+#      lower_bounds       1     1                                    #s2
+#      upper_bounds       4     9                                    #s2
+#      descriptors      'y1'   'y2'                                  #s2
+#    discrete_design_set                                             #s2
+#      real = 2                                                      #s2
+#        elements_per_variable = 4 5                                 #s2
+#        elements = 1.2 2.3 3.4 4.5 1.2 3.3 4.4 5.5 7.7              #s2
+#         initial_point 3.4  4.4                                     #s2
+#        descriptors      'y3'   'y4'                                #s2
+#      integer = 2                                                   #s2
+#        elements_per_variable = 2 2                                 #s2
+#        elements = 4 7 8 9                                          #s2
+#        descriptors      'z1'   'z2'                                #s2
+#      string = 1                                                    #s2
+#         elements = 'aniso1' 'aniso2' 'iso1' 'iso2' 'iso3'          #s2
+#        descriptors = 'ancomp'                                      #s2
+#         adjacency_matrix 1 1 0 0 0                                 #s2
+#                          1 1 0 0 0                                 #s2
+#                          0 0 1 1 1                                 #s2
+#                          0 0 1 1 1                                 #s2
+#                          0 0 1 1 1                                 #s2
 
 interface,
     direct
     analysis_driver = 'text_book'
 
 responses,
-    objective_functions = 1     #s0
+    objective_functions = 1     #s0,#s2
 #    objective_functions = 3    #s1
     no_gradients
     no_hessians

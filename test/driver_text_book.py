@@ -284,6 +284,9 @@ class RandomSample:
 
     def core_run(self, executor):
 
+        # Show the docstring for the executor
+        #help(executor)
+
         n_vars = executor.tv()
         n_fns  = executor.response_size()
         init_pts = executor.initial_values()
@@ -312,9 +315,90 @@ class RandomSample:
         retval['fns'] = fns
         retval['fns_np'] = np.array(fns).astype(np.float64)
 
+        # Output using Dakota formatting
         executor.output_central_moments(fns)
 
-        print("fns_np = ", retval['fns_np'])
+        #print("fns_np = ", retval['fns_np'])
+
+        if False:
+            print("fns = ", fns)
+            print("x = ", xvals)
+
+        return retval
+
+
+############################################################
+#       Demo Python Method --> Mixed Variable Sampling     #
+############################################################
+
+class RandomSampleMixed:
+
+    def __init__(self, params=None):
+
+        print("python RandomSample class constructer...")
+        self.coeffs = None
+        if params is not None:
+            self.params = params
+
+
+    def print_executor(self, executor):
+
+        print("executor.tv()                                ", executor.tv())
+        print("executor.cv()                                ", executor.cv())
+        print("executor.div()                               ", executor.div())
+        print("executor.dsv()                               ", executor.dsv())
+        print("executor.drv()                               ", executor.drv())
+        print("executor.continuous_variables()              ", executor.continuous_variables())
+        print("executor.discrete_int_variables()            ", executor.discrete_int_variables())
+        print("executor.discrete_string_variables()         ", executor.discrete_string_variables())
+        print("executor.discrete_real_variables()           ", executor.discrete_real_variables())
+        print("executor.continuous_variable_labels()        ", executor.continuous_variable_labels())
+        print("executor.discrete_int_variable_labels()      ", executor.discrete_int_variable_labels())
+        print("executor.discrete_string_variable_labels()   ", executor.discrete_string_variable_labels())
+        print("executor.discrete_real_variable_labels()     ", executor.discrete_real_variable_labels())
+        print("executor.response_size()                     ", executor.response_size())
+        print("executor.response_labels()                   ", executor.response_labels())
+        print("executor.continuous_lower_bounds()           ", executor.continuous_lower_bounds())
+        print("executor.continuous_upper_bounds()           ", executor.continuous_upper_bounds())
+        print("executor.discrete_int_lower_bounds()         ", executor.discrete_int_lower_bounds())
+        print("executor.discrete_int_upper_bounds()         ", executor.discrete_int_upper_bounds())
+        print("executor.discrete_real_lower_bounds()        ", executor.discrete_real_lower_bounds())
+        print("executor.discrete_real_upper_bounds()        ", executor.discrete_real_upper_bounds())
+
+
+    def core_run(self, executor):
+
+        self.print_executor(executor)
+
+        n_vars = executor.cv()
+        n_fns  = executor.response_size()
+        init_pts = executor.initial_values()
+        l_bounds = executor.continuous_lower_bounds()
+        u_bounds = executor.continuous_upper_bounds()
+
+        retval = {}
+
+        # Hard-coded setting that could be configured by user
+        max_evals = 5
+
+        # Crude random sampling over parameter space
+        i = 1
+        x = init_pts
+        xvals = []
+        fns = []
+        while  i<=max_evals:
+            xvals.append(x)
+            fns.append(executor.function_value(x))
+            x = []
+            for j in range(n_vars):
+                x.append(rnd.uniform(l_bounds[j], u_bounds[j]))
+            i=i+1
+
+        retval['x']   = x
+        retval['fns'] = fns
+
+        # Output using Dakota formatting
+        executor.output_central_moments(fns)
 
         if False:
             print("fns = ", fns)
