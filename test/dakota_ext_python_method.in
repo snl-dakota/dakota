@@ -1,12 +1,12 @@
 #@ s*: Label=FastTest
 #@ *: DakotaConfig=HAVE_EXT_PYTHON_METHOD
-#@ *: ReqFiles=driver_text_book.py
+#@ *: ReqFiles=external_methods.py
 
 method,
     external_python
-      class_path_and_name = "driver_text_book.SimplePyOpt"           #s0
-#      class_path_and_name = "driver_text_book.RandomSample"         #s1
-#      class_path_and_name = "driver_text_book.RandomSampleMixed"    #s2
+      class_path_and_name = "external_methods.SimplePyOpt"           #s0
+#      class_path_and_name = "external_methods.RandomSample"         #s1
+#      class_path_and_name = "external_methods.RandomSampleMixed"    #s2
 
 variables,
     continuous_design = 2                                            #s0,#s1
