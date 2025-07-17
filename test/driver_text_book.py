@@ -209,6 +209,35 @@ def text_book_batch(list_of_params):
             retvals.append(text_book_numpy(param_dict))
     return retvals
 
+#####################################
+#       External Method Helper      #
+#####################################
+
+def print_executor(executor):
+
+    print("executor.tv()                                ", executor.tv())
+    print("executor.cv()                                ", executor.cv())
+    print("executor.div()                               ", executor.div())
+    print("executor.dsv()                               ", executor.dsv())
+    print("executor.drv()                               ", executor.drv())
+    print("executor.continuous_variables()              ", executor.continuous_variables())
+    print("executor.discrete_int_variables()            ", executor.discrete_int_variables())
+    print("executor.discrete_string_variables()         ", executor.discrete_string_variables())
+    print("executor.discrete_real_variables()           ", executor.discrete_real_variables())
+    print("executor.continuous_variable_labels()        ", executor.continuous_variable_labels())
+    print("executor.discrete_int_variable_labels()      ", executor.discrete_int_variable_labels())
+    print("executor.discrete_string_variable_labels()   ", executor.discrete_string_variable_labels())
+    print("executor.discrete_real_variable_labels()     ", executor.discrete_real_variable_labels())
+    print("executor.response_size()                     ", executor.response_size())
+    print("executor.response_labels()                   ", executor.response_labels())
+    print("executor.continuous_lower_bounds()           ", executor.continuous_lower_bounds())
+    print("executor.continuous_upper_bounds()           ", executor.continuous_upper_bounds())
+    print("executor.discrete_int_lower_bounds()         ", executor.discrete_int_lower_bounds())
+    print("executor.discrete_int_upper_bounds()         ", executor.discrete_int_upper_bounds())
+    print("executor.discrete_real_lower_bounds()        ", executor.discrete_real_lower_bounds())
+    print("executor.discrete_real_upper_bounds()        ", executor.discrete_real_upper_bounds())
+
+
 
 #############################################
 #       Demo Python Method --> Optimizer    #
@@ -340,39 +369,14 @@ class RandomSampleMixed:
 
     def __init__(self, params=None):
 
-        print("python RandomSample class constructer...")
+        print("python RandomSampleMixed class constructer...")
         if params is not None:
             self.params = params
 
 
-    def print_executor(self, executor):
-
-        print("executor.tv()                                ", executor.tv())
-        print("executor.cv()                                ", executor.cv())
-        print("executor.div()                               ", executor.div())
-        print("executor.dsv()                               ", executor.dsv())
-        print("executor.drv()                               ", executor.drv())
-        print("executor.continuous_variables()              ", executor.continuous_variables())
-        print("executor.discrete_int_variables()            ", executor.discrete_int_variables())
-        print("executor.discrete_string_variables()         ", executor.discrete_string_variables())
-        print("executor.discrete_real_variables()           ", executor.discrete_real_variables())
-        print("executor.continuous_variable_labels()        ", executor.continuous_variable_labels())
-        print("executor.discrete_int_variable_labels()      ", executor.discrete_int_variable_labels())
-        print("executor.discrete_string_variable_labels()   ", executor.discrete_string_variable_labels())
-        print("executor.discrete_real_variable_labels()     ", executor.discrete_real_variable_labels())
-        print("executor.response_size()                     ", executor.response_size())
-        print("executor.response_labels()                   ", executor.response_labels())
-        print("executor.continuous_lower_bounds()           ", executor.continuous_lower_bounds())
-        print("executor.continuous_upper_bounds()           ", executor.continuous_upper_bounds())
-        print("executor.discrete_int_lower_bounds()         ", executor.discrete_int_lower_bounds())
-        print("executor.discrete_int_upper_bounds()         ", executor.discrete_int_upper_bounds())
-        print("executor.discrete_real_lower_bounds()        ", executor.discrete_real_lower_bounds())
-        print("executor.discrete_real_upper_bounds()        ", executor.discrete_real_upper_bounds())
-
-
     def core_run(self, executor):
 
-        self.print_executor(executor)
+        print_executor(executor)
 
         n_vars = executor.cv()
         n_fns  = executor.response_size()
@@ -389,26 +393,36 @@ class RandomSampleMixed:
         i = 1
         x = init_pts
         xvals = []
-        fns = []
+        mixed_vals = {}
+        self.fns = []
         while  i<=max_evals:
             xvals.append(x)
-            fns.append(executor.function_value(x))
+            mixed_vals['cv']  = x
+            mixed_vals['div'] = executor.discrete_int_variables() # just use initial values for testing API
+            mixed_vals['dsv'] = executor.discrete_string_variables() # just use initial values for testing API
+            mixed_vals['drv'] = executor.discrete_real_variables() # just use initial values for testing API
+            self.fns.append(executor.function_value(mixed_vals))
             x = []
             for j in range(n_vars):
                 x.append(rnd.uniform(l_bounds[j], u_bounds[j]))
             i=i+1
 
         retval['x']   = x
-        retval['fns'] = fns
-
-        # Output using Dakota formatting
-        executor.output_central_moments(fns)
+        retval['fns'] = self.fns
 
         if False:
             print("fns = ", fns)
             print("x = ", xvals)
 
         return retval
+
+    def post_run(self, executor):
+
+        # Not sure how to use this yet
+        #print(type(s))
+
+        # Output using Dakota formatting
+        executor.output_central_moments(self.fns)
 
 
     def test_np_array(self):

@@ -32,8 +32,11 @@ class ModelExecutor
     /// Constructor
     ModelExecutor(std::shared_ptr<Model> & model);
 
-    /// model evaluator
+    /// model evaluator, continuous vars
     std::vector<double> value(std::vector<double> & x);
+
+    /// model evaluator, mixed vars
+    std::vector<double> value(py::dict & vars);
 
     /// compute and print response central moments
     void compute_and_print_moments(const std::vector<std::vector<double>> &);

@@ -44,12 +44,12 @@ void ExtPythonMethod::initialize_python()
     ownPython = true;
     if (Py_IsInitialized()) {
       if (outputLevel >= NORMAL_OUTPUT)
-	Cout << "Python interpreter initialized for direct function evaluation."
+	Cout << "Python interpreter initialized for external methods."
 	     << std::endl;
     }
     else {
-      Cerr << "Error: Could not initialize Python for direct function "
-	   << "evaluation." << std::endl;
+      Cerr << "Error: Could not initialize Python for external methods."
+	   << std::endl;
       abort_handler(-1);
     }
   }
@@ -214,15 +214,56 @@ ModelExecutor::ModelExecutor(std::shared_ptr<Model> & model) :
   model_(model)
 { }
 
+// -----------------------------------------------------------------
+
 std::vector<double>
 ModelExecutor::value(std::vector<double>& x)
 {
-  Real result = 0;
   for (int i=0; i<x.size(); ++i)
-    model_->current_variables().continuous_variable(x[i], i);
+    ModelUtils::continuous_variable(*model_, x[i], i);
   model_->evaluate();
 
-  const Response& test_resp = model_->current_response();
+  const Response& test_resp = model_->current_response(); // No ModelUtils helper for Response's
+  std::vector<double> resp(test_resp.num_functions());
+  for (int i=0; i<resp.size(); ++i)
+    resp[i] = test_resp.function_value(i);
+
+  return resp;
+}
+
+// -----------------------------------------------------------------
+
+std::vector<double>
+ModelExecutor::value(py::dict & vars)
+{
+  if (vars.contains("cv")) {
+    auto cv = vars["cv"].cast<std::vector<double>>();
+    //Cout << "ModelExecutor::value: cv : " << cv << std::endl;
+    for (int i=0; i<cv.size(); ++i)
+      ModelUtils::continuous_variable(*model_, cv[i], i);
+  }
+  if (vars.contains("div")) {
+    auto div = vars["div"].cast<std::vector<int>>();
+    //Cout << "ModelExecutor::value: div : " << div << std::endl;
+    for (int i=0; i<div.size(); ++i)
+      ModelUtils::discrete_int_variable(*model_, div[i], i);
+  }
+  if (vars.contains("dsv")) {
+    auto dsv = vars["dsv"].cast<std::vector<String>>();
+    //Cout << "ModelExecutor::value: dsv : " << dsv << std::endl;
+    for (int i=0; i<dsv.size(); ++i)
+      ModelUtils::discrete_string_variable(*model_, dsv[i], i);
+  }
+  if (vars.contains("drv")) {
+    auto drv = vars["drv"].cast<std::vector<Real>>();
+    //Cout << "ModelExecutor::value: drv : " << drv << std::endl;
+    for (int i=0; i<drv.size(); ++i)
+      ModelUtils::discrete_real_variable(*model_, drv[i], i);
+  }
+
+  model_->evaluate();
+
+  const Response& test_resp = model_->current_response(); // No ModelUtils helper for Response's
   std::vector<double> resp(test_resp.num_functions());
   for (int i=0; i<resp.size(); ++i)
     resp[i] = test_resp.function_value(i);
@@ -259,11 +300,19 @@ ModelExecutor::compute_and_print_moments(const std::vector<std::vector<double>> 
 
 PYBIND11_MODULE(ext_method, m) {
 
-  // Executor value helper
+  // Executor evaluator helper
   py::class_<Dakota::ModelExecutor>(m, "Executor")
-    .def("function_value", &Dakota::ModelExecutor::value
-         , "Return function value for passed parameter values"
+    .def("function_value"
+         , static_cast<std::vector<double> (Dakota::ModelExecutor::*)(std::vector<double>&)>
+                        (&Dakota::ModelExecutor::value)
+         , "Return function value for continuous values"
          , py::arg("x"))
+    
+    .def("function_value"
+         , static_cast<std::vector<double> (Dakota::ModelExecutor::*)(py::dict &)>
+                        (&Dakota::ModelExecutor::value)
+         , "Return function value for mixed parameter values"
+         , py::arg("vars"))
     
   // Executor output helper
     .def("output_central_moments", &Dakota::ModelExecutor::compute_and_print_moments
