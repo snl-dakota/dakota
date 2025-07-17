@@ -7,13 +7,14 @@ method,
       class_path_and_name = "external_methods.SimplePyOpt"           #s0
 #      class_path_and_name = "external_methods.RandomSample"         #s1
 #      class_path_and_name = "external_methods.RandomSampleMixed"    #s2
+#      class_path_and_name = "external_methods.NumpyOpt"             #s3
 
 variables,
-    continuous_design = 2                                            #s0,#s1
-    initial_point       0.5     0.5                                  #s0,#s1
-    upper_bounds	2.0     2.0                                  #s0,#s1
-    lower_bounds       -2.0    -2.0                                  #s0,#s1
-    descriptors	        'x1'    'x2'                                 #s0,#s1
+    continuous_design = 2                                            #s0,#s1,#s3
+    initial_point       0.5     0.5                                  #s0,#s1,#s3
+    upper_bounds	2.0     2.0                                  #s0,#s1,#s3
+    lower_bounds       -2.0    -2.0                                  #s0,#s1,#s3
+    descriptors	        'x1'    'x2'                                 #s0,#s1,#s3
 #    continuous_design = 3                                           #s2
 #      initial_point   -1.0    1.5   2.0                             #s2
 #      upper_bounds    10.0   10.0  10.0                             #s2
@@ -48,7 +49,7 @@ interface,
     analysis_driver = 'text_book'
 
 responses,
-    objective_functions = 1     #s0,#s2
+    objective_functions = 1     #s0,#s2,#s3
 #    objective_functions = 3    #s1
     no_gradients
     no_hessians

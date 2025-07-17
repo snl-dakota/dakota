@@ -35,6 +35,9 @@ class ModelExecutor
     /// model evaluator, continuous vars
     std::vector<double> value(std::vector<double> & x);
 
+    /// model evaluator, continuous vars, numpy/Eigen format
+    VectorXd value(VectorXd & x);
+
     /// model evaluator, mixed vars
     std::vector<double> value(py::dict & vars);
 

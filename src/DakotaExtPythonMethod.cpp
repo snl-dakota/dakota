@@ -147,17 +147,26 @@ void ExtPythonMethod::core_run()
     // A special case for an optimizer
     //     extract the single scalar result and best parameters
     if (ret_val.contains("fns") && ret_val.contains("best_x")) {
-      int i=0;
       auto best_x = ret_val["best_x"].cast<std::vector<double>>();
-      auto values = ret_val["fns"].cast<std::vector<double>>();
+      Real best_f = ret_val["fns"].cast<std::vector<double>>()[0];
       StringMultiArrayConstView cv_labels =
         ModelUtils::continuous_variable_labels(*iteratedModel);
-      for (auto const & f : values) {
-        Cout << "ExtPythonMethod::core_run()\n"
-             << "\tbest_f: " << f << ", at:" << std::endl;
-        for( size_t i=0; i<cv_labels.size(); ++i )
-          Cout << "\t" << cv_labels[i].data() << ": " << best_x[i] << std::endl;
-      }
+      Cout << "ExtPythonMethod::core_run()\n"
+           << "\tbest_f: " << best_f << ", at:" << std::endl;
+      for( size_t i=0; i<cv_labels.size(); ++i )
+        Cout << "\t" << cv_labels[i].data() << ": " << best_x[i] << std::endl;
+    }
+    // A special case for a numpy optimizer
+    //     extract the single scalar result and best parameters
+    if (ret_val.contains("fns_np") && ret_val.contains("best_x_np")) {
+      auto best_x = ret_val["best_x_np"].cast<VectorXd>();
+      Real best_f = ret_val["fns_np"].cast<VectorXd>()[0];
+      StringMultiArrayConstView cv_labels =
+        ModelUtils::continuous_variable_labels(*iteratedModel);
+      Cout << "ExtPythonMethod::core_run()\n"
+           << "\tbest_f: " << best_f << ", at:" << std::endl;
+      for( size_t i=0; i<cv_labels.size(); ++i )
+        Cout << "\t" << cv_labels[i].data() << ": " << best_x[i] << std::endl;
     }
     // For debugging output utility
     //if (ret_val.contains("fns")) {
@@ -233,6 +242,22 @@ ModelExecutor::value(std::vector<double>& x)
 
 // -----------------------------------------------------------------
 
+VectorXd
+ModelExecutor::value(VectorXd& x)
+{
+  for (int i=0; i<x.size(); ++i)
+    ModelUtils::continuous_variable(*model_, x[i], i);
+  model_->evaluate();
+
+  const Response& test_resp = model_->current_response(); // No ModelUtils helper for Response's
+  VectorXd resp(test_resp.num_functions());
+  for (int i=0; i<resp.size(); ++i)
+    resp[i] = test_resp.function_value(i);
+
+  return resp;
+}
+
+// -----------------------------------------------------------------
 std::vector<double>
 ModelExecutor::value(py::dict & vars)
 {
@@ -306,6 +331,12 @@ PYBIND11_MODULE(ext_method, m) {
          , static_cast<std::vector<double> (Dakota::ModelExecutor::*)(std::vector<double>&)>
                         (&Dakota::ModelExecutor::value)
          , "Return function value for continuous values"
+         , py::arg("x"))
+    
+    .def("function_value"
+         , static_cast<VectorXd (Dakota::ModelExecutor::*)(VectorXd&)>
+                        (&Dakota::ModelExecutor::value)
+         , "Return function value for continuous values using numpy/Eigen data"
          , py::arg("x"))
     
     .def("function_value"

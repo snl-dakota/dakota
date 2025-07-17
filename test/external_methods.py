@@ -57,14 +57,15 @@ class SimplePyOpt:
 
     def core_run(self, executor):
 
-        n_vars = executor.tv()
+        # Only treat continuous vars for now
+        n_vars = executor.cv()
         n_fns  = executor.response_size()
         init_pts = executor.initial_values()
         l_bounds = executor.continuous_lower_bounds()
         u_bounds = executor.continuous_upper_bounds()
 
         if n_fns != 1:
-            raise RuntimeError("SimplyPyOpt only supports a single response")
+            raise RuntimeError("SimplePyOpt only supports a single response")
 
         retval = {}
 
@@ -73,6 +74,9 @@ class SimplePyOpt:
         fn_tol = 1.e-4
 
         target = 0.0
+
+        # Make test reproducible
+        rnd.seed(12321)
 
         # Crude "optimization" based on random sampling over parameter space
         i = 0
@@ -91,6 +95,64 @@ class SimplePyOpt:
 
         retval['fns']    = [best_f]
         retval['best_x'] = best_x
+
+        if False:
+            print("Found best_f = ", best_f)
+            print("Using x = ", best_x)
+
+        return retval
+
+
+#############################################
+#   Demo Python Method --> Numpy Optimizer  #
+#############################################
+
+class NumpyOpt:
+
+    def __init__(self, params=None):
+
+        print("python NumpyOpt class constructer...")
+        if params is not None:
+            self.params = params
+
+    def core_run(self, executor):
+
+        # Only treat continuous vars for now
+        n_vars = executor.cv()
+        n_fns  = executor.response_size()
+        init_pts = np.array(executor.initial_values())
+        l_bounds = np.array(executor.continuous_lower_bounds())
+        u_bounds = np.array(executor.continuous_upper_bounds())
+
+        if n_fns != 1:
+            raise RuntimeError("NumpyOpt only supports a single response")
+
+        # Hard-coded optimizer settings that could be configured by user
+        max_evals = 100
+        fn_tol = 1.e-4
+
+        target = 0.0
+
+        # Make test reproducible
+        np.random.seed(12321)
+
+        retval = {}
+
+        # Crude "optimization" based on random sampling over parameter space
+        i = 0
+        best_x = init_pts
+        best_f = executor.function_value(init_pts)[0]
+        while  i<=max_evals and best_f>fn_tol:
+            x = np.random.uniform(low=l_bounds, high=u_bounds, size=n_vars)
+            f = executor.function_value(x)
+
+            if abs(f[0]-target) < best_f:
+                best_x = x.copy()
+                best_f = abs(f[0]-target)
+            i=i+1
+
+        retval['fns_np']    = [best_f]
+        retval['best_x_np'] = best_x
 
         if False:
             print("Found best_f = ", best_f)
@@ -127,6 +189,9 @@ class RandomSample:
         # Hard-coded setting that could be configured by user
         max_evals = 25
 
+        # Make test reproducible
+        rnd.seed(231)
+
         # Crude random sampling over parameter space
         i = 1
         x = init_pts
@@ -142,9 +207,6 @@ class RandomSample:
 
         retval['x']   = x
         retval['fns'] = self.fns
-        #retval['fns_np'] = np.array(fns).astype(np.float64)
-
-        #print("fns_np = ", retval['fns_np'])
 
         if False:
             print("fns = ", fns)
@@ -154,9 +216,6 @@ class RandomSample:
 
 
     def post_run(self, executor):
-
-        # Not sure how to use this yet
-        #print(type(s))
 
         # Output using Dakota formatting
         executor.output_central_moments(self.fns)
@@ -191,6 +250,9 @@ class RandomSampleMixed:
         # Hard-coded setting that could be configured by user
         max_evals = 5
 
+        # Make test reproducible
+        rnd.seed(123)
+
         # Crude random sampling over parameter space
         i = 1
         x = init_pts
@@ -200,9 +262,9 @@ class RandomSampleMixed:
         while  i<=max_evals:
             xvals.append(x)
             mixed_vals['cv']  = x
-            mixed_vals['div'] = executor.discrete_int_variables() # just use initial values for testing API
+            mixed_vals['div'] = executor.discrete_int_variables()    # just use initial values for testing API
             mixed_vals['dsv'] = executor.discrete_string_variables() # just use initial values for testing API
-            mixed_vals['drv'] = executor.discrete_real_variables() # just use initial values for testing API
+            mixed_vals['drv'] = executor.discrete_real_variables()   # just use initial values for testing API
             self.fns.append(executor.function_value(mixed_vals))
             x = []
             for j in range(n_vars):
@@ -220,18 +282,8 @@ class RandomSampleMixed:
 
     def post_run(self, executor):
 
-        # Not sure how to use this yet
-        #print(type(s))
-
         # Output using Dakota formatting
         executor.output_central_moments(self.fns)
-
-
-    def test_np_array(self):
-
-        arr = np.array([1.1, 2.2, 3.3])
-        print(arr)
-        return arr
 
 
 
