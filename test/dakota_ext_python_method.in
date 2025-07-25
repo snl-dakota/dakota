@@ -1,6 +1,6 @@
 #@ s*: Label=FastTest
 #@ *: DakotaConfig=HAVE_EXT_PYTHON_METHOD
-#@ *: ReqFiles=external_methods.py
+#@ *: ReqFiles=external_methods.py,lhs_sampling.py
 
 method,
     external_python
@@ -8,6 +8,7 @@ method,
 #      class_path_and_name = "external_methods.RandomSample"         #s1
 #      class_path_and_name = "external_methods.RandomSampleMixed"    #s2
 #      class_path_and_name = "external_methods.NumpyOpt"             #s3
+#      class_path_and_name = "lhs_sampling.LHSSample"                #s4
 
 variables,
     continuous_design = 2                                            #s0,#s1,#s3
@@ -15,11 +16,11 @@ variables,
     upper_bounds	2.0     2.0                                  #s0,#s1,#s3
     lower_bounds       -2.0    -2.0                                  #s0,#s1,#s3
     descriptors	        'x1'    'x2'                                 #s0,#s1,#s3
-#    continuous_design = 3                                           #s2
-#      initial_point   -1.0    1.5   2.0                             #s2
-#      upper_bounds    10.0   10.0  10.0                             #s2
-#      lower_bounds   -10.0  -10.0 -10.0                             #s2
-#      descriptors      'x1'  'x2'  'x3'                             #s2
+#    continuous_design = 3                                           #s2,#s4
+#      initial_point   -1.0    1.5   2.0                             #s2,#s4
+#      upper_bounds    10.0   10.0  10.0                             #s2,#s4
+#      lower_bounds   -10.0  -10.0 -10.0                             #s2,#s4
+#      descriptors      'x1'  'x2'  'x3'                             #s2,#s4
 #    discrete_design_range = 2                                       #s2
 #      initial_point      2     2                                    #s2
 #      lower_bounds       1     1                                    #s2
@@ -50,7 +51,7 @@ interface,
 
 responses,
     objective_functions = 1     #s0,#s2,#s3
-#    objective_functions = 3    #s1
+#    objective_functions = 3    #s1,#s4
     no_gradients
     no_hessians
 
