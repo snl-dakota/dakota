@@ -57,12 +57,15 @@ class LHSSample:
     def pre_run(self, executor):
 
         n_vars = executor.tv()
+        l_bounds = executor.continuous_lower_bounds()
+        u_bounds = executor.continuous_upper_bounds()
 
         # Generate samples using LHS from scipy qmc
         sampler = qmc.LatinHypercube(d=n_vars)
 
         # Hard-coded setting that could be configured by user
-        self.samples = sampler.random(n=25)
+        samples = sampler.random(n=25)
+        self.samples = qmc.scale(samples, l_bounds, u_bounds)
         print("Using scipy qmc LHS samples:",self.samples)
 
         #executor.output_central_moments(self.fns)
@@ -72,16 +75,9 @@ class LHSSample:
         # Show the docstring for the executor
         #help(executor)
 
-        n_vars = executor.tv()
-        n_fns  = executor.response_size()
-        init_pts = executor.initial_values()
-        l_bounds = executor.continuous_lower_bounds()
-        u_bounds = executor.continuous_upper_bounds()
-
         retval = {}
 
         # Sample over parameter space
-        x = init_pts
         self.fns = []
         for x in self.samples:
             self.fns.append(executor.function_value(x))
