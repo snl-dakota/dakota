@@ -6,7 +6,8 @@ add_library(
   src/DakotaROLVector.cpp 
   src/DakotaROLObjective.cpp 
   src/DakotaROLConstraint.cpp 
-  src/DakotaROLOptimizer.cpp 
+  src/DakotaROLOptimizer.cpp
+  src/ROLOptimizerCompatibility.cpp 
 )
 
 target_include_directories(
@@ -26,3 +27,8 @@ target_link_libraries(
 )
 
 install(TARGETS rol_interface EXPORT ${ExportTarget} DESTINATION lib)
+
+# Add tests subdirectory
+if(DAKOTA_ENABLE_TESTS OR BUILD_TESTING)
+  add_subdirectory(test)
+endif()

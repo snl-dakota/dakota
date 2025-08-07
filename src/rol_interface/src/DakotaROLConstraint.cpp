@@ -186,7 +186,7 @@ void Constraint::applyAdjointHessian(       ROL::Vector<Dakota::Real>& ahuv,
       auto& ahuv_vector    = as_dakota_vector(ahuv);
       const auto& v_vector = as_dakota_vector(v);
       const auto& u_vector = as_dakota_vector(u);
-      for(int i = 0; i < numCon; ++i) {
+      for(std::size_t i = 0; i < numCon; ++i) {
         int err_code = ahuv_vector.multiply(Teuchos::LEFT_SIDE,
                                             u_vector[i],
                                             hessianView.at(i),

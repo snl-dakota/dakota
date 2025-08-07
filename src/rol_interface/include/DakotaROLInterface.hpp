@@ -11,8 +11,10 @@
 
 // Dakota Includes
 #include "DakotaOptimizer.hpp"
+#include "ProblemDescDB.hpp"
 
 // ROL Includes
+#include "ROL_Problem.hpp"
 #include "ROL_Solver.hpp"
 
 // Forward Declarations and aliases
@@ -36,5 +38,6 @@ using ROLVector = ROL::Vector<Dakota::Real>;
 #include "DakotaROLObjective.hpp"
 #include "DakotaROLConstraint.hpp"
 #include "DakotaROLOptimizer.hpp"
+#include "ROLOptimizerCompatibility.hpp"
 
 #endif // DAKOTA_ROL_INTERFACE_HPP

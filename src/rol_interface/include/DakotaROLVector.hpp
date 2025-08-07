@@ -1,6 +1,9 @@
 #ifndef DAKOTA_ROL_VECTOR_HPP
 #define DAKOTA_ROL_VECTOR_HPP
 
+#include "ROL_Vector.hpp"
+#include "ROL_Elementwise_Function.hpp"
+
 namespace rol_interface {
 
 class Vector : public ROL::Vector<Dakota::Real> {

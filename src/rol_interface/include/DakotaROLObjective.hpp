@@ -2,6 +2,8 @@
 #ifndef DAKOTA_ROL_OBJECTIVE_HPP
 #define DAKOTA_ROL_OBJECTIVE_HPP
 
+#include "ROL_Objective.hpp"
+
 namespace rol_interface {
 
 class Objective : public ROL::Objective<Dakota::Real> {

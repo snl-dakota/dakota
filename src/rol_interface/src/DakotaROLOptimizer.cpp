@@ -6,9 +6,7 @@ namespace rol_interface {
 // information from the problem database.
 Optimizer::Optimizer(       Dakota::ProblemDescDB&          problem_db, 
                       const std::shared_ptr<Dakota::Model>& model ) :
-  Dakota::Optimizer( problem_db, 
-                     model, 
-                     Traits::create() )
+  Dakota::Optimizer( Traits::create() )
 //  modelInterface(ROL::makePtr<ModelInterface>(this)) 
   {
 } // Standard constructor  
@@ -18,9 +16,7 @@ Optimizer::Optimizer(       Dakota::ProblemDescDB&          problem_db,
 // ROL solver based on information passed as arguments.
 Optimizer::Optimizer( const Dakota::String&                 method_string, 
                       const std::shared_ptr<Dakota::Model>& model ):
-  Dakota::Optimizer( Dakota::Iterator::method_string_to_enum(method_string), 
-                     model, 
-                     Traits::create() )
+  Dakota::Optimizer( Traits::create() )
 /*  modelInterface(ROL::makePtr<ModelInterface>(this))*/ {
 } // alternate constructor
 

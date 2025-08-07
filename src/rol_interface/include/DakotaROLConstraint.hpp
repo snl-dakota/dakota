@@ -1,6 +1,8 @@
 #ifndef DAKOTA_ROL_CONSTRAINT
 #define DAKOTA_ROL_CONSTRAINT
 
+#include "ROL_Constraint.hpp"
+
 namespace rol_interface {
 
 struct ConstraintSet {

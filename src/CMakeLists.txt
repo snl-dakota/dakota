@@ -800,20 +800,19 @@ if(HAVE_ROL)
   if(HAVE_DAKOTA_ROL_INTERFACE) # TODO: Move this to Dakota/src/rol_interface
     message("\n\n=========[ Building Dakota/ROL Interface ]========\n\n")
     set(Dakota_ROL_Interface_DIR "${Dakota_SOURCE_DIR}/src/rol_interface")
-    set(Dakota_ROL_Constraint_DIR "${Dakota_ROL_Interface_DIR}/constraint")
 
     add_definitions("-DHAVE_DAKOTA_ROL_INTERFACE")
-    list(APPEND DAKOTA_INCDIRS ${Dakota_ROL_Interface_DIR} ${Dakota_ROL_Constraint_DIR} )
-    set(iterator_src ${iterator_src} ${Dakota_ROL_Interface_DIR}/DakotaROLHessian.cpp
-                                     ${Dakota_ROL_Interface_DIR}/DakotaROLModelInterface.cpp
-                                     ${Dakota_ROL_Interface_DIR}/DakotaROLObjective.cpp      
-                                     ${Dakota_ROL_Interface_DIR}/DakotaROLOptimizer.cpp      
-                                     ${Dakota_ROL_Constraint_DIR}/DakotaROLConstraint.cpp
-                                     ${Dakota_ROL_Constraint_DIR}/DakotaROLLinearConstraint.cpp
-                                     ${Dakota_ROL_Constraint_DIR}/DakotaROLLinearEqualityConstraint.cpp
-                                     ${Dakota_ROL_Constraint_DIR}/DakotaROLLinearInequalityConstraint.cpp
-                                     ${Dakota_ROL_Constraint_DIR}/DakotaROLNonlinearEqualityConstraint.cpp
-                                     ${Dakota_ROL_Constraint_DIR}/DakotaROLNonlinearInequalityConstraint.cpp )
+
+    # TODO
+
+
+
+
+
+
+
+
+
   else()
     set(iterator_src ${iterator_src} ROLOptimizer.cpp)
   endif()
@@ -943,10 +942,10 @@ endif()
 if( HAVE_ROL )
   list(APPEND DAKOTA_INCDIRS ${ROL_INCLUDE_DIRS})
   add_definitions("-DHAVE_ROL")
-  #  add_subdirectory(rol_interface)
-  #  target_link_libraries(dakota_src rol_interface)
-  #  list(APPEND EXPORT_TARGETS rol_interface)
-  #  list(APPEND DAKOTA_LIBS rol_interface)
+  add_subdirectory(rol_interface)
+  target_link_libraries(dakota_src rol_interface)
+  list(APPEND EXPORT_TARGETS rol_interface)
+  list(APPEND DAKOTA_LIBS rol_interface)
 endif()
 
 # Enforce library ordering
