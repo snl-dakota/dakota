@@ -10,11 +10,13 @@
 #include "PluginInterface.hpp"
 #include "ProblemDescDB.hpp"
 
+#include <boost/version.hpp>
+
 #if BOOST_VERSION >= 107000
 #define BOOST_DLL_USE_STD_FS
 #endif
+
 #include <boost/dll/import.hpp>
-#include <boost/version.hpp>
 
 // Boost 1.76 and newer avoid the C++20 import keyword
 // RATIONALE: Using preprocessor as isolated to this compilation unit

@@ -13,9 +13,7 @@ macro(dakota_find_boost)
   # Dakota requires the specified compiled Boost library components
   # Dakota requires Boost 1.69 or newer (this can possibly be relaxed to 1.58
   # if not building unit tests); enforce for all libs in the build
-  set(dakota_boost_libs filesystem program_options regex serialization system)
-  # Remove filesystem after moving to Boost 1.70+
-  #set(dakota_boost_libs program_options regex serialization system)
+  set(dakota_boost_libs program_options regex serialization system)
 
   if(DAKOTA_APPLE_FIX_BOOSTLIBS)
     # This approach requires separate include and lib dirs
@@ -39,11 +37,18 @@ macro(dakota_find_boost)
 
 
   find_package(Boost 1.69 REQUIRED COMPONENTS ${dakota_boost_libs})
+  #message(STATUS "Found Boost version ${Boost_VERSION}")
 
-  # Remove filesystem after moving to Boost 1.70+
-  #set(DAKOTA_BOOST_TARGETS Boost::boost Boost::program_options
-  set(DAKOTA_BOOST_TARGETS Boost::boost Boost::filesystem Boost::program_options
-    Boost::regex Boost::serialization Boost::system)
+  if(Boost_VERSION VERSION_LESS 1.70.0)
+    set(dakota_boost_libs filesystem program_options regex serialization system)
+    find_package(Boost 1.69 REQUIRED COMPONENTS ${dakota_boost_libs})
+
+    set(DAKOTA_BOOST_TARGETS Boost::boost Boost::filesystem Boost::program_options
+      Boost::regex Boost::serialization Boost::system)
+  else()
+    set(DAKOTA_BOOST_TARGETS Boost::boost Boost::program_options
+      Boost::regex Boost::serialization Boost::system)
+  endif()
 
   set(dakota_boost_libs "${dakota_boost_libs}" CACHE STRING "")
   set(dakota_boost_version "${Boost_VERSION_MAJOR}.${Boost_VERSION_MINOR}.${Boost_VERSION_PATCH}" CACHE STRING "")
