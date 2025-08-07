@@ -167,10 +167,8 @@ ProcessApplicInterface(const ProblemDescDB& problem_db, ParallelLibrary& paralle
   // asynchLocalEvalConcurrency because this is set per parallel
   // configuration in set_communicators.
 
-  bool require_unique =
-    (interface_synchronization() == ASYNCHRONOUS_INTERFACE &&
-     asynchLocalEvalConcSpec > serializeThreshold && !batchEval);
-
+  bool require_unique = (!batchEval && asynchFlag &&
+			 asynchLocalEvalConcSpec > serializeThreshold);
   if (require_unique) {
     if (useWorkdir) {
       if (!dirTag && !workDirName.empty()) {
