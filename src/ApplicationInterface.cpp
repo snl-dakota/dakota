@@ -2043,7 +2043,7 @@ asynchronous_local_evaluations_nowait(PRPQueue& local_prp_queue)
   size_t num_recv = num_active;
   while (num_recv) {
     num_recv = test_local_backfill(local_prp_queue, local_prp_iter);
-    if (num_recv && local_prp_iter != local_prp_queue.end())
+    if (num_recv && local_prp_iter != local_prp_queue.end()) // else kick out
       std::this_thread::sleep_for(std::chrono::microseconds(MICRO_PAUSE));
   }
 }
