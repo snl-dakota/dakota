@@ -48,35 +48,40 @@ ModelGroup::ModelGroup(const std::vector<unsigned short>& model_indices, int num
 //   model_evaluations: A vector of model evaluation results.
 //   replication: The replication index for the sample.
 void ModelGroup::addSample(const std::vector<Real>& model_evaluations, int replication) {
-    for (int moment = 0; moment < num_moments_; ++moment) {
-        for (int qoi = 0; qoi < num_qois_; ++qoi) {
-            
-            // First check is all model evaluations for this qoi are finite
-            bool all_finite = true;
-            for (int model = 0; model < model_indices_.size(); ++model) {
-                auto value = model_evaluations[model_indices_[model] * num_qois_ + qoi];
-                if (!std::isfinite(value)) {
-                    all_finite = false;
-                    break;
-                }
+    for (int qoi = 0; qoi < num_qois_; ++qoi) {
+        
+        // Check if all model evaluations for this qoi are finite
+        bool all_finite = true;
+        for (int model = 0; model < model_indices_.size(); ++model) {
+            if (!std::isfinite(model_evaluations[model_indices_[model] * num_qois_ + qoi])) {
+                all_finite = false;
+                break;
             }
-            if (!all_finite) {
-                continue; // skip this qoi entirely
-            }
+        }
+        if (!all_finite) continue;
+
+        // Initialize per-model powers for moment 0
+        std::vector<Real> value_pows(model_indices_.size());
+        for (int model = 0; model < model_indices_.size(); ++model) {
+            value_pows[model] = model_evaluations[model_indices_[model] * num_qois_ + qoi];
+        }
+
+        // Loop over moments and models, computing powers on the fly
+        for (int moment = 0; moment < num_moments_; ++moment) {
 
             // Update accumulators
             for (int model = 0; model < model_indices_.size(); ++model) {
-                auto value = model_evaluations[model_indices_[model] * num_qois_ + qoi];
-                auto value_pow = std::pow(value, moment + 1);
-
+                const Real value_pow = value_pows[model];
                 mean_accumulators_[moment][model][qoi][replication].addSample(value_pow);
 
                 for (int other_model = 0; other_model <= model; ++other_model) {
-                    auto other_value = model_evaluations[model_indices_[other_model] * num_qois_ + qoi];
-                    auto other_value_pow = std::pow(other_value, moment + 1);
-
-                    covariance_accumulators_[moment][model][other_model][qoi][replication].addSample(value_pow, other_value_pow);
+                    covariance_accumulators_[moment][model][other_model][qoi][replication].addSample(value_pow, value_pows[other_model]);
                 }
+            }
+
+            // Incrementally build next moment powers
+            for (int model = 0; model < model_indices_.size(); ++model) {
+                value_pows[model] *= model_evaluations[model_indices_[model] * num_qois_ + qoi];
             }
         }
     }
