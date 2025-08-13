@@ -48,25 +48,34 @@ ModelGroup::ModelGroup(const std::vector<unsigned short>& model_indices, int num
 //   model_evaluations: A vector of model evaluation results.
 //   replication: The replication index for the sample.
 void ModelGroup::addSample(const std::vector<Real>& model_evaluations, int replication) {
-    // Update accumulators
     for (int moment = 0; moment < num_moments_; ++moment) {
-        for (int model = 0; model < model_indices_.size(); ++model) {
-            for (int qoi = 0; qoi < num_qois_; ++qoi) {
-
-                // Update mean accumulator
+        for (int qoi = 0; qoi < num_qois_; ++qoi) {
+            
+            // First check is all model evaluations for this qoi are finite
+            bool all_finite = true;
+            for (int model = 0; model < model_indices_.size(); ++model) {
                 auto value = model_evaluations[model_indices_[model] * num_qois_ + qoi];
-                if (!std::isnan(value)) { // or check out of bounds
-                    auto value_pow = std::pow(value, moment + 1);
-                    mean_accumulators_[moment][model][qoi][replication].addSample(value_pow);
-                
-                    // Update covariance accumulator
-                    for (int other_model = 0; other_model <= model; ++other_model) {
-                        auto other_value = model_evaluations[model_indices_[other_model] * num_qois_ + qoi];
-                        if (!std::isnan(other_value)) {
-                            auto other_value_pow = std::pow(other_value, moment + 1);
-                            covariance_accumulators_[moment][model][other_model][qoi][replication].addSample(value_pow, other_value_pow);
-                        }
-                    }
+                if (!std::isfinite(value)) {
+                    all_finite = false;
+                    break;
+                }
+            }
+            if (!all_finite) {
+                continue; // skip this qoi entirely
+            }
+
+            // Update accumulators
+            for (int model = 0; model < model_indices_.size(); ++model) {
+                auto value = model_evaluations[model_indices_[model] * num_qois_ + qoi];
+                auto value_pow = std::pow(value, moment + 1);
+
+                mean_accumulators_[moment][model][qoi][replication].addSample(value_pow);
+
+                for (int other_model = 0; other_model <= model; ++other_model) {
+                    auto other_value = model_evaluations[model_indices_[other_model] * num_qois_ + qoi];
+                    auto other_value_pow = std::pow(other_value, moment + 1);
+
+                    covariance_accumulators_[moment][model][other_model][qoi][replication].addSample(value_pow, other_value_pow);
                 }
             }
         }
