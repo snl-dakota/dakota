@@ -7,6 +7,12 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
+#include <boost/version.hpp>
+
+#if BOOST_VERSION >= 107000
+#define BOOST_DLL_USE_STD_FS
+#endif
+
 #include <boost/config.hpp>
 #include <boost/dll.hpp>
 #include <pybind11/embed.h>

@@ -1,4 +1,6 @@
 #@ s*: DakotaConfig=HAVE_ROL
+#@ s*: TimeoutDelay=120
+#@ s*: TimeoutAbsolute=900
 # Demonstrate list parameter study on global GP, exporting values and
 # variance, and model.
 # TODO: Diff tabular data against exported surrogate evals

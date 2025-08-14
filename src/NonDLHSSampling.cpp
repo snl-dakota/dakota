@@ -754,10 +754,12 @@ void NonDLHSSampling::post_run(std::ostream& s)
                                          vbdDropTol); // set in DakotaAnalyzer constructor
     }
     else if(!summaryOutputFlag) {
-      // To support incremental reporting of statistics, compute_statistics is 
-      // iteratively called by print_results. However, when the sampling iterator 
-      // is a subiterator (e.g. in a nested model), print_results isn't called.
-      // Compute stats here for all samples.
+      // if summaryOutputFlag is set to False because an instantiation of this
+      // class is a subiterator (e.g., in a nested model), print_results() won't
+      // be called. print_results() is usually where compute_statistics is called in
+      // order to support incremental reporting of statistics. This if statement
+      // ensures that even if print_results isn't called, statistics are still
+      // computed and results are still archived.
       compute_statistics(allSamples, allResponses);
       // JAS TODO
       archive_results(numSamples); 
@@ -1039,41 +1041,48 @@ void NonDLHSSampling::print_results(std::ostream& s, short results_state)
 {
   if (!numResponseFunctions) // DACE mode w/ opt or NLS
     Analyzer::print_results(s, results_state);
-  if (vbdFlag)
-    nonDSampCorr.print_sobol_indices(s,
-                                     iteratedModel->current_variables().ordered_labels(ACTIVE_VARS),
-                                     ModelUtils::response_labels(*iteratedModel),
-                                     vbdDropTol); // set in DakotaAnalyzer constructor
-  else if (statsFlag) {
-    if(refineSamples.length() == 0) {
-      compute_statistics(allSamples, allResponses);
-      archive_results(numSamples);
-      int actual_samples = allSamples.numCols();
-      print_header_and_statistics(s, actual_samples);
-    } else {  // iterate over refinement_samples to generate incremental stats
-      // assume that the keys (eval ids) of allResponses are consecutive
-      const int start_id = allResponses.begin()->first;
-      int running_total = 0;  // total number of samples
-      IntArray samples_vec(1+refineSamples.length(), 0);
-      samples_vec[0] = numSamples;
-      copy_data_partial(refineSamples, samples_vec, 1);
-      IntResponseMap::iterator start_resp = allResponses.begin();
-      IntResponseMap inc_responses; // block of responses for this increment
-      for(size_t i = 0; i < samples_vec.size(); ++i) {
-        int inc_size = samples_vec[i];
-        size_t inc_id = i + 1;
-        running_total += inc_size;
-        RealMatrix inc_samples(Teuchos::View, allSamples,// block of samples for
-            allSamples.numRows(), running_total);        // this increment
-        IntResponseMap::iterator end_resp = allResponses.find(running_total + 
-            start_id);
-        // Response copy ctor just copies a pointer, so this insert should be
-        // cheap.
-        inc_responses.insert(start_resp, end_resp);
-        compute_statistics(inc_samples, inc_responses);
-        archive_results(running_total,inc_id);
-        print_header_and_statistics(s, running_total);
-        start_resp = end_resp;
+  if (statsFlag) {
+    if (vbdFlag){
+      nonDSampCorr.print_sobol_indices(s,
+                                       iteratedModel->current_variables().ordered_labels(ACTIVE_VARS),
+                                       ModelUtils::response_labels(*iteratedModel),
+                                       vbdDropTol); // set in DakotaAnalyzer constructor
+    }
+    // Want to suppress computing and printing sample statistics
+    // if samples are in the pick-freeze structure. TNP note: you
+    // COULD still compute sample statistics for the independent
+    // "A" and "B" matrices from pick-freeze.
+    if (!(vbdFlag && vbdViaSamplingMethod==VBD_PICK_AND_FREEZE)) {
+      if(refineSamples.length() == 0) {
+        compute_statistics(allSamples, allResponses);
+        archive_results(numSamples);
+        int actual_samples = allSamples.numCols();
+        print_header_and_statistics(s, actual_samples);
+      } else {  // iterate over refinement_samples to generate incremental stats
+        // assume that the keys (eval ids) of allResponses are consecutive
+        const int start_id = allResponses.begin()->first;
+        int running_total = 0;  // total number of samples
+        IntArray samples_vec(1+refineSamples.length(), 0);
+        samples_vec[0] = numSamples;
+        copy_data_partial(refineSamples, samples_vec, 1);
+        IntResponseMap::iterator start_resp = allResponses.begin();
+        IntResponseMap inc_responses; // block of responses for this increment
+        for(size_t i = 0; i < samples_vec.size(); ++i) {
+          int inc_size = samples_vec[i];
+          size_t inc_id = i + 1;
+          running_total += inc_size;
+          RealMatrix inc_samples(Teuchos::View, allSamples,// block of samples for
+              allSamples.numRows(), running_total);        // this increment
+          IntResponseMap::iterator end_resp = allResponses.find(running_total + 
+              start_id);
+          // Response copy ctor just copies a pointer, so this insert should be
+          // cheap.
+          inc_responses.insert(start_resp, end_resp);
+          compute_statistics(inc_samples, inc_responses);
+          archive_results(running_total,inc_id);
+          print_header_and_statistics(s, running_total);
+          start_resp = end_resp;
+        }
       }
     }
   }

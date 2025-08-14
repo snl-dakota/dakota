@@ -167,10 +167,8 @@ ProcessApplicInterface(const ProblemDescDB& problem_db, ParallelLibrary& paralle
   // asynchLocalEvalConcurrency because this is set per parallel
   // configuration in set_communicators.
 
-  bool require_unique =
-    (interface_synchronization() == ASYNCHRONOUS_INTERFACE &&
-     asynchLocalEvalConcSpec > serializeThreshold && !batchEval);
-
+  bool require_unique = (!batchEval && asynchFlag &&
+			 asynchLocalEvalConcSpec > serializeThreshold);
   if (require_unique) {
     if (useWorkdir) {
       if (!dirTag && !workDirName.empty()) {
@@ -294,7 +292,6 @@ void ProcessApplicInterface::test_local_evaluations(PRPQueue& prp_queue)
 
 void ProcessApplicInterface::wait_local_evaluation_batch(PRPQueue& prp_queue)
 {
-
   batchIdCntr++;
   // define_filenames sets paramsFileWritten and resultsFileWritten, taking
   // into consideration all the myriad settings the user could have provided,
@@ -329,11 +326,11 @@ void ProcessApplicInterface::wait_local_evaluation_batch(PRPQueue& prp_queue)
   }
  
   file_and_workdir_cleanup(paramsFileWritten, resultsFileWritten, createdDir, batch_id_tag);
-
 }
 
+
 void ProcessApplicInterface::test_local_evaluation_batch(PRPQueue& prp_queue)
-{ wait_local_evaluation_batch(prp_queue); }
+{ if (!prp_queue.empty()) wait_local_evaluation_batch(prp_queue); }
 
 
 // ------------------------
