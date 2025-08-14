@@ -7,6 +7,7 @@
 #  For more information, see the README file in the top Dakota directory.
 #  _______________________________________________________________________
 
+import copy
 import numpy as np
 import random as rnd
 
@@ -78,20 +79,53 @@ class SimplePyOpt:
         # Make test reproducible
         rnd.seed(12321)
 
-        # Crude "optimization" based on random sampling over parameter space
         i = 0
         best_x = init_pts
-        best_f = executor.function_value(init_pts)[0]
-        while  i<=max_evals and best_f>fn_tol:
-            x = []
-            for j in range(n_vars):
-                x.append(rnd.uniform(l_bounds[j], u_bounds[j]))
-            f = executor.function_value(x)
 
-            if abs(f[0]-target) < best_f:
-                best_x = x
-                best_f = abs(f[0]-target)
-            i=i+1
+        #print("Model supports gradients -->", executor.has_gradient())
+        #print("Model supports hessians -->", executor.has_hessian())
+
+        #asv = [3]
+        #chk_f, chk_grad, chk_hess = executor.evaluate(init_pts, asv)
+        #print(chk_f)
+        #print(chk_grad)
+        #print(chk_hess)
+        ##raise RuntimeError("Stopping here ...")
+
+        # Simple gradient-based optimizer with hard-coded step length
+        if executor.has_gradient():
+
+            best_f = executor.function_value(init_pts)[0]
+            x_new = copy.deepcopy(best_x)
+            while  i<=max_evals and best_f>fn_tol:
+                x_old = copy.deepcopy(x_new)
+                grad = executor.gradient_values(x_old)
+                x_new[0] = x_old[0] - 0.30*grad[0][0]
+                x_new[1] = x_old[1] - 0.30*grad[0][1]
+                f = executor.function_value(x_new)
+
+                if abs(f[0]-target) < best_f:
+                    best_x = x_new
+                    best_f = abs(f[0]-target)
+                i=i+1
+
+        # Crude "optimization" based on random sampling over parameter space
+        else:
+
+            i = 0
+            best_x = init_pts
+            best_f = executor.function_value(init_pts)[0]
+            while  i<=max_evals and best_f>fn_tol:
+                x = []
+                for j in range(n_vars):
+                    x.append(rnd.uniform(l_bounds[j], u_bounds[j]))
+                f = executor.function_value(x)
+
+                if abs(f[0]-target) < best_f:
+                    best_x = x
+                    best_f = abs(f[0]-target)
+                i=i+1
+
 
         retval['fns']    = [best_f]
         retval['best_x'] = best_x

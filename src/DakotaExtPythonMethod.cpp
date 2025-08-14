@@ -225,6 +225,69 @@ ModelExecutor::ModelExecutor(std::shared_ptr<Model> & model) :
 
 // -----------------------------------------------------------------
 
+bool
+ModelExecutor::has_gradient() const
+{
+  return model_->gradient_type() != "none";
+}
+
+// -----------------------------------------------------------------
+
+bool
+ModelExecutor::has_hessian() const
+{
+  return model_->hessian_type() != "none";
+}
+
+// -----------------------------------------------------------------
+
+template<typename vecT>
+vecT ModelExecutor::copy_functions() const
+{
+  const Response& model_resp = model_->current_response();
+  int num_fns = model_resp.num_functions();
+  vecT resp(num_fns);
+  for (int i=0; i<num_fns; ++i)
+    resp[i] = model_resp.function_value(i);
+
+  return resp;
+}
+
+// -----------------------------------------------------------------
+
+template<typename matT>
+matT ModelExecutor::copy_gradients() const
+{
+  // Need to revisit semantics to support MatrixXd
+
+  const Response& model_resp = model_->current_response();
+  const RealMatrix& fn_gradients = model_resp.function_gradients();
+  fn_gradients.print(Cout);
+  assert(model_resp.num_functions() == fn_gradients.numCols());
+
+  matT grads;
+  for (int fn=0; fn<fn_gradients.numCols(); ++fn) {
+    std::vector<double> grad(fn_gradients.numRows());
+    for (int i=0; i<fn_gradients.numRows(); ++i) {
+      grad[i] = fn_gradients(i,fn);
+    }
+    grads.push_back(grad);
+  }
+
+  return grads;
+}
+
+// -----------------------------------------------------------------
+
+template<typename matT>
+matT ModelExecutor::copy_hessians() const
+{
+  matT resp;
+  return resp;
+}
+
+// -----------------------------------------------------------------
+
 std::vector<double>
 ModelExecutor::value(std::vector<double>& x)
 {
@@ -232,12 +295,7 @@ ModelExecutor::value(std::vector<double>& x)
     ModelUtils::continuous_variable(*model_, x[i], i);
   model_->evaluate();
 
-  const Response& test_resp = model_->current_response(); // No ModelUtils helper for Response's
-  std::vector<double> resp(test_resp.num_functions());
-  for (int i=0; i<resp.size(); ++i)
-    resp[i] = test_resp.function_value(i);
-
-  return resp;
+  return copy_functions<std::vector<double>>();
 }
 
 // -----------------------------------------------------------------
@@ -249,12 +307,7 @@ ModelExecutor::value(VectorXd& x)
     ModelUtils::continuous_variable(*model_, x[i], i);
   model_->evaluate();
 
-  const Response& test_resp = model_->current_response(); // No ModelUtils helper for Response's
-  VectorXd resp(test_resp.num_functions());
-  for (int i=0; i<resp.size(); ++i)
-    resp[i] = test_resp.function_value(i);
-
-  return resp;
+  return copy_functions<VectorXd>();
 }
 
 // -----------------------------------------------------------------
@@ -288,12 +341,59 @@ ModelExecutor::value(py::dict & vars)
 
   model_->evaluate();
 
-  const Response& test_resp = model_->current_response(); // No ModelUtils helper for Response's
-  std::vector<double> resp(test_resp.num_functions());
-  for (int i=0; i<resp.size(); ++i)
-    resp[i] = test_resp.function_value(i);
+  return copy_functions<std::vector<double>>();
+}
 
-  return resp;
+// -----------------------------------------------------------------
+
+std::vector<std::vector<double>>
+ModelExecutor::gradient(std::vector<double>& x)
+{
+  //Cout << "ModelExecutor::gradient: x : " << x << std::endl;
+  //Cout << "ModelExecutor::gradient: gradientType : " << model_->gradient_type() << std::endl;
+
+  const Response& test_resp = model_->current_response(); // No ModelUtils helper for Response's
+  ActiveSet temp_set = test_resp.active_set(); // copy
+  temp_set.request_values(2); // gradients
+
+  for (int i=0; i<x.size(); ++i)
+    ModelUtils::continuous_variable(*model_, x[i], i);
+  model_->evaluate(temp_set);
+
+  return copy_gradients<std::vector<std::vector<double>>>();
+}
+
+// -----------------------------------------------------------------
+
+std::tuple< std::vector<double>,
+            std::vector<std::vector<double>>,
+            std::vector<std::vector<std::vector<double>>> >
+ModelExecutor::evaluate(std::vector<double>& x, std::vector<int> & asv)
+{
+  //Cout << "ModelExecutor::evaluate: x : " << x << std::endl;
+  //Cout << "ModelExecutor::evaluate: asv : " << asv << std::endl;
+
+  const Response& test_resp = model_->current_response();
+  ActiveSet temp_set = test_resp.active_set(); // copy
+  temp_set.request_values(asv[0]); // single response only for now
+
+  for (int i=0; i<x.size(); ++i)
+    ModelUtils::continuous_variable(*model_, x[i], i);
+  model_->evaluate(temp_set);
+
+  // Functions
+  auto fns = copy_functions<std::vector<double>>();
+
+  // Gradients
+  auto grads = copy_gradients<std::vector<std::vector<double>>>();
+
+  // Hessians
+  std::vector<std::vector<std::vector<double>>> empty_hessian;
+
+  // Return tuple
+  auto ret = std::make_tuple(fns, grads, empty_hessian);
+
+  return ret;
 }
 
 // -----------------------------------------------------------------
@@ -345,6 +445,14 @@ PYBIND11_MODULE(ext_method, m) {
          , "Return function value for mixed parameter values"
          , py::arg("vars"))
     
+    .def("gradient_values", (&Dakota::ModelExecutor::gradient)
+         , "Return function gradients for continuous values"
+         , py::arg("x"))
+    
+    .def("evaluate", (&Dakota::ModelExecutor::evaluate)
+         , "Return function, gradients, and hessian for continuous values"
+         , py::arg("x"), py::arg("asv"))
+    
   // Executor output helper
     .def("output_central_moments", &Dakota::ModelExecutor::compute_and_print_moments
          , "Compute and print central moments for response array"
@@ -356,6 +464,13 @@ PYBIND11_MODULE(ext_method, m) {
             return PythonUtils::copy_array_to_pybind11<py::list>(
                 ModelUtils::continuous_variables(me.model()));
         })
+
+  // Executor query helpers
+    .def("has_gradient", &Dakota::ModelExecutor::has_gradient
+         , "Query if the model supports gradient evaluations")
+
+    .def("has_hessian", &Dakota::ModelExecutor::has_hessian
+         , "Query if the model supports hessian evaluations")
 
 
   // --------------

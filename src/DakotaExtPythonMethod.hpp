@@ -32,14 +32,23 @@ class ModelExecutor
     /// Constructor
     ModelExecutor(std::shared_ptr<Model> & model);
 
-    /// model evaluator, continuous vars
+    /// model evaluator response value, continuous vars
     std::vector<double> value(std::vector<double> & x);
 
-    /// model evaluator, continuous vars, numpy/Eigen format
+    /// model evaluator response value, continuous vars, numpy/Eigen format
     VectorXd value(VectorXd & x);
 
-    /// model evaluator, mixed vars
+    /// model evaluator response value, mixed vars
     std::vector<double> value(py::dict & vars);
+
+    /// model evaluator response gradient, continuous vars
+    std::vector<std::vector<double>> gradient(std::vector<double> & x);
+
+    /// model evaluator response value, gradient, and hessian for continuous vars
+    std::tuple< std::vector<double>,
+                std::vector<std::vector<double>>,
+                std::vector<std::vector<std::vector<double>>> >
+      evaluate(std::vector<double> & x, std::vector<int> & asv);
 
     /// compute and print response central moments
     void compute_and_print_moments(const std::vector<std::vector<double>> &);
@@ -47,7 +56,25 @@ class ModelExecutor
     const Model& model() const
       { return *model_; }
 
+    // Query if gradients are supported
+    bool has_gradient() const;
+
+    // Query if hessians are supported
+    bool has_hessian() const;
+
   private:
+
+    // Copy functions from Response
+    template<typename vecT>
+    vecT copy_functions() const;
+
+    // Copy gradients from Response
+    template<typename matT>
+    matT copy_gradients() const;
+
+    // Copy hessians from Response
+    template<typename matT>
+    matT copy_hessians() const;
 
     // wrapped model
     std::shared_ptr<Model> model_;
