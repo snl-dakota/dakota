@@ -9,23 +9,23 @@
 
 #include "python_utils.hpp"
 
-namespace Dakota {
-
-bool PythonUtils::check_for_attr(py::object & pyObj, const std::string& attr,
-                                 std::string name)
-{
-  try {
-    py::object py_chk = pyObj.attr(attr.c_str());
-  }
-  catch(py::error_already_set &e) {
-    if (e.matches(PyExc_AttributeError)) {
-      if( !name.empty() )
-        std::cout << "Module '" << name << "' does not "
-                  << "contain method '" << attr << "'"
-                  << std::endl;
-    }
-    return false;;
-  }
-  return true;
-}
-}
+//namespace Dakota {
+//
+//bool PythonUtils::check_for_attr(py::object & pyObj, const std::string& attr,
+//                                 std::string name)
+//{
+//  try {
+//    py::object py_chk = pyObj.attr(attr.c_str());
+//  }
+//  catch(py::error_already_set &e) {
+//    if (e.matches(PyExc_AttributeError)) {
+//      if( !name.empty() )
+//        std::cout << "Module '" << name << "' does not "
+//                  << "contain method '" << attr << "'"
+//                  << std::endl;
+//    }
+//    return false;;
+//  }
+//  return true;
+//}
+//}

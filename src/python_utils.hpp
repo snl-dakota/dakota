@@ -7,7 +7,9 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-#pragma once
+#ifndef DAKOTA_PYTHON_UTILS_H
+#define DAKOTA_PYTHON_UTILS_H
+
 #include "dakota_data_util.hpp"
 #include <pybind11/numpy.h>
 namespace py = pybind11;
@@ -38,4 +40,24 @@ namespace Dakota {
       bool check_for_attr(py::object & pyObj, const std::string& attr,
                           std::string name="");
     }
+
+    inline bool PythonUtils::check_for_attr(py::object & pyObj, const std::string& attr,
+                                            std::string name)
+    {
+      try {
+        py::object py_chk = pyObj.attr(attr.c_str());
+      }
+      catch(py::error_already_set &e) {
+        if (e.matches(PyExc_AttributeError)) {
+          if( !name.empty() )
+            std::cout << "Module '" << name << "' does not "
+                      << "contain method '" << attr << "'"
+                      << std::endl;
+        }
+        return false;;
+      }
+      return true;
+    }
 }
+
+#endif
