@@ -27,8 +27,14 @@ ExecutableEnvironment::ExecutableEnvironment(int argc, char* argv[]):
 
   // could we wait to do redirection and any output here?
   // might get entangled with CL usage...
-  if (programOptions.version())
-    outputManager.output_version();
+  if (programOptions.version()) {
+    if (!programOptions.version_query().empty()) {
+      outputManager.output_version(programOptions.version_query());
+    }
+    else {
+      outputManager.output_version();
+    }
+  }
 
   // After command line parsing and before input DB parsing: if just
   // getting version or help, don't instantiate anything.

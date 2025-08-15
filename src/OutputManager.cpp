@@ -373,6 +373,18 @@ void OutputManager::output_version(std::ostream& os) const
   }
 }
 
+void OutputManager::output_version(const String& query, std::ostream& os) const
+{
+  output_version(os);
+
+  if (!query.empty()) {
+    std::cout << std::endl;
+    std::cout << "--------------------------" << std::endl;
+    std::cout << "Build configuration for query: " << query << std::endl;
+    std::cout << std::endl;
+    std::cout << DakotaBuildInfo::get_build_config(query) << std::endl;
+  }
+}
 
 void OutputManager::output_startup_message(std::ostream& os) const 
 {
