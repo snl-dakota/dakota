@@ -87,6 +87,8 @@ public:
   bool help() const;
   /// is version mode active?
   bool version() const;
+  /// is version mode active?
+  String version_query() const;
   /// is check mode active?
   bool check() const;
 
@@ -223,6 +225,7 @@ private:
   String readRestartFile;    ///< e.g., "dakota.old.rst"
   size_t stopRestartEvals;   ///< eval number at which to stop restart read
   String writeRestartFile;   ///< e.g., "dakota.new.rst"
+  String versionQuery;     /// argument passed to "version"
 
   // Run mode flags; intially only valid on rank 0.
   // Could condense flags into a bit-wise short, but using bool for
