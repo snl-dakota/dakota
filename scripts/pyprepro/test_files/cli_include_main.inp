@@ -19,3 +19,7 @@ include_var1 = 10: {include_var1 = 10} # Should read 10
 
 from cli
 cparam: {cparam}; cparam = 4: {cparam = 4}
+
+Regression Test for math module constants
+pi: {pi}
+E: {E}
