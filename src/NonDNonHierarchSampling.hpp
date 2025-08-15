@@ -487,14 +487,18 @@ protected:
   bool active_set_for_model(size_t i);
 
   /// promote scalar to 1D array
-  void inflate(size_t N_0D, SizetArray& N_1D);
+  void inflate(size_t N_0D, SizetArray& N_1D, size_t len);
   /// promote scalar to portion of 1D array
-  void inflate(size_t N_0D, SizetArray& N_1D, const UShortArray& approx_set);
+  void inflate(size_t N_0D, SizetArray& N_1D, const UShortArray& subset,
+	       size_t len);
   /// promote 1D array to 2D array
-  void inflate(const SizetArray& N_1D, Sizet2DArray& N_2D);
+  void inflate(const SizetArray& N_1D, Sizet2DArray& N_2D, size_t len);
   /// promote 1D array to active portion of 2D array
   void inflate(const SizetArray& N_1D, Sizet2DArray& N_2D,
-	       const UShortArray& approx_set);
+	       const UShortArray& subset, size_t len);
+  /// promote 1D array to active portion of 2D array
+  void inflate(const SizetArray& N_1D, const BitArray& mask,
+	       Sizet2DArray& N_2D);
   /// promote vector of averaged values to full matrix
   void inflate(const RealVector& avg_eval_ratios, RealMatrix& eval_ratios);
   /// promote scalar to column vector
@@ -2024,42 +2028,54 @@ inline bool NonDNonHierarchSampling::active_set_for_model(size_t i)
 }
 
 
-inline void NonDNonHierarchSampling::inflate(size_t N_0D, SizetArray& N_1D)
-{ N_1D.assign(numApprox, N_0D); }
+inline void NonDNonHierarchSampling::
+inflate(size_t N_0D, SizetArray& N_1D, size_t len)
+{ N_1D.assign(len, N_0D); }
 
 
 inline void NonDNonHierarchSampling::
-inflate(size_t N_0D, SizetArray& N_1D, const UShortArray& approx_set)
+inflate(size_t N_0D, SizetArray& N_1D, const UShortArray& subset, size_t len)
 {
-  N_1D.assign(numApprox, 0);
-  size_t i, num_approx = approx_set.size();
-  for (i=0; i<num_approx; ++i)
-    N_1D[approx_set[i]] = N_0D;
+  N_1D.assign(len, 0);
+  size_t i, num_subset = subset.size();
+  for (i=0; i<num_subset; ++i)
+    N_1D[subset[i]] = N_0D;
 }
 
 
 inline void NonDNonHierarchSampling::
-inflate(const SizetArray& N_1D, Sizet2DArray& N_2D)
+inflate(const SizetArray& N_1D, Sizet2DArray& N_2D, size_t len)
 {
-  N_2D.resize(numApprox);
-  for (size_t approx=0; approx<numApprox; ++approx)
-    N_2D[approx] = N_1D;
+  N_2D.resize(len);
+  for (size_t i=0; i<len; ++i)
+    N_2D[i] = N_1D;
 }
 
 
 inline void NonDNonHierarchSampling::
 inflate(const SizetArray& N_1D, Sizet2DArray& N_2D,
-	const UShortArray& approx_set)
+	const UShortArray& subset, size_t len)
 {
   N_2D.clear();
-  N_2D.resize(numApprox);
-  size_t i, num_approx = approx_set.size();
-  for (i=0; i<num_approx; ++i)
-    N_2D[approx_set[i]] = N_1D;
+  N_2D.resize(len);
+  size_t i, num_subset = subset.size();
+  for (i=0; i<num_subset; ++i)
+    N_2D[subset[i]] = N_1D;
   // Not needed so long as empty 1D arrays are allowed:
   //for (i=0; i<numApprox; ++i)
   //  if (N_2D[i].empty())
   //    N_2D[i].assign(numFunctions, 0);
+}
+
+
+inline void NonDNonHierarchSampling::
+inflate(const SizetArray& N_1D, const BitArray& mask, Sizet2DArray& N_2D)
+{
+  size_t i, len = mask.size();
+  N_2D.resize(len);
+  for (size_t i=0; i<len; ++i)
+    if (mask[i]) N_2D[i] = N_1D;
+    else         N_2D[i].clear();
 }
 
 

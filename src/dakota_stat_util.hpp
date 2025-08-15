@@ -139,19 +139,60 @@ inline void average(const RealMatrix& mat, size_t avg_index,
     break;
   default:
     Cerr << "Error: bad averaging index (" << avg_index
-	 << ") in NonDEnsembleSampling::average(RealMatrix)." << std::endl;
+	 << ") in average(RealMatrix)." << std::endl;
     abort_handler(-1); break;
   }
 }
 
 
-/// eliminate inner dimension of 2D array by averaging over each inner vector
-inline void average(const Sizet2DArray& N_2D, RealVector& N_1D)
+/// compute row-averages for each column or column-averages for each row
+inline void average(const Sizet2DArray& array, RealVector& avg_array,
+		    size_t avg_index = 1)
 {
-  size_t i, len = N_2D.size();
-  N_1D.sizeUninitialized(len);
-  for (i=0; i<len; ++i)
-    N_1D[i] = average(N_2D[i]);
+  // typically the second dimension is number of QoI, which does not vary
+  size_t i, j, num_array = array.size(),
+    array_len = (num_array) ? array[0].size() : 0;
+  switch (avg_index) {
+  case 0: // average over index 0 (num_array), retaining index 1 (array_len)
+    avg_array.sizeUninitialized(array_len);
+    switch (num_array) {
+    case 0:
+      avg_array.putScalar(std::numeric_limits<Real>::quiet_NaN());
+      break;
+    case 1:
+      for (j=0; j<array_len; ++j) avg_array[j] = array[0][j];
+      break;
+    default:
+      for (j=0; j<array_len; ++j) {
+	Real sum = 0.;
+	for (i=0; i<num_array; ++i)
+	  sum += array[i][j];
+	avg_array[j] = sum / num_array;
+      }
+      break;
+    }
+    break;
+  case 1: // average over index 1 (array_len), retaining index 0 (num_array)
+    avg_array.sizeUninitialized(num_array);
+    switch (array_len) {
+    case 0:
+      avg_array.putScalar(std::numeric_limits<Real>::quiet_NaN());
+      break;
+    case 1:
+      for (i=0; i<num_array; ++i) avg_array[i] = array[i][0];
+      break;
+    default:
+      avg_array.sizeUninitialized(num_array);
+      for (i=0; i<num_array; ++i)
+	avg_array[i] = average(array[i]);
+      break;
+    }
+    break;
+  default:
+    Cerr << "Error: bad averaging index (" << avg_index
+	 << ") in average(Sizet2DArray)." << std::endl;
+    abort_handler(-1); break;
+  }
 }
 
 

@@ -25,7 +25,7 @@ namespace Dakota {
     instantiation using the ProblemDescDB. */
 NonDMultilevelFunctionTrain::
 NonDMultilevelFunctionTrain(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
-  NonDC3FunctionTrain(DEFAULT_METHOD, problem_db, model),
+  NonDC3FunctionTrain(DEFAULT_METHOD, problem_db, parallel_lib, model),
   startRankSeqSpec(
     problem_db.get_sza("method.nond.c3function_train.start_rank_sequence")),
   startOrderSeqSpec(

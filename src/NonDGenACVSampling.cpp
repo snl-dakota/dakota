@@ -684,8 +684,9 @@ void NonDGenACVSampling::generalized_acv_online_pilot()
   SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
   size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
   N_H_actual.assign(numFunctions, 0);  N_H_alloc = 0;
-  Sizet2DArray N_L_actual_shared;  inflate(N_H_actual, N_L_actual_shared);
-  inflate(N_H_alloc, NApproxAlloc);
+  Sizet2DArray N_L_actual_shared;
+  inflate(N_H_actual, N_L_actual_shared, numApprox);
+  inflate(N_H_alloc,  NApproxAlloc,      numApprox);
   Real hf_target = 0., avg_N_H;  size_t alloc_incr;
   // start with all approximations included
   std::pair<UShortArray, UShortArray> soln_key(fullApproxSet, UShortArray());
@@ -812,7 +813,7 @@ void NonDGenACVSampling::generalized_acv_offline_pilot()
   SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
   size_t&     N_H_alloc  =  NLevAlloc[hf_form_index][hf_lev_index];
   N_H_actual.assign(numFunctions, 0);  N_H_alloc = 0;
-  inflate(N_H_alloc, NApproxAlloc); // used in active_budget()
+  inflate(N_H_alloc, NApproxAlloc, numApprox); // used in active_budget()
   std::pair<UShortArray, UShortArray> soln_key;
 
   // no need for "no_solve" logic in offline case
@@ -913,7 +914,7 @@ void NonDGenACVSampling::generalized_acv_pilot_projection()
 			  varH, covLL, covLH);
     N_H_alloc = numSamples;
   } /// TO DO: this code block is exact same as ACV
-  inflate(N_H_alloc, NApproxAlloc);
+  inflate(N_H_alloc, NApproxAlloc, numApprox);
 
   // -----------------------------------
   // Compute "online" sample increments:

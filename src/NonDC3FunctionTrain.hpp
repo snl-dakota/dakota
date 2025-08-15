@@ -43,6 +43,7 @@ protected:
   /// (method_name is not necessary, rather it is just a convenient overload
   /// allowing the derived ML FT class to bypass the standard FT ctor)
   NonDC3FunctionTrain(unsigned short method_name, ProblemDescDB& problem_db,
+		      ParallelLibrary& parallel_lib,
 		      std::shared_ptr<Model> model);
 
   //

@@ -121,7 +121,7 @@ NonDC3FunctionTrain(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, st
 /** This constructor is called by derived class constructors. */
 NonDC3FunctionTrain::
 NonDC3FunctionTrain(unsigned short method_name, ProblemDescDB& problem_db,
-		    ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+		    ParallelLibrary& parallel_lib,std::shared_ptr<Model> model):
   NonDExpansion(problem_db, parallel_lib, model),
   importBuildPointsFile(
     problem_db.get_string("method.import_build_points_file")),

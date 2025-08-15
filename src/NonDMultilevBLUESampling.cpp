@@ -9,6 +9,7 @@
 
 #include "dakota_system_defs.hpp"
 #include "dakota_data_io.hpp"
+#include "dakota_data_util.hpp"
 //#include "dakota_tabular_io.hpp"
 #include "dakota_linear_algebra.hpp"
 #include "DakotaModel.hpp"
@@ -887,15 +888,39 @@ compute_allocations(MFSolutionData& soln, const Sizet2DArray& N_G_actual,
     no_solve = (equivHFEvals >= (Real)maxFunctionEvals); // budget exhausted
 
   if (mlmfIter == 0) {
-    if (retainedModelGroups.empty()) soln.solution_variables(pilotSamples);
+    // store allocation (not actual) in MFSolutionData
+    bool no_retain_throttle = retainedModelGroups.empty();
+    if (no_retain_throttle) soln.solution_variables(pilotSamples);
     else {
       RealVector x0; deflate(pilotSamples, retainedModelGroups, x0);
       soln.solution_variables(x0);
     }
 
+    // shared/independent pilot has been performed; extract NGroupActual counts
+    // for use in {numGIter,estVarIter,estVarMetric}0.  Note that Iter0 data
+    // includes any runtime throttling.
+    RealVector avg_pilot;
+    if (pilotGroupSampling == SHARED_PILOT) {
+      // assign scalar avg over QoI to all groups, consistent with covar reuse
+      size_t num_v = num_active_groups(), all_group = numGroups - 1;
+      const SizetArray& N_G_actual_all = NGroupActual[all_group];
+      if (no_retain_throttle)   inflate(N_G_actual_all, numGIter0, numGroups);
+      else inflate(N_G_actual_all, retainedModelGroups, numGIter0);
+      avg_pilot.sizeUninitialized(num_v);
+      avg_pilot.putScalar(average(N_G_actual_all));
+    }
+    else { // pilot sample per active group averaged over qoi
+      numGIter0 = NGroupActual;
+      if (no_retain_throttle)      average(NGroupActual, avg_pilot);
+      else {
+	RealVector avg_pilot_all;  average(NGroupActual, avg_pilot_all);
+	deflate(avg_pilot_all, retainedModelGroups, avg_pilot);
+      }
+    }
+ 
     if (pilotMgmtMode == ONLINE_PILOT ||
 	pilotMgmtMode == ONLINE_PILOT_PROJECTION) { // cache estVarIter0
-      estimator_variances(soln.solution_variables(), estVarIter0);
+      estimator_variances(avg_pilot, estVarIter0); // use actual
       MFSolutionData::update_estimator_variance_metric(estVarMetricType,
 	estVarMetricNormOrder, estVarIter0, estVarMetric0);
       // no_solve augmentation for online iter 0:
@@ -1402,7 +1427,8 @@ void NonDMultilevBLUESampling::print_variance_reduction(std::ostream& s) const
 {
   const RealVector&  mlblue_est_var = blueSolnData.estimator_variances();
   const RealVector&  mlblue_ratios  = blueSolnData.estimator_variance_ratios();
-  const StringArray& labels = ModelUtils::response_labels(*iteratedModel->truth_model());
+  const StringArray& labels
+    = ModelUtils::response_labels(*iteratedModel->truth_model());
   Real mlblue_est_var_q, mlblue_ratio_q, proj_equiv_estvar_q;
   size_t qoi, wpp7 = write_precision+7,
     proj_equiv_hf = (size_t)std::floor(equivHFEvals + deltaEquivHF + .5);
@@ -1417,11 +1443,13 @@ void NonDMultilevBLUESampling::print_variance_reduction(std::ostream& s) const
 
   // search for the most refined covGG[g][qoi](H,H)
   size_t ref_group, ref_model_index, all_group = numGroups - 1;
+  RealVector avg_numG_iter0(numFunctions);
   switch (pilotMgmtMode) {
   case OFFLINE_PILOT:  case OFFLINE_PILOT_PROJECTION:
     ref_group = numGroups - 1;  ref_model_index = numApprox;             break;
   default: // define online ref from group with max HF samples (best varH)
     find_hf_sample_reference(NGroupActual, ref_group, ref_model_index);  break;
+    average(numGIter0, avg_numG_iter0, 0); // average pilot sample for each QoI
   }
   // As described in process_group_allocations(), we have two MC references:
   // projected HF-only samples and projected equivalent HF samples.
@@ -1438,9 +1466,9 @@ void NonDMultilevBLUESampling::print_variance_reduction(std::ostream& s) const
     proj_equiv_estvar_q = proj_equiv_estvar[qoi];
 
     if (online)
-      s << "    Initial pilot (" << std::setw(3) << pilotSamples[all_group]
-	<< " " << pilot_type << " samples):  " << std::setw(wpp7)
-	<< estVarIter0[qoi] << '\n';
+      s << "    Initial pilot (" << std::setw(3)
+	<< (size_t)std::floor(avg_numG_iter0[qoi] + .5)	<< " " << pilot_type
+	<< " samples):  " << std::setw(wpp7) << estVarIter0[qoi] << '\n';
     if (mc_only_ref)
       s << "  " << type << " MC    (" << std::setw(6) << projNActualHF[qoi]
 	<< " HF samples):  " << std::setw(wpp7) << projEstVarHF[qoi] << '\n';

@@ -446,4 +446,14 @@ void iround(const RealVector& input_vec, IntVector& rounded_vec)
     rounded_vec[i] = boost::math::iround(input_vec[i]);
 }
 
+
+void iround(const RealVector& input_vec, SizetArray& rounded_vec)
+{
+  int len = input_vec.length();
+  if (rounded_vec.size() != len)
+    rounded_vec.resize(len);
+  for (int i=0; i<len; ++i)
+    rounded_vec[i] = boost::math::iround(input_vec[i]);
+}
+
 } // namespace Dakota

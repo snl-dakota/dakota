@@ -308,8 +308,8 @@ update_projected_lf_samples(const MFSolutionData& soln,
 			    //SizetArray& delta_N_L_actual,
 			    Real& delta_equiv_hf)
 {
-  Sizet2DArray N_L_actual;  inflate(N_H_actual, N_L_actual);
-  SizetArray   N_L_alloc;   inflate(N_H_alloc,  N_L_alloc);
+  Sizet2DArray N_L_actual;  inflate(N_H_actual, N_L_actual, numApprox);
+  SizetArray   N_L_alloc;   inflate(N_H_alloc,  N_L_alloc,  numApprox);
   size_t qoi, approx, alloc_incr, actual_incr;  Real lf_target;
   const RealVector& soln_vars = soln.solution_variables();
   for (approx=0; approx<numApprox; ++approx) {
@@ -421,8 +421,8 @@ approx_increments(IntRealMatrixMap& sum_L_baseline,
   // Perform approximation increments in parallel
   // --------------------------------------------
   SizetArray delta_N_G(numGroups);  delta_N_G[numApprox] = 0;
-  inflate(N_H_actual, N_L_actual_refined);
-  inflate(N_H_alloc,  N_L_alloc_refined);
+  inflate(N_H_actual, N_L_actual_refined, numApprox);
+  inflate(N_H_alloc,  N_L_alloc_refined,  numApprox);
   const RealVector& soln_vars = soln.solution_variables();
   // increment_sample_range() updates the count reference prior to computing
   // the next delta_N_G, such that this in a rolling increment, ordered from
@@ -446,7 +446,8 @@ approx_increments(IntRealMatrixMap& sum_L_baseline,
   accumulate_group_sums(sum_G, N_G_actual, batchResponsesMap);
   clear_batches();
   // Map from "horizontal" group incr to "vertical" model incr (see JCP: ACV)
-  sum_L_shared = sum_L_baseline;  inflate(N_H_actual, N_L_actual_shared);
+  sum_L_shared = sum_L_baseline;
+  inflate(N_H_actual, N_L_actual_shared, numApprox);
   overlay_group_sums(sum_G,         N_G_actual,
 		     sum_L_shared,  N_L_actual_shared,
 		     sum_L_refined, N_L_actual_refined);
