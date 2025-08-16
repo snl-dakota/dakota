@@ -150,43 +150,45 @@ inline void average(const Sizet2DArray& array, RealVector& avg_array,
 		    size_t avg_index = 1)
 {
   // typically the second dimension is number of QoI, which does not vary
-  size_t i, j, num_array = array.size(),
-    array_len = (num_array) ? array[0].size() : 0;
+  size_t i, j, num_array = array.size(), array_len;
   switch (avg_index) {
   case 0: // average over index 0 (num_array), retaining index 1 (array_len)
-    avg_array.sizeUninitialized(array_len);
     switch (num_array) {
     case 0:
-      avg_array.putScalar(std::numeric_limits<Real>::quiet_NaN());
+      avg_array.size(0);
+      //avg_array.putScalar(std::numeric_limits<Real>::quiet_NaN());
       break;
-    case 1:
-      for (j=0; j<array_len; ++j) avg_array[j] = array[0][j];
+    case 1: {
+      const SizetArray& array_0 = array[0];
+      array_len = array_0.size();
+      avg_array.sizeUninitialized(array_len);
+      for (j=0; j<array_len; ++j)
+	avg_array[j] = array_0[j];
       break;
-    default:
-      for (j=0; j<array_len; ++j) {
-	Real sum = 0.;
-	for (i=0; i<num_array; ++i)
-	  sum += array[i][j];
-	avg_array[j] = sum / num_array;
+    }
+    default: {
+      size_t max_array_len = 0;
+      for (i=0; i<num_array; ++i) {
+	array_len = array[i].size();
+	if (array_len > max_array_len) max_array_len = array_len;
       }
+      avg_array.size(max_array_len); // init to 0
+      SizetArray count;  count.assign(max_array_len, 0);
+      for (i=0; i<num_array; ++i) {
+	array_len = array[i].size();
+	for (j=0; j<array_len; ++j)
+	  { avg_array[j] += array[i][j];  ++count[j]; }
+      }
+      for (j=0; j<max_array_len; ++j)
+	avg_array[j] /= count[j];
       break;
+    }
     }
     break;
   case 1: // average over index 1 (array_len), retaining index 0 (num_array)
     avg_array.sizeUninitialized(num_array);
-    switch (array_len) {
-    case 0:
-      avg_array.putScalar(std::numeric_limits<Real>::quiet_NaN());
-      break;
-    case 1:
-      for (i=0; i<num_array; ++i) avg_array[i] = array[i][0];
-      break;
-    default:
-      avg_array.sizeUninitialized(num_array);
-      for (i=0; i<num_array; ++i)
-	avg_array[i] = average(array[i]);
-      break;
-    }
+    for (i=0; i<num_array; ++i)
+      avg_array[i] = average(array[i]); // handles quiet_nan et al.
     break;
   default:
     Cerr << "Error: bad averaging index (" << avg_index

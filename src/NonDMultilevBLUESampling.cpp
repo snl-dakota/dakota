@@ -904,8 +904,8 @@ compute_allocations(MFSolutionData& soln, const Sizet2DArray& N_G_actual,
       // assign scalar avg over QoI to all groups, consistent with covar reuse
       size_t num_v = num_active_groups(), all_group = numGroups - 1;
       const SizetArray& N_G_actual_all = NGroupActual[all_group];
-      if (no_retain_throttle)   inflate(N_G_actual_all, numGIter0, numGroups);
-      else inflate(N_G_actual_all, retainedModelGroups, numGIter0);
+      if (no_retain_throttle) inflate(N_G_actual_all, numGIter0, numGroups);
+      else          inflate(N_G_actual_all, retainedModelGroups, numGIter0);
       avg_pilot.sizeUninitialized(num_v);
       avg_pilot.putScalar(average(N_G_actual_all));
     }
@@ -1443,13 +1443,14 @@ void NonDMultilevBLUESampling::print_variance_reduction(std::ostream& s) const
 
   // search for the most refined covGG[g][qoi](H,H)
   size_t ref_group, ref_model_index, all_group = numGroups - 1;
-  RealVector avg_numG_iter0(numFunctions);
+  RealVector avg_numG_iter0;
   switch (pilotMgmtMode) {
   case OFFLINE_PILOT:  case OFFLINE_PILOT_PROJECTION:
-    ref_group = numGroups - 1;  ref_model_index = numApprox;             break;
+    ref_group = numGroups - 1;  ref_model_index = numApprox;  break;
   default: // define online ref from group with max HF samples (best varH)
-    find_hf_sample_reference(NGroupActual, ref_group, ref_model_index);  break;
+    find_hf_sample_reference(NGroupActual, ref_group, ref_model_index);
     average(numGIter0, avg_numG_iter0, 0); // average pilot sample for each QoI
+    break;
   }
   // As described in process_group_allocations(), we have two MC references:
   // projected HF-only samples and projected equivalent HF samples.
