@@ -901,6 +901,17 @@ endif()
 include_directories(${DAKOTA_INCDIRS} ${EXT_TPL_INCDIRS})
 link_directories(${DAKOTA_LIBDIRS} ${EXT_TPL_LIBDIRS})
 
+set(generatedFile ${CMAKE_CURRENT_BINARY_DIR}/dakota_cmake_cache.h) 
+set_property(SOURCE ${generatedFile} PROPERTY GENERATED ON)
+
+# Generate Header file consisting of the parsed CmakeCache for xSDK compliance
+add_custom_command(
+  OUTPUT ${generatedFile}
+  COMMAND ${CMAKE_BINARY_DIR}/src/util/parse_cmake_cache ${CMAKE_BINARY_DIR}/CMakeCache.txt
+  DEPENDS ${CMAKE_BINARY_DIR}/CMakeCache.txt
+  VERBATIM)
+
+list(APPEND Dakota_src ${generatedFile})
 
 # --- Create the core Dakota libraries and set properties
 
