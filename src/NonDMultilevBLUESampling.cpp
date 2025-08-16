@@ -1467,7 +1467,7 @@ void NonDMultilevBLUESampling::print_variance_reduction(std::ostream& s) const
     proj_equiv_estvar_q = proj_equiv_estvar[qoi];
 
     if (online)
-      s << "    Initial pilot (" << std::setw(3)
+      s << "  Pilot reference (" << std::setw(3)
 	<< (size_t)std::floor(avg_numG_iter0[qoi] + .5)	<< " " << pilot_type
 	<< " samples):  " << std::setw(wpp7) << estVarIter0[qoi] << '\n';
     if (mc_only_ref)
