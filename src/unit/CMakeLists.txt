@@ -147,7 +147,7 @@ if(DAKOTA_H5PY_FOUND)
 endif()
 
 
-if (HAVE_ROL)
+if (HAVE_ROL AND NOT HAVE_DAKOTA_ROL_INTERFACE )
   add_subdirectory(dakota_opt_tpl_rol_textbook)
 
   add_subdirectory(dakota_opt_tpl_rol_pbs)
