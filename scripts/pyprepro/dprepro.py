@@ -25,7 +25,7 @@ if pyv >= (3,):
     xrange = range
     unicode = str
     
-__version__ = "20250404.0"
+__version__ = "20250815.0"
 
 __all__ = ['pyprepro','Immutable','Mutable','ImmutableValDict','dprepro','convert_dakota']
 
@@ -214,9 +214,7 @@ def pyprepro(tpl,
     for include in include_files:
         _,subenv = _template(include,return_env=True,syntax=syntax.copy())
         
-        # remove the initial variables (even though they will be the same for all
-        for init_var in INIT_VARS: # init_vars is a set. May init_vars 
-            del subenv[init_var]
+        subenv = _del_init_vars(subenv)
         
         # Update the main but set as immutable
         for key,val in subenv.items():
@@ -284,38 +282,12 @@ def render(*args,**kwargs):
     keep_immutable = kwargs.pop('keep_immutable',False)
     
     env = pyprepro(*args,**kwargs)
-    
-    # This code block is about removing items in the dictionary that come from
-    # the code itself and not the user. The problem is, we want to permit writing
-    # variables with names already defined (e.g. 'gamma'). Approach is documented
-    for key,val in INIT_VARS.items():
-        if key not in env:
-            continue
-            
-        if (env[key] == val or key.startswith('_')): # Value hasn't changed
-            del env[key]
-            continue
-            
-        if key == 'nan' and math.isnan(val): # Special case for nan
-            del env[key]
-            continue
-        
-        # Callable Lambdas that change equality. Note that this will only capture
-        # if also in INIT_VARS
-        if key in _CALLABLE_INIT_LAMBDAS and callable(val):
-            del env[key]
-            continue
-        
-        # The 'env' key ends up being recursive. Test for it
-        if key == 'env' and isinstance(val,dict) and val.get('env') is val:
-            del env[key]
-            continue
+    env = _del_init_vars(env)
     
     if keep_immutable:
         return env
         
     return dict(env)
-        
     
 def _parse_cli(argv,dprepro=False):
     """
@@ -2017,6 +1989,38 @@ def _template(tpl, syntax=None, env=None, filename=None,return_env=False):
             sys.exit(1)
         else:
             raise
+            
+def _del_init_vars(env):
+    """
+    This will remove INIT_VARS from env if the value hasn't changed. The idea is to 
+    allow values to be changed (e.g. "E") but not keep everything that may have 
+    been defined.
+    
+    Returns env but also modifies it
+    """
+    for key,val in INIT_VARS.items():
+        if key not in env:
+            continue
+            
+        if (env[key] == val or key.startswith('_')): # Value hasn't changed
+            del env[key]
+            continue
+            
+        if key == 'nan' and math.isnan(val): # Special case for nan
+            del env[key]
+            continue
+        
+        # Callable Lambdas that change equality. Note that this will only capture
+        # if also in INIT_VARS
+        if key in _CALLABLE_INIT_LAMBDAS and callable(val):
+            del env[key]
+            continue
+        
+        # The 'env' key ends up being recursive. Test for it
+        if key == 'env' and isinstance(val,dict) and val.get('env') is val:
+            del env[key]
+            continue
+    return env
 ########################### six extracted codes ###########################
 # This is pulled from the python six module (see links below) to work 
 # around some python 2.7.4 issues

@@ -11,6 +11,8 @@
 #define DAKOTA_BUILD_INFO_H
 
 #include <string>
+#include <vector>
+#include "dakota_cmake_cache.h"
 
 namespace Dakota {
 
@@ -28,6 +30,7 @@ public:
   static std::string get_build_date();
   /// Compilation time
   static std::string get_build_time();
+  static std::vector<std::string> get_build_config(std::string query);
 
 private:
 
@@ -53,6 +56,18 @@ inline std::string DakotaBuildInfo::get_release_date()
 }
 inline std::string DakotaBuildInfo::get_build_date()  { return __DATE__; }
 inline std::string DakotaBuildInfo::get_build_time()  { return __TIME__; }
+
+// For xSDK compliance
+inline std::vector<std::string> DakotaBuildInfo::get_build_config(std::string query) { 
+  std::vector<std::string> result;
+  for (auto& e: cmake_configuration) {
+    if (query == "all" || e.find(query) != std::string::npos) {
+      result.push_back(e);
+    }
+  }
+
+  return result;
+}
 
 } // namespace Dakota
 

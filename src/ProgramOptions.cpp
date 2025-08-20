@@ -58,9 +58,12 @@ ProgramOptions::ProgramOptions(int argc, char* argv[], int world_rank):
   CommandLineHandler clh(argc, argv, world_rank);
   
   helpFlag = clh.retrieve("help");
-  versionFlag = clh.retrieve("version");
   checkFlag = clh.retrieve("check");
 
+  if (clh.retrieve("version")) {
+    versionFlag = true;
+    versionQuery = clh.retrieve("version");
+  }
   // Need to catch the NULL case; this will clean up when GetLongOpt
   // gets refactored
 
@@ -158,6 +161,9 @@ bool ProgramOptions::help() const
 
 bool ProgramOptions::version() const
 { return versionFlag; }
+
+String ProgramOptions::version_query() const
+{ return versionQuery; }
 
 bool ProgramOptions::check() const
 { return checkFlag; }

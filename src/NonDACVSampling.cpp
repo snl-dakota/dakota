@@ -160,7 +160,8 @@ void NonDACVSampling::approximate_control_variate_online_pilot()
   if (finalStatsType == QOI_STATISTICS) {
     // peer DAG: no need for shared arrays since shared == baseline
     IntRealMatrixMap sum_L_refined;//, sum_L_shared;
-    Sizet2DArray N_L_actual_baseline; inflate(N_H_actual, N_L_actual_baseline);
+    Sizet2DArray N_L_actual_baseline;
+    inflate(N_H_actual, N_L_actual_baseline, numApprox);
     RealVector2DArray beta(4);
     approx_increments(sum_L_baselineH, N_H_actual, N_H_alloc, sum_L_refined,
 		      N_L_actual_refined, N_L_alloc, acvSolnData);
@@ -231,7 +232,7 @@ void NonDACVSampling::approximate_control_variate_offline_pilot()
   IntRealMatrixMap sum_L_refined;  //, sum_L_shared;
   Sizet2DArray N_L_actual_refined, N_L_actual_baseline;
   SizetArray   N_L_alloc;  RealVector2DArray beta(4);
-  inflate(N_H_actual, N_L_actual_baseline);
+  inflate(N_H_actual, N_L_actual_baseline, numApprox);
   approx_increments(sum_L_baselineH, N_H_actual, N_H_alloc, sum_L_refined,
 		    N_L_actual_refined, N_L_alloc, acvSolnData);
   compute_acv_controls(sum_L_pilot, sum_H_pilot, sum_LL_pilot, sum_LH_pilot,
@@ -400,8 +401,8 @@ approx_increments(IntRealMatrixMap& sum_L_baseline,
   // Perform approximation increments in parallel
   // --------------------------------------------
   SizetArray delta_N_G(numGroups);
-  inflate(N_H_actual, N_L_actual_refined);
-  inflate(N_H_alloc,  N_L_alloc);
+  inflate(N_H_actual, N_L_actual_refined, numApprox);
+  inflate(N_H_alloc,  N_L_alloc,          numApprox);
   const RealVector& soln_vars = soln.solution_variables();
   size_t last_g = numGroups - 1;  delta_N_G[last_g] = 0;
   // Pyramid sampling with reuse: base to top, excluding all-model group.
@@ -1166,16 +1167,18 @@ inflate_lf_samples(const UShortArray& approx_set,
       pilotMgmtMode == OFFLINE_PILOT_PROJECTION) {
     // after processing of offline covariance data, online shared_increment()
     // which follows only includes best model set 
-    if (N_L_actual.empty()) inflate(N_H_actual, N_L_actual, approx_set);
-    if (N_L_alloc.empty())  inflate(N_H_alloc,  N_L_alloc,  approx_set);
+    if (N_L_actual.empty())
+      inflate(N_H_actual, N_L_actual, approx_set, numApprox);
+    if (N_L_alloc.empty())
+      inflate(N_H_alloc,  N_L_alloc,  approx_set, numApprox);
   }
   else {
     // online: all models are part of initial shared_increment(), which can
     // then be updated when there is GenACV iteration of the active set.
     // > when iteration is not used, N_L counts do not need to be managed
     //   separately and can be inflated here from N_H.
-    if (N_L_actual.empty()) inflate(N_H_actual, N_L_actual);
-    if (N_L_alloc.empty())  inflate(N_H_alloc,  N_L_alloc);
+    if (N_L_actual.empty()) inflate(N_H_actual, N_L_actual, numApprox);
+    if (N_L_alloc.empty())  inflate(N_H_alloc,  N_L_alloc,  numApprox);
   }
 }
 

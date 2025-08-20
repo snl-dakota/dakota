@@ -1244,6 +1244,8 @@ inline void merge_data_partial(const IntVector& d_vec,
 
 /// round entries of a RealVector yielding an IntVector
 void iround(const RealVector& input_vec, IntVector& rounded_vec);
+/// round entries of a RealVector yielding a SizetVector
+void iround(const RealVector& input_vec, SizetArray& rounded_vec);
 
 
 // -------------------------------

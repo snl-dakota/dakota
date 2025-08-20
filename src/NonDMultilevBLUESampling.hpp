@@ -353,6 +353,9 @@ private:
   /// counter for sample allocations, per group
   SizetArray   NGroupAlloc;
 
+  /// sample count reference corresponding to estVarIter0
+  Sizet2DArray numGIter0;
+
   /// final solution data for BLUE
   MFSolutionData blueSolnData;
 
