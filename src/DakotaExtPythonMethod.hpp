@@ -44,6 +44,9 @@ class ModelExecutor
     /// model evaluator response gradient, continuous vars
     std::vector<std::vector<double>> gradient(std::vector<double> & x);
 
+    /// model evaluator response hessian, continuous vars
+    std::vector<std::vector<std::vector<double>>> hessian(std::vector<double> & x);
+
     /// model evaluator response value, gradient, and hessian for continuous vars
     std::tuple< std::vector<double>,
                 std::vector<std::vector<double>>,

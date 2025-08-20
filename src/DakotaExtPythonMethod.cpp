@@ -282,8 +282,28 @@ matT ModelExecutor::copy_gradients() const
 template<typename matT>
 matT ModelExecutor::copy_hessians() const
 {
-  matT resp;
-  return resp;
+  // Need to revisit semantics to support MatrixXd
+
+  const Response& model_resp = model_->current_response();
+  const RealSymMatrixArray& fn_hessians = model_resp.function_hessians();
+  fn_hessians[0].print(Cout);
+  assert(model_resp.num_functions() == fn_hessians.size());
+
+  matT all_hess(model_resp.num_functions());
+  int k = 0;
+  for(const auto &sym_hess : fn_hessians) {
+    all_hess[k].resize(sym_hess.numRows());
+    for(int i = 0; i < sym_hess.numRows(); ++i)
+      all_hess[k][i].resize(sym_hess.numCols());
+    for(int i = 0; i < sym_hess.numRows(); ++i) {
+      all_hess[k][i][i] = sym_hess(i, i);
+      for(int j = i+1; j < sym_hess.numCols(); ++j) {
+        all_hess[k][j][i] = all_hess[k][i][j] = sym_hess(i,j);
+      }
+    }
+  }
+
+  return all_hess;
 }
 
 // -----------------------------------------------------------------
@@ -365,6 +385,25 @@ ModelExecutor::gradient(std::vector<double>& x)
 
 // -----------------------------------------------------------------
 
+std::vector<std::vector<std::vector<double>>>
+ModelExecutor::hessian(std::vector<double>& x)
+{
+  //Cout << "ModelExecutor::hessian: x : " << x << std::endl;
+  //Cout << "ModelExecutor::hessian: hessianType : " << model_->hessian_type() << std::endl;
+
+  const Response& test_resp = model_->current_response(); // No ModelUtils helper for Response's
+  ActiveSet temp_set = test_resp.active_set(); // copy
+  temp_set.request_values(4); // hessians
+
+  for (int i=0; i<x.size(); ++i)
+    ModelUtils::continuous_variable(*model_, x[i], i);
+  model_->evaluate(temp_set);
+
+  return copy_hessians<std::vector<std::vector<std::vector<double>>>>();
+}
+
+// -----------------------------------------------------------------
+
 std::tuple< std::vector<double>,
             std::vector<std::vector<double>>,
             std::vector<std::vector<std::vector<double>>> >
@@ -388,10 +427,10 @@ ModelExecutor::evaluate(std::vector<double>& x, std::vector<int> & asv)
   auto grads = copy_gradients<std::vector<std::vector<double>>>();
 
   // Hessians
-  std::vector<std::vector<std::vector<double>>> empty_hessian;
+  auto hesss = copy_hessians<std::vector<std::vector<std::vector<double>>>>();
 
   // Return tuple
-  auto ret = std::make_tuple(fns, grads, empty_hessian);
+  auto ret = std::make_tuple(fns, grads, hesss);
 
   return ret;
 }
@@ -447,6 +486,10 @@ PYBIND11_MODULE(ext_method, m) {
     
     .def("gradient_values", (&Dakota::ModelExecutor::gradient)
          , "Return function gradients for continuous values"
+         , py::arg("x"))
+    
+    .def("hessian_values", (&Dakota::ModelExecutor::hessian)
+         , "Return function hessians for continuous values"
          , py::arg("x"))
     
     .def("evaluate", (&Dakota::ModelExecutor::evaluate)

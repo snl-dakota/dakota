@@ -1,6 +1,6 @@
 #@ s*: Label=FastTest
 #@ *: DakotaConfig=HAVE_EXT_PYTHON_METHOD
-#@ *: ReqFiles=external_methods.py,lhs_sampling.py
+#@ *: ReqFiles=external_methods.py,lhs_sampling.py,sp_optimize.py
 
 method,
     external_python
@@ -9,14 +9,16 @@ method,
 #      class_path_and_name = "external_methods.RandomSampleMixed"    #s2
 #      class_path_and_name = "external_methods.NumpyOpt"             #s3
 #      class_path_and_name = "lhs_sampling.LHSSample"                #s4
+#      class_path_and_name = "sp_optimize.ScipyOpt"                  #s6,#s7,#s8
 
 variables,
-    continuous_design = 2                                            #s0,#s1,#s3,#s5
+    continuous_design = 2                                            #s0,#s1,#s3,#s5,#s6,#s7,#s8
     initial_point       0.5     0.5                                  #s0,#s1,#s3
 #    initial_point      -0.2     1.3                                 #s5
-    upper_bounds	2.0     2.0                                  #s0,#s1,#s3,#s5
-    lower_bounds       -2.0    -2.0                                  #s0,#s1,#s3,#s5
-    descriptors	        'x1'    'x2'                                 #s0,#s1,#s3,#s5
+#    initial_point       0.0     0.0                                 #s6,#s7,#s8
+    upper_bounds	2.0     2.0                                  #s0,#s1,#s3,#s5,#s6,#s7,#s8
+    lower_bounds       -2.0    -2.0                                  #s0,#s1,#s3,#s5,#s6,#s7,#s8
+    descriptors	        'x1'    'x2'                                 #s0,#s1,#s3,#s5,#s6,#s7,#s8
 #    continuous_design = 3                                           #s2,#s4
 #      initial_point   -1.0    1.5   2.0                             #s2,#s4
 #      upper_bounds    10.0   10.0  10.0                             #s2,#s4
@@ -51,9 +53,10 @@ interface,
     analysis_driver = 'text_book'
 
 responses,
-    objective_functions = 1     #s0,#s2,#s3,#s5
+    objective_functions = 1     #s0,#s2,#s3,#s5,#s6,#s7,#s8
 #    objective_functions = 3    #s1,#s4
-    no_gradients                #s0,#s1,#s2,#s3,#s4
-#    analytic_gradients          #s5
-    no_hessians
+    no_gradients                #s0,#s1,#s2,#s3,#s4,#s6
+#    analytic_gradients         #s5,#s7,#s8
+    no_hessians                 #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7
+#    analytic_hessians          #s8
 
