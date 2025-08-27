@@ -109,9 +109,12 @@ class ScipyOpt:
         retval['fns_sp']    = [result.fun]
         retval['best_x_np'] = [result.x[0], result.x[1]]
 
-        if False:
-            print("Found best_f = ", best_f)
-            print("Using x = ", best_x)
+        # Send output to Dakota in a format amenable to regression testing
+        executor.dak_print("<<<<< Best parameters          =")
+        executor.dak_print(f"\t\t{result.x[0]} x1")
+        executor.dak_print(f"\t\t{result.x[1]} x2")
+        executor.dak_print("<<<<< Best objective function  =")
+        executor.dak_print(f"\t\t{result.fun}")
 
         return retval
 

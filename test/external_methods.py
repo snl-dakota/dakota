@@ -130,6 +130,12 @@ class SimplePyOpt:
         retval['fns']    = [best_f]
         retval['best_x'] = best_x
 
+        executor.dak_print("<<<<< Best parameters          =")
+        executor.dak_print(f"\t\t{best_x[0]} x1")
+        executor.dak_print(f"\t\t{best_x[1]} x2")
+        executor.dak_print("<<<<< Best objective function  =")
+        executor.dak_print(f"\t\t{best_f}")
+
         if False:
             print("Found best_f = ", best_f)
             print("Using x = ", best_x)
@@ -188,9 +194,12 @@ class NumpyOpt:
         retval['fns_np']    = [best_f]
         retval['best_x_np'] = best_x
 
-        if False:
-            print("Found best_f = ", best_f)
-            print("Using x = ", best_x)
+        # Send output to Dakota in a format amenable to regression testing
+        executor.dak_print("<<<<< Best parameters          =")
+        executor.dak_print(f"\t\t{best_x[0]} x1")
+        executor.dak_print(f"\t\t{best_x[1]} x2")
+        executor.dak_print("<<<<< Best objective function  =")
+        executor.dak_print(f"\t\t{best_f}")
 
         return retval
 

@@ -56,6 +56,9 @@ class ModelExecutor
     /// compute and print response central moments
     void compute_and_print_moments(const std::vector<std::vector<double>> &);
 
+    /// Send python output to Dakota Cout
+    void dak_print(const std::string&);
+
     const Model& model() const
       { return *model_; }
 

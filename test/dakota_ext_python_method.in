@@ -2,6 +2,13 @@
 #@ *: DakotaConfig=HAVE_EXT_PYTHON_METHOD
 #@ *: ReqFiles=external_methods.py,lhs_sampling.py,sp_optimize.py
 
+environment
+    tabular_data
+      tabular_data_file = 'external_python.dat'
+    results_output
+      hdf5
+        results_output_file = 'external_python'
+
 method,
     external_python
       class_path_and_name = "external_methods.SimplePyOpt"           #s0,#s5

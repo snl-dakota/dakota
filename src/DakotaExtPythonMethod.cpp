@@ -454,10 +454,18 @@ ModelExecutor::compute_and_print_moments(const std::vector<std::vector<double>> 
   NonDSampling::compute_moments(resp_mat, stats, Pecos::STANDARD_MOMENTS);
 
   NonDSampling::print_moments(Cout, stats, RealMatrix(), 
-      "external python method response",
+      "response function:",
       Pecos::STANDARD_MOMENTS, ModelUtils::response_labels(*model_), false); 
 
   return;
+}
+
+// -----------------------------------------------------------------
+
+void
+ModelExecutor::dak_print(const std::string & str)
+{
+  Cout << str << std::endl;
 }
 
 // -----------------------------------------------------------------
@@ -500,6 +508,11 @@ PYBIND11_MODULE(ext_method, m) {
     .def("output_central_moments", &Dakota::ModelExecutor::compute_and_print_moments
          , "Compute and print central moments for response array"
          , py::arg("resp"))
+
+  // Executor output helper
+    .def("dak_print", &Dakota::ModelExecutor::dak_print
+         , "Print python string to Cout"
+         , py::arg("s"))
 
   // Executor helper alias
     .def("initial_values",
