@@ -2017,6 +2017,39 @@
         </keyword>
     ' >
 
+    <!-- Reusable definition for a method's three optional keywords -->
+    <!ENTITY method_three_optional_keywords '
+      <keyword  id="id_method" name="id_method" code="{N_mdm(str,idMethod)}" label="Method set identifier"  minOccurs="0" default="strategy use of last method parsed" >
+        <param type="STRING" taglist="method" />
+      </keyword>
+      <keyword  id="output3" name="output" code="{0}" label="Output verbosity"  minOccurs="0" default="normal" >
+        <oneOf label="Output Level">
+          <keyword  id="debug" name="debug" code="{N_mdm(type,methodOutput_DEBUG_OUTPUT)}" label="debug"   />
+          <keyword  id="verbose" name="verbose" code="{N_mdm(type,methodOutput_VERBOSE_OUTPUT)}" label="verbose"   />
+          <keyword  id="normal" name="normal" code="{N_mdm(type,methodOutput_NORMAL_OUTPUT)}" label="normal"   />
+          <keyword  id="quiet" name="quiet" code="{N_mdm(type,methodOutput_QUIET_OUTPUT)}" label="quiet"   />
+          <keyword  id="silent" name="silent" code="{N_mdm(type,methodOutput_SILENT_OUTPUT)}" label="silent"   />
+        </oneOf>
+      </keyword>
+      <keyword  id="final_solutions" name="final_solutions" code="{N_mdm(sizet,numFinalSolutions)}" label="Final solutions"  minOccurs="0" default="1" >
+        <param type="INTEGER" constraint=">= 0" />
+      </keyword>
+    '>
+    
+    <!-- reusable definition for a model's four optional keywords -->
+    <!ENTITY model_four_optional_keywords '
+      <keyword  id="id_model" name="id_model" code="{N_mom(str,idModel)}" label="Model Identifier"  minOccurs="0" default="method use of last model parsed" complexity="0">
+        <param type="STRING" taglist="model" />
+      </keyword>
+     <keyword  id="variables_pointer" name="variables_pointer" code="{N_mom(str,variablesPointer)}" label="Variables Pointer"  minOccurs="0" default="model use of last variables parsed" complexity="0">
+       <param type="STRING" in_taglist="variables" />
+     </keyword>
+     <keyword  id="responses_pointer" name="responses_pointer" code="{N_mom(str,responsesPointer)}" label="Responses Pointer"  minOccurs="0" default="model use of last responses parsed" complexity="0">
+       <param type="STRING" in_taglist="responses" />
+     </keyword>
+     <keyword  id="hierarchical_tagging" name="hierarchical_tagging" code="{N_mom(true,hierarchicalTags)}" label="Hierarchical Evaluation Tags"  minOccurs="0" default="no hierarchical tagging" complexity="1" />
+    '>
+
     ]>
 
 <document xmlns='http://www.sandia.gov/dakota/1.0' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
@@ -2146,21 +2179,6 @@
 
     <!-- **** TOPLEVEL *** -->
     <keyword id="method" name="method" maxOccurs="999999" code="{N_mdm3(start,0,stop)}" label="Method" >
-      <keyword  id="id_method" name="id_method" code="{N_mdm(str,idMethod)}" label="Method set identifier"  minOccurs="0" default="strategy use of last method parsed" >
-        <param type="STRING" taglist="method" />
-      </keyword>
-      <keyword  id="output3" name="output" code="{0}" label="Output verbosity"  minOccurs="0" default="normal" >
-        <oneOf label="Output Level">
-          <keyword  id="debug" name="debug" code="{N_mdm(type,methodOutput_DEBUG_OUTPUT)}" label="debug"   />
-          <keyword  id="verbose" name="verbose" code="{N_mdm(type,methodOutput_VERBOSE_OUTPUT)}" label="verbose"   />
-          <keyword  id="normal" name="normal" code="{N_mdm(type,methodOutput_NORMAL_OUTPUT)}" label="normal"   />
-          <keyword  id="quiet" name="quiet" code="{N_mdm(type,methodOutput_QUIET_OUTPUT)}" label="quiet"   />
-          <keyword  id="silent" name="silent" code="{N_mdm(type,methodOutput_SILENT_OUTPUT)}" label="silent"   />
-        </oneOf>
-      </keyword>
-      <keyword  id="final_solutions" name="final_solutions" code="{N_mdm(sizet,numFinalSolutions)}" label="Final solutions"  minOccurs="0" default="1" >
-        <param type="INTEGER" constraint=">= 0" />
-      </keyword>
 
       <!-- Primary method selection alternation -->
       <oneOf label="Method (Iterative Algorithm)">
@@ -2174,6 +2192,7 @@
               <!-- #	      [ adaptive {N_mdm(lit,seqHybridType_adaptive)}
                    #	      	progress_threshold REAL {N_mdm(Real,hybridProgThresh)} ]
                 -->
+              &method_three_optional_keywords;
               <oneOf label="Sub-method Selection">
                 <keyword  id="method_name_list" name="method_name_list" code="{N_mdm(strL,hybridMethodNames)}" label="List of method names"  >
                   <param type="STRINGLIST" />
@@ -2190,6 +2209,7 @@
 
             <keyword  id="embedded" name="embedded" code="{N_mdm(utype,subMethod_SUBMETHOD_EMBEDDED)}" label="Embedded hybrid"  >
               <alias name="coupled"/>
+              &method_three_optional_keywords;
               <oneOf label="Global Sub-method Selection">
                 <keyword  id="global_method_name" name="global_method_name" code="{N_mdm(str,hybridGlobalMethodName)}" label="Name of the global method"  >
                   <param type="STRING" />
@@ -2222,6 +2242,7 @@
               <!-- #	      abo {N_mdm(lit,hybridCollabType_abo)}
                    #	      | hops {N_mdm(lit,hybridCollabType_hops)}
                 -->
+              &method_three_optional_keywords;
               <oneOf label="Sub-method Selection">
                 <keyword  id="method_name_list1" name="method_name_list" code="{N_mdm(strL,hybridMethodNames)}" label="List of method names"  >
                   <param type="STRINGLIST" />
@@ -2240,6 +2261,7 @@
         </keyword>
 
         <keyword  id="multi_start" name="multi_start" code="{N_mdm(utype,methodName_MULTI_START)}" label="Multi-start meta-iterator"  group="Optimization: Other" >
+          &method_three_optional_keywords;
           <oneOf label="Sub-method Selection">
             <keyword  id="method_name" name="method_name" code="{N_mdm(str,subMethodName)}" label="Identification of a sub-method by name (no separate specification block)"  >
               <param type="STRING" />
@@ -2264,6 +2286,7 @@
         </keyword>
 
         <keyword  id="pareto_set" name="pareto_set" code="{N_mdm(utype,methodName_PARETO_SET)}" label="Pareto set minimization"  group="Optimization: Other" >
+          &method_three_optional_keywords;
           <oneOf label="Sub-method Selection">
             <keyword  id="method_name1" name="method_name" code="{N_mdm(str,subMethodName)}" label="Identification of sub-iterator by name"  >
               <alias name="opt_method_name"/>
@@ -2297,6 +2320,7 @@
 	    # (they require their own Model, not just a sub-model for the sub-method).
 	-->
 	<keyword  id="branch_and_bound" name="branch_and_bound" code="{N_mdm(utype,methodName_BRANCH_AND_BOUND)}" label="branch_and_bound"  group="Optimization: Other" >
+        &method_three_optional_keywords;
           <oneOf label="Local Optimizer Selection">
             <keyword  id="method_pointer2" name="method_pointer" code="{N_mdm(str,subMethodPointer)}" label="Identification of minimizer by pointer"  >
 	      <param type="STRING" in_taglist="method" />
@@ -2342,6 +2366,7 @@
 	-->
 
         <keyword  id="surrogate_based_local" name="surrogate_based_local" code="{N_mdm(utype,methodName_SURROGATE_BASED_LOCAL)}" label="surrogate_based_local"  group="Surrogate-based Methods" >
+          &method_three_optional_keywords;
           <oneOf label="Subproblem Optimizer Selection">
             <keyword  id="method_pointer3" name="method_pointer" code="{N_mdm(str,subMethodPointer)}" label="Identification of minimizer by pointer"   >
               <alias name="approx_method_pointer"/>
@@ -2397,6 +2422,7 @@
         </keyword>
 
         <keyword  id="surrogate_based_global" name="surrogate_based_global" code="{N_mdm(utype,methodName_SURROGATE_BASED_GLOBAL)}" label="surrogate_based_global"  group="Surrogate-based Methods" >
+          &method_three_optional_keywords;
           <oneOf label="Sub-method Selection">
             <keyword  id="method_pointer4" name="method_pointer" code="{N_mdm(str,subMethodPointer)}" label="method_pointer"   >
               <alias name="approx_method_pointer"/>
@@ -2419,44 +2445,55 @@
 	<!-- Optimizers -->
 
         <keyword  id="dot_frcg" name="dot_frcg" code="{N_mdm(utype,methodName_DOT_FRCG)}" label="dot_frcg"   group="Optimization: Local, Derivative-based" >
+    &method_three_optional_keywords;
 	  &method_dot_common_opts;
 	</keyword>
         <keyword  id="dot_mmfd" name="dot_mmfd" code="{N_mdm(utype,methodName_DOT_MMFD)}" label="dot_mmfd"   group="Optimization: Local, Derivative-based" >
-	  &method_dot_common_opts;
+	  &method_three_optional_keywords;
+    &method_dot_common_opts;
 	</keyword>
         <keyword  id="dot_bfgs" name="dot_bfgs" code="{N_mdm(utype,methodName_DOT_BFGS)}" label="dot_bfgs"   group="Optimization: Local, Derivative-based" >
-	  &method_dot_common_opts;
+	  &method_three_optional_keywords;
+    &method_dot_common_opts;
 	</keyword>
         <keyword  id="dot_slp" name="dot_slp" code="{N_mdm(utype,methodName_DOT_SLP)}" label="dot_slp"   group="Optimization: Local, Derivative-based" >
-	  &method_dot_common_opts;
+	  &method_three_optional_keywords;
+    &method_dot_common_opts;
 	</keyword>
         <keyword  id="dot_sqp" name="dot_sqp" code="{N_mdm(utype,methodName_DOT_SQP)}" label="dot_sqp"   group="Optimization: Local, Derivative-based" >
-	  &method_dot_common_opts;
+	  &method_three_optional_keywords;
+    &method_dot_common_opts;
 	</keyword>
 
         <keyword  id="conmin_frcg" name="conmin_frcg" code="{N_mdm(utype,methodName_CONMIN_FRCG)}" label="conmin_frcg"   group="Optimization: Local, Derivative-based" >
-	  &method_conmin_common_opts;
+	  &method_three_optional_keywords;
+    &method_conmin_common_opts;
 	</keyword>
         <keyword  id="conmin_mfd" name="conmin_mfd" code="{N_mdm(utype,methodName_CONMIN_MFD)}" label="conmin_mfd"   group="Optimization: Local, Derivative-based" >
-	  &method_conmin_common_opts;
+	  &method_three_optional_keywords;
+    &method_conmin_common_opts;
 	</keyword>
 
         <keyword  id="dl_solver" name="dl_solver" code="{N_mdm(utype_lit,TYPE_DATA_methodName_DL_SOLVER)}" label="dl_solver"   group="Optimization: Other" >
           <!-- store method name AND incoming STRING -->
           <param type="STRING" />
+          &method_three_optional_keywords;
           &method_max_function_evaluations;
           &default_scaling;
 	  &method_optional_model_pointer;
         </keyword>
 
         <keyword  id="npsol_sqp" name="npsol_sqp" code="{N_mdm(utype,methodName_NPSOL_SQP)}" label="npsol_sqp"   group="Optimization: Local, Derivative-based" >
-	  &method_npsol_common_opts;
+	  &method_three_optional_keywords;
+    &method_npsol_common_opts;
 	</keyword>
         <keyword  id="nlssol_sqp" name="nlssol_sqp" code="{N_mdm(utype,methodName_NLSSOL_SQP)}" label="nlssol_sqp"   group="Calibration" >
-	  &method_npsol_common_opts;
+	  &method_three_optional_keywords;
+    &method_npsol_common_opts;
 	</keyword>
 
         <keyword  id="nlpql_sqp" name="nlpql_sqp" code="{N_mdm(utype,methodName_NLPQL_SQP)}" label="nlpql_sqp"   group="Optimization: Local, Derivative-based" >
+          &method_three_optional_keywords;
           &method_max_iterations;
           &method_convergence_tolerance;
           &method_max_function_evaluations;
@@ -2465,25 +2502,31 @@
         </keyword>
 
         <keyword  id="optpp_cg" name="optpp_cg" code="{N_mdm(utype,methodName_OPTPP_CG)}" label="optpp_cg"   group="Optimization: Local, Derivative-based" >
-	  &method_optpp_grad_based_opts;
+	  &method_three_optional_keywords;
+    &method_optpp_grad_based_opts;
 	</keyword>
         <keyword  id="optpp_q_newton" name="optpp_q_newton" code="{N_mdm(utype,methodName_OPTPP_Q_NEWTON)}" label="optpp_q_newton"   group="Optimization: Local, Derivative-based" >
-	  &method_optpp_newton_opts;
+	  &method_three_optional_keywords;
+    &method_optpp_newton_opts;
 	  &method_optpp_grad_based_opts;
 	</keyword>
         <keyword  id="optpp_fd_newton" name="optpp_fd_newton" code="{N_mdm(utype,methodName_OPTPP_FD_NEWTON)}" label="optpp_fd_newton"   group="Optimization: Local, Derivative-based" >
-	  &method_optpp_newton_opts;
+	  &method_three_optional_keywords;
+    &method_optpp_newton_opts;
 	  &method_optpp_grad_based_opts;
 	</keyword>
         <keyword  id="optpp_g_newton" name="optpp_g_newton" code="{N_mdm(utype,methodName_OPTPP_G_NEWTON)}" label="optpp_g_newton"   group="Calibration" >
-	  &method_optpp_newton_opts;
+	  &method_three_optional_keywords;
+    &method_optpp_newton_opts;
 	  &method_optpp_grad_based_opts;
 	</keyword>
         <keyword  id="optpp_newton" name="optpp_newton" code="{N_mdm(utype,methodName_OPTPP_NEWTON)}" label="optpp_newton"   group="Optimization: Local, Derivative-based" >
-	  &method_optpp_newton_opts;
+	  &method_three_optional_keywords;
+    &method_optpp_newton_opts;
 	  &method_optpp_grad_based_opts;
 	</keyword>
         <keyword  id="optpp_pds" name="optpp_pds" code="{N_mdm(utype,methodName_OPTPP_PDS)}" label="optpp_pds"  group="Optimization: Local, Derivative-free" >
+          &method_three_optional_keywords;
           <keyword  id="search_scheme_size" name="search_scheme_size" code="{N_mdm(int,searchSchemeSize)}" label="search_scheme_size"  minOccurs="0" default="32" >
             <param type="INTEGER" />
           </keyword>
@@ -2496,6 +2539,7 @@
 
 
         <keyword  id="demo_tpl" name="demo_tpl" code="{N_mdm(utype,methodName_DEMO_TPL)}" label="demo_tpl" help="" group="Optimization: Local" >
+          &method_three_optional_keywords;
           &method_max_function_evaluations;
 	  &method_max_iterations;
           &method_convergence_tolerance;
@@ -2513,6 +2557,7 @@
 
 
         <keyword  id="rol" name="rol" code="{N_mdm(utype,methodName_ROL)}" label="rol" help="" group="Optimization: Local, Derivative-based" >
+        &method_three_optional_keywords;
 	  &method_max_iterations;
           <keyword  id="variable_tolerance" name="variable_tolerance" code="{N_mdm(Real,threshStepLength)}" label="Threshold for offset values"  minOccurs="0" default="0.01" >
             <param type="REAL" />
@@ -2531,6 +2576,7 @@
 
         <keyword  id="asynch_pattern_search" name="asynch_pattern_search" code="{N_mdm(utype,methodName_ASYNCH_PATTERN_SEARCH)}" label="asynch_pattern_search"  group="Optimization: Local, Derivative-free" >
           <alias name="coliny_apps"/>
+          &method_three_optional_keywords;
           <keyword  id="initial_delta" name="initial_delta" code="{N_mdm(Real,initStepLength)}" label="Initial offset value"  minOccurs="0" default="1.0" >
             <param type="REAL" />
           </keyword>
@@ -2569,6 +2615,7 @@
         </keyword>
 
         <keyword  id="mesh_adaptive_search" name="mesh_adaptive_search" code="{N_mdm(utype,methodName_MESH_ADAPTIVE_SEARCH)}" label="mesh_adaptive_search"  >
+          &method_three_optional_keywords;
           <keyword  id="initial_delta2" name="initial_delta" code="{N_mdm(Real,initMeshSize)}" label="Initial mesh size"  minOccurs="0" default="1.0" >
             <param type="REAL" />
           </keyword>
@@ -2609,6 +2656,7 @@
         </keyword>
 
         <keyword  id="nowpac" name="nowpac" code="{N_mdm(utype,methodName_MIT_NOWPAC)}" label="nowpac"  >
+          &method_three_optional_keywords;
           &default_trust_region;
           &method_max_iterations;
           &method_max_function_evaluations;
@@ -2617,6 +2665,7 @@
         </keyword>
 
         <keyword  id="snowpac" name="snowpac" code="{N_mdm(utype,methodName_MIT_SNOWPAC)}" label="snowpac"  >
+        &method_three_optional_keywords;
 	  <keyword  id="seed6" name="seed" code="{N_mdm(int,randomSeed)}" label="Random seed"  minOccurs="0" default="system-generated (non-repeatable)" >
 	    <param type="INTEGER" constraint="> 0" />
 	  </keyword>
@@ -2629,6 +2678,7 @@
 
 	<!-- BEGIN JEGA -->
         <keyword  id="moga" name="moga" code="{N_mdm(utype,methodName_MOGA)}" label="moga"  group="Optimization: Global" >
+          &method_three_optional_keywords;
           <keyword  id="fitness_type" name="fitness_type" code="{0}" label="Fitness type"  minOccurs="0" default="domination_count" >
             <oneOf label="Fitness Type">
               <keyword  id="layer_rank" name="layer_rank" code="{N_mdm(lit,fitnessType_layer_rank)}" label="layer_rank"   />
@@ -2685,6 +2735,7 @@
 	  &method_jega_common_opts;
         </keyword>
         <keyword  id="soga" name="soga" code="{N_mdm(utype,methodName_SOGA)}" label="soga"  group="Optimization: Global" >
+          &method_three_optional_keywords;
           <keyword  id="fitness_type1" name="fitness_type" code="{0}" label="Fitness type"  minOccurs="0" default="merit_function">
             <keyword  id="merit_function3" name="merit_function" code="{N_mdm(lit,fitnessType_merit_function)}" label="merit_function"   />
             <keyword  id="constraint_penalty1" name="constraint_penalty" code="{N_mdm(Realp,constraintTolerance)}" label="Constraint penalty in merit function"  minOccurs="0" default="1.0" >
@@ -2728,6 +2779,7 @@
 
 	<!-- BEGIN coliny methods -->
         <keyword  id="coliny_pattern_search" name="coliny_pattern_search" code="{N_mdm(utype,methodName_COLINY_PATTERN_SEARCH)}" label="coliny_pattern_search"  group="Optimization: Local, Derivative-free" >
+          &method_three_optional_keywords;
           <keyword  id="constant_penalty" name="constant_penalty" code="{N_mdm(true,constantPenalty)}" label="Control of dynamic penalty"  minOccurs="0" default="algorithm dynamically adapts the constraint penalty" />
           <keyword  id="no_expansion" name="no_expansion" code="{N_mdm(false,expansionFlag)}" label="No expansion flag"  minOccurs="0" default="algorithm may expand pattern size" />
           <keyword  id="expand_after_success" name="expand_after_success" code="{N_mdm(int,expandAfterSuccess)}" label="Number of consecutive improvements before expansion"  minOccurs="0" default="5" >
@@ -2769,6 +2821,7 @@
         </keyword>
 
         <keyword  id="coliny_solis_wets" name="coliny_solis_wets" code="{N_mdm(utype,methodName_COLINY_SOLIS_WETS)}" label="coliny_solis_wets"  group="Optimization: Local, Derivative-free" >
+          &method_three_optional_keywords;
           <keyword  id="contract_after_failure" name="contract_after_failure" code="{N_mdm(int,contractAfterFail)}" label="Number of consecutive failures before contraction"  minOccurs="0" default="4*number of variables" >
             <param type="INTEGER" />
           </keyword>
@@ -2795,6 +2848,7 @@
         </keyword>
 
         <keyword  id="coliny_cobyla" name="coliny_cobyla" code="{N_mdm(utype,methodName_COLINY_COBYLA)}" label="coliny_cobyla"   group="Optimization: Local, Derivative-free">
+          &method_three_optional_keywords;
           <keyword  id="initial_delta1" name="initial_delta" code="{N_mdm(Real,initDelta)}" label="initial_delta"  minOccurs="0" default="1.0 (COBYLA), 0.1*range (PS, SW)" >
             <param type="REAL" />
           </keyword>
@@ -2806,6 +2860,7 @@
         </keyword>
 
         <keyword  id="coliny_direct" name="coliny_direct" code="{N_mdm(utype,methodName_COLINY_DIRECT)}" label="coliny_direct"  group="Optimization: Global" >
+          &method_three_optional_keywords;
           <keyword  id="division" name="division" code="{0}" label="Box subdivision approach"  minOccurs="0" default="major_dimension" >
             <oneOf label="Divide Along">
               <keyword  id="major_dimension" name="major_dimension" code="{N_mdm(lit,boxDivision_major_dimension)}" label="major_dimension"   />
@@ -2831,6 +2886,7 @@
 	  &method_optional_model_pointer;
         </keyword>
         <keyword  id="coliny_ea" name="coliny_ea" code="{N_mdm(utype,methodName_COLINY_EA)}" label="coliny_ea"  group="Optimization: Global" >
+          &method_three_optional_keywords;
           <keyword  id="population_size1" name="population_size" code="{N_mdm(int,populationSize)}" label="Number of population members"  minOccurs="0" default="50" >
             <param type="INTEGER" constraint="> 0" />
           </keyword>
@@ -2901,6 +2957,7 @@
 	  &method_optional_model_pointer;
         </keyword>
         <keyword  id="coliny_beta" name="coliny_beta" code="{N_mdm(utype,methodName_COLINY_BETA)}" label="coliny_beta"  group="Optimization: Other" >
+          &method_three_optional_keywords;
           <keyword  id="beta_solver_name" name="beta_solver_name" code="{N_mdm(str,betaSolverName)}" label="beta_solver_name"   >
             <param type="STRING" />
           </keyword>
@@ -2910,6 +2967,7 @@
 	<!-- END coliny methods -->
 
         <keyword  id="nl2sol" name="nl2sol" code="{N_mdm(utype,methodName_NL2SOL)}" label="nl2sol"  group="Calibration" >
+          &method_three_optional_keywords;
           <keyword  id="function_precision2" name="function_precision" code="{N_mdm(Real,functionPrecision)}" label="Relative precision in least squares terms"  minOccurs="0" default="1.0e-10" >
             <param type="REAL" />
           </keyword>
@@ -2944,6 +3002,7 @@
         </keyword>
 
         <keyword  id="nonlinear_cg" name="nonlinear_cg" code="{N_mdm(utype,methodName_NONLINEAR_CG)}" label="nonlinear_cg"  group="Optimization: Local, Derivative-based" >
+          &method_three_optional_keywords;
           <keyword  id="misc_options1" name="misc_options" code="{N_mdm(strL,miscOptions)}" label="misc_options"  minOccurs="0" default="no misc options" >
             <param type="STRINGLIST" />
           </keyword>
@@ -2954,6 +3013,7 @@
         </keyword>
 
         <keyword  id="ncsu_direct" name="ncsu_direct" code="{N_mdm(utype,methodName_NCSU_DIRECT)}" label="ncsu_direct"  group="Optimization: Global" >
+          &method_three_optional_keywords;
           <keyword  id="solution_target2" name="solution_target" code="{N_mdm(Real,solnTarget)}" label="Solution Target "  minOccurs="0" default="0" >
             <alias name="solution_accuracy"/>
             <param type="REAL" />
@@ -2972,6 +3032,7 @@
         </keyword>
 
         <keyword  id="genie_opt_darts" name="genie_opt_darts" code="{N_mdm(utype,methodName_GENIE_OPT_DARTS)}" label="genie_opt_darts"   group="Optimization: Global">
+          &method_three_optional_keywords;
           <keyword  id="seed5" name="seed" code="{N_mdm(int,randomSeed)}" label="seed"  minOccurs="0" default="system-generated (non-repeatable)" >
             <param type="INTEGER" constraint="> 0" />
           </keyword>
@@ -2981,7 +3042,8 @@
 	</keyword>
 
         <keyword  id="genie_direct" name="genie_direct" code="{N_mdm(utype,methodName_GENIE_DIRECT)}" label="genie_direct"   group="Optimization: Global">
-	  <keyword  id="seed5" name="seed" code="{N_mdm(int,randomSeed)}" label="seed"  minOccurs="0" default="system-generated (non-repeatable)" >
+	        &method_three_optional_keywords;
+          <keyword  id="seed5" name="seed" code="{N_mdm(int,randomSeed)}" label="seed"  minOccurs="0" default="system-generated (non-repeatable)" >
             <param type="INTEGER" constraint="> 0" />
           </keyword>
           &method_max_function_evaluations;
@@ -2990,9 +3052,10 @@
 	</keyword>
 
         <keyword  id="efficient_global" name="efficient_global" code="{N_mdm(utype,methodName_EFFICIENT_GLOBAL)}" label="efficient_global"  group="Surrogate-based Methods" >
-	  <keyword  id="initial_samples" name="initial_samples" code="{N_mdm(int,numSamples)}" label="initial samples"  minOccurs="0" default="(d+1)(d+2)/2">
-	    <param type="INTEGER" />
-	  </keyword>
+	        &method_three_optional_keywords;
+          <keyword  id="initial_samples" name="initial_samples" code="{N_mdm(int,numSamples)}" label="initial samples"  minOccurs="0" default="(d+1)(d+2)/2">
+	          <param type="INTEGER" />
+	        </keyword>
           <keyword  id="seed6" name="seed" code="{N_mdm(int,randomSeed)}" label="Random seed"  minOccurs="0" default="system-generated (non-repeatable)" >
             <param type="INTEGER" constraint="> 0" />
           </keyword>
@@ -3027,6 +3090,7 @@
         </keyword>
 
         <keyword  id="surrogate_based_uq" name="surrogate_based_uq" code="{N_mdm(utype,methodName_SURROGATE_BASED_UQ)}" label="surrogate_based_uq" help="" group="Uncertainty Quantification" >
+        &method_three_optional_keywords;
           <!-- Current target is Model-based PCE,SC,FT expansions: support expansion_options. -->
 	  &expansion_options; <!-- level mappings et al. -->
           &method_seed;       <!-- for expansion sampler -->
@@ -3035,6 +3099,7 @@
         </keyword>
 
         <keyword  id="function_train" name="function_train" code="{N_mdm(utype,methodName_C3_FUNCTION_TRAIN)}" label="function_train" help="" group="Uncertainty Quantification" >
+        &method_three_optional_keywords;
 	  &ft_method_refinement;
 	  &method_exp_convergence_tolerance;
 	  <!-- &import_build; Rely on DFSModel data import -->
@@ -3048,7 +3113,8 @@
         </keyword>
 
         <keyword  id="multifidelity_function_train" name="multifidelity_function_train" code="{N_mdm(utype,methodName_MULTIFIDELITY_FUNCTION_TRAIN)}" label="multifidelity_function_train" help="" group="Uncertainty Quantification" >
-	  &ft_method_refinement;
+	  &method_three_optional_keywords;
+    &ft_method_refinement;
 	  &method_mf_exp_convergence_tolerance;
 	  &mf_alloc_control;
 	  &discrep_emulation;
@@ -3062,7 +3128,8 @@
         </keyword>
 
         <keyword  id="multilevel_function_train" name="multilevel_function_train" code="{N_mdm(utype,methodName_MULTILEVEL_FUNCTION_TRAIN)}" label="multilevel_function_train" help="" group="Uncertainty Quantification" >
-	  &method_max_iterations;
+	  &method_three_optional_keywords;
+    &method_max_iterations;
 	  &mlft_alloc_control;
 	  &method_exp_convergence_tolerance;
 	  &discrep_emulation;
@@ -3077,7 +3144,8 @@
 
 	<keyword  id="polynomial_chaos" name="polynomial_chaos" code="{N_mdm(utype,methodName_POLYNOMIAL_CHAOS)}" label="polynomial_chaos" group="Uncertainty Quantification" >
 	  <alias name="nond_polynomial_chaos"/>
-	  &pce_refinement;
+	  &method_three_optional_keywords;
+    &pce_refinement;
 	  &method_exp_convergence_tolerance;
 	  <oneOf label="Chaos coefficient estimation approach">
 	    &expansion_quadrature;
@@ -3094,7 +3162,8 @@
 	</keyword>
 
 	<keyword  id="multifidelity_polynomial_chaos" name="multifidelity_polynomial_chaos" code="{N_mdm(utype,methodName_MULTIFIDELITY_POLYNOMIAL_CHAOS)}" label="multifidelity_polynomial_chaos" group="Uncertainty Quantification" >
-	  &pce_refinement;
+	  &method_three_optional_keywords;
+    &pce_refinement;
 	  &method_mf_exp_convergence_tolerance;
 	  &mf_alloc_control;
 	  &discrep_emulation;
@@ -3113,7 +3182,8 @@
 	</keyword>
 
 	<keyword  id="multilevel_polynomial_chaos" name="multilevel_polynomial_chaos" code="{N_mdm(utype,methodName_MULTILEVEL_POLYNOMIAL_CHAOS)}" label="multilevel_polynomial_chaos" group="Uncertainty Quantification" >
-	  &method_max_iterations;
+	  &method_three_optional_keywords;
+    &method_max_iterations;
 	  &mlpce_alloc_control;
 	  &method_exp_convergence_tolerance;
 	  &discrep_emulation;
@@ -3131,7 +3201,8 @@
 
 	<keyword  id="stoch_collocation" name="stoch_collocation" code="{N_mdm(utype,methodName_STOCH_COLLOCATION)}" label="stoch_collocation"  group="Uncertainty Quantification" >
 	  <alias name="nond_stoch_collocation"/>
-	  &sc_refinement;
+	  &method_three_optional_keywords;
+    &sc_refinement;
 	  &method_exp_convergence_tolerance;
 	  <oneOf label="Interpolation Grid Type">
 	    &expansion_quadrature;
@@ -3144,7 +3215,8 @@
 	</keyword>
 
 	<keyword  id="multifidelity_stoch_collocation" name="multifidelity_stoch_collocation" code="{N_mdm(utype,methodName_MULTIFIDELITY_STOCH_COLLOCATION)}" label="multifidelity_stoch_collocation"  group="Uncertainty Quantification" >
-	  &sc_refinement;
+	  &method_three_optional_keywords;
+    &sc_refinement;
 	  &method_mf_exp_convergence_tolerance;
 	  &mf_alloc_control;
 	  &discrep_emulation;
@@ -3161,7 +3233,8 @@
 
 	<keyword  id="sampling" name="sampling" code="{N_mdm(utype,methodName_RANDOM_SAMPLING)}" label="Nondeterministic sampling method"  group="Uncertainty Quantification" >
 	  <alias name="nond_sampling"/>
-	  <keyword  id="samples" name="samples" code="{N_mdm(int,numSamples)}" label="(initial) samples"  minOccurs="0" default="0">
+	  &method_three_optional_keywords;
+    <keyword  id="samples" name="samples" code="{N_mdm(int,numSamples)}" label="(initial) samples"  minOccurs="0" default="0">
 	    <alias name="initial_samples" />
 	    <param type="INTEGER" />
 	  </keyword>
@@ -3232,7 +3305,8 @@
 	<keyword  id="multilevel_sampling" name="multilevel_sampling" code="{N_mdm(utype,methodName_MULTILEVEL_SAMPLING)}" label="multilevel_sampling"  group="Uncertainty Quantification" >
 	  <alias name="multilevel_mc"/>
 	  <alias name="mlmc"/>
-	  &method_seed_sequence;
+	  &method_three_optional_keywords;
+    &method_seed_sequence;
 	  &mlmf_pilot_samples;
 	  &mlmf_solution_mode;
 	  &method_sample_type_lhs_mc;
@@ -3283,7 +3357,8 @@
 	<keyword  id="multifidelity_sampling" name="multifidelity_sampling" code="{N_mdm(utype,methodName_MULTIFIDELITY_SAMPLING)}" label="multifidelity_sampling"  group="Uncertainty Quantification" >
 	  <alias name="multifidelity_mc"/>
 	  <alias name="mfmc"/>
-	  &method_seed_sequence;
+	  &method_three_optional_keywords;
+    &method_seed_sequence;
 	  &mlmf_pilot_samples;
 	  &mlmf_solution_mode;
 	  &mfmc_numerical_solve;
@@ -3302,7 +3377,8 @@
 	<keyword  id="multilevel_multifidelity_sampling" name="multilevel_multifidelity_sampling" code="{N_mdm(utype,methodName_MULTILEVEL_MULTIFIDELITY_SAMPLING)}" label="multilevel_multifidelity_sampling"  group="Uncertainty Quantification" >
 	  <alias name="multilevel_multifidelity_mc"/>
 	  <alias name="mlmfmc"/>
-	  &method_seed_sequence;
+	  &method_three_optional_keywords;
+    &method_seed_sequence;
 	  &mlmf_pilot_samples;
 	  &mlmf_solution_mode;
 	  &method_sample_type_lhs_mc;
@@ -3318,7 +3394,8 @@
 
 	<keyword  id="approximate_control_variate" name="approximate_control_variate" code="{N_mdm(utype,methodName_APPROX_CONTROL_VARIATE)}" label="approximate_control_variate"  group="Uncertainty Quantification" >
 	  <alias name="acv_sampling"/>
-	  <oneOf label="Solution Approach">
+	  &method_three_optional_keywords;
+    <oneOf label="Solution Approach">
 	    <keyword  id="acv_independent_sampling" name="acv_independent_sampling" code="{N_mdm(utype,subMethod_SUBMETHOD_ACV_IS)}" label="acv_independent_sampling" >
 	      <alias name="acv_is"/>
 	    </keyword>
@@ -3370,7 +3447,8 @@
 	</keyword>
 
 	<keyword  id="multilevel_blue" name="multilevel_blue" code="{N_mdm(utype,methodName_MULTILEVEL_BLUE)}" label="multilevel_blue"  group="Uncertainty Quantification" >
-	  &mlmf_group_throttle;
+	  &method_three_optional_keywords;
+    &mlmf_group_throttle;
 	  &mlmf_group_pilot_samples;
 	  &mlmf_solution_mode;
 	  &method_mlmf_sub_problem_solver;
@@ -3389,7 +3467,8 @@
 
 	<keyword  id="importance_sampling" name="importance_sampling" code="{N_mdm(utype,methodName_IMPORTANCE_SAMPLING)}" label="importance_sampling"  group="Uncertainty Quantification" >
 	  <alias name="nond_importance_sampling"/>
-	  <keyword  id="samples" name="samples" code="{N_mdm(int,numSamples)}" label="(initial) samples"  minOccurs="0" default="0">
+	  &method_three_optional_keywords;
+    <keyword  id="samples" name="samples" code="{N_mdm(int,numSamples)}" label="(initial) samples"  minOccurs="0" default="0">
 	    <alias name="initial_samples" />
 	    <param type="INTEGER" />
 	  </keyword>
@@ -3413,7 +3492,8 @@
 
 	<keyword  id="gpais" name="gpais" code="{N_mdm(utype,methodName_GPAIS)}" label="gpais"  group="Uncertainty Quantification" >
 	  <alias name="gaussian_process_adaptive_importance_sampling"/>
-	  <keyword  id="build_samples4" name="build_samples" code="{N_mdm(int,buildSamples)}" label="Samples to build emulator"  minOccurs="0" >
+	  &method_three_optional_keywords;
+    <keyword  id="build_samples4" name="build_samples" code="{N_mdm(int,buildSamples)}" label="Samples to build emulator"  minOccurs="0" >
 	    <alias name="samples" />
 	    <param type="INTEGER" />
 	  </keyword>
@@ -3437,7 +3517,8 @@
 
 	<keyword  id="adaptive_sampling" name="adaptive_sampling" code="{N_mdm(utype,methodName_ADAPTIVE_SAMPLING)}" label="adaptive_sampling"  group="Uncertainty Quantification" >
 	  <alias name="nond_adaptive_sampling"/>
-	  <keyword  id="initial_samples" name="initial_samples" code="{N_mdm(int,numSamples)}" label="initial samples"  minOccurs="0" default="0">
+	  &method_three_optional_keywords;
+    <keyword  id="initial_samples" name="initial_samples" code="{N_mdm(int,numSamples)}" label="initial samples"  minOccurs="0" default="0">
 	    <alias name="samples" />
 	    <param type="INTEGER" />
 	  </keyword>
@@ -3482,7 +3563,8 @@
 
 	<keyword  id="pof_darts" name="pof_darts" code="{N_mdm(utype,methodName_POF_DARTS)}" label="pof_darts"  group="Uncertainty Quantification" >
 	  <alias name="nond_pof_darts"/>
-	  <keyword  id="build_samples4" name="build_samples" code="{N_mdm(int,buildSamples)}" label="Samples to build emulator"   >
+	  &method_three_optional_keywords;
+    <keyword  id="build_samples4" name="build_samples" code="{N_mdm(int,buildSamples)}" label="Samples to build emulator"   >
 	    <alias name="samples" />
 	    <param type="INTEGER" />
 	  </keyword>
@@ -3505,7 +3587,8 @@
 
 	<keyword  id="rkd_darts" name="rkd_darts" code="{N_mdm(utype,methodName_RKD_DARTS)}" label="rkd_darts"   group="Uncertainty Quantification">
 	  <alias name="nond_rkd_darts"/>
-	  <keyword  id="build_samples4" name="build_samples" code="{N_mdm(int,buildSamples)}" label="Samples to build emulator"   >
+	  &method_three_optional_keywords;
+    <keyword  id="build_samples4" name="build_samples" code="{N_mdm(int,buildSamples)}" label="Samples to build emulator"   >
 	    <alias name="samples" />
 	    <param type="INTEGER" />
 	  </keyword>
@@ -3529,7 +3612,8 @@
 	<!-- BMA TODO: not clear what the right samples spec is for evidence -->
 	<keyword  id="global_evidence" name="global_evidence" code="{N_mdm(utype,methodName_GLOBAL_EVIDENCE)}" label="global_evidence"  group="Uncertainty Quantification" >
 	  <alias name="nond_global_evidence"/>
-	  <keyword  id="samples4" name="samples" code="{N_mdm(int,numSamples)}" label="samples" minOccurs="0"   >
+	  &method_three_optional_keywords;
+    <keyword  id="samples4" name="samples" code="{N_mdm(int,numSamples)}" label="samples" minOccurs="0"   >
 	    <param type="INTEGER" />
 	  </keyword>
 	  <keyword  id="seed7" name="seed" code="{N_mdm(int,randomSeed)}" label="seed"  minOccurs="0" default="system-generated (non-repeatable)" >
@@ -3544,7 +3628,8 @@
         <keyword  id="global_interval_est" name="global_interval_est" code="{N_mdm(utype,methodName_GLOBAL_INTERVAL_EST)}" label="global_interval_est"  group="Uncertainty Quantification" >
 	  <alias name="nond_global_interval_est"/>
 	  <!-- BMA TODO: not clear what the right spec is for interval -->
-	  <keyword  id="samples4" name="samples" code="{N_mdm(int,numSamples)}" label="samples"  minOccurs="0" >
+	  &method_three_optional_keywords;
+    <keyword  id="samples4" name="samples" code="{N_mdm(int,numSamples)}" label="samples"  minOccurs="0" >
 	    <param type="INTEGER" />
 	  </keyword>
 	  <keyword  id="seed7" name="seed" code="{N_mdm(int,randomSeed)}" label="seed"  minOccurs="0" default="system-generated (non-repeatable)" >
@@ -3561,7 +3646,8 @@
 	<!-- BEGIN Bayesian Calibration -->
 	<keyword  id="bayes_calibration" name="bayes_calibration" code="{N_mdm(utype,methodName_BAYES_CALIBRATION)}" label="Bayesian calibration "  group="Calibration" >
 	  <alias name="nond_bayes_calibration"/>
-	  <oneOf label="Bayesian Calibration Method">
+	  &method_three_optional_keywords;
+    <oneOf label="Bayesian Calibration Method">
 	    <keyword  id="queso" name="queso" code="{N_mdm(utype,subMethod_SUBMETHOD_QUESO)}" label="queso"  >
 	      <keyword  id="chain_samples" name="chain_samples" code="{N_mdm(int,chainSamples)}" label="MCMC chain samples"  default="method-dependent">
 		<alias name="samples" />
@@ -4000,7 +4086,8 @@
 
         <!-- DACE Methods -->
 	<keyword  id="dace" name="dace" code="{N_mdm(utype,methodName_DACE)}" label="dace"  group="[CHOOSE method category]DACE" >
-	  <oneOf label="DACE type">
+	  &method_three_optional_keywords;
+    <oneOf label="DACE type">
 	    <keyword  id="grid" name="grid" code="{N_mdm(utype,subMethod_SUBMETHOD_GRID)}" label="grid"   />
 	    <keyword  id="random4" name="random" code="{N_mdm(utype,subMethod_SUBMETHOD_RANDOM)}" label="random"   />
 	    <keyword  id="oas" name="oas" code="{N_mdm(utype,subMethod_SUBMETHOD_OAS)}" label="oas"   />
@@ -4023,7 +4110,8 @@
 	</keyword>
 
 	<keyword  id="fsu_cvt" name="fsu_cvt" code="{N_mdm(utype,methodName_FSU_CVT)}" label="fsu_cvt"  group="DACE" >
-	  <keyword  id="samples" name="samples" code="{N_mdm(int,numSamples)}" label="samples"  minOccurs="0" default="0">
+	  &method_three_optional_keywords;
+    <keyword  id="samples" name="samples" code="{N_mdm(int,numSamples)}" label="samples"  minOccurs="0" default="0">
 	    <param type="INTEGER" />
 	  </keyword>
 	  &method_seed;
@@ -4045,7 +4133,8 @@
 	</keyword>
 
 	<keyword  id="psuade_moat" name="psuade_moat" code="{N_mdm(utype,methodName_PSUADE_MOAT)}" label="PSUADE MOAT method"  group="DACE" >
-	  <keyword  id="partitions" name="partitions" code="{N_mdm(usharray,varPartitions)}" label="Number of partitions"  minOccurs="0" default="3" >
+	  &method_three_optional_keywords;
+    <keyword  id="partitions" name="partitions" code="{N_mdm(usharray,varPartitions)}" label="Number of partitions"  minOccurs="0" default="3" >
 	    <param type="INTEGERLIST" />
 	  </keyword>
 	  <keyword  id="samples" name="samples" code="{N_mdm(int,numSamples)}" label="samples"  minOccurs="0" default="0">
@@ -4057,22 +4146,25 @@
 	  &method_optional_model_pointer;
 	</keyword>
 
-        <keyword  id="local_evidence" name="local_evidence" code="{N_mdm(utype,methodName_LOCAL_EVIDENCE)}" label="local_evidence"  group="Uncertainty Quantification" >
+  <keyword  id="local_evidence" name="local_evidence" code="{N_mdm(utype,methodName_LOCAL_EVIDENCE)}" label="local_evidence"  group="Uncertainty Quantification" >
           <alias name="nond_local_evidence"/>
-          &method_gradient_sub_problem_solver;
+    &method_three_optional_keywords; 
+    &method_gradient_sub_problem_solver;
 	  &level_mappings_no_rel;
 	  &method_optional_model_pointer;
         </keyword>
 
-        <keyword  id="local_interval_est" name="local_interval_est" code="{N_mdm(utype,methodName_LOCAL_INTERVAL_EST)}" label="local_interval_est"  group="Uncertainty Quantification" >
+  <keyword  id="local_interval_est" name="local_interval_est" code="{N_mdm(utype,methodName_LOCAL_INTERVAL_EST)}" label="local_interval_est"  group="Uncertainty Quantification" >
           <alias name="nond_local_interval_est"/>
+          &method_three_optional_keywords;
           &method_gradient_sub_problem_solver;
           &method_convergence_tolerance;
 	  &method_optional_model_pointer;
         </keyword>
 
-        <keyword  id="local_reliability" name="local_reliability" code="{N_mdm(utype,methodName_LOCAL_RELIABILITY)}" label="Reliability method"  group="Uncertainty Quantification" >
+  <keyword  id="local_reliability" name="local_reliability" code="{N_mdm(utype,methodName_LOCAL_RELIABILITY)}" label="Reliability method"  group="Uncertainty Quantification" >
           <alias name="nond_local_reliability"/>
+          &method_three_optional_keywords;
           <keyword  id="mpp_search" name="mpp_search" code="{0}" label="MPP search type"  minOccurs="0" default="No MPP search (MV method)" >
             <oneOf label="MPP Approximation">
               <keyword  id="x_taylor_mean" name="x_taylor_mean" code="{N_mdm(utype,subMethod_SUBMETHOD_AMV_X)}" label="x_taylor_mean"   />
@@ -4122,8 +4214,9 @@
 	  &method_optional_model_pointer;
         </keyword>
 
-        <keyword  id="global_reliability" name="global_reliability" code="{N_mdm(utype,methodName_GLOBAL_RELIABILITY)}" label="global_reliability"  group="Uncertainty Quantification" >
+    <keyword  id="global_reliability" name="global_reliability" code="{N_mdm(utype,methodName_GLOBAL_RELIABILITY)}" label="global_reliability"  group="Uncertainty Quantification" >
           <alias name="nond_global_reliability"/>
+      &method_three_optional_keywords;
 	  <keyword  id="initial_samples" name="initial_samples" code="{N_mdm(int,numSamples)}" label="initial samples"  minOccurs="0" default="(d+1)(d+2)/2">
 	    <param type="INTEGER" />
 	  </keyword>
@@ -4166,7 +4259,8 @@
 	  &method_optional_model_pointer;
         </keyword>
 
-        <keyword  id="fsu_quasi_mc" name="fsu_quasi_mc" code="{0}" label="fsu_quasi_mc"  group="DACE" >
+  <keyword  id="fsu_quasi_mc" name="fsu_quasi_mc" code="{0}" label="fsu_quasi_mc"  group="DACE" >
+          &method_three_optional_keywords;
           <oneOf label="Sequence Type">
             <keyword  id="halton1" name="halton" code="{N_mdm(utype,methodName_FSU_HALTON)}" label="halton"   />
             <keyword  id="hammersley" name="hammersley" code="{N_mdm(utype,methodName_FSU_HAMMERSLEY)}" label="hammersley"   />
@@ -4193,6 +4287,7 @@
 
 	<!-- Parameter Studies -->
         <keyword  id="vector_parameter_study" name="vector_parameter_study" code="{N_mdm(utype,methodName_VECTOR_PARAMETER_STUDY)}" label="Vector parameter study"  group="Parameter Studies" >
+          &method_three_optional_keywords;
           <oneOf label="Step Control">
             <keyword  id="final_point" name="final_point" code="{N_mdm(RealDL,finalPoint)}" label="Termination point of vector"   >
               <param type="REALLIST" />
@@ -4208,6 +4303,7 @@
         </keyword>
 
         <keyword  id="list_parameter_study" name="list_parameter_study" code="{N_mdm(utype,methodName_LIST_PARAMETER_STUDY)}" label="List parameter study"  group="Parameter Studies" >
+          &method_three_optional_keywords;
           <oneOf label="Points Source">
             <keyword  id="list_of_points" name="list_of_points" code="{N_mdm(RealDL,listOfPoints)}" label="List of points to evaluate"   >
               <param type="REALLIST" />
@@ -4232,6 +4328,7 @@
         </keyword>
 
         <keyword  id="centered_parameter_study" name="centered_parameter_study" code="{N_mdm(utype,methodName_CENTERED_PARAMETER_STUDY)}" label="Centered parameter study"  group="Parameter Studies" >
+          &method_three_optional_keywords;
           <keyword  id="step_vector1" name="step_vector" code="{N_mdm(RealDL,stepVector)}" label="Step vector"   >
             <param type="REALLIST" />
           </keyword>
@@ -4243,6 +4340,7 @@
         </keyword>
 
         <keyword  id="multidim_parameter_study" name="multidim_parameter_study" code="{N_mdm(utype,methodName_MULTIDIM_PARAMETER_STUDY)}" label="Multidimensional parameter study"  group="Parameter Studies" >
+          &method_three_optional_keywords;
           <keyword  id="partitions1" name="partitions" code="{N_mdm(usharray,varPartitions)}" label="Partitions per variable"   >
             <param type="INTEGERLIST" />
           </keyword>
@@ -4251,6 +4349,7 @@
 
 	<!-- Verification -->
         <keyword  id="richardson_extrap" name="richardson_extrap" code="{N_mdm(utype,methodName_RICHARDSON_EXTRAP)}" label="Richardson extrapolation"  group="Verification Studies" >
+          &method_three_optional_keywords;
           <oneOf label="Verification Mode">
             <keyword  id="estimate_order" name="estimate_order" code="{N_mdm(utype,subMethod_SUBMETHOD_ESTIMATE_ORDER)}" label="estimate_order"   />
             <keyword  id="converge_order" name="converge_order" code="{N_mdm(utype,subMethod_SUBMETHOD_CONVERGE_ORDER)}" label="converge_order"   />
@@ -4269,12 +4368,10 @@
 
     <!-- **** TOPLEVEL *** -->
     <keyword id="model" name="model" minOccurs="0" maxOccurs="999999" code="{N_mom3(start,0,stop)}" label="Model" >
-      <keyword  id="id_model" name="id_model" code="{N_mom(str,idModel)}" label="Model Identifier"  minOccurs="0" default="method use of last model parsed" complexity="0">
-        <param type="STRING" taglist="model" />
-      </keyword>
       <oneOf label="Model Type">
         <keyword  id="single" name="single" code="{N_mom(lit,modelType_simulation)}" label="Single"  default="N/A ( single if no model specification)" complexity="0">
           <alias name="simulation"/>
+          &model_four_optional_keywords;
           <keyword  id="interface_pointer" name="interface_pointer" code="{N_mom(str,interfacePointer)}" label="Interface Set Pointer"  minOccurs="0" default="model use of last interface parsed" >
             <param type="STRING" in_taglist="interface" />
           </keyword>
@@ -4293,6 +4390,7 @@
 	  </optional>
         </keyword>
         <keyword  id="surrogate" name="surrogate" code="{N_mom(lit,modelType_surrogate)}" label="Surrogate"  complexity="0" >
+          &model_four_optional_keywords;
           <keyword  id="id_surrogates" name="id_surrogates" code="{N_mom(id_to_index_set,surrogateFnIndices)}" label="Surrogate Response IDs"  minOccurs="0" default="All response functions are approximated" >
             <param type="INTEGERLIST" />
           </keyword>
@@ -4727,6 +4825,7 @@
             </oneOf>
           </keyword>
         <keyword  id="nested2" name="nested" code="{N_mom(lit,modelType_nested)}" label="Nested"  complexity="1">
+          &model_four_optional_keywords;
           <keyword  id="optional_interface_pointer" name="optional_interface_pointer" code="{N_mom(str,interfacePointer)}" label="Optional Interface Set Pointer"  minOccurs="0" default="no optional interface" >
             <param type="STRING" in_taglist="interface" />
             <keyword  id="optional_interface_responses_pointer" name="optional_interface_responses_pointer" code="{N_mom(str,optionalInterfRespPointer)}" label="Responses Pointer for Optional Interfaces"  minOccurs="0" default="reuse of top-level responses specification" >
@@ -4769,6 +4868,7 @@
         </keyword>
         <keyword  id="active_subspace" name="active_subspace" code="{N_mom(lit,modelType_active_subspace)}" label="Active Subspace"  complexity="1">
           <alias name="subspace"/>
+          &model_four_optional_keywords;
 
 	  <keyword  id="truth_model_pointer" name="truth_model_pointer" code="{N_mom(str,truthModelPointer)}" label="Truth Model Pointer"  >
             <alias name="actual_model_pointer"/>
@@ -4831,7 +4931,8 @@
 	  </keyword>
 	</keyword>
 	<keyword id="adapted_basis" name="adapted_basis" code="{N_mom(lit,modelType_adapted_basis)}" label="Adapted Basis"  >
-	  <keyword  id="truth_model_pointer" name="truth_model_pointer" code="{N_mom(str,truthModelPointer)}" label="Truth Model Pointer"  >
+	  &model_four_optional_keywords;
+    <keyword  id="truth_model_pointer" name="truth_model_pointer" code="{N_mom(str,truthModelPointer)}" label="Truth Model Pointer"  >
             <alias name="actual_model_pointer"/>
             <param type="STRING" in_taglist="model" />
 	  <oneOf label="Expansion Basis Control">
@@ -4861,7 +4962,8 @@
           </keyword>
 	</keyword>
 	<keyword  id="random_field" name="random_field" code="{N_mom(lit,modelType_random_field)}" label="Random Field"  complexity="1">
-	  <keyword id="build_source" name="build_source" code="{0}" label="Build Source" minOccurs="0">
+	  &model_four_optional_keywords;
+    <keyword id="build_source" name="build_source" code="{0}" label="Build Source" minOccurs="0">
 	    <oneOf label="Build Data Source">
 	          <keyword  id="rf_data_file" name="rf_data_file" code="{N_mom(str,rfDataFileName)}" label="Random Field Data File Name" default="none">
 		<param type="STRING" />
@@ -4894,13 +4996,6 @@
 	  </keyword>
         </keyword>
     </oneOf>
-     <keyword  id="variables_pointer" name="variables_pointer" code="{N_mom(str,variablesPointer)}" label="Variables Pointer"  minOccurs="0" default="model use of last variables parsed" complexity="0">
-       <param type="STRING" in_taglist="variables" />
-     </keyword>
-     <keyword  id="responses_pointer" name="responses_pointer" code="{N_mom(str,responsesPointer)}" label="Responses Pointer"  minOccurs="0" default="model use of last responses parsed" complexity="0">
-       <param type="STRING" in_taglist="responses" />
-     </keyword>
-     <keyword  id="hierarchical_tagging" name="hierarchical_tagging" code="{N_mom(true,hierarchicalTags)}" label="Hierarchical Evaluation Tags"  minOccurs="0" default="no hierarchical tagging" complexity="1" />
     </keyword>
 
     <!-- **** TOPLEVEL *** -->
