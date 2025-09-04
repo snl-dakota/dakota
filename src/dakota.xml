@@ -1,4 +1,3 @@
-<?xml version='1.0' encoding='UTF-8'?>
 <!DOCTYPE DAKOTA_XML [
     <!ENTITY method_import_build_format "
 	     <optional>
@@ -4232,7 +4231,7 @@
               </optional>
               <optional>
                 <oneOf anchor="build_data" label="Build Data Source">
-                  <keyword argument="ARGUMENT" code="{N_mom(str,subMethodPointer)}" default="no design of experiments data" id="dace_method_pointer" label="Design of Experiments Method Pointer" name="dace_method_pointer">
+                  <keyword argument="pointer" code="{N_mom(str,subMethodPointer)}" default="no design of experiments data" id="dace_method_pointer" label="Design of Experiments Method Pointer" name="dace_method_pointer">
                     <param in_taglist="method" type="STRING" />
                     <keyword code="{N_mom(true,autoRefine)}" complexity="1" default="no refinement" id="auto_refinement" label="Automatically Refine Surrogate" minOccurs="0" name="auto_refinement">
                       <keyword code="{N_mom(sizet,maxIterations)}" default="100" id="max_iterations" label="Max Build Iterations" minOccurs="0" name="max_iterations">
@@ -4247,7 +4246,7 @@
                       <keyword code="{N_mom(int,softConvergenceLimit)}" default="0" id="soft_convergence_limit" label="Soft Convergence Limit" minOccurs="0" name="soft_convergence_limit">
                         <param constraint="&gt;= 0" type="INTEGER" />
                       </keyword>
-                      <keyword argument="ARGUMENT" code="{N_mom(str,refineCVMetric)}" default="root-mean-squared error" id="cross_validation_metric" label="Cross-Validation Metric Type" minOccurs="0" name="cross_validation_metric">
+                      <keyword argument="metric" code="{N_mom(str,refineCVMetric)}" default="root-mean-squared error" id="cross_validation_metric" label="Cross-Validation Metric Type" minOccurs="0" name="cross_validation_metric">
                         <param type="STRING" />
                         <keyword code="{N_mom(int,refineCVFolds)}" default="10" id="folds" label="CV Folds" minOccurs="0" name="folds">
                           <param constraint="&gt; 0" type="INTEGER" />
@@ -4269,7 +4268,7 @@
                   <keyword code="{N_mom(lit,approxPointReuse_none)}" id="none" label="None" name="none" />
                 </oneOf>
               </keyword>
-              <keyword argument="ARGUMENT" code="{N_mom(str,importBuildPtsFile)}" default="no point import from a file" id="import_build_points_file17" label="File Import of Samples for Global Approximation Builds" minOccurs="0" name="import_build_points_file">
+              <keyword argument="filename" code="{N_mom(str,importBuildPtsFile)}" default="no point import from a file" id="import_build_points_file17" label="File Import of Samples for Global Approximation Builds" minOccurs="0" name="import_build_points_file">
                 <alias name="import_points_file" />
                 <alias name="samples_file" />
                 <param type="INPUT_FILE" />
@@ -4290,7 +4289,7 @@
                 </optional>
                 <keyword code="{N_mom(true,importBuildActive)}" id="active_only20" label="Active Variables Only" minOccurs="0" name="active_only" />
               </keyword>
-              <keyword code="{N_mom(str,exportApproxPtsFile)}" default="no point export to a file" id="export_approx_points_file8" label="File Export of Global Approximation-Based Sample Results" minOccurs="0" name="export_approx_points_file" argument="ARGUMENT">
+              <keyword code="{N_mom(str,exportApproxPtsFile)}" default="no point export to a file" id="export_approx_points_file8" label="File Export of Global Approximation-Based Sample Results" minOccurs="0" name="export_approx_points_file" argument="filename">
                 <alias name="export_points_file" />
                 <param type="OUTPUT_FILE" />
                 <optional>
@@ -4307,7 +4306,7 @@
               </keyword>
               <keyword code="{N_mom(true,modelUseDerivsFlag)}" complexity="1" default="use function values only" id="use_derivatives8" label="Gradient Enhancement" minOccurs="0" name="use_derivatives" />
               &surrogate_correction;
-              <keyword argument="ARGUMENT" code="{N_mom(strL,diagMetrics)}" default="No diagnostics" id="metrics" label="Compute Surrogate Diagnostics" minOccurs="0" name="metrics">
+              <keyword argument="metrics" code="{N_mom(strL,diagMetrics)}" default="No diagnostics" id="metrics" label="Compute Surrogate Diagnostics" minOccurs="0" name="metrics">
                 <alias name="diagnostics" />
                 <param type="STRINGLIST" />
                 <keyword code="{N_mom(true,crossValidateFlag)}" default="No cross validation" id="cross_validation4" label="Perform Cross Validation" minOccurs="0" name="cross_validation">
@@ -4324,7 +4323,7 @@
                 </keyword>
                 <keyword code="{N_mom(true,pressFlag)}" default="No PRESS cross validation" id="press" label="Perform PRESS Cross-Validation" minOccurs="0" name="press" />
               </keyword>
-              <keyword argument="ARGUMENT" code="{N_mom(str,importChallengePtsFile)}" default="no user challenge data" id="import_challenge_points_file" label="Challenge File for Surrogate Metrics" minOccurs="0" name="import_challenge_points_file">
+              <keyword argument="filename" code="{N_mom(str,importChallengePtsFile)}" default="no user challenge data" id="import_challenge_points_file" label="Challenge File for Surrogate Metrics" minOccurs="0" name="import_challenge_points_file">
                 <alias name="challenge_points_file" />
                 <param type="STRING" />
                 <optional>
@@ -4369,7 +4368,7 @@
                   <param in_taglist="model" type="STRINGLIST" />
                   &surrogate_correction;
                 </keyword>
-                <keyword argument="ARGUMENT" code="{N_mom(str,truthModelPointer)}" id="truth_model_pointer" label="Truth Model Pointer" name="truth_model_pointer">
+                <keyword argument="pointer" code="{N_mom(str,truthModelPointer)}" id="truth_model_pointer" label="Truth Model Pointer" name="truth_model_pointer">
                   <alias name="actual_model_pointer" />
                   <param in_taglist="model" type="STRING" />
                   <keyword code="{N_mom(strL,ensembleModelPointers)}" id="approximation_models" label="Model Pointers (set of approximation models)" minOccurs="0" name="approximation_models">
@@ -4383,13 +4382,13 @@
         </keyword>
         <keyword code="{N_mom(lit,modelType_nested)}" complexity="1" id="nested2" label="Nested" name="nested">
           &model_four_optional_keywords;
-          <keyword argument="ARGUMENT" code="{N_mom(str,interfacePointer)}" default="no optional interface" id="optional_interface_pointer" label="Optional Interface Set Pointer" minOccurs="0" name="optional_interface_pointer">
+          <keyword argument="pointer" code="{N_mom(str,interfacePointer)}" default="no optional interface" id="optional_interface_pointer" label="Optional Interface Set Pointer" minOccurs="0" name="optional_interface_pointer">
             <param in_taglist="interface" type="STRING" />
             <keyword code="{N_mom(str,optionalInterfRespPointer)}" default="reuse of top-level responses specification" id="optional_interface_responses_pointer" label="Responses Pointer for Optional Interfaces" minOccurs="0" name="optional_interface_responses_pointer">
               <param in_taglist="responses" type="STRING" />
             </keyword>
           </keyword>
-          <keyword argument="ARGUMENT" code="{N_mom(str,subMethodPointer)}" id="sub_method_pointer" label="Sub-Method Pointer" name="sub_method_pointer">
+          <keyword argument="pointer" code="{N_mom(str,subMethodPointer)}" id="sub_method_pointer" label="Sub-Method Pointer" name="sub_method_pointer">
             <param in_taglist="method" type="STRING" />
             <keyword code="{N_mom(int,subMethodServers)}" id="iterator_servers1" label="Iterator Servers" minOccurs="0" name="iterator_servers">
               <param constraint="&gt; 0" type="INTEGER" />
@@ -4483,14 +4482,14 @@
         </keyword>
         <keyword code="{N_mom(lit,modelType_adapted_basis)}" id="adapted_basis" label="Adapted Basis" name="adapted_basis">
           &model_four_optional_keywords;
-          <keyword argument="ARGUMENT" code="{N_mom(str,truthModelPointer)}" id="truth_model_pointer" label="Truth Model Pointer" name="truth_model_pointer">
+          <keyword argument="pointer" code="{N_mom(str,truthModelPointer)}" id="truth_model_pointer" label="Truth Model Pointer" name="truth_model_pointer">
             <alias name="actual_model_pointer" />
             <param in_taglist="model" type="STRING" />
             <oneOf anchor="basis_control" label="Expansion Basis Control">
               <keyword code="{N_mom(ushint,adaptedBasisSparseGridLev)}" id="sparse_grid_level" label="Adapted Basis Sparse Grid Level" name="sparse_grid_level">
                 <param type="INTEGER" />
               </keyword>
-              <keyword argument="ARGUMENT" code="{N_mom(ushint,adaptedBasisExpOrder)}" id="expansion_order" label="Adapted Basis Expansion Order" name="expansion_order">
+              <keyword argument="order" code="{N_mom(ushint,adaptedBasisExpOrder)}" id="expansion_order" label="Adapted Basis Expansion Order" name="expansion_order">
                 <param type="INTEGER" />
                 <keyword code="{N_mom(Real,adaptedBasisCollocRatio)}" id="collocation_ratio4" label="Adapted Basis Collocation Ratio" name="collocation_ratio">
                   <param type="REAL" />
@@ -4567,7 +4566,7 @@
           <keyword code="{N_vam(type,varsDomain_RELAXED_DOMAIN)}" id="relaxed" label="relaxed" name="relaxed" />
         </oneOf>
       </optional>
-      <keyword argument="ARGUMENT" code="{N_vam(sizet,numContinuousDesVars)}" default="no continuous design variables" group="Design Variables" id="continuous_design" label="Continuous design variables" minOccurs="0" name="continuous_design">
+      <keyword argument="count" code="{N_vam(sizet,numContinuousDesVars)}" default="no continuous design variables" group="Design Variables" id="continuous_design" label="Continuous design variables" minOccurs="0" name="continuous_design">
         <param constraint="&gt; 0" type="INTEGER" />
         <keyword code="{N_vam(rvec,continuousDesignVars)}" default="0.0" id="initial_point" label="Initial point" minOccurs="0" name="initial_point">
           <alias name="cdv_initial_point" />
@@ -4594,7 +4593,7 @@
           <param constraint="LEN continuous_design" type="STRINGLIST" />
         </keyword>
       </keyword>
-      <keyword argument="ARGUMENT" code="{N_vam(sizet,numDiscreteDesRangeVars)}" default="no discrete design variables" group="Design Variables" id="discrete_design_range" label="Discrete design range variables" minOccurs="0" name="discrete_design_range">
+      <keyword argument="count" code="{N_vam(sizet,numDiscreteDesRangeVars)}" default="no discrete design variables" group="Design Variables" id="discrete_design_range" label="Discrete design range variables" minOccurs="0" name="discrete_design_range">
         <param constraint="&gt; 0" type="INTEGER" />
         <keyword code="{N_vam(ivec,discreteDesignRangeVars)}" default="0" id="initial_point1" label="Initial point" minOccurs="0" name="initial_point">
           <alias name="ddv_initial_point" />
@@ -4614,7 +4613,7 @@
         </keyword>
       </keyword>
       <keyword code="{0}" group="Design Variables" id="discrete_design_set" label="discrete_design_set" minOccurs="0" name="discrete_design_set">
-        <keyword argument="ARGUMENT" code="{N_vam(sizet,numDiscreteDesSetIntVars)}" default="no discrete design set integer variables" id="integer" label="integer" minOccurs="0" name="integer">
+        <keyword argument="count" code="{N_vam(sizet,numDiscreteDesSetIntVars)}" default="no discrete design set integer variables" id="integer" label="integer" minOccurs="0" name="integer">
           <param constraint="&gt; 0" type="INTEGER" />
           <keyword code="{N_vam(newiarray,Var_Info_nddsi)}" default="equal distribution" id="elements_per_variable" label="elements_per_variable" minOccurs="0" name="elements_per_variable">
             <alias name="num_set_values" />
@@ -4624,7 +4623,7 @@
             <alias name="set_values" />
             <param type="INTEGERLIST" />
           </keyword>
-          <keyword argument="ARGUMENT" code="{N_vam(categorical,discreteDesignSetIntCat)}" id="categorical" label="categorical" minOccurs="0" name="categorical">
+          <keyword argument="count" code="{N_vam(categorical,discreteDesignSetIntCat)}" id="categorical" label="categorical" minOccurs="0" name="categorical">
             <param constraint="LEN integer" type="STRINGLIST" />
             <keyword code="{N_vam(newivec,Var_Info_ddsia)}" id="adjacency_matrix" label="adjacency_matrix" minOccurs="0" name="adjacency_matrix">
               <param type="INTEGERLIST" />
@@ -4637,7 +4636,7 @@
             <param constraint="LEN integer" type="STRINGLIST" />
           </keyword>
         </keyword>
-        <keyword argument="ARGUMENT" code="{N_vam(sizet,numDiscreteDesSetStrVars)}" default="no discrete design set string variables" id="string" label="string" minOccurs="0" name="string">
+        <keyword argument="count" code="{N_vam(sizet,numDiscreteDesSetStrVars)}" default="no discrete design set string variables" id="string" label="string" minOccurs="0" name="string">
           <param constraint="&gt; 0" type="INTEGER" />
           <keyword code="{N_vam(newiarray,Var_Info_nddss)}" default="equal distribution" id="elements_per_variable1" label="elements_per_variable" minOccurs="0" name="elements_per_variable">
             <alias name="num_set_values" />
@@ -4657,7 +4656,7 @@
             <param constraint="LEN string" type="STRINGLIST" />
           </keyword>
         </keyword>
-        <keyword argument="ARGUMENT" code="{N_vam(sizet,numDiscreteDesSetRealVars)}" default="no discrete design set real variables" id="real" label="real" minOccurs="0" name="real">
+        <keyword argument="count" code="{N_vam(sizet,numDiscreteDesSetRealVars)}" default="no discrete design set real variables" id="real" label="real" minOccurs="0" name="real">
           <param constraint="&gt; 0" type="INTEGER" />
           <keyword code="{N_vam(newiarray,Var_Info_nddsr)}" default="equal distribution" id="elements_per_variable2" label="elements_per_variable" minOccurs="0" name="elements_per_variable">
             <alias name="num_set_values" />
@@ -4667,7 +4666,7 @@
             <alias name="set_values" />
             <param type="REALLIST" />
           </keyword>
-          <keyword argument="ARGUMENT" code="{N_vam(categorical,discreteDesignSetRealCat)}" id="categorical1" label="categorical" minOccurs="0" name="categorical">
+          <keyword argument="count" code="{N_vam(categorical,discreteDesignSetRealCat)}" id="categorical1" label="categorical" minOccurs="0" name="categorical">
             <param constraint="LEN integer" type="STRINGLIST" />
             <keyword code="{N_vam(newivec,Var_Info_ddsra)}" id="adjacency_matrix2" label="adjacency_matrix" minOccurs="0" name="adjacency_matrix">
               <param type="INTEGERLIST" />
@@ -4681,7 +4680,7 @@
           </keyword>
         </keyword>
       </keyword>
-      <keyword argument="ARGUMENT" code="{N_vam(sizet,numNormalUncVars)}" default="no normal uncertain variables" group="Continuous Aleatory Uncertain" id="normal_uncertain" label="normal uncertain variables" minOccurs="0" name="normal_uncertain">
+      <keyword argument="count" code="{N_vam(sizet,numNormalUncVars)}" default="no normal uncertain variables" group="Continuous Aleatory Uncertain" id="normal_uncertain" label="normal uncertain variables" minOccurs="0" name="normal_uncertain">
         <param constraint="&gt; 0" type="INTEGER" />
         <keyword code="{N_vam(rvec,normalUncMeans)}" id="means" label="normal uncertain means" name="means">
           <alias name="nuv_means" />
@@ -4707,7 +4706,7 @@
           <param constraint="LEN normal_uncertain" type="STRINGLIST" />
         </keyword>
       </keyword>
-      <keyword argument="ARGUMENT" code="{N_vam(sizet,numLognormalUncVars)}" default="no lognormal uncertain variables" group="Continuous Aleatory Uncertain" id="lognormal_uncertain" label="lognormal uncertain variables" minOccurs="0" name="lognormal_uncertain">
+      <keyword argument="count" code="{N_vam(sizet,numLognormalUncVars)}" default="no lognormal uncertain variables" group="Continuous Aleatory Uncertain" id="lognormal_uncertain" label="lognormal uncertain variables" minOccurs="0" name="lognormal_uncertain">
         <param constraint="&gt; 0" type="INTEGER" />
         <keyword code="{N_vam(RealLb,lognormalUncMeans)}" id="means1" label="lognormal uncertain means" name="means">
           <alias name="lnuv_means" />
@@ -4733,7 +4732,7 @@
           <param constraint="LEN lognormal_uncertain" type="STRINGLIST" />
         </keyword>
       </keyword>
-      <keyword argument="ARGUMENT" code="{N_vam(sizet,numUniformUncVars)}" default="no uniform uncertain variables" group="Continuous Aleatory Uncertain" id="uniform_uncertain" label="uniform uncertain variables" minOccurs="0" name="uniform_uncertain">
+      <keyword argument="count" code="{N_vam(sizet,numUniformUncVars)}" default="no uniform uncertain variables" group="Continuous Aleatory Uncertain" id="uniform_uncertain" label="uniform uncertain variables" minOccurs="0" name="uniform_uncertain">
         <param constraint="&gt; 0" type="INTEGER" />
         <keyword code="{N_vam(RealLb,uniformUncLowerBnds)}" id="lower_bounds4" label="Distribution lower bounds" name="lower_bounds">
           <alias name="uuv_lower_bounds" />
@@ -4751,7 +4750,7 @@
           <param constraint="LEN uniform_uncertain" type="STRINGLIST" />
         </keyword>
       </keyword>
-      <keyword argument="ARGUMENT" code="{N_vam(sizet,numLoguniformUncVars)}" default="no loguniform uncertain variables" group="Continuous Aleatory Uncertain" id="loguniform_uncertain" label="loguniform uncertain variables" minOccurs="0" name="loguniform_uncertain">
+      <keyword argument="count" code="{N_vam(sizet,numLoguniformUncVars)}" default="no loguniform uncertain variables" group="Continuous Aleatory Uncertain" id="loguniform_uncertain" label="loguniform uncertain variables" minOccurs="0" name="loguniform_uncertain">
         <param constraint="&gt; 0" type="INTEGER" />
         <keyword code="{N_vam(RealLb,loguniformUncLowerBnds)}" id="lower_bounds5" label="Distribution lower bounds" name="lower_bounds">
           <alias name="luuv_lower_bounds" />
@@ -4769,7 +4768,7 @@
           <param constraint="LEN loguniform_uncertain" type="STRINGLIST" />
         </keyword>
       </keyword>
-      <keyword argument="ARGUMENT" code="{N_vam(sizet,numTriangularUncVars)}" default="no triangular uncertain variables" group="Continuous Aleatory Uncertain" id="triangular_uncertain" label="triangular uncertain variables" minOccurs="0" name="triangular_uncertain">
+      <keyword argument="count" code="{N_vam(sizet,numTriangularUncVars)}" default="no triangular uncertain variables" group="Continuous Aleatory Uncertain" id="triangular_uncertain" label="triangular uncertain variables" minOccurs="0" name="triangular_uncertain">
         <param constraint="&gt; 0" type="INTEGER" />
         <keyword code="{N_vam(rvec,triangularUncModes)}" id="modes" label="triangular uncertain modes" name="modes">
           <alias name="tuv_modes" />
@@ -4791,7 +4790,7 @@
           <param constraint="LEN triangular_uncertain" type="STRINGLIST" />
         </keyword>
       </keyword>
-      <keyword argument="ARGUMENT" code="{N_vam(sizet,numExponentialUncVars)}" default="no exponential uncertain variables" group="Continuous Aleatory Uncertain" id="exponential_uncertain" label="exponential uncertain variables" minOccurs="0" name="exponential_uncertain">
+      <keyword argument="count" code="{N_vam(sizet,numExponentialUncVars)}" default="no exponential uncertain variables" group="Continuous Aleatory Uncertain" id="exponential_uncertain" label="exponential uncertain variables" minOccurs="0" name="exponential_uncertain">
         <param constraint="&gt; 0" type="INTEGER" />
         <keyword code="{N_vam(RealLb,exponentialUncBetas)}" id="betas" label="exponential uncertain betas" name="betas">
           <alias name="euv_betas" />
@@ -4805,7 +4804,7 @@
           <param constraint="LEN exponential_uncertain" type="STRINGLIST" />
         </keyword>
       </keyword>
-      <keyword argument="ARGUMENT" code="{N_vam(sizet,numBetaUncVars)}" default="no beta uncertain variables" group="Continuous Aleatory Uncertain" id="beta_uncertain" label="beta uncertain variables" minOccurs="0" name="beta_uncertain">
+      <keyword argument="count" code="{N_vam(sizet,numBetaUncVars)}" default="no beta uncertain variables" group="Continuous Aleatory Uncertain" id="beta_uncertain" label="beta uncertain variables" minOccurs="0" name="beta_uncertain">
         <param constraint="&gt; 0" type="INTEGER" />
         <keyword code="{N_vam(RealLb,betaUncAlphas)}" id="alphas" label="beta uncertain alphas" name="alphas">
           <alias name="buv_alphas" />
@@ -4831,7 +4830,7 @@
           <param constraint="LEN beta_uncertain" type="STRINGLIST" />
         </keyword>
       </keyword>
-      <keyword argument="ARGUMENT" code="{N_vam(sizet,numGammaUncVars)}" default="no gamma uncertain variables" group="Continuous Aleatory Uncertain" id="gamma_uncertain" label="gamma uncertain variables" minOccurs="0" name="gamma_uncertain">
+      <keyword argument="count" code="{N_vam(sizet,numGammaUncVars)}" default="no gamma uncertain variables" group="Continuous Aleatory Uncertain" id="gamma_uncertain" label="gamma uncertain variables" minOccurs="0" name="gamma_uncertain">
         <param constraint="&gt; 0" type="INTEGER" />
         <keyword code="{N_vam(RealLb,gammaUncAlphas)}" id="alphas1" label="gamma uncertain alphas" name="alphas">
           <alias name="gauv_alphas" />
@@ -4849,7 +4848,7 @@
           <param constraint="LEN gamma_uncertain" type="STRINGLIST" />
         </keyword>
       </keyword>
-      <keyword argument="ARGUMENT" code="{N_vam(sizet,numGumbelUncVars)}" default="no gumbel uncertain variables" group="Continuous Aleatory Uncertain" id="gumbel_uncertain" label="gumbel uncertain variables" minOccurs="0" name="gumbel_uncertain">
+      <keyword argument="count" code="{N_vam(sizet,numGumbelUncVars)}" default="no gumbel uncertain variables" group="Continuous Aleatory Uncertain" id="gumbel_uncertain" label="gumbel uncertain variables" minOccurs="0" name="gumbel_uncertain">
         <param constraint="&gt; 0" type="INTEGER" />
         <keyword code="{N_vam(RealLb,gumbelUncAlphas)}" id="alphas2" label="gumbel uncertain alphas" name="alphas">
           <alias name="guuv_alphas" />
@@ -4867,7 +4866,7 @@
           <param constraint="LEN gumbel_uncertain" type="STRINGLIST" />
         </keyword>
       </keyword>
-      <keyword argument="ARGUMENT" code="{N_vam(sizet,numFrechetUncVars)}" default="no frechet uncertain variables" group="Continuous Aleatory Uncertain" id="frechet_uncertain" label="frechet uncertain variables" minOccurs="0" name="frechet_uncertain">
+      <keyword argument="count" code="{N_vam(sizet,numFrechetUncVars)}" default="no frechet uncertain variables" group="Continuous Aleatory Uncertain" id="frechet_uncertain" label="frechet uncertain variables" minOccurs="0" name="frechet_uncertain">
         <param constraint="&gt; 0" type="INTEGER" />
         <keyword code="{N_vam(RealLb,frechetUncAlphas)}" id="alphas3" label="frechet uncertain alphas" name="alphas">
           <alias name="fuv_alphas" />
@@ -4885,7 +4884,7 @@
           <param constraint="LEN frechet_uncertain" type="STRINGLIST" />
         </keyword>
       </keyword>
-      <keyword argument="ARGUMENT" code="{N_vam(sizet,numWeibullUncVars)}" default="no weibull uncertain variables" group="Continuous Aleatory Uncertain" id="weibull_uncertain" label="weibull uncertain variables" minOccurs="0" name="weibull_uncertain">
+      <keyword argument="count" code="{N_vam(sizet,numWeibullUncVars)}" default="no weibull uncertain variables" group="Continuous Aleatory Uncertain" id="weibull_uncertain" label="weibull uncertain variables" minOccurs="0" name="weibull_uncertain">
         <param constraint="&gt; 0" type="INTEGER" />
         <keyword code="{N_vam(RealLb,weibullUncAlphas)}" id="alphas4" label="weibull uncertain alphas" name="alphas">
           <alias name="wuv_alphas" />
@@ -4903,7 +4902,7 @@
           <param constraint="LEN weibull_uncertain" type="STRINGLIST" />
         </keyword>
       </keyword>
-      <keyword argument="ARGUMENT" code="{N_vam(sizet,numHistogramBinUncVars)}" default="no histogram bin uncertain variables" group="Continuous Aleatory Uncertain" id="histogram_bin_uncertain" label="histogram bin uncertain variables" minOccurs="0" name="histogram_bin_uncertain">
+      <keyword argument="count" code="{N_vam(sizet,numHistogramBinUncVars)}" default="no histogram bin uncertain variables" group="Continuous Aleatory Uncertain" id="histogram_bin_uncertain" label="histogram bin uncertain variables" minOccurs="0" name="histogram_bin_uncertain">
         <param constraint="&gt; 0" type="INTEGER" />
         <keyword code="{N_vam(newiarray,Var_Info_nhbp)}" default="equal distribution" id="pairs_per_variable3" label="key to apportionment among bin-based histogram variables" minOccurs="0" name="pairs_per_variable">
           <alias name="num_pairs" />
@@ -4931,7 +4930,7 @@
           <param constraint="LEN histogram_bin_uncertain" type="STRINGLIST" />
         </keyword>
       </keyword>
-      <keyword argument="ARGUMENT" code="{N_vam(sizet,numPoissonUncVars)}" default="no poisson uncertain variables" group="Discrete Aleatory Uncertain" id="poisson_uncertain" label="poisson uncertain variables" minOccurs="0" name="poisson_uncertain">
+      <keyword argument="count" code="{N_vam(sizet,numPoissonUncVars)}" default="no poisson uncertain variables" group="Discrete Aleatory Uncertain" id="poisson_uncertain" label="poisson uncertain variables" minOccurs="0" name="poisson_uncertain">
         <param constraint="&gt; 0" type="INTEGER" />
         <keyword code="{N_vam(RealLb,poissonUncLambdas)}" id="lambdas1" label="poisson uncertain lambdas" name="lambdas">
           <param constraint="LEN poisson_uncertain" type="REALLIST" />
@@ -4943,7 +4942,7 @@
           <param constraint="LEN poisson_uncertain" type="STRINGLIST" />
         </keyword>
       </keyword>
-      <keyword argument="ARGUMENT" code="{N_vam(sizet,numBinomialUncVars)}" default="no binomial uncertain variables" group="Discrete Aleatory Uncertain" id="binomial_uncertain" label="binomial uncertain variables" minOccurs="0" name="binomial_uncertain">
+      <keyword argument="count" code="{N_vam(sizet,numBinomialUncVars)}" default="no binomial uncertain variables" group="Discrete Aleatory Uncertain" id="binomial_uncertain" label="binomial uncertain variables" minOccurs="0" name="binomial_uncertain">
         <param constraint="&gt; 0" type="INTEGER" />
         <keyword code="{N_vam(rvec,binomialUncProbPerTrial)}" id="probability_per_trial" label="probability_per_trial" name="probability_per_trial">
           <alias name="prob_per_trial" />
@@ -4959,7 +4958,7 @@
           <param constraint="LEN binomial_uncertain" type="STRINGLIST" />
         </keyword>
       </keyword>
-      <keyword argument="ARGUMENT" code="{N_vam(sizet,numNegBinomialUncVars)}" default="no negative binomial uncertain variables" group="Discrete Aleatory Uncertain" id="negative_binomial_uncertain" label="negative binomial uncertain variables" minOccurs="0" name="negative_binomial_uncertain">
+      <keyword argument="count" code="{N_vam(sizet,numNegBinomialUncVars)}" default="no negative binomial uncertain variables" group="Discrete Aleatory Uncertain" id="negative_binomial_uncertain" label="negative binomial uncertain variables" minOccurs="0" name="negative_binomial_uncertain">
         <param constraint="&gt; 0" type="INTEGER" />
         <keyword code="{N_vam(rvec,negBinomialUncProbPerTrial)}" id="probability_per_trial1" label="probability_per_trial" name="probability_per_trial">
           <alias name="prob_per_trial" />
@@ -4975,7 +4974,7 @@
           <param constraint="LEN negative_binomial_uncertain" type="STRINGLIST" />
         </keyword>
       </keyword>
-      <keyword argument="ARGUMENT" code="{N_vam(sizet,numGeometricUncVars)}" default="no geometric uncertain variables" group="Discrete Aleatory Uncertain" id="geometric_uncertain" label="geometric uncertain variables" minOccurs="0" name="geometric_uncertain">
+      <keyword argument="count" code="{N_vam(sizet,numGeometricUncVars)}" default="no geometric uncertain variables" group="Discrete Aleatory Uncertain" id="geometric_uncertain" label="geometric uncertain variables" minOccurs="0" name="geometric_uncertain">
         <param constraint="&gt; 0" type="INTEGER" />
         <keyword code="{N_vam(rvec,geometricUncProbPerTrial)}" id="probability_per_trial2" label="probability_per_trial" name="probability_per_trial">
           <alias name="prob_per_trial" />
@@ -4988,7 +4987,7 @@
           <param constraint="LEN geometric_uncertain" type="STRINGLIST" />
         </keyword>
       </keyword>
-      <keyword argument="ARGUMENT" code="{N_vam(sizet,numHyperGeomUncVars)}" default="no hypergeometric uncertain variables" group="Discrete Aleatory Uncertain" id="hypergeometric_uncertain" label="hypergeometric uncertain variables" minOccurs="0" name="hypergeometric_uncertain">
+      <keyword argument="count" code="{N_vam(sizet,numHyperGeomUncVars)}" default="no hypergeometric uncertain variables" group="Discrete Aleatory Uncertain" id="hypergeometric_uncertain" label="hypergeometric uncertain variables" minOccurs="0" name="hypergeometric_uncertain">
         <param constraint="&gt; 0" type="INTEGER" />
         <keyword code="{N_vam(IntLb,hyperGeomUncTotalPop)}" id="total_population" label="hypergeometric uncertain total_population" name="total_population">
           <param constraint="LEN hypergeometric_uncertain" type="INTEGERLIST" />
@@ -5007,7 +5006,7 @@
         </keyword>
       </keyword>
       <keyword code="{0}" default="no histogram point uncertain variables" group="Discrete Aleatory Uncertain" id="histogram_point_uncertain" label="histogram point uncertain variables" minOccurs="0" name="histogram_point_uncertain">
-        <keyword argument="ARGUMENT" code="{N_vam(sizet,numHistogramPtIntUncVars)}" id="integer1" label="integer" minOccurs="0" name="integer">
+        <keyword argument="count" code="{N_vam(sizet,numHistogramPtIntUncVars)}" id="integer1" label="integer" minOccurs="0" name="integer">
           <param constraint="&gt; 0" type="INTEGER" />
           <keyword code="{N_vam(newiarray,Var_Info_nhpip)}" default="equal distribution" id="pairs_per_variable" label="pairs_per_variable" minOccurs="0" name="pairs_per_variable">
             <alias name="num_pairs" />
@@ -5026,7 +5025,7 @@
             <param constraint="LEN integer" type="STRINGLIST" />
           </keyword>
         </keyword>
-        <keyword argument="ARGUMENT" code="{N_vam(sizet,numHistogramPtStrUncVars)}" id="string1" label="string" minOccurs="0" name="string">
+        <keyword argument="count" code="{N_vam(sizet,numHistogramPtStrUncVars)}" id="string1" label="string" minOccurs="0" name="string">
           <param constraint="&gt; 0" type="INTEGER" />
           <keyword code="{N_vam(newiarray,Var_Info_nhpsp)}" default="equal distribution" id="pairs_per_variable1" label="pairs_per_variable" minOccurs="0" name="pairs_per_variable">
             <alias name="num_pairs" />
@@ -5045,7 +5044,7 @@
             <param constraint="LEN string" type="STRINGLIST" />
           </keyword>
         </keyword>
-        <keyword argument="ARGUMENT" code="{N_vam(sizet,numHistogramPtRealUncVars)}" id="real1" label="real" minOccurs="0" name="real">
+        <keyword argument="count" code="{N_vam(sizet,numHistogramPtRealUncVars)}" id="real1" label="real" minOccurs="0" name="real">
           <param constraint="&gt; 0" type="INTEGER" />
           <keyword code="{N_vam(newiarray,Var_Info_nhprp)}" default="equal distribution" id="pairs_per_variable2" label="pairs_per_variable" minOccurs="0" name="pairs_per_variable">
             <alias name="num_pairs" />
@@ -5068,7 +5067,7 @@
       <keyword code="{N_vam(newrvec,Var_Info_ucm)}" default="identity matrix (uncorrelated)" group="Aleatory Uncertain Correlations" id="uncertain_correlation_matrix" label="correlations in aleatory uncertain variables" minOccurs="0" name="uncertain_correlation_matrix">
         <param type="REALLIST" />
       </keyword>
-      <keyword argument="ARGUMENT" code="{N_vam(sizet,numContinuousIntervalUncVars)}" default="no continuous interval uncertain variables" group="Epistemic Uncertain" id="continuous_interval_uncertain" label="continuous interval uncertain variables" minOccurs="0" name="continuous_interval_uncertain">
+      <keyword argument="count" code="{N_vam(sizet,numContinuousIntervalUncVars)}" default="no continuous interval uncertain variables" group="Epistemic Uncertain" id="continuous_interval_uncertain" label="continuous interval uncertain variables" minOccurs="0" name="continuous_interval_uncertain">
         <alias name="interval_uncertain" />
         <param constraint="&gt; 0" type="INTEGER" />
         <keyword code="{N_vam(newiarray,Var_Info_nCI)}" default="Equal apportionment of intervals among variables" id="num_intervals" label="number of intervals defined for each continuous interval variable" minOccurs="0" name="num_intervals">
@@ -5094,7 +5093,7 @@
           <param constraint="LEN continuous_interval_uncertain" type="STRINGLIST" />
         </keyword>
       </keyword>
-      <keyword argument="ARGUMENT" code="{N_vam(sizet,numDiscreteIntervalUncVars)}" default="No discrete interval uncertain variables" group="Epistemic Uncertain" id="discrete_interval_uncertain" label="Discrete interval uncertain variables" minOccurs="0" name="discrete_interval_uncertain">
+      <keyword argument="count" code="{N_vam(sizet,numDiscreteIntervalUncVars)}" default="No discrete interval uncertain variables" group="Epistemic Uncertain" id="discrete_interval_uncertain" label="Discrete interval uncertain variables" minOccurs="0" name="discrete_interval_uncertain">
         <param constraint="&gt; 0" type="INTEGER" />
         <keyword code="{N_vam(newiarray,Var_Info_nDI)}" default="Equal apportionment of intervals among variables" id="num_intervals1" label="Number of intervals defined for each interval variable" minOccurs="0" name="num_intervals">
           <param constraint="LEN discrete_interval_uncertain" type="INTEGERLIST" />
@@ -5119,7 +5118,7 @@
         </keyword>
       </keyword>
       <keyword code="{0}" group="Epistemic Uncertain" id="discrete_uncertain_set" label="discrete_uncertain_set" minOccurs="0" name="discrete_uncertain_set">
-        <keyword argument="ARGUMENT" code="{N_vam(sizet,numDiscreteUncSetIntVars)}" default="no discrete uncertain set integer variables" id="integer2" label="integer" minOccurs="0" name="integer">
+        <keyword argument="count" code="{N_vam(sizet,numDiscreteUncSetIntVars)}" default="no discrete uncertain set integer variables" id="integer2" label="integer" minOccurs="0" name="integer">
           <param constraint="&gt; 0" type="INTEGER" />
           <keyword code="{N_vam(newiarray,Var_Info_ndusi)}" default="equal distribution" id="elements_per_variable3" label="elements_per_variable" minOccurs="0" name="elements_per_variable">
             <alias name="num_set_values" />
@@ -5143,7 +5142,7 @@
             <param constraint="LEN integer" type="STRINGLIST" />
           </keyword>
         </keyword>
-        <keyword argument="ARGUMENT" code="{N_vam(sizet,numDiscreteUncSetStrVars)}" default="no discrete uncertain set string variables" id="string2" label="string" minOccurs="0" name="string">
+        <keyword argument="count" code="{N_vam(sizet,numDiscreteUncSetStrVars)}" default="no discrete uncertain set string variables" id="string2" label="string" minOccurs="0" name="string">
           <param constraint="&gt; 0" type="INTEGER" />
           <keyword code="{N_vam(newiarray,Var_Info_nduss)}" default="equal distribution" id="elements_per_variable4" label="elements_per_variable" minOccurs="0" name="elements_per_variable">
             <alias name="num_set_values" />
@@ -5164,7 +5163,7 @@
             <param constraint="LEN string" type="STRINGLIST" />
           </keyword>
         </keyword>
-        <keyword argument="ARGUMENT" code="{N_vam(sizet,numDiscreteUncSetRealVars)}" default="no discrete uncertain set real variables" id="real2" label="real" minOccurs="0" name="real">
+        <keyword argument="count" code="{N_vam(sizet,numDiscreteUncSetRealVars)}" default="no discrete uncertain set real variables" id="real2" label="real" minOccurs="0" name="real">
           <param constraint="&gt; 0" type="INTEGER" />
           <keyword code="{N_vam(newiarray,Var_Info_ndusr)}" default="equal distribution" id="elements_per_variable5" label="elements_per_variable" minOccurs="0" name="elements_per_variable">
             <alias name="num_set_values" />
@@ -5189,7 +5188,7 @@
           </keyword>
         </keyword>
       </keyword>
-      <keyword argument="ARGUMENT" code="{N_vam(sizet,numContinuousStateVars)}" default="No continuous state variables" group="State Variables" id="continuous_state" label="Continuous state variables" minOccurs="0" name="continuous_state">
+      <keyword argument="count" code="{N_vam(sizet,numContinuousStateVars)}" default="No continuous state variables" group="State Variables" id="continuous_state" label="Continuous state variables" minOccurs="0" name="continuous_state">
         <param constraint="&gt; 0" type="INTEGER" />
         <keyword code="{N_vam(rvec,continuousStateVars)}" default="0.0" id="initial_state" label="Initial states" minOccurs="0" name="initial_state">
           <alias name="csv_initial_state" />
@@ -5208,7 +5207,7 @@
           <param constraint="LEN continuous_state" type="STRINGLIST" />
         </keyword>
       </keyword>
-      <keyword argument="ARGUMENT" code="{N_vam(sizet,numDiscreteStateRangeVars)}" default="No discrete state variables" group="State Variables" id="discrete_state_range" label="Discrete state range variables" minOccurs="0" name="discrete_state_range">
+      <keyword argument="count" code="{N_vam(sizet,numDiscreteStateRangeVars)}" default="No discrete state variables" group="State Variables" id="discrete_state_range" label="Discrete state range variables" minOccurs="0" name="discrete_state_range">
         <param constraint="&gt; 0" type="INTEGER" />
         <keyword code="{N_vam(ivec,discreteStateRangeVars)}" default="0" id="initial_state1" label="Initial states" minOccurs="0" name="initial_state">
           <alias name="dsv_initial_state" />
@@ -5228,7 +5227,7 @@
         </keyword>
       </keyword>
       <keyword code="{0}" group="State Variables" id="discrete_state_set" label="discrete_state_set" minOccurs="0" name="discrete_state_set">
-        <keyword argument="ARGUMENT" code="{N_vam(sizet,numDiscreteStateSetIntVars)}" default="no discrete state set integer variables" id="integer3" label="integer" minOccurs="0" name="integer">
+        <keyword argument="count" code="{N_vam(sizet,numDiscreteStateSetIntVars)}" default="no discrete state set integer variables" id="integer3" label="integer" minOccurs="0" name="integer">
           <param constraint="&gt; 0" type="INTEGER" />
           <keyword code="{N_vam(newiarray,Var_Info_ndssi)}" default="equal distribution" id="elements_per_variable6" label="elements_per_variable" minOccurs="0" name="elements_per_variable">
             <alias name="num_set_values" />
@@ -5248,7 +5247,7 @@
             <param constraint="LEN integer" type="STRINGLIST" />
           </keyword>
         </keyword>
-        <keyword argument="ARGUMENT" code="{N_vam(sizet,numDiscreteStateSetStrVars)}" default="no discrete state set string variables" id="string3" label="string" minOccurs="0" name="string">
+        <keyword argument="count" code="{N_vam(sizet,numDiscreteStateSetStrVars)}" default="no discrete state set string variables" id="string3" label="string" minOccurs="0" name="string">
           <param constraint="&gt; 0" type="INTEGER" />
           <keyword code="{N_vam(newiarray,Var_Info_ndsss)}" default="equal distribution" id="elements_per_variable7" label="elements_per_variable" minOccurs="0" name="elements_per_variable">
             <alias name="num_set_values" />
@@ -5265,7 +5264,7 @@
             <param constraint="LEN string" type="STRINGLIST" />
           </keyword>
         </keyword>
-        <keyword argument="ARGUMENT" code="{N_vam(sizet,numDiscreteStateSetRealVars)}" default="no discrete state set real variables" id="real3" label="real" minOccurs="0" name="real">
+        <keyword argument="count" code="{N_vam(sizet,numDiscreteStateSetRealVars)}" default="no discrete state set real variables" id="real3" label="real" minOccurs="0" name="real">
           <param constraint="&gt; 0" type="INTEGER" />
           <keyword code="{N_vam(newiarray,Var_Info_ndssr)}" default="equal distribution" id="elements_per_variable8" label="elements_per_variable" minOccurs="0" name="elements_per_variable">
             <alias name="num_set_values" />
@@ -5318,7 +5317,7 @@
       <keyword code="{N_ifm(str,idInterface)}" complexity="0" default="use of last interface parsed" id="id_interface" label="Interface Set Identifier" minOccurs="0" name="id_interface">
         <param taglist="interface" type="STRING" />
       </keyword>
-      <keyword argument="ARGUMENT" code="{N_ifm(strL,analysisDrivers)}" complexity="0" id="analysis_drivers" label="Analysis Drivers" minOccurs="0" name="analysis_drivers">
+      <keyword argument="drivers" code="{N_ifm(strL,analysisDrivers)}" complexity="0" id="analysis_drivers" label="Analysis Drivers" minOccurs="0" name="analysis_drivers">
         <param type="STRINGLIST" />
         <keyword code="{N_ifm(str,inputFilter)}" complexity="1" default="no input filter" id="input_filter" label="Input Filter" minOccurs="0" name="input_filter">
           <param type="STRING" />
@@ -5524,7 +5523,7 @@
         <param type="STRINGLIST" />
       </keyword>
       <oneOf anchor="response_type" label="Response Type">
-        <keyword argument="ARGUMENT" code="{N_rem(sizet,numObjectiveFunctions)}" id="objective_functions" label="Optimization" name="objective_functions">
+        <keyword argument="count" code="{N_rem(sizet,numObjectiveFunctions)}" id="objective_functions" label="Optimization" name="objective_functions">
           <alias name="num_objective_functions" />
           <param constraint="&gt;= 0" type="INTEGER" />
           <keyword code="{N_rem(strL,primaryRespFnSense)}" default="vector values = 'minimize'" id="sense" label="Optimization sense" minOccurs="0" name="sense">
@@ -5542,7 +5541,7 @@
             <alias name="multi_objective_weights" />
             <param constraint="LEN objective_functions" type="REALLIST" />
           </keyword>
-          <keyword argument="ARGUMENT" code="{N_rem(sizet,numNonlinearIneqConstraints)}" default="0" id="nonlinear_inequality_constraints" label="Number of nonlinear inequality constraints" minOccurs="0" name="nonlinear_inequality_constraints">
+          <keyword argument="count" code="{N_rem(sizet,numNonlinearIneqConstraints)}" default="0" id="nonlinear_inequality_constraints" label="Number of nonlinear inequality constraints" minOccurs="0" name="nonlinear_inequality_constraints">
             <alias name="num_nonlinear_inequality_constraints" />
             <param constraint="&gt;= 0" type="INTEGER" />
             <keyword code="{N_rem(RealDL,nonlinearIneqLowerBnds)}" default="vector values = -infinity" id="lower_bounds12" label="Nonlinear inequality constraint lower bounds" minOccurs="0" name="lower_bounds">
@@ -5562,7 +5561,7 @@
               <param constraint="LEN1 nonlinear_inequality_constraints" type="REALLIST" />
             </keyword>
           </keyword>
-          <keyword argument="ARGUMENT" code="{N_rem(sizet,numNonlinearEqConstraints)}" default="0" id="nonlinear_equality_constraints" label="Number of nonlinear equality constraints" minOccurs="0" name="nonlinear_equality_constraints">
+          <keyword argument="count" code="{N_rem(sizet,numNonlinearEqConstraints)}" default="0" id="nonlinear_equality_constraints" label="Number of nonlinear equality constraints" minOccurs="0" name="nonlinear_equality_constraints">
             <alias name="num_nonlinear_equality_constraints" />
             <param constraint="&gt;= 0" type="INTEGER" />
             <keyword code="{N_rem(RealDL,nonlinearEqTargets)}" default="vector values = 0 ." id="targets" label="Nonlinear equality constraint targets" minOccurs="0" name="targets">
@@ -5582,7 +5581,7 @@
             <alias name="num_scalar_objectives" />
             <param constraint="&gt;= 0" type="INTEGER" />
           </keyword>
-          <keyword argument="ARGUMENT" code="{N_rem(sizet,numFieldObjectiveFunctions)}" id="field_objectives" label="field_objectives" minOccurs="0" name="field_objectives">
+          <keyword argument="count" code="{N_rem(sizet,numFieldObjectiveFunctions)}" id="field_objectives" label="field_objectives" minOccurs="0" name="field_objectives">
             <alias name="num_field_objectives" />
             <param constraint="&gt;= 0" type="INTEGER" />
             <keyword code="{N_rem(ivec,fieldLengths)}" id="lengths" label="lengths" name="lengths">
@@ -5594,14 +5593,14 @@
             <keyword code="{N_rem(true,readFieldCoords)}" id="read_field_coordinates1" label="whether to read field coordinate files" minOccurs="0" name="read_field_coordinates" />
           </keyword>
         </keyword>
-        <keyword argument="ARGUMENT" code="{N_rem(sizet,numLeastSqTerms)}" id="calibration_terms" label="Calibration (Least squares)" name="calibration_terms">
+        <keyword argument="count" code="{N_rem(sizet,numLeastSqTerms)}" id="calibration_terms" label="Calibration (Least squares)" name="calibration_terms">
           <alias name="least_squares_terms" />
           <alias name="num_least_squares_terms" />
           <param constraint="&gt;= 0" type="INTEGER" />
           <keyword code="{N_rem(sizet,numScalarLeastSqTerms)}" id="scalar_calibration_terms" label="scalar_calibration_terms" minOccurs="0" name="scalar_calibration_terms">
             <param constraint="&gt;= 0" type="INTEGER" />
           </keyword>
-          <keyword argument="ARGUMENT" code="{N_rem(sizet,numFieldLeastSqTerms)}" id="field_calibration_terms" label="field_calibration_terms" minOccurs="0" name="field_calibration_terms">
+          <keyword argument="count" code="{N_rem(sizet,numFieldLeastSqTerms)}" id="field_calibration_terms" label="field_calibration_terms" minOccurs="0" name="field_calibration_terms">
             <param constraint="&gt;= 0" type="INTEGER" />
             <keyword code="{N_rem(ivec,fieldLengths)}" id="lengths1" label="lengths" name="lengths">
               <param constraint="LEN field_calibration_terms" type="INTEGERLIST" />
@@ -5643,7 +5642,7 @@
                 </keyword>
                 <keyword code="{N_rem(true,interpolateFlag)}" id="interpolate1" label="Interpolate between simulation and experiment data" minOccurs="0" name="interpolate" />
               </keyword>
-              <keyword argument="ARGUMENT" code="{N_rem(str,scalarDataFileName)}" default="none" id="calibration_data_file" label="Calibration data file name" name="calibration_data_file">
+              <keyword argument="filename" code="{N_rem(str,scalarDataFileName)}" default="none" id="calibration_data_file" label="Calibration data file name" name="calibration_data_file">
                 <alias name="least_squares_data_file" />
                 <param type="STRING" />
                 &response_scalar_data_format;
@@ -5663,7 +5662,7 @@
           <keyword code="{N_rem(RealL,simVariance)}" default="no variance" id="simulation_variance" label="Additive model error" minOccurs="0" name="simulation_variance">
             <param constraint="LEN1 calibration_terms" type="REALLIST" />
           </keyword>
-          <keyword argument="ARGUMENT" code="{N_rem(sizet,numNonlinearIneqConstraints)}" default="0" id="nonlinear_inequality_constraints1" label="Number of nonlinear inequality constraints" minOccurs="0" name="nonlinear_inequality_constraints">
+          <keyword argument="count" code="{N_rem(sizet,numNonlinearIneqConstraints)}" default="0" id="nonlinear_inequality_constraints1" label="Number of nonlinear inequality constraints" minOccurs="0" name="nonlinear_inequality_constraints">
             <alias name="num_nonlinear_inequality_constraints" />
             <param constraint="&gt;= 0" type="INTEGER" />
             <keyword code="{N_rem(RealDL,nonlinearIneqLowerBnds)}" default="vector values = -infinity" id="lower_bounds13" label="Nonlinear inequality lower bounds" minOccurs="0" name="lower_bounds">
@@ -5683,7 +5682,7 @@
               <param constraint="LEN1 nonlinear_inequality_constraints" type="REALLIST" />
             </keyword>
           </keyword>
-          <keyword argument="ARGUMENT" code="{N_rem(sizet,numNonlinearEqConstraints)}" default="0" id="nonlinear_equality_constraints1" label="Number of nonlinear equality constraints" minOccurs="0" name="nonlinear_equality_constraints">
+          <keyword argument="count" code="{N_rem(sizet,numNonlinearEqConstraints)}" default="0" id="nonlinear_equality_constraints1" label="Number of nonlinear equality constraints" minOccurs="0" name="nonlinear_equality_constraints">
             <alias name="num_nonlinear_equality_constraints" />
             <param constraint="&gt;= 0" type="INTEGER" />
             <keyword code="{N_rem(RealDL,nonlinearEqTargets)}" default="vector values = 0 ." id="targets1" label="Nonlinear equality targets" minOccurs="0" name="targets">
@@ -5700,14 +5699,14 @@
             </keyword>
           </keyword>
         </keyword>
-        <keyword argument="ARGUMENT" code="{N_rem(sizet,numResponseFunctions)}" id="response_functions" label="Generic responses" name="response_functions">
+        <keyword argument="count" code="{N_rem(sizet,numResponseFunctions)}" id="response_functions" label="Generic responses" name="response_functions">
           <alias name="num_response_functions" />
           <param constraint="&gt;= 0" type="INTEGER" />
           <keyword code="{N_rem(sizet,numScalarResponseFunctions)}" id="scalar_responses" label="scalar_responses" minOccurs="0" name="scalar_responses">
             <alias name="num_scalar_responses" />
             <param constraint="&gt;= 0" type="INTEGER" />
           </keyword>
-          <keyword argument="ARGUMENT" code="{N_rem(sizet,numFieldResponseFunctions)}" id="field_responses" label="field_responses" minOccurs="0" name="field_responses">
+          <keyword argument="count" code="{N_rem(sizet,numFieldResponseFunctions)}" id="field_responses" label="field_responses" minOccurs="0" name="field_responses">
             <alias name="num_field_responses" />
             <param constraint="&gt;= 0" type="INTEGER" />
             <keyword code="{N_rem(ivec,fieldLengths)}" id="lengths2" label="lengths" name="lengths">
