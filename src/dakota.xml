@@ -2148,7 +2148,7 @@
           </keyword>
           <keyword code="{N_mdm(true,surrBasedLocalLayerBypass)}" default="no bypass" id="truth_surrogate_bypass" label="Flag for bypassing lower level surrogates in truth verifications" minOccurs="0" name="truth_surrogate_bypass" />
           <keyword code="{0}" default="original_primary original_constraints" id="approx_subproblem" label="Approximate subproblem formulation" minOccurs="0" name="approx_subproblem">
-            <oneOf "objective_formulation" label="Objective Formulation">
+            <oneOf anchor="objective_formulation" label="Objective Formulation">
               <keyword code="{N_mdm(type,surrBasedLocalSubProbObj_ORIGINAL_PRIMARY)}" id="original_primary" label="original_primary" name="original_primary" />
               <keyword code="{N_mdm(type,surrBasedLocalSubProbObj_SINGLE_OBJECTIVE)}" id="single_objective" label="single_objective" name="single_objective" />
               <keyword code="{N_mdm(type,surrBasedLocalSubProbObj_AUGMENTED_LAGRANGIAN_OBJECTIVE)}" id="augmented_lagrangian_objective" label="augmented_lagrangian_objective" name="augmented_lagrangian_objective" />
@@ -3407,9 +3407,9 @@
                     <keyword code="{N_mdm(RealDL,dataDistMeans)}" id="means" label="User-provided proposal means of gaussian dist on data" name="means">
                       <param type="REALLIST" />
                     </keyword>
-                    <keyword code="{N_mdm(RealDL,dataDistCovariance)}" id="covariance" label="User-provided proposal covariance of gaussian dist on data" name="covariance", argument="values">
+                    <keyword code="{N_mdm(RealDL,dataDistCovariance)}" id="covariance" label="User-provided proposal covariance of gaussian dist on data" name="covariance" argument="values">
                       <param type="REALLIST" />
-                      <oneOf anchor="type", label="Values For">
+                      <oneOf anchor="type" label="Values For">
                         <keyword code="{N_mdm(lit,dataDistCovInputType_diagonal)}" id="diagonal" label="Diagonal data distribution covariance input" name="diagonal" />
                         <keyword code="{N_mdm(lit,dataDistCovInputType_matrix)}" id="matrix" label="Matrix data distribution covariance input" name="matrix" />
                       </oneOf>
