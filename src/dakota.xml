@@ -1904,7 +1904,7 @@
         <keyword code="{N_stm(str,errorFile)}" complexity="0" default="errors to console, not file" id="error_file" label="Error File" minOccurs="0" name="error_file">
           <param type="OUTPUT_FILE" />
         </keyword>
-        <keyword argument="ARGUMENT" code="{N_stm(str,readRestart)}" complexity="0" default="no restart read" id="read_restart" label="Read Restart File" minOccurs="0" name="read_restart">
+        <keyword argument="filename" code="{N_stm(str,readRestart)}" complexity="0" default="no restart read" id="read_restart" label="Read Restart File" minOccurs="0" name="read_restart">
           <param type="STRING" />
           <keyword code="{N_stm(int,stopRestart)}" default="read all records" id="stop_restart" label="Restart Stop Value" minOccurs="0" name="stop_restart">
             <param constraint="&gt;= 0" type="INTEGER" />
@@ -2003,7 +2003,7 @@
               <alias name="uncoupled" />
               &method_three_optional_keywords;
               <oneOf anchor="sub_method" label="Sub-method Selection">
-                <keyword argument="ARGUMENT" code="{N_mdm(strL,hybridMethodNames)}" id="method_name_list" label="List of method names" name="method_name_list">
+		  <keyword argument="method_name_list" code="{N_mdm(strL,hybridMethodNames)}" id="method_name_list" label="List of method names" name="method_name_list">
                   <param type="STRINGLIST" />
                   <keyword code="{N_mdm(strL,hybridModelPointers)}" id="model_pointer_list" label="List of model pointers" minOccurs="0" name="model_pointer_list">
                     <param type="STRINGLIST" />
@@ -2019,7 +2019,7 @@
               <alias name="coupled" />
               &method_three_optional_keywords;
               <oneOf anchor="sub_method" label="Global Sub-method Selection">
-                <keyword argument="ARGUMENT" code="{N_mdm(str,hybridGlobalMethodName)}" id="global_method_name" label="Name of the global method" name="global_method_name">
+                <keyword argument="name" code="{N_mdm(str,hybridGlobalMethodName)}" id="global_method_name" label="Name of the global method" name="global_method_name">
                   <param type="STRING" />
                   <keyword code="{N_mdm(str,hybridGlobalModelPointer)}" id="global_model_pointer" label="Pointer to the global model specification" minOccurs="0" name="global_model_pointer">
                     <param in_taglist="model" type="STRING" />
@@ -2030,7 +2030,7 @@
                 </keyword>
               </oneOf>
               <oneOf anchor="sub_method" label="Local Sub-method Selection">
-                <keyword argument="ARGUMENT" code="{N_mdm(str,hybridLocalMethodName)}" id="local_method_name" label="Name of the local method" name="local_method_name">
+                <keyword argument="name" code="{N_mdm(str,hybridLocalMethodName)}" id="local_method_name" label="Name of the local method" name="local_method_name">
                   <param type="STRING" />
                   <keyword code="{N_mdm(str,hybridLocalModelPointer)}" id="local_model_pointer" label="Pointer to the local model specification" minOccurs="0" name="local_model_pointer">
                     <param in_taglist="model" type="STRING" />
@@ -2048,7 +2048,7 @@
             <keyword code="{N_mdm(utype,subMethod_SUBMETHOD_COLLABORATIVE)}" id="collaborative" label="Collaborative hybrid" name="collaborative">
               &method_three_optional_keywords;
               <oneOf anchor="sub_method" label="Sub-method Selection">
-                <keyword argument="ARGUMENT" code="{N_mdm(strL,hybridMethodNames)}" id="method_name_list1" label="List of method names" name="method_name_list">
+                <keyword argument="method_name_list" code="{N_mdm(strL,hybridMethodNames)}" id="method_name_list1" label="List of method names" name="method_name_list">
                   <param type="STRINGLIST" />
                   <keyword code="{N_mdm(strL,hybridModelPointers)}" id="model_pointer_list1" label="List of model pointers" minOccurs="0" name="model_pointer_list">
                     <param type="STRINGLIST" />
@@ -2065,7 +2065,7 @@
         <keyword code="{N_mdm(utype,methodName_MULTI_START)}" group="Optimization: Other" id="multi_start" label="Multi-start meta-iterator" name="multi_start">
           &method_three_optional_keywords;
           <oneOf anchor="sub_method" label="Sub-method Selection">
-            <keyword argument="ARGUMENT" code="{N_mdm(str,subMethodName)}" id="method_name" label="Identification of a sub-method by name (no separate specification block)" name="method_name">
+            <keyword argument="method_name" code="{N_mdm(str,subMethodName)}" id="method_name" label="Identification of a sub-method by name (no separate specification block)" name="method_name">
               <param type="STRING" />
               <keyword code="{N_mdm(str,subModelPointer)}" default="method use of last model parsed (or use of default model if none parsed)" id="model_pointer" label="Model pointer" minOccurs="0" name="model_pointer">
                 <param in_taglist="model" type="STRING" />
@@ -2075,7 +2075,7 @@
               <param in_taglist="method" type="STRING" />
             </keyword>
           </oneOf>
-          <keyword argument="ARGUMENT" code="{N_mdm(int,concurrentRandomJobs)}" id="random_starts" label="Number of random starting points" minOccurs="0" name="random_starts">
+          <keyword argument="count" code="{N_mdm(int,concurrentRandomJobs)}" id="random_starts" label="Number of random starting points" minOccurs="0" name="random_starts">
             <param type="INTEGER" />
             <keyword code="{N_mdm(int,randomSeed)}" default="system-generated (non-repeatable)" id="seed" label="Seed for random starting points" minOccurs="0" name="seed">
               <param type="INTEGER" />
@@ -2089,7 +2089,7 @@
         <keyword code="{N_mdm(utype,methodName_PARETO_SET)}" group="Optimization: Other" id="pareto_set" label="Pareto set minimization" name="pareto_set">
           &method_three_optional_keywords;
           <oneOf anchor="sub_method" label="Sub-method Selection">
-            <keyword argument="ARGUMENT" code="{N_mdm(str,subMethodName)}" id="method_name1" label="Identification of sub-iterator by name" name="method_name">
+            <keyword argument="method_name" code="{N_mdm(str,subMethodName)}" id="method_name1" label="Identification of sub-iterator by name" name="method_name">
               <alias name="opt_method_name" />
               <param type="STRING" />
               <keyword code="{N_mdm(str,subModelPointer)}" default="method use of last model parsed (or use of default model if none parsed)" id="model_pointer1" label="Identification of model by pointer" minOccurs="0" name="model_pointer">
@@ -2102,7 +2102,7 @@
               <param in_taglist="method" type="STRING" />
             </keyword>
           </oneOf>
-          <keyword argument="ARGUMENT" code="{N_mdm(int,concurrentRandomJobs)}" id="random_weight_sets" label="Number of random weighting sets" minOccurs="0" name="random_weight_sets">
+          <keyword argument="count" code="{N_mdm(int,concurrentRandomJobs)}" id="random_weight_sets" label="Number of random weighting sets" minOccurs="0" name="random_weight_sets">
             <param type="INTEGER" />
             <keyword code="{N_mdm(int,randomSeed)}" default="system-generated (non-repeatable)" id="seed1" label="Seed for random weighting sets" minOccurs="0" name="seed">
               <param type="INTEGER" />
@@ -2430,7 +2430,7 @@
               <keyword code="{N_mdm(lit,replacementType_elitist)}" id="elitist" label="elitist" name="elitist" />
               <keyword code="{N_mdm(lit,replacementType_roulette_wheel)}" id="roulette_wheel" label="roulette_wheel" name="roulette_wheel" />
               <keyword code="{N_mdm(lit,replacementType_unique_roulette_wheel)}" id="unique_roulette_wheel" label="unique_roulette_wheel" name="unique_roulette_wheel" />
-              <keyword argument="ARGUMENT" code="{N_mdm(litp,TYPE_DATA_replacementType_below_limit)}" default="6" id="below_limit" label="Below limit selection" name="below_limit">
+              <keyword argument="threshhold" code="{N_mdm(litp,TYPE_DATA_replacementType_below_limit)}" default="6" id="below_limit" label="Below limit selection" name="below_limit">
                 <param type="REAL" />
                 <keyword code="{N_mdm(Real01,shrinkagePercent)}" default="0.9" id="shrinkage_fraction" label="shrinkage_fraction" minOccurs="0" name="shrinkage_fraction">
                   <alias name="shrinkage_percentage" />
@@ -2447,7 +2447,7 @@
               <keyword code="{N_mdm(RealLlit,TYPE_DATA_nichingType_distance)}" id="distance" label="distance" name="distance">
                 <param type="REALLIST" />
               </keyword>
-              <keyword argument="ARGUMENT" code="{N_mdm(RealLlit,TYPE_DATA_nichingType_max_designs)}" id="max_designs" label="max_designs" name="max_designs">
+              <keyword argument="min_distances" code="{N_mdm(RealLlit,TYPE_DATA_nichingType_max_designs)}" id="max_designs" label="max_designs" name="max_designs">
                 <param type="REALLIST" />
                 <keyword code="{N_mdm(sizet,numDesigns)}" default="100" id="num_designs" label="Number designs to keep for max_designs nicher" minOccurs="0" name="num_designs">
                   <param constraint="&gt;= 2" type="INTEGER" />
@@ -2783,7 +2783,7 @@
           <keyword code="{N_mdm(int,randomSeed)}" default="system-generated (non-repeatable)" id="seed6" label="Random seed" minOccurs="0" name="seed">
             <param constraint="&gt; 0" type="INTEGER" />
           </keyword>
-          <keyword argument="ARGUMENT" code="{N_mdm(int,batchSize)}" id="batch_size" label="Number of concurrent refinement candidates to compute for parallel execution" minOccurs="0" name="batch_size">
+          <keyword argument="count" code="{N_mdm(int,batchSize)}" id="batch_size" label="Number of concurrent refinement candidates to compute for parallel execution" minOccurs="0" name="batch_size">
             <param constraint="&gt;= 1" type="INTEGER" />
             <keyword code="{N_mdm(int,batchSizeExplore)}" id="exploration" label="Portion of specified batch size that performs exploration rather than selected acquisition" minOccurs="0" name="exploration">
               <param constraint="&gt;= 0" type="INTEGER" />
@@ -2799,7 +2799,7 @@
           </keyword>
           &method_gp_alternatives_with_export;
           <keyword code="{N_mdm(true,methodUseDerivsFlag)}" default="use function values only" id="use_derivatives" label="Derivative usage" minOccurs="0" name="use_derivatives" />
-          <keyword argument="ARGUMENT" code="{N_mdm(str,importBuildPtsFile)}" default="no point import from a file" id="import_build_points_file" label="File name for points to be imported as the basis for the initial GP" minOccurs="0" name="import_build_points_file">
+          <keyword argument="filename" code="{N_mdm(str,importBuildPtsFile)}" default="no point import from a file" id="import_build_points_file" label="File name for points to be imported as the basis for the initial GP" minOccurs="0" name="import_build_points_file">
             <alias name="import_points_file" />
             <param type="INPUT_FILE" />
             &method_import_build_format;
@@ -3407,7 +3407,7 @@
                     <keyword code="{N_mdm(RealDL,dataDistMeans)}" id="means" label="User-provided proposal means of gaussian dist on data" name="means">
                       <param type="REALLIST" />
                     </keyword>
-                    <keyword code="{N_mdm(RealDL,dataDistCovariance)}" id="covariance" label="User-provided proposal covariance of gaussian dist on data" name="covariance", argument="ARGUMENT">
+                    <keyword code="{N_mdm(RealDL,dataDistCovariance)}" id="covariance" label="User-provided proposal covariance of gaussian dist on data" name="covariance", argument="values">
                       <param type="REALLIST" />
                       <oneOf anchor="type", label="Values For">
                         <keyword code="{N_mdm(lit,dataDistCovInputType_diagonal)}" id="diagonal" label="Diagonal data distribution covariance input" name="diagonal" />
@@ -3956,7 +3956,7 @@
             <keyword code="{N_mdm(RealDL,listOfPoints)}" id="list_of_points" label="List of points to evaluate" name="list_of_points">
               <param type="REALLIST" />
             </keyword>
-            <keyword argument="ARGUMENT" code="{N_mdm(str,pstudyFilename)}" default="no point import from a file" id="import_points_file10" label="import_points_file" name="import_points_file">
+            <keyword argument="filename" code="{N_mdm(str,pstudyFilename)}" default="no point import from a file" id="import_points_file10" label="import_points_file" name="import_points_file">
               <param type="INPUT_FILE" />
               <optional>
                 <oneOf anchor="format" label="Tabular Format">
@@ -4719,7 +4719,8 @@
       </keyword>
       <keyword argument="ARGUMENT" code="{N_vam(sizet,numLognormalUncVars)}" default="no lognormal uncertain variables" group="Continuous Aleatory Uncertain" id="lognormal_uncertain" label="lognormal uncertain variables" minOccurs="0" name="lognormal_uncertain">
         <param constraint="&gt; 0" type="INTEGER" />
-        <oneOf anchor="ANCHOR" label="Lognormal Characterization">
+	<!--
+	<oneOf anchor="ANCHOR" label="Lognormal Characterization">
           <keyword argument="ARGUMENT" code="{N_vam(rvec,lognormalUncLambdas)}" id="lambdas" label="lognormal uncertain lambdas" name="lambdas">
             <alias name="lnuv_lambdas" />
             <param constraint="LEN lognormal_uncertain" type="REALLIST" />
@@ -4742,7 +4743,17 @@
               </keyword>
             </oneOf>
           </keyword>
-        </oneOf>
+	</oneOf>
+        -->
+        <keyword code="{N_vam(RealLb,lognormalUncMeans)}" id="means1" label="lognormal uncertain means" name="means">
+          <alias name="lnuv_means" />
+          <param constraint="LEN lognormal_uncertain" type="REALLIST" />
+        </keyword>
+        <keyword code="{N_vam(RealLb,lognormalUncStdDevs)}" id="std_deviations1" label="lognormal uncertain standard deviations" name="std_deviations">
+           <alias name="lnuv_std_deviations" />
+           <param constraint="LEN lognormal_uncertain" type="REALLIST" />
+        </keyword>
+
         <keyword code="{N_vam(RealLb,lognormalUncLowerBnds)}" default="0" id="lower_bounds3" label="Distribution lower bounds" minOccurs="0" name="lower_bounds">
           <alias name="lnuv_lower_bounds" />
           <param constraint="LEN lognormal_uncertain" type="REALLIST" />
@@ -4939,7 +4950,7 @@
           <alias name="huv_bin_abscissas" />
           <param type="REALLIST" />
         </keyword>
-        <oneOf anchor="ANCHOR" label="Density Values">
+        <oneOf anchor="density" label="Density Values">
           <keyword code="{N_vam(newrvec,Var_Info_hbo)}" id="ordinates" label="sets of ordinates for bin-based histogram variables" name="ordinates">
             <alias name="huv_bin_ordinates" />
             <param type="REALLIST" />
@@ -5352,7 +5363,7 @@
         <keyword code="{N_ifm(str,outputFilter)}" complexity="1" default="no output filter" id="output_filter" label="Output Filter" minOccurs="0" name="output_filter">
           <param type="STRING" />
         </keyword>
-        <oneOf anchor="ANCHOR" label="Interface Type">
+        <oneOf anchor="interface_type" label="Interface Type">
           <keyword code="{N_ifm(type,interfaceType_SYSTEM_INTERFACE)}" complexity="0" id="system9" label="System" name="system">
             <keyword code="{N_ifm(str,parametersFile)}" complexity="0" default="Unix temp files" id="parameters_file" label="Parameters File" minOccurs="0" name="parameters_file">
               <param type="STRING" />
@@ -5490,7 +5501,7 @@
         <keyword code="{N_ifm(false,restartFileFlag)}" complexity="1" id="restart_file" label="Restart File" minOccurs="0" name="restart_file" />
       </keyword>
       <optional>
-        <oneOf anchor="ANCHOR">
+        <oneOf anchor="concurrency" label="Concurrency Strategy">
           <keyword code="{N_ifm(true,batchEvalFlag)}" complexity="0" default="sequential interface usage" id="batch" label="Batch Interface Usage" name="batch">
             <keyword code="{N_ifm(int,asynchLocalEvalConcurrency)}" complexity="0" default="local: unlimited batch size, hybrid: zero batch size" id="size" label="Batch size" minOccurs="0" name="size">
               <param constraint="&gt; 0" type="INTEGER" />
@@ -5549,7 +5560,7 @@
         <alias name="response_descriptors" />
         <param type="STRINGLIST" />
       </keyword>
-      <oneOf anchor="ANCHOR" label="Response Type">
+      <oneOf anchor="response_type" label="Response Type">
         <keyword argument="ARGUMENT" code="{N_rem(sizet,numObjectiveFunctions)}" id="objective_functions" label="Optimization" name="objective_functions">
           <alias name="num_objective_functions" />
           <param constraint="&gt;= 0" type="INTEGER" />
@@ -5648,7 +5659,7 @@
             <param constraint="LEN calibration_terms" type="REALLIST" />
           </keyword>
           <optional>
-            <oneOf anchor="ANCHOR" label="Calibration Data">
+            <oneOf anchor="data_specification" label="Calibration Data">
               <keyword code="{N_rem(true,calibrationDataFlag)}" id="calibration_data1" label="calibration data" name="calibration_data">
                 <keyword code="{N_rem(str,dataPathPrefix)}" id="data_directory" label="Path to prepend to any data file names" minOccurs="0" name="data_directory">
                   <param type="STRING" />
