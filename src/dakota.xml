@@ -1876,7 +1876,7 @@
      <keyword  id='hierarchical_tagging' name='hierarchical_tagging' code='{N_mom(true,hierarchicalTags)}' label='Hierarchical Evaluation Tags'  minOccurs='0' default='no hierarchical tagging' complexity='1' />
     ">
 ]>
-<document xmlns:ns0="http://www.sandia.gov/dakota/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sandia.gov/dakota/1.0 dakota.xsd">
+<document xmlns="http://www.sandia.gov/dakota/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sandia.gov/dakota/1.0 dakota.xsd">
   <input>
     <keyword code="{NIDRProblemDescDB::env_start}" default="no environment" id="environment" label="Environment" maxOccurs="1" minOccurs="0" name="environment">
       <group label="Input/Output">
@@ -1947,7 +1947,7 @@
           <keyword code="{N_stm(str,preRunInput)}" default="no pre-run specific input read" id="input" label="Input File" minOccurs="0" name="input">
             <param type="STRING" />
           </keyword>
-          <keyword code="{N_stm(str,preRunOutput)}" default="no pre-run specific output written" id="output" label="Output File" minOccurs="0" name="output">
+          <keyword code="{N_stm(str,preRunOutput)}" default="no pre-run specific output written" id="output" label="Output File" minOccurs="0" name="output" argument="filename">
             <param type="STRING" />
             <optional>
               <oneOf anchor="format" label="Tabular Format">
@@ -1971,7 +1971,7 @@
           </keyword>
         </keyword>
         <keyword code="{N_stm(true,postRunFlag)}" complexity="0" default="pre-run, run, post-run all executed" id="post_run" label="Enable Post-Run Mode" minOccurs="0" name="post_run">
-          <keyword code="{N_stm(str,postRunInput)}" default="no post-run specific input read" id="input2" label="Input File" minOccurs="0" name="input">
+          <keyword code="{N_stm(str,postRunInput)}" default="no post-run specific input read" id="input2" label="Input File" minOccurs="0" name="input" argument="filename">
             <param type="STRING" />
             <optional>
               <oneOf anchor="format" label="Tabular Format">
@@ -2003,7 +2003,7 @@
               <alias name="uncoupled" />
               &method_three_optional_keywords;
               <oneOf anchor="sub_method" label="Sub-method Selection">
-		  <keyword argument="method_name_list" code="{N_mdm(strL,hybridMethodNames)}" id="method_name_list" label="List of method names" name="method_name_list">
+                <keyword argument="method_name_list" code="{N_mdm(strL,hybridMethodNames)}" id="method_name_list" label="List of method names" name="method_name_list">
                   <param type="STRINGLIST" />
                   <keyword code="{N_mdm(strL,hybridModelPointers)}" id="model_pointer_list" label="List of model pointers" minOccurs="0" name="model_pointer_list">
                     <param type="STRINGLIST" />
@@ -3092,7 +3092,7 @@
         </keyword>
         <keyword code="{N_mdm(utype,methodName_APPROX_CONTROL_VARIATE)}" group="Uncertainty Quantification" id="approximate_control_variate" label="approximate_control_variate" name="approximate_control_variate">
           <alias name="acv_sampling" />
-	  &method_three_optional_keywords;
+          &method_three_optional_keywords;
           <oneOf anchor="solution_approach" label="Solution Approach">
             <keyword code="{N_mdm(utype,subMethod_SUBMETHOD_ACV_IS)}" id="acv_independent_sampling" label="acv_independent_sampling" name="acv_independent_sampling">
               <alias name="acv_is" />
@@ -3605,7 +3605,7 @@
             <keyword code="{N_mdm(int,batchSize)}" id="batch_size" label="Number of optimal experimental designs selected per iteration" minOccurs="0" name="batch_size">
               <param constraint="&gt;= 1" type="INTEGER" />
             </keyword>
-            <keyword code="{N_mdm(str,importCandPtsFile)}" default="no point import from a file" id="import_candidate_points_file" label="Filename for Candidate Point Import" minOccurs="0" name="import_candidate_points_file">
+            <keyword code="{N_mdm(str,importCandPtsFile)}" default="no point import from a file" id="import_candidate_points_file" label="Filename for Candidate Point Import" minOccurs="0" name="import_candidate_points_file" argument="filename">
               <param type="INPUT_FILE" />
               <optional>
                 <oneOf anchor="format" label="Tabular Format">
@@ -3679,7 +3679,7 @@
             <keyword code="{N_mdm(RealDL,predictionConfigList)}" id="prediction_configs" label="List of Prediction Configurations" minOccurs="0" name="prediction_configs">
               <param type="REALLIST" />
             </keyword>
-            <keyword code="{N_mdm(str,importPredConfigs)}" default="no point import from a file" id="import_prediction_configs" label="Filename for Prediction Configs" minOccurs="0" name="import_prediction_configs">
+            <keyword code="{N_mdm(str,importPredConfigs)}" default="no point import from a file" id="import_prediction_configs" label="Filename for Prediction Configs" minOccurs="0" name="import_prediction_configs" argument="filename">
               <param type="INPUT_FILE" />
               <optional>
                 <oneOf anchor="format" label="Tabular Format">
@@ -3693,7 +3693,7 @@
                 </oneOf>
               </optional>
             </keyword>
-            <keyword code="{N_mdm(str,exportDiscrepFile)}" default="discrepancy export to default filename" id="export_discrepancy_file" label="File export of model discrepancy values" minOccurs="0" name="export_discrepancy_file">
+            <keyword code="{N_mdm(str,exportDiscrepFile)}" default="discrepancy export to default filename" id="export_discrepancy_file" label="File export of model discrepancy values" minOccurs="0" name="export_discrepancy_file" argument="filename">
               <param type="OUTPUT_FILE" />
               <optional>
                 <oneOf anchor="format" label="Tabular Format">
@@ -3707,7 +3707,7 @@
                 </oneOf>
               </optional>
             </keyword>
-            <keyword code="{N_mdm(str,exportCorrModelFile)}" default="corrected model export to default filename" id="export_corrected_model_file" label="File export of corrected model values" minOccurs="0" name="export_corrected_model_file">
+            <keyword code="{N_mdm(str,exportCorrModelFile)}" default="corrected model export to default filename" id="export_corrected_model_file" label="File export of corrected model values" minOccurs="0" name="export_corrected_model_file" argument="filename">
               <param type="OUTPUT_FILE" />
               <optional>
                 <oneOf anchor="format" label="Tabular Format">
@@ -3721,7 +3721,7 @@
                 </oneOf>
               </optional>
             </keyword>
-            <keyword code="{N_mdm(str,exportCorrVarFile)}" default="corrected model variance export to default filename" id="export_corrected_variance_file" label="File export of variance values of corrected model" minOccurs="0" name="export_corrected_variance_file">
+            <keyword code="{N_mdm(str,exportCorrVarFile)}" default="corrected model variance export to default filename" id="export_corrected_variance_file" label="File export of variance values of corrected model" minOccurs="0" name="export_corrected_variance_file" argument="filename">
               <param type="OUTPUT_FILE" />
               <optional>
                 <oneOf anchor="format" label="Tabular Format">
@@ -4032,11 +4032,11 @@
         </keyword>
         <keyword code="{N_mom(lit,modelType_surrogate)}" complexity="0" id="surrogate" label="Surrogate" name="surrogate">
           &model_four_optional_keywords;
-          <oneOf label="Surrogate Category">
+          <keyword code="{N_mom(id_to_index_set,surrogateFnIndices)}" default="All response functions are approximated" id="id_surrogates" label="Surrogate Response IDs" minOccurs="0" name="id_surrogates">
+            <param type="INTEGERLIST" />
+          </keyword>
+          <oneOf label="Surrogate Category" anchor="category">
             <keyword code="{0}" id="global" label="Global Approximation" name="global">
-              <keyword code="{N_mom(id_to_index_set,surrogateFnIndices)}" default="All response functions are approximated" id="id_surrogates" label="Surrogate Response IDs" minOccurs="0" name="id_surrogates">
-                <param type="INTEGERLIST" />
-              </keyword>
               <oneOf anchor="type" label="Global Surrogate Type">
                 <keyword code="{N_mom(lit,surrogateType_global_exp_gauss_proc)}" id="experimental_gaussian_process" label="Experimental Gaussian Process" minOccurs="1" name="experimental_gaussian_process">
                   <keyword code="{0}" default="reduced_quadratic" id="trend1" label="Specify Trend Function" minOccurs="0" name="trend">
@@ -4290,7 +4290,7 @@
                 </optional>
                 <keyword code="{N_mom(true,importBuildActive)}" id="active_only20" label="Active Variables Only" minOccurs="0" name="active_only" />
               </keyword>
-              <keyword code="{N_mom(str,exportApproxPtsFile)}" default="no point export to a file" id="export_approx_points_file8" label="File Export of Global Approximation-Based Sample Results" minOccurs="0" name="export_approx_points_file">
+              <keyword code="{N_mom(str,exportApproxPtsFile)}" default="no point export to a file" id="export_approx_points_file8" label="File Export of Global Approximation-Based Sample Results" minOccurs="0" name="export_approx_points_file" argument="ARGUMENT">
                 <alias name="export_points_file" />
                 <param type="OUTPUT_FILE" />
                 <optional>
@@ -4345,10 +4345,7 @@
                 <keyword code="{N_mom(true,importChallengeActive)}" id="active_only22" label="Active Variables Only" minOccurs="0" name="active_only" />
               </keyword>
             </keyword>
-	    <keyword code="{0}" complexity="1" id="multipoint" label="Multipoint Approximation" name="multipoint">
-              <keyword code="{N_mom(id_to_index_set,surrogateFnIndices)}" default="All response functions are approximated" id="id_surrogates" label="Surrogate Response IDs" minOccurs="0" name="id_surrogates">
-                <param type="INTEGERLIST" />
-              </keyword>
+            <keyword code="{0}" complexity="1" id="multipoint" label="Multipoint Approximation" name="multipoint">
               <oneOf anchor="type" label="Multipoint Surrogate">
                 <keyword code="{N_mom(lit,surrogateType_multipoint_tana)}" id="tana" label="Two-point adaptive nonlinear approximation " name="tana" />
                 <keyword code="{N_mom(lit,surrogateType_multipoint_qmea)}" id="qmea" label="Quadratic multipoint exponential approximation " name="qmea" />
@@ -4358,21 +4355,14 @@
                 <param in_taglist="model" type="STRING" />
               </keyword>
             </keyword>
-	    <keyword code="{N_mom(lit,surrogateType_local_taylor)}" complexity="1" id="local" label="Local Approximation" name="local">
-              <keyword code="{N_mom(id_to_index_set,surrogateFnIndices)}" default="All response functions are approximated" id="id_surrogates" label="Surrogate Response IDs" minOccurs="0" name="id_surrogates">
-                <param type="INTEGERLIST" />
-              </keyword>
-
+            <keyword code="{N_mom(lit,surrogateType_local_taylor)}" complexity="1" id="local" label="Local Approximation" name="local">
               <keyword code="{0}" id="taylor_series" label="Taylor Series Local Approximation " name="taylor_series" />
               <keyword code="{N_mom(str,truthModelPointer)}" id="truth_model_pointer" label="Truth Model Pointer" name="truth_model_pointer">
                 <alias name="actual_model_pointer" />
                 <param in_taglist="model" type="STRING" />
               </keyword>
             </keyword>
-	    <keyword code="{N_mom(lit,surrogateType_ensemble)}" id="ensemble" label="Ensemble Model Approximation" name="ensemble">
-              <keyword code="{N_mom(id_to_index_set,surrogateFnIndices)}" default="All response functions are approximated" id="id_surrogates" label="Surrogate Response IDs" minOccurs="0" name="id_surrogates">
-                <param type="INTEGERLIST" />
-              </keyword>
+            <keyword code="{N_mom(lit,surrogateType_ensemble)}" id="ensemble" label="Ensemble Model Approximation" name="ensemble">
               <oneOf label="Ensemble model specification">
                 <keyword code="{N_mom(strL,ensembleModelPointers)}" id="ordered_model_fidelities" label="Model Pointers (Ordered by Fidelity)" name="ordered_model_fidelities">
                   <alias name="model_fidelity_sequence" />
@@ -4719,41 +4709,14 @@
       </keyword>
       <keyword argument="ARGUMENT" code="{N_vam(sizet,numLognormalUncVars)}" default="no lognormal uncertain variables" group="Continuous Aleatory Uncertain" id="lognormal_uncertain" label="lognormal uncertain variables" minOccurs="0" name="lognormal_uncertain">
         <param constraint="&gt; 0" type="INTEGER" />
-	<!--
-	<oneOf anchor="ANCHOR" label="Lognormal Characterization">
-          <keyword argument="ARGUMENT" code="{N_vam(rvec,lognormalUncLambdas)}" id="lambdas" label="lognormal uncertain lambdas" name="lambdas">
-            <alias name="lnuv_lambdas" />
-            <param constraint="LEN lognormal_uncertain" type="REALLIST" />
-            <keyword code="{N_vam(RealLb,lognormalUncZetas)}" id="zetas" label="lognormal uncertain zetas" name="zetas">
-              <alias name="lnuv_zetas" />
-              <param constraint="LEN lognormal_uncertain" type="REALLIST" />
-            </keyword>
-          </keyword>
-          <keyword code="{N_vam(RealLb,lognormalUncMeans)}" id="means1" label="lognormal uncertain means" name="means">
-            <alias name="lnuv_means" />
-            <param constraint="LEN lognormal_uncertain" type="REALLIST" />
-            <oneOf anchor="ANCHOR" label="Spread">
-              <keyword code="{N_vam(RealLb,lognormalUncStdDevs)}" id="std_deviations1" label="lognormal uncertain standard deviations" name="std_deviations">
-                <alias name="lnuv_std_deviations" />
-                <param constraint="LEN lognormal_uncertain" type="REALLIST" />
-              </keyword>
-              <keyword code="{N_vam(RealLb,lognormalUncErrFacts)}" id="error_factors" label="lognormal uncertain error factors" name="error_factors">
-                <alias name="lnuv_error_factors" />
-                <param constraint="LEN lognormal_uncertain" type="REALLIST" />
-              </keyword>
-            </oneOf>
-          </keyword>
-	</oneOf>
-        -->
         <keyword code="{N_vam(RealLb,lognormalUncMeans)}" id="means1" label="lognormal uncertain means" name="means">
           <alias name="lnuv_means" />
           <param constraint="LEN lognormal_uncertain" type="REALLIST" />
         </keyword>
         <keyword code="{N_vam(RealLb,lognormalUncStdDevs)}" id="std_deviations1" label="lognormal uncertain standard deviations" name="std_deviations">
-           <alias name="lnuv_std_deviations" />
-           <param constraint="LEN lognormal_uncertain" type="REALLIST" />
+          <alias name="lnuv_std_deviations" />
+          <param constraint="LEN lognormal_uncertain" type="REALLIST" />
         </keyword>
-
         <keyword code="{N_vam(RealLb,lognormalUncLowerBnds)}" default="0" id="lower_bounds3" label="Distribution lower bounds" minOccurs="0" name="lower_bounds">
           <alias name="lnuv_lower_bounds" />
           <param constraint="LEN lognormal_uncertain" type="REALLIST" />
