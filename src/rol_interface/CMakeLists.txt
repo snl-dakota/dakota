@@ -15,9 +15,9 @@ target_include_directories(
   PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   ${Teuchos_INCLUDE_DIRS}
-  ${ROL_INCLUDE_DIRS}
   PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}/src
+  ${ROL_INCLUDE_DIRS}
 )
 
 target_link_libraries(
