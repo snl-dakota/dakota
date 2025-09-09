@@ -155,7 +155,7 @@ if (HAVE_ROL AND NOT HAVE_DAKOTA_ROL_INTERFACE )
   add_subdirectory(dakota_rol_adapters)
 
   add_subdirectory(dakota_rol_integration)
-endif (HAVE_ROL)
+endif (HAVE_ROL AND NOT HAVE_DAKOTA_ROL_INTERFACE )
 
 
 if (DAKOTA_MODULE_SURROGATES)
