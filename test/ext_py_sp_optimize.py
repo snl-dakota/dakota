@@ -50,11 +50,12 @@ class Standalone:
 
 class ScipyOpt:
 
-    def __init__(self, params=None):
+    def __init__(self, executor, params_file=None):
 
         print("python ScipyOpt class constructer...")
-        if params is not None:
-            self.params = params
+        self.executor = executor
+        if params_file is not None:
+            self.params_file = params_file
 
     def obj_fn(self, x):
         f = self.executor.function_value(x)
@@ -75,26 +76,22 @@ class ScipyOpt:
         print(h)
         return hess
 
-    def pre_run(self, executor):
-        print("Here... in pre_run.")
-        self.executor = executor
-
-    def core_run(self, executor):
+    def core_run(self):
 
         # Only treat continuous vars for now
-        n_fns  = executor.response_size()
-        init_pts = np.array(executor.initial_values())
+        n_fns  = self.executor.response_size()
+        init_pts = np.array(self.executor.initial_values())
 
         if n_fns != 1:
             raise RuntimeError("ScipyOpt only supports a single response")
 
 
         # Use the appropriate scipy minimizer
-        if executor.has_gradient() and executor.has_hessian():
+        if self.executor.has_gradient() and self.executor.has_hessian():
             result = minimize(self.obj_fn, init_pts, method='trust-ncg', \
                               jac=self.grad, hess=self.hess)
 
-        elif executor.has_gradient():
+        elif self.executor.has_gradient():
             result = minimize(self.obj_fn, init_pts, jac=self.grad)
 
         else:
@@ -110,11 +107,11 @@ class ScipyOpt:
         retval['best_x_np'] = [result.x[0], result.x[1]]
 
         # Send output to Dakota in a format amenable to regression testing
-        executor.dak_print("<<<<< Best parameters          =")
-        executor.dak_print(f"\t\t{result.x[0]} x1")
-        executor.dak_print(f"\t\t{result.x[1]} x2")
-        executor.dak_print("<<<<< Best objective function  =")
-        executor.dak_print(f"\t\t{result.fun}")
+        self.executor.dak_print("<<<<< Best parameters          =")
+        self.executor.dak_print(f"\t\t{result.x[0]} x1")
+        self.executor.dak_print(f"\t\t{result.x[1]} x2")
+        self.executor.dak_print("<<<<< Best objective function  =")
+        self.executor.dak_print(f"\t\t{result.fun}")
 
         return retval
 

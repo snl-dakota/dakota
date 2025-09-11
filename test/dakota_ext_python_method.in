@@ -1,6 +1,6 @@
 #@ s*: Label=FastTest
 #@ *: DakotaConfig=HAVE_EXT_PYTHON_METHOD
-#@ *: ReqFiles=external_methods.py,lhs_sampling.py,sp_optimize.py
+#@ *: ReqFiles=ext_py_methods.py,ext_py_lhs_sampling.py,ext_py_sp_optimize.py
 
 environment
     tabular_data
@@ -11,12 +11,12 @@ environment
 
 method,
     external_python
-      class_path_and_name = "external_methods.SimplePyOpt"           #s0,#s5
-#      class_path_and_name = "external_methods.RandomSample"         #s1
-#      class_path_and_name = "external_methods.RandomSampleMixed"    #s2
-#      class_path_and_name = "external_methods.NumpyOpt"             #s3
-#      class_path_and_name = "lhs_sampling.LHSSample"                #s4
-#      class_path_and_name = "sp_optimize.ScipyOpt"                  #s6,#s7,#s8
+      class_path_and_name = "ext_py_methods.SimplePyOpt"           #s0,#s5
+#      class_path_and_name = "ext_py_methods.RandomSample"         #s1
+#      class_path_and_name = "ext_py_methods.RandomSampleMixed"    #s2
+#      class_path_and_name = "ext_py_methods.NumpyOpt"             #s3
+#      class_path_and_name = "ext_py_lhs_sampling.LHSSample"                #s4
+#      class_path_and_name = "ext_py_sp_optimize.ScipyOpt"                  #s6,#s7,#s8
 
 variables,
     continuous_design = 2                                            #s0,#s1,#s3,#s5,#s6,#s7,#s8

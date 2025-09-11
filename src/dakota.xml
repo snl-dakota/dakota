@@ -2453,8 +2453,9 @@
           <keyword  id="class_path_and_name" name="class_path_and_name" code="{N_mdm(str,moduleAndClassName)}" label="Python Module File and Class Name"  minOccurs="1" >
             <param type="INPUT_FILE" />
           </keyword>
-          <!-- store method name AND incoming STRING -->
-          <!-- <param type="STRING" /> -->
+	  <keyword  id="options_file" name="options_file" code="{N_mdm(str,advancedOptionsFilename)}" label="Advanced Options File"  minOccurs="0" default="no advanced options file" >
+	    <param type="INPUT_FILE" />
+	  </keyword>
         </keyword>
 
         <keyword  id="npsol_sqp" name="npsol_sqp" code="{N_mdm(utype,methodName_NPSOL_SQP)}" label="npsol_sqp"   group="Optimization: Local, Derivative-based" >

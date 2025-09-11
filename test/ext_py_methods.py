@@ -50,20 +50,21 @@ def print_executor(executor):
 
 class SimplePyOpt:
 
-    def __init__(self, params=None):
+    def __init__(self, executor, params_file=None):
 
         print("python SimplePyOpt class constructer...")
-        if params is not None:
-            self.params = params
+        self.executor = executor
+        if params_file is not None:
+            self.params_file = params_file
 
-    def core_run(self, executor):
+    def core_run(self):
 
         # Only treat continuous vars for now
-        n_vars = executor.cv()
-        n_fns  = executor.response_size()
-        init_pts = executor.initial_values()
-        l_bounds = executor.continuous_lower_bounds()
-        u_bounds = executor.continuous_upper_bounds()
+        n_vars = self.executor.cv()
+        n_fns  = self.executor.response_size()
+        init_pts = self.executor.initial_values()
+        l_bounds = self.executor.continuous_lower_bounds()
+        u_bounds = self.executor.continuous_upper_bounds()
 
         if n_fns != 1:
             raise RuntimeError("SimplePyOpt only supports a single response")
@@ -82,27 +83,27 @@ class SimplePyOpt:
         i = 0
         best_x = init_pts
 
-        #print("Model supports gradients -->", executor.has_gradient())
-        #print("Model supports hessians -->", executor.has_hessian())
+        #print("Model supports gradients -->", self.executor.has_gradient())
+        #print("Model supports hessians -->", self.executor.has_hessian())
 
         #asv = [3]
-        #chk_f, chk_grad, chk_hess = executor.evaluate(init_pts, asv)
+        #chk_f, chk_grad, chk_hess = self.executor.evaluate(init_pts, asv)
         #print(chk_f)
         #print(chk_grad)
         #print(chk_hess)
         ##raise RuntimeError("Stopping here ...")
 
         # Simple gradient-based optimizer with hard-coded step length
-        if executor.has_gradient():
+        if self.executor.has_gradient():
 
-            best_f = executor.function_value(init_pts)[0]
+            best_f = self.executor.function_value(init_pts)[0]
             x_new = copy.deepcopy(best_x)
             while  i<=max_evals and best_f>fn_tol:
                 x_old = copy.deepcopy(x_new)
-                grad = executor.gradient_values(x_old)
+                grad = self.executor.gradient_values(x_old)
                 x_new[0] = x_old[0] - 0.30*grad[0][0]
                 x_new[1] = x_old[1] - 0.30*grad[0][1]
-                f = executor.function_value(x_new)
+                f = self.executor.function_value(x_new)
 
                 if abs(f[0]-target) < best_f:
                     best_x = x_new
@@ -114,12 +115,12 @@ class SimplePyOpt:
 
             i = 0
             best_x = init_pts
-            best_f = executor.function_value(init_pts)[0]
+            best_f = self.executor.function_value(init_pts)[0]
             while  i<=max_evals and best_f>fn_tol:
                 x = []
                 for j in range(n_vars):
                     x.append(rnd.uniform(l_bounds[j], u_bounds[j]))
-                f = executor.function_value(x)
+                f = self.executor.function_value(x)
 
                 if abs(f[0]-target) < best_f:
                     best_x = x
@@ -130,11 +131,11 @@ class SimplePyOpt:
         retval['fns']    = [best_f]
         retval['best_x'] = best_x
 
-        executor.dak_print("<<<<< Best parameters          =")
-        executor.dak_print(f"\t\t{best_x[0]} x1")
-        executor.dak_print(f"\t\t{best_x[1]} x2")
-        executor.dak_print("<<<<< Best objective function  =")
-        executor.dak_print(f"\t\t{best_f}")
+        self.executor.dak_print("<<<<< Best parameters          =")
+        self.executor.dak_print(f"\t\t{best_x[0]} x1")
+        self.executor.dak_print(f"\t\t{best_x[1]} x2")
+        self.executor.dak_print("<<<<< Best objective function  =")
+        self.executor.dak_print(f"\t\t{best_f}")
 
         if False:
             print("Found best_f = ", best_f)
@@ -149,20 +150,21 @@ class SimplePyOpt:
 
 class NumpyOpt:
 
-    def __init__(self, params=None):
+    def __init__(self, executor, params_file=None):
 
         print("python NumpyOpt class constructer...")
-        if params is not None:
-            self.params = params
+        self.executor = executor
+        if params_file is not None:
+            self.params_file = params_file
 
-    def core_run(self, executor):
+    def core_run(self):
 
         # Only treat continuous vars for now
-        n_vars = executor.cv()
-        n_fns  = executor.response_size()
-        init_pts = np.array(executor.initial_values())
-        l_bounds = np.array(executor.continuous_lower_bounds())
-        u_bounds = np.array(executor.continuous_upper_bounds())
+        n_vars = self.executor.cv()
+        n_fns  = self.executor.response_size()
+        init_pts = np.array(self.executor.initial_values())
+        l_bounds = np.array(self.executor.continuous_lower_bounds())
+        u_bounds = np.array(self.executor.continuous_upper_bounds())
 
         if n_fns != 1:
             raise RuntimeError("NumpyOpt only supports a single response")
@@ -181,10 +183,10 @@ class NumpyOpt:
         # Crude "optimization" based on random sampling over parameter space
         i = 0
         best_x = init_pts
-        best_f = executor.function_value(init_pts)[0]
+        best_f = self.executor.function_value(init_pts)[0]
         while  i<=max_evals and best_f>fn_tol:
             x = np.random.uniform(low=l_bounds, high=u_bounds, size=n_vars)
-            f = executor.function_value(x)
+            f = self.executor.function_value(x)
 
             if abs(f[0]-target) < best_f:
                 best_x = x.copy()
@@ -195,11 +197,11 @@ class NumpyOpt:
         retval['best_x_np'] = best_x
 
         # Send output to Dakota in a format amenable to regression testing
-        executor.dak_print("<<<<< Best parameters          =")
-        executor.dak_print(f"\t\t{best_x[0]} x1")
-        executor.dak_print(f"\t\t{best_x[1]} x2")
-        executor.dak_print("<<<<< Best objective function  =")
-        executor.dak_print(f"\t\t{best_f}")
+        self.executor.dak_print("<<<<< Best parameters          =")
+        self.executor.dak_print(f"\t\t{best_x[0]} x1")
+        self.executor.dak_print(f"\t\t{best_x[1]} x2")
+        self.executor.dak_print("<<<<< Best objective function  =")
+        self.executor.dak_print(f"\t\t{best_f}")
 
         return retval
 
@@ -210,22 +212,23 @@ class NumpyOpt:
 
 class RandomSample:
 
-    def __init__(self, params=None):
+    def __init__(self, executor, params_file=None):
 
         print("python RandomSample class constructer...")
-        if params is not None:
-            self.params = params
+        self.executor = executor
+        if params_file is not None:
+            self.params_file = params_file
 
-    def core_run(self, executor):
+    def core_run(self):
 
         # Show the docstring for the executor
-        #help(executor)
+        #help(self.executor)
 
-        n_vars = executor.tv()
-        n_fns  = executor.response_size()
-        init_pts = executor.initial_values()
-        l_bounds = executor.continuous_lower_bounds()
-        u_bounds = executor.continuous_upper_bounds()
+        n_vars = self.executor.tv()
+        n_fns  = self.executor.response_size()
+        init_pts = self.executor.initial_values()
+        l_bounds = self.executor.continuous_lower_bounds()
+        u_bounds = self.executor.continuous_upper_bounds()
 
         retval = {}
 
@@ -242,7 +245,7 @@ class RandomSample:
         self.fns = []
         while  i<=max_evals:
             xvals.append(x)
-            self.fns.append(executor.function_value(x))
+            self.fns.append(self.executor.function_value(x))
             x = []
             for j in range(n_vars):
                 x.append(rnd.uniform(l_bounds[j], u_bounds[j]))
@@ -258,10 +261,10 @@ class RandomSample:
         return retval
 
 
-    def post_run(self, executor):
+    def post_run(self):
 
         # Output using Dakota formatting
-        executor.output_central_moments(self.fns)
+        self.executor.output_central_moments(self.fns)
 
 
 
@@ -271,22 +274,23 @@ class RandomSample:
 
 class RandomSampleMixed:
 
-    def __init__(self, params=None):
+    def __init__(self, executor, params_file=None):
 
         print("python RandomSampleMixed class constructer...")
-        if params is not None:
-            self.params = params
+        self.executor = executor
+        if params_file is not None:
+            self.params_file = params_file
 
 
-    def core_run(self, executor):
+    def core_run(self):
 
-        print_executor(executor)
+        print_executor(self.executor)
 
-        n_vars = executor.cv()
-        n_fns  = executor.response_size()
-        init_pts = executor.initial_values()
-        l_bounds = executor.continuous_lower_bounds()
-        u_bounds = executor.continuous_upper_bounds()
+        n_vars = self.executor.cv()
+        n_fns  = self.executor.response_size()
+        init_pts = self.executor.initial_values()
+        l_bounds = self.executor.continuous_lower_bounds()
+        u_bounds = self.executor.continuous_upper_bounds()
 
         retval = {}
 
@@ -305,10 +309,10 @@ class RandomSampleMixed:
         while  i<=max_evals:
             xvals.append(x)
             mixed_vals['cv']  = x
-            mixed_vals['div'] = executor.discrete_int_variables()    # just use initial values for testing API
-            mixed_vals['dsv'] = executor.discrete_string_variables() # just use initial values for testing API
-            mixed_vals['drv'] = executor.discrete_real_variables()   # just use initial values for testing API
-            self.fns.append(executor.function_value(mixed_vals))
+            mixed_vals['div'] = self.executor.discrete_int_variables()    # just use initial values for testing API
+            mixed_vals['dsv'] = self.executor.discrete_string_variables() # just use initial values for testing API
+            mixed_vals['drv'] = self.executor.discrete_real_variables()   # just use initial values for testing API
+            self.fns.append(self.executor.function_value(mixed_vals))
             x = []
             for j in range(n_vars):
                 x.append(rnd.uniform(l_bounds[j], u_bounds[j]))
@@ -323,10 +327,10 @@ class RandomSampleMixed:
 
         return retval
 
-    def post_run(self, executor):
+    def post_run(self):
 
         # Output using Dakota formatting
-        executor.output_central_moments(self.fns)
+        self.executor.output_central_moments(self.fns)
 
 
 

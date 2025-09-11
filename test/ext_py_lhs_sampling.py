@@ -48,17 +48,18 @@ def print_executor(executor):
 
 class LHSSample:
 
-    def __init__(self, params=None):
+    def __init__(self, executor, params_file=None):
 
         print("python LHSSample class constructer...")
-        if params is not None:
-            self.params = params
+        self.executor = executor
+        if params_file is not None:
+            self.params_file = params_file
 
-    def pre_run(self, executor):
+    def pre_run(self):
 
-        n_vars = executor.tv()
-        l_bounds = executor.continuous_lower_bounds()
-        u_bounds = executor.continuous_upper_bounds()
+        n_vars = self.executor.tv()
+        l_bounds = self.executor.continuous_lower_bounds()
+        u_bounds = self.executor.continuous_upper_bounds()
 
         # Generate samples using LHS from scipy qmc
         sampler = qmc.LatinHypercube(d=n_vars)
@@ -68,19 +69,19 @@ class LHSSample:
         self.samples = qmc.scale(samples, l_bounds, u_bounds)
         print("Using scipy qmc LHS samples:",self.samples)
 
-        #executor.output_central_moments(self.fns)
+        #self.executor.output_central_moments(self.fns)
 
-    def core_run(self, executor):
+    def core_run(self):
 
         # Show the docstring for the executor
-        #help(executor)
+        #help(self.executor)
 
         retval = {}
 
         # Sample over parameter space
         self.fns = []
         for x in self.samples:
-            self.fns.append(executor.function_value(x))
+            self.fns.append(self.executor.function_value(x))
 
         retval['x']   = self.samples
         retval['fns'] = self.fns
@@ -92,10 +93,10 @@ class LHSSample:
         return retval
 
 
-    def post_run(self, executor):
+    def post_run(self):
 
         # Output using Dakota formatting
-        executor.output_central_moments(self.fns)
+        self.executor.output_central_moments(self.fns)
 
 
 

@@ -1255,7 +1255,7 @@ public:
   RealVector proposalCovData;
   /// file from which to read proposal covariance in diagonal or matrix format
   String proposalCovFile;
-  /// file containing advanced ROL option overrides
+  /// file containing specialized algorithm options, eg ROL, external python, etc.
   String advancedOptionsFilename;
   /// file containing advanced QUESO option overrides
   String quesoOptionsFilename;

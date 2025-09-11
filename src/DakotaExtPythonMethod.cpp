@@ -28,11 +28,18 @@ ExtPythonMethod::ExtPythonMethod(ProblemDescDB& problem_db,
   ownPython(false),
   py11Active(false)
 {
+  iteratedModel = model;
+  update_from_model(*iteratedModel);
+
+  // Create the callback executor (model wrapper)
+  executor_ = std::make_shared<ModelExecutor>(iteratedModel);
+
+  // Support optional configuration file
+  optionsFilename = probDescDB.get_string("method.advanced_options_file");
+
   moduleAndClassName = problem_db.get_string("method.class_path_and_name");
   initialize_python();
 
-  iteratedModel = model;
-  update_from_model(*iteratedModel);
 }
 
 // -----------------------------------------------------------------
@@ -67,7 +74,10 @@ void ExtPythonMethod::initialize_python()
       auto method_name = moduleAndClassName.substr(p+1);
 
       py::object module = py::module_::import(module_name.c_str());
-      pyMethod = module.attr(method_name.c_str())();
+      if( optionsFilename.empty() )
+        pyMethod = module.attr(method_name.c_str())(*executor_);
+      else
+        pyMethod = module.attr(method_name.c_str())(*executor_, optionsFilename);
     }
     catch(py::error_already_set &e) {
       if (e.matches(PyExc_ModuleNotFoundError)) {
@@ -102,14 +112,11 @@ void ExtPythonMethod::initialize_python()
 
 void ExtPythonMethod::initialize_run()
 {
-  // Create the callback executor (model wrapper)
-  executor_ = std::make_shared<ModelExecutor>(iteratedModel);
-
   // Check and do if optional method exists
   std::string chk_attr = "initialize_run";
   if( PythonUtils::check_for_attr(pyMethod, chk_attr, moduleAndClassName) ) {
     py::object py_run = pyMethod.attr(chk_attr.c_str());
-    py_run(*executor_);
+    py_run();
   }
 }
 
@@ -121,7 +128,7 @@ void ExtPythonMethod::pre_run()
   std::string chk_attr = "pre_run";
   if( PythonUtils::check_for_attr(pyMethod, chk_attr, moduleAndClassName) ) {
     py::object py_run = pyMethod.attr(chk_attr.c_str());
-    py_run(*executor_);
+    py_run();
   }
 }
 
@@ -142,7 +149,7 @@ void ExtPythonMethod::core_run()
     // Call the method
     const std::string fn_name("core_run");
     py::object py_run = pyMethod.attr(fn_name.c_str());
-    py::dict ret_val = py_run(*executor_);
+    py::dict ret_val = py_run();
 
     // A special case for an optimizer
     //     extract the single scalar result and best parameters
@@ -198,7 +205,7 @@ void ExtPythonMethod::post_run(std::ostream& s)
   std::string chk_attr = "post_run";
   if( PythonUtils::check_for_attr(pyMethod, chk_attr, moduleAndClassName) ) {
     py::object py_run = pyMethod.attr(chk_attr.c_str());
-    py_run(*executor_);
+    py_run();
   }
 }
 
@@ -210,7 +217,7 @@ void ExtPythonMethod::finalize_run()
   std::string chk_attr = "finalize_run";
   if( PythonUtils::check_for_attr(pyMethod, chk_attr, moduleAndClassName) ) {
     py::object py_run = pyMethod.attr(chk_attr.c_str());
-    py_run(*executor_);
+    py_run();
   }
 }
 

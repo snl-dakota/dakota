@@ -132,6 +132,9 @@ class ExtPythonMethod : public Iterator
     /// Python module filename and class/function
     String moduleAndClassName;
 
+    /// Optional algorithm/parameter options filename
+    String optionsFilename;
+
     bool py11Active;
 
     std::shared_ptr<ModelExecutor> executor_;
