@@ -8,6 +8,7 @@
 #  _______________________________________________________________________
 
 import copy
+import json
 import numpy as np
 import random as rnd
 
@@ -55,7 +56,9 @@ class SimplePyOpt:
         print("python SimplePyOpt class constructer...")
         self.executor = executor
         if params_file is not None:
-            self.params_file = params_file
+            with open(params_file) as F:
+                all_methods_params = json.load(F)
+            self.params = all_methods_params['SimplePyOpt']
 
     def core_run(self):
 
@@ -69,16 +72,17 @@ class SimplePyOpt:
         if n_fns != 1:
             raise RuntimeError("SimplePyOpt only supports a single response")
 
-        retval = {}
-
-        # Hard-coded optimizer settings that could be configured by user
-        max_evals = 100
-        fn_tol = 1.e-4
-
-        target = 0.0
+        # Method specs
+        max_evals = self.params['max_evals']
+        fn_tol    = self.params['fn_tol']
+        target    = self.params['target']
+        rnd_seed  = self.params['rnd_seed']
+        step      = self.params['step']
 
         # Make test reproducible
-        rnd.seed(12321)
+        rnd.seed(rnd_seed)
+
+        retval = {}
 
         i = 0
         best_x = init_pts
@@ -93,7 +97,7 @@ class SimplePyOpt:
         #print(chk_hess)
         ##raise RuntimeError("Stopping here ...")
 
-        # Simple gradient-based optimizer with hard-coded step length
+        # Simple gradient-based optimizer
         if self.executor.has_gradient():
 
             best_f = self.executor.function_value(init_pts)[0]
@@ -101,8 +105,8 @@ class SimplePyOpt:
             while  i<=max_evals and best_f>fn_tol:
                 x_old = copy.deepcopy(x_new)
                 grad = self.executor.gradient_values(x_old)
-                x_new[0] = x_old[0] - 0.30*grad[0][0]
-                x_new[1] = x_old[1] - 0.30*grad[0][1]
+                x_new[0] = x_old[0] - step*grad[0][0]
+                x_new[1] = x_old[1] - step*grad[0][1]
                 f = self.executor.function_value(x_new)
 
                 if abs(f[0]-target) < best_f:
@@ -155,7 +159,9 @@ class NumpyOpt:
         print("python NumpyOpt class constructer...")
         self.executor = executor
         if params_file is not None:
-            self.params_file = params_file
+            with open(params_file) as F:
+                all_methods_params = json.load(F)
+            self.params = all_methods_params['NumpyOpt']
 
     def core_run(self):
 
@@ -169,14 +175,14 @@ class NumpyOpt:
         if n_fns != 1:
             raise RuntimeError("NumpyOpt only supports a single response")
 
-        # Hard-coded optimizer settings that could be configured by user
-        max_evals = 100
-        fn_tol = 1.e-4
-
-        target = 0.0
+        # Method specs
+        max_evals = self.params['max_evals']
+        fn_tol    = self.params['fn_tol']
+        target    = self.params['target']
+        rnd_seed  = self.params['rnd_seed']
 
         # Make test reproducible
-        np.random.seed(12321)
+        np.random.seed(rnd_seed)
 
         retval = {}
 
@@ -217,7 +223,9 @@ class RandomSample:
         print("python RandomSample class constructer...")
         self.executor = executor
         if params_file is not None:
-            self.params_file = params_file
+            with open(params_file) as F:
+                all_methods_params = json.load(F)
+            self.params = all_methods_params['RandomSample']
 
     def core_run(self):
 
@@ -230,13 +238,14 @@ class RandomSample:
         l_bounds = self.executor.continuous_lower_bounds()
         u_bounds = self.executor.continuous_upper_bounds()
 
-        retval = {}
-
-        # Hard-coded setting that could be configured by user
-        max_evals = 25
+        # Method specs
+        max_evals = self.params['max_evals']
+        rnd_seed  = self.params['rnd_seed']
 
         # Make test reproducible
-        rnd.seed(231)
+        rnd.seed(rnd_seed)
+
+        retval = {}
 
         # Crude random sampling over parameter space
         i = 1
@@ -279,7 +288,9 @@ class RandomSampleMixed:
         print("python RandomSampleMixed class constructer...")
         self.executor = executor
         if params_file is not None:
-            self.params_file = params_file
+            with open(params_file) as F:
+                all_methods_params = json.load(F)
+            self.params = all_methods_params['RandomSampleMixed']
 
 
     def core_run(self):
@@ -292,13 +303,15 @@ class RandomSampleMixed:
         l_bounds = self.executor.continuous_lower_bounds()
         u_bounds = self.executor.continuous_upper_bounds()
 
-        retval = {}
 
-        # Hard-coded setting that could be configured by user
-        max_evals = 5
+        # Method specs
+        max_evals = self.params['max_evals']
+        rnd_seed  = self.params['rnd_seed']
 
         # Make test reproducible
-        rnd.seed(123)
+        rnd.seed(rnd_seed)
+
+        retval = {}
 
         # Crude random sampling over parameter space
         i = 1

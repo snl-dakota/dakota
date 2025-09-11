@@ -1,0 +1,27 @@
+{
+  "SimplePyOpt" :
+  {
+    "max_evals" : 100,
+    "fn_tol"    : 1.0e-4,
+    "target"    : 0.0,
+    "rnd_seed"  : 12321,
+    "step"      : 0.3
+  },
+  "NumpyOpt" :
+  {
+    "max_evals" : 100,
+    "fn_tol"    : 1.0e-4,
+    "target"    : 0.0,
+    "rnd_seed"  : 12321
+  },
+  "RandomSample" :
+  {
+    "max_evals" : 25,
+    "rnd_seed"  : 231
+  },
+  "RandomSampleMixed" :
+  {
+    "max_evals" : 5,
+    "rnd_seed"  : 123
+  }
+}
