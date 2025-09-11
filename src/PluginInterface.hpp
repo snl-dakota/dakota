@@ -54,7 +54,11 @@ protected:
   String pluginPath;
 
   /// the interface class loaded via plugin
+#if BOOST_VERSION < 108800
   boost::shared_ptr<DakotaPlugins::DakotaInterfaceAPI> pluginInterface;
+#else
+  std::shared_ptr<DakotaPlugins::DakotaInterfaceAPI> pluginInterface;
+#endif
 
 
   /// list of drivers to perform core simulation mappings (can
