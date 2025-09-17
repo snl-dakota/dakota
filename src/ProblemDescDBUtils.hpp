@@ -9,6 +9,8 @@
 
 #pragma once
 #include <string_view>
+#include <string>
+#include <utility>
 
 namespace Dakota {
 
