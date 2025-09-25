@@ -16,7 +16,8 @@ if(TARGET TrilinosFramework)
 endif()
 
 get_target_property(TEUCHOS_CORE_INCLUDES teuchoscore INCLUDE_DIRECTORIES)
-
+get_target_property(TEUCHOS_NUMERICS_INCLUDES teuchosnumerics INCLUDE_DIRECTORIES)
+get_target_property(TEUCHOS_PARAMETERLIST_INCLUDES teuchosparameterlist INCLUDE_DIRECTORIES)
 
 target_include_directories(
   rol_interface
@@ -25,6 +26,11 @@ target_include_directories(
   PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}/src
   ${TEUCHOS_CORE_INCLUDES}
+  ${TEUCHOS_NUMERICS_INCLUDES}
+  ${TEUCHOS_PARAMETERLIST_INCLUDES}
+  # Add generated config header directories
+  ${CMAKE_BINARY_DIR}/packages/external/trilinos/packages/teuchos/core/src
+  ${CMAKE_BINARY_DIR}/packages/external/trilinos/packages/teuchos/parameterlist/src
 )
 
 target_link_libraries(

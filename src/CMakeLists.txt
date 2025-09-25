@@ -795,28 +795,11 @@ endif()
 if(HAVE_ROL)
   message("\n\n=========[ Have ROL ]========\n\n")
 
-  list(APPEND DAKOTA_INCDIRS ${ROL_INCLUDE_DIRS})
-  # Add Teuchos core source directory for ROL compatibility layer
-  list(APPEND DAKOTA_INCDIRS ${CMAKE_SOURCE_DIR}/packages/external/trilinos/packages/teuchos/core/src)
-  # Add Teuchos generated config headers directory
-  list(APPEND DAKOTA_INCDIRS ${CMAKE_BINARY_DIR}/packages/external/trilinos/packages/teuchos/core/src)
   add_definitions("-DHAVE_ROL")
   if(HAVE_DAKOTA_ROL_INTERFACE) # TODO: Move this to Dakota/src/rol_interface
     message("\n\n=========[ Building Dakota/ROL Interface ]========\n\n")
     set(Dakota_ROL_Interface_DIR "${Dakota_SOURCE_DIR}/src/rol_interface")
-
     add_definitions("-DHAVE_DAKOTA_ROL_INTERFACE")
-
-    # TODO
-
-
-
-
-
-
-
-
-
   else()
     set(iterator_src ${iterator_src} ROLOptimizer.cpp)
   endif()
@@ -950,6 +933,10 @@ if( HAVE_ROL )
   list(APPEND DAKOTA_INCDIRS ${CMAKE_SOURCE_DIR}/packages/external/trilinos/packages/teuchos/core/src)
   # Add Teuchos generated config headers directory
   list(APPEND DAKOTA_INCDIRS ${CMAKE_BINARY_DIR}/packages/external/trilinos/packages/teuchos/core/src)
+  # Add TeuchosNumerics source directory for ROL linear algebra compatibility
+  list(APPEND DAKOTA_INCDIRS ${CMAKE_SOURCE_DIR}/packages/external/trilinos/packages/teuchos/numerics/src)
+  # Add TeuchosParameterList source directory for ROL parameterlist compatibility
+  list(APPEND DAKOTA_INCDIRS ${CMAKE_SOURCE_DIR}/packages/external/trilinos/packages/teuchos/parameterlist/src)
   add_definitions("-DHAVE_ROL")
   add_subdirectory(rol_interface)
   target_link_libraries(dakota_src rol_interface)
