@@ -1,6 +1,7 @@
 #ifndef DAKOTA_ROL_VECTOR_HPP
 #define DAKOTA_ROL_VECTOR_HPP
 
+#include "dakota_data_types.hpp"
 #include "ROL_Vector.hpp"
 #include "ROL_Elementwise_Function.hpp"
 

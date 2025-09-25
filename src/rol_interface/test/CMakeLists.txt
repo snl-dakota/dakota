@@ -39,7 +39,10 @@ target_include_directories(ROLInterfaceTest PRIVATE
 #)
 dakota_add_unit_test( NAME test_minimal_wiring 
                       SOURCES test_minimal_wiring.cpp
-                      LINK_DAKOTA_LIBS)
+                      LINK_DAKOTA_LIBS
+                      INCLUDE_DIRECTORIES 
+                    
+                    )
                                         
 target_include_directories(test_minimal_wiring PRIVATE ../include                                  
                                                ${ROL_INCLUDE_DIRS}
@@ -63,3 +66,89 @@ target_include_directories(test_minimal_wiring PRIVATE ../include
 #     set_property(TEST test_minimal_wiring PROPERTY LABELS ROL Interface Legacy)
 #     set_property(TEST adapter_model_test PROPERTY LABELS ROL Interface Legacy)
 # endif()
+
+# Unit test for Constraint class  
+dakota_add_unit_test(NAME ConstraintTest
+  SOURCES ConstraintTest.cpp
+  LINK_DAKOTA_LIBS
+  LINK_LIBS )
+
+target_include_directories(ConstraintTest PRIVATE
+    ../../
+    ../include
+    ${ROL_INCLUDE_DIRS}
+    ${Teuchos_INCLUDE_DIRS}
+)
+
+# Integration test for Constraint class
+dakota_add_unit_test(NAME ROLConstraintIntegration
+  SOURCES test_constraint_integration.cpp
+  LABELS ROL Interface
+  LINK_DAKOTA_LIBS
+)
+
+target_include_directories(ROLConstraintIntegration PRIVATE
+    ../../
+    ../include
+    ${ROL_INCLUDE_DIRS}
+    ${Teuchos_INCLUDE_DIRS}
+)
+
+# Link ROL interface library to tests that need it
+# target_link_libraries(ConstraintTest PRIVATE rol_interface)  # Already linked via LINK_DAKOTA_LIBS
+target_link_libraries(ROLConstraintIntegration PRIVATE rol_interface)
+
+# Copy input files for tests
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/constraint_test.in 
+     DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+
+# Copy ROL XML parameter file for tests
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/rol_input.xml
+     DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+
+# Additional ROL interface tests
+dakota_add_unit_test(NAME test_objective
+  SOURCES test_objective.cpp
+  LABELS ROL Interface
+  LINK_DAKOTA_LIBS
+)
+
+target_include_directories(test_objective PRIVATE
+    ../../
+    ../include
+    ${ROL_INCLUDE_DIRS}
+    ${Teuchos_INCLUDE_DIRS}
+)
+
+target_link_libraries(test_objective PRIVATE rol_interface)
+
+dakota_add_unit_test(NAME test_rosenbrock_integration
+  SOURCES test_rosenbrock_integration.cpp
+  LABELS ROL Interface
+  LINK_DAKOTA_LIBS
+)
+
+target_include_directories(test_rosenbrock_integration PRIVATE
+    ../../
+    ../include
+    ${ROL_INCLUDE_DIRS}
+    ${Teuchos_INCLUDE_DIRS}
+)
+
+target_link_libraries(test_rosenbrock_integration PRIVATE rol_interface)
+
+dakota_add_unit_test(NAME test_wiring_concept
+  SOURCES test_wiring_concept.cpp
+  LABELS ROL Interface
+  LINK_DAKOTA_LIBS
+)
+
+target_include_directories(test_wiring_concept PRIVATE
+    ../../
+    ../include
+    ${ROL_INCLUDE_DIRS}
+    ${Teuchos_INCLUDE_DIRS}
+)
+
+target_link_libraries(test_wiring_concept PRIVATE rol_interface)
+

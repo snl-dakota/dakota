@@ -22,15 +22,41 @@ Vector::Vector( const ROL::Ptr<Dakota::RealVector>& vec )
 : vec_{vec} {}
     
 Vector::Vector( int length, bool zeroOut ) 
-: vec_{ ROL::makePtr<Dakota::RealVector>(length,zeroOut) } {
+: vec_{ ROL::makePtr<Dakota::RealVector>(length) } {
+  if (zeroOut) {
+    *vec_ = 0.0;  // Use Dakota's assignment operator
+  }
 } 
   
 Dakota::Real Vector::dot( const ROL::Vector<Dakota::Real>& x ) const { 
-  return vec_->dot(as_dakota_vector(x));
+  auto xd = as_dakota_vector(x);
+  Dakota::Real sum = 0.0;
+  for (int i = 0; i < vec_->length(); ++i) {
+    Dakota::Real val = (*vec_)[i];
+    sum += (*vec_)[i] * xd[i];
+  }
+  return sum;
 }
 
 Dakota::Real Vector::norm() const {
-  return std::sqrt(vec_->dot(*vec_));
+  // Safety check
+  if (!vec_) {
+    throw std::runtime_error("Vector::norm(): vec_ is null");
+  }
+  if (vec_->length() == 0) {
+    return 0.0;
+  }
+  if (!vec_->values()) {
+    throw std::runtime_error("Vector::norm(): vec_->values() is null");
+  }
+  
+  // Manual norm calculation to avoid BLAS issues
+  Dakota::Real sum = 0.0;
+  for (int i = 0; i < vec_->length(); ++i) {
+    Dakota::Real val = (*vec_)[i];
+    sum += val * val;
+  }
+  return std::sqrt(sum);
 }
 
 void Vector::set( const ROL::Vector<Dakota::Real>& x ) { 
@@ -81,6 +107,14 @@ Dakota::Real Vector::reduce( const ROL::Elementwise::ReductionOp<Real>& r ) cons
 }
 
 void Vector::randomize( const Dakota::Real l, const Dakota::Real u ) {
+  // Safety check
+  if (!vec_) {
+    throw std::runtime_error("Vector::randomize(): vec_ is null");
+  }
+  if (!vec_->values()) {
+    throw std::runtime_error("Vector::randomize(): vec_->values() is null");
+  }
+  
   Dakota::Real a = (u-l);
   Dakota::Real b = l;
   Dakota::Real x(0);

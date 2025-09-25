@@ -17,6 +17,7 @@ macro(dakota_find_trilinos)
 
     if(Trilinos_FOUND)
       if(Trilinos_DIR)
+        message("Trilinos_INCLUDE_DIRS = ${Trilinos_INCLUDE_DIRS}")
 	message(STATUS
 	  "Dakota using previously specified Trilinos in ${Trilinos_DIR}")
       else()
@@ -117,4 +118,8 @@ macro(dakota_find_trilinos)
     endif() # Trilinos_DIR
 
   endif() # NOT BUILD_IN_TRILINOS
+
+  set(Teuchos_INCLUDE_DIRS ${Trilinos_INCLUDE_DIRS})
 endmacro()
+
+

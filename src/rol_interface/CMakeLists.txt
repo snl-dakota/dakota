@@ -2,7 +2,7 @@ message("\n\n=========[ Building Dakota/ROL Interface ]========\n\n")
 add_definitions("-DHAVE_DAKOTA_ROL_INTERFACE")
 
 add_library(
-  rol_interface 
+  rol_interface STATIC
   src/DakotaROLVector.cpp 
   src/DakotaROLObjective.cpp 
   src/DakotaROLConstraint.cpp 

@@ -911,6 +911,7 @@ set_target_properties(dakota_src_fortran PROPERTIES INCLUDE_DIRECTORIES "")
 list(APPEND EXPORT_TARGETS dakota_src_fortran)
 
 add_library(dakota_src ${Dakota_src})
+target_include_directories(dakota_src PUBLIC ${Teuchos_INCLUDE_DIRS})
 # handle special case for gcc filesystem support
 if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9.0) OR DAKOTA_LINK_STDCPPFS)
   #message(STATUS "GCC version is less than 9.0, adding -lstdc++fs")

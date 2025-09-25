@@ -25,6 +25,9 @@ public:
 
   void core_run() override;
 
+  /// Set ROL parameters from Dakota settings and optional XML file
+  void set_rol_parameters();
+
   static std::shared_ptr<Optimizer> 
   create(       Dakota::ProblemDescDB&          problem_db, 
           const std::shared_ptr<Dakota::Model>& model );

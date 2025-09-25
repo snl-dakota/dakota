@@ -2,6 +2,9 @@
 #define DAKOTA_ROL_CONSTRAINT
 
 #include "ROL_Constraint.hpp"
+#include "dakota_data_types.hpp"
+#include "DakotaModel.hpp"
+#include "BoolDispatch.hpp"
 
 namespace rol_interface {
 
@@ -45,13 +48,14 @@ public:
 
   static ConstraintSet createSetFromModel( Dakota::Model& model );
 
-//private:
-
   Constraint( BoolDispatch   isLinear, 
               BoolDispatch   isEquality,
               BoolDispatch   hasJacobian,
               BoolDispatch   hasHessian,
               Dakota::Model& model );
+
+private:
+  void update_views();
 
   Dakota::Model& dakotaModel;
   std::size_t numOpt, numCon;

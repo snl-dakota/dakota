@@ -25,6 +25,40 @@ Objective::Objective( BoolDispatch   HasGradient,
 void Objective::update( const ROL::Vector<Dakota::Real>& x,
                               ROL::UpdateType            type,
                               int                        iter ) {
+  std::ignore = iter;
+  if (type == ROL::UpdateType::Temp || type == ROL::UpdateType::Initial) {
+    // Update Dakota model with current optimization variables
+    const auto& x_dakota = as_dakota_vector(const_cast<ROL::Vector<Dakota::Real>&>(x));
+    Dakota::ModelUtils::continuous_variables(dakotaModel, x_dakota);
+    
+    // Set up active set for evaluation based on what derivatives are needed
+    Dakota::ActiveSet eval_set(dakotaModel.current_response().active_set());
+    if (dakotaModel.gradient_type() == "numerical" && dakotaModel.method_source() == "vendor") {
+      // ROL will handle gradients numerically
+      eval_set.request_values(1);  // Function values only
+    } else if (dakotaModel.hessian_type() == "none") {
+      // Need function values and gradients
+      eval_set.request_values(3);  // Function values + gradients
+    } else {
+      // Need function values, gradients, and Hessians
+      eval_set.request_values(7);  // Function values + gradients + Hessians
+    }
+    
+    // Evaluate the Dakota model at the current point
+    dakotaModel.evaluate(eval_set);
+    
+    // Update gradient view if we have gradients
+    hasGradient.receive([&,this](auto has_gradient) {
+      if constexpr( has_gradient ) {
+        const auto& resp = dakotaModel.current_response();
+        const_pointer grad_ptr = resp.function_gradients().values();
+        // Objective gradient is at offset 0 (first function)
+        gradientView = Dakota::RealVector(Teuchos::View,
+                                         const_cast<pointer>(grad_ptr), 
+                                         static_cast<int>(numOpt) /* length */ );
+      }
+    });
+  }
 } // Objective::update
 
 
@@ -81,6 +115,19 @@ void Objective::hessVec(       ROL::Vector<Dakota::Real>& hv,
   });
 }
 
+
+ROL::Ptr<ROL::Objective<Dakota::Real>> Objective::createFromModel( Dakota::Model& model ) {
+  auto grad_type  = model.gradient_type();
+  auto hess_type  = model.hessian_type();
+  auto method_src = model.method_source();
+
+  BoolDispatch have_gradient{( grad_type == "analytic" || grad_type == "mixed" ||
+                            ( grad_type == "numerical" && method_src == "dakota" ))};
+
+  BoolDispatch have_hessian{hess_type != "none"};
+
+  return ROL::makePtr<Objective>(have_gradient, have_hessian, model);
+}
 
 } // namespace rol_interface
 
