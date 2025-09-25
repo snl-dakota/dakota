@@ -2,62 +2,60 @@
 #ifndef DAKOTA_ROL_OPTIMIZER_HPP
 #define DAKOTA_ROL_OPTIMIZER_HPP
 
+#include <memory>
+
+// Forward declarations (no Dakota includes here!)
+#include <string>
+
+namespace Dakota {
+  class ProblemDescDB;
+  class Model;
+  using String = std::string;
+}
+
 namespace rol_interface {
 
 // -----------------------------------------------------------------
-/** Optimizer specializes Dakota::Optimizer to construct and run a
-    ROL solver appropriate for the type of problem specified by the
-    user. */
+/** Abstract interface for ROL optimizer. The actual implementation
+    that inherits from Dakota::Optimizer lives in dakota_src to avoid
+    circular dependencies. */
 
-class Optimizer : public Dakota::Optimizer {
+class OptimizerInterface {
 public:
 
-  /// Standard constructor
-  Optimizer(       Dakota::ProblemDescDB&          problem_db, 
-             const std::shared_ptr<Dakota::Model>& model );
+  /// Virtual destructor
+  virtual ~OptimizerInterface() = default;
 
-  /// Alternate constructor for Iterator instantiations by name
-  Optimizer( const Dakota::String& method_name, 
-             const std::shared_ptr<Dakota::Model>& model );
-  
-  /// Destructor
-  virtual ~Optimizer() = default;
-
-  void core_run() override;
+  /// Run the optimization
+  virtual void core_run() = 0;
 
   /// Set ROL parameters from Dakota settings and optional XML file
-  void set_rol_parameters();
+  virtual void set_rol_parameters() = 0;
 
-  static std::shared_ptr<Optimizer> 
+}; // class OptimizerInterface
+
+// -----------------------------------------------------------------
+/** Factory class for creating ROL optimizers. This uses the pIMPL
+    idiom to break the circular dependency between rol_interface and
+    dakota_src libraries. */
+
+class OptimizerFactory {
+public:
+
+  /// Create optimizer from problem database
+  static std::unique_ptr<OptimizerInterface> 
   create(       Dakota::ProblemDescDB&          problem_db, 
           const std::shared_ptr<Dakota::Model>& model );
 
-  static std::shared_ptr<Optimizer> 
-  create ( const Dakota::String& method_name, 
-           const std::shared_ptr<Dakota::Model>& model );
- 
+  /// Create optimizer by method name
+  static std::unique_ptr<OptimizerInterface> 
+  create( const Dakota::String&                 method_name, 
+          const std::shared_ptr<Dakota::Model>& model );
 
-private:
-  ROL::Ptr<ROL::Problem<Dakota::Real>> problem;
-  ROL::ParameterList parList;	
+}; // class OptimizerFactory
 
-  
-
-  // -----------------------------------------------------------------
-  /** Initializer is a helper class used to initialize Optimizer. */
-
-//  class Initializer {
-//
-//    static void initialize( Optimizer* opt );
-//    static void set_default_parameters( Optimizer* opt );
-//
-//    friend class Optimizer;
-//
-//  }; // class ROLInitializer
-
-
-
-}; // class Optimizer
+// Legacy typedef for backward compatibility
+using Optimizer = OptimizerInterface;
 
 } // namespace rol_interface
 

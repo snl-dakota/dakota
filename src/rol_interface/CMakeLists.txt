@@ -3,26 +3,32 @@ add_definitions("-DHAVE_DAKOTA_ROL_INTERFACE")
 
 add_library(
   rol_interface STATIC
-  src/DakotaROLVector.cpp 
-  src/DakotaROLObjective.cpp 
-  src/DakotaROLConstraint.cpp 
+  src/DakotaROLVector.cpp
+  src/DakotaROLObjective.cpp
+  src/DakotaROLConstraint.cpp
   src/DakotaROLOptimizer.cpp
-  src/ROLOptimizerCompatibility.cpp 
+  src/ROLOptimizerCompatibility.cpp
 )
+
+# Ensure Trilinos is built before rol_interface
+if(TARGET TrilinosFramework)
+  add_dependencies(rol_interface TrilinosFramework)
+endif()
+
+get_target_property(TEUCHOS_CORE_INCLUDES teuchoscore INCLUDE_DIRECTORIES)
+
 
 target_include_directories(
   rol_interface
   PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  ${Teuchos_INCLUDE_DIRS}
   PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}/src
-  ${ROL_INCLUDE_DIRS}
+  ${TEUCHOS_CORE_INCLUDES}
 )
 
 target_link_libraries(
   rol_interface
-  ${Teuchos_LIBRARIES}
   ${ROL_LIBRARIES}
 )
 

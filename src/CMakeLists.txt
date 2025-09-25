@@ -796,6 +796,10 @@ if(HAVE_ROL)
   message("\n\n=========[ Have ROL ]========\n\n")
 
   list(APPEND DAKOTA_INCDIRS ${ROL_INCLUDE_DIRS})
+  # Add Teuchos core source directory for ROL compatibility layer
+  list(APPEND DAKOTA_INCDIRS ${CMAKE_SOURCE_DIR}/packages/external/trilinos/packages/teuchos/core/src)
+  # Add Teuchos generated config headers directory
+  list(APPEND DAKOTA_INCDIRS ${CMAKE_BINARY_DIR}/packages/external/trilinos/packages/teuchos/core/src)
   add_definitions("-DHAVE_ROL")
   if(HAVE_DAKOTA_ROL_INTERFACE) # TODO: Move this to Dakota/src/rol_interface
     message("\n\n=========[ Building Dakota/ROL Interface ]========\n\n")
@@ -942,6 +946,10 @@ endif()
 
 if( HAVE_ROL )
   list(APPEND DAKOTA_INCDIRS ${ROL_INCLUDE_DIRS})
+  # Add Teuchos core source directory for ROL compatibility layer
+  list(APPEND DAKOTA_INCDIRS ${CMAKE_SOURCE_DIR}/packages/external/trilinos/packages/teuchos/core/src)
+  # Add Teuchos generated config headers directory
+  list(APPEND DAKOTA_INCDIRS ${CMAKE_BINARY_DIR}/packages/external/trilinos/packages/teuchos/core/src)
   add_definitions("-DHAVE_ROL")
   add_subdirectory(rol_interface)
   target_link_libraries(dakota_src rol_interface)

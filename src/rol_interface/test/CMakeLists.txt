@@ -67,7 +67,7 @@ target_include_directories(test_minimal_wiring PRIVATE ../include
 #     set_property(TEST adapter_model_test PROPERTY LABELS ROL Interface Legacy)
 # endif()
 
-# Unit test for Constraint class  
+# Unit test for Constraint class
 dakota_add_unit_test(NAME ConstraintTest
   SOURCES ConstraintTest.cpp
   LINK_DAKOTA_LIBS
@@ -79,6 +79,9 @@ target_include_directories(ConstraintTest PRIVATE
     ${ROL_INCLUDE_DIRS}
     ${Teuchos_INCLUDE_DIRS}
 )
+
+# NOTE: LINK_DAKOTA_LIBS already provides rol_interface and dakota_src in correct order
+# Removed explicit rol_interface link to avoid circular dependency issues
 
 # Integration test for Constraint class
 dakota_add_unit_test(NAME ROLConstraintIntegration
@@ -95,8 +98,7 @@ target_include_directories(ROLConstraintIntegration PRIVATE
 )
 
 # Link ROL interface library to tests that need it
-# target_link_libraries(ConstraintTest PRIVATE rol_interface)  # Already linked via LINK_DAKOTA_LIBS
-target_link_libraries(ROLConstraintIntegration PRIVATE rol_interface)
+# Removed explicit rol_interface links - already provided by LINK_DAKOTA_LIBS
 
 # Copy input files for tests
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/constraint_test.in 
@@ -120,7 +122,7 @@ target_include_directories(test_objective PRIVATE
     ${Teuchos_INCLUDE_DIRS}
 )
 
-target_link_libraries(test_objective PRIVATE rol_interface)
+# Removed - already provided by LINK_DAKOTA_LIBS
 
 dakota_add_unit_test(NAME test_rosenbrock_integration
   SOURCES test_rosenbrock_integration.cpp
@@ -135,7 +137,7 @@ target_include_directories(test_rosenbrock_integration PRIVATE
     ${Teuchos_INCLUDE_DIRS}
 )
 
-target_link_libraries(test_rosenbrock_integration PRIVATE rol_interface)
+# Removed - already provided by LINK_DAKOTA_LIBS
 
 dakota_add_unit_test(NAME test_wiring_concept
   SOURCES test_wiring_concept.cpp
@@ -150,5 +152,5 @@ target_include_directories(test_wiring_concept PRIVATE
     ${Teuchos_INCLUDE_DIRS}
 )
 
-target_link_libraries(test_wiring_concept PRIVATE rol_interface)
+# Removed - already provided by LINK_DAKOTA_LIBS
 

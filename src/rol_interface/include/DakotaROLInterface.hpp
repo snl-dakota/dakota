@@ -9,9 +9,12 @@
 #include <boost/iostreams/filter/line.hpp>
 #include <boost/iostreams/filtering_stream.hpp>
 
-// Dakota Includes
-#include "DakotaOptimizer.hpp"
-#include "ProblemDescDB.hpp"
+// Forward declarations (no Dakota includes to avoid circular dependency)
+namespace Dakota {
+  class ProblemDescDB;
+  class Model;
+  using Real = double;
+}
 
 // ROL Includes
 #include "ROL_Problem.hpp"
@@ -23,7 +26,7 @@ namespace rol_interface {
 class Vector;
 class Objective;
 class Constraint;
-class Optimizer;
+class OptimizerInterface;
 
 using Dakota::Real;
 using ROLVector = ROL::Vector<Dakota::Real>;
@@ -33,7 +36,6 @@ using ROLVector = ROL::Vector<Dakota::Real>;
 // Dakota-ROL Interface Includes
 #include "BoolDispatch.hpp"
 #include "DakotaROLOutputStreamFilter.hpp"
-#include "DakotaROLTraits.hpp"
 #include "DakotaROLVector.hpp"
 #include "DakotaROLObjective.hpp"
 #include "DakotaROLConstraint.hpp"

@@ -160,6 +160,5 @@ const Dakota::Real* get_dakota_vector_data_pointer( const ROL::Vector<Dakota::Re
   return static_cast<const Vector&>(x).data();
 }
 
-
 } // namespace rol_interface
 
