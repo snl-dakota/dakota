@@ -4,6 +4,9 @@ import sys
 import os
 import subprocess
 
+if len(sys.argv) == 1:
+    print("Error: " + sys.argv[0] + " received no command line arguments.")
+    sys.exit(-1)
 
 # Test work_directory named trydir
 workdir_basename="trydir"
