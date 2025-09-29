@@ -9,7 +9,7 @@
    Remove :orphan: above if promoting this page.
 
 """"""""""""""""""""""""""""""""""""""""
-Version 6.22 (2025/05/15); pre-release)
+Version 6.23 (2025/11/17); pre-release)
 """"""""""""""""""""""""""""""""""""""""
 
 **Highlight: Feature A**
@@ -40,35 +40,26 @@ for using the GUI.  The 6.11 GUI manual is also available here.
 
 *Interfaces, Input/Output*
 
-- The pyprepro template processing tool now supports JSON format Dakota parameters files.
 
 *Models*
 
 *Optimization Methods*
 
-- ROL optimizer was updated to release 2.0.
 
 *UQ Methods*
 
-- Support for MUQ's multilevel MCMC algorithm was added.
 
 *MLMF Sampling*
 
  
 **Miscellaneous Enhancements and Bugfixes**
 
-- Enh: Dakota now uses GoogleTest instead of Boost.Test
-- Enh: Dakota now uses std::filesystem when available instead of Boost.filesystem
-- Enh: The Trilinos snapshot was updated to version 16.1
-- Bug fix: Small fixes to JEGA to satisfy recent versions of clang (issues `#178 <https://github.com/snl-dakota/dakota/issues/178>`_ and `#94 <https://github.com/snl-dakota/dakota/issues/94>`_)
-- Bug fix: Boost version check fixed (issue `#163 <https://github.com/snl-dakota/dakota/issues/163>`_)
-- Bug fix: Broken links in examples (issue `#162 <https://github.com/snl-dakota/dakota/issues/162>`_)
+- Windows builds now performed using MSVS 2022 and Intel oneAPI 2024.
 
 **Deprecated and Changed**
 
 **Compatibility**
 
-- Dakota now requires C++17 and CMake 3.23
-- Legacy Python 2 support has been removed, and Python 3 is required for all optional python dependencies
+- Dakota now requires a minimum of Boost 1.70.
 
 **Other Notes and Known Issues**
