@@ -4,9 +4,14 @@ import sys
 import os
 import subprocess
 
+
+def abort():
+    with open("results.out", "w") as f:
+        f.write("FAIL")
+
 if len(sys.argv) == 1:
     print("Error: " + sys.argv[0] + " received no command line arguments.")
-    sys.exit(-1)
+    abort()
 
 # Test work_directory named trydir
 workdir_basename="trydir"
@@ -25,10 +30,6 @@ else:
     mode = None
     paramsfile = sys.argv[1]
     resultsfile = sys.argv[2]
-
-def abort():
-    open(resultsfile, "w").close()
-    sys.exit(1)
 
 if mode in set(("tag","tag_save","saved_params")):
     # we should find ourselves in a directory tagged with an integer
