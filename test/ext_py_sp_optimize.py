@@ -59,7 +59,7 @@ class ScipyOpt:
 
     def obj_fn(self, x):
         f = self.executor.function_value(x)
-        return f
+        return f[0] # Single objective only for now
 
     def grad(self, x):
         grad = np.array(self.executor.gradient_values(x)[0])
