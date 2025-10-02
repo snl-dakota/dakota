@@ -427,14 +427,21 @@ ModelExecutor::evaluate(std::vector<double>& x, std::vector<int> & asv)
     ModelUtils::continuous_variable(*model_, x[i], i);
   model_->evaluate(temp_set);
 
+  std::vector<double> fns;
+  std::vector<std::vector<double>> grads;
+  std::vector<std::vector<std::vector<double>>> hesss;
+
   // Functions
-  auto fns = copy_functions<std::vector<double>>();
+  if (asv[0] & 1)
+    fns = copy_functions<std::vector<double>>();
 
   // Gradients
-  auto grads = copy_gradients<std::vector<std::vector<double>>>();
+  if (asv[0] & 2)
+    grads = copy_gradients<std::vector<std::vector<double>>>();
 
   // Hessians
-  auto hesss = copy_hessians<std::vector<std::vector<std::vector<double>>>>();
+  if (asv[0] & 4)
+    hesss = copy_hessians<std::vector<std::vector<std::vector<double>>>>();
 
   // Return tuple
   auto ret = std::make_tuple(fns, grads, hesss);

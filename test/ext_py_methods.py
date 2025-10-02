@@ -87,34 +87,26 @@ class SimplePyOpt:
         i = 0
         best_x = init_pts
 
-        #print("Model supports gradients -->", self.executor.has_gradient())
-        #print("Model supports hessians -->", self.executor.has_hessian())
-
-        #asv = [3]
-        #chk_f, chk_grad, chk_hess = self.executor.evaluate(init_pts, asv)
-        #print(chk_f)
-        #print(chk_grad)
-        #print(chk_hess)
-        ##raise RuntimeError("Stopping here ...")
-
         # Simple gradient-based optimizer
         if self.executor.has_gradient():
 
+            asv = [3] # Specify combined function and gradient evaluation
             best_f = self.executor.function_value(init_pts)[0]
             x_new = copy.deepcopy(best_x)
+            grad = self.executor.gradient_values(x_new)
             while  i<=max_evals and best_f>fn_tol:
                 x_old = copy.deepcopy(x_new)
-                grad = self.executor.gradient_values(x_old)
                 x_new[0] = x_old[0] - step*grad[0][0]
                 x_new[1] = x_old[1] - step*grad[0][1]
-                f = self.executor.function_value(x_new)
+                f, grad, _ = self.executor.evaluate(x_new, asv)
 
                 if abs(f[0]-target) < best_f:
                     best_x = x_new
                     best_f = abs(f[0]-target)
                 i=i+1
 
-        # Crude "optimization" based on random sampling over parameter space
+        # Without gradient, use crude "optimization" based on random
+        # sampling over parameter space
         else:
 
             i = 0
@@ -135,15 +127,12 @@ class SimplePyOpt:
         retval['fns']    = [best_f]
         retval['best_x'] = best_x
 
+        # Dakota recognized output format; needed for test baselines
         self.executor.dak_print("<<<<< Best parameters          =")
         self.executor.dak_print(f"\t\t{best_x[0]} x1")
         self.executor.dak_print(f"\t\t{best_x[1]} x2")
         self.executor.dak_print("<<<<< Best objective function  =")
         self.executor.dak_print(f"\t\t{best_f}")
-
-        if False:
-            print("Found best_f = ", best_f)
-            print("Using x = ", best_x)
 
         return retval
 
