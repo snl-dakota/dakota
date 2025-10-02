@@ -56,6 +56,11 @@ for using the GUI.  The 6.11 GUI manual is also available here.
 
 - Windows builds now performed using MSVS 2022 and Intel oneAPI 2024.
 
+- Fix for `github 140 <http://github.com/snl-dakota/dakota/issues/140>`_
+  by replacing boost::filesystem with std::filesystem
+- Obviates `github PR179 <https://github.com/snl-dakota/dakota/pull/179>`_
+  and `github PR181 <https://github.com/snl-dakota/dakota/pull/181>`_
+
 **Deprecated and Changed**
 
 **Compatibility**
