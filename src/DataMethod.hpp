@@ -35,6 +35,7 @@ namespace Dakota {
 // define special values for method name.  Special bit selections enable
 // identification of method groupings based on the value.
 enum { DEFAULT_METHOD=0,
+       EXTERNAL_PYTHON,
        // Meta-Iterators:
        HYBRID=(META_BIT | PARALLEL_BIT), PARETO_SET, MULTI_START,
        //       BRANCH_AND_BOUND,
@@ -665,6 +666,8 @@ public:
   String patternBasis;
   /// beta solvers don't need documentation
   String betaSolverName;
+  /// the \c class_path_and_name specification for the Python External method
+  String moduleAndClassName;
 
   // COLINY and APPS
 
@@ -1252,7 +1255,7 @@ public:
   RealVector proposalCovData;
   /// file from which to read proposal covariance in diagonal or matrix format
   String proposalCovFile;
-  /// file containing advanced ROL option overrides
+  /// file containing specialized algorithm options, eg ROL, external python, etc.
   String advancedOptionsFilename;
   /// file containing advanced QUESO option overrides
   String quesoOptionsFilename;

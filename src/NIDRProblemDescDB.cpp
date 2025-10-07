@@ -6872,6 +6872,7 @@ static UShortArray
 static String
         MP_(advancedOptionsFilename),
         MP_(betaSolverName),
+        MP_(moduleAndClassName),
         MP_(dataDistFile),
         MP_(displayFormat),
         MP_(diliHessianType),
@@ -7285,6 +7286,7 @@ static Method_mp_utype
 	MP2s(methodName,NCSU_DIRECT),
 	MP2s(methodName,ROL),
 	MP2s(methodName,DEMO_TPL),
+	MP2s(methodName,EXTERNAL_PYTHON),
 	MP2s(methodName,NL2SOL),
 	MP2s(methodName,NLPQL_SQP),
 	MP2s(methodName,NLSSOL_SQP),

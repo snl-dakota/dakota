@@ -40,6 +40,10 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
     set(DAKOTA_PYTHON_PATH "${Dakota_SOURCE_DIR}/interfaces/Python")
   endif()
 
+  if(HAVE_EXT_PYTHON_METHOD)
+    set(DAKOTA_PYTHON_PATH "$<TARGET_FILE_DIR:ext_method>:${DAKOTA_PYTHON_PATH}")
+  endif()
+
   # list of all destination files copied into test/ or subdirs test/dakota_*
   # so we can have a custom target depend on them
   set(copied_test_files_abs)

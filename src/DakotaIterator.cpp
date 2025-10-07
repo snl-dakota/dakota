@@ -294,6 +294,7 @@ static UShortStrBimap method_map =
   (NCSU_DIRECT,                     "ncsu_direct")
   (ROL,                             "rol")
   (DEMO_TPL,                        "demo_tpl")
+  (EXTERNAL_PYTHON,                 "external_python")
   ;
 
 
