@@ -16,10 +16,10 @@ method
   id_method = 'SubNLP'
   conmin_frcg					#s0,#s3
 #  npsol_sqp					#s1
-#  coliny_ea 					#s2
+#  soga 					#s2
 #    seed = 123451337				#s2
-    max_iterations = 100
-    max_function_evaluations = 100
+    max_iterations = 1000
+    max_function_evaluations = 10000
 
 variables,
 	continuous_design = 3
