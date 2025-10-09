@@ -79,7 +79,9 @@ endif()
 # (Formerly, DAKOTA_PYTHON controlled linked/direct Python interface only)
 option(DAKOTA_PYTHON "Dakota Python scripts (Interpreter); default ON" ON)
 
-option(HAVE_EXT_PYTHON_METHOD "Dakota external Python methods support; default ON" ON)
+# External python methods defaults to OFF to avoid Python library dependencies
+# and because some tests require scipy
+option(HAVE_EXT_PYTHON_METHOD "Dakota external Python methods support; default OFF" OFF)
 
 # Direct interface defaults OFF to avoid Python library dependencies
 option(DAKOTA_PYTHON_DIRECT_INTERFACE
