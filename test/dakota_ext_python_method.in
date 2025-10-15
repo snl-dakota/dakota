@@ -22,60 +22,60 @@ environment
 
 method,
     external_python
-      class_path_and_name = "ext_py_methods.SimplePyOpt"           #s0,#s5
-#      class_path_and_name = "ext_py_methods.RandomSample"         #s1
-#      class_path_and_name = "ext_py_methods.RandomSampleMixed"    #s2
-#      class_path_and_name = "ext_py_methods.NumpyOpt"             #s3
-      options_file = 'ext_py_options.json'                         #s0,#s1,#s2,#s3,#s5
-#      class_path_and_name = "ext_py_lhs_sampling.LHSSample"       #s4
-#      class_path_and_name = "ext_py_sp_optimize.ScipyOpt"         #s6,#s7,#s8
-
-variables,
-    continuous_design = 2                                            #s0,#s1,#s3,#s5,#s6,#s7,#s8
-    initial_point       0.5     0.5                                  #s0,#s1,#s3
-#    initial_point      -0.2     1.3                                 #s5
-#    initial_point       0.0     0.0                                 #s6,#s7,#s8
-    upper_bounds	2.0     2.0                                  #s0,#s1,#s3,#s5,#s6,#s7,#s8
-    lower_bounds       -2.0    -2.0                                  #s0,#s1,#s3,#s5,#s6,#s7,#s8
-    descriptors	        'x1'    'x2'                                 #s0,#s1,#s3,#s5,#s6,#s7,#s8
-#    continuous_design = 3                                           #s2,#s4
-#      initial_point   -1.0    1.5   2.0                             #s2,#s4
-#      upper_bounds    10.0   10.0  10.0                             #s2,#s4
-#      lower_bounds   -10.0  -10.0 -10.0                             #s2,#s4
-#      descriptors      'x1'  'x2'  'x3'                             #s2,#s4
-#    discrete_design_range = 2                                       #s2
-#      initial_point      2     2                                    #s2
-#      lower_bounds       1     1                                    #s2
-#      upper_bounds       4     9                                    #s2
-#      descriptors      'y1'   'y2'                                  #s2
-#    discrete_design_set                                             #s2
-#      real = 2                                                      #s2
-#        elements_per_variable = 4 5                                 #s2
-#        elements = 1.2 2.3 3.4 4.5 1.2 3.3 4.4 5.5 7.7              #s2
-#         initial_point 3.4  4.4                                     #s2
-#        descriptors      'y3'   'y4'                                #s2
-#      integer = 2                                                   #s2
-#        elements_per_variable = 2 2                                 #s2
-#        elements = 4 7 8 9                                          #s2
-#        descriptors      'z1'   'z2'                                #s2
-#      string = 1                                                    #s2
-#         elements = 'aniso1' 'aniso2' 'iso1' 'iso2' 'iso3'          #s2
-#        descriptors = 'ancomp'                                      #s2
-#         adjacency_matrix 1 1 0 0 0                                 #s2
-#                          1 1 0 0 0                                 #s2
-#                          0 0 1 1 1                                 #s2
-#                          0 0 1 1 1                                 #s2
-#                          0 0 1 1 1                                 #s2
+      class_path_and_name = "ext_py_methods.SimplePyOpt"           #s0,#s5,#p0,#p5
+#      class_path_and_name = "ext_py_methods.RandomSample"         #s1,#p1
+#      class_path_and_name = "ext_py_methods.RandomSampleMixed"    #s2,#p2
+#      class_path_and_name = "ext_py_methods.NumpyOpt"             #s3,#p3
+      options_file = 'ext_py_options.json'                         #s0,#s1,#s2,#s3,#s5,#p0,#p1,#p2,#p3,#p5
+#      class_path_and_name = "ext_py_lhs_sampling.LHSSample"       #s4,#p4
+#      class_path_and_name = "ext_py_sp_optimize.ScipyOpt"         #s6,#s7,#s8,#p6,#p7,#p8
+                                                                                                                                     
+variables,                                                                                                                           
+    continuous_design = 2                                          #s0,#s1,#s3,#s5,#s6,#s7,#s8,#p0,#p1,#p3,#p5,#p6,#p7,#p8                      
+    initial_point       0.5     0.5                                #s0,#s1,#s3,#p0,#p1,#p3
+#    initial_point      -0.2     1.3                               #s5,#p5
+#    initial_point       0.0     0.0                               #s6,#s7,#s8,#p6,#p7,#p8
+    upper_bounds	2.0     2.0                                #s0,#s1,#s3,#s5,#s6,#s7,#s8,#p0,#p1,#p3,#p5,#p6,#p7,#p8
+    lower_bounds       -2.0    -2.0                                #s0,#s1,#s3,#s5,#s6,#s7,#s8,#p0,#p1,#p3,#p5,#p6,#p7,#p8
+    descriptors	        'x1'    'x2'                               #s0,#s1,#s3,#s5,#s6,#s7,#s8,#p0,#p1,#p3,#p5,#p6,#p7,#p8
+#    continuous_design = 3                                         #s2,#s4,#p2,#p4
+#      initial_point   -1.0    1.5   2.0                           #s2,#s4,#p2,#p4
+#      upper_bounds    10.0   10.0  10.0                           #s2,#s4,#p2,#p4
+#      lower_bounds   -10.0  -10.0 -10.0                           #s2,#s4,#p2,#p4
+#      descriptors      'x1'  'x2'  'x3'                           #s2,#s4,#p2,#p4
+#    discrete_design_range = 2                                     #s2,#p2
+#      initial_point      2     2                                  #s2,#p2
+#      lower_bounds       1     1                                  #s2,#p2
+#      upper_bounds       4     9                                  #s2,#p2
+#      descriptors      'y1'   'y2'                                #s2,#p2
+#    discrete_design_set                                           #s2,#p2
+#      real = 2                                                    #s2,#p2
+#        elements_per_variable = 4 5                               #s2,#p2
+#        elements = 1.2 2.3 3.4 4.5 1.2 3.3 4.4 5.5 7.7            #s2,#p2
+#         initial_point 3.4  4.4                                   #s2,#p2
+#        descriptors      'y3'   'y4'                              #s2,#p2
+#      integer = 2                                                 #s2,#p2
+#        elements_per_variable = 2 2                               #s2,#p2
+#        elements = 4 7 8 9                                        #s2,#p2
+#        descriptors      'z1'   'z2'                              #s2,#p2
+#      string = 1                                                  #s2,#p2
+#         elements = 'aniso1' 'aniso2' 'iso1' 'iso2' 'iso3'        #s2,#p2
+#        descriptors = 'ancomp'                                    #s2,#p2
+#         adjacency_matrix 1 1 0 0 0                               #s2,#p2
+#                          1 1 0 0 0                               #s2,#p2
+#                          0 0 1 1 1                               #s2,#p2
+#                          0 0 1 1 1                               #s2,#p2
+#                          0 0 1 1 1                               #s2,#p2
 
 interface,
     direct
     analysis_driver = 'text_book'
 
 responses,
-    objective_functions = 1     #s0,#s2,#s3,#s5,#s6,#s7,#s8
-#    objective_functions = 3    #s1,#s4
-    no_gradients                #s0,#s1,#s2,#s3,#s4,#s6
-#    analytic_gradients         #s5,#s7,#s8
-    no_hessians                 #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7
-#    analytic_hessians          #s8
+    objective_functions = 1     #s0,#s2,#s3,#s5,#s6,#s7,#s8,#p0,#p2,#p3,#p5,#p6,#p7,#p8
+#    objective_functions = 3    #s1,#s4,#p1,#p4
+    no_gradients                #s0,#s1,#s2,#s3,#s4,#s6,#p0,#p1,#p2,#p3,#p4,#p6
+#    analytic_gradients         #s5,#s7,#s8,#p5,#p7,#p8
+    no_hessians                 #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7
+#    analytic_hessians          #s8,#p8
 
