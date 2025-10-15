@@ -46,18 +46,25 @@ macro(dakota_find_python)
       add_subdirectory(packages/external/pybind11)
     endif()
 
-    # If building with HDF5 support was requested, check for h5py available.
-    if(DAKOTA_HAVE_HDF5)
-      execute_process(COMMAND ${Python3_EXECUTABLE} -c "import h5py"
-      RESULT_VARIABLE missing_h5py OUTPUT_QUIET ERROR_QUIET)
-      if(NOT missing_h5py)
-        set(DAKOTA_H5PY_FOUND ON CACHE BOOL "h5py probe successful")
-        message(STATUS "Python3 h5py module found")
-      else()
-        set(DAKOTA_H5PY_FOUND OFF CACHE BOOL "h5py probe failed")
-        message(WARNING "HDF5 requested, but Python3 h5py module not found. HDF5 tests that require h5py will be disabled.")
-      endif()
+    # Check for default and user-requested python module support
+    set(dakota_python_modules h5py numpy scipy)
+
+    if(DEFINED CHECK_PYTHON_MODULES)
+      list(APPEND dakota_python_modules ${CHECK_PYTHON_MODULES})
     endif()
+
+    foreach(mod ${dakota_python_modules})
+      string(TOUPPER "${mod}" upmod)
+      execute_process(COMMAND ${Python3_EXECUTABLE} -c "import ${mod}"
+      RESULT_VARIABLE missing_mod OUTPUT_QUIET ERROR_QUIET)
+      if(NOT missing_mod)
+        set(DAKOTA_${upmod}_FOUND ON CACHE BOOL "${mod} probe successful")
+        message(STATUS "Python3 ${mod} module found")
+      else()
+        set(DAKOTA_${upmod}_FOUND OFF CACHE BOOL "${mod} probe failed")
+        message(STATUS "Python3 ${mod} module NOT found. ${upmod} tests that require ${mod} will be disabled.")
+      endif()
+    endforeach()
 
   else()
 
