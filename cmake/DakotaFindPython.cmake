@@ -49,8 +49,8 @@ macro(dakota_find_python)
     # Check for default and user-requested python module support
     set(dakota_python_modules h5py numpy scipy)
 
-    if(DEFINED CHECK_PYTHON_MODULES)
-      list(APPEND dakota_python_modules ${CHECK_PYTHON_MODULES})
+    if(DEFINED PROBE_PYTHON_MODULES)
+      list(APPEND dakota_python_modules ${PROBE_PYTHON_MODULES})
     endif()
 
     foreach(mod ${dakota_python_modules})
