@@ -1,16 +1,16 @@
 #@ s*: Label=FastTest
 #@ p*: MPIProcs=2
 #@ *: DakotaConfig=HAVE_EXT_PYTHON_METHOD
-#@ s3 DakotaConfig=DAKOTA_NUMPY_FOUND
-#@ s4 DakotaConfig=DAKOTA_SCIPY_FOUND
-#@ s6 DakotaConfig=DAKOTA_SCIPY_FOUND
-#@ s7 DakotaConfig=DAKOTA_SCIPY_FOUND
-#@ s8 DakotaConfig=DAKOTA_SCIPY_FOUND
-#@ p3 DakotaConfig=DAKOTA_NUMPY_FOUND
-#@ p4 DakotaConfig=DAKOTA_SCIPY_FOUND
-#@ p6 DakotaConfig=DAKOTA_SCIPY_FOUND
-#@ p7 DakotaConfig=DAKOTA_SCIPY_FOUND
-#@ p8 DakotaConfig=DAKOTA_SCIPY_FOUND
+#@ s3 DakotaConfig=DAKOTA_PYTHON_NUMPY_FOUND
+#@ s4 DakotaConfig=DAKOTA_PYTHON_SCIPY_FOUND
+#@ s6 DakotaConfig=DAKOTA_PYTHON_SCIPY_FOUND
+#@ s7 DakotaConfig=DAKOTA_PYTHON_SCIPY_FOUND
+#@ s8 DakotaConfig=DAKOTA_PYTHON_SCIPY_FOUND
+#@ p3 DakotaConfig=DAKOTA_PYTHON_NUMPY_FOUND
+#@ p4 DakotaConfig=DAKOTA_PYTHON_SCIPY_FOUND
+#@ p6 DakotaConfig=DAKOTA_PYTHON_SCIPY_FOUND
+#@ p7 DakotaConfig=DAKOTA_PYTHON_SCIPY_FOUND
+#@ p8 DakotaConfig=DAKOTA_PYTHON_SCIPY_FOUND
 #@ *: ReqFiles=ext_py_methods.py,ext_py_lhs_sampling.py,ext_py_sp_optimize.py,ext_py_options.json
 
 environment

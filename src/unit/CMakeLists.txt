@@ -125,7 +125,7 @@ endif (NOT DAKOTA_HAVE_MPI)
 
 
 # Unit test: h5py_hdf5
-if(DAKOTA_H5PY_FOUND)
+if(DAKOTA_PYTHON_H5PY_FOUND)
   dakota_add_h5py_test(mixed_sampling)
   if (DAKOTA_MODULE_SURROGATES)
     dakota_add_h5py_test(incremental_sampling)
