@@ -3,6 +3,7 @@ import numpy as np
 from scipy.optimize import minimize
 
 import ext_method
+import ext_py_helper
 
 class Standalone:
 
@@ -97,21 +98,13 @@ class ScipyOpt:
         else:
             result = minimize(self.obj_fn, init_pts)
 
-        # Print the results
-        print("Optimal value of x:", result.x[0])
-        print("Optimal value of y:", result.x[1])
-        print("Minimum value of the function:", result.fun)
+        # Send output to Dakota in a format amenable to regression testing
+        ext_py_helper.print_opt_results(self.executor, result.x, result.fun)
 
+        # Return these to Dakota
         retval = {}
         retval['fns_sp']    = [result.fun]
         retval['best_x_np'] = [result.x[0], result.x[1]]
-
-        # Send output to Dakota in a format amenable to regression testing
-        self.executor.dak_print("<<<<< Best parameters          =")
-        self.executor.dak_print(f"\t\t{result.x[0]} x1")
-        self.executor.dak_print(f"\t\t{result.x[1]} x2")
-        self.executor.dak_print("<<<<< Best objective function  =")
-        self.executor.dak_print(f"\t\t{result.fun}")
 
         return retval
 

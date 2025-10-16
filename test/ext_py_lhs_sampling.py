@@ -10,36 +10,7 @@
 from scipy.stats import qmc
 
 import ext_method
-
-
-#####################################
-#       External Method Helper      #
-#####################################
-
-def print_executor(executor):
-
-    print("executor.tv()                                ", executor.tv())
-    print("executor.cv()                                ", executor.cv())
-    print("executor.div()                               ", executor.div())
-    print("executor.dsv()                               ", executor.dsv())
-    print("executor.drv()                               ", executor.drv())
-    print("executor.continuous_variables()              ", executor.continuous_variables())
-    print("executor.discrete_int_variables()            ", executor.discrete_int_variables())
-    print("executor.discrete_string_variables()         ", executor.discrete_string_variables())
-    print("executor.discrete_real_variables()           ", executor.discrete_real_variables())
-    print("executor.continuous_variable_labels()        ", executor.continuous_variable_labels())
-    print("executor.discrete_int_variable_labels()      ", executor.discrete_int_variable_labels())
-    print("executor.discrete_string_variable_labels()   ", executor.discrete_string_variable_labels())
-    print("executor.discrete_real_variable_labels()     ", executor.discrete_real_variable_labels())
-    print("executor.response_size()                     ", executor.response_size())
-    print("executor.response_labels()                   ", executor.response_labels())
-    print("executor.continuous_lower_bounds()           ", executor.continuous_lower_bounds())
-    print("executor.continuous_upper_bounds()           ", executor.continuous_upper_bounds())
-    print("executor.discrete_int_lower_bounds()         ", executor.discrete_int_lower_bounds())
-    print("executor.discrete_int_upper_bounds()         ", executor.discrete_int_upper_bounds())
-    print("executor.discrete_real_lower_bounds()        ", executor.discrete_real_lower_bounds())
-    print("executor.discrete_real_upper_bounds()        ", executor.discrete_real_upper_bounds())
-
+import ext_py_helper
 
 
 #############################################
@@ -68,8 +39,6 @@ class LHSSample:
         samples = sampler.random(n=25)
         self.samples = qmc.scale(samples, l_bounds, u_bounds)
         print("Using scipy qmc LHS samples:",self.samples)
-
-        #self.executor.output_central_moments(self.fns)
 
     def core_run(self):
 

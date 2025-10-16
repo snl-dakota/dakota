@@ -11,7 +11,7 @@
 #@ p6 DakotaConfig=DAKOTA_PYTHON_SCIPY_FOUND
 #@ p7 DakotaConfig=DAKOTA_PYTHON_SCIPY_FOUND
 #@ p8 DakotaConfig=DAKOTA_PYTHON_SCIPY_FOUND
-#@ *: ReqFiles=ext_py_methods.py,ext_py_lhs_sampling.py,ext_py_sp_optimize.py,ext_py_options.json
+#@ *: ReqFiles=ext_py_methods.py,ext_py_lhs_sampling.py,ext_py_sp_optimize.py,ext_py_options.json,ext_py_helper.py
 
 environment
     tabular_data

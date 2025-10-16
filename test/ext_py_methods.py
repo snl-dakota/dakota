@@ -13,36 +13,7 @@ import numpy as np
 import random as rnd
 
 import ext_method
-
-
-#####################################
-#       External Method Helper      #
-#####################################
-
-def print_executor(executor):
-
-    print("executor.tv()                                ", executor.tv())
-    print("executor.cv()                                ", executor.cv())
-    print("executor.div()                               ", executor.div())
-    print("executor.dsv()                               ", executor.dsv())
-    print("executor.drv()                               ", executor.drv())
-    print("executor.continuous_variables()              ", executor.continuous_variables())
-    print("executor.discrete_int_variables()            ", executor.discrete_int_variables())
-    print("executor.discrete_string_variables()         ", executor.discrete_string_variables())
-    print("executor.discrete_real_variables()           ", executor.discrete_real_variables())
-    print("executor.continuous_variable_labels()        ", executor.continuous_variable_labels())
-    print("executor.discrete_int_variable_labels()      ", executor.discrete_int_variable_labels())
-    print("executor.discrete_string_variable_labels()   ", executor.discrete_string_variable_labels())
-    print("executor.discrete_real_variable_labels()     ", executor.discrete_real_variable_labels())
-    print("executor.response_size()                     ", executor.response_size())
-    print("executor.response_labels()                   ", executor.response_labels())
-    print("executor.continuous_lower_bounds()           ", executor.continuous_lower_bounds())
-    print("executor.continuous_upper_bounds()           ", executor.continuous_upper_bounds())
-    print("executor.discrete_int_lower_bounds()         ", executor.discrete_int_lower_bounds())
-    print("executor.discrete_int_upper_bounds()         ", executor.discrete_int_upper_bounds())
-    print("executor.discrete_real_lower_bounds()        ", executor.discrete_real_lower_bounds())
-    print("executor.discrete_real_upper_bounds()        ", executor.discrete_real_upper_bounds())
-
+import ext_py_helper
 
 
 #############################################
@@ -124,15 +95,12 @@ class SimplePyOpt:
                 i=i+1
 
 
+        # Send output to Dakota in a format amenable to regression testing
+        ext_py_helper.print_opt_results(self.executor, best_x, best_f)
+
+        # Return these to Dakota
         retval['fns']    = [best_f]
         retval['best_x'] = best_x
-
-        # Dakota recognized output format; needed for test baselines
-        self.executor.dak_print("<<<<< Best parameters          =")
-        self.executor.dak_print(f"\t\t{best_x[0]} x1")
-        self.executor.dak_print(f"\t\t{best_x[1]} x2")
-        self.executor.dak_print("<<<<< Best objective function  =")
-        self.executor.dak_print(f"\t\t{best_f}")
 
         return retval
 
@@ -188,15 +156,12 @@ class NumpyOpt:
                 best_f = abs(f[0]-target)
             i=i+1
 
+        # Send output to Dakota in a format amenable to regression testing
+        ext_py_helper.print_opt_results(self.executor, best_x, best_f)
+
+        # Return these to Dakota
         retval['fns_np']    = [best_f]
         retval['best_x_np'] = best_x
-
-        # Send output to Dakota in a format amenable to regression testing
-        self.executor.dak_print("<<<<< Best parameters          =")
-        self.executor.dak_print(f"\t\t{best_x[0]} x1")
-        self.executor.dak_print(f"\t\t{best_x[1]} x2")
-        self.executor.dak_print("<<<<< Best objective function  =")
-        self.executor.dak_print(f"\t\t{best_f}")
 
         return retval
 
@@ -284,7 +249,7 @@ class RandomSampleMixed:
 
     def core_run(self):
 
-        print_executor(self.executor)
+        ext_py_helper.print_executor(self.executor)
 
         n_vars = self.executor.cv()
         n_fns  = self.executor.response_size()
