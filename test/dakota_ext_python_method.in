@@ -1,17 +1,7 @@
 #@ s*: Label=FastTest
 #@ p*: MPIProcs=2
 #@ *: DakotaConfig=HAVE_EXT_PYTHON_METHOD
-#@ s3 DakotaConfig=DAKOTA_PYTHON_NUMPY_FOUND
-#@ s4 DakotaConfig=DAKOTA_PYTHON_SCIPY_FOUND
-#@ s6 DakotaConfig=DAKOTA_PYTHON_SCIPY_FOUND
-#@ s7 DakotaConfig=DAKOTA_PYTHON_SCIPY_FOUND
-#@ s8 DakotaConfig=DAKOTA_PYTHON_SCIPY_FOUND
-#@ p3 DakotaConfig=DAKOTA_PYTHON_NUMPY_FOUND
-#@ p4 DakotaConfig=DAKOTA_PYTHON_SCIPY_FOUND
-#@ p6 DakotaConfig=DAKOTA_PYTHON_SCIPY_FOUND
-#@ p7 DakotaConfig=DAKOTA_PYTHON_SCIPY_FOUND
-#@ p8 DakotaConfig=DAKOTA_PYTHON_SCIPY_FOUND
-#@ *: ReqFiles=ext_py_methods.py,ext_py_lhs_sampling.py,ext_py_sp_optimize.py,ext_py_options.json,ext_py_helper.py
+#@ *: ReqFiles=ext_py_methods.py,ext_py_options.json,ext_py_helper.py
 
 environment
     tabular_data
@@ -22,27 +12,23 @@ environment
 
 method,
     external_python
-      class_path_and_name = "ext_py_methods.SimplePyOpt"           #s0,#s5,#p0,#p5
+      class_path_and_name = "ext_py_methods.SimplePyOpt"           #s0,#s3,#p0,#p3
 #      class_path_and_name = "ext_py_methods.RandomSample"         #s1,#p1
 #      class_path_and_name = "ext_py_methods.RandomSampleMixed"    #s2,#p2
-#      class_path_and_name = "ext_py_methods.NumpyOpt"             #s3,#p3
-      options_file = 'ext_py_options.json'                         #s0,#s1,#s2,#s3,#s5,#p0,#p1,#p2,#p3,#p5
-#      class_path_and_name = "ext_py_lhs_sampling.LHSSample"       #s4,#p4
-#      class_path_and_name = "ext_py_sp_optimize.ScipyOpt"         #s6,#s7,#s8,#p6,#p7,#p8
+      options_file = 'ext_py_options.json'                         #s0,#s1,#s2,#s3,#p0,#p1,#p2,#p3
                                                                                                                                      
 variables,                                                                                                                           
-    continuous_design = 2                                          #s0,#s1,#s3,#s5,#s6,#s7,#s8,#p0,#p1,#p3,#p5,#p6,#p7,#p8                      
-    initial_point       0.5     0.5                                #s0,#s1,#s3,#p0,#p1,#p3
-#    initial_point      -0.2     1.3                               #s5,#p5
-#    initial_point       0.0     0.0                               #s6,#s7,#s8,#p6,#p7,#p8
-    upper_bounds	2.0     2.0                                #s0,#s1,#s3,#s5,#s6,#s7,#s8,#p0,#p1,#p3,#p5,#p6,#p7,#p8
-    lower_bounds       -2.0    -2.0                                #s0,#s1,#s3,#s5,#s6,#s7,#s8,#p0,#p1,#p3,#p5,#p6,#p7,#p8
-    descriptors	        'x1'    'x2'                               #s0,#s1,#s3,#s5,#s6,#s7,#s8,#p0,#p1,#p3,#p5,#p6,#p7,#p8
-#    continuous_design = 3                                         #s2,#s4,#p2,#p4
-#      initial_point   -1.0    1.5   2.0                           #s2,#s4,#p2,#p4
-#      upper_bounds    10.0   10.0  10.0                           #s2,#s4,#p2,#p4
-#      lower_bounds   -10.0  -10.0 -10.0                           #s2,#s4,#p2,#p4
-#      descriptors      'x1'  'x2'  'x3'                           #s2,#s4,#p2,#p4
+    continuous_design = 2                                          #s0,#s1,#s3,#p0,#p1,#p3
+    initial_point       0.5     0.5                                #s0,#s1,#p0,#p1
+#    initial_point      -0.2     1.3                               #s3,#p3
+    upper_bounds	2.0     2.0                                #s0,#s1,#s3,#p0,#p1,#p3
+    lower_bounds       -2.0    -2.0                                #s0,#s1,#s3,#p0,#p1,#p3
+    descriptors	        'x1'    'x2'                               #s0,#s1,#s3,#p0,#p1,#p3
+#    continuous_design = 3                                         #s2,#p2
+#      initial_point   -1.0    1.5   2.0                           #s2,#p2
+#      upper_bounds    10.0   10.0  10.0                           #s2,#p2
+#      lower_bounds   -10.0  -10.0 -10.0                           #s2,#p2
+#      descriptors      'x1'  'x2'  'x3'                           #s2,#p2
 #    discrete_design_range = 2                                     #s2,#p2
 #      initial_point      2     2                                  #s2,#p2
 #      lower_bounds       1     1                                  #s2,#p2
@@ -72,10 +58,9 @@ interface,
     analysis_driver = 'text_book'
 
 responses,
-    objective_functions = 1     #s0,#s2,#s3,#s5,#s6,#s7,#s8,#p0,#p2,#p3,#p5,#p6,#p7,#p8
-#    objective_functions = 3    #s1,#s4,#p1,#p4
-    no_gradients                #s0,#s1,#s2,#s3,#s4,#s6,#p0,#p1,#p2,#p3,#p4,#p6
-#    analytic_gradients         #s5,#s7,#s8,#p5,#p7,#p8
-    no_hessians                 #s0,#s1,#s2,#s3,#s4,#s5,#s6,#s7,#p0,#p1,#p2,#p3,#p4,#p5,#p6,#p7
-#    analytic_hessians          #s8,#p8
+    objective_functions = 1     #s0,#s2,#s3,#p0,#p2,#p3
+#    objective_functions = 3    #s1,#p1
+    no_gradients                #s0,#s1,#s2,#p0,#p1,#p2
+#    analytic_gradients         #s3,#p3
+    no_hessians                 #s0,#s1,#s2,#s3,#p0,#p1,#p2,#p3
 

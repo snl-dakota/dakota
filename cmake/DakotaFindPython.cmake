@@ -62,7 +62,7 @@ macro(dakota_find_python)
         message(STATUS "Python3 ${mod} module found")
       else()
         set(DAKOTA_PYTHON_${upmod}_FOUND OFF CACHE BOOL "${mod} probe failed")
-        message(STATUS "Python3 ${mod} module NOT found. ${upmod} tests that require ${mod} will be disabled.")
+        message(STATUS "Python3 ${mod} module NOT found. Tests that require DAKOTA_PYTHON_${upmod}_FOUND will be disabled.")
       endif()
     endforeach()
 
