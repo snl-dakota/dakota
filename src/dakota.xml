@@ -3811,7 +3811,7 @@
                       <keyword  id="initial_chain_samples" name="initial_chain_samples" code="{N_mdm(int,mlmcmcInitialChainSamples)}" label="Number of initial samples for MLMCMC"  minOccurs="0" default="100" >
                         <param type="INTEGER" />
                       </keyword>
-                      <keyword  id="target_variance" name="target_variance" code="{N_mdm(Real,mlmcmcTargetVariance)}" label="Estimator variance for the MLMCMC greedy algorithm"  minOccurs="0.0001" default="1." >
+                      <keyword  id="target_variance" name="target_variance" code="{N_mdm(Real,mlmcmcTargetVariance)}" label="Estimator variance for the MLMCMC greedy algorithm"  minOccurs="0" default="0.05" >
                         <param type="REAL" />
                       </keyword>
                       <keyword  id="greedy_resampling_factor" name="greedy_resampling_factor" code="{N_mdm(Real,mlmcmcGreedyResamplingFactor)}" label="Resampling factor for the MLMCMC greedy algorithm"  minOccurs="0" maxOccurs="1" default="0.5" >
