@@ -58,6 +58,7 @@ enum { DEFAULT_METHOD=0,
        MULTILEVEL_MULTIFIDELITY_SAMPLING, APPROX_CONTROL_VARIATE,
        GEN_APPROX_CONTROL_VARIATE, MULTILEVEL_BLUE,
        LIST_SAMPLING, RANDOM_SAMPLING,
+       IMPORT_POINTS, // TNP TODO: Maybe move this depending on where it goes in the class hierarchy
        // Variables::method_view(): epistemic if method_name > RANDOM_SAMPLING
        LOCAL_INTERVAL_EST, LOCAL_EVIDENCE, GLOBAL_INTERVAL_EST, GLOBAL_EVIDENCE,
        //BAYES_CALIBRATION=(ANALYZER_BIT | NOND_BIT | PARALLEL_BIT),
@@ -1481,6 +1482,15 @@ public:
   unsigned short importBuildFormat;
   /// whether to import active variables only
   bool importBuildActive;
+  
+  /// the file name from the \c import_points_file specification
+  String importPtsFile;
+  /// tabular format for the build point import file
+  unsigned short importPtsFormat;
+  /// whether to import active variables only
+  bool importPtsActive;
+    /// whether to parse/validate variable labels from header
+  bool importPtsUseVariableLabels;
 
   /// the file name from the \c import_approx_points_file specification
   String importApproxPtsFile;

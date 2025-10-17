@@ -174,7 +174,7 @@ public:
   bool importUseVariableLabels;
   /// whether to import active variables only
   bool importBuildActive;
-
+  
   // the file name from the \c import_approx_points_file specification in
   // \ref ModelSurrG
   //String importApproxPtsFile;

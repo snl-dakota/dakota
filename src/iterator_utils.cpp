@@ -26,6 +26,7 @@
 #include "NonDLocalReliability.hpp"
 #include "NonDGlobalReliability.hpp"
 #include "NonDLHSSampling.hpp"
+#include "NonDImportPoints.hpp"
 #include "NonDAdaptImpSampling.hpp"
 #include "NonDGPImpSampling.hpp"
 #include "NonDMultilevControlVarSampling.hpp"
@@ -305,6 +306,11 @@ namespace Dakota {
         //  case MUQ_SAMPLING:
         //    return std::make_shared<NonDMUQBayesCalibration>(problem_db, parallel_lib, model);break;
         //#endif
+        case IMPORT_POINTS: {
+            std::shared_ptr<Iterator> sp = std::make_shared<NonDImportPoints>(problem_db, parallel_lib, model);
+            return sp;
+            break;
+        }
         case RANDOM_SAMPLING: { 
             std::shared_ptr<Iterator> sp = std::make_shared<NonDLHSSampling>(problem_db, parallel_lib, model);
             return sp;
