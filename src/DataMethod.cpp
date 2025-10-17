@@ -226,6 +226,8 @@ DataMethodRep::DataMethodRep():
   refinementRate(2.),
   // Point import/export files
   importBuildFormat(TABULAR_ANNOTATED),   importBuildActive(false),
+  importPtsFormat(TABULAR_ANNOTATED),   importPtsActive(false),
+  importPtsUseVariableLabels(false),
   importApproxFormat(TABULAR_ANNOTATED),  importApproxActive(false),
   exportApproxFormat(TABULAR_ANNOTATED),
   exportSampleSeqFlag(false), exportSamplesFormat(TABULAR_ANNOTATED),
@@ -432,6 +434,8 @@ void DataMethodRep::write(MPIPackBuffer& s) const
 
   // Point import/export files
   s << importBuildPtsFile  << importBuildFormat  << importBuildActive
+    << importPtsFile  << importPtsFormat  
+    << importPtsActive << importPtsUseVariableLabels
     << importApproxPtsFile << importApproxFormat << importApproxActive
     << exportApproxPtsFile << exportApproxFormat << exportMCMCPtsFile
     << exportSampleSeqFlag << exportSamplesFormat;
@@ -636,6 +640,8 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
 
   // Point import/export files
   s >> importBuildPtsFile  >> importBuildFormat  >> importBuildActive
+    >> importPtsFile  >> importPtsFormat
+    >> importPtsActive >> importPtsUseVariableLabels
     >> importApproxPtsFile >> importApproxFormat >> importApproxActive
     >> exportApproxPtsFile >> exportApproxFormat >> exportMCMCPtsFile
     >> exportSampleSeqFlag >> exportSamplesFormat;
@@ -840,6 +846,8 @@ void DataMethodRep::write(std::ostream& s) const
 
   // Point import/export files
   s << importBuildPtsFile  << importBuildFormat  << importBuildActive
+    << importPtsFile << importPtsFormat
+    << importPtsActive << importPtsUseVariableLabels
     << importApproxPtsFile << importApproxFormat << importApproxActive
     << exportApproxPtsFile << exportApproxFormat << exportMCMCPtsFile
     << exportSampleSeqFlag << exportSamplesFormat;

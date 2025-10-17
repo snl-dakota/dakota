@@ -133,6 +133,9 @@ public:
 			    const RealMatrix& moment_cis, String qoi_type,
 			    short moments_type,
 			    const StringArray& moment_labels, bool print_cis);
+  
+          /// Print a header and summary statistics
+  void print_header_and_statistics(std::ostream& s, const int& num_samples);
 
   /// prints the Wilks stastics
   void print_wilks_stastics(std::ostream& s) const;

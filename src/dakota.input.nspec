@@ -2879,6 +2879,73 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
    )
   |
+  ( import_points {N_mdm(utype,methodName_IMPORT_POINTS)}
+    ( import_points_file STRING {N_mdm(str,importPtsFile)}
+      [ 
+        ( custom_annotated {N_mdm(utype,importPtsFormat_TABULAR_NONE)}
+          [ header {N_mdm(augment_utype,importPtsFormat_TABULAR_HEADER)}
+            [ use_variable_labels {N_mdm(true,importPtsUseVariableLabels)} ]
+           ]
+          [ eval_id {N_mdm(augment_utype,importPtsFormat_TABULAR_EVAL_ID)} ]
+          [ interface_id {N_mdm(augment_utype,importPtsFormat_TABULAR_IFACE_ID)} ]
+         )
+        |
+        ( annotated {N_mdm(utype,importPtsFormat_TABULAR_ANNOTATED)}
+          [ use_variable_labels {N_mdm(true,importPtsUseVariableLabels)} ]
+         )
+        |
+        freeform {N_mdm(utype,importPtsFormat_TABULAR_NONE)}
+       ]
+      [ active_only {N_mdm(true,importPtsActive)} ]
+     )
+    [ variance_based_decomp {N_mdm(true,vbdFlag)}
+      [ drop_tolerance REAL {N_mdm(Real,vbdDropTolerance)} ]
+      [ num_bins INTEGER {N_mdm(int,vbdViaSamplingNumBins)} ]
+     ]
+    [ std_regression_coeffs {N_mdm(true,stdRegressionCoeffs)} ]
+    [ tolerance_intervals {N_mdm(true,toleranceIntervalsFlag)}
+      [ coverage REAL {N_mdm(Real01,tiCoverage)} ]
+      [ confidence_level REAL {N_mdm(Real01,tiConfidenceLevel)} ]
+     ]
+    [ final_moments {0}
+      none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
+      |
+      standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
+      |
+      central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
+     ]
+    [ response_levels REALLIST {N_mdm(resplevs,responseLevels)}
+      [ num_response_levels INTEGERLIST {N_mdm(num_resplevs,responseLevels)} ]
+      [ compute {0}
+        probabilities {N_mdm(type,responseLevelTarget_PROBABILITIES)}
+        |
+        reliabilities {N_mdm(type,responseLevelTarget_RELIABILITIES)}
+        |
+        gen_reliabilities {N_mdm(type,responseLevelTarget_GEN_RELIABILITIES)}
+        [ system {0}
+          series {N_mdm(type,responseLevelTargetReduce_SYSTEM_SERIES)}
+          |
+          parallel {N_mdm(type,responseLevelTargetReduce_SYSTEM_PARALLEL)}
+         ]
+       ]
+     ]
+    [ probability_levels REALLIST {N_mdm(resplevs01,probabilityLevels)}
+      [ num_probability_levels INTEGERLIST {N_mdm(num_resplevs,probabilityLevels)} ]
+     ]
+    [ reliability_levels REALLIST {N_mdm(resplevs,reliabilityLevels)}
+      [ num_reliability_levels INTEGERLIST {N_mdm(num_resplevs,reliabilityLevels)} ]
+     ]
+    [ gen_reliability_levels REALLIST {N_mdm(resplevs,genReliabilityLevels)}
+      [ num_gen_reliability_levels INTEGERLIST {N_mdm(num_resplevs,genReliabilityLevels)} ]
+     ]
+    [ distribution {0}
+      cumulative {N_mdm(type,distributionType_CUMULATIVE)}
+      |
+      complementary {N_mdm(type,distributionType_COMPLEMENTARY)}
+     ]
+    [ model_pointer STRING {N_mdm(str,modelPointer)} ]
+   )
+  |
   ( multilevel_sampling ALIAS multilevel_mc ALIAS mlmc {N_mdm(utype,methodName_MULTILEVEL_SAMPLING)}
     [ seed_sequence INTEGERLIST {N_mdm(szarray,randomSeedSeq)} ]
     [ fixed_seed {N_mdm(true,fixedSeedFlag)} ]
