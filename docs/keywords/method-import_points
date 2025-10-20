@@ -1,0 +1,135 @@
+Blurb::
+Imports points from file and computes statistics for them.
+Description::
+This method imports input-output points from a tabular file
+and computes statistics for them. Correlation coefficients 
+and moments are always computed. More advanced statistics, 
+e.g., for sensitivity or reliability analysis, can optionally
+be computed.
+
+*Default Behavior*
+
+By default, the ``import_points`` method operates on aleatory and epistemic
+uncertain variables.  The types of variables can be restricted or
+expanded (to include design or state variables) through use of the
+``active`` keyword in the :dakkw:`variables` block in the Dakota input
+file.
+
+*Expected Outputs*
+
+As a default, Dakota provides correlation analyses for imported points.
+Correlation tables are printed with the simple, partial, and rank
+correlations between inputs and outputs. These can be useful to get a
+quick sense of how correlated the inputs are to each other, and how
+correlated various outputs are to inputs. ``variance_based_decomp`` employs
+the CROSSREFBINNED method to compute first-order Sobol' indices for the 
+imported points.
+
+Additional statistics can be computed from the imported points using the following
+keywords:
+
+- ``response_levels``
+- ``reliability_levels``
+- ``probability_levels``
+- ``gen_reliability_levels``
+
+``response_levels`` computes statistics at the specified response value.
+The other three allow the specification of the statistic value, and will
+estimate the corresponding response value.
+
+``distribution`` is used to specify whether the statistic values are
+from cumulative or complementary cumulative functions.
+
+*Expected HDF5 Output*
+
+If Dakota was built with HDF5 support and run with the
+:dakkw:`environment-results_output-hdf5` keyword, this method
+writes the following results to HDF5:
+
+* When :dakkw:`method-sampling-variance_based_decomp` is enabled  
+   * :ref:`hdf5_results-vbd`
+
+* For aleatory UQ studies  
+   * :ref:`hdf5_results-pdf`
+   * :ref:`hdf5_results-level_mappings`
+   * :ref:`hdf5_results-sampling_moments`
+   * :ref:`hdf5_results-correlations`
+
+* For epistemic UQ studies
+   * :ref:`hdf5_results-extreme_responses`
+   * :ref:`hdf5_results-correlations`
+
+*Usage Tips*
+
+No error checking is done on the imported points, e.g., to confirm 
+whether sample values fall within specified bounds in the variables
+block, or to confirm the adequacy of the sample for computing a requested
+statistic. Users should perform their own quality checks on their
+input-output points before employing this method.
+
+**Active Variables:** By default ``import_points`` imports only uncertain 
+variables, and treats any design or state variables as 
+constants.  However, if :dakkw:`variables-active`
+:dakkw:`variables-active-all` is specified sampling will be performed
+over all variables, including uncertain, design, and state.  In this
+case, the sampling algorithm will treat any continuous design or
+continuous state variables as parameters with uniform probability
+distributions between their upper and lower bounds.
+**TODO** what happens if we have design/state variables in our input deck
+and in our imported points?
+
+This is similar to the behavior of the design of experiments methods,
+since they will also generate samples over all continuous design,
+uncertain, and state variables in the variables specification.
+However, the design of experiments methods will treat all variables as
+being uniformly distributed between their upper and lower bounds,
+whereas the sampling method will sample the uncertain variables within
+their specified probability distributions. The other ``active``
+options can enable sample over other subsets of variables.
+
+Topics::
+uncertainty_quantification, sampling
+Examples::
+
+.. code-block::
+    
+    environment
+    
+    method
+      import_points
+        import_points_file 'all_points.dat'
+        variance_based_decomp
+    
+    model
+      single
+    
+    variables
+      active uncertain
+      uniform_uncertain = 2
+        descriptors  =   'input1'     'input2'
+        lower_bounds =  -2.0     -2.0
+        upper_bounds =   2.0      2.0
+      continuous_state = 1
+        descriptors =   'constant1'
+        initial_state = 100
+    
+    interface
+      analysis_drivers 'text_book'
+        fork
+    
+    responses
+      response_functions = 1
+      no_gradients
+      no_hessians
+
+
+This example illustrates a basic import points Dakota input file.
+- The tabular file to import is specified.
+- 
+
+- LHS is used instead of purely random sampling.
+- The default random number generator is used.
+- Without a ``seed`` specified, this will not be reproducable
+- In the ``variables`` block, two types of variables are used
+- Only the uncertain variables are varied, this is the default     behavior, and is also specified by the ``active`` keyword, w/ the     ``uncertain`` option
+Theory::
