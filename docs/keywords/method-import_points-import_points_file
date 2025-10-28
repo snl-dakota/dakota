@@ -1,12 +1,12 @@
 Blurb::
-File containing list of variable values to evaluate in a list parameter study
+File containing list of variable and response values to import for analysis.
 Description::
-The ``import_points_file`` specifies a file containing a list of variable
-values at which to compute a model response.
+The ``import_points_file`` specifies a file containing a list of variable and
+response values.
 
 *Default Behavior*
 
-By default, methods do not import points from a file.
+This argument must be specified for ``import_points_method``.
 
 *Usage Tips*
 
@@ -23,8 +23,8 @@ Examples::
 .. code-block::
 
     method
-      list_parameter_study
-        import_points_file = 'dakota_pstudy.3.dat'
+      import_points
+        import_points_file = 'all_samples.dat'
 
 
 Theory::

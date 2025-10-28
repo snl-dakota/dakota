@@ -1,5 +1,6 @@
 Blurb::
 Imports points from file and computes statistics for them.
+
 Description::
 This method imports input-output points from a tabular file
 and computes statistics for them. Correlation coefficients 
@@ -13,7 +14,7 @@ By default, the ``import_points`` method operates on aleatory and epistemic
 uncertain variables.  The types of variables can be restricted or
 expanded (to include design or state variables) through use of the
 ``active`` keyword in the :dakkw:`variables` block in the Dakota input
-file.
+file. 
 
 *Expected Outputs*
 
@@ -22,8 +23,8 @@ Correlation tables are printed with the simple, partial, and rank
 correlations between inputs and outputs. These can be useful to get a
 quick sense of how correlated the inputs are to each other, and how
 correlated various outputs are to inputs. ``variance_based_decomp`` employs
-the CROSSREFBINNED method to compute first-order Sobol' indices for the 
-imported points.
+the binned Sobol' index method :cite:p:`Li16` to compute first-order Sobol'
+indices for the imported points.
 
 Additional statistics can be computed from the imported points using the following
 keywords:
@@ -70,22 +71,10 @@ input-output points before employing this method.
 **Active Variables:** By default ``import_points`` imports only uncertain 
 variables, and treats any design or state variables as 
 constants.  However, if :dakkw:`variables-active`
-:dakkw:`variables-active-all` is specified sampling will be performed
-over all variables, including uncertain, design, and state.  In this
-case, the sampling algorithm will treat any continuous design or
-continuous state variables as parameters with uniform probability
-distributions between their upper and lower bounds.
-**TODO** what happens if we have design/state variables in our input deck
-and in our imported points?
-
-This is similar to the behavior of the design of experiments methods,
-since they will also generate samples over all continuous design,
-uncertain, and state variables in the variables specification.
-However, the design of experiments methods will treat all variables as
-being uniformly distributed between their upper and lower bounds,
-whereas the sampling method will sample the uncertain variables within
-their specified probability distributions. The other ``active``
-options can enable sample over other subsets of variables.
+:dakkw:`variables-active-all` is specified, statistics such as correlation 
+coefficients will be computed over all variables, including uncertain, design, 
+and state. The other ``active`` options can enable statistics computation over
+other subsets of variables.
 
 Topics::
 uncertainty_quantification, sampling
@@ -124,12 +113,7 @@ Examples::
 
 
 This example illustrates a basic import points Dakota input file.
-- The tabular file to import is specified.
-- 
 
-- LHS is used instead of purely random sampling.
-- The default random number generator is used.
-- Without a ``seed`` specified, this will not be reproducable
-- In the ``variables`` block, two types of variables are used
-- Only the uncertain variables are varied, this is the default     behavior, and is also specified by the ``active`` keyword, w/ the     ``uncertain`` option
-Theory::
+- The tabular file to import is specified using ``import_points_file`` option.
+- Values for all variables, including state variables, are imported.
+- Statistics such as correlation coefficients and binned Sobol' indices are only computed for the active variables.
