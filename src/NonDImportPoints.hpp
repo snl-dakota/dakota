@@ -38,6 +38,9 @@ public:
 
   /// Import points from file. 
   void pre_run() override;
+
+  /// Override NonDSampling's core_run so there's a no-op.
+  void core_run() override;
   
   /// Compute statistics for imported points
   void post_run(std::ostream& s) override;

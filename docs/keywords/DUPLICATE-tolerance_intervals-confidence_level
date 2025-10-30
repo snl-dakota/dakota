@@ -1,0 +1,34 @@
+Blurb::
+
+The confidence level to be used to determine the standard deviation
+of the equivalent normal distribution.
+
+Description::
+
+The confidence level must be a value between 0 and 1.
+
+*Default Behavior*
+
+A value of 0.90 (90%) is the default value for this parameter.
+
+Topics::
+
+Examples::
+
+.. code-block::
+
+    method
+      sampling
+        samples 5
+        refinement_samples 4 3 3
+        sample_type random
+        tolerance_intervals
+          coverage 0.96
+          confidence_level 0.92
+        seed = 31415
+
+Theory::
+
+Faq::
+
+See_Also::

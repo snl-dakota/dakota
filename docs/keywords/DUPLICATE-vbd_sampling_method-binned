@@ -1,5 +1,5 @@
 Blurb::
-Use the binned Sobol' main effect index computation
+Computes Sobol' main effects using a binned approach
 Description::
 Uses unstructured input-output samples to estimate
 main effect indices. It cannot compute total indices.
@@ -19,6 +19,16 @@ Examples::
         samples = 100
         variance_based_decomp
           vbd_sampling_method binned
+
+.. code-block::
+
+    method,
+        import_points
+            import_points_file "all_samples.dat"
+            variance_based_decomp
+
+Note that since the ``import_points`` method only supports 
+the binned approach, ``vbd_sampling_method`` is not specified.
 
 Theory::
 The binned approach to computing Sobol' main effect indices is 

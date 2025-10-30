@@ -1,0 +1,45 @@
+Blurb::
+Output Standardized Regression Coefficients and R^2 for samples
+
+Description::
+Obtain standardized regression coefficients and coefficient of
+determination, R^2 from a linear regression model constructed from
+input-output samples for each response.  Requires the new surrogates module.
+
+
+*Default Behavior*
+
+Off by default.
+
+*Expected Output*
+
+When ``std_regression_coeffs`` is specified, a linear regression model
+for each response is constructed and the standardized coefficients for 
+each variable are reported together with the coefficient of determination 
+representing the goodness of fit of each linear regression model.  
+Standardization corresponds to subtracting the mean and dividing the result 
+by the standard deviation of each variable.  Whereas regular regression 
+coefficients represent how much the mean of the response changes with a 
+unit increase in each variable with other variables held fixed, standardized 
+regression coefficients represent how the standard deviation of the response 
+changes for a standard deviation change in each variable with all other variables
+fixed and are insensitive to variable scaling.
+
+*Usage Tips*
+
+Topics::
+
+Examples::
+
+.. code-block::
+
+    method
+      sampling
+       samples 50
+       std_regression_coeffs
+
+Theory::
+
+Faq::
+
+See_Also::
