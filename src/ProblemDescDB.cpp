@@ -1623,6 +1623,16 @@ get_iirma(const String& entry_name) const
 
 const StringArray& ProblemDescDB::get_sa(const String& entry_name) const
 {
+  // Allow use of JSON input
+  if (jsonDB ) {
+    try {
+      auto val = jsonDB->get_sa(entry_name);
+      return val;
+    } catch (const json::exception& e) {
+      /* no-op; */
+    }
+  }
+
   return get<const StringArray>
   ( "get_sa()",
     { /* environment */ },
@@ -1723,6 +1733,16 @@ const String2DArray& ProblemDescDB::get_s2a(const String& entry_name) const
 
 const String& ProblemDescDB::get_string(const String& entry_name) const
 {
+  // Allow use of JSON input
+  if (jsonDB ) {
+    try {
+      auto val = jsonDB->get_string(entry_name);
+      return val;
+    } catch (const json::exception& e) {
+      /* no-op; */
+    }
+  }
+
   return get<const String>
   ( "get_string()",
     { /* environment */
@@ -2392,6 +2412,16 @@ size_t ProblemDescDB::get_sizet(const String& entry_name) const
 
 bool ProblemDescDB::get_bool(const String& entry_name) const
 {
+  // Allow use of JSON input
+  if (jsonDB ) {
+    try {
+      auto val = jsonDB->get_bool(entry_name);
+      return val;
+    } catch (const json::exception& e) {
+      /* no-op; */
+    }
+  }
+
   return get<bool>
   ( "get_bool()",
     { /* environment */
