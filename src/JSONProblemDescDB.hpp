@@ -77,7 +77,7 @@ class JSONProblemDescDB //: public ProblemDescDB
     // /// get a String2DArray out of the database based on an identifier string
     // const String2DArray& get_s2a(const String& entry_name) const;
     /// copy a String out of the database based on an identifier string
-    String get_string(const String& entry_name) const;
+    const String& get_string(const String& entry_name) const;
     // /// get a Real out of the database based on an identifier string
     // const Real& get_real(const String& entry_name) const;
     /// copy an int out of the database based on an identifier string
@@ -105,6 +105,9 @@ class JSONProblemDescDB //: public ProblemDescDB
 
   public:
 
+  private:
+
+    mutable std::map<String, String> cachedStringData;
 };
 
 inline auto JSONProblemDescDB::get_value(const String& key) const
@@ -112,12 +115,12 @@ inline auto JSONProblemDescDB::get_value(const String& key) const
   // Copy appropriate block
   // ... could do better by going one level more
   String block_name = key.substr(0, key.find('.'));
+  if( allowedBlocks.find(block_name) == allowedBlocks.end() ) {
+    throw(std::runtime_error(
+      "JSONProblemDescDB: Invalid json block \""+block_name+"\""));
+  }
   int blk_id = blockIds.find(block_name)->second;
   nlohmann::json current = jsonOptions[blk_id];
-  //if( allowedBlocks.find(block_name) == allowedBlocks.end() ) {
-  //  throw(std::runtime_error(
-  //    "JSONProblemDescDB: Invalid json block \""+block_name+"\""));
-  //}
 
   // Split the key by dot notation
   String working_key = key;
@@ -136,10 +139,11 @@ inline StringArray JSONProblemDescDB::get_sa(const String& key) const
   return val;
 }
 
-inline String JSONProblemDescDB::get_string(const String& key) const
+inline const String& JSONProblemDescDB::get_string(const String& key) const
 {
   auto val = get_value(key).get<String>();
-  return val;
+  cachedStringData[key] = val;
+  return cachedStringData[key];
 }
 
 inline int JSONProblemDescDB::get_int(const String& key) const

@@ -1629,6 +1629,10 @@ const StringArray& ProblemDescDB::get_sa(const String& entry_name) const
       auto val = jsonDB->get_sa(entry_name);
       return val;
     } catch (const json::exception& e) {
+      //Cout << "ProblemDescDB::get_sa: no JSON value for \"" << entry_name << "\"" << std::endl;
+      /* no-op; */
+    } catch (const std::exception& e) {
+      //Cout << "ProblemDescDB::get_sa: no JSON value for \"" << entry_name << "\"" << std::endl;
       /* no-op; */
     }
   }
@@ -1736,9 +1740,15 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
   // Allow use of JSON input
   if (jsonDB ) {
     try {
-      auto val = jsonDB->get_string(entry_name);
+      auto& val = jsonDB->get_string(entry_name);
+      //Cout << "ProblemDescDB::get_string: found JSON value for \"" << entry_name << "\"" 
+      //     << " = " << val << std::endl;
       return val;
     } catch (const json::exception& e) {
+      //Cout << "ProblemDescDB::get_string: no JSON value for \"" << entry_name << "\"" << std::endl;
+      /* no-op; */
+    } catch (const std::exception& e) {
+      //Cout << "ProblemDescDB::get_string: no JSON value for \"" << entry_name << "\"" << std::endl;
       /* no-op; */
     }
   }
@@ -2011,6 +2021,10 @@ int ProblemDescDB::get_int(const String& entry_name) const
       auto val = jsonDB->get_int(entry_name);
       return val;
     } catch (const json::exception& e) {
+      //Cout << "ProblemDescDB::get_int: no JSON value for \"" << entry_name << "\"" << std::endl;
+      /* no-op; */
+    } catch (const std::exception& e) {
+      //Cout << "ProblemDescDB::get_int: no JSON value for \"" << entry_name << "\"" << std::endl;
       /* no-op; */
     }
   }
@@ -2418,6 +2432,8 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
       auto val = jsonDB->get_bool(entry_name);
       return val;
     } catch (const json::exception& e) {
+      /* no-op; */
+    } catch (const std::exception& e) {
       /* no-op; */
     }
   }
