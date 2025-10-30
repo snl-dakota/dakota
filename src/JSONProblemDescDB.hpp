@@ -109,36 +109,25 @@ class JSONProblemDescDB //: public ProblemDescDB
 
 inline auto JSONProblemDescDB::get_value(const String& key) const
 {
-  // Copy json DB for now
-  nlohmann::json current = jsonOptions;
-
-  // Prepend block id
+  // Copy appropriate block
+  // ... could do better by going one level more
   String block_name = key.substr(0, key.find('.'));
+  int blk_id = blockIds.find(block_name)->second;
+  nlohmann::json current = jsonOptions[blk_id];
   //if( allowedBlocks.find(block_name) == allowedBlocks.end() ) {
   //  throw(std::runtime_error(
   //    "JSONProblemDescDB: Invalid json block \""+block_name+"\""));
   //}
 
   // Split the key by dot notation
-  String working_key = std::to_string(blockIds.find(block_name)->second)+"."+key;
-  //Cout << "Trying \"" << working_key << "\" ..." << std::endl;
+  String working_key = key;
   size_t pos = 0;
   while ((pos = working_key.find('.')) != String::npos) {
     String token = working_key.substr(0, pos);
-    // If the current level is an array, convert the token to an integer index
-    if (current.is_array()) {
-      current = current[std::stoi(token)];
-    } else {
-      current = current[token];
-    }
+    current = current[token];
     working_key.erase(0, pos + 1);
   }
-  // Handle the last part of the key
-  if (current.is_array()) {
-    return current[std::stoi(working_key)];
-  } else {
-    return current[working_key];
-  }
+  return current[working_key];
 }
 
 inline StringArray JSONProblemDescDB::get_sa(const String& key) const

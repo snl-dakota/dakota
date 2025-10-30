@@ -37,6 +37,7 @@ typedef void(*DbCallbackFunctionPtr)(Dakota::ProblemDescDB* db, void *data_ptr);
     DataResponses) */
 
 class ParallelLibrary;
+class JSONProblemDescDB;
 class ProblemDescDB
 {
   
@@ -72,6 +73,8 @@ public:
         bool command_line_run,
 		    DbCallbackFunctionPtr callback = NULL,
 		    void* callback_data = NULL);
+  /// Enables JSON input
+  void enable_json_input(const String &);
   /// performs check_input, broadcast, and post_process, but for now,
   /// allowing separate invocation through the public API as well
   void check_and_broadcast(const UserModes& user_modes);
@@ -440,6 +443,9 @@ private:
 
   /// pointer to the letter (initialized only for the envelope)
   std::shared_ptr<ProblemDescDB> dbRep;
+
+  /// pointer to the JSON data
+  std::shared_ptr<JSONProblemDescDB> jsonDB;
 
   /// MPI world rank
   int worldRank;

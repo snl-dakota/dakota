@@ -20,6 +20,7 @@
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
 #include "NIDRProblemDescDB.hpp"
+#include "JSONProblemDescDB.hpp"
 #include "DakotaIterator.hpp"
 #include "DakotaInterface.hpp"
 #include "WorkdirHelper.hpp"  // bfs utils and prepend_preferred_env_path
@@ -144,6 +145,9 @@ parse_inputs(const std::string_view input_string, const std::string_view parser_
   }
 }
 
+void ProblemDescDB::enable_json_input(const String & json_file) {
+  jsonDB = std::make_shared<JSONProblemDescDB>(json_file);
+}
 
 /** DB setup phase 3: perform basic checks on keywords counts in
     current DB state, then sync to all processors. */
@@ -1018,6 +1022,17 @@ get(const std::string& context_msg,
   if (!db_rep)
     Null_rep(context_msg);
   
+  // Allow use of JSON input
+  // ... has to wait until we have all types supported
+  //if (jsonDB ) {
+  //  try {
+  //    T val = jsonDB->get_value(entry_name).template get<T>();
+  //    return val;
+  //  } catch (const json::exception& e) {
+  //    /* no-op; */
+  //  }
+  //}
+
   std::string block, entry;
   std::tie(block, entry) = split_entry_name(entry_name, context_msg);
 
@@ -1970,6 +1985,16 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
 
 int ProblemDescDB::get_int(const String& entry_name) const
 {
+  // Allow use of JSON input
+  if (jsonDB ) {
+    try {
+      auto val = jsonDB->get_int(entry_name);
+      return val;
+    } catch (const json::exception& e) {
+      /* no-op; */
+    }
+  }
+
   return get<int>
   ( "get_int()",
     { /* environment */

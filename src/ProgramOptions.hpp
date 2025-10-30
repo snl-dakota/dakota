@@ -58,6 +58,8 @@ public:
   bool stdin_input() const;
   /// is input echo specified?
   bool echo_input() const;
+  /// Dakota JSON input file name
+  const String& json_input_file() const;
 
   /// pre-process input file
   bool preproc_input() const;
@@ -119,6 +121,8 @@ public:
   void input_string(const String& in_string);
   /// set whether to echo input to output
   void echo_input(bool echo_flag);
+  /// set Dakota JSON input file name
+  void json_input_file(const String& in_file);
   /// set whether to pre-process input file
   void preproc_input(bool pp_flag);
   /// set name of preprocessed input file
@@ -211,6 +215,8 @@ private:
   /// @brief true when user indicated input from stdin (inputFile == "-)
   bool stdinInput;
   bool echoInput;         ///< whether to echo client's input file at parse 
+  /// Dakota JSON input file name, e.g., "dakota.json"
+  String jsonFile;
 
   bool preprocInput;      ///< whether to pre-process input with pyprepro/etc.
   String preprocCmd;      ///< pre-processing command (default pyprepro.py)

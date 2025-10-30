@@ -288,6 +288,10 @@ void Environment::parse(bool check_bcast_database,
         std::filesystem::remove(programOptions.preprocessed_file());
   }
 
+  // Allow optional JSON input
+  if ( !programOptions.json_input_file().empty() )
+    probDescDB.enable_json_input(programOptions.json_input_file());
+
   // check if true, otherwise caller assumes responsibility  
   if (check_bcast_database)
     ProblemDescDBUtils::check_and_broadcast_pdb(probDescDB, programOptions.user_modes(), parallelLib); 

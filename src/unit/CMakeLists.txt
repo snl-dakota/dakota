@@ -120,6 +120,10 @@ FILE( COPY
   "${CMAKE_CURRENT_SOURCE_DIR}/dakota_surr_reduced_basis/dakota_tabular_svd.dat"
   DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/dakota_surr_reduced_basis"
   )
+FILE( COPY
+  "${CMAKE_CURRENT_SOURCE_DIR}/dakota_json_input_parser/sample_input.json"
+  DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/dakota_json_input_parser"
+  )
 
 if (NOT DAKOTA_HAVE_MPI)
   add_subdirectory(dakota_opt_tpl_api)

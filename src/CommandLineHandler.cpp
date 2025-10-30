@@ -386,6 +386,9 @@ void CommandLineHandler::initialize_options()
 
   //enroll("mpi", GetLongOpt::Valueless,
   //       "Turn on message passing within an executable built with MPI", 0);
+
+  enroll("json", GetLongOpt::MandatoryValue,
+         "Use input options contained in a JSON file", NULL);
 }
 
 

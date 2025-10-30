@@ -75,6 +75,9 @@ ProgramOptions::ProgramOptions(int argc, char* argv[], int world_rank):
     inputFile = "";
   }
 
+  if (clh.retrieve("json"))
+    jsonFile = clh.retrieve("json");
+
   if (clh.retrieve("preproc")) {
     preprocInput = true;
     preprocCmd = clh.retrieve("preproc");
@@ -124,6 +127,9 @@ bool ProgramOptions::stdin_input() const
 
 bool ProgramOptions::echo_input() const
 { return echoInput; }
+
+const String& ProgramOptions::json_input_file() const
+{ return jsonFile; }
 
 bool ProgramOptions::preproc_input() const
 { return preprocInput; }
@@ -226,6 +232,11 @@ void ProgramOptions::input_string(const String& in_string)
 
 void ProgramOptions::echo_input(bool echo_flag)
 { echoInput = echo_flag; }
+
+void ProgramOptions::json_input_file(const String& in_file)
+{ 
+  jsonFile = in_file; 
+}
 
 void ProgramOptions::preproc_input(bool pp_flag)
 { preprocInput = pp_flag; }
