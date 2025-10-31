@@ -1792,8 +1792,7 @@
 
     <!ENTITY numerical_gradient_options '
 	     <!-- # formerly required for dakota | vendor -->
-	     <keyword  id="method_source" name="method_source" code="{0}" label="method_source"  minOccurs="0" default="dakota" />
-	     <optional>
+	     <keyword  id="method_source" name="method_source" code="{0}" label="method_source"  minOccurs="0" default="dakota" >
                <oneOf label="Gradient Source">
 		 <keyword  id="dakota7" name="dakota" code="{N_rem(lit,methodSource_dakota)}" label="dakota"  default="relative" >
 		   <keyword  id="ignore_bounds" name="ignore_bounds" code="{N_rem(true,ignoreBounds)}" label="ignore_bounds"  minOccurs="0" default="bounds respected" />
@@ -1807,15 +1806,14 @@
 		 </keyword>
 		 <keyword  id="vendor" name="vendor" code="{N_rem(lit,methodSource_vendor)}" label="vendor"   />
                </oneOf>
-	     </optional>
+             </keyword>
 	     <!-- # formerly required for forward or central -->
-	     <keyword  id="interval_type" name="interval_type" code="{0}" label="interval_type"  minOccurs="0" default="forward" />
-	     <optional>
+	     <keyword  id="interval_type" name="interval_type" code="{0}" label="interval_type"  minOccurs="0" default="forward" >
                <oneOf label="Finite Difference Type">
 		 <keyword  id="forward" name="forward" code="{N_rem(lit,intervalType_forward)}" label="forward"   default="forward" />
 		 <keyword  id="central" name="central" code="{N_rem(lit,intervalType_central)}" label="central"   />
-               </oneOf>
-	     </optional>
+	       </oneOf>
+             </keyword>
 	     <keyword  id="fd_step_size" name="fd_step_size" code="{N_rem(RealL,fdGradStepSize)}" label="fd_step_size"  minOccurs="0" default="0.001" >
                <alias name="fd_gradient_step_size"/>
                <param type="REALLIST" />
