@@ -908,7 +908,7 @@
 	       <!-- TODO: consider removing this alias: -->
 	       <alias name='sample_refinement'/>
 	       <oneOf label='Importance Sampling Approach' anchor='importance_sampling_approach'>
-		 <keyword  id='import' name='import' code='{N_mdm(utype,integrationRefine_IS)}' label='import'   />
+		 <keyword  id='importance' name='importance' code='{N_mdm(utype,integrationRefine_IS)}' label='importance'   />
 		 <keyword  id='adapt_import' name='adapt_import' code='{N_mdm(utype,integrationRefine_AIS)}' label='adapt_import'   />
 		 <keyword  id='mm_adapt_import' name='mm_adapt_import' code='{N_mdm(utype,integrationRefine_MMAIS)}' label='mm_adapt_import'   />
 	       </oneOf>
@@ -3159,7 +3159,7 @@
             <param constraint="&gt; 0" type="INTEGER" />
           </keyword>
           <oneOf anchor="approach" label="Importance Sampling Approach">
-            <keyword code="{N_mdm(utype,integrationRefine_IS)}" id="import2" label="import" name="import" />
+            <keyword code="{N_mdm(utype,integrationRefine_IS)}" id="import2" label="importance" name="importance" />
             <keyword code="{N_mdm(utype,integrationRefine_AIS)}" id="adapt_import2" label="adapt_import" name="adapt_import" />
             <keyword code="{N_mdm(utype,integrationRefine_MMAIS)}" id="mm_adapt_import2" label="mm_adapt_import" name="mm_adapt_import" />
           </oneOf>
@@ -3253,8 +3253,8 @@
           </keyword>
           <keyword code="{0}" id="lipschitz" label="Lipschitz" minOccurs="0" name="lipschitz">
             <oneOf label="Local/Global Estimate">
-              <keyword code="{N_mdm(lit,lipschitzType_local)}" id="local_est" label="local_est" name="local" />
-              <keyword code="{N_mdm(lit,lipschitzType_global)}" id="global_est" label="global_est" name="global" />
+              <keyword code="{N_mdm(lit,lipschitzType_local)}" id="local_est" label="local_est" name="local_est" />
+              <keyword code="{N_mdm(lit,lipschitzType_global)}" id="global_est" label="global_est" name="global_est" />
             </oneOf>
           </keyword>
           <keyword code="{N_mdm(int,samplesOnEmulator)}" id="samples_on_emulator5" label="Samples on emulator" minOccurs="0" name="samples_on_emulator">
@@ -3276,8 +3276,8 @@
           </keyword>
           <keyword code="{0}" id="lipschitz" label="Lipschitz" minOccurs="0" name="lipschitz">
             <oneOf label="Local/Global Estimate">
-              <keyword code="{N_mdm(lit,lipschitzType_local)}" id="local_est" label="local_est" name="local" />
-              <keyword code="{N_mdm(lit,lipschitzType_global)}" id="global_est" label="global_est" name="global" />
+              <keyword code="{N_mdm(lit,lipschitzType_local)}" id="local_est" label="local_est" name="local_est" />
+              <keyword code="{N_mdm(lit,lipschitzType_global)}" id="global_est" label="global_est" name="global_est" />
             </oneOf>
           </keyword>
           <keyword code="{N_mdm(int,samplesOnEmulator)}" id="samples_on_emulator6" label="Samples on emulator" minOccurs="0" name="samples_on_emulator">
@@ -3844,7 +3844,7 @@
               <keyword code="{0}" id="probability_refinement2" label="probability_refinement" minOccurs="0" name="probability_refinement">
                 <alias name="sample_refinement" />
                 <oneOf anchor="approach" label="Importance Sampling Approach">
-                  <keyword code="{N_mdm(utype,integrationRefine_IS)}" id="import3" label="import" name="import" />
+                  <keyword code="{N_mdm(utype,integrationRefine_IS)}" id="import3" label="importance" name="importance" />
                   <keyword code="{N_mdm(utype,integrationRefine_AIS)}" id="adapt_import3" label="adapt_import" name="adapt_import" />
                   <keyword code="{N_mdm(utype,integrationRefine_MMAIS)}" id="mm_adapt_import3" label="mm_adapt_import" name="mm_adapt_import" />
                 </oneOf>
@@ -4033,7 +4033,7 @@
             <param type="INTEGERLIST" />
           </keyword>
           <oneOf label="Surrogate Category" anchor="category">
-            <keyword code="{0}" id="global" label="Global Approximation" name="global">
+            <keyword code="{0}" id="global_approx" label="Global Approximation" name="global_approx">
               <oneOf anchor="type" label="Global Surrogate Type">
                 <keyword code="{N_mom(lit,surrogateType_global_exp_gauss_proc)}" id="experimental_gaussian_process" label="Experimental Gaussian Process" minOccurs="1" name="experimental_gaussian_process">
                   <keyword code="{0}" default="reduced_quadratic" id="trend1" label="Specify Trend Function" minOccurs="0" name="trend">
