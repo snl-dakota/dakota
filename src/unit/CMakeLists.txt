@@ -101,6 +101,8 @@ add_subdirectory(dakota_digital_net_test)
 
 add_subdirectory(dakota_json_results_parser)
 
+add_subdirectory(dakota_json_utils)
+
 # Copy needed unit test auxiliary data files
 dakota_copy_test_file("${CMAKE_CURRENT_SOURCE_DIR}/expt_data_test_files"
   "${CMAKE_CURRENT_BINARY_DIR}/expt_data_test_files"
