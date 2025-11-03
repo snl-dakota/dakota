@@ -100,6 +100,8 @@ import_points()
 
 }
 
+void NonDImportPoints::core_run(){}
+
 void NonDImportPoints::post_run(std::ostream& s)
 {
 

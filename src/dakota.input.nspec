@@ -7774,8 +7774,7 @@ KEYWORD responses {N_rem3(start,0,stop)}
   ( mixed_gradients {N_rem(lit,gradientType_mixed)}
     id_numerical_gradients INTEGERLIST {N_rem(intset,idNumericalGrads)}
     id_analytic_gradients INTEGERLIST {N_rem(intset,idAnalyticGrads)}
-    [ method_source {0} ]
-    [ 
+    [ method_source {0}
       ( dakota {N_rem(lit,methodSource_dakota)}
         [ ignore_bounds {N_rem(true,ignoreBounds)} ]
         [ 
@@ -7789,8 +7788,7 @@ KEYWORD responses {N_rem3(start,0,stop)}
       |
       vendor {N_rem(lit,methodSource_vendor)}
      ]
-    [ interval_type {0} ]
-    [ 
+    [ interval_type {0}
       forward {N_rem(lit,intervalType_forward)}
       |
       central {N_rem(lit,intervalType_central)}
@@ -7799,8 +7797,7 @@ KEYWORD responses {N_rem3(start,0,stop)}
    )
   |
   ( numerical_gradients {N_rem(lit,gradientType_numerical)}
-    [ method_source {0} ]
-    [ 
+    [ method_source {0}
       ( dakota {N_rem(lit,methodSource_dakota)}
         [ ignore_bounds {N_rem(true,ignoreBounds)} ]
         [ 
@@ -7814,8 +7811,7 @@ KEYWORD responses {N_rem3(start,0,stop)}
       |
       vendor {N_rem(lit,methodSource_vendor)}
      ]
-    [ interval_type {0} ]
-    [ 
+    [ interval_type {0}
       forward {N_rem(lit,intervalType_forward)}
       |
       central {N_rem(lit,intervalType_central)}
