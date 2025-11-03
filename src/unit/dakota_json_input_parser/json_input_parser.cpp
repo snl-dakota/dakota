@@ -41,15 +41,15 @@ TEST(json_results_parser_tests, test_metadata_double)
     EXPECT_EQ(met_samples, 100);
 
     // variables
-    auto var_active_all        = jpdb.get_bool ("variables.active.all");
-    auto var_uniform_count     = jpdb.get_int  ("variables.uniform_uncertain.count");
-    auto var_uniform_descs     = jpdb.get_sa   ("variables.uniform_uncertain.descriptors");
-    auto var_uniform_lb        = jpdb.get_value("variables.uniform_uncertain.lower_bounds").get<std::vector<double>>(); // need to fix these
-    auto var_uniform_ub        = jpdb.get_value("variables.uniform_uncertain.upper_bounds").get<std::vector<double>>(); // need to fix these
-    auto var_continuous_count  = jpdb.get_int  ("variables.continuous_design.count");
-    auto var_continuous_descs  = jpdb.get_sa   ("variables.continuous_design.descriptors");
-    auto var_continuous_lb     = jpdb.get_value("variables.continuous_design.lower_bounds").get<std::vector<double>>(); // need to fix these
-    auto var_continuous_ub     = jpdb.get_value("variables.continuous_design.upper_bounds").get<std::vector<double>>(); // need to fix these
+    auto var_active_all        = jpdb.get_bool("variables.active.all");
+    auto var_uniform_count     = jpdb.get_int ("variables.uniform_uncertain.count");
+    auto var_uniform_descs     = jpdb.get_sa  ("variables.uniform_uncertain.descriptors");
+    auto var_uniform_lb        = jpdb.get_rv  ("variables.uniform_uncertain.lower_bounds");
+    auto var_uniform_ub        = jpdb.get_rv  ("variables.uniform_uncertain.upper_bounds");
+    auto var_continuous_count  = jpdb.get_int ("variables.continuous_design.count");
+    auto var_continuous_descs  = jpdb.get_sa  ("variables.continuous_design.descriptors");
+    auto var_continuous_lb     = jpdb.get_rv  ("variables.continuous_design.lower_bounds");
+    auto var_continuous_ub     = jpdb.get_rv  ("variables.continuous_design.upper_bounds");
 
     EXPECT_TRUE(var_active_all);
     EXPECT_EQ(var_uniform_count, 2);

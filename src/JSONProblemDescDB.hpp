@@ -11,7 +11,10 @@
 #define JSON_PROBLEM_DESC_DB_H
 
 #include "ProblemDescDB.hpp" // might derive from this - RWH
+#include "JSONUtils.hpp"
 #include <nlohmann/json.hpp>
+
+using json = nlohmann::json;
 
 namespace Dakota {
  
@@ -33,8 +36,8 @@ class JSONProblemDescDB //: public ProblemDescDB
              */
     // /// get a RealMatrixArray out of the database based on an identifier string
     // const RealMatrixArray& get_rma(const String& entry_name) const;
-    // /// get a RealVector out of the database based on an identifier string
-    // const RealVector& get_rv(const String& entry_name) const;
+    /// get a RealVector out of the database based on an identifier string
+    const RealVector& get_rv(const String& entry_name) const;
     // /// get an IntVector out of the database based on an identifier string
     // const IntVector& get_iv(const String& entry_name) const;
     // /// get a BitArray out of the database based on an identifier string
@@ -97,7 +100,7 @@ class JSONProblemDescDB //: public ProblemDescDB
     // Access JSON values using dot notation
     auto get_value(const String& key) const;
 
-    nlohmann::json jsonOptions;
+    json jsonOptions;
 
     std::set<std::string> allowedBlocks;
 
@@ -108,6 +111,7 @@ class JSONProblemDescDB //: public ProblemDescDB
   private:
 
     mutable std::map<String, String> cachedStringData;
+    mutable std::map<String, RealVector> cachedRealVectorData;
 };
 
 inline auto JSONProblemDescDB::get_value(const String& key) const
@@ -120,7 +124,7 @@ inline auto JSONProblemDescDB::get_value(const String& key) const
       "JSONProblemDescDB: Invalid json block \""+block_name+"\""));
   }
   int blk_id = blockIds.find(block_name)->second;
-  nlohmann::json current = jsonOptions[blk_id];
+  json current = jsonOptions[blk_id];
 
   // Split the key by dot notation
   String working_key = key;
@@ -131,6 +135,13 @@ inline auto JSONProblemDescDB::get_value(const String& key) const
     working_key.erase(0, pos + 1);
   }
   return current[working_key];
+}
+
+inline const RealVector& JSONProblemDescDB::get_rv(const String& key) const
+{
+  auto val = get_value(key).template get<JSONRealVector>().value;
+  cachedRealVectorData[key] = val;
+  return cachedRealVectorData[key];
 }
 
 inline StringArray JSONProblemDescDB::get_sa(const String& key) const
