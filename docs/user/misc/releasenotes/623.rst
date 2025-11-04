@@ -18,6 +18,23 @@ available in all builds of Dakota.
 The keyword documentation for the :dakkw:`method-import_points`
 method has further details.
 
+**Highlight: External Python method support**
+
+A new interface for general python methods,
+:dakkw:`method-external_python`, is available in Dakota release 6.23. It
+enables python implementations of the Dakota Iterator and provides a
+wrapped Dakota model for function, gradient and hessian responses along
+with helper methods to query model properties and output results to the
+Dakota output stream.
+
+*Enabling / Accessing:* The :dakkw:`method-external_python` method is
+available in all builds of Dakota.
+
+*Documentation:* 
+
+The keyword documentation for the :dakkw:`method-external_python`
+method has further details.
+
 **Miscellaneous Enhancements and Bugfixes**
 
 - Windows builds now performed using MSVS 2022 and Intel oneAPI 2024.
