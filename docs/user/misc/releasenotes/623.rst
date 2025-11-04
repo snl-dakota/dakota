@@ -1,0 +1,34 @@
+"""""""""""""""""""""""""
+Version 6.23 (2025/11/17)
+"""""""""""""""""""""""""
+
+**Highlight: Compute statistics from imported samples**
+
+A new method, :dakkw:`method-import_points`, is available in Dakota
+release 6.23. It simplifies importing input-output points from
+a tabular file and computing statistics for them. Computed
+statistics include correlation coefficients, moments, and optionally
+level mappings and Sobol indices.
+
+*Enabling / Accessing:* The :dakkw:`method-import_samples` method is
+available in all builds of Dakota.
+
+*Documentation:* 
+
+The keyword documentation for the :dakkw:`method-import_points`
+method has further details.
+
+**Miscellaneous Enhancements and Bugfixes**
+
+- Windows builds now performed using MSVS 2022 and Intel oneAPI 2024.
+- Fix for `github 140 <http://github.com/snl-dakota/dakota/issues/140>`_
+  by replacing boost::filesystem with std::filesystem
+- Obviates `github PR179 <https://github.com/snl-dakota/dakota/pull/179>`_
+  and `github PR181 <https://github.com/snl-dakota/dakota/pull/181>`_
+- Method source and interval type keywords for numerical gradients and Hessians
+  are now properly nested.
+
+**Compatibility**
+
+- Dakota now requires a minimum of Boost 1.70.
+
