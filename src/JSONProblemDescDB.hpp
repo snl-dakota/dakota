@@ -62,62 +62,62 @@ class JSONProblemDescDB //: public ProblemDescDB
     // /// get a RealMatrixArray out of the database based on an identifier string
     // const RealMatrixArray& get_rma(const String& entry_name) const;
     /// get a RealVector out of the database based on an identifier string
-    const RealVector& get_rv(const String& entry_name) const;
+    const RealVector& get_rv(const String& entry_name);
     /// get an IntVector out of the database based on an identifier string
-    const IntVector& get_iv(const String& entry_name) const;
+    const IntVector& get_iv(const String& entry_name);
     // /// get a BitArray out of the database based on an identifier string
-    // const BitArray& get_ba(const String& entry_name) const;
+    // const BitArray& get_ba(const String& entry_name);
     /// get an SizetArray out of the database based on an identifier string
-    const SizetArray& get_sza(const String& entry_name) const;
+    const SizetArray& get_sza(const String& entry_name);
     /// get an UShortArray out of the database based on an identifier string
-    const UShortArray& get_usa(const String& entry_name) const;
+    const UShortArray& get_usa(const String& entry_name);
     /// get a RealSymMatrix out of the database based on an identifier string
-    const RealSymMatrix& get_rsm(const String& entry_name) const;
+    const RealSymMatrix& get_rsm(const String& entry_name);
     ///// get a RealVectorArray out of the database based on an identifier string
-    //const RealVectorArray& get_rva(const String& entry_name) const;
+    //const RealVectorArray& get_rva(const String& entry_name);
     ///// get an IntVectorArray out of the database based on an identifier string
-    //const IntVectorArray& get_iva(const String& entry_name) const;
+    //const IntVectorArray& get_iva(const String& entry_name);
     /// get an IntSet out of the database based on an identifier string
-    const IntSet& get_is(const String& entry_name) const;
+    const IntSet& get_is(const String& entry_name);
     /// get an IntSetArray out of the database based on an identifier string
-    const IntSetArray& get_isa(const String& entry_name) const;
+    const IntSetArray& get_isa(const String& entry_name);
     /// get a SizetSet out of the database based on an identifier string
-    const SizetSet& get_szs(const String& entry_name) const;
+    const SizetSet& get_szs(const String& entry_name);
     /// get an StringSetArray out of the database based on an identifier string
-    const StringSetArray& get_ssa(const String& entry_name) const;
+    const StringSetArray& get_ssa(const String& entry_name);
     /// get a RealSetArray out of the database based on an identifier string
-    const RealSetArray& get_rsa(const String& entry_name) const;
+    const RealSetArray& get_rsa(const String& entry_name);
     /// get an IntRealMapArray out of the database based on an identifier string
-    const IntRealMapArray& get_irma(const String& entry_name) const;
+    const IntRealMapArray& get_irma(const String& entry_name);
     /// get an StringRealMapArray out of the database based on an
     /// identifier string
-    const StringRealMapArray& get_srma(const String& entry_name) const;
+    const StringRealMapArray& get_srma(const String& entry_name);
     /// get a RealRealMapArray out of the database based on an identifier string
-    const RealRealMapArray& get_rrma(const String& entry_name) const;
+    const RealRealMapArray& get_rrma(const String& entry_name);
     /// get a RealRealPairRealMapArray out of the database based on an
     /// identifier string
-    const RealRealPairRealMapArray& get_rrrma(const String& entry_name) const;
+    const RealRealPairRealMapArray& get_rrrma(const String& entry_name);
     /// get an IntIntPairRealMapArray out of the database based on an
     /// identifier string
-    const IntIntPairRealMapArray& get_iirma(const String& entry_name) const;
+    const IntIntPairRealMapArray& get_iirma(const String& entry_name);
     /// get a StringArray out of the database based on an identifier string
-    const StringArray& get_sa(const String& entry_name) const;
+    const StringArray& get_sa(const String& entry_name);
     /// get a String2DArray out of the database based on an identifier string
-    const String2DArray& get_s2a(const String& entry_name) const;
+    const String2DArray& get_s2a(const String& entry_name);
     /// get a String out of the database based on an identifier string
-    const String& get_string(const String& entry_name) const;
+    const String& get_string(const String& entry_name);
     /// get a Real out of the database based on an identifier string
-    const Real& get_real(const String& entry_name) const;
+    const Real& get_real(const String& entry_name);
     /// get an int out of the database based on an identifier string
-    const int& get_int(const String& entry_name) const;
+    const int& get_int(const String& entry_name);
     /// get a short out of the database based on an identifier string
-    const short& get_short(const String& entry_name) const;
+    const short& get_short(const String& entry_name);
     /// get an unsigned short out of the database based on an identifier string
-    const Ushort& get_ushort(const String& entry_name) const;
+    const Ushort& get_ushort(const String& entry_name);
     /// get a size_t out of the database based on an identifier string
-    const size_t& get_sizet(const String& entry_name) const;
+    const size_t& get_sizet(const String& entry_name);
     /// get a bool out of the database based on an identifier string
-    const bool& get_bool(const String& entry_name) const;
+    const bool& get_bool(const String& entry_name);
 
   //private:
   public:
@@ -135,32 +135,32 @@ class JSONProblemDescDB //: public ProblemDescDB
 
   private:
 
-    mutable std::map<String, RealVector>               cachedData_RealVector;
-    mutable std::map<String, SizetArray>               cachedData_SizetArray;
-    mutable std::map<String, UShortArray>              cachedData_UShortArray;
-    mutable std::map<String, RealSymMatrix>            cachedData_RealSymMatrix;
-    mutable std::map<String, RealVectorArray>          cachedData_RealVectorArray;
-    mutable std::map<String, IntVectorArray>           cachedData_IntVectorArray;
-    mutable std::map<String, IntSet>                   cachedData_IntSet;
-    mutable std::map<String, IntSetArray>              cachedData_IntSetArray;
-    mutable std::map<String, SizetSet>                 cachedData_SizetSet;
-    mutable std::map<String, StringSetArray>           cachedData_StringSetArray;
-    mutable std::map<String, RealSetArray>             cachedData_RealSetArray;
-    mutable std::map<String, IntRealMapArray>          cachedData_IntRealMapArray;
-    mutable std::map<String, StringRealMapArray>       cachedData_StringRealMapArray;
-    mutable std::map<String, RealRealMapArray>         cachedData_RealRealMapArray;
-    mutable std::map<String, RealRealPairRealMapArray> cachedData_RealRealPairRealMapArray;
-    mutable std::map<String, IntIntPairRealMapArray>   cachedData_IntIntPairRealMapArray;
-    mutable std::map<String, IntVector>                cachedData_IntVector;
-    mutable std::map<String, StringArray>              cachedData_StringArray;
-    mutable std::map<String, String2DArray>            cachedData_String2DArray;
-    mutable std::map<String, String>                   cachedData_String;
-    mutable std::map<String, Real>                     cachedData_Real;
-    mutable std::map<String, int>                      cachedData_int;
-    mutable std::map<String, short>                    cachedData_short;
-    mutable std::map<String, unsigned short>           cachedData_Ushort;
-    mutable std::map<String, size_t>                   cachedData_size_t;
-    mutable std::map<String, bool>                     cachedData_bool;
+    std::map<String, RealVector>               cachedData_RealVector;
+    std::map<String, SizetArray>               cachedData_SizetArray;
+    std::map<String, UShortArray>              cachedData_UShortArray;
+    std::map<String, RealSymMatrix>            cachedData_RealSymMatrix;
+    std::map<String, RealVectorArray>          cachedData_RealVectorArray;
+    std::map<String, IntVectorArray>           cachedData_IntVectorArray;
+    std::map<String, IntSet>                   cachedData_IntSet;
+    std::map<String, IntSetArray>              cachedData_IntSetArray;
+    std::map<String, SizetSet>                 cachedData_SizetSet;
+    std::map<String, StringSetArray>           cachedData_StringSetArray;
+    std::map<String, RealSetArray>             cachedData_RealSetArray;
+    std::map<String, IntRealMapArray>          cachedData_IntRealMapArray;
+    std::map<String, StringRealMapArray>       cachedData_StringRealMapArray;
+    std::map<String, RealRealMapArray>         cachedData_RealRealMapArray;
+    std::map<String, RealRealPairRealMapArray> cachedData_RealRealPairRealMapArray;
+    std::map<String, IntIntPairRealMapArray>   cachedData_IntIntPairRealMapArray;
+    std::map<String, IntVector>                cachedData_IntVector;
+    std::map<String, StringArray>              cachedData_StringArray;
+    std::map<String, String2DArray>            cachedData_String2DArray;
+    std::map<String, String>                   cachedData_String;
+    std::map<String, Real>                     cachedData_Real;
+    std::map<String, int>                      cachedData_int;
+    std::map<String, short>                    cachedData_short;
+    std::map<String, unsigned short>           cachedData_Ushort;
+    std::map<String, size_t>                   cachedData_size_t;
+    std::map<String, bool>                     cachedData_bool;
 };
 
 inline auto JSONProblemDescDB::get_value(const String& key) const
@@ -187,14 +187,14 @@ inline auto JSONProblemDescDB::get_value(const String& key) const
 }
 
 #define STANDARD_JSONDB_GET_METHOD(TYPE, GET_FN) \
-  inline const TYPE& JSONProblemDescDB::GET_FN(const String& key) const { \
+  inline const TYPE& JSONProblemDescDB::GET_FN(const String& key) { \
     auto val = get_value(key).get<TYPE>(); \
     cachedData_##TYPE[key] = val; \
     return cachedData_##TYPE[key]; \
   }
 
 #define CUSTOM_JSONDB_GET_METHOD(TYPE, GET_FN) \
-  inline const TYPE& JSONProblemDescDB::GET_FN(const String& key) const { \
+  inline const TYPE& JSONProblemDescDB::GET_FN(const String& key) { \
     auto val = get_value(key).template get<JSON##TYPE>().value; \
     cachedData_##TYPE[key] = val; \
     return cachedData_##TYPE[key]; \
