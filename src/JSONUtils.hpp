@@ -38,6 +38,11 @@ struct JSONRealSymMatrix {
   RealSymMatrix value;
 };
 
+// store the result of getting a BitArray from JSON.
+struct JSONBitArray {
+  BitArray value;
+};
+
 // store the result of getting a RealVector array from JSON.
 struct JSONRealVectorArray {
   RealVectorArray value;
@@ -133,6 +138,17 @@ inline void from_json(const json &j, JSONRealMatrix &e) {
         for(int k = 0; k <= i; ++k) 
                 h(i, k) = j[i][k].template get<JSONDoubleElement>().value;
 }
+
+/// Read a BitArray from JSON
+inline void from_json(const json &j, JSONBitArray &e) {
+    if(!j.is_array())
+        throw JSONStoreError("expected an array object");
+    auto n = j.size();
+    auto &v = e.value;
+    // Fix this
+    v = BitArray();
+}
+
 
 /// Read an array of RealVector's of numbers or string-encoded numbers from JSON
 inline void from_json(const json &j, JSONRealVectorArray &e) {
