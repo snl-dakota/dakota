@@ -65,8 +65,8 @@ class JSONProblemDescDB //: public ProblemDescDB
     const RealVector& get_rv(const String& entry_name);
     /// get an IntVector out of the database based on an identifier string
     const IntVector& get_iv(const String& entry_name);
-    // /// get a BitArray out of the database based on an identifier string
-    // const BitArray& get_ba(const String& entry_name);
+    /// get a BitArray out of the database based on an identifier string
+    const BitArray& get_ba(const String& entry_name);
     /// get an SizetArray out of the database based on an identifier string
     const SizetArray& get_sza(const String& entry_name);
     /// get an UShortArray out of the database based on an identifier string
@@ -152,6 +152,7 @@ class JSONProblemDescDB //: public ProblemDescDB
     std::map<String, RealRealMapArray>         cachedData_RealRealMapArray;
     std::map<String, RealRealPairRealMapArray> cachedData_RealRealPairRealMapArray;
     std::map<String, IntIntPairRealMapArray>   cachedData_IntIntPairRealMapArray;
+    std::map<String, BitArray>                 cachedData_BitArray;
     std::map<String, IntVector>                cachedData_IntVector;
     std::map<String, StringArray>              cachedData_StringArray;
     std::map<String, String2DArray>            cachedData_String2DArray;
@@ -201,48 +202,34 @@ inline auto JSONProblemDescDB::get_value(const String& key) const
     return cachedData_##TYPE[key]; \
   }
 
-CUSTOM_JSONDB_GET_METHOD  (RealMatrixArray,          get_rma)
-CUSTOM_JSONDB_GET_METHOD  (RealVector,               get_rv)
-CUSTOM_JSONDB_GET_METHOD  (IntVector,                get_iv)
-//CUSTOM_JSONDB_GET_METHOD(BitArray,                 get_ba)
-STANDARD_JSONDB_GET_METHOD(SizetArray,               get_sza)
-STANDARD_JSONDB_GET_METHOD(UShortArray,              get_usa)
-CUSTOM_JSONDB_GET_METHOD  (RealSymMatrix,            get_rsm)
-CUSTOM_JSONDB_GET_METHOD  (RealVectorArray,          get_rva)
-CUSTOM_JSONDB_GET_METHOD  (IntVectorArray,           get_iva)
-STANDARD_JSONDB_GET_METHOD(IntSet,                   get_is)
-STANDARD_JSONDB_GET_METHOD(IntSetArray,              get_isa)
-STANDARD_JSONDB_GET_METHOD(SizetSet,                 get_szs)
-STANDARD_JSONDB_GET_METHOD(StringSetArray,           get_ssa)
-STANDARD_JSONDB_GET_METHOD(RealSetArray,             get_rsa)
-STANDARD_JSONDB_GET_METHOD(IntRealMapArray,          get_irma)
-STANDARD_JSONDB_GET_METHOD(StringRealMapArray,       get_srma)
-STANDARD_JSONDB_GET_METHOD(RealRealMapArray,         get_rrma)
-STANDARD_JSONDB_GET_METHOD(RealRealPairRealMapArray, get_rrrma)
-STANDARD_JSONDB_GET_METHOD(IntIntPairRealMapArray,   get_iirma)
-STANDARD_JSONDB_GET_METHOD(StringArray,              get_sa)
-STANDARD_JSONDB_GET_METHOD(String2DArray,            get_s2a)
-STANDARD_JSONDB_GET_METHOD(String,                   get_string)
-STANDARD_JSONDB_GET_METHOD(Real,                     get_real)
-STANDARD_JSONDB_GET_METHOD(int,                      get_int)
-STANDARD_JSONDB_GET_METHOD(short,                    get_short)
-STANDARD_JSONDB_GET_METHOD(Ushort,                   get_ushort)
-STANDARD_JSONDB_GET_METHOD(size_t,                   get_sizet)
-STANDARD_JSONDB_GET_METHOD(bool,                     get_bool)
-
-//inline const RealVector& JSONProblemDescDB::get_rv(const String& key) const
-//{
-//  auto val = get_value(key).template get<JSONRealVector>().value;
-//  cachedData_RealVector[key] = val;
-//  return cachedData_RealVector[key];
-//}
-
-//inline const BitArray& JSONProblemDescDB::get_ba(const String& key) const
-//{
-//  auto val = get_value(key).template get<BitArray>().value;
-//  cachedData_BitArray[key] = val;
-//  return cachedData_BitArray[key];
-//}
+CUSTOM_JSONDB_GET_METHOD   (RealMatrixArray,          get_rma)
+CUSTOM_JSONDB_GET_METHOD   (RealVector,               get_rv)
+CUSTOM_JSONDB_GET_METHOD   (IntVector,                get_iv)
+CUSTOM_JSONDB_GET_METHOD   (BitArray,                 get_ba)
+STANDARD_JSONDB_GET_METHOD (SizetArray,               get_sza)
+STANDARD_JSONDB_GET_METHOD (UShortArray,              get_usa)
+CUSTOM_JSONDB_GET_METHOD   (RealSymMatrix,            get_rsm)
+CUSTOM_JSONDB_GET_METHOD   (RealVectorArray,          get_rva)
+CUSTOM_JSONDB_GET_METHOD   (IntVectorArray,           get_iva)
+STANDARD_JSONDB_GET_METHOD (IntSet,                   get_is)
+STANDARD_JSONDB_GET_METHOD (IntSetArray,              get_isa)
+STANDARD_JSONDB_GET_METHOD (SizetSet,                 get_szs)
+STANDARD_JSONDB_GET_METHOD (StringSetArray,           get_ssa)
+STANDARD_JSONDB_GET_METHOD (RealSetArray,             get_rsa)
+STANDARD_JSONDB_GET_METHOD (IntRealMapArray,          get_irma)
+STANDARD_JSONDB_GET_METHOD (StringRealMapArray,       get_srma)
+STANDARD_JSONDB_GET_METHOD (RealRealMapArray,         get_rrma)
+STANDARD_JSONDB_GET_METHOD (RealRealPairRealMapArray, get_rrrma)
+STANDARD_JSONDB_GET_METHOD (IntIntPairRealMapArray,   get_iirma)
+STANDARD_JSONDB_GET_METHOD (StringArray,              get_sa)
+STANDARD_JSONDB_GET_METHOD (String2DArray,            get_s2a)
+STANDARD_JSONDB_GET_METHOD (String,                   get_string)
+STANDARD_JSONDB_GET_METHOD (Real,                     get_real)
+STANDARD_JSONDB_GET_METHOD (int,                      get_int)
+STANDARD_JSONDB_GET_METHOD (short,                    get_short)
+STANDARD_JSONDB_GET_METHOD (Ushort,                   get_ushort)
+STANDARD_JSONDB_GET_METHOD (size_t,                   get_sizet)
+STANDARD_JSONDB_GET_METHOD (bool,                     get_bool)
 
 } // namespace Dakota
 
