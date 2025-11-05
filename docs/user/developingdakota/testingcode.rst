@@ -127,9 +127,9 @@ The following are a few key concepts in Dakota's regression test system:
 Running Regression Tests
 ------------------------
 
-Dakota's full regression test suite contains approxiately 300 test files
+Dakota's full regression test suite contains approximately 300 test files
 and more than a thousand subtests. It typically takes between several tens of
-minutes to a few hours to complete, depending on available computing resouces.
+minutes to a few hours to complete, depending on available computing resources.
 The test system executes Dakota for each subtest, collects the output, and
 compares it to a baseline. There are three possible results for a subtest:
 
@@ -151,7 +151,7 @@ sequentially. A few helpful options:
 It currently is not possible to run specific subtests; all subtests of a test
 selected by label or name will be run.
 
-During configuration, test files, baselines, and auxilliary content is copied
+During configuration, test files, baselines, and auxilliary content are copied
 from the source tree to the build tree, where tests will be run. For each test
 file, a subdirectory is created in the test/ directory. The subdirectories have the
 names of their test files, minus the ``.in`` extension. If Dakota was built with parallel
@@ -207,8 +207,8 @@ following which are performed in the Dakota build directory:
 Creating a New Regression Test
 ------------------------------
 
-A complete regression test includes a test file, which can contain multiple
-subtests, a baseline, and any auxilliary files (such as data files or
+A complete regression test includes a test file (extension ``*.in``), which can contain multiple
+subtests, a baseline (extension ``*.base``), and any auxilliary files (such as data files or
 drivers) needed by the subtests.
 
 Writing Subtests
@@ -284,7 +284,37 @@ A few notes on directives:
   to ``dakota_test.perl``.
 - ``MPIProcs`` is required for parallel tests.
 
-Example Test file
+Including Auxilliary Files
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Auxilliary files can be included in a test two ways: 
+
+- By giving them the same base name as the regression test, e.g., if the test file is named
+  dakota_newtest.in, auxilliary files matching the regular expression dakota_newtest.* will
+  be copied to the test subfolder. 
+- By including the directive ``ReqFiles`` in the test file. For example, if auxilliary files 
+  are named ``aux1.dat``, ``aux2.dat`` the directive ``ReqFiles=aux1.dat,aux2.dat`` will ensure 
+  the files are copied to the test subfolder. 
+
+Creating a New Baseline File
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To create a new baseline dakota_*.base file for serial
+regression tests, call 
+
+.. code-block::
+
+	dakota_test.perl --base name_of_new_input_file.in
+   
+This will create a file with extension .base.new with the same
+basename as the input file. Check the results, then change 
+the extension to .base to incorporate it into the test suite.
+
+More advanced options for generating baseline
+files (e.g., for parallel tests) and more details about creating 
+baselines are available in ``dakota_test.perl --man``. 
+
+Example Test File
 ^^^^^^^^^^^^^^^^^
 
 An example input test file demonstrating a few of these features is below.
@@ -328,20 +358,6 @@ them.
 The test has the label ``FastTest`` and will only be run when
 Dakota is built with the optional QUESO component.
 
-To create a new baseline dakota_*.base file for serial
-regression tests, call 
-
-.. code-block::
-
-	dakota_test.perl --base name_of_new_input_file.in
-   
-This will create a file with extension .base.new with the same
-basename as the input file. Check the results, then change 
-the extension to .base to incorporate it into the test suite.
-
-More advanced options for generating baseline
-files (e.g., for parallel tests) and more details about creating 
-baselines are available in ``dakota_test.perl --man``. 
 
 =============================
 Unit Test-driven System Tests

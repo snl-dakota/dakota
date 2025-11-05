@@ -338,10 +338,10 @@ namespace Dakota {
         /// set a label within the all discrete labels in currentVariables
         void all_discrete_string_variable_labels(Model &model, StringMultiArrayConstView a_d_v_labels);
 
-        /// return all discrete variable labels in currentVariables
+        /// set all discrete variable labels in currentVariables
         void all_discrete_string_variable_label(Model &model, const String& a_d_v_label, size_t i);
 
-        /// set all discrete variable labels in currentVariables
+        /// return all discrete variable labels in currentVariables
         StringMultiArrayConstView all_discrete_real_variable_labels(const Model &model);
 
         /// set a label within the all discrete labels in currentVariables

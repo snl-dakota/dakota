@@ -130,9 +130,6 @@ public:
   /// sort algorithm to compute ranks for rank correlations
   static bool rank_sort(const int& x, const int& y);
 
-  /// Print a header and summary statistics
-  void print_header_and_statistics(std::ostream& s, const int& num_samples);
-
   /// Archive all results
   void archive_results(int num_samples, size_t ind_inc = 0);
   

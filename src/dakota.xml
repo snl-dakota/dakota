@@ -2233,6 +2233,15 @@
           &default_scaling;
           &method_optional_model_pointer;
         </keyword>
+        <keyword  id="external_python" name="external_python" code="{N_mdm(utype,methodName_EXTERNAL_PYTHON)}" label="external_python" help="" >
+          &method_three_optional_keywords;
+          <keyword  id="class_path_and_name" name="class_path_and_name" code="{N_mdm(str,moduleAndClassName)}" label="Python Module File and Class Name"  minOccurs="1" >
+            <param type="INPUT_FILE" />
+          </keyword>
+	  <keyword  id="options_file" name="options_file" code="{N_mdm(str,advancedOptionsFilename)}" label="Advanced Options File"  minOccurs="0" default="no advanced options file" >
+	    <param type="INPUT_FILE" />
+	  </keyword>
+        </keyword>
         <keyword code="{N_mdm(utype,methodName_NPSOL_SQP)}" group="Optimization: Local, Derivative-based" id="npsol_sqp" label="npsol_sqp" name="npsol_sqp">
           &method_three_optional_keywords;
           &method_npsol_common_opts;
@@ -3000,6 +3009,52 @@
           &rng_options;
           &method_optional_model_pointer;
         </keyword>
+
+ <keyword id="import_points" name="import_points" code="{N_mdm(utype,methodName_IMPORT_POINTS)}" label="import_points" group="Uncertainty Quantification">
+          &method_three_optional_keywords;
+    <keyword  id="import_points_file1" name="import_points_file" argument="filename" code="{N_mdm(str,importPtsFile)}" label="File Import for Points Import Analysis"  minOccurs="1" default="A filename must be provided" >
+        <param type="INPUT_FILE" />
+        <optional>
+          <oneOf label="Tabular Format" anchor="format" >
+            <keyword  id="custom_annotated" name="custom_annotated" code="{N_mdm(utype,importPtsFormat_TABULAR_NONE)}" label="Custom Annotated"  >
+              <keyword  id="header" name="header" code="{N_mdm(augment_utype,importPtsFormat_TABULAR_HEADER)}" label="Header"  minOccurs="0" >
+                <keyword  id="use_variable_labels" name="use_variable_labels" code="{N_mdm(true,importPtsUseVariableLabels)}" label="Use/Validate Variables Labels from Header"  minOccurs="0" />
+              </keyword>
+              <keyword  id="eval_id" name="eval_id" code="{N_mdm(augment_utype,importPtsFormat_TABULAR_EVAL_ID)}" label="Eval ID"  minOccurs="0" />
+              <keyword  id="interface_id" name="interface_id" code="{N_mdm(augment_utype,importPtsFormat_TABULAR_IFACE_ID)}" label="Interface ID"  minOccurs="0"/>
+            </keyword>
+
+            <keyword  id="annotated" name="annotated" code="{N_mdm(utype,importPtsFormat_TABULAR_ANNOTATED)}" label="Annotated"   default="annotated" >
+              <keyword  id="use_variable_labels" name="use_variable_labels" code="{N_mdm(true,importPtsUseVariableLabels)}" label="Use/Validate Variables Labels from Header"  minOccurs="0" />
+            </keyword>
+            <keyword  id="freeform" name="freeform" code="{N_mdm(utype,importPtsFormat_TABULAR_NONE)}" label="Freeform"   default="annotated" />
+          </oneOf>
+        </optional>
+        <keyword  id="active_only1" name="active_only" code="{N_mdm(true,importPtsActive)}" label="Active Variables Only"  minOccurs="0" />
+    </keyword>
+    <keyword  id="variance_based_decomp" name="variance_based_decomp" code="{N_mdm(true,vbdFlag)}" label="variance_based_decomp"  minOccurs="0" default="no variance-based decomposition" >
+      <keyword  id="drop_tolerance" name="drop_tolerance" code="{N_mdm(Real,vbdDropTolerance)}" label="drop_tolerance"  minOccurs="0" default="All VBD indices displayed" >
+        <param type="REAL" />
+      </keyword>
+      <keyword  id="vbd_via_sampling_numBins" name="num_bins" code="{N_mdm(int,vbdViaSamplingNumBins)}" label="Number of bins for the binned sampling method for computing Sobol indices"  minOccurs="0" default="-1" >
+        <param type="INTEGER" />
+      </keyword>
+    </keyword> 
+    <keyword  id="std_regression_coeffs" name="std_regression_coeffs" code="{N_mdm(true,stdRegressionCoeffs)}" label="std_regression_coeffs"  minOccurs="0" >
+	  </keyword>
+    <keyword  id="tolerance_intervals" name="tolerance_intervals" code="{N_mdm(true,toleranceIntervalsFlag)}" label="Compute tolerance intervals"  minOccurs="0" >
+	    <keyword  id="ti_coverage" name="coverage" code="{N_mdm(Real01,tiCoverage)}" label="Coverage for tolerance intervals"  minOccurs="0" maxOccurs="1" default="0.95" >
+        <param type="REAL" />
+	    </keyword>
+	    <keyword  id="ti_confidence_level" name="confidence_level" code="{N_mdm(Real01,tiConfidenceLevel)}" label="Confidence level for tolerance intervals"  minOccurs="0" maxOccurs="1" default="0.90" >
+	      <param type="REAL" />
+	    </keyword>
+    </keyword>
+    &default_final_moments;
+	  &level_mappings;
+    &method_optional_model_pointer;
+  </keyword>
+
         <keyword code="{N_mdm(utype,methodName_MULTILEVEL_SAMPLING)}" group="Uncertainty Quantification" id="multilevel_sampling" label="multilevel_sampling" name="multilevel_sampling">
           <alias name="multilevel_mc" />
           <alias name="mlmc" />
@@ -3560,7 +3615,7 @@
                     <keyword code="{N_mdm(int,mlmcmcInitialChainSamples)}" default="100" id="initial_chain_samples" label="Number of initial samples for MLMCMC" minOccurs="0" name="initial_chain_samples">
                       <param type="INTEGER" />
                     </keyword>
-                    <keyword code="{N_mdm(Real,mlmcmcTargetVariance)}" default="1." id="target_variance" label="Estimator variance for the MLMCMC greedy algorithm" minOccurs="0.0001" name="target_variance">
+                    <keyword code="{N_mdm(Real,mlmcmcTargetVariance)}" default="1." id="target_variance" label="Estimator variance for the MLMCMC greedy algorithm" minOccurs="0" name="target_variance">
                       <param type="REAL" />
                     </keyword>
                     <keyword code="{N_mdm(Real,mlmcmcGreedyResamplingFactor)}" default="0.5" id="greedy_resampling_factor" label="Resampling factor for the MLMCMC greedy algorithm" maxOccurs="1" minOccurs="0" name="greedy_resampling_factor">

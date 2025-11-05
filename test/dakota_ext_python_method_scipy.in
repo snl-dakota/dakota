@@ -1,0 +1,41 @@
+#@ s*: Label=FastTest
+#@ p*: MPIProcs=2
+#@ *: DakotaConfig=HAVE_EXT_PYTHON_METHOD,DAKOTA_PYTHON_SCIPY_FOUND
+#@ *: ReqFiles=ext_py_lhs_sampling.py,ext_py_sp_optimize.py,ext_py_helper.py
+
+environment
+    tabular_data
+      tabular_data_file = 'external_python.dat'
+    results_output
+      hdf5
+        results_output_file = 'external_python'
+
+method,
+    external_python
+      class_path_and_name = "ext_py_lhs_sampling.LHSSample"  #s0,#p0
+#      class_path_and_name = "ext_py_sp_optimize.ScipyOpt"   #s1,#s2,#s3,#p1,#p2,#p3
+
+variables,
+    continuous_design = 3                                    #s0,#p0
+      initial_point   -1.0    1.5   2.0                      #s0,#p0
+      upper_bounds    10.0   10.0  10.0                      #s0,#p0
+      lower_bounds   -10.0  -10.0 -10.0                      #s0,#p0
+      descriptors      'x1'  'x2'  'x3'                      #s0,#p0
+#    continuous_design = 2                                   #s1,#s2,#s3,#p1,#p2,#p3
+#    initial_point       0.0     0.0                         #s1,#s2,#s3,#p1,#p2,#p3
+#    upper_bounds	 2.0     2.0                         #s1,#s2,#s3,#p1,#p2,#p3
+#    lower_bounds       -2.0    -2.0                         #s1,#s2,#s3,#p1,#p2,#p3
+#    descriptors	'x1'    'x2'                         #s1,#s2,#s3,#p1,#p2,#p3
+
+interface,
+    direct
+    analysis_driver = 'text_book'
+
+responses,
+    objective_functions = 3     #s0,#p0
+#    objective_functions = 1    #s1,#s2,#s3,#p1,#p2,#p3
+    no_gradients                #s0,#s1,#p0,#p1
+#    analytic_gradients         #s2,#s3,#p2,#p3
+    no_hessians                 #s0,#s1,#s2,#p0,#p1,#p2
+#    analytic_hessians          #s3,#p3
+
