@@ -28,9 +28,29 @@ struct JSONIntVector {
   IntVector value;
 };
 
+// store the result of getting a RealMatrix from JSON.
+struct JSONRealMatrix {
+  RealMatrix value;
+};
+
 // store the result of getting a RealSymMatrix from JSON.
 struct JSONRealSymMatrix {
   RealSymMatrix value;
+};
+
+// store the result of getting a RealVector array from JSON.
+struct JSONRealVectorArray {
+  RealVectorArray value;
+};
+
+// store the result of getting a IntVector array from JSON.
+struct JSONIntVectorArray {
+  IntVectorArray value;
+};
+
+// store the result of getting a RealMatrixArray array from JSON.
+struct JSONRealMatrixArray {
+  RealMatrixArray value;
 };
 
 class JSONStoreError : public std::exception {
@@ -65,7 +85,7 @@ inline void from_json(const json &j, JSONRealVector &e) {
 }
 
 
-/// Read a IntVector of numbers from string-encoded numbers from JSON
+/// Read a IntVector of numbers from JSON
 inline void from_json(const json &j, JSONIntVector &e) {
     if(!j.is_array())
         throw JSONStoreError("expected an array object");
@@ -94,5 +114,60 @@ inline void from_json(const json &j, JSONRealSymMatrix &e) {
         for(int k = 0; k <= i; ++k) 
                 h(i, k) = j[i][k].template get<JSONDoubleElement>().value;
 }
+
+/// Read a RealMatrix of numbers or string-encoded numbers from JSON
+inline void from_json(const json &j, JSONRealMatrix &e) {
+    if(!j.is_array())
+         throw JSONStoreError(std::string("expected array object"));  
+    auto &h = e.value;
+    auto n = j.size();
+    auto m = j[0].size();
+    h.shape(n,m);
+    for(const auto &row : j) {
+        if(!row.is_array())
+	    throw JSONStoreError(std::string("expected element to be an array object"));
+	if(row.size() != n)
+            throw JSONStoreError(std::string("fix the RealMatrix implementation"));
+    }
+    for(int i = 0; i < n; ++i) 
+        for(int k = 0; k <= i; ++k) 
+                h(i, k) = j[i][k].template get<JSONDoubleElement>().value;
+}
+
+/// Read an array of RealVector's of numbers or string-encoded numbers from JSON
+inline void from_json(const json &j, JSONRealVectorArray &e) {
+    if(!j.is_array())
+        throw JSONStoreError("expected an array object");
+    auto n = j.size();
+    auto &v = e.value;
+    v.resize(n);
+    for(size_t i = 0; i < n; ++i)
+        v[i] = j[i].template get<JSONRealVector>().value;
+}
+
+
+/// Read an array of IntVector's of numbers from JSON
+inline void from_json(const json &j, JSONIntVectorArray &e) {
+    if(!j.is_array())
+        throw JSONStoreError("expected an array object");
+    auto n = j.size();
+    auto &v = e.value;
+    v.resize(n);
+    for(size_t i = 0; i < n; ++i)
+        v[i] = j[i].template get<JSONIntVector>().value;
+}
+
+
+/// Read an array of RealMatrix of numbers from JSON
+inline void from_json(const json &j, JSONRealMatrixArray &e) {
+    if(!j.is_array())
+        throw JSONStoreError("expected an array object");
+    auto n = j.size();
+    auto &v = e.value;
+    v.resize(n);
+    for(size_t i = 0; i < n; ++i)
+        v[i] = j[i].template get<JSONRealMatrix>().value;
+}
+
 
 } // dakota namespace
