@@ -59,8 +59,8 @@ class JSONProblemDescDB //: public ProblemDescDB
     //- Heading: Member methods
     //
 
-    // /// get a RealMatrixArray out of the database based on an identifier string
-    // const RealMatrixArray& get_rma(const String& entry_name) const;
+    /// get a RealMatrixArray out of the database based on an identifier string
+    const RealMatrixArray& get_rma(const String& entry_name);
     /// get a RealVector out of the database based on an identifier string
     const RealVector& get_rv(const String& entry_name);
     /// get an IntVector out of the database based on an identifier string
@@ -73,10 +73,10 @@ class JSONProblemDescDB //: public ProblemDescDB
     const UShortArray& get_usa(const String& entry_name);
     /// get a RealSymMatrix out of the database based on an identifier string
     const RealSymMatrix& get_rsm(const String& entry_name);
-    ///// get a RealVectorArray out of the database based on an identifier string
-    //const RealVectorArray& get_rva(const String& entry_name);
-    ///// get an IntVectorArray out of the database based on an identifier string
-    //const IntVectorArray& get_iva(const String& entry_name);
+    /// get a RealVectorArray out of the database based on an identifier string
+    const RealVectorArray& get_rva(const String& entry_name);
+    /// get an IntVectorArray out of the database based on an identifier string
+    const IntVectorArray& get_iva(const String& entry_name);
     /// get an IntSet out of the database based on an identifier string
     const IntSet& get_is(const String& entry_name);
     /// get an IntSetArray out of the database based on an identifier string
@@ -135,6 +135,7 @@ class JSONProblemDescDB //: public ProblemDescDB
 
   private:
 
+    std::map<String, RealMatrixArray>          cachedData_RealMatrixArray;
     std::map<String, RealVector>               cachedData_RealVector;
     std::map<String, SizetArray>               cachedData_SizetArray;
     std::map<String, UShortArray>              cachedData_UShortArray;
@@ -200,15 +201,15 @@ inline auto JSONProblemDescDB::get_value(const String& key) const
     return cachedData_##TYPE[key]; \
   }
 
-//CUSTOM_JSONDB_GET_METHOD  (RealMatrixArray,        get_rma)
+CUSTOM_JSONDB_GET_METHOD  (RealMatrixArray,          get_rma)
 CUSTOM_JSONDB_GET_METHOD  (RealVector,               get_rv)
 CUSTOM_JSONDB_GET_METHOD  (IntVector,                get_iv)
 //CUSTOM_JSONDB_GET_METHOD(BitArray,                 get_ba)
 STANDARD_JSONDB_GET_METHOD(SizetArray,               get_sza)
 STANDARD_JSONDB_GET_METHOD(UShortArray,              get_usa)
 CUSTOM_JSONDB_GET_METHOD  (RealSymMatrix,            get_rsm)
-//CUSTOM_JSONDB_GET_METHOD  (RealVectorArray,        get_rva)
-//CUSTOM_JSONDB_GET_METHOD  (IntVectorArray,         get_iva)
+CUSTOM_JSONDB_GET_METHOD  (RealVectorArray,          get_rva)
+CUSTOM_JSONDB_GET_METHOD  (IntVectorArray,           get_iva)
 STANDARD_JSONDB_GET_METHOD(IntSet,                   get_is)
 STANDARD_JSONDB_GET_METHOD(IntSetArray,              get_isa)
 STANDARD_JSONDB_GET_METHOD(SizetSet,                 get_szs)
