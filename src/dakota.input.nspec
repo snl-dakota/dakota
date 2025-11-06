@@ -528,6 +528,19 @@ KEYWORD method {N_mdm3(start,0,stop)}
    )
   |
   ( external_python {N_mdm(utype,methodName_EXTERNAL_PYTHON)}
+    [ id_method STRING {N_mdm(str,idMethod)} ]
+    [ output {0}
+      debug {N_mdm(type,methodOutput_DEBUG_OUTPUT)}
+      |
+      verbose {N_mdm(type,methodOutput_VERBOSE_OUTPUT)}
+      |
+      normal {N_mdm(type,methodOutput_NORMAL_OUTPUT)}
+      |
+      quiet {N_mdm(type,methodOutput_QUIET_OUTPUT)}
+      |
+      silent {N_mdm(type,methodOutput_SILENT_OUTPUT)}
+     ]
+    [ final_solutions INTEGER >= 0 {N_mdm(sizet,numFinalSolutions)} ]
     class_path_and_name STRING {N_mdm(str,moduleAndClassName)}
     [ options_file STRING {N_mdm(str,advancedOptionsFilename)} ]
    )
@@ -1655,7 +1668,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
       rnum2 {N_mdm(lit,rngName_rnum2)}
      ]
     [ probability_refinement ALIAS sample_refinement {0}
-      import {N_mdm(utype,integrationRefine_IS)}
+      importance {N_mdm(utype,integrationRefine_IS)}
       |
       adapt_import {N_mdm(utype,integrationRefine_AIS)}
       |
@@ -1820,7 +1833,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
       rnum2 {N_mdm(lit,rngName_rnum2)}
      ]
     [ probability_refinement ALIAS sample_refinement {0}
-      import {N_mdm(utype,integrationRefine_IS)}
+      importance {N_mdm(utype,integrationRefine_IS)}
       |
       adapt_import {N_mdm(utype,integrationRefine_AIS)}
       |
@@ -1997,7 +2010,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
       rnum2 {N_mdm(lit,rngName_rnum2)}
      ]
     [ probability_refinement ALIAS sample_refinement {0}
-      import {N_mdm(utype,integrationRefine_IS)}
+      importance {N_mdm(utype,integrationRefine_IS)}
       |
       adapt_import {N_mdm(utype,integrationRefine_AIS)}
       |
@@ -2160,7 +2173,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
       rnum2 {N_mdm(lit,rngName_rnum2)}
      ]
     [ probability_refinement ALIAS sample_refinement {0}
-      import {N_mdm(utype,integrationRefine_IS)}
+      importance {N_mdm(utype,integrationRefine_IS)}
       |
       adapt_import {N_mdm(utype,integrationRefine_AIS)}
       |
@@ -2460,7 +2473,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
       rnum2 {N_mdm(lit,rngName_rnum2)}
      ]
     [ probability_refinement ALIAS sample_refinement {0}
-      import {N_mdm(utype,integrationRefine_IS)}
+      importance {N_mdm(utype,integrationRefine_IS)}
       |
       adapt_import {N_mdm(utype,integrationRefine_AIS)}
       |
@@ -2729,7 +2742,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
       rnum2 {N_mdm(lit,rngName_rnum2)}
      ]
     [ probability_refinement ALIAS sample_refinement {0}
-      import {N_mdm(utype,integrationRefine_IS)}
+      importance {N_mdm(utype,integrationRefine_IS)}
       |
       adapt_import {N_mdm(utype,integrationRefine_AIS)}
       |
@@ -2963,7 +2976,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
       rnum2 {N_mdm(lit,rngName_rnum2)}
      ]
     [ probability_refinement ALIAS sample_refinement {0}
-      import {N_mdm(utype,integrationRefine_IS)}
+      importance {N_mdm(utype,integrationRefine_IS)}
       |
       adapt_import {N_mdm(utype,integrationRefine_AIS)}
       |
@@ -3144,7 +3157,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
       rnum2 {N_mdm(lit,rngName_rnum2)}
      ]
     [ probability_refinement ALIAS sample_refinement {0}
-      import {N_mdm(utype,integrationRefine_IS)}
+      importance {N_mdm(utype,integrationRefine_IS)}
       |
       adapt_import {N_mdm(utype,integrationRefine_AIS)}
       |
@@ -3338,7 +3351,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
       rnum2 {N_mdm(lit,rngName_rnum2)}
      ]
     [ probability_refinement ALIAS sample_refinement {0}
-      import {N_mdm(utype,integrationRefine_IS)}
+      importance {N_mdm(utype,integrationRefine_IS)}
       |
       adapt_import {N_mdm(utype,integrationRefine_AIS)}
       |
@@ -3582,6 +3595,19 @@ KEYWORD method {N_mdm3(start,0,stop)}
    )
   |
   ( import_points {N_mdm(utype,methodName_IMPORT_POINTS)}
+    [ id_method STRING {N_mdm(str,idMethod)} ]
+    [ output {0}
+      debug {N_mdm(type,methodOutput_DEBUG_OUTPUT)}
+      |
+      verbose {N_mdm(type,methodOutput_VERBOSE_OUTPUT)}
+      |
+      normal {N_mdm(type,methodOutput_NORMAL_OUTPUT)}
+      |
+      quiet {N_mdm(type,methodOutput_QUIET_OUTPUT)}
+      |
+      silent {N_mdm(type,methodOutput_SILENT_OUTPUT)}
+     ]
+    [ final_solutions INTEGER >= 0 {N_mdm(sizet,numFinalSolutions)} ]
     ( import_points_file STRING {N_mdm(str,importPtsFile)}
       [ 
         ( custom_annotated {N_mdm(utype,importPtsFormat_TABULAR_NONE)}
@@ -4344,7 +4370,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ final_solutions INTEGER >= 0 {N_mdm(sizet,numFinalSolutions)} ]
     [ samples ALIAS initial_samples INTEGER {N_mdm(int,numSamples)} ]
     [ seed INTEGER > 0 {N_mdm(int,randomSeed)} ]
-    import {N_mdm(utype,integrationRefine_IS)}
+    importance {N_mdm(utype,integrationRefine_IS)}
     |
     adapt_import {N_mdm(utype,integrationRefine_AIS)}
     |
@@ -4573,9 +4599,9 @@ KEYWORD method {N_mdm3(start,0,stop)}
     build_samples ALIAS samples INTEGER {N_mdm(int,buildSamples)}
     [ seed INTEGER > 0 {N_mdm(int,randomSeed)} ]
     [ lipschitz {0}
-      local {N_mdm(lit,lipschitzType_local)}
+      local_est {N_mdm(lit,lipschitzType_local)}
       |
-      global {N_mdm(lit,lipschitzType_global)}
+      global_est {N_mdm(lit,lipschitzType_global)}
      ]
     [ samples_on_emulator INTEGER {N_mdm(int,samplesOnEmulator)} ]
     [ response_levels REALLIST {N_mdm(resplevs,responseLevels)}
@@ -4627,9 +4653,9 @@ KEYWORD method {N_mdm3(start,0,stop)}
     build_samples ALIAS samples INTEGER {N_mdm(int,buildSamples)}
     [ seed INTEGER > 0 {N_mdm(int,randomSeed)} ]
     [ lipschitz {0}
-      local {N_mdm(lit,lipschitzType_local)}
+      local_est {N_mdm(lit,lipschitzType_local)}
       |
-      global {N_mdm(lit,lipschitzType_global)}
+      global_est {N_mdm(lit,lipschitzType_global)}
      ]
     [ samples_on_emulator INTEGER {N_mdm(int,samplesOnEmulator)} ]
     [ response_levels REALLIST {N_mdm(resplevs,responseLevels)}
@@ -7447,7 +7473,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
         |
         second_order {N_mdm(lit,reliabilityIntegration_second_order)}
         [ probability_refinement ALIAS sample_refinement {0}
-          import {N_mdm(utype,integrationRefine_IS)}
+          importance {N_mdm(utype,integrationRefine_IS)}
           |
           adapt_import {N_mdm(utype,integrationRefine_AIS)}
           |
@@ -7778,7 +7804,7 @@ KEYWORD model {N_mom3(start,0,stop)}
     [ responses_pointer STRING {N_mom(str,responsesPointer)} ]
     [ hierarchical_tagging {N_mom(true,hierarchicalTags)} ]
     [ id_surrogates INTEGERLIST {N_mom(id_to_index_set,surrogateFnIndices)} ]
-    ( global {0}
+    ( global_approx {0}
       ( experimental_gaussian_process {N_mom(lit,surrogateType_global_exp_gauss_proc)}
         [ trend {0}
           none {N_mom(lit,trendOrder_none)}
