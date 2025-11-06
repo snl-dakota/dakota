@@ -25,8 +25,8 @@ method
 #             0.1 2.0					                      #p1
 #        matrix                                       #p1
 #  diagonal and matrix formats from file
-#      filename 'dakota_cantilever_queso.diag.dat'	diagonal  #p2
-#      filename 'dakota_cantilever_queso.matrix.dat'	matrix  #p3
+#      file 'dakota_cantilever_queso.diag.dat'	diagonal  #p2
+#      file 'dakota_cantilever_queso.matrix.dat'	matrix  #p3
     logit_transform         # default is off
 #    burn_in_samples 200 						#s1
 #    sub_sampling_period 10 					#s1
