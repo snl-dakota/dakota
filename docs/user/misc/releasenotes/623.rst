@@ -42,8 +42,11 @@ method has further details.
   by replacing boost::filesystem with std::filesystem
 - Obviates `github PR179 <https://github.com/snl-dakota/dakota/pull/179>`_
   and `github PR181 <https://github.com/snl-dakota/dakota/pull/181>`_
-- Method source and interval type keywords for numerical gradients and Hessians
-  are now properly nested.
+- Method source and interval type keywords for numerical gradients are 
+  now properly nested.
+- Dakota reports the options it was configured with when the
+  `-version` command line argument is followed by `all` or a search
+  string.
 
 **Compatibility**
 
