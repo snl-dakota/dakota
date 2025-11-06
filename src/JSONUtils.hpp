@@ -126,16 +126,14 @@ inline void from_json(const json &j, JSONRealMatrix &e) {
          throw JSONStoreError(std::string("expected array object"));  
     auto &h = e.value;
     auto n = j.size();
-    auto m = j[0].size();
+    auto m = j.at(0).size();
     h.shape(n,m);
     for(const auto &row : j) {
         if(!row.is_array())
 	    throw JSONStoreError(std::string("expected element to be an array object"));
-	if(row.size() != n)
-            throw JSONStoreError(std::string("fix the RealMatrix implementation"));
     }
     for(int i = 0; i < n; ++i) 
-        for(int k = 0; k <= i; ++k) 
+        for(int k = 0; k < m; ++k) 
                 h(i, k) = j[i][k].template get<JSONDoubleElement>().value;
 }
 
@@ -145,8 +143,11 @@ inline void from_json(const json &j, JSONBitArray &e) {
         throw JSONStoreError("expected an array object");
     auto n = j.size();
     auto &v = e.value;
-    // Fix this
-    v = BitArray();
+    v.resize(n);
+    for(size_t i = 0; i < n; ++i) {
+      //std::cout << "TEST: BitArray i: " << i << ", " << j[i] << std::endl;
+      v[i] = (j[i] == "yes") ? 1 : 0;
+    }
 }
 
 

@@ -21,10 +21,6 @@ using namespace nlohmann::literals;
 using namespace Dakota;
 
 
-//TEST(json_utils_tests, test_real_matrix_array) {
-//  EXPECT_TRUE((actual == expected));
-//}
-
 // -----------------------------------
 
 TEST(json_utils_tests, test_real_vector) {
@@ -57,6 +53,23 @@ TEST(json_utils_tests, test_int_vector) {
 
 // -----------------------------------
 
+TEST(json_utils_tests, test_real_matrix) {
+  RealMatrix expected(2,3);
+  expected(0,0) = 0.5, expected(0,1) = 1.5, expected(0,2) = 3.4;
+  expected(1,0) = 5.0, expected(1,1) = 6.0, expected(1,2) = 2.0;
+  auto j = R"(
+  {
+      "test_values": [ [0.5, 1.5, 3.4],
+                       [5.0, 6.0, 2.0] ]
+  }
+  )"_json;
+
+  auto actual = j["test_values"].template get<JSONRealMatrix>().value;
+  EXPECT_TRUE((actual == expected));
+}
+
+// -----------------------------------
+
 TEST(json_utils_tests, test_real_sym_matrix)
 {
   RealSymMatrix expected(2);
@@ -74,15 +87,88 @@ TEST(json_utils_tests, test_real_sym_matrix)
   EXPECT_TRUE((actual == expected));
 }
 
-//TEST(json_utils_tests, test_real_vector_array) {
-//  EXPECT_TRUE((actual == expected));
-//}
+// -----------------------------------
+
+TEST(json_utils_tests, test_bit_array) {
+  BitArray expected(3);
+  expected[0] = 1, expected[2] = 1;
+  auto j = R"(
+  {
+      "test_values": ["yes", "no", "yes"]
+  }
+  )"_json;
+
+  auto actual = j["test_values"].template get<JSONBitArray>().value;
+  EXPECT_TRUE((actual.count() == 2));
+}
 
 // -----------------------------------
 
-//TEST(json_utils_tests, test_int_vector_array) {
-//  EXPECT_TRUE((actual == expected));
-//}
+TEST(json_utils_tests, test_real_vector_array) {
+  RealVectorArray expected(2);
+  expected[0].size(2);
+  expected[1].size(3);
+  expected[0][0] = 0.5, expected[0][1] = 1.5;
+  expected[1][0] = 1.1, expected[1][1] = 2.2, expected[1][2] = 3.3;
+  auto j = R"(
+  {
+      "test_values": [ [0.5, 1.5],
+                       [1.1, 2.2, 3.3]
+                     ]
+  }
+  )"_json;
+
+  auto actual = j["test_values"].template get<JSONRealVectorArray>().value;
+  EXPECT_TRUE((actual[0] == expected[0]));
+  EXPECT_TRUE((actual[1] == expected[1]));
+}
+
+// -----------------------------------
+
+TEST(json_utils_tests, test_int_vector_array) {
+  IntVectorArray expected(2);
+  expected[0].size(2);
+  expected[1].size(3);
+  expected[0][0] = 0, expected[0][1] = 1;
+  expected[1][0] = 1, expected[1][1] = 2, expected[1][2] = 3;
+  auto j = R"(
+  {
+      "test_values": [ [0, 1],
+                       [1, 2, 3]
+                     ]
+  }
+  )"_json;
+
+  auto actual = j["test_values"].template get<JSONIntVectorArray>().value;
+  EXPECT_TRUE((actual[0] == expected[0]));
+  EXPECT_TRUE((actual[1] == expected[1]));
+}
+
+// -----------------------------------
+
+TEST(json_utils_tests, test_real_matrix_array) {
+  RealMatrixArray expected(2);
+  expected[0].reshape(2,3);
+  expected[1].reshape(3,1);
+  expected[0](0,0) = 0.5, expected[0](0,1) = 1.5, expected[0](0,2) = 3.4;
+  expected[0](1,0) = 5.0, expected[0](1,1) = 6.0, expected[0](1,2) = 2.0;
+  expected[1](0,0) = 1.1, expected[1](1,0) = 2.2, expected[1](2,0) = 3.3;
+  auto j = R"(
+  {
+      "test_values": [
+                       [ [0.5, 1.5, 3.4],
+                         [5.0, 6.0, 2.0] ],
+                       [ [1.1],
+                         [2.2],
+                         [3.3] ]
+                     ]
+  }
+  )"_json;
+
+  auto actual = j["test_values"].template get<JSONRealMatrixArray>().value;
+  EXPECT_TRUE((actual[0] == expected[0]));
+  EXPECT_TRUE((actual[1] == expected[1]));
+}
 
 // -----------------------------------
 
