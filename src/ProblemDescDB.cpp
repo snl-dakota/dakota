@@ -1106,7 +1106,7 @@ get(const std::string& context_msg,
 const RealMatrixArray& ProblemDescDB::get_rma(const String& entry_name) const
 {
   // Allow use of JSON input
-  //JSON_GET_VALUE(get_rma, true)
+  JSON_GET_VALUE(get_rma, JSONDB_VERBOSE)
 
   return get<RealMatrixArray>
   ( "get_rma()",
@@ -1333,6 +1333,9 @@ const IntVector& ProblemDescDB::get_iv(const String& entry_name) const
 
 const BitArray& ProblemDescDB::get_ba(const String& entry_name) const
 {
+  // Allow use of JSON input
+  JSON_GET_VALUE(get_ba, JSONDB_VERBOSE)
+
   return get<const BitArray>
   ( "get_ba()",
     { /* environment */ },
@@ -1432,6 +1435,9 @@ const RealSymMatrix& ProblemDescDB::get_rsm(const String& entry_name) const
 
 const RealVectorArray& ProblemDescDB::get_rva(const String& entry_name) const
 {
+  // Allow use of JSON input
+  JSON_GET_VALUE(get_rva, JSONDB_VERBOSE)
+
   return get<const RealVectorArray>
   ( "get_rva()",
     { /* environment */ },
@@ -1451,6 +1457,9 @@ const RealVectorArray& ProblemDescDB::get_rva(const String& entry_name) const
 
 const IntVectorArray& ProblemDescDB::get_iva(const String& entry_name) const
 {
+  // Allow use of JSON input
+  JSON_GET_VALUE(get_iva, JSONDB_VERBOSE)
+
   // BMA: no current use cases
   return get<const IntVectorArray>
   ( "get_iva()",
