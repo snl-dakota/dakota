@@ -10,7 +10,6 @@
 #ifndef JSON_PROBLEM_DESC_DB_H
 #define JSON_PROBLEM_DESC_DB_H
 
-#include "ProblemDescDB.hpp" // might derive from this - RWH
 #include "JSONUtils.hpp"
 #include <nlohmann/json.hpp>
 
@@ -19,23 +18,23 @@ using json = nlohmann::json;
 #define JSON_GET_VALUE(GET_VALUE_FN, verbose) \
   if (jsonDB) { \
     /* \
-    std::cout << "Trying ProblemDescDB::" << std::string(#GET_VALUE_FN) \
+    std::cout << "Trying JSONProblemDescDB::" << std::string(#GET_VALUE_FN) \
               << ": for \"" << entry_name << "\"" << std::endl; \
     */ \
     try { \
       const auto& val = jsonDB->GET_VALUE_FN(entry_name); \
       if( verbose ) \
-        std::cout << "ProblemDescDB::" << std::string(#GET_VALUE_FN) \
+        std::cout << "JSONProblemDescDB::" << std::string(#GET_VALUE_FN) \
                   << ": FOUND JSON value for \"" << entry_name << "\"" << std::endl; \
       return val; \
     } catch (const json::exception& e) { \
       if( verbose ) \
-        std::cout << "ProblemDescDB::" << std::string(#GET_VALUE_FN) \
+        std::cout << "JSONProblemDescDB::" << std::string(#GET_VALUE_FN) \
                   << ": no JSON value for \"" << entry_name << "\"" << std::endl; \
       /* no-op; */ \
     } catch (const std::exception& e) { \
       if( verbose ) \
-        std::cout << "ProblemDescDB::" << std::string(#GET_VALUE_FN) \
+        std::cout << "JSONProblemDescDB::" << std::string(#GET_VALUE_FN) \
                   << ": no JSON value for \"" << entry_name << "\"" << std::endl; \
       /* no-op; */ \
     } \
@@ -45,7 +44,7 @@ namespace Dakota {
 
   using Ushort = unsigned short;
  
-class JSONProblemDescDB //: public ProblemDescDB
+class JSONProblemDescDB
 {
   public:
 
@@ -127,8 +126,8 @@ class JSONProblemDescDB //: public ProblemDescDB
 
     json jsonOptions;
 
+    // These may not be needed if we adopt named json blocks
     std::set<std::string> allowedBlocks;
-
     std::map<String, int> blockIds;
 
   public:
