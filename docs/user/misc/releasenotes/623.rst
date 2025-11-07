@@ -35,6 +35,50 @@ available in all builds of Dakota.
 The keyword documentation for the :dakkw:`method-external_python`
 method has further details.
 
+**Improvements by Category**
+
+*UQ Methods*
+
+- Fault tolerance: ML BLUE now more consistent with other
+  multifidelity sampling methods in the presence of simulation
+  faults: (a) exclude all data for a given sample from group
+  covariance estimation when any model fails, and (b) reference
+  estimator variance (for reporting and relative accuracy control) is
+  based on actual accumulations rather than allocations.
+
+- Online cost recovery: multifidelity surrogate methods (polynomial
+  chaos, stochastic collocation, and functional tensor train) now
+  support model cost estimation through online metadata recovery, as
+  previously supported for multifidelity sampling methods.
+
+- Accuracy control: multifidelity methods can now be target an
+  absolute accuracy (specified using "convergence_tolerance" with
+  "absolute" instead of the default "relative"), rather than as
+  relative to a pilot sample-based accuracy benchmark.  This enables
+  activation of accuracy control (min cost for specified accuracy) for
+  all offline pilot cases, since they otherwise do not have an
+  appropriate pilot accuracy benchmark.
+
+*Parallelism*
+
+- Multi-batch processing of concurrent jobs is now supported for
+  ensemble models.  Each unique sample set spanning a set of models is
+  now exported as an individual batch file, where multiple concurrent
+  batches are supported during group covariance evaluation or sample
+  allocation increments.  This enables more advanced interaction with
+  ensemble managers such as FLUX, admitting greater concurrency in
+  multifidelity method executions.
+
+- Asynchronous local concurrency for a simulation interface would
+  previously serialize any local job scheduling when the concurrency
+  was set at 1.  In the presence of multiple simulation interfaces
+  within an ensemble model specification, it can be desirable to allow
+  asynchronous job launches even in the case of a single job per
+  interface, in order to admit concurrency across interfaces.  An
+  alternative serialization threshold is now employed by ensemble
+  models and by the optional interface in nested models.
+
+
 **Miscellaneous Enhancements and Bugfixes**
 
 - Windows builds now performed using MSVS 2022 and Intel oneAPI 2024.
@@ -45,8 +89,7 @@ method has further details.
 - Method source and interval type keywords for numerical gradients are 
   now properly nested.
 - Dakota reports the options it was configured with when the
-  `-version` command line argument is followed by `all` or a search
-  string.
+  `-version` command line argument is followed by `all` or a search string.
 
 **Compatibility**
 
