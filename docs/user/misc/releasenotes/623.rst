@@ -42,9 +42,9 @@ multifidelity deployments.
 
 *UQ Methods*
 
-- Fault tolerance: ML BLUE now more consistent with other
-  multifidelity sampling methods in the presence of simulation
-  faults: (a) exclude all data for a given sample from group
+- Fault tolerance: ML BLUE (:dakkw:`method-multilevel_blue`) now more 
+  consistent with other multifidelity sampling methods in the presence
+  of simulation faults: (a) exclude all data for a given sample from group
   covariance estimation when any model fails, and (b) reference
   estimator variance (for reporting and relative accuracy control) is
   based on actual accumulations rather than allocations.
@@ -54,7 +54,7 @@ multifidelity deployments.
   support model cost estimation through online metadata recovery, as
   previously supported for multifidelity sampling methods.
 
-- Accuracy control: multifidelity methods can now be target an
+- Accuracy control: multifidelity methods can now target an
   absolute accuracy (specified using ``convergence_tolerance`` with
   ``absolute`` instead of the default ``relative``), rather than as
   relative to a pilot sample-based accuracy benchmark.  This enables
@@ -69,8 +69,8 @@ multifidelity deployments.
   now exported as an individual batch file, where multiple concurrent
   batches are supported during group covariance evaluation or sample
   allocation increments.  This enables more advanced interaction with
-  ensemble managers such as FLUX, admitting greater concurrency in
-  multifidelity method executions.
+  ensemble managers such as `Flux <http://flux-framework.org/>`_,
+  admitting greater concurrency in multifidelity method executions.
 
 - Asynchronous local concurrency for a simulation interface would
   previously serialize any local job scheduling when the concurrency
