@@ -1,10 +1,12 @@
 Blurb::
-relative scaling of statistical metrics when adapting UQ surrogates
+Assess convergence in adaptive UQ methods using statistical metrics that are relative to a benchmark
+
 Description::
-When adapting a UQ surrogate model, the ``relative``
-option indicates that the change is measured relative to the current
-reference value (which evolves during the refinement), such that the
-convergence tolerance controls the relative change.
+When adaptively refining a UQ method (e.g., allocating sample allocations for
+metric estimation or surrogate training), the ``relative`` option
+indicates that the metric is assessed relative to a current reference
+value (e.g. estimator variance after a pilot sample), such that the
+convergence tolerance controls the relative accuracy.
 
 *Default Behavior*
 

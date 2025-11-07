@@ -1,9 +1,12 @@
 Blurb::
-use of absolute statistical metrics when adapting UQ surrogates
+Use absolute statistical metrics for assessing convergence in adaptive UQ methods
+
 Description::
-When adapting a UQ surrogate model,the ``absolute``
-option indicates that there is no scaling such that the statistical
-change is compared directly to the convergence tolerance.
+When adaptively refining a UQ method (e.g., sample allocations for
+metric estimation or surrogate training), the ``absolute`` option
+indicates that the metric is not scaled relative to a benchmark, such
+that the statistical metric is compared directly to the convergence
+tolerance.
 
 *Default Behavior*
 

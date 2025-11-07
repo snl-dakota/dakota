@@ -37,6 +37,9 @@ method has further details.
 
 **Improvements by Category**
 
+A number of refinements were performed as part of recent large-scale
+multifidelity deployments.
+
 *UQ Methods*
 
 - Fault tolerance: ML BLUE now more consistent with other
@@ -52,8 +55,8 @@ method has further details.
   previously supported for multifidelity sampling methods.
 
 - Accuracy control: multifidelity methods can now be target an
-  absolute accuracy (specified using "convergence_tolerance" with
-  "absolute" instead of the default "relative"), rather than as
+  absolute accuracy (specified using ``convergence_tolerance`` with
+  ``absolute`` instead of the default ``relative``), rather than as
   relative to a pilot sample-based accuracy benchmark.  This enables
   activation of accuracy control (min cost for specified accuracy) for
   all offline pilot cases, since they otherwise do not have an
