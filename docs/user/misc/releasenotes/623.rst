@@ -4,11 +4,10 @@ Version 6.23 (2025/11/17)
 
 **Highlight: Compute statistics from imported samples**
 
-A new method, :dakkw:`method-import_points`, is available in Dakota
-release 6.23. It simplifies importing input-output points from
-a tabular file and computing statistics for them. Computed
-statistics include correlation coefficients, moments, and optionally
-level mappings and Sobol indices.
+Version 6.23 includes improved support for computing statistics
+from imported samples. The :dakkw:`method-import_points` method
+reads samples from a tabular file and computes moments, correlation
+coefficients, and, optionally, level mappings and Sobol indices.
 
 *Enabling / Accessing:* The :dakkw:`method-import_samples` method is
 available in all builds of Dakota.
@@ -18,14 +17,15 @@ available in all builds of Dakota.
 The keyword documentation for the :dakkw:`method-import_points`
 method has further details.
 
-**Highlight: External Python method support**
+**Highlight: Import methods from Python**
 
-A new interface for general python methods,
-:dakkw:`method-external_python`, is available in Dakota release 6.23. It
-enables python implementations of the Dakota Iterator and provides a
-wrapped Dakota model for function, gradient and hessian responses along
-with helper methods to query model properties and output results to the
-Dakota output stream.
+Dakota can now import and use methods written in Python. Users can
+implement or wrap their own iterative, black-box algorithms such as 
+optimizers or UQ methods and use them in Dakota studies. Dakota
+provides the imported method with a wrapped Model instance that it can
+use to evaluate the function, gradient, and Hessian of responses and
+perform other operations such as sending results to Dakota's output
+stream.
 
 *Enabling / Accessing:* The :dakkw:`method-external_python` method is
 available in all builds of Dakota.
