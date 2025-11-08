@@ -12,7 +12,7 @@ convergence_tolerance, then this convergence criterion is satisfied on
 the current iteration.
 
 For uncertainty quantification, it is commonly employed for accuracy
-control, e.g. in prescribing the an upper bound on the variance of a
+control, e.g. in prescribing an upper bound on the variance of a
 statistical estimator such as the mean value of a QoI.  In this context,
 the tolerance may be either absolute or relative, where the latter admits
 permissible values between 0 and 1, non-inclusive.
