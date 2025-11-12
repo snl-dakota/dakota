@@ -238,6 +238,19 @@ enum {  DEFAULT_CONVERGENCE_TOLERANCE=0, RELATIVE_CONVERGENCE_TOLERANCE,
 // specifing equality constraint, either variance or cost
 enum { VARIANCE_CONSTRAINT_TARGET, COST_CONSTRAINT_TARGET };
 
+// Low disrepancy options
+// rank 1 lattice options
+// for the generating vector
+enum { GEN_VECTOR_KUO, GEN_VECTOR_COOLS_KUO_NUYENS};
+// ordering for rank 1 lattice approach
+enum { RANK_1_LATTICE_NATURAL_ORDERING, RANK_1_LATTICE_RADICAL_INVERSE_ORDERING };
+
+// digital net options
+// ordering for digital net approach
+enum { DIGITAL_NET_NATURAL_ORDERING, DIGITAL_NET_GRAY_CODE_ORDERING };
+// generating matrix options
+enum { JOE_KUO, SOBOL_ORDER_2 };
+
 // ML/MF sampling modes
 enum { ONLINE_PILOT,            OFFLINE_PILOT,
        ONLINE_PILOT_PROJECTION, OFFLINE_PILOT_PROJECTION };
@@ -920,8 +933,12 @@ public:
   /// Name of file with generating vector
   String generatingVectorFileName;
   /// Predefined generating vectors
+  short rank1GeneratingVectorScheme;
   bool kuo;
   bool cools_kuo_nuyens;
+
+  /// Ordering of the lattic points
+  short rank1Ordering;
   /// Ordering of the lattice points
   bool naturalOrdering;
   bool radicalInverseOrdering;
@@ -945,8 +962,12 @@ public:
   /// Name of file with generating matrices
   String generatingMatricesFileName;
   /// Predefined generating matrices
+  short digitalNetGeneratingMatrixScheme;
+  /// Predefined generating matrices
   bool joe_kuo;
   bool sobol_order_2;
+  /// Ordering of the digital net points
+  short digitalNetOrdering;
   /// Ordering of the digital net points
   bool grayCodeOrdering;
 
