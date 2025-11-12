@@ -2068,6 +2068,10 @@ short ProblemDescDB::get_short(const String& entry_name) const
     { /* environment */ },
     { /* method */
       {"iterator_scheduling", P_MET iteratorScheduling},
+      {"ld.digitalnet.generating_matrix_scheme", P_MET digitalNetGeneratingMatrixScheme},
+      {"ld.digitalnet.ordering", P_MET digitalNetOrdering},
+      {"ld.rank1.generating_vector_scheme", P_MET rank1GeneratingVectorScheme},
+      {"ld.rank1.ordering", P_MET rank1Ordering},
       {"nond.allocation_target", P_MET allocationTarget},
       {"nond.c3function_train.advancement_type", P_MET c3AdvanceType},
       {"nond.convergence_tolerance_target", P_MET convergenceToleranceTarget},
