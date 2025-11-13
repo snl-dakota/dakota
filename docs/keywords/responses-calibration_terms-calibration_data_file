@@ -191,6 +191,7 @@ together might look like
         calibration_data_file = 'circuit.dat'
           annotated
           num_experiments = 4
+          num_config_variables = 2
           experiment_variance_type 'scalar'
 
 
