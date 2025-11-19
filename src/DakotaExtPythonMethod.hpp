@@ -89,6 +89,12 @@ class ModelExecutor
 
 // -----------------------------------------------------------------
 
+/** The ExtPythonMethod class provides an interface to an external python
+    method which can implement arbitrary algorithms using a wrapped
+    Model instance to evaluate the function, gradient, and Hessian of
+    responses and to perform other operations such as sending results
+    to Dakota’s output stream.  */
+
 class ExtPythonMethod : public Iterator
 {
   public:
