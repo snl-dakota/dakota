@@ -1252,7 +1252,7 @@ void iround(const RealVector& input_vec, SizetArray& rounded_vec);
 
 /// return a std vector with the counts of unique values of a 
 /// sorted vector (i.e., assumes the elements are sorted smallest to largest)
-std::vector<size_t> get_unique_counts_of_sorted_vec( const RealVector& sorted_vec );
+IntVector get_unique_counts_of_sorted_vec( const RealVector& sorted_vec );
 
 
 // -------------------------------

@@ -219,7 +219,7 @@ private:
   /// per variable.
   void get_discrete_var_samples_argsort_and_counts( const RealMatrix& valid_data, 
                                              IntMatrix& sorted_var_indices, 
-                                             std::vector<std::vector<size_t>>& unique_counts );
+                                             std::vector<IntVector>& unique_counts );
 
   void compute_response_means_and_variances( const RealMatrix& response_samples, 
                                            RealVector& total_means,
@@ -288,6 +288,29 @@ protected:
   /// compute binned sobol indices from valid samples (having screened out samples with non-numeric response)
   void compute_binned_sobol_indices_from_valid_samples( const RealMatrix& valid_samples,
                                                       size_t num_bins );
+
+
+  /// compute binned sobol indices for continuous random variables
+  void compute_binned_continuous_var_sobol_indices( RealMatrix& response_samples,
+                                                    RealVector& total_variances,
+                                                    IntMatrix& sorted_continuous_var_inds,
+                                                    size_t num_bins);
+
+  /// compute binned sobol indices for discrete random variables
+  void compute_binned_discrete_var_sobol_indices( RealMatrix& response_samples,
+                                                  RealVector& total_variances, 
+                                                  IntMatrix& sorted_discrete_var_inds, 
+                                                  std::vector<IntVector>& unique_counts );
+
+  /// Given sorted response samples and a vector of length num_bins with bin counts per
+  /// bin, computes the variance in each bin.
+  RealMatrix compute_binned_variances( RealMatrix& sorted_response_samples, IntVector& bin_counts);
+
+  /// Given binned variances, weights over bins, and the index of the variable,
+  
+  void compute_Si_from_binned_variances_and_weights( RealVector& total_variances, 
+                                                     RealMatrix& binned_variance_samples, 
+                                                     RealVector& bin_weights, int i );
 
   /// Reorder 
 

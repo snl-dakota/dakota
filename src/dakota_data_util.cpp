@@ -472,19 +472,22 @@ void iround(const RealVector& input_vec, SizetArray& rounded_vec)
     rounded_vec[i] = boost::math::iround(input_vec[i]);
 }
 
-std::vector<size_t> get_unique_counts_of_sorted_vec( const RealVector& sorted_vec ){
-  std::vector<size_t> counts;
-  size_t count = 1;
+IntVector get_unique_counts_of_sorted_vec( const RealVector& sorted_vec ){
+  std::vector<int> temp;
+  int count = 1;
   for (int j=1; j<sorted_vec.length(); ++j){
     if(sorted_vec[j]==sorted_vec[j-1]){
       ++count;
     }
     else{
-      counts.push_back(count);
+      temp.push_back(count);
       count = 1;
     }
   }
-  counts.push_back(count);
+  temp.push_back(count);
+
+  IntVector counts(temp.size());
+  for (int i=0; i<temp.size(); ++i){ counts[i] = temp[i]; }
   return counts;
 }
 
