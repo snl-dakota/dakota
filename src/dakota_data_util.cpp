@@ -207,6 +207,22 @@ void compute_col_means(RealMatrix& matrix, RealVector& avg_vals)
   }
 }
 
+void compute_col_weighted_averages( RealMatrix& matrix, RealVector& weights, RealVector& avg_vals)
+{
+  int num_cols = matrix.numCols();
+  int num_rows = matrix.numRows();
+
+  avg_vals.resize(num_cols);
+
+  double weights_sum = 0;
+  for (int i=0; i < weights.length(); ++i){ weights_sum += weights[i]; }
+
+  for(int i=0; i<num_cols; ++i){
+    const RealVector& col_vec = Teuchos::getCol(Teuchos::View, matrix, i);
+    avg_vals(i) = col_vec.dot(weights)/((Real) weights_sum);
+  }
+}
+
 //----------------------------------------------------------------
 
 void compute_col_stdevs(RealMatrix& matrix, RealVector& avg_vals, 
@@ -454,6 +470,22 @@ void iround(const RealVector& input_vec, SizetArray& rounded_vec)
     rounded_vec.resize(len);
   for (int i=0; i<len; ++i)
     rounded_vec[i] = boost::math::iround(input_vec[i]);
+}
+
+std::vector<size_t> get_unique_counts_of_sorted_vec( const RealVector& sorted_vec ){
+  std::vector<size_t> counts;
+  size_t count = 1;
+  for (int j=1; j<sorted_vec.length(); ++j){
+    if(sorted_vec[j]==sorted_vec[j-1]){
+      ++count;
+    }
+    else{
+      counts.push_back(count);
+      count = 1;
+    }
+  }
+  counts.push_back(count);
+  return counts;
 }
 
 } // namespace Dakota

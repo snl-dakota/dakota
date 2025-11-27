@@ -90,7 +90,8 @@ public:
   void compute_vbd_stats_via_sampling( const unsigned short   method
                                      , const int              numBins
                                      , const size_t           numFunctions
-                                     , const size_t           num_vars
+                                     , const size_t           num_continuous_vars
+                                     , const size_t           num_discrete_vars
                                      , const size_t           num_samples
                                      , const RealMatrix &     vars_samples
                                      , const IntResponseMap & resp_samples
@@ -201,7 +202,8 @@ private:
 
   void compute_binned_vbd_stats( const int              numBins
                                        , const size_t           numFunctions
-                                       , const size_t           num_vars
+                                       , const size_t           num_continuous_vars
+                                       , const size_t           num_discrete_vars
                                        , const size_t           num_samples
                                        , const RealMatrix &     vars_samples
                                        , const IntResponseMap & resp_samples
@@ -209,7 +211,15 @@ private:
 
   /// Returns a matrix where columns are the indices that would sort
   /// each variable's samples smallest to largest. 
-  IntMatrix get_var_samples_argsort( const RealMatrix& valid_data );
+  IntMatrix get_continuous_var_samples_argsort( const RealMatrix& valid_data );
+  
+  /// Returns a matrix where columns are the indices that sort
+  /// each variable into contiguous unique values and a list-of-lists
+  /// containing the number of unique values from smallest to largest
+  /// per variable.
+  void get_discrete_var_samples_argsort_and_counts( const RealMatrix& valid_data, 
+                                             IntMatrix& sorted_var_indices, 
+                                             std::vector<std::vector<size_t>>& unique_counts );
 
   void compute_response_means_and_variances( const RealMatrix& response_samples, 
                                            RealVector& total_means,
@@ -285,10 +295,11 @@ protected:
   size_t numFns;
   /// number of inputs
   size_t numVars;
+  /// number of continuous inputs
+  size_t numContinuousVars;
+  /// number of discrete inputs
+  size_t numDiscreteVars;
   
-  /// Matrix to hold binned Sobol' indices
-  //RealMatrix mainEffects;
-
   /// VBD main effect indices
   RealVectorArray indexSi;
 
