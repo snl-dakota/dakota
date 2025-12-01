@@ -796,13 +796,22 @@ if(HAVE_ROL)
   message("\n\n=========[ Have ROL ]========\n\n")
 
   add_definitions("-DHAVE_ROL")
-  if(HAVE_DAKOTA_ROL_INTERFACE) # TODO: Move this to Dakota/src/rol_interface
-    message("\n\n=========[ Building Dakota/ROL Interface ]========\n\n")
-    set(Dakota_ROL_Interface_DIR "${Dakota_SOURCE_DIR}/src/rol_interface")
-    add_definitions("-DHAVE_DAKOTA_ROL_INTERFACE")
-  else()
-    set(iterator_src ${iterator_src} ROLOptimizer.cpp)
-  endif()
+
+  # Use the new modular ROL interface implementation
+  add_definitions("-DHAVE_DAKOTA_ROL_INTERFACE")
+  message(STATUS "Using new modular ROL interface (rol_interface/)")
+
+  # Add ROL interface supporting classes directly to dakota_src from rol_interface subdirectory
+  # These sources are compiled into dakota_src.so (no separate library to avoid circular dependencies)
+  set(iterator_src ${iterator_src}
+      rol_interface/src/DakotaROLObjective.cpp
+      rol_interface/src/DakotaROLConstraint.cpp
+      rol_interface/src/DakotaROLVector.cpp
+      rol_interface/src/DakotaROLOptimizer.cpp)
+
+  # Add rol_interface include directory to Dakota's include paths
+  list(APPEND DAKOTA_INCDIRS ${Dakota_SOURCE_DIR}/src/rol_interface/include)
+
 endif(HAVE_ROL)
 
 if(HAVE_DEMO_TPL)
@@ -937,11 +946,18 @@ if( HAVE_ROL )
   list(APPEND DAKOTA_INCDIRS ${CMAKE_SOURCE_DIR}/packages/external/trilinos/packages/teuchos/numerics/src)
   # Add TeuchosParameterList source directory for ROL parameterlist compatibility
   list(APPEND DAKOTA_INCDIRS ${CMAKE_SOURCE_DIR}/packages/external/trilinos/packages/teuchos/parameterlist/src)
+  # Add Teuchos generated config headers for parameterlist
+  list(APPEND DAKOTA_INCDIRS ${CMAKE_BINARY_DIR}/packages/external/trilinos/packages/teuchos/parameterlist/src)
   add_definitions("-DHAVE_ROL")
-  add_subdirectory(rol_interface)
-  target_link_libraries(dakota_src rol_interface)
-  list(APPEND EXPORT_TARGETS rol_interface)
-  list(APPEND DAKOTA_LIBS rol_interface)
+  add_definitions("-DHAVE_DAKOTA_ROL_INTERFACE")
+  # ROL interface sources are now included directly in dakota_src (no separate library)
+  # The source files are added to iterator_src in the HAVE_ROL block above (around line 800)
+  # The include directory is added to DAKOTA_INCDIRS in that same block
+  # Previously built as separate library but now integrated to avoid circular dependencies
+  # Tests are built through src/unit/dakota_rol/ (standard Dakota unit test framework)
+
+  # Link ROL libraries directly to dakota_src
+  target_link_libraries(dakota_src ${ROL_LIBRARIES})
 endif()
 
 # Enforce library ordering

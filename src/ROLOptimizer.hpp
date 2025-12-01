@@ -14,6 +14,9 @@
 #ifndef ROL_OPTIMIZER_H
 #define ROL_OPTIMIZER_H
 
+#ifndef HAVE_DAKOTA_ROL_INTERFACE
+
+
 // Dakota headers
 #include "DakotaOptimizer.hpp"
 #include "DakotaModel.hpp"
@@ -589,4 +592,5 @@ private:
 
 } // namespace Dakota
 
+#endif // HAVE_DAKOTA_ROL_INTERFACE
 #endif

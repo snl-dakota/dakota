@@ -147,15 +147,20 @@ if(DAKOTA_H5PY_FOUND)
 endif()
 
 
-if (HAVE_ROL AND NOT HAVE_DAKOTA_ROL_INTERFACE )
-  add_subdirectory(dakota_opt_tpl_rol_textbook)
+if (HAVE_ROL)
+  # New consolidated ROL interface tests
+  add_subdirectory(dakota_rol)
 
-  add_subdirectory(dakota_opt_tpl_rol_pbs)
+  # Legacy tests (only when not using the new interface)
+  if(NOT HAVE_DAKOTA_ROL_INTERFACE)
+    add_subdirectory(dakota_opt_tpl_rol_textbook)
 
-  add_subdirectory(dakota_rol_adapters)
+    add_subdirectory(dakota_opt_tpl_rol_pbs)
 
-  add_subdirectory(dakota_rol_integration)
+    add_subdirectory(dakota_rol_adapters)
 
+    add_subdirectory(dakota_rol_integration)
+  endif()
 endif ()
 
 

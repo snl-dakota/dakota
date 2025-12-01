@@ -7,6 +7,8 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
+#ifndef HAVE_DAKOTA_ROL_INTERFACE
+
 // Dakota headers
 #include "ROLOptimizer.hpp"
 #include "ProblemDescDB.hpp"
@@ -850,3 +852,5 @@ DakotaROLEqConstraintsHess::applyAdjointHessian( std::vector<Real> & ahuv,
 
 
 } // namespace Dakota
+
+#endif // HAVE_DAKOTA_ROL_INTERFACE

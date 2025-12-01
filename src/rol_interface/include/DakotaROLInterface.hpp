@@ -26,7 +26,6 @@ namespace rol_interface {
 class Vector;
 class Objective;
 class Constraint;
-class OptimizerInterface;
 
 using Dakota::Real;
 using ROLVector = ROL::Vector<Dakota::Real>;
@@ -40,6 +39,5 @@ using ROLVector = ROL::Vector<Dakota::Real>;
 #include "DakotaROLObjective.hpp"
 #include "DakotaROLConstraint.hpp"
 #include "DakotaROLOptimizer.hpp"
-#include "ROLOptimizerCompatibility.hpp"
 
 #endif // DAKOTA_ROL_INTERFACE_HPP

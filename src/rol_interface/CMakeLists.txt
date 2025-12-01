@@ -1,46 +1,17 @@
-message("\n\n=========[ Building Dakota/ROL Interface ]========\n\n")
-add_definitions("-DHAVE_DAKOTA_ROL_INTERFACE")
+# ROL Interface - Integrated Build
+#
+# The ROL interface sources are now built directly into dakota_src library
+# to eliminate circular dependencies.
+#
+# Source files from rol_interface/src/ are added to dakota_src in the main
+# CMakeLists.txt (around line 803-809)
+#
+# Include files from rol_interface/include/ are added to DAKOTA_INCDIRS in
+# the main CMakeLists.txt (around line 812)
+#
+# TESTS: ROL interface tests are located in src/unit/dakota_rol/ and are
+# built through the standard Dakota unit test framework (src/unit/CMakeLists.txt)
 
-add_library(
-  rol_interface STATIC
-  src/DakotaROLVector.cpp
-  src/DakotaROLObjective.cpp
-  src/DakotaROLConstraint.cpp
-  src/DakotaROLOptimizer.cpp
-  src/ROLOptimizerCompatibility.cpp
-)
+message(STATUS "ROL Interface: Sources integrated into dakota_src (no separate library)")
 
-# Ensure Trilinos is built before rol_interface
-if(TARGET TrilinosFramework)
-  add_dependencies(rol_interface TrilinosFramework)
-endif()
-
-get_target_property(TEUCHOS_CORE_INCLUDES teuchoscore INCLUDE_DIRECTORIES)
-get_target_property(TEUCHOS_NUMERICS_INCLUDES teuchosnumerics INCLUDE_DIRECTORIES)
-get_target_property(TEUCHOS_PARAMETERLIST_INCLUDES teuchosparameterlist INCLUDE_DIRECTORIES)
-
-target_include_directories(
-  rol_interface
-  PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  PRIVATE
-  ${CMAKE_CURRENT_SOURCE_DIR}/src
-  ${TEUCHOS_CORE_INCLUDES}
-  ${TEUCHOS_NUMERICS_INCLUDES}
-  ${TEUCHOS_PARAMETERLIST_INCLUDES}
-  # Add generated config header directories
-  ${CMAKE_BINARY_DIR}/packages/external/trilinos/packages/teuchos/core/src
-  ${CMAKE_BINARY_DIR}/packages/external/trilinos/packages/teuchos/parameterlist/src
-)
-
-target_link_libraries(
-  rol_interface
-  ${ROL_LIBRARIES}
-)
-
-install(TARGETS rol_interface EXPORT ${ExportTarget} DESTINATION lib)
-
-# Add tests subdirectory
-if(DAKOTA_ENABLE_TESTS OR BUILD_TESTING)
-  add_subdirectory(test)
-endif()
+# Tests are handled by src/unit/dakota_rol/ - no test subdirectory here

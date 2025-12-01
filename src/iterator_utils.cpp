@@ -93,8 +93,12 @@
 #ifdef HAVE_NCSU
 #include "NCSUOptimizer.hpp"
 #endif
-#if defined(HAVE_ROL) && !defined(HAVE_DAKOTA_ROL_INTERFACE)
+#ifdef HAVE_ROL
+#if defined(HAVE_DAKOTA_ROL_INTERFACE)
+#include "DakotaROLOptimizer.hpp"
+#else
 #include "ROLOptimizer.hpp"
+#endif
 #endif
 #ifdef HAVE_DEMO_TPL
 #include "DemoOptimizer.hpp"
@@ -440,7 +444,7 @@ namespace Dakota {
         case NCSU_DIRECT:
             return std::make_shared<NCSUOptimizer>(problem_db, parallel_lib, model);       break;
         #endif
-        #if defined(HAVE_ROL) && !defined(HAVE_DAKOTA_ROL_INTERFACE)
+        #ifdef HAVE_ROL
         case ROL:
             return std::make_shared<ROLOptimizer>(problem_db, parallel_lib, model); break;
         #endif
@@ -559,7 +563,7 @@ namespace Dakota {
         else if (method_string == "ncsu_direct")
             return std::make_shared<NCSUOptimizer>(model);
         #endif
-        #if defined(HAVE_ROL) && !defined(HAVE_DAKOTA_ROL_INTERFACE)
+        #ifdef HAVE_ROL
         else if (method_string == "rol")
             return std::make_shared<ROLOptimizer>(method_string, model);
         #endif

@@ -2,6 +2,8 @@
 #ifndef DAKOTA_ROL_OBJECTIVE_HPP
 #define DAKOTA_ROL_OBJECTIVE_HPP
 
+#include "DakotaModel.hpp"
+
 #include "ROL_Objective.hpp"
 
 namespace rol_interface {
@@ -10,6 +12,10 @@ class Objective : public ROL::Objective<Dakota::Real> {
 public:
   using pointer       =       Dakota::Real*;
   using const_pointer = const Dakota::Real*;
+
+  Objective( BoolDispatch   hasGradient,
+             BoolDispatch   hasHessian,
+             Dakota::Model& model ); 
 
   void update( const ROL::Vector<Dakota::Real>& x, 
                      ROL::UpdateType            type,
@@ -29,9 +35,6 @@ public:
 
   static ROL::Ptr<ROL::Objective<Dakota::Real>> createFromModel( Dakota::Model& model ); 
 
-  Objective( BoolDispatch   hasGradient,
-             BoolDispatch   hasHessian,
-             Dakota::Model& model ); 
  
   std::size_t numOpt;
   Dakota::RealVector gradientView;
