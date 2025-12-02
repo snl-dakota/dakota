@@ -37,7 +37,7 @@ public:
 
  
   std::size_t numOpt;
-  Dakota::RealVector gradientView;
+  Dakota::RealVector gradientCopy;  // Stores a COPY of gradient data (not a view)
   BoolDispatch hasGradient, hasHessian;
   Dakota::Model& dakotaModel;
 }; // class Objective

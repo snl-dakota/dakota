@@ -4,33 +4,23 @@ namespace rol_interface {
 
 Objective::Objective( BoolDispatch   HasGradient,
                       BoolDispatch   HasHessian,
-                      Dakota::Model& model )  
-  : numOpt{Dakota::ModelUtils::cv(model)}, 
+                      Dakota::Model& model )
+  : numOpt{Dakota::ModelUtils::cv(model)},
+    gradientCopy(static_cast<int>(numOpt), true),  // Allocate storage for gradient copy
     hasGradient{HasGradient},
     hasHessian{HasHessian},
-    dakotaModel{model} { 
-      
-  hasGradient.receive([&,this](auto has_gradient) {
-    if constexpr( has_gradient ) {
-      const auto& resp = dakotaModel.current_response();
-      const_pointer grad_ptr = resp.function_gradients().values();
-      // Objective gradient is at offset 0 (first function)
-      gradientView = Dakota::RealVector(Teuchos::View,
-                                       const_cast<pointer>(grad_ptr), 
-                                       static_cast<int>(numOpt) /* length */ );
-    }
-  });
+    dakotaModel{model} {
 }
 
 void Objective::update( const ROL::Vector<Dakota::Real>& x,
                               ROL::UpdateType            type,
                               int                        iter ) {
   std::ignore = iter;
-  if (type == ROL::UpdateType::Temp || type == ROL::UpdateType::Initial) {
+  if (type == ROL::UpdateType::Temp || type == ROL::UpdateType::Trial || type == ROL::UpdateType::Initial) {
     // Update Dakota model with current optimization variables
     const auto& x_dakota = as_dakota_vector(const_cast<ROL::Vector<Dakota::Real>&>(x));
     Dakota::ModelUtils::continuous_variables(dakotaModel, x_dakota);
-    
+
     // Set up active set for evaluation based on what derivatives are needed
     Dakota::ActiveSet eval_set(dakotaModel.current_response().active_set());
     if (dakotaModel.gradient_type() == "numerical" && dakotaModel.method_source() == "vendor") {
@@ -43,40 +33,41 @@ void Objective::update( const ROL::Vector<Dakota::Real>& x,
       // Need function values, gradients, and Hessians
       eval_set.request_values(7);  // Function values + gradients + Hessians
     }
-    
+
     // Evaluate the Dakota model at the current point
     dakotaModel.evaluate(eval_set);
-    
-    // Update gradient view if we have gradients
+
+    // Copy gradient data (not a view - to avoid Dakota response data being invalidated)
     hasGradient.receive([&,this](auto has_gradient) {
       if constexpr( has_gradient ) {
         const auto& resp = dakotaModel.current_response();
         const_pointer grad_ptr = resp.function_gradients().values();
-        // Objective gradient is at offset 0 (first function)
-        gradientView = Dakota::RealVector(Teuchos::View,
-                                         const_cast<pointer>(grad_ptr), 
-                                         static_cast<int>(numOpt) /* length */ );
+        // Copy the gradient values for the objective (first function)
+        for (std::size_t i = 0; i < numOpt; ++i) {
+          gradientCopy[static_cast<int>(i)] = grad_ptr[i];
+        }
       }
     });
   }
 } // Objective::update
 
 
-Dakota::Real Objective::value( const ROL::Vector<Dakota::Real>& x, 
+Dakota::Real Objective::value( const ROL::Vector<Dakota::Real>& x,
                                      Dakota::Real&              tol ) {
   const auto& resp = dakotaModel.current_response();
-  return resp.function_value(0);      
+  return resp.function_value(0);
 }
 
 
 
 void Objective::gradient(       ROL::Vector<Dakota::Real>& g,
-                          const ROL::Vector<Dakota::Real>& x, 
+                          const ROL::Vector<Dakota::Real>& x,
                                 Dakota::Real&              tol ) {
   hasGradient.receive([&,this](auto has_gradient) {
     if constexpr( has_gradient ) {
+      // Use the cached copy of gradient data
       auto& g_vector = as_dakota_vector(g);
-      g_vector = gradientView;
+      g_vector = gradientCopy;
     } else {
       // Use ROL's finite difference approximation
       ROL::Objective<Dakota::Real>::gradient(g, x, tol);
@@ -85,7 +76,7 @@ void Objective::gradient(       ROL::Vector<Dakota::Real>& g,
 }
 
 
-void Objective::hessVec(       ROL::Vector<Dakota::Real>& hv, 
+void Objective::hessVec(       ROL::Vector<Dakota::Real>& hv,
                          const ROL::Vector<Dakota::Real>& v,
                          const ROL::Vector<Dakota::Real>& x,
                                Dakota::Real&              tol ) {
@@ -94,13 +85,13 @@ void Objective::hessVec(       ROL::Vector<Dakota::Real>& hv,
       const auto& resp = dakotaModel.current_response();
       auto& hv_vector = as_dakota_vector(hv);
       const auto& v_vector = as_dakota_vector(v);
-      
+
       // Objective Hessian is at index 0
       Dakota::RealSymMatrix H(Teuchos::View,
                               resp.function_hessian(0),
                               static_cast<int>(numOpt) /* stride */,
                               static_cast<int>(numOpt) /* size */ );
-      
+
       // hv = H * v
       int err_code = hv_vector.multiply(Teuchos::LEFT_SIDE,
                                         Dakota::Real{1.0},
@@ -130,4 +121,3 @@ ROL::Ptr<ROL::Objective<Dakota::Real>> Objective::createFromModel( Dakota::Model
 }
 
 } // namespace rol_interface
-

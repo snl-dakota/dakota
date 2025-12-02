@@ -3,7 +3,7 @@
 
 namespace rol_interface {
 
-void Constraint::update_views() {
+void Constraint::copy_response_data() {
   const_pointer val_ptr{nullptr}, jac_ptr{nullptr}, target_ptr{nullptr};
   std::ptrdiff_t val_offset{0}, jac_offset{0};
 
@@ -54,11 +54,18 @@ void Constraint::update_views() {
     }
   });
 
-  /** NOTE: Teuchos::SerialDenseMatrix constructor requires non-const pointer */
-  valueView = Dakota::RealVector(Teuchos::View,
-                                 const_cast<pointer>(val_ptr + val_offset),
-                                 static_cast<int>(numCon) /* length */ );
+  // Copy constraint values (not a view - the underlying data can change)
+  isLinear.receive([&,this](auto is_linear) {
+    if constexpr( !is_linear ) {
+      // Nonlinear constraints: copy values from response
+      valueCopy.sizeUninitialized(static_cast<int>(numCon));
+      for (std::size_t i = 0; i < numCon; ++i) {
+        valueCopy[static_cast<int>(i)] = val_ptr[val_offset + i];
+      }
+    }
+  });
 
+  // Set up target view (static data, view is OK)
   isEquality.receive([&,this](auto is_equality){
     if constexpr( is_equality ) {
       targetView = Dakota::RealVector(Teuchos::View,
@@ -67,13 +74,36 @@ void Constraint::update_views() {
     }
   });
 
+  // Copy Jacobian data (not a view - the underlying data can change)
   hasJacobian.receive([&,this](auto has_jacobian){
     if constexpr( has_jacobian ) {
-      jacobianView = Dakota::RealMatrix(Teuchos::View,
-                                        const_cast<pointer>(jac_ptr + jac_offset),
-                                        static_cast<int>(numCon) /* stride */,
-                                        static_cast<int>(numCon) /* rows */,
-                                        static_cast<int>(numOpt) /* columns */ );
+      isLinear.receive([&,this](auto is_linear) {
+        if constexpr( is_linear ) {
+          // Linear constraint Jacobian - use coefficient matrix directly (stored differently)
+          jacobianCopy.shapeUninitialized(static_cast<int>(numCon), static_cast<int>(numOpt));
+          for (std::size_t row = 0; row < numCon; ++row) {
+            for (std::size_t col = 0; col < numOpt; ++col) {
+              // Linear constraint coefficients stored as (numCon x numOpt) matrix
+              jacobianCopy(static_cast<int>(row), static_cast<int>(col)) =
+                jac_ptr[row + col * numCon];
+            }
+          }
+        } else {
+          // Nonlinear constraint Jacobian - from response gradients
+          // Dakota's function_gradients() is indexed as (variable_idx, response_idx)
+          // ROL needs Jacobian as (constraint_idx, variable_idx) = J(j, i)
+          // So we read gradient_matrix(i, offset+j) and store in jacobianCopy(j, i)
+          const auto& gradient_matrix = dakotaModel.current_response().function_gradients();
+          jacobianCopy.shapeUninitialized(static_cast<int>(numCon), static_cast<int>(numOpt));
+          for (std::size_t conIdx = 0; conIdx < numCon; ++conIdx) {
+            for (std::size_t varIdx = 0; varIdx < numOpt; ++varIdx) {
+              // gradient_matrix(varIdx, val_offset + conIdx) gives dc_conIdx/dx_varIdx
+              jacobianCopy(static_cast<int>(conIdx), static_cast<int>(varIdx)) =
+                gradient_matrix(static_cast<int>(varIdx), static_cast<int>(val_offset + conIdx));
+            }
+          }
+        }
+      });
     }
   });
 }
@@ -85,12 +115,37 @@ Constraint::Constraint( BoolDispatch   IsLinear,
                         BoolDispatch   HasHessian,
                         Dakota::Model& model )
 : numOpt{Dakota::ModelUtils::cv(model)},
+  numCon{0},
+  valueCopy(1, true),        // Allocate initial storage
+  jacobianCopy(1, 1, true),  // Allocate initial storage
   isLinear{IsLinear},
   isEquality{IsEquality},
   hasJacobian{HasJacobian},
   hasHessian{HasHessian},
   dakotaModel{model}  {
-  update_views();
+  // Determine numCon from model based on constraint type
+  isLinear.receive([&,this](auto is_linear) {
+    if constexpr( is_linear ) {
+      isEquality.receive([&,this](auto is_equality) {
+        if constexpr( is_equality ) {
+          numCon = Dakota::ModelUtils::num_linear_eq_constraints(dakotaModel);
+        } else {
+          numCon = Dakota::ModelUtils::num_linear_ineq_constraints(dakotaModel);
+        }
+      });
+    } else {
+      isEquality.receive([&,this](auto is_equality) {
+        if constexpr( is_equality ) {
+          numCon = Dakota::ModelUtils::num_nonlinear_eq_constraints(dakotaModel);
+        } else {
+          numCon = Dakota::ModelUtils::num_nonlinear_ineq_constraints(dakotaModel);
+        }
+      });
+    }
+  });
+  // Resize storage appropriately
+  valueCopy.sizeUninitialized(static_cast<int>(numCon));
+  jacobianCopy.shapeUninitialized(static_cast<int>(numCon), static_cast<int>(numOpt));
 }
 
 
@@ -98,7 +153,7 @@ void Constraint::update( const ROL::Vector<Dakota::Real>& x,
                                ROL::UpdateType            type,
                                int                        iter ) {
   std::ignore = iter;
-  if (type == ROL::UpdateType::Temp || type == ROL::UpdateType::Initial) {
+  if (type == ROL::UpdateType::Temp || type == ROL::UpdateType::Trial || type == ROL::UpdateType::Initial) {
     isLinear.receive([&]( auto is_true ) {
       if constexpr( !is_true ) {
         const auto& x_dakota = as_dakota_vector(const_cast<ROL::Vector<Dakota::Real>&>(x));
@@ -113,7 +168,7 @@ void Constraint::update( const ROL::Vector<Dakota::Real>& x,
           eval_set.request_values(7);
         dakotaModel.evaluate(eval_set);
 
-        update_views();
+        copy_response_data();
       }
     });
   }
@@ -128,7 +183,7 @@ void Constraint::value(       ROL::Vector<Dakota::Real>& c,
       applyJacobian(c,x,x,tol);
     } else {
       auto& c_vector = as_dakota_vector(c);
-      c_vector = valueView;
+      c_vector = valueCopy;
     }
   });
 
@@ -154,7 +209,7 @@ void Constraint::applyJacobian(       ROL::Vector<Dakota::Real>& jv,
       int err_code = jv_vector.multiply(Teuchos::NO_TRANS,
                                         Teuchos::NO_TRANS,
                                         1,
-                                        jacobianView,
+                                        jacobianCopy,
                                         v_vector,
                                         0);
       TEUCHOS_ASSERT_EQUALITY(err_code,0);
@@ -178,7 +233,7 @@ void Constraint::applyAdjointJacobian(       ROL::Vector<Dakota::Real>& ajv,
       int err_code = ajv_vector.multiply(Teuchos::TRANS,
                                          Teuchos::NO_TRANS,
                                          1,
-                                         jacobianView,
+                                         jacobianCopy,
                                          v_vector,
                                          0);
       TEUCHOS_ASSERT_EQUALITY(err_code,0);

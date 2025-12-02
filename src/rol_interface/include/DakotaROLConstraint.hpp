@@ -55,12 +55,13 @@ public:
               Dakota::Model& model );
 
 private:
-  void update_views();
+  void copy_response_data();
 
   Dakota::Model& dakotaModel;
   std::size_t numOpt, numCon;
-  Dakota::RealVector valueView, targetView;
-  Dakota::RealMatrix jacobianView;
+  Dakota::RealVector valueCopy;      // Stores a COPY of constraint values (not a view)
+  Dakota::RealVector targetView;     // Target values are static, view is OK
+  Dakota::RealMatrix jacobianCopy;   // Stores a COPY of Jacobian data (not a view)
   Dakota::RealSymMatrixArray hessianView;
   BoolDispatch isLinear, isEquality, hasJacobian, hasHessian;
 };        

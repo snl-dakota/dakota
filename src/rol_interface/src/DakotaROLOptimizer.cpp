@@ -146,11 +146,11 @@ void ROLOptimizer::core_run()
 {
   using namespace rol_interface;
 
-  // Create output stream filter to prefix ROL output
-  OutputStreamFilter rolOutputStream(Cout);
-
   // Rebuild the problem in case it needs to be updated
   set_problem();
+
+  // Create output stream filter to prefix ROL output with "ROL: "
+  OutputStreamFilter rolOutputStream(Cout);
 
   // Solve the optimization problem
   pimpl_->rolSolver->solve(rolOutputStream.stream());
