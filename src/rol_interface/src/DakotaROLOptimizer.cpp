@@ -153,7 +153,7 @@ void ROLOptimizer::core_run()
   set_problem();
 
   // Solve the optimization problem
-  pimpl_->rolSolver->run(*pimpl_->rolX, rolOutputStream.stream());
+  pimpl_->rolSolver->solve(rolOutputStream.stream());
 
   // Copy ROL solution to Dakota bestVariablesArray
   Variables& best_vars = bestVariablesArray.front();
@@ -215,12 +215,9 @@ void ROLOptimizer::set_problem()
   auto& x_dakota = as_dakota_vector(*pimpl_->rolX);
   get_initial_values(*iteratedModel, x_dakota);
 
-  // Create ROL Problem
-  pimpl_->rolProblem = ROL::makePtr<ROL::Problem<Real>>();
-
-  // Set objective
+  // Create objective and ROL Problem with initial guess
   auto obj = Objective::createFromModel(*iteratedModel);
-  pimpl_->rolProblem->setObjective(obj);
+  pimpl_->rolProblem = ROL::makePtr<ROL::Problem<Real>>(obj, pimpl_->rolX);
 
   // Set variable bounds if needed
   if ((pimpl_->problemType == TYPE_B) || (pimpl_->problemType == TYPE_EB)) {
@@ -245,8 +242,8 @@ void ROLOptimizer::set_problem()
     }
 
     // Set bounds in ROL problem
-    auto bnd = ROL::makePtr<ROL::Bounds<Real>>(*pimpl_->lowerBounds,
-                                                *pimpl_->upperBounds);
+    auto bnd = ROL::makePtr<ROL::Bounds<Real>>(pimpl_->lowerBounds,
+                                               pimpl_->upperBounds);
     pimpl_->rolProblem->addBoundConstraint(bnd);
   }
 
@@ -286,11 +283,13 @@ void ROLOptimizer::set_problem()
       if (li_u_dakota[i] > rol_inf)  li_u_dakota[i] = rol_inf;
     }
 
-    auto li_bnd = ROL::makePtr<ROL::Bounds<Real>>(*li_lower, *li_upper);
+    auto li_bnd = ROL::makePtr<ROL::Bounds<Real>>(li_lower, li_upper);
+    ROL::Ptr<ROL::Vector<Real>> li_res = ROL::nullPtr;
     pimpl_->rolProblem->addLinearConstraint("Linear Inequality",
                                             constraints.linearInequality,
                                             imul,
-                                            li_bnd);
+                                            li_bnd,
+                                            li_res);
   }
 
   // Add nonlinear equality constraints
@@ -326,11 +325,13 @@ void ROLOptimizer::set_problem()
       if (nli_u_dakota[i] > rol_inf)  nli_u_dakota[i] = rol_inf;
     }
 
-    auto nli_bnd = ROL::makePtr<ROL::Bounds<Real>>(*nli_lower, *nli_upper);
+    auto nli_bnd = ROL::makePtr<ROL::Bounds<Real>>(nli_lower, nli_upper);
+    ROL::Ptr<ROL::Vector<Real>> nli_res = ROL::nullPtr;
     pimpl_->rolProblem->addConstraint("Nonlinear Inequality",
                                       constraints.nonlinearInequality,
                                       imul,
-                                      nli_bnd);
+                                      nli_bnd,
+                                      nli_res);
   }
 
   // Finalize the problem
