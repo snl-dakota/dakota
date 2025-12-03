@@ -204,7 +204,7 @@ DataMethodRep::DataMethodRep():
   modelDiscrepancyType("global_kriging"), polynomialOrder(2),
   exportCorrModelFormat(TABULAR_ANNOTATED),
   exportCorrVarFormat(TABULAR_ANNOTATED),
-  exportDiscrepFormat(TABULAR_ANNOTATED), adaptExpDesign(false),
+  exportDiscrepFormat(TABULAR_ANNOTATED), adaptExpDesign(false), adaptExpSamples(0),
   mutualInfoKSG2(false), importCandFormat(TABULAR_ANNOTATED),
   numCandidates(0), maxHifiEvals(-1), batchSize(1), batchSizeExplore(0),
   // DREAM
@@ -411,7 +411,7 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << importPredConfigs << importPredConfigFormat << modelDiscrepancyType
     << polynomialOrder << exportCorrModelFile << exportCorrModelFormat
     << exportCorrVarFile << exportCorrVarFormat << exportDiscrepFile
-    << exportDiscrepFormat << adaptExpDesign << importCandPtsFile
+    << exportDiscrepFormat << adaptExpDesign << adaptExpSamples << importCandPtsFile
     << importCandFormat << numCandidates << maxHifiEvals
     << batchSize << batchSizeExplore
     << mutualInfoKSG2 << numChains << numCR << crossoverChainPairs
@@ -619,7 +619,7 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> importPredConfigs >> importPredConfigFormat >> modelDiscrepancyType
     >> polynomialOrder >> exportCorrModelFile >> exportCorrModelFormat
     >> exportCorrVarFile >> exportCorrVarFormat >> exportDiscrepFile
-    >> exportDiscrepFormat >> adaptExpDesign >> importCandPtsFile
+    >> exportDiscrepFormat >> adaptExpDesign >> adaptExpSamples >> importCandPtsFile
     >> importCandFormat >> numCandidates >> maxHifiEvals
     >> batchSize >> batchSizeExplore
     >> mutualInfoKSG2 >> numChains >> numCR >> crossoverChainPairs
@@ -827,7 +827,7 @@ void DataMethodRep::write(std::ostream& s) const
     << importPredConfigs << importPredConfigFormat << modelDiscrepancyType
     << polynomialOrder << exportCorrModelFile << exportCorrModelFormat
     << exportCorrVarFile << exportCorrVarFormat << exportDiscrepFile
-    << exportDiscrepFormat << adaptExpDesign << importCandPtsFile
+    << exportDiscrepFormat << adaptExpDesign << adaptExpSamples << importCandPtsFile
     << importCandFormat << numCandidates << maxHifiEvals
     << batchSize << batchSizeExplore
     << mutualInfoKSG2 << numChains << numCR << crossoverChainPairs

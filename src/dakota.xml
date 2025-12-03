@@ -2006,7 +2006,7 @@
                   <param in_taglist="method" type="STRING" />
                 </keyword>
               </oneOf>
-              <oneOf anchor="sub_method" label="Local Sub-method Selection">
+              <oneOf anchor="local_sub_method" label="Local Sub-method Selection">
                 <keyword argument="name" code="{N_mdm(str,hybridLocalMethodName)}" id="local_method_name" label="Name of the local method" name="local_method_name">
                   <param type="STRING" />
                   <keyword code="{N_mdm(str,hybridLocalModelPointer)}" id="local_model_pointer" label="Pointer to the local model specification" minOccurs="0" name="local_model_pointer">
@@ -2939,16 +2939,16 @@
 	      <keyword code="{N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}" id="incremental_random" label="incremental_random" name="incremental_random" />
 	      <keyword  id='low_discrepancy' name='low_discrepancy' code='{N_mdm(utype,sampleType_SUBMETHOD_LOW_DISCREPANCY_SAMPLING)}' label='low_discrepancy'>
 	          <alias name='qmc' />
-	          <optional>
-	            <keyword id='rank_1_lattice' name='rank_1_lattice' code='{N_mdm(true,rank1LatticeFlag)}' label='Options for rank-1 lattice samples' default='No rank-1 lattice sampling'>
+
+	            <keyword id='rank_1_lattice' name='rank_1_lattice' code='{N_mdm(true,rank1LatticeFlag)}' label='Options for rank-1 lattice samples' default='No rank-1 lattice sampling' minOccurs="0">
 	              &rank_1_lattice_options;
 	            </keyword>
-	          </optional>
-	          <optional>
-	            <keyword id='digital_net' name='digital_net' code='{N_mdm(true,digitalNetFlag)}' label='Options for digital net samples' default='No digital net sampling'>
+
+
+	            <keyword id='digital_net' name='digital_net' code='{N_mdm(true,digitalNetFlag)}' label='Options for digital net samples' default='No digital net sampling' minOccurs="0">
 	              &digital_net_options;
 	            </keyword>
-	          </optional>
+
 	        </keyword>
             </oneOf>
           </keyword>
@@ -3636,7 +3636,7 @@
             </keyword>
           </oneOf>
           <keyword code="{N_mdm(true,adaptExpDesign)}" id="experimental_design" label="Bayesian Experiment Design" minOccurs="0" name="experimental_design">
-            <keyword code="{N_mdm(int,numSamples)}" default="method-dependent" id="initial_samples" label="Initial Hi-fi Samples" name="initial_samples">
+            <keyword code="{N_mdm(int,adaptExpSamples)}" default="method-dependent" id="initial_samples" label="Initial Hi-fi Samples" name="initial_samples">
               <alias name="samples" />
               <param type="INTEGER" />
             </keyword>
@@ -3672,14 +3672,12 @@
               <keyword code="{N_mdm(utype,calibrateErrorMode_CALIBRATE_PER_RESP)}" id="per_response" label="multiplier per response" name="per_response" />
               <keyword code="{N_mdm(utype,calibrateErrorMode_CALIBRATE_BOTH)}" id="both" label="multiplier for each experiment, response" name="both" />
             </oneOf>
-            <optional>
-              <keyword code="{N_mdm(RealDL,hyperPriorAlphas)}" id="hyperprior_alphas" label="Inverse-gamma hyper-prior alphas" name="hyperprior_alphas">
-                <param type="REALLIST" />
-              </keyword>
+            <keyword code="{N_mdm(RealDL,hyperPriorAlphas)}" id="hyperprior_alphas" label="Inverse-gamma hyper-prior alphas" name="hyperprior_alphas" minOccurs="0">
+              <param type="REALLIST" />
               <keyword code="{N_mdm(RealDL,hyperPriorBetas)}" id="hyperprior_betas" label="Inverse-gamma hyper-prior betas" name="hyperprior_betas">
                 <param type="REALLIST" />
               </keyword>
-            </optional>
+            </keyword>
           </keyword>
           <keyword code="{N_mdm(int,burnInSamples)}" default="0" id="burn_in_samples" label="Burn-in samples" minOccurs="0" name="burn_in_samples">
             <param type="INTEGER" />
@@ -4232,7 +4230,7 @@
                   &model_surrogate_import;
                 </keyword>
                 <keyword code="{N_mom(lit,surrogateType_global_exp_poly)}" id="experimental_polynomial" label="Experimental Polynomial" minOccurs="1" name="experimental_polynomial">
-                  <keyword code="{N_mom(shint,polynomialOrder)}" id="basis_order" label="Basis Order" minOccurs="1" name="basis_order">
+                  <keyword code="{N_mom(shint,polynomialOrder)}" id="basis_order" label="Basis Order" minOccurs="0" name="basis_order">
                     <param constraint="&gt;= 0" type="INTEGER" />
                   </keyword>
                   <keyword code="{N_mom(str,advancedOptionsFilename)}" default="no advanced options file" id="options_file" label="Advanced Options File" minOccurs="0" name="options_file">

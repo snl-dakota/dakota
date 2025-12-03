@@ -1977,6 +1977,7 @@ int ProblemDescDB::get_int(const String& entry_name) const
       {"stop_restart", P_ENV stopRestart}
     },
     { /* method */
+      {"adapt_exp_design_samples", P_MET adaptExpSamples},
       {"batch_size", P_MET batchSize},
       {"batch_size.exploration", P_MET batchSizeExplore},
       {"build_samples", P_MET buildSamples},
