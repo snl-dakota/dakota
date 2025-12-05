@@ -3462,57 +3462,53 @@ KEYWORD method {N_mdm3(start,0,stop)}
       incremental_random {N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}
       |
       ( low_discrepancy ALIAS qmc {N_mdm(utype,sampleType_SUBMETHOD_LOW_DISCREPANCY_SAMPLING)}
-        [ 
-          ( rank_1_lattice {N_mdm(true,rank1LatticeFlag)}
-            [ no_random_shift {N_mdm(true,noRandomShiftFlag)} ]
-            [ m_max INTEGER >= 0 {N_mdm(int,log2MaxPoints)} ]
-            [ generating_vector {0}
-              inline INTEGERLIST {N_mdm(ivec,generatingVector)}
+        [ rank_1_lattice {N_mdm(true,rank1LatticeFlag)}
+          [ no_random_shift {N_mdm(true,noRandomShiftFlag)} ]
+          [ m_max INTEGER >= 0 {N_mdm(int,log2MaxPoints)} ]
+          [ generating_vector {0}
+            inline INTEGERLIST {N_mdm(ivec,generatingVector)}
+            |
+            file STRING {N_mdm(str,generatingVectorFileName)}
+            |
+            ( predefined {0}
+              kuo {N_mdm(type,rank1GeneratingVectorScheme_GEN_VECTOR_KUO)}
               |
-              file STRING {N_mdm(str,generatingVectorFileName)}
-              |
-              ( predefined {0}
-                kuo {N_mdm(type,rank1GeneratingVectorScheme_GEN_VECTOR_KUO)}
-                |
-                cools_kuo_nuyens {N_mdm(type,rank1GeneratingVectorScheme_GEN_VECTOR_COOLS_KUO_NUYENS)}
-               )
-             ]
-            [ ordering {0}
-              natural {N_mdm(type,rank1Ordering_RANK_1_LATTICE_NATURAL_ORDERING)}
-              |
-              radical_inverse {N_mdm(type,rank1Ordering_RANK_1_LATTICE_RADICAL_INVERSE_ORDERING)}
-             ]
-           )
+              cools_kuo_nuyens {N_mdm(type,rank1GeneratingVectorScheme_GEN_VECTOR_COOLS_KUO_NUYENS)}
+             )
+           ]
+          [ ordering {0}
+            natural {N_mdm(type,rank1Ordering_RANK_1_LATTICE_NATURAL_ORDERING)}
+            |
+            radical_inverse {N_mdm(type,rank1Ordering_RANK_1_LATTICE_RADICAL_INVERSE_ORDERING)}
+           ]
          ]
-        [ 
-          ( digital_net ALIAS sobol_sequence {N_mdm(true,digitalNetFlag)}
-            [ no_digital_shift {N_mdm(true,noDigitalShiftFlag)} ]
-            [ no_scrambling {N_mdm(true,noScramblingFlag)} ]
-            [ integer_format {0}
-              most_significant_bit_first {N_mdm(true,mostSignificantBitFirst)}
+        [ digital_net ALIAS sobol_sequence {N_mdm(true,digitalNetFlag)}
+          [ no_digital_shift {N_mdm(true,noDigitalShiftFlag)} ]
+          [ no_scrambling {N_mdm(true,noScramblingFlag)} ]
+          [ integer_format {0}
+            most_significant_bit_first {N_mdm(true,mostSignificantBitFirst)}
+            |
+            least_significant_bit_first {N_mdm(true,leastSignificantBitFirst)}
+           ]
+          [ m_max INTEGER >= 0 {N_mdm(int,log2MaxPoints)} ]
+          [ t_max INTEGER >= 0 {N_mdm(int,numberOfBits)} ]
+          [ t_scramble INTEGER >= 0 {N_mdm(int,scrambleSize)} ]
+          [ generating_matrices {0}
+            inline INTEGERLIST {N_mdm(ivec,generatingMatrices)}
+            |
+            file STRING {N_mdm(str,generatingMatricesFileName)}
+            |
+            ( predefined {0}
+              joe_kuo {N_mdm(type,digitalNetGeneratingMatrixScheme_JOE_KUO)}
               |
-              least_significant_bit_first {N_mdm(true,leastSignificantBitFirst)}
-             ]
-            [ m_max INTEGER >= 0 {N_mdm(int,log2MaxPoints)} ]
-            [ t_max INTEGER >= 0 {N_mdm(int,numberOfBits)} ]
-            [ t_scramble INTEGER >= 0 {N_mdm(int,scrambleSize)} ]
-            [ generating_matrices {0}
-              inline INTEGERLIST {N_mdm(ivec,generatingMatrices)}
-              |
-              file STRING {N_mdm(str,generatingMatricesFileName)}
-              |
-              ( predefined {0}
-                joe_kuo {N_mdm(type,digitalNetGeneratingMatrixScheme_JOE_KUO)}
-                |
-                sobol_order_2 {N_mdm(type,digitalNetGeneratingMatrixScheme_SOBOL_ORDER_2)}
-               )
-             ]
-            [ ordering {0}
-              natural {N_mdm(type,digitalNetOrdering_DIGITAL_NET_NATURAL_ORDERING)}
-              |
-              gray_code {N_mdm(type,digitalNetOrdering_DIGITAL_NET_GRAY_CODE_ORDERING)}
-             ]
-           )
+              sobol_order_2 {N_mdm(type,digitalNetGeneratingMatrixScheme_SOBOL_ORDER_2)}
+             )
+           ]
+          [ ordering {0}
+            natural {N_mdm(type,digitalNetOrdering_DIGITAL_NET_NATURAL_ORDERING)}
+            |
+            gray_code {N_mdm(type,digitalNetOrdering_DIGITAL_NET_GRAY_CODE_ORDERING)}
+           ]
          ]
        )
      ]
@@ -7132,7 +7128,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
        ]
      )
     [ experimental_design {N_mdm(true,adaptExpDesign)}
-      initial_samples ALIAS samples INTEGER {N_mdm(int,numSamples)}
+      initial_samples ALIAS samples INTEGER {N_mdm(int,adaptExpSamples)}
       num_candidates INTEGER > 0 {N_mdm(sizet,numCandidates)}
       [ max_hifi_evaluations INTEGER >= 0 {N_mdm(int,maxHifiEvals)} ]
       [ batch_size INTEGER >= 1 {N_mdm(int,batchSize)} ]
@@ -7159,8 +7155,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
       per_response {N_mdm(utype,calibrateErrorMode_CALIBRATE_PER_RESP)}
       |
       both {N_mdm(utype,calibrateErrorMode_CALIBRATE_BOTH)}
-      [ 
-        hyperprior_alphas REALLIST {N_mdm(RealDL,hyperPriorAlphas)}
+      [ hyperprior_alphas REALLIST {N_mdm(RealDL,hyperPriorAlphas)}
         hyperprior_betas REALLIST {N_mdm(RealDL,hyperPriorBetas)}
        ]
      ]
@@ -8051,7 +8046,7 @@ KEYWORD model {N_mom3(start,0,stop)}
        )
       |
       ( experimental_polynomial {N_mom(lit,surrogateType_global_exp_poly)}
-        basis_order INTEGER >= 0 {N_mom(shint,polynomialOrder)}
+        [ basis_order INTEGER >= 0 {N_mom(shint,polynomialOrder)} ]
         [ options_file STRING {N_mom(str,advancedOptionsFilename)} ]
         [ export_model {N_mom(true,exportSurrogate)}
           [ filename_prefix STRING {N_mom(str,modelExportPrefix)} ]
