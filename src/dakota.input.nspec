@@ -84,20 +84,20 @@ KEYWORD01 environment {NIDRProblemDescDB::env_start}
 
 KEYWORD method {N_mdm3(start,0,stop)}
   ( hybrid {N_mdm(utype,methodName_HYBRID)}
+    [ id_method STRING {N_mdm(str,idMethod)} ]
+    [ output {0}
+      debug {N_mdm(type,methodOutput_DEBUG_OUTPUT)}
+      |
+      verbose {N_mdm(type,methodOutput_VERBOSE_OUTPUT)}
+      |
+      normal {N_mdm(type,methodOutput_NORMAL_OUTPUT)}
+      |
+      quiet {N_mdm(type,methodOutput_QUIET_OUTPUT)}
+      |
+      silent {N_mdm(type,methodOutput_SILENT_OUTPUT)}
+     ]
+    [ final_solutions INTEGER >= 0 {N_mdm(sizet,numFinalSolutions)} ]
     ( sequential ALIAS uncoupled {N_mdm(utype,subMethod_SUBMETHOD_SEQUENTIAL)}
-      [ id_method STRING {N_mdm(str,idMethod)} ]
-      [ output {0}
-        debug {N_mdm(type,methodOutput_DEBUG_OUTPUT)}
-        |
-        verbose {N_mdm(type,methodOutput_VERBOSE_OUTPUT)}
-        |
-        normal {N_mdm(type,methodOutput_NORMAL_OUTPUT)}
-        |
-        quiet {N_mdm(type,methodOutput_QUIET_OUTPUT)}
-        |
-        silent {N_mdm(type,methodOutput_SILENT_OUTPUT)}
-       ]
-      [ final_solutions INTEGER >= 0 {N_mdm(sizet,numFinalSolutions)} ]
       ( method_name_list STRINGLIST {N_mdm(strL,hybridMethodNames)}
         [ model_pointer_list STRINGLIST {N_mdm(strL,hybridModelPointers)} ]
        )
@@ -113,19 +113,6 @@ KEYWORD method {N_mdm3(start,0,stop)}
      )
     |
     ( embedded ALIAS coupled {N_mdm(utype,subMethod_SUBMETHOD_EMBEDDED)}
-      [ id_method STRING {N_mdm(str,idMethod)} ]
-      [ output {0}
-        debug {N_mdm(type,methodOutput_DEBUG_OUTPUT)}
-        |
-        verbose {N_mdm(type,methodOutput_VERBOSE_OUTPUT)}
-        |
-        normal {N_mdm(type,methodOutput_NORMAL_OUTPUT)}
-        |
-        quiet {N_mdm(type,methodOutput_QUIET_OUTPUT)}
-        |
-        silent {N_mdm(type,methodOutput_SILENT_OUTPUT)}
-       ]
-      [ final_solutions INTEGER >= 0 {N_mdm(sizet,numFinalSolutions)} ]
       ( global_method_name STRING {N_mdm(str,hybridGlobalMethodName)}
         [ global_model_pointer STRING {N_mdm(str,hybridGlobalModelPointer)} ]
        )
@@ -147,19 +134,6 @@ KEYWORD method {N_mdm3(start,0,stop)}
      )
     |
     ( collaborative {N_mdm(utype,subMethod_SUBMETHOD_COLLABORATIVE)}
-      [ id_method STRING {N_mdm(str,idMethod)} ]
-      [ output {0}
-        debug {N_mdm(type,methodOutput_DEBUG_OUTPUT)}
-        |
-        verbose {N_mdm(type,methodOutput_VERBOSE_OUTPUT)}
-        |
-        normal {N_mdm(type,methodOutput_NORMAL_OUTPUT)}
-        |
-        quiet {N_mdm(type,methodOutput_QUIET_OUTPUT)}
-        |
-        silent {N_mdm(type,methodOutput_SILENT_OUTPUT)}
-       ]
-      [ final_solutions INTEGER >= 0 {N_mdm(sizet,numFinalSolutions)} ]
       ( method_name_list STRINGLIST {N_mdm(strL,hybridMethodNames)}
         [ model_pointer_list STRINGLIST {N_mdm(strL,hybridModelPointers)} ]
        )

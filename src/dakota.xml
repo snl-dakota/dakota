@@ -1975,10 +1975,10 @@
     <keyword code="{N_mdm3(start,0,stop)}" id="method" label="Method" maxOccurs="999999" name="method">
       <oneOf label="Method (Iterative Algorithm)">
         <keyword code="{N_mdm(utype,methodName_HYBRID)}" group="Optimization: Other" id="hybrid" label="Hybrid meta-iterator" name="hybrid">
-          <oneOf label="Hybrid Method Type">
+          &method_three_optional_keywords;
+          <oneOf label="Hybrid Method Type" anchor="strategy">
             <keyword code="{N_mdm(utype,subMethod_SUBMETHOD_SEQUENTIAL)}" id="sequential" label="Sequential hybrid" name="sequential">
               <alias name="uncoupled" />
-              &method_three_optional_keywords;
               <oneOf anchor="sub_method" label="Sub-method Selection">
                 <keyword argument="method_name_list" code="{N_mdm(strL,hybridMethodNames)}" id="method_name_list" label="List of method names" name="method_name_list">
                   <param type="STRINGLIST" />
@@ -1994,7 +1994,6 @@
             </keyword>
             <keyword code="{N_mdm(utype,subMethod_SUBMETHOD_EMBEDDED)}" id="embedded" label="Embedded hybrid" name="embedded">
               <alias name="coupled" />
-              &method_three_optional_keywords;
               <oneOf anchor="sub_method" label="Global Sub-method Selection">
                 <keyword argument="name" code="{N_mdm(str,hybridGlobalMethodName)}" id="global_method_name" label="Name of the global method" name="global_method_name">
                   <param type="STRING" />
@@ -2023,7 +2022,6 @@
               &method_iterator_server_scheduling;
             </keyword>
             <keyword code="{N_mdm(utype,subMethod_SUBMETHOD_COLLABORATIVE)}" id="collaborative" label="Collaborative hybrid" name="collaborative">
-              &method_three_optional_keywords;
               <oneOf anchor="sub_method" label="Sub-method Selection">
                 <keyword argument="method_name_list" code="{N_mdm(strL,hybridMethodNames)}" id="method_name_list1" label="List of method names" name="method_name_list">
                   <param type="STRINGLIST" />
