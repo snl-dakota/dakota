@@ -7156,8 +7156,8 @@ KEYWORD method {N_mdm3(start,0,stop)}
       |
       both {N_mdm(utype,calibrateErrorMode_CALIBRATE_BOTH)}
       [ hyperprior_parameters {0}
-        hyperprior_alphas REALLIST {N_mdm(RealDL,hyperPriorAlphas)}
-        hyperprior_betas REALLIST {N_mdm(RealDL,hyperPriorBetas)}
+        alphas REALLIST {N_mdm(RealDL,hyperPriorAlphas)}
+        betas REALLIST {N_mdm(RealDL,hyperPriorBetas)}
        ]
      ]
     [ burn_in_samples INTEGER {N_mdm(int,burnInSamples)} ]
