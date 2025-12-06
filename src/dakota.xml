@@ -3672,12 +3672,14 @@
               <keyword code="{N_mdm(utype,calibrateErrorMode_CALIBRATE_PER_RESP)}" id="per_response" label="multiplier per response" name="per_response" />
               <keyword code="{N_mdm(utype,calibrateErrorMode_CALIBRATE_BOTH)}" id="both" label="multiplier for each experiment, response" name="both" />
             </oneOf>
-            <keyword code="{N_mdm(RealDL,hyperPriorAlphas)}" id="hyperprior_alphas" label="Inverse-gamma hyper-prior alphas" name="hyperprior_alphas" minOccurs="0">
-              <param type="REALLIST" />
-              <keyword code="{N_mdm(RealDL,hyperPriorBetas)}" id="hyperprior_betas" label="Inverse-gamma hyper-prior betas" name="hyperprior_betas">
+            <keyword code="{0}" id="hyperprior_parameters" name="hyperprior_parameters" label="Specify shape (alpha) and scale (beta) of the inverse gamma hyper-parameter prior" minOccurs="0">
+              <keyword code="{N_mdm(RealDL,hyperPriorAlphas)}" id="hyperprior_alphas" label="Inverse-gamma hyper-prior alphas" name="hyperprior_alphas">
                 <param type="REALLIST" />
               </keyword>
-            </keyword>
+              <keyword code="{N_mdm(RealDL,hyperPriorBetas)}" id="hyperprior_betas" label="Inverse-gamma hyper-prior betas" name="hyperprior_betas">
+                <param type="REALLIST" />
+	      </keyword>
+	    </keyword>
           </keyword>
           <keyword code="{N_mdm(int,burnInSamples)}" default="0" id="burn_in_samples" label="Burn-in samples" minOccurs="0" name="burn_in_samples">
             <param type="INTEGER" />

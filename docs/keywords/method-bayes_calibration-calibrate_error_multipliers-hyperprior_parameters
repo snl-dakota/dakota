@@ -1,0 +1,13 @@
+Blurb::
+Specify shape (alpha) and scale (beta) of the inverse gamma hyper-parameter prior
+Description::
+Specify the shape and scale of the prior distribution for calibrated error multipliers.
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

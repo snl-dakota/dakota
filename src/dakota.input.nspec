@@ -7155,7 +7155,8 @@ KEYWORD method {N_mdm3(start,0,stop)}
       per_response {N_mdm(utype,calibrateErrorMode_CALIBRATE_PER_RESP)}
       |
       both {N_mdm(utype,calibrateErrorMode_CALIBRATE_BOTH)}
-      [ hyperprior_alphas REALLIST {N_mdm(RealDL,hyperPriorAlphas)}
+      [ hyperprior_parameters {0}
+        hyperprior_alphas REALLIST {N_mdm(RealDL,hyperPriorAlphas)}
         hyperprior_betas REALLIST {N_mdm(RealDL,hyperPriorBetas)}
        ]
      ]
