@@ -8597,14 +8597,14 @@ KEYWORD interface {N_ifm3(start,0,stop)}
         |
         aprepro {N_ifm(type,parametersFileFormat_PARAMETERS_FILE_APREPRO)}
         |
-        json {N_ifm(type,parametersFileFormat_PARAMETERS_FILE_JSON)}
+        json_format {N_ifm(type,parametersFileFormat_PARAMETERS_FILE_JSON)}
        ]
       [ results_format {N_ifm(type,resultsFileFormat_RESULTS_FILE_STANDARD)}
         ( standard {N_ifm(type,resultsFileFormat_RESULTS_FILE_STANDARD)}
           [ labeled {N_ifm(true,dakotaResultsFileLabeled)} ]
          )
         |
-        json {N_ifm(type,resultsFileFormat_RESULTS_FILE_JSON)}
+        json_format {N_ifm(type,resultsFileFormat_RESULTS_FILE_JSON)}
        ]
       [ file_tag {N_ifm(true,fileTagFlag)} ]
       [ file_save {N_ifm(true,fileSaveFlag)} ]
@@ -8628,14 +8628,14 @@ KEYWORD interface {N_ifm3(start,0,stop)}
         |
         aprepro {N_ifm(type,parametersFileFormat_PARAMETERS_FILE_APREPRO)}
         |
-        json {N_ifm(type,parametersFileFormat_PARAMETERS_FILE_JSON)}
+        json_format {N_ifm(type,parametersFileFormat_PARAMETERS_FILE_JSON)}
        ]
       [ results_format {N_ifm(type,resultsFileFormat_RESULTS_FILE_STANDARD)}
         ( standard {N_ifm(type,resultsFileFormat_RESULTS_FILE_STANDARD)}
           [ labeled {N_ifm(true,dakotaResultsFileLabeled)} ]
          )
         |
-        json {N_ifm(type,resultsFileFormat_RESULTS_FILE_JSON)}
+        json_format {N_ifm(type,resultsFileFormat_RESULTS_FILE_JSON)}
        ]
       [ file_tag {N_ifm(true,fileTagFlag)} ]
       [ file_save {N_ifm(true,fileSaveFlag)} ]

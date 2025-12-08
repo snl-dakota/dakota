@@ -5380,7 +5380,7 @@
               <oneOf label="Parameters file format">
                 <keyword code="{N_ifm(type,parametersFileFormat_PARAMETERS_FILE_STANDARD)}" id="standard" label="standard format" name="standard" />
                 <keyword code="{N_ifm(type,parametersFileFormat_PARAMETERS_FILE_APREPRO)}" id="aprepro" label="aprepro format" name="aprepro" />
-                <keyword code="{N_ifm(type,parametersFileFormat_PARAMETERS_FILE_JSON)}" id="json" label="JSON format" name="json" />
+                <keyword code="{N_ifm(type,parametersFileFormat_PARAMETERS_FILE_JSON)}" id="json_format" label="JSON format" name="json_format" />
               </oneOf>
             </keyword>
             <keyword code="{N_ifm(type,resultsFileFormat_RESULTS_FILE_STANDARD)}" default="standard format" id="results_format" label="Results file format" minOccurs="0" name="results_format">
@@ -5388,7 +5388,7 @@
                 <keyword code="{N_ifm(type,resultsFileFormat_RESULTS_FILE_STANDARD)}" id="standard" label="standard format" name="standard">
                   <keyword code="{N_ifm(true,dakotaResultsFileLabeled)}" complexity="0" default="Function value labels optional" id="labeled" label="Labeled" minOccurs="0" name="labeled" />
                 </keyword>
-                <keyword code="{N_ifm(type,resultsFileFormat_RESULTS_FILE_JSON)}" id="json" label="JSON format" name="json" />
+                <keyword code="{N_ifm(type,resultsFileFormat_RESULTS_FILE_JSON)}" id="json_format" label="JSON format" name="json_format" />
               </oneOf>
             </keyword>
             <keyword code="{N_ifm(true,fileTagFlag)}" complexity="0" default="no tagging" id="file_tag" label="File Tag" minOccurs="0" name="file_tag" />
@@ -5425,7 +5425,7 @@
               <oneOf label="Parameters file format">
                 <keyword code="{N_ifm(type,parametersFileFormat_PARAMETERS_FILE_STANDARD)}" id="standard" label="standard format" name="standard" />
                 <keyword code="{N_ifm(type,parametersFileFormat_PARAMETERS_FILE_APREPRO)}" id="aprepro" label="aprepro format" name="aprepro" />
-                <keyword code="{N_ifm(type,parametersFileFormat_PARAMETERS_FILE_JSON)}" id="json" label="JSON format" name="json" />
+                <keyword code="{N_ifm(type,parametersFileFormat_PARAMETERS_FILE_JSON)}" id="json_format" label="JSON format" name="json_format" />
               </oneOf>
             </keyword>
             <keyword code="{N_ifm(type,resultsFileFormat_RESULTS_FILE_STANDARD)}" default="standard format" id="results_format" label="Results file format" minOccurs="0" name="results_format">
@@ -5433,7 +5433,7 @@
                 <keyword code="{N_ifm(type,resultsFileFormat_RESULTS_FILE_STANDARD)}" id="standard" label="standard format" name="standard">
                   <keyword code="{N_ifm(true,dakotaResultsFileLabeled)}" complexity="0" default="Function value labels optional" id="labeled" label="Labeled" minOccurs="0" name="labeled" />
                 </keyword>
-                <keyword code="{N_ifm(type,resultsFileFormat_RESULTS_FILE_JSON)}" id="json" label="JSON format" name="json" />
+                <keyword code="{N_ifm(type,resultsFileFormat_RESULTS_FILE_JSON)}" id="json_format" label="JSON format" name="json_format" />
               </oneOf>
             </keyword>
             <keyword code="{N_ifm(true,fileTagFlag)}" complexity="0" default="no tagging" id="file_tag" label="File Tag" minOccurs="0" name="file_tag" />
