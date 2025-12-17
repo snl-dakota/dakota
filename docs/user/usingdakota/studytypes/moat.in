@@ -1,0 +1,5 @@
+method
+  psuade_moat
+    partitions 3
+    seed 52983
+    samples 100
