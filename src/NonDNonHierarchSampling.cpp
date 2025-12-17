@@ -820,7 +820,7 @@ scale_to_budget_with_pilot(RealVector& avg_eval_ratios, const RealVector& cost,
     Cout << "\nRescale to budget: incoming average evaluation ratios:\n"
 	 << avg_eval_ratios;
 
-  Real cost_r_i, approx_inner_prod = 0.;  size_t approx;
+  Real cost_r_index, approx_inner_prod = 0.;  size_t approx;
   for (approx=0; approx<numApprox; ++approx)
     approx_inner_prod += cost[approx] * avg_eval_ratios[approx];
   // Apply factor: r_scaled = factor r^* which applies to LF (HF r remains 1)
@@ -828,21 +828,30 @@ scale_to_budget_with_pilot(RealVector& avg_eval_ratios, const RealVector& cost,
   // > factor r*^T w = budget / N_pilot - 1
   Real cost_H = cost[numApprox],
     factor = (budget / avg_N_H - 1.) / approx_inner_prod * cost_H;
-  //avg_eval_ratios.scale(factor); // can result in infeasible r_i < 1
+  //avg_eval_ratios.scale(factor); // can result in infeasible ratio < 1
 
-  for (int i=numApprox-1; i>=0; --i) { // repair r_i < 1 first if possible
-    Real& r_i = avg_eval_ratios[i];
-    r_i *= factor;
-    if (r_i <= 1.) { // fix at 1+NUDGE --> scale remaining r_i to reduced budget
+  // Avoid any order dependence for reorder-on-the-fly solns (numerical MFMC),
+  // but don't update ratioApproxSequence since this fn is often used for
+  // repairing an analytic initial guess
+  SizetArray ratio_approx_seq; // descending order of eval ratio
+  ordered_approx_sequence(avg_eval_ratios, ratio_approx_seq, true);
+  bool ordered = ratio_approx_seq.empty();  int i;  size_t index;
+  for (i=numApprox-1; i>=0; --i) { // repair r_index < 1 first if possible
+    index = (ordered) ? i : ratio_approx_seq[i];
+    Real& r_index = avg_eval_ratios[index];
+    r_index *= factor;
+    if (r_index <= 1.) {// fix at 1+NUDGE -> scale remaining r to reduced budget
       // > only valid for peer DAG with all CV targets = truth, otherwise
       //   tramples linear ineq for other source-target pairs
       // > DAG-aware overload below preserves source-target ratio
-      r_i = 1. + RATIO_NUDGE;  cost_r_i = r_i * cost[i];
-      // update factor for next r_i: remove this r_i from budget/inner_prod
-      budget -= avg_N_H * cost_r_i / cost_H;  approx_inner_prod -= cost_r_i;
+      r_index = 1. + RATIO_NUDGE;  cost_r_index = r_index * cost[index];
+      // update factor for next r: remove current r from budget/inner_prod
+      budget -=  avg_N_H * cost_r_index / cost_H;
+      approx_inner_prod -= cost_r_index;
       factor  = (budget / avg_N_H - 1.) / approx_inner_prod * cost_H;
     }
   }
+
   if (outputLevel >= DEBUG_OUTPUT) {
     Real inner_prod = cost_H;
     for (approx=0; approx<numApprox; ++approx)

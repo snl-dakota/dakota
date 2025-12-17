@@ -1005,6 +1005,14 @@ analytic_initialization_from_mfmc(const RealMatrix& rho2_LH,
                         ? g_index : _NPOS;
   }
   analytic_ratios_to_solution_variables(avg_eval_ratios,ratios_to_groups,soln);
+
+#ifdef EXPORT_INITIAL_GUESS
+  std::ofstream mfmc_initials;
+  mfmc_initials.open("mfmc_initial_guesses.dat",
+		     std::ofstream::out | std::ofstream::app);
+  mfmc_initials << soln.solution_variables() << std::endl;
+  mfmc_initials.close();
+#endif // EXPORT_INITIAL_GUESS
 }
 
 
@@ -1035,6 +1043,14 @@ analytic_initialization_from_ensemble_cvmc(const RealMatrix& rho2_LH,
                         ? g_index : _NPOS;
   }
   analytic_ratios_to_solution_variables(avg_eval_ratios,ratios_to_groups,soln);
+
+#ifdef EXPORT_INITIAL_GUESS
+  std::ofstream cvmc_initials;
+  cvmc_initials.open("cvmc_initial_guesses.dat",
+		     std::ofstream::out | std::ofstream::app);
+  cvmc_initials << soln.solution_variables() << std::endl;
+  cvmc_initials.close();
+#endif // EXPORT_INITIAL_GUESS
 }
 
 
