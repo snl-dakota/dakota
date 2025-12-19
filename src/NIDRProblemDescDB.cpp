@@ -7097,7 +7097,11 @@ static Method_mp_type
         MP2s(dagRecursionType,KL_GRAPH_RECURSION),
         MP2s(dagRecursionType,NO_GRAPH_RECURSION),
         MP2s(dagRecursionType,PARTIAL_GRAPH_RECURSION),
-	MP2s(distributionType,COMPLEMENTARY),
+	MP2s(digitalNetGeneratingMatrixScheme,JOE_KUO),
+	MP2s(digitalNetGeneratingMatrixScheme,SOBOL_ORDER_2),
+        MP2s(digitalNetOrdering,DIGITAL_NET_NATURAL_ORDERING),
+        MP2s(digitalNetOrdering,DIGITAL_NET_GRAY_CODE_ORDERING),
+MP2s(distributionType,COMPLEMENTARY),
 	MP2s(distributionType,CUMULATIVE),
 	MP2s(emulatorType,EXPGP_EMULATOR),
 	MP2s(emulatorType,GP_EMULATOR),
@@ -7162,7 +7166,11 @@ static Method_mp_type
 	MP2s(pilotGroupSampling,INDEPENDENT_PILOT),
 	MP2s(qoiAggregation,QOI_AGGREGATION_MAX),
 	MP2s(qoiAggregation,QOI_AGGREGATION_SUM),
-	MP2p(refinementControl,DIMENSION_ADAPTIVE_CONTROL_GENERALIZED),// Pecos
+	MP2s(rank1GeneratingVectorScheme,GEN_VECTOR_KUO),
+	MP2s(rank1GeneratingVectorScheme,GEN_VECTOR_COOLS_KUO_NUYENS),
+        MP2s(rank1Ordering,RANK_1_LATTICE_NATURAL_ORDERING),
+        MP2s(rank1Ordering,RANK_1_LATTICE_RADICAL_INVERSE_ORDERING),
+MP2p(refinementControl,DIMENSION_ADAPTIVE_CONTROL_GENERALIZED),// Pecos
 	MP2p(refinementControl,DIMENSION_ADAPTIVE_CONTROL_DECAY),      // Pecos
 	MP2p(refinementControl,DIMENSION_ADAPTIVE_CONTROL_SOBOL),      // Pecos
 	MP2p(refinementControl,LOCAL_ADAPTIVE_CONTROL),                // Pecos

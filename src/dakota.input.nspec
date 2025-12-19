@@ -2757,15 +2757,15 @@ KEYWORD method {N_mdm3(start,0,stop)}
               file STRING {N_mdm(str,generatingVectorFileName)}
               |
               ( predefined {0}
-                kuo {N_mdm(true,kuo)}
+                kuo {N_mdm(type,rank1GeneratingVectorScheme_GEN_VECTOR_KUO)}
                 |
-                cools_kuo_nuyens {N_mdm(true,cools_kuo_nuyens)}
+                cools_kuo_nuyens {N_mdm(type,rank1GeneratingVectorScheme_GEN_VECTOR_COOLS_KUO_NUYENS)}
                )
              ]
             [ ordering {0}
-              natural {N_mdm(true,naturalOrdering)}
+              natural {N_mdm(type,rank1Ordering_RANK_1_LATTICE_NATURAL_ORDERING)}
               |
-              radical_inverse {N_mdm(true,radicalInverseOrdering)}
+              radical_inverse {N_mdm(type,rank1Ordering_RANK_1_LATTICE_RADICAL_INVERSE_ORDERING)}
              ]
            )
          ]
@@ -2787,15 +2787,15 @@ KEYWORD method {N_mdm3(start,0,stop)}
               file STRING {N_mdm(str,generatingMatricesFileName)}
               |
               ( predefined {0}
-                joe_kuo {N_mdm(true,joe_kuo)}
+                joe_kuo {N_mdm(type,digitalNetGeneratingMatrixScheme_JOE_KUO)}
                 |
-                sobol_order_2 {N_mdm(true,sobol_order_2)}
+                sobol_order_2 {N_mdm(type,digitalNetGeneratingMatrixScheme_SOBOL_ORDER_2)}
                )
              ]
             [ ordering {0}
-              natural {N_mdm(true,naturalOrdering)}
+              natural {N_mdm(type,digitalNetOrdering_DIGITAL_NET_NATURAL_ORDERING)}
               |
-              gray_code {N_mdm(true,grayCodeOrdering)}
+              gray_code {N_mdm(type,digitalNetOrdering_DIGITAL_NET_GRAY_CODE_ORDERING)}
              ]
            )
          ]
