@@ -43,11 +43,14 @@ NonDNonHierarchSampling* NonDNonHierarchSampling::nonHierSampInstance(NULL);
     probDescDB can be queried for settings from the method specification. */
 NonDNonHierarchSampling::
 NonDNonHierarchSampling(ProblemDescDB& problem_db,
-			ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
-  NonDEnsembleSampling(problem_db, parallel_lib, model), activeBudget((Real)maxFunctionEvals),
+			ParallelLibrary& parallel_lib,
+			std::shared_ptr<Model> model):
+  NonDEnsembleSampling(problem_db, parallel_lib, model),
+  activeBudget((Real)maxFunctionEvals),
   truthFixedByPilot(problem_db.get_bool("method.nond.truth_fixed_by_pilot")),
   analyticEstVarDerivs(false), // only in ML BLUE currently
-  hardenNumericSoln(true)      // Cholesky option not currently exposed in spec
+  hardenNumericSoln(true),     // Cholesky option not currently exposed in spec
+  reorderOnTheFly(false)       // currently only active for numerical MFMC
 {
   // solver(s) that perform the numerical solution for resource allocations
   // > Note: this is not a hard error for analytic MFMC that doesn't require
@@ -693,8 +696,7 @@ apply_controls(const IntRealVectorMap& sum_H_baseline,
 void NonDNonHierarchSampling::update_model_group_costs()
 {
   // modelGroupCost used in finite_solution_bounds() for
-  // mfmc_numerical_solution().  MFMC numerical preserves approxSequence
-  // in augment_linear_ineq_constraints(), so we use it here as well.
+  // mfmc_numerical_solution().
 
   // Note: GenACV can have active num_groups != numGroups
   size_t num_groups = modelGroups.size(); // active groups
@@ -1008,8 +1010,9 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
   // Formulate the optimization sub-problem: initial pt, bnds, constraints
   // --------------------------------------
 
-  // > MFMC analytic requires ordered rho2LH to avoid FPE (approxSequence defn)
-  //   followed by ordered r_i for {pyramid sampling, R_sq contribution > 0}
+  // > MFMC analytic needs ordered rho2LH to avoid FPE (see corrApproxSequence)
+  //   followed by ordered r_i for {pyramid sampling, R_sq contrib > 0} (see
+  //   ratioApproxSequence)
   // > MFMC numerical needs ordered r_i to retain pyramid sampling/recursion
   //   >> estvar objective requires an ordering fixed a priori --> makes sense
   //      to optimize w.r.t. this ordering constraint, similar to std::max()
@@ -1064,29 +1067,30 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
     nln_ineq_ub[0] = budget;
     break;
   }
-  case N_MODEL_LINEAR_CONSTRAINT:  case N_MODEL_LINEAR_OBJECTIVE: {
+  case N_MODEL_LINEAR_CONSTRAINT: {
     x_lb = (offline) ? offline_N_lwr : avg_N_H;
-    // Allow numerical nudge as lower bound:
-    //x_lb = avg_N_H;  enforce_nudge(x_lb);
-
     const RealVector& soln_vars = soln.solution_variables();
-    x0 = (soln_vars.empty()) ? x_lb : soln_vars;
-    if (optSubProblemForm == N_MODEL_LINEAR_CONSTRAINT) {
-      // linear inequality constraint on budget:
-      //   N ( w + \Sum_i w_i r_i ) <= C, where C = equivHF * w
-      //   N w + \Sum_i w_i N_i <= equivHF * w
-      //   N + \Sum_i w_i/w N_i <= equivHF
-      lin_ineq_ub[0] = budget; // remaining ub initialized to 0
-      for (approx=0; approx<numApprox; ++approx)
-	lin_ineq_coeffs(0, approx) = sequenceCost[approx] / cost_H;
-      lin_ineq_coeffs(0, numApprox) = 1.;
-    }
-    else if (optSubProblemForm == N_MODEL_LINEAR_OBJECTIVE) {
-      // nonlinear inequality constraint on estvar
-      nln_ineq_lb = -DBL_MAX;  // no lower bnd
-      nln_ineq_ub = (convergenceTolType == ABSOLUTE_CONVERGENCE_TOLERANCE)
-	? std::log(convergenceTol) : std::log(convergenceTol * estVarMetric0);
-    }
+    x0   = (soln_vars.empty()) ? x_lb : soln_vars;
+
+    // linear inequality constraint on budget:
+    //   N ( w + \Sum_i w_i r_i ) <= C, where C = equivHF * w
+    //   N w + \Sum_i w_i N_i <= equivHF * w
+    //   N + \Sum_i w_i/w N_i <= equivHF
+    lin_ineq_ub[0] = budget; // remaining ub initialized to 0
+    for (approx=0; approx<numApprox; ++approx)
+      lin_ineq_coeffs(0, approx) = sequenceCost[approx] / cost_H;
+    lin_ineq_coeffs(0, numApprox) = 1.;
+    break;
+  }
+  case N_MODEL_LINEAR_OBJECTIVE: {
+    x_lb = (offline) ? offline_N_lwr : avg_N_H;
+    const RealVector& soln_vars = soln.solution_variables();
+    x0   = (soln_vars.empty()) ? x_lb : soln_vars;
+
+    // nonlinear inequality constraint on estvar
+    nln_ineq_lb = -DBL_MAX;  // no lower bnd
+    nln_ineq_ub = (convergenceTolType == ABSOLUTE_CONVERGENCE_TOLERANCE)
+      ? std::log(convergenceTol) : std::log(convergenceTol * estVarMetric0);
     break;
   }
   }
@@ -1286,9 +1290,10 @@ derived_finite_solution_bounds(const RealVector& x0, RealVector& x_lb,
     size_t hf_form_index, hf_lev_index;
     hf_indices(hf_form_index, hf_lev_index);
     Real N_sh = (Real)NLevAlloc[hf_form_index][hf_lev_index],
-      cost_sh = modelGroupCost[x_len], factor = budget_cost / N_sh - cost_sh;
+      cost_sh = modelGroupCost[x_len], factor = budget_cost / N_sh - cost_sh,
+      cost_lb_i = (reorderOnTheFly) ? sequenceCost[i] : modelGroupCost[i];
     for (i=0; i<x_len; ++i)
-      x_ub[i] = 1. + factor / modelGroupCost[i]; // for ub on r_i
+      x_ub[i] = 1. + factor / cost_lb_i; // for ub on r_i
     break;
   }
   case R_AND_N_NONLINEAR_CONSTRAINT: { // not valid for group allocations
@@ -1299,9 +1304,10 @@ derived_finite_solution_bounds(const RealVector& x0, RealVector& x_lb,
     //   (r_i - 1) N_sh cost_i = budget_cost - N_sh cost_sh
     //   r_i = 1 + (budget_cost / N_sh - cost_sh) / cost_i
     // And for variable N_sh, r_i upper bnd corresponds to N_sh lower bnd
-    Real N_sh_lb = x_lb[hf_index], factor = budget_cost / N_sh_lb - cost_sh;
+    Real N_sh_lb = x_lb[hf_index], factor = budget_cost / N_sh_lb - cost_sh,
+      cost_lb_i = (reorderOnTheFly) ? sequenceCost[i] : modelGroupCost[i];
     for (i=0; i<hf_index; ++i)
-      x_ub[i] = 1. + factor / modelGroupCost[i]; // ub on r_i
+      x_ub[i] = 1. + factor / cost_lb_i; // ub on r_i
     break;
   }
   default: {
@@ -1312,9 +1318,14 @@ derived_finite_solution_bounds(const RealVector& x0, RealVector& x_lb,
     //   delta_N_i cost_i = budget_cost - N_sh cost_sh
     //   N_i =  (budget_cost - N_sh (cost_sh - cost_i)) / cost_i
     // And for variable N_sh, N_i upper bnd corresponds to N_sh lower bnd
-    Real N_sh_lb = x_lb[hf_index], factor = budget_cost - N_sh_lb * cost_sh;
+    Real N_sh_lb = x_lb[hf_index], factor = budget_cost - N_sh_lb * cost_sh,
+      // > with reorder-on-the-fly (MFMC), the lowest group cost is model i by
+      //   itself since it could be moved to model position 0.
+      // > without reorder-on-the-fly, the group cost is invariant and can be
+      //   used to reduce the search domain.
+      cost_lb_i = (reorderOnTheFly) ? sequenceCost[i] : modelGroupCost[i];
     for (i=0; i<hf_index; ++i)
-      x_ub[i] = N_sh_lb + factor / modelGroupCost[i]; // ub on N_i
+      x_ub[i] = N_sh_lb + factor / cost_lb_i; // ub on N_i
     break;
   }
   }

@@ -35,7 +35,8 @@ public:
   //
 
   /// standard constructor
-  NonDNonHierarchSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, 
+  NonDNonHierarchSampling(ProblemDescDB& problem_db,
+			  ParallelLibrary& parallel_lib, 
 			  std::shared_ptr<Model> model);
   /// destructor
   ~NonDNonHierarchSampling() override;
@@ -557,11 +558,14 @@ protected:
   /// user specification to suppress any increments in the number of HF
   /// evaluations (e.g., because too expensive and no more can be performed)
   bool truthFixedByPilot;
-  /// a subset of the non-hierarchcvial samplers provide analytic derivatives
+  /// a subset of the non-hierarchical samplers provide analytic derivatives
   /// of estimator variance
   bool analyticEstVarDerivs;
   /// employ truncated SVD rather than Cholesky factorization for matrix solve
   bool hardenNumericSoln;
+  /// flag for hierarchical methods (MFMC) that reorder models on the fly during
+  /// numerical solutions in order to satisfy monotonicity requirements
+  bool reorderOnTheFly;
 
   /// for sample projections, the calculated increment in HF samples that
   /// would be evaluated if full iteration/statistics were pursued

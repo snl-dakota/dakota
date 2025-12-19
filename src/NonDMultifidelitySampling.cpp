@@ -1173,6 +1173,8 @@ compute_allocations(const RealMatrix& rho2_LH, const RealVector& var_H,
     break;
   }
 
+  reorderOnTheFly = false; // default (reassigned inside mfmc_numerical)
+
   // For stand-alone analytic MFMC (not an analytic initial guess), enforce
   // monotonicity in r_i for a valid evaluation of estvar that is consistent
   // with the order used for computing avg_eval_ratios.  Reordering sample set
@@ -1190,7 +1192,6 @@ compute_allocations(const RealMatrix& rho2_LH, const RealVector& var_H,
 			   lower_bounded_r, monotonic_r);
     process_analytic_allocations(rho2_LH, var_H, N_H, cost,
 				 avg_eval_ratios, soln);
-    //update_model_groups();  update_model_group_costs();
     break;
 
   case REORDERED_ANALYTIC_SOLUTION: // inactive (see above)
@@ -1200,7 +1201,6 @@ compute_allocations(const RealMatrix& rho2_LH, const RealVector& var_H,
 				     lower_bounded_r, monotonic_r);
     process_analytic_allocations(rho2_LH, var_H, N_H, cost,
 				 avg_eval_ratios, soln);
-    //update_model_groups();  update_model_group_costs();
     break;
 
   default: // any of several numerical optimization formulations
@@ -1287,12 +1287,22 @@ mfmc_numerical_solution(const RealMatrix& rho2_LH, const RealVector& cost,
   //correlation_sq_to_covariance(rho2_LH, var_L, varH, covLH);
   //matrix_to_diagonal_array(var_L, covLL);
 
+  // *** TO DO***: support other numerical MFMC options
+  reorderOnTheFly = true; // for now (removes need for modelGroupCosts in finite bounds)
+  // Note: reordering does not invalidate the linear budget constraint since
+  // this is formulated using sequenceCost and total sample counts for each
+  // model (model counts N_i are not inferred from overlays of optimized N_g
+  // group samples).  Thus, pyramid structure with sample sharing is not
+  // reflected in upstream solution constraints, instead manifesting downstream
+  // as a sample management scheme in approx_increments(), which then supports
+  // multi-batch concurrency using group_increments().
+
   // This definition of modelGroupCost allows a unified treatment in
   // NonDNonHierarchSampling::derived_finite_solution_bounds(), which aligns
   // solution vars N[i] with modelGroupCost[i] --> use ordered groups here.
-  // > Downstream, modelGroup{s,Cost} are used for group_increments() -->
+  // > Downstream, modelGroup{s,Cost} are used for approx_increments() -->
   //   groups are redefined for an r_i ordering.
-  update_model_groups();  update_model_group_costs();
+  update_model_groups();  update_model_group_costs(); // *** TO DO: still needed for reorderOnTheFly?
 
   // Base class implementation of numerical solve (shared with ACV,GenACV):
   ensemble_numerical_solution(soln);
