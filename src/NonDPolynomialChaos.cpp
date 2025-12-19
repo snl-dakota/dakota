@@ -508,7 +508,7 @@ config_expectation(size_t exp_samples, unsigned short sample_type,
   if (numSamplesOnModel) {
     if (refineType && fixedSeed)
       Cerr << "Warning: combining sample refinement with fixed_seed is more "
-	   << "likely to cause sample redundancy." << std::endl;
+	   << "likely to\n         cause sample redundancy." << std::endl;
 
     construct_lhs(u_space_sampler, g_u_model, sample_type, numSamplesOnModel,
 		  seed, rng, !fixedSeed, ACTIVE);
@@ -651,7 +651,7 @@ config_regression(const UShortArray& exp_orders, size_t colloc_pts,
       //            from lower-level seed fixing across levels or refine iters.
       if (refineType && fixedSeed)
 	Cerr << "Warning: combining sample refinement with fixed_seed is more "
-	     << "likely to cause sample redundancy." << std::endl;
+	     << "likely to\n         cause sample redundancy." << std::endl;
       // reuse type/seed/rng settings intended for the expansion_sampler.
       // Unlike expansion_sampler, allow sampling pattern to vary under
       // unstructured grid refinement/replacement/augmentation.  Also
