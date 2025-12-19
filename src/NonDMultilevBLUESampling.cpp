@@ -31,7 +31,7 @@ namespace Dakota {
 NonDMultilevBLUESampling::
 NonDMultilevBLUESampling(ProblemDescDB& problem_db,
 			 ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
-  NonDNonHierarchSampling(problem_db, parallel_lib, model),
+  NonDNumericSolveSampling(problem_db, parallel_lib, model),
   pilotGroupSampling(problem_db.get_short("method.nond.pilot_samples.mode")),
   groupThrottleType(problem_db.get_short("method.nond.group_throttle_type")),
   groupSizeThrottle(problem_db.get_ushort("method.nond.group_size_throttle")),
@@ -198,7 +198,7 @@ NonDMultilevBLUESampling::~NonDMultilevBLUESampling()
 
 void NonDMultilevBLUESampling::pre_run()
 {
-  NonDNonHierarchSampling::pre_run();
+  NonDNumericSolveSampling::pre_run();
   responseContainer.reset();
   pilotResponseContainer.reset();
 }
@@ -402,7 +402,7 @@ void NonDMultilevBLUESampling::ml_blue_pilot_projection()
 			    sequenceCost[numApprox], deltaEquivHF);
   finalize_counts(NGroupActual, NGroupAlloc);
   // No need for updating estimator variance given deltaNActualHF since
-  // NonDNonHierarchSampling::ensemble_numerical_solution() recovers N*
+  // NonDNumericSolveSampling::ensemble_numerical_solution() recovers N*
   // from the numerical solve and computes projected estVariance{s,Ratios}
 }
 
@@ -1574,7 +1574,7 @@ accumulate_blue_sums(IntRealMatrixArrayMap& sum_G,
 
     for (qoi=0; qoi<numFunctions; ++qoi) {
 
-      // see Bessel correction notes in NonDNonHierarchSampling::
+      // see Bessel correction notes in NonDNumericSolveSampling::
       // compute_correlation(): population mean and variance should be
       // computed from the same sample set
       all_finite = true;
@@ -1664,7 +1664,7 @@ accumulate_blue_sums(RealMatrix& sum_G_g, RealSymMatrixArray& sum_GG_g,
 
     for (qoi=0; qoi<numFunctions; ++qoi) {
 
-      // see fault tol notes in NonDNonHierarchSampling::compute_correlation():
+      // see fault tol notes in NonDNumericSolveSampling::compute_correlation():
       // population mean and variance should be computed from same sample set
       all_finite = true;
       for (m=0; m<num_models; ++m) {

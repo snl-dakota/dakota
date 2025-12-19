@@ -34,7 +34,7 @@ namespace Dakota {
     probDescDB can be queried for settings from the method specification. */
 NonDMultifidelitySampling::
 NonDMultifidelitySampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
-  NonDNonHierarchSampling(problem_db, parallel_lib, model),
+  NonDNumericSolveSampling(problem_db, parallel_lib, model),
   numericalSolveMode(problem_db.get_ushort("method.nond.numerical_solve_mode"))
 {
   mlmfSubMethod = SUBMETHOD_MFMC; // if needed for numerical solves
@@ -347,7 +347,7 @@ update_projected_samples(const MFSolutionData& soln,
     actual_incr = (backfillFailures) ? one_sided_delta(N_H_actual, hf_target)
                                      : alloc_incr;
   // For analytic solns, mirror CDV lower bnd for numerical solns; see rationale
-  // in NonDNonHierarchSampling::numerical_solution_bounds_constraints()
+  // in NonDNumericSolveSampling::numerical_solution_bounds_constraints()
   if ( ( pilotMgmtMode == OFFLINE_PILOT ||
 	 pilotMgmtMode == OFFLINE_PILOT_PROJECTION ) &&
        ( optSubProblemForm == ANALYTIC_SOLUTION ||
@@ -688,7 +688,7 @@ accumulate_mf_sums(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
 
     for (qoi=0; qoi<numFunctions; ++qoi) {
 
-      // see fault tol notes in NonDNonHierarchSampling::compute_correlation()
+      // see fault tol notes in NonDNumericSolveSampling::compute_correlation()
       all_finite = true;
       for (approx=0; approx<=numApprox; ++approx)
 	if (!isfinite(fn_vals[approx * numFunctions + qoi])) // NaN or +/-Inf
@@ -782,7 +782,7 @@ accumulate_mf_sums(RealMatrix& sum_L_baseline, RealVector& sum_H,
 
     for (qoi=0; qoi<numFunctions; ++qoi) {
 
-      // see fault tol notes in NonDNonHierarchSampling::compute_correlation()
+      // see fault tol notes in NonDNumericSolveSampling::compute_correlation()
       all_finite = true;
       for (approx=0; approx<=numApprox; ++approx)
 	if (!isfinite(fn_vals[approx * numFunctions + qoi])) // NaN or +/-Inf
@@ -1298,7 +1298,7 @@ mfmc_numerical_solution(const RealMatrix& rho2_LH, const RealVector& cost,
   // multi-batch concurrency using group_increments().
 
   // This definition of modelGroupCost allows a unified treatment in
-  // NonDNonHierarchSampling::derived_finite_solution_bounds(), which aligns
+  // NonDNumericSolveSampling::derived_finite_solution_bounds(), which aligns
   // solution vars N[i] with modelGroupCost[i] --> use ordered groups here.
   // > Downstream, modelGroup{s,Cost} are used for approx_increments() -->
   //   groups are redefined for an r_i ordering.
@@ -1500,9 +1500,9 @@ mfmc_estvar_ratios(const RealMatrix& rho2_LH, const RealVector& avg_eval_ratios,
   }
 
   // Call stack for MFMC numerical solution:
-  // > NonDNonHierarchSampling::log_estvar_metric(RealVector&)
-  // > NonDNonHierarchSampling::estimator_variance_metric(RealVector&)
-  // > NonDNonHierarchSampling::estimator_variances(RealVector&)
+  // > NonDNumericSolveSampling::log_estvar_metric(RealVector&)
+  // > NonDNumericSolveSampling::estimator_variance_metric(RealVector&)
+  // > NonDNumericSolveSampling::estimator_variances(RealVector&)
   // > NonDMultifidelitySampling::estimator_variance_ratios() [virtual]
   // > This function (vector of avg_eval_ratios from opt design variables)
   // Note: ANALYTIC_SOLUTION covered by ordered case below

@@ -525,9 +525,8 @@ set(iterator_src DakotaIterator.cpp DakotaAnalyzer.cpp DakotaPStudyDACE.cpp
     NonDMultilevelPolynomialChaos.cpp NonDMultilevelStochCollocation.cpp
     NonDSurrogateExpansion.cpp NonDCalibration.cpp NonDBayesCalibration.cpp
     NonDWASABIBayesCalibration.cpp NonDSampling.cpp NonDLHSSampling.cpp
-    NonDEnsembleSampling.cpp
-    NonDHierarchSampling.cpp NonDMultilevelSampling.cpp
-    NonDMultilevControlVarSampling.cpp NonDNonHierarchSampling.cpp
+    NonDEnsembleSampling.cpp NonDMultilevelSampling.cpp
+    NonDMultilevControlVarSampling.cpp NonDNumericSolveSampling.cpp
     NonDMultifidelitySampling.cpp NonDACVSampling.cpp
     NonDGenACVSampling.cpp NonDMultilevBLUESampling.cpp
     NonDAdaptImpSampling.cpp NonDGPImpSampling.cpp

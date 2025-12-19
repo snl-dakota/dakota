@@ -10,7 +10,7 @@
 #ifndef NOND_ML_BLUE_SAMPLING_H
 #define NOND_ML_BLUE_SAMPLING_H
 
-#include "NonDNonHierarchSampling.hpp"
+#include "NonDNumericSolveSampling.hpp"
 //#include "DataMethod.hpp"
 
 #define DIRECT_DIMENSION_LIMIT 64
@@ -24,7 +24,7 @@ namespace Dakota {
     that utilitizes lower fidelity simulations that have response QoI
     that are correlated with the high-fidelity response QoI. */
 
-class NonDMultilevBLUESampling: public NonDNonHierarchSampling
+class NonDMultilevBLUESampling: public NonDNumericSolveSampling
 {
 public:
 
@@ -839,7 +839,7 @@ initialize_rva(RealVectorArray& rva, bool init)
 inline Real NonDMultilevBLUESampling::linear_group_cost(const RealVector& cdv)
 {
   if (retainedModelGroups.empty())
-    return NonDNonHierarchSampling::linear_group_cost(cdv);
+    return NonDNumericSolveSampling::linear_group_cost(cdv);
 
   // linear objective: N + Sum(w_i N_i) / w
   Real lin_obj = 0.;  size_t i, cntr = 0;
@@ -857,7 +857,7 @@ inline void NonDMultilevBLUESampling::
 linear_group_cost_gradient(const RealVector& cdv, RealVector& grad_c)
 {
   if (retainedModelGroups.empty()) {
-    NonDNonHierarchSampling::linear_group_cost_gradient(cdv, grad_c);
+    NonDNumericSolveSampling::linear_group_cost_gradient(cdv, grad_c);
     return;
   }
 
@@ -1044,7 +1044,7 @@ inline void NonDMultilevBLUESampling::apply_mc_reference(RealVector& mc_targets)
 {
   // derived implementation (varH is not used by ML BLUE)
 
-  // used by NonDNonHierarchSampling::finite_solution_bounds() for accuracy
+  // used by NonDNumericSolveSampling::finite_solution_bounds() for accuracy
   // constrained cases, which are disallowed for offline pilot modes
 
   // mirrors find_hf_sample_reference() logic in print_variance_reduction()

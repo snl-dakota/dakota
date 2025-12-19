@@ -636,7 +636,7 @@ void NonDGenACVSampling::update_model_groups(const UShortList& root_list)
 
 void NonDGenACVSampling::pre_run()
 {
-  NonDNonHierarchSampling::pre_run();
+  NonDNumericSolveSampling::pre_run();
 
   // For hyper-parameter/design/state changes, can reuse modelDAGs.  Other
   // changes ({dagRecursion,modelSelect}Type) would induce need to regenerate.
@@ -963,7 +963,7 @@ void NonDGenACVSampling::generalized_acv_pilot_projection()
 			   N_H_alloc, N_L_actual, NApproxAlloc,
 			   deltaNActualHF, deltaEquivHF);
   // No need for updating estimator variance given deltaNActualHF since
-  // NonDNonHierarchSampling::ensemble_numerical_solution() recovers N*
+  // NonDNumericSolveSampling::ensemble_numerical_solution() recovers N*
   // from the numerical solve and computes projected estVariance{s,Ratios}
 }
 
@@ -1415,7 +1415,7 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
 				      RealMatrix& lin_ineq_coeffs,
 				      RealMatrix& lin_eq_coeffs)
 {
-  // Refer to NonDNonHierarchSampling base implementation for additional notes
+  // Refer to NonDNumericSolveSampling base implementation for additional notes
 
   size_t hf_form_index, hf_lev_index;
   hf_indices(hf_form_index, hf_lev_index);
@@ -1989,7 +1989,7 @@ accumulate_genacv_sums(IntRealMatrixMap& sum_L_shared, IntRealVectorMap& sum_H,
 
     for (qoi=0; qoi<numFunctions; ++qoi) {
 
-      // see fault tol notes in NonDNonHierarchSampling::compute_correlation()
+      // see fault tol notes in NonDNumericSolveSampling::compute_correlation()
       if (!check_finite(fn_vals, asv, qoi, num_am1)) continue;
 
       hf_index = numApprox * numFunctions + qoi;
@@ -2117,7 +2117,7 @@ void NonDGenACVSampling::compute_parameterized_G_g(const RealVector& N_vec)
   //   (HF = 1, MF = 2, LF = 3) and Gorodetsky,Bomarito (HF = 0, MF = 1, LF = 2)
   // > incoming N_vec is ordered as for Dakota r_i: LF = 0, MF = 1, HF = 2
   // > incoming DAG is zero root as in Bomarito 2022 --> reverse DAG ordering
-  // See also NonDNonHierarchSampling::mfmc_analytic_solution()
+  // See also NonDNumericSolveSampling::mfmc_analytic_solution()
 
   // Here we use ACV notation: z_i is comprised of N_i incoming samples
   // including z^1_i (less resolved "correlated mean estimator") and z^2_i

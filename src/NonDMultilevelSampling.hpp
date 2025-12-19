@@ -10,7 +10,7 @@
 #ifndef NOND_MULTILEVEL_SAMPLING_H
 #define NOND_MULTILEVEL_SAMPLING_H
 
-#include "NonDHierarchSampling.hpp"
+#include "NonDEnsembleSampling.hpp"
 #include "DataMethod.hpp"
 
 #ifdef HAVE_NPSOL
@@ -27,7 +27,7 @@ namespace Dakota {
     that utilitizes lower fidelity simulations that have response QoI
     that are correlated with the high-fidelity response QoI. */
 
-class NonDMultilevelSampling: public virtual NonDHierarchSampling
+class NonDMultilevelSampling: public NonDEnsembleSampling
 {
 public:
 
@@ -36,7 +36,9 @@ public:
   //
 
   /// standard constructor
-  NonDMultilevelSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model);
+  NonDMultilevelSampling(ProblemDescDB& problem_db,
+			 ParallelLibrary& parallel_lib,
+			 std::shared_ptr<Model> model);
   /// destructor
   ~NonDMultilevelSampling() override;
 
@@ -81,6 +83,16 @@ protected:
   void compute_ml_estimator_variance(const RealMatrix&   var_Y,
 				     const Sizet2DArray& num_Y,
 				     RealVector& ml_est_var);
+
+  /// queue a batch of samples to be performed for the active model subset
+  void ensemble_sample_batch(const String& prepend, int batch_id,
+			     bool new_samples = true);
+  /// set request = 1 for QoI in (lev-1,lev)
+  void ml_active_set(size_t lev, size_t offset = 0, bool clear_req = true);
+
+  /// export allSamples to tagged tabular file
+  void export_all_samples(String root_prepend, const Model& model,
+			  size_t iter, int batch_id);
 
   /// recover variance from raw moments
   void recover_variance(const RealMatrix& moment_stats, RealVector& var_H);
@@ -164,6 +176,11 @@ protected:
   //
   //- Heading: Data
   //
+
+  /// number of model forms/resolution within a hierarchical sequence
+  size_t numSteps;
+  /// setting for inactive model dimension not traversed by loop over numSteps
+  size_t secondaryIndex;
 
   /// final estimator variance for output in print_variance_reduction()
   RealVector estVar;
@@ -621,6 +638,22 @@ inline Real NonDMultilevelSampling::estimator_accuracy_metric() const
 	 << "multilevel_sampling." << std::endl;
     abort_handler(METHOD_ERROR);  return DBL_MAX;
   }
+}
+
+
+inline void NonDMultilevelSampling::
+ml_active_set(size_t lev, size_t offset, bool clear_req)
+{
+  if (clear_req) activeSet.request_values(0);
+
+  if (lev) {
+    size_t lm1 = lev - 1;
+    if (lm1) offset += lm1 * numFunctions;
+    size_t end = offset + numFunctions;
+    activeSet.request_values(1, offset, end);
+    offset = end;
+  }
+  activeSet.request_values(1, offset, offset + numFunctions);
 }
 
 
