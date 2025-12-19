@@ -1290,10 +1290,10 @@ derived_finite_solution_bounds(const RealVector& x0, RealVector& x_lb,
     size_t hf_form_index, hf_lev_index;
     hf_indices(hf_form_index, hf_lev_index);
     Real N_sh = (Real)NLevAlloc[hf_form_index][hf_lev_index],
-      cost_sh = modelGroupCost[x_len], factor = budget_cost / N_sh - cost_sh,
-      cost_lb_i = (reorderOnTheFly) ? sequenceCost[i] : modelGroupCost[i];
+      cost_sh = modelGroupCost[x_len], factor = budget_cost / N_sh - cost_sh;
     for (i=0; i<x_len; ++i)
-      x_ub[i] = 1. + factor / cost_lb_i; // for ub on r_i
+      x_ub[i] = (reorderOnTheFly) ? // for ub on r_i
+	1. + factor / sequenceCost[i] : 1. + factor / modelGroupCost[i];
     break;
   }
   case R_AND_N_NONLINEAR_CONSTRAINT: { // not valid for group allocations
@@ -1304,10 +1304,10 @@ derived_finite_solution_bounds(const RealVector& x0, RealVector& x_lb,
     //   (r_i - 1) N_sh cost_i = budget_cost - N_sh cost_sh
     //   r_i = 1 + (budget_cost / N_sh - cost_sh) / cost_i
     // And for variable N_sh, r_i upper bnd corresponds to N_sh lower bnd
-    Real N_sh_lb = x_lb[hf_index], factor = budget_cost / N_sh_lb - cost_sh,
-      cost_lb_i = (reorderOnTheFly) ? sequenceCost[i] : modelGroupCost[i];
+    Real N_sh_lb = x_lb[hf_index], factor = budget_cost / N_sh_lb - cost_sh;
     for (i=0; i<hf_index; ++i)
-      x_ub[i] = 1. + factor / cost_lb_i; // ub on r_i
+      x_ub[i] = (reorderOnTheFly) ? // for ub on r_i
+	1. + factor / sequenceCost[i] : 1. + factor / modelGroupCost[i];
     break;
   }
   default: {
@@ -1318,14 +1318,14 @@ derived_finite_solution_bounds(const RealVector& x0, RealVector& x_lb,
     //   delta_N_i cost_i = budget_cost - N_sh cost_sh
     //   N_i =  (budget_cost - N_sh (cost_sh - cost_i)) / cost_i
     // And for variable N_sh, N_i upper bnd corresponds to N_sh lower bnd
-    Real N_sh_lb = x_lb[hf_index], factor = budget_cost - N_sh_lb * cost_sh,
-      // > with reorder-on-the-fly (MFMC), the lowest group cost is model i by
-      //   itself since it could be moved to model position 0.
-      // > without reorder-on-the-fly, the group cost is invariant and can be
-      //   used to reduce the search domain.
-      cost_lb_i = (reorderOnTheFly) ? sequenceCost[i] : modelGroupCost[i];
-    for (i=0; i<hf_index; ++i)
-      x_ub[i] = N_sh_lb + factor / cost_lb_i; // ub on N_i
+    Real N_sh_lb = x_lb[hf_index], factor = budget_cost - N_sh_lb * cost_sh;
+    // > with reorder-on-the-fly (MFMC), the lowest group cost is model i by
+    //   itself since it could be moved to model position 0.
+    // > without reorder-on-the-fly, the group cost is invariant and can be
+    //   used to reduce the search domain.
+    for (i=0; i<hf_index; ++i) // ub on N_i
+      x_ub[i] = (reorderOnTheFly) ? N_sh_lb + factor / sequenceCost[i] :
+	N_sh_lb + factor / modelGroupCost[i];
     break;
   }
   }
