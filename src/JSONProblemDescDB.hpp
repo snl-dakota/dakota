@@ -187,6 +187,32 @@ inline auto JSONProblemDescDB::get_value(const String& key) const
   return current[working_key];
 }
 
+inline const int& JSONProblemDescDB::get_int(const String& key) {
+
+  if( cachedData_int.count(key) ) {
+    if( true )
+      std::cout << "JSONProblemDescDB::" << "get_int"
+                << ": FOUND JSON value for \"" << key << "\"" << std::endl;
+    return cachedData_int[key];
+  }
+  else
+    throw(std::runtime_error(
+      "JSONProblemDescDB: Did not find a value for "+key));
+}
+
+inline const size_t& JSONProblemDescDB::get_sizet(const String& key) {
+
+  if( cachedData_size_t.count(key) ) {
+    if( true )
+      std::cout << "JSONProblemDescDB::" << "get_sizet"
+                << ": FOUND JSON value for \"" << key << "\"" << std::endl;
+    return cachedData_size_t[key];
+  }
+  else
+    throw(std::runtime_error(
+      "JSONProblemDescDB: Did not find a value for "+key));
+}
+
 #define STANDARD_JSONDB_GET_METHOD(TYPE, GET_FN) \
   inline const TYPE& JSONProblemDescDB::GET_FN(const String& key) { \
     auto val = get_value(key).get<TYPE>(); \
@@ -224,10 +250,10 @@ STANDARD_JSONDB_GET_METHOD (StringArray,              get_sa)
 STANDARD_JSONDB_GET_METHOD (String2DArray,            get_s2a)
 STANDARD_JSONDB_GET_METHOD (String,                   get_string)
 STANDARD_JSONDB_GET_METHOD (Real,                     get_real)
-STANDARD_JSONDB_GET_METHOD (int,                      get_int)
+//STANDARD_JSONDB_GET_METHOD (int,                      get_int)
 STANDARD_JSONDB_GET_METHOD (short,                    get_short)
 STANDARD_JSONDB_GET_METHOD (Ushort,                   get_ushort)
-STANDARD_JSONDB_GET_METHOD (size_t,                   get_sizet)
+//STANDARD_JSONDB_GET_METHOD (size_t,                   get_sizet)
 STANDARD_JSONDB_GET_METHOD (bool,                     get_bool)
 
 } // namespace Dakota

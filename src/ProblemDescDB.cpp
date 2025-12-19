@@ -33,7 +33,7 @@
 //#define DEBUG
 //#define MPI_DEBUG
 
-#define JSONDB_VERBOSE false
+#define JSONDB_VERBOSE true
 
 static const char rcsId[]="@(#) $Id: ProblemDescDB.cpp 7007 2010-10-06 15:54:39Z wjbohnh $";
 
@@ -2057,7 +2057,17 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
 int ProblemDescDB::get_int(const String& entry_name) const
 {
   // Allow use of JSON input
-  JSON_GET_VALUE(get_int, JSONDB_VERBOSE)
+  //JSON_GET_VALUE(get_int, JSONDB_VERBOSE)
+
+  if (jsonDB) {
+    try {
+      return jsonDB->get_int(entry_name);
+    } catch (const std::exception& e) {
+      if( JSONDB_VERBOSE )
+        std::cout << "JSONProblemDescDB::" << "get_int"
+                  << ": no JSON value for \"" << entry_name << "\"" << std::endl;
+    }
+  }
 
   return get<int>
   ( "get_int()",
@@ -2331,7 +2341,17 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
 size_t ProblemDescDB::get_sizet(const String& entry_name) const
 {
   // Allow use of JSON input
-  JSON_GET_VALUE(get_sizet, JSONDB_VERBOSE)
+  //JSON_GET_VALUE(get_sizet, JSONDB_VERBOSE)
+
+  if (jsonDB) {
+    try {
+      return jsonDB->get_sizet(entry_name);
+    } catch (const std::exception& e) {
+      if( JSONDB_VERBOSE )
+        std::cout << "JSONProblemDescDB::" << "get_sizet"
+                  << ": no JSON value for \"" << entry_name << "\"" << std::endl;
+    }
+  }
 
   // first handle special case for variable group queries
 
