@@ -15,6 +15,17 @@
 
 using json = nlohmann::json;
 
+#define JSON_GET_CACHED_VALUE(GET_VALUE_FN, verbose) \
+  if (jsonDB) { \
+    try { \
+      return jsonDB->GET_VALUE_FN(entry_name); \
+    } catch (const std::exception& e) { \
+      if( verbose ) \
+        std::cout << "JSONProblemDescDB::" << std::string(#GET_VALUE_FN) \
+                  << ": no JSON value for \"" << entry_name << "\"" << std::endl; \
+    } \
+  }
+
 #define JSON_GET_VALUE(GET_VALUE_FN, verbose) \
   if (jsonDB) { \
     /* \
@@ -187,31 +198,18 @@ inline auto JSONProblemDescDB::get_value(const String& key) const
   return current[working_key];
 }
 
-inline const int& JSONProblemDescDB::get_int(const String& key) {
-
-  if( cachedData_int.count(key) ) {
-    if( true )
-      std::cout << "JSONProblemDescDB::" << "get_int"
-                << ": FOUND JSON value for \"" << key << "\"" << std::endl;
-    return cachedData_int[key];
+#define CACHED_JSONDB_GET_METHOD(TYPE, GET_FN) \
+  inline const TYPE& JSONProblemDescDB::GET_FN(const String& key) { \
+    if( cachedData_##TYPE.count(key) ) { \
+      if( true ) \
+        std::cout << "JSONProblemDescDB::" << std::string(#GET_FN) \
+                  << ": FOUND JSON value for \"" << key << "\"" << std::endl; \
+      return cachedData_##TYPE[key]; \
+    } \
+    else \
+      throw(std::runtime_error( \
+        "JSONProblemDescDB: Did not find a value for "+key)); \
   }
-  else
-    throw(std::runtime_error(
-      "JSONProblemDescDB: Did not find a value for "+key));
-}
-
-inline const size_t& JSONProblemDescDB::get_sizet(const String& key) {
-
-  if( cachedData_size_t.count(key) ) {
-    if( true )
-      std::cout << "JSONProblemDescDB::" << "get_sizet"
-                << ": FOUND JSON value for \"" << key << "\"" << std::endl;
-    return cachedData_size_t[key];
-  }
-  else
-    throw(std::runtime_error(
-      "JSONProblemDescDB: Did not find a value for "+key));
-}
 
 #define STANDARD_JSONDB_GET_METHOD(TYPE, GET_FN) \
   inline const TYPE& JSONProblemDescDB::GET_FN(const String& key) { \
@@ -248,13 +246,13 @@ STANDARD_JSONDB_GET_METHOD (RealRealPairRealMapArray, get_rrrma)
 STANDARD_JSONDB_GET_METHOD (IntIntPairRealMapArray,   get_iirma)
 STANDARD_JSONDB_GET_METHOD (StringArray,              get_sa)
 STANDARD_JSONDB_GET_METHOD (String2DArray,            get_s2a)
-STANDARD_JSONDB_GET_METHOD (String,                   get_string)
-STANDARD_JSONDB_GET_METHOD (Real,                     get_real)
-//STANDARD_JSONDB_GET_METHOD (int,                      get_int)
+CACHED_JSONDB_GET_METHOD   (String,                   get_string)
+CACHED_JSONDB_GET_METHOD   (Real,                     get_real)
+CACHED_JSONDB_GET_METHOD   (int,                      get_int)
 STANDARD_JSONDB_GET_METHOD (short,                    get_short)
 STANDARD_JSONDB_GET_METHOD (Ushort,                   get_ushort)
-//STANDARD_JSONDB_GET_METHOD (size_t,                   get_sizet)
-STANDARD_JSONDB_GET_METHOD (bool,                     get_bool)
+CACHED_JSONDB_GET_METHOD   (size_t,                   get_sizet)
+CACHED_JSONDB_GET_METHOD   (bool,                     get_bool)
 
 } // namespace Dakota
 

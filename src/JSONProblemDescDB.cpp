@@ -36,7 +36,7 @@ JSONProblemDescDB::JSONProblemDescDB(const std::string& filename)
     jsonOptions = load_json_from_file(filename);
     key_map_obj = load_json_from_file("key_mapping_v2.json");
     // Output the loaded JSON objects
-    //std::cout << "JSON Input: "   << jsonOptions.dump(4) << std::endl;
+    std::cout << "Dakota JSON Input: "   << jsonOptions.dump(4) << std::endl;
     //std::cout << "JSON Key Map: " << key_map_obj.dump(4) << std::endl;
   } catch (const std::exception& e) {
         std::cerr << "Error: " << e.what() << std::endl;
@@ -65,25 +65,63 @@ JSONProblemDescDB::JSONProblemDescDB(const std::string& filename)
       // Otherwise, it's a simple key-value pair
       else {
         std::cout << currentPath << ": " << value << std::endl;
-        if( key_map_obj["xml_keywords_by_path"].contains(currentPath) ) {
-          if( key_map_obj["xml_keywords_by_path"][currentPath].contains("pdb_key") ) {
+        auto const& key_map_item = key_map_obj["xml_keywords_by_path"];
+        if( key_map_item.contains(currentPath) )
+        {
+          // Support multiple cache map keys
+          // ... but might consider consolidating into only a single client key, cf
+          // ... method.convergence_tolerance and the many aliases
+          std::vector<String> cache_keys;
+          if( key_map_item[currentPath].contains("pdb_key") )
+            cache_keys.push_back(key_map_item[currentPath]["pdb_key"]);
+          else if( key_map_item[currentPath].contains("pdb_keys") )
+            for (auto const& k : key_map_item[currentPath]["pdb_keys"])
+              cache_keys.push_back(k);
+
+          if( cache_keys.size() > 1 )
+            std::for_each(cache_keys.begin(), cache_keys.end(), [](const String& str) {
+                std::cout << "   " << str << std::endl;
+                });
+
+          const std::string& storage_type = key_map_item[currentPath]["storage_type"];
+
+          for( const auto& ckey : cache_keys )
+          {
             std::cout << currentPath << " --> " 
-                       << "(" << key_map_obj["xml_keywords_by_path"][currentPath]["handler_type"] << ") "
-                       << key_map_obj["xml_keywords_by_path"][currentPath]["pdb_key"]
+                       << "(" << key_map_item[currentPath]["handler_type"] << ") "
+                       << ckey
                        << std::endl;
-            if( "DIRECT_VALUE" == key_map_obj["xml_keywords_by_path"][currentPath]["storage_type"] ) {
-              const std::string& type = key_map_obj["xml_keywords_by_path"][currentPath]["handler_type"];
+            if( "DIRECT_VALUE" == storage_type ) {
+              const std::string& type = key_map_item[currentPath]["handler_type"];
               if( type == "int" )
-                cachedData_int[key_map_obj["xml_keywords_by_path"][currentPath]["pdb_key"]] = value;
+                cachedData_int[ckey] = value;
               else if( type == "sizet" )
-                cachedData_size_t[key_map_obj["xml_keywords_by_path"][currentPath]["pdb_key"]] = value;
+                cachedData_size_t[ckey] = value;
+              else if( type == "Real" )
+                cachedData_Real[ckey] = value;
               else
-                std::cout << "Need to implement data cavhing for type "
-                          << key_map_obj["xml_keywords_by_path"][currentPath]["handler_type"]
+                std::cout << "Need to implement data caching for type "
+                          << type
                           << std::endl;
-                     }
+            }
+            else if( "PRESENCE_LITERAL" == storage_type ) {
+              const std::string& type = key_map_item[currentPath]["handler_type"];
+              if( type == "lit" ){
+                const String& keyword = cachedData_String[key_map_item[currentPath]["keyword_name"]];
+                cachedData_String[ckey] = keyword;
+              }
+              else
+                std::cout << "Need to implement data caching for type "
+                          << type
+                          << std::endl;
+            }
+            else if( "PRESENCE_BOOL" == storage_type ) {
+              const std::string& type = key_map_item[currentPath]["handler_type"];
+              assert( "true" == type );
+              cachedData_bool[ckey] = true;
+              }
           }
-          else
+          if( cache_keys.empty() )
             std::cout << currentPath << " --> " << "No pdb_key" << std::endl;
         }
       }
@@ -92,6 +130,7 @@ JSONProblemDescDB::JSONProblemDescDB(const std::string& filename)
 
   parse_json(jsonOptions, "");
   std::cout << "\n\n" << std::endl;
+  //throw;//(std::system_error(ecode, "Dakota aborted"));
 }
 
 } // namespace Dakota

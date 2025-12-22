@@ -1789,7 +1789,7 @@ const String2DArray& ProblemDescDB::get_s2a(const String& entry_name) const
 const String& ProblemDescDB::get_string(const String& entry_name) const
 {
   // Allow use of JSON input
-  JSON_GET_VALUE(get_string, JSONDB_VERBOSE)
+  JSON_GET_CACHED_VALUE(get_string, JSONDB_VERBOSE)
 
   return get<const String>
   ( "get_string()",
@@ -1942,7 +1942,7 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
 const Real& ProblemDescDB::get_real(const String& entry_name) const
 {
   // Allow use of JSON input
-  JSON_GET_VALUE(get_real, JSONDB_VERBOSE)
+  JSON_GET_CACHED_VALUE(get_real, JSONDB_VERBOSE)
 
   return get<const Real>
   ( "get_real()",
@@ -2057,17 +2057,7 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
 int ProblemDescDB::get_int(const String& entry_name) const
 {
   // Allow use of JSON input
-  //JSON_GET_VALUE(get_int, JSONDB_VERBOSE)
-
-  if (jsonDB) {
-    try {
-      return jsonDB->get_int(entry_name);
-    } catch (const std::exception& e) {
-      if( JSONDB_VERBOSE )
-        std::cout << "JSONProblemDescDB::" << "get_int"
-                  << ": no JSON value for \"" << entry_name << "\"" << std::endl;
-    }
-  }
+  JSON_GET_CACHED_VALUE(get_int, JSONDB_VERBOSE)
 
   return get<int>
   ( "get_int()",
@@ -2341,17 +2331,7 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
 size_t ProblemDescDB::get_sizet(const String& entry_name) const
 {
   // Allow use of JSON input
-  //JSON_GET_VALUE(get_sizet, JSONDB_VERBOSE)
-
-  if (jsonDB) {
-    try {
-      return jsonDB->get_sizet(entry_name);
-    } catch (const std::exception& e) {
-      if( JSONDB_VERBOSE )
-        std::cout << "JSONProblemDescDB::" << "get_sizet"
-                  << ": no JSON value for \"" << entry_name << "\"" << std::endl;
-    }
-  }
+  JSON_GET_CACHED_VALUE(get_sizet, JSONDB_VERBOSE)
 
   // first handle special case for variable group queries
 
@@ -2490,7 +2470,7 @@ size_t ProblemDescDB::get_sizet(const String& entry_name) const
 bool ProblemDescDB::get_bool(const String& entry_name) const
 {
   // Allow use of JSON input
-  JSON_GET_VALUE(get_bool, JSONDB_VERBOSE)
+  JSON_GET_CACHED_VALUE(get_bool, JSONDB_VERBOSE)
 
   return get<bool>
   ( "get_bool()",
