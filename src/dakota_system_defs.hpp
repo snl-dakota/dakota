@@ -23,6 +23,7 @@
 #include <iostream>
 #include <fstream>
 #include <iomanip>
+#include <unordered_map>
 
 // C++ compiler using new, h-less standard C headers
 #include <cstdlib>

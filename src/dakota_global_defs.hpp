@@ -130,6 +130,24 @@ extern std::ostream* dakota_cout;
 extern std::ostream* dakota_cerr;
 extern int write_precision;
 
+// Returns a reference to the static enum map
+// ... ensures the map is constructed before first use
+inline std::unordered_map<std::string, int>& dakEnumMap() {
+    static std::unordered_map<std::string, int> enumMap;
+    return enumMap;
+}
+
+// Helper macro for registering additional enums
+#define REGISTER_DAKOTA_ENUM(name, value) \
+    namespace { \
+        struct Register_##name { \
+            Register_##name() { \
+                dakEnumMap()[#name] = value; \
+            } \
+        }; \
+        static Register_##name register_##name; \
+    }
+
 /// options for tabular columns
 enum { TABULAR_NONE = 0, TABULAR_HEADER = 1, 
        TABULAR_EVAL_ID = 2, TABULAR_IFACE_ID = 4,
@@ -137,6 +155,23 @@ enum { TABULAR_NONE = 0, TABULAR_HEADER = 1,
        TABULAR_EXPER_ANNOT = TABULAR_HEADER | TABULAR_EVAL_ID,
        // default for tabular files is fully annotated as of Dakota 6.1
        TABULAR_ANNOTATED = TABULAR_HEADER | TABULAR_EVAL_ID | TABULAR_IFACE_ID };
+//#define ADD_ENUMS X(TABULAR_NONE, 0) X(TABULAR_HEADER, 1) \
+//       X(TABULAR_EVAL_ID, 2) X(TABULAR_IFACE_ID, 4) \
+//       X(TABULAR_EXPER_ANNOT , TABULAR_HEADER | TABULAR_EVAL_ID) \
+//       X(TABULAR_ANNOTATED , TABULAR_HEADER | TABULAR_EVAL_ID | TABULAR_IFACE_ID)
+//#define X(name, value) name = value,
+//enum {
+//  ADD_ENUMS
+//};
+//#undef X
+// Auto-register these enums when header is included
+//#undef ADD_ENUMS
+//#define ADD_ENUMS X(TABULAR_NONE, 0) X(TABULAR_HEADER, 1) \
+//       X(TABULAR_EVAL_ID, 2) X(TABULAR_IFACE_ID, 4)
+//#define X(name, value) REGISTER_DAKOTA_ENUM(name, value)
+//  ADD_ENUMS
+//#undef X
+//#undef ADD_ENUMS
 
 /// Results output format
 enum { RESULTS_OUTPUT_TEXT = 1, RESULTS_OUTPUT_HDF5 = 2};

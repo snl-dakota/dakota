@@ -7,6 +7,7 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
+#include "DataMethod.hpp"
 #include "JSONProblemDescDB.hpp"
 
 namespace {
@@ -129,7 +130,15 @@ JSONProblemDescDB::JSONProblemDescDB(const std::string& filename)
               const std::string& type = key_map_item[currentPath]["handler_type"];
               assert( "true" == type );
               cachedData_bool[ckey] = true;
-              }
+            }
+            else if( "PRESENCE_ENUM" == storage_type ) {
+              const std::string& enum_str = key_map_item[currentPath]["stored_value"];
+              if( dakEnumMap().count(enum_str) )
+                cachedData_short[ckey] = dakEnumMap().at(enum_str);
+              else
+                std::cout << "PRESENCE_ENUM: " << enum_str << " has not been registered." << std::endl;
+              std::cout << "PRESENCE_ENUM: " << ckey << " = " << enum_str << std::endl;
+            }
           }
           if( cache_keys.empty() )
             std::cout << currentPath << " --> " << "No pdb_key" << std::endl;

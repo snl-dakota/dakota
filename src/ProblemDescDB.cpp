@@ -2153,7 +2153,7 @@ int ProblemDescDB::get_int(const String& entry_name) const
 short ProblemDescDB::get_short(const String& entry_name) const
 {
   // Allow use of JSON input
-  JSON_GET_VALUE(get_short, JSONDB_VERBOSE)
+  JSON_GET_CACHED_VALUE(get_short, JSONDB_VERBOSE)
 
   return get<short>
   ( "get_short()",

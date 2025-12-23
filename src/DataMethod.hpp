@@ -10,6 +10,7 @@
 #ifndef DATA_METHOD_H
 #define DATA_METHOD_H
 
+#include "dakota_global_defs.hpp"
 #include "dakota_system_defs.hpp"
 #include "dakota_data_types.hpp"
 #include "MPIPackBuffer.hpp"
@@ -132,8 +133,19 @@ enum { NO_MODEL_SELECTION=0, ALL_MODEL_COMBINATIONS };
 
 // define special values for outputLevel within
 // Iterator/Model/Interface/Approximation
-enum { SILENT_OUTPUT, QUIET_OUTPUT, NORMAL_OUTPUT, VERBOSE_OUTPUT,
-       DEBUG_OUTPUT };
+#define ADD_ENUMS X(SILENT_OUTPUT) X(QUIET_OUTPUT) X(NORMAL_OUTPUT) X(VERBOSE_OUTPUT) \
+       X(DEBUG_OUTPUT)
+#define X(name) name,
+enum {
+  ADD_ENUMS
+};
+#undef X
+// Auto-register these enums when header is included
+#define X(name) REGISTER_DAKOTA_ENUM(name, name)
+  ADD_ENUMS
+#undef X
+#undef ADD_ENUMS
+
 // define special values for printing of different results states
 enum { NO_RESULTS=0,        // suppress all results
        REFINEMENT_RESULTS,  // results following a (minor) refinement iteration
