@@ -106,9 +106,19 @@ JSONProblemDescDB::JSONProblemDescDB(const std::string& filename)
             }
             else if( "PRESENCE_LITERAL" == storage_type ) {
               const std::string& type = key_map_item[currentPath]["handler_type"];
-              if( type == "lit" ){
-                const String& keyword = cachedData_String[key_map_item[currentPath]["keyword_name"]];
-                cachedData_String[ckey] = keyword;
+              if( type == "lit" ) {
+                std::cout << currentPath << " --> " 
+                           << "(" << key_map_item[currentPath]["is_oneof"] << ") "
+                           << std::endl;
+                if( !key_map_item[currentPath]["oneof_anchor"].is_null() ) {
+                  const std::string& anchor = key_map_item[currentPath]["oneof_anchor"];
+                  std::cout << "   anchor: " << anchor << std::endl;
+                }
+                else
+                {
+                  const String& keyword = cachedData_String[key_map_item[currentPath]["stored_value"]];
+                  cachedData_String[ckey] = keyword;
+                }
               }
               else
                 std::cout << "Need to implement data caching for type "
@@ -124,6 +134,8 @@ JSONProblemDescDB::JSONProblemDescDB(const std::string& filename)
           if( cache_keys.empty() )
             std::cout << currentPath << " --> " << "No pdb_key" << std::endl;
         }
+        else
+          std::cout << currentPath << " --> " << "Not in xml_keywords_by_path file" << std::endl;
       }
     }
   };
