@@ -7,7 +7,7 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-#include "DataMethod.hpp"
+#include "dakota_global_defs.hpp"
 #include "JSONProblemDescDB.hpp"
 
 namespace {
