@@ -30,7 +30,6 @@ namespace Dakota {
 
 JSONProblemDescDB::JSONProblemDescDB(const std::string& filename)
 {
-
   json key_map_obj;
   try {
     // Load JSON objects from files
@@ -40,7 +39,7 @@ JSONProblemDescDB::JSONProblemDescDB(const std::string& filename)
     std::cout << "Dakota JSON Input: "   << jsonOptions.dump(4) << std::endl;
     //std::cout << "JSON Key Map: " << key_map_obj.dump(4) << std::endl;
   } catch (const std::exception& e) {
-        std::cerr << "Error: " << e.what() << std::endl;
+    std::cerr << "Error: " << e.what() << std::endl;
   }
 
   // Parse the Dakota json input and populate data chace maps
@@ -54,6 +53,10 @@ JSONProblemDescDB::JSONProblemDescDB(const std::string& filename)
 
       // Check if the value is a JSON object
       if (value.is_object()) {
+        if( key_map_item.contains(currentPath) ) {
+          std::cout << "Handling non-leaf keyword : " << currentPath << std::endl;
+          handle_keyword(key_map_item, currentPath, value);
+        }
         parse_json(value, currentPath); // Recursive call for nested objects
       }
       // Check if the value is a JSON array
@@ -68,87 +71,7 @@ JSONProblemDescDB::JSONProblemDescDB(const std::string& filename)
       }
       // Otherwise, it's a simple key-value pair
       else {
-        // Remove trailing "/" 
-        //if( currentPath.back() == '/' )
-        //  currentPath.pop_back();
-        std::cout << currentPath << ": " << value << std::endl;
-        if( key_map_item.contains(currentPath) )
-        {
-          // Support multiple cache map keys
-          // ... but might consider consolidating into only a single client key, cf
-          // ... method.convergence_tolerance and the many aliases
-          std::vector<String> cache_keys;
-          if( key_map_item[currentPath].contains("pdb_key") )
-            cache_keys.push_back(key_map_item[currentPath]["pdb_key"]);
-          else if( key_map_item[currentPath].contains("pdb_keys") )
-            for (auto const& k : key_map_item[currentPath]["pdb_keys"])
-              cache_keys.push_back(k);
-
-          if( cache_keys.size() > 1 )
-            std::for_each(cache_keys.begin(), cache_keys.end(), [](const String& str) {
-                std::cout << "   " << str << std::endl;
-                });
-
-          const std::string& storage_type = key_map_item[currentPath]["storage_type"];
-
-          for( const auto& ckey : cache_keys )
-          {
-            std::cout << currentPath << " --> " 
-                       << "(" << key_map_item[currentPath]["handler_type"] << ") "
-                       << ckey
-                       << std::endl;
-            if( "DIRECT_VALUE" == storage_type ) {
-              const std::string& type = key_map_item[currentPath]["handler_type"];
-              if( type == "int" )
-                cachedData_int[ckey] = value;
-              else if( type == "sizet" )
-                cachedData_size_t[ckey] = value;
-              else if( type == "Real" )
-                cachedData_Real[ckey] = value;
-              else if( type == "strL" )
-                //std::cout << "DIRECT_VALUE, strL: " << value << std::endl;
-                cachedData_StringArray[ckey] = value.get<StringArray>();
-              else if( type == "rvec" )
-                cachedData_RealVector[ckey] = value.get<JSONRealVector>().value;
-              else if( type == "RealDL" ) // need to employ the proper kw handler
-                cachedData_RealVector[ckey] = value.get<JSONRealVector>().value;
-              else
-                std::cout << "Need to implement data caching for type "
-                          << type
-                          << std::endl;
-            }
-            else if( "PRESENCE_LITERAL" == storage_type ) {
-              const std::string& type = key_map_item[currentPath]["handler_type"];
-              if( type == "lit" ) {
-                const String& keyword = key_map_item[currentPath]["stored_value"];
-                cachedData_String[ckey] = keyword;
-                std::cout << "Setting " << ckey 
-                          << " (" << currentPath << ") --> " << keyword << std::endl;
-              }
-              else
-                std::cout << "Need to implement data caching for type "
-                          << type
-                          << std::endl;
-            }
-            else if( "PRESENCE_BOOL" == storage_type ) {
-              const std::string& type = key_map_item[currentPath]["handler_type"];
-              assert( "true" == type );
-              cachedData_bool[ckey] = true;
-            }
-            else if( "PRESENCE_ENUM" == storage_type ) {
-              const std::string& enum_str = key_map_item[currentPath]["stored_value"];
-              if( dakEnumMap().count(enum_str) )
-                cachedData_short[ckey] = dakEnumMap().at(enum_str);
-              else
-                std::cout << "PRESENCE_ENUM: " << enum_str << " has not been registered." << std::endl;
-              std::cout << "PRESENCE_ENUM: " << ckey << " = " << enum_str << std::endl;
-            }
-          }
-          if( cache_keys.empty() )
-            std::cout << currentPath << " --> " << "No pdb_key" << std::endl;
-        }
-        else
-          std::cout << currentPath << " --> " << "Not in xml_keywords_by_path file" << std::endl;
+        handle_keyword(key_map_item, currentPath, value);
       }
     }
   };
@@ -156,6 +79,94 @@ JSONProblemDescDB::JSONProblemDescDB(const std::string& filename)
   parse_json(jsonOptions, "");
   std::cout << "\n\n" << std::endl;
   //throw;//(std::system_error(ecode, "Dakota aborted"));
+}
+
+void
+JSONProblemDescDB::handle_keyword(const json& key_map_item, const std::string& currentPath, const json& value)
+{
+  // Remove trailing "/" 
+  //if( currentPath.back() == '/' )
+  //  currentPath.pop_back();
+  std::cout << currentPath << ": " << value << std::endl;
+  if( key_map_item.contains(currentPath) )
+  {
+    // Support multiple cache map keys
+    // ... but might consider consolidating into only a single client key, cf
+    // ... method.convergence_tolerance and the many aliases
+    std::vector<Dakota::String> cache_keys;
+    if( key_map_item[currentPath].contains("pdb_key") )
+      cache_keys.push_back(key_map_item[currentPath]["pdb_key"]);
+    else if( key_map_item[currentPath].contains("pdb_keys") )
+      for (auto const& k : key_map_item[currentPath]["pdb_keys"])
+        cache_keys.push_back(k);
+
+    if( cache_keys.size() > 1 )
+      std::for_each(cache_keys.begin(), cache_keys.end(), [](const Dakota::String& str) {
+          std::cout << "   " << str << std::endl;
+          });
+
+    const std::string& storage_type = key_map_item[currentPath]["storage_type"];
+
+    for( const auto& ckey : cache_keys )
+    {
+      std::cout << currentPath << " --> " 
+        << "(" << key_map_item[currentPath]["handler_type"] << ") "
+        << ckey
+        << std::endl;
+      if( "DIRECT_VALUE" == storage_type ) {
+        const std::string& type = key_map_item[currentPath]["handler_type"];
+        if( type == "str" )
+          cachedData_String[ckey] = value;
+        else if( type == "int" )
+          cachedData_int[ckey] = value;
+        else if( type == "sizet" )
+          cachedData_size_t[ckey] = value;
+        else if( type == "Real" )
+          cachedData_Real[ckey] = value;
+        else if( type == "strL" )
+          //std::cout << "DIRECT_VALUE, strL: " << value << std::endl;
+          cachedData_StringArray[ckey] = value.get<StringArray>();
+        else if( type == "rvec" )
+          cachedData_RealVector[ckey] = value.get<JSONRealVector>().value;
+        else if( type == "RealDL" ) // need to employ the proper kw handler
+          cachedData_RealVector[ckey] = value.get<JSONRealVector>().value;
+        else
+          std::cout << "DIRECT_VALUE: Need to implement data caching for type "
+            << type
+            << std::endl;
+      }
+      else if( "PRESENCE_LITERAL" == storage_type ) {
+        const std::string& type = key_map_item[currentPath]["handler_type"];
+        if( type == "lit" ) {
+          const String& keyword = key_map_item[currentPath]["stored_value"];
+          cachedData_String[ckey] = keyword;
+          std::cout << "Setting " << ckey 
+            << " (" << currentPath << ") --> " << keyword << std::endl;
+        }
+        else
+          std::cout << "PRESENCE_LITERAL: Need to implement data caching for type "
+            << type
+            << std::endl;
+      }
+      else if( "PRESENCE_BOOL" == storage_type ) {
+        const std::string& type = key_map_item[currentPath]["handler_type"];
+        assert( "true" == type );
+        cachedData_bool[ckey] = true;
+      }
+      else if( "PRESENCE_ENUM" == storage_type ) {
+        const std::string& enum_str = key_map_item[currentPath]["stored_value"];
+        if( dakEnumMap().count(enum_str) )
+          cachedData_short[ckey] = dakEnumMap().at(enum_str);
+        else
+          std::cout << "PRESENCE_ENUM: " << enum_str << " has not been registered." << std::endl;
+        std::cout << "PRESENCE_ENUM: " << ckey << " = " << enum_str << std::endl;
+      }
+    }
+    if( cache_keys.empty() )
+      std::cout << currentPath << " --> " << "No pdb_key" << std::endl;
+  }
+  else
+    std::cout << currentPath << " --> " << "Not in xml_keywords_by_path file" << std::endl;
 }
 
 } // namespace Dakota

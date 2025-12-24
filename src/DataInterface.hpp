@@ -24,15 +24,30 @@ namespace Dakota {
 #define DIRECT_INTERFACE_BIT  16
 
 /// special values for interface type
-enum { 
-  // default is for algebraic-only and all other interface types
-  DEFAULT_INTERFACE=0, APPROX_INTERFACE,
-  // external process interfaces
-  FORK_INTERFACE=PROCESS_INTERFACE_BIT, SYSTEM_INTERFACE, GRID_INTERFACE,
-  // direct coupled interfaces
-  TEST_INTERFACE=DIRECT_INTERFACE_BIT, PLUGIN_INTERFACE,
-  MATLAB_INTERFACE, PYTHON_INTERFACE, SCILAB_INTERFACE
+//enum { 
+//  // default is for algebraic-only and all other interface types
+//  DEFAULT_INTERFACE=0, APPROX_INTERFACE,
+//  // external process interfaces
+//  FORK_INTERFACE=PROCESS_INTERFACE_BIT, SYSTEM_INTERFACE, GRID_INTERFACE,
+//  // direct coupled interfaces
+//  TEST_INTERFACE=DIRECT_INTERFACE_BIT, PLUGIN_INTERFACE,
+//  MATLAB_INTERFACE, PYTHON_INTERFACE, SCILAB_INTERFACE
+//};
+#define ADD_ENUMS \
+  X(DEFAULT_INTERFACE, 0) X(APPROX_INTERFACE, 1) \
+  X(FORK_INTERFACE, 8) X(SYSTEM_INTERFACE, 9) X(GRID_INTERFACE, 10) \
+  X(TEST_INTERFACE, 16) X(PLUGIN_INTERFACE, 17) \
+  X(MATLAB_INTERFACE, 18) X(PYTHON_INTERFACE, 19) X(SCILAB_INTERFACE, 20)
+#define X(name, value) name = value,
+enum {
+  ADD_ENUMS
 };
+#undef X
+// Auto-register these enums when header is included
+#define X(name, value) REGISTER_DAKOTA_ENUM(name, value)
+  ADD_ENUMS
+#undef X
+#undef ADD_ENUMS
 
 // put this helper function here to encourage sync with enum above
 inline String interface_enum_to_string(unsigned short interface_type) 

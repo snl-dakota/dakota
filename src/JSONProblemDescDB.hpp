@@ -141,7 +141,8 @@ class JSONProblemDescDB
     std::set<std::string> allowedBlocks;
     std::map<String, int> blockIds;
 
-  public:
+  private:
+    void handle_keyword(const json& key_map_item, const std::string& currentPath, const json& value);
 
   private:
 
