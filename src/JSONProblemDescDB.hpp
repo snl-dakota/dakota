@@ -226,7 +226,7 @@ inline auto JSONProblemDescDB::get_value(const String& key) const
   }
 
 CUSTOM_JSONDB_GET_METHOD   (RealMatrixArray,          get_rma)
-CUSTOM_JSONDB_GET_METHOD   (RealVector,               get_rv)
+CACHED_JSONDB_GET_METHOD   (RealVector,               get_rv)
 CUSTOM_JSONDB_GET_METHOD   (IntVector,                get_iv)
 CUSTOM_JSONDB_GET_METHOD   (BitArray,                 get_ba)
 STANDARD_JSONDB_GET_METHOD (SizetArray,               get_sza)
@@ -244,7 +244,7 @@ STANDARD_JSONDB_GET_METHOD (StringRealMapArray,       get_srma)
 STANDARD_JSONDB_GET_METHOD (RealRealMapArray,         get_rrma)
 STANDARD_JSONDB_GET_METHOD (RealRealPairRealMapArray, get_rrrma)
 STANDARD_JSONDB_GET_METHOD (IntIntPairRealMapArray,   get_iirma)
-STANDARD_JSONDB_GET_METHOD (StringArray,              get_sa)
+CACHED_JSONDB_GET_METHOD   (StringArray,              get_sa)
 STANDARD_JSONDB_GET_METHOD (String2DArray,            get_s2a)
 CACHED_JSONDB_GET_METHOD   (String,                   get_string)
 CACHED_JSONDB_GET_METHOD   (Real,                     get_real)

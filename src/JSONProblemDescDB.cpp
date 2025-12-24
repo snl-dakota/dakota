@@ -47,6 +47,8 @@ JSONProblemDescDB::JSONProblemDescDB(const std::string& filename)
   std::function<void(const json&, const std::string&)>
     parse_json = [&](const json& j, const std::string& path = "")
   {
+    auto const& key_map_item = key_map_obj["xml_keywords_by_path"];
+
     for (auto& [key, value] : j.items()) {
       std::string currentPath = path.empty() ? key : path + "/" + key;
 
@@ -55,7 +57,8 @@ JSONProblemDescDB::JSONProblemDescDB(const std::string& filename)
         parse_json(value, currentPath); // Recursive call for nested objects
       }
       // Check if the value is a JSON array
-      else if (value.is_array()) {
+      else if( value.is_array() && key_map_item.at(currentPath).at("handler_type") == "start" )
+      {
         // Print the array key without index
         std::cout << currentPath << ": [Array of size " << value.size() << "]" << std::endl;
         // Recurse to iterate through the array contents
@@ -65,8 +68,10 @@ JSONProblemDescDB::JSONProblemDescDB(const std::string& filename)
       }
       // Otherwise, it's a simple key-value pair
       else {
+        // Remove trailing "/" 
+        //if( currentPath.back() == '/' )
+        //  currentPath.pop_back();
         std::cout << currentPath << ": " << value << std::endl;
-        auto const& key_map_item = key_map_obj["xml_keywords_by_path"];
         if( key_map_item.contains(currentPath) )
         {
           // Support multiple cache map keys
@@ -100,6 +105,13 @@ JSONProblemDescDB::JSONProblemDescDB(const std::string& filename)
                 cachedData_size_t[ckey] = value;
               else if( type == "Real" )
                 cachedData_Real[ckey] = value;
+              else if( type == "strL" )
+                //std::cout << "DIRECT_VALUE, strL: " << value << std::endl;
+                cachedData_StringArray[ckey] = value.get<StringArray>();
+              else if( type == "rvec" )
+                cachedData_RealVector[ckey] = value.get<JSONRealVector>().value;
+              else if( type == "RealDL" ) // need to employ the proper kw handler
+                cachedData_RealVector[ckey] = value.get<JSONRealVector>().value;
               else
                 std::cout << "Need to implement data caching for type "
                           << type
@@ -108,18 +120,10 @@ JSONProblemDescDB::JSONProblemDescDB(const std::string& filename)
             else if( "PRESENCE_LITERAL" == storage_type ) {
               const std::string& type = key_map_item[currentPath]["handler_type"];
               if( type == "lit" ) {
-                std::cout << currentPath << " --> " 
-                           << "(" << key_map_item[currentPath]["is_oneof"] << ") "
-                           << std::endl;
-                if( !key_map_item[currentPath]["oneof_anchor"].is_null() ) {
-                  const std::string& anchor = key_map_item[currentPath]["oneof_anchor"];
-                  std::cout << "   anchor: " << anchor << std::endl;
-                }
-                else
-                {
-                  const String& keyword = cachedData_String[key_map_item[currentPath]["stored_value"]];
-                  cachedData_String[ckey] = keyword;
-                }
+                const String& keyword = key_map_item[currentPath]["stored_value"];
+                cachedData_String[ckey] = keyword;
+                std::cout << "Setting " << ckey 
+                          << " (" << currentPath << ") --> " << keyword << std::endl;
               }
               else
                 std::cout << "Need to implement data caching for type "

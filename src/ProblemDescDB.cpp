@@ -1127,7 +1127,7 @@ const RealMatrixArray& ProblemDescDB::get_rma(const String& entry_name) const
 const RealVector& ProblemDescDB::get_rv(const String& entry_name) const
 {  
   // Allow use of JSON input
-  JSON_GET_VALUE(get_rv, JSONDB_VERBOSE)
+  JSON_GET_CACHED_VALUE(get_rv, JSONDB_VERBOSE)
 
   return get<const RealVector>
   ( "get_rv()",
@@ -1683,7 +1683,7 @@ get_iirma(const String& entry_name) const
 const StringArray& ProblemDescDB::get_sa(const String& entry_name) const
 {
   // Allow use of JSON input
-  JSON_GET_VALUE(get_sa, JSONDB_VERBOSE)
+  JSON_GET_CACHED_VALUE(get_sa, JSONDB_VERBOSE)
 
   return get<const StringArray>
   ( "get_sa()",
