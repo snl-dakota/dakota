@@ -126,10 +126,34 @@ JSONProblemDescDB::handle_keyword(const json& key_map_item, const std::string& c
         else if( type == "strL" )
           //std::cout << "DIRECT_VALUE, strL: " << value << std::endl;
           cachedData_StringArray[ckey] = value.get<StringArray>();
-        else if( type == "rvec" )
+        else if( type == "str2D" )
+          cachedData_String2DArray[ckey] = value.get<String2DArray>();
+        else if( type == "intset" )
+          cachedData_IntSet[ckey] = value.get<IntSet>();
+        else if( type == "id_to_index_set" )
+          cachedData_SizetSet[ckey] = value.get<SizetSet>();
+        else if( type == "rvec"   ||
+                 type == "RealL"  || // need to use the proper kw handler
+                 type == "RealLb" || // need to use the proper kw handler
+                 type == "RealUb" || // need to use the proper kw handler
+                 type == "RealDL"  ) // need to use the proper kw handler
           cachedData_RealVector[ckey] = value.get<JSONRealVector>().value;
-        else if( type == "RealDL" ) // need to employ the proper kw handler
-          cachedData_RealVector[ckey] = value.get<JSONRealVector>().value;
+        else if( type == "ivec" )
+          cachedData_IntVector[ckey] = value.get<JSONIntVector>().value;
+        else if( type == "categorical" )
+          cachedData_BitArray[ckey] = value.get<JSONBitArray>().value;
+        else if( type == "szarray" )
+          cachedData_SizetArray[ckey] = value.get<SizetArray>();
+        else if( type == "usharray" )
+          cachedData_UShortArray[ckey] = value.get<UShortArray>();
+        else if( type == "newrvec" ) {
+          std::cout << "DIRECT_VALUE, newrvec: " << value << std::endl;
+          cachedData_RealSymMatrix[ckey] = value.get<JSONRealSymMatrix>().value;
+        }
+        else if( type == "resplevs01" ) {
+          std::cout << "DIRECT_VALUE, resplevs01: " << value << std::endl;
+          cachedData_RealVectorArray[ckey] = value.get<JSONRealVectorArray>().value;
+        }
         else
           std::cout << "DIRECT_VALUE: Need to implement data caching for type "
             << type

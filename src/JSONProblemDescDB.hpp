@@ -22,32 +22,7 @@ using json = nlohmann::json;
     } catch (const std::exception& e) { \
       if( verbose ) \
         std::cout << "JSONProblemDescDB::" << std::string(#GET_VALUE_FN) \
-                  << ": no JSON value for \"" << entry_name << "\"" << std::endl; \
-    } \
-  }
-
-#define JSON_GET_VALUE(GET_VALUE_FN, verbose) \
-  if (jsonDB) { \
-    /* \
-    std::cout << "Trying JSONProblemDescDB::" << std::string(#GET_VALUE_FN) \
-              << ": for \"" << entry_name << "\"" << std::endl; \
-    */ \
-    try { \
-      const auto& val = jsonDB->GET_VALUE_FN(entry_name); \
-      if( verbose ) \
-        std::cout << "JSONProblemDescDB::" << std::string(#GET_VALUE_FN) \
-                  << ": FOUND JSON value for \"" << entry_name << "\"" << std::endl; \
-      return val; \
-    } catch (const json::exception& e) { \
-      if( verbose ) \
-        std::cout << "JSONProblemDescDB::" << std::string(#GET_VALUE_FN) \
-                  << ": no JSON value for \"" << entry_name << "\"" << std::endl; \
-      /* no-op; */ \
-    } catch (const std::exception& e) { \
-      if( verbose ) \
-        std::cout << "JSONProblemDescDB::" << std::string(#GET_VALUE_FN) \
-                  << ": no JSON value for \"" << entry_name << "\"" << std::endl; \
-      /* no-op; */ \
+                  << ": no cached JSON value for \"" << entry_name << "\"" << std::endl; \
     } \
   }
 
@@ -204,54 +179,40 @@ inline auto JSONProblemDescDB::get_value(const String& key) const
     if( cachedData_##TYPE.count(key) ) { \
       if( true ) \
         std::cout << "JSONProblemDescDB::" << std::string(#GET_FN) \
-                  << ": FOUND JSON value for \"" << key << "\"" << std::endl; \
+                  << ": FOUND cached JSON value for \"" << key << "\"" << std::endl; \
       return cachedData_##TYPE[key]; \
     } \
     else \
       throw(std::runtime_error( \
-        "JSONProblemDescDB: Did not find a value for "+key)); \
+        "JSONProblemDescDB: no cached value for "+key)); \
   }
 
-#define STANDARD_JSONDB_GET_METHOD(TYPE, GET_FN) \
-  inline const TYPE& JSONProblemDescDB::GET_FN(const String& key) { \
-    auto val = get_value(key).get<TYPE>(); \
-    cachedData_##TYPE[key] = val; \
-    return cachedData_##TYPE[key]; \
-  }
-
-#define CUSTOM_JSONDB_GET_METHOD(TYPE, GET_FN) \
-  inline const TYPE& JSONProblemDescDB::GET_FN(const String& key) { \
-    auto val = get_value(key).template get<JSON##TYPE>().value; \
-    cachedData_##TYPE[key] = val; \
-    return cachedData_##TYPE[key]; \
-  }
-
-CUSTOM_JSONDB_GET_METHOD   (RealMatrixArray,          get_rma)
+CACHED_JSONDB_GET_METHOD   (RealMatrixArray,          get_rma)
 CACHED_JSONDB_GET_METHOD   (RealVector,               get_rv)
-CUSTOM_JSONDB_GET_METHOD   (IntVector,                get_iv)
-CUSTOM_JSONDB_GET_METHOD   (BitArray,                 get_ba)
-STANDARD_JSONDB_GET_METHOD (SizetArray,               get_sza)
-STANDARD_JSONDB_GET_METHOD (UShortArray,              get_usa)
-CUSTOM_JSONDB_GET_METHOD   (RealSymMatrix,            get_rsm)
-CUSTOM_JSONDB_GET_METHOD   (RealVectorArray,          get_rva)
-CUSTOM_JSONDB_GET_METHOD   (IntVectorArray,           get_iva)
-STANDARD_JSONDB_GET_METHOD (IntSet,                   get_is)
-STANDARD_JSONDB_GET_METHOD (IntSetArray,              get_isa)
-STANDARD_JSONDB_GET_METHOD (SizetSet,                 get_szs)
-STANDARD_JSONDB_GET_METHOD (StringSetArray,           get_ssa)
-STANDARD_JSONDB_GET_METHOD (RealSetArray,             get_rsa)
-STANDARD_JSONDB_GET_METHOD (IntRealMapArray,          get_irma)
-STANDARD_JSONDB_GET_METHOD (StringRealMapArray,       get_srma)
-STANDARD_JSONDB_GET_METHOD (RealRealMapArray,         get_rrma)
-STANDARD_JSONDB_GET_METHOD (RealRealPairRealMapArray, get_rrrma)
-STANDARD_JSONDB_GET_METHOD (IntIntPairRealMapArray,   get_iirma)
+CACHED_JSONDB_GET_METHOD   (IntVector,                get_iv)
+CACHED_JSONDB_GET_METHOD   (BitArray,                 get_ba)
+CACHED_JSONDB_GET_METHOD   (SizetArray,               get_sza)
+CACHED_JSONDB_GET_METHOD   (UShortArray,              get_usa)
+CACHED_JSONDB_GET_METHOD   (RealSymMatrix,            get_rsm)
+CACHED_JSONDB_GET_METHOD   (RealVectorArray,          get_rva)
+CACHED_JSONDB_GET_METHOD   (IntVectorArray,           get_iva)
+CACHED_JSONDB_GET_METHOD   (IntSet,                   get_is)
+CACHED_JSONDB_GET_METHOD   (IntSetArray,              get_isa)
+CACHED_JSONDB_GET_METHOD   (SizetSet,                 get_szs)
+CACHED_JSONDB_GET_METHOD   (StringSetArray,           get_ssa)
+CACHED_JSONDB_GET_METHOD   (RealSetArray,             get_rsa)
+CACHED_JSONDB_GET_METHOD   (IntRealMapArray,          get_irma)
+CACHED_JSONDB_GET_METHOD   (StringRealMapArray,       get_srma)
+CACHED_JSONDB_GET_METHOD   (RealRealMapArray,         get_rrma)
+CACHED_JSONDB_GET_METHOD   (RealRealPairRealMapArray, get_rrrma)
+CACHED_JSONDB_GET_METHOD   (IntIntPairRealMapArray,   get_iirma)
 CACHED_JSONDB_GET_METHOD   (StringArray,              get_sa)
-STANDARD_JSONDB_GET_METHOD (String2DArray,            get_s2a)
+CACHED_JSONDB_GET_METHOD   (String2DArray,            get_s2a)
 CACHED_JSONDB_GET_METHOD   (String,                   get_string)
 CACHED_JSONDB_GET_METHOD   (Real,                     get_real)
 CACHED_JSONDB_GET_METHOD   (int,                      get_int)
 CACHED_JSONDB_GET_METHOD   (short,                    get_short)
-STANDARD_JSONDB_GET_METHOD (Ushort,                   get_ushort)
+CACHED_JSONDB_GET_METHOD   (Ushort,                   get_ushort)
 CACHED_JSONDB_GET_METHOD   (size_t,                   get_sizet)
 CACHED_JSONDB_GET_METHOD   (bool,                     get_bool)
 
