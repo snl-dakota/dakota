@@ -179,11 +179,12 @@ JSONProblemDescDB::handle_keyword(const json& key_map_item, const std::string& c
       }
       else if( "PRESENCE_ENUM" == storage_type ) {
         const std::string& enum_str = key_map_item[currentPath]["stored_value"];
-        if( dakEnumMap().count(enum_str) )
-          cachedData_short[ckey] = dakEnumMap().at(enum_str);
+        if( dakEnumMap().count(enum_str) ) {
+          cachedData_Ushort[ckey] = dakEnumMap().at(enum_str);
+          std::cout << "PRESENCE_ENUM: Setting " << ckey << " = " << enum_str << std::endl;
+        }
         else
           std::cout << "PRESENCE_ENUM: " << enum_str << " has not been registered." << std::endl;
-        std::cout << "PRESENCE_ENUM: " << ckey << " = " << enum_str << std::endl;
       }
     }
     if( cache_keys.empty() )

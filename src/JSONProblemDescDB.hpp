@@ -18,6 +18,9 @@ using json = nlohmann::json;
 #define JSON_GET_CACHED_VALUE(GET_VALUE_FN, verbose) \
   if (jsonDB) { \
     try { \
+      if( false ) \
+        std::cout << "Trying JSONProblemDescDB::" << std::string(#GET_VALUE_FN) \
+                  << " ... for \"" << entry_name << "\"" << std::endl; \
       return jsonDB->GET_VALUE_FN(entry_name); \
     } catch (const std::exception& e) { \
       if( verbose ) \
