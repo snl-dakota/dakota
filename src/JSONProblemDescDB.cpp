@@ -175,7 +175,10 @@ JSONProblemDescDB::handle_keyword(const json& key_map_item, const std::string& c
       else if( "PRESENCE_BOOL" == storage_type ) {
         const std::string& type = key_map_item[currentPath]["handler_type"];
         assert( "true" == type );
-        cachedData_bool[ckey] = true;
+        if( !value.is_object() )
+          cachedData_bool[ckey] = value;
+        else
+          cachedData_bool[ckey] = true;
       }
       else if( "PRESENCE_ENUM" == storage_type ) {
         const std::string& enum_str = key_map_item[currentPath]["stored_value"];
