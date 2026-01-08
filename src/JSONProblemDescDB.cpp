@@ -138,7 +138,8 @@ JSONProblemDescDB::handle_keyword(const json& key_map_item, const std::string& c
                  type == "RealUb" || // need to use the proper kw handler
                  type == "RealDL"  ) // need to use the proper kw handler
           cachedData_RealVector[ckey] = value.get<JSONRealVector>().value;
-        else if( type == "ivec" )
+        else if( type == "ivec"   ||
+                 type == "IntLb"   ) // need to use the proper kw handler
           cachedData_IntVector[ckey] = value.get<JSONIntVector>().value;
         else if( type == "categorical" )
           cachedData_BitArray[ckey] = value.get<JSONBitArray>().value;
