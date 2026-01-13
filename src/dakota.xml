@@ -6099,7 +6099,7 @@
 
 		<keyword  id="experiment_variance_type1" name="experiment_variance_type" code="{N_rem(strL,varianceType)}" label="Type of measurement error (none, scalar, diagonal, matrix)"  minOccurs="0" default="none" >
 		  <alias name="variance_type"/>
-                  <param type="STRINGLIST" constraint="LEN1 field_calibration_terms" />
+                  <param type="STRINGLIST" constraint="LEN1 calibration_terms" />
 		</keyword>
 
 		<keyword  id="scalar_data_file" name="scalar_data_file" code="{N_rem(str,scalarDataFileName)}" label="Scalar calibration data file name"  minOccurs="0" >
