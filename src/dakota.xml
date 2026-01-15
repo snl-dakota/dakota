@@ -5066,7 +5066,7 @@
             <param type="REALLIST" />
           </keyword>
           <keyword  id="categorical1" name="categorical" code="{N_vam(categorical,discreteDesignSetRealCat)}" label="categorical"  minOccurs="0" >
-            <param type="STRINGLIST" constraint="LEN integer" />
+            <param type="STRINGLIST" constraint="LEN real" />
             <keyword id="adjacency_matrix2" name="adjacency_matrix" code="{N_vam(newivec,Var_Info_ddsra)}" label="adjacency_matrix"  minOccurs="0">
               <param type="INTEGERLIST"/>
             </keyword>
@@ -5694,7 +5694,7 @@
             <param type="REALLIST" />
           </keyword>
           <keyword  id="categorical5" name="categorical" code="{N_vam(categorical,discreteStateSetRealCat)}" label="categorical"  minOccurs="0" >
-            <param type="STRINGLIST" constraint="LEN integer" />
+            <param type="STRINGLIST" constraint="LEN real" />
           </keyword>
           <keyword  id="initial_state4" name="initial_state" code="{N_vam(rvec,discreteStateSetRealVars)}" label="initial_state"  minOccurs="0" default="middle set value, or rounded down" >
             <param type="REALLIST" constraint="LEN real" />
@@ -6099,7 +6099,7 @@
 
 		<keyword  id="experiment_variance_type1" name="experiment_variance_type" code="{N_rem(strL,varianceType)}" label="Type of measurement error (none, scalar, diagonal, matrix)"  minOccurs="0" default="none" >
 		  <alias name="variance_type"/>
-                  <param type="STRINGLIST" constraint="LEN1 field_calibration_terms" />
+                  <param type="STRINGLIST" constraint="LEN1 calibration_terms" />
 		</keyword>
 
 		<keyword  id="scalar_data_file" name="scalar_data_file" code="{N_rem(str,scalarDataFileName)}" label="Scalar calibration data file name"  minOccurs="0" >

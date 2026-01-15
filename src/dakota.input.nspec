@@ -7302,7 +7302,7 @@ KEYWORD variables {N_vam3(start,0,stop)}
     [ real INTEGER > 0 {N_vam(sizet,numDiscreteDesSetRealVars)}
       [ elements_per_variable ALIAS num_set_values INTEGERLIST LEN1 real {N_vam(newiarray,Var_Info_nddsr)} ]
       elements ALIAS set_values REALLIST {N_vam(newrvec,Var_Info_ddsr)}
-      [ categorical STRINGLIST LEN integer {N_vam(categorical,discreteDesignSetRealCat)}
+      [ categorical STRINGLIST LEN real {N_vam(categorical,discreteDesignSetRealCat)}
         [ adjacency_matrix INTEGERLIST {N_vam(newivec,Var_Info_ddsra)} ]
        ]
       [ initial_point REALLIST LEN real {N_vam(rvec,discreteDesignSetRealVars)} ]
@@ -7520,7 +7520,7 @@ KEYWORD variables {N_vam3(start,0,stop)}
     [ real INTEGER > 0 {N_vam(sizet,numDiscreteStateSetRealVars)}
       [ elements_per_variable ALIAS num_set_values INTEGERLIST LEN1 real {N_vam(newiarray,Var_Info_ndssr)} ]
       elements ALIAS set_values REALLIST {N_vam(newrvec,Var_Info_dssr)}
-      [ categorical STRINGLIST LEN integer {N_vam(categorical,discreteStateSetRealCat)} ]
+      [ categorical STRINGLIST LEN real {N_vam(categorical,discreteStateSetRealCat)} ]
       [ initial_state REALLIST LEN real {N_vam(rvec,discreteStateSetRealVars)} ]
       [ descriptors STRINGLIST LEN real {N_vam(strL,discreteStateSetRealLabels)} ]
      ]
@@ -7713,7 +7713,7 @@ KEYWORD responses {N_rem3(start,0,stop)}
         [ data_directory STRING {N_rem(str,dataPathPrefix)} ]
         [ num_experiments INTEGER >= 0 {N_rem(sizet,numExperiments)} ]
         [ num_config_variables INTEGER >= 0 {N_rem(sizet,numExpConfigVars)} ]
-        [ experiment_variance_type ALIAS variance_type STRINGLIST LEN1 field_calibration_terms {N_rem(strL,varianceType)} ]
+        [ experiment_variance_type ALIAS variance_type STRINGLIST LEN1 calibration_terms {N_rem(strL,varianceType)} ]
         [ scalar_data_file STRING {N_rem(str,scalarDataFileName)}
           [ 
             ( custom_annotated {N_rem(utype,scalarDataFormat_TABULAR_NONE)}
