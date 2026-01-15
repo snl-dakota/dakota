@@ -111,7 +111,8 @@ void check_and_broadcast_pdb(ProblemDescDB& problem_db, const UserModes& user_mo
     if (parallel_lib.world_size() > 1) {
       if (parallel_lib.world_rank() == 0) {
 	    problem_db.enforce_unique_ids();
-	    problem_db.derived_broadcast(); // pre-processor
+            if (problem_db.is_json_null())
+              problem_db.derived_broadcast(); // pre-processor
         MPIPackBuffer send_buffer;
         send_buffer << rep->environmentSpec   << rep->dataMethodList    << rep->dataModelList
                 << rep->dataVariablesList << rep->dataInterfaceList << rep->dataResponsesList;
@@ -151,7 +152,8 @@ void check_and_broadcast_pdb(ProblemDescDB& problem_db, const UserModes& user_mo
 	   << std::endl;
 #endif // DEBUG
       problem_db.enforce_unique_ids();
-      problem_db.derived_broadcast();
+      if (problem_db.is_json_null())
+        problem_db.derived_broadcast();
     }
 
     // After broadcast, perform post-processing on all processors to

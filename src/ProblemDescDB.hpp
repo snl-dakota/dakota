@@ -308,6 +308,9 @@ public:
   /// function to check dbRep (does this envelope contain a letter)
   bool is_null() const;
 
+  /// function to check if jsonDB is null
+  bool is_json_null() const;
+
 protected:
 
   //
@@ -446,6 +449,13 @@ private:
 
   /// pointer to the JSON data
   std::shared_ptr<JSONProblemDescDB> jsonDB;
+
+  // default data objects to use for json-only (when nidr is not used)
+  DataMethod    defaultDataMethod;
+  DataModel     defaultDataModel;
+  DataVariables defaultDataVariables;
+  DataInterface defaultDataInterface;
+  DataResponses defaultDataResponses;
 
   /// MPI world rank
   int worldRank;
@@ -592,6 +602,9 @@ inline bool ProblemDescDB::responses_locked() const
 
 inline bool ProblemDescDB::is_null() const
 { return (dbRep) ? false : true; }
+
+inline bool ProblemDescDB::is_json_null() const
+{ return (jsonDB) ? false : true; }
 
 
 inline int ProblemDescDB::

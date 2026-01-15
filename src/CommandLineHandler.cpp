@@ -423,13 +423,18 @@ void CommandLineHandler::check_usage(int argc, char** argv)
     return;  // no further processing for version
   }
 
+  //if (retrieve("json") != NULL) // a json input file is optional
+  //  Cout << "CommandLineHandler::check_usage: json = " << retrieve("json") << std::endl;
+
   if (retrieve("input") == NULL) { // an input file is REQUIRED
-    if (optind == argc - 1)
-      GetLongOpt::store("input", argv[optind]);
-    else {
-      usage();
-      output_helper("Missing input file command line argument.", Cerr);
-      abort_handler(-1);
+    if (retrieve("json") == NULL) {
+      if (optind == argc - 1)
+        GetLongOpt::store("input", argv[optind]);
+      else {
+        usage();
+        output_helper("Missing input file command line argument.", Cerr);
+        abort_handler(-1);
+      }
     }
   }
 

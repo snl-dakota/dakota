@@ -145,10 +145,35 @@ parse_inputs(const std::string_view input_string, const std::string_view parser_
     // if (callback)
     // 	(*callback)(this, callback_data);
   }
+  //Cout << "ProblemDescDB::parse_inputs: using data from input ..."
+  //     << " dataMethodList is " << String(dataMethodList.empty() ? "" : "NOT")
+  //     << " empty." << std::endl;
 }
 
-void ProblemDescDB::enable_json_input(const String & json_file) {
+void ProblemDescDB::enable_json_input(const String & json_file)
+{
   jsonDB = std::make_shared<JSONProblemDescDB>(json_file);
+
+  // all or nothing data members for now
+  if ( dbRep && dbRep->dataMethodList.empty() )
+  {
+    Cout << "ProblemDescDB: using default data objects and input from JSON ..." << std::endl;
+    assert(dbRep->dataInterfaceList.empty() );
+    assert(dbRep->dataModelList.empty()     );
+    assert(dbRep->dataResponsesList.empty() );
+    assert(dbRep->dataVariablesList.empty() );
+
+    // Manually configure needed parsed data
+    // ... This may just require bypassing all NIDR checks and relying
+    //     on validated json input to contain all needed checks and values. - RWH
+    //defaultDataVariables.data_rep()->numContinuousDesVars = 2;
+
+    dbRep->insert_node( defaultDataMethod    );
+    dbRep->insert_node( defaultDataModel     );
+    dbRep->insert_node( defaultDataVariables );
+    dbRep->insert_node( defaultDataInterface );
+    dbRep->insert_node( defaultDataResponses );
+  }
 }
 
 /** DB setup phase 3: perform basic checks on keywords counts in
@@ -195,7 +220,8 @@ void ProblemDescDB::broadcast()
     if (worldSize > 1) {
       if (worldRank == 0) {
 	enforce_unique_ids();
-	derived_broadcast(); // pre-processor
+        if( !jsonDB )
+          derived_broadcast(); // pre-processor
 	send_db_buffer();
 #ifdef MPI_DEBUG
 	Cout << "DB buffer to send on world rank " << worldRank
@@ -220,7 +246,9 @@ void ProblemDescDB::broadcast()
 	   << std::endl;
 #endif // DEBUG
       enforce_unique_ids();
-      derived_broadcast();
+      // Skip NIDR if using json parser
+      if( !jsonDB )
+        derived_broadcast();
     }
   }
 }

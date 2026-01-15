@@ -378,7 +378,7 @@ void ProgramOptions::parse(const ProblemDescDB& problem_db)
 void ProgramOptions::read(MPIUnpackBuffer& s) 
 {
   // core files and options
-  s >> inputFile >> inputString >> echoInput >> parserOptions 
+  s >> inputFile >> jsonFile >> inputString >> echoInput >> parserOptions 
     >> outputFile >> errorFile 
     >> readRestartFile >> stopRestartEvals >> writeRestartFile;
   // run mode controls
@@ -389,7 +389,7 @@ void ProgramOptions::read(MPIUnpackBuffer& s)
 void ProgramOptions::write(MPIPackBuffer& s) const
 {
   // core files and options
-  s << inputFile << inputString << echoInput << parserOptions 
+  s << inputFile << jsonFile << inputString << echoInput << parserOptions 
     << outputFile << errorFile 
     << readRestartFile << stopRestartEvals << writeRestartFile;
   // run mode controls
