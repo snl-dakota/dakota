@@ -804,8 +804,8 @@ print_std_regress_coeffs(std::ostream& s, StringArray var_labels,
 }
 
 void SensAnalysisGlobal::compute_vbd_stats_via_sampling( const unsigned short   method
-                                                       , const int              numBins
-                                                       , const size_t           numFunctions
+                                                       , const int              num_bins
+                                                       , const size_t           num_functions
                                                        , const size_t           num_continuous_vars
                                                        , const size_t           num_discrete_vars
                                                        , const size_t           num_samples
@@ -815,8 +815,8 @@ void SensAnalysisGlobal::compute_vbd_stats_via_sampling( const unsigned short   
 {
 
   if (method == VBD_BINNED) {
-    this->compute_binned_vbd_stats( numBins
-                                  , numFunctions
+    this->compute_binned_vbd_stats( num_bins
+                                  , num_functions
                                   , num_continuous_vars
                                   , num_discrete_vars
                                   , num_samples
@@ -825,7 +825,7 @@ void SensAnalysisGlobal::compute_vbd_stats_via_sampling( const unsigned short   
                                   );
   }
   else {
-    this->compute_pick_and_freeze_vbd_stats( numFunctions
+    this->compute_pick_and_freeze_vbd_stats( num_functions
                                            , num_continuous_vars + num_discrete_vars
                                            , num_samples
                                            , resp_samples
@@ -833,7 +833,7 @@ void SensAnalysisGlobal::compute_vbd_stats_via_sampling( const unsigned short   
   }
 }
 
-void SensAnalysisGlobal::compute_pick_and_freeze_vbd_stats( const size_t           numFunctions
+void SensAnalysisGlobal::compute_pick_and_freeze_vbd_stats( const size_t           num_functions
                                                           , const size_t           num_vars
                                                           , const size_t           num_samples
                                                           , const IntResponseMap & resp_samples
@@ -851,11 +851,11 @@ void SensAnalysisGlobal::compute_pick_and_freeze_vbd_stats( const size_t        
   //      total_fn_vals[respFn][replicate][sample]
   // This is making the assumption that the responses are ordered as allSamples
   // BMA TODO: compute statistics on finite samples only
-  boost::multi_array<Real,3> total_fn_vals(boost::extents[numFunctions][num_vars+2][num_samples]); // [k][i][j]
+  boost::multi_array<Real,3> total_fn_vals(boost::extents[num_functions][num_vars+2][num_samples]); // [k][i][j]
   IntRespMCIter r_it = resp_samples.begin();
   for (size_t i(0); i < (num_vars+2); ++i) {
     for (size_t j(0); j < num_samples; ++r_it, ++j) {
-      for (size_t k(0); k < numFunctions; ++k) {
+      for (size_t k(0); k < num_functions; ++k) {
         total_fn_vals[k][i][j] = r_it->second.function_value(k);
       }
     }
@@ -863,7 +863,7 @@ void SensAnalysisGlobal::compute_pick_and_freeze_vbd_stats( const size_t        
 
 #ifdef DEBUG
   //Cout << "allSamples:\n" << allSamples << '\n';
-  for (size_t k(0); k < numFunctions; ++k) {
+  for (size_t k(0); k < num_functions; ++k) {
     for (size_t i(0); i < num_vars+2; ++i) {
       for (size_t j(0); j < num_samples; ++j) {
         Cout << "Response " << k << " for replicate " << i << ", sample " << j
@@ -886,15 +886,15 @@ void SensAnalysisGlobal::compute_pick_and_freeze_vbd_stats( const size_t        
   //   M. Eldred, "Sensitivity analysis techniques applied to a system of
   //   hyperbolic conservation laws", RESS, 107, pp. 157--170, Nov. 2012.
 
-  indexSi.resize(numFunctions, RealVector(num_vars));
-  indexTi.resize(numFunctions, RealVector(num_vars));
+  indexSi.resize(num_functions, RealVector(num_vars));
+  indexTi.resize(num_functions, RealVector(num_vars));
 
-  boost::multi_array<Real,3> total_norm_vals(boost::extents[numFunctions][num_vars+2][num_samples]); // [k][i][j]
+  boost::multi_array<Real,3> total_norm_vals(boost::extents[num_functions][num_vars+2][num_samples]); // [k][i][j]
 
   Real dNumSamples( static_cast<Real>(num_samples) );
 
   // Obtain sensitivity indices for each function
-  for (size_t k(0); k < numFunctions; ++k) {
+  for (size_t k(0); k < num_functions; ++k) {
     Real mean_C(0.);
     {
       Real mean_hatY(0.);
@@ -952,8 +952,8 @@ void SensAnalysisGlobal::compute_pick_and_freeze_vbd_stats( const size_t        
   } // for k
 }
 
-void SensAnalysisGlobal::compute_binned_vbd_stats( const int              numBins
-                                                 , const size_t           numFunctions
+void SensAnalysisGlobal::compute_binned_vbd_stats( const int              num_bins
+                                                 , const size_t           num_functions
                                                  , const size_t           num_continuous_vars
                                                  , const size_t           num_discrete_vars
                                                  , const size_t           num_samples
@@ -967,7 +967,7 @@ void SensAnalysisGlobal::compute_binned_vbd_stats( const int              numBin
   numContinuousVars = num_continuous_vars;
   numDiscreteVars = num_discrete_vars;
   numVars = num_continuous_vars + num_discrete_vars;
-  numFns  = numFunctions;
+  numFns  = num_functions;
 
   // Determine which samples have valid responses (are).
   BoolDeque is_valid_sample(num_samples);
@@ -981,11 +981,11 @@ void SensAnalysisGlobal::compute_binned_vbd_stats( const int              numBin
   valid_sample_matrix(vars_samples, resp_samples, is_valid_sample, valid_data); 
 
   size_t n_bins;
-  if ( numBins <= 0 ){
+  if ( num_bins <= 0 ){
     n_bins = std::trunc(std::sqrt(num_valid_samples));
   }
   else{
-    n_bins = numBins;
+    n_bins = num_bins;
   }
 
   compute_binned_sobol_indices_from_valid_samples( valid_data, n_bins );

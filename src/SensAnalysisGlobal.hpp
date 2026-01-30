@@ -88,8 +88,8 @@ public:
 
   /// compute VBD-based Sobol indices
   void compute_vbd_stats_via_sampling( const unsigned short   method
-                                     , const int              numBins
-                                     , const size_t           numFunctions
+                                     , const int              num_bins
+                                     , const size_t           num_functions
                                      , const size_t           num_continuous_vars
                                      , const size_t           num_discrete_vars
                                      , const size_t           num_samples
@@ -194,14 +194,14 @@ private:
          const size_t &inc_id,
          bool rank) const;
 
-  void compute_pick_and_freeze_vbd_stats( const size_t           numFunctions
+  void compute_pick_and_freeze_vbd_stats( const size_t           num_functions
                                         , const size_t           num_vars
                                         , const size_t           num_samples
                                         , const IntResponseMap & resp_samples
                                         );
 
-  void compute_binned_vbd_stats( const int              numBins
-                                       , const size_t           numFunctions
+  void compute_binned_vbd_stats(         const int              num_bins
+                                       , const size_t           num_functions
                                        , const size_t           num_continuous_vars
                                        , const size_t           num_discrete_vars
                                        , const size_t           num_samples
