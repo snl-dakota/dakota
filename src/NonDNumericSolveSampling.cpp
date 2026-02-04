@@ -1719,7 +1719,7 @@ void NonDNumericSolveSampling::run_minimizers(MFSolutionData& soln)
       // upstream/global searches may fail to satisfy all constaints, where it
       // is the augmented linear constraints that affect numerical viability
       enforce_augmented_linear_ineq_constraints(
-	vars_star.continuous_variables_view());
+	vars_star.continuous_variables_view()); // updates copy
 
       IteratorPtrArray& min_ip1 = varianceMinimizers[i+1];
       num_solvers = min_ip1.size();
