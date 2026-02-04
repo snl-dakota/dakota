@@ -62,6 +62,8 @@ protected:
 
   void estimator_variance_ratios(const RealVector& cd_vars,
 				 RealVector& estvar_ratios) override;
+  void estimator_variance_ratio_gradients(const RealVector& cd_vars,
+					  RealMatrix& evr_grads) override;
 
   //
   //- Heading: member functions
@@ -82,6 +84,8 @@ protected:
 				    MFSolutionData& soln);
   void mfmc_numerical_solution(const RealMatrix& rho2_LH,
 			       const RealVector& cost, MFSolutionData& soln);
+  void analytic_initialization_from_mfmc(const RealMatrix& rho2_LH,
+					 MFSolutionData& soln);
 
   void emerge_from_pilot(const SizetArray& N_H, RealVector& avg_eval_ratios,
 			 Real& avg_hf_target, Real offline_N_lwr = 1.);
@@ -187,7 +191,7 @@ private:
 
   /// MFMC uses all approximations within numApprox; this array supports this
   /// case for functions that are generalized to support approx subsets
-  UShortArray approxSet;
+  UShortArray fullApproxSet;
 
   /// tracks approximation ordering based on ascending rho2_LH;
   /// used to determine which analytic MFMC option is used.

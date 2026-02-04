@@ -37,12 +37,15 @@ NonDMultifidelitySampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_l
   NonDNumericSolveSampling(problem_db, parallel_lib, model),
   numericalSolveMode(problem_db.get_ushort("method.nond.numerical_solve_mode"))
 {
+  analyticEstVarDerivs = true; // MFMC estvar soln has analytic derivatives
+  //hardenNumericSoln  = true; // now adopted for all numerical estimators
+
   mlmfSubMethod = SUBMETHOD_MFMC; // if needed for numerical solves
 
-  // defining approxSet allows reuse of fns that support model selection
-  approxSet.resize(numApprox);
+  // defining fullApproxSet allows reuse of fns that support model selection
+  fullApproxSet.resize(numApprox);
   for (size_t i=0; i<numApprox; ++i)
-    approxSet[i] = i;
+    fullApproxSet[i] = i;
 
   // model{Groups,GroupCost} have run-time dependency on approx sequence
   //if (costSource == USER_COST_SPEC) update_model_group_costs(); 
@@ -430,7 +433,7 @@ approx_increments(IntRealMatrixMap& sum_L_baseline,
   // increments correspond to different groupings.
   for (int g=numApprox-1; g>=0; --g) // base to top, excluding all-model group
     delta_N_G[g]
-      = group_approx_increment(soln_vars, approxSet, N_L_actual_refined,
+      = group_approx_increment(soln_vars, fullApproxSet, N_L_actual_refined,
 			       N_L_alloc_refined, modelGroups[g]);
   group_increments(delta_N_G, "mf_", true); // reverse order for RNG sequence
 
@@ -514,15 +517,7 @@ estimator_variance_ratios(const RealVector& cd_vars, RealVector& estvar_ratios)
   //          = F_ii CovLH_i^2 / (VarH_i VarL_i) = F_ii rho2LH_i where
   //   F_ii   = (r_i - r_{i+1}) / (r_i r_{i+1}).
   RealVector r;
-  switch (optSubProblemForm) {
-  case N_MODEL_LINEAR_OBJECTIVE:  case N_MODEL_LINEAR_CONSTRAINT:
-    copy_data_partial(cd_vars, 0, (int)numApprox, r); // N_i
-    r.scale(1./cd_vars[numApprox]); // r_i = N_i / N
-    break;
-  default: // r_and_N provided: pass leading numApprox terms of cd_vars
-    r = RealVector(Teuchos::View, cd_vars.values(), numApprox);
-    break;
-  }
+  design_vars_to_r(cd_vars, r);
 
   // define approx order using high to low on average evaluation ratios
   bool ordered = ordered_approx_sequence(r, ratioApproxSequence, true);
@@ -534,6 +529,57 @@ estimator_variance_ratios(const RealVector& cd_vars, RealVector& estvar_ratios)
 	   << "(high to low):\n" << ratioApproxSequence << std::endl;
   }
   mfmc_estvar_ratios(rho2LH, r, ratioApproxSequence, estvar_ratios);
+}
+
+
+void NonDMultifidelitySampling::
+estimator_variance_ratio_gradients(const RealVector& cd_vars,
+				   RealMatrix& evr_grads)
+{
+  // Numerical MFMC
+
+  // Gradient calculations are very important for reorder on the fly cases
+  // since finite differencing has been observed to induce order changes,
+  // corrupting the numerical solution.
+
+  if (evr_grads.numRows() != numApprox || evr_grads.numCols() != numFunctions)
+    evr_grads.shapeUninitialized(numApprox, numFunctions);
+
+  // TO DO: support optSubProblemForms (for now N_MODEL_LINEAR_* assumed)
+  RealVector N;  design_vars_to_N(cd_vars, N);
+  RealVector N_ord(Teuchos::View, N.values(), numApprox);
+  bool ordered = ordered_approx_sequence(N_ord, ratioApproxSequence, true);
+  size_t i, approx, q;
+  Real N_H = N[numApprox], N_a, N_am1, rho2_a, rho2_am1, sum;
+  for (q=0; q<numFunctions; ++q) {
+    sum = 0.;
+    for (i=0; i<numApprox; ++i) {
+      approx = (ordered) ? i : ratioApproxSequence[i];
+      rho2_a = rho2LH(q, approx);  N_a = N[approx];
+      // dR^2 / dN_a = (rho2_a - rho2_am1) * N_H / N_a / N_a;
+      // d(evr) / dN_a = -dR^2 / dN_a since evr = 1.-R_sq
+      Real& evr_grad_aq = evr_grads(approx, q);
+      evr_grad_aq  = (i) ? rho2_am1 - rho2_a : -rho2_a; // negate: evr=1-R_sq
+      evr_grad_aq *= N_H / N_a / N_a;
+      // dR^2/dN accumulations
+      if (i) sum += rho2_am1 * (N_am1 - N_a) / N_am1 / N_a;
+      // bookkeeping
+      rho2_am1 = rho2_a;  N_am1 = N_a;
+    }
+    evr_grads(numApprox, q) = rho2_a / N_a - sum; // negate: evr = 1. - R_sq
+  }
+
+  /* Desirable to support general DVV, but overkill for right now
+  size_t index, q, v, num_v = num_active_groups(), num_m = numApprox+1;
+  for (v=0; v<num_v; ++v) {
+    index = active_to_all(ratioApproxSequence[v]); // ***
+    ...
+  }
+  */
+
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "Solve at sample allocations:\n" << cd_vars << "for QoI estimator "
+	 << "variance ratio gradients:\n" << evr_grads << std::endl;
 }
 
 
@@ -1136,27 +1182,8 @@ compute_allocations(const RealMatrix& rho2_LH, const RealVector& var_H,
       N_MODEL_LINEAR_OBJECTIVE;
     break;
   case NUMERICAL_FALLBACK: // default
-    // Theory for JCP EstVar expression (Appendix B) used in minimization
-    // assumes ordered eval ratios [sqrt(rho2_diff) no longer applies to this
-    // case, no we can now focus or r_i ordering rather than rho ordering].
-    // Ordering in avg_eval_ratios is then used for pyramid sampling downstream
-    // > ascending order in rho required all QoI for all Approx
-    ordered_rho = ordered_approx_sequence(rho2_LH);
-    if (ordered_rho) {
-      Cout << "MFMC: model sequence provided is ordered in Low-High "
-	   << "correlation for all QoI.\n      No fallback: computing "
-	   << "standard analytic solution.\n" << std::endl;
-      optSubProblemForm = ANALYTIC_SOLUTION;
-    }
-    else {
-      optSubProblemForm = (budget_constr) ? N_MODEL_LINEAR_CONSTRAINT :
-	N_MODEL_LINEAR_OBJECTIVE;
-      Cout << "MFMC: model sequence provided is out of order with respect to "
-	   << "Low-High\n      correlation for at least one QoI.  Fallback: "
-	   << "switching to numerical solution.\n";
-    }
-    break;
   case REORDERED_FALLBACK: // not currently in XML spec (numerical FB preferred)
+    // ascending order in rho required all QoI for all Approx
     ordered_rho = ordered_approx_sequence(rho2_LH);
     if (ordered_rho) {
       Cout << "MFMC: model sequence provided is ordered in Low-High "
@@ -1165,15 +1192,24 @@ compute_allocations(const RealMatrix& rho2_LH, const RealVector& var_H,
       optSubProblemForm = ANALYTIC_SOLUTION;
     }
     else {
-      optSubProblemForm = REORDERED_ANALYTIC_SOLUTION;
+      // Theory for JCP EstVar expression (Appendix B) used in minimization
+      // assumes ordered eval ratios [sqrt(rho2_diff) no longer applies to this
+      // case, so we now focus or r_i ordering rather than rho2 ordering].
+      // Ordering in eval ratios is then used for pyramid sampling downstream.
       Cout << "MFMC: model sequence provided is out of order with respect to "
-	   << "Low-High\n      correlation for at least one QoI.  Fallback: "
-	   << "switching to reordered analytic solution.\n";
+	   << "Low-High\n      correlation for at least one QoI.  Fallback: ";
+      if (numericalSolveMode == REORDERED_FALLBACK) {
+	optSubProblemForm = REORDERED_ANALYTIC_SOLUTION;
+	Cout << "switching to reordered analytic solution.\n";
+      }
+      else {//if (numericalSolveMode == NUMERICAL_FALLBACK)
+	optSubProblemForm = (budget_constr) ? N_MODEL_LINEAR_CONSTRAINT :
+	  N_MODEL_LINEAR_OBJECTIVE;
+	Cout << "switching to numerical solution.\n";
+      }
     }
     break;
   }
-
-  reorderOnTheFly = false; // default (reassigned inside mfmc_numerical)
 
   // For stand-alone analytic MFMC (not an analytic initial guess), enforce
   // monotonicity in r_i for a valid evaluation of estvar that is consistent
@@ -1188,15 +1224,16 @@ compute_allocations(const RealMatrix& rho2_LH, const RealVector& var_H,
   switch (optSubProblemForm) {
   case ANALYTIC_SOLUTION:
     corrApproxSequence.clear();  ratioApproxSequence.clear();
-    mfmc_analytic_solution(approxSet, rho2_LH, cost, avg_eval_ratios,
+    reorderModelsOnTheFly = false;
+    mfmc_analytic_solution(fullApproxSet, rho2_LH, cost, avg_eval_ratios,
 			   lower_bounded_r, monotonic_r);
     process_analytic_allocations(rho2_LH, var_H, N_H, cost,
 				 avg_eval_ratios, soln);
     break;
 
   case REORDERED_ANALYTIC_SOLUTION: // inactive (see above)
-    ratioApproxSequence.clear();
-    mfmc_reordered_analytic_solution(approxSet, rho2_LH, cost,
+    ratioApproxSequence.clear();  reorderModelsOnTheFly = false;
+    mfmc_reordered_analytic_solution(fullApproxSet, rho2_LH, cost,
 				     corrApproxSequence, avg_eval_ratios,
 				     lower_bounded_r, monotonic_r);
     process_analytic_allocations(rho2_LH, var_H, N_H, cost,
@@ -1243,52 +1280,44 @@ mfmc_numerical_solution(const RealMatrix& rho2_LH, const RealVector& cost,
       no_solve_variances(soln);  numSamples = 0;  return;
     }
 
-    // Compute r* initial guess from analytic MFMC
-    // > leave r_i at analytic values unless mfmc_estvar_ratios() is needed
-    //   for accuracy constraint
-    bool lower_bounded_r = true, monotonic_r = (budget_constrained) ?
-      false : true;
-    if (ordered_approx_sequence(rho2_LH)) { // can happen w/ NUMERICAL_OVERRIDE
-      corrApproxSequence.clear();
-      mfmc_analytic_solution(approxSet, rho2_LH, cost, avg_eval_ratios,
-			     lower_bounded_r, monotonic_r);
+    switch (optSubProblemSolver) {
+    // global and sequenced global+local methods (no initial guess)
+    case SUBMETHOD_DIRECT_NPSOL_OPTPP:  case SUBMETHOD_DIRECT_NPSOL:
+    case SUBMETHOD_DIRECT_OPTPP:        case SUBMETHOD_DIRECT:
+    case SUBMETHOD_EGO:  case SUBMETHOD_SBGO:  case SUBMETHOD_EA:
+      ensemble_numerical_solution(soln);
+      break;
+    default: {
+      // Here we discount pairwise CVMC and focus on the analytic MFMC initial
+      // guess.  There may still be a competition between solvers from multiple
+      // varianceMinimizers in ensemble_numerical_solution().
+      analytic_initialization_from_mfmc(rho2LH, soln);
+      ensemble_numerical_solution(soln);
+      break;
     }
-    else
-      mfmc_reordered_analytic_solution(approxSet, rho2_LH, cost,
-				       corrApproxSequence, avg_eval_ratios,
-				       lower_bounded_r, monotonic_r);
-    if (outputLevel >= NORMAL_OUTPUT)
-      Cout << "Initial guess from analytic MFMC (average eval ratios):\n"
-	   << avg_eval_ratios << std::endl;
-
-    Real hf_target;
-    if (budget_constrained) // for numerical, re-scale for over-estimated pilot
-      scale_to_target(avg_N_H, cost, avg_eval_ratios, hf_target, activeBudget);
-    else { // accuracy-constrained
-      // Computes estvar_ratios* from r*,rho2.  Next, m1* from estvar_ratios*;
-      // then these estvar_ratios get replaced for actual profile
-      RealVector estvar_ratios, estvar;  Real metric;  size_t metric_index;
-      mfmc_estvar_ratios(rho2_LH, avg_eval_ratios, corrApproxSequence,
-			 estvar_ratios);
-      estvar_ratios_to_estvar(estvar_ratios, varH, N_H_actual, estvar);
-      MFSolutionData::update_estimator_variance_metric(estVarMetricType,
-	estVarMetricNormOrder, estvar_ratios, estvar, metric, metric_index);
-      hf_target = (convergenceTolType == ABSOLUTE_CONVERGENCE_TOLERANCE) ?
-	update_hf_target(estvar_ratios, metric_index, varH) :
-	update_hf_target(estvar_ratios, metric_index, varH, estVarIter0);
     }
-    // push updates to MFSolutionData
-    soln.anchored_solution_ratios(avg_eval_ratios, hf_target);
   }
-  else if (no_solve) // subsequent iterations
-    { numSamples = 0;  return; } // leave soln at previous values
+  else { // subsequent iterations
+    if (no_solve) // leave soln at previous values
+      { numSamples = 0; return; }
+    // warm start from previous solution (for active or one-and-only DAG)
+    // > no scaling needed from prev soln (as in NonDLocalReliability) since
+    //   updated avg_N_H now includes allocation from previous solution and
+    //   should be active on constraint bound (excepting sample count rounding)
+    ensemble_numerical_solution(soln);
+  }
 
-  // define covLH and covLL from rho2LH, var_L, varH
-  //correlation_sq_to_covariance(rho2_LH, var_L, varH, covLH);
-  //matrix_to_diagonal_array(var_L, covLL);
+  process_model_allocations(soln, numSamples);
+  if (outputLevel >= NORMAL_OUTPUT)
+    print_model_allocations(Cout, soln, fullApproxSet);
+}
 
-  // *** TO DO***: support other numerical MFMC options
-  reorderOnTheFly = true; // for now (removes need for modelGroupCosts in finite bounds)
+
+void NonDMultifidelitySampling::
+analytic_initialization_from_mfmc(const RealMatrix& rho2_LH,
+				  MFSolutionData& soln)
+{
+  //reorderModelsOnTheFly = true; // for now (removes need for modelGroupCosts in finite bounds)
   // Note: reordering does not invalidate the linear budget constraint since
   // this is formulated using sequenceCost and total sample counts for each
   // model (model counts N_i are not inferred from overlays of optimized N_g
@@ -1297,18 +1326,63 @@ mfmc_numerical_solution(const RealMatrix& rho2_LH, const RealVector& cost,
   // as a sample management scheme in approx_increments(), which then supports
   // multi-batch concurrency using group_increments().
 
+  // Compute r* initial guess from analytic MFMC
+  RealVector avg_eval_ratios;
+  bool lower_bounded_r = true,
+    monotonic_r = (maxFunctionEvals == SZ_MAX || // for accuracy-constrained since estvar calculation is needed --> monotonicity required
+		   !reorderModelsOnTheFly),// respect model order + hierarch DAG
+    rho_ordered = ordered_approx_sequence(rho2_LH);
+  if (rho_ordered) { // can happen w/ NUMERICAL_OVERRIDE
+    corrApproxSequence.clear();
+    mfmc_analytic_solution(fullApproxSet, rho2_LH, sequenceCost,
+			   avg_eval_ratios, lower_bounded_r, monotonic_r);
+  }
+  else
+    mfmc_reordered_analytic_solution(fullApproxSet, rho2_LH, sequenceCost,
+				     corrApproxSequence, avg_eval_ratios,
+				     lower_bounded_r, monotonic_r);
+    // > TO DO: confirm reordered soln maps properly (I think it does since
+    //   avg_eval_ratios is always in model order)
+    // > Don't need to map corrApproxSequence to an initial ratioApproxSequence
+    //   since estvar calculation will reorder based on design vars.
+
   // This definition of modelGroupCost allows a unified treatment in
   // NonDNumericSolveSampling::derived_finite_solution_bounds(), which aligns
   // solution vars N[i] with modelGroupCost[i] --> use ordered groups here.
   // > Downstream, modelGroup{s,Cost} are used for approx_increments() -->
   //   groups are redefined for an r_i ordering.
-  update_model_groups();  update_model_group_costs(); // *** TO DO: still needed for reorderOnTheFly?
+  //update_model_groups();  update_model_group_costs(); // *** TO DO: still needed for !reorderModelsOnTheFly?
 
-  // Base class implementation of numerical solve (shared with ACV,GenACV):
-  ensemble_numerical_solution(soln);
-  process_model_allocations(soln, numSamples);
-  //if (outputLevel >= NORMAL_OUTPUT)
-  //  print_model_allocations(Cout, soln, approxSet);
+  if (outputLevel >= NORMAL_OUTPUT)
+    Cout << "Initial guess from analytic MFMC (average eval ratios):\n"
+	 << avg_eval_ratios << std::endl;
+
+  // Update soln from analytic r* and hf_target
+  size_t hf_form_index, hf_lev_index;
+  hf_indices(hf_form_index, hf_lev_index);
+  SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
+  Real hf_target;
+  if (maxFunctionEvals == SZ_MAX) { // accuracy-constrained
+    // Computes estvar_ratios* from r*,rho2.  Next, m1* from estvar_ratios*;
+    // then these estvar_ratios get replaced for actual profile
+    RealVector estvar_ratios, estvar;  Real metric;  size_t metric_index;
+    mfmc_estvar_ratios(rho2_LH, avg_eval_ratios, corrApproxSequence,
+		       estvar_ratios);
+    estvar_ratios_to_estvar(estvar_ratios, varH, N_H_actual, estvar);
+    MFSolutionData::update_estimator_variance_metric(estVarMetricType,
+      estVarMetricNormOrder, estvar_ratios, estvar, metric, metric_index);
+    hf_target = (convergenceTolType == ABSOLUTE_CONVERGENCE_TOLERANCE) ?
+      update_hf_target(estvar_ratios, metric_index, varH) :
+      update_hf_target(estvar_ratios, metric_index, varH, estVarIter0);
+  }
+  else {// budget-constrained: for numerical, re-scale for over-estimated pilot
+    size_t& N_H_alloc =  NLevAlloc[hf_form_index][hf_lev_index];
+    Real avg_N_H = (backfillFailures) ? average(N_H_actual) : N_H_alloc;
+    scale_to_target(avg_N_H, sequenceCost, avg_eval_ratios,
+		    hf_target, activeBudget);
+  }
+
+  soln.anchored_solution_ratios(avg_eval_ratios, hf_target);
 }
 
 

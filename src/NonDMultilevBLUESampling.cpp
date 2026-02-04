@@ -39,7 +39,7 @@ NonDMultilevBLUESampling(ProblemDescDB& problem_db,
   rCondTolThrottle(problem_db.get_real("method.nond.rcond_tol_throttle"))
 {
   analyticEstVarDerivs = true; // ML BLUE estvar soln has analytic derivatives
-  //hardenNumericSoln  = true; // now adopted for all non-hierarch estimators
+  //hardenNumericSoln  = true; // now adopted for all numerical estimators
 
   mlmfSubMethod = problem_db.get_ushort("method.sub_method");
 

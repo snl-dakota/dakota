@@ -48,9 +48,10 @@ NonDNumericSolveSampling(ProblemDescDB& problem_db,
   NonDEnsembleSampling(problem_db, parallel_lib, model),
   activeBudget((Real)maxFunctionEvals),
   truthFixedByPilot(problem_db.get_bool("method.nond.truth_fixed_by_pilot")),
-  analyticEstVarDerivs(false), // only in ML BLUE currently
-  hardenNumericSoln(true),     // Cholesky option not currently exposed in spec
-  reorderOnTheFly(false)       // currently only active for numerical MFMC
+  analyticEstVarDerivs(false),  // true for MFMC and ML BLUE currently
+  hardenNumericSoln(true),      // Cholesky option not currently exposed in spec
+  reorderModelsOnTheFly(false), // currently only active for numerical MFMC
+  recurConversion(false)
 {
   // solver(s) that perform the numerical solution for resource allocations
   // > Note: this is not a hard error for analytic MFMC that doesn't require
@@ -952,6 +953,25 @@ process_model_allocations(MFSolutionData& soln, size_t& num_samples)
 
 
 void NonDNumericSolveSampling::
+print_model_allocations(std::ostream& s, const MFSolutionData& soln,
+			const UShortArray& approx_set)
+{
+  const RealVector& soln_vars = soln.solution_variables();
+  size_t i, num_approx = approx_set.size();
+  for (i=0; i<num_approx; ++i)
+    s << "Approx " << approx_set[i] + 1 << ": sample allocation = "
+      << soln_vars[i] << '\n';
+  s << "Truth:   sample allocation = " << soln_vars[num_approx] << '\n';
+  if (maxFunctionEvals == SZ_MAX)
+    s << "Estimator cost allocation = " << soln.equivalent_hf_allocation()
+      << std::endl;
+  else
+    s << "Estimator variance metric = " << soln.estimator_variance_metric()
+      << std::endl;
+}
+
+
+void NonDNumericSolveSampling::
 numerical_solution_counts(size_t& num_cdv, size_t& num_lin_con,
 			  size_t& num_nln_con)
 {
@@ -1292,7 +1312,7 @@ derived_finite_solution_bounds(const RealVector& x0, RealVector& x_lb,
     Real N_sh = (Real)NLevAlloc[hf_form_index][hf_lev_index],
       cost_sh = modelGroupCost[x_len], factor = budget_cost / N_sh - cost_sh;
     for (i=0; i<x_len; ++i)
-      x_ub[i] = (reorderOnTheFly) ? // for ub on r_i
+      x_ub[i] = (reorderModelsOnTheFly) ? // for ub on r_i
 	1. + factor / sequenceCost[i] : 1. + factor / modelGroupCost[i];
     break;
   }
@@ -1306,7 +1326,7 @@ derived_finite_solution_bounds(const RealVector& x0, RealVector& x_lb,
     // And for variable N_sh, r_i upper bnd corresponds to N_sh lower bnd
     Real N_sh_lb = x_lb[hf_index], factor = budget_cost / N_sh_lb - cost_sh;
     for (i=0; i<hf_index; ++i)
-      x_ub[i] = (reorderOnTheFly) ? // for ub on r_i
+      x_ub[i] = (reorderModelsOnTheFly) ? // for ub on r_i
 	1. + factor / sequenceCost[i] : 1. + factor / modelGroupCost[i];
     break;
   }
@@ -1324,7 +1344,7 @@ derived_finite_solution_bounds(const RealVector& x0, RealVector& x_lb,
     // > without reorder-on-the-fly, the group cost is invariant and can be
     //   used to reduce the search domain.
     for (i=0; i<hf_index; ++i) // ub on N_i
-      x_ub[i] = (reorderOnTheFly) ? N_sh_lb + factor / sequenceCost[i] :
+      x_ub[i] = (reorderModelsOnTheFly) ? N_sh_lb + factor / sequenceCost[i] :
 	N_sh_lb + factor / modelGroupCost[i];
     break;
   }
@@ -1842,6 +1862,8 @@ estimator_variances_from_ratios(const RealVector& cd_vars,
 				const RealVector& estvar_ratios,
 				RealVector& estvar)
 {
+  if (estvar_ratios.empty()) { estvar.size(0); return; }
+
   // form estimator variances to pick up dependence on N
   if (estvar.length() != numFunctions) estvar.sizeUninitialized(numFunctions);
   size_t qoi, num_approx = num_approximations();
@@ -1867,6 +1889,43 @@ estimator_variances_from_ratios(const RealVector& cd_vars,
     Cout << "NonDNumericSolveSampling::estimator_variances(): design vars:\n"
 	 << cd_vars << "EstVar ratios:\n" << estvar_ratios << "EstVar:\n"
 	 << estvar << '\n';
+}
+
+
+void NonDNumericSolveSampling::
+estimator_ratios_from_variances(const RealVector& cd_vars,
+				const RealVector& estvar,
+				RealVector& estvar_ratios)
+{
+  if (estvar.empty()) { estvar_ratios.size(0); return; }
+
+  // form estimator variances to pick up dependence on N
+  if (estvar_ratios.length() != numFunctions)
+    estvar_ratios.sizeUninitialized(numFunctions);
+  size_t qoi, num_approx = num_approximations();
+  switch (optSubProblemForm) {
+  case R_ONLY_LINEAR_CONSTRAINT: // N is a vector constant for opt sub-problem
+    if (cd_vars.length() == num_approx) {
+      // N_H not provided so pull from latest counter values
+      size_t hf_form_index, hf_lev_index;
+      hf_indices(hf_form_index, hf_lev_index);
+      estvar_to_estvar_ratios(estvar, varH,
+			      NLevActual[hf_form_index][hf_lev_index],
+			      estvar_ratios);
+    }
+    else // r_and_N_to_design_vars(): N_H appended for convenience
+      estvar_to_estvar_ratios(estvar, varH, cd_vars[num_approx], estvar_ratios);
+    break;
+  case N_MODEL_LINEAR_OBJECTIVE:  case N_MODEL_LINEAR_CONSTRAINT:
+  case R_AND_N_NONLINEAR_CONSTRAINT: // N is a scalar optimization variable
+    estvar_ratios_to_estvar(estvar, varH, cd_vars[num_approx], estvar_ratios);
+    break;
+  }
+
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "NonDNumericSolveSampling::estimator_variance_ratios(): "
+	 << "design vars:\n" << cd_vars << "EstVar:\n" << estvar
+	 << "EstVar ratios:\n" << estvar_ratios << '\n';
 }
 
 
@@ -2207,21 +2266,19 @@ npsol_objective(int& mode, int& n, double* x, double& f, double* grad_f,
 	copy_data(grad_f_rv, grad_f, n);
       // else leave unspecified
     }
-    else {
-      if (asv_request & 1)
-	f = numSolveSampInstance->log_estvar_metric(x_rv);
-      // NPSOL estimates unspecified components of the obj grad, so ASV grad
-      // request is not an error
-      if (asv_request & 2) {
-	//RealVector grad_f_rv(Teuchos::View, grad_f, n);
-	//numSolveSampInstance->log_estvar_metric_gradient(x_rv, grad_f_rv);
-	// manage ML BLUE (defined) vs. other estimators (empty)
-	RealVector grad_f_rv;
-	numSolveSampInstance->log_estvar_metric_gradient(x_rv, grad_f_rv);
-	if (grad_f_rv.length() == n) // grads supported by derived class
-	  copy_data(grad_f_rv, grad_f, n);
-	// else leave unspecified
-      }
+    else if (asv_request & 1)
+      f = numSolveSampInstance->log_estvar_metric(x_rv);
+    // NPSOL estimates unspecified components of the obj grad, so ASV grad
+    // request is not an error
+    else if (asv_request & 2) {
+      //RealVector grad_f_rv(Teuchos::View, grad_f, n);
+      //numSolveSampInstance->log_estvar_metric_gradient(x_rv, grad_f_rv);
+      // manage ML BLUE (defined) vs. other estimators (empty)
+      RealVector grad_f_rv;
+      numSolveSampInstance->log_estvar_metric_gradient(x_rv, grad_f_rv);
+      if (grad_f_rv.length() == n) // grads supported by derived class
+	copy_data(grad_f_rv, grad_f, n);
+      // else leave unspecified
     }
     break;
   }
@@ -2246,21 +2303,19 @@ npsol_constraint(int& mode, int& ncnln, int& n, int& nrowj, int* needc,
 	copy_data(grad_c_rv, cjac, n);
       // else leave unspecified
     }
-    else {
-      if (asv_request & 1)
-	c[0] = numSolveSampInstance->log_estvar_metric(x_rv);
-      // NPSOL estimates unspecified components of the constr grad, so ASV grad
-      // request is not an error
-      if (asv_request & 2) {
-	//RealVector grad_c_rv(Teuchos::View, cjac, n);
-	//numSolveSampInstance->log_estvar_metric_gradient(x_rv, grad_c_rv);
-	// manage ML BLUE (defined) vs. other estimators (empty)
-	RealVector grad_c_rv;
-	numSolveSampInstance->log_estvar_metric_gradient(x_rv, grad_c_rv);
-	if (grad_c_rv.length() == n) // grads supported by derived class
-	  copy_data(grad_c_rv, cjac, n);
-	// else leave unspecified
-      }
+    else if (asv_request & 1)
+      c[0] = numSolveSampInstance->log_estvar_metric(x_rv);
+    // NPSOL estimates unspecified components of the constr grad, so ASV grad
+    // request is not an error
+    if (asv_request & 2) {
+      //RealVector grad_c_rv(Teuchos::View, cjac, n);
+      //numSolveSampInstance->log_estvar_metric_gradient(x_rv, grad_c_rv);
+      // manage ML BLUE (defined) vs. other estimators (empty)
+      RealVector grad_c_rv;
+      numSolveSampInstance->log_estvar_metric_gradient(x_rv, grad_c_rv);
+      if (grad_c_rv.length() == n) // grads supported by derived class
+	copy_data(grad_c_rv, cjac, n);
+      // else leave unspecified
     }
     break;
   case R_AND_N_NONLINEAR_CONSTRAINT:
@@ -2308,15 +2363,13 @@ optpp_nlf1_objective(int mode, int n, const RealVector& x, double& f,
       result_mode |= OPTPP::NLPFunction; // adds 1 bit
       result_mode |= OPTPP::NLPGradient; // adds 2 bit
     }
-    else {
-      if (mode & OPTPP::NLPFunction) { // 1st bit is present, mode = 1 or 3
-	f = numSolveSampInstance->log_estvar_metric(x);
-	result_mode |= OPTPP::NLPFunction; // adds 1 bit
-      }
-      if (mode & OPTPP::NLPGradient) { // 2nd bit is present, mode = 2 or 3
-	numSolveSampInstance->log_estvar_metric_gradient(x, grad_f);
-	result_mode |= OPTPP::NLPGradient; // adds 2 bit
-      }
+    else if (mode & OPTPP::NLPFunction) { // 1st bit is present, mode = 1 or 3
+      f = numSolveSampInstance->log_estvar_metric(x);
+      result_mode |= OPTPP::NLPFunction; // adds 1 bit
+    }
+    else if (mode & OPTPP::NLPGradient) { // 2nd bit is present, mode = 2 or 3
+      numSolveSampInstance->log_estvar_metric_gradient(x, grad_f);
+      result_mode |= OPTPP::NLPGradient; // adds 2 bit
     }
     break;
   }
@@ -2337,16 +2390,14 @@ optpp_nlf1_constraint(int mode, int n, const RealVector& x, RealVector& c,
       result_mode |= OPTPP::NLPFunction; // adds 1 bit
       result_mode |= OPTPP::NLPGradient; // adds 2 bit
     }
-    else {
-      if (mode & OPTPP::NLPFunction) { // 1st bit is present, mode = 1 or 3
-	c[0] = numSolveSampInstance->log_estvar_metric(x);
-	result_mode |= OPTPP::NLPFunction; // adds 1 bit
-      }
-      if (mode & OPTPP::NLPGradient) { // 2nd bit is present, mode = 2 or 3
-	RealVector grad_c_rv(Teuchos::View, grad_c[0], n); // 0-th col vec
-	numSolveSampInstance->log_estvar_metric_gradient(x, grad_c_rv);
-	result_mode |= OPTPP::NLPGradient; // adds 2 bit
-      }
+    else if (mode & OPTPP::NLPFunction) { // 1st bit is present, mode = 1 or 3
+      c[0] = numSolveSampInstance->log_estvar_metric(x);
+      result_mode |= OPTPP::NLPFunction; // adds 1 bit
+    }
+    else if (mode & OPTPP::NLPGradient) { // 2nd bit is present, mode = 2 or 3
+      RealVector grad_c_rv(Teuchos::View, grad_c[0], n); // 0-th col vec
+      numSolveSampInstance->log_estvar_metric_gradient(x, grad_c_rv);
+      result_mode |= OPTPP::NLPGradient; // adds 2 bit
     }
     break;
   case R_AND_N_NONLINEAR_CONSTRAINT:
@@ -2476,13 +2527,12 @@ response_evaluator(const Variables& vars, const ActiveSet& set,
 		   Response& response)
 {
   const ShortArray& asv = set.request_vector();
-  size_t i, num_fns = asv.size();//, num_deriv_vars = dvv.size();
+  //size_t i, num_fns = asv.size();//, num_deriv_vars = dvv.size();
   //bool grad_flag = false, hess_flag = false;
   //for (i=0; i<num_fns; ++i) {
   //  if (asv[i] & 2) grad_flag = true;
   //  if (asv[i] & 4) hess_flag = true;
   //}
-  bool nln_con = (num_fns > 1);
 
   const RealVector& c_vars = vars.continuous_variables();
   switch (numSolveSampInstance->optSubProblemForm) {
@@ -2510,45 +2560,43 @@ response_evaluator(const Variables& vars, const ActiveSet& set,
       RealVector grad_f = response.function_gradient_view(0);
       numSolveSampInstance->log_estvar_metric_and_gradient(c_vars, f, grad_f);
     }
-    else {
-      if (asv[0] & 1)
-	response.function_value(numSolveSampInstance->
-				log_estvar_metric(c_vars), 0);
-      if (asv[0] & 2) {
-	RealVector grad_f = response.function_gradient_view(0);
-	numSolveSampInstance->log_estvar_metric_gradient(c_vars, grad_f);
-      }
+    else if (asv[0] & 1)
+      response.function_value(numSolveSampInstance->
+			      log_estvar_metric(c_vars), 0);
+    else if (asv[0] & 2) {
+      RealVector grad_f = response.function_gradient_view(0);
+      numSolveSampInstance->log_estvar_metric_gradient(c_vars, grad_f);
     }
   }
 
-  switch (numSolveSampInstance->optSubProblemForm) {
-  case N_MODEL_LINEAR_OBJECTIVE:  case N_GROUP_LINEAR_OBJECTIVE:
-    if (nln_con && ((asv[1] & 3) == 3)) {
-      Real&           c = response.function_value_view(1);
-      RealVector grad_c = response.function_gradient_view(1);
-      numSolveSampInstance->log_estvar_metric_and_gradient(c_vars, c, grad_c);
-    }
-    else {
-      if (nln_con && (asv[1] & 1))
+  bool nln_con = (asv.size() > 1);
+  if (nln_con)
+    switch (numSolveSampInstance->optSubProblemForm) {
+    case N_MODEL_LINEAR_OBJECTIVE:  case N_GROUP_LINEAR_OBJECTIVE:
+      if ((asv[1] & 3) == 3) {
+	Real&           c = response.function_value_view(1);
+	RealVector grad_c = response.function_gradient_view(1);
+	numSolveSampInstance->log_estvar_metric_and_gradient(c_vars, c, grad_c);
+      }
+      else if (asv[1] & 1)
 	response.function_value(numSolveSampInstance->
 				log_estvar_metric(c_vars), 1);
-      if (nln_con && (asv[1] & 2)) {
+      else if (asv[1] & 2) {
 	RealVector grad_c = response.function_gradient_view(1);
 	numSolveSampInstance->log_estvar_metric_gradient(c_vars, grad_c);
       }
+      break;
+    default:
+      // R_ONLY_LINEAR_CONSTRAINT has nln_con = 0, so c_vars ends in N_H
+      if (asv[1] & 1)
+	response.function_value(numSolveSampInstance->
+				nonlinear_model_cost(c_vars), 1);
+      if (asv[1] & 2) {
+	RealVector grad_c = response.function_gradient_view(1);
+	numSolveSampInstance->nonlinear_model_cost_gradient(c_vars, grad_c);
+      }
+      break;
     }
-    break;
-  default:
-    // R_ONLY_LINEAR_CONSTRAINT has nln_con = 0, so c_vars ends in N_H
-    if (nln_con && (asv[1] & 1))
-      response.function_value(numSolveSampInstance->
-			      nonlinear_model_cost(c_vars), 1);
-    if (nln_con && (asv[1] & 2)) {
-      RealVector grad_c = response.function_gradient_view(1);
-      numSolveSampInstance->nonlinear_model_cost_gradient(c_vars, grad_c);
-    }
-    break;
-  }
 }
 
 
