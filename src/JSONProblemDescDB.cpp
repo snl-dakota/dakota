@@ -190,6 +190,29 @@ JSONProblemDescDB::handle_keyword(const json& key_map_item, const std::string& c
         else
           std::cout << "PRESENCE_ENUM: " << enum_str << " has not been registered." << std::endl;
       }
+      else if( "AUGMENT_ENUM" == storage_type ) {
+        const std::string& init_enum_str = key_map_item[currentPath]["initial_value"];
+        const std::string& aug_enum_str  = key_map_item[currentPath]["stored_value"];
+        bool is_valid = true;
+        if( dakEnumMap().count(init_enum_str) == 0 ) {
+          std::cout << "AUGMENT_ENUM: " << init_enum_str << " has not been registered." << std::endl;
+          is_valid = false;
+        }
+        if( dakEnumMap().count(aug_enum_str) == 0 ) {
+          std::cout << "AUGMENT_ENUM: " << aug_enum_str << " has not been registered." << std::endl;
+          is_valid = false;
+        }
+
+        if( is_valid ) {
+          if( cachedData_Ushort.count(ckey) ) {
+            // initial value should already be set
+            assert( cachedData_Ushort[ckey] & dakEnumMap().at(init_enum_str) );
+            cachedData_Ushort[ckey] |= dakEnumMap().at(aug_enum_str);
+          }
+          else
+            cachedData_Ushort[ckey] = dakEnumMap().at(aug_enum_str) | dakEnumMap().at(aug_enum_str);
+        }
+      }
     }
     if( cache_keys.empty() )
       std::cout << currentPath << " --> " << "No pdb_key" << std::endl;
