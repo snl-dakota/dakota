@@ -1183,9 +1183,7 @@ const RealVector& ProblemDescDB::get_rv(const String& entry_name) const
       {"nested.primary_response_mapping", P_MOD primaryRespCoeffs},
       {"nested.secondary_response_mapping", P_MOD secondaryRespCoeffs},
       {"simulation.solution_level_cost", P_MOD solutionLevelCost},
-      {"surrogate.kriging_correlations", P_MOD krigingCorrelations},
-      {"surrogate.kriging_max_correlations", P_MOD krigingMaxCorrelations},
-      {"surrogate.kriging_min_correlations", P_MOD krigingMinCorrelations}
+      {"surrogate.kriging_correlations", P_MOD krigingCorrelations}
     },
     { /* variables */
       {"beta_uncertain.alphas", P_VAR betaUncAlphas},
@@ -1277,9 +1275,6 @@ const RealVector& ProblemDescDB::get_rv(const String& entry_name) const
       {"failure_capture.recovery_fn_vals", P_INT recoveryFnVals}
     },
     { /* responses */
-      {"exp_config_variables", P_RES expConfigVars},
-      {"exp_observations", P_RES expObservations},
-      {"exp_std_deviations", P_RES expStdDeviations},
       {"fd_gradient_step_size", P_RES fdGradStepSize},
       {"fd_hessian_step_size", P_RES fdHessStepSize},
       {"nonlinear_equality_scales", P_RES nonlinearEqScales},

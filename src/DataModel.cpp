@@ -82,7 +82,6 @@ void DataModelRep::write(MPIPackBuffer& s) const
     << numRestarts << approxCorrectionType << approxCorrectionOrder
     << modelUseDerivsFlag << respScalingFlag << polynomialOrder
     << krigingCorrelations << krigingOptMethod << krigingMaxTrials
-    << krigingMaxCorrelations << krigingMinCorrelations
     << krigingNugget << krigingFindNugget << mlsWeightFunction
     << rbfBases << rbfMaxPts << rbfMaxSubsets << rbfMinPartition
     << marsMaxBases << marsInterpolation << annRandomWeight << annNodes
@@ -132,7 +131,6 @@ void DataModelRep::read(MPIUnpackBuffer& s)
     >> numRestarts >> approxCorrectionType >> approxCorrectionOrder
     >> modelUseDerivsFlag >> respScalingFlag >> polynomialOrder
     >> krigingCorrelations >> krigingOptMethod >> krigingMaxTrials
-    >> krigingMaxCorrelations >> krigingMinCorrelations
     >> krigingNugget >> krigingFindNugget >> mlsWeightFunction
     >> rbfBases >> rbfMaxPts >> rbfMaxSubsets >> rbfMinPartition
     >> marsMaxBases >> marsInterpolation >> annRandomWeight >> annNodes
@@ -182,7 +180,6 @@ void DataModelRep::write(std::ostream& s) const
     << numRestarts << approxCorrectionType << approxCorrectionOrder
     << modelUseDerivsFlag << respScalingFlag << polynomialOrder
     << krigingCorrelations << krigingOptMethod << krigingMaxTrials
-    << krigingMaxCorrelations << krigingMinCorrelations
     << krigingNugget << krigingFindNugget << mlsWeightFunction
     << rbfBases << rbfMaxPts << rbfMaxSubsets << rbfMinPartition
     << marsMaxBases << marsInterpolation << annRandomWeight << annNodes

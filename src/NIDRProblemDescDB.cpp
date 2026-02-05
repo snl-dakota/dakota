@@ -7562,8 +7562,6 @@ static Real
 
 static RealVector
 	MP_(krigingCorrelations),
-      //MP_(krigingMaxCorrelations),
-      //MP_(krigingMinCorrelations),
 	MP_(primaryRespCoeffs),
 	MP_(secondaryRespCoeffs),
   	MP_(solutionLevelCost);
@@ -7699,8 +7697,6 @@ static IntVector
 	MP_(numCoordsPerField);
 
 static RealVector
-	MP_(expConfigVars),
-	MP_(expObservations),
 	MP_(primaryRespFnWeights),
 	MP_(nonlinearEqTargets),
 	MP_(nonlinearIneqLowerBnds),

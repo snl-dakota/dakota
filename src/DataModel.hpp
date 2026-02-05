@@ -236,10 +236,6 @@ public:
   String krigingOptMethod;
   /// maximum number of trials in optimization of kriging correlations
   short krigingMaxTrials;
-  /// upper bound on kriging correlation vector
-  RealVector krigingMaxCorrelations;
-  /// lower bound on kriging correlation vector
-  RealVector krigingMinCorrelations;
   /// nugget value for kriging
   Real krigingNugget;
   /// option to have Kriging find the best nugget value to use
