@@ -151,9 +151,6 @@ protected:
   Real update_hf_target(const RealVector& avg_eval_ratios, Real avg_N_H,
 			const RealVector& var_H);
 
-  void print_model_allocations(std::ostream& s, const MFSolutionData& soln,
-			       const UShortArray& approx_set);
-
   //
   //- Heading: Data
   //
@@ -165,7 +162,7 @@ protected:
   /// as a numFunctions array of symmetric numApprox x numApprox matrices
   RealSymMatrixArray covLL;
 
-  /// ACV uses all approximations with in numApprox; this array supports this
+  /// ACV uses all approximations within numApprox; this array supports this
   /// case for functions that are generalized to support approx subsets
   UShortArray fullApproxSet;
 

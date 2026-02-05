@@ -194,6 +194,10 @@ protected:
   void estimator_variances_from_ratios(const RealVector& cd_vars,
 				       const RealVector& estvar_ratios,
 				       RealVector& est_var);
+  /// compute estimator variances from ratios and MC reference variance
+  void estimator_ratios_from_variances(const RealVector& cd_vars,
+				       const RealVector& estvar,
+				       RealVector& estvar_ratios);
   /// alternate API for updating both variance ratios and associated variances
   void estimator_variances_and_ratios(const RealVector& cd_vars,
 				      RealVector& estvar_ratios,
@@ -212,6 +216,14 @@ protected:
   /// compute estimator variance from estimator variance ratios
   void estvar_ratios_to_estvar(const RealVector& var_H, const SizetArray& N_H,
 			       MFSolutionData& soln);
+  /// compute estimator variance ratios from estimator variance
+  void estvar_to_estvar_ratios(const RealVector& estvar,
+			       const RealVector& var_H, const SizetArray& N_H,
+			       RealVector& estvar_ratios);
+  /// compute estimator variance ratios from estimator variance
+  void estvar_to_estvar_ratios(const RealVector& estvar,
+			       const RealVector& var_H, Real N_H,
+			       RealVector& estvar_ratios);
 
   /// evaluate the optimization metric formed from a reduction of
   /// estimator variances
@@ -380,6 +392,8 @@ protected:
 			    const RealMatrix& lin_eq_coeffs);
   void run_minimizers(MFSolutionData& soln);
   void process_model_allocations(MFSolutionData& soln, size_t& num_samples);
+  void print_model_allocations(std::ostream& s, const MFSolutionData& soln,
+			       const UShortArray& approx_set);
 
   void root_reverse_dag_to_group(unsigned short root, const UShortSet& rev_dag,
 				 UShortArray& model_group);
@@ -456,6 +470,8 @@ protected:
 			RealVector& N_vec);
   void r_and_N_to_design_vars(const RealVector& avg_eval_ratios, Real N_H,
 			      RealVector& cd_vars);
+  void design_vars_to_r(const RealVector& cd_vars, RealVector& avg_eval_ratios);
+  void design_vars_to_N(const RealVector& cd_vars, RealVector& N_samp);
   void solution_to_design_vars(const MFSolutionData& soln, RealVector& cd_vars);
 
   /// define approx_sequence in increasing metric order
@@ -565,7 +581,7 @@ protected:
   bool hardenNumericSoln;
   /// flag for hierarchical methods (MFMC) that reorder models on the fly during
   /// numerical solutions in order to satisfy monotonicity requirements
-  bool reorderOnTheFly;
+  bool reorderModelsOnTheFly;
 
   /// for sample projections, the calculated increment in HF samples that
   /// would be evaluated if full iteration/statistics were pursued
@@ -640,6 +656,10 @@ private:
   //
   //- Heading: Data
   //
+
+  /// flag to prevent a circular invocation of base class conversions between
+  /// estvar and estvar_ratios, for values or gradients
+  bool recurConversion;
 
   /// pointer to NonDACV instance used in static member functions
   static NonDNumericSolveSampling* numSolveSampInstance;
@@ -828,9 +848,24 @@ competed_initial_guesses(MFSolutionData& mf_soln, MFSolutionData& cv_soln,
 inline void NonDNumericSolveSampling::
 estimator_variance_ratios(const RealVector& cd_vars, RealVector& estvar_ratios)
 {
-  Cerr << "Error: estimator_variance_ratios() not defined by derived class.\n"
-       << std::endl;
-  abort_handler(METHOD_ERROR);
+  // estimator_variance_ratios() not redefined: fallback to estvar + conversion
+  // > we allow only one use of a base class estvar/estvar_ratios conversion;
+  //   derived class must redefine at least one
+
+  if (recurConversion) { // both option are base; neither is redefined
+    //estvar_ratios.size(0); return;
+    // make this a hard error here rather than managing downstream
+    Cerr << "Error: no derived implementation of estimator_variance() or "
+	 << "estimator_variance_ratios().  Base conversion is circular."
+	 << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+
+  recurConversion = true; // protect a circular use of base class conversion
+  RealVector estvar(numFunctions, false);
+  estimator_variances(cd_vars, estvar); // virtual: MFMC,ACV,GenACV
+  estimator_ratios_from_variances(cd_vars, estvar, estvar_ratios);
+  recurConversion = false; // reset for next metric eval
 }
 
 
@@ -838,22 +873,89 @@ inline void NonDNumericSolveSampling::
 estimator_variance_ratio_gradients(const RealVector& cd_vars,
 				   RealMatrix& evr_grads)
 {
-  // *** TO DO ***: this can be derived from
-  //   ev = varH/N_H ev_ratios
-  // where varH is fixed and N_H is a design variable for ACV,GenACV,MFMC
+  // estimator_variance_ratio_gradients() not redefined:
+  // fallback to estvar gradients + conversion
+  // > we allow only one use of a base class estvar/estvar_ratio gradients
+  //   conversion; derived class must redefine at least one
 
-  Cerr << "Error: estimator_variance_ratio_gradients() not defined by derived "
-       << "class.\n" << std::endl;
-  abort_handler(METHOD_ERROR);
+  if (recurConversion) // both options are base impls.; neither is redefined
+    { evr_grads.shape(0,0); return; }
+
+  RealVector estvar_ratios;
+  estimator_variance_ratios(cd_vars, estvar_ratios);
+
+  recurConversion = true;
+  RealMatrix ev_grads;
+  estimator_variance_gradients(cd_vars, ev_grads);
+  if (ev_grads.empty())
+    evr_grads.shape(0,0);
+  else {
+    size_t q, v, num_v = cd_vars.length();
+    evr_grads.shape(num_v, numFunctions);
+    for (q=0; q<numFunctions; ++q) {
+      const Real* ev_grad_q = ev_grads[q];
+      Real* evr_grad_q = evr_grads[q];
+      Real varH_q = varH[q], N = cd_vars[numApprox];
+      for (v=0; v<num_v; ++v)
+	evr_grad_q[v] = N * ev_grad_q[v] / varH_q + estvar_ratios[q] / N;
+    }
+  }
+  recurConversion = false; // reset for next gradient eval
 }
 
 
 inline void NonDNumericSolveSampling::
 estimator_variances(const RealVector& cd_vars, RealVector& est_var)
 {
+  // estimator_variances() not redefined: fallback to ratios + conversion
+  // > we allow only one use of a base class estvar/estvar_ratios conversion;
+  //   derived class must redefine at least one
+
+  if (recurConversion) { // both options are base impls.; neither is redefined
+    //est_var.size(0); return;
+    // make this a hard error here rather than managing downstream
+    Cerr << "Error: no derived implementation of estimator_variance() or "
+	 << "estimator_variance_ratios().  Base conversion is circular."
+	 << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+
+  recurConversion = true;
   RealVector estvar_ratios(numFunctions, false);
   estimator_variance_ratios(cd_vars, estvar_ratios); // virtual: MFMC,ACV,GenACV
   estimator_variances_from_ratios(cd_vars, estvar_ratios, est_var);
+  recurConversion = false; // reset for next metric eval
+}
+
+
+inline void NonDNumericSolveSampling::
+estimator_variance_gradients(const RealVector& cd_vars, RealMatrix& ev_grads)
+{
+  // estimator_variance_gradients() not redefined:
+  // fallback to estvar ratio gradients + conversion
+  // > we allow only one use of a base class estvar/estvar_ratio gradient
+  //   conversion; derived class must redefine at least one
+
+  if (recurConversion) // both option are base; neither is redefined
+    { ev_grads.shape(0,0); return; }
+
+  recurConversion = true;
+  RealVector estvar_ratios;  RealMatrix evr_grads;
+  estimator_variance_ratios_and_gradients(cd_vars, estvar_ratios, evr_grads);
+  if (evr_grads.empty())
+    ev_grads.shape(0,0);
+  else {
+    size_t q, v, num_v = cd_vars.length();
+    ev_grads.shape(num_v, numFunctions);
+    for (q=0; q<numFunctions; ++q) {
+      const Real* evr_grad_q = evr_grads[q];
+      Real* ev_grad_q = ev_grads[q];
+      Real varH_q = varH[q], N = cd_vars[numApprox];
+      for (v=0; v<num_v; ++v)
+	ev_grad_q[v] = varH_q / N * (evr_grad_q[v] - estvar_ratios[q] / N);
+    }
+  }
+  recurConversion = false; // reset for next gradient eval
 }
 
 
@@ -876,15 +978,6 @@ estimator_variances_and_ratios(const RealVector& cd_vars, MFSolutionData& soln)
   soln.estimator_variance_ratios(estvar_ratios);
   //soln.update_estimator_variance_metric(estVarMetricType,
   //                                      estVarMetricNormOrder);
-}
-
-
-inline void NonDNumericSolveSampling::
-estimator_variance_gradients(const RealVector& cd_vars, RealMatrix& ev_grads)
-{
-  //Cerr << "Warning: testing omission of estimator_variance_gradients() by "
-  //     << "derived class.\n" << std::endl;
-  ev_grads.shape(0,0);
 }
 
 
@@ -938,6 +1031,29 @@ estvar_ratios_to_estvar(const RealVector& var_H, const SizetArray& N_H,
   soln.initialize_estimator_variances(numFunctions);
   for (size_t qoi=0; qoi<numFunctions; ++qoi)
     soln.estimator_variance(estvar_ratios[qoi] * var_H[qoi] / N_H[qoi], qoi);
+}
+
+
+inline void NonDNumericSolveSampling::
+estvar_to_estvar_ratios(const RealVector& estvar,
+			const RealVector& var_H, const SizetArray& N_H,
+			RealVector& estvar_ratios)
+{
+  if (estvar_ratios.length() != numFunctions)
+    estvar_ratios.sizeUninitialized(numFunctions);
+  for (size_t qoi=0; qoi<numFunctions; ++qoi)
+    estvar_ratios[qoi] = estvar[qoi] * N_H[qoi] / var_H[qoi];
+}
+
+
+inline void NonDNumericSolveSampling::
+estvar_to_estvar_ratios(const RealVector& estvar, const RealVector& var_H,
+			Real N_H, RealVector& estvar_ratios)
+{
+  if (estvar_ratios.length() != numFunctions)
+    estvar_ratios.sizeUninitialized(numFunctions);
+  for (size_t qoi=0; qoi<numFunctions; ++qoi)
+    estvar_ratios[qoi] = estvar[qoi] * N_H / var_H[qoi];
 }
 
 
@@ -1589,6 +1705,39 @@ r_and_N_to_design_vars(const RealVector& avg_eval_ratios, Real N_H,
   }
   case N_MODEL_LINEAR_OBJECTIVE:  case N_MODEL_LINEAR_CONSTRAINT:
     r_and_N_to_N_vec(avg_eval_ratios, N_H, cd_vars);  break;
+  }
+}
+
+
+inline void NonDNumericSolveSampling::
+design_vars_to_r(const RealVector& cd_vars, RealVector& avg_eval_ratios)
+{
+  switch (optSubProblemForm) {
+  case N_MODEL_LINEAR_OBJECTIVE:  case N_MODEL_LINEAR_CONSTRAINT:
+    copy_data_partial(cd_vars, 0, (int)numApprox, avg_eval_ratios); // N_i
+    avg_eval_ratios.scale(1./cd_vars[numApprox]); // r_i = N_i / N
+    break;
+  default: // r_and_N provided: pass leading numApprox terms of cd_vars
+    avg_eval_ratios = RealVector(Teuchos::View, cd_vars.values(), numApprox);
+    break;
+  }
+}
+
+
+inline void NonDNumericSolveSampling::
+design_vars_to_N(const RealVector& cd_vars, RealVector& N_samp)
+{
+  int num_m = numApprox+1;
+  switch (optSubProblemForm) {
+  case N_MODEL_LINEAR_OBJECTIVE:  case N_MODEL_LINEAR_CONSTRAINT:
+    N_samp = RealVector(Teuchos::View, cd_vars.values(), num_m);
+    break;
+  default: // r_and_N provided: pass leading numApprox terms of cd_vars
+    copy_data(cd_vars, N_samp);
+    Real N_H = cd_vars[numApprox];
+    for (size_t i=0; i<numApprox; ++i)
+      N_samp[i] *= N_H; // N_i = r_i * N
+    break;
   }
 }
 

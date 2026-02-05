@@ -706,25 +706,6 @@ analytic_ratios_to_solution_variables(RealVector& avg_eval_ratios,
 }
 
 
-void NonDACVSampling::
-print_model_allocations(std::ostream& s, const MFSolutionData& soln,
-			const UShortArray& approx_set)
-{
-  const RealVector& soln_vars = soln.solution_variables();
-  size_t i, num_approx = approx_set.size();
-  for (i=0; i<num_approx; ++i)
-    s << "Approx " << approx_set[i] + 1 << ": sample allocation = "
-      << soln_vars[i] << '\n';
-  s << "Truth:   sample allocation = " << soln_vars[num_approx] << '\n';
-  if (maxFunctionEvals == SZ_MAX)
-    s << "Estimator cost allocation = " << soln.equivalent_hf_allocation()
-      << std::endl;
-  else
-    s << "Estimator variance metric = " << soln.estimator_variance_metric()
-      << std::endl;
-}
-
-
 /** Multi-moment map-based version used by ACV following shared_increment() */
 void NonDACVSampling::
 accumulate_acv_sums(IntRealMatrixMap& sum_L_shared, IntRealVectorMap& sum_H,
