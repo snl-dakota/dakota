@@ -580,8 +580,7 @@ estimator_variance_ratio_gradients(const RealVector& cd_vars,
   */
 
   if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "Solve at sample allocations:\n" << cd_vars << "for QoI estimator "
-	 << "variance ratio gradients:\n" << evr_grads << std::endl;
+    Cout << "QoI estimator variance ratio gradients:\n" << evr_grads<<std::endl;
 }
 
 

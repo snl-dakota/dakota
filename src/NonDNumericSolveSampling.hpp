@@ -891,16 +891,21 @@ estimator_variance_ratio_gradients(const RealVector& cd_vars,
   if (ev_grads.empty())
     evr_grads.shape(0,0);
   else {
-    size_t q, v, num_v = cd_vars.length();
+    size_t q, v, num_v = cd_vars.length(), num_vm1 = num_v - 1;
     evr_grads.shape(num_v, numFunctions);
     for (q=0; q<numFunctions; ++q) {
       const Real* ev_grad_q =  ev_grads[q];
       Real*      evr_grad_q = evr_grads[q];
       Real varH_q = varH[q], N = cd_vars[numApprox];
-      for (v=0; v<num_v; ++v)
-	evr_grad_q[v] = N * ev_grad_q[v] / varH_q + estvar_ratios[q] / N;
+      for (v=0; v<num_vm1; ++v)
+	evr_grad_q[v] = N * ev_grad_q[v] / varH_q;
+      evr_grad_q[num_vm1]
+	= N * ev_grad_q[num_vm1] / varH_q + estvar_ratios[q] / N;
     }
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "QoI estimator variance ratio gradients:\n"<<evr_grads<<std::endl;
   }
+
   recurConversion = false; // reset for next gradient eval
 }
 
@@ -946,16 +951,21 @@ estimator_variance_gradients(const RealVector& cd_vars, RealMatrix& ev_grads)
   if (evr_grads.empty())
     ev_grads.shape(0,0);
   else {
-    size_t q, v, num_v = cd_vars.length();
+    size_t q, v, num_v = cd_vars.length(), num_vm1 = num_v - 1;
     ev_grads.shape(num_v, numFunctions);
     for (q=0; q<numFunctions; ++q) {
       const Real* evr_grad_q = evr_grads[q];
       Real*        ev_grad_q =  ev_grads[q];
       Real varH_q = varH[q], N = cd_vars[numApprox];
-      for (v=0; v<num_v; ++v)
-	ev_grad_q[v] = varH_q / N * (evr_grad_q[v] - estvar_ratios[q] / N);
+      for (v=0; v<num_vm1; ++v)
+	ev_grad_q[v] = varH_q / N * evr_grad_q[v];
+      ev_grad_q[num_vm1]
+	= varH_q / N * (evr_grad_q[num_vm1] - estvar_ratios[q] / N);
     }
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "QoI estimator variance gradients:\n" << ev_grads << std::endl;
   }
+
   recurConversion = false; // reset for next gradient eval
 }
 

@@ -1549,7 +1549,7 @@ configure_minimizers(RealVector& x0, RealVector& x_lb, RealVector& x_ub,
 	  Real max_step = 100000.;    String fd_type = "forward";
 	  RealVector fdss(1, false);  fdss[0] = 1.e-7; // ~7x > default
 #ifdef HAVE_OPTPP
-	if (analyticEstVarDerivs)
+	  if (analyticEstVarDerivs)
 	    min_i[j] = std::make_shared<SNLLOptimizer>(x0, x_lb,
 	      x_ub, lin_ineq_coeffs, lin_ineq_lb, lin_ineq_ub, lin_eq_coeffs,
 	      lin_eq_tgt, nln_ineq_lb, nln_ineq_ub, nln_eq_tgt,
