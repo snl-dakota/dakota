@@ -348,7 +348,7 @@ short Variables::method_view(const ProblemDescDB& problem_db) const
   else if (method_name & NOND_BIT) {
     // NonD method enum vals are ordered as aleatory, both (sampling), epistemic
     if (method_name == RANDOM_SAMPLING || method_name == LIST_SAMPLING ||
-	method_name == MULTILEVEL_SAMPLING) { // MC/LHS, MLMC, import samples
+	method_name == MULTILEVEL_SAMPLING || method_name == IMPORT_POINTS ) { // MC/LHS, MLMC, import samples
       size_t num_auv = problem_db.get_sizet("variables.aleatory_uncertain"),
 	     num_euv = problem_db.get_sizet("variables.epistemic_uncertain");
       if (num_auv && num_euv) return UNCERTAIN_VIEW;

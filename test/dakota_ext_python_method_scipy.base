@@ -1,0 +1,24 @@
+Test Number 0 succeeded
+Sample moment statistics for each response function::
+                            Mean           Std Dev          Skewness          Kurtosis
+      obj_fn_1  6.7799138669e+03  6.5350962282e+03  2.0219620752e+00  6.0338629705e+00
+      obj_fn_2  3.3969661303e+01  3.0653667380e+01  5.7147007958e-01 -9.7506358822e-01
+      obj_fn_3  3.3913152571e+01  3.0889128507e+01  6.8172336287e-01 -6.2206657886e-01
+Test Number 1 succeeded
+<<<<< Best parameters          =
+		0.9866579004475098 x1
+		0.9866579004480851 x2
+<<<<< Best objective function  =
+		6.337627403821941e-08
+Test Number 2 succeeded
+<<<<< Best parameters          =
+		0.9866579075128461 x1
+		0.9866579075128461 x2
+<<<<< Best objective function  =
+		6.337613979964552e-08
+Test Number 3 succeeded
+<<<<< Best parameters          =
+		0.9739877051262511 x1
+		0.9739877051262511 x2
+<<<<< Best objective function  =
+		9.156819842364305e-07

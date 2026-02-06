@@ -101,6 +101,8 @@ add_subdirectory(dakota_digital_net_test)
 
 add_subdirectory(dakota_json_results_parser)
 
+add_subdirectory(dakota_json_utils)
+
 # Copy needed unit test auxiliary data files
 dakota_copy_test_file("${CMAKE_CURRENT_SOURCE_DIR}/expt_data_test_files"
   "${CMAKE_CURRENT_BINARY_DIR}/expt_data_test_files"
@@ -125,7 +127,7 @@ endif (NOT DAKOTA_HAVE_MPI)
 
 
 # Unit test: h5py_hdf5
-if(DAKOTA_H5PY_FOUND)
+if(DAKOTA_PYTHON_H5PY_FOUND)
   dakota_add_h5py_test(mixed_sampling)
   if (DAKOTA_MODULE_SURROGATES)
     dakota_add_h5py_test(incremental_sampling)

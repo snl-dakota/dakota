@@ -167,7 +167,7 @@ set MPI_CXX_COMPILER to a compiler wrapper. ::
 
 Boost
 ^^^^^^
-You will need to set the following variables iff CMake
+You will need to set the following variables if CMake
 cannot find your installed version of Boost or if you have a custom
 Boost install location. ::
 
@@ -322,7 +322,7 @@ Dakota uses the standard `CMake FindBoost
 <https://cmake.org/cmake/help/latest/module/FindBoost.html>`_; see its
 documentation for the most up to date options. To identify a
 non-system default Boost installation, set
-``BOOST_ROOT:PATH=/path/to/boost/1.69``, where the specified path
+``BOOST_ROOT:PATH=/path/to/boost/1.70``, where the specified path
 contains the ``include/`` and ``lib/`` directories.  Alternately, for
 split installations, set ``BOOST_INCLUDEDIR`` and
 ``BOOST_LIBRARYDIR``.
@@ -475,7 +475,7 @@ Compiling Dakota's QUESO sub-package requires:
 Environment: If the program ``gsl-config`` is not on your PATH, you'll
 either need to put it there, or set the environment variable export
 ``GSL_CONFIG=/usr/local/gsl/1.15/bin/gsl-config`` or similar. You may
-also need to ``export BOOST_ROOT=/usr/local/boost/1.69.0`` or similar
+also need to ``export BOOST_ROOT=/usr/local/boost/1.70.0`` or similar
 to make sure that QUESO and Dakota are built with the same Boost.
 
 The following CMake settings are necessary to enable QUESO: ::

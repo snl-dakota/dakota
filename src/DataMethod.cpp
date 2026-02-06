@@ -155,13 +155,31 @@ DataMethodRep::DataMethodRep():
   //adaptedBasisInitLevel(0),
   adaptedBasisAdvancements(3), normalizedCoeffs(false), tensorGridFlag(false),
   sampleType(SUBMETHOD_DEFAULT), rank1LatticeFlag(false),
-  noRandomShiftFlag(false), log2MaxPoints(0), kuo(false),
+  noRandomShiftFlag(false), log2MaxPoints(0), 
+  rank1GeneratingVectorScheme(GEN_VECTOR_COOLS_KUO_NUYENS),
+  rank1Ordering(RANK_1_LATTICE_RADICAL_INVERSE_ORDERING),
+  // JAS TO REMOVE
+  kuo(false),
   cools_kuo_nuyens(false), naturalOrdering(false),
-  radicalInverseOrdering(false), digitalNetFlag(false),
+  radicalInverseOrdering(false), 
+  // JAS END TO REMOVE
+
+  digitalNetFlag(false),
+  digitalNetGeneratingMatrixScheme(JOE_KUO),
+  digitalNetOrdering(DIGITAL_NET_GRAY_CODE_ORDERING),
   noDigitalShiftFlag(false), noScramblingFlag(false),
-  mostSignificantBitFirst(false), leastSignificantBitFirst(false),
-  numberOfBits(0), scrambleSize(64), joe_kuo(false), sobol_order_2(false), 
-  grayCodeOrdering(false), dOptimal(false), numCandidateDesigns(0),
+  mostSignificantBitFirst(false), 
+  
+  // JAS TO REMOVE
+  leastSignificantBitFirst(false),
+  numberOfBits(0), scrambleSize(64),
+  
+  // JAS TO REMOVE
+  joe_kuo(false), sobol_order_2(false), 
+  
+  grayCodeOrdering(false), 
+  // JAS END TO REMOVE
+  dOptimal(false), numCandidateDesigns(0),
   //reliabilitySearchType(MV),
   integrationRefine(NO_INT_REFINE), optSubProbSolver(SUBMETHOD_DEFAULT),
   numericalSolveMode(NUMERICAL_FALLBACK),
@@ -226,6 +244,8 @@ DataMethodRep::DataMethodRep():
   refinementRate(2.),
   // Point import/export files
   importBuildFormat(TABULAR_ANNOTATED),   importBuildActive(false),
+  importPtsFormat(TABULAR_ANNOTATED),   importPtsActive(false),
+  importPtsUseVariableLabels(false),
   importApproxFormat(TABULAR_ANNOTATED),  importApproxActive(false),
   exportApproxFormat(TABULAR_ANNOTATED),
   exportSampleSeqFlag(false), exportSamplesFormat(TABULAR_ANNOTATED),
@@ -352,9 +372,11 @@ void DataMethodRep::write(MPIPackBuffer& s) const
     << adaptedBasisAdvancements << normalizedCoeffs << pointReuse
     << tensorGridFlag << tensorGridOrder
     << importExpansionFile << exportExpansionFile << sampleType
-    << rank1LatticeFlag <<  noRandomShiftFlag << log2MaxPoints << kuo 
+    << rank1LatticeFlag <<  noRandomShiftFlag << log2MaxPoints 
+    << rank1GeneratingVectorScheme << rank1Ordering << kuo 
     << cools_kuo_nuyens << naturalOrdering << radicalInverseOrdering 
-    << digitalNetFlag <<  noDigitalShiftFlag <<  noScramblingFlag
+    << digitalNetFlag << digitalNetGeneratingMatrixScheme << digitalNetOrdering
+    << rank1Ordering << noDigitalShiftFlag <<  noScramblingFlag
     << mostSignificantBitFirst << leastSignificantBitFirst << numberOfBits
     << scrambleSize << joe_kuo << sobol_order_2 << grayCodeOrdering
     << dOptimal << numCandidateDesigns //<< reliabilitySearchType
@@ -432,6 +454,8 @@ void DataMethodRep::write(MPIPackBuffer& s) const
 
   // Point import/export files
   s << importBuildPtsFile  << importBuildFormat  << importBuildActive
+    << importPtsFile  << importPtsFormat  
+    << importPtsActive << importPtsUseVariableLabels
     << importApproxPtsFile << importApproxFormat << importApproxActive
     << exportApproxPtsFile << exportApproxFormat << exportMCMCPtsFile
     << exportSampleSeqFlag << exportSamplesFormat;
@@ -556,9 +580,11 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
     >> adaptedBasisAdvancements >> normalizedCoeffs >> pointReuse
     >> tensorGridFlag >> tensorGridOrder
     >> importExpansionFile >> exportExpansionFile >> sampleType
-    >> rank1LatticeFlag >>  noRandomShiftFlag >> log2MaxPoints >> kuo 
+    >> rank1LatticeFlag >>  noRandomShiftFlag >> log2MaxPoints  
+    >> rank1GeneratingVectorScheme >> rank1Ordering >> kuo 
     >> cools_kuo_nuyens >> naturalOrdering >> radicalInverseOrdering 
-    >> digitalNetFlag >>  noDigitalShiftFlag >>  noScramblingFlag
+    >> digitalNetFlag >> digitalNetGeneratingMatrixScheme >> digitalNetOrdering
+    >> rank1Ordering >> noDigitalShiftFlag >>  noScramblingFlag
     >> mostSignificantBitFirst >> leastSignificantBitFirst >> numberOfBits
     >> scrambleSize >> joe_kuo >> sobol_order_2 >> grayCodeOrdering
     >> dOptimal >> numCandidateDesigns //>> reliabilitySearchType
@@ -636,6 +662,8 @@ void DataMethodRep::read(MPIUnpackBuffer& s)
 
   // Point import/export files
   s >> importBuildPtsFile  >> importBuildFormat  >> importBuildActive
+    >> importPtsFile  >> importPtsFormat
+    >> importPtsActive >> importPtsUseVariableLabels
     >> importApproxPtsFile >> importApproxFormat >> importApproxActive
     >> exportApproxPtsFile >> exportApproxFormat >> exportMCMCPtsFile
     >> exportSampleSeqFlag >> exportSamplesFormat;
@@ -760,9 +788,11 @@ void DataMethodRep::write(std::ostream& s) const
     << adaptedBasisAdvancements << normalizedCoeffs << pointReuse
     << tensorGridFlag << tensorGridOrder
     << importExpansionFile << exportExpansionFile << sampleType
-    << rank1LatticeFlag <<  noRandomShiftFlag << log2MaxPoints << kuo 
+    << rank1LatticeFlag <<  noRandomShiftFlag << log2MaxPoints 
+    << rank1GeneratingVectorScheme << rank1Ordering << kuo 
     << cools_kuo_nuyens << naturalOrdering << radicalInverseOrdering 
-    << digitalNetFlag <<  noDigitalShiftFlag <<  noScramblingFlag
+    << digitalNetFlag << digitalNetGeneratingMatrixScheme << digitalNetOrdering
+    << rank1Ordering << noDigitalShiftFlag <<  noScramblingFlag
     << mostSignificantBitFirst << leastSignificantBitFirst << numberOfBits
     << scrambleSize << joe_kuo << sobol_order_2 << grayCodeOrdering
     << dOptimal << numCandidateDesigns //<< reliabilitySearchType
@@ -840,6 +870,8 @@ void DataMethodRep::write(std::ostream& s) const
 
   // Point import/export files
   s << importBuildPtsFile  << importBuildFormat  << importBuildActive
+    << importPtsFile << importPtsFormat
+    << importPtsActive << importPtsUseVariableLabels
     << importApproxPtsFile << importApproxFormat << importApproxActive
     << exportApproxPtsFile << exportApproxFormat << exportMCMCPtsFile
     << exportSampleSeqFlag << exportSamplesFormat;

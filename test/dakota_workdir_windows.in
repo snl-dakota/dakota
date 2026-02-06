@@ -43,6 +43,9 @@ interface
 # 	copy_files = 'dakota_workdir_windows.root.dat' 			#s3
 #	copy_files = 'dakota_workdir_windows.templatedir/*'		#s4
 #	parameters_file = 'params.in'				#s5,#s6
+        # always use results.out so the driver knows where to write a failure when/if
+        # it doesn't receive CL args
+        results_file = "results.out"                
 #	  file_save						#s6
 
 responses
