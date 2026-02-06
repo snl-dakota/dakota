@@ -1309,8 +1309,8 @@ derived_finite_solution_bounds(const RealVector& x0, RealVector& x_lb,
     // rather than accumulated samples (NLevActual) as fixed soln reference
     size_t hf_form_index, hf_lev_index;
     hf_indices(hf_form_index, hf_lev_index);
-    Real N_sh = (Real)NLevAlloc[hf_form_index][hf_lev_index],
-      cost_sh = modelGroupCost[x_len], factor = budget_cost / N_sh - cost_sh;
+    Real N_sh = (Real)NLevAlloc[hf_form_index][hf_lev_index], cost_sh =
+      modelGroupCost[x_len], factor = budget_cost / N_sh - cost_sh;
     for (i=0; i<x_len; ++i)
       x_ub[i] = (reorderModelsOnTheFly) ? // for ub on r_i
 	1. + factor / sequenceCost[i] : 1. + factor / modelGroupCost[i];

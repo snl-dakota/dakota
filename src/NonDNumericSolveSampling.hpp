@@ -852,10 +852,10 @@ estimator_variance_ratios(const RealVector& cd_vars, RealVector& estvar_ratios)
   // > we allow only one use of a base class estvar/estvar_ratios conversion;
   //   derived class must redefine at least one
 
-  if (recurConversion) { // both option are base; neither is redefined
+  if (recurConversion) { // both options are base impls.; neither is redefined
     //estvar_ratios.size(0); return;
     // make this a hard error here rather than managing downstream
-    Cerr << "Error: no derived implementation of estimator_variance() or "
+    Cerr << "Error: no derived implementation of estimator_variances() or "
 	 << "estimator_variance_ratios().  Base conversion is circular."
 	 << std::endl;
     abort_handler(METHOD_ERROR);
@@ -879,7 +879,7 @@ estimator_variance_ratio_gradients(const RealVector& cd_vars,
   //   conversion; derived class must redefine at least one
 
   if (recurConversion) // both options are base impls.; neither is redefined
-    { evr_grads.shape(0,0); return; }
+    { evr_grads.shape(0,0); return; } // not an error for grads as for fns
 
   RealVector estvar_ratios;
   estimator_variance_ratios(cd_vars, estvar_ratios);
@@ -887,14 +887,15 @@ estimator_variance_ratio_gradients(const RealVector& cd_vars,
   recurConversion = true;
   RealMatrix ev_grads;
   estimator_variance_gradients(cd_vars, ev_grads);
+
   if (ev_grads.empty())
     evr_grads.shape(0,0);
   else {
     size_t q, v, num_v = cd_vars.length();
     evr_grads.shape(num_v, numFunctions);
     for (q=0; q<numFunctions; ++q) {
-      const Real* ev_grad_q = ev_grads[q];
-      Real* evr_grad_q = evr_grads[q];
+      const Real* ev_grad_q =  ev_grads[q];
+      Real*      evr_grad_q = evr_grads[q];
       Real varH_q = varH[q], N = cd_vars[numApprox];
       for (v=0; v<num_v; ++v)
 	evr_grad_q[v] = N * ev_grad_q[v] / varH_q + estvar_ratios[q] / N;
@@ -949,7 +950,7 @@ estimator_variance_gradients(const RealVector& cd_vars, RealMatrix& ev_grads)
     ev_grads.shape(num_v, numFunctions);
     for (q=0; q<numFunctions; ++q) {
       const Real* evr_grad_q = evr_grads[q];
-      Real* ev_grad_q = ev_grads[q];
+      Real*        ev_grad_q =  ev_grads[q];
       Real varH_q = varH[q], N = cd_vars[numApprox];
       for (v=0; v<num_v; ++v)
 	ev_grad_q[v] = varH_q / N * (evr_grad_q[v] - estvar_ratios[q] / N);
@@ -985,7 +986,7 @@ inline void NonDNumericSolveSampling::
 estimator_variances_and_gradients(const RealVector& cd_vars,
 				  RealVector& est_var, RealMatrix& ev_grads)
 {
-  // default implementation
+  // default implementation for use when there is little overlap
   estimator_variances(cd_vars, est_var);
   estimator_variance_gradients(cd_vars, ev_grads);
 }
@@ -996,7 +997,7 @@ estimator_variance_ratios_and_gradients(const RealVector& cd_vars,
 					RealVector& estvar_ratios,
 					RealMatrix& evr_grads)
 {
-  // default implementation
+  // default implementation for use when there is little overlap
   estimator_variance_ratios(cd_vars, estvar_ratios);
   estimator_variance_ratio_gradients(cd_vars, evr_grads);
 }

@@ -210,6 +210,10 @@ private:
 
   /// final solution data for MFMC (default DAG = 1,2,...,numApprox)
   MFSolutionData mfmcSolnData;
+
+  // an option for numerical MFMC solutions that utilizes linear constraints
+  // to preserve monotonicity throughout, rather than reordering on the fly
+  //bool fixedModelOrder;
 };
 
 

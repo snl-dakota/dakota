@@ -64,8 +64,6 @@ NonDMultifidelitySampling::~NonDMultifidelitySampling()
 
 void NonDMultifidelitySampling::core_run()
 {
-  //sequence_models(); // enforce correlation condition (*** AFTER PILOT ***)
-
   // Initialize for pilot sample
   numSamples = pilotSamples[numApprox]; // last in pilot array
 
@@ -542,14 +540,18 @@ estimator_variance_ratio_gradients(const RealVector& cd_vars,
   // since finite differencing has been observed to induce order changes,
   // corrupting the numerical solution.
 
-  if (evr_grads.numRows() != numApprox || evr_grads.numCols() != numFunctions)
-    evr_grads.shapeUninitialized(numApprox, numFunctions);
+  size_t q, i, approx, num_m = numApprox + 1;
+  if (cd_vars.length() != num_m) {
+    Cerr << "Error: inconsistent number of design variables ()" << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+  if (evr_grads.numRows() != num_m || evr_grads.numCols() != numFunctions)
+    evr_grads.shapeUninitialized(num_m, numFunctions);
 
   // TO DO: support optSubProblemForms (for now N_MODEL_LINEAR_* assumed)
   RealVector N;  design_vars_to_N(cd_vars, N);
-  RealVector N_ord(Teuchos::View, N.values(), numApprox);
-  bool ordered = ordered_approx_sequence(N_ord, ratioApproxSequence, true);
-  size_t i, approx, q;
+  RealVector N_approx(Teuchos::View, N.values(), numApprox);
+  bool ordered = ordered_approx_sequence(N_approx, ratioApproxSequence, true);
   Real N_H = N[numApprox], N_a, N_am1, rho2_a, rho2_am1, sum;
   for (q=0; q<numFunctions; ++q) {
     sum = 0.;
@@ -559,14 +561,14 @@ estimator_variance_ratio_gradients(const RealVector& cd_vars,
       // dR^2 / dN_a = (rho2_a - rho2_am1) * N_H / N_a / N_a;
       // d(evr) / dN_a = -dR^2 / dN_a since evr = 1.-R_sq
       Real& evr_grad_aq = evr_grads(approx, q);
-      evr_grad_aq  = (i) ? rho2_am1 - rho2_a : -rho2_a; // negate: evr=1-R_sq
+      evr_grad_aq  = (i) ? rho2_am1 - rho2_a : -rho2_a; // negate: evr = 1-R_sq
       evr_grad_aq *= N_H / N_a / N_a;
       // dR^2/dN accumulations
       if (i) sum += rho2_am1 * (N_am1 - N_a) / N_am1 / N_a;
       // bookkeeping
       rho2_am1 = rho2_a;  N_am1 = N_a;
     }
-    evr_grads(numApprox, q) = rho2_a / N_a - sum; // negate: evr = 1. - R_sq
+    evr_grads(numApprox, q) = rho2_a / N_a - sum; // negate: evr = 1 - R_sq
   }
 
   /* Desirable to support general DVV, but overkill for right now
@@ -1240,7 +1242,22 @@ compute_allocations(const RealMatrix& rho2_LH, const RealVector& var_H,
 				 avg_eval_ratios, soln);
     break;
 
-  default: // any of several numerical optimization formulations
+  default: // any of several numerical solver formulations
+    // Notes on reorderModelsOnTheFly:
+    // > true setting removes need for modelGroupCosts in finite bounds
+    // > reordering does not invalidate the linear budget constraint since
+    // > this is formulated using sequenceCost and total sample counts for each
+    // > model (model counts N_i are not inferred from overlays of optimized N_g
+    // > group samples).  Thus, pyramid structure with sample sharing is not
+    // > reflected in upstream solution constraints, instead manifesting
+    // > downstream as a sample management scheme in approx_increments(),
+    //   which then supports multi-batch concurrency using group_increments().
+    reorderModelsOnTheFly = /*(fixedModelOrder) false :*/ true; // TO DO: set reorderModelsOnTheFly in constructor based on fixed order spec, then override as needed here
+    // If reordered on-the-fly, only the invariant all-group model cost is used
+    // in NonDNumericSolveSampling::derived_finite_solution_bounds().  If strict
+    // MFMC ordering, then original costs hold throughout.
+    //if (!reorderModelsOnTheFly) {// strict DAG usage + monotonic linear cons
+    update_model_groups(); update_model_group_costs(); //}
     mfmc_numerical_solution(rho2_LH, cost, soln);
     break;
   }
@@ -1317,15 +1334,6 @@ void NonDMultifidelitySampling::
 analytic_initialization_from_mfmc(const RealMatrix& rho2_LH,
 				  MFSolutionData& soln)
 {
-  //reorderModelsOnTheFly = true; // for now (removes need for modelGroupCosts in finite bounds)
-  // Note: reordering does not invalidate the linear budget constraint since
-  // this is formulated using sequenceCost and total sample counts for each
-  // model (model counts N_i are not inferred from overlays of optimized N_g
-  // group samples).  Thus, pyramid structure with sample sharing is not
-  // reflected in upstream solution constraints, instead manifesting downstream
-  // as a sample management scheme in approx_increments(), which then supports
-  // multi-batch concurrency using group_increments().
-
   // Compute r* initial guess from analytic MFMC
   RealVector avg_eval_ratios;
   bool lower_bounded_r = true,
@@ -1351,7 +1359,7 @@ analytic_initialization_from_mfmc(const RealMatrix& rho2_LH,
   // solution vars N[i] with modelGroupCost[i] --> use ordered groups here.
   // > Downstream, modelGroup{s,Cost} are used for approx_increments() -->
   //   groups are redefined for an r_i ordering.
-  //update_model_groups();  update_model_group_costs(); // *** TO DO: still needed for !reorderModelsOnTheFly?
+  //update_model_groups();  update_model_group_costs();
 
   if (outputLevel >= NORMAL_OUTPUT)
     Cout << "Initial guess from analytic MFMC (average eval ratios):\n"
