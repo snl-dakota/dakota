@@ -210,7 +210,7 @@ JSONProblemDescDB::handle_keyword(const json& key_map_item, const std::string& c
             cachedData_Ushort[ckey] |= dakEnumMap().at(aug_enum_str);
           }
           else
-            cachedData_Ushort[ckey] = dakEnumMap().at(aug_enum_str) | dakEnumMap().at(aug_enum_str);
+            cachedData_Ushort[ckey] = dakEnumMap().at(init_enum_str) | dakEnumMap().at(aug_enum_str);
         }
       }
     }
