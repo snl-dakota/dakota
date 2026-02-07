@@ -7356,6 +7356,8 @@ static Method_mp_utype
 	MP2s(methodName,MULTIDIM_PARAMETER_STUDY),
         MP2s(modelExportFormat,TEXT_ARCHIVE),
         MP2s(modelExportFormat,BINARY_ARCHIVE),
+	MP2s(modelReordering,FIXED_MODEL_ORDERING),
+	MP2s(modelReordering,REORDER_MODELS_ON_THE_FLY),
 	MP2s(numericalSolveMode,NUMERICAL_FALLBACK),
 	MP2s(numericalSolveMode,NUMERICAL_OVERRIDE),
       //MP2s(numericalSolveMode,REORDERED_FALLBACK),

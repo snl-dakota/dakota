@@ -1251,7 +1251,7 @@ compute_allocations(const RealMatrix& rho2_LH, const RealVector& var_H,
     // > reflected in upstream solution constraints, instead manifesting
     // > downstream as a sample management scheme in approx_increments(),
     //   which then supports multi-batch concurrency using group_increments().
-    reorderModelsOnTheFly = /*(fixedModelOrder) false :*/ true; // TO DO: set reorderModelsOnTheFly in constructor based on fixed order spec, then override as needed here
+    //reorderModelsOnTheFly = (fixedModelOrder) ? false : true; // set in ctor
     // If reordered on-the-fly, only the invariant all-group model cost is used
     // in NonDNumericSolveSampling::derived_finite_solution_bounds().  If strict
     // MFMC ordering, then original costs hold throughout.
@@ -1438,106 +1438,6 @@ process_analytic_allocations(const RealMatrix& rho2_LH, const RealVector& var_H,
 
 
 void NonDMultifidelitySampling::
-mfmc_estimator_variance(const RealMatrix& rho2_LH, const RealVector& var_H,
-			const SizetArray& N_H, MFSolutionData& soln)
-{
-  // These operations are deferred until convergence of any solution iteration
-  // > Accuracy-constrained needs estvar_ratios for computing hf_target in
-  //   process_allocations()
-
-  switch (optSubProblemForm) {
-
-  case ANALYTIC_SOLUTION:  case REORDERED_ANALYTIC_SOLUTION: {
-    // estvar/estvar_ratios not required during online iteration
-    //bool converged = (pilotMgmtMode != ONLINE_PILOT || !numSamples ||
-    //		      mlmfIter > maxIterations);
-    //if (converged) {
-    mfmc_estvar_ratios(rho2_LH, soln.solution_ratios(),
-		       corrApproxSequence, soln);
-    estvar_ratios_to_estvar(var_H, N_H, soln);
-    // Note: we are not updating soln.anchored_solution_ratios()
-    //       (not necessary for things like one_sided_delta() to follow)
-    //}
-    if (outputLevel >= NORMAL_OUTPUT) {
-      const RealVector& estvar_ratios = soln.estimator_variance_ratios();
-      for (size_t qoi=0; qoi<numFunctions; ++qoi)
-	Cout << "QoI " << qoi+1 << ": variance reduction factor = "
-	     << estvar_ratios[qoi] << '\n';
-      Cout << std::endl;
-    }
-    break;
-  }
-
-  // Numerical MFMC: mfmc_numerical_solution() uses process_model_allocations()
-  // to store optimized estvar/estvar_ratios in soln.  In this case, there is
-  // no emerge_from_pilot() modification so estvar remains consistent,
-  // including pilot projections that target this optimized state.
-  }
-
-  // update metric for solution comparisons (e.g. model tuning)
-  soln.update_estimator_variance_metric(estVarMetricType,estVarMetricNormOrder);
-}
-
-
-void NonDMultifidelitySampling::update_model_groups()
-{
-  // Note: model selection case handled by NonDDGenACV, so here numGroups
-  // is the total number of model instances
-  if (modelGroups.size() != numGroups)
-    modelGroups.resize(numGroups);
-  for (size_t g=0; g<numGroups; ++g)
-    mfmc_model_group(g, modelGroups[g]);
-}
-
-
-void NonDMultifidelitySampling::
-update_model_groups(const SizetArray& approx_sequence)
-{
-  if (approx_sequence.empty())
-    update_model_groups();
-
-  // Note: model selection case handled by NonDDGenACV, so here numGroups
-  // is the total number of model instances
-  if (modelGroups.size() != numGroups)
-    modelGroups.resize(numGroups);
-  for (size_t g=0; g<numGroups; ++g)
-    mfmc_model_group(g, approx_sequence, modelGroups[g]);
-}
-
-
-void NonDMultifidelitySampling::
-emerge_from_pilot(const SizetArray& N_H, RealVector& avg_eval_ratios,
-		  Real& avg_hf_target, Real offline_N_lwr)
-{
-  // Analytic cases: the profile emerges from the pilot sample.
-  // > if N* < N_H --> N = N_H
-  // > if r*_i N* <= N_H (shared sample), take credit for pilot
-  //   --> increase N_i to N_H with     r_i N_i = (1+nudge) N_H
-  // > if r*_i N* >  N_H, keep N_i with r_i N_i = (scaled r_i) N_H
-  Real avg_N_H = average(N_H);
-  if (pilotMgmtMode == OFFLINE_PILOT ||
-      pilotMgmtMode == OFFLINE_PILOT_PROJECTION) {
-    if (avg_N_H < offline_N_lwr)
-      avg_N_H = offline_N_lwr;
-  }
-  if (avg_N_H > avg_hf_target) { // replace N* and rescale r*
-    Real nudge = RATIO_NUDGE, scaling = avg_hf_target / avg_N_H, N_i;
-    bool ordered = ratioApproxSequence.empty();  unsigned short approx;
-    for (int i=numApprox-1; i>=0; --i) {
-      approx = (ordered) ? i : ratioApproxSequence[i];
-      Real& r_i = avg_eval_ratios[approx];  N_i = r_i * avg_hf_target;
-      // use RATIO_NUDGE, noting that best for peer DAG
-      if (N_i <= avg_N_H) // new N_i ~= N_H (new r_i ~= 1)
-	{ r_i = 1. + nudge; nudge += RATIO_NUDGE; }
-      else // same N_i (new r_i for new N_H)
-	r_i *= scaling;
-    }
-    avg_hf_target = avg_N_H; // replace N* with N_H
-  }
-}
-
-
-void NonDMultifidelitySampling::
 mfmc_estvar_ratios(const RealMatrix& rho2_LH, const RealVector& avg_eval_ratios,
 		   SizetArray& approx_sequence, RealVector& estvar_ratios)
 {
@@ -1606,6 +1506,167 @@ mfmc_estvar_ratios(const RealMatrix& rho2_LH, const RealVector& avg_eval_ratios,
     }
     break;
   }
+  }
+}
+
+
+void NonDMultifidelitySampling::
+mfmc_estimator_variance(const RealMatrix& rho2_LH, const RealVector& var_H,
+			const SizetArray& N_H, MFSolutionData& soln)
+{
+  // These operations are deferred until convergence of any solution iteration
+  // > Accuracy-constrained needs estvar_ratios for computing hf_target in
+  //   process_allocations()
+
+  switch (optSubProblemForm) {
+
+  case ANALYTIC_SOLUTION:  case REORDERED_ANALYTIC_SOLUTION: {
+    // estvar/estvar_ratios not required during online iteration
+    //bool converged = (pilotMgmtMode != ONLINE_PILOT || !numSamples ||
+    //		      mlmfIter > maxIterations);
+    //if (converged) {
+    mfmc_estvar_ratios(rho2_LH, soln.solution_ratios(),
+		       corrApproxSequence, soln);
+    estvar_ratios_to_estvar(var_H, N_H, soln);
+    // Note: we are not updating soln.anchored_solution_ratios()
+    //       (not necessary for things like one_sided_delta() to follow)
+    //}
+    if (outputLevel >= NORMAL_OUTPUT) {
+      const RealVector& estvar_ratios = soln.estimator_variance_ratios();
+      for (size_t qoi=0; qoi<numFunctions; ++qoi)
+	Cout << "QoI " << qoi+1 << ": variance reduction factor = "
+	     << estvar_ratios[qoi] << '\n';
+      Cout << std::endl;
+    }
+    break;
+  }
+
+  // Numerical MFMC: mfmc_numerical_solution() uses process_model_allocations()
+  // to store optimized estvar/estvar_ratios in soln.  In this case, there is
+  // no emerge_from_pilot() modification so estvar remains consistent,
+  // including pilot projections that target this optimized state.
+  }
+
+  // update metric for solution comparisons (e.g. model tuning)
+  soln.update_estimator_variance_metric(estVarMetricType,estVarMetricNormOrder);
+}
+
+
+void NonDMultifidelitySampling::
+augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
+				RealVector& lin_ineq_lb,
+				RealVector& lin_ineq_ub)
+{
+  // numerical MFMC adopts base implementation when it reorders on the fly
+  // > linear inequality constraints on sample counts:
+  //    N_i >  N (aka r_i > 1) prevents numerical exceptions
+  //   (N_i >= N becomes N_i > N based on RATIO_NUDGE)
+  if (reorderModelsOnTheFly) {
+    NonDNumericSolveSampling::
+      augment_linear_ineq_constraints(lin_ineq_coeffs,lin_ineq_lb,lin_ineq_ub);
+    return;
+  }
+
+  // enforce strict MFMC ordering and manage numerics with monotonicity lin cons
+  // > N_i > N_ip1 based on RATIO_NUDGE
+  switch (optSubProblemForm) {
+  case N_MODEL_LINEAR_CONSTRAINT:  // lin_ineq #0 is augmented
+  case N_MODEL_LINEAR_OBJECTIVE: { // no other lin ineq
+    size_t offset = (optSubProblemForm == N_MODEL_LINEAR_CONSTRAINT) ? 1 : 0;
+    for (size_t approx=0; approx<numApprox; ++approx) {
+      lin_ineq_coeffs(approx+offset, approx)   = -1.;
+      lin_ineq_coeffs(approx+offset, approx+1) =  1. + RATIO_NUDGE;//N_i > N_ip1
+    }
+    break;
+  }
+  //case R_ONLY_LINEAR_CONSTRAINT: case R_AND_N_NONLINEAR_CONSTRAINT:
+    // omit for now since unused
+    //break;
+  }
+}
+
+
+void NonDMultifidelitySampling::
+enforce_augmented_linear_ineq_constraints(RealVector& cd_vars)
+{
+  // numerical MFMC adopts base implementation when it reorders on the fly
+  if (reorderModelsOnTheFly) {
+    NonDNumericSolveSampling::
+      enforce_augmented_linear_ineq_constraints(cd_vars);
+    return;
+  }
+
+  switch (optSubProblemForm) {
+  case N_MODEL_LINEAR_CONSTRAINT:  case N_MODEL_LINEAR_OBJECTIVE: {
+    Real N_nudge = cd_vars[numApprox] * (1. + RATIO_NUDGE);
+    for (int approx=numApprox-1; approx>=0; --approx) {
+      Real& cdv_a = cd_vars[approx];
+      if (cdv_a  < N_nudge) cdv_a = N_nudge;
+      if (approx > 0)       N_nudge = cdv_a * (1. + RATIO_NUDGE);
+    }
+    break;
+  }
+  //case R_ONLY_LINEAR_CONSTRAINT: case R_AND_N_NONLINEAR_CONSTRAINT:
+    // omit for now since unused
+    //break;
+  }
+}
+
+
+void NonDMultifidelitySampling::update_model_groups()
+{
+  // Note: model selection case handled by NonDDGenACV, so here numGroups
+  // is the total number of model instances
+  if (modelGroups.size() != numGroups)
+    modelGroups.resize(numGroups);
+  for (size_t g=0; g<numGroups; ++g)
+    mfmc_model_group(g, modelGroups[g]);
+}
+
+
+void NonDMultifidelitySampling::
+update_model_groups(const SizetArray& approx_sequence)
+{
+  if (approx_sequence.empty())
+    update_model_groups();
+
+  // Note: model selection case handled by NonDDGenACV, so here numGroups
+  // is the total number of model instances
+  if (modelGroups.size() != numGroups)
+    modelGroups.resize(numGroups);
+  for (size_t g=0; g<numGroups; ++g)
+    mfmc_model_group(g, approx_sequence, modelGroups[g]);
+}
+
+
+void NonDMultifidelitySampling::
+emerge_from_pilot(const SizetArray& N_H, RealVector& avg_eval_ratios,
+		  Real& avg_hf_target, Real offline_N_lwr)
+{
+  // Analytic cases: the profile emerges from the pilot sample.
+  // > if N* < N_H --> N = N_H
+  // > if r*_i N* <= N_H (shared sample), take credit for pilot
+  //   --> increase N_i to N_H with     r_i N_i = (1+nudge) N_H
+  // > if r*_i N* >  N_H, keep N_i with r_i N_i = (scaled r_i) N_H
+  Real avg_N_H = average(N_H);
+  if (pilotMgmtMode == OFFLINE_PILOT ||
+      pilotMgmtMode == OFFLINE_PILOT_PROJECTION) {
+    if (avg_N_H < offline_N_lwr)
+      avg_N_H = offline_N_lwr;
+  }
+  if (avg_N_H > avg_hf_target) { // replace N* and rescale r*
+    Real nudge = RATIO_NUDGE, scaling = avg_hf_target / avg_N_H, N_i;
+    bool ordered = ratioApproxSequence.empty();  unsigned short approx;
+    for (int i=numApprox-1; i>=0; --i) {
+      approx = (ordered) ? i : ratioApproxSequence[i];
+      Real& r_i = avg_eval_ratios[approx];  N_i = r_i * avg_hf_target;
+      // use RATIO_NUDGE, noting that best for peer DAG
+      if (N_i <= avg_N_H) // new N_i ~= N_H (new r_i ~= 1)
+	{ r_i = 1. + nudge; nudge += RATIO_NUDGE; }
+      else // same N_i (new r_i for new N_H)
+	r_i *= scaling;
+    }
+    avg_hf_target = avg_N_H; // replace N* with N_H
   }
 }
 

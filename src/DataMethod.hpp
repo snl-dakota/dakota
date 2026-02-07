@@ -267,6 +267,8 @@ enum { NO_OPTIMAL_ALLOCATION=0, ANALYTIC_SOLUTION, REORDERED_ANALYTIC_SOLUTION,
        N_GROUP_LINEAR_CONSTRAINT, N_GROUP_LINEAR_OBJECTIVE };
 // Numerical solution modes
 enum { REORDERED_FALLBACK, NUMERICAL_FALLBACK, NUMERICAL_OVERRIDE };
+// Model reordering modes during numerical solutions
+enum { FIXED_MODEL_ORDERING, REORDER_MODELS_ON_THE_FLY };
 // options for obtaining cost data for model fidelities/resolutions
 enum { NO_COST_SOURCE=0, USER_COST_SPEC, ONLINE_COST_RECOVERY,
        MIXED_COST_SPEC_RECOVERY };
@@ -1129,6 +1131,8 @@ public:
   /// assumptions that might be violated, suggesting a fallback approach,
   /// or lacking robustness, suggesting an optional override replacement
   unsigned short numericalSolveMode;
+  /// approach for automatic model reordering in MFMC numerical solves
+  unsigned short modelReordering;
   /// type of solver metric used in variance minimization / accuracy
   /// specification (average, max, or norm of estimator variance across QoI)
   short estVarMetricType;

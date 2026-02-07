@@ -362,6 +362,12 @@
                    <keyword  id="override" name="override" code="{N_mdm(utype,numericalSolveMode_NUMERICAL_OVERRIDE)}" label="override" />
                  </oneOf>
                </optional>
+               <optional>
+	         <oneOf label="Model reordering">
+                   <keyword  id="reorder_models" name="reorder_models" code="{N_mdm(utype,modelReordering_REORDER_MODELS_ON_THE_FLY)}" label="reorder_models" />
+                   <keyword  id="fixed_model_order" name="fixed_model_order" code="{N_mdm(utype,modelReordering_FIXED_MODEL_ORDERING)}" label="fixed_model_order" />
+                 </oneOf>
+               </optional>
                &method_mlmf_sub_problem_solver;
                &method_mlmf_solver_metric;
 	     </keyword>

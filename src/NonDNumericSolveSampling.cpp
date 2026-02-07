@@ -50,7 +50,8 @@ NonDNumericSolveSampling(ProblemDescDB& problem_db,
   truthFixedByPilot(problem_db.get_bool("method.nond.truth_fixed_by_pilot")),
   analyticEstVarDerivs(false),  // true for MFMC and ML BLUE currently
   hardenNumericSoln(true),      // Cholesky option not currently exposed in spec
-  reorderModelsOnTheFly(false), // currently only active for numerical MFMC
+  reorderModelsOnTheFly(problem_db.get_ushort("method.nond.model_reordering")
+			== REORDER_MODELS_ON_THE_FLY), // active for MFMC
   recurConversion(false)
 {
   // solver(s) that perform the numerical solution for resource allocations

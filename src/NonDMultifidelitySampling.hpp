@@ -65,6 +65,11 @@ protected:
   void estimator_variance_ratio_gradients(const RealVector& cd_vars,
 					  RealMatrix& evr_grads) override;
 
+  void augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
+				       RealVector& lin_ineq_lb,
+				       RealVector& lin_ineq_ub);
+  void enforce_augmented_linear_ineq_constraints(RealVector& cd_vars);
+
   //
   //- Heading: member functions
   //

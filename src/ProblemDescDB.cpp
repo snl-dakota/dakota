@@ -2187,6 +2187,7 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
       {"nond.graph_depth_limit", P_MET dagDepthLimit},
       {"nond.group_size_throttle", P_MET groupSizeThrottle},
       {"nond.integration_refinement", P_MET integrationRefine},
+      {"nond.model_reordering", P_MET modelReordering},
       {"nond.numerical_solve_mode", P_MET numericalSolveMode},
       {"nond.opt_subproblem_solver", P_MET optSubProbSolver},
       {"nond.quadrature_order", P_MET quadratureOrder},
