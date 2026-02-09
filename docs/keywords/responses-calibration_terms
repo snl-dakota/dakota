@@ -51,16 +51,33 @@ order:
 
 
 1. When present, observation error variance :math:`\sigma_i`  or full covariance :math:`\Sigma` , optionally specified through ``experiment_variance_type``, is applied to residuals first: 
-.. math::   R^{(1)}_i = \frac{R_{i}}{\sigma_{i}} = \frac{y^{Model}_i(\theta) - y^{Data}_{i}}{\sigma_{i}}  \textrm{, or} 
-.. math::  R^{(1)} = \Sigma^{-1/2} R = \Sigma^{-1/2} \left(y^{Model}(\theta) - y^{Data}\right), 
+
+.. math::
+   R^{(1)}_i = \frac{R_{i}}{\sigma_{i}} = \frac{y^{Model}_i(\theta) - y^{Data}_{i}}{\sigma_{i}}  \textrm{, or} 
+
+.. math::
+  R^{(1)} = \Sigma^{-1/2} R = \Sigma^{-1/2} \left(y^{Model}(\theta) - y^{Data}\right), 
+
 resulting in the typical variance-weighted least squares formulation 
-.. math::  \textrm{min}_\theta \; R(\theta)^T \Sigma^{-1} R(\theta) 
+
+.. math::
+  \textrm{min}_\theta \; R(\theta)^T \Sigma^{-1} R(\theta) 
+
 2. Any active scaling transformations are applied next, e.g., for characteristic value scaling: 
-.. math::  R^{(2)}_i = \frac{R^{(1)}_i}{s_i} 
+
+.. math::
+  R^{(2)}_i = \frac{R^{(1)}_i}{s_i} 
+
 3. Finally the optional weights are applied in a way that preserves backward compatibility: 
-.. math::  R^{(3)}_i = \sqrt{w_i}{R^{(2)}_i} 
+
+.. math::
+  R^{(3)}_i = \sqrt{w_i}{R^{(2)}_i} 
+
 so the ultimate least squares formulation, e.g., in a scaled and weighted case would be 
-.. math::  f = \sum_{i=1}^{n} w_i \left( \frac{y^{Model}_i - y^{Data}_i}{s_i} \right)^2 
+
+.. math::
+  f = \sum_{i=1}^{n} w_i \left( \frac{y^{Model}_i - y^{Data}_i}{s_i} \right)^2 
+
 *Note that specifying observation error variance and weights are mutually
 exclusive in a calibration problem.*
 Topics::
@@ -82,8 +99,11 @@ the simulator are different when using
 Least squares calibration involves a set of residual
 functions, whereas optimization involves a single objective function
 (sum of the squares of the residuals), i.e., 
-.. math:: f = \sum_{i=1}^{n}
-R_i^2 = \sum_{i=1}^{n} \left(y^{Model}_i(\theta) - y^{Data}_{i} \right)^2 
+
+.. math::
+   f = \sum_{i=1}^{n}
+   R_i^2 = \sum_{i=1}^{n} \left(y^{Model}_i(\theta) - y^{Data}_{i} \right)^2 
+
 where *f* is the objective function and the set of :math:`R_i` 
 are the residual functions, most commonly defined as the difference between a model response and data. Therefore, function values and derivative
 data in the least squares case involve the values and derivatives of

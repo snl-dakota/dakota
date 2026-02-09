@@ -32,7 +32,7 @@ DigitalNet::DigitalNet(
   bool digitalShiftFlag,                  /// Use digital shift if true
   bool scramblingFlag,                    /// Use linear matrix scramble if true
   int seedValue,                          /// Random seed value
-  DigitalNetOrdering ordering,            /// Order of the digital net points
+  short ordering,                /// Order of the digital net points
   bool mostSignificantBitFirst,           /// Generating matrices are stored with most significant bit first if true
   short outputLevel                       /// Verbosity
 ) :
@@ -301,10 +301,8 @@ DigitalNet(
   problem_db.get_int("method.random_seed") ?
     problem_db.get_int("method.random_seed") :
     generate_system_seed(),
-  problem_db.get_bool("method.ordering.natural") ? 
-    DIGITAL_NET_NATURAL_ORDERING :
-    DIGITAL_NET_GRAY_CODE_ORDERING,
-  problem_db.get_bool("method.most_significant_bit_first") ? true : false,
+  problem_db.get_short("method.ld.digitalnet.ordering"),
+  problem_db.get_bool("method.most_significant_bit_first"),
   problem_db.get_short("method.output")
 )
 {
@@ -445,7 +443,6 @@ const std::tuple<UInt64Matrix, int, int> DigitalNet::get_generating_matrices_fro
       }
       row++;
     }
-
     return std::make_tuple(
       generatingMatrices,
       problem_db.get_int("method.m_max"),
@@ -457,7 +454,7 @@ const std::tuple<UInt64Matrix, int, int> DigitalNet::get_generating_matrices_fro
     Cerr << "Error: error while parsing generating vector from file '"
       << fileName << "'" << std::endl;
     abort_handler(METHOD_ERROR);
-
+    throw; // to silence warning
   }
 }
 
@@ -513,7 +510,7 @@ const std::tuple<UInt64Matrix, int, int> DigitalNet::get_default_generating_matr
   bool outputLevel = problem_db.get_short("method.output");
 
   /// Select predefined generating matrices
-  if ( problem_db.get_bool("method.sobol_order_2") )
+  if ( problem_db.get_short("method.ld.digitalnet.generating_matrix_scheme") == SOBOL_ORDER_2 )
   {
     if ( outputLevel >= DEBUG_OUTPUT )
     {
@@ -530,7 +527,7 @@ const std::tuple<UInt64Matrix, int, int> DigitalNet::get_default_generating_matr
   {
     if ( outputLevel >= DEBUG_OUTPUT )
     {
-      if ( problem_db.get_bool("method.joe_kuo") )
+      if ( problem_db.get_short("method.ld.digitalnet.generating_matrix_scheme") == JOE_KUO )
       {
         Cout << "Found predefined generating matrices 'joe_kuo'."
           << std::endl;

@@ -4,6 +4,7 @@
          or parser doesn't recognize header, eval_id, interface_id -->
 
     <!-- Reusable definition for a method's approximation data import format -->
+
     <!ENTITY method_import_build_format '
 	     <optional>
                <oneOf label="Tabular Format" >
@@ -442,7 +443,7 @@
 	     ' >
 
     <!ENTITY import_build '
-       	     <keyword  id="import_build_points_file" name="import_build_points_file" code="{N_mdm(str,importBuildPtsFile)}" label="import_build_points_file"  minOccurs="0" default="no point import from a file" >
+      <keyword  id="import_build_points_file" name="import_build_points_file" code="{N_mdm(str,importBuildPtsFile)}" label="import_build_points_file"  minOccurs="0" default="no point import from a file" >
 	       <alias name="import_points_file"/>
 	       <param type="INPUT_FILE" />
 	       &method_import_build_format;
@@ -988,7 +989,7 @@
 	     <keyword  id="fixed_seed" name="fixed_seed" code="{N_mdm(true,fixedSeedFlag)}" label="fixed_seed"  minOccurs="0" default="not fixed; pattern varies run-to-run" />
 	     ' >
 
-    <!ENTITY method_sample_type_lhs_mc '
+       <!ENTITY method_sample_type_lhs_mc '
 	     <keyword  id="sample_type" name="sample_type" code="{0}" label="sample_type"  minOccurs="0" default="random" >
 	       <oneOf label="Sample Type">
 	         <keyword  id="lhs" name="lhs" code="{N_mdm(utype,sampleType_SUBMETHOD_LHS)}" label="lhs"   />
@@ -996,7 +997,6 @@
 	       </oneOf>
 	     </keyword>
 	     ' >
-
     <!ENTITY samples_on_emulator_with_alias '
 	     <keyword  id="samples_on_emulator" name="samples_on_emulator" code="{N_mdm(int,samplesOnEmulator)}" label="Samples on emulator"  minOccurs="0" >
 	       <alias name="samples" />
@@ -1792,8 +1792,7 @@
 
     <!ENTITY numerical_gradient_options '
 	     <!-- # formerly required for dakota | vendor -->
-	     <keyword  id="method_source" name="method_source" code="{0}" label="method_source"  minOccurs="0" default="dakota" />
-	     <optional>
+	     <keyword  id="method_source" name="method_source" code="{0}" label="method_source"  minOccurs="0" default="dakota" >
                <oneOf label="Gradient Source">
 		 <keyword  id="dakota7" name="dakota" code="{N_rem(lit,methodSource_dakota)}" label="dakota"  default="relative" >
 		   <keyword  id="ignore_bounds" name="ignore_bounds" code="{N_rem(true,ignoreBounds)}" label="ignore_bounds"  minOccurs="0" default="bounds respected" />
@@ -1807,15 +1806,14 @@
 		 </keyword>
 		 <keyword  id="vendor" name="vendor" code="{N_rem(lit,methodSource_vendor)}" label="vendor"   />
                </oneOf>
-	     </optional>
+             </keyword>
 	     <!-- # formerly required for forward or central -->
-	     <keyword  id="interval_type" name="interval_type" code="{0}" label="interval_type"  minOccurs="0" default="forward" />
-	     <optional>
+	     <keyword  id="interval_type" name="interval_type" code="{0}" label="interval_type"  minOccurs="0" default="forward" >
                <oneOf label="Finite Difference Type">
 		 <keyword  id="forward" name="forward" code="{N_rem(lit,intervalType_forward)}" label="forward"   default="forward" />
 		 <keyword  id="central" name="central" code="{N_rem(lit,intervalType_central)}" label="central"   />
-               </oneOf>
-	     </optional>
+	       </oneOf>
+             </keyword>
 	     <keyword  id="fd_step_size" name="fd_step_size" code="{N_rem(RealL,fdGradStepSize)}" label="fd_step_size"  minOccurs="0" default="0.001" >
                <alias name="fd_gradient_step_size"/>
                <param type="REALLIST" />
@@ -1909,11 +1907,6 @@
 
     <!-- Entities below are for low discrepancy sampling -->
 
-    <!-- Extracted option for natural ordering of low-discrepancy points, as it occurs in both rank-1 lattice and digital net -->
-    <!ENTITY natural '
-      <keyword id="natural" name="natural" code="{N_mdm(true,naturalOrdering)}" label="Natural ordering" >
-      </keyword>
-    ' >
 
     <!-- Extracted options for rank 1 lattices, as they occurs for both replicated and non-replicted low-discrepancy sampling -->
     <!ENTITY rank_1_lattice_options '
@@ -1930,11 +1923,11 @@
           <keyword id="file" name="file" code="{N_mdm(str,generatingVectorFileName)}" label="Generating vector file" >
             <param type="STRING" />
           </keyword>
-          <keyword id="predefined" name="predefined" code="{0}" label="Predefined generating vector" default="Default generating vector">
+          <keyword id="predefined" name="predefined" code="{0}" label="Predefined generating vector" default="Generating vector from Cools, Kuo, and Nuyens (2016)">
             <oneOf label="Predefined Generating Vectors">
-              <keyword id="kuo" name="kuo" code="{N_mdm(true,kuo)}" label="Generating vector from Kuo&apos;s website">
+              <keyword id="kuo" name="kuo" code="{N_mdm(type,rank1GeneratingVectorScheme_GEN_VECTOR_KUO)}" label="Generating vector from Kuo&apos;s website">
               </keyword>
-              <keyword id="cools_kuo_nuyens" name="cools_kuo_nuyens" code="{N_mdm(true,cools_kuo_nuyens)}" label="Generating vector from Cools, Kuo and Nuyens (2016)">
+              <keyword id="cools_kuo_nuyens" name="cools_kuo_nuyens" code="{N_mdm(type,rank1GeneratingVectorScheme_GEN_VECTOR_COOLS_KUO_NUYENS)}" label="Generating vector from Cools, Kuo and Nuyens (2016)">
               </keyword>
             </oneOf>
           </keyword>
@@ -1942,9 +1935,8 @@
       </keyword>
       <keyword id="ordering" name="ordering" code="{0}" label="Ordering" minOccurs="0" default="Radical inverse ordering">
         <oneOf label="Ordering">
-          &natural;
-          <keyword id="radical_inverse" name="radical_inverse" code="{N_mdm(true,radicalInverseOrdering)}" label="Radical inverse ordering" >
-          </keyword>
+          <keyword id="natural" name="natural" code="{N_mdm(type,rank1Ordering_RANK_1_LATTICE_NATURAL_ORDERING)}" label="Natural ordering" />
+          <keyword id="radical_inverse" name="radical_inverse" code="{N_mdm(type,rank1Ordering_RANK_1_LATTICE_RADICAL_INVERSE_ORDERING)}" label="Radical inverse ordering" />
         </oneOf>
       </keyword>
     ' >
@@ -1973,7 +1965,7 @@
       <keyword id="t_scramble" name="t_scramble" code="{N_mdm(int,scrambleSize)}" label="t_scramble" minOccurs="0" default="64">
         <param type="INTEGER" constraint=">= 0" />
       </keyword>
-      <keyword id="generating_matrices" name="generating_matrices" code="{0}" label="Generating matrices" minOccurs="0" default="No generating matrices">
+      <keyword id="generating_matrices" name="generating_matrices" code="{0}" label="Generating matrices" minOccurs="0" default="Predfined generating matrices from Joe and Kuo (2008)">
         <oneOf label="Generating Matrices"> 
           <keyword id="inline" name="inline" code="{N_mdm(ivec,generatingMatrices)}" label="Inline generating matrices" >
             <param type="INTEGERLIST" />
@@ -1981,11 +1973,11 @@
           <keyword id="file" name="file" code="{N_mdm(str,generatingMatricesFileName)}" label="Generating matrices file" >
             <param type="STRING" />
           </keyword>
-          <keyword id="predefined" name="predefined" code="{0}" label="Predefined generating matrices" default="Default generating matrices">
+          <keyword id="predefined" name="predefined" code="{0}" label="Predefined generating matrices" default="Generating matrices from Joe and Kuo (2008)">
             <oneOf label="Predefined Generating Matrices">
-              <keyword id="joe_kuo" name="joe_kuo" code="{N_mdm(true,joe_kuo)}" label="Generating matrices from Joe and Kuo (2008)">
+              <keyword id="joe_kuo" name="joe_kuo" code="{N_mdm(type,digitalNetGeneratingMatrixScheme_JOE_KUO)}" label="Generating matrices from Joe and Kuo (2008)">
               </keyword>
-              <keyword id="sobol_order_2" name="sobol_order_2" code="{N_mdm(true,sobol_order_2)}" label="Generating matrices for Sobol sequence">
+              <keyword id="sobol_order_2" name="sobol_order_2" code="{N_mdm(type,digitalNetGeneratingMatrixScheme_SOBOL_ORDER_2)}" label="Generating matrices for Sobol sequence">
               </keyword>
             </oneOf>
           </keyword>
@@ -1993,28 +1985,11 @@
       </keyword>
       <keyword id="ordering" name="ordering" code="{0}" label="Ordering" minOccurs="0" default="Gray code ordering">
         <oneOf label="Ordering">
-          &natural;
-          <keyword id="gray_code" name="gray_code" code="{N_mdm(true,grayCodeOrdering)}" label="Gray code ordering" >
+          <keyword id="natural" name="natural" code="{N_mdm(type,digitalNetOrdering_DIGITAL_NET_NATURAL_ORDERING)}" label="Natural ordering" />
+          <keyword id="gray_code" name="gray_code" code="{N_mdm(type,digitalNetOrdering_DIGITAL_NET_GRAY_CODE_ORDERING)}" label="Gray code ordering" >
           </keyword>
         </oneOf>
       </keyword>
-    ' >
-
-    <!-- Extracted options for low-discrepancy sampling -->
-    <!ENTITY low_discrepancy '
-      <keyword  id="low_discrepancy" name="low_discrepancy" code="{N_mdm(utype,sampleType_SUBMETHOD_LOW_DISCREPANCY_SAMPLING)}" label="low_discrepancy">
-          <alias name="qmc" />
-          <optional>
-            <keyword id="rank_1_lattice" name="rank_1_lattice" code="{N_mdm(true,rank1LatticeFlag)}" label="Options for rank-1 lattice samples" default="No rank-1 lattice sampling">
-              &rank_1_lattice_options;
-            </keyword>
-          </optional>
-          <optional>
-            <keyword id="digital_net" name="digital_net" code="{N_mdm(true,digitalNetFlag)}" label="Options for digital net samples" default="No digital net sampling">
-              &digital_net_options;
-            </keyword>
-          </optional>
-        </keyword>
     ' >
 
     ]>
@@ -2447,6 +2422,15 @@
           &method_max_function_evaluations;
           &default_scaling;
 	  &method_optional_model_pointer;
+        </keyword>
+
+        <keyword  id="external_python" name="external_python" code="{N_mdm(utype,methodName_EXTERNAL_PYTHON)}" label="external_python" help="" >
+          <keyword  id="class_path_and_name" name="class_path_and_name" code="{N_mdm(str,moduleAndClassName)}" label="Python Module File and Class Name"  minOccurs="1" >
+            <param type="INPUT_FILE" />
+          </keyword>
+	  <keyword  id="options_file" name="options_file" code="{N_mdm(str,advancedOptionsFilename)}" label="Advanced Options File"  minOccurs="0" default="no advanced options file" >
+	    <param type="INPUT_FILE" />
+	  </keyword>
         </keyword>
 
         <keyword  id="npsol_sqp" name="npsol_sqp" code="{N_mdm(utype,methodName_NPSOL_SQP)}" label="npsol_sqp"   group="Optimization: Local, Derivative-based" >
@@ -3176,7 +3160,19 @@
         <keyword  id="random" name="random" code="{N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}" label="random"   />
         <keyword  id="incremental_lhs" name="incremental_lhs" code="{N_mdm(utype,sampleType_SUBMETHOD_LHS)}" label="incremental_lhs"   default="no sample reuse in coefficient estimation" />
         <keyword  id="incremental_random" name="incremental_random" code="{N_mdm(utype,sampleType_SUBMETHOD_RANDOM)}" label="incremental_random"   />
-        &low_discrepancy;
+        <keyword  id="low_discrepancy" name="low_discrepancy" code="{N_mdm(utype,sampleType_SUBMETHOD_LOW_DISCREPANCY_SAMPLING)}" label="low_discrepancy">
+          <alias name="qmc" />
+          <optional>
+            <keyword id="rank_1_lattice" name="rank_1_lattice" code="{N_mdm(true,rank1LatticeFlag)}" label="Options for rank-1 lattice samples" default="No rank-1 lattice sampling">
+              &rank_1_lattice_options;
+            </keyword>
+          </optional>
+          <optional>
+            <keyword id="digital_net" name="digital_net" code="{N_mdm(true,digitalNetFlag)}" label="Options for digital net samples" default="No digital net sampling">
+              &digital_net_options;
+            </keyword>
+          </optional>
+          </keyword>
       </oneOf>
     </keyword>
 	  <keyword  id="refinement_samples" name="refinement_samples" code="{N_mdm(ivec,refineSamples)}" label="Refinement samples"  minOccurs="0" >
@@ -3228,6 +3224,51 @@
 	  &rng_options;
 	  &method_optional_model_pointer;
 	</keyword>
+
+  <!--TNP TODO: update group?-->
+ <keyword id="import_points" name="import_points" code="{N_mdm(utype,methodName_IMPORT_POINTS)}" label="import_points" group="Uncertainty Quantification">
+    <keyword  id="import_points_file1" name="import_points_file" code="{N_mdm(str,importPtsFile)}" label="File Import for Points Import Analysis"  minOccurs="1" default="A filename must be provided" >
+        <param type="INPUT_FILE" />
+        <optional>
+          <oneOf label="Tabular Format" >
+            <keyword  id="custom_annotated" name="custom_annotated" code="{N_mdm(utype,importPtsFormat_TABULAR_NONE)}" label="Custom Annotated"  >
+              <keyword  id="header" name="header" code="{N_mdm(augment_utype,importPtsFormat_TABULAR_HEADER)}" label="Header"  minOccurs="0" >
+                <keyword  id="use_variable_labels" name="use_variable_labels" code="{N_mdm(true,importPtsUseVariableLabels)}" label="Use/Validate Variables Labels from Header"  minOccurs="0" />
+              </keyword>
+              <keyword  id="eval_id" name="eval_id" code="{N_mdm(augment_utype,importPtsFormat_TABULAR_EVAL_ID)}" label="Eval ID"  minOccurs="0" />
+              <keyword  id="interface_id" name="interface_id" code="{N_mdm(augment_utype,importPtsFormat_TABULAR_IFACE_ID)}" label="Interface ID"  minOccurs="0"/>
+            </keyword>
+
+            <keyword  id="annotated" name="annotated" code="{N_mdm(utype,importPtsFormat_TABULAR_ANNOTATED)}" label="Annotated"   default="annotated" >
+              <keyword  id="use_variable_labels" name="use_variable_labels" code="{N_mdm(true,importPtsUseVariableLabels)}" label="Use/Validate Variables Labels from Header"  minOccurs="0" />
+            </keyword>
+            <keyword  id="freeform" name="freeform" code="{N_mdm(utype,importPtsFormat_TABULAR_NONE)}" label="Freeform"   default="annotated" />
+          </oneOf>
+        </optional>
+        <keyword  id="active_only1" name="active_only" code="{N_mdm(true,importPtsActive)}" label="Active Variables Only"  minOccurs="0" />
+    </keyword>
+    <keyword  id="variance_based_decomp" name="variance_based_decomp" code="{N_mdm(true,vbdFlag)}" label="variance_based_decomp"  minOccurs="0" default="no variance-based decomposition" >
+      <keyword  id="drop_tolerance" name="drop_tolerance" code="{N_mdm(Real,vbdDropTolerance)}" label="drop_tolerance"  minOccurs="0" default="All VBD indices displayed" >
+        <param type="REAL" />
+      </keyword>
+      <keyword  id="vbd_via_sampling_numBins" name="num_bins" code="{N_mdm(int,vbdViaSamplingNumBins)}" label="Number of bins for the binned sampling method for computing Sobol indices"  minOccurs="0" default="-1" >
+        <param type="INTEGER" />
+      </keyword>
+    </keyword> 
+    <keyword  id="std_regression_coeffs" name="std_regression_coeffs" code="{N_mdm(true,stdRegressionCoeffs)}" label="std_regression_coeffs"  minOccurs="0" >
+	  </keyword>
+    <keyword  id="tolerance_intervals" name="tolerance_intervals" code="{N_mdm(true,toleranceIntervalsFlag)}" label="Compute tolerance intervals"  minOccurs="0" >
+	    <keyword  id="ti_coverage" name="coverage" code="{N_mdm(Real01,tiCoverage)}" label="Coverage for tolerance intervals"  minOccurs="0" maxOccurs="1" default="0.95" >
+        <param type="REAL" />
+	    </keyword>
+	    <keyword  id="ti_confidence_level" name="confidence_level" code="{N_mdm(Real01,tiConfidenceLevel)}" label="Confidence level for tolerance intervals"  minOccurs="0" maxOccurs="1" default="0.90" >
+	      <param type="REAL" />
+	    </keyword>
+    </keyword>
+    &default_final_moments;
+	  &level_mappings;
+    &method_optional_model_pointer;
+  </keyword>
 
 	<keyword  id="multilevel_sampling" name="multilevel_sampling" code="{N_mdm(utype,methodName_MULTILEVEL_SAMPLING)}" label="multilevel_sampling"  group="Uncertainty Quantification" >
 	  <alias name="multilevel_mc"/>
@@ -3802,7 +3843,7 @@
                       <keyword  id="initial_chain_samples" name="initial_chain_samples" code="{N_mdm(int,mlmcmcInitialChainSamples)}" label="Number of initial samples for MLMCMC"  minOccurs="0" default="100" >
                         <param type="INTEGER" />
                       </keyword>
-                      <keyword  id="target_variance" name="target_variance" code="{N_mdm(Real,mlmcmcTargetVariance)}" label="Estimator variance for the MLMCMC greedy algorithm"  minOccurs="0.0001" default="1." >
+                      <keyword  id="target_variance" name="target_variance" code="{N_mdm(Real,mlmcmcTargetVariance)}" label="Estimator variance for the MLMCMC greedy algorithm"  minOccurs="0" default="0.05" >
                         <param type="REAL" />
                       </keyword>
                       <keyword  id="greedy_resampling_factor" name="greedy_resampling_factor" code="{N_mdm(Real,mlmcmcGreedyResamplingFactor)}" label="Resampling factor for the MLMCMC greedy algorithm"  minOccurs="0" maxOccurs="1" default="0.5" >
@@ -5025,7 +5066,7 @@
             <param type="REALLIST" />
           </keyword>
           <keyword  id="categorical1" name="categorical" code="{N_vam(categorical,discreteDesignSetRealCat)}" label="categorical"  minOccurs="0" >
-            <param type="STRINGLIST" constraint="LEN integer" />
+            <param type="STRINGLIST" constraint="LEN real" />
             <keyword id="adjacency_matrix2" name="adjacency_matrix" code="{N_vam(newivec,Var_Info_ddsra)}" label="adjacency_matrix"  minOccurs="0">
               <param type="INTEGERLIST"/>
             </keyword>
@@ -5653,7 +5694,7 @@
             <param type="REALLIST" />
           </keyword>
           <keyword  id="categorical5" name="categorical" code="{N_vam(categorical,discreteStateSetRealCat)}" label="categorical"  minOccurs="0" >
-            <param type="STRINGLIST" constraint="LEN integer" />
+            <param type="STRINGLIST" constraint="LEN real" />
           </keyword>
           <keyword  id="initial_state4" name="initial_state" code="{N_vam(rvec,discreteStateSetRealVars)}" label="initial_state"  minOccurs="0" default="middle set value, or rounded down" >
             <param type="REALLIST" constraint="LEN real" />
@@ -6058,7 +6099,7 @@
 
 		<keyword  id="experiment_variance_type1" name="experiment_variance_type" code="{N_rem(strL,varianceType)}" label="Type of measurement error (none, scalar, diagonal, matrix)"  minOccurs="0" default="none" >
 		  <alias name="variance_type"/>
-                  <param type="STRINGLIST" constraint="LEN1 field_calibration_terms" />
+                  <param type="STRINGLIST" constraint="LEN1 calibration_terms" />
 		</keyword>
 
 		<keyword  id="scalar_data_file" name="scalar_data_file" code="{N_rem(str,scalarDataFileName)}" label="Scalar calibration data file name"  minOccurs="0" >

@@ -29,7 +29,7 @@ Rank1Lattice::Rank1Lattice(
   int mMax,                             /// log2 of maximum number of points
   bool randomShiftFlag,                 /// Use random shift if true
   int seedValue,                        /// Random seed value
-  Rank1LatticeOrdering ordering,        /// Order of the lattice points
+  short ordering,        /// Order of the lattice points
   short outputLevel                     /// Verbosity
 ) :
 LowDiscrepancySequence(
@@ -191,9 +191,7 @@ Rank1Lattice(
   problem_db.get_int("method.random_seed") ?
     problem_db.get_int("method.random_seed") :
     generate_system_seed(),
-  problem_db.get_bool("method.ordering.natural") ? 
-    RANK_1_LATTICE_NATURAL_ORDERING :
-    RANK_1_LATTICE_RADICAL_INVERSE_ORDERING,
+  problem_db.get_short("method.ld.rank1.ordering"), 
   problem_db.get_short("method.output")
 )
 {
@@ -301,7 +299,6 @@ const std::tuple<UInt32Vector, int> Rank1Lattice::get_generating_vector_from_fil
     {
       generatingVector[j++] = std::stoull(line);
     }
-
     return std::make_tuple(
       generatingVector,
       problem_db.get_int("method.m_max")
@@ -312,7 +309,7 @@ const std::tuple<UInt32Vector, int> Rank1Lattice::get_generating_vector_from_fil
     Cerr << "Error: error while parsing generating vector from file '"
       << fileName << "'" << std::endl;
     abort_handler(METHOD_ERROR);
-
+    throw; // to silence warning
   }
 }
 
@@ -353,7 +350,7 @@ const std::tuple<UInt32Vector, int> Rank1Lattice::get_default_generating_vector(
   bool outputLevel = problem_db.get_short("method.output");
 
   /// Select predefined generating vector
-  if ( problem_db.get_bool("method.kuo") )
+  if ( problem_db.get_short("method.ld.rank1.generating_vector_scheme") == GEN_VECTOR_KUO )
   {
     if ( outputLevel >= DEBUG_OUTPUT )
     {
@@ -370,7 +367,7 @@ const std::tuple<UInt32Vector, int> Rank1Lattice::get_default_generating_vector(
   {
     if ( outputLevel >= DEBUG_OUTPUT )
     {
-      if ( problem_db.get_bool("method.cools_kuo_nuyens") )
+      if ( problem_db.get_short("method.ld.rank1.generating_vector_scheme") == GEN_VECTOR_COOLS_KUO_NUYENS )
       {
         Cout << "Found predefined generating vector 'cools_kuo_nuyens'"
           << std::endl;

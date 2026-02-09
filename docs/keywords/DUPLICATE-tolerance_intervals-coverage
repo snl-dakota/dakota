@@ -1,0 +1,39 @@
+Blurb::
+
+The coverage to be used for the calculation of the lower and upper ends
+of the interval covering the user supplied samples.
+
+Description::
+
+The coverage must be a value between 0 and 1.
+Once the mean and standard deviation 's_equiv' of the equivalent normal
+distribution are computed (based on the "confidence_level" input parameter),
+Dakota uses this "coverage" input parameter to know how much it has to
+multiply 's_equiv' in order to get the lower and upper ends of the interval
+covering the user supplied samples.
+
+*Default Behavior*
+
+A value of 0.95 (95%) is the default value for this parameter.
+
+Topics::
+
+Examples::
+
+.. code-block::
+
+    method
+      sampling
+        samples 5
+        refinement_samples 4 3 3
+        sample_type random
+        tolerance_intervals
+          coverage 0.96
+          confidence_level 0.92
+        seed = 31415
+
+Theory::
+
+Faq::
+
+See_Also::

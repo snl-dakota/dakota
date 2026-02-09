@@ -104,7 +104,7 @@ macro(dakota_find_trilinos)
           "Teuchos deprecated code clashes with operator<< in Dakota")
 
 	add_subdirectory(packages/external/trilinos)
-
+        set(CMAKE_PREFIX_PATH "${Trilinos_BINARY_DIR}" ${CMAKE_PREFIX_PATH})
 	if(HAVE_ROL)
           get_target_property(ROL_INCLUDE_DIRS rol INCLUDE_DIRECTORIES)
 	endif()

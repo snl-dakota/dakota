@@ -1,12 +1,12 @@
 Test Number 0 succeeded
 <<<<< Function evaluation summary (OPTIONAL_I): 39 total (27 new, 12 duplicate)
  nln_ineq_con_1: 39 val (27 n, 12 d), 36 grad (27 n, 9 d), 0 Hess (0 n, 0 d)
-<<<<< Function evaluation summary (UQ_I): 1425 total (1384 new, 41 duplicate)
-  response_fn_1: 1425 val (1384 n, 41 d), 828 grad (787 n, 41 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 1425 total (1383 new, 42 duplicate)
+  response_fn_1: 1425 val (1383 n, 42 d), 828 grad (786 n, 42 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary (OPTIONAL_I): 39 total (27 new, 12 duplicate)
  nln_ineq_con_1: 39 val (27 n, 12 d), 36 grad (27 n, 9 d), 0 Hess (0 n, 0 d)
-<<<<< Function evaluation summary (UQ_I): 1425 total (1384 new, 41 duplicate)
-  response_fn_1: 1425 val (1384 n, 41 d), 828 grad (787 n, 41 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 1425 total (1383 new, 42 duplicate)
+  response_fn_1: 1425 val (1383 n, 42 d), 828 grad (786 n, 42 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                       2.0000000000e+02 b
                       1.7500000000e+01 d

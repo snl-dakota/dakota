@@ -124,11 +124,11 @@ You will see a new directory,
    platform configuration. Instructions are provided in that file.
 
 As an example, consider the need to specify a custom location for the
-Boost 1.69 library, eg in ``/extra/boost_1_69_0``.  The appropriate lines
+Boost 1.70 library, eg in ``/extra/boost_1_70_0``.  The appropriate lines
 to uncomment and modify in the BuildDakotaCustom.cmake file are these::
 
   set(BOOST_ROOT
-      "/extra/boost_1_69_0"
+      "/extra/boost_1_70_0"
       CACHE PATH "Use non-standard Boost install" FORCE)
   set( Boost_NO_SYSTEM_PATHS TRUE
        CACHE BOOL "Supress search paths other than BOOST_ROOT" FORCE)
