@@ -2613,6 +2613,12 @@ static void Vgen_NormalUnc(DataVariablesRep *dv, size_t offset)
       break;
     }
   }
+
+  // Copy final values back to per-type variable
+  if (!IP->length())
+    IP->sizeUninitialized(n);
+  for (i = offset, j = 0; j < n; ++i, ++j)
+    (*IP)[j] = (*V)[i];
 }
 
 static void Vchk_LognormalUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
@@ -2725,6 +2731,12 @@ static void Vgen_LognormalUnc(DataVariablesRep *dv, size_t offset)
     if (!num_U)
       (*B)[i] = mean + 3.*stdev;
   }
+
+  // Copy final values back to per-type variable
+  if (!IP->length())
+    IP->sizeUninitialized(n);
+  for (i = offset, j = 0; j < n; ++i, ++j)
+    (*IP)[j] = (*V)[i];
 }
 
 static void Vchk_UniformUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
@@ -2761,6 +2773,12 @@ static void Vgen_UniformUnc(DataVariablesRep *dv, size_t offset)
     for(i = offset, j = 0; j < n; ++i, ++j)
       Pecos::UniformRandomVariable::
 	moments_from_params((*L)[j], (*U)[j], (*V)[i], stdev);
+
+  // Copy final values back to per-type variable
+  if (!IP->length())
+    IP->sizeUninitialized(n);
+  for (i = offset, j = 0; j < n; ++i, ++j)
+    (*IP)[j] = (*V)[i];
 }
 
 static void
@@ -2817,6 +2835,12 @@ static void Vgen_LoguniformUnc(DataVariablesRep *dv, size_t offset)
     for(i = offset, j = 0; j < n; ++i, ++j)
       Pecos::LoguniformRandomVariable::
 	moments_from_params((*L)[j], (*U)[j], (*V)[i], stdev);
+
+  // Copy final values back to per-type variable
+  if (!IP->length())
+    IP->sizeUninitialized(n);
+  for (i = offset, j = 0; j < n; ++i, ++j)
+    (*IP)[j] = (*V)[i];
 }
 
 static void Vchk_TriangularUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
@@ -2864,6 +2888,12 @@ static void Vgen_TriangularUnc(DataVariablesRep *dv, size_t offset)
       Pecos::TriangularRandomVariable::
 	moments_from_params((*L)[j], (*M)[j], (*U)[j], (*V)[i], stdev);
   }
+
+  // Copy final values back to per-type variable
+  if (!IP->length())
+    IP->sizeUninitialized(n);
+  for (i = offset, j = 0; j < n; ++i, ++j)
+    (*IP)[j] = (*V)[i];
 }
 
 static void
@@ -2894,6 +2924,12 @@ static void Vgen_ExponentialUnc(DataVariablesRep *dv, size_t offset)
     if (num_IP) (*V)[i] = (*IP)[j];
     else        (*V)[i] = mean;
   }
+
+  // Copy final values back to per-type variable
+  if (!IP->length())
+    IP->sizeUninitialized(n);
+  for (i = offset, j = 0; j < n; ++i, ++j)
+    (*IP)[j] = (*V)[i];
 }
 
 static void Vchk_BetaUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
@@ -2931,6 +2967,12 @@ static void Vgen_BetaUnc(DataVariablesRep *dv, size_t offset)
     for(i = offset, j = 0; j < n; ++i, ++j)
       Pecos::BetaRandomVariable::
 	moments_from_params((*A)[j], (*B)[j], (*L)[j], (*U)[j], (*V)[i], stdev);
+
+  // Copy final values back to per-type variable
+  if (!IP->length())
+    IP->sizeUninitialized(n);
+  for (i = offset, j = 0; j < n; ++i, ++j)
+    (*IP)[j] = (*V)[i];
 }
 
 static void Vchk_GammaUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
@@ -2963,6 +3005,12 @@ static void Vgen_GammaUnc(DataVariablesRep *dv, size_t offset)
     if (num_IP) (*V)[i] = (*IP)[j];
     else        (*V)[i] = mean;
   }
+
+  // Copy final values back to per-type variable
+  if (!IP->length())
+    IP->sizeUninitialized(n);
+  for (i = offset, j = 0; j < n; ++i, ++j)
+    (*IP)[j] = (*V)[i];
 }
 
 static void Vchk_GumbelUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
@@ -2995,6 +3043,12 @@ static void Vgen_GumbelUnc(DataVariablesRep *dv, size_t offset)
     if (num_IP) (*V)[i] = (*IP)[j];
     else        (*V)[i] = mean;
   }
+
+  // Copy final values back to per-type variable
+  if (!IP->length())
+    IP->sizeUninitialized(n);
+  for (i = offset, j = 0; j < n; ++i, ++j)
+    (*IP)[j] = (*V)[i];
 }
 
 static void Vchk_FrechetUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
@@ -3027,6 +3081,12 @@ static void Vgen_FrechetUnc(DataVariablesRep *dv, size_t offset)
     if (num_IP) (*V)[i] = (*IP)[j];
     else        (*V)[i] = mean;
   }
+
+  // Copy final values back to per-type variable
+  if (!IP->length())
+    IP->sizeUninitialized(n);
+  for (i = offset, j = 0; j < n; ++i, ++j)
+    (*IP)[j] = (*V)[i];
 }
 
 static void Vchk_WeibullUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
@@ -3059,6 +3119,12 @@ static void Vgen_WeibullUnc(DataVariablesRep *dv, size_t offset)
     if (num_IP) (*V)[i] = (*IP)[j];
     else        (*V)[i] = mean;
   }
+
+  // Copy final values back to per-type variable
+  if (!IP->length())
+    IP->sizeUninitialized(n);
+  for (i = offset, j = 0; j < n; ++i, ++j)
+    (*IP)[j] = (*V)[i];
 }
 
 
@@ -3179,6 +3245,12 @@ static void Vgen_HistogramBinUnc(DataVariablesRep *dv, size_t offset)
       Pecos::HistogramBinRandomVariable::
 	moments_from_params(hist_bin_pairs, (*V)[i], stdev);
   }
+
+  // Copy final values back to per-type variable
+  if (!IP->length())
+    IP->sizeUninitialized(n);
+  for (i = offset, j = 0; j < n; ++i, ++j)
+    (*IP)[j] = (*V)[i];
 }
 
 static void Vchk_PoissonUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
@@ -3209,6 +3281,12 @@ static void Vgen_PoissonUnc(DataVariablesRep *dv, size_t offset)
     if (num_IP) (*V)[i] = (*IP)[j];
     else        (*V)[i] = (int)mean;
   }
+
+  // Copy final values back to per-type variable
+  if (!IP->length())
+    IP->sizeUninitialized(n);
+  for (i = offset, j = 0; j < n; ++i, ++j)
+    (*IP)[j] = (*V)[i];
 }
 
 static void Vchk_BinomialUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
@@ -3246,6 +3324,12 @@ static void Vgen_BinomialUnc(DataVariablesRep *dv, size_t offset)
       (*V)[i] = (int)mean;
     }
   }
+
+  // Copy final values back to per-type variable
+  if (!IP->length())
+    IP->sizeUninitialized(n);
+  for (i = offset, j = 0; j < n; ++i, ++j)
+    (*IP)[j] = (*V)[i];
 }
 
 static void
@@ -3282,6 +3366,12 @@ static void Vgen_NegBinomialUnc(DataVariablesRep *dv, size_t offset)
     }
     else                      (*V)[i] = (int)mean;
   }
+
+  // Copy final values back to per-type variable
+  if (!IP->length())
+    IP->sizeUninitialized(n);
+  for (i = offset, j = 0; j < n; ++i, ++j)
+    (*IP)[j] = (*V)[i];
 }
 
 static void Vchk_GeometricUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
@@ -3313,6 +3403,12 @@ static void Vgen_GeometricUnc(DataVariablesRep *dv, size_t offset)
     if (num_IP) (*V)[i] = (*IP)[j];
     else        (*V)[i] = (int)mean;
   }
+
+  // Copy final values back to per-type variable
+  if (!IP->length())
+    IP->sizeUninitialized(n);
+  for (i = offset, j = 0; j < n; ++i, ++j)
+    (*IP)[j] = (*V)[i];
 }
 
 static void Vchk_HyperGeomUnc(DataVariablesRep *dv, size_t offset, Var_Info *vi)
@@ -3356,6 +3452,12 @@ static void Vgen_HyperGeomUnc(DataVariablesRep *dv, size_t offset)
       (*V)[i] = (int)mean;
     }
   }
+
+  // Copy final values back to per-type variable
+  if (!IP->length())
+    IP->sizeUninitialized(n);
+  for (i = offset, j = 0; j < n; ++i, ++j)
+    (*IP)[j] = (*V)[i];
 }
 
 
@@ -3480,6 +3582,12 @@ static void Vgen_HistogramPtIntUnc(DataVariablesRep *dv, size_t offset)
       }
     }
   }
+
+  // Copy final values back to per-type variable
+  if (!IP.length())
+    IP.sizeUninitialized(n);
+  for (i = offset, j = 0; j < n; ++i, ++j)
+    IP[j] = V[i];
 }
 
 /// Check the histogram point string input data, normalize the counts,
@@ -3603,6 +3711,12 @@ static void Vgen_HistogramPtStrUnc(DataVariablesRep *dv, size_t offset)
       }
     }
   }
+
+  // Copy final values back to per-type variable
+  if (!IP.size())
+    IP.resize(n);
+  for (i = offset, j = 0; j < n; ++i, ++j)
+    IP[j] = V[i];
 }
 
 
@@ -3725,6 +3839,12 @@ static void Vgen_HistogramPtRealUnc(DataVariablesRep *dv, size_t offset)
       }
     }
   }
+
+  // Copy final values back to per-type variable
+  if (!IP.length())
+    IP.sizeUninitialized(n);
+  for (i = offset, j = 0; j < n; ++i, ++j)
+    IP[j] = V[i];
 }
 
 
@@ -3869,6 +3989,12 @@ static void Vgen_ContinuousIntervalUnc(DataVariablesRep *dv, size_t offset)
       Pecos::UniformRandomVariable::moments_from_params(lb, ub, (*V)[i], stdev);
     // TO DO: if disjoint cells, repair V[i] to lie inside nearest cell
   }
+
+  // Copy final values back to per-type variable
+  if (!IP->length())
+    IP->sizeUninitialized(n);
+  for (i = offset, j = 0; j < n; ++i, ++j)
+    (*IP)[j] = (*V)[i];
 }
 
 /// Check the discrete interval uncertain input data and populate
@@ -3992,6 +4118,12 @@ static void Vgen_DiscreteIntervalUnc(DataVariablesRep *dv, size_t offset)
       (*V)[i] = (lb + ub) / 2; // int truncation if odd sum
     // TO DO: if disjoint cells, repair V[offset] to lie inside nearest cell
   }
+
+  // Copy final values back to per-type variable
+  if (!IP->length())
+    IP->sizeUninitialized(n);
+  for (i = offset, j = 0; j < n; ++i, ++j)
+    (*IP)[j] = (*V)[i];
 }
 
 
@@ -4766,6 +4898,15 @@ static void Vgen_DiscreteUncSetInt(DataVariablesRep *dv, size_t offset)
 	     dv->discreteIntEpistemicUncUpperBnds,
 	     dv->discreteIntEpistemicUncVars, true, offset);
   if (dv->discreteUncSetIntVars.length()) dv->uncertainVarsInitPt = true;
+
+  // Copy final values back to per-type variable
+  { size_t n = dv->numDiscreteUncSetIntVars;
+    IntVector& IP = dv->discreteUncSetIntVars;
+    IntVector& V = dv->discreteIntEpistemicUncVars;
+    if (!IP.length()) IP.sizeUninitialized(n);
+    for (size_t i = offset, j = 0; j < n; ++i, ++j)
+      IP[j] = V[i];
+  }
 }
 
 static void
@@ -4783,6 +4924,15 @@ static void Vgen_DiscreteUncSetStr(DataVariablesRep *dv, size_t offset)
 	     dv->discreteStrEpistemicUncUpperBnds,
 	     dv->discreteStrEpistemicUncVars, true, offset);
   if (dv->discreteUncSetStrVars.size()) dv->uncertainVarsInitPt = true;
+
+  // Copy final values back to per-type variable
+  { size_t n = dv->numDiscreteUncSetStrVars;
+    StringArray& IP = dv->discreteUncSetStrVars;
+    StringArray& V = dv->discreteStrEpistemicUncVars;
+    if (!IP.size()) IP.resize(n);
+    for (size_t i = offset, j = 0; j < n; ++i, ++j)
+      IP[j] = V[i];
+  }
 }
 
 static void
@@ -4800,6 +4950,15 @@ static void Vgen_DiscreteUncSetReal(DataVariablesRep *dv, size_t offset)
 	     dv->discreteRealEpistemicUncUpperBnds,
 	     dv->discreteRealEpistemicUncVars, true, offset);
   if (dv->discreteUncSetRealVars.length()) dv->uncertainVarsInitPt = true;
+
+  // Copy final values back to per-type variable
+  { size_t n = dv->numDiscreteUncSetRealVars;
+    RealVector& IP = dv->discreteUncSetRealVars;
+    RealVector& V = dv->discreteRealEpistemicUncVars;
+    if (!IP.length()) IP.sizeUninitialized(n);
+    for (size_t i = offset, j = 0; j < n; ++i, ++j)
+      IP[j] = V[i];
+  }
 }
 
 static void
