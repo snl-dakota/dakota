@@ -37,10 +37,14 @@ NonDMultifidelitySampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_l
   NonDNumericSolveSampling(problem_db, parallel_lib, model),
   numericalSolveMode(problem_db.get_ushort("method.nond.numerical_solve_mode"))
 {
-  analyticEstVarDerivs = true; // MFMC estvar soln has analytic derivatives
-  //hardenNumericSoln  = true; // now adopted for all numerical estimators
+  analyticEstVarDerivs  = true; // MFMC estvar soln has analytic derivatives
+  //hardenNumericSoln   = true; // now adopted for all numerical estimators
+  mlmfSubMethod         = SUBMETHOD_MFMC; // if needed for numerical solves
 
-  mlmfSubMethod = SUBMETHOD_MFMC; // if needed for numerical solves
+  // reorderModelsOnTheFly affects finite_solution_bounds() so restrict
+  // activation to MFMC:
+  reorderModelsOnTheFly = (problem_db.get_ushort("method.nond.model_reordering")
+			   == REORDER_MODELS_ON_THE_FLY); // on by default
 
   // defining fullApproxSet allows reuse of fns that support model selection
   fullApproxSet.resize(numApprox);
@@ -399,7 +403,7 @@ approx_increments(IntRealMatrixMap& sum_L_baseline,
   // Important: unlike ML BLUE, modelGroups are only used to facilitate shared
   // sample set groupings in group_increments() and these updates to group
   // definitions do not imply changes to the moment roll-up or peer DAG
-  // > upstream use of modelGroupCosts in finite_solution_bounds() is complete
+  // > upstream use of modelGroupCost in finite_solution_bounds() is complete
   // > downstream processing is agnostic to modelGroups, consuming the overlaid
   //   {sum,num}_L_{sh,ref}.
   // > If modelGroups are used more broadly in the future, then nested sampling
@@ -1243,20 +1247,18 @@ compute_allocations(const RealMatrix& rho2_LH, const RealVector& var_H,
 
   default: // any of several numerical solver formulations
     // Notes on reorderModelsOnTheFly:
-    // > true setting removes need for modelGroupCosts in finite bounds
     // > reordering does not invalidate the linear budget constraint since
-    // > this is formulated using sequenceCost and total sample counts for each
-    // > model (model counts N_i are not inferred from overlays of optimized N_g
-    // > group samples).  Thus, pyramid structure with sample sharing is not
-    // > reflected in upstream solution constraints, instead manifesting
-    // > downstream as a sample management scheme in approx_increments(),
+    //   this is formulated using sequenceCost and total sample counts for each
+    //   model (model counts N_i are not inferred from overlays of optimized N_g
+    //   group samples).  Thus, pyramid structure with sample sharing is not
+    //   reflected in upstream solution constraints, instead manifesting
+    //   downstream as a sample management scheme in approx_increments(),
     //   which then supports multi-batch concurrency using group_increments().
-    //reorderModelsOnTheFly = (fixedModelOrder) ? false : true; // set in ctor
-    // If reordered on-the-fly, only the invariant all-group model cost is used
-    // in NonDNumericSolveSampling::derived_finite_solution_bounds().  If strict
-    // MFMC ordering, then original costs hold throughout.
-    //if (!reorderModelsOnTheFly) {// strict DAG usage + monotonic linear cons
-    update_model_groups(); update_model_group_costs(); //}
+    // > If reordered on-the-fly, only the invariant all-group cost is used in
+    //   NonDNumericSolveSampling::derived_finite_solution_bounds() as approx
+    //   bounds are inferred from sequenceCost for this case.  If fixed model
+    //   ordering, then original group costs hold throughout.
+    update_model_groups(); update_model_group_costs();// slight overkill (reord)
     mfmc_numerical_solution(rho2_LH, cost, soln);
     break;
   }
