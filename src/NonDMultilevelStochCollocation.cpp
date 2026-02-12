@@ -27,7 +27,9 @@ namespace Dakota {
 /** This constructor is called for a standard letter-envelope iterator
     instantiation using the ProblemDescDB. */
 NonDMultilevelStochCollocation::
-NonDMultilevelStochCollocation(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+NonDMultilevelStochCollocation(ProblemDescDB& problem_db,
+			       ParallelLibrary& parallel_lib,
+			       std::shared_ptr<Model> model):
   NonDStochCollocation(DEFAULT_METHOD, problem_db, parallel_lib, model), // bypass SC ctor
   quadOrderSeqSpec(problem_db.get_usa("method.nond.quadrature_order")),
   ssgLevelSeqSpec(problem_db.get_usa("method.nond.sparse_grid_level")),
@@ -263,8 +265,11 @@ void NonDMultilevelStochCollocation::assign_specification_sequence()
       (uSpaceModel->subordinate_iterator());
     if (sequenceIndex < quadOrderSeqSpec.size())
       nond_quad->quadrature_order(quadOrderSeqSpec[sequenceIndex]);
-    else //if (refineControl)
+    else { //if (refineControl)
+      Cout << "\nNote: quadrature_order_sequence specification exceeded.  "
+	   << "Resetting to nominal." << std::endl;
       nond_quad->reset();   // reset refinement, capture dist param updates
+    }
     break;
   }
   case Pecos::COMBINED_SPARSE_GRID: case Pecos::INCREMENTAL_SPARSE_GRID:
@@ -274,8 +279,11 @@ void NonDMultilevelStochCollocation::assign_specification_sequence()
       (uSpaceModel->subordinate_iterator());
     if (sequenceIndex < ssgLevelSeqSpec.size())
       nond_sparse->sparse_grid_level(ssgLevelSeqSpec[sequenceIndex]);
-    else //if (refineControl)
+    else { //if (refineControl)
+      Cout << "\nNote: sparse_grid_level_sequence specification exceeded.  "
+	   << "Resetting to nominal." << std::endl;
       nond_sparse->reset(); // reset refinement, capture dist param updates
+    }
     break;
   }
   default:
@@ -298,8 +306,11 @@ void NonDMultilevelStochCollocation::increment_specification_sequence()
       ++sequenceIndex;      // advance order sequence if sufficient entries
       nond_quad->quadrature_order(quadOrderSeqSpec[sequenceIndex]);
     }
-    else //if (refineControl)
+    else { //if (refineControl)
+      Cout << "\nNote: quadrature_order_sequence exceeded.  "
+	   << "Resetting to nominal." << std::endl;
       nond_quad->reset();   // reset refinement, capture dist param updates
+    }
     break;
   }
   case Pecos::COMBINED_SPARSE_GRID: case Pecos::INCREMENTAL_SPARSE_GRID:
@@ -311,8 +322,11 @@ void NonDMultilevelStochCollocation::increment_specification_sequence()
       ++sequenceIndex;      // advance level sequence if sufficient entries
       nond_sparse->sparse_grid_level(ssgLevelSeqSpec[sequenceIndex]);
     }
-    else //if (refineControl)
+    else { //if (refineControl)
+      Cout << "\nNote: sparse_grid_level_sequence exceeded.  "
+	   << "Resetting to nominal." << std::endl;
       nond_sparse->reset(); // reset refinement, capture dist param updates
+    }
     break;
   }
   default:

@@ -3156,6 +3156,11 @@ KEYWORD method {N_mdm3(start,0,stop)}
         override {N_mdm(utype,numericalSolveMode_NUMERICAL_OVERRIDE)}
        ]
       [ 
+        reorder_models {N_mdm(utype,modelReordering_REORDER_MODELS_ON_THE_FLY)}
+        |
+        fixed_model_order {N_mdm(utype,modelReordering_FIXED_MODEL_ORDERING)}
+       ]
+      [ 
         sqp {N_mdm(utype,optSubProbSolver_SUBMETHOD_NPSOL)}
         |
         nip {N_mdm(utype,optSubProbSolver_SUBMETHOD_OPTPP)}

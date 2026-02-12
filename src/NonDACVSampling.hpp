@@ -10,7 +10,7 @@
 #ifndef NOND_ACV_SAMPLING_H
 #define NOND_ACV_SAMPLING_H
 
-#include "NonDNonHierarchSampling.hpp"
+#include "NonDNumericAllocSampling.hpp"
 //#include "DataMethod.hpp"
 
 
@@ -23,7 +23,7 @@ namespace Dakota {
     that utilitizes lower fidelity simulations that have response QoI
     that are correlated with the high-fidelity response QoI. */
 
-class NonDACVSampling: public NonDNonHierarchSampling
+class NonDACVSampling: public NonDNumericAllocSampling
 {
 public:
 
@@ -151,9 +151,6 @@ protected:
   Real update_hf_target(const RealVector& avg_eval_ratios, Real avg_N_H,
 			const RealVector& var_H);
 
-  void print_model_allocations(std::ostream& s, const MFSolutionData& soln,
-			       const UShortArray& approx_set);
-
   //
   //- Heading: Data
   //
@@ -165,7 +162,7 @@ protected:
   /// as a numFunctions array of symmetric numApprox x numApprox matrices
   RealSymMatrixArray covLL;
 
-  /// ACV uses all approximations with in numApprox; this array supports this
+  /// ACV uses all approximations within numApprox; this array supports this
   /// case for functions that are generalized to support approx subsets
   UShortArray fullApproxSet;
 
@@ -706,7 +703,7 @@ update_hf_target(const RealVector& avg_eval_ratios, Real avg_N_H,
   MFSolutionData::update_estimator_variance_metric(estVarMetricType,
     estVarMetricNormOrder, estvar_ratios, estvar, metric, metric_index);
 
-  return NonDNonHierarchSampling::
+  return NonDNumericAllocSampling::
     update_hf_target(estvar_ratios, metric_index, var_H, estvar0);
 }
 
@@ -723,7 +720,7 @@ update_hf_target(const RealVector& avg_eval_ratios, Real avg_N_H,
   MFSolutionData::update_estimator_variance_metric(estVarMetricType,
     estVarMetricNormOrder, estvar_ratios, estvar, metric, metric_index);
 
-  return NonDNonHierarchSampling::
+  return NonDNumericAllocSampling::
     update_hf_target(estvar_ratios, metric_index, var_H);
 }
 

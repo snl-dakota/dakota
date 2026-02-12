@@ -336,7 +336,7 @@ config_regression(size_t colloc_pts, size_t regress_size, int seed,
     //            from lower-level seed fixing across levels or refine iters.
     if (refineType && fixedSeed)
       Cerr << "Warning: combining sample refinement with fixed_seed is more "
-	   << "likely to cause sample redundancy." << std::endl;
+	   << "likely to\n         cause sample redundancy." << std::endl;
     // reuse type/seed/rng settings intended for the expansion_sampler.
     // Unlike expansion_sampler, allow sampling pattern to vary under
     // unstructured grid refinement/replacement/augmentation.  Also

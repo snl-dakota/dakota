@@ -10,7 +10,7 @@
 #ifndef NOND_MULTIFIDELITY_SAMPLING_H
 #define NOND_MULTIFIDELITY_SAMPLING_H
 
-#include "NonDNonHierarchSampling.hpp"
+#include "NonDNumericAllocSampling.hpp"
 //#include "DataMethod.hpp"
 
 
@@ -23,7 +23,7 @@ namespace Dakota {
     that utilitizes lower fidelity simulations that have response QoI
     that are correlated with the high-fidelity response QoI. */
 
-class NonDMultifidelitySampling: public NonDNonHierarchSampling
+class NonDMultifidelitySampling: public NonDNumericAllocSampling
 {
 public:
 
@@ -62,6 +62,13 @@ protected:
 
   void estimator_variance_ratios(const RealVector& cd_vars,
 				 RealVector& estvar_ratios) override;
+  void estimator_variance_ratio_gradients(const RealVector& cd_vars,
+					  RealMatrix& evr_grads) override;
+
+  void augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
+				       RealVector& lin_ineq_lb,
+				       RealVector& lin_ineq_ub);
+  void enforce_augmented_linear_ineq_constraints(RealVector& cd_vars);
 
   //
   //- Heading: member functions
@@ -82,6 +89,8 @@ protected:
 				    MFSolutionData& soln);
   void mfmc_numerical_solution(const RealMatrix& rho2_LH,
 			       const RealVector& cost, MFSolutionData& soln);
+  void analytic_initialization_from_mfmc(const RealMatrix& rho2_LH,
+					 MFSolutionData& soln);
 
   void emerge_from_pilot(const SizetArray& N_H, RealVector& avg_eval_ratios,
 			 Real& avg_hf_target, Real offline_N_lwr = 1.);
@@ -187,7 +196,7 @@ private:
 
   /// MFMC uses all approximations within numApprox; this array supports this
   /// case for functions that are generalized to support approx subsets
-  UShortArray approxSet;
+  UShortArray fullApproxSet;
 
   /// tracks approximation ordering based on ascending rho2_LH;
   /// used to determine which analytic MFMC option is used.
@@ -206,6 +215,10 @@ private:
 
   /// final solution data for MFMC (default DAG = 1,2,...,numApprox)
   MFSolutionData mfmcSolnData;
+
+  // an option for numerical MFMC solutions that utilizes linear constraints
+  // to preserve monotonicity throughout, rather than reordering on the fly
+  //bool fixedModelOrder;
 };
 
 

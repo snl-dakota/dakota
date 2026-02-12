@@ -31,7 +31,7 @@ namespace Dakota {
 NonDMultilevBLUESampling::
 NonDMultilevBLUESampling(ProblemDescDB& problem_db,
 			 ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
-  NonDNonHierarchSampling(problem_db, parallel_lib, model),
+  NonDNumericAllocSampling(problem_db, parallel_lib, model),
   pilotGroupSampling(problem_db.get_short("method.nond.pilot_samples.mode")),
   groupThrottleType(problem_db.get_short("method.nond.group_throttle_type")),
   groupSizeThrottle(problem_db.get_ushort("method.nond.group_size_throttle")),
@@ -39,7 +39,7 @@ NonDMultilevBLUESampling(ProblemDescDB& problem_db,
   rCondTolThrottle(problem_db.get_real("method.nond.rcond_tol_throttle"))
 {
   analyticEstVarDerivs = true; // ML BLUE estvar soln has analytic derivatives
-  //hardenNumericSoln  = true; // now adopted for all non-hierarch estimators
+  //hardenNumericSoln  = true; // now adopted for all numerical estimators
 
   mlmfSubMethod = problem_db.get_ushort("method.sub_method");
 
@@ -198,7 +198,7 @@ NonDMultilevBLUESampling::~NonDMultilevBLUESampling()
 
 void NonDMultilevBLUESampling::pre_run()
 {
-  NonDNonHierarchSampling::pre_run();
+  NonDNumericAllocSampling::pre_run();
   responseContainer.reset();
   pilotResponseContainer.reset();
 }
@@ -402,7 +402,7 @@ void NonDMultilevBLUESampling::ml_blue_pilot_projection()
 			    sequenceCost[numApprox], deltaEquivHF);
   finalize_counts(NGroupActual, NGroupAlloc);
   // No need for updating estimator variance given deltaNActualHF since
-  // NonDNonHierarchSampling::ensemble_numerical_solution() recovers N*
+  // NonDNumericAllocSampling::ensemble_numerical_solution() recovers N*
   // from the numerical solve and computes projected estVariance{s,Ratios}
 }
 
@@ -1005,6 +1005,14 @@ analytic_initialization_from_mfmc(const RealMatrix& rho2_LH,
                         ? g_index : _NPOS;
   }
   analytic_ratios_to_solution_variables(avg_eval_ratios,ratios_to_groups,soln);
+
+#ifdef EXPORT_INITIAL_GUESS
+  std::ofstream mfmc_initials;
+  mfmc_initials.open("mfmc_initial_guesses.dat",
+		     std::ofstream::out | std::ofstream::app);
+  mfmc_initials << soln.solution_variables() << std::endl;
+  mfmc_initials.close();
+#endif // EXPORT_INITIAL_GUESS
 }
 
 
@@ -1035,6 +1043,14 @@ analytic_initialization_from_ensemble_cvmc(const RealMatrix& rho2_LH,
                         ? g_index : _NPOS;
   }
   analytic_ratios_to_solution_variables(avg_eval_ratios,ratios_to_groups,soln);
+
+#ifdef EXPORT_INITIAL_GUESS
+  std::ofstream cvmc_initials;
+  cvmc_initials.open("cvmc_initial_guesses.dat",
+		     std::ofstream::out | std::ofstream::app);
+  cvmc_initials << soln.solution_variables() << std::endl;
+  cvmc_initials.close();
+#endif // EXPORT_INITIAL_GUESS
 }
 
 
@@ -1558,7 +1574,7 @@ accumulate_blue_sums(IntRealMatrixArrayMap& sum_G,
 
     for (qoi=0; qoi<numFunctions; ++qoi) {
 
-      // see Bessel correction notes in NonDNonHierarchSampling::
+      // see Bessel correction notes in NonDNumericAllocSampling::
       // compute_correlation(): population mean and variance should be
       // computed from the same sample set
       all_finite = true;
@@ -1648,7 +1664,7 @@ accumulate_blue_sums(RealMatrix& sum_G_g, RealSymMatrixArray& sum_GG_g,
 
     for (qoi=0; qoi<numFunctions; ++qoi) {
 
-      // see fault tol notes in NonDNonHierarchSampling::compute_correlation():
+      // see fault tol notes in NonDNumericAllocSampling::compute_correlation():
       // population mean and variance should be computed from same sample set
       all_finite = true;
       for (m=0; m<num_models; ++m) {

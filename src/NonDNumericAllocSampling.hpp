@@ -7,8 +7,8 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-#ifndef NOND_NONHIERARCH_SAMPLING_H
-#define NOND_NONHIERARCH_SAMPLING_H
+#ifndef NOND_NUMERIC_SOLVE_SAMPLING_H
+#define NOND_NUMERIC_SOLVE_SAMPLING_H
 
 #include "NonDEnsembleSampling.hpp"
 #include "MFSolutionData.hpp"
@@ -26,7 +26,7 @@ namespace Dakota {
 
 /** Derived classes include MFMC, ACV, and GenACV. */
 
-class NonDNonHierarchSampling: public NonDEnsembleSampling
+class NonDNumericAllocSampling: public NonDEnsembleSampling
 {
 public:
 
@@ -35,10 +35,11 @@ public:
   //
 
   /// standard constructor
-  NonDNonHierarchSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, 
+  NonDNumericAllocSampling(ProblemDescDB& problem_db,
+			  ParallelLibrary& parallel_lib, 
 			  std::shared_ptr<Model> model);
   /// destructor
-  ~NonDNonHierarchSampling() override;
+  ~NonDNumericAllocSampling() override;
 
   //
   //- Heading: Virtual function redefinitions
@@ -193,6 +194,10 @@ protected:
   void estimator_variances_from_ratios(const RealVector& cd_vars,
 				       const RealVector& estvar_ratios,
 				       RealVector& est_var);
+  /// compute estimator variances from ratios and MC reference variance
+  void estimator_ratios_from_variances(const RealVector& cd_vars,
+				       const RealVector& estvar,
+				       RealVector& estvar_ratios);
   /// alternate API for updating both variance ratios and associated variances
   void estimator_variances_and_ratios(const RealVector& cd_vars,
 				      RealVector& estvar_ratios,
@@ -211,6 +216,14 @@ protected:
   /// compute estimator variance from estimator variance ratios
   void estvar_ratios_to_estvar(const RealVector& var_H, const SizetArray& N_H,
 			       MFSolutionData& soln);
+  /// compute estimator variance ratios from estimator variance
+  void estvar_to_estvar_ratios(const RealVector& estvar,
+			       const RealVector& var_H, const SizetArray& N_H,
+			       RealVector& estvar_ratios);
+  /// compute estimator variance ratios from estimator variance
+  void estvar_to_estvar_ratios(const RealVector& estvar,
+			       const RealVector& var_H, Real N_H,
+			       RealVector& estvar_ratios);
 
   /// evaluate the optimization metric formed from a reduction of
   /// estimator variances
@@ -379,6 +392,8 @@ protected:
 			    const RealMatrix& lin_eq_coeffs);
   void run_minimizers(MFSolutionData& soln);
   void process_model_allocations(MFSolutionData& soln, size_t& num_samples);
+  void print_model_allocations(std::ostream& s, const MFSolutionData& soln,
+			       const UShortArray& approx_set);
 
   void root_reverse_dag_to_group(unsigned short root, const UShortSet& rev_dag,
 				 UShortArray& model_group);
@@ -455,6 +470,8 @@ protected:
 			RealVector& N_vec);
   void r_and_N_to_design_vars(const RealVector& avg_eval_ratios, Real N_H,
 			      RealVector& cd_vars);
+  void design_vars_to_r(const RealVector& cd_vars, RealVector& avg_eval_ratios);
+  void design_vars_to_N(const RealVector& cd_vars, RealVector& N_samp);
   void solution_to_design_vars(const MFSolutionData& soln, RealVector& cd_vars);
 
   /// define approx_sequence in increasing metric order
@@ -557,11 +574,14 @@ protected:
   /// user specification to suppress any increments in the number of HF
   /// evaluations (e.g., because too expensive and no more can be performed)
   bool truthFixedByPilot;
-  /// a subset of the non-hierarchcvial samplers provide analytic derivatives
+  /// a subset of the non-hierarchical samplers provide analytic derivatives
   /// of estimator variance
   bool analyticEstVarDerivs;
   /// employ truncated SVD rather than Cholesky factorization for matrix solve
   bool hardenNumericSoln;
+  /// flag for hierarchical methods (MFMC) that reorder models on the fly during
+  /// numerical solutions in order to satisfy monotonicity requirements
+  bool reorderModelsOnTheFly;
 
   /// for sample projections, the calculated increment in HF samples that
   /// would be evaluated if full iteration/statistics were pursued
@@ -637,29 +657,33 @@ private:
   //- Heading: Data
   //
 
+  /// flag to prevent a circular invocation of base class conversions between
+  /// estvar and estvar_ratios, for values or gradients
+  bool recurConversion;
+
   /// pointer to NonDACV instance used in static member functions
-  static NonDNonHierarchSampling* nonHierSampInstance;
+  static NonDNumericAllocSampling* numSolveSampInstance;
 };
 
 
-inline size_t NonDNonHierarchSampling::num_approximations() const
+inline size_t NonDNumericAllocSampling::num_approximations() const
 { return numApprox; }
 
 
-inline unsigned short NonDNonHierarchSampling::uses_method() const
+inline unsigned short NonDNumericAllocSampling::uses_method() const
 { return optSubProblemSolver; }
 
 
-inline Real NonDNonHierarchSampling::estimator_accuracy_metric() const
+inline Real NonDNumericAllocSampling::estimator_accuracy_metric() const
 { return final_solution_data().estimator_variance_metric(); }
 
 
-//inline Real NonDNonHierarchSampling::estimator_cost_metric() const
+//inline Real NonDNumericAllocSampling::estimator_cost_metric() const
 //{ return final_solution_data().equivalent_hf_allocation(); }
 
 
 /*
-inline void NonDNonHierarchSampling::initialize_sums(IntRealMatrixMap& sum_Q)
+inline void NonDNumericAllocSampling::initialize_sums(IntRealMatrixMap& sum_Q)
 {
   // sum_* are running sums across all increments
   std::pair<int, RealMatrix> mat_pr;
@@ -672,7 +696,7 @@ inline void NonDNonHierarchSampling::initialize_sums(IntRealMatrixMap& sum_Q)
 }
 
 
-inline void NonDNonHierarchSampling::initialize_counts(Sizet2DArray& num_Q)
+inline void NonDNumericAllocSampling::initialize_counts(Sizet2DArray& num_Q)
 {
   num_Q.resize(numApprox);
   for (size_t approx=0; approx<numApprox; ++approx)
@@ -681,7 +705,7 @@ inline void NonDNonHierarchSampling::initialize_counts(Sizet2DArray& num_Q)
 */
 
 
-inline void NonDNonHierarchSampling::
+inline void NonDNumericAllocSampling::
 initialize_sums(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
 		IntRealMatrixMap& sum_LH,         RealVector&       sum_HH)
 {
@@ -699,7 +723,7 @@ initialize_sums(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
 }
 
 
-inline void NonDNonHierarchSampling::
+inline void NonDNumericAllocSampling::
 initialize_counts(Sizet2DArray& num_L_baseline, SizetArray& num_H,
 		  Sizet2DArray& num_LH)
 {
@@ -712,7 +736,7 @@ initialize_counts(Sizet2DArray& num_L_baseline, SizetArray& num_H,
 }
 
 
-inline void NonDNonHierarchSampling::
+inline void NonDNumericAllocSampling::
 initialize_group_sums(RealMatrixArray& sum_G, RealSymMatrix2DArray& sum_GG)
 {
   // order indexing such that per-group structure is consistent with
@@ -730,7 +754,7 @@ initialize_group_sums(RealMatrixArray& sum_G, RealSymMatrix2DArray& sum_GG)
 }
 
 
-inline void NonDNonHierarchSampling::
+inline void NonDNumericAllocSampling::
 initialize_group_sums(RealMatrixArray& sum_G)
 {
   // order indexing such that per-group structure is consistent with
@@ -742,7 +766,7 @@ initialize_group_sums(RealMatrixArray& sum_G)
 }
 
 
-inline void NonDNonHierarchSampling::
+inline void NonDNumericAllocSampling::
 initialize_group_sums(IntRealMatrixArrayMap& sum_G,
 		     IntRealSymMatrix2DArrayMap& sum_GG)
 {
@@ -753,7 +777,7 @@ initialize_group_sums(IntRealMatrixArrayMap& sum_G,
 }
 
 
-inline void NonDNonHierarchSampling::
+inline void NonDNumericAllocSampling::
 initialize_group_sums(IntRealMatrixArrayMap& sum_G)
 {
   RealMatrixArray mat1;
@@ -763,7 +787,7 @@ initialize_group_sums(IntRealMatrixArrayMap& sum_G)
 }
 
 
-inline void NonDNonHierarchSampling::
+inline void NonDNumericAllocSampling::
 initialize_group_counts(Sizet2DArray& num_G)
 {
   size_t g, num_groups = modelGroups.size(), num_models;
@@ -773,7 +797,7 @@ initialize_group_counts(Sizet2DArray& num_G)
 }
 
 
-inline void NonDNonHierarchSampling::no_solve_variances(MFSolutionData& soln)
+inline void NonDNumericAllocSampling::no_solve_variances(MFSolutionData& soln)
 {
   // For offline pilot, the online EstVar is undefined prior to any online
   // samples, but should not happen (no budget used) unless bad convTol spec
@@ -786,7 +810,7 @@ inline void NonDNonHierarchSampling::no_solve_variances(MFSolutionData& soln)
 }
 
 
-inline void NonDNonHierarchSampling::
+inline void NonDNumericAllocSampling::
 competed_initial_guesses(MFSolutionData& mf_soln, MFSolutionData& cv_soln,
 			 MFSolutionData& selected_soln)
 {
@@ -821,39 +845,132 @@ competed_initial_guesses(MFSolutionData& mf_soln, MFSolutionData& cv_soln,
 }
 
 
-inline void NonDNonHierarchSampling::
+inline void NonDNumericAllocSampling::
 estimator_variance_ratios(const RealVector& cd_vars, RealVector& estvar_ratios)
 {
-  Cerr << "Error: estimator_variance_ratios() not defined by derived class.\n"
-       << std::endl;
-  abort_handler(METHOD_ERROR);
+  // estimator_variance_ratios() not redefined: fallback to estvar + conversion
+  // > we allow only one use of a base class estvar/estvar_ratios conversion;
+  //   derived class must redefine at least one
+
+  if (recurConversion) { // both options are base impls.; neither is redefined
+    //estvar_ratios.size(0); return;
+    // make this a hard error here rather than managing downstream
+    Cerr << "Error: no derived implementation of estimator_variances() or "
+	 << "estimator_variance_ratios().  Base conversion is circular."
+	 << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+
+  recurConversion = true; // protect a circular use of base class conversion
+  RealVector estvar(numFunctions, false);
+  estimator_variances(cd_vars, estvar); // virtual: MFMC,ACV,GenACV
+  estimator_ratios_from_variances(cd_vars, estvar, estvar_ratios);
+  recurConversion = false; // reset for next metric eval
 }
 
 
-inline void NonDNonHierarchSampling::
+inline void NonDNumericAllocSampling::
 estimator_variance_ratio_gradients(const RealVector& cd_vars,
 				   RealMatrix& evr_grads)
 {
-  // *** TO DO ***: this can be derived from
-  //   ev = varH/N_H ev_ratios
-  // where varH is fixed and N_H is a design variable for ACV,GenACV,MFMC
+  // estimator_variance_ratio_gradients() not redefined:
+  // fallback to estvar gradients + conversion
+  // > we allow only one use of a base class estvar/estvar_ratio gradients
+  //   conversion; derived class must redefine at least one
 
-  Cerr << "Error: estimator_variance_ratio_gradients() not defined by derived "
-       << "class.\n" << std::endl;
-  abort_handler(METHOD_ERROR);
+  if (recurConversion) // both options are base impls.; neither is redefined
+    { evr_grads.shape(0,0); return; } // not an error for grads as for fns
+
+  RealVector estvar_ratios;
+  estimator_variance_ratios(cd_vars, estvar_ratios);
+
+  recurConversion = true;
+  RealMatrix ev_grads;
+  estimator_variance_gradients(cd_vars, ev_grads);
+
+  if (ev_grads.empty())
+    evr_grads.shape(0,0);
+  else {
+    size_t q, v, num_v = cd_vars.length(), num_vm1 = num_v - 1;
+    evr_grads.shape(num_v, numFunctions);
+    for (q=0; q<numFunctions; ++q) {
+      const Real* ev_grad_q =  ev_grads[q];
+      Real*      evr_grad_q = evr_grads[q];
+      Real varH_q = varH[q], N = cd_vars[numApprox];
+      for (v=0; v<num_vm1; ++v)
+	evr_grad_q[v] = N * ev_grad_q[v] / varH_q;
+      evr_grad_q[num_vm1]
+	= N * ev_grad_q[num_vm1] / varH_q + estvar_ratios[q] / N;
+    }
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "QoI estimator variance ratio gradients:\n"<<evr_grads<<std::endl;
+  }
+
+  recurConversion = false; // reset for next gradient eval
 }
 
 
-inline void NonDNonHierarchSampling::
+inline void NonDNumericAllocSampling::
 estimator_variances(const RealVector& cd_vars, RealVector& est_var)
 {
+  // estimator_variances() not redefined: fallback to ratios + conversion
+  // > we allow only one use of a base class estvar/estvar_ratios conversion;
+  //   derived class must redefine at least one
+
+  if (recurConversion) { // both options are base impls.; neither is redefined
+    //est_var.size(0); return;
+    // make this a hard error here rather than managing downstream
+    Cerr << "Error: no derived implementation of estimator_variance() or "
+	 << "estimator_variance_ratios().  Base conversion is circular."
+	 << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+
+  recurConversion = true;
   RealVector estvar_ratios(numFunctions, false);
   estimator_variance_ratios(cd_vars, estvar_ratios); // virtual: MFMC,ACV,GenACV
   estimator_variances_from_ratios(cd_vars, estvar_ratios, est_var);
+  recurConversion = false; // reset for next metric eval
 }
 
 
-inline void NonDNonHierarchSampling::
+inline void NonDNumericAllocSampling::
+estimator_variance_gradients(const RealVector& cd_vars, RealMatrix& ev_grads)
+{
+  // estimator_variance_gradients() not redefined:
+  // fallback to estvar ratio gradients + conversion
+  // > we allow only one use of a base class estvar/estvar_ratio gradient
+  //   conversion; derived class must redefine at least one
+
+  if (recurConversion) // both option are base; neither is redefined
+    { ev_grads.shape(0,0); return; }
+
+  recurConversion = true;
+  RealVector estvar_ratios;  RealMatrix evr_grads;
+  estimator_variance_ratios_and_gradients(cd_vars, estvar_ratios, evr_grads);
+  if (evr_grads.empty())
+    ev_grads.shape(0,0);
+  else {
+    size_t q, v, num_v = cd_vars.length(), num_vm1 = num_v - 1;
+    ev_grads.shape(num_v, numFunctions);
+    for (q=0; q<numFunctions; ++q) {
+      const Real* evr_grad_q = evr_grads[q];
+      Real*        ev_grad_q =  ev_grads[q];
+      Real varH_q = varH[q], N = cd_vars[numApprox];
+      for (v=0; v<num_vm1; ++v)
+	ev_grad_q[v] = varH_q / N * evr_grad_q[v];
+      ev_grad_q[num_vm1]
+	= varH_q / N * (evr_grad_q[num_vm1] - estvar_ratios[q] / N);
+    }
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "QoI estimator variance gradients:\n" << ev_grads << std::endl;
+  }
+
+  recurConversion = false; // reset for next gradient eval
+}
+
+
+inline void NonDNumericAllocSampling::
 estimator_variances_and_ratios(const RealVector& cd_vars,
 			       RealVector& estvar_ratios, RealVector& estvar)
 {
@@ -862,7 +979,7 @@ estimator_variances_and_ratios(const RealVector& cd_vars,
 }
 
 
-inline void NonDNonHierarchSampling::
+inline void NonDNumericAllocSampling::
 estimator_variances_and_ratios(const RealVector& cd_vars, MFSolutionData& soln)
 {
   RealVector estvar_ratios, estvar;
@@ -875,37 +992,28 @@ estimator_variances_and_ratios(const RealVector& cd_vars, MFSolutionData& soln)
 }
 
 
-inline void NonDNonHierarchSampling::
-estimator_variance_gradients(const RealVector& cd_vars, RealMatrix& ev_grads)
-{
-  //Cerr << "Warning: testing omission of estimator_variance_gradients() by "
-  //     << "derived class.\n" << std::endl;
-  ev_grads.shape(0,0);
-}
-
-
-inline void NonDNonHierarchSampling::
+inline void NonDNumericAllocSampling::
 estimator_variances_and_gradients(const RealVector& cd_vars,
 				  RealVector& est_var, RealMatrix& ev_grads)
 {
-  // default implementation
+  // default implementation for use when there is little overlap
   estimator_variances(cd_vars, est_var);
   estimator_variance_gradients(cd_vars, ev_grads);
 }
 
 
-inline void NonDNonHierarchSampling::
+inline void NonDNumericAllocSampling::
 estimator_variance_ratios_and_gradients(const RealVector& cd_vars,
 					RealVector& estvar_ratios,
 					RealMatrix& evr_grads)
 {
-  // default implementation
+  // default implementation for use when there is little overlap
   estimator_variance_ratios(cd_vars, estvar_ratios);
   estimator_variance_ratio_gradients(cd_vars, evr_grads);
 }
 
 
-inline void NonDNonHierarchSampling::
+inline void NonDNumericAllocSampling::
 estvar_ratios_to_estvar(const RealVector& estvar_ratios,
 			const RealVector& var_H, const SizetArray& N_H,
 			RealVector& estvar)
@@ -916,7 +1024,7 @@ estvar_ratios_to_estvar(const RealVector& estvar_ratios,
 }
 
 
-inline void NonDNonHierarchSampling::
+inline void NonDNumericAllocSampling::
 estvar_ratios_to_estvar(const RealVector& estvar_ratios,
 			const RealVector& var_H, Real N_H, RealVector& estvar)
 {
@@ -926,7 +1034,7 @@ estvar_ratios_to_estvar(const RealVector& estvar_ratios,
 }
 
 
-inline void NonDNonHierarchSampling::
+inline void NonDNumericAllocSampling::
 estvar_ratios_to_estvar(const RealVector& var_H, const SizetArray& N_H,
 			MFSolutionData& soln)
 {
@@ -937,7 +1045,30 @@ estvar_ratios_to_estvar(const RealVector& var_H, const SizetArray& N_H,
 }
 
 
-inline Real NonDNonHierarchSampling::
+inline void NonDNumericAllocSampling::
+estvar_to_estvar_ratios(const RealVector& estvar,
+			const RealVector& var_H, const SizetArray& N_H,
+			RealVector& estvar_ratios)
+{
+  if (estvar_ratios.length() != numFunctions)
+    estvar_ratios.sizeUninitialized(numFunctions);
+  for (size_t qoi=0; qoi<numFunctions; ++qoi)
+    estvar_ratios[qoi] = estvar[qoi] * N_H[qoi] / var_H[qoi];
+}
+
+
+inline void NonDNumericAllocSampling::
+estvar_to_estvar_ratios(const RealVector& estvar, const RealVector& var_H,
+			Real N_H, RealVector& estvar_ratios)
+{
+  if (estvar_ratios.length() != numFunctions)
+    estvar_ratios.sizeUninitialized(numFunctions);
+  for (size_t qoi=0; qoi<numFunctions; ++qoi)
+    estvar_ratios[qoi] = estvar[qoi] * N_H / var_H[qoi];
+}
+
+
+inline Real NonDNumericAllocSampling::
 estimator_variance_metric(const RealVector& cd_vars)
 {
   RealVector estvar_ratios, estvar;  Real metric;  size_t metric_index;
@@ -955,7 +1086,7 @@ estimator_variance_metric(const RealVector& cd_vars)
 }
 
 
-inline void NonDNonHierarchSampling::
+inline void NonDNumericAllocSampling::
 estimator_variance_metric_gradient(const RealVector& cd_vars,
 				   RealVector& evm_grad)
 {
@@ -973,7 +1104,7 @@ estimator_variance_metric_gradient(const RealVector& cd_vars,
 }
 
 
-inline void NonDNonHierarchSampling::
+inline void NonDNumericAllocSampling::
 estimator_variance_metric_and_gradient(const RealVector& cd_vars,
 				       Real& ev_metric, RealVector& evm_grad)
 {
@@ -996,7 +1127,7 @@ estimator_variance_metric_and_gradient(const RealVector& cd_vars,
 }
 
 
-inline Real NonDNonHierarchSampling::
+inline Real NonDNumericAllocSampling::
 log_estvar_metric(const RealVector& cd_vars)
 {
   Real ev_metric = estimator_variance_metric(cd_vars);
@@ -1007,7 +1138,7 @@ log_estvar_metric(const RealVector& cd_vars)
 }
 
 
-inline void NonDNonHierarchSampling::
+inline void NonDNumericAllocSampling::
 log_estvar_metric_gradient(const RealVector& cd_vars, RealVector& log_evm_grad)
 {
   RealVector evm_grad;  estimator_variance_metric_gradient(cd_vars, evm_grad);
@@ -1025,7 +1156,7 @@ log_estvar_metric_gradient(const RealVector& cd_vars, RealVector& log_evm_grad)
 }
 
 
-inline void NonDNonHierarchSampling::
+inline void NonDNumericAllocSampling::
 log_estvar_metric_and_gradient(const RealVector& cd_vars, Real& log_evm,
 			       RealVector& log_evm_grad)
 {
@@ -1048,7 +1179,7 @@ log_estvar_metric_and_gradient(const RealVector& cd_vars, Real& log_evm,
 }
 
 
-inline void NonDNonHierarchSampling::
+inline void NonDNumericAllocSampling::
 finalize_counts(const Sizet2DArray& N_L_actual, const SizetArray& N_L_alloc)
 {
   // post final sample counts back to NLev{Actual,Alloc} (for final summaries)
@@ -1056,7 +1187,7 @@ finalize_counts(const Sizet2DArray& N_L_actual, const SizetArray& N_L_alloc)
   // Note: key data is fixed for all non-hierarchical cases
   const Pecos::ActiveKey& active_key = iteratedModel->active_model_key();
   if (active_key.data_size() != numApprox + 1) {
-    Cerr << "Error: inconsistent active key size in NonDNonHierarchSampling::"
+    Cerr << "Error: inconsistent active key size in NonDNumericAllocSampling::"
 	 << "finalize_counts()." << std::endl;
     abort_handler(METHOD_ERROR);
   }
@@ -1073,7 +1204,7 @@ finalize_counts(const Sizet2DArray& N_L_actual, const SizetArray& N_L_alloc)
 }
 
 
-inline Real NonDNonHierarchSampling::
+inline Real NonDNumericAllocSampling::
 compute_equivalent_cost(Real hf_target, const RealVector& avg_eval_ratios,
 			const RealVector& cost)
 {
@@ -1085,7 +1216,7 @@ compute_equivalent_cost(Real hf_target, const RealVector& avg_eval_ratios,
 }
 
 
-inline Real NonDNonHierarchSampling::
+inline Real NonDNumericAllocSampling::
 compute_equivalent_cost(Real hf_target, const RealVector& avg_eval_ratios,
 			const RealVector& cost, const UShortArray& approx_set)
 {
@@ -1098,7 +1229,7 @@ compute_equivalent_cost(Real hf_target, const RealVector& avg_eval_ratios,
 
 
 /* redundant with linear_model_cost():
-inline Real NonDNonHierarchSampling::
+inline Real NonDNumericAllocSampling::
 compute_equivalent_cost(const RealVector& sample_counts, const RealVector& cost)
 {
   Real nc_sum = 0.;
@@ -1108,7 +1239,7 @@ compute_equivalent_cost(const RealVector& sample_counts, const RealVector& cost)
 }
 
 
-inline Real NonDNonHierarchSampling::
+inline Real NonDNumericAllocSampling::
 compute_equivalent_cost(const RealVector& sample_counts, const RealVector& cost,
 			const UShortArray& approx_set)
 {
@@ -1121,7 +1252,7 @@ compute_equivalent_cost(const RealVector& sample_counts, const RealVector& cost,
 */
 
 
-inline void NonDNonHierarchSampling::
+inline void NonDNumericAllocSampling::
 increment_equivalent_cost(size_t new_samp, const RealVector& cost,
 			  size_t index,    Real& equiv_hf_evals)
 {
@@ -1131,7 +1262,7 @@ increment_equivalent_cost(size_t new_samp, const RealVector& cost,
 }
 
 
-inline void NonDNonHierarchSampling::
+inline void NonDNumericAllocSampling::
 increment_equivalent_cost(size_t new_samp, const RealVector& cost,
 			  size_t start, size_t end, Real& equiv_hf_evals)
 {
@@ -1145,7 +1276,7 @@ increment_equivalent_cost(size_t new_samp, const RealVector& cost,
 }
 
 
-inline void NonDNonHierarchSampling::
+inline void NonDNumericAllocSampling::
 increment_equivalent_cost(size_t new_samp, const RealVector& cost,
 			  const SizetArray& approx_sequence,
 			  size_t start, size_t end, Real& equiv_hf_evals)
@@ -1168,7 +1299,7 @@ increment_equivalent_cost(size_t new_samp, const RealVector& cost,
 }
 
 
-inline void NonDNonHierarchSampling::
+inline void NonDNumericAllocSampling::
 increment_equivalent_cost(size_t new_samp, const RealVector& cost,
 			  const SizetArray& approx_sequence,
 			  size_t start, size_t end,
@@ -1188,7 +1319,7 @@ increment_equivalent_cost(size_t new_samp, const RealVector& cost,
 }
 
 
-inline void NonDNonHierarchSampling::
+inline void NonDNumericAllocSampling::
 increment_equivalent_cost(size_t new_samp, const RealVector& cost,
 			  unsigned short root, const UShortSet& reverse_dag,
 			  Real& equiv_hf_evals)
@@ -1203,7 +1334,7 @@ increment_equivalent_cost(size_t new_samp, const RealVector& cost,
 }
 
 
-inline void NonDNonHierarchSampling::
+inline void NonDNumericAllocSampling::
 increment_equivalent_cost(size_t new_samp, const RealVector& cost,
 			  unsigned short root, const UShortArray& approx_set,
 			  Real& equiv_hf_evals)
@@ -1218,7 +1349,7 @@ increment_equivalent_cost(size_t new_samp, const RealVector& cost,
 }
 
 
-inline void NonDNonHierarchSampling::
+inline void NonDNumericAllocSampling::
 increment_equivalent_cost(const SizetArray& delta_N_g,
 			  const RealVector& group_cost, Real hf_cost,
 			  Real& equiv_hf_evals)
@@ -1234,7 +1365,7 @@ increment_equivalent_cost(const SizetArray& delta_N_g,
 }
 
 
-inline void NonDNonHierarchSampling::
+inline void NonDNumericAllocSampling::
 increment_sample_range(SizetArray& N_L, size_t incr,
 		       const SizetArray& approx_sequence,
 		       size_t start, size_t end)
@@ -1248,7 +1379,7 @@ increment_sample_range(SizetArray& N_L, size_t incr,
 }
 
 
-inline void NonDNonHierarchSampling::
+inline void NonDNumericAllocSampling::
 increment_sample_range(SizetArray& N_L, size_t incr,
 		       const UShortArray& approx_set)
 {
@@ -1259,7 +1390,7 @@ increment_sample_range(SizetArray& N_L, size_t incr,
 }
 
 
-inline void NonDNonHierarchSampling::
+inline void NonDNumericAllocSampling::
 increment_sample_range(SizetArray& N_L, size_t incr,
 		       const SizetArray& approx_sequence,
 		       size_t start, size_t end, const UShortArray& approx_set)
@@ -1273,7 +1404,7 @@ increment_sample_range(SizetArray& N_L, size_t incr,
 }
 
 
-inline void NonDNonHierarchSampling::
+inline void NonDNumericAllocSampling::
 increment_sample_range(SizetArray& N_L, size_t incr, unsigned short root,
 		       const UShortSet& reverse_dag)
 {
@@ -1287,7 +1418,7 @@ increment_sample_range(SizetArray& N_L, size_t incr, unsigned short root,
 }
 
 
-inline void NonDNonHierarchSampling::
+inline void NonDNumericAllocSampling::
 ensemble_active_set(const UShortArray& model_set)
 {
   activeSet.request_values(0);
@@ -1299,7 +1430,7 @@ ensemble_active_set(const UShortArray& model_set)
 }
 
 
-inline void NonDNonHierarchSampling::
+inline void NonDNumericAllocSampling::
 root_reverse_dag_to_group(unsigned short root, const UShortSet& rev_dag,
 			  UShortArray& model_group)
 {
@@ -1309,7 +1440,7 @@ root_reverse_dag_to_group(unsigned short root, const UShortSet& rev_dag,
 }
 
 
-inline void NonDNonHierarchSampling::
+inline void NonDNumericAllocSampling::
 group_to_root_reverse_dag(const UShortArray& model_group, unsigned short& root,
 			  UShortSet& rev_dag)
 {
@@ -1319,7 +1450,7 @@ group_to_root_reverse_dag(const UShortArray& model_group, unsigned short& root,
 }
 
 
-inline void NonDNonHierarchSampling::
+inline void NonDNumericAllocSampling::
 mfmc_model_group(size_t last_index, UShortArray& model_group) const
 {
   // MFMC or ACV-MF: last index is the all-models group
@@ -1330,7 +1461,7 @@ mfmc_model_group(size_t last_index, UShortArray& model_group) const
 }
 
 
-inline void NonDNonHierarchSampling::
+inline void NonDNumericAllocSampling::
 mfmc_model_group(size_t last_index, const SizetArray& approx_sequence,
 		 UShortArray& model_group) const
 {
@@ -1355,12 +1486,12 @@ mfmc_model_group(size_t last_index, const SizetArray& approx_sequence,
 }
 
 
-inline void NonDNonHierarchSampling::
+inline void NonDNumericAllocSampling::
 singleton_model_group(size_t index, UShortArray& model_group) const
 { model_group.resize(1); model_group[0] = index; }
 
 
-inline void NonDNonHierarchSampling::
+inline void NonDNumericAllocSampling::
 singleton_model_group(size_t index, const SizetArray& approx_sequence,
 		      UShortArray& model_group) const
 {
@@ -1372,7 +1503,7 @@ singleton_model_group(size_t index, const SizetArray& approx_sequence,
 }
 
 
-inline void NonDNonHierarchSampling::
+inline void NonDNumericAllocSampling::
 cvmc_model_group(size_t index, UShortArray& model_group) const
 {
   if (index < numApprox) singleton_model_group(index, model_group);
@@ -1380,7 +1511,7 @@ cvmc_model_group(size_t index, UShortArray& model_group) const
 }
 
 
-inline void NonDNonHierarchSampling::
+inline void NonDNumericAllocSampling::
 cvmc_model_group(size_t index, const SizetArray& approx_sequence,
 		 UShortArray& model_group) const
 {
@@ -1393,7 +1524,7 @@ cvmc_model_group(size_t index, const SizetArray& approx_sequence,
 }
 
 
-inline void NonDNonHierarchSampling::
+inline void NonDNumericAllocSampling::
 mlmc_model_group(size_t index, UShortArray& model_group) const
 {
   // MLMC or ACV-RD (ACV-IS differs in shared group)
@@ -1406,7 +1537,7 @@ mlmc_model_group(size_t index, UShortArray& model_group) const
 }
 
 
-inline void NonDNonHierarchSampling::
+inline void NonDNumericAllocSampling::
 mlmc_model_group(size_t index, const SizetArray& approx_sequence,
 		 UShortArray& model_group) const
 {
@@ -1425,7 +1556,7 @@ mlmc_model_group(size_t index, const SizetArray& approx_sequence,
 }
 
 
-inline void NonDNonHierarchSampling::
+inline void NonDNumericAllocSampling::
 print_group(std::ostream& s, size_t g) const
 {
   const UShortArray& group_g = modelGroups[g];
@@ -1437,7 +1568,7 @@ print_group(std::ostream& s, size_t g) const
 }
 
 
-inline Real NonDNonHierarchSampling::
+inline Real NonDNumericAllocSampling::
 allocate_budget(const RealVector& avg_eval_ratios, const RealVector& cost,
 		Real budget)
 {
@@ -1452,12 +1583,12 @@ allocate_budget(const RealVector& avg_eval_ratios, const RealVector& cost,
 }
 
 
-inline Real NonDNonHierarchSampling::
+inline Real NonDNumericAllocSampling::
 allocate_budget(const RealVector& avg_eval_ratios, const RealVector& cost)
 { return allocate_budget(avg_eval_ratios, cost, activeBudget); }
 
 
-inline Real NonDNonHierarchSampling::
+inline Real NonDNumericAllocSampling::
 allocate_budget(const UShortArray& approx_set,const RealVector& avg_eval_ratios,
 		const RealVector& cost,	Real budget)
 {
@@ -1473,13 +1604,13 @@ allocate_budget(const UShortArray& approx_set,const RealVector& avg_eval_ratios,
 }
 
 
-inline Real NonDNonHierarchSampling::
+inline Real NonDNumericAllocSampling::
 allocate_budget(const UShortArray& approx_set,
 		const RealVector& avg_eval_ratios, const RealVector& cost)
 { return allocate_budget(approx_set, avg_eval_ratios, cost, activeBudget); }
 
 
-inline void NonDNonHierarchSampling::
+inline void NonDNumericAllocSampling::
 pick_mfmc_cvmc_solution(const MFSolutionData& mf_soln, //size_t mf_samp,
 			const MFSolutionData& cv_soln, //size_t cv_samp,
 			MFSolutionData& soln) //, size_t& num_samp)
@@ -1496,7 +1627,7 @@ pick_mfmc_cvmc_solution(const MFSolutionData& mf_soln, //size_t mf_samp,
 }
 
 
-inline void NonDNonHierarchSampling::cache_mc_reference()
+inline void NonDNumericAllocSampling::cache_mc_reference()
 {
   size_t hf_form_index, hf_lev_index;  hf_indices(hf_form_index, hf_lev_index);
   SizetArray& N_H_actual = NLevActual[hf_form_index][hf_lev_index];
@@ -1516,7 +1647,7 @@ inline void NonDNonHierarchSampling::cache_mc_reference()
 }
 
 
-inline void NonDNonHierarchSampling::apply_mc_reference(RealVector& mc_targets)
+inline void NonDNumericAllocSampling::apply_mc_reference(RealVector& mc_targets)
 {
   // base implementation for use when varH is available
 
@@ -1535,7 +1666,7 @@ inline void NonDNonHierarchSampling::apply_mc_reference(RealVector& mc_targets)
 }
 
 
-inline void NonDNonHierarchSampling::
+inline void NonDNumericAllocSampling::
 enforce_bounds(RealVector& x0, const RealVector& x_lb, const RealVector& x_ub)
 {
   size_t i, len = x0.length();
@@ -1559,7 +1690,7 @@ enforce_bounds(RealVector& x0, const RealVector& x_lb, const RealVector& x_ub)
 }
 
 
-inline void NonDNonHierarchSampling::
+inline void NonDNumericAllocSampling::
 r_and_N_to_N_vec(const RealVector& avg_eval_ratios, Real N_H, RealVector& N_vec)
 {
   size_t num_approx = avg_eval_ratios.length(), vec_len = num_approx+1;
@@ -1570,7 +1701,7 @@ r_and_N_to_N_vec(const RealVector& avg_eval_ratios, Real N_H, RealVector& N_vec)
 }
 
 
-inline void NonDNonHierarchSampling::
+inline void NonDNumericAllocSampling::
 r_and_N_to_design_vars(const RealVector& avg_eval_ratios, Real N_H,
 		       RealVector& cd_vars)
 {
@@ -1589,7 +1720,40 @@ r_and_N_to_design_vars(const RealVector& avg_eval_ratios, Real N_H,
 }
 
 
-inline void NonDNonHierarchSampling::
+inline void NonDNumericAllocSampling::
+design_vars_to_r(const RealVector& cd_vars, RealVector& avg_eval_ratios)
+{
+  switch (optSubProblemForm) {
+  case N_MODEL_LINEAR_OBJECTIVE:  case N_MODEL_LINEAR_CONSTRAINT:
+    copy_data_partial(cd_vars, 0, (int)numApprox, avg_eval_ratios); // N_i
+    avg_eval_ratios.scale(1./cd_vars[numApprox]); // r_i = N_i / N
+    break;
+  default: // r_and_N provided: pass leading numApprox terms of cd_vars
+    avg_eval_ratios = RealVector(Teuchos::View, cd_vars.values(), numApprox);
+    break;
+  }
+}
+
+
+inline void NonDNumericAllocSampling::
+design_vars_to_N(const RealVector& cd_vars, RealVector& N_samp)
+{
+  int num_m = numApprox+1;
+  switch (optSubProblemForm) {
+  case N_MODEL_LINEAR_OBJECTIVE:  case N_MODEL_LINEAR_CONSTRAINT:
+    N_samp = RealVector(Teuchos::View, cd_vars.values(), num_m);
+    break;
+  default: // r_and_N provided: pass leading numApprox terms of cd_vars
+    copy_data(cd_vars, N_samp);
+    Real N_H = cd_vars[numApprox];
+    for (size_t i=0; i<numApprox; ++i)
+      N_samp[i] *= N_H; // N_i = r_i * N
+    break;
+  }
+}
+
+
+inline void NonDNumericAllocSampling::
 solution_to_design_vars(const MFSolutionData& soln, RealVector& cd_vars)
 {
   switch (optSubProblemForm) {
@@ -1606,7 +1770,7 @@ solution_to_design_vars(const MFSolutionData& soln, RealVector& cd_vars)
 }
 
 
-inline Real NonDNonHierarchSampling::
+inline Real NonDNumericAllocSampling::
 update_hf_target(const RealVector& estvar_ratios, size_t metric_index,
 		 const RealVector& var_H, const RealVector& estvar_0)
 {
@@ -1646,7 +1810,7 @@ update_hf_target(const RealVector& estvar_ratios, size_t metric_index,
 }
 
 
-inline Real NonDNonHierarchSampling::
+inline Real NonDNumericAllocSampling::
 update_hf_target(const RealVector& estvar_ratios, size_t metric_index,
 		 const RealVector& var_H)
 {
@@ -1670,7 +1834,7 @@ update_hf_target(const RealVector& estvar_ratios, size_t metric_index,
 }
 
 
-inline Real NonDNonHierarchSampling::
+inline Real NonDNumericAllocSampling::
 update_hf_target(const RealVector& estvar, size_t metric_index,
 		 const SizetArray& N_H, const RealVector& estvar_0)
 {
@@ -1698,7 +1862,7 @@ update_hf_target(const RealVector& estvar, size_t metric_index,
 }
 
 
-inline Real NonDNonHierarchSampling::
+inline Real NonDNumericAllocSampling::
 update_hf_target(const RealVector& estvar, size_t metric_index,
 		 const SizetArray& N_H)
 {
@@ -1725,7 +1889,7 @@ update_hf_target(const RealVector& estvar, size_t metric_index,
 }
 
 
-inline Real NonDNonHierarchSampling::
+inline Real NonDNumericAllocSampling::
 update_hf_target(const RealVector& estvar, size_t metric_index,
 		 size_t N_H, const RealVector& estvar_0)
 {
@@ -1734,7 +1898,7 @@ update_hf_target(const RealVector& estvar, size_t metric_index,
 }
 
 
-inline Real NonDNonHierarchSampling::
+inline Real NonDNumericAllocSampling::
 update_hf_target(const RealVector& estvar, size_t metric_index,
 		 size_t N_H)
 {
@@ -1743,7 +1907,7 @@ update_hf_target(const RealVector& estvar, size_t metric_index,
 }
 
 
-inline bool NonDNonHierarchSampling::
+inline bool NonDNumericAllocSampling::
 ordered_approx_sequence(const RealVector& metric, SizetArray& approx_sequence,
 			bool descending_keys)
 {
@@ -1773,7 +1937,7 @@ ordered_approx_sequence(const RealVector& metric, SizetArray& approx_sequence,
 }
 
 
-inline bool NonDNonHierarchSampling::
+inline bool NonDNumericAllocSampling::
 ordered_approx_sequence(const RealMatrix& metric, SizetArray& approx_sequence,
 			bool descending_keys)
 {
@@ -1784,7 +1948,7 @@ ordered_approx_sequence(const RealMatrix& metric, SizetArray& approx_sequence,
 }
 
 
-inline bool NonDNonHierarchSampling::
+inline bool NonDNumericAllocSampling::
 ordered_approx_sequence(const RealMatrix& metric)
 {
   // this checks for metric ordering for each QoI (not averaged QoI)
@@ -1804,7 +1968,7 @@ ordered_approx_sequence(const RealMatrix& metric)
 }
 
 
-inline bool NonDNonHierarchSampling::
+inline bool NonDNumericAllocSampling::
 ordered_approx_sequence(const RealMatrix& metric, const UShortArray& approx_set)
 {
   // this checks for metric ordering for each QoI (not averaged QoI)
@@ -1824,7 +1988,7 @@ ordered_approx_sequence(const RealMatrix& metric, const UShortArray& approx_set)
 }
 
 
-inline void NonDNonHierarchSampling::
+inline void NonDNumericAllocSampling::
 compute_variance(Real sum_Q, Real sum_QQ, size_t num_Q, Real& var_Q)
 		 //size_t num_QQ, // this count is the same as num_Q
 {
@@ -1840,7 +2004,7 @@ compute_variance(Real sum_Q, Real sum_QQ, size_t num_Q, Real& var_Q)
 }
 
 
-inline void NonDNonHierarchSampling::
+inline void NonDNumericAllocSampling::
 compute_variance(const RealVector& sum_Q, const RealVector& sum_QQ,
 		 const SizetArray& num_Q,   RealVector& var_Q)
 {
@@ -1851,7 +2015,7 @@ compute_variance(const RealVector& sum_Q, const RealVector& sum_QQ,
 }
 
 
-inline void NonDNonHierarchSampling::
+inline void NonDNumericAllocSampling::
 compute_correlation(Real sum_Q1, Real sum_Q2, Real sum_Q1Q1, Real sum_Q1Q2,
 		    Real sum_Q2Q2, size_t N_shared, Real& var_Q1,
 		    Real& var_Q2, Real& rho2_Q1Q2)
@@ -1880,7 +2044,7 @@ compute_correlation(Real sum_Q1, Real sum_Q2, Real sum_Q1Q1, Real sum_Q1Q2,
 }
 
 
-inline void NonDNonHierarchSampling::
+inline void NonDNumericAllocSampling::
 compute_covariance(Real sum_Q1, Real sum_Q2, Real sum_Q1Q2, size_t N_shared,
 		   Real& cov_Q1Q2)
 {
@@ -1904,7 +2068,7 @@ compute_covariance(Real sum_Q1, Real sum_Q2, Real sum_Q1Q2, size_t N_shared,
 }
 
 
-inline void NonDNonHierarchSampling::
+inline void NonDNumericAllocSampling::
 covariance_to_correlation_sq(const RealMatrix& cov_LH,
 			     const RealSymMatrixArray& cov_LL,
 			     const RealVector& var_H, RealMatrix& rho2_LH)
@@ -1925,7 +2089,7 @@ covariance_to_correlation_sq(const RealMatrix& cov_LH,
 
 
 /*
-inline void NonDNonHierarchSampling::
+inline void NonDNumericAllocSampling::
 compute_correlation(Real sum_Q1, Real sum_Q2, Real sum_Q1Q1, Real sum_Q1Q2,
 		    Real sum_Q2Q2, size_t num_Q1, size_t num_Q2,
 		    size_t num_Q1Q2, Real& var_Q1, Real& var_Q2,
@@ -1977,7 +2141,7 @@ compute_correlation(Real sum_Q1, Real sum_Q2, Real sum_Q1Q1, Real sum_Q1Q2,
 }
 
 
-inline void NonDNonHierarchSampling::
+inline void NonDNumericAllocSampling::
 compute_covariance(Real sum_Q1, Real sum_Q2, Real sum_Q1Q2, size_t num_Q1,
 		   size_t num_Q2, size_t num_Q1Q2, Real& cov_Q1Q2)
 {
@@ -2001,7 +2165,7 @@ compute_covariance(Real sum_Q1, Real sum_Q2, Real sum_Q1Q2, size_t num_Q1,
 */
 
 
-inline void NonDNonHierarchSampling::
+inline void NonDNumericAllocSampling::
 apply_control(Real sum_L_shared, size_t num_L_shared, Real sum_L_refined,
 	      size_t num_L_refined, Real beta, Real& H_raw_mom)
 {
@@ -2017,7 +2181,7 @@ apply_control(Real sum_L_shared, size_t num_L_shared, Real sum_L_refined,
 }
 
 
-inline bool NonDNonHierarchSampling::active_set_for_model(size_t i)
+inline bool NonDNumericAllocSampling::active_set_for_model(size_t i)
 {
   size_t qoi, start = numFunctions*i, end = start+numFunctions;
   const ShortArray& asv = activeSet.request_vector();
@@ -2028,12 +2192,12 @@ inline bool NonDNonHierarchSampling::active_set_for_model(size_t i)
 }
 
 
-inline void NonDNonHierarchSampling::
+inline void NonDNumericAllocSampling::
 inflate(size_t N_0D, SizetArray& N_1D, size_t len)
 { N_1D.assign(len, N_0D); }
 
 
-inline void NonDNonHierarchSampling::
+inline void NonDNumericAllocSampling::
 inflate(size_t N_0D, SizetArray& N_1D, const UShortArray& subset, size_t len)
 {
   N_1D.assign(len, 0);
@@ -2043,7 +2207,7 @@ inflate(size_t N_0D, SizetArray& N_1D, const UShortArray& subset, size_t len)
 }
 
 
-inline void NonDNonHierarchSampling::
+inline void NonDNumericAllocSampling::
 inflate(const SizetArray& N_1D, Sizet2DArray& N_2D, size_t len)
 {
   N_2D.resize(len);
@@ -2052,7 +2216,7 @@ inflate(const SizetArray& N_1D, Sizet2DArray& N_2D, size_t len)
 }
 
 
-inline void NonDNonHierarchSampling::
+inline void NonDNumericAllocSampling::
 inflate(const SizetArray& N_1D, Sizet2DArray& N_2D,
 	const UShortArray& subset, size_t len)
 {
@@ -2068,7 +2232,7 @@ inflate(const SizetArray& N_1D, Sizet2DArray& N_2D,
 }
 
 
-inline void NonDNonHierarchSampling::
+inline void NonDNumericAllocSampling::
 inflate(const SizetArray& N_1D, const BitArray& mask, Sizet2DArray& N_2D)
 {
   size_t i, len = mask.size();
@@ -2079,7 +2243,7 @@ inflate(const SizetArray& N_1D, const BitArray& mask, Sizet2DArray& N_2D)
 }
 
 
-inline void NonDNonHierarchSampling::
+inline void NonDNumericAllocSampling::
 inflate(const RealVector& avg_eval_ratios, RealMatrix& eval_ratios)
 {
   // inflate avg_eval_ratios back to eval_ratios
@@ -2093,7 +2257,7 @@ inflate(const RealVector& avg_eval_ratios, RealMatrix& eval_ratios)
 }
 
 
-inline void NonDNonHierarchSampling::
+inline void NonDNumericAllocSampling::
 inflate(Real r_i, size_t num_rows, Real* eval_ratios_col)
 {
   // inflate scalar to column vector
@@ -2102,7 +2266,7 @@ inflate(Real r_i, size_t num_rows, Real* eval_ratios_col)
 }
 
 
-inline void NonDNonHierarchSampling::
+inline void NonDNumericAllocSampling::
 inflate(const RealVector& vec, const BitArray& mask, RealVector& inflated_vec)
 {
   if (mask.empty())
@@ -2118,7 +2282,7 @@ inflate(const RealVector& vec, const BitArray& mask, RealVector& inflated_vec)
 
 
 /*
-inline void NonDNonHierarchSampling::
+inline void NonDNumericAllocSampling::
 inflate(const RealMatrix& mat, const BitArray& mask, RealMatrix& inflated_mat)
 {
   if (mask.empty())
@@ -2140,7 +2304,7 @@ inflate(const RealMatrix& mat, const BitArray& mask, RealMatrix& inflated_mat)
 }
 
 
-inline void NonDNonHierarchSampling::
+inline void NonDNumericAllocSampling::
 inflate(const RealSymMatrix& mat, const BitArray& mask,
 	RealSymMatrix& inflated_mat)
 {
@@ -2163,7 +2327,7 @@ inflate(const RealSymMatrix& mat, const BitArray& mask,
 */
 
 
-inline void NonDNonHierarchSampling::
+inline void NonDNumericAllocSampling::
 deflate(const RealVector& vec, const BitArray& mask, RealVector& deflated_vec)
 {
   if (mask.empty())
@@ -2178,7 +2342,7 @@ deflate(const RealVector& vec, const BitArray& mask, RealVector& deflated_vec)
 }
 
 
-inline void NonDNonHierarchSampling::
+inline void NonDNumericAllocSampling::
 deflate(const SizetArray& vec, const BitArray& mask, RealVector& deflated_vec)
 {
   if (mask.empty())
@@ -2194,7 +2358,7 @@ deflate(const SizetArray& vec, const BitArray& mask, RealVector& deflated_vec)
 
 
 /*
-inline void NonDNonHierarchSampling::enforce_nudge(RealVector& x)
+inline void NonDNumericAllocSampling::enforce_nudge(RealVector& x)
 {
   size_t i, len = x.length();
   Real lb = //(maxFunctionEvals == SZ_MAX) ?
