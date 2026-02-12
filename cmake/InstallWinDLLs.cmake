@@ -6,12 +6,16 @@ function(find_lib_path base_path result_var)
       "${base_path}/redist/ia32/compiler" ABSOLUTE)
     get_filename_component(path_intel64
       "${base_path}/redist/intel64/compiler" ABSOLUTE)
+    get_filename_component(path_bin
+      "${base_path}/bin" ABSOLUTE)
 
     # Check if either directory exists
     if(EXISTS "${path_ia32}")
         set(${result_var} "${path_ia32}" PARENT_SCOPE)
     elseif(EXISTS "${path_intel64}")
         set(${result_var} "${path_intel64}" PARENT_SCOPE)
+    elseif(EXISTS "${path_bin}")
+        set(${result_var} "${path_bin}" PARENT_SCOPE)
     else()
         set(${result_var} "${base_path}" PARENT_SCOPE)
     endif()
@@ -31,6 +35,10 @@ elseif(DEFINED ENV{IFORT_COMPILER11})
   find_lib_path("$ENV{IFORT_COMPILER11}" ifort_libpath)
 elseif (DEFINED ENV{IFORT_COMPILER12})
   find_lib_path("$ENV{IFORT_COMPILER12}" ifort_libpath)
+elseif (DEFINED ENV{IFORT_COMPILER24})
+  find_lib_path("$ENV{IFORT_COMPILER24}" ifort_libpath)
+elseif (DEFINED ENV{IFORT_COMPILER25})
+  find_lib_path("$ENV{IFORT_COMPILER25}" ifort_libpath)
 endif()
 
 

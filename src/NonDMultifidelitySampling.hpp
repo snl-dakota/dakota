@@ -10,7 +10,7 @@
 #ifndef NOND_MULTIFIDELITY_SAMPLING_H
 #define NOND_MULTIFIDELITY_SAMPLING_H
 
-#include "NonDNumericSolveSampling.hpp"
+#include "NonDNumericAllocSampling.hpp"
 //#include "DataMethod.hpp"
 
 
@@ -23,7 +23,7 @@ namespace Dakota {
     that utilitizes lower fidelity simulations that have response QoI
     that are correlated with the high-fidelity response QoI. */
 
-class NonDMultifidelitySampling: public NonDNumericSolveSampling
+class NonDMultifidelitySampling: public NonDNumericAllocSampling
 {
 public:
 
@@ -64,6 +64,11 @@ protected:
 				 RealVector& estvar_ratios) override;
   void estimator_variance_ratio_gradients(const RealVector& cd_vars,
 					  RealMatrix& evr_grads) override;
+
+  void augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
+				       RealVector& lin_ineq_lb,
+				       RealVector& lin_ineq_ub);
+  void enforce_augmented_linear_ineq_constraints(RealVector& cd_vars);
 
   //
   //- Heading: member functions

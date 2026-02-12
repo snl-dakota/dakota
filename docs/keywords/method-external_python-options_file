@@ -1,0 +1,27 @@
+
+Blurb::
+Filename to pass to exteral python methods
+
+Description::
+The file can be of any type and is intended to contain parameters and
+options meaningful to a particular external python method.
+
+Topics::
+
+Examples::
+
+.. code-block::
+
+    {
+      "RandomSample" :
+      {
+        "max_evals" : 25,
+        "rnd_seed"  : 231
+      }
+    }
+
+Theory::
+
+Faq::
+
+See_Also::

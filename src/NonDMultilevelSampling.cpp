@@ -687,7 +687,7 @@ configure_indices(unsigned short group, unsigned short form, size_t lev,
 */
 
 
-/** The version in NonDNumericSolveSampling would be sufficiently general here
+/** The version in NonDNumericAllocSampling would be sufficiently general here
     as well, given AGGREGATED_MODELS controlled by the ASV. However, MLMC and
     MLCV MC employ AGGREGATED_MODEL_PAIR without ASV subsetting, so we
     specialize for that case. */

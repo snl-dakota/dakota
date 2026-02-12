@@ -10,7 +10,7 @@
 #ifndef NOND_ACV_SAMPLING_H
 #define NOND_ACV_SAMPLING_H
 
-#include "NonDNumericSolveSampling.hpp"
+#include "NonDNumericAllocSampling.hpp"
 //#include "DataMethod.hpp"
 
 
@@ -23,7 +23,7 @@ namespace Dakota {
     that utilitizes lower fidelity simulations that have response QoI
     that are correlated with the high-fidelity response QoI. */
 
-class NonDACVSampling: public NonDNumericSolveSampling
+class NonDACVSampling: public NonDNumericAllocSampling
 {
 public:
 
@@ -703,7 +703,7 @@ update_hf_target(const RealVector& avg_eval_ratios, Real avg_N_H,
   MFSolutionData::update_estimator_variance_metric(estVarMetricType,
     estVarMetricNormOrder, estvar_ratios, estvar, metric, metric_index);
 
-  return NonDNumericSolveSampling::
+  return NonDNumericAllocSampling::
     update_hf_target(estvar_ratios, metric_index, var_H, estvar0);
 }
 
@@ -720,7 +720,7 @@ update_hf_target(const RealVector& avg_eval_ratios, Real avg_N_H,
   MFSolutionData::update_estimator_variance_metric(estVarMetricType,
     estVarMetricNormOrder, estvar_ratios, estvar, metric, metric_index);
 
-  return NonDNumericSolveSampling::
+  return NonDNumericAllocSampling::
     update_hf_target(estvar_ratios, metric_index, var_H);
 }
 

@@ -26,6 +26,7 @@
 #include "NonDLocalReliability.hpp"
 #include "NonDGlobalReliability.hpp"
 #include "NonDLHSSampling.hpp"
+#include "NonDImportPoints.hpp"
 #include "NonDAdaptImpSampling.hpp"
 #include "NonDGPImpSampling.hpp"
 #include "NonDMultilevControlVarSampling.hpp"
@@ -120,6 +121,9 @@
 #endif
 #ifdef HAVE_MUQ 
 #include "NonDMUQBayesCalibration.hpp"
+#endif
+#ifdef HAVE_EXT_PYTHON_METHOD
+#include "DakotaExtPythonMethod.hpp"
 #endif
 #include "OptDartsOptimizer.hpp"
 #include "NonDWASABIBayesCalibration.hpp"
@@ -302,6 +306,11 @@ namespace Dakota {
         //  case MUQ_SAMPLING:
         //    return std::make_shared<NonDMUQBayesCalibration>(problem_db, parallel_lib, model);break;
         //#endif
+        case IMPORT_POINTS: {
+            std::shared_ptr<Iterator> sp = std::make_shared<NonDImportPoints>(problem_db, parallel_lib, model);
+            return sp;
+            break;
+        }
         case RANDOM_SAMPLING: { 
             std::shared_ptr<Iterator> sp = std::make_shared<NonDLHSSampling>(problem_db, parallel_lib, model);
             return sp;
@@ -447,6 +456,10 @@ namespace Dakota {
         #ifdef HAVE_DEMO_TPL
         case DEMO_TPL:
             return std::make_shared<DemoTPLOptimizer>(problem_db, parallel_lib, model); break;
+        #endif
+        #ifdef HAVE_EXT_PYTHON_METHOD
+        case EXTERNAL_PYTHON:
+            return std::make_shared<ExtPythonMethod>(problem_db, parallel_lib, model); break;
         #endif
         default:
             switch (method_name) {

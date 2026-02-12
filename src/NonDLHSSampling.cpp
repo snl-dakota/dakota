@@ -1025,18 +1025,6 @@ void NonDLHSSampling::compute_pca(std::ostream& s)
   }
 }
 
-
-void NonDLHSSampling::print_header_and_statistics(std::ostream& s, 
-    const int& num_samples)
-{
-    s << "---------------------------------------------------------------------"
-      << "--------\nStatistics based on " << num_samples << " samples:\n";
-    print_statistics(s);
-    s << "---------------------------------------------------------------------"
-      << "--------" << std::endl;
-}
-
-
 void NonDLHSSampling::print_results(std::ostream& s, short results_state)
 {
   if (!numResponseFunctions) // DACE mode w/ opt or NLS

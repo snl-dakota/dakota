@@ -866,3 +866,67 @@ Sample moment statistics for each response function:
  response_fn_1  2.5251161126038153e-02  2.5464258844983899e-02
  response_fn_2  1.2908742020716724e-01  1.2969582316287404e-01
  response_fn_3  2.5251161125885935e-02  2.5464258844823520e-02
+Test Number 28 succeeded
+<<<<< Function evaluation summary (HF_INT): 80075 total (80075 new, 0 duplicate)
+<<<<< Online number of equivalent high fidelity evaluations: 5.0094140625000000e+02
+<<<<< Variance for mean estimator:
+ response_fn_1:
+       Online     MC (    2 HF samples):  2.4929004282274908e-05
+       Online   MFMC (sample profile):    7.3467207759279623e-10
+       Online   MFMC ratio (1 - R^2):     1.4735287243605732e-05
+   Equivalent     MC (  501 HF samples):  9.9528623392867751e-08
+   Equivalent   MFMC ratio:               7.3815155133095415e-03
+ response_fn_2:
+       Online     MC (    2 HF samples):  1.0391785674795581e-04
+       Online   MFMC (sample profile):    6.1393315895445250e-09
+       Online   MFMC ratio (1 - R^2):     2.9539348585849723e-05
+   Equivalent     MC (  501 HF samples):  4.1489026641209422e-07
+   Equivalent   MFMC ratio:               1.4797482820304509e-02
+ response_fn_3:
+       Online     MC (    2 HF samples):  2.4929004285728234e-05
+       Online   MFMC (sample profile):    7.3467207787723438e-10
+       Online   MFMC ratio (1 - R^2):     1.4735287247269468e-05
+   Equivalent     MC (  501 HF samples):  9.9528623406655091e-08
+   Equivalent   MFMC ratio:               7.3815155151448599e-03
+Sample moment statistics for each response function:
+                                  Mean                 Std Dev                Skewness                Kurtosis
+ response_fn_1  2.5330245260472572e-02  6.6287934834332344e-03  7.7968091635191250e-01 -1.2517207523750429e-01
+ response_fn_2  1.2915486034834397e-01  1.3598868307383114e-02  7.3774894446529138e-01 -5.6322902589171520e-01
+ response_fn_3  2.5330245262440248e-02  6.6287934820327722e-03  7.7968091587832800e-01 -1.2517207496269966e-01
+95% confidence intervals for each response function:
+                          LowerCI_Mean            UpperCI_Mean
+ response_fn_1  2.5277120760166343e-02  2.5383369760778800e-02
+ response_fn_2  1.2900128955200618e-01  1.2930843114468177e-01
+ response_fn_3  2.5277120762123736e-02  2.5383369762756760e-02
+Test Number 29 succeeded
+<<<<< Function evaluation summary (HF_INT): 20396 total (20396 new, 0 duplicate)
+<<<<< Online number of equivalent high fidelity evaluations: 1.2846093750000000e+02
+<<<<< Variance for mean estimator:
+ response_fn_1:
+       Online     MC (    2 HF samples):  2.4929004282274908e-05
+       Online   MFMC (sample profile):    2.8978068041640902e-09
+       Online   MFMC ratio (1 - R^2):     5.8121190308124682e-05
+   Equivalent     MC (  128 HF samples):  3.8811805000683432e-07
+   Equivalent   MFMC ratio:               7.4663025955970432e-03
+ response_fn_2:
+       Online     MC (    2 HF samples):  1.0391785674795581e-04
+       Online   MFMC (sample profile):    2.4204391201305058e-08
+       Online   MFMC ratio (1 - R^2):     1.1645924944359010e-04
+   Equivalent     MC (  128 HF samples):  1.6178903683924276e-06
+   Equivalent   MFMC ratio:               1.4960464364068801e-02
+ response_fn_3:
+       Online     MC (    2 HF samples):  2.4929004285728234e-05
+       Online   MFMC (sample profile):    2.8978068048146037e-09
+       Online   MFMC ratio (1 - R^2):     5.8121190313120685e-05
+   Equivalent     MC (  128 HF samples):  3.8811805006059889e-07
+   Equivalent   MFMC ratio:               7.4663025962388354e-03
+Sample moment statistics for each response function:
+                                  Mean                 Std Dev                Skewness                Kurtosis
+ response_fn_1  2.5356660295538791e-02  6.6407843748956842e-03  7.6938139811039286e-01 -1.6572381652550350e-01
+ response_fn_2  1.2930845345467895e-01  1.3635372855633425e-02  7.5820244699206496e-01 -5.9811383842203103e-01
+ response_fn_3  2.5356660297556802e-02  6.6407843733943799e-03  7.6938139765239821e-01 -1.6572381615404286e-01
+95% confidence intervals for each response function:
+                          LowerCI_Mean            UpperCI_Mean
+ response_fn_1  2.5251152923718035e-02  2.5462167667359547e-02
+ response_fn_2  1.2900352695192824e-01  1.2961337995742966e-01
+ response_fn_3  2.5251152925724201e-02  2.5462167669389402e-02
