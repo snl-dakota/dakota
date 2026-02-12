@@ -34,7 +34,7 @@ namespace Dakota {
     probDescDB can be queried for settings from the method specification. */
 NonDMultifidelitySampling::
 NonDMultifidelitySampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
-  NonDNumericSolveSampling(problem_db, parallel_lib, model),
+  NonDNumericAllocSampling(problem_db, parallel_lib, model),
   numericalSolveMode(problem_db.get_ushort("method.nond.numerical_solve_mode"))
 {
   analyticEstVarDerivs  = true; // MFMC estvar soln has analytic derivatives
@@ -352,7 +352,7 @@ update_projected_samples(const MFSolutionData& soln,
     actual_incr = (backfillFailures) ? one_sided_delta(N_H_actual, hf_target)
                                      : alloc_incr;
   // For analytic solns, mirror CDV lower bnd for numerical solns; see rationale
-  // in NonDNumericSolveSampling::numerical_solution_bounds_constraints()
+  // in NonDNumericAllocSampling::numerical_solution_bounds_constraints()
   if ( ( pilotMgmtMode == OFFLINE_PILOT ||
 	 pilotMgmtMode == OFFLINE_PILOT_PROJECTION ) &&
        ( optSubProblemForm == ANALYTIC_SOLUTION ||
@@ -739,7 +739,7 @@ accumulate_mf_sums(IntRealMatrixMap& sum_L_baseline, IntRealVectorMap& sum_H,
 
     for (qoi=0; qoi<numFunctions; ++qoi) {
 
-      // see fault tol notes in NonDNumericSolveSampling::compute_correlation()
+      // see fault tol notes in NonDNumericAllocSampling::compute_correlation()
       all_finite = true;
       for (approx=0; approx<=numApprox; ++approx)
 	if (!isfinite(fn_vals[approx * numFunctions + qoi])) // NaN or +/-Inf
@@ -833,7 +833,7 @@ accumulate_mf_sums(RealMatrix& sum_L_baseline, RealVector& sum_H,
 
     for (qoi=0; qoi<numFunctions; ++qoi) {
 
-      // see fault tol notes in NonDNumericSolveSampling::compute_correlation()
+      // see fault tol notes in NonDNumericAllocSampling::compute_correlation()
       all_finite = true;
       for (approx=0; approx<=numApprox; ++approx)
 	if (!isfinite(fn_vals[approx * numFunctions + qoi])) // NaN or +/-Inf
@@ -1255,7 +1255,7 @@ compute_allocations(const RealMatrix& rho2_LH, const RealVector& var_H,
     //   downstream as a sample management scheme in approx_increments(),
     //   which then supports multi-batch concurrency using group_increments().
     // > If reordered on-the-fly, only the invariant all-group cost is used in
-    //   NonDNumericSolveSampling::derived_finite_solution_bounds() as approx
+    //   NonDNumericAllocSampling::derived_finite_solution_bounds() as approx
     //   bounds are inferred from sequenceCost for this case.  If fixed model
     //   ordering, then original group costs hold throughout.
     update_model_groups(); update_model_group_costs();// slight overkill (reord)
@@ -1356,7 +1356,7 @@ analytic_initialization_from_mfmc(const RealMatrix& rho2_LH,
     //   since estvar calculation will reorder based on design vars.
 
   // This definition of modelGroupCost allows a unified treatment in
-  // NonDNumericSolveSampling::derived_finite_solution_bounds(), which aligns
+  // NonDNumericAllocSampling::derived_finite_solution_bounds(), which aligns
   // solution vars N[i] with modelGroupCost[i] --> use ordered groups here.
   // > Downstream, modelGroup{s,Cost} are used for approx_increments() -->
   //   groups are redefined for an r_i ordering.
@@ -1483,9 +1483,9 @@ mfmc_estvar_ratios(const RealMatrix& rho2_LH, const RealVector& avg_eval_ratios,
   }
 
   // Call stack for MFMC numerical solution:
-  // > NonDNumericSolveSampling::log_estvar_metric(RealVector&)
-  // > NonDNumericSolveSampling::estimator_variance_metric(RealVector&)
-  // > NonDNumericSolveSampling::estimator_variances(RealVector&)
+  // > NonDNumericAllocSampling::log_estvar_metric(RealVector&)
+  // > NonDNumericAllocSampling::estimator_variance_metric(RealVector&)
+  // > NonDNumericAllocSampling::estimator_variances(RealVector&)
   // > NonDMultifidelitySampling::estimator_variance_ratios() [virtual]
   // > This function (vector of avg_eval_ratios from opt design variables)
   // Note: ANALYTIC_SOLUTION covered by ordered case below
@@ -1563,28 +1563,26 @@ augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
   // > linear inequality constraints on sample counts:
   //    N_i >  N (aka r_i > 1) prevents numerical exceptions
   //   (N_i >= N becomes N_i > N based on RATIO_NUDGE)
-  if (reorderModelsOnTheFly) {
-    NonDNumericSolveSampling::
+  if (reorderModelsOnTheFly)
+    NonDNumericAllocSampling::
       augment_linear_ineq_constraints(lin_ineq_coeffs,lin_ineq_lb,lin_ineq_ub);
-    return;
-  }
-
-  // enforce strict MFMC ordering and manage numerics with monotonicity lin cons
-  // > N_i > N_ip1 based on RATIO_NUDGE
-  switch (optSubProblemForm) {
-  case N_MODEL_LINEAR_CONSTRAINT:  // lin_ineq #0 is augmented
-  case N_MODEL_LINEAR_OBJECTIVE: { // no other lin ineq
-    size_t offset = (optSubProblemForm == N_MODEL_LINEAR_CONSTRAINT) ? 1 : 0;
-    for (size_t approx=0; approx<numApprox; ++approx) {
-      lin_ineq_coeffs(approx+offset, approx)   = -1.;
-      lin_ineq_coeffs(approx+offset, approx+1) =  1. + RATIO_NUDGE;//N_i > N_ip1
+  else
+    // enforce fixed MFMC ordering & manage numerics with monotonicity lin cons
+    // > N_i > N_ip1 based on RATIO_NUDGE
+    switch (optSubProblemForm) {
+    case N_MODEL_LINEAR_CONSTRAINT:  // lin_ineq #0 is augmented
+    case N_MODEL_LINEAR_OBJECTIVE: { // no other lin ineq
+      size_t offset = (optSubProblemForm == N_MODEL_LINEAR_CONSTRAINT) ? 1 : 0;
+      for (size_t approx=0; approx<numApprox; ++approx) {
+	lin_ineq_coeffs(approx+offset, approx)   = -1.;
+	lin_ineq_coeffs(approx+offset, approx+1) =  1. + RATIO_NUDGE;//N_i>N_ip1
+      }
+      break;
     }
-    break;
-  }
-  //case R_ONLY_LINEAR_CONSTRAINT: case R_AND_N_NONLINEAR_CONSTRAINT:
-    // omit for now since unused
-    //break;
-  }
+    //case R_ONLY_LINEAR_CONSTRAINT: case R_AND_N_NONLINEAR_CONSTRAINT:
+      // omit for now since unused
+      //break;
+    }
 }
 
 
@@ -1592,26 +1590,24 @@ void NonDMultifidelitySampling::
 enforce_augmented_linear_ineq_constraints(RealVector& cd_vars)
 {
   // numerical MFMC adopts base implementation when it reorders on the fly
-  if (reorderModelsOnTheFly) {
-    NonDNumericSolveSampling::
+  if (reorderModelsOnTheFly)
+    NonDNumericAllocSampling::
       enforce_augmented_linear_ineq_constraints(cd_vars);
-    return;
-  }
-
-  switch (optSubProblemForm) {
-  case N_MODEL_LINEAR_CONSTRAINT:  case N_MODEL_LINEAR_OBJECTIVE: {
-    Real N_nudge = cd_vars[numApprox] * (1. + RATIO_NUDGE);
-    for (int approx=numApprox-1; approx>=0; --approx) {
-      Real& cdv_a = cd_vars[approx];
-      if (cdv_a  < N_nudge) cdv_a = N_nudge;
-      if (approx > 0)       N_nudge = cdv_a * (1. + RATIO_NUDGE);
+  else
+    switch (optSubProblemForm) {
+    case N_MODEL_LINEAR_CONSTRAINT:  case N_MODEL_LINEAR_OBJECTIVE: {
+      Real N_nudge = cd_vars[numApprox] * (1. + RATIO_NUDGE);
+      for (int approx=numApprox-1; approx>=0; --approx) {
+	Real& cdv_a = cd_vars[approx];
+	if (cdv_a  < N_nudge) cdv_a = N_nudge;
+	if (approx > 0)       N_nudge = cdv_a * (1. + RATIO_NUDGE);
+      }
+      break;
     }
-    break;
-  }
-  //case R_ONLY_LINEAR_CONSTRAINT: case R_AND_N_NONLINEAR_CONSTRAINT:
-    // omit for now since unused
-    //break;
-  }
+    //case R_ONLY_LINEAR_CONSTRAINT: case R_AND_N_NONLINEAR_CONSTRAINT:
+      // omit for now since unused
+      //break;
+    }
 }
 
 

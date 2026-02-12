@@ -2858,7 +2858,7 @@ void NonDLocalReliability::method_recourse(unsigned short method_name)
   // options, seems best to go with minimal change at higher levels and isolate
   // additional complexity within method_recourse.
   // > Option 1: copy config from old to new as per below (simpler for now)
-  // > Option 2: defer instantiation as in NonDNumericSolveSampling::
+  // > Option 2: defer instantiation as in NonDNumericAllocSampling::
   //   varianceMinimizer (but adding comm parallelism): if null at run time,
   //   instantiate mppOptimizer w/ latest method and init/set comms
 

@@ -10,7 +10,7 @@
 #ifndef NOND_MULTIFIDELITY_SAMPLING_H
 #define NOND_MULTIFIDELITY_SAMPLING_H
 
-#include "NonDNumericSolveSampling.hpp"
+#include "NonDNumericAllocSampling.hpp"
 //#include "DataMethod.hpp"
 
 
@@ -23,7 +23,7 @@ namespace Dakota {
     that utilitizes lower fidelity simulations that have response QoI
     that are correlated with the high-fidelity response QoI. */
 
-class NonDMultifidelitySampling: public NonDNumericSolveSampling
+class NonDMultifidelitySampling: public NonDNumericAllocSampling
 {
 public:
 
