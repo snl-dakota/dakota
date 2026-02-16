@@ -11,7 +11,7 @@
 #include "dakota_data_io.hpp"
 //#include "dakota_tabular_io.hpp"
 #include "DakotaResponse.hpp"
-#include "NonDNumericSolveSampling.hpp"
+#include "NonDNumericAllocSampling.hpp"
 #include "ProblemDescDB.hpp"
 #include "ActiveKey.hpp"
 #include "MinimizerAdapterModel.hpp"
@@ -30,19 +30,19 @@
 #include "NCSUOptimizer.hpp"
 #endif
 
-static const char rcsId[]="@(#) $Id: NonDNumericSolveSampling.cpp 7035 2010-10-22 21:45:39Z mseldre $";
+static const char rcsId[]="@(#) $Id: NonDNumericAllocSampling.cpp 7035 2010-10-22 21:45:39Z mseldre $";
 
 namespace Dakota {
 
 // initialization of statics
-NonDNumericSolveSampling* NonDNumericSolveSampling::numSolveSampInstance(NULL);
+NonDNumericAllocSampling* NonDNumericAllocSampling::numSolveSampInstance(NULL);
 
 
 /** This constructor is called for a standard letter-envelope iterator 
     instantiation.  In this case, set_db_list_nodes has been called and 
     probDescDB can be queried for settings from the method specification. */
-NonDNumericSolveSampling::
-NonDNumericSolveSampling(ProblemDescDB& problem_db,
+NonDNumericAllocSampling::
+NonDNumericAllocSampling(ProblemDescDB& problem_db,
 			ParallelLibrary& parallel_lib,
 			std::shared_ptr<Model> model):
   NonDEnsembleSampling(problem_db, parallel_lib, model),
@@ -50,9 +50,8 @@ NonDNumericSolveSampling(ProblemDescDB& problem_db,
   truthFixedByPilot(problem_db.get_bool("method.nond.truth_fixed_by_pilot")),
   analyticEstVarDerivs(false),  // true for MFMC and ML BLUE currently
   hardenNumericSoln(true),      // Cholesky option not currently exposed in spec
-  reorderModelsOnTheFly(problem_db.get_ushort("method.nond.model_reordering")
-			== REORDER_MODELS_ON_THE_FLY), // active for MFMC
-  recurConversion(false)
+  reorderModelsOnTheFly(false), // active for MFMC
+  recurConversion(false)        // protect cyclic estvar/estvar ratio conversion
 {
   // solver(s) that perform the numerical solution for resource allocations
   // > Note: this is not a hard error for analytic MFMC that doesn't require
@@ -77,12 +76,12 @@ NonDNumericSolveSampling(ProblemDescDB& problem_db,
 }
 
 
-NonDNumericSolveSampling::~NonDNumericSolveSampling()
+NonDNumericAllocSampling::~NonDNumericAllocSampling()
 { }
 
 
 /*
-bool NonDNumericSolveSampling::resize()
+bool NonDNumericAllocSampling::resize()
 {
   bool parent_reinit_comms = NonDSampling::resize();
 
@@ -95,7 +94,7 @@ bool NonDNumericSolveSampling::resize()
 */
 
 
-void NonDNumericSolveSampling::pre_run()
+void NonDNumericAllocSampling::pre_run()
 {
   NonDEnsembleSampling::pre_run();
 
@@ -130,7 +129,7 @@ void NonDNumericSolveSampling::pre_run()
 }
 
 
-void NonDNumericSolveSampling::assign_active_key()
+void NonDNumericAllocSampling::assign_active_key()
 {
   Pecos::ActiveKey active_key;
   std::vector<Pecos::ActiveKey> form_res_keys(numApprox+1);
@@ -151,7 +150,7 @@ void NonDNumericSolveSampling::assign_active_key()
 }
 
 
-void NonDNumericSolveSampling::
+void NonDNumericAllocSampling::
 hf_indices(size_t& hf_form_index, size_t& hf_lev_index) const
 {
   // case Pecos::FORM_RESOLUTION_ENUMERATION
@@ -160,7 +159,7 @@ hf_indices(size_t& hf_form_index, size_t& hf_lev_index) const
 }
 
 
-void NonDNumericSolveSampling::shared_increment(String prepend)
+void NonDNumericAllocSampling::shared_increment(String prepend)
 {
   if (mlmfIter == 0) Cout << "\nNon-hierarchical pilot sample: ";
   else Cout << "\nNon-hierarchical sampling iteration " << mlmfIter
@@ -178,7 +177,7 @@ void NonDNumericSolveSampling::shared_increment(String prepend)
 }
 
 
-void NonDNumericSolveSampling::
+void NonDNumericAllocSampling::
 shared_increment(String prepend, const UShortArray& approx_set)
 {
   if (mlmfIter == 0) Cout << "\nNon-hierarchical pilot sample: ";
@@ -202,7 +201,7 @@ shared_increment(String prepend, const UShortArray& approx_set)
 }
 
 
-void NonDNumericSolveSampling::shared_approx_increment(String prepend)
+void NonDNumericAllocSampling::shared_approx_increment(String prepend)
 {
   if (mlmfIter == 0) Cout << "\nNon-hierarchical approx pilot sample: ";
   else Cout << "\nNon-hierarchical sampling iteration " << mlmfIter
@@ -224,7 +223,7 @@ void NonDNumericSolveSampling::shared_approx_increment(String prepend)
 }
 
 
-bool NonDNumericSolveSampling::
+bool NonDNumericAllocSampling::
 approx_increment(String prepend, const SizetArray& approx_sequence,
 		 size_t start, size_t end)
 {
@@ -253,7 +252,7 @@ approx_increment(String prepend, const SizetArray& approx_sequence,
 }
 
 
-bool NonDNumericSolveSampling::
+bool NonDNumericAllocSampling::
 approx_increment(String prepend, const SizetArray& approx_sequence,
 		 size_t start, size_t end, const UShortArray& approx_set)
 {
@@ -282,7 +281,7 @@ approx_increment(String prepend, const SizetArray& approx_sequence,
 }
 
 
-bool NonDNumericSolveSampling::
+bool NonDNumericAllocSampling::
 approx_increment(String prepend, unsigned short root,
 		 const UShortSet& reverse_dag)
 {
@@ -316,7 +315,7 @@ approx_increment(String prepend, unsigned short root,
 }
 
 
-void NonDNumericSolveSampling::
+void NonDNumericAllocSampling::
 group_increments(SizetArray& delta_N_G, String prepend, bool reverse_order)
 {
   if (mlmfIter == 0) Cout << "\nPerforming pilot sample for model groups.\n";
@@ -348,7 +347,7 @@ group_increments(SizetArray& delta_N_G, String prepend, bool reverse_order)
 }
 
 
-size_t NonDNumericSolveSampling::
+size_t NonDNumericAllocSampling::
 group_approx_increment(const RealVector& soln_vars,
 		       const UShortArray& approx_set,
 		       const Sizet2DArray& N_L_actual, SizetArray& N_L_alloc,
@@ -390,7 +389,7 @@ group_approx_increment(const RealVector& soln_vars,
 
 
 /*
-size_t NonDNumericSolveSampling::
+size_t NonDNumericAllocSampling::
 dag_approx_increment(const RealVector& soln_vars, const UShortArray& approx_set,
 		     const Sizet2DArray& N_L_actual, SizetArray& N_L_alloc,
 		     unsigned short root, const UShortSet& reverse_dag)
@@ -428,7 +427,7 @@ dag_approx_increment(const RealVector& soln_vars, const UShortArray& approx_set,
 */
 
 
-void NonDNumericSolveSampling::
+void NonDNumericAllocSampling::
 ensemble_sample_increment(const String& prepend, size_t step, bool new_samples)
 {
   // Single sample batch case: define and evaluate (includes synchronization)
@@ -445,7 +444,7 @@ ensemble_sample_increment(const String& prepend, size_t step, bool new_samples)
 }
 
 
-void NonDNumericSolveSampling::
+void NonDNumericAllocSampling::
 ensemble_sample_batch(const String& prepend, size_t step, bool new_samples)
 {
   // Queue one sample batch among multiple (excludes synchronization)
@@ -463,7 +462,7 @@ ensemble_sample_batch(const String& prepend, size_t step, bool new_samples)
 }
 
 
-void NonDNumericSolveSampling::
+void NonDNumericAllocSampling::
 export_sample_sets(const String& prepend, size_t step)
 {
   if (exportSampleSets) { // for HF+LF models, use the HF tags
@@ -478,7 +477,7 @@ export_sample_sets(const String& prepend, size_t step)
 }
 
 
-void NonDNumericSolveSampling::
+void NonDNumericAllocSampling::
 export_all_samples(const String& root_prepend, const Model& model, size_t iter,
 		   size_t step)
 {
@@ -494,7 +493,7 @@ export_all_samples(const String& root_prepend, const Model& model, size_t iter,
 }
 
 
-void NonDNumericSolveSampling::
+void NonDNumericAllocSampling::
 mfmc_analytic_solution(const UShortArray& approx_set, const RealMatrix& rho2_LH,
 		       const RealVector& cost, RealVector& avg_eval_ratios,
 		       bool lower_bounded_r, bool monotonic_r)
@@ -547,7 +546,7 @@ mfmc_analytic_solution(const UShortArray& approx_set, const RealMatrix& rho2_LH,
 }
 
 
-void NonDNumericSolveSampling::
+void NonDNumericAllocSampling::
 mfmc_reordered_analytic_solution(const UShortArray& approx_set,
 				 const RealMatrix& rho2_LH,
 				 const RealVector& cost,
@@ -615,7 +614,7 @@ mfmc_reordered_analytic_solution(const UShortArray& approx_set,
 }
 
 
-void NonDNumericSolveSampling::
+void NonDNumericAllocSampling::
 cvmc_ensemble_solutions(const RealMatrix& rho2_LH, const RealVector& cost,
 			RealVector& avg_eval_ratios, bool lower_bounded_r)
 {
@@ -651,7 +650,7 @@ cvmc_ensemble_solutions(const RealMatrix& rho2_LH, const RealVector& cost,
 }
 
 
-void NonDNumericSolveSampling::
+void NonDNumericAllocSampling::
 apply_controls(const IntRealVectorMap& sum_H_baseline,
 	       const SizetArray& N_baseline,
 	       const IntRealMatrixMap& sum_L_shared,
@@ -695,7 +694,7 @@ apply_controls(const IntRealVectorMap& sum_H_baseline,
 }
 
 
-void NonDNumericSolveSampling::update_model_group_costs()
+void NonDNumericAllocSampling::update_model_group_costs()
 {
   // modelGroupCost used in finite_solution_bounds() for
   // mfmc_numerical_solution().
@@ -727,7 +726,7 @@ void NonDNumericSolveSampling::update_model_group_costs()
 }
 
 
-void NonDNumericSolveSampling::
+void NonDNumericAllocSampling::
 overlay_group_sums(const IntRealMatrixArrayMap& sum_G,
 		   const Sizet2DArray& N_G_actual,
 		   IntRealMatrixMap& sum_L_shared,
@@ -789,7 +788,7 @@ overlay_group_sums(const IntRealMatrixArrayMap& sum_G,
 }
 
 
-void NonDNumericSolveSampling::
+void NonDNumericAllocSampling::
 scale_to_target(Real avg_N_H, const RealVector& cost,
 		RealVector& avg_eval_ratios, Real& avg_hf_target,
 		Real budget, Real offline_N_lwr)
@@ -812,7 +811,7 @@ scale_to_target(Real avg_N_H, const RealVector& cost,
 }
 
 
-void NonDNumericSolveSampling::
+void NonDNumericAllocSampling::
 scale_to_budget_with_pilot(RealVector& avg_eval_ratios, const RealVector& cost,
 			   Real avg_N_H, Real budget)
 {
@@ -866,7 +865,7 @@ scale_to_budget_with_pilot(RealVector& avg_eval_ratios, const RealVector& cost,
 }
 
 
-void NonDNumericSolveSampling::ensemble_numerical_solution(MFSolutionData& soln)
+void NonDNumericAllocSampling::ensemble_numerical_solution(MFSolutionData& soln)
 {
   // deduct sunk cost for inactive models/groups
   activeBudget = active_budget(); // virtual for GenACV, ML BLUE
@@ -893,7 +892,7 @@ void NonDNumericSolveSampling::ensemble_numerical_solution(MFSolutionData& soln)
 }
 
 
-void NonDNumericSolveSampling::
+void NonDNumericAllocSampling::
 process_model_allocations(MFSolutionData& soln, size_t& num_samples)
 {
   // compute sample increment for HF from current to target:
@@ -915,7 +914,7 @@ process_model_allocations(MFSolutionData& soln, size_t& num_samples)
   // with any relaxation of the sample increment that follows
   // > inconsistency in final reporting (if final relax factor != 1) as well as
   //   intermediate performance metrics, e.g. estVar ratio below
-  // All NumericSolve estimators to review: minimizer_results_to_solution_data()
+  // All NumericAlloc estimators to review: minimizer_results_to_solution_data()
   // after numerical solve, print_variance_reduction()/print_estimator_perf(),
   // no_solve defaults
   // > MFMC analytic: estvar_ratios to estvar using N_H_actual{,_proj}
@@ -953,7 +952,7 @@ process_model_allocations(MFSolutionData& soln, size_t& num_samples)
 }
 
 
-void NonDNumericSolveSampling::
+void NonDNumericAllocSampling::
 print_model_allocations(std::ostream& s, const MFSolutionData& soln,
 			const UShortArray& approx_set)
 {
@@ -972,7 +971,7 @@ print_model_allocations(std::ostream& s, const MFSolutionData& soln,
 }
 
 
-void NonDNumericSolveSampling::
+void NonDNumericAllocSampling::
 numerical_solution_counts(size_t& num_cdv, size_t& num_lin_con,
 			  size_t& num_nln_con)
 {
@@ -996,7 +995,7 @@ numerical_solution_counts(size_t& num_cdv, size_t& num_lin_con,
 }
 
 
-void NonDNumericSolveSampling::
+void NonDNumericAllocSampling::
 numerical_solution_bounds_constraints(const MFSolutionData& soln,
 				      RealVector& x0, RealVector& x_lb,
 				      RealVector& x_ub, RealVector& lin_ineq_lb,
@@ -1130,7 +1129,7 @@ numerical_solution_bounds_constraints(const MFSolutionData& soln,
 }
 
 
-void NonDNumericSolveSampling::
+void NonDNumericAllocSampling::
 augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
 				RealVector& lin_ineq_lb,
 				RealVector& lin_ineq_ub)
@@ -1158,7 +1157,7 @@ augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
 }
 
 
-Real NonDNumericSolveSampling::
+Real NonDNumericAllocSampling::
 augmented_linear_ineq_violations(const RealVector& cd_vars,
 				 const RealMatrix& lin_ineq_coeffs,
 				 const RealVector& lin_ineq_lb,
@@ -1224,7 +1223,7 @@ augmented_linear_ineq_violations(const RealVector& cd_vars,
 }
 
 
-void NonDNumericSolveSampling::
+void NonDNumericAllocSampling::
 enforce_augmented_linear_ineq_constraints(RealVector& cd_vars)
 {
   // default is simply N_i > N
@@ -1244,7 +1243,7 @@ enforce_augmented_linear_ineq_constraints(RealVector& cd_vars)
 }
 
 
-void NonDNumericSolveSampling::
+void NonDNumericAllocSampling::
 finite_solution_bounds(const RealVector& x0, RealVector& x_lb, RealVector& x_ub)
 {
   // Some optimizers (DIRECT, SBLO, EGO) require finite bounds
@@ -1297,7 +1296,7 @@ finite_solution_bounds(const RealVector& x0, RealVector& x_lb, RealVector& x_ub)
 }
 
 
-void NonDNumericSolveSampling::
+void NonDNumericAllocSampling::
 derived_finite_solution_bounds(const RealVector& x0, RealVector& x_lb,
 			       RealVector& x_ub, Real budget)
 {
@@ -1353,7 +1352,7 @@ derived_finite_solution_bounds(const RealVector& x0, RealVector& x_lb,
 }
 
 
-void NonDNumericSolveSampling::
+void NonDNumericAllocSampling::
 configure_minimizers(RealVector& x0, RealVector& x_lb, RealVector& x_ub,
 		     const RealVector& lin_ineq_lb,
 		     const RealVector& lin_ineq_ub,
@@ -1703,7 +1702,7 @@ configure_minimizers(RealVector& x0, RealVector& x_lb, RealVector& x_ub,
 }
 
 
-void NonDNumericSolveSampling::run_minimizers(MFSolutionData& soln)
+void NonDNumericAllocSampling::run_minimizers(MFSolutionData& soln)
 {
   // ----------------------------------
   // Solve the optimization sub-problem: compute optimal r*,N*
@@ -1766,7 +1765,7 @@ void NonDNumericSolveSampling::run_minimizers(MFSolutionData& soln)
 }
 
 
-void NonDNumericSolveSampling::
+void NonDNumericAllocSampling::
 minimizer_results_to_solution_data(const RealVector& cv_star,
 				   const RealVector& fn_star,
 				   MFSolutionData& soln)
@@ -1858,7 +1857,7 @@ minimizer_results_to_solution_data(const RealVector& cv_star,
 }
 
 
-void NonDNumericSolveSampling::
+void NonDNumericAllocSampling::
 estimator_variances_from_ratios(const RealVector& cd_vars,
 				const RealVector& estvar_ratios,
 				RealVector& estvar)
@@ -1887,13 +1886,13 @@ estimator_variances_from_ratios(const RealVector& cd_vars,
   }
 
   if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "NonDNumericSolveSampling::estimator_variances(): design vars:\n"
+    Cout << "NonDNumericAllocSampling::estimator_variances(): design vars:\n"
 	 << cd_vars << "EstVar ratios:\n" << estvar_ratios << "EstVar:\n"
 	 << estvar << '\n';
 }
 
 
-void NonDNumericSolveSampling::
+void NonDNumericAllocSampling::
 estimator_ratios_from_variances(const RealVector& cd_vars,
 				const RealVector& estvar,
 				RealVector& estvar_ratios)
@@ -1924,13 +1923,13 @@ estimator_ratios_from_variances(const RealVector& cd_vars,
   }
 
   if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "NonDNumericSolveSampling::estimator_variance_ratios(): "
+    Cout << "NonDNumericAllocSampling::estimator_variance_ratios(): "
 	 << "design vars:\n" << cd_vars << "EstVar:\n" << estvar
 	 << "EstVar ratios:\n" << estvar_ratios << '\n';
 }
 
 
-void NonDNumericSolveSampling::
+void NonDNumericAllocSampling::
 estvar_gradients_to_metric_gradient(const RealVector& ev_vec,
 				    const RealMatrix& ev_grad,
 				    RealVector& evm_grad)
@@ -1970,9 +1969,9 @@ estvar_gradients_to_metric_gradient(const RealVector& ev_vec,
 }
 
 
-void NonDNumericSolveSampling::method_recourse(unsigned short outer_method)
+void NonDNumericAllocSampling::method_recourse(unsigned short outer_method)
 {
-  // NonDNumericSolveSampling numerical solves must protect use of Fortran
+  // NonDNumericAllocSampling numerical solves must protect use of Fortran
   // solvers at this level from conflicting with use at a higher level.
   // However, it is not necessary to check the other direction by defining
   // check_sub_iterator_conflict(), since solver execution does not span
@@ -2043,12 +2042,12 @@ void NonDNumericSolveSampling::method_recourse(unsigned short outer_method)
     }
 
   if (err_flag) {
-    Cerr << "\nError: method conflict detected in NonDNumericSolveSampling but "
+    Cerr << "\nError: method conflict detected in NonDNumericAllocSampling but "
 	 << "no alternate solver available." << std::endl;
     abort_handler(METHOD_ERROR);
   }
   else
-    Cerr << "\nWarning: method recourse invoked in NonDNumericSolveSampling "
+    Cerr << "\nWarning: method recourse invoked in NonDNumericAllocSampling "
 	 << "due to detected method conflict.\n         New solver = "
 	 << optSubProblemSolver << "\n\n";
 }
@@ -2056,7 +2055,7 @@ void NonDNumericSolveSampling::method_recourse(unsigned short outer_method)
 
 // Minimizer::penalty_merit() uses too many Minimizer attributes, so we
 // use local definitions here
-Real NonDNumericSolveSampling::
+Real NonDNumericAllocSampling::
 nh_penalty_merit(const RealVector& cd_vars, const RealVector& fn_vals)
 {
   // Assume linear constraints are satisfied (for now)
@@ -2094,7 +2093,7 @@ nh_penalty_merit(const RealVector& cd_vars, const RealVector& fn_vals)
 
 // Minimizer::penalty_merit() uses too many Minimizer attributes, so we
 // use local definitions here
-Real NonDNumericSolveSampling::nh_penalty_merit(const MFSolutionData& soln)
+Real NonDNumericAllocSampling::nh_penalty_merit(const MFSolutionData& soln)
 {
   // Assume linear constraints are satisfied (for now)
   // Keep accuracy in log space and normalize both cost and log-accuracy
@@ -2118,7 +2117,7 @@ Real NonDNumericSolveSampling::nh_penalty_merit(const MFSolutionData& soln)
 }
 
 
-Real NonDNumericSolveSampling::
+Real NonDNumericAllocSampling::
 nh_penalty_merit(Real obj, Real nln_con, Real nln_u_bnd)
 {
   Real merit_fn = obj, constr_viol = 0., r_p = 1.e+6, c_tol = .01,
@@ -2135,7 +2134,7 @@ nh_penalty_merit(Real obj, Real nln_con, Real nln_u_bnd)
 }
 
 
-Real NonDNumericSolveSampling::linear_model_cost(const RealVector& N_m)
+Real NonDNumericAllocSampling::linear_model_cost(const RealVector& N_m)
 {
   // linear objective: N + Sum(w_i N_i) / w
   Real sum = 0., lin_obj;
@@ -2148,7 +2147,7 @@ Real NonDNumericSolveSampling::linear_model_cost(const RealVector& N_m)
 }
 
 
-void NonDNumericSolveSampling::
+void NonDNumericAllocSampling::
 linear_model_cost_gradient(const RealVector& N_vec, RealVector& grad_c)
 {
   // linear objective: N + Sum(w_i N_i) / w
@@ -2166,7 +2165,7 @@ linear_model_cost_gradient(const RealVector& N_vec, RealVector& grad_c)
 }
 
 
-Real NonDNumericSolveSampling::linear_group_cost(const RealVector& N_g)
+Real NonDNumericAllocSampling::linear_group_cost(const RealVector& N_g)
 {
   // default version for case where retainedModelGroups is undefined
 
@@ -2181,7 +2180,7 @@ Real NonDNumericSolveSampling::linear_group_cost(const RealVector& N_g)
 }
 
 
-void NonDNumericSolveSampling::
+void NonDNumericAllocSampling::
 linear_group_cost_gradient(const RealVector& N_vec, RealVector& grad_c)
 {
   // default version for case where retainedModelGroups is undefined
@@ -2194,7 +2193,7 @@ linear_group_cost_gradient(const RealVector& N_vec, RealVector& grad_c)
 }
 
 
-Real NonDNumericSolveSampling::nonlinear_model_cost(const RealVector& r_and_N)
+Real NonDNumericAllocSampling::nonlinear_model_cost(const RealVector& r_and_N)
 {
   // nln ineq constraint: N ( w + Sum(w_i r_i) ) <= C, where C = equivHF * w
   // -->  N ( 1 + Sum(w_i r_i) / w ) <= equivHF
@@ -2212,7 +2211,7 @@ Real NonDNumericSolveSampling::nonlinear_model_cost(const RealVector& r_and_N)
 }
 
 
-void NonDNumericSolveSampling::
+void NonDNumericAllocSampling::
 nonlinear_model_cost_gradient(const RealVector& r_and_N, RealVector& grad_c)
 {
   // nonlinear inequality constraint: N ( 1 + Sum(w_i r_i) / w ) <= equivHF
@@ -2234,7 +2233,7 @@ nonlinear_model_cost_gradient(const RealVector& r_and_N, RealVector& grad_c)
 }
 
 
-void NonDNumericSolveSampling::
+void NonDNumericAllocSampling::
 npsol_objective(int& mode, int& n, double* x, double& f, double* grad_f,
 		int& nstate)
 {
@@ -2286,7 +2285,7 @@ npsol_objective(int& mode, int& n, double* x, double& f, double* grad_f,
 }
 
 
-void NonDNumericSolveSampling::
+void NonDNumericAllocSampling::
 npsol_constraint(int& mode, int& ncnln, int& n, int& nrowj, int* needc,
 		 double* x, double* c, double* cjac, int& nstate)
 {
@@ -2332,7 +2331,7 @@ npsol_constraint(int& mode, int& ncnln, int& n, int& nrowj, int* needc,
 
 
 /** API for NLF1 objective (see SNLLOptimizer::nlf1_evaluator()) */
-void NonDNumericSolveSampling::
+void NonDNumericAllocSampling::
 optpp_nlf1_objective(int mode, int n, const RealVector& x, double& f, 
 		     RealVector& grad_f, int& result_mode)
 {
@@ -2378,7 +2377,7 @@ optpp_nlf1_objective(int mode, int n, const RealVector& x, double& f,
 
 
 /** API for NLF1 constraint (see SNLLOptimizer::constraint1_evaluator()) */
-void NonDNumericSolveSampling::
+void NonDNumericAllocSampling::
 optpp_nlf1_constraint(int mode, int n, const RealVector& x, RealVector& c,
 		      RealMatrix& grad_c, int& result_mode)
 {
@@ -2417,7 +2416,7 @@ optpp_nlf1_constraint(int mode, int n, const RealVector& x, RealVector& c,
 
 
 /** API for FDNLF1 objective (see SNLLOptimizer::nlf0_evaluator()) */
-void NonDNumericSolveSampling::
+void NonDNumericAllocSampling::
 optpp_fdnlf1_objective(int n, const RealVector& x, double& f, int& result_mode)
 {
   f = numSolveSampInstance->log_estvar_metric(x);
@@ -2426,7 +2425,7 @@ optpp_fdnlf1_objective(int n, const RealVector& x, double& f, int& result_mode)
 
 
 /** API for FDNLF1 constraint (see SNLLOptimizer::constraint0_evaluator()) */
-void NonDNumericSolveSampling::
+void NonDNumericAllocSampling::
 optpp_fdnlf1_constraint(int n, const RealVector& x, RealVector& c,
 			int& result_mode)
 {
@@ -2435,7 +2434,7 @@ optpp_fdnlf1_constraint(int n, const RealVector& x, RealVector& c,
 }
 
 
-Real NonDNumericSolveSampling::direct_penalty_merit(const RealVector& cd_vars)
+Real NonDNumericAllocSampling::direct_penalty_merit(const RealVector& cd_vars)
 {
   // In addition to accuracy + cost in numerical_solution_bounds_constraints(),
   // there are linear ineq augmentations in augment_linear_ineq_constraints()
@@ -2523,7 +2522,7 @@ Real NonDNumericSolveSampling::direct_penalty_merit(const RealVector& cd_vars)
 
 
 /** API for MinimizerAdapterModel */
-void NonDNumericSolveSampling::
+void NonDNumericAllocSampling::
 response_evaluator(const Variables& vars, const ActiveSet& set,
 		   Response& response)
 {
@@ -2602,7 +2601,7 @@ response_evaluator(const Variables& vars, const ActiveSet& set,
 
 
 /** Multi-moment map-based version used for approximation increments */
-void NonDNumericSolveSampling::
+void NonDNumericAllocSampling::
 accumulate_group_sums(IntRealMatrixArrayMap& sum_G, Sizet2DArray& num_G,
 		     const IntIntResponse2DMap& batch_resp_map)
 {
@@ -2617,7 +2616,7 @@ accumulate_group_sums(IntRealMatrixArrayMap& sum_G, Sizet2DArray& num_G,
 
 
 /** Multi-moment map-based version for approximation increments */
-void NonDNumericSolveSampling::
+void NonDNumericAllocSampling::
 accumulate_group_sums(IntRealMatrixArrayMap& sum_G, Sizet2DArray& num_G,
 		     size_t group, const IntResponseMap& resp_map)
 {
@@ -2636,7 +2635,7 @@ accumulate_group_sums(IntRealMatrixArrayMap& sum_G, Sizet2DArray& num_G,
 
     for (qoi=0; qoi<numFunctions; ++qoi) {
 
-      // see fault tol notes in NonDNumericSolveSampling::compute_correlation():
+      // see fault tol notes in NonDNumericAllocSampling::compute_correlation():
       // population mean and variance should be computed from same sample set
       all_finite = true;
       for (m=0; m<num_models; ++m) {
@@ -2674,7 +2673,7 @@ accumulate_group_sums(IntRealMatrixArrayMap& sum_G, Sizet2DArray& num_G,
 }
 
 
-void NonDNumericSolveSampling::
+void NonDNumericAllocSampling::
 print_estimator_performance(std::ostream& s, const MFSolutionData& soln) const
 {
   const RealVector&  nh_est_var = soln.estimator_variances();

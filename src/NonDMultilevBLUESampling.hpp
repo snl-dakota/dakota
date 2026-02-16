@@ -10,7 +10,7 @@
 #ifndef NOND_ML_BLUE_SAMPLING_H
 #define NOND_ML_BLUE_SAMPLING_H
 
-#include "NonDNumericSolveSampling.hpp"
+#include "NonDNumericAllocSampling.hpp"
 //#include "DataMethod.hpp"
 
 #define DIRECT_DIMENSION_LIMIT 64
@@ -24,7 +24,7 @@ namespace Dakota {
     that utilitizes lower fidelity simulations that have response QoI
     that are correlated with the high-fidelity response QoI. */
 
-class NonDMultilevBLUESampling: public NonDNumericSolveSampling
+class NonDMultilevBLUESampling: public NonDNumericAllocSampling
 {
 public:
 
@@ -839,34 +839,34 @@ initialize_rva(RealVectorArray& rva, bool init)
 inline Real NonDMultilevBLUESampling::linear_group_cost(const RealVector& cdv)
 {
   if (retainedModelGroups.empty())
-    return NonDNumericSolveSampling::linear_group_cost(cdv);
-
-  // linear objective: N + Sum(w_i N_i) / w
-  Real lin_obj = 0.;  size_t i, cntr = 0;
-  for (i=0; i<numGroups; ++i)
-    if (retainedModelGroups[i])
-      lin_obj += modelGroupCost[i] * cdv[cntr++]; // Sum(w_i N_i)
-  lin_obj /= sequenceCost[numApprox];// N + Sum / w
-  if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "linear group cost = " << lin_obj << std::endl;
-  return lin_obj;
+    return NonDNumericAllocSampling::linear_group_cost(cdv);
+  else {
+    // linear objective: N + Sum(w_i N_i) / w
+    Real lin_obj = 0.;  size_t i, cntr = 0;
+    for (i=0; i<numGroups; ++i)
+      if (retainedModelGroups[i])
+	lin_obj += modelGroupCost[i] * cdv[cntr++]; // Sum(w_i N_i)
+    lin_obj /= sequenceCost[numApprox];// N + Sum / w
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "linear group cost = " << lin_obj << std::endl;
+    return lin_obj;
+  }
 }
 
 
 inline void NonDMultilevBLUESampling::
 linear_group_cost_gradient(const RealVector& cdv, RealVector& grad_c)
 {
-  if (retainedModelGroups.empty()) {
-    NonDNumericSolveSampling::linear_group_cost_gradient(cdv, grad_c);
-    return;
+  if (retainedModelGroups.empty())
+    NonDNumericAllocSampling::linear_group_cost_gradient(cdv, grad_c);
+  else {
+    Real cost_H = sequenceCost[numApprox];  size_t i, cntr = 0;
+    for (i=0; i<numGroups; ++i)
+      if (retainedModelGroups[i])
+	grad_c[cntr++] = modelGroupCost[i] / cost_H;
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "linear group cost gradient:\n" << grad_c << std::endl;
   }
-
-  Real cost_H = sequenceCost[numApprox];  size_t i, cntr = 0;
-  for (i=0; i<numGroups; ++i)
-    if (retainedModelGroups[i])
-      grad_c[cntr++] = modelGroupCost[i] / cost_H;
-  if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "linear group cost gradient:\n" << grad_c << std::endl;
 }
 
 
@@ -1044,7 +1044,7 @@ inline void NonDMultilevBLUESampling::apply_mc_reference(RealVector& mc_targets)
 {
   // derived implementation (varH is not used by ML BLUE)
 
-  // used by NonDNumericSolveSampling::finite_solution_bounds() for accuracy
+  // used by NonDNumericAllocSampling::finite_solution_bounds() for accuracy
   // constrained cases, which are disallowed for offline pilot modes
 
   // mirrors find_hf_sample_reference() logic in print_variance_reduction()

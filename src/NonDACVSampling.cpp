@@ -29,7 +29,7 @@ namespace Dakota {
 NonDACVSampling::
 NonDACVSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
 		std::shared_ptr<Model> model):
-  NonDNumericSolveSampling(problem_db, parallel_lib, model)
+  NonDNumericAllocSampling(problem_db, parallel_lib, model)
   //, multiStartACV(true)
 {
   mlmfSubMethod = problem_db.get_ushort("method.sub_method");
@@ -291,7 +291,7 @@ void NonDACVSampling::approximate_control_variate_pilot_projection()
   update_projected_samples(acvSolnData, fullApproxSet, N_H_actual, N_H_alloc,
 			   N_L_actual, N_L_alloc, deltaNActualHF, deltaEquivHF);
   // No need for updating estimator variance given deltaNActualHF since
-  // NonDNumericSolveSampling::ensemble_numerical_solution() recovers N*
+  // NonDNumericAllocSampling::ensemble_numerical_solution() recovers N*
   // from the numerical solve and computes projected estVariance{s,Ratios}
 }
 
@@ -834,7 +834,7 @@ accumulate_acv_sums(IntRealMatrixMap& sum_L_shared, IntRealVectorMap& sum_H,
 
     for (qoi=0; qoi<numFunctions; ++qoi) {
 
-      // see fault tol notes in NonDNumericSolveSampling::compute_correlation()
+      // see fault tol notes in NonDNumericAllocSampling::compute_correlation()
       if (!check_finite(fn_vals, asv, qoi, num_am1)) continue;
 
       hf_index = numApprox * numFunctions + qoi;
@@ -879,7 +879,7 @@ accumulate_acv_sums(RealMatrix& sum_L_baseline, RealVector& sum_H,
 
     for (qoi=0; qoi<numFunctions; ++qoi) {
 
-      // see fault tol notes in NonDNumericSolveSampling::compute_correlation()
+      // see fault tol notes in NonDNumericAllocSampling::compute_correlation()
       if (!check_finite(fn_vals, asv, qoi, num_am1)) continue;
       
       // High accumulations:
@@ -934,7 +934,7 @@ accumulate_acv_sums(IntRealMatrixMap& sum_L_shared,
 
     for (qoi=0; qoi<numFunctions; ++qoi) {
 
-      // see fault tol notes in NonDNumericSolveSampling::compute_correlation()
+      // see fault tol notes in NonDNumericAllocSampling::compute_correlation()
       if (!check_finite(fn_vals, asv, qoi, numApprox)) continue;
 
       // Low accumulations:
