@@ -243,7 +243,8 @@ private:
   // 			    const RealSymMatrixArray& sum_LL,
   // 			    const SizetArray& num_L, RealMatrix& var_L);
 
-  void compute_F_matrix(const RealVector& avg_eval_ratios, RealSymMatrix& F);
+  void compute_F_matrix_from_r(const RealVector& r_and_N, RealSymMatrix& F);
+  void compute_F_matrix_from_N(const RealVector& N, RealSymMatrix& F);
   /*
   void invert_CF(const RealSymMatrix& C, const RealSymMatrix& F,
 		 RealSymMatrix& CF_inv);
@@ -412,77 +413,20 @@ compute_LH_statistics(RealMatrix& sum_L_pilot, RealVector& sum_H_pilot,
 
 
 inline void NonDACVSampling::
-compute_F_matrix(const RealVector& r_and_N, RealSymMatrix& F)
+analytic_ratios_to_solution_variables(RealVector& avg_eval_ratios,
+				      Real avg_N_H, MFSolutionData& soln)
 {
-  size_t i, j;
-  if (F.empty()) F.shapeUninitialized(numApprox);
+  Real hf_target;
+  if (maxFunctionEvals == SZ_MAX) {// HF tgt from ACV estvar using analytic soln
+    hf_target = (convergenceTolType == ABSOLUTE_CONVERGENCE_TOLERANCE) ?
+      update_hf_target(avg_eval_ratios, avg_N_H, varH) :
+      update_hf_target(avg_eval_ratios, avg_N_H, varH, estVarIter0);
+  }
+  else // allocate_budget(), then manage lower bounds and pilot over-estimation
+    scale_to_target(avg_N_H, sequenceCost, avg_eval_ratios, hf_target,
+		    activeBudget);
 
-  switch (mlmfSubMethod) {
-  case SUBMETHOD_MFMC: { // diagonal (see Eq. 16 in JCP ACV paper)
-    size_t num_am1 = numApprox - 1;  Real r_i, r_ip1;
-    for (i=0; i<num_am1; ++i) {
-      r_i = r_and_N[i]; r_ip1 = r_and_N[i+1];
-      F(i,i) = (r_i - r_ip1) / (r_i * r_ip1);
-    }
-    r_i = r_and_N[num_am1]; //r_ip1 = 1.;
-    F(num_am1,num_am1) = (r_i - 1.) / r_i;
-    break;
-  }
-  case SUBMETHOD_ACV_IS: { // Eq. 30
-    Real ri_ratio;
-    for (i=0; i<numApprox; ++i) {
-      F(i,i)   = ri_ratio = (r_and_N[i] - 1.) / r_and_N[i];
-      for (j=0; j<i; ++j)
-	F(i,j) = ri_ratio * (r_and_N[j] - 1.) / r_and_N[j];
-    }
-    break;
-  }
-  case SUBMETHOD_ACV_MF: { // Eq. 34
-    Real r_i, min_r;
-    for (i=0; i<numApprox; ++i) {
-      r_i = r_and_N[i];  F(i,i) = (r_i - 1.) / r_i;
-      for (j=0; j<i; ++j) {
-	min_r = std::min(r_i, r_and_N[j]);
-	F(i,j) = (min_r - 1.) / min_r;
-      }
-    }
-    break;
-  }
-  /*
-  // Weighted RD is not well-motivated as a root DAG; preferable to use ACV-IS
-  // --> map an RD user spec to GenACV and default to hierarch DAG as in MFMC
-  //     (allow DAG selection, model selection, both, neither)
-  // --> No "ACV_RD" implemented in this class for root DAG case
-  case SUBMETHOD_ACV_RD: {
-    // TO DO: convert r_and_N to N_vec
-    Real z1_i, z2_i, N_H = N_vec[numApprox];
-    for (i=0; i<numApprox; ++i) {
-      z1_i = N_H;            // z1s = z2t
-      z2_i = N_vec[i] - N_H; // z2i = N_vec[source] - z1s
-      //gVec[i] = 1./z1_i;
-      GMat(i,i) = 1./z2_i + 1./z1_i;
-      for (j=0; j<i; ++j) {
-	GMat(i,j) = 1./z1_i;
-	// From GenACV-RD:
-	//if (tgt_i == tgt_j) GMat(i,j) += 1./z1_i; // always true
-	//if (tgt_i == src_j) GMat(i,j) -= 1./z1_i; // always false for root dag
-	//if (src_i == tgt_j) GMat(i,j) -= 1./z2_i; // always false for root dag
-	//if (src_i == src_j) GMat(i,j) += 1./z2_i; // diagonal
-      }
-    }
-    // TO DO: convert GMat to F (and resolve gVec)
-    break;
-  }
-  */
-  default:
-    Cerr << "Error: bad sub-method name (" << mlmfSubMethod
-	 << ") in NonDACVSampling::compute_F_matrix()" << std::endl;
-    abort_handler(METHOD_ERROR); break;
-  }
-
-  if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "Given r_and_N vector:\n" << r_and_N << "F matrix for sub-method "
-	 << mlmfSubMethod << ":\n" << F << std::endl;
+  soln.anchored_solution_ratios(avg_eval_ratios, hf_target);
 }
 
 
@@ -631,6 +575,30 @@ compute_C_F_c_f(const RealSymMatrix& C, const RealSymMatrix& F,
 }
 
 
+inline void NonDACVSampling::
+solve_for_C_F_c_f(RealSymMatrix& C_F, RealVector& c_f, RealVector& lhs,
+		  bool copy_C_F, bool copy_c_f)
+{
+  // The idea behind this approach is to leverage both the solution refinement
+  // in solve() and equilibration during factorization (inverting C_F in place
+  // can only leverage the latter).
+
+  size_t n = c_f.length();
+  lhs.size(n); // not sure if initialization matters here...
+
+  if (hardenNumericSoln) {
+    RealMatrix C_F_inv;  Real rcond;
+    pseudo_inverse(C_F, C_F_inv, rcond);
+    lhs.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1., C_F_inv, c_f, 0.);
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "ACV pseudo-inverse solve for LHS:\n" << lhs << "has rcond = "
+	   << rcond << std::endl;
+  }
+  else
+    cholesky_solve(C_F, lhs, c_f, copy_C_F, copy_c_f);
+}
+
+
 inline Real NonDACVSampling::
 solve_for_triple_product(const RealSymMatrix& C, const RealSymMatrix& F,
 			 const RealMatrix&    c, size_t qoi)
@@ -676,14 +644,12 @@ estimator_variance_ratios(const RealVector& cd_vars, RealVector& estvar_ratios)
   RealSymMatrix F;
   switch (optSubProblemForm) {
   case N_MODEL_LINEAR_OBJECTIVE:  case N_MODEL_LINEAR_CONSTRAINT: {
-    RealVector r;  copy_data_partial(cd_vars, 0, (int)numApprox, r); // N_i
-    r.scale(1./cd_vars[numApprox]); // r_i = N_i / N
-    compute_F_matrix(r, F);
+    compute_F_matrix_from_N(cd_vars, F);
     break;
   }
   case R_ONLY_LINEAR_CONSTRAINT: // N is a vector constant for opt sub-problem
   case R_AND_N_NONLINEAR_CONSTRAINT:
-    compute_F_matrix(cd_vars, F); // admits r as leading numApprox terms
+    compute_F_matrix_from_r(cd_vars, F); // admits r as leading numApprox terms
     break;
   }
   // compute ACV estimator variance given F
@@ -764,10 +730,7 @@ solve_for_acv_control(const RealSymMatrix& cov_LL, const RealSymMatrix& F,
 
 inline void NonDACVSampling::
 precompute_acv_controls(const RealVector& avg_eval_ratios)
-{
-  //RealSymMatrix F;
-  compute_F_matrix(avg_eval_ratios, FMat);
-}
+{ compute_F_matrix_from_r(avg_eval_ratios, FMat); }
 
 
 inline void NonDACVSampling::
@@ -788,6 +751,56 @@ compute_acv_control(const RealMatrix& sum_L_m, Real sum_H_mq,
 				    N_shared_q, qoi, cov_LL, cov_LH);
     // forward to overload:
     solve_for_acv_control(cov_LL, FMat, cov_LH, qoi, beta);
+  }
+}
+
+
+inline void NonDACVSampling::update_model_groups()
+{
+  // Note: model selection case handled by NonDDGenACV, so here numGroups
+  // is the total number of model instances
+  if (modelGroups.size() != numGroups)
+    modelGroups.resize(numGroups);
+  switch (mlmfSubMethod) {
+  case SUBMETHOD_ACV_MF:
+    for (size_t g=0; g<numGroups; ++g)
+      mfmc_model_group(g, modelGroups[g]);
+    break;
+  case SUBMETHOD_ACV_IS:
+    for (size_t g=0; g<numGroups; ++g)
+      cvmc_model_group(g, modelGroups[g]);
+    break;
+  case SUBMETHOD_ACV_RD:
+    for (size_t g=0; g<numGroups; ++g)
+      mlmc_model_group(g, modelGroups[g]);
+    break;
+  }
+}
+
+
+inline void NonDACVSampling::
+update_model_groups(const SizetArray& approx_sequence)
+{
+  if (approx_sequence.empty())
+    { update_model_groups(); return; }
+
+  // Note: model selection case handled by NonDDGenACV, so here numGroups
+  // is the total number of model instances
+  if (modelGroups.size() != numGroups)
+    modelGroups.resize(numGroups);
+  switch (mlmfSubMethod) {
+  case SUBMETHOD_ACV_MF:
+    for (size_t g=0; g<numGroups; ++g)
+      mfmc_model_group(g, approx_sequence, modelGroups[g]);
+    break;
+  case SUBMETHOD_ACV_IS:
+    for (size_t g=0; g<numGroups; ++g)
+      cvmc_model_group(g, approx_sequence, modelGroups[g]);
+    break;
+  case SUBMETHOD_ACV_RD:
+    for (size_t g=0; g<numGroups; ++g)
+      mlmc_model_group(g, approx_sequence, modelGroups[g]);
+    break;
   }
 }
 
