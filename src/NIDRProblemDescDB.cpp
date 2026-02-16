@@ -2925,6 +2925,16 @@ static void Vgen_ExponentialUnc(DataVariablesRep *dv, size_t offset)
     else        (*V)[i] = mean;
   }
 
+
+  // Copy computed bounds to per-type variables
+  { RealVector& lb = dv->exponentialUncLowerBnds;
+    RealVector& ub = dv->exponentialUncUpperBnds;
+    lb.sizeUninitialized(n); ub.sizeUninitialized(n);
+    for (i = offset, j = 0; j < n; ++i, ++j) {
+      lb[j] = (*L)[i]; ub[j] = (*U)[i];
+    }
+  }
+
   // Copy final values back to per-type variable
   if (!IP->length())
     IP->sizeUninitialized(n);
@@ -3006,6 +3016,16 @@ static void Vgen_GammaUnc(DataVariablesRep *dv, size_t offset)
     else        (*V)[i] = mean;
   }
 
+
+  // Copy computed bounds to per-type variables
+  { RealVector& lb = dv->gammaUncLowerBnds;
+    RealVector& ub = dv->gammaUncUpperBnds;
+    lb.sizeUninitialized(n); ub.sizeUninitialized(n);
+    for (i = offset, j = 0; j < n; ++i, ++j) {
+      lb[j] = (*L)[i]; ub[j] = (*U)[i];
+    }
+  }
+
   // Copy final values back to per-type variable
   if (!IP->length())
     IP->sizeUninitialized(n);
@@ -3042,6 +3062,16 @@ static void Vgen_GumbelUnc(DataVariablesRep *dv, size_t offset)
     (*U)[i] = mean + 3.*stdev;
     if (num_IP) (*V)[i] = (*IP)[j];
     else        (*V)[i] = mean;
+  }
+
+
+  // Copy computed bounds to per-type variables
+  { RealVector& lb = dv->gumbelUncLowerBnds;
+    RealVector& ub = dv->gumbelUncUpperBnds;
+    lb.sizeUninitialized(n); ub.sizeUninitialized(n);
+    for (i = offset, j = 0; j < n; ++i, ++j) {
+      lb[j] = (*L)[i]; ub[j] = (*U)[i];
+    }
   }
 
   // Copy final values back to per-type variable
@@ -3082,6 +3112,16 @@ static void Vgen_FrechetUnc(DataVariablesRep *dv, size_t offset)
     else        (*V)[i] = mean;
   }
 
+
+  // Copy computed bounds to per-type variables
+  { RealVector& lb = dv->frechetUncLowerBnds;
+    RealVector& ub = dv->frechetUncUpperBnds;
+    lb.sizeUninitialized(n); ub.sizeUninitialized(n);
+    for (i = offset, j = 0; j < n; ++i, ++j) {
+      lb[j] = (*L)[i]; ub[j] = (*U)[i];
+    }
+  }
+
   // Copy final values back to per-type variable
   if (!IP->length())
     IP->sizeUninitialized(n);
@@ -3118,6 +3158,16 @@ static void Vgen_WeibullUnc(DataVariablesRep *dv, size_t offset)
     (*U)[i] = mean + 3.*stdev;
     if (num_IP) (*V)[i] = (*IP)[j];
     else        (*V)[i] = mean;
+  }
+
+
+  // Copy computed bounds to per-type variables
+  { RealVector& lb = dv->weibullUncLowerBnds;
+    RealVector& ub = dv->weibullUncUpperBnds;
+    lb.sizeUninitialized(n); ub.sizeUninitialized(n);
+    for (i = offset, j = 0; j < n; ++i, ++j) {
+      lb[j] = (*L)[i]; ub[j] = (*U)[i];
+    }
   }
 
   // Copy final values back to per-type variable
@@ -3246,6 +3296,16 @@ static void Vgen_HistogramBinUnc(DataVariablesRep *dv, size_t offset)
 	moments_from_params(hist_bin_pairs, (*V)[i], stdev);
   }
 
+
+  // Copy computed bounds to per-type variables
+  { RealVector& lb = dv->histogramBinUncLowerBnds;
+    RealVector& ub = dv->histogramBinUncUpperBnds;
+    lb.sizeUninitialized(n); ub.sizeUninitialized(n);
+    for (i = offset, j = 0; j < n; ++i, ++j) {
+      lb[j] = (*L)[i]; ub[j] = (*U)[i];
+    }
+  }
+
   // Copy final values back to per-type variable
   if (!IP->length())
     IP->sizeUninitialized(n);
@@ -3280,6 +3340,16 @@ static void Vgen_PoissonUnc(DataVariablesRep *dv, size_t offset)
     (*U)[i] = (int)std::ceil(mean + 3.*std_dev);
     if (num_IP) (*V)[i] = (*IP)[j];
     else        (*V)[i] = (int)mean;
+  }
+
+
+  // Copy computed bounds to per-type variables
+  { IntVector& lb = dv->poissonUncLowerBnds;
+    IntVector& ub = dv->poissonUncUpperBnds;
+    lb.sizeUninitialized(n); ub.sizeUninitialized(n);
+    for (i = offset, j = 0; j < n; ++i, ++j) {
+      lb[j] = (*L)[i]; ub[j] = (*U)[i];
+    }
   }
 
   // Copy final values back to per-type variable
@@ -3325,6 +3395,16 @@ static void Vgen_BinomialUnc(DataVariablesRep *dv, size_t offset)
     }
   }
 
+
+  // Copy computed bounds to per-type variables
+  { IntVector& lb = dv->binomialUncLowerBnds;
+    IntVector& ub = dv->binomialUncUpperBnds;
+    lb.sizeUninitialized(n); ub.sizeUninitialized(n);
+    for (i = offset, j = 0; j < n; ++i, ++j) {
+      lb[j] = (*L)[i]; ub[j] = (*U)[i];
+    }
+  }
+
   // Copy final values back to per-type variable
   if (!IP->length())
     IP->sizeUninitialized(n);
@@ -3367,6 +3447,16 @@ static void Vgen_NegBinomialUnc(DataVariablesRep *dv, size_t offset)
     else                      (*V)[i] = (int)mean;
   }
 
+
+  // Copy computed bounds to per-type variables
+  { IntVector& lb = dv->negBinomialUncLowerBnds;
+    IntVector& ub = dv->negBinomialUncUpperBnds;
+    lb.sizeUninitialized(n); ub.sizeUninitialized(n);
+    for (i = offset, j = 0; j < n; ++i, ++j) {
+      lb[j] = (*L)[i]; ub[j] = (*U)[i];
+    }
+  }
+
   // Copy final values back to per-type variable
   if (!IP->length())
     IP->sizeUninitialized(n);
@@ -3402,6 +3492,16 @@ static void Vgen_GeometricUnc(DataVariablesRep *dv, size_t offset)
     (*U)[i] = (int)std::ceil(mean + 3.*std_dev);
     if (num_IP) (*V)[i] = (*IP)[j];
     else        (*V)[i] = (int)mean;
+  }
+
+
+  // Copy computed bounds to per-type variables
+  { IntVector& lb = dv->geometricUncLowerBnds;
+    IntVector& ub = dv->geometricUncUpperBnds;
+    lb.sizeUninitialized(n); ub.sizeUninitialized(n);
+    for (i = offset, j = 0; j < n; ++i, ++j) {
+      lb[j] = (*L)[i]; ub[j] = (*U)[i];
+    }
   }
 
   // Copy final values back to per-type variable
@@ -3450,6 +3550,16 @@ static void Vgen_HyperGeomUnc(DataVariablesRep *dv, size_t offset)
       Pecos::HypergeometricRandomVariable::
 	moments_from_params((*TP)[j], s, d, mean, std_dev);
       (*V)[i] = (int)mean;
+    }
+  }
+
+
+  // Copy computed bounds to per-type variables
+  { IntVector& lb = dv->hyperGeomUncLowerBnds;
+    IntVector& ub = dv->hyperGeomUncUpperBnds;
+    lb.sizeUninitialized(n); ub.sizeUninitialized(n);
+    for (i = offset, j = 0; j < n; ++i, ++j) {
+      lb[j] = (*L)[i]; ub[j] = (*U)[i];
     }
   }
 
@@ -3583,6 +3693,16 @@ static void Vgen_HistogramPtIntUnc(DataVariablesRep *dv, size_t offset)
     }
   }
 
+
+  // Copy computed bounds to per-type variables
+  { IntVector& lb = dv->histogramPointIntUncLowerBnds;
+    IntVector& ub = dv->histogramPointIntUncUpperBnds;
+    lb.sizeUninitialized(n); ub.sizeUninitialized(n);
+    for (i = offset, j = 0; j < n; ++i, ++j) {
+      lb[j] = L[i]; ub[j] = U[i];
+    }
+  }
+
   // Copy final values back to per-type variable
   if (!IP.length())
     IP.sizeUninitialized(n);
@@ -3712,6 +3832,16 @@ static void Vgen_HistogramPtStrUnc(DataVariablesRep *dv, size_t offset)
     }
   }
 
+
+  // Copy computed bounds to per-type variables
+  { StringArray& lb = dv->histogramPointStrUncLowerBnds;
+    StringArray& ub = dv->histogramPointStrUncUpperBnds;
+    lb.resize(n); ub.resize(n);
+    for (i = offset, j = 0; j < n; ++i, ++j) {
+      lb[j] = L[i]; ub[j] = U[i];
+    }
+  }
+
   // Copy final values back to per-type variable
   if (!IP.size())
     IP.resize(n);
@@ -3837,6 +3967,16 @@ static void Vgen_HistogramPtRealUnc(DataVariablesRep *dv, size_t offset)
 	// initialize with value closest to mean
 	V[i] = (mean - right_val < left_val - mean) ? right_val : left_val;
       }
+    }
+  }
+
+
+  // Copy computed bounds to per-type variables
+  { RealVector& lb = dv->histogramPointRealUncLowerBnds;
+    RealVector& ub = dv->histogramPointRealUncUpperBnds;
+    lb.sizeUninitialized(n); ub.sizeUninitialized(n);
+    for (i = offset, j = 0; j < n; ++i, ++j) {
+      lb[j] = L[i]; ub[j] = U[i];
     }
   }
 
@@ -3990,6 +4130,16 @@ static void Vgen_ContinuousIntervalUnc(DataVariablesRep *dv, size_t offset)
     // TO DO: if disjoint cells, repair V[i] to lie inside nearest cell
   }
 
+
+  // Copy computed bounds to per-type variables
+  { RealVector& lb = dv->continuousIntervalUncLowerBnds;
+    RealVector& ub = dv->continuousIntervalUncUpperBnds;
+    lb.sizeUninitialized(n); ub.sizeUninitialized(n);
+    for (i = offset, j = 0; j < n; ++i, ++j) {
+      lb[j] = (*ceuLB)[i]; ub[j] = (*ceuUB)[i];
+    }
+  }
+
   // Copy final values back to per-type variable
   if (!IP->length())
     IP->sizeUninitialized(n);
@@ -4117,6 +4267,16 @@ static void Vgen_DiscreteIntervalUnc(DataVariablesRep *dv, size_t offset)
     else
       (*V)[i] = (lb + ub) / 2; // int truncation if odd sum
     // TO DO: if disjoint cells, repair V[offset] to lie inside nearest cell
+  }
+
+
+  // Copy computed bounds to per-type variables
+  { IntVector& lb = dv->discreteIntervalUncLowerBnds;
+    IntVector& ub = dv->discreteIntervalUncUpperBnds;
+    lb.sizeUninitialized(n); ub.sizeUninitialized(n);
+    for (i = offset, j = 0; j < n; ++i, ++j) {
+      lb[j] = (*deuLB)[i]; ub[j] = (*deuUB)[i];
+    }
   }
 
   // Copy final values back to per-type variable
@@ -4899,6 +5059,18 @@ static void Vgen_DiscreteUncSetInt(DataVariablesRep *dv, size_t offset)
 	     dv->discreteIntEpistemicUncVars, true, offset);
   if (dv->discreteUncSetIntVars.length()) dv->uncertainVarsInitPt = true;
 
+  // Copy computed bounds to per-type variables
+  { size_t n = dv->numDiscreteUncSetIntVars;
+    IntVector& lb = dv->discreteUncSetIntLowerBnds;
+    IntVector& ub = dv->discreteUncSetIntUpperBnds;
+    IntVector& L = dv->discreteIntEpistemicUncLowerBnds;
+    IntVector& U = dv->discreteIntEpistemicUncUpperBnds;
+    lb.sizeUninitialized(n); ub.sizeUninitialized(n);
+    for (size_t i = offset, j = 0; j < n; ++i, ++j) {
+      lb[j] = L[i]; ub[j] = U[i];
+    }
+  }
+
   // Copy final values back to per-type variable
   { size_t n = dv->numDiscreteUncSetIntVars;
     IntVector& IP = dv->discreteUncSetIntVars;
@@ -4925,6 +5097,18 @@ static void Vgen_DiscreteUncSetStr(DataVariablesRep *dv, size_t offset)
 	     dv->discreteStrEpistemicUncVars, true, offset);
   if (dv->discreteUncSetStrVars.size()) dv->uncertainVarsInitPt = true;
 
+  // Copy computed bounds to per-type variables
+  { size_t n = dv->numDiscreteUncSetStrVars;
+    StringArray& lb = dv->discreteUncSetStrLowerBnds;
+    StringArray& ub = dv->discreteUncSetStrUpperBnds;
+    StringArray& L = dv->discreteStrEpistemicUncLowerBnds;
+    StringArray& U = dv->discreteStrEpistemicUncUpperBnds;
+    lb.resize(n); ub.resize(n);
+    for (size_t i = offset, j = 0; j < n; ++i, ++j) {
+      lb[j] = L[i]; ub[j] = U[i];
+    }
+  }
+
   // Copy final values back to per-type variable
   { size_t n = dv->numDiscreteUncSetStrVars;
     StringArray& IP = dv->discreteUncSetStrVars;
@@ -4950,6 +5134,18 @@ static void Vgen_DiscreteUncSetReal(DataVariablesRep *dv, size_t offset)
 	     dv->discreteRealEpistemicUncUpperBnds,
 	     dv->discreteRealEpistemicUncVars, true, offset);
   if (dv->discreteUncSetRealVars.length()) dv->uncertainVarsInitPt = true;
+
+  // Copy computed bounds to per-type variables
+  { size_t n = dv->numDiscreteUncSetRealVars;
+    RealVector& lb = dv->discreteUncSetRealLowerBnds;
+    RealVector& ub = dv->discreteUncSetRealUpperBnds;
+    RealVector& L = dv->discreteRealEpistemicUncLowerBnds;
+    RealVector& U = dv->discreteRealEpistemicUncUpperBnds;
+    lb.sizeUninitialized(n); ub.sizeUninitialized(n);
+    for (size_t i = offset, j = 0; j < n; ++i, ++j) {
+      lb[j] = L[i]; ub[j] = U[i];
+    }
+  }
 
   // Copy final values back to per-type variable
   { size_t n = dv->numDiscreteUncSetRealVars;
@@ -5752,6 +5948,76 @@ make_variable_defaults(std::list<DataVariables>* dvl)
 	if (sa->size() == 0)
 	  BuildLabels(sa, n, 0, n, vlc->stub);
       }
+
+    // ================================================================
+    // Distribute aggregate labels to per-type label members
+    // ================================================================
+    {
+      size_t offset;
+
+      // Continuous aleatory uncertain labels
+      offset = 0;
+      const StringArray& cauL = dv->continuousAleatoryUncLabels;
+      auto copy_labels = [](const StringArray& agg, size_t& off, size_t n, StringArray& dst) {
+        if (n == 0) return;
+        dst.resize(n);
+        for (size_t j = 0; j < n; ++j) dst[j] = agg[off + j];
+        off += n;
+      };
+      copy_labels(cauL, offset, dv->numNormalUncVars,       dv->normalUncLabels);
+      copy_labels(cauL, offset, dv->numLognormalUncVars,    dv->lognormalUncLabels);
+      copy_labels(cauL, offset, dv->numUniformUncVars,      dv->uniformUncLabels);
+      copy_labels(cauL, offset, dv->numLoguniformUncVars,   dv->loguniformUncLabels);
+      copy_labels(cauL, offset, dv->numTriangularUncVars,   dv->triangularUncLabels);
+      copy_labels(cauL, offset, dv->numExponentialUncVars,  dv->exponentialUncLabels);
+      copy_labels(cauL, offset, dv->numBetaUncVars,         dv->betaUncLabels);
+      copy_labels(cauL, offset, dv->numGammaUncVars,        dv->gammaUncLabels);
+      copy_labels(cauL, offset, dv->numGumbelUncVars,       dv->gumbelUncLabels);
+      copy_labels(cauL, offset, dv->numFrechetUncVars,      dv->frechetUncLabels);
+      copy_labels(cauL, offset, dv->numWeibullUncVars,      dv->weibullUncLabels);
+      copy_labels(cauL, offset, dv->numHistogramBinUncVars, dv->histogramBinUncLabels);
+
+      // Discrete int aleatory uncertain labels
+      offset = 0;
+      const StringArray& diauL = dv->discreteIntAleatoryUncLabels;
+      copy_labels(diauL, offset, dv->numPoissonUncVars,       dv->poissonUncLabels);
+      copy_labels(diauL, offset, dv->numBinomialUncVars,      dv->binomialUncLabels);
+      copy_labels(diauL, offset, dv->numNegBinomialUncVars,   dv->negBinomialUncLabels);
+      copy_labels(diauL, offset, dv->numGeometricUncVars,     dv->geometricUncLabels);
+      copy_labels(diauL, offset, dv->numHyperGeomUncVars,     dv->hyperGeomUncLabels);
+      copy_labels(diauL, offset, dv->numHistogramPtIntUncVars, dv->histogramPointIntUncLabels);
+
+      // Discrete string aleatory uncertain labels
+      offset = 0;
+      const StringArray& dsauL = dv->discreteStrAleatoryUncLabels;
+      copy_labels(dsauL, offset, dv->numHistogramPtStrUncVars, dv->histogramPointStrUncLabels);
+
+      // Discrete real aleatory uncertain labels
+      offset = 0;
+      const StringArray& drauL = dv->discreteRealAleatoryUncLabels;
+      copy_labels(drauL, offset, dv->numHistogramPtRealUncVars, dv->histogramPointRealUncLabels);
+
+      // Continuous epistemic uncertain labels
+      offset = 0;
+      const StringArray& ceuL = dv->continuousEpistemicUncLabels;
+      copy_labels(ceuL, offset, dv->numContinuousIntervalUncVars, dv->continuousIntervalUncLabels);
+
+      // Discrete int epistemic uncertain labels
+      offset = 0;
+      const StringArray& dieuL = dv->discreteIntEpistemicUncLabels;
+      copy_labels(dieuL, offset, dv->numDiscreteIntervalUncVars, dv->discreteIntervalUncLabels);
+      copy_labels(dieuL, offset, dv->numDiscreteUncSetIntVars,   dv->discreteUncSetIntLabels);
+
+      // Discrete string epistemic uncertain labels
+      offset = 0;
+      const StringArray& dseuL = dv->discreteStrEpistemicUncLabels;
+      copy_labels(dseuL, offset, dv->numDiscreteUncSetStrVars, dv->discreteUncSetStrLabels);
+
+      // Discrete real epistemic uncertain labels
+      offset = 0;
+      const StringArray& dreuL = dv->discreteRealEpistemicUncLabels;
+      copy_labels(dreuL, offset, dv->numDiscreteUncSetRealVars, dv->discreteUncSetRealLabels);
+    }
   }
 }
 

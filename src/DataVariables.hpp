@@ -120,12 +120,16 @@ public:
   /// number of lognormal uncertain variables (from the \c lognormal_uncertain
   /// specification in \ref VarAUV)
   size_t numLognormalUncVars;
+  /// per-type labels for normalUnc variables
+  StringArray normalUncLabels;
   /// number of uniform uncertain variables (from the \c uniform_uncertain
   /// specification in \ref VarAUV)
   size_t numUniformUncVars;
   /// number of loguniform uncertain variables (from the \c
   /// loguniform_uncertain specification in \ref VarAUV)
   size_t numLoguniformUncVars;
+  /// per-type labels for uniformUnc variables
+  StringArray uniformUncLabels;
   /// number of triangular uncertain variables (from the \c
   /// triangular_uncertain specification in \ref VarAUV)
   size_t numTriangularUncVars;
@@ -343,6 +347,8 @@ public:
   /// initial values of the lognormal uncertain variables (from the \c
   /// initial_point specification in \ref VarCAUV_Lognormal)
   RealVector lognormalUncVars;
+  /// per-type labels for lognormalUnc variables
+  StringArray lognormalUncLabels;
   /// distribution lower bounds for the uniform uncertain variables
   /// (from the \c lower_bounds specification in \ref VarCAUV_Uniform)
   RealVector uniformUncLowerBnds;
@@ -361,6 +367,8 @@ public:
   /// initial values of the loguniform uncertain variables (from the \c
   /// initial_point specification in \ref VarCAUV_Loguniform)
   RealVector loguniformUncVars;
+  /// per-type labels for loguniformUnc variables
+  StringArray loguniformUncLabels;
   /// modes of the triangular uncertain variables (from the \c modes
   /// specification in \ref VarCAUV_Triangular)
   RealVector triangularUncModes;
@@ -373,12 +381,20 @@ public:
   /// initial values of the triangular uncertain variables (from the \c
   /// initial_point specification in \ref VarCAUV_Triangular)
   RealVector triangularUncVars;
+  /// per-type labels for triangularUnc variables
+  StringArray triangularUncLabels;
   /// beta factors for the exponential uncertain variables (from
   /// the \c betas specification in \ref VarCAUV_Exponential)
   RealVector exponentialUncBetas;
   /// initial values of the exponential uncertain variables (from the \c
   /// initial_point specification in \ref VarCAUV_Exponential)
   RealVector exponentialUncVars;
+  /// computed lower bounds for the exponential uncertain variables
+  RealVector exponentialUncLowerBnds;
+  /// computed upper bounds for the exponential uncertain variables
+  RealVector exponentialUncUpperBnds;
+  /// per-type labels for exponentialUnc variables
+  StringArray exponentialUncLabels;
   /// alpha factors for the beta uncertain variables (from
   /// the \c means specification in \ref VarCAUV_Beta)
   RealVector betaUncAlphas;
@@ -394,6 +410,8 @@ public:
   /// initial values of the beta uncertain variables (from the \c
   /// initial_point specification in \ref VarCAUV_Beta)
   RealVector betaUncVars;
+  /// per-type labels for betaUnc variables
+  StringArray betaUncLabels;
   /// alpha factors for the gamma uncertain variables (from
   /// the \c alphas specification in \ref VarCAUV_Gamma)
   RealVector gammaUncAlphas;
@@ -403,6 +421,12 @@ public:
   /// initial values of the gamma uncertain variables (from the \c
   /// initial_point specification in \ref VarCAUV_Gamma)
   RealVector gammaUncVars;
+  /// per-type labels for gammaUnc variables
+  StringArray gammaUncLabels;
+  /// computed lower bounds for the gamma uncertain variables
+  RealVector gammaUncLowerBnds;
+  /// computed upper bounds for the gamma uncertain variables
+  RealVector gammaUncUpperBnds;
   /// alpha factors for the gumbel uncertain variables (from the \c
   /// alphas specification in \ref VarCAUV_Gumbel)
   RealVector gumbelUncAlphas;
@@ -412,6 +436,12 @@ public:
   /// initial values of the gumbel uncertain variables (from the \c
   /// initial_point specification in \ref VarCAUV_Gumbel)
   RealVector gumbelUncVars;
+  /// per-type labels for gumbelUnc variables
+  StringArray gumbelUncLabels;
+  /// computed lower bounds for the gumbel uncertain variables
+  RealVector gumbelUncLowerBnds;
+  /// computed upper bounds for the gumbel uncertain variables
+  RealVector gumbelUncUpperBnds;
   /// alpha factors for the frechet uncertain variables (from
   /// the \c alphas specification in \ref VarCAUV_Frechet)
   RealVector frechetUncAlphas;
@@ -421,6 +451,12 @@ public:
   /// initial values of the frechet uncertain variables (from the \c
   /// initial_point specification in \ref VarCAUV_Frechet)
   RealVector frechetUncVars;
+  /// per-type labels for frechetUnc variables
+  StringArray frechetUncLabels;
+  /// computed lower bounds for the frechet uncertain variables
+  RealVector frechetUncLowerBnds;
+  /// computed upper bounds for the frechet uncertain variables
+  RealVector frechetUncUpperBnds;
   /// alpha factors for the weibull uncertain variables (from
   /// the \c alphas specification in \ref VarCAUV_Weibull)
   RealVector weibullUncAlphas;
@@ -430,6 +466,12 @@ public:
   /// initial values of the weibull uncertain variables (from the \c
   /// initial_point specification in \ref VarCAUV_Weibull)
   RealVector weibullUncVars;
+  /// per-type labels for weibullUnc variables
+  StringArray weibullUncLabels;
+  /// computed lower bounds for the weibull uncertain variables
+  RealVector weibullUncLowerBnds;
+  /// computed upper bounds for the weibull uncertain variables
+  RealVector weibullUncUpperBnds;
 
   /// An array for each real-valued bin-based histogram uncertain variable.
   /// Each array entry is a map from a real value to its probability (from the
@@ -442,6 +484,12 @@ public:
   /// initial values of the histogram bin uncertain variables (from the
   /// \c initial_point specification in \ref VarCAUV_Bin_Histogram)
   RealVector histogramBinUncVars;
+  /// computed lower bounds for the histogram bin uncertain variables
+  RealVector histogramBinUncLowerBnds;
+  /// computed upper bounds for the histogram bin uncertain variables
+  RealVector histogramBinUncUpperBnds;
+  /// per-type labels for histogramBinUnc variables
+  StringArray histogramBinUncLabels;
 
   // discrete types
 
@@ -451,6 +499,12 @@ public:
   /// initial values of the poisson uncertain variables (from the \c
   /// initial_point specification in \ref VarDAUV_Poisson)
   IntVector poissonUncVars;
+  /// computed lower bounds for the poisson uncertain variables
+  IntVector poissonUncLowerBnds;
+  /// computed upper bounds for the poisson uncertain variables
+  IntVector poissonUncUpperBnds;
+  /// per-type labels for poissonUnc variables
+  StringArray poissonUncLabels;
   /// is each poisson var strictly categorical (true) or relaxable (false)
   BitArray poissonUncCat;
 
@@ -463,6 +517,12 @@ public:
   /// initial values of the binomial uncertain variables (from the \c
   /// initial_point specification in \ref VarDAUV_Binomial)
   IntVector binomialUncVars;
+  /// computed lower bounds for the binomial uncertain variables
+  IntVector binomialUncLowerBnds;
+  /// computed upper bounds for the binomial uncertain variables
+  IntVector binomialUncUpperBnds;
+  /// per-type labels for binomialUnc variables
+  StringArray binomialUncLabels;
   /// is each binomial var strictly categorical (true) or relaxable (false)
   BitArray binomialUncCat;
 
@@ -476,6 +536,12 @@ public:
   /// initial values of the negative binomial uncertain variables (from the
   /// \c initial_point specification in \ref VarDAUV_Negative_Binomial)
   IntVector negBinomialUncVars;
+  /// computed lower bounds for the negative binomial uncertain variables
+  IntVector negBinomialUncLowerBnds;
+  /// computed upper bounds for the negative binomial uncertain variables
+  IntVector negBinomialUncUpperBnds;
+  /// per-type labels for negBinomialUnc variables
+  StringArray negBinomialUncLabels;
   /// is each negbinomial var strictly categorical (true) or relaxable (false)
   BitArray negBinomialUncCat;
 
@@ -485,6 +551,12 @@ public:
   /// initial values of the geometric uncertain variables (from the \c
   /// initial_point specification in \ref VarDAUV_Geometric)
   IntVector geometricUncVars;
+  /// computed lower bounds for the geometric uncertain variables
+  IntVector geometricUncLowerBnds;
+  /// computed upper bounds for the geometric uncertain variables
+  IntVector geometricUncUpperBnds;
+  /// per-type labels for geometricUnc variables
+  StringArray geometricUncLabels;
   /// is each geometric var strictly categorical (true) or relaxable (false)
   BitArray geometricUncCat;
 
@@ -501,6 +573,12 @@ public:
   /// initial values of the hypergeometric uncertain variables (from the
   /// \c initial_point specification in \ref VarDAUV_Hypergeometric)
   IntVector hyperGeomUncVars;
+  /// computed lower bounds for the hypergeometric uncertain variables
+  IntVector hyperGeomUncLowerBnds;
+  /// computed upper bounds for the hypergeometric uncertain variables
+  IntVector hyperGeomUncUpperBnds;
+  /// per-type labels for hyperGeomUnc variables
+  StringArray hyperGeomUncLabels;
   /// is each hypergeom var strictly categorical (true) or relaxable (false)
   BitArray hyperGeomUncCat;
 
@@ -514,6 +592,12 @@ public:
   /// variables (from the \c initial_point specification in \ref
   /// VarDAUV_Point_Histogram)
   IntVector histogramPointIntUncVars;
+  /// per-type labels for histogramPointIntUnc variables
+  StringArray histogramPointIntUncLabels;
+  /// computed lower bounds for the histogram point int uncertain variables
+  IntVector histogramPointIntUncLowerBnds;
+  /// computed upper bounds for the histogram point int uncertain variables
+  IntVector histogramPointIntUncUpperBnds;
   /// is each hupi var strictly categorical (true) or relaxable (false)
   BitArray histogramUncPointIntCat;
  
@@ -527,6 +611,12 @@ public:
   /// variables (from the \c initial_point specification in \ref
   /// VarDAUV_Point_Histogram)
   StringArray histogramPointStrUncVars;
+  /// per-type labels for histogramPointStrUnc variables
+  StringArray histogramPointStrUncLabels;
+  /// computed lower bounds for the histogram point string uncertain variables
+  StringArray histogramPointStrUncLowerBnds;
+  /// computed upper bounds for the histogram point string uncertain variables
+  StringArray histogramPointStrUncUpperBnds;
   // string variables cannot be relaxed, no categorical option
 
   /// An array for each real-valued point-based histogram uncertain
@@ -539,6 +629,12 @@ public:
   /// variables (from the \c initial_point specification in \ref
   /// VarDAUV_Point_Histogram)
   RealVector histogramPointRealUncVars;
+  /// per-type labels for histogramPointRealUnc variables
+  StringArray histogramPointRealUncLabels;
+  /// computed lower bounds for the histogram point real uncertain variables
+  RealVector histogramPointRealUncLowerBnds;
+  /// computed upper bounds for the histogram point real uncertain variables
+  RealVector histogramPointRealUncUpperBnds;
   /// is each hupr var strictly categorical (true) or relaxable (false)
   BitArray histogramUncPointRealCat;
 
@@ -558,6 +654,12 @@ public:
   /// initial values of the continuous interval uncertain variables
   /// (from the \c initial_point specification in \ref VarCEUV_Interval)
   RealVector continuousIntervalUncVars;
+  /// computed lower bounds for the continuous interval uncertain variables
+  RealVector continuousIntervalUncLowerBnds;
+  /// computed upper bounds for the continuous interval uncertain variables
+  RealVector continuousIntervalUncUpperBnds;
+  /// per-type labels for continuousIntervalUnc variables
+  StringArray continuousIntervalUncLabels;
 
   /// Probability values per interval cell per epistemic interval uncertain
   /// variable (from the \c discrete_interval_uncertain \c interval_probs
@@ -566,6 +668,12 @@ public:
   /// initial values of the discrete interval uncertain variables
   /// (from the \c initial_point specification in \ref VarDIUV)
   IntVector discreteIntervalUncVars;
+  /// computed lower bounds for the discrete interval uncertain variables
+  IntVector discreteIntervalUncLowerBnds;
+  /// computed upper bounds for the discrete interval uncertain variables
+  IntVector discreteIntervalUncUpperBnds;
+  /// per-type labels for discreteIntervalUnc variables
+  StringArray discreteIntervalUncLabels;
   /// is each diu var strictly categorical (true) or relaxable (false)
   BitArray discreteIntervalUncCat;
 
@@ -577,6 +685,12 @@ public:
   /// initial values of the discrete uncertain set integer variables
   /// (from the \c initial_point specification in \ref VarDUSIV)
   IntVector discreteUncSetIntVars;
+  /// computed lower bounds for the discrete uncertain set int variables
+  IntVector discreteUncSetIntLowerBnds;
+  /// computed upper bounds for the discrete uncertain set int variables
+  IntVector discreteUncSetIntUpperBnds;
+  /// per-type labels for discreteUncSetInt variables
+  StringArray discreteUncSetIntLabels;
   /// is each dusi var strictly categorical (true) or relaxable (false)
   BitArray discreteUncSetIntCat;
 
@@ -588,6 +702,12 @@ public:
   /// initial values of the discrete uncertain set integer variables
   /// (from the \c initial_point specification in \ref VarDUSIV)
   StringArray discreteUncSetStrVars;
+  /// computed lower bounds for the discrete uncertain set string variables
+  StringArray discreteUncSetStrLowerBnds;
+  /// computed upper bounds for the discrete uncertain set string variables
+  StringArray discreteUncSetStrUpperBnds;
+  /// per-type labels for discreteUncSetStr variables
+  StringArray discreteUncSetStrLabels;
 
   /// complete set of admissible values with associated basic probability
   /// assignments for each of the discrete epistemic uncertain variables
@@ -597,6 +717,12 @@ public:
   /// initial values of the discrete uncertain set real variables
   /// (from the \c initial_point specification in \ref VarDUSRV)
   RealVector discreteUncSetRealVars;
+  /// computed lower bounds for the discrete uncertain set real variables
+  RealVector discreteUncSetRealLowerBnds;
+  /// computed upper bounds for the discrete uncertain set real variables
+  RealVector discreteUncSetRealUpperBnds;
+  /// per-type labels for discreteUncSetReal variables
+  StringArray discreteUncSetRealLabels;
   /// is each dusr var strictly categorical (true) or relaxable (false)
   BitArray discreteUncSetRealCat;
 
