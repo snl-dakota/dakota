@@ -11,6 +11,7 @@
 #define NOND_ACV_SAMPLING_H
 
 #include "NonDNumericAllocSampling.hpp"
+#include "dakota_linear_algebra.hpp"
 //#include "DataMethod.hpp"
 
 
@@ -32,7 +33,8 @@ public:
   //
 
   /// standard constructor
-  NonDACVSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
+  NonDACVSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
+		  std::shared_ptr<Model> model);
   /// destructor
   ~NonDACVSampling() override;
 
@@ -54,6 +56,8 @@ protected:
 
   void estimator_variance_ratios(const RealVector& cd_vars,
 				 RealVector& estvar_ratios) override;
+  void estimator_variance_ratio_gradients(const RealVector& cd_vars,
+					  RealMatrix& evr_grads) override;
 
   //
   //- Heading: member functions
@@ -245,6 +249,16 @@ private:
 
   void compute_F_matrix_from_r(const RealVector& r_and_N, RealSymMatrix& F);
   void compute_F_matrix_from_N(const RealVector& N, RealSymMatrix& F);
+
+  void compute_F_f_gradients_from_N(const RealVector& N,
+				    RealSymMatrixArray& dF_dN,
+				    RealVectorArray& df_dN);
+  void compute_C_F_c_f_gradients(const RealSymMatrix& C, const RealMatrix& c,
+				 size_t qoi, const RealSymMatrixArray& dF_dN,
+				 const RealVectorArray& df_dN,
+				 RealSymMatrixArray& dCF_dN,
+				 RealVectorArray& dcf_dN);
+
   /*
   void invert_CF(const RealSymMatrix& C, const RealSymMatrix& F,
 		 RealSymMatrix& CF_inv);

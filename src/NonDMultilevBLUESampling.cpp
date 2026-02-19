@@ -30,7 +30,8 @@ namespace Dakota {
     probDescDB can be queried for settings from the method specification. */
 NonDMultilevBLUESampling::
 NonDMultilevBLUESampling(ProblemDescDB& problem_db,
-			 ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+			 ParallelLibrary& parallel_lib,
+			 std::shared_ptr<Model> model):
   NonDNumericAllocSampling(problem_db, parallel_lib, model),
   pilotGroupSampling(problem_db.get_short("method.nond.pilot_samples.mode")),
   groupThrottleType(problem_db.get_short("method.nond.group_throttle_type")),
@@ -38,8 +39,8 @@ NonDMultilevBLUESampling(ProblemDescDB& problem_db,
   rCondBestThrottle(problem_db.get_sizet("method.nond.rcond_best_throttle")),
   rCondTolThrottle(problem_db.get_real("method.nond.rcond_tol_throttle"))
 {
-  analyticEstVarDerivs = true; // ML BLUE estvar soln has analytic derivatives
-  //hardenNumericSoln  = true; // now adopted for all numerical estimators
+  //analyticEstVarDerivs = true; // now adopted for all numerical estimators
+  //hardenNumericSoln    = true; // now adopted for all numerical estimators
 
   mlmfSubMethod = problem_db.get_ushort("method.sub_method");
 

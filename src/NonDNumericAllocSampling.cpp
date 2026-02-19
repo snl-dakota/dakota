@@ -48,7 +48,7 @@ NonDNumericAllocSampling(ProblemDescDB& problem_db,
   NonDEnsembleSampling(problem_db, parallel_lib, model),
   activeBudget((Real)maxFunctionEvals),
   truthFixedByPilot(problem_db.get_bool("method.nond.truth_fixed_by_pilot")),
-  analyticEstVarDerivs(false),  // true for MFMC and ML BLUE currently
+  analyticEstVarDerivs(true),   // true for MFMC,ACV,GenACV,ML BLUE
   hardenNumericSoln(true),      // Cholesky option not currently exposed in spec
   reorderModelsOnTheFly(false), // active for MFMC
   recurConversion(false)        // protect cyclic estvar/estvar ratio conversion

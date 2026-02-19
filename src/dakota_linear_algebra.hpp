@@ -73,6 +73,13 @@ int cholesky_solve(RealSymMatrix& A, RealMatrix& X, RealMatrix& B,
 		   bool copy_A = false, bool copy_B = false,
 		   bool hard_error = true);
 
+// helper for w^T A w
+//Real symMatVecTripleProduct(ETransp transw, const Real alpha,
+//			    const RealSymMatrix& A, const RealVector& w);
+/// helper for v1^T A v2
+Real symMatVecTripleProduct(const Real alpha,       const RealVector& v1,
+			    const RealSymMatrix& A, const RealVector& v2);
+
 /**
  * \brief Compute an in-place QR factorization A = QR
 

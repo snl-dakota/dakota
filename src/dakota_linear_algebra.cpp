@@ -224,6 +224,37 @@ int qr(RealMatrix& A)
 }
 
 
+/*
+Real symMatVecTripleProduct(Teuchos::ETransp transw, const Real alpha,
+			    const RealSymMatrix& A, const RealVector& w)
+{
+  RealSymMatrix B(1,1);
+  Teuchos::symMatTripleProduct(transw, alpha, A, w, B);
+  return B(0,0);
+}
+*/
+
+
+Real symMatVecTripleProduct(const Real alpha,       const RealVector& v1,
+			    const RealSymMatrix& A, const RealVector& v2)
+{
+  int A_nrc = A.numRows();
+  if (v1.length() != A_nrc || v2.length() != A_nrc) {
+    Cerr << "Error: incompatible vector length in symMatVecTripleProduct()."
+	 << std::endl;
+    abort_handler(-1);
+  }
+
+  // SerialDenseVector(n) is equiv to SerialDenseMatrix(n,1) = a column vector
+  // v1 = nx1, A = nxn, v2 = nx1 --> A * v2 = nx1 (valid column vector)
+
+  // Workspace: size to compute A*v2
+  RealVector A_v2(A_nrc, false);
+  A_v2.multiply( Teuchos::LEFT_SIDE, alpha, A, v2, 0. ); // column vector
+  return A_v2.dot(v1); // inner prod of two column vectors
+}
+
+
 /** Returns info > 0 if the matrix is singular */
 int qr_rsolve(const RealMatrix& q_r, bool transpose, RealMatrix& rhs)
 {

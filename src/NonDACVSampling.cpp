@@ -10,7 +10,6 @@
 #include "dakota_system_defs.hpp"
 #include "dakota_data_io.hpp"
 //#include "dakota_tabular_io.hpp"
-#include "dakota_linear_algebra.hpp"
 #include "DakotaModel.hpp"
 #include "DakotaResponse.hpp"
 #include "NonDACVSampling.hpp"
@@ -579,20 +578,21 @@ compute_F_matrix_from_N(const RealVector& N, RealSymMatrix& F)
   size_t i, j;
   if (F.empty()) F.shapeUninitialized(numApprox);
 
+  Real N_i, N_A = N[numApprox];
   switch (mlmfSubMethod) {
   case SUBMETHOD_MFMC: { // diagonal (see Eq. 16 in JCP ACV paper)
-    size_t num_am1 = numApprox - 1;  Real N_i, N_ip1, N_A = N[numApprox];
+    size_t num_am1 = numApprox - 1;  Real N_ip1;
     for (i=0; i<num_am1; ++i) {
       N_i = N[i]; N_ip1 = N[i+1];
       F(i,i) = N_A * (N_i - N_ip1) / (N_i * N_ip1);
       for (j=0; j<i; ++j) F(i,j) = 0.;
     }
-    N_i = N[num_ip1];
+    N_i = N_ip1;
     F(num_am1,num_am1) = (N_i - N_A) / N_i;
     break;
   }
   case SUBMETHOD_ACV_IS: { // Eq. 30 modified
-    Real Ni_ratio;
+    Real N_j, Ni_ratio;
     for (i=0; i<numApprox; ++i) {
       N_i    = N[i];
       F(i,i) = Ni_ratio = (N_i - N_A) / N_i;
@@ -604,7 +604,7 @@ compute_F_matrix_from_N(const RealVector& N, RealSymMatrix& F)
     break;
   }
   case SUBMETHOD_ACV_MF: { // Eq. 34 modified
-    Real N_i, min_N;
+    Real min_N;
     for (i=0; i<numApprox; ++i) {
       N_i = N[i];  F(i,i) = (N_i - N_A) / N_i;
       for (j=0; j<i; ++j) {
@@ -628,55 +628,58 @@ compute_F_matrix_from_N(const RealVector& N, RealSymMatrix& F)
 
 
 void NonDACVSampling::
-compute_F_gradients_from_N(const RealVector& N, RealSymMatrixArray& dF_dN)
+compute_F_f_gradients_from_N(const RealVector& N, RealSymMatrixArray& dF_dN,
+			     RealVectorArray& df_dN)
 {
   // no dependence on QoI, only dependence is on N
-  size_t i, j, num_N = N.length();
-  if (dF_dN.empty()) {
-    dF_dN.size(num_N);
-    for (i=0; i<num_N; ++i)
+  size_t i, j, v, num_v = N.length();
+  if (dF_dN.empty() || df_dN.empty()) {
+    dF_dN.resize(num_v);  df_dN.resize(num_v);
+    for (i=0; i<num_v; ++i) {
       dF_dN[i].shapeUninitialized(numApprox);
+      df_dN[i].sizeUninitialized(numApprox);
+    }
   }
 
+  Real N_i, N_A = N[numApprox];
   switch (mlmfSubMethod) {
-  case SUBMETHOD_MFMC: { // diagonal (see Eq. 16 in JCP ACV paper)
-    size_t num_am1 = numApprox - 1;  Real N_i, N_ip1, N_A = N[numApprox];
+  case SUBMETHOD_MFMC: // diagonal (see Eq. 16 in JCP ACV paper)
     for (v=0; v<num_v; ++v) {
       RealSymMatrix& dF_dN_v = dF_dN[v];
+      RealVector&    df_dN_v = df_dN[v];
       for (i=0; i<numApprox; ++i) {
 	N_i = N[i];
-	dF_dN_v(i,i) = N_A / (N_i * N_i);
+	dF_dN_v(i,i) = df_dN_v(i) = N_A / (N_i * N_i);
 	for (j=0; j<i; ++j) dF_dN_v(i,j) = 0.;
       }
     }
     break;
-  }
-  case SUBMETHOD_ACV_IS: { // Eq. 30 deriv w.r.t. N
+  case SUBMETHOD_ACV_IS: { // refer to Eq. 30 in JCP ACV paper
     Real Ni_ratio;
     for (v=0; v<num_v; ++v) {
       RealSymMatrix& dF_dN_v = dF_dN[v];
+      RealVector&    df_dN_v = df_dN[v];
       for (i=0; i<numApprox; ++i) {
 	N_i = N[i];  Ni_ratio = (N_i - N_A) / N_i;
-	dF_dN_v(i,i) = N_A / (N_i * N_i);
-	for (j=0; j<i; ++j) {
-	  N_j = N[j];
-	  dF_dN_v(i,j) = Ni_ratio * N_A / (N_j * N_j);
-	}
+	dF_dN_v(i,i) = df_dN_v(i) = N_A / (N_i * N_i);
+	for (j=0; j<i; ++j)
+	  dF_dN_v(i,j) = Ni_ratio * N_A / (N[j] * N[j]);
       }
     }
     break;
   }
-  case SUBMETHOD_ACV_MF: { // Eq. 34 deriv w.r.t. N
-    Real N_i, min_r;
+  case SUBMETHOD_ACV_MF: { // refer to Eq. 34 in JCP ACV paper
+    Real N_j;
     for (v=0; v<num_v; ++v) {
       RealSymMatrix& dF_dN_v = dF_dN[v];
+      RealVector&    df_dN_v = df_dN[v];
       for (i=0; i<numApprox; ++i) {
 	N_i = N[i];
-	dF_dN_v(i,i) = N_A / (N_i * N_i);
+	dF_dN_v(i,i) = df_dN_v(i) = N_A / (N_i * N_i);
 	for (j=0; j<i; ++j) {
 	  N_j = N[j];
 	  // create 2 deriv branches to bypass min
-	  if (N_i < N_j) dF_dN_v(i,j) = 0.; // N_A / (N_i * N_i);
+	  if (N_i < N_j) dF_dN_v(i,j) = 0.;
 	  else           dF_dN_v(i,j) = N_A / (N_j * N_j);
 	}
       }
@@ -686,13 +689,82 @@ compute_F_gradients_from_N(const RealVector& N, RealSymMatrixArray& dF_dN)
   //case SUBMETHOD_ACV_RD:// refer to comments/code in compute_F_matrix_from_r()
   default:
     Cerr << "Error: bad sub-method name (" << mlmfSubMethod
-	 << ") in NonDACVSampling::compute_F_matrix()" << std::endl;
+	 << ") in NonDACVSampling::compute_F_f_gradients()" << std::endl;
     abort_handler(METHOD_ERROR); break;
   }
 
   if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "Given N vector:\n" << N << "F matrix for sub-method "
-	 << mlmfSubMethod << ":\n" << F << std::endl;
+    Cout << "For sub-method " << mlmfSubMethod << ", N vector:\n" << N
+	 << "dF/dN matrix array:\n" << dF_dN
+	 << "df/dN vector array:\n" << df_dN << std::endl;
+}
+
+
+void NonDACVSampling::
+compute_C_F_c_f_gradients(const RealSymMatrix& C, const RealMatrix& c,
+			  size_t qoi, const RealSymMatrixArray& dF_dN,
+			  const RealVectorArray& df_dN,
+			  RealSymMatrixArray& dCF_dN, RealVectorArray& dcf_dN)
+{
+  // no dependence on QoI, only dependence is on N
+  size_t i, j, v, num_v = df_dN.size();
+  if (dCF_dN.empty() || dcf_dN.empty()) {
+    dCF_dN.resize(num_v);  dcf_dN.resize(num_v);
+    for (v=0; v<num_v; ++v) {
+      dCF_dN[v].shapeUninitialized(numApprox);
+      dcf_dN[v].sizeUninitialized(numApprox);
+    }
+  }
+  for (v=0; v<num_v; ++v) {
+    const RealSymMatrix& dF_dN_v =  dF_dN[v];
+    const RealVector&    df_dN_v =  df_dN[v];
+    RealSymMatrix&      dCF_dN_v = dCF_dN[v];
+    RealVector&         dcf_dN_v = dcf_dN[v];
+    for (i=0; i<numApprox; ++i) {
+      dcf_dN_v(i) = c(qoi,i) * dF_dN_v(i,i); // c o df/dN
+      for (j=0; j<=i; ++j)
+	dCF_dN_v(i,j) = C(i,j) * dF_dN_v(i,j);
+    }
+  }
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "For sub-method " << mlmfSubMethod << ":\ndCF/dN matrix array:\n"
+	 << dCF_dN << "dcf/dN vector array:\n" << dcf_dN << std::endl;
+}
+
+
+void NonDACVSampling::
+estimator_variance_ratio_gradients(const RealVector& cd_vars,
+				   RealMatrix& evr_grads)
+{
+  size_t q, v, num_v = numApprox+1;
+  if (evr_grads.numRows() != num_v || evr_grads.numCols() != numFunctions)
+    evr_grads.shapeUninitialized(num_v, numFunctions);
+
+  // d(abc) = abc' + ab'c + a'bc
+  // d[triple_prod]/dN
+  //   = cf^T CF_inv d[cf] + cf^T d[CF_inv] cf + d[cf]^T CF_inv cf
+  // where d[CF_inv] = -CF_inv dCF/dN CF_inv [see also ML BLUE]
+
+  Real rcond;
+  RealSymMatrix      F, CF, CF_inv;  RealVector cf;
+  RealSymMatrixArray dF_dN, dCF_dN;  RealVectorArray df_dN, dcf_dN;
+  compute_F_matrix_from_N(cd_vars, F);
+  compute_F_f_gradients_from_N(cd_vars, dF_dN, df_dN);
+  for (q=0; q<numFunctions; ++q) {
+    const RealSymMatrix& covLL_q = covLL[q];
+    // form d[triple_prod]/dN:
+    compute_C_F_c_f(covLL_q, F, covLH, q, CF, cf);
+    compute_C_F_c_f_gradients(covLL_q, covLH, q, dF_dN, df_dN, dCF_dN, dcf_dN);
+    pseudo_inverse(CF, CF_inv, rcond);
+    for (v=0; v<num_v; ++v) {
+      Real& evr_grad_vq = evr_grads(v,q);
+      // symmetry allows combination of terms 1 + 3 = 2 cf^T CF_inv d[cf]
+      evr_grad_vq = symMatVecTripleProduct(2., cf, CF_inv,    dcf_dN[v])
+	          + symMatVecTripleProduct(1., cf, dCF_dN[v], cf);
+      // from d(triple) to evr_grads:
+      evr_grad_vq /= -varH[q];
+    }
+  }
 }
 
 
