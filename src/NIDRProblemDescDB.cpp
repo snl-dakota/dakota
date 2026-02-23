@@ -7140,7 +7140,7 @@ static Real
 
 static int
   MP_(mlmcmcInitialChainSamples);
-
+  
 static Method_mp_litc
 	MP3(crossoverType,crossoverRate,shuffle_random),
 	MP3(crossoverType,crossoverRate,null_crossover),
@@ -7429,6 +7429,7 @@ static short
 */
 
 static int
+        MP_(adaptExpSamples),
 	MP_(amPeriodNumSteps),
 	MP_(amStartingStep),
 	MP_(batchSize),

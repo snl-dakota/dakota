@@ -1442,6 +1442,8 @@ public:
   unsigned short exportDiscrepFormat;
   /// whether to perform adaptive Bayesian design of experiments
   bool adaptExpDesign;
+  /// Number of initial samples for Bayes experimental design
+  int adaptExpSamples;
   /// whether to import candidate design points for adaptive Bayesian
   /// experimental design
   String importCandPtsFile;

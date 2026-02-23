@@ -65,7 +65,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, s
   randomSeed(probDescDB.get_int("method.random_seed")),
   mcmcDerivOrder(1), batchSize(1), 
   adaptExpDesign(probDescDB.get_bool("method.nond.adapt_exp_design")),
-  initHifiSamples (probDescDB.get_int("method.samples")),
+  initHifiSamples (probDescDB.get_int("method.adapt_exp_design_samples")),
   scalarDataFilename(probDescDB.get_string("responses.scalar_data_filename")),
   importCandPtsFile(
     probDescDB.get_string("method.import_candidate_points_file")),
