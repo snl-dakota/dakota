@@ -3447,22 +3447,6 @@ KEYWORD method {N_mdm3(start,0,stop)}
             ( predefined {0}
               kuo {N_mdm(type,rank1GeneratingVectorScheme_GEN_VECTOR_KUO)}
               |
-<<<<<<< HEAD
-              file STRING {N_mdm(str,generatingVectorFileName)}
-              |
-              ( predefined {0}
-                kuo {N_mdm(type,rank1GeneratingVectorScheme_GEN_VECTOR_KUO)}
-                |
-                cools_kuo_nuyens {N_mdm(type,rank1GeneratingVectorScheme_GEN_VECTOR_COOLS_KUO_NUYENS)}
-               )
-             ]
-            [ ordering {0}
-              natural {N_mdm(type,rank1Ordering_RANK_1_LATTICE_NATURAL_ORDERING)}
-              |
-              radical_inverse {N_mdm(type,rank1Ordering_RANK_1_LATTICE_RADICAL_INVERSE_ORDERING)}
-             ]
-           )
-=======
               cools_kuo_nuyens {N_mdm(type,rank1GeneratingVectorScheme_GEN_VECTOR_COOLS_KUO_NUYENS)}
              )
            ]
@@ -3471,7 +3455,6 @@ KEYWORD method {N_mdm3(start,0,stop)}
             |
             radical_inverse {N_mdm(type,rank1Ordering_RANK_1_LATTICE_RADICAL_INVERSE_ORDERING)}
            ]
->>>>>>> dp_1294_xml_updates_for_pydantic
          ]
         [ digital_net ALIAS sobol_sequence {N_mdm(true,digitalNetFlag)}
           [ no_digital_shift {N_mdm(true,noDigitalShiftFlag)} ]
@@ -3492,30 +3475,6 @@ KEYWORD method {N_mdm3(start,0,stop)}
             ( predefined {0}
               joe_kuo {N_mdm(type,digitalNetGeneratingMatrixScheme_JOE_KUO)}
               |
-<<<<<<< HEAD
-              least_significant_bit_first {N_mdm(true,leastSignificantBitFirst)}
-             ]
-            [ m_max INTEGER >= 0 {N_mdm(int,log2MaxPoints)} ]
-            [ t_max INTEGER >= 0 {N_mdm(int,numberOfBits)} ]
-            [ t_scramble INTEGER >= 0 {N_mdm(int,scrambleSize)} ]
-            [ generating_matrices {0}
-              inline INTEGERLIST {N_mdm(ivec,generatingMatrices)}
-              |
-              file STRING {N_mdm(str,generatingMatricesFileName)}
-              |
-              ( predefined {0}
-                joe_kuo {N_mdm(type,digitalNetGeneratingMatrixScheme_JOE_KUO)}
-                |
-                sobol_order_2 {N_mdm(type,digitalNetGeneratingMatrixScheme_SOBOL_ORDER_2)}
-               )
-             ]
-            [ ordering {0}
-              natural {N_mdm(type,digitalNetOrdering_DIGITAL_NET_NATURAL_ORDERING)}
-              |
-              gray_code {N_mdm(type,digitalNetOrdering_DIGITAL_NET_GRAY_CODE_ORDERING)}
-             ]
-           )
-=======
               sobol_order_2 {N_mdm(type,digitalNetGeneratingMatrixScheme_SOBOL_ORDER_2)}
              )
            ]
@@ -3524,7 +3483,6 @@ KEYWORD method {N_mdm3(start,0,stop)}
             |
             gray_code {N_mdm(type,digitalNetOrdering_DIGITAL_NET_GRAY_CODE_ORDERING)}
            ]
->>>>>>> dp_1294_xml_updates_for_pydantic
          ]
        )
      ]
@@ -3921,7 +3879,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
         |
         override {N_mdm(utype,numericalSolveMode_NUMERICAL_OVERRIDE)}
        ]
-      [ 
+      [ model_reordering {0}
         reorder_models {N_mdm(utype,modelReordering_REORDER_MODELS_ON_THE_FLY)}
         |
         fixed_model_order {N_mdm(utype,modelReordering_FIXED_MODEL_ORDERING)}
@@ -8421,8 +8379,22 @@ KEYWORD variables {N_vam3(start,0,stop)}
     [ descriptors ALIAS nuv_descriptors STRINGLIST LEN normal_uncertain {N_vae(caulbl,CAUVar_normal)} ]
    ]
   [ lognormal_uncertain INTEGER > 0 {N_vam(sizet,numLognormalUncVars)}
-    means ALIAS lnuv_means REALLIST LEN lognormal_uncertain {N_vam(RealLb,lognormalUncMeans)}
-    std_deviations ALIAS lnuv_std_deviations REALLIST LEN lognormal_uncertain {N_vam(RealLb,lognormalUncStdDevs)}
+    ( parameters {0}
+      ( option_1 {0}
+        means ALIAS lnuv_means REALLIST LEN lognormal_uncertain {N_vam(RealLb,lognormalUncMeans)}
+        std_deviations ALIAS lnuv_std_deviations REALLIST LEN lognormal_uncertain {N_vam(RealLb,lognormalUncStdDevs)}
+       )
+      |
+      ( option_2 {0}
+        means ALIAS lnuv_means REALLIST LEN lognormal_uncertain {N_vam(RealLb,lognormalUncMeans)}
+        error_factors ALIAS lnuv_error_factors REALLIST LEN lognormal_uncertain {N_vam(RealLb,lognormalUncErrFacts)}
+       )
+      |
+      ( option_3 {0}
+        lambdas ALIAS lnuv_lambdas REALLIST LEN lognormal_uncertain {N_vam(rvec,lognormalUncLambdas)}
+        zetas ALIAS lnuv_zetas REALLIST LEN lognormal_uncertain {N_vam(RealLb,lognormalUncZetas)}
+       )
+     )
     [ lower_bounds ALIAS lnuv_lower_bounds REALLIST LEN lognormal_uncertain {N_vam(RealLb,lognormalUncLowerBnds)} ]
     [ upper_bounds ALIAS lnuv_upper_bounds REALLIST LEN lognormal_uncertain {N_vam(RealUb,lognormalUncUpperBnds)} ]
     [ initial_point REALLIST LEN lognormal_uncertain {N_vam(RealLb,lognormalUncVars)} ]

@@ -92,6 +92,7 @@ model,
 variables,
 #	active all
 	lognormal_uncertain =  2			
+          parameters option_1
 	  means             =  1.0  1.0			
 	  std_deviations    =  0.06 0.06
 	  descriptors       =  'TF1ln' 'TF2ln'		

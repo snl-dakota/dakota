@@ -1577,18 +1577,21 @@
 ">
 <!ENTITY mfmc_numerical_solve "
 <keyword id='numerical_solve' name='numerical_solve' code='{0}' label='Specify the situations where numerical optimization is used for MFMC sample allocation' minOccurs='0' >
-
-               <optional>
-	         <oneOf scenario='17' union_pattern='1' default_branch='fallback' label='Employ numerical solve' anchor='numerical_solve_strategy'>
-                   <keyword id='fallback' name='fallback' code='{N_mdm(utype,numericalSolveMode_NUMERICAL_FALLBACK)}' label='Fall back to a numerical solve when needed for mitigation in MFMC' />
-
-                   <keyword id='override' name='override' code='{N_mdm(utype,numericalSolveMode_NUMERICAL_OVERRIDE)}' label='Replace MFMC analytic allocation with a numerical solution' />
-
-                 </oneOf>
-               </optional>
-               &method_mlmf_sub_problem_solver;
-               &method_mlmf_solver_metric;
-	     </keyword>
+  <optional>
+	  <oneOf scenario='17' union_pattern='1' default_branch='fallback' label='Employ numerical solve' anchor='numerical_solve_strategy'>
+      <keyword id='fallback' name='fallback' code='{N_mdm(utype,numericalSolveMode_NUMERICAL_FALLBACK)}' label='Fall back to a numerical solve when needed for mitigation in MFMC' />
+      <keyword id='override' name='override' code='{N_mdm(utype,numericalSolveMode_NUMERICAL_OVERRIDE)}' label='Replace MFMC analytic allocation with a numerical solution' />
+    </oneOf>
+  </optional>
+  <keyword id='model_reordering' code='{0}' name='model_reordering' label='Model reordering strategy' minOccurs='0'>
+    <oneOf label='Model reordering' union_pattern='1' default_branch='reorder_models' >
+      <keyword  id='reorder_models' name='reorder_models' code='{N_mdm(utype,modelReordering_REORDER_MODELS_ON_THE_FLY)}' label='reorder_models' />
+      <keyword  id='fixed_model_order' name='fixed_model_order' code='{N_mdm(utype,modelReordering_FIXED_MODEL_ORDERING)}' label='fixed_model_order' />
+    </oneOf>
+  </keyword>
+  &method_mlmf_sub_problem_solver;
+  &method_mlmf_solver_metric;
+</keyword>
 ">
 <!ENTITY mlft_alloc_control "
 <keyword id='allocation_control' name='allocation_control' code='{0}' label='Sample allocation approach for multilevel expansions' help='' minOccurs='0' >
@@ -5498,30 +5501,56 @@
         </keyword>
       </keyword>
       <keyword argument="count" code="{N_vam(sizet,numLognormalUncVars)}" default="no lognormal uncertain variables" group="Continuous Aleatory Uncertain" id="lognormal_uncertain" label="Aleatory uncertain variable - lognormal" minOccurs="0" name="lognormal_uncertain">
-        <param constraint="&gt; 0" type="INTEGER" />
-        <keyword code="{N_vam(RealLb,lognormalUncMeans)}" id="means1" label="First parameter of the lognormal distribution (options 1 &amp; 2)" name="means">
-          <alias name="lnuv_means" />
-          <param constraint="LEN lognormal_uncertain" type="REALLIST" />
-        </keyword>
-        <keyword code="{N_vam(RealLb,lognormalUncStdDevs)}" id="std_deviations1" label="Second parameter of the lognormal distribution (option 1)" name="std_deviations">
-          <alias name="lnuv_std_deviations" />
-          <param constraint="LEN lognormal_uncertain" type="REALLIST" />
-        </keyword>
-        <keyword code="{N_vam(RealLb,lognormalUncLowerBnds)}" default="0" id="lower_bounds3" label="Specify minimum values" minOccurs="0" name="lower_bounds">
-          <alias name="lnuv_lower_bounds" />
-          <param constraint="LEN lognormal_uncertain" type="REALLIST" />
-        </keyword>
-        <keyword code="{N_vam(RealUb,lognormalUncUpperBnds)}" default="infinity" id="upper_bounds3" label="Specify maximium values" minOccurs="0" name="upper_bounds">
-          <alias name="lnuv_upper_bounds" />
-          <param constraint="LEN lognormal_uncertain" type="REALLIST" />
-        </keyword>
-        <keyword code="{N_vam(RealLb,lognormalUncVars)}" id="initial_point6" label="Initial values for variables" minOccurs="0" name="initial_point">
-          <param constraint="LEN lognormal_uncertain" type="REALLIST" />
-        </keyword>
-        <keyword code="{N_vae(caulbl,CAUVar_lognormal)}" default="lnuv_{i}" id="descriptors6" label="Labels for the variables" minOccurs="0" name="descriptors">
-          <alias name="lnuv_descriptors" />
-          <param constraint="LEN lognormal_uncertain" type="STRINGLIST" />
-        </keyword>
+          <param constraint="&gt; 0" type="INTEGER" />
+          <keyword id="parameters" name="parameters" code="{0}" label="Select a parmaterization of the lognormal distribution" minOccurs="1">
+              <oneOf label="Lognormal parameterization selection" union_pattern='4' default_branch='None'>
+                  <keyword id="option_1" name="option_1" code="{0}" label="Specify means and standard deviations for the lognormal distributions" minOccurs="1">
+                      <keyword code="{N_vam(RealLb,lognormalUncMeans)}" id="means1" label="First parameter of the lognormal distribution (option 1)" name="means">
+                          <alias name="lnuv_means" />
+                          <param constraint="LEN lognormal_uncertain" type="REALLIST" />
+                      </keyword>
+                      <keyword code="{N_vam(RealLb,lognormalUncStdDevs)}" id="std_deviations1" label="Second parameter of the lognormal distribution (option 1)" name="std_deviations">
+                          <alias name="lnuv_std_deviations" />
+                          <param constraint="LEN lognormal_uncertain" type="REALLIST" />
+                      </keyword>
+                  </keyword>
+                  <keyword id="option_2" name="option_2" code="{0}" label="Specify means and error factors for the lognormal distributions" minOccurs="1">
+                      <keyword code="{N_vam(RealLb,lognormalUncMeans)}" id="means1" label="First parameter of the lognormal distribution (option 1)" name="means">
+                          <alias name="lnuv_means" />
+                          <param constraint="LEN lognormal_uncertain" type="REALLIST" />
+                      </keyword>
+                      <keyword  id="error_factors" name="error_factors" code="{N_vam(RealLb,lognormalUncErrFacts)}" label="Second parameter of the lognormal distribution (option 2)"   >
+                          <alias name="lnuv_error_factors"/>
+                          <param type="REALLIST" constraint="LEN lognormal_uncertain" />
+                      </keyword>
+                  </keyword>
+                  <keyword id="option_3" name="option_3" code="{0}" label="Specify lambdas and zetas for the lognormal distributions" minOccurs="1">
+                      <keyword  id="lambdas" name="lambdas" code="{N_vam(rvec,lognormalUncLambdas)}" label="First parameter of the lognormal distribution (option 3)"  >
+                          <alias name="lnuv_lambdas"/>
+                          <param type="REALLIST" constraint="LEN lognormal_uncertain" />
+                      </keyword>
+                      <keyword  id="zetas" name="zetas" code="{N_vam(RealLb,lognormalUncZetas)}" label="Second parameter of the lognormal distribution (option 2)"   >
+                          <alias name="lnuv_zetas"/>
+                          <param type="REALLIST" constraint="LEN lognormal_uncertain" />    
+                      </keyword>
+                  </keyword>
+              </oneOf>
+          </keyword>
+          <keyword code="{N_vam(RealLb,lognormalUncLowerBnds)}" default="0" id="lower_bounds3" label="Specify minimum values" minOccurs="0" name="lower_bounds">
+              <alias name="lnuv_lower_bounds" />
+              <param constraint="LEN lognormal_uncertain" type="REALLIST" />
+          </keyword>
+          <keyword code="{N_vam(RealUb,lognormalUncUpperBnds)}" default="infinity" id="upper_bounds3" label="Specify maximium values" minOccurs="0" name="upper_bounds">
+              <alias name="lnuv_upper_bounds" />
+              <param constraint="LEN lognormal_uncertain" type="REALLIST" />
+          </keyword>
+          <keyword code="{N_vam(RealLb,lognormalUncVars)}" id="initial_point6" label="Initial values for variables" minOccurs="0" name="initial_point">
+              <param constraint="LEN lognormal_uncertain" type="REALLIST" />
+          </keyword>
+          <keyword code="{N_vae(caulbl,CAUVar_lognormal)}" default="lnuv_{i}" id="descriptors6" label="Labels for the variables" minOccurs="0" name="descriptors">
+              <alias name="lnuv_descriptors" />
+              <param constraint="LEN lognormal_uncertain" type="STRINGLIST" />
+          </keyword>
       </keyword>
       <keyword argument="count" code="{N_vam(sizet,numUniformUncVars)}" default="no uniform uncertain variables" group="Continuous Aleatory Uncertain" id="uniform_uncertain" label="Aleatory uncertain variable - uniform" minOccurs="0" name="uniform_uncertain">
         <param constraint="&gt; 0" type="INTEGER" />
