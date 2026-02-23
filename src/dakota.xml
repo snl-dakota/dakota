@@ -1584,9 +1584,9 @@
     </oneOf>
   </optional>
   <keyword id='model_reordering' code='{0}' name='model_reordering' label='Model reordering strategy' minOccurs='0'>
-    <oneOf label='Model reordering' union_pattern='1' default_branch='reorder_models' >
-      <keyword  id='reorder_models' name='reorder_models' code='{N_mdm(utype,modelReordering_REORDER_MODELS_ON_THE_FLY)}' label='reorder_models' />
-      <keyword  id='fixed_model_order' name='fixed_model_order' code='{N_mdm(utype,modelReordering_FIXED_MODEL_ORDERING)}' label='fixed_model_order' />
+    <oneOf label='Model reordering' union_pattern='1' default_branch='auto_reorder' >
+      <keyword  id='auto_reorder' name='auto_reorder' code='{N_mdm(utype,modelReordering_REORDER_MODELS_ON_THE_FLY)}' label='Reorder models automatically' />
+      <keyword  id='fixed_order' name='fixed_order' code='{N_mdm(utype,modelReordering_FIXED_MODEL_ORDERING)}' label='Used a fixed model order' />
     </oneOf>
   </keyword>
   &method_mlmf_sub_problem_solver;
