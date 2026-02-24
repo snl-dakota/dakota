@@ -62,14 +62,6 @@ NonDLHSSampling::NonDLHSSampling(ProblemDescDB& problem_db, ParallelLibrary& par
   if (model->primary_fn_type() == GENERIC_FNS)
     numResponseFunctions = model->num_primary_fns();
 
-  if ((vbdFlag == true) && 
-      (vbdViaSamplingMethod==VBD_BINNED ) &&
-      (numDiscreteIntVars || numDiscreteStringVars || numDiscreteRealVars)){
-        Cerr << "\nError: discrete variables are not supported for "
-        << "binned variance based decomposition.\n";
-        abort_handler(METHOD_ERROR); 
-  }
-
   if (dOptimal) {
     const SharedVariablesData& svd = model->current_variables().shared_data();
     const SizetArray& ac_totals = svd.active_components_totals();
@@ -743,7 +735,8 @@ void NonDLHSSampling::post_run(std::ostream& s)
       nonDSampCorr.compute_vbd_stats_via_sampling(vbdViaSamplingMethod,
                                                   vbdViaSamplingNumBins,
                                                   numFunctions,
-                                                  numContinuousVars + numDiscreteIntVars + numDiscreteRealVars + numDiscreteStringVars,
+                                                  numContinuousVars,
+                                                  numDiscreteIntVars + numDiscreteRealVars + numDiscreteStringVars,
                                                   numSamples,
                                                   allSamples,
                                                   allResponses);

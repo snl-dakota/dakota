@@ -7,8 +7,11 @@ Allows the user to specify the number of bins to be used
 in the variance-based decomposition.
 
 **Default Behavior**
-Default number of bins is the square root of the number
-of samples rounded down to the nearest integer.
+For continuous variables, the default number of 
+bins is the square root of the number of samples rounded 
+down to the nearest integer. For discrete and categorical
+variables, the number of bins is equal to the number of 
+unique values the variable takes in the sample set.
 
 Examples::
 
