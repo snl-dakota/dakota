@@ -12,11 +12,13 @@ method
 #       #   alpha = (mean/std_dev)^2 + 2                 #p4,#p5
 #       #   beta = mean*(alpha-1)                        #p4,#p5
 #       # mean = 1.0, s.d. = 0.2                         #p4
-#      hyperprior_alphas = 27.0                          #p4
-#      hyperprior_betas  = 26.0                          #p4
+#      hyperprior_parameters                             #p4 
+#        alphas = 27.0                                   #p4
+#        betas  = 26.0                                   #p4
 #      # mean = 1.5, s.d. = 2.0                          #p5
-#      hyperprior_alphas = 2.5625                        #p5
-#      hyperprior_betas  = 2.34375                       #p5
+#      hyperprior_parameters                             #p5
+#        alphas = 2.5625                                 #p5
+#        betas  = 2.34375                                #p5
     proposal_covariance
 # diagonal and matrix formats with values
       values 1.0e6 1.0e-1				                    #s0,#s1,#p0,#p4,#p5
