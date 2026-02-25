@@ -35,6 +35,7 @@ namespace Dakota {
 // define special values for method name.  Special bit selections enable
 // identification of method groupings based on the value.
 enum { DEFAULT_METHOD=0,
+       EXTERNAL_PYTHON,
        // Meta-Iterators:
        HYBRID=(META_BIT | PARALLEL_BIT), PARETO_SET, MULTI_START,
        //       BRANCH_AND_BOUND,
@@ -57,6 +58,7 @@ enum { DEFAULT_METHOD=0,
        MULTILEVEL_MULTIFIDELITY_SAMPLING, APPROX_CONTROL_VARIATE,
        GEN_APPROX_CONTROL_VARIATE, MULTILEVEL_BLUE,
        LIST_SAMPLING, RANDOM_SAMPLING,
+       IMPORT_POINTS, // TNP TODO: Maybe move this depending on where it goes in the class hierarchy
        // Variables::method_view(): epistemic if method_name > RANDOM_SAMPLING
        LOCAL_INTERVAL_EST, LOCAL_EVIDENCE, GLOBAL_INTERVAL_EST, GLOBAL_EVIDENCE,
        //BAYES_CALIBRATION=(ANALYZER_BIT | NOND_BIT | PARALLEL_BIT),
@@ -236,6 +238,19 @@ enum {  DEFAULT_CONVERGENCE_TOLERANCE=0, RELATIVE_CONVERGENCE_TOLERANCE,
 // specifing equality constraint, either variance or cost
 enum { VARIANCE_CONSTRAINT_TARGET, COST_CONSTRAINT_TARGET };
 
+// Low disrepancy options
+// rank 1 lattice options
+// for the generating vector
+enum { GEN_VECTOR_KUO, GEN_VECTOR_COOLS_KUO_NUYENS};
+// ordering for rank 1 lattice approach
+enum { RANK_1_LATTICE_NATURAL_ORDERING, RANK_1_LATTICE_RADICAL_INVERSE_ORDERING };
+
+// digital net options
+// ordering for digital net approach
+enum { DIGITAL_NET_NATURAL_ORDERING, DIGITAL_NET_GRAY_CODE_ORDERING };
+// generating matrix options
+enum { JOE_KUO, SOBOL_ORDER_2 };
+
 // ML/MF sampling modes
 enum { ONLINE_PILOT,            OFFLINE_PILOT,
        ONLINE_PILOT_PROJECTION, OFFLINE_PILOT_PROJECTION };
@@ -252,6 +267,8 @@ enum { NO_OPTIMAL_ALLOCATION=0, ANALYTIC_SOLUTION, REORDERED_ANALYTIC_SOLUTION,
        N_GROUP_LINEAR_CONSTRAINT, N_GROUP_LINEAR_OBJECTIVE };
 // Numerical solution modes
 enum { REORDERED_FALLBACK, NUMERICAL_FALLBACK, NUMERICAL_OVERRIDE };
+// Model reordering modes during numerical solutions
+enum { FIXED_MODEL_ORDERING, REORDER_MODELS_ON_THE_FLY };
 // options for obtaining cost data for model fidelities/resolutions
 enum { NO_COST_SOURCE=0, USER_COST_SPEC, ONLINE_COST_RECOVERY,
        MIXED_COST_SPEC_RECOVERY };
@@ -665,6 +682,8 @@ public:
   String patternBasis;
   /// beta solvers don't need documentation
   String betaSolverName;
+  /// the \c class_path_and_name specification for the Python External method
+  String moduleAndClassName;
 
   // COLINY and APPS
 
@@ -916,8 +935,12 @@ public:
   /// Name of file with generating vector
   String generatingVectorFileName;
   /// Predefined generating vectors
+  short rank1GeneratingVectorScheme;
   bool kuo;
   bool cools_kuo_nuyens;
+
+  /// Ordering of the lattic points
+  short rank1Ordering;
   /// Ordering of the lattice points
   bool naturalOrdering;
   bool radicalInverseOrdering;
@@ -941,8 +964,12 @@ public:
   /// Name of file with generating matrices
   String generatingMatricesFileName;
   /// Predefined generating matrices
+  short digitalNetGeneratingMatrixScheme;
+  /// Predefined generating matrices
   bool joe_kuo;
   bool sobol_order_2;
+  /// Ordering of the digital net points
+  short digitalNetOrdering;
   /// Ordering of the digital net points
   bool grayCodeOrdering;
 
@@ -1104,6 +1131,8 @@ public:
   /// assumptions that might be violated, suggesting a fallback approach,
   /// or lacking robustness, suggesting an optional override replacement
   unsigned short numericalSolveMode;
+  /// approach for automatic model reordering in MFMC numerical solves
+  unsigned short modelReordering;
   /// type of solver metric used in variance minimization / accuracy
   /// specification (average, max, or norm of estimator variance across QoI)
   short estVarMetricType;
@@ -1252,7 +1281,7 @@ public:
   RealVector proposalCovData;
   /// file from which to read proposal covariance in diagonal or matrix format
   String proposalCovFile;
-  /// file containing advanced ROL option overrides
+  /// file containing specialized algorithm options, eg ROL, external python, etc.
   String advancedOptionsFilename;
   /// file containing advanced QUESO option overrides
   String quesoOptionsFilename;
@@ -1478,6 +1507,15 @@ public:
   unsigned short importBuildFormat;
   /// whether to import active variables only
   bool importBuildActive;
+  
+  /// the file name from the \c import_points_file specification
+  String importPtsFile;
+  /// tabular format for the build point import file
+  unsigned short importPtsFormat;
+  /// whether to import active variables only
+  bool importPtsActive;
+    /// whether to parse/validate variable labels from header
+  bool importPtsUseVariableLabels;
 
   /// the file name from the \c import_approx_points_file specification
   String importApproxPtsFile;

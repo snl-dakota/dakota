@@ -230,7 +230,8 @@ void FSUDesignCompExp::post_run(std::ostream& s)
     pStudyDACESensGlobal.compute_vbd_stats_via_sampling(vbdViaSamplingMethod,
                                                         vbdViaSamplingNumBins,
                                                         numFunctions,
-                                                        numContinuousVars + numDiscreteIntVars + numDiscreteRealVars,
+                                                        numContinuousVars,
+                                                        numDiscreteIntVars + numDiscreteRealVars,
                                                         numSamples,
                                                         allSamples,
                                                         allResponses);

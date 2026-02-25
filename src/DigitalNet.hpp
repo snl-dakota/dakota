@@ -16,12 +16,6 @@
 
 namespace Dakota {
 
-/// Enum for digital net ordering
-enum DigitalNetOrdering {
-  DIGITAL_NET_NATURAL_ORDERING,
-  DIGITAL_NET_GRAY_CODE_ORDERING
-};
-
 /// Class for digital nets in Dakota
 class DigitalNet : public LowDiscrepancySequence
 {
@@ -36,7 +30,7 @@ public:
     bool digitalShiftFlag,                  /// Use digital shift if true
     bool scramblingFlag,                    /// Use linear matrix scramble if true
     int seedValue,                          /// Random seed value
-    DigitalNetOrdering ordering,            /// Order of the digital net points
+    short ordering,            /// Order of the digital net points
     bool mostSignificantBit,                /// Generating matrices are stored with most significant bit first if true
     short outputLevel                       /// Verbosity
   );
@@ -115,7 +109,7 @@ private:
   UInt64Vector digitalShift;
 
   /// Order of the points of this digital net
-  DigitalNetOrdering ordering;
+  short ordering;
 
   /// Most significant bit comes first in generatingMatrices when true
   bool mostSignificantBitFirst;

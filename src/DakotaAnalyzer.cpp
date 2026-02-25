@@ -118,7 +118,7 @@ void Analyzer::update_from_model(const Model& model)
   numContinuousVars     = ModelUtils::cv(model);  numDiscreteIntVars  = ModelUtils::div(model);
   numDiscreteStringVars = ModelUtils::dsv(model); numDiscreteRealVars = ModelUtils::drv(model);
   numFunctions          = ModelUtils::response_size(model);
-
+  
   bool err_flag = false;
   // Check for correct bit associated within methodName
   if ( !(methodName & ANALYZER_BIT) ) {
@@ -132,7 +132,8 @@ void Analyzer::update_from_model(const Model& model)
       methodName == MULTIDIM_PARAMETER_STUDY ||
       methodName == VECTOR_PARAMETER_STUDY   || methodName == RANDOM_SAMPLING ||
       methodName == GLOBAL_INTERVAL_EST      || methodName == GLOBAL_EVIDENCE ||
-      methodName == ADAPTIVE_SAMPLING ) {
+      methodName == ADAPTIVE_SAMPLING        || 
+      methodName == IMPORT_POINTS ) {
     if (!numContinuousVars && !numDiscreteIntVars && !numDiscreteStringVars &&
 	!numDiscreteRealVars) {
       Cerr << "\nError: " << method_enum_to_string(methodName)

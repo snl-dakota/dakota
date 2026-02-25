@@ -1,0 +1,46 @@
+Blurb::
+
+Computes the double sided tolerance interval equivalent normal distribuion.
+
+Description::
+
+The "tolerance_intervals" keyword is used to compute (i) the equivalent
+normal distribution, given response samples and a desired conficence level
+between 0 and 1, and (ii) the lower and upper ends of an inverval covering
+the samples, given a desired coverage between 0 and 1 :cite:p:`Jekel20`.
+
+*Default Behavior*
+
+By default, coverage is set to 0.95 (95%) and confidence level is set to 0.90 (90%).
+
+*Expected Output*
+
+Dakota first analyzes the N response samples supplied by the user, and
+eliminates any sample with a NAN value, resulting in a final amount
+M <= N of samples to be actually used in the calculations. If M >= 2,
+then Dakota computes 6 values: the sample mean 'mu', the sample standard
+deviation 's', the multiplicative factor 'f', the tolerance interval
+lower end 'mu-f*s', the tolerance interval upper end 'mu+f*s', and the
+standard deviation 's_equiv' of the tolerance interval equivalent normal.
+
+Topics::
+
+Examples::
+
+.. code-block::
+
+    method
+      sampling
+        samples 5
+        refinement_samples 4 3 3
+        sample_type random
+        tolerance_intervals
+          coverage 0.96
+          confidence_level 0.92
+        seed = 31415
+
+Theory::
+
+Faq::
+
+See_Also::

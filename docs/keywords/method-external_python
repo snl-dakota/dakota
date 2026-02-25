@@ -1,0 +1,33 @@
+Blurb::
+Use the external python methods interface
+
+Description::
+This is an experimental capability that allows the user to expose
+python algorithms to Dakota as top-level Iterators.  The Dakota model
+is available to python and supplies function, gradient, and hessian
+responses as appropriate in addition to helper functions for model
+queries and output to the Dakota output stream.
+
+The code example below shows class initialization which outputs the
+wrapped model 'executor' docstring.
+
+Topics::
+
+Examples::
+
+.. code-block::
+
+  import ext_method
+
+  class RandomSample:
+
+      def __init__(self, executor, params_file=None):
+          self.executor = executor
+          help(self.executor)
+
+Theory::
+
+Faq::
+
+See_Also::
+

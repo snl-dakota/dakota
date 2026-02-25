@@ -804,9 +804,10 @@ print_std_regress_coeffs(std::ostream& s, StringArray var_labels,
 }
 
 void SensAnalysisGlobal::compute_vbd_stats_via_sampling( const unsigned short   method
-                                                       , const int              numBins
-                                                       , const size_t           numFunctions
-                                                       , const size_t           num_vars
+                                                       , const int              num_bins
+                                                       , const size_t           num_functions
+                                                       , const size_t           num_continuous_vars
+                                                       , const size_t           num_discrete_vars
                                                        , const size_t           num_samples
                                                        , const RealMatrix &     vars_samples
                                                        , const IntResponseMap & resp_samples
@@ -814,24 +815,25 @@ void SensAnalysisGlobal::compute_vbd_stats_via_sampling( const unsigned short   
 {
 
   if (method == VBD_BINNED) {
-    this->compute_binned_vbd_stats( numBins
-                                  , numFunctions
-                                  , num_vars
+    this->compute_binned_vbd_stats( num_bins
+                                  , num_functions
+                                  , num_continuous_vars
+                                  , num_discrete_vars
                                   , num_samples
                                   , vars_samples
                                   , resp_samples
                                   );
   }
   else {
-    this->compute_pick_and_freeze_vbd_stats( numFunctions
-                                           , num_vars
+    this->compute_pick_and_freeze_vbd_stats( num_functions
+                                           , num_continuous_vars + num_discrete_vars
                                            , num_samples
                                            , resp_samples
                                            );
   }
 }
 
-void SensAnalysisGlobal::compute_pick_and_freeze_vbd_stats( const size_t           numFunctions
+void SensAnalysisGlobal::compute_pick_and_freeze_vbd_stats( const size_t           num_functions
                                                           , const size_t           num_vars
                                                           , const size_t           num_samples
                                                           , const IntResponseMap & resp_samples
@@ -849,11 +851,11 @@ void SensAnalysisGlobal::compute_pick_and_freeze_vbd_stats( const size_t        
   //      total_fn_vals[respFn][replicate][sample]
   // This is making the assumption that the responses are ordered as allSamples
   // BMA TODO: compute statistics on finite samples only
-  boost::multi_array<Real,3> total_fn_vals(boost::extents[numFunctions][num_vars+2][num_samples]); // [k][i][j]
+  boost::multi_array<Real,3> total_fn_vals(boost::extents[num_functions][num_vars+2][num_samples]); // [k][i][j]
   IntRespMCIter r_it = resp_samples.begin();
   for (size_t i(0); i < (num_vars+2); ++i) {
     for (size_t j(0); j < num_samples; ++r_it, ++j) {
-      for (size_t k(0); k < numFunctions; ++k) {
+      for (size_t k(0); k < num_functions; ++k) {
         total_fn_vals[k][i][j] = r_it->second.function_value(k);
       }
     }
@@ -861,7 +863,7 @@ void SensAnalysisGlobal::compute_pick_and_freeze_vbd_stats( const size_t        
 
 #ifdef DEBUG
   //Cout << "allSamples:\n" << allSamples << '\n';
-  for (size_t k(0); k < numFunctions; ++k) {
+  for (size_t k(0); k < num_functions; ++k) {
     for (size_t i(0); i < num_vars+2; ++i) {
       for (size_t j(0); j < num_samples; ++j) {
         Cout << "Response " << k << " for replicate " << i << ", sample " << j
@@ -884,15 +886,15 @@ void SensAnalysisGlobal::compute_pick_and_freeze_vbd_stats( const size_t        
   //   M. Eldred, "Sensitivity analysis techniques applied to a system of
   //   hyperbolic conservation laws", RESS, 107, pp. 157--170, Nov. 2012.
 
-  indexSi.resize(numFunctions, RealVector(num_vars));
-  indexTi.resize(numFunctions, RealVector(num_vars));
+  indexSi.resize(num_functions, RealVector(num_vars));
+  indexTi.resize(num_functions, RealVector(num_vars));
 
-  boost::multi_array<Real,3> total_norm_vals(boost::extents[numFunctions][num_vars+2][num_samples]); // [k][i][j]
+  boost::multi_array<Real,3> total_norm_vals(boost::extents[num_functions][num_vars+2][num_samples]); // [k][i][j]
 
   Real dNumSamples( static_cast<Real>(num_samples) );
 
   // Obtain sensitivity indices for each function
-  for (size_t k(0); k < numFunctions; ++k) {
+  for (size_t k(0); k < num_functions; ++k) {
     Real mean_C(0.);
     {
       Real mean_hatY(0.);
@@ -950,22 +952,22 @@ void SensAnalysisGlobal::compute_pick_and_freeze_vbd_stats( const size_t        
   } // for k
 }
 
-void SensAnalysisGlobal::compute_binned_vbd_stats( const int              numBins
-                                                 , const size_t           numFunctions
-                                                 , const size_t           num_vars
+void SensAnalysisGlobal::compute_binned_vbd_stats( const int              num_bins
+                                                 , const size_t           num_functions
+                                                 , const size_t           num_continuous_vars
+                                                 , const size_t           num_discrete_vars
                                                  , const size_t           num_samples
                                                  , const RealMatrix &     vars_samples
                                                  , const IntResponseMap & resp_samples
                                                  )
 {
-  // TNP NOTE: the algorithm would need to be modified to support discrete random variables.
-  // Currently there is a check before calling compute_vbs_stats_via_sampling that errors
-  // out if there are discrete random variables.
 
   check_num_samples( num_samples, resp_samples.size(), "compute_binned_vbd_stats");
 
-  numVars = num_vars;
-  numFns  = numFunctions;
+  numContinuousVars = num_continuous_vars;
+  numDiscreteVars = num_discrete_vars;
+  numVars = num_continuous_vars + num_discrete_vars;
+  numFns  = num_functions;
 
   // Determine which samples have valid responses (are).
   BoolDeque is_valid_sample(num_samples);
@@ -979,11 +981,11 @@ void SensAnalysisGlobal::compute_binned_vbd_stats( const int              numBin
   valid_sample_matrix(vars_samples, resp_samples, is_valid_sample, valid_data); 
 
   size_t n_bins;
-  if ( numBins <= 0 ){
+  if ( num_bins <= 0 ){
     n_bins = std::trunc(std::sqrt(num_valid_samples));
   }
   else{
-    n_bins = numBins;
+    n_bins = num_bins;
   }
 
   compute_binned_sobol_indices_from_valid_samples( valid_data, n_bins );
@@ -1130,59 +1132,148 @@ compute_binned_sobol_indices_from_valid_samples( const RealMatrix& valid_data, s
   // Bin response samples, compute sample variance in each bin
   // Compute sample mean over binned variances
     
-  // TODO: only implemented "option 2" algorithm from the paper; could add "option 1" if there is demand.
+  // TNP: only implemented "option 2" algorithm from the paper; could add "option 1" if there is demand.
 
   indexSi.resize(numFns, numVars); 
 
   size_t num_samples = valid_data.numCols();
-  size_t num_samples_per_bin = num_samples / num_bins;
-  
-  IntMatrix sorted_var_indices = get_var_samples_argsort(valid_data);
-
   RealMatrix response_samples( Teuchos::View, valid_data, numFns, num_samples, numVars );
   RealVector total_means, total_variances;
   compute_response_means_and_variances( response_samples, total_means, total_variances );
-  
-  RealVector binned_means, binned_variances, partial_variances;
-  RealMatrix sorted_response_samples( numFns, num_samples );
-  RealMatrix binned_variance_samples( numFns, num_bins );
-  for (int i=0; i<numVars; ++i ){ 
 
-    IntVector sort_inds = Teuchos::getCol(Teuchos::View, sorted_var_indices, i);
+  if (numContinuousVars > 0){
+    IntMatrix sorted_continuous_var_inds = get_continuous_var_samples_argsort(valid_data);
+    compute_binned_continuous_var_sobol_indices(response_samples, total_variances, sorted_continuous_var_inds, num_bins);
+  }
 
-    reorder_matrix_columns_from_index_vector(response_samples, sorted_response_samples, sort_inds );
-
-    // Compute response variances in each bin
-    for ( int j=0; j<num_bins; ++j ){ 
-
-      RealMatrix binned_response_samples( Teuchos::View, sorted_response_samples, numFns, num_samples_per_bin, 0, num_samples_per_bin*j );
-      RealMatrix binned_response_samples_T( binned_response_samples, Teuchos::TRANS );
-      compute_col_means( binned_response_samples_T, binned_means );
-      compute_col_variances( binned_response_samples_T, binned_means, binned_variances );
-      Teuchos::setCol( binned_variances, j, binned_variance_samples );
-    }
-
-    // Compute expectation of binned variances over bins
-    RealMatrix binned_variance_samples_T( binned_variance_samples, Teuchos::TRANS );
-    compute_col_means( binned_variance_samples_T, partial_variances );
-    for ( int k=0; k<numFns; ++k ){
-      indexSi[k][i] = 1 - partial_variances[k] / total_variances[k]; 
-    }
+  if (numDiscreteVars > 0){
+    IntMatrix sorted_discrete_var_inds;
+    std::vector<IntVector> unique_counts;
+    get_discrete_var_samples_argsort_and_counts(valid_data, sorted_discrete_var_inds, unique_counts);
+    compute_binned_discrete_var_sobol_indices(response_samples, total_variances, sorted_discrete_var_inds, unique_counts);
   }
 }
 
+void SensAnalysisGlobal::
+compute_binned_continuous_var_sobol_indices( RealMatrix& response_samples, 
+                                             RealVector& total_variances, 
+                                             IntMatrix& sorted_continuous_var_inds,
+                                             size_t num_bins ){
+
+  size_t num_samples = response_samples.numCols();
+  auto bin_struct = std::div( int(num_samples), int(num_bins) );
+  size_t num_samples_per_bin = bin_struct.quot;
+  size_t num_overflow_samples = bin_struct.rem;
+
+  if (num_overflow_samples > 0){
+    Cout << std::endl;
+    Cout << "WARNING: the number of bins for vbd_sampling_method binned (" << num_bins;
+    Cout << ") does not" << std::endl << "equally subdivide the number of samples (";
+    Cout << num_samples << "). " << num_overflow_samples << " additional samples " << std::endl;
+    Cout << "will be included in the final bin for computation." << std::endl << std::endl;
+  }
+
+  IntVector bin_counts(num_bins);
+  bin_counts.putScalar(num_samples_per_bin);
+  bin_counts[num_bins-1] += num_overflow_samples;
+  RealVector bin_weights(num_bins);
+  for (int i=0; i<num_bins; ++i){ bin_weights[i] = double(bin_counts[i]) / double(num_samples);}
+
+  RealMatrix sorted_response_samples( numFns, num_samples );
+  for (int i=0; i<numContinuousVars; ++i ){ 
+    IntVector sort_inds = Teuchos::getCol(Teuchos::View, sorted_continuous_var_inds, i);
+    reorder_matrix_columns_from_index_vector(response_samples, sorted_response_samples, sort_inds );
+    RealMatrix binned_variance_samples = compute_binned_variances( sorted_response_samples, bin_counts);
+    compute_Si_from_binned_variances_and_weights(total_variances, binned_variance_samples, bin_weights, i);
+  }
+}
+
+void SensAnalysisGlobal::
+compute_binned_discrete_var_sobol_indices( RealMatrix& response_samples,
+                                           RealVector& total_variances, 
+                                           IntMatrix& sorted_discrete_var_inds, 
+                                           std::vector<IntVector>& unique_counts ){
+
+  size_t num_samples = response_samples.numCols();
+  RealMatrix sorted_response_samples(numFns, num_samples);
+  for (int i=0; i<numDiscreteVars; ++i ){ 
+
+    IntVector sort_inds = Teuchos::getCol(Teuchos::View, sorted_discrete_var_inds, i);
+    reorder_matrix_columns_from_index_vector(response_samples, sorted_response_samples, sort_inds );
+
+    IntVector bin_counts = unique_counts[i];
+    RealVector bin_weights(bin_counts.length());
+    for ( int j=0; j<bin_counts.length(); ++j){ bin_weights[j] = double(bin_counts[j])/double(num_samples);}
+
+    RealMatrix binned_variance_samples = compute_binned_variances(sorted_response_samples, bin_counts);
+    
+    compute_Si_from_binned_variances_and_weights(total_variances, binned_variance_samples, bin_weights, i+numContinuousVars);
+  }
+
+}
+
+RealMatrix SensAnalysisGlobal::
+compute_binned_variances( RealMatrix& sorted_response_samples, IntVector& bin_counts){
+  RealVector binned_means, binned_variances;
+  RealMatrix binned_variance_samples(numFns, bin_counts.length());
+  int start_ind = 0;
+  for ( int j=0; j<bin_counts.length(); ++j ){ 
+    RealMatrix binned_response_samples( Teuchos::View, sorted_response_samples, numFns, bin_counts[j], 0, start_ind );
+    RealMatrix binned_response_samples_T( binned_response_samples, Teuchos::TRANS );
+    compute_col_means( binned_response_samples_T, binned_means );
+    compute_col_variances( binned_response_samples_T, binned_means, binned_variances );
+    Teuchos::setCol( binned_variances, j, binned_variance_samples );
+
+    start_ind += bin_counts[j];
+  }
+  return binned_variance_samples;
+}
+
+void SensAnalysisGlobal::
+compute_Si_from_binned_variances_and_weights( RealVector& total_variances, 
+                                              RealMatrix& binned_variance_samples, 
+                                              RealVector& bin_weights, int i ){
+      // Compute weighted average of binned variances over bins
+    RealMatrix binned_variance_samples_T( binned_variance_samples, Teuchos::TRANS );
+    RealVector partial_variances;
+    compute_col_weighted_averages( binned_variance_samples_T, bin_weights, partial_variances);
+    for ( int k=0; k<numFns; ++k ){
+      indexSi[k][i] = 1 - partial_variances[k] / total_variances[k]; 
+    }
+}
+
 IntMatrix SensAnalysisGlobal::
-get_var_samples_argsort( const RealMatrix& valid_data){
+get_continuous_var_samples_argsort( const RealMatrix& valid_data ){
   
-  // Making a view of only the variable samples so only those are 
-  // converted to their rank values.
+  // Making a view of only the continuous variable samples 
+  // so only those are converted to their rank values.
   RealMatrix valid_samples_T( valid_data, Teuchos::TRANS );
-  RealMatrix var_samples_T( Teuchos::View, valid_samples_T, valid_data.numCols(), numVars );
+  RealMatrix var_samples_T( Teuchos::View, valid_samples_T, valid_data.numCols(), numContinuousVars );
 
   RealMatrix sorted_var_samples_T;
   IntMatrix sorted_var_indices_T;
   sort_matrix_columns(var_samples_T, sorted_var_samples_T, sorted_var_indices_T );
   return sorted_var_indices_T;
+}
+
+void SensAnalysisGlobal::
+get_discrete_var_samples_argsort_and_counts( const RealMatrix& valid_data, 
+                                             IntMatrix& sorted_var_indices, 
+                                             std::vector<IntVector>& bin_counts ){
+
+  RealMatrix valid_samples_T( valid_data, Teuchos::TRANS );
+  RealMatrix var_samples_T( Teuchos::View, valid_samples_T, valid_data.numCols(), numDiscreteVars, 0, numContinuousVars );
+
+  RealMatrix sorted_var_samples_T;
+  sort_matrix_columns(var_samples_T, sorted_var_samples_T, sorted_var_indices );
+
+  // For discrete RVs, the bin count is based on how many samples have a given
+  // unique (discrete) value.
+  bin_counts.resize(numDiscreteVars);
+  for (int i=0; i < numDiscreteVars; ++i){
+    RealVector sorted_vec = Teuchos::getCol(Teuchos::View, sorted_var_samples_T, i);  
+    bin_counts[i] = get_unique_counts_of_sorted_vec(sorted_vec); 
+  }
 }
 
 void SensAnalysisGlobal::

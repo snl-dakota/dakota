@@ -236,6 +236,7 @@ static UShortStrBimap method_map =
   (GPAIS,                           "gpais")
   (POF_DARTS,                       "pof_darts")
   (RKD_DARTS,                       "rkd_darts")
+  (IMPORT_POINTS,                   "import_points")
   (IMPORTANCE_SAMPLING,             "importance_sampling")
   (ADAPTIVE_SAMPLING,               "adaptive_sampling")
   (RANDOM_SAMPLING,                 "random_sampling")
@@ -294,6 +295,7 @@ static UShortStrBimap method_map =
   (NCSU_DIRECT,                     "ncsu_direct")
   (ROL,                             "rol")
   (DEMO_TPL,                        "demo_tpl")
+  (EXTERNAL_PYTHON,                 "external_python")
   ;
 
 

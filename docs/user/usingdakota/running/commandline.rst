@@ -11,7 +11,7 @@ prompt without any arguments, a usage message similar to the following appears:
 
     usage: dakota [options and <args>]
     -help (Print this summary)
-    -version (Print DAKOTA version number)
+    -version [$val] (Print DAKOTA version information or build information related to $val string)
     -input <$val> (REQUIRED DAKOTA input file $val)
     -preproc [$val] (Pre-process input file with pyprepro or tool $val)
     -output <$val> (Redirect DAKOTA standard output to file $val)
@@ -29,7 +29,7 @@ prompt without any arguments, a usage message similar to the following appears:
 Of these available command line inputs, only the ``-input`` option is required, and ``-input`` can be omitted if the input file name is the final item on the command line; all other command-line inputs are optional.
 
 - The ``-help`` option prints the usage message above.
-- The ``-version`` option prints the version number of the executable.
+- The ``-version`` option prints the version number of the executable. With the optional argument will also print information about the configuration parameters related to that query, e.g., ``--version CXX`` will print information about the C++ compiler used.
 - The ``-check`` option invokes a dry-run mode in which the input file is processed and checked for errors, but the study
   is not performed.
 - The ``-input`` option provides the name of the Dakota input file, which can optionally be pre-processed as a template using the ``-preproc`` option.

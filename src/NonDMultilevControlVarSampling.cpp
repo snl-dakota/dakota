@@ -25,10 +25,11 @@ namespace Dakota {
     instantiation.  In this case, set_db_list_nodes has been called and 
     probDescDB can be queried for settings from the method specification. */
 NonDMultilevControlVarSampling::
-NonDMultilevControlVarSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+NonDMultilevControlVarSampling(ProblemDescDB& problem_db,
+			       ParallelLibrary& parallel_lib,
+			       std::shared_ptr<Model> model):
   NonDMultilevelSampling(problem_db, parallel_lib, model),
   //NonDMultifidelitySampling(problem_db, model),
-  NonDHierarchSampling(problem_db, parallel_lib, model), // top of virtual inheritance
   delegateMethod(MULTILEVEL_MULTIFIDELITY_SAMPLING)
 {
   // override MULTILEVEL_PRECEDENCE from NonDMultilevel ctor
@@ -557,7 +558,7 @@ evaluate_pilot(RealVectorArray& eval_ratios, RealMatrix& Lambda,
 }
 
 
-/** The version in NonDNonHierarchSampling would be sufficiently general here
+/** The version in NonDNumericAllocSampling would be sufficiently general here
     as well, given AGGREGATED_MODELS controlled by the ASV. However, MLMC and
     MLCV MC employ AGGREGATED_MODEL_PAIR without ASV subsetting, so we
     specialize for that case. */
@@ -618,7 +619,7 @@ mlmf_increments(const SizetArray& delta_N_l, String prepend)
 }
 
 
-/** The version in NonDNonHierarchSampling would be sufficiently general here
+/** The version in NonDNumericAllocSampling would be sufficiently general here
     as well, given AGGREGATED_MODELS controlled by the ASV. However, MLMC and
     MLCV MC employ AGGREGATED_MODEL_PAIR without ASV subsetting, so we
     specialize for that case. */

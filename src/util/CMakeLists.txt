@@ -67,4 +67,14 @@ install(TARGETS dakota_util EXPORT ${ExportTarget}
   ARCHIVE DESTINATION lib
 )
 
+# Build the tool for parsing the completed CMakeCache file
+add_compile_definitions("DAKOTA_SRC_DIR=\"${CMAKE_SOURCE_DIR}\"")
+add_executable(parse_cmake_cache parse_cmake_cache.cpp)
+
+if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9.0) OR DAKOTA_LINK_STDCPPFS)
+  target_link_libraries(parse_cmake_cache PRIVATE stdc++fs)
+endif()
+
+
+
 add_subdirectory(unit)

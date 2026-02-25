@@ -1,5 +1,5 @@
 Blurb::
-Labels for the responses
+Labels for response functions, calibration terms, objective functions, and constraints
 Description::
 A list of strings which identify the responses.  These are used in
 console and tabular output.  Response descriptors are ordered by

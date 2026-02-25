@@ -37,9 +37,92 @@ response_fn_1 Sobol' indices:
                                  Main
                       4.6003274943e-01 uuv_1
                       4.7403704956e-01 uuv_2
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.9981496825e-01  3.7499332214e-01  1.1193854323e+00  1.0954696226e+00
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
+ response_fn_1  3.2540815760e-01  4.7422177891e-01  3.2924670382e-01  4.3562046323e-01
+Simple Correlation Matrix among all inputs and outputs:
+                    uuv_1        uuv_2 response_fn_1 
+       uuv_1  1.00000e+00 
+       uuv_2 -1.75349e-02  1.00000e+00 
+response_fn_1 -5.98739e-01 -5.66505e-01  1.00000e+00 
+Partial Correlation Matrix between input and output:
+             response_fn_1 
+       uuv_1 -7.38741e-01 
+       uuv_2 -7.20515e-01 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                    uuv_1        uuv_2 response_fn_1 
+       uuv_1  1.00000e+00 
+       uuv_2 -1.76778e-02  1.00000e+00 
+response_fn_1 -6.39172e-01 -6.05173e-01  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+             response_fn_1 
+       uuv_1 -8.16450e-01 
+       uuv_2 -8.01712e-01 
 Test Number 6 succeeded
 <<<<< Function evaluation summary: 100 total (100 new, 0 duplicate)
 response_fn_1 Sobol' indices:
                                  Main
                       4.6579220420e-01 uuv_1
                       4.0590597112e-01 uuv_2
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  3.9981496825e-01  3.7499332214e-01  1.1193854323e+00  1.0954696226e+00
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
+ response_fn_1  3.2540815760e-01  4.7422177891e-01  3.2924670382e-01  4.3562046323e-01
+Simple Correlation Matrix among all inputs and outputs:
+                    uuv_1        uuv_2 response_fn_1 
+       uuv_1  1.00000e+00 
+       uuv_2 -1.75349e-02  1.00000e+00 
+response_fn_1 -5.98739e-01 -5.66505e-01  1.00000e+00 
+Partial Correlation Matrix between input and output:
+             response_fn_1 
+       uuv_1 -7.38741e-01 
+       uuv_2 -7.20515e-01 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                    uuv_1        uuv_2 response_fn_1 
+       uuv_1  1.00000e+00 
+       uuv_2 -1.76778e-02  1.00000e+00 
+response_fn_1 -6.39172e-01 -6.05173e-01  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+             response_fn_1 
+       uuv_1 -8.16450e-01 
+       uuv_2 -8.01712e-01 
+Test Number 7 succeeded
+<<<<< Function evaluation summary: 100 total (100 new, 0 duplicate)
+response_fn_1 Sobol' indices:
+                                 Main
+                      2.8083233103e-01 uuv_1
+                      2.9916382861e-01 uuv_2
+                      4.0407109387e-01 hpruv_1
+Sample moment statistics for each response function:
+                            Mean           Std Dev          Skewness          Kurtosis
+ response_fn_1  7.2791496825e-01  5.0212893695e-01  3.3992699171e-01 -1.9684770347e-02
+95% confidence intervals for each response function:
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
+ response_fn_1  6.2828169340e-01  8.2754824311e-01  4.4087264392e-01  5.8331076103e-01
+Simple Correlation Matrix among all inputs and outputs:
+                    uuv_1        uuv_2      hpruv_1 response_fn_1 
+       uuv_1  1.00000e+00 
+       uuv_2  2.37969e-03  1.00000e+00 
+     hpruv_1  7.65301e-03 -3.65475e-02  1.00000e+00 
+response_fn_1 -4.57040e-01 -5.00544e-01  6.40383e-01  1.00000e+00 
+Partial Correlation Matrix between input and output:
+             response_fn_1 
+       uuv_1 -7.65746e-01 
+       uuv_2 -7.76124e-01 
+     hpruv_1  8.50650e-01 
+Simple Rank Correlation Matrix among all inputs and outputs:
+                    uuv_1        uuv_2      hpruv_1 response_fn_1 
+       uuv_1  1.00000e+00 
+       uuv_2  1.96820e-03  1.00000e+00 
+     hpruv_1  7.62140e-03 -3.74142e-02  1.00000e+00 
+response_fn_1 -4.94281e-01 -5.05467e-01  6.27034e-01  1.00000e+00 
+Partial Rank Correlation Matrix between input and output:
+             response_fn_1 
+       uuv_1 -8.14110e-01 
+       uuv_2 -8.04548e-01 
+     hpruv_1  8.65002e-01 

@@ -590,8 +590,11 @@ void NonDMultilevelPolynomialChaos::assign_specification_sequence()
       (uSpaceModel->subordinate_iterator());
     if (sequenceIndex < quadOrderSeqSpec.size())
       nond_quad->quadrature_order(quadOrderSeqSpec[sequenceIndex]);
-    else //if (refineControl)
+    else { //if (refineControl)
+      Cout << "\nNote: quadrature_order_sequence specification exceeded.  "
+	   << "Resetting to nominal." << std::endl;
       nond_quad->reset();   // reset refinement, capture dist param updates
+    }
     break;
   }
   case Pecos::COMBINED_SPARSE_GRID: case Pecos::INCREMENTAL_SPARSE_GRID:
@@ -601,8 +604,11 @@ void NonDMultilevelPolynomialChaos::assign_specification_sequence()
       (uSpaceModel->subordinate_iterator());
     if (sequenceIndex < ssgLevelSeqSpec.size())
       nond_sparse->sparse_grid_level(ssgLevelSeqSpec[sequenceIndex]);
-    else //if (refineControl)
+    else { //if (refineControl)
+      Cout << "\nNote: sparse_grid_level_sequence specification exceeded.  "
+	   << "Resetting to nominal." << std::endl;
       nond_sparse->reset(); // reset refinement, capture dist param updates
+    }
     break;
   }
   case Pecos::CUBATURE:
@@ -612,13 +618,24 @@ void NonDMultilevelPolynomialChaos::assign_specification_sequence()
     break;
   case Pecos::SAMPLING: {
     // assign expansionOrder and/or expansionSamples, as admissible
-    if (sequenceIndex <   expOrderSeqSpec.size()) update_exp = true;
+    if (sequenceIndex < expOrderSeqSpec.size()) update_exp = true;
+    else if (!expOrderSeqSpec.empty())
+      Cout << "\nNote: expansion_order_sequence specification exceeded.  "
+	   << "Reusing previous order." << std::endl;
+
     if (sequenceIndex < expSamplesSeqSpec.size()) {
       numSamplesOnModel = expSamplesSeqSpec[sequenceIndex];
       update_sampler = true;
     }
+    else if (!expSamplesSeqSpec.empty())
+      Cout << "\nNote: expansion_samples_sequence specification exceeded.  "
+	   << "Reusing previous sample count." << std::endl;
+
     if (sequenceIndex < randomSeedSeqSpec.size())
       update_sampler = true;
+    else if (!randomSeedSeqSpec.empty())
+      Cout << "\nNote: random_seed_sequence specification exceeded.  "
+	   << "Continuing previous state." << std::endl;
     break;
   }
   case Pecos::ORTHOG_LEAST_INTERPOLATION:
@@ -627,18 +644,38 @@ void NonDMultilevelPolynomialChaos::assign_specification_sequence()
       numSamplesOnModel = collocPtsSeqSpec[sequenceIndex];
       update_sampler = true;
     }
+    else if (!collocPtsSeqSpec.empty())
+      Cout << "\nNote: collocation_points_sequence specification exceeded.  "
+	   << "Reusing previous point count." << std::endl;
+
     if (sequenceIndex < randomSeedSeqSpec.size())
       update_sampler = true;
+    else if (!randomSeedSeqSpec.empty())
+      Cout << "\nNote: random_seed_sequence specification exceeded.  "
+	   << "Continuing previous state." << std::endl;
     break;
   default: { // regression
     // assign expansionOrder and/or collocationPoints, as admissible
-    if (sequenceIndex <  expOrderSeqSpec.size()) update_exp = true;
+    if (sequenceIndex < expOrderSeqSpec.size())
+      update_exp = true;
+    else if (!expOrderSeqSpec.empty())
+      Cout << "\nNote: expansion_order_sequence specification exceeded.  "
+	   << "Reusing previous order." << std::endl;
+
     if (sequenceIndex < collocPtsSeqSpec.size()) {
       numSamplesOnModel = collocPtsSeqSpec[sequenceIndex];
       update_sampler = true;
     }
+    else if (!collocPtsSeqSpec.empty())
+      Cout << "\nNote: collocation_points_sequence specification exceeded.  "
+	   << "Reusing previous point count." << std::endl;
+
     if (sequenceIndex < randomSeedSeqSpec.size())
       update_sampler = true;
+    else if (!randomSeedSeqSpec.empty())
+      Cout << "\nNote: random_seed_sequence specification exceeded.  "
+	   << "Continuing previous state." << std::endl;
+
     if (update_exp && collocPtsSeqSpec.empty()) // (fixed) collocation ratio
       update_from_ratio = update_sampler = true;
     break;
@@ -661,8 +698,11 @@ void NonDMultilevelPolynomialChaos::increment_specification_sequence()
       ++sequenceIndex;      // advance order sequence if sufficient entries
       nond_quad->quadrature_order(quadOrderSeqSpec[sequenceIndex]);
     }
-    else //if (refineControl)
+    else { //if (refineControl)
+      Cout << "\nNote: quadrature_order_sequence exceeded.  "
+	   << "Resetting to nominal." << std::endl;
       nond_quad->reset();   // reset refinement, capture dist param updates
+    }
     break;
   }
   case Pecos::COMBINED_SPARSE_GRID: case Pecos::INCREMENTAL_SPARSE_GRID:
@@ -674,8 +714,11 @@ void NonDMultilevelPolynomialChaos::increment_specification_sequence()
       ++sequenceIndex;      // advance level sequence if sufficient entries
       nond_sparse->sparse_grid_level(ssgLevelSeqSpec[sequenceIndex]);
     }
-    else //if (refineControl)
+    else { //if (refineControl)
+      Cout << "\nNote: sparse_grid_level_sequence exceeded.  "
+	   << "Resetting to nominal." << std::endl;
       nond_sparse->reset(); // reset refinement, capture dist param updates
+    }
     break;
   }
   case Pecos::CUBATURE:
@@ -687,10 +730,21 @@ void NonDMultilevelPolynomialChaos::increment_specification_sequence()
     // advance expansionOrder and/or expansionSamples, as admissible
     size_t next_i = sequenceIndex + 1;
     if (next_i <   expOrderSeqSpec.size()) update_exp = true;
+    else if (!expOrderSeqSpec.empty())
+      Cout << "\nNote: expansion_order_sequence specification exceeded.  "
+	   << "Reusing previous order." << std::endl;
+
     if (next_i < expSamplesSeqSpec.size())
       { numSamplesOnModel = expSamplesSeqSpec[next_i]; update_sampler = true; }
+    else if (!expSamplesSeqSpec.empty())
+      Cout << "\nNote: expansion_samples_sequence specification exceeded.  "
+	   << "Reusing previous sample count." << std::endl;
+
     if (next_i < randomSeedSeqSpec.size())
       update_sampler = true;
+    else if (!randomSeedSeqSpec.empty())
+      Cout << "\nNote: random_seed_sequence specification exceeded.  "
+	   << "Continuing previous state." << std::endl;
     if (update_exp || update_sampler) ++sequenceIndex;
     break;
   }
@@ -701,8 +755,16 @@ void NonDMultilevelPolynomialChaos::increment_specification_sequence()
       numSamplesOnModel = collocPtsSeqSpec[next_i];
       update_sampler = true; 
     }
+    else if (!collocPtsSeqSpec.empty())
+      Cout << "\nNote: collocation_points_sequence specification exceeded.  "
+	   << "Reusing previous point count." << std::endl;
+
     if (next_i < randomSeedSeqSpec.size())
       update_sampler = true;
+    else if (!randomSeedSeqSpec.empty())
+      Cout << "\nNote: random_seed_sequence specification exceeded.  "
+	   << "Continuing previous state." << std::endl;
+
     if (update_sampler) ++sequenceIndex;
     break;
   }
@@ -710,10 +772,22 @@ void NonDMultilevelPolynomialChaos::increment_specification_sequence()
     // advance expansionOrder and/or collocationPoints, as admissible
     size_t next_i = sequenceIndex + 1;
     if (next_i <  expOrderSeqSpec.size()) update_exp = true;
+    else if (!expOrderSeqSpec.empty())
+      Cout << "\nNote: expansion_order_sequence specification exceeded.  "
+	   << "Reusing previous order." << std::endl;
+
     if (next_i < collocPtsSeqSpec.size())
       { numSamplesOnModel = collocPtsSeqSpec[next_i]; update_sampler = true; }
+    else if (!collocPtsSeqSpec.empty())
+      Cout << "\nNote: collocation_points_sequence specification exceeded.  "
+	   << "Reusing previous point count." << std::endl;
+
     if (next_i < randomSeedSeqSpec.size())
       update_sampler = true;
+    else if (!randomSeedSeqSpec.empty())
+      Cout << "\nNote: random_seed_sequence specification exceeded.  "
+	   << "Continuing previous state." << std::endl;
+
     if (update_exp || update_sampler) ++sequenceIndex;
     if (update_exp && collocPtsSeqSpec.empty()) // (fixed) collocation ratio
       update_from_ratio = update_sampler = true;

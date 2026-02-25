@@ -1,0 +1,37 @@
+#@ s*: Label=FastTest
+# DAKOTA INPUT FILE : dakota_import_points.in
+
+environment,
+  tabular_data
+  results_output
+    hdf5
+      results_output_file = 'dakota_import_points'
+
+method,
+  import_points
+    import_points_file 'dakota_import_points.dat'
+    #final_moments standard #s1
+    #final_moments central #s2
+    #tolerance_intervals #s3
+	  #variance_based_decomp #s4
+    #std_regression_coeffs #s5
+    #response_levels 0.2 0.4 0.6 0.8 1 #s6,#s7
+    #probability_levels 0.2 0.4 0.6 0.8 1 #s8,#s9
+    #reliability_levels 0.2 0.4 0.6 0.8 1 #s10,s11
+    #gen_reliability_levels 0.2 0.4 0.6 0.8 1 #s12,#s13
+    #distribution cumulative #s6,#s8,#s10,#s12
+    #distribution complementary #s7,#s9,#s11,#s13
+
+variables,
+	uniform_uncertain = 2
+	  lower_bounds = 0 0
+	  upper_bounds =  1 1
+
+interface,
+	direct
+	  analysis_driver = 'text_book'
+
+responses,
+	response_functions = 1
+	no_gradients
+	no_hessians

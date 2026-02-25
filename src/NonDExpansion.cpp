@@ -421,7 +421,8 @@ construct_quadrature(std::shared_ptr<Iterator>& u_space_sampler, std::shared_ptr
 
 
 void NonDExpansion::
-construct_quadrature(std::shared_ptr<Iterator>& u_space_sampler, std::shared_ptr<Model> g_u_model,
+construct_quadrature(std::shared_ptr<Iterator>& u_space_sampler,
+		     std::shared_ptr<Model> g_u_model,
 		     unsigned short quad_order, const RealVector& dim_pref,
 		     int sub_samples, int seed)
 {
@@ -551,16 +552,16 @@ void NonDExpansion::initialize_u_space_model()
     break;
     case Pecos::COVARIANCE_METRIC:
       if (totalLevelRequests)
-	Cout << "Warning: refinement metric set to covariance.  Level mappings"
-	     << "\n        will not be used to guide adaptation." << std::endl;
+	Cout << "Warning: refinement metric set to covariance.  Level mappings "
+	     << "will not be\n         used to guide adaptation." << std::endl;
       break;
     case Pecos::LEVEL_STATS_METRIC:
       if (totalLevelRequests)
 	refineMetric = (rel_mapping) ?
 	  Pecos::MIXED_STATS_METRIC : Pecos::LEVEL_STATS_METRIC;
       else {
-	Cerr << "Warning: refinement metric switched to covariance as no level"
-	     << "\n        mappings were provided." << std::endl;
+	Cerr << "Warning: refinement metric switched to covariance as no level "
+	     << "mappings were provided." << std::endl;
 	refineMetric = Pecos::COVARIANCE_METRIC;
       }
       break;

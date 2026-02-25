@@ -417,6 +417,10 @@ if(DAKOTA_HAVE_HDF5)
   list(APPEND util_src HDF5_IO.cpp ResultsDBHDF5.cpp )
 endif()
 
+if(DAKOTA_PYTHON_DIRECT_INTERFACE)
+  list(APPEND util_src python_utils.cpp )
+endif()
+
 if(DAKOTA_DL_SOLVER)
   list(APPEND util_src DLSolver.cpp)
 endif(DAKOTA_DL_SOLVER)
@@ -525,9 +529,9 @@ set(iterator_src DakotaIterator.cpp DakotaAnalyzer.cpp DakotaPStudyDACE.cpp
     NonDMultilevelPolynomialChaos.cpp NonDMultilevelStochCollocation.cpp
     NonDSurrogateExpansion.cpp NonDCalibration.cpp NonDBayesCalibration.cpp
     NonDWASABIBayesCalibration.cpp NonDSampling.cpp NonDLHSSampling.cpp
-    NonDEnsembleSampling.cpp
-    NonDHierarchSampling.cpp NonDMultilevelSampling.cpp
-    NonDMultilevControlVarSampling.cpp NonDNonHierarchSampling.cpp
+    NonDImportPoints.cpp
+    NonDEnsembleSampling.cpp NonDMultilevelSampling.cpp
+    NonDMultilevControlVarSampling.cpp NonDNumericAllocSampling.cpp
     NonDMultifidelitySampling.cpp NonDACVSampling.cpp
     NonDGenACVSampling.cpp NonDMultilevBLUESampling.cpp
     NonDAdaptImpSampling.cpp NonDGPImpSampling.cpp
@@ -833,6 +837,19 @@ if(HAVE_DEMO_TPL)
   add_definitions("-DHAVE_DEMO_TPL")
 endif(HAVE_DEMO_TPL)
 
+if(HAVE_EXT_PYTHON_METHOD)
+  set(iterator_src ${iterator_src} ${Dakota_SOURCE_DIR}/src/DakotaExtPythonMethod.cpp)
+  add_definitions("-DHAVE_EXT_PYTHON_METHOD")
+
+  pybind11_add_module(ext_method DakotaExtPythonMethod.cpp)
+  target_link_libraries(ext_method PRIVATE dakota_src
+    ${Dakota_LIBRARIES} ${Dakota_TPL_LIBRARIES}
+    )
+
+    # The extra foo needed below for the python "environment" module
+    # may be needed here too (?) RWH
+endif(HAVE_EXT_PYTHON_METHOD)
+
 CheckPackage(PSUADE)
 if(HAVE_PSUADE)
   list(APPEND interface_src PSUADEDesignCompExp.cpp)
@@ -904,6 +921,17 @@ endif()
 include_directories(${DAKOTA_INCDIRS} ${EXT_TPL_INCDIRS})
 link_directories(${DAKOTA_LIBDIRS} ${EXT_TPL_LIBDIRS})
 
+set(generatedFile ${CMAKE_CURRENT_BINARY_DIR}/dakota_cmake_cache.h) 
+set_property(SOURCE ${generatedFile} PROPERTY GENERATED ON)
+
+# Generate Header file consisting of the parsed CmakeCache for xSDK compliance
+add_custom_command(
+  OUTPUT ${generatedFile}
+  COMMAND $<TARGET_FILE:parse_cmake_cache> ${CMAKE_BINARY_DIR}/CMakeCache.txt
+  DEPENDS ${CMAKE_BINARY_DIR}/CMakeCache.txt
+  VERBATIM)
+
+list(APPEND Dakota_src ${generatedFile})
 
 # --- Create the core Dakota libraries and set properties
 

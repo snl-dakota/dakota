@@ -10,3 +10,4 @@ docs/user/usingdakota/samples
 __pycache__
 *.pyc
 build
+.cache

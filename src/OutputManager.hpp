@@ -230,6 +230,7 @@ public:
 
   /// Output the current Dakota version
   void output_version(std::ostream& os = Cout) const;
+  void output_version(const String& query, std::ostream& os = Cout) const;
 
   /// Output the startup header and time
   void output_startup_message(std::ostream& os = Cout) const;

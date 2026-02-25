@@ -112,7 +112,8 @@ responses,
 	id_responses = 'UQ_R'
 	response_functions = 10
 	numerical_gradients
-	  forward fd_gradient_step_size = 1.e-6
+          interval_type
+ 	  forward fd_gradient_step_size = 1.e-6
 	no_hessians				#s0,#s2
 #	numerical_hessians			#s1,#s3
 #	  central fd_hessian_step_size = 1.e-5	#s1,#s3

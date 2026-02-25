@@ -77,7 +77,7 @@ Test Number 6 succeeded
 <<<<< Incurred cost in equivalent high fidelity evaluations: 5.7988839286e+01
 <<<<< Variance for mean estimator:
  response_fn_1:
-    Initial pilot ( 50 share samples):   6.5096835228e-01
+  Pilot reference ( 50 share samples):   6.5096835228e-01
   Projected MC    (    50 HF samples):   1.6545556341e+02
   Projected ML BLUE  (sample profile):   1.9789791420e-03
   Projected ML BLUE ratio   (1 - R^2):   1.1960789357e-05
@@ -90,7 +90,7 @@ Test Number 7 succeeded
 <<<<< Incurred cost in equivalent high fidelity evaluations: 5.7988839286e+01
 <<<<< Variance for mean estimator:
  response_fn_1:
-    Initial pilot ( 50 share samples):   3.3524361596e+01
+  Pilot reference ( 50 share samples):   3.3524361596e+01
   Projected MC    (    50 HF samples):   1.6545556341e+02
   Projected ML BLUE  (sample profile):   5.4700104883e-02
   Projected ML BLUE ratio   (1 - R^2):   3.3060299548e-04
@@ -103,7 +103,7 @@ Test Number 8 succeeded
 <<<<< Incurred cost in equivalent high fidelity evaluations: 5.7988839286e+01
 <<<<< Variance for mean estimator:
  response_fn_1:
-    Initial pilot ( 50 share samples):   8.3835105650e+00
+  Pilot reference ( 50 share samples):   8.3835105650e+00
   Projected MC    (    50 HF samples):   1.6545556341e+02
   Projected ML BLUE  (sample profile):   1.5197939602e-02
   Projected ML BLUE ratio   (1 - R^2):   9.1855113776e-05
@@ -116,7 +116,7 @@ Test Number 9 succeeded
 <<<<< Incurred cost in equivalent high fidelity evaluations: 5.7988839286e+01
 <<<<< Variance for mean estimator:
  response_fn_1:
-    Initial pilot ( 50 share samples):   4.5650527522e+00
+  Pilot reference ( 50 share samples):   4.5650527522e+00
   Projected MC    (    59 HF samples):   1.4021657916e+02
   Projected ML BLUE  (sample profile):   2.2808511644e-03
   Projected ML BLUE ratio   (1 - R^2):   1.6266629653e-05
@@ -129,7 +129,7 @@ Test Number 10 succeeded
 <<<<< Incurred cost in equivalent high fidelity evaluations: 5.7988839286e+01
 <<<<< Variance for mean estimator:
  response_fn_1:
-    Initial pilot ( 50 share samples):   1.6487086272e+00
+  Pilot reference ( 50 share samples):   1.6487086272e+00
   Projected MC    (    50 HF samples):   1.6545556341e+02
   Projected ML BLUE  (sample profile):   1.9789606395e-03
   Projected ML BLUE ratio   (1 - R^2):   1.1960677530e-05
@@ -142,7 +142,7 @@ Test Number 11 succeeded
 <<<<< Incurred cost in equivalent high fidelity evaluations: 5.7988839286e+01
 <<<<< Variance for mean estimator:
  response_fn_1:
-    Initial pilot ( 50 share samples):   3.0207377275e+00
+  Pilot reference ( 50 share samples):   3.0207377275e+00
   Projected MC    (    50 HF samples):   1.6545556341e+02
   Projected ML BLUE  (sample profile):   1.9789572105e-03
   Projected ML BLUE ratio   (1 - R^2):   1.1960656806e-05

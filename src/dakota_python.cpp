@@ -15,7 +15,10 @@
 
 #include "ExecutableEnvironment.hpp"
 #include "LibraryEnvironment.hpp"
+#include "DakotaBuildInfo.hpp"
 #include "Pybind11Interface.hpp"
+
+#include "dakota_data_types.hpp"
 
 //#include "Eigen/Dense"
 
@@ -36,9 +39,9 @@ namespace python {
 
   // demonstrate a little wrapper to get Dakota version info without
   // making an Environment
-  void print_version() {
+  void print_version(const String& query) {
     OutputManager out_mgr;
-    out_mgr.output_version();
+    out_mgr.output_version(query);
   }
 
   // Eigen::VectorXd final_response(const Environment& dakenv) {
@@ -116,10 +119,27 @@ namespace python {
 PYBIND11_MODULE(environment, m) {
 
   // demo a module-level function
+  m.def("print_version",
+  py::overload_cast<const Dakota::String&>(&Dakota::python::print_version),
+  "Print Dakota version to console",
+  py::arg("query") = ""
+  );
+
   m.def("version",
-	&Dakota::python::print_version,
-	"Print Dakota version to console"
-	);
+  &Dakota::DakotaBuildInfo::get_release_num,
+  "Return Dakota version as string"
+  );
+
+  m.def("revision",
+  &Dakota::DakotaBuildInfo::get_rev_number,
+  "Return Dakota repository revision number as string"
+  );
+
+  m.def("build_info",
+  py::overload_cast<std::string>(&Dakota::DakotaBuildInfo::get_build_config),
+  "Return build information related to `query' as a string",
+  py::arg("query") = "CXX"
+  );
 
   // demo a Dakota command-line wrapper
   // probably don't need this at all, but demoing...

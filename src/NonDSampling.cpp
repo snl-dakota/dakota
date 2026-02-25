@@ -972,7 +972,6 @@ void NonDSampling::active_set_mapping()
     or allVariables. */
 void NonDSampling::core_run()
 {
-  Cout << "Hello from NonDSampling::core_run" << std::endl;
   bool log_resp_flag = (allDataFlag || statsFlag), log_best_flag = false;
   evaluate_parameter_sets(*iteratedModel, log_resp_flag, log_best_flag);
 }
@@ -1831,6 +1830,16 @@ void NonDSampling::update_final_statistics()
   }
   else // moments + level mappings
     NonD::update_final_statistics();
+}
+
+void NonDSampling::print_header_and_statistics(std::ostream& s, 
+    const int& num_samples)
+{
+    s << "---------------------------------------------------------------------"
+      << "--------\nStatistics based on " << num_samples << " samples:\n";
+    print_statistics(s);
+    s << "---------------------------------------------------------------------"
+      << "--------" << std::endl;
 }
 
 

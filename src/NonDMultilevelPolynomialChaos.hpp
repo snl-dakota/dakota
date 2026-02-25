@@ -92,9 +92,11 @@ protected:
   void increment_sample_sequence(size_t new_samp, size_t total_samp,
 				 size_t step) override;
   void compute_sample_increment(const RealVector& sparsity,
-				const SizetArray& N_l, SizetArray& delta_N_l) override;
+				const SizetArray& N_l,
+				SizetArray& delta_N_l) override;
 
-  void print_results(std::ostream& s, short results_state = FINAL_RESULTS) override;
+  void print_results(std::ostream& s,
+		     short results_state = FINAL_RESULTS) override;
 
   //
   //- Heading: Member functions

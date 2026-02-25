@@ -220,6 +220,8 @@ class SensAnalysisGlobalTest : public SensAnalysisGlobal {
       return SensAnalysisGlobal::compute_binned_sobol_indices_from_valid_samples(valid_samples, n_bins);
       }
     void set_num_vars( size_t num_vars ){ numVars = num_vars; }
+    void set_num_cont_vars( size_t num_cont_vars ){ numContinuousVars = num_cont_vars; }
+    void set_num_disc_vars( size_t num_disc_vars ){ numDiscreteVars = num_disc_vars; }
     void set_num_fns( size_t num_fns ){ numFns = num_fns; }
     RealVectorArray get_indexSi( ){return indexSi; }
 };
@@ -298,7 +300,6 @@ class SobolG{
 TEST(global_sa_matrices_tests, test_binned_sobol_computation)
 {
 
-
   // Generating input and output samples from our test function.
   Eigen::ArrayXd a(Eigen::ArrayXd::Zero(2));
   SobolG gfunc(a);
@@ -313,6 +314,8 @@ TEST(global_sa_matrices_tests, test_binned_sobol_computation)
   SensAnalysisGlobalTest gsa;
   size_t num_vars = x.rows(), num_fns = 1;
   gsa.set_num_vars( num_vars );
+  gsa.set_num_cont_vars( num_vars );
+  gsa.set_num_disc_vars( 0 );
   gsa.set_num_fns( num_fns );
 
   // Converting to a format Dakota can ingest
@@ -322,7 +325,9 @@ TEST(global_sa_matrices_tests, test_binned_sobol_computation)
   RealMatrix samples;
   copy_data(samplesXd, samples);
 
+  // TODO: Why is this seg faulting?
   gsa.compute_binned_sobol_indices_from_valid_samples( samples, num_bins );  
+  std::cout << "here\n";
   RealVectorArray test_sobols_va = gsa.get_indexSi();
 
   RealMatrix test_sobols{int(num_vars), int(num_fns)};
@@ -339,6 +344,132 @@ TEST(global_sa_matrices_tests, test_binned_sobol_computation)
 
   EXPECT_TRUE((frob_err < 1e-3));
 }
+
+class Textbook{
+  /*
+  Implements the Textbook function, defined as
+
+  f(x1, ..., xN ) = sum_i=1^N (xi - 1)^4.
+
+  In this case we assume N=3, with 
+  x1, x2 = U[0,1]
+  x3 = histogram point, 1.1, 1.9, with equal probability
+
+  This class implements evaluation of the function, as well as computation of 
+  its analytical main effects indices.
+  */
+  public: 
+    Textbook()
+    {
+      compute_analytical_main_effects();
+    }
+
+    Eigen::ArrayXd get_analytical_main_effects(){ return analyticalMainEffects; }
+
+    Eigen::ArrayXXd generate_input_samples( int n_samples ){
+      // Eigen's Random method generates samples from U[-1,1], so we add 1 and scale by 0.5
+      // to generate samples from U[0,1].
+
+      auto u_samples = 0.5 * ( Eigen::ArrayXXd::Random( 2, n_samples ) + 1 );
+
+      // Screen by positive vs negative samples; put one or the other value;
+      // should yield equiprobable number of random samples of 1.1 and 1.9.
+      double a = 1.1;
+      double b =  1.9;
+      Eigen::ArrayXXd M =
+          (Eigen::ArrayXXd::Random(1, n_samples ) > 0).select(
+            Eigen::ArrayXXd::Constant(1,n_samples,b), 
+            Eigen::ArrayXXd::Constant(1,n_samples,a));
+
+      Eigen::ArrayXXd all_samples(3,n_samples);
+      all_samples << u_samples, M;
+      return all_samples; 
+    }
+
+    Eigen::ArrayXd evaluate( const Eigen::ArrayXXd& input_samples ){
+      /*
+      Input: [N_inputs x N_samples ] input_samples 
+      Implements the Textbook function defined above.
+      */
+
+      // Create an array [N_samples x N_inputs]; sum columnwise
+      Eigen::ArrayXXd gi{ (input_samples-1).pow(4.0).transpose() };
+      // N_inputs x N_samples, we want to sum over inputs
+      return gi.rowwise().sum();      
+    } 
+
+  private:
+    void compute_analytical_main_effects(){
+      /*
+      Partial variances are
+      V_1 = V_2 = 16/225
+      V_3 = 1/2(.1^8+.9^8) - 1/4(.1^4+.9^4)^2 
+      */
+
+      // Computing and storing partial variances in the main effects
+      // array for now; these aren't normalized yet.
+
+      float V1 = 16.0/225.0;
+      float V3 = 0.5 * (std::pow(0.1,8.)+std::pow(0.9,8.)) - 0.25 * std::pow( std::pow(0.1,4.)+std::pow(0.9,4.), 2. );
+      analyticalMainEffects.resize(3);
+      analyticalMainEffects << V1, V1, V3;
+
+      float total_variance = 2*V1 + V3;
+
+      analyticalMainEffects /= total_variance;
+      std::cout << analyticalMainEffects << " " << total_variance << std::endl;
+    }
+
+    Eigen::ArrayXd analyticalMainEffects;
+};
+
+
+
+TEST(global_sa_matrices_tests, test_discrete_binned_sobol_computation)
+{
+
+  // Generating input and output samples from our test function.
+  Textbook textbook;
+
+  // Setting the seed so we get same samples every time
+  std::srand((unsigned int) 20230530); 
+  size_t num_samples = 1000000;
+  size_t num_bins = std::sqrt(num_samples);
+  Eigen::ArrayXXd x = textbook.generate_input_samples(num_samples);
+  Eigen::ArrayXd f = textbook.evaluate(x);
+
+  SensAnalysisGlobalTest gsa;
+  size_t num_vars = x.rows(), num_fns = 1;
+  gsa.set_num_vars( num_vars );
+  gsa.set_num_cont_vars( 2 );
+  gsa.set_num_disc_vars( 1 );
+  gsa.set_num_fns( num_fns );
+
+  // Converting to a format Dakota can ingest
+  MatrixXd samplesXd{ MatrixXd::Zero( num_vars + num_fns, num_samples )};  
+  samplesXd.topRows(num_vars) = x;
+  samplesXd.row(num_vars) = f;
+  RealMatrix samples;
+  copy_data(samplesXd, samples);
+
+  gsa.compute_binned_sobol_indices_from_valid_samples( samples, num_bins );  
+  RealVectorArray test_sobols_va = gsa.get_indexSi();
+
+  RealMatrix test_sobols{int(num_vars), int(num_fns)};
+  for (int i=0; i < num_fns; i++){
+    Teuchos::setCol( test_sobols_va[i], i, test_sobols );
+  }
+
+  RealMatrix true_sobols;
+  copy_data(textbook.get_analytical_main_effects(), true_sobols);
+
+  // Compute the L2 error between the test and analytical Sobol' indices.
+  true_sobols -= test_sobols;
+  auto frob_err = true_sobols.normFrobenius();
+
+  EXPECT_TRUE((frob_err < 1e-3));
+}
+
 
 int main(int argc, char **argv) {
   testing::InitGoogleTest(&argc, argv);

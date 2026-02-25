@@ -19,3 +19,7 @@ include_var1 = 10: 10 # Should read 10
 
 from cli
 cparam: 10; cparam = 4: 10
+
+Regression Test for math module constants
+pi: 4
+E: 10

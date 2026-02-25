@@ -13,3 +13,5 @@ There should also be no difference between any kind of block
 %}
 
 {param = 10}
+{E = 10}
+{pi = 4}

@@ -88,9 +88,10 @@ public:
 
   /// compute VBD-based Sobol indices
   void compute_vbd_stats_via_sampling( const unsigned short   method
-                                     , const int              numBins
-                                     , const size_t           numFunctions
-                                     , const size_t           num_vars
+                                     , const int              num_bins
+                                     , const size_t           num_functions
+                                     , const size_t           num_continuous_vars
+                                     , const size_t           num_discrete_vars
                                      , const size_t           num_samples
                                      , const RealMatrix &     vars_samples
                                      , const IntResponseMap & resp_samples
@@ -193,15 +194,16 @@ private:
          const size_t &inc_id,
          bool rank) const;
 
-  void compute_pick_and_freeze_vbd_stats( const size_t           numFunctions
+  void compute_pick_and_freeze_vbd_stats( const size_t           num_functions
                                         , const size_t           num_vars
                                         , const size_t           num_samples
                                         , const IntResponseMap & resp_samples
                                         );
 
-  void compute_binned_vbd_stats( const int              numBins
-                                       , const size_t           numFunctions
-                                       , const size_t           num_vars
+  void compute_binned_vbd_stats(         const int              num_bins
+                                       , const size_t           num_functions
+                                       , const size_t           num_continuous_vars
+                                       , const size_t           num_discrete_vars
                                        , const size_t           num_samples
                                        , const RealMatrix &     vars_samples
                                        , const IntResponseMap & resp_samples
@@ -209,7 +211,15 @@ private:
 
   /// Returns a matrix where columns are the indices that would sort
   /// each variable's samples smallest to largest. 
-  IntMatrix get_var_samples_argsort( const RealMatrix& valid_data );
+  IntMatrix get_continuous_var_samples_argsort( const RealMatrix& valid_data );
+  
+  /// Returns a matrix where columns are the indices that sort
+  /// each variable into contiguous unique values and a list-of-lists
+  /// containing the number of unique values from smallest to largest
+  /// per variable.
+  void get_discrete_var_samples_argsort_and_counts( const RealMatrix& valid_data, 
+                                             IntMatrix& sorted_var_indices, 
+                                             std::vector<IntVector>& unique_counts );
 
   void compute_response_means_and_variances( const RealMatrix& response_samples, 
                                            RealVector& total_means,
@@ -279,16 +289,40 @@ protected:
   void compute_binned_sobol_indices_from_valid_samples( const RealMatrix& valid_samples,
                                                       size_t num_bins );
 
+
+  /// compute binned sobol indices for continuous random variables
+  void compute_binned_continuous_var_sobol_indices( RealMatrix& response_samples,
+                                                    RealVector& total_variances,
+                                                    IntMatrix& sorted_continuous_var_inds,
+                                                    size_t num_bins);
+
+  /// compute binned sobol indices for discrete random variables
+  void compute_binned_discrete_var_sobol_indices( RealMatrix& response_samples,
+                                                  RealVector& total_variances, 
+                                                  IntMatrix& sorted_discrete_var_inds, 
+                                                  std::vector<IntVector>& unique_counts );
+
+  /// Given sorted response samples and a vector of length num_bins with bin counts per
+  /// bin, computes the variance in each bin.
+  RealMatrix compute_binned_variances( RealMatrix& sorted_response_samples, IntVector& bin_counts);
+
+  /// Given binned variances, weights over bins, and the index of the variable,
+  
+  void compute_Si_from_binned_variances_and_weights( RealVector& total_variances, 
+                                                     RealMatrix& binned_variance_samples, 
+                                                     RealVector& bin_weights, int i );
+
   /// Reorder 
 
   /// number of responses
   size_t numFns;
   /// number of inputs
   size_t numVars;
+  /// number of continuous inputs
+  size_t numContinuousVars;
+  /// number of discrete inputs
+  size_t numDiscreteVars;
   
-  /// Matrix to hold binned Sobol' indices
-  //RealMatrix mainEffects;
-
   /// VBD main effect indices
   RealVectorArray indexSi;
 

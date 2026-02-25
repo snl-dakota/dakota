@@ -27,8 +27,10 @@ namespace Dakota {
     instantiation.  In this case, set_db_list_nodes has been called and 
     probDescDB can be queried for settings from the method specification. */
 NonDACVSampling::
-NonDACVSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
-  NonDNonHierarchSampling(problem_db, parallel_lib, model)//, multiStartACV(true)
+NonDACVSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
+		std::shared_ptr<Model> model):
+  NonDNumericAllocSampling(problem_db, parallel_lib, model)
+  //, multiStartACV(true)
 {
   mlmfSubMethod = problem_db.get_ushort("method.sub_method");
 
@@ -160,7 +162,8 @@ void NonDACVSampling::approximate_control_variate_online_pilot()
   if (finalStatsType == QOI_STATISTICS) {
     // peer DAG: no need for shared arrays since shared == baseline
     IntRealMatrixMap sum_L_refined;//, sum_L_shared;
-    Sizet2DArray N_L_actual_baseline; inflate(N_H_actual, N_L_actual_baseline);
+    Sizet2DArray N_L_actual_baseline;
+    inflate(N_H_actual, N_L_actual_baseline, numApprox);
     RealVector2DArray beta(4);
     approx_increments(sum_L_baselineH, N_H_actual, N_H_alloc, sum_L_refined,
 		      N_L_actual_refined, N_L_alloc, acvSolnData);
@@ -231,7 +234,7 @@ void NonDACVSampling::approximate_control_variate_offline_pilot()
   IntRealMatrixMap sum_L_refined;  //, sum_L_shared;
   Sizet2DArray N_L_actual_refined, N_L_actual_baseline;
   SizetArray   N_L_alloc;  RealVector2DArray beta(4);
-  inflate(N_H_actual, N_L_actual_baseline);
+  inflate(N_H_actual, N_L_actual_baseline, numApprox);
   approx_increments(sum_L_baselineH, N_H_actual, N_H_alloc, sum_L_refined,
 		    N_L_actual_refined, N_L_alloc, acvSolnData);
   compute_acv_controls(sum_L_pilot, sum_H_pilot, sum_LL_pilot, sum_LH_pilot,
@@ -288,7 +291,7 @@ void NonDACVSampling::approximate_control_variate_pilot_projection()
   update_projected_samples(acvSolnData, fullApproxSet, N_H_actual, N_H_alloc,
 			   N_L_actual, N_L_alloc, deltaNActualHF, deltaEquivHF);
   // No need for updating estimator variance given deltaNActualHF since
-  // NonDNonHierarchSampling::ensemble_numerical_solution() recovers N*
+  // NonDNumericAllocSampling::ensemble_numerical_solution() recovers N*
   // from the numerical solve and computes projected estVariance{s,Ratios}
 }
 
@@ -400,8 +403,8 @@ approx_increments(IntRealMatrixMap& sum_L_baseline,
   // Perform approximation increments in parallel
   // --------------------------------------------
   SizetArray delta_N_G(numGroups);
-  inflate(N_H_actual, N_L_actual_refined);
-  inflate(N_H_alloc,  N_L_alloc);
+  inflate(N_H_actual, N_L_actual_refined, numApprox);
+  inflate(N_H_alloc,  N_L_alloc,          numApprox);
   const RealVector& soln_vars = soln.solution_variables();
   size_t last_g = numGroups - 1;  delta_N_G[last_g] = 0;
   // Pyramid sampling with reuse: base to top, excluding all-model group.
@@ -703,25 +706,6 @@ analytic_ratios_to_solution_variables(RealVector& avg_eval_ratios,
 }
 
 
-void NonDACVSampling::
-print_model_allocations(std::ostream& s, const MFSolutionData& soln,
-			const UShortArray& approx_set)
-{
-  const RealVector& soln_vars = soln.solution_variables();
-  size_t i, num_approx = approx_set.size();
-  for (i=0; i<num_approx; ++i)
-    s << "Approx " << approx_set[i] + 1 << ": sample allocation = "
-      << soln_vars[i] << '\n';
-  s << "Truth:   sample allocation = " << soln_vars[num_approx] << '\n';
-  if (maxFunctionEvals == SZ_MAX)
-    s << "Estimator cost allocation = " << soln.equivalent_hf_allocation()
-      << std::endl;
-  else
-    s << "Estimator variance metric = " << soln.estimator_variance_metric()
-      << std::endl;
-}
-
-
 /** Multi-moment map-based version used by ACV following shared_increment() */
 void NonDACVSampling::
 accumulate_acv_sums(IntRealMatrixMap& sum_L_shared, IntRealVectorMap& sum_H,
@@ -742,7 +726,7 @@ accumulate_acv_sums(IntRealMatrixMap& sum_L_shared, IntRealVectorMap& sum_H,
 
     for (qoi=0; qoi<numFunctions; ++qoi) {
 
-      // see fault tol notes in NonDNonHierarchSampling::compute_correlation()
+      // see fault tol notes in NonDNumericAllocSampling::compute_correlation()
       if (!check_finite(fn_vals, asv, qoi, num_am1)) continue;
 
       hf_index = numApprox * numFunctions + qoi;
@@ -787,7 +771,7 @@ accumulate_acv_sums(RealMatrix& sum_L_baseline, RealVector& sum_H,
 
     for (qoi=0; qoi<numFunctions; ++qoi) {
 
-      // see fault tol notes in NonDNonHierarchSampling::compute_correlation()
+      // see fault tol notes in NonDNumericAllocSampling::compute_correlation()
       if (!check_finite(fn_vals, asv, qoi, num_am1)) continue;
       
       // High accumulations:
@@ -842,7 +826,7 @@ accumulate_acv_sums(IntRealMatrixMap& sum_L_shared,
 
     for (qoi=0; qoi<numFunctions; ++qoi) {
 
-      // see fault tol notes in NonDNonHierarchSampling::compute_correlation()
+      // see fault tol notes in NonDNumericAllocSampling::compute_correlation()
       if (!check_finite(fn_vals, asv, qoi, numApprox)) continue;
 
       // Low accumulations:
@@ -1166,16 +1150,18 @@ inflate_lf_samples(const UShortArray& approx_set,
       pilotMgmtMode == OFFLINE_PILOT_PROJECTION) {
     // after processing of offline covariance data, online shared_increment()
     // which follows only includes best model set 
-    if (N_L_actual.empty()) inflate(N_H_actual, N_L_actual, approx_set);
-    if (N_L_alloc.empty())  inflate(N_H_alloc,  N_L_alloc,  approx_set);
+    if (N_L_actual.empty())
+      inflate(N_H_actual, N_L_actual, approx_set, numApprox);
+    if (N_L_alloc.empty())
+      inflate(N_H_alloc,  N_L_alloc,  approx_set, numApprox);
   }
   else {
     // online: all models are part of initial shared_increment(), which can
     // then be updated when there is GenACV iteration of the active set.
     // > when iteration is not used, N_L counts do not need to be managed
     //   separately and can be inflated here from N_H.
-    if (N_L_actual.empty()) inflate(N_H_actual, N_L_actual);
-    if (N_L_alloc.empty())  inflate(N_H_alloc,  N_L_alloc);
+    if (N_L_actual.empty()) inflate(N_H_actual, N_L_actual, numApprox);
+    if (N_L_alloc.empty())  inflate(N_H_alloc,  N_L_alloc,  numApprox);
   }
 }
 

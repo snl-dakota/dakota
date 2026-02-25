@@ -92,7 +92,7 @@ Packages
      - any
      - Required, e.g., BLAS/LAPACK, MKL, Accelerate
    * - `Boost <https://www.hdfgroup.org/>`_
-     - >= 1.69
+     - >= 1.70
      - Required; headers, plus libraries: filesystem, program_options,
        regex, serialization, system
    * - MPI
@@ -205,12 +205,9 @@ OpenMPI 4.1.1::
    # Enable the PowerTools repo via editing /etc/yum.repos.d/CentOS-PowerTools.repo and install
    blas-devel lapack-devel
 
-EPEL Packages add Boost 1.69 and HDF 1.10.5::
+EPEL Packages add HDF 1.10.5::
 
    dnf install epel-release
-    
-   # EPEL, PowerTools for Boost to /usr/include/boost169
-   boost169 boost169-devel
     
    # Optional; also needs powertools for libsz and libaec deps
    hdf5 hdf5-devel: 1.10.5
@@ -218,9 +215,11 @@ EPEL Packages add Boost 1.69 and HDF 1.10.5::
    # Optional python linked library:
    python36-devel
 
+Boost version >= 1.70 can be downloaded from boost.org and installed.
+
 Basic build example::
 
-   cmake -D BOOST_INCLUDEDIR:PATH=/usr/include/boost169 -DBOOST_LIBRARYDIR:PATH=/usr/lib64/boost169 ../source
+   cmake -D BOOST_INCLUDEDIR:PATH=/usr/include/boost170 -DBOOST_LIBRARYDIR:PATH=/usr/lib64/boost170 ../source
 
 
 ------
@@ -310,7 +309,7 @@ homebrew package manager.
 
 Boost:
 
-- Download a source package for Boost 1.69 and unpack it someplace.
+- Download a source package for Boost >= 1.70 and unpack it someplace.
 - Follow the instructions on the Boost website to build Boost.Build.
 - Create ~/user-config.jam with the following in it. (Switch gcc-7 to the desired version, if different)::
 

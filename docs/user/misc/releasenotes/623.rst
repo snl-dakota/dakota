@@ -1,0 +1,100 @@
+"""""""""""""""""""""""""
+Version 6.23 (2025/11/17)
+"""""""""""""""""""""""""
+
+**Highlight: Compute statistics from imported samples**
+
+Version 6.23 includes improved support for computing statistics
+from imported samples. The :dakkw:`method-import_points` method
+reads samples from a tabular file and computes moments, correlation
+coefficients, and, optionally, level mappings and Sobol indices.
+
+*Enabling / Accessing:* The :dakkw:`method-import_samples` method is
+available in all builds of Dakota.
+
+*Documentation:* 
+
+The keyword documentation for the :dakkw:`method-import_points`
+method has further details.
+
+**Highlight: Import methods from Python**
+
+Dakota can now import and use methods written in Python. Users can
+implement or wrap their own iterative, black-box algorithms such as 
+optimizers or UQ methods and use them in Dakota studies. Dakota
+provides the imported method with a wrapped Model instance that it can
+use to evaluate the function, gradient, and Hessian of responses and
+perform other operations such as sending results to Dakota's output
+stream.
+
+*Enabling / Accessing:* The :dakkw:`method-external_python` method is
+available in all builds of Dakota.
+
+*Documentation:* 
+
+The keyword documentation for the :dakkw:`method-external_python`
+method has further details.
+
+**Improvements by Category**
+
+A number of refinements were performed as part of recent large-scale
+multifidelity deployments.
+
+*UQ Methods*
+
+- Fault tolerance: ML BLUE (:dakkw:`method-multilevel_blue`) now more 
+  consistent with other multifidelity sampling methods in the presence
+  of simulation faults: (a) exclude all data for a given sample from group
+  covariance estimation when any model fails, and (b) reference
+  estimator variance (for reporting and relative accuracy control) is
+  based on actual accumulations rather than allocations.
+
+- Online cost recovery: multifidelity surrogate methods (polynomial
+  chaos, stochastic collocation, and functional tensor train) now
+  support model cost estimation through online metadata recovery, as
+  previously supported for multifidelity sampling methods.
+
+- Accuracy control: multifidelity methods can now target an
+  absolute accuracy (specified using ``convergence_tolerance`` with
+  ``absolute`` instead of the default ``relative``), rather than as
+  relative to a pilot sample-based accuracy benchmark.  This enables
+  activation of accuracy control (min cost for specified accuracy) for
+  all offline pilot cases, since they otherwise do not have an
+  appropriate pilot accuracy benchmark.
+
+*Parallelism*
+
+- Multi-batch processing of concurrent jobs is now supported for
+  ensemble models.  Each unique sample set spanning a set of models is
+  now exported as an individual batch file, where multiple concurrent
+  batches are supported during group covariance evaluation or sample
+  allocation increments.  This enables more advanced interaction with
+  ensemble managers such as `Flux <http://flux-framework.org/>`_,
+  admitting greater concurrency in multifidelity method executions.
+
+- Asynchronous local concurrency for a simulation interface would
+  previously serialize any local job scheduling when the concurrency
+  was set at 1.  In the presence of multiple simulation interfaces
+  within an ensemble model specification, it can be desirable to allow
+  asynchronous job launches even in the case of a single job per
+  interface, in order to admit concurrency across interfaces.  An
+  alternative serialization threshold is now employed by ensemble
+  models and by the optional interface in nested models.
+
+
+**Miscellaneous Enhancements and Bugfixes**
+
+- Windows builds now performed using MSVS 2022 and Intel oneAPI 2024.
+- Fix for `github 140 <http://github.com/snl-dakota/dakota/issues/140>`_
+  by replacing boost::filesystem with std::filesystem
+- Obviates `github PR179 <https://github.com/snl-dakota/dakota/pull/179>`_
+  and `github PR181 <https://github.com/snl-dakota/dakota/pull/181>`_
+- Method source and interval type keywords for numerical gradients are 
+  now properly nested.
+- Dakota reports the options it was configured with when the
+  `-version` command line argument is followed by `all` or a search string.
+
+**Compatibility**
+
+- Dakota now requires a minimum of Boost 1.70.
+

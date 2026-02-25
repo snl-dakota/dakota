@@ -332,6 +332,11 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
    )
   |
+  ( external_python {N_mdm(utype,methodName_EXTERNAL_PYTHON)}
+    class_path_and_name STRING {N_mdm(str,moduleAndClassName)}
+    [ options_file STRING {N_mdm(str,advancedOptionsFilename)} ]
+   )
+  |
   ( npsol_sqp {N_mdm(utype,methodName_NPSOL_SQP)}
     [ verify_level INTEGER {N_mdm(int,verifyLevel)} ]
     [ function_precision REAL {N_mdm(Real,functionPrecision)} ]
@@ -2752,15 +2757,15 @@ KEYWORD method {N_mdm3(start,0,stop)}
               file STRING {N_mdm(str,generatingVectorFileName)}
               |
               ( predefined {0}
-                kuo {N_mdm(true,kuo)}
+                kuo {N_mdm(type,rank1GeneratingVectorScheme_GEN_VECTOR_KUO)}
                 |
-                cools_kuo_nuyens {N_mdm(true,cools_kuo_nuyens)}
+                cools_kuo_nuyens {N_mdm(type,rank1GeneratingVectorScheme_GEN_VECTOR_COOLS_KUO_NUYENS)}
                )
              ]
             [ ordering {0}
-              natural {N_mdm(true,naturalOrdering)}
+              natural {N_mdm(type,rank1Ordering_RANK_1_LATTICE_NATURAL_ORDERING)}
               |
-              radical_inverse {N_mdm(true,radicalInverseOrdering)}
+              radical_inverse {N_mdm(type,rank1Ordering_RANK_1_LATTICE_RADICAL_INVERSE_ORDERING)}
              ]
            )
          ]
@@ -2782,15 +2787,15 @@ KEYWORD method {N_mdm3(start,0,stop)}
               file STRING {N_mdm(str,generatingMatricesFileName)}
               |
               ( predefined {0}
-                joe_kuo {N_mdm(true,joe_kuo)}
+                joe_kuo {N_mdm(type,digitalNetGeneratingMatrixScheme_JOE_KUO)}
                 |
-                sobol_order_2 {N_mdm(true,sobol_order_2)}
+                sobol_order_2 {N_mdm(type,digitalNetGeneratingMatrixScheme_SOBOL_ORDER_2)}
                )
              ]
             [ ordering {0}
-              natural {N_mdm(true,naturalOrdering)}
+              natural {N_mdm(type,digitalNetOrdering_DIGITAL_NET_NATURAL_ORDERING)}
               |
-              gray_code {N_mdm(true,grayCodeOrdering)}
+              gray_code {N_mdm(type,digitalNetOrdering_DIGITAL_NET_GRAY_CODE_ORDERING)}
              ]
            )
          ]
@@ -2870,6 +2875,73 @@ KEYWORD method {N_mdm3(start,0,stop)}
       mt19937 {N_mdm(lit,rngName_mt19937)}
       |
       rnum2 {N_mdm(lit,rngName_rnum2)}
+     ]
+    [ model_pointer STRING {N_mdm(str,modelPointer)} ]
+   )
+  |
+  ( import_points {N_mdm(utype,methodName_IMPORT_POINTS)}
+    ( import_points_file STRING {N_mdm(str,importPtsFile)}
+      [ 
+        ( custom_annotated {N_mdm(utype,importPtsFormat_TABULAR_NONE)}
+          [ header {N_mdm(augment_utype,importPtsFormat_TABULAR_HEADER)}
+            [ use_variable_labels {N_mdm(true,importPtsUseVariableLabels)} ]
+           ]
+          [ eval_id {N_mdm(augment_utype,importPtsFormat_TABULAR_EVAL_ID)} ]
+          [ interface_id {N_mdm(augment_utype,importPtsFormat_TABULAR_IFACE_ID)} ]
+         )
+        |
+        ( annotated {N_mdm(utype,importPtsFormat_TABULAR_ANNOTATED)}
+          [ use_variable_labels {N_mdm(true,importPtsUseVariableLabels)} ]
+         )
+        |
+        freeform {N_mdm(utype,importPtsFormat_TABULAR_NONE)}
+       ]
+      [ active_only {N_mdm(true,importPtsActive)} ]
+     )
+    [ variance_based_decomp {N_mdm(true,vbdFlag)}
+      [ drop_tolerance REAL {N_mdm(Real,vbdDropTolerance)} ]
+      [ num_bins INTEGER {N_mdm(int,vbdViaSamplingNumBins)} ]
+     ]
+    [ std_regression_coeffs {N_mdm(true,stdRegressionCoeffs)} ]
+    [ tolerance_intervals {N_mdm(true,toleranceIntervalsFlag)}
+      [ coverage REAL {N_mdm(Real01,tiCoverage)} ]
+      [ confidence_level REAL {N_mdm(Real01,tiConfidenceLevel)} ]
+     ]
+    [ final_moments {0}
+      none {N_mdm(type,finalMomentsType_NO_MOMENTS)}
+      |
+      standard {N_mdm(type,finalMomentsType_STANDARD_MOMENTS)}
+      |
+      central {N_mdm(type,finalMomentsType_CENTRAL_MOMENTS)}
+     ]
+    [ response_levels REALLIST {N_mdm(resplevs,responseLevels)}
+      [ num_response_levels INTEGERLIST {N_mdm(num_resplevs,responseLevels)} ]
+      [ compute {0}
+        probabilities {N_mdm(type,responseLevelTarget_PROBABILITIES)}
+        |
+        reliabilities {N_mdm(type,responseLevelTarget_RELIABILITIES)}
+        |
+        gen_reliabilities {N_mdm(type,responseLevelTarget_GEN_RELIABILITIES)}
+        [ system {0}
+          series {N_mdm(type,responseLevelTargetReduce_SYSTEM_SERIES)}
+          |
+          parallel {N_mdm(type,responseLevelTargetReduce_SYSTEM_PARALLEL)}
+         ]
+       ]
+     ]
+    [ probability_levels REALLIST {N_mdm(resplevs01,probabilityLevels)}
+      [ num_probability_levels INTEGERLIST {N_mdm(num_resplevs,probabilityLevels)} ]
+     ]
+    [ reliability_levels REALLIST {N_mdm(resplevs,reliabilityLevels)}
+      [ num_reliability_levels INTEGERLIST {N_mdm(num_resplevs,reliabilityLevels)} ]
+     ]
+    [ gen_reliability_levels REALLIST {N_mdm(resplevs,genReliabilityLevels)}
+      [ num_gen_reliability_levels INTEGERLIST {N_mdm(num_resplevs,genReliabilityLevels)} ]
+     ]
+    [ distribution {0}
+      cumulative {N_mdm(type,distributionType_CUMULATIVE)}
+      |
+      complementary {N_mdm(type,distributionType_COMPLEMENTARY)}
      ]
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
    )
@@ -3082,6 +3154,11 @@ KEYWORD method {N_mdm3(start,0,stop)}
         fallback {N_mdm(utype,numericalSolveMode_NUMERICAL_FALLBACK)}
         |
         override {N_mdm(utype,numericalSolveMode_NUMERICAL_OVERRIDE)}
+       ]
+      [ 
+        reorder_models {N_mdm(utype,modelReordering_REORDER_MODELS_ON_THE_FLY)}
+        |
+        fixed_model_order {N_mdm(utype,modelReordering_FIXED_MODEL_ORDERING)}
        ]
       [ 
         sqp {N_mdm(utype,optSubProbSolver_SUBMETHOD_NPSOL)}
@@ -6122,7 +6199,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
         |
         ( multilevel_mcmc {N_mdm(lit,mcmcType_multilevel_mcmc)}
           [ initial_chain_samples INTEGER {N_mdm(int,mlmcmcInitialChainSamples)} ]
-          target_variance REAL {N_mdm(Real,mlmcmcTargetVariance)}
+          [ target_variance REAL {N_mdm(Real,mlmcmcTargetVariance)} ]
           [ greedy_resampling_factor REAL {N_mdm(Real,mlmcmcGreedyResamplingFactor)} ]
           [ subsampling_steps INTEGERLIST {N_mdm(ivec,mlmcmcSubsamplingSteps)} ]
          )
@@ -7230,7 +7307,7 @@ KEYWORD variables {N_vam3(start,0,stop)}
     [ real INTEGER > 0 {N_vam(sizet,numDiscreteDesSetRealVars)}
       [ elements_per_variable ALIAS num_set_values INTEGERLIST LEN1 real {N_vam(newiarray,Var_Info_nddsr)} ]
       elements ALIAS set_values REALLIST {N_vam(newrvec,Var_Info_ddsr)}
-      [ categorical STRINGLIST LEN integer {N_vam(categorical,discreteDesignSetRealCat)}
+      [ categorical STRINGLIST LEN real {N_vam(categorical,discreteDesignSetRealCat)}
         [ adjacency_matrix INTEGERLIST {N_vam(newivec,Var_Info_ddsra)} ]
        ]
       [ initial_point REALLIST LEN real {N_vam(rvec,discreteDesignSetRealVars)} ]
@@ -7448,7 +7525,7 @@ KEYWORD variables {N_vam3(start,0,stop)}
     [ real INTEGER > 0 {N_vam(sizet,numDiscreteStateSetRealVars)}
       [ elements_per_variable ALIAS num_set_values INTEGERLIST LEN1 real {N_vam(newiarray,Var_Info_ndssr)} ]
       elements ALIAS set_values REALLIST {N_vam(newrvec,Var_Info_dssr)}
-      [ categorical STRINGLIST LEN integer {N_vam(categorical,discreteStateSetRealCat)} ]
+      [ categorical STRINGLIST LEN real {N_vam(categorical,discreteStateSetRealCat)} ]
       [ initial_state REALLIST LEN real {N_vam(rvec,discreteStateSetRealVars)} ]
       [ descriptors STRINGLIST LEN real {N_vam(strL,discreteStateSetRealLabels)} ]
      ]
@@ -7641,7 +7718,7 @@ KEYWORD responses {N_rem3(start,0,stop)}
         [ data_directory STRING {N_rem(str,dataPathPrefix)} ]
         [ num_experiments INTEGER >= 0 {N_rem(sizet,numExperiments)} ]
         [ num_config_variables INTEGER >= 0 {N_rem(sizet,numExpConfigVars)} ]
-        [ experiment_variance_type ALIAS variance_type STRINGLIST LEN1 field_calibration_terms {N_rem(strL,varianceType)} ]
+        [ experiment_variance_type ALIAS variance_type STRINGLIST LEN1 calibration_terms {N_rem(strL,varianceType)} ]
         [ scalar_data_file STRING {N_rem(str,scalarDataFileName)}
           [ 
             ( custom_annotated {N_rem(utype,scalarDataFormat_TABULAR_NONE)}
@@ -7702,8 +7779,7 @@ KEYWORD responses {N_rem3(start,0,stop)}
   ( mixed_gradients {N_rem(lit,gradientType_mixed)}
     id_numerical_gradients INTEGERLIST {N_rem(intset,idNumericalGrads)}
     id_analytic_gradients INTEGERLIST {N_rem(intset,idAnalyticGrads)}
-    [ method_source {0} ]
-    [ 
+    [ method_source {0}
       ( dakota {N_rem(lit,methodSource_dakota)}
         [ ignore_bounds {N_rem(true,ignoreBounds)} ]
         [ 
@@ -7717,8 +7793,7 @@ KEYWORD responses {N_rem3(start,0,stop)}
       |
       vendor {N_rem(lit,methodSource_vendor)}
      ]
-    [ interval_type {0} ]
-    [ 
+    [ interval_type {0}
       forward {N_rem(lit,intervalType_forward)}
       |
       central {N_rem(lit,intervalType_central)}
@@ -7727,8 +7802,7 @@ KEYWORD responses {N_rem3(start,0,stop)}
    )
   |
   ( numerical_gradients {N_rem(lit,gradientType_numerical)}
-    [ method_source {0} ]
-    [ 
+    [ method_source {0}
       ( dakota {N_rem(lit,methodSource_dakota)}
         [ ignore_bounds {N_rem(true,ignoreBounds)} ]
         [ 
@@ -7742,8 +7816,7 @@ KEYWORD responses {N_rem3(start,0,stop)}
       |
       vendor {N_rem(lit,methodSource_vendor)}
      ]
-    [ interval_type {0} ]
-    [ 
+    [ interval_type {0}
       forward {N_rem(lit,intervalType_forward)}
       |
       central {N_rem(lit,intervalType_central)}

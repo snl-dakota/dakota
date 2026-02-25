@@ -1,8 +1,8 @@
 Test Number 0 succeeded
-<<<<< Function evaluation summary: 197 total (186 new, 11 duplicate)
-         obj_fn: 197 val (186 n, 11 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- nln_ineq_con_1: 173 val (162 n, 11 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- nln_ineq_con_2: 169 val (158 n, 11 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 188 total (181 new, 7 duplicate)
+         obj_fn: 188 val (181 n, 7 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ nln_ineq_con_1: 164 val (157 n, 7 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ nln_ineq_con_2: 160 val (153 n, 7 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                       5.0038033911e-01 x1
                       5.0038042558e-01 x2
@@ -10,12 +10,12 @@ Test Number 0 succeeded
                       1.0000000000e+00 z1
 <<<<< Best objective function  =
                       1.2462008192e-01
-<<<<< Best evaluation ID: 191
+<<<<< Best evaluation ID: 182
 Test Number 1 succeeded
-<<<<< Function evaluation summary: 97 total (97 new, 0 duplicate)
-         obj_fn: 97 val (97 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- nln_ineq_con_1: 97 val (97 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- nln_ineq_con_2: 97 val (97 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 82 total (82 new, 0 duplicate)
+         obj_fn: 82 val (82 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ nln_ineq_con_1: 82 val (82 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ nln_ineq_con_2: 82 val (82 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                       5.0000000000e-01 x1
                       5.0000000000e-01 x2
@@ -23,26 +23,26 @@ Test Number 1 succeeded
                       1.0000000000e+00 z1
 <<<<< Best objective function  =
                       1.2501781853e-01
-<<<<< Best evaluation ID: 94
+<<<<< Best evaluation ID: 79
 Test Number 2 succeeded
-<<<<< Function evaluation summary: 1332 total (1332 new, 0 duplicate)
-         obj_fn: 1332 val (1332 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- nln_ineq_con_1: 1332 val (1332 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- nln_ineq_con_2: 1332 val (1332 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 8508 total (8462 new, 46 duplicate)
+         obj_fn: 8508 val (8462 n, 46 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ nln_ineq_con_1: 8508 val (8462 n, 46 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ nln_ineq_con_2: 8508 val (8462 n, 46 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                     -5.1763266815e-01 x1
-                      1.4774644289e-01 x2
-                      3.1744655842e+00 x3
-                      3.0000000000e+00 y1
-                      2.0000000000e+00 y2
+                      6.0548929991e-01 x1
+                      6.3613726321e-01 x2
+                      1.0282933018e+00 x3
+                      1.0000000000e+00 y1
+                      1.0000000000e+00 y2
 <<<<< Best objective function  =
-                      4.5189161820e+01
-<<<<< Best evaluation ID: 1185
+                      4.1752768386e-02
+<<<<< Best evaluation ID: 8322
 Test Number 3 succeeded
-<<<<< Function evaluation summary: 43 total (32 new, 11 duplicate)
-         obj_fn: 43 val (32 n, 11 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- nln_ineq_con_1: 43 val (32 n, 11 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-   nln_eq_con_1: 43 val (32 n, 11 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 34 total (27 new, 7 duplicate)
+         obj_fn: 34 val (27 n, 7 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ nln_ineq_con_1: 34 val (27 n, 7 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+   nln_eq_con_1: 34 val (27 n, 7 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                       6.1675011764e-08 x1
                       1.7560655608e-04 x2
@@ -50,4 +50,4 @@ Test Number 3 succeeded
                       1.0000000000e+00 z1
 <<<<< Best objective function  =
                       2.9772896557e+00
-<<<<< Best evaluation ID: 37
+<<<<< Best evaluation ID: 28

@@ -1,0 +1,34 @@
+Blurb::
+File containing list of variable and response values to import for analysis.
+Description::
+The ``import_points_file`` specifies a file containing a list of variable and
+response values.
+
+*Default Behavior*
+
+This argument must be specified for ``import_points_method``.
+
+*Usage Tips*
+
+Dakota parses input files without regard to whitespace, but the
+import_points_file must be in one of three formats:
+
+- ``annotated`` (default)
+- ``custom_annotated``
+- ``freeform``
+Topics::
+
+Examples::
+
+.. code-block::
+
+    method
+      import_points
+        import_points_file = 'all_samples.dat'
+
+
+Theory::
+
+Faq::
+
+See_Also::

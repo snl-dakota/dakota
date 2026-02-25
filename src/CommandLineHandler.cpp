@@ -332,7 +332,7 @@ void CommandLineHandler::initialize_options()
   // information options
   enroll("help",    GetLongOpt::Valueless, "Print this summary", NULL);
 
-  enroll("version", GetLongOpt::Valueless, "Print DAKOTA version number", NULL);
+  enroll("version", GetLongOpt::OptionalValue, "Print DAKOTA version number", NULL);
 
   // I/O options
   enroll("input",   GetLongOpt::MandatoryValue,

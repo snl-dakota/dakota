@@ -1,0 +1,94 @@
+Blurb::
+Specify the module and class name of the external python method
+
+Description::
+Specify the module and class name of the external python method.
+The python method will be treated by Dakota as a top-level Iterator
+and must supply a ``core_run`` method.  Optionally, ``initialize_run``
+``pre_run`` ``post_run`` and ``finalize_run`` methods may be supplied.
+
+Topics::
+
+Examples::
+
+Use of external python methods in Dakota is enabled within the method
+block via:
+
+.. code-block::
+
+  method,
+      external_python
+        class_path_and_name = "ext_py_methods.RandomSample"
+        options_file = 'ext_py_options.json'
+
+
+An example python class that implements simple random sampling in the
+``core_run`` method could consist of the following:
+
+.. code-block:: python
+
+  import ext_method
+
+  class RandomSample:
+  
+      def __init__(self, executor, params_file=None):
+          self.executor = executor
+          if params_file is not None:
+              with open(params_file) as F:
+                  all_methods_params = json.load(F)
+              self.params = all_methods_params['RandomSample']
+  
+      def core_run(self):
+          n_vars = self.executor.tv()
+          init_pts = self.executor.initial_values()
+          l_bounds = self.executor.continuous_lower_bounds()
+          u_bounds = self.executor.continuous_upper_bounds()
+  
+          # Method specs
+          max_evals = self.params['max_evals']
+          rnd_seed  = self.params['rnd_seed']
+          rnd.seed(rnd_seed)
+  
+          retval = {}
+  
+          i = 1
+          x = init_pts
+          xvals = []
+          self.fns = []
+          while  i<=max_evals:
+              xvals.append(x)
+              self.fns.append(self.executor.function_value(x))
+              x = []
+              for j in range(n_vars):
+                  x.append(rnd.uniform(l_bounds[j], u_bounds[j]))
+              i=i+1
+  
+          retval['x']   = x
+          retval['fns'] = self.fns
+  
+          return retval
+  
+  
+      def post_run(self):
+          # Output using Dakota formatting
+          self.executor.output_central_moments(self.fns)
+
+
+A companion options file, ``ext_py_options.json`` which satisfies the
+method specifications above might contain the following:
+
+.. code-block::
+
+    {
+      "RandomSample" :
+      {
+        "max_evals" : 25,
+        "rnd_seed"  : 231
+      }
+    }
+
+Theory::
+
+Faq::
+
+See_Also::
