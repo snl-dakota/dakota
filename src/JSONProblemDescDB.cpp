@@ -105,6 +105,9 @@ JSONProblemDescDB::handle_keyword(const json& key_map_item, const std::string& c
           std::cout << "   " << str << std::endl;
           });
 
+    if( cache_keys.empty() )
+      std::cout << currentPath << " --> " << "No pdb_key" << std::endl;
+
     const std::string& storage_type = key_map_item[currentPath]["storage_type"];
 
     for( const auto& ckey : cache_keys )
@@ -153,7 +156,7 @@ JSONProblemDescDB::handle_keyword(const json& key_map_item, const std::string& c
         }
         else if( type == "resplevs01" ) {
           std::cout << "DIRECT_VALUE, resplevs01: " << value << std::endl;
-          cachedData_RealVectorArray[ckey] = value.get<JSONRealVectorArray>().value;
+          cachedData_RealVector[ckey] = value.get<JSONRealVector>().value;
         }
         else
           std::cout << "DIRECT_VALUE: Need to implement data caching for type "
@@ -214,8 +217,6 @@ JSONProblemDescDB::handle_keyword(const json& key_map_item, const std::string& c
         }
       }
     }
-    if( cache_keys.empty() )
-      std::cout << currentPath << " --> " << "No pdb_key" << std::endl;
   }
   else
     std::cout << currentPath << " --> " << "Not in xml_keywords_by_path file" << std::endl;
