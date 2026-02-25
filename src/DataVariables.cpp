@@ -62,10 +62,13 @@ void DataVariablesRep::write(MPIPackBuffer& s) const
 
   // Aleatory uncertain arrays
   s << normalUncMeans << normalUncStdDevs << normalUncLowerBnds
-    << normalUncUpperBnds << normalUncVars << lognormalUncLambdas
+    << normalUncUpperBnds << normalUncVars
+    << normalUncInferredLowerBnds << normalUncInferredUpperBnds
+    << lognormalUncLambdas
     << lognormalUncZetas << lognormalUncMeans << lognormalUncStdDevs
     << lognormalUncErrFacts << lognormalUncLowerBnds << lognormalUncUpperBnds
-    << lognormalUncVars << uniformUncLowerBnds << uniformUncUpperBnds
+    << lognormalUncVars << lognormalUncInferredLowerBnds
+    << lognormalUncInferredUpperBnds << uniformUncLowerBnds << uniformUncUpperBnds
     << uniformUncVars << loguniformUncLowerBnds << loguniformUncUpperBnds
     << loguniformUncVars << triangularUncModes << triangularUncLowerBnds
     << triangularUncUpperBnds << triangularUncVars << exponentialUncBetas
@@ -173,10 +176,13 @@ void DataVariablesRep::read(MPIUnpackBuffer& s)
 
   // Aleatory uncertain arrays
   s >> normalUncMeans >> normalUncStdDevs >> normalUncLowerBnds
-    >> normalUncUpperBnds >> normalUncVars >> lognormalUncLambdas
+    >> normalUncUpperBnds >> normalUncVars
+    >> normalUncInferredLowerBnds >> normalUncInferredUpperBnds
+    >> lognormalUncLambdas
     >> lognormalUncZetas >> lognormalUncMeans >> lognormalUncStdDevs
     >> lognormalUncErrFacts >> lognormalUncLowerBnds >> lognormalUncUpperBnds
-    >> lognormalUncVars >> uniformUncLowerBnds >> uniformUncUpperBnds
+    >> lognormalUncVars >> lognormalUncInferredLowerBnds
+    >> lognormalUncInferredUpperBnds >> uniformUncLowerBnds >> uniformUncUpperBnds
     >> uniformUncVars >> loguniformUncLowerBnds >> loguniformUncUpperBnds
     >> loguniformUncVars >> triangularUncModes >> triangularUncLowerBnds
     >> triangularUncUpperBnds >> triangularUncVars >> exponentialUncBetas
@@ -282,10 +288,13 @@ void DataVariablesRep::write(std::ostream& s) const
 
   // Aleatory uncertain arrays
   s << normalUncMeans << normalUncStdDevs << normalUncLowerBnds
-    << normalUncUpperBnds << normalUncVars << lognormalUncLambdas
+    << normalUncUpperBnds << normalUncVars
+    << normalUncInferredLowerBnds << normalUncInferredUpperBnds
+    << lognormalUncLambdas
     << lognormalUncZetas << lognormalUncMeans << lognormalUncStdDevs
     << lognormalUncErrFacts << lognormalUncLowerBnds << lognormalUncUpperBnds
-    << lognormalUncVars << uniformUncLowerBnds << uniformUncUpperBnds
+    << lognormalUncVars << lognormalUncInferredLowerBnds
+    << lognormalUncInferredUpperBnds << uniformUncLowerBnds << uniformUncUpperBnds
     << uniformUncVars << loguniformUncLowerBnds << loguniformUncUpperBnds
     << loguniformUncVars << triangularUncModes << triangularUncLowerBnds
     << triangularUncUpperBnds << triangularUncVars << exponentialUncBetas

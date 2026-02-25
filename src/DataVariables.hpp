@@ -322,6 +322,12 @@ public:
   /// initial values of the normal uncertain variables (from the \c
   /// initial_point specification in \ref VarCAUV_Normal)
   RealVector normalUncVars;
+  /// inferred lower bounds for the normal uncertain variables
+  /// (equals distribution bounds if specified, otherwise mean - 3*sigma)
+  RealVector normalUncInferredLowerBnds;
+  /// inferred upper bounds for the normal uncertain variables
+  /// (equals distribution bounds if specified, otherwise mean + 3*sigma)
+  RealVector normalUncInferredUpperBnds;
   /// lambdas (means of the corresponding normals) of the lognormal uncertain
   /// variables (from the \c lambdas specification in \ref VarCAUV_Lognormal)
   RealVector lognormalUncLambdas;
@@ -347,6 +353,12 @@ public:
   /// initial values of the lognormal uncertain variables (from the \c
   /// initial_point specification in \ref VarCAUV_Lognormal)
   RealVector lognormalUncVars;
+  /// inferred lower bounds for the lognormal uncertain variables
+  /// (equals distribution bounds if specified, otherwise 0 or inferred)
+  RealVector lognormalUncInferredLowerBnds;
+  /// inferred upper bounds for the lognormal uncertain variables
+  /// (equals distribution bounds if specified, otherwise mean + 3*sigma)
+  RealVector lognormalUncInferredUpperBnds;
   /// per-type labels for lognormalUnc variables
   StringArray lognormalUncLabels;
   /// distribution lower bounds for the uniform uncertain variables

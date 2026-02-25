@@ -27,203 +27,116 @@ RelaxedVarConstraints(const ProblemDescDB& problem_db,
 		      const SharedVariablesData& svd):
   Constraints(BaseConstructor(), problem_db, svd)
 {
-  const RealVector& cdv_l_bnds = problem_db.get_rv(
-    "variables.continuous_design.lower_bounds");
-  const RealVector& cdv_u_bnds = problem_db.get_rv(
-    "variables.continuous_design.upper_bounds");
-  const RealVector& cauv_l_bnds = problem_db.get_rv(
-    "variables.continuous_aleatory_uncertain.lower_bounds");
-  const RealVector& cauv_u_bnds = problem_db.get_rv(
-    "variables.continuous_aleatory_uncertain.upper_bounds");
-  const RealVector& ceuv_l_bnds = problem_db.get_rv(
-    "variables.continuous_epistemic_uncertain.lower_bounds");
-  const RealVector& ceuv_u_bnds = problem_db.get_rv(
-    "variables.continuous_epistemic_uncertain.upper_bounds");
-  const RealVector& csv_l_bnds  = problem_db.get_rv(
-    "variables.continuous_state.lower_bounds");
-  const RealVector& csv_u_bnds  = problem_db.get_rv(
-    "variables.continuous_state.upper_bounds");
-
-  const IntVector& ddrv_l_bnds = problem_db.get_iv(
-    "variables.discrete_design_range.lower_bounds");
-  const IntVector& ddrv_u_bnds = problem_db.get_iv(
-    "variables.discrete_design_range.upper_bounds");
-  const IntVector& ddsiv_l_bnds = problem_db.get_iv(
-    "variables.discrete_design_set_int.lower_bounds");
-  const IntVector& ddsiv_u_bnds = problem_db.get_iv(
-    "variables.discrete_design_set_int.upper_bounds");
-  const IntVector& dauiv_l_bnds = problem_db.get_iv(
-    "variables.discrete_aleatory_uncertain_int.lower_bounds");
-  const IntVector& dauiv_u_bnds = problem_db.get_iv(
-    "variables.discrete_aleatory_uncertain_int.upper_bounds");
-  const IntVector& deuiv_l_bnds = problem_db.get_iv(
-    "variables.discrete_epistemic_uncertain_int.lower_bounds");
-  const IntVector& deuiv_u_bnds = problem_db.get_iv(
-    "variables.discrete_epistemic_uncertain_int.upper_bounds");
-  const IntVector& dsrv_l_bnds = problem_db.get_iv(
-    "variables.discrete_state_range.lower_bounds");
-  const IntVector& dsrv_u_bnds = problem_db.get_iv(
-    "variables.discrete_state_range.upper_bounds");
-  const IntVector& dssiv_l_bnds = problem_db.get_iv(
-    "variables.discrete_state_set_int.lower_bounds");
-  const IntVector& dssiv_u_bnds = problem_db.get_iv(
-    "variables.discrete_state_set_int.upper_bounds");
-
-  // discrete string variable bounds?  (not needed for exclusively categorical)
-
-  const RealVector& ddsrv_l_bnds = problem_db.get_rv(
-    "variables.discrete_design_set_real.lower_bounds");
-  const RealVector& ddsrv_u_bnds = problem_db.get_rv(
-    "variables.discrete_design_set_real.upper_bounds");
-  const RealVector& daurv_l_bnds = problem_db.get_rv(
-    "variables.discrete_aleatory_uncertain_real.lower_bounds");
-  const RealVector& daurv_u_bnds = problem_db.get_rv(
-    "variables.discrete_aleatory_uncertain_real.upper_bounds");
-  const RealVector& deurv_l_bnds = problem_db.get_rv(
-    "variables.discrete_epistemic_uncertain_real.lower_bounds");
-  const RealVector& deurv_u_bnds = problem_db.get_rv(
-    "variables.discrete_epistemic_uncertain_real.upper_bounds");
-  const RealVector& dssrv_l_bnds = problem_db.get_rv(
-    "variables.discrete_state_set_real.lower_bounds");
-  const RealVector& dssrv_u_bnds = problem_db.get_rv(
-    "variables.discrete_state_set_real.upper_bounds");
-
   size_t i, ardi_cntr = 0, ardr_cntr = 0,
-    acv_offset = 0, adiv_offset = 0, adrv_offset = 0,
-    num_ddrv  = ddrv_l_bnds.length(),  num_ddsiv = ddsiv_l_bnds.length(),
-    num_ddsrv = ddsrv_l_bnds.length(), num_dauiv = dauiv_l_bnds.length(),
-    num_daurv = daurv_l_bnds.length(), num_deuiv = deuiv_l_bnds.length(),
-    num_deurv = deurv_l_bnds.length(), num_dsrv  = dsrv_l_bnds.length(),
-    num_dssiv = dssiv_l_bnds.length(), num_dssrv = dssrv_l_bnds.length();
+    acv_offset = 0, adiv_offset = 0, adrv_offset = 0;
   const BitArray& all_relax_di = sharedVarsData.all_relaxed_discrete_int();
   const BitArray& all_relax_dr = sharedVarsData.all_relaxed_discrete_real();
 
-  copy_data_partial(cdv_l_bnds, allContinuousLowerBnds, acv_offset);
-  copy_data_partial(cdv_u_bnds, allContinuousUpperBnds, acv_offset);
-  acv_offset += cdv_l_bnds.length();
-  for (i=0; i<num_ddrv; ++i, ++ardi_cntr)
-    if (all_relax_di[ardi_cntr]) {
-      allContinuousLowerBnds[acv_offset]   = (Real)ddrv_l_bnds[i];
-      allContinuousUpperBnds[acv_offset]   = (Real)ddrv_u_bnds[i];
-      ++acv_offset;
-    }
-    else {
-      allDiscreteIntLowerBnds[adiv_offset] = ddrv_l_bnds[i];
-      allDiscreteIntUpperBnds[adiv_offset] = ddrv_u_bnds[i];
-      ++adiv_offset;
-    }
-  for (i=0; i<num_ddsiv; ++i, ++ardi_cntr)
-    if (all_relax_di[ardi_cntr]) {
-      allContinuousLowerBnds[acv_offset]   = (Real)ddsiv_l_bnds[i];
-      allContinuousUpperBnds[acv_offset]   = (Real)ddsiv_u_bnds[i];
-      ++acv_offset;
-    }
-    else {
-      allDiscreteIntLowerBnds[adiv_offset] = ddsiv_l_bnds[i];
-      allDiscreteIntUpperBnds[adiv_offset] = ddsiv_u_bnds[i];
-      ++adiv_offset;
-    }
-  for (i=0; i<num_ddsrv; ++i, ++ardr_cntr)
-    if (all_relax_dr[ardr_cntr]) {
-      allContinuousLowerBnds[acv_offset]    = ddsrv_l_bnds[i];
-      allContinuousUpperBnds[acv_offset]    = ddsrv_u_bnds[i];
-      ++acv_offset;
-    }
-    else {
-      allDiscreteRealLowerBnds[adiv_offset] = ddsrv_l_bnds[i];
-      allDiscreteRealUpperBnds[adiv_offset] = ddsrv_u_bnds[i];
-      ++adrv_offset;
-    }
+  // Helper lambda: copy continuous bounds from explicit keys
+  auto copy_cv = [&](const String& lb_key, const String& ub_key) {
+    const RealVector& lb = problem_db.get_rv(lb_key);
+    const RealVector& ub = problem_db.get_rv(ub_key);
+    copy_data_partial(lb, allContinuousLowerBnds, acv_offset);
+    copy_data_partial(ub, allContinuousUpperBnds, acv_offset);
+    acv_offset += lb.length();
+  };
+  // Helper: standard pattern using base + ".lower_bounds"/".upper_bounds"
+  auto copy_cv_std = [&](const char* base) {
+    copy_cv(String(base)+".lower_bounds", String(base)+".upper_bounds");
+  };
 
-  copy_data_partial(cauv_l_bnds, allContinuousLowerBnds, acv_offset);
-  copy_data_partial(cauv_u_bnds, allContinuousUpperBnds, acv_offset);
-  acv_offset += cauv_l_bnds.length();
-  for (i=0; i<num_dauiv; ++i, ++ardi_cntr)
-    if (all_relax_di[ardi_cntr]) {
-      allContinuousLowerBnds[acv_offset]   = (Real)dauiv_l_bnds[i];
-      allContinuousUpperBnds[acv_offset]   = (Real)dauiv_u_bnds[i];
-      ++acv_offset;
-    }
-    else {
-      allDiscreteIntLowerBnds[adiv_offset] = dauiv_l_bnds[i];
-      allDiscreteIntUpperBnds[adiv_offset] = dauiv_u_bnds[i];
-      ++adiv_offset;
-    }
-  for (i=0; i<num_daurv; ++i, ++ardr_cntr)
-    if (all_relax_dr[ardr_cntr]) {
-      allContinuousLowerBnds[acv_offset]    = daurv_l_bnds[i];
-      allContinuousUpperBnds[acv_offset]    = daurv_u_bnds[i];
-      ++acv_offset;
-    }
-    else {
-      allDiscreteRealLowerBnds[adiv_offset] = daurv_l_bnds[i];
-      allDiscreteRealUpperBnds[adiv_offset] = daurv_u_bnds[i];
-      ++adrv_offset;
-    }
+  // Helper lambda: relax discrete int bounds from a per-type key
+  auto relax_div = [&](const char* base) {
+    const IntVector& lb = problem_db.get_iv(String(base)+".lower_bounds");
+    const IntVector& ub = problem_db.get_iv(String(base)+".upper_bounds");
+    for (i=0; i<lb.length(); ++i, ++ardi_cntr)
+      if (all_relax_di[ardi_cntr]) {
+	allContinuousLowerBnds[acv_offset]   = (Real)lb[i];
+	allContinuousUpperBnds[acv_offset]   = (Real)ub[i];
+	++acv_offset;
+      }
+      else {
+	allDiscreteIntLowerBnds[adiv_offset] = lb[i];
+	allDiscreteIntUpperBnds[adiv_offset] = ub[i];
+	++adiv_offset;
+      }
+  };
 
-  copy_data_partial(ceuv_l_bnds, allContinuousLowerBnds, acv_offset);
-  copy_data_partial(ceuv_u_bnds, allContinuousUpperBnds, acv_offset);
-  acv_offset += ceuv_l_bnds.length();
-  for (i=0; i<num_deuiv; ++i, ++ardi_cntr)
-    if (all_relax_di[ardi_cntr]) {
-      allContinuousLowerBnds[acv_offset]   = (Real)deuiv_l_bnds[i];
-      allContinuousUpperBnds[acv_offset]   = (Real)deuiv_u_bnds[i];
-      ++acv_offset;
-    }
-    else {
-      allDiscreteIntLowerBnds[adiv_offset] = deuiv_l_bnds[i];
-      allDiscreteIntUpperBnds[adiv_offset] = deuiv_u_bnds[i];
-      ++adiv_offset;
-    }
-  for (i=0; i<num_deurv; ++i, ++ardr_cntr)
-    if (all_relax_dr[ardr_cntr]) {
-      allContinuousLowerBnds[acv_offset]    = deurv_l_bnds[i];
-      allContinuousUpperBnds[acv_offset]    = deurv_u_bnds[i];
-      ++acv_offset;
-    }
-    else {
-      allDiscreteRealLowerBnds[adiv_offset] = deurv_l_bnds[i];
-      allDiscreteRealUpperBnds[adiv_offset] = deurv_u_bnds[i];
-      ++adrv_offset;
-    }
+  // Helper lambda: relax discrete real bounds from a per-type key
+  auto relax_drv = [&](const char* base) {
+    const RealVector& lb = problem_db.get_rv(String(base)+".lower_bounds");
+    const RealVector& ub = problem_db.get_rv(String(base)+".upper_bounds");
+    for (i=0; i<lb.length(); ++i, ++ardr_cntr)
+      if (all_relax_dr[ardr_cntr]) {
+	allContinuousLowerBnds[acv_offset]    = lb[i];
+	allContinuousUpperBnds[acv_offset]    = ub[i];
+	++acv_offset;
+      }
+      else {
+	allDiscreteRealLowerBnds[adrv_offset] = lb[i];
+	allDiscreteRealUpperBnds[adrv_offset] = ub[i];
+	++adrv_offset;
+      }
+  };
 
-  copy_data_partial(csv_l_bnds, allContinuousLowerBnds, acv_offset);
-  copy_data_partial(csv_u_bnds, allContinuousUpperBnds, acv_offset);
-  acv_offset += csv_l_bnds.length();
-  for (i=0; i<num_dsrv; ++i, ++ardi_cntr)
-    if (all_relax_di[ardi_cntr]) {
-      allContinuousLowerBnds[acv_offset]   = (Real)dsrv_l_bnds[i];
-      allContinuousUpperBnds[acv_offset]   = (Real)dsrv_u_bnds[i];
-      ++acv_offset;
-    }
-    else {
-      allDiscreteIntLowerBnds[adiv_offset] = dsrv_l_bnds[i];
-      allDiscreteIntUpperBnds[adiv_offset] = dsrv_u_bnds[i];
-      ++adiv_offset;
-    }
-  for (i=0; i<num_dssiv; ++i, ++ardi_cntr)
-    if (all_relax_di[ardi_cntr]) {
-      allContinuousLowerBnds[acv_offset]   = (Real)dssiv_l_bnds[i];
-      allContinuousUpperBnds[acv_offset]   = (Real)dssiv_u_bnds[i];
-      ++acv_offset;
-    }
-    else {
-      allDiscreteIntLowerBnds[adiv_offset] = dssiv_l_bnds[i];
-      allDiscreteIntUpperBnds[adiv_offset] = dssiv_u_bnds[i];
-      ++adiv_offset;
-    }
-  for (i=0; i<num_dssrv; ++i, ++ardr_cntr)
-    if (all_relax_dr[ardr_cntr]) {
-      allContinuousLowerBnds[acv_offset]    = dssrv_l_bnds[i];
-      allContinuousUpperBnds[acv_offset]    = dssrv_u_bnds[i];
-      ++acv_offset;
-    }
-    else {
-      allDiscreteRealLowerBnds[adiv_offset] = dssrv_l_bnds[i];
-      allDiscreteRealUpperBnds[adiv_offset] = dssrv_u_bnds[i];
-      ++adrv_offset;
-    }
+  // --- design ---
+  copy_cv_std("variables.continuous_design");
+  relax_div("variables.discrete_design_range");
+  relax_div("variables.discrete_design_set_int");
+  relax_drv("variables.discrete_design_set_real");
+
+  // --- aleatory uncertain ---
+  // normal/lognormal use inferred bounds
+  copy_cv("variables.normal_uncertain.inferred_lower_bounds",
+          "variables.normal_uncertain.inferred_upper_bounds");
+  copy_cv("variables.lognormal_uncertain.inferred_lower_bounds",
+          "variables.lognormal_uncertain.inferred_upper_bounds");
+  {
+    const char* cauv_remaining[] = {
+      "variables.uniform_uncertain",
+      "variables.loguniform_uncertain",
+      "variables.triangular_uncertain",
+      "variables.exponential_uncertain",
+      "variables.beta_uncertain",
+      "variables.gamma_uncertain",
+      "variables.gumbel_uncertain",
+      "variables.frechet_uncertain",
+      "variables.weibull_uncertain",
+      "variables.histogram_bin_uncertain"
+    };
+    for (const char* key : cauv_remaining) copy_cv_std(key);
+  }
+  {
+    const char* dauiv_keys[] = {
+      "variables.poisson_uncertain",
+      "variables.binomial_uncertain",
+      "variables.negative_binomial_uncertain",
+      "variables.geometric_uncertain",
+      "variables.hypergeometric_uncertain",
+      "variables.histogram_uncertain.point_int"
+    };
+    for (const char* key : dauiv_keys) relax_div(key);
+  }
+  relax_drv("variables.histogram_uncertain.point_real");
+
+  // --- epistemic uncertain ---
+  copy_cv_std("variables.continuous_interval_uncertain");
+  {
+    const char* deuiv_keys[] = {
+      "variables.discrete_interval_uncertain",
+      "variables.discrete_uncertain_set_int"
+    };
+    for (const char* key : deuiv_keys) relax_div(key);
+  }
+  relax_drv("variables.discrete_uncertain_set_real");
+
+  // --- state ---
+  copy_cv_std("variables.continuous_state");
+  relax_div("variables.discrete_state_range");
+  relax_div("variables.discrete_state_set_int");
+  relax_drv("variables.discrete_state_set_real");
 }
+
 
 
 void RelaxedVarConstraints::read(std::istream& s)
