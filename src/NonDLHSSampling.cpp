@@ -210,6 +210,13 @@ void NonDLHSSampling::pre_run()
   // Saltelli method.
   if (vbdFlag && vbdViaSamplingMethod==VBD_PICK_AND_FREEZE ) {
     get_vbd_parameter_sets(iteratedModel, numSamples);
+    if (increm_lhs_active){
+      Cout << "\nError: Dakota doesn't currently support incremental sampling with "
+      << "the 'variance_based_decomp'\nmethod of type 'pick_and_freeze' active. The "
+      << "study will proceed with the original number of\nsamples specified by the 'samples'"
+      << "keyword." << std::endl;
+      abort_handler(METHOD_ERROR);
+    }
     return;
   }
 
