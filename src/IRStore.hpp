@@ -25,7 +25,7 @@ using IRValue = dakota::irgen::IRValue;
 class IRStore
 {
 public:
-  using Map = std::unordered_map<String, IRValue>;
+  using Map = std::map<String, IRValue>;
 
   bool contains(const String& local_key) const
   { return values_.find(local_key) != values_.end(); }
