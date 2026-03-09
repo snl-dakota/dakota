@@ -12,6 +12,7 @@
 
 #include "JSONUtils.hpp"
 #include <nlohmann/json.hpp>
+#include <any>
 
 using json = nlohmann::json;
 
@@ -32,10 +33,12 @@ using json = nlohmann::json;
 namespace Dakota {
 
   using Ushort = unsigned short;
- 
+
 class JSONProblemDescDB
 {
   public:
+
+    using DataMap = std::map<String, std::any>;
 
     /// constructor
     JSONProblemDescDB(const String& filename);
@@ -44,7 +47,7 @@ class JSONProblemDescDB
     ~JSONProblemDescDB() = default;
 
     //
-    //- Heading: Member methods
+    //- Heading: Getter methods
     //
 
     /// get a RealMatrixArray out of the database based on an identifier string
@@ -107,6 +110,21 @@ class JSONProblemDescDB
     /// get a bool out of the database based on an identifier string
     const bool& get_bool(const String& entry_name);
 
+    //
+    //- Heading: Active block selection
+    //
+
+    /// set the active method block index
+    void set_active_method(size_t idx);
+    /// set the active model block index
+    void set_active_model(size_t idx);
+    /// set the active variables block index
+    void set_active_variables(size_t idx);
+    /// set the active interface block index
+    void set_active_interface(size_t idx);
+    /// set the active responses block index
+    void set_active_responses(size_t idx);
+
   //private:
   public:
 
@@ -120,104 +138,243 @@ class JSONProblemDescDB
     std::map<String, int> blockIds;
 
   private:
-    void handle_keyword(const json& key_map_item, const std::string& currentPath, const json& value);
 
-  private:
+    //
+    //- Heading: Internal helpers
+    //
 
-    std::map<String, RealMatrixArray>          cachedData_RealMatrixArray;
-    std::map<String, RealVector>               cachedData_RealVector;
-    std::map<String, SizetArray>               cachedData_SizetArray;
-    std::map<String, UShortArray>              cachedData_UShortArray;
-    std::map<String, RealSymMatrix>            cachedData_RealSymMatrix;
-    std::map<String, RealVectorArray>          cachedData_RealVectorArray;
-    std::map<String, IntVectorArray>           cachedData_IntVectorArray;
-    std::map<String, IntSet>                   cachedData_IntSet;
-    std::map<String, IntSetArray>              cachedData_IntSetArray;
-    std::map<String, SizetSet>                 cachedData_SizetSet;
-    std::map<String, StringSetArray>           cachedData_StringSetArray;
-    std::map<String, RealSetArray>             cachedData_RealSetArray;
-    std::map<String, IntRealMapArray>          cachedData_IntRealMapArray;
-    std::map<String, StringRealMapArray>       cachedData_StringRealMapArray;
-    std::map<String, RealRealMapArray>         cachedData_RealRealMapArray;
-    std::map<String, RealRealPairRealMapArray> cachedData_RealRealPairRealMapArray;
-    std::map<String, IntIntPairRealMapArray>   cachedData_IntIntPairRealMapArray;
-    std::map<String, BitArray>                 cachedData_BitArray;
-    std::map<String, IntVector>                cachedData_IntVector;
-    std::map<String, StringArray>              cachedData_StringArray;
-    std::map<String, String2DArray>            cachedData_String2DArray;
-    std::map<String, String>                   cachedData_String;
-    std::map<String, Real>                     cachedData_Real;
-    std::map<String, int>                      cachedData_int;
-    std::map<String, short>                    cachedData_short;
-    std::map<String, unsigned short>           cachedData_Ushort;
-    std::map<String, size_t>                   cachedData_size_t;
-    std::map<String, bool>                     cachedData_bool;
+    /// Retrieve a cached value by key, routed to the active block instance
+    template<typename T>
+    const T& get_cached(const String& entry_name);
+
+    /// Return the active DataMap for a given block name
+    DataMap& active_data(const std::string& block_name);
+
+    /// Return the block list for a given block name (used during construction)
+    std::vector<DataMap>& get_block_list(const std::string& block_name);
+
+    //
+    //- Heading: Keyword handlers
+    //
+
+    void handle_keyword(const json& key_map_item,
+                        const std::string& currentPath,
+                        const json& value);
+
+    void handle_categorical(const String& ckey,
+                            const std::string& currentPath,
+                            const json& value);
+
+    void handle_type_data_combined(const json& binding,
+                                   const String& ckey,
+                                   const std::string& currentPath,
+                                   const json& value);
+
+    void handle_adjacency_matrix(const String& ckey,
+                                 const std::string& currentPath,
+                                 const json& value);
+
+    void handle_discrete_set_values(const json& binding,
+                                    const String& ckey,
+                                    const std::string& currentPath,
+                                    const json& value);
+
+    void handle_histogram_bin_uncertain(const String& ckey,
+                                        const std::string& currentPath,
+                                        const json& value);
+
+    void handle_histogram_point_uncertain(const String& ckey,
+                                          const std::string& currentPath,
+                                          const json& value);
+
+    void handle_discrete_uncertain_set_values_probs(const String& ckey,
+                                                    const std::string& currentPath,
+                                                    const json& value);
+
+    void handle_continuous_interval_uncertain(const String& ckey,
+                                              const std::string& currentPath,
+                                              const json& value);
+
+    void handle_discrete_interval_uncertain(const String& ckey,
+                                            const std::string& currentPath,
+                                            const json& value);
+
+    void handle_uncertain_correlation_matrix(const String& ckey,
+                                             const std::string& currentPath,
+                                             const json& value);
+
+
+    /// Store a value in the current DataMap
+    template<typename T>
+    void store(const String& ckey, T&& val);
+
+    //
+    //- Heading: Per-block-type storage
+    //
+
+    DataMap                  environmentData;
+    std::vector<DataMap>     methodList;
+    std::vector<DataMap>     modelList;
+    std::vector<DataMap>     variablesList;
+    std::vector<DataMap>     interfaceList;
+    std::vector<DataMap>     responsesList;
+
+    size_t activeMethodIdx    = 0;
+    size_t activeModelIdx     = 0;
+    size_t activeVariablesIdx = 0;
+    size_t activeInterfaceIdx = 0;
+    size_t activeResponsesIdx = 0;
+
+    /// Points to the DataMap currently being populated during construction
+    DataMap* currentData_ = nullptr;
+
+    /// Points to the JSON object for the current block element being parsed.
+    /// Allows handlers to look up sibling/ancestor fields within the block.
+    const json* currentBlockJson_ = nullptr;
 };
+
+// ---------------------------------------------------------------------------
+// Inline implementations
+// ---------------------------------------------------------------------------
 
 inline auto JSONProblemDescDB::get_value(const String& key) const
 {
-  // Copy appropriate block
-  // ... could do better by going one level more
-  String block_name = key.substr(0, key.find('.'));
-  if( allowedBlocks.find(block_name) == allowedBlocks.end() ) {
-    throw(std::runtime_error(
-      "JSONProblemDescDB: Invalid json block \""+block_name+"\""));
-  }
-  int blk_id = blockIds.find(block_name)->second;
-  json current = jsonOptions[blk_id];
+  // Interpret `key` as dot-delimited, with the first token being the top-level block:
+  //   environment.*, method.*, model.*, variables.*, interface.*, responses.*
+  //
+  // This matches the validated JSON shape where:
+  //   - environment is an object (optional)
+  //   - the other blocks are arrays of objects, indexed by the active_* index.
+  auto dot = key.find('.');
+  if (dot == String::npos)
+    throw std::runtime_error(
+      "JSONProblemDescDB::get_value: key missing block prefix: " + key);
 
-  // Split the key by dot notation
-  String working_key = key;
-  size_t pos = 0;
-  while ((pos = working_key.find('.')) != String::npos) {
-    String token = working_key.substr(0, pos);
-    current = current[token];
-    working_key.erase(0, pos + 1);
+  const std::string block = key.substr(0, dot);
+  const std::string rest  = key.substr(dot + 1);
+
+  const json* current = nullptr;
+
+  if (block == "environment") {
+    if (!jsonOptions.contains("environment") || !jsonOptions["environment"].is_object())
+      throw std::runtime_error(
+        "JSONProblemDescDB::get_value: environment block missing or not an object");
+    current = &jsonOptions["environment"];
   }
-  return current[working_key];
+  else {
+    if (!jsonOptions.contains(block))
+      throw std::runtime_error(
+        "JSONProblemDescDB::get_value: top-level block missing: " + block);
+    const json& arr = jsonOptions[block];
+    if (!arr.is_array())
+      throw std::runtime_error(
+        "JSONProblemDescDB::get_value: expected array for block: " + block);
+
+    size_t idx = 0;
+    if      (block == "method")     idx = activeMethodIdx;
+    else if (block == "model")      idx = activeModelIdx;
+    else if (block == "variables")  idx = activeVariablesIdx;
+    else if (block == "interface")  idx = activeInterfaceIdx;
+    else if (block == "responses")  idx = activeResponsesIdx;
+    else
+      throw std::runtime_error(
+        "JSONProblemDescDB::get_value: unknown block: " + block);
+
+    if (idx >= arr.size())
+      throw std::runtime_error(
+        "JSONProblemDescDB::get_value: active index out of range for block: " + block);
+
+    current = &arr[idx];
+  }
+
+  // Traverse remaining tokens within the selected block object.
+  json node = *current;
+  String working = rest;
+  size_t pos = 0;
+  while ((pos = working.find('.')) != String::npos) {
+    String token = working.substr(0, pos);
+    node = node[token];
+    working.erase(0, pos + 1);
+  }
+  return node[working];
 }
 
-#define CACHED_JSONDB_GET_METHOD(TYPE, GET_FN) \
-  inline const TYPE& JSONProblemDescDB::GET_FN(const String& key) { \
-    if( cachedData_##TYPE.count(key) ) { \
-      if( true ) \
-        std::cout << "JSONProblemDescDB::" << std::string(#GET_FN) \
-                  << ": FOUND cached JSON value for \"" << key << "\"" << std::endl; \
-      return cachedData_##TYPE[key]; \
-    } \
-    else \
-      throw(std::runtime_error( \
-        "JSONProblemDescDB: no cached value for "+key)); \
+
+template<typename T>
+const T& JSONProblemDescDB::get_cached(const String& entry_name)
+{
+  auto dot = entry_name.find('.');
+  if (dot == String::npos)
+    throw std::runtime_error(
+      "JSONProblemDescDB: entry_name missing block prefix: " + entry_name);
+
+  std::string block = entry_name.substr(0, dot);
+  const DataMap& dm = active_data(block);
+  auto it = dm.find(entry_name);
+  if (it == dm.end())
+    throw std::runtime_error(
+      "JSONProblemDescDB: no cached value for " + entry_name);
+  return std::any_cast<const T&>(it->second);
+}
+
+template<typename T>
+void JSONProblemDescDB::store(const String& ckey, T&& val)
+{
+  (*currentData_)[ckey] = std::any(std::forward<T>(val));
+}
+
+inline void JSONProblemDescDB::set_active_method(size_t idx)
+{ activeMethodIdx = idx; }
+
+inline void JSONProblemDescDB::set_active_model(size_t idx)
+{ activeModelIdx = idx; }
+
+inline void JSONProblemDescDB::set_active_variables(size_t idx)
+{ activeVariablesIdx = idx; }
+
+inline void JSONProblemDescDB::set_active_interface(size_t idx)
+{ activeInterfaceIdx = idx; }
+
+inline void JSONProblemDescDB::set_active_responses(size_t idx)
+{ activeResponsesIdx = idx; }
+
+// Type-specific getters: thin wrappers around get_cached<T>
+
+#define JSONDB_GETTER(TYPE, FN) \
+  inline const TYPE& JSONProblemDescDB::FN(const String& key) { \
+    return get_cached<TYPE>(key); \
   }
 
-CACHED_JSONDB_GET_METHOD   (RealMatrixArray,          get_rma)
-CACHED_JSONDB_GET_METHOD   (RealVector,               get_rv)
-CACHED_JSONDB_GET_METHOD   (IntVector,                get_iv)
-CACHED_JSONDB_GET_METHOD   (BitArray,                 get_ba)
-CACHED_JSONDB_GET_METHOD   (SizetArray,               get_sza)
-CACHED_JSONDB_GET_METHOD   (UShortArray,              get_usa)
-CACHED_JSONDB_GET_METHOD   (RealSymMatrix,            get_rsm)
-CACHED_JSONDB_GET_METHOD   (RealVectorArray,          get_rva)
-CACHED_JSONDB_GET_METHOD   (IntVectorArray,           get_iva)
-CACHED_JSONDB_GET_METHOD   (IntSet,                   get_is)
-CACHED_JSONDB_GET_METHOD   (IntSetArray,              get_isa)
-CACHED_JSONDB_GET_METHOD   (SizetSet,                 get_szs)
-CACHED_JSONDB_GET_METHOD   (StringSetArray,           get_ssa)
-CACHED_JSONDB_GET_METHOD   (RealSetArray,             get_rsa)
-CACHED_JSONDB_GET_METHOD   (IntRealMapArray,          get_irma)
-CACHED_JSONDB_GET_METHOD   (StringRealMapArray,       get_srma)
-CACHED_JSONDB_GET_METHOD   (RealRealMapArray,         get_rrma)
-CACHED_JSONDB_GET_METHOD   (RealRealPairRealMapArray, get_rrrma)
-CACHED_JSONDB_GET_METHOD   (IntIntPairRealMapArray,   get_iirma)
-CACHED_JSONDB_GET_METHOD   (StringArray,              get_sa)
-CACHED_JSONDB_GET_METHOD   (String2DArray,            get_s2a)
-CACHED_JSONDB_GET_METHOD   (String,                   get_string)
-CACHED_JSONDB_GET_METHOD   (Real,                     get_real)
-CACHED_JSONDB_GET_METHOD   (int,                      get_int)
-CACHED_JSONDB_GET_METHOD   (short,                    get_short)
-CACHED_JSONDB_GET_METHOD   (Ushort,                   get_ushort)
-CACHED_JSONDB_GET_METHOD   (size_t,                   get_sizet)
-CACHED_JSONDB_GET_METHOD   (bool,                     get_bool)
+JSONDB_GETTER(RealMatrixArray,          get_rma)
+JSONDB_GETTER(RealVector,               get_rv)
+JSONDB_GETTER(IntVector,                get_iv)
+JSONDB_GETTER(BitArray,                 get_ba)
+JSONDB_GETTER(SizetArray,               get_sza)
+JSONDB_GETTER(UShortArray,              get_usa)
+JSONDB_GETTER(RealSymMatrix,            get_rsm)
+JSONDB_GETTER(RealVectorArray,          get_rva)
+JSONDB_GETTER(IntVectorArray,           get_iva)
+JSONDB_GETTER(IntSet,                   get_is)
+JSONDB_GETTER(IntSetArray,              get_isa)
+JSONDB_GETTER(SizetSet,                 get_szs)
+JSONDB_GETTER(StringSetArray,           get_ssa)
+JSONDB_GETTER(RealSetArray,             get_rsa)
+JSONDB_GETTER(IntRealMapArray,          get_irma)
+JSONDB_GETTER(StringRealMapArray,       get_srma)
+JSONDB_GETTER(RealRealMapArray,         get_rrma)
+JSONDB_GETTER(RealRealPairRealMapArray, get_rrrma)
+JSONDB_GETTER(IntIntPairRealMapArray,   get_iirma)
+JSONDB_GETTER(StringArray,              get_sa)
+JSONDB_GETTER(String2DArray,            get_s2a)
+JSONDB_GETTER(String,                   get_string)
+JSONDB_GETTER(Real,                     get_real)
+JSONDB_GETTER(int,                      get_int)
+JSONDB_GETTER(short,                    get_short)
+JSONDB_GETTER(Ushort,                   get_ushort)
+JSONDB_GETTER(size_t,                   get_sizet)
+JSONDB_GETTER(bool,                     get_bool)
+
+#undef JSONDB_GETTER
 
 } // namespace Dakota
 

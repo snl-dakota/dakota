@@ -93,6 +93,19 @@ public:
   /// Explicitly unlocks the database.  Use with care.
   void unlock();
 
+  void lock_method_db();
+  void unlock_method_db();
+  void lock_model_db();
+  void unlock_model_db();
+  void lock_variables_db();
+  void unlock_variables_db();
+  void lock_interface_db();
+  void unlock_interface_db();
+  void lock_responses_db();
+  void unlock_responses_db();
+  
+
+
   /// set dataMethodIter based on a method identifier string to activate a
   /// particular method specification in dataMethodList and use pointers from
   /// this method specification to set all other list iterators.
@@ -125,6 +138,20 @@ public:
   void set_db_model_nodes(size_t model_index);
   /// return the index of the active node in dataModelList
   size_t get_db_model_node(); // restoration usage: return by value
+
+  size_t get_db_responses_node(const String& responses_tag) const;
+
+  size_t get_db_interface_node(const String& interface_tag) const;
+
+  size_t get_db_variables_node(const String& variables_tag) const;
+
+/// Return the active indices of each top-level specification list.
+/// These are primarily used to synchronize state with the JSONProblemDescDB.
+int get_active_method_index() const;
+int get_active_model_index() const;
+int get_active_variables_index() const;
+int get_active_interface_index() const;
+int get_active_responses_index() const;
 
   /// set dataVariablesIter based on the variables identifier string
   void set_db_variables_node(const String& variables_tag);

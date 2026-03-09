@@ -85,7 +85,6 @@ ProblemDescDB::get_db(int world_size, int world_rank)
   return std::make_shared<NIDRProblemDescDB>(world_size, world_rank);
 }
 
-
 /** Copy constructor manages sharing of dbRep */
 ProblemDescDB::ProblemDescDB(const ProblemDescDB& db):
   dbRep(db.dbRep)
@@ -465,7 +464,6 @@ void ProblemDescDB::set_db_list_nodes(size_t method_index)
   }
 }
 
-
 void ProblemDescDB::resolve_top_method(bool set_model_nodes)
 {
   if (dbRep)
@@ -522,9 +520,18 @@ void ProblemDescDB::resolve_top_method(bool set_model_nodes)
     // set all subordinate list nodes for this method
     if (set_model_nodes)
       set_db_model_nodes(dataMethodIter->dataMethodRep->modelPointer);
+
+    if (jsonDB) {
+      jsonDB->set_active_method(get_active_method_index());
+      if (set_model_nodes) {
+        jsonDB->set_active_model(get_active_model_index());
+        jsonDB->set_active_variables(get_active_variables_index());
+        jsonDB->set_active_interface(get_active_interface_index());
+        jsonDB->set_active_responses(get_active_responses_index());
+      }
+    }
   }
 }
-
 
 void ProblemDescDB::set_db_method_node(const String& method_tag)
 {
@@ -1110,17 +1117,6 @@ get(const std::string& context_msg,
   return abort_handler_t<T&>(PARSE_ERROR);
 }
 
-// couldn't get const-correctness right with a simple forwarder...
-// template <typename T>
-// void ProblemDescDB::LookerUpper<T>::
-// set(const std::string& entry_name,
-//     std::shared_ptr<ProblemDescDB>& db_rep, const T entry_value) const
-// {
-//   T& entry_rep_ref = get(entry_name, db_rep);
-//   entry_rep_ref = entry_value;
-// }
-
-
 // shorthand for pointer to Data*Rep members for use in key to data maps;
 // these names are super terse on purpose and only used in this compilation unit
 #define P_ENV &DataEnvironmentRep::
@@ -1150,7 +1146,6 @@ const RealMatrixArray& ProblemDescDB::get_rma(const String& entry_name) const
     { /* responses */ },
     entry_name, dbRep);
 }
-
 
 const RealVector& ProblemDescDB::get_rv(const String& entry_name) const
 {  
@@ -1746,7 +1741,6 @@ const RealRealMapArray& ProblemDescDB::get_rrma(const String& entry_name) const
     entry_name, dbRep);
 }
 
-
 const RealRealPairRealMapArray& ProblemDescDB::
 get_rrrma(const String& entry_name) const
 {
@@ -1767,7 +1761,6 @@ get_rrrma(const String& entry_name) const
     entry_name, dbRep);
 }
 
-
 const IntIntPairRealMapArray& ProblemDescDB::
 get_iirma(const String& entry_name) const
 {
@@ -1787,7 +1780,6 @@ get_iirma(const String& entry_name) const
     { /* responses */ },
     entry_name, dbRep);
 }
-
 
 const StringArray& ProblemDescDB::get_sa(const String& entry_name) const
 {
@@ -3375,4 +3367,69 @@ void ProblemDescDB::enforce_unique_ids()
 #undef P_RES
 
 
+void ProblemDescDB::lock_method_db()
+{
+  if (dbRep) dbRep->lock_method_db();
+  else       methodDBLocked = true;
+}
+
+void ProblemDescDB::unlock_method_db()
+{
+  if (dbRep) dbRep->unlock_method_db();
+  else       methodDBLocked = false;
+}
+
+void ProblemDescDB::lock_model_db()
+{
+  if (dbRep) dbRep->lock_model_db();
+  else       modelDBLocked = true;
+}
+
+void ProblemDescDB::unlock_model_db()
+{
+  if (dbRep) dbRep->unlock_model_db();
+  else       modelDBLocked = false;
+}
+
+void ProblemDescDB::lock_variables_db()
+{
+  if (dbRep) dbRep->lock_variables_db();
+  else       variablesDBLocked = true;
+}
+
+void ProblemDescDB::unlock_variables_db()
+{
+  if (dbRep) dbRep->unlock_variables_db();
+  else       variablesDBLocked = false;
+}
+
+void ProblemDescDB::lock_interface_db()
+{
+  if (dbRep) dbRep->lock_interface_db();
+  else       interfaceDBLocked = true;
+}
+
+void ProblemDescDB::unlock_interface_db()
+{
+  if (dbRep) dbRep->unlock_interface_db();
+  else       interfaceDBLocked = false;
+}
+
+void ProblemDescDB::lock_responses_db()
+{
+  if (dbRep) dbRep->lock_responses_db();
+  else       responsesDBLocked = true;
+}
+
+void ProblemDescDB::unlock_responses_db()
+{
+  if (dbRep) dbRep->unlock_responses_db();
+  else       responsesDBLocked = false;
+}
+
 } // namespace Dakota
+
+
+
+
+
