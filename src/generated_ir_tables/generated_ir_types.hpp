@@ -12,6 +12,7 @@
 namespace dakota::irgen {
 
 enum class IrValueType {
+  UnspecifiedType,
   BitArray,
   IntIntPairRealMapArray,
   IntRealMapArray,

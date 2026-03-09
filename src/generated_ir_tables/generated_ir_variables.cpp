@@ -305,574 +305,666 @@ const std::unordered_map<std::string, KeyContract>& contracts() {
 const std::unordered_map<std::string, std::vector<WriteOp>>& instructions() {
   static const auto kInstructions = []() {
     std::unordered_map<std::string, std::vector<WriteOp>> m;
-    m.reserve(174);
+    m.reserve(220);
     m.emplace("active/aleatory", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "view", nlohmann::json::parse("{\"handler_type\": \"type\", \"keyword_name\": \"aleatory\", \"member_variable_type\": \"short\", \"stored_value\": \"ALEATORY_UNCERTAIN_VIEW\"}")},
+      WriteOp{OpKind::PresenceEnum, "view", OpLiteral{IrValueType::String, IRValue{std::string("ALEATORY_UNCERTAIN_VIEW")}}},
     });
     m.emplace("active/all", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "view", nlohmann::json::parse("{\"handler_type\": \"type\", \"keyword_name\": \"all\", \"member_variable_type\": \"short\", \"stored_value\": \"ALL_VIEW\"}")},
+      WriteOp{OpKind::PresenceEnum, "view", OpLiteral{IrValueType::String, IRValue{std::string("ALL_VIEW")}}},
     });
     m.emplace("active/design", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "view", nlohmann::json::parse("{\"handler_type\": \"type\", \"keyword_name\": \"design\", \"member_variable_type\": \"short\", \"stored_value\": \"DESIGN_VIEW\"}")},
+      WriteOp{OpKind::PresenceEnum, "view", OpLiteral{IrValueType::String, IRValue{std::string("DESIGN_VIEW")}}},
     });
     m.emplace("active/epistemic", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "view", nlohmann::json::parse("{\"handler_type\": \"type\", \"keyword_name\": \"epistemic\", \"member_variable_type\": \"short\", \"stored_value\": \"EPISTEMIC_UNCERTAIN_VIEW\"}")},
+      WriteOp{OpKind::PresenceEnum, "view", OpLiteral{IrValueType::String, IRValue{std::string("EPISTEMIC_UNCERTAIN_VIEW")}}},
     });
     m.emplace("active/state", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "view", nlohmann::json::parse("{\"handler_type\": \"type\", \"keyword_name\": \"state\", \"member_variable_type\": \"short\", \"stored_value\": \"STATE_VIEW\"}")},
+      WriteOp{OpKind::PresenceEnum, "view", OpLiteral{IrValueType::String, IRValue{std::string("STATE_VIEW")}}},
     });
     m.emplace("active/uncertain", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "view", nlohmann::json::parse("{\"handler_type\": \"type\", \"keyword_name\": \"uncertain\", \"member_variable_type\": \"short\", \"stored_value\": \"UNCERTAIN_VIEW\"}")},
+      WriteOp{OpKind::PresenceEnum, "view", OpLiteral{IrValueType::String, IRValue{std::string("UNCERTAIN_VIEW")}}},
+    });
+    m.emplace("beta_uncertain", std::vector<WriteOp>{
+      WriteOp{OpKind::DirectValue, "beta_uncertain", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("beta_uncertain/alphas", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "beta_uncertain.alphas", nlohmann::json::parse("{\"handler_type\": \"RealLb\", \"keyword_name\": \"alphas\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "beta_uncertain.alphas", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("beta_uncertain/betas", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "beta_uncertain.betas", nlohmann::json::parse("{\"handler_type\": \"RealLb\", \"keyword_name\": \"betas\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "beta_uncertain.betas", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("beta_uncertain/count", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "beta_uncertain", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"beta_uncertain\", \"member_variable_type\": \"size_t\"}")},
-      WriteOp{OpKind::DirectValue, "beta_uncertain", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"beta_uncertain\", \"member_variable_type\": \"size_t\"}")},
+      WriteOp{OpKind::DirectValue, "beta_uncertain", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("beta_uncertain/initial_point", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "beta_uncertain.initial_point", nlohmann::json::parse("{\"handler_type\": \"rvec\", \"keyword_name\": \"initial_point\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "beta_uncertain.initial_point", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("beta_uncertain/lower_bounds", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "beta_uncertain.lower_bounds", nlohmann::json::parse("{\"handler_type\": \"rvec\", \"keyword_name\": \"lower_bounds\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "beta_uncertain.lower_bounds", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("beta_uncertain/upper_bounds", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "beta_uncertain.upper_bounds", nlohmann::json::parse("{\"handler_type\": \"rvec\", \"keyword_name\": \"upper_bounds\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "beta_uncertain.upper_bounds", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+    });
+    m.emplace("binomial_uncertain", std::vector<WriteOp>{
+      WriteOp{OpKind::DirectValue, "binomial_uncertain", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("binomial_uncertain/count", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "binomial_uncertain", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"binomial_uncertain\", \"member_variable_type\": \"size_t\"}")},
-      WriteOp{OpKind::DirectValue, "binomial_uncertain", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"binomial_uncertain\", \"member_variable_type\": \"size_t\"}")},
+      WriteOp{OpKind::DirectValue, "binomial_uncertain", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("binomial_uncertain/initial_point", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "binomial_uncertain.initial_point", nlohmann::json::parse("{\"handler_type\": \"IntLb\", \"keyword_name\": \"initial_point\", \"member_variable_type\": \"IntVector\"}")},
+      WriteOp{OpKind::DirectValue, "binomial_uncertain.initial_point", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("binomial_uncertain/num_trials", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "binomial_uncertain.num_trials", nlohmann::json::parse("{\"handler_type\": \"IntLb\", \"keyword_name\": \"num_trials\", \"member_variable_type\": \"IntVector\"}")},
+      WriteOp{OpKind::DirectValue, "binomial_uncertain.num_trials", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("binomial_uncertain/probability_per_trial", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "binomial_uncertain.prob_per_trial", nlohmann::json::parse("{\"handler_type\": \"rvec\", \"keyword_name\": \"probability_per_trial\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "binomial_uncertain.prob_per_trial", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+    });
+    m.emplace("continuous_design", std::vector<WriteOp>{
+      WriteOp{OpKind::DirectValue, "continuous_design", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("continuous_design/count", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "continuous_design", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"continuous_design\", \"member_variable_type\": \"size_t\"}")},
-      WriteOp{OpKind::DirectValue, "continuous_design", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"continuous_design\", \"member_variable_type\": \"size_t\"}")},
+      WriteOp{OpKind::DirectValue, "continuous_design", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("continuous_design/descriptors", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "continuous_design.labels", nlohmann::json::parse("{\"handler_type\": \"strL\", \"keyword_name\": \"descriptors\", \"member_variable_type\": \"StringArray\"}")},
+      WriteOp{OpKind::DirectValue, "continuous_design.labels", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("continuous_design/initial_point", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "continuous_design.initial_point", nlohmann::json::parse("{\"handler_type\": \"rvec\", \"keyword_name\": \"initial_point\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "continuous_design.initial_point", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("continuous_design/lower_bounds", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "continuous_design.lower_bounds", nlohmann::json::parse("{\"handler_type\": \"rvec\", \"keyword_name\": \"lower_bounds\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "continuous_design.lower_bounds", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("continuous_design/scale_types", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "continuous_design.scale_types", nlohmann::json::parse("{\"handler_type\": \"strL\", \"keyword_name\": \"scale_types\", \"member_variable_type\": \"StringArray\"}")},
+      WriteOp{OpKind::DirectValue, "continuous_design.scale_types", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("continuous_design/scales", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "continuous_design.scales", nlohmann::json::parse("{\"handler_type\": \"rvec\", \"keyword_name\": \"scales\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "continuous_design.scales", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("continuous_design/upper_bounds", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "continuous_design.upper_bounds", nlohmann::json::parse("{\"handler_type\": \"rvec\", \"keyword_name\": \"upper_bounds\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "continuous_design.upper_bounds", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("continuous_interval_uncertain", std::vector<WriteOp>{
-      WriteOp{OpKind::ContinuousIntervalUncertain, "continuous_interval_uncertain.basic_probs", nlohmann::json::parse("{\"handler_type\": \"materialize\", \"keyword_name\": \"continuous_interval_uncertain\", \"member_variable_type\": \"RealRealPairRealMapArray\"}")},
-      WriteOp{OpKind::ContinuousIntervalUncertain, "continuous_interval_uncertain.basic_probs", nlohmann::json::parse("{\"handler_type\": \"materialize\", \"keyword_name\": \"continuous_interval_uncertain\", \"member_variable_type\": \"RealRealPairRealMapArray\"}")},
-      WriteOp{OpKind::ContinuousIntervalUncertain, "continuous_interval_uncertain.basic_probs", nlohmann::json::parse("{\"handler_type\": \"materialize\", \"keyword_name\": \"continuous_interval_uncertain\", \"member_variable_type\": \"RealRealPairRealMapArray\"}")},
-      WriteOp{OpKind::ContinuousIntervalUncertain, "continuous_interval_uncertain.basic_probs", nlohmann::json::parse("{\"handler_type\": \"materialize\", \"keyword_name\": \"continuous_interval_uncertain\", \"member_variable_type\": \"RealRealPairRealMapArray\"}")},
+      WriteOp{OpKind::ContinuousIntervalUncertain, "continuous_interval_uncertain.basic_probs", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("continuous_interval_uncertain/count", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "continuous_interval_uncertain", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"continuous_interval_uncertain\", \"member_variable_type\": \"size_t\"}")},
+      WriteOp{OpKind::DirectValue, "continuous_interval_uncertain", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("continuous_interval_uncertain/initial_point", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "continuous_interval_uncertain.initial_point", nlohmann::json::parse("{\"handler_type\": \"rvec\", \"keyword_name\": \"initial_point\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "continuous_interval_uncertain.initial_point", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+    });
+    m.emplace("continuous_interval_uncertain/interval_probabilities", std::vector<WriteOp>{
+      WriteOp{OpKind::ContinuousIntervalUncertain, "continuous_interval_uncertain.basic_probs", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+    });
+    m.emplace("continuous_interval_uncertain/lower_bounds", std::vector<WriteOp>{
+      WriteOp{OpKind::ContinuousIntervalUncertain, "continuous_interval_uncertain.basic_probs", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+    });
+    m.emplace("continuous_interval_uncertain/upper_bounds", std::vector<WriteOp>{
+      WriteOp{OpKind::ContinuousIntervalUncertain, "continuous_interval_uncertain.basic_probs", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+    });
+    m.emplace("continuous_state", std::vector<WriteOp>{
+      WriteOp{OpKind::DirectValue, "continuous_state", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("continuous_state/count", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "continuous_state", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"continuous_state\", \"member_variable_type\": \"size_t\"}")},
-      WriteOp{OpKind::DirectValue, "continuous_state", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"continuous_state\", \"member_variable_type\": \"size_t\"}")},
+      WriteOp{OpKind::DirectValue, "continuous_state", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("continuous_state/descriptors", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "continuous_state.labels", nlohmann::json::parse("{\"handler_type\": \"strL\", \"keyword_name\": \"descriptors\", \"member_variable_type\": \"StringArray\"}")},
+      WriteOp{OpKind::DirectValue, "continuous_state.labels", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("continuous_state/initial_state", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "continuous_state.initial_state", nlohmann::json::parse("{\"handler_type\": \"rvec\", \"keyword_name\": \"initial_state\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "continuous_state.initial_state", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("continuous_state/lower_bounds", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "continuous_state.lower_bounds", nlohmann::json::parse("{\"handler_type\": \"rvec\", \"keyword_name\": \"lower_bounds\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "continuous_state.lower_bounds", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("continuous_state/upper_bounds", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "continuous_state.upper_bounds", nlohmann::json::parse("{\"handler_type\": \"rvec\", \"keyword_name\": \"upper_bounds\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "continuous_state.upper_bounds", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+    });
+    m.emplace("discrete_design_range", std::vector<WriteOp>{
+      WriteOp{OpKind::DirectValue, "discrete_design_range", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_design_range/count", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "discrete_design_range", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"discrete_design_range\", \"member_variable_type\": \"size_t\"}")},
-      WriteOp{OpKind::DirectValue, "discrete_design_range", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"discrete_design_range\", \"member_variable_type\": \"size_t\"}")},
+      WriteOp{OpKind::DirectValue, "discrete_design_range", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_design_range/descriptors", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "discrete_design_range.labels", nlohmann::json::parse("{\"handler_type\": \"strL\", \"keyword_name\": \"descriptors\", \"member_variable_type\": \"StringArray\"}")},
+      WriteOp{OpKind::DirectValue, "discrete_design_range.labels", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_design_range/initial_point", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "discrete_design_range.initial_point", nlohmann::json::parse("{\"handler_type\": \"ivec\", \"keyword_name\": \"initial_point\", \"member_variable_type\": \"IntVector\"}")},
+      WriteOp{OpKind::DirectValue, "discrete_design_range.initial_point", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_design_range/lower_bounds", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "discrete_design_range.lower_bounds", nlohmann::json::parse("{\"handler_type\": \"ivec\", \"keyword_name\": \"lower_bounds\", \"member_variable_type\": \"IntVector\"}")},
+      WriteOp{OpKind::DirectValue, "discrete_design_range.lower_bounds", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_design_range/upper_bounds", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "discrete_design_range.upper_bounds", nlohmann::json::parse("{\"handler_type\": \"ivec\", \"keyword_name\": \"upper_bounds\", \"member_variable_type\": \"IntVector\"}")},
+      WriteOp{OpKind::DirectValue, "discrete_design_range.upper_bounds", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_design_set/integer", std::vector<WriteOp>{
-      WriteOp{OpKind::DiscreteSetValues, "discrete_design_set_int.values", nlohmann::json::parse("{\"handler_type\": \"newivec\", \"keyword_name\": \"elements\", \"member_variable_type\": \"IntSetArray\"}")},
-      WriteOp{OpKind::DiscreteSetValues, "discrete_design_set_int.values", nlohmann::json::parse("{\"handler_type\": \"newivec\", \"keyword_name\": \"elements\", \"member_variable_type\": \"IntSetArray\"}")},
+      WriteOp{OpKind::DiscreteSetValues, "discrete_design_set_int.values", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+    });
+    m.emplace("discrete_design_set/integer/categorical", std::vector<WriteOp>{
+      WriteOp{OpKind::Categorical, "discrete_design_set_int.categorical", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_design_set/integer/categorical/adjacency_matrix", std::vector<WriteOp>{
-      WriteOp{OpKind::AdjacencyMatrix, "discrete_design_set_int.adjacency_matrix", nlohmann::json::parse("{\"handler_type\": \"newivec\", \"keyword_name\": \"adjacency_matrix\", \"member_variable_type\": \"RealMatrixArray\"}")},
+      WriteOp{OpKind::AdjacencyMatrix, "discrete_design_set_int.adjacency_matrix", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_design_set/integer/categorical/flags", std::vector<WriteOp>{
-      WriteOp{OpKind::Categorical, "discrete_design_set_int.categorical", nlohmann::json::parse("{\"handler_type\": \"categorical\", \"keyword_name\": \"categorical\", \"member_variable_type\": \"BitArray\"}")},
-      WriteOp{OpKind::Categorical, "discrete_design_set_int.categorical", nlohmann::json::parse("{\"handler_type\": \"categorical\", \"keyword_name\": \"categorical\", \"member_variable_type\": \"BitArray\"}")},
+      WriteOp{OpKind::Categorical, "discrete_design_set_int.categorical", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_design_set/integer/count", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "discrete_design_set_int", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"integer\", \"member_variable_type\": \"size_t\"}")},
+      WriteOp{OpKind::DirectValue, "discrete_design_set_int", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_design_set/integer/descriptors", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "discrete_design_set_int.labels", nlohmann::json::parse("{\"handler_type\": \"strL\", \"keyword_name\": \"descriptors\", \"member_variable_type\": \"StringArray\"}")},
+      WriteOp{OpKind::DirectValue, "discrete_design_set_int.labels", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+    });
+    m.emplace("discrete_design_set/integer/elements", std::vector<WriteOp>{
+      WriteOp{OpKind::DiscreteSetValues, "discrete_design_set_int.values", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_design_set/integer/initial_point", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "discrete_design_set_int.initial_point", nlohmann::json::parse("{\"handler_type\": \"ivec\", \"keyword_name\": \"initial_point\", \"member_variable_type\": \"IntVector\"}")},
+      WriteOp{OpKind::DirectValue, "discrete_design_set_int.initial_point", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_design_set/real", std::vector<WriteOp>{
-      WriteOp{OpKind::DiscreteSetValues, "discrete_design_set_real.values", nlohmann::json::parse("{\"handler_type\": \"newrvec\", \"keyword_name\": \"elements\", \"member_variable_type\": \"RealSetArray\"}")},
-      WriteOp{OpKind::DiscreteSetValues, "discrete_design_set_real.values", nlohmann::json::parse("{\"handler_type\": \"newrvec\", \"keyword_name\": \"elements\", \"member_variable_type\": \"RealSetArray\"}")},
+      WriteOp{OpKind::DiscreteSetValues, "discrete_design_set_real.values", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+    });
+    m.emplace("discrete_design_set/real/categorical", std::vector<WriteOp>{
+      WriteOp{OpKind::Categorical, "discrete_design_set_real.categorical", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_design_set/real/categorical/adjacency_matrix", std::vector<WriteOp>{
-      WriteOp{OpKind::AdjacencyMatrix, "discrete_design_set_real.adjacency_matrix", nlohmann::json::parse("{\"handler_type\": \"newivec\", \"keyword_name\": \"adjacency_matrix\", \"member_variable_type\": \"RealMatrixArray\"}")},
+      WriteOp{OpKind::AdjacencyMatrix, "discrete_design_set_real.adjacency_matrix", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_design_set/real/categorical/flags", std::vector<WriteOp>{
-      WriteOp{OpKind::Categorical, "discrete_design_set_real.categorical", nlohmann::json::parse("{\"handler_type\": \"categorical\", \"keyword_name\": \"categorical\", \"member_variable_type\": \"BitArray\"}")},
-      WriteOp{OpKind::Categorical, "discrete_design_set_real.categorical", nlohmann::json::parse("{\"handler_type\": \"categorical\", \"keyword_name\": \"categorical\", \"member_variable_type\": \"BitArray\"}")},
+      WriteOp{OpKind::Categorical, "discrete_design_set_real.categorical", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_design_set/real/count", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "discrete_design_set_real", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"real\", \"member_variable_type\": \"size_t\"}")},
+      WriteOp{OpKind::DirectValue, "discrete_design_set_real", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_design_set/real/descriptors", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "discrete_design_set_real.labels", nlohmann::json::parse("{\"handler_type\": \"strL\", \"keyword_name\": \"descriptors\", \"member_variable_type\": \"StringArray\"}")},
+      WriteOp{OpKind::DirectValue, "discrete_design_set_real.labels", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+    });
+    m.emplace("discrete_design_set/real/elements", std::vector<WriteOp>{
+      WriteOp{OpKind::DiscreteSetValues, "discrete_design_set_real.values", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_design_set/real/initial_point", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "discrete_design_set_real.initial_point", nlohmann::json::parse("{\"handler_type\": \"rvec\", \"keyword_name\": \"initial_point\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "discrete_design_set_real.initial_point", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_design_set/string", std::vector<WriteOp>{
-      WriteOp{OpKind::DiscreteSetValues, "discrete_design_set_string.values", nlohmann::json::parse("{\"handler_type\": \"newsarray\", \"keyword_name\": \"elements\", \"member_variable_type\": \"StringSetArray\"}")},
-      WriteOp{OpKind::DiscreteSetValues, "discrete_design_set_string.values", nlohmann::json::parse("{\"handler_type\": \"newsarray\", \"keyword_name\": \"elements\", \"member_variable_type\": \"StringSetArray\"}")},
+      WriteOp{OpKind::DiscreteSetValues, "discrete_design_set_string.values", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_design_set/string/adjacency_matrix", std::vector<WriteOp>{
-      WriteOp{OpKind::AdjacencyMatrix, "discrete_design_set_str.adjacency_matrix", nlohmann::json::parse("{\"handler_type\": \"newivec\", \"keyword_name\": \"adjacency_matrix\", \"member_variable_type\": \"RealMatrixArray\"}")},
+      WriteOp{OpKind::AdjacencyMatrix, "discrete_design_set_str.adjacency_matrix", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_design_set/string/count", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "discrete_design_set_string", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"string\", \"member_variable_type\": \"size_t\"}")},
+      WriteOp{OpKind::DirectValue, "discrete_design_set_string", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_design_set/string/descriptors", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "discrete_design_set_string.labels", nlohmann::json::parse("{\"handler_type\": \"strL\", \"keyword_name\": \"descriptors\", \"member_variable_type\": \"StringArray\"}")},
+      WriteOp{OpKind::DirectValue, "discrete_design_set_string.labels", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+    });
+    m.emplace("discrete_design_set/string/elements", std::vector<WriteOp>{
+      WriteOp{OpKind::DiscreteSetValues, "discrete_design_set_string.values", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_design_set/string/initial_point", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "discrete_design_set_string.initial_point", nlohmann::json::parse("{\"handler_type\": \"strL\", \"keyword_name\": \"initial_point\", \"member_variable_type\": \"StringArray\"}")},
+      WriteOp{OpKind::DirectValue, "discrete_design_set_string.initial_point", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_interval_uncertain", std::vector<WriteOp>{
-      WriteOp{OpKind::DiscreteIntervalUncertain, "discrete_interval_uncertain.basic_probs", nlohmann::json::parse("{\"handler_type\": \"materialize\", \"keyword_name\": \"discrete_interval_uncertain\", \"member_variable_type\": \"IntIntPairRealMapArray\"}")},
-      WriteOp{OpKind::DiscreteIntervalUncertain, "discrete_interval_uncertain.basic_probs", nlohmann::json::parse("{\"handler_type\": \"materialize\", \"keyword_name\": \"discrete_interval_uncertain\", \"member_variable_type\": \"IntIntPairRealMapArray\"}")},
-      WriteOp{OpKind::DiscreteIntervalUncertain, "discrete_interval_uncertain.basic_probs", nlohmann::json::parse("{\"handler_type\": \"materialize\", \"keyword_name\": \"discrete_interval_uncertain\", \"member_variable_type\": \"IntIntPairRealMapArray\"}")},
-      WriteOp{OpKind::DiscreteIntervalUncertain, "discrete_interval_uncertain.basic_probs", nlohmann::json::parse("{\"handler_type\": \"materialize\", \"keyword_name\": \"discrete_interval_uncertain\", \"member_variable_type\": \"IntIntPairRealMapArray\"}")},
+      WriteOp{OpKind::DiscreteIntervalUncertain, "discrete_interval_uncertain.basic_probs", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_interval_uncertain/count", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "discrete_interval_uncertain", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"discrete_interval_uncertain\", \"member_variable_type\": \"size_t\"}")},
+      WriteOp{OpKind::DirectValue, "discrete_interval_uncertain", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_interval_uncertain/initial_point", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "discrete_interval_uncertain.initial_point", nlohmann::json::parse("{\"handler_type\": \"ivec\", \"keyword_name\": \"initial_point\", \"member_variable_type\": \"IntVector\"}")},
+      WriteOp{OpKind::DirectValue, "discrete_interval_uncertain.initial_point", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+    });
+    m.emplace("discrete_interval_uncertain/interval_probabilities", std::vector<WriteOp>{
+      WriteOp{OpKind::DiscreteIntervalUncertain, "discrete_interval_uncertain.basic_probs", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+    });
+    m.emplace("discrete_interval_uncertain/lower_bounds", std::vector<WriteOp>{
+      WriteOp{OpKind::DiscreteIntervalUncertain, "discrete_interval_uncertain.basic_probs", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+    });
+    m.emplace("discrete_interval_uncertain/upper_bounds", std::vector<WriteOp>{
+      WriteOp{OpKind::DiscreteIntervalUncertain, "discrete_interval_uncertain.basic_probs", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+    });
+    m.emplace("discrete_state_range", std::vector<WriteOp>{
+      WriteOp{OpKind::DirectValue, "discrete_state_range", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_state_range/count", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "discrete_state_range", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"discrete_state_range\", \"member_variable_type\": \"size_t\"}")},
-      WriteOp{OpKind::DirectValue, "discrete_state_range", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"discrete_state_range\", \"member_variable_type\": \"size_t\"}")},
+      WriteOp{OpKind::DirectValue, "discrete_state_range", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_state_range/descriptors", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "discrete_state_range.labels", nlohmann::json::parse("{\"handler_type\": \"strL\", \"keyword_name\": \"descriptors\", \"member_variable_type\": \"StringArray\"}")},
+      WriteOp{OpKind::DirectValue, "discrete_state_range.labels", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_state_range/initial_state", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "discrete_state_range.initial_state", nlohmann::json::parse("{\"handler_type\": \"ivec\", \"keyword_name\": \"initial_state\", \"member_variable_type\": \"IntVector\"}")},
+      WriteOp{OpKind::DirectValue, "discrete_state_range.initial_state", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_state_range/lower_bounds", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "discrete_state_range.lower_bounds", nlohmann::json::parse("{\"handler_type\": \"ivec\", \"keyword_name\": \"lower_bounds\", \"member_variable_type\": \"IntVector\"}")},
+      WriteOp{OpKind::DirectValue, "discrete_state_range.lower_bounds", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_state_range/upper_bounds", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "discrete_state_range.upper_bounds", nlohmann::json::parse("{\"handler_type\": \"ivec\", \"keyword_name\": \"upper_bounds\", \"member_variable_type\": \"IntVector\"}")},
+      WriteOp{OpKind::DirectValue, "discrete_state_range.upper_bounds", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_state_set/integer", std::vector<WriteOp>{
-      WriteOp{OpKind::DiscreteSetValues, "discrete_state_set_int.values", nlohmann::json::parse("{\"handler_type\": \"newivec\", \"keyword_name\": \"elements\", \"member_variable_type\": \"IntSetArray\"}")},
-      WriteOp{OpKind::DiscreteSetValues, "discrete_state_set_int.values", nlohmann::json::parse("{\"handler_type\": \"newivec\", \"keyword_name\": \"elements\", \"member_variable_type\": \"IntSetArray\"}")},
+      WriteOp{OpKind::DiscreteSetValues, "discrete_state_set_int.values", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_state_set/integer/categorical", std::vector<WriteOp>{
-      WriteOp{OpKind::Categorical, "discrete_state_set_int.categorical", nlohmann::json::parse("{\"handler_type\": \"categorical\", \"keyword_name\": \"categorical\", \"member_variable_type\": \"BitArray\"}")},
+      WriteOp{OpKind::Categorical, "discrete_state_set_int.categorical", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_state_set/integer/count", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "discrete_state_set_int", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"integer\", \"member_variable_type\": \"size_t\"}")},
+      WriteOp{OpKind::DirectValue, "discrete_state_set_int", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_state_set/integer/descriptors", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "discrete_state_set_int.labels", nlohmann::json::parse("{\"handler_type\": \"strL\", \"keyword_name\": \"descriptors\", \"member_variable_type\": \"StringArray\"}")},
+      WriteOp{OpKind::DirectValue, "discrete_state_set_int.labels", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+    });
+    m.emplace("discrete_state_set/integer/elements", std::vector<WriteOp>{
+      WriteOp{OpKind::DiscreteSetValues, "discrete_state_set_int.values", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_state_set/integer/initial_state", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "discrete_state_set_int.initial_state", nlohmann::json::parse("{\"handler_type\": \"ivec\", \"keyword_name\": \"initial_state\", \"member_variable_type\": \"IntVector\"}")},
+      WriteOp{OpKind::DirectValue, "discrete_state_set_int.initial_state", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_state_set/real", std::vector<WriteOp>{
-      WriteOp{OpKind::DiscreteSetValues, "discrete_state_set_real.values", nlohmann::json::parse("{\"handler_type\": \"newrvec\", \"keyword_name\": \"elements\", \"member_variable_type\": \"RealSetArray\"}")},
-      WriteOp{OpKind::DiscreteSetValues, "discrete_state_set_real.values", nlohmann::json::parse("{\"handler_type\": \"newrvec\", \"keyword_name\": \"elements\", \"member_variable_type\": \"RealSetArray\"}")},
+      WriteOp{OpKind::DiscreteSetValues, "discrete_state_set_real.values", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_state_set/real/categorical", std::vector<WriteOp>{
-      WriteOp{OpKind::Categorical, "discrete_state_set_real.categorical", nlohmann::json::parse("{\"handler_type\": \"categorical\", \"keyword_name\": \"categorical\", \"member_variable_type\": \"BitArray\"}")},
+      WriteOp{OpKind::Categorical, "discrete_state_set_real.categorical", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_state_set/real/count", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "discrete_state_set_real", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"real\", \"member_variable_type\": \"size_t\"}")},
+      WriteOp{OpKind::DirectValue, "discrete_state_set_real", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_state_set/real/descriptors", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "discrete_state_set_real.labels", nlohmann::json::parse("{\"handler_type\": \"strL\", \"keyword_name\": \"descriptors\", \"member_variable_type\": \"StringArray\"}")},
+      WriteOp{OpKind::DirectValue, "discrete_state_set_real.labels", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+    });
+    m.emplace("discrete_state_set/real/elements", std::vector<WriteOp>{
+      WriteOp{OpKind::DiscreteSetValues, "discrete_state_set_real.values", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_state_set/real/initial_state", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "discrete_state_set_real.initial_state", nlohmann::json::parse("{\"handler_type\": \"rvec\", \"keyword_name\": \"initial_state\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "discrete_state_set_real.initial_state", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_state_set/string", std::vector<WriteOp>{
-      WriteOp{OpKind::DiscreteSetValues, "discrete_state_set_string.values", nlohmann::json::parse("{\"handler_type\": \"newsarray\", \"keyword_name\": \"elements\", \"member_variable_type\": \"StringSetArray\"}")},
-      WriteOp{OpKind::DiscreteSetValues, "discrete_state_set_string.values", nlohmann::json::parse("{\"handler_type\": \"newsarray\", \"keyword_name\": \"elements\", \"member_variable_type\": \"StringSetArray\"}")},
+      WriteOp{OpKind::DiscreteSetValues, "discrete_state_set_string.values", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_state_set/string/count", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "discrete_state_set_string", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"string\", \"member_variable_type\": \"size_t\"}")},
+      WriteOp{OpKind::DirectValue, "discrete_state_set_string", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_state_set/string/descriptors", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "discrete_state_set_string.labels", nlohmann::json::parse("{\"handler_type\": \"strL\", \"keyword_name\": \"descriptors\", \"member_variable_type\": \"StringArray\"}")},
+      WriteOp{OpKind::DirectValue, "discrete_state_set_string.labels", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+    });
+    m.emplace("discrete_state_set/string/elements", std::vector<WriteOp>{
+      WriteOp{OpKind::DiscreteSetValues, "discrete_state_set_string.values", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_state_set/string/initial_state", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "discrete_state_set_string.initial_state", nlohmann::json::parse("{\"handler_type\": \"strL\", \"keyword_name\": \"initial_state\", \"member_variable_type\": \"StringArray\"}")},
+      WriteOp{OpKind::DirectValue, "discrete_state_set_string.initial_state", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_uncertain_set/integer", std::vector<WriteOp>{
-      WriteOp{OpKind::DiscreteUncertainSetValuesProbs, "discrete_uncertain_set_int.values_probs", nlohmann::json::parse("{\"handler_type\": \"materialize\", \"keyword_name\": \"integer\", \"member_variable_type\": \"IntRealMapArray\"}")},
-      WriteOp{OpKind::DiscreteUncertainSetValuesProbs, "discrete_uncertain_set_int.values_probs", nlohmann::json::parse("{\"handler_type\": \"materialize\", \"keyword_name\": \"integer\", \"member_variable_type\": \"IntRealMapArray\"}")},
+      WriteOp{OpKind::DiscreteUncertainSetValuesProbs, "discrete_uncertain_set_int.values_probs", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_uncertain_set/integer/categorical", std::vector<WriteOp>{
-      WriteOp{OpKind::Categorical, "discrete_uncertain_set_int.categorical", nlohmann::json::parse("{\"handler_type\": \"categorical\", \"keyword_name\": \"categorical\", \"member_variable_type\": \"BitArray\"}")},
+      WriteOp{OpKind::Categorical, "discrete_uncertain_set_int.categorical", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_uncertain_set/integer/count", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "discrete_uncertain_set_int", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"integer\", \"member_variable_type\": \"size_t\"}")},
+      WriteOp{OpKind::DirectValue, "discrete_uncertain_set_int", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_uncertain_set/integer/initial_point", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "discrete_uncertain_set_int.initial_point", nlohmann::json::parse("{\"handler_type\": \"ivec\", \"keyword_name\": \"initial_point\", \"member_variable_type\": \"IntVector\"}")},
+      WriteOp{OpKind::DirectValue, "discrete_uncertain_set_int.initial_point", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+    });
+    m.emplace("discrete_uncertain_set/integer/set_probabilities", std::vector<WriteOp>{
+      WriteOp{OpKind::DiscreteUncertainSetValuesProbs, "discrete_uncertain_set_int.values_probs", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_uncertain_set/real", std::vector<WriteOp>{
-      WriteOp{OpKind::DiscreteUncertainSetValuesProbs, "discrete_uncertain_set_real.values_probs", nlohmann::json::parse("{\"handler_type\": \"materialize\", \"keyword_name\": \"real\", \"member_variable_type\": \"RealRealMapArray\"}")},
-      WriteOp{OpKind::DiscreteUncertainSetValuesProbs, "discrete_uncertain_set_real.values_probs", nlohmann::json::parse("{\"handler_type\": \"materialize\", \"keyword_name\": \"real\", \"member_variable_type\": \"RealRealMapArray\"}")},
+      WriteOp{OpKind::DiscreteUncertainSetValuesProbs, "discrete_uncertain_set_real.values_probs", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_uncertain_set/real/categorical", std::vector<WriteOp>{
-      WriteOp{OpKind::Categorical, "discrete_uncertain_set_real.categorical", nlohmann::json::parse("{\"handler_type\": \"categorical\", \"keyword_name\": \"categorical\", \"member_variable_type\": \"BitArray\"}")},
+      WriteOp{OpKind::Categorical, "discrete_uncertain_set_real.categorical", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_uncertain_set/real/count", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "discrete_uncertain_set_real", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"real\", \"member_variable_type\": \"size_t\"}")},
+      WriteOp{OpKind::DirectValue, "discrete_uncertain_set_real", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_uncertain_set/real/initial_point", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "discrete_uncertain_set_real.initial_point", nlohmann::json::parse("{\"handler_type\": \"rvec\", \"keyword_name\": \"initial_point\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "discrete_uncertain_set_real.initial_point", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+    });
+    m.emplace("discrete_uncertain_set/real/set_probabilities", std::vector<WriteOp>{
+      WriteOp{OpKind::DiscreteUncertainSetValuesProbs, "discrete_uncertain_set_real.values_probs", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_uncertain_set/string", std::vector<WriteOp>{
-      WriteOp{OpKind::DiscreteUncertainSetValuesProbs, "discrete_uncertain_set_string.values_probs", nlohmann::json::parse("{\"handler_type\": \"materialize\", \"keyword_name\": \"string\", \"member_variable_type\": \"StringRealMapArray\"}")},
-      WriteOp{OpKind::DiscreteUncertainSetValuesProbs, "discrete_uncertain_set_string.values_probs", nlohmann::json::parse("{\"handler_type\": \"materialize\", \"keyword_name\": \"string\", \"member_variable_type\": \"StringRealMapArray\"}")},
+      WriteOp{OpKind::DiscreteUncertainSetValuesProbs, "discrete_uncertain_set_string.values_probs", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_uncertain_set/string/count", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "discrete_uncertain_set_string", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"string\", \"member_variable_type\": \"size_t\"}")},
+      WriteOp{OpKind::DirectValue, "discrete_uncertain_set_string", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_uncertain_set/string/initial_point", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "discrete_uncertain_set_string.initial_point", nlohmann::json::parse("{\"handler_type\": \"strL\", \"keyword_name\": \"initial_point\", \"member_variable_type\": \"StringArray\"}")},
+      WriteOp{OpKind::DirectValue, "discrete_uncertain_set_string.initial_point", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+    });
+    m.emplace("discrete_uncertain_set/string/set_probabilities", std::vector<WriteOp>{
+      WriteOp{OpKind::DiscreteUncertainSetValuesProbs, "discrete_uncertain_set_string.values_probs", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("domain/mixed", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "domain", nlohmann::json::parse("{\"handler_type\": \"type\", \"keyword_name\": \"mixed\", \"member_variable_type\": \"short\", \"stored_value\": \"MIXED_DOMAIN\"}")},
+      WriteOp{OpKind::PresenceEnum, "domain", OpLiteral{IrValueType::String, IRValue{std::string("MIXED_DOMAIN")}}},
     });
     m.emplace("domain/relaxed", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "domain", nlohmann::json::parse("{\"handler_type\": \"type\", \"keyword_name\": \"relaxed\", \"member_variable_type\": \"short\", \"stored_value\": \"RELAXED_DOMAIN\"}")},
+      WriteOp{OpKind::PresenceEnum, "domain", OpLiteral{IrValueType::String, IRValue{std::string("RELAXED_DOMAIN")}}},
+    });
+    m.emplace("exponential_uncertain", std::vector<WriteOp>{
+      WriteOp{OpKind::DirectValue, "exponential_uncertain", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("exponential_uncertain/betas", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "exponential_uncertain.betas", nlohmann::json::parse("{\"handler_type\": \"RealLb\", \"keyword_name\": \"betas\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "exponential_uncertain.betas", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("exponential_uncertain/count", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "exponential_uncertain", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"exponential_uncertain\", \"member_variable_type\": \"size_t\"}")},
-      WriteOp{OpKind::DirectValue, "exponential_uncertain", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"exponential_uncertain\", \"member_variable_type\": \"size_t\"}")},
+      WriteOp{OpKind::DirectValue, "exponential_uncertain", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("exponential_uncertain/initial_point", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "exponential_uncertain.initial_point", nlohmann::json::parse("{\"handler_type\": \"RealLb\", \"keyword_name\": \"initial_point\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "exponential_uncertain.initial_point", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+    });
+    m.emplace("frechet_uncertain", std::vector<WriteOp>{
+      WriteOp{OpKind::DirectValue, "frechet_uncertain", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("frechet_uncertain/alphas", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "frechet_uncertain.alphas", nlohmann::json::parse("{\"handler_type\": \"RealLb\", \"keyword_name\": \"alphas\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "frechet_uncertain.alphas", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("frechet_uncertain/betas", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "frechet_uncertain.betas", nlohmann::json::parse("{\"handler_type\": \"rvec\", \"keyword_name\": \"betas\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "frechet_uncertain.betas", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("frechet_uncertain/count", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "frechet_uncertain", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"frechet_uncertain\", \"member_variable_type\": \"size_t\"}")},
-      WriteOp{OpKind::DirectValue, "frechet_uncertain", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"frechet_uncertain\", \"member_variable_type\": \"size_t\"}")},
+      WriteOp{OpKind::DirectValue, "frechet_uncertain", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("frechet_uncertain/initial_point", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "frechet_uncertain.initial_point", nlohmann::json::parse("{\"handler_type\": \"rvec\", \"keyword_name\": \"initial_point\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "frechet_uncertain.initial_point", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+    });
+    m.emplace("gamma_uncertain", std::vector<WriteOp>{
+      WriteOp{OpKind::DirectValue, "gamma_uncertain", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("gamma_uncertain/alphas", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "gamma_uncertain.alphas", nlohmann::json::parse("{\"handler_type\": \"RealLb\", \"keyword_name\": \"alphas\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "gamma_uncertain.alphas", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("gamma_uncertain/betas", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "gamma_uncertain.betas", nlohmann::json::parse("{\"handler_type\": \"RealLb\", \"keyword_name\": \"betas\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "gamma_uncertain.betas", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("gamma_uncertain/count", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "gamma_uncertain", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"gamma_uncertain\", \"member_variable_type\": \"size_t\"}")},
-      WriteOp{OpKind::DirectValue, "gamma_uncertain", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"gamma_uncertain\", \"member_variable_type\": \"size_t\"}")},
+      WriteOp{OpKind::DirectValue, "gamma_uncertain", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("gamma_uncertain/initial_point", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "gamma_uncertain.initial_point", nlohmann::json::parse("{\"handler_type\": \"RealLb\", \"keyword_name\": \"initial_point\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "gamma_uncertain.initial_point", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+    });
+    m.emplace("geometric_uncertain", std::vector<WriteOp>{
+      WriteOp{OpKind::DirectValue, "geometric_uncertain", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("geometric_uncertain/count", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "geometric_uncertain", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"geometric_uncertain\", \"member_variable_type\": \"size_t\"}")},
-      WriteOp{OpKind::DirectValue, "geometric_uncertain", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"geometric_uncertain\", \"member_variable_type\": \"size_t\"}")},
+      WriteOp{OpKind::DirectValue, "geometric_uncertain", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("geometric_uncertain/initial_point", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "geometric_uncertain.initial_point", nlohmann::json::parse("{\"handler_type\": \"IntLb\", \"keyword_name\": \"initial_point\", \"member_variable_type\": \"IntVector\"}")},
+      WriteOp{OpKind::DirectValue, "geometric_uncertain.initial_point", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("geometric_uncertain/probability_per_trial", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "geometric_uncertain.prob_per_trial", nlohmann::json::parse("{\"handler_type\": \"rvec\", \"keyword_name\": \"probability_per_trial\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "geometric_uncertain.prob_per_trial", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+    });
+    m.emplace("gumbel_uncertain", std::vector<WriteOp>{
+      WriteOp{OpKind::DirectValue, "gumbel_uncertain", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("gumbel_uncertain/alphas", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "gumbel_uncertain.alphas", nlohmann::json::parse("{\"handler_type\": \"RealLb\", \"keyword_name\": \"alphas\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "gumbel_uncertain.alphas", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("gumbel_uncertain/betas", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "gumbel_uncertain.betas", nlohmann::json::parse("{\"handler_type\": \"rvec\", \"keyword_name\": \"betas\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "gumbel_uncertain.betas", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("gumbel_uncertain/count", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "gumbel_uncertain", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"gumbel_uncertain\", \"member_variable_type\": \"size_t\"}")},
-      WriteOp{OpKind::DirectValue, "gumbel_uncertain", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"gumbel_uncertain\", \"member_variable_type\": \"size_t\"}")},
+      WriteOp{OpKind::DirectValue, "gumbel_uncertain", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("gumbel_uncertain/initial_point", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "gumbel_uncertain.initial_point", nlohmann::json::parse("{\"handler_type\": \"rvec\", \"keyword_name\": \"initial_point\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "gumbel_uncertain.initial_point", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("histogram_bin_uncertain", std::vector<WriteOp>{
-      WriteOp{OpKind::HistogramBinUncertain, "histogram_uncertain.bin_pairs", nlohmann::json::parse("{\"handler_type\": \"materialize\", \"keyword_name\": \"histogram_bin_uncertain\", \"member_variable_type\": \"RealRealMapArray\"}")},
+      WriteOp{OpKind::HistogramBinUncertain, "histogram_uncertain.bin_pairs", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("histogram_bin_uncertain/count", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "histogram_uncertain.bin", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"histogram_bin_uncertain\", \"member_variable_type\": \"size_t\"}")},
+      WriteOp{OpKind::DirectValue, "histogram_uncertain.bin", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("histogram_bin_uncertain/initial_point", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "histogram_bin_uncertain.initial_point", nlohmann::json::parse("{\"handler_type\": \"rvec\", \"keyword_name\": \"initial_point\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "histogram_bin_uncertain.initial_point", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("histogram_point_uncertain/integer", std::vector<WriteOp>{
-      WriteOp{OpKind::HistogramPointUncertain, "histogram_uncertain.point_int_pairs", nlohmann::json::parse("{\"handler_type\": \"materialize\", \"keyword_name\": \"integer\", \"member_variable_type\": \"IntRealMapArray\"}")},
-      WriteOp{OpKind::HistogramPointUncertain, "histogram_uncertain.point_int_pairs", nlohmann::json::parse("{\"handler_type\": \"materialize\", \"keyword_name\": \"integer\", \"member_variable_type\": \"IntRealMapArray\"}")},
-      WriteOp{OpKind::HistogramPointUncertain, "histogram_uncertain.point_int_pairs", nlohmann::json::parse("{\"handler_type\": \"materialize\", \"keyword_name\": \"integer\", \"member_variable_type\": \"IntRealMapArray\"}")},
-      WriteOp{OpKind::HistogramPointUncertain, "histogram_uncertain.point_int_pairs", nlohmann::json::parse("{\"handler_type\": \"materialize\", \"keyword_name\": \"integer\", \"member_variable_type\": \"IntRealMapArray\"}")},
+      WriteOp{OpKind::HistogramPointUncertain, "histogram_uncertain.point_int_pairs", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+    });
+    m.emplace("histogram_point_uncertain/integer/abscissas", std::vector<WriteOp>{
+      WriteOp{OpKind::HistogramPointUncertain, "histogram_uncertain.point_int_pairs", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("histogram_point_uncertain/integer/count", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "histogram_uncertain.point_int", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"integer\", \"member_variable_type\": \"size_t\"}")},
+      WriteOp{OpKind::DirectValue, "histogram_uncertain.point_int", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+    });
+    m.emplace("histogram_point_uncertain/integer/counts", std::vector<WriteOp>{
+      WriteOp{OpKind::HistogramPointUncertain, "histogram_uncertain.point_int_pairs", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("histogram_point_uncertain/integer/initial_point", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "histogram_uncertain.point_int.initial_point", nlohmann::json::parse("{\"handler_type\": \"ivec\", \"keyword_name\": \"initial_point\", \"member_variable_type\": \"IntVector\"}")},
+      WriteOp{OpKind::DirectValue, "histogram_uncertain.point_int.initial_point", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+    });
+    m.emplace("histogram_point_uncertain/integer/pairs_per_variable", std::vector<WriteOp>{
+      WriteOp{OpKind::HistogramPointUncertain, "histogram_uncertain.point_int_pairs", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("histogram_point_uncertain/real", std::vector<WriteOp>{
-      WriteOp{OpKind::HistogramPointUncertain, "histogram_uncertain.point_real_pairs", nlohmann::json::parse("{\"handler_type\": \"materialize\", \"keyword_name\": \"real\", \"member_variable_type\": \"RealRealMapArray\"}")},
-      WriteOp{OpKind::HistogramPointUncertain, "histogram_uncertain.point_real_pairs", nlohmann::json::parse("{\"handler_type\": \"materialize\", \"keyword_name\": \"real\", \"member_variable_type\": \"RealRealMapArray\"}")},
-      WriteOp{OpKind::HistogramPointUncertain, "histogram_uncertain.point_real_pairs", nlohmann::json::parse("{\"handler_type\": \"materialize\", \"keyword_name\": \"real\", \"member_variable_type\": \"RealRealMapArray\"}")},
-      WriteOp{OpKind::HistogramPointUncertain, "histogram_uncertain.point_real_pairs", nlohmann::json::parse("{\"handler_type\": \"materialize\", \"keyword_name\": \"real\", \"member_variable_type\": \"RealRealMapArray\"}")},
+      WriteOp{OpKind::HistogramPointUncertain, "histogram_uncertain.point_real_pairs", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+    });
+    m.emplace("histogram_point_uncertain/real/abscissas", std::vector<WriteOp>{
+      WriteOp{OpKind::HistogramPointUncertain, "histogram_uncertain.point_real_pairs", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("histogram_point_uncertain/real/count", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "histogram_uncertain.point_real", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"real\", \"member_variable_type\": \"size_t\"}")},
+      WriteOp{OpKind::DirectValue, "histogram_uncertain.point_real", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+    });
+    m.emplace("histogram_point_uncertain/real/counts", std::vector<WriteOp>{
+      WriteOp{OpKind::HistogramPointUncertain, "histogram_uncertain.point_real_pairs", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("histogram_point_uncertain/real/initial_point", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "histogram_uncertain.point_real.initial_point", nlohmann::json::parse("{\"handler_type\": \"rvec\", \"keyword_name\": \"initial_point\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "histogram_uncertain.point_real.initial_point", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+    });
+    m.emplace("histogram_point_uncertain/real/pairs_per_variable", std::vector<WriteOp>{
+      WriteOp{OpKind::HistogramPointUncertain, "histogram_uncertain.point_real_pairs", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("histogram_point_uncertain/string", std::vector<WriteOp>{
-      WriteOp{OpKind::HistogramPointUncertain, "histogram_uncertain.point_string_pairs", nlohmann::json::parse("{\"handler_type\": \"materialize\", \"keyword_name\": \"string\", \"member_variable_type\": \"StringRealMapArray\"}")},
-      WriteOp{OpKind::HistogramPointUncertain, "histogram_uncertain.point_string_pairs", nlohmann::json::parse("{\"handler_type\": \"materialize\", \"keyword_name\": \"string\", \"member_variable_type\": \"StringRealMapArray\"}")},
-      WriteOp{OpKind::HistogramPointUncertain, "histogram_uncertain.point_string_pairs", nlohmann::json::parse("{\"handler_type\": \"materialize\", \"keyword_name\": \"string\", \"member_variable_type\": \"StringRealMapArray\"}")},
-      WriteOp{OpKind::HistogramPointUncertain, "histogram_uncertain.point_string_pairs", nlohmann::json::parse("{\"handler_type\": \"materialize\", \"keyword_name\": \"string\", \"member_variable_type\": \"StringRealMapArray\"}")},
+      WriteOp{OpKind::HistogramPointUncertain, "histogram_uncertain.point_string_pairs", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+    });
+    m.emplace("histogram_point_uncertain/string/abscissas", std::vector<WriteOp>{
+      WriteOp{OpKind::HistogramPointUncertain, "histogram_uncertain.point_string_pairs", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("histogram_point_uncertain/string/count", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "histogram_uncertain.point_string", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"string\", \"member_variable_type\": \"size_t\"}")},
+      WriteOp{OpKind::DirectValue, "histogram_uncertain.point_string", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+    });
+    m.emplace("histogram_point_uncertain/string/counts", std::vector<WriteOp>{
+      WriteOp{OpKind::HistogramPointUncertain, "histogram_uncertain.point_string_pairs", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("histogram_point_uncertain/string/initial_point", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "histogram_uncertain.point_string.initial_point", nlohmann::json::parse("{\"handler_type\": \"strL\", \"keyword_name\": \"initial_point\", \"member_variable_type\": \"StringArray\"}")},
+      WriteOp{OpKind::DirectValue, "histogram_uncertain.point_string.initial_point", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+    });
+    m.emplace("histogram_point_uncertain/string/pairs_per_variable", std::vector<WriteOp>{
+      WriteOp{OpKind::HistogramPointUncertain, "histogram_uncertain.point_string_pairs", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+    });
+    m.emplace("hypergeometric_uncertain", std::vector<WriteOp>{
+      WriteOp{OpKind::DirectValue, "hypergeometric_uncertain", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("hypergeometric_uncertain/count", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "hypergeometric_uncertain", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"hypergeometric_uncertain\", \"member_variable_type\": \"size_t\"}")},
-      WriteOp{OpKind::DirectValue, "hypergeometric_uncertain", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"hypergeometric_uncertain\", \"member_variable_type\": \"size_t\"}")},
+      WriteOp{OpKind::DirectValue, "hypergeometric_uncertain", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("hypergeometric_uncertain/initial_point", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "hypergeometric_uncertain.initial_point", nlohmann::json::parse("{\"handler_type\": \"IntLb\", \"keyword_name\": \"initial_point\", \"member_variable_type\": \"IntVector\"}")},
+      WriteOp{OpKind::DirectValue, "hypergeometric_uncertain.initial_point", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("hypergeometric_uncertain/num_drawn", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "hypergeometric_uncertain.num_drawn", nlohmann::json::parse("{\"handler_type\": \"IntLb\", \"keyword_name\": \"num_drawn\", \"member_variable_type\": \"IntVector\"}")},
+      WriteOp{OpKind::DirectValue, "hypergeometric_uncertain.num_drawn", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("hypergeometric_uncertain/selected_population", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "hypergeometric_uncertain.selected_population", nlohmann::json::parse("{\"handler_type\": \"IntLb\", \"keyword_name\": \"selected_population\", \"member_variable_type\": \"IntVector\"}")},
+      WriteOp{OpKind::DirectValue, "hypergeometric_uncertain.selected_population", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("hypergeometric_uncertain/total_population", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "hypergeometric_uncertain.total_population", nlohmann::json::parse("{\"handler_type\": \"IntLb\", \"keyword_name\": \"total_population\", \"member_variable_type\": \"IntVector\"}")},
+      WriteOp{OpKind::DirectValue, "hypergeometric_uncertain.total_population", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("id_variables", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "id", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"id_variables\", \"member_variable_type\": \"String\"}")},
+      WriteOp{OpKind::DirectValue, "id", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("linear_equality_constraint_matrix", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "linear_equality_constraints", nlohmann::json::parse("{\"handler_type\": \"rvec\", \"keyword_name\": \"linear_equality_constraint_matrix\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "linear_equality_constraints", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("linear_equality_scale_types", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "linear_equality_scale_types", nlohmann::json::parse("{\"handler_type\": \"strL\", \"keyword_name\": \"linear_equality_scale_types\", \"member_variable_type\": \"StringArray\"}")},
+      WriteOp{OpKind::DirectValue, "linear_equality_scale_types", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("linear_equality_scales", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "linear_equality_scales", nlohmann::json::parse("{\"handler_type\": \"rvec\", \"keyword_name\": \"linear_equality_scales\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "linear_equality_scales", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("linear_equality_targets", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "linear_equality_targets", nlohmann::json::parse("{\"handler_type\": \"rvec\", \"keyword_name\": \"linear_equality_targets\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "linear_equality_targets", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("linear_inequality_constraint_matrix", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "linear_inequality_constraints", nlohmann::json::parse("{\"handler_type\": \"rvec\", \"keyword_name\": \"linear_inequality_constraint_matrix\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "linear_inequality_constraints", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("linear_inequality_lower_bounds", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "linear_inequality_lower_bounds", nlohmann::json::parse("{\"handler_type\": \"rvec\", \"keyword_name\": \"linear_inequality_lower_bounds\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "linear_inequality_lower_bounds", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("linear_inequality_scale_types", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "linear_inequality_scale_types", nlohmann::json::parse("{\"handler_type\": \"strL\", \"keyword_name\": \"linear_inequality_scale_types\", \"member_variable_type\": \"StringArray\"}")},
+      WriteOp{OpKind::DirectValue, "linear_inequality_scale_types", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("linear_inequality_scales", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "linear_inequality_scales", nlohmann::json::parse("{\"handler_type\": \"rvec\", \"keyword_name\": \"linear_inequality_scales\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "linear_inequality_scales", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("linear_inequality_upper_bounds", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "linear_inequality_upper_bounds", nlohmann::json::parse("{\"handler_type\": \"rvec\", \"keyword_name\": \"linear_inequality_upper_bounds\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "linear_inequality_upper_bounds", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+    });
+    m.emplace("lognormal_uncertain", std::vector<WriteOp>{
+      WriteOp{OpKind::DirectValue, "lognormal_uncertain", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("lognormal_uncertain/count", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "lognormal_uncertain", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"lognormal_uncertain\", \"member_variable_type\": \"size_t\"}")},
-      WriteOp{OpKind::DirectValue, "lognormal_uncertain", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"lognormal_uncertain\", \"member_variable_type\": \"size_t\"}")},
+      WriteOp{OpKind::DirectValue, "lognormal_uncertain", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("lognormal_uncertain/initial_point", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "lognormal_uncertain.initial_point", nlohmann::json::parse("{\"handler_type\": \"RealLb\", \"keyword_name\": \"initial_point\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "lognormal_uncertain.initial_point", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("lognormal_uncertain/lower_bounds", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "lognormal_uncertain.lower_bounds", nlohmann::json::parse("{\"handler_type\": \"RealLb\", \"keyword_name\": \"lower_bounds\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "lognormal_uncertain.lower_bounds", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("lognormal_uncertain/parameters/option_1/means", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "lognormal_uncertain.means", nlohmann::json::parse("{\"handler_type\": \"RealLb\", \"keyword_name\": \"means\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "lognormal_uncertain.means", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("lognormal_uncertain/parameters/option_1/std_deviations", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "lognormal_uncertain.std_deviations", nlohmann::json::parse("{\"handler_type\": \"RealLb\", \"keyword_name\": \"std_deviations\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "lognormal_uncertain.std_deviations", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("lognormal_uncertain/parameters/option_2/error_factors", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "lognormal_uncertain.error_factors", nlohmann::json::parse("{\"handler_type\": \"RealLb\", \"keyword_name\": \"error_factors\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "lognormal_uncertain.error_factors", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("lognormal_uncertain/parameters/option_2/means", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "lognormal_uncertain.means", nlohmann::json::parse("{\"handler_type\": \"RealLb\", \"keyword_name\": \"means\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "lognormal_uncertain.means", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("lognormal_uncertain/parameters/option_3/lambdas", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "lognormal_uncertain.lambdas", nlohmann::json::parse("{\"handler_type\": \"rvec\", \"keyword_name\": \"lambdas\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "lognormal_uncertain.lambdas", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("lognormal_uncertain/parameters/option_3/zetas", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "lognormal_uncertain.zetas", nlohmann::json::parse("{\"handler_type\": \"RealLb\", \"keyword_name\": \"zetas\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "lognormal_uncertain.zetas", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("lognormal_uncertain/upper_bounds", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "lognormal_uncertain.upper_bounds", nlohmann::json::parse("{\"handler_type\": \"RealUb\", \"keyword_name\": \"upper_bounds\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "lognormal_uncertain.upper_bounds", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+    });
+    m.emplace("loguniform_uncertain", std::vector<WriteOp>{
+      WriteOp{OpKind::DirectValue, "loguniform_uncertain", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("loguniform_uncertain/count", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "loguniform_uncertain", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"loguniform_uncertain\", \"member_variable_type\": \"size_t\"}")},
-      WriteOp{OpKind::DirectValue, "loguniform_uncertain", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"loguniform_uncertain\", \"member_variable_type\": \"size_t\"}")},
+      WriteOp{OpKind::DirectValue, "loguniform_uncertain", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("loguniform_uncertain/initial_point", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "loguniform_uncertain.initial_point", nlohmann::json::parse("{\"handler_type\": \"RealLb\", \"keyword_name\": \"initial_point\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "loguniform_uncertain.initial_point", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("loguniform_uncertain/lower_bounds", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "loguniform_uncertain.lower_bounds", nlohmann::json::parse("{\"handler_type\": \"RealLb\", \"keyword_name\": \"lower_bounds\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "loguniform_uncertain.lower_bounds", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("loguniform_uncertain/upper_bounds", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "loguniform_uncertain.upper_bounds", nlohmann::json::parse("{\"handler_type\": \"RealUb\", \"keyword_name\": \"upper_bounds\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "loguniform_uncertain.upper_bounds", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+    });
+    m.emplace("negative_binomial_uncertain", std::vector<WriteOp>{
+      WriteOp{OpKind::DirectValue, "negative_binomial_uncertain", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("negative_binomial_uncertain/count", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "negative_binomial_uncertain", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"negative_binomial_uncertain\", \"member_variable_type\": \"size_t\"}")},
-      WriteOp{OpKind::DirectValue, "negative_binomial_uncertain", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"negative_binomial_uncertain\", \"member_variable_type\": \"size_t\"}")},
+      WriteOp{OpKind::DirectValue, "negative_binomial_uncertain", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("negative_binomial_uncertain/initial_point", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "negative_binomial_uncertain.initial_point", nlohmann::json::parse("{\"handler_type\": \"IntLb\", \"keyword_name\": \"initial_point\", \"member_variable_type\": \"IntVector\"}")},
+      WriteOp{OpKind::DirectValue, "negative_binomial_uncertain.initial_point", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("negative_binomial_uncertain/num_trials", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "negative_binomial_uncertain.num_trials", nlohmann::json::parse("{\"handler_type\": \"IntLb\", \"keyword_name\": \"num_trials\", \"member_variable_type\": \"IntVector\"}")},
+      WriteOp{OpKind::DirectValue, "negative_binomial_uncertain.num_trials", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("negative_binomial_uncertain/probability_per_trial", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "negative_binomial_uncertain.prob_per_trial", nlohmann::json::parse("{\"handler_type\": \"rvec\", \"keyword_name\": \"probability_per_trial\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "negative_binomial_uncertain.prob_per_trial", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+    });
+    m.emplace("normal_uncertain", std::vector<WriteOp>{
+      WriteOp{OpKind::DirectValue, "normal_uncertain", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("normal_uncertain/count", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "normal_uncertain", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"normal_uncertain\", \"member_variable_type\": \"size_t\"}")},
-      WriteOp{OpKind::DirectValue, "normal_uncertain", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"normal_uncertain\", \"member_variable_type\": \"size_t\"}")},
+      WriteOp{OpKind::DirectValue, "normal_uncertain", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("normal_uncertain/initial_point", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "normal_uncertain.initial_point", nlohmann::json::parse("{\"handler_type\": \"rvec\", \"keyword_name\": \"initial_point\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "normal_uncertain.initial_point", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("normal_uncertain/lower_bounds", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "normal_uncertain.lower_bounds", nlohmann::json::parse("{\"handler_type\": \"rvec\", \"keyword_name\": \"lower_bounds\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "normal_uncertain.lower_bounds", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("normal_uncertain/means", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "normal_uncertain.means", nlohmann::json::parse("{\"handler_type\": \"rvec\", \"keyword_name\": \"means\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "normal_uncertain.means", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("normal_uncertain/std_deviations", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "normal_uncertain.std_deviations", nlohmann::json::parse("{\"handler_type\": \"RealLb\", \"keyword_name\": \"std_deviations\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "normal_uncertain.std_deviations", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("normal_uncertain/upper_bounds", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "normal_uncertain.upper_bounds", nlohmann::json::parse("{\"handler_type\": \"rvec\", \"keyword_name\": \"upper_bounds\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "normal_uncertain.upper_bounds", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+    });
+    m.emplace("poisson_uncertain", std::vector<WriteOp>{
+      WriteOp{OpKind::DirectValue, "poisson_uncertain", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("poisson_uncertain/count", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "poisson_uncertain", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"poisson_uncertain\", \"member_variable_type\": \"size_t\"}")},
-      WriteOp{OpKind::DirectValue, "poisson_uncertain", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"poisson_uncertain\", \"member_variable_type\": \"size_t\"}")},
+      WriteOp{OpKind::DirectValue, "poisson_uncertain", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("poisson_uncertain/initial_point", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "poisson_uncertain.initial_point", nlohmann::json::parse("{\"handler_type\": \"IntLb\", \"keyword_name\": \"initial_point\", \"member_variable_type\": \"IntVector\"}")},
+      WriteOp{OpKind::DirectValue, "poisson_uncertain.initial_point", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("poisson_uncertain/lambdas", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "poisson_uncertain.lambdas", nlohmann::json::parse("{\"handler_type\": \"RealLb\", \"keyword_name\": \"lambdas\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "poisson_uncertain.lambdas", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+    });
+    m.emplace("triangular_uncertain", std::vector<WriteOp>{
+      WriteOp{OpKind::DirectValue, "triangular_uncertain", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("triangular_uncertain/count", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "triangular_uncertain", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"triangular_uncertain\", \"member_variable_type\": \"size_t\"}")},
-      WriteOp{OpKind::DirectValue, "triangular_uncertain", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"triangular_uncertain\", \"member_variable_type\": \"size_t\"}")},
+      WriteOp{OpKind::DirectValue, "triangular_uncertain", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("triangular_uncertain/initial_point", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "triangular_uncertain.initial_point", nlohmann::json::parse("{\"handler_type\": \"rvec\", \"keyword_name\": \"initial_point\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "triangular_uncertain.initial_point", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("triangular_uncertain/lower_bounds", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "triangular_uncertain.lower_bounds", nlohmann::json::parse("{\"handler_type\": \"RealLb\", \"keyword_name\": \"lower_bounds\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "triangular_uncertain.lower_bounds", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("triangular_uncertain/modes", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "triangular_uncertain.modes", nlohmann::json::parse("{\"handler_type\": \"rvec\", \"keyword_name\": \"modes\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "triangular_uncertain.modes", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("triangular_uncertain/upper_bounds", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "triangular_uncertain.upper_bounds", nlohmann::json::parse("{\"handler_type\": \"RealUb\", \"keyword_name\": \"upper_bounds\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "triangular_uncertain.upper_bounds", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("uncertain_correlation_matrix", std::vector<WriteOp>{
-      WriteOp{OpKind::UncertainCorrelationMatrix, "uncertain.correlation_matrix", nlohmann::json::parse("{\"handler_type\": \"materialize\", \"keyword_name\": \"uncertain_correlation_matrix\", \"member_variable_type\": \"RealSymMatrix\"}")},
+      WriteOp{OpKind::UncertainCorrelationMatrix, "uncertain.correlation_matrix", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+    });
+    m.emplace("uniform_uncertain", std::vector<WriteOp>{
+      WriteOp{OpKind::DirectValue, "uniform_uncertain", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("uniform_uncertain/count", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "uniform_uncertain", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"uniform_uncertain\", \"member_variable_type\": \"size_t\"}")},
-      WriteOp{OpKind::DirectValue, "uniform_uncertain", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"uniform_uncertain\", \"member_variable_type\": \"size_t\"}")},
+      WriteOp{OpKind::DirectValue, "uniform_uncertain", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("uniform_uncertain/initial_point", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "uniform_uncertain.initial_point", nlohmann::json::parse("{\"handler_type\": \"rvec\", \"keyword_name\": \"initial_point\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "uniform_uncertain.initial_point", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("uniform_uncertain/lower_bounds", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "uniform_uncertain.lower_bounds", nlohmann::json::parse("{\"handler_type\": \"RealLb\", \"keyword_name\": \"lower_bounds\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "uniform_uncertain.lower_bounds", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("uniform_uncertain/upper_bounds", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "uniform_uncertain.upper_bounds", nlohmann::json::parse("{\"handler_type\": \"RealUb\", \"keyword_name\": \"upper_bounds\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "uniform_uncertain.upper_bounds", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+    });
+    m.emplace("weibull_uncertain", std::vector<WriteOp>{
+      WriteOp{OpKind::DirectValue, "weibull_uncertain", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("weibull_uncertain/alphas", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "weibull_uncertain.alphas", nlohmann::json::parse("{\"handler_type\": \"RealLb\", \"keyword_name\": \"alphas\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "weibull_uncertain.alphas", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("weibull_uncertain/betas", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "weibull_uncertain.betas", nlohmann::json::parse("{\"handler_type\": \"RealLb\", \"keyword_name\": \"betas\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "weibull_uncertain.betas", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("weibull_uncertain/count", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "weibull_uncertain", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"weibull_uncertain\", \"member_variable_type\": \"size_t\"}")},
-      WriteOp{OpKind::DirectValue, "weibull_uncertain", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"weibull_uncertain\", \"member_variable_type\": \"size_t\"}")},
+      WriteOp{OpKind::DirectValue, "weibull_uncertain", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("weibull_uncertain/initial_point", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "weibull_uncertain.initial_point", nlohmann::json::parse("{\"handler_type\": \"RealLb\", \"keyword_name\": \"initial_point\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "weibull_uncertain.initial_point", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     return m;
   }();

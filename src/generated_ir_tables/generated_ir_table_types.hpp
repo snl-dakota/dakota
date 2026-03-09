@@ -4,7 +4,6 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
-#include <nlohmann/json.hpp>
 #include "generated_ir_types.hpp"
 
 namespace dakota::irgen {
@@ -19,10 +18,15 @@ struct KeyContract {
   IRValue default_value;
 };
 
+struct OpLiteral {
+  IrValueType ir_value_type;
+  IRValue value;
+};
+
 struct WriteOp {
   OpKind op_kind;
-  std::string target_local_pdb_key;
-  nlohmann::json payload;
+  std::string target_local_ir_key;
+  OpLiteral literal;
 };
 
 struct BlockTables {

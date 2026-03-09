@@ -152,1192 +152,954 @@ const std::unordered_map<std::string, KeyContract>& contracts() {
 const std::unordered_map<std::string, std::vector<WriteOp>>& instructions() {
   static const auto kInstructions = []() {
     std::unordered_map<std::string, std::vector<WriteOp>> m;
-    m.reserve(297);
+    m.reserve(312);
     m.emplace("active_subspace", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"active_subspace\", \"member_variable_type\": \"String\", \"stored_value\": \"active_subspace\"}")},
+      WriteOp{OpKind::PresenceLiteral, "type", OpLiteral{IrValueType::String, IRValue{std::string("active_subspace")}}},
     });
     m.emplace("active_subspace/bootstrap_samples", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "active_subspace.bootstrap_samples", nlohmann::json::parse("{\"handler_type\": \"int\", \"keyword_name\": \"bootstrap_samples\", \"member_variable_type\": \"int\"}")},
+      WriteOp{OpKind::DirectValue, "active_subspace.bootstrap_samples", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("active_subspace/build_surrogate", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "active_subspace.build_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"build_surrogate\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "active_subspace.build_surrogate", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("active_subspace/build_surrogate/refinement_samples", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "refinement_samples", nlohmann::json::parse("{\"handler_type\": \"ivec\", \"keyword_name\": \"refinement_samples\", \"member_variable_type\": \"IntVector\"}")},
+      WriteOp{OpKind::DirectValue, "refinement_samples", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("active_subspace/dimension", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "rf.expansion_bases", nlohmann::json::parse("{\"handler_type\": \"int\", \"keyword_name\": \"dimension\", \"member_variable_type\": \"int\"}")},
-      WriteOp{OpKind::DirectValue, "subspace.dimension", nlohmann::json::parse("{\"handler_type\": \"int\", \"keyword_name\": \"dimension\", \"member_variable_type\": \"int\"}")},
+      WriteOp{OpKind::DirectValue, "rf.expansion_bases", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+      WriteOp{OpKind::DirectValue, "subspace.dimension", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("active_subspace/hierarchical_tagging", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "hierarchical_tags", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"hierarchical_tagging\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "hierarchical_tags", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"hierarchical_tagging\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "hierarchical_tags", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"hierarchical_tagging\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "hierarchical_tags", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"hierarchical_tagging\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "hierarchical_tags", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"hierarchical_tagging\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "hierarchical_tags", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"hierarchical_tagging\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "hierarchical_tags", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("active_subspace/id_model", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "id", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"id_model\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "id", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"id_model\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "id", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"id_model\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "id", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"id_model\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "id", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"id_model\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "id", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"id_model\", \"member_variable_type\": \"String\"}")},
+      WriteOp{OpKind::DirectValue, "id", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("active_subspace/initial_samples", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "initial_samples", nlohmann::json::parse("{\"handler_type\": \"int\", \"keyword_name\": \"initial_samples\", \"member_variable_type\": \"int\"}")},
+      WriteOp{OpKind::DirectValue, "initial_samples", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("active_subspace/normalization/local_gradient", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "active_subspace.normalization", nlohmann::json::parse("{\"handler_type\": \"utype\", \"keyword_name\": \"local_gradient\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"SUBSPACE_NORM_LOCAL_GRAD\"}")},
+      WriteOp{OpKind::PresenceEnum, "active_subspace.normalization", OpLiteral{IrValueType::String, IRValue{std::string("SUBSPACE_NORM_LOCAL_GRAD")}}},
     });
     m.emplace("active_subspace/normalization/mean_gradient", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "active_subspace.normalization", nlohmann::json::parse("{\"handler_type\": \"utype\", \"keyword_name\": \"mean_gradient\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"SUBSPACE_NORM_MEAN_GRAD\"}")},
+      WriteOp{OpKind::PresenceEnum, "active_subspace.normalization", OpLiteral{IrValueType::String, IRValue{std::string("SUBSPACE_NORM_MEAN_GRAD")}}},
     });
     m.emplace("active_subspace/normalization/mean_value", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "active_subspace.normalization", nlohmann::json::parse("{\"handler_type\": \"utype\", \"keyword_name\": \"mean_value\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"SUBSPACE_NORM_MEAN_VALUE\"}")},
+      WriteOp{OpKind::PresenceEnum, "active_subspace.normalization", OpLiteral{IrValueType::String, IRValue{std::string("SUBSPACE_NORM_MEAN_VALUE")}}},
     });
     m.emplace("active_subspace/sample_type/lhs", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "active_subspace.sample_type", nlohmann::json::parse("{\"handler_type\": \"utype\", \"keyword_name\": \"lhs\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"SUBMETHOD_LHS\"}")},
+      WriteOp{OpKind::PresenceEnum, "active_subspace.sample_type", OpLiteral{IrValueType::String, IRValue{std::string("SUBMETHOD_LHS")}}},
     });
     m.emplace("active_subspace/sample_type/random", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "active_subspace.sample_type", nlohmann::json::parse("{\"handler_type\": \"utype\", \"keyword_name\": \"random\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"SUBMETHOD_RANDOM\"}")},
+      WriteOp{OpKind::PresenceEnum, "active_subspace.sample_type", OpLiteral{IrValueType::String, IRValue{std::string("SUBMETHOD_RANDOM")}}},
     });
     m.emplace("active_subspace/truncation_method/bing_li", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "active_subspace.truncation_method.bing_li", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"bing_li\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "active_subspace.truncation_method.bing_li", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("active_subspace/truncation_method/constantine", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "active_subspace.truncation_method.constantine", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"constantine\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "active_subspace.truncation_method.constantine", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("active_subspace/truncation_method/cross_validation", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "active_subspace.truncation_method.cv", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"cross_validation\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "active_subspace.truncation_method.cv", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("active_subspace/truncation_method/cross_validation/criterion/decrease", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "active_subspace.cv.id_method", nlohmann::json::parse("{\"handler_type\": \"utype\", \"keyword_name\": \"decrease\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"DECREASE_TOLERANCE\"}")},
+      WriteOp{OpKind::PresenceEnum, "active_subspace.cv.id_method", OpLiteral{IrValueType::String, IRValue{std::string("DECREASE_TOLERANCE")}}},
     });
     m.emplace("active_subspace/truncation_method/cross_validation/criterion/minimum", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "active_subspace.cv.id_method", nlohmann::json::parse("{\"handler_type\": \"utype\", \"keyword_name\": \"minimum\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"MINIMUM_METRIC\"}")},
+      WriteOp{OpKind::PresenceEnum, "active_subspace.cv.id_method", OpLiteral{IrValueType::String, IRValue{std::string("MINIMUM_METRIC")}}},
     });
     m.emplace("active_subspace/truncation_method/cross_validation/criterion/relative", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "active_subspace.cv.id_method", nlohmann::json::parse("{\"handler_type\": \"utype\", \"keyword_name\": \"relative\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"RELATIVE_TOLERANCE\"}")},
+      WriteOp{OpKind::PresenceEnum, "active_subspace.cv.id_method", OpLiteral{IrValueType::String, IRValue{std::string("RELATIVE_TOLERANCE")}}},
     });
     m.emplace("active_subspace/truncation_method/cross_validation/decrease_tolerance", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "active_subspace.cv.decrease_tolerance", nlohmann::json::parse("{\"handler_type\": \"Real\", \"keyword_name\": \"decrease_tolerance\", \"member_variable_type\": \"Real\"}")},
+      WriteOp{OpKind::DirectValue, "active_subspace.cv.decrease_tolerance", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("active_subspace/truncation_method/cross_validation/exhaustive", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "active_subspace.cv.incremental", nlohmann::json::parse("{\"handler_type\": \"false\", \"keyword_name\": \"exhaustive\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::DirectValue, "active_subspace.cv.incremental", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("active_subspace/truncation_method/cross_validation/max_rank", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "active_subspace.cv.max_rank", nlohmann::json::parse("{\"handler_type\": \"int\", \"keyword_name\": \"max_rank\", \"member_variable_type\": \"int\"}")},
+      WriteOp{OpKind::DirectValue, "active_subspace.cv.max_rank", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("active_subspace/truncation_method/cross_validation/relative_tolerance", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "active_subspace.cv.relative_tolerance", nlohmann::json::parse("{\"handler_type\": \"Real\", \"keyword_name\": \"relative_tolerance\", \"member_variable_type\": \"Real\"}")},
+      WriteOp{OpKind::DirectValue, "active_subspace.cv.relative_tolerance", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("active_subspace/truncation_method/energy", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "active_subspace.truncation_method.energy", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"energy\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "active_subspace.truncation_method.energy", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("active_subspace/truncation_method/energy/truncation_tolerance", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "active_subspace.truncation_method.energy.truncation_tolerance", nlohmann::json::parse("{\"handler_type\": \"Real\", \"keyword_name\": \"truncation_tolerance\", \"member_variable_type\": \"Real\"}")},
-      WriteOp{OpKind::DirectValue, "truncation_tolerance", nlohmann::json::parse("{\"handler_type\": \"Real\", \"keyword_name\": \"truncation_tolerance\", \"member_variable_type\": \"Real\"}")},
+      WriteOp{OpKind::DirectValue, "active_subspace.truncation_method.energy.truncation_tolerance", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+      WriteOp{OpKind::DirectValue, "truncation_tolerance", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("active_subspace/truth_model_pointer", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "surrogate.truth_model_pointer", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"truth_model_pointer\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "surrogate.truth_model_pointer", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"truth_model_pointer\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "surrogate.truth_model_pointer", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"truth_model_pointer\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "surrogate.truth_model_pointer", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"truth_model_pointer\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "surrogate.truth_model_pointer", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"truth_model_pointer\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "surrogate.truth_model_pointer", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"truth_model_pointer\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "surrogate.truth_model_pointer", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"truth_model_pointer\", \"member_variable_type\": \"String\"}")},
+      WriteOp{OpKind::DirectValue, "surrogate.truth_model_pointer", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("adapted_basis", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"adapted_basis\", \"member_variable_type\": \"String\", \"stored_value\": \"adapted_basis\"}")},
+      WriteOp{OpKind::PresenceLiteral, "type", OpLiteral{IrValueType::String, IRValue{std::string("adapted_basis")}}},
     });
     m.emplace("adapted_basis/hierarchical_tagging", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "hierarchical_tags", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"hierarchical_tagging\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "hierarchical_tags", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"hierarchical_tagging\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "hierarchical_tags", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"hierarchical_tagging\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "hierarchical_tags", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"hierarchical_tagging\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "hierarchical_tags", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"hierarchical_tagging\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "hierarchical_tags", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"hierarchical_tagging\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "hierarchical_tags", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("adapted_basis/id_model", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "id", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"id_model\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "id", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"id_model\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "id", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"id_model\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "id", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"id_model\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "id", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"id_model\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "id", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"id_model\", \"member_variable_type\": \"String\"}")},
+      WriteOp{OpKind::DirectValue, "id", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("adapted_basis/truncation_tolerance", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "adapted_basis.truncation_tolerance", nlohmann::json::parse("{\"handler_type\": \"Real\", \"keyword_name\": \"truncation_tolerance\", \"member_variable_type\": \"Real\"}")},
+      WriteOp{OpKind::DirectValue, "adapted_basis.truncation_tolerance", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+    });
+    m.emplace("adapted_basis/truth_model_pointer", std::vector<WriteOp>{
+      WriteOp{OpKind::DirectValue, "surrogate.truth_model_pointer", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+    });
+    m.emplace("adapted_basis/truth_model_pointer/basis_control/expansion_order", std::vector<WriteOp>{
+      WriteOp{OpKind::DirectValue, "adapted_basis.expansion_order", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("adapted_basis/truth_model_pointer/basis_control/expansion_order/collocation_ratio", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "adapted_basis.collocation_ratio", nlohmann::json::parse("{\"handler_type\": \"Real\", \"keyword_name\": \"collocation_ratio\", \"member_variable_type\": \"Real\"}")},
+      WriteOp{OpKind::DirectValue, "adapted_basis.collocation_ratio", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("adapted_basis/truth_model_pointer/basis_control/expansion_order/order", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "adapted_basis.expansion_order", nlohmann::json::parse("{\"handler_type\": \"ushint\", \"keyword_name\": \"expansion_order\", \"member_variable_type\": \"unsigned short\"}")},
-      WriteOp{OpKind::DirectValue, "adapted_basis.expansion_order", nlohmann::json::parse("{\"handler_type\": \"ushint\", \"keyword_name\": \"expansion_order\", \"member_variable_type\": \"unsigned short\"}")},
+      WriteOp{OpKind::DirectValue, "adapted_basis.expansion_order", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("adapted_basis/truth_model_pointer/basis_control/sparse_grid_level", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "adapted_basis.sparse_grid_level", nlohmann::json::parse("{\"handler_type\": \"ushint\", \"keyword_name\": \"sparse_grid_level\", \"member_variable_type\": \"unsigned short\"}")},
+      WriteOp{OpKind::DirectValue, "adapted_basis.sparse_grid_level", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("adapted_basis/truth_model_pointer/dimension", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "rf.expansion_bases", nlohmann::json::parse("{\"handler_type\": \"int\", \"keyword_name\": \"dimension\", \"member_variable_type\": \"int\"}")},
-      WriteOp{OpKind::DirectValue, "subspace.dimension", nlohmann::json::parse("{\"handler_type\": \"int\", \"keyword_name\": \"dimension\", \"member_variable_type\": \"int\"}")},
+      WriteOp{OpKind::DirectValue, "rf.expansion_bases", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+      WriteOp{OpKind::DirectValue, "subspace.dimension", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("adapted_basis/truth_model_pointer/pointer", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "surrogate.truth_model_pointer", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"truth_model_pointer\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "surrogate.truth_model_pointer", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"truth_model_pointer\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "surrogate.truth_model_pointer", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"truth_model_pointer\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "surrogate.truth_model_pointer", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"truth_model_pointer\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "surrogate.truth_model_pointer", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"truth_model_pointer\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "surrogate.truth_model_pointer", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"truth_model_pointer\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "surrogate.truth_model_pointer", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"truth_model_pointer\", \"member_variable_type\": \"String\"}")},
+      WriteOp{OpKind::DirectValue, "surrogate.truth_model_pointer", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("nested", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"nested\", \"member_variable_type\": \"String\", \"stored_value\": \"nested\"}")},
+      WriteOp{OpKind::PresenceLiteral, "type", OpLiteral{IrValueType::String, IRValue{std::string("nested")}}},
     });
     m.emplace("nested/hierarchical_tagging", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "hierarchical_tags", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"hierarchical_tagging\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "hierarchical_tags", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"hierarchical_tagging\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "hierarchical_tags", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"hierarchical_tagging\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "hierarchical_tags", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"hierarchical_tagging\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "hierarchical_tags", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"hierarchical_tagging\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "hierarchical_tags", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"hierarchical_tagging\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "hierarchical_tags", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("nested/id_model", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "id", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"id_model\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "id", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"id_model\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "id", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"id_model\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "id", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"id_model\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "id", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"id_model\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "id", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"id_model\", \"member_variable_type\": \"String\"}")},
+      WriteOp{OpKind::DirectValue, "id", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+    });
+    m.emplace("nested/optional_interface_pointer", std::vector<WriteOp>{
+      WriteOp{OpKind::DirectValue, "interface_pointer", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("nested/optional_interface_pointer/optional_interface_responses_pointer", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "optional_interface_responses_pointer", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"optional_interface_responses_pointer\", \"member_variable_type\": \"String\"}")},
+      WriteOp{OpKind::DirectValue, "optional_interface_responses_pointer", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("nested/optional_interface_pointer/pointer", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "interface_pointer", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"optional_interface_pointer\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "interface_pointer", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"optional_interface_pointer\", \"member_variable_type\": \"String\"}")},
+      WriteOp{OpKind::DirectValue, "interface_pointer", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+    });
+    m.emplace("nested/sub_method_pointer", std::vector<WriteOp>{
+      WriteOp{OpKind::DirectValue, "dace_method_pointer", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+      WriteOp{OpKind::DirectValue, "nested.sub_method_pointer", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("nested/sub_method_pointer/identity_response_mapping", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "nested.identity_resp_map", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"identity_response_mapping\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "nested.identity_resp_map", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("nested/sub_method_pointer/iterator_scheduling/dedicated", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "nested.iterator_scheduling", nlohmann::json::parse("{\"handler_type\": \"type\", \"keyword_name\": \"dedicated\", \"member_variable_type\": \"short\", \"stored_value\": \"DEDICATED_SCHEDULER_DYNAMIC\"}")},
+      WriteOp{OpKind::PresenceEnum, "nested.iterator_scheduling", OpLiteral{IrValueType::String, IRValue{std::string("DEDICATED_SCHEDULER_DYNAMIC")}}},
     });
     m.emplace("nested/sub_method_pointer/iterator_scheduling/peer", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "nested.iterator_scheduling", nlohmann::json::parse("{\"handler_type\": \"type\", \"keyword_name\": \"peer\", \"member_variable_type\": \"short\", \"stored_value\": \"PEER_SCHEDULING\"}")},
+      WriteOp{OpKind::PresenceEnum, "nested.iterator_scheduling", OpLiteral{IrValueType::String, IRValue{std::string("PEER_SCHEDULING")}}},
     });
     m.emplace("nested/sub_method_pointer/iterator_servers", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "nested.iterator_servers", nlohmann::json::parse("{\"handler_type\": \"int\", \"keyword_name\": \"iterator_servers\", \"member_variable_type\": \"int\"}")},
+      WriteOp{OpKind::DirectValue, "nested.iterator_servers", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("nested/sub_method_pointer/pointer", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "dace_method_pointer", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"sub_method_pointer\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "nested.sub_method_pointer", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"sub_method_pointer\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "dace_method_pointer", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"sub_method_pointer\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "nested.sub_method_pointer", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"sub_method_pointer\", \"member_variable_type\": \"String\"}")},
+      WriteOp{OpKind::DirectValue, "dace_method_pointer", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+      WriteOp{OpKind::DirectValue, "nested.sub_method_pointer", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("nested/sub_method_pointer/primary_response_mapping", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "nested.primary_response_mapping", nlohmann::json::parse("{\"handler_type\": \"RealDL\", \"keyword_name\": \"primary_response_mapping\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "nested.primary_response_mapping", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("nested/sub_method_pointer/primary_variable_mapping", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "nested.primary_variable_mapping", nlohmann::json::parse("{\"handler_type\": \"strL\", \"keyword_name\": \"primary_variable_mapping\", \"member_variable_type\": \"StringArray\"}")},
+      WriteOp{OpKind::DirectValue, "nested.primary_variable_mapping", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("nested/sub_method_pointer/processors_per_iterator", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "nested.processors_per_iterator", nlohmann::json::parse("{\"handler_type\": \"int\", \"keyword_name\": \"processors_per_iterator\", \"member_variable_type\": \"int\"}")},
+      WriteOp{OpKind::DirectValue, "nested.processors_per_iterator", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("nested/sub_method_pointer/secondary_response_mapping", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "nested.secondary_response_mapping", nlohmann::json::parse("{\"handler_type\": \"RealDL\", \"keyword_name\": \"secondary_response_mapping\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "nested.secondary_response_mapping", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("nested/sub_method_pointer/secondary_variable_mapping", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "nested.secondary_variable_mapping", nlohmann::json::parse("{\"handler_type\": \"strL\", \"keyword_name\": \"secondary_variable_mapping\", \"member_variable_type\": \"StringArray\"}")},
+      WriteOp{OpKind::DirectValue, "nested.secondary_variable_mapping", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("random_field", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"random_field\", \"member_variable_type\": \"String\", \"stored_value\": \"random_field\"}")},
+      WriteOp{OpKind::PresenceLiteral, "type", OpLiteral{IrValueType::String, IRValue{std::string("random_field")}}},
     });
     m.emplace("random_field/build_source/analytic_covariance/exponential", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "rf.analytic_covariance", nlohmann::json::parse("{\"handler_type\": \"utype\", \"keyword_name\": \"exponential\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"EXP_L1\"}")},
+      WriteOp{OpKind::PresenceEnum, "rf.analytic_covariance", OpLiteral{IrValueType::String, IRValue{std::string("EXP_L1")}}},
     });
     m.emplace("random_field/build_source/analytic_covariance/squared_exponential", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "rf.analytic_covariance", nlohmann::json::parse("{\"handler_type\": \"utype\", \"keyword_name\": \"squared_exponential\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"EXP_L2\"}")},
+      WriteOp{OpKind::PresenceEnum, "rf.analytic_covariance", OpLiteral{IrValueType::String, IRValue{std::string("EXP_L2")}}},
     });
     m.emplace("random_field/build_source/dace_method_pointer", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "dace_method_pointer", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"dace_method_pointer\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "nested.sub_method_pointer", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"dace_method_pointer\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "dace_method_pointer", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"dace_method_pointer\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "nested.sub_method_pointer", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"dace_method_pointer\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "dace_method_pointer", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"dace_method_pointer\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "nested.sub_method_pointer", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"dace_method_pointer\", \"member_variable_type\": \"String\"}")},
+      WriteOp{OpKind::DirectValue, "dace_method_pointer", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+      WriteOp{OpKind::DirectValue, "nested.sub_method_pointer", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("random_field/build_source/rf_data_file", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "rf_data_file", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"rf_data_file\", \"member_variable_type\": \"String\"}")},
+      WriteOp{OpKind::DirectValue, "rf_data_file", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("random_field/expansion_bases", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "rf.expansion_bases", nlohmann::json::parse("{\"handler_type\": \"int\", \"keyword_name\": \"expansion_bases\", \"member_variable_type\": \"int\"}")},
-      WriteOp{OpKind::DirectValue, "subspace.dimension", nlohmann::json::parse("{\"handler_type\": \"int\", \"keyword_name\": \"expansion_bases\", \"member_variable_type\": \"int\"}")},
+      WriteOp{OpKind::DirectValue, "rf.expansion_bases", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+      WriteOp{OpKind::DirectValue, "subspace.dimension", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("random_field/expansion_form/karhunen_loeve", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "rf.expansion_form", nlohmann::json::parse("{\"handler_type\": \"utype\", \"keyword_name\": \"karhunen_loeve\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"RF_KARHUNEN_LOEVE\"}")},
+      WriteOp{OpKind::PresenceEnum, "rf.expansion_form", OpLiteral{IrValueType::String, IRValue{std::string("RF_KARHUNEN_LOEVE")}}},
     });
     m.emplace("random_field/expansion_form/principal_components", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "rf.expansion_form", nlohmann::json::parse("{\"handler_type\": \"utype\", \"keyword_name\": \"principal_components\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"RF_PCA_GP\"}")},
+      WriteOp{OpKind::PresenceEnum, "rf.expansion_form", OpLiteral{IrValueType::String, IRValue{std::string("RF_PCA_GP")}}},
     });
     m.emplace("random_field/hierarchical_tagging", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "hierarchical_tags", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"hierarchical_tagging\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "hierarchical_tags", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"hierarchical_tagging\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "hierarchical_tags", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"hierarchical_tagging\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "hierarchical_tags", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"hierarchical_tagging\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "hierarchical_tags", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"hierarchical_tagging\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "hierarchical_tags", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"hierarchical_tagging\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "hierarchical_tags", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("random_field/id_model", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "id", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"id_model\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "id", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"id_model\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "id", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"id_model\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "id", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"id_model\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "id", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"id_model\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "id", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"id_model\", \"member_variable_type\": \"String\"}")},
+      WriteOp{OpKind::DirectValue, "id", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("random_field/propagation_model_pointer", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "rf.propagation_model_pointer", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"propagation_model_pointer\", \"member_variable_type\": \"String\"}")},
+      WriteOp{OpKind::DirectValue, "rf.propagation_model_pointer", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("random_field/truncation_tolerance", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "active_subspace.truncation_method.energy.truncation_tolerance", nlohmann::json::parse("{\"handler_type\": \"Real\", \"keyword_name\": \"truncation_tolerance\", \"member_variable_type\": \"Real\"}")},
-      WriteOp{OpKind::DirectValue, "truncation_tolerance", nlohmann::json::parse("{\"handler_type\": \"Real\", \"keyword_name\": \"truncation_tolerance\", \"member_variable_type\": \"Real\"}")},
+      WriteOp{OpKind::DirectValue, "active_subspace.truncation_method.energy.truncation_tolerance", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+      WriteOp{OpKind::DirectValue, "truncation_tolerance", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("single", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"single\", \"member_variable_type\": \"String\", \"stored_value\": \"simulation\"}")},
+      WriteOp{OpKind::PresenceLiteral, "type", OpLiteral{IrValueType::String, IRValue{std::string("simulation")}}},
     });
     m.emplace("single/cost_model/cost_recovery_metadata", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "simulation.cost_recovery_metadata", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"cost_recovery_metadata\", \"member_variable_type\": \"String\"}")},
+      WriteOp{OpKind::DirectValue, "simulation.cost_recovery_metadata", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("single/cost_model/solution_level_cost", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "simulation.solution_level_cost", nlohmann::json::parse("{\"handler_type\": \"RealDL\", \"keyword_name\": \"solution_level_cost\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "simulation.solution_level_cost", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("single/hierarchical_tagging", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "hierarchical_tags", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"hierarchical_tagging\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "hierarchical_tags", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"hierarchical_tagging\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "hierarchical_tags", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"hierarchical_tagging\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "hierarchical_tags", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"hierarchical_tagging\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "hierarchical_tags", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"hierarchical_tagging\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "hierarchical_tags", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"hierarchical_tagging\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "hierarchical_tags", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("single/id_model", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "id", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"id_model\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "id", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"id_model\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "id", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"id_model\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "id", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"id_model\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "id", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"id_model\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "id", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"id_model\", \"member_variable_type\": \"String\"}")},
+      WriteOp{OpKind::DirectValue, "id", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("single/interface_pointer", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "interface_pointer", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"interface_pointer\", \"member_variable_type\": \"String\"}")},
+      WriteOp{OpKind::DirectValue, "interface_pointer", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("single/solution_level_control", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "simulation.solution_level_control", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"solution_level_control\", \"member_variable_type\": \"String\"}")},
+      WriteOp{OpKind::DirectValue, "simulation.solution_level_control", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"surrogate\", \"member_variable_type\": \"String\", \"stored_value\": \"surrogate\"}")},
+      WriteOp{OpKind::PresenceLiteral, "type", OpLiteral{IrValueType::String, IRValue{std::string("surrogate")}}},
     });
     m.emplace("surrogate/category/ensemble", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "surrogate.type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"ensemble\", \"member_variable_type\": \"String\", \"stored_value\": \"ensemble\"}")},
+      WriteOp{OpKind::PresenceLiteral, "surrogate.type", OpLiteral{IrValueType::String, IRValue{std::string("ensemble")}}},
+    });
+    m.emplace("surrogate/category/ensemble/ordered_model_fidelities", std::vector<WriteOp>{
+      WriteOp{OpKind::DirectValue, "surrogate.ensemble_model_pointers", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/ensemble/ordered_model_fidelities/correction/correction_type/additive", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "surrogate.correction_type", nlohmann::json::parse("{\"handler_type\": \"type\", \"keyword_name\": \"additive\", \"member_variable_type\": \"short\", \"stored_value\": \"ADDITIVE_CORRECTION\"}")},
+      WriteOp{OpKind::PresenceEnum, "surrogate.correction_type", OpLiteral{IrValueType::String, IRValue{std::string("ADDITIVE_CORRECTION")}}},
     });
     m.emplace("surrogate/category/ensemble/ordered_model_fidelities/correction/correction_type/combined", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "surrogate.correction_type", nlohmann::json::parse("{\"handler_type\": \"type\", \"keyword_name\": \"combined\", \"member_variable_type\": \"short\", \"stored_value\": \"COMBINED_CORRECTION\"}")},
+      WriteOp{OpKind::PresenceEnum, "surrogate.correction_type", OpLiteral{IrValueType::String, IRValue{std::string("COMBINED_CORRECTION")}}},
     });
     m.emplace("surrogate/category/ensemble/ordered_model_fidelities/correction/correction_type/multiplicative", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "surrogate.correction_type", nlohmann::json::parse("{\"handler_type\": \"type\", \"keyword_name\": \"multiplicative\", \"member_variable_type\": \"short\", \"stored_value\": \"MULTIPLICATIVE_CORRECTION\"}")},
+      WriteOp{OpKind::PresenceEnum, "surrogate.correction_type", OpLiteral{IrValueType::String, IRValue{std::string("MULTIPLICATIVE_CORRECTION")}}},
     });
     m.emplace("surrogate/category/ensemble/ordered_model_fidelities/pointers", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "surrogate.ensemble_model_pointers", nlohmann::json::parse("{\"handler_type\": \"strL\", \"keyword_name\": \"ordered_model_fidelities\", \"member_variable_type\": \"StringArray\"}")},
-      WriteOp{OpKind::DirectValue, "surrogate.ensemble_model_pointers", nlohmann::json::parse("{\"handler_type\": \"strL\", \"keyword_name\": \"ordered_model_fidelities\", \"member_variable_type\": \"StringArray\"}")},
+      WriteOp{OpKind::DirectValue, "surrogate.ensemble_model_pointers", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+    });
+    m.emplace("surrogate/category/ensemble/truth_model_pointer", std::vector<WriteOp>{
+      WriteOp{OpKind::DirectValue, "surrogate.truth_model_pointer", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/ensemble/truth_model_pointer/approximation_models", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "surrogate.ensemble_model_pointers", nlohmann::json::parse("{\"handler_type\": \"strL\", \"keyword_name\": \"approximation_models\", \"member_variable_type\": \"StringArray\"}")},
+      WriteOp{OpKind::DirectValue, "surrogate.ensemble_model_pointers", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/ensemble/truth_model_pointer/pointer", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "surrogate.truth_model_pointer", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"truth_model_pointer\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "surrogate.truth_model_pointer", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"truth_model_pointer\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "surrogate.truth_model_pointer", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"truth_model_pointer\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "surrogate.truth_model_pointer", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"truth_model_pointer\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "surrogate.truth_model_pointer", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"truth_model_pointer\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "surrogate.truth_model_pointer", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"truth_model_pointer\", \"member_variable_type\": \"String\"}")},
+      WriteOp{OpKind::DirectValue, "surrogate.truth_model_pointer", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+    });
+    m.emplace("surrogate/category/global_approx/build_data/dace_method_pointer", std::vector<WriteOp>{
+      WriteOp{OpKind::DirectValue, "dace_method_pointer", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+      WriteOp{OpKind::DirectValue, "nested.sub_method_pointer", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/build_data/dace_method_pointer/auto_refinement", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "surrogate.auto_refine", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"auto_refinement\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "surrogate.auto_refine", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/build_data/dace_method_pointer/auto_refinement/convergence_tolerance", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "convergence_tolerance", nlohmann::json::parse("{\"handler_type\": \"Real\", \"keyword_name\": \"convergence_tolerance\", \"member_variable_type\": \"Real\"}")},
+      WriteOp{OpKind::DirectValue, "convergence_tolerance", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+    });
+    m.emplace("surrogate/category/global_approx/build_data/dace_method_pointer/auto_refinement/cross_validation_metric", std::vector<WriteOp>{
+      WriteOp{OpKind::DirectValue, "surrogate.refine_cv_metric", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/build_data/dace_method_pointer/auto_refinement/cross_validation_metric/folds", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "surrogate.refine_cv_folds", nlohmann::json::parse("{\"handler_type\": \"int\", \"keyword_name\": \"folds\", \"member_variable_type\": \"int\"}")},
+      WriteOp{OpKind::DirectValue, "surrogate.refine_cv_folds", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/build_data/dace_method_pointer/auto_refinement/cross_validation_metric/metric", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "surrogate.refine_cv_metric", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"cross_validation_metric\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "surrogate.refine_cv_metric", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"cross_validation_metric\", \"member_variable_type\": \"String\"}")},
+      WriteOp{OpKind::DirectValue, "surrogate.refine_cv_metric", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/build_data/dace_method_pointer/auto_refinement/max_function_evaluations", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "max_function_evals", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"max_function_evaluations\", \"member_variable_type\": \"size_t\"}")},
+      WriteOp{OpKind::DirectValue, "max_function_evals", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/build_data/dace_method_pointer/auto_refinement/max_iterations", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "max_iterations", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"max_iterations\", \"member_variable_type\": \"size_t\"}")},
+      WriteOp{OpKind::DirectValue, "max_iterations", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/build_data/dace_method_pointer/auto_refinement/soft_convergence_limit", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "soft_convergence_limit", nlohmann::json::parse("{\"handler_type\": \"int\", \"keyword_name\": \"soft_convergence_limit\", \"member_variable_type\": \"int\"}")},
+      WriteOp{OpKind::DirectValue, "soft_convergence_limit", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/build_data/dace_method_pointer/pointer", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "dace_method_pointer", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"dace_method_pointer\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "nested.sub_method_pointer", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"dace_method_pointer\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "dace_method_pointer", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"dace_method_pointer\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "nested.sub_method_pointer", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"dace_method_pointer\", \"member_variable_type\": \"String\"}")},
+      WriteOp{OpKind::DirectValue, "dace_method_pointer", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+      WriteOp{OpKind::DirectValue, "nested.sub_method_pointer", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/build_data/truth_model_pointer", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "surrogate.truth_model_pointer", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"truth_model_pointer\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "surrogate.truth_model_pointer", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"truth_model_pointer\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "surrogate.truth_model_pointer", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"truth_model_pointer\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "surrogate.truth_model_pointer", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"truth_model_pointer\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "surrogate.truth_model_pointer", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"truth_model_pointer\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "surrogate.truth_model_pointer", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"truth_model_pointer\", \"member_variable_type\": \"String\"}")},
+      WriteOp{OpKind::DirectValue, "surrogate.truth_model_pointer", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/build_points/minimum_points", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "surrogate.points_management", nlohmann::json::parse("{\"handler_type\": \"type\", \"keyword_name\": \"minimum_points\", \"member_variable_type\": \"short\", \"stored_value\": \"MINIMUM_POINTS\"}")},
+      WriteOp{OpKind::PresenceEnum, "surrogate.points_management", OpLiteral{IrValueType::String, IRValue{std::string("MINIMUM_POINTS")}}},
     });
     m.emplace("surrogate/category/global_approx/build_points/recommended_points", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "surrogate.points_management", nlohmann::json::parse("{\"handler_type\": \"type\", \"keyword_name\": \"recommended_points\", \"member_variable_type\": \"short\", \"stored_value\": \"RECOMMENDED_POINTS\"}")},
+      WriteOp{OpKind::PresenceEnum, "surrogate.points_management", OpLiteral{IrValueType::String, IRValue{std::string("RECOMMENDED_POINTS")}}},
     });
     m.emplace("surrogate/category/global_approx/build_points/total_points", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "surrogate.points_total", nlohmann::json::parse("{\"handler_type\": \"int\", \"keyword_name\": \"total_points\", \"member_variable_type\": \"int\"}")},
+      WriteOp{OpKind::DirectValue, "surrogate.points_total", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/correction/correction_type/additive", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "surrogate.correction_type", nlohmann::json::parse("{\"handler_type\": \"type\", \"keyword_name\": \"additive\", \"member_variable_type\": \"short\", \"stored_value\": \"ADDITIVE_CORRECTION\"}")},
+      WriteOp{OpKind::PresenceEnum, "surrogate.correction_type", OpLiteral{IrValueType::String, IRValue{std::string("ADDITIVE_CORRECTION")}}},
     });
     m.emplace("surrogate/category/global_approx/correction/correction_type/combined", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "surrogate.correction_type", nlohmann::json::parse("{\"handler_type\": \"type\", \"keyword_name\": \"combined\", \"member_variable_type\": \"short\", \"stored_value\": \"COMBINED_CORRECTION\"}")},
+      WriteOp{OpKind::PresenceEnum, "surrogate.correction_type", OpLiteral{IrValueType::String, IRValue{std::string("COMBINED_CORRECTION")}}},
     });
     m.emplace("surrogate/category/global_approx/correction/correction_type/multiplicative", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "surrogate.correction_type", nlohmann::json::parse("{\"handler_type\": \"type\", \"keyword_name\": \"multiplicative\", \"member_variable_type\": \"short\", \"stored_value\": \"MULTIPLICATIVE_CORRECTION\"}")},
+      WriteOp{OpKind::PresenceEnum, "surrogate.correction_type", OpLiteral{IrValueType::String, IRValue{std::string("MULTIPLICATIVE_CORRECTION")}}},
     });
     m.emplace("surrogate/category/global_approx/domain_decomposition", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "surrogate.domain_decomp", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"domain_decomposition\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "surrogate.domain_decomp", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/domain_decomposition/cell_type", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "surrogate.decomp_cell_type", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"cell_type\", \"member_variable_type\": \"String\"}")},
+      WriteOp{OpKind::DirectValue, "surrogate.decomp_cell_type", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/domain_decomposition/discontinuity_detection", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "surrogate.decomp_discont_detect", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"discontinuity_detection\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "surrogate.decomp_discont_detect", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/domain_decomposition/discontinuity_detection/gradient_threshold", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "surrogate.discont_grad_thresh", nlohmann::json::parse("{\"handler_type\": \"Real\", \"keyword_name\": \"gradient_threshold\", \"member_variable_type\": \"Real\"}")},
+      WriteOp{OpKind::DirectValue, "surrogate.discont_grad_thresh", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/domain_decomposition/discontinuity_detection/jump_threshold", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "surrogate.discont_jump_thresh", nlohmann::json::parse("{\"handler_type\": \"Real\", \"keyword_name\": \"jump_threshold\", \"member_variable_type\": \"Real\"}")},
+      WriteOp{OpKind::DirectValue, "surrogate.discont_jump_thresh", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/domain_decomposition/support_layers", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "surrogate.decomp_support_layers", nlohmann::json::parse("{\"handler_type\": \"int\", \"keyword_name\": \"support_layers\", \"member_variable_type\": \"int\"}")},
+      WriteOp{OpKind::DirectValue, "surrogate.decomp_support_layers", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+    });
+    m.emplace("surrogate/category/global_approx/export_approx_points_file", std::vector<WriteOp>{
+      WriteOp{OpKind::DirectValue, "surrogate.export_approx_points_file", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/export_approx_points_file/filename", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "surrogate.export_approx_points_file", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"export_approx_points_file\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "surrogate.export_approx_points_file", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"export_approx_points_file\", \"member_variable_type\": \"String\"}")},
+      WriteOp{OpKind::DirectValue, "surrogate.export_approx_points_file", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/export_approx_points_file/format/annotated", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "surrogate.export_approx_format", nlohmann::json::parse("{\"handler_type\": \"utype\", \"keyword_name\": \"annotated\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"TABULAR_ANNOTATED\"}")},
+      WriteOp{OpKind::PresenceEnum, "surrogate.export_approx_format", OpLiteral{IrValueType::String, IRValue{std::string("TABULAR_ANNOTATED")}}},
     });
     m.emplace("surrogate/category/global_approx/export_approx_points_file/format/custom_annotated", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "surrogate.export_approx_format", nlohmann::json::parse("{\"handler_type\": \"utype\", \"keyword_name\": \"custom_annotated\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"TABULAR_NONE\"}")},
+      WriteOp{OpKind::PresenceEnum, "surrogate.export_approx_format", OpLiteral{IrValueType::String, IRValue{std::string("TABULAR_NONE")}}},
     });
     m.emplace("surrogate/category/global_approx/export_approx_points_file/format/custom_annotated/eval_id", std::vector<WriteOp>{
-      WriteOp{OpKind::AugmentEnum, "surrogate.export_approx_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"eval_id\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"TABULAR_EVAL_ID\"}")},
+      WriteOp{OpKind::AugmentEnum, "surrogate.export_approx_format", OpLiteral{IrValueType::String, IRValue{std::string("TABULAR_EVAL_ID")}}},
     });
     m.emplace("surrogate/category/global_approx/export_approx_points_file/format/custom_annotated/header", std::vector<WriteOp>{
-      WriteOp{OpKind::AugmentEnum, "surrogate.export_approx_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"header\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"TABULAR_HEADER\"}")},
+      WriteOp{OpKind::AugmentEnum, "surrogate.export_approx_format", OpLiteral{IrValueType::String, IRValue{std::string("TABULAR_HEADER")}}},
     });
     m.emplace("surrogate/category/global_approx/export_approx_points_file/format/custom_annotated/interface_id", std::vector<WriteOp>{
-      WriteOp{OpKind::AugmentEnum, "surrogate.export_approx_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"interface_id\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"TABULAR_IFACE_ID\"}")},
+      WriteOp{OpKind::AugmentEnum, "surrogate.export_approx_format", OpLiteral{IrValueType::String, IRValue{std::string("TABULAR_IFACE_ID")}}},
     });
     m.emplace("surrogate/category/global_approx/export_approx_points_file/format/freeform", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "surrogate.export_approx_format", nlohmann::json::parse("{\"handler_type\": \"utype\", \"keyword_name\": \"freeform\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"TABULAR_NONE\"}")},
+      WriteOp{OpKind::PresenceEnum, "surrogate.export_approx_format", OpLiteral{IrValueType::String, IRValue{std::string("TABULAR_NONE")}}},
+    });
+    m.emplace("surrogate/category/global_approx/import_build_points_file", std::vector<WriteOp>{
+      WriteOp{OpKind::DirectValue, "surrogate.import_build_points_file", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/import_build_points_file/active_only", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "surrogate.import_build_active_only", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"active_only\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "surrogate.import_build_active_only", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/import_build_points_file/filename", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "surrogate.import_build_points_file", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"import_build_points_file\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "surrogate.import_build_points_file", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"import_build_points_file\", \"member_variable_type\": \"String\"}")},
+      WriteOp{OpKind::DirectValue, "surrogate.import_build_points_file", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/import_build_points_file/format/annotated", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "surrogate.import_build_format", nlohmann::json::parse("{\"handler_type\": \"utype\", \"keyword_name\": \"annotated\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"TABULAR_ANNOTATED\"}")},
+      WriteOp{OpKind::PresenceEnum, "surrogate.import_build_format", OpLiteral{IrValueType::String, IRValue{std::string("TABULAR_ANNOTATED")}}},
     });
     m.emplace("surrogate/category/global_approx/import_build_points_file/format/annotated/use_variable_labels", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "surrogate.import_use_variable_labels", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"use_variable_labels\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.import_use_variable_labels", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"use_variable_labels\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "surrogate.import_use_variable_labels", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/import_build_points_file/format/custom_annotated", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "surrogate.import_build_format", nlohmann::json::parse("{\"handler_type\": \"utype\", \"keyword_name\": \"custom_annotated\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"TABULAR_NONE\"}")},
+      WriteOp{OpKind::PresenceEnum, "surrogate.import_build_format", OpLiteral{IrValueType::String, IRValue{std::string("TABULAR_NONE")}}},
     });
     m.emplace("surrogate/category/global_approx/import_build_points_file/format/custom_annotated/eval_id", std::vector<WriteOp>{
-      WriteOp{OpKind::AugmentEnum, "surrogate.import_build_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"eval_id\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"TABULAR_EVAL_ID\"}")},
+      WriteOp{OpKind::AugmentEnum, "surrogate.import_build_format", OpLiteral{IrValueType::String, IRValue{std::string("TABULAR_EVAL_ID")}}},
     });
     m.emplace("surrogate/category/global_approx/import_build_points_file/format/custom_annotated/header", std::vector<WriteOp>{
-      WriteOp{OpKind::AugmentEnum, "surrogate.import_build_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"header\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"TABULAR_HEADER\"}")},
+      WriteOp{OpKind::AugmentEnum, "surrogate.import_build_format", OpLiteral{IrValueType::String, IRValue{std::string("TABULAR_HEADER")}}},
     });
     m.emplace("surrogate/category/global_approx/import_build_points_file/format/custom_annotated/header/use_variable_labels", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "surrogate.import_use_variable_labels", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"use_variable_labels\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.import_use_variable_labels", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"use_variable_labels\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "surrogate.import_use_variable_labels", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/import_build_points_file/format/custom_annotated/interface_id", std::vector<WriteOp>{
-      WriteOp{OpKind::AugmentEnum, "surrogate.import_build_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"interface_id\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"TABULAR_IFACE_ID\"}")},
+      WriteOp{OpKind::AugmentEnum, "surrogate.import_build_format", OpLiteral{IrValueType::String, IRValue{std::string("TABULAR_IFACE_ID")}}},
     });
     m.emplace("surrogate/category/global_approx/import_build_points_file/format/freeform", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "surrogate.import_build_format", nlohmann::json::parse("{\"handler_type\": \"utype\", \"keyword_name\": \"freeform\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"TABULAR_NONE\"}")},
+      WriteOp{OpKind::PresenceEnum, "surrogate.import_build_format", OpLiteral{IrValueType::String, IRValue{std::string("TABULAR_NONE")}}},
+    });
+    m.emplace("surrogate/category/global_approx/import_challenge_points_file", std::vector<WriteOp>{
+      WriteOp{OpKind::DirectValue, "surrogate.challenge_points_file", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/import_challenge_points_file/active_only", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "surrogate.challenge_points_file_active", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"active_only\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "surrogate.challenge_points_file_active", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/import_challenge_points_file/filename", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "surrogate.challenge_points_file", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"import_challenge_points_file\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "surrogate.challenge_points_file", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"import_challenge_points_file\", \"member_variable_type\": \"String\"}")},
+      WriteOp{OpKind::DirectValue, "surrogate.challenge_points_file", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/import_challenge_points_file/format/annotated", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "surrogate.challenge_points_file_format", nlohmann::json::parse("{\"handler_type\": \"utype\", \"keyword_name\": \"annotated\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"TABULAR_ANNOTATED\"}")},
+      WriteOp{OpKind::PresenceEnum, "surrogate.challenge_points_file_format", OpLiteral{IrValueType::String, IRValue{std::string("TABULAR_ANNOTATED")}}},
     });
     m.emplace("surrogate/category/global_approx/import_challenge_points_file/format/annotated/use_variable_labels", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "surrogate.challenge_use_variable_labels", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"use_variable_labels\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.challenge_use_variable_labels", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"use_variable_labels\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "surrogate.challenge_use_variable_labels", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/import_challenge_points_file/format/custom_annotated", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "surrogate.challenge_points_file_format", nlohmann::json::parse("{\"handler_type\": \"utype\", \"keyword_name\": \"custom_annotated\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"TABULAR_NONE\"}")},
+      WriteOp{OpKind::PresenceEnum, "surrogate.challenge_points_file_format", OpLiteral{IrValueType::String, IRValue{std::string("TABULAR_NONE")}}},
     });
     m.emplace("surrogate/category/global_approx/import_challenge_points_file/format/custom_annotated/eval_id", std::vector<WriteOp>{
-      WriteOp{OpKind::AugmentEnum, "surrogate.challenge_points_file_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"eval_id\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"TABULAR_EVAL_ID\"}")},
+      WriteOp{OpKind::AugmentEnum, "surrogate.challenge_points_file_format", OpLiteral{IrValueType::String, IRValue{std::string("TABULAR_EVAL_ID")}}},
     });
     m.emplace("surrogate/category/global_approx/import_challenge_points_file/format/custom_annotated/header", std::vector<WriteOp>{
-      WriteOp{OpKind::AugmentEnum, "surrogate.challenge_points_file_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"header\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"TABULAR_HEADER\"}")},
+      WriteOp{OpKind::AugmentEnum, "surrogate.challenge_points_file_format", OpLiteral{IrValueType::String, IRValue{std::string("TABULAR_HEADER")}}},
     });
     m.emplace("surrogate/category/global_approx/import_challenge_points_file/format/custom_annotated/header/use_variable_labels", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "surrogate.challenge_use_variable_labels", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"use_variable_labels\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.challenge_use_variable_labels", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"use_variable_labels\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "surrogate.challenge_use_variable_labels", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/import_challenge_points_file/format/custom_annotated/interface_id", std::vector<WriteOp>{
-      WriteOp{OpKind::AugmentEnum, "surrogate.challenge_points_file_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"interface_id\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"TABULAR_IFACE_ID\"}")},
+      WriteOp{OpKind::AugmentEnum, "surrogate.challenge_points_file_format", OpLiteral{IrValueType::String, IRValue{std::string("TABULAR_IFACE_ID")}}},
     });
     m.emplace("surrogate/category/global_approx/import_challenge_points_file/format/freeform", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "surrogate.challenge_points_file_format", nlohmann::json::parse("{\"handler_type\": \"utype\", \"keyword_name\": \"freeform\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"TABULAR_NONE\"}")},
+      WriteOp{OpKind::PresenceEnum, "surrogate.challenge_points_file_format", OpLiteral{IrValueType::String, IRValue{std::string("TABULAR_NONE")}}},
+    });
+    m.emplace("surrogate/category/global_approx/metrics", std::vector<WriteOp>{
+      WriteOp{OpKind::DirectValue, "diagnostics", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+      WriteOp{OpKind::DirectValue, "metrics", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/metrics/cross_validation", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "surrogate.cross_validate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"cross_validation\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "surrogate.cross_validate", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/metrics/cross_validation/folds", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "surrogate.folds", nlohmann::json::parse("{\"handler_type\": \"int\", \"keyword_name\": \"folds\", \"member_variable_type\": \"int\"}")},
+      WriteOp{OpKind::DirectValue, "surrogate.folds", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/metrics/cross_validation/percent", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "surrogate.percent", nlohmann::json::parse("{\"handler_type\": \"Real\", \"keyword_name\": \"percent\", \"member_variable_type\": \"Real\"}")},
+      WriteOp{OpKind::DirectValue, "surrogate.percent", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/metrics/metrics", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "diagnostics", nlohmann::json::parse("{\"handler_type\": \"strL\", \"keyword_name\": \"metrics\", \"member_variable_type\": \"StringArray\"}")},
-      WriteOp{OpKind::DirectValue, "metrics", nlohmann::json::parse("{\"handler_type\": \"strL\", \"keyword_name\": \"metrics\", \"member_variable_type\": \"StringArray\"}")},
-      WriteOp{OpKind::DirectValue, "diagnostics", nlohmann::json::parse("{\"handler_type\": \"strL\", \"keyword_name\": \"metrics\", \"member_variable_type\": \"StringArray\"}")},
-      WriteOp{OpKind::DirectValue, "metrics", nlohmann::json::parse("{\"handler_type\": \"strL\", \"keyword_name\": \"metrics\", \"member_variable_type\": \"StringArray\"}")},
+      WriteOp{OpKind::DirectValue, "diagnostics", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+      WriteOp{OpKind::DirectValue, "metrics", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/metrics/press", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "surrogate.press", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"press\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "surrogate.press", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/reuse_points/reuse_domain/all", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "surrogate.point_reuse", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"all\", \"member_variable_type\": \"String\", \"stored_value\": \"all\"}")},
+      WriteOp{OpKind::PresenceLiteral, "surrogate.point_reuse", OpLiteral{IrValueType::String, IRValue{std::string("all")}}},
     });
     m.emplace("surrogate/category/global_approx/reuse_points/reuse_domain/none", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "surrogate.point_reuse", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"none\", \"member_variable_type\": \"String\", \"stored_value\": \"none\"}")},
+      WriteOp{OpKind::PresenceLiteral, "surrogate.point_reuse", OpLiteral{IrValueType::String, IRValue{std::string("none")}}},
     });
     m.emplace("surrogate/category/global_approx/reuse_points/reuse_domain/region", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "surrogate.point_reuse", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"region\", \"member_variable_type\": \"String\", \"stored_value\": \"region\"}")},
+      WriteOp{OpKind::PresenceLiteral, "surrogate.point_reuse", OpLiteral{IrValueType::String, IRValue{std::string("region")}}},
     });
     m.emplace("surrogate/category/global_approx/type/experimental_gaussian_process", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "surrogate.type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"experimental_gaussian_process\", \"member_variable_type\": \"String\", \"stored_value\": \"global_exp_gauss_proc\"}")},
+      WriteOp{OpKind::PresenceLiteral, "surrogate.type", OpLiteral{IrValueType::String, IRValue{std::string("global_exp_gauss_proc")}}},
+    });
+    m.emplace("surrogate/category/global_approx/type/experimental_gaussian_process/export_approx_variance_file", std::vector<WriteOp>{
+      WriteOp{OpKind::DirectValue, "surrogate.export_approx_variance_file", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/experimental_gaussian_process/export_approx_variance_file/filename", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "surrogate.export_approx_variance_file", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"export_approx_variance_file\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "surrogate.export_approx_variance_file", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"export_approx_variance_file\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "surrogate.export_approx_variance_file", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"export_approx_variance_file\", \"member_variable_type\": \"String\"}")},
+      WriteOp{OpKind::DirectValue, "surrogate.export_approx_variance_file", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/experimental_gaussian_process/export_approx_variance_file/format/annotated", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "surrogate.export_approx_variance_format", nlohmann::json::parse("{\"handler_type\": \"utype\", \"keyword_name\": \"annotated\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"TABULAR_ANNOTATED\"}")},
+      WriteOp{OpKind::PresenceEnum, "surrogate.export_approx_variance_format", OpLiteral{IrValueType::String, IRValue{std::string("TABULAR_ANNOTATED")}}},
     });
     m.emplace("surrogate/category/global_approx/type/experimental_gaussian_process/export_approx_variance_file/format/custom_annotated", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "surrogate.export_approx_variance_format", nlohmann::json::parse("{\"handler_type\": \"utype\", \"keyword_name\": \"custom_annotated\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"TABULAR_NONE\"}")},
+      WriteOp{OpKind::PresenceEnum, "surrogate.export_approx_variance_format", OpLiteral{IrValueType::String, IRValue{std::string("TABULAR_NONE")}}},
     });
     m.emplace("surrogate/category/global_approx/type/experimental_gaussian_process/export_approx_variance_file/format/custom_annotated/eval_id", std::vector<WriteOp>{
-      WriteOp{OpKind::AugmentEnum, "surrogate.export_approx_variance_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"eval_id\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"TABULAR_EVAL_ID\"}")},
+      WriteOp{OpKind::AugmentEnum, "surrogate.export_approx_variance_format", OpLiteral{IrValueType::String, IRValue{std::string("TABULAR_EVAL_ID")}}},
     });
     m.emplace("surrogate/category/global_approx/type/experimental_gaussian_process/export_approx_variance_file/format/custom_annotated/header", std::vector<WriteOp>{
-      WriteOp{OpKind::AugmentEnum, "surrogate.export_approx_variance_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"header\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"TABULAR_HEADER\"}")},
+      WriteOp{OpKind::AugmentEnum, "surrogate.export_approx_variance_format", OpLiteral{IrValueType::String, IRValue{std::string("TABULAR_HEADER")}}},
     });
     m.emplace("surrogate/category/global_approx/type/experimental_gaussian_process/export_approx_variance_file/format/custom_annotated/interface_id", std::vector<WriteOp>{
-      WriteOp{OpKind::AugmentEnum, "surrogate.export_approx_variance_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"interface_id\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"TABULAR_IFACE_ID\"}")},
+      WriteOp{OpKind::AugmentEnum, "surrogate.export_approx_variance_format", OpLiteral{IrValueType::String, IRValue{std::string("TABULAR_IFACE_ID")}}},
     });
     m.emplace("surrogate/category/global_approx/type/experimental_gaussian_process/export_approx_variance_file/format/freeform", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "surrogate.export_approx_variance_format", nlohmann::json::parse("{\"handler_type\": \"utype\", \"keyword_name\": \"freeform\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"TABULAR_NONE\"}")},
+      WriteOp{OpKind::PresenceEnum, "surrogate.export_approx_variance_format", OpLiteral{IrValueType::String, IRValue{std::string("TABULAR_NONE")}}},
     });
     m.emplace("surrogate/category/global_approx/type/experimental_gaussian_process/export_model", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "surrogate.export_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"export_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.export_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"export_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.export_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"export_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.export_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"export_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.export_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"export_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.export_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"export_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.export_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"export_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.export_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"export_model\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "surrogate.export_surrogate", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/experimental_gaussian_process/export_model/filename_prefix", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "surrogate.model_export_prefix", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"filename_prefix\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "surrogate.model_export_prefix", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"filename_prefix\", \"member_variable_type\": \"String\"}")},
+      WriteOp{OpKind::DirectValue, "surrogate.model_export_prefix", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/experimental_gaussian_process/export_model/formats/binary_archive", std::vector<WriteOp>{
-      WriteOp{OpKind::AugmentEnum, "surrogate.model_export_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"binary_archive\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"BINARY_ARCHIVE\"}")},
-      WriteOp{OpKind::AugmentEnum, "surrogate.model_export_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"binary_archive\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"BINARY_ARCHIVE\"}")},
+      WriteOp{OpKind::AugmentEnum, "surrogate.model_export_format", OpLiteral{IrValueType::String, IRValue{std::string("BINARY_ARCHIVE")}}},
     });
     m.emplace("surrogate/category/global_approx/type/experimental_gaussian_process/export_model/formats/text_archive", std::vector<WriteOp>{
-      WriteOp{OpKind::AugmentEnum, "surrogate.model_export_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"text_archive\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"TEXT_ARCHIVE\"}")},
-      WriteOp{OpKind::AugmentEnum, "surrogate.model_export_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"text_archive\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"TEXT_ARCHIVE\"}")},
+      WriteOp{OpKind::AugmentEnum, "surrogate.model_export_format", OpLiteral{IrValueType::String, IRValue{std::string("TEXT_ARCHIVE")}}},
     });
     m.emplace("surrogate/category/global_approx/type/experimental_gaussian_process/import_model", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "surrogate.import_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"import_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.import_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"import_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.import_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"import_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.import_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"import_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.import_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"import_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.import_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"import_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.import_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"import_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.import_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"import_model\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "surrogate.import_surrogate", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/experimental_gaussian_process/import_model/filename_prefix", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "surrogate.model_import_prefix", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"filename_prefix\", \"member_variable_type\": \"String\"}")},
+      WriteOp{OpKind::DirectValue, "surrogate.model_import_prefix", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/experimental_gaussian_process/import_model/import_format/binary_archive", std::vector<WriteOp>{
-      WriteOp{OpKind::AugmentEnum, "surrogate.model_import_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"binary_archive\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"BINARY_ARCHIVE\"}")},
+      WriteOp{OpKind::AugmentEnum, "surrogate.model_import_format", OpLiteral{IrValueType::String, IRValue{std::string("BINARY_ARCHIVE")}}},
     });
     m.emplace("surrogate/category/global_approx/type/experimental_gaussian_process/import_model/import_format/text_archive", std::vector<WriteOp>{
-      WriteOp{OpKind::AugmentEnum, "surrogate.model_import_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"text_archive\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"TEXT_ARCHIVE\"}")},
+      WriteOp{OpKind::AugmentEnum, "surrogate.model_import_format", OpLiteral{IrValueType::String, IRValue{std::string("TEXT_ARCHIVE")}}},
     });
     m.emplace("surrogate/category/global_approx/type/experimental_gaussian_process/nugget/find_nugget", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "surrogate.find_nugget", nlohmann::json::parse("{\"handler_type\": \"shint\", \"keyword_name\": \"find_nugget\", \"member_variable_type\": \"short\"}")},
-      WriteOp{OpKind::DirectValue, "surrogate.find_nugget", nlohmann::json::parse("{\"handler_type\": \"shint\", \"keyword_name\": \"find_nugget\", \"member_variable_type\": \"short\"}")},
+      WriteOp{OpKind::DirectValue, "surrogate.find_nugget", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/experimental_gaussian_process/nugget/nugget", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "surrogate.nugget", nlohmann::json::parse("{\"handler_type\": \"Real\", \"keyword_name\": \"nugget\", \"member_variable_type\": \"Real\"}")},
-      WriteOp{OpKind::DirectValue, "surrogate.nugget", nlohmann::json::parse("{\"handler_type\": \"Real\", \"keyword_name\": \"nugget\", \"member_variable_type\": \"Real\"}")},
+      WriteOp{OpKind::DirectValue, "surrogate.nugget", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/experimental_gaussian_process/num_restarts", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "surrogate.num_restarts", nlohmann::json::parse("{\"handler_type\": \"int\", \"keyword_name\": \"num_restarts\", \"member_variable_type\": \"int\"}")},
+      WriteOp{OpKind::DirectValue, "surrogate.num_restarts", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/experimental_gaussian_process/options_file", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "advanced_options_file", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"options_file\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "advanced_options_file", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"options_file\", \"member_variable_type\": \"String\"}")},
+      WriteOp{OpKind::DirectValue, "advanced_options_file", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/experimental_gaussian_process/trend/constant", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "surrogate.trend_order", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"constant\", \"member_variable_type\": \"String\", \"stored_value\": \"constant\"}")},
-      WriteOp{OpKind::PresenceLiteral, "surrogate.trend_order", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"constant\", \"member_variable_type\": \"String\", \"stored_value\": \"constant\"}")},
-      WriteOp{OpKind::PresenceLiteral, "surrogate.trend_order", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"constant\", \"member_variable_type\": \"String\", \"stored_value\": \"constant\"}")},
+      WriteOp{OpKind::PresenceLiteral, "surrogate.trend_order", OpLiteral{IrValueType::String, IRValue{std::string("constant")}}},
     });
     m.emplace("surrogate/category/global_approx/type/experimental_gaussian_process/trend/linear", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "surrogate.trend_order", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"linear\", \"member_variable_type\": \"String\", \"stored_value\": \"linear\"}")},
-      WriteOp{OpKind::PresenceLiteral, "surrogate.trend_order", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"linear\", \"member_variable_type\": \"String\", \"stored_value\": \"linear\"}")},
-      WriteOp{OpKind::PresenceLiteral, "surrogate.trend_order", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"linear\", \"member_variable_type\": \"String\", \"stored_value\": \"linear\"}")},
+      WriteOp{OpKind::PresenceLiteral, "surrogate.trend_order", OpLiteral{IrValueType::String, IRValue{std::string("linear")}}},
     });
     m.emplace("surrogate/category/global_approx/type/experimental_gaussian_process/trend/none", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "surrogate.trend_order", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"none\", \"member_variable_type\": \"String\", \"stored_value\": \"none\"}")},
+      WriteOp{OpKind::PresenceLiteral, "surrogate.trend_order", OpLiteral{IrValueType::String, IRValue{std::string("none")}}},
     });
     m.emplace("surrogate/category/global_approx/type/experimental_gaussian_process/trend/quadratic", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "surrogate.trend_order", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"quadratic\", \"member_variable_type\": \"String\", \"stored_value\": \"quadratic\"}")},
-      WriteOp{OpKind::PresenceLiteral, "surrogate.trend_order", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"quadratic\", \"member_variable_type\": \"String\", \"stored_value\": \"quadratic\"}")},
+      WriteOp{OpKind::PresenceLiteral, "surrogate.trend_order", OpLiteral{IrValueType::String, IRValue{std::string("quadratic")}}},
     });
     m.emplace("surrogate/category/global_approx/type/experimental_gaussian_process/trend/reduced_quadratic", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "surrogate.trend_order", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"reduced_quadratic\", \"member_variable_type\": \"String\", \"stored_value\": \"reduced_quadratic\"}")},
-      WriteOp{OpKind::PresenceLiteral, "surrogate.trend_order", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"reduced_quadratic\", \"member_variable_type\": \"String\", \"stored_value\": \"reduced_quadratic\"}")},
-      WriteOp{OpKind::PresenceLiteral, "surrogate.trend_order", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"reduced_quadratic\", \"member_variable_type\": \"String\", \"stored_value\": \"reduced_quadratic\"}")},
+      WriteOp{OpKind::PresenceLiteral, "surrogate.trend_order", OpLiteral{IrValueType::String, IRValue{std::string("reduced_quadratic")}}},
     });
     m.emplace("surrogate/category/global_approx/type/experimental_polynomial", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "surrogate.type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"experimental_polynomial\", \"member_variable_type\": \"String\", \"stored_value\": \"global_exp_poly\"}")},
+      WriteOp{OpKind::PresenceLiteral, "surrogate.type", OpLiteral{IrValueType::String, IRValue{std::string("global_exp_poly")}}},
     });
     m.emplace("surrogate/category/global_approx/type/experimental_polynomial/basis_order", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "surrogate.polynomial_order", nlohmann::json::parse("{\"handler_type\": \"shint\", \"keyword_name\": \"basis_order\", \"member_variable_type\": \"short\"}")},
-      WriteOp{OpKind::DirectValue, "surrogate.polynomial_order", nlohmann::json::parse("{\"handler_type\": \"shint\", \"keyword_name\": \"basis_order\", \"member_variable_type\": \"short\"}")},
-      WriteOp{OpKind::DirectValue, "surrogate.polynomial_order", nlohmann::json::parse("{\"handler_type\": \"shint\", \"keyword_name\": \"basis_order\", \"member_variable_type\": \"short\"}")},
+      WriteOp{OpKind::DirectValue, "surrogate.polynomial_order", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/experimental_polynomial/export_model", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "surrogate.export_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"export_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.export_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"export_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.export_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"export_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.export_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"export_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.export_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"export_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.export_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"export_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.export_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"export_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.export_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"export_model\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "surrogate.export_surrogate", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/experimental_polynomial/export_model/filename_prefix", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "surrogate.model_export_prefix", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"filename_prefix\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "surrogate.model_export_prefix", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"filename_prefix\", \"member_variable_type\": \"String\"}")},
+      WriteOp{OpKind::DirectValue, "surrogate.model_export_prefix", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/experimental_polynomial/export_model/formats/binary_archive", std::vector<WriteOp>{
-      WriteOp{OpKind::AugmentEnum, "surrogate.model_export_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"binary_archive\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"BINARY_ARCHIVE\"}")},
-      WriteOp{OpKind::AugmentEnum, "surrogate.model_export_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"binary_archive\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"BINARY_ARCHIVE\"}")},
+      WriteOp{OpKind::AugmentEnum, "surrogate.model_export_format", OpLiteral{IrValueType::String, IRValue{std::string("BINARY_ARCHIVE")}}},
     });
     m.emplace("surrogate/category/global_approx/type/experimental_polynomial/export_model/formats/text_archive", std::vector<WriteOp>{
-      WriteOp{OpKind::AugmentEnum, "surrogate.model_export_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"text_archive\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"TEXT_ARCHIVE\"}")},
-      WriteOp{OpKind::AugmentEnum, "surrogate.model_export_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"text_archive\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"TEXT_ARCHIVE\"}")},
+      WriteOp{OpKind::AugmentEnum, "surrogate.model_export_format", OpLiteral{IrValueType::String, IRValue{std::string("TEXT_ARCHIVE")}}},
     });
     m.emplace("surrogate/category/global_approx/type/experimental_polynomial/import_model", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "surrogate.import_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"import_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.import_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"import_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.import_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"import_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.import_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"import_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.import_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"import_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.import_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"import_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.import_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"import_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.import_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"import_model\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "surrogate.import_surrogate", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/experimental_polynomial/import_model/filename_prefix", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "surrogate.model_import_prefix", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"filename_prefix\", \"member_variable_type\": \"String\"}")},
+      WriteOp{OpKind::DirectValue, "surrogate.model_import_prefix", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/experimental_polynomial/import_model/import_format/binary_archive", std::vector<WriteOp>{
-      WriteOp{OpKind::AugmentEnum, "surrogate.model_import_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"binary_archive\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"BINARY_ARCHIVE\"}")},
+      WriteOp{OpKind::AugmentEnum, "surrogate.model_import_format", OpLiteral{IrValueType::String, IRValue{std::string("BINARY_ARCHIVE")}}},
     });
     m.emplace("surrogate/category/global_approx/type/experimental_polynomial/import_model/import_format/text_archive", std::vector<WriteOp>{
-      WriteOp{OpKind::AugmentEnum, "surrogate.model_import_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"text_archive\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"TEXT_ARCHIVE\"}")},
+      WriteOp{OpKind::AugmentEnum, "surrogate.model_import_format", OpLiteral{IrValueType::String, IRValue{std::string("TEXT_ARCHIVE")}}},
     });
     m.emplace("surrogate/category/global_approx/type/experimental_polynomial/options_file", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "advanced_options_file", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"options_file\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "advanced_options_file", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"options_file\", \"member_variable_type\": \"String\"}")},
+      WriteOp{OpKind::DirectValue, "advanced_options_file", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/experimental_python", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "surrogate.type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"experimental_python\", \"member_variable_type\": \"String\", \"stored_value\": \"global_exp_python\"}")},
+      WriteOp{OpKind::PresenceLiteral, "surrogate.type", OpLiteral{IrValueType::String, IRValue{std::string("global_exp_python")}}},
     });
     m.emplace("surrogate/category/global_approx/type/experimental_python/class_path_and_name", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "surrogate.class_path_and_name", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"class_path_and_name\", \"member_variable_type\": \"String\"}")},
+      WriteOp{OpKind::DirectValue, "surrogate.class_path_and_name", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/function_train", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "surrogate.type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"function_train\", \"member_variable_type\": \"String\", \"stored_value\": \"global_function_train\"}")},
+      WriteOp{OpKind::PresenceLiteral, "surrogate.type", OpLiteral{IrValueType::String, IRValue{std::string("global_function_train")}}},
     });
     m.emplace("surrogate/category/global_approx/type/function_train/adapt_order", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "c3function_train.adapt_order", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"adapt_order\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "c3function_train.adapt_order", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/function_train/adapt_rank", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "c3function_train.adapt_rank", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"adapt_rank\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "c3function_train.adapt_rank", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/function_train/arithmetic_tolerance", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "c3function_train.stats_rounding_tolerance", nlohmann::json::parse("{\"handler_type\": \"Real\", \"keyword_name\": \"arithmetic_tolerance\", \"member_variable_type\": \"Real\"}")},
+      WriteOp{OpKind::DirectValue, "c3function_train.stats_rounding_tolerance", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/function_train/kick_order", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "c3function_train.kick_order", nlohmann::json::parse("{\"handler_type\": \"ushint\", \"keyword_name\": \"kick_order\", \"member_variable_type\": \"unsigned short\"}")},
+      WriteOp{OpKind::DirectValue, "c3function_train.kick_order", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/function_train/kick_rank", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "c3function_train.kick_rank", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"kick_rank\", \"member_variable_type\": \"size_t\"}")},
+      WriteOp{OpKind::DirectValue, "c3function_train.kick_rank", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/function_train/max_cross_iterations", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "c3function_train.max_cross_iterations", nlohmann::json::parse("{\"handler_type\": \"int\", \"keyword_name\": \"max_cross_iterations\", \"member_variable_type\": \"int\"}")},
+      WriteOp{OpKind::DirectValue, "c3function_train.max_cross_iterations", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/function_train/max_cv_order_candidates", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "c3function_train.cross_validation.max_order_candidates", nlohmann::json::parse("{\"handler_type\": \"ushint\", \"keyword_name\": \"max_cv_order_candidates\", \"member_variable_type\": \"unsigned short\"}")},
+      WriteOp{OpKind::DirectValue, "c3function_train.cross_validation.max_order_candidates", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/function_train/max_cv_rank_candidates", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "c3function_train.cross_validation.max_rank_candidates", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"max_cv_rank_candidates\", \"member_variable_type\": \"size_t\"}")},
+      WriteOp{OpKind::DirectValue, "c3function_train.cross_validation.max_rank_candidates", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/function_train/max_order", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "c3function_train.max_order", nlohmann::json::parse("{\"handler_type\": \"ushint\", \"keyword_name\": \"max_order\", \"member_variable_type\": \"unsigned short\"}")},
+      WriteOp{OpKind::DirectValue, "c3function_train.max_order", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/function_train/max_rank", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "c3function_train.max_rank", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"max_rank\", \"member_variable_type\": \"size_t\"}")},
+      WriteOp{OpKind::DirectValue, "c3function_train.max_rank", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/function_train/max_solver_iterations", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "max_solver_iterations", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"max_solver_iterations\", \"member_variable_type\": \"size_t\"}")},
+      WriteOp{OpKind::DirectValue, "max_solver_iterations", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/function_train/regression_type/ls", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "surrogate.regression_type", nlohmann::json::parse("{\"handler_type\": \"type\", \"keyword_name\": \"ls\", \"member_variable_type\": \"short\", \"stored_value\": \"FT_LS\"}")},
+      WriteOp{OpKind::PresenceEnum, "surrogate.regression_type", OpLiteral{IrValueType::String, IRValue{std::string("FT_LS")}}},
     });
     m.emplace("surrogate/category/global_approx/type/function_train/regression_type/rls2", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "surrogate.regression_type", nlohmann::json::parse("{\"handler_type\": \"type\", \"keyword_name\": \"rls2\", \"member_variable_type\": \"short\", \"stored_value\": \"FT_RLS2\"}")},
+      WriteOp{OpKind::PresenceEnum, "surrogate.regression_type", OpLiteral{IrValueType::String, IRValue{std::string("FT_RLS2")}}},
     });
     m.emplace("surrogate/category/global_approx/type/function_train/regression_type/rls2/l2_penalty", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "surrogate.regression_penalty", nlohmann::json::parse("{\"handler_type\": \"Real\", \"keyword_name\": \"l2_penalty\", \"member_variable_type\": \"Real\"}")},
+      WriteOp{OpKind::DirectValue, "surrogate.regression_penalty", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/function_train/response_scaling", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "surrogate.response_scaling", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"response_scaling\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "surrogate.response_scaling", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/function_train/rounding_tolerance", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "c3function_train.solver_rounding_tolerance", nlohmann::json::parse("{\"handler_type\": \"Real\", \"keyword_name\": \"rounding_tolerance\", \"member_variable_type\": \"Real\"}")},
+      WriteOp{OpKind::DirectValue, "c3function_train.solver_rounding_tolerance", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/function_train/solver_tolerance", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "c3function_train.solver_tolerance", nlohmann::json::parse("{\"handler_type\": \"Real\", \"keyword_name\": \"solver_tolerance\", \"member_variable_type\": \"Real\"}")},
+      WriteOp{OpKind::DirectValue, "c3function_train.solver_tolerance", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+    });
+    m.emplace("surrogate/category/global_approx/type/function_train/start_order", std::vector<WriteOp>{
+      WriteOp{OpKind::DirectValue, "c3function_train.start_order", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/function_train/start_order/value", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "c3function_train.start_order", nlohmann::json::parse("{\"handler_type\": \"ushint\", \"keyword_name\": \"start_order\", \"member_variable_type\": \"unsigned short\"}")},
-      WriteOp{OpKind::DirectValue, "c3function_train.start_order", nlohmann::json::parse("{\"handler_type\": \"ushint\", \"keyword_name\": \"start_order\", \"member_variable_type\": \"unsigned short\"}")},
+      WriteOp{OpKind::DirectValue, "c3function_train.start_order", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/function_train/start_rank", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "c3function_train.start_rank", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"start_rank\", \"member_variable_type\": \"size_t\"}")},
+      WriteOp{OpKind::DirectValue, "c3function_train.start_rank", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/function_train/tensor_grid", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "c3function_train.tensor_grid", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"tensor_grid\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "c3function_train.tensor_grid", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+    });
+    m.emplace("surrogate/category/global_approx/type/gaussian_process/export_approx_variance_file", std::vector<WriteOp>{
+      WriteOp{OpKind::DirectValue, "surrogate.export_approx_variance_file", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/gaussian_process/export_approx_variance_file/filename", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "surrogate.export_approx_variance_file", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"export_approx_variance_file\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "surrogate.export_approx_variance_file", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"export_approx_variance_file\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "surrogate.export_approx_variance_file", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"export_approx_variance_file\", \"member_variable_type\": \"String\"}")},
+      WriteOp{OpKind::DirectValue, "surrogate.export_approx_variance_file", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/gaussian_process/export_approx_variance_file/format/annotated", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "surrogate.export_approx_variance_format", nlohmann::json::parse("{\"handler_type\": \"utype\", \"keyword_name\": \"annotated\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"TABULAR_ANNOTATED\"}")},
+      WriteOp{OpKind::PresenceEnum, "surrogate.export_approx_variance_format", OpLiteral{IrValueType::String, IRValue{std::string("TABULAR_ANNOTATED")}}},
     });
     m.emplace("surrogate/category/global_approx/type/gaussian_process/export_approx_variance_file/format/custom_annotated", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "surrogate.export_approx_variance_format", nlohmann::json::parse("{\"handler_type\": \"utype\", \"keyword_name\": \"custom_annotated\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"TABULAR_NONE\"}")},
+      WriteOp{OpKind::PresenceEnum, "surrogate.export_approx_variance_format", OpLiteral{IrValueType::String, IRValue{std::string("TABULAR_NONE")}}},
     });
     m.emplace("surrogate/category/global_approx/type/gaussian_process/export_approx_variance_file/format/custom_annotated/eval_id", std::vector<WriteOp>{
-      WriteOp{OpKind::AugmentEnum, "surrogate.export_approx_variance_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"eval_id\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"TABULAR_EVAL_ID\"}")},
+      WriteOp{OpKind::AugmentEnum, "surrogate.export_approx_variance_format", OpLiteral{IrValueType::String, IRValue{std::string("TABULAR_EVAL_ID")}}},
     });
     m.emplace("surrogate/category/global_approx/type/gaussian_process/export_approx_variance_file/format/custom_annotated/header", std::vector<WriteOp>{
-      WriteOp{OpKind::AugmentEnum, "surrogate.export_approx_variance_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"header\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"TABULAR_HEADER\"}")},
+      WriteOp{OpKind::AugmentEnum, "surrogate.export_approx_variance_format", OpLiteral{IrValueType::String, IRValue{std::string("TABULAR_HEADER")}}},
     });
     m.emplace("surrogate/category/global_approx/type/gaussian_process/export_approx_variance_file/format/custom_annotated/interface_id", std::vector<WriteOp>{
-      WriteOp{OpKind::AugmentEnum, "surrogate.export_approx_variance_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"interface_id\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"TABULAR_IFACE_ID\"}")},
+      WriteOp{OpKind::AugmentEnum, "surrogate.export_approx_variance_format", OpLiteral{IrValueType::String, IRValue{std::string("TABULAR_IFACE_ID")}}},
     });
     m.emplace("surrogate/category/global_approx/type/gaussian_process/export_approx_variance_file/format/freeform", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "surrogate.export_approx_variance_format", nlohmann::json::parse("{\"handler_type\": \"utype\", \"keyword_name\": \"freeform\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"TABULAR_NONE\"}")},
+      WriteOp{OpKind::PresenceEnum, "surrogate.export_approx_variance_format", OpLiteral{IrValueType::String, IRValue{std::string("TABULAR_NONE")}}},
     });
     m.emplace("surrogate/category/global_approx/type/gaussian_process/gp_implementation/dakota", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "surrogate.type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"dakota\", \"member_variable_type\": \"String\", \"stored_value\": \"global_gaussian\"}")},
+      WriteOp{OpKind::PresenceLiteral, "surrogate.type", OpLiteral{IrValueType::String, IRValue{std::string("global_gaussian")}}},
     });
     m.emplace("surrogate/category/global_approx/type/gaussian_process/gp_implementation/dakota/point_selection", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "surrogate.point_selection", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"point_selection\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "surrogate.point_selection", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/gaussian_process/gp_implementation/dakota/trend/constant", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "surrogate.trend_order", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"constant\", \"member_variable_type\": \"String\", \"stored_value\": \"constant\"}")},
-      WriteOp{OpKind::PresenceLiteral, "surrogate.trend_order", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"constant\", \"member_variable_type\": \"String\", \"stored_value\": \"constant\"}")},
-      WriteOp{OpKind::PresenceLiteral, "surrogate.trend_order", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"constant\", \"member_variable_type\": \"String\", \"stored_value\": \"constant\"}")},
+      WriteOp{OpKind::PresenceLiteral, "surrogate.trend_order", OpLiteral{IrValueType::String, IRValue{std::string("constant")}}},
     });
     m.emplace("surrogate/category/global_approx/type/gaussian_process/gp_implementation/dakota/trend/linear", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "surrogate.trend_order", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"linear\", \"member_variable_type\": \"String\", \"stored_value\": \"linear\"}")},
-      WriteOp{OpKind::PresenceLiteral, "surrogate.trend_order", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"linear\", \"member_variable_type\": \"String\", \"stored_value\": \"linear\"}")},
-      WriteOp{OpKind::PresenceLiteral, "surrogate.trend_order", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"linear\", \"member_variable_type\": \"String\", \"stored_value\": \"linear\"}")},
+      WriteOp{OpKind::PresenceLiteral, "surrogate.trend_order", OpLiteral{IrValueType::String, IRValue{std::string("linear")}}},
     });
     m.emplace("surrogate/category/global_approx/type/gaussian_process/gp_implementation/dakota/trend/reduced_quadratic", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "surrogate.trend_order", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"reduced_quadratic\", \"member_variable_type\": \"String\", \"stored_value\": \"reduced_quadratic\"}")},
-      WriteOp{OpKind::PresenceLiteral, "surrogate.trend_order", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"reduced_quadratic\", \"member_variable_type\": \"String\", \"stored_value\": \"reduced_quadratic\"}")},
-      WriteOp{OpKind::PresenceLiteral, "surrogate.trend_order", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"reduced_quadratic\", \"member_variable_type\": \"String\", \"stored_value\": \"reduced_quadratic\"}")},
+      WriteOp{OpKind::PresenceLiteral, "surrogate.trend_order", OpLiteral{IrValueType::String, IRValue{std::string("reduced_quadratic")}}},
     });
     m.emplace("surrogate/category/global_approx/type/gaussian_process/gp_implementation/surfpack", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "surrogate.type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"surfpack\", \"member_variable_type\": \"String\", \"stored_value\": \"global_kriging\"}")},
+      WriteOp{OpKind::PresenceLiteral, "surrogate.type", OpLiteral{IrValueType::String, IRValue{std::string("global_kriging")}}},
     });
     m.emplace("surrogate/category/global_approx/type/gaussian_process/gp_implementation/surfpack/correlation_lengths", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "surrogate.kriging_correlations", nlohmann::json::parse("{\"handler_type\": \"RealDL\", \"keyword_name\": \"correlation_lengths\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "surrogate.kriging_correlations", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/gaussian_process/gp_implementation/surfpack/export_model", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "surrogate.export_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"export_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.export_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"export_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.export_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"export_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.export_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"export_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.export_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"export_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.export_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"export_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.export_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"export_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.export_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"export_model\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "surrogate.export_surrogate", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/gaussian_process/gp_implementation/surfpack/export_model/filename_prefix", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "surrogate.model_export_prefix", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"filename_prefix\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "surrogate.model_export_prefix", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"filename_prefix\", \"member_variable_type\": \"String\"}")},
+      WriteOp{OpKind::DirectValue, "surrogate.model_export_prefix", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/gaussian_process/gp_implementation/surfpack/export_model/formats/algebraic_console", std::vector<WriteOp>{
-      WriteOp{OpKind::AugmentEnum, "surrogate.model_export_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"algebraic_console\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"ALGEBRAIC_CONSOLE\"}")},
+      WriteOp{OpKind::AugmentEnum, "surrogate.model_export_format", OpLiteral{IrValueType::String, IRValue{std::string("ALGEBRAIC_CONSOLE")}}},
     });
     m.emplace("surrogate/category/global_approx/type/gaussian_process/gp_implementation/surfpack/export_model/formats/algebraic_file", std::vector<WriteOp>{
-      WriteOp{OpKind::AugmentEnum, "surrogate.model_export_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"algebraic_file\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"ALGEBRAIC_FILE\"}")},
+      WriteOp{OpKind::AugmentEnum, "surrogate.model_export_format", OpLiteral{IrValueType::String, IRValue{std::string("ALGEBRAIC_FILE")}}},
     });
     m.emplace("surrogate/category/global_approx/type/gaussian_process/gp_implementation/surfpack/export_model/formats/binary_archive", std::vector<WriteOp>{
-      WriteOp{OpKind::AugmentEnum, "surrogate.model_export_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"binary_archive\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"BINARY_ARCHIVE\"}")},
-      WriteOp{OpKind::AugmentEnum, "surrogate.model_export_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"binary_archive\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"BINARY_ARCHIVE\"}")},
+      WriteOp{OpKind::AugmentEnum, "surrogate.model_export_format", OpLiteral{IrValueType::String, IRValue{std::string("BINARY_ARCHIVE")}}},
     });
     m.emplace("surrogate/category/global_approx/type/gaussian_process/gp_implementation/surfpack/export_model/formats/text_archive", std::vector<WriteOp>{
-      WriteOp{OpKind::AugmentEnum, "surrogate.model_export_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"text_archive\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"TEXT_ARCHIVE\"}")},
-      WriteOp{OpKind::AugmentEnum, "surrogate.model_export_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"text_archive\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"TEXT_ARCHIVE\"}")},
+      WriteOp{OpKind::AugmentEnum, "surrogate.model_export_format", OpLiteral{IrValueType::String, IRValue{std::string("TEXT_ARCHIVE")}}},
     });
     m.emplace("surrogate/category/global_approx/type/gaussian_process/gp_implementation/surfpack/import_model", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "surrogate.import_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"import_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.import_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"import_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.import_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"import_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.import_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"import_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.import_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"import_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.import_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"import_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.import_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"import_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.import_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"import_model\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "surrogate.import_surrogate", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/gaussian_process/gp_implementation/surfpack/import_model/filename_prefix", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "surrogate.model_import_prefix", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"filename_prefix\", \"member_variable_type\": \"String\"}")},
+      WriteOp{OpKind::DirectValue, "surrogate.model_import_prefix", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/gaussian_process/gp_implementation/surfpack/import_model/import_format/binary_archive", std::vector<WriteOp>{
-      WriteOp{OpKind::AugmentEnum, "surrogate.model_import_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"binary_archive\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"BINARY_ARCHIVE\"}")},
+      WriteOp{OpKind::AugmentEnum, "surrogate.model_import_format", OpLiteral{IrValueType::String, IRValue{std::string("BINARY_ARCHIVE")}}},
     });
     m.emplace("surrogate/category/global_approx/type/gaussian_process/gp_implementation/surfpack/import_model/import_format/text_archive", std::vector<WriteOp>{
-      WriteOp{OpKind::AugmentEnum, "surrogate.model_import_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"text_archive\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"TEXT_ARCHIVE\"}")},
+      WriteOp{OpKind::AugmentEnum, "surrogate.model_import_format", OpLiteral{IrValueType::String, IRValue{std::string("TEXT_ARCHIVE")}}},
     });
     m.emplace("surrogate/category/global_approx/type/gaussian_process/gp_implementation/surfpack/max_trials", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "surrogate.kriging_max_trials", nlohmann::json::parse("{\"handler_type\": \"shint\", \"keyword_name\": \"max_trials\", \"member_variable_type\": \"short\"}")},
+      WriteOp{OpKind::DirectValue, "surrogate.kriging_max_trials", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/gaussian_process/gp_implementation/surfpack/nugget/find_nugget", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "surrogate.find_nugget", nlohmann::json::parse("{\"handler_type\": \"shint\", \"keyword_name\": \"find_nugget\", \"member_variable_type\": \"short\"}")},
-      WriteOp{OpKind::DirectValue, "surrogate.find_nugget", nlohmann::json::parse("{\"handler_type\": \"shint\", \"keyword_name\": \"find_nugget\", \"member_variable_type\": \"short\"}")},
+      WriteOp{OpKind::DirectValue, "surrogate.find_nugget", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/gaussian_process/gp_implementation/surfpack/nugget/nugget", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "surrogate.nugget", nlohmann::json::parse("{\"handler_type\": \"Real\", \"keyword_name\": \"nugget\", \"member_variable_type\": \"Real\"}")},
-      WriteOp{OpKind::DirectValue, "surrogate.nugget", nlohmann::json::parse("{\"handler_type\": \"Real\", \"keyword_name\": \"nugget\", \"member_variable_type\": \"Real\"}")},
+      WriteOp{OpKind::DirectValue, "surrogate.nugget", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/gaussian_process/gp_implementation/surfpack/optimization_method", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "surrogate.kriging_opt_method", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"optimization_method\", \"member_variable_type\": \"String\"}")},
+      WriteOp{OpKind::DirectValue, "surrogate.kriging_opt_method", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/gaussian_process/gp_implementation/surfpack/trend/constant", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "surrogate.trend_order", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"constant\", \"member_variable_type\": \"String\", \"stored_value\": \"constant\"}")},
-      WriteOp{OpKind::PresenceLiteral, "surrogate.trend_order", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"constant\", \"member_variable_type\": \"String\", \"stored_value\": \"constant\"}")},
-      WriteOp{OpKind::PresenceLiteral, "surrogate.trend_order", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"constant\", \"member_variable_type\": \"String\", \"stored_value\": \"constant\"}")},
+      WriteOp{OpKind::PresenceLiteral, "surrogate.trend_order", OpLiteral{IrValueType::String, IRValue{std::string("constant")}}},
     });
     m.emplace("surrogate/category/global_approx/type/gaussian_process/gp_implementation/surfpack/trend/linear", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "surrogate.trend_order", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"linear\", \"member_variable_type\": \"String\", \"stored_value\": \"linear\"}")},
-      WriteOp{OpKind::PresenceLiteral, "surrogate.trend_order", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"linear\", \"member_variable_type\": \"String\", \"stored_value\": \"linear\"}")},
-      WriteOp{OpKind::PresenceLiteral, "surrogate.trend_order", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"linear\", \"member_variable_type\": \"String\", \"stored_value\": \"linear\"}")},
+      WriteOp{OpKind::PresenceLiteral, "surrogate.trend_order", OpLiteral{IrValueType::String, IRValue{std::string("linear")}}},
     });
     m.emplace("surrogate/category/global_approx/type/gaussian_process/gp_implementation/surfpack/trend/quadratic", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "surrogate.trend_order", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"quadratic\", \"member_variable_type\": \"String\", \"stored_value\": \"quadratic\"}")},
-      WriteOp{OpKind::PresenceLiteral, "surrogate.trend_order", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"quadratic\", \"member_variable_type\": \"String\", \"stored_value\": \"quadratic\"}")},
+      WriteOp{OpKind::PresenceLiteral, "surrogate.trend_order", OpLiteral{IrValueType::String, IRValue{std::string("quadratic")}}},
     });
     m.emplace("surrogate/category/global_approx/type/gaussian_process/gp_implementation/surfpack/trend/reduced_quadratic", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "surrogate.trend_order", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"reduced_quadratic\", \"member_variable_type\": \"String\", \"stored_value\": \"reduced_quadratic\"}")},
-      WriteOp{OpKind::PresenceLiteral, "surrogate.trend_order", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"reduced_quadratic\", \"member_variable_type\": \"String\", \"stored_value\": \"reduced_quadratic\"}")},
-      WriteOp{OpKind::PresenceLiteral, "surrogate.trend_order", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"reduced_quadratic\", \"member_variable_type\": \"String\", \"stored_value\": \"reduced_quadratic\"}")},
+      WriteOp{OpKind::PresenceLiteral, "surrogate.trend_order", OpLiteral{IrValueType::String, IRValue{std::string("reduced_quadratic")}}},
     });
     m.emplace("surrogate/category/global_approx/type/mars", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "surrogate.type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"mars\", \"member_variable_type\": \"String\", \"stored_value\": \"global_mars\"}")},
+      WriteOp{OpKind::PresenceLiteral, "surrogate.type", OpLiteral{IrValueType::String, IRValue{std::string("global_mars")}}},
     });
     m.emplace("surrogate/category/global_approx/type/mars/export_model", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "surrogate.export_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"export_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.export_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"export_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.export_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"export_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.export_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"export_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.export_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"export_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.export_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"export_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.export_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"export_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.export_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"export_model\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "surrogate.export_surrogate", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/mars/export_model/filename_prefix", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "surrogate.model_export_prefix", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"filename_prefix\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "surrogate.model_export_prefix", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"filename_prefix\", \"member_variable_type\": \"String\"}")},
+      WriteOp{OpKind::DirectValue, "surrogate.model_export_prefix", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/mars/export_model/formats/binary_archive", std::vector<WriteOp>{
-      WriteOp{OpKind::AugmentEnum, "surrogate.model_export_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"binary_archive\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"BINARY_ARCHIVE\"}")},
-      WriteOp{OpKind::AugmentEnum, "surrogate.model_export_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"binary_archive\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"BINARY_ARCHIVE\"}")},
+      WriteOp{OpKind::AugmentEnum, "surrogate.model_export_format", OpLiteral{IrValueType::String, IRValue{std::string("BINARY_ARCHIVE")}}},
     });
     m.emplace("surrogate/category/global_approx/type/mars/export_model/formats/text_archive", std::vector<WriteOp>{
-      WriteOp{OpKind::AugmentEnum, "surrogate.model_export_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"text_archive\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"TEXT_ARCHIVE\"}")},
-      WriteOp{OpKind::AugmentEnum, "surrogate.model_export_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"text_archive\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"TEXT_ARCHIVE\"}")},
+      WriteOp{OpKind::AugmentEnum, "surrogate.model_export_format", OpLiteral{IrValueType::String, IRValue{std::string("TEXT_ARCHIVE")}}},
     });
     m.emplace("surrogate/category/global_approx/type/mars/import_model", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "surrogate.import_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"import_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.import_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"import_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.import_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"import_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.import_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"import_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.import_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"import_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.import_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"import_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.import_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"import_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.import_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"import_model\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "surrogate.import_surrogate", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/mars/import_model/filename_prefix", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "surrogate.model_import_prefix", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"filename_prefix\", \"member_variable_type\": \"String\"}")},
+      WriteOp{OpKind::DirectValue, "surrogate.model_import_prefix", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/mars/import_model/import_format/binary_archive", std::vector<WriteOp>{
-      WriteOp{OpKind::AugmentEnum, "surrogate.model_import_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"binary_archive\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"BINARY_ARCHIVE\"}")},
+      WriteOp{OpKind::AugmentEnum, "surrogate.model_import_format", OpLiteral{IrValueType::String, IRValue{std::string("BINARY_ARCHIVE")}}},
     });
     m.emplace("surrogate/category/global_approx/type/mars/import_model/import_format/text_archive", std::vector<WriteOp>{
-      WriteOp{OpKind::AugmentEnum, "surrogate.model_import_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"text_archive\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"TEXT_ARCHIVE\"}")},
+      WriteOp{OpKind::AugmentEnum, "surrogate.model_import_format", OpLiteral{IrValueType::String, IRValue{std::string("TEXT_ARCHIVE")}}},
     });
     m.emplace("surrogate/category/global_approx/type/mars/interpolation/cubic", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "surrogate.mars_interpolation", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"cubic\", \"member_variable_type\": \"String\", \"stored_value\": \"cubic\"}")},
+      WriteOp{OpKind::PresenceLiteral, "surrogate.mars_interpolation", OpLiteral{IrValueType::String, IRValue{std::string("cubic")}}},
     });
     m.emplace("surrogate/category/global_approx/type/mars/interpolation/linear", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "surrogate.mars_interpolation", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"linear\", \"member_variable_type\": \"String\", \"stored_value\": \"linear\"}")},
+      WriteOp{OpKind::PresenceLiteral, "surrogate.mars_interpolation", OpLiteral{IrValueType::String, IRValue{std::string("linear")}}},
     });
     m.emplace("surrogate/category/global_approx/type/mars/max_bases", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "surrogate.mars_max_bases", nlohmann::json::parse("{\"handler_type\": \"shint\", \"keyword_name\": \"max_bases\", \"member_variable_type\": \"short\"}")},
+      WriteOp{OpKind::DirectValue, "surrogate.mars_max_bases", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/moving_least_squares", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "surrogate.type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"moving_least_squares\", \"member_variable_type\": \"String\", \"stored_value\": \"global_moving_least_squares\"}")},
+      WriteOp{OpKind::PresenceLiteral, "surrogate.type", OpLiteral{IrValueType::String, IRValue{std::string("global_moving_least_squares")}}},
     });
     m.emplace("surrogate/category/global_approx/type/moving_least_squares/basis_order", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "surrogate.polynomial_order", nlohmann::json::parse("{\"handler_type\": \"shint\", \"keyword_name\": \"basis_order\", \"member_variable_type\": \"short\"}")},
-      WriteOp{OpKind::DirectValue, "surrogate.polynomial_order", nlohmann::json::parse("{\"handler_type\": \"shint\", \"keyword_name\": \"basis_order\", \"member_variable_type\": \"short\"}")},
-      WriteOp{OpKind::DirectValue, "surrogate.polynomial_order", nlohmann::json::parse("{\"handler_type\": \"shint\", \"keyword_name\": \"basis_order\", \"member_variable_type\": \"short\"}")},
+      WriteOp{OpKind::DirectValue, "surrogate.polynomial_order", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/moving_least_squares/export_model", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "surrogate.export_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"export_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.export_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"export_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.export_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"export_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.export_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"export_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.export_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"export_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.export_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"export_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.export_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"export_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.export_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"export_model\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "surrogate.export_surrogate", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/moving_least_squares/export_model/filename_prefix", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "surrogate.model_export_prefix", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"filename_prefix\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "surrogate.model_export_prefix", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"filename_prefix\", \"member_variable_type\": \"String\"}")},
+      WriteOp{OpKind::DirectValue, "surrogate.model_export_prefix", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/moving_least_squares/export_model/formats/binary_archive", std::vector<WriteOp>{
-      WriteOp{OpKind::AugmentEnum, "surrogate.model_export_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"binary_archive\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"BINARY_ARCHIVE\"}")},
-      WriteOp{OpKind::AugmentEnum, "surrogate.model_export_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"binary_archive\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"BINARY_ARCHIVE\"}")},
+      WriteOp{OpKind::AugmentEnum, "surrogate.model_export_format", OpLiteral{IrValueType::String, IRValue{std::string("BINARY_ARCHIVE")}}},
     });
     m.emplace("surrogate/category/global_approx/type/moving_least_squares/export_model/formats/text_archive", std::vector<WriteOp>{
-      WriteOp{OpKind::AugmentEnum, "surrogate.model_export_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"text_archive\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"TEXT_ARCHIVE\"}")},
-      WriteOp{OpKind::AugmentEnum, "surrogate.model_export_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"text_archive\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"TEXT_ARCHIVE\"}")},
+      WriteOp{OpKind::AugmentEnum, "surrogate.model_export_format", OpLiteral{IrValueType::String, IRValue{std::string("TEXT_ARCHIVE")}}},
     });
     m.emplace("surrogate/category/global_approx/type/moving_least_squares/import_model", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "surrogate.import_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"import_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.import_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"import_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.import_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"import_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.import_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"import_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.import_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"import_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.import_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"import_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.import_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"import_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.import_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"import_model\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "surrogate.import_surrogate", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/moving_least_squares/import_model/filename_prefix", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "surrogate.model_import_prefix", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"filename_prefix\", \"member_variable_type\": \"String\"}")},
+      WriteOp{OpKind::DirectValue, "surrogate.model_import_prefix", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/moving_least_squares/import_model/import_format/binary_archive", std::vector<WriteOp>{
-      WriteOp{OpKind::AugmentEnum, "surrogate.model_import_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"binary_archive\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"BINARY_ARCHIVE\"}")},
+      WriteOp{OpKind::AugmentEnum, "surrogate.model_import_format", OpLiteral{IrValueType::String, IRValue{std::string("BINARY_ARCHIVE")}}},
     });
     m.emplace("surrogate/category/global_approx/type/moving_least_squares/import_model/import_format/text_archive", std::vector<WriteOp>{
-      WriteOp{OpKind::AugmentEnum, "surrogate.model_import_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"text_archive\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"TEXT_ARCHIVE\"}")},
+      WriteOp{OpKind::AugmentEnum, "surrogate.model_import_format", OpLiteral{IrValueType::String, IRValue{std::string("TEXT_ARCHIVE")}}},
     });
     m.emplace("surrogate/category/global_approx/type/moving_least_squares/weight_function", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "surrogate.mls_weight_function", nlohmann::json::parse("{\"handler_type\": \"shint\", \"keyword_name\": \"weight_function\", \"member_variable_type\": \"short\"}")},
+      WriteOp{OpKind::DirectValue, "surrogate.mls_weight_function", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/neural_network", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "surrogate.type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"neural_network\", \"member_variable_type\": \"String\", \"stored_value\": \"global_neural_network\"}")},
+      WriteOp{OpKind::PresenceLiteral, "surrogate.type", OpLiteral{IrValueType::String, IRValue{std::string("global_neural_network")}}},
     });
     m.emplace("surrogate/category/global_approx/type/neural_network/export_model", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "surrogate.export_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"export_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.export_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"export_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.export_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"export_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.export_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"export_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.export_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"export_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.export_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"export_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.export_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"export_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.export_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"export_model\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "surrogate.export_surrogate", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/neural_network/export_model/filename_prefix", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "surrogate.model_export_prefix", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"filename_prefix\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "surrogate.model_export_prefix", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"filename_prefix\", \"member_variable_type\": \"String\"}")},
+      WriteOp{OpKind::DirectValue, "surrogate.model_export_prefix", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/neural_network/export_model/formats/algebraic_console", std::vector<WriteOp>{
-      WriteOp{OpKind::AugmentEnum, "surrogate.model_export_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"algebraic_console\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"ALGEBRAIC_CONSOLE\"}")},
+      WriteOp{OpKind::AugmentEnum, "surrogate.model_export_format", OpLiteral{IrValueType::String, IRValue{std::string("ALGEBRAIC_CONSOLE")}}},
     });
     m.emplace("surrogate/category/global_approx/type/neural_network/export_model/formats/algebraic_file", std::vector<WriteOp>{
-      WriteOp{OpKind::AugmentEnum, "surrogate.model_export_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"algebraic_file\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"ALGEBRAIC_FILE\"}")},
+      WriteOp{OpKind::AugmentEnum, "surrogate.model_export_format", OpLiteral{IrValueType::String, IRValue{std::string("ALGEBRAIC_FILE")}}},
     });
     m.emplace("surrogate/category/global_approx/type/neural_network/export_model/formats/binary_archive", std::vector<WriteOp>{
-      WriteOp{OpKind::AugmentEnum, "surrogate.model_export_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"binary_archive\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"BINARY_ARCHIVE\"}")},
-      WriteOp{OpKind::AugmentEnum, "surrogate.model_export_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"binary_archive\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"BINARY_ARCHIVE\"}")},
+      WriteOp{OpKind::AugmentEnum, "surrogate.model_export_format", OpLiteral{IrValueType::String, IRValue{std::string("BINARY_ARCHIVE")}}},
     });
     m.emplace("surrogate/category/global_approx/type/neural_network/export_model/formats/text_archive", std::vector<WriteOp>{
-      WriteOp{OpKind::AugmentEnum, "surrogate.model_export_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"text_archive\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"TEXT_ARCHIVE\"}")},
-      WriteOp{OpKind::AugmentEnum, "surrogate.model_export_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"text_archive\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"TEXT_ARCHIVE\"}")},
+      WriteOp{OpKind::AugmentEnum, "surrogate.model_export_format", OpLiteral{IrValueType::String, IRValue{std::string("TEXT_ARCHIVE")}}},
     });
     m.emplace("surrogate/category/global_approx/type/neural_network/import_model", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "surrogate.import_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"import_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.import_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"import_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.import_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"import_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.import_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"import_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.import_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"import_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.import_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"import_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.import_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"import_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.import_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"import_model\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "surrogate.import_surrogate", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/neural_network/import_model/filename_prefix", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "surrogate.model_import_prefix", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"filename_prefix\", \"member_variable_type\": \"String\"}")},
+      WriteOp{OpKind::DirectValue, "surrogate.model_import_prefix", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/neural_network/import_model/import_format/binary_archive", std::vector<WriteOp>{
-      WriteOp{OpKind::AugmentEnum, "surrogate.model_import_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"binary_archive\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"BINARY_ARCHIVE\"}")},
+      WriteOp{OpKind::AugmentEnum, "surrogate.model_import_format", OpLiteral{IrValueType::String, IRValue{std::string("BINARY_ARCHIVE")}}},
     });
     m.emplace("surrogate/category/global_approx/type/neural_network/import_model/import_format/text_archive", std::vector<WriteOp>{
-      WriteOp{OpKind::AugmentEnum, "surrogate.model_import_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"text_archive\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"TEXT_ARCHIVE\"}")},
+      WriteOp{OpKind::AugmentEnum, "surrogate.model_import_format", OpLiteral{IrValueType::String, IRValue{std::string("TEXT_ARCHIVE")}}},
     });
     m.emplace("surrogate/category/global_approx/type/neural_network/max_nodes", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "surrogate.neural_network_nodes", nlohmann::json::parse("{\"handler_type\": \"shint\", \"keyword_name\": \"max_nodes\", \"member_variable_type\": \"short\"}")},
+      WriteOp{OpKind::DirectValue, "surrogate.neural_network_nodes", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/neural_network/random_weight", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "surrogate.neural_network_random_weight", nlohmann::json::parse("{\"handler_type\": \"shint\", \"keyword_name\": \"random_weight\", \"member_variable_type\": \"short\"}")},
+      WriteOp{OpKind::DirectValue, "surrogate.neural_network_random_weight", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/neural_network/range", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "surrogate.neural_network_range", nlohmann::json::parse("{\"handler_type\": \"Real\", \"keyword_name\": \"range\", \"member_variable_type\": \"Real\"}")},
+      WriteOp{OpKind::DirectValue, "surrogate.neural_network_range", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/polynomial", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "surrogate.type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"polynomial\", \"member_variable_type\": \"String\", \"stored_value\": \"global_polynomial\"}")},
+      WriteOp{OpKind::PresenceLiteral, "surrogate.type", OpLiteral{IrValueType::String, IRValue{std::string("global_polynomial")}}},
     });
     m.emplace("surrogate/category/global_approx/type/polynomial/export_model", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "surrogate.export_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"export_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.export_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"export_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.export_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"export_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.export_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"export_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.export_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"export_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.export_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"export_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.export_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"export_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.export_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"export_model\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "surrogate.export_surrogate", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/polynomial/export_model/filename_prefix", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "surrogate.model_export_prefix", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"filename_prefix\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "surrogate.model_export_prefix", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"filename_prefix\", \"member_variable_type\": \"String\"}")},
+      WriteOp{OpKind::DirectValue, "surrogate.model_export_prefix", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/polynomial/export_model/formats/algebraic_console", std::vector<WriteOp>{
-      WriteOp{OpKind::AugmentEnum, "surrogate.model_export_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"algebraic_console\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"ALGEBRAIC_CONSOLE\"}")},
+      WriteOp{OpKind::AugmentEnum, "surrogate.model_export_format", OpLiteral{IrValueType::String, IRValue{std::string("ALGEBRAIC_CONSOLE")}}},
     });
     m.emplace("surrogate/category/global_approx/type/polynomial/export_model/formats/algebraic_file", std::vector<WriteOp>{
-      WriteOp{OpKind::AugmentEnum, "surrogate.model_export_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"algebraic_file\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"ALGEBRAIC_FILE\"}")},
+      WriteOp{OpKind::AugmentEnum, "surrogate.model_export_format", OpLiteral{IrValueType::String, IRValue{std::string("ALGEBRAIC_FILE")}}},
     });
     m.emplace("surrogate/category/global_approx/type/polynomial/export_model/formats/binary_archive", std::vector<WriteOp>{
-      WriteOp{OpKind::AugmentEnum, "surrogate.model_export_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"binary_archive\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"BINARY_ARCHIVE\"}")},
-      WriteOp{OpKind::AugmentEnum, "surrogate.model_export_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"binary_archive\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"BINARY_ARCHIVE\"}")},
+      WriteOp{OpKind::AugmentEnum, "surrogate.model_export_format", OpLiteral{IrValueType::String, IRValue{std::string("BINARY_ARCHIVE")}}},
     });
     m.emplace("surrogate/category/global_approx/type/polynomial/export_model/formats/text_archive", std::vector<WriteOp>{
-      WriteOp{OpKind::AugmentEnum, "surrogate.model_export_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"text_archive\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"TEXT_ARCHIVE\"}")},
-      WriteOp{OpKind::AugmentEnum, "surrogate.model_export_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"text_archive\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"TEXT_ARCHIVE\"}")},
+      WriteOp{OpKind::AugmentEnum, "surrogate.model_export_format", OpLiteral{IrValueType::String, IRValue{std::string("TEXT_ARCHIVE")}}},
     });
     m.emplace("surrogate/category/global_approx/type/polynomial/import_model", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "surrogate.import_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"import_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.import_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"import_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.import_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"import_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.import_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"import_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.import_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"import_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.import_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"import_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.import_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"import_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.import_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"import_model\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "surrogate.import_surrogate", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/polynomial/import_model/filename_prefix", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "surrogate.model_import_prefix", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"filename_prefix\", \"member_variable_type\": \"String\"}")},
+      WriteOp{OpKind::DirectValue, "surrogate.model_import_prefix", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/polynomial/import_model/import_format/binary_archive", std::vector<WriteOp>{
-      WriteOp{OpKind::AugmentEnum, "surrogate.model_import_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"binary_archive\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"BINARY_ARCHIVE\"}")},
+      WriteOp{OpKind::AugmentEnum, "surrogate.model_import_format", OpLiteral{IrValueType::String, IRValue{std::string("BINARY_ARCHIVE")}}},
     });
     m.emplace("surrogate/category/global_approx/type/polynomial/import_model/import_format/text_archive", std::vector<WriteOp>{
-      WriteOp{OpKind::AugmentEnum, "surrogate.model_import_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"text_archive\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"TEXT_ARCHIVE\"}")},
+      WriteOp{OpKind::AugmentEnum, "surrogate.model_import_format", OpLiteral{IrValueType::String, IRValue{std::string("TEXT_ARCHIVE")}}},
     });
     m.emplace("surrogate/category/global_approx/type/polynomial/order/basis_order", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "surrogate.polynomial_order", nlohmann::json::parse("{\"handler_type\": \"shint\", \"keyword_name\": \"basis_order\", \"member_variable_type\": \"short\"}")},
-      WriteOp{OpKind::DirectValue, "surrogate.polynomial_order", nlohmann::json::parse("{\"handler_type\": \"shint\", \"keyword_name\": \"basis_order\", \"member_variable_type\": \"short\"}")},
-      WriteOp{OpKind::DirectValue, "surrogate.polynomial_order", nlohmann::json::parse("{\"handler_type\": \"shint\", \"keyword_name\": \"basis_order\", \"member_variable_type\": \"short\"}")},
+      WriteOp{OpKind::DirectValue, "surrogate.polynomial_order", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/radial_basis", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "surrogate.type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"radial_basis\", \"member_variable_type\": \"String\", \"stored_value\": \"global_radial_basis\"}")},
+      WriteOp{OpKind::PresenceLiteral, "surrogate.type", OpLiteral{IrValueType::String, IRValue{std::string("global_radial_basis")}}},
     });
     m.emplace("surrogate/category/global_approx/type/radial_basis/bases", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "surrogate.rbf_bases", nlohmann::json::parse("{\"handler_type\": \"shint\", \"keyword_name\": \"bases\", \"member_variable_type\": \"short\"}")},
+      WriteOp{OpKind::DirectValue, "surrogate.rbf_bases", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/radial_basis/export_model", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "surrogate.export_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"export_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.export_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"export_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.export_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"export_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.export_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"export_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.export_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"export_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.export_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"export_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.export_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"export_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.export_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"export_model\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "surrogate.export_surrogate", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/radial_basis/export_model/filename_prefix", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "surrogate.model_export_prefix", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"filename_prefix\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "surrogate.model_export_prefix", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"filename_prefix\", \"member_variable_type\": \"String\"}")},
+      WriteOp{OpKind::DirectValue, "surrogate.model_export_prefix", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/radial_basis/export_model/formats/algebraic_console", std::vector<WriteOp>{
-      WriteOp{OpKind::AugmentEnum, "surrogate.model_export_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"algebraic_console\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"ALGEBRAIC_CONSOLE\"}")},
+      WriteOp{OpKind::AugmentEnum, "surrogate.model_export_format", OpLiteral{IrValueType::String, IRValue{std::string("ALGEBRAIC_CONSOLE")}}},
     });
     m.emplace("surrogate/category/global_approx/type/radial_basis/export_model/formats/algebraic_file", std::vector<WriteOp>{
-      WriteOp{OpKind::AugmentEnum, "surrogate.model_export_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"algebraic_file\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"ALGEBRAIC_FILE\"}")},
+      WriteOp{OpKind::AugmentEnum, "surrogate.model_export_format", OpLiteral{IrValueType::String, IRValue{std::string("ALGEBRAIC_FILE")}}},
     });
     m.emplace("surrogate/category/global_approx/type/radial_basis/export_model/formats/binary_archive", std::vector<WriteOp>{
-      WriteOp{OpKind::AugmentEnum, "surrogate.model_export_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"binary_archive\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"BINARY_ARCHIVE\"}")},
-      WriteOp{OpKind::AugmentEnum, "surrogate.model_export_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"binary_archive\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"BINARY_ARCHIVE\"}")},
+      WriteOp{OpKind::AugmentEnum, "surrogate.model_export_format", OpLiteral{IrValueType::String, IRValue{std::string("BINARY_ARCHIVE")}}},
     });
     m.emplace("surrogate/category/global_approx/type/radial_basis/export_model/formats/text_archive", std::vector<WriteOp>{
-      WriteOp{OpKind::AugmentEnum, "surrogate.model_export_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"text_archive\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"TEXT_ARCHIVE\"}")},
-      WriteOp{OpKind::AugmentEnum, "surrogate.model_export_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"text_archive\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"TEXT_ARCHIVE\"}")},
+      WriteOp{OpKind::AugmentEnum, "surrogate.model_export_format", OpLiteral{IrValueType::String, IRValue{std::string("TEXT_ARCHIVE")}}},
     });
     m.emplace("surrogate/category/global_approx/type/radial_basis/import_model", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "surrogate.import_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"import_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.import_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"import_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.import_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"import_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.import_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"import_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.import_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"import_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.import_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"import_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.import_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"import_model\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "surrogate.import_surrogate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"import_model\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "surrogate.import_surrogate", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/radial_basis/import_model/filename_prefix", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "surrogate.model_import_prefix", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"filename_prefix\", \"member_variable_type\": \"String\"}")},
+      WriteOp{OpKind::DirectValue, "surrogate.model_import_prefix", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/radial_basis/import_model/import_format/binary_archive", std::vector<WriteOp>{
-      WriteOp{OpKind::AugmentEnum, "surrogate.model_import_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"binary_archive\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"BINARY_ARCHIVE\"}")},
+      WriteOp{OpKind::AugmentEnum, "surrogate.model_import_format", OpLiteral{IrValueType::String, IRValue{std::string("BINARY_ARCHIVE")}}},
     });
     m.emplace("surrogate/category/global_approx/type/radial_basis/import_model/import_format/text_archive", std::vector<WriteOp>{
-      WriteOp{OpKind::AugmentEnum, "surrogate.model_import_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"text_archive\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"TEXT_ARCHIVE\"}")},
+      WriteOp{OpKind::AugmentEnum, "surrogate.model_import_format", OpLiteral{IrValueType::String, IRValue{std::string("TEXT_ARCHIVE")}}},
     });
     m.emplace("surrogate/category/global_approx/type/radial_basis/max_pts", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "surrogate.rbf_max_pts", nlohmann::json::parse("{\"handler_type\": \"shint\", \"keyword_name\": \"max_pts\", \"member_variable_type\": \"short\"}")},
+      WriteOp{OpKind::DirectValue, "surrogate.rbf_max_pts", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/radial_basis/max_subsets", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "surrogate.rbf_max_subsets", nlohmann::json::parse("{\"handler_type\": \"shint\", \"keyword_name\": \"max_subsets\", \"member_variable_type\": \"short\"}")},
+      WriteOp{OpKind::DirectValue, "surrogate.rbf_max_subsets", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/type/radial_basis/min_partition", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "surrogate.rbf_min_partition", nlohmann::json::parse("{\"handler_type\": \"shint\", \"keyword_name\": \"min_partition\", \"member_variable_type\": \"short\"}")},
+      WriteOp{OpKind::DirectValue, "surrogate.rbf_min_partition", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/global_approx/use_derivatives", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "surrogate.derivative_usage", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"use_derivatives\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "surrogate.derivative_usage", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/local", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "surrogate.type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"local\", \"member_variable_type\": \"String\", \"stored_value\": \"local_taylor\"}")},
+      WriteOp{OpKind::PresenceLiteral, "surrogate.type", OpLiteral{IrValueType::String, IRValue{std::string("local_taylor")}}},
     });
     m.emplace("surrogate/category/local/truth_model_pointer", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "surrogate.truth_model_pointer", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"truth_model_pointer\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "surrogate.truth_model_pointer", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"truth_model_pointer\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "surrogate.truth_model_pointer", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"truth_model_pointer\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "surrogate.truth_model_pointer", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"truth_model_pointer\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "surrogate.truth_model_pointer", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"truth_model_pointer\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "surrogate.truth_model_pointer", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"truth_model_pointer\", \"member_variable_type\": \"String\"}")},
+      WriteOp{OpKind::DirectValue, "surrogate.truth_model_pointer", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/multipoint/truth_model_pointer", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "surrogate.truth_model_pointer", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"truth_model_pointer\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "surrogate.truth_model_pointer", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"truth_model_pointer\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "surrogate.truth_model_pointer", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"truth_model_pointer\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "surrogate.truth_model_pointer", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"truth_model_pointer\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "surrogate.truth_model_pointer", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"truth_model_pointer\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "surrogate.truth_model_pointer", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"truth_model_pointer\", \"member_variable_type\": \"String\"}")},
+      WriteOp{OpKind::DirectValue, "surrogate.truth_model_pointer", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/category/multipoint/type/qmea", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "surrogate.type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"qmea\", \"member_variable_type\": \"String\", \"stored_value\": \"multipoint_qmea\"}")},
+      WriteOp{OpKind::PresenceLiteral, "surrogate.type", OpLiteral{IrValueType::String, IRValue{std::string("multipoint_qmea")}}},
     });
     m.emplace("surrogate/category/multipoint/type/tana", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "surrogate.type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"tana\", \"member_variable_type\": \"String\", \"stored_value\": \"multipoint_tana\"}")},
+      WriteOp{OpKind::PresenceLiteral, "surrogate.type", OpLiteral{IrValueType::String, IRValue{std::string("multipoint_tana")}}},
     });
     m.emplace("surrogate/hierarchical_tagging", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "hierarchical_tags", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"hierarchical_tagging\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "hierarchical_tags", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"hierarchical_tagging\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "hierarchical_tags", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"hierarchical_tagging\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "hierarchical_tags", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"hierarchical_tagging\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "hierarchical_tags", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"hierarchical_tagging\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "hierarchical_tags", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"hierarchical_tagging\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "hierarchical_tags", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/id_model", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "id", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"id_model\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "id", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"id_model\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "id", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"id_model\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "id", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"id_model\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "id", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"id_model\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "id", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"id_model\", \"member_variable_type\": \"String\"}")},
+      WriteOp{OpKind::DirectValue, "id", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/id_surrogates", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "surrogate.function_indices", nlohmann::json::parse("{\"handler_type\": \"id_to_index_set\", \"keyword_name\": \"id_surrogates\", \"member_variable_type\": \"SizetSet\"}")},
+      WriteOp{OpKind::DirectValue, "surrogate.function_indices", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     return m;
   }();

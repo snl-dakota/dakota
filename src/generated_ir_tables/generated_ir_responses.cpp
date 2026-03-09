@@ -73,457 +73,399 @@ const std::unordered_map<std::string, KeyContract>& contracts() {
 const std::unordered_map<std::string, std::vector<WriteOp>>& instructions() {
   static const auto kInstructions = []() {
     std::unordered_map<std::string, std::vector<WriteOp>> m;
-    m.reserve(117);
+    m.reserve(131);
     m.emplace("descriptors", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "labels", nlohmann::json::parse("{\"handler_type\": \"strL\", \"keyword_name\": \"descriptors\", \"member_variable_type\": \"StringArray\"}")},
+      WriteOp{OpKind::DirectValue, "labels", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("gradient_type/analytic_gradients", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "gradient_type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"analytic_gradients\", \"member_variable_type\": \"String\", \"stored_value\": \"analytic\"}")},
+      WriteOp{OpKind::PresenceLiteral, "gradient_type", OpLiteral{IrValueType::String, IRValue{std::string("analytic")}}},
     });
     m.emplace("gradient_type/mixed_gradients", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "gradient_type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"mixed_gradients\", \"member_variable_type\": \"String\", \"stored_value\": \"mixed\"}")},
+      WriteOp{OpKind::PresenceLiteral, "gradient_type", OpLiteral{IrValueType::String, IRValue{std::string("mixed")}}},
     });
     m.emplace("gradient_type/mixed_gradients/fd_step_size", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "fd_gradient_step_size", nlohmann::json::parse("{\"handler_type\": \"RealL\", \"keyword_name\": \"fd_step_size\", \"member_variable_type\": \"RealVector\"}")},
-      WriteOp{OpKind::DirectValue, "fd_gradient_step_size", nlohmann::json::parse("{\"handler_type\": \"RealL\", \"keyword_name\": \"fd_step_size\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "fd_gradient_step_size", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("gradient_type/mixed_gradients/id_analytic_gradients", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "gradients.mixed.id_analytic", nlohmann::json::parse("{\"handler_type\": \"intset\", \"keyword_name\": \"id_analytic_gradients\", \"member_variable_type\": \"IntSet\"}")},
+      WriteOp{OpKind::DirectValue, "gradients.mixed.id_analytic", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("gradient_type/mixed_gradients/id_numerical_gradients", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "gradients.mixed.id_numerical", nlohmann::json::parse("{\"handler_type\": \"intset\", \"keyword_name\": \"id_numerical_gradients\", \"member_variable_type\": \"IntSet\"}")},
+      WriteOp{OpKind::DirectValue, "gradients.mixed.id_numerical", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("gradient_type/mixed_gradients/interval_type/central", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "interval_type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"central\", \"member_variable_type\": \"String\", \"stored_value\": \"central\"}")},
-      WriteOp{OpKind::PresenceLiteral, "interval_type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"central\", \"member_variable_type\": \"String\", \"stored_value\": \"central\"}")},
+      WriteOp{OpKind::PresenceLiteral, "interval_type", OpLiteral{IrValueType::String, IRValue{std::string("central")}}},
     });
     m.emplace("gradient_type/mixed_gradients/interval_type/forward", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "interval_type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"forward\", \"member_variable_type\": \"String\", \"stored_value\": \"forward\"}")},
-      WriteOp{OpKind::PresenceLiteral, "interval_type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"forward\", \"member_variable_type\": \"String\", \"stored_value\": \"forward\"}")},
+      WriteOp{OpKind::PresenceLiteral, "interval_type", OpLiteral{IrValueType::String, IRValue{std::string("forward")}}},
     });
     m.emplace("gradient_type/mixed_gradients/method_source/dakota", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "method_source", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"dakota\", \"member_variable_type\": \"String\", \"stored_value\": \"dakota\"}")},
-      WriteOp{OpKind::PresenceLiteral, "method_source", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"dakota\", \"member_variable_type\": \"String\", \"stored_value\": \"dakota\"}")},
+      WriteOp{OpKind::PresenceLiteral, "method_source", OpLiteral{IrValueType::String, IRValue{std::string("dakota")}}},
     });
     m.emplace("gradient_type/mixed_gradients/method_source/dakota/ignore_bounds", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "ignore_bounds", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"ignore_bounds\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "ignore_bounds", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"ignore_bounds\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "ignore_bounds", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("gradient_type/mixed_gradients/method_source/dakota/step_scaling/absolute", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "fd_gradient_step_type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"absolute\", \"member_variable_type\": \"String\", \"stored_value\": \"absolute\"}")},
-      WriteOp{OpKind::PresenceLiteral, "fd_gradient_step_type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"absolute\", \"member_variable_type\": \"String\", \"stored_value\": \"absolute\"}")},
+      WriteOp{OpKind::PresenceLiteral, "fd_gradient_step_type", OpLiteral{IrValueType::String, IRValue{std::string("absolute")}}},
     });
     m.emplace("gradient_type/mixed_gradients/method_source/dakota/step_scaling/bounds", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "fd_gradient_step_type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"bounds\", \"member_variable_type\": \"String\", \"stored_value\": \"bounds\"}")},
-      WriteOp{OpKind::PresenceLiteral, "fd_gradient_step_type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"bounds\", \"member_variable_type\": \"String\", \"stored_value\": \"bounds\"}")},
+      WriteOp{OpKind::PresenceLiteral, "fd_gradient_step_type", OpLiteral{IrValueType::String, IRValue{std::string("bounds")}}},
     });
     m.emplace("gradient_type/mixed_gradients/method_source/dakota/step_scaling/relative", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "fd_gradient_step_type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"relative\", \"member_variable_type\": \"String\", \"stored_value\": \"relative\"}")},
-      WriteOp{OpKind::PresenceLiteral, "fd_gradient_step_type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"relative\", \"member_variable_type\": \"String\", \"stored_value\": \"relative\"}")},
+      WriteOp{OpKind::PresenceLiteral, "fd_gradient_step_type", OpLiteral{IrValueType::String, IRValue{std::string("relative")}}},
     });
     m.emplace("gradient_type/mixed_gradients/method_source/vendor", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "method_source", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"vendor\", \"member_variable_type\": \"String\", \"stored_value\": \"vendor\"}")},
-      WriteOp{OpKind::PresenceLiteral, "method_source", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"vendor\", \"member_variable_type\": \"String\", \"stored_value\": \"vendor\"}")},
+      WriteOp{OpKind::PresenceLiteral, "method_source", OpLiteral{IrValueType::String, IRValue{std::string("vendor")}}},
     });
     m.emplace("gradient_type/no_gradients", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "gradient_type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"no_gradients\", \"member_variable_type\": \"String\", \"stored_value\": \"none\"}")},
+      WriteOp{OpKind::PresenceLiteral, "gradient_type", OpLiteral{IrValueType::String, IRValue{std::string("none")}}},
     });
     m.emplace("gradient_type/numerical_gradients", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "gradient_type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"numerical_gradients\", \"member_variable_type\": \"String\", \"stored_value\": \"numerical\"}")},
+      WriteOp{OpKind::PresenceLiteral, "gradient_type", OpLiteral{IrValueType::String, IRValue{std::string("numerical")}}},
     });
     m.emplace("gradient_type/numerical_gradients/fd_step_size", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "fd_gradient_step_size", nlohmann::json::parse("{\"handler_type\": \"RealL\", \"keyword_name\": \"fd_step_size\", \"member_variable_type\": \"RealVector\"}")},
-      WriteOp{OpKind::DirectValue, "fd_gradient_step_size", nlohmann::json::parse("{\"handler_type\": \"RealL\", \"keyword_name\": \"fd_step_size\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "fd_gradient_step_size", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("gradient_type/numerical_gradients/interval_type/central", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "interval_type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"central\", \"member_variable_type\": \"String\", \"stored_value\": \"central\"}")},
-      WriteOp{OpKind::PresenceLiteral, "interval_type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"central\", \"member_variable_type\": \"String\", \"stored_value\": \"central\"}")},
+      WriteOp{OpKind::PresenceLiteral, "interval_type", OpLiteral{IrValueType::String, IRValue{std::string("central")}}},
     });
     m.emplace("gradient_type/numerical_gradients/interval_type/forward", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "interval_type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"forward\", \"member_variable_type\": \"String\", \"stored_value\": \"forward\"}")},
-      WriteOp{OpKind::PresenceLiteral, "interval_type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"forward\", \"member_variable_type\": \"String\", \"stored_value\": \"forward\"}")},
+      WriteOp{OpKind::PresenceLiteral, "interval_type", OpLiteral{IrValueType::String, IRValue{std::string("forward")}}},
     });
     m.emplace("gradient_type/numerical_gradients/method_source/dakota", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "method_source", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"dakota\", \"member_variable_type\": \"String\", \"stored_value\": \"dakota\"}")},
-      WriteOp{OpKind::PresenceLiteral, "method_source", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"dakota\", \"member_variable_type\": \"String\", \"stored_value\": \"dakota\"}")},
+      WriteOp{OpKind::PresenceLiteral, "method_source", OpLiteral{IrValueType::String, IRValue{std::string("dakota")}}},
     });
     m.emplace("gradient_type/numerical_gradients/method_source/dakota/ignore_bounds", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "ignore_bounds", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"ignore_bounds\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "ignore_bounds", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"ignore_bounds\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "ignore_bounds", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("gradient_type/numerical_gradients/method_source/dakota/step_scaling/absolute", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "fd_gradient_step_type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"absolute\", \"member_variable_type\": \"String\", \"stored_value\": \"absolute\"}")},
-      WriteOp{OpKind::PresenceLiteral, "fd_gradient_step_type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"absolute\", \"member_variable_type\": \"String\", \"stored_value\": \"absolute\"}")},
+      WriteOp{OpKind::PresenceLiteral, "fd_gradient_step_type", OpLiteral{IrValueType::String, IRValue{std::string("absolute")}}},
     });
     m.emplace("gradient_type/numerical_gradients/method_source/dakota/step_scaling/bounds", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "fd_gradient_step_type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"bounds\", \"member_variable_type\": \"String\", \"stored_value\": \"bounds\"}")},
-      WriteOp{OpKind::PresenceLiteral, "fd_gradient_step_type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"bounds\", \"member_variable_type\": \"String\", \"stored_value\": \"bounds\"}")},
+      WriteOp{OpKind::PresenceLiteral, "fd_gradient_step_type", OpLiteral{IrValueType::String, IRValue{std::string("bounds")}}},
     });
     m.emplace("gradient_type/numerical_gradients/method_source/dakota/step_scaling/relative", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "fd_gradient_step_type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"relative\", \"member_variable_type\": \"String\", \"stored_value\": \"relative\"}")},
-      WriteOp{OpKind::PresenceLiteral, "fd_gradient_step_type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"relative\", \"member_variable_type\": \"String\", \"stored_value\": \"relative\"}")},
+      WriteOp{OpKind::PresenceLiteral, "fd_gradient_step_type", OpLiteral{IrValueType::String, IRValue{std::string("relative")}}},
     });
     m.emplace("gradient_type/numerical_gradients/method_source/vendor", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "method_source", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"vendor\", \"member_variable_type\": \"String\", \"stored_value\": \"vendor\"}")},
-      WriteOp{OpKind::PresenceLiteral, "method_source", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"vendor\", \"member_variable_type\": \"String\", \"stored_value\": \"vendor\"}")},
+      WriteOp{OpKind::PresenceLiteral, "method_source", OpLiteral{IrValueType::String, IRValue{std::string("vendor")}}},
     });
     m.emplace("hessian_type/analytic_hessians", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "hessian_type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"analytic_hessians\", \"member_variable_type\": \"String\", \"stored_value\": \"analytic\"}")},
+      WriteOp{OpKind::PresenceLiteral, "hessian_type", OpLiteral{IrValueType::String, IRValue{std::string("analytic")}}},
     });
     m.emplace("hessian_type/mixed_hessians", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "hessian_type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"mixed_hessians\", \"member_variable_type\": \"String\", \"stored_value\": \"mixed\"}")},
+      WriteOp{OpKind::PresenceLiteral, "hessian_type", OpLiteral{IrValueType::String, IRValue{std::string("mixed")}}},
     });
     m.emplace("hessian_type/mixed_hessians/id_analytic_hessians", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "hessians.mixed.id_analytic", nlohmann::json::parse("{\"handler_type\": \"intset\", \"keyword_name\": \"id_analytic_hessians\", \"member_variable_type\": \"IntSet\"}")},
+      WriteOp{OpKind::DirectValue, "hessians.mixed.id_analytic", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+    });
+    m.emplace("hessian_type/mixed_hessians/id_numerical_hessians", std::vector<WriteOp>{
+      WriteOp{OpKind::DirectValue, "hessians.mixed.id_numerical", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("hessian_type/mixed_hessians/id_numerical_hessians/fd_step_size", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "fd_hessian_step_size", nlohmann::json::parse("{\"handler_type\": \"RealL\", \"keyword_name\": \"fd_step_size\", \"member_variable_type\": \"RealVector\"}")},
-      WriteOp{OpKind::DirectValue, "fd_hessian_step_size", nlohmann::json::parse("{\"handler_type\": \"RealL\", \"keyword_name\": \"fd_step_size\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "fd_hessian_step_size", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("hessian_type/mixed_hessians/id_numerical_hessians/values", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "hessians.mixed.id_numerical", nlohmann::json::parse("{\"handler_type\": \"intset\", \"keyword_name\": \"id_numerical_hessians\", \"member_variable_type\": \"IntSet\"}")},
-      WriteOp{OpKind::DirectValue, "hessians.mixed.id_numerical", nlohmann::json::parse("{\"handler_type\": \"intset\", \"keyword_name\": \"id_numerical_hessians\", \"member_variable_type\": \"IntSet\"}")},
+      WriteOp{OpKind::DirectValue, "hessians.mixed.id_numerical", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+    });
+    m.emplace("hessian_type/mixed_hessians/id_quasi_hessians", std::vector<WriteOp>{
+      WriteOp{OpKind::DirectValue, "hessians.mixed.id_quasi", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("hessian_type/mixed_hessians/id_quasi_hessians/approximation/bfgs", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "quasi_hessian_type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"bfgs\", \"member_variable_type\": \"String\", \"stored_value\": \"bfgs\"}")},
-      WriteOp{OpKind::PresenceLiteral, "quasi_hessian_type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"bfgs\", \"member_variable_type\": \"String\", \"stored_value\": \"bfgs\"}")},
+      WriteOp{OpKind::PresenceLiteral, "quasi_hessian_type", OpLiteral{IrValueType::String, IRValue{std::string("bfgs")}}},
     });
     m.emplace("hessian_type/mixed_hessians/id_quasi_hessians/approximation/bfgs/damped", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "quasi_hessian_type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"damped\", \"member_variable_type\": \"String\", \"stored_value\": \"damped_bfgs\"}")},
-      WriteOp{OpKind::PresenceLiteral, "quasi_hessian_type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"damped\", \"member_variable_type\": \"String\", \"stored_value\": \"damped_bfgs\"}")},
+      WriteOp{OpKind::PresenceLiteral, "quasi_hessian_type", OpLiteral{IrValueType::String, IRValue{std::string("damped_bfgs")}}},
     });
     m.emplace("hessian_type/mixed_hessians/id_quasi_hessians/approximation/sr1", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "quasi_hessian_type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"sr1\", \"member_variable_type\": \"String\", \"stored_value\": \"sr1\"}")},
-      WriteOp{OpKind::PresenceLiteral, "quasi_hessian_type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"sr1\", \"member_variable_type\": \"String\", \"stored_value\": \"sr1\"}")},
+      WriteOp{OpKind::PresenceLiteral, "quasi_hessian_type", OpLiteral{IrValueType::String, IRValue{std::string("sr1")}}},
     });
     m.emplace("hessian_type/mixed_hessians/id_quasi_hessians/values", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "hessians.mixed.id_quasi", nlohmann::json::parse("{\"handler_type\": \"intset\", \"keyword_name\": \"id_quasi_hessians\", \"member_variable_type\": \"IntSet\"}")},
-      WriteOp{OpKind::DirectValue, "hessians.mixed.id_quasi", nlohmann::json::parse("{\"handler_type\": \"intset\", \"keyword_name\": \"id_quasi_hessians\", \"member_variable_type\": \"IntSet\"}")},
+      WriteOp{OpKind::DirectValue, "hessians.mixed.id_quasi", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("hessian_type/mixed_hessians/interval_type/central", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "central_hess", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"central\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "central_hess", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"central\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "central_hess", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("hessian_type/mixed_hessians/interval_type/forward", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "central_hess", nlohmann::json::parse("{\"handler_type\": \"false\", \"keyword_name\": \"forward\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::DirectValue, "central_hess", nlohmann::json::parse("{\"handler_type\": \"false\", \"keyword_name\": \"forward\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::DirectValue, "central_hess", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("hessian_type/mixed_hessians/step_scaling/absolute", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "fd_hessian_step_type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"absolute\", \"member_variable_type\": \"String\", \"stored_value\": \"absolute\"}")},
-      WriteOp{OpKind::PresenceLiteral, "fd_hessian_step_type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"absolute\", \"member_variable_type\": \"String\", \"stored_value\": \"absolute\"}")},
+      WriteOp{OpKind::PresenceLiteral, "fd_hessian_step_type", OpLiteral{IrValueType::String, IRValue{std::string("absolute")}}},
     });
     m.emplace("hessian_type/mixed_hessians/step_scaling/bounds", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "fd_hessian_step_type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"bounds\", \"member_variable_type\": \"String\", \"stored_value\": \"bounds\"}")},
-      WriteOp{OpKind::PresenceLiteral, "fd_hessian_step_type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"bounds\", \"member_variable_type\": \"String\", \"stored_value\": \"bounds\"}")},
+      WriteOp{OpKind::PresenceLiteral, "fd_hessian_step_type", OpLiteral{IrValueType::String, IRValue{std::string("bounds")}}},
     });
     m.emplace("hessian_type/mixed_hessians/step_scaling/relative", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "fd_hessian_step_type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"relative\", \"member_variable_type\": \"String\", \"stored_value\": \"relative\"}")},
-      WriteOp{OpKind::PresenceLiteral, "fd_hessian_step_type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"relative\", \"member_variable_type\": \"String\", \"stored_value\": \"relative\"}")},
+      WriteOp{OpKind::PresenceLiteral, "fd_hessian_step_type", OpLiteral{IrValueType::String, IRValue{std::string("relative")}}},
     });
     m.emplace("hessian_type/no_hessians", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "hessian_type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"no_hessians\", \"member_variable_type\": \"String\", \"stored_value\": \"none\"}")},
+      WriteOp{OpKind::PresenceLiteral, "hessian_type", OpLiteral{IrValueType::String, IRValue{std::string("none")}}},
     });
     m.emplace("hessian_type/numerical_hessians", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "hessian_type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"numerical_hessians\", \"member_variable_type\": \"String\", \"stored_value\": \"numerical\"}")},
+      WriteOp{OpKind::PresenceLiteral, "hessian_type", OpLiteral{IrValueType::String, IRValue{std::string("numerical")}}},
     });
     m.emplace("hessian_type/numerical_hessians/fd_step_size", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "fd_hessian_step_size", nlohmann::json::parse("{\"handler_type\": \"RealL\", \"keyword_name\": \"fd_step_size\", \"member_variable_type\": \"RealVector\"}")},
-      WriteOp{OpKind::DirectValue, "fd_hessian_step_size", nlohmann::json::parse("{\"handler_type\": \"RealL\", \"keyword_name\": \"fd_step_size\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "fd_hessian_step_size", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("hessian_type/numerical_hessians/interval_type/central", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "central_hess", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"central\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "central_hess", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"central\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "central_hess", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("hessian_type/numerical_hessians/interval_type/forward", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "central_hess", nlohmann::json::parse("{\"handler_type\": \"false\", \"keyword_name\": \"forward\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::DirectValue, "central_hess", nlohmann::json::parse("{\"handler_type\": \"false\", \"keyword_name\": \"forward\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::DirectValue, "central_hess", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("hessian_type/numerical_hessians/step_scaling/absolute", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "fd_hessian_step_type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"absolute\", \"member_variable_type\": \"String\", \"stored_value\": \"absolute\"}")},
-      WriteOp{OpKind::PresenceLiteral, "fd_hessian_step_type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"absolute\", \"member_variable_type\": \"String\", \"stored_value\": \"absolute\"}")},
+      WriteOp{OpKind::PresenceLiteral, "fd_hessian_step_type", OpLiteral{IrValueType::String, IRValue{std::string("absolute")}}},
     });
     m.emplace("hessian_type/numerical_hessians/step_scaling/bounds", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "fd_hessian_step_type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"bounds\", \"member_variable_type\": \"String\", \"stored_value\": \"bounds\"}")},
-      WriteOp{OpKind::PresenceLiteral, "fd_hessian_step_type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"bounds\", \"member_variable_type\": \"String\", \"stored_value\": \"bounds\"}")},
+      WriteOp{OpKind::PresenceLiteral, "fd_hessian_step_type", OpLiteral{IrValueType::String, IRValue{std::string("bounds")}}},
     });
     m.emplace("hessian_type/numerical_hessians/step_scaling/relative", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "fd_hessian_step_type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"relative\", \"member_variable_type\": \"String\", \"stored_value\": \"relative\"}")},
-      WriteOp{OpKind::PresenceLiteral, "fd_hessian_step_type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"relative\", \"member_variable_type\": \"String\", \"stored_value\": \"relative\"}")},
+      WriteOp{OpKind::PresenceLiteral, "fd_hessian_step_type", OpLiteral{IrValueType::String, IRValue{std::string("relative")}}},
     });
     m.emplace("hessian_type/quasi_hessians", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "hessian_type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"quasi_hessians\", \"member_variable_type\": \"String\", \"stored_value\": \"quasi\"}")},
+      WriteOp{OpKind::PresenceLiteral, "hessian_type", OpLiteral{IrValueType::String, IRValue{std::string("quasi")}}},
     });
     m.emplace("hessian_type/quasi_hessians/bfgs", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "quasi_hessian_type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"bfgs\", \"member_variable_type\": \"String\", \"stored_value\": \"bfgs\"}")},
-      WriteOp{OpKind::PresenceLiteral, "quasi_hessian_type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"bfgs\", \"member_variable_type\": \"String\", \"stored_value\": \"bfgs\"}")},
+      WriteOp{OpKind::PresenceLiteral, "quasi_hessian_type", OpLiteral{IrValueType::String, IRValue{std::string("bfgs")}}},
     });
     m.emplace("hessian_type/quasi_hessians/bfgs/damped", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "quasi_hessian_type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"damped\", \"member_variable_type\": \"String\", \"stored_value\": \"damped_bfgs\"}")},
-      WriteOp{OpKind::PresenceLiteral, "quasi_hessian_type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"damped\", \"member_variable_type\": \"String\", \"stored_value\": \"damped_bfgs\"}")},
+      WriteOp{OpKind::PresenceLiteral, "quasi_hessian_type", OpLiteral{IrValueType::String, IRValue{std::string("damped_bfgs")}}},
     });
     m.emplace("hessian_type/quasi_hessians/sr1", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "quasi_hessian_type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"sr1\", \"member_variable_type\": \"String\", \"stored_value\": \"sr1\"}")},
-      WriteOp{OpKind::PresenceLiteral, "quasi_hessian_type", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"sr1\", \"member_variable_type\": \"String\", \"stored_value\": \"sr1\"}")},
+      WriteOp{OpKind::PresenceLiteral, "quasi_hessian_type", OpLiteral{IrValueType::String, IRValue{std::string("sr1")}}},
     });
     m.emplace("id_responses", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "id", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"id_responses\", \"member_variable_type\": \"String\"}")},
+      WriteOp{OpKind::DirectValue, "id", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("metadata", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "metadata_labels", nlohmann::json::parse("{\"handler_type\": \"strL\", \"keyword_name\": \"metadata\", \"member_variable_type\": \"StringArray\"}")},
+      WriteOp{OpKind::DirectValue, "metadata_labels", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+    });
+    m.emplace("response_type/calibration_terms", std::vector<WriteOp>{
+      WriteOp{OpKind::DirectValue, "num_calibration_terms", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("response_type/calibration_terms/count", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "num_calibration_terms", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"calibration_terms\", \"member_variable_type\": \"size_t\"}")},
-      WriteOp{OpKind::DirectValue, "num_calibration_terms", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"calibration_terms\", \"member_variable_type\": \"size_t\"}")},
+      WriteOp{OpKind::DirectValue, "num_calibration_terms", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("response_type/calibration_terms/data_specification/calibration_data", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "calibration_data", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"calibration_data\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "calibration_data", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("response_type/calibration_terms/data_specification/calibration_data/data_directory", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "data_directory", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"data_directory\", \"member_variable_type\": \"String\"}")},
+      WriteOp{OpKind::DirectValue, "data_directory", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("response_type/calibration_terms/data_specification/calibration_data/experiment_variance_type", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "variance_type", nlohmann::json::parse("{\"handler_type\": \"strL\", \"keyword_name\": \"experiment_variance_type\", \"member_variable_type\": \"StringArray\"}")},
-      WriteOp{OpKind::DirectValue, "variance_type", nlohmann::json::parse("{\"handler_type\": \"strL\", \"keyword_name\": \"experiment_variance_type\", \"member_variable_type\": \"StringArray\"}")},
+      WriteOp{OpKind::DirectValue, "variance_type", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("response_type/calibration_terms/data_specification/calibration_data/interpolate", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "interpolate", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"interpolate\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "interpolate", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("response_type/calibration_terms/data_specification/calibration_data/num_config_variables", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "num_config_vars", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"num_config_variables\", \"member_variable_type\": \"size_t\"}")},
-      WriteOp{OpKind::DirectValue, "num_config_vars", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"num_config_variables\", \"member_variable_type\": \"size_t\"}")},
+      WriteOp{OpKind::DirectValue, "num_config_vars", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("response_type/calibration_terms/data_specification/calibration_data/num_experiments", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "num_experiments", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"num_experiments\", \"member_variable_type\": \"size_t\"}")},
-      WriteOp{OpKind::DirectValue, "num_experiments", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"num_experiments\", \"member_variable_type\": \"size_t\"}")},
+      WriteOp{OpKind::DirectValue, "num_experiments", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+    });
+    m.emplace("response_type/calibration_terms/data_specification/calibration_data/scalar_data_file", std::vector<WriteOp>{
+      WriteOp{OpKind::DirectValue, "scalar_data_filename", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("response_type/calibration_terms/data_specification/calibration_data/scalar_data_file/filename", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "scalar_data_filename", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"scalar_data_file\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "scalar_data_filename", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"scalar_data_file\", \"member_variable_type\": \"String\"}")},
+      WriteOp{OpKind::DirectValue, "scalar_data_filename", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("response_type/calibration_terms/data_specification/calibration_data/scalar_data_file/format/annotated", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "scalar_data_format", nlohmann::json::parse("{\"handler_type\": \"utype\", \"keyword_name\": \"annotated\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"TABULAR_EXPER_ANNOT\"}")},
+      WriteOp{OpKind::PresenceEnum, "scalar_data_format", OpLiteral{IrValueType::String, IRValue{std::string("TABULAR_EXPER_ANNOT")}}},
     });
     m.emplace("response_type/calibration_terms/data_specification/calibration_data/scalar_data_file/format/custom_annotated", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "scalar_data_format", nlohmann::json::parse("{\"handler_type\": \"utype\", \"keyword_name\": \"custom_annotated\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"TABULAR_NONE\"}")},
+      WriteOp{OpKind::PresenceEnum, "scalar_data_format", OpLiteral{IrValueType::String, IRValue{std::string("TABULAR_NONE")}}},
     });
     m.emplace("response_type/calibration_terms/data_specification/calibration_data/scalar_data_file/format/custom_annotated/exp_id", std::vector<WriteOp>{
-      WriteOp{OpKind::AugmentEnum, "scalar_data_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"exp_id\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"TABULAR_EVAL_ID\"}")},
+      WriteOp{OpKind::AugmentEnum, "scalar_data_format", OpLiteral{IrValueType::String, IRValue{std::string("TABULAR_EVAL_ID")}}},
     });
     m.emplace("response_type/calibration_terms/data_specification/calibration_data/scalar_data_file/format/custom_annotated/header", std::vector<WriteOp>{
-      WriteOp{OpKind::AugmentEnum, "scalar_data_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"header\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"TABULAR_HEADER\"}")},
+      WriteOp{OpKind::AugmentEnum, "scalar_data_format", OpLiteral{IrValueType::String, IRValue{std::string("TABULAR_HEADER")}}},
     });
     m.emplace("response_type/calibration_terms/data_specification/calibration_data/scalar_data_file/format/freeform", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "scalar_data_format", nlohmann::json::parse("{\"handler_type\": \"utype\", \"keyword_name\": \"freeform\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"TABULAR_NONE\"}")},
+      WriteOp{OpKind::PresenceEnum, "scalar_data_format", OpLiteral{IrValueType::String, IRValue{std::string("TABULAR_NONE")}}},
+    });
+    m.emplace("response_type/calibration_terms/data_specification/calibration_data_file", std::vector<WriteOp>{
+      WriteOp{OpKind::DirectValue, "scalar_data_filename", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("response_type/calibration_terms/data_specification/calibration_data_file/experiment_variance_type", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "variance_type", nlohmann::json::parse("{\"handler_type\": \"strL\", \"keyword_name\": \"experiment_variance_type\", \"member_variable_type\": \"StringArray\"}")},
-      WriteOp{OpKind::DirectValue, "variance_type", nlohmann::json::parse("{\"handler_type\": \"strL\", \"keyword_name\": \"experiment_variance_type\", \"member_variable_type\": \"StringArray\"}")},
+      WriteOp{OpKind::DirectValue, "variance_type", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("response_type/calibration_terms/data_specification/calibration_data_file/filename", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "scalar_data_filename", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"calibration_data_file\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "scalar_data_filename", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"calibration_data_file\", \"member_variable_type\": \"String\"}")},
+      WriteOp{OpKind::DirectValue, "scalar_data_filename", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("response_type/calibration_terms/data_specification/calibration_data_file/format/annotated", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "scalar_data_format", nlohmann::json::parse("{\"handler_type\": \"utype\", \"keyword_name\": \"annotated\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"TABULAR_EXPER_ANNOT\"}")},
+      WriteOp{OpKind::PresenceEnum, "scalar_data_format", OpLiteral{IrValueType::String, IRValue{std::string("TABULAR_EXPER_ANNOT")}}},
     });
     m.emplace("response_type/calibration_terms/data_specification/calibration_data_file/format/custom_annotated", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "scalar_data_format", nlohmann::json::parse("{\"handler_type\": \"utype\", \"keyword_name\": \"custom_annotated\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"TABULAR_NONE\"}")},
+      WriteOp{OpKind::PresenceEnum, "scalar_data_format", OpLiteral{IrValueType::String, IRValue{std::string("TABULAR_NONE")}}},
     });
     m.emplace("response_type/calibration_terms/data_specification/calibration_data_file/format/custom_annotated/exp_id", std::vector<WriteOp>{
-      WriteOp{OpKind::AugmentEnum, "scalar_data_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"exp_id\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"TABULAR_EVAL_ID\"}")},
+      WriteOp{OpKind::AugmentEnum, "scalar_data_format", OpLiteral{IrValueType::String, IRValue{std::string("TABULAR_EVAL_ID")}}},
     });
     m.emplace("response_type/calibration_terms/data_specification/calibration_data_file/format/custom_annotated/header", std::vector<WriteOp>{
-      WriteOp{OpKind::AugmentEnum, "scalar_data_format", nlohmann::json::parse("{\"handler_type\": \"augment_utype\", \"keyword_name\": \"header\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"TABULAR_HEADER\"}")},
+      WriteOp{OpKind::AugmentEnum, "scalar_data_format", OpLiteral{IrValueType::String, IRValue{std::string("TABULAR_HEADER")}}},
     });
     m.emplace("response_type/calibration_terms/data_specification/calibration_data_file/format/freeform", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "scalar_data_format", nlohmann::json::parse("{\"handler_type\": \"utype\", \"keyword_name\": \"freeform\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"TABULAR_NONE\"}")},
+      WriteOp{OpKind::PresenceEnum, "scalar_data_format", OpLiteral{IrValueType::String, IRValue{std::string("TABULAR_NONE")}}},
     });
     m.emplace("response_type/calibration_terms/data_specification/calibration_data_file/num_config_variables", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "num_config_vars", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"num_config_variables\", \"member_variable_type\": \"size_t\"}")},
-      WriteOp{OpKind::DirectValue, "num_config_vars", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"num_config_variables\", \"member_variable_type\": \"size_t\"}")},
+      WriteOp{OpKind::DirectValue, "num_config_vars", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("response_type/calibration_terms/data_specification/calibration_data_file/num_experiments", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "num_experiments", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"num_experiments\", \"member_variable_type\": \"size_t\"}")},
-      WriteOp{OpKind::DirectValue, "num_experiments", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"num_experiments\", \"member_variable_type\": \"size_t\"}")},
+      WriteOp{OpKind::DirectValue, "num_experiments", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+    });
+    m.emplace("response_type/calibration_terms/field_calibration_terms", std::vector<WriteOp>{
+      WriteOp{OpKind::DirectValue, "num_field_calibration_terms", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("response_type/calibration_terms/field_calibration_terms/count", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "num_field_calibration_terms", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"field_calibration_terms\", \"member_variable_type\": \"size_t\"}")},
-      WriteOp{OpKind::DirectValue, "num_field_calibration_terms", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"field_calibration_terms\", \"member_variable_type\": \"size_t\"}")},
+      WriteOp{OpKind::DirectValue, "num_field_calibration_terms", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("response_type/calibration_terms/field_calibration_terms/lengths", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "lengths", nlohmann::json::parse("{\"handler_type\": \"ivec\", \"keyword_name\": \"lengths\", \"member_variable_type\": \"IntVector\"}")},
-      WriteOp{OpKind::DirectValue, "lengths", nlohmann::json::parse("{\"handler_type\": \"ivec\", \"keyword_name\": \"lengths\", \"member_variable_type\": \"IntVector\"}")},
-      WriteOp{OpKind::DirectValue, "lengths", nlohmann::json::parse("{\"handler_type\": \"ivec\", \"keyword_name\": \"lengths\", \"member_variable_type\": \"IntVector\"}")},
+      WriteOp{OpKind::DirectValue, "lengths", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("response_type/calibration_terms/field_calibration_terms/num_coordinates_per_field", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "num_coordinates_per_field", nlohmann::json::parse("{\"handler_type\": \"ivec\", \"keyword_name\": \"num_coordinates_per_field\", \"member_variable_type\": \"IntVector\"}")},
-      WriteOp{OpKind::DirectValue, "num_coordinates_per_field", nlohmann::json::parse("{\"handler_type\": \"ivec\", \"keyword_name\": \"num_coordinates_per_field\", \"member_variable_type\": \"IntVector\"}")},
-      WriteOp{OpKind::DirectValue, "num_coordinates_per_field", nlohmann::json::parse("{\"handler_type\": \"ivec\", \"keyword_name\": \"num_coordinates_per_field\", \"member_variable_type\": \"IntVector\"}")},
+      WriteOp{OpKind::DirectValue, "num_coordinates_per_field", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("response_type/calibration_terms/field_calibration_terms/read_field_coordinates", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "read_field_coordinates", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"read_field_coordinates\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "read_field_coordinates", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"read_field_coordinates\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "read_field_coordinates", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"read_field_coordinates\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "read_field_coordinates", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+    });
+    m.emplace("response_type/calibration_terms/nonlinear_equality_constraints", std::vector<WriteOp>{
+      WriteOp{OpKind::DirectValue, "num_nonlinear_equality_constraints", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("response_type/calibration_terms/nonlinear_equality_constraints/count", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "num_nonlinear_equality_constraints", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"nonlinear_equality_constraints\", \"member_variable_type\": \"size_t\"}")},
-      WriteOp{OpKind::DirectValue, "num_nonlinear_equality_constraints", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"nonlinear_equality_constraints\", \"member_variable_type\": \"size_t\"}")},
-      WriteOp{OpKind::DirectValue, "num_nonlinear_equality_constraints", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"nonlinear_equality_constraints\", \"member_variable_type\": \"size_t\"}")},
-      WriteOp{OpKind::DirectValue, "num_nonlinear_equality_constraints", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"nonlinear_equality_constraints\", \"member_variable_type\": \"size_t\"}")},
+      WriteOp{OpKind::DirectValue, "num_nonlinear_equality_constraints", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("response_type/calibration_terms/nonlinear_equality_constraints/scale_types", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "nonlinear_equality_scale_types", nlohmann::json::parse("{\"handler_type\": \"strL\", \"keyword_name\": \"scale_types\", \"member_variable_type\": \"StringArray\"}")},
-      WriteOp{OpKind::DirectValue, "nonlinear_equality_scale_types", nlohmann::json::parse("{\"handler_type\": \"strL\", \"keyword_name\": \"scale_types\", \"member_variable_type\": \"StringArray\"}")},
+      WriteOp{OpKind::DirectValue, "nonlinear_equality_scale_types", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("response_type/calibration_terms/nonlinear_equality_constraints/scales", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "nonlinear_equality_scales", nlohmann::json::parse("{\"handler_type\": \"RealDL\", \"keyword_name\": \"scales\", \"member_variable_type\": \"RealVector\"}")},
-      WriteOp{OpKind::DirectValue, "nonlinear_equality_scales", nlohmann::json::parse("{\"handler_type\": \"RealDL\", \"keyword_name\": \"scales\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "nonlinear_equality_scales", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("response_type/calibration_terms/nonlinear_equality_constraints/targets", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "nonlinear_equality_targets", nlohmann::json::parse("{\"handler_type\": \"RealDL\", \"keyword_name\": \"targets\", \"member_variable_type\": \"RealVector\"}")},
-      WriteOp{OpKind::DirectValue, "nonlinear_equality_targets", nlohmann::json::parse("{\"handler_type\": \"RealDL\", \"keyword_name\": \"targets\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "nonlinear_equality_targets", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+    });
+    m.emplace("response_type/calibration_terms/nonlinear_inequality_constraints", std::vector<WriteOp>{
+      WriteOp{OpKind::DirectValue, "num_nonlinear_inequality_constraints", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("response_type/calibration_terms/nonlinear_inequality_constraints/count", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "num_nonlinear_inequality_constraints", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"nonlinear_inequality_constraints\", \"member_variable_type\": \"size_t\"}")},
-      WriteOp{OpKind::DirectValue, "num_nonlinear_inequality_constraints", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"nonlinear_inequality_constraints\", \"member_variable_type\": \"size_t\"}")},
-      WriteOp{OpKind::DirectValue, "num_nonlinear_inequality_constraints", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"nonlinear_inequality_constraints\", \"member_variable_type\": \"size_t\"}")},
-      WriteOp{OpKind::DirectValue, "num_nonlinear_inequality_constraints", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"nonlinear_inequality_constraints\", \"member_variable_type\": \"size_t\"}")},
+      WriteOp{OpKind::DirectValue, "num_nonlinear_inequality_constraints", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("response_type/calibration_terms/nonlinear_inequality_constraints/lower_bounds", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "nonlinear_inequality_lower_bounds", nlohmann::json::parse("{\"handler_type\": \"RealDL\", \"keyword_name\": \"lower_bounds\", \"member_variable_type\": \"RealVector\"}")},
-      WriteOp{OpKind::DirectValue, "nonlinear_inequality_lower_bounds", nlohmann::json::parse("{\"handler_type\": \"RealDL\", \"keyword_name\": \"lower_bounds\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "nonlinear_inequality_lower_bounds", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("response_type/calibration_terms/nonlinear_inequality_constraints/scale_types", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "nonlinear_inequality_scale_types", nlohmann::json::parse("{\"handler_type\": \"strL\", \"keyword_name\": \"scale_types\", \"member_variable_type\": \"StringArray\"}")},
-      WriteOp{OpKind::DirectValue, "nonlinear_inequality_scale_types", nlohmann::json::parse("{\"handler_type\": \"strL\", \"keyword_name\": \"scale_types\", \"member_variable_type\": \"StringArray\"}")},
+      WriteOp{OpKind::DirectValue, "nonlinear_inequality_scale_types", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("response_type/calibration_terms/nonlinear_inequality_constraints/scales", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "nonlinear_inequality_scales", nlohmann::json::parse("{\"handler_type\": \"RealDL\", \"keyword_name\": \"scales\", \"member_variable_type\": \"RealVector\"}")},
-      WriteOp{OpKind::DirectValue, "nonlinear_inequality_scales", nlohmann::json::parse("{\"handler_type\": \"RealDL\", \"keyword_name\": \"scales\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "nonlinear_inequality_scales", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("response_type/calibration_terms/nonlinear_inequality_constraints/upper_bounds", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "nonlinear_inequality_upper_bounds", nlohmann::json::parse("{\"handler_type\": \"RealDL\", \"keyword_name\": \"upper_bounds\", \"member_variable_type\": \"RealVector\"}")},
-      WriteOp{OpKind::DirectValue, "nonlinear_inequality_upper_bounds", nlohmann::json::parse("{\"handler_type\": \"RealDL\", \"keyword_name\": \"upper_bounds\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "nonlinear_inequality_upper_bounds", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("response_type/calibration_terms/primary_scales", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "primary_response_fn_scales", nlohmann::json::parse("{\"handler_type\": \"RealDL\", \"keyword_name\": \"primary_scales\", \"member_variable_type\": \"RealVector\"}")},
-      WriteOp{OpKind::DirectValue, "primary_response_fn_scales", nlohmann::json::parse("{\"handler_type\": \"RealDL\", \"keyword_name\": \"primary_scales\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "primary_response_fn_scales", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("response_type/calibration_terms/scalar_calibration_terms", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "num_scalar_calibration_terms", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"scalar_calibration_terms\", \"member_variable_type\": \"size_t\"}")},
+      WriteOp{OpKind::DirectValue, "num_scalar_calibration_terms", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("response_type/calibration_terms/simulation_variance", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "simulation_variance", nlohmann::json::parse("{\"handler_type\": \"RealL\", \"keyword_name\": \"simulation_variance\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "simulation_variance", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("response_type/calibration_terms/weights", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "primary_response_fn_weights", nlohmann::json::parse("{\"handler_type\": \"RealDL\", \"keyword_name\": \"weights\", \"member_variable_type\": \"RealVector\"}")},
-      WriteOp{OpKind::DirectValue, "primary_response_fn_weights", nlohmann::json::parse("{\"handler_type\": \"RealDL\", \"keyword_name\": \"weights\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "primary_response_fn_weights", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+    });
+    m.emplace("response_type/objective_functions", std::vector<WriteOp>{
+      WriteOp{OpKind::DirectValue, "num_objective_functions", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("response_type/objective_functions/count", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "num_objective_functions", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"objective_functions\", \"member_variable_type\": \"size_t\"}")},
-      WriteOp{OpKind::DirectValue, "num_objective_functions", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"objective_functions\", \"member_variable_type\": \"size_t\"}")},
+      WriteOp{OpKind::DirectValue, "num_objective_functions", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+    });
+    m.emplace("response_type/objective_functions/field_objectives", std::vector<WriteOp>{
+      WriteOp{OpKind::DirectValue, "num_field_objectives", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("response_type/objective_functions/field_objectives/count", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "num_field_objectives", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"field_objectives\", \"member_variable_type\": \"size_t\"}")},
-      WriteOp{OpKind::DirectValue, "num_field_objectives", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"field_objectives\", \"member_variable_type\": \"size_t\"}")},
+      WriteOp{OpKind::DirectValue, "num_field_objectives", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("response_type/objective_functions/field_objectives/lengths", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "lengths", nlohmann::json::parse("{\"handler_type\": \"ivec\", \"keyword_name\": \"lengths\", \"member_variable_type\": \"IntVector\"}")},
-      WriteOp{OpKind::DirectValue, "lengths", nlohmann::json::parse("{\"handler_type\": \"ivec\", \"keyword_name\": \"lengths\", \"member_variable_type\": \"IntVector\"}")},
-      WriteOp{OpKind::DirectValue, "lengths", nlohmann::json::parse("{\"handler_type\": \"ivec\", \"keyword_name\": \"lengths\", \"member_variable_type\": \"IntVector\"}")},
+      WriteOp{OpKind::DirectValue, "lengths", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("response_type/objective_functions/field_objectives/num_coordinates_per_field", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "num_coordinates_per_field", nlohmann::json::parse("{\"handler_type\": \"ivec\", \"keyword_name\": \"num_coordinates_per_field\", \"member_variable_type\": \"IntVector\"}")},
-      WriteOp{OpKind::DirectValue, "num_coordinates_per_field", nlohmann::json::parse("{\"handler_type\": \"ivec\", \"keyword_name\": \"num_coordinates_per_field\", \"member_variable_type\": \"IntVector\"}")},
-      WriteOp{OpKind::DirectValue, "num_coordinates_per_field", nlohmann::json::parse("{\"handler_type\": \"ivec\", \"keyword_name\": \"num_coordinates_per_field\", \"member_variable_type\": \"IntVector\"}")},
+      WriteOp{OpKind::DirectValue, "num_coordinates_per_field", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("response_type/objective_functions/field_objectives/read_field_coordinates", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "read_field_coordinates", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"read_field_coordinates\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "read_field_coordinates", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"read_field_coordinates\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "read_field_coordinates", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"read_field_coordinates\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "read_field_coordinates", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+    });
+    m.emplace("response_type/objective_functions/nonlinear_equality_constraints", std::vector<WriteOp>{
+      WriteOp{OpKind::DirectValue, "num_nonlinear_equality_constraints", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("response_type/objective_functions/nonlinear_equality_constraints/count", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "num_nonlinear_equality_constraints", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"nonlinear_equality_constraints\", \"member_variable_type\": \"size_t\"}")},
-      WriteOp{OpKind::DirectValue, "num_nonlinear_equality_constraints", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"nonlinear_equality_constraints\", \"member_variable_type\": \"size_t\"}")},
-      WriteOp{OpKind::DirectValue, "num_nonlinear_equality_constraints", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"nonlinear_equality_constraints\", \"member_variable_type\": \"size_t\"}")},
-      WriteOp{OpKind::DirectValue, "num_nonlinear_equality_constraints", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"nonlinear_equality_constraints\", \"member_variable_type\": \"size_t\"}")},
+      WriteOp{OpKind::DirectValue, "num_nonlinear_equality_constraints", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("response_type/objective_functions/nonlinear_equality_constraints/scale_types", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "nonlinear_equality_scale_types", nlohmann::json::parse("{\"handler_type\": \"strL\", \"keyword_name\": \"scale_types\", \"member_variable_type\": \"StringArray\"}")},
-      WriteOp{OpKind::DirectValue, "nonlinear_equality_scale_types", nlohmann::json::parse("{\"handler_type\": \"strL\", \"keyword_name\": \"scale_types\", \"member_variable_type\": \"StringArray\"}")},
+      WriteOp{OpKind::DirectValue, "nonlinear_equality_scale_types", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("response_type/objective_functions/nonlinear_equality_constraints/scales", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "nonlinear_equality_scales", nlohmann::json::parse("{\"handler_type\": \"RealDL\", \"keyword_name\": \"scales\", \"member_variable_type\": \"RealVector\"}")},
-      WriteOp{OpKind::DirectValue, "nonlinear_equality_scales", nlohmann::json::parse("{\"handler_type\": \"RealDL\", \"keyword_name\": \"scales\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "nonlinear_equality_scales", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("response_type/objective_functions/nonlinear_equality_constraints/targets", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "nonlinear_equality_targets", nlohmann::json::parse("{\"handler_type\": \"RealDL\", \"keyword_name\": \"targets\", \"member_variable_type\": \"RealVector\"}")},
-      WriteOp{OpKind::DirectValue, "nonlinear_equality_targets", nlohmann::json::parse("{\"handler_type\": \"RealDL\", \"keyword_name\": \"targets\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "nonlinear_equality_targets", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+    });
+    m.emplace("response_type/objective_functions/nonlinear_inequality_constraints", std::vector<WriteOp>{
+      WriteOp{OpKind::DirectValue, "num_nonlinear_inequality_constraints", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("response_type/objective_functions/nonlinear_inequality_constraints/count", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "num_nonlinear_inequality_constraints", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"nonlinear_inequality_constraints\", \"member_variable_type\": \"size_t\"}")},
-      WriteOp{OpKind::DirectValue, "num_nonlinear_inequality_constraints", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"nonlinear_inequality_constraints\", \"member_variable_type\": \"size_t\"}")},
-      WriteOp{OpKind::DirectValue, "num_nonlinear_inequality_constraints", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"nonlinear_inequality_constraints\", \"member_variable_type\": \"size_t\"}")},
-      WriteOp{OpKind::DirectValue, "num_nonlinear_inequality_constraints", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"nonlinear_inequality_constraints\", \"member_variable_type\": \"size_t\"}")},
+      WriteOp{OpKind::DirectValue, "num_nonlinear_inequality_constraints", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("response_type/objective_functions/nonlinear_inequality_constraints/lower_bounds", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "nonlinear_inequality_lower_bounds", nlohmann::json::parse("{\"handler_type\": \"RealDL\", \"keyword_name\": \"lower_bounds\", \"member_variable_type\": \"RealVector\"}")},
-      WriteOp{OpKind::DirectValue, "nonlinear_inequality_lower_bounds", nlohmann::json::parse("{\"handler_type\": \"RealDL\", \"keyword_name\": \"lower_bounds\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "nonlinear_inequality_lower_bounds", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("response_type/objective_functions/nonlinear_inequality_constraints/scale_types", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "nonlinear_inequality_scale_types", nlohmann::json::parse("{\"handler_type\": \"strL\", \"keyword_name\": \"scale_types\", \"member_variable_type\": \"StringArray\"}")},
-      WriteOp{OpKind::DirectValue, "nonlinear_inequality_scale_types", nlohmann::json::parse("{\"handler_type\": \"strL\", \"keyword_name\": \"scale_types\", \"member_variable_type\": \"StringArray\"}")},
+      WriteOp{OpKind::DirectValue, "nonlinear_inequality_scale_types", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("response_type/objective_functions/nonlinear_inequality_constraints/scales", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "nonlinear_inequality_scales", nlohmann::json::parse("{\"handler_type\": \"RealDL\", \"keyword_name\": \"scales\", \"member_variable_type\": \"RealVector\"}")},
-      WriteOp{OpKind::DirectValue, "nonlinear_inequality_scales", nlohmann::json::parse("{\"handler_type\": \"RealDL\", \"keyword_name\": \"scales\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "nonlinear_inequality_scales", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("response_type/objective_functions/nonlinear_inequality_constraints/upper_bounds", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "nonlinear_inequality_upper_bounds", nlohmann::json::parse("{\"handler_type\": \"RealDL\", \"keyword_name\": \"upper_bounds\", \"member_variable_type\": \"RealVector\"}")},
-      WriteOp{OpKind::DirectValue, "nonlinear_inequality_upper_bounds", nlohmann::json::parse("{\"handler_type\": \"RealDL\", \"keyword_name\": \"upper_bounds\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "nonlinear_inequality_upper_bounds", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("response_type/objective_functions/primary_scale_types", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "primary_response_fn_scale_types", nlohmann::json::parse("{\"handler_type\": \"strL\", \"keyword_name\": \"primary_scale_types\", \"member_variable_type\": \"StringArray\"}")},
+      WriteOp{OpKind::DirectValue, "primary_response_fn_scale_types", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("response_type/objective_functions/primary_scales", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "primary_response_fn_scales", nlohmann::json::parse("{\"handler_type\": \"RealDL\", \"keyword_name\": \"primary_scales\", \"member_variable_type\": \"RealVector\"}")},
-      WriteOp{OpKind::DirectValue, "primary_response_fn_scales", nlohmann::json::parse("{\"handler_type\": \"RealDL\", \"keyword_name\": \"primary_scales\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "primary_response_fn_scales", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("response_type/objective_functions/scalar_objectives", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "num_scalar_objectives", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"scalar_objectives\", \"member_variable_type\": \"size_t\"}")},
+      WriteOp{OpKind::DirectValue, "num_scalar_objectives", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("response_type/objective_functions/sense", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "primary_response_fn_sense", nlohmann::json::parse("{\"handler_type\": \"strL\", \"keyword_name\": \"sense\", \"member_variable_type\": \"StringArray\"}")},
+      WriteOp{OpKind::DirectValue, "primary_response_fn_sense", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("response_type/objective_functions/weights", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "primary_response_fn_weights", nlohmann::json::parse("{\"handler_type\": \"RealDL\", \"keyword_name\": \"weights\", \"member_variable_type\": \"RealVector\"}")},
-      WriteOp{OpKind::DirectValue, "primary_response_fn_weights", nlohmann::json::parse("{\"handler_type\": \"RealDL\", \"keyword_name\": \"weights\", \"member_variable_type\": \"RealVector\"}")},
+      WriteOp{OpKind::DirectValue, "primary_response_fn_weights", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+    });
+    m.emplace("response_type/response_functions", std::vector<WriteOp>{
+      WriteOp{OpKind::DirectValue, "num_response_functions", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("response_type/response_functions/count", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "num_response_functions", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"response_functions\", \"member_variable_type\": \"size_t\"}")},
-      WriteOp{OpKind::DirectValue, "num_response_functions", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"response_functions\", \"member_variable_type\": \"size_t\"}")},
+      WriteOp{OpKind::DirectValue, "num_response_functions", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+    });
+    m.emplace("response_type/response_functions/field_responses", std::vector<WriteOp>{
+      WriteOp{OpKind::DirectValue, "num_field_responses", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("response_type/response_functions/field_responses/count", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "num_field_responses", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"field_responses\", \"member_variable_type\": \"size_t\"}")},
-      WriteOp{OpKind::DirectValue, "num_field_responses", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"field_responses\", \"member_variable_type\": \"size_t\"}")},
+      WriteOp{OpKind::DirectValue, "num_field_responses", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("response_type/response_functions/field_responses/lengths", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "lengths", nlohmann::json::parse("{\"handler_type\": \"ivec\", \"keyword_name\": \"lengths\", \"member_variable_type\": \"IntVector\"}")},
-      WriteOp{OpKind::DirectValue, "lengths", nlohmann::json::parse("{\"handler_type\": \"ivec\", \"keyword_name\": \"lengths\", \"member_variable_type\": \"IntVector\"}")},
-      WriteOp{OpKind::DirectValue, "lengths", nlohmann::json::parse("{\"handler_type\": \"ivec\", \"keyword_name\": \"lengths\", \"member_variable_type\": \"IntVector\"}")},
+      WriteOp{OpKind::DirectValue, "lengths", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("response_type/response_functions/field_responses/num_coordinates_per_field", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "num_coordinates_per_field", nlohmann::json::parse("{\"handler_type\": \"ivec\", \"keyword_name\": \"num_coordinates_per_field\", \"member_variable_type\": \"IntVector\"}")},
-      WriteOp{OpKind::DirectValue, "num_coordinates_per_field", nlohmann::json::parse("{\"handler_type\": \"ivec\", \"keyword_name\": \"num_coordinates_per_field\", \"member_variable_type\": \"IntVector\"}")},
-      WriteOp{OpKind::DirectValue, "num_coordinates_per_field", nlohmann::json::parse("{\"handler_type\": \"ivec\", \"keyword_name\": \"num_coordinates_per_field\", \"member_variable_type\": \"IntVector\"}")},
+      WriteOp{OpKind::DirectValue, "num_coordinates_per_field", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("response_type/response_functions/field_responses/read_field_coordinates", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "read_field_coordinates", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"read_field_coordinates\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "read_field_coordinates", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"read_field_coordinates\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "read_field_coordinates", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"read_field_coordinates\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "read_field_coordinates", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("response_type/response_functions/scalar_responses", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "num_scalar_responses", nlohmann::json::parse("{\"handler_type\": \"sizet\", \"keyword_name\": \"scalar_responses\", \"member_variable_type\": \"size_t\"}")},
+      WriteOp{OpKind::DirectValue, "num_scalar_responses", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     return m;
   }();

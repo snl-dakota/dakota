@@ -60,300 +60,260 @@ const std::unordered_map<std::string, KeyContract>& contracts() {
 const std::unordered_map<std::string, std::vector<WriteOp>>& instructions() {
   static const auto kInstructions = []() {
     std::unordered_map<std::string, std::vector<WriteOp>> m;
-    m.reserve(83);
+    m.reserve(84);
     m.emplace("algebraic_mappings", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "algebraic_mappings", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"algebraic_mappings\", \"member_variable_type\": \"String\"}")},
+      WriteOp{OpKind::DirectValue, "algebraic_mappings", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+    });
+    m.emplace("analysis_drivers", std::vector<WriteOp>{
+      WriteOp{OpKind::DirectValue, "application.analysis_drivers", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("analysis_drivers/analysis_components", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "application.analysis_components", nlohmann::json::parse("{\"handler_type\": \"str2D\", \"keyword_name\": \"analysis_components\", \"member_variable_type\": \"String2DArray\"}")},
+      WriteOp{OpKind::DirectValue, "application.analysis_components", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("analysis_drivers/drivers", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "application.analysis_drivers", nlohmann::json::parse("{\"handler_type\": \"strL\", \"keyword_name\": \"analysis_drivers\", \"member_variable_type\": \"StringArray\"}")},
-      WriteOp{OpKind::DirectValue, "application.analysis_drivers", nlohmann::json::parse("{\"handler_type\": \"strL\", \"keyword_name\": \"analysis_drivers\", \"member_variable_type\": \"StringArray\"}")},
+      WriteOp{OpKind::DirectValue, "application.analysis_drivers", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("analysis_drivers/input_filter", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "application.input_filter", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"input_filter\", \"member_variable_type\": \"String\"}")},
+      WriteOp{OpKind::DirectValue, "application.input_filter", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("analysis_drivers/interface_type/direct", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "type", nlohmann::json::parse("{\"handler_type\": \"type\", \"keyword_name\": \"direct\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"TEST_INTERFACE\"}")},
+      WriteOp{OpKind::PresenceEnum, "type", OpLiteral{IrValueType::String, IRValue{std::string("TEST_INTERFACE")}}},
     });
     m.emplace("analysis_drivers/interface_type/direct/processors_per_analysis", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "direct.processors_per_analysis", nlohmann::json::parse("{\"handler_type\": \"int\", \"keyword_name\": \"processors_per_analysis\", \"member_variable_type\": \"int\"}")},
+      WriteOp{OpKind::DirectValue, "direct.processors_per_analysis", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("analysis_drivers/interface_type/fork", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "type", nlohmann::json::parse("{\"handler_type\": \"type\", \"keyword_name\": \"fork\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"FORK_INTERFACE\"}")},
+      WriteOp{OpKind::PresenceEnum, "type", OpLiteral{IrValueType::String, IRValue{std::string("FORK_INTERFACE")}}},
     });
     m.emplace("analysis_drivers/interface_type/fork/allow_existing_results", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "allow_existing_results", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"allow_existing_results\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "allow_existing_results", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"allow_existing_results\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "allow_existing_results", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("analysis_drivers/interface_type/fork/file_save", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "application.file_save", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"file_save\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "application.file_save", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"file_save\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "application.file_save", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("analysis_drivers/interface_type/fork/file_tag", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "application.file_tag", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"file_tag\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "application.file_tag", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"file_tag\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "application.file_tag", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("analysis_drivers/interface_type/fork/parameters_file", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "application.parameters_file", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"parameters_file\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "application.parameters_file", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"parameters_file\", \"member_variable_type\": \"String\"}")},
+      WriteOp{OpKind::DirectValue, "application.parameters_file", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("analysis_drivers/interface_type/fork/parameters_format", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "application.parameters_file_format", nlohmann::json::parse("{\"handler_type\": \"type\", \"keyword_name\": \"parameters_format\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"PARAMETERS_FILE_STANDARD\"}")},
-      WriteOp{OpKind::PresenceEnum, "application.parameters_file_format", nlohmann::json::parse("{\"handler_type\": \"type\", \"keyword_name\": \"parameters_format\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"PARAMETERS_FILE_STANDARD\"}")},
+      WriteOp{OpKind::PresenceEnum, "application.parameters_file_format", OpLiteral{IrValueType::String, IRValue{std::string("PARAMETERS_FILE_STANDARD")}}},
     });
     m.emplace("analysis_drivers/interface_type/fork/parameters_format/aprepro", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "application.parameters_file_format", nlohmann::json::parse("{\"handler_type\": \"type\", \"keyword_name\": \"aprepro\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"PARAMETERS_FILE_APREPRO\"}")},
-      WriteOp{OpKind::PresenceEnum, "application.parameters_file_format", nlohmann::json::parse("{\"handler_type\": \"type\", \"keyword_name\": \"aprepro\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"PARAMETERS_FILE_APREPRO\"}")},
+      WriteOp{OpKind::PresenceEnum, "application.parameters_file_format", OpLiteral{IrValueType::String, IRValue{std::string("PARAMETERS_FILE_APREPRO")}}},
     });
     m.emplace("analysis_drivers/interface_type/fork/parameters_format/json_format", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "application.parameters_file_format", nlohmann::json::parse("{\"handler_type\": \"type\", \"keyword_name\": \"json_format\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"PARAMETERS_FILE_JSON\"}")},
-      WriteOp{OpKind::PresenceEnum, "application.parameters_file_format", nlohmann::json::parse("{\"handler_type\": \"type\", \"keyword_name\": \"json_format\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"PARAMETERS_FILE_JSON\"}")},
+      WriteOp{OpKind::PresenceEnum, "application.parameters_file_format", OpLiteral{IrValueType::String, IRValue{std::string("PARAMETERS_FILE_JSON")}}},
     });
     m.emplace("analysis_drivers/interface_type/fork/parameters_format/standard", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "application.parameters_file_format", nlohmann::json::parse("{\"handler_type\": \"type\", \"keyword_name\": \"standard\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"PARAMETERS_FILE_STANDARD\"}")},
-      WriteOp{OpKind::PresenceEnum, "application.parameters_file_format", nlohmann::json::parse("{\"handler_type\": \"type\", \"keyword_name\": \"standard\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"PARAMETERS_FILE_STANDARD\"}")},
+      WriteOp{OpKind::PresenceEnum, "application.parameters_file_format", OpLiteral{IrValueType::String, IRValue{std::string("PARAMETERS_FILE_STANDARD")}}},
     });
     m.emplace("analysis_drivers/interface_type/fork/results_file", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "application.results_file", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"results_file\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "application.results_file", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"results_file\", \"member_variable_type\": \"String\"}")},
+      WriteOp{OpKind::DirectValue, "application.results_file", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("analysis_drivers/interface_type/fork/results_format", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "application.results_file_format", nlohmann::json::parse("{\"handler_type\": \"type\", \"keyword_name\": \"results_format\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"RESULTS_FILE_STANDARD\"}")},
-      WriteOp{OpKind::PresenceEnum, "application.results_file_format", nlohmann::json::parse("{\"handler_type\": \"type\", \"keyword_name\": \"results_format\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"RESULTS_FILE_STANDARD\"}")},
+      WriteOp{OpKind::PresenceEnum, "application.results_file_format", OpLiteral{IrValueType::String, IRValue{std::string("RESULTS_FILE_STANDARD")}}},
     });
     m.emplace("analysis_drivers/interface_type/fork/results_format/json_format", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "application.results_file_format", nlohmann::json::parse("{\"handler_type\": \"type\", \"keyword_name\": \"json_format\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"RESULTS_FILE_JSON\"}")},
-      WriteOp{OpKind::PresenceEnum, "application.results_file_format", nlohmann::json::parse("{\"handler_type\": \"type\", \"keyword_name\": \"json_format\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"RESULTS_FILE_JSON\"}")},
+      WriteOp{OpKind::PresenceEnum, "application.results_file_format", OpLiteral{IrValueType::String, IRValue{std::string("RESULTS_FILE_JSON")}}},
     });
     m.emplace("analysis_drivers/interface_type/fork/results_format/standard", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "application.results_file_format", nlohmann::json::parse("{\"handler_type\": \"type\", \"keyword_name\": \"standard\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"RESULTS_FILE_STANDARD\"}")},
-      WriteOp{OpKind::PresenceEnum, "application.results_file_format", nlohmann::json::parse("{\"handler_type\": \"type\", \"keyword_name\": \"standard\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"RESULTS_FILE_STANDARD\"}")},
+      WriteOp{OpKind::PresenceEnum, "application.results_file_format", OpLiteral{IrValueType::String, IRValue{std::string("RESULTS_FILE_STANDARD")}}},
     });
     m.emplace("analysis_drivers/interface_type/fork/results_format/standard/labeled", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "labeled_results", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"labeled\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "labeled_results", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"labeled\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "labeled_results", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("analysis_drivers/interface_type/fork/verbatim", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "application.verbatim", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"verbatim\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "application.verbatim", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"verbatim\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "application.verbatim", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("analysis_drivers/interface_type/fork/work_directory", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "useWorkdir", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"work_directory\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "useWorkdir", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"work_directory\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "useWorkdir", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("analysis_drivers/interface_type/fork/work_directory/copy_files", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "copyFiles", nlohmann::json::parse("{\"handler_type\": \"strL\", \"keyword_name\": \"copy_files\", \"member_variable_type\": \"StringArray\"}")},
-      WriteOp{OpKind::DirectValue, "copyFiles", nlohmann::json::parse("{\"handler_type\": \"strL\", \"keyword_name\": \"copy_files\", \"member_variable_type\": \"StringArray\"}")},
+      WriteOp{OpKind::DirectValue, "copyFiles", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("analysis_drivers/interface_type/fork/work_directory/directory_save", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "dirSave", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"directory_save\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "dirSave", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"directory_save\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "dirSave", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("analysis_drivers/interface_type/fork/work_directory/directory_tag", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "dirTag", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"directory_tag\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "dirTag", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"directory_tag\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "dirTag", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("analysis_drivers/interface_type/fork/work_directory/link_files", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "linkFiles", nlohmann::json::parse("{\"handler_type\": \"strL\", \"keyword_name\": \"link_files\", \"member_variable_type\": \"StringArray\"}")},
-      WriteOp{OpKind::DirectValue, "linkFiles", nlohmann::json::parse("{\"handler_type\": \"strL\", \"keyword_name\": \"link_files\", \"member_variable_type\": \"StringArray\"}")},
+      WriteOp{OpKind::DirectValue, "linkFiles", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("analysis_drivers/interface_type/fork/work_directory/named", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "workDir", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"named\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "workDir", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"named\", \"member_variable_type\": \"String\"}")},
+      WriteOp{OpKind::DirectValue, "workDir", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("analysis_drivers/interface_type/fork/work_directory/replace", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "templateReplace", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"replace\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "templateReplace", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"replace\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "templateReplace", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("analysis_drivers/interface_type/grid", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "type", nlohmann::json::parse("{\"handler_type\": \"type\", \"keyword_name\": \"grid\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"GRID_INTERFACE\"}")},
+      WriteOp{OpKind::PresenceEnum, "type", OpLiteral{IrValueType::String, IRValue{std::string("GRID_INTERFACE")}}},
     });
     m.emplace("analysis_drivers/interface_type/matlab", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "type", nlohmann::json::parse("{\"handler_type\": \"type\", \"keyword_name\": \"matlab\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"MATLAB_INTERFACE\"}")},
+      WriteOp{OpKind::PresenceEnum, "type", OpLiteral{IrValueType::String, IRValue{std::string("MATLAB_INTERFACE")}}},
     });
     m.emplace("analysis_drivers/interface_type/plugin", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "type", nlohmann::json::parse("{\"handler_type\": \"type\", \"keyword_name\": \"plugin\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"PLUGIN_INTERFACE\"}")},
+      WriteOp{OpKind::PresenceEnum, "type", OpLiteral{IrValueType::String, IRValue{std::string("PLUGIN_INTERFACE")}}},
     });
     m.emplace("analysis_drivers/interface_type/plugin/library_path", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "plugin_library_path", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"library_path\", \"member_variable_type\": \"String\"}")},
+      WriteOp{OpKind::DirectValue, "plugin_library_path", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("analysis_drivers/interface_type/python", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "type", nlohmann::json::parse("{\"handler_type\": \"type\", \"keyword_name\": \"python\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"PYTHON_INTERFACE\"}")},
+      WriteOp{OpKind::PresenceEnum, "type", OpLiteral{IrValueType::String, IRValue{std::string("PYTHON_INTERFACE")}}},
     });
     m.emplace("analysis_drivers/interface_type/python/numpy", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "python.numpy", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"numpy\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "python.numpy", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("analysis_drivers/interface_type/scilab", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "type", nlohmann::json::parse("{\"handler_type\": \"type\", \"keyword_name\": \"scilab\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"SCILAB_INTERFACE\"}")},
+      WriteOp{OpKind::PresenceEnum, "type", OpLiteral{IrValueType::String, IRValue{std::string("SCILAB_INTERFACE")}}},
     });
     m.emplace("analysis_drivers/interface_type/system", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "type", nlohmann::json::parse("{\"handler_type\": \"type\", \"keyword_name\": \"system\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"SYSTEM_INTERFACE\"}")},
+      WriteOp{OpKind::PresenceEnum, "type", OpLiteral{IrValueType::String, IRValue{std::string("SYSTEM_INTERFACE")}}},
     });
     m.emplace("analysis_drivers/interface_type/system/allow_existing_results", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "allow_existing_results", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"allow_existing_results\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "allow_existing_results", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"allow_existing_results\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "allow_existing_results", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("analysis_drivers/interface_type/system/file_save", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "application.file_save", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"file_save\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "application.file_save", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"file_save\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "application.file_save", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("analysis_drivers/interface_type/system/file_tag", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "application.file_tag", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"file_tag\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "application.file_tag", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"file_tag\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "application.file_tag", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("analysis_drivers/interface_type/system/parameters_file", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "application.parameters_file", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"parameters_file\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "application.parameters_file", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"parameters_file\", \"member_variable_type\": \"String\"}")},
+      WriteOp{OpKind::DirectValue, "application.parameters_file", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("analysis_drivers/interface_type/system/parameters_format", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "application.parameters_file_format", nlohmann::json::parse("{\"handler_type\": \"type\", \"keyword_name\": \"parameters_format\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"PARAMETERS_FILE_STANDARD\"}")},
-      WriteOp{OpKind::PresenceEnum, "application.parameters_file_format", nlohmann::json::parse("{\"handler_type\": \"type\", \"keyword_name\": \"parameters_format\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"PARAMETERS_FILE_STANDARD\"}")},
+      WriteOp{OpKind::PresenceEnum, "application.parameters_file_format", OpLiteral{IrValueType::String, IRValue{std::string("PARAMETERS_FILE_STANDARD")}}},
     });
     m.emplace("analysis_drivers/interface_type/system/parameters_format/aprepro", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "application.parameters_file_format", nlohmann::json::parse("{\"handler_type\": \"type\", \"keyword_name\": \"aprepro\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"PARAMETERS_FILE_APREPRO\"}")},
-      WriteOp{OpKind::PresenceEnum, "application.parameters_file_format", nlohmann::json::parse("{\"handler_type\": \"type\", \"keyword_name\": \"aprepro\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"PARAMETERS_FILE_APREPRO\"}")},
+      WriteOp{OpKind::PresenceEnum, "application.parameters_file_format", OpLiteral{IrValueType::String, IRValue{std::string("PARAMETERS_FILE_APREPRO")}}},
     });
     m.emplace("analysis_drivers/interface_type/system/parameters_format/json_format", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "application.parameters_file_format", nlohmann::json::parse("{\"handler_type\": \"type\", \"keyword_name\": \"json_format\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"PARAMETERS_FILE_JSON\"}")},
-      WriteOp{OpKind::PresenceEnum, "application.parameters_file_format", nlohmann::json::parse("{\"handler_type\": \"type\", \"keyword_name\": \"json_format\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"PARAMETERS_FILE_JSON\"}")},
+      WriteOp{OpKind::PresenceEnum, "application.parameters_file_format", OpLiteral{IrValueType::String, IRValue{std::string("PARAMETERS_FILE_JSON")}}},
     });
     m.emplace("analysis_drivers/interface_type/system/parameters_format/standard", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "application.parameters_file_format", nlohmann::json::parse("{\"handler_type\": \"type\", \"keyword_name\": \"standard\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"PARAMETERS_FILE_STANDARD\"}")},
-      WriteOp{OpKind::PresenceEnum, "application.parameters_file_format", nlohmann::json::parse("{\"handler_type\": \"type\", \"keyword_name\": \"standard\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"PARAMETERS_FILE_STANDARD\"}")},
+      WriteOp{OpKind::PresenceEnum, "application.parameters_file_format", OpLiteral{IrValueType::String, IRValue{std::string("PARAMETERS_FILE_STANDARD")}}},
     });
     m.emplace("analysis_drivers/interface_type/system/results_file", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "application.results_file", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"results_file\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "application.results_file", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"results_file\", \"member_variable_type\": \"String\"}")},
+      WriteOp{OpKind::DirectValue, "application.results_file", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("analysis_drivers/interface_type/system/results_format", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "application.results_file_format", nlohmann::json::parse("{\"handler_type\": \"type\", \"keyword_name\": \"results_format\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"RESULTS_FILE_STANDARD\"}")},
-      WriteOp{OpKind::PresenceEnum, "application.results_file_format", nlohmann::json::parse("{\"handler_type\": \"type\", \"keyword_name\": \"results_format\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"RESULTS_FILE_STANDARD\"}")},
+      WriteOp{OpKind::PresenceEnum, "application.results_file_format", OpLiteral{IrValueType::String, IRValue{std::string("RESULTS_FILE_STANDARD")}}},
     });
     m.emplace("analysis_drivers/interface_type/system/results_format/json_format", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "application.results_file_format", nlohmann::json::parse("{\"handler_type\": \"type\", \"keyword_name\": \"json_format\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"RESULTS_FILE_JSON\"}")},
-      WriteOp{OpKind::PresenceEnum, "application.results_file_format", nlohmann::json::parse("{\"handler_type\": \"type\", \"keyword_name\": \"json_format\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"RESULTS_FILE_JSON\"}")},
+      WriteOp{OpKind::PresenceEnum, "application.results_file_format", OpLiteral{IrValueType::String, IRValue{std::string("RESULTS_FILE_JSON")}}},
     });
     m.emplace("analysis_drivers/interface_type/system/results_format/standard", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "application.results_file_format", nlohmann::json::parse("{\"handler_type\": \"type\", \"keyword_name\": \"standard\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"RESULTS_FILE_STANDARD\"}")},
-      WriteOp{OpKind::PresenceEnum, "application.results_file_format", nlohmann::json::parse("{\"handler_type\": \"type\", \"keyword_name\": \"standard\", \"member_variable_type\": \"unsigned short\", \"stored_value\": \"RESULTS_FILE_STANDARD\"}")},
+      WriteOp{OpKind::PresenceEnum, "application.results_file_format", OpLiteral{IrValueType::String, IRValue{std::string("RESULTS_FILE_STANDARD")}}},
     });
     m.emplace("analysis_drivers/interface_type/system/results_format/standard/labeled", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "labeled_results", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"labeled\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "labeled_results", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"labeled\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "labeled_results", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("analysis_drivers/interface_type/system/verbatim", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "application.verbatim", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"verbatim\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "application.verbatim", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"verbatim\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "application.verbatim", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("analysis_drivers/interface_type/system/work_directory", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "useWorkdir", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"work_directory\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "useWorkdir", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"work_directory\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "useWorkdir", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("analysis_drivers/interface_type/system/work_directory/copy_files", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "copyFiles", nlohmann::json::parse("{\"handler_type\": \"strL\", \"keyword_name\": \"copy_files\", \"member_variable_type\": \"StringArray\"}")},
-      WriteOp{OpKind::DirectValue, "copyFiles", nlohmann::json::parse("{\"handler_type\": \"strL\", \"keyword_name\": \"copy_files\", \"member_variable_type\": \"StringArray\"}")},
+      WriteOp{OpKind::DirectValue, "copyFiles", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("analysis_drivers/interface_type/system/work_directory/directory_save", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "dirSave", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"directory_save\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "dirSave", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"directory_save\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "dirSave", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("analysis_drivers/interface_type/system/work_directory/directory_tag", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "dirTag", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"directory_tag\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "dirTag", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"directory_tag\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "dirTag", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("analysis_drivers/interface_type/system/work_directory/link_files", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "linkFiles", nlohmann::json::parse("{\"handler_type\": \"strL\", \"keyword_name\": \"link_files\", \"member_variable_type\": \"StringArray\"}")},
-      WriteOp{OpKind::DirectValue, "linkFiles", nlohmann::json::parse("{\"handler_type\": \"strL\", \"keyword_name\": \"link_files\", \"member_variable_type\": \"StringArray\"}")},
+      WriteOp{OpKind::DirectValue, "linkFiles", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("analysis_drivers/interface_type/system/work_directory/named", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "workDir", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"named\", \"member_variable_type\": \"String\"}")},
-      WriteOp{OpKind::DirectValue, "workDir", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"named\", \"member_variable_type\": \"String\"}")},
+      WriteOp{OpKind::DirectValue, "workDir", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("analysis_drivers/interface_type/system/work_directory/replace", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "templateReplace", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"replace\", \"member_variable_type\": \"bool\"}")},
-      WriteOp{OpKind::PresenceBool, "templateReplace", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"replace\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "templateReplace", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("analysis_drivers/output_filter", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "application.output_filter", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"output_filter\", \"member_variable_type\": \"String\"}")},
+      WriteOp{OpKind::DirectValue, "application.output_filter", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("analysis_scheduling/dedicated", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "analysis_scheduling", nlohmann::json::parse("{\"handler_type\": \"type\", \"keyword_name\": \"dedicated\", \"member_variable_type\": \"short\", \"stored_value\": \"DEDICATED_SCHEDULER_DYNAMIC\"}")},
+      WriteOp{OpKind::PresenceEnum, "analysis_scheduling", OpLiteral{IrValueType::String, IRValue{std::string("DEDICATED_SCHEDULER_DYNAMIC")}}},
     });
     m.emplace("analysis_scheduling/peer", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "analysis_scheduling", nlohmann::json::parse("{\"handler_type\": \"type\", \"keyword_name\": \"peer\", \"member_variable_type\": \"short\", \"stored_value\": \"PEER_SCHEDULING\"}")},
+      WriteOp{OpKind::PresenceEnum, "analysis_scheduling", OpLiteral{IrValueType::String, IRValue{std::string("PEER_SCHEDULING")}}},
     });
     m.emplace("analysis_servers", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "analysis_servers", nlohmann::json::parse("{\"handler_type\": \"int\", \"keyword_name\": \"analysis_servers\", \"member_variable_type\": \"int\"}")},
+      WriteOp{OpKind::DirectValue, "analysis_servers", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("concurrency/asynchronous", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "asynch", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"asynchronous\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "asynch", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("concurrency/asynchronous/analysis_concurrency", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "asynch_local_analysis_concurrency", nlohmann::json::parse("{\"handler_type\": \"int\", \"keyword_name\": \"analysis_concurrency\", \"member_variable_type\": \"int\"}")},
+      WriteOp{OpKind::DirectValue, "asynch_local_analysis_concurrency", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("concurrency/asynchronous/evaluation_concurrency", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "asynch_local_evaluation_concurrency", nlohmann::json::parse("{\"handler_type\": \"int\", \"keyword_name\": \"evaluation_concurrency\", \"member_variable_type\": \"int\"}")},
+      WriteOp{OpKind::DirectValue, "asynch_local_evaluation_concurrency", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("concurrency/asynchronous/local_evaluation_scheduling/dynamic", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "local_evaluation_scheduling", nlohmann::json::parse("{\"handler_type\": \"type\", \"keyword_name\": \"dynamic\", \"member_variable_type\": \"short\", \"stored_value\": \"DYNAMIC_SCHEDULING\"}")},
+      WriteOp{OpKind::PresenceEnum, "local_evaluation_scheduling", OpLiteral{IrValueType::String, IRValue{std::string("DYNAMIC_SCHEDULING")}}},
     });
     m.emplace("concurrency/asynchronous/local_evaluation_scheduling/static", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "local_evaluation_scheduling", nlohmann::json::parse("{\"handler_type\": \"type\", \"keyword_name\": \"static\", \"member_variable_type\": \"short\", \"stored_value\": \"STATIC_SCHEDULING\"}")},
+      WriteOp{OpKind::PresenceEnum, "local_evaluation_scheduling", OpLiteral{IrValueType::String, IRValue{std::string("STATIC_SCHEDULING")}}},
     });
     m.emplace("concurrency/batch", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "batch", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"batch\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "batch", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("concurrency/batch/size", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "asynch_local_evaluation_concurrency", nlohmann::json::parse("{\"handler_type\": \"int\", \"keyword_name\": \"size\", \"member_variable_type\": \"int\"}")},
+      WriteOp{OpKind::DirectValue, "asynch_local_evaluation_concurrency", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("deactivate/active_set_vector", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "active_set_vector", nlohmann::json::parse("{\"handler_type\": \"false\", \"keyword_name\": \"active_set_vector\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::DirectValue, "active_set_vector", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("deactivate/evaluation_cache", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "evaluation_cache", nlohmann::json::parse("{\"handler_type\": \"false\", \"keyword_name\": \"evaluation_cache\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::DirectValue, "evaluation_cache", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("deactivate/restart_file", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "restart_file", nlohmann::json::parse("{\"handler_type\": \"false\", \"keyword_name\": \"restart_file\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::DirectValue, "restart_file", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("deactivate/strict_cache_equality", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceBool, "nearby_evaluation_cache", nlohmann::json::parse("{\"handler_type\": \"true\", \"keyword_name\": \"strict_cache_equality\", \"member_variable_type\": \"bool\"}")},
+      WriteOp{OpKind::PresenceBool, "nearby_evaluation_cache", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("deactivate/strict_cache_equality/cache_tolerance", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "nearby_evaluation_cache_tolerance", nlohmann::json::parse("{\"handler_type\": \"Real\", \"keyword_name\": \"cache_tolerance\", \"member_variable_type\": \"Real\"}")},
+      WriteOp{OpKind::DirectValue, "nearby_evaluation_cache_tolerance", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("evaluation_scheduling/dedicated", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "evaluation_scheduling", nlohmann::json::parse("{\"handler_type\": \"type\", \"keyword_name\": \"dedicated\", \"member_variable_type\": \"short\", \"stored_value\": \"DEDICATED_SCHEDULER_DYNAMIC\"}")},
+      WriteOp{OpKind::PresenceEnum, "evaluation_scheduling", OpLiteral{IrValueType::String, IRValue{std::string("DEDICATED_SCHEDULER_DYNAMIC")}}},
     });
     m.emplace("evaluation_scheduling/peer/dynamic", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "evaluation_scheduling", nlohmann::json::parse("{\"handler_type\": \"type\", \"keyword_name\": \"dynamic\", \"member_variable_type\": \"short\", \"stored_value\": \"PEER_DYNAMIC_SCHEDULING\"}")},
+      WriteOp{OpKind::PresenceEnum, "evaluation_scheduling", OpLiteral{IrValueType::String, IRValue{std::string("PEER_DYNAMIC_SCHEDULING")}}},
     });
     m.emplace("evaluation_scheduling/peer/static", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceEnum, "evaluation_scheduling", nlohmann::json::parse("{\"handler_type\": \"type\", \"keyword_name\": \"static\", \"member_variable_type\": \"short\", \"stored_value\": \"PEER_STATIC_SCHEDULING\"}")},
+      WriteOp{OpKind::PresenceEnum, "evaluation_scheduling", OpLiteral{IrValueType::String, IRValue{std::string("PEER_STATIC_SCHEDULING")}}},
     });
     m.emplace("evaluation_servers", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "evaluation_servers", nlohmann::json::parse("{\"handler_type\": \"int\", \"keyword_name\": \"evaluation_servers\", \"member_variable_type\": \"int\"}")},
+      WriteOp{OpKind::DirectValue, "evaluation_servers", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("failure_capture/abort", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "failure_capture.action", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"abort\", \"member_variable_type\": \"String\", \"stored_value\": \"abort\"}")},
+      WriteOp{OpKind::PresenceLiteral, "failure_capture.action", OpLiteral{IrValueType::String, IRValue{std::string("abort")}}},
     });
     m.emplace("failure_capture/continuation", std::vector<WriteOp>{
-      WriteOp{OpKind::PresenceLiteral, "failure_capture.action", nlohmann::json::parse("{\"handler_type\": \"lit\", \"keyword_name\": \"continuation\", \"member_variable_type\": \"String\", \"stored_value\": \"continuation\"}")},
+      WriteOp{OpKind::PresenceLiteral, "failure_capture.action", OpLiteral{IrValueType::String, IRValue{std::string("continuation")}}},
     });
     m.emplace("failure_capture/recover", std::vector<WriteOp>{
-      WriteOp{OpKind::LiteralAssign, "failure_capture.action", nlohmann::json::parse("{\"argument_member_variable_type\": \"RealVector\", \"handler_type\": \"Rlit\", \"keyword_name\": \"recover\", \"literal_value\": \"recover\", \"member_variable_type\": \"String\", \"stored_value\": \"recover\", \"type_data_role\": \"literal\"}")},
-      WriteOp{OpKind::DirectValue, "failure_capture.action", nlohmann::json::parse("{\"argument_member_variable_type\": \"RealVector\", \"handler_type\": \"Rlit\", \"keyword_name\": \"recover\", \"member_variable_type\": \"String\", \"stored_value\": \"recover\", \"type_data_role\": \"argument\"}")},
+      WriteOp{OpKind::LiteralAssign, "failure_capture.action", OpLiteral{IrValueType::String, IRValue{std::string("recover")}}},
+      WriteOp{OpKind::DirectValue, "failure_capture.recovery_fn_vals", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("failure_capture/retry", std::vector<WriteOp>{
-      WriteOp{OpKind::LiteralAssign, "failure_capture.action", nlohmann::json::parse("{\"argument_member_variable_type\": \"int\", \"handler_type\": \"ilit\", \"keyword_name\": \"retry\", \"literal_value\": \"retry\", \"member_variable_type\": \"String\", \"stored_value\": \"retry\", \"type_data_role\": \"literal\"}")},
-      WriteOp{OpKind::DirectValue, "failure_capture.action", nlohmann::json::parse("{\"argument_member_variable_type\": \"int\", \"handler_type\": \"ilit\", \"keyword_name\": \"retry\", \"member_variable_type\": \"String\", \"stored_value\": \"retry\", \"type_data_role\": \"argument\"}")},
+      WriteOp{OpKind::LiteralAssign, "failure_capture.action", OpLiteral{IrValueType::String, IRValue{std::string("retry")}}},
+      WriteOp{OpKind::DirectValue, "failure_capture.retry_limit", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("id_interface", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "id", nlohmann::json::parse("{\"handler_type\": \"str\", \"keyword_name\": \"id_interface\", \"member_variable_type\": \"String\"}")},
+      WriteOp{OpKind::DirectValue, "id", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("processors_per_evaluation", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "processors_per_evaluation", nlohmann::json::parse("{\"handler_type\": \"int\", \"keyword_name\": \"processors_per_evaluation\", \"member_variable_type\": \"int\"}")},
+      WriteOp{OpKind::DirectValue, "processors_per_evaluation", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     return m;
   }();
