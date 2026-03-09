@@ -1,0 +1,65 @@
+/*  _______________________________________________________________________
+
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2025
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    This software is distributed under the GNU Lesser General Public License.
+    For more information, see the README file in the top Dakota directory.
+    _______________________________________________________________________ */
+
+#ifndef DAKOTA_INSTRUCTION_MATERIALIZER_H
+#define DAKOTA_INSTRUCTION_MATERIALIZER_H
+
+#include "IRState.hpp"
+#include "generated_ir_table_types.hpp"
+
+#include <nlohmann/json_fwd.hpp>
+#include <unordered_set>
+
+namespace Dakota {
+
+/// Tracks keys explicitly written during one materialization pass.
+struct WriteTracker
+{
+  std::unordered_set<String> environment;
+  std::unordered_set<String> method;
+  std::unordered_set<String> model;
+  std::unordered_set<String> variables;
+  std::unordered_set<String> interface;
+  std::unordered_set<String> responses;
+
+  bool mark_written(irgen::BlockType block, const String& local_key);
+};
+
+/// Materializes a validated JSON study into block-scoped IRState
+/// using generated contracts and keyword instructions.
+class InstructionMaterializer
+{
+public:
+  InstructionMaterializer() = default;
+
+  /// Build and return a fully materialized IR state.
+  IRState materialize(const nlohmann::json& validated_json) const;
+
+private:
+  /// Initialize all IR keys from generated contract defaults.
+  void initialize_defaults(IRState& state) const;
+
+  /// Execute instruction writes for a single block instance.
+  void materialize_block(const nlohmann::json& block_json,
+                         irgen::BlockType block,
+                         IRStore& store,
+                         WriteTracker& writes) const;
+
+  /// Apply one generated write operation.
+  void apply_write_op(const nlohmann::json& block_json,
+                      const irgen::WriteOp& op,
+                      const irgen::BlockTables& tables,
+                      irgen::BlockType block,
+                      IRStore& store,
+                      WriteTracker& writes) const;
+};
+
+} // namespace Dakota
+
+#endif // DAKOTA_INSTRUCTION_MATERIALIZER_H
