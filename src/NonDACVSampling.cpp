@@ -757,39 +757,6 @@ estimator_variance_ratio_gradients(const RealVector& cd_vars,
 }
 
 
-void NonDACVSampling::
-combine_gradients_with_covariance(const RealSymMatrix& C, const RealMatrix& c,
-				  size_t qoi, const RealSymMatrixArray& dF_dN,
-				  const RealVectorArray& df_dN,
-				  RealSymMatrixArray& dCF_dN,
-				  RealVectorArray& dcf_dN)
-{
-  // no dependence on QoI, only dependence is on N
-  size_t i, j, v, num_v = df_dN.size();
-  if (dCF_dN.empty() || dcf_dN.empty()) {
-    dCF_dN.resize(num_v);  dcf_dN.resize(num_v);
-    for (v=0; v<num_v; ++v) {
-      dCF_dN[v].shapeUninitialized(numApprox);
-      dcf_dN[v].sizeUninitialized(numApprox);
-    }
-  }
-  for (v=0; v<num_v; ++v) {
-    const RealSymMatrix& dF_dN_v =  dF_dN[v];
-    const RealVector&    df_dN_v =  df_dN[v];
-    RealSymMatrix&      dCF_dN_v = dCF_dN[v];
-    RealVector&         dcf_dN_v = dcf_dN[v];
-    for (i=0; i<numApprox; ++i) {
-      dcf_dN_v(i) = c(qoi,i) * dF_dN_v(i,i); // c o df/dN
-      for (j=0; j<=i; ++j)
-	dCF_dN_v(i,j) = C(i,j) * dF_dN_v(i,j);
-    }
-  }
-  if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "For sub-method " << mlmfSubMethod << ":\ndCF/dN matrix array:\n"
-	 << dCF_dN << "dcf/dN vector array:\n" << dcf_dN << std::endl;
-}
-
-
 void NonDACVSampling::compute_allocations(MFSolutionData& soln)
 {
   // Solve the optimization sub-problem using an initial guess from either

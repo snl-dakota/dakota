@@ -2302,11 +2302,12 @@ estimator_variance_ratios(const RealVector& cd_vars, RealVector& estvar_ratios)
   //       the need to map indices (DAG values to sample count indices) as DAG
   //       source/target can be used directly as indices in N_vec/z1/z2)
 
-  RealVector N_vec;
-  inflate_variables_to_N(cd_vars, N_vec);
+  RealVector inflate_cdv, N_vec;
+  const UShortArray& approx_set = activeModelSetIter->first;
+  inflate_variables(cd_vars, inflate_cdv, approx_set);
+  design_vars_to_N(inflate_cdv, N_vec);
   compute_G_g_from_N(N_vec, GMat, gVec);
 
-  const UShortArray& approx_set = activeModelSetIter->first;
   size_t num_approx = approx_set.size();
   Real R_sq, N_H = N_vec[num_approx];
   for (size_t qoi=0; qoi<numFunctions; ++qoi) {
@@ -2350,7 +2351,8 @@ estimator_variance_ratio_gradients(const RealVector& cd_vars,
   Real rcond;
   const UShortArray& approx_set = activeModelSetIter->first;
 
-  inflate_variables_to_N(cd_vars, N_vec);
+  inflate_variables(cd_vars, inflate_cdv, approx_set);
+  design_vars_to_N(inflate_cdv, N_vec);
   compute_G_g_from_N(N_vec, GMat, gVec);
   compute_G_g_gradients_from_N(N_vec, dG_dN, dg_dN);
 
@@ -2393,7 +2395,8 @@ estimator_variance_ratios_and_gradients(const RealVector& cd_vars,
   RealSymMatrixArray dG_dN, dCG_dN;  RealVectorArray dg_dN, dcg_dN;
   Real varH_q;
 
-  inflate_variables_to_N(cd_vars, N_vec);
+  inflate_variables(cd_vars, inflate_cdv, approx_set);
+  design_vars_to_N(inflate_cdv, N_vec);
   compute_G_g_from_N(N_vec, GMat, gVec);
   compute_G_g_gradients_from_N(N_vec, dG_dN, dg_dN);
 
