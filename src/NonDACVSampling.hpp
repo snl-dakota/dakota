@@ -249,15 +249,19 @@ private:
 
   void compute_F_matrix_from_r(const RealVector& r_and_N, RealSymMatrix& F);
   void compute_F_matrix_from_N(const RealVector& N, RealSymMatrix& F);
-
   void compute_F_f_gradients_from_N(const RealVector& N,
 				    RealSymMatrixArray& dF_dN,
 				    RealVectorArray& df_dN);
-  void compute_C_F_c_f_gradients(const RealSymMatrix& C, const RealMatrix& c,
-				 size_t qoi, const RealSymMatrixArray& dF_dN,
-				 const RealVectorArray& df_dN,
-				 RealSymMatrixArray& dCF_dN,
-				 RealVectorArray& dcf_dN);
+
+  void combine_with_covariance(const RealSymMatrix& C, const RealMatrix& c,
+			       size_t qoi, const RealSymMatrix& F,
+			       RealSymMatrix& C_F, RealVector& c_f);
+  void combine_gradients_with_covariance(const RealSymMatrix& C,
+					 const RealMatrix& c, size_t qoi,
+					 const RealSymMatrixArray& dF_dN,
+					 const RealVectorArray& df_dN,
+					 RealSymMatrixArray& dCF_dN,
+					 RealVectorArray& dcf_dN);
 
   /*
   void invert_CF(const RealSymMatrix& C, const RealSymMatrix& F,
@@ -269,9 +273,6 @@ private:
   Real compute_R_sq(const RealSymMatrix& CF_inv, const RealVector& A,
 		    Real var_H_q);
   */
-  void compute_C_F_c_f(const RealSymMatrix& C, const RealSymMatrix& F,
-		       const RealMatrix& c, size_t qoi,
-		       RealSymMatrix& C_F, RealVector& c_f);
   void solve_for_C_F_c_f(RealSymMatrix& C_F, RealVector& c_f,
 			 RealVector& lhs, bool copy_C_F = true,
 			 bool copy_c_f = true);
@@ -575,9 +576,9 @@ compute_acv_control(RealMatrix& sum_L, Real sum_H_q, RealSymMatrix& sum_LL_q,
 
 
 inline void NonDACVSampling::
-compute_C_F_c_f(const RealSymMatrix& C, const RealSymMatrix& F,
-		const RealMatrix& c, size_t qoi,
-		RealSymMatrix& C_F, RealVector& c_f)
+combine_with_covariance(const RealSymMatrix& C, const RealMatrix& c, size_t qoi,
+			const RealSymMatrix& F, RealSymMatrix& C_F,
+			RealVector& c_f)
 {
   size_t i, j, n = C.numRows();
   C_F.shapeUninitialized(n);  c_f.sizeUninitialized(n);
@@ -618,7 +619,7 @@ solve_for_triple_product(const RealSymMatrix& C, const RealSymMatrix& F,
 			 const RealMatrix&    c, size_t qoi)
 {
   RealSymMatrix C_F;  RealVector c_f, lhs;
-  compute_C_F_c_f(C, F, c, qoi, C_F, c_f);
+  combine_with_covariance(C, c, qoi, F, C_F, c_f);
   solve_for_C_F_c_f(C_F, c_f, lhs, false, true); // retain c_f for use below
 
   size_t i, n = C.numRows();
@@ -648,26 +649,6 @@ acv_estvar_ratios(const RealSymMatrix& F, RealVector& estvar_ratios)
   for (size_t qoi=0; qoi<numFunctions; ++qoi)
     estvar_ratios[qoi]
       = 1. - compute_R_sq(covLL[qoi], F, covLH, qoi, varH[qoi]);
-}
-
-
-inline void NonDACVSampling::
-estimator_variance_ratios(const RealVector& cd_vars, RealVector& estvar_ratios)
-{
-  // map incoming continuous design vars into r_i factors and compute F
-  RealSymMatrix F;
-  switch (optSubProblemForm) {
-  case N_MODEL_LINEAR_OBJECTIVE:  case N_MODEL_LINEAR_CONSTRAINT: {
-    compute_F_matrix_from_N(cd_vars, F);
-    break;
-  }
-  case R_ONLY_LINEAR_CONSTRAINT: // N is a vector constant for opt sub-problem
-  case R_AND_N_NONLINEAR_CONSTRAINT:
-    compute_F_matrix_from_r(cd_vars, F); // admits r as leading numApprox terms
-    break;
-  }
-  // compute ACV estimator variance given F
-  acv_estvar_ratios(F, estvar_ratios);
 }
 
 
@@ -734,7 +715,7 @@ solve_for_acv_control(const RealSymMatrix& cov_LL, const RealSymMatrix& F,
 		      const RealMatrix& cov_LH, size_t qoi, RealVector& beta)
 {
   RealSymMatrix C_F;  RealVector c_f;
-  compute_C_F_c_f(cov_LL, F, cov_LH, qoi, C_F, c_f);
+  combine_with_covariance(cov_LL, cov_LH, qoi, F, C_F, c_f);
   solve_for_C_F_c_f(C_F, c_f, beta, false, false); // Ok to modify C_F,c_f
 
   //Cout << "solve_for_acv_control qoi " << qoi+1 << ": C_F\n" << C_F

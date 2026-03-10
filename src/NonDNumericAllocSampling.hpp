@@ -1723,13 +1723,22 @@ r_and_N_to_design_vars(const RealVector& avg_eval_ratios, Real N_H,
 inline void NonDNumericAllocSampling::
 design_vars_to_r(const RealVector& cd_vars, RealVector& avg_eval_ratios)
 {
+  // works for full numApprox or partial approx_set, so long as N_H is
+  // omitted for R_ONLY_LINEAR_CONSTRAINT
+
+  int num_v = cd_vars.length();
   switch (optSubProblemForm) {
-  case N_MODEL_LINEAR_OBJECTIVE:  case N_MODEL_LINEAR_CONSTRAINT:
-    copy_data_partial(cd_vars, 0, (int)numApprox, avg_eval_ratios); // N_i
-    avg_eval_ratios.scale(1./cd_vars[numApprox]); // r_i = N_i / N
+  case N_MODEL_LINEAR_OBJECTIVE:  case N_MODEL_LINEAR_CONSTRAINT: {
+    int num_approx = num_v - 1;
+    copy_data_partial(cd_vars, 0, num_approx, avg_eval_ratios); // N_i
+    avg_eval_ratios.scale(1./cd_vars[num_approx]); // r_i = N_i / N
     break;
-  default: // r_and_N provided: pass leading numApprox terms of cd_vars
-    avg_eval_ratios = RealVector(Teuchos::View, cd_vars.values(), numApprox);
+  }
+  case R_ONLY_LINEAR_CONSTRAINT: // cd_vars must be of length num_approx
+    avg_eval_ratios = RealVector(Teuchos::View, cd_vars.values(), num_v);
+    break;
+  case R_AND_N_NONLINEAR_CONSTRAINT:
+    avg_eval_ratios = RealVector(Teuchos::View, cd_vars.values(), num_v - 1);
     break;
   }
 }
@@ -1738,15 +1747,17 @@ design_vars_to_r(const RealVector& cd_vars, RealVector& avg_eval_ratios)
 inline void NonDNumericAllocSampling::
 design_vars_to_N(const RealVector& cd_vars, RealVector& N_samp)
 {
-  int num_m = numApprox+1;
+  // works for full numApprox or partial approx_set, so long as N_H is included
+
   switch (optSubProblemForm) {
   case N_MODEL_LINEAR_OBJECTIVE:  case N_MODEL_LINEAR_CONSTRAINT:
-    N_samp = RealVector(Teuchos::View, cd_vars.values(), num_m);
+    N_samp = RealVector(Teuchos::View, cd_vars.values(), cd_vars.length());
     break;
-  default: // r_and_N provided: pass leading numApprox terms of cd_vars
+  default: // r_and_N have to include N_H at end (see inflate_variables())
     copy_data(cd_vars, N_samp);
-    Real N_H = cd_vars[numApprox];
-    for (size_t i=0; i<numApprox; ++i)
+    int num_approx = cd_vars.length() - 1;
+    Real N_H = cd_vars[num_approx];
+    for (size_t i=0; i<num_approx; ++i)
       N_samp[i] *= N_H; // N_i = r_i * N
     break;
   }

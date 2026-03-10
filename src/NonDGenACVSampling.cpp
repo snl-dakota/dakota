@@ -27,7 +27,8 @@ namespace Dakota {
     instantiation.  In this case, set_db_list_nodes has been called and 
     probDescDB can be queried for settings from the method specification. */
 NonDGenACVSampling::
-NonDGenACVSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+NonDGenACVSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
+		   std::shared_ptr<Model> model):
   NonDACVSampling(problem_db, parallel_lib, model),
   dagRecursionType(
     problem_db.get_short("method.nond.search_model_graphs.recursion")),
@@ -455,7 +456,10 @@ generate_hierarchical_sub_trees(unsigned short root, const UShortArray& nodes,
 void NonDGenACVSampling::
 generate_reverse_dag(const UShortArray& approx_set, const UShortArray& dag)
 {
-  // define an array of source nodes that point to a given target
+  // Define a set of source nodes that connect to a given target.  This array
+  // is only one level deep, i.e. sources that are directly connected to a
+  // target via edges, such that unique ordered sets of sources can be used.
+
   size_t i, dag_size = dag.size();
   reverseActiveDAG.clear();
   reverseActiveDAG.resize(numGroups);
@@ -1719,8 +1723,550 @@ scale_to_target(Real avg_N_H, const RealVector& cost,
 
 
 void NonDGenACVSampling::
-solve_for_C_G_c_g(RealSymMatrix& C_G, RealVector& c_g, RealVector& lhs,
-		  bool copy_C_G, bool copy_c_g)
+compute_G_g_from_N(const RealVector& N_vec, RealSymMatrix& G, RealVector& g)
+{
+  // Invert N_vec ordering
+  // > Dakota r_i ordering is low-to-high --> reversed from Peherstorfer
+  //   (HF = 1, MF = 2, LF = 3) and Gorodetsky,Bomarito (HF = 0, MF = 1, LF = 2)
+  // > incoming N_vec is ordered as for Dakota r_i: LF = 0, MF = 1, HF = 2
+  // > incoming DAG is zero root as in Bomarito 2022 --> reverse DAG ordering
+  // See also NonDNumericAllocSampling::mfmc_analytic_solution()
+
+  // Here we use ACV notation: z_i is comprised of N_i incoming samples
+  // including z^1_i (less resolved "correlated mean estimator") and z^2_i
+  // (more resolved "control variate mean").  Mapping from GenACV notation:
+  // "z^*_i" --> z^1_i, "z_i" --> z^2_i, "z_{i* U i}" --> z_i
+
+  // Note: N_vec,z1,z2 are inflated to full dimension, avoiding the need to
+  //       map indices (DAG values to sample count indices)
+
+  const UShortArray& approx_set = activeModelSetIter->first;
+  const UShortArray& active_dag = *activeDAGIter;
+  size_t i, j, dag_size = active_dag.size();
+  if (G.numRows() != dag_size) G.shapeUninitialized(dag_size);
+  if (g.length()  != dag_size)  g.sizeUninitialized(dag_size);
+
+  // define sample recursion sets backwards (from z_H down to lowest fid)
+  Real src_i, src_j, tgt_i, tgt_j, z1_i;
+  switch (mlmfSubMethod) {
+  case SUBMETHOD_ACV_MF: { // Bomarito Eqs. 16-17
+    Real z2_i, z1_j, z2_j, z_H = N_vec[numApprox]; // N_vec inflated
+    for (i=0; i<dag_size; ++i) {
+      src_i = approx_set[i];  tgt_i = active_dag[i];
+      z1_i = /*z2_bi = z_bi =*/ N_vec[tgt_i];  z2_i = /*z_i =*/ N_vec[src_i];
+      g[i] = (std::min(z1_i, z_H) / z1_i - std::min(z2_i, z_H) / z2_i) / z_H;
+      for (j=0; j<=i; ++j) {
+	src_j = approx_set[j];  tgt_j = active_dag[j];
+	z1_j  = /*z2_bj = z_bj =*/ N_vec[tgt_j];  z2_j = /*z_j =*/ N_vec[src_j];
+	G(i,j)
+	  = (std::min(z1_i, z1_j)/z1_j - std::min(z1_i, z2_j)/z2_j)/z1_i
+	  + (std::min(z2_i, z2_j)/z2_j - std::min(z2_i, z1_j)/z1_j)/z2_i;
+      }
+    }
+    break;
+  }
+  case SUBMETHOD_ACV_IS: {
+    // Bomarito Eqs. 21-22.  Notation conversion (Bomarito in quotes):
+    // > "N_{beta_i}" denotes z1_i
+    // > "N_i" denotes "zprime_i" which is NOT z2_i, but rather z2_i - z1_i
+    //   (where z2_i = N_vec[i])
+    // > z1_src is matched to "N_tgt", again "zprime_tgt" = z2_tgt - z1_tgt
+    RealVector z1, z2;  unroll_z1_z2(N_vec, z1, z2);
+    Real z_i, z_j, zi_zj, zprime_i;
+    for (i=0; i<dag_size; ++i) {
+      src_i = approx_set[i];   tgt_i = active_dag[i];
+      z_i   = N_vec[src_i];    z1_i  = z1[src_i];
+      zprime_i = z2[src_i] - z1_i; // increment between z1 and total (= z = z2)
+      g[i] = (tgt_i == numApprox) ? 1./z1_i - 1./z_i : 0.;// = 1/N_H - 1/N_i
+      for (j=0; j<=i; ++j) {
+	src_j = approx_set[j];  tgt_j = active_dag[j];
+	z_j   = N_vec[src_j];   zi_zj = z_i * z_j;
+	G(i,j) = 0.;     
+	if (tgt_i == tgt_j) G(i,j) += 1./z1_i - 1./z_i - 1./z_j + z1_i/zi_zj;
+	if (tgt_i == src_j) G(i,j) += z1_i/zi_zj - 1./z_j;
+	if (src_i == tgt_j) G(i,j) += zprime_i/zi_zj - 1./z_i;
+	if (src_i == src_j) G(i,j) += zprime_i/zi_zj;
+      }
+    }
+    break;
+  }
+  case SUBMETHOD_ACV_RD: {
+    // Bomarito Eqs. 19-20.  Notation conversion (Bomarito in quotes):
+    // > "N_{beta_i}" denotes z1_i and "N_i" denotes z2_i
+    // > z1_src is matched to "N_tgt", again z2_tgt
+    RealVector z1, z2;  unroll_z1_z2(N_vec, z1, z2);
+    Real z2_i;
+    for (i=0; i<dag_size; ++i) {
+      src_i = approx_set[i];  tgt_i = active_dag[i];
+      z1_i  = z1[src_i];      z2_i  = z2[src_i];
+      g[i] = (tgt_i == numApprox) ? 1./z1_i : 0.; // N_0 -> N_beta_i
+      for (j=0; j<=i; ++j) {
+	src_j = approx_set[j];  tgt_j = active_dag[j];
+	G(i,j) = 0.;
+	if (tgt_i == tgt_j) G(i,j) += 1./z1_i;
+	if (tgt_i == src_j) G(i,j) -= 1./z1_i; // always false for root dag
+	if (src_i == tgt_j) G(i,j) -= 1./z2_i; // always false for root dag
+	if (src_i == src_j) G(i,j) += 1./z2_i;
+      }
+    }
+    break;
+  }
+  default:
+    Cerr << "Error: bad sub-method name (" << mlmfSubMethod << ") in "
+	 << "NonDGenACVSampling::compute_G_g_from_N()" << std::endl;
+    abort_handler(METHOD_ERROR); break;
+  }
+
+  if (outputLevel >= DEBUG_OUTPUT) {
+    Cout << "For dag:\n"; print_dag(active_dag, approx_set);
+    Cout << "G matrix:\n" << G << "g vector:\n" << g << std::endl;
+  }
+}
+
+
+void NonDGenACVSampling::
+unroll_z1_z2(const RealVector& N_vec, RealVector& z1, RealVector& z2)
+{
+  // z1, z2 denote z_m^1 and z_m^2 from ACV paper: Gorodetsky et al., JCP 2020
+  // > N_vec,z1,z2 are inflated to full dimension, avoiding the need to map
+  //   indices (DAG values to sample count indices) 
+
+  //Real z_H = N_vec[numApprox];
+  z1.size(numGroups);  z1[numApprox] = 0;                // JCP ACV Fig 2 "z"
+  z2.size(numGroups);  z2[numApprox] = N_vec[numApprox]; // JCP ACV Fig 2 "z"
+
+  switch (mlmfSubMethod) {
+  case SUBMETHOD_ACV_MF: { // not used (special unroll logic not required)
+    const UShortArray& approx_set = activeModelSetIter->first;
+    const UShortArray& active_dag = *activeDAGIter;
+    unsigned short i, source, target;  size_t dag_size = active_dag.size();
+    for (i=0; i<dag_size; ++i) {
+      source = approx_set[i];     target = active_dag[i];
+      //z1[i] = N_vec[target];    z2[i] = N_vec[source];      // COMPACTED z1,z2
+      z1[source] = N_vec[target]; z2[source] = N_vec[source]; // FULL z1,z2
+    }
+    break;
+  }
+  case SUBMETHOD_ACV_IS: {
+    // leverage reverseActiveDAG and orderedRootList:
+    UShortList::const_iterator r_cit;  UShortSet::const_iterator d_cit;
+    unsigned short source, target;  Real z1t;
+    for (r_cit=orderedRootList.begin(); r_cit!=orderedRootList.end(); ++r_cit) {
+      target = *r_cit;  z1t = z1[target];
+      const UShortSet& reverse_dag = reverseActiveDAG[target];
+      for (d_cit=reverse_dag.begin(); d_cit!=reverse_dag.end(); ++d_cit) {
+	source = *d_cit;
+	z1[source] = N_vec[target] - z1t; // Bomarito Fig 6, JCP ACV Fig 2c
+	z2[source] = N_vec[source];
+      }
+    }
+    break;
+  }
+  case SUBMETHOD_ACV_RD: {
+    // leverage reverseActiveDAG and orderedRootList:
+    UShortList::const_iterator r_cit;  UShortSet::const_iterator d_cit;
+    unsigned short source, target;  Real z2t;
+    for (r_cit=orderedRootList.begin(); r_cit!=orderedRootList.end(); ++r_cit) {
+      target = *r_cit;  z2t = z2[target];
+      const UShortSet& reverse_dag = reverseActiveDAG[target];
+      for (d_cit=reverse_dag.begin(); d_cit!=reverse_dag.end(); ++d_cit) {
+	source = *d_cit;  Real& z1s = z1[source];
+	z1s = z2t;                        // Bomarito Fig 5, JCP ACV Fig 2a
+	z2[source] = N_vec[source] - z1s;
+      }
+    }
+    break;
+  }
+  default:
+    Cerr << "Error: unsupported mlmfSubMethod in unroll_z1_z2()" << std::endl;
+    abort_handler(METHOD_ERROR);  break;
+  }
+
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "GenACV unroll of N_vec:\n" << N_vec << "into z1:\n" << z1
+	 << "and z2:\n" << z2 << std::endl;
+}
+
+
+void NonDGenACVSampling::
+unroll_z1_z2_gradients(RealMatrix& z1_grads, RealMatrix& z2_grads)
+{
+  // z1, z2 denote z_m^1 and z_m^2 from ACV paper: Gorodetsky et al., JCP 2020
+  // > As for z1,z2 in unroll_z1_z2(), columns in {z1,z2}_grads are inflated
+  //   to full dimension for each opt variable for consistency and convenience
+
+  const UShortArray& approx_set = activeModelSetIter->first;
+  const UShortArray& active_dag = *activeDAGIter;
+  size_t i, num_a = approx_set.size(), num_v = num_a + 1,
+    num_all_m = numApprox + 1, cntr;
+  unsigned short source, target;
+  SizetArray index_map;  inflate_approx_set(approx_set, index_map);
+  z1_grads.shape(num_v, num_all_m); // init to 0. (entries are sparse)
+
+  switch (mlmfSubMethod) {
+  //case SUBMETHOD_ACV_MF: // not used (special unroll logic not required)
+  //  break;
+  case SUBMETHOD_ACV_IS: {
+    // z1[src]  = N_vec[tgt] - z1[tgt]
+    //          = N_vec[tgt] - N_vec[tgt[tgt]] + z1[tgt[tgt]]
+    //          = +/- N_vec[node] from recur along DAG
+    // --> dz1_i/dN_j = 0, +1, or -1 depending on DAG
+
+    for (i=0; i<num_a; ++i) {
+      source = approx_set[i];  target = active_dag[i];
+      z1_grads(i, source) = 1.;
+      // walk DAG from i-th approx to root
+      cntr = 0;
+      while (target != numApprox) {
+	source = target;  target = active_dag[index_map[source]];
+	z1_grads(i, source) = (++cntr % 2) ? -1. : 1.;
+      }
+    }
+    //z1_grads[num_a][numApprox] = 0.; // since z1[numApprox] = 0.
+    break;
+  }
+  case SUBMETHOD_ACV_RD: {
+    // z1[src] = z2[tgt]                 (shared)
+    // z2[src] = N_vec[src] - z1[src] (increment)
+    //         = N_vec[src] - N_vec[tgt] + N_vec[tgt[tgt]] - z2[tgt[tgt[tgt]]]
+    //         = +/- N_vec[node] from recur along DAG 
+    // --> dz2_i/dN_j = 0, +1, or -1 depending on DAG, one node removed from z1
+    // --> dz1_i/dN_j = -dz2_i/dN_j, except for population of upstream zero
+    z2_grads.shape(num_v, num_all_m);
+
+    for (i=0; i<num_a; ++i) {
+      source = approx_set[i];  target = active_dag[i];
+      z2_grads(i, source) = 1.; //z1_grads(i, source) = 0.;
+      // walk DAG from i-th approx to root
+      cntr = 0;
+      while (target != numApprox) {
+	source = target;  target = active_dag[index_map[source]];  ++cntr;
+	z2_grads(i, source) = (cntr % 2) ? -1. :  1.;
+	z1_grads(i, source) = (cntr % 2) ?  1. : -1.; // look ahead to next z2g
+      }
+    }
+    //z1_grads(num_a, numApprox) = 0.; // z1[numApprox] = 0.
+    z2_grads(num_a, numApprox) = 1.;   // z2[numApprox] = N_vec[numApprox]
+    break;
+  }
+  default:
+    Cerr << "Error: unsupported mlmfSubMethod in unroll_z1_z2_gradients()"
+	 << std::endl;
+    abort_handler(METHOD_ERROR);  break;
+  }
+
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "GenACV unroll of DAG into z1_grads:\n" << z1_grads
+	 << "and z2_grads:\n" << z2_grads << std::endl;
+}
+
+
+void NonDGenACVSampling::
+compute_G_g_gradients_from_N(const RealVector& N_vec, RealSymMatrixArray& dG_dN,
+			     RealVectorArray& dg_dN)
+{
+  // no dependence on QoI, only dependence is on N
+  const UShortArray& approx_set = activeModelSetIter->first;
+  const UShortArray& active_dag = *activeDAGIter;
+  size_t i, j, dag_size = active_dag.size(), v, num_v = N_vec.length();
+  if (dG_dN.size() != num_v) dG_dN.resize(num_v);
+  if (dg_dN.size() != num_v) dg_dN.resize(num_v);
+  for (i=0; i<num_v; ++i) {
+    if (dG_dN[i].numRows() != dag_size) dG_dN[i].shape(dag_size);
+    else dG_dN[i] = 0.;
+    if (dg_dN[i].length()  != dag_size) dg_dN[i].size(dag_size);
+    else dg_dN[i] = 0.;
+  }
+
+  unsigned short src_i, tgt_i, src_j, tgt_j, inflate_v;
+  Real z1_i, z2_i, z1_j, z2_j, z_H = N_vec[numApprox]; // N_vec inflated
+  switch (mlmfSubMethod) {
+  case SUBMETHOD_ACV_MF: { // refer to Eq. 34 in JCP ACV paper
+    Real inv_z1_sq, inv_z2_sq;
+    for (v=0; v<num_v; ++v) {
+      RealSymMatrix& dG_dN_v = dG_dN[v];
+      RealVector&    dg_dN_v = dg_dN[v];
+      inflate_v = (v == num_v-1) ? numApprox : approx_set[i];
+      for (i=0; i<dag_size; ++i) {
+	src_i = approx_set[i];  tgt_i = active_dag[i];
+	z1_i  =  N_vec[tgt_i];   z2_i =  N_vec[src_i]; // N_vec inflated
+
+	Real& dg_dN_vi  = dg_dN_v(i);
+	Real& dG_dN_vii = dG_dN_v(i,i);
+	if (tgt_i == inflate_v) { // deriv w.r.t. z1_i
+	  inv_z1_sq = 1./(z1_i * z1_i);
+	  if (inflate_v == numApprox || z1_i >= z_H) dg_dN_vi -= inv_z1_sq;
+	  dG_dN_vii -= inv_z1_sq;
+	  if (z1_i >= z2_i) dG_dN_vii += 2. * inv_z1_sq;
+	}
+	else if (src_i == inflate_v) { // deriv w.r.t. z2_i
+	  inv_z2_sq = 1./(z2_i * z2_i);
+	  if (inflate_v == numApprox || z2_i >= z_H) dg_dN_vi += inv_z2_sq;
+	  dG_dN_vii -= inv_z2_sq;
+	  if (z2_i >= z1_i) dG_dN_vii += 2. * inv_z2_sq;
+	}
+
+	for (j=0; j<i; ++j) {
+	  src_j = approx_set[j];  tgt_j = active_dag[j];
+	  z1_j  =  N_vec[tgt_j];  z2_j  =  N_vec[src_j];
+	  Real& dG_dN_vij = dG_dN_v(i,j);
+	  // edge case: don't double count if z*_i exactly equals z*_j
+	  if (tgt_i == inflate_v) { // deriv w.r.t. z1_i
+	    if (z1_i >= z1_j) dG_dN_vij -= 1./(z1_i * z1_i);
+	    if (z1_i >= z2_j) dG_dN_vij += 1./(z1_i * z1_i);
+	  }
+	  if (src_i == inflate_v) { // deriv w.r.t. z2_i
+	    if (z2_i >= z1_j) dG_dN_vij += 1./(z2_i * z2_i);
+	    if (z2_i >= z2_j) dG_dN_vij -= 1./(z2_i * z2_i);
+	  }
+	  if (tgt_j == inflate_v) { // deriv w.r.t. z1_j
+	    if (z1_j >  z1_i) dG_dN_vij -= 1./(z1_j * z1_j);
+	    if (z1_j >  z2_i) dG_dN_vij += 1./(z1_j * z1_j);
+	  }
+	  if (src_j == inflate_v) { // deriv w.r.t. z2_j
+	    if (z2_j >  z1_i) dG_dN_vij += 1./(z2_j * z2_j);
+	    if (z2_j >  z2_i) dG_dN_vij -= 1./(z2_j * z2_j);
+	  }
+	}
+      }
+    }
+    break;
+  }
+  case SUBMETHOD_ACV_IS: { // refer to Eq. 30 in JCP ACV paper
+    // z1[src]  = N_vec[tgt] - z1[tgt]
+    //          = N_vec[tgt] - N_vec[tgt[tgt]] + z1[tgt[tgt]]
+    //          = +/- N_vec[node] from recur along DAG
+    // --> dz1_i/dN_j = 0, +1, or -1 depending on DAG
+    //
+    // z2[src] = z[src] = N_vec[src]; // z2 not carried here since redundant
+    // --> dz2_i/dN_j = delta_ij
+    //
+    // > Bomarito: z1_i is "N_{beta_i}" where beta_i = beta_j
+
+    // *************************************************************
+    // Two options to handle recursion using reverse DAGs:
+    // > 1. Pre-compute dz1_i/dN_j here for each v and loop over v
+    // > 2. replace loop over v with direct insertions for DAG nodes
+    // *************************************************************
+    RealVector z1, z2;             unroll_z1_z2(N_vec, z1, z2);
+    RealMatrix z1_grads, z2_grads; unroll_z1_z2_gradients(z1_grads, z2_grads);
+
+    // replace outer v loop with inner recursion across reverse_dag
+    UShortSet::const_iterator d_cit;  size_t count;
+    RealVector& dg_dN_A = dg_dN[num_v-1]; // only dependent on z_H
+    Real z1_i, z2_i, inv_z1_sq_i, inv_z2_sq_i, inv_z2_sq_j;
+    for (i=0; i<dag_size; ++i) {
+      src_i = approx_set[i];  tgt_i = active_dag[i]; // inflated indices
+      z1_i = z1[src_i];  inv_z1_sq_i = 1./(z1_i * z1_i);
+      z2_i = z2[src_i];  inv_z2_sq_i = 1./(z2_i * z2_i);
+
+      if (tgt_i == numApprox) { // g[i] = 1./z_H - 1./z_i
+	dg_dN_A(i)  -= 1./(z_H  * z_H);
+	dg_dN[i](i) += 1./(z2_i * z2_i);
+      }
+
+      for (j=0; j<=i; ++j) {
+	src_j = approx_set[j];  tgt_j = active_dag[j];
+	z2_j = z2[src_j];  inv_z2_sq_j = 1./(z2_j * z2_j);
+	// The src/tgt matches to follow identify z1,z2 terms in G that are then
+	// differentiated for each design var --> think of G matrix as fixed -->
+	// define separate deriv matrices by differentiating for each design var
+	// > Utilize reverse DAGs to insert terms for dependent N_i where
+	//   dz1/dN_i is +/- 1 counting from tgt_i
+
+	for (v=0; v<num_v; ++v) {
+	  Real& dG_dN_vij = dG_dN[v](i,j);
+
+	  // G(i,j) += z1_i/zi_zj - 1./z_j (shared)
+	  if (tgt_i == tgt_j || tgt_i == src_j) {
+	    // can't be both since src_j != tgt_j
+	    // --> don't need to account for a double increment
+
+	    // deriv of z1_i/zi_zj: use special case for i == j to avoid
+	    // managing dz_i/dN_j = delta_ij
+	    // > (N_i dz1/dN_i - z1_i)/(N^2_i N_j) for N_i
+	    //   (N_j dz1/dN_j - z1_i)/(N_i N^2_j) for N_j
+	    //   (dz1/dN_k)/(N_i N_j) for other k != {i,j}
+	    if (i == v && j == v)
+	      dG_dN_vij += (z2_i * z1_grads(v,i) - 2.* z1_i)/z2_i * inv_z2_sq_i;
+	    else if (i == v)
+	      dG_dN_vij += (z2_i * z1_grads(v,i) - z1_i) / z2_j * inv_z2_sq_i;
+	    else if (j == v)
+	      dG_dN_vij += (z2_j * z1_grads(v,j) - z1_i) / z2_i * inv_z2_sq_j;
+	    else // v != {i,j} but appears in dz1_dN_vij
+	      dG_dN_vij += z1_grads(v,v) / (z2_i * z2_j);	    
+
+	    // deriv of - 1/z_j:
+	    if (j == v) dG_dN_vij += inv_z2_sq_j;
+	  }
+
+	  // G(i,j) += 1./z1_i - 1./z_i (additions to shared terms above);
+	  if (tgt_i == tgt_j) {
+	    // deriv of 1/z1_i: given z1 recurrence, add for all i,j,v and
+	    // rely on the dz1_dN pre-compute
+	    // > -1/z1^2 * dz1/dN_i for each N_i in reverse DAG:
+	    dG_dN_vij -= z1_grads(v,v) * inv_z1_sq_i;
+	    // deriv of - 1/z_i
+	    if (i == v) dG_dN_vij += inv_z2_sq_i;
+	  }
+
+	  // G(i,j) += z1_i/zi_zj - 1./z_j;
+	  //if (tgt_i == src_j) { } // both terms covered above
+
+	  // G(i,j) += zprime_i/zi_zj (shared)
+	  //         = (z_i - z1_i)/zi_zj = 1/z_j - z1_i/zi_zj
+	  if (src_i == tgt_j || src_i == src_j) {
+	    // can't be both since src_j != tgt_j
+	    // --> don't need to account for a double increment
+
+	    // deriv of 1/z_j
+	    if (j == v) dG_dN_vij -= inv_z2_sq_j;
+ 	    
+	    // deriv of -z1_i/zi_zj
+	    // > -(dz1_i/dN_i N^2_i - z1_i 2 N_i)/N^4_i
+	    //    = (z1_i - dz1_i/dN_i N_i) / N^3_i for v == i == j
+	    // > -(dz1_i/dN_i N_i N_j - z1_i N_j)/(N^2_i N^2_j)
+	    //    = (z1_i - dz1_i/dN_i N_i) / (N^2_i N_j) for v == i
+	    // >  -(dz1_i/dN_j N_i N_j - z1_i N_i)/(N^2_i N^2_j)
+	    //    = (z1_i - dz1_i/dN_j N_j) / (N_i N^2_j) for v == j
+	    // > -dz1/dN_i / (N_i N_j) for other v != {i,j}
+	    if (i == v && j == v)
+	      dG_dN_vij += (z1_i - z1_grads(v,i) * 2.* z2_i)/z2_i * inv_z2_sq_i;
+	    else if (i == v)
+	      dG_dN_vij += (z1_i - z1_grads(v,i) * z2_i) / z2_j * inv_z2_sq_i;
+	    else if (j == v)
+	      dG_dN_vij += (z1_i - z1_grads(v,j) * z2_j) / z2_i * inv_z2_sq_j;
+	    else // v != {i,j} but appears in dz1_dN_vij
+	      dG_dN_vij += z1_grads(v,v) / (z2_i * z2_j);	    
+	  }
+
+	  // G(i,j) -= 1./z_i (addition to shared term above)
+	  if (src_i == tgt_j && i == v) dG_dN_vij += inv_z2_sq_i;
+	}
+
+	/*
+        ///////////// Option 2: insert for specific v (no loop) /////////////
+	// > clean for terms without DAG recursion
+
+	// collapse 2 loops since tgt_i == tgt_j
+	const UShortSet& reverse_dag = reverseActiveDAG[tgt_i];  count = 0;
+	for (d_cit=reverse_dag.begin(); d_cit!=reverse_dag.end(); ++d_cit) {
+	  deflate_v = index_map[*d_cit];
+	  RealMatrix& dG_dN_v = dG_dN[deflate_v];
+	  ++count;  dz1_dN = (count%2) ? 1. : -1.;
+	  // instead of "if (i==deflate_v) do something", insert for equality
+	  dG_dN_v(deflate_v,j) += dz1_dN[i] * -inv_z1_sq_i;
+	  dG_dN_v(i,deflate_v) += dz1_dN[j] * -inv_z1_sq_i;
+	  dG_dN_v(deflate_v,j) += (z2_i * dz1_dN[i] - z1_i)/z2_j *inv_z2_sq_i;
+	  dG_dN_v(i,deflate_v) += (z2_j * dz1_dN[j] - z1_i)/z2_i *inv_z2_sq_j;
+	  //dG_dN[tgt_k](i,j) += dz1_dNk/(z2_i * z2_j); // *** dependent nodes have been enumerated
+	}
+	// > 1/N^2_i for N_i (insert expression for deriv mat = i value)
+	dG_dN[i](i,j) += inv_z2_sq_i;
+	// > 1/N^2_j for N_j (insert expression for deriv mat = j value)
+	dG_dN[j](i,j) += inv_z2_sq_j;
+	
+	//if (tgt_i == src_j) G(i,j) += z1_i/zi_zj - 1./z_j;
+	if (tgt_i == src_j) {
+	  // Enumeration of 2 terms (subset of 4 above)
+	  const UShortSet& reverse_dag = reverseActiveDAG[tgt_i];  count = 0;
+	  for (d_cit=reverse_dag.begin(); d_cit!=reverse_dag.end(); ++d_cit) {
+	    deflate_v = index_map[*d_cit];  ++count;
+	    dG_dN[deflate_v](i,j) += (count%2) ? inv_z1_sq_i : -inv_z1_sq_i;
+	  }
+	}
+	//if (src_i == tgt_j) G(i,j) += (z_i - z1_i)/zi_zj - 1./z_i;
+	if (src_i == tgt_j) {
+	  // Enumeration of 2 terms:
+	  // > ((1 - dz1/dN_i) N_i N_j - (N_i - z1_i) N_j)/(N^2_i N^2_j) for N_i
+	  //     (z1_i N_j - dz1/dN_i N_i) / (N^2_i N_j)
+	  //   (-dz1/dN_j N_i N_j - (N_i - z1_i) N_i)/(N^2_i N^2_j) for N_j
+	  //     (-dz1/dN_j N_j - (N_i - z1_i))/(N_i N^2_j)
+	  //   (-dz1/dN_i)/(N_i N_j) for other N != {i,j}
+	  // > -1/N^2_i for N_i in reverse DAG
+	  // where dz2/dN_i is +/- 1 counting from src_i
+	  const UShortSet& reverse_dag = reverseActiveDAG[src_i];  count = 0;
+	  for (d_cit=reverse_dag.begin(); d_cit!=reverse_dag.end(); ++d_cit) { }
+	}
+	//if (src_i == src_j) G(i,j) += (z_i - z1_i)/zi_zj; 
+	if (src_i == src_j) {
+	  // Enumeration of 1 term (first of 2 above)
+	  const UShortSet& reverse_dag = reverseActiveDAG[src_i];  count = 0;
+	  for (d_cit=reverse_dag.begin(); d_cit!=reverse_dag.end(); ++d_cit) { }
+	}
+	*/
+      }
+    }
+    break;
+  }
+  case SUBMETHOD_ACV_RD: { // refer to Eq. 34 in JCP ACV paper
+    // z1[src] = z2[tgt]                 (shared)
+    // z2[src] = N_vec[src] - z1[src] (increment)
+    //         = N_vec[src] - z2[tgt]
+    //         = N_vec[src] - N_vec[tgt] + z2[tgt[tgt]] 
+    //         = N_vec[src] - N_vec[tgt] + N_vec[tgt[tgt]] - z2[tgt[tgt[tgt]]]
+    //         = +/- N_vec[node] from recur along DAG 
+    // --> dz2_i/dN_j = 0, +1, or -1 depending on DAG, one node removed from z1
+    // --> dz1_i/dN_j = -dz2_i/dN_j, except for population of upstream zero
+    RealVector z1, z2;             unroll_z1_z2(N_vec, z1, z2);
+    RealMatrix z1_grads, z2_grads; unroll_z1_z2_gradients(z1_grads, z2_grads);
+
+    // replace outer v loop with inner recursion across reverse_dag
+    UShortSet::const_iterator d_cit;  size_t count;
+    RealVector& dg_dN_A = dg_dN[num_v-1]; // only dependent on z_H
+    Real z1_i, z2_i, inv_z1_sq_i, inv_z2_sq_i;
+    for (i=0; i<dag_size; ++i) {
+      src_i = approx_set[i];  tgt_i = active_dag[i]; // inflated indices
+
+      // g[i] = (tgt_i == numApprox) ? 1./z_H : 0.;
+      if (tgt_i == numApprox) dg_dN_A[i] = -1./(z_H * z_H);
+
+      z1_i = z1[src_i];  inv_z1_sq_i = 1./(z1_i * z1_i);
+      z2_i = z2[src_i];  inv_z2_sq_i = 1./(z2_i * z2_i);
+      for (j=0; j<=i; ++j) {
+	src_j = approx_set[j];  tgt_j = active_dag[j];
+
+	//if (tgt_i == tgt_j) G(i,j) += 1./z1_i;
+	//if (tgt_i == src_j) G(i,j) -= 1./z1_i;
+	//if (src_i == tgt_j) G(i,j) -= 1./z2_i;
+	//if (src_i == src_j) G(i,j) += 1./z2_i;
+	for (v=0; v<num_v; ++v) {
+	  Real& dG_dN_vij = dG_dN[v](i,j);
+
+	  // G(i,j) += +/- 1./z1_i (shared)
+	  // both equalities can't hold since src_j != tgt_j
+	  // --> don't need to account for a double increment
+	  if (tgt_i == tgt_j || tgt_i == src_j) // all v because of z1 recursion
+	    dG_dN_vij += (tgt_i == tgt_j) ? -z1_grads(v,i) * inv_z1_sq_i
+	                                  :  z1_grads(v,i) * inv_z1_sq_i;
+
+	  // G(i,j) += +/- 1/z2_i (shared)
+	  // both equalities can't hold since src_j != tgt_j
+	  // --> don't need to account for a double increment
+	  if (src_i == tgt_j || src_i == src_j) // all v because of z2 recursion
+	    dG_dN_vij += (src_i == src_j) ? -z2_grads(v,i) * inv_z2_sq_i
+	                                  :  z2_grads(v,i) * inv_z2_sq_i;
+	}
+      }
+    }
+    break;
+  }
+  default:
+    Cerr << "Error: bad sub-method name (" << mlmfSubMethod
+	 << ") in NonDACVSampling::compute_G_g_gradients_from_N()" << std::endl;
+    abort_handler(METHOD_ERROR); break;
+  }
+
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "For sub-method " << mlmfSubMethod << ", N vector:\n" << N_vec
+	 << "dG/dN matrix array:\n" << dG_dN
+	 << "dg/dN vector array:\n" << dg_dN << std::endl;
+}
+
+
+void NonDGenACVSampling::
+solve_for_C_G_c_g(RealSymMatrix& C_G, RealSymMatrix& C_G_inv, RealVector& c_g,
+		  RealVector& lhs, bool copy_C_G, bool copy_c_g)
 {
   // The idea behind this approach is to leverage both the solution refinement
   // in solve() and equilibration during factorization (inverting C_G in place
@@ -1730,15 +2276,19 @@ solve_for_C_G_c_g(RealSymMatrix& C_G, RealVector& c_g, RealVector& lhs,
   if (lhs.length() != n) lhs.size(n); // not sure if initialization matters
 
   if (hardenNumericSoln) {
-    RealMatrix C_G_inv;  Real rcond;
+    Real rcond;  //RealMatrix C_G_inv;
+    // copy_C_G can be ignored since RealSymMatrix is copied to RealMatrix
+    // copy_c_g can be ignored since multiply() accepts RHS as const
     pseudo_inverse(C_G, C_G_inv, rcond);
-    lhs.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1., C_G_inv, c_g, 0.);
+    lhs.multiply(Teuchos::LEFT_SIDE, 1., C_G_inv, c_g, 0.);
     if (outputLevel >= DEBUG_OUTPUT)
       Cout << "GenACV pseudo-inverse solve for LHS:\n" << lhs << "has rcond = "
 	   << rcond << std::endl;
   }
-  else
+  else {
     cholesky_solve(C_G, lhs, c_g, copy_C_G, copy_c_g);
+    //spd_solver.invert(); copy_data(CG, C_G_inv); // not needed since inactive
+  }
 }
 
 
@@ -1752,32 +2302,14 @@ estimator_variance_ratios(const RealVector& cd_vars, RealVector& estvar_ratios)
   //       the need to map indices (DAG values to sample count indices) as DAG
   //       source/target can be used directly as indices in N_vec/z1/z2)
 
+  RealVector N_vec;
+  inflate_variables_to_N(cd_vars, N_vec);
+  compute_G_g_from_N(N_vec, GMat, gVec);
+
   const UShortArray& approx_set = activeModelSetIter->first;
   size_t num_approx = approx_set.size();
-  RealVector N_vec;  inflate_variables(cd_vars, N_vec, approx_set);
-  Real R_sq, N_H = N_vec[numApprox]; // R_ONLY: N_vec inflated w/ avg NLevActual
-  switch (optSubProblemForm) {
-  case R_ONLY_LINEAR_CONSTRAINT:  case R_AND_N_NONLINEAR_CONSTRAINT:
-    for (size_t i=0; i<numApprox; ++i)
-      N_vec[i] *= N_H; // N_i = r_i * N
-    compute_parameterized_G_g(N_vec);
-    break;
-  case N_MODEL_LINEAR_OBJECTIVE:  case N_MODEL_LINEAR_CONSTRAINT:
-    compute_parameterized_G_g(N_vec);
-    break;
-  }
-
+  Real R_sq, N_H = N_vec[num_approx];
   for (size_t qoi=0; qoi<numFunctions; ++qoi) {
-    //invert_C_G_matrix(covLL[qoi], GMat, C_G_inv);
-    //compute_c_g_vector(covLH, qoi, gVec, c_g);
-    //R_sq = compute_R_sq(C_G_inv, c_g, varH[qoi], N_H);
-    //if (outputLevel >= DEBUG_OUTPUT)
-    //  Cout << "-----------------------------\n"
-    // 	     << "GenACV::estimator_variance_ratios(): C-G inverse =\n"
-    // 	     << C_G_inv << "c-g vector =\n" << c_g
-    // 	     << " Rsq[" << qoi << "] via invert() = " << R_sq
-    // 	     << "\n-----------------------------\n" << std::endl;
-
     R_sq = compute_R_sq(covLL[qoi], GMat, covLH, gVec, qoi, approx_set,
 			varH[qoi], N_H);
     //if (outputLevel >= DEBUG_OUTPUT)
@@ -1789,13 +2321,99 @@ estimator_variance_ratios(const RealVector& cd_vars, RealVector& estvar_ratios)
       /*
       Real nugget = 1.e-6;
       while (R_sq >= 1. and nugget_cntr <= 10) {
-	R_sq = compute_R_sq(covLL[qoi], GMat, covLH, gVec, qoi,
-	                    varH[qoi], N_H, nugget);
+	R_sq =
+	  compute_R_sq(covLL[qoi], G, covLH, g, qoi, varH[qoi], N_H, nugget);
 	nugget *= 10.;  ++nugget_cntr;
       }
       */
     }
     estvar_ratios[qoi] = (1. - R_sq);
+  }
+}
+
+
+void NonDGenACVSampling::
+estimator_variance_ratio_gradients(const RealVector& cd_vars,
+				   RealMatrix& evr_grads)
+{
+  size_t q, v, num_v = numApprox+1;
+  if (evr_grads.numRows() != num_v || evr_grads.numCols() != numFunctions)
+    evr_grads.shapeUninitialized(num_v, numFunctions);
+
+  // d(abc) = abc' + ab'c + a'bc
+  // d[triple_prod]/dN
+  //   = cg^T CG_inv d[cg] + cg^T d[CG_inv] cg + d[cg]^T CG_inv cg
+  // where d[CG_inv] = -CG_inv dCG/dN CG_inv [see also ML BLUE]
+
+  RealSymMatrix      CG, CG_inv;  RealVector cg, inflate_cdv, N_vec;
+  RealSymMatrixArray dG_dN, dCG_dN;  RealVectorArray dg_dN, dcg_dN;
+  Real rcond;
+  const UShortArray& approx_set = activeModelSetIter->first;
+
+  inflate_variables_to_N(cd_vars, N_vec);
+  compute_G_g_from_N(N_vec, GMat, gVec);
+  compute_G_g_gradients_from_N(N_vec, dG_dN, dg_dN);
+
+  for (q=0; q<numFunctions; ++q) {
+    const RealSymMatrix& covLL_q = covLL[q];
+    // form d[triple_prod]/dN:
+    combine_with_covariance(covLL_q, covLH, q, approx_set, GMat, gVec, CG, cg);
+    combine_gradients_with_covariance(covLL_q, covLH, q, approx_set,
+				      dG_dN, dg_dN, dCG_dN, dcg_dN);
+    pseudo_inverse(CG, CG_inv, rcond);
+    for (v=0; v<num_v; ++v) {
+      Real& evr_grad_vq = evr_grads(v,q);
+      // symmetry allows combination of terms 1 + 3 = 2 cf^T CG_inv d[cg]
+      evr_grad_vq = symMatVecTripleProduct(2., cg, CG_inv,    dcg_dN[v])
+	          + symMatVecTripleProduct(1., cg, dCG_dN[v], cg);
+      // from d(triple) to evr_grads:
+      evr_grad_vq /= -varH[q];
+    }
+  }
+}
+
+
+void NonDGenACVSampling::
+estimator_variance_ratios_and_gradients(const RealVector& cd_vars,
+					RealVector& estvar_ratios,
+					RealMatrix& evr_grads)
+{
+  size_t q, v, num_v = numApprox+1;
+  if (estvar_ratios.empty()) estvar_ratios.sizeUninitialized(numFunctions);
+  if (evr_grads.numRows() != num_v || evr_grads.numCols() != numFunctions)
+    evr_grads.shapeUninitialized(num_v, numFunctions);
+
+  // d(abc) = abc' + ab'c + a'bc
+  // d[triple_prod]/dN
+  //   = cg^T CG_inv d[cg] + cg^T d[CG_inv] cg + d[cg]^T CG_inv cg
+  // where d[CG_inv] = -CG_inv dCG/dN CG_inv [see also ML BLUE]
+
+  const UShortArray& approx_set = activeModelSetIter->first;
+  RealSymMatrix      CG, CG_inv;  RealVector cg, lhs, inflate_cdv, N_vec;
+  RealSymMatrixArray dG_dN, dCG_dN;  RealVectorArray dg_dN, dcg_dN;
+  Real varH_q;
+
+  inflate_variables_to_N(cd_vars, N_vec);
+  compute_G_g_from_N(N_vec, GMat, gVec);
+  compute_G_g_gradients_from_N(N_vec, dG_dN, dg_dN);
+
+  for (q=0; q<numFunctions; ++q) {
+    const RealSymMatrix& covLL_q = covLL[q];  varH_q = varH[q];
+    // form d[triple_prod]/dN:
+    combine_with_covariance(covLL_q, covLH, q, approx_set, GMat, gVec, CG, cg);
+    solve_for_C_G_c_g(CG, CG_inv, cg, lhs, false, false);//Ok to modify C_G,c_g
+    estvar_ratios[q] = 1. - compute_R_sq(cg, lhs, varH_q);
+
+    combine_gradients_with_covariance(covLL_q, covLH, q, approx_set,
+				      dG_dN, dg_dN, dCG_dN, dcg_dN);
+    for (v=0; v<num_v; ++v) {
+      Real& evr_grad_vq = evr_grads(v,q);
+      // symmetry allows combination of terms 1 + 3 = 2 cf^T CG_inv d[cg]
+      evr_grad_vq = symMatVecTripleProduct(2., cg, CG_inv,    dcg_dN[v])
+	          + symMatVecTripleProduct(1., cg, dCG_dN[v], cg);
+      // from d(triple) to evr_grads:
+      evr_grad_vq /= -varH_q;
+    }
   }
 }
 
@@ -2107,180 +2725,6 @@ accumulate_genacv_sums(IntRealMatrixMap& sum_L_shared,
 			  inflate_approx);
     }
   }
-}
-
-
-void NonDGenACVSampling::compute_parameterized_G_g(const RealVector& N_vec)
-{
-  // Invert N_vec ordering
-  // > Dakota r_i ordering is low-to-high --> reversed from Peherstorfer
-  //   (HF = 1, MF = 2, LF = 3) and Gorodetsky,Bomarito (HF = 0, MF = 1, LF = 2)
-  // > incoming N_vec is ordered as for Dakota r_i: LF = 0, MF = 1, HF = 2
-  // > incoming DAG is zero root as in Bomarito 2022 --> reverse DAG ordering
-  // See also NonDNumericAllocSampling::mfmc_analytic_solution()
-
-  // Here we use ACV notation: z_i is comprised of N_i incoming samples
-  // including z^1_i (less resolved "correlated mean estimator") and z^2_i
-  // (more resolved "control variate mean").  Mapping from GenACV notation:
-  // "z^*_i" --> z^1_i, "z_i" --> z^2_i, "z_{i* U i}" --> z_i
-
-  // Note: N_vec,z1,z2 are inflated to full dimension, avoiding the need to
-  //       map indices (DAG values to sample count indices)
-
-  //Cout << "Call " << ++compGgCntr << " to compute_param_G_g()" << std::endl;
-  //if (compGgCntr == 385)
-  //  Cout << "Here.\n";
-
-  const UShortArray& approx_set = activeModelSetIter->first;
-  const UShortArray& active_dag = *activeDAGIter;
-  size_t i, j, dag_size = active_dag.size();
-  if (GMat.numRows() != dag_size) GMat.shapeUninitialized(dag_size);
-  if (gVec.length()  != dag_size) gVec.sizeUninitialized(dag_size);
-
-  //RealMatrix FGMat(dag_size, dag_size, false); // to verify matrix symmetry
-
-  // define sample recursion sets backwards (from z_H down to lowest fid)
-  Real src_i, src_j, tgt_i, tgt_j, z1_i;
-  switch (mlmfSubMethod) {
-  case SUBMETHOD_ACV_MF: { // Bomarito Eqs. 16-17
-    Real z2_i, z1_j, z2_j, z_H = N_vec[numApprox];
-    for (i=0; i<dag_size; ++i) {
-      src_i = approx_set[i];  tgt_i = active_dag[i];
-      z1_i = /*z2_bi = z_bi =*/ N_vec[tgt_i];  z2_i = /*z_i =*/ N_vec[src_i];
-      gVec[i] = (std::min(z1_i, z_H) / z1_i - std::min(z2_i, z_H) / z2_i) / z_H;
-      for (j=0; j<=i; ++j) {
-	src_j = approx_set[j];  tgt_j = active_dag[j];
-	z1_j  = /*z2_bj = z_bj =*/ N_vec[tgt_j];  z2_j = /*z_j =*/ N_vec[src_j];
-	GMat(i,j)
-	  = (std::min(z1_i, z1_j)/z1_j - std::min(z1_i, z2_j)/z2_j)/z1_i
-	  + (std::min(z2_i, z2_j)/z2_j - std::min(z2_i, z1_j)/z1_j)/z2_i;
-      }
-    }
-    break;
-  }
-  case SUBMETHOD_ACV_IS: {
-    // Bomarito Eqs. 21-22.  Notation conversion (Bomarito in quotes):
-    // > "N_{beta_i}" denotes z1_i
-    // > "N_i" denotes "zprime_i" which is NOT z2_i, but rather z2_i - z1_i
-    //   (where z2_i = N_vec[i])
-    // > z1_src is matched to "N_tgt", again "zprime_tgt" = z2_tgt - z1_tgt
-    RealVector z1, z2;  unroll_z1_z2(N_vec, z1, z2);
-    Real z_i, z_j, zi_zj, zprime_i;
-    for (i=0; i<dag_size; ++i) {
-      src_i = approx_set[i];   tgt_i = active_dag[i];
-      z_i   = N_vec[src_i];    z1_i  = z1[src_i];
-      zprime_i = z2[src_i] - z1_i;
-      gVec[i] = (tgt_i == numApprox) ? 1./z1_i - 1./z_i : 0.; // N_0 -> N_beta_i
-      for (j=0; j<=i; ++j) {
-	src_j = approx_set[j];  tgt_j = active_dag[j];
-	z_j   = N_vec[src_j];   zi_zj = z_i * z_j;
-	GMat(i,j) = 0.;     
-	if (tgt_i == tgt_j) GMat(i,j) += 1./z1_i - 1./z_i - 1./z_j + z1_i/zi_zj;
-	if (tgt_i == src_j) GMat(i,j) += z1_i/zi_zj - 1./z_j;
-	if (src_i == tgt_j) GMat(i,j) += zprime_i/zi_zj - 1./z_i;
-	if (src_i == src_j) GMat(i,j) += zprime_i/zi_zj;
-      }
-    }
-    break;
-  }
-  case SUBMETHOD_ACV_RD: {
-    // Bomarito Eqs. 19-20.  Notation conversion (Bomarito in quotes):
-    // > "N_{beta_i}" denotes z1_i and "N_i" denotes z2_i
-    // > z1_src is matched to "N_tgt", again z2_tgt
-    RealVector z1, z2;  unroll_z1_z2(N_vec, z1, z2);
-    Real z2_i;
-    for (i=0; i<dag_size; ++i) {
-      src_i = approx_set[i];  tgt_i = active_dag[i];
-      z1_i  = z1[src_i];      z2_i  = z2[src_i];
-      gVec[i] = (tgt_i == numApprox) ? 1./z1_i : 0.; // N_0 -> N_beta_i
-      for (j=0; j<=i; ++j) {
-	src_j = approx_set[j];  tgt_j = active_dag[j];
-	GMat(i,j) = 0.;
-	if (tgt_i == tgt_j) GMat(i,j) += 1./z1_i;
-	if (tgt_i == src_j) GMat(i,j) -= 1./z1_i; // always false for root dag
-	if (src_i == tgt_j) GMat(i,j) -= 1./z2_i; // always false for root dag
-	if (src_i == src_j) GMat(i,j) += 1./z2_i;
-      }
-    }
-    break;
-  }
-  default:
-    Cerr << "Error: bad sub-method name (" << mlmfSubMethod << ") in NonDGen"
-	 << "ACVSampling::compute_parameterized_G_g()" << std::endl;
-    abort_handler(METHOD_ERROR); break;
-  }
-
-  //Cout << "Full G matrix:\n" << FGMat << "g vector:\n" << gVec << std::endl;
-  //exit(0);
-
-  if (outputLevel >= DEBUG_OUTPUT) {
-    Cout << "For dag:\n"; print_dag(active_dag, approx_set);
-    Cout << "G matrix:\n" << GMat << "g vector:\n" << gVec << std::endl;
-  }
-}
-
-
-void NonDGenACVSampling::
-unroll_z1_z2(const RealVector& N_vec, RealVector& z1, RealVector& z2)
-{
-  // z1, z2 denote z_m^1 and z_m^2 from ACV paper: Gorodetsky et al., JCP 2020
-  // > N_vec,z1,z2 are inflated to full dimension, avoiding the need to map
-  //   indices (DAG values to sample count indices) 
-
-  //Real z_H = N_vec[numApprox];
-  z1.size(numGroups);  z1[numApprox] = 0;                // JCP ACV Fig 2 "z"
-  z2.size(numGroups);  z2[numApprox] = N_vec[numApprox]; // JCP ACV Fig 2 "z"
-
-  switch (mlmfSubMethod) {
-  case SUBMETHOD_ACV_MF: { // not used (special unroll logic not required)
-    const UShortArray& approx_set = activeModelSetIter->first;
-    const UShortArray& active_dag = *activeDAGIter;
-    unsigned short i, source, target;  size_t dag_size = active_dag.size();
-    for (i=0; i<dag_size; ++i) {
-      source = approx_set[i];  target = active_dag[i];
-      //z1[i] = N_vec[target];  z2[i] = N_vec[source];    // COMPACTED z1,z2
-      z1[source] = N_vec[target];  z2[source] = N_vec[source]; // FULL z1,z2
-    }
-    break;
-  }
-  case SUBMETHOD_ACV_IS: {
-    // leverage reverseActiveDAG and orderedRootList:
-    UShortList::const_iterator r_cit;  UShortSet::const_iterator d_cit;
-    unsigned short source, target;  Real z1t;
-    for (r_cit=orderedRootList.begin(); r_cit!=orderedRootList.end(); ++r_cit) {
-      target = *r_cit;  z1t = z1[target];
-      const UShortSet& reverse_dag = reverseActiveDAG[target];
-      for (d_cit=reverse_dag.begin(); d_cit!=reverse_dag.end(); ++d_cit) {
-	source = *d_cit;
-	z1[source] = N_vec[target] - z1t; // Bomarito Fig 6, JCP ACV Fig 2c
-	z2[source] = N_vec[source];
-      }
-    }
-    break;
-  }
-  case SUBMETHOD_ACV_RD: {
-    // leverage reverseActiveDAG and orderedRootList:
-    UShortList::const_iterator r_cit;  UShortSet::const_iterator d_cit;
-    unsigned short source, target;  Real z2t;
-    for (r_cit=orderedRootList.begin(); r_cit!=orderedRootList.end(); ++r_cit) {
-      target = *r_cit;  z2t = z2[target];
-      const UShortSet& reverse_dag = reverseActiveDAG[target];
-      for (d_cit=reverse_dag.begin(); d_cit!=reverse_dag.end(); ++d_cit) {
-	source = *d_cit;  Real& z1s = z1[source];
-	z1s = z2t;                        // Bomarito Fig 5, JCP ACV Fig 2a
-	z2[source] = N_vec[source] - z1s;
-      }
-    }
-    break;
-  }
-  default:
-    Cerr << "Error: unsupported mlmfSubMethod in unroll_z1_z2()" << std::endl;
-    abort_handler(METHOD_ERROR);  break;
-  }
-
-  if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "GenACV unroll of N_vec:\n" << N_vec << "into z1:\n" << z1
-	 << "and z2:\n" << z2 << std::endl;
 }
 
 

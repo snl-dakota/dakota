@@ -701,10 +701,68 @@ compute_F_f_gradients_from_N(const RealVector& N, RealSymMatrixArray& dF_dN,
 
 
 void NonDACVSampling::
-compute_C_F_c_f_gradients(const RealSymMatrix& C, const RealMatrix& c,
-			  size_t qoi, const RealSymMatrixArray& dF_dN,
-			  const RealVectorArray& df_dN,
-			  RealSymMatrixArray& dCF_dN, RealVectorArray& dcf_dN)
+estimator_variance_ratios(const RealVector& cd_vars, RealVector& estvar_ratios)
+{
+  // map incoming continuous design vars into r_i factors and compute F
+  RealSymMatrix F;
+  switch (optSubProblemForm) {
+  case N_MODEL_LINEAR_OBJECTIVE:  case N_MODEL_LINEAR_CONSTRAINT: {
+    compute_F_matrix_from_N(cd_vars, F);
+    break;
+  }
+  case R_ONLY_LINEAR_CONSTRAINT: // N is a vector constant for opt sub-problem
+  case R_AND_N_NONLINEAR_CONSTRAINT:
+    compute_F_matrix_from_r(cd_vars, F); // admits r as leading numApprox terms
+    break;
+  }
+  // compute ACV estimator variance given F
+  acv_estvar_ratios(F, estvar_ratios);
+}
+
+
+void NonDACVSampling::
+estimator_variance_ratio_gradients(const RealVector& cd_vars,
+				   RealMatrix& evr_grads)
+{
+  size_t q, v, num_v = numApprox+1;
+  if (evr_grads.numRows() != num_v || evr_grads.numCols() != numFunctions)
+    evr_grads.shapeUninitialized(num_v, numFunctions);
+
+  // d(abc) = abc' + ab'c + a'bc
+  // d[triple_prod]/dN
+  //   = cf^T CF_inv d[cf] + cf^T d[CF_inv] cf + d[cf]^T CF_inv cf
+  // where d[CF_inv] = -CF_inv dCF/dN CF_inv [see also ML BLUE]
+
+  Real rcond;
+  RealSymMatrix      F, CF, CF_inv;  RealVector cf;
+  RealSymMatrixArray dF_dN, dCF_dN;  RealVectorArray df_dN, dcf_dN;
+  compute_F_matrix_from_N(cd_vars, F); // *** TO DO: implement estimator_variance_ratios_and_gradients() for efficiency ***
+  compute_F_f_gradients_from_N(cd_vars, dF_dN, df_dN);
+  for (q=0; q<numFunctions; ++q) {
+    const RealSymMatrix& covLL_q = covLL[q];
+    // form d[triple_prod]/dN:
+    combine_with_covariance(covLL_q, covLH, q, F, CF, cf); // *** TO DO: implement estimator_variance_ratios_and_gradients() for efficiency ***
+    combine_gradients_with_covariance(covLL_q, covLH, q, dF_dN, df_dN,
+				      dCF_dN, dcf_dN);
+    pseudo_inverse(CF, CF_inv, rcond);
+    for (v=0; v<num_v; ++v) {
+      Real& evr_grad_vq = evr_grads(v,q);
+      // symmetry allows combination of terms 1 + 3 = 2 cf^T CF_inv d[cf]
+      evr_grad_vq = symMatVecTripleProduct(2., cf, CF_inv,    dcf_dN[v])
+	          + symMatVecTripleProduct(1., cf, dCF_dN[v], cf);
+      // from d(triple) to evr_grads:
+      evr_grad_vq /= -varH[q];
+    }
+  }
+}
+
+
+void NonDACVSampling::
+combine_gradients_with_covariance(const RealSymMatrix& C, const RealMatrix& c,
+				  size_t qoi, const RealSymMatrixArray& dF_dN,
+				  const RealVectorArray& df_dN,
+				  RealSymMatrixArray& dCF_dN,
+				  RealVectorArray& dcf_dN)
 {
   // no dependence on QoI, only dependence is on N
   size_t i, j, v, num_v = df_dN.size();
@@ -729,42 +787,6 @@ compute_C_F_c_f_gradients(const RealSymMatrix& C, const RealMatrix& c,
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "For sub-method " << mlmfSubMethod << ":\ndCF/dN matrix array:\n"
 	 << dCF_dN << "dcf/dN vector array:\n" << dcf_dN << std::endl;
-}
-
-
-void NonDACVSampling::
-estimator_variance_ratio_gradients(const RealVector& cd_vars,
-				   RealMatrix& evr_grads)
-{
-  size_t q, v, num_v = numApprox+1;
-  if (evr_grads.numRows() != num_v || evr_grads.numCols() != numFunctions)
-    evr_grads.shapeUninitialized(num_v, numFunctions);
-
-  // d(abc) = abc' + ab'c + a'bc
-  // d[triple_prod]/dN
-  //   = cf^T CF_inv d[cf] + cf^T d[CF_inv] cf + d[cf]^T CF_inv cf
-  // where d[CF_inv] = -CF_inv dCF/dN CF_inv [see also ML BLUE]
-
-  Real rcond;
-  RealSymMatrix      F, CF, CF_inv;  RealVector cf;
-  RealSymMatrixArray dF_dN, dCF_dN;  RealVectorArray df_dN, dcf_dN;
-  compute_F_matrix_from_N(cd_vars, F);
-  compute_F_f_gradients_from_N(cd_vars, dF_dN, df_dN);
-  for (q=0; q<numFunctions; ++q) {
-    const RealSymMatrix& covLL_q = covLL[q];
-    // form d[triple_prod]/dN:
-    compute_C_F_c_f(covLL_q, F, covLH, q, CF, cf);
-    compute_C_F_c_f_gradients(covLL_q, covLH, q, dF_dN, df_dN, dCF_dN, dcf_dN);
-    pseudo_inverse(CF, CF_inv, rcond);
-    for (v=0; v<num_v; ++v) {
-      Real& evr_grad_vq = evr_grads(v,q);
-      // symmetry allows combination of terms 1 + 3 = 2 cf^T CF_inv d[cf]
-      evr_grad_vq = symMatVecTripleProduct(2., cf, CF_inv,    dcf_dN[v])
-	          + symMatVecTripleProduct(1., cf, dCF_dN[v], cf);
-      // from d(triple) to evr_grads:
-      evr_grad_vq /= -varH[q];
-    }
-  }
 }
 
 

@@ -79,6 +79,11 @@ protected:
 
   void estimator_variance_ratios(const RealVector& cd_vars,
 				 RealVector& estvar_ratios) override;
+  void estimator_variance_ratio_gradients(const RealVector& cd_vars,
+					  RealMatrix& evr_grads) override;
+  void estimator_variance_ratios_and_gradients(const RealVector& cd_vars,
+					       RealVector& estvar_ratios,
+					       RealMatrix& evr_grads) override;
 
   void augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
 				       RealVector& lin_ineq_lb,
@@ -191,9 +196,27 @@ private:
 			       const UShortList& root_list,
 			       RealVector& avg_eval_ratios);
 
-  void compute_parameterized_G_g(const RealVector& N_vec);
-  void unroll_z1_z2(const RealVector& N_vec, RealVector& z1, RealVector& z2);
+  //void compute_G_g(const RealVector& cd_vars);
+  void compute_G_g_from_N(const RealVector& N_vec,
+			  RealSymMatrix& G, RealVector& g);
+  void compute_G_g_gradients_from_N(const RealVector& N_vec,
+				    RealSymMatrixArray& dG_dN,
+				    RealVectorArray& dg_dN);
 
+  void unroll_z1_z2(const RealVector& N_vec, RealVector& z1, RealVector& z2);
+  void unroll_z1_z2_gradients(RealMatrix& z1_grads, RealMatrix& z2_grads);
+
+  void combine_with_covariance(const RealSymMatrix& C, const RealMatrix& c,
+			       size_t qoi, const UShortArray& approx_set,
+			       const RealSymMatrix& G, const RealVector& g,
+			       RealSymMatrix& C_G,     RealVector& c_g);
+  void combine_gradients_with_covariance(const RealSymMatrix& C,
+					 const RealMatrix& c, size_t qoi,
+					 const UShortArray& approx_set,
+					 const RealSymMatrixArray& dG_dN,
+					 const RealVectorArray& dg_dN,
+					 RealSymMatrixArray& dCG_dN,
+					 RealVectorArray& dcg_dN);
   /*
   void invert_C_G_matrix(const RealSymMatrix& C, const RealSymMatrix& G,
 			 RealSymMatrix& C_G_inv);
@@ -202,11 +225,8 @@ private:
   Real compute_R_sq(const RealSymMatrix& C_G_inv, const RealVector& c_g,
 		    Real var_H_q, Real N_H);
   */
-  void compute_C_G_c_g(const RealSymMatrix& C, const RealSymMatrix& G,
-		       const RealMatrix&    c, const RealVector& g,
-		       size_t qoi,             const UShortArray& approx_set,
-		       RealSymMatrix& C_G,     RealVector& c_g);
-  void solve_for_C_G_c_g(RealSymMatrix& C_G, RealVector& c_g, RealVector& lhs,
+  void solve_for_C_G_c_g(RealSymMatrix& C_G,   RealSymMatrix& C_G_inv,
+			 RealVector& c_g,      RealVector& lhs,
 			 bool copy_C_G = true, bool copy_c_g = true);
   Real solve_for_triple_product(const RealSymMatrix& C,	const RealSymMatrix& G,
 				const RealMatrix&    c, const RealVector& g,
@@ -214,6 +234,7 @@ private:
   Real compute_R_sq(const RealSymMatrix& C, const RealSymMatrix& G,
 		    const RealMatrix&    c, const RealVector& g, size_t qoi,
 		    const UShortArray& approx_set, Real var_H_q, Real N_H);
+  Real compute_R_sq(RealVector c_g, RealVector lhs, Real var_H_q);
 
   void accumulate_genacv_sums(IntRealMatrixMap& sum_L_shared,
 			      IntRealMatrixMap& sum_L_refined,
@@ -260,8 +281,9 @@ private:
   //void reset_acv();
 
   void inflate_approx_set(const UShortArray& approx_set, SizetArray& index_map);
-  void inflate_variables(const RealVector& cd_vars, RealVector& N_vec,
+  void inflate_variables(const RealVector& cd_vars, RealVector& inflate_vars,
 			 const UShortArray& approx_set);
+  void inflate_variables_to_N(const RealVector& cd_vars, RealVector& N_vec);
 
   // pretty-print DAG using right arrows from approx set
   void print_dag(const UShortArray& dag, const UShortArray& approx_set) const;
@@ -432,21 +454,6 @@ compute_genacv_control(const RealSymMatrix& cov_LL, const RealSymMatrix& G,
   beta.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1., C_G_inv, c_g, 0.);
   //Cout << "compute_acv_control qoi " << qoi+1 << ": beta\n" << beta;
 }
-
-
-inline void NonDGenACVSampling::
-compute_C_G_c_g(const RealSymMatrix& C, const RealSymMatrix& G,
-		const RealMatrix&    c, const RealVector& g,
-		size_t qoi, RealSymMatrix& C_G, RealVector& c_g)
-{
-  size_t i, j, n = C.numRows();
-  C_G.shapeUninitialized(n);  c_g.sizeUninitialized(n);
-  for (i=0; i<n; ++i) {
-    c_g[i] = c(qoi, i) * g[i];
-    for (j=0; j<=i; ++j)
-      C_G(i,j) = C(i,j) * G(i,j); // Ok for RealSymMatrix
-  }
-}
 */
 
 
@@ -462,16 +469,16 @@ inflate_approx_set(const UShortArray& approx_set, SizetArray& index_map)
 
 
 inline void NonDGenACVSampling::
-inflate_variables(const RealVector& cd_vars, RealVector& N_vec,
+inflate_variables(const RealVector& cd_vars, RealVector& inflate_vars,
 		  const UShortArray& approx_set)
 {
   size_t i, num_approx = approx_set.size(), num_cdv = cd_vars.length();
-  if  (N_vec.length() == numGroups) N_vec = 0.;
-  else N_vec.size(numGroups);
+  if  (inflate_vars.length() == numGroups) inflate_vars = 0.;
+  else inflate_vars.size(numGroups);
   for (i=0; i<num_approx; ++i)
-    N_vec[approx_set[i]] = cd_vars[i];
+    inflate_vars[approx_set[i]] = cd_vars[i];
   if (num_cdv == num_approx + 1)
-    N_vec[numApprox] = cd_vars[num_approx];
+    inflate_vars[numApprox] = cd_vars[num_approx];
   else {
     // N_H not provided so pull from latest counter values
     size_t hf_form_index, hf_lev_index;
@@ -479,7 +486,7 @@ inflate_variables(const RealVector& cd_vars, RealVector& N_vec,
     // estimator_variance_metric() uses actual (not alloc) to sync with varH
     // so use same prior to defining G,g in precompute_genacv_controls() and
     // estimator_variance_ratios()
-    N_vec[numApprox] = //(backfillFailures) ?
+    inflate_vars[numApprox] = //(backfillFailures) ?
       average(NLevActual[hf_form_index][hf_lev_index]);// :
       //NLevAlloc[hf_form_index][hf_lev_index];
   }
@@ -487,10 +494,19 @@ inflate_variables(const RealVector& cd_vars, RealVector& N_vec,
 
 
 inline void NonDGenACVSampling::
-compute_C_G_c_g(const RealSymMatrix& C, const RealSymMatrix& G,
-		const RealMatrix&    c, const RealVector& g,
-		size_t qoi,             const UShortArray& approx_set,
-		RealSymMatrix& C_G,     RealVector& c_g)
+inflate_variables_to_N(const RealVector& cd_vars, RealVector& N_vec)
+{
+  RealVector inflate_cdv;
+  inflate_variables(cd_vars, inflate_cdv, activeModelSetIter->first);
+  design_vars_to_N(inflate_cdv, N_vec);
+}
+
+
+inline void NonDGenACVSampling::
+combine_with_covariance(const RealSymMatrix& C,	const RealMatrix& c,
+			size_t qoi, const UShortArray& approx_set,
+			const RealSymMatrix& G, const RealVector& g,
+			RealSymMatrix& C_G, RealVector& c_g)
 {
   size_t i, j, n = G.numRows();  unsigned short approx_i;
   C_G.shapeUninitialized(n);  c_g.sizeUninitialized(n);
@@ -508,9 +524,9 @@ solve_for_triple_product(const RealSymMatrix& C, const RealSymMatrix& G,
 			 const RealMatrix&    c, const RealVector& g,
 			 size_t qoi, const UShortArray& approx_set)
 {
-  RealSymMatrix C_G;  RealVector c_g, lhs;
-  compute_C_G_c_g(C, G, c, g, qoi, approx_set, C_G, c_g);
-  solve_for_C_G_c_g(C_G, c_g, lhs, false, true); // retain c_g for use below
+  RealSymMatrix C_G, C_G_inv;  RealVector c_g, lhs;
+  combine_with_covariance(C, c, qoi, approx_set, G, g, C_G, c_g);
+  solve_for_C_G_c_g(C_G, C_G_inv, c_g, lhs, false, true); // retain original c_g
 
   size_t i, n = G.numRows();
   Real trip_prod = 0.;
@@ -531,14 +547,42 @@ compute_R_sq(const RealSymMatrix& C, const RealSymMatrix& G,
 { return solve_for_triple_product(C, G, c, g, qoi, approx_set) * N_H / var_H_q;}
 
 
+inline Real NonDGenACVSampling::
+compute_R_sq(RealVector c_g, RealVector lhs, Real var_H_q)
+{
+  size_t i, n = c_g.length();  Real R_sq = 0.;
+  for (i=0; i<n; ++i)
+    R_sq += c_g(i) * lhs(i); // triple_product
+  R_sq /= var_H_q;   // triple_product to R_sq
+  return R_sq;
+}
+
+
+/*
+inline void NonDGenACVSampling::
+compute_G_g(const RealVector& cd_vars, RealSymMatrix& G, RealVector& g,
+            RealVector& N_vec)
+{
+  // Note: cd_vars is the dimension of the numerical optimization whereas N_vec
+  //       is inflated to full dimension for convenience/efficiency --> avoids
+  //       the need to map indices (DAG values to sample count indices) as DAG
+  //       source/target can be used directly as indices in N_vec/z1/z2)
+
+  inflate_variables_to_N(cd_vars, N_vec);
+  compute_G_g_from_N(N_vec, G, g); // N_vec is inflated
+}
+*/
+
+
 inline void NonDGenACVSampling::
 precompute_genacv_controls(const RealVector& soln_vars)
 {
   // Note: while G,g have a more explicit dependence on N_shared[qoi] than F,
   // we mirror the averaged sample allocations and compute G,g once
-  RealVector inflate_soln_vars;
-  inflate_variables(soln_vars, inflate_soln_vars, activeModelSetIter->first);
-  compute_parameterized_G_g(inflate_soln_vars);
+
+  RealVector N_vec;
+  inflate_variables_to_N(soln_vars, N_vec);
+  compute_G_g_from_N(N_vec, GMat, gVec);
 }
 
 
@@ -548,9 +592,9 @@ solve_for_genacv_control(const RealSymMatrix& cov_LL, const RealSymMatrix& G,
 			 size_t qoi, const UShortArray& approx_set,
 			 RealVector& beta)
 {
-  RealSymMatrix C_G;  RealVector c_g;
-  compute_C_G_c_g(cov_LL, G, cov_LH, g, qoi, approx_set, C_G, c_g);
-  solve_for_C_G_c_g(C_G, c_g, beta, false, false); // Ok to modify C_G,c_g
+  RealSymMatrix C_G, C_G_inv;  RealVector c_g;
+  combine_with_covariance(cov_LL, cov_LH, qoi, approx_set, G, g, C_G, c_g);
+  solve_for_C_G_c_g(C_G, C_G_inv, c_g, beta, false, false);// can modify C_G,c_g
 
   //Cout << "compute_genacv_control qoi " << qoi+1 << ": C_G\n" << C_G
   //     << "c_g\n" << c_g << "beta\n" << beta;
