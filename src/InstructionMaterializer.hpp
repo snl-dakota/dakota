@@ -14,6 +14,9 @@
 #include "generated_ir_table_types.hpp"
 
 #include <nlohmann/json_fwd.hpp>
+#include <functional>
+#include <string_view>
+#include <unordered_map>
 #include <unordered_set>
 
 namespace Dakota {
@@ -42,6 +45,22 @@ public:
   IRState materialize(const nlohmann::json& validated_json) const;
 
 private:
+  struct HandlerContext
+  {
+    const nlohmann::json& block_json;
+    IRStore& store;
+    std::string_view current_path;
+  };
+
+  using OpHandler = std::function<void(
+    const irgen::WriteOp& op,
+    const irgen::KeyContract& contract,
+    const HandlerContext& ctx
+  )>;
+
+  /// Registry for OpKind-dispatched keyword handlers.
+  static const std::unordered_map<irgen::OpKind, OpHandler>& op_handlers();
+
   /// Initialize all IR keys from generated contract defaults.
   void initialize_defaults(IRState& state) const;
 
@@ -53,11 +72,59 @@ private:
 
   /// Apply one generated write operation.
   void apply_write_op(const nlohmann::json& block_json,
+                      std::string_view current_path,
                       const irgen::WriteOp& op,
                       const irgen::BlockTables& tables,
                       irgen::BlockType block,
                       IRStore& store,
                       WriteTracker& writes) const;
+
+  static void handle_direct_value(const irgen::WriteOp& op,
+                                  const irgen::KeyContract& contract,
+                                  const HandlerContext& ctx);
+  static void handle_literal_assign(const irgen::WriteOp& op,
+                                    const irgen::KeyContract& contract,
+                                    const HandlerContext& ctx);
+  static void handle_presence_bool(const irgen::WriteOp& op,
+                                   const irgen::KeyContract& contract,
+                                   const HandlerContext& ctx);
+  static void handle_presence_literal(const irgen::WriteOp& op,
+                                      const irgen::KeyContract& contract,
+                                      const HandlerContext& ctx);
+  static void handle_presence_enum(const irgen::WriteOp& op,
+                                   const irgen::KeyContract& contract,
+                                   const HandlerContext& ctx);
+  static void handle_augment_enum(const irgen::WriteOp& op,
+                                  const irgen::KeyContract& contract,
+                                  const HandlerContext& ctx);
+  static void handle_categorical(const irgen::WriteOp& op,
+                                 const irgen::KeyContract& contract,
+                                 const HandlerContext& ctx);
+  static void handle_adjacency_matrix(const irgen::WriteOp& op,
+                                      const irgen::KeyContract& contract,
+                                      const HandlerContext& ctx);
+  static void handle_discrete_set_values(const irgen::WriteOp& op,
+                                         const irgen::KeyContract& contract,
+                                         const HandlerContext& ctx);
+  static void handle_histogram_bin_uncertain(const irgen::WriteOp& op,
+                                             const irgen::KeyContract& contract,
+                                             const HandlerContext& ctx);
+  static void handle_histogram_point_uncertain(const irgen::WriteOp& op,
+                                               const irgen::KeyContract& contract,
+                                               const HandlerContext& ctx);
+  static void handle_discrete_uncertain_set_values_probs(
+    const irgen::WriteOp& op,
+    const irgen::KeyContract& contract,
+    const HandlerContext& ctx);
+  static void handle_continuous_interval_uncertain(const irgen::WriteOp& op,
+                                                   const irgen::KeyContract& contract,
+                                                   const HandlerContext& ctx);
+  static void handle_discrete_interval_uncertain(const irgen::WriteOp& op,
+                                                 const irgen::KeyContract& contract,
+                                                 const HandlerContext& ctx);
+  static void handle_uncertain_correlation_matrix(const irgen::WriteOp& op,
+                                                  const irgen::KeyContract& contract,
+                                                  const HandlerContext& ctx);
 };
 
 } // namespace Dakota
