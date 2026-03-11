@@ -14,6 +14,7 @@
 #include <nlohmann/json.hpp>
 
 #include <cctype>
+#include <cstdint>
 #include <stdexcept>
 #include <string>
 
@@ -62,6 +63,75 @@ Dakota::IRValue convert_direct_value(const json& value, dakota::irgen::IrValueTy
   }
 
   return IRValue(value);
+}
+
+uint64_t enum_literal_to_u64(const Dakota::irgen::OpLiteral& lit,
+                             const Dakota::irgen::IrValueType t)
+{
+  using Dakota::IRValue;
+  using Dakota::irgen::IrValueType;
+
+  auto as_u64 = [](const IRValue& v, const char* what) -> uint64_t {
+    if (const auto* p = std::get_if<unsigned short>(&v)) return static_cast<uint64_t>(*p);
+    if (const auto* p = std::get_if<short>(&v)) return static_cast<uint64_t>(*p);
+    if (const auto* p = std::get_if<int>(&v)) return static_cast<uint64_t>(*p);
+    if (const auto* p = std::get_if<size_t>(&v)) return static_cast<uint64_t>(*p);
+    throw std::runtime_error(std::string("InstructionMaterializer::") + what +
+                             " literal has non-integral variant value");
+  };
+
+  switch (t) {
+  case IrValueType::UnsignedShort:
+  case IrValueType::Short:
+  case IrValueType::Int:
+  case IrValueType::SizeT:
+    return as_u64(lit.value, "enum handler");
+  default:
+    throw std::runtime_error(
+      "InstructionMaterializer enum handler requires integral contract type");
+  }
+}
+
+Dakota::IRValue enum_u64_to_irvalue(uint64_t v, Dakota::irgen::IrValueType t)
+{
+  using Dakota::IRValue;
+  using Dakota::irgen::IrValueType;
+  switch (t) {
+  case IrValueType::UnsignedShort:
+    return IRValue(static_cast<unsigned short>(v));
+  case IrValueType::Short:
+    return IRValue(static_cast<short>(v));
+  case IrValueType::Int:
+    return IRValue(static_cast<int>(v));
+  case IrValueType::SizeT:
+    return IRValue(static_cast<size_t>(v));
+  default:
+    throw std::runtime_error(
+      "InstructionMaterializer enum handler requires integral contract type");
+  }
+}
+
+uint64_t current_enum_value_or_zero(const Dakota::IRStore& store,
+                                    const std::string& key,
+                                    Dakota::irgen::IrValueType t)
+{
+  using Dakota::irgen::IrValueType;
+  if (!store.contains(key))
+    return 0;
+
+  switch (t) {
+  case IrValueType::UnsignedShort:
+    return static_cast<uint64_t>(store.get<unsigned short>(key));
+  case IrValueType::Short:
+    return static_cast<uint64_t>(store.get<short>(key));
+  case IrValueType::Int:
+    return static_cast<uint64_t>(store.get<int>(key));
+  case IrValueType::SizeT:
+    return static_cast<uint64_t>(store.get<size_t>(key));
+  default:
+    throw std::runtime_error(
+      "InstructionMaterializer enum handler requires integral contract type");
+  }
 }
 
 } // namespace
@@ -118,22 +188,21 @@ void InstructionMaterializer::handle_presence_enum(const irgen::WriteOp& op,
                                                    const irgen::KeyContract& contract,
                                                    const HandlerContext& ctx)
 {
-  (void)op;
-  (void)contract;
-  (void)ctx;
-  throw std::runtime_error(
-    "InstructionMaterializer::handle_presence_enum disabled: instruction literal typed as String");
+  (void)InstructionMaterializerUtils::required_path(ctx.block_json, ctx.current_path);
+  const uint64_t lit = enum_literal_to_u64(op.literal, contract.ir_value_type);
+  ctx.store.set_value(op.target_local_ir_key, enum_u64_to_irvalue(lit, contract.ir_value_type));
 }
 
 void InstructionMaterializer::handle_augment_enum(const irgen::WriteOp& op,
                                                   const irgen::KeyContract& contract,
                                                   const HandlerContext& ctx)
 {
-  (void)op;
-  (void)contract;
-  (void)ctx;
-  throw std::runtime_error(
-    "InstructionMaterializer::handle_augment_enum disabled: instruction literal typed as String");
+  (void)InstructionMaterializerUtils::required_path(ctx.block_json, ctx.current_path);
+  const uint64_t base = current_enum_value_or_zero(
+    ctx.store, op.target_local_ir_key, contract.ir_value_type);
+  const uint64_t lit = enum_literal_to_u64(op.literal, contract.ir_value_type);
+  const uint64_t out = (base | lit);
+  ctx.store.set_value(op.target_local_ir_key, enum_u64_to_irvalue(out, contract.ir_value_type));
 }
 
 void InstructionMaterializer::handle_categorical(const irgen::WriteOp& op,
