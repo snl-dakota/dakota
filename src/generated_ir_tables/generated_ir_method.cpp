@@ -200,7 +200,7 @@ const std::unordered_map<std::string, KeyContract>& contracts() {
     m.emplace("nond.calibrate_error_mode", KeyContract{IrValueType::UnsignedShort, DefaultSource::Override, IRValue{static_cast<unsigned short>(CALIBRATE_NONE)}});
     m.emplace("nond.chain_samples", KeyContract{IrValueType::Int, DefaultSource::Policy, IRValue{int(0)}});
     m.emplace("nond.collocation_points", KeyContract{IrValueType::SizeT, DefaultSource::Override, IRValue{static_cast<size_t>(SZ_MAX)}});
-    m.emplace("nond.collocation_ratio", KeyContract{IrValueType::Real, DefaultSource::Schema, IRValue{double(0.0)}});
+    m.emplace("nond.collocation_ratio", KeyContract{IrValueType::Real, DefaultSource::Policy, IRValue{double(0.0)}});
     m.emplace("nond.collocation_ratio_terms_order", KeyContract{IrValueType::Real, DefaultSource::Schema, IRValue{double(1.0)}});
     m.emplace("nond.convergence_tolerance_target", KeyContract{IrValueType::Short, DefaultSource::Schema, IRValue{static_cast<short>(VARIANCE_CONSTRAINT_TARGET)}});
     m.emplace("nond.convergence_tolerance_type", KeyContract{IrValueType::Short, DefaultSource::Override, IRValue{static_cast<short>(DEFAULT_CONVERGENCE_TOLERANCE)}});
@@ -246,7 +246,7 @@ const std::unordered_map<std::string, KeyContract>& contracts() {
     m.emplace("nond.expansion_refinement_metric", KeyContract{IrValueType::Short, DefaultSource::Override, IRValue{std::string("Pecos::DEFAULT_METRIC")}});
     m.emplace("nond.expansion_refinement_type", KeyContract{IrValueType::Short, DefaultSource::Override, IRValue{std::string("Pecos::NO_REFINEMENT")}});
     m.emplace("nond.expansion_samples", KeyContract{IrValueType::SizeT, DefaultSource::Override, IRValue{static_cast<size_t>(SZ_MAX)}});
-    m.emplace("nond.expansion_type", KeyContract{IrValueType::Short, DefaultSource::Override, IRValue{static_cast<short>(EXTENDED_U)}});
+    m.emplace("nond.expansion_type", KeyContract{IrValueType::Short, DefaultSource::Schema, IRValue{bool(true)}});
     m.emplace("nond.export_corrected_model_file", KeyContract{IrValueType::String, DefaultSource::Policy, IRValue{std::string("")}});
     m.emplace("nond.export_corrected_model_format", KeyContract{IrValueType::UnsignedShort, DefaultSource::Schema, IRValue{static_cast<unsigned short>(TABULAR_ANNOTATED)}});
     m.emplace("nond.export_corrected_variance_file", KeyContract{IrValueType::String, DefaultSource::Policy, IRValue{std::string("")}});
@@ -426,7 +426,7 @@ const std::unordered_map<std::string, KeyContract>& contracts() {
 const std::unordered_map<std::string, std::vector<WriteOp>>& instructions() {
   static const auto kInstructions = []() {
     std::unordered_map<std::string, std::vector<WriteOp>> m;
-    m.reserve(4257);
+    m.reserve(4265);
     m.emplace("adaptive_sampling", std::vector<WriteOp>{
       WriteOp{OpKind::PresenceEnum, "algorithm", OpLiteral{IrValueType::UnsignedShort, IRValue{static_cast<unsigned short>(ADAPTIVE_SAMPLING)}}},
     });
@@ -1445,6 +1445,10 @@ const std::unordered_map<std::string, std::vector<WriteOp>>& instructions() {
     m.emplace("bayes_calibration/sub_method/dream/emulator/mf_sc/basis_family/askey", std::vector<WriteOp>{
       WriteOp{OpKind::PresenceEnum, "nond.expansion_type", OpLiteral{IrValueType::Short, IRValue{static_cast<short>(ASKEY_U)}}},
     });
+    m.emplace("bayes_calibration/sub_method/dream/emulator/mf_sc/basis_family/piecewise", std::vector<WriteOp>{
+      WriteOp{OpKind::LiteralAssign, "nond.expansion_type", OpLiteral{IrValueType::Short, IRValue{static_cast<short>(STD_UNIFORM_U)}}},
+      WriteOp{OpKind::LiteralAssign, "nond.piecewise_basis", OpLiteral{IrValueType::Bool, IRValue{bool(true)}}},
+    });
     m.emplace("bayes_calibration/sub_method/dream/emulator/mf_sc/basis_family/wiener", std::vector<WriteOp>{
       WriteOp{OpKind::PresenceEnum, "nond.expansion_type", OpLiteral{IrValueType::Short, IRValue{static_cast<short>(STD_NORMAL_U)}}},
     });
@@ -2047,6 +2051,10 @@ const std::unordered_map<std::string, std::vector<WriteOp>>& instructions() {
     });
     m.emplace("bayes_calibration/sub_method/dream/emulator/sc/basis_family/askey", std::vector<WriteOp>{
       WriteOp{OpKind::PresenceEnum, "nond.expansion_type", OpLiteral{IrValueType::Short, IRValue{static_cast<short>(ASKEY_U)}}},
+    });
+    m.emplace("bayes_calibration/sub_method/dream/emulator/sc/basis_family/piecewise", std::vector<WriteOp>{
+      WriteOp{OpKind::LiteralAssign, "nond.expansion_type", OpLiteral{IrValueType::Short, IRValue{static_cast<short>(STD_UNIFORM_U)}}},
+      WriteOp{OpKind::LiteralAssign, "nond.piecewise_basis", OpLiteral{IrValueType::Bool, IRValue{bool(true)}}},
     });
     m.emplace("bayes_calibration/sub_method/dream/emulator/sc/basis_family/wiener", std::vector<WriteOp>{
       WriteOp{OpKind::PresenceEnum, "nond.expansion_type", OpLiteral{IrValueType::Short, IRValue{static_cast<short>(STD_NORMAL_U)}}},
@@ -2798,6 +2806,10 @@ const std::unordered_map<std::string, std::vector<WriteOp>>& instructions() {
     m.emplace("bayes_calibration/sub_method/queso/emulator/mf_sc/basis_family/askey", std::vector<WriteOp>{
       WriteOp{OpKind::PresenceEnum, "nond.expansion_type", OpLiteral{IrValueType::Short, IRValue{static_cast<short>(ASKEY_U)}}},
     });
+    m.emplace("bayes_calibration/sub_method/queso/emulator/mf_sc/basis_family/piecewise", std::vector<WriteOp>{
+      WriteOp{OpKind::LiteralAssign, "nond.expansion_type", OpLiteral{IrValueType::Short, IRValue{static_cast<short>(STD_UNIFORM_U)}}},
+      WriteOp{OpKind::LiteralAssign, "nond.piecewise_basis", OpLiteral{IrValueType::Bool, IRValue{bool(true)}}},
+    });
     m.emplace("bayes_calibration/sub_method/queso/emulator/mf_sc/basis_family/wiener", std::vector<WriteOp>{
       WriteOp{OpKind::PresenceEnum, "nond.expansion_type", OpLiteral{IrValueType::Short, IRValue{static_cast<short>(STD_NORMAL_U)}}},
     });
@@ -3401,6 +3413,10 @@ const std::unordered_map<std::string, std::vector<WriteOp>>& instructions() {
     m.emplace("bayes_calibration/sub_method/queso/emulator/sc/basis_family/askey", std::vector<WriteOp>{
       WriteOp{OpKind::PresenceEnum, "nond.expansion_type", OpLiteral{IrValueType::Short, IRValue{static_cast<short>(ASKEY_U)}}},
     });
+    m.emplace("bayes_calibration/sub_method/queso/emulator/sc/basis_family/piecewise", std::vector<WriteOp>{
+      WriteOp{OpKind::LiteralAssign, "nond.expansion_type", OpLiteral{IrValueType::Short, IRValue{static_cast<short>(STD_UNIFORM_U)}}},
+      WriteOp{OpKind::LiteralAssign, "nond.piecewise_basis", OpLiteral{IrValueType::Bool, IRValue{bool(true)}}},
+    });
     m.emplace("bayes_calibration/sub_method/queso/emulator/sc/basis_family/wiener", std::vector<WriteOp>{
       WriteOp{OpKind::PresenceEnum, "nond.expansion_type", OpLiteral{IrValueType::Short, IRValue{static_cast<short>(STD_NORMAL_U)}}},
     });
@@ -3904,6 +3920,10 @@ const std::unordered_map<std::string, std::vector<WriteOp>>& instructions() {
     });
     m.emplace("bayes_calibration/sub_method/wasabi/emulator/mf_sc/basis_family/askey", std::vector<WriteOp>{
       WriteOp{OpKind::PresenceEnum, "nond.expansion_type", OpLiteral{IrValueType::Short, IRValue{static_cast<short>(ASKEY_U)}}},
+    });
+    m.emplace("bayes_calibration/sub_method/wasabi/emulator/mf_sc/basis_family/piecewise", std::vector<WriteOp>{
+      WriteOp{OpKind::LiteralAssign, "nond.expansion_type", OpLiteral{IrValueType::Short, IRValue{static_cast<short>(STD_UNIFORM_U)}}},
+      WriteOp{OpKind::LiteralAssign, "nond.piecewise_basis", OpLiteral{IrValueType::Bool, IRValue{bool(true)}}},
     });
     m.emplace("bayes_calibration/sub_method/wasabi/emulator/mf_sc/basis_family/wiener", std::vector<WriteOp>{
       WriteOp{OpKind::PresenceEnum, "nond.expansion_type", OpLiteral{IrValueType::Short, IRValue{static_cast<short>(STD_NORMAL_U)}}},
@@ -4508,6 +4528,10 @@ const std::unordered_map<std::string, std::vector<WriteOp>>& instructions() {
     m.emplace("bayes_calibration/sub_method/wasabi/emulator/sc/basis_family/askey", std::vector<WriteOp>{
       WriteOp{OpKind::PresenceEnum, "nond.expansion_type", OpLiteral{IrValueType::Short, IRValue{static_cast<short>(ASKEY_U)}}},
     });
+    m.emplace("bayes_calibration/sub_method/wasabi/emulator/sc/basis_family/piecewise", std::vector<WriteOp>{
+      WriteOp{OpKind::LiteralAssign, "nond.expansion_type", OpLiteral{IrValueType::Short, IRValue{static_cast<short>(STD_UNIFORM_U)}}},
+      WriteOp{OpKind::LiteralAssign, "nond.piecewise_basis", OpLiteral{IrValueType::Bool, IRValue{bool(true)}}},
+    });
     m.emplace("bayes_calibration/sub_method/wasabi/emulator/sc/basis_family/wiener", std::vector<WriteOp>{
       WriteOp{OpKind::PresenceEnum, "nond.expansion_type", OpLiteral{IrValueType::Short, IRValue{static_cast<short>(STD_NORMAL_U)}}},
     });
@@ -4903,8 +4927,7 @@ const std::unordered_map<std::string, std::vector<WriteOp>>& instructions() {
       WriteOp{OpKind::DirectValue, "id", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("coliny_ea/initialization_type/flat_file", std::vector<WriteOp>{
-      WriteOp{OpKind::LiteralAssign, "initialization_type", OpLiteral{IrValueType::String, IRValue{std::string("flat_file")}}},
-      WriteOp{OpKind::DirectValue, "flat_file", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+      WriteOp{OpKind::TypeData, "initialization_type", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("coliny_ea/initialization_type/simple_random", std::vector<WriteOp>{
       WriteOp{OpKind::PresenceLiteral, "initialization_type", OpLiteral{IrValueType::String, IRValue{std::string("random")}}},
@@ -7856,20 +7879,16 @@ const std::unordered_map<std::string, std::vector<WriteOp>>& instructions() {
       WriteOp{OpKind::DirectValue, "jega.percent_change", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("moga/crossover_type/crossover_rate", std::vector<WriteOp>{
-      WriteOp{OpKind::LiteralAssign, "crossover_type", OpLiteral{IrValueType::String, IRValue{std::string("null_crossover")}}},
-      WriteOp{OpKind::DirectValue, "crossover_rate", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+      WriteOp{OpKind::TypeData, "crossover_type", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("moga/crossover_type/strategy/multi_point_binary", std::vector<WriteOp>{
-      WriteOp{OpKind::LiteralAssign, "crossover_type", OpLiteral{IrValueType::String, IRValue{std::string("multi_point_binary")}}},
-      WriteOp{OpKind::DirectValue, "jega.num_cross_points", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+      WriteOp{OpKind::TypeData, "crossover_type", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("moga/crossover_type/strategy/multi_point_parameterized_binary", std::vector<WriteOp>{
-      WriteOp{OpKind::LiteralAssign, "crossover_type", OpLiteral{IrValueType::String, IRValue{std::string("multi_point_parameterized_binary")}}},
-      WriteOp{OpKind::DirectValue, "jega.num_cross_points", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+      WriteOp{OpKind::TypeData, "crossover_type", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("moga/crossover_type/strategy/multi_point_real", std::vector<WriteOp>{
-      WriteOp{OpKind::LiteralAssign, "crossover_type", OpLiteral{IrValueType::String, IRValue{std::string("multi_point_real")}}},
-      WriteOp{OpKind::DirectValue, "jega.num_cross_points", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+      WriteOp{OpKind::TypeData, "crossover_type", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("moga/crossover_type/strategy/shuffle_random/num_offspring", std::vector<WriteOp>{
       WriteOp{OpKind::DirectValue, "jega.num_offspring", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
@@ -7890,8 +7909,7 @@ const std::unordered_map<std::string, std::vector<WriteOp>>& instructions() {
       WriteOp{OpKind::DirectValue, "id", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("moga/initialization_type/flat_file", std::vector<WriteOp>{
-      WriteOp{OpKind::LiteralAssign, "initialization_type", OpLiteral{IrValueType::String, IRValue{std::string("flat_file")}}},
-      WriteOp{OpKind::DirectValue, "flat_file", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+      WriteOp{OpKind::TypeData, "initialization_type", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("moga/initialization_type/simple_random", std::vector<WriteOp>{
       WriteOp{OpKind::PresenceLiteral, "initialization_type", OpLiteral{IrValueType::String, IRValue{std::string("random")}}},
@@ -7912,8 +7930,7 @@ const std::unordered_map<std::string, std::vector<WriteOp>>& instructions() {
       WriteOp{OpKind::DirectValue, "model_pointer", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("moga/mutation_type/mutation_rate", std::vector<WriteOp>{
-      WriteOp{OpKind::LiteralAssign, "mutation_type", OpLiteral{IrValueType::String, IRValue{std::string("null_mutation")}}},
-      WriteOp{OpKind::DirectValue, "mutation_rate", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+      WriteOp{OpKind::TypeData, "mutation_type", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("moga/mutation_type/strategy/bit_random", std::vector<WriteOp>{
       WriteOp{OpKind::PresenceLiteral, "mutation_type", OpLiteral{IrValueType::String, IRValue{std::string("bit_random")}}},
@@ -7931,23 +7948,19 @@ const std::unordered_map<std::string, std::vector<WriteOp>>& instructions() {
       WriteOp{OpKind::PresenceLiteral, "mutation_type", OpLiteral{IrValueType::String, IRValue{std::string("replace_uniform")}}},
     });
     m.emplace("moga/niching_type/distance", std::vector<WriteOp>{
-      WriteOp{OpKind::LiteralAssign, "jega.niching_type", OpLiteral{IrValueType::String, IRValue{std::string("distance")}}},
-      WriteOp{OpKind::DirectValue, "jega.niche_vector", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+      WriteOp{OpKind::TypeData, "jega.niching_type", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("moga/niching_type/max_designs", std::vector<WriteOp>{
-      WriteOp{OpKind::LiteralAssign, "jega.niching_type", OpLiteral{IrValueType::String, IRValue{std::string("max_designs")}}},
-      WriteOp{OpKind::DirectValue, "jega.niche_vector", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+      WriteOp{OpKind::TypeData, "jega.niching_type", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("moga/niching_type/max_designs/min_distances", std::vector<WriteOp>{
-      WriteOp{OpKind::LiteralAssign, "jega.niching_type", OpLiteral{IrValueType::String, IRValue{std::string("max_designs")}}},
-      WriteOp{OpKind::DirectValue, "jega.niche_vector", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+      WriteOp{OpKind::TypeData, "jega.niching_type", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("moga/niching_type/max_designs/num_designs", std::vector<WriteOp>{
       WriteOp{OpKind::DirectValue, "jega.num_designs", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("moga/niching_type/radial", std::vector<WriteOp>{
-      WriteOp{OpKind::LiteralAssign, "jega.niching_type", OpLiteral{IrValueType::String, IRValue{std::string("radial")}}},
-      WriteOp{OpKind::DirectValue, "jega.niche_vector", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+      WriteOp{OpKind::TypeData, "jega.niching_type", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("moga/output/debug", std::vector<WriteOp>{
       WriteOp{OpKind::PresenceEnum, "output", OpLiteral{IrValueType::Short, IRValue{static_cast<short>(DEBUG_OUTPUT)}}},
@@ -7968,22 +7981,19 @@ const std::unordered_map<std::string, std::vector<WriteOp>>& instructions() {
       WriteOp{OpKind::DirectValue, "population_size", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("moga/postprocessor_type/orthogonal_distance", std::vector<WriteOp>{
-      WriteOp{OpKind::LiteralAssign, "jega.postprocessor_type", OpLiteral{IrValueType::String, IRValue{std::string("distance_postprocessor")}}},
-      WriteOp{OpKind::DirectValue, "jega.distance_vector", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+      WriteOp{OpKind::TypeData, "jega.postprocessor_type", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("moga/print_each_pop", std::vector<WriteOp>{
       WriteOp{OpKind::PresenceBool, "print_each_pop", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("moga/replacement_type/below_limit", std::vector<WriteOp>{
-      WriteOp{OpKind::LiteralAssign, "replacement_type", OpLiteral{IrValueType::String, IRValue{std::string("below_limit")}}},
-      WriteOp{OpKind::DirectValue, "jega.fitness_limit", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+      WriteOp{OpKind::TypeData, "replacement_type", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("moga/replacement_type/below_limit/shrinkage_fraction", std::vector<WriteOp>{
       WriteOp{OpKind::DirectValue, "jega.shrinkage_percentage", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("moga/replacement_type/below_limit/threshhold", std::vector<WriteOp>{
-      WriteOp{OpKind::LiteralAssign, "replacement_type", OpLiteral{IrValueType::String, IRValue{std::string("below_limit")}}},
-      WriteOp{OpKind::DirectValue, "jega.fitness_limit", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+      WriteOp{OpKind::TypeData, "replacement_type", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("moga/replacement_type/elitist", std::vector<WriteOp>{
       WriteOp{OpKind::PresenceLiteral, "replacement_type", OpLiteral{IrValueType::String, IRValue{std::string("elitist")}}},
@@ -9061,6 +9071,10 @@ const std::unordered_map<std::string, std::vector<WriteOp>>& instructions() {
     });
     m.emplace("multifidelity_stoch_collocation/basis_family/askey", std::vector<WriteOp>{
       WriteOp{OpKind::PresenceEnum, "nond.expansion_type", OpLiteral{IrValueType::Short, IRValue{static_cast<short>(ASKEY_U)}}},
+    });
+    m.emplace("multifidelity_stoch_collocation/basis_family/piecewise", std::vector<WriteOp>{
+      WriteOp{OpKind::LiteralAssign, "nond.expansion_type", OpLiteral{IrValueType::Short, IRValue{static_cast<short>(STD_UNIFORM_U)}}},
+      WriteOp{OpKind::LiteralAssign, "nond.piecewise_basis", OpLiteral{IrValueType::Bool, IRValue{bool(true)}}},
     });
     m.emplace("multifidelity_stoch_collocation/basis_family/wiener", std::vector<WriteOp>{
       WriteOp{OpKind::PresenceEnum, "nond.expansion_type", OpLiteral{IrValueType::Short, IRValue{static_cast<short>(STD_NORMAL_U)}}},
@@ -12547,20 +12561,16 @@ const std::unordered_map<std::string, std::vector<WriteOp>>& instructions() {
       WriteOp{OpKind::DirectValue, "jega.percent_change", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("soga/crossover_type/crossover_rate", std::vector<WriteOp>{
-      WriteOp{OpKind::LiteralAssign, "crossover_type", OpLiteral{IrValueType::String, IRValue{std::string("null_crossover")}}},
-      WriteOp{OpKind::DirectValue, "crossover_rate", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+      WriteOp{OpKind::TypeData, "crossover_type", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("soga/crossover_type/strategy/multi_point_binary", std::vector<WriteOp>{
-      WriteOp{OpKind::LiteralAssign, "crossover_type", OpLiteral{IrValueType::String, IRValue{std::string("multi_point_binary")}}},
-      WriteOp{OpKind::DirectValue, "jega.num_cross_points", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+      WriteOp{OpKind::TypeData, "crossover_type", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("soga/crossover_type/strategy/multi_point_parameterized_binary", std::vector<WriteOp>{
-      WriteOp{OpKind::LiteralAssign, "crossover_type", OpLiteral{IrValueType::String, IRValue{std::string("multi_point_parameterized_binary")}}},
-      WriteOp{OpKind::DirectValue, "jega.num_cross_points", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+      WriteOp{OpKind::TypeData, "crossover_type", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("soga/crossover_type/strategy/multi_point_real", std::vector<WriteOp>{
-      WriteOp{OpKind::LiteralAssign, "crossover_type", OpLiteral{IrValueType::String, IRValue{std::string("multi_point_real")}}},
-      WriteOp{OpKind::DirectValue, "jega.num_cross_points", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+      WriteOp{OpKind::TypeData, "crossover_type", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("soga/crossover_type/strategy/shuffle_random/num_offspring", std::vector<WriteOp>{
       WriteOp{OpKind::DirectValue, "jega.num_offspring", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
@@ -12581,8 +12591,7 @@ const std::unordered_map<std::string, std::vector<WriteOp>>& instructions() {
       WriteOp{OpKind::DirectValue, "id", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("soga/initialization_type/flat_file", std::vector<WriteOp>{
-      WriteOp{OpKind::LiteralAssign, "initialization_type", OpLiteral{IrValueType::String, IRValue{std::string("flat_file")}}},
-      WriteOp{OpKind::DirectValue, "flat_file", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+      WriteOp{OpKind::TypeData, "initialization_type", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("soga/initialization_type/simple_random", std::vector<WriteOp>{
       WriteOp{OpKind::PresenceLiteral, "initialization_type", OpLiteral{IrValueType::String, IRValue{std::string("random")}}},
@@ -12603,8 +12612,7 @@ const std::unordered_map<std::string, std::vector<WriteOp>>& instructions() {
       WriteOp{OpKind::DirectValue, "model_pointer", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("soga/mutation_type/mutation_rate", std::vector<WriteOp>{
-      WriteOp{OpKind::LiteralAssign, "mutation_type", OpLiteral{IrValueType::String, IRValue{std::string("null_mutation")}}},
-      WriteOp{OpKind::DirectValue, "mutation_rate", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+      WriteOp{OpKind::TypeData, "mutation_type", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("soga/mutation_type/strategy/bit_random", std::vector<WriteOp>{
       WriteOp{OpKind::PresenceLiteral, "mutation_type", OpLiteral{IrValueType::String, IRValue{std::string("bit_random")}}},
@@ -12665,6 +12673,10 @@ const std::unordered_map<std::string, std::vector<WriteOp>>& instructions() {
     });
     m.emplace("stoch_collocation/basis_family/askey", std::vector<WriteOp>{
       WriteOp{OpKind::PresenceEnum, "nond.expansion_type", OpLiteral{IrValueType::Short, IRValue{static_cast<short>(ASKEY_U)}}},
+    });
+    m.emplace("stoch_collocation/basis_family/piecewise", std::vector<WriteOp>{
+      WriteOp{OpKind::LiteralAssign, "nond.expansion_type", OpLiteral{IrValueType::Short, IRValue{static_cast<short>(STD_UNIFORM_U)}}},
+      WriteOp{OpKind::LiteralAssign, "nond.piecewise_basis", OpLiteral{IrValueType::Bool, IRValue{bool(true)}}},
     });
     m.emplace("stoch_collocation/basis_family/wiener", std::vector<WriteOp>{
       WriteOp{OpKind::PresenceEnum, "nond.expansion_type", OpLiteral{IrValueType::Short, IRValue{static_cast<short>(STD_NORMAL_U)}}},

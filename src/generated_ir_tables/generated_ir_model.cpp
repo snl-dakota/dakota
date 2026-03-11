@@ -155,7 +155,7 @@ const std::unordered_map<std::string, KeyContract>& contracts() {
 const std::unordered_map<std::string, std::vector<WriteOp>>& instructions() {
   static const auto kInstructions = []() {
     std::unordered_map<std::string, std::vector<WriteOp>> m;
-    m.reserve(312);
+    m.reserve(321);
     m.emplace("active_subspace", std::vector<WriteOp>{
       WriteOp{OpKind::PresenceLiteral, "type", OpLiteral{IrValueType::String, IRValue{std::string("active_subspace")}}},
     });
@@ -392,6 +392,15 @@ const std::unordered_map<std::string, std::vector<WriteOp>>& instructions() {
     m.emplace("surrogate/category/ensemble/ordered_model_fidelities", std::vector<WriteOp>{
       WriteOp{OpKind::DirectValue, "surrogate.ensemble_model_pointers", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
+    m.emplace("surrogate/category/ensemble/ordered_model_fidelities/correction/correction_order/first_order", std::vector<WriteOp>{
+      WriteOp{OpKind::PresenceLiteral, "surrogate.correction_order", OpLiteral{IrValueType::Short, IRValue{short(1)}}},
+    });
+    m.emplace("surrogate/category/ensemble/ordered_model_fidelities/correction/correction_order/second_order", std::vector<WriteOp>{
+      WriteOp{OpKind::PresenceLiteral, "surrogate.correction_order", OpLiteral{IrValueType::Short, IRValue{short(2)}}},
+    });
+    m.emplace("surrogate/category/ensemble/ordered_model_fidelities/correction/correction_order/zeroth_order", std::vector<WriteOp>{
+      WriteOp{OpKind::PresenceLiteral, "surrogate.correction_order", OpLiteral{IrValueType::Short, IRValue{short(0)}}},
+    });
     m.emplace("surrogate/category/ensemble/ordered_model_fidelities/correction/correction_type/additive", std::vector<WriteOp>{
       WriteOp{OpKind::PresenceEnum, "surrogate.correction_type", OpLiteral{IrValueType::Short, IRValue{static_cast<short>(ADDITIVE_CORRECTION)}}},
     });
@@ -456,6 +465,15 @@ const std::unordered_map<std::string, std::vector<WriteOp>>& instructions() {
     });
     m.emplace("surrogate/category/global_approx/build_points/total_points", std::vector<WriteOp>{
       WriteOp{OpKind::DirectValue, "surrogate.points_total", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+    });
+    m.emplace("surrogate/category/global_approx/correction/correction_order/first_order", std::vector<WriteOp>{
+      WriteOp{OpKind::PresenceLiteral, "surrogate.correction_order", OpLiteral{IrValueType::Short, IRValue{short(1)}}},
+    });
+    m.emplace("surrogate/category/global_approx/correction/correction_order/second_order", std::vector<WriteOp>{
+      WriteOp{OpKind::PresenceLiteral, "surrogate.correction_order", OpLiteral{IrValueType::Short, IRValue{short(2)}}},
+    });
+    m.emplace("surrogate/category/global_approx/correction/correction_order/zeroth_order", std::vector<WriteOp>{
+      WriteOp{OpKind::PresenceLiteral, "surrogate.correction_order", OpLiteral{IrValueType::Short, IRValue{short(0)}}},
     });
     m.emplace("surrogate/category/global_approx/correction/correction_type/additive", std::vector<WriteOp>{
       WriteOp{OpKind::PresenceEnum, "surrogate.correction_type", OpLiteral{IrValueType::Short, IRValue{static_cast<short>(ADDITIVE_CORRECTION)}}},
@@ -1031,6 +1049,15 @@ const std::unordered_map<std::string, std::vector<WriteOp>>& instructions() {
     });
     m.emplace("surrogate/category/global_approx/type/polynomial/order/basis_order", std::vector<WriteOp>{
       WriteOp{OpKind::DirectValue, "surrogate.polynomial_order", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+    });
+    m.emplace("surrogate/category/global_approx/type/polynomial/order/cubic", std::vector<WriteOp>{
+      WriteOp{OpKind::PresenceLiteral, "surrogate.polynomial_order", OpLiteral{IrValueType::Short, IRValue{short(3)}}},
+    });
+    m.emplace("surrogate/category/global_approx/type/polynomial/order/linear", std::vector<WriteOp>{
+      WriteOp{OpKind::PresenceLiteral, "surrogate.polynomial_order", OpLiteral{IrValueType::Short, IRValue{short(1)}}},
+    });
+    m.emplace("surrogate/category/global_approx/type/polynomial/order/quadratic", std::vector<WriteOp>{
+      WriteOp{OpKind::PresenceLiteral, "surrogate.polynomial_order", OpLiteral{IrValueType::Short, IRValue{short(2)}}},
     });
     m.emplace("surrogate/category/global_approx/type/radial_basis", std::vector<WriteOp>{
       WriteOp{OpKind::PresenceLiteral, "surrogate.type", OpLiteral{IrValueType::String, IRValue{std::string("global_radial_basis")}}},

@@ -308,7 +308,7 @@ const std::unordered_map<std::string, KeyContract>& contracts() {
 const std::unordered_map<std::string, std::vector<WriteOp>>& instructions() {
   static const auto kInstructions = []() {
     std::unordered_map<std::string, std::vector<WriteOp>> m;
-    m.reserve(220);
+    m.reserve(211);
     m.emplace("active/aleatory", std::vector<WriteOp>{
       WriteOp{OpKind::PresenceEnum, "view", OpLiteral{IrValueType::Short, IRValue{static_cast<short>(ALEATORY_UNCERTAIN_VIEW)}}},
     });
@@ -442,13 +442,10 @@ const std::unordered_map<std::string, std::vector<WriteOp>>& instructions() {
       WriteOp{OpKind::DirectValue, "discrete_design_range.upper_bounds", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_design_set/integer", std::vector<WriteOp>{
-      WriteOp{OpKind::DiscreteSetValues, "discrete_design_set_int.values", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+      WriteOp{OpKind::DirectValue, "discrete_design_set_int", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_design_set/integer/categorical", std::vector<WriteOp>{
       WriteOp{OpKind::Categorical, "discrete_design_set_int.categorical", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
-    });
-    m.emplace("discrete_design_set/integer/categorical/adjacency_matrix", std::vector<WriteOp>{
-      WriteOp{OpKind::AdjacencyMatrix, "discrete_design_set_int.adjacency_matrix", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_design_set/integer/categorical/flags", std::vector<WriteOp>{
       WriteOp{OpKind::Categorical, "discrete_design_set_int.categorical", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
@@ -459,20 +456,14 @@ const std::unordered_map<std::string, std::vector<WriteOp>>& instructions() {
     m.emplace("discrete_design_set/integer/descriptors", std::vector<WriteOp>{
       WriteOp{OpKind::DirectValue, "discrete_design_set_int.labels", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
-    m.emplace("discrete_design_set/integer/elements", std::vector<WriteOp>{
-      WriteOp{OpKind::DiscreteSetValues, "discrete_design_set_int.values", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
-    });
     m.emplace("discrete_design_set/integer/initial_point", std::vector<WriteOp>{
       WriteOp{OpKind::DirectValue, "discrete_design_set_int.initial_point", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_design_set/real", std::vector<WriteOp>{
-      WriteOp{OpKind::DiscreteSetValues, "discrete_design_set_real.values", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+      WriteOp{OpKind::DirectValue, "discrete_design_set_real", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_design_set/real/categorical", std::vector<WriteOp>{
       WriteOp{OpKind::Categorical, "discrete_design_set_real.categorical", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
-    });
-    m.emplace("discrete_design_set/real/categorical/adjacency_matrix", std::vector<WriteOp>{
-      WriteOp{OpKind::AdjacencyMatrix, "discrete_design_set_real.adjacency_matrix", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_design_set/real/categorical/flags", std::vector<WriteOp>{
       WriteOp{OpKind::Categorical, "discrete_design_set_real.categorical", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
@@ -483,26 +474,17 @@ const std::unordered_map<std::string, std::vector<WriteOp>>& instructions() {
     m.emplace("discrete_design_set/real/descriptors", std::vector<WriteOp>{
       WriteOp{OpKind::DirectValue, "discrete_design_set_real.labels", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
-    m.emplace("discrete_design_set/real/elements", std::vector<WriteOp>{
-      WriteOp{OpKind::DiscreteSetValues, "discrete_design_set_real.values", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
-    });
     m.emplace("discrete_design_set/real/initial_point", std::vector<WriteOp>{
       WriteOp{OpKind::DirectValue, "discrete_design_set_real.initial_point", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_design_set/string", std::vector<WriteOp>{
-      WriteOp{OpKind::DiscreteSetValues, "discrete_design_set_string.values", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
-    });
-    m.emplace("discrete_design_set/string/adjacency_matrix", std::vector<WriteOp>{
-      WriteOp{OpKind::AdjacencyMatrix, "discrete_design_set_str.adjacency_matrix", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+      WriteOp{OpKind::DirectValue, "discrete_design_set_string", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_design_set/string/count", std::vector<WriteOp>{
       WriteOp{OpKind::DirectValue, "discrete_design_set_string", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_design_set/string/descriptors", std::vector<WriteOp>{
       WriteOp{OpKind::DirectValue, "discrete_design_set_string.labels", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
-    });
-    m.emplace("discrete_design_set/string/elements", std::vector<WriteOp>{
-      WriteOp{OpKind::DiscreteSetValues, "discrete_design_set_string.values", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_design_set/string/initial_point", std::vector<WriteOp>{
       WriteOp{OpKind::DirectValue, "discrete_design_set_string.initial_point", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
@@ -544,7 +526,7 @@ const std::unordered_map<std::string, std::vector<WriteOp>>& instructions() {
       WriteOp{OpKind::DirectValue, "discrete_state_range.upper_bounds", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_state_set/integer", std::vector<WriteOp>{
-      WriteOp{OpKind::DiscreteSetValues, "discrete_state_set_int.values", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+      WriteOp{OpKind::DirectValue, "discrete_state_set_int", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_state_set/integer/categorical", std::vector<WriteOp>{
       WriteOp{OpKind::Categorical, "discrete_state_set_int.categorical", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
@@ -555,14 +537,11 @@ const std::unordered_map<std::string, std::vector<WriteOp>>& instructions() {
     m.emplace("discrete_state_set/integer/descriptors", std::vector<WriteOp>{
       WriteOp{OpKind::DirectValue, "discrete_state_set_int.labels", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
-    m.emplace("discrete_state_set/integer/elements", std::vector<WriteOp>{
-      WriteOp{OpKind::DiscreteSetValues, "discrete_state_set_int.values", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
-    });
     m.emplace("discrete_state_set/integer/initial_state", std::vector<WriteOp>{
       WriteOp{OpKind::DirectValue, "discrete_state_set_int.initial_state", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_state_set/real", std::vector<WriteOp>{
-      WriteOp{OpKind::DiscreteSetValues, "discrete_state_set_real.values", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+      WriteOp{OpKind::DirectValue, "discrete_state_set_real", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_state_set/real/categorical", std::vector<WriteOp>{
       WriteOp{OpKind::Categorical, "discrete_state_set_real.categorical", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
@@ -573,23 +552,17 @@ const std::unordered_map<std::string, std::vector<WriteOp>>& instructions() {
     m.emplace("discrete_state_set/real/descriptors", std::vector<WriteOp>{
       WriteOp{OpKind::DirectValue, "discrete_state_set_real.labels", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
-    m.emplace("discrete_state_set/real/elements", std::vector<WriteOp>{
-      WriteOp{OpKind::DiscreteSetValues, "discrete_state_set_real.values", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
-    });
     m.emplace("discrete_state_set/real/initial_state", std::vector<WriteOp>{
       WriteOp{OpKind::DirectValue, "discrete_state_set_real.initial_state", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_state_set/string", std::vector<WriteOp>{
-      WriteOp{OpKind::DiscreteSetValues, "discrete_state_set_string.values", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+      WriteOp{OpKind::DirectValue, "discrete_state_set_string", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_state_set/string/count", std::vector<WriteOp>{
       WriteOp{OpKind::DirectValue, "discrete_state_set_string", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_state_set/string/descriptors", std::vector<WriteOp>{
       WriteOp{OpKind::DirectValue, "discrete_state_set_string.labels", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
-    });
-    m.emplace("discrete_state_set/string/elements", std::vector<WriteOp>{
-      WriteOp{OpKind::DiscreteSetValues, "discrete_state_set_string.values", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("discrete_state_set/string/initial_state", std::vector<WriteOp>{
       WriteOp{OpKind::DirectValue, "discrete_state_set_string.initial_state", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
