@@ -11,6 +11,7 @@
 #define DAKOTA_GLOBAL_DEFS_H
 
 #include "dakota_system_defs.hpp"
+#include "DakotaGlobalEnums.hpp"
 #include <stdexcept>
 #include <limits>
 
@@ -63,25 +64,8 @@ enum {
   OTHER_ERROR     = -1   // the historical Dakota default error
 };
 
-/// enum for selecting the models that store evaluations
-enum { 
-      MODEL_EVAL_STORE_TOP_METHOD = 0,
-      MODEL_EVAL_STORE_NONE,
-      MODEL_EVAL_STORE_ALL,
-      MODEL_EVAL_STORE_ALL_METHODS};
-
-/// enum for selecting the interfaces that store evaluations
-enum {
-      INTERF_EVAL_STORE_SIMULATION = 0,
-      INTERF_EVAL_STORE_NONE,
-      INTERF_EVAL_STORE_ALL};
-
-
 /// enum for dakota abort behaviors
 enum {ABORT_EXITS, ABORT_THROWS};
-
-/// enum for active subspace cross validation identification
-enum {CV_ID_DEFAULT = 0, MINIMUM_METRIC, RELATIVE_TOLERANCE, DECREASE_TOLERANCE};
 
 /// whether dakota exits/aborts or throws on errors
 extern short abort_mode;
@@ -148,14 +132,6 @@ inline std::unordered_map<std::string, int>& dakEnumMap() {
         static Register_##name register_##name; \
     }
 
-/// options for tabular columns
-enum { TABULAR_NONE = 0, TABULAR_HEADER = 1, 
-       TABULAR_EVAL_ID = 2, TABULAR_IFACE_ID = 4,
-       // experiment data annotated has header and exp_id
-       TABULAR_EXPER_ANNOT = TABULAR_HEADER | TABULAR_EVAL_ID,
-       // default for tabular files is fully annotated as of Dakota 6.1
-       TABULAR_ANNOTATED = TABULAR_HEADER | TABULAR_EVAL_ID | TABULAR_IFACE_ID };
-
 REGISTER_DAKOTA_ENUM( TABULAR_NONE,             TABULAR_NONE)
 REGISTER_DAKOTA_ENUM( TABULAR_HEADER,           TABULAR_HEADER       )
 REGISTER_DAKOTA_ENUM( TABULAR_EVAL_ID,          TABULAR_EVAL_ID       )
@@ -180,21 +156,8 @@ REGISTER_DAKOTA_ENUM( TABULAR_ANNOTATED,        TABULAR_ANNOTATED       )
 //#undef X
 //#undef ADD_ENUMS
 
-/// Results output format
-enum { RESULTS_OUTPUT_TEXT = 1, RESULTS_OUTPUT_HDF5 = 2};
-
 /// options for results file format
 enum {FLEXIBLE_RESULTS, LABELED_RESULTS};
-
-/// Parameters file format
-enum { PARAMETERS_FILE_STANDARD = 0, PARAMETERS_FILE_APREPRO, PARAMETERS_FILE_JSON };
-
-/// Results file format
-enum { RESULTS_FILE_STANDARD = 0, RESULTS_FILE_JSON };
-
-/// define special values for surrogateExportFormats
-enum { NO_MODEL_FORMAT=0, TEXT_ARCHIVE=1, BINARY_ARCHIVE=2, ALGEBRAIC_FILE=4,
-       ALGEBRAIC_CONSOLE=8 };
 
 
 #ifdef DAKOTA_MODELCENTER
