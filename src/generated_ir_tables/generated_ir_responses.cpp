@@ -89,10 +89,10 @@ const std::unordered_map<std::string, std::vector<WriteOp>>& instructions() {
       WriteOp{OpKind::DirectValue, "fd_gradient_step_size", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("gradient_type/mixed_gradients/id_analytic_gradients", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "gradients.mixed.id_analytic", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+      WriteOp{OpKind::IntSet, "gradients.mixed.id_analytic", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("gradient_type/mixed_gradients/id_numerical_gradients", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "gradients.mixed.id_numerical", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+      WriteOp{OpKind::IntSet, "gradients.mixed.id_numerical", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("gradient_type/mixed_gradients/interval_type/central", std::vector<WriteOp>{
       WriteOp{OpKind::PresenceLiteral, "interval_type", OpLiteral{IrValueType::String, IRValue{std::string("central")}}},
@@ -158,19 +158,19 @@ const std::unordered_map<std::string, std::vector<WriteOp>>& instructions() {
       WriteOp{OpKind::PresenceLiteral, "hessian_type", OpLiteral{IrValueType::String, IRValue{std::string("mixed")}}},
     });
     m.emplace("hessian_type/mixed_hessians/id_analytic_hessians", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "hessians.mixed.id_analytic", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+      WriteOp{OpKind::IntSet, "hessians.mixed.id_analytic", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("hessian_type/mixed_hessians/id_numerical_hessians", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "hessians.mixed.id_numerical", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+      WriteOp{OpKind::IntSet, "hessians.mixed.id_numerical", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("hessian_type/mixed_hessians/id_numerical_hessians/fd_step_size", std::vector<WriteOp>{
       WriteOp{OpKind::DirectValue, "fd_hessian_step_size", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("hessian_type/mixed_hessians/id_numerical_hessians/values", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "hessians.mixed.id_numerical", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+      WriteOp{OpKind::IntSet, "hessians.mixed.id_numerical", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("hessian_type/mixed_hessians/id_quasi_hessians", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "hessians.mixed.id_quasi", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+      WriteOp{OpKind::IntSet, "hessians.mixed.id_quasi", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("hessian_type/mixed_hessians/id_quasi_hessians/approximation/bfgs", std::vector<WriteOp>{
       WriteOp{OpKind::PresenceLiteral, "quasi_hessian_type", OpLiteral{IrValueType::String, IRValue{std::string("bfgs")}}},
@@ -182,7 +182,7 @@ const std::unordered_map<std::string, std::vector<WriteOp>>& instructions() {
       WriteOp{OpKind::PresenceLiteral, "quasi_hessian_type", OpLiteral{IrValueType::String, IRValue{std::string("sr1")}}},
     });
     m.emplace("hessian_type/mixed_hessians/id_quasi_hessians/values", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "hessians.mixed.id_quasi", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+      WriteOp{OpKind::IntSet, "hessians.mixed.id_quasi", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("hessian_type/mixed_hessians/interval_type/central", std::vector<WriteOp>{
       WriteOp{OpKind::PresenceBool, "central_hess", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},

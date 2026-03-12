@@ -305,10 +305,12 @@ const std::unordered_map<std::string, std::vector<WriteOp>>& instructions() {
       WriteOp{OpKind::PresenceLiteral, "failure_capture.action", OpLiteral{IrValueType::String, IRValue{std::string("continuation")}}},
     });
     m.emplace("failure_capture/recover", std::vector<WriteOp>{
-      WriteOp{OpKind::TypeData, "failure_capture.action", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+      WriteOp{OpKind::LiteralAssign, "failure_capture.action", OpLiteral{IrValueType::String, IRValue{std::string("recover")}}},
+      WriteOp{OpKind::DirectValue, "failure_capture.recovery_fn_vals", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("failure_capture/retry", std::vector<WriteOp>{
-      WriteOp{OpKind::TypeData, "failure_capture.action", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+      WriteOp{OpKind::LiteralAssign, "failure_capture.action", OpLiteral{IrValueType::String, IRValue{std::string("retry")}}},
+      WriteOp{OpKind::DirectValue, "failure_capture.retry_limit", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("id_interface", std::vector<WriteOp>{
       WriteOp{OpKind::DirectValue, "id", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},

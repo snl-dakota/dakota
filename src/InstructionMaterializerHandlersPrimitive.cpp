@@ -237,4 +237,57 @@ void InstructionMaterializer::handle_categorical(const irgen::WriteOp& op,
   ctx.store.set_value(op.target_local_ir_key, IRValue(std::move(bits)));
 }
 
+void InstructionMaterializer::handle_id_to_index_set(const irgen::WriteOp& op,
+                                                     const irgen::KeyContract& contract,
+                                                     const HandlerContext& ctx)
+{
+  (void)contract;
+  const auto& value = InstructionMaterializerUtils::required_path(
+    ctx.block_json, ctx.current_path);
+  if (!value.is_array()) {
+    throw std::runtime_error(
+      "InstructionMaterializer::handle_id_to_index_set expected array at '" +
+      std::string(ctx.current_path) + "'");
+  }
+
+  SizetSet out;
+  for (size_t i = 0; i < value.size(); ++i) {
+    if (!value[i].is_number_integer()) {
+      throw std::runtime_error(
+        "InstructionMaterializer::handle_id_to_index_set expected integer entries at '" +
+        std::string(ctx.current_path) + "'");
+    }
+    const int id = value[i].get<int>();
+    out.insert(static_cast<size_t>(id - 1));
+  }
+
+  ctx.store.set_value(op.target_local_ir_key, IRValue(std::move(out)));
+}
+
+void InstructionMaterializer::handle_int_set(const irgen::WriteOp& op,
+                                             const irgen::KeyContract& contract,
+                                             const HandlerContext& ctx)
+{
+  (void)contract;
+  const auto& value = InstructionMaterializerUtils::required_path(
+    ctx.block_json, ctx.current_path);
+  if (!value.is_array()) {
+    throw std::runtime_error(
+      "InstructionMaterializer::handle_int_set expected array at '" +
+      std::string(ctx.current_path) + "'");
+  }
+
+  IntSet out;
+  for (size_t i = 0; i < value.size(); ++i) {
+    if (!value[i].is_number_integer()) {
+      throw std::runtime_error(
+        "InstructionMaterializer::handle_int_set expected integer entries at '" +
+        std::string(ctx.current_path) + "'");
+    }
+    out.insert(value[i].get<int>());
+  }
+
+  ctx.store.set_value(op.target_local_ir_key, IRValue(std::move(out)));
+}
+
 } // namespace Dakota

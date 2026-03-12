@@ -57,6 +57,10 @@ InstructionMaterializer::op_handlers()
       &InstructionMaterializer::handle_discrete_interval_uncertain},
     {irgen::OpKind::UncertainCorrelationMatrix,
       &InstructionMaterializer::handle_uncertain_correlation_matrix},
+    {irgen::OpKind::IdToIndexSet,
+      &InstructionMaterializer::handle_id_to_index_set},
+    {irgen::OpKind::IntSet,
+      &InstructionMaterializer::handle_int_set},
   };
   return handlers;
 }
@@ -108,4 +112,3 @@ void InstructionMaterializer::apply_write_op(const nlohmann::json& block_json,
 }
 
 } // namespace Dakota
-

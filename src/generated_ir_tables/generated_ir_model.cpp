@@ -1129,7 +1129,7 @@ const std::unordered_map<std::string, std::vector<WriteOp>>& instructions() {
       WriteOp{OpKind::DirectValue, "id", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     m.emplace("surrogate/id_surrogates", std::vector<WriteOp>{
-      WriteOp{OpKind::DirectValue, "surrogate.function_indices", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
+      WriteOp{OpKind::IdToIndexSet, "surrogate.function_indices", OpLiteral{IrValueType::UnspecifiedType, IRValue{std::monostate{}}}},
     });
     return m;
   }();
