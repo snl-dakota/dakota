@@ -1978,56 +1978,52 @@ compute_G_g_gradients_from_N(const RealVector& N_vec, RealSymMatrixArray& dG_dN,
     else dg_dN[i] = 0.;
   }
 
-  unsigned short src_i, tgt_i, src_j, tgt_j, inflate_v;
+  unsigned short src_i, tgt_i, src_j, tgt_j; //, inflate_v;
   Real z1_i, z2_i, z1_j, z2_j, z_H = N_vec[numApprox]; // N_vec inflated
   switch (mlmfSubMethod) {
   case SUBMETHOD_ACV_MF: { // refer to Eq. 34 in JCP ACV paper
-    Real inv_z1_sq, inv_z2_sq;
-    for (v=0; v<num_v; ++v) {
-      RealSymMatrix& dG_dN_v = dG_dN[v];
-      RealVector&    dg_dN_v = dg_dN[v];
-      inflate_v = (v == num_v-1) ? numApprox : approx_set[i];
-      for (i=0; i<dag_size; ++i) {
-	src_i = approx_set[i];  tgt_i = active_dag[i];
-	z1_i  =  N_vec[tgt_i];   z2_i =  N_vec[src_i]; // N_vec inflated
 
-	Real& dg_dN_vi  = dg_dN_v(i);
-	Real& dG_dN_vii = dG_dN_v(i,i);
-	if (tgt_i == inflate_v) { // deriv w.r.t. z1_i
-	  inv_z1_sq = 1./(z1_i * z1_i);
-	  if (inflate_v == numApprox || z1_i >= z_H) dg_dN_vi -= inv_z1_sq;
-	  dG_dN_vii -= inv_z1_sq;
-	  if (z1_i >= z2_i) dG_dN_vii += 2. * inv_z1_sq;
-	}
-	else if (src_i == inflate_v) { // deriv w.r.t. z2_i
-	  inv_z2_sq = 1./(z2_i * z2_i);
-	  if (inflate_v == numApprox || z2_i >= z_H) dg_dN_vi += inv_z2_sq;
-	  dG_dN_vii -= inv_z2_sq;
-	  if (z2_i >= z1_i) dG_dN_vii += 2. * inv_z2_sq;
-	}
+    // can flatten loop over v since no N recursion as in IS/RD
+    SizetArray index_map;  inflate_approx_set(approx_set, index_map);
+    Real inv_z1_sq_i, inv_z2_sq_i, inv_z1_sq_j, inv_z2_sq_j;
+    size_t deflate_src_i, deflate_tgt_i, deflate_src_j, deflate_tgt_j;
+    for (i=0; i<dag_size; ++i) {
+      src_i = approx_set[i];  deflate_src_i = index_map[src_i];
+      tgt_i = active_dag[i];  deflate_tgt_i = index_map[tgt_i];
+      z1_i  = N_vec[tgt_i];   inv_z1_sq_i = 1./(z1_i * z1_i);
+      z2_i  = N_vec[src_i];   inv_z2_sq_i = 1./(z2_i * z2_i);
 
-	for (j=0; j<i; ++j) {
-	  src_j = approx_set[j];  tgt_j = active_dag[j];
-	  z1_j  =  N_vec[tgt_j];  z2_j  =  N_vec[src_j];
-	  Real& dG_dN_vij = dG_dN_v(i,j);
-	  // edge case: don't double count if z*_i exactly equals z*_j
-	  if (tgt_i == inflate_v) { // deriv w.r.t. z1_i
-	    if (z1_i >= z1_j) dG_dN_vij -= 1./(z1_i * z1_i);
-	    if (z1_i >= z2_j) dG_dN_vij += 1./(z1_i * z1_i);
-	  }
-	  if (src_i == inflate_v) { // deriv w.r.t. z2_i
-	    if (z2_i >= z1_j) dG_dN_vij += 1./(z2_i * z2_i);
-	    if (z2_i >= z2_j) dG_dN_vij -= 1./(z2_i * z2_i);
-	  }
-	  if (tgt_j == inflate_v) { // deriv w.r.t. z1_j
-	    if (z1_j >  z1_i) dG_dN_vij -= 1./(z1_j * z1_j);
-	    if (z1_j >  z2_i) dG_dN_vij += 1./(z1_j * z1_j);
-	  }
-	  if (src_j == inflate_v) { // deriv w.r.t. z2_j
-	    if (z2_j >  z1_i) dG_dN_vij += 1./(z2_j * z2_j);
-	    if (z2_j >  z2_i) dG_dN_vij -= 1./(z2_j * z2_j);
-	  }
-	}
+      // derivs of (i) and (i,i) terms w.r.t. z1_i and z2_i
+      if (tgt_i == numApprox || z1_i >= z_H)
+	dg_dN[deflate_tgt_i](i) -= inv_z1_sq_i; // term 1, JCP eq. 17 (z1=z_H)
+      if (src_i == numApprox || z2_i >= z_H)
+	dg_dN[deflate_src_i](i) += inv_z2_sq_i; // term 2, JCP eq. 17
+
+      Real& dG_dN_ti_ii = dG_dN[deflate_tgt_i](i,i);
+      Real& dG_dN_si_ii = dG_dN[deflate_src_i](i,i);
+      dG_dN_ti_ii -= inv_z1_sq_i; // term 1 in JCP eq. 16
+      dG_dN_si_ii -= inv_z2_sq_i; // term 4 in JCP eq. 16
+      if (z1_i >= z2_i) dG_dN_ti_ii += 2. * inv_z1_sq_i; // terms 2 & 3, i==j
+      else              dG_dN_si_ii += 2. * inv_z2_sq_i; // terms 2 & 3, i==j
+
+      for (j=0; j<i; ++j) {
+	src_j = approx_set[j];  deflate_src_j = index_map[src_j];
+	tgt_j = active_dag[j];  deflate_tgt_j = index_map[tgt_j];
+	z1_j  = N_vec[tgt_j];   inv_z1_sq_j = 1./(z1_j * z1_j);
+	z2_j  = N_vec[src_j];   inv_z2_sq_j = 1./(z2_j * z2_j);
+	// edge case: don't double count if z*_i exactly equals z*_j
+	Real& dG_dN_si_ij = dG_dN[deflate_src_i](i,j);
+	Real& dG_dN_sj_ij = dG_dN[deflate_src_j](i,j);
+	Real& dG_dN_ti_ij = dG_dN[deflate_tgt_i](i,j);
+	Real& dG_dN_tj_ij = dG_dN[deflate_tgt_j](i,j);
+	if (z1_i >= z1_j) dG_dN_ti_ij -= inv_z1_sq_i;
+	else              dG_dN_tj_ij -= inv_z1_sq_j;
+	if (z1_i >= z2_j) dG_dN_ti_ij += inv_z1_sq_i;
+	else              dG_dN_sj_ij += inv_z2_sq_j;
+	if (z2_i >= z1_j) dG_dN_si_ij += inv_z2_sq_i;
+	else              dG_dN_tj_ij += inv_z1_sq_j;
+	if (z2_i >= z2_j) dG_dN_si_ij -= inv_z2_sq_i;
+	else              dG_dN_sj_ij -= inv_z2_sq_j;
       }
     }
     break;
@@ -2043,15 +2039,12 @@ compute_G_g_gradients_from_N(const RealVector& N_vec, RealSymMatrixArray& dG_dN,
     //
     // > Bomarito: z1_i is "N_{beta_i}" where beta_i = beta_j
 
-    // *************************************************************
-    // Two options to handle recursion using reverse DAGs:
-    // > 1. Pre-compute dz1_i/dN_j here for each v and loop over v
-    // > 2. replace loop over v with direct insertions for DAG nodes
-    // *************************************************************
-    RealVector z1, z2;             unroll_z1_z2(N_vec, z1, z2);
-    RealMatrix z1_grads, z2_grads; unroll_z1_z2_gradients(z1_grads, z2_grads);
+    // Given recursion in N, we pre-compute dz1_i/dN_j here for each v and loop
+    // over v, rather than replacing v loop with direct insertions as in ACV-MF
 
-    // replace outer v loop with inner recursion across reverse_dag
+    RealVector z1, z2;              unroll_z1_z2(N_vec, z1, z2);
+    RealMatrix z1_grads, z2_grads;  unroll_z1_z2_gradients(z1_grads, z2_grads);
+
     UShortSet::const_iterator d_cit;  size_t count;
     RealVector& dg_dN_A = dg_dN[num_v-1]; // only dependent on z_H
     Real z1_i, z2_i, inv_z1_sq_i, inv_z2_sq_i, inv_z2_sq_j;
@@ -2143,58 +2136,6 @@ compute_G_g_gradients_from_N(const RealVector& N_vec, RealSymMatrixArray& dG_dN,
 	  // G(i,j) -= 1./z_i (addition to shared term above)
 	  if (src_i == tgt_j && i == v) dG_dN_vij += inv_z2_sq_i;
 	}
-
-	/*
-        ///////////// Option 2: insert for specific v (no loop) /////////////
-	// > clean for terms without DAG recursion
-
-	// collapse 2 loops since tgt_i == tgt_j
-	const UShortSet& reverse_dag = reverseActiveDAG[tgt_i];  count = 0;
-	for (d_cit=reverse_dag.begin(); d_cit!=reverse_dag.end(); ++d_cit) {
-	  deflate_v = index_map[*d_cit];
-	  RealMatrix& dG_dN_v = dG_dN[deflate_v];
-	  ++count;  dz1_dN = (count%2) ? 1. : -1.;
-	  // instead of "if (i==deflate_v) do something", insert for equality
-	  dG_dN_v(deflate_v,j) += dz1_dN[i] * -inv_z1_sq_i;
-	  dG_dN_v(i,deflate_v) += dz1_dN[j] * -inv_z1_sq_i;
-	  dG_dN_v(deflate_v,j) += (z2_i * dz1_dN[i] - z1_i)/z2_j *inv_z2_sq_i;
-	  dG_dN_v(i,deflate_v) += (z2_j * dz1_dN[j] - z1_i)/z2_i *inv_z2_sq_j;
-	  //dG_dN[tgt_k](i,j) += dz1_dNk/(z2_i * z2_j); // *** dependent nodes have been enumerated
-	}
-	// > 1/N^2_i for N_i (insert expression for deriv mat = i value)
-	dG_dN[i](i,j) += inv_z2_sq_i;
-	// > 1/N^2_j for N_j (insert expression for deriv mat = j value)
-	dG_dN[j](i,j) += inv_z2_sq_j;
-	
-	//if (tgt_i == src_j) G(i,j) += z1_i/zi_zj - 1./z_j;
-	if (tgt_i == src_j) {
-	  // Enumeration of 2 terms (subset of 4 above)
-	  const UShortSet& reverse_dag = reverseActiveDAG[tgt_i];  count = 0;
-	  for (d_cit=reverse_dag.begin(); d_cit!=reverse_dag.end(); ++d_cit) {
-	    deflate_v = index_map[*d_cit];  ++count;
-	    dG_dN[deflate_v](i,j) += (count%2) ? inv_z1_sq_i : -inv_z1_sq_i;
-	  }
-	}
-	//if (src_i == tgt_j) G(i,j) += (z_i - z1_i)/zi_zj - 1./z_i;
-	if (src_i == tgt_j) {
-	  // Enumeration of 2 terms:
-	  // > ((1 - dz1/dN_i) N_i N_j - (N_i - z1_i) N_j)/(N^2_i N^2_j) for N_i
-	  //     (z1_i N_j - dz1/dN_i N_i) / (N^2_i N_j)
-	  //   (-dz1/dN_j N_i N_j - (N_i - z1_i) N_i)/(N^2_i N^2_j) for N_j
-	  //     (-dz1/dN_j N_j - (N_i - z1_i))/(N_i N^2_j)
-	  //   (-dz1/dN_i)/(N_i N_j) for other N != {i,j}
-	  // > -1/N^2_i for N_i in reverse DAG
-	  // where dz2/dN_i is +/- 1 counting from src_i
-	  const UShortSet& reverse_dag = reverseActiveDAG[src_i];  count = 0;
-	  for (d_cit=reverse_dag.begin(); d_cit!=reverse_dag.end(); ++d_cit) { }
-	}
-	//if (src_i == src_j) G(i,j) += (z_i - z1_i)/zi_zj; 
-	if (src_i == src_j) {
-	  // Enumeration of 1 term (first of 2 above)
-	  const UShortSet& reverse_dag = reverseActiveDAG[src_i];  count = 0;
-	  for (d_cit=reverse_dag.begin(); d_cit!=reverse_dag.end(); ++d_cit) { }
-	}
-	*/
       }
     }
     break;
@@ -2208,10 +2149,13 @@ compute_G_g_gradients_from_N(const RealVector& N_vec, RealSymMatrixArray& dG_dN,
     //         = +/- N_vec[node] from recur along DAG 
     // --> dz2_i/dN_j = 0, +1, or -1 depending on DAG, one node removed from z1
     // --> dz1_i/dN_j = -dz2_i/dN_j, except for population of upstream zero
+
+    // As for ACV-IS, we pre-compute dz1_i/dN_j and dz2_i/dN_j for each v and
+    // then loop over v, rather than using direct insertions as in ACV-MF
+
     RealVector z1, z2;             unroll_z1_z2(N_vec, z1, z2);
     RealMatrix z1_grads, z2_grads; unroll_z1_z2_gradients(z1_grads, z2_grads);
 
-    // replace outer v loop with inner recursion across reverse_dag
     UShortSet::const_iterator d_cit;  size_t count;
     RealVector& dg_dN_A = dg_dN[num_v-1]; // only dependent on z_H
     Real z1_i, z2_i, inv_z1_sq_i, inv_z2_sq_i;
