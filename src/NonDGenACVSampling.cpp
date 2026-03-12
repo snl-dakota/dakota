@@ -1535,8 +1535,7 @@ augment_linear_ineq_constraints(RealMatrix& lin_ineq_coeffs,
     size_t offset_i, deflate_tgt, lin_ineq_offset
       = (optSubProblemForm == N_MODEL_LINEAR_CONSTRAINT) ? 1 : 0;
     for (i=0; i<num_approx; ++i) { // N_src > N_tgt
-      tgt = dag[i]; //src = approx_set[i];
-      deflate_tgt = (tgt == numApprox) ? num_approx : index_map[tgt];
+      tgt = dag[i];  deflate_tgt = index_map[tgt];
       offset_i = i+lin_ineq_offset;
       lin_ineq_coeffs(offset_i, i) = -1.;
       lin_ineq_coeffs(offset_i, deflate_tgt) = 1. + RATIO_NUDGE;
@@ -1622,8 +1621,7 @@ enforce_augmented_linear_ineq_constraints(RealVector& cd_vars)
     Real N_tgt, N_tgt_nudge, nudge_p1 = RATIO_NUDGE + 1.;
     SizetArray index_map;  inflate_approx_set(approx_set, index_map);
     for (r_cit=orderedRootList.begin(); r_cit!=orderedRootList.end(); ++r_cit) {
-      target = *r_cit;
-      deflate_tgt = (target == numApprox) ? num_approx : index_map[target];
+      target = *r_cit;  deflate_tgt = index_map[target];
       N_tgt = cd_vars[deflate_tgt];  N_tgt_nudge = N_tgt * nudge_p1;
       const UShortSet& reverse_dag = reverseActiveDAG[target];
       for (d_cit=reverse_dag.begin(); d_cit!=reverse_dag.end(); ++d_cit) {
@@ -1955,9 +1953,9 @@ unroll_z1_z2_gradients(RealMatrix& z1_grads, RealMatrix& z2_grads)
     abort_handler(METHOD_ERROR);  break;
   }
 
-  if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "GenACV unroll of DAG into z1_grads:\n" << z1_grads
-	 << "and z2_grads:\n" << z2_grads << std::endl;
+  //if (outputLevel >= DEBUG_OUTPUT)
+  //  Cout << "GenACV unroll of DAG into z1_grads:\n" << z1_grads
+  // 	   << "and z2_grads:\n" << z2_grads << std::endl;
 }
 
 
@@ -2201,10 +2199,10 @@ compute_G_g_gradients_from_N(const RealVector& N_vec, RealSymMatrixArray& dG_dN,
     abort_handler(METHOD_ERROR); break;
   }
 
-  if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "For sub-method " << mlmfSubMethod << ", N vector:\n" << N_vec
-	 << "dG/dN matrix array:\n" << dG_dN
-	 << "dg/dN vector array:\n" << dg_dN << std::endl;
+  //if (outputLevel >= DEBUG_OUTPUT)
+  //  Cout << "For sub-method " << mlmfSubMethod << ", N vector:\n" << N_vec
+  // 	   << "dG/dN matrix array:\n" << dG_dN
+  // 	   << "dg/dN vector array:\n" << dg_dN << std::endl;
 }
 
 
@@ -2362,6 +2360,10 @@ estimator_variance_ratios_and_gradients(const RealVector& cd_vars,
       evr_grad_vq /= -varH_q;
     }
   }
+
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "estimator variance ratios:\n" << estvar_ratios
+	 << "estimator variance ratio gradients:\n" << evr_grads << std::endl;
 }
 
 

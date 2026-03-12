@@ -460,11 +460,16 @@ compute_genacv_control(const RealSymMatrix& cov_LL, const RealSymMatrix& G,
 inline void NonDGenACVSampling::
 inflate_approx_set(const UShortArray& approx_set, SizetArray& index_map)
 {
-  // inflate from compact approx_set to index_map[0,numApprox)
+  // inflate from compact approx_set plus HF to index_map[0,numApprox].
+  // compact indices are unchanged, becoming padded with SZ_MAX entries.
+  // > useful for mapping original model indices to active indices for, e.g.,
+  //   design variable or DAG indexing (see also inflate_variables() below)
+
   size_t i, num_approx_set = approx_set.size();
-  index_map.assign(numApprox, SZ_MAX);
+  index_map.assign(numApprox+1, SZ_MAX);
   for (i=0; i<num_approx_set; ++i)
-    index_map[approx_set[i]] = i; // maps src/tgt from inflated to compact
+    index_map[approx_set[i]] = i; // maps from all model to active model index
+  index_map[numApprox] = num_approx_set; // terminate with HF
 }
 
 
