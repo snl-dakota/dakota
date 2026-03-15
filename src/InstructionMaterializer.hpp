@@ -21,6 +21,8 @@
 
 namespace Dakota {
 
+namespace irgen = dakota::irgen;
+
 /// Tracks keys explicitly written during one materialization pass.
 struct WriteTracker
 {

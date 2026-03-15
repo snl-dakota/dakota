@@ -131,7 +131,14 @@ endif()
 # -----------------
 # Set path for nlohmann::json header
 
+set(JSON_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/packages/external/json/include")
 set(JSON_SINGLE_INCDIR "${PROJECT_SOURCE_DIR}/packages/external/json/single_include")
+if(EXISTS "${JSON_INCLUDE_DIR}/nlohmann/json_fwd.hpp")
+  list(APPEND EXT_TPL_INCDIRS ${JSON_INCLUDE_DIR})
+else()
+  message(FATAL_ERROR "JSON forward header file not found in ${JSON_INCLUDE_DIR}.
+                        You may need run `git submodule update --init --recursive`" )
+endif()
 if(EXISTS "${JSON_SINGLE_INCDIR}/nlohmann/json.hpp")
   message( "Found JSON header file" )
   list( APPEND EXT_TPL_INCDIRS ${JSON_SINGLE_INCDIR} )
@@ -875,6 +882,17 @@ set(Dakota_src ${Dakota_src} ${util_src} ${evaldata_src} ${db_src}
     ${model_src} ${constraint_src} ${interface_src} ${env_src}
     ${iterator_src})
 
+set(dakota_ir_src
+  InstructionMaterializer.cpp
+  InstructionMaterializerHandlersComplexVariables.cpp
+  InstructionMaterializerHandlersContinuous.cpp
+  InstructionMaterializerHandlersDiscrete.cpp
+  InstructionMaterializerHandlersHistogram.cpp
+  InstructionMaterializerHandlersPrimitive.cpp
+  InstructionMaterializerUtils.cpp
+  ${dakota_ir_generated_files}
+  )
+
 # Experiment with moving AMPL here; if cross-platform link errors, revert
 if(HAVE_AMPL)
   add_definitions("-DHAVE_AMPL")
@@ -940,6 +958,26 @@ add_library(dakota_src_fortran ${Dakota_src_fortran})
 set_target_properties(dakota_src_fortran PROPERTIES INCLUDE_DIRECTORIES "")
 list(APPEND EXPORT_TARGETS dakota_src_fortran)
 
+add_library(dakota_ir STATIC ${dakota_ir_src})
+add_dependencies(dakota_ir dakota_ir_generated_tables)
+target_include_directories(dakota_ir
+  PUBLIC
+    $<BUILD_INTERFACE:${Dakota_SOURCE_DIR}/src>
+    $<BUILD_INTERFACE:${DAKOTA_IR_GENERATED_DIR}>
+    $<BUILD_INTERFACE:${Dakota_SOURCE_DIR}/src/generated_ir_tables>
+    $<BUILD_INTERFACE:${JSON_INCLUDE_DIR}>
+    "$<BUILD_INTERFACE:${Teuchos_INCLUDE_DIRS}>"
+    "$<BUILD_INTERFACE:${Boost_INCLUDE_DIR}>"
+    "$<BUILD_INTERFACE:${Boost_INCLUDE_DIRS}>"
+    $<BUILD_INTERFACE:${EXT_TPL_INCDIRS}>
+  )
+if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9.0) OR DAKOTA_LINK_STDCPPFS)
+  target_link_libraries(dakota_ir stdc++fs)
+endif()
+target_link_libraries(dakota_ir PUBLIC ${Teuchos_LIBRARIES})
+target_link_libraries(dakota_ir PUBLIC Boost::serialization)
+DakotaApplyMPISettings(dakota_ir)
+
 add_library(dakota_src ${Dakota_src})
 # handle special case for gcc filesystem support
 if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9.0) OR DAKOTA_LINK_STDCPPFS)
@@ -951,8 +989,9 @@ endif()
 target_link_libraries(dakota_src dakota_src_fortran ${DAKOTA_BOOST_TARGETS})
 # Dakota should always depend on util (consider removing option in DakotaOptions.cmamke
 target_link_libraries(dakota_src dakota_util)
+set_property(TARGET dakota_src APPEND PROPERTY LINK_LIBRARIES dakota_ir)
 list(APPEND EXPORT_TARGETS dakota_util)
-list(APPEND DAKOTA_LIBS dakota_util)
+list(APPEND DAKOTA_LIBS dakota_util dakota_ir)
 if(DAKOTA_MODULE_SURROGATES)
   target_link_libraries(dakota_src dakota_surrogates)
   #list(APPEND DAKOTA_PKG_LIBS dakota_surrogates)

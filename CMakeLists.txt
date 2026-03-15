@@ -256,6 +256,8 @@ endif(HAVE_ROL)
 # the targets can be used to add unit tests
 dakota_find_googletest()
 
+include(DakotaIRGeneration)
+
 # -----
 # Configuration of Dakota components
 # -----

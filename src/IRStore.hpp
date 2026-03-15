@@ -18,6 +18,8 @@
 
 namespace Dakota {
 
+namespace irgen = dakota::irgen;
+
 /// Unified IR value representation (shared with generated contract defaults).
 using IRValue = dakota::irgen::IRValue;
 

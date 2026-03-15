@@ -25,7 +25,7 @@ const nlohmann::json& required_path(const nlohmann::json& block_json,
 
   const nlohmann::json* node = &block_json;
   std::string token;
-  std::istringstream iss(std::string(path));
+  std::istringstream iss{std::string(path)};
   while (std::getline(iss, token, '/')) {
     if (token.empty())
       continue;
@@ -46,7 +46,7 @@ const nlohmann::json* optional_path(const nlohmann::json& block_json,
 
   const nlohmann::json* node = &block_json;
   std::string token;
-  std::istringstream iss(std::string(path));
+  std::istringstream iss{std::string(path)};
   while (std::getline(iss, token, '/')) {
     if (token.empty())
       continue;
@@ -58,4 +58,3 @@ const nlohmann::json* optional_path(const nlohmann::json& block_json,
 }
 
 } // namespace Dakota::InstructionMaterializerUtils
-
