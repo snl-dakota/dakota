@@ -57,6 +57,8 @@ InstructionMaterializer::op_handlers()
       &InstructionMaterializer::handle_discrete_interval_uncertain},
     {irgen::OpKind::UncertainCorrelationMatrix,
       &InstructionMaterializer::handle_uncertain_correlation_matrix},
+    {irgen::OpKind::UncertainInitPointFlag,
+      &InstructionMaterializer::handle_uncertain_init_point_flag},
     {irgen::OpKind::IdToIndexSet,
       &InstructionMaterializer::handle_id_to_index_set},
     {irgen::OpKind::IntSet,

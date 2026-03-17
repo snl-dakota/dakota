@@ -2191,10 +2191,6 @@
         "key": "variables.uncertain.correlation_matrix",
         "value_type": "RealSymMatrix"
       },
-      "uncertain.initial_point_flag": {
-        "key": "variables.uncertain.initial_point_flag",
-        "value_type": "bool"
-      },
       "uniform_uncertain": {
         "key": "variables.uniform_uncertain",
         "value_type": "size_t"

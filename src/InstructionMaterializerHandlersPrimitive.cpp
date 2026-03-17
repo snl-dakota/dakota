@@ -175,6 +175,23 @@ void InstructionMaterializer::handle_presence_bool(const irgen::WriteOp& op,
   ctx.store.set_value(op.target_local_ir_key, IRValue(value.get<bool>()));
 }
 
+void InstructionMaterializer::handle_uncertain_init_point_flag(
+  const irgen::WriteOp& op,
+  const irgen::KeyContract& contract,
+  const HandlerContext& ctx)
+{
+  (void)contract;
+  const auto& value = InstructionMaterializerUtils::required_path(
+    ctx.block_json, ctx.current_path);
+  if (!value.is_boolean()) {
+    throw std::runtime_error(
+      "InstructionMaterializer::handle_uncertain_init_point_flag expected boolean at '" +
+      std::string(ctx.current_path) + "'");
+  }
+  if (value.get<bool>())
+    ctx.store.set_value(op.target_local_ir_key, IRValue(true));
+}
+
 void InstructionMaterializer::handle_presence_literal(const irgen::WriteOp& op,
                                                       const irgen::KeyContract& contract,
                                                       const HandlerContext& ctx)

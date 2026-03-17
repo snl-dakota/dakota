@@ -729,6 +729,19 @@
                     "x-model-default": "RngOptionsContext2Mt19937",
                     "x-union-pattern": 1
                 },
+                "gen_reliability_levels": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/GenReliabilityLevelsGenReliabilityLevels"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "values",
+                    "default": null,
+                    "description": "Specify generalized relability levels at which to estimate the corresponding response value"
+                },
                 "probability_levels": {
                     "anyOf": [
                         {
@@ -741,20 +754,6 @@
                     "argument": "values",
                     "default": null,
                     "description": "Specify probability levels at which to estimate the corresponding response value"
-                },
-                "distribution": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
-                        },
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
-                        }
-                    ],
-                    "description": "Selection of cumulative or complementary cumulative functions",
-                    "title": "Distribution",
-                    "x-model-default": "DistributionCumulComplContext1Cumulative",
-                    "x-union-pattern": 1
                 },
                 "response_levels": {
                     "anyOf": [
@@ -769,18 +768,19 @@
                     "default": null,
                     "description": "Values at which to estimate desired statistics for each response"
                 },
-                "gen_reliability_levels": {
+                "distribution": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/GenReliabilityLevelsGenReliabilityLevels"
+                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
                         },
                         {
-                            "type": "null"
+                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
                         }
                     ],
-                    "argument": "values",
-                    "default": null,
-                    "description": "Specify generalized relability levels at which to estimate the corresponding response value"
+                    "description": "Selection of cumulative or complementary cumulative functions",
+                    "title": "Distribution",
+                    "x-model-default": "DistributionCumulComplContext1Cumulative",
+                    "x-union-pattern": 1
                 },
                 "max_iterations": {
                     "default": 4294967295,
@@ -3823,6 +3823,20 @@
                     "x-aliases": [
                         "buv_descriptors"
                     ]
+                },
+                "initial_point_user_provided": {
+                    "default": false,
+                    "description": "Internal-only flag indicating the user explicitly provided initial_point.",
+                    "title": "Initial Point User Provided",
+                    "type": "boolean",
+                    "x-internal-only": true,
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.uncertain.initial_point_flag",
+                            "ir_value_type": "bool",
+                            "storage_type": "UNCERTAIN_INIT_POINT_FLAG"
+                        }
+                    ]
                 }
             },
             "required": [
@@ -3931,7 +3945,8 @@
                         "betas",
                         "lower_bounds",
                         "upper_bounds",
-                        "count"
+                        "count",
+                        "initial_point_user_provided"
                     ],
                     "validationLiterals": [],
                     "validationRuleName": "beta_uncertain_initial"
@@ -4123,6 +4138,20 @@
                     "default": null,
                     "description": "Labels for the variables",
                     "title": "Descriptors"
+                },
+                "initial_point_user_provided": {
+                    "default": false,
+                    "description": "Internal-only flag indicating the user explicitly provided initial_point.",
+                    "title": "Initial Point User Provided",
+                    "type": "boolean",
+                    "x-internal-only": true,
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.uncertain.initial_point_flag",
+                            "ir_value_type": "bool",
+                            "storage_type": "UNCERTAIN_INIT_POINT_FLAG"
+                        }
+                    ]
                 }
             },
             "required": [
@@ -4225,7 +4254,8 @@
                         "initial_point",
                         "probability_per_trial",
                         "num_trials",
-                        "count"
+                        "count",
+                        "initial_point_user_provided"
                     ],
                     "validationLiterals": [],
                     "validationRuleName": "binomial_uncertain_initial"
@@ -8319,6 +8349,46 @@
             "additionalProperties": false,
             "description": "Generated model for ConminFrcgConfig",
             "properties": {
+                "scaling": {
+                    "default": false,
+                    "description": "Turn on scaling for variables, responses, and constraints",
+                    "title": "Scaling",
+                    "type": "boolean",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.scaling",
+                            "ir_value_type": "bool",
+                            "storage_type": "PRESENCE_BOOL"
+                        }
+                    ]
+                },
+                "max_iterations": {
+                    "default": 4294967295,
+                    "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
+                    "minimum": 0,
+                    "title": "Max Iterations",
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.max_iterations",
+                            "ir_value_type": "size_t",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "speculative": {
+                    "default": false,
+                    "description": "Compute speculative gradients",
+                    "title": "Speculative",
+                    "type": "boolean",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.speculative",
+                            "ir_value_type": "bool",
+                            "storage_type": "PRESENCE_BOOL"
+                        }
+                    ]
+                },
                 "constraint_tolerance": {
                     "default": 0.0,
                     "description": "Maximum allowable constraint violation still considered feasible",
@@ -8328,20 +8398,6 @@
                         {
                             "ir_key": "method.constraint_tolerance",
                             "ir_value_type": "Real",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
-                "max_function_evaluations": {
-                    "default": 4294967295,
-                    "description": "Number of function evaluations allowed for optimizers",
-                    "minimum": 0,
-                    "title": "Max Function Evaluations",
-                    "type": "integer",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.max_function_evaluations",
-                            "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
                         }
                     ]
@@ -8367,46 +8423,6 @@
                         }
                     ]
                 },
-                "max_iterations": {
-                    "default": 4294967295,
-                    "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
-                    "minimum": 0,
-                    "title": "Max Iterations",
-                    "type": "integer",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.max_iterations",
-                            "ir_value_type": "size_t",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
-                "scaling": {
-                    "default": false,
-                    "description": "Turn on scaling for variables, responses, and constraints",
-                    "title": "Scaling",
-                    "type": "boolean",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.scaling",
-                            "ir_value_type": "bool",
-                            "storage_type": "PRESENCE_BOOL"
-                        }
-                    ]
-                },
-                "speculative": {
-                    "default": false,
-                    "description": "Compute speculative gradients",
-                    "title": "Speculative",
-                    "type": "boolean",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.speculative",
-                            "ir_value_type": "bool",
-                            "storage_type": "PRESENCE_BOOL"
-                        }
-                    ]
-                },
                 "convergence_tolerance": {
                     "default": -1.7976931348623157e+308,
                     "description": "Stopping criterion based on objective function or statistics convergence",
@@ -8421,6 +8437,20 @@
                         {
                             "ir_key": "method.jega.percent_change",
                             "ir_value_type": "Real",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "max_function_evaluations": {
+                    "default": 4294967295,
+                    "description": "Number of function evaluations allowed for optimizers",
+                    "minimum": 0,
+                    "title": "Max Function Evaluations",
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.max_function_evaluations",
+                            "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
                         }
                     ]
@@ -8512,6 +8542,46 @@
             "additionalProperties": false,
             "description": "Generated model for ConminMfdConfig",
             "properties": {
+                "scaling": {
+                    "default": false,
+                    "description": "Turn on scaling for variables, responses, and constraints",
+                    "title": "Scaling",
+                    "type": "boolean",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.scaling",
+                            "ir_value_type": "bool",
+                            "storage_type": "PRESENCE_BOOL"
+                        }
+                    ]
+                },
+                "max_iterations": {
+                    "default": 4294967295,
+                    "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
+                    "minimum": 0,
+                    "title": "Max Iterations",
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.max_iterations",
+                            "ir_value_type": "size_t",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "speculative": {
+                    "default": false,
+                    "description": "Compute speculative gradients",
+                    "title": "Speculative",
+                    "type": "boolean",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.speculative",
+                            "ir_value_type": "bool",
+                            "storage_type": "PRESENCE_BOOL"
+                        }
+                    ]
+                },
                 "constraint_tolerance": {
                     "default": 0.0,
                     "description": "Maximum allowable constraint violation still considered feasible",
@@ -8521,20 +8591,6 @@
                         {
                             "ir_key": "method.constraint_tolerance",
                             "ir_value_type": "Real",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
-                "max_function_evaluations": {
-                    "default": 4294967295,
-                    "description": "Number of function evaluations allowed for optimizers",
-                    "minimum": 0,
-                    "title": "Max Function Evaluations",
-                    "type": "integer",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.max_function_evaluations",
-                            "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
                         }
                     ]
@@ -8560,46 +8616,6 @@
                         }
                     ]
                 },
-                "max_iterations": {
-                    "default": 4294967295,
-                    "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
-                    "minimum": 0,
-                    "title": "Max Iterations",
-                    "type": "integer",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.max_iterations",
-                            "ir_value_type": "size_t",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
-                "scaling": {
-                    "default": false,
-                    "description": "Turn on scaling for variables, responses, and constraints",
-                    "title": "Scaling",
-                    "type": "boolean",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.scaling",
-                            "ir_value_type": "bool",
-                            "storage_type": "PRESENCE_BOOL"
-                        }
-                    ]
-                },
-                "speculative": {
-                    "default": false,
-                    "description": "Compute speculative gradients",
-                    "title": "Speculative",
-                    "type": "boolean",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.speculative",
-                            "ir_value_type": "bool",
-                            "storage_type": "PRESENCE_BOOL"
-                        }
-                    ]
-                },
                 "convergence_tolerance": {
                     "default": -1.7976931348623157e+308,
                     "description": "Stopping criterion based on objective function or statistics convergence",
@@ -8614,6 +8630,20 @@
                         {
                             "ir_key": "method.jega.percent_change",
                             "ir_value_type": "Real",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "max_function_evaluations": {
+                    "default": 4294967295,
+                    "description": "Number of function evaluations allowed for optimizers",
+                    "minimum": 0,
+                    "title": "Max Function Evaluations",
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.max_function_evaluations",
+                            "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
                         }
                     ]
@@ -9222,6 +9252,20 @@
                     "x-aliases": [
                         "iuv_descriptors"
                     ]
+                },
+                "initial_point_user_provided": {
+                    "default": false,
+                    "description": "Internal-only flag indicating the user explicitly provided initial_point.",
+                    "title": "Initial Point User Provided",
+                    "type": "boolean",
+                    "x-internal-only": true,
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.uncertain.initial_point_flag",
+                            "ir_value_type": "bool",
+                            "storage_type": "UNCERTAIN_INIT_POINT_FLAG"
+                        }
+                    ]
                 }
             },
             "required": [
@@ -9315,7 +9359,8 @@
                         "lower_bounds",
                         "upper_bounds",
                         "num_intervals",
-                        "count"
+                        "count",
+                        "initial_point_user_provided"
                     ],
                     "validationLiterals": [],
                     "validationRuleName": "continuous_interval_uncertain_initial"
@@ -12167,7 +12212,8 @@
                         "initial_point",
                         "elements_per_variable",
                         "elements",
-                        "count"
+                        "count",
+                        "initial_point_user_provided"
                     ],
                     "validationLiterals": [],
                     "validationRuleName": "discrete_design_set_int_initial"
@@ -12428,7 +12474,8 @@
                         "initial_point",
                         "elements_per_variable",
                         "elements",
-                        "count"
+                        "count",
+                        "initial_point_user_provided"
                     ],
                     "validationLiterals": [],
                     "validationRuleName": "discrete_design_set_real_initial"
@@ -12682,7 +12729,8 @@
                         "initial_point",
                         "elements_per_variable",
                         "elements",
-                        "count"
+                        "count",
+                        "initial_point_user_provided"
                     ],
                     "validationLiterals": [],
                     "validationRuleName": "discrete_design_set_str_initial"
@@ -12852,6 +12900,20 @@
                     "default": null,
                     "description": "Labels for the variables",
                     "title": "Descriptors"
+                },
+                "initial_point_user_provided": {
+                    "default": false,
+                    "description": "Internal-only flag indicating the user explicitly provided initial_point.",
+                    "title": "Initial Point User Provided",
+                    "type": "boolean",
+                    "x-internal-only": true,
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.uncertain.initial_point_flag",
+                            "ir_value_type": "bool",
+                            "storage_type": "UNCERTAIN_INIT_POINT_FLAG"
+                        }
+                    ]
                 }
             },
             "required": [
@@ -12945,7 +13007,8 @@
                         "lower_bounds",
                         "upper_bounds",
                         "num_intervals",
-                        "count"
+                        "count",
+                        "initial_point_user_provided"
                     ],
                     "validationLiterals": [],
                     "validationRuleName": "discrete_interval_uncertain_initial"
@@ -13466,7 +13529,8 @@
                         "initial_state",
                         "elements_per_variable",
                         "elements",
-                        "count"
+                        "count",
+                        "initial_point_user_provided"
                     ],
                     "validationLiterals": [],
                     "validationRuleName": "discrete_state_set_int_initial"
@@ -13735,7 +13799,8 @@
                         "initial_state",
                         "elements_per_variable",
                         "elements",
-                        "count"
+                        "count",
+                        "initial_point_user_provided"
                     ],
                     "validationLiterals": [],
                     "validationRuleName": "discrete_state_set_real_initial"
@@ -13971,7 +14036,8 @@
                         "initial_state",
                         "elements_per_variable",
                         "elements",
-                        "count"
+                        "count",
+                        "initial_point_user_provided"
                     ],
                     "validationLiterals": [],
                     "validationRuleName": "discrete_state_set_str_initial"
@@ -14201,6 +14267,20 @@
                     "default": null,
                     "description": "Labels for the variables",
                     "title": "Descriptors"
+                },
+                "initial_point_user_provided": {
+                    "default": false,
+                    "description": "Internal-only flag indicating the user explicitly provided initial_point.",
+                    "title": "Initial Point User Provided",
+                    "type": "boolean",
+                    "x-internal-only": true,
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.uncertain.initial_point_flag",
+                            "ir_value_type": "bool",
+                            "storage_type": "UNCERTAIN_INIT_POINT_FLAG"
+                        }
+                    ]
                 }
             },
             "required": [
@@ -14302,7 +14382,8 @@
                         "initial_point",
                         "elements_per_variable",
                         "elements",
-                        "count"
+                        "count",
+                        "initial_point_user_provided"
                     ],
                     "validationLiterals": [],
                     "validationRuleName": "discrete_uncertain_set_int_initial"
@@ -14504,6 +14585,20 @@
                     "default": null,
                     "description": "Labels for the variables",
                     "title": "Descriptors"
+                },
+                "initial_point_user_provided": {
+                    "default": false,
+                    "description": "Internal-only flag indicating the user explicitly provided initial_point.",
+                    "title": "Initial Point User Provided",
+                    "type": "boolean",
+                    "x-internal-only": true,
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.uncertain.initial_point_flag",
+                            "ir_value_type": "bool",
+                            "storage_type": "UNCERTAIN_INIT_POINT_FLAG"
+                        }
+                    ]
                 }
             },
             "required": [
@@ -14605,7 +14700,8 @@
                         "initial_point",
                         "elements_per_variable",
                         "elements",
-                        "count"
+                        "count",
+                        "initial_point_user_provided"
                     ],
                     "validationLiterals": [],
                     "validationRuleName": "discrete_uncertain_set_real_initial"
@@ -14784,6 +14880,20 @@
                     "default": null,
                     "description": "Labels for the variables",
                     "title": "Descriptors"
+                },
+                "initial_point_user_provided": {
+                    "default": false,
+                    "description": "Internal-only flag indicating the user explicitly provided initial_point.",
+                    "title": "Initial Point User Provided",
+                    "type": "boolean",
+                    "x-internal-only": true,
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.uncertain.initial_point_flag",
+                            "ir_value_type": "bool",
+                            "storage_type": "UNCERTAIN_INIT_POINT_FLAG"
+                        }
+                    ]
                 }
             },
             "required": [
@@ -14875,7 +14985,8 @@
                         "initial_point",
                         "elements_per_variable",
                         "elements",
-                        "count"
+                        "count",
+                        "initial_point_user_provided"
                     ],
                     "validationLiterals": [],
                     "validationRuleName": "discrete_uncertain_set_str_initial"
@@ -15210,6 +15321,46 @@
             "additionalProperties": false,
             "description": "Generated model for DotBfgsConfig",
             "properties": {
+                "scaling": {
+                    "default": false,
+                    "description": "Turn on scaling for variables, responses, and constraints",
+                    "title": "Scaling",
+                    "type": "boolean",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.scaling",
+                            "ir_value_type": "bool",
+                            "storage_type": "PRESENCE_BOOL"
+                        }
+                    ]
+                },
+                "max_iterations": {
+                    "default": 4294967295,
+                    "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
+                    "minimum": 0,
+                    "title": "Max Iterations",
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.max_iterations",
+                            "ir_value_type": "size_t",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "speculative": {
+                    "default": false,
+                    "description": "Compute speculative gradients",
+                    "title": "Speculative",
+                    "type": "boolean",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.speculative",
+                            "ir_value_type": "bool",
+                            "storage_type": "PRESENCE_BOOL"
+                        }
+                    ]
+                },
                 "constraint_tolerance": {
                     "default": 0.0,
                     "description": "Maximum allowable constraint violation still considered feasible",
@@ -15219,20 +15370,6 @@
                         {
                             "ir_key": "method.constraint_tolerance",
                             "ir_value_type": "Real",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
-                "max_function_evaluations": {
-                    "default": 4294967295,
-                    "description": "Number of function evaluations allowed for optimizers",
-                    "minimum": 0,
-                    "title": "Max Function Evaluations",
-                    "type": "integer",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.max_function_evaluations",
-                            "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
                         }
                     ]
@@ -15258,46 +15395,6 @@
                         }
                     ]
                 },
-                "max_iterations": {
-                    "default": 4294967295,
-                    "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
-                    "minimum": 0,
-                    "title": "Max Iterations",
-                    "type": "integer",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.max_iterations",
-                            "ir_value_type": "size_t",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
-                "scaling": {
-                    "default": false,
-                    "description": "Turn on scaling for variables, responses, and constraints",
-                    "title": "Scaling",
-                    "type": "boolean",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.scaling",
-                            "ir_value_type": "bool",
-                            "storage_type": "PRESENCE_BOOL"
-                        }
-                    ]
-                },
-                "speculative": {
-                    "default": false,
-                    "description": "Compute speculative gradients",
-                    "title": "Speculative",
-                    "type": "boolean",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.speculative",
-                            "ir_value_type": "bool",
-                            "storage_type": "PRESENCE_BOOL"
-                        }
-                    ]
-                },
                 "convergence_tolerance": {
                     "default": -1.7976931348623157e+308,
                     "description": "Stopping criterion based on objective function or statistics convergence",
@@ -15312,6 +15409,20 @@
                         {
                             "ir_key": "method.jega.percent_change",
                             "ir_value_type": "Real",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "max_function_evaluations": {
+                    "default": 4294967295,
+                    "description": "Number of function evaluations allowed for optimizers",
+                    "minimum": 0,
+                    "title": "Max Function Evaluations",
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.max_function_evaluations",
+                            "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
                         }
                     ]
@@ -15403,6 +15514,46 @@
             "additionalProperties": false,
             "description": "Generated model for DotFrcgConfig",
             "properties": {
+                "scaling": {
+                    "default": false,
+                    "description": "Turn on scaling for variables, responses, and constraints",
+                    "title": "Scaling",
+                    "type": "boolean",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.scaling",
+                            "ir_value_type": "bool",
+                            "storage_type": "PRESENCE_BOOL"
+                        }
+                    ]
+                },
+                "max_iterations": {
+                    "default": 4294967295,
+                    "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
+                    "minimum": 0,
+                    "title": "Max Iterations",
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.max_iterations",
+                            "ir_value_type": "size_t",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "speculative": {
+                    "default": false,
+                    "description": "Compute speculative gradients",
+                    "title": "Speculative",
+                    "type": "boolean",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.speculative",
+                            "ir_value_type": "bool",
+                            "storage_type": "PRESENCE_BOOL"
+                        }
+                    ]
+                },
                 "constraint_tolerance": {
                     "default": 0.0,
                     "description": "Maximum allowable constraint violation still considered feasible",
@@ -15412,20 +15563,6 @@
                         {
                             "ir_key": "method.constraint_tolerance",
                             "ir_value_type": "Real",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
-                "max_function_evaluations": {
-                    "default": 4294967295,
-                    "description": "Number of function evaluations allowed for optimizers",
-                    "minimum": 0,
-                    "title": "Max Function Evaluations",
-                    "type": "integer",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.max_function_evaluations",
-                            "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
                         }
                     ]
@@ -15451,46 +15588,6 @@
                         }
                     ]
                 },
-                "max_iterations": {
-                    "default": 4294967295,
-                    "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
-                    "minimum": 0,
-                    "title": "Max Iterations",
-                    "type": "integer",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.max_iterations",
-                            "ir_value_type": "size_t",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
-                "scaling": {
-                    "default": false,
-                    "description": "Turn on scaling for variables, responses, and constraints",
-                    "title": "Scaling",
-                    "type": "boolean",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.scaling",
-                            "ir_value_type": "bool",
-                            "storage_type": "PRESENCE_BOOL"
-                        }
-                    ]
-                },
-                "speculative": {
-                    "default": false,
-                    "description": "Compute speculative gradients",
-                    "title": "Speculative",
-                    "type": "boolean",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.speculative",
-                            "ir_value_type": "bool",
-                            "storage_type": "PRESENCE_BOOL"
-                        }
-                    ]
-                },
                 "convergence_tolerance": {
                     "default": -1.7976931348623157e+308,
                     "description": "Stopping criterion based on objective function or statistics convergence",
@@ -15505,6 +15602,20 @@
                         {
                             "ir_key": "method.jega.percent_change",
                             "ir_value_type": "Real",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "max_function_evaluations": {
+                    "default": 4294967295,
+                    "description": "Number of function evaluations allowed for optimizers",
+                    "minimum": 0,
+                    "title": "Max Function Evaluations",
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.max_function_evaluations",
+                            "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
                         }
                     ]
@@ -15596,6 +15707,46 @@
             "additionalProperties": false,
             "description": "Generated model for DotMmfdConfig",
             "properties": {
+                "scaling": {
+                    "default": false,
+                    "description": "Turn on scaling for variables, responses, and constraints",
+                    "title": "Scaling",
+                    "type": "boolean",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.scaling",
+                            "ir_value_type": "bool",
+                            "storage_type": "PRESENCE_BOOL"
+                        }
+                    ]
+                },
+                "max_iterations": {
+                    "default": 4294967295,
+                    "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
+                    "minimum": 0,
+                    "title": "Max Iterations",
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.max_iterations",
+                            "ir_value_type": "size_t",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "speculative": {
+                    "default": false,
+                    "description": "Compute speculative gradients",
+                    "title": "Speculative",
+                    "type": "boolean",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.speculative",
+                            "ir_value_type": "bool",
+                            "storage_type": "PRESENCE_BOOL"
+                        }
+                    ]
+                },
                 "constraint_tolerance": {
                     "default": 0.0,
                     "description": "Maximum allowable constraint violation still considered feasible",
@@ -15605,20 +15756,6 @@
                         {
                             "ir_key": "method.constraint_tolerance",
                             "ir_value_type": "Real",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
-                "max_function_evaluations": {
-                    "default": 4294967295,
-                    "description": "Number of function evaluations allowed for optimizers",
-                    "minimum": 0,
-                    "title": "Max Function Evaluations",
-                    "type": "integer",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.max_function_evaluations",
-                            "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
                         }
                     ]
@@ -15644,46 +15781,6 @@
                         }
                     ]
                 },
-                "max_iterations": {
-                    "default": 4294967295,
-                    "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
-                    "minimum": 0,
-                    "title": "Max Iterations",
-                    "type": "integer",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.max_iterations",
-                            "ir_value_type": "size_t",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
-                "scaling": {
-                    "default": false,
-                    "description": "Turn on scaling for variables, responses, and constraints",
-                    "title": "Scaling",
-                    "type": "boolean",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.scaling",
-                            "ir_value_type": "bool",
-                            "storage_type": "PRESENCE_BOOL"
-                        }
-                    ]
-                },
-                "speculative": {
-                    "default": false,
-                    "description": "Compute speculative gradients",
-                    "title": "Speculative",
-                    "type": "boolean",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.speculative",
-                            "ir_value_type": "bool",
-                            "storage_type": "PRESENCE_BOOL"
-                        }
-                    ]
-                },
                 "convergence_tolerance": {
                     "default": -1.7976931348623157e+308,
                     "description": "Stopping criterion based on objective function or statistics convergence",
@@ -15698,6 +15795,20 @@
                         {
                             "ir_key": "method.jega.percent_change",
                             "ir_value_type": "Real",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "max_function_evaluations": {
+                    "default": 4294967295,
+                    "description": "Number of function evaluations allowed for optimizers",
+                    "minimum": 0,
+                    "title": "Max Function Evaluations",
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.max_function_evaluations",
+                            "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
                         }
                     ]
@@ -15789,6 +15900,46 @@
             "additionalProperties": false,
             "description": "Generated model for DotSlpConfig",
             "properties": {
+                "scaling": {
+                    "default": false,
+                    "description": "Turn on scaling for variables, responses, and constraints",
+                    "title": "Scaling",
+                    "type": "boolean",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.scaling",
+                            "ir_value_type": "bool",
+                            "storage_type": "PRESENCE_BOOL"
+                        }
+                    ]
+                },
+                "max_iterations": {
+                    "default": 4294967295,
+                    "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
+                    "minimum": 0,
+                    "title": "Max Iterations",
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.max_iterations",
+                            "ir_value_type": "size_t",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "speculative": {
+                    "default": false,
+                    "description": "Compute speculative gradients",
+                    "title": "Speculative",
+                    "type": "boolean",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.speculative",
+                            "ir_value_type": "bool",
+                            "storage_type": "PRESENCE_BOOL"
+                        }
+                    ]
+                },
                 "constraint_tolerance": {
                     "default": 0.0,
                     "description": "Maximum allowable constraint violation still considered feasible",
@@ -15798,20 +15949,6 @@
                         {
                             "ir_key": "method.constraint_tolerance",
                             "ir_value_type": "Real",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
-                "max_function_evaluations": {
-                    "default": 4294967295,
-                    "description": "Number of function evaluations allowed for optimizers",
-                    "minimum": 0,
-                    "title": "Max Function Evaluations",
-                    "type": "integer",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.max_function_evaluations",
-                            "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
                         }
                     ]
@@ -15837,46 +15974,6 @@
                         }
                     ]
                 },
-                "max_iterations": {
-                    "default": 4294967295,
-                    "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
-                    "minimum": 0,
-                    "title": "Max Iterations",
-                    "type": "integer",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.max_iterations",
-                            "ir_value_type": "size_t",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
-                "scaling": {
-                    "default": false,
-                    "description": "Turn on scaling for variables, responses, and constraints",
-                    "title": "Scaling",
-                    "type": "boolean",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.scaling",
-                            "ir_value_type": "bool",
-                            "storage_type": "PRESENCE_BOOL"
-                        }
-                    ]
-                },
-                "speculative": {
-                    "default": false,
-                    "description": "Compute speculative gradients",
-                    "title": "Speculative",
-                    "type": "boolean",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.speculative",
-                            "ir_value_type": "bool",
-                            "storage_type": "PRESENCE_BOOL"
-                        }
-                    ]
-                },
                 "convergence_tolerance": {
                     "default": -1.7976931348623157e+308,
                     "description": "Stopping criterion based on objective function or statistics convergence",
@@ -15891,6 +15988,20 @@
                         {
                             "ir_key": "method.jega.percent_change",
                             "ir_value_type": "Real",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "max_function_evaluations": {
+                    "default": 4294967295,
+                    "description": "Number of function evaluations allowed for optimizers",
+                    "minimum": 0,
+                    "title": "Max Function Evaluations",
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.max_function_evaluations",
+                            "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
                         }
                     ]
@@ -15982,6 +16093,46 @@
             "additionalProperties": false,
             "description": "Generated model for DotSqpConfig",
             "properties": {
+                "scaling": {
+                    "default": false,
+                    "description": "Turn on scaling for variables, responses, and constraints",
+                    "title": "Scaling",
+                    "type": "boolean",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.scaling",
+                            "ir_value_type": "bool",
+                            "storage_type": "PRESENCE_BOOL"
+                        }
+                    ]
+                },
+                "max_iterations": {
+                    "default": 4294967295,
+                    "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
+                    "minimum": 0,
+                    "title": "Max Iterations",
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.max_iterations",
+                            "ir_value_type": "size_t",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "speculative": {
+                    "default": false,
+                    "description": "Compute speculative gradients",
+                    "title": "Speculative",
+                    "type": "boolean",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.speculative",
+                            "ir_value_type": "bool",
+                            "storage_type": "PRESENCE_BOOL"
+                        }
+                    ]
+                },
                 "constraint_tolerance": {
                     "default": 0.0,
                     "description": "Maximum allowable constraint violation still considered feasible",
@@ -15991,20 +16142,6 @@
                         {
                             "ir_key": "method.constraint_tolerance",
                             "ir_value_type": "Real",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
-                "max_function_evaluations": {
-                    "default": 4294967295,
-                    "description": "Number of function evaluations allowed for optimizers",
-                    "minimum": 0,
-                    "title": "Max Function Evaluations",
-                    "type": "integer",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.max_function_evaluations",
-                            "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
                         }
                     ]
@@ -16030,46 +16167,6 @@
                         }
                     ]
                 },
-                "max_iterations": {
-                    "default": 4294967295,
-                    "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
-                    "minimum": 0,
-                    "title": "Max Iterations",
-                    "type": "integer",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.max_iterations",
-                            "ir_value_type": "size_t",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
-                "scaling": {
-                    "default": false,
-                    "description": "Turn on scaling for variables, responses, and constraints",
-                    "title": "Scaling",
-                    "type": "boolean",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.scaling",
-                            "ir_value_type": "bool",
-                            "storage_type": "PRESENCE_BOOL"
-                        }
-                    ]
-                },
-                "speculative": {
-                    "default": false,
-                    "description": "Compute speculative gradients",
-                    "title": "Speculative",
-                    "type": "boolean",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.speculative",
-                            "ir_value_type": "bool",
-                            "storage_type": "PRESENCE_BOOL"
-                        }
-                    ]
-                },
                 "convergence_tolerance": {
                     "default": -1.7976931348623157e+308,
                     "description": "Stopping criterion based on objective function or statistics convergence",
@@ -16084,6 +16181,20 @@
                         {
                             "ir_key": "method.jega.percent_change",
                             "ir_value_type": "Real",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "max_function_evaluations": {
+                    "default": 4294967295,
+                    "description": "Number of function evaluations allowed for optimizers",
+                    "minimum": 0,
+                    "title": "Max Function Evaluations",
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.max_function_evaluations",
+                            "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
                         }
                     ]
@@ -23238,6 +23349,20 @@
                     "x-aliases": [
                         "euv_descriptors"
                     ]
+                },
+                "initial_point_user_provided": {
+                    "default": false,
+                    "description": "Internal-only flag indicating the user explicitly provided initial_point.",
+                    "title": "Initial Point User Provided",
+                    "type": "boolean",
+                    "x-internal-only": true,
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.uncertain.initial_point_flag",
+                            "ir_value_type": "bool",
+                            "storage_type": "UNCERTAIN_INIT_POINT_FLAG"
+                        }
+                    ]
                 }
             },
             "required": [
@@ -23328,7 +23453,8 @@
                     "validationFields": [
                         "initial_point",
                         "betas",
-                        "count"
+                        "count",
+                        "initial_point_user_provided"
                     ],
                     "validationLiterals": [],
                     "validationRuleName": "exponential_uncertain_initial"
@@ -25132,6 +25258,20 @@
                     "x-aliases": [
                         "fuv_descriptors"
                     ]
+                },
+                "initial_point_user_provided": {
+                    "default": false,
+                    "description": "Internal-only flag indicating the user explicitly provided initial_point.",
+                    "title": "Initial Point User Provided",
+                    "type": "boolean",
+                    "x-internal-only": true,
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.uncertain.initial_point_flag",
+                            "ir_value_type": "bool",
+                            "storage_type": "UNCERTAIN_INIT_POINT_FLAG"
+                        }
+                    ]
                 }
             },
             "required": [
@@ -25234,7 +25374,8 @@
                         "initial_point",
                         "alphas",
                         "betas",
-                        "count"
+                        "count",
+                        "initial_point_user_provided"
                     ],
                     "validationLiterals": [],
                     "validationRuleName": "frechet_uncertain_initial"
@@ -26353,19 +26494,6 @@
                     "title": "Collocation Control",
                     "x-union-pattern": 4
                 },
-                "convergence_tolerance": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "value",
-                    "default": null,
-                    "description": "Stopping criterion based on objective function or statistics convergence"
-                },
                 "refinement_metric": {
                     "anyOf": [
                         {
@@ -26382,6 +26510,19 @@
                     "description": "Metric used for guiding adaptive refinement during UQ.",
                     "title": "Refinement Metric",
                     "x-union-pattern": 2
+                },
+                "convergence_tolerance": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "value",
+                    "default": null,
+                    "description": "Stopping criterion based on objective function or statistics convergence"
                 },
                 "p_refinement": {
                     "anyOf": [
@@ -27181,6 +27322,20 @@
                     "x-aliases": [
                         "gauv_descriptors"
                     ]
+                },
+                "initial_point_user_provided": {
+                    "default": false,
+                    "description": "Internal-only flag indicating the user explicitly provided initial_point.",
+                    "title": "Initial Point User Provided",
+                    "type": "boolean",
+                    "x-internal-only": true,
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.uncertain.initial_point_flag",
+                            "ir_value_type": "bool",
+                            "storage_type": "UNCERTAIN_INIT_POINT_FLAG"
+                        }
+                    ]
                 }
             },
             "required": [
@@ -27283,7 +27438,8 @@
                         "initial_point",
                         "alphas",
                         "betas",
-                        "count"
+                        "count",
+                        "initial_point_user_provided"
                     ],
                     "validationLiterals": [],
                     "validationRuleName": "gamma_uncertain_initial"
@@ -28011,6 +28167,20 @@
                     "default": null,
                     "description": "Labels for the variables",
                     "title": "Descriptors"
+                },
+                "initial_point_user_provided": {
+                    "default": false,
+                    "description": "Internal-only flag indicating the user explicitly provided initial_point.",
+                    "title": "Initial Point User Provided",
+                    "type": "boolean",
+                    "x-internal-only": true,
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.uncertain.initial_point_flag",
+                            "ir_value_type": "bool",
+                            "storage_type": "UNCERTAIN_INIT_POINT_FLAG"
+                        }
+                    ]
                 }
             },
             "required": [
@@ -28101,7 +28271,8 @@
                     "validationFields": [
                         "initial_point",
                         "probability_per_trial",
-                        "count"
+                        "count",
+                        "initial_point_user_provided"
                     ],
                     "validationLiterals": [],
                     "validationRuleName": "geometric_uncertain_initial"
@@ -29090,6 +29261,19 @@
                     "x-model-default": "RngOptionsContext2Mt19937",
                     "x-union-pattern": 1
                 },
+                "gen_reliability_levels": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/GenReliabilityLevelsGenReliabilityLevels"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "values",
+                    "default": null,
+                    "description": "Specify generalized relability levels at which to estimate the corresponding response value"
+                },
                 "probability_levels": {
                     "anyOf": [
                         {
@@ -29102,20 +29286,6 @@
                     "argument": "values",
                     "default": null,
                     "description": "Specify probability levels at which to estimate the corresponding response value"
-                },
-                "distribution": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
-                        },
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
-                        }
-                    ],
-                    "description": "Selection of cumulative or complementary cumulative functions",
-                    "title": "Distribution",
-                    "x-model-default": "DistributionCumulComplContext1Cumulative",
-                    "x-union-pattern": 1
                 },
                 "response_levels": {
                     "anyOf": [
@@ -29130,18 +29300,19 @@
                     "default": null,
                     "description": "Values at which to estimate desired statistics for each response"
                 },
-                "gen_reliability_levels": {
+                "distribution": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/GenReliabilityLevelsGenReliabilityLevels"
+                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
                         },
                         {
-                            "type": "null"
+                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
                         }
                     ],
-                    "argument": "values",
-                    "default": null,
-                    "description": "Specify generalized relability levels at which to estimate the corresponding response value"
+                    "description": "Selection of cumulative or complementary cumulative functions",
+                    "title": "Distribution",
+                    "x-model-default": "DistributionCumulComplContext1Cumulative",
+                    "x-union-pattern": 1
                 },
                 "solution_approach": {
                     "anchor": true,
@@ -29657,6 +29828,19 @@
                         }
                     ]
                 },
+                "gen_reliability_levels": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/GenReliabilityLevelsGenReliabilityLevels"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "values",
+                    "default": null,
+                    "description": "Specify generalized relability levels at which to estimate the corresponding response value"
+                },
                 "probability_levels": {
                     "anyOf": [
                         {
@@ -29669,20 +29853,6 @@
                     "argument": "values",
                     "default": null,
                     "description": "Specify probability levels at which to estimate the corresponding response value"
-                },
-                "distribution": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
-                        },
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
-                        }
-                    ],
-                    "description": "Selection of cumulative or complementary cumulative functions",
-                    "title": "Distribution",
-                    "x-model-default": "DistributionCumulComplContext1Cumulative",
-                    "x-union-pattern": 1
                 },
                 "response_levels": {
                     "anyOf": [
@@ -29697,18 +29867,19 @@
                     "default": null,
                     "description": "Values at which to estimate desired statistics for each response"
                 },
-                "gen_reliability_levels": {
+                "distribution": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/GenReliabilityLevelsGenReliabilityLevels"
+                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
                         },
                         {
-                            "type": "null"
+                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
                         }
                     ],
-                    "argument": "values",
-                    "default": null,
-                    "description": "Specify generalized relability levels at which to estimate the corresponding response value"
+                    "description": "Selection of cumulative or complementary cumulative functions",
+                    "title": "Distribution",
+                    "x-model-default": "DistributionCumulComplContext1Cumulative",
+                    "x-union-pattern": 1
                 },
                 "rng": {
                     "anyOf": [
@@ -30122,6 +30293,19 @@
                     "x-model-default": "RngOptionsContext2Mt19937",
                     "x-union-pattern": 1
                 },
+                "gen_reliability_levels": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/GenReliabilityLevelsGenReliabilityLevels"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "values",
+                    "default": null,
+                    "description": "Specify generalized relability levels at which to estimate the corresponding response value"
+                },
                 "probability_levels": {
                     "anyOf": [
                         {
@@ -30134,20 +30318,6 @@
                     "argument": "values",
                     "default": null,
                     "description": "Specify probability levels at which to estimate the corresponding response value"
-                },
-                "distribution": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
-                        },
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
-                        }
-                    ],
-                    "description": "Selection of cumulative or complementary cumulative functions",
-                    "title": "Distribution",
-                    "x-model-default": "DistributionCumulComplContext1Cumulative",
-                    "x-union-pattern": 1
                 },
                 "response_levels": {
                     "anyOf": [
@@ -30162,18 +30332,19 @@
                     "default": null,
                     "description": "Values at which to estimate desired statistics for each response"
                 },
-                "gen_reliability_levels": {
+                "distribution": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/GenReliabilityLevelsGenReliabilityLevels"
+                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
                         },
                         {
-                            "type": "null"
+                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
                         }
                     ],
-                    "argument": "values",
-                    "default": null,
-                    "description": "Specify generalized relability levels at which to estimate the corresponding response value"
+                    "description": "Selection of cumulative or complementary cumulative functions",
+                    "title": "Distribution",
+                    "x-model-default": "DistributionCumulComplContext1Cumulative",
+                    "x-union-pattern": 1
                 },
                 "max_iterations": {
                     "default": 4294967295,
@@ -31012,6 +31183,20 @@
                     "x-aliases": [
                         "guuv_descriptors"
                     ]
+                },
+                "initial_point_user_provided": {
+                    "default": false,
+                    "description": "Internal-only flag indicating the user explicitly provided initial_point.",
+                    "title": "Initial Point User Provided",
+                    "type": "boolean",
+                    "x-internal-only": true,
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.uncertain.initial_point_flag",
+                            "ir_value_type": "bool",
+                            "storage_type": "UNCERTAIN_INIT_POINT_FLAG"
+                        }
+                    ]
                 }
             },
             "required": [
@@ -31114,7 +31299,8 @@
                         "initial_point",
                         "alphas",
                         "betas",
-                        "count"
+                        "count",
+                        "initial_point_user_provided"
                     ],
                     "validationLiterals": [],
                     "validationRuleName": "gumbel_uncertain_initial"
@@ -31371,6 +31557,20 @@
                     "x-aliases": [
                         "huv_bin_descriptors"
                     ]
+                },
+                "initial_point_user_provided": {
+                    "default": false,
+                    "description": "Internal-only flag indicating the user explicitly provided initial_point.",
+                    "title": "Initial Point User Provided",
+                    "type": "boolean",
+                    "x-internal-only": true,
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.uncertain.initial_point_flag",
+                            "ir_value_type": "bool",
+                            "storage_type": "UNCERTAIN_INIT_POINT_FLAG"
+                        }
+                    ]
                 }
             },
             "required": [
@@ -31505,7 +31705,8 @@
                         "pairs_per_variable",
                         "abscissas",
                         "density",
-                        "count"
+                        "count",
+                        "initial_point_user_provided"
                     ],
                     "validationLiterals": [],
                     "validationRuleName": "histogram_bin_uncertain_initial"
@@ -31691,6 +31892,20 @@
                     "default": null,
                     "description": "Labels for the variables",
                     "title": "Descriptors"
+                },
+                "initial_point_user_provided": {
+                    "default": false,
+                    "description": "Internal-only flag indicating the user explicitly provided initial_point.",
+                    "title": "Initial Point User Provided",
+                    "type": "boolean",
+                    "x-internal-only": true,
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.uncertain.initial_point_flag",
+                            "ir_value_type": "bool",
+                            "storage_type": "UNCERTAIN_INIT_POINT_FLAG"
+                        }
+                    ]
                 }
             },
             "required": [
@@ -31815,7 +32030,8 @@
                         "pairs_per_variable",
                         "abscissas",
                         "counts",
-                        "count"
+                        "count",
+                        "initial_point_user_provided"
                     ],
                     "validationLiterals": [],
                     "validationRuleName": "histogram_point_int_uncertain_initial"
@@ -31933,6 +32149,20 @@
                     "default": null,
                     "description": "Labels for the variables",
                     "title": "Descriptors"
+                },
+                "initial_point_user_provided": {
+                    "default": false,
+                    "description": "Internal-only flag indicating the user explicitly provided initial_point.",
+                    "title": "Initial Point User Provided",
+                    "type": "boolean",
+                    "x-internal-only": true,
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.uncertain.initial_point_flag",
+                            "ir_value_type": "bool",
+                            "storage_type": "UNCERTAIN_INIT_POINT_FLAG"
+                        }
+                    ]
                 }
             },
             "required": [
@@ -32057,7 +32287,8 @@
                         "pairs_per_variable",
                         "abscissas",
                         "counts",
-                        "count"
+                        "count",
+                        "initial_point_user_provided"
                     ],
                     "validationLiterals": [],
                     "validationRuleName": "histogram_point_real_uncertain_initial"
@@ -32175,6 +32406,20 @@
                     "default": null,
                     "description": "Labels for the variables",
                     "title": "Descriptors"
+                },
+                "initial_point_user_provided": {
+                    "default": false,
+                    "description": "Internal-only flag indicating the user explicitly provided initial_point.",
+                    "title": "Initial Point User Provided",
+                    "type": "boolean",
+                    "x-internal-only": true,
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.uncertain.initial_point_flag",
+                            "ir_value_type": "bool",
+                            "storage_type": "UNCERTAIN_INIT_POINT_FLAG"
+                        }
+                    ]
                 }
             },
             "required": [
@@ -32299,7 +32544,8 @@
                         "pairs_per_variable",
                         "abscissas",
                         "counts",
-                        "count"
+                        "count",
+                        "initial_point_user_provided"
                     ],
                     "validationLiterals": [],
                     "validationRuleName": "histogram_point_str_uncertain_initial"
@@ -32513,6 +32759,20 @@
                     "default": null,
                     "description": "Labels for the variables",
                     "title": "Descriptors"
+                },
+                "initial_point_user_provided": {
+                    "default": false,
+                    "description": "Internal-only flag indicating the user explicitly provided initial_point.",
+                    "title": "Initial Point User Provided",
+                    "type": "boolean",
+                    "x-internal-only": true,
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.uncertain.initial_point_flag",
+                            "ir_value_type": "bool",
+                            "storage_type": "UNCERTAIN_INIT_POINT_FLAG"
+                        }
+                    ]
                 }
             },
             "required": [
@@ -32627,7 +32887,8 @@
                         "total_population",
                         "selected_population",
                         "num_drawn",
-                        "count"
+                        "count",
+                        "initial_point_user_provided"
                     ],
                     "validationLiterals": [],
                     "validationRuleName": "hypergeometric_uncertain_initial"
@@ -33698,6 +33959,19 @@
                     "x-model-default": "DistributionCumulComplContext1Cumulative",
                     "x-union-pattern": 1
                 },
+                "gen_reliability_levels": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/GenReliabilityLevelsGenReliabilityLevels"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "values",
+                    "default": null,
+                    "description": "Specify generalized relability levels at which to estimate the corresponding response value"
+                },
                 "probability_levels": {
                     "anyOf": [
                         {
@@ -33710,19 +33984,6 @@
                     "argument": "values",
                     "default": null,
                     "description": "Specify probability levels at which to estimate the corresponding response value"
-                },
-                "response_levels": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/ResponseLevelsComputeProbRelGenResponseLevels"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "values",
-                    "default": null,
-                    "description": "Values at which to estimate desired statistics for each response"
                 },
                 "reliability_levels": {
                     "anyOf": [
@@ -33737,10 +33998,10 @@
                     "default": null,
                     "description": "Specify reliability levels at which the response values will be estimated"
                 },
-                "gen_reliability_levels": {
+                "response_levels": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/GenReliabilityLevelsGenReliabilityLevels"
+                            "$ref": "#/$defs/ResponseLevelsComputeProbRelGenResponseLevels"
                         },
                         {
                             "type": "null"
@@ -33748,7 +34009,7 @@
                     ],
                     "argument": "values",
                     "default": null,
-                    "description": "Specify generalized relability levels at which to estimate the corresponding response value"
+                    "description": "Values at which to estimate desired statistics for each response"
                 },
                 "final_moments": {
                     "anyOf": [
@@ -34468,6 +34729,19 @@
                     "x-model-default": "RngOptionsContext2Mt19937",
                     "x-union-pattern": 1
                 },
+                "gen_reliability_levels": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/GenReliabilityLevelsGenReliabilityLevels"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "values",
+                    "default": null,
+                    "description": "Specify generalized relability levels at which to estimate the corresponding response value"
+                },
                 "probability_levels": {
                     "anyOf": [
                         {
@@ -34480,20 +34754,6 @@
                     "argument": "values",
                     "default": null,
                     "description": "Specify probability levels at which to estimate the corresponding response value"
-                },
-                "distribution": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
-                        },
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
-                        }
-                    ],
-                    "description": "Selection of cumulative or complementary cumulative functions",
-                    "title": "Distribution",
-                    "x-model-default": "DistributionCumulComplContext1Cumulative",
-                    "x-union-pattern": 1
                 },
                 "response_levels": {
                     "anyOf": [
@@ -34508,18 +34768,19 @@
                     "default": null,
                     "description": "Values at which to estimate desired statistics for each response"
                 },
-                "gen_reliability_levels": {
+                "distribution": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/GenReliabilityLevelsGenReliabilityLevels"
+                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
                         },
                         {
-                            "type": "null"
+                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
                         }
                     ],
-                    "argument": "values",
-                    "default": null,
-                    "description": "Specify generalized relability levels at which to estimate the corresponding response value"
+                    "description": "Selection of cumulative or complementary cumulative functions",
+                    "title": "Distribution",
+                    "x-model-default": "DistributionCumulComplContext1Cumulative",
+                    "x-union-pattern": 1
                 },
                 "convergence_tolerance": {
                     "default": -1.7976931348623157e+308,
@@ -36386,6 +36647,19 @@
                         }
                     ]
                 },
+                "gen_reliability_levels": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/GenReliabilityLevelsGenReliabilityLevels"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "values",
+                    "default": null,
+                    "description": "Specify generalized relability levels at which to estimate the corresponding response value"
+                },
                 "probability_levels": {
                     "anyOf": [
                         {
@@ -36398,20 +36672,6 @@
                     "argument": "values",
                     "default": null,
                     "description": "Specify probability levels at which to estimate the corresponding response value"
-                },
-                "distribution": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
-                        },
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
-                        }
-                    ],
-                    "description": "Selection of cumulative or complementary cumulative functions",
-                    "title": "Distribution",
-                    "x-model-default": "DistributionCumulComplContext1Cumulative",
-                    "x-union-pattern": 1
                 },
                 "response_levels": {
                     "anyOf": [
@@ -36426,18 +36686,19 @@
                     "default": null,
                     "description": "Values at which to estimate desired statistics for each response"
                 },
-                "gen_reliability_levels": {
+                "distribution": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/GenReliabilityLevelsGenReliabilityLevels"
+                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
                         },
                         {
-                            "type": "null"
+                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
                         }
                     ],
-                    "argument": "values",
-                    "default": null,
-                    "description": "Specify generalized relability levels at which to estimate the corresponding response value"
+                    "description": "Selection of cumulative or complementary cumulative functions",
+                    "title": "Distribution",
+                    "x-model-default": "DistributionCumulComplContext1Cumulative",
+                    "x-union-pattern": 1
                 },
                 "optimization_solver": {
                     "anchor": true,
@@ -36884,6 +37145,19 @@
                     "x-model-default": "DistributionCumulComplContext1Cumulative",
                     "x-union-pattern": 1
                 },
+                "gen_reliability_levels": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/GenReliabilityLevelsGenReliabilityLevels"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "values",
+                    "default": null,
+                    "description": "Specify generalized relability levels at which to estimate the corresponding response value"
+                },
                 "probability_levels": {
                     "anyOf": [
                         {
@@ -36896,19 +37170,6 @@
                     "argument": "values",
                     "default": null,
                     "description": "Specify probability levels at which to estimate the corresponding response value"
-                },
-                "response_levels": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/ResponseLevelsComputeProbRelGenResponseLevels"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "values",
-                    "default": null,
-                    "description": "Values at which to estimate desired statistics for each response"
                 },
                 "reliability_levels": {
                     "anyOf": [
@@ -36923,10 +37184,10 @@
                     "default": null,
                     "description": "Specify reliability levels at which the response values will be estimated"
                 },
-                "gen_reliability_levels": {
+                "response_levels": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/GenReliabilityLevelsGenReliabilityLevels"
+                            "$ref": "#/$defs/ResponseLevelsComputeProbRelGenResponseLevels"
                         },
                         {
                             "type": "null"
@@ -36934,7 +37195,7 @@
                     ],
                     "argument": "values",
                     "default": null,
-                    "description": "Specify generalized relability levels at which to estimate the corresponding response value"
+                    "description": "Values at which to estimate desired statistics for each response"
                 },
                 "id_method": {
                     "anyOf": [
@@ -37161,6 +37422,20 @@
                         "lnuv_descriptors"
                     ]
                 },
+                "initial_point_user_provided": {
+                    "default": false,
+                    "description": "Internal-only flag indicating the user explicitly provided initial_point.",
+                    "title": "Initial Point User Provided",
+                    "type": "boolean",
+                    "x-internal-only": true,
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.uncertain.initial_point_flag",
+                            "ir_value_type": "bool",
+                            "storage_type": "UNCERTAIN_INIT_POINT_FLAG"
+                        }
+                    ]
+                },
                 "inferred_upper_bounds": {
                     "anyOf": [
                         {
@@ -37175,7 +37450,8 @@
                     ],
                     "default": null,
                     "description": "Internal use only",
-                    "title": "Inferred Upper Bounds"
+                    "title": "Inferred Upper Bounds",
+                    "x-internal-only": true
                 }
             },
             "required": [
@@ -37328,7 +37604,8 @@
                         "std_deviations",
                         "lower_bounds",
                         "upper_bounds",
-                        "count"
+                        "count",
+                        "initial_point_user_provided"
                     ],
                     "validationLiterals": [],
                     "validationRuleName": "lognormal_uncertain_initial"
@@ -37460,6 +37737,20 @@
                     "x-aliases": [
                         "luuv_descriptors"
                     ]
+                },
+                "initial_point_user_provided": {
+                    "default": false,
+                    "description": "Internal-only flag indicating the user explicitly provided initial_point.",
+                    "title": "Initial Point User Provided",
+                    "type": "boolean",
+                    "x-internal-only": true,
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.uncertain.initial_point_flag",
+                            "ir_value_type": "bool",
+                            "storage_type": "UNCERTAIN_INIT_POINT_FLAG"
+                        }
+                    ]
                 }
             },
             "required": [
@@ -37544,7 +37835,8 @@
                         "initial_point",
                         "lower_bounds",
                         "upper_bounds",
-                        "count"
+                        "count",
+                        "initial_point_user_provided"
                     ],
                     "validationLiterals": [],
                     "validationRuleName": "loguniform_uncertain_initial"
@@ -42950,18 +43242,22 @@
                     "description": "Sample allocation approach for multifidelity expansions",
                     "x-union-pattern": 2
                 },
-                "convergence_tolerance": {
+                "refinement_metric": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
+                            "$ref": "#/$defs/LevelMappings"
+                        },
+                        {
+                            "$ref": "#/$defs/RefinementMetricCov"
                         },
                         {
                             "type": "null"
                         }
                     ],
-                    "argument": "value",
                     "default": null,
-                    "description": "Stopping criterion based on objective function or statistics convergence"
+                    "description": "Metric used for guiding adaptive refinement during UQ.",
+                    "title": "Refinement Metric",
+                    "x-union-pattern": 2
                 },
                 "statistics_mode": {
                     "anyOf": [
@@ -42980,22 +43276,18 @@
                     "title": "Statistics Mode",
                     "x-union-pattern": 2
                 },
-                "refinement_metric": {
+                "convergence_tolerance": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/LevelMappings"
-                        },
-                        {
-                            "$ref": "#/$defs/RefinementMetricCov"
+                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
                         },
                         {
                             "type": "null"
                         }
                     ],
+                    "argument": "value",
                     "default": null,
-                    "description": "Metric used for guiding adaptive refinement during UQ.",
-                    "title": "Refinement Metric",
-                    "x-union-pattern": 2
+                    "description": "Stopping criterion based on objective function or statistics convergence"
                 },
                 "p_refinement": {
                     "anyOf": [
@@ -45980,19 +46272,6 @@
                     "title": "Discrepancy Emulation",
                     "x-union-pattern": 2
                 },
-                "convergence_tolerance": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "value",
-                    "default": null,
-                    "description": "Stopping criterion based on objective function or statistics convergence"
-                },
                 "refinement_metric": {
                     "anyOf": [
                         {
@@ -46009,6 +46288,19 @@
                     "description": "Metric used for guiding adaptive refinement during UQ.",
                     "title": "Refinement Metric",
                     "x-union-pattern": 2
+                },
+                "convergence_tolerance": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "value",
+                    "default": null,
+                    "description": "Stopping criterion based on objective function or statistics convergence"
                 },
                 "allocation_control": {
                     "anyOf": [
@@ -50007,18 +50299,22 @@
                     "description": "Sample allocation approach for multifidelity expansions",
                     "x-union-pattern": 2
                 },
-                "convergence_tolerance": {
+                "refinement_metric": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
+                            "$ref": "#/$defs/LevelMappings"
+                        },
+                        {
+                            "$ref": "#/$defs/RefinementMetricCov"
                         },
                         {
                             "type": "null"
                         }
                     ],
-                    "argument": "value",
                     "default": null,
-                    "description": "Stopping criterion based on objective function or statistics convergence"
+                    "description": "Metric used for guiding adaptive refinement during UQ.",
+                    "title": "Refinement Metric",
+                    "x-union-pattern": 2
                 },
                 "statistics_mode": {
                     "anyOf": [
@@ -50037,22 +50333,18 @@
                     "title": "Statistics Mode",
                     "x-union-pattern": 2
                 },
-                "refinement_metric": {
+                "convergence_tolerance": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/LevelMappings"
-                        },
-                        {
-                            "$ref": "#/$defs/RefinementMetricCov"
+                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
                         },
                         {
                             "type": "null"
                         }
                     ],
+                    "argument": "value",
                     "default": null,
-                    "description": "Metric used for guiding adaptive refinement during UQ.",
-                    "title": "Refinement Metric",
-                    "x-union-pattern": 2
+                    "description": "Stopping criterion based on objective function or statistics convergence"
                 },
                 "p_refinement": {
                     "anyOf": [
@@ -50865,18 +51157,22 @@
                     "description": "Sample allocation approach for multifidelity expansions",
                     "x-union-pattern": 2
                 },
-                "convergence_tolerance": {
+                "refinement_metric": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
+                            "$ref": "#/$defs/LevelMappings"
+                        },
+                        {
+                            "$ref": "#/$defs/RefinementMetricCov"
                         },
                         {
                             "type": "null"
                         }
                     ],
-                    "argument": "value",
                     "default": null,
-                    "description": "Stopping criterion based on objective function or statistics convergence"
+                    "description": "Metric used for guiding adaptive refinement during UQ.",
+                    "title": "Refinement Metric",
+                    "x-union-pattern": 2
                 },
                 "statistics_mode": {
                     "anyOf": [
@@ -50895,22 +51191,18 @@
                     "title": "Statistics Mode",
                     "x-union-pattern": 2
                 },
-                "refinement_metric": {
+                "convergence_tolerance": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/LevelMappings"
-                        },
-                        {
-                            "$ref": "#/$defs/RefinementMetricCov"
+                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
                         },
                         {
                             "type": "null"
                         }
                     ],
+                    "argument": "value",
                     "default": null,
-                    "description": "Metric used for guiding adaptive refinement during UQ.",
-                    "title": "Refinement Metric",
-                    "x-union-pattern": 2
+                    "description": "Stopping criterion based on objective function or statistics convergence"
                 },
                 "max_refinement_iterations": {
                     "default": 4294967295,
@@ -52460,19 +52752,6 @@
                     "title": "Discrepancy Emulation",
                     "x-union-pattern": 2
                 },
-                "convergence_tolerance": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "value",
-                    "default": null,
-                    "description": "Stopping criterion based on objective function or statistics convergence"
-                },
                 "refinement_metric": {
                     "anyOf": [
                         {
@@ -52489,6 +52768,19 @@
                     "description": "Metric used for guiding adaptive refinement during UQ.",
                     "title": "Refinement Metric",
                     "x-union-pattern": 2
+                },
+                "convergence_tolerance": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "value",
+                    "default": null,
+                    "description": "Stopping criterion based on objective function or statistics convergence"
                 },
                 "allocation_control": {
                     "anyOf": [
@@ -54207,6 +54499,20 @@
                     "default": null,
                     "description": "Labels for the variables",
                     "title": "Descriptors"
+                },
+                "initial_point_user_provided": {
+                    "default": false,
+                    "description": "Internal-only flag indicating the user explicitly provided initial_point.",
+                    "title": "Initial Point User Provided",
+                    "type": "boolean",
+                    "x-internal-only": true,
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.uncertain.initial_point_flag",
+                            "ir_value_type": "bool",
+                            "storage_type": "UNCERTAIN_INIT_POINT_FLAG"
+                        }
+                    ]
                 }
             },
             "required": [
@@ -54309,7 +54615,8 @@
                         "initial_point",
                         "probability_per_trial",
                         "num_trials",
-                        "count"
+                        "count",
+                        "initial_point_user_provided"
                     ],
                     "validationLiterals": [],
                     "validationRuleName": "negative_binomial_uncertain_initial"
@@ -55731,6 +56038,20 @@
                         "nuv_descriptors"
                     ]
                 },
+                "initial_point_user_provided": {
+                    "default": false,
+                    "description": "Internal-only flag indicating the user explicitly provided initial_point.",
+                    "title": "Initial Point User Provided",
+                    "type": "boolean",
+                    "x-internal-only": true,
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.uncertain.initial_point_flag",
+                            "ir_value_type": "bool",
+                            "storage_type": "UNCERTAIN_INIT_POINT_FLAG"
+                        }
+                    ]
+                },
                 "inferred_lower_bounds": {
                     "anyOf": [
                         {
@@ -55745,7 +56066,8 @@
                     ],
                     "default": null,
                     "description": "Internal use only",
-                    "title": "Inferred Lower Bounds"
+                    "title": "Inferred Lower Bounds",
+                    "x-internal-only": true
                 },
                 "inferred_upper_bounds": {
                     "anyOf": [
@@ -55761,7 +56083,8 @@
                     ],
                     "default": null,
                     "description": "Internal use only",
-                    "title": "Inferred Upper Bounds"
+                    "title": "Inferred Upper Bounds",
+                    "x-internal-only": true
                 }
             },
             "required": [
@@ -55862,29 +56185,14 @@
                 {
                     "validationContext": "normal_uncertain",
                     "validationErrorMessage": "For normal_uncertain, failed to set default/inferred bounds",
-                    "validationFields": [
-                        "lower_bounds",
-                        "upper_bounds",
-                        "inferred_lower_bounds",
-                        "inferred_upper_bounds",
-                        "means",
-                        "std_deviations",
-                        "count"
-                    ],
+                    "validationFields": [],
                     "validationLiterals": [],
                     "validationRuleName": "normal_uncertain_bounds"
                 },
                 {
                     "validationContext": "normal_uncertain",
                     "validationErrorMessage": "For normal_uncertain, failed to set initial_point defaults",
-                    "validationFields": [
-                        "initial_point",
-                        "means",
-                        "std_deviations",
-                        "lower_bounds",
-                        "upper_bounds",
-                        "count"
-                    ],
+                    "validationFields": [],
                     "validationLiterals": [],
                     "validationRuleName": "normal_uncertain_initial"
                 },
@@ -61062,19 +61370,6 @@
                     "title": "Basis Family",
                     "x-union-pattern": 2
                 },
-                "convergence_tolerance": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "value",
-                    "default": null,
-                    "description": "Stopping criterion based on objective function or statistics convergence"
-                },
                 "refinement_metric": {
                     "anyOf": [
                         {
@@ -61091,6 +61386,19 @@
                     "description": "Metric used for guiding adaptive refinement during UQ.",
                     "title": "Refinement Metric",
                     "x-union-pattern": 2
+                },
+                "convergence_tolerance": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "value",
+                    "default": null,
+                    "description": "Stopping criterion based on objective function or statistics convergence"
                 },
                 "p_refinement": {
                     "anyOf": [
@@ -63508,6 +63816,19 @@
                     "x-model-default": "RngOptionsContext2Mt19937",
                     "x-union-pattern": 1
                 },
+                "gen_reliability_levels": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/GenReliabilityLevelsGenReliabilityLevels"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "values",
+                    "default": null,
+                    "description": "Specify generalized relability levels at which to estimate the corresponding response value"
+                },
                 "probability_levels": {
                     "anyOf": [
                         {
@@ -63520,20 +63841,6 @@
                     "argument": "values",
                     "default": null,
                     "description": "Specify probability levels at which to estimate the corresponding response value"
-                },
-                "distribution": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
-                        },
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
-                        }
-                    ],
-                    "description": "Selection of cumulative or complementary cumulative functions",
-                    "title": "Distribution",
-                    "x-model-default": "DistributionCumulComplContext1Cumulative",
-                    "x-union-pattern": 1
                 },
                 "response_levels": {
                     "anyOf": [
@@ -63548,18 +63855,19 @@
                     "default": null,
                     "description": "Values at which to estimate desired statistics for each response"
                 },
-                "gen_reliability_levels": {
+                "distribution": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/GenReliabilityLevelsGenReliabilityLevels"
+                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
                         },
                         {
-                            "type": "null"
+                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
                         }
                     ],
-                    "argument": "values",
-                    "default": null,
-                    "description": "Specify generalized relability levels at which to estimate the corresponding response value"
+                    "description": "Selection of cumulative or complementary cumulative functions",
+                    "title": "Distribution",
+                    "x-model-default": "DistributionCumulComplContext1Cumulative",
+                    "x-union-pattern": 1
                 },
                 "id_method": {
                     "anyOf": [
@@ -63827,6 +64135,20 @@
                     "default": null,
                     "description": "Labels for the variables",
                     "title": "Descriptors"
+                },
+                "initial_point_user_provided": {
+                    "default": false,
+                    "description": "Internal-only flag indicating the user explicitly provided initial_point.",
+                    "title": "Initial Point User Provided",
+                    "type": "boolean",
+                    "x-internal-only": true,
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.uncertain.initial_point_flag",
+                            "ir_value_type": "bool",
+                            "storage_type": "UNCERTAIN_INIT_POINT_FLAG"
+                        }
+                    ]
                 }
             },
             "required": [
@@ -63917,7 +64239,8 @@
                     "validationFields": [
                         "initial_point",
                         "lambdas",
-                        "count"
+                        "count",
+                        "initial_point_user_provided"
                     ],
                     "validationLiterals": [],
                     "validationRuleName": "poisson_uncertain_initial"
@@ -67609,6 +67932,19 @@
                     "x-model-default": "RngOptionsContext1Mt19937",
                     "x-union-pattern": 1
                 },
+                "gen_reliability_levels": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/GenReliabilityLevelsGenReliabilityLevels"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "values",
+                    "default": null,
+                    "description": "Specify generalized relability levels at which to estimate the corresponding response value"
+                },
                 "probability_levels": {
                     "anyOf": [
                         {
@@ -67621,20 +67957,6 @@
                     "argument": "values",
                     "default": null,
                     "description": "Specify probability levels at which to estimate the corresponding response value"
-                },
-                "distribution": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
-                        },
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
-                        }
-                    ],
-                    "description": "Selection of cumulative or complementary cumulative functions",
-                    "title": "Distribution",
-                    "x-model-default": "DistributionCumulComplContext1Cumulative",
-                    "x-union-pattern": 1
                 },
                 "response_levels": {
                     "anyOf": [
@@ -67649,18 +67971,19 @@
                     "default": null,
                     "description": "Undocumented: Recursive k-d (RKD) Darts is an experimental capability."
                 },
-                "gen_reliability_levels": {
+                "distribution": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/GenReliabilityLevelsGenReliabilityLevels"
+                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
                         },
                         {
-                            "type": "null"
+                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
                         }
                     ],
-                    "argument": "values",
-                    "default": null,
-                    "description": "Specify generalized relability levels at which to estimate the corresponding response value"
+                    "description": "Selection of cumulative or complementary cumulative functions",
+                    "title": "Distribution",
+                    "x-model-default": "DistributionCumulComplContext1Cumulative",
+                    "x-union-pattern": 1
                 },
                 "id_method": {
                     "anyOf": [
@@ -68241,6 +68564,19 @@
                     "x-model-default": "DistributionCumulComplContext1Cumulative",
                     "x-union-pattern": 1
                 },
+                "gen_reliability_levels": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/GenReliabilityLevelsGenReliabilityLevels"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "values",
+                    "default": null,
+                    "description": "Specify generalized relability levels at which to estimate the corresponding response value"
+                },
                 "probability_levels": {
                     "anyOf": [
                         {
@@ -68253,19 +68589,6 @@
                     "argument": "values",
                     "default": null,
                     "description": "Specify probability levels at which to estimate the corresponding response value"
-                },
-                "response_levels": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/ResponseLevelsComputeProbRelGenResponseLevels"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "values",
-                    "default": null,
-                    "description": "Values at which to estimate desired statistics for each response"
                 },
                 "reliability_levels": {
                     "anyOf": [
@@ -68280,10 +68603,10 @@
                     "default": null,
                     "description": "Specify reliability levels at which the response values will be estimated"
                 },
-                "gen_reliability_levels": {
+                "response_levels": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/GenReliabilityLevelsGenReliabilityLevels"
+                            "$ref": "#/$defs/ResponseLevelsComputeProbRelGenResponseLevels"
                         },
                         {
                             "type": "null"
@@ -68291,7 +68614,7 @@
                     ],
                     "argument": "values",
                     "default": null,
-                    "description": "Specify generalized relability levels at which to estimate the corresponding response value"
+                    "description": "Values at which to estimate desired statistics for each response"
                 },
                 "final_moments": {
                     "anyOf": [
@@ -70867,19 +71190,6 @@
                     "title": "Basis Family",
                     "x-union-pattern": 2
                 },
-                "convergence_tolerance": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "value",
-                    "default": null,
-                    "description": "Stopping criterion based on objective function or statistics convergence"
-                },
                 "refinement_metric": {
                     "anyOf": [
                         {
@@ -70896,6 +71206,19 @@
                     "description": "Metric used for guiding adaptive refinement during UQ.",
                     "title": "Refinement Metric",
                     "x-union-pattern": 2
+                },
+                "convergence_tolerance": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "value",
+                    "default": null,
+                    "description": "Stopping criterion based on objective function or statistics convergence"
                 },
                 "max_refinement_iterations": {
                     "default": 4294967295,
@@ -73784,6 +74107,20 @@
                     "x-aliases": [
                         "tuv_descriptors"
                     ]
+                },
+                "initial_point_user_provided": {
+                    "default": false,
+                    "description": "Internal-only flag indicating the user explicitly provided initial_point.",
+                    "title": "Initial Point User Provided",
+                    "type": "boolean",
+                    "x-internal-only": true,
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.uncertain.initial_point_flag",
+                            "ir_value_type": "bool",
+                            "storage_type": "UNCERTAIN_INIT_POINT_FLAG"
+                        }
+                    ]
                 }
             },
             "required": [
@@ -73880,7 +74217,8 @@
                         "modes",
                         "lower_bounds",
                         "upper_bounds",
-                        "count"
+                        "count",
+                        "initial_point_user_provided"
                     ],
                     "validationLiterals": [],
                     "validationRuleName": "triangular_uncertain_initial"
@@ -74448,6 +74786,20 @@
                     "x-aliases": [
                         "uuv_descriptors"
                     ]
+                },
+                "initial_point_user_provided": {
+                    "default": false,
+                    "description": "Internal-only flag indicating the user explicitly provided initial_point.",
+                    "title": "Initial Point User Provided",
+                    "type": "boolean",
+                    "x-internal-only": true,
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.uncertain.initial_point_flag",
+                            "ir_value_type": "bool",
+                            "storage_type": "UNCERTAIN_INIT_POINT_FLAG"
+                        }
+                    ]
                 }
             },
             "required": [
@@ -74532,7 +74884,8 @@
                         "initial_point",
                         "lower_bounds",
                         "upper_bounds",
-                        "count"
+                        "count",
+                        "initial_point_user_provided"
                     ],
                     "validationLiterals": [],
                     "validationRuleName": "uniform_uncertain_initial"
@@ -76020,6 +76373,20 @@
                     "x-aliases": [
                         "wuv_descriptors"
                     ]
+                },
+                "initial_point_user_provided": {
+                    "default": false,
+                    "description": "Internal-only flag indicating the user explicitly provided initial_point.",
+                    "title": "Initial Point User Provided",
+                    "type": "boolean",
+                    "x-internal-only": true,
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.uncertain.initial_point_flag",
+                            "ir_value_type": "bool",
+                            "storage_type": "UNCERTAIN_INIT_POINT_FLAG"
+                        }
+                    ]
                 }
             },
             "required": [
@@ -76122,7 +76489,8 @@
                         "initial_point",
                         "alphas",
                         "betas",
-                        "count"
+                        "count",
+                        "initial_point_user_provided"
                     ],
                     "validationLiterals": [],
                     "validationRuleName": "weibull_uncertain_initial"

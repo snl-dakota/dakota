@@ -130,6 +130,9 @@ private:
   static void handle_uncertain_correlation_matrix(const irgen::WriteOp& op,
                                                   const irgen::KeyContract& contract,
                                                   const HandlerContext& ctx);
+  static void handle_uncertain_init_point_flag(const irgen::WriteOp& op,
+                                               const irgen::KeyContract& contract,
+                                               const HandlerContext& ctx);
   static void handle_id_to_index_set(const irgen::WriteOp& op,
                                      const irgen::KeyContract& contract,
                                      const HandlerContext& ctx);

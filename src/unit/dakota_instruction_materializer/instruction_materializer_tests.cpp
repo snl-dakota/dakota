@@ -89,6 +89,34 @@ TEST(instruction_materializer_tests, presence_bool_treats_object_as_true)
   EXPECT_TRUE(store.get<bool>("enabled"));
 }
 
+TEST(instruction_materializer_tests, uncertain_init_point_flag_sets_global_flag_when_true)
+{
+  const auto op = make_op(irgen::OpKind::UncertainInitPointFlag, "uncertain.initial_point_flag");
+  const auto store = invoke_handler(
+    op,
+    make_contract(irgen::IrValueType::Bool),
+    json{{"flag", true}},
+    "flag");
+
+  EXPECT_TRUE(store.get<bool>("uncertain.initial_point_flag"));
+}
+
+TEST(instruction_materializer_tests, uncertain_init_point_flag_leaves_existing_false_when_false)
+{
+  IRStore store;
+  store.set_value("uncertain.initial_point_flag", IRValue(false));
+  const auto op = make_op(irgen::OpKind::UncertainInitPointFlag, "uncertain.initial_point_flag");
+
+  InstructionMaterializerTestAccess::invoke_handler(
+    op,
+    make_contract(irgen::IrValueType::Bool),
+    json{{"flag", false}},
+    "flag",
+    store);
+
+  EXPECT_FALSE(store.get<bool>("uncertain.initial_point_flag"));
+}
+
 TEST(instruction_materializer_tests, presence_literal_writes_literal_when_path_exists)
 {
   const auto op = make_op(
