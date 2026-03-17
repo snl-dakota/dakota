@@ -145,13 +145,13 @@ public:
 
   size_t get_db_variables_node(const String& variables_tag) const;
 
-/// Return the active indices of each top-level specification list.
-/// These are primarily used to synchronize state with the JSONProblemDescDB.
-int get_active_method_index() const;
-int get_active_model_index() const;
-int get_active_variables_index() const;
-int get_active_interface_index() const;
-int get_active_responses_index() const;
+  /// Return the active indices of each top-level specification list.
+  /// These are primarily used to synchronize state with the JSONProblemDescDB.
+  int get_active_method_index() const { /* TODO: Fix this */ return 0; }
+  int get_active_model_index() const { /* TODO: Fix this */ return 0; }
+  int get_active_variables_index() const { /* TODO: Fix this */ return 0; }
+  int get_active_interface_index() const { /* TODO: Fix this */ return 0; }
+  int get_active_responses_index() const { /* TODO: Fix this */ return 0; }
 
   /// set dataVariablesIter based on the variables identifier string
   void set_db_variables_node(const String& variables_tag);

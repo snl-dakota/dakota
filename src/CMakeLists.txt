@@ -972,7 +972,7 @@ target_include_directories(dakota_ir
     $<BUILD_INTERFACE:${EXT_TPL_INCDIRS}>
   )
 if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9.0) OR DAKOTA_LINK_STDCPPFS)
-  target_link_libraries(dakota_ir stdc++fs)
+  target_link_libraries(dakota_ir PUBLIC stdc++fs)
 endif()
 target_link_libraries(dakota_ir PUBLIC ${Teuchos_LIBRARIES})
 target_link_libraries(dakota_ir PUBLIC Boost::serialization)
