@@ -22,6 +22,7 @@
 namespace Dakota {
 
 namespace irgen = dakota::irgen;
+struct InstructionMaterializerTestAccess;
 
 /// Tracks keys explicitly written during one materialization pass.
 struct WriteTracker
@@ -45,6 +46,8 @@ public:
 
   /// Build and return a fully materialized IR state.
   IRState materialize(const nlohmann::json& validated_json) const;
+
+  friend struct InstructionMaterializerTestAccess;
 
 private:
   struct HandlerContext
@@ -133,6 +136,23 @@ private:
   static void handle_int_set(const irgen::WriteOp& op,
                              const irgen::KeyContract& contract,
                              const HandlerContext& ctx);
+};
+
+/// Internal testing seam for focused unit coverage of individual handlers.
+struct InstructionMaterializerTestAccess
+{
+  static void invoke_handler(const irgen::WriteOp& op,
+                             const irgen::KeyContract& contract,
+                             const nlohmann::json& block_json,
+                             std::string_view current_path,
+                             IRStore& store)
+  {
+    const InstructionMaterializer::HandlerContext ctx{
+      block_json, store, current_path
+    };
+    const auto& handler = InstructionMaterializer::op_handlers().at(op.op_kind);
+    handler(op, contract, ctx);
+  }
 };
 
 } // namespace Dakota
