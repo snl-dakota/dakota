@@ -107,6 +107,8 @@ add_subdirectory(dakota_json_utils)
 
 add_subdirectory(dakota_instruction_materializer)
 
+add_subdirectory(dakota_problem_desc_db_dump)
+
 # Copy needed unit test auxiliary data files
 dakota_copy_test_file("${CMAKE_CURRENT_SOURCE_DIR}/expt_data_test_files"
   "${CMAKE_CURRENT_BINARY_DIR}/expt_data_test_files"

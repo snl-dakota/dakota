@@ -51,6 +51,9 @@ public:
     return *ptr;
   }
 
+  const Map& values() const
+  { return values_; }
+
 private:
   Map values_;
 };

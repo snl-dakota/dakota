@@ -20,6 +20,7 @@
 #include "DataResponses.hpp"
 #include "UserModes.hpp"
 #include "ProblemDescDBUtils.hpp"
+#include <nlohmann/json.hpp>
 
 namespace Dakota {
 
@@ -42,6 +43,7 @@ class ProblemDescDB
 {
   
   friend void ProblemDescDBUtils::check_and_broadcast_pdb(ProblemDescDB& problem_db, const UserModes& user_modes, ParallelLibrary& parallel_lib);
+  friend nlohmann::json dump_problem_desc_db_json(const ProblemDescDB& db);
 
 public:
 
@@ -244,6 +246,8 @@ public:
   bool get_bool(const String& entry_name) const;
   /// for getting a void**, e.g., &dlLib
   void** get_voidss(const String& entry_name) const;
+  /// write the full stored ProblemDescDB contents to a JSON file for debugging
+  void write_json_dump(const String& output_path) const;
 
   // These functions support a library mode with external parsing.  Rather
   // than using manage_inputs() to parse an input file, Data objects
