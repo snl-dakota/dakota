@@ -234,7 +234,7 @@ private:
   Real compute_R_sq(const RealSymMatrix& C, const RealSymMatrix& G,
 		    const RealMatrix&    c, const RealVector& g, size_t qoi,
 		    const UShortArray& approx_set, Real var_H_q, Real N_H);
-  Real compute_R_sq(RealVector c_g, RealVector lhs, Real var_H_q);
+  Real compute_R_sq(RealVector& c_g, RealVector& lhs, Real var_H_q, Real N_H);
 
   void accumulate_genacv_sums(IntRealMatrixMap& sum_L_shared,
 			      IntRealMatrixMap& sum_L_refined,
@@ -549,7 +549,6 @@ combine_gradients_with_covariance(const RealSymMatrix& C, const RealMatrix& c,
       dcg_dN[v].sizeUninitialized(num_approx);
     }
   }
-
   unsigned short approx_i;
   for (v=0; v<num_v; ++v) {
     const RealSymMatrix& dG_dN_v =  dG_dN[v];
@@ -563,6 +562,7 @@ combine_gradients_with_covariance(const RealSymMatrix& C, const RealMatrix& c,
 	dCG_dN_v(i,j) = C(approx_i,approx_set[j]) * dG_dN_v(i,j); // C o dG/dN
     }
   }
+
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "For sub-method " << mlmfSubMethod << ":\ndCG/dN matrix array:\n"
 	 << dCG_dN << "dcg/dN vector array:\n" << dcg_dN << std::endl;
@@ -577,16 +577,7 @@ solve_for_triple_product(const RealSymMatrix& C, const RealSymMatrix& G,
   RealSymMatrix C_G, C_G_inv;  RealVector c_g, lhs;
   combine_with_covariance(C, c, qoi, approx_set, G, g, C_G, c_g);
   solve_for_C_G_c_g(C_G, C_G_inv, c_g, lhs, false, true); // retain original c_g
-
-  size_t i, n = G.numRows();
-  Real trip_prod = 0.;
-  for (i=0; i<n; ++i)
-    trip_prod += c_g(i) * lhs(i);
-  //if (outputLevel >= DEBUG_OUTPUT)
-  //  Cout << "GenACV::solve_for_triple_product(): C-G =\n" << C_G
-  // 	   << "RHS c-g =\n" << c_g << "LHS soln =\n" << lhs
-  // 	   << "triple product = " << trip_prod << std::endl;
-  return trip_prod;
+  return triple_product(c_g, lhs);
 }
 
 
@@ -597,15 +588,10 @@ compute_R_sq(const RealSymMatrix& C, const RealSymMatrix& G,
 { return solve_for_triple_product(C, G, c, g, qoi, approx_set) * N_H / var_H_q;}
 
 
+// This version used to post-process after matrix solve
 inline Real NonDGenACVSampling::
-compute_R_sq(RealVector c_g, RealVector lhs, Real var_H_q)
-{
-  size_t i, n = c_g.length();  Real R_sq = 0.;
-  for (i=0; i<n; ++i)
-    R_sq += c_g(i) * lhs(i); // triple_product
-  R_sq /= var_H_q;   // triple_product to R_sq
-  return R_sq;
-}
+compute_R_sq(RealVector& c_g, RealVector& lhs, Real var_H_q, Real N_H)
+{ return triple_product(c_g, lhs) * N_H / var_H_q; } // triple_product to R_sq
 
 
 inline void NonDGenACVSampling::

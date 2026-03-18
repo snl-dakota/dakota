@@ -58,6 +58,9 @@ protected:
 				 RealVector& estvar_ratios) override;
   void estimator_variance_ratio_gradients(const RealVector& cd_vars,
 					  RealMatrix& evr_grads) override;
+  void estimator_variance_ratios_and_gradients(const RealVector& cd_vars,
+					       RealVector& estvar_ratios,
+					       RealMatrix& evr_grads) override;
 
   //
   //- Heading: member functions
@@ -154,6 +157,8 @@ protected:
 			const RealVector& var_H, const RealVector& estvar0);
   Real update_hf_target(const RealVector& avg_eval_ratios, Real avg_N_H,
 			const RealVector& var_H);
+
+  Real triple_product(RealVector& c_f, RealVector& lhs);
 
   //
   //- Heading: Data
@@ -273,13 +278,14 @@ private:
   Real compute_R_sq(const RealSymMatrix& CF_inv, const RealVector& A,
 		    Real var_H_q);
   */
-  void solve_for_C_F_c_f(RealSymMatrix& C_F, RealVector& c_f,
-			 RealVector& lhs, bool copy_C_F = true,
-			 bool copy_c_f = true);
+  void solve_for_C_F_c_f(RealSymMatrix& C_F, RealSymMatrix& C_F_inv,
+			 RealVector& c_f, RealVector& lhs,
+			 bool copy_C_F = true, bool copy_c_f = true);
   Real solve_for_triple_product(const RealSymMatrix& C, const RealSymMatrix& F,
 				const RealMatrix&    c, size_t qoi);
   Real compute_R_sq(const RealSymMatrix& C, const RealSymMatrix& F,
 		    const RealMatrix& c, size_t qoi, Real var_H_q);
+  Real compute_R_sq(RealVector& c_g, RealVector& lhs, Real var_H_q);
 
   void compute_allocations(MFSolutionData& soln);
 
@@ -624,8 +630,8 @@ combine_gradients_with_covariance(const RealSymMatrix& C, const RealMatrix& c,
 
 
 inline void NonDACVSampling::
-solve_for_C_F_c_f(RealSymMatrix& C_F, RealVector& c_f, RealVector& lhs,
-		  bool copy_C_F, bool copy_c_f)
+solve_for_C_F_c_f(RealSymMatrix& C_F, RealSymMatrix& C_F_inv, RealVector& c_f,
+		  RealVector& lhs, bool copy_C_F, bool copy_c_f)
 {
   // The idea behind this approach is to leverage both the solution refinement
   // in solve() and equilibration during factorization (inverting C_F in place
@@ -635,15 +641,37 @@ solve_for_C_F_c_f(RealSymMatrix& C_F, RealVector& c_f, RealVector& lhs,
   lhs.size(n); // not sure if initialization matters here...
 
   if (hardenNumericSoln) {
-    RealMatrix C_F_inv;  Real rcond;
+    Real rcond;  //RealMatrix C_F_inv;
+    // copy_C_F can be ignored since RealSymMatrix is copied to RealMatrix
+    // copy_c_f can be ignored since multiply() accepts RHS as const
+
     pseudo_inverse(C_F, C_F_inv, rcond);
-    lhs.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1., C_F_inv, c_f, 0.);
+    lhs.multiply(Teuchos::LEFT_SIDE, 1., C_F_inv, c_f, 0.); // C_F_inv * c_f
+    /*
+    RealMatrix C_F_inv_rm;
+    pseudo_inverse(C_F, C_F_inv_rm, rcond);
+    lhs.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1., C_F_inv_rm, c_f, 0.);
+    copy_data(C_F_inv_rm, C_F_inv);
+    */
+
     if (outputLevel >= DEBUG_OUTPUT)
       Cout << "ACV pseudo-inverse solve for LHS:\n" << lhs << "has rcond = "
 	   << rcond << std::endl;
   }
-  else
+  else {
     cholesky_solve(C_F, lhs, c_f, copy_C_F, copy_c_f);
+    //spd_solver.invert(); copy_data(C_F, C_F_inv); // not needed since inactive
+  }
+}
+
+
+inline Real NonDACVSampling::
+triple_product(RealVector& c_f, RealVector& lhs)
+{
+  size_t i, n = c_f.length();  Real trip_prod = 0.;
+  for (i=0; i<n; ++i)
+    trip_prod += c_f(i) * lhs(i); // triple_product
+  return trip_prod;
 }
 
 
@@ -651,26 +679,23 @@ inline Real NonDACVSampling::
 solve_for_triple_product(const RealSymMatrix& C, const RealSymMatrix& F,
 			 const RealMatrix&    c, size_t qoi)
 {
-  RealSymMatrix C_F;  RealVector c_f, lhs;
+  RealSymMatrix C_F, C_F_inv;  RealVector c_f, lhs;
   combine_with_covariance(C, c, qoi, F, C_F, c_f);
-  solve_for_C_F_c_f(C_F, c_f, lhs, false, true); // retain c_f for use below
-
-  size_t i, n = C.numRows();
-  Real trip_prod = 0.;
-  for (i=0; i<n; ++i)
-    trip_prod += c_f(i) * lhs(i);
-  //if (outputLevel >= DEBUG_OUTPUT)
-  //  Cout << "ACV::solve_for_triple_product(): C-F =\n" << C_F
-  // 	   << "RHS c-f =\n" << c_f << "LHS soln =\n" << lhs
-  // 	   << "triple product = " << trip_prod << std::endl;
-  return trip_prod;
+  solve_for_C_F_c_f(C_F, C_F_inv, c_f, lhs, false, true); // retain original c_f
+  return triple_product(c_f, lhs);
 }
 
 
 inline Real NonDACVSampling::
 compute_R_sq(const RealSymMatrix& C, const RealSymMatrix& F,
 	     const RealMatrix& c, size_t qoi, Real var_H_q)
-{ return solve_for_triple_product(C, F, c, qoi) / var_H_q; }
+{ return solve_for_triple_product(C, F, c, qoi) / var_H_q; }// trip prod to R_sq
+
+
+// This version used to post-process after matrix solve
+inline Real NonDACVSampling::
+compute_R_sq(RealVector& c_f, RealVector& lhs, Real var_H_q)
+{ return triple_product(c_f, lhs) / var_H_q; } // triple_product to R_sq
 
 
 inline void NonDACVSampling::
@@ -747,9 +772,9 @@ inline void NonDACVSampling::
 solve_for_acv_control(const RealSymMatrix& cov_LL, const RealSymMatrix& F,
 		      const RealMatrix& cov_LH, size_t qoi, RealVector& beta)
 {
-  RealSymMatrix C_F;  RealVector c_f;
+  RealSymMatrix C_F, C_F_inv;  RealVector c_f;
   combine_with_covariance(cov_LL, cov_LH, qoi, F, C_F, c_f);
-  solve_for_C_F_c_f(C_F, c_f, beta, false, false); // Ok to modify C_F,c_f
+  solve_for_C_F_c_f(C_F, C_F_inv, c_f, beta, false, false);// can modify C_F,c_f
 
   //Cout << "solve_for_acv_control qoi " << qoi+1 << ": C_F\n" << C_F
   //     << "c_f\n" << c_f << "beta\n" << beta;

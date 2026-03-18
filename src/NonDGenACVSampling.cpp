@@ -1953,9 +1953,9 @@ unroll_z1_z2_gradients(RealMatrix& z1_grads, RealMatrix& z2_grads)
     abort_handler(METHOD_ERROR);  break;
   }
 
-  //if (outputLevel >= DEBUG_OUTPUT)
-  //  Cout << "GenACV unroll of DAG into z1_grads:\n" << z1_grads
-  // 	   << "and z2_grads:\n" << z2_grads << std::endl;
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "GenACV unroll of DAG into z1_grads:\n" << z1_grads
+	 << "and z2_grads:\n" << z2_grads << std::endl;
 }
 
 
@@ -2199,10 +2199,10 @@ compute_G_g_gradients_from_N(const RealVector& N_vec, RealSymMatrixArray& dG_dN,
     abort_handler(METHOD_ERROR); break;
   }
 
-  //if (outputLevel >= DEBUG_OUTPUT)
-  //  Cout << "For sub-method " << mlmfSubMethod << ", N vector:\n" << N_vec
-  // 	   << "dG/dN matrix array:\n" << dG_dN
-  // 	   << "dg/dN vector array:\n" << dg_dN << std::endl;
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "For sub-method " << mlmfSubMethod << ", N vector:\n" << N_vec
+	 << "dG/dN matrix array:\n" << dG_dN
+	 << "dg/dN vector array:\n" << dg_dN << std::endl;
 }
 
 
@@ -2229,7 +2229,7 @@ solve_for_C_G_c_g(RealSymMatrix& C_G, RealSymMatrix& C_G_inv, RealVector& c_g,
   }
   else {
     cholesky_solve(C_G, lhs, c_g, copy_C_G, copy_c_g);
-    //spd_solver.invert(); copy_data(CG, C_G_inv); // not needed since inactive
+    //spd_solver.invert(); copy_data(C_G, C_G_inv); // not needed since inactive
   }
 }
 
@@ -2244,13 +2244,14 @@ estimator_variance_ratios(const RealVector& cd_vars, RealVector& estvar_ratios)
   //       the need to map indices (DAG values to sample count indices) as DAG
   //       source/target can be used directly as indices in N_vec/z1/z2)
 
-  RealVector inflate_cdv, N_vec;
   const UShortArray& approx_set = activeModelSetIter->first;
+  size_t num_approx = approx_set.size();
+  RealVector inflate_cdv, N_vec;
+
   inflate_variables(cd_vars, inflate_cdv, approx_set);
   design_vars_to_N(inflate_cdv, N_vec);
   compute_G_g_from_N(N_vec, GMat, gVec);
 
-  size_t num_approx = approx_set.size();
   Real R_sq, N_H = N_vec[num_approx];
   for (size_t qoi=0; qoi<numFunctions; ++qoi) {
     R_sq = compute_R_sq(covLL[qoi], GMat, covLH, gVec, qoi, approx_set,
@@ -2279,7 +2280,8 @@ void NonDGenACVSampling::
 estimator_variance_ratio_gradients(const RealVector& cd_vars,
 				   RealMatrix& evr_grads)
 {
-  size_t q, v, num_v = numApprox+1;
+  const UShortArray& approx_set = activeModelSetIter->first;
+  size_t num_approx = approx_set.size(), q, v, num_v = num_approx+1;
   if (evr_grads.numRows() != num_v || evr_grads.numCols() != numFunctions)
     evr_grads.shapeUninitialized(num_v, numFunctions);
 
@@ -2291,7 +2293,6 @@ estimator_variance_ratio_gradients(const RealVector& cd_vars,
   RealSymMatrix      CG, CG_inv;  RealVector cg, inflate_cdv, N_vec;
   RealSymMatrixArray dG_dN, dCG_dN;  RealVectorArray dg_dN, dcg_dN;
   Real rcond;
-  const UShortArray& approx_set = activeModelSetIter->first;
 
   inflate_variables(cd_vars, inflate_cdv, approx_set);
   design_vars_to_N(inflate_cdv, N_vec);
@@ -2311,7 +2312,7 @@ estimator_variance_ratio_gradients(const RealVector& cd_vars,
       evr_grad_vq = symMatVecTripleProduct(2., cg, CG_inv,    dcg_dN[v])
 	          + symMatVecTripleProduct(1., cg, dCG_dN[v], cg);
       // from d(triple) to evr_grads:
-      evr_grad_vq /= -varH[q];
+      evr_grad_vq /= -varH[q]; // *** F in terms of r; G in terms of N ***
     }
   }
 }
@@ -2322,32 +2323,27 @@ estimator_variance_ratios_and_gradients(const RealVector& cd_vars,
 					RealVector& estvar_ratios,
 					RealMatrix& evr_grads)
 {
-  size_t q, v, num_v = numApprox+1;
+  const UShortArray& approx_set = activeModelSetIter->first;
+  size_t num_approx = approx_set.size(), q, v, num_v = num_approx+1;
   if (estvar_ratios.empty()) estvar_ratios.sizeUninitialized(numFunctions);
   if (evr_grads.numRows() != num_v || evr_grads.numCols() != numFunctions)
     evr_grads.shapeUninitialized(num_v, numFunctions);
 
-  // d(abc) = abc' + ab'c + a'bc
-  // d[triple_prod]/dN
-  //   = cg^T CG_inv d[cg] + cg^T d[CG_inv] cg + d[cg]^T CG_inv cg
-  // where d[CG_inv] = -CG_inv dCG/dN CG_inv [see also ML BLUE]
-
-  const UShortArray& approx_set = activeModelSetIter->first;
   RealSymMatrix      CG, CG_inv;  RealVector cg, lhs, inflate_cdv, N_vec;
   RealSymMatrixArray dG_dN, dCG_dN;  RealVectorArray dg_dN, dcg_dN;
-  Real varH_q;
 
   inflate_variables(cd_vars, inflate_cdv, approx_set);
   design_vars_to_N(inflate_cdv, N_vec);
   compute_G_g_from_N(N_vec, GMat, gVec);
   compute_G_g_gradients_from_N(N_vec, dG_dN, dg_dN);
 
+  Real varH_q, N_H = N_vec[num_approx];
   for (q=0; q<numFunctions; ++q) {
     const RealSymMatrix& covLL_q = covLL[q];  varH_q = varH[q];
     // form d[triple_prod]/dN:
     combine_with_covariance(covLL_q, covLH, q, approx_set, GMat, gVec, CG, cg);
     solve_for_C_G_c_g(CG, CG_inv, cg, lhs, false, false);//Ok to modify C_G,c_g
-    estvar_ratios[q] = 1. - compute_R_sq(cg, lhs, varH_q);
+    estvar_ratios[q] = 1. - compute_R_sq(cg, lhs, varH_q, N_H); // *** N_H: F in terms of r (compute_F_from_N still returns r-compatible version); G in terms of N ***
 
     combine_gradients_with_covariance(covLL_q, covLH, q, approx_set,
 				      dG_dN, dg_dN, dCG_dN, dcg_dN);
@@ -2357,7 +2353,7 @@ estimator_variance_ratios_and_gradients(const RealVector& cd_vars,
       evr_grad_vq = symMatVecTripleProduct(2., cg, CG_inv,    dcg_dN[v])
 	          + symMatVecTripleProduct(1., cg, dCG_dN[v], cg);
       // from d(triple) to evr_grads:
-      evr_grad_vq /= -varH_q;
+      evr_grad_vq /= -varH_q; // *** N_H: F in terms of r; G in terms of N ***
     }
   }
 
