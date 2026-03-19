@@ -18,6 +18,61 @@
 
 namespace Dakota {
 
+namespace {
+
+template <typename X>
+void ensure_strictly_increasing_histogram_point_x(const X& current,
+                                                  const X& next,
+                                                  std::string_view current_path)
+{
+  if (!(current < next)) {
+    throw std::runtime_error(
+      "handle_histogram_point_uncertain: histogram point x values must increase at '" +
+      std::string(current_path) + "'");
+  }
+}
+
+template <typename MapArray, typename GetX>
+MapArray build_histogram_point_maps(const nlohmann::json& value,
+                                    const std::vector<Real>& counts,
+                                    const std::vector<int>& pairs_per_var,
+                                    std::string_view current_path,
+                                    GetX&& get_x)
+{
+  MapArray out;
+  out.resize(pairs_per_var.size());
+
+  size_t idx = 0;
+  for (size_t i = 0; i < pairs_per_var.size(); ++i) {
+    auto& map_i = out[i];
+    Real sum = 0.0;
+    const int n = pairs_per_var[i];
+    for (int j = 0; j < n; ++j, ++idx) {
+      const auto x = get_x(idx);
+      const Real y = counts[idx];
+      if (y <= 0.0) {
+        throw std::runtime_error(
+          "handle_histogram_point_uncertain: nonpositive intermediate histogram point y value at '" +
+          std::string(current_path) + "'");
+      }
+      if (j < n - 1) {
+        ensure_strictly_increasing_histogram_point_x(
+          x, get_x(idx + 1), current_path);
+      }
+      map_i[x] = y;
+      sum += y;
+    }
+    if (sum > 0.0) {
+      for (auto& kv : map_i)
+        kv.second /= sum;
+    }
+  }
+
+  return out;
+}
+
+} // namespace
+
 void InstructionMaterializer::handle_histogram_bin_uncertain(const irgen::WriteOp& op,
                                                              const irgen::KeyContract& contract,
                                                              const HandlerContext& ctx)
@@ -128,10 +183,93 @@ void InstructionMaterializer::handle_histogram_point_uncertain(const irgen::Writ
                                                                const HandlerContext& ctx)
 {
   (void)op;
-  (void)contract;
-  (void)ctx;
-  throw std::runtime_error("handle_histogram_point_uncertain not implemented yet.");
+  const auto& value = InstructionMaterializerUtils::required_path(
+    ctx.block_json, ctx.current_path);
+  if (!value.is_object()) {
+    throw std::runtime_error(
+      "handle_histogram_point_uncertain: expected object at '" +
+      std::string(ctx.current_path) + "'");
+  }
+  if (!value.contains("abscissas") || !value.contains("counts")) {
+    throw std::runtime_error(
+      "handle_histogram_point_uncertain: missing abscissas/counts at '" +
+      std::string(ctx.current_path) + "'");
+  }
+  if (!value.contains("count")) {
+    throw std::runtime_error(
+      "handle_histogram_point_uncertain: missing count at '" +
+      std::string(ctx.current_path) + "'");
+  }
+
+  const size_t count = value["count"].get<size_t>();
+  if (count == 0) {
+    throw std::runtime_error(
+      "handle_histogram_point_uncertain: count must be > 0 at '" +
+      std::string(ctx.current_path) + "'");
+  }
+
+  const std::vector<Real> counts = value["counts"].get<std::vector<Real>>();
+  const size_t num_c = counts.size();
+  const size_t num_a = value["abscissas"].size();
+  if (num_a != num_c) {
+    throw std::runtime_error(
+      "handle_histogram_point_uncertain: abscissas/counts length mismatch at '" +
+      std::string(ctx.current_path) + "'");
+  }
+
+  std::vector<int> pairs_per_var;
+  if (value.contains("pairs_per_variable") && !value["pairs_per_variable"].is_null()) {
+    pairs_per_var = value["pairs_per_variable"].get<std::vector<int>>();
+    size_t total = 0;
+    for (int n : pairs_per_var) {
+      if (n < 1) {
+        throw std::runtime_error(
+          "handle_histogram_point_uncertain: pairs_per_variable must be >= 1 at '" +
+          std::string(ctx.current_path) + "'");
+      }
+      total += static_cast<size_t>(n);
+    }
+    if (total != num_a) {
+      throw std::runtime_error(
+        "handle_histogram_point_uncertain: pairs_per_variable/apportionment mismatch at '" +
+        std::string(ctx.current_path) + "'");
+    }
+  }
+  else {
+    if (num_a % count != 0) {
+      throw std::runtime_error(
+        "handle_histogram_point_uncertain: number of abscissas not evenly divisible by count at '" +
+        std::string(ctx.current_path) + "'");
+    }
+    pairs_per_var.assign(count, static_cast<int>(num_a / count));
+  }
+
+  switch (contract.ir_value_type) {
+  case irgen::IrValueType::IntRealMapArray: {
+    auto out = build_histogram_point_maps<IntRealMapArray>(
+      value, counts, pairs_per_var, ctx.current_path,
+      [&](size_t idx) { return value["abscissas"][idx].get<int>(); });
+    ctx.store.set_value(op.target_local_ir_key, IRValue(std::move(out)));
+    return;
+  }
+  case irgen::IrValueType::StringRealMapArray: {
+    auto out = build_histogram_point_maps<StringRealMapArray>(
+      value, counts, pairs_per_var, ctx.current_path,
+      [&](size_t idx) { return value["abscissas"][idx].get<String>(); });
+    ctx.store.set_value(op.target_local_ir_key, IRValue(std::move(out)));
+    return;
+  }
+  case irgen::IrValueType::RealRealMapArray: {
+    auto out = build_histogram_point_maps<RealRealMapArray>(
+      value, counts, pairs_per_var, ctx.current_path,
+      [&](size_t idx) { return value["abscissas"][idx].get<Real>(); });
+    ctx.store.set_value(op.target_local_ir_key, IRValue(std::move(out)));
+    return;
+  }
+  default:
+    throw std::runtime_error(
+      "handle_histogram_point_uncertain: unsupported contract type");
+  }
 }
 
 } // namespace Dakota
-

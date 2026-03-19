@@ -103,7 +103,14 @@
                     "default": null,
                     "description": "Specify which variables block will be included with this model block",
                     "title": "Variables Pointer",
-                    "x-block-pointer": "variables"
+                    "x-block-pointer": "variables",
+                    "x-materialization": [
+                        {
+                            "ir_key": "model.variables_pointer",
+                            "ir_value_type": "String",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 },
                 "responses_pointer": {
                     "anyOf": [
@@ -117,7 +124,14 @@
                     "default": null,
                     "description": "Specify which reponses block will be used by this model block",
                     "title": "Responses Pointer",
-                    "x-block-pointer": "responses"
+                    "x-block-pointer": "responses",
+                    "x-materialization": [
+                        {
+                            "ir_key": "model.responses_pointer",
+                            "ir_value_type": "String",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 },
                 "hierarchical_tagging": {
                     "default": false,
@@ -448,7 +462,14 @@
                     "default": null,
                     "description": "Specify which variables block will be included with this model block",
                     "title": "Variables Pointer",
-                    "x-block-pointer": "variables"
+                    "x-block-pointer": "variables",
+                    "x-materialization": [
+                        {
+                            "ir_key": "model.variables_pointer",
+                            "ir_value_type": "String",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 },
                 "responses_pointer": {
                     "anyOf": [
@@ -462,7 +483,14 @@
                     "default": null,
                     "description": "Specify which reponses block will be used by this model block",
                     "title": "Responses Pointer",
-                    "x-block-pointer": "responses"
+                    "x-block-pointer": "responses",
+                    "x-materialization": [
+                        {
+                            "ir_key": "model.responses_pointer",
+                            "ir_value_type": "String",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 },
                 "hierarchical_tagging": {
                     "default": false,
@@ -729,10 +757,10 @@
                     "x-model-default": "RngOptionsContext2Mt19937",
                     "x-union-pattern": 1
                 },
-                "gen_reliability_levels": {
+                "response_levels": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/GenReliabilityLevelsGenReliabilityLevels"
+                            "$ref": "#/$defs/ResponseLevelsComputeProbGenContext1ResponseLevels"
                         },
                         {
                             "type": "null"
@@ -740,7 +768,14 @@
                     ],
                     "argument": "values",
                     "default": null,
-                    "description": "Specify generalized relability levels at which to estimate the corresponding response value"
+                    "description": "Values at which to estimate desired statistics for each response",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.response_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
                 },
                 "probability_levels": {
                     "anyOf": [
@@ -753,20 +788,14 @@
                     ],
                     "argument": "values",
                     "default": null,
-                    "description": "Specify probability levels at which to estimate the corresponding response value"
-                },
-                "response_levels": {
-                    "anyOf": [
+                    "description": "Specify probability levels at which to estimate the corresponding response value",
+                    "x-materialization": [
                         {
-                            "$ref": "#/$defs/ResponseLevelsComputeProbGenContext1ResponseLevels"
-                        },
-                        {
-                            "type": "null"
+                            "ir_key": "method.nond.probability_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
                         }
-                    ],
-                    "argument": "values",
-                    "default": null,
-                    "description": "Values at which to estimate desired statistics for each response"
+                    ]
                 },
                 "distribution": {
                     "anyOf": [
@@ -781,6 +810,26 @@
                     "title": "Distribution",
                     "x-model-default": "DistributionCumulComplContext1Cumulative",
                     "x-union-pattern": 1
+                },
+                "gen_reliability_levels": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/GenReliabilityLevelsGenReliabilityLevels"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "values",
+                    "default": null,
+                    "description": "Specify generalized relability levels at which to estimate the corresponding response value",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.gen_reliability_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
                 },
                 "max_iterations": {
                     "default": 4294967295,
@@ -2809,7 +2858,14 @@
                     ],
                     "argument": "values",
                     "default": null,
-                    "description": "Specify probability levels at which to compute credible and prediction intervals"
+                    "description": "Specify probability levels at which to compute credible and prediction intervals",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.probability_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
                 },
                 "id_method": {
                     "anyOf": [
@@ -8349,59 +8405,6 @@
             "additionalProperties": false,
             "description": "Generated model for ConminFrcgConfig",
             "properties": {
-                "scaling": {
-                    "default": false,
-                    "description": "Turn on scaling for variables, responses, and constraints",
-                    "title": "Scaling",
-                    "type": "boolean",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.scaling",
-                            "ir_value_type": "bool",
-                            "storage_type": "PRESENCE_BOOL"
-                        }
-                    ]
-                },
-                "max_iterations": {
-                    "default": 4294967295,
-                    "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
-                    "minimum": 0,
-                    "title": "Max Iterations",
-                    "type": "integer",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.max_iterations",
-                            "ir_value_type": "size_t",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
-                "speculative": {
-                    "default": false,
-                    "description": "Compute speculative gradients",
-                    "title": "Speculative",
-                    "type": "boolean",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.speculative",
-                            "ir_value_type": "bool",
-                            "storage_type": "PRESENCE_BOOL"
-                        }
-                    ]
-                },
-                "constraint_tolerance": {
-                    "default": 0.0,
-                    "description": "Maximum allowable constraint violation still considered feasible",
-                    "title": "Constraint Tolerance",
-                    "type": "number",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.constraint_tolerance",
-                            "ir_value_type": "Real",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
                 "model_pointer": {
                     "anyOf": [
                         {
@@ -8436,6 +8439,59 @@
                         },
                         {
                             "ir_key": "method.jega.percent_change",
+                            "ir_value_type": "Real",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "speculative": {
+                    "default": false,
+                    "description": "Compute speculative gradients",
+                    "title": "Speculative",
+                    "type": "boolean",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.speculative",
+                            "ir_value_type": "bool",
+                            "storage_type": "PRESENCE_BOOL"
+                        }
+                    ]
+                },
+                "scaling": {
+                    "default": false,
+                    "description": "Turn on scaling for variables, responses, and constraints",
+                    "title": "Scaling",
+                    "type": "boolean",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.scaling",
+                            "ir_value_type": "bool",
+                            "storage_type": "PRESENCE_BOOL"
+                        }
+                    ]
+                },
+                "max_iterations": {
+                    "default": 4294967295,
+                    "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
+                    "minimum": 0,
+                    "title": "Max Iterations",
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.max_iterations",
+                            "ir_value_type": "size_t",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "constraint_tolerance": {
+                    "default": 0.0,
+                    "description": "Maximum allowable constraint violation still considered feasible",
+                    "title": "Constraint Tolerance",
+                    "type": "number",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.constraint_tolerance",
                             "ir_value_type": "Real",
                             "storage_type": "DIRECT_VALUE"
                         }
@@ -8542,59 +8598,6 @@
             "additionalProperties": false,
             "description": "Generated model for ConminMfdConfig",
             "properties": {
-                "scaling": {
-                    "default": false,
-                    "description": "Turn on scaling for variables, responses, and constraints",
-                    "title": "Scaling",
-                    "type": "boolean",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.scaling",
-                            "ir_value_type": "bool",
-                            "storage_type": "PRESENCE_BOOL"
-                        }
-                    ]
-                },
-                "max_iterations": {
-                    "default": 4294967295,
-                    "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
-                    "minimum": 0,
-                    "title": "Max Iterations",
-                    "type": "integer",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.max_iterations",
-                            "ir_value_type": "size_t",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
-                "speculative": {
-                    "default": false,
-                    "description": "Compute speculative gradients",
-                    "title": "Speculative",
-                    "type": "boolean",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.speculative",
-                            "ir_value_type": "bool",
-                            "storage_type": "PRESENCE_BOOL"
-                        }
-                    ]
-                },
-                "constraint_tolerance": {
-                    "default": 0.0,
-                    "description": "Maximum allowable constraint violation still considered feasible",
-                    "title": "Constraint Tolerance",
-                    "type": "number",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.constraint_tolerance",
-                            "ir_value_type": "Real",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
                 "model_pointer": {
                     "anyOf": [
                         {
@@ -8629,6 +8632,59 @@
                         },
                         {
                             "ir_key": "method.jega.percent_change",
+                            "ir_value_type": "Real",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "speculative": {
+                    "default": false,
+                    "description": "Compute speculative gradients",
+                    "title": "Speculative",
+                    "type": "boolean",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.speculative",
+                            "ir_value_type": "bool",
+                            "storage_type": "PRESENCE_BOOL"
+                        }
+                    ]
+                },
+                "scaling": {
+                    "default": false,
+                    "description": "Turn on scaling for variables, responses, and constraints",
+                    "title": "Scaling",
+                    "type": "boolean",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.scaling",
+                            "ir_value_type": "bool",
+                            "storage_type": "PRESENCE_BOOL"
+                        }
+                    ]
+                },
+                "max_iterations": {
+                    "default": 4294967295,
+                    "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
+                    "minimum": 0,
+                    "title": "Max Iterations",
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.max_iterations",
+                            "ir_value_type": "size_t",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "constraint_tolerance": {
+                    "default": 0.0,
+                    "description": "Maximum allowable constraint violation still considered feasible",
+                    "title": "Constraint Tolerance",
+                    "type": "number",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.constraint_tolerance",
                             "ir_value_type": "Real",
                             "storage_type": "DIRECT_VALUE"
                         }
@@ -15321,59 +15377,6 @@
             "additionalProperties": false,
             "description": "Generated model for DotBfgsConfig",
             "properties": {
-                "scaling": {
-                    "default": false,
-                    "description": "Turn on scaling for variables, responses, and constraints",
-                    "title": "Scaling",
-                    "type": "boolean",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.scaling",
-                            "ir_value_type": "bool",
-                            "storage_type": "PRESENCE_BOOL"
-                        }
-                    ]
-                },
-                "max_iterations": {
-                    "default": 4294967295,
-                    "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
-                    "minimum": 0,
-                    "title": "Max Iterations",
-                    "type": "integer",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.max_iterations",
-                            "ir_value_type": "size_t",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
-                "speculative": {
-                    "default": false,
-                    "description": "Compute speculative gradients",
-                    "title": "Speculative",
-                    "type": "boolean",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.speculative",
-                            "ir_value_type": "bool",
-                            "storage_type": "PRESENCE_BOOL"
-                        }
-                    ]
-                },
-                "constraint_tolerance": {
-                    "default": 0.0,
-                    "description": "Maximum allowable constraint violation still considered feasible",
-                    "title": "Constraint Tolerance",
-                    "type": "number",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.constraint_tolerance",
-                            "ir_value_type": "Real",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
                 "model_pointer": {
                     "anyOf": [
                         {
@@ -15408,6 +15411,59 @@
                         },
                         {
                             "ir_key": "method.jega.percent_change",
+                            "ir_value_type": "Real",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "speculative": {
+                    "default": false,
+                    "description": "Compute speculative gradients",
+                    "title": "Speculative",
+                    "type": "boolean",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.speculative",
+                            "ir_value_type": "bool",
+                            "storage_type": "PRESENCE_BOOL"
+                        }
+                    ]
+                },
+                "scaling": {
+                    "default": false,
+                    "description": "Turn on scaling for variables, responses, and constraints",
+                    "title": "Scaling",
+                    "type": "boolean",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.scaling",
+                            "ir_value_type": "bool",
+                            "storage_type": "PRESENCE_BOOL"
+                        }
+                    ]
+                },
+                "max_iterations": {
+                    "default": 4294967295,
+                    "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
+                    "minimum": 0,
+                    "title": "Max Iterations",
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.max_iterations",
+                            "ir_value_type": "size_t",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "constraint_tolerance": {
+                    "default": 0.0,
+                    "description": "Maximum allowable constraint violation still considered feasible",
+                    "title": "Constraint Tolerance",
+                    "type": "number",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.constraint_tolerance",
                             "ir_value_type": "Real",
                             "storage_type": "DIRECT_VALUE"
                         }
@@ -15514,59 +15570,6 @@
             "additionalProperties": false,
             "description": "Generated model for DotFrcgConfig",
             "properties": {
-                "scaling": {
-                    "default": false,
-                    "description": "Turn on scaling for variables, responses, and constraints",
-                    "title": "Scaling",
-                    "type": "boolean",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.scaling",
-                            "ir_value_type": "bool",
-                            "storage_type": "PRESENCE_BOOL"
-                        }
-                    ]
-                },
-                "max_iterations": {
-                    "default": 4294967295,
-                    "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
-                    "minimum": 0,
-                    "title": "Max Iterations",
-                    "type": "integer",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.max_iterations",
-                            "ir_value_type": "size_t",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
-                "speculative": {
-                    "default": false,
-                    "description": "Compute speculative gradients",
-                    "title": "Speculative",
-                    "type": "boolean",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.speculative",
-                            "ir_value_type": "bool",
-                            "storage_type": "PRESENCE_BOOL"
-                        }
-                    ]
-                },
-                "constraint_tolerance": {
-                    "default": 0.0,
-                    "description": "Maximum allowable constraint violation still considered feasible",
-                    "title": "Constraint Tolerance",
-                    "type": "number",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.constraint_tolerance",
-                            "ir_value_type": "Real",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
                 "model_pointer": {
                     "anyOf": [
                         {
@@ -15601,6 +15604,59 @@
                         },
                         {
                             "ir_key": "method.jega.percent_change",
+                            "ir_value_type": "Real",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "speculative": {
+                    "default": false,
+                    "description": "Compute speculative gradients",
+                    "title": "Speculative",
+                    "type": "boolean",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.speculative",
+                            "ir_value_type": "bool",
+                            "storage_type": "PRESENCE_BOOL"
+                        }
+                    ]
+                },
+                "scaling": {
+                    "default": false,
+                    "description": "Turn on scaling for variables, responses, and constraints",
+                    "title": "Scaling",
+                    "type": "boolean",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.scaling",
+                            "ir_value_type": "bool",
+                            "storage_type": "PRESENCE_BOOL"
+                        }
+                    ]
+                },
+                "max_iterations": {
+                    "default": 4294967295,
+                    "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
+                    "minimum": 0,
+                    "title": "Max Iterations",
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.max_iterations",
+                            "ir_value_type": "size_t",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "constraint_tolerance": {
+                    "default": 0.0,
+                    "description": "Maximum allowable constraint violation still considered feasible",
+                    "title": "Constraint Tolerance",
+                    "type": "number",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.constraint_tolerance",
                             "ir_value_type": "Real",
                             "storage_type": "DIRECT_VALUE"
                         }
@@ -15707,59 +15763,6 @@
             "additionalProperties": false,
             "description": "Generated model for DotMmfdConfig",
             "properties": {
-                "scaling": {
-                    "default": false,
-                    "description": "Turn on scaling for variables, responses, and constraints",
-                    "title": "Scaling",
-                    "type": "boolean",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.scaling",
-                            "ir_value_type": "bool",
-                            "storage_type": "PRESENCE_BOOL"
-                        }
-                    ]
-                },
-                "max_iterations": {
-                    "default": 4294967295,
-                    "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
-                    "minimum": 0,
-                    "title": "Max Iterations",
-                    "type": "integer",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.max_iterations",
-                            "ir_value_type": "size_t",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
-                "speculative": {
-                    "default": false,
-                    "description": "Compute speculative gradients",
-                    "title": "Speculative",
-                    "type": "boolean",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.speculative",
-                            "ir_value_type": "bool",
-                            "storage_type": "PRESENCE_BOOL"
-                        }
-                    ]
-                },
-                "constraint_tolerance": {
-                    "default": 0.0,
-                    "description": "Maximum allowable constraint violation still considered feasible",
-                    "title": "Constraint Tolerance",
-                    "type": "number",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.constraint_tolerance",
-                            "ir_value_type": "Real",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
                 "model_pointer": {
                     "anyOf": [
                         {
@@ -15794,6 +15797,59 @@
                         },
                         {
                             "ir_key": "method.jega.percent_change",
+                            "ir_value_type": "Real",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "speculative": {
+                    "default": false,
+                    "description": "Compute speculative gradients",
+                    "title": "Speculative",
+                    "type": "boolean",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.speculative",
+                            "ir_value_type": "bool",
+                            "storage_type": "PRESENCE_BOOL"
+                        }
+                    ]
+                },
+                "scaling": {
+                    "default": false,
+                    "description": "Turn on scaling for variables, responses, and constraints",
+                    "title": "Scaling",
+                    "type": "boolean",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.scaling",
+                            "ir_value_type": "bool",
+                            "storage_type": "PRESENCE_BOOL"
+                        }
+                    ]
+                },
+                "max_iterations": {
+                    "default": 4294967295,
+                    "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
+                    "minimum": 0,
+                    "title": "Max Iterations",
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.max_iterations",
+                            "ir_value_type": "size_t",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "constraint_tolerance": {
+                    "default": 0.0,
+                    "description": "Maximum allowable constraint violation still considered feasible",
+                    "title": "Constraint Tolerance",
+                    "type": "number",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.constraint_tolerance",
                             "ir_value_type": "Real",
                             "storage_type": "DIRECT_VALUE"
                         }
@@ -15900,59 +15956,6 @@
             "additionalProperties": false,
             "description": "Generated model for DotSlpConfig",
             "properties": {
-                "scaling": {
-                    "default": false,
-                    "description": "Turn on scaling for variables, responses, and constraints",
-                    "title": "Scaling",
-                    "type": "boolean",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.scaling",
-                            "ir_value_type": "bool",
-                            "storage_type": "PRESENCE_BOOL"
-                        }
-                    ]
-                },
-                "max_iterations": {
-                    "default": 4294967295,
-                    "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
-                    "minimum": 0,
-                    "title": "Max Iterations",
-                    "type": "integer",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.max_iterations",
-                            "ir_value_type": "size_t",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
-                "speculative": {
-                    "default": false,
-                    "description": "Compute speculative gradients",
-                    "title": "Speculative",
-                    "type": "boolean",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.speculative",
-                            "ir_value_type": "bool",
-                            "storage_type": "PRESENCE_BOOL"
-                        }
-                    ]
-                },
-                "constraint_tolerance": {
-                    "default": 0.0,
-                    "description": "Maximum allowable constraint violation still considered feasible",
-                    "title": "Constraint Tolerance",
-                    "type": "number",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.constraint_tolerance",
-                            "ir_value_type": "Real",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
                 "model_pointer": {
                     "anyOf": [
                         {
@@ -15987,6 +15990,59 @@
                         },
                         {
                             "ir_key": "method.jega.percent_change",
+                            "ir_value_type": "Real",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "speculative": {
+                    "default": false,
+                    "description": "Compute speculative gradients",
+                    "title": "Speculative",
+                    "type": "boolean",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.speculative",
+                            "ir_value_type": "bool",
+                            "storage_type": "PRESENCE_BOOL"
+                        }
+                    ]
+                },
+                "scaling": {
+                    "default": false,
+                    "description": "Turn on scaling for variables, responses, and constraints",
+                    "title": "Scaling",
+                    "type": "boolean",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.scaling",
+                            "ir_value_type": "bool",
+                            "storage_type": "PRESENCE_BOOL"
+                        }
+                    ]
+                },
+                "max_iterations": {
+                    "default": 4294967295,
+                    "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
+                    "minimum": 0,
+                    "title": "Max Iterations",
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.max_iterations",
+                            "ir_value_type": "size_t",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "constraint_tolerance": {
+                    "default": 0.0,
+                    "description": "Maximum allowable constraint violation still considered feasible",
+                    "title": "Constraint Tolerance",
+                    "type": "number",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.constraint_tolerance",
                             "ir_value_type": "Real",
                             "storage_type": "DIRECT_VALUE"
                         }
@@ -16093,59 +16149,6 @@
             "additionalProperties": false,
             "description": "Generated model for DotSqpConfig",
             "properties": {
-                "scaling": {
-                    "default": false,
-                    "description": "Turn on scaling for variables, responses, and constraints",
-                    "title": "Scaling",
-                    "type": "boolean",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.scaling",
-                            "ir_value_type": "bool",
-                            "storage_type": "PRESENCE_BOOL"
-                        }
-                    ]
-                },
-                "max_iterations": {
-                    "default": 4294967295,
-                    "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
-                    "minimum": 0,
-                    "title": "Max Iterations",
-                    "type": "integer",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.max_iterations",
-                            "ir_value_type": "size_t",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
-                "speculative": {
-                    "default": false,
-                    "description": "Compute speculative gradients",
-                    "title": "Speculative",
-                    "type": "boolean",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.speculative",
-                            "ir_value_type": "bool",
-                            "storage_type": "PRESENCE_BOOL"
-                        }
-                    ]
-                },
-                "constraint_tolerance": {
-                    "default": 0.0,
-                    "description": "Maximum allowable constraint violation still considered feasible",
-                    "title": "Constraint Tolerance",
-                    "type": "number",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.constraint_tolerance",
-                            "ir_value_type": "Real",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
                 "model_pointer": {
                     "anyOf": [
                         {
@@ -16180,6 +16183,59 @@
                         },
                         {
                             "ir_key": "method.jega.percent_change",
+                            "ir_value_type": "Real",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "speculative": {
+                    "default": false,
+                    "description": "Compute speculative gradients",
+                    "title": "Speculative",
+                    "type": "boolean",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.speculative",
+                            "ir_value_type": "bool",
+                            "storage_type": "PRESENCE_BOOL"
+                        }
+                    ]
+                },
+                "scaling": {
+                    "default": false,
+                    "description": "Turn on scaling for variables, responses, and constraints",
+                    "title": "Scaling",
+                    "type": "boolean",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.scaling",
+                            "ir_value_type": "bool",
+                            "storage_type": "PRESENCE_BOOL"
+                        }
+                    ]
+                },
+                "max_iterations": {
+                    "default": 4294967295,
+                    "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
+                    "minimum": 0,
+                    "title": "Max Iterations",
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.max_iterations",
+                            "ir_value_type": "size_t",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "constraint_tolerance": {
+                    "default": 0.0,
+                    "description": "Maximum allowable constraint violation still considered feasible",
+                    "title": "Constraint Tolerance",
+                    "type": "number",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.constraint_tolerance",
                             "ir_value_type": "Real",
                             "storage_type": "DIRECT_VALUE"
                         }
@@ -21715,14 +21771,7 @@
                         "type": "number"
                     },
                     "title": "Values",
-                    "type": "array",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.nond.gen_reliability_levels",
-                            "ir_value_type": "RealVectorArray",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
+                    "type": "array"
                 },
                 "num_gen_reliability_levels": {
                     "anyOf": [
@@ -21769,14 +21818,7 @@
                         "type": "number"
                     },
                     "title": "Values",
-                    "type": "array",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.nond.probability_levels",
-                            "ir_value_type": "RealVectorArray",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
+                    "type": "array"
                 },
                 "num_probability_levels": {
                     "anyOf": [
@@ -21949,14 +21991,7 @@
                         "type": "number"
                     },
                     "title": "Values",
-                    "type": "array",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.nond.reliability_levels",
-                            "ir_value_type": "RealVectorArray",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
+                    "type": "array"
                 },
                 "num_reliability_levels": {
                     "anyOf": [
@@ -22003,14 +22038,7 @@
                         "type": "number"
                     },
                     "title": "Values",
-                    "type": "array",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.nond.response_levels",
-                            "ir_value_type": "RealVectorArray",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
+                    "type": "array"
                 },
                 "num_response_levels": {
                     "anyOf": [
@@ -26106,7 +26134,14 @@
                     ],
                     "argument": "values",
                     "default": null,
-                    "description": "Values at which to estimate desired statistics for each response"
+                    "description": "Values at which to estimate desired statistics for each response",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.response_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
                 },
                 "probability_levels": {
                     "anyOf": [
@@ -26119,7 +26154,14 @@
                     ],
                     "argument": "values",
                     "default": null,
-                    "description": "Specify probability levels at which to estimate the corresponding response value"
+                    "description": "Specify probability levels at which to estimate the corresponding response value",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.probability_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
                 },
                 "reliability_levels": {
                     "anyOf": [
@@ -26132,7 +26174,14 @@
                     ],
                     "argument": "values",
                     "default": null,
-                    "description": "Specify reliability levels at which the response values will be estimated"
+                    "description": "Specify reliability levels at which the response values will be estimated",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.reliability_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
                 },
                 "gen_reliability_levels": {
                     "anyOf": [
@@ -26145,7 +26194,14 @@
                     ],
                     "argument": "values",
                     "default": null,
-                    "description": "Specify generalized relability levels at which to estimate the corresponding response value"
+                    "description": "Specify generalized relability levels at which to estimate the corresponding response value",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.gen_reliability_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
                 },
                 "distribution": {
                     "anyOf": [
@@ -26494,6 +26550,19 @@
                     "title": "Collocation Control",
                     "x-union-pattern": 4
                 },
+                "convergence_tolerance": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "value",
+                    "default": null,
+                    "description": "Stopping criterion based on objective function or statistics convergence"
+                },
                 "refinement_metric": {
                     "anyOf": [
                         {
@@ -26510,19 +26579,6 @@
                     "description": "Metric used for guiding adaptive refinement during UQ.",
                     "title": "Refinement Metric",
                     "x-union-pattern": 2
-                },
-                "convergence_tolerance": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "value",
-                    "default": null,
-                    "description": "Stopping criterion based on objective function or statistics convergence"
                 },
                 "p_refinement": {
                     "anyOf": [
@@ -27568,14 +27624,7 @@
                         "type": "number"
                     },
                     "title": "Values",
-                    "type": "array",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.nond.gen_reliability_levels",
-                            "ir_value_type": "RealVectorArray",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
+                    "type": "array"
                 },
                 "num_gen_reliability_levels": {
                     "anyOf": [
@@ -29261,10 +29310,10 @@
                     "x-model-default": "RngOptionsContext2Mt19937",
                     "x-union-pattern": 1
                 },
-                "gen_reliability_levels": {
+                "response_levels": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/GenReliabilityLevelsGenReliabilityLevels"
+                            "$ref": "#/$defs/ResponseLevelsComputeProbGenContext1ResponseLevels"
                         },
                         {
                             "type": "null"
@@ -29272,7 +29321,14 @@
                     ],
                     "argument": "values",
                     "default": null,
-                    "description": "Specify generalized relability levels at which to estimate the corresponding response value"
+                    "description": "Values at which to estimate desired statistics for each response",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.response_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
                 },
                 "probability_levels": {
                     "anyOf": [
@@ -29285,20 +29341,14 @@
                     ],
                     "argument": "values",
                     "default": null,
-                    "description": "Specify probability levels at which to estimate the corresponding response value"
-                },
-                "response_levels": {
-                    "anyOf": [
+                    "description": "Specify probability levels at which to estimate the corresponding response value",
+                    "x-materialization": [
                         {
-                            "$ref": "#/$defs/ResponseLevelsComputeProbGenContext1ResponseLevels"
-                        },
-                        {
-                            "type": "null"
+                            "ir_key": "method.nond.probability_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
                         }
-                    ],
-                    "argument": "values",
-                    "default": null,
-                    "description": "Values at which to estimate desired statistics for each response"
+                    ]
                 },
                 "distribution": {
                     "anyOf": [
@@ -29313,6 +29363,26 @@
                     "title": "Distribution",
                     "x-model-default": "DistributionCumulComplContext1Cumulative",
                     "x-union-pattern": 1
+                },
+                "gen_reliability_levels": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/GenReliabilityLevelsGenReliabilityLevels"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "values",
+                    "default": null,
+                    "description": "Specify generalized relability levels at which to estimate the corresponding response value",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.gen_reliability_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
                 },
                 "solution_approach": {
                     "anchor": true,
@@ -29828,10 +29898,10 @@
                         }
                     ]
                 },
-                "gen_reliability_levels": {
+                "response_levels": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/GenReliabilityLevelsGenReliabilityLevels"
+                            "$ref": "#/$defs/ResponseLevelsComputeProbGenContext1ResponseLevels"
                         },
                         {
                             "type": "null"
@@ -29839,7 +29909,14 @@
                     ],
                     "argument": "values",
                     "default": null,
-                    "description": "Specify generalized relability levels at which to estimate the corresponding response value"
+                    "description": "Values at which to estimate desired statistics for each response",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.response_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
                 },
                 "probability_levels": {
                     "anyOf": [
@@ -29852,20 +29929,14 @@
                     ],
                     "argument": "values",
                     "default": null,
-                    "description": "Specify probability levels at which to estimate the corresponding response value"
-                },
-                "response_levels": {
-                    "anyOf": [
+                    "description": "Specify probability levels at which to estimate the corresponding response value",
+                    "x-materialization": [
                         {
-                            "$ref": "#/$defs/ResponseLevelsComputeProbGenContext1ResponseLevels"
-                        },
-                        {
-                            "type": "null"
+                            "ir_key": "method.nond.probability_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
                         }
-                    ],
-                    "argument": "values",
-                    "default": null,
-                    "description": "Values at which to estimate desired statistics for each response"
+                    ]
                 },
                 "distribution": {
                     "anyOf": [
@@ -29880,6 +29951,26 @@
                     "title": "Distribution",
                     "x-model-default": "DistributionCumulComplContext1Cumulative",
                     "x-union-pattern": 1
+                },
+                "gen_reliability_levels": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/GenReliabilityLevelsGenReliabilityLevels"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "values",
+                    "default": null,
+                    "description": "Specify generalized relability levels at which to estimate the corresponding response value",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.gen_reliability_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
                 },
                 "rng": {
                     "anyOf": [
@@ -30293,10 +30384,10 @@
                     "x-model-default": "RngOptionsContext2Mt19937",
                     "x-union-pattern": 1
                 },
-                "gen_reliability_levels": {
+                "response_levels": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/GenReliabilityLevelsGenReliabilityLevels"
+                            "$ref": "#/$defs/ResponseLevelsComputeProbGenContext1ResponseLevels"
                         },
                         {
                             "type": "null"
@@ -30304,7 +30395,14 @@
                     ],
                     "argument": "values",
                     "default": null,
-                    "description": "Specify generalized relability levels at which to estimate the corresponding response value"
+                    "description": "Values at which to estimate desired statistics for each response",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.response_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
                 },
                 "probability_levels": {
                     "anyOf": [
@@ -30317,20 +30415,14 @@
                     ],
                     "argument": "values",
                     "default": null,
-                    "description": "Specify probability levels at which to estimate the corresponding response value"
-                },
-                "response_levels": {
-                    "anyOf": [
+                    "description": "Specify probability levels at which to estimate the corresponding response value",
+                    "x-materialization": [
                         {
-                            "$ref": "#/$defs/ResponseLevelsComputeProbGenContext1ResponseLevels"
-                        },
-                        {
-                            "type": "null"
+                            "ir_key": "method.nond.probability_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
                         }
-                    ],
-                    "argument": "values",
-                    "default": null,
-                    "description": "Values at which to estimate desired statistics for each response"
+                    ]
                 },
                 "distribution": {
                     "anyOf": [
@@ -30345,6 +30437,26 @@
                     "title": "Distribution",
                     "x-model-default": "DistributionCumulComplContext1Cumulative",
                     "x-union-pattern": 1
+                },
+                "gen_reliability_levels": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/GenReliabilityLevelsGenReliabilityLevels"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "values",
+                    "default": null,
+                    "description": "Specify generalized relability levels at which to estimate the corresponding response value",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.gen_reliability_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
                 },
                 "max_iterations": {
                     "default": 4294967295,
@@ -31815,13 +31927,6 @@
                     "title": "Pairs Per Variable",
                     "x-aliases": [
                         "num_pairs"
-                    ],
-                    "x-materialization": [
-                        {
-                            "ir_key": "variables.histogram_uncertain.point_int_pairs",
-                            "ir_value_type": "IntRealMapArray",
-                            "storage_type": "HISTOGRAM_POINT_UNCERTAIN"
-                        }
                     ]
                 },
                 "abscissas": {
@@ -31830,14 +31935,7 @@
                         "type": "integer"
                     },
                     "title": "Abscissas",
-                    "type": "array",
-                    "x-materialization": [
-                        {
-                            "ir_key": "variables.histogram_uncertain.point_int_pairs",
-                            "ir_value_type": "IntRealMapArray",
-                            "storage_type": "HISTOGRAM_POINT_UNCERTAIN"
-                        }
-                    ]
+                    "type": "array"
                 },
                 "counts": {
                     "description": "Counts for integer-valued point histogram",
@@ -31845,14 +31943,7 @@
                         "type": "number"
                     },
                     "title": "Counts",
-                    "type": "array",
-                    "x-materialization": [
-                        {
-                            "ir_key": "variables.histogram_uncertain.point_int_pairs",
-                            "ir_value_type": "IntRealMapArray",
-                            "storage_type": "HISTOGRAM_POINT_UNCERTAIN"
-                        }
-                    ]
+                    "type": "array"
                 },
                 "initial_point": {
                     "anyOf": [
@@ -32072,13 +32163,6 @@
                     "title": "Pairs Per Variable",
                     "x-aliases": [
                         "num_pairs"
-                    ],
-                    "x-materialization": [
-                        {
-                            "ir_key": "variables.histogram_uncertain.point_real_pairs",
-                            "ir_value_type": "RealRealMapArray",
-                            "storage_type": "HISTOGRAM_POINT_UNCERTAIN"
-                        }
                     ]
                 },
                 "abscissas": {
@@ -32087,14 +32171,7 @@
                         "type": "number"
                     },
                     "title": "Abscissas",
-                    "type": "array",
-                    "x-materialization": [
-                        {
-                            "ir_key": "variables.histogram_uncertain.point_real_pairs",
-                            "ir_value_type": "RealRealMapArray",
-                            "storage_type": "HISTOGRAM_POINT_UNCERTAIN"
-                        }
-                    ]
+                    "type": "array"
                 },
                 "counts": {
                     "description": "Counts for real-valued point histogram",
@@ -32102,14 +32179,7 @@
                         "type": "number"
                     },
                     "title": "Counts",
-                    "type": "array",
-                    "x-materialization": [
-                        {
-                            "ir_key": "variables.histogram_uncertain.point_real_pairs",
-                            "ir_value_type": "RealRealMapArray",
-                            "storage_type": "HISTOGRAM_POINT_UNCERTAIN"
-                        }
-                    ]
+                    "type": "array"
                 },
                 "initial_point": {
                     "anyOf": [
@@ -32329,13 +32399,6 @@
                     "title": "Pairs Per Variable",
                     "x-aliases": [
                         "num_pairs"
-                    ],
-                    "x-materialization": [
-                        {
-                            "ir_key": "variables.histogram_uncertain.point_string_pairs",
-                            "ir_value_type": "StringRealMapArray",
-                            "storage_type": "HISTOGRAM_POINT_UNCERTAIN"
-                        }
                     ]
                 },
                 "abscissas": {
@@ -32344,14 +32407,7 @@
                         "type": "string"
                     },
                     "title": "Abscissas",
-                    "type": "array",
-                    "x-materialization": [
-                        {
-                            "ir_key": "variables.histogram_uncertain.point_string_pairs",
-                            "ir_value_type": "StringRealMapArray",
-                            "storage_type": "HISTOGRAM_POINT_UNCERTAIN"
-                        }
-                    ]
+                    "type": "array"
                 },
                 "counts": {
                     "description": "Counts for string-valued point histogram",
@@ -32359,14 +32415,7 @@
                         "type": "number"
                     },
                     "title": "Counts",
-                    "type": "array",
-                    "x-materialization": [
-                        {
-                            "ir_key": "variables.histogram_uncertain.point_string_pairs",
-                            "ir_value_type": "StringRealMapArray",
-                            "storage_type": "HISTOGRAM_POINT_UNCERTAIN"
-                        }
-                    ]
+                    "type": "array"
                 },
                 "initial_point": {
                     "anyOf": [
@@ -33945,6 +33994,46 @@
                         }
                     ]
                 },
+                "probability_levels": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/ProbabilityLevelsContext2ProbabilityLevels"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "values",
+                    "default": null,
+                    "description": "Specify probability levels at which to estimate the corresponding response value",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.probability_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
+                },
+                "reliability_levels": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/ReliabilityLevelsReliabilityLevels"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "values",
+                    "default": null,
+                    "description": "Specify reliability levels at which the response values will be estimated",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.reliability_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
+                },
                 "distribution": {
                     "anyOf": [
                         {
@@ -33959,45 +34048,6 @@
                     "x-model-default": "DistributionCumulComplContext1Cumulative",
                     "x-union-pattern": 1
                 },
-                "gen_reliability_levels": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/GenReliabilityLevelsGenReliabilityLevels"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "values",
-                    "default": null,
-                    "description": "Specify generalized relability levels at which to estimate the corresponding response value"
-                },
-                "probability_levels": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/ProbabilityLevelsContext2ProbabilityLevels"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "values",
-                    "default": null,
-                    "description": "Specify probability levels at which to estimate the corresponding response value"
-                },
-                "reliability_levels": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/ReliabilityLevelsReliabilityLevels"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "values",
-                    "default": null,
-                    "description": "Specify reliability levels at which the response values will be estimated"
-                },
                 "response_levels": {
                     "anyOf": [
                         {
@@ -34009,7 +34059,34 @@
                     ],
                     "argument": "values",
                     "default": null,
-                    "description": "Values at which to estimate desired statistics for each response"
+                    "description": "Values at which to estimate desired statistics for each response",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.response_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
+                },
+                "gen_reliability_levels": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/GenReliabilityLevelsGenReliabilityLevels"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "values",
+                    "default": null,
+                    "description": "Specify generalized relability levels at which to estimate the corresponding response value",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.gen_reliability_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
                 },
                 "final_moments": {
                     "anyOf": [
@@ -34729,10 +34806,10 @@
                     "x-model-default": "RngOptionsContext2Mt19937",
                     "x-union-pattern": 1
                 },
-                "gen_reliability_levels": {
+                "response_levels": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/GenReliabilityLevelsGenReliabilityLevels"
+                            "$ref": "#/$defs/ResponseLevelsComputeProbGenContext1ResponseLevels"
                         },
                         {
                             "type": "null"
@@ -34740,7 +34817,14 @@
                     ],
                     "argument": "values",
                     "default": null,
-                    "description": "Specify generalized relability levels at which to estimate the corresponding response value"
+                    "description": "Values at which to estimate desired statistics for each response",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.response_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
                 },
                 "probability_levels": {
                     "anyOf": [
@@ -34753,20 +34837,14 @@
                     ],
                     "argument": "values",
                     "default": null,
-                    "description": "Specify probability levels at which to estimate the corresponding response value"
-                },
-                "response_levels": {
-                    "anyOf": [
+                    "description": "Specify probability levels at which to estimate the corresponding response value",
+                    "x-materialization": [
                         {
-                            "$ref": "#/$defs/ResponseLevelsComputeProbGenContext1ResponseLevels"
-                        },
-                        {
-                            "type": "null"
+                            "ir_key": "method.nond.probability_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
                         }
-                    ],
-                    "argument": "values",
-                    "default": null,
-                    "description": "Values at which to estimate desired statistics for each response"
+                    ]
                 },
                 "distribution": {
                     "anyOf": [
@@ -34781,6 +34859,26 @@
                     "title": "Distribution",
                     "x-model-default": "DistributionCumulComplContext1Cumulative",
                     "x-union-pattern": 1
+                },
+                "gen_reliability_levels": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/GenReliabilityLevelsGenReliabilityLevels"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "values",
+                    "default": null,
+                    "description": "Specify generalized relability levels at which to estimate the corresponding response value",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.gen_reliability_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
                 },
                 "convergence_tolerance": {
                     "default": -1.7976931348623157e+308,
@@ -36647,10 +36745,10 @@
                         }
                     ]
                 },
-                "gen_reliability_levels": {
+                "response_levels": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/GenReliabilityLevelsGenReliabilityLevels"
+                            "$ref": "#/$defs/ResponseLevelsComputeProbGenContext1ResponseLevels"
                         },
                         {
                             "type": "null"
@@ -36658,7 +36756,14 @@
                     ],
                     "argument": "values",
                     "default": null,
-                    "description": "Specify generalized relability levels at which to estimate the corresponding response value"
+                    "description": "Values at which to estimate desired statistics for each response",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.response_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
                 },
                 "probability_levels": {
                     "anyOf": [
@@ -36671,20 +36776,14 @@
                     ],
                     "argument": "values",
                     "default": null,
-                    "description": "Specify probability levels at which to estimate the corresponding response value"
-                },
-                "response_levels": {
-                    "anyOf": [
+                    "description": "Specify probability levels at which to estimate the corresponding response value",
+                    "x-materialization": [
                         {
-                            "$ref": "#/$defs/ResponseLevelsComputeProbGenContext1ResponseLevels"
-                        },
-                        {
-                            "type": "null"
+                            "ir_key": "method.nond.probability_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
                         }
-                    ],
-                    "argument": "values",
-                    "default": null,
-                    "description": "Values at which to estimate desired statistics for each response"
+                    ]
                 },
                 "distribution": {
                     "anyOf": [
@@ -36699,6 +36798,26 @@
                     "title": "Distribution",
                     "x-model-default": "DistributionCumulComplContext1Cumulative",
                     "x-union-pattern": 1
+                },
+                "gen_reliability_levels": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/GenReliabilityLevelsGenReliabilityLevels"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "values",
+                    "default": null,
+                    "description": "Specify generalized relability levels at which to estimate the corresponding response value",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.gen_reliability_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
                 },
                 "optimization_solver": {
                     "anchor": true,
@@ -37131,6 +37250,46 @@
                         }
                     ]
                 },
+                "probability_levels": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/ProbabilityLevelsContext2ProbabilityLevels"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "values",
+                    "default": null,
+                    "description": "Specify probability levels at which to estimate the corresponding response value",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.probability_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
+                },
+                "reliability_levels": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/ReliabilityLevelsReliabilityLevels"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "values",
+                    "default": null,
+                    "description": "Specify reliability levels at which the response values will be estimated",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.reliability_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
+                },
                 "distribution": {
                     "anyOf": [
                         {
@@ -37145,45 +37304,6 @@
                     "x-model-default": "DistributionCumulComplContext1Cumulative",
                     "x-union-pattern": 1
                 },
-                "gen_reliability_levels": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/GenReliabilityLevelsGenReliabilityLevels"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "values",
-                    "default": null,
-                    "description": "Specify generalized relability levels at which to estimate the corresponding response value"
-                },
-                "probability_levels": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/ProbabilityLevelsContext2ProbabilityLevels"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "values",
-                    "default": null,
-                    "description": "Specify probability levels at which to estimate the corresponding response value"
-                },
-                "reliability_levels": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/ReliabilityLevelsReliabilityLevels"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "values",
-                    "default": null,
-                    "description": "Specify reliability levels at which the response values will be estimated"
-                },
                 "response_levels": {
                     "anyOf": [
                         {
@@ -37195,7 +37315,34 @@
                     ],
                     "argument": "values",
                     "default": null,
-                    "description": "Values at which to estimate desired statistics for each response"
+                    "description": "Values at which to estimate desired statistics for each response",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.response_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
+                },
+                "gen_reliability_levels": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/GenReliabilityLevelsGenReliabilityLevels"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "values",
+                    "default": null,
+                    "description": "Specify generalized relability levels at which to estimate the corresponding response value",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.gen_reliability_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
                 },
                 "id_method": {
                     "anyOf": [
@@ -43040,7 +43187,14 @@
                     ],
                     "argument": "values",
                     "default": null,
-                    "description": "Values at which to estimate desired statistics for each response"
+                    "description": "Values at which to estimate desired statistics for each response",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.response_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
                 },
                 "probability_levels": {
                     "anyOf": [
@@ -43053,7 +43207,14 @@
                     ],
                     "argument": "values",
                     "default": null,
-                    "description": "Specify probability levels at which to estimate the corresponding response value"
+                    "description": "Specify probability levels at which to estimate the corresponding response value",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.probability_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
                 },
                 "reliability_levels": {
                     "anyOf": [
@@ -43066,7 +43227,14 @@
                     ],
                     "argument": "values",
                     "default": null,
-                    "description": "Specify reliability levels at which the response values will be estimated"
+                    "description": "Specify reliability levels at which the response values will be estimated",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.reliability_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
                 },
                 "gen_reliability_levels": {
                     "anyOf": [
@@ -43079,7 +43247,14 @@
                     ],
                     "argument": "values",
                     "default": null,
-                    "description": "Specify generalized relability levels at which to estimate the corresponding response value"
+                    "description": "Specify generalized relability levels at which to estimate the corresponding response value",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.gen_reliability_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
                 },
                 "distribution": {
                     "anyOf": [
@@ -43242,6 +43417,19 @@
                     "description": "Sample allocation approach for multifidelity expansions",
                     "x-union-pattern": 2
                 },
+                "convergence_tolerance": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "value",
+                    "default": null,
+                    "description": "Stopping criterion based on objective function or statistics convergence"
+                },
                 "refinement_metric": {
                     "anyOf": [
                         {
@@ -43275,19 +43463,6 @@
                     "description": "type of statistical metric roll-up for multifidelity UQ methods",
                     "title": "Statistics Mode",
                     "x-union-pattern": 2
-                },
-                "convergence_tolerance": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "value",
-                    "default": null,
-                    "description": "Stopping criterion based on objective function or statistics convergence"
                 },
                 "p_refinement": {
                     "anyOf": [
@@ -46083,7 +46258,14 @@
                     ],
                     "argument": "values",
                     "default": null,
-                    "description": "Values at which to estimate desired statistics for each response"
+                    "description": "Values at which to estimate desired statistics for each response",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.response_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
                 },
                 "probability_levels": {
                     "anyOf": [
@@ -46096,7 +46278,14 @@
                     ],
                     "argument": "values",
                     "default": null,
-                    "description": "Specify probability levels at which to estimate the corresponding response value"
+                    "description": "Specify probability levels at which to estimate the corresponding response value",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.probability_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
                 },
                 "reliability_levels": {
                     "anyOf": [
@@ -46109,7 +46298,14 @@
                     ],
                     "argument": "values",
                     "default": null,
-                    "description": "Specify reliability levels at which the response values will be estimated"
+                    "description": "Specify reliability levels at which the response values will be estimated",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.reliability_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
                 },
                 "gen_reliability_levels": {
                     "anyOf": [
@@ -46122,7 +46318,14 @@
                     ],
                     "argument": "values",
                     "default": null,
-                    "description": "Specify generalized relability levels at which to estimate the corresponding response value"
+                    "description": "Specify generalized relability levels at which to estimate the corresponding response value",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.gen_reliability_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
                 },
                 "distribution": {
                     "anyOf": [
@@ -46272,6 +46475,19 @@
                     "title": "Discrepancy Emulation",
                     "x-union-pattern": 2
                 },
+                "convergence_tolerance": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "value",
+                    "default": null,
+                    "description": "Stopping criterion based on objective function or statistics convergence"
+                },
                 "refinement_metric": {
                     "anyOf": [
                         {
@@ -46288,19 +46504,6 @@
                     "description": "Metric used for guiding adaptive refinement during UQ.",
                     "title": "Refinement Metric",
                     "x-union-pattern": 2
-                },
-                "convergence_tolerance": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "value",
-                    "default": null,
-                    "description": "Stopping criterion based on objective function or statistics convergence"
                 },
                 "allocation_control": {
                     "anyOf": [
@@ -49839,7 +50042,14 @@
                     ],
                     "argument": "values",
                     "default": null,
-                    "description": "Values at which to estimate desired statistics for each response"
+                    "description": "Values at which to estimate desired statistics for each response",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.response_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
                 },
                 "probability_levels": {
                     "anyOf": [
@@ -49852,7 +50062,14 @@
                     ],
                     "argument": "values",
                     "default": null,
-                    "description": "Specify probability levels at which to estimate the corresponding response value"
+                    "description": "Specify probability levels at which to estimate the corresponding response value",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.probability_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
                 },
                 "reliability_levels": {
                     "anyOf": [
@@ -49865,7 +50082,14 @@
                     ],
                     "argument": "values",
                     "default": null,
-                    "description": "Specify reliability levels at which the response values will be estimated"
+                    "description": "Specify reliability levels at which the response values will be estimated",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.reliability_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
                 },
                 "gen_reliability_levels": {
                     "anyOf": [
@@ -49878,7 +50102,14 @@
                     ],
                     "argument": "values",
                     "default": null,
-                    "description": "Specify generalized relability levels at which to estimate the corresponding response value"
+                    "description": "Specify generalized relability levels at which to estimate the corresponding response value",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.gen_reliability_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
                 },
                 "distribution": {
                     "anyOf": [
@@ -50299,6 +50530,19 @@
                     "description": "Sample allocation approach for multifidelity expansions",
                     "x-union-pattern": 2
                 },
+                "convergence_tolerance": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "value",
+                    "default": null,
+                    "description": "Stopping criterion based on objective function or statistics convergence"
+                },
                 "refinement_metric": {
                     "anyOf": [
                         {
@@ -50332,19 +50576,6 @@
                     "description": "type of statistical metric roll-up for multifidelity UQ methods",
                     "title": "Statistics Mode",
                     "x-union-pattern": 2
-                },
-                "convergence_tolerance": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "value",
-                    "default": null,
-                    "description": "Stopping criterion based on objective function or statistics convergence"
                 },
                 "p_refinement": {
                     "anyOf": [
@@ -50972,7 +51203,14 @@
                     ],
                     "argument": "values",
                     "default": null,
-                    "description": "Values at which to estimate desired statistics for each response"
+                    "description": "Values at which to estimate desired statistics for each response",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.response_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
                 },
                 "probability_levels": {
                     "anyOf": [
@@ -50985,7 +51223,14 @@
                     ],
                     "argument": "values",
                     "default": null,
-                    "description": "Specify probability levels at which to estimate the corresponding response value"
+                    "description": "Specify probability levels at which to estimate the corresponding response value",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.probability_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
                 },
                 "reliability_levels": {
                     "anyOf": [
@@ -50998,7 +51243,14 @@
                     ],
                     "argument": "values",
                     "default": null,
-                    "description": "Specify reliability levels at which the response values will be estimated"
+                    "description": "Specify reliability levels at which the response values will be estimated",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.reliability_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
                 },
                 "gen_reliability_levels": {
                     "anyOf": [
@@ -51011,7 +51263,14 @@
                     ],
                     "argument": "values",
                     "default": null,
-                    "description": "Specify generalized relability levels at which to estimate the corresponding response value"
+                    "description": "Specify generalized relability levels at which to estimate the corresponding response value",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.gen_reliability_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
                 },
                 "distribution": {
                     "anyOf": [
@@ -51157,6 +51416,19 @@
                     "description": "Sample allocation approach for multifidelity expansions",
                     "x-union-pattern": 2
                 },
+                "convergence_tolerance": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "value",
+                    "default": null,
+                    "description": "Stopping criterion based on objective function or statistics convergence"
+                },
                 "refinement_metric": {
                     "anyOf": [
                         {
@@ -51190,19 +51462,6 @@
                     "description": "type of statistical metric roll-up for multifidelity UQ methods",
                     "title": "Statistics Mode",
                     "x-union-pattern": 2
-                },
-                "convergence_tolerance": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "value",
-                    "default": null,
-                    "description": "Stopping criterion based on objective function or statistics convergence"
                 },
                 "max_refinement_iterations": {
                     "default": 4294967295,
@@ -52305,7 +52564,14 @@
                     ],
                     "argument": "values",
                     "default": null,
-                    "description": "Values at which to estimate desired statistics for each response"
+                    "description": "Values at which to estimate desired statistics for each response",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.response_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
                 },
                 "probability_levels": {
                     "anyOf": [
@@ -52318,7 +52584,14 @@
                     ],
                     "argument": "values",
                     "default": null,
-                    "description": "Specify probability levels at which to estimate the corresponding response value"
+                    "description": "Specify probability levels at which to estimate the corresponding response value",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.probability_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
                 },
                 "reliability_levels": {
                     "anyOf": [
@@ -52331,7 +52604,14 @@
                     ],
                     "argument": "values",
                     "default": null,
-                    "description": "Specify reliability levels at which the response values will be estimated"
+                    "description": "Specify reliability levels at which the response values will be estimated",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.reliability_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
                 },
                 "gen_reliability_levels": {
                     "anyOf": [
@@ -52344,7 +52624,14 @@
                     ],
                     "argument": "values",
                     "default": null,
-                    "description": "Specify generalized relability levels at which to estimate the corresponding response value"
+                    "description": "Specify generalized relability levels at which to estimate the corresponding response value",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.gen_reliability_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
                 },
                 "distribution": {
                     "anyOf": [
@@ -52752,6 +53039,19 @@
                     "title": "Discrepancy Emulation",
                     "x-union-pattern": 2
                 },
+                "convergence_tolerance": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "value",
+                    "default": null,
+                    "description": "Stopping criterion based on objective function or statistics convergence"
+                },
                 "refinement_metric": {
                     "anyOf": [
                         {
@@ -52768,19 +53068,6 @@
                     "description": "Metric used for guiding adaptive refinement during UQ.",
                     "title": "Refinement Metric",
                     "x-union-pattern": 2
-                },
-                "convergence_tolerance": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "value",
-                    "default": null,
-                    "description": "Stopping criterion based on objective function or statistics convergence"
                 },
                 "allocation_control": {
                     "anyOf": [
@@ -54670,7 +54957,14 @@
                     "default": null,
                     "description": "Specify which variables block will be included with this model block",
                     "title": "Variables Pointer",
-                    "x-block-pointer": "variables"
+                    "x-block-pointer": "variables",
+                    "x-materialization": [
+                        {
+                            "ir_key": "model.variables_pointer",
+                            "ir_value_type": "String",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 },
                 "responses_pointer": {
                     "anyOf": [
@@ -54684,7 +54978,14 @@
                     "default": null,
                     "description": "Specify which reponses block will be used by this model block",
                     "title": "Responses Pointer",
-                    "x-block-pointer": "responses"
+                    "x-block-pointer": "responses",
+                    "x-materialization": [
+                        {
+                            "ir_key": "model.responses_pointer",
+                            "ir_value_type": "String",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 },
                 "hierarchical_tagging": {
                     "default": false,
@@ -61198,7 +61499,14 @@
                     ],
                     "argument": "values",
                     "default": null,
-                    "description": "Values at which to estimate desired statistics for each response"
+                    "description": "Values at which to estimate desired statistics for each response",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.response_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
                 },
                 "probability_levels": {
                     "anyOf": [
@@ -61211,7 +61519,14 @@
                     ],
                     "argument": "values",
                     "default": null,
-                    "description": "Specify probability levels at which to estimate the corresponding response value"
+                    "description": "Specify probability levels at which to estimate the corresponding response value",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.probability_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
                 },
                 "reliability_levels": {
                     "anyOf": [
@@ -61224,7 +61539,14 @@
                     ],
                     "argument": "values",
                     "default": null,
-                    "description": "Specify reliability levels at which the response values will be estimated"
+                    "description": "Specify reliability levels at which the response values will be estimated",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.reliability_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
                 },
                 "gen_reliability_levels": {
                     "anyOf": [
@@ -61237,7 +61559,14 @@
                     ],
                     "argument": "values",
                     "default": null,
-                    "description": "Specify generalized relability levels at which to estimate the corresponding response value"
+                    "description": "Specify generalized relability levels at which to estimate the corresponding response value",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.gen_reliability_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
                 },
                 "distribution": {
                     "anyOf": [
@@ -61370,6 +61699,19 @@
                     "title": "Basis Family",
                     "x-union-pattern": 2
                 },
+                "convergence_tolerance": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "value",
+                    "default": null,
+                    "description": "Stopping criterion based on objective function or statistics convergence"
+                },
                 "refinement_metric": {
                     "anyOf": [
                         {
@@ -61386,19 +61728,6 @@
                     "description": "Metric used for guiding adaptive refinement during UQ.",
                     "title": "Refinement Metric",
                     "x-union-pattern": 2
-                },
-                "convergence_tolerance": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "value",
-                    "default": null,
-                    "description": "Stopping criterion based on objective function or statistics convergence"
                 },
                 "p_refinement": {
                     "anyOf": [
@@ -63816,10 +64145,10 @@
                     "x-model-default": "RngOptionsContext2Mt19937",
                     "x-union-pattern": 1
                 },
-                "gen_reliability_levels": {
+                "response_levels": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/GenReliabilityLevelsGenReliabilityLevels"
+                            "$ref": "#/$defs/ResponseLevelsComputeProbGenContext1ResponseLevels"
                         },
                         {
                             "type": "null"
@@ -63827,7 +64156,14 @@
                     ],
                     "argument": "values",
                     "default": null,
-                    "description": "Specify generalized relability levels at which to estimate the corresponding response value"
+                    "description": "Values at which to estimate desired statistics for each response",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.response_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
                 },
                 "probability_levels": {
                     "anyOf": [
@@ -63840,20 +64176,14 @@
                     ],
                     "argument": "values",
                     "default": null,
-                    "description": "Specify probability levels at which to estimate the corresponding response value"
-                },
-                "response_levels": {
-                    "anyOf": [
+                    "description": "Specify probability levels at which to estimate the corresponding response value",
+                    "x-materialization": [
                         {
-                            "$ref": "#/$defs/ResponseLevelsComputeProbGenContext1ResponseLevels"
-                        },
-                        {
-                            "type": "null"
+                            "ir_key": "method.nond.probability_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
                         }
-                    ],
-                    "argument": "values",
-                    "default": null,
-                    "description": "Values at which to estimate desired statistics for each response"
+                    ]
                 },
                 "distribution": {
                     "anyOf": [
@@ -63868,6 +64198,26 @@
                     "title": "Distribution",
                     "x-model-default": "DistributionCumulComplContext1Cumulative",
                     "x-union-pattern": 1
+                },
+                "gen_reliability_levels": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/GenReliabilityLevelsGenReliabilityLevels"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "values",
+                    "default": null,
+                    "description": "Specify generalized relability levels at which to estimate the corresponding response value",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.gen_reliability_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
                 },
                 "id_method": {
                     "anyOf": [
@@ -64566,14 +64916,7 @@
                         "type": "number"
                     },
                     "title": "Values",
-                    "type": "array",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.nond.probability_levels",
-                            "ir_value_type": "RealVectorArray",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
+                    "type": "array"
                 },
                 "num_probability_levels": {
                     "anyOf": [
@@ -64629,14 +64972,7 @@
                         "type": "number"
                     },
                     "title": "Values",
-                    "type": "array",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.nond.probability_levels",
-                            "ir_value_type": "RealVectorArray",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
+                    "type": "array"
                 },
                 "num_probability_levels": {
                     "anyOf": [
@@ -65875,7 +66211,14 @@
                     "default": null,
                     "description": "Specify which variables block will be included with this model block",
                     "title": "Variables Pointer",
-                    "x-block-pointer": "variables"
+                    "x-block-pointer": "variables",
+                    "x-materialization": [
+                        {
+                            "ir_key": "model.variables_pointer",
+                            "ir_value_type": "String",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 },
                 "responses_pointer": {
                     "anyOf": [
@@ -65889,7 +66232,14 @@
                     "default": null,
                     "description": "Specify which reponses block will be used by this model block",
                     "title": "Responses Pointer",
-                    "x-block-pointer": "responses"
+                    "x-block-pointer": "responses",
+                    "x-materialization": [
+                        {
+                            "ir_key": "model.responses_pointer",
+                            "ir_value_type": "String",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 },
                 "hierarchical_tagging": {
                     "default": false,
@@ -66497,14 +66847,7 @@
                         "type": "number"
                     },
                     "title": "Values",
-                    "type": "array",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.nond.reliability_levels",
-                            "ir_value_type": "RealVectorArray",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
+                    "type": "array"
                 },
                 "num_reliability_levels": {
                     "anyOf": [
@@ -66736,14 +67079,7 @@
                         "type": "number"
                     },
                     "title": "Values",
-                    "type": "array",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.nond.response_levels",
-                            "ir_value_type": "RealVectorArray",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
+                    "type": "array"
                 },
                 "num_response_levels": {
                     "anyOf": [
@@ -66932,14 +67268,7 @@
                         "type": "number"
                     },
                     "title": "Values",
-                    "type": "array",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.nond.response_levels",
-                            "ir_value_type": "RealVectorArray",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
+                    "type": "array"
                 },
                 "num_response_levels": {
                     "anyOf": [
@@ -67153,14 +67482,7 @@
                         "type": "number"
                     },
                     "title": "Values",
-                    "type": "array",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.nond.response_levels",
-                            "ir_value_type": "RealVectorArray",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
+                    "type": "array"
                 },
                 "num_response_levels": {
                     "anyOf": [
@@ -67932,19 +68254,6 @@
                     "x-model-default": "RngOptionsContext1Mt19937",
                     "x-union-pattern": 1
                 },
-                "gen_reliability_levels": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/GenReliabilityLevelsGenReliabilityLevels"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "values",
-                    "default": null,
-                    "description": "Specify generalized relability levels at which to estimate the corresponding response value"
-                },
                 "probability_levels": {
                     "anyOf": [
                         {
@@ -67956,7 +68265,14 @@
                     ],
                     "argument": "values",
                     "default": null,
-                    "description": "Specify probability levels at which to estimate the corresponding response value"
+                    "description": "Specify probability levels at which to estimate the corresponding response value",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.probability_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
                 },
                 "response_levels": {
                     "anyOf": [
@@ -67969,7 +68285,14 @@
                     ],
                     "argument": "values",
                     "default": null,
-                    "description": "Undocumented: Recursive k-d (RKD) Darts is an experimental capability."
+                    "description": "Undocumented: Recursive k-d (RKD) Darts is an experimental capability.",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.response_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
                 },
                 "distribution": {
                     "anyOf": [
@@ -67984,6 +68307,26 @@
                     "title": "Distribution",
                     "x-model-default": "DistributionCumulComplContext1Cumulative",
                     "x-union-pattern": 1
+                },
+                "gen_reliability_levels": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/GenReliabilityLevelsGenReliabilityLevels"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "values",
+                    "default": null,
+                    "description": "Specify generalized relability levels at which to estimate the corresponding response value",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.gen_reliability_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
                 },
                 "id_method": {
                     "anyOf": [
@@ -68550,6 +68893,46 @@
                     "x-model-default": "RngOptionsContext2Mt19937",
                     "x-union-pattern": 1
                 },
+                "probability_levels": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/ProbabilityLevelsContext2ProbabilityLevels"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "values",
+                    "default": null,
+                    "description": "Specify probability levels at which to estimate the corresponding response value",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.probability_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
+                },
+                "reliability_levels": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/ReliabilityLevelsReliabilityLevels"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "values",
+                    "default": null,
+                    "description": "Specify reliability levels at which the response values will be estimated",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.reliability_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
+                },
                 "distribution": {
                     "anyOf": [
                         {
@@ -68564,45 +68947,6 @@
                     "x-model-default": "DistributionCumulComplContext1Cumulative",
                     "x-union-pattern": 1
                 },
-                "gen_reliability_levels": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/GenReliabilityLevelsGenReliabilityLevels"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "values",
-                    "default": null,
-                    "description": "Specify generalized relability levels at which to estimate the corresponding response value"
-                },
-                "probability_levels": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/ProbabilityLevelsContext2ProbabilityLevels"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "values",
-                    "default": null,
-                    "description": "Specify probability levels at which to estimate the corresponding response value"
-                },
-                "reliability_levels": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/ReliabilityLevelsReliabilityLevels"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "values",
-                    "default": null,
-                    "description": "Specify reliability levels at which the response values will be estimated"
-                },
                 "response_levels": {
                     "anyOf": [
                         {
@@ -68614,7 +68958,34 @@
                     ],
                     "argument": "values",
                     "default": null,
-                    "description": "Values at which to estimate desired statistics for each response"
+                    "description": "Values at which to estimate desired statistics for each response",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.response_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
+                },
+                "gen_reliability_levels": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/GenReliabilityLevelsGenReliabilityLevels"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "values",
+                    "default": null,
+                    "description": "Specify generalized relability levels at which to estimate the corresponding response value",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.gen_reliability_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
                 },
                 "final_moments": {
                     "anyOf": [
@@ -69934,7 +70305,14 @@
                     "default": null,
                     "description": "Specify which variables block will be included with this model block",
                     "title": "Variables Pointer",
-                    "x-block-pointer": "variables"
+                    "x-block-pointer": "variables",
+                    "x-materialization": [
+                        {
+                            "ir_key": "model.variables_pointer",
+                            "ir_value_type": "String",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 },
                 "responses_pointer": {
                     "anyOf": [
@@ -69948,7 +70326,14 @@
                     "default": null,
                     "description": "Specify which reponses block will be used by this model block",
                     "title": "Responses Pointer",
-                    "x-block-pointer": "responses"
+                    "x-block-pointer": "responses",
+                    "x-materialization": [
+                        {
+                            "ir_key": "model.responses_pointer",
+                            "ir_value_type": "String",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 },
                 "hierarchical_tagging": {
                     "default": false,
@@ -71035,7 +71420,14 @@
                     ],
                     "argument": "values",
                     "default": null,
-                    "description": "Values at which to estimate desired statistics for each response"
+                    "description": "Values at which to estimate desired statistics for each response",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.response_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
                 },
                 "probability_levels": {
                     "anyOf": [
@@ -71048,7 +71440,14 @@
                     ],
                     "argument": "values",
                     "default": null,
-                    "description": "Specify probability levels at which to estimate the corresponding response value"
+                    "description": "Specify probability levels at which to estimate the corresponding response value",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.probability_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
                 },
                 "reliability_levels": {
                     "anyOf": [
@@ -71061,7 +71460,14 @@
                     ],
                     "argument": "values",
                     "default": null,
-                    "description": "Specify reliability levels at which the response values will be estimated"
+                    "description": "Specify reliability levels at which the response values will be estimated",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.reliability_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
                 },
                 "gen_reliability_levels": {
                     "anyOf": [
@@ -71074,7 +71480,14 @@
                     ],
                     "argument": "values",
                     "default": null,
-                    "description": "Specify generalized relability levels at which to estimate the corresponding response value"
+                    "description": "Specify generalized relability levels at which to estimate the corresponding response value",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.gen_reliability_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
                 },
                 "distribution": {
                     "anyOf": [
@@ -71190,6 +71603,19 @@
                     "title": "Basis Family",
                     "x-union-pattern": 2
                 },
+                "convergence_tolerance": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "value",
+                    "default": null,
+                    "description": "Stopping criterion based on objective function or statistics convergence"
+                },
                 "refinement_metric": {
                     "anyOf": [
                         {
@@ -71206,19 +71632,6 @@
                     "description": "Metric used for guiding adaptive refinement during UQ.",
                     "title": "Refinement Metric",
                     "x-union-pattern": 2
-                },
-                "convergence_tolerance": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "value",
-                    "default": null,
-                    "description": "Stopping criterion based on objective function or statistics convergence"
                 },
                 "max_refinement_iterations": {
                     "default": 4294967295,
@@ -72796,7 +73209,14 @@
                     ],
                     "argument": "values",
                     "default": null,
-                    "description": "Values at which to estimate desired statistics for each response"
+                    "description": "Values at which to estimate desired statistics for each response",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.response_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
                 },
                 "probability_levels": {
                     "anyOf": [
@@ -72809,7 +73229,14 @@
                     ],
                     "argument": "values",
                     "default": null,
-                    "description": "Specify probability levels at which to estimate the corresponding response value"
+                    "description": "Specify probability levels at which to estimate the corresponding response value",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.probability_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
                 },
                 "reliability_levels": {
                     "anyOf": [
@@ -72822,7 +73249,14 @@
                     ],
                     "argument": "values",
                     "default": null,
-                    "description": "Specify reliability levels at which the response values will be estimated"
+                    "description": "Specify reliability levels at which the response values will be estimated",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.reliability_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
                 },
                 "gen_reliability_levels": {
                     "anyOf": [
@@ -72835,7 +73269,14 @@
                     ],
                     "argument": "values",
                     "default": null,
-                    "description": "Specify generalized relability levels at which to estimate the corresponding response value"
+                    "description": "Specify generalized relability levels at which to estimate the corresponding response value",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.gen_reliability_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
                 },
                 "distribution": {
                     "anyOf": [
@@ -73036,7 +73477,14 @@
                     "default": null,
                     "description": "Specify which variables block will be included with this model block",
                     "title": "Variables Pointer",
-                    "x-block-pointer": "variables"
+                    "x-block-pointer": "variables",
+                    "x-materialization": [
+                        {
+                            "ir_key": "model.variables_pointer",
+                            "ir_value_type": "String",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 },
                 "responses_pointer": {
                     "anyOf": [
@@ -73050,7 +73498,14 @@
                     "default": null,
                     "description": "Specify which reponses block will be used by this model block",
                     "title": "Responses Pointer",
-                    "x-block-pointer": "responses"
+                    "x-block-pointer": "responses",
+                    "x-materialization": [
+                        {
+                            "ir_key": "model.responses_pointer",
+                            "ir_value_type": "String",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 },
                 "hierarchical_tagging": {
                     "default": false,

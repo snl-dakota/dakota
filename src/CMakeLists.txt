@@ -443,7 +443,7 @@ set(evaldata_src DakotaVariables.cpp MixedVariables.cpp RelaxedVariables.cpp
     ParamResponsePair.cpp)
 
 ## DB sources.
-set(db_src ProblemDescDB.cpp JSONProblemDescDB.cpp NIDRProblemDescDB.cpp
+set(db_src ProblemDescDB.cpp NIDRProblemDescDB.cpp
   ProblemDescDBUtils.cpp
   ProblemDescDBDump.cpp
   DataEnvironment.cpp DataMethod.cpp DataModel.cpp DataVariables.cpp

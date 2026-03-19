@@ -20,7 +20,8 @@
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
 #include "NIDRProblemDescDB.hpp"
-#include "JSONProblemDescDB.hpp"
+#include "InstructionMaterializer.hpp"
+#include "IRQuery.hpp"
 #include "DakotaIterator.hpp"
 #include "DakotaInterface.hpp"
 #include "WorkdirHelper.hpp"  // bfs utils and prepend_preferred_env_path
@@ -28,12 +29,19 @@
 #include <boost/function.hpp>
 #include <string>
 #include "delete_study_components.hpp"
+#include <cstdlib>
+#include <fstream>
+#include <nlohmann/json.hpp>
+#include <iostream>
 #include <string_view>
+#include <type_traits>
+#include <variant>
 
 //#define DEBUG
 //#define MPI_DEBUG
 
 #define JSONDB_VERBOSE true
+#define JSON_GET_CACHED_VALUE(GET_VALUE_FN, verbose)
 
 static const char rcsId[]="@(#) $Id: ProblemDescDB.cpp 7007 2010-10-06 15:54:39Z wjbohnh $";
 
@@ -42,6 +50,61 @@ namespace Dakota {
 
 extern ParallelLibrary dummy_lib; // defined in dakota_global_defs.cpp
 extern ProblemDescDB *Dak_pddb;	  // defined in dakota_global_defs.cpp
+
+namespace {
+
+using json = nlohmann::json;
+
+json load_json_from_file(const String& filename)
+{
+  std::ifstream file(filename);
+  if (!file.is_open())
+    throw std::runtime_error("Could not open the file: " + filename);
+
+  json j;
+  file >> j;
+  return j;
+}
+
+bool ir_debug_logging_enabled()
+{
+  const char* value = std::getenv("DAKOTA_DEBUG_IR");
+  return value && *value;
+}
+
+void log_top_level_json_shape(const json& j, const String& filename)
+{
+  if (!ir_debug_logging_enabled())
+    return;
+
+  std::cerr << "ProblemDescDB::enable_json_input: loaded '" << filename << "'";
+  if (!j.is_object()) {
+    std::cerr << " with top-level type " << j.type_name() << std::endl;
+    return;
+  }
+
+  std::cerr << " with top-level keys:";
+  for (auto it = j.begin(); it != j.end(); ++it) {
+    std::cerr << " " << it.key() << "("
+              << (it->is_object() ? "object" :
+                  it->is_array() ? "array" :
+                  it->type_name())
+              << ")";
+  }
+  std::cerr << std::endl;
+}
+
+template <class T, class Variant>
+struct variant_contains;
+
+template <class T, class... Alts>
+struct variant_contains<T, std::variant<Alts...>>
+  : std::disjunction<std::is_same<T, Alts>...> {};
+
+template <class T, class Variant>
+inline constexpr bool variant_contains_v = variant_contains<T, Variant>::value;
+
+} // namespace
 
 
 /** This constructor is the one which must build the base class data for all
@@ -151,27 +214,44 @@ parse_inputs(const std::string_view input_string, const std::string_view parser_
 
 void ProblemDescDB::enable_json_input(const String & json_file)
 {
-  jsonDB = std::make_shared<JSONProblemDescDB>(json_file);
+  if (ir_debug_logging_enabled())
+    std::cerr << "ProblemDescDB::enable_json_input: starting for '" << json_file << "'" << std::endl;
 
-  // all or nothing data members for now
-  if ( dbRep && dbRep->dataMethodList.empty() )
-  {
-    Cout << "ProblemDescDB: using default data objects and input from JSON ..." << std::endl;
-    assert(dbRep->dataInterfaceList.empty() );
-    assert(dbRep->dataModelList.empty()     );
-    assert(dbRep->dataResponsesList.empty() );
-    assert(dbRep->dataVariablesList.empty() );
+  const json study_json = load_json_from_file(json_file);
+  log_top_level_json_shape(study_json, json_file);
 
-    // Manually configure needed parsed data
-    // ... This may just require bypassing all NIDR checks and relying
-    //     on validated json input to contain all needed checks and values. - RWH
-    //defaultDataVariables.data_rep()->numContinuousDesVars = 2;
+  InstructionMaterializer materializer;
+  std::shared_ptr<IRState> materialized;
+  try {
+    materialized = std::make_shared<IRState>(materializer.materialize(study_json));
+  }
+  catch (const std::exception& e) {
+    std::cerr << "ProblemDescDB::enable_json_input: failed while materializing '"
+              << json_file << "': " << e.what() << std::endl;
+    throw;
+  }
 
-    dbRep->insert_node( defaultDataMethod    );
-    dbRep->insert_node( defaultDataModel     );
-    dbRep->insert_node( defaultDataVariables );
-    dbRep->insert_node( defaultDataInterface );
-    dbRep->insert_node( defaultDataResponses );
+  if (dbRep) {
+    dbRep->irState = std::move(materialized);
+    if (dbRep->dataMethodList.empty())
+      dbRep->populate_skeleton_data_from_ir();
+  }
+  else {
+    irState = std::move(materialized);
+    if (dataMethodList.empty())
+      populate_skeleton_data_from_ir();
+  }
+
+  if (ir_debug_logging_enabled()) {
+    const ProblemDescDB* db = dbRep ? dbRep.get() : this;
+    std::cerr << "ProblemDescDB::enable_json_input: materialized IR sizes"
+              << " environment=" << db->irState->environment.values().size()
+              << " method=" << db->irState->method.size()
+              << " model=" << db->irState->model.size()
+              << " variables=" << db->irState->variables.size()
+              << " interface=" << db->irState->interface.size()
+              << " responses=" << db->irState->responses.size()
+              << std::endl;
   }
 }
 
@@ -201,6 +281,78 @@ void ProblemDescDB::check_and_broadcast(const UserModes& user_modes) {
 }
 
 
+void ProblemDescDB::populate_skeleton_data_from_ir()
+{
+  ProblemDescDB* db = dbRep ? dbRep.get() : this;
+  if (!db->irState)
+    return;
+
+  db->environmentCntr = 0;
+  db->environmentSpec = DataEnvironment();
+  if (db->irState->environment.contains("top_method_pointer"))
+    db->environmentSpec.data_rep()->topMethodPointer =
+      db->irState->environment.get<String>("top_method_pointer");
+  if (!db->irState->environment.values().empty())
+    db->environmentCntr = 1;
+
+  db->dataMethodList.clear();
+  for (const auto& store : db->irState->method) {
+    DataMethod method;
+    if (store.contains("id"))
+      method.data_rep()->idMethod = store.get<String>("id");
+    if (store.contains("model_pointer"))
+      method.data_rep()->modelPointer = store.get<String>("model_pointer");
+    if (store.contains("sub_method_pointer"))
+      method.data_rep()->subMethodPointer = store.get<String>("sub_method_pointer");
+    db->dataMethodList.push_back(method);
+  }
+
+  db->dataModelList.clear();
+  for (const auto& store : db->irState->model) {
+    DataModel model;
+    if (store.contains("id"))
+      model.data_rep()->idModel = store.get<String>("id");
+    if (store.contains("variables_pointer"))
+      model.data_rep()->variablesPointer = store.get<String>("variables_pointer");
+    if (store.contains("interface_pointer"))
+      model.data_rep()->interfacePointer = store.get<String>("interface_pointer");
+    if (store.contains("responses_pointer"))
+      model.data_rep()->responsesPointer = store.get<String>("responses_pointer");
+    if (store.contains("sub_method_pointer"))
+      model.data_rep()->subMethodPointer = store.get<String>("sub_method_pointer");
+    if (store.contains("type"))
+      model.data_rep()->modelType = store.get<String>("type");
+    if (store.contains("surrogate.type"))
+      model.data_rep()->surrogateType = store.get<String>("surrogate.type");
+    db->dataModelList.push_back(model);
+  }
+
+  db->dataVariablesList.clear();
+  for (const auto& store : db->irState->variables) {
+    DataVariables variables;
+    if (store.contains("id"))
+      variables.data_rep()->idVariables = store.get<String>("id");
+    db->dataVariablesList.push_back(variables);
+  }
+
+  db->dataInterfaceList.clear();
+  for (const auto& store : db->irState->interface) {
+    DataInterface interface;
+    if (store.contains("id"))
+      interface.data_rep()->idInterface = store.get<String>("id");
+    db->dataInterfaceList.push_back(interface);
+  }
+
+  db->dataResponsesList.clear();
+  for (const auto& store : db->irState->responses) {
+    DataResponses responses;
+    if (store.contains("id"))
+      responses.data_rep()->idResponses = store.get<String>("id");
+    db->dataResponsesList.push_back(responses);
+  }
+}
+
+
 
 void ProblemDescDB::broadcast()
 {
@@ -219,7 +371,7 @@ void ProblemDescDB::broadcast()
     if (worldSize > 1) {
       if (worldRank == 0) {
 	enforce_unique_ids();
-        if( !jsonDB )
+        if( !irState )
           derived_broadcast(); // pre-processor
 	send_db_buffer();
 #ifdef MPI_DEBUG
@@ -245,8 +397,8 @@ void ProblemDescDB::broadcast()
 	   << std::endl;
 #endif // DEBUG
       enforce_unique_ids();
-      // Skip NIDR if using json parser
-      if( !jsonDB )
+      // Skip NIDR if using IR-backed JSON input
+      if( !irState )
         derived_broadcast();
     }
   }
@@ -521,13 +673,13 @@ void ProblemDescDB::resolve_top_method(bool set_model_nodes)
     if (set_model_nodes)
       set_db_model_nodes(dataMethodIter->dataMethodRep->modelPointer);
 
-    if (jsonDB) {
-      jsonDB->set_active_method(get_active_method_index());
+    if (irState) {
+      irState->active.method = static_cast<size_t>(get_active_method_index());
       if (set_model_nodes) {
-        jsonDB->set_active_model(get_active_model_index());
-        jsonDB->set_active_variables(get_active_variables_index());
-        jsonDB->set_active_interface(get_active_interface_index());
-        jsonDB->set_active_responses(get_active_responses_index());
+        irState->active.model = static_cast<size_t>(get_active_model_index());
+        irState->active.variables = static_cast<size_t>(get_active_variables_index());
+        irState->active.interface = static_cast<size_t>(get_active_interface_index());
+        irState->active.responses = static_cast<size_t>(get_active_responses_index());
       }
     }
   }
@@ -585,6 +737,8 @@ void ProblemDescDB::set_db_method_node(const String& method_tag)
 	       << "specification will be used.\n";
       }
     }
+    if (irState && !methodDBLocked)
+      irState->active.method = static_cast<size_t>(get_active_method_index());
   }
 }
 
@@ -607,6 +761,8 @@ void ProblemDescDB::set_db_method_node(size_t method_index)
     std::advance(dataMethodIter, method_index);
     // unlock if not advanced to end()
     methodDBLocked = (method_index == num_meth_spec);
+    if (irState && method_index < irState->method.size())
+      irState->active.method = method_index;
   }
 }
 
@@ -633,6 +789,8 @@ void ProblemDescDB::set_db_model_nodes(size_t model_index)
       modelDBLocked = variablesDBLocked = interfaceDBLocked = responsesDBLocked
 	= true;
     else {
+      if (irState && model_index < irState->model.size())
+        irState->active.model = model_index;
       const DataModelRep& MoRep = *dataModelIter->dataModelRep;
       set_db_variables_node(MoRep.variablesPointer);
       if (model_has_interface(MoRep))
@@ -707,6 +865,8 @@ void ProblemDescDB::set_db_model_nodes(const String& model_tag)
     if (modelDBLocked)
       variablesDBLocked = interfaceDBLocked = responsesDBLocked	= true;
     else {
+      if (irState)
+        irState->active.model = static_cast<size_t>(get_active_model_index());
       const DataModelRep& MoRep = *dataModelIter->dataModelRep;
       set_db_variables_node(MoRep.variablesPointer);
       if (model_has_interface(MoRep))
@@ -775,6 +935,8 @@ void ProblemDescDB::set_db_variables_node(const String& variables_tag)
 	       << "specification will be used.\n";
       }
     }
+    if (irState && !variablesDBLocked)
+      irState->active.variables = static_cast<size_t>(get_active_variables_index());
   }
 }
 
@@ -844,6 +1006,8 @@ void ProblemDescDB::set_db_interface_node(const String& interface_tag)
 	       << "specification will be used.\n";
       }
     }
+    if (irState && !interfaceDBLocked)
+      irState->active.interface = static_cast<size_t>(get_active_interface_index());
   }
 }
 
@@ -904,6 +1068,8 @@ void ProblemDescDB::set_db_responses_node(const String& responses_tag)
 	       << "specification will be used.\n";
       }
     }
+    if (irState && !responsesDBLocked)
+      irState->active.responses = static_cast<size_t>(get_active_responses_index());
   }
 }
 
@@ -1045,7 +1211,7 @@ split_entry_name(const std::string& entry_name, const std::string& context_msg)
 }
 
 template <typename T>
-T& ProblemDescDB::
+const T& ProblemDescDB::
 get(const std::string& context_msg,
     const std::map<std::string, T DataEnvironmentRep::*>& env_map,
     const std::map<std::string, T DataMethodRep::*>& met_map,
@@ -1058,17 +1224,81 @@ get(const std::string& context_msg,
 {
   if (!db_rep)
     Null_rep(context_msg);
-  
-  // Allow use of JSON input
-  // ... has to wait until we have all types supported
-  //if (jsonDB ) {
-  //  try {
-  //    T val = jsonDB->get_value(entry_name).template get<T>();
-  //    return val;
-  //  } catch (const json::exception& e) {
-  //    /* no-op; */
-  //  }
-  //}
+
+  using QueryT = std::remove_const_t<T>;
+  if constexpr (variant_contains_v<QueryT, IRValue>) {
+    if (db_rep->irState) {
+      try {
+        return ir_query::get<QueryT>(*db_rep->irState, entry_name);
+      }
+      catch (const std::exception&) {
+        // Fall through to legacy Data*Rep access while the IR implementation
+        // is still being filled in incrementally.
+      }
+    }
+  }
+
+  std::string block, entry;
+  std::tie(block, entry) = split_entry_name(entry_name, context_msg);
+
+  if (block == "environment") {
+    auto it = env_map.find(entry);
+    if (it != env_map.end())
+      return (db_rep->environmentSpec.dataEnvRep).get()->*(it->second);
+  }
+  else if (block == "method") {
+    if (db_rep->methodDBLocked)
+      Locked_db();
+    auto it = met_map.find(entry);
+    if (it != met_map.end())
+      return (db_rep->dataMethodIter->dataMethodRep).get()->*(it->second);
+  }
+  else if (block == "model") {
+    if (db_rep->modelDBLocked)
+      Locked_db();
+    auto it = mod_map.find(entry);
+    if (it != mod_map.end())
+      return (db_rep->dataModelIter->dataModelRep).get()->*(it->second);
+  }
+  else if (block == "variables") {
+    if (db_rep->variablesDBLocked)
+      Locked_db();
+    auto it = var_map.find(entry);
+    if (it != var_map.end())
+      return (db_rep->dataVariablesIter->dataVarsRep).get()->*(it->second);
+  }
+  else if (block == "interface") {
+    if (db_rep->interfaceDBLocked)
+      Locked_db();
+    auto it = int_map.find(entry);
+    if (it != int_map.end())
+      return (db_rep->dataInterfaceIter->dataIfaceRep).get()->*(it->second);
+  }
+  else if (block == "responses") {
+    if (db_rep->responsesDBLocked)
+      Locked_db();
+    auto it = res_map.find(entry);
+    if (it != res_map.end())
+      return (db_rep->dataResponsesIter->dataRespRep).get()->*(it->second);
+  }
+  Bad_name(entry_name, context_msg);
+  return abort_handler_t<const T&>(PARSE_ERROR);
+}
+
+template <typename T>
+T& ProblemDescDB::
+get_mutable(const std::string& context_msg,
+    const std::map<std::string, T DataEnvironmentRep::*>& env_map,
+    const std::map<std::string, T DataMethodRep::*>& met_map,
+    const std::map<std::string, T DataModelRep::*>& mod_map,
+    const std::map<std::string, T DataVariablesRep::*>& var_map,
+    const std::map<std::string, T DataInterfaceRep::*>& int_map,
+    const std::map<std::string, T DataResponsesRep::*>& res_map,
+    const std::string& entry_name,
+    const std::shared_ptr<ProblemDescDB>& db_rep) const
+{
+  if (!db_rep)
+    Null_rep(context_msg);
 
   std::string block, entry;
   std::tie(block, entry) = split_entry_name(entry_name, context_msg);
@@ -2769,7 +2999,7 @@ void** ProblemDescDB::get_voidss(const String& entry_name) const
 
 void ProblemDescDB::set(const String& entry_name, const RealVector& rv)
 {
-  RealVector& rep_rv = get<RealVector>
+  RealVector& rep_rv = get_mutable<RealVector>
   ( "set(RealVector&)",
     { /* environment */ },
     { /* method */ 
@@ -2929,7 +3159,7 @@ void ProblemDescDB::set(const String& entry_name, const RealVector& rv)
 
 void ProblemDescDB::set(const String& entry_name, const IntVector& iv)
 {
-  IntVector& rep_iv = get<IntVector>
+  IntVector& rep_iv = get_mutable<IntVector>
   ( "set(IntVector&)",
     { /* environment */ },
     { /* method */
@@ -3011,7 +3241,7 @@ void ProblemDescDB::set(const String& entry_name, const IntVector& iv)
 
 void ProblemDescDB::set(const String& entry_name, const BitArray& ba)
 {
-  BitArray& rep_ba = get<BitArray>
+  BitArray& rep_ba = get_mutable<BitArray>
   ( "set(BitArray&)",
     { /* environment */ },
     { /* method */ },
@@ -3046,7 +3276,7 @@ void ProblemDescDB::set(const String& entry_name, const BitArray& ba)
 
 void ProblemDescDB::set(const String& entry_name, const RealSymMatrix& rsm)
 {
-  RealSymMatrix& rep_rsm = get<RealSymMatrix>
+  RealSymMatrix& rep_rsm = get_mutable<RealSymMatrix>
   ( "set(RealSymMatrix&)",
     { /* environment */ },
     { /* method */ },
@@ -3064,7 +3294,7 @@ void ProblemDescDB::set(const String& entry_name, const RealSymMatrix& rsm)
 
 void ProblemDescDB::set(const String& entry_name, const RealVectorArray& rva)
 {
-  RealVectorArray& rep_rva = get<RealVectorArray>
+  RealVectorArray& rep_rva = get_mutable<RealVectorArray>
   ( "set(RealVectorArray&)",
     { /* environment */ },
     { /* method */
@@ -3085,7 +3315,7 @@ void ProblemDescDB::set(const String& entry_name, const RealVectorArray& rva)
 
 void ProblemDescDB::set(const String& entry_name, const IntVectorArray& iva)
 {
-  IntVectorArray& rep_iva = get<IntVectorArray>
+  IntVectorArray& rep_iva = get_mutable<IntVectorArray>
   ( "set(IntVectorArray&)",
     { /* environment */ },
     { /* method */ },
@@ -3101,7 +3331,7 @@ void ProblemDescDB::set(const String& entry_name, const IntVectorArray& iva)
 
 void ProblemDescDB::set(const String& entry_name, const IntSetArray& isa)
 {
-  IntSetArray& rep_isa = get<IntSetArray>
+  IntSetArray& rep_isa = get_mutable<IntSetArray>
   ( "set(IntSetArray&)",
     { /* environment */ },
     { /* method */ },
@@ -3120,7 +3350,7 @@ void ProblemDescDB::set(const String& entry_name, const IntSetArray& isa)
 
 void ProblemDescDB::set(const String& entry_name, const RealSetArray& rsa)
 {
-  RealSetArray& rep_rsa = get<RealSetArray>
+  RealSetArray& rep_rsa = get_mutable<RealSetArray>
   ( "set(RealSetArray&)",
     { /* environment */ },
     { /* method */ },
@@ -3139,7 +3369,7 @@ void ProblemDescDB::set(const String& entry_name, const RealSetArray& rsa)
 
 void ProblemDescDB::set(const String& entry_name, const IntRealMapArray& irma)
 {
-  IntRealMapArray& rep_irma = get<IntRealMapArray>
+  IntRealMapArray& rep_irma = get_mutable<IntRealMapArray>
   ( "set(IntRealMapArray&)",
     { /* environment */ },
     { /* method */ },
@@ -3159,7 +3389,7 @@ void ProblemDescDB::set(const String& entry_name, const IntRealMapArray& irma)
 
 void ProblemDescDB::set(const String& entry_name, const StringRealMapArray& srma)
 {
-  StringRealMapArray& rep_srma = get<StringRealMapArray>
+  StringRealMapArray& rep_srma = get_mutable<StringRealMapArray>
   ( "set(StringRealMapArray&)",
     { /* environment */ },
     { /* method */ },
@@ -3177,7 +3407,7 @@ void ProblemDescDB::set(const String& entry_name, const StringRealMapArray& srma
 
 void ProblemDescDB::set(const String& entry_name, const RealRealMapArray& rrma)
 {
-  RealRealMapArray& rep_rrma = get<RealRealMapArray>
+  RealRealMapArray& rep_rrma = get_mutable<RealRealMapArray>
   ( "set(RealRealMapArray&)",
     { /* environment */ },
     { /* method */ },
@@ -3196,7 +3426,7 @@ void ProblemDescDB::set(const String& entry_name, const RealRealMapArray& rrma)
 void ProblemDescDB::
 set(const String& entry_name, const RealRealPairRealMapArray& rrrma)
 {
-  RealRealPairRealMapArray& rep_rrrma = get<RealRealPairRealMapArray>
+  RealRealPairRealMapArray& rep_rrrma = get_mutable<RealRealPairRealMapArray>
   ( "set(RealRealPairRealMapArray&)",
     { /* environment */ },
     { /* method */ },
@@ -3215,7 +3445,7 @@ set(const String& entry_name, const RealRealPairRealMapArray& rrrma)
 void ProblemDescDB::
 set(const String& entry_name, const IntIntPairRealMapArray& iirma)
 {
-  IntIntPairRealMapArray& rep_iirma = get<IntIntPairRealMapArray>
+  IntIntPairRealMapArray& rep_iirma = get_mutable<IntIntPairRealMapArray>
   ( "set(IntIntPairRealMapArray&)",
     { /* environment */ },
     { /* method */ },
@@ -3234,7 +3464,7 @@ set(const String& entry_name, const IntIntPairRealMapArray& iirma)
 
 void ProblemDescDB::set(const String& entry_name, const StringArray& sa)
 {
-  StringArray& rep_sa = get<StringArray>
+  StringArray& rep_sa = get_mutable<StringArray>
   ( "set(StringArray&)",
     { /* environment */ },
     { /* method */ },
@@ -3428,8 +3658,3 @@ void ProblemDescDB::unlock_responses_db()
 }
 
 } // namespace Dakota
-
-
-
-
-
