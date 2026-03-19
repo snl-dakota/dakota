@@ -65,12 +65,9 @@ Dakota::IRValue convert_direct_value(const json& value, dakota::irgen::IrValueTy
   return IRValue(value);
 }
 
-std::vector<int> infer_response_level_partition(const json& document_json,
-                                                const json& block_json,
-                                                std::string_view current_path)
+std::vector<int> infer_response_level_partition(const json& block_json,
+                                               const std::string& container_path)
 {
-  (void)document_json;
-  const std::string container_path(current_path);
   const auto* node = Dakota::InstructionMaterializerUtils::optional_path(
     block_json, container_path);
   if (!node || !node->is_object()) {
@@ -357,7 +354,7 @@ void InstructionMaterializer::handle_response_levels_array(
   }
 
   const std::vector<int> partition = infer_response_level_partition(
-    ctx.document_json, ctx.block_json, ctx.current_path);
+    ctx.block_json, std::string(ctx.current_path));
   const auto& values = level_spec["values"];
   const size_t total_levels = values.size();
 

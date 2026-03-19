@@ -47,15 +47,11 @@ public:
   /// Build and return a fully materialized IR state.
   IRState materialize(const nlohmann::json& validated_json) const;
 
-  /// Emit lightweight stderr diagnostics while materializing.
-  static bool debug_logging_enabled();
-
   friend struct InstructionMaterializerTestAccess;
 
 private:
   struct HandlerContext
   {
-    const nlohmann::json& document_json;
     const nlohmann::json& block_json;
     IRStore& store;
     std::string_view current_path;
@@ -74,15 +70,13 @@ private:
   void initialize_defaults(IRState& state) const;
 
   /// Execute instruction writes for a single block instance.
-  void materialize_block(const nlohmann::json& document_json,
-                         const nlohmann::json& block_json,
+  void materialize_block(const nlohmann::json& block_json,
                          irgen::BlockType block,
                          IRStore& store,
                          WriteTracker& writes) const;
 
   /// Apply one generated write operation.
-  void apply_write_op(const nlohmann::json& document_json,
-                      const nlohmann::json& block_json,
+  void apply_write_op(const nlohmann::json& block_json,
                       std::string_view current_path,
                       const irgen::WriteOp& op,
                       const irgen::BlockTables& tables,
@@ -160,7 +154,7 @@ struct InstructionMaterializerTestAccess
                              IRStore& store)
   {
     const InstructionMaterializer::HandlerContext ctx{
-      block_json, block_json, store, current_path
+      block_json, store, current_path
     };
     const auto& handler = InstructionMaterializer::op_handlers().at(op.op_kind);
     handler(op, contract, ctx);

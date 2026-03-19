@@ -237,23 +237,17 @@ TEST(instruction_materializer_tests, histogram_bin_uncertain_normalizes_count_de
   EXPECT_DOUBLE_EQ(histogram.at(2.0), 0.0);
 }
 
-TEST(instruction_materializer_tests, histogram_point_uncertain_normalizes_counts)
+TEST(instruction_materializer_tests, histogram_point_uncertain_reports_not_implemented)
 {
   const auto op = make_op(irgen::OpKind::HistogramPointUncertain, "histograms");
-  const auto store = invoke_handler(
-    op,
-    make_contract(irgen::IrValueType::RealRealMapArray),
-    json{{"hist", {{"count", 1},
-                    {"abscissas", json::array({3.0, 4.0})},
-                    {"counts", json::array({1.0, 1.0})},
-                    {"pairs_per_variable", json::array({2})}}}},
-    "hist");
-  const auto& histograms = store.get<RealRealMapArray>("histograms");
 
-  ASSERT_EQ(histograms.size(), 1U);
-  const auto& histogram = histograms[0];
-  EXPECT_DOUBLE_EQ(histogram.at(3.0), 0.5);
-  EXPECT_DOUBLE_EQ(histogram.at(4.0), 0.5);
+  EXPECT_THROW(
+    invoke_handler(
+      op,
+      make_contract(irgen::IrValueType::IntSet),
+      json{{"hist", json::object()}},
+      "hist"),
+    std::runtime_error);
 }
 
 TEST(instruction_materializer_tests, discrete_uncertain_set_values_probs_builds_probability_maps)

@@ -18,6 +18,16 @@
 
 namespace Dakota {
 
+namespace {
+
+bool debug_logging_enabled()
+{
+  const char* value = std::getenv("DAKOTA_DEBUG_IR");
+  return value && *value;
+}
+
+} // namespace
+
 bool WriteTracker::mark_written(irgen::BlockType block, const String& local_key)
 {
   switch (block) {
@@ -72,17 +82,11 @@ InstructionMaterializer::op_handlers()
   return handlers;
 }
 
-bool InstructionMaterializer::debug_logging_enabled()
-{
-  const char* value = std::getenv("DAKOTA_DEBUG_IR");
-  return value && *value;
-}
-
 IRState InstructionMaterializer::materialize(const nlohmann::json& validated_json) const
 {
   if (!validated_json.is_object()) {
     throw std::runtime_error(
-      "InstructionMaterializer::materialize expected validated top-level JSON object.");
+      "InstructionMaterializer::materialize expected validated top-level object.");
   }
 
   IRState state;
@@ -133,7 +137,7 @@ IRState InstructionMaterializer::materialize(const nlohmann::json& validated_jso
     if (debug_logging_enabled())
       std::cerr << "InstructionMaterializer: materializing environment block" << std::endl;
     materialize_block(
-      validated_json, *env_it, irgen::BlockType::Environment, state.environment, writes);
+      *env_it, irgen::BlockType::Environment, state.environment, writes);
   }
 
   const auto materialize_array_block =
@@ -151,7 +155,7 @@ IRState InstructionMaterializer::materialize(const nlohmann::json& validated_jso
           std::cerr << "InstructionMaterializer: materializing block '" << key
                     << "' index " << i << std::endl;
         }
-        materialize_block(validated_json, (*it)[i], block, stores[i], writes);
+        materialize_block((*it)[i], block, stores[i], writes);
       }
     };
 
@@ -223,8 +227,7 @@ void InstructionMaterializer::initialize_defaults(IRState& state) const
   initialize_block_vector(irgen::BlockType::Responses, state.responses);
 }
 
-void InstructionMaterializer::materialize_block(const nlohmann::json& document_json,
-                                                const nlohmann::json& block_json,
+void InstructionMaterializer::materialize_block(const nlohmann::json& block_json,
                                                 irgen::BlockType block,
                                                 IRStore& store,
                                                 WriteTracker& writes) const
@@ -246,7 +249,7 @@ void InstructionMaterializer::materialize_block(const nlohmann::json& document_j
                     << "' has " << it->second.size() << " write op(s)" << std::endl;
         }
         for (const auto& op : it->second)
-          apply_write_op(document_json, block_json, path, op, tables, block, store, writes);
+          apply_write_op(block_json, path, op, tables, block, store, writes);
       }
 
       if (!node.is_object())
@@ -262,8 +265,7 @@ void InstructionMaterializer::materialize_block(const nlohmann::json& document_j
   visit(block_json, "");
 }
 
-void InstructionMaterializer::apply_write_op(const nlohmann::json& document_json,
-                                             const nlohmann::json& block_json,
+void InstructionMaterializer::apply_write_op(const nlohmann::json& block_json,
                                              std::string_view current_path,
                                              const irgen::WriteOp& op,
                                              const irgen::BlockTables& tables,
@@ -284,7 +286,7 @@ void InstructionMaterializer::apply_write_op(const nlohmann::json& document_json
       "InstructionMaterializer::apply_write_op missing handler for op kind");
   }
 
-  const HandlerContext ctx{document_json, block_json, store, current_path};
+  const HandlerContext ctx{block_json, store, current_path};
   if (debug_logging_enabled()) {
     std::cerr << "InstructionMaterializer: applying op kind "
               << static_cast<int>(op.op_kind)
