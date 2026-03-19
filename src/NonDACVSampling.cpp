@@ -646,6 +646,8 @@ compute_F_f_gradients_from_N(const RealVector& N, RealSymMatrixArray& dF_dN,
   RealSymMatrix& dF_dN_A = dF_dN[numApprox];
   RealVector&    df_dN_A = df_dN[numApprox];
   switch (mlmfSubMethod) {
+  // MFMC case is untested/inactive due to matrix-free approach in
+  // NonDMultifidelitySampling::estimator_variance_ratio_gradients()
   case SUBMETHOD_MFMC: { // diagonal (see Eq. 16 in JCP ACV paper)
     // F(i,i) = N_A * (N_i - N_ip1) / (N_i * N_ip1)
     size_t ip1, num_am1 = numApprox - 1;  Real N_i, N_ip1;
@@ -708,10 +710,10 @@ compute_F_f_gradients_from_N(const RealVector& N, RealSymMatrixArray& dF_dN,
     abort_handler(METHOD_ERROR); break;
   }
 
-  if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "For sub-method " << mlmfSubMethod << ", N vector:\n" << N
-	 << "dF/dN matrix array:\n" << dF_dN
-	 << "df/dN vector array:\n" << df_dN << std::endl;
+  //if (outputLevel >= DEBUG_OUTPUT)
+  //  Cout << "For sub-method " << mlmfSubMethod << ", N vector:\n" << N
+  // 	   << "dF/dN matrix array:\n" << dF_dN
+  // 	   << "df/dN vector array:\n" << df_dN << std::endl;
 }
 
 
@@ -748,9 +750,9 @@ estimator_variance_ratio_gradients(const RealVector& cd_vars,
   //   = cf^T CF_inv d[cf] + cf^T d[CF_inv] cf + d[cf]^T CF_inv cf
   // where d[CF_inv] = -CF_inv dCF/dN CF_inv [see also ML BLUE]
 
-  Real rcond;
-  RealSymMatrix      F, CF, CF_inv;  RealVector cf, N_vec;
-  RealSymMatrixArray dF_dN, dCF_dN;  RealVectorArray df_dN, dcf_dN;
+  Real rcond;  RealVector cf, N_vec;  RealMatrix CF_inv_rm;
+  RealSymMatrix F, CF, CF_inv, dCF_inv_dN(numApprox);
+  RealVectorArray df_dN, dcf_dN;  RealSymMatrixArray dF_dN, dCF_dN;
 
   design_vars_to_N(cd_vars, N_vec);
   compute_F_matrix_from_N(N_vec, F);
@@ -762,12 +764,15 @@ estimator_variance_ratio_gradients(const RealVector& cd_vars,
     combine_with_covariance(covLL_q, covLH, q, F, CF, cf);
     combine_gradients_with_covariance(covLL_q, covLH, q, dF_dN, df_dN,
 				      dCF_dN, dcf_dN);
-    pseudo_inverse(CF, CF_inv, rcond);
+    pseudo_inverse(CF, CF_inv_rm, rcond);
+    copy_data(CF_inv_rm, CF_inv);
     for (v=0; v<num_v; ++v) {
-      Real& evr_grad_vq = evr_grads(v,q);
+      Teuchos::symMatTripleProduct(Teuchos::NO_TRANS, -1., dCF_dN[v],
+				   CF_inv_rm, dCF_inv_dN);
       // symmetry allows combination of terms 1 + 3 = 2 cf^T CF_inv d[cf]
-      evr_grad_vq = symMatVecTripleProduct(2., cf, CF_inv,    dcf_dN[v])
-	          + symMatVecTripleProduct(1., cf, dCF_dN[v], cf);
+      Real& evr_grad_vq = evr_grads(v,q);
+      evr_grad_vq = symMatVecTripleProduct(2., cf, CF_inv,     dcf_dN[v])
+	          + symMatVecTripleProduct(1., cf, dCF_inv_dN, cf);
       // from d(triple) to evr_grads:
       evr_grad_vq /= -varH[q];
     }
@@ -785,9 +790,9 @@ estimator_variance_ratios_and_gradients(const RealVector& cd_vars,
   if (evr_grads.numRows() != num_v || evr_grads.numCols() != numFunctions)
     evr_grads.shapeUninitialized(num_v, numFunctions);
 
-  RealSymMatrix      F, CF, CF_inv;  RealVector cf, lhs, N_vec;
-  RealSymMatrixArray dF_dN, dCF_dN;  RealVectorArray df_dN, dcf_dN;
-  Real               varH_q;
+  RealSymMatrix F, CF, CF_inv, dCF_inv_dN(numApprox);
+  RealSymMatrixArray dF_dN, dCF_dN;  RealMatrix CF_inv_rm;
+  RealVector cf, lhs, N_vec;  RealVectorArray df_dN, dcf_dN;  Real varH_q;
 
   design_vars_to_N(cd_vars, N_vec);
   compute_F_matrix_from_N(N_vec, F);
@@ -796,14 +801,18 @@ estimator_variance_ratios_and_gradients(const RealVector& cd_vars,
   for (q=0; q<numFunctions; ++q) {
     const RealSymMatrix& covLL_q = covLL[q];  varH_q = varH[q];
     combine_with_covariance(covLL_q, covLH, q, F, CF, cf);
-    solve_for_C_F_c_f(CF, CF_inv, cf, lhs, false, false);// Ok to modify C_F,c_f
+    solve_for_C_F_c_f(CF, CF_inv_rm, cf, lhs, false, false);
     estvar_ratios[q] = 1. - compute_R_sq(cf, lhs, varH_q);
-
     combine_gradients_with_covariance(covLL_q, covLH, q, dF_dN, df_dN,
 				      dCF_dN, dcf_dN);
+    copy_data(CF_inv_rm, CF_inv);
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "C_F inverse:\n" << CF_inv << std::endl;
     for (v=0; v<num_v; ++v) {
-      Real& evr_grad_vq = evr_grads(v,q);
+      Teuchos::symMatTripleProduct(Teuchos::NO_TRANS, -1., dCF_dN[v],
+				   CF_inv_rm, dCF_inv_dN);
       // symmetry allows combination of terms 1 + 3 = 2 cf^T CG_inv d[cg]
+      Real& evr_grad_vq = evr_grads(v,q);
       evr_grad_vq = symMatVecTripleProduct(2., cf, CF_inv,    dcf_dN[v])
 	          + symMatVecTripleProduct(1., cf, dCF_dN[v], cf);
       // from d(triple) to evr_grads:

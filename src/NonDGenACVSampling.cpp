@@ -1817,7 +1817,8 @@ compute_G_g_from_N(const RealVector& N_vec, RealSymMatrix& G, RealVector& g)
 
   if (outputLevel >= DEBUG_OUTPUT) {
     Cout << "For dag:\n"; print_dag(active_dag, approx_set);
-    Cout << "G matrix:\n" << G << "g vector:\n" << g << std::endl;
+    Cout << "and N vector:\n" << N_vec << "G matrix:\n" << G
+	 << "g vector:\n" << g << std::endl;
   }
 }
 
@@ -1880,9 +1881,9 @@ unroll_z1_z2(const RealVector& N_vec, RealVector& z1, RealVector& z2)
     abort_handler(METHOD_ERROR);  break;
   }
 
-  if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "GenACV unroll of N_vec:\n" << N_vec << "into z1:\n" << z1
-	 << "and z2:\n" << z2 << std::endl;
+  //if (outputLevel >= DEBUG_OUTPUT)
+  //  Cout << "GenACV unroll of N_vec:\n" << N_vec << "into z1:\n" << z1
+  // 	   << "and z2:\n" << z2 << std::endl;
 }
 
 
@@ -1953,9 +1954,9 @@ unroll_z1_z2_gradients(RealMatrix& z1_grads, RealMatrix& z2_grads)
     abort_handler(METHOD_ERROR);  break;
   }
 
-  if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "GenACV unroll of DAG into z1_grads:\n" << z1_grads
-	 << "and z2_grads:\n" << z2_grads << std::endl;
+  //if (outputLevel >= DEBUG_OUTPUT)
+  //  Cout << "GenACV unroll of DAG into z1_grads:\n" << z1_grads
+  //	   << "and z2_grads:\n" << z2_grads << std::endl;
 }
 
 
@@ -2207,34 +2208,6 @@ compute_G_g_gradients_from_N(const RealVector& N_vec, RealSymMatrixArray& dG_dN,
 
 
 void NonDGenACVSampling::
-solve_for_C_G_c_g(RealSymMatrix& C_G, RealSymMatrix& C_G_inv, RealVector& c_g,
-		  RealVector& lhs, bool copy_C_G, bool copy_c_g)
-{
-  // The idea behind this approach is to leverage both the solution refinement
-  // in solve() and equilibration during factorization (inverting C_G in place
-  // can only leverage the latter).
-
-  size_t n = c_g.length();
-  if (lhs.length() != n) lhs.size(n); // not sure if initialization matters
-
-  if (hardenNumericSoln) {
-    Real rcond;  //RealMatrix C_G_inv;
-    // copy_C_G can be ignored since RealSymMatrix is copied to RealMatrix
-    // copy_c_g can be ignored since multiply() accepts RHS as const
-    pseudo_inverse(C_G, C_G_inv, rcond);
-    lhs.multiply(Teuchos::LEFT_SIDE, 1., C_G_inv, c_g, 0.);
-    if (outputLevel >= DEBUG_OUTPUT)
-      Cout << "GenACV pseudo-inverse solve for LHS:\n" << lhs << "has rcond = "
-	   << rcond << std::endl;
-  }
-  else {
-    cholesky_solve(C_G, lhs, c_g, copy_C_G, copy_c_g);
-    //spd_solver.invert(); copy_data(C_G, C_G_inv); // not needed since inactive
-  }
-}
-
-
-void NonDGenACVSampling::
 estimator_variance_ratios(const RealVector& cd_vars, RealVector& estvar_ratios)
 {
   if (estvar_ratios.empty()) estvar_ratios.sizeUninitialized(numFunctions);
@@ -2290,9 +2263,10 @@ estimator_variance_ratio_gradients(const RealVector& cd_vars,
   //   = cg^T CG_inv d[cg] + cg^T d[CG_inv] cg + d[cg]^T CG_inv cg
   // where d[CG_inv] = -CG_inv dCG/dN CG_inv [see also ML BLUE]
 
-  RealSymMatrix      CG, CG_inv;  RealVector cg, inflate_cdv, N_vec;
-  RealSymMatrixArray dG_dN, dCG_dN;  RealVectorArray dg_dN, dcg_dN;
-  Real rcond;
+  RealSymMatrix CG, CG_inv, dCG_inv_dN(num_approx);
+  RealSymMatrixArray dG_dN, dCG_dN;
+  RealVector cg, inflate_cdv, N_vec;  RealVectorArray dg_dN, dcg_dN;
+  RealMatrix CG_inv_rm;  Real rcond;
 
   inflate_variables(cd_vars, inflate_cdv, approx_set);
   design_vars_to_N(inflate_cdv, N_vec);
@@ -2305,12 +2279,16 @@ estimator_variance_ratio_gradients(const RealVector& cd_vars,
     combine_with_covariance(covLL_q, covLH, q, approx_set, GMat, gVec, CG, cg);
     combine_gradients_with_covariance(covLL_q, covLH, q, approx_set,
 				      dG_dN, dg_dN, dCG_dN, dcg_dN);
-    pseudo_inverse(CG, CG_inv, rcond);
+    pseudo_inverse(CG, CG_inv_rm, rcond);
+    copy_data(CG_inv_rm, CG_inv);
     for (v=0; v<num_v; ++v) {
+      // compute dCG_inv_dN = -CG_inv^T dCG_dN[v] CG_inv
+      Teuchos::symMatTripleProduct(Teuchos::NO_TRANS, -1., dCG_dN[v],
+				   CG_inv_rm, dCG_inv_dN);
       Real& evr_grad_vq = evr_grads(v,q);
       // symmetry allows combination of terms 1 + 3 = 2 cf^T CG_inv d[cg]
-      evr_grad_vq = symMatVecTripleProduct(2., cg, CG_inv,    dcg_dN[v])
-	          + symMatVecTripleProduct(1., cg, dCG_dN[v], cg);
+      evr_grad_vq = symMatVecTripleProduct(2., cg, CG_inv,     dcg_dN[v])
+	          + symMatVecTripleProduct(1., cg, dCG_inv_dN, cg);
       // from d(triple) to evr_grads:
       evr_grad_vq /= -varH[q]; // *** F in terms of r; G in terms of N ***
     }
@@ -2329,8 +2307,9 @@ estimator_variance_ratios_and_gradients(const RealVector& cd_vars,
   if (evr_grads.numRows() != num_v || evr_grads.numCols() != numFunctions)
     evr_grads.shapeUninitialized(num_v, numFunctions);
 
-  RealSymMatrix      CG, CG_inv;  RealVector cg, lhs, inflate_cdv, N_vec;
-  RealSymMatrixArray dG_dN, dCG_dN;  RealVectorArray dg_dN, dcg_dN;
+  RealSymMatrix CG, CG_inv, dCG_inv_dN(num_approx);
+  RealMatrix CG_inv_rm;                    RealSymMatrixArray dG_dN, dCG_dN;
+  RealVector cg, lhs, inflate_cdv, N_vec;  RealVectorArray dg_dN, dcg_dN;
 
   inflate_variables(cd_vars, inflate_cdv, approx_set);
   design_vars_to_N(inflate_cdv, N_vec);
@@ -2342,14 +2321,18 @@ estimator_variance_ratios_and_gradients(const RealVector& cd_vars,
     const RealSymMatrix& covLL_q = covLL[q];  varH_q = varH[q];
     // form d[triple_prod]/dN:
     combine_with_covariance(covLL_q, covLH, q, approx_set, GMat, gVec, CG, cg);
-    solve_for_C_G_c_g(CG, CG_inv, cg, lhs, false, false);//Ok to modify C_G,c_g
+    solve_for_C_G_c_g(CG, CG_inv_rm, cg, lhs, false, false);
+    copy_data(CG_inv_rm, CG_inv);
     estvar_ratios[q] = 1. - compute_R_sq(cg, lhs, varH_q, N_H); // *** N_H: F in terms of r (compute_F_from_N still returns r-compatible version); G in terms of N ***
 
     combine_gradients_with_covariance(covLL_q, covLH, q, approx_set,
 				      dG_dN, dg_dN, dCG_dN, dcg_dN);
     for (v=0; v<num_v; ++v) {
-      Real& evr_grad_vq = evr_grads(v,q);
+      // compute dCG_inv_dN = -CG_inv^T dCG_dN[v] CG_inv
+      Teuchos::symMatTripleProduct(Teuchos::NO_TRANS, -1., dCG_dN[v],
+				   CG_inv_rm, dCG_inv_dN);
       // symmetry allows combination of terms 1 + 3 = 2 cf^T CG_inv d[cg]
+      Real& evr_grad_vq = evr_grads(v,q);
       evr_grad_vq = symMatVecTripleProduct(2., cg, CG_inv,    dcg_dN[v])
 	          + symMatVecTripleProduct(1., cg, dCG_dN[v], cg);
       // from d(triple) to evr_grads:

@@ -281,6 +281,9 @@ private:
   void solve_for_C_F_c_f(RealSymMatrix& C_F, RealSymMatrix& C_F_inv,
 			 RealVector& c_f, RealVector& lhs,
 			 bool copy_C_F = true, bool copy_c_f = true);
+  void solve_for_C_F_c_f(RealSymMatrix& C_F, RealMatrix& C_F_inv,
+			 RealVector& c_f, RealVector& lhs,
+			 bool copy_C_F = true, bool copy_c_f = true);
   Real solve_for_triple_product(const RealSymMatrix& C, const RealSymMatrix& F,
 				const RealMatrix&    c, size_t qoi);
   Real compute_R_sq(const RealSymMatrix& C, const RealSymMatrix& F,
@@ -593,6 +596,9 @@ combine_with_covariance(const RealSymMatrix& C, const RealMatrix& c, size_t qoi,
     for (j=0; j<=i; ++j)
       C_F(i,j) = C(i,j) * F(i,j);
   }
+  //if (outputLevel >= DEBUG_OUTPUT)
+  //  Cout << "Covariance combine:\nC_F matrix:\n" << C_F
+  // 	   << "c_f vector:\n" << c_f << std::endl;
 }
 
 
@@ -623,9 +629,9 @@ combine_gradients_with_covariance(const RealSymMatrix& C, const RealMatrix& c,
 	dCF_dN_v(i,j) = C(i,j) * dF_dN_v(i,j); // C o dF/dN
     }
   }
-  if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "For sub-method " << mlmfSubMethod << ":\ndCF/dN matrix array:\n"
-	 << dCF_dN << "dcf/dN vector array:\n" << dcf_dN << std::endl;
+  //if (outputLevel >= DEBUG_OUTPUT)
+  //  Cout << "For sub-method " << mlmfSubMethod << ":\ndCF/dN matrix array:\n"
+  //	   << dCF_dN << "dcf/dN vector array:\n" << dcf_dN << std::endl;
 }
 
 
@@ -633,10 +639,6 @@ inline void NonDACVSampling::
 solve_for_C_F_c_f(RealSymMatrix& C_F, RealSymMatrix& C_F_inv, RealVector& c_f,
 		  RealVector& lhs, bool copy_C_F, bool copy_c_f)
 {
-  // The idea behind this approach is to leverage both the solution refinement
-  // in solve() and equilibration during factorization (inverting C_F in place
-  // can only leverage the latter).
-
   size_t n = c_f.length();
   lhs.size(n); // not sure if initialization matters here...
 
@@ -644,20 +646,40 @@ solve_for_C_F_c_f(RealSymMatrix& C_F, RealSymMatrix& C_F_inv, RealVector& c_f,
     Real rcond;  //RealMatrix C_F_inv;
     // copy_C_F can be ignored since RealSymMatrix is copied to RealMatrix
     // copy_c_f can be ignored since multiply() accepts RHS as const
-
     pseudo_inverse(C_F, C_F_inv, rcond);
     lhs.multiply(Teuchos::LEFT_SIDE, 1., C_F_inv, c_f, 0.); // C_F_inv * c_f
-    /*
-    RealMatrix C_F_inv_rm;
-    pseudo_inverse(C_F, C_F_inv_rm, rcond);
-    lhs.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1., C_F_inv_rm, c_f, 0.);
-    copy_data(C_F_inv_rm, C_F_inv);
-    */
-
     if (outputLevel >= DEBUG_OUTPUT)
       Cout << "ACV pseudo-inverse solve for LHS:\n" << lhs << "has rcond = "
 	   << rcond << std::endl;
   }
+  // leverages both solution refinement in solve() and equilibration during
+  // factorization (inverting C_G in place can only leverage the latter)
+  else {
+    cholesky_solve(C_F, lhs, c_f, copy_C_F, copy_c_f);
+    //spd_solver.invert(); copy_data(C_F, C_F_inv); // not needed since inactive
+  }
+}
+
+
+inline void NonDACVSampling::
+solve_for_C_F_c_f(RealSymMatrix& C_F, RealMatrix& C_F_inv, RealVector& c_f,
+		  RealVector& lhs, bool copy_C_F, bool copy_c_f)
+{
+  size_t n = c_f.length();
+  lhs.size(n); // not sure if initialization matters here...
+
+  if (hardenNumericSoln) {
+    Real rcond;  //RealMatrix C_F_inv;
+    // copy_C_F can be ignored since RealSymMatrix is copied to RealMatrix
+    // copy_c_f can be ignored since multiply() accepts RHS as const
+    pseudo_inverse(C_F, C_F_inv, rcond);
+    lhs.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1., C_F_inv, c_f, 0.);
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "ACV pseudo-inverse solve for LHS:\n" << lhs << "has rcond = "
+	   << rcond << std::endl;
+  }
+  // leverages both solution refinement in solve() and equilibration during
+  // factorization (inverting C_G in place can only leverage the latter)
   else {
     cholesky_solve(C_F, lhs, c_f, copy_C_F, copy_c_f);
     //spd_solver.invert(); copy_data(C_F, C_F_inv); // not needed since inactive

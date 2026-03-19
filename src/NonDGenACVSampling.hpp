@@ -228,6 +228,9 @@ private:
   void solve_for_C_G_c_g(RealSymMatrix& C_G,   RealSymMatrix& C_G_inv,
 			 RealVector& c_g,      RealVector& lhs,
 			 bool copy_C_G = true, bool copy_c_g = true);
+  void solve_for_C_G_c_g(RealSymMatrix& C_G,   RealMatrix& C_G_inv,
+			 RealVector& c_g,      RealVector& lhs,
+			 bool copy_C_G = true, bool copy_c_g = true);
   Real solve_for_triple_product(const RealSymMatrix& C,	const RealSymMatrix& G,
 				const RealMatrix&    c, const RealVector& g,
 				size_t qoi, const UShortArray& approx_set);
@@ -529,6 +532,9 @@ combine_with_covariance(const RealSymMatrix& C,	const RealMatrix& c,
     for (j=0; j<=i; ++j)
       C_G(i,j) = C(approx_i,approx_set[j]) * G(i,j); // Ok for RealSymMatrix
   }
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "Covariance combine:\nC_G matrix:\n" << C_G
+	 << "c_g vector:\n" << c_g << std::endl;
 }
 
 
@@ -566,6 +572,58 @@ combine_gradients_with_covariance(const RealSymMatrix& C, const RealMatrix& c,
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "For sub-method " << mlmfSubMethod << ":\ndCG/dN matrix array:\n"
 	 << dCG_dN << "dcg/dN vector array:\n" << dcg_dN << std::endl;
+}
+
+
+inline void NonDGenACVSampling::
+solve_for_C_G_c_g(RealSymMatrix& C_G, RealSymMatrix& C_G_inv, RealVector& c_g,
+		  RealVector& lhs, bool copy_C_G, bool copy_c_g)
+{
+  size_t n = c_g.length();
+  if (lhs.length() != n) lhs.size(n); // not sure if initialization matters
+
+  if (hardenNumericSoln) {
+    Real rcond;  //RealMatrix C_G_inv;
+    // copy_C_G can be ignored since RealSymMatrix is copied to RealMatrix
+    // copy_c_g can be ignored since multiply() accepts RHS as const
+    pseudo_inverse(C_G, C_G_inv, rcond);
+    lhs.multiply(Teuchos::LEFT_SIDE, 1., C_G_inv, c_g, 0.);
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "GenACV pseudo-inverse solve for LHS:\n" << lhs << "has rcond = "
+	   << rcond << std::endl;
+  }
+  // leverages both solution refinement in solve() and equilibration during
+  // factorization (inverting C_G in place can only leverage the latter)
+  else {
+    cholesky_solve(C_G, lhs, c_g, copy_C_G, copy_c_g);
+    //spd_solver.invert(); copy_data(C_G, C_G_inv); // not needed since inactive
+  }
+}
+
+
+inline void NonDGenACVSampling::
+solve_for_C_G_c_g(RealSymMatrix& C_G, RealMatrix& C_G_inv, RealVector& c_g,
+		  RealVector& lhs, bool copy_C_G, bool copy_c_g)
+{
+  size_t n = c_g.length();
+  if (lhs.length() != n) lhs.size(n); // not sure if initialization matters
+
+  if (hardenNumericSoln) {
+    Real rcond;  //RealMatrix C_G_inv;
+    // copy_C_G can be ignored since RealSymMatrix is copied to RealMatrix
+    // copy_c_g can be ignored since multiply() accepts RHS as const
+    pseudo_inverse(C_G, C_G_inv, rcond);
+    lhs.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1., C_G_inv, c_g, 0.);
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "GenACV pseudo-inverse solve for LHS:\n" << lhs << "has rcond = "
+	   << rcond << std::endl;
+  }
+  // leverages both solution refinement in solve() and equilibration during
+  // factorization (inverting C_G in place can only leverage the latter)
+  else {
+    cholesky_solve(C_G, lhs, c_g, copy_C_G, copy_c_g);
+    //spd_solver.invert(); copy_data(C_G, C_G_inv); // not needed since inactive
+  }
 }
 
 
