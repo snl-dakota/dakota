@@ -63,6 +63,8 @@ InstructionMaterializer::op_handlers()
       &InstructionMaterializer::handle_id_to_index_set},
     {irgen::OpKind::IntSet,
       &InstructionMaterializer::handle_int_set},
+    {irgen::OpKind::ResponseLevelsArray,
+      &InstructionMaterializer::handle_response_levels_array},
   };
   return handlers;
 }

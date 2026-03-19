@@ -65,6 +65,32 @@ Dakota::IRValue convert_direct_value(const json& value, dakota::irgen::IrValueTy
   return IRValue(value);
 }
 
+std::vector<int> infer_response_level_partition(const json& block_json,
+                                               const std::string& container_path)
+{
+  const auto* node = Dakota::InstructionMaterializerUtils::optional_path(
+    block_json, container_path);
+  if (!node || !node->is_object()) {
+    throw std::runtime_error(
+      "InstructionMaterializer::handle_response_levels_array expected object at '" +
+      container_path + "'");
+  }
+
+  const auto sibling_names = {
+    std::string("num_response_levels"),
+    std::string("num_probability_levels"),
+    std::string("num_reliability_levels"),
+    std::string("num_gen_reliability_levels"),
+  };
+  for (const auto& sibling : sibling_names) {
+    if (const auto* counts = Dakota::InstructionMaterializerUtils::optional_path(
+          block_json, container_path + "/" + sibling)) {
+      return counts->get<std::vector<int>>();
+    }
+  }
+  return {};
+}
+
 uint64_t enum_literal_to_u64(const Dakota::irgen::OpLiteral& lit,
                              const Dakota::irgen::IrValueType t)
 {
@@ -304,6 +330,65 @@ void InstructionMaterializer::handle_int_set(const irgen::WriteOp& op,
     out.insert(value[i].get<int>());
   }
 
+  ctx.store.set_value(op.target_local_ir_key, IRValue(std::move(out)));
+}
+
+void InstructionMaterializer::handle_response_levels_array(
+  const irgen::WriteOp& op,
+  const irgen::KeyContract& contract,
+  const HandlerContext& ctx)
+{
+  (void)op;
+  if (contract.ir_value_type != irgen::IrValueType::RealVectorArray) {
+    throw std::runtime_error(
+      "InstructionMaterializer::handle_response_levels_array requires RealVectorArray contract type");
+  }
+
+  const auto& level_spec = InstructionMaterializerUtils::required_path(
+    ctx.block_json, ctx.current_path);
+  if (!level_spec.is_object() || !level_spec.contains("values") ||
+      !level_spec["values"].is_array()) {
+    throw std::runtime_error(
+      "InstructionMaterializer::handle_response_levels_array expected object-with-values at '" +
+      std::string(ctx.current_path) + "'");
+  }
+
+  const std::vector<int> partition = infer_response_level_partition(
+    ctx.block_json, std::string(ctx.current_path));
+  const auto& values = level_spec["values"];
+  const size_t total_levels = values.size();
+
+  RealVectorArray out;
+  if (partition.empty()) {
+    out.resize(1);
+    RealVector& vec = out[0];
+    vec.sizeUninitialized(static_cast<int>(total_levels));
+    for (size_t i = 0; i < total_levels; ++i)
+      vec[static_cast<int>(i)] = values[i].get<JSONDoubleElement>().value;
+  }
+  else {
+    out.resize(partition.size());
+    size_t offset = 0;
+    for (size_t i = 0; i < partition.size(); ++i) {
+      if (partition[i] < 0) {
+        throw std::runtime_error(
+          "InstructionMaterializer::handle_response_levels_array does not support implicit repartitioning");
+      }
+      const size_t count = static_cast<size_t>(partition[i]);
+      if (offset + count > total_levels) {
+        throw std::runtime_error(
+          "InstructionMaterializer::handle_response_levels_array partition exceeds values length");
+      }
+      RealVector& vec = out[i];
+      vec.sizeUninitialized(static_cast<int>(count));
+      for (size_t j = 0; j < count; ++j, ++offset)
+        vec[static_cast<int>(j)] = values[offset].get<JSONDoubleElement>().value;
+    }
+    if (offset != total_levels) {
+      throw std::runtime_error(
+        "InstructionMaterializer::handle_response_levels_array partition does not consume all values");
+    }
+  }
   ctx.store.set_value(op.target_local_ir_key, IRValue(std::move(out)));
 }
 
