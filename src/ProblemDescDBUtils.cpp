@@ -164,7 +164,6 @@ void check_and_broadcast_pdb(ProblemDescDB& problem_db, const UserModes& user_mo
     problem_db.post_process();
 
     const char* dump_path = std::getenv("DAKOTA_DUMP_DATA_CLASSES");
-    std::cout << dump_path << std::endl;
     if (dump_path && *dump_path && parallel_lib.world_rank() == 0)
       problem_db.write_json_dump(dump_path);
 }

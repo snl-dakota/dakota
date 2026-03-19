@@ -131,20 +131,19 @@ void InstructionMaterializer::handle_histogram_point_uncertain(const irgen::Writ
   const auto& value = InstructionMaterializerUtils::required_path(
     ctx.block_json, ctx.current_path);
 
-  const size_t count = value.at("count").get<size_t>();
-  const std::vector<Real> counts = value.at("counts").get<std::vector<Real>>();
-  const size_t num_a = value["abscissas"].size();
-
-  std::vector<int> pairs_per_var;
-  if (value.contains("pairs_per_variable") && !value["pairs_per_variable"].is_null()) {
-    pairs_per_var = value["pairs_per_variable"].get<std::vector<int>>();
-  }
-  else {
-    pairs_per_var.assign(count, static_cast<int>(num_a / count));
-  }
-
   switch (contract.ir_value_type) {
   case irgen::IrValueType::IntRealMapArray: {
+    const size_t count = value.at("count").get<size_t>();
+    const std::vector<Real> counts = value.at("counts").get<std::vector<Real>>();
+    const size_t num_a = value["abscissas"].size();
+    std::vector<int> pairs_per_var;
+    if (value.contains("pairs_per_variable") && !value["pairs_per_variable"].is_null()) {
+      pairs_per_var = value["pairs_per_variable"].get<std::vector<int>>();
+    }
+    else {
+      pairs_per_var.assign(count, static_cast<int>(num_a / count));
+    }
+
     auto out = build_histogram_point_maps<IntRealMapArray>(
       value, counts, pairs_per_var,
       [&](size_t idx) { return value["abscissas"][idx].get<int>(); });
@@ -152,6 +151,17 @@ void InstructionMaterializer::handle_histogram_point_uncertain(const irgen::Writ
     return;
   }
   case irgen::IrValueType::StringRealMapArray: {
+    const size_t count = value.at("count").get<size_t>();
+    const std::vector<Real> counts = value.at("counts").get<std::vector<Real>>();
+    const size_t num_a = value["abscissas"].size();
+    std::vector<int> pairs_per_var;
+    if (value.contains("pairs_per_variable") && !value["pairs_per_variable"].is_null()) {
+      pairs_per_var = value["pairs_per_variable"].get<std::vector<int>>();
+    }
+    else {
+      pairs_per_var.assign(count, static_cast<int>(num_a / count));
+    }
+
     auto out = build_histogram_point_maps<StringRealMapArray>(
       value, counts, pairs_per_var,
       [&](size_t idx) { return value["abscissas"][idx].get<String>(); });
@@ -159,6 +169,17 @@ void InstructionMaterializer::handle_histogram_point_uncertain(const irgen::Writ
     return;
   }
   case irgen::IrValueType::RealRealMapArray: {
+    const size_t count = value.at("count").get<size_t>();
+    const std::vector<Real> counts = value.at("counts").get<std::vector<Real>>();
+    const size_t num_a = value["abscissas"].size();
+    std::vector<int> pairs_per_var;
+    if (value.contains("pairs_per_variable") && !value["pairs_per_variable"].is_null()) {
+      pairs_per_var = value["pairs_per_variable"].get<std::vector<int>>();
+    }
+    else {
+      pairs_per_var.assign(count, static_cast<int>(num_a / count));
+    }
+
     auto out = build_histogram_point_maps<RealRealMapArray>(
       value, counts, pairs_per_var,
       [&](size_t idx) { return value["abscissas"][idx].get<Real>(); });

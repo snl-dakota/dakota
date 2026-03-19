@@ -244,7 +244,7 @@ TEST(instruction_materializer_tests, histogram_point_uncertain_reports_not_imple
   EXPECT_THROW(
     invoke_handler(
       op,
-      make_contract(irgen::IrValueType::RealRealMapArray),
+      make_contract(irgen::IrValueType::IntSet),
       json{{"hist", json::object()}},
       "hist"),
     std::runtime_error);
