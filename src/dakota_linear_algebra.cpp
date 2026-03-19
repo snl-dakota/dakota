@@ -9,6 +9,7 @@
 
 #include "dakota_global_defs.hpp"
 #include "dakota_data_util.hpp"
+#include "dakota_data_io.hpp"
 #include "dakota_linear_algebra.hpp"
 #include "Teuchos_LAPACK.hpp"
 
@@ -238,6 +239,9 @@ Real symMatVecTripleProduct(Teuchos::ETransp transw, const Real alpha,
 Real symMatVecTripleProduct(const Real alpha,       const RealVector& v1,
 			    const RealSymMatrix& A, const RealVector& v2)
 {
+  // SerialDenseVector(n) is equiv to SerialDenseMatrix(n,1) = a column vector
+  // v1 = nx1, A = nxn, v2 = nx1 --> A * v2 = nx1 (valid column vector)
+
   int A_nrc = A.numRows();
   if (v1.length() != A_nrc || v2.length() != A_nrc) {
     Cerr << "Error: incompatible vector length in symMatVecTripleProduct()."
@@ -245,12 +249,8 @@ Real symMatVecTripleProduct(const Real alpha,       const RealVector& v1,
     abort_handler(-1);
   }
 
-  // SerialDenseVector(n) is equiv to SerialDenseMatrix(n,1) = a column vector
-  // v1 = nx1, A = nxn, v2 = nx1 --> A * v2 = nx1 (valid column vector)
-
-  // Workspace: size to compute A*v2
   RealVector A_v2(A_nrc, false);
-  A_v2.multiply( Teuchos::LEFT_SIDE, alpha, A, v2, 0. ); // column vector
+  A_v2.multiply(Teuchos::LEFT_SIDE, alpha, A, v2, 0.); // column vector
   return A_v2.dot(v1); // inner prod of two column vectors
 }
 

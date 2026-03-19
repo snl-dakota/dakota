@@ -2333,8 +2333,8 @@ estimator_variance_ratios_and_gradients(const RealVector& cd_vars,
 				   CG_inv_rm, dCG_inv_dN);
       // symmetry allows combination of terms 1 + 3 = 2 cf^T CG_inv d[cg]
       Real& evr_grad_vq = evr_grads(v,q);
-      evr_grad_vq = symMatVecTripleProduct(2., cg, CG_inv,    dcg_dN[v])
-	          + symMatVecTripleProduct(1., cg, dCG_dN[v], cg);
+      evr_grad_vq = symMatVecTripleProduct(2., cg, CG_inv,     dcg_dN[v])
+	          + symMatVecTripleProduct(1., cg, dCG_inv_dN, cg);
       // from d(triple) to evr_grads:
       evr_grad_vq /= -varH_q; // *** N_H: F in terms of r; G in terms of N ***
     }

@@ -649,8 +649,8 @@ solve_for_C_F_c_f(RealSymMatrix& C_F, RealSymMatrix& C_F_inv, RealVector& c_f,
     pseudo_inverse(C_F, C_F_inv, rcond);
     lhs.multiply(Teuchos::LEFT_SIDE, 1., C_F_inv, c_f, 0.); // C_F_inv * c_f
     if (outputLevel >= DEBUG_OUTPUT)
-      Cout << "ACV pseudo-inverse solve for LHS:\n" << lhs << "has rcond = "
-	   << rcond << std::endl;
+      Cout << "ACV pseudo-inverse solution:\n" << lhs << "uses C_F inverse:\n"
+	   << C_F_inv << "and has rcond = " << rcond << '\n' << std::endl;
   }
   // leverages both solution refinement in solve() and equilibration during
   // factorization (inverting C_G in place can only leverage the latter)
@@ -675,8 +675,8 @@ solve_for_C_F_c_f(RealSymMatrix& C_F, RealMatrix& C_F_inv, RealVector& c_f,
     pseudo_inverse(C_F, C_F_inv, rcond);
     lhs.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1., C_F_inv, c_f, 0.);
     if (outputLevel >= DEBUG_OUTPUT)
-      Cout << "ACV pseudo-inverse solve for LHS:\n" << lhs << "has rcond = "
-	   << rcond << std::endl;
+      Cout << "ACV pseudo-inverse solution:\n" << lhs << "uses C_F inverse:\n"
+	   << C_F_inv << "and has rcond = " << rcond << '\n' << std::endl;
   }
   // leverages both solution refinement in solve() and equilibration during
   // factorization (inverting C_G in place can only leverage the latter)

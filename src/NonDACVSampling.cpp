@@ -734,6 +734,8 @@ estimator_variance_ratios(const RealVector& cd_vars, RealVector& estvar_ratios)
   }
   // compute ACV estimator variance given F
   acv_estvar_ratios(F, estvar_ratios);
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "estimator variance ratios:\n" << estvar_ratios << std::endl;
 }
 
 
@@ -746,9 +748,8 @@ estimator_variance_ratio_gradients(const RealVector& cd_vars,
     evr_grads.shapeUninitialized(num_v, numFunctions);
 
   // d(abc) = abc' + ab'c + a'bc
-  // d[triple_prod]/dN
-  //   = cf^T CF_inv d[cf] + cf^T d[CF_inv] cf + d[cf]^T CF_inv cf
-  // where d[CF_inv] = -CF_inv dCF/dN CF_inv [see also ML BLUE]
+  // d[triple_prod]/dN = cf^T d[CF_inv] cf + 2 d[cf]^T CF_inv cf
+  //   where d[CF_inv] = -CF_inv dCF/dN CF_inv [see also ML BLUE]
 
   Real rcond;  RealVector cf, N_vec;  RealMatrix CF_inv_rm;
   RealSymMatrix F, CF, CF_inv, dCF_inv_dN(numApprox);
@@ -777,6 +778,8 @@ estimator_variance_ratio_gradients(const RealVector& cd_vars,
       evr_grad_vq /= -varH[q];
     }
   }
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "estimator variance ratio gradients:\n" << evr_grads << std::endl;
 }
 
 
@@ -806,20 +809,16 @@ estimator_variance_ratios_and_gradients(const RealVector& cd_vars,
     combine_gradients_with_covariance(covLL_q, covLH, q, dF_dN, df_dN,
 				      dCF_dN, dcf_dN);
     copy_data(CF_inv_rm, CF_inv);
-    if (outputLevel >= DEBUG_OUTPUT)
-      Cout << "C_F inverse:\n" << CF_inv << std::endl;
     for (v=0; v<num_v; ++v) {
       Teuchos::symMatTripleProduct(Teuchos::NO_TRANS, -1., dCF_dN[v],
 				   CF_inv_rm, dCF_inv_dN);
-      // symmetry allows combination of terms 1 + 3 = 2 cf^T CG_inv d[cg]
       Real& evr_grad_vq = evr_grads(v,q);
-      evr_grad_vq = symMatVecTripleProduct(2., cf, CF_inv,    dcf_dN[v])
-	          + symMatVecTripleProduct(1., cf, dCF_dN[v], cf);
-      // from d(triple) to evr_grads:
+      evr_grad_vq = symMatVecTripleProduct(2., cf, CF_inv,     dcf_dN[v])
+	          + symMatVecTripleProduct(1., cf, dCF_inv_dN, cf);
+      // from d(triple) to evr_grads (also from c to c-bar in JCP ACV):
       evr_grad_vq /= -varH_q;
     }
   }
-
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "estimator variance ratios:\n" << estvar_ratios
 	 << "estimator variance ratio gradients:\n" << evr_grads << std::endl;
