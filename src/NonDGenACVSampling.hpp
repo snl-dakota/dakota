@@ -635,7 +635,7 @@ solve_for_triple_product(const RealSymMatrix& C, const RealSymMatrix& G,
   RealSymMatrix C_G, C_G_inv;  RealVector c_g, lhs;
   combine_with_covariance(C, c, qoi, approx_set, G, g, C_G, c_g);
   solve_for_C_G_c_g(C_G, C_G_inv, c_g, lhs, false, true); // retain original c_g
-  return triple_product(c_g, lhs);
+  return c_g.dot(lhs);//triple_product(c_g, lhs);
 }
 
 
@@ -646,10 +646,13 @@ compute_R_sq(const RealSymMatrix& C, const RealSymMatrix& G,
 { return solve_for_triple_product(C, G, c, g, qoi, approx_set) * N_H / var_H_q;}
 
 
-// This version used to post-process after matrix solve
 inline Real NonDGenACVSampling::
 compute_R_sq(RealVector& c_g, RealVector& lhs, Real var_H_q, Real N_H)
-{ return triple_product(c_g, lhs) * N_H / var_H_q; } // triple_product to R_sq
+{
+  // This version used to post-process after matrix solve
+  // > from triple_product c_g^T CG_inv c_g to R_sq
+  return c_g.dot(lhs) * N_H / var_H_q;//triple_product(c_g,lhs) * N_H / var_H_q;
+}
 
 
 inline void NonDGenACVSampling::

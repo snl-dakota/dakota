@@ -2246,6 +2246,8 @@ estimator_variance_ratios(const RealVector& cd_vars, RealVector& estvar_ratios)
     }
     estvar_ratios[qoi] = (1. - R_sq);
   }
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "estimator variance ratios:\n" << estvar_ratios << std::endl;
 }
 
 
@@ -2266,16 +2268,16 @@ estimator_variance_ratio_gradients(const RealVector& cd_vars,
   RealSymMatrix CG, CG_inv, dCG_inv_dN(num_approx);
   RealSymMatrixArray dG_dN, dCG_dN;
   RealVector cg, inflate_cdv, N_vec;  RealVectorArray dg_dN, dcg_dN;
-  RealMatrix CG_inv_rm;  Real rcond;
+  RealMatrix CG_inv_rm;  Real rcond, trip_prod, trip_prod_grad;
 
   inflate_variables(cd_vars, inflate_cdv, approx_set);
   design_vars_to_N(inflate_cdv, N_vec);
   compute_G_g_from_N(N_vec, GMat, gVec);
   compute_G_g_gradients_from_N(N_vec, dG_dN, dg_dN);
+  Real N_H = N_vec[num_approx];
 
   for (q=0; q<numFunctions; ++q) {
     const RealSymMatrix& covLL_q = covLL[q];
-    // form d[triple_prod]/dN:
     combine_with_covariance(covLL_q, covLH, q, approx_set, GMat, gVec, CG, cg);
     combine_gradients_with_covariance(covLL_q, covLH, q, approx_set,
 				      dG_dN, dg_dN, dCG_dN, dcg_dN);
@@ -2285,14 +2287,29 @@ estimator_variance_ratio_gradients(const RealVector& cd_vars,
       // compute dCG_inv_dN = -CG_inv^T dCG_dN[v] CG_inv
       Teuchos::symMatTripleProduct(Teuchos::NO_TRANS, -1., dCG_dN[v],
 				   CG_inv_rm, dCG_inv_dN);
+      // form d[triple_product]/dN:
+      trip_prod_grad = symMatVecTripleProduct(2., cg, CG_inv,     dcg_dN[v])
+	             + symMatVecTripleProduct(1., cg, dCG_inv_dN, cg);
+      // EV  = var_H / N_H - trip_prod = (1 - R^2) var_H / N_H = EVR var_H / N_H
+      // EVR = 1 - trip_prod N_H / var_H
       Real& evr_grad_vq = evr_grads(v,q);
+      if (v == numApprox) {
+	trip_prod = symMatVecTripleProduct(1., cg, CG_inv, cg);
+	evr_grad_vq = (-trip_prod - trip_prod_grad * N_H) / varH[q];
+      }
+      else
+	evr_grad_vq = -trip_prod_grad * N_H / varH[q];
+      /*
       // symmetry allows combination of terms 1 + 3 = 2 cf^T CG_inv d[cg]
       evr_grad_vq = symMatVecTripleProduct(2., cg, CG_inv,     dcg_dN[v])
 	          + symMatVecTripleProduct(1., cg, dCG_inv_dN, cg);
       // from d(triple) to evr_grads:
-      evr_grad_vq /= -varH[q]; // *** F in terms of r; G in terms of N ***
+      evr_grad_vq /= -varH[q];
+      */
     }
   }
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "estimator variance ratio gradients:\n" << evr_grads << std::endl;
 }
 
 
@@ -2316,27 +2333,30 @@ estimator_variance_ratios_and_gradients(const RealVector& cd_vars,
   compute_G_g_from_N(N_vec, GMat, gVec);
   compute_G_g_gradients_from_N(N_vec, dG_dN, dg_dN);
 
-  Real varH_q, N_H = N_vec[num_approx];
+  Real varH_q, N_H = N_vec[num_approx], trip_prod, trip_prod_grad;
   for (q=0; q<numFunctions; ++q) {
     const RealSymMatrix& covLL_q = covLL[q];  varH_q = varH[q];
     // form d[triple_prod]/dN:
     combine_with_covariance(covLL_q, covLH, q, approx_set, GMat, gVec, CG, cg);
     solve_for_C_G_c_g(CG, CG_inv_rm, cg, lhs, false, false);
     copy_data(CG_inv_rm, CG_inv);
-    estvar_ratios[q] = 1. - compute_R_sq(cg, lhs, varH_q, N_H); // *** N_H: F in terms of r (compute_F_from_N still returns r-compatible version); G in terms of N ***
-
+    trip_prod = cg.dot(lhs);
+    estvar_ratios[q] = 1. - trip_prod * N_H / varH_q;// 1. - compute_R_sq(...);
     combine_gradients_with_covariance(covLL_q, covLH, q, approx_set,
 				      dG_dN, dg_dN, dCG_dN, dcg_dN);
     for (v=0; v<num_v; ++v) {
       // compute dCG_inv_dN = -CG_inv^T dCG_dN[v] CG_inv
       Teuchos::symMatTripleProduct(Teuchos::NO_TRANS, -1., dCG_dN[v],
 				   CG_inv_rm, dCG_inv_dN);
-      // symmetry allows combination of terms 1 + 3 = 2 cf^T CG_inv d[cg]
-      Real& evr_grad_vq = evr_grads(v,q);
-      evr_grad_vq = symMatVecTripleProduct(2., cg, CG_inv,     dcg_dN[v])
-	          + symMatVecTripleProduct(1., cg, dCG_inv_dN, cg);
-      // from d(triple) to evr_grads:
-      evr_grad_vq /= -varH_q; // *** N_H: F in terms of r; G in terms of N ***
+      // form d[triple_product]/dN:
+      // symmetry allows combination of terms --> 2 cf^T CG_inv d[cg]
+      trip_prod_grad = symMatVecTripleProduct(2., cg, CG_inv,     dcg_dN[v])
+	             + symMatVecTripleProduct(1., cg, dCG_inv_dN, cg);
+      // EV  = var_H / N_H - trip_prod = (1 - R^2) var_H / N_H = EVR var_H / N_H
+      // EVR = 1 - trip_prod N_H / var_H
+      evr_grads(v,q) = (v == numApprox) ?
+	(-trip_prod - trip_prod_grad * N_H) / varH_q :
+	-trip_prod_grad * N_H / varH_q;
     }
   }
 

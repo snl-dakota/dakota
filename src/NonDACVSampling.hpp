@@ -158,7 +158,7 @@ protected:
   Real update_hf_target(const RealVector& avg_eval_ratios, Real avg_N_H,
 			const RealVector& var_H);
 
-  Real triple_product(RealVector& c_f, RealVector& lhs);
+  //Real triple_product(RealVector& c_f, RealVector& lhs);
 
   //
   //- Heading: Data
@@ -687,6 +687,7 @@ solve_for_C_F_c_f(RealSymMatrix& C_F, RealMatrix& C_F_inv, RealVector& c_f,
 }
 
 
+/*
 inline Real NonDACVSampling::
 triple_product(RealVector& c_f, RealVector& lhs)
 {
@@ -695,6 +696,7 @@ triple_product(RealVector& c_f, RealVector& lhs)
     trip_prod += c_f(i) * lhs(i); // triple_product
   return trip_prod;
 }
+*/
 
 
 inline Real NonDACVSampling::
@@ -704,7 +706,7 @@ solve_for_triple_product(const RealSymMatrix& C, const RealSymMatrix& F,
   RealSymMatrix C_F, C_F_inv;  RealVector c_f, lhs;
   combine_with_covariance(C, c, qoi, F, C_F, c_f);
   solve_for_C_F_c_f(C_F, C_F_inv, c_f, lhs, false, true); // retain original c_f
-  return triple_product(c_f, lhs);
+  return c_f.dot(lhs);//triple_product(c_f, lhs);
 }
 
 
@@ -714,10 +716,13 @@ compute_R_sq(const RealSymMatrix& C, const RealSymMatrix& F,
 { return solve_for_triple_product(C, F, c, qoi) / var_H_q; }// trip prod to R_sq
 
 
-// This version used to post-process after matrix solve
 inline Real NonDACVSampling::
 compute_R_sq(RealVector& c_f, RealVector& lhs, Real var_H_q)
-{ return triple_product(c_f, lhs) / var_H_q; } // triple_product to R_sq
+{
+  // This version used to post-process after matrix solve
+  // > from triple_product c_f^T CF_inv c_f to R_sq
+  return c_f.dot(lhs) / var_H_q; //triple_product(c_f, lhs) / var_H_q;
+}
 
 
 inline void NonDACVSampling::
