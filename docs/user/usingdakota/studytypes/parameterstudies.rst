@@ -495,6 +495,10 @@ studies, see :ref:`dace:usage` and especially
 :numref:`dace:usage:table`, which clarifies the different purposes of
 the method types.
 
+.. 
+   TNP TODO: add comment on that you don't get sensitivity metrics
+   so if you want those, you should look at the SA page?
+
 .. _`ps:example:vector`:
 
 Example: Vector Parameter Study with Rosenbrock

@@ -66,21 +66,19 @@ Global Sensitivity
 ~~~~~~~~~~~~~~~~~~
 
 Global sensitivity analysis assesses the relative influence of parameters
-over the entire input space, typically defined as a hyper-rectangle
-bounded by lower and upper limits on each parameter. Rather than
+over the entire input space, either between upper and lower bounds or over
+the support of the parameters' probability distributions. Rather than
 examining behavior at a single point, global SA characterizes how
-parameters affect the response across all possible values within
-their specified ranges.
+parameters affect the response over the range of plausible parameter values.
 
-Global SA addresses questions such as: What is the general trend of
-the response over all values of a parameter? Does the response depend
-more nonlinearly on one factor than another? How do parameters interact
-to influence the response?
+Global SA addresses questions such as: 
+  - What is the general trend of the response over all values of a parameter? 
+  - Does the response depend more nonlinearly on one factor than another? 
+  - How do parameters interact to influence the response?
 
 Global SA is performed by evaluating the response at well-distributed
-points in the input space (a design of computer experiments) and
-analyzing the resulting input/output pairs. Dakota primarily focuses
-on global sensitivity analysis methods.
+points in the input space and analyzing the resulting input/output pairs. 
+Dakota primarily focuses on global sensitivity analysis methods.
 
 .. _`sa:concepts:measures`:
 
@@ -94,6 +92,10 @@ interpretations and computational requirements:
 correlations between input parameters and output responses, computed
 from sampling data. These measure linear or monotonic relationships,
 respectively, and are inexpensive to compute from existing samples.
+.. TNP TODO: mention partial correlation coeffs.
+
+**Standardized regression coefficients**: 
+.. TNP TODO: add description.
 
 **Elementary effects (Morris method)**: The modified mean and standard
 deviation of elementary effects, computed by varying one parameter at
@@ -111,6 +113,9 @@ effect indices :math:`T_i` include interactions with other parameters.
 parameter and response standard deviations, providing a dimensionless
 measure of relative influence at a given point.
 
+.. TNP TODO: scatterplots... not sure where it goes but it needs to be addressed
+
+.. TNP TODO: Consider deleting this section.
 .. _`sa:process`:
 
 A Practical Process for Sensitivity Analysis
@@ -174,6 +179,13 @@ screening.
 
 .. _`sa:methods:pstudy:centered`:
 
+.. 
+  TNP TODO: Question, is this really what we want to recommend? I pretty much
+  always just do an LHS since you're enforcing independence between the di-
+  mensions anyway. Is it that much more computation to do LHS than this? 
+  LHS at least gives you correlations vs I don't think you get anything
+  from centered parameter study except generating scatterplots, which you
+  can do with LHS anyway...
 Centered Parameter Study
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -216,6 +228,7 @@ strength of input-output relationships.
 Latin Hypercube Sampling
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
+.. TNP TODO: link to discussion of LHS under UQ, if there is one.
 Latin hypercube sampling provides better coverage of the parameter
 space than simple random sampling with the same number of samples.
 For sensitivity analysis, configure LHS using the
@@ -246,6 +259,10 @@ between parameters and responses.
 
 .. _`sa:methods:sampling:interpretation`:
 
+.. 
+  TNP TODO: better exposition of explaining correlation results; pictures
+  would be good. Math definitions of what's being computed?
+
 Interpreting Correlation Results
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -262,7 +279,13 @@ When interpreting sampling-based sensitivity results:
 - For nonlinear or non-monotonic relationships, rank correlations
   (Spearman) may be more informative than simple correlations (Pearson).
 
+.. 
+  TNP TODO: add discussion on standardized regression coefficients and how 
+  their interpretation differs from correlation coefficients. Math?
+
 .. _`sa:methods:moat`:
+
+.. TNP TODO: Understand this method and what the trajectories are.
 
 Morris One-at-a-Time (MOAT)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -304,7 +327,7 @@ Key MOAT configuration options:
 Variance-Based Decomposition
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Variance-based decomposition (VBD), also known as Sobol analysis,
+Variance-based decomposition (VBD), also known as Sobol' sensitivity analysis,
 decomposes the variance of the response into contributions from
 individual parameters and their interactions. This provides the most
 complete picture of parameter importance but can be computationally
@@ -316,7 +339,13 @@ VBD assumes the response can be decomposed as:
 
    f(x) = f_0 + \sum_i f_i(x_i) + \sum_{i<j} f_{ij}(x_i, x_j) + \cdots
 
-The main effect Sobol index :math:`S_i` measures the fraction of output
+.. 
+  TNP TODO: either go through ANOVA to get to the indices or remove this. I 
+  think it's worth going through the math because then interaction effects
+  make sense. Also need to add definition of interaction effects since PCE 
+  returns them.
+
+The main effect Sobol' index :math:`S_i` measures the fraction of output
 variance due to parameter :math:`x_i` alone:
 
 .. math::
@@ -447,24 +476,43 @@ Selecting an appropriate sensitivity analysis method depends on several
 factors including computational budget, model characteristics, and
 analysis objectives.
 
+.. 
+  TNP TODO: We may want to distinguish recommendations based on the anticipated
+  downstream analysis. If it's UQ and your model is anything but stupidly cheap
+  I think I would recommend you go straight to doing LHS sampling. Maybe there
+  would be justification for doing something like MOAT or centered param if you're
+  going to do an optimization after, without a surrogate where it would be better
+  to have space-filling samples, since optimization will follow some particular 
+  trajector through parameter space anyway, so any initial SA samples will be
+  "thrown out"
+
+.. 
+  TNP TODO: How many steps do people do? I guess it would be a bit less than the 
+  lower limit of LHS recommendation if they do less than 5 steps. I'm 
+  still not convinced this is the thing we should be recommending as the 
+  first pass since they can be effectively wasted evaluations if you 
+  move on to UQ. Change my mind!
 **For initial screening** with limited computational budget, start with
 a centered parameter study to identify obviously influential or
 non-influential parameters. This requires only :math:`2kN + 1` evaluations
 for :math:`N` parameters with :math:`k` steps per variable.
 
+.. TNP TODO: Same concern applies here
 **For moderate budgets** with potentially nonlinear or non-monotonic
 responses, Morris MOAT provides efficient screening with more robustness
 than centered parameter studies. The modified mean and standard deviation
 metrics help distinguish between linear influence, nonlinear influence,
 and interaction effects.
 
+.. TNP TODO: what about sampling-based, just getting things like CCs? This 
+   has always been my go-to if a precursor to UQ. 
 **For comprehensive analysis** when computational resources permit,
 sampling-based methods with variance-based decomposition provide the
 most complete picture of parameter importance. For smooth responses,
 polynomial chaos expansion offers an efficient route to Sobol indices.
 
+.. TNP TODO: review. I definitely woudln't recommend CCs for noisy responses. 
 **Consider model characteristics** when selecting methods:
-
 - Smooth, well-behaved responses: PCE-based VBD is typically most efficient
 - Noisy or discontinuous responses: Sampling with correlations or MOAT
 - High-dimensional problems: MOAT for screening, then detailed analysis
@@ -474,6 +522,7 @@ polynomial chaos expansion offers an efficient route to Sobol indices.
 
 .. _`sa:postprocessing`:
 
+.. TNP TODO: Not sure this section is necessary?
 Using Dakota-Generated Data
 ---------------------------
 
@@ -482,7 +531,7 @@ or HDF5 format with ``dakota_results.h5``) containing all evaluation
 data. These files can be imported into external tools for additional
 analysis:
 
-- **Scatter plots**: Visualize input-output relationships to identify
+- **Scatterplots**: Visualize input-output relationships to identify
   trends missed by correlation coefficients
 - **Regression analysis**: Perform stepwise or best-subsets regression
   to identify significant parameters
@@ -509,14 +558,13 @@ related but serve different primary purposes:
 
 - **SA focuses on parameters**: The primary goal is to rank parameter
   importance and understand how parameters influence responses
-  (sometimes called inverse UQ)
 - **UQ focuses on responses**: The primary goal is to characterize
   statistical properties of outputs given uncertain inputs
 
 Some methods serve both purposes. For example, Latin hypercube sampling
 is commonly used for SA (computing correlations) and UQ (estimating
 response moments, PDFs, and CDFs). Polynomial chaos expansions are
-often considered a UQ method but efficiently produce Sobol indices
+often considered a UQ method but efficiently produce Sobol' indices
 for parameter ranking.
 
 A typical workflow combines SA and UQ: first use SA to identify the
