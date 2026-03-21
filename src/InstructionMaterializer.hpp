@@ -87,6 +87,9 @@ private:
   static void handle_direct_value(const irgen::WriteOp& op,
                                   const irgen::KeyContract& contract,
                                   const HandlerContext& ctx);
+  static void handle_add_to_value(const irgen::WriteOp& op,
+                                  const irgen::KeyContract& contract,
+                                  const HandlerContext& ctx);
   static void handle_literal_assign(const irgen::WriteOp& op,
                                     const irgen::KeyContract& contract,
                                     const HandlerContext& ctx);
