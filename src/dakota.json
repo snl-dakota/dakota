@@ -757,25 +757,19 @@
                     "x-model-default": "RngOptionsContext2Mt19937",
                     "x-union-pattern": 1
                 },
-                "response_levels": {
+                "distribution": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/ResponseLevelsComputeProbGenContext1ResponseLevels"
+                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
                         },
                         {
-                            "type": "null"
+                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
                         }
                     ],
-                    "argument": "values",
-                    "default": null,
-                    "description": "Values at which to estimate desired statistics for each response",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.nond.response_levels",
-                            "ir_value_type": "RealVectorArray",
-                            "storage_type": "RESPONSE_LEVELS_ARRAY"
-                        }
-                    ]
+                    "description": "Selection of cumulative or complementary cumulative functions",
+                    "title": "Distribution",
+                    "x-model-default": "DistributionCumulComplContext1Cumulative",
+                    "x-union-pattern": 1
                 },
                 "probability_levels": {
                     "anyOf": [
@@ -797,19 +791,25 @@
                         }
                     ]
                 },
-                "distribution": {
+                "response_levels": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
+                            "$ref": "#/$defs/ResponseLevelsComputeProbGenContext1ResponseLevels"
                         },
                         {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
+                            "type": "null"
                         }
                     ],
-                    "description": "Selection of cumulative or complementary cumulative functions",
-                    "title": "Distribution",
-                    "x-model-default": "DistributionCumulComplContext1Cumulative",
-                    "x-union-pattern": 1
+                    "argument": "values",
+                    "default": null,
+                    "description": "Values at which to estimate desired statistics for each response",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.response_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
                 },
                 "gen_reliability_levels": {
                     "anyOf": [
@@ -3763,6 +3763,26 @@
                             "ir_key": "variables.beta_uncertain",
                             "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.continuous_aleatory_uncertain",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.aleatory_uncertain",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.uncertain",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.total",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
                         }
                     ]
                 },
@@ -3878,6 +3898,13 @@
                     "title": "Descriptors",
                     "x-aliases": [
                         "buv_descriptors"
+                    ],
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.beta_uncertain.labels",
+                            "ir_value_type": "StringArray",
+                            "storage_type": "DIRECT_VALUE"
+                        }
                     ]
                 },
                 "initial_point_user_provided": {
@@ -4120,6 +4147,26 @@
                             "ir_key": "variables.binomial_uncertain",
                             "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.discrete_aleatory_uncertain",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.aleatory_uncertain",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.uncertain",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.total",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
                         }
                     ]
                 },
@@ -4193,7 +4240,14 @@
                     ],
                     "default": null,
                     "description": "Labels for the variables",
-                    "title": "Descriptors"
+                    "title": "Descriptors",
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.binomial_uncertain.labels",
+                            "ir_value_type": "StringArray",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 },
                 "initial_point_user_provided": {
                     "default": false,
@@ -4224,7 +4278,14 @@
                     "items": {
                         "type": "integer"
                     },
-                    "type": "array"
+                    "type": "array",
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.binomial_uncertain.lower_bounds",
+                            "ir_value_type": "IntVector",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 },
                 "upper_bounds": {
                     "description": "Upper bounds (equals num_trials)",
@@ -4232,7 +4293,14 @@
                     "items": {
                         "type": "integer"
                     },
-                    "type": "array"
+                    "type": "array",
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.binomial_uncertain.upper_bounds",
+                            "ir_value_type": "IntVector",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 }
             },
             "x-model-validations": [
@@ -8405,23 +8473,29 @@
             "additionalProperties": false,
             "description": "Generated model for ConminFrcgConfig",
             "properties": {
-                "model_pointer": {
-                    "anyOf": [
-                        {
-                            "type": "string"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "default": null,
-                    "description": "Identifier for model block to be used by a method",
-                    "title": "Model Pointer",
-                    "x-block-pointer": "model",
+                "scaling": {
+                    "default": false,
+                    "description": "Turn on scaling for variables, responses, and constraints",
+                    "title": "Scaling",
+                    "type": "boolean",
                     "x-materialization": [
                         {
-                            "ir_key": "method.model_pointer",
-                            "ir_value_type": "String",
+                            "ir_key": "method.scaling",
+                            "ir_value_type": "bool",
+                            "storage_type": "PRESENCE_BOOL"
+                        }
+                    ]
+                },
+                "max_function_evaluations": {
+                    "default": 4294967295,
+                    "description": "Number of function evaluations allowed for optimizers",
+                    "minimum": 0,
+                    "title": "Max Function Evaluations",
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.max_function_evaluations",
+                            "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
                         }
                     ]
@@ -8444,32 +8518,6 @@
                         }
                     ]
                 },
-                "speculative": {
-                    "default": false,
-                    "description": "Compute speculative gradients",
-                    "title": "Speculative",
-                    "type": "boolean",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.speculative",
-                            "ir_value_type": "bool",
-                            "storage_type": "PRESENCE_BOOL"
-                        }
-                    ]
-                },
-                "scaling": {
-                    "default": false,
-                    "description": "Turn on scaling for variables, responses, and constraints",
-                    "title": "Scaling",
-                    "type": "boolean",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.scaling",
-                            "ir_value_type": "bool",
-                            "storage_type": "PRESENCE_BOOL"
-                        }
-                    ]
-                },
                 "max_iterations": {
                     "default": 4294967295,
                     "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
@@ -8481,6 +8529,19 @@
                             "ir_key": "method.max_iterations",
                             "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "speculative": {
+                    "default": false,
+                    "description": "Compute speculative gradients",
+                    "title": "Speculative",
+                    "type": "boolean",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.speculative",
+                            "ir_value_type": "bool",
+                            "storage_type": "PRESENCE_BOOL"
                         }
                     ]
                 },
@@ -8497,16 +8558,23 @@
                         }
                     ]
                 },
-                "max_function_evaluations": {
-                    "default": 4294967295,
-                    "description": "Number of function evaluations allowed for optimizers",
-                    "minimum": 0,
-                    "title": "Max Function Evaluations",
-                    "type": "integer",
+                "model_pointer": {
+                    "anyOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Identifier for model block to be used by a method",
+                    "title": "Model Pointer",
+                    "x-block-pointer": "model",
                     "x-materialization": [
                         {
-                            "ir_key": "method.max_function_evaluations",
-                            "ir_value_type": "size_t",
+                            "ir_key": "method.model_pointer",
+                            "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
                     ]
@@ -8598,23 +8666,29 @@
             "additionalProperties": false,
             "description": "Generated model for ConminMfdConfig",
             "properties": {
-                "model_pointer": {
-                    "anyOf": [
-                        {
-                            "type": "string"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "default": null,
-                    "description": "Identifier for model block to be used by a method",
-                    "title": "Model Pointer",
-                    "x-block-pointer": "model",
+                "scaling": {
+                    "default": false,
+                    "description": "Turn on scaling for variables, responses, and constraints",
+                    "title": "Scaling",
+                    "type": "boolean",
                     "x-materialization": [
                         {
-                            "ir_key": "method.model_pointer",
-                            "ir_value_type": "String",
+                            "ir_key": "method.scaling",
+                            "ir_value_type": "bool",
+                            "storage_type": "PRESENCE_BOOL"
+                        }
+                    ]
+                },
+                "max_function_evaluations": {
+                    "default": 4294967295,
+                    "description": "Number of function evaluations allowed for optimizers",
+                    "minimum": 0,
+                    "title": "Max Function Evaluations",
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.max_function_evaluations",
+                            "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
                         }
                     ]
@@ -8637,32 +8711,6 @@
                         }
                     ]
                 },
-                "speculative": {
-                    "default": false,
-                    "description": "Compute speculative gradients",
-                    "title": "Speculative",
-                    "type": "boolean",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.speculative",
-                            "ir_value_type": "bool",
-                            "storage_type": "PRESENCE_BOOL"
-                        }
-                    ]
-                },
-                "scaling": {
-                    "default": false,
-                    "description": "Turn on scaling for variables, responses, and constraints",
-                    "title": "Scaling",
-                    "type": "boolean",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.scaling",
-                            "ir_value_type": "bool",
-                            "storage_type": "PRESENCE_BOOL"
-                        }
-                    ]
-                },
                 "max_iterations": {
                     "default": 4294967295,
                     "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
@@ -8674,6 +8722,19 @@
                             "ir_key": "method.max_iterations",
                             "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "speculative": {
+                    "default": false,
+                    "description": "Compute speculative gradients",
+                    "title": "Speculative",
+                    "type": "boolean",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.speculative",
+                            "ir_value_type": "bool",
+                            "storage_type": "PRESENCE_BOOL"
                         }
                     ]
                 },
@@ -8690,16 +8751,23 @@
                         }
                     ]
                 },
-                "max_function_evaluations": {
-                    "default": 4294967295,
-                    "description": "Number of function evaluations allowed for optimizers",
-                    "minimum": 0,
-                    "title": "Max Function Evaluations",
-                    "type": "integer",
+                "model_pointer": {
+                    "anyOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Identifier for model block to be used by a method",
+                    "title": "Model Pointer",
+                    "x-block-pointer": "model",
                     "x-materialization": [
                         {
-                            "ir_key": "method.max_function_evaluations",
-                            "ir_value_type": "size_t",
+                            "ir_key": "method.model_pointer",
+                            "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
                     ]
@@ -8869,6 +8937,21 @@
                             "ir_key": "variables.continuous_design",
                             "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.continuous",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.design",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.total",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
                         }
                     ]
                 },
@@ -9188,6 +9271,26 @@
                             "ir_key": "variables.continuous_interval_uncertain",
                             "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.continuous",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.epistemic_uncertain",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.uncertain",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.total",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
                         }
                     ]
                 },
@@ -9307,6 +9410,13 @@
                     "title": "Descriptors",
                     "x-aliases": [
                         "iuv_descriptors"
+                    ],
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.continuous_interval_uncertain.labels",
+                            "ir_value_type": "StringArray",
+                            "storage_type": "DIRECT_VALUE"
+                        }
                     ]
                 },
                 "initial_point_user_provided": {
@@ -9338,7 +9448,14 @@
                     "items": {
                         "type": "number"
                     },
-                    "type": "array"
+                    "type": "array",
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.continuous_interval_uncertain.lower_bounds",
+                            "ir_value_type": "RealVector",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 },
                 "inferred_upper_bounds": {
                     "description": "Inferred upper bounds: max upper_bound across intervals per variable",
@@ -9346,7 +9463,14 @@
                     "items": {
                         "type": "number"
                     },
-                    "type": "array"
+                    "type": "array",
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.continuous_interval_uncertain.upper_bounds",
+                            "ir_value_type": "RealVector",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 }
             },
             "x-model-validations": [
@@ -9437,6 +9561,21 @@
                             "ir_key": "variables.continuous_state",
                             "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.continuous",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.state",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.total",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
                         }
                     ]
                 },
@@ -11771,6 +11910,21 @@
                             "ir_key": "variables.discrete_design_range",
                             "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.discrete",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.design",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.total",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
                         }
                     ]
                 },
@@ -12062,6 +12216,21 @@
                             "ir_key": "variables.discrete_design_set_int",
                             "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.discrete",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.design",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.total",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
                         }
                     ]
                 },
@@ -12182,7 +12351,14 @@
                     "items": {
                         "type": "integer"
                     },
-                    "type": "array"
+                    "type": "array",
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.discrete_design_set_int.lower_bounds",
+                            "ir_value_type": "IntVector",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 },
                 "upper_bounds": {
                     "description": "Upper bounds: max element per variable",
@@ -12190,7 +12366,14 @@
                     "items": {
                         "type": "integer"
                     },
-                    "type": "array"
+                    "type": "array",
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.discrete_design_set_int.upper_bounds",
+                            "ir_value_type": "IntVector",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 }
             },
             "x-model-validations": [
@@ -12324,6 +12507,21 @@
                             "ir_key": "variables.discrete_design_set_real",
                             "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.discrete",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.design",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.total",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
                         }
                     ]
                 },
@@ -12444,7 +12642,14 @@
                     "items": {
                         "type": "number"
                     },
-                    "type": "array"
+                    "type": "array",
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.discrete_design_set_real.lower_bounds",
+                            "ir_value_type": "RealVector",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 },
                 "upper_bounds": {
                     "description": "Upper bounds: max element per variable",
@@ -12452,7 +12657,14 @@
                     "items": {
                         "type": "number"
                     },
-                    "type": "array"
+                    "type": "array",
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.discrete_design_set_real.upper_bounds",
+                            "ir_value_type": "RealVector",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 }
             },
             "x-model-validations": [
@@ -12586,6 +12798,21 @@
                             "ir_key": "variables.discrete_design_set_string",
                             "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.discrete",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.design",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.total",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
                         }
                     ]
                 },
@@ -12709,7 +12936,14 @@
                     "items": {
                         "type": "string"
                     },
-                    "type": "array"
+                    "type": "array",
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.discrete_design_set_string.lower_bounds",
+                            "ir_value_type": "StringArray",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 },
                 "upper_bounds": {
                     "description": "Upper bounds: max element per variable",
@@ -12717,7 +12951,14 @@
                     "items": {
                         "type": "string"
                     },
-                    "type": "array"
+                    "type": "array",
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.discrete_design_set_string.upper_bounds",
+                            "ir_value_type": "StringArray",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 }
             },
             "x-model-validations": [
@@ -12841,6 +13082,26 @@
                             "ir_key": "variables.discrete_interval_uncertain",
                             "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.discrete",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.epistemic_uncertain",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.uncertain",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.total",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
                         }
                     ]
                 },
@@ -12955,7 +13216,14 @@
                     ],
                     "default": null,
                     "description": "Labels for the variables",
-                    "title": "Descriptors"
+                    "title": "Descriptors",
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.discrete_interval_uncertain.labels",
+                            "ir_value_type": "StringArray",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 },
                 "initial_point_user_provided": {
                     "default": false,
@@ -12986,7 +13254,14 @@
                     "items": {
                         "type": "integer"
                     },
-                    "type": "array"
+                    "type": "array",
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.discrete_interval_uncertain.lower_bounds",
+                            "ir_value_type": "IntVector",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 },
                 "inferred_upper_bounds": {
                     "description": "Inferred upper bounds: max upper_bound across intervals per variable",
@@ -12994,7 +13269,14 @@
                     "items": {
                         "type": "integer"
                     },
-                    "type": "array"
+                    "type": "array",
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.discrete_interval_uncertain.upper_bounds",
+                            "ir_value_type": "IntVector",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 }
             },
             "x-model-validations": [
@@ -13085,6 +13367,21 @@
                             "ir_key": "variables.discrete_state_range",
                             "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.discrete",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.state",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.total",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
                         }
                     ]
                 },
@@ -13376,6 +13673,21 @@
                             "ir_key": "variables.discrete_state_set_int",
                             "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.discrete",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.state",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.total",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
                         }
                     ]
                 },
@@ -13499,7 +13811,14 @@
                     "items": {
                         "type": "integer"
                     },
-                    "type": "array"
+                    "type": "array",
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.discrete_state_set_int.lower_bounds",
+                            "ir_value_type": "IntVector",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 },
                 "upper_bounds": {
                     "description": "Upper bounds: max element per variable",
@@ -13507,7 +13826,14 @@
                     "items": {
                         "type": "integer"
                     },
-                    "type": "array"
+                    "type": "array",
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.discrete_state_set_int.upper_bounds",
+                            "ir_value_type": "IntVector",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 }
             },
             "x-model-validations": [
@@ -13646,6 +13972,21 @@
                             "ir_key": "variables.discrete_state_set_real",
                             "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.discrete",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.state",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.total",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
                         }
                     ]
                 },
@@ -13769,7 +14110,14 @@
                     "items": {
                         "type": "number"
                     },
-                    "type": "array"
+                    "type": "array",
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.discrete_state_set_real.lower_bounds",
+                            "ir_value_type": "RealVector",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 },
                 "upper_bounds": {
                     "description": "Upper bounds: max element per variable",
@@ -13777,7 +14125,14 @@
                     "items": {
                         "type": "number"
                     },
-                    "type": "array"
+                    "type": "array",
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.discrete_state_set_real.upper_bounds",
+                            "ir_value_type": "RealVector",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 }
             },
             "x-model-validations": [
@@ -13916,6 +14271,21 @@
                             "ir_key": "variables.discrete_state_set_string",
                             "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.discrete",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.state",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.total",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
                         }
                     ]
                 },
@@ -14016,7 +14386,14 @@
                     "items": {
                         "type": "string"
                     },
-                    "type": "array"
+                    "type": "array",
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.discrete_state_set_string.lower_bounds",
+                            "ir_value_type": "StringArray",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 },
                 "upper_bounds": {
                     "description": "Upper bounds: max element per variable",
@@ -14024,7 +14401,14 @@
                     "items": {
                         "type": "string"
                     },
-                    "type": "array"
+                    "type": "array",
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.discrete_state_set_string.upper_bounds",
+                            "ir_value_type": "StringArray",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 }
             },
             "x-model-validations": [
@@ -14203,6 +14587,26 @@
                             "ir_key": "variables.discrete_uncertain_set_int",
                             "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.discrete",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.epistemic_uncertain",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.uncertain",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.total",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
                         }
                     ]
                 },
@@ -14322,7 +14726,14 @@
                     ],
                     "default": null,
                     "description": "Labels for the variables",
-                    "title": "Descriptors"
+                    "title": "Descriptors",
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.discrete_uncertain_set_int.labels",
+                            "ir_value_type": "StringArray",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 },
                 "initial_point_user_provided": {
                     "default": false,
@@ -14352,7 +14763,14 @@
                     "items": {
                         "type": "integer"
                     },
-                    "type": "array"
+                    "type": "array",
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.discrete_uncertain_set_int.lower_bounds",
+                            "ir_value_type": "IntVector",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 },
                 "upper_bounds": {
                     "description": "Upper bounds: max element per variable",
@@ -14360,7 +14778,14 @@
                     "items": {
                         "type": "integer"
                     },
-                    "type": "array"
+                    "type": "array",
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.discrete_uncertain_set_int.upper_bounds",
+                            "ir_value_type": "IntVector",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 }
             },
             "x-model-validations": [
@@ -14521,6 +14946,26 @@
                             "ir_key": "variables.discrete_uncertain_set_real",
                             "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.discrete",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.epistemic_uncertain",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.uncertain",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.total",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
                         }
                     ]
                 },
@@ -14640,7 +15085,14 @@
                     ],
                     "default": null,
                     "description": "Labels for the variables",
-                    "title": "Descriptors"
+                    "title": "Descriptors",
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.discrete_uncertain_set_real.labels",
+                            "ir_value_type": "StringArray",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 },
                 "initial_point_user_provided": {
                     "default": false,
@@ -14670,7 +15122,14 @@
                     "items": {
                         "type": "number"
                     },
-                    "type": "array"
+                    "type": "array",
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.discrete_uncertain_set_real.lower_bounds",
+                            "ir_value_type": "RealVector",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 },
                 "upper_bounds": {
                     "description": "Upper bounds: max element per variable",
@@ -14678,7 +15137,14 @@
                     "items": {
                         "type": "number"
                     },
-                    "type": "array"
+                    "type": "array",
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.discrete_uncertain_set_real.upper_bounds",
+                            "ir_value_type": "RealVector",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 }
             },
             "x-model-validations": [
@@ -14839,6 +15305,26 @@
                             "ir_key": "variables.discrete_uncertain_set_string",
                             "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.discrete",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.epistemic_uncertain",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.uncertain",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.total",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
                         }
                     ]
                 },
@@ -14935,7 +15421,14 @@
                     ],
                     "default": null,
                     "description": "Labels for the variables",
-                    "title": "Descriptors"
+                    "title": "Descriptors",
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.discrete_uncertain_set_string.labels",
+                            "ir_value_type": "StringArray",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 },
                 "initial_point_user_provided": {
                     "default": false,
@@ -14965,7 +15458,14 @@
                     "items": {
                         "type": "string"
                     },
-                    "type": "array"
+                    "type": "array",
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.discrete_uncertain_set_string.lower_bounds",
+                            "ir_value_type": "StringArray",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 },
                 "upper_bounds": {
                     "description": "Upper bounds: max element per variable",
@@ -14973,7 +15473,14 @@
                     "items": {
                         "type": "string"
                     },
-                    "type": "array"
+                    "type": "array",
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.discrete_uncertain_set_string.upper_bounds",
+                            "ir_value_type": "StringArray",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 }
             },
             "x-model-validations": [
@@ -15377,23 +15884,29 @@
             "additionalProperties": false,
             "description": "Generated model for DotBfgsConfig",
             "properties": {
-                "model_pointer": {
-                    "anyOf": [
-                        {
-                            "type": "string"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "default": null,
-                    "description": "Identifier for model block to be used by a method",
-                    "title": "Model Pointer",
-                    "x-block-pointer": "model",
+                "scaling": {
+                    "default": false,
+                    "description": "Turn on scaling for variables, responses, and constraints",
+                    "title": "Scaling",
+                    "type": "boolean",
                     "x-materialization": [
                         {
-                            "ir_key": "method.model_pointer",
-                            "ir_value_type": "String",
+                            "ir_key": "method.scaling",
+                            "ir_value_type": "bool",
+                            "storage_type": "PRESENCE_BOOL"
+                        }
+                    ]
+                },
+                "max_function_evaluations": {
+                    "default": 4294967295,
+                    "description": "Number of function evaluations allowed for optimizers",
+                    "minimum": 0,
+                    "title": "Max Function Evaluations",
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.max_function_evaluations",
+                            "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
                         }
                     ]
@@ -15416,32 +15929,6 @@
                         }
                     ]
                 },
-                "speculative": {
-                    "default": false,
-                    "description": "Compute speculative gradients",
-                    "title": "Speculative",
-                    "type": "boolean",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.speculative",
-                            "ir_value_type": "bool",
-                            "storage_type": "PRESENCE_BOOL"
-                        }
-                    ]
-                },
-                "scaling": {
-                    "default": false,
-                    "description": "Turn on scaling for variables, responses, and constraints",
-                    "title": "Scaling",
-                    "type": "boolean",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.scaling",
-                            "ir_value_type": "bool",
-                            "storage_type": "PRESENCE_BOOL"
-                        }
-                    ]
-                },
                 "max_iterations": {
                     "default": 4294967295,
                     "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
@@ -15453,6 +15940,19 @@
                             "ir_key": "method.max_iterations",
                             "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "speculative": {
+                    "default": false,
+                    "description": "Compute speculative gradients",
+                    "title": "Speculative",
+                    "type": "boolean",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.speculative",
+                            "ir_value_type": "bool",
+                            "storage_type": "PRESENCE_BOOL"
                         }
                     ]
                 },
@@ -15469,16 +15969,23 @@
                         }
                     ]
                 },
-                "max_function_evaluations": {
-                    "default": 4294967295,
-                    "description": "Number of function evaluations allowed for optimizers",
-                    "minimum": 0,
-                    "title": "Max Function Evaluations",
-                    "type": "integer",
+                "model_pointer": {
+                    "anyOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Identifier for model block to be used by a method",
+                    "title": "Model Pointer",
+                    "x-block-pointer": "model",
                     "x-materialization": [
                         {
-                            "ir_key": "method.max_function_evaluations",
-                            "ir_value_type": "size_t",
+                            "ir_key": "method.model_pointer",
+                            "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
                     ]
@@ -15570,23 +16077,29 @@
             "additionalProperties": false,
             "description": "Generated model for DotFrcgConfig",
             "properties": {
-                "model_pointer": {
-                    "anyOf": [
-                        {
-                            "type": "string"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "default": null,
-                    "description": "Identifier for model block to be used by a method",
-                    "title": "Model Pointer",
-                    "x-block-pointer": "model",
+                "scaling": {
+                    "default": false,
+                    "description": "Turn on scaling for variables, responses, and constraints",
+                    "title": "Scaling",
+                    "type": "boolean",
                     "x-materialization": [
                         {
-                            "ir_key": "method.model_pointer",
-                            "ir_value_type": "String",
+                            "ir_key": "method.scaling",
+                            "ir_value_type": "bool",
+                            "storage_type": "PRESENCE_BOOL"
+                        }
+                    ]
+                },
+                "max_function_evaluations": {
+                    "default": 4294967295,
+                    "description": "Number of function evaluations allowed for optimizers",
+                    "minimum": 0,
+                    "title": "Max Function Evaluations",
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.max_function_evaluations",
+                            "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
                         }
                     ]
@@ -15609,32 +16122,6 @@
                         }
                     ]
                 },
-                "speculative": {
-                    "default": false,
-                    "description": "Compute speculative gradients",
-                    "title": "Speculative",
-                    "type": "boolean",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.speculative",
-                            "ir_value_type": "bool",
-                            "storage_type": "PRESENCE_BOOL"
-                        }
-                    ]
-                },
-                "scaling": {
-                    "default": false,
-                    "description": "Turn on scaling for variables, responses, and constraints",
-                    "title": "Scaling",
-                    "type": "boolean",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.scaling",
-                            "ir_value_type": "bool",
-                            "storage_type": "PRESENCE_BOOL"
-                        }
-                    ]
-                },
                 "max_iterations": {
                     "default": 4294967295,
                     "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
@@ -15646,6 +16133,19 @@
                             "ir_key": "method.max_iterations",
                             "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "speculative": {
+                    "default": false,
+                    "description": "Compute speculative gradients",
+                    "title": "Speculative",
+                    "type": "boolean",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.speculative",
+                            "ir_value_type": "bool",
+                            "storage_type": "PRESENCE_BOOL"
                         }
                     ]
                 },
@@ -15662,16 +16162,23 @@
                         }
                     ]
                 },
-                "max_function_evaluations": {
-                    "default": 4294967295,
-                    "description": "Number of function evaluations allowed for optimizers",
-                    "minimum": 0,
-                    "title": "Max Function Evaluations",
-                    "type": "integer",
+                "model_pointer": {
+                    "anyOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Identifier for model block to be used by a method",
+                    "title": "Model Pointer",
+                    "x-block-pointer": "model",
                     "x-materialization": [
                         {
-                            "ir_key": "method.max_function_evaluations",
-                            "ir_value_type": "size_t",
+                            "ir_key": "method.model_pointer",
+                            "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
                     ]
@@ -15763,23 +16270,29 @@
             "additionalProperties": false,
             "description": "Generated model for DotMmfdConfig",
             "properties": {
-                "model_pointer": {
-                    "anyOf": [
-                        {
-                            "type": "string"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "default": null,
-                    "description": "Identifier for model block to be used by a method",
-                    "title": "Model Pointer",
-                    "x-block-pointer": "model",
+                "scaling": {
+                    "default": false,
+                    "description": "Turn on scaling for variables, responses, and constraints",
+                    "title": "Scaling",
+                    "type": "boolean",
                     "x-materialization": [
                         {
-                            "ir_key": "method.model_pointer",
-                            "ir_value_type": "String",
+                            "ir_key": "method.scaling",
+                            "ir_value_type": "bool",
+                            "storage_type": "PRESENCE_BOOL"
+                        }
+                    ]
+                },
+                "max_function_evaluations": {
+                    "default": 4294967295,
+                    "description": "Number of function evaluations allowed for optimizers",
+                    "minimum": 0,
+                    "title": "Max Function Evaluations",
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.max_function_evaluations",
+                            "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
                         }
                     ]
@@ -15802,32 +16315,6 @@
                         }
                     ]
                 },
-                "speculative": {
-                    "default": false,
-                    "description": "Compute speculative gradients",
-                    "title": "Speculative",
-                    "type": "boolean",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.speculative",
-                            "ir_value_type": "bool",
-                            "storage_type": "PRESENCE_BOOL"
-                        }
-                    ]
-                },
-                "scaling": {
-                    "default": false,
-                    "description": "Turn on scaling for variables, responses, and constraints",
-                    "title": "Scaling",
-                    "type": "boolean",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.scaling",
-                            "ir_value_type": "bool",
-                            "storage_type": "PRESENCE_BOOL"
-                        }
-                    ]
-                },
                 "max_iterations": {
                     "default": 4294967295,
                     "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
@@ -15839,6 +16326,19 @@
                             "ir_key": "method.max_iterations",
                             "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "speculative": {
+                    "default": false,
+                    "description": "Compute speculative gradients",
+                    "title": "Speculative",
+                    "type": "boolean",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.speculative",
+                            "ir_value_type": "bool",
+                            "storage_type": "PRESENCE_BOOL"
                         }
                     ]
                 },
@@ -15855,16 +16355,23 @@
                         }
                     ]
                 },
-                "max_function_evaluations": {
-                    "default": 4294967295,
-                    "description": "Number of function evaluations allowed for optimizers",
-                    "minimum": 0,
-                    "title": "Max Function Evaluations",
-                    "type": "integer",
+                "model_pointer": {
+                    "anyOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Identifier for model block to be used by a method",
+                    "title": "Model Pointer",
+                    "x-block-pointer": "model",
                     "x-materialization": [
                         {
-                            "ir_key": "method.max_function_evaluations",
-                            "ir_value_type": "size_t",
+                            "ir_key": "method.model_pointer",
+                            "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
                     ]
@@ -15956,23 +16463,29 @@
             "additionalProperties": false,
             "description": "Generated model for DotSlpConfig",
             "properties": {
-                "model_pointer": {
-                    "anyOf": [
-                        {
-                            "type": "string"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "default": null,
-                    "description": "Identifier for model block to be used by a method",
-                    "title": "Model Pointer",
-                    "x-block-pointer": "model",
+                "scaling": {
+                    "default": false,
+                    "description": "Turn on scaling for variables, responses, and constraints",
+                    "title": "Scaling",
+                    "type": "boolean",
                     "x-materialization": [
                         {
-                            "ir_key": "method.model_pointer",
-                            "ir_value_type": "String",
+                            "ir_key": "method.scaling",
+                            "ir_value_type": "bool",
+                            "storage_type": "PRESENCE_BOOL"
+                        }
+                    ]
+                },
+                "max_function_evaluations": {
+                    "default": 4294967295,
+                    "description": "Number of function evaluations allowed for optimizers",
+                    "minimum": 0,
+                    "title": "Max Function Evaluations",
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.max_function_evaluations",
+                            "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
                         }
                     ]
@@ -15995,32 +16508,6 @@
                         }
                     ]
                 },
-                "speculative": {
-                    "default": false,
-                    "description": "Compute speculative gradients",
-                    "title": "Speculative",
-                    "type": "boolean",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.speculative",
-                            "ir_value_type": "bool",
-                            "storage_type": "PRESENCE_BOOL"
-                        }
-                    ]
-                },
-                "scaling": {
-                    "default": false,
-                    "description": "Turn on scaling for variables, responses, and constraints",
-                    "title": "Scaling",
-                    "type": "boolean",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.scaling",
-                            "ir_value_type": "bool",
-                            "storage_type": "PRESENCE_BOOL"
-                        }
-                    ]
-                },
                 "max_iterations": {
                     "default": 4294967295,
                     "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
@@ -16032,6 +16519,19 @@
                             "ir_key": "method.max_iterations",
                             "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "speculative": {
+                    "default": false,
+                    "description": "Compute speculative gradients",
+                    "title": "Speculative",
+                    "type": "boolean",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.speculative",
+                            "ir_value_type": "bool",
+                            "storage_type": "PRESENCE_BOOL"
                         }
                     ]
                 },
@@ -16048,16 +16548,23 @@
                         }
                     ]
                 },
-                "max_function_evaluations": {
-                    "default": 4294967295,
-                    "description": "Number of function evaluations allowed for optimizers",
-                    "minimum": 0,
-                    "title": "Max Function Evaluations",
-                    "type": "integer",
+                "model_pointer": {
+                    "anyOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Identifier for model block to be used by a method",
+                    "title": "Model Pointer",
+                    "x-block-pointer": "model",
                     "x-materialization": [
                         {
-                            "ir_key": "method.max_function_evaluations",
-                            "ir_value_type": "size_t",
+                            "ir_key": "method.model_pointer",
+                            "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
                     ]
@@ -16149,23 +16656,29 @@
             "additionalProperties": false,
             "description": "Generated model for DotSqpConfig",
             "properties": {
-                "model_pointer": {
-                    "anyOf": [
-                        {
-                            "type": "string"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "default": null,
-                    "description": "Identifier for model block to be used by a method",
-                    "title": "Model Pointer",
-                    "x-block-pointer": "model",
+                "scaling": {
+                    "default": false,
+                    "description": "Turn on scaling for variables, responses, and constraints",
+                    "title": "Scaling",
+                    "type": "boolean",
                     "x-materialization": [
                         {
-                            "ir_key": "method.model_pointer",
-                            "ir_value_type": "String",
+                            "ir_key": "method.scaling",
+                            "ir_value_type": "bool",
+                            "storage_type": "PRESENCE_BOOL"
+                        }
+                    ]
+                },
+                "max_function_evaluations": {
+                    "default": 4294967295,
+                    "description": "Number of function evaluations allowed for optimizers",
+                    "minimum": 0,
+                    "title": "Max Function Evaluations",
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.max_function_evaluations",
+                            "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
                         }
                     ]
@@ -16188,32 +16701,6 @@
                         }
                     ]
                 },
-                "speculative": {
-                    "default": false,
-                    "description": "Compute speculative gradients",
-                    "title": "Speculative",
-                    "type": "boolean",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.speculative",
-                            "ir_value_type": "bool",
-                            "storage_type": "PRESENCE_BOOL"
-                        }
-                    ]
-                },
-                "scaling": {
-                    "default": false,
-                    "description": "Turn on scaling for variables, responses, and constraints",
-                    "title": "Scaling",
-                    "type": "boolean",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.scaling",
-                            "ir_value_type": "bool",
-                            "storage_type": "PRESENCE_BOOL"
-                        }
-                    ]
-                },
                 "max_iterations": {
                     "default": 4294967295,
                     "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
@@ -16225,6 +16712,19 @@
                             "ir_key": "method.max_iterations",
                             "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "speculative": {
+                    "default": false,
+                    "description": "Compute speculative gradients",
+                    "title": "Speculative",
+                    "type": "boolean",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.speculative",
+                            "ir_value_type": "bool",
+                            "storage_type": "PRESENCE_BOOL"
                         }
                     ]
                 },
@@ -16241,16 +16741,23 @@
                         }
                     ]
                 },
-                "max_function_evaluations": {
-                    "default": 4294967295,
-                    "description": "Number of function evaluations allowed for optimizers",
-                    "minimum": 0,
-                    "title": "Max Function Evaluations",
-                    "type": "integer",
+                "model_pointer": {
+                    "anyOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Identifier for model block to be used by a method",
+                    "title": "Model Pointer",
+                    "x-block-pointer": "model",
                     "x-materialization": [
                         {
-                            "ir_key": "method.max_function_evaluations",
-                            "ir_value_type": "size_t",
+                            "ir_key": "method.model_pointer",
+                            "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
                     ]
@@ -23315,6 +23822,26 @@
                             "ir_key": "variables.exponential_uncertain",
                             "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.continuous",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.aleatory_uncertain",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.uncertain",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.total",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
                         }
                     ]
                 },
@@ -23376,6 +23903,13 @@
                     "title": "Descriptors",
                     "x-aliases": [
                         "euv_descriptors"
+                    ],
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.exponential_uncertain.labels",
+                            "ir_value_type": "StringArray",
+                            "storage_type": "DIRECT_VALUE"
+                        }
                     ]
                 },
                 "initial_point_user_provided": {
@@ -23406,7 +23940,14 @@
                     "items": {
                         "type": "number"
                     },
-                    "type": "array"
+                    "type": "array",
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.exponential_uncertain.lower_bounds",
+                            "ir_value_type": "RealVector",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 },
                 "upper_bounds": {
                     "description": "Upper bounds: mean + 3*stdev from beta",
@@ -23414,7 +23955,14 @@
                     "items": {
                         "type": "number"
                     },
-                    "type": "array"
+                    "type": "array",
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.exponential_uncertain.upper_bounds",
+                            "ir_value_type": "RealVector",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 }
             },
             "x-model-validations": [
@@ -25206,6 +25754,26 @@
                             "ir_key": "variables.frechet_uncertain",
                             "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.continuous",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.aleatory_uncertain",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.uncertain",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.total",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
                         }
                     ]
                 },
@@ -25285,6 +25853,13 @@
                     "title": "Descriptors",
                     "x-aliases": [
                         "fuv_descriptors"
+                    ],
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.frechet_uncertain.labels",
+                            "ir_value_type": "StringArray",
+                            "storage_type": "DIRECT_VALUE"
+                        }
                     ]
                 },
                 "initial_point_user_provided": {
@@ -25316,7 +25891,14 @@
                     "items": {
                         "type": "number"
                     },
-                    "type": "array"
+                    "type": "array",
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.frechet_uncertain.lower_bounds",
+                            "ir_value_type": "RealVector",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 },
                 "upper_bounds": {
                     "description": "Upper bounds: mean + 3*stdev from alpha, beta",
@@ -25324,7 +25906,14 @@
                     "items": {
                         "type": "number"
                     },
-                    "type": "array"
+                    "type": "array",
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.frechet_uncertain.upper_bounds",
+                            "ir_value_type": "RealVector",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 }
             },
             "x-model-validations": [
@@ -26550,19 +27139,6 @@
                     "title": "Collocation Control",
                     "x-union-pattern": 4
                 },
-                "convergence_tolerance": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "value",
-                    "default": null,
-                    "description": "Stopping criterion based on objective function or statistics convergence"
-                },
                 "refinement_metric": {
                     "anyOf": [
                         {
@@ -26579,6 +27155,19 @@
                     "description": "Metric used for guiding adaptive refinement during UQ.",
                     "title": "Refinement Metric",
                     "x-union-pattern": 2
+                },
+                "convergence_tolerance": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "value",
+                    "default": null,
+                    "description": "Stopping criterion based on objective function or statistics convergence"
                 },
                 "p_refinement": {
                     "anyOf": [
@@ -27298,6 +27887,26 @@
                             "ir_key": "variables.gamma_uncertain",
                             "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.continuous",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.aleatory_uncertain",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.uncertain",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.total",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
                         }
                     ]
                 },
@@ -27377,6 +27986,13 @@
                     "title": "Descriptors",
                     "x-aliases": [
                         "gauv_descriptors"
+                    ],
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.gamma_uncertain.labels",
+                            "ir_value_type": "StringArray",
+                            "storage_type": "DIRECT_VALUE"
+                        }
                     ]
                 },
                 "initial_point_user_provided": {
@@ -27408,7 +28024,14 @@
                     "items": {
                         "type": "number"
                     },
-                    "type": "array"
+                    "type": "array",
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.gamma_uncertain.lower_bounds",
+                            "ir_value_type": "RealVector",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 },
                 "upper_bounds": {
                     "description": "Upper bounds: mean + 3*stdev from alpha, beta",
@@ -27416,7 +28039,14 @@
                     "items": {
                         "type": "number"
                     },
-                    "type": "array"
+                    "type": "array",
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.gamma_uncertain.upper_bounds",
+                            "ir_value_type": "RealVector",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 }
             },
             "x-model-validations": [
@@ -28157,6 +28787,26 @@
                             "ir_key": "variables.geometric_uncertain",
                             "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.discrete",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.aleatory_uncertain",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.uncertain",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.total",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
                         }
                     ]
                 },
@@ -28215,7 +28865,14 @@
                     ],
                     "default": null,
                     "description": "Labels for the variables",
-                    "title": "Descriptors"
+                    "title": "Descriptors",
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.geometric_uncertain.labels",
+                            "ir_value_type": "StringArray",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 },
                 "initial_point_user_provided": {
                     "default": false,
@@ -28245,7 +28902,14 @@
                     "items": {
                         "type": "integer"
                     },
-                    "type": "array"
+                    "type": "array",
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.geometric_uncertain.lower_bounds",
+                            "ir_value_type": "IntVector",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 },
                 "upper_bounds": {
                     "description": "Upper bounds: ceil(mean + 3*stdev)",
@@ -28253,7 +28917,14 @@
                     "items": {
                         "type": "integer"
                     },
-                    "type": "array"
+                    "type": "array",
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.geometric_uncertain.upper_bounds",
+                            "ir_value_type": "IntVector",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 }
             },
             "x-model-validations": [
@@ -29310,25 +29981,19 @@
                     "x-model-default": "RngOptionsContext2Mt19937",
                     "x-union-pattern": 1
                 },
-                "response_levels": {
+                "distribution": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/ResponseLevelsComputeProbGenContext1ResponseLevels"
+                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
                         },
                         {
-                            "type": "null"
+                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
                         }
                     ],
-                    "argument": "values",
-                    "default": null,
-                    "description": "Values at which to estimate desired statistics for each response",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.nond.response_levels",
-                            "ir_value_type": "RealVectorArray",
-                            "storage_type": "RESPONSE_LEVELS_ARRAY"
-                        }
-                    ]
+                    "description": "Selection of cumulative or complementary cumulative functions",
+                    "title": "Distribution",
+                    "x-model-default": "DistributionCumulComplContext1Cumulative",
+                    "x-union-pattern": 1
                 },
                 "probability_levels": {
                     "anyOf": [
@@ -29350,19 +30015,25 @@
                         }
                     ]
                 },
-                "distribution": {
+                "response_levels": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
+                            "$ref": "#/$defs/ResponseLevelsComputeProbGenContext1ResponseLevels"
                         },
                         {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
+                            "type": "null"
                         }
                     ],
-                    "description": "Selection of cumulative or complementary cumulative functions",
-                    "title": "Distribution",
-                    "x-model-default": "DistributionCumulComplContext1Cumulative",
-                    "x-union-pattern": 1
+                    "argument": "values",
+                    "default": null,
+                    "description": "Values at which to estimate desired statistics for each response",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.response_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
                 },
                 "gen_reliability_levels": {
                     "anyOf": [
@@ -29898,25 +30569,19 @@
                         }
                     ]
                 },
-                "response_levels": {
+                "distribution": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/ResponseLevelsComputeProbGenContext1ResponseLevels"
+                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
                         },
                         {
-                            "type": "null"
+                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
                         }
                     ],
-                    "argument": "values",
-                    "default": null,
-                    "description": "Values at which to estimate desired statistics for each response",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.nond.response_levels",
-                            "ir_value_type": "RealVectorArray",
-                            "storage_type": "RESPONSE_LEVELS_ARRAY"
-                        }
-                    ]
+                    "description": "Selection of cumulative or complementary cumulative functions",
+                    "title": "Distribution",
+                    "x-model-default": "DistributionCumulComplContext1Cumulative",
+                    "x-union-pattern": 1
                 },
                 "probability_levels": {
                     "anyOf": [
@@ -29938,19 +30603,25 @@
                         }
                     ]
                 },
-                "distribution": {
+                "response_levels": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
+                            "$ref": "#/$defs/ResponseLevelsComputeProbGenContext1ResponseLevels"
                         },
                         {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
+                            "type": "null"
                         }
                     ],
-                    "description": "Selection of cumulative or complementary cumulative functions",
-                    "title": "Distribution",
-                    "x-model-default": "DistributionCumulComplContext1Cumulative",
-                    "x-union-pattern": 1
+                    "argument": "values",
+                    "default": null,
+                    "description": "Values at which to estimate desired statistics for each response",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.response_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
                 },
                 "gen_reliability_levels": {
                     "anyOf": [
@@ -30384,25 +31055,19 @@
                     "x-model-default": "RngOptionsContext2Mt19937",
                     "x-union-pattern": 1
                 },
-                "response_levels": {
+                "distribution": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/ResponseLevelsComputeProbGenContext1ResponseLevels"
+                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
                         },
                         {
-                            "type": "null"
+                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
                         }
                     ],
-                    "argument": "values",
-                    "default": null,
-                    "description": "Values at which to estimate desired statistics for each response",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.nond.response_levels",
-                            "ir_value_type": "RealVectorArray",
-                            "storage_type": "RESPONSE_LEVELS_ARRAY"
-                        }
-                    ]
+                    "description": "Selection of cumulative or complementary cumulative functions",
+                    "title": "Distribution",
+                    "x-model-default": "DistributionCumulComplContext1Cumulative",
+                    "x-union-pattern": 1
                 },
                 "probability_levels": {
                     "anyOf": [
@@ -30424,19 +31089,25 @@
                         }
                     ]
                 },
-                "distribution": {
+                "response_levels": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
+                            "$ref": "#/$defs/ResponseLevelsComputeProbGenContext1ResponseLevels"
                         },
                         {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
+                            "type": "null"
                         }
                     ],
-                    "description": "Selection of cumulative or complementary cumulative functions",
-                    "title": "Distribution",
-                    "x-model-default": "DistributionCumulComplContext1Cumulative",
-                    "x-union-pattern": 1
+                    "argument": "values",
+                    "default": null,
+                    "description": "Values at which to estimate desired statistics for each response",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.response_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
                 },
                 "gen_reliability_levels": {
                     "anyOf": [
@@ -31215,6 +31886,26 @@
                             "ir_key": "variables.gumbel_uncertain",
                             "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.continuous",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.aleatory_uncertain",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.uncertain",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.total",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
                         }
                     ]
                 },
@@ -31294,6 +31985,13 @@
                     "title": "Descriptors",
                     "x-aliases": [
                         "guuv_descriptors"
+                    ],
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.gumbel_uncertain.labels",
+                            "ir_value_type": "StringArray",
+                            "storage_type": "DIRECT_VALUE"
+                        }
                     ]
                 },
                 "initial_point_user_provided": {
@@ -31325,7 +32023,14 @@
                     "items": {
                         "type": "number"
                     },
-                    "type": "array"
+                    "type": "array",
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.gumbel_uncertain.lower_bounds",
+                            "ir_value_type": "RealVector",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 },
                 "upper_bounds": {
                     "description": "Upper bounds: mean + 3*stdev from alpha, beta",
@@ -31333,7 +32038,14 @@
                     "items": {
                         "type": "number"
                     },
-                    "type": "array"
+                    "type": "array",
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.gumbel_uncertain.upper_bounds",
+                            "ir_value_type": "RealVector",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 }
             },
             "x-model-validations": [
@@ -31581,6 +32293,26 @@
                             "ir_key": "variables.histogram_uncertain.bin",
                             "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.continuous",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.aleatory_uncertain",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.uncertain",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.total",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
                         }
                     ]
                 },
@@ -31668,6 +32400,13 @@
                     "title": "Descriptors",
                     "x-aliases": [
                         "huv_bin_descriptors"
+                    ],
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.histogram_bin_uncertain.labels",
+                            "ir_value_type": "StringArray",
+                            "storage_type": "DIRECT_VALUE"
+                        }
                     ]
                 },
                 "initial_point_user_provided": {
@@ -31699,7 +32438,14 @@
                     "items": {
                         "type": "number"
                     },
-                    "type": "array"
+                    "type": "array",
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.histogram_uncertain.bin.lower_bounds",
+                            "ir_value_type": "RealVector",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 },
                 "upper_bounds": {
                     "description": "Upper bounds: last abscissa per variable",
@@ -31707,7 +32453,14 @@
                     "items": {
                         "type": "number"
                     },
-                    "type": "array"
+                    "type": "array",
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.histogram_uncertain.bin.upper_bounds",
+                            "ir_value_type": "RealVector",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 }
             },
             "x-model-validations": [
@@ -31907,6 +32660,26 @@
                             "ir_key": "variables.histogram_uncertain.point_int",
                             "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.discrete",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.aleatory_uncertain",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.uncertain",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.total",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
                         }
                     ]
                 },
@@ -31982,7 +32755,14 @@
                     ],
                     "default": null,
                     "description": "Labels for the variables",
-                    "title": "Descriptors"
+                    "title": "Descriptors",
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.histogram_uncertain.point_int.labels",
+                            "ir_value_type": "StringArray",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 },
                 "initial_point_user_provided": {
                     "default": false,
@@ -32013,7 +32793,14 @@
                     "items": {
                         "type": "integer"
                     },
-                    "type": "array"
+                    "type": "array",
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.histogram_uncertain.point_int.lower_bounds",
+                            "ir_value_type": "IntVector",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 },
                 "upper_bounds": {
                     "description": "Upper bounds: max abscissa per variable",
@@ -32021,7 +32808,14 @@
                     "items": {
                         "type": "integer"
                     },
-                    "type": "array"
+                    "type": "array",
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.histogram_uncertain.point_int.upper_bounds",
+                            "ir_value_type": "IntVector",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 }
             },
             "x-model-validations": [
@@ -32143,6 +32937,26 @@
                             "ir_key": "variables.histogram_uncertain.point_real",
                             "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.discrete",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.aleatory_uncertain",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.uncertain",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.total",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
                         }
                     ]
                 },
@@ -32218,7 +33032,14 @@
                     ],
                     "default": null,
                     "description": "Labels for the variables",
-                    "title": "Descriptors"
+                    "title": "Descriptors",
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.histogram_uncertain.point_real.labels",
+                            "ir_value_type": "StringArray",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 },
                 "initial_point_user_provided": {
                     "default": false,
@@ -32249,7 +33070,14 @@
                     "items": {
                         "type": "number"
                     },
-                    "type": "array"
+                    "type": "array",
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.histogram_uncertain.point_real.lower_bounds",
+                            "ir_value_type": "RealVector",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 },
                 "upper_bounds": {
                     "description": "Upper bounds: max abscissa per variable",
@@ -32257,7 +33085,14 @@
                     "items": {
                         "type": "number"
                     },
-                    "type": "array"
+                    "type": "array",
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.histogram_uncertain.point_real.upper_bounds",
+                            "ir_value_type": "RealVector",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 }
             },
             "x-model-validations": [
@@ -32379,6 +33214,26 @@
                             "ir_key": "variables.histogram_uncertain.point_string",
                             "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.discrete",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.aleatory_uncertain",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.uncertain",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.total",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
                         }
                     ]
                 },
@@ -32454,7 +33309,14 @@
                     ],
                     "default": null,
                     "description": "Labels for the variables",
-                    "title": "Descriptors"
+                    "title": "Descriptors",
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.histogram_uncertain.point_string.labels",
+                            "ir_value_type": "StringArray",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 },
                 "initial_point_user_provided": {
                     "default": false,
@@ -32485,7 +33347,14 @@
                     "items": {
                         "type": "string"
                     },
-                    "type": "array"
+                    "type": "array",
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.histogram_uncertain.point_string.lower_bounds",
+                            "ir_value_type": "StringArray",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 },
                 "upper_bounds": {
                     "description": "Upper bounds: max abscissa per variable",
@@ -32493,7 +33362,14 @@
                     "items": {
                         "type": "string"
                     },
-                    "type": "array"
+                    "type": "array",
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.histogram_uncertain.point_string.upper_bounds",
+                            "ir_value_type": "StringArray",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 }
             },
             "x-model-validations": [
@@ -32722,6 +33598,26 @@
                             "ir_key": "variables.hypergeometric_uncertain",
                             "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.discrete",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.aleatory_uncertain",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.uncertain",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.total",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
                         }
                     ]
                 },
@@ -32807,7 +33703,14 @@
                     ],
                     "default": null,
                     "description": "Labels for the variables",
-                    "title": "Descriptors"
+                    "title": "Descriptors",
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.hypergeometric_uncertain.labels",
+                            "ir_value_type": "StringArray",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 },
                 "initial_point_user_provided": {
                     "default": false,
@@ -32839,7 +33742,14 @@
                     "items": {
                         "type": "integer"
                     },
-                    "type": "array"
+                    "type": "array",
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.hypergeometric_uncertain.lower_bounds",
+                            "ir_value_type": "IntVector",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 },
                 "upper_bounds": {
                     "description": "Upper bounds: min(num_drawn, selected_population)",
@@ -32847,7 +33757,14 @@
                     "items": {
                         "type": "integer"
                     },
-                    "type": "array"
+                    "type": "array",
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.hypergeometric_uncertain.upper_bounds",
+                            "ir_value_type": "IntVector",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 }
             },
             "x-model-validations": [
@@ -33994,26 +34911,6 @@
                         }
                     ]
                 },
-                "probability_levels": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/ProbabilityLevelsContext2ProbabilityLevels"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "values",
-                    "default": null,
-                    "description": "Specify probability levels at which to estimate the corresponding response value",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.nond.probability_levels",
-                            "ir_value_type": "RealVectorArray",
-                            "storage_type": "RESPONSE_LEVELS_ARRAY"
-                        }
-                    ]
-                },
                 "reliability_levels": {
                     "anyOf": [
                         {
@@ -34029,40 +34926,6 @@
                     "x-materialization": [
                         {
                             "ir_key": "method.nond.reliability_levels",
-                            "ir_value_type": "RealVectorArray",
-                            "storage_type": "RESPONSE_LEVELS_ARRAY"
-                        }
-                    ]
-                },
-                "distribution": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
-                        },
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
-                        }
-                    ],
-                    "description": "Selection of cumulative or complementary cumulative functions",
-                    "title": "Distribution",
-                    "x-model-default": "DistributionCumulComplContext1Cumulative",
-                    "x-union-pattern": 1
-                },
-                "response_levels": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/ResponseLevelsComputeProbRelGenResponseLevels"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "values",
-                    "default": null,
-                    "description": "Values at which to estimate desired statistics for each response",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.nond.response_levels",
                             "ir_value_type": "RealVectorArray",
                             "storage_type": "RESPONSE_LEVELS_ARRAY"
                         }
@@ -34087,6 +34950,60 @@
                             "storage_type": "RESPONSE_LEVELS_ARRAY"
                         }
                     ]
+                },
+                "probability_levels": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/ProbabilityLevelsContext2ProbabilityLevels"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "values",
+                    "default": null,
+                    "description": "Specify probability levels at which to estimate the corresponding response value",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.probability_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
+                },
+                "response_levels": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/ResponseLevelsComputeProbRelGenResponseLevels"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "values",
+                    "default": null,
+                    "description": "Values at which to estimate desired statistics for each response",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.response_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
+                },
+                "distribution": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
+                        },
+                        {
+                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
+                        }
+                    ],
+                    "description": "Selection of cumulative or complementary cumulative functions",
+                    "title": "Distribution",
+                    "x-model-default": "DistributionCumulComplContext1Cumulative",
+                    "x-union-pattern": 1
                 },
                 "final_moments": {
                     "anyOf": [
@@ -34806,25 +35723,19 @@
                     "x-model-default": "RngOptionsContext2Mt19937",
                     "x-union-pattern": 1
                 },
-                "response_levels": {
+                "distribution": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/ResponseLevelsComputeProbGenContext1ResponseLevels"
+                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
                         },
                         {
-                            "type": "null"
+                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
                         }
                     ],
-                    "argument": "values",
-                    "default": null,
-                    "description": "Values at which to estimate desired statistics for each response",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.nond.response_levels",
-                            "ir_value_type": "RealVectorArray",
-                            "storage_type": "RESPONSE_LEVELS_ARRAY"
-                        }
-                    ]
+                    "description": "Selection of cumulative or complementary cumulative functions",
+                    "title": "Distribution",
+                    "x-model-default": "DistributionCumulComplContext1Cumulative",
+                    "x-union-pattern": 1
                 },
                 "probability_levels": {
                     "anyOf": [
@@ -34846,19 +35757,25 @@
                         }
                     ]
                 },
-                "distribution": {
+                "response_levels": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
+                            "$ref": "#/$defs/ResponseLevelsComputeProbGenContext1ResponseLevels"
                         },
                         {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
+                            "type": "null"
                         }
                     ],
-                    "description": "Selection of cumulative or complementary cumulative functions",
-                    "title": "Distribution",
-                    "x-model-default": "DistributionCumulComplContext1Cumulative",
-                    "x-union-pattern": 1
+                    "argument": "values",
+                    "default": null,
+                    "description": "Values at which to estimate desired statistics for each response",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.response_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
                 },
                 "gen_reliability_levels": {
                     "anyOf": [
@@ -36745,25 +37662,19 @@
                         }
                     ]
                 },
-                "response_levels": {
+                "distribution": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/ResponseLevelsComputeProbGenContext1ResponseLevels"
+                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
                         },
                         {
-                            "type": "null"
+                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
                         }
                     ],
-                    "argument": "values",
-                    "default": null,
-                    "description": "Values at which to estimate desired statistics for each response",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.nond.response_levels",
-                            "ir_value_type": "RealVectorArray",
-                            "storage_type": "RESPONSE_LEVELS_ARRAY"
-                        }
-                    ]
+                    "description": "Selection of cumulative or complementary cumulative functions",
+                    "title": "Distribution",
+                    "x-model-default": "DistributionCumulComplContext1Cumulative",
+                    "x-union-pattern": 1
                 },
                 "probability_levels": {
                     "anyOf": [
@@ -36785,19 +37696,25 @@
                         }
                     ]
                 },
-                "distribution": {
+                "response_levels": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
+                            "$ref": "#/$defs/ResponseLevelsComputeProbGenContext1ResponseLevels"
                         },
                         {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
+                            "type": "null"
                         }
                     ],
-                    "description": "Selection of cumulative or complementary cumulative functions",
-                    "title": "Distribution",
-                    "x-model-default": "DistributionCumulComplContext1Cumulative",
-                    "x-union-pattern": 1
+                    "argument": "values",
+                    "default": null,
+                    "description": "Values at which to estimate desired statistics for each response",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.response_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
                 },
                 "gen_reliability_levels": {
                     "anyOf": [
@@ -37250,26 +38167,6 @@
                         }
                     ]
                 },
-                "probability_levels": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/ProbabilityLevelsContext2ProbabilityLevels"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "values",
-                    "default": null,
-                    "description": "Specify probability levels at which to estimate the corresponding response value",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.nond.probability_levels",
-                            "ir_value_type": "RealVectorArray",
-                            "storage_type": "RESPONSE_LEVELS_ARRAY"
-                        }
-                    ]
-                },
                 "reliability_levels": {
                     "anyOf": [
                         {
@@ -37285,40 +38182,6 @@
                     "x-materialization": [
                         {
                             "ir_key": "method.nond.reliability_levels",
-                            "ir_value_type": "RealVectorArray",
-                            "storage_type": "RESPONSE_LEVELS_ARRAY"
-                        }
-                    ]
-                },
-                "distribution": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
-                        },
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
-                        }
-                    ],
-                    "description": "Selection of cumulative or complementary cumulative functions",
-                    "title": "Distribution",
-                    "x-model-default": "DistributionCumulComplContext1Cumulative",
-                    "x-union-pattern": 1
-                },
-                "response_levels": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/ResponseLevelsComputeProbRelGenResponseLevels"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "values",
-                    "default": null,
-                    "description": "Values at which to estimate desired statistics for each response",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.nond.response_levels",
                             "ir_value_type": "RealVectorArray",
                             "storage_type": "RESPONSE_LEVELS_ARRAY"
                         }
@@ -37343,6 +38206,60 @@
                             "storage_type": "RESPONSE_LEVELS_ARRAY"
                         }
                     ]
+                },
+                "probability_levels": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/ProbabilityLevelsContext2ProbabilityLevels"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "values",
+                    "default": null,
+                    "description": "Specify probability levels at which to estimate the corresponding response value",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.probability_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
+                },
+                "response_levels": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/ResponseLevelsComputeProbRelGenResponseLevels"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "values",
+                    "default": null,
+                    "description": "Values at which to estimate desired statistics for each response",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.response_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
+                },
+                "distribution": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
+                        },
+                        {
+                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
+                        }
+                    ],
+                    "description": "Selection of cumulative or complementary cumulative functions",
+                    "title": "Distribution",
+                    "x-model-default": "DistributionCumulComplContext1Cumulative",
+                    "x-union-pattern": 1
                 },
                 "id_method": {
                     "anyOf": [
@@ -37456,6 +38373,26 @@
                             "ir_key": "variables.lognormal_uncertain",
                             "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.continuous",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.aleatory_uncertain",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.uncertain",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.total",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
                         }
                     ]
                 },
@@ -37567,6 +38504,13 @@
                     "title": "Descriptors",
                     "x-aliases": [
                         "lnuv_descriptors"
+                    ],
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.lognormal_uncertain.labels",
+                            "ir_value_type": "StringArray",
+                            "storage_type": "DIRECT_VALUE"
+                        }
                     ]
                 },
                 "initial_point_user_provided": {
@@ -37804,6 +38748,26 @@
                             "ir_key": "variables.loguniform_uncertain",
                             "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.continuous",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.aleatory_uncertain",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.uncertain",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.total",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
                         }
                     ]
                 },
@@ -37883,6 +38847,13 @@
                     "title": "Descriptors",
                     "x-aliases": [
                         "luuv_descriptors"
+                    ],
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.loguniform_uncertain.labels",
+                            "ir_value_type": "StringArray",
+                            "storage_type": "DIRECT_VALUE"
+                        }
                     ]
                 },
                 "initial_point_user_provided": {
@@ -43417,18 +44388,22 @@
                     "description": "Sample allocation approach for multifidelity expansions",
                     "x-union-pattern": 2
                 },
-                "convergence_tolerance": {
+                "statistics_mode": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
+                            "$ref": "#/$defs/Active"
+                        },
+                        {
+                            "$ref": "#/$defs/StatisticsModeCombined"
                         },
                         {
                             "type": "null"
                         }
                     ],
-                    "argument": "value",
                     "default": null,
-                    "description": "Stopping criterion based on objective function or statistics convergence"
+                    "description": "type of statistical metric roll-up for multifidelity UQ methods",
+                    "title": "Statistics Mode",
+                    "x-union-pattern": 2
                 },
                 "refinement_metric": {
                     "anyOf": [
@@ -43447,22 +44422,18 @@
                     "title": "Refinement Metric",
                     "x-union-pattern": 2
                 },
-                "statistics_mode": {
+                "convergence_tolerance": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/Active"
-                        },
-                        {
-                            "$ref": "#/$defs/StatisticsModeCombined"
+                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
                         },
                         {
                             "type": "null"
                         }
                     ],
+                    "argument": "value",
                     "default": null,
-                    "description": "type of statistical metric roll-up for multifidelity UQ methods",
-                    "title": "Statistics Mode",
-                    "x-union-pattern": 2
+                    "description": "Stopping criterion based on objective function or statistics convergence"
                 },
                 "p_refinement": {
                     "anyOf": [
@@ -46475,19 +47446,6 @@
                     "title": "Discrepancy Emulation",
                     "x-union-pattern": 2
                 },
-                "convergence_tolerance": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "value",
-                    "default": null,
-                    "description": "Stopping criterion based on objective function or statistics convergence"
-                },
                 "refinement_metric": {
                     "anyOf": [
                         {
@@ -46504,6 +47462,19 @@
                     "description": "Metric used for guiding adaptive refinement during UQ.",
                     "title": "Refinement Metric",
                     "x-union-pattern": 2
+                },
+                "convergence_tolerance": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "value",
+                    "default": null,
+                    "description": "Stopping criterion based on objective function or statistics convergence"
                 },
                 "allocation_control": {
                     "anyOf": [
@@ -50530,18 +51501,22 @@
                     "description": "Sample allocation approach for multifidelity expansions",
                     "x-union-pattern": 2
                 },
-                "convergence_tolerance": {
+                "statistics_mode": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
+                            "$ref": "#/$defs/Active"
+                        },
+                        {
+                            "$ref": "#/$defs/StatisticsModeCombined"
                         },
                         {
                             "type": "null"
                         }
                     ],
-                    "argument": "value",
                     "default": null,
-                    "description": "Stopping criterion based on objective function or statistics convergence"
+                    "description": "type of statistical metric roll-up for multifidelity UQ methods",
+                    "title": "Statistics Mode",
+                    "x-union-pattern": 2
                 },
                 "refinement_metric": {
                     "anyOf": [
@@ -50560,22 +51535,18 @@
                     "title": "Refinement Metric",
                     "x-union-pattern": 2
                 },
-                "statistics_mode": {
+                "convergence_tolerance": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/Active"
-                        },
-                        {
-                            "$ref": "#/$defs/StatisticsModeCombined"
+                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
                         },
                         {
                             "type": "null"
                         }
                     ],
+                    "argument": "value",
                     "default": null,
-                    "description": "type of statistical metric roll-up for multifidelity UQ methods",
-                    "title": "Statistics Mode",
-                    "x-union-pattern": 2
+                    "description": "Stopping criterion based on objective function or statistics convergence"
                 },
                 "p_refinement": {
                     "anyOf": [
@@ -51416,18 +52387,22 @@
                     "description": "Sample allocation approach for multifidelity expansions",
                     "x-union-pattern": 2
                 },
-                "convergence_tolerance": {
+                "statistics_mode": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
+                            "$ref": "#/$defs/Active"
+                        },
+                        {
+                            "$ref": "#/$defs/StatisticsModeCombined"
                         },
                         {
                             "type": "null"
                         }
                     ],
-                    "argument": "value",
                     "default": null,
-                    "description": "Stopping criterion based on objective function or statistics convergence"
+                    "description": "type of statistical metric roll-up for multifidelity UQ methods",
+                    "title": "Statistics Mode",
+                    "x-union-pattern": 2
                 },
                 "refinement_metric": {
                     "anyOf": [
@@ -51446,22 +52421,18 @@
                     "title": "Refinement Metric",
                     "x-union-pattern": 2
                 },
-                "statistics_mode": {
+                "convergence_tolerance": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/Active"
-                        },
-                        {
-                            "$ref": "#/$defs/StatisticsModeCombined"
+                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
                         },
                         {
                             "type": "null"
                         }
                     ],
+                    "argument": "value",
                     "default": null,
-                    "description": "type of statistical metric roll-up for multifidelity UQ methods",
-                    "title": "Statistics Mode",
-                    "x-union-pattern": 2
+                    "description": "Stopping criterion based on objective function or statistics convergence"
                 },
                 "max_refinement_iterations": {
                     "default": 4294967295,
@@ -53039,19 +54010,6 @@
                     "title": "Discrepancy Emulation",
                     "x-union-pattern": 2
                 },
-                "convergence_tolerance": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "value",
-                    "default": null,
-                    "description": "Stopping criterion based on objective function or statistics convergence"
-                },
                 "refinement_metric": {
                     "anyOf": [
                         {
@@ -53068,6 +54026,19 @@
                     "description": "Metric used for guiding adaptive refinement during UQ.",
                     "title": "Refinement Metric",
                     "x-union-pattern": 2
+                },
+                "convergence_tolerance": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "value",
+                    "default": null,
+                    "description": "Stopping criterion based on objective function or statistics convergence"
                 },
                 "allocation_control": {
                     "anyOf": [
@@ -54712,6 +55683,26 @@
                             "ir_key": "variables.negative_binomial_uncertain",
                             "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.discrete",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.aleatory_uncertain",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.uncertain",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.total",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
                         }
                     ]
                 },
@@ -54785,7 +55776,14 @@
                     ],
                     "default": null,
                     "description": "Labels for the variables",
-                    "title": "Descriptors"
+                    "title": "Descriptors",
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.negative_binomial_uncertain.labels",
+                            "ir_value_type": "StringArray",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 },
                 "initial_point_user_provided": {
                     "default": false,
@@ -54816,7 +55814,14 @@
                     "items": {
                         "type": "integer"
                     },
-                    "type": "array"
+                    "type": "array",
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.negative_binomial_uncertain.lower_bounds",
+                            "ir_value_type": "IntVector",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 },
                 "upper_bounds": {
                     "description": "Upper bounds: ceil(mean + 3*stdev)",
@@ -54824,7 +55829,14 @@
                     "items": {
                         "type": "integer"
                     },
-                    "type": "array"
+                    "type": "array",
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.negative_binomial_uncertain.upper_bounds",
+                            "ir_value_type": "IntVector",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 }
             },
             "x-model-validations": [
@@ -56206,6 +57218,26 @@
                             "ir_key": "variables.normal_uncertain",
                             "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.continuous",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.aleatory_uncertain",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.uncertain",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.total",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
                         }
                     ]
                 },
@@ -56337,6 +57369,13 @@
                     "title": "Descriptors",
                     "x-aliases": [
                         "nuv_descriptors"
+                    ],
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.normal_uncertain.labels",
+                            "ir_value_type": "StringArray",
+                            "storage_type": "DIRECT_VALUE"
+                        }
                     ]
                 },
                 "initial_point_user_provided": {
@@ -61699,19 +62738,6 @@
                     "title": "Basis Family",
                     "x-union-pattern": 2
                 },
-                "convergence_tolerance": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "value",
-                    "default": null,
-                    "description": "Stopping criterion based on objective function or statistics convergence"
-                },
                 "refinement_metric": {
                     "anyOf": [
                         {
@@ -61728,6 +62754,19 @@
                     "description": "Metric used for guiding adaptive refinement during UQ.",
                     "title": "Refinement Metric",
                     "x-union-pattern": 2
+                },
+                "convergence_tolerance": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "value",
+                    "default": null,
+                    "description": "Stopping criterion based on objective function or statistics convergence"
                 },
                 "p_refinement": {
                     "anyOf": [
@@ -64145,25 +65184,19 @@
                     "x-model-default": "RngOptionsContext2Mt19937",
                     "x-union-pattern": 1
                 },
-                "response_levels": {
+                "distribution": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/ResponseLevelsComputeProbGenContext1ResponseLevels"
+                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
                         },
                         {
-                            "type": "null"
+                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
                         }
                     ],
-                    "argument": "values",
-                    "default": null,
-                    "description": "Values at which to estimate desired statistics for each response",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.nond.response_levels",
-                            "ir_value_type": "RealVectorArray",
-                            "storage_type": "RESPONSE_LEVELS_ARRAY"
-                        }
-                    ]
+                    "description": "Selection of cumulative or complementary cumulative functions",
+                    "title": "Distribution",
+                    "x-model-default": "DistributionCumulComplContext1Cumulative",
+                    "x-union-pattern": 1
                 },
                 "probability_levels": {
                     "anyOf": [
@@ -64185,19 +65218,25 @@
                         }
                     ]
                 },
-                "distribution": {
+                "response_levels": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
+                            "$ref": "#/$defs/ResponseLevelsComputeProbGenContext1ResponseLevels"
                         },
                         {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
+                            "type": "null"
                         }
                     ],
-                    "description": "Selection of cumulative or complementary cumulative functions",
-                    "title": "Distribution",
-                    "x-model-default": "DistributionCumulComplContext1Cumulative",
-                    "x-union-pattern": 1
+                    "argument": "values",
+                    "default": null,
+                    "description": "Values at which to estimate desired statistics for each response",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.response_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
                 },
                 "gen_reliability_levels": {
                     "anyOf": [
@@ -64429,6 +65468,26 @@
                             "ir_key": "variables.poisson_uncertain",
                             "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.discrete",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.aleatory_uncertain",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.uncertain",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.total",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
                         }
                     ]
                 },
@@ -64484,7 +65543,14 @@
                     ],
                     "default": null,
                     "description": "Labels for the variables",
-                    "title": "Descriptors"
+                    "title": "Descriptors",
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.poisson_uncertain.labels",
+                            "ir_value_type": "StringArray",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 },
                 "initial_point_user_provided": {
                     "default": false,
@@ -64514,7 +65580,14 @@
                     "items": {
                         "type": "integer"
                     },
-                    "type": "array"
+                    "type": "array",
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.poisson_uncertain.lower_bounds",
+                            "ir_value_type": "IntVector",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 },
                 "upper_bounds": {
                     "description": "Upper bounds: ceil(lambda + 3*sqrt(lambda))",
@@ -64522,7 +65595,14 @@
                     "items": {
                         "type": "integer"
                     },
-                    "type": "array"
+                    "type": "array",
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.poisson_uncertain.upper_bounds",
+                            "ir_value_type": "IntVector",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 }
             },
             "x-model-validations": [
@@ -68254,6 +69334,26 @@
                     "x-model-default": "RngOptionsContext1Mt19937",
                     "x-union-pattern": 1
                 },
+                "gen_reliability_levels": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/GenReliabilityLevelsGenReliabilityLevels"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "values",
+                    "default": null,
+                    "description": "Specify generalized relability levels at which to estimate the corresponding response value",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.gen_reliability_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
+                },
                 "probability_levels": {
                     "anyOf": [
                         {
@@ -68274,6 +69374,20 @@
                         }
                     ]
                 },
+                "distribution": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
+                        },
+                        {
+                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
+                        }
+                    ],
+                    "description": "Selection of cumulative or complementary cumulative functions",
+                    "title": "Distribution",
+                    "x-model-default": "DistributionCumulComplContext1Cumulative",
+                    "x-union-pattern": 1
+                },
                 "response_levels": {
                     "anyOf": [
                         {
@@ -68289,40 +69403,6 @@
                     "x-materialization": [
                         {
                             "ir_key": "method.nond.response_levels",
-                            "ir_value_type": "RealVectorArray",
-                            "storage_type": "RESPONSE_LEVELS_ARRAY"
-                        }
-                    ]
-                },
-                "distribution": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
-                        },
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
-                        }
-                    ],
-                    "description": "Selection of cumulative or complementary cumulative functions",
-                    "title": "Distribution",
-                    "x-model-default": "DistributionCumulComplContext1Cumulative",
-                    "x-union-pattern": 1
-                },
-                "gen_reliability_levels": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/GenReliabilityLevelsGenReliabilityLevels"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "values",
-                    "default": null,
-                    "description": "Specify generalized relability levels at which to estimate the corresponding response value",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.nond.gen_reliability_levels",
                             "ir_value_type": "RealVectorArray",
                             "storage_type": "RESPONSE_LEVELS_ARRAY"
                         }
@@ -68893,26 +69973,6 @@
                     "x-model-default": "RngOptionsContext2Mt19937",
                     "x-union-pattern": 1
                 },
-                "probability_levels": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/ProbabilityLevelsContext2ProbabilityLevels"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "values",
-                    "default": null,
-                    "description": "Specify probability levels at which to estimate the corresponding response value",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.nond.probability_levels",
-                            "ir_value_type": "RealVectorArray",
-                            "storage_type": "RESPONSE_LEVELS_ARRAY"
-                        }
-                    ]
-                },
                 "reliability_levels": {
                     "anyOf": [
                         {
@@ -68928,40 +69988,6 @@
                     "x-materialization": [
                         {
                             "ir_key": "method.nond.reliability_levels",
-                            "ir_value_type": "RealVectorArray",
-                            "storage_type": "RESPONSE_LEVELS_ARRAY"
-                        }
-                    ]
-                },
-                "distribution": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
-                        },
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
-                        }
-                    ],
-                    "description": "Selection of cumulative or complementary cumulative functions",
-                    "title": "Distribution",
-                    "x-model-default": "DistributionCumulComplContext1Cumulative",
-                    "x-union-pattern": 1
-                },
-                "response_levels": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/ResponseLevelsComputeProbRelGenResponseLevels"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "values",
-                    "default": null,
-                    "description": "Values at which to estimate desired statistics for each response",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.nond.response_levels",
                             "ir_value_type": "RealVectorArray",
                             "storage_type": "RESPONSE_LEVELS_ARRAY"
                         }
@@ -68986,6 +70012,60 @@
                             "storage_type": "RESPONSE_LEVELS_ARRAY"
                         }
                     ]
+                },
+                "probability_levels": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/ProbabilityLevelsContext2ProbabilityLevels"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "values",
+                    "default": null,
+                    "description": "Specify probability levels at which to estimate the corresponding response value",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.probability_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
+                },
+                "response_levels": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/ResponseLevelsComputeProbRelGenResponseLevels"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "values",
+                    "default": null,
+                    "description": "Values at which to estimate desired statistics for each response",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.response_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
+                },
+                "distribution": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
+                        },
+                        {
+                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
+                        }
+                    ],
+                    "description": "Selection of cumulative or complementary cumulative functions",
+                    "title": "Distribution",
+                    "x-model-default": "DistributionCumulComplContext1Cumulative",
+                    "x-union-pattern": 1
                 },
                 "final_moments": {
                     "anyOf": [
@@ -71603,19 +72683,6 @@
                     "title": "Basis Family",
                     "x-union-pattern": 2
                 },
-                "convergence_tolerance": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "value",
-                    "default": null,
-                    "description": "Stopping criterion based on objective function or statistics convergence"
-                },
                 "refinement_metric": {
                     "anyOf": [
                         {
@@ -71632,6 +72699,19 @@
                     "description": "Metric used for guiding adaptive refinement during UQ.",
                     "title": "Refinement Metric",
                     "x-union-pattern": 2
+                },
+                "convergence_tolerance": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "value",
+                    "default": null,
+                    "description": "Stopping criterion based on objective function or statistics convergence"
                 },
                 "max_refinement_iterations": {
                     "default": 4294967295,
@@ -74464,6 +75544,26 @@
                             "ir_key": "variables.triangular_uncertain",
                             "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.continuous",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.aleatory_uncertain",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.uncertain",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.total",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
                         }
                     ]
                 },
@@ -74561,6 +75661,13 @@
                     "title": "Descriptors",
                     "x-aliases": [
                         "tuv_descriptors"
+                    ],
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.triangular_uncertain.labels",
+                            "ir_value_type": "StringArray",
+                            "storage_type": "DIRECT_VALUE"
+                        }
                     ]
                 },
                 "initial_point_user_provided": {
@@ -75161,6 +76268,26 @@
                             "ir_key": "variables.uniform_uncertain",
                             "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.continuous",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.aleatory_uncertain",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.uncertain",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.total",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
                         }
                     ]
                 },
@@ -75240,6 +76367,13 @@
                     "title": "Descriptors",
                     "x-aliases": [
                         "uuv_descriptors"
+                    ],
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.uniform_uncertain.labels",
+                            "ir_value_type": "StringArray",
+                            "storage_type": "DIRECT_VALUE"
+                        }
                     ]
                 },
                 "initial_point_user_provided": {
@@ -76748,6 +77882,26 @@
                             "ir_key": "variables.weibull_uncertain",
                             "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.continuous",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.aleatory_uncertain",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.uncertain",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
+                        },
+                        {
+                            "ir_key": "variables.total",
+                            "ir_value_type": "size_t",
+                            "storage_type": "ADD_TO_VALUE"
                         }
                     ]
                 },
@@ -76827,6 +77981,13 @@
                     "title": "Descriptors",
                     "x-aliases": [
                         "wuv_descriptors"
+                    ],
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.weibull_uncertain.labels",
+                            "ir_value_type": "StringArray",
+                            "storage_type": "DIRECT_VALUE"
+                        }
                     ]
                 },
                 "initial_point_user_provided": {
@@ -76858,7 +78019,14 @@
                     "items": {
                         "type": "number"
                     },
-                    "type": "array"
+                    "type": "array",
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.weibull_uncertain.lower_bounds",
+                            "ir_value_type": "RealVector",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 },
                 "upper_bounds": {
                     "description": "Upper bounds: mean + 3*stdev from alpha, beta",
@@ -76866,7 +78034,14 @@
                     "items": {
                         "type": "number"
                     },
-                    "type": "array"
+                    "type": "array",
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.weibull_uncertain.upper_bounds",
+                            "ir_value_type": "RealVector",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 }
             },
             "x-model-validations": [

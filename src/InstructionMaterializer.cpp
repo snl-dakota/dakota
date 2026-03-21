@@ -51,6 +51,7 @@ const std::unordered_map<irgen::OpKind, InstructionMaterializer::OpHandler>&
 InstructionMaterializer::op_handlers()
 {
   static const std::unordered_map<irgen::OpKind, OpHandler> handlers{
+    {irgen::OpKind::AddToValue, &InstructionMaterializer::handle_add_to_value},
     {irgen::OpKind::DirectValue, &InstructionMaterializer::handle_direct_value},
     {irgen::OpKind::LiteralAssign, &InstructionMaterializer::handle_literal_assign},
     {irgen::OpKind::PresenceBool, &InstructionMaterializer::handle_presence_bool},

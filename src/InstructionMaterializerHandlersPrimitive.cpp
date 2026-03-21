@@ -65,6 +65,25 @@ Dakota::IRValue convert_direct_value(const json& value, dakota::irgen::IrValueTy
   return IRValue(value);
 }
 
+uint64_t convert_integral_direct_value(const json& value, dakota::irgen::IrValueType t)
+{
+  using namespace Dakota;
+
+  switch (t) {
+  case irgen::IrValueType::SizeT:
+    return static_cast<uint64_t>(value.get<size_t>());
+  case irgen::IrValueType::UnsignedShort:
+    return static_cast<uint64_t>(value.get<unsigned short>());
+  case irgen::IrValueType::Int:
+    return static_cast<uint64_t>(value.get<int>());
+  case irgen::IrValueType::Short:
+    return static_cast<uint64_t>(value.get<short>());
+  default:
+    throw std::runtime_error(
+      "InstructionMaterializer::handle_add_to_value unsupported contract type");
+  }
+}
+
 std::vector<int> infer_response_level_partition(const json& block_json,
                                                const std::string& container_path)
 {
@@ -160,6 +179,25 @@ uint64_t current_enum_value_or_zero(const Dakota::IRStore& store,
   }
 }
 
+Dakota::IRValue integral_u64_to_irvalue(uint64_t v, Dakota::irgen::IrValueType t)
+{
+  using Dakota::IRValue;
+  using Dakota::irgen::IrValueType;
+  switch (t) {
+  case IrValueType::SizeT:
+    return IRValue(static_cast<size_t>(v));
+  case IrValueType::UnsignedShort:
+    return IRValue(static_cast<unsigned short>(v));
+  case IrValueType::Int:
+    return IRValue(static_cast<int>(v));
+  case IrValueType::Short:
+    return IRValue(static_cast<short>(v));
+  default:
+    throw std::runtime_error(
+      "InstructionMaterializer::handle_add_to_value unsupported contract type");
+  }
+}
+
 } // namespace
 
 namespace Dakota {
@@ -172,6 +210,20 @@ void InstructionMaterializer::handle_direct_value(const irgen::WriteOp& op,
     ctx.block_json, ctx.current_path);
   ctx.store.set_value(op.target_local_ir_key,
                       convert_direct_value(value, contract.ir_value_type));
+}
+
+void InstructionMaterializer::handle_add_to_value(const irgen::WriteOp& op,
+                                                  const irgen::KeyContract& contract,
+                                                  const HandlerContext& ctx)
+{
+  const auto& value = InstructionMaterializerUtils::required_path(
+    ctx.block_json, ctx.current_path);
+  const uint64_t delta = convert_integral_direct_value(value, contract.ir_value_type);
+  const uint64_t base = current_enum_value_or_zero(
+    ctx.store, op.target_local_ir_key, contract.ir_value_type);
+  ctx.store.set_value(
+    op.target_local_ir_key,
+    integral_u64_to_irvalue(base + delta, contract.ir_value_type));
 }
 
 void InstructionMaterializer::handle_literal_assign(const irgen::WriteOp& op,

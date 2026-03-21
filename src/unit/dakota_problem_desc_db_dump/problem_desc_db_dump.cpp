@@ -125,6 +125,34 @@ TEST(problem_desc_db_dump_tests, ir_state_dump_preserves_native_ir_keys)
   EXPECT_FALSE(values.contains("method[0].id_method"));
 }
 
+TEST(problem_desc_db_dump_tests, problem_desc_db_dump_prefers_ir_state_when_present)
+{
+  ProblemDescDB db(1, 0);
+  const auto input_path =
+    std::filesystem::temp_directory_path() / "dakota_problem_desc_db_dump_ir_input.json";
+  {
+    std::ofstream input(input_path);
+    ASSERT_TRUE(input.good());
+    input << "{\n"
+             "  \"environment\": {}\n"
+             "}\n";
+  }
+
+  db.enable_json_input(input_path.string());
+
+  const auto out_path =
+    std::filesystem::temp_directory_path() / "dakota_problem_desc_db_dump_ir_preferred.json";
+  db.write_json_dump(out_path.string());
+
+  std::ifstream in(out_path);
+  ASSERT_TRUE(in.good());
+  json dumped = json::parse(in);
+
+  ASSERT_EQ(dumped["_meta"]["implementation"], "ir_state");
+  EXPECT_EQ(dumped["_meta"]["omitted_keys"], json::array());
+  EXPECT_TRUE(dumped["values"].is_object());
+}
+
 } // namespace
 } // namespace Dakota
 

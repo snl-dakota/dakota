@@ -313,6 +313,14 @@ void write_ir_state_json(const IRState& state, const String& output_path)
 
 void ProblemDescDB::write_json_dump(const String& output_path) const
 {
+  const ProblemDescDB* const storage =
+    dbRep ? dbRep.get() : this;
+
+  if (storage->irState) {
+    write_ir_state_json(*storage->irState, output_path);
+    return;
+  }
+
   write_problem_desc_db_json(*this, output_path);
 }
 

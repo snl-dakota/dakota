@@ -359,6 +359,11 @@ def _iter_materialization_entries(schema: dict[str, Any]):
             for name, child in props.items():
                 yield from walk(child, path_tokens + [name])
 
+        computed = node.get("x-computed-fields")
+        if isinstance(computed, dict):
+            for name, child in computed.items():
+                yield from walk(child, path_tokens + [name])
+
         items = node.get("items")
         if isinstance(items, dict):
             yield from walk(items, path_tokens)
@@ -489,6 +494,7 @@ def load_instructions_by_block(schema_path: Path) -> dict[str, dict[str, list[di
             op = {
                 "op_kind": storage,
                 "target_local_ir_key": local_key,
+                "ir_value_type": info.get("ir_value_type"),
                 "literal_member_type": lit[0] if lit and uses_lit else None,
                 "literal_value": lit[1] if lit and uses_lit else None,
                 "literal_enum_scope": info.get("enum_scope") if lit and uses_lit else None,
@@ -504,6 +510,37 @@ def _cpp_json_expr(value: Any) -> str:
     txt = json.dumps(value, sort_keys=True)
     txt = txt.replace("\\", "\\\\").replace('"', '\\"')
     return f'nlohmann::json::parse("{txt}")'
+
+
+def synthesize_missing_contracts_from_instructions(
+    contracts_by_block: dict[str, dict[str, KeyContract]],
+    instructions_by_block: dict[str, dict[str, list[dict[str, Any]]]],
+) -> None:
+    """Add contracts for write targets that are instruction-only IR keys."""
+
+    for block in BLOCKS:
+        contracts = contracts_by_block[block]
+        for ops in instructions_by_block[block].values():
+            for op in ops:
+                local_key = op.get("target_local_ir_key")
+                if not isinstance(local_key, str) or local_key in contracts:
+                    continue
+
+                member_type = op.get("ir_value_type") or op.get("literal_member_type")
+                if not isinstance(member_type, str) or not member_type:
+                    continue
+
+                full_ir_key = f"{block}.{local_key}"
+                contracts[local_key] = KeyContract(
+                    full_ir_key=full_ir_key,
+                    local_ir_key=local_key,
+                    member_variable_type=member_type,
+                    value_type_tag=type_tag(member_type),
+                    default_kind="policy",
+                    default_value=policy_default_for_type(member_type),
+                    enum_scope="",
+                    source="instruction_inferred",
+                )
 
 
 def _cpp_str(value: str) -> str:
@@ -935,6 +972,7 @@ def main() -> int:
     policies = load_policies(Path(args.policy_registry))
     merged = merge_contracts(schema, overrides, policies)
     instructions = load_instructions_by_block(Path(args.schema))
+    synthesize_missing_contracts_from_instructions(merged, instructions)
     out_dir = Path(args.output_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
 

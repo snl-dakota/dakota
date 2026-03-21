@@ -41,7 +41,6 @@
 //#define MPI_DEBUG
 
 #define JSONDB_VERBOSE true
-#define JSON_GET_CACHED_VALUE(GET_VALUE_FN, verbose)
 
 static const char rcsId[]="@(#) $Id: ProblemDescDB.cpp 7007 2010-10-06 15:54:39Z wjbohnh $";
 
@@ -1359,9 +1358,6 @@ get_mutable(const std::string& context_msg,
 
 const RealMatrixArray& ProblemDescDB::get_rma(const String& entry_name) const
 {
-  // Allow use of JSON input
-  JSON_GET_CACHED_VALUE(get_rma, JSONDB_VERBOSE)
-
   return get<RealMatrixArray>
   ( "get_rma()",
     { /* environment */ },
@@ -1379,9 +1375,6 @@ const RealMatrixArray& ProblemDescDB::get_rma(const String& entry_name) const
 
 const RealVector& ProblemDescDB::get_rv(const String& entry_name) const
 {  
-  // Allow use of JSON input
-  JSON_GET_CACHED_VALUE(get_rv, JSONDB_VERBOSE)
-
   return get<const RealVector>
   ( "get_rv()",
     { /* environment */ },
@@ -1567,9 +1560,6 @@ const RealVector& ProblemDescDB::get_rv(const String& entry_name) const
 
 const IntVector& ProblemDescDB::get_iv(const String& entry_name) const
 {
-  // Allow use of JSON input
-  JSON_GET_CACHED_VALUE(get_iv, JSONDB_VERBOSE)
-
   return get<const IntVector>
   ( "get_iv()",
     { /* environment */ },
@@ -1667,9 +1657,6 @@ const IntVector& ProblemDescDB::get_iv(const String& entry_name) const
 
 const BitArray& ProblemDescDB::get_ba(const String& entry_name) const
 {
-  // Allow use of JSON input
-  JSON_GET_CACHED_VALUE(get_ba, JSONDB_VERBOSE)
-
   return get<const BitArray>
   ( "get_ba()",
     { /* environment */ },
@@ -1703,9 +1690,6 @@ const BitArray& ProblemDescDB::get_ba(const String& entry_name) const
 
 const SizetArray& ProblemDescDB::get_sza(const String& entry_name) const
 {
-  // Allow use of JSON input
-  JSON_GET_CACHED_VALUE(get_sza, JSONDB_VERBOSE)
-
   return get<const SizetArray>
   ( "get_sza()",
     { /* environment */ },
@@ -1726,9 +1710,6 @@ const SizetArray& ProblemDescDB::get_sza(const String& entry_name) const
 
 const UShortArray& ProblemDescDB::get_usa(const String& entry_name) const
 {
-  // Allow use of JSON input
-  JSON_GET_CACHED_VALUE(get_usa, JSONDB_VERBOSE)
-
   return get<const UShortArray>
   ( "get_usa()",
     { /* environment */ },
@@ -1750,9 +1731,6 @@ const UShortArray& ProblemDescDB::get_usa(const String& entry_name) const
 
 const RealSymMatrix& ProblemDescDB::get_rsm(const String& entry_name) const
 {
-  // Allow use of JSON input
-  JSON_GET_CACHED_VALUE(get_rsm, JSONDB_VERBOSE)
-
   return get<const RealSymMatrix>
   ( "get_rsm()",
     { /* environment */ },
@@ -1769,9 +1747,6 @@ const RealSymMatrix& ProblemDescDB::get_rsm(const String& entry_name) const
 
 const RealVectorArray& ProblemDescDB::get_rva(const String& entry_name) const
 {
-  // Allow use of JSON input
-  JSON_GET_CACHED_VALUE(get_rva, JSONDB_VERBOSE)
-
   return get<const RealVectorArray>
   ( "get_rva()",
     { /* environment */ },
@@ -1791,9 +1766,6 @@ const RealVectorArray& ProblemDescDB::get_rva(const String& entry_name) const
 
 const IntVectorArray& ProblemDescDB::get_iva(const String& entry_name) const
 {
-  // Allow use of JSON input
-  JSON_GET_CACHED_VALUE(get_iva, JSONDB_VERBOSE)
-
   // BMA: no current use cases
   return get<const IntVectorArray>
   ( "get_iva()",
@@ -1809,9 +1781,6 @@ const IntVectorArray& ProblemDescDB::get_iva(const String& entry_name) const
 
 const IntSet& ProblemDescDB::get_is(const String& entry_name) const
 {
-  // Allow use of JSON input
-  JSON_GET_CACHED_VALUE(get_is, JSONDB_VERBOSE)
-
   return get<const IntSet>
   ( "get_is()",
     { /* environment */ },
@@ -1832,9 +1801,6 @@ const IntSet& ProblemDescDB::get_is(const String& entry_name) const
 
 const IntSetArray& ProblemDescDB::get_isa(const String& entry_name) const
 {
-  // Allow use of JSON input
-  JSON_GET_CACHED_VALUE(get_isa, JSONDB_VERBOSE)
-
   return get<const IntSetArray>
   ( "get_isa()",
     { /* environment */ },
@@ -1852,9 +1818,6 @@ const IntSetArray& ProblemDescDB::get_isa(const String& entry_name) const
 
 const SizetSet& ProblemDescDB::get_szs(const String& entry_name) const
 {
-  // Allow use of JSON input
-  JSON_GET_CACHED_VALUE(get_szs, JSONDB_VERBOSE)
-
   return get<const SizetSet>
   ( "get_szs()",
     { /* environment */ },
@@ -1871,9 +1834,6 @@ const SizetSet& ProblemDescDB::get_szs(const String& entry_name) const
 
 const StringSetArray& ProblemDescDB::get_ssa(const String& entry_name) const
 {
-  // Allow use of JSON input
-  JSON_GET_CACHED_VALUE(get_ssa, JSONDB_VERBOSE)
-
   return get <const StringSetArray>
   ( "get_ssa()",
     { /* environment */ },
@@ -1891,9 +1851,6 @@ const StringSetArray& ProblemDescDB::get_ssa(const String& entry_name) const
 
 const RealSetArray& ProblemDescDB::get_rsa(const String& entry_name) const
 {
-  // Allow use of JSON input
-  JSON_GET_CACHED_VALUE(get_rsa, JSONDB_VERBOSE)
-
   return get<const RealSetArray>
   ( "get_rsa()",
     { /* environment */ },
@@ -1911,9 +1868,6 @@ const RealSetArray& ProblemDescDB::get_rsa(const String& entry_name) const
 
 const IntRealMapArray& ProblemDescDB::get_irma(const String& entry_name) const
 {
-  // Allow use of JSON input
-  JSON_GET_CACHED_VALUE(get_irma, JSONDB_VERBOSE)
-
   return get<const IntRealMapArray>
   ( "get_irma()",
     { /* environment */ },
@@ -1931,9 +1885,6 @@ const IntRealMapArray& ProblemDescDB::get_irma(const String& entry_name) const
 
 const StringRealMapArray& ProblemDescDB::get_srma(const String& entry_name) const
 {
-  // Allow use of JSON input
-  JSON_GET_CACHED_VALUE(get_srma, JSONDB_VERBOSE)
-
   return get<const StringRealMapArray>
   ( "get_srma()",
     { /* environment */ },
@@ -1952,9 +1903,6 @@ const StringRealMapArray& ProblemDescDB::get_srma(const String& entry_name) cons
 
 const RealRealMapArray& ProblemDescDB::get_rrma(const String& entry_name) const
 {
-  // Allow use of JSON input
-  JSON_GET_CACHED_VALUE(get_rrma, JSONDB_VERBOSE)
-
   return get<const RealRealMapArray>
   ( "get_rrma()",
     { /* environment */ },
@@ -1974,9 +1922,6 @@ const RealRealMapArray& ProblemDescDB::get_rrma(const String& entry_name) const
 const RealRealPairRealMapArray& ProblemDescDB::
 get_rrrma(const String& entry_name) const
 {
-  // Allow use of JSON input
-  JSON_GET_CACHED_VALUE(get_rrrma, JSONDB_VERBOSE)
-
   return get<const RealRealPairRealMapArray>
   ( "get_rrrma()",
     { /* environment */ },
@@ -1994,9 +1939,6 @@ get_rrrma(const String& entry_name) const
 const IntIntPairRealMapArray& ProblemDescDB::
 get_iirma(const String& entry_name) const
 {
-  // Allow use of JSON input
-  JSON_GET_CACHED_VALUE(get_iirma, JSONDB_VERBOSE)
-
   return get<const IntIntPairRealMapArray>
   ( "get_iirma()",
     { /* environment */ },
@@ -2013,9 +1955,6 @@ get_iirma(const String& entry_name) const
 
 const StringArray& ProblemDescDB::get_sa(const String& entry_name) const
 {
-  // Allow use of JSON input
-  JSON_GET_CACHED_VALUE(get_sa, JSONDB_VERBOSE)
-
   return get<const StringArray>
   ( "get_sa()",
     { /* environment */ },
@@ -2135,9 +2074,6 @@ const StringArray& ProblemDescDB::get_sa(const String& entry_name) const
 
 const String2DArray& ProblemDescDB::get_s2a(const String& entry_name) const
 {
-  // Allow use of JSON input
-  JSON_GET_CACHED_VALUE(get_s2a, JSONDB_VERBOSE)
-
   return get<const String2DArray>
   ( "get_s2a()",
     { /* environment */ },
@@ -2154,9 +2090,6 @@ const String2DArray& ProblemDescDB::get_s2a(const String& entry_name) const
 
 const String& ProblemDescDB::get_string(const String& entry_name) const
 {
-  // Allow use of JSON input
-  JSON_GET_CACHED_VALUE(get_string, JSONDB_VERBOSE)
-
   return get<const String>
   ( "get_string()",
     { /* environment */
@@ -2307,9 +2240,6 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
 
 const Real& ProblemDescDB::get_real(const String& entry_name) const
 {
-  // Allow use of JSON input
-  JSON_GET_CACHED_VALUE(get_real, JSONDB_VERBOSE)
-
   return get<const Real>
   ( "get_real()",
     { /* environment */ },
@@ -2422,9 +2352,6 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
 
 int ProblemDescDB::get_int(const String& entry_name) const
 {
-  // Allow use of JSON input
-  JSON_GET_CACHED_VALUE(get_int, JSONDB_VERBOSE)
-
   return get<int>
   ( "get_int()",
     { /* environment */
@@ -2519,9 +2446,6 @@ int ProblemDescDB::get_int(const String& entry_name) const
 
 short ProblemDescDB::get_short(const String& entry_name) const
 {
-  // Allow use of JSON input
-  JSON_GET_CACHED_VALUE(get_short, JSONDB_VERBOSE)
-
   return get<short>
   ( "get_short()",
     { /* environment */ },
@@ -2610,9 +2534,6 @@ short ProblemDescDB::get_short(const String& entry_name) const
 
 unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
 {
-  // Allow use of JSON input
-  JSON_GET_CACHED_VALUE(get_ushort, JSONDB_VERBOSE)
-
   return get<unsigned short>
   ( "get_ushort()",
     { /* environment */
@@ -2698,9 +2619,6 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
 
 size_t ProblemDescDB::get_sizet(const String& entry_name) const
 {
-  // Allow use of JSON input
-  JSON_GET_CACHED_VALUE(get_sizet, JSONDB_VERBOSE)
-
   // first handle special case for variable group queries
 
   std::string block, entry;
@@ -2711,6 +2629,16 @@ size_t ProblemDescDB::get_sizet(const String& entry_name) const
       Null_rep("get_sizet()");
     if (dbRep->variablesDBLocked)
       Locked_db();
+
+    if (dbRep->irState) {
+      try {
+        return ir_query::get<size_t>(*dbRep->irState, entry_name);
+      }
+      catch (const std::exception&) {
+        // Fall through to legacy aggregate helpers while IR coverage is
+        // still being filled in incrementally.
+      }
+    }
 
     // string for lookup key without the leading "variables."
     auto v_iter = dbRep->dataVariablesIter;
@@ -2837,9 +2765,6 @@ size_t ProblemDescDB::get_sizet(const String& entry_name) const
 
 bool ProblemDescDB::get_bool(const String& entry_name) const
 {
-  // Allow use of JSON input
-  JSON_GET_CACHED_VALUE(get_bool, JSONDB_VERBOSE)
-
   return get<bool>
   ( "get_bool()",
     { /* environment */
