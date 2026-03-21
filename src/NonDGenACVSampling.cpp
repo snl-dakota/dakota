@@ -1774,13 +1774,13 @@ compute_G_g_from_N(const RealVector& N_vec, RealSymMatrix& G, RealVector& g)
     for (i=0; i<dag_size; ++i) {
       src_i = approx_set[i];   tgt_i = active_dag[i];
       z_i   = N_vec[src_i];    z1_i  = z1[src_i];
-      zprime_i = z2[src_i] - z1_i; // increment between z1 and total (= z = z2)
+      zprime_i = z_i - z1_i; // increment between z1 and total (= z = z2)
       g[i] = (tgt_i == numApprox) ? 1./z1_i - 1./z_i : 0.;// = 1/N_H - 1/N_i
       for (j=0; j<=i; ++j) {
 	src_j = approx_set[j];  tgt_j = active_dag[j];
 	z_j   = N_vec[src_j];   zi_zj = z_i * z_j;
 	G(i,j) = 0.;     
-	if (tgt_i == tgt_j) G(i,j) += 1./z1_i - 1./z_i - 1./z_j + z1_i/zi_zj;
+	if (tgt_i == tgt_j) G(i,j) += z1_i/zi_zj - 1./z_j + 1./z1_i - 1./z_i;
 	if (tgt_i == src_j) G(i,j) += z1_i/zi_zj - 1./z_j;
 	if (src_i == tgt_j) G(i,j) += zprime_i/zi_zj - 1./z_i;
 	if (src_i == src_j) G(i,j) += zprime_i/zi_zj;
@@ -1881,9 +1881,9 @@ unroll_z1_z2(const RealVector& N_vec, RealVector& z1, RealVector& z2)
     abort_handler(METHOD_ERROR);  break;
   }
 
-  //if (outputLevel >= DEBUG_OUTPUT)
-  //  Cout << "GenACV unroll of N_vec:\n" << N_vec << "into z1:\n" << z1
-  // 	   << "and z2:\n" << z2 << std::endl;
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "GenACV unroll of N_vec:\n" << N_vec << "into z1:\n" << z1
+	 << "and z2:\n" << z2 << std::endl;
 }
 
 
@@ -1891,16 +1891,15 @@ void NonDGenACVSampling::
 unroll_z1_z2_gradients(RealMatrix& z1_grads, RealMatrix& z2_grads)
 {
   // z1, z2 denote z_m^1 and z_m^2 from ACV paper: Gorodetsky et al., JCP 2020
-  // > As for z1,z2 in unroll_z1_z2(), columns in {z1,z2}_grads are inflated
-  //   to full dimension for each opt variable for consistency and convenience
+  // > {z1,z2}_grads use active (not inflated) indexing as for other grad
+  //   arrays, differing from z1,z2 in unroll_z1_z2()
 
   const UShortArray& approx_set = activeModelSetIter->first;
   const UShortArray& active_dag = *activeDAGIter;
-  size_t i, num_a = approx_set.size(), num_v = num_a + 1,
-    num_all_m = numApprox + 1, cntr;
+  size_t i, num_a = approx_set.size(), num_v = num_a + 1, index_src, cntr;
   unsigned short source, target;
   SizetArray index_map;  inflate_approx_set(approx_set, index_map);
-  z1_grads.shape(num_v, num_all_m); // init to 0. (entries are sparse)
+  z1_grads.shape(num_v, num_v); // init to 0. (entries are sparse)
 
   switch (mlmfSubMethod) {
   //case SUBMETHOD_ACV_MF: // not used (special unroll logic not required)
@@ -1908,20 +1907,19 @@ unroll_z1_z2_gradients(RealMatrix& z1_grads, RealMatrix& z2_grads)
   case SUBMETHOD_ACV_IS: {
     // z1[src]  = N_vec[tgt] - z1[tgt]
     //          = N_vec[tgt] - N_vec[tgt[tgt]] + z1[tgt[tgt]]
-    //          = +/- N_vec[node] from recur along DAG
+    //          = +/- N_vec[node] from walking DAG from source to root
     // --> dz1_i/dN_j = 0, +1, or -1 depending on DAG
-
-    for (i=0; i<num_a; ++i) {
-      source = approx_set[i];  target = active_dag[i];
-      z1_grads(i, source) = 1.;
-      // walk DAG from i-th approx to root
-      cntr = 0;
+    for (i=0; i<num_a; ++i) { // walk DAG from i-th source to root
+      source = approx_set[i];  index_src = index_map[source];
+      target = active_dag[i];
+      z1_grads(i, index_src) = 1.;  cntr = 0;
       while (target != numApprox) {
-	source = target;  target = active_dag[index_map[source]];
-	z1_grads(i, source) = (++cntr % 2) ? -1. : 1.;
+	source = target;  index_src = index_map[source];
+	target = active_dag[index_src];
+	z1_grads(i, index_src) = (++cntr % 2) ? -1. : 1.; // dz1_i / dN_v
       }
     }
-    //z1_grads[num_a][numApprox] = 0.; // since z1[numApprox] = 0.
+    //z1_grads[num_a][num_a] = 0.; // since z1[numApprox] = 0.
     break;
   }
   case SUBMETHOD_ACV_RD: {
@@ -1931,21 +1929,21 @@ unroll_z1_z2_gradients(RealMatrix& z1_grads, RealMatrix& z2_grads)
     //         = +/- N_vec[node] from recur along DAG 
     // --> dz2_i/dN_j = 0, +1, or -1 depending on DAG, one node removed from z1
     // --> dz1_i/dN_j = -dz2_i/dN_j, except for population of upstream zero
-    z2_grads.shape(num_v, num_all_m);
+    z2_grads.shape(num_v, num_v);
 
-    for (i=0; i<num_a; ++i) {
-      source = approx_set[i];  target = active_dag[i];
-      z2_grads(i, source) = 1.; //z1_grads(i, source) = 0.;
-      // walk DAG from i-th approx to root
-      cntr = 0;
+    for (i=0; i<num_a; ++i) { // walk DAG from i-th source to root
+      source = approx_set[i];  index_src = index_map[source];
+      target = active_dag[i];  cntr = 0;
+      z2_grads(i, index_src) = 1.; //z1_grads(i, index_src) = 0.;
       while (target != numApprox) {
-	source = target;  target = active_dag[index_map[source]];  ++cntr;
-	z2_grads(i, source) = (cntr % 2) ? -1. :  1.;
-	z1_grads(i, source) = (cntr % 2) ?  1. : -1.; // look ahead to next z2g
+	source = target;  index_src = index_map[source];
+	target = active_dag[index_src];  ++cntr;
+	z2_grads(i, index_src) = (cntr % 2) ? -1. :  1.; // dz2_i / dN_v
+	z1_grads(i, index_src) = (cntr % 2) ?  1. : -1.; // look ahead: next z2g
       }
     }
-    //z1_grads(num_a, numApprox) = 0.; // z1[numApprox] = 0.
-    z2_grads(num_a, numApprox) = 1.;   // z2[numApprox] = N_vec[numApprox]
+    //z1_grads(num_a, num_a) = 0.; // z1[numApprox] = 0.
+    z2_grads(num_a, num_a) = 1.;   // z2[numApprox] = N_vec[numApprox]
     break;
   }
   default:
@@ -1954,9 +1952,9 @@ unroll_z1_z2_gradients(RealMatrix& z1_grads, RealMatrix& z2_grads)
     abort_handler(METHOD_ERROR);  break;
   }
 
-  //if (outputLevel >= DEBUG_OUTPUT)
-  //  Cout << "GenACV unroll of DAG into z1_grads:\n" << z1_grads
-  //	   << "and z2_grads:\n" << z2_grads << std::endl;
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "GenACV unroll of DAG into z1_grads:\n" << z1_grads
+  	   << "and z2_grads:\n" << z2_grads << std::endl;
 }
 
 
@@ -2010,11 +2008,11 @@ compute_G_g_gradients_from_N(const RealVector& N_vec, RealSymMatrixArray& dG_dN,
 	tgt_j = active_dag[j];  deflate_tgt_j = index_map[tgt_j];
 	z1_j  = N_vec[tgt_j];   inv_z1_sq_j = 1./(z1_j * z1_j);
 	z2_j  = N_vec[src_j];   inv_z2_sq_j = 1./(z2_j * z2_j);
-	// edge case: don't double count if z*_i exactly equals z*_j
 	Real& dG_dN_si_ij = dG_dN[deflate_src_i](i,j);
 	Real& dG_dN_sj_ij = dG_dN[deflate_src_j](i,j);
 	Real& dG_dN_ti_ij = dG_dN[deflate_tgt_i](i,j);
 	Real& dG_dN_tj_ij = dG_dN[deflate_tgt_j](i,j);
+	// use >= since C++ standard takes 1st arg if equal
 	if (z1_i >= z1_j) dG_dN_ti_ij -= inv_z1_sq_i;
 	else              dG_dN_tj_ij -= inv_z1_sq_j;
 	if (z1_i >= z2_j) dG_dN_ti_ij += inv_z1_sq_i;
@@ -2052,7 +2050,7 @@ compute_G_g_gradients_from_N(const RealVector& N_vec, RealSymMatrixArray& dG_dN,
       z1_i = z1[src_i];  inv_z1_sq_i = 1./(z1_i * z1_i);
       z2_i = z2[src_i];  inv_z2_sq_i = 1./(z2_i * z2_i);
 
-      if (tgt_i == numApprox) { // g[i] = 1./z_H - 1./z_i
+      if (tgt_i == numApprox) { // g[i] = 1/N_H - 1/N_i
 	dg_dN_A(i)  -= 1./(z_H  * z_H);
 	dg_dN[i](i) += 1./(z2_i * z2_i);
       }
@@ -2061,30 +2059,32 @@ compute_G_g_gradients_from_N(const RealVector& N_vec, RealSymMatrixArray& dG_dN,
 	src_j = approx_set[j];  tgt_j = active_dag[j];
 	z2_j = z2[src_j];  inv_z2_sq_j = 1./(z2_j * z2_j);
 	// The src/tgt matches to follow identify z1,z2 terms in G that are then
-	// differentiated for each design var --> think of G matrix as fixed -->
-	// define separate deriv matrices by differentiating for each design var
-	// > Utilize reverse DAGs to insert terms for dependent N_i where
-	//   dz1/dN_i is +/- 1 counting from tgt_i
+	// differentiated for each design var --> for a fixed G matrix, define
+	// separate deriv matrices by differentiating G for each design var
+	// > Utilize z1_grads to insert terms for dependent N_i from DAG
+	//   recursion (dz1/dN_i is +/- 1 counting from src_i)
 
 	for (v=0; v<num_v; ++v) {
-	  Real& dG_dN_vij = dG_dN[v](i,j);
+	  Real& dG_dN_vij = dG_dN[v](i,j); // deriv of G(i,j) w.r.t. v
 
-	  // G(i,j) += z1_i/zi_zj - 1./z_j (shared)
+	  // G(i,j) += z1_i/zi_zj - 1./z_j (shared portion to be augmented)
 	  if (tgt_i == tgt_j || tgt_i == src_j) {
 	    // can't be both since src_j != tgt_j
 	    // --> don't need to account for a double increment
 
-	    // deriv of z1_i/zi_zj: use special case for i == j to avoid
-	    // managing dz_i/dN_j = delta_ij
-	    // > (N_i dz1/dN_i - z1_i)/(N^2_i N_j) for N_i
-	    //   (N_j dz1/dN_j - z1_i)/(N_i N^2_j) for N_j
-	    //   (dz1/dN_k)/(N_i N_j) for other k != {i,j}
+	    // deriv of z1_i/(N_i N_j): 
+	    // > (N_i dz1_i/dN_i - z1_i)/(N^2_i N_j) for N_i
+	    //   (N_j dz1_i/dN_j - z1_i)/(N_i N^2_j) for N_j
+	    //   (dz1_i/dN_k)/(N_i N_j)              for other k != {i,j}
+	    // > special case for i == j to avoid managing dz_i/dN_j = delta_ij
+	    //   d[z1_i/(z_i)^2] --> ((N_i)^2 dz1_i/dN_i - 2 z1_i N_i) / (N_i)^4
+	    //                     = (N_i dz1_i/dN_i - 2 z1_i) / (N_i)^3
 	    if (i == v && j == v)
-	      dG_dN_vij += (z2_i * z1_grads(v,i) - 2.* z1_i)/z2_i * inv_z2_sq_i;
+	      dG_dN_vij += (z2_i * z1_grads(i,v) - 2.* z1_i)/z2_i * inv_z2_sq_i;
 	    else if (i == v)
-	      dG_dN_vij += (z2_i * z1_grads(v,i) - z1_i) / z2_j * inv_z2_sq_i;
+	      dG_dN_vij += (z2_i * z1_grads(i,v) - z1_i) / z2_j * inv_z2_sq_i;
 	    else if (j == v)
-	      dG_dN_vij += (z2_j * z1_grads(v,j) - z1_i) / z2_i * inv_z2_sq_j;
+	      dG_dN_vij += (z2_j * z1_grads(j,v) - z1_i) / z2_i * inv_z2_sq_j;
 	    else // v != {i,j} but appears in dz1_dN_vij
 	      dG_dN_vij += z1_grads(v,v) / (z2_i * z2_j);	    
 
@@ -2092,7 +2092,7 @@ compute_G_g_gradients_from_N(const RealVector& N_vec, RealSymMatrixArray& dG_dN,
 	    if (j == v) dG_dN_vij += inv_z2_sq_j;
 	  }
 
-	  // G(i,j) += 1./z1_i - 1./z_i (additions to shared terms above);
+	  // G(i,j) += 1./z1_i - 1./z_i (augment shared terms above)
 	  if (tgt_i == tgt_j) {
 	    // deriv of 1/z1_i: given z1 recurrence, add for all i,j,v and
 	    // rely on the dz1_dN pre-compute
@@ -2123,11 +2123,11 @@ compute_G_g_gradients_from_N(const RealVector& N_vec, RealSymMatrixArray& dG_dN,
 	    //    = (z1_i - dz1_i/dN_j N_j) / (N_i N^2_j) for v == j
 	    // > -dz1/dN_i / (N_i N_j) for other v != {i,j}
 	    if (i == v && j == v)
-	      dG_dN_vij += (z1_i - z1_grads(v,i) * 2.* z2_i)/z2_i * inv_z2_sq_i;
+	      dG_dN_vij += (z1_i - z1_grads(i,v) * 2.* z2_i)/z2_i * inv_z2_sq_i;
 	    else if (i == v)
-	      dG_dN_vij += (z1_i - z1_grads(v,i) * z2_i) / z2_j * inv_z2_sq_i;
+	      dG_dN_vij += (z1_i - z1_grads(i,v) * z2_i) / z2_j * inv_z2_sq_i;
 	    else if (j == v)
-	      dG_dN_vij += (z1_i - z1_grads(v,j) * z2_j) / z2_i * inv_z2_sq_j;
+	      dG_dN_vij += (z1_i - z1_grads(j,v) * z2_j) / z2_i * inv_z2_sq_j;
 	    else // v != {i,j} but appears in dz1_dN_vij
 	      dG_dN_vij += z1_grads(v,v) / (z2_i * z2_j);	    
 	  }
@@ -2174,21 +2174,21 @@ compute_G_g_gradients_from_N(const RealVector& N_vec, RealSymMatrixArray& dG_dN,
 	//if (src_i == tgt_j) G(i,j) -= 1./z2_i;
 	//if (src_i == src_j) G(i,j) += 1./z2_i;
 	for (v=0; v<num_v; ++v) {
-	  Real& dG_dN_vij = dG_dN[v](i,j);
+	  Real& dG_dN_vij = dG_dN[v](i,j); // deriv of G(i,j) w.r.t. v
 
 	  // G(i,j) += +/- 1./z1_i (shared)
 	  // both equalities can't hold since src_j != tgt_j
 	  // --> don't need to account for a double increment
 	  if (tgt_i == tgt_j || tgt_i == src_j) // all v because of z1 recursion
-	    dG_dN_vij += (tgt_i == tgt_j) ? -z1_grads(v,i) * inv_z1_sq_i
-	                                  :  z1_grads(v,i) * inv_z1_sq_i;
+	    dG_dN_vij += (tgt_i == tgt_j) ? -z1_grads(i,v) * inv_z1_sq_i
+	                                  :  z1_grads(i,v) * inv_z1_sq_i;
 
 	  // G(i,j) += +/- 1/z2_i (shared)
 	  // both equalities can't hold since src_j != tgt_j
 	  // --> don't need to account for a double increment
 	  if (src_i == tgt_j || src_i == src_j) // all v because of z2 recursion
-	    dG_dN_vij += (src_i == src_j) ? -z2_grads(v,i) * inv_z2_sq_i
-	                                  :  z2_grads(v,i) * inv_z2_sq_i;
+	    dG_dN_vij += (src_i == src_j) ? -z2_grads(i,v) * inv_z2_sq_i
+	                                  :  z2_grads(i,v) * inv_z2_sq_i;
 	}
       }
     }
@@ -2299,13 +2299,6 @@ estimator_variance_ratio_gradients(const RealVector& cd_vars,
       }
       else
 	evr_grad_vq = -trip_prod_grad * N_H / varH[q];
-      /*
-      // symmetry allows combination of terms 1 + 3 = 2 cf^T CG_inv d[cg]
-      evr_grad_vq = symMatVecTripleProduct(2., cg, CG_inv,     dcg_dN[v])
-	          + symMatVecTripleProduct(1., cg, dCG_inv_dN, cg);
-      // from d(triple) to evr_grads:
-      evr_grad_vq /= -varH[q];
-      */
     }
   }
   if (outputLevel >= DEBUG_OUTPUT)
