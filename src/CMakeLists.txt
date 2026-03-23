@@ -848,7 +848,13 @@ if(HAVE_EXT_PYTHON_METHOD)
   add_definitions("-DHAVE_EXT_PYTHON_METHOD")
 
   pybind11_add_module(ext_method DakotaExtPythonMethod.cpp)
-  target_link_libraries(ext_method PRIVATE dakota_src
+  add_dependencies(ext_method dakota_ir_generated_tables)
+  target_include_directories(ext_method PRIVATE
+	    ${DAKOTA_IR_GENERATED_DIR}
+	      ${Dakota_SOURCE_DIR}/src/generated_ir_tables
+	      )  
+  
+    target_link_libraries(ext_method PRIVATE dakota_src
     ${Dakota_LIBRARIES} ${Dakota_TPL_LIBRARIES}
     )
 
@@ -959,8 +965,10 @@ add_library(dakota_src_fortran ${Dakota_src_fortran})
 set_target_properties(dakota_src_fortran PROPERTIES INCLUDE_DIRECTORIES "")
 list(APPEND EXPORT_TARGETS dakota_src_fortran)
 
+
 add_library(dakota_ir STATIC ${dakota_ir_src})
 add_dependencies(dakota_ir dakota_ir_generated_tables)
+set_target_properties(dakota_ir PROPERTIES POSITION_INDEPENDENT_CODE ON)
 target_include_directories(dakota_ir
   PUBLIC
     $<BUILD_INTERFACE:${Dakota_SOURCE_DIR}/src>
