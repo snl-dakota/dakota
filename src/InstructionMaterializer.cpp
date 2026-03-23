@@ -126,6 +126,22 @@ IRState InstructionMaterializer::materialize(const nlohmann::json& validated_jso
   resize_block("interface", state.interface);
   resize_block("responses", state.responses);
 
+  if (state.model.empty()) {
+    state.model.resize(1);
+    if (debug_logging_enabled()) {
+      std::cerr << "InstructionMaterializer: synthesizing default model block"
+                << std::endl;
+    }
+  }
+
+  if (state.interface.empty()) {
+    state.interface.resize(1);
+    if (debug_logging_enabled()) {
+      std::cerr << "InstructionMaterializer: synthesizing default interface block"
+                << std::endl;
+    }
+  }
+
   initialize_defaults(state);
 
   WriteTracker writes;

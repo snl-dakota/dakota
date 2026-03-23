@@ -516,7 +516,14 @@ def synthesize_missing_contracts_from_instructions(
     contracts_by_block: dict[str, dict[str, KeyContract]],
     instructions_by_block: dict[str, dict[str, list[dict[str, Any]]]],
 ) -> None:
-    """Add contracts for write targets that are instruction-only IR keys."""
+    """Add contracts for write targets that are instruction-only IR keys.
+
+    Some IR keys, especially derived variable count rollups like
+    ``variables.continuous`` and ``variables.total``, do not correspond to a
+    standalone schema field but are still legal write targets. When schema,
+    override, and policy registries do not define them explicitly, synthesize a
+    policy-style contract from the instruction materialization type.
+    """
 
     for block in BLOCKS:
         contracts = contracts_by_block[block]
@@ -548,6 +555,22 @@ def _cpp_str(value: str) -> str:
     return f'"{s}"'
 
 
+def _cpp_symbolic_expr(value: str) -> str | None:
+    text = value.strip()
+    if not text:
+        return None
+
+    # C/C++ symbolic constants and scoped identifiers, optionally negated.
+    if re.fullmatch(r"-?(?:[A-Za-z_][A-Za-z0-9_]*)(?:::[A-Za-z_][A-Za-z0-9_]*)*", text):
+        return text
+
+    # Common standard-library symbolic expressions used in defaults.
+    if re.fullmatch(r"-?std::numeric_limits<[^>]+>::(?:max|min|lowest|infinity)\(\)", text):
+        return text
+
+    return None
+
+
 def _cpp_default_variant_expr(member_type: str, value: Any, enum_scope: str = "") -> str:
     t = " ".join(member_type.split())
     if value is None:
@@ -555,11 +578,15 @@ def _cpp_default_variant_expr(member_type: str, value: Any, enum_scope: str = ""
     if isinstance(value, bool):
         return "IRValue{bool(" + ("true" if value else "false") + ")}"
     if isinstance(value, str):
-        # Enum symbolic literals/defaults are stored as strings in schema
-        # materialization/default JSON, but they represent integral constants
-        # in Dakota C++.
-        if t in INT_TYPES and re.fullmatch(r"[A-Z][A-Z0-9_]*", value):
-            scoped_value = f"{enum_scope}::{value}" if enum_scope else value
+        symbolic_value = _cpp_symbolic_expr(value)
+        # Symbolic literals/defaults are stored as strings in JSON registries,
+        # but for non-string IR member types they represent C++ expressions.
+        if t in INT_TYPES and symbolic_value:
+            scoped_value = (
+                f"{enum_scope}::{symbolic_value}"
+                if enum_scope and "::" not in symbolic_value and not symbolic_value.startswith("-")
+                else symbolic_value
+            )
             if t == "short":
                 return f"IRValue{{static_cast<short>({scoped_value})}}"
             if t == "unsigned short":
@@ -577,6 +604,9 @@ def _cpp_default_variant_expr(member_type: str, value: Any, enum_scope: str = ""
             if t == "unsigned long long":
                 return f"IRValue{{static_cast<unsigned long long>({scoped_value})}}"
             return f"IRValue{{int({scoped_value})}}"
+        if t in FLOAT_TYPES and symbolic_value:
+            cast_type = "float" if t == "float" else "double"
+            return f"IRValue{{{cast_type}({symbolic_value})}}"
         return f"IRValue{{std::string({_cpp_str(value)})}}"
     if isinstance(value, int):
         if t == "short":
@@ -598,6 +628,11 @@ def _cpp_default_variant_expr(member_type: str, value: Any, enum_scope: str = ""
         return f"IRValue{{int({value})}}"
     if isinstance(value, float):
         return f"IRValue{{double({repr(value)})}}"
+    if (isinstance(value, list) and not value) or (isinstance(value, dict) and not value):
+        # Policy defaults for Dakota container/matrix types should materialize
+        # as their native C++ value types, not as nlohmann::json placeholders.
+        if t not in INT_TYPES and t not in FLOAT_TYPES and t not in {"bool", "String", "std::string", "string"}:
+            return f"IRValue{{{t}{{}}}}"
     return f"IRValue{{{_cpp_json_expr(value)}}}"
 
 
@@ -889,7 +924,7 @@ def render_block_cpp(
     # Enum symbols referenced by defaults/literals come from these headers.
     block_enum_headers = {
         "environment": ["DakotaGlobalEnums.hpp"],
-        "method": ["DakotaMethodEnums.hpp", "DakotaModelEnums.hpp"],
+        "method": ["DakotaMethodEnums.hpp", "DakotaModelEnums.hpp", "globals.h"],
         "model": ["DakotaModelEnums.hpp", "DakotaMethodEnums.hpp"],
         "variables": ["DakotaVariablesEnums.hpp", "DakotaGlobalEnums.hpp"],
         # interface tables also use scheduling enums from method enums.

@@ -299,10 +299,6 @@
         "key": "method.import_prediction_configs",
         "value_type": "String"
       },
-      "iterator_scheduling": {
-        "key": "method.iterator_scheduling",
-        "value_type": "short"
-      },
       "iterator_servers": {
         "key": "method.iterator_servers",
         "value_type": "int"
@@ -318,10 +314,6 @@
       "jega.niche_vector": {
         "key": "method.jega.niche_vector",
         "value_type": "RealVector"
-      },
-      "jega.num_cross_points": {
-        "key": "method.jega.num_cross_points",
-        "value_type": "size_t"
       },
       "joe_kuo": {
         "key": "method.joe_kuo",
@@ -579,10 +571,6 @@
         "key": "method.nond.proposal_covariance_type",
         "value_type": "String"
       },
-      "nond.pushforward_samples": {
-        "key": "method.nond.pushforward_samples",
-        "value_type": "int"
-      },
       "nond.refinement_samples": {
         "key": "method.nond.refinement_samples",
         "value_type": "IntVector"
@@ -783,13 +771,13 @@
         "key": "method.sub_model_pointer",
         "value_type": "String"
       },
-      "synchronization": {
-        "key": "method.synchronization",
-        "value_type": "short"
-      },
       "tolerance_intervals": {
         "key": "method.tolerance_intervals",
         "value_type": "bool"
+      },
+      "trial_type": {
+        "key": "method.trial_type",
+        "value_type": "String"
       },
       "trust_region.initial_size": {
         "key": "method.trust_region.initial_size",
@@ -881,10 +869,6 @@
         "key": "model.nested.identity_resp_map",
         "value_type": "bool"
       },
-      "nested.iterator_scheduling": {
-        "key": "model.nested.iterator_scheduling",
-        "value_type": "short"
-      },
       "nested.iterator_servers": {
         "key": "model.nested.iterator_servers",
         "value_type": "int"
@@ -920,10 +904,6 @@
       "refinement_samples": {
         "key": "model.refinement_samples",
         "value_type": "IntVector"
-      },
-      "rf.expansion_form": {
-        "key": "model.rf.expansion_form",
-        "value_type": "unsigned short"
       },
       "rf.propagation_model_pointer": {
         "key": "model.rf.propagation_model_pointer",
@@ -2373,6 +2353,10 @@
     "responses": {
       "calibration_data": {
         "key": "responses.calibration_data",
+        "value_type": "bool"
+      },
+      "central_hess": {
+        "key": "responses.central_hess",
         "value_type": "bool"
       },
       "data_directory": {

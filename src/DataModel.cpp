@@ -59,6 +59,7 @@ DataModelRep::DataModelRep():
   maxFunctionEvals(SZ_MAX), refineCVMetric("root_mean_squared"),
   refineCVFolds(10), adaptedBasisSparseGridLev(0), adaptedBasisExpOrder(0),
   adaptedBasisCollocRatio(1.), truncationTolerance(1.0e-6),
+  randomFieldIdForm(RF_KARHUNEN_LOEVE),
   analyticCovIdForm(NOCOVAR),
   method_rotation(ROTATION_METHOD_RANKED),
   adaptedBasisTruncationTolerance(0.9)

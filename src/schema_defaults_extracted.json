@@ -1,26 +1,6 @@
 {
   "blocks": {
     "environment": {
-      "interface_evals_selection": {
-        "key": "environment.interface_evals_selection",
-        "candidates": [
-          {
-            "value": "INTERF_EVAL_STORE_SIMULATION",
-            "value_type": "unsigned short",
-            "enum_scope": ""
-          }
-        ]
-      },
-      "model_evals_selection": {
-        "key": "environment.model_evals_selection",
-        "candidates": [
-          {
-            "value": "MODEL_EVAL_STORE_TOP_METHOD",
-            "value_type": "unsigned short",
-            "enum_scope": ""
-          }
-        ]
-      },
       "output_precision": {
         "key": "environment.output_precision",
         "candidates": [
@@ -31,42 +11,12 @@
           }
         ]
       },
-      "post_run_input_format": {
-        "key": "environment.post_run_input_format",
-        "candidates": [
-          {
-            "value": "TABULAR_ANNOTATED",
-            "value_type": "unsigned short",
-            "enum_scope": ""
-          }
-        ]
-      },
-      "pre_run_output_format": {
-        "key": "environment.pre_run_output_format",
-        "candidates": [
-          {
-            "value": "TABULAR_ANNOTATED",
-            "value_type": "unsigned short",
-            "enum_scope": ""
-          }
-        ]
-      },
       "results_output_file": {
         "key": "environment.results_output_file",
         "candidates": [
           {
             "value": "dakota_results",
             "value_type": "String",
-            "enum_scope": ""
-          }
-        ]
-      },
-      "tabular_format": {
-        "key": "environment.tabular_format",
-        "candidates": [
-          {
-            "value": "TABULAR_ANNOTATED",
-            "value_type": "unsigned short",
             "enum_scope": ""
           }
         ]
@@ -109,16 +59,6 @@
           {
             "value": 1.0,
             "value_type": "Real",
-            "enum_scope": ""
-          }
-        ]
-      },
-      "asynch_pattern_search.merit_function": {
-        "key": "method.asynch_pattern_search.merit_function",
-        "candidates": [
-          {
-            "value": "merit2_squared",
-            "value_type": "String",
             "enum_scope": ""
           }
         ]
@@ -179,16 +119,6 @@
           {
             "value": -1.7976931348623157e+308,
             "value_type": "Real",
-            "enum_scope": ""
-          }
-        ]
-      },
-      "batch_selection": {
-        "key": "method.batch_selection",
-        "candidates": [
-          {
-            "value": "naive",
-            "value_type": "String",
             "enum_scope": ""
           }
         ]
@@ -287,12 +217,12 @@
         "key": "method.coliny.expansion",
         "candidates": [
           {
-            "value": false,
+            "value": true,
             "value_type": "bool",
             "enum_scope": ""
           },
           {
-            "value": false,
+            "value": true,
             "value_type": "bool",
             "enum_scope": ""
           }
@@ -820,26 +750,6 @@
             "value": "TABULAR_ANNOTATED",
             "value_type": "unsigned short",
             "enum_scope": ""
-          },
-          {
-            "value": "TABULAR_ANNOTATED",
-            "value_type": "unsigned short",
-            "enum_scope": ""
-          },
-          {
-            "value": "TABULAR_ANNOTATED",
-            "value_type": "unsigned short",
-            "enum_scope": ""
-          },
-          {
-            "value": "TABULAR_ANNOTATED",
-            "value_type": "unsigned short",
-            "enum_scope": ""
-          },
-          {
-            "value": "TABULAR_ANNOTATED",
-            "value_type": "unsigned short",
-            "enum_scope": ""
           }
         ]
       },
@@ -1253,16 +1163,6 @@
           }
         ]
       },
-      "fitness_metric": {
-        "key": "method.fitness_metric",
-        "candidates": [
-          {
-            "value": "predicted_variance",
-            "value_type": "String",
-            "enum_scope": ""
-          }
-        ]
-      },
       "fsu_cvt.num_trials": {
         "key": "method.fsu_cvt.num_trials",
         "candidates": [
@@ -1343,21 +1243,6 @@
           }
         ]
       },
-      "import_approx_format": {
-        "key": "method.import_approx_format",
-        "candidates": [
-          {
-            "value": "TABULAR_ANNOTATED",
-            "value_type": "unsigned short",
-            "enum_scope": ""
-          },
-          {
-            "value": "TABULAR_ANNOTATED",
-            "value_type": "unsigned short",
-            "enum_scope": ""
-          }
-        ]
-      },
       "import_build_format": {
         "key": "method.import_build_format",
         "candidates": [
@@ -1366,86 +1251,6 @@
             "value_type": "unsigned short",
             "enum_scope": ""
           },
-          {
-            "value": "TABULAR_ANNOTATED",
-            "value_type": "unsigned short",
-            "enum_scope": ""
-          },
-          {
-            "value": "TABULAR_ANNOTATED",
-            "value_type": "unsigned short",
-            "enum_scope": ""
-          },
-          {
-            "value": "TABULAR_ANNOTATED",
-            "value_type": "unsigned short",
-            "enum_scope": ""
-          },
-          {
-            "value": "TABULAR_ANNOTATED",
-            "value_type": "unsigned short",
-            "enum_scope": ""
-          },
-          {
-            "value": "TABULAR_ANNOTATED",
-            "value_type": "unsigned short",
-            "enum_scope": ""
-          },
-          {
-            "value": "TABULAR_ANNOTATED",
-            "value_type": "unsigned short",
-            "enum_scope": ""
-          },
-          {
-            "value": "TABULAR_ANNOTATED",
-            "value_type": "unsigned short",
-            "enum_scope": ""
-          },
-          {
-            "value": "TABULAR_ANNOTATED",
-            "value_type": "unsigned short",
-            "enum_scope": ""
-          },
-          {
-            "value": "TABULAR_ANNOTATED",
-            "value_type": "unsigned short",
-            "enum_scope": ""
-          },
-          {
-            "value": "TABULAR_ANNOTATED",
-            "value_type": "unsigned short",
-            "enum_scope": ""
-          },
-          {
-            "value": "TABULAR_ANNOTATED",
-            "value_type": "unsigned short",
-            "enum_scope": ""
-          },
-          {
-            "value": "TABULAR_ANNOTATED",
-            "value_type": "unsigned short",
-            "enum_scope": ""
-          },
-          {
-            "value": "TABULAR_ANNOTATED",
-            "value_type": "unsigned short",
-            "enum_scope": ""
-          },
-          {
-            "value": "TABULAR_ANNOTATED",
-            "value_type": "unsigned short",
-            "enum_scope": ""
-          },
-          {
-            "value": "TABULAR_ANNOTATED",
-            "value_type": "unsigned short",
-            "enum_scope": ""
-          }
-        ]
-      },
-      "import_candidate_format": {
-        "key": "method.import_candidate_format",
-        "candidates": [
           {
             "value": "TABULAR_ANNOTATED",
             "value_type": "unsigned short",
@@ -1463,32 +1268,22 @@
           }
         ]
       },
-      "import_prediction_configs_format": {
-        "key": "method.import_prediction_configs_format",
+      "jega.num_cross_points": {
+        "key": "method.jega.num_cross_points",
         "candidates": [
           {
-            "value": "TABULAR_ANNOTATED",
-            "value_type": "unsigned short",
-            "enum_scope": ""
-          }
-        ]
-      },
-      "initialization_type": {
-        "key": "method.initialization_type",
-        "candidates": [
-          {
-            "value": "unique_random",
-            "value_type": "String",
+            "value": 2,
+            "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": "unique_random",
-            "value_type": "String",
+            "value": 2,
+            "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": "unique_random",
-            "value_type": "String",
+            "value": 2,
+            "value_type": "size_t",
             "enum_scope": ""
           }
         ]
@@ -1773,21 +1568,6 @@
           }
         ]
       },
-      "lipschitz": {
-        "key": "method.lipschitz",
-        "candidates": [
-          {
-            "value": "local",
-            "value_type": "String",
-            "enum_scope": ""
-          },
-          {
-            "value": "local",
-            "value_type": "String",
-            "enum_scope": ""
-          }
-        ]
-      },
       "log_file": {
         "key": "method.log_file",
         "candidates": [
@@ -1822,202 +1602,202 @@
         "key": "method.max_function_evaluations",
         "candidates": [
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           }
@@ -2027,262 +1807,262 @@
         "key": "method.max_iterations",
         "candidates": [
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           }
@@ -2407,7 +2187,7 @@
         "key": "method.mutation_adaptive",
         "candidates": [
           {
-            "value": false,
+            "value": true,
             "value_type": "bool",
             "enum_scope": ""
           }
@@ -2519,16 +2299,6 @@
           {
             "value": 3,
             "value_type": "unsigned short",
-            "enum_scope": ""
-          }
-        ]
-      },
-      "nond.allocation_target": {
-        "key": "method.nond.allocation_target",
-        "candidates": [
-          {
-            "value": "TARGET_MEAN",
-            "value_type": "short",
             "enum_scope": ""
           }
         ]
@@ -2662,17 +2432,17 @@
         "key": "method.nond.c3function_train.max_rank",
         "candidates": [
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           }
@@ -2803,16 +2573,6 @@
           }
         ]
       },
-      "nond.convergence_tolerance_target": {
-        "key": "method.nond.convergence_tolerance_target",
-        "candidates": [
-          {
-            "value": "VARIANCE_CONSTRAINT_TARGET",
-            "value_type": "short",
-            "enum_scope": ""
-          }
-        ]
-      },
       "nond.cross_validation.max_order_candidates": {
         "key": "method.nond.cross_validation.max_order_candidates",
         "candidates": [
@@ -2862,17 +2622,17 @@
         "key": "method.nond.cross_validation.max_rank_candidates",
         "candidates": [
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           }
@@ -3018,121 +2778,6 @@
           }
         ]
       },
-      "nond.distribution": {
-        "key": "method.nond.distribution",
-        "candidates": [
-          {
-            "value": "CUMULATIVE",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "CUMULATIVE",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "CUMULATIVE",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "CUMULATIVE",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "CUMULATIVE",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "CUMULATIVE",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "CUMULATIVE",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "CUMULATIVE",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "CUMULATIVE",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "CUMULATIVE",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "CUMULATIVE",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "CUMULATIVE",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "CUMULATIVE",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "CUMULATIVE",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "CUMULATIVE",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "CUMULATIVE",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "CUMULATIVE",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "CUMULATIVE",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "CUMULATIVE",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "CUMULATIVE",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "CUMULATIVE",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "CUMULATIVE",
-            "value_type": "short",
-            "enum_scope": ""
-          }
-        ]
-      },
       "nond.dr_num_stages": {
         "key": "method.nond.dr_num_stages",
         "candidates": [
@@ -3223,51 +2868,6 @@
           }
         ]
       },
-      "nond.expansion_type": {
-        "key": "method.nond.expansion_type",
-        "candidates": [
-          {
-            "value": true,
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": true,
-            "value_type": "short",
-            "enum_scope": ""
-          }
-        ]
-      },
-      "nond.export_corrected_model_format": {
-        "key": "method.nond.export_corrected_model_format",
-        "candidates": [
-          {
-            "value": "TABULAR_ANNOTATED",
-            "value_type": "unsigned short",
-            "enum_scope": ""
-          }
-        ]
-      },
-      "nond.export_corrected_variance_format": {
-        "key": "method.nond.export_corrected_variance_format",
-        "candidates": [
-          {
-            "value": "TABULAR_ANNOTATED",
-            "value_type": "unsigned short",
-            "enum_scope": ""
-          }
-        ]
-      },
-      "nond.export_discrep_format": {
-        "key": "method.nond.export_discrep_format",
-        "candidates": [
-          {
-            "value": "TABULAR_ANNOTATED",
-            "value_type": "unsigned short",
-            "enum_scope": ""
-          }
-        ]
-      },
       "nond.export_samples_format": {
         "key": "method.nond.export_samples_format",
         "candidates": [
@@ -3318,81 +2918,6 @@
           }
         ]
       },
-      "nond.final_moments": {
-        "key": "method.nond.final_moments",
-        "candidates": [
-          {
-            "value": "STANDARD_MOMENTS",
-            "value_type": "short",
-            "enum_scope": "Pecos"
-          },
-          {
-            "value": "STANDARD_MOMENTS",
-            "value_type": "short",
-            "enum_scope": "Pecos"
-          },
-          {
-            "value": "STANDARD_MOMENTS",
-            "value_type": "short",
-            "enum_scope": "Pecos"
-          },
-          {
-            "value": "STANDARD_MOMENTS",
-            "value_type": "short",
-            "enum_scope": "Pecos"
-          },
-          {
-            "value": "STANDARD_MOMENTS",
-            "value_type": "short",
-            "enum_scope": "Pecos"
-          },
-          {
-            "value": "STANDARD_MOMENTS",
-            "value_type": "short",
-            "enum_scope": "Pecos"
-          },
-          {
-            "value": "STANDARD_MOMENTS",
-            "value_type": "short",
-            "enum_scope": "Pecos"
-          },
-          {
-            "value": "STANDARD_MOMENTS",
-            "value_type": "short",
-            "enum_scope": "Pecos"
-          },
-          {
-            "value": "STANDARD_MOMENTS",
-            "value_type": "short",
-            "enum_scope": "Pecos"
-          },
-          {
-            "value": "STANDARD_MOMENTS",
-            "value_type": "short",
-            "enum_scope": "Pecos"
-          },
-          {
-            "value": "STANDARD_MOMENTS",
-            "value_type": "short",
-            "enum_scope": "Pecos"
-          },
-          {
-            "value": "STANDARD_MOMENTS",
-            "value_type": "short",
-            "enum_scope": "Pecos"
-          },
-          {
-            "value": "STANDARD_MOMENTS",
-            "value_type": "short",
-            "enum_scope": "Pecos"
-          },
-          {
-            "value": "STANDARD_MOMENTS",
-            "value_type": "short",
-            "enum_scope": "Pecos"
-          }
-        ]
-      },
       "nond.mala_step_size": {
         "key": "method.nond.mala_step_size",
         "candidates": [
@@ -3407,52 +2932,52 @@
         "key": "method.nond.max_refinement_iterations",
         "candidates": [
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           }
@@ -3462,57 +2987,57 @@
         "key": "method.nond.max_solver_iterations",
         "candidates": [
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           },
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           }
@@ -3521,16 +3046,6 @@
       "nond.mcmc_type": {
         "key": "method.nond.mcmc_type",
         "candidates": [
-          {
-            "value": "dram",
-            "value_type": "String",
-            "enum_scope": ""
-          },
-          {
-            "value": "dram",
-            "value_type": "String",
-            "enum_scope": ""
-          },
           {
             "value": "dram",
             "value_type": "String",
@@ -3562,9 +3077,7 @@
         "key": "method.nond.mlmcmc_subsampling_steps",
         "candidates": [
           {
-            "value": [
-              0
-            ],
+            "value": [],
             "value_type": "IntVector",
             "enum_scope": ""
           }
@@ -3595,16 +3108,6 @@
           }
         ]
       },
-      "nond.model_reordering": {
-        "key": "method.nond.model_reordering",
-        "candidates": [
-          {
-            "value": "REORDER_MODELS_ON_THE_FLY",
-            "value_type": "unsigned short",
-            "enum_scope": ""
-          }
-        ]
-      },
       "nond.multilevel_estimator_rate": {
         "key": "method.nond.multilevel_estimator_rate",
         "candidates": [
@@ -3625,32 +3128,12 @@
           }
         ]
       },
-      "nond.numerical_solve_mode": {
-        "key": "method.nond.numerical_solve_mode",
-        "candidates": [
-          {
-            "value": "NUMERICAL_FALLBACK",
-            "value_type": "unsigned short",
-            "enum_scope": ""
-          }
-        ]
-      },
       "nond.prop_cov_update_period": {
         "key": "method.nond.prop_cov_update_period",
         "candidates": [
           {
             "value": 2147483647,
             "value_type": "int",
-            "enum_scope": ""
-          }
-        ]
-      },
-      "nond.qoi_aggregation": {
-        "key": "method.nond.qoi_aggregation",
-        "candidates": [
-          {
-            "value": "QOI_AGGREGATION_SUM",
-            "value_type": "short",
             "enum_scope": ""
           }
         ]
@@ -3820,31 +3303,6 @@
           }
         ]
       },
-      "optpp.merit_function": {
-        "key": "method.optpp.merit_function",
-        "candidates": [
-          {
-            "value": "ArgaezTapia",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "ArgaezTapia",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "ArgaezTapia",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "ArgaezTapia",
-            "value_type": "short",
-            "enum_scope": ""
-          }
-        ]
-      },
       "optpp.search_scheme_size": {
         "key": "method.optpp.search_scheme_size",
         "candidates": [
@@ -3890,416 +3348,6 @@
           }
         ]
       },
-      "output": {
-        "key": "method.output",
-        "candidates": [
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          },
-          {
-            "value": "NORMAL_OUTPUT",
-            "value_type": "short",
-            "enum_scope": ""
-          }
-        ]
-      },
       "percent_variance_explained": {
         "key": "method.percent_variance_explained",
         "candidates": [
@@ -4336,151 +3384,6 @@
           {
             "value": 1.0,
             "value_type": "Real",
-            "enum_scope": ""
-          }
-        ]
-      },
-      "pstudy.import_format": {
-        "key": "method.pstudy.import_format",
-        "candidates": [
-          {
-            "value": "TABULAR_ANNOTATED",
-            "value_type": "unsigned short",
-            "enum_scope": ""
-          }
-        ]
-      },
-      "random_number_generator": {
-        "key": "method.random_number_generator",
-        "candidates": [
-          {
-            "value": "mt19937",
-            "value_type": "String",
-            "enum_scope": ""
-          },
-          {
-            "value": "mt19937",
-            "value_type": "String",
-            "enum_scope": ""
-          },
-          {
-            "value": "mt19937",
-            "value_type": "String",
-            "enum_scope": ""
-          },
-          {
-            "value": "mt19937",
-            "value_type": "String",
-            "enum_scope": ""
-          },
-          {
-            "value": "mt19937",
-            "value_type": "String",
-            "enum_scope": ""
-          },
-          {
-            "value": "mt19937",
-            "value_type": "String",
-            "enum_scope": ""
-          },
-          {
-            "value": "mt19937",
-            "value_type": "String",
-            "enum_scope": ""
-          },
-          {
-            "value": "mt19937",
-            "value_type": "String",
-            "enum_scope": ""
-          },
-          {
-            "value": "mt19937",
-            "value_type": "String",
-            "enum_scope": ""
-          },
-          {
-            "value": "mt19937",
-            "value_type": "String",
-            "enum_scope": ""
-          },
-          {
-            "value": "mt19937",
-            "value_type": "String",
-            "enum_scope": ""
-          },
-          {
-            "value": "mt19937",
-            "value_type": "String",
-            "enum_scope": ""
-          },
-          {
-            "value": "mt19937",
-            "value_type": "String",
-            "enum_scope": ""
-          },
-          {
-            "value": "mt19937",
-            "value_type": "String",
-            "enum_scope": ""
-          },
-          {
-            "value": "mt19937",
-            "value_type": "String",
-            "enum_scope": ""
-          },
-          {
-            "value": "mt19937",
-            "value_type": "String",
-            "enum_scope": ""
-          },
-          {
-            "value": "mt19937",
-            "value_type": "String",
-            "enum_scope": ""
-          },
-          {
-            "value": "mt19937",
-            "value_type": "String",
-            "enum_scope": ""
-          },
-          {
-            "value": "mt19937",
-            "value_type": "String",
-            "enum_scope": ""
-          },
-          {
-            "value": "mt19937",
-            "value_type": "String",
-            "enum_scope": ""
-          },
-          {
-            "value": "mt19937",
-            "value_type": "String",
-            "enum_scope": ""
-          },
-          {
-            "value": "mt19937",
-            "value_type": "String",
-            "enum_scope": ""
-          },
-          {
-            "value": "mt19937",
-            "value_type": "String",
-            "enum_scope": ""
-          },
-          {
-            "value": "mt19937",
-            "value_type": "String",
-            "enum_scope": ""
-          },
-          {
-            "value": "mt19937",
-            "value_type": "String",
-            "enum_scope": ""
-          },
-          {
-            "value": "mt19937",
-            "value_type": "String",
             "enum_scope": ""
           }
         ]
@@ -4541,26 +3444,6 @@
           {
             "value": 0,
             "value_type": "int",
-            "enum_scope": ""
-          }
-        ]
-      },
-      "sbl.acceptance_logic": {
-        "key": "method.sbl.acceptance_logic",
-        "candidates": [
-          {
-            "value": "FILTER",
-            "value_type": "short",
-            "enum_scope": ""
-          }
-        ]
-      },
-      "sbl.merit_function": {
-        "key": "method.sbl.merit_function",
-        "candidates": [
-          {
-            "value": "AUGMENTED_LAGRANGIAN_MERIT",
-            "value_type": "short",
             "enum_scope": ""
           }
         ]
@@ -4906,7 +3789,7 @@
         "key": "model.active_subspace.cv.incremental",
         "candidates": [
           {
-            "value": false,
+            "value": true,
             "value_type": "bool",
             "enum_scope": ""
           }
@@ -4971,7 +3854,7 @@
         "key": "model.c3function_train.cross_validation.max_rank_candidates",
         "candidates": [
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           }
@@ -5021,7 +3904,7 @@
         "key": "model.c3function_train.max_rank",
         "candidates": [
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           }
@@ -5101,7 +3984,7 @@
         "key": "model.max_function_evals",
         "candidates": [
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           }
@@ -5111,7 +3994,7 @@
         "key": "model.max_iterations",
         "candidates": [
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           }
@@ -5121,7 +4004,7 @@
         "key": "model.max_solver_iterations",
         "candidates": [
           {
-            "value": 4294967295,
+            "value": 9223372036854775807,
             "value_type": "size_t",
             "enum_scope": ""
           }
@@ -5203,26 +4086,6 @@
           {
             "value": 0,
             "value_type": "int",
-            "enum_scope": ""
-          }
-        ]
-      },
-      "surrogate.export_approx_format": {
-        "key": "model.surrogate.export_approx_format",
-        "candidates": [
-          {
-            "value": "TABULAR_ANNOTATED",
-            "value_type": "unsigned short",
-            "enum_scope": ""
-          }
-        ]
-      },
-      "surrogate.export_approx_variance_format": {
-        "key": "model.surrogate.export_approx_variance_format",
-        "candidates": [
-          {
-            "value": "TABULAR_ANNOTATED",
-            "value_type": "unsigned short",
             "enum_scope": ""
           }
         ]
@@ -5397,26 +4260,6 @@
           }
         ]
       },
-      "surrogate.trend_order": {
-        "key": "model.surrogate.trend_order",
-        "candidates": [
-          {
-            "value": "reduced_quadratic",
-            "value_type": "String",
-            "enum_scope": ""
-          },
-          {
-            "value": "reduced_quadratic",
-            "value_type": "String",
-            "enum_scope": ""
-          },
-          {
-            "value": "reduced_quadratic",
-            "value_type": "String",
-            "enum_scope": ""
-          }
-        ]
-      },
       "truncation_tolerance": {
         "key": "model.truncation_tolerance",
         "candidates": [
@@ -5570,7 +4413,7 @@
         "key": "interface.active_set_vector",
         "candidates": [
           {
-            "value": false,
+            "value": true,
             "value_type": "bool",
             "enum_scope": ""
           }
@@ -5580,18 +4423,8 @@
         "key": "interface.evaluation_cache",
         "candidates": [
           {
-            "value": false,
+            "value": true,
             "value_type": "bool",
-            "enum_scope": ""
-          }
-        ]
-      },
-      "failure_capture.action": {
-        "key": "interface.failure_capture.action",
-        "candidates": [
-          {
-            "value": "abort",
-            "value_type": "String",
             "enum_scope": ""
           }
         ]
@@ -5610,7 +4443,7 @@
         "key": "interface.restart_file",
         "candidates": [
           {
-            "value": false,
+            "value": true,
             "value_type": "bool",
             "enum_scope": ""
           }
@@ -5618,66 +4451,6 @@
       }
     },
     "responses": {
-      "central_hess": {
-        "key": "responses.central_hess",
-        "candidates": [
-          {
-            "value": true,
-            "value_type": "bool",
-            "enum_scope": ""
-          },
-          {
-            "value": true,
-            "value_type": "bool",
-            "enum_scope": ""
-          }
-        ]
-      },
-      "fd_gradient_step_type": {
-        "key": "responses.fd_gradient_step_type",
-        "candidates": [
-          {
-            "value": "relative",
-            "value_type": "String",
-            "enum_scope": ""
-          },
-          {
-            "value": "relative",
-            "value_type": "String",
-            "enum_scope": ""
-          }
-        ]
-      },
-      "fd_hessian_step_type": {
-        "key": "responses.fd_hessian_step_type",
-        "candidates": [
-          {
-            "value": "relative",
-            "value_type": "String",
-            "enum_scope": ""
-          },
-          {
-            "value": "relative",
-            "value_type": "String",
-            "enum_scope": ""
-          }
-        ]
-      },
-      "interval_type": {
-        "key": "responses.interval_type",
-        "candidates": [
-          {
-            "value": "forward",
-            "value_type": "String",
-            "enum_scope": ""
-          },
-          {
-            "value": "forward",
-            "value_type": "String",
-            "enum_scope": ""
-          }
-        ]
-      },
       "method_source": {
         "key": "responses.method_source",
         "candidates": [

@@ -1,16 +1,82 @@
 {
   "blocks": {
-    "environment": {},
+    "environment": {
+      "interface_evals_selection": {
+        "key": "environment.interface_evals_selection",
+        "value_type": "unsigned short",
+        "value": "INTERF_EVAL_STORE_SIMULATION"
+      },
+      "model_evals_selection": {
+        "key": "environment.model_evals_selection",
+        "value_type": "unsigned short",
+        "value": "MODEL_EVAL_STORE_TOP_METHOD"
+      },
+      "post_run_input_format": {
+        "key": "environment.post_run_input_format",
+        "value_type": "unsigned short",
+        "value": "TABULAR_ANNOTATED"
+      },
+      "pre_run_output_format": {
+        "key": "environment.pre_run_output_format",
+        "value_type": "unsigned short",
+        "value": "TABULAR_ANNOTATED"
+      },
+      "tabular_format": {
+        "key": "environment.tabular_format",
+        "value_type": "unsigned short",
+        "value": "TABULAR_ANNOTATED"
+      }
+    },
     "method": {
       "algorithm": {
         "key": "method.algorithm",
         "value_type": "unsigned short",
         "value": "DEFAULT_METHOD"
       },
+      "asynch_pattern_search.merit_function": {
+        "key": "method.asynch_pattern_search.merit_function",
+        "value_type": "String",
+        "value": "merit2_squared"
+      },
+      "batch_selection": {
+        "key": "method.batch_selection",
+        "value_type": "String",
+        "value": "naive"
+      },
       "coliny.number_retained": {
         "key": "method.coliny.number_retained",
         "value_type": "int",
         "value": -9999
+      },
+      "fitness_metric": {
+        "key": "method.fitness_metric",
+        "value_type": "String",
+        "value": "predicted_variance"
+      },
+      "import_approx_format": {
+        "key": "method.import_approx_format",
+        "value_type": "unsigned short",
+        "value": "TABULAR_ANNOTATED"
+      },
+      "import_candidate_format": {
+        "key": "method.import_candidate_format",
+        "value_type": "unsigned short",
+        "value": "TABULAR_ANNOTATED"
+      },
+      "import_prediction_configs_format": {
+        "key": "method.import_prediction_configs_format",
+        "value_type": "unsigned short",
+        "value": "TABULAR_ANNOTATED"
+      },
+      "initialization_type": {
+        "key": "method.initialization_type",
+        "value_type": "String",
+        "value": "unique_random"
+      },
+      "iterator_scheduling": {
+        "key": "method.iterator_scheduling",
+        "value_type": "short",
+        "value": "DEFAULT_SCHEDULING"
       },
       "jega.fitness_limit": {
         "key": "method.jega.fitness_limit",
@@ -47,6 +113,11 @@
         "value_type": "short",
         "value": "RANK_1_LATTICE_RADICAL_INVERSE_ORDERING"
       },
+      "lipschitz": {
+        "key": "method.lipschitz",
+        "value_type": "String",
+        "value": "local"
+      },
       "max_hifi_evaluations": {
         "key": "method.max_hifi_evaluations",
         "value_type": "int",
@@ -61,6 +132,11 @@
         "key": "method.model_export_format",
         "value_type": "unsigned short",
         "value": "NO_MODEL_FORMAT"
+      },
+      "nond.allocation_target": {
+        "key": "method.nond.allocation_target",
+        "value_type": "short",
+        "value": "TARGET_MEAN"
       },
       "nond.c3function_train.advancement_type": {
         "key": "method.nond.c3function_train.advancement_type",
@@ -77,6 +153,11 @@
         "value_type": "size_t",
         "value": "SZ_MAX"
       },
+      "nond.convergence_tolerance_target": {
+        "key": "method.nond.convergence_tolerance_target",
+        "value_type": "short",
+        "value": "VARIANCE_CONSTRAINT_TARGET"
+      },
       "nond.convergence_tolerance_type": {
         "key": "method.nond.convergence_tolerance_type",
         "value_type": "short",
@@ -91,6 +172,11 @@
         "key": "method.nond.cubature_integrand",
         "value_type": "unsigned short",
         "value": "USHRT_MAX"
+      },
+      "nond.distribution": {
+        "key": "method.nond.distribution",
+        "value_type": "short",
+        "value": "CUMULATIVE"
       },
       "nond.emulator": {
         "key": "method.nond.emulator",
@@ -132,6 +218,31 @@
         "value_type": "size_t",
         "value": "SZ_MAX"
       },
+      "nond.expansion_type": {
+        "key": "method.nond.expansion_type",
+        "value_type": "short",
+        "value": "EXTENDED_U"
+      },
+      "nond.export_corrected_model_format": {
+        "key": "method.nond.export_corrected_model_format",
+        "value_type": "unsigned short",
+        "value": "TABULAR_ANNOTATED"
+      },
+      "nond.export_corrected_variance_format": {
+        "key": "method.nond.export_corrected_variance_format",
+        "value_type": "unsigned short",
+        "value": "TABULAR_ANNOTATED"
+      },
+      "nond.export_discrep_format": {
+        "key": "method.nond.export_discrep_format",
+        "value_type": "unsigned short",
+        "value": "TABULAR_ANNOTATED"
+      },
+      "nond.final_moments": {
+        "key": "method.nond.final_moments",
+        "value_type": "short",
+        "value": "Pecos::STANDARD_MOMENTS"
+      },
       "nond.final_statistics": {
         "key": "method.nond.final_statistics",
         "value_type": "short",
@@ -167,6 +278,11 @@
         "value_type": "short",
         "value": "DEFAULT_LS"
       },
+      "nond.model_reordering": {
+        "key": "method.nond.model_reordering",
+        "value_type": "unsigned short",
+        "value": "REORDER_MODELS_ON_THE_FLY"
+      },
       "nond.multilevel_allocation_control": {
         "key": "method.nond.multilevel_allocation_control",
         "value_type": "short",
@@ -182,6 +298,11 @@
         "value_type": "short",
         "value": "Pecos::NO_NESTING_OVERRIDE"
       },
+      "nond.numerical_solve_mode": {
+        "key": "method.nond.numerical_solve_mode",
+        "value_type": "unsigned short",
+        "value": "NUMERICAL_FALLBACK"
+      },
       "nond.opt_subproblem_solver": {
         "key": "method.nond.opt_subproblem_solver",
         "value_type": "unsigned short",
@@ -191,6 +312,16 @@
         "key": "method.nond.pilot_samples.mode",
         "value_type": "short",
         "value": "SHARED_PILOT"
+      },
+      "nond.pushforward_samples": {
+        "key": "method.nond.pushforward_samples",
+        "value_type": "int",
+        "value": 10000
+      },
+      "nond.qoi_aggregation": {
+        "key": "method.nond.qoi_aggregation",
+        "value_type": "short",
+        "value": "QOI_AGGREGATION_SUM"
       },
       "nond.quadrature_order": {
         "key": "method.nond.quadrature_order",
@@ -242,15 +373,45 @@
         "value_type": "unsigned short",
         "value": "USHRT_MAX"
       },
+      "optpp.merit_function": {
+        "key": "method.optpp.merit_function",
+        "value_type": "short",
+        "value": "OPTPP::ArgaezTapia"
+      },
+      "output": {
+        "key": "method.output",
+        "value_type": "short",
+        "value": "NORMAL_OUTPUT"
+      },
+      "pstudy.import_format": {
+        "key": "method.pstudy.import_format",
+        "value_type": "unsigned short",
+        "value": "TABULAR_ANNOTATED"
+      },
+      "random_number_generator": {
+        "key": "method.random_number_generator",
+        "value_type": "String",
+        "value": "mt19937"
+      },
       "sample_type": {
         "key": "method.sample_type",
         "value_type": "unsigned short",
         "value": "SUBMETHOD_DEFAULT"
       },
+      "sbl.acceptance_logic": {
+        "key": "method.sbl.acceptance_logic",
+        "value_type": "short",
+        "value": "FILTER"
+      },
       "sbl.constraint_relax": {
         "key": "method.sbl.constraint_relax",
         "value_type": "short",
         "value": "NO_RELAX"
+      },
+      "sbl.merit_function": {
+        "key": "method.sbl.merit_function",
+        "value_type": "short",
+        "value": "AUGMENTED_LAGRANGIAN_MERIT"
       },
       "sbl.subproblem_constraints": {
         "key": "method.sbl.subproblem_constraints",
@@ -267,10 +428,10 @@
         "value_type": "unsigned short",
         "value": "SUBMETHOD_DEFAULT"
       },
-      "trial_type": {
-        "key": "method.trial_type",
-        "value_type": "String",
-        "value": "random"
+      "synchronization": {
+        "key": "method.synchronization",
+        "value_type": "short",
+        "value": "DEFAULT_SYNCHRONIZATION"
       },
       "vbd_via_sampling_method": {
         "key": "method.vbd_via_sampling_method",
@@ -319,15 +480,35 @@
         "value_type": "size_t",
         "value": "SZ_MAX"
       },
+      "nested.iterator_scheduling": {
+        "key": "model.nested.iterator_scheduling",
+        "value_type": "short",
+        "value": "DEFAULT_SCHEDULING"
+      },
       "rf.analytic_covariance": {
         "key": "model.rf.analytic_covariance",
         "value_type": "unsigned short",
         "value": "NOCOVAR"
       },
+      "rf.expansion_form": {
+        "key": "model.rf.expansion_form",
+        "value_type": "unsigned short",
+        "value": "RF_KARHUNEN_LOEVE"
+      },
       "surrogate.correction_type": {
         "key": "model.surrogate.correction_type",
         "value_type": "short",
         "value": "NO_CORRECTION"
+      },
+      "surrogate.export_approx_format": {
+        "key": "model.surrogate.export_approx_format",
+        "value_type": "unsigned short",
+        "value": "TABULAR_ANNOTATED"
+      },
+      "surrogate.export_approx_variance_format": {
+        "key": "model.surrogate.export_approx_variance_format",
+        "value_type": "unsigned short",
+        "value": "TABULAR_ANNOTATED"
       },
       "surrogate.model_export_format": {
         "key": "model.surrogate.model_export_format",
@@ -348,6 +529,11 @@
         "key": "model.surrogate.regression_type",
         "value_type": "short",
         "value": "FT_LS"
+      },
+      "surrogate.trend_order": {
+        "key": "model.surrogate.trend_order",
+        "value_type": "String",
+        "value": "reduced_quadratic"
       },
       "type": {
         "key": "model.type",
@@ -388,6 +574,11 @@
         "value_type": "short",
         "value": "DEFAULT_SCHEDULING"
       },
+      "failure_capture.action": {
+        "key": "interface.failure_capture.action",
+        "value_type": "String",
+        "value": "abort"
+      },
       "failure_capture.retry_limit": {
         "key": "interface.failure_capture.retry_limit",
         "value_type": "int",
@@ -404,6 +595,22 @@
         "value": "DEFAULT_INTERFACE"
       }
     },
-    "responses": {}
+    "responses": {
+      "fd_gradient_step_type": {
+        "key": "responses.fd_gradient_step_type",
+        "value_type": "String",
+        "value": "relative"
+      },
+      "fd_hessian_step_type": {
+        "key": "responses.fd_hessian_step_type",
+        "value_type": "String",
+        "value": "relative"
+      },
+      "interval_type": {
+        "key": "responses.interval_type",
+        "value_type": "String",
+        "value": "forward"
+      }
+    }
   }
 }

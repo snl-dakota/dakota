@@ -78,6 +78,64 @@ def _infer_presence_value(m: dict) -> Any:
     return None
 
 
+def _schema_default_targets(m: dict, default_value: Any) -> list[tuple[str, Any, str]]:
+    """Resolve schema-field defaults into IR default candidates.
+
+    Most materialization entries map field defaults directly to their primary
+    IR key, but a few storage types write multiple targets or route the field
+    value to a secondary key instead.
+    """
+    storage_type = str(m.get("storage_type", ""))
+    if storage_type == "TYPE_DATA_COMBINED":
+        ir_key = m.get("secondary_ir_key")
+        member_variable_type = str(
+            m.get("secondary_ir_value_type")
+            or m.get("secondary_member_variable_type")
+            or m.get("secondary_value_type")
+            or ""
+        )
+        if isinstance(ir_key, str):
+            return [(ir_key, default_value, member_variable_type)]
+        return []
+
+    if storage_type == "METHOD_PIECEWISE":
+        # Wrapper defaults like Literal[True] on the "piecewise" selector do not
+        # mean Dakota's effective IR default is piecewise-selected. The actual
+        # defaults come from the DataMethod constructor (e.g. expansionType and
+        # piecewiseBasis initializers), so do not synthesize schema defaults here.
+        return []
+
+    ir_key = m.get("ir_key") or m.get("pdb_key")
+    member_variable_type = str(
+        m.get("ir_value_type")
+        or m.get("member_variable_type")
+        or ""
+    )
+    if isinstance(ir_key, str):
+        return [(ir_key, default_value, member_variable_type)]
+    return []
+
+
+def _xmodel_default_targets(m: dict) -> list[tuple[str, Any, str]]:
+    """Resolve x-model-default branch selections into IR default candidates."""
+    storage = str(m.get("storage_type", ""))
+    if storage == "METHOD_PIECEWISE":
+        return []
+
+    ir_key = m.get("ir_key") or m.get("pdb_key")
+    if not isinstance(ir_key, str):
+        return []
+    value = _infer_presence_value(m)
+    if value is None:
+        return []
+    member_variable_type = str(
+        m.get("ir_value_type")
+        or m.get("member_variable_type")
+        or ""
+    )
+    return [(ir_key, value, member_variable_type)]
+
+
 def extract_defaults(schema: dict) -> dict[str, list[DefaultCandidate]]:
     defs = schema.get("$defs", {})
     by_key: dict[str, list[DefaultCandidate]] = defaultdict(list)
@@ -95,9 +153,6 @@ def extract_defaults(schema: dict) -> dict[str, list[DefaultCandidate]]:
             for m in node["x-materialization"]:
                 if not isinstance(m, dict):
                     continue
-                ir_key = m.get("ir_key") or m.get("pdb_key")
-                if not isinstance(ir_key, str):
-                    continue
                 storage_type = str(m.get("storage_type", ""))
                 # Presence/augment handlers are keyword-presence semantics.
                 # The schema field default (often const true/false on a keyword model)
@@ -108,24 +163,24 @@ def extract_defaults(schema: dict) -> dict[str, list[DefaultCandidate]]:
                     "PRESENCE_LITERAL",
                     "AUGMENT_ENUM",
                     "PRESENCE_BOOL",
+                    "METHOD_PIECEWISE",
                 }:
                     continue
-                by_key[ir_key].append(
-                    DefaultCandidate(
-                        value=default_value,
-                        source="schema_default",
-                        schema_path=schema_path,
-                        storage_type=storage_type,
-                        handler_type=str(m.get("handler_type", "")),
-                        keyword_name=str(m.get("keyword_name", "")),
-                        member_variable_type=str(
-                            m.get("ir_value_type")
-                            or m.get("member_variable_type")
-                            or ""
-                        ),
-                        enum_scope=str(m.get("enum_scope", "")),
+                for ir_key, candidate_value, member_variable_type in _schema_default_targets(m, default_value):
+                    if not isinstance(ir_key, str):
+                        continue
+                    by_key[ir_key].append(
+                        DefaultCandidate(
+                            value=candidate_value,
+                            source="schema_default",
+                            schema_path=schema_path,
+                            storage_type=storage_type,
+                            handler_type=str(m.get("handler_type", "")),
+                            keyword_name=str(m.get("keyword_name", "")),
+                            member_variable_type=member_variable_type,
+                            enum_scope=str(m.get("enum_scope", "")),
+                        )
                     )
-                )
 
         # Source 2: union x-model-default (important enum case)
         x_model_default = node.get("x-model-default")
@@ -147,30 +202,27 @@ def extract_defaults(schema: dict) -> dict[str, list[DefaultCandidate]]:
             continue
 
         for chosen_schema_path, _obj, m in _find_materializations(chosen_def):
-            ir_key = m.get("ir_key") or m.get("pdb_key")
-            if not isinstance(ir_key, str):
-                continue
-            value = _infer_presence_value(m)
-            if value is None:
+            storage_type = str(m.get("storage_type", ""))
+            targets = _xmodel_default_targets(m)
+            if not targets:
                 # x-model-default is most useful for presence/enum-like storage.
                 continue
-            by_key[ir_key].append(
-                DefaultCandidate(
-                    value=value,
-                    source="x_model_default",
-                    schema_path=f"{schema_path} -> $defs/{x_model_default}:{chosen_schema_path}",
-                    storage_type=str(m.get("storage_type", "")),
-                    handler_type=str(m.get("handler_type", "")),
-                    keyword_name=str(m.get("keyword_name", "")),
-                    member_variable_type=str(
-                        m.get("ir_value_type")
-                        or m.get("member_variable_type")
-                        or ""
-                    ),
-                    enum_scope=str(m.get("enum_scope", "")),
-                    chosen_model=x_model_default,
+            for ir_key, value, member_variable_type in targets:
+                if not isinstance(ir_key, str):
+                    continue
+                by_key[ir_key].append(
+                    DefaultCandidate(
+                        value=value,
+                        source="x_model_default",
+                        schema_path=f"{schema_path} -> $defs/{x_model_default}:{chosen_schema_path}",
+                        storage_type=storage_type,
+                        handler_type=str(m.get("handler_type", "")),
+                        keyword_name=str(m.get("keyword_name", "")),
+                        member_variable_type=member_variable_type,
+                        enum_scope=str(m.get("enum_scope", "")),
+                        chosen_model=x_model_default,
+                    )
                 )
-            )
 
     # Deduplicate exact candidate records per key
     deduped: dict[str, list[DefaultCandidate]] = {}

@@ -22,7 +22,11 @@ namespace Dakota {
 // --------------
 /// special value returned by index() when entry not found
 //const size_t _NPOS  = ~(size_t)0; // one's complement
-const size_t SZ_MAX = std::numeric_limits<size_t>::max();
+// SZ_MAX is defined this way instead of as max<size_t> to get around a couple of
+// consistency issues with Pydantic models and the freeform input file parser. The
+// size of size_t can vary, and we need a consistent definition between this definition
+// and the Pydantic models. Also, the input file reader uses int64_t for all integers.
+const size_t SZ_MAX = static_cast<size_t>(std::numeric_limits<int64_t>::max());
 const size_t _NPOS  = SZ_MAX; // alias old definition
 /// bound beyond which constraints are considered inactive
 const double BIG_REAL_BOUND = 1.0e+30;

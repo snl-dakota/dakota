@@ -585,7 +585,7 @@ inline constexpr std::array<std::string_view, 135> k_model_entries = {{
   "model.surrogate.response_scaling",
 }};
 
-inline constexpr std::array<std::string_view, 287> k_variables_entries = {{
+inline constexpr std::array<std::string_view, 299> k_variables_entries = {{
   "variables.discrete_design_set_int.adjacency_matrix",
   "variables.discrete_design_set_real.adjacency_matrix",
   "variables.discrete_design_set_str.adjacency_matrix",
@@ -770,6 +770,8 @@ inline constexpr std::array<std::string_view, 287> k_variables_entries = {{
   "variables.discrete_uncertain_set_real.values_probs",
   "variables.histogram_uncertain.bin_pairs",
   "variables.histogram_uncertain.point_real_pairs",
+  "variables.continuous_interval_uncertain.basic_probs",
+  "variables.discrete_interval_uncertain.basic_probs",
   "variables.continuous_aleatory_uncertain.labels",
   "variables.normal_uncertain.labels",
   "variables.lognormal_uncertain.labels",
@@ -832,21 +834,28 @@ inline constexpr std::array<std::string_view, 287> k_variables_entries = {{
   "variables.histogram_uncertain.point_string.lower_bounds",
   "variables.histogram_uncertain.point_string.upper_bounds",
   "variables.histogram_uncertain.point_string.initial_point",
+  "variables.histogram_uncertain.bin.lower_bounds",
+  "variables.histogram_uncertain.bin.upper_bounds",
   "variables.linear_equality_scale_types",
   "variables.linear_inequality_scale_types",
   "variables.id",
   "variables.domain",
   "variables.view",
+  "variables.aleatory_uncertain",
   "variables.beta_uncertain",
   "variables.binomial_uncertain",
+  "variables.continuous",
   "variables.continuous_design",
   "variables.continuous_interval_uncertain",
   "variables.continuous_state",
+  "variables.design",
+  "variables.discrete",
   "variables.discrete_design_range",
   "variables.discrete_design_set_int",
   "variables.discrete_design_set_real",
   "variables.discrete_design_set_string",
   "variables.discrete_interval_uncertain",
+  "variables.epistemic_uncertain",
   "variables.discrete_state_range",
   "variables.discrete_state_set_int",
   "variables.discrete_state_set_real",
@@ -869,7 +878,10 @@ inline constexpr std::array<std::string_view, 287> k_variables_entries = {{
   "variables.negative_binomial_uncertain",
   "variables.normal_uncertain",
   "variables.poisson_uncertain",
+  "variables.state",
+  "variables.total",
   "variables.triangular_uncertain",
+  "variables.uncertain",
   "variables.uniform_uncertain",
   "variables.weibull_uncertain",
   "variables.uncertain.initial_point_flag",
@@ -1045,14 +1057,34 @@ bool try_emit_method_entry(const DataMethodRep& rep, std::string_view full_key, 
   if (full_key == "method.generating_matrices.inline") { emit(rep.generatingMatrices); return true; }
   if (full_key == "method.nond.mlmcmc_subsampling_steps") { emit(rep.mlmcmcSubsamplingSteps); return true; }
   if (full_key == "method.nond.c3function_train.start_rank_sequence") { emit(rep.startRankSeq); return true; }
-  if (full_key == "method.nond.collocation_points") { emit(rep.collocationPointsSeq); return true; }
-  if (full_key == "method.nond.expansion_samples") { emit(rep.expansionSamplesSeq); return true; }
+  if (full_key == "method.nond.collocation_points") {
+    if (!rep.collocationPointsSeq.empty()) emit(rep.collocationPointsSeq);
+    else emit(rep.collocationPoints);
+    return true;
+  }
+  if (full_key == "method.nond.expansion_samples") {
+    if (!rep.expansionSamplesSeq.empty()) emit(rep.expansionSamplesSeq);
+    else emit(rep.expansionSamples);
+    return true;
+  }
   if (full_key == "method.nond.pilot_samples") { emit(rep.pilotSamples); return true; }
   if (full_key == "method.random_seed_sequence") { emit(rep.randomSeedSeq); return true; }
   if (full_key == "method.nond.c3function_train.start_order_sequence") { emit(rep.startOrderSeq); return true; }
-  if (full_key == "method.nond.expansion_order") { emit(rep.expansionOrderSeq); return true; }
-  if (full_key == "method.nond.quadrature_order") { emit(rep.quadratureOrderSeq); return true; }
-  if (full_key == "method.nond.sparse_grid_level") { emit(rep.sparseGridLevelSeq); return true; }
+  if (full_key == "method.nond.expansion_order") {
+    if (!rep.expansionOrderSeq.empty()) emit(rep.expansionOrderSeq);
+    else emit(rep.expansionOrder);
+    return true;
+  }
+  if (full_key == "method.nond.quadrature_order") {
+    if (!rep.quadratureOrderSeq.empty()) emit(rep.quadratureOrderSeq);
+    else emit(rep.quadratureOrder);
+    return true;
+  }
+  if (full_key == "method.nond.sparse_grid_level") {
+    if (!rep.sparseGridLevelSeq.empty()) emit(rep.sparseGridLevelSeq);
+    else emit(rep.sparseGridLevel);
+    return true;
+  }
   if (full_key == "method.nond.tensor_grid_order") { emit(rep.tensorGridOrder); return true; }
   if (full_key == "method.partitions") { emit(rep.varPartitions); return true; }
   if (full_key == "method.nond.gen_reliability_levels") { emit(rep.genReliabilityLevels); return true; }
@@ -1758,6 +1790,8 @@ bool try_emit_variables_entry(const DataVariablesRep& rep, std::string_view full
   if (full_key == "variables.discrete_uncertain_set_real.values_probs") { emit(rep.discreteUncSetRealValuesProbs); return true; }
   if (full_key == "variables.histogram_uncertain.bin_pairs") { emit(rep.histogramUncBinPairs); return true; }
   if (full_key == "variables.histogram_uncertain.point_real_pairs") { emit(rep.histogramUncPointRealPairs); return true; }
+  if (full_key == "variables.continuous_interval_uncertain.basic_probs") { emit(rep.continuousIntervalUncBasicProbs); return true; }
+  if (full_key == "variables.discrete_interval_uncertain.basic_probs") { emit(rep.discreteIntervalUncBasicProbs); return true; }
   if (full_key == "variables.continuous_aleatory_uncertain.labels") { emit(rep.continuousAleatoryUncLabels); return true; }
   if (full_key == "variables.normal_uncertain.labels") { emit(rep.normalUncLabels); return true; }
   if (full_key == "variables.lognormal_uncertain.labels") { emit(rep.lognormalUncLabels); return true; }
@@ -1820,21 +1854,70 @@ bool try_emit_variables_entry(const DataVariablesRep& rep, std::string_view full
   if (full_key == "variables.histogram_uncertain.point_string.lower_bounds") { emit(rep.histogramPointStrUncLowerBnds); return true; }
   if (full_key == "variables.histogram_uncertain.point_string.upper_bounds") { emit(rep.histogramPointStrUncUpperBnds); return true; }
   if (full_key == "variables.histogram_uncertain.point_string.initial_point") { emit(rep.histogramPointStrUncVars); return true; }
+  if (full_key == "variables.histogram_uncertain.bin.lower_bounds") { emit(rep.histogramBinUncLowerBnds); return true; }
+  if (full_key == "variables.histogram_uncertain.bin.upper_bounds") { emit(rep.histogramBinUncUpperBnds); return true; }
   if (full_key == "variables.linear_equality_scale_types") { emit(rep.linearEqScaleTypes); return true; }
   if (full_key == "variables.linear_inequality_scale_types") { emit(rep.linearIneqScaleTypes); return true; }
   if (full_key == "variables.id") { emit(rep.idVariables); return true; }
   if (full_key == "variables.domain") { emit(rep.varsDomain); return true; }
   if (full_key == "variables.view") { emit(rep.varsView); return true; }
+  if (full_key == "variables.aleatory_uncertain") {
+    emit(rep.numNormalUncVars + rep.numLognormalUncVars + rep.numUniformUncVars +
+         rep.numLoguniformUncVars + rep.numTriangularUncVars +
+         rep.numExponentialUncVars + rep.numBetaUncVars + rep.numGammaUncVars +
+         rep.numGumbelUncVars + rep.numFrechetUncVars + rep.numWeibullUncVars +
+         rep.numHistogramBinUncVars + rep.numPoissonUncVars +
+         rep.numBinomialUncVars + rep.numNegBinomialUncVars +
+         rep.numGeometricUncVars + rep.numHyperGeomUncVars +
+         rep.numHistogramPtIntUncVars + rep.numHistogramPtRealUncVars +
+         rep.numHistogramPtStrUncVars);
+    return true;
+  }
   if (full_key == "variables.beta_uncertain") { emit(rep.numBetaUncVars); return true; }
   if (full_key == "variables.binomial_uncertain") { emit(rep.numBinomialUncVars); return true; }
+  if (full_key == "variables.continuous") {
+    emit(rep.numContinuousDesVars + rep.numNormalUncVars + rep.numLognormalUncVars +
+         rep.numUniformUncVars + rep.numLoguniformUncVars +
+         rep.numTriangularUncVars + rep.numExponentialUncVars +
+         rep.numBetaUncVars + rep.numGammaUncVars + rep.numGumbelUncVars +
+         rep.numFrechetUncVars + rep.numWeibullUncVars +
+         rep.numHistogramBinUncVars + rep.numContinuousIntervalUncVars +
+         rep.numContinuousStateVars);
+    return true;
+  }
   if (full_key == "variables.continuous_design") { emit(rep.numContinuousDesVars); return true; }
   if (full_key == "variables.continuous_interval_uncertain") { emit(rep.numContinuousIntervalUncVars); return true; }
   if (full_key == "variables.continuous_state") { emit(rep.numContinuousStateVars); return true; }
+  if (full_key == "variables.design") {
+    emit(rep.numContinuousDesVars + rep.numDiscreteDesRangeVars +
+         rep.numDiscreteDesSetIntVars + rep.numDiscreteDesSetRealVars +
+         rep.numDiscreteDesSetStrVars);
+    return true;
+  }
+  if (full_key == "variables.discrete") {
+    emit(rep.numDiscreteDesRangeVars + rep.numDiscreteDesSetIntVars +
+         rep.numDiscreteDesSetRealVars + rep.numDiscreteDesSetStrVars +
+         rep.numPoissonUncVars + rep.numBinomialUncVars +
+         rep.numNegBinomialUncVars + rep.numGeometricUncVars +
+         rep.numHyperGeomUncVars + rep.numHistogramPtIntUncVars +
+         rep.numHistogramPtStrUncVars + rep.numDiscreteIntervalUncVars +
+         rep.numDiscreteUncSetIntVars + rep.numDiscreteUncSetRealVars +
+         rep.numDiscreteUncSetStrVars + rep.numDiscreteStateRangeVars +
+         rep.numDiscreteStateSetIntVars + rep.numDiscreteStateSetRealVars +
+         rep.numDiscreteStateSetStrVars);
+    return true;
+  }
   if (full_key == "variables.discrete_design_range") { emit(rep.numDiscreteDesRangeVars); return true; }
   if (full_key == "variables.discrete_design_set_int") { emit(rep.numDiscreteDesSetIntVars); return true; }
   if (full_key == "variables.discrete_design_set_real") { emit(rep.numDiscreteDesSetRealVars); return true; }
   if (full_key == "variables.discrete_design_set_string") { emit(rep.numDiscreteDesSetStrVars); return true; }
   if (full_key == "variables.discrete_interval_uncertain") { emit(rep.numDiscreteIntervalUncVars); return true; }
+  if (full_key == "variables.epistemic_uncertain") {
+    emit(rep.numContinuousIntervalUncVars + rep.numDiscreteIntervalUncVars +
+         rep.numDiscreteUncSetIntVars + rep.numDiscreteUncSetRealVars +
+         rep.numDiscreteUncSetStrVars);
+    return true;
+  }
   if (full_key == "variables.discrete_state_range") { emit(rep.numDiscreteStateRangeVars); return true; }
   if (full_key == "variables.discrete_state_set_int") { emit(rep.numDiscreteStateSetIntVars); return true; }
   if (full_key == "variables.discrete_state_set_real") { emit(rep.numDiscreteStateSetRealVars); return true; }
@@ -1857,7 +1940,47 @@ bool try_emit_variables_entry(const DataVariablesRep& rep, std::string_view full
   if (full_key == "variables.negative_binomial_uncertain") { emit(rep.numNegBinomialUncVars); return true; }
   if (full_key == "variables.normal_uncertain") { emit(rep.numNormalUncVars); return true; }
   if (full_key == "variables.poisson_uncertain") { emit(rep.numPoissonUncVars); return true; }
+  if (full_key == "variables.state") {
+    emit(rep.numContinuousStateVars + rep.numDiscreteStateRangeVars +
+         rep.numDiscreteStateSetIntVars + rep.numDiscreteStateSetRealVars +
+         rep.numDiscreteStateSetStrVars);
+    return true;
+  }
+  if (full_key == "variables.total") {
+    emit(rep.numContinuousDesVars + rep.numDiscreteDesRangeVars +
+         rep.numDiscreteDesSetIntVars + rep.numDiscreteDesSetRealVars +
+         rep.numDiscreteDesSetStrVars + rep.numNormalUncVars +
+         rep.numLognormalUncVars + rep.numUniformUncVars +
+         rep.numLoguniformUncVars + rep.numTriangularUncVars +
+         rep.numExponentialUncVars + rep.numBetaUncVars + rep.numGammaUncVars +
+         rep.numGumbelUncVars + rep.numFrechetUncVars + rep.numWeibullUncVars +
+         rep.numHistogramBinUncVars + rep.numPoissonUncVars +
+         rep.numBinomialUncVars + rep.numNegBinomialUncVars +
+         rep.numGeometricUncVars + rep.numHyperGeomUncVars +
+         rep.numHistogramPtIntUncVars + rep.numHistogramPtRealUncVars +
+         rep.numHistogramPtStrUncVars + rep.numContinuousIntervalUncVars +
+         rep.numDiscreteIntervalUncVars + rep.numDiscreteUncSetIntVars +
+         rep.numDiscreteUncSetRealVars + rep.numDiscreteUncSetStrVars +
+         rep.numContinuousStateVars + rep.numDiscreteStateRangeVars +
+         rep.numDiscreteStateSetIntVars + rep.numDiscreteStateSetRealVars +
+         rep.numDiscreteStateSetStrVars);
+    return true;
+  }
   if (full_key == "variables.triangular_uncertain") { emit(rep.numTriangularUncVars); return true; }
+  if (full_key == "variables.uncertain") {
+    emit(rep.numNormalUncVars + rep.numLognormalUncVars + rep.numUniformUncVars +
+         rep.numLoguniformUncVars + rep.numTriangularUncVars +
+         rep.numExponentialUncVars + rep.numBetaUncVars + rep.numGammaUncVars +
+         rep.numGumbelUncVars + rep.numFrechetUncVars + rep.numWeibullUncVars +
+         rep.numHistogramBinUncVars + rep.numPoissonUncVars +
+         rep.numBinomialUncVars + rep.numNegBinomialUncVars +
+         rep.numGeometricUncVars + rep.numHyperGeomUncVars +
+         rep.numHistogramPtIntUncVars + rep.numHistogramPtRealUncVars +
+         rep.numHistogramPtStrUncVars + rep.numContinuousIntervalUncVars +
+         rep.numDiscreteIntervalUncVars + rep.numDiscreteUncSetIntVars +
+         rep.numDiscreteUncSetRealVars + rep.numDiscreteUncSetStrVars);
+    return true;
+  }
   if (full_key == "variables.uniform_uncertain") { emit(rep.numUniformUncVars); return true; }
   if (full_key == "variables.weibull_uncertain") { emit(rep.numWeibullUncVars); return true; }
   if (full_key == "variables.uncertain.initial_point_flag") { emit(rep.uncertainVarsInitPt); return true; }
