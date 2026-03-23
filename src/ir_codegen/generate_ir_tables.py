@@ -4,15 +4,12 @@ Generate block-specific C++ IR contract/instruction tables keyed by IR keys,
 plus shared types and a central registry for block lookup.
 """
 
-from __future__ import annotations
-
 import argparse
 import hashlib
 import json
 import re
-from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 BLOCKS = ("environment", "method", "model", "variables", "interface", "responses")
 
@@ -30,19 +27,29 @@ INT_TYPES = {
 FLOAT_TYPES = {"Real", "double", "float"}
 
 
-@dataclass
 class KeyContract:
-    full_ir_key: str
-    local_ir_key: str
-    member_variable_type: str
-    value_type_tag: str
-    default_kind: str
-    default_value: Any
-    enum_scope: str
-    source: str
+    def __init__(
+        self,
+        full_ir_key,
+        local_ir_key,
+        member_variable_type,
+        value_type_tag,
+        default_kind,
+        default_value,
+        enum_scope,
+        source,
+    ):
+        self.full_ir_key = full_ir_key
+        self.local_ir_key = local_ir_key
+        self.member_variable_type = member_variable_type
+        self.value_type_tag = value_type_tag
+        self.default_kind = default_kind
+        self.default_value = default_value
+        self.enum_scope = enum_scope
+        self.source = source
 
 
-def split_pdb_key(full_key: str) -> tuple[str, str]:
+def split_pdb_key(full_key: str) -> Tuple[str, str]:
     parts = full_key.split(".", 1)
     if len(parts) != 2:
         raise ValueError(f"Invalid IR key: {full_key}")
@@ -82,9 +89,9 @@ def _json_sig(v: Any) -> str:
     return json.dumps(v, sort_keys=True, separators=(",", ":"))
 
 
-def load_schema_defaults(schema_defaults_path: Path) -> dict[str, dict[str, KeyContract]]:
+def load_schema_defaults(schema_defaults_path: Path) -> Dict[str, Dict[str, KeyContract]]:
     data = json.loads(schema_defaults_path.read_text(encoding="utf-8"))
-    by_block: dict[str, dict[str, KeyContract]] = {b: {} for b in BLOCKS}
+    by_block = {b: {} for b in BLOCKS}  # type: Dict[str, Dict[str, KeyContract]]
 
     blocks = data.get("blocks")
     if isinstance(blocks, dict):
@@ -186,9 +193,9 @@ def load_schema_defaults(schema_defaults_path: Path) -> dict[str, dict[str, KeyC
     return by_block
 
 
-def load_overrides(override_registry_path: Path) -> dict[str, dict[str, KeyContract]]:
+def load_overrides(override_registry_path: Path) -> Dict[str, Dict[str, KeyContract]]:
     data = json.loads(override_registry_path.read_text(encoding="utf-8"))
-    by_block: dict[str, dict[str, KeyContract]] = {b: {} for b in BLOCKS}
+    by_block = {b: {} for b in BLOCKS}  # type: Dict[str, Dict[str, KeyContract]]
     for block, payload in (data.get("blocks") or {}).items():
         if block not in BLOCKS or not isinstance(payload, dict):
             continue
@@ -224,9 +231,9 @@ def load_overrides(override_registry_path: Path) -> dict[str, dict[str, KeyContr
     return by_block
 
 
-def load_policies(policy_registry_path: Path) -> dict[str, dict[str, KeyContract]]:
+def load_policies(policy_registry_path: Path) -> Dict[str, Dict[str, KeyContract]]:
     data = json.loads(policy_registry_path.read_text(encoding="utf-8"))
-    by_block: dict[str, dict[str, KeyContract]] = {b: {} for b in BLOCKS}
+    by_block = {b: {} for b in BLOCKS}  # type: Dict[str, Dict[str, KeyContract]]
     for block, payload in (data.get("blocks") or {}).items():
         if block not in BLOCKS or not isinstance(payload, dict):
             continue
@@ -263,11 +270,11 @@ def load_policies(policy_registry_path: Path) -> dict[str, dict[str, KeyContract
 
 
 def merge_contracts(
-    schema: dict[str, dict[str, KeyContract]],
-    overrides: dict[str, dict[str, KeyContract]],
-    policies: dict[str, dict[str, KeyContract]],
-) -> dict[str, dict[str, KeyContract]]:
-    out: dict[str, dict[str, KeyContract]] = {b: {} for b in BLOCKS}
+    schema: Dict[str, Dict[str, KeyContract]],
+    overrides: Dict[str, Dict[str, KeyContract]],
+    policies: Dict[str, Dict[str, KeyContract]],
+) -> Dict[str, Dict[str, KeyContract]]:
+    out = {b: {} for b in BLOCKS}  # type: Dict[str, Dict[str, KeyContract]]
 
     for block in BLOCKS:
         schema_keys = set(schema[block].keys())
@@ -286,7 +293,7 @@ def merge_contracts(
     return out
 
 
-def _literal_member_type_and_value(info: dict[str, Any]) -> tuple[str, Any] | None:
+def _literal_member_type_and_value(info: Dict[str, Any]) -> Optional[Tuple[str, Any]]:
     literal = info.get("literal_value")
     if literal is None:
         literal = info.get("stored_value")
@@ -320,11 +327,11 @@ def _op_kind_uses_literal(op_kind: str) -> bool:
     }
 
 
-def _iter_materialization_entries(schema: dict[str, Any]):
+def _iter_materialization_entries(schema: Dict[str, Any]):
     def resolve_local_ref(ref: str) -> Any:
         if not ref.startswith("#/"):
             return None
-        cur: Any = schema
+        cur = schema  # type: Any
         for tok in ref[2:].split("/"):
             tok = tok.replace("~1", "/").replace("~0", "~")
             if not isinstance(cur, dict) or tok not in cur:
@@ -332,9 +339,9 @@ def _iter_materialization_entries(schema: dict[str, Any]):
             cur = cur[tok]
         return cur
 
-    seen: set[tuple[int, tuple[str, ...]]] = set()
+    seen = set()  # type: Set[Tuple[int, Tuple[str, ...]]]
 
-    def walk(node: Any, path_tokens: list[str]):
+    def walk(node: Any, path_tokens: List[str]):
         if not isinstance(node, dict):
             return
         marker = (id(node), tuple(path_tokens))
@@ -377,9 +384,9 @@ def _iter_materialization_entries(schema: dict[str, Any]):
     yield from walk(schema, [])
 
 
-def load_instructions_by_block(schema_path: Path) -> dict[str, dict[str, list[dict[str, Any]]]]:
+def load_instructions_by_block(schema_path: Path) -> Dict[str, Dict[str, List[Dict[str, Any]]]]:
     data = json.loads(schema_path.read_text(encoding="utf-8"))
-    out: dict[str, dict[str, list[dict[str, Any]]]] = {b: {} for b in BLOCKS}
+    out = {b: {} for b in BLOCKS}  # type: Dict[str, Dict[str, List[Dict[str, Any]]]]
 
     for schema_path_str, info in _iter_materialization_entries(data):
         full = info.get("ir_key") or info.get("pdb_key")
@@ -513,8 +520,8 @@ def _cpp_json_expr(value: Any) -> str:
 
 
 def synthesize_missing_contracts_from_instructions(
-    contracts_by_block: dict[str, dict[str, KeyContract]],
-    instructions_by_block: dict[str, dict[str, list[dict[str, Any]]]],
+    contracts_by_block: Dict[str, Dict[str, KeyContract]],
+    instructions_by_block: Dict[str, Dict[str, List[Dict[str, Any]]]],
 ) -> None:
     """Add contracts for write targets that are instruction-only IR keys.
 
@@ -555,7 +562,7 @@ def _cpp_str(value: str) -> str:
     return f'"{s}"'
 
 
-def _cpp_symbolic_expr(value: str) -> str | None:
+def _cpp_symbolic_expr(value: str) -> Optional[str]:
     text = value.strip()
     if not text:
         return None
@@ -636,7 +643,7 @@ def _cpp_default_variant_expr(member_type: str, value: Any, enum_scope: str = ""
     return f"IRValue{{{_cpp_json_expr(value)}}}"
 
 
-def _cpp_literal_expr(op: dict[str, Any]) -> str:
+def _cpp_literal_expr(op: Dict[str, Any]) -> str:
     member_type = op.get("literal_member_type")
     value = op.get("literal_value")
     enum_scope = op.get("literal_enum_scope")
@@ -656,8 +663,8 @@ def _cpp_literal_expr(op: dict[str, Any]) -> str:
 
 
 def _enum_ident_from_member_type(member_type: str) -> str:
-    parts: list[str] = []
-    token: list[str] = []
+    parts = []  # type: List[str]
+    token = []  # type: List[str]
     for ch in member_type:
         if ch.isalnum():
             token.append(ch)
@@ -676,8 +683,8 @@ def _enum_ident_from_member_type(member_type: str) -> str:
 
 
 def _enum_ident(text: str) -> str:
-    parts: list[str] = []
-    token: list[str] = []
+    parts = []  # type: List[str]
+    token = []  # type: List[str]
     for ch in text:
         if ch.isalnum():
             token.append(ch)
@@ -689,7 +696,7 @@ def _enum_ident(text: str) -> str:
         parts.append("".join(token))
     if not parts:
         return "Unknown"
-    norm_parts: list[str] = []
+    norm_parts = []  # type: List[str]
     for p in parts:
         if p.isupper() or p.islower():
             norm_parts.append(p[:1].upper() + p[1:].lower())
@@ -712,9 +719,9 @@ def _cpp_ir_type_token(member_type: str) -> str:
     return f"Dakota::{t}"
 
 
-def load_all_storage_types(schema_path: Path) -> set[str]:
+def load_all_storage_types(schema_path: Path) -> Set[str]:
     data = json.loads(schema_path.read_text(encoding="utf-8"))
-    out: set[str] = set()
+    out = set()  # type: Set[str]
 
     def walk(node: Any):
         if isinstance(node, dict):
@@ -745,8 +752,8 @@ def load_all_storage_types(schema_path: Path) -> set[str]:
     return out
 
 
-def render_types_hpp(member_types: list[str], op_kinds: list[str]) -> str:
-    lines: list[str] = []
+def render_types_hpp(member_types: List[str], op_kinds: List[str]) -> str:
+    lines = []  # type: List[str]
     lines.append("// Auto-generated by update_pdb_keys/generate_ir_tables.py")
     sig_payload = {"member_types": member_types, "op_kinds": op_kinds}
     sig = hashlib.sha256(json.dumps(sig_payload, sort_keys=True).encode("utf-8")).hexdigest()
@@ -788,7 +795,7 @@ def render_types_hpp(member_types: list[str], op_kinds: list[str]) -> str:
 
 
 def render_table_types_hpp() -> str:
-    lines: list[str] = []
+    lines = []  # type: List[str]
     lines.append("// Stable table metadata types. Keep this header minimal and non-derived.")
     lines.append("#pragma once")
     lines.append("")
@@ -865,7 +872,7 @@ def _extract_type_signature(header_text: str) -> str:
 
 
 def render_registry_cpp() -> str:
-    lines: list[str] = []
+    lines = []  # type: List[str]
     lines.append("// Auto-generated by update_pdb_keys/generate_ir_tables.py")
     lines.append('#include "generated_ir_table_types.hpp"')
     lines.append("")
@@ -909,15 +916,15 @@ def render_registry_cpp() -> str:
 
 def render_block_cpp(
     block: str,
-    contracts: dict[str, KeyContract],
-    instructions: dict[str, list[dict[str, Any]]],
+    contracts: Dict[str, KeyContract],
+    instructions: Dict[str, List[Dict[str, Any]]],
 ) -> str:
     ns = f"dakota::irgen::{block}"
     def _default_source_enum(v: str) -> str:
         m = {"policy": "Policy", "schema": "Schema", "override": "Override"}
         return m.get(v, "Policy")
 
-    lines: list[str] = []
+    lines = []  # type: List[str]
     lines.append("// Auto-generated by update_pdb_keys/generate_ir_tables.py")
     lines.append(f"// Block: {block}")
     lines.append('#include "generated_ir_table_types.hpp"')

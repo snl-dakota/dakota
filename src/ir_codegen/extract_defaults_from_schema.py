@@ -11,27 +11,35 @@ Output is keyed by key and records one or more candidate defaults with source
 metadata.
 """
 
-from __future__ import annotations
-
 import argparse
 import json
 from collections import defaultdict
-from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, Dict, List, Tuple
 
 
-@dataclass(frozen=True)
 class DefaultCandidate:
-    value: Any
-    source: str
-    schema_path: str
-    storage_type: str
-    handler_type: str
-    keyword_name: str
-    member_variable_type: str
-    enum_scope: str = ""
-    chosen_model: str = ""
+    def __init__(
+        self,
+        value,
+        source,
+        schema_path,
+        storage_type,
+        handler_type,
+        keyword_name,
+        member_variable_type,
+        enum_scope="",
+        chosen_model="",
+    ):
+        self.value = value
+        self.source = source
+        self.schema_path = schema_path
+        self.storage_type = storage_type
+        self.handler_type = handler_type
+        self.keyword_name = keyword_name
+        self.member_variable_type = member_variable_type
+        self.enum_scope = enum_scope
+        self.chosen_model = chosen_model
 
 
 def _walk(node: Any, path: str = ""):
@@ -78,7 +86,7 @@ def _infer_presence_value(m: dict) -> Any:
     return None
 
 
-def _schema_default_targets(m: dict, default_value: Any) -> list[tuple[str, Any, str]]:
+def _schema_default_targets(m: dict, default_value: Any) -> List[Tuple[str, Any, str]]:
     """Resolve schema-field defaults into IR default candidates.
 
     Most materialization entries map field defaults directly to their primary
@@ -116,7 +124,7 @@ def _schema_default_targets(m: dict, default_value: Any) -> list[tuple[str, Any,
     return []
 
 
-def _xmodel_default_targets(m: dict) -> list[tuple[str, Any, str]]:
+def _xmodel_default_targets(m: dict) -> List[Tuple[str, Any, str]]:
     """Resolve x-model-default branch selections into IR default candidates."""
     storage = str(m.get("storage_type", ""))
     if storage == "METHOD_PIECEWISE":
@@ -136,9 +144,9 @@ def _xmodel_default_targets(m: dict) -> list[tuple[str, Any, str]]:
     return [(ir_key, value, member_variable_type)]
 
 
-def extract_defaults(schema: dict) -> dict[str, list[DefaultCandidate]]:
+def extract_defaults(schema: dict) -> Dict[str, List[DefaultCandidate]]:
     defs = schema.get("$defs", {})
-    by_key: dict[str, list[DefaultCandidate]] = defaultdict(list)
+    by_key = defaultdict(list)  # type: Dict[str, List[DefaultCandidate]]
 
     for schema_path, node in _walk(schema):
         if not isinstance(node, dict):
@@ -225,7 +233,7 @@ def extract_defaults(schema: dict) -> dict[str, list[DefaultCandidate]]:
                 )
 
     # Deduplicate exact candidate records per key
-    deduped: dict[str, list[DefaultCandidate]] = {}
+    deduped = {}  # type: Dict[str, List[DefaultCandidate]]
     for ir_key, candidates in by_key.items():
         seen = set()
         uniq = []
@@ -253,7 +261,7 @@ def extract_defaults(schema: dict) -> dict[str, list[DefaultCandidate]]:
     return deduped
 
 
-def summarize(cands: dict[str, list[DefaultCandidate]]) -> dict[str, Any]:
+def summarize(cands: Dict[str, List[DefaultCandidate]]) -> Dict[str, Any]:
     num_keys = len(cands)
     num_candidates = sum(len(v) for v in cands.values())
     enum_like = 0
@@ -295,7 +303,7 @@ def main() -> int:
     summary = summarize(cands)
 
     blocks = ("environment", "method", "model", "variables", "interface", "responses")
-    defaults_by_block: dict[str, dict[str, Any]] = {b: {} for b in blocks}
+    defaults_by_block = {b: {} for b in blocks}  # type: Dict[str, Dict[str, Any]]
     skipped_invalid_key = 0
     for ir_key in sorted(cands.keys()):
         parts = ir_key.split(".", 1)
