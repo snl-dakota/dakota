@@ -193,11 +193,6 @@
         "value_type": "short",
         "value": "Pecos::DEFAULT_BASIS"
       },
-      "nond.expansion_order": {
-        "key": "method.nond.expansion_order",
-        "value_type": "unsigned short",
-        "value": "USHRT_MAX"
-      },
       "nond.expansion_refinement_control": {
         "key": "method.nond.expansion_refinement_control",
         "value_type": "short",
@@ -212,11 +207,6 @@
         "key": "method.nond.expansion_refinement_type",
         "value_type": "short",
         "value": "Pecos::NO_REFINEMENT"
-      },
-      "nond.expansion_samples": {
-        "key": "method.nond.expansion_samples",
-        "value_type": "size_t",
-        "value": "SZ_MAX"
       },
       "nond.expansion_type": {
         "key": "method.nond.expansion_type",
@@ -323,11 +313,6 @@
         "value_type": "short",
         "value": "QOI_AGGREGATION_SUM"
       },
-      "nond.quadrature_order": {
-        "key": "method.nond.quadrature_order",
-        "value_type": "unsigned short",
-        "value": "USHRT_MAX"
-      },
       "nond.rcond_best_throttle": {
         "key": "method.nond.rcond_best_throttle",
         "value_type": "size_t",
@@ -367,11 +352,6 @@
         "key": "method.nond.search_model_graphs.selection",
         "value_type": "short",
         "value": "NO_MODEL_SELECTION"
-      },
-      "nond.sparse_grid_level": {
-        "key": "method.nond.sparse_grid_level",
-        "value_type": "unsigned short",
-        "value": "USHRT_MAX"
       },
       "optpp.merit_function": {
         "key": "method.optpp.merit_function",

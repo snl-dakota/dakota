@@ -93,8 +93,8 @@ InstructionMaterializer::op_handlers()
       &InstructionMaterializer::handle_int_set},
     {irgen::OpKind::ResponseLevelsArray,
       &InstructionMaterializer::handle_response_levels_array},
-    {irgen::OpKind::StringlistToString2d,
-      &InstructionMaterializer::handle_stringlist_to_string2d},
+    {irgen::OpKind::AnalysisComponents,
+      &InstructionMaterializer::handle_analysis_components},
   };
   return handlers;
 }

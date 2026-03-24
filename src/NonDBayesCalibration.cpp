@@ -385,9 +385,9 @@ void NonDBayesCalibration::construct_mcmc_model()
 
     else if (emulatorType == MF_SC_EMULATOR) {
       const UShortArray& ssg_level_seq
-	= probDescDB.get_usa("method.nond.sparse_grid_level");
+	= probDescDB.get_usa("method.nond.sparse_grid_level_sequence");
       const UShortArray& tpq_order_seq
-	= probDescDB.get_usa("method.nond.quadrature_order");
+	= probDescDB.get_usa("method.nond.quadrature_order_sequence");
       short ml_alloc_cntl
 	= probDescDB.get_short("method.nond.multilevel_allocation_control"),
 	ml_discrep
@@ -414,9 +414,9 @@ void NonDBayesCalibration::construct_mcmc_model()
 
     else if (emulatorType == MF_PCE_EMULATOR) {
       const UShortArray& ssg_level_seq
-	= probDescDB.get_usa("method.nond.sparse_grid_level");
+	= probDescDB.get_usa("method.nond.sparse_grid_level_sequence");
       const UShortArray& tpq_order_seq
-	= probDescDB.get_usa("method.nond.quadrature_order");
+	= probDescDB.get_usa("method.nond.quadrature_order_sequence");
       short ml_alloc_cntl
 	= probDescDB.get_short("method.nond.multilevel_allocation_control"),
 	ml_discrep
@@ -439,8 +439,8 @@ void NonDBayesCalibration::construct_mcmc_model()
         stochExpIterator = std::make_shared<NonDMultilevelPolynomialChaos>(
           MULTIFIDELITY_POLYNOMIAL_CHAOS, inbound_model,
           probDescDB.get_short("method.nond.regression_type"), 
-          probDescDB.get_usa("method.nond.expansion_order"), dim_pref,
-          probDescDB.get_sza("method.nond.collocation_points"), // sequence
+          probDescDB.get_usa("method.nond.expansion_order_sequence"), dim_pref,
+          probDescDB.get_sza("method.nond.collocation_points_sequence"), // sequence
           probDescDB.get_real("method.nond.collocation_ratio"), // scalar
           seed_seq, u_space_type, refine_type, refine_cntl, cov_cntl,
           ml_alloc_cntl, ml_discrep, /* rule_nest, rule_growth, */ pw_basis,
@@ -457,8 +457,8 @@ void NonDBayesCalibration::construct_mcmc_model()
       stochExpIterator = std::make_shared<NonDMultilevelPolynomialChaos>(
         MULTILEVEL_POLYNOMIAL_CHAOS, inbound_model,
         probDescDB.get_short("method.nond.regression_type"),
-        probDescDB.get_usa("method.nond.expansion_order"), dim_pref,
-        probDescDB.get_sza("method.nond.collocation_points"), // sequence
+        probDescDB.get_usa("method.nond.expansion_order_sequence"), dim_pref,
+        probDescDB.get_sza("method.nond.collocation_points_sequence"), // sequence
         probDescDB.get_real("method.nond.collocation_ratio"), // scalar
         seed_seq, u_space_type, refine_type, refine_cntl, cov_cntl,
         probDescDB.get_short("method.nond.multilevel_allocation_control"),

@@ -415,6 +415,10 @@
         "key": "method.nond.chain_samples",
         "value_type": "int"
       },
+      "nond.collocation_points_sequence": {
+        "key": "method.nond.collocation_points_sequence",
+        "value_type": "SizetArray"
+      },
       "nond.collocation_ratio": {
         "key": "method.nond.collocation_ratio",
         "value_type": "Real"
@@ -458,6 +462,14 @@
       "nond.evaluate_posterior_density": {
         "key": "method.nond.evaluate_posterior_density",
         "value_type": "bool"
+      },
+      "nond.expansion_order_sequence": {
+        "key": "method.nond.expansion_order_sequence",
+        "value_type": "UShortArray"
+      },
+      "nond.expansion_samples_sequence": {
+        "key": "method.nond.expansion_samples_sequence",
+        "value_type": "SizetArray"
       },
       "nond.export_corrected_model_file": {
         "key": "method.nond.export_corrected_model_file",
@@ -571,6 +583,10 @@
         "key": "method.nond.proposal_covariance_type",
         "value_type": "String"
       },
+      "nond.quadrature_order_sequence": {
+        "key": "method.nond.quadrature_order_sequence",
+        "value_type": "UShortArray"
+      },
       "nond.refinement_samples": {
         "key": "method.nond.refinement_samples",
         "value_type": "IntVector"
@@ -614,6 +630,10 @@
       "nond.scalarization_response_mapping": {
         "key": "method.nond.scalarization_response_mapping",
         "value_type": "RealVector"
+      },
+      "nond.sparse_grid_level_sequence": {
+        "key": "method.nond.sparse_grid_level_sequence",
+        "value_type": "UShortArray"
       },
       "nond.standardized_space": {
         "key": "method.nond.standardized_space",

@@ -1702,8 +1702,8 @@ const SizetArray& ProblemDescDB::get_sza(const String& entry_name) const
     { /* environment */ },
     { /* method */
       {"nond.c3function_train.start_rank_sequence", P_MET startRankSeq},
-      {"nond.collocation_points", P_MET collocationPointsSeq},
-      {"nond.expansion_samples", P_MET expansionSamplesSeq},
+      {"nond.collocation_points_sequence", P_MET collocationPointsSeq},
+      {"nond.expansion_samples_sequence", P_MET expansionSamplesSeq},
       {"nond.pilot_samples", P_MET pilotSamples},
       {"random_seed_sequence", P_MET randomSeedSeq}
     },
@@ -1722,9 +1722,9 @@ const UShortArray& ProblemDescDB::get_usa(const String& entry_name) const
     { /* environment */ },
     { /* method */
       {"nond.c3function_train.start_order_sequence", P_MET startOrderSeq},
-      {"nond.expansion_order", P_MET expansionOrderSeq},
-      {"nond.quadrature_order", P_MET quadratureOrderSeq},
-      {"nond.sparse_grid_level", P_MET sparseGridLevelSeq},
+      {"nond.expansion_order_sequence", P_MET expansionOrderSeq},
+      {"nond.quadrature_order_sequence", P_MET quadratureOrderSeq},
+      {"nond.sparse_grid_level_sequence", P_MET sparseGridLevelSeq},
       {"nond.tensor_grid_order", P_MET tensorGridOrder},
       {"partitions", P_MET varPartitions}
     },

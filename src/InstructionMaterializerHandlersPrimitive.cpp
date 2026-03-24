@@ -274,7 +274,12 @@ void InstructionMaterializer::handle_presence_literal(const irgen::WriteOp& op,
                                                       const HandlerContext& ctx)
 {
   (void)contract;
-  (void)InstructionMaterializerUtils::required_path(ctx.block_json, ctx.current_path);
+  const auto& value = InstructionMaterializerUtils::required_path(
+    ctx.block_json, ctx.current_path);
+  if (value.is_boolean()) {
+    if (!value.get<bool>())
+      return;
+  }
   ctx.store.set_value(op.target_local_ir_key, op.literal.value);
 }
 
@@ -282,7 +287,12 @@ void InstructionMaterializer::handle_presence_enum(const irgen::WriteOp& op,
                                                    const irgen::KeyContract& contract,
                                                    const HandlerContext& ctx)
 {
-  (void)InstructionMaterializerUtils::required_path(ctx.block_json, ctx.current_path);
+  const auto& value = InstructionMaterializerUtils::required_path(
+    ctx.block_json, ctx.current_path);
+  if (value.is_boolean()) {
+    if (!value.get<bool>())
+      return;
+  }
   const uint64_t lit = enum_literal_to_u64(op.literal, contract.ir_value_type);
   ctx.store.set_value(op.target_local_ir_key, enum_u64_to_irvalue(lit, contract.ir_value_type));
 }
@@ -443,40 +453,41 @@ void InstructionMaterializer::handle_response_levels_array(
   ctx.store.set_value(op.target_local_ir_key, IRValue(std::move(out)));
 }
 
-void InstructionMaterializer::handle_stringlist_to_string2d(
+void InstructionMaterializer::handle_analysis_components(
   const irgen::WriteOp& op,
   const irgen::KeyContract& contract,
   const HandlerContext& ctx)
 {
   if (contract.ir_value_type != irgen::IrValueType::String2DArray) {
     throw std::runtime_error(
-      "InstructionMaterializer::handle_stringlist_to_string2d requires String2DArray contract type");
+      "InstructionMaterializer::handle_analysis_components requires String2DArray contract type");
   }
 
   const auto& value = InstructionMaterializerUtils::required_path(
     ctx.block_json, ctx.current_path);
   if (!value.is_array()) {
     throw std::runtime_error(
-      "InstructionMaterializer::handle_stringlist_to_string2d expected array at '" +
+      "InstructionMaterializer::handle_analysis_components expected array at '" +
       std::string(ctx.current_path) + "'");
   }
 
   const StringArray flat = value.get<StringArray>();
-  size_t num_drivers = 1;
+  size_t num_drivers = 0;
   if (ctx.store.contains("application.analysis_drivers")) {
     const auto& drivers = ctx.store.get<StringArray>("application.analysis_drivers");
-    if (!drivers.empty())
-      num_drivers = drivers.size();
+    num_drivers = drivers.size();
   }
   if (num_drivers == 0) {
-    throw std::runtime_error(
-      "InstructionMaterializer::handle_stringlist_to_string2d requires at least one analysis driver");
+    if (const auto* drivers_json =
+          InstructionMaterializerUtils::optional_path(
+            ctx.block_json, "analysis_drivers/drivers")) {
+      if (drivers_json->is_array())
+        num_drivers = drivers_json->size();
+    }
   }
-  if (flat.size() % num_drivers != 0) {
+  if (num_drivers == 0)
     throw std::runtime_error(
-      "InstructionMaterializer::handle_stringlist_to_string2d expected list length divisible by number of analysis_drivers at '" +
-      std::string(ctx.current_path) + "'");
-  }
+      "InstructionMaterializer::handle_analysis_components requires analysis_drivers/drivers");
 
   String2DArray out(num_drivers);
   const size_t comps_per_driver = flat.size() / num_drivers;

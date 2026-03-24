@@ -2868,6 +2868,36 @@
           }
         ]
       },
+      "nond.expansion_order": {
+        "key": "method.nond.expansion_order",
+        "candidates": [
+          {
+            "value": 65535,
+            "value_type": "unsigned short",
+            "enum_scope": ""
+          },
+          {
+            "value": 65535,
+            "value_type": "unsigned short",
+            "enum_scope": ""
+          }
+        ]
+      },
+      "nond.expansion_samples": {
+        "key": "method.nond.expansion_samples",
+        "candidates": [
+          {
+            "value": 9223372036854775807,
+            "value_type": "size_t",
+            "enum_scope": ""
+          },
+          {
+            "value": 9223372036854775807,
+            "value_type": "size_t",
+            "enum_scope": ""
+          }
+        ]
+      },
       "nond.export_samples_format": {
         "key": "method.nond.export_samples_format",
         "candidates": [
@@ -3138,6 +3168,31 @@
           }
         ]
       },
+      "nond.quadrature_order": {
+        "key": "method.nond.quadrature_order",
+        "candidates": [
+          {
+            "value": 65535,
+            "value_type": "unsigned short",
+            "enum_scope": ""
+          },
+          {
+            "value": 65535,
+            "value_type": "unsigned short",
+            "enum_scope": ""
+          },
+          {
+            "value": 65535,
+            "value_type": "unsigned short",
+            "enum_scope": ""
+          },
+          {
+            "value": 65535,
+            "value_type": "unsigned short",
+            "enum_scope": ""
+          }
+        ]
+      },
       "nond.samples_on_emulator": {
         "key": "method.nond.samples_on_emulator",
         "candidates": [
@@ -3204,6 +3259,31 @@
           {
             "value": 0,
             "value_type": "int",
+            "enum_scope": ""
+          }
+        ]
+      },
+      "nond.sparse_grid_level": {
+        "key": "method.nond.sparse_grid_level",
+        "candidates": [
+          {
+            "value": 65535,
+            "value_type": "unsigned short",
+            "enum_scope": ""
+          },
+          {
+            "value": 65535,
+            "value_type": "unsigned short",
+            "enum_scope": ""
+          },
+          {
+            "value": 65535,
+            "value_type": "unsigned short",
+            "enum_scope": ""
+          },
+          {
+            "value": 65535,
+            "value_type": "unsigned short",
             "enum_scope": ""
           }
         ]

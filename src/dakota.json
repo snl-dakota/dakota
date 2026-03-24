@@ -749,25 +749,19 @@
                     "x-model-default": "RngOptionsContext2Mt19937",
                     "x-union-pattern": 1
                 },
-                "probability_levels": {
+                "distribution": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/ProbabilityLevelsContext2ProbabilityLevels"
+                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
                         },
                         {
-                            "type": "null"
+                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
                         }
                     ],
-                    "argument": "values",
-                    "default": null,
-                    "description": "Specify probability levels at which to estimate the corresponding response value",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.nond.probability_levels",
-                            "ir_value_type": "RealVectorArray",
-                            "storage_type": "RESPONSE_LEVELS_ARRAY"
-                        }
-                    ]
+                    "description": "Selection of cumulative or complementary cumulative functions",
+                    "title": "Distribution",
+                    "x-model-default": "DistributionCumulComplContext1Cumulative",
+                    "x-union-pattern": 1
                 },
                 "response_levels": {
                     "anyOf": [
@@ -784,6 +778,26 @@
                     "x-materialization": [
                         {
                             "ir_key": "method.nond.response_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
+                },
+                "probability_levels": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/ProbabilityLevelsContext2ProbabilityLevels"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "values",
+                    "default": null,
+                    "description": "Specify probability levels at which to estimate the corresponding response value",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.probability_levels",
                             "ir_value_type": "RealVectorArray",
                             "storage_type": "RESPONSE_LEVELS_ARRAY"
                         }
@@ -808,20 +822,6 @@
                             "storage_type": "RESPONSE_LEVELS_ARRAY"
                         }
                     ]
-                },
-                "distribution": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
-                        },
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
-                        }
-                    ],
-                    "description": "Selection of cumulative or complementary cumulative functions",
-                    "title": "Distribution",
-                    "x-model-default": "DistributionCumulComplContext1Cumulative",
-                    "x-union-pattern": 1
                 },
                 "max_iterations": {
                     "default": 9223372036854775807,
@@ -1327,7 +1327,7 @@
                         {
                             "ir_key": "interface.application.analysis_components",
                             "ir_value_type": "String2DArray",
-                            "storage_type": "STRINGLIST_TO_STRING2D"
+                            "storage_type": "ANALYSIS_COMPONENTS"
                         }
                     ]
                 }
@@ -1337,7 +1337,16 @@
                 "interface_type"
             ],
             "title": "AnalysisDrivers",
-            "type": "object"
+            "type": "object",
+            "x-model-validations": [
+                {
+                    "validationContext": "analysis_drivers",
+                    "validationErrorMessage": "For analysis_drivers, some block parameters are invalid",
+                    "validationFields": [],
+                    "validationLiterals": [],
+                    "validationRuleName": "check_analysis_drivers"
+                }
+            ]
         },
         "AnalysisDriversGrid": {
             "additionalProperties": false,
@@ -8407,47 +8416,6 @@
             "additionalProperties": false,
             "description": "Generated model for ConminFrcgConfig",
             "properties": {
-                "max_function_evaluations": {
-                    "default": 9223372036854775807,
-                    "description": "Number of function evaluations allowed for optimizers",
-                    "minimum": 0,
-                    "title": "Max Function Evaluations",
-                    "type": "integer",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.max_function_evaluations",
-                            "ir_value_type": "size_t",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
-                "speculative": {
-                    "default": false,
-                    "description": "Compute speculative gradients",
-                    "title": "Speculative",
-                    "type": "boolean",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.speculative",
-                            "ir_value_type": "bool",
-                            "storage_type": "PRESENCE_BOOL"
-                        }
-                    ]
-                },
-                "max_iterations": {
-                    "default": 9223372036854775807,
-                    "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
-                    "minimum": 0,
-                    "title": "Max Iterations",
-                    "type": "integer",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.max_iterations",
-                            "ir_value_type": "size_t",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
                 "scaling": {
                     "default": false,
                     "description": "Turn on scaling for variables, responses, and constraints",
@@ -8475,6 +8443,20 @@
                         {
                             "ir_key": "method.jega.percent_change",
                             "ir_value_type": "Real",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "max_function_evaluations": {
+                    "default": 9223372036854775807,
+                    "description": "Number of function evaluations allowed for optimizers",
+                    "minimum": 0,
+                    "title": "Max Function Evaluations",
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.max_function_evaluations",
+                            "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
                         }
                     ]
@@ -8510,6 +8492,33 @@
                             "ir_key": "method.model_pointer",
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "max_iterations": {
+                    "default": 9223372036854775807,
+                    "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
+                    "minimum": 0,
+                    "title": "Max Iterations",
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.max_iterations",
+                            "ir_value_type": "size_t",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "speculative": {
+                    "default": false,
+                    "description": "Compute speculative gradients",
+                    "title": "Speculative",
+                    "type": "boolean",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.speculative",
+                            "ir_value_type": "bool",
+                            "storage_type": "PRESENCE_BOOL"
                         }
                     ]
                 },
@@ -8600,47 +8609,6 @@
             "additionalProperties": false,
             "description": "Generated model for ConminMfdConfig",
             "properties": {
-                "max_function_evaluations": {
-                    "default": 9223372036854775807,
-                    "description": "Number of function evaluations allowed for optimizers",
-                    "minimum": 0,
-                    "title": "Max Function Evaluations",
-                    "type": "integer",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.max_function_evaluations",
-                            "ir_value_type": "size_t",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
-                "speculative": {
-                    "default": false,
-                    "description": "Compute speculative gradients",
-                    "title": "Speculative",
-                    "type": "boolean",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.speculative",
-                            "ir_value_type": "bool",
-                            "storage_type": "PRESENCE_BOOL"
-                        }
-                    ]
-                },
-                "max_iterations": {
-                    "default": 9223372036854775807,
-                    "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
-                    "minimum": 0,
-                    "title": "Max Iterations",
-                    "type": "integer",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.max_iterations",
-                            "ir_value_type": "size_t",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
                 "scaling": {
                     "default": false,
                     "description": "Turn on scaling for variables, responses, and constraints",
@@ -8668,6 +8636,20 @@
                         {
                             "ir_key": "method.jega.percent_change",
                             "ir_value_type": "Real",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "max_function_evaluations": {
+                    "default": 9223372036854775807,
+                    "description": "Number of function evaluations allowed for optimizers",
+                    "minimum": 0,
+                    "title": "Max Function Evaluations",
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.max_function_evaluations",
+                            "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
                         }
                     ]
@@ -8703,6 +8685,33 @@
                             "ir_key": "method.model_pointer",
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "max_iterations": {
+                    "default": 9223372036854775807,
+                    "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
+                    "minimum": 0,
+                    "title": "Max Iterations",
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.max_iterations",
+                            "ir_value_type": "size_t",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "speculative": {
+                    "default": false,
+                    "description": "Compute speculative gradients",
+                    "title": "Speculative",
+                    "type": "boolean",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.speculative",
+                            "ir_value_type": "bool",
+                            "storage_type": "PRESENCE_BOOL"
                         }
                     ]
                 },
@@ -15716,47 +15725,6 @@
             "additionalProperties": false,
             "description": "Generated model for DotBfgsConfig",
             "properties": {
-                "max_function_evaluations": {
-                    "default": 9223372036854775807,
-                    "description": "Number of function evaluations allowed for optimizers",
-                    "minimum": 0,
-                    "title": "Max Function Evaluations",
-                    "type": "integer",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.max_function_evaluations",
-                            "ir_value_type": "size_t",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
-                "speculative": {
-                    "default": false,
-                    "description": "Compute speculative gradients",
-                    "title": "Speculative",
-                    "type": "boolean",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.speculative",
-                            "ir_value_type": "bool",
-                            "storage_type": "PRESENCE_BOOL"
-                        }
-                    ]
-                },
-                "max_iterations": {
-                    "default": 9223372036854775807,
-                    "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
-                    "minimum": 0,
-                    "title": "Max Iterations",
-                    "type": "integer",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.max_iterations",
-                            "ir_value_type": "size_t",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
                 "scaling": {
                     "default": false,
                     "description": "Turn on scaling for variables, responses, and constraints",
@@ -15784,6 +15752,20 @@
                         {
                             "ir_key": "method.jega.percent_change",
                             "ir_value_type": "Real",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "max_function_evaluations": {
+                    "default": 9223372036854775807,
+                    "description": "Number of function evaluations allowed for optimizers",
+                    "minimum": 0,
+                    "title": "Max Function Evaluations",
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.max_function_evaluations",
+                            "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
                         }
                     ]
@@ -15819,6 +15801,33 @@
                             "ir_key": "method.model_pointer",
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "max_iterations": {
+                    "default": 9223372036854775807,
+                    "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
+                    "minimum": 0,
+                    "title": "Max Iterations",
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.max_iterations",
+                            "ir_value_type": "size_t",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "speculative": {
+                    "default": false,
+                    "description": "Compute speculative gradients",
+                    "title": "Speculative",
+                    "type": "boolean",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.speculative",
+                            "ir_value_type": "bool",
+                            "storage_type": "PRESENCE_BOOL"
                         }
                     ]
                 },
@@ -15909,47 +15918,6 @@
             "additionalProperties": false,
             "description": "Generated model for DotFrcgConfig",
             "properties": {
-                "max_function_evaluations": {
-                    "default": 9223372036854775807,
-                    "description": "Number of function evaluations allowed for optimizers",
-                    "minimum": 0,
-                    "title": "Max Function Evaluations",
-                    "type": "integer",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.max_function_evaluations",
-                            "ir_value_type": "size_t",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
-                "speculative": {
-                    "default": false,
-                    "description": "Compute speculative gradients",
-                    "title": "Speculative",
-                    "type": "boolean",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.speculative",
-                            "ir_value_type": "bool",
-                            "storage_type": "PRESENCE_BOOL"
-                        }
-                    ]
-                },
-                "max_iterations": {
-                    "default": 9223372036854775807,
-                    "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
-                    "minimum": 0,
-                    "title": "Max Iterations",
-                    "type": "integer",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.max_iterations",
-                            "ir_value_type": "size_t",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
                 "scaling": {
                     "default": false,
                     "description": "Turn on scaling for variables, responses, and constraints",
@@ -15977,6 +15945,20 @@
                         {
                             "ir_key": "method.jega.percent_change",
                             "ir_value_type": "Real",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "max_function_evaluations": {
+                    "default": 9223372036854775807,
+                    "description": "Number of function evaluations allowed for optimizers",
+                    "minimum": 0,
+                    "title": "Max Function Evaluations",
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.max_function_evaluations",
+                            "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
                         }
                     ]
@@ -16012,6 +15994,33 @@
                             "ir_key": "method.model_pointer",
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "max_iterations": {
+                    "default": 9223372036854775807,
+                    "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
+                    "minimum": 0,
+                    "title": "Max Iterations",
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.max_iterations",
+                            "ir_value_type": "size_t",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "speculative": {
+                    "default": false,
+                    "description": "Compute speculative gradients",
+                    "title": "Speculative",
+                    "type": "boolean",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.speculative",
+                            "ir_value_type": "bool",
+                            "storage_type": "PRESENCE_BOOL"
                         }
                     ]
                 },
@@ -16102,47 +16111,6 @@
             "additionalProperties": false,
             "description": "Generated model for DotMmfdConfig",
             "properties": {
-                "max_function_evaluations": {
-                    "default": 9223372036854775807,
-                    "description": "Number of function evaluations allowed for optimizers",
-                    "minimum": 0,
-                    "title": "Max Function Evaluations",
-                    "type": "integer",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.max_function_evaluations",
-                            "ir_value_type": "size_t",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
-                "speculative": {
-                    "default": false,
-                    "description": "Compute speculative gradients",
-                    "title": "Speculative",
-                    "type": "boolean",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.speculative",
-                            "ir_value_type": "bool",
-                            "storage_type": "PRESENCE_BOOL"
-                        }
-                    ]
-                },
-                "max_iterations": {
-                    "default": 9223372036854775807,
-                    "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
-                    "minimum": 0,
-                    "title": "Max Iterations",
-                    "type": "integer",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.max_iterations",
-                            "ir_value_type": "size_t",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
                 "scaling": {
                     "default": false,
                     "description": "Turn on scaling for variables, responses, and constraints",
@@ -16170,6 +16138,20 @@
                         {
                             "ir_key": "method.jega.percent_change",
                             "ir_value_type": "Real",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "max_function_evaluations": {
+                    "default": 9223372036854775807,
+                    "description": "Number of function evaluations allowed for optimizers",
+                    "minimum": 0,
+                    "title": "Max Function Evaluations",
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.max_function_evaluations",
+                            "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
                         }
                     ]
@@ -16205,6 +16187,33 @@
                             "ir_key": "method.model_pointer",
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "max_iterations": {
+                    "default": 9223372036854775807,
+                    "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
+                    "minimum": 0,
+                    "title": "Max Iterations",
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.max_iterations",
+                            "ir_value_type": "size_t",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "speculative": {
+                    "default": false,
+                    "description": "Compute speculative gradients",
+                    "title": "Speculative",
+                    "type": "boolean",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.speculative",
+                            "ir_value_type": "bool",
+                            "storage_type": "PRESENCE_BOOL"
                         }
                     ]
                 },
@@ -16295,47 +16304,6 @@
             "additionalProperties": false,
             "description": "Generated model for DotSlpConfig",
             "properties": {
-                "max_function_evaluations": {
-                    "default": 9223372036854775807,
-                    "description": "Number of function evaluations allowed for optimizers",
-                    "minimum": 0,
-                    "title": "Max Function Evaluations",
-                    "type": "integer",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.max_function_evaluations",
-                            "ir_value_type": "size_t",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
-                "speculative": {
-                    "default": false,
-                    "description": "Compute speculative gradients",
-                    "title": "Speculative",
-                    "type": "boolean",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.speculative",
-                            "ir_value_type": "bool",
-                            "storage_type": "PRESENCE_BOOL"
-                        }
-                    ]
-                },
-                "max_iterations": {
-                    "default": 9223372036854775807,
-                    "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
-                    "minimum": 0,
-                    "title": "Max Iterations",
-                    "type": "integer",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.max_iterations",
-                            "ir_value_type": "size_t",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
                 "scaling": {
                     "default": false,
                     "description": "Turn on scaling for variables, responses, and constraints",
@@ -16363,6 +16331,20 @@
                         {
                             "ir_key": "method.jega.percent_change",
                             "ir_value_type": "Real",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "max_function_evaluations": {
+                    "default": 9223372036854775807,
+                    "description": "Number of function evaluations allowed for optimizers",
+                    "minimum": 0,
+                    "title": "Max Function Evaluations",
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.max_function_evaluations",
+                            "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
                         }
                     ]
@@ -16398,6 +16380,33 @@
                             "ir_key": "method.model_pointer",
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "max_iterations": {
+                    "default": 9223372036854775807,
+                    "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
+                    "minimum": 0,
+                    "title": "Max Iterations",
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.max_iterations",
+                            "ir_value_type": "size_t",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "speculative": {
+                    "default": false,
+                    "description": "Compute speculative gradients",
+                    "title": "Speculative",
+                    "type": "boolean",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.speculative",
+                            "ir_value_type": "bool",
+                            "storage_type": "PRESENCE_BOOL"
                         }
                     ]
                 },
@@ -16488,47 +16497,6 @@
             "additionalProperties": false,
             "description": "Generated model for DotSqpConfig",
             "properties": {
-                "max_function_evaluations": {
-                    "default": 9223372036854775807,
-                    "description": "Number of function evaluations allowed for optimizers",
-                    "minimum": 0,
-                    "title": "Max Function Evaluations",
-                    "type": "integer",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.max_function_evaluations",
-                            "ir_value_type": "size_t",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
-                "speculative": {
-                    "default": false,
-                    "description": "Compute speculative gradients",
-                    "title": "Speculative",
-                    "type": "boolean",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.speculative",
-                            "ir_value_type": "bool",
-                            "storage_type": "PRESENCE_BOOL"
-                        }
-                    ]
-                },
-                "max_iterations": {
-                    "default": 9223372036854775807,
-                    "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
-                    "minimum": 0,
-                    "title": "Max Iterations",
-                    "type": "integer",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.max_iterations",
-                            "ir_value_type": "size_t",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
                 "scaling": {
                     "default": false,
                     "description": "Turn on scaling for variables, responses, and constraints",
@@ -16556,6 +16524,20 @@
                         {
                             "ir_key": "method.jega.percent_change",
                             "ir_value_type": "Real",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "max_function_evaluations": {
+                    "default": 9223372036854775807,
+                    "description": "Number of function evaluations allowed for optimizers",
+                    "minimum": 0,
+                    "title": "Max Function Evaluations",
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.max_function_evaluations",
+                            "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
                         }
                     ]
@@ -16591,6 +16573,33 @@
                             "ir_key": "method.model_pointer",
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "max_iterations": {
+                    "default": 9223372036854775807,
+                    "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
+                    "minimum": 0,
+                    "title": "Max Iterations",
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.max_iterations",
+                            "ir_value_type": "size_t",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "speculative": {
+                    "default": false,
+                    "description": "Compute speculative gradients",
+                    "title": "Speculative",
+                    "type": "boolean",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.speculative",
+                            "ir_value_type": "bool",
+                            "storage_type": "PRESENCE_BOOL"
                         }
                     ]
                 },
@@ -17766,7 +17775,7 @@
                     ],
                     "x-materialization": [
                         {
-                            "ir_key": "method.nond.collocation_points",
+                            "ir_key": "method.nond.collocation_points_sequence",
                             "ir_value_type": "SizetArray",
                             "storage_type": "DIRECT_VALUE"
                         }
@@ -17936,7 +17945,7 @@
                     "type": "array",
                     "x-materialization": [
                         {
-                            "ir_key": "method.nond.expansion_order",
+                            "ir_key": "method.nond.expansion_order_sequence",
                             "ir_value_type": "UShortArray",
                             "storage_type": "DIRECT_VALUE"
                         }
@@ -18131,7 +18140,7 @@
                     "type": "array",
                     "x-materialization": [
                         {
-                            "ir_key": "method.nond.quadrature_order",
+                            "ir_key": "method.nond.quadrature_order_sequence",
                             "ir_value_type": "UShortArray",
                             "storage_type": "DIRECT_VALUE"
                         }
@@ -18225,7 +18234,7 @@
                     "type": "array",
                     "x-materialization": [
                         {
-                            "ir_key": "method.nond.sparse_grid_level",
+                            "ir_key": "method.nond.sparse_grid_level_sequence",
                             "ir_value_type": "UShortArray",
                             "storage_type": "DIRECT_VALUE"
                         }
@@ -18441,7 +18450,7 @@
                     "type": "array",
                     "x-materialization": [
                         {
-                            "ir_key": "method.nond.sparse_grid_level",
+                            "ir_key": "method.nond.sparse_grid_level_sequence",
                             "ir_value_type": "UShortArray",
                             "storage_type": "DIRECT_VALUE"
                         }
@@ -18770,7 +18779,7 @@
                     ],
                     "x-materialization": [
                         {
-                            "ir_key": "method.nond.collocation_points",
+                            "ir_key": "method.nond.collocation_points_sequence",
                             "ir_value_type": "SizetArray",
                             "storage_type": "DIRECT_VALUE"
                         }
@@ -18940,7 +18949,7 @@
                     "type": "array",
                     "x-materialization": [
                         {
-                            "ir_key": "method.nond.expansion_order",
+                            "ir_key": "method.nond.expansion_order_sequence",
                             "ir_value_type": "UShortArray",
                             "storage_type": "DIRECT_VALUE"
                         }
@@ -19066,7 +19075,7 @@
                     "type": "array",
                     "x-materialization": [
                         {
-                            "ir_key": "method.nond.expansion_samples",
+                            "ir_key": "method.nond.expansion_samples_sequence",
                             "ir_value_type": "SizetArray",
                             "storage_type": "DIRECT_VALUE"
                         }
@@ -19148,7 +19157,7 @@
                     "type": "array",
                     "x-materialization": [
                         {
-                            "ir_key": "method.nond.collocation_points",
+                            "ir_key": "method.nond.collocation_points_sequence",
                             "ir_value_type": "SizetArray",
                             "storage_type": "DIRECT_VALUE"
                         }
@@ -19558,7 +19567,14 @@
                 "points": {
                     "description": "Number of collocation points used to estimate expansion coefficients",
                     "title": "Points",
-                    "type": "integer"
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.collocation_points",
+                            "ir_value_type": "size_t",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 },
                 "regression_method": {
                     "anchor": true,
@@ -20212,7 +20228,14 @@
                     "default": 65535,
                     "description": "The (initial) order of a polynomial expansion",
                     "title": "Order",
-                    "type": "integer"
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.expansion_order",
+                            "ir_value_type": "unsigned short",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 },
                 "dimension_preference": {
                     "anyOf": [
@@ -20333,7 +20356,14 @@
                     "default": 9223372036854775807,
                     "description": "Number of simulation samples used to estimate the expected value of a set of PCE coefficients",
                     "title": "Value",
-                    "type": "integer"
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.expansion_samples",
+                            "ir_value_type": "size_t",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 },
                 "reuse_points": {
                     "default": false,
@@ -20511,7 +20541,14 @@
                 "collocation_points": {
                     "description": "Number of collocation points used to estimate expansion coefficients",
                     "title": "Collocation Points",
-                    "type": "integer"
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.collocation_points",
+                            "ir_value_type": "size_t",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 },
                 "tensor_grid": {
                     "anyOf": [
@@ -20795,7 +20832,14 @@
                     "default": 65535,
                     "description": "Order for tensor-products of Gaussian quadrature rules",
                     "title": "Order",
-                    "type": "integer"
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.quadrature_order",
+                            "ir_value_type": "unsigned short",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 },
                 "dimension_preference": {
                     "anyOf": [
@@ -20912,7 +20956,14 @@
                     "default": 65535,
                     "description": "Level to use in sparse grid integration or interpolation",
                     "title": "Level",
-                    "type": "integer"
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.sparse_grid_level",
+                            "ir_value_type": "unsigned short",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 },
                 "dimension_preference": {
                     "anyOf": [
@@ -21227,7 +21278,14 @@
                     "default": 65535,
                     "description": "Order for tensor-products of Gaussian quadrature rules",
                     "title": "Order",
-                    "type": "integer"
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.quadrature_order",
+                            "ir_value_type": "unsigned short",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 },
                 "dimension_preference": {
                     "anyOf": [
@@ -21298,7 +21356,14 @@
                     "default": 65535,
                     "description": "Level to use in sparse grid integration or interpolation",
                     "title": "Level",
-                    "type": "integer"
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.sparse_grid_level",
+                            "ir_value_type": "unsigned short",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 },
                 "dimension_preference": {
                     "anyOf": [
@@ -26875,6 +26940,19 @@
                     "title": "Collocation Control",
                     "x-union-pattern": 4
                 },
+                "convergence_tolerance": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "value",
+                    "default": null,
+                    "description": "Stopping criterion based on objective function or statistics convergence"
+                },
                 "refinement_metric": {
                     "anyOf": [
                         {
@@ -26891,19 +26969,6 @@
                     "description": "Metric used for guiding adaptive refinement during UQ.",
                     "title": "Refinement Metric",
                     "x-union-pattern": 2
-                },
-                "convergence_tolerance": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "value",
-                    "default": null,
-                    "description": "Stopping criterion based on objective function or statistics convergence"
                 },
                 "p_refinement": {
                     "anyOf": [
@@ -27098,7 +27163,14 @@
                 "collocation_points": {
                     "description": "Number of collocation points used to estimate expansion coefficients",
                     "title": "Collocation Points",
-                    "type": "integer"
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.collocation_points",
+                            "ir_value_type": "size_t",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 }
             },
             "required": [
@@ -29701,25 +29773,19 @@
                     "x-model-default": "RngOptionsContext2Mt19937",
                     "x-union-pattern": 1
                 },
-                "probability_levels": {
+                "distribution": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/ProbabilityLevelsContext2ProbabilityLevels"
+                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
                         },
                         {
-                            "type": "null"
+                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
                         }
                     ],
-                    "argument": "values",
-                    "default": null,
-                    "description": "Specify probability levels at which to estimate the corresponding response value",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.nond.probability_levels",
-                            "ir_value_type": "RealVectorArray",
-                            "storage_type": "RESPONSE_LEVELS_ARRAY"
-                        }
-                    ]
+                    "description": "Selection of cumulative or complementary cumulative functions",
+                    "title": "Distribution",
+                    "x-model-default": "DistributionCumulComplContext1Cumulative",
+                    "x-union-pattern": 1
                 },
                 "response_levels": {
                     "anyOf": [
@@ -29736,6 +29802,26 @@
                     "x-materialization": [
                         {
                             "ir_key": "method.nond.response_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
+                },
+                "probability_levels": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/ProbabilityLevelsContext2ProbabilityLevels"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "values",
+                    "default": null,
+                    "description": "Specify probability levels at which to estimate the corresponding response value",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.probability_levels",
                             "ir_value_type": "RealVectorArray",
                             "storage_type": "RESPONSE_LEVELS_ARRAY"
                         }
@@ -29760,20 +29846,6 @@
                             "storage_type": "RESPONSE_LEVELS_ARRAY"
                         }
                     ]
-                },
-                "distribution": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
-                        },
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
-                        }
-                    ],
-                    "description": "Selection of cumulative or complementary cumulative functions",
-                    "title": "Distribution",
-                    "x-model-default": "DistributionCumulComplContext1Cumulative",
-                    "x-union-pattern": 1
                 },
                 "solution_approach": {
                     "anchor": true,
@@ -30289,25 +30361,19 @@
                         }
                     ]
                 },
-                "probability_levels": {
+                "distribution": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/ProbabilityLevelsContext2ProbabilityLevels"
+                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
                         },
                         {
-                            "type": "null"
+                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
                         }
                     ],
-                    "argument": "values",
-                    "default": null,
-                    "description": "Specify probability levels at which to estimate the corresponding response value",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.nond.probability_levels",
-                            "ir_value_type": "RealVectorArray",
-                            "storage_type": "RESPONSE_LEVELS_ARRAY"
-                        }
-                    ]
+                    "description": "Selection of cumulative or complementary cumulative functions",
+                    "title": "Distribution",
+                    "x-model-default": "DistributionCumulComplContext1Cumulative",
+                    "x-union-pattern": 1
                 },
                 "response_levels": {
                     "anyOf": [
@@ -30324,6 +30390,26 @@
                     "x-materialization": [
                         {
                             "ir_key": "method.nond.response_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
+                },
+                "probability_levels": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/ProbabilityLevelsContext2ProbabilityLevels"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "values",
+                    "default": null,
+                    "description": "Specify probability levels at which to estimate the corresponding response value",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.probability_levels",
                             "ir_value_type": "RealVectorArray",
                             "storage_type": "RESPONSE_LEVELS_ARRAY"
                         }
@@ -30348,20 +30434,6 @@
                             "storage_type": "RESPONSE_LEVELS_ARRAY"
                         }
                     ]
-                },
-                "distribution": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
-                        },
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
-                        }
-                    ],
-                    "description": "Selection of cumulative or complementary cumulative functions",
-                    "title": "Distribution",
-                    "x-model-default": "DistributionCumulComplContext1Cumulative",
-                    "x-union-pattern": 1
                 },
                 "rng": {
                     "anyOf": [
@@ -30775,25 +30847,19 @@
                     "x-model-default": "RngOptionsContext2Mt19937",
                     "x-union-pattern": 1
                 },
-                "probability_levels": {
+                "distribution": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/ProbabilityLevelsContext2ProbabilityLevels"
+                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
                         },
                         {
-                            "type": "null"
+                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
                         }
                     ],
-                    "argument": "values",
-                    "default": null,
-                    "description": "Specify probability levels at which to estimate the corresponding response value",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.nond.probability_levels",
-                            "ir_value_type": "RealVectorArray",
-                            "storage_type": "RESPONSE_LEVELS_ARRAY"
-                        }
-                    ]
+                    "description": "Selection of cumulative or complementary cumulative functions",
+                    "title": "Distribution",
+                    "x-model-default": "DistributionCumulComplContext1Cumulative",
+                    "x-union-pattern": 1
                 },
                 "response_levels": {
                     "anyOf": [
@@ -30810,6 +30876,26 @@
                     "x-materialization": [
                         {
                             "ir_key": "method.nond.response_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
+                },
+                "probability_levels": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/ProbabilityLevelsContext2ProbabilityLevels"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "values",
+                    "default": null,
+                    "description": "Specify probability levels at which to estimate the corresponding response value",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.probability_levels",
                             "ir_value_type": "RealVectorArray",
                             "storage_type": "RESPONSE_LEVELS_ARRAY"
                         }
@@ -30834,20 +30920,6 @@
                             "storage_type": "RESPONSE_LEVELS_ARRAY"
                         }
                     ]
-                },
-                "distribution": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
-                        },
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
-                        }
-                    ],
-                    "description": "Selection of cumulative or complementary cumulative functions",
-                    "title": "Distribution",
-                    "x-model-default": "DistributionCumulComplContext1Cumulative",
-                    "x-union-pattern": 1
                 },
                 "max_iterations": {
                     "default": 9223372036854775807,
@@ -34599,6 +34671,26 @@
                         }
                     ]
                 },
+                "probability_levels": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/ProbabilityLevelsContext2ProbabilityLevels"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "values",
+                    "default": null,
+                    "description": "Specify probability levels at which to estimate the corresponding response value",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.probability_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
+                },
                 "gen_reliability_levels": {
                     "anyOf": [
                         {
@@ -34633,10 +34725,10 @@
                     "x-model-default": "DistributionCumulComplContext1Cumulative",
                     "x-union-pattern": 1
                 },
-                "probability_levels": {
+                "reliability_levels": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/ProbabilityLevelsContext2ProbabilityLevels"
+                            "$ref": "#/$defs/ReliabilityLevelsReliabilityLevels"
                         },
                         {
                             "type": "null"
@@ -34644,10 +34736,10 @@
                     ],
                     "argument": "values",
                     "default": null,
-                    "description": "Specify probability levels at which to estimate the corresponding response value",
+                    "description": "Specify reliability levels at which the response values will be estimated",
                     "x-materialization": [
                         {
-                            "ir_key": "method.nond.probability_levels",
+                            "ir_key": "method.nond.reliability_levels",
                             "ir_value_type": "RealVectorArray",
                             "storage_type": "RESPONSE_LEVELS_ARRAY"
                         }
@@ -34668,26 +34760,6 @@
                     "x-materialization": [
                         {
                             "ir_key": "method.nond.response_levels",
-                            "ir_value_type": "RealVectorArray",
-                            "storage_type": "RESPONSE_LEVELS_ARRAY"
-                        }
-                    ]
-                },
-                "reliability_levels": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/ReliabilityLevelsReliabilityLevels"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "values",
-                    "default": null,
-                    "description": "Specify reliability levels at which the response values will be estimated",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.nond.reliability_levels",
                             "ir_value_type": "RealVectorArray",
                             "storage_type": "RESPONSE_LEVELS_ARRAY"
                         }
@@ -35403,25 +35475,19 @@
                     "x-model-default": "RngOptionsContext2Mt19937",
                     "x-union-pattern": 1
                 },
-                "probability_levels": {
+                "distribution": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/ProbabilityLevelsContext2ProbabilityLevels"
+                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
                         },
                         {
-                            "type": "null"
+                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
                         }
                     ],
-                    "argument": "values",
-                    "default": null,
-                    "description": "Specify probability levels at which to estimate the corresponding response value",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.nond.probability_levels",
-                            "ir_value_type": "RealVectorArray",
-                            "storage_type": "RESPONSE_LEVELS_ARRAY"
-                        }
-                    ]
+                    "description": "Selection of cumulative or complementary cumulative functions",
+                    "title": "Distribution",
+                    "x-model-default": "DistributionCumulComplContext1Cumulative",
+                    "x-union-pattern": 1
                 },
                 "response_levels": {
                     "anyOf": [
@@ -35438,6 +35504,26 @@
                     "x-materialization": [
                         {
                             "ir_key": "method.nond.response_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
+                },
+                "probability_levels": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/ProbabilityLevelsContext2ProbabilityLevels"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "values",
+                    "default": null,
+                    "description": "Specify probability levels at which to estimate the corresponding response value",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.probability_levels",
                             "ir_value_type": "RealVectorArray",
                             "storage_type": "RESPONSE_LEVELS_ARRAY"
                         }
@@ -35462,20 +35548,6 @@
                             "storage_type": "RESPONSE_LEVELS_ARRAY"
                         }
                     ]
-                },
-                "distribution": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
-                        },
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
-                        }
-                    ],
-                    "description": "Selection of cumulative or complementary cumulative functions",
-                    "title": "Distribution",
-                    "x-model-default": "DistributionCumulComplContext1Cumulative",
-                    "x-union-pattern": 1
                 },
                 "convergence_tolerance": {
                     "default": -1.7976931348623157e+308,
@@ -37326,25 +37398,19 @@
                         }
                     ]
                 },
-                "probability_levels": {
+                "distribution": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/ProbabilityLevelsContext2ProbabilityLevels"
+                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
                         },
                         {
-                            "type": "null"
+                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
                         }
                     ],
-                    "argument": "values",
-                    "default": null,
-                    "description": "Specify probability levels at which to estimate the corresponding response value",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.nond.probability_levels",
-                            "ir_value_type": "RealVectorArray",
-                            "storage_type": "RESPONSE_LEVELS_ARRAY"
-                        }
-                    ]
+                    "description": "Selection of cumulative or complementary cumulative functions",
+                    "title": "Distribution",
+                    "x-model-default": "DistributionCumulComplContext1Cumulative",
+                    "x-union-pattern": 1
                 },
                 "response_levels": {
                     "anyOf": [
@@ -37361,6 +37427,26 @@
                     "x-materialization": [
                         {
                             "ir_key": "method.nond.response_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
+                },
+                "probability_levels": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/ProbabilityLevelsContext2ProbabilityLevels"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "values",
+                    "default": null,
+                    "description": "Specify probability levels at which to estimate the corresponding response value",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.probability_levels",
                             "ir_value_type": "RealVectorArray",
                             "storage_type": "RESPONSE_LEVELS_ARRAY"
                         }
@@ -37385,20 +37471,6 @@
                             "storage_type": "RESPONSE_LEVELS_ARRAY"
                         }
                     ]
-                },
-                "distribution": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
-                        },
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
-                        }
-                    ],
-                    "description": "Selection of cumulative or complementary cumulative functions",
-                    "title": "Distribution",
-                    "x-model-default": "DistributionCumulComplContext1Cumulative",
-                    "x-union-pattern": 1
                 },
                 "optimization_solver": {
                     "anchor": true,
@@ -37831,6 +37903,26 @@
                         }
                     ]
                 },
+                "probability_levels": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/ProbabilityLevelsContext2ProbabilityLevels"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "values",
+                    "default": null,
+                    "description": "Specify probability levels at which to estimate the corresponding response value",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.probability_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
+                },
                 "gen_reliability_levels": {
                     "anyOf": [
                         {
@@ -37865,10 +37957,10 @@
                     "x-model-default": "DistributionCumulComplContext1Cumulative",
                     "x-union-pattern": 1
                 },
-                "probability_levels": {
+                "reliability_levels": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/ProbabilityLevelsContext2ProbabilityLevels"
+                            "$ref": "#/$defs/ReliabilityLevelsReliabilityLevels"
                         },
                         {
                             "type": "null"
@@ -37876,10 +37968,10 @@
                     ],
                     "argument": "values",
                     "default": null,
-                    "description": "Specify probability levels at which to estimate the corresponding response value",
+                    "description": "Specify reliability levels at which the response values will be estimated",
                     "x-materialization": [
                         {
-                            "ir_key": "method.nond.probability_levels",
+                            "ir_key": "method.nond.reliability_levels",
                             "ir_value_type": "RealVectorArray",
                             "storage_type": "RESPONSE_LEVELS_ARRAY"
                         }
@@ -37900,26 +37992,6 @@
                     "x-materialization": [
                         {
                             "ir_key": "method.nond.response_levels",
-                            "ir_value_type": "RealVectorArray",
-                            "storage_type": "RESPONSE_LEVELS_ARRAY"
-                        }
-                    ]
-                },
-                "reliability_levels": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/ReliabilityLevelsReliabilityLevels"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "values",
-                    "default": null,
-                    "description": "Specify reliability levels at which the response values will be estimated",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.nond.reliability_levels",
                             "ir_value_type": "RealVectorArray",
                             "storage_type": "RESPONSE_LEVELS_ARRAY"
                         }
@@ -43954,6 +44026,19 @@
                     "description": "Sample allocation approach for multifidelity expansions",
                     "x-union-pattern": 2
                 },
+                "convergence_tolerance": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "value",
+                    "default": null,
+                    "description": "Stopping criterion based on objective function or statistics convergence"
+                },
                 "refinement_metric": {
                     "anyOf": [
                         {
@@ -43987,19 +44072,6 @@
                     "description": "type of statistical metric roll-up for multifidelity UQ methods",
                     "title": "Statistics Mode",
                     "x-union-pattern": 2
-                },
-                "convergence_tolerance": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "value",
-                    "default": null,
-                    "description": "Stopping criterion based on objective function or statistics convergence"
                 },
                 "p_refinement": {
                     "anyOf": [
@@ -44428,7 +44500,7 @@
                     ],
                     "x-materialization": [
                         {
-                            "ir_key": "method.nond.collocation_points",
+                            "ir_key": "method.nond.collocation_points_sequence",
                             "ir_value_type": "SizetArray",
                             "storage_type": "DIRECT_VALUE"
                         }
@@ -44871,7 +44943,7 @@
                     "type": "array",
                     "x-materialization": [
                         {
-                            "ir_key": "method.nond.expansion_order",
+                            "ir_key": "method.nond.expansion_order_sequence",
                             "ir_value_type": "UShortArray",
                             "storage_type": "DIRECT_VALUE"
                         }
@@ -44997,7 +45069,7 @@
                     "type": "array",
                     "x-materialization": [
                         {
-                            "ir_key": "method.nond.expansion_samples",
+                            "ir_key": "method.nond.expansion_samples_sequence",
                             "ir_value_type": "SizetArray",
                             "storage_type": "DIRECT_VALUE"
                         }
@@ -45240,7 +45312,7 @@
                     "type": "array",
                     "x-materialization": [
                         {
-                            "ir_key": "method.nond.collocation_points",
+                            "ir_key": "method.nond.collocation_points_sequence",
                             "ir_value_type": "SizetArray",
                             "storage_type": "DIRECT_VALUE"
                         }
@@ -45519,7 +45591,7 @@
                     "type": "array",
                     "x-materialization": [
                         {
-                            "ir_key": "method.nond.quadrature_order",
+                            "ir_key": "method.nond.quadrature_order_sequence",
                             "ir_value_type": "UShortArray",
                             "storage_type": "DIRECT_VALUE"
                         }
@@ -45659,7 +45731,7 @@
                     "type": "array",
                     "x-materialization": [
                         {
-                            "ir_key": "method.nond.sparse_grid_level",
+                            "ir_key": "method.nond.sparse_grid_level_sequence",
                             "ir_value_type": "UShortArray",
                             "storage_type": "DIRECT_VALUE"
                         }
@@ -46951,6 +47023,19 @@
                     "title": "Discrepancy Emulation",
                     "x-union-pattern": 2
                 },
+                "convergence_tolerance": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "value",
+                    "default": null,
+                    "description": "Stopping criterion based on objective function or statistics convergence"
+                },
                 "refinement_metric": {
                     "anyOf": [
                         {
@@ -46967,19 +47052,6 @@
                     "description": "Metric used for guiding adaptive refinement during UQ.",
                     "title": "Refinement Metric",
                     "x-union-pattern": 2
-                },
-                "convergence_tolerance": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "value",
-                    "default": null,
-                    "description": "Stopping criterion based on objective function or statistics convergence"
                 },
                 "allocation_control": {
                     "anyOf": [
@@ -47393,7 +47465,7 @@
                     ],
                     "x-materialization": [
                         {
-                            "ir_key": "method.nond.collocation_points",
+                            "ir_key": "method.nond.collocation_points_sequence",
                             "ir_value_type": "SizetArray",
                             "storage_type": "DIRECT_VALUE"
                         }
@@ -47836,7 +47908,7 @@
                     "type": "array",
                     "x-materialization": [
                         {
-                            "ir_key": "method.nond.expansion_order",
+                            "ir_key": "method.nond.expansion_order_sequence",
                             "ir_value_type": "UShortArray",
                             "storage_type": "DIRECT_VALUE"
                         }
@@ -47962,7 +48034,7 @@
                     "type": "array",
                     "x-materialization": [
                         {
-                            "ir_key": "method.nond.expansion_samples",
+                            "ir_key": "method.nond.expansion_samples_sequence",
                             "ir_value_type": "SizetArray",
                             "storage_type": "DIRECT_VALUE"
                         }
@@ -48205,7 +48277,7 @@
                     "type": "array",
                     "x-materialization": [
                         {
-                            "ir_key": "method.nond.collocation_points",
+                            "ir_key": "method.nond.collocation_points_sequence",
                             "ir_value_type": "SizetArray",
                             "storage_type": "DIRECT_VALUE"
                         }
@@ -50901,7 +50973,7 @@
                     ],
                     "x-materialization": [
                         {
-                            "ir_key": "method.nond.collocation_points",
+                            "ir_key": "method.nond.collocation_points_sequence",
                             "ir_value_type": "SizetArray",
                             "storage_type": "DIRECT_VALUE"
                         }
@@ -50984,6 +51056,19 @@
                     "description": "Sample allocation approach for multifidelity expansions",
                     "x-union-pattern": 2
                 },
+                "convergence_tolerance": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "value",
+                    "default": null,
+                    "description": "Stopping criterion based on objective function or statistics convergence"
+                },
                 "refinement_metric": {
                     "anyOf": [
                         {
@@ -51017,19 +51102,6 @@
                     "description": "type of statistical metric roll-up for multifidelity UQ methods",
                     "title": "Statistics Mode",
                     "x-union-pattern": 2
-                },
-                "convergence_tolerance": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "value",
-                    "default": null,
-                    "description": "Stopping criterion based on objective function or statistics convergence"
                 },
                 "p_refinement": {
                     "anyOf": [
@@ -51870,6 +51942,19 @@
                     "description": "Sample allocation approach for multifidelity expansions",
                     "x-union-pattern": 2
                 },
+                "convergence_tolerance": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "value",
+                    "default": null,
+                    "description": "Stopping criterion based on objective function or statistics convergence"
+                },
                 "refinement_metric": {
                     "anyOf": [
                         {
@@ -51903,19 +51988,6 @@
                     "description": "type of statistical metric roll-up for multifidelity UQ methods",
                     "title": "Statistics Mode",
                     "x-union-pattern": 2
-                },
-                "convergence_tolerance": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "value",
-                    "default": null,
-                    "description": "Stopping criterion based on objective function or statistics convergence"
                 },
                 "max_refinement_iterations": {
                     "default": 9223372036854775807,
@@ -52067,7 +52139,7 @@
                     "type": "array",
                     "x-materialization": [
                         {
-                            "ir_key": "method.nond.quadrature_order",
+                            "ir_key": "method.nond.quadrature_order_sequence",
                             "ir_value_type": "UShortArray",
                             "storage_type": "DIRECT_VALUE"
                         }
@@ -52207,7 +52279,7 @@
                     "type": "array",
                     "x-materialization": [
                         {
-                            "ir_key": "method.nond.sparse_grid_level",
+                            "ir_key": "method.nond.sparse_grid_level_sequence",
                             "ir_value_type": "UShortArray",
                             "storage_type": "DIRECT_VALUE"
                         }
@@ -53423,7 +53495,7 @@
                     ],
                     "x-materialization": [
                         {
-                            "ir_key": "method.nond.collocation_points",
+                            "ir_key": "method.nond.collocation_points_sequence",
                             "ir_value_type": "SizetArray",
                             "storage_type": "DIRECT_VALUE"
                         }
@@ -53493,6 +53565,19 @@
                     "title": "Discrepancy Emulation",
                     "x-union-pattern": 2
                 },
+                "convergence_tolerance": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "value",
+                    "default": null,
+                    "description": "Stopping criterion based on objective function or statistics convergence"
+                },
                 "refinement_metric": {
                     "anyOf": [
                         {
@@ -53509,19 +53594,6 @@
                     "description": "Metric used for guiding adaptive refinement during UQ.",
                     "title": "Refinement Metric",
                     "x-union-pattern": 2
-                },
-                "convergence_tolerance": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "value",
-                    "default": null,
-                    "description": "Stopping criterion based on objective function or statistics convergence"
                 },
                 "allocation_control": {
                     "anyOf": [
@@ -62131,6 +62203,19 @@
                     "title": "Basis Family",
                     "x-union-pattern": 2
                 },
+                "convergence_tolerance": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "value",
+                    "default": null,
+                    "description": "Stopping criterion based on objective function or statistics convergence"
+                },
                 "refinement_metric": {
                     "anyOf": [
                         {
@@ -62147,19 +62232,6 @@
                     "description": "Metric used for guiding adaptive refinement during UQ.",
                     "title": "Refinement Metric",
                     "x-union-pattern": 2
-                },
-                "convergence_tolerance": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "value",
-                    "default": null,
-                    "description": "Stopping criterion based on objective function or statistics convergence"
                 },
                 "p_refinement": {
                     "anyOf": [
@@ -62545,7 +62617,14 @@
                 "points": {
                     "description": "Number of collocation points used to estimate expansion coefficients",
                     "title": "Points",
-                    "type": "integer"
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.collocation_points",
+                            "ir_value_type": "size_t",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 },
                 "regression_method": {
                     "anchor": true,
@@ -63199,7 +63278,14 @@
                     "default": 65535,
                     "description": "The (initial) order of a polynomial expansion",
                     "title": "Order",
-                    "type": "integer"
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.expansion_order",
+                            "ir_value_type": "unsigned short",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 },
                 "dimension_preference": {
                     "anyOf": [
@@ -63307,7 +63393,14 @@
                     "default": 9223372036854775807,
                     "description": "Number of simulation samples used to estimate the expected value of a set of PCE coefficients",
                     "title": "Value",
-                    "type": "integer"
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.expansion_samples",
+                            "ir_value_type": "size_t",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 },
                 "reuse_points": {
                     "default": false,
@@ -63593,7 +63686,14 @@
                 "collocation_points": {
                     "description": "Number of collocation points used to estimate expansion coefficients",
                     "title": "Collocation Points",
-                    "type": "integer"
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.collocation_points",
+                            "ir_value_type": "size_t",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 },
                 "tensor_grid": {
                     "anyOf": [
@@ -63854,7 +63954,14 @@
                     "default": 65535,
                     "description": "Order for tensor-products of Gaussian quadrature rules",
                     "title": "Order",
-                    "type": "integer"
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.quadrature_order",
+                            "ir_value_type": "unsigned short",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 },
                 "dimension_preference": {
                     "anyOf": [
@@ -64088,7 +64195,14 @@
                     "default": 65535,
                     "description": "Level to use in sparse grid integration or interpolation",
                     "title": "Level",
-                    "type": "integer"
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.sparse_grid_level",
+                            "ir_value_type": "unsigned short",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 },
                 "dimension_preference": {
                     "anyOf": [
@@ -64553,25 +64667,19 @@
                     "x-model-default": "RngOptionsContext2Mt19937",
                     "x-union-pattern": 1
                 },
-                "probability_levels": {
+                "distribution": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/ProbabilityLevelsContext2ProbabilityLevels"
+                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
                         },
                         {
-                            "type": "null"
+                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
                         }
                     ],
-                    "argument": "values",
-                    "default": null,
-                    "description": "Specify probability levels at which to estimate the corresponding response value",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.nond.probability_levels",
-                            "ir_value_type": "RealVectorArray",
-                            "storage_type": "RESPONSE_LEVELS_ARRAY"
-                        }
-                    ]
+                    "description": "Selection of cumulative or complementary cumulative functions",
+                    "title": "Distribution",
+                    "x-model-default": "DistributionCumulComplContext1Cumulative",
+                    "x-union-pattern": 1
                 },
                 "response_levels": {
                     "anyOf": [
@@ -64588,6 +64696,26 @@
                     "x-materialization": [
                         {
                             "ir_key": "method.nond.response_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
+                },
+                "probability_levels": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/ProbabilityLevelsContext2ProbabilityLevels"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "values",
+                    "default": null,
+                    "description": "Specify probability levels at which to estimate the corresponding response value",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.probability_levels",
                             "ir_value_type": "RealVectorArray",
                             "storage_type": "RESPONSE_LEVELS_ARRAY"
                         }
@@ -64612,20 +64740,6 @@
                             "storage_type": "RESPONSE_LEVELS_ARRAY"
                         }
                     ]
-                },
-                "distribution": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
-                        },
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
-                        }
-                    ],
-                    "description": "Selection of cumulative or complementary cumulative functions",
-                    "title": "Distribution",
-                    "x-model-default": "DistributionCumulComplContext1Cumulative",
-                    "x-union-pattern": 1
                 },
                 "id_method": {
                     "anyOf": [
@@ -68631,6 +68745,20 @@
                     "x-model-default": "RngOptionsContext1Mt19937",
                     "x-union-pattern": 1
                 },
+                "distribution": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
+                        },
+                        {
+                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
+                        }
+                    ],
+                    "description": "Selection of cumulative or complementary cumulative functions",
+                    "title": "Distribution",
+                    "x-model-default": "DistributionCumulComplContext1Cumulative",
+                    "x-union-pattern": 1
+                },
                 "probability_levels": {
                     "anyOf": [
                         {
@@ -68690,20 +68818,6 @@
                             "storage_type": "RESPONSE_LEVELS_ARRAY"
                         }
                     ]
-                },
-                "distribution": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
-                        },
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
-                        }
-                    ],
-                    "description": "Selection of cumulative or complementary cumulative functions",
-                    "title": "Distribution",
-                    "x-model-default": "DistributionCumulComplContext1Cumulative",
-                    "x-union-pattern": 1
                 },
                 "id_method": {
                     "anyOf": [
@@ -69246,6 +69360,26 @@
                     "x-model-default": "RngOptionsContext2Mt19937",
                     "x-union-pattern": 1
                 },
+                "probability_levels": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/ProbabilityLevelsContext2ProbabilityLevels"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "values",
+                    "default": null,
+                    "description": "Specify probability levels at which to estimate the corresponding response value",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.probability_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
+                },
                 "gen_reliability_levels": {
                     "anyOf": [
                         {
@@ -69280,10 +69414,10 @@
                     "x-model-default": "DistributionCumulComplContext1Cumulative",
                     "x-union-pattern": 1
                 },
-                "probability_levels": {
+                "reliability_levels": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/ProbabilityLevelsContext2ProbabilityLevels"
+                            "$ref": "#/$defs/ReliabilityLevelsReliabilityLevels"
                         },
                         {
                             "type": "null"
@@ -69291,10 +69425,10 @@
                     ],
                     "argument": "values",
                     "default": null,
-                    "description": "Specify probability levels at which to estimate the corresponding response value",
+                    "description": "Specify reliability levels at which the response values will be estimated",
                     "x-materialization": [
                         {
-                            "ir_key": "method.nond.probability_levels",
+                            "ir_key": "method.nond.reliability_levels",
                             "ir_value_type": "RealVectorArray",
                             "storage_type": "RESPONSE_LEVELS_ARRAY"
                         }
@@ -69315,26 +69449,6 @@
                     "x-materialization": [
                         {
                             "ir_key": "method.nond.response_levels",
-                            "ir_value_type": "RealVectorArray",
-                            "storage_type": "RESPONSE_LEVELS_ARRAY"
-                        }
-                    ]
-                },
-                "reliability_levels": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/ReliabilityLevelsReliabilityLevels"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "values",
-                    "default": null,
-                    "description": "Specify reliability levels at which the response values will be estimated",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.nond.reliability_levels",
                             "ir_value_type": "RealVectorArray",
                             "storage_type": "RESPONSE_LEVELS_ARRAY"
                         }
@@ -71948,6 +72062,19 @@
                     "title": "Basis Family",
                     "x-union-pattern": 2
                 },
+                "convergence_tolerance": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "value",
+                    "default": null,
+                    "description": "Stopping criterion based on objective function or statistics convergence"
+                },
                 "refinement_metric": {
                     "anyOf": [
                         {
@@ -71964,19 +72091,6 @@
                     "description": "Metric used for guiding adaptive refinement during UQ.",
                     "title": "Refinement Metric",
                     "x-union-pattern": 2
-                },
-                "convergence_tolerance": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "value",
-                    "default": null,
-                    "description": "Stopping criterion based on objective function or statistics convergence"
                 },
                 "max_refinement_iterations": {
                     "default": 9223372036854775807,
@@ -72112,7 +72226,14 @@
                     "default": 65535,
                     "description": "Order for tensor-products of Gaussian quadrature rules",
                     "title": "Order",
-                    "type": "integer"
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.quadrature_order",
+                            "ir_value_type": "unsigned short",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 },
                 "dimension_preference": {
                     "anyOf": [
@@ -72229,7 +72350,14 @@
                     "default": 65535,
                     "description": "Level to use in sparse grid integration or interpolation",
                     "title": "Level",
-                    "type": "integer"
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.sparse_grid_level",
+                            "ir_value_type": "unsigned short",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 },
                 "dimension_preference": {
                     "anyOf": [

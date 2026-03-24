@@ -36,7 +36,7 @@ inline constexpr std::array<std::string_view, 28> k_environment_entries = {{
   "environment.tabular_graphics_data",
 }};
 
-inline constexpr std::array<std::string_view, 408> k_method_entries = {{
+inline constexpr std::array<std::string_view, 413> k_method_entries = {{
   "method.concurrent.parameter_sets",
   "method.jega.distance_vector",
   "method.jega.niche_vector",
@@ -64,13 +64,18 @@ inline constexpr std::array<std::string_view, 408> k_method_entries = {{
   "method.nond.mlmcmc_subsampling_steps",
   "method.nond.c3function_train.start_rank_sequence",
   "method.nond.collocation_points",
+  "method.nond.collocation_points_sequence",
   "method.nond.expansion_samples",
+  "method.nond.expansion_samples_sequence",
   "method.nond.pilot_samples",
   "method.random_seed_sequence",
   "method.nond.c3function_train.start_order_sequence",
   "method.nond.expansion_order",
+  "method.nond.expansion_order_sequence",
   "method.nond.quadrature_order",
+  "method.nond.quadrature_order_sequence",
   "method.nond.sparse_grid_level",
+  "method.nond.sparse_grid_level_sequence",
   "method.nond.tensor_grid_order",
   "method.partitions",
   "method.nond.gen_reliability_levels",
@@ -1058,31 +1063,43 @@ bool try_emit_method_entry(const DataMethodRep& rep, std::string_view full_key, 
   if (full_key == "method.nond.mlmcmc_subsampling_steps") { emit(rep.mlmcmcSubsamplingSteps); return true; }
   if (full_key == "method.nond.c3function_train.start_rank_sequence") { emit(rep.startRankSeq); return true; }
   if (full_key == "method.nond.collocation_points") {
-    if (!rep.collocationPointsSeq.empty()) emit(rep.collocationPointsSeq);
-    else emit(rep.collocationPoints);
+    emit(rep.collocationPoints);
+    return true;
+  }
+  if (full_key == "method.nond.collocation_points_sequence") {
+    emit(rep.collocationPointsSeq);
     return true;
   }
   if (full_key == "method.nond.expansion_samples") {
-    if (!rep.expansionSamplesSeq.empty()) emit(rep.expansionSamplesSeq);
-    else emit(rep.expansionSamples);
+    emit(rep.expansionSamples);
+    return true;
+  }
+  if (full_key == "method.nond.expansion_samples_sequence") {
+    emit(rep.expansionSamplesSeq);
     return true;
   }
   if (full_key == "method.nond.pilot_samples") { emit(rep.pilotSamples); return true; }
   if (full_key == "method.random_seed_sequence") { emit(rep.randomSeedSeq); return true; }
   if (full_key == "method.nond.c3function_train.start_order_sequence") { emit(rep.startOrderSeq); return true; }
-  if (full_key == "method.nond.expansion_order") {
-    if (!rep.expansionOrderSeq.empty()) emit(rep.expansionOrderSeq);
-    else emit(rep.expansionOrder);
+  if (full_key == "method.nond.expansion_order") { emit(rep.expansionOrder); return true; }
+  if (full_key == "method.nond.expansion_order_sequence") {
+    emit(rep.expansionOrderSeq);
     return true;
   }
   if (full_key == "method.nond.quadrature_order") {
-    if (!rep.quadratureOrderSeq.empty()) emit(rep.quadratureOrderSeq);
-    else emit(rep.quadratureOrder);
+    emit(rep.quadratureOrder);
+    return true;
+  }
+  if (full_key == "method.nond.quadrature_order_sequence") {
+    emit(rep.quadratureOrderSeq);
     return true;
   }
   if (full_key == "method.nond.sparse_grid_level") {
-    if (!rep.sparseGridLevelSeq.empty()) emit(rep.sparseGridLevelSeq);
-    else emit(rep.sparseGridLevel);
+    emit(rep.sparseGridLevel);
+    return true;
+  }
+  if (full_key == "method.nond.sparse_grid_level_sequence") {
+    emit(rep.sparseGridLevelSeq);
     return true;
   }
   if (full_key == "method.nond.tensor_grid_order") { emit(rep.tensorGridOrder); return true; }

@@ -145,9 +145,9 @@ private:
   static void handle_response_levels_array(const irgen::WriteOp& op,
                                            const irgen::KeyContract& contract,
                                            const HandlerContext& ctx);
-  static void handle_stringlist_to_string2d(const irgen::WriteOp& op,
-                                            const irgen::KeyContract& contract,
-                                            const HandlerContext& ctx);
+  static void handle_analysis_components(const irgen::WriteOp& op,
+                                         const irgen::KeyContract& contract,
+                                         const HandlerContext& ctx);
 };
 
 /// Internal testing seam for focused unit coverage of individual handlers.
