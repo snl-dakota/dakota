@@ -297,8 +297,16 @@ void ProblemDescDB::populate_skeleton_data_from_ir()
   db->dataMethodList.clear();
   for (const auto& store : db->irState->method) {
     DataMethod method;
+    if (store.contains("algorithm"))
+      method.data_rep()->methodName = store.get<unsigned short>("algorithm");
     if (store.contains("id"))
       method.data_rep()->idMethod = store.get<String>("id");
+    if (store.contains("sub_method"))
+      method.data_rep()->subMethod = store.get<unsigned short>("sub_method");
+    if (store.contains("sub_method_name"))
+      method.data_rep()->subMethodName = store.get<String>("sub_method_name");
+    if (store.contains("sub_model_pointer"))
+      method.data_rep()->subModelPointer = store.get<String>("sub_model_pointer");
     if (store.contains("model_pointer"))
       method.data_rep()->modelPointer = store.get<String>("model_pointer");
     if (store.contains("sub_method_pointer"))
@@ -672,15 +680,9 @@ void ProblemDescDB::resolve_top_method(bool set_model_nodes)
     if (set_model_nodes)
       set_db_model_nodes(dataMethodIter->dataMethodRep->modelPointer);
 
-    if (irState) {
-      irState->active.method = static_cast<size_t>(get_active_method_index());
-      if (set_model_nodes) {
-        irState->active.model = static_cast<size_t>(get_active_model_index());
-        irState->active.variables = static_cast<size_t>(get_active_variables_index());
-        irState->active.interface = static_cast<size_t>(get_active_interface_index());
-        irState->active.responses = static_cast<size_t>(get_active_responses_index());
-      }
-    }
+    if (irState && !methodDBLocked)
+      irState->active.method =
+        static_cast<size_t>(std::distance(dataMethodList.begin(), dataMethodIter));
   }
 }
 
@@ -737,7 +739,8 @@ void ProblemDescDB::set_db_method_node(const String& method_tag)
       }
     }
     if (irState && !methodDBLocked)
-      irState->active.method = static_cast<size_t>(get_active_method_index());
+      irState->active.method =
+        static_cast<size_t>(std::distance(dataMethodList.begin(), dataMethodIter));
   }
 }
 
@@ -865,7 +868,8 @@ void ProblemDescDB::set_db_model_nodes(const String& model_tag)
       variablesDBLocked = interfaceDBLocked = responsesDBLocked	= true;
     else {
       if (irState)
-        irState->active.model = static_cast<size_t>(get_active_model_index());
+        irState->active.model =
+          static_cast<size_t>(std::distance(dataModelList.begin(), dataModelIter));
       const DataModelRep& MoRep = *dataModelIter->dataModelRep;
       set_db_variables_node(MoRep.variablesPointer);
       if (model_has_interface(MoRep))
@@ -935,7 +939,8 @@ void ProblemDescDB::set_db_variables_node(const String& variables_tag)
       }
     }
     if (irState && !variablesDBLocked)
-      irState->active.variables = static_cast<size_t>(get_active_variables_index());
+      irState->active.variables =
+        static_cast<size_t>(std::distance(dataVariablesList.begin(), dataVariablesIter));
   }
 }
 
@@ -1006,7 +1011,8 @@ void ProblemDescDB::set_db_interface_node(const String& interface_tag)
       }
     }
     if (irState && !interfaceDBLocked)
-      irState->active.interface = static_cast<size_t>(get_active_interface_index());
+      irState->active.interface =
+        static_cast<size_t>(std::distance(dataInterfaceList.begin(), dataInterfaceIter));
   }
 }
 
@@ -1068,7 +1074,8 @@ void ProblemDescDB::set_db_responses_node(const String& responses_tag)
       }
     }
     if (irState && !responsesDBLocked)
-      irState->active.responses = static_cast<size_t>(get_active_responses_index());
+      irState->active.responses =
+        static_cast<size_t>(std::distance(dataResponsesList.begin(), dataResponsesIter));
   }
 }
 

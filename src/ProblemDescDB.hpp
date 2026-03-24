@@ -342,6 +342,9 @@ public:
   /// function to check if IR-backed JSON input is inactive
   bool is_json_null() const;
 
+  /// function to check if validated JSON has been materialized into IR state
+  bool has_ir_state() const;
+
 protected:
 
   //
@@ -534,28 +537,46 @@ inline void ProblemDescDB::unlock()
 
 inline std::string_view ProblemDescDB::method_id() const {
   const ProblemDescDB* db = dbRep ? dbRep.get() : this;
+  static const String empty_id;
   if (db->irState && !db->method_locked() &&
       db->irState->active.method < db->irState->method.size() &&
       db->irState->method[db->irState->active.method].contains("id"))
     return db->irState->method[db->irState->active.method].get<String>("id");
+  if (db->method_locked()) {
+    if (db->dataMethodList.size() == 1)
+      return db->dataMethodList.begin()->dataMethodRep->idMethod;
+    return empty_id;
+  }
   return db->dataMethodIter->dataMethodRep->idMethod;
 }
 
 inline std::string_view ProblemDescDB::model_id() const {
   const ProblemDescDB* db = dbRep ? dbRep.get() : this;
+  static const String empty_id;
   if (db->irState && !db->model_locked() &&
       db->irState->active.model < db->irState->model.size() &&
       db->irState->model[db->irState->active.model].contains("id"))
     return db->irState->model[db->irState->active.model].get<String>("id");
+  if (db->model_locked()) {
+    if (db->dataModelList.size() == 1)
+      return db->dataModelList.begin()->dataModelRep->idModel;
+    return empty_id;
+  }
   return db->dataModelIter->dataModelRep->idModel;
 }
 
 inline std::string_view ProblemDescDB::interface_id() const {
   const ProblemDescDB* db = dbRep ? dbRep.get() : this;
+  static const String empty_id;
   if (db->irState && !db->interface_locked() &&
       db->irState->active.interface < db->irState->interface.size() &&
       db->irState->interface[db->irState->active.interface].contains("id"))
     return db->irState->interface[db->irState->active.interface].get<String>("id");
+  if (db->interface_locked()) {
+    if (db->dataInterfaceList.size() == 1)
+      return db->dataInterfaceList.begin()->dataIfaceRep->idInterface;
+    return empty_id;
+  }
   return db->dataInterfaceIter->dataIfaceRep->idInterface;
 }
 
@@ -668,6 +689,12 @@ inline bool ProblemDescDB::is_json_null() const
 {
   const ProblemDescDB* db = dbRep ? dbRep.get() : this;
   return (db->irState) ? false : true;
+}
+
+inline bool ProblemDescDB::has_ir_state() const
+{
+  const ProblemDescDB* db = dbRep ? dbRep.get() : this;
+  return static_cast<bool>(db->irState);
 }
 
 inline int ProblemDescDB::get_active_method_index() const

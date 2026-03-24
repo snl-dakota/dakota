@@ -207,8 +207,8 @@ void InstructionMaterializer::handle_direct_value(const irgen::WriteOp& op,
 {
   const auto& value = InstructionMaterializerUtils::required_path(
     ctx.block_json, ctx.current_path);
-  ctx.store.set_value(op.target_local_ir_key,
-                      convert_direct_value(value, contract.ir_value_type));
+  ctx.store.set_value(
+    op.target_local_ir_key, convert_direct_value(value, contract.ir_value_type));
 }
 
 void InstructionMaterializer::handle_add_to_value(const irgen::WriteOp& op,
@@ -439,6 +439,52 @@ void InstructionMaterializer::handle_response_levels_array(
       throw std::runtime_error(
         "InstructionMaterializer::handle_response_levels_array partition does not consume all values");
     }
+  }
+  ctx.store.set_value(op.target_local_ir_key, IRValue(std::move(out)));
+}
+
+void InstructionMaterializer::handle_stringlist_to_string2d(
+  const irgen::WriteOp& op,
+  const irgen::KeyContract& contract,
+  const HandlerContext& ctx)
+{
+  if (contract.ir_value_type != irgen::IrValueType::String2DArray) {
+    throw std::runtime_error(
+      "InstructionMaterializer::handle_stringlist_to_string2d requires String2DArray contract type");
+  }
+
+  const auto& value = InstructionMaterializerUtils::required_path(
+    ctx.block_json, ctx.current_path);
+  if (!value.is_array()) {
+    throw std::runtime_error(
+      "InstructionMaterializer::handle_stringlist_to_string2d expected array at '" +
+      std::string(ctx.current_path) + "'");
+  }
+
+  const StringArray flat = value.get<StringArray>();
+  size_t num_drivers = 1;
+  if (ctx.store.contains("application.analysis_drivers")) {
+    const auto& drivers = ctx.store.get<StringArray>("application.analysis_drivers");
+    if (!drivers.empty())
+      num_drivers = drivers.size();
+  }
+  if (num_drivers == 0) {
+    throw std::runtime_error(
+      "InstructionMaterializer::handle_stringlist_to_string2d requires at least one analysis driver");
+  }
+  if (flat.size() % num_drivers != 0) {
+    throw std::runtime_error(
+      "InstructionMaterializer::handle_stringlist_to_string2d expected list length divisible by number of analysis_drivers at '" +
+      std::string(ctx.current_path) + "'");
+  }
+
+  String2DArray out(num_drivers);
+  const size_t comps_per_driver = flat.size() / num_drivers;
+  size_t k = 0;
+  for (size_t i = 0; i < num_drivers; ++i) {
+    out[i].resize(comps_per_driver);
+    for (size_t j = 0; j < comps_per_driver; ++j, ++k)
+      out[i][j] = flat[k];
   }
   ctx.store.set_value(op.target_local_ir_key, IRValue(std::move(out)));
 }

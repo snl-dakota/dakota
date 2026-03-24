@@ -26,6 +26,20 @@ bool debug_logging_enabled()
   return value && *value;
 }
 
+const char* block_name(const Dakota::irgen::BlockType block)
+{
+  using Dakota::irgen::BlockType;
+  switch (block) {
+  case BlockType::Environment: return "environment";
+  case BlockType::Method: return "method";
+  case BlockType::Model: return "model";
+  case BlockType::Variables: return "variables";
+  case BlockType::Interface: return "interface";
+  case BlockType::Responses: return "responses";
+  }
+  return "unknown";
+}
+
 } // namespace
 
 bool WriteTracker::mark_written(irgen::BlockType block, const String& local_key)
@@ -79,6 +93,8 @@ InstructionMaterializer::op_handlers()
       &InstructionMaterializer::handle_int_set},
     {irgen::OpKind::ResponseLevelsArray,
       &InstructionMaterializer::handle_response_levels_array},
+    {irgen::OpKind::StringlistToString2d,
+      &InstructionMaterializer::handle_stringlist_to_string2d},
   };
   return handlers;
 }
@@ -319,7 +335,11 @@ void InstructionMaterializer::apply_write_op(const nlohmann::json& block_json,
                 << current_path << "' target '" << op.target_local_ir_key
                 << "': " << e.what() << std::endl;
     }
-    throw;
+    throw std::runtime_error(
+      std::string("InstructionMaterializer: handler failed in block '") +
+      block_name(block) + "' at path '" + std::string(current_path) +
+      "' -> target '" + op.target_local_ir_key + "' (op kind " +
+      std::to_string(static_cast<int>(op.op_kind)) + "): " + e.what());
   }
   writes.mark_written(block, op.target_local_ir_key);
 }

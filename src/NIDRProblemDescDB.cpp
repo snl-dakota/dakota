@@ -240,6 +240,9 @@ void NIDRProblemDescDB::derived_broadcast()
 
 void NIDRProblemDescDB::derived_post_process()
 {
+  if (has_ir_state())
+    return;
+
   // finish processing dataVariableList
   make_variable_defaults(&dataVariablesList);
   // finish processing dataResponsesList
