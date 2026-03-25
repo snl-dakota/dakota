@@ -77,9 +77,9 @@ TEST(instruction_materializer_tests, literal_assign_uses_literal_without_json_lo
   EXPECT_EQ(store.get<String>("strategy"), "lhs");
 }
 
-TEST(instruction_materializer_tests, presence_bool_treats_object_as_true)
+TEST(instruction_materializer_tests, presence_true_treats_object_as_true)
 {
-  const auto op = make_op(irgen::OpKind::PresenceBool, "enabled");
+  const auto op = make_op(irgen::OpKind::PresenceTrue, "enabled");
   const auto store = invoke_handler(
     op,
     make_contract(irgen::IrValueType::Bool),
@@ -87,6 +87,30 @@ TEST(instruction_materializer_tests, presence_bool_treats_object_as_true)
     "flag");
 
   EXPECT_TRUE(store.get<bool>("enabled"));
+}
+
+TEST(instruction_materializer_tests, presence_false_inverts_boolean_payload)
+{
+  const auto op = make_op(irgen::OpKind::PresenceFalse, "enabled");
+  const auto store = invoke_handler(
+    op,
+    make_contract(irgen::IrValueType::Bool),
+    json{{"flag", true}},
+    "flag");
+
+  EXPECT_FALSE(store.get<bool>("enabled"));
+}
+
+TEST(instruction_materializer_tests, presence_false_treats_object_as_false)
+{
+  const auto op = make_op(irgen::OpKind::PresenceFalse, "enabled");
+  const auto store = invoke_handler(
+    op,
+    make_contract(irgen::IrValueType::Bool),
+    json{{"flag", json::object()}},
+    "flag");
+
+  EXPECT_FALSE(store.get<bool>("enabled"));
 }
 
 TEST(instruction_materializer_tests, uncertain_init_point_flag_sets_global_flag_when_true)

@@ -43,6 +43,11 @@
         "value_type": "String",
         "value": "naive"
       },
+      "coliny.expansion": {
+        "key": "method.coliny.expansion",
+        "value_type": "bool",
+        "value": true
+      },
       "coliny.number_retained": {
         "key": "method.coliny.number_retained",
         "value_type": "int",
@@ -132,6 +137,11 @@
         "key": "method.model_export_format",
         "value_type": "unsigned short",
         "value": "NO_MODEL_FORMAT"
+      },
+      "mutation_adaptive": {
+        "key": "method.mutation_adaptive",
+        "value_type": "bool",
+        "value": true
       },
       "nond.allocation_target": {
         "key": "method.nond.allocation_target",
@@ -430,6 +440,11 @@
         "value_type": "unsigned short",
         "value": "CV_ID_DEFAULT"
       },
+      "active_subspace.cv.incremental": {
+        "key": "model.active_subspace.cv.incremental",
+        "value_type": "bool",
+        "value": true
+      },
       "active_subspace.normalization": {
         "key": "model.active_subspace.normalization",
         "value_type": "unsigned short",
@@ -534,6 +549,11 @@
       }
     },
     "interface": {
+      "active_set_vector": {
+        "key": "interface.active_set_vector",
+        "value_type": "bool",
+        "value": true
+      },
       "analysis_scheduling": {
         "key": "interface.analysis_scheduling",
         "value_type": "short",
@@ -548,6 +568,11 @@
         "key": "interface.application.results_file_format",
         "value_type": "unsigned short",
         "value": "RESULTS_FILE_STANDARD"
+      },
+      "evaluation_cache": {
+        "key": "interface.evaluation_cache",
+        "value_type": "bool",
+        "value": true
       },
       "evaluation_scheduling": {
         "key": "interface.evaluation_scheduling",
@@ -568,6 +593,11 @@
         "key": "interface.local_evaluation_scheduling",
         "value_type": "short",
         "value": "DEFAULT_SCHEDULING"
+      },
+      "restart_file": {
+        "key": "interface.restart_file",
+        "value_type": "bool",
+        "value": true
       },
       "type": {
         "key": "interface.type",

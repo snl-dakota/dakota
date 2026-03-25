@@ -79,10 +79,12 @@ def _infer_presence_value(m: dict) -> Any:
     storage = m.get("storage_type")
     if storage in ("PRESENCE_ENUM", "PRESENCE_LITERAL", "AUGMENT_ENUM"):
         return m.get("stored_value")
-    if storage == "PRESENCE_BOOL":
+    if storage == "PRESENCE_TRUE":
         # Presence-bool semantics are keyword-presence driven in this schema.
         # If present in a chosen default branch, treat as true.
         return True
+    if storage == "PRESENCE_FALSE":
+        return False
     return None
 
 
@@ -170,7 +172,8 @@ def extract_defaults(schema: dict) -> Dict[str, List[DefaultCandidate]]:
                     "PRESENCE_ENUM",
                     "PRESENCE_LITERAL",
                     "AUGMENT_ENUM",
-                    "PRESENCE_BOOL",
+                    "PRESENCE_TRUE",
+                    "PRESENCE_FALSE",
                     "METHOD_PIECEWISE",
                 }:
                     continue
@@ -272,7 +275,7 @@ def summarize(cands: Dict[str, List[DefaultCandidate]]) -> Dict[str, Any]:
         if len(values) > 1:
             conflicting += 1
         storage_types = {v.storage_type for v in vals}
-        if storage_types & {"PRESENCE_ENUM", "PRESENCE_LITERAL", "AUGMENT_ENUM", "PRESENCE_BOOL"}:
+        if storage_types & {"PRESENCE_ENUM", "PRESENCE_LITERAL", "AUGMENT_ENUM", "PRESENCE_TRUE", "PRESENCE_FALSE"}:
             enum_like += 1
         if len({v.source for v in vals}) > 1:
             mixed += 1

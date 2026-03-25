@@ -242,12 +242,19 @@ JSONProblemDescDB::handle_keyword(const json& bindings,
           std::cout << "PRESENCE_LITERAL: Need to implement data caching for type "
             << handler_type << std::endl;
       }
-      else if ("PRESENCE_BOOL" == storage_type) {
+      else if ("PRESENCE_TRUE" == storage_type) {
         assert("true" == handler_type);
         if (!value.is_object())
           store(ckey, value.get<bool>());
         else
           store(ckey, true);
+      }
+      else if ("PRESENCE_FALSE" == storage_type) {
+        assert("false" == handler_type);
+        if (!value.is_object())
+          store(ckey, !value.get<bool>());
+        else
+          store(ckey, false);
       }
       else if ("PRESENCE_ENUM" == storage_type) {
         const std::string enum_str = binding.value("stored_value", "");

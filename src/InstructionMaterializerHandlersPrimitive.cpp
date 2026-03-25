@@ -233,23 +233,38 @@ void InstructionMaterializer::handle_literal_assign(const irgen::WriteOp& op,
   ctx.store.set_value(op.target_local_ir_key, op.literal.value);
 }
 
-void InstructionMaterializer::handle_presence_bool(const irgen::WriteOp& op,
+void InstructionMaterializer::handle_presence_true(const irgen::WriteOp& op,
                                                    const irgen::KeyContract& contract,
                                                    const HandlerContext& ctx)
 {
   (void)contract;
   const auto& value = InstructionMaterializerUtils::required_path(
     ctx.block_json, ctx.current_path);
-  if (value.is_object()) {
+  if (value.is_object() || value.is_boolean()) {
     ctx.store.set_value(op.target_local_ir_key, IRValue(true));
     return;
-  }
-  if (!value.is_boolean()) {
+  } else {
     throw std::runtime_error(
-      "InstructionMaterializer::handle_presence_bool expected object or boolean at '" +
+      "InstructionMaterializer::handle_presence_true expected object or boolean at '" +
       std::string(ctx.current_path) + "'");
   }
-  ctx.store.set_value(op.target_local_ir_key, IRValue(value.get<bool>()));
+}
+
+void InstructionMaterializer::handle_presence_false(const irgen::WriteOp& op,
+                                                    const irgen::KeyContract& contract,
+                                                    const HandlerContext& ctx)
+{
+  (void)contract;
+  const auto& value = InstructionMaterializerUtils::required_path(
+    ctx.block_json, ctx.current_path);
+  if (value.is_object() || value.is_boolean()) {
+    ctx.store.set_value(op.target_local_ir_key, IRValue(false));
+    return;
+  } else {
+    throw std::runtime_error(
+      "InstructionMaterializer::handle_presence_false expected object or boolean at '" +
+      std::string(ctx.current_path) + "'");
+  }
 }
 
 void InstructionMaterializer::handle_uncertain_init_point_flag(

@@ -93,9 +93,12 @@ private:
   static void handle_literal_assign(const irgen::WriteOp& op,
                                     const irgen::KeyContract& contract,
                                     const HandlerContext& ctx);
-  static void handle_presence_bool(const irgen::WriteOp& op,
+  static void handle_presence_true(const irgen::WriteOp& op,
                                    const irgen::KeyContract& contract,
                                    const HandlerContext& ctx);
+  static void handle_presence_false(const irgen::WriteOp& op,
+                                    const irgen::KeyContract& contract,
+                                    const HandlerContext& ctx);
   static void handle_presence_literal(const irgen::WriteOp& op,
                                       const irgen::KeyContract& contract,
                                       const HandlerContext& ctx);

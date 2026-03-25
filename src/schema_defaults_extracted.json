@@ -213,21 +213,6 @@
           }
         ]
       },
-      "coliny.expansion": {
-        "key": "method.coliny.expansion",
-        "candidates": [
-          {
-            "value": true,
-            "value_type": "bool",
-            "enum_scope": ""
-          },
-          {
-            "value": true,
-            "value_type": "bool",
-            "enum_scope": ""
-          }
-        ]
-      },
       "coliny.global_balance_parameter": {
         "key": "method.coliny.global_balance_parameter",
         "candidates": [
@@ -2183,16 +2168,6 @@
           }
         ]
       },
-      "mutation_adaptive": {
-        "key": "method.mutation_adaptive",
-        "candidates": [
-          {
-            "value": true,
-            "value_type": "bool",
-            "enum_scope": ""
-          }
-        ]
-      },
       "mutation_rate": {
         "key": "method.mutation_rate",
         "candidates": [
@@ -3865,16 +3840,6 @@
           }
         ]
       },
-      "active_subspace.cv.incremental": {
-        "key": "model.active_subspace.cv.incremental",
-        "candidates": [
-          {
-            "value": true,
-            "value_type": "bool",
-            "enum_scope": ""
-          }
-        ]
-      },
       "active_subspace.cv.max_rank": {
         "key": "model.active_subspace.cv.max_rank",
         "candidates": [
@@ -4489,42 +4454,12 @@
       }
     },
     "interface": {
-      "active_set_vector": {
-        "key": "interface.active_set_vector",
-        "candidates": [
-          {
-            "value": true,
-            "value_type": "bool",
-            "enum_scope": ""
-          }
-        ]
-      },
-      "evaluation_cache": {
-        "key": "interface.evaluation_cache",
-        "candidates": [
-          {
-            "value": true,
-            "value_type": "bool",
-            "enum_scope": ""
-          }
-        ]
-      },
       "nearby_evaluation_cache_tolerance": {
         "key": "interface.nearby_evaluation_cache_tolerance",
         "candidates": [
           {
             "value": 2.220446049250313e-16,
             "value_type": "Real",
-            "enum_scope": ""
-          }
-        ]
-      },
-      "restart_file": {
-        "key": "interface.restart_file",
-        "candidates": [
-          {
-            "value": true,
-            "value_type": "bool",
             "enum_scope": ""
           }
         ]
