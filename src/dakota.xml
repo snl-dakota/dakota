@@ -216,7 +216,7 @@
 
 	     <keyword id='collocation_ratio' name='collocation_ratio' code='{N_mdm(Realp,collocationRatio)}' label='Set the number of points used to build a PCE via regression to be proportional to the number of terms in the expansion.' argument='sequence'>
 
-	       <param type='REAL' default='0.' />
+	       <param type='REAL' />
 	       <keyword id='collocation_points_sequence' name='collocation_points_sequence' code='{N_mdm(szarray,collocationPointsSeq)}' label='Sequence of collocation point counts used in a multi-stage expansion' minOccurs='0' >
 
 	         <alias name='pilot_samples'/> 
@@ -229,7 +229,7 @@
 <!ENTITY colloc_ratio_with_pce_regress "
 <keyword id='collocation_ratio' name='collocation_ratio' code='{N_mdm(Realp,collocationRatio)}' label='Set the number of points used to build a PCE via regression to be proportional to the number of terms in the expansion.' argument='value'>
 
-	       <param type='REAL' default='0.' />
+	       <param type='REAL' />
 	       &pce_regression_alg_select;
 	       &pce_regression_opts;
 	     </keyword>
@@ -626,7 +626,7 @@
 	      </keyword>
 	      <keyword id='collocation_ratio' name='collocation_ratio' code='{N_mdm(Realp,collocationRatio)}' label='Set the number of points used to build a PCE via regression to be proportional to the number of terms in the expansion.'>
 
-		      <param type='REAL' default='0.' />
+		      <param type='REAL' />
 	      </keyword>
 	    </oneOf>
 ">
@@ -672,7 +672,7 @@
 	     </keyword>
 	     <keyword id='collocation_ratio' name='collocation_ratio' code='{N_mdm(Realp,collocationRatio)}' label='Set the number of points used to build a PCE via regression to be proportional to the number of terms in the expansion.' minOccurs='0' default='0.'>
 
-	       <param type='REAL' default='0.' />
+	       <param type='REAL' />
 	     </keyword>
 ">
 <!ENTITY ft_method_tols "
@@ -759,7 +759,7 @@
 	       </keyword>
 	       <keyword id='collocation_ratio' name='collocation_ratio' code='{N_mom(Real,collocationRatio)}' label='Collocation point oversampling ratio to estimate coeffs'>
 
-		 <param type='REAL' default='0.' />
+		 <param type='REAL' />
 	       </keyword>
 	     </oneOf>
 ">
@@ -1198,7 +1198,7 @@
 
 		 <keyword id='unique_random' name='unique_random' code='{N_mdm(lit,initializationType_unique_random)}' label='Create random initial solutions, but enforce uniqueness (default)' />
 
-		 <keyword id='flat_file' name='flat_file' code='{N_mdm(slit2,TYPE_DATA_initializationType_flat_file)}' label='Read initial solutions from file' >
+		 <keyword id='flat_file' name='flat_file' code='{N_mdm(slit2,TYPE_DATA_initializationType_flat_file)}' label='Read initial solutions from file' type_data_argument='flatFile'>
 
                    
                    <param type='STRING' />
@@ -1208,19 +1208,19 @@
              <keyword id='crossover_type' name='crossover_type' code='{0}' label='Select a crossover type for JEGA methods' minOccurs='0' default='shuffle_random'>
 
                <oneOf scenario='0' union_pattern='4' default_branch='None' label='Crossover Type' anchor='strategy'>
-		            <keyword id='multi_point_binary' name='multi_point_binary' code='{N_mdm(ilit2p,TYPE_DATA_crossoverType_multi_point_binary)}' label='Use bit switching for crossover events' >
+		            <keyword id='multi_point_binary' name='multi_point_binary' code='{N_mdm(ilit2p,TYPE_DATA_crossoverType_multi_point_binary)}' label='Use bit switching for crossover events' type_data_argument='numCrossPoints' type_data_default='2'>
 
                    <param type='INTEGER' />
 		            </keyword>
-		            <keyword id='multi_point_parameterized_binary' name='multi_point_parameterized_binary' code='{N_mdm(ilit2p,TYPE_DATA_crossoverType_multi_point_parameterized_binary)}' label='Use bit switching to crossover each design variable' >
+		            <keyword id='multi_point_parameterized_binary' name='multi_point_parameterized_binary' code='{N_mdm(ilit2p,TYPE_DATA_crossoverType_multi_point_parameterized_binary)}' label='Use bit switching to crossover each design variable' type_data_argument='numCrossPoints' type_data_default='2'>
 
                    <param type='INTEGER' />
 		            </keyword>
-		            <keyword id='multi_point_real' name='multi_point_real' code='{N_mdm(ilit2p,TYPE_DATA_crossoverType_multi_point_real)}' label='Perform crossover in real valued genome' >
+		            <keyword id='multi_point_real' name='multi_point_real' code='{N_mdm(ilit2p,TYPE_DATA_crossoverType_multi_point_real)}' label='Perform crossover in real valued genome' type_data_argument='numCrossPoints' type_data_default='2' >
 
                    <param type='INTEGER' />
 		            </keyword>
-		            <keyword id='shuffle_random' name='shuffle_random' code='{N_mdm(litc,TYPE_DATA_crossoverType_shuffle_random)}' label='Perform crossover by choosing design variable(s)' >
+		            <keyword id='shuffle_random' name='shuffle_random' code='{N_mdm(lit,crossoverType_shuffle_random)}' label='Perform crossover by choosing design variable(s)' type_data_argument='crossoverRate'>
 
                    <keyword id='num_parents' name='num_parents' code='{N_mdm(sizet,numParents)}' label='Number of parents in random shuffle crossover' minOccurs='0' default='2' >
 
@@ -1233,7 +1233,7 @@
                    </keyword>
 		 </keyword>
                </oneOf>
-               <keyword id='crossover_rate' name='crossover_rate' code='{N_mdm(litz,TYPE_DATA_crossoverType_null_crossover)}' label='Specify the probability of a crossover event' minOccurs='0' default='0.8' >
+               <keyword id='crossover_rate' name='crossover_rate' code='{N_mdm(litz,TYPE_DATA_crossoverType_null_crossover)}' label='Specify the probability of a crossover event' minOccurs='0' default='0.8' type_data_argument='crossoverRate'>
 
 		 <param type='REAL' />
                </keyword>
@@ -1245,20 +1245,20 @@
 
 		 <keyword id='replace_uniform' name='replace_uniform' code='{N_mdm(lit,mutationType_replace_uniform)}' label='Use uniformly distributed value over range of parameter' />
 
-                 <keyword id='offset_normal' name='offset_normal' code='{N_mdm(litc,TYPE_DATA_mutationType_offset_normal)}' label='Set mutation offset to use a normal distribution' >
+                 <keyword id='offset_normal' name='offset_normal' code='{N_mdm(lit,mutationType_offset_normal)}' label='Set mutation offset to use a normal distribution' type_data_argument='mutationRate'>
 
 		   &method_ga_mutation_scale;
 		 </keyword>
-                 <keyword id='offset_cauchy' name='offset_cauchy' code='{N_mdm(litc,TYPE_DATA_mutationType_offset_cauchy)}' label='Use a Cauchy distribution for the mutation offset' >
+                 <keyword id='offset_cauchy' name='offset_cauchy' code='{N_mdm(lit,mutationType_offset_cauchy)}' label='Use a Cauchy distribution for the mutation offset' type_data_argument='mutationRate'>
 
 		   &method_ga_mutation_scale;
 		 </keyword>
-                 <keyword id='offset_uniform' name='offset_uniform' code='{N_mdm(litc,TYPE_DATA_mutationType_offset_uniform)}' label='Set mutation offset to use a uniform distribution' >
+                 <keyword id='offset_uniform' name='offset_uniform' code='{N_mdm(lit,mutationType_offset_uniform)}' label='Set mutation offset to use a uniform distribution' type_data_argument='mutationRate'>
 
 		   &method_ga_mutation_scale;
 		 </keyword>
                </oneOf>
-               <keyword id='mutation_rate' name='mutation_rate' code='{N_mdm(litz,TYPE_DATA_mutationType_null_mutation)}' label='Set probability of a mutation' minOccurs='0' default='0.08' >
+               <keyword id='mutation_rate' name='mutation_rate' code='{N_mdm(litz,TYPE_DATA_mutationType_null_mutation)}' label='Set probability of a mutation' minOccurs='0' default='0.08' type_data_argument='mutationRate'>
 
 		 <param type='REAL' />
                </keyword>
@@ -2954,7 +2954,7 @@
           &method_three_optional_keywords;
           &method_conmin_common_opts;
         </keyword>
-        <keyword code="{N_mdm(utype_lit,TYPE_DATA_methodName_DL_SOLVER)}" group="Optimization: Other" id="dl_solver" label="(Experimental) Dynamically-loaded solver" name="dl_solver" argument='name'>
+        <keyword code="{N_mdm(utype_lit,TYPE_DATA_methodName_DL_SOLVER)}" group="Optimization: Other" id="dl_solver" label="(Experimental) Dynamically-loaded solver" name="dl_solver" argument='name' type_data_argument='dlDetails'>
           <param type="STRING" />
           &method_three_optional_keywords;
           &method_max_function_evaluations_context_1;
@@ -3164,7 +3164,7 @@
               <keyword code="{N_mdm(lit,replacementType_elitist)}" id="elitist" label="Use the best designs to form a new population" name="elitist" />
               <keyword code="{N_mdm(lit,replacementType_roulette_wheel)}" id="roulette_wheel" label="Replace population" name="roulette_wheel" />
               <keyword code="{N_mdm(lit,replacementType_unique_roulette_wheel)}" id="unique_roulette_wheel" label="Replace population" name="unique_roulette_wheel" />
-              <keyword argument="threshhold" code="{N_mdm(litp,TYPE_DATA_replacementType_below_limit)}" default="6" id="below_limit" label="Limit number of designs dominating those kept" name="below_limit">
+              <keyword argument="threshhold" code="{N_mdm(litp,TYPE_DATA_replacementType_below_limit)}" default="6" id="below_limit" label="Limit number of designs dominating those kept" name="below_limit" type_data_argument="fitnessLimit">
                 <param type="REAL" />
                 <keyword code="{N_mdm(Real01,shrinkagePercent)}" default="0.9" id="shrinkage_fraction" label="Decrease the population size by a percentage" minOccurs="0" name="shrinkage_fraction">
                   <alias name="shrinkage_percentage" />
@@ -3175,13 +3175,13 @@
           </keyword>
           <keyword code="{0}" default="No niche pressure" id="niching_type" label="Specify the type of niching pressure" minOccurs="0" name="niching_type">
             <oneOf scenario='16' union_pattern='2' default_branch='None' label="Niching Type">
-              <keyword code="{N_mdm(RealLlit,TYPE_DATA_nichingType_radial)}" default="0.01 for all objectives" id="radial" label="Set niching distance to percentage of non-dominated range" name="radial">
+              <keyword code="{N_mdm(RealLlit,TYPE_DATA_nichingType_radial)}" default="0.01 for all objectives" id="radial" label="Set niching distance to percentage of non-dominated range" name="radial" type_data_argument="nicheVector">
                 <param type="REALLIST" />
               </keyword>
-              <keyword code="{N_mdm(RealLlit,TYPE_DATA_nichingType_distance)}" id="distance" label="Enforce minimum Euclidean distance between designs" name="distance">
+              <keyword code="{N_mdm(RealLlit,TYPE_DATA_nichingType_distance)}" id="distance" label="Enforce minimum Euclidean distance between designs" name="distance" type_data_argument="nicheVector">
                 <param type="REALLIST" />
               </keyword>
-              <keyword argument="min_distances" code="{N_mdm(RealLlit,TYPE_DATA_nichingType_max_designs)}" id="max_designs" label="Limit number of solutions to remain in the population" name="max_designs">
+              <keyword argument="min_distances" code="{N_mdm(RealLlit,TYPE_DATA_nichingType_max_designs)}" id="max_designs" label="Limit number of solutions to remain in the population" name="max_designs" type_data_argument="nicheVector">
                 <param type="REALLIST" />
                 <keyword code="{N_mdm(sizet,numDesigns)}" default="100" id="num_designs" label="Limit the number of solutions" minOccurs="0" name="num_designs">
                   <param constraint="&gt;= 2" type="INTEGER" default='100' />
@@ -3199,7 +3199,7 @@
             </keyword>
           </keyword>
           <keyword code="{0}" default="No post-processing of solutions" id="postprocessor_type" label="Post process the final solution from ``moga``" minOccurs="0" name="postprocessor_type">
-            <keyword code="{N_mdm(RealLlit,TYPE_DATA_postProcessorType_distance_postprocessor)}" default="0.01 for all objectives" id="orthogonal_distance" label="Get subset of Pareto front based on distance" name="orthogonal_distance">
+            <keyword code="{N_mdm(RealLlit,TYPE_DATA_postProcessorType_distance_postprocessor)}" default="0.01 for all objectives" id="orthogonal_distance" label="Get subset of Pareto front based on distance" name="orthogonal_distance" type_data_argument="distanceVector">
               <param type="REALLIST" />
             </keyword>
           </keyword>
@@ -3360,7 +3360,7 @@
             <oneOf scenario='17' union_pattern='1' default_branch='unique_random' label="Initialization Type">
               <keyword code="{N_mdm(lit,initializationType_random)}" id="simple_random1" label="Create random initial solutions" name="simple_random" />
               <keyword code="{N_mdm(lit,initializationType_unique_random)}" id="unique_random1" label="Create random initial solutions, but enforce uniqueness (default)" name="unique_random" />
-              <keyword code="{N_mdm(slit2,TYPE_DATA_initializationType_flat_file)}" id="flat_file1" label="Read initial solutions from file" name="flat_file">
+              <keyword code="{N_mdm(slit2,TYPE_DATA_initializationType_flat_file)}" id="flat_file1" label="Read initial solutions from file" name="flat_file" type_data_argument="flatFile">
                 <param type="STRING" />
               </keyword>
             </oneOf>
@@ -3373,13 +3373,13 @@
           </keyword>
           <keyword code="{0}" default="elitist=1" id="replacement_type2" label="Select a replacement type for SCOLIB evolutionary algorithm ( ``coliny_ea``)" minOccurs="0" name="replacement_type">
             <oneOf scenario='16' union_pattern='2' default_branch='None' label="Replacement Type">
-              <keyword code="{N_mdm(ilit2,TYPE_DATA_replacementType_random)}" id="random" label="Create new population randomly" name="random">
+              <keyword code="{N_mdm(ilit2,TYPE_DATA_replacementType_random)}" id="random" label="Create new population randomly" name="random" type_data_argument="numberRetained">
                 <param type="INTEGER" />
               </keyword>
-              <keyword code="{N_mdm(ilit2,TYPE_DATA_replacementType_chc)}" id="chc" label="Create new population using replacement" name="chc">
+              <keyword code="{N_mdm(ilit2,TYPE_DATA_replacementType_chc)}" id="chc" label="Create new population using replacement" name="chc" type_data_argument="numberRetained">
                 <param type="INTEGER" />
               </keyword>
-              <keyword code="{N_mdm(ilit2,TYPE_DATA_replacementType_elitist)}" id="elitist2" label="Use the best designs to form a new population" name="elitist">
+              <keyword code="{N_mdm(ilit2,TYPE_DATA_replacementType_elitist)}" id="elitist2" label="Use the best designs to form a new population" name="elitist" type_data_argument="numberRetained">
                 <param type="INTEGER" />
               </keyword>
             </oneOf>
@@ -4187,7 +4187,7 @@
             </keyword>
             <keyword code="{N_mdm(utype,subMethod_SUBMETHOD_WASABI)}" id="wasabi" label="(Experimental Method) Non-MCMC Bayesian inference using interval analysis" name="wasabi">
               <keyword code="{N_mdm(int,numPushforwardSamples)}" default="method-dependent" id="pushforward_samples" label="(Experimental Capability) Number of samples of the prior to push forward through the model" name="pushforward_samples">
-                <param type="INTEGER" />
+                <param type="INTEGER" default="1000" />
               </keyword>
               <keyword code="{N_mdm(int,randomSeed)}" default="system-generated (non-repeatable)" id="seed7" label="Seed of the random number generator" minOccurs="0" name="seed">
                 <param constraint="&gt; 0" type="INTEGER" />
@@ -4363,7 +4363,7 @@
                       <param type="REAL" default='0.5' />
                     </keyword>
                     <keyword code="{N_mdm(ivec,mlmcmcSubsamplingSteps)}" default="None" id="subsampling_steps" label="Number of samples at each level" minOccurs="0" name="subsampling_steps">
-                      <param type="INTEGERLIST" default='0' />
+                      <param type="INTEGERLIST" default='EMPTY_LIST'/>
                     </keyword>
                   </keyword>
                   <keyword code="{N_mdm(lit,mcmcType_mala)}" default="dram" id="mala" label="Metropolis-adjusted Langevin algorithm" name="mala">
@@ -5413,13 +5413,13 @@
             <alias name="num_set_values" />
             <param constraint="LEN1 integer" type="INTEGERLIST" />
           </keyword>
-          <keyword code="{N_vam(newivec,Var_Info_ddsi)}" id="elements" label="The permissible values for each discrete variable" name="elements">
+          <keyword code="{N_vam(newivec,Var_Info_ddsi)}" id="elements" label="The permissible values for each discrete variable" name="elements" var_info_argument="discreteDesignSetInt">
             <alias name="set_values" />
             <param type="INTEGERLIST" />
           </keyword>
           <keyword argument="flags" code="{N_vam(categorical,discreteDesignSetIntCat)}" id="categorical" label="Whether the set-valued variables are categorical or relaxable" minOccurs="0" name="categorical">
             <param constraint="LEN integer" type="STRINGLIST" />
-            <keyword code="{N_vam(newivec,Var_Info_ddsia)}" id="adjacency_matrix" label="1-0 matrix defining which categorical variable levels are related." minOccurs="0" name="adjacency_matrix">
+            <keyword code="{N_vam(newivec,Var_Info_ddsia)}" id="adjacency_matrix" label="1-0 matrix defining which categorical variable levels are related." minOccurs="0" name="adjacency_matrix" adjacency_matrix_argument="discreteDesignSetIntAdj">
               <param type="INTEGERLIST" />
             </keyword>
           </keyword>
@@ -5436,11 +5436,11 @@
             <alias name="num_set_values" />
             <param constraint="LEN1 string" type="INTEGERLIST" />
           </keyword>
-          <keyword code="{N_vam(newsarray,Var_Info_ddss)}" id="elements1" label="The permissible values for each discrete variable" name="elements">
+          <keyword code="{N_vam(newsarray,Var_Info_ddss)}" id="elements1" label="The permissible values for each discrete variable" name="elements" var_info_argument="discreteDesignSetStr">
             <alias name="set_values" />
             <param type="STRINGLIST" />
           </keyword>
-          <keyword code="{N_vam(newivec,Var_Info_ddssa)}" id="adjacency_matrix1" label="1-0 matrix defining which categorical variable levels are related." minOccurs="0" name="adjacency_matrix">
+          <keyword code="{N_vam(newivec,Var_Info_ddssa)}" id="adjacency_matrix1" label="1-0 matrix defining which categorical variable levels are related." minOccurs="0" name="adjacency_matrix" adjacency_matrix_argument="discreteDesignSetStrAdj">
             <param type="INTEGERLIST" />
           </keyword>
           <keyword code="{N_vam(strL,discreteDesignSetStrVars)}" default="middle set value, or rounded down" id="initial_point3" label="Initial values for variables" minOccurs="0" name="initial_point">
@@ -5456,13 +5456,13 @@
             <alias name="num_set_values" />
             <param constraint="LEN1 real" type="INTEGERLIST" />
           </keyword>
-          <keyword code="{N_vam(newrvec,Var_Info_ddsr)}" id="elements2" label="The permissible values for each discrete variable" name="elements">
+          <keyword code="{N_vam(newrvec,Var_Info_ddsr)}" id="elements2" label="The permissible values for each discrete variable" name="elements" var_info_argument="discreteDesignSetReal">
             <alias name="set_values" />
             <param type="REALLIST" />
           </keyword>
           <keyword argument="flags" code="{N_vam(categorical,discreteDesignSetRealCat)}" id="categorical1" label="Whether the set-valued variables are categorical or relaxable" minOccurs="0" name="categorical">
             <param constraint="LEN real" type="STRINGLIST" />
-            <keyword code="{N_vam(newivec,Var_Info_ddsra)}" id="adjacency_matrix2" label="1-0 matrix defining which categorical variable levels are related." minOccurs="0" name="adjacency_matrix">
+            <keyword code="{N_vam(newivec,Var_Info_ddsra)}" id="adjacency_matrix2" label="1-0 matrix defining which categorical variable levels are related." minOccurs="0" name="adjacency_matrix" adjacency_matrix_argument="discreteDesignSetRealAdj">
               <param type="INTEGERLIST" />
             </keyword>
           </keyword>
@@ -6053,7 +6053,7 @@
             <alias name="num_set_values" />
             <param constraint="LEN1 integer" type="INTEGERLIST" />
           </keyword>
-          <keyword code="{N_vam(newivec,Var_Info_dssi)}" id="elements6" label="The permissible values for each discrete variable" name="elements">
+          <keyword code="{N_vam(newivec,Var_Info_dssi)}" id="elements6" label="The permissible values for each discrete variable" name="elements" var_info_argument="discreteStateSetInt">
             <alias name="set_values" />
             <param type="INTEGERLIST" />
           </keyword>
@@ -6073,7 +6073,7 @@
             <alias name="num_set_values" />
             <param constraint="LEN1 string" type="INTEGERLIST" />
           </keyword>
-          <keyword code="{N_vam(newsarray,Var_Info_dsss)}" id="elements7" label="The permissible values for each discrete variable" name="elements">
+          <keyword code="{N_vam(newsarray,Var_Info_dsss)}" id="elements7" label="The permissible values for each discrete variable" name="elements" var_info_argument="discreteStateSetStr">
             <alias name="set_values" />
             <param type="STRINGLIST" />
           </keyword>
@@ -6090,7 +6090,7 @@
             <alias name="num_set_values" />
             <param constraint="LEN1 real" type="INTEGERLIST" />
           </keyword>
-          <keyword code="{N_vam(newrvec,Var_Info_dssr)}" id="elements8" label="The permissible values for each discrete variable" name="elements">
+          <keyword code="{N_vam(newrvec,Var_Info_dssr)}" id="elements8" label="The permissible values for each discrete variable" name="elements" var_info_argument="discreteStateSetReal">
             <alias name="set_values" />
             <param type="REALLIST" />
           </keyword>
@@ -6263,10 +6263,10 @@
       <keyword code="{0}" complexity="0" default="abort" id="failure_capture" label="Determine how Dakota responds to analysis driver failure" minOccurs="0" name="failure_capture">
         <oneOf scenario='17' union_pattern='1' default_branch='abort' label="Failure Mitigation">
           <keyword code="{N_ifm(lit,failAction_abort)}" complexity="0" id="abort" label="(Default) Abort the Dakota job" name="abort" />
-          <keyword code="{N_ifm(ilit,TYPE_DATA_failAction_retry)}" complexity="0" id="retry" label="Rerun failed analyses" name="retry">
+          <keyword code="{N_ifm(ilit,TYPE_DATA_failAction_retry)}" complexity="0" id="retry" label="Rerun failed analyses" name="retry" type_data_argument="retryLimit">
             <param type="INTEGER" />
           </keyword>
-          <keyword code="{N_ifm(Rlit,TYPE_DATA_failAction_recover)}" complexity="0" id="recover" label="Substitute dummy values for the responses" name="recover">
+          <keyword code="{N_ifm(Rlit,TYPE_DATA_failAction_recover)}" complexity="0" id="recover" label="Substitute dummy values for the responses" name="recover" type_data_argument="recoveryFnVals">
             <param type="REALLIST" />
           </keyword>
           <keyword code="{N_ifm(lit,failAction_continuation)}" complexity="1" id="continuation" label="Cause Dakota to step toward the failed &quot;target&quot; simulation from a nearby successful &quot;source&quot;" name="continuation" />

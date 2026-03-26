@@ -1055,7 +1055,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
       |
       multi_point_real INTEGER {N_mdm(ilit2p,TYPE_DATA_crossoverType_multi_point_real)}
       |
-      ( shuffle_random {N_mdm(litc,TYPE_DATA_crossoverType_shuffle_random)}
+      ( shuffle_random {N_mdm(lit,crossoverType_shuffle_random)}
         [ num_parents INTEGER > 0 {N_mdm(sizet,numParents)} ]
         [ num_offspring INTEGER > 0 {N_mdm(sizet,numOffspring)} ]
        )
@@ -1066,15 +1066,15 @@ KEYWORD method {N_mdm3(start,0,stop)}
       |
       replace_uniform {N_mdm(lit,mutationType_replace_uniform)}
       |
-      ( offset_normal {N_mdm(litc,TYPE_DATA_mutationType_offset_normal)}
+      ( offset_normal {N_mdm(lit,mutationType_offset_normal)}
         [ mutation_scale REAL {N_mdm(Real01,mutationScale)} ]
        )
       |
-      ( offset_cauchy {N_mdm(litc,TYPE_DATA_mutationType_offset_cauchy)}
+      ( offset_cauchy {N_mdm(lit,mutationType_offset_cauchy)}
         [ mutation_scale REAL {N_mdm(Real01,mutationScale)} ]
        )
       |
-      ( offset_uniform {N_mdm(litc,TYPE_DATA_mutationType_offset_uniform)}
+      ( offset_uniform {N_mdm(lit,mutationType_offset_uniform)}
         [ mutation_scale REAL {N_mdm(Real01,mutationScale)} ]
        )
       [ mutation_rate REAL {N_mdm(litz,TYPE_DATA_mutationType_null_mutation)} ]
@@ -1142,7 +1142,7 @@ KEYWORD method {N_mdm3(start,0,stop)}
       |
       multi_point_real INTEGER {N_mdm(ilit2p,TYPE_DATA_crossoverType_multi_point_real)}
       |
-      ( shuffle_random {N_mdm(litc,TYPE_DATA_crossoverType_shuffle_random)}
+      ( shuffle_random {N_mdm(lit,crossoverType_shuffle_random)}
         [ num_parents INTEGER > 0 {N_mdm(sizet,numParents)} ]
         [ num_offspring INTEGER > 0 {N_mdm(sizet,numOffspring)} ]
        )
@@ -1153,15 +1153,15 @@ KEYWORD method {N_mdm3(start,0,stop)}
       |
       replace_uniform {N_mdm(lit,mutationType_replace_uniform)}
       |
-      ( offset_normal {N_mdm(litc,TYPE_DATA_mutationType_offset_normal)}
+      ( offset_normal {N_mdm(lit,mutationType_offset_normal)}
         [ mutation_scale REAL {N_mdm(Real01,mutationScale)} ]
        )
       |
-      ( offset_cauchy {N_mdm(litc,TYPE_DATA_mutationType_offset_cauchy)}
+      ( offset_cauchy {N_mdm(lit,mutationType_offset_cauchy)}
         [ mutation_scale REAL {N_mdm(Real01,mutationScale)} ]
        )
       |
-      ( offset_uniform {N_mdm(litc,TYPE_DATA_mutationType_offset_uniform)}
+      ( offset_uniform {N_mdm(lit,mutationType_offset_uniform)}
         [ mutation_scale REAL {N_mdm(Real01,mutationScale)} ]
        )
       [ mutation_rate REAL {N_mdm(litz,TYPE_DATA_mutationType_null_mutation)} ]

@@ -7071,6 +7071,7 @@ static Method_mp_lit
 	MP2(convergenceType,best_fitness_tracker),
 	MP2(convergenceType,metric_tracker),
 	MP2(crossoverType,blend),
+  MP2(crossoverType,shuffle_random),
 	MP2(crossoverType,two_point),
 	MP2(crossoverType,uniform),
         MP2(dataDistCovInputType,diagonal),
@@ -7155,12 +7156,12 @@ static int
   MP_(mlmcmcInitialChainSamples);
   
 static Method_mp_litc
-	MP3(crossoverType,crossoverRate,shuffle_random),
+	//MP3(crossoverType,crossoverRate,shuffle_random),
 	MP3(crossoverType,crossoverRate,null_crossover),
 	MP3(mutationType,mutationRate,null_mutation),
-	MP3(mutationType,mutationRate,offset_cauchy),
-	MP3(mutationType,mutationRate,offset_normal),
-	MP3(mutationType,mutationRate,offset_uniform),
+	//MP3(mutationType,mutationRate,offset_cauchy),
+	//MP3(mutationType,mutationRate,offset_normal),
+	//MP3(mutationType,mutationRate,offset_uniform),
 	MP3(replacementType,fitnessLimit,below_limit);
 
 static Method_mp_litrv

@@ -773,40 +773,6 @@
                     "x-model-default": "RngOptionsContext2Mt19937",
                     "x-union-pattern": 1
                 },
-                "response_levels": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/ResponseLevelsComputeProbGenContext1ResponseLevels"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "values",
-                    "default": null,
-                    "description": "Values at which to estimate desired statistics for each response",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.nond.response_levels",
-                            "ir_value_type": "RealVectorArray",
-                            "storage_type": "RESPONSE_LEVELS_ARRAY"
-                        }
-                    ]
-                },
-                "distribution": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
-                        },
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
-                        }
-                    ],
-                    "description": "Selection of cumulative or complementary cumulative functions",
-                    "title": "Distribution",
-                    "x-model-default": "DistributionCumulComplContext1Cumulative",
-                    "x-union-pattern": 1
-                },
                 "gen_reliability_levels": {
                     "anyOf": [
                         {
@@ -842,6 +808,40 @@
                     "x-materialization": [
                         {
                             "ir_key": "method.nond.probability_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
+                },
+                "distribution": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
+                        },
+                        {
+                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
+                        }
+                    ],
+                    "description": "Selection of cumulative or complementary cumulative functions",
+                    "title": "Distribution",
+                    "x-model-default": "DistributionCumulComplContext1Cumulative",
+                    "x-union-pattern": 1
+                },
+                "response_levels": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/ResponseLevelsComputeProbGenContext1ResponseLevels"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "values",
+                    "default": null,
+                    "description": "Values at which to estimate desired statistics for each response",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.response_levels",
                             "ir_value_type": "RealVectorArray",
                             "storage_type": "RESPONSE_LEVELS_ARRAY"
                         }
@@ -8741,50 +8741,37 @@
             "additionalProperties": false,
             "description": "Generated model for ConminFrcgConfig",
             "properties": {
-                "max_function_evaluations": {
-                    "default": 9223372036854775807,
-                    "description": "Number of function evaluations allowed for optimizers",
-                    "minimum": 0,
-                    "title": "Max Function Evaluations",
-                    "type": "integer",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.max_function_evaluations",
-                            "ir_value_type": "size_t",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
-                "constraint_tolerance": {
-                    "default": 0.0,
-                    "description": "Maximum allowable constraint violation still considered feasible",
-                    "title": "Constraint Tolerance",
-                    "type": "number",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.constraint_tolerance",
-                            "ir_value_type": "Real",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
-                "model_pointer": {
+                "scaling": {
                     "anyOf": [
                         {
-                            "type": "string"
+                            "const": true,
+                            "type": "boolean"
                         },
                         {
                             "type": "null"
                         }
                     ],
                     "default": null,
-                    "description": "Identifier for model block to be used by a method",
-                    "title": "Model Pointer",
-                    "x-block-pointer": "model",
+                    "description": "Turn on scaling for variables, responses, and constraints",
+                    "title": "Scaling",
                     "x-materialization": [
                         {
-                            "ir_key": "method.model_pointer",
-                            "ir_value_type": "String",
+                            "ir_key": "method.scaling",
+                            "ir_value_type": "bool",
+                            "storage_type": "PRESENCE_TRUE"
+                        }
+                    ]
+                },
+                "max_iterations": {
+                    "default": 9223372036854775807,
+                    "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
+                    "minimum": 0,
+                    "title": "Max Iterations",
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.max_iterations",
+                            "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
                         }
                     ]
@@ -8828,38 +8815,51 @@
                         }
                     ]
                 },
-                "max_iterations": {
-                    "default": 9223372036854775807,
-                    "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
-                    "minimum": 0,
-                    "title": "Max Iterations",
-                    "type": "integer",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.max_iterations",
-                            "ir_value_type": "size_t",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
-                "scaling": {
+                "model_pointer": {
                     "anyOf": [
                         {
-                            "const": true,
-                            "type": "boolean"
+                            "type": "string"
                         },
                         {
                             "type": "null"
                         }
                     ],
                     "default": null,
-                    "description": "Turn on scaling for variables, responses, and constraints",
-                    "title": "Scaling",
+                    "description": "Identifier for model block to be used by a method",
+                    "title": "Model Pointer",
+                    "x-block-pointer": "model",
                     "x-materialization": [
                         {
-                            "ir_key": "method.scaling",
-                            "ir_value_type": "bool",
-                            "storage_type": "PRESENCE_TRUE"
+                            "ir_key": "method.model_pointer",
+                            "ir_value_type": "String",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "max_function_evaluations": {
+                    "default": 9223372036854775807,
+                    "description": "Number of function evaluations allowed for optimizers",
+                    "minimum": 0,
+                    "title": "Max Function Evaluations",
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.max_function_evaluations",
+                            "ir_value_type": "size_t",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "constraint_tolerance": {
+                    "default": 0.0,
+                    "description": "Maximum allowable constraint violation still considered feasible",
+                    "title": "Constraint Tolerance",
+                    "type": "number",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.constraint_tolerance",
+                            "ir_value_type": "Real",
+                            "storage_type": "DIRECT_VALUE"
                         }
                     ]
                 },
@@ -8950,50 +8950,37 @@
             "additionalProperties": false,
             "description": "Generated model for ConminMfdConfig",
             "properties": {
-                "max_function_evaluations": {
-                    "default": 9223372036854775807,
-                    "description": "Number of function evaluations allowed for optimizers",
-                    "minimum": 0,
-                    "title": "Max Function Evaluations",
-                    "type": "integer",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.max_function_evaluations",
-                            "ir_value_type": "size_t",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
-                "constraint_tolerance": {
-                    "default": 0.0,
-                    "description": "Maximum allowable constraint violation still considered feasible",
-                    "title": "Constraint Tolerance",
-                    "type": "number",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.constraint_tolerance",
-                            "ir_value_type": "Real",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
-                "model_pointer": {
+                "scaling": {
                     "anyOf": [
                         {
-                            "type": "string"
+                            "const": true,
+                            "type": "boolean"
                         },
                         {
                             "type": "null"
                         }
                     ],
                     "default": null,
-                    "description": "Identifier for model block to be used by a method",
-                    "title": "Model Pointer",
-                    "x-block-pointer": "model",
+                    "description": "Turn on scaling for variables, responses, and constraints",
+                    "title": "Scaling",
                     "x-materialization": [
                         {
-                            "ir_key": "method.model_pointer",
-                            "ir_value_type": "String",
+                            "ir_key": "method.scaling",
+                            "ir_value_type": "bool",
+                            "storage_type": "PRESENCE_TRUE"
+                        }
+                    ]
+                },
+                "max_iterations": {
+                    "default": 9223372036854775807,
+                    "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
+                    "minimum": 0,
+                    "title": "Max Iterations",
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.max_iterations",
+                            "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
                         }
                     ]
@@ -9037,38 +9024,51 @@
                         }
                     ]
                 },
-                "max_iterations": {
-                    "default": 9223372036854775807,
-                    "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
-                    "minimum": 0,
-                    "title": "Max Iterations",
-                    "type": "integer",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.max_iterations",
-                            "ir_value_type": "size_t",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
-                "scaling": {
+                "model_pointer": {
                     "anyOf": [
                         {
-                            "const": true,
-                            "type": "boolean"
+                            "type": "string"
                         },
                         {
                             "type": "null"
                         }
                     ],
                     "default": null,
-                    "description": "Turn on scaling for variables, responses, and constraints",
-                    "title": "Scaling",
+                    "description": "Identifier for model block to be used by a method",
+                    "title": "Model Pointer",
+                    "x-block-pointer": "model",
                     "x-materialization": [
                         {
-                            "ir_key": "method.scaling",
-                            "ir_value_type": "bool",
-                            "storage_type": "PRESENCE_TRUE"
+                            "ir_key": "method.model_pointer",
+                            "ir_value_type": "String",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "max_function_evaluations": {
+                    "default": 9223372036854775807,
+                    "description": "Number of function evaluations allowed for optimizers",
+                    "minimum": 0,
+                    "title": "Max Function Evaluations",
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.max_function_evaluations",
+                            "ir_value_type": "size_t",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "constraint_tolerance": {
+                    "default": 0.0,
+                    "description": "Maximum allowable constraint violation still considered feasible",
+                    "title": "Constraint Tolerance",
+                    "type": "number",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.constraint_tolerance",
+                            "ir_value_type": "Real",
+                            "storage_type": "DIRECT_VALUE"
                         }
                     ]
                 },
@@ -9516,8 +9516,8 @@
                     "validationErrorMessage": "Bounds setup failed: lower_bounds or upper_bounds could not be set.",
                     "validationFields": [],
                     "validationLiterals": [
-                        -Infinity,
-                        Infinity
+                        "-inf",
+                        "inf"
                     ],
                     "validationRuleName": "default_bounds_real"
                 },
@@ -10047,8 +10047,8 @@
                     "validationErrorMessage": "Bounds setup failed: lower_bounds or upper_bounds could not be set.",
                     "validationFields": [],
                     "validationLiterals": [
-                        -Infinity,
-                        Infinity
+                        "-inf",
+                        "inf"
                     ],
                     "validationRuleName": "default_bounds_real"
                 },
@@ -16185,50 +16185,37 @@
             "additionalProperties": false,
             "description": "Generated model for DotBfgsConfig",
             "properties": {
-                "max_function_evaluations": {
-                    "default": 9223372036854775807,
-                    "description": "Number of function evaluations allowed for optimizers",
-                    "minimum": 0,
-                    "title": "Max Function Evaluations",
-                    "type": "integer",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.max_function_evaluations",
-                            "ir_value_type": "size_t",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
-                "constraint_tolerance": {
-                    "default": 0.0,
-                    "description": "Maximum allowable constraint violation still considered feasible",
-                    "title": "Constraint Tolerance",
-                    "type": "number",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.constraint_tolerance",
-                            "ir_value_type": "Real",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
-                "model_pointer": {
+                "scaling": {
                     "anyOf": [
                         {
-                            "type": "string"
+                            "const": true,
+                            "type": "boolean"
                         },
                         {
                             "type": "null"
                         }
                     ],
                     "default": null,
-                    "description": "Identifier for model block to be used by a method",
-                    "title": "Model Pointer",
-                    "x-block-pointer": "model",
+                    "description": "Turn on scaling for variables, responses, and constraints",
+                    "title": "Scaling",
                     "x-materialization": [
                         {
-                            "ir_key": "method.model_pointer",
-                            "ir_value_type": "String",
+                            "ir_key": "method.scaling",
+                            "ir_value_type": "bool",
+                            "storage_type": "PRESENCE_TRUE"
+                        }
+                    ]
+                },
+                "max_iterations": {
+                    "default": 9223372036854775807,
+                    "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
+                    "minimum": 0,
+                    "title": "Max Iterations",
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.max_iterations",
+                            "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
                         }
                     ]
@@ -16272,38 +16259,51 @@
                         }
                     ]
                 },
-                "max_iterations": {
-                    "default": 9223372036854775807,
-                    "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
-                    "minimum": 0,
-                    "title": "Max Iterations",
-                    "type": "integer",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.max_iterations",
-                            "ir_value_type": "size_t",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
-                "scaling": {
+                "model_pointer": {
                     "anyOf": [
                         {
-                            "const": true,
-                            "type": "boolean"
+                            "type": "string"
                         },
                         {
                             "type": "null"
                         }
                     ],
                     "default": null,
-                    "description": "Turn on scaling for variables, responses, and constraints",
-                    "title": "Scaling",
+                    "description": "Identifier for model block to be used by a method",
+                    "title": "Model Pointer",
+                    "x-block-pointer": "model",
                     "x-materialization": [
                         {
-                            "ir_key": "method.scaling",
-                            "ir_value_type": "bool",
-                            "storage_type": "PRESENCE_TRUE"
+                            "ir_key": "method.model_pointer",
+                            "ir_value_type": "String",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "max_function_evaluations": {
+                    "default": 9223372036854775807,
+                    "description": "Number of function evaluations allowed for optimizers",
+                    "minimum": 0,
+                    "title": "Max Function Evaluations",
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.max_function_evaluations",
+                            "ir_value_type": "size_t",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "constraint_tolerance": {
+                    "default": 0.0,
+                    "description": "Maximum allowable constraint violation still considered feasible",
+                    "title": "Constraint Tolerance",
+                    "type": "number",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.constraint_tolerance",
+                            "ir_value_type": "Real",
+                            "storage_type": "DIRECT_VALUE"
                         }
                     ]
                 },
@@ -16394,50 +16394,37 @@
             "additionalProperties": false,
             "description": "Generated model for DotFrcgConfig",
             "properties": {
-                "max_function_evaluations": {
-                    "default": 9223372036854775807,
-                    "description": "Number of function evaluations allowed for optimizers",
-                    "minimum": 0,
-                    "title": "Max Function Evaluations",
-                    "type": "integer",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.max_function_evaluations",
-                            "ir_value_type": "size_t",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
-                "constraint_tolerance": {
-                    "default": 0.0,
-                    "description": "Maximum allowable constraint violation still considered feasible",
-                    "title": "Constraint Tolerance",
-                    "type": "number",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.constraint_tolerance",
-                            "ir_value_type": "Real",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
-                "model_pointer": {
+                "scaling": {
                     "anyOf": [
                         {
-                            "type": "string"
+                            "const": true,
+                            "type": "boolean"
                         },
                         {
                             "type": "null"
                         }
                     ],
                     "default": null,
-                    "description": "Identifier for model block to be used by a method",
-                    "title": "Model Pointer",
-                    "x-block-pointer": "model",
+                    "description": "Turn on scaling for variables, responses, and constraints",
+                    "title": "Scaling",
                     "x-materialization": [
                         {
-                            "ir_key": "method.model_pointer",
-                            "ir_value_type": "String",
+                            "ir_key": "method.scaling",
+                            "ir_value_type": "bool",
+                            "storage_type": "PRESENCE_TRUE"
+                        }
+                    ]
+                },
+                "max_iterations": {
+                    "default": 9223372036854775807,
+                    "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
+                    "minimum": 0,
+                    "title": "Max Iterations",
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.max_iterations",
+                            "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
                         }
                     ]
@@ -16481,38 +16468,51 @@
                         }
                     ]
                 },
-                "max_iterations": {
-                    "default": 9223372036854775807,
-                    "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
-                    "minimum": 0,
-                    "title": "Max Iterations",
-                    "type": "integer",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.max_iterations",
-                            "ir_value_type": "size_t",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
-                "scaling": {
+                "model_pointer": {
                     "anyOf": [
                         {
-                            "const": true,
-                            "type": "boolean"
+                            "type": "string"
                         },
                         {
                             "type": "null"
                         }
                     ],
                     "default": null,
-                    "description": "Turn on scaling for variables, responses, and constraints",
-                    "title": "Scaling",
+                    "description": "Identifier for model block to be used by a method",
+                    "title": "Model Pointer",
+                    "x-block-pointer": "model",
                     "x-materialization": [
                         {
-                            "ir_key": "method.scaling",
-                            "ir_value_type": "bool",
-                            "storage_type": "PRESENCE_TRUE"
+                            "ir_key": "method.model_pointer",
+                            "ir_value_type": "String",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "max_function_evaluations": {
+                    "default": 9223372036854775807,
+                    "description": "Number of function evaluations allowed for optimizers",
+                    "minimum": 0,
+                    "title": "Max Function Evaluations",
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.max_function_evaluations",
+                            "ir_value_type": "size_t",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "constraint_tolerance": {
+                    "default": 0.0,
+                    "description": "Maximum allowable constraint violation still considered feasible",
+                    "title": "Constraint Tolerance",
+                    "type": "number",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.constraint_tolerance",
+                            "ir_value_type": "Real",
+                            "storage_type": "DIRECT_VALUE"
                         }
                     ]
                 },
@@ -16603,50 +16603,37 @@
             "additionalProperties": false,
             "description": "Generated model for DotMmfdConfig",
             "properties": {
-                "max_function_evaluations": {
-                    "default": 9223372036854775807,
-                    "description": "Number of function evaluations allowed for optimizers",
-                    "minimum": 0,
-                    "title": "Max Function Evaluations",
-                    "type": "integer",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.max_function_evaluations",
-                            "ir_value_type": "size_t",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
-                "constraint_tolerance": {
-                    "default": 0.0,
-                    "description": "Maximum allowable constraint violation still considered feasible",
-                    "title": "Constraint Tolerance",
-                    "type": "number",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.constraint_tolerance",
-                            "ir_value_type": "Real",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
-                "model_pointer": {
+                "scaling": {
                     "anyOf": [
                         {
-                            "type": "string"
+                            "const": true,
+                            "type": "boolean"
                         },
                         {
                             "type": "null"
                         }
                     ],
                     "default": null,
-                    "description": "Identifier for model block to be used by a method",
-                    "title": "Model Pointer",
-                    "x-block-pointer": "model",
+                    "description": "Turn on scaling for variables, responses, and constraints",
+                    "title": "Scaling",
                     "x-materialization": [
                         {
-                            "ir_key": "method.model_pointer",
-                            "ir_value_type": "String",
+                            "ir_key": "method.scaling",
+                            "ir_value_type": "bool",
+                            "storage_type": "PRESENCE_TRUE"
+                        }
+                    ]
+                },
+                "max_iterations": {
+                    "default": 9223372036854775807,
+                    "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
+                    "minimum": 0,
+                    "title": "Max Iterations",
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.max_iterations",
+                            "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
                         }
                     ]
@@ -16690,38 +16677,51 @@
                         }
                     ]
                 },
-                "max_iterations": {
-                    "default": 9223372036854775807,
-                    "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
-                    "minimum": 0,
-                    "title": "Max Iterations",
-                    "type": "integer",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.max_iterations",
-                            "ir_value_type": "size_t",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
-                "scaling": {
+                "model_pointer": {
                     "anyOf": [
                         {
-                            "const": true,
-                            "type": "boolean"
+                            "type": "string"
                         },
                         {
                             "type": "null"
                         }
                     ],
                     "default": null,
-                    "description": "Turn on scaling for variables, responses, and constraints",
-                    "title": "Scaling",
+                    "description": "Identifier for model block to be used by a method",
+                    "title": "Model Pointer",
+                    "x-block-pointer": "model",
                     "x-materialization": [
                         {
-                            "ir_key": "method.scaling",
-                            "ir_value_type": "bool",
-                            "storage_type": "PRESENCE_TRUE"
+                            "ir_key": "method.model_pointer",
+                            "ir_value_type": "String",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "max_function_evaluations": {
+                    "default": 9223372036854775807,
+                    "description": "Number of function evaluations allowed for optimizers",
+                    "minimum": 0,
+                    "title": "Max Function Evaluations",
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.max_function_evaluations",
+                            "ir_value_type": "size_t",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "constraint_tolerance": {
+                    "default": 0.0,
+                    "description": "Maximum allowable constraint violation still considered feasible",
+                    "title": "Constraint Tolerance",
+                    "type": "number",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.constraint_tolerance",
+                            "ir_value_type": "Real",
+                            "storage_type": "DIRECT_VALUE"
                         }
                     ]
                 },
@@ -16812,50 +16812,37 @@
             "additionalProperties": false,
             "description": "Generated model for DotSlpConfig",
             "properties": {
-                "max_function_evaluations": {
-                    "default": 9223372036854775807,
-                    "description": "Number of function evaluations allowed for optimizers",
-                    "minimum": 0,
-                    "title": "Max Function Evaluations",
-                    "type": "integer",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.max_function_evaluations",
-                            "ir_value_type": "size_t",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
-                "constraint_tolerance": {
-                    "default": 0.0,
-                    "description": "Maximum allowable constraint violation still considered feasible",
-                    "title": "Constraint Tolerance",
-                    "type": "number",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.constraint_tolerance",
-                            "ir_value_type": "Real",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
-                "model_pointer": {
+                "scaling": {
                     "anyOf": [
                         {
-                            "type": "string"
+                            "const": true,
+                            "type": "boolean"
                         },
                         {
                             "type": "null"
                         }
                     ],
                     "default": null,
-                    "description": "Identifier for model block to be used by a method",
-                    "title": "Model Pointer",
-                    "x-block-pointer": "model",
+                    "description": "Turn on scaling for variables, responses, and constraints",
+                    "title": "Scaling",
                     "x-materialization": [
                         {
-                            "ir_key": "method.model_pointer",
-                            "ir_value_type": "String",
+                            "ir_key": "method.scaling",
+                            "ir_value_type": "bool",
+                            "storage_type": "PRESENCE_TRUE"
+                        }
+                    ]
+                },
+                "max_iterations": {
+                    "default": 9223372036854775807,
+                    "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
+                    "minimum": 0,
+                    "title": "Max Iterations",
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.max_iterations",
+                            "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
                         }
                     ]
@@ -16899,38 +16886,51 @@
                         }
                     ]
                 },
-                "max_iterations": {
-                    "default": 9223372036854775807,
-                    "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
-                    "minimum": 0,
-                    "title": "Max Iterations",
-                    "type": "integer",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.max_iterations",
-                            "ir_value_type": "size_t",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
-                "scaling": {
+                "model_pointer": {
                     "anyOf": [
                         {
-                            "const": true,
-                            "type": "boolean"
+                            "type": "string"
                         },
                         {
                             "type": "null"
                         }
                     ],
                     "default": null,
-                    "description": "Turn on scaling for variables, responses, and constraints",
-                    "title": "Scaling",
+                    "description": "Identifier for model block to be used by a method",
+                    "title": "Model Pointer",
+                    "x-block-pointer": "model",
                     "x-materialization": [
                         {
-                            "ir_key": "method.scaling",
-                            "ir_value_type": "bool",
-                            "storage_type": "PRESENCE_TRUE"
+                            "ir_key": "method.model_pointer",
+                            "ir_value_type": "String",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "max_function_evaluations": {
+                    "default": 9223372036854775807,
+                    "description": "Number of function evaluations allowed for optimizers",
+                    "minimum": 0,
+                    "title": "Max Function Evaluations",
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.max_function_evaluations",
+                            "ir_value_type": "size_t",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "constraint_tolerance": {
+                    "default": 0.0,
+                    "description": "Maximum allowable constraint violation still considered feasible",
+                    "title": "Constraint Tolerance",
+                    "type": "number",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.constraint_tolerance",
+                            "ir_value_type": "Real",
+                            "storage_type": "DIRECT_VALUE"
                         }
                     ]
                 },
@@ -17021,50 +17021,37 @@
             "additionalProperties": false,
             "description": "Generated model for DotSqpConfig",
             "properties": {
-                "max_function_evaluations": {
-                    "default": 9223372036854775807,
-                    "description": "Number of function evaluations allowed for optimizers",
-                    "minimum": 0,
-                    "title": "Max Function Evaluations",
-                    "type": "integer",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.max_function_evaluations",
-                            "ir_value_type": "size_t",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
-                "constraint_tolerance": {
-                    "default": 0.0,
-                    "description": "Maximum allowable constraint violation still considered feasible",
-                    "title": "Constraint Tolerance",
-                    "type": "number",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.constraint_tolerance",
-                            "ir_value_type": "Real",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
-                "model_pointer": {
+                "scaling": {
                     "anyOf": [
                         {
-                            "type": "string"
+                            "const": true,
+                            "type": "boolean"
                         },
                         {
                             "type": "null"
                         }
                     ],
                     "default": null,
-                    "description": "Identifier for model block to be used by a method",
-                    "title": "Model Pointer",
-                    "x-block-pointer": "model",
+                    "description": "Turn on scaling for variables, responses, and constraints",
+                    "title": "Scaling",
                     "x-materialization": [
                         {
-                            "ir_key": "method.model_pointer",
-                            "ir_value_type": "String",
+                            "ir_key": "method.scaling",
+                            "ir_value_type": "bool",
+                            "storage_type": "PRESENCE_TRUE"
+                        }
+                    ]
+                },
+                "max_iterations": {
+                    "default": 9223372036854775807,
+                    "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
+                    "minimum": 0,
+                    "title": "Max Iterations",
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.max_iterations",
+                            "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
                         }
                     ]
@@ -17108,38 +17095,51 @@
                         }
                     ]
                 },
-                "max_iterations": {
-                    "default": 9223372036854775807,
-                    "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
-                    "minimum": 0,
-                    "title": "Max Iterations",
-                    "type": "integer",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.max_iterations",
-                            "ir_value_type": "size_t",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
-                "scaling": {
+                "model_pointer": {
                     "anyOf": [
                         {
-                            "const": true,
-                            "type": "boolean"
+                            "type": "string"
                         },
                         {
                             "type": "null"
                         }
                     ],
                     "default": null,
-                    "description": "Turn on scaling for variables, responses, and constraints",
-                    "title": "Scaling",
+                    "description": "Identifier for model block to be used by a method",
+                    "title": "Model Pointer",
+                    "x-block-pointer": "model",
                     "x-materialization": [
                         {
-                            "ir_key": "method.scaling",
-                            "ir_value_type": "bool",
-                            "storage_type": "PRESENCE_TRUE"
+                            "ir_key": "method.model_pointer",
+                            "ir_value_type": "String",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "max_function_evaluations": {
+                    "default": 9223372036854775807,
+                    "description": "Number of function evaluations allowed for optimizers",
+                    "minimum": 0,
+                    "title": "Max Function Evaluations",
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.max_function_evaluations",
+                            "ir_value_type": "size_t",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "constraint_tolerance": {
+                    "default": 0.0,
+                    "description": "Maximum allowable constraint violation still considered feasible",
+                    "title": "Constraint Tolerance",
+                    "type": "number",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.constraint_tolerance",
+                            "ir_value_type": "Real",
+                            "storage_type": "DIRECT_VALUE"
                         }
                     ]
                 },
@@ -28237,6 +28237,19 @@
                     "title": "Collocation Control",
                     "x-union-pattern": 4
                 },
+                "convergence_tolerance": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "value",
+                    "default": null,
+                    "description": "Stopping criterion based on objective function or statistics convergence"
+                },
                 "refinement_metric": {
                     "anyOf": [
                         {
@@ -28253,19 +28266,6 @@
                     "description": "Metric used for guiding adaptive refinement during UQ.",
                     "title": "Refinement Metric",
                     "x-union-pattern": 2
-                },
-                "convergence_tolerance": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "value",
-                    "default": null,
-                    "description": "Stopping criterion based on objective function or statistics convergence"
                 },
                 "p_refinement": {
                     "anyOf": [
@@ -31198,40 +31198,6 @@
                     "x-model-default": "RngOptionsContext2Mt19937",
                     "x-union-pattern": 1
                 },
-                "response_levels": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/ResponseLevelsComputeProbGenContext1ResponseLevels"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "values",
-                    "default": null,
-                    "description": "Values at which to estimate desired statistics for each response",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.nond.response_levels",
-                            "ir_value_type": "RealVectorArray",
-                            "storage_type": "RESPONSE_LEVELS_ARRAY"
-                        }
-                    ]
-                },
-                "distribution": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
-                        },
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
-                        }
-                    ],
-                    "description": "Selection of cumulative or complementary cumulative functions",
-                    "title": "Distribution",
-                    "x-model-default": "DistributionCumulComplContext1Cumulative",
-                    "x-union-pattern": 1
-                },
                 "gen_reliability_levels": {
                     "anyOf": [
                         {
@@ -31267,6 +31233,40 @@
                     "x-materialization": [
                         {
                             "ir_key": "method.nond.probability_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
+                },
+                "distribution": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
+                        },
+                        {
+                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
+                        }
+                    ],
+                    "description": "Selection of cumulative or complementary cumulative functions",
+                    "title": "Distribution",
+                    "x-model-default": "DistributionCumulComplContext1Cumulative",
+                    "x-union-pattern": 1
+                },
+                "response_levels": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/ResponseLevelsComputeProbGenContext1ResponseLevels"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "values",
+                    "default": null,
+                    "description": "Values at which to estimate desired statistics for each response",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.response_levels",
                             "ir_value_type": "RealVectorArray",
                             "storage_type": "RESPONSE_LEVELS_ARRAY"
                         }
@@ -31786,40 +31786,6 @@
                         }
                     ]
                 },
-                "response_levels": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/ResponseLevelsComputeProbGenContext1ResponseLevels"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "values",
-                    "default": null,
-                    "description": "Values at which to estimate desired statistics for each response",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.nond.response_levels",
-                            "ir_value_type": "RealVectorArray",
-                            "storage_type": "RESPONSE_LEVELS_ARRAY"
-                        }
-                    ]
-                },
-                "distribution": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
-                        },
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
-                        }
-                    ],
-                    "description": "Selection of cumulative or complementary cumulative functions",
-                    "title": "Distribution",
-                    "x-model-default": "DistributionCumulComplContext1Cumulative",
-                    "x-union-pattern": 1
-                },
                 "gen_reliability_levels": {
                     "anyOf": [
                         {
@@ -31855,6 +31821,40 @@
                     "x-materialization": [
                         {
                             "ir_key": "method.nond.probability_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
+                },
+                "distribution": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
+                        },
+                        {
+                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
+                        }
+                    ],
+                    "description": "Selection of cumulative or complementary cumulative functions",
+                    "title": "Distribution",
+                    "x-model-default": "DistributionCumulComplContext1Cumulative",
+                    "x-union-pattern": 1
+                },
+                "response_levels": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/ResponseLevelsComputeProbGenContext1ResponseLevels"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "values",
+                    "default": null,
+                    "description": "Values at which to estimate desired statistics for each response",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.response_levels",
                             "ir_value_type": "RealVectorArray",
                             "storage_type": "RESPONSE_LEVELS_ARRAY"
                         }
@@ -32280,40 +32280,6 @@
                     "x-model-default": "RngOptionsContext2Mt19937",
                     "x-union-pattern": 1
                 },
-                "response_levels": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/ResponseLevelsComputeProbGenContext1ResponseLevels"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "values",
-                    "default": null,
-                    "description": "Values at which to estimate desired statistics for each response",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.nond.response_levels",
-                            "ir_value_type": "RealVectorArray",
-                            "storage_type": "RESPONSE_LEVELS_ARRAY"
-                        }
-                    ]
-                },
-                "distribution": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
-                        },
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
-                        }
-                    ],
-                    "description": "Selection of cumulative or complementary cumulative functions",
-                    "title": "Distribution",
-                    "x-model-default": "DistributionCumulComplContext1Cumulative",
-                    "x-union-pattern": 1
-                },
                 "gen_reliability_levels": {
                     "anyOf": [
                         {
@@ -32349,6 +32315,40 @@
                     "x-materialization": [
                         {
                             "ir_key": "method.nond.probability_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
+                },
+                "distribution": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
+                        },
+                        {
+                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
+                        }
+                    ],
+                    "description": "Selection of cumulative or complementary cumulative functions",
+                    "title": "Distribution",
+                    "x-model-default": "DistributionCumulComplContext1Cumulative",
+                    "x-union-pattern": 1
+                },
+                "response_levels": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/ResponseLevelsComputeProbGenContext1ResponseLevels"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "values",
+                    "default": null,
+                    "description": "Values at which to estimate desired statistics for each response",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.response_levels",
                             "ir_value_type": "RealVectorArray",
                             "storage_type": "RESPONSE_LEVELS_ARRAY"
                         }
@@ -36312,20 +36312,6 @@
                         }
                     ]
                 },
-                "distribution": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
-                        },
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
-                        }
-                    ],
-                    "description": "Selection of cumulative or complementary cumulative functions",
-                    "title": "Distribution",
-                    "x-model-default": "DistributionCumulComplContext1Cumulative",
-                    "x-union-pattern": 1
-                },
                 "gen_reliability_levels": {
                     "anyOf": [
                         {
@@ -36346,26 +36332,6 @@
                         }
                     ]
                 },
-                "reliability_levels": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/ReliabilityLevelsReliabilityLevels"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "values",
-                    "default": null,
-                    "description": "Specify reliability levels at which the response values will be estimated",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.nond.reliability_levels",
-                            "ir_value_type": "RealVectorArray",
-                            "storage_type": "RESPONSE_LEVELS_ARRAY"
-                        }
-                    ]
-                },
                 "response_levels": {
                     "anyOf": [
                         {
@@ -36381,6 +36347,40 @@
                     "x-materialization": [
                         {
                             "ir_key": "method.nond.response_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
+                },
+                "distribution": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
+                        },
+                        {
+                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
+                        }
+                    ],
+                    "description": "Selection of cumulative or complementary cumulative functions",
+                    "title": "Distribution",
+                    "x-model-default": "DistributionCumulComplContext1Cumulative",
+                    "x-union-pattern": 1
+                },
+                "reliability_levels": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/ReliabilityLevelsReliabilityLevels"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "values",
+                    "default": null,
+                    "description": "Specify reliability levels at which the response values will be estimated",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.reliability_levels",
                             "ir_value_type": "RealVectorArray",
                             "storage_type": "RESPONSE_LEVELS_ARRAY"
                         }
@@ -37204,40 +37204,6 @@
                     "x-model-default": "RngOptionsContext2Mt19937",
                     "x-union-pattern": 1
                 },
-                "response_levels": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/ResponseLevelsComputeProbGenContext1ResponseLevels"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "values",
-                    "default": null,
-                    "description": "Values at which to estimate desired statistics for each response",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.nond.response_levels",
-                            "ir_value_type": "RealVectorArray",
-                            "storage_type": "RESPONSE_LEVELS_ARRAY"
-                        }
-                    ]
-                },
-                "distribution": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
-                        },
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
-                        }
-                    ],
-                    "description": "Selection of cumulative or complementary cumulative functions",
-                    "title": "Distribution",
-                    "x-model-default": "DistributionCumulComplContext1Cumulative",
-                    "x-union-pattern": 1
-                },
                 "gen_reliability_levels": {
                     "anyOf": [
                         {
@@ -37273,6 +37239,40 @@
                     "x-materialization": [
                         {
                             "ir_key": "method.nond.probability_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
+                },
+                "distribution": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
+                        },
+                        {
+                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
+                        }
+                    ],
+                    "description": "Selection of cumulative or complementary cumulative functions",
+                    "title": "Distribution",
+                    "x-model-default": "DistributionCumulComplContext1Cumulative",
+                    "x-union-pattern": 1
+                },
+                "response_levels": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/ResponseLevelsComputeProbGenContext1ResponseLevels"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "values",
+                    "default": null,
+                    "description": "Values at which to estimate desired statistics for each response",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.response_levels",
                             "ir_value_type": "RealVectorArray",
                             "storage_type": "RESPONSE_LEVELS_ARRAY"
                         }
@@ -39191,40 +39191,6 @@
                         }
                     ]
                 },
-                "response_levels": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/ResponseLevelsComputeProbGenContext1ResponseLevels"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "values",
-                    "default": null,
-                    "description": "Values at which to estimate desired statistics for each response",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.nond.response_levels",
-                            "ir_value_type": "RealVectorArray",
-                            "storage_type": "RESPONSE_LEVELS_ARRAY"
-                        }
-                    ]
-                },
-                "distribution": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
-                        },
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
-                        }
-                    ],
-                    "description": "Selection of cumulative or complementary cumulative functions",
-                    "title": "Distribution",
-                    "x-model-default": "DistributionCumulComplContext1Cumulative",
-                    "x-union-pattern": 1
-                },
                 "gen_reliability_levels": {
                     "anyOf": [
                         {
@@ -39260,6 +39226,40 @@
                     "x-materialization": [
                         {
                             "ir_key": "method.nond.probability_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
+                },
+                "distribution": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
+                        },
+                        {
+                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
+                        }
+                    ],
+                    "description": "Selection of cumulative or complementary cumulative functions",
+                    "title": "Distribution",
+                    "x-model-default": "DistributionCumulComplContext1Cumulative",
+                    "x-union-pattern": 1
+                },
+                "response_levels": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/ResponseLevelsComputeProbGenContext1ResponseLevels"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "values",
+                    "default": null,
+                    "description": "Values at which to estimate desired statistics for each response",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.response_levels",
                             "ir_value_type": "RealVectorArray",
                             "storage_type": "RESPONSE_LEVELS_ARRAY"
                         }
@@ -39696,20 +39696,6 @@
                         }
                     ]
                 },
-                "distribution": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
-                        },
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
-                        }
-                    ],
-                    "description": "Selection of cumulative or complementary cumulative functions",
-                    "title": "Distribution",
-                    "x-model-default": "DistributionCumulComplContext1Cumulative",
-                    "x-union-pattern": 1
-                },
                 "gen_reliability_levels": {
                     "anyOf": [
                         {
@@ -39730,26 +39716,6 @@
                         }
                     ]
                 },
-                "reliability_levels": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/ReliabilityLevelsReliabilityLevels"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "values",
-                    "default": null,
-                    "description": "Specify reliability levels at which the response values will be estimated",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.nond.reliability_levels",
-                            "ir_value_type": "RealVectorArray",
-                            "storage_type": "RESPONSE_LEVELS_ARRAY"
-                        }
-                    ]
-                },
                 "response_levels": {
                     "anyOf": [
                         {
@@ -39765,6 +39731,40 @@
                     "x-materialization": [
                         {
                             "ir_key": "method.nond.response_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
+                },
+                "distribution": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
+                        },
+                        {
+                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
+                        }
+                    ],
+                    "description": "Selection of cumulative or complementary cumulative functions",
+                    "title": "Distribution",
+                    "x-model-default": "DistributionCumulComplContext1Cumulative",
+                    "x-union-pattern": 1
+                },
+                "reliability_levels": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/ReliabilityLevelsReliabilityLevels"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "values",
+                    "default": null,
+                    "description": "Specify reliability levels at which the response values will be estimated",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.reliability_levels",
                             "ir_value_type": "RealVectorArray",
                             "storage_type": "RESPONSE_LEVELS_ARRAY"
                         }
@@ -40248,7 +40248,7 @@
                         "upper_bounds"
                     ],
                     "validationLiterals": [
-                        Infinity,
+                        "inf",
                         true
                     ],
                     "validationRuleName": "check_real_upper_bound"
@@ -40506,7 +40506,7 @@
                         "upper_bounds"
                     ],
                     "validationLiterals": [
-                        Infinity,
+                        "inf",
                         false
                     ],
                     "validationRuleName": "check_real_upper_bound"
@@ -45543,7 +45543,7 @@
                         {
                             "ir_key": "method.mutation_type",
                             "ir_value_type": "String",
-                            "storage_type": "TYPE_DATA",
+                            "storage_type": "PRESENCE_LITERAL",
                             "stored_value": "offset_cauchy"
                         }
                     ]
@@ -45566,7 +45566,7 @@
                         {
                             "ir_key": "method.mutation_type",
                             "ir_value_type": "String",
-                            "storage_type": "TYPE_DATA",
+                            "storage_type": "PRESENCE_LITERAL",
                             "stored_value": "offset_normal"
                         }
                     ]
@@ -45589,7 +45589,7 @@
                         {
                             "ir_key": "method.mutation_type",
                             "ir_value_type": "String",
-                            "storage_type": "TYPE_DATA",
+                            "storage_type": "PRESENCE_LITERAL",
                             "stored_value": "offset_uniform"
                         }
                     ]
@@ -46387,22 +46387,18 @@
                     "description": "Sample allocation approach for multifidelity expansions",
                     "x-union-pattern": 2
                 },
-                "refinement_metric": {
+                "convergence_tolerance": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/LevelMappings"
-                        },
-                        {
-                            "$ref": "#/$defs/RefinementMetricCov"
+                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
                         },
                         {
                             "type": "null"
                         }
                     ],
+                    "argument": "value",
                     "default": null,
-                    "description": "Metric used for guiding adaptive refinement during UQ.",
-                    "title": "Refinement Metric",
-                    "x-union-pattern": 2
+                    "description": "Stopping criterion based on objective function or statistics convergence"
                 },
                 "statistics_mode": {
                     "anyOf": [
@@ -46421,18 +46417,22 @@
                     "title": "Statistics Mode",
                     "x-union-pattern": 2
                 },
-                "convergence_tolerance": {
+                "refinement_metric": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
+                            "$ref": "#/$defs/LevelMappings"
+                        },
+                        {
+                            "$ref": "#/$defs/RefinementMetricCov"
                         },
                         {
                             "type": "null"
                         }
                     ],
-                    "argument": "value",
                     "default": null,
-                    "description": "Stopping criterion based on objective function or statistics convergence"
+                    "description": "Metric used for guiding adaptive refinement during UQ.",
+                    "title": "Refinement Metric",
+                    "x-union-pattern": 2
                 },
                 "p_refinement": {
                     "anyOf": [
@@ -49583,6 +49583,19 @@
                     "title": "Discrepancy Emulation",
                     "x-union-pattern": 2
                 },
+                "convergence_tolerance": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "value",
+                    "default": null,
+                    "description": "Stopping criterion based on objective function or statistics convergence"
+                },
                 "refinement_metric": {
                     "anyOf": [
                         {
@@ -49599,19 +49612,6 @@
                     "description": "Metric used for guiding adaptive refinement during UQ.",
                     "title": "Refinement Metric",
                     "x-union-pattern": 2
-                },
-                "convergence_tolerance": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "value",
-                    "default": null,
-                    "description": "Stopping criterion based on objective function or statistics convergence"
                 },
                 "allocation_control": {
                     "anyOf": [
@@ -53904,22 +53904,18 @@
                     "description": "Sample allocation approach for multifidelity expansions",
                     "x-union-pattern": 2
                 },
-                "refinement_metric": {
+                "convergence_tolerance": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/LevelMappings"
-                        },
-                        {
-                            "$ref": "#/$defs/RefinementMetricCov"
+                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
                         },
                         {
                             "type": "null"
                         }
                     ],
+                    "argument": "value",
                     "default": null,
-                    "description": "Metric used for guiding adaptive refinement during UQ.",
-                    "title": "Refinement Metric",
-                    "x-union-pattern": 2
+                    "description": "Stopping criterion based on objective function or statistics convergence"
                 },
                 "statistics_mode": {
                     "anyOf": [
@@ -53938,18 +53934,22 @@
                     "title": "Statistics Mode",
                     "x-union-pattern": 2
                 },
-                "convergence_tolerance": {
+                "refinement_metric": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
+                            "$ref": "#/$defs/LevelMappings"
+                        },
+                        {
+                            "$ref": "#/$defs/RefinementMetricCov"
                         },
                         {
                             "type": "null"
                         }
                     ],
-                    "argument": "value",
                     "default": null,
-                    "description": "Stopping criterion based on objective function or statistics convergence"
+                    "description": "Metric used for guiding adaptive refinement during UQ.",
+                    "title": "Refinement Metric",
+                    "x-union-pattern": 2
                 },
                 "p_refinement": {
                     "anyOf": [
@@ -54814,22 +54814,18 @@
                     "description": "Sample allocation approach for multifidelity expansions",
                     "x-union-pattern": 2
                 },
-                "refinement_metric": {
+                "convergence_tolerance": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/LevelMappings"
-                        },
-                        {
-                            "$ref": "#/$defs/RefinementMetricCov"
+                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
                         },
                         {
                             "type": "null"
                         }
                     ],
+                    "argument": "value",
                     "default": null,
-                    "description": "Metric used for guiding adaptive refinement during UQ.",
-                    "title": "Refinement Metric",
-                    "x-union-pattern": 2
+                    "description": "Stopping criterion based on objective function or statistics convergence"
                 },
                 "statistics_mode": {
                     "anyOf": [
@@ -54848,18 +54844,22 @@
                     "title": "Statistics Mode",
                     "x-union-pattern": 2
                 },
-                "convergence_tolerance": {
+                "refinement_metric": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
+                            "$ref": "#/$defs/LevelMappings"
+                        },
+                        {
+                            "$ref": "#/$defs/RefinementMetricCov"
                         },
                         {
                             "type": "null"
                         }
                     ],
-                    "argument": "value",
                     "default": null,
-                    "description": "Stopping criterion based on objective function or statistics convergence"
+                    "description": "Metric used for guiding adaptive refinement during UQ.",
+                    "title": "Refinement Metric",
+                    "x-union-pattern": 2
                 },
                 "max_refinement_iterations": {
                     "default": 9223372036854775807,
@@ -56485,6 +56485,19 @@
                     "title": "Discrepancy Emulation",
                     "x-union-pattern": 2
                 },
+                "convergence_tolerance": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "value",
+                    "default": null,
+                    "description": "Stopping criterion based on objective function or statistics convergence"
+                },
                 "refinement_metric": {
                     "anyOf": [
                         {
@@ -56501,19 +56514,6 @@
                     "description": "Metric used for guiding adaptive refinement during UQ.",
                     "title": "Refinement Metric",
                     "x-union-pattern": 2
-                },
-                "convergence_tolerance": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "value",
-                    "default": null,
-                    "description": "Stopping criterion based on objective function or statistics convergence"
                 },
                 "allocation_control": {
                     "anyOf": [
@@ -65467,6 +65467,19 @@
                     "title": "Basis Family",
                     "x-union-pattern": 2
                 },
+                "convergence_tolerance": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "value",
+                    "default": null,
+                    "description": "Stopping criterion based on objective function or statistics convergence"
+                },
                 "refinement_metric": {
                     "anyOf": [
                         {
@@ -65483,19 +65496,6 @@
                     "description": "Metric used for guiding adaptive refinement during UQ.",
                     "title": "Refinement Metric",
                     "x-union-pattern": 2
-                },
-                "convergence_tolerance": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "value",
-                    "default": null,
-                    "description": "Stopping criterion based on objective function or statistics convergence"
                 },
                 "p_refinement": {
                     "anyOf": [
@@ -68115,40 +68115,6 @@
                     "x-model-default": "RngOptionsContext2Mt19937",
                     "x-union-pattern": 1
                 },
-                "response_levels": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/ResponseLevelsComputeProbGenContext1ResponseLevels"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "values",
-                    "default": null,
-                    "description": "Values at which to estimate desired statistics for each response",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.nond.response_levels",
-                            "ir_value_type": "RealVectorArray",
-                            "storage_type": "RESPONSE_LEVELS_ARRAY"
-                        }
-                    ]
-                },
-                "distribution": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
-                        },
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
-                        }
-                    ],
-                    "description": "Selection of cumulative or complementary cumulative functions",
-                    "title": "Distribution",
-                    "x-model-default": "DistributionCumulComplContext1Cumulative",
-                    "x-union-pattern": 1
-                },
                 "gen_reliability_levels": {
                     "anyOf": [
                         {
@@ -68184,6 +68150,40 @@
                     "x-materialization": [
                         {
                             "ir_key": "method.nond.probability_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
+                },
+                "distribution": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
+                        },
+                        {
+                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
+                        }
+                    ],
+                    "description": "Selection of cumulative or complementary cumulative functions",
+                    "title": "Distribution",
+                    "x-model-default": "DistributionCumulComplContext1Cumulative",
+                    "x-union-pattern": 1
+                },
+                "response_levels": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/ResponseLevelsComputeProbGenContext1ResponseLevels"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "values",
+                    "default": null,
+                    "description": "Values at which to estimate desired statistics for each response",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.response_levels",
                             "ir_value_type": "RealVectorArray",
                             "storage_type": "RESPONSE_LEVELS_ARRAY"
                         }
@@ -72387,26 +72387,6 @@
                     "x-model-default": "RngOptionsContext1Mt19937",
                     "x-union-pattern": 1
                 },
-                "response_levels": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/ResponseLevelsComputeProbGenContext2ResponseLevels"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "values",
-                    "default": null,
-                    "description": "Undocumented: Recursive k-d (RKD) Darts is an experimental capability.",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.nond.response_levels",
-                            "ir_value_type": "RealVectorArray",
-                            "storage_type": "RESPONSE_LEVELS_ARRAY"
-                        }
-                    ]
-                },
                 "gen_reliability_levels": {
                     "anyOf": [
                         {
@@ -72422,6 +72402,26 @@
                     "x-materialization": [
                         {
                             "ir_key": "method.nond.gen_reliability_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
+                },
+                "response_levels": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/ResponseLevelsComputeProbGenContext2ResponseLevels"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "values",
+                    "default": null,
+                    "description": "Undocumented: Recursive k-d (RKD) Darts is an experimental capability.",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.response_levels",
                             "ir_value_type": "RealVectorArray",
                             "storage_type": "RESPONSE_LEVELS_ARRAY"
                         }
@@ -73034,20 +73034,6 @@
                     "x-model-default": "RngOptionsContext2Mt19937",
                     "x-union-pattern": 1
                 },
-                "distribution": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
-                        },
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
-                        }
-                    ],
-                    "description": "Selection of cumulative or complementary cumulative functions",
-                    "title": "Distribution",
-                    "x-model-default": "DistributionCumulComplContext1Cumulative",
-                    "x-union-pattern": 1
-                },
                 "gen_reliability_levels": {
                     "anyOf": [
                         {
@@ -73068,26 +73054,6 @@
                         }
                     ]
                 },
-                "reliability_levels": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/ReliabilityLevelsReliabilityLevels"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "values",
-                    "default": null,
-                    "description": "Specify reliability levels at which the response values will be estimated",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.nond.reliability_levels",
-                            "ir_value_type": "RealVectorArray",
-                            "storage_type": "RESPONSE_LEVELS_ARRAY"
-                        }
-                    ]
-                },
                 "response_levels": {
                     "anyOf": [
                         {
@@ -73103,6 +73069,40 @@
                     "x-materialization": [
                         {
                             "ir_key": "method.nond.response_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
+                },
+                "distribution": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
+                        },
+                        {
+                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
+                        }
+                    ],
+                    "description": "Selection of cumulative or complementary cumulative functions",
+                    "title": "Distribution",
+                    "x-model-default": "DistributionCumulComplContext1Cumulative",
+                    "x-union-pattern": 1
+                },
+                "reliability_levels": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/ReliabilityLevelsReliabilityLevels"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "values",
+                    "default": null,
+                    "description": "Specify reliability levels at which the response values will be estimated",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.reliability_levels",
                             "ir_value_type": "RealVectorArray",
                             "storage_type": "RESPONSE_LEVELS_ARRAY"
                         }
@@ -74344,7 +74344,7 @@
                         {
                             "ir_key": "method.crossover_type",
                             "ir_value_type": "String",
-                            "storage_type": "TYPE_DATA",
+                            "storage_type": "PRESENCE_LITERAL",
                             "stored_value": "shuffle_random"
                         }
                     ]
@@ -75848,6 +75848,19 @@
                     "title": "Basis Family",
                     "x-union-pattern": 2
                 },
+                "convergence_tolerance": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "value",
+                    "default": null,
+                    "description": "Stopping criterion based on objective function or statistics convergence"
+                },
                 "refinement_metric": {
                     "anyOf": [
                         {
@@ -75864,19 +75877,6 @@
                     "description": "Metric used for guiding adaptive refinement during UQ.",
                     "title": "Refinement Metric",
                     "x-union-pattern": 2
-                },
-                "convergence_tolerance": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "value",
-                    "default": null,
-                    "description": "Stopping criterion based on objective function or statistics convergence"
                 },
                 "max_refinement_iterations": {
                     "default": 9223372036854775807,
@@ -79106,7 +79106,7 @@
                         "lower_bounds"
                     ],
                     "validationLiterals": [
-                        -Infinity,
+                        "-inf",
                         false
                     ],
                     "validationRuleName": "check_real_lower_bound"
@@ -79118,7 +79118,7 @@
                         "upper_bounds"
                     ],
                     "validationLiterals": [
-                        Infinity,
+                        "inf",
                         false
                     ],
                     "validationRuleName": "check_real_upper_bound"
@@ -79824,7 +79824,7 @@
                         "lower_bounds"
                     ],
                     "validationLiterals": [
-                        -Infinity,
+                        "-inf",
                         false
                     ],
                     "validationRuleName": "check_real_lower_bound"
@@ -79836,7 +79836,7 @@
                         "upper_bounds"
                     ],
                     "validationLiterals": [
-                        Infinity,
+                        "inf",
                         false
                     ],
                     "validationRuleName": "check_real_upper_bound"
