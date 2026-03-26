@@ -284,20 +284,6 @@ void InstructionMaterializer::handle_uncertain_init_point_flag(
     ctx.store.set_value(op.target_local_ir_key, IRValue(true));
 }
 
-void InstructionMaterializer::handle_presence_literal(const irgen::WriteOp& op,
-                                                      const irgen::KeyContract& contract,
-                                                      const HandlerContext& ctx)
-{
-  (void)contract;
-  const auto& value = InstructionMaterializerUtils::required_path(
-    ctx.block_json, ctx.current_path);
-  if (value.is_boolean()) {
-    if (!value.get<bool>())
-      return;
-  }
-  ctx.store.set_value(op.target_local_ir_key, op.literal.value);
-}
-
 void InstructionMaterializer::handle_presence_enum(const irgen::WriteOp& op,
                                                    const irgen::KeyContract& contract,
                                                    const HandlerContext& ctx)

@@ -2504,7 +2504,7 @@ short ProblemDescDB::get_short(const String& entry_name) const
       {"wilks.sided_interval", P_MET wilksSidedInterval}
     },
     { /* model */
-      {"adapted_basis.rotation_method", P_MOD method_rotation},
+      {"adapted_basis.rotation_method", P_MOD methodRotation},
       {"c3function_train.advancement_type", P_MOD c3AdvanceType},
       //{"c3function_train.refinement_control", P_MOD refinementControl},
       //{"c3function_train.refinement_type", P_MOD refinementType},

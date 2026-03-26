@@ -8275,9 +8275,9 @@ KEYWORD model {N_mom3(start,0,stop)}
        )
       [ dimension INTEGER {N_mom(int,subspaceDimension)} ]
       [ rotation_method {0}
-        unranked {N_mom(type,method_rotation_ROTATION_METHOD_UNRANKED)}
+        unranked {N_mom(type,methodRotation_ROTATION_METHOD_UNRANKED)}
         |
-        ranked {N_mom(type,method_rotation_ROTATION_METHOD_RANKED)}
+        ranked {N_mom(type,methodRotation_ROTATION_METHOD_RANKED)}
        ]
      )
     [ truncation_tolerance REAL {N_mom(Real,adaptedBasisTruncationTolerance)} ]

@@ -99,9 +99,6 @@ private:
   static void handle_presence_false(const irgen::WriteOp& op,
                                     const irgen::KeyContract& contract,
                                     const HandlerContext& ctx);
-  static void handle_presence_literal(const irgen::WriteOp& op,
-                                      const irgen::KeyContract& contract,
-                                      const HandlerContext& ctx);
   static void handle_presence_enum(const irgen::WriteOp& op,
                                    const irgen::KeyContract& contract,
                                    const HandlerContext& ctx);

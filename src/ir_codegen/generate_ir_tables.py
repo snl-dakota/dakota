@@ -321,7 +321,6 @@ def _literal_member_type_and_value(info: Dict[str, Any]) -> Optional[Tuple[str, 
 def _op_kind_uses_literal(op_kind: str) -> bool:
     return op_kind in {
         "LITERAL_ASSIGN",
-        "PRESENCE_LITERAL",
         "PRESENCE_ENUM",
         "AUGMENT_ENUM",
     }
@@ -497,9 +496,14 @@ def load_instructions_by_block(schema_path: Path) -> Dict[str, Dict[str, List[Di
             )
         else:
             lit = _literal_member_type_and_value(info)
-            uses_lit = _op_kind_uses_literal(storage)
+            op_kind = (
+                "LITERAL_ASSIGN"
+                if storage in {"PRESENCE_LITERAL", "TYPE_DATA"}
+                else storage
+            )
+            uses_lit = _op_kind_uses_literal(op_kind)
             op = {
-                "op_kind": storage,
+                "op_kind": op_kind,
                 "target_local_ir_key": local_key,
                 "ir_value_type": info.get("ir_value_type"),
                 "literal_member_type": lit[0] if lit and uses_lit else None,
@@ -746,8 +750,10 @@ def load_all_storage_types(schema_path: Path) -> Set[str]:
                 out.add(st)
 
     # Composite storage types are decomposed into primitive ops.
+    out.discard("TYPE_DATA")
     out.discard("TYPE_DATA_COMBINED")
     out.discard("METHOD_PIECEWISE")
+    out.discard("PRESENCE_LITERAL")
     out.add("LITERAL_ASSIGN")
     return out
 

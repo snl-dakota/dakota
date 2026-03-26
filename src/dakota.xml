@@ -5295,8 +5295,8 @@
             </keyword>
             <keyword code="{0}" default="norm" id="rotation_method" label="Method used to build the rotation matrix" minOccurs="0" name="rotation_method">
               <oneOf scenario='17' union_pattern='1' default_branch='ranked' label="Rotation Method">
-                <keyword code="{N_mom(type,method_rotation_ROTATION_METHOD_UNRANKED)}" id="unranked" label="Use the unranked method to obtain the rotation matrix" name="unranked" />
-                <keyword code="{N_mom(type,method_rotation_ROTATION_METHOD_RANKED)}" id="ranked" label="Use the ranked method to obtain the rotation matrix" name="ranked" />
+                <keyword code="{N_mom(type,methodRotation_ROTATION_METHOD_UNRANKED)}" id="unranked" label="Use the unranked method to obtain the rotation matrix" name="unranked" />
+                <keyword code="{N_mom(type,methodRotation_ROTATION_METHOD_RANKED)}" id="ranked" label="Use the ranked method to obtain the rotation matrix" name="ranked" />
               </oneOf>
             </keyword>
           </keyword>

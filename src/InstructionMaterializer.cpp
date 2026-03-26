@@ -70,7 +70,6 @@ InstructionMaterializer::op_handlers()
     {irgen::OpKind::LiteralAssign, &InstructionMaterializer::handle_literal_assign},
     {irgen::OpKind::PresenceTrue, &InstructionMaterializer::handle_presence_true},
     {irgen::OpKind::PresenceFalse, &InstructionMaterializer::handle_presence_false},
-    {irgen::OpKind::PresenceLiteral, &InstructionMaterializer::handle_presence_literal},
     {irgen::OpKind::PresenceEnum, &InstructionMaterializer::handle_presence_enum},
     {irgen::OpKind::AugmentEnum, &InstructionMaterializer::handle_augment_enum},
     {irgen::OpKind::Categorical, &InstructionMaterializer::handle_categorical},
@@ -317,7 +316,10 @@ void InstructionMaterializer::apply_write_op(const nlohmann::json& block_json,
   const auto handler_it = op_handlers().find(op.op_kind);
   if (handler_it == op_handlers().end()) {
     throw std::runtime_error(
-      "InstructionMaterializer::apply_write_op missing handler for op kind");
+      "InstructionMaterializer::apply_write_op missing handler for op kind " +
+      std::to_string(static_cast<int>(op.op_kind)) + " in block '" +
+      std::string(block_name(block)) + "' at path '" + std::string(current_path) +
+      "' targeting '" + op.target_local_ir_key + "'");
   }
 
   const HandlerContext ctx{block_json, store, current_path};

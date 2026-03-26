@@ -2375,10 +2375,6 @@
         "key": "responses.calibration_data",
         "value_type": "bool"
       },
-      "central_hess": {
-        "key": "responses.central_hess",
-        "value_type": "bool"
-      },
       "data_directory": {
         "key": "responses.data_directory",
         "value_type": "String"

@@ -141,10 +141,10 @@ TEST(instruction_materializer_tests, uncertain_init_point_flag_leaves_existing_f
   EXPECT_FALSE(store.get<bool>("uncertain.initial_point_flag"));
 }
 
-TEST(instruction_materializer_tests, presence_literal_writes_literal_when_path_exists)
+TEST(instruction_materializer_tests, literal_assign_writes_literal_when_path_exists)
 {
   const auto op = make_op(
-    irgen::OpKind::PresenceLiteral,
+    irgen::OpKind::LiteralAssign,
     "level",
     make_literal(irgen::IrValueType::Int, IRValue(7)));
   const auto store = invoke_handler(

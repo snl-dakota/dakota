@@ -3664,7 +3664,7 @@ static void Vgen_HistogramPtIntUnc(DataVariablesRep *dv, size_t offset)
   IntVector& V = dv->discreteIntAleatoryUncVars;
   IntVector&  IP = dv->histogramPointIntUncVars;
 
-  size_t i, j, k, last, n = dv->numHistogramPtIntUncVars;
+  size_t i, j, n = dv->numHistogramPtIntUncVars;
   size_t num_IP = IP.length();
   if (num_IP) dv->uncertainVarsInitPt = true;
 
@@ -3685,13 +3685,18 @@ static void Vgen_HistogramPtIntUnc(DataVariablesRep *dv, size_t offset)
 	V[i] = hist_pt_prs.begin()->first;
       else {
 	IRMCIter it = hist_pt_prs.begin(), it_end = hist_pt_prs.end();
-	// find value immediately right of mean (can't be past the end)
-	for( ; it != it_end, it->first <= mean; ++it);
-	// bracket the mean
-	int right_val = it->first;
-	int left_val = (--it)->first;
-	// initialize with value closest to mean
-	V[i] = (mean - right_val < left_val - mean) ? right_val : left_val;
+	// find value immediately right of mean, if one exists
+	for ( ; it != it_end && it->first <= mean; ++it);
+	if (it == hist_pt_prs.begin())
+	  V[i] = it->first;
+	else if (it == it_end)
+	  V[i] = std::prev(it_end)->first;
+	else {
+	  // bracket the mean and initialize with value closest to mean
+	  int right_val = it->first;
+	  int left_val = std::prev(it)->first;
+	  V[i] = (right_val - mean < mean - left_val) ? right_val : left_val;
+	}
       }
     }
   }
@@ -3941,7 +3946,7 @@ static void Vgen_HistogramPtRealUnc(DataVariablesRep *dv, size_t offset)
   RealVector& V = dv->discreteRealAleatoryUncVars;
   RealVector& IP = dv->histogramPointRealUncVars;
 
-  size_t i, j, k, last, n = dv->numHistogramPtRealUncVars;
+  size_t i, j, n = dv->numHistogramPtRealUncVars;
   size_t num_IP = IP.length();
   if (num_IP) dv->uncertainVarsInitPt = true;
 
@@ -3962,13 +3967,18 @@ static void Vgen_HistogramPtRealUnc(DataVariablesRep *dv, size_t offset)
 	V[i] = hist_pt_prs.begin()->first;
       else {
 	RRMCIter it = hist_pt_prs.begin(), it_end = hist_pt_prs.end();
-	// find value immediately right of mean (can't be past the end)
-	for( ; it != it_end, it->first <= mean; ++it);
-	// bracket the mean
-	Real right_val = it->first;
-	Real left_val = (--it)->first;
-	// initialize with value closest to mean
-	V[i] = (mean - right_val < left_val - mean) ? right_val : left_val;
+	// find value immediately right of mean, if one exists
+	for ( ; it != it_end && it->first <= mean; ++it);
+	if (it == hist_pt_prs.begin())
+	  V[i] = it->first;
+	else if (it == it_end)
+	  V[i] = std::prev(it_end)->first;
+	else {
+	  // bracket the mean and initialize with value closest to mean
+	  Real right_val = it->first;
+	  Real left_val = std::prev(it)->first;
+	  V[i] = (right_val - mean < mean - left_val) ? right_val : left_val;
+	}
       }
     }
   }
@@ -7921,8 +7931,8 @@ static Model_mp_type
 	MP2s(regressionType,FT_LS),
 	MP2s(regressionType,FT_RLS2),
 	MP2s(subMethodScheduling,DEDICATED_SCHEDULER_DYNAMIC),
-        MP2s(method_rotation,ROTATION_METHOD_UNRANKED),
-	MP2s(method_rotation,ROTATION_METHOD_RANKED),
+        MP2s(methodRotation,ROTATION_METHOD_UNRANKED),
+	MP2s(methodRotation,ROTATION_METHOD_RANKED),
 	MP2s(subMethodScheduling,PEER_SCHEDULING);
       //MP2s(subMethodScheduling,PEER_DYNAMIC_SCHEDULING),
       //MP2s(subMethodScheduling,PEER_STATIC_SCHEDULING),

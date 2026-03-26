@@ -200,7 +200,7 @@ DataMethodRep::DataMethodRep():
   proposalCovUpdatePeriod(std::numeric_limits<int>::max()),
   fitnessMetricType("predicted_variance"), batchSelectionType("naive"),
   lipschitzType("local"), calibrateErrorMode(CALIBRATE_NONE),
-  burnInSamples(0), subSamplingPeriod(1), calModelDiscrepancy(false),
+  burnInSamples(0), subSamplingPeriod(1), evidenceSamples(0), calModelDiscrepancy(false),
   numPredConfigs(0), importPredConfigFormat(TABULAR_ANNOTATED),
   modelDiscrepancyType("global_kriging"), polynomialOrder(2),
   exportCorrModelFormat(TABULAR_ANNOTATED),

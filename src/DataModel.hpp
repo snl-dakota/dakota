@@ -425,7 +425,7 @@ public:
   /// matrix within adapted basis approach to dimension reduction
   Real adaptedBasisCollocRatio;
   
-  short method_rotation;
+  short methodRotation;
   Real adaptedBasisTruncationTolerance;
 
   // random field models

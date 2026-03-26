@@ -839,8 +839,6 @@ inline constexpr std::array<std::string_view, 299> k_variables_entries = {{
   "variables.histogram_uncertain.point_string.lower_bounds",
   "variables.histogram_uncertain.point_string.upper_bounds",
   "variables.histogram_uncertain.point_string.initial_point",
-  "variables.histogram_uncertain.bin.lower_bounds",
-  "variables.histogram_uncertain.bin.upper_bounds",
   "variables.linear_equality_scale_types",
   "variables.linear_inequality_scale_types",
   "variables.id",
@@ -1549,7 +1547,7 @@ bool try_emit_model_entry(const DataModelRep& rep, std::string_view full_key, Em
   if (full_key == "model.surrogate.num_restarts") { emit(rep.numRestarts); return true; }
   if (full_key == "model.surrogate.points_total") { emit(rep.pointsTotal); return true; }
   if (full_key == "model.surrogate.refine_cv_folds") { emit(rep.refineCVFolds); return true; }
-  if (full_key == "model.adapted_basis.rotation_method") { emit(rep.method_rotation); return true; }
+  if (full_key == "model.adapted_basis.rotation_method") { emit(rep.methodRotation); return true; }
   if (full_key == "model.c3function_train.advancement_type") { emit(rep.c3AdvanceType); return true; }
   if (full_key == "model.nested.iterator_scheduling") { emit(rep.subMethodScheduling); return true; }
   if (full_key == "model.surrogate.correction_order") { emit(rep.approxCorrectionOrder); return true; }
@@ -1871,8 +1869,6 @@ bool try_emit_variables_entry(const DataVariablesRep& rep, std::string_view full
   if (full_key == "variables.histogram_uncertain.point_string.lower_bounds") { emit(rep.histogramPointStrUncLowerBnds); return true; }
   if (full_key == "variables.histogram_uncertain.point_string.upper_bounds") { emit(rep.histogramPointStrUncUpperBnds); return true; }
   if (full_key == "variables.histogram_uncertain.point_string.initial_point") { emit(rep.histogramPointStrUncVars); return true; }
-  if (full_key == "variables.histogram_uncertain.bin.lower_bounds") { emit(rep.histogramBinUncLowerBnds); return true; }
-  if (full_key == "variables.histogram_uncertain.bin.upper_bounds") { emit(rep.histogramBinUncUpperBnds); return true; }
   if (full_key == "variables.linear_equality_scale_types") { emit(rep.linearEqScaleTypes); return true; }
   if (full_key == "variables.linear_inequality_scale_types") { emit(rep.linearIneqScaleTypes); return true; }
   if (full_key == "variables.id") { emit(rep.idVariables); return true; }
@@ -1917,6 +1913,7 @@ bool try_emit_variables_entry(const DataVariablesRep& rep, std::string_view full
          rep.numPoissonUncVars + rep.numBinomialUncVars +
          rep.numNegBinomialUncVars + rep.numGeometricUncVars +
          rep.numHyperGeomUncVars + rep.numHistogramPtIntUncVars +
+         rep.numHistogramPtRealUncVars +
          rep.numHistogramPtStrUncVars + rep.numDiscreteIntervalUncVars +
          rep.numDiscreteUncSetIntVars + rep.numDiscreteUncSetRealVars +
          rep.numDiscreteUncSetStrVars + rep.numDiscreteStateRangeVars +
