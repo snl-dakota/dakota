@@ -57,10 +57,11 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
     ${CMAKE_CURRENT_BINARY_DIR}/dakota_test.perl @ONLY)
 
   # copied primary scripts
-  set(file "dakota_diff.perl")
-  add_file_copy_command(${CMAKE_CURRENT_SOURCE_DIR}/${file} 
-    ${CMAKE_CURRENT_BINARY_DIR}/${file})
-  list(APPEND copied_test_files_abs "${CMAKE_CURRENT_BINARY_DIR}/${file}")  
+  foreach(file dakota_diff.perl dsl_to_json.py)
+    add_file_copy_command(${CMAKE_CURRENT_SOURCE_DIR}/${file} 
+      ${CMAKE_CURRENT_BINARY_DIR}/${file})
+    list(APPEND copied_test_files_abs "${CMAKE_CURRENT_BINARY_DIR}/${file}")
+  endforeach()
 
 
   # Create one CTest per Dakota input file, each in a protected subdirectory
@@ -279,6 +280,10 @@ install(TARGETS ${dakota_test_executables}
   DESTINATION "${DAKOTA_TEST_INSTALL}/test")
 
 install(FILES dakota_test.perl
+  DESTINATION "${DAKOTA_TEST_INSTALL}/test" PERMISSIONS
+  OWNER_READ OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+
+install(FILES dsl_to_json.py
   DESTINATION "${DAKOTA_TEST_INSTALL}/test" PERMISSIONS
   OWNER_READ OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 
