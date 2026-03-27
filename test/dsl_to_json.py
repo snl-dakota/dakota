@@ -18,15 +18,16 @@ from pathlib import Path
 def _load_converter_main():
     repo_root = Path(__file__).resolve().parents[3]
 
+    # The DAKOTA_PYTHON_PACKAGE_DIR environment variable must be set externally
+    # to point to the location of the Pydantic models package
+    # This allows flexibility for different development environments
     package_root = os.environ.get("DAKOTA_PYTHON_PACKAGE_DIR")
     if not package_root:
-        for candidate in (
-            repo_root / "model_generation" / "build" / "dakota_package",
-            repo_root / "model_generation" / "build" / "generated_models",
-        ):
-            if candidate.exists():
-                os.environ["DAKOTA_PYTHON_PACKAGE_DIR"] = str(candidate)
-                break
+        raise RuntimeError(
+            "DAKOTA_PYTHON_PACKAGE_DIR environment variable not set. "
+            "Please set it to the directory containing the Pydantic models package "
+            "(e.g., /path/to/model_generation/build/dakota_package)"
+        )
 
     converter_path = repo_root / "dsl_to_json" / "dsl_to_json.py"
     spec = importlib.util.spec_from_file_location("dakota_dsl_to_json_impl", converter_path)
