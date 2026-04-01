@@ -210,6 +210,7 @@ foreach my $file (@test_inputs) {
     my $dakota_args = get_test_option_value($cnt, "ExecArgs", "");
     # default is dakota_input.in_
     my $dakota_input = get_test_option_value($cnt, "InputFile", "$input");
+    my $saved_dakota_input = $dakota_input;
 
     # Default is to write a unique restart per test, named for the test input
     # no restart options by default
@@ -353,7 +354,8 @@ foreach my $file (@test_inputs) {
 
     # Catalog data from each run, if requested
     if ($save_output) {
-      copy("$dakota_input", "${dakota_input}.${cnt}") if (-e "$dakota_input");
+      copy("$saved_dakota_input", "${saved_dakota_input}.${cnt}")
+        if (-e "$saved_dakota_input");
       copy("$output", "${output}.${cnt}") if (-e "$output");
       copy("$error", "${error}.${cnt}") if (-e "$error");
       copy("$restart_file", "${restart_file}.${cnt}") if (-e "$restart_file");
