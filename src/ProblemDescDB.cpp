@@ -1231,6 +1231,20 @@ get(const std::string& context_msg,
   if (!db_rep)
     Null_rep(context_msg);
 
+  std::string block, entry;
+  std::tie(block, entry) = split_entry_name(entry_name, context_msg);
+
+  if (block == "method" && db_rep->methodDBLocked)
+    Locked_db();
+  else if (block == "model" && db_rep->modelDBLocked)
+    Locked_db();
+  else if (block == "variables" && db_rep->variablesDBLocked)
+    Locked_db();
+  else if (block == "interface" && db_rep->interfaceDBLocked)
+    Locked_db();
+  else if (block == "responses" && db_rep->responsesDBLocked)
+    Locked_db();
+
   using QueryT = std::remove_const_t<T>;
   if constexpr (variant_contains_v<QueryT, IRValue>) {
     if (db_rep->irState) {
@@ -1244,45 +1258,32 @@ get(const std::string& context_msg,
     }
   }
 
-  std::string block, entry;
-  std::tie(block, entry) = split_entry_name(entry_name, context_msg);
-
   if (block == "environment") {
     auto it = env_map.find(entry);
     if (it != env_map.end())
       return (db_rep->environmentSpec.dataEnvRep).get()->*(it->second);
   }
   else if (block == "method") {
-    if (db_rep->methodDBLocked)
-      Locked_db();
     auto it = met_map.find(entry);
     if (it != met_map.end())
       return (db_rep->dataMethodIter->dataMethodRep).get()->*(it->second);
   }
   else if (block == "model") {
-    if (db_rep->modelDBLocked)
-      Locked_db();
     auto it = mod_map.find(entry);
     if (it != mod_map.end())
       return (db_rep->dataModelIter->dataModelRep).get()->*(it->second);
   }
   else if (block == "variables") {
-    if (db_rep->variablesDBLocked)
-      Locked_db();
     auto it = var_map.find(entry);
     if (it != var_map.end())
       return (db_rep->dataVariablesIter->dataVarsRep).get()->*(it->second);
   }
   else if (block == "interface") {
-    if (db_rep->interfaceDBLocked)
-      Locked_db();
     auto it = int_map.find(entry);
     if (it != int_map.end())
       return (db_rep->dataInterfaceIter->dataIfaceRep).get()->*(it->second);
   }
   else if (block == "responses") {
-    if (db_rep->responsesDBLocked)
-      Locked_db();
     auto it = res_map.find(entry);
     if (it != res_map.end())
       return (db_rep->dataResponsesIter->dataRespRep).get()->*(it->second);

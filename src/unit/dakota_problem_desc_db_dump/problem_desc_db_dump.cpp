@@ -153,6 +153,46 @@ TEST(problem_desc_db_dump_tests, problem_desc_db_dump_prefers_ir_state_when_pres
   EXPECT_TRUE(dumped["values"].is_object());
 }
 
+TEST(problem_desc_db_dump_tests, ir_backed_queries_still_respect_legacy_block_locks)
+{
+  ProblemDescDB db(1, 0);
+  const auto input_path =
+    std::filesystem::temp_directory_path() / "dakota_problem_desc_db_locking_input.json";
+  {
+    std::ofstream input(input_path);
+    ASSERT_TRUE(input.good());
+    input << "{\n"
+             "  \"method\": [\n"
+             "    {\n"
+             "      \"bayes_calibration\": {\n"
+             "        \"model_pointer\": \"HIERARCH\",\n"
+             "        \"sub_method\": {\n"
+             "          \"queso\": {\n"
+             "            \"chain_samples\": 10\n"
+             "          }\n"
+             "        }\n"
+             "      }\n"
+             "    }\n"
+             "  ],\n"
+             "  \"model\": [\n"
+             "    {\n"
+             "      \"surrogate\": {\n"
+             "        \"id_model\": \"HIERARCH\"\n"
+             "      }\n"
+             "    }\n"
+             "  ]\n"
+             "}\n";
+  }
+
+  db.enable_json_input(input_path.string());
+
+  EXPECT_DEATH(
+    {
+      (void)db.get_string("method.model_pointer");
+    },
+    "database is locked");
+}
+
 } // namespace
 } // namespace Dakota
 
