@@ -23,3 +23,6 @@
 [submodule "dakota-examples"]
 	path = dakota-examples
 	url = ../dakota-examples.git
+[submodule "packages/pydantic-models"]
+	path = packages/pydantic-models
+	url = git@cee-gitlab.sandia.gov:dakota/pydantic-models.git

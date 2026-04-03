@@ -255,8 +255,17 @@ endif(HAVE_ROL)
 # Set up googletest. It must be done early so that
 # the targets can be used to add unit tests
 dakota_find_googletest()
+#if(TARGET gtest AND TARGET gtest_main)
+#  message(STATUS "GoogleTest is available")
+#else()
+#  message(FATAL_ERROR "GoogleTest not available; expected targets not created")
+#endif()
 
 include(DakotaIRGeneration)
+
+# Needed for the new input file reader
+set(DAKOTA_SCHEMA_PATH ${CMAKE_SOURCE_DIR}/src/dakota.json CACHE STRING "Dakota Schema file")
+set(DAKOTA_XML_INPUT ${CMAKE_SOURCE_DIR}/src/dakota.xml CACHE STRING "Dakota XML grammar file")
 
 # -----
 # Configuration of Dakota components
