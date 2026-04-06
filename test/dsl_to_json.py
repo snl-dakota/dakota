@@ -22,14 +22,6 @@ from enum import Enum
 from typing import Dict, List, Optional, Any, Tuple, Set
 
 
-def get_project_dir() -> Path:
-    """Return the Dakota project root for test-local path discovery."""
-    env_project_dir = os.environ.get("PROJECT_DIR")
-    if env_project_dir:
-        return Path(env_project_dir).resolve()
-    return Path(__file__).resolve().parents[3]
-
-
 # Major Dakota sections
 MAJOR_SECTIONS = {'environment', 'method', 'model', 'variables', 'interface', 'responses'}
 
@@ -743,16 +735,8 @@ class DakotaDSLConverter:
     def _load_pydantic_model(self):
         """Load the Pydantic DakotaStudy model for validation"""
         candidate_roots = []
-
-        env_root = os.environ.get("DAKOTA_PYTHON_PACKAGE_DIR")
-        if env_root:
+        if env_root := os.environ.get("DAKOTA_PYTHON_PACKAGE_DIR"):
             candidate_roots.append(Path(env_root))
-
-        repo_root = get_project_dir()
-        candidate_roots.extend([
-            repo_root / "model_generation" / "build" / "dakota_package",
-            repo_root / "model_generation" / "build" / "generated_models",
-        ])
 
         def clear_dakota_modules():
             for mod_name in list(sys.modules.keys()):
