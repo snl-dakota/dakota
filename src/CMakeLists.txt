@@ -245,7 +245,7 @@ option(DAKOTA_USAGE_TRACKING
   "Toggle DAKOTA usage tracking, default is disabled." OFF
   )
 set(TRACKING_LOCATION_AND_PROXY "" CACHE STRING 
-  "<URL;proxy> for usage tracking"
+  "<url1%url2@proxy2%url3@proxy3> for usage tracking"
   )
 if(DAKOTA_USAGE_TRACKING)
   find_package(CURL)
