@@ -73,12 +73,24 @@ int cholesky_solve(RealSymMatrix& A, RealMatrix& X, RealMatrix& B,
 		   bool copy_A = false, bool copy_B = false,
 		   bool hard_error = true);
 
-// helper for w^T A w
-//Real symMatVecTripleProduct(ETransp transw, const Real alpha,
-//			    const RealSymMatrix& A, const RealVector& w);
-/// helper for v1^T A v2
-Real symMatVecTripleProduct(const Real alpha,       const RealVector& v1,
-			    const RealSymMatrix& A, const RealVector& v2);
+/// helper for B = W^T A W for general A and W
+void matrixTripleProduct(const Real alpha, const RealMatrix& A,
+			 const RealMatrix& W,    RealMatrix& B);
+/// helper for B = W^T A W for symmetric W and general A
+/// (Teuchos::symMatTripleProduct() handles symmetric A,B with general W)
+void matrixTripleProduct(const Real alpha, const RealMatrix& A,
+			    const RealSymMatrix& W, RealMatrix& B);
+/// helper for B = W^T A W for symmetric A and W
+/// (Teuchos::symMatTripleProduct() handles symmetric A,B with general W)
+void matrixTripleProduct(const Real alpha, const RealSymMatrix& A,
+			 const RealSymMatrix& W, RealSymMatrix& B);
+
+/// helper for v1^T A v2 for general A
+Real matVecTripleProduct(const Real alpha,    const RealVector& v1,
+			 const RealMatrix& A, const RealVector& v2);
+/// helper for v1^T A v2 for symmetric A
+Real matVecTripleProduct(const Real alpha,       const RealVector& v1,
+			 const RealSymMatrix& A, const RealVector& v2);
 
 /**
  * \brief Compute an in-place QR factorization A = QR

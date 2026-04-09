@@ -1918,7 +1918,7 @@ estimator_ratios_from_variances(const RealVector& cd_vars,
     break;
   case N_MODEL_LINEAR_OBJECTIVE:  case N_MODEL_LINEAR_CONSTRAINT:
   case R_AND_N_NONLINEAR_CONSTRAINT: // N is a scalar optimization variable
-    estvar_ratios_to_estvar(estvar, varH, cd_vars[num_approx], estvar_ratios);
+    estvar_to_estvar_ratios(estvar, varH, cd_vars[num_approx], estvar_ratios);
     break;
   }
 

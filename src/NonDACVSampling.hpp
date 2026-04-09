@@ -54,13 +54,13 @@ protected:
 
   void print_variance_reduction(std::ostream& s) const override;
 
-  void estimator_variance_ratios(const RealVector& cd_vars,
-				 RealVector& estvar_ratios) override;
-  void estimator_variance_ratio_gradients(const RealVector& cd_vars,
-					  RealMatrix& evr_grads) override;
-  void estimator_variance_ratios_and_gradients(const RealVector& cd_vars,
-					       RealVector& estvar_ratios,
-					       RealMatrix& evr_grads) override;
+  void estimator_variances(const RealVector& cd_vars,
+			   RealVector& est_var) override;
+  void estimator_variance_gradients(const RealVector& cd_vars,
+				    RealMatrix& ev_grads) override;
+  void estimator_variances_and_gradients(const RealVector& cd_vars,
+					 RealVector& est_var,
+					 RealMatrix& ev_grads) override;
 
   //
   //- Heading: member functions
@@ -292,9 +292,10 @@ private:
 
   void compute_allocations(MFSolutionData& soln);
 
-  void acv_estvar_ratios(const RealSymMatrix& F, RealVector& estvar_ratios);
-  //Real acv_estimator_variance(const RealVector& avg_eval_ratios,
-  //			        Real avg_hf_target);
+  void acv_estimator_variances(const RealSymMatrix& F, const RealVector& var_H,
+			       Real N_H, RealVector& est_var);
+  void acv_estimator_variance_ratios(const RealSymMatrix& F,
+				     RealVector& estvar_ratios);
 
   void solve_for_acv_control(const RealSymMatrix& cov_LL,
 			     const RealSymMatrix& F, const RealMatrix& cov_LH,
@@ -519,7 +520,7 @@ compute_R_sq(const RealSymMatrix& CF_inv, const RealVector& A, Real var_H_q)
 
 
 inline void NonDACVSampling::
-acv_estvar_ratios(const RealSymMatrix& F, RealVector& estvar_ratios)
+acv_estimator_variance_ratios(const RealSymMatrix& F, RealVector& estvar_ratios)
 {
   if (estvar_ratios.empty()) estvar_ratios.sizeUninitialized(numFunctions);
 
@@ -726,7 +727,20 @@ compute_R_sq(RealVector& c_f, RealVector& lhs, Real var_H_q)
 
 
 inline void NonDACVSampling::
-acv_estvar_ratios(const RealSymMatrix& F, RealVector& estvar_ratios)
+acv_estimator_variances(const RealSymMatrix& F, const RealVector& var_H,
+			Real N_H, RealVector& est_var)
+{
+  if (est_var.length() != numFunctions)
+    est_var.sizeUninitialized(numFunctions);
+
+  for (size_t qoi=0; qoi<numFunctions; ++qoi)
+    est_var[qoi] = (var_H[qoi] -
+		    solve_for_triple_product(covLL[qoi], F, covLH, qoi)) / N_H;
+}
+
+
+inline void NonDACVSampling::
+acv_estimator_variance_ratios(const RealSymMatrix& F, RealVector& estvar_ratios)
 {
   if (estvar_ratios.length() != numFunctions)
     estvar_ratios.sizeUninitialized(numFunctions);

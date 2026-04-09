@@ -226,7 +226,7 @@ int qr(RealMatrix& A)
 
 
 /*
-Real symMatVecTripleProduct(Teuchos::ETransp transw, const Real alpha,
+Real matrixTripleProduct(Teuchos::ETransp transw, const Real alpha,
 			    const RealSymMatrix& A, const RealVector& w)
 {
   RealSymMatrix B(1,1);
@@ -236,8 +236,59 @@ Real symMatVecTripleProduct(Teuchos::ETransp transw, const Real alpha,
 */
 
 
-Real symMatVecTripleProduct(const Real alpha,       const RealVector& v1,
-			    const RealSymMatrix& A, const RealVector& v2)
+void matrixTripleProduct(const Real alpha, const RealMatrix& A,
+			 const RealMatrix& W,    RealMatrix& B)
+{
+  // B = W^T A W for general A and W
+  // (Note: W A W^T is not supported, but could be)
+
+  int W_nr = W.numRows(), W_nc = W.numCols(),
+      A_nr = A.numRows(), A_nc = A.numCols();
+  if (A_nr != W_nr || A_nc != W_nr) { // A is square
+    Cerr << "Error: incompatible matrices in matMatTripleProduct()."
+	 << std::endl;
+    abort_handler(-1);
+  }
+
+  RealMatrix A_W(A_nr, W_nc, false); // A * W
+  A_W.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, alpha, A, W, 0.);
+  B.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1., W, A_W, 0.); // W^T A_W
+}
+
+
+void matrixTripleProduct(const Real alpha, const RealMatrix& A,
+			 const RealSymMatrix& W, RealMatrix& B)
+{
+  // B = W^T A W for general A and symmetric W
+
+  int W_nrc = W.numRows(), A_nr = A.numRows(), A_nc = A.numCols();
+  if (W_nrc != A_nr || A_nc != W_nrc) { // A must be square
+    Cerr << "Error: incompatible matrices in symMatMatTripleProduct()."
+	 << std::endl;
+    abort_handler(-1);
+  }
+
+  // W is the RealSymMatrix listed first and subject to LEFT,RIGHT
+  RealMatrix W_A(W_nrc, A_nc, false); // W * A
+  W_A.multiply(Teuchos::LEFT_SIDE, alpha, W, A, 0.); // square matrix
+  B.multiply(Teuchos::RIGHT_SIDE, 1., W, W_A, 0.); // W_A * W
+}
+
+
+void matrixTripleProduct(const Real alpha, const RealSymMatrix& A,
+			 const RealSymMatrix& W, RealSymMatrix& B)
+{
+  // B = W^T A W for symmetric A,B,W
+
+  // Teuchos::SerialSymDenseMatrix does not support multiply(), so we resort
+  // to copying W to a general matrix
+  RealMatrix W_rm;  copy_data(W, W_rm);
+  Teuchos::symMatTripleProduct(Teuchos::NO_TRANS, alpha, A, W_rm, B);
+}
+
+
+Real matVecTripleProduct(const Real alpha,       const RealVector& v1,
+			 const RealSymMatrix& A, const RealVector& v2)
 {
   // SerialDenseVector(n) is equiv to SerialDenseMatrix(n,1) = a column vector
   // v1 = nx1, A = nxn, v2 = nx1 --> A * v2 = nx1 (valid column vector)
@@ -251,6 +302,25 @@ Real symMatVecTripleProduct(const Real alpha,       const RealVector& v1,
 
   RealVector A_v2(A_nrc, false);
   A_v2.multiply(Teuchos::LEFT_SIDE, alpha, A, v2, 0.); // column vector
+  return A_v2.dot(v1); // inner prod of two column vectors
+}
+
+
+Real matVecTripleProduct(const Real alpha,    const RealVector& v1,
+			 const RealMatrix& A, const RealVector& v2)
+{
+  // SerialDenseVector(n) is equiv to SerialDenseMatrix(n,1) = a column vector
+  // v1 = nx1, A = nxn, v2 = nx1 --> A * v2 = nx1 (valid column vector)
+
+  int A_nr = A.numRows(), A_nc = A.numCols();
+  if (v1.length() != A_nr || v2.length() != A_nc) {
+    Cerr << "Error: incompatible vector length in matVecTripleProduct()."
+	 << std::endl;
+    abort_handler(-1);
+  }
+
+  RealVector A_v2(A_nr, false);
+  A_v2.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, alpha, A, v2, 0.);
   return A_v2.dot(v1); // inner prod of two column vectors
 }
 

@@ -585,7 +585,7 @@ compute_F_matrix_from_r(const RealVector& r_and_N, RealSymMatrix& F)
 
   default:
     Cerr << "Error: bad sub-method name (" << mlmfSubMethod
-	 << ") in NonDACVSampling::compute_F_matrix()" << std::endl;
+	 << ") in NonDACVSampling::compute_F_matrix_from_r()" << std::endl;
     abort_handler(METHOD_ERROR); break;
   }
 
@@ -640,7 +640,7 @@ compute_F_matrix_from_N(const RealVector& N, RealSymMatrix& F)
   //case SUBMETHOD_ACV_RD:// refer to comments in compute_F_matrix_from_r()
   default:
     Cerr << "Error: bad sub-method name (" << mlmfSubMethod
-	 << ") in NonDACVSampling::compute_F_matrix()" << std::endl;
+	 << ") in NonDACVSampling::compute_F_matrix_from_N()" << std::endl;
     abort_handler(METHOD_ERROR); break;
   }
 
@@ -740,6 +740,131 @@ compute_F_f_gradients_from_N(const RealVector& N, RealSymMatrixArray& dF_dN,
 
 
 void NonDACVSampling::
+estimator_variances(const RealVector& cd_vars, RealVector& est_var)
+{
+  // map incoming continuous design vars into r_i factors and compute F
+
+  /*
+  switch (optSubProblemForm) {
+  case N_MODEL_LINEAR_OBJECTIVE:  case N_MODEL_LINEAR_CONSTRAINT:
+    compute_F_matrix_from_N(cd_vars, F);  break;
+  case R_ONLY_LINEAR_CONSTRAINT: // N is a vector constant for opt sub-problem
+  case R_AND_N_NONLINEAR_CONSTRAINT:
+    compute_F_matrix_from_r(cd_vars, F); // admits r as leading numApprox terms
+    break;
+  }
+  */
+
+  RealSymMatrix F;  RealVector N_vec;
+  design_vars_to_N(cd_vars, N_vec);
+  compute_F_matrix_from_N(cd_vars, F);
+  acv_estimator_variances(F, varH, N_vec[numApprox], est_var);
+
+  // compute ACV estimator variance given F
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "ACV estimator variances:\n" << est_var << std::endl;
+}
+
+
+void NonDACVSampling::
+estimator_variance_gradients(const RealVector& cd_vars, RealMatrix& ev_grads)
+{
+  size_t q, v, num_v = numApprox+1;
+  if (ev_grads.numRows() != num_v || ev_grads.numCols() != numFunctions)
+    ev_grads.shapeUninitialized(num_v, numFunctions);
+
+  // d(abc) = abc' + ab'c + a'bc
+  // d[triple_prod]/dN = cf^T d[CF_inv] cf + 2 d[cf]^T CF_inv cf
+  //   where d[CF_inv] = -CF_inv dCF/dN CF_inv [see also ML BLUE]
+
+  RealVector cf, N_vec, lhs;  RealMatrix CF_inv_rm;
+  RealSymMatrix F, CF, CF_inv, dCF_inv_dN(numApprox);
+  RealVectorArray df_dN, dcf_dN;  RealSymMatrixArray dF_dN, dCF_dN;
+
+  design_vars_to_N(cd_vars, N_vec);
+  compute_F_matrix_from_N(N_vec, F);
+  compute_F_f_gradients_from_N(N_vec, dF_dN, df_dN);
+  Real trip_prod, trip_prod_grad, N_H = N_vec[numApprox];
+
+  for (q=0; q<numFunctions; ++q) {
+    const RealSymMatrix& covLL_q = covLL[q];
+    // form d[triple_prod]/dN:
+    combine_with_covariance(covLL_q, covLH, q, F, CF, cf);
+    combine_gradients_with_covariance(covLL_q, covLH, q, dF_dN, df_dN,
+				      dCF_dN, dcf_dN);
+    solve_for_C_F_c_f(CF, CF_inv_rm, cf, lhs, false, true);
+    trip_prod = cf.dot(lhs);
+    copy_data(CF_inv_rm, CF_inv);
+    for (v=0; v<num_v; ++v) {
+      Teuchos::symMatTripleProduct(Teuchos::NO_TRANS, -1., dCF_dN[v],
+				   CF_inv_rm, dCF_inv_dN);
+      // form d[triple_product]/dN:
+      // symmetry allows combination of terms 1 + 3 = 2 cf^T CF_inv d[cf]
+      trip_prod_grad = matVecTripleProduct(2., cf, CF_inv,     dcf_dN[v])
+	             + matVecTripleProduct(1., cf, dCF_inv_dN, cf);
+      // EV = (var_H - trip_prod) / N_H
+      // dEV/dN = (-var_H + trip_prod - N_H trip_prod_grad) / N_H^2 (N_i = N_H)
+      //        = -trip_prod_grad / N_H                             (otherwise)
+      ev_grads(v,q) = (v == numApprox) ?
+	(trip_prod - N_H * trip_prod_grad - varH[q]) / (N_H * N_H) :
+	-trip_prod_grad / N_H;
+    }
+  }
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "ACV estimator variance gradients:\n" << ev_grads << std::endl;
+}
+
+
+void NonDACVSampling::
+estimator_variances_and_gradients(const RealVector& cd_vars,
+				  RealVector& est_var, RealMatrix& ev_grads)
+{
+  size_t q, v, num_v = numApprox+1;
+  if (est_var.empty()) est_var.sizeUninitialized(numFunctions);
+  if (ev_grads.numRows() != num_v || ev_grads.numCols() != numFunctions)
+    ev_grads.shapeUninitialized(num_v, numFunctions);
+
+  RealSymMatrix F, CF, CF_inv, dCF_inv_dN(numApprox);
+  RealSymMatrixArray dF_dN, dCF_dN;  RealMatrix CF_inv_rm;
+  RealVector cf, lhs, N_vec;         RealVectorArray df_dN, dcf_dN;
+
+  design_vars_to_N(cd_vars, N_vec);
+  compute_F_matrix_from_N(N_vec, F);
+  compute_F_f_gradients_from_N(N_vec, dF_dN, df_dN);
+  Real trip_prod, trip_prod_grad, varH_q, N_H = N_vec[numApprox];
+
+  for (q=0; q<numFunctions; ++q) {
+    const RealSymMatrix& covLL_q = covLL[q];  varH_q = varH[q];
+    combine_with_covariance(covLL_q, covLH, q, F, CF, cf);
+    combine_gradients_with_covariance(covLL_q, covLH, q, dF_dN, df_dN,
+				      dCF_dN, dcf_dN);
+    solve_for_C_F_c_f(CF, CF_inv_rm, cf, lhs, false, true);
+    trip_prod = cf.dot(lhs);
+    est_var[q] = (varH_q - trip_prod) / N_H;
+    copy_data(CF_inv_rm, CF_inv);
+    for (v=0; v<num_v; ++v) {
+      Teuchos::symMatTripleProduct(Teuchos::NO_TRANS, -1., dCF_dN[v],
+				   CF_inv_rm, dCF_inv_dN);
+      // form d[triple_product]/dN:
+      // symmetry allows combination of terms 1 + 3 = 2 cf^T CF_inv d[cf]
+      trip_prod_grad = matVecTripleProduct(2., cf, CF_inv,     dcf_dN[v])
+	             + matVecTripleProduct(1., cf, dCF_inv_dN, cf);
+      // EV = (var_H - trip_prod) / N_H
+      // dEV/dN = (-var_H + trip_prod - N_H trip_prod_grad) / N_H^2 (N_i = N_H)
+      //        = -trip_prod_grad / N_H                             (otherwise)
+      ev_grads(v,q) = (v == numApprox) ?
+	(trip_prod - N_H * trip_prod_grad - varH_q) / (N_H * N_H) :
+	-trip_prod_grad / N_H;
+    }
+  }
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "ACV estimator variances:\n" << est_var
+	 << "ACV estimator variance gradients:\n" << ev_grads << std::endl;
+}
+
+
+/*
+void NonDACVSampling::
 estimator_variance_ratios(const RealVector& cd_vars, RealVector& estvar_ratios)
 {
   // map incoming continuous design vars into r_i factors and compute F
@@ -755,7 +880,7 @@ estimator_variance_ratios(const RealVector& cd_vars, RealVector& estvar_ratios)
     break;
   }
   // compute ACV estimator variance given F
-  acv_estvar_ratios(F, estvar_ratios);
+  acv_estimator_variance_ratios(F, estvar_ratios);
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "estimator variance ratios:\n" << estvar_ratios << std::endl;
 }
@@ -794,8 +919,8 @@ estimator_variance_ratio_gradients(const RealVector& cd_vars,
 				   CF_inv_rm, dCF_inv_dN);
       // symmetry allows combination of terms 1 + 3 = 2 cf^T CF_inv d[cf]
       Real& evr_grad_vq = evr_grads(v,q);
-      evr_grad_vq = symMatVecTripleProduct(2., cf, CF_inv,     dcf_dN[v])
-	          + symMatVecTripleProduct(1., cf, dCF_inv_dN, cf);
+      evr_grad_vq = matVecTripleProduct(2., cf, CF_inv,     dcf_dN[v])
+	          + matVecTripleProduct(1., cf, dCF_inv_dN, cf);
       // from d(triple) to evr_grads:
       evr_grad_vq /= -varH[q];
     }
@@ -826,7 +951,7 @@ estimator_variance_ratios_and_gradients(const RealVector& cd_vars,
   for (q=0; q<numFunctions; ++q) {
     const RealSymMatrix& covLL_q = covLL[q];  varH_q = varH[q];
     combine_with_covariance(covLL_q, covLH, q, F, CF, cf);
-    solve_for_C_F_c_f(CF, CF_inv_rm, cf, lhs, false, false);
+    solve_for_C_F_c_f(CF, CF_inv_rm, cf, lhs, false, true);
     estvar_ratios[q] = 1. - compute_R_sq(cf, lhs, varH_q);
     combine_gradients_with_covariance(covLL_q, covLH, q, dF_dN, df_dN,
 				      dCF_dN, dcf_dN);
@@ -835,8 +960,8 @@ estimator_variance_ratios_and_gradients(const RealVector& cd_vars,
       Teuchos::symMatTripleProduct(Teuchos::NO_TRANS, -1., dCF_dN[v],
 				   CF_inv_rm, dCF_inv_dN);
       Real& evr_grad_vq = evr_grads(v,q);
-      evr_grad_vq = symMatVecTripleProduct(2., cf, CF_inv,     dcf_dN[v])
-	          + symMatVecTripleProduct(1., cf, dCF_inv_dN, cf);
+      evr_grad_vq = matVecTripleProduct(2., cf, CF_inv,     dcf_dN[v])
+	          + matVecTripleProduct(1., cf, dCF_inv_dN, cf);
       // from d(triple) to evr_grads (also from c to c-bar in JCP ACV):
       evr_grad_vq /= -varH_q;
     }
@@ -845,7 +970,7 @@ estimator_variance_ratios_and_gradients(const RealVector& cd_vars,
     Cout << "estimator variance ratios:\n" << estvar_ratios
 	 << "estimator variance ratio gradients:\n" << evr_grads << std::endl;
 }
-
+*/
 
 void NonDACVSampling::compute_allocations(MFSolutionData& soln)
 {
