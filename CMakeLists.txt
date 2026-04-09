@@ -37,6 +37,28 @@ elseif(NOT IS_DIRECTORY "${Dakota_SOURCE_DIR}/packages/external/nidr")
     )
 endif()
 
+# -----------------
+# Set path for nlohmann::json header needed by new parser
+
+set(JSON_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/packages/external/json/include")
+set(JSON_SINGLE_INCDIR "${PROJECT_SOURCE_DIR}/packages/external/json/single_include")
+if(EXISTS "${JSON_INCLUDE_DIR}/nlohmann/json_fwd.hpp")
+  list(APPEND EXT_TPL_INCDIRS ${JSON_INCLUDE_DIR})
+else()
+  message(FATAL_ERROR "JSON forward header file not found in ${JSON_INCLUDE_DIR}.
+                        You may need run `git submodule update --init --recursive`" )
+endif()
+if(EXISTS "${JSON_SINGLE_INCDIR}/nlohmann/json.hpp")
+  message( "Found JSON header file" )
+  list( APPEND EXT_TPL_INCDIRS ${JSON_SINGLE_INCDIR} )
+  # Set this cmake variable for so that the new parser uses Dakota's nlohmann
+  set(NLOHMANN_JSON_ROOT "${PROJECT_SOURCE_DIR}/packages/external/json" CACHE PATH
+    "nlohmann used by Dakota" FORCE)
+else()
+  message( FATAL_ERROR "JSON header file not found in ${JSON_SINGLE_INCDIR}.
+                        You may need run `git submodule update --init --recursive`" )
+endif()
+
 # Dakota requires C++17
 include(DakotaCxxOptions)
 dakota_cxx_standard()
