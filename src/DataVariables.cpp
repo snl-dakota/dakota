@@ -67,8 +67,7 @@ void DataVariablesRep::write(MPIPackBuffer& s) const
     << lognormalUncLambdas
     << lognormalUncZetas << lognormalUncMeans << lognormalUncStdDevs
     << lognormalUncErrFacts << lognormalUncLowerBnds << lognormalUncUpperBnds
-    << lognormalUncVars << lognormalUncInferredLowerBnds
-    << lognormalUncInferredUpperBnds << uniformUncLowerBnds << uniformUncUpperBnds
+    << lognormalUncVars << lognormalUncInferredUpperBnds << uniformUncLowerBnds << uniformUncUpperBnds
     << uniformUncVars << loguniformUncLowerBnds << loguniformUncUpperBnds
     << loguniformUncVars << triangularUncModes << triangularUncLowerBnds
     << triangularUncUpperBnds << triangularUncVars << exponentialUncBetas
@@ -181,8 +180,7 @@ void DataVariablesRep::read(MPIUnpackBuffer& s)
     >> lognormalUncLambdas
     >> lognormalUncZetas >> lognormalUncMeans >> lognormalUncStdDevs
     >> lognormalUncErrFacts >> lognormalUncLowerBnds >> lognormalUncUpperBnds
-    >> lognormalUncVars >> lognormalUncInferredLowerBnds
-    >> lognormalUncInferredUpperBnds >> uniformUncLowerBnds >> uniformUncUpperBnds
+    >> lognormalUncVars >> lognormalUncInferredUpperBnds >> uniformUncLowerBnds >> uniformUncUpperBnds
     >> uniformUncVars >> loguniformUncLowerBnds >> loguniformUncUpperBnds
     >> loguniformUncVars >> triangularUncModes >> triangularUncLowerBnds
     >> triangularUncUpperBnds >> triangularUncVars >> exponentialUncBetas
@@ -293,8 +291,7 @@ void DataVariablesRep::write(std::ostream& s) const
     << lognormalUncLambdas
     << lognormalUncZetas << lognormalUncMeans << lognormalUncStdDevs
     << lognormalUncErrFacts << lognormalUncLowerBnds << lognormalUncUpperBnds
-    << lognormalUncVars << lognormalUncInferredLowerBnds
-    << lognormalUncInferredUpperBnds << uniformUncLowerBnds << uniformUncUpperBnds
+    << lognormalUncVars << lognormalUncInferredUpperBnds << uniformUncLowerBnds << uniformUncUpperBnds
     << uniformUncVars << loguniformUncLowerBnds << loguniformUncUpperBnds
     << loguniformUncVars << triangularUncModes << triangularUncLowerBnds
     << triangularUncUpperBnds << triangularUncVars << exponentialUncBetas

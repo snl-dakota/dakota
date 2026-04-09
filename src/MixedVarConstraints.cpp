@@ -48,7 +48,7 @@ MixedVarConstraints(const ProblemDescDB& problem_db,
     // aleatory uncertain: normal/lognormal use inferred bounds
     copy_cv("variables.normal_uncertain.inferred_lower_bounds",
             "variables.normal_uncertain.inferred_upper_bounds");
-    copy_cv("variables.lognormal_uncertain.inferred_lower_bounds",
+    copy_cv("variables.lognormal_uncertain.lower_bounds",
             "variables.lognormal_uncertain.inferred_upper_bounds");
     // remaining aleatory uncertain use distribution bounds directly
     const char* cauv_remaining[] = {

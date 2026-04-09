@@ -2548,28 +2548,37 @@ static void Vgen_NormalUnc(DataVariablesRep *dv, size_t offset)
   L  = &dv->normalUncLowerBnds;  U  = &dv->normalUncUpperBnds;
   IP = &dv->normalUncVars;       V  = &dv->continuousAleatoryUncVars;
 
+  dv->normalUncInferredLowerBnds.size(n);
+  dv->normalUncInferredUpperBnds.size(n);
+
   // process lower bounds
   B = &dv->continuousAleatoryUncLowerBnds;
   if (L->length()) {
     Vcopyup(B, L, offset, n); // global = distribution
+    Vcopyup(&dv->normalUncInferredLowerBnds, L, 0, n); // inferred global = distribution
     bds |= 1;
   }
   else {
     Set_rv(L, -dbl_inf, n); // distribution
-    for(j = 0; j < n; ++j)
+    for(j = 0; j < n; ++j) {
       (*B)[offset+j] = (*M)[j] - 3.*(*Sd)[j]; // inferred global
+      dv->normalUncInferredLowerBnds[j] = (*B)[offset+j];
+    }
   }
 
   // process upper bounds
   B = &dv->continuousAleatoryUncUpperBnds;
   if (U->length()) {
     Vcopyup(B, U, offset, n); // global = distribution
+    Vcopyup(&dv->normalUncInferredUpperBnds, U, 0, n); // inferred global = distribution
     bds |= 2;
   }
   else {
     Set_rv(U, dbl_inf, n); // distribution
-    for(j = 0; j < n; ++j)
+    for(j = 0; j < n; ++j) {
       (*B)[offset+j] = (*M)[j] + 3.*(*Sd)[j]; // inferred global
+      dv->normalUncInferredUpperBnds[j] = (*B)[offset+j];
+    }
   }
 
   // Set initial values and repair to bounds, if needed
@@ -2683,10 +2692,14 @@ static void Vgen_LognormalUnc(DataVariablesRep *dv, size_t offset)
 
   // manage distribution and global bounds.  Global are inferred if
   // distribution are not specified.
+  dv->lognormalUncInferredUpperBnds.size(n);
   if (!num_L) L->size(n); // inits L to zeros --> default {dist,global}
   Vcopyup(&dv->continuousAleatoryUncLowerBnds, L, offset, n); // global = dist
   B = &dv->continuousAleatoryUncUpperBnds;
-  if (num_U) Vcopyup(B, U, offset, n); // global = dist
+  if (num_U) {
+    Vcopyup(B, U, offset, n); // global = dist
+    Vcopyup(&dv->lognormalUncInferredUpperBnds, U, 0, n); // inferred global = dist
+  }
   else       Set_rv(U, dbl_inf, n);    // default dist; global inferred below
 
   for (i = offset, j = 0; j < n; ++i, ++j) {
@@ -2731,8 +2744,10 @@ static void Vgen_LognormalUnc(DataVariablesRep *dv, size_t offset)
     }
 
     // infer global bounds if no distribution bounds spec
-    if (!num_U)
+    if (!num_U) {
       (*B)[i] = mean + 3.*stdev;
+      dv->lognormalUncInferredUpperBnds[j] = (*B)[i];
+    }
   }
 
   // Copy final values back to per-type variable

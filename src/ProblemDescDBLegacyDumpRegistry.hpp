@@ -1695,7 +1695,6 @@ bool try_emit_variables_entry(const DataVariablesRep& rep, std::string_view full
   if (full_key == "variables.linear_inequality_scales") { emit(rep.linearIneqScales); return true; }
   if (full_key == "variables.linear_inequality_upper_bounds") { emit(rep.linearIneqUpperBnds); return true; }
   if (full_key == "variables.lognormal_uncertain.error_factors") { emit(rep.lognormalUncErrFacts); return true; }
-  if (full_key == "variables.lognormal_uncertain.inferred_lower_bounds") { emit(rep.lognormalUncInferredLowerBnds); return true; }
   if (full_key == "variables.lognormal_uncertain.inferred_upper_bounds") { emit(rep.lognormalUncInferredUpperBnds); return true; }
   if (full_key == "variables.lognormal_uncertain.lambdas") { emit(rep.lognormalUncLambdas); return true; }
   if (full_key == "variables.lognormal_uncertain.initial_point") { emit(rep.lognormalUncVars); return true; }

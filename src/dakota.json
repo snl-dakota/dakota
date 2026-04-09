@@ -813,20 +813,6 @@
                         }
                     ]
                 },
-                "distribution": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
-                        },
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
-                        }
-                    ],
-                    "description": "Selection of cumulative or complementary cumulative functions",
-                    "title": "Distribution",
-                    "x-model-default": "DistributionCumulComplContext1Cumulative",
-                    "x-union-pattern": 1
-                },
                 "response_levels": {
                     "anyOf": [
                         {
@@ -846,6 +832,20 @@
                             "storage_type": "RESPONSE_LEVELS_ARRAY"
                         }
                     ]
+                },
+                "distribution": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
+                        },
+                        {
+                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
+                        }
+                    ],
+                    "description": "Selection of cumulative or complementary cumulative functions",
+                    "title": "Distribution",
+                    "x-model-default": "DistributionCumulComplContext1Cumulative",
+                    "x-union-pattern": 1
                 },
                 "max_iterations": {
                     "default": 9223372036854775807,
@@ -8741,6 +8741,19 @@
             "additionalProperties": false,
             "description": "Generated model for ConminFrcgConfig",
             "properties": {
+                "constraint_tolerance": {
+                    "default": 0.0,
+                    "description": "Maximum allowable constraint violation still considered feasible",
+                    "title": "Constraint Tolerance",
+                    "type": "number",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.constraint_tolerance",
+                            "ir_value_type": "Real",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
                 "scaling": {
                     "anyOf": [
                         {
@@ -8762,20 +8775,6 @@
                         }
                     ]
                 },
-                "max_iterations": {
-                    "default": 9223372036854775807,
-                    "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
-                    "minimum": 0,
-                    "title": "Max Iterations",
-                    "type": "integer",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.max_iterations",
-                            "ir_value_type": "size_t",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
                 "convergence_tolerance": {
                     "default": -1.7976931348623157e+308,
                     "description": "Stopping criterion based on objective function or statistics convergence",
@@ -8791,27 +8790,6 @@
                             "ir_key": "method.jega.percent_change",
                             "ir_value_type": "Real",
                             "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
-                "speculative": {
-                    "anyOf": [
-                        {
-                            "const": true,
-                            "type": "boolean"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "default": null,
-                    "description": "Compute speculative gradients",
-                    "title": "Speculative",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.speculative",
-                            "ir_value_type": "bool",
-                            "storage_type": "PRESENCE_TRUE"
                         }
                     ]
                 },
@@ -8850,16 +8828,38 @@
                         }
                     ]
                 },
-                "constraint_tolerance": {
-                    "default": 0.0,
-                    "description": "Maximum allowable constraint violation still considered feasible",
-                    "title": "Constraint Tolerance",
-                    "type": "number",
+                "max_iterations": {
+                    "default": 9223372036854775807,
+                    "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
+                    "minimum": 0,
+                    "title": "Max Iterations",
+                    "type": "integer",
                     "x-materialization": [
                         {
-                            "ir_key": "method.constraint_tolerance",
-                            "ir_value_type": "Real",
+                            "ir_key": "method.max_iterations",
+                            "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "speculative": {
+                    "anyOf": [
+                        {
+                            "const": true,
+                            "type": "boolean"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Compute speculative gradients",
+                    "title": "Speculative",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.speculative",
+                            "ir_value_type": "bool",
+                            "storage_type": "PRESENCE_TRUE"
                         }
                     ]
                 },
@@ -8950,6 +8950,19 @@
             "additionalProperties": false,
             "description": "Generated model for ConminMfdConfig",
             "properties": {
+                "constraint_tolerance": {
+                    "default": 0.0,
+                    "description": "Maximum allowable constraint violation still considered feasible",
+                    "title": "Constraint Tolerance",
+                    "type": "number",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.constraint_tolerance",
+                            "ir_value_type": "Real",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
                 "scaling": {
                     "anyOf": [
                         {
@@ -8971,20 +8984,6 @@
                         }
                     ]
                 },
-                "max_iterations": {
-                    "default": 9223372036854775807,
-                    "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
-                    "minimum": 0,
-                    "title": "Max Iterations",
-                    "type": "integer",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.max_iterations",
-                            "ir_value_type": "size_t",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
                 "convergence_tolerance": {
                     "default": -1.7976931348623157e+308,
                     "description": "Stopping criterion based on objective function or statistics convergence",
@@ -9000,27 +8999,6 @@
                             "ir_key": "method.jega.percent_change",
                             "ir_value_type": "Real",
                             "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
-                "speculative": {
-                    "anyOf": [
-                        {
-                            "const": true,
-                            "type": "boolean"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "default": null,
-                    "description": "Compute speculative gradients",
-                    "title": "Speculative",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.speculative",
-                            "ir_value_type": "bool",
-                            "storage_type": "PRESENCE_TRUE"
                         }
                     ]
                 },
@@ -9059,16 +9037,38 @@
                         }
                     ]
                 },
-                "constraint_tolerance": {
-                    "default": 0.0,
-                    "description": "Maximum allowable constraint violation still considered feasible",
-                    "title": "Constraint Tolerance",
-                    "type": "number",
+                "max_iterations": {
+                    "default": 9223372036854775807,
+                    "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
+                    "minimum": 0,
+                    "title": "Max Iterations",
+                    "type": "integer",
                     "x-materialization": [
                         {
-                            "ir_key": "method.constraint_tolerance",
-                            "ir_value_type": "Real",
+                            "ir_key": "method.max_iterations",
+                            "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "speculative": {
+                    "anyOf": [
+                        {
+                            "const": true,
+                            "type": "boolean"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Compute speculative gradients",
+                    "title": "Speculative",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.speculative",
+                            "ir_value_type": "bool",
+                            "storage_type": "PRESENCE_TRUE"
                         }
                     ]
                 },
@@ -16185,6 +16185,19 @@
             "additionalProperties": false,
             "description": "Generated model for DotBfgsConfig",
             "properties": {
+                "constraint_tolerance": {
+                    "default": 0.0,
+                    "description": "Maximum allowable constraint violation still considered feasible",
+                    "title": "Constraint Tolerance",
+                    "type": "number",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.constraint_tolerance",
+                            "ir_value_type": "Real",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
                 "scaling": {
                     "anyOf": [
                         {
@@ -16206,20 +16219,6 @@
                         }
                     ]
                 },
-                "max_iterations": {
-                    "default": 9223372036854775807,
-                    "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
-                    "minimum": 0,
-                    "title": "Max Iterations",
-                    "type": "integer",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.max_iterations",
-                            "ir_value_type": "size_t",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
                 "convergence_tolerance": {
                     "default": -1.7976931348623157e+308,
                     "description": "Stopping criterion based on objective function or statistics convergence",
@@ -16235,27 +16234,6 @@
                             "ir_key": "method.jega.percent_change",
                             "ir_value_type": "Real",
                             "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
-                "speculative": {
-                    "anyOf": [
-                        {
-                            "const": true,
-                            "type": "boolean"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "default": null,
-                    "description": "Compute speculative gradients",
-                    "title": "Speculative",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.speculative",
-                            "ir_value_type": "bool",
-                            "storage_type": "PRESENCE_TRUE"
                         }
                     ]
                 },
@@ -16294,16 +16272,38 @@
                         }
                     ]
                 },
-                "constraint_tolerance": {
-                    "default": 0.0,
-                    "description": "Maximum allowable constraint violation still considered feasible",
-                    "title": "Constraint Tolerance",
-                    "type": "number",
+                "max_iterations": {
+                    "default": 9223372036854775807,
+                    "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
+                    "minimum": 0,
+                    "title": "Max Iterations",
+                    "type": "integer",
                     "x-materialization": [
                         {
-                            "ir_key": "method.constraint_tolerance",
-                            "ir_value_type": "Real",
+                            "ir_key": "method.max_iterations",
+                            "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "speculative": {
+                    "anyOf": [
+                        {
+                            "const": true,
+                            "type": "boolean"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Compute speculative gradients",
+                    "title": "Speculative",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.speculative",
+                            "ir_value_type": "bool",
+                            "storage_type": "PRESENCE_TRUE"
                         }
                     ]
                 },
@@ -16394,6 +16394,19 @@
             "additionalProperties": false,
             "description": "Generated model for DotFrcgConfig",
             "properties": {
+                "constraint_tolerance": {
+                    "default": 0.0,
+                    "description": "Maximum allowable constraint violation still considered feasible",
+                    "title": "Constraint Tolerance",
+                    "type": "number",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.constraint_tolerance",
+                            "ir_value_type": "Real",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
                 "scaling": {
                     "anyOf": [
                         {
@@ -16415,20 +16428,6 @@
                         }
                     ]
                 },
-                "max_iterations": {
-                    "default": 9223372036854775807,
-                    "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
-                    "minimum": 0,
-                    "title": "Max Iterations",
-                    "type": "integer",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.max_iterations",
-                            "ir_value_type": "size_t",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
                 "convergence_tolerance": {
                     "default": -1.7976931348623157e+308,
                     "description": "Stopping criterion based on objective function or statistics convergence",
@@ -16444,27 +16443,6 @@
                             "ir_key": "method.jega.percent_change",
                             "ir_value_type": "Real",
                             "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
-                "speculative": {
-                    "anyOf": [
-                        {
-                            "const": true,
-                            "type": "boolean"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "default": null,
-                    "description": "Compute speculative gradients",
-                    "title": "Speculative",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.speculative",
-                            "ir_value_type": "bool",
-                            "storage_type": "PRESENCE_TRUE"
                         }
                     ]
                 },
@@ -16503,16 +16481,38 @@
                         }
                     ]
                 },
-                "constraint_tolerance": {
-                    "default": 0.0,
-                    "description": "Maximum allowable constraint violation still considered feasible",
-                    "title": "Constraint Tolerance",
-                    "type": "number",
+                "max_iterations": {
+                    "default": 9223372036854775807,
+                    "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
+                    "minimum": 0,
+                    "title": "Max Iterations",
+                    "type": "integer",
                     "x-materialization": [
                         {
-                            "ir_key": "method.constraint_tolerance",
-                            "ir_value_type": "Real",
+                            "ir_key": "method.max_iterations",
+                            "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "speculative": {
+                    "anyOf": [
+                        {
+                            "const": true,
+                            "type": "boolean"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Compute speculative gradients",
+                    "title": "Speculative",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.speculative",
+                            "ir_value_type": "bool",
+                            "storage_type": "PRESENCE_TRUE"
                         }
                     ]
                 },
@@ -16603,6 +16603,19 @@
             "additionalProperties": false,
             "description": "Generated model for DotMmfdConfig",
             "properties": {
+                "constraint_tolerance": {
+                    "default": 0.0,
+                    "description": "Maximum allowable constraint violation still considered feasible",
+                    "title": "Constraint Tolerance",
+                    "type": "number",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.constraint_tolerance",
+                            "ir_value_type": "Real",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
                 "scaling": {
                     "anyOf": [
                         {
@@ -16624,20 +16637,6 @@
                         }
                     ]
                 },
-                "max_iterations": {
-                    "default": 9223372036854775807,
-                    "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
-                    "minimum": 0,
-                    "title": "Max Iterations",
-                    "type": "integer",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.max_iterations",
-                            "ir_value_type": "size_t",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
                 "convergence_tolerance": {
                     "default": -1.7976931348623157e+308,
                     "description": "Stopping criterion based on objective function or statistics convergence",
@@ -16653,27 +16652,6 @@
                             "ir_key": "method.jega.percent_change",
                             "ir_value_type": "Real",
                             "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
-                "speculative": {
-                    "anyOf": [
-                        {
-                            "const": true,
-                            "type": "boolean"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "default": null,
-                    "description": "Compute speculative gradients",
-                    "title": "Speculative",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.speculative",
-                            "ir_value_type": "bool",
-                            "storage_type": "PRESENCE_TRUE"
                         }
                     ]
                 },
@@ -16712,16 +16690,38 @@
                         }
                     ]
                 },
-                "constraint_tolerance": {
-                    "default": 0.0,
-                    "description": "Maximum allowable constraint violation still considered feasible",
-                    "title": "Constraint Tolerance",
-                    "type": "number",
+                "max_iterations": {
+                    "default": 9223372036854775807,
+                    "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
+                    "minimum": 0,
+                    "title": "Max Iterations",
+                    "type": "integer",
                     "x-materialization": [
                         {
-                            "ir_key": "method.constraint_tolerance",
-                            "ir_value_type": "Real",
+                            "ir_key": "method.max_iterations",
+                            "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "speculative": {
+                    "anyOf": [
+                        {
+                            "const": true,
+                            "type": "boolean"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Compute speculative gradients",
+                    "title": "Speculative",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.speculative",
+                            "ir_value_type": "bool",
+                            "storage_type": "PRESENCE_TRUE"
                         }
                     ]
                 },
@@ -16812,6 +16812,19 @@
             "additionalProperties": false,
             "description": "Generated model for DotSlpConfig",
             "properties": {
+                "constraint_tolerance": {
+                    "default": 0.0,
+                    "description": "Maximum allowable constraint violation still considered feasible",
+                    "title": "Constraint Tolerance",
+                    "type": "number",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.constraint_tolerance",
+                            "ir_value_type": "Real",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
                 "scaling": {
                     "anyOf": [
                         {
@@ -16833,20 +16846,6 @@
                         }
                     ]
                 },
-                "max_iterations": {
-                    "default": 9223372036854775807,
-                    "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
-                    "minimum": 0,
-                    "title": "Max Iterations",
-                    "type": "integer",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.max_iterations",
-                            "ir_value_type": "size_t",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
                 "convergence_tolerance": {
                     "default": -1.7976931348623157e+308,
                     "description": "Stopping criterion based on objective function or statistics convergence",
@@ -16862,27 +16861,6 @@
                             "ir_key": "method.jega.percent_change",
                             "ir_value_type": "Real",
                             "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
-                "speculative": {
-                    "anyOf": [
-                        {
-                            "const": true,
-                            "type": "boolean"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "default": null,
-                    "description": "Compute speculative gradients",
-                    "title": "Speculative",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.speculative",
-                            "ir_value_type": "bool",
-                            "storage_type": "PRESENCE_TRUE"
                         }
                     ]
                 },
@@ -16921,16 +16899,38 @@
                         }
                     ]
                 },
-                "constraint_tolerance": {
-                    "default": 0.0,
-                    "description": "Maximum allowable constraint violation still considered feasible",
-                    "title": "Constraint Tolerance",
-                    "type": "number",
+                "max_iterations": {
+                    "default": 9223372036854775807,
+                    "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
+                    "minimum": 0,
+                    "title": "Max Iterations",
+                    "type": "integer",
                     "x-materialization": [
                         {
-                            "ir_key": "method.constraint_tolerance",
-                            "ir_value_type": "Real",
+                            "ir_key": "method.max_iterations",
+                            "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "speculative": {
+                    "anyOf": [
+                        {
+                            "const": true,
+                            "type": "boolean"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Compute speculative gradients",
+                    "title": "Speculative",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.speculative",
+                            "ir_value_type": "bool",
+                            "storage_type": "PRESENCE_TRUE"
                         }
                     ]
                 },
@@ -17021,6 +17021,19 @@
             "additionalProperties": false,
             "description": "Generated model for DotSqpConfig",
             "properties": {
+                "constraint_tolerance": {
+                    "default": 0.0,
+                    "description": "Maximum allowable constraint violation still considered feasible",
+                    "title": "Constraint Tolerance",
+                    "type": "number",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.constraint_tolerance",
+                            "ir_value_type": "Real",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
                 "scaling": {
                     "anyOf": [
                         {
@@ -17042,20 +17055,6 @@
                         }
                     ]
                 },
-                "max_iterations": {
-                    "default": 9223372036854775807,
-                    "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
-                    "minimum": 0,
-                    "title": "Max Iterations",
-                    "type": "integer",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.max_iterations",
-                            "ir_value_type": "size_t",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
                 "convergence_tolerance": {
                     "default": -1.7976931348623157e+308,
                     "description": "Stopping criterion based on objective function or statistics convergence",
@@ -17071,27 +17070,6 @@
                             "ir_key": "method.jega.percent_change",
                             "ir_value_type": "Real",
                             "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
-                "speculative": {
-                    "anyOf": [
-                        {
-                            "const": true,
-                            "type": "boolean"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "default": null,
-                    "description": "Compute speculative gradients",
-                    "title": "Speculative",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.speculative",
-                            "ir_value_type": "bool",
-                            "storage_type": "PRESENCE_TRUE"
                         }
                     ]
                 },
@@ -17130,16 +17108,38 @@
                         }
                     ]
                 },
-                "constraint_tolerance": {
-                    "default": 0.0,
-                    "description": "Maximum allowable constraint violation still considered feasible",
-                    "title": "Constraint Tolerance",
-                    "type": "number",
+                "max_iterations": {
+                    "default": 9223372036854775807,
+                    "description": "Number of iterations allowed for optimizers and adaptive UQ methods",
+                    "minimum": 0,
+                    "title": "Max Iterations",
+                    "type": "integer",
                     "x-materialization": [
                         {
-                            "ir_key": "method.constraint_tolerance",
-                            "ir_value_type": "Real",
+                            "ir_key": "method.max_iterations",
+                            "ir_value_type": "size_t",
                             "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "speculative": {
+                    "anyOf": [
+                        {
+                            "const": true,
+                            "type": "boolean"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Compute speculative gradients",
+                    "title": "Speculative",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.speculative",
+                            "ir_value_type": "bool",
+                            "storage_type": "PRESENCE_TRUE"
                         }
                     ]
                 },
@@ -28237,19 +28237,6 @@
                     "title": "Collocation Control",
                     "x-union-pattern": 4
                 },
-                "convergence_tolerance": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "value",
-                    "default": null,
-                    "description": "Stopping criterion based on objective function or statistics convergence"
-                },
                 "refinement_metric": {
                     "anyOf": [
                         {
@@ -28266,6 +28253,19 @@
                     "description": "Metric used for guiding adaptive refinement during UQ.",
                     "title": "Refinement Metric",
                     "x-union-pattern": 2
+                },
+                "convergence_tolerance": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "value",
+                    "default": null,
+                    "description": "Stopping criterion based on objective function or statistics convergence"
                 },
                 "p_refinement": {
                     "anyOf": [
@@ -31238,20 +31238,6 @@
                         }
                     ]
                 },
-                "distribution": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
-                        },
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
-                        }
-                    ],
-                    "description": "Selection of cumulative or complementary cumulative functions",
-                    "title": "Distribution",
-                    "x-model-default": "DistributionCumulComplContext1Cumulative",
-                    "x-union-pattern": 1
-                },
                 "response_levels": {
                     "anyOf": [
                         {
@@ -31271,6 +31257,20 @@
                             "storage_type": "RESPONSE_LEVELS_ARRAY"
                         }
                     ]
+                },
+                "distribution": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
+                        },
+                        {
+                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
+                        }
+                    ],
+                    "description": "Selection of cumulative or complementary cumulative functions",
+                    "title": "Distribution",
+                    "x-model-default": "DistributionCumulComplContext1Cumulative",
+                    "x-union-pattern": 1
                 },
                 "solution_approach": {
                     "anchor": true,
@@ -31826,20 +31826,6 @@
                         }
                     ]
                 },
-                "distribution": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
-                        },
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
-                        }
-                    ],
-                    "description": "Selection of cumulative or complementary cumulative functions",
-                    "title": "Distribution",
-                    "x-model-default": "DistributionCumulComplContext1Cumulative",
-                    "x-union-pattern": 1
-                },
                 "response_levels": {
                     "anyOf": [
                         {
@@ -31859,6 +31845,20 @@
                             "storage_type": "RESPONSE_LEVELS_ARRAY"
                         }
                     ]
+                },
+                "distribution": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
+                        },
+                        {
+                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
+                        }
+                    ],
+                    "description": "Selection of cumulative or complementary cumulative functions",
+                    "title": "Distribution",
+                    "x-model-default": "DistributionCumulComplContext1Cumulative",
+                    "x-union-pattern": 1
                 },
                 "rng": {
                     "anyOf": [
@@ -32320,20 +32320,6 @@
                         }
                     ]
                 },
-                "distribution": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
-                        },
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
-                        }
-                    ],
-                    "description": "Selection of cumulative or complementary cumulative functions",
-                    "title": "Distribution",
-                    "x-model-default": "DistributionCumulComplContext1Cumulative",
-                    "x-union-pattern": 1
-                },
                 "response_levels": {
                     "anyOf": [
                         {
@@ -32353,6 +32339,20 @@
                             "storage_type": "RESPONSE_LEVELS_ARRAY"
                         }
                     ]
+                },
+                "distribution": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
+                        },
+                        {
+                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
+                        }
+                    ],
+                    "description": "Selection of cumulative or complementary cumulative functions",
+                    "title": "Distribution",
+                    "x-model-default": "DistributionCumulComplContext1Cumulative",
+                    "x-union-pattern": 1
                 },
                 "max_iterations": {
                     "default": 9223372036854775807,
@@ -36312,26 +36312,6 @@
                         }
                     ]
                 },
-                "gen_reliability_levels": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/GenReliabilityLevelsGenReliabilityLevels"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "values",
-                    "default": null,
-                    "description": "Specify generalized relability levels at which to estimate the corresponding response value",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.nond.gen_reliability_levels",
-                            "ir_value_type": "RealVectorArray",
-                            "storage_type": "RESPONSE_LEVELS_ARRAY"
-                        }
-                    ]
-                },
                 "response_levels": {
                     "anyOf": [
                         {
@@ -36352,24 +36332,10 @@
                         }
                     ]
                 },
-                "distribution": {
+                "gen_reliability_levels": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
-                        },
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
-                        }
-                    ],
-                    "description": "Selection of cumulative or complementary cumulative functions",
-                    "title": "Distribution",
-                    "x-model-default": "DistributionCumulComplContext1Cumulative",
-                    "x-union-pattern": 1
-                },
-                "reliability_levels": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/ReliabilityLevelsReliabilityLevels"
+                            "$ref": "#/$defs/GenReliabilityLevelsGenReliabilityLevels"
                         },
                         {
                             "type": "null"
@@ -36377,10 +36343,10 @@
                     ],
                     "argument": "values",
                     "default": null,
-                    "description": "Specify reliability levels at which the response values will be estimated",
+                    "description": "Specify generalized relability levels at which to estimate the corresponding response value",
                     "x-materialization": [
                         {
-                            "ir_key": "method.nond.reliability_levels",
+                            "ir_key": "method.nond.gen_reliability_levels",
                             "ir_value_type": "RealVectorArray",
                             "storage_type": "RESPONSE_LEVELS_ARRAY"
                         }
@@ -36405,6 +36371,40 @@
                             "storage_type": "RESPONSE_LEVELS_ARRAY"
                         }
                     ]
+                },
+                "reliability_levels": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/ReliabilityLevelsReliabilityLevels"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "values",
+                    "default": null,
+                    "description": "Specify reliability levels at which the response values will be estimated",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.reliability_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
+                },
+                "distribution": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
+                        },
+                        {
+                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
+                        }
+                    ],
+                    "description": "Selection of cumulative or complementary cumulative functions",
+                    "title": "Distribution",
+                    "x-model-default": "DistributionCumulComplContext1Cumulative",
+                    "x-union-pattern": 1
                 },
                 "final_moments": {
                     "anyOf": [
@@ -37244,20 +37244,6 @@
                         }
                     ]
                 },
-                "distribution": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
-                        },
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
-                        }
-                    ],
-                    "description": "Selection of cumulative or complementary cumulative functions",
-                    "title": "Distribution",
-                    "x-model-default": "DistributionCumulComplContext1Cumulative",
-                    "x-union-pattern": 1
-                },
                 "response_levels": {
                     "anyOf": [
                         {
@@ -37277,6 +37263,20 @@
                             "storage_type": "RESPONSE_LEVELS_ARRAY"
                         }
                     ]
+                },
+                "distribution": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
+                        },
+                        {
+                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
+                        }
+                    ],
+                    "description": "Selection of cumulative or complementary cumulative functions",
+                    "title": "Distribution",
+                    "x-model-default": "DistributionCumulComplContext1Cumulative",
+                    "x-union-pattern": 1
                 },
                 "convergence_tolerance": {
                     "default": -1.7976931348623157e+308,
@@ -39231,20 +39231,6 @@
                         }
                     ]
                 },
-                "distribution": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
-                        },
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
-                        }
-                    ],
-                    "description": "Selection of cumulative or complementary cumulative functions",
-                    "title": "Distribution",
-                    "x-model-default": "DistributionCumulComplContext1Cumulative",
-                    "x-union-pattern": 1
-                },
                 "response_levels": {
                     "anyOf": [
                         {
@@ -39264,6 +39250,20 @@
                             "storage_type": "RESPONSE_LEVELS_ARRAY"
                         }
                     ]
+                },
+                "distribution": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
+                        },
+                        {
+                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
+                        }
+                    ],
+                    "description": "Selection of cumulative or complementary cumulative functions",
+                    "title": "Distribution",
+                    "x-model-default": "DistributionCumulComplContext1Cumulative",
+                    "x-union-pattern": 1
                 },
                 "optimization_solver": {
                     "anchor": true,
@@ -39696,26 +39696,6 @@
                         }
                     ]
                 },
-                "gen_reliability_levels": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/GenReliabilityLevelsGenReliabilityLevels"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "values",
-                    "default": null,
-                    "description": "Specify generalized relability levels at which to estimate the corresponding response value",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.nond.gen_reliability_levels",
-                            "ir_value_type": "RealVectorArray",
-                            "storage_type": "RESPONSE_LEVELS_ARRAY"
-                        }
-                    ]
-                },
                 "response_levels": {
                     "anyOf": [
                         {
@@ -39736,24 +39716,10 @@
                         }
                     ]
                 },
-                "distribution": {
+                "gen_reliability_levels": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
-                        },
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
-                        }
-                    ],
-                    "description": "Selection of cumulative or complementary cumulative functions",
-                    "title": "Distribution",
-                    "x-model-default": "DistributionCumulComplContext1Cumulative",
-                    "x-union-pattern": 1
-                },
-                "reliability_levels": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/ReliabilityLevelsReliabilityLevels"
+                            "$ref": "#/$defs/GenReliabilityLevelsGenReliabilityLevels"
                         },
                         {
                             "type": "null"
@@ -39761,10 +39727,10 @@
                     ],
                     "argument": "values",
                     "default": null,
-                    "description": "Specify reliability levels at which the response values will be estimated",
+                    "description": "Specify generalized relability levels at which to estimate the corresponding response value",
                     "x-materialization": [
                         {
-                            "ir_key": "method.nond.reliability_levels",
+                            "ir_key": "method.nond.gen_reliability_levels",
                             "ir_value_type": "RealVectorArray",
                             "storage_type": "RESPONSE_LEVELS_ARRAY"
                         }
@@ -39789,6 +39755,40 @@
                             "storage_type": "RESPONSE_LEVELS_ARRAY"
                         }
                     ]
+                },
+                "reliability_levels": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/ReliabilityLevelsReliabilityLevels"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "values",
+                    "default": null,
+                    "description": "Specify reliability levels at which the response values will be estimated",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.reliability_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
+                },
+                "distribution": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
+                        },
+                        {
+                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
+                        }
+                    ],
+                    "description": "Selection of cumulative or complementary cumulative functions",
+                    "title": "Distribution",
+                    "x-model-default": "DistributionCumulComplContext1Cumulative",
+                    "x-union-pattern": 1
                 },
                 "id_method": {
                     "anyOf": [
@@ -40071,7 +40071,14 @@
                     "default": null,
                     "description": "Internal use only",
                     "title": "Inferred Upper Bounds",
-                    "x-internal-only": true
+                    "x-internal-only": true,
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.lognormal_uncertain.inferred_upper_bounds",
+                            "ir_value_type": "RealVector",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 }
             },
             "required": [
@@ -46387,6 +46394,23 @@
                     "description": "Sample allocation approach for multifidelity expansions",
                     "x-union-pattern": 2
                 },
+                "refinement_metric": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/LevelMappings"
+                        },
+                        {
+                            "$ref": "#/$defs/RefinementMetricCov"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Metric used for guiding adaptive refinement during UQ.",
+                    "title": "Refinement Metric",
+                    "x-union-pattern": 2
+                },
                 "convergence_tolerance": {
                     "anyOf": [
                         {
@@ -46415,23 +46439,6 @@
                     "default": null,
                     "description": "type of statistical metric roll-up for multifidelity UQ methods",
                     "title": "Statistics Mode",
-                    "x-union-pattern": 2
-                },
-                "refinement_metric": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/LevelMappings"
-                        },
-                        {
-                            "$ref": "#/$defs/RefinementMetricCov"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "default": null,
-                    "description": "Metric used for guiding adaptive refinement during UQ.",
-                    "title": "Refinement Metric",
                     "x-union-pattern": 2
                 },
                 "p_refinement": {
@@ -49583,19 +49590,6 @@
                     "title": "Discrepancy Emulation",
                     "x-union-pattern": 2
                 },
-                "convergence_tolerance": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "value",
-                    "default": null,
-                    "description": "Stopping criterion based on objective function or statistics convergence"
-                },
                 "refinement_metric": {
                     "anyOf": [
                         {
@@ -49612,6 +49606,19 @@
                     "description": "Metric used for guiding adaptive refinement during UQ.",
                     "title": "Refinement Metric",
                     "x-union-pattern": 2
+                },
+                "convergence_tolerance": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "value",
+                    "default": null,
+                    "description": "Stopping criterion based on objective function or statistics convergence"
                 },
                 "allocation_control": {
                     "anyOf": [
@@ -53904,6 +53911,23 @@
                     "description": "Sample allocation approach for multifidelity expansions",
                     "x-union-pattern": 2
                 },
+                "refinement_metric": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/LevelMappings"
+                        },
+                        {
+                            "$ref": "#/$defs/RefinementMetricCov"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Metric used for guiding adaptive refinement during UQ.",
+                    "title": "Refinement Metric",
+                    "x-union-pattern": 2
+                },
                 "convergence_tolerance": {
                     "anyOf": [
                         {
@@ -53932,23 +53956,6 @@
                     "default": null,
                     "description": "type of statistical metric roll-up for multifidelity UQ methods",
                     "title": "Statistics Mode",
-                    "x-union-pattern": 2
-                },
-                "refinement_metric": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/LevelMappings"
-                        },
-                        {
-                            "$ref": "#/$defs/RefinementMetricCov"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "default": null,
-                    "description": "Metric used for guiding adaptive refinement during UQ.",
-                    "title": "Refinement Metric",
                     "x-union-pattern": 2
                 },
                 "p_refinement": {
@@ -54814,6 +54821,23 @@
                     "description": "Sample allocation approach for multifidelity expansions",
                     "x-union-pattern": 2
                 },
+                "refinement_metric": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/LevelMappings"
+                        },
+                        {
+                            "$ref": "#/$defs/RefinementMetricCov"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Metric used for guiding adaptive refinement during UQ.",
+                    "title": "Refinement Metric",
+                    "x-union-pattern": 2
+                },
                 "convergence_tolerance": {
                     "anyOf": [
                         {
@@ -54842,23 +54866,6 @@
                     "default": null,
                     "description": "type of statistical metric roll-up for multifidelity UQ methods",
                     "title": "Statistics Mode",
-                    "x-union-pattern": 2
-                },
-                "refinement_metric": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/LevelMappings"
-                        },
-                        {
-                            "$ref": "#/$defs/RefinementMetricCov"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "default": null,
-                    "description": "Metric used for guiding adaptive refinement during UQ.",
-                    "title": "Refinement Metric",
                     "x-union-pattern": 2
                 },
                 "max_refinement_iterations": {
@@ -56485,19 +56492,6 @@
                     "title": "Discrepancy Emulation",
                     "x-union-pattern": 2
                 },
-                "convergence_tolerance": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "value",
-                    "default": null,
-                    "description": "Stopping criterion based on objective function or statistics convergence"
-                },
                 "refinement_metric": {
                     "anyOf": [
                         {
@@ -56514,6 +56508,19 @@
                     "description": "Metric used for guiding adaptive refinement during UQ.",
                     "title": "Refinement Metric",
                     "x-union-pattern": 2
+                },
+                "convergence_tolerance": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "value",
+                    "default": null,
+                    "description": "Stopping criterion based on objective function or statistics convergence"
                 },
                 "allocation_control": {
                     "anyOf": [
@@ -59976,7 +59983,14 @@
                     "default": null,
                     "description": "Internal use only",
                     "title": "Inferred Lower Bounds",
-                    "x-internal-only": true
+                    "x-internal-only": true,
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.normal_uncertain.inferred_lower_bounds",
+                            "ir_value_type": "RealVector",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 },
                 "inferred_upper_bounds": {
                     "anyOf": [
@@ -59993,7 +60007,14 @@
                     "default": null,
                     "description": "Internal use only",
                     "title": "Inferred Upper Bounds",
-                    "x-internal-only": true
+                    "x-internal-only": true,
+                    "x-materialization": [
+                        {
+                            "ir_key": "variables.normal_uncertain.inferred_upper_bounds",
+                            "ir_value_type": "RealVector",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 }
             },
             "required": [
@@ -65467,19 +65488,6 @@
                     "title": "Basis Family",
                     "x-union-pattern": 2
                 },
-                "convergence_tolerance": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "value",
-                    "default": null,
-                    "description": "Stopping criterion based on objective function or statistics convergence"
-                },
                 "refinement_metric": {
                     "anyOf": [
                         {
@@ -65496,6 +65504,19 @@
                     "description": "Metric used for guiding adaptive refinement during UQ.",
                     "title": "Refinement Metric",
                     "x-union-pattern": 2
+                },
+                "convergence_tolerance": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "value",
+                    "default": null,
+                    "description": "Stopping criterion based on objective function or statistics convergence"
                 },
                 "p_refinement": {
                     "anyOf": [
@@ -68155,20 +68176,6 @@
                         }
                     ]
                 },
-                "distribution": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
-                        },
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
-                        }
-                    ],
-                    "description": "Selection of cumulative or complementary cumulative functions",
-                    "title": "Distribution",
-                    "x-model-default": "DistributionCumulComplContext1Cumulative",
-                    "x-union-pattern": 1
-                },
                 "response_levels": {
                     "anyOf": [
                         {
@@ -68188,6 +68195,20 @@
                             "storage_type": "RESPONSE_LEVELS_ARRAY"
                         }
                     ]
+                },
+                "distribution": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
+                        },
+                        {
+                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
+                        }
+                    ],
+                    "description": "Selection of cumulative or complementary cumulative functions",
+                    "title": "Distribution",
+                    "x-model-default": "DistributionCumulComplContext1Cumulative",
+                    "x-union-pattern": 1
                 },
                 "id_method": {
                     "anyOf": [
@@ -72427,20 +72448,6 @@
                         }
                     ]
                 },
-                "distribution": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
-                        },
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
-                        }
-                    ],
-                    "description": "Selection of cumulative or complementary cumulative functions",
-                    "title": "Distribution",
-                    "x-model-default": "DistributionCumulComplContext1Cumulative",
-                    "x-union-pattern": 1
-                },
                 "probability_levels": {
                     "anyOf": [
                         {
@@ -72460,6 +72467,20 @@
                             "storage_type": "RESPONSE_LEVELS_ARRAY"
                         }
                     ]
+                },
+                "distribution": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
+                        },
+                        {
+                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
+                        }
+                    ],
+                    "description": "Selection of cumulative or complementary cumulative functions",
+                    "title": "Distribution",
+                    "x-model-default": "DistributionCumulComplContext1Cumulative",
+                    "x-union-pattern": 1
                 },
                 "id_method": {
                     "anyOf": [
@@ -73034,26 +73055,6 @@
                     "x-model-default": "RngOptionsContext2Mt19937",
                     "x-union-pattern": 1
                 },
-                "gen_reliability_levels": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/GenReliabilityLevelsGenReliabilityLevels"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "values",
-                    "default": null,
-                    "description": "Specify generalized relability levels at which to estimate the corresponding response value",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.nond.gen_reliability_levels",
-                            "ir_value_type": "RealVectorArray",
-                            "storage_type": "RESPONSE_LEVELS_ARRAY"
-                        }
-                    ]
-                },
                 "response_levels": {
                     "anyOf": [
                         {
@@ -73074,24 +73075,10 @@
                         }
                     ]
                 },
-                "distribution": {
+                "gen_reliability_levels": {
                     "anyOf": [
                         {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
-                        },
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
-                        }
-                    ],
-                    "description": "Selection of cumulative or complementary cumulative functions",
-                    "title": "Distribution",
-                    "x-model-default": "DistributionCumulComplContext1Cumulative",
-                    "x-union-pattern": 1
-                },
-                "reliability_levels": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/ReliabilityLevelsReliabilityLevels"
+                            "$ref": "#/$defs/GenReliabilityLevelsGenReliabilityLevels"
                         },
                         {
                             "type": "null"
@@ -73099,10 +73086,10 @@
                     ],
                     "argument": "values",
                     "default": null,
-                    "description": "Specify reliability levels at which the response values will be estimated",
+                    "description": "Specify generalized relability levels at which to estimate the corresponding response value",
                     "x-materialization": [
                         {
-                            "ir_key": "method.nond.reliability_levels",
+                            "ir_key": "method.nond.gen_reliability_levels",
                             "ir_value_type": "RealVectorArray",
                             "storage_type": "RESPONSE_LEVELS_ARRAY"
                         }
@@ -73127,6 +73114,40 @@
                             "storage_type": "RESPONSE_LEVELS_ARRAY"
                         }
                     ]
+                },
+                "reliability_levels": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/ReliabilityLevelsReliabilityLevels"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "values",
+                    "default": null,
+                    "description": "Specify reliability levels at which the response values will be estimated",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.reliability_levels",
+                            "ir_value_type": "RealVectorArray",
+                            "storage_type": "RESPONSE_LEVELS_ARRAY"
+                        }
+                    ]
+                },
+                "distribution": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
+                        },
+                        {
+                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
+                        }
+                    ],
+                    "description": "Selection of cumulative or complementary cumulative functions",
+                    "title": "Distribution",
+                    "x-model-default": "DistributionCumulComplContext1Cumulative",
+                    "x-union-pattern": 1
                 },
                 "final_moments": {
                     "anyOf": [
@@ -75848,19 +75869,6 @@
                     "title": "Basis Family",
                     "x-union-pattern": 2
                 },
-                "convergence_tolerance": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "value",
-                    "default": null,
-                    "description": "Stopping criterion based on objective function or statistics convergence"
-                },
                 "refinement_metric": {
                     "anyOf": [
                         {
@@ -75877,6 +75885,19 @@
                     "description": "Metric used for guiding adaptive refinement during UQ.",
                     "title": "Refinement Metric",
                     "x-union-pattern": 2
+                },
+                "convergence_tolerance": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/MethodConvergenceTolWithTypeContext2ConvergenceTol"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "value",
+                    "default": null,
+                    "description": "Stopping criterion based on objective function or statistics convergence"
                 },
                 "max_refinement_iterations": {
                     "default": 9223372036854775807,

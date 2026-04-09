@@ -309,9 +309,6 @@ public:
   /// initial values of the lognormal uncertain variables (from the \c
   /// initial_point specification in \ref VarCAUV_Lognormal)
   RealVector lognormalUncVars;
-  /// inferred lower bounds for the lognormal uncertain variables
-  /// (equals distribution bounds if specified, otherwise 0 or inferred)
-  RealVector lognormalUncInferredLowerBnds;
   /// inferred upper bounds for the lognormal uncertain variables
   /// (equals distribution bounds if specified, otherwise mean + 3*sigma)
   RealVector lognormalUncInferredUpperBnds;

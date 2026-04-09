@@ -2007,10 +2007,6 @@
         "key": "variables.lognormal_uncertain.error_factors",
         "value_type": "RealVector"
       },
-      "lognormal_uncertain.inferred_lower_bounds": {
-        "key": "variables.lognormal_uncertain.inferred_lower_bounds",
-        "value_type": "RealVector"
-      },
       "lognormal_uncertain.inferred_upper_bounds": {
         "key": "variables.lognormal_uncertain.inferred_upper_bounds",
         "value_type": "RealVector"
