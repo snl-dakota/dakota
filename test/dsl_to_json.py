@@ -735,6 +735,8 @@ class DakotaDSLConverter:
     def _load_pydantic_model(self):
         """Load the Pydantic DakotaStudy model for validation"""
         candidate_roots = []
+        import_errors = []
+        last_error = None
         if env_root := os.environ.get("DAKOTA_PYTHON_PACKAGE_DIR"):
             candidate_roots.append(Path(env_root))
 
@@ -791,7 +793,10 @@ class DakotaDSLConverter:
                 print("Pydantic model loaded for validation")
             return
         except ImportError:
-            pass
+            last_error = sys.exc_info()[1]
+            import_errors.append(
+                f"PYTHONPATH import dakota.spec.study failed: {last_error}"
+            )
 
         for root in candidate_roots:
             if not root.exists():
@@ -806,6 +811,10 @@ class DakotaDSLConverter:
                     print(f"Pydantic model loaded for validation from {root}")
                 return
             except ImportError:
+                last_error = sys.exc_info()[1]
+                import_errors.append(
+                    f"PYTHONPATH import with root {root} failed: {last_error}"
+                )
                 try:
                     DakotaStudy = try_import_from_root(root)
                     self._dakota_study_class = DakotaStudy
@@ -813,14 +822,23 @@ class DakotaDSLConverter:
                         print(f"Pydantic model loaded for validation from {root}")
                     return
                 except ImportError:
+                    last_error = sys.exc_info()[1]
+                    import_errors.append(
+                        f"Direct import from root {root} failed: {last_error}"
+                    )
                     continue
 
         details = ", ".join(str(p) for p in candidate_roots if p.exists())
+        error_details = "; ".join(import_errors) if import_errors else "no import attempts recorded"
         print(
             "Warning: Could not import Pydantic models for validation: "
-            f"No module named 'dakota.spec' (searched PYTHONPATH and fallback roots: {details})"
+            "Could not import dakota.spec.study "
+            f"(searched PYTHONPATH and fallback roots: {details}; "
+            f"observed import errors: {error_details})"
         )
-        raise ModuleNotFoundError("No module named 'dakota.spec'")
+        if last_error is not None:
+            raise last_error
+        raise ModuleNotFoundError("No module named 'dakota.spec.study'")
     
     def convert(self, input_path: str, output_path: Optional[str] = None,
                 raw_output_path: Optional[str] = None) -> Dict[str, Any]:

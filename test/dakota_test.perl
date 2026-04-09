@@ -1100,10 +1100,29 @@ sub prepare_json_test_input {
   close($ordered_fh);
   fix_environment_bug($ordered_input);
 
-  my $convert_cmd =
-    "$json_python $json_converter --grammar $json_grammar --quiet " .
-    "--output $validated_json $ordered_input";
-  my $convert_status = system($convert_cmd);
+  my @convert_cmd = (
+    $json_python,
+    $json_converter,
+    "--grammar", $json_grammar,
+    "--quiet",
+    "--output", $validated_json,
+    $ordered_input
+  );
+
+  my $convert_status;
+  if ($ENV{'DAKOTA_TEST_JSON_PYTHON'}) {
+    local $ENV{'PYTHONPATH'};
+    if ($ENV{'DAKOTA_PYTHON_PACKAGE_DIR'}) {
+      $ENV{'PYTHONPATH'} = $ENV{'DAKOTA_PYTHON_PACKAGE_DIR'};
+    }
+    else {
+      delete $ENV{'PYTHONPATH'};
+    }
+    $convert_status = system(@convert_cmd);
+  }
+  else {
+    $convert_status = system(@convert_cmd);
+  }
   if ($convert_status != 0) {
     die "JSON conversion failed for $ordered_input\n";
   }
