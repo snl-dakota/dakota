@@ -86,12 +86,6 @@ MixedVariables(const ProblemDescDB& problem_db, const ShortShortPair& view):
     "variables.continuous_state.initial_state"
   }, allContinuousVars, acv_offset, get_rv);
 
-  std::cout << "MixedVariables, after writing allContinuousVars.\n";
-  for(int i = 0; i < len(allContinuousVars); ++i)
-    std::cout << allContinuousVars[i] << std::endl;
-  std::cout << "MixedVariables, done writing\n";
-
-
   // --- Discrete integer variables ---
   copy_from_db(problem_db, {
     "variables.discrete_design_range.initial_point",
