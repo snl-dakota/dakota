@@ -1951,11 +1951,11 @@ compute_G_g_from_N(const RealVector& N_infl, RealSymMatrix& G, RealVector& g)
     abort_handler(METHOD_ERROR); break;
   }
 
-  //if (outputLevel >= DEBUG_OUTPUT) {
+  if (outputLevel >= DEBUG_OUTPUT) {
     Cout << "For dag:\n"; print_dag(active_dag, approx_set);
-    Cout //<< "and N vector:\n" << N_infl
-         << "Symmetric G matrix:\n" << G << "g vector:\n" << g << std::endl;
-  //}
+    Cout << "and N vector:\n" << N_infl << "Symmetric G matrix:\n" << G
+	 << "g vector:\n" << g << std::endl;
+  }
 }
 
 
@@ -2043,12 +2043,10 @@ compute_G_g_gradients_from_N(const RealVector& N_infl,
     //
     // z2[src] = z[src] = N_infl[src]; // z2 not carried here since redundant
     // --> dz2_i/dN_j = delta_ij
-    //
-    // > Bomarito: z1_i is "N_{beta_i}" where beta_i = beta_j
 
-    // Given recursion in N, we pre-compute dz1_i/dN_j here for each v and loop
-    // over v, rather than replacing v loop with direct insertions as in ACV-MF
-
+    // Bomarito: z1_i is "N_{beta_i}"
+    // Given recursion in N, we pre-compute dz1_i/dN_v here and loop over v
+    // below, rather than replacing v loop with direct insertions as in ACV-MF
     RealVector z1, z2;              unroll_z1_z2(N_infl, z1, z2);
     RealMatrix z1_grads, z2_grads;  unroll_z1_z2_gradients(z1_grads, z2_grads);
 
@@ -2208,8 +2206,8 @@ compute_G_g_gradients_from_N(const RealVector& N_infl,
     abort_handler(METHOD_ERROR); break;
   }
 
-  //if (outputLevel >= DEBUG_OUTPUT)
-    Cout //<< "For sub-method " << mlmfSubMethod << ", N vector:\n" << N_infl
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "For sub-method " << mlmfSubMethod << ", N vector:\n" << N_infl
 	 << "Symmetric dG/dN matrix array:\n" << dG_dN
          << "dg/dN vector array:\n" << dg_dN << std::endl;
 }
@@ -2240,9 +2238,9 @@ estimator_variances(const RealVector& cd_vars, RealVector& est_var)
     combine_with_covariance(covLL[q], covLH, q, approx_set, GMat, gVec,C_G,c_g);
     solve_for_C_G_c_g(C_G, C_G_inv, c_g, lhs, false, true); // copy c_g
     trip_prod = c_g.dot(lhs);
-    if (outputLevel >= DEBUG_OUTPUT)
-      Cout << "C_G_inv:\n" << C_G_inv << "triple_product(" << q << ") = "
-	   << trip_prod << '\n';
+    //if (outputLevel >= DEBUG_OUTPUT)
+    //  Cout << "C_G_inv:\n" << C_G_inv << "triple_product(" << q << ") = "
+    //	     << trip_prod << '\n';
     est_var[q] = varH[q] / N_H - trip_prod;
   }
   if (outputLevel >= DEBUG_OUTPUT)
@@ -2284,13 +2282,13 @@ estimator_variance_gradients(const RealVector& cd_vars, RealMatrix& ev_grads)
     for (v=0; v<num_v; ++v) {
       // compute dCG_inv_dN = -CG_inv^T dCG_dN[v] CG_inv
       matrixTripleProduct(-1., dCG_dN[v], CG_inv, dCG_inv_dN); //A,W,B
-      if (outputLevel >= DEBUG_OUTPUT) Cout << "dCG_inv/dN:\n" << dCG_inv_dN;
+      //if (outputLevel >= DEBUG_OUTPUT) Cout << "dCG_inv/dN:\n" << dCG_inv_dN;
       // form d[triple_product]/dN:
       trip_prod_grad = matVecTripleProduct(2., cg, CG_inv,     dcg_dN[v])
 	             + matVecTripleProduct(1., cg, dCG_inv_dN, cg);
-      if (outputLevel >= DEBUG_OUTPUT)
-	Cout << "trip_prod_grad(" << v << "," << q << ") = "
-	     <<  trip_prod_grad << '\n';
+      //if (outputLevel >= DEBUG_OUTPUT)
+      //  Cout << "trip_prod_grad(" << v << "," << q << ") = "
+      //       <<  trip_prod_grad << '\n';
       // EV  = var_H / N_H - trip_prod
       // dEV/dN = -var_H / N_H^2 - trip_prod_grad (N_i = N_H)
       //        =                - trip_prod_grad (otherwise)
@@ -2349,14 +2347,14 @@ estimator_variances_and_gradients(const RealVector& cd_vars,
     for (v=0; v<num_v; ++v) {
       // compute dCG_inv_dN = -CG_inv^T dCG_dN[v] CG_inv
       matrixTripleProduct(-1., dCG_dN[v], CG_inv, dCG_inv_dN); //A,W,B
-      if (outputLevel >= DEBUG_OUTPUT) Cout << "dCG_inv/dN:\n" << dCG_inv_dN;
+      //if (outputLevel >= DEBUG_OUTPUT) Cout << "dCG_inv/dN:\n" << dCG_inv_dN;
       // form d[triple_product]/dN:
       // symmetry allows combination of terms --> 2 cf^T CG_inv d[cg]
       trip_prod_grad = matVecTripleProduct(2., cg, CG_inv,     dcg_dN[v])
 	             + matVecTripleProduct(1., cg, dCG_inv_dN, cg);
-      if (outputLevel >= DEBUG_OUTPUT)
-	Cout << "trip_prod_grad(" << v << "," << q << ") = "
-	     <<  trip_prod_grad << '\n';
+      //if (outputLevel >= DEBUG_OUTPUT)
+      //  Cout << "trip_prod_grad(" << v << "," << q << ") = "
+      //       <<  trip_prod_grad << '\n';
       // EV  = var_H / N_H - trip_prod
       // dEV/dN = -var_H / N_H^2 - trip_prod_grad (N_i = N_H)
       //        =                - trip_prod_grad (otherwise)

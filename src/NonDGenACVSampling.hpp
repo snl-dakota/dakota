@@ -451,9 +451,9 @@ combine_with_covariance(const RealSymMatrix& C,	const RealMatrix& c,
 			const RealSymMatrix& G, const RealVector& g,
 			RealSymMatrix& C_G, RealVector& c_g)
 {
-  size_t i, j, n = C.numRows();  unsigned short approx_i;
-  C_G.shapeUninitialized(n);  c_g.sizeUninitialized(n);
-  for (i=0; i<n; ++i) {
+  size_t i, j, num_approx = approx_set.size();  unsigned short approx_i;
+  C_G.shapeUninitialized(num_approx);  c_g.sizeUninitialized(num_approx);
+  for (i=0; i<num_approx; ++i) {
     approx_i = approx_set[i];
     c_g[i] = c(qoi, approx_i) * g[i];
     for (j=0; j<=i; ++j)
