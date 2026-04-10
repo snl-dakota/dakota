@@ -254,9 +254,8 @@ private:
 
   void compute_F_matrix_from_r(const RealVector& r_and_N, RealSymMatrix& F);
   void compute_F_matrix_from_N(const RealVector& N, RealSymMatrix& F);
-  void compute_F_f_gradients_from_N(const RealVector& N,
-				    RealSymMatrixArray& dF_dN,
-				    RealVectorArray& df_dN);
+  void compute_F_gradients_from_N(const RealVector& N,
+				  RealSymMatrixArray& dF_dN);
 
   void combine_with_covariance(const RealSymMatrix& C, const RealMatrix& c,
 			       size_t qoi, const RealSymMatrix& F,
@@ -264,7 +263,6 @@ private:
   void combine_gradients_with_covariance(const RealSymMatrix& C,
 					 const RealMatrix& c, size_t qoi,
 					 const RealSymMatrixArray& dF_dN,
-					 const RealVectorArray& df_dN,
 					 RealSymMatrixArray& dCF_dN,
 					 RealVectorArray& dcf_dN);
 
@@ -606,12 +604,11 @@ combine_with_covariance(const RealSymMatrix& C, const RealMatrix& c, size_t qoi,
 inline void NonDACVSampling::
 combine_gradients_with_covariance(const RealSymMatrix& C, const RealMatrix& c,
 				  size_t qoi, const RealSymMatrixArray& dF_dN,
-				  const RealVectorArray& df_dN,
 				  RealSymMatrixArray& dCF_dN,
 				  RealVectorArray& dcf_dN)
 {
   // no dependence on QoI, only dependence is on N
-  size_t i, j, v, num_v = df_dN.size();
+  size_t i, j, v, num_v = dF_dN.size();
   if (dCF_dN.empty() || dcf_dN.empty()) {
     dCF_dN.resize(num_v);  dcf_dN.resize(num_v);
     for (v=0; v<num_v; ++v) {
@@ -621,7 +618,6 @@ combine_gradients_with_covariance(const RealSymMatrix& C, const RealMatrix& c,
   }
   for (v=0; v<num_v; ++v) {
     const RealSymMatrix& dF_dN_v =  dF_dN[v];
-    const RealVector&    df_dN_v =  df_dN[v];
     RealSymMatrix&      dCF_dN_v = dCF_dN[v];
     RealVector&         dcf_dN_v = dcf_dN[v];
     for (i=0; i<numApprox; ++i) {

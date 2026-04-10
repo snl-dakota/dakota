@@ -1909,12 +1909,12 @@ compute_G_g_from_N(const RealVector& N_infl, RealSymMatrix& G, RealVector& g)
     Real z_i, z_j, zi_zj, zprime_i;
     for (i=0; i<dag_size; ++i) {
       src_i = approx_set[i];   tgt_i = active_dag[i];
-      z_i   = N_infl[src_i];    z1_i  = z1[src_i];
+      z_i   = N_infl[src_i];   z1_i  = z1[src_i];
       zprime_i = z_i - z1_i; // increment between z1 and total (= z = z2)
       g[i] = (tgt_i == numApprox) ? 1./z1_i - 1./z_i : 0.;// = 1/N_H - 1/N_i
       for (j=0; j<=i; ++j) {
 	src_j = approx_set[j];  tgt_j = active_dag[j];
-	z_j   = N_infl[src_j];   zi_zj = z_i * z_j;
+	z_j   = N_infl[src_j];  zi_zj = z_i * z_j;
 	G(i,j) = 0.;     
 	if (tgt_i == tgt_j) G(i,j) += z1_i/zi_zj - 1./z_j + 1./z1_i - 1./z_i;
 	if (tgt_i == src_j) G(i,j) += z1_i/zi_zj - 1./z_j;

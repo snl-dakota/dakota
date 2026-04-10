@@ -474,7 +474,7 @@ combine_gradients_with_covariance(const RealSymMatrix& C, const RealMatrix& c,
 				  RealVectorArray& dcg_dN)
 {
   // no dependence on QoI, only dependence is on N
-  size_t i, j, v, num_v = dG_dN.size(), num_approx = approx_set.size();
+  size_t i, j, v, num_approx = approx_set.size(), num_v = num_approx+1;
   if (dCG_dN.empty() || dcg_dN.empty()) {
     dCG_dN.resize(num_v);  dcg_dN.resize(num_v);
     for (v=0; v<num_v; ++v) {
@@ -490,7 +490,7 @@ combine_gradients_with_covariance(const RealSymMatrix& C, const RealMatrix& c,
     RealVector&         dcg_dN_v = dcg_dN[v];
     for (i=0; i<num_approx; ++i) {
       approx_i = approx_set[i];
-      dcg_dN_v(i) = c(qoi,approx_i) * dG_dN_v(i,i); // c o dg/dN
+      dcg_dN_v(i) = c(qoi,approx_i) * dg_dN_v(i); // c o dg/dN
       for (j=0; j<=i; ++j)
 	dCG_dN_v(i,j) = C(approx_i,approx_set[j]) * dG_dN_v(i,j); // C o dG/dN
     }

@@ -651,22 +651,18 @@ compute_F_matrix_from_N(const RealVector& N, RealSymMatrix& F)
 
 
 void NonDACVSampling::
-compute_F_f_gradients_from_N(const RealVector& N, RealSymMatrixArray& dF_dN,
-			     RealVectorArray& df_dN)
+compute_F_gradients_from_N(const RealVector& N, RealSymMatrixArray& dF_dN)
 {
   // no dependence on QoI, only dependence is on N
   size_t i, j, v, num_v = N.length();
-  if (dF_dN.empty() || df_dN.empty()) {
-    dF_dN.resize(num_v);  df_dN.resize(num_v);
-    for (i=0; i<num_v; ++i) {
-      dF_dN[i].shape(numApprox); // init to 0
-      df_dN[i].size(numApprox);  // init to 0
-    }
+  if (dF_dN.empty()) {
+    dF_dN.resize(num_v);
+    for (v=0; v<num_v; ++v)
+      dF_dN[v].shape(numApprox); // init to 0
   }
 
   Real N_i, N_A = N[numApprox];
   RealSymMatrix& dF_dN_A = dF_dN[numApprox];
-  RealVector&    df_dN_A = df_dN[numApprox];
   switch (mlmfSubMethod) {
   // MFMC case is untested/inactive due to matrix-free approach in
   // NonDMultifidelitySampling::estimator_variance_ratio_gradients()
@@ -675,14 +671,14 @@ compute_F_f_gradients_from_N(const RealVector& N, RealSymMatrixArray& dF_dN,
     size_t ip1, num_am1 = numApprox - 1;  Real N_i, N_ip1;
     for (i=0; i<num_am1; ++i) { // ip1 < A  (i < A-1)
       ip1 = i+1;  N_i = N[i];  N_ip1 = N[ip1];
-      dF_dN[i](i,i)   = df_dN[i](i)   =  N_A / (N_i   * N_i);  // v == i
-      dF_dN[ip1](i,i) = df_dN[ip1](i) = -N_A / (N_ip1 * N_ip1);// v == i+1
+      dF_dN[i](i,i)   =  N_A / (N_i   * N_i);  // v == i
+      dF_dN[ip1](i,i) = -N_A / (N_ip1 * N_ip1);// v == i+1
       dF_dN_A(i,i)    = (N_i - N_ip1) / (N_i * N_ip1);         // v == numApprox
     }
     // ip1 == A  (i == A-1)
     // F(num_am1,num_am1) = (N_am1 - N_A) / N_am1     [since N_ip1 = N_A]
     i = num_am1;  N_i = N[i];
-    dF_dN[i](i,i) = df_dN[i](i) = N_A / (N_i * N_i); // v == A-1 == i
+    dF_dN[i](i,i) = N_A / (N_i * N_i); // v == A-1 == i
     dF_dN_A(i,i)  = -1. / N_i;                       // v == A   == ip1
     break;
   }
@@ -691,8 +687,8 @@ compute_F_f_gradients_from_N(const RealVector& N, RealSymMatrixArray& dF_dN,
     for (i=0; i<numApprox; ++i) {
       N_i = N[i];  Ni_ratio = (N_i - N_A) / N_i;
       N_A_div_N_sq_i = N_A / (N_i * N_i);
-      dF_dN[i](i,i) = df_dN[i](i) = N_A_div_N_sq_i; // v == i
-      dF_dN_A(i,i)  = df_dN_A(i)  = -1. / N_i;      // v == numApprox
+      dF_dN[i](i,i) = N_A_div_N_sq_i; // v == i
+      dF_dN_A(i,i)  = -1. / N_i;      // v == numApprox
       for (j=0; j<i; ++j) {
 	N_j = N[j];  Nj_ratio = (N_j - N_A) / N_j;
 	N_A_div_N_sq_j = N_A / (N_j * N_j);
@@ -708,8 +704,8 @@ compute_F_f_gradients_from_N(const RealVector& N, RealSymMatrixArray& dF_dN,
     for (i=0; i<numApprox; ++i) {
       N_i = N[i];  neg_inv_N_i = -1. / N_i;
       N_A_div_N_sq_i = N_A / (N_i * N_i);
-      dF_dN[i](i,i) = df_dN[i](i) = N_A_div_N_sq_i; // v == i
-      dF_dN_A(i,i)  = df_dN_A(i)  = neg_inv_N_i;    // v == numApprox
+      dF_dN[i](i,i) = N_A_div_N_sq_i; // v == i
+      dF_dN_A(i,i)  = neg_inv_N_i;    // v == numApprox
       for (j=0; j<i; ++j) {
 	N_j = N[j];
 	// C++ standard: min,max return 1st arg when args are equivalent
@@ -734,8 +730,7 @@ compute_F_f_gradients_from_N(const RealVector& N, RealSymMatrixArray& dF_dN,
 
   //if (outputLevel >= DEBUG_OUTPUT)
   //  Cout << "For sub-method " << mlmfSubMethod << ", N vector:\n" << N
-  // 	   << "dF/dN matrix array:\n" << dF_dN
-  // 	   << "df/dN vector array:\n" << df_dN << std::endl;
+  // 	   << "dF/dN matrix array:\n" << dF_dN << std::endl;
 }
 
 
@@ -779,19 +774,18 @@ estimator_variance_gradients(const RealVector& cd_vars, RealMatrix& ev_grads)
 
   RealVector cf, N_vec, lhs;  RealMatrix CF_inv_rm;
   RealSymMatrix F, CF, CF_inv, dCF_inv_dN(numApprox);
-  RealVectorArray df_dN, dcf_dN;  RealSymMatrixArray dF_dN, dCF_dN;
+  RealVectorArray dcf_dN;  RealSymMatrixArray dF_dN, dCF_dN;
 
   design_vars_to_N(cd_vars, N_vec);
   compute_F_matrix_from_N(N_vec, F);
-  compute_F_f_gradients_from_N(N_vec, dF_dN, df_dN);
+  compute_F_gradients_from_N(N_vec, dF_dN);
   Real trip_prod, trip_prod_grad, N_H = N_vec[numApprox];
 
   for (q=0; q<numFunctions; ++q) {
     const RealSymMatrix& covLL_q = covLL[q];
     // form d[triple_prod]/dN:
     combine_with_covariance(covLL_q, covLH, q, F, CF, cf);
-    combine_gradients_with_covariance(covLL_q, covLH, q, dF_dN, df_dN,
-				      dCF_dN, dcf_dN);
+    combine_gradients_with_covariance(covLL_q, covLH, q, dF_dN, dCF_dN, dcf_dN);
     solve_for_C_F_c_f(CF, CF_inv_rm, cf, lhs, false, true);
     trip_prod = cf.dot(lhs);
     copy_data(CF_inv_rm, CF_inv);
@@ -826,18 +820,17 @@ estimator_variances_and_gradients(const RealVector& cd_vars,
 
   RealSymMatrix F, CF, CF_inv, dCF_inv_dN(numApprox);
   RealSymMatrixArray dF_dN, dCF_dN;  RealMatrix CF_inv_rm;
-  RealVector cf, lhs, N_vec;         RealVectorArray df_dN, dcf_dN;
+  RealVector cf, lhs, N_vec;         RealVectorArray dcf_dN;
 
   design_vars_to_N(cd_vars, N_vec);
   compute_F_matrix_from_N(N_vec, F);
-  compute_F_f_gradients_from_N(N_vec, dF_dN, df_dN);
+  compute_F_gradients_from_N(N_vec, dF_dN);
   Real trip_prod, trip_prod_grad, varH_q, N_H = N_vec[numApprox];
 
   for (q=0; q<numFunctions; ++q) {
     const RealSymMatrix& covLL_q = covLL[q];  varH_q = varH[q];
     combine_with_covariance(covLL_q, covLH, q, F, CF, cf);
-    combine_gradients_with_covariance(covLL_q, covLH, q, dF_dN, df_dN,
-				      dCF_dN, dcf_dN);
+    combine_gradients_with_covariance(covLL_q, covLH, q, dF_dN, dCF_dN, dcf_dN);
     solve_for_C_F_c_f(CF, CF_inv_rm, cf, lhs, false, true);
     trip_prod = cf.dot(lhs);
     est_var[q] = (varH_q - trip_prod) / N_H;
@@ -900,18 +893,17 @@ estimator_variance_ratio_gradients(const RealVector& cd_vars,
 
   Real rcond;  RealVector cf, N_vec;  RealMatrix CF_inv_rm;
   RealSymMatrix F, CF, CF_inv, dCF_inv_dN(numApprox);
-  RealVectorArray df_dN, dcf_dN;  RealSymMatrixArray dF_dN, dCF_dN;
+  RealVectorArray dcf_dN;  RealSymMatrixArray dF_dN, dCF_dN;
 
   design_vars_to_N(cd_vars, N_vec);
   compute_F_matrix_from_N(N_vec, F);
-  compute_F_f_gradients_from_N(N_vec, dF_dN, df_dN);
+  compute_F_gradients_from_N(N_vec, dF_dN);
 
   for (q=0; q<numFunctions; ++q) {
     const RealSymMatrix& covLL_q = covLL[q];
     // form d[triple_prod]/dN:
     combine_with_covariance(covLL_q, covLH, q, F, CF, cf);
-    combine_gradients_with_covariance(covLL_q, covLH, q, dF_dN, df_dN,
-				      dCF_dN, dcf_dN);
+    combine_gradients_with_covariance(covLL_q, covLH, q, dF_dN, dCF_dN, dcf_dN);
     pseudo_inverse(CF, CF_inv_rm, rcond);
     copy_data(CF_inv_rm, CF_inv);
     for (v=0; v<num_v; ++v) {
@@ -942,19 +934,18 @@ estimator_variance_ratios_and_gradients(const RealVector& cd_vars,
 
   RealSymMatrix F, CF, CF_inv, dCF_inv_dN(numApprox);
   RealSymMatrixArray dF_dN, dCF_dN;  RealMatrix CF_inv_rm;
-  RealVector cf, lhs, N_vec;  RealVectorArray df_dN, dcf_dN;  Real varH_q;
+  RealVector cf, lhs, N_vec;  RealVectorArray dcf_dN;  Real varH_q;
 
   design_vars_to_N(cd_vars, N_vec);
   compute_F_matrix_from_N(N_vec, F);
-  compute_F_f_gradients_from_N(N_vec, dF_dN, df_dN);
+  compute_F_gradients_from_N(N_vec, dF_dN);
 
   for (q=0; q<numFunctions; ++q) {
     const RealSymMatrix& covLL_q = covLL[q];  varH_q = varH[q];
     combine_with_covariance(covLL_q, covLH, q, F, CF, cf);
     solve_for_C_F_c_f(CF, CF_inv_rm, cf, lhs, false, true);
     estvar_ratios[q] = 1. - compute_R_sq(cf, lhs, varH_q);
-    combine_gradients_with_covariance(covLL_q, covLH, q, dF_dN, df_dN,
-				      dCF_dN, dcf_dN);
+    combine_gradients_with_covariance(covLL_q, covLH, q, dF_dN, dCF_dN, dcf_dN);
     copy_data(CF_inv_rm, CF_inv);
     for (v=0; v<num_v; ++v) {
       Teuchos::symMatTripleProduct(Teuchos::NO_TRANS, -1., dCF_dN[v],
