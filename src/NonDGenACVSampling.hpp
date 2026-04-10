@@ -207,11 +207,6 @@ private:
 			       RealVector& avg_eval_ratios);
 
   //void compute_G_g(const RealVector& cd_vars);
-  void compute_G_g_from_N(const RealVector& N_vec, RealMatrix& G,RealVector& g);
-  void compute_G_g_gradients_from_N(const RealVector& N_vec,
-				    RealMatrixArray& dG_dN,
-				    RealVectorArray& dg_dN);
-
   void compute_G_g_from_N(const RealVector& N_vec, RealSymMatrix& G,
 			  RealVector& g);
   void compute_G_g_gradients_from_N(const RealVector& N_vec,
