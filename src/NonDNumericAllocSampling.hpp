@@ -353,7 +353,7 @@ protected:
   void compute_covariance(Real sum_Q1, Real sum_Q2, Real sum_Q1Q2,
 			  size_t N_shared, Real& cov_Q1Q2);
 
-  void covariance_to_correlation_sq(const RealMatrix& cov_LH,
+  void covariance_to_correlation_sq(const RealVectorArray&    cov_LH,
 				    const RealSymMatrixArray& cov_LL,
 				    const RealVector& var_H,
 				    RealMatrix& rho2_LH);
@@ -2080,7 +2080,7 @@ compute_covariance(Real sum_Q1, Real sum_Q2, Real sum_Q1Q2, size_t N_shared,
 
 
 inline void NonDNumericAllocSampling::
-covariance_to_correlation_sq(const RealMatrix& cov_LH,
+covariance_to_correlation_sq(const RealVectorArray&    cov_LH,
 			     const RealSymMatrixArray& cov_LL,
 			     const RealVector& var_H, RealMatrix& rho2_LH)
 {
@@ -2090,8 +2090,9 @@ covariance_to_correlation_sq(const RealMatrix& cov_LH,
   for (qoi=0; qoi<numFunctions; ++qoi) {
     var_H_q = var_H[qoi];
     const RealSymMatrix& cov_LL_q = cov_LL[qoi];
+    const RealVector&    cov_LH_q = cov_LH[qoi];
     for (approx=0; approx<numApprox; ++approx) {
-      cov_LH_aq = cov_LH(qoi,approx);
+      cov_LH_aq = cov_LH_q[approx];
       rho2_LH(qoi,approx) = cov_LH_aq / cov_LL_q(approx,approx)
 	                  * cov_LH_aq / var_H_q;
     }

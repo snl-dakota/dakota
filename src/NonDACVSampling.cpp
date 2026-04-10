@@ -357,7 +357,7 @@ compute_LH_statistics(RealMatrix& sum_L_pilot, RealVector& sum_H_pilot,
 		      RealMatrix& sum_LH_pilot, RealVector& sum_HH_pilot,
 		      SizetArray& N_pilot, //RealMatrix& var_L,
 		      RealVector& var_H, RealSymMatrixArray& cov_LL,
-		      RealMatrix& cov_LH, const UShortArray& approx_set)
+		      RealVectorArray& cov_LH, const UShortArray& approx_set)
 {
   //if (mlmfIter == 0) // see var_L usage in compute_allocations()
   //  compute_L_variance(sum_L_pilot, sum_LL_pilot, N_pilot, var_L);
@@ -783,9 +783,10 @@ estimator_variance_gradients(const RealVector& cd_vars, RealMatrix& ev_grads)
 
   for (q=0; q<numFunctions; ++q) {
     const RealSymMatrix& covLL_q = covLL[q];
+    const RealVector&    covLH_q = covLH[q];
     // form d[triple_prod]/dN:
-    combine_with_covariance(covLL_q, covLH, q, F, CF, cf);
-    combine_gradients_with_covariance(covLL_q, covLH, q, dF_dN, dCF_dN, dcf_dN);
+    combine_with_covariance(covLL_q, covLH_q, F, CF, cf);
+    combine_gradients_with_covariance(covLL_q, covLH_q, dF_dN, dCF_dN, dcf_dN);
     solve_for_C_F_c_f(CF, CF_inv_rm, cf, lhs, false, true);
     trip_prod = cf.dot(lhs);
     copy_data(CF_inv_rm, CF_inv);
@@ -829,8 +830,9 @@ estimator_variances_and_gradients(const RealVector& cd_vars,
 
   for (q=0; q<numFunctions; ++q) {
     const RealSymMatrix& covLL_q = covLL[q];  varH_q = varH[q];
-    combine_with_covariance(covLL_q, covLH, q, F, CF, cf);
-    combine_gradients_with_covariance(covLL_q, covLH, q, dF_dN, dCF_dN, dcf_dN);
+    const RealVector&    covLH_q = covLH[q];
+    combine_with_covariance(covLL_q, covLH_q, F, CF, cf);
+    combine_gradients_with_covariance(covLL_q, covLH_q, dF_dN, dCF_dN, dcf_dN);
     solve_for_C_F_c_f(CF, CF_inv_rm, cf, lhs, false, true);
     trip_prod = cf.dot(lhs);
     est_var[q] = (varH_q - trip_prod) / N_H;
@@ -901,9 +903,10 @@ estimator_variance_ratio_gradients(const RealVector& cd_vars,
 
   for (q=0; q<numFunctions; ++q) {
     const RealSymMatrix& covLL_q = covLL[q];
+    const RealVector&    covLH_q = covLH[q];
     // form d[triple_prod]/dN:
-    combine_with_covariance(covLL_q, covLH, q, F, CF, cf);
-    combine_gradients_with_covariance(covLL_q, covLH, q, dF_dN, dCF_dN, dcf_dN);
+    combine_with_covariance(covLL_q, covLH_q, F, CF, cf);
+    combine_gradients_with_covariance(covLL_q, covLH_q, dF_dN, dCF_dN, dcf_dN);
     pseudo_inverse(CF, CF_inv_rm, rcond);
     copy_data(CF_inv_rm, CF_inv);
     for (v=0; v<num_v; ++v) {
@@ -942,10 +945,11 @@ estimator_variance_ratios_and_gradients(const RealVector& cd_vars,
 
   for (q=0; q<numFunctions; ++q) {
     const RealSymMatrix& covLL_q = covLL[q];  varH_q = varH[q];
-    combine_with_covariance(covLL_q, covLH, q, F, CF, cf);
+    const RealVector&    covLH_q = covLH[q];
+    combine_with_covariance(covLL_q, covLH_q, F, CF, cf);
     solve_for_C_F_c_f(CF, CF_inv_rm, cf, lhs, false, true);
     estvar_ratios[q] = 1. - compute_R_sq(cf, lhs, varH_q);
-    combine_gradients_with_covariance(covLL_q, covLH, q, dF_dN, dCF_dN, dcf_dN);
+    combine_gradients_with_covariance(covLL_q, covLH_q, dF_dN, dCF_dN, dcf_dN);
     copy_data(CF_inv_rm, CF_inv);
     for (v=0; v<num_v; ++v) {
       Teuchos::symMatTripleProduct(Teuchos::NO_TRANS, -1., dCF_dN[v],
@@ -1398,20 +1402,22 @@ accumulate_lf_hf_qoi(const RealVector& fn_vals, const ShortArray& asv,
 void NonDACVSampling::
 compute_LH_covariance(const RealMatrix& sum_L_shared, const RealVector& sum_H,
 		      const RealMatrix& sum_LH, const SizetArray& N_shared,
-		      RealMatrix& cov_LH, const UShortArray& approx_set)
+		      RealVectorArray& cov_LH, const UShortArray& approx_set)
 {
-  if (cov_LH.numRows() != numFunctions) cov_LH.shape(numFunctions, numApprox);
-  else                                  cov_LH = 0.;
-
   size_t i, approx, num_approx = approx_set.size(), qoi;
+  if (cov_LH.size() != numFunctions)
+    cov_LH.resize(numFunctions);
+  for (i=0; i<numFunctions; ++i)
+    if (cov_LH[i].length() != numApprox) cov_LH[i].size(numApprox);
+    else                                 cov_LH[i] = 0.;
+
   for (i=0; i<num_approx; ++i) {
     approx = approx_set[i];
     const Real* sum_L_shared_a = sum_L_shared[approx];
     const Real*       sum_LH_a =       sum_LH[approx];
-    Real*             cov_LH_a =       cov_LH[approx];
     for (qoi=0; qoi<numFunctions; ++qoi)
       compute_covariance(sum_L_shared_a[qoi], sum_H[qoi], sum_LH_a[qoi],
-			 N_shared[qoi], cov_LH_a[qoi]);
+			 N_shared[qoi], cov_LH[qoi][approx]);
   }
 
   if (outputLevel >= DEBUG_OUTPUT)

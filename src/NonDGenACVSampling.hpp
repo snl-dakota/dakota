@@ -199,7 +199,7 @@ private:
 						  Real avg_N_H,
 						  MFSolutionData& soln);
   void cvmc_ensemble_solutions(const RealSymMatrixArray& cov_LL,
-			       const RealMatrix& cov_LH,
+			       const RealVectorArray& cov_LH,
 			       const RealVector& var_H, const RealVector& cost,
 			       const UShortArray& approx_set,
 			       const UShortArray& dag,
@@ -216,12 +216,12 @@ private:
   void unroll_z1_z2(const RealVector& N_vec, RealVector& z1, RealVector& z2);
   void unroll_z1_z2_gradients(RealMatrix& z1_grads, RealMatrix& z2_grads);
 
-  void combine_with_covariance(const RealSymMatrix& C, const RealMatrix& c,
-			       size_t qoi, const UShortArray& approx_set,
+  void combine_with_covariance(const RealSymMatrix& C, const RealVector& c,
+			       const UShortArray& approx_set,
 			       const RealSymMatrix& G, const RealVector& g,
 			       RealSymMatrix& C_G,     RealVector& c_g);
   void combine_gradients_with_covariance(const RealSymMatrix& C,
-					 const RealMatrix& c, size_t qoi,
+					 const RealVector& c,
 					 const UShortArray& approx_set,
 					 const RealSymMatrixArray& dG_dN,
 					 const RealVectorArray& dg_dN,
@@ -239,10 +239,10 @@ private:
 			 RealVector& c_g,      RealVector& lhs,
 			 bool copy_C_G = true, bool copy_c_g = true);
   Real solve_for_triple_product(const RealSymMatrix& C,	const RealSymMatrix& G,
-				const RealMatrix&    c, const RealVector& g,
-				size_t qoi, const UShortArray& approx_set);
+				const RealVector&    c, const RealVector& g,
+				const UShortArray& approx_set);
   Real compute_R_sq(const RealSymMatrix& C, const RealSymMatrix& G,
-		    const RealMatrix&    c, const RealVector& g, size_t qoi,
+		    const RealVector&    c, const RealVector& g,
 		    const UShortArray& approx_set, Real var_H_q, Real N_H);
   Real compute_R_sq(RealVector& c_g, RealVector& lhs, Real var_H_q, Real N_H);
 
@@ -271,9 +271,8 @@ private:
 
   void solve_for_genacv_control(const RealSymMatrix& cov_LL,
 				const RealSymMatrix& G,
-				const RealMatrix& cov_LH, const RealVector& g,
-				size_t qoi, const UShortArray& approx_set,
-				RealVector& beta);
+				const RealVector& cov_LH, const RealVector& g,
+				const UShortArray& approx_set,RealVector& beta);
 
   void scale_to_target(Real avg_N_H, const RealVector& cost,
 		       RealVector& avg_eval_ratios, Real& avg_hf_target,
@@ -446,16 +445,16 @@ inflate_variables_to_N(const RealVector& cd_vars, RealVector& N_vec)
 
 
 inline void NonDGenACVSampling::
-combine_with_covariance(const RealSymMatrix& C,	const RealMatrix& c,
-			size_t qoi, const UShortArray& approx_set,
-			const RealSymMatrix& G, const RealVector& g,
+combine_with_covariance(const RealSymMatrix& C,	const RealVector& c,
+			const UShortArray& approx_set,
+			const RealSymMatrix& G,	const RealVector& g,
 			RealSymMatrix& C_G, RealVector& c_g)
 {
   size_t i, j, num_approx = approx_set.size();  unsigned short approx_i;
   C_G.shapeUninitialized(num_approx);  c_g.sizeUninitialized(num_approx);
   for (i=0; i<num_approx; ++i) {
     approx_i = approx_set[i];
-    c_g[i] = c(qoi, approx_i) * g[i];
+    c_g[i] = c[approx_i] * g[i];
     for (j=0; j<=i; ++j)
       C_G(i,j) = C(approx_i,approx_set[j]) * G(i,j); // Ok for RealSymMatrix
   }
@@ -466,8 +465,8 @@ combine_with_covariance(const RealSymMatrix& C,	const RealMatrix& c,
 
 
 inline void NonDGenACVSampling::
-combine_gradients_with_covariance(const RealSymMatrix& C, const RealMatrix& c,
-				  size_t qoi, const UShortArray& approx_set,
+combine_gradients_with_covariance(const RealSymMatrix& C, const RealVector& c,
+				  const UShortArray& approx_set,
 				  const RealSymMatrixArray& dG_dN,
 				  const RealVectorArray& dg_dN,
 				  RealSymMatrixArray& dCG_dN,
@@ -490,7 +489,7 @@ combine_gradients_with_covariance(const RealSymMatrix& C, const RealMatrix& c,
     RealVector&         dcg_dN_v = dcg_dN[v];
     for (i=0; i<num_approx; ++i) {
       approx_i = approx_set[i];
-      dcg_dN_v(i) = c(qoi,approx_i) * dg_dN_v(i); // c o dg/dN
+      dcg_dN_v(i) = c[approx_i] * dg_dN_v(i); // c o dg/dN
       for (j=0; j<=i; ++j)
 	dCG_dN_v(i,j) = C(approx_i,approx_set[j]) * dG_dN_v(i,j); // C o dG/dN
     }
@@ -530,11 +529,11 @@ solve_for_C_G_c_g(RealSymMatrix& C_G, RealSymMatrix& C_G_inv, RealVector& c_g,
 
 inline Real NonDGenACVSampling::
 solve_for_triple_product(const RealSymMatrix& C, const RealSymMatrix& G,
-			 const RealMatrix&    c, const RealVector& g,
-			 size_t qoi, const UShortArray& approx_set)
+			 const RealVector&    c, const RealVector& g,
+			 const UShortArray& approx_set)
 {
   RealSymMatrix C_G, C_G_inv;  RealVector c_g, lhs;
-  combine_with_covariance(C, c, qoi, approx_set, G, g, C_G, c_g);
+  combine_with_covariance(C, c, approx_set, G, g, C_G, c_g);
   solve_for_C_G_c_g(C_G, C_G_inv, c_g, lhs, false, true); // retain original c_g
   return c_g.dot(lhs);//triple_product(c_g, lhs);
 }
@@ -542,9 +541,9 @@ solve_for_triple_product(const RealSymMatrix& C, const RealSymMatrix& G,
 
 inline Real NonDGenACVSampling::
 compute_R_sq(const RealSymMatrix& C, const RealSymMatrix& G,
-	     const RealMatrix& c, const RealVector& g, size_t qoi,
+	     const RealVector& c, const RealVector& g,
 	     const UShortArray& approx_set, Real var_H_q, Real N_H)
-{ return solve_for_triple_product(C, G, c, g, qoi, approx_set) * N_H / var_H_q;}
+{ return solve_for_triple_product(C, G, c, g, approx_set) * N_H / var_H_q;}
 
 
 inline Real NonDGenACVSampling::
@@ -572,12 +571,11 @@ precompute_genacv_controls(const RealVector& soln_vars)
 
 inline void NonDGenACVSampling::
 solve_for_genacv_control(const RealSymMatrix& cov_LL, const RealSymMatrix& G,
-			 const RealMatrix& cov_LH, const RealVector& g,
-			 size_t qoi, const UShortArray& approx_set,
-			 RealVector& beta)
+			 const RealVector&    cov_LH, const RealVector&    g,
+			 const UShortArray& approx_set, RealVector& beta)
 {
   RealSymMatrix C_G, C_G_inv;  RealVector c_g;
-  combine_with_covariance(cov_LL, cov_LH, qoi, approx_set, G, g, C_G, c_g);
+  combine_with_covariance(cov_LL, cov_LH, approx_set, G, g, C_G, c_g);
   solve_for_C_G_c_g(C_G, C_G_inv, c_g, beta, false, false);// can modify C_G,c_g
 
   //Cout << "compute_genacv_control qoi " << qoi+1 << ": C_G\n" << C_G
@@ -593,16 +591,15 @@ compute_genacv_control(const RealMatrix& sum_L_m, Real sum_H_mq,
 		       RealVector& beta)
 {
   if (mom == 1) // online|offline covariances available for mean
-    solve_for_genacv_control(covLL[qoi], GMat, covLH, gVec, qoi,
+    solve_for_genacv_control(covLL[qoi], GMat, covLH[qoi], gVec,
 			     approx_set, beta);
   else { // compute variances/covariances for higher-order moment estimators
     // compute cov_LL, cov_LH, var_H across numApprox for a particular QoI
     // > cov_LH is sized for all qoi but only 1 row is used
-    RealSymMatrix cov_LL_mq; RealMatrix cov_LH_m;
+    RealSymMatrix cov_LL_mq; RealVector cov_LH_mq;
     compute_acv_control_covariances(sum_L_m, sum_H_mq, sum_LL_mq, sum_LH_m,
-				    N_shared_q, qoi, cov_LL_mq, cov_LH_m);
-    solve_for_genacv_control(cov_LL_mq, GMat, cov_LH_m, gVec, qoi,
-			     approx_set, beta);
+				    N_shared_q, qoi, cov_LL_mq, cov_LH_mq);
+    solve_for_genacv_control(cov_LL_mq, GMat, cov_LH_mq, gVec, approx_set,beta);
   }
 }
 

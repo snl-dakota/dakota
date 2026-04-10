@@ -89,13 +89,13 @@ protected:
 			     RealMatrix& sum_LH_pilot, RealVector& sum_HH_pilot,
 			     SizetArray& N_shared_pilot, //RealMatrix& var_L,
 			     RealVector& var_H, RealSymMatrixArray& cov_LL,
-			     RealMatrix& cov_LH);
+			     RealVectorArray& cov_LH);
   void compute_LH_statistics(RealMatrix& sum_L_pilot, RealVector& sum_H_pilot,
 			     RealSymMatrixArray& sum_LL_pilot,
 			     RealMatrix& sum_LH_pilot, RealVector& sum_HH_pilot,
 			     SizetArray& N_shared_pilot, //RealMatrix& var_L,
 			     RealVector& var_H, RealSymMatrixArray& cov_LL,
-			     RealMatrix& cov_LH, const UShortArray& approx_set);
+			     RealVectorArray& cov_LH, const UShortArray& approx_set);
 
   // shared_increment() cases:
   void accumulate_acv_sums(IntRealMatrixMap& sum_L_baseline,
@@ -133,7 +133,7 @@ protected:
 				       const RealMatrix& sum_LH,
 				       size_t N_shared_q, size_t qoi,
 				       RealSymMatrix& cov_LL,
-				       RealMatrix& cov_LH);
+				       RealVector& cov_LH);
 
   void update_projected_samples(const MFSolutionData& soln,
 				const UShortArray& approx_set,
@@ -166,7 +166,7 @@ protected:
 
   /// covariances between each LF approximation and HF truth (the c
   /// vector in ACV); organized numFunctions x numApprox
-  RealMatrix covLH;
+  RealVectorArray    covLH;
   /// covariances among all LF approximations (the C matrix in ACV); organized
   /// as a numFunctions array of symmetric numApprox x numApprox matrices
   RealSymMatrixArray covLL;
@@ -241,7 +241,8 @@ private:
 
   void compute_LH_covariance(const RealMatrix& sum_L_shared,
 			     const RealVector& sum_H, const RealMatrix& sum_LH,
-			     const SizetArray& N_shared, RealMatrix& cov_LH,
+			     const SizetArray& N_shared,
+			     RealVectorArray& cov_LH,
 			     const UShortArray& approx_set);
   void compute_LL_covariance(const RealMatrix& sum_L_shared,
 			     const RealSymMatrixArray& sum_LL,
@@ -257,11 +258,11 @@ private:
   void compute_F_gradients_from_N(const RealVector& N,
 				  RealSymMatrixArray& dF_dN);
 
-  void combine_with_covariance(const RealSymMatrix& C, const RealMatrix& c,
-			       size_t qoi, const RealSymMatrix& F,
-			       RealSymMatrix& C_F, RealVector& c_f);
+  void combine_with_covariance(const RealSymMatrix& C, const RealVector& c,
+			       const RealSymMatrix& F, RealSymMatrix& C_F,
+			       RealVector& c_f);
   void combine_gradients_with_covariance(const RealSymMatrix& C,
-					 const RealMatrix& c, size_t qoi,
+					 const RealVector& c,
 					 const RealSymMatrixArray& dF_dN,
 					 RealSymMatrixArray& dCF_dN,
 					 RealVectorArray& dcf_dN);
@@ -269,10 +270,10 @@ private:
   /*
   void invert_CF(const RealSymMatrix& C, const RealSymMatrix& F,
 		 RealSymMatrix& CF_inv);
-  void compute_A_vector(const RealSymMatrix& F, const RealMatrix& c,
-			size_t qoi, RealVector& A);
-  void compute_A_vector(const RealSymMatrix& F, const RealMatrix& c,
-			size_t qoi, Real var_H_q, RealVector& A);
+  void compute_A_vector(const RealSymMatrix& F, const RealVector& c,
+			RealVector& A);
+  void compute_A_vector(const RealSymMatrix& F, const RealVector& c,
+			Real var_H_q, RealVector& A);
   Real compute_R_sq(const RealSymMatrix& CF_inv, const RealVector& A,
 		    Real var_H_q);
   */
@@ -283,9 +284,9 @@ private:
 			 RealVector& c_f, RealVector& lhs,
 			 bool copy_C_F = true, bool copy_c_f = true);
   Real solve_for_triple_product(const RealSymMatrix& C, const RealSymMatrix& F,
-				const RealMatrix&    c, size_t qoi);
+				const RealVector&    c);
   Real compute_R_sq(const RealSymMatrix& C, const RealSymMatrix& F,
-		    const RealMatrix& c, size_t qoi, Real var_H_q);
+		    const RealVector& c, Real var_H_q);
   Real compute_R_sq(RealVector& c_g, RealVector& lhs, Real var_H_q);
 
   void compute_allocations(MFSolutionData& soln);
@@ -296,8 +297,8 @@ private:
 				     RealVector& estvar_ratios);
 
   void solve_for_acv_control(const RealSymMatrix& cov_LL,
-			     const RealSymMatrix& F, const RealMatrix& cov_LH,
-			     size_t qoi, RealVector& beta);
+			     const RealSymMatrix& F, const RealVector& cov_LH,
+			     RealVector& beta);
 
   //
   //- Heading: Data
@@ -427,7 +428,7 @@ compute_LH_statistics(RealMatrix& sum_L_pilot, RealVector& sum_H_pilot,
 		      RealMatrix& sum_LH_pilot, RealVector& sum_HH_pilot,
 		      SizetArray& N_pilot, //RealMatrix& var_L,
 		      RealVector& var_H, RealSymMatrixArray& cov_LL,
-		      RealMatrix& cov_LH)
+		      RealVectorArray& cov_LH)
 {
   compute_LH_statistics(sum_L_pilot, sum_H_pilot, sum_LL_pilot, sum_LH_pilot,
 			sum_HH_pilot, N_pilot, //var_L,
@@ -478,8 +479,7 @@ invert_CF(const RealSymMatrix& C, const RealSymMatrix& F, RealSymMatrix& CF_inv)
 
 
 inline void NonDACVSampling::
-compute_A_vector(const RealSymMatrix& F, const RealMatrix& c,
-		 size_t qoi, RealVector& A)
+compute_A_vector(const RealSymMatrix& F, const RealVector& c, RealVector& A)
 {
   size_t i, num_approx = F.numRows();
   if (A.length() != num_approx) A.sizeUninitialized(num_approx);
@@ -490,8 +490,8 @@ compute_A_vector(const RealSymMatrix& F, const RealMatrix& c,
 
 
 inline void NonDACVSampling::
-compute_A_vector(const RealSymMatrix& F, const RealMatrix& c,
-		 size_t qoi, Real var_H_q, RealVector& A)
+compute_A_vector(const RealSymMatrix& F, const RealVector& c, Real var_H_q,
+                 RealVector& A)
 {
   compute_A_vector(F, c, qoi, A); // first use unscaled overload
   A.scale(1./std::sqrt(var_H_q)); // scale from c to c-bar
@@ -526,7 +526,7 @@ acv_estimator_variance_ratios(const RealSymMatrix& F, RealVector& estvar_ratios)
   for (size_t qoi=0; qoi<numFunctions; ++qoi) {
     invert_CF(covLL[qoi], F, CF_inv);
     //Cout << "Objective eval: CF inverse =\n" << CF_inv << std::endl;
-    compute_A_vector(F, covLH, qoi, A);    // defer c-bar scaling
+    compute_A_vector(F, covLH[qoi], A);    // defer c-bar scaling
     //Cout << "Objective eval: A =\n" << A << std::endl;
     R_sq = compute_R_sq(CF_inv, A, varH[qoi]); // apply scaling^2
     //Cout << "Objective eval: varH[" << qoi << "] = " << varH[qoi]
@@ -538,12 +538,12 @@ acv_estimator_variance_ratios(const RealSymMatrix& F, RealVector& estvar_ratios)
 
 inline void NonDACVSampling::
 compute_acv_control(const RealSymMatrix& cov_LL, const RealSymMatrix& F,
-		    const RealMatrix& cov_LH, size_t qoi, RealVector& beta)
+		    const RealVector& cov_LH, RealVector& beta)
 {
   RealSymMatrix CF_inv;  RealVector A;
   invert_CF(cov_LL, F, CF_inv);
   //Cout << "compute_acv_control qoi " << qoi+1 << ": CF_inv\n" << CF_inv;
-  compute_A_vector(F, cov_LH, qoi, A); // no scaling (uses c, not c-bar)
+  compute_A_vector(F, cov_LH, A); // no scaling (uses c, not c-bar)
   //Cout << "compute_acv_control qoi " << qoi+1 << ": A\n" << A;
 
   size_t n = F.numRows();
@@ -584,14 +584,14 @@ compute_acv_control(RealMatrix& sum_L, Real sum_H_q, RealSymMatrix& sum_LL_q,
 
 
 inline void NonDACVSampling::
-combine_with_covariance(const RealSymMatrix& C, const RealMatrix& c, size_t qoi,
+combine_with_covariance(const RealSymMatrix& C, const RealVector& c,
 			const RealSymMatrix& F, RealSymMatrix& C_F,
 			RealVector& c_f)
 {
   size_t i, j, n = C.numRows();
   C_F.shapeUninitialized(n);  c_f.sizeUninitialized(n);
   for (i=0; i<n; ++i) {
-    c_f[i] = c(qoi, i) * F(i,i);
+    c_f[i] = c[i] * F(i,i);
     for (j=0; j<=i; ++j)
       C_F(i,j) = C(i,j) * F(i,j);
   }
@@ -602,8 +602,8 @@ combine_with_covariance(const RealSymMatrix& C, const RealMatrix& c, size_t qoi,
 
 
 inline void NonDACVSampling::
-combine_gradients_with_covariance(const RealSymMatrix& C, const RealMatrix& c,
-				  size_t qoi, const RealSymMatrixArray& dF_dN,
+combine_gradients_with_covariance(const RealSymMatrix& C, const RealVector& c,
+				  const RealSymMatrixArray& dF_dN,
 				  RealSymMatrixArray& dCF_dN,
 				  RealVectorArray& dcf_dN)
 {
@@ -621,7 +621,7 @@ combine_gradients_with_covariance(const RealSymMatrix& C, const RealMatrix& c,
     RealSymMatrix&      dCF_dN_v = dCF_dN[v];
     RealVector&         dcf_dN_v = dcf_dN[v];
     for (i=0; i<numApprox; ++i) {
-      dcf_dN_v(i) = c(qoi,i) * dF_dN_v(i,i);   // c o df/dN
+      dcf_dN_v[i] = c[i] * dF_dN_v(i,i);   // c o df/dN
       for (j=0; j<=i; ++j)
 	dCF_dN_v(i,j) = C(i,j) * dF_dN_v(i,j); // C o dF/dN
     }
@@ -698,10 +698,10 @@ triple_product(RealVector& c_f, RealVector& lhs)
 
 inline Real NonDACVSampling::
 solve_for_triple_product(const RealSymMatrix& C, const RealSymMatrix& F,
-			 const RealMatrix&    c, size_t qoi)
+			 const RealVector& c)
 {
   RealSymMatrix C_F, C_F_inv;  RealVector c_f, lhs;
-  combine_with_covariance(C, c, qoi, F, C_F, c_f);
+  combine_with_covariance(C, c, F, C_F, c_f);
   solve_for_C_F_c_f(C_F, C_F_inv, c_f, lhs, false, true); // retain original c_f
   return c_f.dot(lhs);//triple_product(c_f, lhs);
 }
@@ -709,8 +709,8 @@ solve_for_triple_product(const RealSymMatrix& C, const RealSymMatrix& F,
 
 inline Real NonDACVSampling::
 compute_R_sq(const RealSymMatrix& C, const RealSymMatrix& F,
-	     const RealMatrix& c, size_t qoi, Real var_H_q)
-{ return solve_for_triple_product(C, F, c, qoi) / var_H_q; }// trip prod to R_sq
+	     const RealVector& c, Real var_H_q)
+{ return solve_for_triple_product(C, F, c) / var_H_q; }// trip prod to R_sq
 
 
 inline Real NonDACVSampling::
@@ -731,7 +731,7 @@ acv_estimator_variances(const RealSymMatrix& F, const RealVector& var_H,
 
   for (size_t qoi=0; qoi<numFunctions; ++qoi)
     est_var[qoi] = (var_H[qoi] -
-		    solve_for_triple_product(covLL[qoi], F, covLH, qoi)) / N_H;
+		    solve_for_triple_product(covLL[qoi], F, covLH[qoi])) / N_H;
 }
 
 
@@ -743,7 +743,7 @@ acv_estimator_variance_ratios(const RealSymMatrix& F, RealVector& estvar_ratios)
 
   for (size_t qoi=0; qoi<numFunctions; ++qoi)
     estvar_ratios[qoi]
-      = 1. - compute_R_sq(covLL[qoi], F, covLH, qoi, varH[qoi]);
+      = 1. - compute_R_sq(covLL[qoi], F, covLH[qoi], varH[qoi]);
 }
 
 
@@ -786,16 +786,16 @@ compute_acv_control_covariances(const RealMatrix& sum_L, Real sum_H_q,
 				const RealSymMatrix& sum_LL_q,
 				const RealMatrix& sum_LH, size_t N_shared_q,
 				size_t qoi, RealSymMatrix& cov_LL,
-				RealMatrix& cov_LH)
+				RealVector& cov_LH)
 {
   // compute cov_LL, cov_LH, var_H across numApprox for a particular QoI
   // > cov_LH is sized for all qoi but only 1 row is used
-  cov_LL.shape(numApprox); cov_LH.shape(numFunctions, numApprox);
+  cov_LL.shape(numApprox); cov_LH.size(numApprox);
   size_t approx, approx2;  Real sum_L_aq;
   for (approx=0; approx<numApprox; ++approx) {
     sum_L_aq = sum_L(qoi,approx);
     compute_covariance(sum_L_aq, sum_H_q, sum_LH(qoi,approx), N_shared_q,
-		       cov_LH(qoi,approx));
+		       cov_LH[approx]);
     compute_variance(sum_L_aq, sum_LL_q(approx,approx), N_shared_q,
 		     cov_LL(approx,approx));
     for (approx2=0; approx2<approx; ++approx2)
@@ -807,14 +807,14 @@ compute_acv_control_covariances(const RealMatrix& sum_L, Real sum_H_q,
 
 inline void NonDACVSampling::
 solve_for_acv_control(const RealSymMatrix& cov_LL, const RealSymMatrix& F,
-		      const RealMatrix& cov_LH, size_t qoi, RealVector& beta)
+		      const RealVector& cov_LH, RealVector& beta)
 {
   RealSymMatrix C_F, C_F_inv;  RealVector c_f;
-  combine_with_covariance(cov_LL, cov_LH, qoi, F, C_F, c_f);
+  combine_with_covariance(cov_LL, cov_LH, F, C_F, c_f);
   solve_for_C_F_c_f(C_F, C_F_inv, c_f, beta, false, false);// can modify C_F,c_f
 
-  //Cout << "solve_for_acv_control qoi " << qoi+1 << ": C_F\n" << C_F
-  //     << "c_f\n" << c_f << "beta\n" << beta;
+  //Cout << "solve_for_acv_control: C_F\n" << C_F << "c_f\n" << c_f
+  //     << "beta\n" << beta;
 }
 
 
@@ -829,18 +829,17 @@ compute_acv_control(const RealMatrix& sum_L_m, Real sum_H_mq,
 		    size_t N_shared_q, size_t mom, size_t qoi, RealVector& beta)
 {
   if (mom == 1) // online|offline covariances available for mean
-    solve_for_acv_control(covLL[qoi], FMat, covLH, qoi, beta);
+    solve_for_acv_control(covLL[qoi], FMat, covLH[qoi], beta);
   else { // compute variances/covariances for higher-order moment estimators
     // compute cov_LL, cov_LH, var_H across numApprox for a particular QoI
     // > cov_LH is sized for all qoi but only 1 row is used
     // > we always use the online covariances and sample accumulations for
     //   self-consistency in data sets, even when more accurate offline
     //   covariances may be available
-    RealSymMatrix cov_LL; RealMatrix cov_LH;
+    RealSymMatrix cov_LL_q; RealVector cov_LH_q;
     compute_acv_control_covariances(sum_L_m, sum_H_mq, sum_LL_mq, sum_LH_m,
-				    N_shared_q, qoi, cov_LL, cov_LH);
-    // forward to overload:
-    solve_for_acv_control(cov_LL, FMat, cov_LH, qoi, beta);
+				    N_shared_q, qoi, cov_LL_q, cov_LH_q);
+    solve_for_acv_control(cov_LL_q, FMat, cov_LH_q, beta);
   }
 }
 

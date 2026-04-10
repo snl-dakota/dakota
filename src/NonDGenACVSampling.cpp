@@ -1315,7 +1315,7 @@ analytic_initialization_from_ensemble_cvmc(const UShortArray& approx_set,
 
 void NonDGenACVSampling::
 cvmc_ensemble_solutions(const RealSymMatrixArray& cov_LL,
-			const RealMatrix& cov_LH, const RealVector& var_H,
+			const RealVectorArray& cov_LH, const RealVector& var_H,
 			const RealVector& cost,   const UShortArray& approx_set,
 			const UShortArray& dag,   const UShortList& root_list,
 			RealVector& avg_eval_ratios)
@@ -1336,9 +1336,10 @@ cvmc_ensemble_solutions(const RealSymMatrixArray& cov_LL,
     Real& avg_eval_ratio = avg_eval_ratios[d];
     for (qoi=0; qoi<numFunctions; ++qoi) {
       const RealSymMatrix& cov_LL_q = cov_LL[qoi];
+      const RealVector&    cov_LH_q = cov_LH[qoi];
       var_L_qs = cov_LL_q(source,source);
       if (target == numApprox) {
-	cov_LH_qs = cov_LH(qoi,source);
+	cov_LH_qs = cov_LH_q[source];
 	rho_sq    = cov_LH_qs / var_L_qs * cov_LH_qs / var_H[qoi];
 	//Cout << "  QoI " << qoi << ": cov_LH " << cov_LH_qs << " var_L "
 	//     << var_L_qs << " var_H " << var_H[qoi] << " rho^2 = " << rho_sq
@@ -2235,7 +2236,7 @@ estimator_variances(const RealVector& cd_vars, RealVector& est_var)
   RealSymMatrix C_G, C_G_inv;  RealVector c_g, lhs;
   for (size_t q=0; q<numFunctions; ++q) {
     //R_sq = compute_R_sq(covLL[q], GMat, covLH, gVec,q,approx_set,varH[q],N_H);
-    combine_with_covariance(covLL[q], covLH, q, approx_set, GMat, gVec,C_G,c_g);
+    combine_with_covariance(covLL[q], covLH[q], approx_set, GMat, gVec,C_G,c_g);
     solve_for_C_G_c_g(C_G, C_G_inv, c_g, lhs, false, true); // copy c_g
     trip_prod = c_g.dot(lhs);
     //if (outputLevel >= DEBUG_OUTPUT)
@@ -2274,8 +2275,9 @@ estimator_variance_gradients(const RealVector& cd_vars, RealMatrix& ev_grads)
   Real N_H = N_infl[numApprox];
   for (q=0; q<numFunctions; ++q) {
     const RealSymMatrix& covLL_q = covLL[q];
-    combine_with_covariance(covLL_q, covLH, q, approx_set, GMat, gVec, CG, cg);
-    combine_gradients_with_covariance(covLL_q, covLH, q, approx_set,
+    const RealVector&    covLH_q = covLH[q];
+    combine_with_covariance(covLL_q, covLH_q, approx_set, GMat, gVec, CG,cg);
+    combine_gradients_with_covariance(covLL_q, covLH_q, approx_set,
 				      dG_dN, dg_dN, dCG_dN, dcg_dN);
     pseudo_inverse(CG, CG_inv, rcond);
     //copy_data(CG_inv_rm, CG_inv);
@@ -2338,8 +2340,9 @@ estimator_variances_and_gradients(const RealVector& cd_vars,
   Real varH_q, N_H = N_infl[numApprox], trip_prod_grad;
   for (q=0; q<numFunctions; ++q) {
     const RealSymMatrix& covLL_q = covLL[q];  varH_q = varH[q];
-    combine_with_covariance(covLL_q, covLH, q, approx_set, GMat, gVec, CG, cg);
-    combine_gradients_with_covariance(covLL_q, covLH, q, approx_set,
+    const RealVector&    covLH_q = covLH[q];
+    combine_with_covariance(covLL_q, covLH_q, approx_set, GMat, gVec, CG, cg);
+    combine_gradients_with_covariance(covLL_q, covLH_q, approx_set,
 				      dG_dN, dg_dN, dCG_dN, dcg_dN);
     solve_for_C_G_c_g(CG, CG_inv, cg, lhs, false, true); // copy c_g
     //copy_data(CG_inv_rm, CG_inv);
