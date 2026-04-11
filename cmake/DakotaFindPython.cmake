@@ -7,8 +7,10 @@ macro(dakota_find_python)
 
     if(DAKOTA_PYTHON_DIRECT_INTERFACE OR DAKOTA_PYTHON_SURROGATES OR
 	DAKOTA_PYTHON_WRAPPER OR DAKOTA_PYBIND11)
-      message(STATUS "Dakota enabling Python3 (Development) for direct or surrogate interface")
-      list(APPEND dakota_python_components Development)
+      message(STATUS
+        "Dakota enabling Python3 Development.Module and Development.Embed "
+        "for Python modules and embedded interpreter support")
+      list(APPEND dakota_python_components Development.Module Development.Embed)
       
       if (DAKOTA_PYTHON_DIRECT_INTERFACE_NUMPY)
 	if (DAKOTA_PYTHON_DIRECT_INTERFACE)
@@ -24,14 +26,27 @@ macro(dakota_find_python)
 
     find_package(Python3 REQUIRED ${dakota_python_components})
 
+    foreach(_dakota_python_target Python3::Module Python3::Python Python3::Interpreter)
+      if(TARGET ${_dakota_python_target})
+        get_target_property(_dakota_imported_location ${_dakota_python_target} IMPORTED_LOCATION)
+        get_target_property(_dakota_imported_location_release ${_dakota_python_target} IMPORTED_LOCATION_RELEASE)
+        get_target_property(_dakota_interface_link_libraries ${_dakota_python_target} INTERFACE_LINK_LIBRARIES)
+        get_target_property(_dakota_interface_link_options ${_dakota_python_target} INTERFACE_LINK_OPTIONS)
+        message(STATUS "${_dakota_python_target} IMPORTED_LOCATION = ${_dakota_imported_location}")
+        message(STATUS "${_dakota_python_target} IMPORTED_LOCATION_RELEASE = ${_dakota_imported_location_release}")
+        message(STATUS "${_dakota_python_target} INTERFACE_LINK_LIBRARIES = ${_dakota_interface_link_libraries}")
+        message(STATUS "${_dakota_python_target} INTERFACE_LINK_OPTIONS = ${_dakota_interface_link_options}")
+      else()
+        message(STATUS "${_dakota_python_target} target not defined")
+      endif()
+    endforeach()
+
     if (DAKOTA_PYTHON_DIRECT_INTERFACE_NUMPY)
 	message(STATUS "NumPy version ${Python_NumPy_VERSION} found at ${Python_NumPy_INCLUDE_DIRS}")
     endif()
 
 
-    # pybind11, C3, Acro, etc., use older CMake FindPythonInterp, so we
-    # coerce it to use same as Dakota; more complex situations may
-    # require setting other variables
+    # Keep legacy consumers aligned on the selected interpreter.
     if(NOT PYTHON_EXECUTABLE)
       set(PYTHON_EXECUTABLE "${Python3_EXECUTABLE}" CACHE FILEPATH
 	"Dakota set PYTHON_EXECUTABLE to match Python3_EXECUTABLE")
@@ -41,6 +56,8 @@ macro(dakota_find_python)
     # if(DAKOTA_PYTHON_DIRECT_INTERFACE and NOT Python_Development_FOUND)
 
     if(DAKOTA_PYBIND11)
+      set(PYBIND11_FINDPYTHON ON CACHE BOOL
+        "Force pybind11 to use CMake FindPython targets" FORCE)
       # This add_subdirectory must be done at top-level so pybind11's
       # CMake functions are pulled in for src/ and below
       add_subdirectory(packages/external/pybind11)

@@ -827,6 +827,12 @@ endif(HAVE_DEMO_TPL)
 if(HAVE_EXT_PYTHON_METHOD)
   set(iterator_src ${iterator_src} ${Dakota_SOURCE_DIR}/src/DakotaExtPythonMethod.cpp)
   add_definitions("-DHAVE_EXT_PYTHON_METHOD")
+  list(APPEND DAKOTA_INCDIRS ${pybind11_INCLUDE_DIRS})
+  if(Python3_INCLUDE_DIRS)
+    list(APPEND DAKOTA_INCDIRS ${Python3_INCLUDE_DIRS})
+  elseif(PYTHON_INCLUDE_DIRS)
+    list(APPEND DAKOTA_INCDIRS ${PYTHON_INCLUDE_DIRS})
+  endif()
 
   pybind11_add_module(ext_method DakotaExtPythonMethod.cpp)
   add_dependencies(ext_method dakota_ir_generated_tables)
@@ -1059,6 +1065,17 @@ endif()
 #add_executable(test_sv test_stringvars.cpp)
 #target_link_libraries(test_sv ${DAKOTA_ALL_LIBS})
 
+if(DAKOTA_PYBIND11 AND
+   (DAKOTA_PYTHON_DIRECT_INTERFACE OR DAKOTA_PYTHON_SURROGATES OR
+    HAVE_EXT_PYTHON_METHOD))
+  target_link_libraries(dakota pybind11::embed)
+  target_link_libraries(dakota_restart_util pybind11::embed)
+  target_link_libraries(dakota_library_mode pybind11::embed)
+  if (DAKOTA_HAVE_MPI)
+    target_link_libraries(dakota_library_split pybind11::embed)
+  endif()
+endif()
+
 if(DAKOTA_DLL_API)
   if (DAKOTA_MODELCENTER)
     # setup link dirs before inclusion of dll_api library
@@ -1068,6 +1085,11 @@ if(DAKOTA_DLL_API)
   add_executable(dll_tester dll_tester.cpp)
   
   target_link_libraries(dll_tester dakota_dll_api)
+  if(DAKOTA_PYBIND11 AND
+     (DAKOTA_PYTHON_DIRECT_INTERFACE OR DAKOTA_PYTHON_SURROGATES OR
+      HAVE_EXT_PYTHON_METHOD))
+    target_link_libraries(dll_tester pybind11::embed)
+  endif()
   if (DAKOTA_MODELCENTER)
     # likely not needed due to CMake dependency management of dakota_dll_api library
     target_link_libraries(dll_tester PHXCppApi)

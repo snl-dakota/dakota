@@ -42,14 +42,14 @@ endif()
 
 add_library(dakota_surrogates ${surrogates_sources} ${surrogates_headers})
 
+target_include_directories(dakota_surrogates PRIVATE
+  ${pybind11_INCLUDE_DIRS}
+)
 target_include_directories(dakota_surrogates PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
   $<INSTALL_INTERFACE:include>
 )
 target_link_libraries(dakota_surrogates PUBLIC dakota_util)
-if(DAKOTA_PYTHON_SURROGATES)
-  target_link_libraries(dakota_surrogates PUBLIC pybind11::embed)
-endif()
 
 # handle special case for gcc filesystem support
 if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9.0) OR DAKOTA_LINK_STDCPPFS)
