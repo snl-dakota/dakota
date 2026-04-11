@@ -48,7 +48,7 @@ NonDNumericAllocSampling(ProblemDescDB& problem_db,
   NonDEnsembleSampling(problem_db, parallel_lib, model),
   activeBudget((Real)maxFunctionEvals),
   truthFixedByPilot(problem_db.get_bool("method.nond.truth_fixed_by_pilot")),
-  analyticEstVarDerivs(false),  // true for MFMC and ML BLUE currently
+  analyticEstVarDerivs(true),   // true for MFMC,ACV,GenACV,ML BLUE
   hardenNumericSoln(true),      // Cholesky option not currently exposed in spec
   reorderModelsOnTheFly(false), // active for MFMC
   recurConversion(false)        // protect cyclic estvar/estvar ratio conversion
@@ -1918,7 +1918,7 @@ estimator_ratios_from_variances(const RealVector& cd_vars,
     break;
   case N_MODEL_LINEAR_OBJECTIVE:  case N_MODEL_LINEAR_CONSTRAINT:
   case R_AND_N_NONLINEAR_CONSTRAINT: // N is a scalar optimization variable
-    estvar_ratios_to_estvar(estvar, varH, cd_vars[num_approx], estvar_ratios);
+    estvar_to_estvar_ratios(estvar, varH, cd_vars[num_approx], estvar_ratios);
     break;
   }
 

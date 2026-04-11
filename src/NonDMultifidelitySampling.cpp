@@ -37,9 +37,9 @@ NonDMultifidelitySampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_l
   NonDNumericAllocSampling(problem_db, parallel_lib, model),
   numericalSolveMode(problem_db.get_ushort("method.nond.numerical_solve_mode"))
 {
-  analyticEstVarDerivs  = true; // MFMC estvar soln has analytic derivatives
-  //hardenNumericSoln   = true; // now adopted for all numerical estimators
-  mlmfSubMethod         = SUBMETHOD_MFMC; // if needed for numerical solves
+  //analyticEstVarDerivs = true; // now adopted for all numerical estimators
+  //hardenNumericSoln    = true; // now adopted for all numerical estimators
+  mlmfSubMethod          = SUBMETHOD_MFMC; // if needed for numerical solves
 
   // reorderModelsOnTheFly affects finite_solution_bounds() so restrict
   // activation to MFMC:
