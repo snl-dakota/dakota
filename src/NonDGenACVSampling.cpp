@@ -1004,10 +1004,7 @@ void NonDGenACVSampling::no_solve_solution()
     // For r_i = 1, C_G,c_g = 0 --> enforce linear constr based on curr DAG
     enforce_augmented_linear_ineq_constraints(avg_eval_ratios, fullApproxSet,
 					      orderedRootList);
-    size_t hf_form_index, hf_lev_index; hf_indices(hf_form_index, hf_lev_index);
-    Real avg_N_H = (backfillFailures) ?
-      average(NLevActual[hf_form_index][hf_lev_index]) :
-      NLevAlloc[hf_form_index][hf_lev_index];
+    Real avg_N_H = find_solution_reference(backfillFailures);
     soln.anchored_solution_ratios(avg_eval_ratios, avg_N_H);
     no_solve_variances(soln);
   }

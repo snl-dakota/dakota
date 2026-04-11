@@ -417,19 +417,8 @@ inflate_variables(const RealVector& cd_vars, RealVector& inflate_vars,
 
   for (i=0; i<num_approx; ++i)
     inflate_vars[approx_set[i]] = cd_vars[i];
-  if (num_cdv == num_approx + 1)
-    inflate_vars[numApprox] = cd_vars[num_approx];
-  else {
-    // N_H not provided so pull from latest counter values
-    size_t hf_form_index, hf_lev_index;
-    hf_indices(hf_form_index, hf_lev_index);
-    // estimator_variance_metric() uses actual (not alloc) to sync with varH
-    // so use same prior to defining G,g in precompute_genacv_controls() and
-    // estimator_variance_ratios()
-    inflate_vars[numApprox] = //(backfillFailures) ?
-      average(NLevActual[hf_form_index][hf_lev_index]);// :
-      //NLevAlloc[hf_form_index][hf_lev_index];
-  }
+  inflate_vars[numApprox] = (num_cdv == num_approx + 1) ? cd_vars[num_approx] :
+    find_solution_reference(); // use NLevActual
 }
 
 

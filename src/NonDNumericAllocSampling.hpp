@@ -466,6 +466,7 @@ protected:
   void print_estimator_performance(std::ostream& s,
 				   const MFSolutionData& soln) const;
 
+  Real find_solution_reference(bool actual = true);
   void r_and_N_to_N_vec(const RealVector& avg_eval_ratios, Real N_H,
 			RealVector& N_vec);
   void r_and_N_to_design_vars(const RealVector& avg_eval_ratios, Real N_H,
@@ -1690,6 +1691,21 @@ enforce_bounds(RealVector& x0, const RealVector& x_lb, const RealVector& x_ub)
 }
 
 
+inline Real NonDNumericAllocSampling::find_solution_reference(bool actual)
+{
+  // this function is helpful when N_H is neither provided nor optimized,
+  // so pull from latest counter values
+  // > estimator_variance_metric() uses actual (not alloc) to sync with varH
+  //   so pass backfill=false when defining G,g in precompute_*_controls()
+  //   and estimator_variances/estimator_variance_ratios()
+
+  size_t hf_form_index, hf_lev_index;
+  hf_indices(hf_form_index, hf_lev_index);
+  return (actual) ? average(NLevActual[hf_form_index][hf_lev_index]) :
+    NLevAlloc[hf_form_index][hf_lev_index];
+}
+
+
 inline void NonDNumericAllocSampling::
 r_and_N_to_N_vec(const RealVector& avg_eval_ratios, Real N_H, RealVector& N_vec)
 {
@@ -1726,19 +1742,19 @@ design_vars_to_r(const RealVector& cd_vars, RealVector& avg_eval_ratios)
   // works for full numApprox or partial approx_set, so long as N_H is
   // omitted for R_ONLY_LINEAR_CONSTRAINT
 
-  int num_v = cd_vars.length();
+  int num_cdv = cd_vars.length();
   switch (optSubProblemForm) {
   case N_MODEL_LINEAR_OBJECTIVE:  case N_MODEL_LINEAR_CONSTRAINT: {
-    int num_approx = num_v - 1;
+    int num_approx = num_cdv - 1;
     copy_data_partial(cd_vars, 0, num_approx, avg_eval_ratios); // N_i
     avg_eval_ratios.scale(1./cd_vars[num_approx]); // r_i = N_i / N
     break;
   }
   case R_ONLY_LINEAR_CONSTRAINT: // cd_vars must be of length num_approx
-    avg_eval_ratios = RealVector(Teuchos::View, cd_vars.values(), num_v);
+    avg_eval_ratios = RealVector(Teuchos::View, cd_vars.values(), num_cdv);
     break;
   case R_AND_N_NONLINEAR_CONSTRAINT:
-    avg_eval_ratios = RealVector(Teuchos::View, cd_vars.values(), num_v - 1);
+    avg_eval_ratios = RealVector(Teuchos::View, cd_vars.values(), num_cdv - 1);
     break;
   }
 }
@@ -1749,17 +1765,27 @@ design_vars_to_N(const RealVector& cd_vars, RealVector& N_samp)
 {
   // works for full numApprox or partial approx_set, so long as N_H is included
 
+  int num_cdv = cd_vars.length();
   switch (optSubProblemForm) {
   case N_MODEL_LINEAR_OBJECTIVE:  case N_MODEL_LINEAR_CONSTRAINT:
-    N_samp = RealVector(Teuchos::View, cd_vars.values(), cd_vars.length());
+    N_samp = RealVector(Teuchos::View, cd_vars.values(), num_cdv);
     break;
-  default: // r_and_N have to include N_H at end (see inflate_variables())
+  case R_ONLY_LINEAR_CONSTRAINT: { // inflate to include N_H
+    Real N_H = find_solution_reference(); // use NLevActual
+    N_samp.sizeUninitialized(num_cdv+1);
+    for (int i=0; i<num_cdv; ++i)
+      N_samp[i] = N_H * cd_vars[i]; // N_i = r_i * N
+    N_samp[num_cdv] = N_H;
+    break;
+  }
+  case R_AND_N_NONLINEAR_CONSTRAINT: {
     copy_data(cd_vars, N_samp);
-    int num_approx = cd_vars.length() - 1;
+    int i, num_approx = num_cdv - 1;
     Real N_H = cd_vars[num_approx];
-    for (size_t i=0; i<num_approx; ++i)
+    for (i=0; i<num_approx; ++i)
       N_samp[i] *= N_H; // N_i = r_i * N
     break;
+  }
   }
 }
 

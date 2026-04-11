@@ -504,24 +504,22 @@ compute_F_matrix_from_r(const RealVector& r_and_N, RealSymMatrix& F)
   if (F.empty()) F.shapeUninitialized(numApprox);
 
   switch (mlmfSubMethod) {
-  /*
-  *** NonDMultifidelitySampling uses the decoupled form for hierarchical DAGs
-  *** (Eq. 16 in JCP ACV paper), bypassing the need for an F matrix.  GenACV-MF
-  *** uses the parametric G,g form.  The code below, included for completeness,
-  *** is not active.
 
-  case SUBMETHOD_MFMC: { // diagonal (see Eq. 16 in JCP ACV paper)
-    size_t num_am1 = numApprox - 1;  Real r_i, r_ip1;
-    for (i=0; i<num_am1; ++i) {
-      r_i = r_and_N[i]; r_ip1 = r_and_N[i+1];
-      F(i,i) = (r_i - r_ip1) / (r_i * r_ip1);
-      for (j=0; j<i; ++j) F(i,j) = 0.;
-    }
-    r_i = r_ip1; //r_ip1 = 1.;
-    F(num_am1,num_am1) = (r_i - 1.) / r_i;
-    break;
-  }
-  */
+  // NonDMultifidelitySampling uses the decoupled form for hierarchical
+  // DAGs (Eq. 16 in JCP ACV paper), bypassing the need for an F matrix.
+  // GenACV-MF uses the parametric G,g form.  The code below, included for
+  // completeness, is not active.
+  //case SUBMETHOD_MFMC: { // diagonal (see Eq. 16 in JCP ACV paper)
+  //  size_t num_am1 = numApprox - 1;  Real r_i, r_ip1;
+  //  for (i=0; i<num_am1; ++i) {
+  //    r_i = r_and_N[i]; r_ip1 = r_and_N[i+1];
+  //    F(i,i) = (r_i - r_ip1) / (r_i * r_ip1);
+  //    for (j=0; j<i; ++j) F(i,j) = 0.;
+  //  }
+  //  r_i = r_ip1; //r_ip1 = 1.;
+  //  F(num_am1,num_am1) = (r_i - 1.) / r_i;
+  //  break;
+  //}
 
   case SUBMETHOD_ACV_IS: { // Eq. 30
     Real ri_ratio;
@@ -545,14 +543,13 @@ compute_F_matrix_from_r(const RealVector& r_and_N, RealSymMatrix& F)
     break;
   }
 
-  /*
-  *** CURRENT OPTIONS: GenACV-RD (searchable DAG) or weighted MLMC (searchable
-  *** hierarch DAG).  All ACV-RD cases are currently promoted to GenACV-RD in
-  *** iterator_utils, and GenACV ctor selects a hierarchical default DAG
-  *** (dagWidthLimit = 1).  The peer DAG case (with no searchable alternatives)
-  *** is not currently supported from NonDACVSampling, but can be recovered in
-  *** GenACV by overriding hierarchical to peer using
-  *** "search_model_graphs partial_recursion depth_limit = 1".
+  // *** CURRENT OPTIONS: GenACV-RD (searchable DAG) or weighted MLMC
+  // (searchable hierarch DAG).  All ACV-RD cases are currently promoted to
+  // GenACV-RD in iterator_utils, and GenACV ctor selects a hierarchical
+  // default DAG (dagWidthLimit = 1).  Peer DAG case (with no searchable
+  // alternatives) is not currently supported from NonDACVSampling, but
+  // can be recovered in GenACV by overriding hierarchical to peer using
+  // "search_model_graphs partial_recursion depth_limit = 1".
 
   // > Note that Fig 2 in JCP ACV shows different DAGs: hierarchical for (a,b)
   //   and peer for (c,d) --> for the same DAG, W-RDiff and ACV-IS only differ
@@ -562,26 +559,25 @@ compute_F_matrix_from_r(const RealVector& r_and_N, RealSymMatrix& F)
   //   F as for MFMC at top (Eq. 16, JCP ACV)
   // > Implementing peer DAG here is coupled and would require a F matrix solve
 
-  case SUBMETHOD_ACV_RD: {
-    // TO DO: convert r_and_N to N_vec
-    Real z1_i, z2_i, N_H = N_vec[numApprox];
-    for (i=0; i<numApprox; ++i) {
-      z1_i = N_H;            // z1s = z2t
-      z2_i = N_vec[i] - N_H; // z2i = N_vec[source] - z1s
-      //g[i] = 1./z1_i;
-      G(i,i) = 1./z2_i + 1./z1_i;// *** Need G -> F (differ by N_H)
-      for (j=0; j<i; ++j) {
-	G(i,j) = 1./z1_i; // *** Need G -> F (differ by N_H)
-	// From GenACV-RD:
-	//if (tgt_i == tgt_j) G(i,j) += 1./z1_i; // always true (all tgt = root)
-	//if (tgt_i == src_j) G(i,j) -= 1./z1_i; // always false for peer dag
-	//if (src_i == tgt_j) G(i,j) -= 1./z2_i; // always false for root dag
-	//if (src_i == src_j) G(i,j) += 1./z2_i; // diagonal
-      }
-    }
-    break;
-  }
-  */
+  //case SUBMETHOD_ACV_RD: {
+  //  // TO DO: convert r_and_N to N_vec
+  //  Real z1_i, z2_i, N_H = N_vec[numApprox];
+  //  for (i=0; i<numApprox; ++i) {
+  //    z1_i = N_H;            // z1s = z2t
+  //    z2_i = N_vec[i] - N_H; // z2i = N_vec[source] - z1s
+  //    //g[i] = 1./z1_i;
+  //    G(i,i) = 1./z2_i + 1./z1_i;// *** Need G -> F (differ by N_H)
+  //    for (j=0; j<i; ++j) {
+  // 	  G(i,j) = 1./z1_i; // *** Need G -> F (differ by N_H)
+  // 	  // From GenACV-RD: (
+  // 	  //if (tgt_i == tgt_j) G(i,j) += 1./z1_i; // always true (all tgt=root)
+  // 	  //if (tgt_i == src_j) G(i,j) -= 1./z1_i; // always false for peer dag
+  // 	  //if (src_i == tgt_j) G(i,j) -= 1./z2_i; // always false for root dag
+  // 	  //if (src_i == src_j) G(i,j) += 1./z2_i; // diagonal
+  //    }
+  //  }
+  //  break;
+  //}
 
   default:
     Cerr << "Error: bad sub-method name (" << mlmfSubMethod
