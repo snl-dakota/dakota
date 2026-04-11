@@ -831,9 +831,13 @@ if(HAVE_EXT_PYTHON_METHOD)
   pybind11_add_module(ext_method DakotaExtPythonMethod.cpp)
   add_dependencies(ext_method dakota_ir_generated_tables)
   target_include_directories(ext_method PRIVATE
-	    ${DAKOTA_IR_GENERATED_DIR}
-	      ${Dakota_SOURCE_DIR}/src/generated_ir_tables
-	      )  
+            ${DAKOTA_IR_GENERATED_DIR}
+            ${Dakota_SOURCE_DIR}/src/generated_ir_tables
+            ${DAKOTA_INCDIRS}
+            ${EXT_TPL_INCDIRS}
+            ${JSON_INCLUDE_DIR}
+            ${JSON_SINGLE_INCDIR}
+            )  
   
     target_link_libraries(ext_method PRIVATE dakota_src
     ${Dakota_LIBRARIES} ${Dakota_TPL_LIBRARIES}
@@ -1166,11 +1170,26 @@ if(DAKOTA_PYTHON_WRAPPER)
   # TODO: Need to always compile libs PIC when using Python
   # TODO: Consider -undefined dynamic_lookup link flag on Mac
   pybind11_add_module(environment dakota_python.cpp)
+  add_dependencies(environment dakota_python_package)
   # TODO: transitive includes when merging from devel
 #  target_include_directories(surrogates PRIVATE ${Teuchos_INCLUDE_DIRS})
   target_link_libraries(environment PRIVATE dakota_src
     ${Dakota_LIBRARIES} ${Dakota_TPL_LIBRARIES}
     )
+
+  set(_dakota_python_environment_dir
+    "${DAKOTA_PYTHON_PATH}/dakota/environment")
+  set_target_properties(environment PROPERTIES
+    LIBRARY_OUTPUT_DIRECTORY "${_dakota_python_environment_dir}"
+    RUNTIME_OUTPUT_DIRECTORY "${_dakota_python_environment_dir}"
+    ARCHIVE_OUTPUT_DIRECTORY "${_dakota_python_environment_dir}")
+  foreach(_dakota_cfg ${CMAKE_CONFIGURATION_TYPES})
+    string(TOUPPER "${_dakota_cfg}" _dakota_cfg_upper)
+    set_target_properties(environment PROPERTIES
+      "LIBRARY_OUTPUT_DIRECTORY_${_dakota_cfg_upper}" "${_dakota_python_environment_dir}"
+      "RUNTIME_OUTPUT_DIRECTORY_${_dakota_cfg_upper}" "${_dakota_python_environment_dir}"
+      "ARCHIVE_OUTPUT_DIRECTORY_${_dakota_cfg_upper}" "${_dakota_python_environment_dir}")
+  endforeach()
 
   # The generated link.txt has too long a single argument to RPATH
   if(DAKOTA_SPLIT_ENVIRONMENT_LINK_TXT)

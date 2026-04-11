@@ -10,20 +10,15 @@
 
 # Tests of top-level Dakota Python interface
 import os
-import sys
 #import numpy as np # DTS: looks like numpy is already imported if Dakota
 # is built with Numpy because get_variables_values_np(daklib) works fine
 # when this import is commented out
 
 
-# Optionally append a path to the python library, passed as argv[1]
-if len(sys.argv) > 1:
-    dakpy_lib_path = sys.argv[1]
-    sys.path.append(dakpy_lib_path)
-
 # NOTE: users would see:
 #   import dakota.environment as dakenv
-import environment as dakenv
+print("importing")
+import dakota.environment as dakenv
 
 # DTS: changed input variable dictionary name from kwargs to params
 # because it is a dict that contains the contents of the Dakota
