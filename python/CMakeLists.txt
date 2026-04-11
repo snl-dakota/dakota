@@ -14,6 +14,8 @@ if(DAKOTA_PYTHON_PATH)
 else()
   set(DAKOTA_PYTHON_BUILD_DIR "${Dakota_BINARY_DIR}/python")
 endif()
+set(DAKOTA_PYTHON_PATH "${DAKOTA_PYTHON_BUILD_DIR}" CACHE INTERNAL
+  "Dakota build-tree Python package root" FORCE)
 set(DAKOTA_PYTHON_PATH "${DAKOTA_PYTHON_BUILD_DIR}" PARENT_SCOPE)
 
 file(GLOB_RECURSE dakota_python_package_files CONFIGURE_DEPENDS

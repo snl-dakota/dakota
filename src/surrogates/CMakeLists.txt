@@ -96,10 +96,24 @@ if(DAKOTA_PYTHON_SURROGATES)
   # TODO: Need to always compile libs PIC when using Python
   # TODO: Consider -undefined dynamic_lookup link flag on Mac
   pybind11_add_module(surrogates surrogates_python.cpp)
+  add_dependencies(surrogates dakota_python_package)
   # TODO: transitive includes when merging from devel
   target_include_directories(surrogates PRIVATE ${Teuchos_INCLUDE_DIRS})
   target_link_libraries(surrogates PRIVATE dakota_surrogates
     ${Teuchos_LIBRARIES})
+  set(_dakota_python_surrogates_dir
+    "${Dakota_BINARY_DIR}/python/dakota/surrogates")
+  set_target_properties(surrogates PROPERTIES
+    LIBRARY_OUTPUT_DIRECTORY "${_dakota_python_surrogates_dir}"
+    RUNTIME_OUTPUT_DIRECTORY "${_dakota_python_surrogates_dir}"
+    ARCHIVE_OUTPUT_DIRECTORY "${_dakota_python_surrogates_dir}")
+  foreach(_dakota_cfg ${CMAKE_CONFIGURATION_TYPES})
+    string(TOUPPER "${_dakota_cfg}" _dakota_cfg_upper)
+    set_target_properties(surrogates PROPERTIES
+      "LIBRARY_OUTPUT_DIRECTORY_${_dakota_cfg_upper}" "${_dakota_python_surrogates_dir}"
+      "RUNTIME_OUTPUT_DIRECTORY_${_dakota_cfg_upper}" "${_dakota_python_surrogates_dir}"
+      "ARCHIVE_OUTPUT_DIRECTORY_${_dakota_cfg_upper}" "${_dakota_python_surrogates_dir}")
+  endforeach()
   if (APPLE)
     set_target_properties(surrogates PROPERTIES INSTALL_RPATH
       "@rpath;@rpath/../../../../../lib;@rpath/../../../../../bin")
