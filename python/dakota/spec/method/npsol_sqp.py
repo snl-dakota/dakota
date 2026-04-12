@@ -1,0 +1,35 @@
+"""Generated Pydantic models for method.npsol_sqp"""
+
+from __future__ import annotations
+
+from ..base import DakotaField
+from .base import MethodSelection
+
+# Cross-module model imports
+from dakota.spec.shared.misc import (
+    MethodNpsolCommonOptsMixin,
+    MethodThreeOptionalKeywordsMixin,
+)
+
+
+class NpsolSqpConfig(MethodThreeOptionalKeywordsMixin, MethodNpsolCommonOptsMixin):
+    """Generated model for NpsolSqpConfig"""
+
+    pass
+
+
+class NpsolSqpSelection(MethodSelection):
+    """Generated model for NpsolSqpSelection"""
+
+    npsol_sqp: NpsolSqpConfig = DakotaField(
+        dakota={
+            "materialization": [
+                {
+                    "ir_key": "method.algorithm",
+                    "stored_value": "NPSOL_SQP",
+                    "storage_type": "PRESENCE_ENUM",
+                    "ir_value_type": "unsigned short",
+                }
+            ]
+        }
+    )

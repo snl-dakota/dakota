@@ -214,9 +214,15 @@ if(DAKOTA_PYTHON_WRAPPER)
     )
   add_test(NAME dakota_python_env
     COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_dakota_python_env.py
-    $<TARGET_FILE_DIR:environment>
     )
   set_property(TEST dakota_python_env PROPERTY LABELS Unit)
+  if(WIN32)
+    set_property(TEST dakota_python_env PROPERTY
+      ENVIRONMENT "PYTHONPATH=${DAKOTA_PYTHON_PATH};$ENV{PYTHONPATH}")
+  else()
+    set_property(TEST dakota_python_env PROPERTY
+      ENVIRONMENT "PYTHONPATH=${DAKOTA_PYTHON_PATH}:$ENV{PYTHONPATH}")
+  endif()
 endif()
 
 

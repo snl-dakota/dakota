@@ -28,6 +28,10 @@ function(dakota_add_unit_test)
   if (DAUT_LINK_LIBS)
     target_link_libraries(${exe_target} ${DAUT_LINK_LIBS})
   endif()
+  if(DAKOTA_PYBIND11 AND
+     (DAKOTA_PYTHON_DIRECT_INTERFACE OR DAKOTA_PYTHON_SURROGATES OR HAVE_EXT_PYTHON_METHOD))
+    target_link_libraries(${exe_target} pybind11::embed)
+  endif()
   # Link to googletest
   target_link_libraries(${exe_target} GTest::gtest_main)
   target_include_directories(${exe_target} PRIVATE ${Dakota_SOURCE_DIR}/packages/external/googletest/googletest/include)

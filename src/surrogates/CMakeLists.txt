@@ -42,14 +42,14 @@ endif()
 
 add_library(dakota_surrogates ${surrogates_sources} ${surrogates_headers})
 
+target_include_directories(dakota_surrogates PRIVATE
+  ${pybind11_INCLUDE_DIRS}
+)
 target_include_directories(dakota_surrogates PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
   $<INSTALL_INTERFACE:include>
 )
 target_link_libraries(dakota_surrogates PUBLIC dakota_util)
-if(DAKOTA_PYTHON_SURROGATES)
-  target_link_libraries(dakota_surrogates PUBLIC pybind11::embed)
-endif()
 
 # handle special case for gcc filesystem support
 if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9.0) OR DAKOTA_LINK_STDCPPFS)
@@ -96,10 +96,24 @@ if(DAKOTA_PYTHON_SURROGATES)
   # TODO: Need to always compile libs PIC when using Python
   # TODO: Consider -undefined dynamic_lookup link flag on Mac
   pybind11_add_module(surrogates surrogates_python.cpp)
+  add_dependencies(surrogates dakota_python_package)
   # TODO: transitive includes when merging from devel
   target_include_directories(surrogates PRIVATE ${Teuchos_INCLUDE_DIRS})
   target_link_libraries(surrogates PRIVATE dakota_surrogates
     ${Teuchos_LIBRARIES})
+  set(_dakota_python_surrogates_dir
+    "${Dakota_BINARY_DIR}/python/dakota/surrogates")
+  set_target_properties(surrogates PROPERTIES
+    LIBRARY_OUTPUT_DIRECTORY "${_dakota_python_surrogates_dir}"
+    RUNTIME_OUTPUT_DIRECTORY "${_dakota_python_surrogates_dir}"
+    ARCHIVE_OUTPUT_DIRECTORY "${_dakota_python_surrogates_dir}")
+  foreach(_dakota_cfg ${CMAKE_CONFIGURATION_TYPES})
+    string(TOUPPER "${_dakota_cfg}" _dakota_cfg_upper)
+    set_target_properties(surrogates PROPERTIES
+      "LIBRARY_OUTPUT_DIRECTORY_${_dakota_cfg_upper}" "${_dakota_python_surrogates_dir}"
+      "RUNTIME_OUTPUT_DIRECTORY_${_dakota_cfg_upper}" "${_dakota_python_surrogates_dir}"
+      "ARCHIVE_OUTPUT_DIRECTORY_${_dakota_cfg_upper}" "${_dakota_python_surrogates_dir}")
+  endforeach()
   if (APPLE)
     set_target_properties(surrogates PROPERTIES INSTALL_RPATH
       "@rpath;@rpath/../../../../../lib;@rpath/../../../../../bin")

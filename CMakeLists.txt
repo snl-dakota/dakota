@@ -45,18 +45,20 @@ set(JSON_SINGLE_INCDIR "${PROJECT_SOURCE_DIR}/packages/external/json/single_incl
 if(EXISTS "${JSON_INCLUDE_DIR}/nlohmann/json_fwd.hpp")
   list(APPEND EXT_TPL_INCDIRS ${JSON_INCLUDE_DIR})
 else()
-  message(FATAL_ERROR "JSON forward header file not found in ${JSON_INCLUDE_DIR}.
-                        You may need run `git submodule update --init --recursive`" )
+  message(FATAL_ERROR
+    "JSON forward header file not found in ${JSON_INCLUDE_DIR}.\n"
+    "You may need run `git submodule update --init --recursive`" )
 endif()
 if(EXISTS "${JSON_SINGLE_INCDIR}/nlohmann/json.hpp")
-  message( "Found JSON header file" )
-  list( APPEND EXT_TPL_INCDIRS ${JSON_SINGLE_INCDIR} )
+  message("Found JSON header file")
+  list(APPEND EXT_TPL_INCDIRS ${JSON_SINGLE_INCDIR})
   # Set this cmake variable for so that the new parser uses Dakota's nlohmann
   set(NLOHMANN_JSON_ROOT "${PROJECT_SOURCE_DIR}/packages/external/json" CACHE PATH
     "nlohmann used by Dakota" FORCE)
 else()
-  message( FATAL_ERROR "JSON header file not found in ${JSON_SINGLE_INCDIR}.
-                        You may need run `git submodule update --init --recursive`" )
+  message(FATAL_ERROR
+    "JSON header file not found in ${JSON_SINGLE_INCDIR}.\n"
+    "You may need run `git submodule update --init --recursive`" )
 endif()
 
 # Dakota requires C++17
@@ -283,11 +285,12 @@ dakota_find_googletest()
 #  message(FATAL_ERROR "GoogleTest not available; expected targets not created")
 #endif()
 
-include(DakotaIRGeneration)
-
 # Needed for the new input file reader
 set(DAKOTA_SCHEMA_PATH ${CMAKE_SOURCE_DIR}/src/dakota.json CACHE STRING "Dakota Schema file")
 set(DAKOTA_XML_INPUT ${CMAKE_SOURCE_DIR}/src/dakota.xml CACHE STRING "Dakota XML grammar file")
+
+include(DakotaJsonSchema)
+include(DakotaIRGeneration)
 
 # -----
 # Configuration of Dakota components
@@ -309,6 +312,8 @@ endif()
 if(DAKOTA_MODULE_DAKOTA)
 
   add_subdirectory(packages)
+
+  add_subdirectory(python)
 
   add_subdirectory(src)
   # Build the executables in the test directory even if BUILD_TESTING is OFF

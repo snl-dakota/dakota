@@ -37,7 +37,7 @@ remove_definitions("-DHAVE_CONFIG_H")
 if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
 
   if(NOT DAKOTA_PYTHON_PATH)
-    set(DAKOTA_PYTHON_PATH "${Dakota_SOURCE_DIR}/interfaces/Python")
+    set(DAKOTA_PYTHON_PATH "${Dakota_BINARY_DIR}/python")
   endif()
 
   if(HAVE_EXT_PYTHON_METHOD)
