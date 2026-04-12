@@ -285,11 +285,12 @@ dakota_find_googletest()
 #  message(FATAL_ERROR "GoogleTest not available; expected targets not created")
 #endif()
 
-include(DakotaIRGeneration)
-
 # Needed for the new input file reader
 set(DAKOTA_SCHEMA_PATH ${CMAKE_SOURCE_DIR}/src/dakota.json CACHE STRING "Dakota Schema file")
 set(DAKOTA_XML_INPUT ${CMAKE_SOURCE_DIR}/src/dakota.xml CACHE STRING "Dakota XML grammar file")
+
+include(DakotaJsonSchema)
+include(DakotaIRGeneration)
 
 # -----
 # Configuration of Dakota components

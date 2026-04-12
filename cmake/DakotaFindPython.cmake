@@ -4,6 +4,10 @@ macro(dakota_find_python)
   if(DAKOTA_PYTHON)
     message(STATUS "Dakota enabling Python3 (Interpreter)")
     set(dakota_python_components Interpreter)
+    set(_dakota_python_minimum_version "")
+    if(DAKOTA_GENERATE_JSON_SCHEMA)
+      set(_dakota_python_minimum_version 3.9)
+    endif()
 
     if(DAKOTA_PYTHON_DIRECT_INTERFACE OR DAKOTA_PYTHON_SURROGATES OR
 	DAKOTA_PYTHON_WRAPPER OR DAKOTA_PYBIND11)
@@ -24,22 +28,11 @@ macro(dakota_find_python)
 
     endif()
 
-    find_package(Python3 REQUIRED ${dakota_python_components})
-
-    foreach(_dakota_python_target Python3::Module Python3::Python Python3::Interpreter)
-      if(TARGET ${_dakota_python_target})
-        get_target_property(_dakota_imported_location ${_dakota_python_target} IMPORTED_LOCATION)
-        get_target_property(_dakota_imported_location_release ${_dakota_python_target} IMPORTED_LOCATION_RELEASE)
-        get_target_property(_dakota_interface_link_libraries ${_dakota_python_target} INTERFACE_LINK_LIBRARIES)
-        get_target_property(_dakota_interface_link_options ${_dakota_python_target} INTERFACE_LINK_OPTIONS)
-        message(STATUS "${_dakota_python_target} IMPORTED_LOCATION = ${_dakota_imported_location}")
-        message(STATUS "${_dakota_python_target} IMPORTED_LOCATION_RELEASE = ${_dakota_imported_location_release}")
-        message(STATUS "${_dakota_python_target} INTERFACE_LINK_LIBRARIES = ${_dakota_interface_link_libraries}")
-        message(STATUS "${_dakota_python_target} INTERFACE_LINK_OPTIONS = ${_dakota_interface_link_options}")
-      else()
-        message(STATUS "${_dakota_python_target} target not defined")
-      endif()
-    endforeach()
+    if(_dakota_python_minimum_version)
+      find_package(Python3 ${_dakota_python_minimum_version} REQUIRED ${dakota_python_components})
+    else()
+      find_package(Python3 REQUIRED ${dakota_python_components})
+    endif()
 
     if (DAKOTA_PYTHON_DIRECT_INTERFACE_NUMPY)
 	message(STATUS "NumPy version ${Python_NumPy_VERSION} found at ${Python_NumPy_INCLUDE_DIRS}")
@@ -61,6 +54,19 @@ macro(dakota_find_python)
       # This add_subdirectory must be done at top-level so pybind11's
       # CMake functions are pulled in for src/ and below
       add_subdirectory(packages/external/pybind11)
+    endif()
+
+    if(DAKOTA_GENERATE_JSON_SCHEMA)
+      execute_process(
+        COMMAND ${Python3_EXECUTABLE} -c
+          "import re, sys; import pydantic; parts = [int(x) for x in re.findall(r'\\d+', pydantic.__version__)[:3]]; sys.exit(0 if tuple(parts) >= (2, 12, 0) else 1)"
+        RESULT_VARIABLE dakota_pydantic_version_ok
+        OUTPUT_QUIET
+        ERROR_QUIET)
+      if(NOT dakota_pydantic_version_ok EQUAL 0)
+        message(FATAL_ERROR
+          "DAKOTA_GENERATE_JSON_SCHEMA requires Pydantic >= 2.12 in ${Python3_EXECUTABLE}")
+      endif()
     endif()
 
     # Check for default and user-requested python module support
