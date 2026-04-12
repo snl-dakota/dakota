@@ -11,13 +11,13 @@ method,
 	fsu_quasi_mc halton			#s0
 #       dace lhs				#s1
 #	fsu_cvt					#s2
-#	sampling				#s3,#s4,#s5,#s6
+#	sampling				#s3,#s4,#s5,#s6,#s7
 	  variance_based_decomp
 	  samples = 100
-#	  vbd_sampling_method = binned #s5,#s6
+#	  vbd_sampling_method = binned #s5,#s6,#s7
 #	  num_bins = 5 #s6
-#         sample_type lhs			#s3,#s4,#s5,#s6
-#         seed = 44691				#s1,#s2,#s3,#s4,#s5,#s6
+#         sample_type lhs			#s3,#s4,#s5,#s6,#s7
+#         seed = 44691				#s1,#s2,#s3,#s4,#s5,#s6,#s7
 #	  num_trials = 1000			#s2
 #	  max_iterations = 100			#s2
 
@@ -31,6 +31,10 @@ variables,
 #	  counts = 1 1 1 1 1  	  		#s4
 #	geometric_uncertain = 1			#s4
 #	  prob_per_trial = 0.95			#s4
+#       histogram_point_uncertain real = 1	#s7      
+#	  num_pairs = 2 			#s7
+#	  abscissas = 1.1 1.9 	#s7
+#	  counts = 1 1   	  		#s7
 
 interface,
 	direct

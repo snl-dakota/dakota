@@ -30,13 +30,6 @@ NonDImportPoints::NonDImportPoints(ProblemDescDB& problem_db, ParallelLibrary& p
   if (model->primary_fn_type() == GENERIC_FNS)
     numResponseFunctions = model->num_primary_fns();
 
-  if ((vbdFlag == true) && 
-      (numDiscreteIntVars || numDiscreteStringVars || numDiscreteRealVars)){
-        Cerr << "\nError: discrete variables are not supported for "
-        << "binned variance based decomposition.\n";
-        abort_handler(METHOD_ERROR); 
-  }
-
   initialize_final_statistics();
 
 }
@@ -110,7 +103,8 @@ void NonDImportPoints::post_run(std::ostream& s)
       nonDSampCorr.compute_vbd_stats_via_sampling(vbdViaSamplingMethod,
                                                   vbdViaSamplingNumBins,
                                                   numFunctions,
-                                                  numContinuousVars + numDiscreteIntVars + numDiscreteRealVars + numDiscreteStringVars,
+                                                  numContinuousVars,
+                                                  numDiscreteIntVars + numDiscreteRealVars + numDiscreteStringVars,
                                                   numSamples,
                                                   allSamples,
                                                   allResponses);

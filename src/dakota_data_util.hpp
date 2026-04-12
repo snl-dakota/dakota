@@ -261,6 +261,9 @@ inline bool is_equal_partial(const StringMultiArray& ma1,
 /// Computes means of columns of matrix
 void compute_col_means(RealMatrix& matrix, RealVector& avg_vals);
 
+/// Computes weighted averages of columns of matrix
+void compute_col_weighted_averages( RealMatrix& matrix, RealVector& weights, RealVector& avg_vals);
+
 /// Computes standard deviations of columns of matrix
 void compute_col_stdevs(RealMatrix& matrix, RealVector& avg_vals, 
                         RealVector& std_devs);
@@ -1246,6 +1249,10 @@ inline void merge_data_partial(const IntVector& d_vec,
 void iround(const RealVector& input_vec, IntVector& rounded_vec);
 /// round entries of a RealVector yielding a SizetVector
 void iround(const RealVector& input_vec, SizetArray& rounded_vec);
+
+/// return a std vector with the counts of unique values of a 
+/// sorted vector (i.e., assumes the elements are sorted smallest to largest)
+IntVector get_unique_counts_of_sorted_vec( const RealVector& sorted_vec );
 
 
 // -------------------------------
