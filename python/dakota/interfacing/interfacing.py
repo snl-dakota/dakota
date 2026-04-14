@@ -11,7 +11,8 @@ import math
 import re
 import sys
 from typing import Generator, Iterable, List, NewType, Tuple, Union, Dict
-from . import dprepro as dprepro_mod
+from .dprepro import dprepro as dprepro_func
+from .dprepro import pyprepro
 
 __author__ = "J. Adam Stephens"
 __copyright__ = "Copyright 2014-2025 National Technology & Engineering Solutions of Sandia, LLC (NTESS)"
@@ -1545,7 +1546,7 @@ def dprepro(
     env.update(include)
 
     # Call the template engine
-    output_string = dprepro_mod.dprepro(
+    output_string = dprepro_func(
         include=env,
         template=template,
         fmt=fmt,
