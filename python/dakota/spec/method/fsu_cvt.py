@@ -25,8 +25,8 @@ class TrialTypeGrid(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.trial_type",
-                    "stored_value": "grid",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "grid",
                     "ir_value_type": "String",
                 }
             ]
@@ -43,8 +43,8 @@ class TrialTypeHalton(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.trial_type",
-                    "stored_value": "halton",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "halton",
                     "ir_value_type": "String",
                 }
             ]
@@ -61,8 +61,8 @@ class TrialTypeRandom(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.trial_type",
-                    "stored_value": "random",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "random",
                     "ir_value_type": "String",
                 }
             ]
@@ -148,8 +148,8 @@ class FsuCvtSelection(MethodSelection):
             "materialization": [
                 {
                     "ir_key": "method.algorithm",
-                    "stored_value": "FSU_CVT",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "FSU_CVT",
                     "ir_value_type": "unsigned short",
                 }
             ]

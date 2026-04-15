@@ -24,8 +24,8 @@ class EstimateOrder(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.sub_method",
-                    "stored_value": "SUBMETHOD_ESTIMATE_ORDER",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBMETHOD_ESTIMATE_ORDER",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -42,8 +42,8 @@ class ConvergeOrder(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.sub_method",
-                    "stored_value": "SUBMETHOD_CONVERGE_ORDER",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBMETHOD_CONVERGE_ORDER",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -60,8 +60,8 @@ class ConvergeQoi(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.sub_method",
-                    "stored_value": "SUBMETHOD_CONVERGE_QOI",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBMETHOD_CONVERGE_QOI",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -103,8 +103,8 @@ class RichardsonExtrapSelection(MethodSelection):
             "materialization": [
                 {
                     "ir_key": "method.algorithm",
-                    "stored_value": "RICHARDSON_EXTRAP",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "RICHARDSON_EXTRAP",
                     "ir_value_type": "unsigned short",
                 }
             ]

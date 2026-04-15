@@ -18,8 +18,8 @@ class NoGradients(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "responses.gradient_type",
-                    "stored_value": "none",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "none",
                     "ir_value_type": "String",
                 }
             ]
@@ -36,8 +36,8 @@ class AnalyticGradients(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "responses.gradient_type",
-                    "stored_value": "analytic",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "analytic",
                     "ir_value_type": "String",
                 }
             ]
@@ -54,8 +54,8 @@ class MixedGradientsMethodSourceDakotaRelative(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "responses.fd_gradient_step_type",
-                    "stored_value": "relative",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "relative",
                     "ir_value_type": "String",
                 }
             ]
@@ -72,8 +72,8 @@ class MixedGradientsMethodSourceDakotaAbsolute(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "responses.fd_gradient_step_type",
-                    "stored_value": "absolute",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "absolute",
                     "ir_value_type": "String",
                 }
             ]
@@ -90,8 +90,8 @@ class MixedGradientsMethodSourceDakotaBounds(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "responses.fd_gradient_step_type",
-                    "stored_value": "bounds",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "bounds",
                     "ir_value_type": "String",
                 }
             ]
@@ -108,8 +108,8 @@ class MixedGradientsMethodSourceVendor(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "responses.method_source",
-                    "stored_value": "vendor",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "vendor",
                     "ir_value_type": "String",
                 }
             ]
@@ -126,8 +126,8 @@ class MixedGradientsIntervalTypeForward(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "responses.interval_type",
-                    "stored_value": "forward",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "forward",
                     "ir_value_type": "String",
                 }
             ]
@@ -144,8 +144,8 @@ class MixedGradientsIntervalTypeCentral(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "responses.interval_type",
-                    "stored_value": "central",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "central",
                     "ir_value_type": "String",
                 }
             ]
@@ -162,8 +162,8 @@ class NumericalGradientsMethodSourceDakotaRelative(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "responses.fd_gradient_step_type",
-                    "stored_value": "relative",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "relative",
                     "ir_value_type": "String",
                 }
             ]
@@ -180,8 +180,8 @@ class NumericalGradientsMethodSourceDakotaAbsolute(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "responses.fd_gradient_step_type",
-                    "stored_value": "absolute",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "absolute",
                     "ir_value_type": "String",
                 }
             ]
@@ -198,8 +198,8 @@ class NumericalGradientsMethodSourceDakotaBounds(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "responses.fd_gradient_step_type",
-                    "stored_value": "bounds",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "bounds",
                     "ir_value_type": "String",
                 }
             ]
@@ -216,8 +216,8 @@ class NumericalGradientsMethodSourceVendor(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "responses.method_source",
-                    "stored_value": "vendor",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "vendor",
                     "ir_value_type": "String",
                 }
             ]
@@ -234,8 +234,8 @@ class NumericalGradientsIntervalTypeForward(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "responses.interval_type",
-                    "stored_value": "forward",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "forward",
                     "ir_value_type": "String",
                 }
             ]
@@ -252,8 +252,8 @@ class NumericalGradientsIntervalTypeCentral(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "responses.interval_type",
-                    "stored_value": "central",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "central",
                     "ir_value_type": "String",
                 }
             ]
@@ -270,8 +270,8 @@ class NoHessians(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "responses.hessian_type",
-                    "stored_value": "none",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "none",
                     "ir_value_type": "String",
                 }
             ]
@@ -288,8 +288,8 @@ class NumericalHessiansRelative(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "responses.fd_hessian_step_type",
-                    "stored_value": "relative",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "relative",
                     "ir_value_type": "String",
                 }
             ]
@@ -306,8 +306,8 @@ class NumericalHessiansAbsolute(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "responses.fd_hessian_step_type",
-                    "stored_value": "absolute",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "absolute",
                     "ir_value_type": "String",
                 }
             ]
@@ -324,8 +324,8 @@ class NumericalHessiansBounds(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "responses.fd_hessian_step_type",
-                    "stored_value": "bounds",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "bounds",
                     "ir_value_type": "String",
                 }
             ]
@@ -377,8 +377,8 @@ class QuasiHessiansBfgsConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "responses.quasi_hessian_type",
-                    "stored_value": "damped_bfgs",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "damped_bfgs",
                     "ir_value_type": "String",
                 }
             ]
@@ -395,8 +395,8 @@ class QuasiHessiansSr1(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "responses.quasi_hessian_type",
-                    "stored_value": "sr1",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "sr1",
                     "ir_value_type": "String",
                 }
             ]
@@ -413,8 +413,8 @@ class AnalyticHessians(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "responses.hessian_type",
-                    "stored_value": "analytic",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "analytic",
                     "ir_value_type": "String",
                 }
             ]
@@ -462,8 +462,8 @@ class MixedHessiansRelative(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "responses.fd_hessian_step_type",
-                    "stored_value": "relative",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "relative",
                     "ir_value_type": "String",
                 }
             ]
@@ -480,8 +480,8 @@ class MixedHessiansAbsolute(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "responses.fd_hessian_step_type",
-                    "stored_value": "absolute",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "absolute",
                     "ir_value_type": "String",
                 }
             ]
@@ -498,8 +498,8 @@ class MixedHessiansBounds(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "responses.fd_hessian_step_type",
-                    "stored_value": "bounds",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "bounds",
                     "ir_value_type": "String",
                 }
             ]
@@ -551,8 +551,8 @@ class IdQuasiHessiansBfgsConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "responses.quasi_hessian_type",
-                    "stored_value": "damped_bfgs",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "damped_bfgs",
                     "ir_value_type": "String",
                 }
             ]
@@ -569,8 +569,8 @@ class IdQuasiHessiansSr1(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "responses.quasi_hessian_type",
-                    "stored_value": "sr1",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "sr1",
                     "ir_value_type": "String",
                 }
             ]
@@ -587,8 +587,8 @@ class ResponseLevelsComputeProbGenContext1Probabilities(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.response_level_target",
-                    "stored_value": "PROBABILITIES",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "PROBABILITIES",
                     "ir_value_type": "short",
                 }
             ]
@@ -605,8 +605,8 @@ class ResponseLevelsComputeProbGenContext1GenReliabilities(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.response_level_target",
-                    "stored_value": "GEN_RELIABILITIES",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "GEN_RELIABILITIES",
                     "ir_value_type": "short",
                 }
             ]
@@ -623,8 +623,8 @@ class ResponseLevelsComputeProbGenContext1SystemSeries(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.response_level_target_reduce",
-                    "stored_value": "SYSTEM_SERIES",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SYSTEM_SERIES",
                     "ir_value_type": "short",
                 }
             ]
@@ -641,8 +641,8 @@ class ResponseLevelsComputeProbGenContext1SystemParallel(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.response_level_target_reduce",
-                    "stored_value": "SYSTEM_PARALLEL",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SYSTEM_PARALLEL",
                     "ir_value_type": "short",
                 }
             ]
@@ -659,8 +659,8 @@ class ResponseLevelsComputeProbGenContext2Probabilities(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.response_level_target",
-                    "stored_value": "PROBABILITIES",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "PROBABILITIES",
                     "ir_value_type": "short",
                 }
             ]
@@ -677,8 +677,8 @@ class ResponseLevelsComputeProbGenContext2GenReliabilities(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.response_level_target",
-                    "stored_value": "GEN_RELIABILITIES",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "GEN_RELIABILITIES",
                     "ir_value_type": "short",
                 }
             ]
@@ -695,8 +695,8 @@ class ResponseLevelsComputeProbGenContext2SystemSeries(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.response_level_target_reduce",
-                    "stored_value": "SYSTEM_SERIES",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SYSTEM_SERIES",
                     "ir_value_type": "short",
                 }
             ]
@@ -713,8 +713,8 @@ class ResponseLevelsComputeProbGenContext2SystemParallel(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.response_level_target_reduce",
-                    "stored_value": "SYSTEM_PARALLEL",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SYSTEM_PARALLEL",
                     "ir_value_type": "short",
                 }
             ]
@@ -732,8 +732,8 @@ class ResponseScalarDataFormatCustomAnnotatedConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "responses.scalar_data_format",
-                    "stored_value": "TABULAR_HEADER",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_HEADER",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -746,8 +746,8 @@ class ResponseScalarDataFormatCustomAnnotatedConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "responses.scalar_data_format",
-                    "stored_value": "TABULAR_EVAL_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_EVAL_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -764,8 +764,8 @@ class ResponseScalarDataFormatAnnotated(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "responses.scalar_data_format",
-                    "stored_value": "TABULAR_EXPER_ANNOT",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_EXPER_ANNOT",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -782,8 +782,8 @@ class ResponseScalarDataFormatFreeform(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "responses.scalar_data_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -902,8 +902,8 @@ class QuasiHessiansBfgs(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "responses.quasi_hessian_type",
-                    "stored_value": "bfgs",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "bfgs",
                     "ir_value_type": "String",
                 }
             ]
@@ -920,8 +920,8 @@ class IdQuasiHessiansBfgs(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "responses.quasi_hessian_type",
-                    "stored_value": "bfgs",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "bfgs",
                     "ir_value_type": "String",
                 }
             ]
@@ -984,8 +984,8 @@ class ResponseScalarDataFormatCustomAnnotated(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "responses.scalar_data_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ],
@@ -1004,8 +1004,8 @@ class MixedGradientsMethodSourceDakota(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "responses.method_source",
-                    "stored_value": "dakota",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "dakota",
                     "ir_value_type": "String",
                 }
             ],
@@ -1024,8 +1024,8 @@ class NumericalGradientsMethodSourceDakota(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "responses.method_source",
-                    "stored_value": "dakota",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "dakota",
                     "ir_value_type": "String",
                 }
             ],
@@ -1042,8 +1042,8 @@ class NumericalHessians(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "responses.hessian_type",
-                    "stored_value": "numerical",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "numerical",
                     "ir_value_type": "String",
                 }
             ]
@@ -1059,8 +1059,8 @@ class QuasiHessians(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "responses.hessian_type",
-                    "stored_value": "quasi",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "quasi",
                     "ir_value_type": "String",
                 }
             ]
@@ -1357,8 +1357,8 @@ class MixedGradients(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "responses.gradient_type",
-                    "stored_value": "mixed",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "mixed",
                     "ir_value_type": "String",
                 }
             ]
@@ -1375,8 +1375,8 @@ class NumericalGradients(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "responses.gradient_type",
-                    "stored_value": "numerical",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "numerical",
                     "ir_value_type": "String",
                 }
             ]
@@ -1393,8 +1393,8 @@ class MixedHessians(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "responses.hessian_type",
-                    "stored_value": "mixed",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "mixed",
                     "ir_value_type": "String",
                 }
             ]

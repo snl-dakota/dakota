@@ -47,8 +47,8 @@ class NonlinearCgSelection(MethodSelection):
             "materialization": [
                 {
                     "ir_key": "method.algorithm",
-                    "stored_value": "NONLINEAR_CG",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "NONLINEAR_CG",
                     "ir_value_type": "unsigned short",
                 }
             ]

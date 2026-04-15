@@ -29,8 +29,8 @@ class SamplingSampleTypeLhs(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.sample_type",
-                    "stored_value": "SUBMETHOD_LHS",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBMETHOD_LHS",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -47,8 +47,8 @@ class SamplingSampleTypeRandom(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.sample_type",
-                    "stored_value": "SUBMETHOD_RANDOM",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBMETHOD_RANDOM",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -65,8 +65,8 @@ class IncrementalLhs(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.sample_type",
-                    "stored_value": "SUBMETHOD_LHS",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBMETHOD_LHS",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -83,8 +83,8 @@ class IncrementalRandom(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.sample_type",
-                    "stored_value": "SUBMETHOD_RANDOM",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBMETHOD_RANDOM",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -193,8 +193,8 @@ class Wilks(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.wilks.sided_interval",
-                    "stored_value": "ONE_SIDED_LOWER",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "ONE_SIDED_LOWER",
                     "ir_value_type": "short",
                 }
             ]
@@ -207,8 +207,8 @@ class Wilks(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.wilks.sided_interval",
-                    "stored_value": "ONE_SIDED_UPPER",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "ONE_SIDED_UPPER",
                     "ir_value_type": "short",
                 }
             ]
@@ -221,8 +221,8 @@ class Wilks(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.wilks.sided_interval",
-                    "stored_value": "TWO_SIDED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TWO_SIDED",
                     "ir_value_type": "short",
                 }
             ]
@@ -307,8 +307,8 @@ class LowDiscrepancy(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.sample_type",
-                    "stored_value": "SUBMETHOD_LOW_DISCREPANCY_SAMPLING",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBMETHOD_LOW_DISCREPANCY_SAMPLING",
                     "ir_value_type": "unsigned short",
                 }
             ],
@@ -458,8 +458,8 @@ class SamplingSelection(MethodSelection):
             "materialization": [
                 {
                     "ir_key": "method.algorithm",
-                    "stored_value": "RANDOM_SAMPLING",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "RANDOM_SAMPLING",
                     "ir_value_type": "unsigned short",
                 }
             ],

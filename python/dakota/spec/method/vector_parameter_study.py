@@ -77,8 +77,8 @@ class VectorParameterStudySelection(MethodSelection):
             "materialization": [
                 {
                     "ir_key": "method.algorithm",
-                    "stored_value": "VECTOR_PARAMETER_STUDY",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "VECTOR_PARAMETER_STUDY",
                     "ir_value_type": "unsigned short",
                 }
             ]

@@ -26,8 +26,8 @@ class LayerRank(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.fitness_type",
-                    "stored_value": "layer_rank",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "layer_rank",
                     "ir_value_type": "String",
                 }
             ]
@@ -44,8 +44,8 @@ class DominationCount(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.fitness_type",
-                    "stored_value": "domination_count",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "domination_count",
                     "ir_value_type": "String",
                 }
             ]
@@ -62,8 +62,8 @@ class MogaReplacementTypeElitist(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.replacement_type",
-                    "stored_value": "elitist",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "elitist",
                     "ir_value_type": "String",
                 }
             ]
@@ -80,8 +80,8 @@ class MogaReplacementTypeRouletteWheel(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.replacement_type",
-                    "stored_value": "roulette_wheel",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "roulette_wheel",
                     "ir_value_type": "String",
                 }
             ]
@@ -98,8 +98,8 @@ class MogaReplacementTypeUniqueRouletteWheel(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.replacement_type",
-                    "stored_value": "unique_roulette_wheel",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "unique_roulette_wheel",
                     "ir_value_type": "String",
                 }
             ]
@@ -117,8 +117,8 @@ class BelowLimitConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.replacement_type",
-                    "stored_value": "below_limit",
                     "storage_type": "TYPE_DATA_COMBINED",
+                    "stored_value": "below_limit",
                     "secondary_ir_key": "method.jega.fitness_limit",
                     "secondary_ir_value_type": "Real",
                     "ir_value_type": "String",
@@ -153,8 +153,8 @@ class Radial(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.jega.niching_type",
-                    "stored_value": "radial",
                     "storage_type": "TYPE_DATA_COMBINED",
+                    "stored_value": "radial",
                     "secondary_ir_key": "method.jega.niche_vector",
                     "secondary_ir_value_type": "RealVector",
                     "ir_value_type": "String",
@@ -173,8 +173,8 @@ class NichingTypeDistance(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.jega.niching_type",
-                    "stored_value": "distance",
                     "storage_type": "TYPE_DATA_COMBINED",
+                    "stored_value": "distance",
                     "secondary_ir_key": "method.jega.niche_vector",
                     "secondary_ir_value_type": "RealVector",
                     "ir_value_type": "String",
@@ -193,8 +193,8 @@ class MaxDesignsConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.jega.niching_type",
-                    "stored_value": "max_designs",
                     "storage_type": "TYPE_DATA_COMBINED",
+                    "stored_value": "max_designs",
                     "secondary_ir_key": "method.jega.niche_vector",
                     "secondary_ir_value_type": "RealVector",
                     "ir_value_type": "String",
@@ -227,8 +227,8 @@ class ConvergenceType(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.jega.convergence_type",
-                    "stored_value": "metric_tracker",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "metric_tracker",
                     "ir_value_type": "String",
                 }
             ]
@@ -278,8 +278,8 @@ class PostprocessorType(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.jega.postprocessor_type",
-                    "stored_value": "distance_postprocessor",
                     "storage_type": "TYPE_DATA_COMBINED",
+                    "stored_value": "distance_postprocessor",
                     "secondary_ir_key": "method.jega.distance_vector",
                     "secondary_ir_value_type": "RealVector",
                     "ir_value_type": "String",
@@ -357,8 +357,8 @@ class MogaSelection(MethodSelection):
             "materialization": [
                 {
                     "ir_key": "method.algorithm",
-                    "stored_value": "MOGA",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "MOGA",
                     "ir_value_type": "unsigned short",
                 }
             ]

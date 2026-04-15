@@ -37,8 +37,8 @@ class NowpacSelection(MethodSelection):
             "materialization": [
                 {
                     "ir_key": "method.algorithm",
-                    "stored_value": "MIT_NOWPAC",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "MIT_NOWPAC",
                     "ir_value_type": "unsigned short",
                 }
             ]

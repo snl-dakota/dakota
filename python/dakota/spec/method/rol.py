@@ -73,8 +73,8 @@ class RolSelection(MethodSelection):
             "materialization": [
                 {
                     "ir_key": "method.algorithm",
-                    "stored_value": "ROL",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "ROL",
                     "ir_value_type": "unsigned short",
                 }
             ]

@@ -24,8 +24,8 @@ class FsuQuasiMcHalton(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.algorithm",
-                    "stored_value": "FSU_HALTON",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "FSU_HALTON",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -42,8 +42,8 @@ class Hammersley(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.algorithm",
-                    "stored_value": "FSU_HAMMERSLEY",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "FSU_HAMMERSLEY",
                     "ir_value_type": "unsigned short",
                 }
             ]

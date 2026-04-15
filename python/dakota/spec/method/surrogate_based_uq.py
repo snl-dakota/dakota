@@ -33,8 +33,8 @@ class SurrogateBasedUqSelection(MethodSelection):
             "materialization": [
                 {
                     "ir_key": "method.algorithm",
-                    "stored_value": "SURROGATE_BASED_UQ",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SURROGATE_BASED_UQ",
                     "ir_value_type": "unsigned short",
                 }
             ]

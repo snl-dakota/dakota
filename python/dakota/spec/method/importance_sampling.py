@@ -26,8 +26,8 @@ class ImportanceSamplingImportance(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.integration_refinement",
-                    "stored_value": "IS",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "IS",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -44,8 +44,8 @@ class ImportanceSamplingAdaptImport(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.integration_refinement",
-                    "stored_value": "AIS",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "AIS",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -62,8 +62,8 @@ class ImportanceSamplingMmAdaptImport(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.integration_refinement",
-                    "stored_value": "MMAIS",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "MMAIS",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -141,8 +141,8 @@ class ImportanceSamplingSelection(MethodSelection):
             "materialization": [
                 {
                     "ir_key": "method.algorithm",
-                    "stored_value": "IMPORTANCE_SAMPLING",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "IMPORTANCE_SAMPLING",
                     "ir_value_type": "unsigned short",
                 }
             ],

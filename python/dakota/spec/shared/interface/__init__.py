@@ -15,8 +15,8 @@ class MethodSystemReliabilitySeries(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.response_level_target_reduce",
-                    "stored_value": "SYSTEM_SERIES",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SYSTEM_SERIES",
                     "ir_value_type": "short",
                 }
             ]
@@ -33,8 +33,8 @@ class MethodSystemReliabilityParallel(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.response_level_target_reduce",
-                    "stored_value": "SYSTEM_PARALLEL",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SYSTEM_PARALLEL",
                     "ir_value_type": "short",
                 }
             ]

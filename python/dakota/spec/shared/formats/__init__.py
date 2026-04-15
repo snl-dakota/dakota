@@ -16,8 +16,8 @@ class MethodImportBuildFormatCustomAnnotatedConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_HEADER",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_HEADER",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -30,8 +30,8 @@ class MethodImportBuildFormatCustomAnnotatedConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_EVAL_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_EVAL_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -44,8 +44,8 @@ class MethodImportBuildFormatCustomAnnotatedConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_IFACE_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_IFACE_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -62,8 +62,8 @@ class MethodImportBuildFormatAnnotated(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_ANNOTATED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_ANNOTATED",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -80,8 +80,8 @@ class MethodImportBuildFormatFreeform(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -99,8 +99,8 @@ class ModelFullSurfpackExportFormatFormats(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.model_export_format",
-                    "stored_value": "TEXT_ARCHIVE",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TEXT_ARCHIVE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -113,8 +113,8 @@ class ModelFullSurfpackExportFormatFormats(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.model_export_format",
-                    "stored_value": "BINARY_ARCHIVE",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "BINARY_ARCHIVE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -127,8 +127,8 @@ class ModelFullSurfpackExportFormatFormats(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.model_export_format",
-                    "stored_value": "ALGEBRAIC_FILE",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "ALGEBRAIC_FILE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -141,8 +141,8 @@ class ModelFullSurfpackExportFormatFormats(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.model_export_format",
-                    "stored_value": "ALGEBRAIC_CONSOLE",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "ALGEBRAIC_CONSOLE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -161,8 +161,8 @@ class MethodImportBuildFormatCustomAnnotated(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ],

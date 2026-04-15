@@ -52,8 +52,8 @@ class Mean(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.allocation_target",
-                    "stored_value": "TARGET_MEAN",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TARGET_MEAN",
                     "ir_value_type": "short",
                 }
             ]
@@ -137,8 +137,8 @@ class Sum(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.qoi_aggregation",
-                    "stored_value": "QOI_AGGREGATION_SUM",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "QOI_AGGREGATION_SUM",
                     "ir_value_type": "short",
                 }
             ]
@@ -155,8 +155,8 @@ class Max(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.qoi_aggregation",
-                    "stored_value": "QOI_AGGREGATION_MAX",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "QOI_AGGREGATION_MAX",
                     "ir_value_type": "short",
                 }
             ]
@@ -173,8 +173,8 @@ class VarianceConstraint(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.convergence_tolerance_target",
-                    "stored_value": "VARIANCE_CONSTRAINT_TARGET",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "VARIANCE_CONSTRAINT_TARGET",
                     "ir_value_type": "short",
                 }
             ]
@@ -191,8 +191,8 @@ class CostConstraint(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.convergence_tolerance_target",
-                    "stored_value": "COST_CONSTRAINT_TARGET",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "COST_CONSTRAINT_TARGET",
                     "ir_value_type": "short",
                 }
             ]
@@ -211,8 +211,8 @@ class Variance(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.allocation_target",
-                    "stored_value": "TARGET_VARIANCE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TARGET_VARIANCE",
                     "ir_value_type": "short",
                 }
             ],
@@ -231,8 +231,8 @@ class StandardDeviation(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.allocation_target",
-                    "stored_value": "TARGET_SIGMA",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TARGET_SIGMA",
                     "ir_value_type": "short",
                 }
             ],
@@ -251,8 +251,8 @@ class Scalarization(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.allocation_target",
-                    "stored_value": "TARGET_SCALARIZATION",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TARGET_SCALARIZATION",
                     "ir_value_type": "short",
                 }
             ],
@@ -281,8 +281,8 @@ class MultilevelSamplingConfig(
             "materialization": [
                 {
                     "ir_key": "method.sub_method",
-                    "stored_value": "SUBMETHOD_WEIGHTED_MLMC",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBMETHOD_WEIGHTED_MLMC",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -331,8 +331,8 @@ class MultilevelSamplingSelection(MethodSelection):
             "materialization": [
                 {
                     "ir_key": "method.algorithm",
-                    "stored_value": "MULTILEVEL_SAMPLING",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "MULTILEVEL_SAMPLING",
                     "ir_value_type": "unsigned short",
                 }
             ],

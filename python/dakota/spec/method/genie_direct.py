@@ -46,8 +46,8 @@ class GenieDirectSelection(MethodSelection):
             "materialization": [
                 {
                     "ir_key": "method.algorithm",
-                    "stored_value": "GENIE_DIRECT",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "GENIE_DIRECT",
                     "ir_value_type": "unsigned short",
                 }
             ]

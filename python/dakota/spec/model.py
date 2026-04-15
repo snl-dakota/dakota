@@ -109,8 +109,8 @@ class TrendNone(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.trend_order",
-                    "stored_value": "none",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "none",
                     "ir_value_type": "String",
                 }
             ]
@@ -127,8 +127,8 @@ class ExperimentalGPTrendConstant(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.trend_order",
-                    "stored_value": "constant",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "constant",
                     "ir_value_type": "String",
                 }
             ]
@@ -145,8 +145,8 @@ class ExperimentalGPTrendLinear(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.trend_order",
-                    "stored_value": "linear",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "linear",
                     "ir_value_type": "String",
                 }
             ]
@@ -163,8 +163,8 @@ class ExperimentalGPTrendReducedQuadratic(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.trend_order",
-                    "stored_value": "reduced_quadratic",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "reduced_quadratic",
                     "ir_value_type": "String",
                 }
             ]
@@ -181,8 +181,8 @@ class ExperimentalGPTrendQuadratic(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.trend_order",
-                    "stored_value": "quadratic",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "quadratic",
                     "ir_value_type": "String",
                 }
             ]
@@ -234,8 +234,8 @@ class DakotaTrendConstant(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.trend_order",
-                    "stored_value": "constant",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "constant",
                     "ir_value_type": "String",
                 }
             ]
@@ -252,8 +252,8 @@ class DakotaTrendLinear(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.trend_order",
-                    "stored_value": "linear",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "linear",
                     "ir_value_type": "String",
                 }
             ]
@@ -270,8 +270,8 @@ class DakotaTrendReducedQuadratic(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.trend_order",
-                    "stored_value": "reduced_quadratic",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "reduced_quadratic",
                     "ir_value_type": "String",
                 }
             ]
@@ -288,8 +288,8 @@ class SurfpackTrendConstant(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.trend_order",
-                    "stored_value": "constant",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "constant",
                     "ir_value_type": "String",
                 }
             ]
@@ -306,8 +306,8 @@ class SurfpackTrendLinear(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.trend_order",
-                    "stored_value": "linear",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "linear",
                     "ir_value_type": "String",
                 }
             ]
@@ -324,8 +324,8 @@ class SurfpackTrendReducedQuadratic(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.trend_order",
-                    "stored_value": "reduced_quadratic",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "reduced_quadratic",
                     "ir_value_type": "String",
                 }
             ]
@@ -342,8 +342,8 @@ class SurfpackTrendQuadratic(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.trend_order",
-                    "stored_value": "quadratic",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "quadratic",
                     "ir_value_type": "String",
                 }
             ]
@@ -395,8 +395,8 @@ class InterpLinear(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.mars_interpolation",
-                    "stored_value": "linear",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "linear",
                     "ir_value_type": "String",
                 }
             ]
@@ -413,8 +413,8 @@ class InterpCubic(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.mars_interpolation",
-                    "stored_value": "cubic",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "cubic",
                     "ir_value_type": "String",
                 }
             ]
@@ -596,8 +596,8 @@ class PolynomialLinear(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.polynomial_order",
-                    "stored_value": 1,
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": 1,
                     "ir_value_type": "short",
                 }
             ]
@@ -614,8 +614,8 @@ class PolynomialQuadratic(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.polynomial_order",
-                    "stored_value": 2,
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": 2,
                     "ir_value_type": "short",
                 }
             ]
@@ -632,8 +632,8 @@ class PolynomialCubic(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.polynomial_order",
-                    "stored_value": 3,
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": 3,
                     "ir_value_type": "short",
                 }
             ]
@@ -752,8 +752,8 @@ class MinimumPoints(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.points_management",
-                    "stored_value": "MINIMUM_POINTS",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "MINIMUM_POINTS",
                     "ir_value_type": "short",
                 }
             ]
@@ -770,8 +770,8 @@ class RecommendedPoints(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.points_management",
-                    "stored_value": "RECOMMENDED_POINTS",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "RECOMMENDED_POINTS",
                     "ir_value_type": "short",
                 }
             ]
@@ -839,8 +839,8 @@ class ReusePointsAll(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.point_reuse",
-                    "stored_value": "all",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "all",
                     "ir_value_type": "String",
                 }
             ]
@@ -857,8 +857,8 @@ class Region(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.point_reuse",
-                    "stored_value": "region",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "region",
                     "ir_value_type": "String",
                 }
             ]
@@ -875,8 +875,8 @@ class ReusePointsNone(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.point_reuse",
-                    "stored_value": "none",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "none",
                     "ir_value_type": "String",
                 }
             ]
@@ -929,8 +929,8 @@ class GlobalApproxImportBuildPointsFileFreeform(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.import_build_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -948,8 +948,8 @@ class GlobalApproxExportApproxPointsFileCustomAnnotatedConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.export_approx_format",
-                    "stored_value": "TABULAR_HEADER",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_HEADER",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -962,8 +962,8 @@ class GlobalApproxExportApproxPointsFileCustomAnnotatedConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.export_approx_format",
-                    "stored_value": "TABULAR_EVAL_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_EVAL_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -976,8 +976,8 @@ class GlobalApproxExportApproxPointsFileCustomAnnotatedConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.export_approx_format",
-                    "stored_value": "TABULAR_IFACE_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_IFACE_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -994,8 +994,8 @@ class GlobalApproxExportApproxPointsFileAnnotated(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.export_approx_format",
-                    "stored_value": "TABULAR_ANNOTATED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_ANNOTATED",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1012,8 +1012,8 @@ class GlobalApproxExportApproxPointsFileFreeform(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.export_approx_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1100,8 +1100,8 @@ class ImportChallengePointsFileFreeform(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.challenge_points_file_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1118,8 +1118,8 @@ class Tana(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.type",
-                    "stored_value": "multipoint_tana",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "multipoint_tana",
                     "ir_value_type": "String",
                 }
             ]
@@ -1136,8 +1136,8 @@ class Qmea(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.type",
-                    "stored_value": "multipoint_qmea",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "multipoint_qmea",
                     "ir_value_type": "String",
                 }
             ]
@@ -1259,8 +1259,8 @@ class SubMethodPointerIteratorSchedulingDedicated(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.nested.iterator_scheduling",
-                    "stored_value": "DEDICATED_SCHEDULER_DYNAMIC",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "DEDICATED_SCHEDULER_DYNAMIC",
                     "ir_value_type": "short",
                 }
             ]
@@ -1277,8 +1277,8 @@ class SubMethodPointerIteratorSchedulingPeer(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.nested.iterator_scheduling",
-                    "stored_value": "PEER_SCHEDULING",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "PEER_SCHEDULING",
                     "ir_value_type": "short",
                 }
             ]
@@ -1295,8 +1295,8 @@ class ActiveSubspaceSampleTypeLhs(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.active_subspace.sample_type",
-                    "stored_value": "SUBMETHOD_LHS",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBMETHOD_LHS",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1313,8 +1313,8 @@ class ActiveSubspaceSampleTypeRandom(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.active_subspace.sample_type",
-                    "stored_value": "SUBMETHOD_RANDOM",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBMETHOD_RANDOM",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1354,8 +1354,8 @@ class Minimum(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.active_subspace.cv.id_method",
-                    "stored_value": "MINIMUM_METRIC",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "MINIMUM_METRIC",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1372,8 +1372,8 @@ class CVRelative(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.active_subspace.cv.id_method",
-                    "stored_value": "RELATIVE_TOLERANCE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "RELATIVE_TOLERANCE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1390,8 +1390,8 @@ class Decrease(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.active_subspace.cv.id_method",
-                    "stored_value": "DECREASE_TOLERANCE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "DECREASE_TOLERANCE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1426,8 +1426,8 @@ class MeanValue(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.active_subspace.normalization",
-                    "stored_value": "SUBSPACE_NORM_MEAN_VALUE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBSPACE_NORM_MEAN_VALUE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1444,8 +1444,8 @@ class MeanGradient(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.active_subspace.normalization",
-                    "stored_value": "SUBSPACE_NORM_MEAN_GRAD",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBSPACE_NORM_MEAN_GRAD",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1462,8 +1462,8 @@ class LocalGradient(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.active_subspace.normalization",
-                    "stored_value": "SUBSPACE_NORM_LOCAL_GRAD",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBSPACE_NORM_LOCAL_GRAD",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1526,8 +1526,8 @@ class Unranked(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.adapted_basis.rotation_method",
-                    "stored_value": "ROTATION_METHOD_UNRANKED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "ROTATION_METHOD_UNRANKED",
                     "ir_value_type": "short",
                 }
             ]
@@ -1544,8 +1544,8 @@ class Ranked(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.adapted_basis.rotation_method",
-                    "stored_value": "ROTATION_METHOD_RANKED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "ROTATION_METHOD_RANKED",
                     "ir_value_type": "short",
                 }
             ]
@@ -1602,8 +1602,8 @@ class SquaredExponential(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.rf.analytic_covariance",
-                    "stored_value": "EXP_L2",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "EXP_L2",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1620,8 +1620,8 @@ class Exponential(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.rf.analytic_covariance",
-                    "stored_value": "EXP_L1",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "EXP_L1",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1638,8 +1638,8 @@ class KarhunenLoeve(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.rf.expansion_form",
-                    "stored_value": "RF_KARHUNEN_LOEVE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "RF_KARHUNEN_LOEVE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1656,8 +1656,8 @@ class ExpansionFormPrincipalComponents(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.rf.expansion_form",
-                    "stored_value": "RF_PCA_GP",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "RF_PCA_GP",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1872,8 +1872,8 @@ class MovingLeastSquares(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.type",
-                    "stored_value": "global_moving_least_squares",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "global_moving_least_squares",
                     "ir_value_type": "String",
                 }
             ]
@@ -1890,8 +1890,8 @@ class Ft(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.type",
-                    "stored_value": "global_function_train",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "global_function_train",
                     "ir_value_type": "String",
                 }
             ]
@@ -1908,8 +1908,8 @@ class NeuralNetwork(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.type",
-                    "stored_value": "global_neural_network",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "global_neural_network",
                     "ir_value_type": "String",
                 }
             ]
@@ -1926,8 +1926,8 @@ class RadialBasis(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.type",
-                    "stored_value": "global_radial_basis",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "global_radial_basis",
                     "ir_value_type": "String",
                 }
             ]
@@ -1956,8 +1956,8 @@ class ExperimentalPolynomial(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.type",
-                    "stored_value": "global_exp_poly",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "global_exp_poly",
                     "ir_value_type": "String",
                 }
             ]
@@ -1974,8 +1974,8 @@ class ExperimentalPython(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.type",
-                    "stored_value": "global_exp_python",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "global_exp_python",
                     "ir_value_type": "String",
                 }
             ]
@@ -2113,8 +2113,8 @@ class GlobalApproxImportBuildPointsFileCustomAnnotatedConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.import_build_format",
-                    "stored_value": "TABULAR_HEADER",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_HEADER",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -2127,8 +2127,8 @@ class GlobalApproxImportBuildPointsFileCustomAnnotatedConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.import_build_format",
-                    "stored_value": "TABULAR_EVAL_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_EVAL_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -2141,8 +2141,8 @@ class GlobalApproxImportBuildPointsFileCustomAnnotatedConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.import_build_format",
-                    "stored_value": "TABULAR_IFACE_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_IFACE_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -2161,8 +2161,8 @@ class GlobalApproxImportBuildPointsFileAnnotated(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.import_build_format",
-                    "stored_value": "TABULAR_ANNOTATED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_ANNOTATED",
                     "ir_value_type": "unsigned short",
                 }
             ],
@@ -2181,8 +2181,8 @@ class GlobalApproxExportApproxPointsFileCustomAnnotated(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.export_approx_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ],
@@ -2249,8 +2249,8 @@ class ImportChallengePointsFileCustomAnnotatedConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.challenge_points_file_format",
-                    "stored_value": "TABULAR_HEADER",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_HEADER",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -2263,8 +2263,8 @@ class ImportChallengePointsFileCustomAnnotatedConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.challenge_points_file_format",
-                    "stored_value": "TABULAR_EVAL_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_EVAL_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -2277,8 +2277,8 @@ class ImportChallengePointsFileCustomAnnotatedConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.challenge_points_file_format",
-                    "stored_value": "TABULAR_IFACE_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_IFACE_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -2297,8 +2297,8 @@ class ImportChallengePointsFileAnnotated(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.challenge_points_file_format",
-                    "stored_value": "TABULAR_ANNOTATED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_ANNOTATED",
                     "ir_value_type": "unsigned short",
                 }
             ],
@@ -2337,8 +2337,8 @@ class Local(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.type",
-                    "stored_value": "local_taylor",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "local_taylor",
                     "ir_value_type": "String",
                 }
             ]
@@ -2581,8 +2581,8 @@ class SingleSelection(ModelSelection):
             "materialization": [
                 {
                     "ir_key": "model.type",
-                    "stored_value": "simulation",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "simulation",
                     "ir_value_type": "String",
                 }
             ],
@@ -2599,8 +2599,8 @@ class ExperimentalGP(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.type",
-                    "stored_value": "global_exp_gauss_proc",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "global_exp_gauss_proc",
                     "ir_value_type": "String",
                 }
             ]
@@ -2617,8 +2617,8 @@ class GlobalApproxGPDakota(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.type",
-                    "stored_value": "global_gaussian",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "global_gaussian",
                     "ir_value_type": "String",
                 }
             ]
@@ -2635,8 +2635,8 @@ class GlobalApproxGPSurfpack(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.type",
-                    "stored_value": "global_kriging",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "global_kriging",
                     "ir_value_type": "String",
                 }
             ]
@@ -2653,8 +2653,8 @@ class Mars(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.type",
-                    "stored_value": "global_mars",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "global_mars",
                     "ir_value_type": "String",
                 }
             ]
@@ -2671,8 +2671,8 @@ class GlobalApproxPolynomial(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.type",
-                    "stored_value": "global_polynomial",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "global_polynomial",
                     "ir_value_type": "String",
                 }
             ]
@@ -2727,8 +2727,8 @@ class GlobalApproxImportBuildPointsFileCustomAnnotated(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.import_build_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ],
@@ -2777,8 +2777,8 @@ class ImportChallengePointsFileCustomAnnotated(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.challenge_points_file_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ],
@@ -2802,8 +2802,8 @@ class Ensemble(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.type",
-                    "stored_value": "ensemble",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "ensemble",
                     "ir_value_type": "String",
                 }
             ]
@@ -3115,8 +3115,8 @@ class NestedSelection(ModelSelection):
             "materialization": [
                 {
                     "ir_key": "model.type",
-                    "stored_value": "nested",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "nested",
                     "ir_value_type": "String",
                 }
             ]
@@ -3247,8 +3247,8 @@ class RandomFieldSelection(ModelSelection):
             "materialization": [
                 {
                     "ir_key": "model.type",
-                    "stored_value": "random_field",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "random_field",
                     "ir_value_type": "String",
                 }
             ]
@@ -3274,8 +3274,8 @@ class ActiveSubspaceSelection(ModelSelection):
             "materialization": [
                 {
                     "ir_key": "model.type",
-                    "stored_value": "active_subspace",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "active_subspace",
                     "ir_value_type": "String",
                 }
             ],
@@ -3292,8 +3292,8 @@ class AdaptedBasisSelection(ModelSelection):
             "materialization": [
                 {
                     "ir_key": "model.type",
-                    "stored_value": "adapted_basis",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "adapted_basis",
                     "ir_value_type": "String",
                 }
             ]
@@ -3430,8 +3430,8 @@ class SurrogateSelection(ModelSelection):
             "materialization": [
                 {
                     "ir_key": "model.type",
-                    "stored_value": "surrogate",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "surrogate",
                     "ir_value_type": "String",
                 }
             ]

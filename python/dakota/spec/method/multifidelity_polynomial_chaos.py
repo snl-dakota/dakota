@@ -32,8 +32,8 @@ class MfPceQuadratureOrderSequenceNested(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.nesting_override",
-                    "stored_value": "NESTED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "NESTED",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -51,8 +51,8 @@ class MfPceQuadratureOrderSequenceNonNested(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.nesting_override",
-                    "stored_value": "NON_NESTED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "NON_NESTED",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -70,8 +70,8 @@ class MfPceSGLevelSequenceRestricted(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.growth_override",
-                    "stored_value": "RESTRICTED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "RESTRICTED",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -89,8 +89,8 @@ class MfPceSGLevelSequenceUnrestricted(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.growth_override",
-                    "stored_value": "UNRESTRICTED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "UNRESTRICTED",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -108,8 +108,8 @@ class MfPceSGLevelSequenceNested(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.nesting_override",
-                    "stored_value": "NESTED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "NESTED",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -127,8 +127,8 @@ class MfPceSGLevelSequenceNonNested(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.nesting_override",
-                    "stored_value": "NON_NESTED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "NON_NESTED",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -146,8 +146,8 @@ class MfPceExpansionOrderSequenceBasisTypeTensorProduct(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.expansion_basis_type",
-                    "stored_value": "TENSOR_PRODUCT_BASIS",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TENSOR_PRODUCT_BASIS",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -165,8 +165,8 @@ class MfPceExpansionOrderSequenceBasisTypeTotalOrder(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.expansion_basis_type",
-                    "stored_value": "TOTAL_ORDER_BASIS",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TOTAL_ORDER_BASIS",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -215,8 +215,8 @@ class MfPceExpansionOrderSequenceCollocRatioLeastSquaresSvd(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.least_squares_regression_type",
-                    "stored_value": "SVD_LS",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SVD_LS",
                     "ir_value_type": "short",
                 }
             ]
@@ -233,8 +233,8 @@ class MfPceExpansionOrderSequenceCollocRatioLeastSquaresEqCon(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.least_squares_regression_type",
-                    "stored_value": "EQ_CON_LS",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "EQ_CON_LS",
                     "ir_value_type": "short",
                 }
             ]
@@ -270,8 +270,8 @@ class MfPceExpansionOrderSequenceCollocRatioBP(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.regression_type",
-                    "stored_value": "BASIS_PURSUIT",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "BASIS_PURSUIT",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -409,8 +409,8 @@ class MfPceExpansionOrderSequenceExpansionSamplesSequenceConfig(DakotaBaseModel)
             "materialization": [
                 {
                     "ir_key": "method.nond.point_reuse",
-                    "stored_value": "all",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "all",
                     "ir_value_type": "String",
                 }
             ],
@@ -430,8 +430,8 @@ class MfPceExpansionOrderSequenceImportBuildPointsFileCustomAnnotatedConfig(
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_HEADER",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_HEADER",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -444,8 +444,8 @@ class MfPceExpansionOrderSequenceImportBuildPointsFileCustomAnnotatedConfig(
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_EVAL_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_EVAL_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -458,8 +458,8 @@ class MfPceExpansionOrderSequenceImportBuildPointsFileCustomAnnotatedConfig(
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_IFACE_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_IFACE_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -476,8 +476,8 @@ class MfPceExpansionOrderSequenceImportBuildPointsFileAnnotated(DakotaBaseModel)
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_ANNOTATED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_ANNOTATED",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -494,8 +494,8 @@ class MfPceExpansionOrderSequenceImportBuildPointsFileFreeform(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -513,8 +513,8 @@ class MfPceOrthogLeastInterpImportBuildPointsFileCustomAnnotatedConfig(DakotaBas
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_HEADER",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_HEADER",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -527,8 +527,8 @@ class MfPceOrthogLeastInterpImportBuildPointsFileCustomAnnotatedConfig(DakotaBas
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_EVAL_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_EVAL_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -541,8 +541,8 @@ class MfPceOrthogLeastInterpImportBuildPointsFileCustomAnnotatedConfig(DakotaBas
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_IFACE_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_IFACE_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -559,8 +559,8 @@ class MfPceOrthogLeastInterpImportBuildPointsFileAnnotated(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_ANNOTATED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_ANNOTATED",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -577,8 +577,8 @@ class MfPceOrthogLeastInterpImportBuildPointsFileFreeform(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -689,8 +689,8 @@ class MfPceExpansionOrderSequenceBasisTypeAdapted(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.expansion_basis_type",
-                    "stored_value": "ADAPTED_BASIS_EXPANDING_FRONT",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "ADAPTED_BASIS_EXPANDING_FRONT",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -711,8 +711,8 @@ class MfPceExpansionOrderSequenceCollocRatioLeastSquares(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.regression_type",
-                    "stored_value": "DEFAULT_LEAST_SQ_REGRESSION",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "DEFAULT_LEAST_SQ_REGRESSION",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -731,8 +731,8 @@ class MfPceExpansionOrderSequenceCollocRatioOMP(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.regression_type",
-                    "stored_value": "ORTHOG_MATCH_PURSUIT",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "ORTHOG_MATCH_PURSUIT",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -751,8 +751,8 @@ class MfPceExpansionOrderSequenceCollocRatioBPDN(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.regression_type",
-                    "stored_value": "BASIS_PURSUIT_DENOISING",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "BASIS_PURSUIT_DENOISING",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -771,8 +771,8 @@ class MfPceExpansionOrderSequenceCollocRatioLars(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.regression_type",
-                    "stored_value": "LEAST_ANGLE_REGRESSION",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "LEAST_ANGLE_REGRESSION",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -791,8 +791,8 @@ class MfPceExpansionOrderSequenceCollocRatioLasso(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.regression_type",
-                    "stored_value": "LASSO_REGRESSION",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "LASSO_REGRESSION",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -822,8 +822,8 @@ class MfPceExpansionOrderSequenceImportBuildPointsFileCustomAnnotated(DakotaBase
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ],
@@ -842,8 +842,8 @@ class MfPceOrthogLeastInterpImportBuildPointsFileCustomAnnotated(DakotaBaseModel
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ],
@@ -997,8 +997,8 @@ class MfPceExpansionOrderSequenceCollocRatioConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.point_reuse",
-                    "stored_value": "all",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "all",
                     "ir_value_type": "String",
                 }
             ],
@@ -1162,8 +1162,8 @@ class MfPceOrthogLeastInterpConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.point_reuse",
-                    "stored_value": "all",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "all",
                     "ir_value_type": "String",
                 }
             ],
@@ -1247,8 +1247,8 @@ class MfPceOrthogLeastInterp(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.regression_type",
-                    "stored_value": "ORTHOG_LEAST_INTERPOLATION",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "ORTHOG_LEAST_INTERPOLATION",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -1299,8 +1299,8 @@ class MfPceSelection(MethodSelection):
             "materialization": [
                 {
                     "ir_key": "method.algorithm",
-                    "stored_value": "MULTIFIDELITY_POLYNOMIAL_CHAOS",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "MULTIFIDELITY_POLYNOMIAL_CHAOS",
                     "ir_value_type": "unsigned short",
                 }
             ]

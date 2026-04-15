@@ -34,8 +34,8 @@ class LocalEvidenceSelection(MethodSelection):
             "materialization": [
                 {
                     "ir_key": "method.algorithm",
-                    "stored_value": "LOCAL_EVIDENCE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "LOCAL_EVIDENCE",
                     "ir_value_type": "unsigned short",
                 }
             ],

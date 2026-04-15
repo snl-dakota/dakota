@@ -60,8 +60,8 @@ class ImportPointsImportPointsFileFreeform(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.import_points_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -145,8 +145,8 @@ class ImportPointsImportPointsFileCustomAnnotatedConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.import_points_format",
-                    "stored_value": "TABULAR_HEADER",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_HEADER",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -159,8 +159,8 @@ class ImportPointsImportPointsFileCustomAnnotatedConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.import_points_format",
-                    "stored_value": "TABULAR_EVAL_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_EVAL_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -173,8 +173,8 @@ class ImportPointsImportPointsFileCustomAnnotatedConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.import_points_format",
-                    "stored_value": "TABULAR_IFACE_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_IFACE_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -193,8 +193,8 @@ class ImportPointsImportPointsFileAnnotated(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.import_points_format",
-                    "stored_value": "TABULAR_ANNOTATED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_ANNOTATED",
                     "ir_value_type": "unsigned short",
                 }
             ],
@@ -213,8 +213,8 @@ class ImportPointsImportPointsFileCustomAnnotated(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.import_points_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ],
@@ -327,8 +327,8 @@ class ImportPointsSelection(MethodSelection):
             "materialization": [
                 {
                     "ir_key": "method.algorithm",
-                    "stored_value": "IMPORT_POINTS",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "IMPORT_POINTS",
                     "ir_value_type": "unsigned short",
                 }
             ]

@@ -42,8 +42,8 @@ class ColinyBetaSelection(MethodSelection):
             "materialization": [
                 {
                     "ir_key": "method.algorithm",
-                    "stored_value": "COLINY_BETA",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "COLINY_BETA",
                     "ir_value_type": "unsigned short",
                 }
             ]

@@ -135,8 +135,8 @@ class ColinySolisWetsSelection(MethodSelection):
             "materialization": [
                 {
                     "ir_key": "method.algorithm",
-                    "stored_value": "COLINY_SOLIS_WETS",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "COLINY_SOLIS_WETS",
                     "ir_value_type": "unsigned short",
                 }
             ]

@@ -26,8 +26,8 @@ class OptppCgSelection(MethodSelection):
             "materialization": [
                 {
                     "ir_key": "method.algorithm",
-                    "stored_value": "OPTPP_CG",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "OPTPP_CG",
                     "ir_value_type": "unsigned short",
                 }
             ]

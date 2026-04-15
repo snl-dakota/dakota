@@ -26,8 +26,8 @@ class DotBfgsSelection(MethodSelection):
             "materialization": [
                 {
                     "ir_key": "method.algorithm",
-                    "stored_value": "DOT_BFGS",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "DOT_BFGS",
                     "ir_value_type": "unsigned short",
                 }
             ]

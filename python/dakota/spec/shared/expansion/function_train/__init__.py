@@ -463,8 +463,8 @@ class IncrementStartRank(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.c3function_train.advancement_type",
-                    "stored_value": "START_RANK_ADVANCEMENT",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "START_RANK_ADVANCEMENT",
                     "ir_value_type": "short",
                 }
             ]
@@ -481,8 +481,8 @@ class IncrementStartOrder(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.c3function_train.advancement_type",
-                    "stored_value": "START_ORDER_ADVANCEMENT",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "START_ORDER_ADVANCEMENT",
                     "ir_value_type": "short",
                 }
             ]
@@ -499,8 +499,8 @@ class IncrementMaxRank(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.c3function_train.advancement_type",
-                    "stored_value": "MAX_RANK_ADVANCEMENT",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "MAX_RANK_ADVANCEMENT",
                     "ir_value_type": "short",
                 }
             ]
@@ -517,8 +517,8 @@ class IncrementMaxOrder(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.c3function_train.advancement_type",
-                    "stored_value": "MAX_ORDER_ADVANCEMENT",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "MAX_ORDER_ADVANCEMENT",
                     "ir_value_type": "short",
                 }
             ]
@@ -535,8 +535,8 @@ class IncrementMaxRankOrder(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.c3function_train.advancement_type",
-                    "stored_value": "MAX_RANK_ORDER_ADVANCEMENT",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "MAX_RANK_ORDER_ADVANCEMENT",
                     "ir_value_type": "short",
                 }
             ]
@@ -553,8 +553,8 @@ class FtMethodRegressionTypeLs(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.regression_type",
-                    "stored_value": "FT_LS",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "FT_LS",
                     "ir_value_type": "short",
                 }
             ]
@@ -623,8 +623,8 @@ class FtMethodRegressionOptsTypeLs(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.regression_type",
-                    "stored_value": "FT_LS",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "FT_LS",
                     "ir_value_type": "short",
                 }
             ]
@@ -658,8 +658,8 @@ class FtMethodRegressionSequenceTypeLs(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.regression_type",
-                    "stored_value": "FT_LS",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "FT_LS",
                     "ir_value_type": "short",
                 }
             ]
@@ -725,8 +725,8 @@ class FtModelRegressionTypeLs(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.regression_type",
-                    "stored_value": "FT_LS",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "FT_LS",
                     "ir_value_type": "short",
                 }
             ]
@@ -760,8 +760,8 @@ class FtModelRegressionOptsTypeLs(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.regression_type",
-                    "stored_value": "FT_LS",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "FT_LS",
                     "ir_value_type": "short",
                 }
             ]
@@ -813,8 +813,8 @@ class RankSampling(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.multilevel_allocation_control",
-                    "stored_value": "RANK_SAMPLING",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "RANK_SAMPLING",
                     "ir_value_type": "short",
                 }
             ]
@@ -939,8 +939,8 @@ class FtMethodRefinementPRefinement(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.expansion_refinement_control",
-                    "stored_value": "UNIFORM_CONTROL",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "UNIFORM_CONTROL",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -958,8 +958,8 @@ class FtMethodRegressionTypeRls2(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.regression_type",
-                    "stored_value": "FT_RLS2",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "FT_RLS2",
                     "ir_value_type": "short",
                 }
             ]
@@ -976,8 +976,8 @@ class FtMethodRegressionOptsTypeRls2(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.regression_type",
-                    "stored_value": "FT_RLS2",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "FT_RLS2",
                     "ir_value_type": "short",
                 }
             ]
@@ -994,8 +994,8 @@ class FtMethodRegressionSequenceTypeRls2(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.regression_type",
-                    "stored_value": "FT_RLS2",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "FT_RLS2",
                     "ir_value_type": "short",
                 }
             ]
@@ -1077,8 +1077,8 @@ class FtModelRegressionTypeRls2(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.regression_type",
-                    "stored_value": "FT_RLS2",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "FT_RLS2",
                     "ir_value_type": "short",
                 }
             ]
@@ -1095,8 +1095,8 @@ class FtModelRegressionOptsTypeRls2(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.regression_type",
-                    "stored_value": "FT_RLS2",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "FT_RLS2",
                     "ir_value_type": "short",
                 }
             ]
@@ -1114,8 +1114,8 @@ class MlftAllocControlAllocationControlEstimatorVariance(DakotaBaseModel):
                 "materialization": [
                     {
                         "ir_key": "method.nond.multilevel_allocation_control",
-                        "stored_value": "ESTIMATOR_VARIANCE",
                         "storage_type": "PRESENCE_ENUM",
+                        "stored_value": "ESTIMATOR_VARIANCE",
                         "ir_value_type": "short",
                     }
                 ]
@@ -1199,8 +1199,8 @@ class FtMethodRefinementMixin(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.expansion_refinement_type",
-                    "stored_value": "P_REFINEMENT",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "P_REFINEMENT",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }

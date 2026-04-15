@@ -25,8 +25,8 @@ class InformSearch(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.mesh_adaptive_search.use_surrogate",
-                    "stored_value": "inform_search",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "inform_search",
                     "ir_value_type": "String",
                 }
             ]
@@ -43,8 +43,8 @@ class Optimize(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.mesh_adaptive_search.use_surrogate",
-                    "stored_value": "optimize",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "optimize",
                     "ir_value_type": "String",
                 }
             ]
@@ -195,8 +195,8 @@ class MeshAdaptiveSearchSelection(MethodSelection):
             "materialization": [
                 {
                     "ir_key": "method.algorithm",
-                    "stored_value": "MESH_ADAPTIVE_SEARCH",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "MESH_ADAPTIVE_SEARCH",
                     "ir_value_type": "unsigned short",
                 }
             ]

@@ -16,8 +16,8 @@ class TabularDataCustomAnnotatedConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "environment.tabular_format",
-                    "stored_value": "TABULAR_HEADER",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_HEADER",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -30,8 +30,8 @@ class TabularDataCustomAnnotatedConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "environment.tabular_format",
-                    "stored_value": "TABULAR_EVAL_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_EVAL_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -44,8 +44,8 @@ class TabularDataCustomAnnotatedConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "environment.tabular_format",
-                    "stored_value": "TABULAR_IFACE_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_IFACE_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -62,8 +62,8 @@ class TabularDataAnnotated(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "environment.tabular_format",
-                    "stored_value": "TABULAR_ANNOTATED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_ANNOTATED",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -80,8 +80,8 @@ class TabularDataFreeform(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "environment.tabular_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -129,8 +129,8 @@ class TopMethod(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "environment.model_evals_selection",
-                    "stored_value": "MODEL_EVAL_STORE_TOP_METHOD",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "MODEL_EVAL_STORE_TOP_METHOD",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -147,8 +147,8 @@ class ModelSelectionNone(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "environment.model_evals_selection",
-                    "stored_value": "MODEL_EVAL_STORE_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "MODEL_EVAL_STORE_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -165,8 +165,8 @@ class AllMethods(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "environment.model_evals_selection",
-                    "stored_value": "MODEL_EVAL_STORE_ALL_METHODS",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "MODEL_EVAL_STORE_ALL_METHODS",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -183,8 +183,8 @@ class ModelSelectionAll(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "environment.model_evals_selection",
-                    "stored_value": "MODEL_EVAL_STORE_ALL",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "MODEL_EVAL_STORE_ALL",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -201,8 +201,8 @@ class InterfaceSelectionNone(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "environment.interface_evals_selection",
-                    "stored_value": "INTERF_EVAL_STORE_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "INTERF_EVAL_STORE_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -219,8 +219,8 @@ class Simulation(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "environment.interface_evals_selection",
-                    "stored_value": "INTERF_EVAL_STORE_SIMULATION",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "INTERF_EVAL_STORE_SIMULATION",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -237,8 +237,8 @@ class InterfaceSelectionAll(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "environment.interface_evals_selection",
-                    "stored_value": "INTERF_EVAL_STORE_ALL",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "INTERF_EVAL_STORE_ALL",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -256,8 +256,8 @@ class OutputCustomAnnotatedConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "environment.pre_run_output_format",
-                    "stored_value": "TABULAR_HEADER",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_HEADER",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -270,8 +270,8 @@ class OutputCustomAnnotatedConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "environment.pre_run_output_format",
-                    "stored_value": "TABULAR_EVAL_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_EVAL_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -284,8 +284,8 @@ class OutputCustomAnnotatedConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "environment.pre_run_output_format",
-                    "stored_value": "TABULAR_IFACE_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_IFACE_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -302,8 +302,8 @@ class OutputAnnotated(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "environment.pre_run_output_format",
-                    "stored_value": "TABULAR_ANNOTATED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_ANNOTATED",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -320,8 +320,8 @@ class OutputFreeform(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "environment.pre_run_output_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -370,8 +370,8 @@ class InputCustomAnnotatedConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "environment.post_run_input_format",
-                    "stored_value": "TABULAR_HEADER",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_HEADER",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -384,8 +384,8 @@ class InputCustomAnnotatedConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "environment.post_run_input_format",
-                    "stored_value": "TABULAR_EVAL_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_EVAL_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -398,8 +398,8 @@ class InputCustomAnnotatedConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "environment.post_run_input_format",
-                    "stored_value": "TABULAR_IFACE_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_IFACE_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -416,8 +416,8 @@ class InputAnnotated(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "environment.post_run_input_format",
-                    "stored_value": "TABULAR_ANNOTATED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_ANNOTATED",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -434,8 +434,8 @@ class InputFreeform(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "environment.post_run_input_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -454,8 +454,8 @@ class TabularDataCustomAnnotated(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "environment.tabular_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ],
@@ -493,8 +493,8 @@ class OutputCustomAnnotated(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "environment.pre_run_output_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ],
@@ -513,8 +513,8 @@ class InputCustomAnnotated(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "environment.post_run_input_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ],
@@ -575,8 +575,8 @@ class ResultsOutput(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "environment.results_output_format",
-                    "stored_value": "RESULTS_OUTPUT_TEXT",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "RESULTS_OUTPUT_TEXT",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -589,8 +589,8 @@ class ResultsOutput(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "environment.results_output_format",
-                    "stored_value": "RESULTS_OUTPUT_HDF5",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "RESULTS_OUTPUT_HDF5",
                     "ir_value_type": "unsigned short",
                 }
             ]

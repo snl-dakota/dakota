@@ -26,8 +26,8 @@ class NlssolSqpSelection(MethodSelection):
             "materialization": [
                 {
                     "ir_key": "method.algorithm",
-                    "stored_value": "NLSSOL_SQP",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "NLSSOL_SQP",
                     "ir_value_type": "unsigned short",
                 }
             ]

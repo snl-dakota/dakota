@@ -48,8 +48,8 @@ class MultidimParameterStudySelection(MethodSelection):
             "materialization": [
                 {
                     "ir_key": "method.algorithm",
-                    "stored_value": "MULTIDIM_PARAMETER_STUDY",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "MULTIDIM_PARAMETER_STUDY",
                     "ir_value_type": "unsigned short",
                 }
             ]

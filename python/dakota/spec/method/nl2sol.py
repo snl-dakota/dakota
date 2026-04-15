@@ -156,8 +156,8 @@ class Nl2solSelection(MethodSelection):
             "materialization": [
                 {
                     "ir_key": "method.algorithm",
-                    "stored_value": "NL2SOL",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "NL2SOL",
                     "ir_value_type": "unsigned short",
                 }
             ]

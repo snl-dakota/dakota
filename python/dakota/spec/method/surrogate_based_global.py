@@ -97,8 +97,8 @@ class SurrogateBasedGlobalSelection(MethodSelection):
             "materialization": [
                 {
                     "ir_key": "method.algorithm",
-                    "stored_value": "SURROGATE_BASED_GLOBAL",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SURROGATE_BASED_GLOBAL",
                     "ir_value_type": "unsigned short",
                 }
             ]

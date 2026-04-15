@@ -26,8 +26,8 @@ class NpsolSqpSelection(MethodSelection):
             "materialization": [
                 {
                     "ir_key": "method.algorithm",
-                    "stored_value": "NPSOL_SQP",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "NPSOL_SQP",
                     "ir_value_type": "unsigned short",
                 }
             ]

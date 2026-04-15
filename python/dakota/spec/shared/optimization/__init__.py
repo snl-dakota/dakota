@@ -18,11 +18,11 @@ from dakota.spec.shared.misc import (
 class MethodConminCommonOptsMixin(
     DefaultConstraintTolMixin,
     DefaultScalingMixin,
-    MethodOptionalModelPointerMixin,
-    MethodMaxFunctionEvaluationsContext1Mixin,
     DefaultSpeculativeMixin,
-    MethodMaxIterationsContext1Mixin,
     MethodConvergenceTolMixin,
+    MethodMaxFunctionEvaluationsContext1Mixin,
+    MethodMaxIterationsContext1Mixin,
+    MethodOptionalModelPointerMixin,
 ):
     """Generated model for MethodConminCommonOptsMixin"""
 

@@ -56,8 +56,8 @@ class ColinyCobylaSelection(MethodSelection):
             "materialization": [
                 {
                     "ir_key": "method.algorithm",
-                    "stored_value": "COLINY_COBYLA",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "COLINY_COBYLA",
                     "ir_value_type": "unsigned short",
                 }
             ]

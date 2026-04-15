@@ -24,8 +24,8 @@ class DaceGrid(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.sub_method",
-                    "stored_value": "SUBMETHOD_GRID",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBMETHOD_GRID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -42,8 +42,8 @@ class DaceRandom(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.sub_method",
-                    "stored_value": "SUBMETHOD_RANDOM",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBMETHOD_RANDOM",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -60,8 +60,8 @@ class Oas(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.sub_method",
-                    "stored_value": "SUBMETHOD_OAS",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBMETHOD_OAS",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -78,8 +78,8 @@ class DaceLhs(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.sub_method",
-                    "stored_value": "SUBMETHOD_LHS",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBMETHOD_LHS",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -96,8 +96,8 @@ class OaLhs(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.sub_method",
-                    "stored_value": "SUBMETHOD_OA_LHS",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBMETHOD_OA_LHS",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -114,8 +114,8 @@ class BoxBehnken(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.sub_method",
-                    "stored_value": "SUBMETHOD_BOX_BEHNKEN",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBMETHOD_BOX_BEHNKEN",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -132,8 +132,8 @@ class CentralComposite(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.sub_method",
-                    "stored_value": "SUBMETHOD_CENTRAL_COMPOSITE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBMETHOD_CENTRAL_COMPOSITE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -216,8 +216,8 @@ class DaceSelection(MethodSelection):
             "materialization": [
                 {
                     "ir_key": "method.algorithm",
-                    "stored_value": "DACE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "DACE",
                     "ir_value_type": "unsigned short",
                 }
             ]

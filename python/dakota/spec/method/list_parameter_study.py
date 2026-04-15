@@ -40,8 +40,8 @@ class ListParameterStudyImportPointsFileCustomAnnotatedConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.pstudy.import_format",
-                    "stored_value": "TABULAR_HEADER",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_HEADER",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -54,8 +54,8 @@ class ListParameterStudyImportPointsFileCustomAnnotatedConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.pstudy.import_format",
-                    "stored_value": "TABULAR_EVAL_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_EVAL_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -68,8 +68,8 @@ class ListParameterStudyImportPointsFileCustomAnnotatedConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.pstudy.import_format",
-                    "stored_value": "TABULAR_IFACE_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_IFACE_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -86,8 +86,8 @@ class ListParameterStudyImportPointsFileAnnotated(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.pstudy.import_format",
-                    "stored_value": "TABULAR_ANNOTATED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_ANNOTATED",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -104,8 +104,8 @@ class ListParameterStudyImportPointsFileFreeform(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.pstudy.import_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -124,8 +124,8 @@ class ListParameterStudyImportPointsFileCustomAnnotated(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.pstudy.import_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ],
@@ -204,8 +204,8 @@ class ListParameterStudySelection(MethodSelection):
             "materialization": [
                 {
                     "ir_key": "method.algorithm",
-                    "stored_value": "LIST_PARAMETER_STUDY",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "LIST_PARAMETER_STUDY",
                     "ir_value_type": "unsigned short",
                 }
             ]

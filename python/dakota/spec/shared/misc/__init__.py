@@ -786,8 +786,8 @@ class DefaultFinalMomentsNoneKeyword(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.final_moments",
-                    "stored_value": "NO_MOMENTS",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "NO_MOMENTS",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -805,8 +805,8 @@ class DefaultFinalMomentsStandard(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.final_moments",
-                    "stored_value": "STANDARD_MOMENTS",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "STANDARD_MOMENTS",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -824,8 +824,8 @@ class DefaultFinalMomentsCentral(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.final_moments",
-                    "stored_value": "CENTRAL_MOMENTS",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "CENTRAL_MOMENTS",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -1101,8 +1101,8 @@ class JoeKuo(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.ld.digitalnet.generating_matrix_scheme",
-                    "stored_value": "JOE_KUO",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "JOE_KUO",
                     "ir_value_type": "short",
                 }
             ]
@@ -1119,8 +1119,8 @@ class SobolOrder2(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.ld.digitalnet.generating_matrix_scheme",
-                    "stored_value": "SOBOL_ORDER_2",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SOBOL_ORDER_2",
                     "ir_value_type": "short",
                 }
             ]
@@ -1137,8 +1137,8 @@ class DigitalNetOptionsOrderingNatural(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.ld.digitalnet.ordering",
-                    "stored_value": "DIGITAL_NET_NATURAL_ORDERING",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "DIGITAL_NET_NATURAL_ORDERING",
                     "ir_value_type": "short",
                 }
             ]
@@ -1155,8 +1155,8 @@ class GrayCode(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.ld.digitalnet.ordering",
-                    "stored_value": "DIGITAL_NET_GRAY_CODE_ORDERING",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "DIGITAL_NET_GRAY_CODE_ORDERING",
                     "ir_value_type": "short",
                 }
             ]
@@ -1174,8 +1174,8 @@ class DiscrepEmulationDiscrepancyEmulationDistinct(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.multilevel_discrepancy_emulation",
-                    "stored_value": "DISTINCT_EMULATION",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "DISTINCT_EMULATION",
                     "ir_value_type": "short",
                 }
             ],
@@ -1192,8 +1192,8 @@ class DiscrepEmulationDiscrepancyEmulationRecursive(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.multilevel_discrepancy_emulation",
-                    "stored_value": "RECURSIVE_EMULATION",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "RECURSIVE_EMULATION",
                     "ir_value_type": "short",
                 }
             ]
@@ -1210,8 +1210,8 @@ class DistributionCumulComplContext2Cumulative(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.distribution",
-                    "stored_value": "CUMULATIVE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "CUMULATIVE",
                     "ir_value_type": "short",
                 }
             ]
@@ -1228,8 +1228,8 @@ class DistributionCumulComplContext2Complementary(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.distribution",
-                    "stored_value": "COMPLEMENTARY",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "COMPLEMENTARY",
                     "ir_value_type": "short",
                 }
             ]
@@ -1246,8 +1246,8 @@ class DistributionCumulComplContext1Cumulative(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.distribution",
-                    "stored_value": "CUMULATIVE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "CUMULATIVE",
                     "ir_value_type": "short",
                 }
             ]
@@ -1264,8 +1264,8 @@ class DistributionCumulComplContext1Complementary(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.distribution",
-                    "stored_value": "COMPLEMENTARY",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "COMPLEMENTARY",
                     "ir_value_type": "short",
                 }
             ]
@@ -1283,8 +1283,8 @@ class EgoSubProblemSolverContext2GPSurfpackExportModelFormats(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.model_export_format",
-                    "stored_value": "TEXT_ARCHIVE",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TEXT_ARCHIVE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1297,8 +1297,8 @@ class EgoSubProblemSolverContext2GPSurfpackExportModelFormats(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.model_export_format",
-                    "stored_value": "BINARY_ARCHIVE",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "BINARY_ARCHIVE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1315,8 +1315,8 @@ class EgoSubProblemSolverContext2GPDakota(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.emulator",
-                    "stored_value": "GP_EMULATOR",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "GP_EMULATOR",
                     "ir_value_type": "short",
                 }
             ]
@@ -1336,8 +1336,8 @@ class EgoSubProblemSolverContext2ImportBuildPointsFileCustomAnnotatedConfig(
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_HEADER",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_HEADER",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1350,8 +1350,8 @@ class EgoSubProblemSolverContext2ImportBuildPointsFileCustomAnnotatedConfig(
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_EVAL_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_EVAL_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1364,8 +1364,8 @@ class EgoSubProblemSolverContext2ImportBuildPointsFileCustomAnnotatedConfig(
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_IFACE_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_IFACE_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1382,8 +1382,8 @@ class EgoSubProblemSolverContext2ImportBuildPointsFileAnnotated(DakotaBaseModel)
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_ANNOTATED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_ANNOTATED",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1400,8 +1400,8 @@ class EgoSubProblemSolverContext2ImportBuildPointsFileFreeform(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1421,8 +1421,8 @@ class EgoSubProblemSolverContext2ExportApproxPointsFileCustomAnnotatedConfig(
             "materialization": [
                 {
                     "ir_key": "method.export_approx_format",
-                    "stored_value": "TABULAR_HEADER",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_HEADER",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1435,8 +1435,8 @@ class EgoSubProblemSolverContext2ExportApproxPointsFileCustomAnnotatedConfig(
             "materialization": [
                 {
                     "ir_key": "method.export_approx_format",
-                    "stored_value": "TABULAR_EVAL_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_EVAL_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1449,8 +1449,8 @@ class EgoSubProblemSolverContext2ExportApproxPointsFileCustomAnnotatedConfig(
             "materialization": [
                 {
                     "ir_key": "method.export_approx_format",
-                    "stored_value": "TABULAR_IFACE_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_IFACE_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1467,8 +1467,8 @@ class EgoSubProblemSolverContext2ExportApproxPointsFileAnnotated(DakotaBaseModel
             "materialization": [
                 {
                     "ir_key": "method.export_approx_format",
-                    "stored_value": "TABULAR_ANNOTATED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_ANNOTATED",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1485,8 +1485,8 @@ class EgoSubProblemSolverContext2ExportApproxPointsFileFreeform(DakotaBaseModel)
             "materialization": [
                 {
                     "ir_key": "method.export_approx_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1504,8 +1504,8 @@ class EgoSubProblemSolverContext1GPSurfpackExportModelFormats(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.model_export_format",
-                    "stored_value": "TEXT_ARCHIVE",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TEXT_ARCHIVE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1518,8 +1518,8 @@ class EgoSubProblemSolverContext1GPSurfpackExportModelFormats(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.model_export_format",
-                    "stored_value": "BINARY_ARCHIVE",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "BINARY_ARCHIVE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1536,8 +1536,8 @@ class EgoSubProblemSolverContext1GPDakota(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.emulator",
-                    "stored_value": "GP_EMULATOR",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "GP_EMULATOR",
                     "ir_value_type": "short",
                 }
             ]
@@ -1557,8 +1557,8 @@ class EgoSubProblemSolverContext1ImportBuildPointsFileCustomAnnotatedConfig(
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_HEADER",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_HEADER",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1571,8 +1571,8 @@ class EgoSubProblemSolverContext1ImportBuildPointsFileCustomAnnotatedConfig(
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_EVAL_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_EVAL_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1585,8 +1585,8 @@ class EgoSubProblemSolverContext1ImportBuildPointsFileCustomAnnotatedConfig(
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_IFACE_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_IFACE_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1603,8 +1603,8 @@ class EgoSubProblemSolverContext1ImportBuildPointsFileAnnotated(DakotaBaseModel)
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_ANNOTATED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_ANNOTATED",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1621,8 +1621,8 @@ class EgoSubProblemSolverContext1ImportBuildPointsFileFreeform(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1642,8 +1642,8 @@ class EgoSubProblemSolverContext1ExportApproxPointsFileCustomAnnotatedConfig(
             "materialization": [
                 {
                     "ir_key": "method.export_approx_format",
-                    "stored_value": "TABULAR_HEADER",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_HEADER",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1656,8 +1656,8 @@ class EgoSubProblemSolverContext1ExportApproxPointsFileCustomAnnotatedConfig(
             "materialization": [
                 {
                     "ir_key": "method.export_approx_format",
-                    "stored_value": "TABULAR_EVAL_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_EVAL_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1670,8 +1670,8 @@ class EgoSubProblemSolverContext1ExportApproxPointsFileCustomAnnotatedConfig(
             "materialization": [
                 {
                     "ir_key": "method.export_approx_format",
-                    "stored_value": "TABULAR_IFACE_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_IFACE_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1688,8 +1688,8 @@ class EgoSubProblemSolverContext1ExportApproxPointsFileAnnotated(DakotaBaseModel
             "materialization": [
                 {
                     "ir_key": "method.export_approx_format",
-                    "stored_value": "TABULAR_ANNOTATED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_ANNOTATED",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1706,8 +1706,8 @@ class EgoSubProblemSolverContext1ExportApproxPointsFileFreeform(DakotaBaseModel)
             "materialization": [
                 {
                     "ir_key": "method.export_approx_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1745,8 +1745,8 @@ class ImportBuildPointsFileCustomAnnotatedConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_HEADER",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_HEADER",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1759,8 +1759,8 @@ class ImportBuildPointsFileCustomAnnotatedConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_EVAL_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_EVAL_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1773,8 +1773,8 @@ class ImportBuildPointsFileCustomAnnotatedConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_IFACE_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_IFACE_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1791,8 +1791,8 @@ class ImportBuildPointsFileAnnotated(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_ANNOTATED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_ANNOTATED",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1809,8 +1809,8 @@ class ImportBuildPointsFileFreeform(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1827,8 +1827,8 @@ class MethodCovTypeDiagCov(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.covariance_control",
-                    "stored_value": "DIAGONAL_COVARIANCE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "DIAGONAL_COVARIANCE",
                     "ir_value_type": "short",
                 }
             ]
@@ -1845,8 +1845,8 @@ class MethodCovTypeFullCov(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.covariance_control",
-                    "stored_value": "FULL_COVARIANCE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "FULL_COVARIANCE",
                     "ir_value_type": "short",
                 }
             ]
@@ -1864,8 +1864,8 @@ class MethodExportModelContext2Formats(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.model_export_format",
-                    "stored_value": "TEXT_ARCHIVE",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TEXT_ARCHIVE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1878,8 +1878,8 @@ class MethodExportModelContext2Formats(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.model_export_format",
-                    "stored_value": "BINARY_ARCHIVE",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "BINARY_ARCHIVE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1897,8 +1897,8 @@ class MethodExportModelContext1Formats(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.model_export_format",
-                    "stored_value": "TEXT_ARCHIVE",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TEXT_ARCHIVE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1911,8 +1911,8 @@ class MethodExportModelContext1Formats(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.model_export_format",
-                    "stored_value": "BINARY_ARCHIVE",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "BINARY_ARCHIVE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1929,8 +1929,8 @@ class MethodGPSurfpack(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.emulator",
-                    "stored_value": "KRIGING_EMULATOR",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "KRIGING_EMULATOR",
                     "ir_value_type": "short",
                 }
             ]
@@ -1947,8 +1947,8 @@ class MethodGPDakota(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.emulator",
-                    "stored_value": "GP_EMULATOR",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "GP_EMULATOR",
                     "ir_value_type": "short",
                 }
             ]
@@ -1965,8 +1965,8 @@ class MethodGlobalSubProblemSolverContext2SbgoGPSurfpack(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.emulator",
-                    "stored_value": "KRIGING_EMULATOR",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "KRIGING_EMULATOR",
                     "ir_value_type": "short",
                 }
             ]
@@ -1983,8 +1983,8 @@ class MethodGlobalSubProblemSolverContext2SbgoGPDakota(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.emulator",
-                    "stored_value": "GP_EMULATOR",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "GP_EMULATOR",
                     "ir_value_type": "short",
                 }
             ]
@@ -2022,8 +2022,8 @@ class MethodGlobalSubProblemSolverContext2SbgoImportBuildPointsFileCustomAnnotat
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_HEADER",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_HEADER",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -2036,8 +2036,8 @@ class MethodGlobalSubProblemSolverContext2SbgoImportBuildPointsFileCustomAnnotat
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_EVAL_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_EVAL_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -2050,8 +2050,8 @@ class MethodGlobalSubProblemSolverContext2SbgoImportBuildPointsFileCustomAnnotat
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_IFACE_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_IFACE_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -2070,8 +2070,8 @@ class MethodGlobalSubProblemSolverContext2SbgoImportBuildPointsFileAnnotated(
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_ANNOTATED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_ANNOTATED",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -2090,8 +2090,8 @@ class MethodGlobalSubProblemSolverContext2SbgoImportBuildPointsFileFreeform(
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -2111,8 +2111,8 @@ class MethodGlobalSubProblemSolverContext2SbgoExportApproxPointsFileCustomAnnota
             "materialization": [
                 {
                     "ir_key": "method.export_approx_format",
-                    "stored_value": "TABULAR_HEADER",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_HEADER",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -2125,8 +2125,8 @@ class MethodGlobalSubProblemSolverContext2SbgoExportApproxPointsFileCustomAnnota
             "materialization": [
                 {
                     "ir_key": "method.export_approx_format",
-                    "stored_value": "TABULAR_EVAL_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_EVAL_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -2139,8 +2139,8 @@ class MethodGlobalSubProblemSolverContext2SbgoExportApproxPointsFileCustomAnnota
             "materialization": [
                 {
                     "ir_key": "method.export_approx_format",
-                    "stored_value": "TABULAR_IFACE_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_IFACE_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -2159,8 +2159,8 @@ class MethodGlobalSubProblemSolverContext2SbgoExportApproxPointsFileAnnotated(
             "materialization": [
                 {
                     "ir_key": "method.export_approx_format",
-                    "stored_value": "TABULAR_ANNOTATED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_ANNOTATED",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -2179,8 +2179,8 @@ class MethodGlobalSubProblemSolverContext2SbgoExportApproxPointsFileFreeform(
             "materialization": [
                 {
                     "ir_key": "method.export_approx_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -2200,8 +2200,8 @@ class MethodGlobalSubProblemSolverContext2EgoGPSurfpackExportModelFormats(
             "materialization": [
                 {
                     "ir_key": "method.model_export_format",
-                    "stored_value": "TEXT_ARCHIVE",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TEXT_ARCHIVE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -2214,8 +2214,8 @@ class MethodGlobalSubProblemSolverContext2EgoGPSurfpackExportModelFormats(
             "materialization": [
                 {
                     "ir_key": "method.model_export_format",
-                    "stored_value": "BINARY_ARCHIVE",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "BINARY_ARCHIVE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -2232,8 +2232,8 @@ class MethodGlobalSubProblemSolverContext2EgoGPDakota(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.emulator",
-                    "stored_value": "GP_EMULATOR",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "GP_EMULATOR",
                     "ir_value_type": "short",
                 }
             ]
@@ -2253,8 +2253,8 @@ class MethodGlobalSubProblemSolverContext2EgoGPExperimentalExportModelFormats(
             "materialization": [
                 {
                     "ir_key": "method.model_export_format",
-                    "stored_value": "TEXT_ARCHIVE",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TEXT_ARCHIVE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -2267,8 +2267,8 @@ class MethodGlobalSubProblemSolverContext2EgoGPExperimentalExportModelFormats(
             "materialization": [
                 {
                     "ir_key": "method.model_export_format",
-                    "stored_value": "BINARY_ARCHIVE",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "BINARY_ARCHIVE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -2288,8 +2288,8 @@ class MethodGlobalSubProblemSolverContext2EgoImportBuildPointsFileCustomAnnotate
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_HEADER",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_HEADER",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -2302,8 +2302,8 @@ class MethodGlobalSubProblemSolverContext2EgoImportBuildPointsFileCustomAnnotate
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_EVAL_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_EVAL_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -2316,8 +2316,8 @@ class MethodGlobalSubProblemSolverContext2EgoImportBuildPointsFileCustomAnnotate
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_IFACE_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_IFACE_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -2336,8 +2336,8 @@ class MethodGlobalSubProblemSolverContext2EgoImportBuildPointsFileAnnotated(
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_ANNOTATED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_ANNOTATED",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -2356,8 +2356,8 @@ class MethodGlobalSubProblemSolverContext2EgoImportBuildPointsFileFreeform(
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -2377,8 +2377,8 @@ class MethodGlobalSubProblemSolverContext2EgoExportApproxPointsFileCustomAnnotat
             "materialization": [
                 {
                     "ir_key": "method.export_approx_format",
-                    "stored_value": "TABULAR_HEADER",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_HEADER",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -2391,8 +2391,8 @@ class MethodGlobalSubProblemSolverContext2EgoExportApproxPointsFileCustomAnnotat
             "materialization": [
                 {
                     "ir_key": "method.export_approx_format",
-                    "stored_value": "TABULAR_EVAL_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_EVAL_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -2405,8 +2405,8 @@ class MethodGlobalSubProblemSolverContext2EgoExportApproxPointsFileCustomAnnotat
             "materialization": [
                 {
                     "ir_key": "method.export_approx_format",
-                    "stored_value": "TABULAR_IFACE_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_IFACE_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -2425,8 +2425,8 @@ class MethodGlobalSubProblemSolverContext2EgoExportApproxPointsFileAnnotated(
             "materialization": [
                 {
                     "ir_key": "method.export_approx_format",
-                    "stored_value": "TABULAR_ANNOTATED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_ANNOTATED",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -2445,8 +2445,8 @@ class MethodGlobalSubProblemSolverContext2EgoExportApproxPointsFileFreeform(
             "materialization": [
                 {
                     "ir_key": "method.export_approx_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -2463,8 +2463,8 @@ class MethodGlobalSubProblemSolverContext2Ea(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.opt_subproblem_solver",
-                    "stored_value": "SUBMETHOD_EA",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBMETHOD_EA",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -2481,8 +2481,8 @@ class MethodGlobalSubProblemSolverContext2Lhs(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.opt_subproblem_solver",
-                    "stored_value": "SUBMETHOD_LHS",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBMETHOD_LHS",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -2499,8 +2499,8 @@ class MethodGlobalSubProblemSolverContext1SbgoGPSurfpack(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.emulator",
-                    "stored_value": "KRIGING_EMULATOR",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "KRIGING_EMULATOR",
                     "ir_value_type": "short",
                 }
             ]
@@ -2517,8 +2517,8 @@ class MethodGlobalSubProblemSolverContext1SbgoGPDakota(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.emulator",
-                    "stored_value": "GP_EMULATOR",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "GP_EMULATOR",
                     "ir_value_type": "short",
                 }
             ]
@@ -2556,8 +2556,8 @@ class MethodGlobalSubProblemSolverContext1SbgoImportBuildPointsFileCustomAnnotat
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_HEADER",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_HEADER",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -2570,8 +2570,8 @@ class MethodGlobalSubProblemSolverContext1SbgoImportBuildPointsFileCustomAnnotat
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_EVAL_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_EVAL_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -2584,8 +2584,8 @@ class MethodGlobalSubProblemSolverContext1SbgoImportBuildPointsFileCustomAnnotat
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_IFACE_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_IFACE_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -2604,8 +2604,8 @@ class MethodGlobalSubProblemSolverContext1SbgoImportBuildPointsFileAnnotated(
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_ANNOTATED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_ANNOTATED",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -2624,8 +2624,8 @@ class MethodGlobalSubProblemSolverContext1SbgoImportBuildPointsFileFreeform(
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -2645,8 +2645,8 @@ class MethodGlobalSubProblemSolverContext1SbgoExportApproxPointsFileCustomAnnota
             "materialization": [
                 {
                     "ir_key": "method.export_approx_format",
-                    "stored_value": "TABULAR_HEADER",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_HEADER",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -2659,8 +2659,8 @@ class MethodGlobalSubProblemSolverContext1SbgoExportApproxPointsFileCustomAnnota
             "materialization": [
                 {
                     "ir_key": "method.export_approx_format",
-                    "stored_value": "TABULAR_EVAL_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_EVAL_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -2673,8 +2673,8 @@ class MethodGlobalSubProblemSolverContext1SbgoExportApproxPointsFileCustomAnnota
             "materialization": [
                 {
                     "ir_key": "method.export_approx_format",
-                    "stored_value": "TABULAR_IFACE_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_IFACE_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -2693,8 +2693,8 @@ class MethodGlobalSubProblemSolverContext1SbgoExportApproxPointsFileAnnotated(
             "materialization": [
                 {
                     "ir_key": "method.export_approx_format",
-                    "stored_value": "TABULAR_ANNOTATED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_ANNOTATED",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -2713,8 +2713,8 @@ class MethodGlobalSubProblemSolverContext1SbgoExportApproxPointsFileFreeform(
             "materialization": [
                 {
                     "ir_key": "method.export_approx_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -2734,8 +2734,8 @@ class MethodGlobalSubProblemSolverContext1EgoGPSurfpackExportModelFormats(
             "materialization": [
                 {
                     "ir_key": "method.model_export_format",
-                    "stored_value": "TEXT_ARCHIVE",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TEXT_ARCHIVE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -2748,8 +2748,8 @@ class MethodGlobalSubProblemSolverContext1EgoGPSurfpackExportModelFormats(
             "materialization": [
                 {
                     "ir_key": "method.model_export_format",
-                    "stored_value": "BINARY_ARCHIVE",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "BINARY_ARCHIVE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -2766,8 +2766,8 @@ class MethodGlobalSubProblemSolverContext1EgoGPDakota(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.emulator",
-                    "stored_value": "GP_EMULATOR",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "GP_EMULATOR",
                     "ir_value_type": "short",
                 }
             ]
@@ -2787,8 +2787,8 @@ class MethodGlobalSubProblemSolverContext1EgoGPExperimentalExportModelFormats(
             "materialization": [
                 {
                     "ir_key": "method.model_export_format",
-                    "stored_value": "TEXT_ARCHIVE",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TEXT_ARCHIVE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -2801,8 +2801,8 @@ class MethodGlobalSubProblemSolverContext1EgoGPExperimentalExportModelFormats(
             "materialization": [
                 {
                     "ir_key": "method.model_export_format",
-                    "stored_value": "BINARY_ARCHIVE",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "BINARY_ARCHIVE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -2822,8 +2822,8 @@ class MethodGlobalSubProblemSolverContext1EgoImportBuildPointsFileCustomAnnotate
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_HEADER",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_HEADER",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -2836,8 +2836,8 @@ class MethodGlobalSubProblemSolverContext1EgoImportBuildPointsFileCustomAnnotate
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_EVAL_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_EVAL_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -2850,8 +2850,8 @@ class MethodGlobalSubProblemSolverContext1EgoImportBuildPointsFileCustomAnnotate
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_IFACE_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_IFACE_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -2870,8 +2870,8 @@ class MethodGlobalSubProblemSolverContext1EgoImportBuildPointsFileAnnotated(
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_ANNOTATED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_ANNOTATED",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -2890,8 +2890,8 @@ class MethodGlobalSubProblemSolverContext1EgoImportBuildPointsFileFreeform(
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -2911,8 +2911,8 @@ class MethodGlobalSubProblemSolverContext1EgoExportApproxPointsFileCustomAnnotat
             "materialization": [
                 {
                     "ir_key": "method.export_approx_format",
-                    "stored_value": "TABULAR_HEADER",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_HEADER",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -2925,8 +2925,8 @@ class MethodGlobalSubProblemSolverContext1EgoExportApproxPointsFileCustomAnnotat
             "materialization": [
                 {
                     "ir_key": "method.export_approx_format",
-                    "stored_value": "TABULAR_EVAL_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_EVAL_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -2939,8 +2939,8 @@ class MethodGlobalSubProblemSolverContext1EgoExportApproxPointsFileCustomAnnotat
             "materialization": [
                 {
                     "ir_key": "method.export_approx_format",
-                    "stored_value": "TABULAR_IFACE_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_IFACE_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -2959,8 +2959,8 @@ class MethodGlobalSubProblemSolverContext1EgoExportApproxPointsFileAnnotated(
             "materialization": [
                 {
                     "ir_key": "method.export_approx_format",
-                    "stored_value": "TABULAR_ANNOTATED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_ANNOTATED",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -2979,8 +2979,8 @@ class MethodGlobalSubProblemSolverContext1EgoExportApproxPointsFileFreeform(
             "materialization": [
                 {
                     "ir_key": "method.export_approx_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -2997,8 +2997,8 @@ class MethodGlobalSubProblemSolverContext1Ea(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.opt_subproblem_solver",
-                    "stored_value": "SUBMETHOD_EA",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBMETHOD_EA",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -3015,8 +3015,8 @@ class MethodGlobalSubProblemSolverContext1Lhs(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.opt_subproblem_solver",
-                    "stored_value": "SUBMETHOD_LHS",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBMETHOD_LHS",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -3033,8 +3033,8 @@ class MethodGpAlternativesNoExportGPSurfpack(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.emulator",
-                    "stored_value": "KRIGING_EMULATOR",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "KRIGING_EMULATOR",
                     "ir_value_type": "short",
                 }
             ]
@@ -3051,8 +3051,8 @@ class MethodGpAlternativesNoExportGPDakota(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.emulator",
-                    "stored_value": "GP_EMULATOR",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "GP_EMULATOR",
                     "ir_value_type": "short",
                 }
             ]
@@ -3090,8 +3090,8 @@ class MethodGpAlternativesWithExportContext2GPSurfpackExportModelFormats(
             "materialization": [
                 {
                     "ir_key": "method.model_export_format",
-                    "stored_value": "TEXT_ARCHIVE",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TEXT_ARCHIVE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -3104,8 +3104,8 @@ class MethodGpAlternativesWithExportContext2GPSurfpackExportModelFormats(
             "materialization": [
                 {
                     "ir_key": "method.model_export_format",
-                    "stored_value": "BINARY_ARCHIVE",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "BINARY_ARCHIVE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -3122,8 +3122,8 @@ class MethodGpAlternativesWithExportContext2GPDakota(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.emulator",
-                    "stored_value": "GP_EMULATOR",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "GP_EMULATOR",
                     "ir_value_type": "short",
                 }
             ]
@@ -3143,8 +3143,8 @@ class MethodGpAlternativesWithExportContext1GPSurfpackExportModelFormats(
             "materialization": [
                 {
                     "ir_key": "method.model_export_format",
-                    "stored_value": "TEXT_ARCHIVE",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TEXT_ARCHIVE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -3157,8 +3157,8 @@ class MethodGpAlternativesWithExportContext1GPSurfpackExportModelFormats(
             "materialization": [
                 {
                     "ir_key": "method.model_export_format",
-                    "stored_value": "BINARY_ARCHIVE",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "BINARY_ARCHIVE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -3175,8 +3175,8 @@ class MethodGpAlternativesWithExportContext1GPDakota(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.emulator",
-                    "stored_value": "GP_EMULATOR",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "GP_EMULATOR",
                     "ir_value_type": "short",
                 }
             ]
@@ -3193,8 +3193,8 @@ class MethodGradientSubProblemSolverSqp(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.opt_subproblem_solver",
-                    "stored_value": "SUBMETHOD_NPSOL",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBMETHOD_NPSOL",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -3211,8 +3211,8 @@ class MethodGradientSubProblemSolverNip(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.opt_subproblem_solver",
-                    "stored_value": "SUBMETHOD_OPTPP",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBMETHOD_OPTPP",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -3229,8 +3229,8 @@ class MethodIteratorServerSchedulingDedicated(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.iterator_scheduling",
-                    "stored_value": "DEDICATED_SCHEDULER_DYNAMIC",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "DEDICATED_SCHEDULER_DYNAMIC",
                     "ir_value_type": "short",
                 }
             ]
@@ -3247,8 +3247,8 @@ class MethodIteratorServerSchedulingPeer(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.iterator_scheduling",
-                    "stored_value": "PEER_SCHEDULING",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "PEER_SCHEDULING",
                     "ir_value_type": "short",
                 }
             ]
@@ -3265,8 +3265,8 @@ class MethodJegaCommonOptsInitializationTypeSimpleRandom(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.initialization_type",
-                    "stored_value": "random",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "random",
                     "ir_value_type": "String",
                 }
             ]
@@ -3283,8 +3283,8 @@ class MethodJegaCommonOptsInitializationTypeUniqueRandom(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.initialization_type",
-                    "stored_value": "unique_random",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "unique_random",
                     "ir_value_type": "String",
                 }
             ]
@@ -3301,8 +3301,8 @@ class MethodJegaCommonOptsInitializationTypeFlatFile(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.initialization_type",
-                    "stored_value": "flat_file",
                     "storage_type": "TYPE_DATA_COMBINED",
+                    "stored_value": "flat_file",
                     "secondary_ir_key": "method.flat_file",
                     "secondary_ir_value_type": "String",
                     "ir_value_type": "String",
@@ -3323,8 +3323,8 @@ class MultiPointBinary(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.crossover_type",
-                    "stored_value": "multi_point_binary",
                     "storage_type": "TYPE_DATA_COMBINED",
+                    "stored_value": "multi_point_binary",
                     "secondary_ir_key": "method.jega.num_cross_points",
                     "secondary_ir_value_type": "size_t",
                     "ir_value_type": "String",
@@ -3345,8 +3345,8 @@ class MultiPointParameterizedBinary(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.crossover_type",
-                    "stored_value": "multi_point_parameterized_binary",
                     "storage_type": "TYPE_DATA_COMBINED",
+                    "stored_value": "multi_point_parameterized_binary",
                     "secondary_ir_key": "method.jega.num_cross_points",
                     "secondary_ir_value_type": "size_t",
                     "ir_value_type": "String",
@@ -3367,8 +3367,8 @@ class MultiPointReal(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.crossover_type",
-                    "stored_value": "multi_point_real",
                     "storage_type": "TYPE_DATA_COMBINED",
+                    "stored_value": "multi_point_real",
                     "secondary_ir_key": "method.jega.num_cross_points",
                     "secondary_ir_value_type": "size_t",
                     "ir_value_type": "String",
@@ -3420,8 +3420,8 @@ class BitRandom(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.mutation_type",
-                    "stored_value": "bit_random",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "bit_random",
                     "ir_value_type": "String",
                 }
             ]
@@ -3438,8 +3438,8 @@ class MethodJegaCommonOptsMutationTypeReplaceUniform(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.mutation_type",
-                    "stored_value": "replace_uniform",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "replace_uniform",
                     "ir_value_type": "String",
                 }
             ]
@@ -3476,8 +3476,8 @@ class MethodMlmfSolverMetricAverageEstimatorVariance(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.estimator_variance_metric",
-                    "stored_value": "AVG_ESTVAR_METRIC",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "AVG_ESTVAR_METRIC",
                     "ir_value_type": "short",
                 }
             ]
@@ -3513,8 +3513,8 @@ class MethodMlmfSolverMetricMaxEstimatorVariance(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.estimator_variance_metric",
-                    "stored_value": "MAX_ESTVAR_METRIC",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "MAX_ESTVAR_METRIC",
                     "ir_value_type": "short",
                 }
             ]
@@ -3531,8 +3531,8 @@ class MethodMlmfSubProblemSolverSqp(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.opt_subproblem_solver",
-                    "stored_value": "SUBMETHOD_NPSOL",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBMETHOD_NPSOL",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -3549,8 +3549,8 @@ class MethodMlmfSubProblemSolverNip(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.opt_subproblem_solver",
-                    "stored_value": "SUBMETHOD_OPTPP",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBMETHOD_OPTPP",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -3567,8 +3567,8 @@ class MethodMlmfSubProblemSolverGlobalLocal(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.opt_subproblem_solver",
-                    "stored_value": "SUBMETHOD_DIRECT_NPSOL_OPTPP",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBMETHOD_DIRECT_NPSOL_OPTPP",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -3585,8 +3585,8 @@ class MethodMlmfSubProblemSolverCompetedLocal(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.opt_subproblem_solver",
-                    "stored_value": "SUBMETHOD_NPSOL_OPTPP",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBMETHOD_NPSOL_OPTPP",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -3603,8 +3603,8 @@ class ValueBasedLineSearch(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.optpp.search_method",
-                    "stored_value": "value_based_line_search",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "value_based_line_search",
                     "ir_value_type": "String",
                 }
             ]
@@ -3621,8 +3621,8 @@ class GradientBasedLineSearch(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.optpp.search_method",
-                    "stored_value": "gradient_based_line_search",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "gradient_based_line_search",
                     "ir_value_type": "String",
                 }
             ]
@@ -3639,8 +3639,8 @@ class SearchMethodTrustRegion(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.optpp.search_method",
-                    "stored_value": "trust_region",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "trust_region",
                     "ir_value_type": "String",
                 }
             ]
@@ -3657,8 +3657,8 @@ class TrPds(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.optpp.search_method",
-                    "stored_value": "tr_pds",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "tr_pds",
                     "ir_value_type": "String",
                 }
             ]
@@ -3675,8 +3675,8 @@ class ElBakry(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.optpp.merit_function",
-                    "stored_value": "NormFmu",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "NormFmu",
                     "enum_scope": "OPTPP",
                     "ir_value_type": "short",
                 }
@@ -3694,8 +3694,8 @@ class ArgaezTapia(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.optpp.merit_function",
-                    "stored_value": "ArgaezTapia",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "ArgaezTapia",
                     "enum_scope": "OPTPP",
                     "ir_value_type": "short",
                 }
@@ -3713,8 +3713,8 @@ class VanShanno(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.optpp.merit_function",
-                    "stored_value": "VanShanno",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "VanShanno",
                     "enum_scope": "OPTPP",
                     "ir_value_type": "short",
                 }
@@ -3732,8 +3732,8 @@ class Blocking(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.synchronization",
-                    "stored_value": "BLOCKING_SYNCHRONIZATION",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "BLOCKING_SYNCHRONIZATION",
                     "ir_value_type": "short",
                 }
             ]
@@ -3750,8 +3750,8 @@ class Nonblocking(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.synchronization",
-                    "stored_value": "NONBLOCKING_SYNCHRONIZATION",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "NONBLOCKING_SYNCHRONIZATION",
                     "ir_value_type": "short",
                 }
             ]
@@ -3768,8 +3768,8 @@ class Debug(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.output",
-                    "stored_value": "DEBUG_OUTPUT",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "DEBUG_OUTPUT",
                     "ir_value_type": "short",
                 }
             ]
@@ -3786,8 +3786,8 @@ class Verbose(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.output",
-                    "stored_value": "VERBOSE_OUTPUT",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "VERBOSE_OUTPUT",
                     "ir_value_type": "short",
                 }
             ]
@@ -3804,8 +3804,8 @@ class Normal(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.output",
-                    "stored_value": "NORMAL_OUTPUT",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "NORMAL_OUTPUT",
                     "ir_value_type": "short",
                 }
             ]
@@ -3822,8 +3822,8 @@ class Quiet(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.output",
-                    "stored_value": "QUIET_OUTPUT",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "QUIET_OUTPUT",
                     "ir_value_type": "short",
                 }
             ]
@@ -3840,8 +3840,8 @@ class Silent(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.output",
-                    "stored_value": "SILENT_OUTPUT",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SILENT_OUTPUT",
                     "ir_value_type": "short",
                 }
             ]
@@ -3858,8 +3858,8 @@ class MfAllocControlContext2AllocationControlGreedy(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.multilevel_allocation_control",
-                    "stored_value": "GREEDY_REFINEMENT",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "GREEDY_REFINEMENT",
                     "ir_value_type": "short",
                 }
             ]
@@ -3876,8 +3876,8 @@ class MfAllocControlContext1AllocationControlGreedy(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.multilevel_allocation_control",
-                    "stored_value": "GREEDY_REFINEMENT",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "GREEDY_REFINEMENT",
                     "ir_value_type": "short",
                 }
             ]
@@ -3894,8 +3894,8 @@ class MfAllocControlContext3AllocationControlGreedy(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.multilevel_allocation_control",
-                    "stored_value": "GREEDY_REFINEMENT",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "GREEDY_REFINEMENT",
                     "ir_value_type": "short",
                 }
             ]
@@ -3912,8 +3912,8 @@ class MlmfFinalStatsStatisticsEstimatorPerformance(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.final_statistics",
-                    "stored_value": "ESTIMATOR_PERFORMANCE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "ESTIMATOR_PERFORMANCE",
                     "ir_value_type": "short",
                 }
             ]
@@ -3930,8 +3930,8 @@ class MlmfFinalStatsStatisticsQoiStatisticsFinalMomentsNoneKeyword(DakotaBaseMod
             "materialization": [
                 {
                     "ir_key": "method.nond.final_moments",
-                    "stored_value": "NO_MOMENTS",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "NO_MOMENTS",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -3949,8 +3949,8 @@ class MlmfFinalStatsStatisticsQoiStatisticsFinalMomentsStandard(DakotaBaseModel)
             "materialization": [
                 {
                     "ir_key": "method.nond.final_moments",
-                    "stored_value": "STANDARD_MOMENTS",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "STANDARD_MOMENTS",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -3968,8 +3968,8 @@ class MlmfFinalStatsStatisticsQoiStatisticsFinalMomentsCentral(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.final_moments",
-                    "stored_value": "CENTRAL_MOMENTS",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "CENTRAL_MOMENTS",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -3987,8 +3987,8 @@ class MlmfFinalStatsStatisticsQoiStatisticsDistributionCumulative(DakotaBaseMode
             "materialization": [
                 {
                     "ir_key": "method.nond.distribution",
-                    "stored_value": "CUMULATIVE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "CUMULATIVE",
                     "ir_value_type": "short",
                 }
             ]
@@ -4005,8 +4005,8 @@ class MlmfFinalStatsStatisticsQoiStatisticsDistributionComplementary(DakotaBaseM
             "materialization": [
                 {
                     "ir_key": "method.nond.distribution",
-                    "stored_value": "COMPLEMENTARY",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "COMPLEMENTARY",
                     "ir_value_type": "short",
                 }
             ]
@@ -4023,8 +4023,8 @@ class MfmcGroups(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.group_throttle_type",
-                    "stored_value": "MFMC_ESTIMATOR_GROUPS",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "MFMC_ESTIMATOR_GROUPS",
                     "ir_value_type": "short",
                 }
             ]
@@ -4041,8 +4041,8 @@ class CommonGroups(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.group_throttle_type",
-                    "stored_value": "COMMON_ESTIMATOR_GROUPS",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "COMMON_ESTIMATOR_GROUPS",
                     "ir_value_type": "short",
                 }
             ]
@@ -4215,8 +4215,8 @@ class OnlinePilotFinalStatisticsEstimatorPerformance(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.final_statistics",
-                    "stored_value": "ESTIMATOR_PERFORMANCE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "ESTIMATOR_PERFORMANCE",
                     "ir_value_type": "short",
                 }
             ]
@@ -4233,8 +4233,8 @@ class OnlinePilotFinalStatisticsQoiStatisticsFinalMomentsNone(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.final_moments",
-                    "stored_value": "NO_MOMENTS",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "NO_MOMENTS",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -4252,8 +4252,8 @@ class OnlinePilotFinalStatisticsQoiStatisticsFinalMomentsStandard(DakotaBaseMode
             "materialization": [
                 {
                     "ir_key": "method.nond.final_moments",
-                    "stored_value": "STANDARD_MOMENTS",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "STANDARD_MOMENTS",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -4271,8 +4271,8 @@ class OnlinePilotFinalStatisticsQoiStatisticsFinalMomentsCentral(DakotaBaseModel
             "materialization": [
                 {
                     "ir_key": "method.nond.final_moments",
-                    "stored_value": "CENTRAL_MOMENTS",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "CENTRAL_MOMENTS",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -4290,8 +4290,8 @@ class OnlinePilotFinalStatisticsQoiStatisticsDistributionCumulative(DakotaBaseMo
             "materialization": [
                 {
                     "ir_key": "method.nond.distribution",
-                    "stored_value": "CUMULATIVE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "CUMULATIVE",
                     "ir_value_type": "short",
                 }
             ]
@@ -4308,8 +4308,8 @@ class OnlinePilotFinalStatisticsQoiStatisticsDistributionComplementary(DakotaBas
             "materialization": [
                 {
                     "ir_key": "method.nond.distribution",
-                    "stored_value": "COMPLEMENTARY",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "COMPLEMENTARY",
                     "ir_value_type": "short",
                 }
             ]
@@ -4326,8 +4326,8 @@ class OnlineProjection(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.ensemble_pilot_solution_mode",
-                    "stored_value": "ONLINE_PILOT_PROJECTION",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "ONLINE_PILOT_PROJECTION",
                     "ir_value_type": "short",
                 }
             ]
@@ -4344,8 +4344,8 @@ class OfflineProjection(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.ensemble_pilot_solution_mode",
-                    "stored_value": "OFFLINE_PILOT_PROJECTION",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "OFFLINE_PILOT_PROJECTION",
                     "ir_value_type": "short",
                 }
             ]
@@ -4363,8 +4363,8 @@ class ExportApproxVarianceFileCustomAnnotatedConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.export_approx_variance_format",
-                    "stored_value": "TABULAR_HEADER",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_HEADER",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -4377,8 +4377,8 @@ class ExportApproxVarianceFileCustomAnnotatedConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.export_approx_variance_format",
-                    "stored_value": "TABULAR_EVAL_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_EVAL_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -4391,8 +4391,8 @@ class ExportApproxVarianceFileCustomAnnotatedConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.export_approx_variance_format",
-                    "stored_value": "TABULAR_IFACE_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_IFACE_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -4409,8 +4409,8 @@ class ExportApproxVarianceFileAnnotated(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.export_approx_variance_format",
-                    "stored_value": "TABULAR_ANNOTATED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_ANNOTATED",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -4427,8 +4427,8 @@ class ExportApproxVarianceFileFreeform(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.export_approx_variance_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -4490,8 +4490,8 @@ class PromotedModelSelectionContext2SearchModelGraphsNoRecursion(DakotaBaseModel
             "materialization": [
                 {
                     "ir_key": "method.nond.search_model_graphs.recursion",
-                    "stored_value": "NO_GRAPH_RECURSION",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "NO_GRAPH_RECURSION",
                     "ir_value_type": "short",
                 }
             ]
@@ -4508,8 +4508,8 @@ class PromotedModelSelectionContext2SearchModelGraphsFullRecursion(DakotaBaseMod
             "materialization": [
                 {
                     "ir_key": "method.nond.search_model_graphs.recursion",
-                    "stored_value": "FULL_GRAPH_RECURSION",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "FULL_GRAPH_RECURSION",
                     "ir_value_type": "short",
                 }
             ]
@@ -4526,8 +4526,8 @@ class PromotedModelSelectionContext1SearchModelGraphsNoRecursion(DakotaBaseModel
             "materialization": [
                 {
                     "ir_key": "method.nond.search_model_graphs.recursion",
-                    "stored_value": "NO_GRAPH_RECURSION",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "NO_GRAPH_RECURSION",
                     "ir_value_type": "short",
                 }
             ]
@@ -4544,8 +4544,8 @@ class PromotedModelSelectionContext1SearchModelGraphsFullRecursion(DakotaBaseMod
             "materialization": [
                 {
                     "ir_key": "method.nond.search_model_graphs.recursion",
-                    "stored_value": "FULL_GRAPH_RECURSION",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "FULL_GRAPH_RECURSION",
                     "ir_value_type": "short",
                 }
             ]
@@ -4596,8 +4596,8 @@ class Kuo(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.ld.rank1.generating_vector_scheme",
-                    "stored_value": "GEN_VECTOR_KUO",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "GEN_VECTOR_KUO",
                     "ir_value_type": "short",
                 }
             ]
@@ -4614,8 +4614,8 @@ class CoolsKuoNuyens(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.ld.rank1.generating_vector_scheme",
-                    "stored_value": "GEN_VECTOR_COOLS_KUO_NUYENS",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "GEN_VECTOR_COOLS_KUO_NUYENS",
                     "ir_value_type": "short",
                 }
             ]
@@ -4632,8 +4632,8 @@ class Rank1LatticeOptionsOrderingNatural(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.ld.rank1.ordering",
-                    "stored_value": "RANK_1_LATTICE_NATURAL_ORDERING",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "RANK_1_LATTICE_NATURAL_ORDERING",
                     "ir_value_type": "short",
                 }
             ]
@@ -4650,8 +4650,8 @@ class RadicalInverse(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.ld.rank1.ordering",
-                    "stored_value": "RANK_1_LATTICE_RADICAL_INVERSE_ORDERING",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "RANK_1_LATTICE_RADICAL_INVERSE_ORDERING",
                     "ir_value_type": "short",
                 }
             ]
@@ -4688,8 +4688,8 @@ class RngOptionsContext2Mt19937(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.random_number_generator",
-                    "stored_value": "mt19937",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "mt19937",
                     "ir_value_type": "String",
                 }
             ]
@@ -4706,8 +4706,8 @@ class RngOptionsContext2Rnum2(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.random_number_generator",
-                    "stored_value": "rnum2",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "rnum2",
                     "ir_value_type": "String",
                 }
             ]
@@ -4724,8 +4724,8 @@ class RngOptionsContext1Mt19937(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.random_number_generator",
-                    "stored_value": "mt19937",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "mt19937",
                     "ir_value_type": "String",
                 }
             ]
@@ -4742,8 +4742,8 @@ class RngOptionsContext1Rnum2(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.random_number_generator",
-                    "stored_value": "rnum2",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "rnum2",
                     "ir_value_type": "String",
                 }
             ]
@@ -4760,8 +4760,8 @@ class SbgoSubProblemSolverGPSurfpack(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.emulator",
-                    "stored_value": "KRIGING_EMULATOR",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "KRIGING_EMULATOR",
                     "ir_value_type": "short",
                 }
             ]
@@ -4778,8 +4778,8 @@ class SbgoSubProblemSolverGPDakota(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.emulator",
-                    "stored_value": "GP_EMULATOR",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "GP_EMULATOR",
                     "ir_value_type": "short",
                 }
             ]
@@ -4815,8 +4815,8 @@ class SbgoSubProblemSolverImportBuildPointsFileCustomAnnotatedConfig(DakotaBaseM
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_HEADER",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_HEADER",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -4829,8 +4829,8 @@ class SbgoSubProblemSolverImportBuildPointsFileCustomAnnotatedConfig(DakotaBaseM
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_EVAL_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_EVAL_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -4843,8 +4843,8 @@ class SbgoSubProblemSolverImportBuildPointsFileCustomAnnotatedConfig(DakotaBaseM
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_IFACE_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_IFACE_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -4861,8 +4861,8 @@ class SbgoSubProblemSolverImportBuildPointsFileAnnotated(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_ANNOTATED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_ANNOTATED",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -4879,8 +4879,8 @@ class SbgoSubProblemSolverImportBuildPointsFileFreeform(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -4898,8 +4898,8 @@ class SbgoSubProblemSolverExportApproxPointsFileCustomAnnotatedConfig(DakotaBase
             "materialization": [
                 {
                     "ir_key": "method.export_approx_format",
-                    "stored_value": "TABULAR_HEADER",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_HEADER",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -4912,8 +4912,8 @@ class SbgoSubProblemSolverExportApproxPointsFileCustomAnnotatedConfig(DakotaBase
             "materialization": [
                 {
                     "ir_key": "method.export_approx_format",
-                    "stored_value": "TABULAR_EVAL_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_EVAL_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -4926,8 +4926,8 @@ class SbgoSubProblemSolverExportApproxPointsFileCustomAnnotatedConfig(DakotaBase
             "materialization": [
                 {
                     "ir_key": "method.export_approx_format",
-                    "stored_value": "TABULAR_IFACE_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_IFACE_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -4944,8 +4944,8 @@ class SbgoSubProblemSolverExportApproxPointsFileAnnotated(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.export_approx_format",
-                    "stored_value": "TABULAR_ANNOTATED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_ANNOTATED",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -4962,8 +4962,8 @@ class SbgoSubProblemSolverExportApproxPointsFileFreeform(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.export_approx_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -4983,8 +4983,8 @@ class SbloSubProblemSolverSbgoExportApproxPointsFileCustomAnnotatedConfig(
             "materialization": [
                 {
                     "ir_key": "method.export_approx_format",
-                    "stored_value": "TABULAR_HEADER",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_HEADER",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -4997,8 +4997,8 @@ class SbloSubProblemSolverSbgoExportApproxPointsFileCustomAnnotatedConfig(
             "materialization": [
                 {
                     "ir_key": "method.export_approx_format",
-                    "stored_value": "TABULAR_EVAL_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_EVAL_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -5011,8 +5011,8 @@ class SbloSubProblemSolverSbgoExportApproxPointsFileCustomAnnotatedConfig(
             "materialization": [
                 {
                     "ir_key": "method.export_approx_format",
-                    "stored_value": "TABULAR_IFACE_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_IFACE_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -5029,8 +5029,8 @@ class SbloSubProblemSolverSbgoExportApproxPointsFileAnnotated(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.export_approx_format",
-                    "stored_value": "TABULAR_ANNOTATED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_ANNOTATED",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -5047,8 +5047,8 @@ class SbloSubProblemSolverSbgoExportApproxPointsFileFreeform(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.export_approx_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -5065,8 +5065,8 @@ class ScOptionsPiecewise(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.expansion_type",
-                    "stored_value": "STD_UNIFORM_U",
                     "storage_type": "METHOD_PIECEWISE",
+                    "stored_value": "STD_UNIFORM_U",
                     "secondary_ir_key": "method.nond.piecewise_basis",
                     "secondary_ir_value_type": "bool",
                     "secondary_literal_value": True,
@@ -5086,8 +5086,8 @@ class ScOptionsAskey(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.expansion_type",
-                    "stored_value": "ASKEY_U",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "ASKEY_U",
                     "ir_value_type": "short",
                 }
             ]
@@ -5104,8 +5104,8 @@ class ScOptionsWiener(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.expansion_type",
-                    "stored_value": "STD_NORMAL_U",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "STD_NORMAL_U",
                     "ir_value_type": "short",
                 }
             ]
@@ -5122,8 +5122,8 @@ class ScRefinementPRefinementUniform(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.expansion_refinement_control",
-                    "stored_value": "UNIFORM_CONTROL",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "UNIFORM_CONTROL",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -5141,8 +5141,8 @@ class ScRefinementPRefinementDimAdaptiveSobol(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.expansion_refinement_control",
-                    "stored_value": "DIMENSION_ADAPTIVE_CONTROL_SOBOL",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "DIMENSION_ADAPTIVE_CONTROL_SOBOL",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -5160,8 +5160,8 @@ class ScRefinementPRefinementDimAdaptiveGeneralized(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.expansion_refinement_control",
-                    "stored_value": "DIMENSION_ADAPTIVE_CONTROL_GENERALIZED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "DIMENSION_ADAPTIVE_CONTROL_GENERALIZED",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -5179,8 +5179,8 @@ class HRefinementUniform(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.expansion_refinement_control",
-                    "stored_value": "UNIFORM_CONTROL",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "UNIFORM_CONTROL",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -5198,8 +5198,8 @@ class HRefinementDimAdaptiveSobol(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.expansion_refinement_control",
-                    "stored_value": "DIMENSION_ADAPTIVE_CONTROL_SOBOL",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "DIMENSION_ADAPTIVE_CONTROL_SOBOL",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -5217,8 +5217,8 @@ class HRefinementDimAdaptiveGeneralized(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.expansion_refinement_control",
-                    "stored_value": "DIMENSION_ADAPTIVE_CONTROL_GENERALIZED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "DIMENSION_ADAPTIVE_CONTROL_GENERALIZED",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -5236,8 +5236,8 @@ class ScRefinementHRefinementLocalAdaptive(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.expansion_refinement_control",
-                    "stored_value": "LOCAL_ADAPTIVE_CONTROL",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "LOCAL_ADAPTIVE_CONTROL",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -5255,8 +5255,8 @@ class ScSGLevelNodal(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.expansion_basis_type",
-                    "stored_value": "NODAL_INTERPOLANT",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "NODAL_INTERPOLANT",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -5274,8 +5274,8 @@ class ScSGLevelHierarchical(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.expansion_basis_type",
-                    "stored_value": "HIERARCHICAL_INTERPOLANT",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "HIERARCHICAL_INTERPOLANT",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -5293,8 +5293,8 @@ class ScSGLevelRestricted(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.growth_override",
-                    "stored_value": "RESTRICTED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "RESTRICTED",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -5312,8 +5312,8 @@ class ScSGLevelUnrestricted(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.growth_override",
-                    "stored_value": "UNRESTRICTED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "UNRESTRICTED",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -5331,8 +5331,8 @@ class ScSGLevelNested(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.nesting_override",
-                    "stored_value": "NESTED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "NESTED",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -5350,8 +5350,8 @@ class ScSGLevelNonNested(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.nesting_override",
-                    "stored_value": "NON_NESTED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "NON_NESTED",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -5369,8 +5369,8 @@ class ScSGSequenceLevelSequenceNodal(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.expansion_basis_type",
-                    "stored_value": "NODAL_INTERPOLANT",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "NODAL_INTERPOLANT",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -5388,8 +5388,8 @@ class ScSGSequenceLevelSequenceHierarchical(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.expansion_basis_type",
-                    "stored_value": "HIERARCHICAL_INTERPOLANT",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "HIERARCHICAL_INTERPOLANT",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -5407,8 +5407,8 @@ class ScSGSequenceLevelSequenceRestricted(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.growth_override",
-                    "stored_value": "RESTRICTED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "RESTRICTED",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -5426,8 +5426,8 @@ class ScSGSequenceLevelSequenceUnrestricted(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.growth_override",
-                    "stored_value": "UNRESTRICTED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "UNRESTRICTED",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -5445,8 +5445,8 @@ class ScSGSequenceLevelSequenceNested(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.nesting_override",
-                    "stored_value": "NESTED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "NESTED",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -5464,8 +5464,8 @@ class ScSGSequenceLevelSequenceNonNested(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.nesting_override",
-                    "stored_value": "NON_NESTED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "NON_NESTED",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -5483,8 +5483,8 @@ class ScSparseInterpolantNodal(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.expansion_basis_type",
-                    "stored_value": "NODAL_INTERPOLANT",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "NODAL_INTERPOLANT",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -5502,8 +5502,8 @@ class ScSparseInterpolantHierarchical(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.expansion_basis_type",
-                    "stored_value": "HIERARCHICAL_INTERPOLANT",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "HIERARCHICAL_INTERPOLANT",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -5539,8 +5539,8 @@ class PickAndFreeze(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.vbd_via_sampling_method",
-                    "stored_value": "VBD_PICK_AND_FREEZE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "VBD_PICK_AND_FREEZE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -5551,11 +5551,11 @@ class PickAndFreeze(DakotaBaseModel):
 class MethodDotCommonOptsMixin(
     DefaultConstraintTolMixin,
     DefaultScalingMixin,
-    MethodOptionalModelPointerMixin,
-    MethodMaxFunctionEvaluationsContext1Mixin,
     DefaultSpeculativeMixin,
-    MethodMaxIterationsContext1Mixin,
     MethodConvergenceTolMixin,
+    MethodMaxFunctionEvaluationsContext1Mixin,
+    MethodMaxIterationsContext1Mixin,
+    MethodOptionalModelPointerMixin,
 ):
     """Generated model for MethodDotCommonOptsMixin"""
 
@@ -5700,8 +5700,8 @@ class EgoSubProblemSolverContext2ImportBuildPointsFileCustomAnnotated(DakotaBase
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ],
@@ -5720,8 +5720,8 @@ class EgoSubProblemSolverContext2ExportApproxPointsFileCustomAnnotated(DakotaBas
             "materialization": [
                 {
                     "ir_key": "method.export_approx_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ],
@@ -5782,8 +5782,8 @@ class EgoSubProblemSolverContext1ImportBuildPointsFileCustomAnnotated(DakotaBase
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ],
@@ -5802,8 +5802,8 @@ class EgoSubProblemSolverContext1ExportApproxPointsFileCustomAnnotated(DakotaBas
             "materialization": [
                 {
                     "ir_key": "method.export_approx_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ],
@@ -5843,8 +5843,8 @@ class ImportBuildPointsFileCustomAnnotated(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ],
@@ -5924,8 +5924,8 @@ class MethodGlobalSubProblemSolverContext2SbgoGPExperimental(DakotaBaseModel):
                 "materialization": [
                     {
                         "ir_key": "method.nond.emulator",
-                        "stored_value": "EXPGP_EMULATOR",
                         "storage_type": "PRESENCE_ENUM",
+                        "stored_value": "EXPGP_EMULATOR",
                         "ir_value_type": "short",
                     }
                 ]
@@ -5947,8 +5947,8 @@ class MethodGlobalSubProblemSolverContext2SbgoImportBuildPointsFileCustomAnnotat
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ],
@@ -5969,8 +5969,8 @@ class MethodGlobalSubProblemSolverContext2SbgoExportApproxPointsFileCustomAnnota
             "materialization": [
                 {
                     "ir_key": "method.export_approx_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ],
@@ -6033,8 +6033,8 @@ class MethodGlobalSubProblemSolverContext2EgoImportBuildPointsFileCustomAnnotate
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ],
@@ -6055,8 +6055,8 @@ class MethodGlobalSubProblemSolverContext2EgoExportApproxPointsFileCustomAnnotat
             "materialization": [
                 {
                     "ir_key": "method.export_approx_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ],
@@ -6074,8 +6074,8 @@ class MethodGlobalSubProblemSolverContext1SbgoGPExperimental(DakotaBaseModel):
                 "materialization": [
                     {
                         "ir_key": "method.nond.emulator",
-                        "stored_value": "EXPGP_EMULATOR",
                         "storage_type": "PRESENCE_ENUM",
+                        "stored_value": "EXPGP_EMULATOR",
                         "ir_value_type": "short",
                     }
                 ]
@@ -6097,8 +6097,8 @@ class MethodGlobalSubProblemSolverContext1SbgoImportBuildPointsFileCustomAnnotat
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ],
@@ -6119,8 +6119,8 @@ class MethodGlobalSubProblemSolverContext1SbgoExportApproxPointsFileCustomAnnota
             "materialization": [
                 {
                     "ir_key": "method.export_approx_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ],
@@ -6183,8 +6183,8 @@ class MethodGlobalSubProblemSolverContext1EgoImportBuildPointsFileCustomAnnotate
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ],
@@ -6205,8 +6205,8 @@ class MethodGlobalSubProblemSolverContext1EgoExportApproxPointsFileCustomAnnotat
             "materialization": [
                 {
                     "ir_key": "method.export_approx_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ],
@@ -6223,8 +6223,8 @@ class MethodGpAlternativesNoExportGPExperimental(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.emulator",
-                    "stored_value": "EXPGP_EMULATOR",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "EXPGP_EMULATOR",
                     "ir_value_type": "short",
                 }
             ]
@@ -6381,8 +6381,8 @@ class ShuffleRandom(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.crossover_type",
-                    "stored_value": "shuffle_random",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "shuffle_random",
                     "ir_value_type": "String",
                 }
             ]
@@ -6399,8 +6399,8 @@ class MethodJegaCommonOptsMutationTypeOffsetNormal(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.mutation_type",
-                    "stored_value": "offset_normal",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "offset_normal",
                     "ir_value_type": "String",
                 }
             ]
@@ -6417,8 +6417,8 @@ class MethodJegaCommonOptsMutationTypeOffsetCauchy(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.mutation_type",
-                    "stored_value": "offset_cauchy",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "offset_cauchy",
                     "ir_value_type": "String",
                 }
             ]
@@ -6435,8 +6435,8 @@ class MethodJegaCommonOptsMutationTypeOffsetUniform(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.mutation_type",
-                    "stored_value": "offset_uniform",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "offset_uniform",
                     "ir_value_type": "String",
                 }
             ]
@@ -6453,8 +6453,8 @@ class MethodMlmfSolverMetricNormEstimatorVariance(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.estimator_variance_metric",
-                    "stored_value": "NORM_ESTVAR_METRIC",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "NORM_ESTVAR_METRIC",
                     "ir_value_type": "short",
                 }
             ]
@@ -6736,8 +6736,8 @@ class ExportApproxVarianceFileCustomAnnotated(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.export_approx_variance_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ],
@@ -6793,8 +6793,8 @@ class PromotedModelSelectionContext2SearchModelGraphs(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.search_model_graphs.selection",
-                    "stored_value": "ALL_MODEL_COMBINATIONS",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "ALL_MODEL_COMBINATIONS",
                     "ir_value_type": "short",
                 }
             ]
@@ -6819,8 +6819,8 @@ class PromotedModelSelectionContext1SearchModelGraphs(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.search_model_graphs.selection",
-                    "stored_value": "ALL_MODEL_COMBINATIONS",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "ALL_MODEL_COMBINATIONS",
                     "ir_value_type": "short",
                 }
             ]
@@ -6889,8 +6889,8 @@ class SbgoSubProblemSolverGPExperimental(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.emulator",
-                    "stored_value": "EXPGP_EMULATOR",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "EXPGP_EMULATOR",
                     "ir_value_type": "short",
                 }
             ]
@@ -6909,8 +6909,8 @@ class SbgoSubProblemSolverImportBuildPointsFileCustomAnnotated(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ],
@@ -6929,8 +6929,8 @@ class SbgoSubProblemSolverExportApproxPointsFileCustomAnnotated(DakotaBaseModel)
             "materialization": [
                 {
                     "ir_key": "method.export_approx_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ],
@@ -6949,8 +6949,8 @@ class SbloSubProblemSolverSbgoExportApproxPointsFileCustomAnnotated(DakotaBaseMo
             "materialization": [
                 {
                     "ir_key": "method.export_approx_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ],
@@ -7119,8 +7119,8 @@ class Binned(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.vbd_via_sampling_method",
-                    "stored_value": "VBD_BINNED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "VBD_BINNED",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -8116,8 +8116,8 @@ class CrossoverType(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.crossover_type",
-                    "stored_value": "null_crossover",
                     "storage_type": "TYPE_DATA_COMBINED",
+                    "stored_value": "null_crossover",
                     "secondary_ir_key": "method.crossover_rate",
                     "secondary_ir_value_type": "Real",
                     "ir_value_type": "String",
@@ -8147,8 +8147,8 @@ class MethodJegaCommonOptsMutationType(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.mutation_type",
-                    "stored_value": "null_mutation",
                     "storage_type": "TYPE_DATA_COMBINED",
+                    "stored_value": "null_mutation",
                     "secondary_ir_key": "method.mutation_rate",
                     "secondary_ir_value_type": "Real",
                     "ir_value_type": "String",
@@ -8184,8 +8184,8 @@ class MlmfFinalStatsStatisticsQoiStatistics(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.final_statistics",
-                    "stored_value": "QOI_STATISTICS",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "QOI_STATISTICS",
                     "ir_value_type": "short",
                 }
             ]
@@ -8202,8 +8202,8 @@ class OnlinePilotFinalStatisticsQoiStatistics(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.final_statistics",
-                    "stored_value": "QOI_STATISTICS",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "QOI_STATISTICS",
                     "ir_value_type": "short",
                 }
             ]
@@ -8220,8 +8220,8 @@ class OfflinePilotFinalStatisticsQoiStatistics(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.final_statistics",
-                    "stored_value": "QOI_STATISTICS",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "QOI_STATISTICS",
                     "ir_value_type": "short",
                 }
             ]
@@ -8261,8 +8261,8 @@ class ExportApproxVarianceFile(DakotaBaseModel):
 
 class LevelMappingsNoRelContext2Mixin(
     DistributionCumulComplContext1Mixin,
-    ProbabilityLevelsContext2Mixin,
     GenReliabilityLevelsMixin,
+    ProbabilityLevelsContext2Mixin,
     ResponseLevelsComputeProbGenContext2Mixin,
 ):
     """Generated model for LevelMappingsNoRelContext2Mixin"""
@@ -8351,11 +8351,11 @@ class Rank1LatticeOptionsMixin(DakotaBaseModel):
 
 
 class LevelMappingsMixin(
-    ResponseLevelsComputeProbRelGenMixin,
     DistributionCumulComplContext1Mixin,
-    ProbabilityLevelsContext2Mixin,
     GenReliabilityLevelsMixin,
+    ProbabilityLevelsContext2Mixin,
     ReliabilityLevelsMixin,
+    ResponseLevelsComputeProbRelGenMixin,
 ):
     """Generated model for LevelMappingsMixin"""
 
@@ -8487,8 +8487,8 @@ class ScRefinementPRefinement(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.expansion_refinement_type",
-                    "stored_value": "P_REFINEMENT",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "P_REFINEMENT",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -8509,8 +8509,8 @@ class ScRefinementHRefinement(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.expansion_refinement_type",
-                    "stored_value": "H_REFINEMENT",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "H_REFINEMENT",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -8571,8 +8571,8 @@ class EgoSubProblemSolverContext2GPSurfpack(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.emulator",
-                    "stored_value": "KRIGING_EMULATOR",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "KRIGING_EMULATOR",
                     "ir_value_type": "short",
                 }
             ]
@@ -8589,8 +8589,8 @@ class EgoSubProblemSolverContext2GPExperimental(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.emulator",
-                    "stored_value": "EXPGP_EMULATOR",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "EXPGP_EMULATOR",
                     "ir_value_type": "short",
                 }
             ]
@@ -8607,8 +8607,8 @@ class EgoSubProblemSolverContext1GPSurfpack(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.emulator",
-                    "stored_value": "KRIGING_EMULATOR",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "KRIGING_EMULATOR",
                     "ir_value_type": "short",
                 }
             ]
@@ -8625,8 +8625,8 @@ class EgoSubProblemSolverContext1GPExperimental(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.emulator",
-                    "stored_value": "EXPGP_EMULATOR",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "EXPGP_EMULATOR",
                     "ir_value_type": "short",
                 }
             ]
@@ -8690,8 +8690,8 @@ class MethodGlobalSubProblemSolverContext2EgoGPSurfpack(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.emulator",
-                    "stored_value": "KRIGING_EMULATOR",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "KRIGING_EMULATOR",
                     "ir_value_type": "short",
                 }
             ]
@@ -8709,8 +8709,8 @@ class MethodGlobalSubProblemSolverContext2EgoGPExperimental(DakotaBaseModel):
                 "materialization": [
                     {
                         "ir_key": "method.nond.emulator",
-                        "stored_value": "EXPGP_EMULATOR",
                         "storage_type": "PRESENCE_ENUM",
+                        "stored_value": "EXPGP_EMULATOR",
                         "ir_value_type": "short",
                     }
                 ]
@@ -8765,8 +8765,8 @@ class MethodGlobalSubProblemSolverContext1EgoGPSurfpack(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.emulator",
-                    "stored_value": "KRIGING_EMULATOR",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "KRIGING_EMULATOR",
                     "ir_value_type": "short",
                 }
             ]
@@ -8784,8 +8784,8 @@ class MethodGlobalSubProblemSolverContext1EgoGPExperimental(DakotaBaseModel):
                 "materialization": [
                     {
                         "ir_key": "method.nond.emulator",
-                        "stored_value": "EXPGP_EMULATOR",
                         "storage_type": "PRESENCE_ENUM",
+                        "stored_value": "EXPGP_EMULATOR",
                         "ir_value_type": "short",
                     }
                 ]
@@ -8813,8 +8813,8 @@ class MethodGpAlternativesWithExportContext2GPSurfpack(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.emulator",
-                    "stored_value": "KRIGING_EMULATOR",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "KRIGING_EMULATOR",
                     "ir_value_type": "short",
                 }
             ]
@@ -8832,8 +8832,8 @@ class MethodGpAlternativesWithExportContext2GPExperimental(DakotaBaseModel):
                 "materialization": [
                     {
                         "ir_key": "method.nond.emulator",
-                        "stored_value": "EXPGP_EMULATOR",
                         "storage_type": "PRESENCE_ENUM",
+                        "stored_value": "EXPGP_EMULATOR",
                         "ir_value_type": "short",
                     }
                 ]
@@ -8851,8 +8851,8 @@ class MethodGpAlternativesWithExportContext1GPSurfpack(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.emulator",
-                    "stored_value": "KRIGING_EMULATOR",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "KRIGING_EMULATOR",
                     "ir_value_type": "short",
                 }
             ]
@@ -8870,8 +8870,8 @@ class MethodGpAlternativesWithExportContext1GPExperimental(DakotaBaseModel):
                 "materialization": [
                     {
                         "ir_key": "method.nond.emulator",
-                        "stored_value": "EXPGP_EMULATOR",
                         "storage_type": "PRESENCE_ENUM",
+                        "stored_value": "EXPGP_EMULATOR",
                         "ir_value_type": "short",
                     }
                 ]
@@ -9249,8 +9249,8 @@ class MethodGlobalSubProblemSolverContext2Sbgo(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.opt_subproblem_solver",
-                    "stored_value": "SUBMETHOD_SBGO",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBMETHOD_SBGO",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -9311,8 +9311,8 @@ class MethodGlobalSubProblemSolverContext1Sbgo(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.opt_subproblem_solver",
-                    "stored_value": "SUBMETHOD_SBGO",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBMETHOD_SBGO",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -9409,8 +9409,8 @@ class OnlinePilot(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.ensemble_pilot_solution_mode",
-                    "stored_value": "ONLINE_PILOT",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "ONLINE_PILOT",
                     "ir_value_type": "short",
                 }
             ],
@@ -9429,8 +9429,8 @@ class OfflinePilot(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.ensemble_pilot_solution_mode",
-                    "stored_value": "OFFLINE_PILOT",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "OFFLINE_PILOT",
                     "ir_value_type": "short",
                 }
             ],
@@ -9447,8 +9447,8 @@ class SbgoSubProblemSolverMixin(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.opt_subproblem_solver",
-                    "stored_value": "SUBMETHOD_SBGO",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBMETHOD_SBGO",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -9471,8 +9471,8 @@ class EgoSubProblemSolverContext2Mixin(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.opt_subproblem_solver",
-                    "stored_value": "SUBMETHOD_EGO",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBMETHOD_EGO",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -9489,8 +9489,8 @@ class EgoSubProblemSolverContext1Mixin(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.opt_subproblem_solver",
-                    "stored_value": "SUBMETHOD_EGO",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBMETHOD_EGO",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -9507,8 +9507,8 @@ class MethodGlobalSubProblemSolverContext2Ego(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.opt_subproblem_solver",
-                    "stored_value": "SUBMETHOD_EGO",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBMETHOD_EGO",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -9525,8 +9525,8 @@ class MethodGlobalSubProblemSolverContext1Ego(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.opt_subproblem_solver",
-                    "stored_value": "SUBMETHOD_EGO",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBMETHOD_EGO",
                     "ir_value_type": "unsigned short",
                 }
             ]

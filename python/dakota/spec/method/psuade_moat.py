@@ -74,8 +74,8 @@ class PsuadeMoatSelection(MethodSelection):
             "materialization": [
                 {
                     "ir_key": "method.algorithm",
-                    "stored_value": "PSUADE_MOAT",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "PSUADE_MOAT",
                     "ir_value_type": "unsigned short",
                 }
             ]

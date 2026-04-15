@@ -47,8 +47,8 @@ class ExternalPythonSelection(MethodSelection):
             "materialization": [
                 {
                     "ir_key": "method.algorithm",
-                    "stored_value": "EXTERNAL_PYTHON",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "EXTERNAL_PYTHON",
                     "ir_value_type": "unsigned short",
                 }
             ]

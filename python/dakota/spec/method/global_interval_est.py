@@ -66,8 +66,8 @@ class GlobalIntervalEstSelection(MethodSelection):
             "materialization": [
                 {
                     "ir_key": "method.algorithm",
-                    "stored_value": "GLOBAL_INTERVAL_EST",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "GLOBAL_INTERVAL_EST",
                     "ir_value_type": "unsigned short",
                 }
             ],

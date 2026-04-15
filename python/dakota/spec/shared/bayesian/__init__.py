@@ -19,8 +19,8 @@ class EmulatorGPSurfpack(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.emulator",
-                    "stored_value": "KRIGING_EMULATOR",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "KRIGING_EMULATOR",
                     "ir_value_type": "short",
                 }
             ]
@@ -37,8 +37,8 @@ class EmulatorGPDakota(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.emulator",
-                    "stored_value": "GP_EMULATOR",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "GP_EMULATOR",
                     "ir_value_type": "short",
                 }
             ]
@@ -56,8 +56,8 @@ class GPImportBuildPointsFileCustomAnnotatedConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_HEADER",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_HEADER",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -70,8 +70,8 @@ class GPImportBuildPointsFileCustomAnnotatedConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_EVAL_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_EVAL_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -84,8 +84,8 @@ class GPImportBuildPointsFileCustomAnnotatedConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_IFACE_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_IFACE_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -102,8 +102,8 @@ class GPImportBuildPointsFileAnnotated(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_ANNOTATED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_ANNOTATED",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -120,8 +120,8 @@ class GPImportBuildPointsFileFreeform(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -138,8 +138,8 @@ class EmulatorPcePRefinementUniform(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.expansion_refinement_control",
-                    "stored_value": "UNIFORM_CONTROL",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "UNIFORM_CONTROL",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -157,8 +157,8 @@ class EmulatorPcePRefinementDimAdaptiveSobol(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.expansion_refinement_control",
-                    "stored_value": "DIMENSION_ADAPTIVE_CONTROL_SOBOL",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "DIMENSION_ADAPTIVE_CONTROL_SOBOL",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -176,8 +176,8 @@ class EmulatorPcePRefinementDimAdaptiveDecay(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.expansion_refinement_control",
-                    "stored_value": "DIMENSION_ADAPTIVE_CONTROL_DECAY",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "DIMENSION_ADAPTIVE_CONTROL_DECAY",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -195,8 +195,8 @@ class EmulatorPcePRefinementDimAdaptiveGeneralized(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.expansion_refinement_control",
-                    "stored_value": "DIMENSION_ADAPTIVE_CONTROL_GENERALIZED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "DIMENSION_ADAPTIVE_CONTROL_GENERALIZED",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -214,8 +214,8 @@ class EmulatorPceQuadratureOrderNested(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.nesting_override",
-                    "stored_value": "NESTED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "NESTED",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -233,8 +233,8 @@ class EmulatorPceQuadratureOrderNonNested(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.nesting_override",
-                    "stored_value": "NON_NESTED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "NON_NESTED",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -252,8 +252,8 @@ class EmulatorPceSGLevelRestricted(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.growth_override",
-                    "stored_value": "RESTRICTED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "RESTRICTED",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -271,8 +271,8 @@ class EmulatorPceSGLevelUnrestricted(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.growth_override",
-                    "stored_value": "UNRESTRICTED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "UNRESTRICTED",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -307,8 +307,8 @@ class EmulatorPceExpansionOrderBasisTypeTensorProduct(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.expansion_basis_type",
-                    "stored_value": "TENSOR_PRODUCT_BASIS",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TENSOR_PRODUCT_BASIS",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -326,8 +326,8 @@ class EmulatorPceExpansionOrderBasisTypeTotalOrder(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.expansion_basis_type",
-                    "stored_value": "TOTAL_ORDER_BASIS",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TOTAL_ORDER_BASIS",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -376,8 +376,8 @@ class EmulatorPceExpansionOrderCollocPointsLeastSquaresSvd(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.least_squares_regression_type",
-                    "stored_value": "SVD_LS",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SVD_LS",
                     "ir_value_type": "short",
                 }
             ]
@@ -394,8 +394,8 @@ class EmulatorPceExpansionOrderCollocPointsLeastSquaresEqCon(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.least_squares_regression_type",
-                    "stored_value": "EQ_CON_LS",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "EQ_CON_LS",
                     "ir_value_type": "short",
                 }
             ]
@@ -431,8 +431,8 @@ class EmulatorPceExpansionOrderCollocPointsBP(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.regression_type",
-                    "stored_value": "BASIS_PURSUIT",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "BASIS_PURSUIT",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -528,8 +528,8 @@ class EmulatorPceExpansionOrderExpansionSamplesConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.point_reuse",
-                    "stored_value": "all",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "all",
                     "ir_value_type": "String",
                 }
             ],
@@ -563,8 +563,8 @@ class EmulatorPceAskey(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.expansion_type",
-                    "stored_value": "ASKEY_U",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "ASKEY_U",
                     "ir_value_type": "short",
                 }
             ]
@@ -581,8 +581,8 @@ class EmulatorPceWiener(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.expansion_type",
-                    "stored_value": "STD_NORMAL_U",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "STD_NORMAL_U",
                     "ir_value_type": "short",
                 }
             ]
@@ -599,8 +599,8 @@ class EmulatorPceDiagCov(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.covariance_control",
-                    "stored_value": "DIAGONAL_COVARIANCE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "DIAGONAL_COVARIANCE",
                     "ir_value_type": "short",
                 }
             ]
@@ -617,8 +617,8 @@ class EmulatorPceFullCov(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.covariance_control",
-                    "stored_value": "FULL_COVARIANCE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "FULL_COVARIANCE",
                     "ir_value_type": "short",
                 }
             ]
@@ -653,8 +653,8 @@ class EmulatorMlPceAllocationControlRipSampling(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.multilevel_allocation_control",
-                    "stored_value": "RIP_SAMPLING",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "RIP_SAMPLING",
                     "ir_value_type": "short",
                 }
             ]
@@ -672,8 +672,8 @@ class EmulatorMlPceDiscrepancyEmulationDistinct(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.multilevel_discrepancy_emulation",
-                    "stored_value": "DISTINCT_EMULATION",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "DISTINCT_EMULATION",
                     "ir_value_type": "short",
                 }
             ],
@@ -690,8 +690,8 @@ class EmulatorMlPceDiscrepancyEmulationRecursive(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.multilevel_discrepancy_emulation",
-                    "stored_value": "RECURSIVE_EMULATION",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "RECURSIVE_EMULATION",
                     "ir_value_type": "short",
                 }
             ]
@@ -731,8 +731,8 @@ class EmulatorMlPceExpansionOrderSequenceExpansionSamplesSequenceConfig(
             "materialization": [
                 {
                     "ir_key": "method.nond.point_reuse",
-                    "stored_value": "all",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "all",
                     "ir_value_type": "String",
                 }
             ],
@@ -749,8 +749,8 @@ class EmulatorMfPceAllocationControlGreedy(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.multilevel_allocation_control",
-                    "stored_value": "GREEDY_REFINEMENT",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "GREEDY_REFINEMENT",
                     "ir_value_type": "short",
                 }
             ]
@@ -767,8 +767,8 @@ class EmulatorScHRefinementLocalAdaptive(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.expansion_refinement_control",
-                    "stored_value": "LOCAL_ADAPTIVE_CONTROL",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "LOCAL_ADAPTIVE_CONTROL",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -786,8 +786,8 @@ class EmulatorScSGLevelNodal(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.expansion_basis_type",
-                    "stored_value": "NODAL_INTERPOLANT",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "NODAL_INTERPOLANT",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -805,8 +805,8 @@ class EmulatorScSGLevelHierarchical(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.expansion_basis_type",
-                    "stored_value": "HIERARCHICAL_INTERPOLANT",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "HIERARCHICAL_INTERPOLANT",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -824,8 +824,8 @@ class EmulatorScPiecewise(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.expansion_type",
-                    "stored_value": "STD_UNIFORM_U",
                     "storage_type": "METHOD_PIECEWISE",
+                    "stored_value": "STD_UNIFORM_U",
                     "secondary_ir_key": "method.nond.piecewise_basis",
                     "secondary_ir_value_type": "bool",
                     "secondary_literal_value": True,
@@ -845,8 +845,8 @@ class MfScPRefinementUniform(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.expansion_refinement_control",
-                    "stored_value": "UNIFORM_CONTROL",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "UNIFORM_CONTROL",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -864,8 +864,8 @@ class MfScPRefinementDimAdaptiveSobol(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.expansion_refinement_control",
-                    "stored_value": "DIMENSION_ADAPTIVE_CONTROL_SOBOL",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "DIMENSION_ADAPTIVE_CONTROL_SOBOL",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -883,8 +883,8 @@ class MfScPRefinementDimAdaptiveGeneralized(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.expansion_refinement_control",
-                    "stored_value": "DIMENSION_ADAPTIVE_CONTROL_GENERALIZED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "DIMENSION_ADAPTIVE_CONTROL_GENERALIZED",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -902,8 +902,8 @@ class MfScHRefinementLocalAdaptive(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.expansion_refinement_control",
-                    "stored_value": "LOCAL_ADAPTIVE_CONTROL",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "LOCAL_ADAPTIVE_CONTROL",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -921,8 +921,8 @@ class MfScAllocationControlGreedy(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.multilevel_allocation_control",
-                    "stored_value": "GREEDY_REFINEMENT",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "GREEDY_REFINEMENT",
                     "ir_value_type": "short",
                 }
             ]
@@ -940,8 +940,8 @@ class MfScDiscrepancyEmulationDistinct(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.multilevel_discrepancy_emulation",
-                    "stored_value": "DISTINCT_EMULATION",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "DISTINCT_EMULATION",
                     "ir_value_type": "short",
                 }
             ],
@@ -958,8 +958,8 @@ class MfScDiscrepancyEmulationRecursive(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.multilevel_discrepancy_emulation",
-                    "stored_value": "RECURSIVE_EMULATION",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "RECURSIVE_EMULATION",
                     "ir_value_type": "short",
                 }
             ]
@@ -976,8 +976,8 @@ class MfScQuadratureOrderSequenceNested(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.nesting_override",
-                    "stored_value": "NESTED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "NESTED",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -995,8 +995,8 @@ class MfScQuadratureOrderSequenceNonNested(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.nesting_override",
-                    "stored_value": "NON_NESTED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "NON_NESTED",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -1014,8 +1014,8 @@ class MfScSGLevelSequenceNodal(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.expansion_basis_type",
-                    "stored_value": "NODAL_INTERPOLANT",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "NODAL_INTERPOLANT",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -1033,8 +1033,8 @@ class MfScSGLevelSequenceHierarchical(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.expansion_basis_type",
-                    "stored_value": "HIERARCHICAL_INTERPOLANT",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "HIERARCHICAL_INTERPOLANT",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -1052,8 +1052,8 @@ class MfScSGLevelSequenceRestricted(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.growth_override",
-                    "stored_value": "RESTRICTED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "RESTRICTED",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -1071,8 +1071,8 @@ class MfScSGLevelSequenceUnrestricted(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.growth_override",
-                    "stored_value": "UNRESTRICTED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "UNRESTRICTED",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -1090,8 +1090,8 @@ class MfScPiecewise(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.expansion_type",
-                    "stored_value": "STD_UNIFORM_U",
                     "storage_type": "METHOD_PIECEWISE",
+                    "stored_value": "STD_UNIFORM_U",
                     "secondary_ir_key": "method.nond.piecewise_basis",
                     "secondary_ir_value_type": "bool",
                     "secondary_literal_value": True,
@@ -1111,8 +1111,8 @@ class MfScAskey(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.expansion_type",
-                    "stored_value": "ASKEY_U",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "ASKEY_U",
                     "ir_value_type": "short",
                 }
             ]
@@ -1129,8 +1129,8 @@ class MfScWiener(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.expansion_type",
-                    "stored_value": "STD_NORMAL_U",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "STD_NORMAL_U",
                     "ir_value_type": "short",
                 }
             ]
@@ -1147,8 +1147,8 @@ class MfScDiagCov(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.covariance_control",
-                    "stored_value": "DIAGONAL_COVARIANCE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "DIAGONAL_COVARIANCE",
                     "ir_value_type": "short",
                 }
             ]
@@ -1165,8 +1165,8 @@ class MfScFullCov(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.covariance_control",
-                    "stored_value": "FULL_COVARIANCE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "FULL_COVARIANCE",
                     "ir_value_type": "short",
                 }
             ]
@@ -1220,8 +1220,8 @@ class ValuesDiag(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.proposal_covariance_input_type",
-                    "stored_value": "diagonal",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "diagonal",
                     "ir_value_type": "String",
                 }
             ]
@@ -1238,8 +1238,8 @@ class ValuesMatrix(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.proposal_covariance_input_type",
-                    "stored_value": "matrix",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "matrix",
                     "ir_value_type": "String",
                 }
             ]
@@ -1256,8 +1256,8 @@ class ScPRefinementUniform(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.expansion_refinement_control",
-                    "stored_value": "UNIFORM_CONTROL",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "UNIFORM_CONTROL",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -1275,8 +1275,8 @@ class ScPRefinementDimAdaptiveSobol(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.expansion_refinement_control",
-                    "stored_value": "DIMENSION_ADAPTIVE_CONTROL_SOBOL",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "DIMENSION_ADAPTIVE_CONTROL_SOBOL",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -1294,8 +1294,8 @@ class ScPRefinementDimAdaptiveGeneralized(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.expansion_refinement_control",
-                    "stored_value": "DIMENSION_ADAPTIVE_CONTROL_GENERALIZED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "DIMENSION_ADAPTIVE_CONTROL_GENERALIZED",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -1313,8 +1313,8 @@ class BayesScHRefinementLocalAdaptive(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.expansion_refinement_control",
-                    "stored_value": "LOCAL_ADAPTIVE_CONTROL",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "LOCAL_ADAPTIVE_CONTROL",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -1332,8 +1332,8 @@ class ScQuadratureOrderNested(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.nesting_override",
-                    "stored_value": "NESTED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "NESTED",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -1351,8 +1351,8 @@ class ScQuadratureOrderNonNested(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.nesting_override",
-                    "stored_value": "NON_NESTED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "NON_NESTED",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -1370,8 +1370,8 @@ class BayesScSGLevelNodal(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.expansion_basis_type",
-                    "stored_value": "NODAL_INTERPOLANT",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "NODAL_INTERPOLANT",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -1389,8 +1389,8 @@ class BayesScSGLevelHierarchical(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.expansion_basis_type",
-                    "stored_value": "HIERARCHICAL_INTERPOLANT",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "HIERARCHICAL_INTERPOLANT",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -1408,8 +1408,8 @@ class BayesScSGLevelRestricted(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.growth_override",
-                    "stored_value": "RESTRICTED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "RESTRICTED",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -1427,8 +1427,8 @@ class BayesScSGLevelUnrestricted(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.growth_override",
-                    "stored_value": "UNRESTRICTED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "UNRESTRICTED",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -1446,8 +1446,8 @@ class BayesScPiecewise(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.expansion_type",
-                    "stored_value": "STD_UNIFORM_U",
                     "storage_type": "METHOD_PIECEWISE",
+                    "stored_value": "STD_UNIFORM_U",
                     "secondary_ir_key": "method.nond.piecewise_basis",
                     "secondary_ir_value_type": "bool",
                     "secondary_literal_value": True,
@@ -1467,8 +1467,8 @@ class ScAskey(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.expansion_type",
-                    "stored_value": "ASKEY_U",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "ASKEY_U",
                     "ir_value_type": "short",
                 }
             ]
@@ -1485,8 +1485,8 @@ class ScWiener(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.expansion_type",
-                    "stored_value": "STD_NORMAL_U",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "STD_NORMAL_U",
                     "ir_value_type": "short",
                 }
             ]
@@ -1503,8 +1503,8 @@ class ScDiagCov(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.covariance_control",
-                    "stored_value": "DIAGONAL_COVARIANCE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "DIAGONAL_COVARIANCE",
                     "ir_value_type": "short",
                 }
             ]
@@ -1521,8 +1521,8 @@ class ScFullCov(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.covariance_control",
-                    "stored_value": "FULL_COVARIANCE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "FULL_COVARIANCE",
                     "ir_value_type": "short",
                 }
             ]
@@ -1539,8 +1539,8 @@ class BayesSeedRngMt19937(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.random_number_generator",
-                    "stored_value": "mt19937",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "mt19937",
                     "ir_value_type": "String",
                 }
             ]
@@ -1557,8 +1557,8 @@ class BayesSeedRngRnum2(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.random_number_generator",
-                    "stored_value": "rnum2",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "rnum2",
                     "ir_value_type": "String",
                 }
             ]
@@ -1577,8 +1577,8 @@ class GPImportBuildPointsFileCustomAnnotated(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ],
@@ -1597,8 +1597,8 @@ class EmulatorPceExpansionOrderImportBuildPointsFileCustomAnnotated(DakotaBaseMo
             "materialization": [
                 {
                     "ir_key": "method.import_build_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ],
@@ -1864,8 +1864,8 @@ class EmulatorPceExpansionOrderBasisTypeAdapted(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.expansion_basis_type",
-                    "stored_value": "ADAPTED_BASIS_EXPANDING_FRONT",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "ADAPTED_BASIS_EXPANDING_FRONT",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -1883,8 +1883,8 @@ class EmulatorMlPceExpansionOrderSequenceBasisTypeAdapted(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.expansion_basis_type",
-                    "stored_value": "ADAPTED_BASIS_EXPANDING_FRONT",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "ADAPTED_BASIS_EXPANDING_FRONT",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -1905,8 +1905,8 @@ class EmulatorPceExpansionOrderCollocPointsLeastSquares(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.regression_type",
-                    "stored_value": "DEFAULT_LEAST_SQ_REGRESSION",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "DEFAULT_LEAST_SQ_REGRESSION",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -1927,8 +1927,8 @@ class EmulatorPceExpansionOrderCollocRatioLeastSquares(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.regression_type",
-                    "stored_value": "DEFAULT_LEAST_SQ_REGRESSION",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "DEFAULT_LEAST_SQ_REGRESSION",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -1947,8 +1947,8 @@ class EmulatorPceExpansionOrderCollocPointsOMP(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.regression_type",
-                    "stored_value": "ORTHOG_MATCH_PURSUIT",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "ORTHOG_MATCH_PURSUIT",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -1967,8 +1967,8 @@ class EmulatorPceExpansionOrderCollocPointsBPDN(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.regression_type",
-                    "stored_value": "BASIS_PURSUIT_DENOISING",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "BASIS_PURSUIT_DENOISING",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -1987,8 +1987,8 @@ class EmulatorPceExpansionOrderCollocPointsLars(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.regression_type",
-                    "stored_value": "LEAST_ANGLE_REGRESSION",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "LEAST_ANGLE_REGRESSION",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -2007,8 +2007,8 @@ class EmulatorPceExpansionOrderCollocRatioOMP(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.regression_type",
-                    "stored_value": "ORTHOG_MATCH_PURSUIT",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "ORTHOG_MATCH_PURSUIT",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -2027,8 +2027,8 @@ class EmulatorPceExpansionOrderCollocPointsLasso(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.regression_type",
-                    "stored_value": "LASSO_REGRESSION",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "LASSO_REGRESSION",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -2047,8 +2047,8 @@ class EmulatorPceExpansionOrderCollocRatioLasso(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.regression_type",
-                    "stored_value": "LASSO_REGRESSION",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "LASSO_REGRESSION",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -2077,8 +2077,8 @@ class EmulatorMlPceAllocationControlEstimatorVariance(DakotaBaseModel):
                 "materialization": [
                     {
                         "ir_key": "method.nond.multilevel_allocation_control",
-                        "stored_value": "ESTIMATOR_VARIANCE",
                         "storage_type": "PRESENCE_ENUM",
+                        "stored_value": "ESTIMATOR_VARIANCE",
                         "ir_value_type": "short",
                     }
                 ]
@@ -2333,8 +2333,8 @@ class Prior(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.proposal_covariance_type",
-                    "stored_value": "prior",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "prior",
                     "ir_value_type": "String",
                 }
             ]
@@ -2351,8 +2351,8 @@ class Derivatives(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.proposal_covariance_type",
-                    "stored_value": "derivatives",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "derivatives",
                     "ir_value_type": "String",
                 }
             ]
@@ -2665,8 +2665,8 @@ class EmulatorScPRefinement(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.expansion_refinement_type",
-                    "stored_value": "P_REFINEMENT",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "P_REFINEMENT",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -2687,8 +2687,8 @@ class EmulatorScHRefinement(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.expansion_refinement_type",
-                    "stored_value": "H_REFINEMENT",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "H_REFINEMENT",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -2707,8 +2707,8 @@ class EmulatorMfScPRefinement(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.expansion_refinement_type",
-                    "stored_value": "P_REFINEMENT",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "P_REFINEMENT",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -2729,8 +2729,8 @@ class EmulatorMfScHRefinement(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.expansion_refinement_type",
-                    "stored_value": "H_REFINEMENT",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "H_REFINEMENT",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -2903,8 +2903,8 @@ class EmulatorPceExpansionOrderCollocPointsConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.point_reuse",
-                    "stored_value": "all",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "all",
                     "ir_value_type": "String",
                 }
             ],
@@ -3031,8 +3031,8 @@ class EmulatorPceExpansionOrderCollocRatioConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.point_reuse",
-                    "stored_value": "all",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "all",
                     "ir_value_type": "String",
                 }
             ],
@@ -3180,8 +3180,8 @@ class EmulatorMlPceExpansionOrderSequenceCollocRatioConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.point_reuse",
-                    "stored_value": "all",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "all",
                     "ir_value_type": "String",
                 }
             ],
@@ -3329,8 +3329,8 @@ class EmulatorMfPceExpansionOrderSequenceCollocRatioConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.point_reuse",
-                    "stored_value": "all",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "all",
                     "ir_value_type": "String",
                 }
             ],
@@ -3381,8 +3381,8 @@ class BayesMfScPRefinement(DakotaBaseModel):
                 "materialization": [
                     {
                         "ir_key": "method.nond.expansion_refinement_type",
-                        "stored_value": "P_REFINEMENT",
                         "storage_type": "PRESENCE_ENUM",
+                        "stored_value": "P_REFINEMENT",
                         "enum_scope": "Pecos",
                         "ir_value_type": "short",
                     }
@@ -3402,8 +3402,8 @@ class BayesMfScHRefinement(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.expansion_refinement_type",
-                    "stored_value": "H_REFINEMENT",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "H_REFINEMENT",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -3461,8 +3461,8 @@ class BayesScPRefinement(DakotaBaseModel):
                 "materialization": [
                     {
                         "ir_key": "method.nond.expansion_refinement_type",
-                        "stored_value": "P_REFINEMENT",
                         "storage_type": "PRESENCE_ENUM",
+                        "stored_value": "P_REFINEMENT",
                         "enum_scope": "Pecos",
                         "ir_value_type": "short",
                     }
@@ -3482,8 +3482,8 @@ class BayesScHRefinement(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.expansion_refinement_type",
-                    "stored_value": "H_REFINEMENT",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "H_REFINEMENT",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -3593,8 +3593,8 @@ class EmulatorPceOrthogLeastInterpConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.point_reuse",
-                    "stored_value": "all",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "all",
                     "ir_value_type": "String",
                 }
             ],
@@ -3669,8 +3669,8 @@ class EmulatorMlPceOrthogLeastInterpConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.point_reuse",
-                    "stored_value": "all",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "all",
                     "ir_value_type": "String",
                 }
             ],
@@ -3935,8 +3935,8 @@ class BayesProposalCovMixin(DakotaBaseModel):
                 "materialization": [
                     {
                         "ir_key": "method.nond.proposal_covariance_type",
-                        "stored_value": "user",
                         "storage_type": "PRESENCE_LITERAL",
+                        "stored_value": "user",
                         "ir_value_type": "String",
                     }
                 ],
@@ -4016,8 +4016,8 @@ class EmulatorPceOrthogLeastInterp(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.regression_type",
-                    "stored_value": "ORTHOG_LEAST_INTERPOLATION",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "ORTHOG_LEAST_INTERPOLATION",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -4036,8 +4036,8 @@ class EmulatorMlPceOrthogLeastInterp(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.regression_type",
-                    "stored_value": "ORTHOG_LEAST_INTERPOLATION",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "ORTHOG_LEAST_INTERPOLATION",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -4056,8 +4056,8 @@ class EmulatorMfPceOrthogLeastInterp(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.regression_type",
-                    "stored_value": "ORTHOG_LEAST_INTERPOLATION",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "ORTHOG_LEAST_INTERPOLATION",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -4263,8 +4263,8 @@ class EmulatorSc(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.emulator",
-                    "stored_value": "SC_EMULATOR",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SC_EMULATOR",
                     "ir_value_type": "short",
                 }
             ]
@@ -4281,8 +4281,8 @@ class EmulatorMfSc(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.emulator",
-                    "stored_value": "MF_SC_EMULATOR",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "MF_SC_EMULATOR",
                     "ir_value_type": "short",
                 }
             ]
@@ -4299,8 +4299,8 @@ class BayesMfScMixin(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.emulator",
-                    "stored_value": "MF_SC_EMULATOR",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "MF_SC_EMULATOR",
                     "ir_value_type": "short",
                 }
             ]
@@ -4317,8 +4317,8 @@ class BayesScMixin(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.emulator",
-                    "stored_value": "SC_EMULATOR",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SC_EMULATOR",
                     "ir_value_type": "short",
                 }
             ]
@@ -4369,8 +4369,8 @@ class BayesEmulatorPceConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.expansion_refinement_type",
-                    "stored_value": "P_REFINEMENT",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "P_REFINEMENT",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -4516,8 +4516,8 @@ class BayesEmulatorMfPceConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.expansion_refinement_type",
-                    "stored_value": "P_REFINEMENT",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "P_REFINEMENT",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -4609,8 +4609,8 @@ class EmulatorPce(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.emulator",
-                    "stored_value": "PCE_EMULATOR",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "PCE_EMULATOR",
                     "ir_value_type": "short",
                 }
             ]
@@ -4627,8 +4627,8 @@ class EmulatorMlPce(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.emulator",
-                    "stored_value": "ML_PCE_EMULATOR",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "ML_PCE_EMULATOR",
                     "ir_value_type": "short",
                 }
             ]
@@ -4645,8 +4645,8 @@ class EmulatorMfPce(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.emulator",
-                    "stored_value": "MF_PCE_EMULATOR",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "MF_PCE_EMULATOR",
                     "ir_value_type": "short",
                 }
             ]

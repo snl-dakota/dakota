@@ -19,8 +19,8 @@ class SystemParametersFormatStandard(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "interface.application.parameters_file_format",
-                    "stored_value": "PARAMETERS_FILE_STANDARD",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "PARAMETERS_FILE_STANDARD",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -37,8 +37,8 @@ class SystemParametersFormatAprepro(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "interface.application.parameters_file_format",
-                    "stored_value": "PARAMETERS_FILE_APREPRO",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "PARAMETERS_FILE_APREPRO",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -55,8 +55,8 @@ class SystemParametersFormatJsonFormat(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "interface.application.parameters_file_format",
-                    "stored_value": "PARAMETERS_FILE_JSON",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "PARAMETERS_FILE_JSON",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -91,8 +91,8 @@ class SystemResultsFormatJsonFormat(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "interface.application.results_file_format",
-                    "stored_value": "RESULTS_FILE_JSON",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "RESULTS_FILE_JSON",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -194,8 +194,8 @@ class ForkParametersFormatStandard(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "interface.application.parameters_file_format",
-                    "stored_value": "PARAMETERS_FILE_STANDARD",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "PARAMETERS_FILE_STANDARD",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -212,8 +212,8 @@ class ForkParametersFormatAprepro(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "interface.application.parameters_file_format",
-                    "stored_value": "PARAMETERS_FILE_APREPRO",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "PARAMETERS_FILE_APREPRO",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -230,8 +230,8 @@ class ForkParametersFormatJsonFormat(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "interface.application.parameters_file_format",
-                    "stored_value": "PARAMETERS_FILE_JSON",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "PARAMETERS_FILE_JSON",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -266,8 +266,8 @@ class ForkResultsFormatJsonFormat(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "interface.application.results_file_format",
-                    "stored_value": "RESULTS_FILE_JSON",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "RESULTS_FILE_JSON",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -405,8 +405,8 @@ class Matlab(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "interface.type",
-                    "stored_value": "MATLAB_INTERFACE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "MATLAB_INTERFACE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -441,8 +441,8 @@ class Scilab(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "interface.type",
-                    "stored_value": "SCILAB_INTERFACE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SCILAB_INTERFACE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -459,8 +459,8 @@ class AnalysisDriversGrid(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "interface.type",
-                    "stored_value": "GRID_INTERFACE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "GRID_INTERFACE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -477,8 +477,8 @@ class Abort(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "interface.failure_capture.action",
-                    "stored_value": "abort",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "abort",
                     "ir_value_type": "String",
                 }
             ]
@@ -495,8 +495,8 @@ class Retry(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "interface.failure_capture.action",
-                    "stored_value": "retry",
                     "storage_type": "TYPE_DATA_COMBINED",
+                    "stored_value": "retry",
                     "secondary_ir_key": "interface.failure_capture.retry_limit",
                     "secondary_ir_value_type": "int",
                     "ir_value_type": "String",
@@ -515,8 +515,8 @@ class Recover(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "interface.failure_capture.action",
-                    "stored_value": "recover",
                     "storage_type": "TYPE_DATA_COMBINED",
+                    "stored_value": "recover",
                     "secondary_ir_key": "interface.failure_capture.recovery_fn_vals",
                     "secondary_ir_value_type": "RealVector",
                     "ir_value_type": "String",
@@ -535,8 +535,8 @@ class Continuation(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "interface.failure_capture.action",
-                    "stored_value": "continuation",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "continuation",
                     "ir_value_type": "String",
                 }
             ]
@@ -590,8 +590,8 @@ class LocalEvaluationSchedulingDynamic(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "interface.local_evaluation_scheduling",
-                    "stored_value": "DYNAMIC_SCHEDULING",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "DYNAMIC_SCHEDULING",
                     "ir_value_type": "short",
                 }
             ]
@@ -608,8 +608,8 @@ class LocalEvaluationSchedulingStatic(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "interface.local_evaluation_scheduling",
-                    "stored_value": "STATIC_SCHEDULING",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "STATIC_SCHEDULING",
                     "ir_value_type": "short",
                 }
             ]
@@ -626,8 +626,8 @@ class EvaluationSchedulingDedicated(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "interface.evaluation_scheduling",
-                    "stored_value": "DEDICATED_SCHEDULER_DYNAMIC",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "DEDICATED_SCHEDULER_DYNAMIC",
                     "ir_value_type": "short",
                 }
             ]
@@ -644,8 +644,8 @@ class PeerDynamic(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "interface.evaluation_scheduling",
-                    "stored_value": "PEER_DYNAMIC_SCHEDULING",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "PEER_DYNAMIC_SCHEDULING",
                     "ir_value_type": "short",
                 }
             ]
@@ -662,8 +662,8 @@ class PeerStatic(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "interface.evaluation_scheduling",
-                    "stored_value": "PEER_STATIC_SCHEDULING",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "PEER_STATIC_SCHEDULING",
                     "ir_value_type": "short",
                 }
             ]
@@ -680,8 +680,8 @@ class AnalysisSchedulingDedicated(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "interface.analysis_scheduling",
-                    "stored_value": "DEDICATED_SCHEDULER_DYNAMIC",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "DEDICATED_SCHEDULER_DYNAMIC",
                     "ir_value_type": "short",
                 }
             ]
@@ -698,8 +698,8 @@ class AnalysisSchedulingPeer(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "interface.analysis_scheduling",
-                    "stored_value": "PEER_SCHEDULING",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "PEER_SCHEDULING",
                     "ir_value_type": "short",
                 }
             ]
@@ -716,8 +716,8 @@ class SystemResultsFormatStandard(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "interface.application.results_file_format",
-                    "stored_value": "RESULTS_FILE_STANDARD",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "RESULTS_FILE_STANDARD",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -734,8 +734,8 @@ class ForkResultsFormatStandard(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "interface.application.results_file_format",
-                    "stored_value": "RESULTS_FILE_STANDARD",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "RESULTS_FILE_STANDARD",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -752,8 +752,8 @@ class Direct(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "interface.type",
-                    "stored_value": "TEST_INTERFACE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TEST_INTERFACE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -770,8 +770,8 @@ class Plugin(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "interface.type",
-                    "stored_value": "PLUGIN_INTERFACE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "PLUGIN_INTERFACE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -788,8 +788,8 @@ class Python(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "interface.type",
-                    "stored_value": "PYTHON_INTERFACE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "PYTHON_INTERFACE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -961,8 +961,8 @@ class SystemConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "interface.application.parameters_file_format",
-                    "stored_value": "PARAMETERS_FILE_STANDARD",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "PARAMETERS_FILE_STANDARD",
                     "ir_value_type": "unsigned short",
                 }
             ],
@@ -978,8 +978,8 @@ class SystemConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "interface.application.results_file_format",
-                    "stored_value": "RESULTS_FILE_STANDARD",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "RESULTS_FILE_STANDARD",
                     "ir_value_type": "unsigned short",
                 }
             ],
@@ -1096,8 +1096,8 @@ class ForkConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "interface.application.parameters_file_format",
-                    "stored_value": "PARAMETERS_FILE_STANDARD",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "PARAMETERS_FILE_STANDARD",
                     "ir_value_type": "unsigned short",
                 }
             ],
@@ -1113,8 +1113,8 @@ class ForkConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "interface.application.results_file_format",
-                    "stored_value": "RESULTS_FILE_STANDARD",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "RESULTS_FILE_STANDARD",
                     "ir_value_type": "unsigned short",
                 }
             ],
@@ -1213,8 +1213,8 @@ class System(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "interface.type",
-                    "stored_value": "SYSTEM_INTERFACE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SYSTEM_INTERFACE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1231,8 +1231,8 @@ class Fork(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "interface.type",
-                    "stored_value": "FORK_INTERFACE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "FORK_INTERFACE",
                     "ir_value_type": "unsigned short",
                 }
             ]

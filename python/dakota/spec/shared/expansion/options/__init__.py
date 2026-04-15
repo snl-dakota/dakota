@@ -43,8 +43,8 @@ class ExpansionOptionsSampleTypeLhs(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.sample_type",
-                    "stored_value": "SUBMETHOD_LHS",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBMETHOD_LHS",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -61,8 +61,8 @@ class ExpansionOptionsSampleTypeRandom(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.sample_type",
-                    "stored_value": "SUBMETHOD_RANDOM",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBMETHOD_RANDOM",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -79,8 +79,8 @@ class ExpansionOptionsRngMt19937(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.random_number_generator",
-                    "stored_value": "mt19937",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "mt19937",
                     "ir_value_type": "String",
                 }
             ]
@@ -97,8 +97,8 @@ class ExpansionOptionsRngRnum2(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.random_number_generator",
-                    "stored_value": "rnum2",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "rnum2",
                     "ir_value_type": "String",
                 }
             ]
@@ -115,8 +115,8 @@ class ExpansionOptionsProbabilityRefinementImportance(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.integration_refinement",
-                    "stored_value": "IS",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "IS",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -133,8 +133,8 @@ class ExpansionOptionsProbabilityRefinementAdaptImport(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.integration_refinement",
-                    "stored_value": "AIS",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "AIS",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -151,8 +151,8 @@ class ExpansionOptionsProbabilityRefinementMmAdaptImport(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.integration_refinement",
-                    "stored_value": "MMAIS",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "MMAIS",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -169,8 +169,8 @@ class ExpansionOptionsFinalMomentsNoneKeyword(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.final_moments",
-                    "stored_value": "NO_MOMENTS",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "NO_MOMENTS",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -188,8 +188,8 @@ class ExpansionOptionsFinalMomentsStandard(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.final_moments",
-                    "stored_value": "STANDARD_MOMENTS",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "STANDARD_MOMENTS",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -207,8 +207,8 @@ class ExpansionOptionsFinalMomentsCentral(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.final_moments",
-                    "stored_value": "CENTRAL_MOMENTS",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "CENTRAL_MOMENTS",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -226,8 +226,8 @@ class ExpansionOptionsResponseLevelsComputeProbabilities(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.response_level_target",
-                    "stored_value": "PROBABILITIES",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "PROBABILITIES",
                     "ir_value_type": "short",
                 }
             ]
@@ -244,8 +244,8 @@ class ExpansionOptionsResponseLevelsComputeReliabilities(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.response_level_target",
-                    "stored_value": "RELIABILITIES",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "RELIABILITIES",
                     "ir_value_type": "short",
                 }
             ]
@@ -262,8 +262,8 @@ class ExpansionOptionsResponseLevelsComputeGenReliabilities(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.response_level_target",
-                    "stored_value": "GEN_RELIABILITIES",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "GEN_RELIABILITIES",
                     "ir_value_type": "short",
                 }
             ]
@@ -280,8 +280,8 @@ class ExpansionOptionsResponseLevelsComputeSystemSeries(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.response_level_target_reduce",
-                    "stored_value": "SYSTEM_SERIES",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SYSTEM_SERIES",
                     "ir_value_type": "short",
                 }
             ]
@@ -298,8 +298,8 @@ class ExpansionOptionsResponseLevelsComputeSystemParallel(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.response_level_target_reduce",
-                    "stored_value": "SYSTEM_PARALLEL",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SYSTEM_PARALLEL",
                     "ir_value_type": "short",
                 }
             ]
@@ -379,8 +379,8 @@ class ExpansionOptionsDistributionCumulative(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.distribution",
-                    "stored_value": "CUMULATIVE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "CUMULATIVE",
                     "ir_value_type": "short",
                 }
             ]
@@ -397,8 +397,8 @@ class ExpansionOptionsDistributionComplementary(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.distribution",
-                    "stored_value": "COMPLEMENTARY",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "COMPLEMENTARY",
                     "ir_value_type": "short",
                 }
             ]
@@ -448,8 +448,8 @@ class ImportApproxPointsFileCustomAnnotatedConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.import_approx_format",
-                    "stored_value": "TABULAR_HEADER",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_HEADER",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -462,8 +462,8 @@ class ImportApproxPointsFileCustomAnnotatedConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.import_approx_format",
-                    "stored_value": "TABULAR_EVAL_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_EVAL_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -476,8 +476,8 @@ class ImportApproxPointsFileCustomAnnotatedConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.import_approx_format",
-                    "stored_value": "TABULAR_IFACE_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_IFACE_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -494,8 +494,8 @@ class ImportApproxPointsFileAnnotated(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.import_approx_format",
-                    "stored_value": "TABULAR_ANNOTATED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_ANNOTATED",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -512,8 +512,8 @@ class ImportApproxPointsFileFreeform(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.import_approx_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -531,8 +531,8 @@ class ExpansionOptionsExportApproxPointsFileCustomAnnotatedConfig(DakotaBaseMode
             "materialization": [
                 {
                     "ir_key": "method.export_approx_format",
-                    "stored_value": "TABULAR_HEADER",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_HEADER",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -545,8 +545,8 @@ class ExpansionOptionsExportApproxPointsFileCustomAnnotatedConfig(DakotaBaseMode
             "materialization": [
                 {
                     "ir_key": "method.export_approx_format",
-                    "stored_value": "TABULAR_EVAL_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_EVAL_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -559,8 +559,8 @@ class ExpansionOptionsExportApproxPointsFileCustomAnnotatedConfig(DakotaBaseMode
             "materialization": [
                 {
                     "ir_key": "method.export_approx_format",
-                    "stored_value": "TABULAR_IFACE_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_IFACE_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -577,8 +577,8 @@ class ExpansionOptionsExportApproxPointsFileAnnotated(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.export_approx_format",
-                    "stored_value": "TABULAR_ANNOTATED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_ANNOTATED",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -595,8 +595,8 @@ class ExpansionOptionsExportApproxPointsFileFreeform(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.export_approx_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -613,8 +613,8 @@ class ExpansionOptionsDiagCov(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.covariance_control",
-                    "stored_value": "DIAGONAL_COVARIANCE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "DIAGONAL_COVARIANCE",
                     "ir_value_type": "short",
                 }
             ]
@@ -631,8 +631,8 @@ class ExpansionOptionsFullCov(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.covariance_control",
-                    "stored_value": "FULL_COVARIANCE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "FULL_COVARIANCE",
                     "ir_value_type": "short",
                 }
             ]
@@ -649,8 +649,8 @@ class ExpansionQuadratureOrderNested(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.nesting_override",
-                    "stored_value": "NESTED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "NESTED",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -668,8 +668,8 @@ class ExpansionQuadratureOrderNonNested(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.nesting_override",
-                    "stored_value": "NON_NESTED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "NON_NESTED",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -687,8 +687,8 @@ class ExpansionQuadratureSequenceOrderSequenceNested(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.nesting_override",
-                    "stored_value": "NESTED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "NESTED",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -706,8 +706,8 @@ class ExpansionQuadratureSequenceOrderSequenceNonNested(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.nesting_override",
-                    "stored_value": "NON_NESTED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "NON_NESTED",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -725,8 +725,8 @@ class ExpansionRuleGrowthRestricted(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.growth_override",
-                    "stored_value": "RESTRICTED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "RESTRICTED",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -744,8 +744,8 @@ class ExpansionRuleGrowthUnrestricted(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.growth_override",
-                    "stored_value": "UNRESTRICTED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "UNRESTRICTED",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -763,8 +763,8 @@ class ExpansionRuleNestingNested(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.nesting_override",
-                    "stored_value": "NESTED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "NESTED",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -782,8 +782,8 @@ class ExpansionRuleNestingNonNested(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.nesting_override",
-                    "stored_value": "NON_NESTED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "NON_NESTED",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -884,8 +884,8 @@ class ImportApproxPointsFileCustomAnnotated(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.import_approx_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ],
@@ -904,8 +904,8 @@ class ExpansionOptionsExportApproxPointsFileCustomAnnotated(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.export_approx_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ],

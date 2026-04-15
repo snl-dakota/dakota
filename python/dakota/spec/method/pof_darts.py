@@ -24,8 +24,8 @@ class PofDartsLipschitzLocalEst(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.lipschitz",
-                    "stored_value": "local",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "local",
                     "ir_value_type": "String",
                 }
             ]
@@ -42,8 +42,8 @@ class PofDartsLipschitzGlobalEst(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.lipschitz",
-                    "stored_value": "global",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "global",
                     "ir_value_type": "String",
                 }
             ]
@@ -117,8 +117,8 @@ class PofDartsSelection(MethodSelection):
             "materialization": [
                 {
                     "ir_key": "method.algorithm",
-                    "stored_value": "POF_DARTS",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "POF_DARTS",
                     "ir_value_type": "unsigned short",
                 }
             ],

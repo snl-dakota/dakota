@@ -51,8 +51,8 @@ class MultifidelityFtSelection(MethodSelection):
             "materialization": [
                 {
                     "ir_key": "method.algorithm",
-                    "stored_value": "MULTIFIDELITY_FUNCTION_TRAIN",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "MULTIFIDELITY_FUNCTION_TRAIN",
                     "ir_value_type": "unsigned short",
                 }
             ]

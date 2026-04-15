@@ -50,8 +50,8 @@ class QuesoDram(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.mcmc_type",
-                    "stored_value": "dram",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "dram",
                     "ir_value_type": "String",
                 }
             ]
@@ -68,8 +68,8 @@ class QuesoDelayedRejection(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.mcmc_type",
-                    "stored_value": "delayed_rejection",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "delayed_rejection",
                     "ir_value_type": "String",
                 }
             ]
@@ -86,8 +86,8 @@ class QuesoAdaptiveMetropolis(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.mcmc_type",
-                    "stored_value": "adaptive_metropolis",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "adaptive_metropolis",
                     "ir_value_type": "String",
                 }
             ]
@@ -104,8 +104,8 @@ class QuesoMetropolisHastings(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.mcmc_type",
-                    "stored_value": "metropolis_hastings",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "metropolis_hastings",
                     "ir_value_type": "String",
                 }
             ]
@@ -122,8 +122,8 @@ class Multilevel(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.mcmc_type",
-                    "stored_value": "multilevel",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "multilevel",
                     "ir_value_type": "String",
                 }
             ]
@@ -140,8 +140,8 @@ class QuesoPreSolveSqp(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.opt_subproblem_solver",
-                    "stored_value": "SUBMETHOD_NPSOL",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBMETHOD_NPSOL",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -158,8 +158,8 @@ class QuesoPreSolveNip(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.opt_subproblem_solver",
-                    "stored_value": "SUBMETHOD_OPTPP",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBMETHOD_OPTPP",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -176,8 +176,8 @@ class QuesoPreSolveNone(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.opt_subproblem_solver",
-                    "stored_value": "SUBMETHOD_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBMETHOD_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -228,8 +228,8 @@ class GpmsaDram(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.mcmc_type",
-                    "stored_value": "dram",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "dram",
                     "ir_value_type": "String",
                 }
             ]
@@ -246,8 +246,8 @@ class GpmsaDelayedRejection(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.mcmc_type",
-                    "stored_value": "delayed_rejection",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "delayed_rejection",
                     "ir_value_type": "String",
                 }
             ]
@@ -264,8 +264,8 @@ class GpmsaAdaptiveMetropolis(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.mcmc_type",
-                    "stored_value": "adaptive_metropolis",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "adaptive_metropolis",
                     "ir_value_type": "String",
                 }
             ]
@@ -282,8 +282,8 @@ class GpmsaMetropolisHastings(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.mcmc_type",
-                    "stored_value": "metropolis_hastings",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "metropolis_hastings",
                     "ir_value_type": "String",
                 }
             ]
@@ -300,8 +300,8 @@ class CovDiag(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.data_dist_cov_type",
-                    "stored_value": "diagonal",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "diagonal",
                     "ir_value_type": "String",
                 }
             ]
@@ -318,8 +318,8 @@ class CovMatrix(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.data_dist_cov_type",
-                    "stored_value": "matrix",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "matrix",
                     "ir_value_type": "String",
                 }
             ]
@@ -843,8 +843,8 @@ class MuqMetropolisHastings(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.mcmc_type",
-                    "stored_value": "metropolis_hastings",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "metropolis_hastings",
                     "ir_value_type": "String",
                 }
             ]
@@ -861,8 +861,8 @@ class MuqPreSolveSqp(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.opt_subproblem_solver",
-                    "stored_value": "SUBMETHOD_NPSOL",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBMETHOD_NPSOL",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -879,8 +879,8 @@ class MuqPreSolveNip(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.opt_subproblem_solver",
-                    "stored_value": "SUBMETHOD_OPTPP",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBMETHOD_OPTPP",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -897,8 +897,8 @@ class MuqPreSolveNone(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.opt_subproblem_solver",
-                    "stored_value": "SUBMETHOD_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBMETHOD_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -916,8 +916,8 @@ class ImportCandidatePointsFileCustomAnnotatedConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.import_candidate_format",
-                    "stored_value": "TABULAR_HEADER",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_HEADER",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -930,8 +930,8 @@ class ImportCandidatePointsFileCustomAnnotatedConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.import_candidate_format",
-                    "stored_value": "TABULAR_EVAL_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_EVAL_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -944,8 +944,8 @@ class ImportCandidatePointsFileCustomAnnotatedConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.import_candidate_format",
-                    "stored_value": "TABULAR_IFACE_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_IFACE_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -962,8 +962,8 @@ class ImportCandidatePointsFileAnnotated(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.import_candidate_format",
-                    "stored_value": "TABULAR_ANNOTATED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_ANNOTATED",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -980,8 +980,8 @@ class ImportCandidatePointsFileFreeform(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.import_candidate_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -998,8 +998,8 @@ class One(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.calibrate_error_mode",
-                    "stored_value": "CALIBRATE_ONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "CALIBRATE_ONE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1016,8 +1016,8 @@ class PerExperiment(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.calibrate_error_mode",
-                    "stored_value": "CALIBRATE_PER_EXPER",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "CALIBRATE_PER_EXPER",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1034,8 +1034,8 @@ class PerResponse(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.calibrate_error_mode",
-                    "stored_value": "CALIBRATE_PER_RESP",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "CALIBRATE_PER_RESP",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1052,8 +1052,8 @@ class Both(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.calibrate_error_mode",
-                    "stored_value": "CALIBRATE_BOTH",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "CALIBRATE_BOTH",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1218,8 +1218,8 @@ class ImportPredictionConfigsCustomAnnotatedConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.import_prediction_configs_format",
-                    "stored_value": "TABULAR_HEADER",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_HEADER",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1232,8 +1232,8 @@ class ImportPredictionConfigsCustomAnnotatedConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.import_prediction_configs_format",
-                    "stored_value": "TABULAR_EVAL_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_EVAL_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1246,8 +1246,8 @@ class ImportPredictionConfigsCustomAnnotatedConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.import_prediction_configs_format",
-                    "stored_value": "TABULAR_IFACE_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_IFACE_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1264,8 +1264,8 @@ class ImportPredictionConfigsAnnotated(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.import_prediction_configs_format",
-                    "stored_value": "TABULAR_ANNOTATED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_ANNOTATED",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1282,8 +1282,8 @@ class ImportPredictionConfigsFreeform(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.import_prediction_configs_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1301,8 +1301,8 @@ class ExportDiscrepancyFileCustomAnnotatedConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.export_discrep_format",
-                    "stored_value": "TABULAR_HEADER",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_HEADER",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1315,8 +1315,8 @@ class ExportDiscrepancyFileCustomAnnotatedConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.export_discrep_format",
-                    "stored_value": "TABULAR_EVAL_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_EVAL_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1329,8 +1329,8 @@ class ExportDiscrepancyFileCustomAnnotatedConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.export_discrep_format",
-                    "stored_value": "TABULAR_IFACE_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_IFACE_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1347,8 +1347,8 @@ class ExportDiscrepancyFileAnnotated(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.export_discrep_format",
-                    "stored_value": "TABULAR_ANNOTATED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_ANNOTATED",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1365,8 +1365,8 @@ class ExportDiscrepancyFileFreeform(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.export_discrep_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1384,8 +1384,8 @@ class ExportCorrectedModelFileCustomAnnotatedConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.export_corrected_model_format",
-                    "stored_value": "TABULAR_HEADER",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_HEADER",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1398,8 +1398,8 @@ class ExportCorrectedModelFileCustomAnnotatedConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.export_corrected_model_format",
-                    "stored_value": "TABULAR_EVAL_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_EVAL_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1412,8 +1412,8 @@ class ExportCorrectedModelFileCustomAnnotatedConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.export_corrected_model_format",
-                    "stored_value": "TABULAR_IFACE_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_IFACE_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1430,8 +1430,8 @@ class ExportCorrectedModelFileAnnotated(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.export_corrected_model_format",
-                    "stored_value": "TABULAR_ANNOTATED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_ANNOTATED",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1448,8 +1448,8 @@ class ExportCorrectedModelFileFreeform(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.export_corrected_model_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1467,8 +1467,8 @@ class ExportCorrectedVarianceFileCustomAnnotatedConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.export_corrected_variance_format",
-                    "stored_value": "TABULAR_HEADER",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_HEADER",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1481,8 +1481,8 @@ class ExportCorrectedVarianceFileCustomAnnotatedConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.export_corrected_variance_format",
-                    "stored_value": "TABULAR_EVAL_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_EVAL_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1495,8 +1495,8 @@ class ExportCorrectedVarianceFileCustomAnnotatedConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.export_corrected_variance_format",
-                    "stored_value": "TABULAR_IFACE_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_IFACE_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1513,8 +1513,8 @@ class ExportCorrectedVarianceFileAnnotated(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.export_corrected_variance_format",
-                    "stored_value": "TABULAR_ANNOTATED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_ANNOTATED",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1531,8 +1531,8 @@ class ExportCorrectedVarianceFileFreeform(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.export_corrected_variance_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -1873,8 +1873,8 @@ class MuqAdaptiveMetropolis(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.mcmc_type",
-                    "stored_value": "adaptive_metropolis",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "adaptive_metropolis",
                     "ir_value_type": "String",
                 }
             ],
@@ -1893,8 +1893,8 @@ class MuqDelayedRejection(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.mcmc_type",
-                    "stored_value": "delayed_rejection",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "delayed_rejection",
                     "ir_value_type": "String",
                 }
             ],
@@ -1913,8 +1913,8 @@ class Dili(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.mcmc_type",
-                    "stored_value": "dili",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "dili",
                     "ir_value_type": "String",
                 }
             ],
@@ -1933,8 +1933,8 @@ class MuqDram(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.mcmc_type",
-                    "stored_value": "dram",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "dram",
                     "ir_value_type": "String",
                 }
             ],
@@ -1953,8 +1953,8 @@ class MultilevelMcmc(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.mcmc_type",
-                    "stored_value": "multilevel_mcmc",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "multilevel_mcmc",
                     "ir_value_type": "String",
                 }
             ],
@@ -1973,8 +1973,8 @@ class Mala(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.mcmc_type",
-                    "stored_value": "mala",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "mala",
                     "ir_value_type": "String",
                 }
             ],
@@ -1993,8 +1993,8 @@ class ImportCandidatePointsFileCustomAnnotated(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.import_candidate_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ],
@@ -2071,8 +2071,8 @@ class DiscrepancyTypeGP(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.discrepancy_type",
-                    "stored_value": "global_kriging",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "global_kriging",
                     "ir_value_type": "String",
                 }
             ],
@@ -2091,8 +2091,8 @@ class DiscrepancyTypePolynomial(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.discrepancy_type",
-                    "stored_value": "global_polynomial",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "global_polynomial",
                     "ir_value_type": "String",
                 }
             ],
@@ -2111,8 +2111,8 @@ class ImportPredictionConfigsCustomAnnotated(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.import_prediction_configs_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ],
@@ -2131,8 +2131,8 @@ class ExportDiscrepancyFileCustomAnnotated(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.export_discrep_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ],
@@ -2151,8 +2151,8 @@ class ExportCorrectedModelFileCustomAnnotated(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.export_corrected_model_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ],
@@ -2171,8 +2171,8 @@ class ExportCorrectedVarianceFileCustomAnnotated(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.export_corrected_variance_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ],
@@ -2189,8 +2189,8 @@ class Queso(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.sub_method",
-                    "stored_value": "SUBMETHOD_QUESO",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBMETHOD_QUESO",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -2207,8 +2207,8 @@ class Gpmsa(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.sub_method",
-                    "stored_value": "SUBMETHOD_GPMSA",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBMETHOD_GPMSA",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -2247,8 +2247,8 @@ class Dream(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.sub_method",
-                    "stored_value": "SUBMETHOD_DREAM",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBMETHOD_DREAM",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -2466,8 +2466,8 @@ class Muq(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.sub_method",
-                    "stored_value": "SUBMETHOD_MUQ",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBMETHOD_MUQ",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -2705,8 +2705,8 @@ class Wasabi(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.sub_method",
-                    "stored_value": "SUBMETHOD_WASABI",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBMETHOD_WASABI",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -2825,8 +2825,8 @@ class BayesCalibrationSelection(MethodSelection):
             "materialization": [
                 {
                     "ir_key": "method.algorithm",
-                    "stored_value": "BAYES_CALIBRATION",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "BAYES_CALIBRATION",
                     "ir_value_type": "unsigned short",
                 }
             ],

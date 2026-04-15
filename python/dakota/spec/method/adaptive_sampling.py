@@ -27,8 +27,8 @@ class PredictedVariance(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.fitness_metric",
-                    "stored_value": "predicted_variance",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "predicted_variance",
                     "ir_value_type": "String",
                 }
             ]
@@ -45,8 +45,8 @@ class FitnessMetricDistance(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.fitness_metric",
-                    "stored_value": "distance",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "distance",
                     "ir_value_type": "String",
                 }
             ]
@@ -63,8 +63,8 @@ class Gradient(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.fitness_metric",
-                    "stored_value": "gradient",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "gradient",
                     "ir_value_type": "String",
                 }
             ]
@@ -81,8 +81,8 @@ class Naive(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.batch_selection",
-                    "stored_value": "naive",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "naive",
                     "ir_value_type": "String",
                 }
             ]
@@ -99,8 +99,8 @@ class DistancePenalty(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.batch_selection",
-                    "stored_value": "distance",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "distance",
                     "ir_value_type": "String",
                 }
             ]
@@ -117,8 +117,8 @@ class Topology(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.batch_selection",
-                    "stored_value": "topology",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "topology",
                     "ir_value_type": "String",
                 }
             ]
@@ -135,8 +135,8 @@ class ConstantLiar(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.batch_selection",
-                    "stored_value": "cl",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "cl",
                     "ir_value_type": "String",
                 }
             ]
@@ -270,8 +270,8 @@ class AdaptiveSamplingSelection(MethodSelection):
             "materialization": [
                 {
                     "ir_key": "method.algorithm",
-                    "stored_value": "ADAPTIVE_SAMPLING",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "ADAPTIVE_SAMPLING",
                     "ir_value_type": "unsigned short",
                 }
             ],

@@ -26,8 +26,8 @@ class DotSqpSelection(MethodSelection):
             "materialization": [
                 {
                     "ir_key": "method.algorithm",
-                    "stored_value": "DOT_SQP",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "DOT_SQP",
                     "ir_value_type": "unsigned short",
                 }
             ]

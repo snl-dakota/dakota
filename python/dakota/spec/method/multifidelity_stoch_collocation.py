@@ -32,8 +32,8 @@ class MultifidelityStochCollocQuadratureOrderSequenceNested(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.nesting_override",
-                    "stored_value": "NESTED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "NESTED",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -51,8 +51,8 @@ class MultifidelityStochCollocQuadratureOrderSequenceNonNested(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.nesting_override",
-                    "stored_value": "NON_NESTED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "NON_NESTED",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -70,8 +70,8 @@ class MultifidelityStochCollocSGLevelSequenceNodal(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.expansion_basis_type",
-                    "stored_value": "NODAL_INTERPOLANT",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "NODAL_INTERPOLANT",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -89,8 +89,8 @@ class MultifidelityStochCollocSGLevelSequenceHierarchical(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.expansion_basis_type",
-                    "stored_value": "HIERARCHICAL_INTERPOLANT",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "HIERARCHICAL_INTERPOLANT",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -108,8 +108,8 @@ class MultifidelityStochCollocSGLevelSequenceRestricted(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.growth_override",
-                    "stored_value": "RESTRICTED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "RESTRICTED",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -127,8 +127,8 @@ class MultifidelityStochCollocSGLevelSequenceUnrestricted(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.growth_override",
-                    "stored_value": "UNRESTRICTED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "UNRESTRICTED",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -146,8 +146,8 @@ class MultifidelityStochCollocSGLevelSequenceNested(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.nesting_override",
-                    "stored_value": "NESTED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "NESTED",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -165,8 +165,8 @@ class MultifidelityStochCollocSGLevelSequenceNonNested(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.nesting_override",
-                    "stored_value": "NON_NESTED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "NON_NESTED",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -341,8 +341,8 @@ class MultifidelityStochCollocSelection(MethodSelection):
             "materialization": [
                 {
                     "ir_key": "method.algorithm",
-                    "stored_value": "MULTIFIDELITY_STOCH_COLLOCATION",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "MULTIFIDELITY_STOCH_COLLOCATION",
                     "ir_value_type": "unsigned short",
                 }
             ]

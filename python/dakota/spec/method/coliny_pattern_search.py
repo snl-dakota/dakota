@@ -24,8 +24,8 @@ class Coordinate(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.coliny.pattern_basis",
-                    "stored_value": "coordinate",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "coordinate",
                     "ir_value_type": "String",
                 }
             ]
@@ -42,8 +42,8 @@ class Simplex(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.coliny.pattern_basis",
-                    "stored_value": "simplex",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "simplex",
                     "ir_value_type": "String",
                 }
             ]
@@ -60,8 +60,8 @@ class MultiStep(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.coliny.exploratory_moves",
-                    "stored_value": "multi_step",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "multi_step",
                     "ir_value_type": "String",
                 }
             ]
@@ -78,8 +78,8 @@ class AdaptivePattern(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.coliny.exploratory_moves",
-                    "stored_value": "adaptive",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "adaptive",
                     "ir_value_type": "String",
                 }
             ]
@@ -96,8 +96,8 @@ class BasicPattern(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.coliny.exploratory_moves",
-                    "stored_value": "simple",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "simple",
                     "ir_value_type": "String",
                 }
             ]
@@ -250,8 +250,8 @@ class ColinyPatternSearchSelection(MethodSelection):
             "materialization": [
                 {
                     "ir_key": "method.algorithm",
-                    "stored_value": "COLINY_PATTERN_SEARCH",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "COLINY_PATTERN_SEARCH",
                     "ir_value_type": "unsigned short",
                 }
             ]

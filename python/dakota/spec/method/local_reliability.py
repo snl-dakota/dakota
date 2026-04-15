@@ -27,8 +27,8 @@ class XTaylorMean(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.sub_method",
-                    "stored_value": "SUBMETHOD_AMV_X",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBMETHOD_AMV_X",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -45,8 +45,8 @@ class UTaylorMean(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.sub_method",
-                    "stored_value": "SUBMETHOD_AMV_U",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBMETHOD_AMV_U",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -63,8 +63,8 @@ class XTaylorMpp(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.sub_method",
-                    "stored_value": "SUBMETHOD_AMV_PLUS_X",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBMETHOD_AMV_PLUS_X",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -81,8 +81,8 @@ class UTaylorMpp(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.sub_method",
-                    "stored_value": "SUBMETHOD_AMV_PLUS_U",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBMETHOD_AMV_PLUS_U",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -99,8 +99,8 @@ class XTwoPoint(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.sub_method",
-                    "stored_value": "SUBMETHOD_TANA_X",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBMETHOD_TANA_X",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -117,8 +117,8 @@ class UTwoPoint(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.sub_method",
-                    "stored_value": "SUBMETHOD_TANA_U",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBMETHOD_TANA_U",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -135,8 +135,8 @@ class XMultiPoint(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.sub_method",
-                    "stored_value": "SUBMETHOD_QMEA_X",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBMETHOD_QMEA_X",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -153,8 +153,8 @@ class UMultiPoint(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.sub_method",
-                    "stored_value": "SUBMETHOD_QMEA_U",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBMETHOD_QMEA_U",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -171,8 +171,8 @@ class NoApprox(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.sub_method",
-                    "stored_value": "SUBMETHOD_NO_APPROX",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBMETHOD_NO_APPROX",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -189,8 +189,8 @@ class IntegrationFirstOrder(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.reliability_integration",
-                    "stored_value": "first_order",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "first_order",
                     "ir_value_type": "String",
                 }
             ]
@@ -207,8 +207,8 @@ class IntegrationSecondOrder(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.reliability_integration",
-                    "stored_value": "second_order",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "second_order",
                     "ir_value_type": "String",
                 }
             ]
@@ -225,8 +225,8 @@ class IntegrationProbabilityRefinementImportance(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.integration_refinement",
-                    "stored_value": "IS",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "IS",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -243,8 +243,8 @@ class IntegrationProbabilityRefinementAdaptImport(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.integration_refinement",
-                    "stored_value": "AIS",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "AIS",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -261,8 +261,8 @@ class IntegrationProbabilityRefinementMmAdaptImport(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.integration_refinement",
-                    "stored_value": "MMAIS",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "MMAIS",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -368,8 +368,8 @@ class LocalReliabilitySelection(MethodSelection):
             "materialization": [
                 {
                     "ir_key": "method.algorithm",
-                    "stored_value": "LOCAL_RELIABILITY",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "LOCAL_RELIABILITY",
                     "ir_value_type": "unsigned short",
                 }
             ],

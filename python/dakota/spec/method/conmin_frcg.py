@@ -24,8 +24,8 @@ class ConminFrcgSelection(MethodSelection):
             "materialization": [
                 {
                     "ir_key": "method.algorithm",
-                    "stored_value": "CONMIN_FRCG",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "CONMIN_FRCG",
                     "ir_value_type": "unsigned short",
                 }
             ]

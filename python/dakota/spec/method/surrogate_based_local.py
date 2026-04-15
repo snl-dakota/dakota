@@ -61,8 +61,8 @@ class OriginalPrimary(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.sbl.subproblem_objective",
-                    "stored_value": "ORIGINAL_PRIMARY",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "ORIGINAL_PRIMARY",
                     "ir_value_type": "short",
                 }
             ]
@@ -79,8 +79,8 @@ class SingleObjective(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.sbl.subproblem_objective",
-                    "stored_value": "SINGLE_OBJECTIVE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SINGLE_OBJECTIVE",
                     "ir_value_type": "short",
                 }
             ]
@@ -97,8 +97,8 @@ class AugmentedLagrangianObjective(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.sbl.subproblem_objective",
-                    "stored_value": "AUGMENTED_LAGRANGIAN_OBJECTIVE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "AUGMENTED_LAGRANGIAN_OBJECTIVE",
                     "ir_value_type": "short",
                 }
             ]
@@ -115,8 +115,8 @@ class LagrangianObjective(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.sbl.subproblem_objective",
-                    "stored_value": "LAGRANGIAN_OBJECTIVE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "LAGRANGIAN_OBJECTIVE",
                     "ir_value_type": "short",
                 }
             ]
@@ -133,8 +133,8 @@ class OriginalConstraints(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.sbl.subproblem_constraints",
-                    "stored_value": "ORIGINAL_CONSTRAINTS",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "ORIGINAL_CONSTRAINTS",
                     "ir_value_type": "short",
                 }
             ]
@@ -151,8 +151,8 @@ class LinearizedConstraints(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.sbl.subproblem_constraints",
-                    "stored_value": "LINEARIZED_CONSTRAINTS",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "LINEARIZED_CONSTRAINTS",
                     "ir_value_type": "short",
                 }
             ]
@@ -169,8 +169,8 @@ class NoConstraints(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.sbl.subproblem_constraints",
-                    "stored_value": "NO_CONSTRAINTS",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "NO_CONSTRAINTS",
                     "ir_value_type": "short",
                 }
             ]
@@ -187,8 +187,8 @@ class PenaltyMerit(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.sbl.merit_function",
-                    "stored_value": "PENALTY_MERIT",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "PENALTY_MERIT",
                     "ir_value_type": "short",
                 }
             ]
@@ -205,8 +205,8 @@ class AdaptivePenaltyMerit(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.sbl.merit_function",
-                    "stored_value": "ADAPTIVE_PENALTY_MERIT",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "ADAPTIVE_PENALTY_MERIT",
                     "ir_value_type": "short",
                 }
             ]
@@ -223,8 +223,8 @@ class LagrangianMerit(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.sbl.merit_function",
-                    "stored_value": "LAGRANGIAN_MERIT",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "LAGRANGIAN_MERIT",
                     "ir_value_type": "short",
                 }
             ]
@@ -241,8 +241,8 @@ class AugmentedLagrangianMerit(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.sbl.merit_function",
-                    "stored_value": "AUGMENTED_LAGRANGIAN_MERIT",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "AUGMENTED_LAGRANGIAN_MERIT",
                     "ir_value_type": "short",
                 }
             ]
@@ -259,8 +259,8 @@ class TrRatio(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.sbl.acceptance_logic",
-                    "stored_value": "TR_RATIO",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TR_RATIO",
                     "ir_value_type": "short",
                 }
             ]
@@ -277,8 +277,8 @@ class Filter(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.sbl.acceptance_logic",
-                    "stored_value": "FILTER",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "FILTER",
                     "ir_value_type": "short",
                 }
             ]
@@ -295,8 +295,8 @@ class ConstraintRelax(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.sbl.constraint_relax",
-                    "stored_value": "HOMOTOPY",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "HOMOTOPY",
                     "ir_value_type": "short",
                 }
             ]
@@ -407,8 +407,8 @@ class SurrogateBasedLocalSelection(MethodSelection):
             "materialization": [
                 {
                     "ir_key": "method.algorithm",
-                    "stored_value": "SURROGATE_BASED_LOCAL",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SURROGATE_BASED_LOCAL",
                     "ir_value_type": "unsigned short",
                 }
             ]

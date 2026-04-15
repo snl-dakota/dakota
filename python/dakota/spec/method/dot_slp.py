@@ -26,8 +26,8 @@ class DotSlpSelection(MethodSelection):
             "materialization": [
                 {
                     "ir_key": "method.algorithm",
-                    "stored_value": "DOT_SLP",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "DOT_SLP",
                     "ir_value_type": "unsigned short",
                 }
             ]

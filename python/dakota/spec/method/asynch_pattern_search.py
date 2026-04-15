@@ -27,8 +27,8 @@ class MeritMax(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.asynch_pattern_search.merit_function",
-                    "stored_value": "merit_max",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "merit_max",
                     "ir_value_type": "String",
                 }
             ]
@@ -45,8 +45,8 @@ class MeritMaxSmooth(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.asynch_pattern_search.merit_function",
-                    "stored_value": "merit_max_smooth",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "merit_max_smooth",
                     "ir_value_type": "String",
                 }
             ]
@@ -63,8 +63,8 @@ class Merit1(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.asynch_pattern_search.merit_function",
-                    "stored_value": "merit1",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "merit1",
                     "ir_value_type": "String",
                 }
             ]
@@ -81,8 +81,8 @@ class Merit1Smooth(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.asynch_pattern_search.merit_function",
-                    "stored_value": "merit1_smooth",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "merit1_smooth",
                     "ir_value_type": "String",
                 }
             ]
@@ -99,8 +99,8 @@ class Merit2(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.asynch_pattern_search.merit_function",
-                    "stored_value": "merit2",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "merit2",
                     "ir_value_type": "String",
                 }
             ]
@@ -117,8 +117,8 @@ class Merit2Smooth(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.asynch_pattern_search.merit_function",
-                    "stored_value": "merit2_smooth",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "merit2_smooth",
                     "ir_value_type": "String",
                 }
             ]
@@ -135,8 +135,8 @@ class Merit2Squared(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.asynch_pattern_search.merit_function",
-                    "stored_value": "merit2_squared",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "merit2_squared",
                     "ir_value_type": "String",
                 }
             ]
@@ -262,8 +262,8 @@ class AsynchPatternSearchSelection(MethodSelection):
             "materialization": [
                 {
                     "ir_key": "method.algorithm",
-                    "stored_value": "ASYNCH_PATTERN_SEARCH",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "ASYNCH_PATTERN_SEARCH",
                     "ir_value_type": "unsigned short",
                 }
             ],

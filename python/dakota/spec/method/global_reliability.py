@@ -30,8 +30,8 @@ class XGP(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.sub_method",
-                    "stored_value": "SUBMETHOD_EGRA_X",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBMETHOD_EGRA_X",
                     "ir_value_type": "unsigned short",
                 }
             ],
@@ -49,8 +49,8 @@ class UGP(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.sub_method",
-                    "stored_value": "SUBMETHOD_EGRA_U",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBMETHOD_EGRA_U",
                     "ir_value_type": "unsigned short",
                 }
             ],
@@ -67,8 +67,8 @@ class GlobalReliabilitySurfpack(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.emulator",
-                    "stored_value": "KRIGING_EMULATOR",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "KRIGING_EMULATOR",
                     "ir_value_type": "short",
                 }
             ]
@@ -85,8 +85,8 @@ class GlobalReliabilityDakota(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.emulator",
-                    "stored_value": "GP_EMULATOR",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "GP_EMULATOR",
                     "ir_value_type": "short",
                 }
             ]
@@ -138,8 +138,8 @@ class GlobalReliabilityExperimental(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.emulator",
-                    "stored_value": "EXPGP_EMULATOR",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "EXPGP_EMULATOR",
                     "ir_value_type": "short",
                 }
             ]
@@ -231,8 +231,8 @@ class GlobalReliabilitySelection(MethodSelection):
             "materialization": [
                 {
                     "ir_key": "method.algorithm",
-                    "stored_value": "GLOBAL_RELIABILITY",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "GLOBAL_RELIABILITY",
                     "ir_value_type": "unsigned short",
                 }
             ],

@@ -78,8 +78,8 @@ class DemoTplSelection(MethodSelection):
             "materialization": [
                 {
                     "ir_key": "method.algorithm",
-                    "stored_value": "DEMO_TPL",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "DEMO_TPL",
                     "ir_value_type": "unsigned short",
                 }
             ]

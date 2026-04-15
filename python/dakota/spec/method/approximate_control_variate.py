@@ -36,8 +36,8 @@ class AcvIndependentSampling(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.sub_method",
-                    "stored_value": "SUBMETHOD_ACV_IS",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBMETHOD_ACV_IS",
                     "ir_value_type": "unsigned short",
                 }
             ],
@@ -55,8 +55,8 @@ class AcvMultifidelity(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.sub_method",
-                    "stored_value": "SUBMETHOD_ACV_MF",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBMETHOD_ACV_MF",
                     "ir_value_type": "unsigned short",
                 }
             ],
@@ -74,8 +74,8 @@ class AcvRecursiveDiff(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.sub_method",
-                    "stored_value": "SUBMETHOD_ACV_RD",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBMETHOD_ACV_RD",
                     "ir_value_type": "unsigned short",
                 }
             ],
@@ -92,8 +92,8 @@ class ApproximateControlVariateSearchModelGraphsNoRecursion(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.search_model_graphs.recursion",
-                    "stored_value": "NO_GRAPH_RECURSION",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "NO_GRAPH_RECURSION",
                     "ir_value_type": "short",
                 }
             ]
@@ -110,8 +110,8 @@ class KlRecursion(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.search_model_graphs.recursion",
-                    "stored_value": "KL_GRAPH_RECURSION",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "KL_GRAPH_RECURSION",
                     "ir_value_type": "short",
                 }
             ]
@@ -145,8 +145,8 @@ class ApproximateControlVariateSearchModelGraphsFullRecursion(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.search_model_graphs.recursion",
-                    "stored_value": "FULL_GRAPH_RECURSION",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "FULL_GRAPH_RECURSION",
                     "ir_value_type": "short",
                 }
             ]
@@ -169,8 +169,8 @@ class PartialRecursion(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.search_model_graphs.recursion",
-                    "stored_value": "PARTIAL_GRAPH_RECURSION",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "PARTIAL_GRAPH_RECURSION",
                     "ir_value_type": "short",
                 }
             ]
@@ -188,8 +188,8 @@ class ApproximateControlVariateSearchModelGraphs(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.search_model_graphs.selection",
-                    "stored_value": "ALL_MODEL_COMBINATIONS",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "ALL_MODEL_COMBINATIONS",
                     "ir_value_type": "short",
                 }
             ]
@@ -272,8 +272,8 @@ class ApproximateControlVariateSelection(MethodSelection):
             "materialization": [
                 {
                     "ir_key": "method.algorithm",
-                    "stored_value": "APPROX_CONTROL_VARIATE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "APPROX_CONTROL_VARIATE",
                     "ir_value_type": "unsigned short",
                 }
             ],

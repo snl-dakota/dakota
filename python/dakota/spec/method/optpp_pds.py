@@ -49,8 +49,8 @@ class OptppPdsSelection(MethodSelection):
             "materialization": [
                 {
                     "ir_key": "method.algorithm",
-                    "stored_value": "OPTPP_PDS",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "OPTPP_PDS",
                     "ir_value_type": "unsigned short",
                 }
             ]

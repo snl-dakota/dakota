@@ -101,8 +101,8 @@ class ActiveAll(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "variables.view",
-                    "stored_value": "ALL_VIEW",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "ALL_VIEW",
                     "ir_value_type": "short",
                 }
             ]
@@ -119,8 +119,8 @@ class Design(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "variables.view",
-                    "stored_value": "DESIGN_VIEW",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "DESIGN_VIEW",
                     "ir_value_type": "short",
                 }
             ]
@@ -137,8 +137,8 @@ class Uncertain(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "variables.view",
-                    "stored_value": "UNCERTAIN_VIEW",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "UNCERTAIN_VIEW",
                     "ir_value_type": "short",
                 }
             ]
@@ -155,8 +155,8 @@ class Aleatory(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "variables.view",
-                    "stored_value": "ALEATORY_UNCERTAIN_VIEW",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "ALEATORY_UNCERTAIN_VIEW",
                     "ir_value_type": "short",
                 }
             ]
@@ -173,8 +173,8 @@ class Epistemic(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "variables.view",
-                    "stored_value": "EPISTEMIC_UNCERTAIN_VIEW",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "EPISTEMIC_UNCERTAIN_VIEW",
                     "ir_value_type": "short",
                 }
             ]
@@ -191,8 +191,8 @@ class State(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "variables.view",
-                    "stored_value": "STATE_VIEW",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "STATE_VIEW",
                     "ir_value_type": "short",
                 }
             ]
@@ -209,8 +209,8 @@ class Mixed(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "variables.domain",
-                    "stored_value": "MIXED_DOMAIN",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "MIXED_DOMAIN",
                     "ir_value_type": "short",
                 }
             ]
@@ -227,8 +227,8 @@ class Relaxed(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "variables.domain",
-                    "stored_value": "RELAXED_DOMAIN",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "RELAXED_DOMAIN",
                     "ir_value_type": "short",
                 }
             ]

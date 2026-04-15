@@ -82,8 +82,8 @@ class NcsuDirectSelection(MethodSelection):
             "materialization": [
                 {
                     "ir_key": "method.algorithm",
-                    "stored_value": "NCSU_DIRECT",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "NCSU_DIRECT",
                     "ir_value_type": "unsigned short",
                 }
             ]

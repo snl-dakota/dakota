@@ -88,8 +88,8 @@ class MethodExportSamplesFormatCustomAnnotatedConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.export_samples_format",
-                    "stored_value": "TABULAR_HEADER",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_HEADER",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -102,8 +102,8 @@ class MethodExportSamplesFormatCustomAnnotatedConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.export_samples_format",
-                    "stored_value": "TABULAR_EVAL_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_EVAL_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -116,8 +116,8 @@ class MethodExportSamplesFormatCustomAnnotatedConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.export_samples_format",
-                    "stored_value": "TABULAR_IFACE_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_IFACE_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -134,8 +134,8 @@ class MethodExportSamplesFormatAnnotated(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.export_samples_format",
-                    "stored_value": "TABULAR_ANNOTATED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_ANNOTATED",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -152,8 +152,8 @@ class MethodExportSamplesFormatFreeform(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.export_samples_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -170,8 +170,8 @@ class MethodSampleTypeLhsMcLhs(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.sample_type",
-                    "stored_value": "SUBMETHOD_LHS",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBMETHOD_LHS",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -188,8 +188,8 @@ class MethodSampleTypeLhsMcRandom(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.sample_type",
-                    "stored_value": "SUBMETHOD_RANDOM",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBMETHOD_RANDOM",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -206,8 +206,8 @@ class Fallback(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.numerical_solve_mode",
-                    "stored_value": "NUMERICAL_FALLBACK",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "NUMERICAL_FALLBACK",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -224,8 +224,8 @@ class Override(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.numerical_solve_mode",
-                    "stored_value": "NUMERICAL_OVERRIDE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "NUMERICAL_OVERRIDE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -242,8 +242,8 @@ class AutoReorder(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.model_reordering",
-                    "stored_value": "REORDER_MODELS_ON_THE_FLY",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "REORDER_MODELS_ON_THE_FLY",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -260,8 +260,8 @@ class FixedOrder(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.model_reordering",
-                    "stored_value": "FIXED_MODEL_ORDERING",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "FIXED_MODEL_ORDERING",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -278,8 +278,8 @@ class NumericalSolveSqp(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.opt_subproblem_solver",
-                    "stored_value": "SUBMETHOD_NPSOL",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBMETHOD_NPSOL",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -296,8 +296,8 @@ class NumericalSolveNip(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.opt_subproblem_solver",
-                    "stored_value": "SUBMETHOD_OPTPP",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBMETHOD_OPTPP",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -314,8 +314,8 @@ class NumericalSolveGlobalLocal(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.opt_subproblem_solver",
-                    "stored_value": "SUBMETHOD_DIRECT_NPSOL_OPTPP",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBMETHOD_DIRECT_NPSOL_OPTPP",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -332,8 +332,8 @@ class NumericalSolveCompetedLocal(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.opt_subproblem_solver",
-                    "stored_value": "SUBMETHOD_NPSOL_OPTPP",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBMETHOD_NPSOL_OPTPP",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -350,8 +350,8 @@ class NumericalSolveSolverMetricAverageEstimatorVariance(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.estimator_variance_metric",
-                    "stored_value": "AVG_ESTVAR_METRIC",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "AVG_ESTVAR_METRIC",
                     "ir_value_type": "short",
                 }
             ]
@@ -387,8 +387,8 @@ class NumericalSolveSolverMetricMaxEstimatorVariance(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.estimator_variance_metric",
-                    "stored_value": "MAX_ESTVAR_METRIC",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "MAX_ESTVAR_METRIC",
                     "ir_value_type": "short",
                 }
             ]
@@ -424,8 +424,8 @@ class PilotSamples(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.pilot_samples.mode",
-                    "stored_value": "INDEPENDENT_PILOT",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "INDEPENDENT_PILOT",
                     "ir_value_type": "short",
                 }
             ]
@@ -444,8 +444,8 @@ class MethodExportSamplesFormatCustomAnnotated(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.export_samples_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ],
@@ -474,8 +474,8 @@ class NumericalSolveSolverMetricNormEstimatorVariance(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.estimator_variance_metric",
-                    "stored_value": "NORM_ESTVAR_METRIC",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "NORM_ESTVAR_METRIC",
                     "ir_value_type": "short",
                 }
             ]

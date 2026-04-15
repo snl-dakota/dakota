@@ -50,8 +50,8 @@ class SnowpacSelection(MethodSelection):
             "materialization": [
                 {
                     "ir_key": "method.algorithm",
-                    "stored_value": "MIT_SNOWPAC",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "MIT_SNOWPAC",
                     "ir_value_type": "unsigned short",
                 }
             ]

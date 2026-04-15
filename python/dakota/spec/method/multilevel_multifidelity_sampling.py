@@ -72,8 +72,8 @@ class MultilevelMultifidelitySamplingSelection(MethodSelection):
                 "materialization": [
                     {
                         "ir_key": "method.algorithm",
-                        "stored_value": "MULTILEVEL_MULTIFIDELITY_SAMPLING",
                         "storage_type": "PRESENCE_ENUM",
+                        "stored_value": "MULTILEVEL_MULTIFIDELITY_SAMPLING",
                         "ir_value_type": "unsigned short",
                     }
                 ],

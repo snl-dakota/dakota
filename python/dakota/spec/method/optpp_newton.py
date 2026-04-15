@@ -31,8 +31,8 @@ class OptppNewtonSelection(MethodSelection):
             "materialization": [
                 {
                     "ir_key": "method.algorithm",
-                    "stored_value": "OPTPP_NEWTON",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "OPTPP_NEWTON",
                     "ir_value_type": "unsigned short",
                 }
             ]

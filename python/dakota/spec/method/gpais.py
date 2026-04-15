@@ -101,8 +101,8 @@ class GpaisSelection(MethodSelection):
             "materialization": [
                 {
                     "ir_key": "method.algorithm",
-                    "stored_value": "GPAIS",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "GPAIS",
                     "ir_value_type": "unsigned short",
                 }
             ],

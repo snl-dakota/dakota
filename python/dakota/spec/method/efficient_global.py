@@ -205,8 +205,8 @@ class EfficientGlobalSelection(MethodSelection):
             "materialization": [
                 {
                     "ir_key": "method.algorithm",
-                    "stored_value": "EFFICIENT_GLOBAL",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "EFFICIENT_GLOBAL",
                     "ir_value_type": "unsigned short",
                 }
             ]

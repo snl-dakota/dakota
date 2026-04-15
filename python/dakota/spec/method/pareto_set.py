@@ -142,8 +142,8 @@ class ParetoSetSelection(MethodSelection):
             "materialization": [
                 {
                     "ir_key": "method.algorithm",
-                    "stored_value": "PARETO_SET",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "PARETO_SET",
                     "ir_value_type": "unsigned short",
                 }
             ]

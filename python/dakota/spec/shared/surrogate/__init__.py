@@ -16,8 +16,8 @@ class MethodExportApproxFormatCustomAnnotatedConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.export_approx_format",
-                    "stored_value": "TABULAR_HEADER",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_HEADER",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -30,8 +30,8 @@ class MethodExportApproxFormatCustomAnnotatedConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.export_approx_format",
-                    "stored_value": "TABULAR_EVAL_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_EVAL_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -44,8 +44,8 @@ class MethodExportApproxFormatCustomAnnotatedConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.export_approx_format",
-                    "stored_value": "TABULAR_IFACE_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_IFACE_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -62,8 +62,8 @@ class MethodExportApproxFormatAnnotated(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.export_approx_format",
-                    "stored_value": "TABULAR_ANNOTATED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_ANNOTATED",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -80,8 +80,8 @@ class MethodExportApproxFormatFreeform(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.export_approx_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -99,8 +99,8 @@ class MethodExportApproxPointsFileCustomAnnotatedConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.export_approx_format",
-                    "stored_value": "TABULAR_HEADER",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_HEADER",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -113,8 +113,8 @@ class MethodExportApproxPointsFileCustomAnnotatedConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.export_approx_format",
-                    "stored_value": "TABULAR_EVAL_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_EVAL_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -127,8 +127,8 @@ class MethodExportApproxPointsFileCustomAnnotatedConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.export_approx_format",
-                    "stored_value": "TABULAR_IFACE_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_IFACE_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -145,8 +145,8 @@ class MethodExportApproxPointsFileAnnotated(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.export_approx_format",
-                    "stored_value": "TABULAR_ANNOTATED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_ANNOTATED",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -163,8 +163,8 @@ class MethodExportApproxPointsFileFreeform(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.export_approx_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -182,8 +182,8 @@ class MethodImportApproxFormatCustomAnnotatedConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.import_approx_format",
-                    "stored_value": "TABULAR_HEADER",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_HEADER",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -196,8 +196,8 @@ class MethodImportApproxFormatCustomAnnotatedConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.import_approx_format",
-                    "stored_value": "TABULAR_EVAL_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_EVAL_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -210,8 +210,8 @@ class MethodImportApproxFormatCustomAnnotatedConfig(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.import_approx_format",
-                    "stored_value": "TABULAR_IFACE_ID",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_IFACE_ID",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -228,8 +228,8 @@ class MethodImportApproxFormatAnnotated(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.import_approx_format",
-                    "stored_value": "TABULAR_ANNOTATED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_ANNOTATED",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -246,8 +246,8 @@ class MethodImportApproxFormatFreeform(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.import_approx_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -265,8 +265,8 @@ class ModelPartialSurrogateExportFormatFormats(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.model_export_format",
-                    "stored_value": "TEXT_ARCHIVE",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TEXT_ARCHIVE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -279,8 +279,8 @@ class ModelPartialSurrogateExportFormatFormats(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.model_export_format",
-                    "stored_value": "BINARY_ARCHIVE",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "BINARY_ARCHIVE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -297,8 +297,8 @@ class TextArchive(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.model_import_format",
-                    "stored_value": "TEXT_ARCHIVE",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TEXT_ARCHIVE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -315,8 +315,8 @@ class BinaryArchive(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.model_import_format",
-                    "stored_value": "BINARY_ARCHIVE",
                     "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "BINARY_ARCHIVE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -333,8 +333,8 @@ class ZerothOrder(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.correction_order",
-                    "stored_value": 0,
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": 0,
                     "ir_value_type": "short",
                 }
             ]
@@ -351,8 +351,8 @@ class CorrectionFirstOrder(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.correction_order",
-                    "stored_value": 1,
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": 1,
                     "ir_value_type": "short",
                 }
             ]
@@ -369,8 +369,8 @@ class CorrectionSecondOrder(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.correction_order",
-                    "stored_value": 2,
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": 2,
                     "ir_value_type": "short",
                 }
             ]
@@ -387,8 +387,8 @@ class Additive(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.correction_type",
-                    "stored_value": "ADDITIVE_CORRECTION",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "ADDITIVE_CORRECTION",
                     "ir_value_type": "short",
                 }
             ]
@@ -405,8 +405,8 @@ class Multiplicative(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.correction_type",
-                    "stored_value": "MULTIPLICATIVE_CORRECTION",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "MULTIPLICATIVE_CORRECTION",
                     "ir_value_type": "short",
                 }
             ]
@@ -423,8 +423,8 @@ class CorrectionCombined(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "model.surrogate.correction_type",
-                    "stored_value": "COMBINED_CORRECTION",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "COMBINED_CORRECTION",
                     "ir_value_type": "short",
                 }
             ]
@@ -443,8 +443,8 @@ class MethodExportApproxFormatCustomAnnotated(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.export_approx_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ],
@@ -463,8 +463,8 @@ class MethodExportApproxPointsFileCustomAnnotated(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.export_approx_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ],
@@ -483,8 +483,8 @@ class MethodImportApproxFormatCustomAnnotated(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.import_approx_format",
-                    "stored_value": "TABULAR_NONE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
                     "ir_value_type": "unsigned short",
                 }
             ],

@@ -24,8 +24,8 @@ class ColinyEaInitializationTypeSimpleRandom(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.initialization_type",
-                    "stored_value": "random",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "random",
                     "ir_value_type": "String",
                 }
             ]
@@ -42,8 +42,8 @@ class ColinyEaInitializationTypeUniqueRandom(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.initialization_type",
-                    "stored_value": "unique_random",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "unique_random",
                     "ir_value_type": "String",
                 }
             ]
@@ -60,8 +60,8 @@ class ColinyEaInitializationTypeFlatFile(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.initialization_type",
-                    "stored_value": "flat_file",
                     "storage_type": "TYPE_DATA_COMBINED",
+                    "stored_value": "flat_file",
                     "secondary_ir_key": "method.flat_file",
                     "secondary_ir_value_type": "String",
                     "ir_value_type": "String",
@@ -80,8 +80,8 @@ class LinearRank(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.fitness_type",
-                    "stored_value": "linear_rank",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "linear_rank",
                     "ir_value_type": "String",
                 }
             ]
@@ -98,8 +98,8 @@ class MeritFunction(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.fitness_type",
-                    "stored_value": "proportional",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "proportional",
                     "ir_value_type": "String",
                 }
             ]
@@ -116,8 +116,8 @@ class ReplacementTypeRandom(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.replacement_type",
-                    "stored_value": "random",
                     "storage_type": "TYPE_DATA_COMBINED",
+                    "stored_value": "random",
                     "secondary_ir_key": "method.coliny.number_retained",
                     "secondary_ir_value_type": "int",
                     "ir_value_type": "String",
@@ -136,8 +136,8 @@ class Chc(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.replacement_type",
-                    "stored_value": "chc",
                     "storage_type": "TYPE_DATA_COMBINED",
+                    "stored_value": "chc",
                     "secondary_ir_key": "method.coliny.number_retained",
                     "secondary_ir_value_type": "int",
                     "ir_value_type": "String",
@@ -156,8 +156,8 @@ class ColinyEaReplacementTypeElitist(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.replacement_type",
-                    "stored_value": "elitist",
                     "storage_type": "TYPE_DATA_COMBINED",
+                    "stored_value": "elitist",
                     "secondary_ir_key": "method.coliny.number_retained",
                     "secondary_ir_value_type": "int",
                     "ir_value_type": "String",
@@ -176,8 +176,8 @@ class TwoPoint(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.crossover_type",
-                    "stored_value": "two_point",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "two_point",
                     "ir_value_type": "String",
                 }
             ]
@@ -194,8 +194,8 @@ class Blend(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.crossover_type",
-                    "stored_value": "blend",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "blend",
                     "ir_value_type": "String",
                 }
             ]
@@ -212,8 +212,8 @@ class CrossoverTypeUniform(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.crossover_type",
-                    "stored_value": "uniform",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "uniform",
                     "ir_value_type": "String",
                 }
             ]
@@ -230,8 +230,8 @@ class ColinyEaMutationTypeReplaceUniform(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.mutation_type",
-                    "stored_value": "replace_uniform",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "replace_uniform",
                     "ir_value_type": "String",
                 }
             ]
@@ -248,8 +248,8 @@ class ColinyEaMutationTypeOffsetNormal(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.mutation_type",
-                    "stored_value": "offset_normal",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "offset_normal",
                     "ir_value_type": "String",
                 }
             ]
@@ -266,8 +266,8 @@ class ColinyEaMutationTypeOffsetCauchy(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.mutation_type",
-                    "stored_value": "offset_cauchy",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "offset_cauchy",
                     "ir_value_type": "String",
                 }
             ]
@@ -284,8 +284,8 @@ class ColinyEaMutationTypeOffsetUniform(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.mutation_type",
-                    "stored_value": "offset_uniform",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "offset_uniform",
                     "ir_value_type": "String",
                 }
             ]
@@ -430,8 +430,8 @@ class ColinyEaSelection(MethodSelection):
             "materialization": [
                 {
                     "ir_key": "method.algorithm",
-                    "stored_value": "COLINY_EA",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "COLINY_EA",
                     "ir_value_type": "unsigned short",
                 }
             ]

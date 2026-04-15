@@ -139,8 +139,8 @@ class MultiStartSelection(MethodSelection):
             "materialization": [
                 {
                     "ir_key": "method.algorithm",
-                    "stored_value": "MULTI_START",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "MULTI_START",
                     "ir_value_type": "unsigned short",
                 }
             ]

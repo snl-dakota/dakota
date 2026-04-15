@@ -37,8 +37,8 @@ class NlpqlSqpSelection(MethodSelection):
             "materialization": [
                 {
                     "ir_key": "method.algorithm",
-                    "stored_value": "NLPQL_SQP",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "NLPQL_SQP",
                     "ir_value_type": "unsigned short",
                 }
             ]

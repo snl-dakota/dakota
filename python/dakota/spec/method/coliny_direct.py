@@ -23,8 +23,8 @@ class MajorDim(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.coliny.division",
-                    "stored_value": "major_dimension",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "major_dimension",
                     "ir_value_type": "String",
                 }
             ]
@@ -41,8 +41,8 @@ class AllDims(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.coliny.division",
-                    "stored_value": "all_dimensions",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "all_dimensions",
                     "ir_value_type": "String",
                 }
             ]
@@ -137,8 +137,8 @@ class ColinyDirectSelection(MethodSelection):
             "materialization": [
                 {
                     "ir_key": "method.algorithm",
-                    "stored_value": "COLINY_DIRECT",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "COLINY_DIRECT",
                     "ir_value_type": "unsigned short",
                 }
             ]

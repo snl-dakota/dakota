@@ -303,8 +303,8 @@ class Sequential(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.sub_method",
-                    "stored_value": "SUBMETHOD_SEQUENTIAL",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBMETHOD_SEQUENTIAL",
                     "ir_value_type": "unsigned short",
                 }
             ],
@@ -322,8 +322,8 @@ class Embedded(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.sub_method",
-                    "stored_value": "SUBMETHOD_EMBEDDED",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBMETHOD_EMBEDDED",
                     "ir_value_type": "unsigned short",
                 }
             ],
@@ -340,8 +340,8 @@ class Collaborative(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.sub_method",
-                    "stored_value": "SUBMETHOD_COLLABORATIVE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBMETHOD_COLLABORATIVE",
                     "ir_value_type": "unsigned short",
                 }
             ]
@@ -365,8 +365,8 @@ class HybridSelection(MethodSelection):
             "materialization": [
                 {
                     "ir_key": "method.algorithm",
-                    "stored_value": "HYBRID",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "HYBRID",
                     "ir_value_type": "unsigned short",
                 }
             ]

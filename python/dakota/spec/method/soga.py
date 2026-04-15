@@ -26,8 +26,8 @@ class FitnessType(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.fitness_type",
-                    "stored_value": "merit_function",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "merit_function",
                     "ir_value_type": "String",
                 }
             ]
@@ -58,8 +58,8 @@ class SogaReplacementTypeElitist(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.replacement_type",
-                    "stored_value": "elitist",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "elitist",
                     "ir_value_type": "String",
                 }
             ]
@@ -76,8 +76,8 @@ class FavorFeasible(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.replacement_type",
-                    "stored_value": "favor_feasible",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "favor_feasible",
                     "ir_value_type": "String",
                 }
             ]
@@ -94,8 +94,8 @@ class SogaReplacementTypeRouletteWheel(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.replacement_type",
-                    "stored_value": "roulette_wheel",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "roulette_wheel",
                     "ir_value_type": "String",
                 }
             ]
@@ -112,8 +112,8 @@ class SogaReplacementTypeUniqueRouletteWheel(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.replacement_type",
-                    "stored_value": "unique_roulette_wheel",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "unique_roulette_wheel",
                     "ir_value_type": "String",
                 }
             ]
@@ -206,8 +206,8 @@ class BestFitnessTracker(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.jega.convergence_type",
-                    "stored_value": "best_fitness_tracker",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "best_fitness_tracker",
                     "ir_value_type": "String",
                 }
             ]
@@ -224,8 +224,8 @@ class AverageFitnessTracker(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.jega.convergence_type",
-                    "stored_value": "average_fitness_tracker",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "average_fitness_tracker",
                     "ir_value_type": "String",
                 }
             ]
@@ -275,8 +275,8 @@ class SogaSelection(MethodSelection):
             "materialization": [
                 {
                     "ir_key": "method.algorithm",
-                    "stored_value": "SOGA",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SOGA",
                     "ir_value_type": "unsigned short",
                 }
             ]

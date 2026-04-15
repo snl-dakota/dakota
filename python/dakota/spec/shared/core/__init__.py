@@ -60,8 +60,8 @@ class MethodConvergenceTolWithTypeContext1Relative(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.convergence_tolerance_type",
-                    "stored_value": "RELATIVE_CONVERGENCE_TOLERANCE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "RELATIVE_CONVERGENCE_TOLERANCE",
                     "ir_value_type": "short",
                 }
             ]
@@ -78,8 +78,8 @@ class MethodConvergenceTolWithTypeContext1Absolute(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.convergence_tolerance_type",
-                    "stored_value": "ABSOLUTE_CONVERGENCE_TOLERANCE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "ABSOLUTE_CONVERGENCE_TOLERANCE",
                     "ir_value_type": "short",
                 }
             ]
@@ -96,8 +96,8 @@ class MethodConvergenceTolWithTypeContext2Relative(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.convergence_tolerance_type",
-                    "stored_value": "RELATIVE_CONVERGENCE_TOLERANCE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "RELATIVE_CONVERGENCE_TOLERANCE",
                     "ir_value_type": "short",
                 }
             ]
@@ -114,8 +114,8 @@ class MethodConvergenceTolWithTypeContext2Absolute(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.convergence_tolerance_type",
-                    "stored_value": "ABSOLUTE_CONVERGENCE_TOLERANCE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "ABSOLUTE_CONVERGENCE_TOLERANCE",
                     "ir_value_type": "short",
                 }
             ]
@@ -132,8 +132,8 @@ class MethodConvergenceTolWithTypeContext3Relative(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.convergence_tolerance_type",
-                    "stored_value": "RELATIVE_CONVERGENCE_TOLERANCE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "RELATIVE_CONVERGENCE_TOLERANCE",
                     "ir_value_type": "short",
                 }
             ]
@@ -150,8 +150,8 @@ class MethodConvergenceTolWithTypeContext3Absolute(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.convergence_tolerance_type",
-                    "stored_value": "ABSOLUTE_CONVERGENCE_TOLERANCE",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "ABSOLUTE_CONVERGENCE_TOLERANCE",
                     "ir_value_type": "short",
                 }
             ]
@@ -168,8 +168,8 @@ class Active(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.refinement_statistics_mode",
-                    "stored_value": "ACTIVE_EXPANSION_STATS",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "ACTIVE_EXPANSION_STATS",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -187,8 +187,8 @@ class StatisticsModeCombined(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.refinement_statistics_mode",
-                    "stored_value": "COMBINED_EXPANSION_STATS",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "COMBINED_EXPANSION_STATS",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -206,8 +206,8 @@ class LevelMappings(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.expansion_refinement_metric",
-                    "stored_value": "LEVEL_STATS_METRIC",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "LEVEL_STATS_METRIC",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -225,8 +225,8 @@ class RefinementMetricCov(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.expansion_refinement_metric",
-                    "stored_value": "COVARIANCE_METRIC",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "COVARIANCE_METRIC",
                     "enum_scope": "Pecos",
                     "ir_value_type": "short",
                 }
@@ -244,8 +244,8 @@ class NumericalGradientOptionsMethodSourceDakotaRelative(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "responses.fd_gradient_step_type",
-                    "stored_value": "relative",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "relative",
                     "ir_value_type": "String",
                 }
             ]
@@ -262,8 +262,8 @@ class NumericalGradientOptionsMethodSourceDakotaAbsolute(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "responses.fd_gradient_step_type",
-                    "stored_value": "absolute",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "absolute",
                     "ir_value_type": "String",
                 }
             ]
@@ -280,8 +280,8 @@ class NumericalGradientOptionsMethodSourceDakotaBounds(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "responses.fd_gradient_step_type",
-                    "stored_value": "bounds",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "bounds",
                     "ir_value_type": "String",
                 }
             ]
@@ -298,8 +298,8 @@ class NumericalGradientOptionsMethodSourceVendor(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "responses.method_source",
-                    "stored_value": "vendor",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "vendor",
                     "ir_value_type": "String",
                 }
             ]
@@ -316,8 +316,8 @@ class NumericalGradientOptionsIntervalTypeForward(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "responses.interval_type",
-                    "stored_value": "forward",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "forward",
                     "ir_value_type": "String",
                 }
             ]
@@ -334,8 +334,8 @@ class NumericalGradientOptionsIntervalTypeCentral(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "responses.interval_type",
-                    "stored_value": "central",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "central",
                     "ir_value_type": "String",
                 }
             ]
@@ -352,8 +352,8 @@ class ResponseLevelsComputeProbRelGenProbabilities(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.response_level_target",
-                    "stored_value": "PROBABILITIES",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "PROBABILITIES",
                     "ir_value_type": "short",
                 }
             ]
@@ -370,8 +370,8 @@ class ResponseLevelsComputeProbRelGenReliabilities(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.response_level_target",
-                    "stored_value": "RELIABILITIES",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "RELIABILITIES",
                     "ir_value_type": "short",
                 }
             ]
@@ -388,8 +388,8 @@ class ResponseLevelsComputeProbRelGenGenReliabilities(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.response_level_target",
-                    "stored_value": "GEN_RELIABILITIES",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "GEN_RELIABILITIES",
                     "ir_value_type": "short",
                 }
             ]
@@ -406,8 +406,8 @@ class ResponseLevelsComputeProbRelGenSystemSeries(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.response_level_target_reduce",
-                    "stored_value": "SYSTEM_SERIES",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SYSTEM_SERIES",
                     "ir_value_type": "short",
                 }
             ]
@@ -424,8 +424,8 @@ class ResponseLevelsComputeProbRelGenSystemParallel(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "method.nond.response_level_target_reduce",
-                    "stored_value": "SYSTEM_PARALLEL",
                     "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SYSTEM_PARALLEL",
                     "ir_value_type": "short",
                 }
             ]
@@ -656,8 +656,8 @@ class NumericalGradientOptionsMethodSourceDakota(DakotaBaseModel):
             "materialization": [
                 {
                     "ir_key": "responses.method_source",
-                    "stored_value": "dakota",
                     "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "dakota",
                     "ir_value_type": "String",
                 }
             ],
@@ -690,7 +690,7 @@ class ResponseLevelsComputeProbRelGenResponseLevels(DakotaBaseModel):
 
 
 class MethodExpConvergenceToleranceMixin(
-    MethodRefineMetricTypeMixin, MethodConvergenceTolWithTypeContext2Mixin
+    MethodConvergenceTolWithTypeContext2Mixin, MethodRefineMetricTypeMixin
 ):
     """Generated model for MethodExpConvergenceToleranceMixin"""
 
@@ -698,9 +698,9 @@ class MethodExpConvergenceToleranceMixin(
 
 
 class MethodMfExpConvergenceToleranceMixin(
-    MethodRefineMetricTypeMixin,
     MethodConvergenceTolWithTypeContext2Mixin,
     MethodMfRefineStatsModeMixin,
+    MethodRefineMetricTypeMixin,
 ):
     """Generated model for MethodMfExpConvergenceToleranceMixin"""
 
