@@ -31,7 +31,8 @@ std::pair<std::string, std::string> final_input_and_template(const ProgramOption
 /// @param template_string possibly empty template string, prior to preprocessing
 void echo_input(std::string_view final_input, std::string_view template_string);
 
-void check_and_broadcast_pdb(ProblemDescDB& problem_db, const UserModes& user_modes, ParallelLibrary& parallel_lib);
+void check_and_broadcast_pdb(ProblemDescDB& problem_db, const std::string& dump_ir_path,
+                             const UserModes& user_modes, ParallelLibrary& parallel_lib);
 
 
 } // namespace ProblemDescDBUtils

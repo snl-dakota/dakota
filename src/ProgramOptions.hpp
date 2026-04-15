@@ -93,6 +93,8 @@ public:
   String version_query() const;
   /// is check mode active?
   bool check() const;
+  /// path for dumping the parsed IR / ProblemDescDB as JSON
+  const String& dump_ir_file() const;
 
   /// UserModes object
   const UserModes& user_modes() const;
@@ -149,6 +151,8 @@ public:
   void version(bool version_flag);
   /// set true to check input and instantiate objects, then exit
   void check(bool check_flag);
+  /// set the path for dumping the parsed IR / ProblemDescDB as JSON
+  void dump_ir_file(const String& dump_ir_path);
   /// set to enable/disable pre-run phase
   void pre_run(bool pre_run_flag);
   /// set to enable/disable run phase
@@ -231,6 +235,7 @@ private:
   String readRestartFile;    ///< e.g., "dakota.old.rst"
   size_t stopRestartEvals;   ///< eval number at which to stop restart read
   String writeRestartFile;   ///< e.g., "dakota.new.rst"
+  String dumpIrFile;         ///< path for JSON dump of parsed IR/problem DB
   String versionQuery;     /// argument passed to "version"
 
   // Run mode flags; intially only valid on rank 0.

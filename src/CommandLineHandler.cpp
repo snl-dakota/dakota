@@ -348,6 +348,9 @@ void CommandLineHandler::initialize_options()
   enroll("error",   GetLongOpt::MandatoryValue,
          "Redirect DAKOTA standard error to file $val", NULL);
 
+  enroll("dump_ir", GetLongOpt::MandatoryValue,
+         "Dump parsed IR / ProblemDescDB JSON to file $val", NULL);
+
   enroll("parser",  GetLongOpt::MandatoryValue,
 	 "Parsing technology: nidr[strict][:dumpfile]", NULL);
 

@@ -42,7 +42,9 @@ class ParallelLibrary;
 class ProblemDescDB
 {
   
-  friend void ProblemDescDBUtils::check_and_broadcast_pdb(ProblemDescDB& problem_db, const UserModes& user_modes, ParallelLibrary& parallel_lib);
+  friend void ProblemDescDBUtils::check_and_broadcast_pdb(ProblemDescDB& problem_db,
+    const String& dump_ir_path, const UserModes& user_modes,
+    ParallelLibrary& parallel_lib);
   friend nlohmann::json dump_problem_desc_db_json(const ProblemDescDB& db);
 
 public:

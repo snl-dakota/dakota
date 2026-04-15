@@ -89,6 +89,8 @@ ProgramOptions::ProgramOptions(int argc, char* argv[], int world_rank):
     outputFile = clh.retrieve("output");
   if (clh.retrieve("error"))
     errorFile = clh.retrieve("error");
+  if (clh.retrieve("dump_ir"))
+    dumpIrFile = clh.retrieve("dump_ir");
 
   // only specify this file if the user passed the option
   if (clh.retrieve("read_restart")) {
@@ -173,6 +175,9 @@ String ProgramOptions::version_query() const
 
 bool ProgramOptions::check() const
 { return checkFlag; }
+
+const String& ProgramOptions::dump_ir_file() const
+{ return dumpIrFile; }
 
 const UserModes& ProgramOptions::user_modes() const
 { return userModes; }
@@ -274,6 +279,9 @@ void ProgramOptions::version(bool version_flag)
 
 void ProgramOptions::check(bool check_flag)
 { checkFlag = check_flag; }
+
+void ProgramOptions::dump_ir_file(const String& dump_ir_path)
+{ dumpIrFile = dump_ir_path; }
 
 void ProgramOptions::pre_run(bool pre_run_flag)
 { userModes.preRun = pre_run_flag; }
@@ -379,7 +387,7 @@ void ProgramOptions::read(MPIUnpackBuffer& s)
 {
   // core files and options
   s >> inputFile >> jsonFile >> inputString >> echoInput >> parserOptions 
-    >> outputFile >> errorFile 
+    >> outputFile >> errorFile >> dumpIrFile
     >> readRestartFile >> stopRestartEvals >> writeRestartFile;
   // run mode controls
   s >> helpFlag >> versionFlag >> checkFlag >> userModes;
@@ -390,7 +398,7 @@ void ProgramOptions::write(MPIPackBuffer& s) const
 {
   // core files and options
   s << inputFile << jsonFile << inputString << echoInput << parserOptions 
-    << outputFile << errorFile 
+    << outputFile << errorFile << dumpIrFile
     << readRestartFile << stopRestartEvals << writeRestartFile;
   // run mode controls
   s << helpFlag << versionFlag << checkFlag << userModes;

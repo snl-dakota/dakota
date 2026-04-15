@@ -294,7 +294,8 @@ void Environment::parse(bool check_bcast_database,
 
   // check if true, otherwise caller assumes responsibility  
   if (check_bcast_database)
-    ProblemDescDBUtils::check_and_broadcast_pdb(probDescDB, programOptions.user_modes(), parallelLib); 
+    ProblemDescDBUtils::check_and_broadcast_pdb(probDescDB, programOptions.dump_ir_file(),
+      programOptions.user_modes(), parallelLib); 
 }
 
 

@@ -14,8 +14,6 @@
 #include "ParallelLibrary.hpp"
 #include "dakota_global_defs.hpp"
 
-#include <cstdlib>
-
 namespace Dakota {
 namespace ProblemDescDBUtils {
 
@@ -90,7 +88,8 @@ void echo_input_helper(std::string_view input_string, bool template_flag) {
     Cout << "----------------\n" << std::endl;
 }
 
-void check_and_broadcast_pdb(ProblemDescDB& problem_db, const UserModes& user_modes, ParallelLibrary& parallel_lib) {
+void check_and_broadcast_pdb(ProblemDescDB& problem_db, const std::string& dump_ir_path,
+                             const UserModes& user_modes, ParallelLibrary& parallel_lib) {
 
     auto rep = problem_db.get_rep();
     // Check to make sure at least one of each of the keywords was found
@@ -163,9 +162,8 @@ void check_and_broadcast_pdb(ProblemDescDB& problem_db, const UserModes& user_mo
     // sending large vectors over an MPI buffer).
     problem_db.post_process();
 
-    const char* dump_path = std::getenv("DAKOTA_DUMP_DATA_CLASSES");
-    if (dump_path && *dump_path && parallel_lib.world_rank() == 0)
-      problem_db.write_json_dump(dump_path);
+    if (!dump_ir_path.empty() && parallel_lib.world_rank() == 0)
+      problem_db.write_json_dump(dump_ir_path);
 }
 
 
