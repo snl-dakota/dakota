@@ -12,7 +12,9 @@ import re
 import sys
 from typing import Generator, Iterable, List, NewType, Tuple, Union, Dict
 from .dprepro import dprepro as dprepro_func
-from .dprepro import pyprepro
+from .dprepro import (
+    pyprepro as pyprepro,
+)  # redundancy to prevent linters from removing this import
 
 __author__ = "J. Adam Stephens"
 __copyright__ = "Copyright 2014-2025 National Technology & Engineering Solutions of Sandia, LLC (NTESS)"
@@ -933,7 +935,6 @@ def _write_json_results(stream: io.IOBase, results: Results, ignore_asv: bool) -
 
 
 def _encode_results_as_json(results: Results, ignore_asv: bool) -> dict:
-
     _check_against_asv(results, ignore_asv)
     if results.failed():
         return {"fail": True}
@@ -986,7 +987,6 @@ def _replace_non_finite(value: Union[float, str]) -> Union[float, str]:
 
 
 def _check_against_asv(results: Results, ignore_asv: bool) -> None:
-
     ## Confirm that user has provided all info requested by Dakota
     if not ignore_asv and not results.failed():
         for t, v in results.items():
