@@ -9,7 +9,7 @@
    Remove :orphan: above if promoting this page.
 
 """"""""""""""""""""""""""""""""""""""""
-Version 6.23 (2025/11/17); pre-release)
+Version 6.24 (2026/05/15); pre-release)
 """"""""""""""""""""""""""""""""""""""""
 
 **Highlight: Feature A**
@@ -18,22 +18,28 @@ Version 6.23 (2025/11/17); pre-release)
 
 *Documentation:* Where to learn more
 
-For example:
+**Highlight: Sensitivity Analysis Chapter**
 
-The Dakota GUI has added many significant feature improvements over
-the last year.  The Dakota GUI now allows you to seamlessly browse
-Dakota's HDF5 database output files, as well as generate sophisticated
-graphical plots from HDF5 data with just a few clicks.  HDF5 browsing
-and plot generation can also be driven within Dakota GUI by Next-Gen
-Workflow, a powerful tool that allows you to construct node-based
-workflows for complex tasks.
+*Enabling / Accessing:* Available in the User Manual
 
-*Enabling / Accessing:* Dakota GUI ships with Dakota and is available
-for Windows, Mac, and RHEL7.
 
-*Documentation:* An enhanced version of the Dakota GUI manual now ships
-with the GUI, giving you easy access to a wealth of reference material
-for using the GUI.  The 6.11 GUI manual is also available here.
+**Highlight: JSON-format Input Files**
+
+Dakota now accepts JSON-format input files. The schema is documented
+in XXX. JSON support is meant to simplify incorporation of Dakota
+into larger workflows, its use in agentic workflows, and and as a
+stepping stone toward more capable Python bindings.
+
+The capability is experimental, and we appreciate your bug
+reports. To fall back to the old input file reader, run Dakota
+with the `-parser legacy` command line argument.
+
+*Enabling / Accessing:* Write a JSON format input file and use the
+`-json` command line argument (e.g. `dakota -json dakota_in.json`).
+
+*Documentation*: TODO
+
+
 
 
 **Improvements by Category**
@@ -50,21 +56,24 @@ for using the GUI.  The 6.11 GUI manual is also available here.
 
 
 *MLMF Sampling*
-
  
+*Sensitivity Analysis*
+
+- The :dakref:`method-sampling-variance_based_decomp-vbd_sampling_method-binned` approach to variance-based decomposition now
+  works with discrete variables.
+
 **Miscellaneous Enhancements and Bugfixes**
-
-- Windows builds now performed using MSVS 2022 and Intel oneAPI 2024.
-
-- Fix for `github 140 <http://github.com/snl-dakota/dakota/issues/140>`_
-  by replacing boost::filesystem with std::filesystem
-- Obviates `github PR179 <https://github.com/snl-dakota/dakota/pull/179>`_
-  and `github PR181 <https://github.com/snl-dakota/dakota/pull/181>`_
 
 **Deprecated and Changed**
 
+- Dakota's NIDR (New Input Deck Reader) is being deprecated and replaced with
+  a newly written input parser. For this release, NIDR is available as a fallback.
+  Use the command line argument `-parser legacy` to use it.
+
 **Compatibility**
 
-- Dakota now requires a minimum of Boost 1.70.
+- The schema for JSON input files is defined by Pydantic models, which are
+  located at `python/dakota/spec/` in the source tree. To update Dakota's
+  input grammar, Python >=3.9 and Pydantic >=2.12 are required.
 
 **Other Notes and Known Issues**
