@@ -49,25 +49,6 @@ else()
     "JSON forward header file not found in ${JSON_INCLUDE_DIR}.\n"
     "You may need run `git submodule update --init --recursive`" )
 endif()
-find_path(JSON_SINGLE_INCDIR
-  NAMES nlohmann/json.hpp
-  HINTS ${NLOHMANN_JSON_ROOT}
-  PATH_SUFFIXES include
-)
-if(JSON_SINGLE_INCDIR)
-  add_library(nlohmann_json INTERFACE)
-  add_library(nlohmann_json::nlohmann_json ALIAS nlohmann_json)
-  target_include_directories(nlohmann_json INTERFACE "${JSON_SINGLE_INCDIR}")
-  message("Found JSON header file")
-  list(APPEND EXT_TPL_INCDIRS ${JSON_SINGLE_INCDIR})
-  # Set this cmake variable for so that the new parser uses Dakota's nlohmann
-  set(NLOHMANN_JSON_ROOT "${PROJECT_SOURCE_DIR}/packages/external/json" CACHE PATH
-    "nlohmann used by Dakota" FORCE)
-else()
-  message(FATAL_ERROR
-    "JSON header file not found in ${JSON_SINGLE_INCDIR}.\n"
-    "You may need run `git submodule update --init --recursive`" )
-endif()
 
 # Dakota requires C++17
 include(DakotaCxxOptions)
@@ -287,11 +268,6 @@ endif(HAVE_ROL)
 # Set up googletest. It must be done early so that
 # the targets can be used to add unit tests
 dakota_find_googletest()
-#if(TARGET gtest AND TARGET gtest_main)
-#  message(STATUS "GoogleTest is available")
-#else()
-#  message(FATAL_ERROR "GoogleTest not available; expected targets not created")
-#endif()
 
 # Needed for the new input file reader
 set(DAKOTA_SCHEMA_PATH ${CMAKE_SOURCE_DIR}/src/dakota.json CACHE STRING "Dakota Schema file")

@@ -19,6 +19,12 @@ ManageRelocatablePackage(NCSUOPT external/NCSUOpt)
 
 add_subdirectory(external/nidr)
 
+set(NLOHMANN_JSON_ROOT "${PROJECT_SOURCE_DIR}/packages/external/json")
+set(PEGTL_ROOT_DIR "${PROJECT_SOURCE_DIR}/packages/external/pegtl")
+set(PYBIND11_ROOT_DIR "${PROJECT_SOURCE_DIR}/packages/external/pybind11")
+set(PYBIND11_JSON_ROOT_DIR "${PROJECT_SOURCE_DIR}/packages/external/pybind11_json")
+message(STATUS "Using pegtl from ${PEGTL_ROOT_DIR}")
+set(FETCHCONTENT_FULLY_DISCONNECTED ON CACHE BOOL "" FORCE)
 add_subdirectory(dakota_parser)
 
 if(HAVE_AMPL)
