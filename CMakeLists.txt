@@ -49,7 +49,15 @@ else()
     "JSON forward header file not found in ${JSON_INCLUDE_DIR}.\n"
     "You may need run `git submodule update --init --recursive`" )
 endif()
-if(EXISTS "${JSON_SINGLE_INCDIR}/nlohmann/json.hpp")
+find_path(JSON_SINGLE_INCDIR
+  NAMES nlohmann/json.hpp
+  HINTS ${NLOHMANN_JSON_ROOT}
+  PATH_SUFFIXES include
+)
+if(JSON_SINGLE_INCDIR)
+  add_library(nlohmann_json INTERFACE)
+  add_library(nlohmann_json::nlohmann_json ALIAS nlohmann_json)
+  target_include_directories(nlohmann_json INTERFACE "${JSON_SINGLE_INCDIR}")
   message("Found JSON header file")
   list(APPEND EXT_TPL_INCDIRS ${JSON_SINGLE_INCDIR})
   # Set this cmake variable for so that the new parser uses Dakota's nlohmann

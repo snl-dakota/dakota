@@ -19,7 +19,7 @@ ManageRelocatablePackage(NCSUOPT external/NCSUOpt)
 
 add_subdirectory(external/nidr)
 
-add_subdirectory(pydantic-models/model_generation/source)
+add_subdirectory(dakota_parser)
 
 if(HAVE_AMPL)
   if (NOT AMPL_INCLUDE_DIRS)

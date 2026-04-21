@@ -1,0 +1,5 @@
+# Test: Missing 'environment' keyword (typo)
+# Expected error: expected 'environment' keyword
+
+environmen
+  tabular_data
