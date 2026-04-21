@@ -119,6 +119,7 @@ dakota	      	    GNU Lesser General Public License (LGPL) [SNL]
   NPSOL		    Commercial license (optional add-on)
   OPTPP		    GNU Lesser General Public License (LGPL) [SNL]
   pecos		    GNU Lesser General Public License (LGPL) [SNL]
+  PEGTL		    MIT License
   PSUADE	    GNU Lesser General Public License (LGPL)
   pybind11	    BSD 3-clause
   pyprepro          MIT License [SNL]
