@@ -10,7 +10,7 @@ from ...validation.rules import CheckNonnegativeList, CompareLength, CompareLeng
 
 
 class MlmfPilotSamplesContext1Mixin(DakotaBaseModel):
-    """Generated model for MlmfPilotSamplesContext1Mixin"""
+    "Generated model for MlmfPilotSamplesContext1Mixin"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CheckNonnegativeList(
@@ -35,7 +35,7 @@ class MlmfPilotSamplesContext1Mixin(DakotaBaseModel):
 
 
 class MlmfPilotSamplesContext2Mixin(DakotaBaseModel):
-    """Generated model for MlmfPilotSamplesContext2Mixin"""
+    "Generated model for MlmfPilotSamplesContext2Mixin"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CheckNonnegativeList(
@@ -60,7 +60,7 @@ class MlmfPilotSamplesContext2Mixin(DakotaBaseModel):
 
 
 class SamplesOnEmulatorWithAliasMixin(DakotaBaseModel):
-    """Generated model for SamplesOnEmulatorWithAliasMixin"""
+    "Generated model for SamplesOnEmulatorWithAliasMixin"
 
     samples_on_emulator: int = DakotaField(
         default=0,
@@ -79,7 +79,7 @@ class SamplesOnEmulatorWithAliasMixin(DakotaBaseModel):
 
 
 class MethodExportSamplesFormatCustomAnnotatedConfig(DakotaBaseModel):
-    """Generated model for MethodExportSamplesFormatCustomAnnotatedConfig"""
+    "Selects custom-annotated tabular file format"
 
     header: Literal[True] | None = DakotaField(
         default=None,
@@ -126,10 +126,11 @@ class MethodExportSamplesFormatCustomAnnotatedConfig(DakotaBaseModel):
 
 
 class MethodExportSamplesFormatAnnotated(DakotaBaseModel):
-    """Generated model for MethodExportSamplesFormatAnnotated"""
+    "Selects annotated tabular file format"
 
     annotated: Literal[True] = DakotaField(
         default=True,
+        description="Selects annotated tabular file format",
         dakota={
             "materialization": [
                 {
@@ -144,10 +145,11 @@ class MethodExportSamplesFormatAnnotated(DakotaBaseModel):
 
 
 class MethodExportSamplesFormatFreeform(DakotaBaseModel):
-    """Generated model for MethodExportSamplesFormatFreeform"""
+    "Selects freeform file format"
 
     freeform: Literal[True] = DakotaField(
         default=True,
+        description="Selects freeform file format",
         dakota={
             "materialization": [
                 {
@@ -162,10 +164,11 @@ class MethodExportSamplesFormatFreeform(DakotaBaseModel):
 
 
 class MethodSampleTypeLhsMcLhs(DakotaBaseModel):
-    """Generated model for MethodSampleTypeLhsMcLhs"""
+    "Uses Latin Hypercube Sampling (LHS) to sample variables"
 
     lhs: Literal[True] = DakotaField(
         default=True,
+        description="Uses Latin Hypercube Sampling (LHS) to sample variables",
         dakota={
             "materialization": [
                 {
@@ -180,10 +183,11 @@ class MethodSampleTypeLhsMcLhs(DakotaBaseModel):
 
 
 class MethodSampleTypeLhsMcRandom(DakotaBaseModel):
-    """Generated model for MethodSampleTypeLhsMcRandom"""
+    "Uses purely random Monte Carlo sampling to sample variables"
 
     random: Literal[True] = DakotaField(
         default=True,
+        description="Uses purely random Monte Carlo sampling to sample variables",
         dakota={
             "materialization": [
                 {
@@ -198,10 +202,11 @@ class MethodSampleTypeLhsMcRandom(DakotaBaseModel):
 
 
 class Fallback(DakotaBaseModel):
-    """Generated model for Fallback"""
+    "Fall back to a numerical solve when needed for mitigation in MFMC"
 
     fallback: Literal[True] = DakotaField(
         default=True,
+        description="Fall back to a numerical solve when needed for mitigation in MFMC",
         dakota={
             "materialization": [
                 {
@@ -216,10 +221,11 @@ class Fallback(DakotaBaseModel):
 
 
 class Override(DakotaBaseModel):
-    """Generated model for Override"""
+    "Replace MFMC analytic allocation with a numerical solution"
 
     override: Literal[True] = DakotaField(
         default=True,
+        description="Replace MFMC analytic allocation with a numerical solution",
         dakota={
             "materialization": [
                 {
@@ -234,10 +240,11 @@ class Override(DakotaBaseModel):
 
 
 class AutoReorder(DakotaBaseModel):
-    """Generated model for AutoReorder"""
+    "Reorder models automatically"
 
     auto_reorder: Literal[True] = DakotaField(
         default=True,
+        description="Reorder models automatically",
         dakota={
             "materialization": [
                 {
@@ -252,10 +259,11 @@ class AutoReorder(DakotaBaseModel):
 
 
 class FixedOrder(DakotaBaseModel):
-    """Generated model for FixedOrder"""
+    "Used a fixed model order"
 
     fixed_order: Literal[True] = DakotaField(
         default=True,
+        description="Used a fixed model order",
         dakota={
             "materialization": [
                 {
@@ -270,10 +278,11 @@ class FixedOrder(DakotaBaseModel):
 
 
 class NumericalSolveSqp(DakotaBaseModel):
-    """Generated model for NumericalSolveSqp"""
+    "Use a sequential quadratic programming method for solving an optimization sub-problem"
 
     sqp: Literal[True] = DakotaField(
         default=True,
+        description="Use a sequential quadratic programming method for solving an optimization sub-problem",
         dakota={
             "materialization": [
                 {
@@ -288,10 +297,11 @@ class NumericalSolveSqp(DakotaBaseModel):
 
 
 class NumericalSolveNip(DakotaBaseModel):
-    """Generated model for NumericalSolveNip"""
+    "Use a nonlinear interior point method for solving an optimization sub-problem"
 
     nip: Literal[True] = DakotaField(
         default=True,
+        description="Use a nonlinear interior point method for solving an optimization sub-problem",
         dakota={
             "materialization": [
                 {
@@ -306,10 +316,11 @@ class NumericalSolveNip(DakotaBaseModel):
 
 
 class NumericalSolveGlobalLocal(DakotaBaseModel):
-    """Generated model for NumericalSolveGlobalLocal"""
+    "Use a hybrid global-local scheme for solving an optimization sub-problem"
 
     global_local: Literal[True] = DakotaField(
         default=True,
+        description="Use a hybrid global-local scheme for solving an optimization sub-problem",
         dakota={
             "materialization": [
                 {
@@ -324,10 +335,11 @@ class NumericalSolveGlobalLocal(DakotaBaseModel):
 
 
 class NumericalSolveCompetedLocal(DakotaBaseModel):
-    """Generated model for NumericalSolveCompetedLocal"""
+    "Use a competed local solver scheme for solving an optimization sub-problem"
 
     competed_local: Literal[True] = DakotaField(
         default=True,
+        description="Use a competed local solver scheme for solving an optimization sub-problem",
         dakota={
             "materialization": [
                 {
@@ -342,10 +354,11 @@ class NumericalSolveCompetedLocal(DakotaBaseModel):
 
 
 class NumericalSolveSolverMetricAverageEstimatorVariance(DakotaBaseModel):
-    """Generated model for NumericalSolveSolverMetricAverageEstimatorVariance"""
+    "Utilize the estimator variance averaged over the QoI as the solver metric for sampling-based multifidelity methods."
 
     average_estimator_variance: Literal[True] = DakotaField(
         default=True,
+        description="Utilize the estimator variance averaged over the QoI as the solver metric for sampling-based multifidelity methods.",
         dakota={
             "materialization": [
                 {
@@ -360,7 +373,7 @@ class NumericalSolveSolverMetricAverageEstimatorVariance(DakotaBaseModel):
 
 
 class NumericalSolveSolverMetricNormEstimatorVarianceConfig(DakotaBaseModel):
-    """Generated model for NumericalSolveSolverMetricNormEstimatorVarianceConfig"""
+    "Utilize a p-norm over the vector of QoI estimator variances as the solver metric for sampling-based multifidelity methods."
 
     norm_order: DakotaFloat = DakotaField(
         default=2.0,
@@ -379,10 +392,11 @@ class NumericalSolveSolverMetricNormEstimatorVarianceConfig(DakotaBaseModel):
 
 
 class NumericalSolveSolverMetricMaxEstimatorVariance(DakotaBaseModel):
-    """Generated model for NumericalSolveSolverMetricMaxEstimatorVariance"""
+    "Utilize the maximum estimator variance as the solver metric for sampling-based multifidelity methods."
 
     max_estimator_variance: Literal[True] = DakotaField(
         default=True,
+        description="Utilize the maximum estimator variance as the solver metric for sampling-based multifidelity methods.",
         dakota={
             "materialization": [
                 {
@@ -397,7 +411,7 @@ class NumericalSolveSolverMetricMaxEstimatorVariance(DakotaBaseModel):
 
 
 class PilotSamples(DakotaBaseModel):
-    """Generated model for PilotSamples"""
+    "Initial set of samples for groups in the multilevel BLUE sampling method"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CheckNonnegativeList(
@@ -434,7 +448,7 @@ class PilotSamples(DakotaBaseModel):
 
 
 class MethodExportSamplesFormatCustomAnnotated(DakotaBaseModel):
-    """Generated model for MethodExportSamplesFormatCustomAnnotated"""
+    "Selects custom-annotated tabular file format"
 
     custom_annotated: MethodExportSamplesFormatCustomAnnotatedConfig = DakotaField(
         default_factory=MethodExportSamplesFormatCustomAnnotatedConfig,
@@ -454,7 +468,7 @@ class MethodExportSamplesFormatCustomAnnotated(DakotaBaseModel):
 
 
 class MethodSampleTypeLhsMcMixin(DakotaBaseModel):
-    """Generated model for MethodSampleTypeLhsMcMixin"""
+    "Generated model for MethodSampleTypeLhsMcMixin"
 
     sample_type: Union[MethodSampleTypeLhsMcLhs, MethodSampleTypeLhsMcRandom] | None = (
         DakotaField(
@@ -466,7 +480,7 @@ class MethodSampleTypeLhsMcMixin(DakotaBaseModel):
 
 
 class NumericalSolveSolverMetricNormEstimatorVariance(DakotaBaseModel):
-    """Generated model for NumericalSolveSolverMetricNormEstimatorVariance"""
+    "Utilize a p-norm over the vector of QoI estimator variances as the solver metric for sampling-based multifidelity methods."
 
     norm_estimator_variance: NumericalSolveSolverMetricNormEstimatorVarianceConfig = DakotaField(
         description="Utilize a p-norm over the vector of QoI estimator variances as the solver metric for sampling-based multifidelity methods.",
@@ -484,7 +498,7 @@ class NumericalSolveSolverMetricNormEstimatorVariance(DakotaBaseModel):
 
 
 class MlmfGroupPilotSamplesMixin(DakotaBaseModel):
-    """Generated model for MlmfGroupPilotSamplesMixin"""
+    "Generated model for MlmfGroupPilotSamplesMixin"
 
     pilot_samples: PilotSamples | None = DakotaField(
         default=None,
@@ -494,7 +508,7 @@ class MlmfGroupPilotSamplesMixin(DakotaBaseModel):
 
 
 class MethodExportSamplesFormatMixin(DakotaBaseModel):
-    """Generated model for MethodExportSamplesFormatMixin"""
+    "Generated model for MethodExportSamplesFormatMixin"
 
     format: Union[
         MethodExportSamplesFormatCustomAnnotated,
@@ -512,7 +526,7 @@ class MethodExportSamplesFormatMixin(DakotaBaseModel):
 
 
 class NumericalSolve(DakotaBaseModel):
-    """Generated model for NumericalSolve"""
+    "Specify the situations where numerical optimization is used for MFMC sample allocation"
 
     numerical_solve_strategy: Union[Fallback, Override] = DakotaField(
         default_factory=Fallback,
@@ -552,7 +566,7 @@ class NumericalSolve(DakotaBaseModel):
 
 
 class MfmcNumericalSolveMixin(DakotaBaseModel):
-    """Generated model for MfmcNumericalSolveMixin"""
+    "Generated model for MfmcNumericalSolveMixin"
 
     numerical_solve: NumericalSolve | None = DakotaField(
         default=None,

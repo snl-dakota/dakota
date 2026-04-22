@@ -21,10 +21,11 @@ from dakota.spec.shared.surrogate import MethodExportApproxFormatMixin
 
 
 class XGP(DakotaBaseModel):
-    """Generated model for XGP"""
+    "Create GP surrogate in x-space"
 
     x_gaussian_process: Literal[True] = DakotaField(
         default=True,
+        description="Create GP surrogate in x-space",
         dakota={
             "aliases": ["x_kriging"],
             "materialization": [
@@ -40,10 +41,11 @@ class XGP(DakotaBaseModel):
 
 
 class UGP(DakotaBaseModel):
-    """Generated model for UGP"""
+    "Create GP surrogate in u-space"
 
     u_gaussian_process: Literal[True] = DakotaField(
         default=True,
+        description="Create GP surrogate in u-space",
         dakota={
             "aliases": ["u_kriging"],
             "materialization": [
@@ -59,7 +61,7 @@ class UGP(DakotaBaseModel):
 
 
 class GlobalReliabilitySurfpack(DakotaBaseModel):
-    """Generated model for GlobalReliabilitySurfpack"""
+    "Use the Surfpack version of Gaussian Process surrogates"
 
     surfpack: MethodExportModelContext1Mixin = DakotaField(
         description="Use the Surfpack version of Gaussian Process surrogates",
@@ -77,10 +79,11 @@ class GlobalReliabilitySurfpack(DakotaBaseModel):
 
 
 class GlobalReliabilityDakota(DakotaBaseModel):
-    """Generated model for GlobalReliabilityDakota"""
+    "Select the built in Gaussian Process surrogate"
 
     dakota: Literal[True] = DakotaField(
         default=True,
+        description="Select the built in Gaussian Process surrogate",
         dakota={
             "materialization": [
                 {
@@ -95,7 +98,7 @@ class GlobalReliabilityDakota(DakotaBaseModel):
 
 
 class GlobalReliabilityExperimentalConfig(MethodExportModelContext1Mixin):
-    """Generated model for GlobalReliabilityExperimentalConfig"""
+    "Use the experimental Gaussian Process surrogate"
 
     options_file: str | None = DakotaField(
         default=None,
@@ -113,7 +116,7 @@ class GlobalReliabilityExperimentalConfig(MethodExportModelContext1Mixin):
 
 
 class GlobalReliabilityExportApproxPointsFile(MethodExportApproxFormatMixin):
-    """Generated model for GlobalReliabilityExportApproxPointsFile"""
+    "Output file for surrogate model value evaluations"
 
     filename: str = DakotaField(
         description="Output file for surrogate model value evaluations",
@@ -130,7 +133,7 @@ class GlobalReliabilityExportApproxPointsFile(MethodExportApproxFormatMixin):
 
 
 class GlobalReliabilityExperimental(DakotaBaseModel):
-    """Generated model for GlobalReliabilityExperimental"""
+    "Use the experimental Gaussian Process surrogate"
 
     experimental: GlobalReliabilityExperimentalConfig = DakotaField(
         description="Use the experimental Gaussian Process surrogate",
@@ -156,7 +159,7 @@ class GlobalReliabilityConfig(
     MethodConvergenceTolMixin,
     MethodOptionalModelPointerMixin,
 ):
-    """Generated model for GlobalReliabilityConfig"""
+    "Global reliability methods"
 
     initial_samples: int = DakotaField(
         default=0,
@@ -223,7 +226,7 @@ class GlobalReliabilityConfig(
 
 
 class GlobalReliabilitySelection(MethodSelection):
-    """Generated model for GlobalReliabilitySelection"""
+    "Generated model for GlobalReliabilitySelection"
 
     global_reliability: GlobalReliabilityConfig = DakotaField(
         dakota={

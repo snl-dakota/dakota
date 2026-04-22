@@ -11,10 +11,11 @@ from ...validation.rules import CheckNonnegativeList, CompareLength, CompareLeng
 
 
 class EmulatorGPSurfpack(DakotaBaseModel):
-    """Generated model for EmulatorGPSurfpack"""
+    "Use the Surfpack version of Gaussian Process surrogates"
 
     surfpack: Literal[True] = DakotaField(
         default=True,
+        description="Use the Surfpack version of Gaussian Process surrogates",
         dakota={
             "materialization": [
                 {
@@ -29,10 +30,11 @@ class EmulatorGPSurfpack(DakotaBaseModel):
 
 
 class EmulatorGPDakota(DakotaBaseModel):
-    """Generated model for EmulatorGPDakota"""
+    "Select the built in Gaussian Process surrogate"
 
     dakota: Literal[True] = DakotaField(
         default=True,
+        description="Select the built in Gaussian Process surrogate",
         dakota={
             "materialization": [
                 {
@@ -47,7 +49,7 @@ class EmulatorGPDakota(DakotaBaseModel):
 
 
 class GPImportBuildPointsFileCustomAnnotatedConfig(DakotaBaseModel):
-    """Generated model for GPImportBuildPointsFileCustomAnnotatedConfig"""
+    "Selects custom-annotated tabular file format"
 
     header: Literal[True] | None = DakotaField(
         default=None,
@@ -94,10 +96,11 @@ class GPImportBuildPointsFileCustomAnnotatedConfig(DakotaBaseModel):
 
 
 class GPImportBuildPointsFileAnnotated(DakotaBaseModel):
-    """Generated model for GPImportBuildPointsFileAnnotated"""
+    "Selects annotated tabular file format"
 
     annotated: Literal[True] = DakotaField(
         default=True,
+        description="Selects annotated tabular file format",
         dakota={
             "materialization": [
                 {
@@ -112,10 +115,11 @@ class GPImportBuildPointsFileAnnotated(DakotaBaseModel):
 
 
 class GPImportBuildPointsFileFreeform(DakotaBaseModel):
-    """Generated model for GPImportBuildPointsFileFreeform"""
+    "Selects freeform file format"
 
     freeform: Literal[True] = DakotaField(
         default=True,
+        description="Selects freeform file format",
         dakota={
             "materialization": [
                 {
@@ -130,10 +134,11 @@ class GPImportBuildPointsFileFreeform(DakotaBaseModel):
 
 
 class EmulatorPcePRefinementUniform(DakotaBaseModel):
-    """Generated model for EmulatorPcePRefinementUniform"""
+    "Refine an expansion uniformly in all dimensions."
 
     uniform: Literal[True] = DakotaField(
         default=True,
+        description="Refine an expansion uniformly in all dimensions.",
         dakota={
             "materialization": [
                 {
@@ -149,10 +154,11 @@ class EmulatorPcePRefinementUniform(DakotaBaseModel):
 
 
 class EmulatorPcePRefinementDimAdaptiveSobol(DakotaBaseModel):
-    """Generated model for EmulatorPcePRefinementDimAdaptiveSobol"""
+    "Estimate dimension preference for automated refinement of stochastic expansion using total Sobol' sensitivity indices."
 
     sobol: Literal[True] = DakotaField(
         default=True,
+        description="Estimate dimension preference for automated refinement of stochastic expansion using total Sobol' sensitivity indices.",
         dakota={
             "materialization": [
                 {
@@ -168,10 +174,11 @@ class EmulatorPcePRefinementDimAdaptiveSobol(DakotaBaseModel):
 
 
 class EmulatorPcePRefinementDimAdaptiveDecay(DakotaBaseModel):
-    """Generated model for EmulatorPcePRefinementDimAdaptiveDecay"""
+    "Estimate spectral coefficient decay rates to guide dimension-adaptive refinement."
 
     decay: Literal[True] = DakotaField(
         default=True,
+        description="Estimate spectral coefficient decay rates to guide dimension-adaptive refinement.",
         dakota={
             "materialization": [
                 {
@@ -187,10 +194,11 @@ class EmulatorPcePRefinementDimAdaptiveDecay(DakotaBaseModel):
 
 
 class EmulatorPcePRefinementDimAdaptiveGeneralized(DakotaBaseModel):
-    """Generated model for EmulatorPcePRefinementDimAdaptiveGeneralized"""
+    "Use the generalized sparse grid dimension adaptive algorithm to refine a sparse grid approximation of stochastic expansion."
 
     generalized: Literal[True] = DakotaField(
         default=True,
+        description="Use the generalized sparse grid dimension adaptive algorithm to refine a sparse grid approximation of stochastic expansion.",
         dakota={
             "materialization": [
                 {
@@ -206,10 +214,11 @@ class EmulatorPcePRefinementDimAdaptiveGeneralized(DakotaBaseModel):
 
 
 class EmulatorPceQuadratureOrderNested(DakotaBaseModel):
-    """Generated model for EmulatorPceQuadratureOrderNested"""
+    "Enforce use of nested quadrature rules if available"
 
     nested: Literal[True] = DakotaField(
         default=True,
+        description="Enforce use of nested quadrature rules if available",
         dakota={
             "materialization": [
                 {
@@ -225,10 +234,11 @@ class EmulatorPceQuadratureOrderNested(DakotaBaseModel):
 
 
 class EmulatorPceQuadratureOrderNonNested(DakotaBaseModel):
-    """Generated model for EmulatorPceQuadratureOrderNonNested"""
+    "Enforce use of non-nested quadrature rules"
 
     non_nested: Literal[True] = DakotaField(
         default=True,
+        description="Enforce use of non-nested quadrature rules",
         dakota={
             "materialization": [
                 {
@@ -244,10 +254,11 @@ class EmulatorPceQuadratureOrderNonNested(DakotaBaseModel):
 
 
 class EmulatorPceSGLevelRestricted(DakotaBaseModel):
-    """Generated model for EmulatorPceSGLevelRestricted"""
+    "Restrict the growth rates for nested and non-nested rules can be synchronized for consistency."
 
     restricted: Literal[True] = DakotaField(
         default=True,
+        description="Restrict the growth rates for nested and non-nested rules can be synchronized for consistency.",
         dakota={
             "materialization": [
                 {
@@ -263,10 +274,11 @@ class EmulatorPceSGLevelRestricted(DakotaBaseModel):
 
 
 class EmulatorPceSGLevelUnrestricted(DakotaBaseModel):
-    """Generated model for EmulatorPceSGLevelUnrestricted"""
+    "Overide the default restriction of growth rates for nested and non-nested rules that are by defualt synchronized for consistency."
 
     unrestricted: Literal[True] = DakotaField(
         default=True,
+        description="Overide the default restriction of growth rates for nested and non-nested rules that are by defualt synchronized for consistency.",
         dakota={
             "materialization": [
                 {
@@ -282,7 +294,7 @@ class EmulatorPceSGLevelUnrestricted(DakotaBaseModel):
 
 
 class EmulatorPceCubatureIntegrand(DakotaBaseModel):
-    """Generated model for EmulatorPceCubatureIntegrand"""
+    "Cubature using Stroud rules and their extensions"
 
     cubature_integrand: int = DakotaField(
         description="Cubature using Stroud rules and their extensions",
@@ -299,10 +311,11 @@ class EmulatorPceCubatureIntegrand(DakotaBaseModel):
 
 
 class EmulatorPceExpansionOrderBasisTypeTensorProduct(DakotaBaseModel):
-    """Generated model for EmulatorPceExpansionOrderBasisTypeTensorProduct"""
+    "Use a tensor-product index set to construct a polynomial chaos expansion."
 
     tensor_product: Literal[True] = DakotaField(
         default=True,
+        description="Use a tensor-product index set to construct a polynomial chaos expansion.",
         dakota={
             "materialization": [
                 {
@@ -318,10 +331,11 @@ class EmulatorPceExpansionOrderBasisTypeTensorProduct(DakotaBaseModel):
 
 
 class EmulatorPceExpansionOrderBasisTypeTotalOrder(DakotaBaseModel):
-    """Generated model for EmulatorPceExpansionOrderBasisTypeTotalOrder"""
+    "Use a total-order index set to construct a polynomial chaos expansion."
 
     total_order: Literal[True] = DakotaField(
         default=True,
+        description="Use a total-order index set to construct a polynomial chaos expansion.",
         dakota={
             "materialization": [
                 {
@@ -337,7 +351,7 @@ class EmulatorPceExpansionOrderBasisTypeTotalOrder(DakotaBaseModel):
 
 
 class EmulatorPceExpansionOrderBasisTypeAdaptedConfig(DakotaBaseModel):
-    """Generated model for EmulatorPceExpansionOrderBasisTypeAdaptedConfig"""
+    "Use adaptive basis selection to choose the basis terms in a polynomial chaos expansion."
 
     advancements: int = DakotaField(
         default=3,
@@ -368,10 +382,11 @@ class EmulatorPceExpansionOrderBasisTypeAdaptedConfig(DakotaBaseModel):
 
 
 class EmulatorPceExpansionOrderCollocPointsLeastSquaresSvd(DakotaBaseModel):
-    """Generated model for EmulatorPceExpansionOrderCollocPointsLeastSquaresSvd"""
+    "Calculate the coefficients of a polynomial chaos expansion using the singular value decomposition."
 
     svd: Literal[True] = DakotaField(
         default=True,
+        description="Calculate the coefficients of a polynomial chaos expansion using the singular value decomposition.",
         dakota={
             "materialization": [
                 {
@@ -386,10 +401,11 @@ class EmulatorPceExpansionOrderCollocPointsLeastSquaresSvd(DakotaBaseModel):
 
 
 class EmulatorPceExpansionOrderCollocPointsLeastSquaresEqCon(DakotaBaseModel):
-    """Generated model for EmulatorPceExpansionOrderCollocPointsLeastSquaresEqCon"""
+    "Calculate the coefficients of a polynomial chaos expansion using equality constrained least squares."
 
     equality_constrained: Literal[True] = DakotaField(
         default=True,
+        description="Calculate the coefficients of a polynomial chaos expansion using equality constrained least squares.",
         dakota={
             "materialization": [
                 {
@@ -404,7 +420,7 @@ class EmulatorPceExpansionOrderCollocPointsLeastSquaresEqCon(DakotaBaseModel):
 
 
 class EmulatorPceExpansionOrderCollocPointsOMPConfig(DakotaBaseModel):
-    """Generated model for EmulatorPceExpansionOrderCollocPointsOMPConfig"""
+    "Compute the coefficients of a polynomial expansion using orthogonal matching pursuit (OMP)"
 
     noise_tolerance: list[DakotaFloat] | None = DakotaField(
         default=None,
@@ -422,10 +438,11 @@ class EmulatorPceExpansionOrderCollocPointsOMPConfig(DakotaBaseModel):
 
 
 class EmulatorPceExpansionOrderCollocPointsBP(DakotaBaseModel):
-    """Generated model for EmulatorPceExpansionOrderCollocPointsBP"""
+    "Compute the coefficients of a polynomial expansion by solving the Basis Pursuit L1 -minimization problem using linear programming."
 
     basis_pursuit: Literal[True] = DakotaField(
         default=True,
+        description="Compute the coefficients of a polynomial expansion by solving the Basis Pursuit L1 -minimization problem using linear programming.",
         dakota={
             "aliases": ["bp"],
             "materialization": [
@@ -442,7 +459,7 @@ class EmulatorPceExpansionOrderCollocPointsBP(DakotaBaseModel):
 
 
 class EmulatorPceExpansionOrderCollocPointsLassoConfig(DakotaBaseModel):
-    """Generated model for EmulatorPceExpansionOrderCollocPointsLassoConfig"""
+    "Compute the coefficients of a polynomial expansion by using the LASSO problem."
 
     noise_tolerance: list[DakotaFloat] | None = DakotaField(
         default=None,
@@ -473,7 +490,7 @@ class EmulatorPceExpansionOrderCollocPointsLassoConfig(DakotaBaseModel):
 
 
 class EmulatorPceExpansionOrderCollocPointsCV(DakotaBaseModel):
-    """Generated model for EmulatorPceExpansionOrderCollocPointsCV"""
+    "Use cross validation to choose the 'best' polynomial order of a polynomial chaos expansion."
 
     noise_only: Literal[True] | None = DakotaField(
         default=None,
@@ -505,7 +522,7 @@ class EmulatorPceExpansionOrderCollocPointsCV(DakotaBaseModel):
 
 
 class EmulatorPceExpansionOrderExpansionSamplesConfig(DakotaBaseModel):
-    """Generated model for EmulatorPceExpansionOrderExpansionSamplesConfig"""
+    "Number of simulation samples used to estimate the expected value of a set of PCE coefficients"
 
     value: int = DakotaField(
         default=SZ_MAX,
@@ -538,7 +555,7 @@ class EmulatorPceExpansionOrderExpansionSamplesConfig(DakotaBaseModel):
 
 
 class EmulatorPceImportExpansionFile(DakotaBaseModel):
-    """Generated model for EmulatorPceImportExpansionFile"""
+    "Build a Polynomial Chaos Expansion (PCE) by importing expansion coefficients and a corresponding multi-index from a file"
 
     import_expansion_file: str = DakotaField(
         description="Build a Polynomial Chaos Expansion (PCE) by importing expansion coefficients and a corresponding multi-index from a file",
@@ -555,10 +572,11 @@ class EmulatorPceImportExpansionFile(DakotaBaseModel):
 
 
 class EmulatorPceAskey(DakotaBaseModel):
-    """Generated model for EmulatorPceAskey"""
+    "Select the standardized random variables (and associated basis polynomials) from the Askey family that best match the user-specified random variables."
 
     askey: Literal[True] = DakotaField(
         default=True,
+        description="Select the standardized random variables (and associated basis polynomials) from the Askey family that best match the user-specified random variables.",
         dakota={
             "materialization": [
                 {
@@ -573,10 +591,11 @@ class EmulatorPceAskey(DakotaBaseModel):
 
 
 class EmulatorPceWiener(DakotaBaseModel):
-    """Generated model for EmulatorPceWiener"""
+    "Use standard normal random variables (along with Hermite orthogonal basis polynomials) when transforming to a standardized probability space."
 
     wiener: Literal[True] = DakotaField(
         default=True,
+        description="Use standard normal random variables (along with Hermite orthogonal basis polynomials) when transforming to a standardized probability space.",
         dakota={
             "materialization": [
                 {
@@ -591,10 +610,11 @@ class EmulatorPceWiener(DakotaBaseModel):
 
 
 class EmulatorPceDiagCov(DakotaBaseModel):
-    """Generated model for EmulatorPceDiagCov"""
+    "Display only the diagonal terms of the covariance matrix"
 
     diagonal_covariance: Literal[True] = DakotaField(
         default=True,
+        description="Display only the diagonal terms of the covariance matrix",
         dakota={
             "materialization": [
                 {
@@ -609,10 +629,11 @@ class EmulatorPceDiagCov(DakotaBaseModel):
 
 
 class EmulatorPceFullCov(DakotaBaseModel):
-    """Generated model for EmulatorPceFullCov"""
+    "Display the full covariance matrix"
 
     full_covariance: Literal[True] = DakotaField(
         default=True,
+        description="Display the full covariance matrix",
         dakota={
             "materialization": [
                 {
@@ -627,7 +648,7 @@ class EmulatorPceFullCov(DakotaBaseModel):
 
 
 class EmulatorMlPceAllocationControlEstimatorVarianceConfig(DakotaBaseModel):
-    """Generated model for EmulatorMlPceAllocationControlEstimatorVarianceConfig"""
+    "Variance of mean estimator within multilevel polynomial chaos"
 
     estimator_rate: DakotaFloat = DakotaField(
         default=2.0,
@@ -645,10 +666,11 @@ class EmulatorMlPceAllocationControlEstimatorVarianceConfig(DakotaBaseModel):
 
 
 class EmulatorMlPceAllocationControlRipSampling(DakotaBaseModel):
-    """Generated model for EmulatorMlPceAllocationControlRipSampling"""
+    "Sample allocation based on restricted isometry property (RIP) within multilevel polynomial chaos"
 
     rip_sampling: Literal[True] = DakotaField(
         default=True,
+        description="Sample allocation based on restricted isometry property (RIP) within multilevel polynomial chaos",
         dakota={
             "materialization": [
                 {
@@ -663,10 +685,11 @@ class EmulatorMlPceAllocationControlRipSampling(DakotaBaseModel):
 
 
 class EmulatorMlPceDiscrepancyEmulationDistinct(DakotaBaseModel):
-    """Generated model for EmulatorMlPceDiscrepancyEmulationDistinct"""
+    "Distinct formulation for emulation of model discrepancies."
 
     distinct: Literal[True] = DakotaField(
         default=True,
+        description="Distinct formulation for emulation of model discrepancies.",
         dakota={
             "aliases": ["paired"],
             "materialization": [
@@ -682,10 +705,11 @@ class EmulatorMlPceDiscrepancyEmulationDistinct(DakotaBaseModel):
 
 
 class EmulatorMlPceDiscrepancyEmulationRecursive(DakotaBaseModel):
-    """Generated model for EmulatorMlPceDiscrepancyEmulationRecursive"""
+    "Recursive formulation for emulation of model discrepancies."
 
     recursive: Literal[True] = DakotaField(
         default=True,
+        description="Recursive formulation for emulation of model discrepancies.",
         dakota={
             "materialization": [
                 {
@@ -702,7 +726,7 @@ class EmulatorMlPceDiscrepancyEmulationRecursive(DakotaBaseModel):
 class EmulatorMlPceExpansionOrderSequenceExpansionSamplesSequenceConfig(
     DakotaBaseModel
 ):
-    """Generated model for EmulatorMlPceExpansionOrderSequenceExpansionSamplesSequenceConfig"""
+    "Sequence of expansion samples used in a multi-stage polynomial chaos expansion Each level entry of the ``expansion_samples_sequence`` applies to one expansion within a multi-stage expansion.  Current multi-stage expansions that support expansion samples sequences include multilevel and multifidelity polynomial chaos. If adaptive refinement is active, then this sequence specifies the starting point for each level within either an individual or integrated refinement approach. A corresponding scalar specification is documented at, e.g., :dakkw:`method-polynomial_chaos-expansion_order-expansion_samples`"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CheckNonnegativeList(
@@ -741,10 +765,11 @@ class EmulatorMlPceExpansionOrderSequenceExpansionSamplesSequenceConfig(
 
 
 class EmulatorMfPceAllocationControlGreedy(DakotaBaseModel):
-    """Generated model for EmulatorMfPceAllocationControlGreedy"""
+    "Sample allocation based on greedy refinement within multifidelity polynomial chaos"
 
     greedy: Literal[True] = DakotaField(
         default=True,
+        description="Sample allocation based on greedy refinement within multifidelity polynomial chaos",
         dakota={
             "materialization": [
                 {
@@ -759,10 +784,11 @@ class EmulatorMfPceAllocationControlGreedy(DakotaBaseModel):
 
 
 class EmulatorScHRefinementLocalAdaptive(DakotaBaseModel):
-    """Generated model for EmulatorScHRefinementLocalAdaptive"""
+    "Planned future capability for local pointwise refinement within a generalized sparse grid."
 
     local_adaptive: Literal[True] = DakotaField(
         default=True,
+        description="Planned future capability for local pointwise refinement within a generalized sparse grid.",
         dakota={
             "materialization": [
                 {
@@ -778,10 +804,11 @@ class EmulatorScHRefinementLocalAdaptive(DakotaBaseModel):
 
 
 class EmulatorScSGLevelNodal(DakotaBaseModel):
-    """Generated model for EmulatorScSGLevelNodal"""
+    "Employ a nodal sparse grid construction in stochastic collocation"
 
     nodal: Literal[True] = DakotaField(
         default=True,
+        description="Employ a nodal sparse grid construction in stochastic collocation",
         dakota={
             "materialization": [
                 {
@@ -797,10 +824,11 @@ class EmulatorScSGLevelNodal(DakotaBaseModel):
 
 
 class EmulatorScSGLevelHierarchical(DakotaBaseModel):
-    """Generated model for EmulatorScSGLevelHierarchical"""
+    "Employ a hierarchical sparse grid construction"
 
     hierarchical: Literal[True] = DakotaField(
         default=True,
+        description="Employ a hierarchical sparse grid construction",
         dakota={
             "materialization": [
                 {
@@ -816,10 +844,11 @@ class EmulatorScSGLevelHierarchical(DakotaBaseModel):
 
 
 class EmulatorScPiecewise(DakotaBaseModel):
-    """Generated model for EmulatorScPiecewise"""
+    "Use piecewise local basis functions"
 
     piecewise: Literal[True] = DakotaField(
         default=True,
+        description="Use piecewise local basis functions",
         dakota={
             "materialization": [
                 {
@@ -837,10 +866,11 @@ class EmulatorScPiecewise(DakotaBaseModel):
 
 
 class MfScPRefinementUniform(DakotaBaseModel):
-    """Generated model for MfScPRefinementUniform"""
+    "Refine an expansion uniformly in all dimensions."
 
     uniform: Literal[True] = DakotaField(
         default=True,
+        description="Refine an expansion uniformly in all dimensions.",
         dakota={
             "materialization": [
                 {
@@ -856,10 +886,11 @@ class MfScPRefinementUniform(DakotaBaseModel):
 
 
 class MfScPRefinementDimAdaptiveSobol(DakotaBaseModel):
-    """Generated model for MfScPRefinementDimAdaptiveSobol"""
+    "Estimate dimension preference for automated refinement of stochastic expansion using total Sobol' sensitivity indices."
 
     sobol: Literal[True] = DakotaField(
         default=True,
+        description="Estimate dimension preference for automated refinement of stochastic expansion using total Sobol' sensitivity indices.",
         dakota={
             "materialization": [
                 {
@@ -875,10 +906,11 @@ class MfScPRefinementDimAdaptiveSobol(DakotaBaseModel):
 
 
 class MfScPRefinementDimAdaptiveGeneralized(DakotaBaseModel):
-    """Generated model for MfScPRefinementDimAdaptiveGeneralized"""
+    "Use the generalized sparse grid dimension adaptive algorithm to refine a sparse grid approximation of stochastic expansion."
 
     generalized: Literal[True] = DakotaField(
         default=True,
+        description="Use the generalized sparse grid dimension adaptive algorithm to refine a sparse grid approximation of stochastic expansion.",
         dakota={
             "materialization": [
                 {
@@ -894,10 +926,11 @@ class MfScPRefinementDimAdaptiveGeneralized(DakotaBaseModel):
 
 
 class MfScHRefinementLocalAdaptive(DakotaBaseModel):
-    """Generated model for MfScHRefinementLocalAdaptive"""
+    "Planned future capability for local pointwise refinement within a generalized sparse grid."
 
     local_adaptive: Literal[True] = DakotaField(
         default=True,
+        description="Planned future capability for local pointwise refinement within a generalized sparse grid.",
         dakota={
             "materialization": [
                 {
@@ -913,10 +946,11 @@ class MfScHRefinementLocalAdaptive(DakotaBaseModel):
 
 
 class MfScAllocationControlGreedy(DakotaBaseModel):
-    """Generated model for MfScAllocationControlGreedy"""
+    "Sample allocation based on greedy refinement within multifidelity stochastic collocation"
 
     greedy: Literal[True] = DakotaField(
         default=True,
+        description="Sample allocation based on greedy refinement within multifidelity stochastic collocation",
         dakota={
             "materialization": [
                 {
@@ -931,10 +965,11 @@ class MfScAllocationControlGreedy(DakotaBaseModel):
 
 
 class MfScDiscrepancyEmulationDistinct(DakotaBaseModel):
-    """Generated model for MfScDiscrepancyEmulationDistinct"""
+    "Distinct formulation for emulation of model discrepancies."
 
     distinct: Literal[True] = DakotaField(
         default=True,
+        description="Distinct formulation for emulation of model discrepancies.",
         dakota={
             "aliases": ["paired"],
             "materialization": [
@@ -950,10 +985,11 @@ class MfScDiscrepancyEmulationDistinct(DakotaBaseModel):
 
 
 class MfScDiscrepancyEmulationRecursive(DakotaBaseModel):
-    """Generated model for MfScDiscrepancyEmulationRecursive"""
+    "Recursive formulation for emulation of model discrepancies."
 
     recursive: Literal[True] = DakotaField(
         default=True,
+        description="Recursive formulation for emulation of model discrepancies.",
         dakota={
             "materialization": [
                 {
@@ -968,10 +1004,11 @@ class MfScDiscrepancyEmulationRecursive(DakotaBaseModel):
 
 
 class MfScQuadratureOrderSequenceNested(DakotaBaseModel):
-    """Generated model for MfScQuadratureOrderSequenceNested"""
+    "Enforce use of nested quadrature rules if available"
 
     nested: Literal[True] = DakotaField(
         default=True,
+        description="Enforce use of nested quadrature rules if available",
         dakota={
             "materialization": [
                 {
@@ -987,10 +1024,11 @@ class MfScQuadratureOrderSequenceNested(DakotaBaseModel):
 
 
 class MfScQuadratureOrderSequenceNonNested(DakotaBaseModel):
-    """Generated model for MfScQuadratureOrderSequenceNonNested"""
+    "Enforce use of non-nested quadrature rules"
 
     non_nested: Literal[True] = DakotaField(
         default=True,
+        description="Enforce use of non-nested quadrature rules",
         dakota={
             "materialization": [
                 {
@@ -1006,10 +1044,11 @@ class MfScQuadratureOrderSequenceNonNested(DakotaBaseModel):
 
 
 class MfScSGLevelSequenceNodal(DakotaBaseModel):
-    """Generated model for MfScSGLevelSequenceNodal"""
+    "Employ a nodal sparse grid construction in stochastic collocation"
 
     nodal: Literal[True] = DakotaField(
         default=True,
+        description="Employ a nodal sparse grid construction in stochastic collocation",
         dakota={
             "materialization": [
                 {
@@ -1025,10 +1064,11 @@ class MfScSGLevelSequenceNodal(DakotaBaseModel):
 
 
 class MfScSGLevelSequenceHierarchical(DakotaBaseModel):
-    """Generated model for MfScSGLevelSequenceHierarchical"""
+    "Employ a hierarchical sparse grid construction"
 
     hierarchical: Literal[True] = DakotaField(
         default=True,
+        description="Employ a hierarchical sparse grid construction",
         dakota={
             "materialization": [
                 {
@@ -1044,10 +1084,11 @@ class MfScSGLevelSequenceHierarchical(DakotaBaseModel):
 
 
 class MfScSGLevelSequenceRestricted(DakotaBaseModel):
-    """Generated model for MfScSGLevelSequenceRestricted"""
+    "Restrict the growth rates for nested and non-nested rules can be synchronized for consistency."
 
     restricted: Literal[True] = DakotaField(
         default=True,
+        description="Restrict the growth rates for nested and non-nested rules can be synchronized for consistency.",
         dakota={
             "materialization": [
                 {
@@ -1063,10 +1104,11 @@ class MfScSGLevelSequenceRestricted(DakotaBaseModel):
 
 
 class MfScSGLevelSequenceUnrestricted(DakotaBaseModel):
-    """Generated model for MfScSGLevelSequenceUnrestricted"""
+    "Overide the default restriction of growth rates for nested and non-nested rules that are by defualt synchronized for consistency."
 
     unrestricted: Literal[True] = DakotaField(
         default=True,
+        description="Overide the default restriction of growth rates for nested and non-nested rules that are by defualt synchronized for consistency.",
         dakota={
             "materialization": [
                 {
@@ -1082,10 +1124,11 @@ class MfScSGLevelSequenceUnrestricted(DakotaBaseModel):
 
 
 class MfScPiecewise(DakotaBaseModel):
-    """Generated model for MfScPiecewise"""
+    "Use piecewise local basis functions"
 
     piecewise: Literal[True] = DakotaField(
         default=True,
+        description="Use piecewise local basis functions",
         dakota={
             "materialization": [
                 {
@@ -1103,10 +1146,11 @@ class MfScPiecewise(DakotaBaseModel):
 
 
 class MfScAskey(DakotaBaseModel):
-    """Generated model for MfScAskey"""
+    "Select the standardized random variables (and associated basis polynomials) from the Askey family that best match the user-specified random variables."
 
     askey: Literal[True] = DakotaField(
         default=True,
+        description="Select the standardized random variables (and associated basis polynomials) from the Askey family that best match the user-specified random variables.",
         dakota={
             "materialization": [
                 {
@@ -1121,10 +1165,11 @@ class MfScAskey(DakotaBaseModel):
 
 
 class MfScWiener(DakotaBaseModel):
-    """Generated model for MfScWiener"""
+    "Use standard normal random variables (along with Hermite orthogonal basis polynomials) when transforming to a standardized probability space."
 
     wiener: Literal[True] = DakotaField(
         default=True,
+        description="Use standard normal random variables (along with Hermite orthogonal basis polynomials) when transforming to a standardized probability space.",
         dakota={
             "materialization": [
                 {
@@ -1139,10 +1184,11 @@ class MfScWiener(DakotaBaseModel):
 
 
 class MfScDiagCov(DakotaBaseModel):
-    """Generated model for MfScDiagCov"""
+    "Display only the diagonal terms of the covariance matrix"
 
     diagonal_covariance: Literal[True] = DakotaField(
         default=True,
+        description="Display only the diagonal terms of the covariance matrix",
         dakota={
             "materialization": [
                 {
@@ -1157,10 +1203,11 @@ class MfScDiagCov(DakotaBaseModel):
 
 
 class MfScFullCov(DakotaBaseModel):
-    """Generated model for MfScFullCov"""
+    "Display the full covariance matrix"
 
     full_covariance: Literal[True] = DakotaField(
         default=True,
+        description="Display the full covariance matrix",
         dakota={
             "materialization": [
                 {
@@ -1175,7 +1222,7 @@ class MfScFullCov(DakotaBaseModel):
 
 
 class PriorConfig(DakotaBaseModel):
-    """Generated model for PriorConfig"""
+    "Uses the covariance of the prior distributions to define the MCMC proposal covariance."
 
     multiplier: DakotaFloat = DakotaField(
         default=1.0,
@@ -1194,7 +1241,7 @@ class PriorConfig(DakotaBaseModel):
 
 
 class DerivativesConfig(DakotaBaseModel):
-    """Generated model for DerivativesConfig"""
+    "Use derivatives to inform the MCMC proposal covariance."
 
     update_period: int = DakotaField(
         default=INT_MAX,
@@ -1212,10 +1259,11 @@ class DerivativesConfig(DakotaBaseModel):
 
 
 class ValuesDiag(DakotaBaseModel):
-    """Generated model for ValuesDiag"""
+    "Specifies the diagonal matrix format when specifying a user-specified proposal covariance."
 
     diagonal: Literal[True] = DakotaField(
         default=True,
+        description="Specifies the diagonal matrix format when specifying a user-specified proposal covariance.",
         dakota={
             "materialization": [
                 {
@@ -1230,10 +1278,11 @@ class ValuesDiag(DakotaBaseModel):
 
 
 class ValuesMatrix(DakotaBaseModel):
-    """Generated model for ValuesMatrix"""
+    "Specifies the full matrix format when specifying a user-specified proposal covariance."
 
     matrix: Literal[True] = DakotaField(
         default=True,
+        description="Specifies the full matrix format when specifying a user-specified proposal covariance.",
         dakota={
             "materialization": [
                 {
@@ -1248,10 +1297,11 @@ class ValuesMatrix(DakotaBaseModel):
 
 
 class ScPRefinementUniform(DakotaBaseModel):
-    """Generated model for ScPRefinementUniform"""
+    "Refine an expansion uniformly in all dimensions."
 
     uniform: Literal[True] = DakotaField(
         default=True,
+        description="Refine an expansion uniformly in all dimensions.",
         dakota={
             "materialization": [
                 {
@@ -1267,10 +1317,11 @@ class ScPRefinementUniform(DakotaBaseModel):
 
 
 class ScPRefinementDimAdaptiveSobol(DakotaBaseModel):
-    """Generated model for ScPRefinementDimAdaptiveSobol"""
+    "Estimate dimension preference for automated refinement of stochastic expansion using total Sobol' sensitivity indices."
 
     sobol: Literal[True] = DakotaField(
         default=True,
+        description="Estimate dimension preference for automated refinement of stochastic expansion using total Sobol' sensitivity indices.",
         dakota={
             "materialization": [
                 {
@@ -1286,10 +1337,11 @@ class ScPRefinementDimAdaptiveSobol(DakotaBaseModel):
 
 
 class ScPRefinementDimAdaptiveGeneralized(DakotaBaseModel):
-    """Generated model for ScPRefinementDimAdaptiveGeneralized"""
+    "Use the generalized sparse grid dimension adaptive algorithm to refine a sparse grid approximation of stochastic expansion."
 
     generalized: Literal[True] = DakotaField(
         default=True,
+        description="Use the generalized sparse grid dimension adaptive algorithm to refine a sparse grid approximation of stochastic expansion.",
         dakota={
             "materialization": [
                 {
@@ -1305,10 +1357,11 @@ class ScPRefinementDimAdaptiveGeneralized(DakotaBaseModel):
 
 
 class BayesScHRefinementLocalAdaptive(DakotaBaseModel):
-    """Generated model for BayesScHRefinementLocalAdaptive"""
+    "Planned future capability for local pointwise refinement within a generalized sparse grid."
 
     local_adaptive: Literal[True] = DakotaField(
         default=True,
+        description="Planned future capability for local pointwise refinement within a generalized sparse grid.",
         dakota={
             "materialization": [
                 {
@@ -1324,10 +1377,11 @@ class BayesScHRefinementLocalAdaptive(DakotaBaseModel):
 
 
 class ScQuadratureOrderNested(DakotaBaseModel):
-    """Generated model for ScQuadratureOrderNested"""
+    "Enforce use of nested quadrature rules if available"
 
     nested: Literal[True] = DakotaField(
         default=True,
+        description="Enforce use of nested quadrature rules if available",
         dakota={
             "materialization": [
                 {
@@ -1343,10 +1397,11 @@ class ScQuadratureOrderNested(DakotaBaseModel):
 
 
 class ScQuadratureOrderNonNested(DakotaBaseModel):
-    """Generated model for ScQuadratureOrderNonNested"""
+    "Enforce use of non-nested quadrature rules"
 
     non_nested: Literal[True] = DakotaField(
         default=True,
+        description="Enforce use of non-nested quadrature rules",
         dakota={
             "materialization": [
                 {
@@ -1362,10 +1417,11 @@ class ScQuadratureOrderNonNested(DakotaBaseModel):
 
 
 class BayesScSGLevelNodal(DakotaBaseModel):
-    """Generated model for BayesScSGLevelNodal"""
+    "Employ a nodal sparse grid construction in stochastic collocation"
 
     nodal: Literal[True] = DakotaField(
         default=True,
+        description="Employ a nodal sparse grid construction in stochastic collocation",
         dakota={
             "materialization": [
                 {
@@ -1381,10 +1437,11 @@ class BayesScSGLevelNodal(DakotaBaseModel):
 
 
 class BayesScSGLevelHierarchical(DakotaBaseModel):
-    """Generated model for BayesScSGLevelHierarchical"""
+    "Employ a hierarchical sparse grid construction"
 
     hierarchical: Literal[True] = DakotaField(
         default=True,
+        description="Employ a hierarchical sparse grid construction",
         dakota={
             "materialization": [
                 {
@@ -1400,10 +1457,11 @@ class BayesScSGLevelHierarchical(DakotaBaseModel):
 
 
 class BayesScSGLevelRestricted(DakotaBaseModel):
-    """Generated model for BayesScSGLevelRestricted"""
+    "Restrict the growth rates for nested and non-nested rules can be synchronized for consistency."
 
     restricted: Literal[True] = DakotaField(
         default=True,
+        description="Restrict the growth rates for nested and non-nested rules can be synchronized for consistency.",
         dakota={
             "materialization": [
                 {
@@ -1419,10 +1477,11 @@ class BayesScSGLevelRestricted(DakotaBaseModel):
 
 
 class BayesScSGLevelUnrestricted(DakotaBaseModel):
-    """Generated model for BayesScSGLevelUnrestricted"""
+    "Overide the default restriction of growth rates for nested and non-nested rules that are by defualt synchronized for consistency."
 
     unrestricted: Literal[True] = DakotaField(
         default=True,
+        description="Overide the default restriction of growth rates for nested and non-nested rules that are by defualt synchronized for consistency.",
         dakota={
             "materialization": [
                 {
@@ -1438,10 +1497,11 @@ class BayesScSGLevelUnrestricted(DakotaBaseModel):
 
 
 class BayesScPiecewise(DakotaBaseModel):
-    """Generated model for BayesScPiecewise"""
+    "Use piecewise local basis functions"
 
     piecewise: Literal[True] = DakotaField(
         default=True,
+        description="Use piecewise local basis functions",
         dakota={
             "materialization": [
                 {
@@ -1459,10 +1519,11 @@ class BayesScPiecewise(DakotaBaseModel):
 
 
 class ScAskey(DakotaBaseModel):
-    """Generated model for ScAskey"""
+    "Select the standardized random variables (and associated basis polynomials) from the Askey family that best match the user-specified random variables."
 
     askey: Literal[True] = DakotaField(
         default=True,
+        description="Select the standardized random variables (and associated basis polynomials) from the Askey family that best match the user-specified random variables.",
         dakota={
             "materialization": [
                 {
@@ -1477,10 +1538,11 @@ class ScAskey(DakotaBaseModel):
 
 
 class ScWiener(DakotaBaseModel):
-    """Generated model for ScWiener"""
+    "Use standard normal random variables (along with Hermite orthogonal basis polynomials) when transforming to a standardized probability space."
 
     wiener: Literal[True] = DakotaField(
         default=True,
+        description="Use standard normal random variables (along with Hermite orthogonal basis polynomials) when transforming to a standardized probability space.",
         dakota={
             "materialization": [
                 {
@@ -1495,10 +1557,11 @@ class ScWiener(DakotaBaseModel):
 
 
 class ScDiagCov(DakotaBaseModel):
-    """Generated model for ScDiagCov"""
+    "Display only the diagonal terms of the covariance matrix"
 
     diagonal_covariance: Literal[True] = DakotaField(
         default=True,
+        description="Display only the diagonal terms of the covariance matrix",
         dakota={
             "materialization": [
                 {
@@ -1513,10 +1576,11 @@ class ScDiagCov(DakotaBaseModel):
 
 
 class ScFullCov(DakotaBaseModel):
-    """Generated model for ScFullCov"""
+    "Display the full covariance matrix"
 
     full_covariance: Literal[True] = DakotaField(
         default=True,
+        description="Display the full covariance matrix",
         dakota={
             "materialization": [
                 {
@@ -1531,10 +1595,11 @@ class ScFullCov(DakotaBaseModel):
 
 
 class BayesSeedRngMt19937(DakotaBaseModel):
-    """Generated model for BayesSeedRngMt19937"""
+    "Generates random numbers using the Mersenne twister"
 
     mt19937: Literal[True] = DakotaField(
         default=True,
+        description="Generates random numbers using the Mersenne twister",
         dakota={
             "materialization": [
                 {
@@ -1549,10 +1614,11 @@ class BayesSeedRngMt19937(DakotaBaseModel):
 
 
 class BayesSeedRngRnum2(DakotaBaseModel):
-    """Generated model for BayesSeedRngRnum2"""
+    "Generates pseudo-random numbers using the Pecos package"
 
     rnum2: Literal[True] = DakotaField(
         default=True,
+        description="Generates pseudo-random numbers using the Pecos package",
         dakota={
             "materialization": [
                 {
@@ -1567,7 +1633,7 @@ class BayesSeedRngRnum2(DakotaBaseModel):
 
 
 class GPImportBuildPointsFileCustomAnnotated(DakotaBaseModel):
-    """Generated model for GPImportBuildPointsFileCustomAnnotated"""
+    "Selects custom-annotated tabular file format"
 
     custom_annotated: GPImportBuildPointsFileCustomAnnotatedConfig = DakotaField(
         default_factory=GPImportBuildPointsFileCustomAnnotatedConfig,
@@ -1587,7 +1653,7 @@ class GPImportBuildPointsFileCustomAnnotated(DakotaBaseModel):
 
 
 class EmulatorPceExpansionOrderImportBuildPointsFileCustomAnnotated(DakotaBaseModel):
-    """Generated model for EmulatorPceExpansionOrderImportBuildPointsFileCustomAnnotated"""
+    "Selects custom-annotated tabular file format"
 
     custom_annotated: GPImportBuildPointsFileCustomAnnotatedConfig = DakotaField(
         default_factory=GPImportBuildPointsFileCustomAnnotatedConfig,
@@ -1607,36 +1673,42 @@ class EmulatorPceExpansionOrderImportBuildPointsFileCustomAnnotated(DakotaBaseMo
 
 
 class EmulatorPcePRefinementDimAdaptive(DakotaBaseModel):
-    """Generated model for EmulatorPcePRefinementDimAdaptive"""
+    'Perform anisotropic expansion refinement by preferentially adapting in dimensions that are detected to have higher \\"importance\\".'
 
     dimension_adaptive: Union[
         EmulatorPcePRefinementDimAdaptiveSobol,
         EmulatorPcePRefinementDimAdaptiveDecay,
         EmulatorPcePRefinementDimAdaptiveGeneralized,
-    ]
+    ] = DakotaField(
+        description='Perform anisotropic expansion refinement by preferentially adapting in dimensions that are detected to have higher "importance".'
+    )
 
 
 class EmulatorMfPcePRefinementDimAdaptive(DakotaBaseModel):
-    """Generated model for EmulatorMfPcePRefinementDimAdaptive"""
+    'Perform anisotropic expansion refinement by preferentially adapting in dimensions that are detected to have higher \\"importance\\".'
 
     dimension_adaptive: Union[
         EmulatorPcePRefinementDimAdaptiveSobol,
         EmulatorPcePRefinementDimAdaptiveDecay,
         EmulatorPcePRefinementDimAdaptiveGeneralized,
-    ]
+    ] = DakotaField(
+        description='Perform anisotropic expansion refinement by preferentially adapting in dimensions that are detected to have higher "importance".'
+    )
 
 
 class EmulatorScPRefinementDimAdaptive(DakotaBaseModel):
-    """Generated model for EmulatorScPRefinementDimAdaptive"""
+    'Perform anisotropic expansion refinement by preferentially adapting in dimensions that are detected to have higher \\"importance\\".'
 
     dimension_adaptive: Union[
         EmulatorPcePRefinementDimAdaptiveSobol,
         EmulatorPcePRefinementDimAdaptiveGeneralized,
-    ]
+    ] = DakotaField(
+        description='Perform anisotropic expansion refinement by preferentially adapting in dimensions that are detected to have higher "importance".'
+    )
 
 
 class EmulatorPceQuadratureOrderConfig(DakotaBaseModel):
-    """Generated model for EmulatorPceQuadratureOrderConfig"""
+    "Order for tensor-products of Gaussian quadrature rules"
 
     order: int = DakotaField(
         default=USHRT_MAX,
@@ -1675,7 +1747,7 @@ class EmulatorPceQuadratureOrderConfig(DakotaBaseModel):
 
 
 class EmulatorMfPceQuadratureOrderSequenceConfig(DakotaBaseModel):
-    """Generated model for EmulatorMfPceQuadratureOrderSequenceConfig"""
+    "Sequence of quadrature orders used in a multi-stage expansion"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CheckNonnegativeList(
@@ -1720,7 +1792,7 @@ class EmulatorMfPceQuadratureOrderSequenceConfig(DakotaBaseModel):
 
 
 class EmulatorScQuadratureOrderConfig(DakotaBaseModel):
-    """Generated model for EmulatorScQuadratureOrderConfig"""
+    "Order for tensor-products of Gaussian quadrature rules"
 
     order: int = DakotaField(
         default=USHRT_MAX,
@@ -1759,7 +1831,7 @@ class EmulatorScQuadratureOrderConfig(DakotaBaseModel):
 
 
 class EmulatorPceSGLevelConfig(DakotaBaseModel):
-    """Generated model for EmulatorPceSGLevelConfig"""
+    "Level to use in sparse grid integration or interpolation"
 
     level: int = DakotaField(
         default=USHRT_MAX,
@@ -1805,7 +1877,7 @@ class EmulatorPceSGLevelConfig(DakotaBaseModel):
 
 
 class EmulatorMfPceSGLevelSequenceConfig(DakotaBaseModel):
-    """Generated model for EmulatorMfPceSGLevelSequenceConfig"""
+    "Sequence of sparse grid levels used in a multi-stage expansion"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CheckNonnegativeList(
@@ -1856,7 +1928,7 @@ class EmulatorMfPceSGLevelSequenceConfig(DakotaBaseModel):
 
 
 class EmulatorPceExpansionOrderBasisTypeAdapted(DakotaBaseModel):
-    """Generated model for EmulatorPceExpansionOrderBasisTypeAdapted"""
+    "Use adaptive basis selection to choose the basis terms in a polynomial chaos expansion."
 
     adapted: EmulatorPceExpansionOrderBasisTypeAdaptedConfig = DakotaField(
         description="Use adaptive basis selection to choose the basis terms in a polynomial chaos expansion.",
@@ -1875,7 +1947,7 @@ class EmulatorPceExpansionOrderBasisTypeAdapted(DakotaBaseModel):
 
 
 class EmulatorMlPceExpansionOrderSequenceBasisTypeAdapted(DakotaBaseModel):
-    """Generated model for EmulatorMlPceExpansionOrderSequenceBasisTypeAdapted"""
+    "Use adaptive basis selection to choose the basis terms in a polynomial chaos expansion."
 
     adapted: EmulatorPceExpansionOrderBasisTypeAdaptedConfig = DakotaField(
         description="Use adaptive basis selection to choose the basis terms in a polynomial chaos expansion.",
@@ -1894,13 +1966,14 @@ class EmulatorMlPceExpansionOrderSequenceBasisTypeAdapted(DakotaBaseModel):
 
 
 class EmulatorPceExpansionOrderCollocPointsLeastSquares(DakotaBaseModel):
-    """Generated model for EmulatorPceExpansionOrderCollocPointsLeastSquares"""
+    "Compute the coefficients of a polynomial expansion using least squares"
 
     least_squares: Union[
         EmulatorPceExpansionOrderCollocPointsLeastSquaresSvd,
         EmulatorPceExpansionOrderCollocPointsLeastSquaresEqCon,
         dict,
     ] = DakotaField(
+        description="Compute the coefficients of a polynomial expansion using least squares",
         dakota={
             "materialization": [
                 {
@@ -1911,18 +1984,19 @@ class EmulatorPceExpansionOrderCollocPointsLeastSquares(DakotaBaseModel):
                     "ir_value_type": "short",
                 }
             ]
-        }
+        },
     )
 
 
 class EmulatorPceExpansionOrderCollocRatioLeastSquares(DakotaBaseModel):
-    """Generated model for EmulatorPceExpansionOrderCollocRatioLeastSquares"""
+    "Compute the coefficients of a polynomial expansion using least squares"
 
     least_squares: Union[
         EmulatorPceExpansionOrderCollocPointsLeastSquaresSvd,
         EmulatorPceExpansionOrderCollocPointsLeastSquaresEqCon,
         dict,
     ] = DakotaField(
+        description="Compute the coefficients of a polynomial expansion using least squares",
         dakota={
             "materialization": [
                 {
@@ -1933,12 +2007,12 @@ class EmulatorPceExpansionOrderCollocRatioLeastSquares(DakotaBaseModel):
                     "ir_value_type": "short",
                 }
             ]
-        }
+        },
     )
 
 
 class EmulatorPceExpansionOrderCollocPointsOMP(DakotaBaseModel):
-    """Generated model for EmulatorPceExpansionOrderCollocPointsOMP"""
+    "Compute the coefficients of a polynomial expansion using orthogonal matching pursuit (OMP)"
 
     orthogonal_matching_pursuit: EmulatorPceExpansionOrderCollocPointsOMPConfig = DakotaField(
         description="Compute the coefficients of a polynomial expansion using orthogonal matching pursuit (OMP)",
@@ -1958,7 +2032,7 @@ class EmulatorPceExpansionOrderCollocPointsOMP(DakotaBaseModel):
 
 
 class EmulatorPceExpansionOrderCollocPointsBPDN(DakotaBaseModel):
-    """Generated model for EmulatorPceExpansionOrderCollocPointsBPDN"""
+    "Compute the coefficients of a polynomial expansion by solving the Basis Pursuit Denoising L1 -minimization problem using second order cone optimization."
 
     basis_pursuit_denoising: EmulatorPceExpansionOrderCollocPointsOMPConfig = DakotaField(
         description="Compute the coefficients of a polynomial expansion by solving the Basis Pursuit Denoising L1 -minimization problem using second order cone optimization.",
@@ -1978,7 +2052,7 @@ class EmulatorPceExpansionOrderCollocPointsBPDN(DakotaBaseModel):
 
 
 class EmulatorPceExpansionOrderCollocPointsLars(DakotaBaseModel):
-    """Generated model for EmulatorPceExpansionOrderCollocPointsLars"""
+    "Compute the coefficients of a polynomial expansion by using the greedy least angle regression (LAR) method."
 
     least_angle_regression: EmulatorPceExpansionOrderCollocPointsOMPConfig = DakotaField(
         description="Compute the coefficients of a polynomial expansion by using the greedy least angle regression (LAR) method.",
@@ -1998,7 +2072,7 @@ class EmulatorPceExpansionOrderCollocPointsLars(DakotaBaseModel):
 
 
 class EmulatorPceExpansionOrderCollocRatioOMP(DakotaBaseModel):
-    """Generated model for EmulatorPceExpansionOrderCollocRatioOMP"""
+    "Compute the coefficients of a polynomial expansion using orthogonal matching pursuit (OMP)"
 
     orthogonal_matching_pursuit: EmulatorPceExpansionOrderCollocPointsOMPConfig = DakotaField(
         description="Compute the coefficients of a polynomial expansion using orthogonal matching pursuit (OMP)",
@@ -2018,7 +2092,7 @@ class EmulatorPceExpansionOrderCollocRatioOMP(DakotaBaseModel):
 
 
 class EmulatorPceExpansionOrderCollocPointsLasso(DakotaBaseModel):
-    """Generated model for EmulatorPceExpansionOrderCollocPointsLasso"""
+    "Compute the coefficients of a polynomial expansion by using the LASSO problem."
 
     least_absolute_shrinkage: EmulatorPceExpansionOrderCollocPointsLassoConfig = DakotaField(
         description="Compute the coefficients of a polynomial expansion by using the LASSO problem.",
@@ -2038,7 +2112,7 @@ class EmulatorPceExpansionOrderCollocPointsLasso(DakotaBaseModel):
 
 
 class EmulatorPceExpansionOrderCollocRatioLasso(DakotaBaseModel):
-    """Generated model for EmulatorPceExpansionOrderCollocRatioLasso"""
+    "Compute the coefficients of a polynomial expansion by using the LASSO problem."
 
     least_absolute_shrinkage: EmulatorPceExpansionOrderCollocPointsLassoConfig = DakotaField(
         description="Compute the coefficients of a polynomial expansion by using the LASSO problem.",
@@ -2058,7 +2132,7 @@ class EmulatorPceExpansionOrderCollocRatioLasso(DakotaBaseModel):
 
 
 class EmulatorPceExpansionOrderExpansionSamples(DakotaBaseModel):
-    """Generated model for EmulatorPceExpansionOrderExpansionSamples"""
+    "Number of simulation samples used to estimate the expected value of a set of PCE coefficients"
 
     expansion_samples: EmulatorPceExpansionOrderExpansionSamplesConfig = DakotaField(
         default=...,
@@ -2068,7 +2142,7 @@ class EmulatorPceExpansionOrderExpansionSamples(DakotaBaseModel):
 
 
 class EmulatorMlPceAllocationControlEstimatorVariance(DakotaBaseModel):
-    """Generated model for EmulatorMlPceAllocationControlEstimatorVariance"""
+    "Variance of mean estimator within multilevel polynomial chaos"
 
     estimator_variance: EmulatorMlPceAllocationControlEstimatorVarianceConfig = (
         DakotaField(
@@ -2088,7 +2162,7 @@ class EmulatorMlPceAllocationControlEstimatorVariance(DakotaBaseModel):
 
 
 class EmulatorMlPceExpansionOrderSequenceExpansionSamplesSequence(DakotaBaseModel):
-    """Generated model for EmulatorMlPceExpansionOrderSequenceExpansionSamplesSequence"""
+    "Sequence of expansion samples used in a multi-stage polynomial chaos expansion Each level entry of the ``expansion_samples_sequence`` applies to one expansion within a multi-stage expansion.  Current multi-stage expansions that support expansion samples sequences include multilevel and multifidelity polynomial chaos. If adaptive refinement is active, then this sequence specifies the starting point for each level within either an individual or integrated refinement approach. A corresponding scalar specification is documented at, e.g., :dakkw:`method-polynomial_chaos-expansion_order-expansion_samples`"
 
     expansion_samples_sequence: EmulatorMlPceExpansionOrderSequenceExpansionSamplesSequenceConfig = DakotaField(
         default=...,
@@ -2098,7 +2172,7 @@ class EmulatorMlPceExpansionOrderSequenceExpansionSamplesSequence(DakotaBaseMode
 
 
 class EmulatorMfPceExpansionOrderSequenceExpansionSamplesSequence(DakotaBaseModel):
-    """Generated model for EmulatorMfPceExpansionOrderSequenceExpansionSamplesSequence"""
+    "Sequence of expansion samples used in a multi-stage polynomial chaos expansion Each level entry of the ``expansion_samples_sequence`` applies to one expansion within a multi-stage expansion.  Current multi-stage expansions that support expansion samples sequences include multilevel and multifidelity polynomial chaos. If adaptive refinement is active, then this sequence specifies the starting point for each level within either an individual or integrated refinement approach. A corresponding scalar specification is documented at, e.g., :dakkw:`method-polynomial_chaos-expansion_order-expansion_samples`"
 
     expansion_samples_sequence: EmulatorMlPceExpansionOrderSequenceExpansionSamplesSequenceConfig = DakotaField(
         default=...,
@@ -2108,7 +2182,7 @@ class EmulatorMfPceExpansionOrderSequenceExpansionSamplesSequence(DakotaBaseMode
 
 
 class EmulatorScSGLevelConfig(DakotaBaseModel):
-    """Generated model for EmulatorScSGLevelConfig"""
+    "Level to use in sparse grid integration or interpolation"
 
     level: int = DakotaField(
         default=USHRT_MAX,
@@ -2157,7 +2231,7 @@ class EmulatorScSGLevelConfig(DakotaBaseModel):
 
 
 class EmulatorMfScSGLevelSequenceConfig(DakotaBaseModel):
-    """Generated model for EmulatorMfScSGLevelSequenceConfig"""
+    "Sequence of sparse grid levels used in a multi-stage expansion"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CheckNonnegativeList(
@@ -2211,23 +2285,27 @@ class EmulatorMfScSGLevelSequenceConfig(DakotaBaseModel):
 
 
 class MfScPRefinementDimAdaptive(DakotaBaseModel):
-    """Generated model for MfScPRefinementDimAdaptive"""
+    'Perform anisotropic expansion refinement by preferentially adapting in dimensions that are detected to have higher \\"importance\\".'
 
     dimension_adaptive: Union[
         MfScPRefinementDimAdaptiveSobol, MfScPRefinementDimAdaptiveGeneralized
-    ]
+    ] = DakotaField(
+        description='Perform anisotropic expansion refinement by preferentially adapting in dimensions that are detected to have higher "importance".'
+    )
 
 
 class MfScHRefinementDimAdaptive(DakotaBaseModel):
-    """Generated model for MfScHRefinementDimAdaptive"""
+    'Perform anisotropic expansion refinement by preferentially adapting in dimensions that are detected to have higher \\"importance\\".'
 
     dimension_adaptive: Union[
         MfScPRefinementDimAdaptiveSobol, MfScPRefinementDimAdaptiveGeneralized
-    ]
+    ] = DakotaField(
+        description='Perform anisotropic expansion refinement by preferentially adapting in dimensions that are detected to have higher "importance".'
+    )
 
 
 class MfScQuadratureOrderSequenceConfig(DakotaBaseModel):
-    """Generated model for MfScQuadratureOrderSequenceConfig"""
+    "Sequence of quadrature orders used in a multi-stage expansion"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CheckNonnegativeList(
@@ -2271,7 +2349,7 @@ class MfScQuadratureOrderSequenceConfig(DakotaBaseModel):
 
 
 class BayesMfScSGLevelSequenceConfig(DakotaBaseModel):
-    """Generated model for BayesMfScSGLevelSequenceConfig"""
+    "Sequence of sparse grid levels used in a multi-stage expansion"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CheckNonnegativeList(
@@ -2325,7 +2403,7 @@ class BayesMfScSGLevelSequenceConfig(DakotaBaseModel):
 
 
 class Prior(DakotaBaseModel):
-    """Generated model for Prior"""
+    "Uses the covariance of the prior distributions to define the MCMC proposal covariance."
 
     prior: PriorConfig = DakotaField(
         description="Uses the covariance of the prior distributions to define the MCMC proposal covariance.",
@@ -2343,7 +2421,7 @@ class Prior(DakotaBaseModel):
 
 
 class Derivatives(DakotaBaseModel):
-    """Generated model for Derivatives"""
+    "Use derivatives to inform the MCMC proposal covariance."
 
     derivatives: DerivativesConfig = DakotaField(
         description="Use derivatives to inform the MCMC proposal covariance.",
@@ -2361,7 +2439,7 @@ class Derivatives(DakotaBaseModel):
 
 
 class ValuesConfig(DakotaBaseModel):
-    """Generated model for ValuesConfig"""
+    "Specifies matrix values to use as the MCMC proposal covariance."
 
     elements: list[DakotaFloat] = DakotaField(
         description="Specifies matrix values to use as the MCMC proposal covariance.",
@@ -2381,7 +2459,7 @@ class ValuesConfig(DakotaBaseModel):
 
 
 class FileConfig(DakotaBaseModel):
-    """Generated model for FileConfig"""
+    "Uses a file to import a user-specified MCMC proposal covariance."
 
     filename: str = DakotaField(
         description="Uses a file to import a user-specified MCMC proposal covariance.",
@@ -2401,23 +2479,27 @@ class FileConfig(DakotaBaseModel):
 
 
 class BayesScPRefinementDimAdaptive(DakotaBaseModel):
-    """Generated model for BayesScPRefinementDimAdaptive"""
+    'Perform anisotropic expansion refinement by preferentially adapting in dimensions that are detected to have higher \\"importance\\".'
 
     dimension_adaptive: Union[
         ScPRefinementDimAdaptiveSobol, ScPRefinementDimAdaptiveGeneralized
-    ]
+    ] = DakotaField(
+        description='Perform anisotropic expansion refinement by preferentially adapting in dimensions that are detected to have higher "importance".'
+    )
 
 
 class ScHRefinementDimAdaptive(DakotaBaseModel):
-    """Generated model for ScHRefinementDimAdaptive"""
+    'Perform anisotropic expansion refinement by preferentially adapting in dimensions that are detected to have higher \\"importance\\".'
 
     dimension_adaptive: Union[
         ScPRefinementDimAdaptiveSobol, ScPRefinementDimAdaptiveGeneralized
-    ]
+    ] = DakotaField(
+        description='Perform anisotropic expansion refinement by preferentially adapting in dimensions that are detected to have higher "importance".'
+    )
 
 
 class BayesScQuadratureOrderConfig(DakotaBaseModel):
-    """Generated model for BayesScQuadratureOrderConfig"""
+    "Order for tensor-products of Gaussian quadrature rules"
 
     order: int = DakotaField(
         default=USHRT_MAX,
@@ -2455,7 +2537,7 @@ class BayesScQuadratureOrderConfig(DakotaBaseModel):
 
 
 class BayesScSGLevelConfig(DakotaBaseModel):
-    """Generated model for BayesScSGLevelConfig"""
+    "Level to use in sparse grid integration or interpolation"
 
     level: int = DakotaField(
         default=USHRT_MAX,
@@ -2503,7 +2585,7 @@ class BayesScSGLevelConfig(DakotaBaseModel):
 
 
 class BayesSeedRngMixin(DakotaBaseModel):
-    """Generated model for BayesSeedRngMixin"""
+    "Generated model for BayesSeedRngMixin"
 
     seed: int | None = DakotaField(
         default=None,
@@ -2527,7 +2609,7 @@ class BayesSeedRngMixin(DakotaBaseModel):
 
 
 class GPImportBuildPointsFile(DakotaBaseModel):
-    """Generated model for GPImportBuildPointsFile"""
+    "File containing points you wish to use to build a surrogate"
 
     filename: str = DakotaField(
         description="File containing points you wish to use to build a surrogate",
@@ -2570,7 +2652,7 @@ class GPImportBuildPointsFile(DakotaBaseModel):
 
 
 class EmulatorPceExpansionOrderImportBuildPointsFile(DakotaBaseModel):
-    """Generated model for EmulatorPceExpansionOrderImportBuildPointsFile"""
+    "File containing points you wish to use to build a surrogate"
 
     filename: str = DakotaField(
         description="File containing points you wish to use to build a surrogate",
@@ -2613,7 +2695,7 @@ class EmulatorPceExpansionOrderImportBuildPointsFile(DakotaBaseModel):
 
 
 class EmulatorPceOrthogLeastInterpImportBuildPointsFile(DakotaBaseModel):
-    """Generated model for EmulatorPceOrthogLeastInterpImportBuildPointsFile"""
+    "File containing points you wish to use to build a surrogate"
 
     filename: str = DakotaField(
         description="File containing points you wish to use to build a surrogate",
@@ -2656,11 +2738,12 @@ class EmulatorPceOrthogLeastInterpImportBuildPointsFile(DakotaBaseModel):
 
 
 class EmulatorScPRefinement(DakotaBaseModel):
-    """Generated model for EmulatorScPRefinement"""
+    "Automatic polynomial order refinement"
 
     p_refinement: Union[
         EmulatorPcePRefinementUniform, EmulatorScPRefinementDimAdaptive
     ] = DakotaField(
+        description="Automatic polynomial order refinement",
         dakota={
             "materialization": [
                 {
@@ -2671,18 +2754,19 @@ class EmulatorScPRefinement(DakotaBaseModel):
                     "ir_value_type": "short",
                 }
             ]
-        }
+        },
     )
 
 
 class EmulatorScHRefinement(DakotaBaseModel):
-    """Generated model for EmulatorScHRefinement"""
+    "Employ h-refinement to refine the grid"
 
     h_refinement: Union[
         EmulatorPcePRefinementUniform,
         EmulatorScPRefinementDimAdaptive,
         EmulatorScHRefinementLocalAdaptive,
     ] = DakotaField(
+        description="Employ h-refinement to refine the grid",
         dakota={
             "materialization": [
                 {
@@ -2693,16 +2777,17 @@ class EmulatorScHRefinement(DakotaBaseModel):
                     "ir_value_type": "short",
                 }
             ]
-        }
+        },
     )
 
 
 class EmulatorMfScPRefinement(DakotaBaseModel):
-    """Generated model for EmulatorMfScPRefinement"""
+    "Automatic polynomial order refinement"
 
     p_refinement: Union[
         EmulatorPcePRefinementUniform, EmulatorScPRefinementDimAdaptive
     ] = DakotaField(
+        description="Automatic polynomial order refinement",
         dakota={
             "materialization": [
                 {
@@ -2713,18 +2798,19 @@ class EmulatorMfScPRefinement(DakotaBaseModel):
                     "ir_value_type": "short",
                 }
             ]
-        }
+        },
     )
 
 
 class EmulatorMfScHRefinement(DakotaBaseModel):
-    """Generated model for EmulatorMfScHRefinement"""
+    "Employ h-refinement to refine the grid"
 
     h_refinement: Union[
         EmulatorPcePRefinementUniform,
         EmulatorScPRefinementDimAdaptive,
         EmulatorScHRefinementLocalAdaptive,
     ] = DakotaField(
+        description="Employ h-refinement to refine the grid",
         dakota={
             "materialization": [
                 {
@@ -2735,12 +2821,12 @@ class EmulatorMfScHRefinement(DakotaBaseModel):
                     "ir_value_type": "short",
                 }
             ]
-        }
+        },
     )
 
 
 class EmulatorPceQuadratureOrder(DakotaBaseModel):
-    """Generated model for EmulatorPceQuadratureOrder"""
+    "Order for tensor-products of Gaussian quadrature rules"
 
     quadrature_order: EmulatorPceQuadratureOrderConfig = DakotaField(
         default=...,
@@ -2750,7 +2836,7 @@ class EmulatorPceQuadratureOrder(DakotaBaseModel):
 
 
 class EmulatorMfPceQuadratureOrderSequence(DakotaBaseModel):
-    """Generated model for EmulatorMfPceQuadratureOrderSequence"""
+    "Sequence of quadrature orders used in a multi-stage expansion"
 
     quadrature_order_sequence: EmulatorMfPceQuadratureOrderSequenceConfig = DakotaField(
         default=...,
@@ -2760,7 +2846,7 @@ class EmulatorMfPceQuadratureOrderSequence(DakotaBaseModel):
 
 
 class EmulatorMfScQuadratureOrderSequence(DakotaBaseModel):
-    """Generated model for EmulatorMfScQuadratureOrderSequence"""
+    "Sequence of quadrature orders used in a multi-stage expansion"
 
     quadrature_order_sequence: EmulatorMfPceQuadratureOrderSequenceConfig = DakotaField(
         default=...,
@@ -2770,7 +2856,7 @@ class EmulatorMfScQuadratureOrderSequence(DakotaBaseModel):
 
 
 class EmulatorScQuadratureOrder(DakotaBaseModel):
-    """Generated model for EmulatorScQuadratureOrder"""
+    "Order for tensor-products of Gaussian quadrature rules"
 
     quadrature_order: EmulatorScQuadratureOrderConfig = DakotaField(
         default=...,
@@ -2780,7 +2866,7 @@ class EmulatorScQuadratureOrder(DakotaBaseModel):
 
 
 class EmulatorPceSGLevel(DakotaBaseModel):
-    """Generated model for EmulatorPceSGLevel"""
+    "Level to use in sparse grid integration or interpolation"
 
     sparse_grid_level: EmulatorPceSGLevelConfig = DakotaField(
         default=...,
@@ -2790,7 +2876,7 @@ class EmulatorPceSGLevel(DakotaBaseModel):
 
 
 class EmulatorMfPceSGLevelSequence(DakotaBaseModel):
-    """Generated model for EmulatorMfPceSGLevelSequence"""
+    "Sequence of sparse grid levels used in a multi-stage expansion"
 
     sparse_grid_level_sequence: EmulatorMfPceSGLevelSequenceConfig = DakotaField(
         default=...,
@@ -2800,7 +2886,7 @@ class EmulatorMfPceSGLevelSequence(DakotaBaseModel):
 
 
 class EmulatorPceExpansionOrderCollocPointsConfig(DakotaBaseModel):
-    """Generated model for EmulatorPceExpansionOrderCollocPointsConfig"""
+    "Number of collocation points used to estimate expansion coefficients"
 
     points: int = DakotaField(
         description="Number of collocation points used to estimate expansion coefficients",
@@ -2927,7 +3013,7 @@ class EmulatorPceExpansionOrderCollocPointsConfig(DakotaBaseModel):
 
 
 class EmulatorPceExpansionOrderCollocRatioConfig(DakotaBaseModel):
-    """Generated model for EmulatorPceExpansionOrderCollocRatioConfig"""
+    "Set the number of points used to build a PCE via regression to be proportional to the number of terms in the expansion."
 
     value: DakotaFloat = DakotaField(
         gt=0,
@@ -3055,7 +3141,7 @@ class EmulatorPceExpansionOrderCollocRatioConfig(DakotaBaseModel):
 
 
 class EmulatorMlPceExpansionOrderSequenceCollocRatioConfig(DakotaBaseModel):
-    """Generated model for EmulatorMlPceExpansionOrderSequenceCollocRatioConfig"""
+    "Set the number of points used to build a PCE via regression to be proportional to the number of terms in the expansion."
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CheckNonnegativeList(
@@ -3204,7 +3290,7 @@ class EmulatorMlPceExpansionOrderSequenceCollocRatioConfig(DakotaBaseModel):
 
 
 class EmulatorMfPceExpansionOrderSequenceCollocRatioConfig(DakotaBaseModel):
-    """Generated model for EmulatorMfPceExpansionOrderSequenceCollocRatioConfig"""
+    "Set the number of points used to build a PCE via regression to be proportional to the number of terms in the expansion."
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CheckNonnegativeList(
@@ -3353,7 +3439,7 @@ class EmulatorMfPceExpansionOrderSequenceCollocRatioConfig(DakotaBaseModel):
 
 
 class EmulatorScSGLevel(DakotaBaseModel):
-    """Generated model for EmulatorScSGLevel"""
+    "Level to use in sparse grid integration or interpolation"
 
     sparse_grid_level: EmulatorScSGLevelConfig = DakotaField(
         default=...,
@@ -3363,7 +3449,7 @@ class EmulatorScSGLevel(DakotaBaseModel):
 
 
 class EmulatorMfScSGLevelSequence(DakotaBaseModel):
-    """Generated model for EmulatorMfScSGLevelSequence"""
+    "Sequence of sparse grid levels used in a multi-stage expansion"
 
     sparse_grid_level_sequence: EmulatorMfScSGLevelSequenceConfig = DakotaField(
         default=...,
@@ -3373,10 +3459,11 @@ class EmulatorMfScSGLevelSequence(DakotaBaseModel):
 
 
 class BayesMfScPRefinement(DakotaBaseModel):
-    """Generated model for BayesMfScPRefinement"""
+    "Automatic polynomial order refinement"
 
     p_refinement: Union[MfScPRefinementUniform, MfScPRefinementDimAdaptive] = (
         DakotaField(
+            description="Automatic polynomial order refinement",
             dakota={
                 "materialization": [
                     {
@@ -3387,17 +3474,18 @@ class BayesMfScPRefinement(DakotaBaseModel):
                         "ir_value_type": "short",
                     }
                 ]
-            }
+            },
         )
     )
 
 
 class BayesMfScHRefinement(DakotaBaseModel):
-    """Generated model for BayesMfScHRefinement"""
+    "Employ h-refinement to refine the grid"
 
     h_refinement: Union[
         MfScPRefinementUniform, MfScHRefinementDimAdaptive, MfScHRefinementLocalAdaptive
     ] = DakotaField(
+        description="Employ h-refinement to refine the grid",
         dakota={
             "materialization": [
                 {
@@ -3408,12 +3496,12 @@ class BayesMfScHRefinement(DakotaBaseModel):
                     "ir_value_type": "short",
                 }
             ]
-        }
+        },
     )
 
 
 class BayesMfScQuadratureOrderSequence(DakotaBaseModel):
-    """Generated model for BayesMfScQuadratureOrderSequence"""
+    "Sequence of quadrature orders used in a multi-stage expansion"
 
     quadrature_order_sequence: MfScQuadratureOrderSequenceConfig = DakotaField(
         default=...,
@@ -3423,7 +3511,7 @@ class BayesMfScQuadratureOrderSequence(DakotaBaseModel):
 
 
 class BayesMfScSGLevelSequence(DakotaBaseModel):
-    """Generated model for BayesMfScSGLevelSequence"""
+    "Sequence of sparse grid levels used in a multi-stage expansion"
 
     sparse_grid_level_sequence: BayesMfScSGLevelSequenceConfig = DakotaField(
         default=...,
@@ -3433,7 +3521,7 @@ class BayesMfScSGLevelSequence(DakotaBaseModel):
 
 
 class Values(DakotaBaseModel):
-    """Generated model for Values"""
+    "Specifies matrix values to use as the MCMC proposal covariance."
 
     values: ValuesConfig = DakotaField(
         default=...,
@@ -3443,7 +3531,7 @@ class Values(DakotaBaseModel):
 
 
 class ProposalCovFile(DakotaBaseModel):
-    """Generated model for ProposalCovFile"""
+    "Uses a file to import a user-specified MCMC proposal covariance."
 
     file: FileConfig = DakotaField(
         default=...,
@@ -3453,10 +3541,11 @@ class ProposalCovFile(DakotaBaseModel):
 
 
 class BayesScPRefinement(DakotaBaseModel):
-    """Generated model for BayesScPRefinement"""
+    "Automatic polynomial order refinement"
 
     p_refinement: Union[ScPRefinementUniform, BayesScPRefinementDimAdaptive] = (
         DakotaField(
+            description="Automatic polynomial order refinement",
             dakota={
                 "materialization": [
                     {
@@ -3467,17 +3556,18 @@ class BayesScPRefinement(DakotaBaseModel):
                         "ir_value_type": "short",
                     }
                 ]
-            }
+            },
         )
     )
 
 
 class BayesScHRefinement(DakotaBaseModel):
-    """Generated model for BayesScHRefinement"""
+    "Employ h-refinement to refine the grid"
 
     h_refinement: Union[
         ScPRefinementUniform, ScHRefinementDimAdaptive, BayesScHRefinementLocalAdaptive
     ] = DakotaField(
+        description="Employ h-refinement to refine the grid",
         dakota={
             "materialization": [
                 {
@@ -3488,12 +3578,12 @@ class BayesScHRefinement(DakotaBaseModel):
                     "ir_value_type": "short",
                 }
             ]
-        }
+        },
     )
 
 
 class BayesScQuadratureOrder(DakotaBaseModel):
-    """Generated model for BayesScQuadratureOrder"""
+    "Order for tensor-products of Gaussian quadrature rules"
 
     quadrature_order: BayesScQuadratureOrderConfig = DakotaField(
         default=...,
@@ -3503,7 +3593,7 @@ class BayesScQuadratureOrder(DakotaBaseModel):
 
 
 class BayesScSGLevel(DakotaBaseModel):
-    """Generated model for BayesScSGLevel"""
+    "Level to use in sparse grid integration or interpolation"
 
     sparse_grid_level: BayesScSGLevelConfig = DakotaField(
         default=...,
@@ -3513,7 +3603,7 @@ class BayesScSGLevel(DakotaBaseModel):
 
 
 class EmulatorGPConfig(DakotaBaseModel):
-    """Generated model for EmulatorGPConfig"""
+    "Gaussian Process surrogate model"
 
     implementation: Union[EmulatorGPSurfpack, EmulatorGPDakota] = DakotaField(
         description="GP Implementation", dakota={"anchor": True, "union_pattern": 4}
@@ -3552,7 +3642,7 @@ class EmulatorGPConfig(DakotaBaseModel):
 
 
 class EmulatorPceOrthogLeastInterpConfig(DakotaBaseModel):
-    """Generated model for EmulatorPceOrthogLeastInterpConfig"""
+    "Build a polynomial chaos expansion from simulation samples using orthogonal least interpolation."
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CheckNonnegativeList(
@@ -3623,7 +3713,7 @@ class EmulatorPceOrthogLeastInterpConfig(DakotaBaseModel):
 
 
 class EmulatorMlPceOrthogLeastInterpConfig(DakotaBaseModel):
-    """Generated model for EmulatorMlPceOrthogLeastInterpConfig"""
+    "Build a polynomial chaos expansion from simulation samples using orthogonal least interpolation."
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CheckNonnegativeList(
@@ -3686,7 +3776,7 @@ class EmulatorMlPceOrthogLeastInterpConfig(DakotaBaseModel):
 
 
 class EmulatorPceExpansionOrderCollocPoints(DakotaBaseModel):
-    """Generated model for EmulatorPceExpansionOrderCollocPoints"""
+    "Number of collocation points used to estimate expansion coefficients"
 
     collocation_points: EmulatorPceExpansionOrderCollocPointsConfig = DakotaField(
         default=...,
@@ -3696,7 +3786,7 @@ class EmulatorPceExpansionOrderCollocPoints(DakotaBaseModel):
 
 
 class EmulatorPceExpansionOrderCollocRatio(DakotaBaseModel):
-    """Generated model for EmulatorPceExpansionOrderCollocRatio"""
+    "Set the number of points used to build a PCE via regression to be proportional to the number of terms in the expansion."
 
     collocation_ratio: EmulatorPceExpansionOrderCollocRatioConfig = DakotaField(
         default=...,
@@ -3706,7 +3796,7 @@ class EmulatorPceExpansionOrderCollocRatio(DakotaBaseModel):
 
 
 class EmulatorMlPceExpansionOrderSequenceCollocRatio(DakotaBaseModel):
-    """Generated model for EmulatorMlPceExpansionOrderSequenceCollocRatio"""
+    "Set the number of points used to build a PCE via regression to be proportional to the number of terms in the expansion."
 
     collocation_ratio: EmulatorMlPceExpansionOrderSequenceCollocRatioConfig = DakotaField(
         default=...,
@@ -3716,7 +3806,7 @@ class EmulatorMlPceExpansionOrderSequenceCollocRatio(DakotaBaseModel):
 
 
 class EmulatorMfPceExpansionOrderSequenceCollocRatio(DakotaBaseModel):
-    """Generated model for EmulatorMfPceExpansionOrderSequenceCollocRatio"""
+    "Set the number of points used to build a PCE via regression to be proportional to the number of terms in the expansion."
 
     collocation_ratio: EmulatorMfPceExpansionOrderSequenceCollocRatioConfig = DakotaField(
         default=...,
@@ -3726,7 +3816,7 @@ class EmulatorMfPceExpansionOrderSequenceCollocRatio(DakotaBaseModel):
 
 
 class ScConfig(DakotaBaseModel):
-    """Generated model for ScConfig"""
+    "Stochastic Collocation as an emulator model."
 
     refinement_method: Union[EmulatorScPRefinement, EmulatorScHRefinement] | None = (
         DakotaField(
@@ -3781,7 +3871,7 @@ class ScConfig(DakotaBaseModel):
 
 
 class MfScConfig(DakotaBaseModel):
-    """Generated model for MfScConfig"""
+    "Multifidelity Stochastic Collocation as an emulator model."
 
     refinement_method: (
         Union[EmulatorMfScPRefinement, EmulatorMfScHRefinement] | None
@@ -3856,7 +3946,7 @@ class MfScConfig(DakotaBaseModel):
 
 
 class BayesMfScMfSc(DakotaBaseModel):
-    """Generated model for BayesMfScMfSc"""
+    "Multifidelity Stochastic Collocation as an emulator model."
 
     refinement_method: Union[BayesMfScPRefinement, BayesMfScHRefinement] | None = (
         DakotaField(
@@ -3924,7 +4014,7 @@ class BayesMfScMfSc(DakotaBaseModel):
 
 
 class BayesProposalCovMixin(DakotaBaseModel):
-    """Generated model for BayesProposalCovMixin"""
+    "Generated model for BayesProposalCovMixin"
 
     proposal_covariance: Union[Prior, Derivatives, Values, ProposalCovFile] | None = (
         DakotaField(
@@ -3946,7 +4036,7 @@ class BayesProposalCovMixin(DakotaBaseModel):
 
 
 class BayesScSc(DakotaBaseModel):
-    """Generated model for BayesScSc"""
+    "Stochastic Collocation as an emulator model."
 
     refinement_method: Union[BayesScPRefinement, BayesScHRefinement] | None = (
         DakotaField(
@@ -3999,7 +4089,7 @@ class BayesScSc(DakotaBaseModel):
 
 
 class EmulatorGP(DakotaBaseModel):
-    """Generated model for EmulatorGP"""
+    "Gaussian Process surrogate model"
 
     gaussian_process: EmulatorGPConfig = DakotaField(
         description="Gaussian Process surrogate model", dakota={"aliases": ["kriging"]}
@@ -4007,7 +4097,7 @@ class EmulatorGP(DakotaBaseModel):
 
 
 class EmulatorPceOrthogLeastInterp(DakotaBaseModel):
-    """Generated model for EmulatorPceOrthogLeastInterp"""
+    "Build a polynomial chaos expansion from simulation samples using orthogonal least interpolation."
 
     orthogonal_least_interpolation: EmulatorPceOrthogLeastInterpConfig = DakotaField(
         description="Build a polynomial chaos expansion from simulation samples using orthogonal least interpolation.",
@@ -4027,7 +4117,7 @@ class EmulatorPceOrthogLeastInterp(DakotaBaseModel):
 
 
 class EmulatorMlPceOrthogLeastInterp(DakotaBaseModel):
-    """Generated model for EmulatorMlPceOrthogLeastInterp"""
+    "Build a polynomial chaos expansion from simulation samples using orthogonal least interpolation."
 
     orthogonal_least_interpolation: EmulatorMlPceOrthogLeastInterpConfig = DakotaField(
         description="Build a polynomial chaos expansion from simulation samples using orthogonal least interpolation.",
@@ -4047,7 +4137,7 @@ class EmulatorMlPceOrthogLeastInterp(DakotaBaseModel):
 
 
 class EmulatorMfPceOrthogLeastInterp(DakotaBaseModel):
-    """Generated model for EmulatorMfPceOrthogLeastInterp"""
+    "Build a polynomial chaos expansion from simulation samples using orthogonal least interpolation."
 
     orthogonal_least_interpolation: EmulatorMlPceOrthogLeastInterpConfig = DakotaField(
         description="Build a polynomial chaos expansion from simulation samples using orthogonal least interpolation.",
@@ -4067,7 +4157,7 @@ class EmulatorMfPceOrthogLeastInterp(DakotaBaseModel):
 
 
 class EmulatorPceExpansionOrderConfig(DakotaBaseModel):
-    """Generated model for EmulatorPceExpansionOrderConfig"""
+    "The (initial) order of a polynomial expansion"
 
     order: int = DakotaField(
         default=USHRT_MAX,
@@ -4135,7 +4225,7 @@ class EmulatorPceExpansionOrderConfig(DakotaBaseModel):
 
 
 class EmulatorMlPceExpansionOrderSequenceConfig(DakotaBaseModel):
-    """Generated model for EmulatorMlPceExpansionOrderSequenceConfig"""
+    "Sequence of expansion orders used in a multi-stage expansion"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CheckNonnegativeList(
@@ -4195,7 +4285,7 @@ class EmulatorMlPceExpansionOrderSequenceConfig(DakotaBaseModel):
 
 
 class EmulatorMfPceExpansionOrderSequenceConfig(DakotaBaseModel):
-    """Generated model for EmulatorMfPceExpansionOrderSequenceConfig"""
+    "Sequence of expansion orders used in a multi-stage expansion"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CheckNonnegativeList(
@@ -4255,7 +4345,7 @@ class EmulatorMfPceExpansionOrderSequenceConfig(DakotaBaseModel):
 
 
 class EmulatorSc(DakotaBaseModel):
-    """Generated model for EmulatorSc"""
+    "Stochastic Collocation as an emulator model."
 
     sc: ScConfig = DakotaField(
         description="Stochastic Collocation as an emulator model.",
@@ -4273,7 +4363,7 @@ class EmulatorSc(DakotaBaseModel):
 
 
 class EmulatorMfSc(DakotaBaseModel):
-    """Generated model for EmulatorMfSc"""
+    "Multifidelity Stochastic Collocation as an emulator model."
 
     mf_sc: MfScConfig = DakotaField(
         description="Multifidelity Stochastic Collocation as an emulator model.",
@@ -4291,7 +4381,7 @@ class EmulatorMfSc(DakotaBaseModel):
 
 
 class BayesMfScMixin(DakotaBaseModel):
-    """Generated model for BayesMfScMixin"""
+    "Generated model for BayesMfScMixin"
 
     mf_sc: BayesMfScMfSc = DakotaField(
         description="Multifidelity Stochastic Collocation as an emulator model.",
@@ -4309,7 +4399,7 @@ class BayesMfScMixin(DakotaBaseModel):
 
 
 class BayesScMixin(DakotaBaseModel):
-    """Generated model for BayesScMixin"""
+    "Generated model for BayesScMixin"
 
     sc: BayesScSc = DakotaField(
         description="Stochastic Collocation as an emulator model.",
@@ -4327,7 +4417,7 @@ class BayesScMixin(DakotaBaseModel):
 
 
 class EmulatorPceExpansionOrder(DakotaBaseModel):
-    """Generated model for EmulatorPceExpansionOrder"""
+    "The (initial) order of a polynomial expansion"
 
     expansion_order: EmulatorPceExpansionOrderConfig = DakotaField(
         default=...,
@@ -4337,7 +4427,7 @@ class EmulatorPceExpansionOrder(DakotaBaseModel):
 
 
 class EmulatorMlPceExpansionOrderSequence(DakotaBaseModel):
-    """Generated model for EmulatorMlPceExpansionOrderSequence"""
+    "Sequence of expansion orders used in a multi-stage expansion"
 
     expansion_order_sequence: EmulatorMlPceExpansionOrderSequenceConfig = DakotaField(
         default=...,
@@ -4347,7 +4437,7 @@ class EmulatorMlPceExpansionOrderSequence(DakotaBaseModel):
 
 
 class EmulatorMfPceExpansionOrderSequence(DakotaBaseModel):
-    """Generated model for EmulatorMfPceExpansionOrderSequence"""
+    "Sequence of expansion orders used in a multi-stage expansion"
 
     expansion_order_sequence: EmulatorMfPceExpansionOrderSequenceConfig = DakotaField(
         default=...,
@@ -4357,7 +4447,7 @@ class EmulatorMfPceExpansionOrderSequence(DakotaBaseModel):
 
 
 class BayesEmulatorPceConfig(DakotaBaseModel):
-    """Generated model for BayesEmulatorPceConfig"""
+    "Polynomial Chaos Expansion surrogate model"
 
     p_refinement: (
         Union[EmulatorPcePRefinementUniform, EmulatorPcePRefinementDimAdaptive] | None
@@ -4438,7 +4528,7 @@ class BayesEmulatorPceConfig(DakotaBaseModel):
 
 
 class BayesEmulatorMlPceConfig(DakotaBaseModel):
-    """Generated model for BayesEmulatorMlPceConfig"""
+    "Multilevel Polynomial Chaos Expansion as an emulator model."
 
     allocation_control: (
         Union[
@@ -4504,7 +4594,7 @@ class BayesEmulatorMlPceConfig(DakotaBaseModel):
 
 
 class BayesEmulatorMfPceConfig(DakotaBaseModel):
-    """Generated model for BayesEmulatorMfPceConfig"""
+    "Multifidelity Polynomial Chaos Expansion as an emulator model."
 
     p_refinement: (
         Union[EmulatorPcePRefinementUniform, EmulatorMfPcePRefinementDimAdaptive] | None
@@ -4601,7 +4691,7 @@ class BayesEmulatorMfPceConfig(DakotaBaseModel):
 
 
 class EmulatorPce(DakotaBaseModel):
-    """Generated model for EmulatorPce"""
+    "Polynomial Chaos Expansion surrogate model"
 
     pce: BayesEmulatorPceConfig = DakotaField(
         description="Polynomial Chaos Expansion surrogate model",
@@ -4619,7 +4709,7 @@ class EmulatorPce(DakotaBaseModel):
 
 
 class EmulatorMlPce(DakotaBaseModel):
-    """Generated model for EmulatorMlPce"""
+    "Multilevel Polynomial Chaos Expansion as an emulator model."
 
     ml_pce: BayesEmulatorMlPceConfig = DakotaField(
         description="Multilevel Polynomial Chaos Expansion as an emulator model.",
@@ -4637,7 +4727,7 @@ class EmulatorMlPce(DakotaBaseModel):
 
 
 class EmulatorMfPce(DakotaBaseModel):
-    """Generated model for EmulatorMfPce"""
+    "Multifidelity Polynomial Chaos Expansion as an emulator model."
 
     mf_pce: BayesEmulatorMfPceConfig = DakotaField(
         description="Multifidelity Polynomial Chaos Expansion as an emulator model.",
@@ -4655,7 +4745,7 @@ class EmulatorMfPce(DakotaBaseModel):
 
 
 class BayesEmulatorMixin(DakotaBaseModel):
-    """Generated model for BayesEmulatorMixin"""
+    "Generated model for BayesEmulatorMixin"
 
     emulator: (
         Union[

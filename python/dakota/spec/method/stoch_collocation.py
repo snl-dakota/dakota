@@ -20,10 +20,11 @@ from dakota.spec.shared.misc import (
 
 
 class StochCollocQuadratureOrderNested(DakotaBaseModel):
-    """Generated model for StochCollocQuadratureOrderNested"""
+    "Enforce use of nested quadrature rules if available"
 
     nested: Literal[True] = DakotaField(
         default=True,
+        description="Enforce use of nested quadrature rules if available",
         dakota={
             "materialization": [
                 {
@@ -39,10 +40,11 @@ class StochCollocQuadratureOrderNested(DakotaBaseModel):
 
 
 class StochCollocQuadratureOrderNonNested(DakotaBaseModel):
-    """Generated model for StochCollocQuadratureOrderNonNested"""
+    "Enforce use of non-nested quadrature rules"
 
     non_nested: Literal[True] = DakotaField(
         default=True,
+        description="Enforce use of non-nested quadrature rules",
         dakota={
             "materialization": [
                 {
@@ -58,10 +60,11 @@ class StochCollocQuadratureOrderNonNested(DakotaBaseModel):
 
 
 class StochCollocSGLevelNodal(DakotaBaseModel):
-    """Generated model for StochCollocSGLevelNodal"""
+    "Employ a nodal sparse grid construction in stochastic collocation"
 
     nodal: Literal[True] = DakotaField(
         default=True,
+        description="Employ a nodal sparse grid construction in stochastic collocation",
         dakota={
             "materialization": [
                 {
@@ -77,10 +80,11 @@ class StochCollocSGLevelNodal(DakotaBaseModel):
 
 
 class StochCollocSGLevelHierarchical(DakotaBaseModel):
-    """Generated model for StochCollocSGLevelHierarchical"""
+    "Employ a hierarchical sparse grid construction"
 
     hierarchical: Literal[True] = DakotaField(
         default=True,
+        description="Employ a hierarchical sparse grid construction",
         dakota={
             "materialization": [
                 {
@@ -96,10 +100,11 @@ class StochCollocSGLevelHierarchical(DakotaBaseModel):
 
 
 class StochCollocSGLevelRestricted(DakotaBaseModel):
-    """Generated model for StochCollocSGLevelRestricted"""
+    "Restrict the growth rates for nested and non-nested rules can be synchronized for consistency."
 
     restricted: Literal[True] = DakotaField(
         default=True,
+        description="Restrict the growth rates for nested and non-nested rules can be synchronized for consistency.",
         dakota={
             "materialization": [
                 {
@@ -115,10 +120,11 @@ class StochCollocSGLevelRestricted(DakotaBaseModel):
 
 
 class StochCollocSGLevelUnrestricted(DakotaBaseModel):
-    """Generated model for StochCollocSGLevelUnrestricted"""
+    "Overide the default restriction of growth rates for nested and non-nested rules that are by defualt synchronized for consistency."
 
     unrestricted: Literal[True] = DakotaField(
         default=True,
+        description="Overide the default restriction of growth rates for nested and non-nested rules that are by defualt synchronized for consistency.",
         dakota={
             "materialization": [
                 {
@@ -134,10 +140,11 @@ class StochCollocSGLevelUnrestricted(DakotaBaseModel):
 
 
 class StochCollocSGLevelNested(DakotaBaseModel):
-    """Generated model for StochCollocSGLevelNested"""
+    "Enforce use of nested quadrature rules if available"
 
     nested: Literal[True] = DakotaField(
         default=True,
+        description="Enforce use of nested quadrature rules if available",
         dakota={
             "materialization": [
                 {
@@ -153,10 +160,11 @@ class StochCollocSGLevelNested(DakotaBaseModel):
 
 
 class StochCollocSGLevelNonNested(DakotaBaseModel):
-    """Generated model for StochCollocSGLevelNonNested"""
+    "Enforce use of non-nested quadrature rules"
 
     non_nested: Literal[True] = DakotaField(
         default=True,
+        description="Enforce use of non-nested quadrature rules",
         dakota={
             "materialization": [
                 {
@@ -172,7 +180,7 @@ class StochCollocSGLevelNonNested(DakotaBaseModel):
 
 
 class StochCollocQuadratureOrderConfig(DakotaBaseModel):
-    """Generated model for StochCollocQuadratureOrderConfig"""
+    "Order for tensor-products of Gaussian quadrature rules"
 
     order: int = DakotaField(
         default=USHRT_MAX,
@@ -211,7 +219,7 @@ class StochCollocQuadratureOrderConfig(DakotaBaseModel):
 
 
 class StochCollocSGLevelConfig(DakotaBaseModel):
-    """Generated model for StochCollocSGLevelConfig"""
+    "Level to use in sparse grid integration or interpolation"
 
     level: int = DakotaField(
         default=USHRT_MAX,
@@ -259,7 +267,7 @@ class StochCollocSGLevelConfig(DakotaBaseModel):
 
 
 class StochCollocQuadratureOrder(DakotaBaseModel):
-    """Generated model for StochCollocQuadratureOrder"""
+    "Order for tensor-products of Gaussian quadrature rules"
 
     quadrature_order: StochCollocQuadratureOrderConfig = DakotaField(
         default=...,
@@ -269,7 +277,7 @@ class StochCollocQuadratureOrder(DakotaBaseModel):
 
 
 class StochCollocSGLevel(DakotaBaseModel):
-    """Generated model for StochCollocSGLevel"""
+    "Level to use in sparse grid integration or interpolation"
 
     sparse_grid_level: StochCollocSGLevelConfig = DakotaField(
         default=...,
@@ -287,7 +295,7 @@ class StochCollocConfig(
     MethodSeedMixin,
     MethodOptionalModelPointerMixin,
 ):
-    """Generated model for StochCollocConfig"""
+    "Uncertainty quantification with stochastic collocation"
 
     grid_type: Union[StochCollocQuadratureOrder, StochCollocSGLevel] = DakotaField(
         description="Interpolation Grid Type",
@@ -296,7 +304,7 @@ class StochCollocConfig(
 
 
 class StochCollocSelection(MethodSelection):
-    """Generated model for StochCollocSelection"""
+    "Generated model for StochCollocSelection"
 
     stoch_collocation: StochCollocConfig = DakotaField(
         dakota={

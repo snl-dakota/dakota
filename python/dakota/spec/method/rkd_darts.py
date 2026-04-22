@@ -16,10 +16,11 @@ from dakota.spec.shared.misc import (
 
 
 class RkdDartsLipschitzLocalEst(DakotaBaseModel):
-    """Generated model for RkdDartsLipschitzLocalEst"""
+    "Undocumented: Recursive k-d (RKD) Darts is an experimental capability."
 
     local_est: Literal[True] = DakotaField(
         default=True,
+        description="Undocumented: Recursive k-d (RKD) Darts is an experimental capability.",
         dakota={
             "materialization": [
                 {
@@ -34,10 +35,11 @@ class RkdDartsLipschitzLocalEst(DakotaBaseModel):
 
 
 class RkdDartsLipschitzGlobalEst(DakotaBaseModel):
-    """Generated model for RkdDartsLipschitzGlobalEst"""
+    "Undocumented: Recursive k-d (RKD) Darts is an experimental capability."
 
     global_est: Literal[True] = DakotaField(
         default=True,
+        description="Undocumented: Recursive k-d (RKD) Darts is an experimental capability.",
         dakota={
             "materialization": [
                 {
@@ -57,7 +59,7 @@ class RkdDartsConfig(
     RngOptionsContext1Mixin,
     MethodOptionalModelPointerMixin,
 ):
-    """Generated model for RkdDartsConfig"""
+    "Recursive k-d (RKD) Darts: Recursive Hyperplane Sampling for Numerical Integration of High-Dimensional Functions."
 
     build_samples: int = DakotaField(
         description="Number of initial model evaluations used in build phase",
@@ -109,7 +111,7 @@ class RkdDartsConfig(
 
 
 class RkdDartsSelection(MethodSelection):
-    """Generated model for RkdDartsSelection"""
+    "Generated model for RkdDartsSelection"
 
     rkd_darts: RkdDartsConfig = DakotaField(
         dakota={

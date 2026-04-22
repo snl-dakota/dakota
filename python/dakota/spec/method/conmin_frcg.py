@@ -11,13 +11,13 @@ from dakota.spec.shared.optimization import MethodConminCommonOptsMixin
 
 
 class ConminFrcgConfig(MethodThreeOptionalKeywordsMixin, MethodConminCommonOptsMixin):
-    """Generated model for ConminFrcgConfig"""
+    "CONMIN conjugate gradient optimization method"
 
     pass
 
 
 class ConminFrcgSelection(MethodSelection):
-    """Generated model for ConminFrcgSelection"""
+    "Generated model for ConminFrcgSelection"
 
     conmin_frcg: ConminFrcgConfig = DakotaField(
         dakota={

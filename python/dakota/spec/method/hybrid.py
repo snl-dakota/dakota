@@ -14,7 +14,7 @@ from dakota.spec.shared.misc import (
 
 
 class SequentialMethodNameListConfig(DakotaBaseModel):
-    """Generated model for SequentialMethodNameListConfig"""
+    "List of Dakota methods to sequentially or collaboratively run"
 
     method_name_list: list[str] = DakotaField(
         description="List of Dakota methods to sequentially or collaboratively run",
@@ -44,7 +44,7 @@ class SequentialMethodNameListConfig(DakotaBaseModel):
 
 
 class SequentialMethodPointerList(DakotaBaseModel):
-    """Generated model for SequentialMethodPointerList"""
+    "Pointers to methods to execute sequantially or collaboratively"
 
     method_pointer_list: list[str] = DakotaField(
         description="Pointers to methods to execute sequantially or collaboratively",
@@ -61,7 +61,7 @@ class SequentialMethodPointerList(DakotaBaseModel):
 
 
 class GlobalMethodNameConfig(DakotaBaseModel):
-    """Generated model for GlobalMethodNameConfig"""
+    "Specify the global method by Dakota name"
 
     name: str = DakotaField(
         description="Specify the global method by Dakota name",
@@ -92,7 +92,7 @@ class GlobalMethodNameConfig(DakotaBaseModel):
 
 
 class GlobalMethodPointer(DakotaBaseModel):
-    """Generated model for GlobalMethodPointer"""
+    "Pointer to global method"
 
     global_method_pointer: str = DakotaField(
         description="Pointer to global method",
@@ -110,7 +110,7 @@ class GlobalMethodPointer(DakotaBaseModel):
 
 
 class LocalMethodNameConfig(DakotaBaseModel):
-    """Generated model for LocalMethodNameConfig"""
+    "Specify the local method by Dakota name"
 
     name: str = DakotaField(
         description="Specify the local method by Dakota name",
@@ -141,7 +141,7 @@ class LocalMethodNameConfig(DakotaBaseModel):
 
 
 class LocalMethodPointer(DakotaBaseModel):
-    """Generated model for LocalMethodPointer"""
+    "Pointer to local method"
 
     local_method_pointer: str = DakotaField(
         description="Pointer to local method",
@@ -159,7 +159,7 @@ class LocalMethodPointer(DakotaBaseModel):
 
 
 class CollaborativeMethodNameListConfig(DakotaBaseModel):
-    """Generated model for CollaborativeMethodNameListConfig"""
+    "List of Dakota methods to sequentially or collaboratively run"
 
     method_name_list: list[str] = DakotaField(
         description="List of Dakota methods to sequentially or collaboratively run",
@@ -189,7 +189,7 @@ class CollaborativeMethodNameListConfig(DakotaBaseModel):
 
 
 class CollaborativeMethodPointerList(DakotaBaseModel):
-    """Generated model for CollaborativeMethodPointerList"""
+    "Pointers to methods to execute sequantially or collaboratively"
 
     method_pointer_list: list[str] = DakotaField(
         description="Pointers to methods to execute sequantially or collaboratively",
@@ -206,7 +206,7 @@ class CollaborativeMethodPointerList(DakotaBaseModel):
 
 
 class SequentialMethodNameList(DakotaBaseModel):
-    """Generated model for SequentialMethodNameList"""
+    "List of Dakota methods to sequentially or collaboratively run"
 
     method_name_list: SequentialMethodNameListConfig = DakotaField(
         default=...,
@@ -216,7 +216,7 @@ class SequentialMethodNameList(DakotaBaseModel):
 
 
 class GlobalMethodName(DakotaBaseModel):
-    """Generated model for GlobalMethodName"""
+    "Specify the global method by Dakota name"
 
     global_method_name: GlobalMethodNameConfig = DakotaField(
         default=...,
@@ -226,7 +226,7 @@ class GlobalMethodName(DakotaBaseModel):
 
 
 class LocalMethodName(DakotaBaseModel):
-    """Generated model for LocalMethodName"""
+    "Specify the local method by Dakota name"
 
     local_method_name: LocalMethodNameConfig = DakotaField(
         default=...,
@@ -236,7 +236,7 @@ class LocalMethodName(DakotaBaseModel):
 
 
 class CollaborativeMethodNameList(DakotaBaseModel):
-    """Generated model for CollaborativeMethodNameList"""
+    "List of Dakota methods to sequentially or collaboratively run"
 
     method_name_list: CollaborativeMethodNameListConfig = DakotaField(
         default=...,
@@ -246,7 +246,7 @@ class CollaborativeMethodNameList(DakotaBaseModel):
 
 
 class SequentialConfig(MethodIteratorServerSchedulingMixin):
-    """Generated model for SequentialConfig"""
+    "Methods are run one at a time, in sequence"
 
     sub_method: Union[SequentialMethodNameList, SequentialMethodPointerList] = (
         DakotaField(
@@ -257,7 +257,7 @@ class SequentialConfig(MethodIteratorServerSchedulingMixin):
 
 
 class EmbeddedConfig(MethodIteratorServerSchedulingMixin):
-    """Generated model for EmbeddedConfig"""
+    "A subordinate local method provides periodic refinements to a top-level global method"
 
     sub_method: Union[GlobalMethodName, GlobalMethodPointer] = DakotaField(
         description="Global Sub-method Selection",
@@ -283,7 +283,7 @@ class EmbeddedConfig(MethodIteratorServerSchedulingMixin):
 
 
 class CollaborativeConfig(MethodIteratorServerSchedulingMixin):
-    """Generated model for CollaborativeConfig"""
+    "Multiple methods run concurrently and share information"
 
     sub_method: Union[CollaborativeMethodNameList, CollaborativeMethodPointerList] = (
         DakotaField(
@@ -294,7 +294,7 @@ class CollaborativeConfig(MethodIteratorServerSchedulingMixin):
 
 
 class Sequential(DakotaBaseModel):
-    """Generated model for Sequential"""
+    "Methods are run one at a time, in sequence"
 
     sequential: SequentialConfig = DakotaField(
         description="Methods are run one at a time, in sequence",
@@ -313,7 +313,7 @@ class Sequential(DakotaBaseModel):
 
 
 class Embedded(DakotaBaseModel):
-    """Generated model for Embedded"""
+    "A subordinate local method provides periodic refinements to a top-level global method"
 
     embedded: EmbeddedConfig = DakotaField(
         description="A subordinate local method provides periodic refinements to a top-level global method",
@@ -332,7 +332,7 @@ class Embedded(DakotaBaseModel):
 
 
 class Collaborative(DakotaBaseModel):
-    """Generated model for Collaborative"""
+    "Multiple methods run concurrently and share information"
 
     collaborative: CollaborativeConfig = DakotaField(
         description="Multiple methods run concurrently and share information",
@@ -350,7 +350,7 @@ class Collaborative(DakotaBaseModel):
 
 
 class HybridConfig(MethodThreeOptionalKeywordsMixin):
-    """Generated model for HybridConfig"""
+    "Strategy in which a set of methods synergistically seek an optimal design"
 
     strategy: Union[Sequential, Embedded, Collaborative] = DakotaField(
         description="Hybrid Method Type", dakota={"anchor": True, "union_pattern": 4}
@@ -358,7 +358,7 @@ class HybridConfig(MethodThreeOptionalKeywordsMixin):
 
 
 class HybridSelection(MethodSelection):
-    """Generated model for HybridSelection"""
+    "Generated model for HybridSelection"
 
     hybrid: HybridConfig = DakotaField(
         dakota={

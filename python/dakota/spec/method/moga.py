@@ -18,10 +18,11 @@ from dakota.spec.shared.misc import (
 
 
 class LayerRank(DakotaBaseModel):
-    """Generated model for LayerRank"""
+    "Assign each member to a layer, based on domination the rank based on layers"
 
     layer_rank: Literal[True] = DakotaField(
         default=True,
+        description="Assign each member to a layer, based on domination the rank based on layers",
         dakota={
             "materialization": [
                 {
@@ -36,10 +37,11 @@ class LayerRank(DakotaBaseModel):
 
 
 class DominationCount(DakotaBaseModel):
-    """Generated model for DominationCount"""
+    "Rank each member by the number of members that dominate it"
 
     domination_count: Literal[True] = DakotaField(
         default=True,
+        description="Rank each member by the number of members that dominate it",
         dakota={
             "materialization": [
                 {
@@ -54,10 +56,11 @@ class DominationCount(DakotaBaseModel):
 
 
 class MogaReplacementTypeElitist(DakotaBaseModel):
-    """Generated model for MogaReplacementTypeElitist"""
+    "Use the best designs to form a new population"
 
     elitist: Literal[True] = DakotaField(
         default=True,
+        description="Use the best designs to form a new population",
         dakota={
             "materialization": [
                 {
@@ -72,10 +75,11 @@ class MogaReplacementTypeElitist(DakotaBaseModel):
 
 
 class MogaReplacementTypeRouletteWheel(DakotaBaseModel):
-    """Generated model for MogaReplacementTypeRouletteWheel"""
+    "Replace population"
 
     roulette_wheel: Literal[True] = DakotaField(
         default=True,
+        description="Replace population",
         dakota={
             "materialization": [
                 {
@@ -90,10 +94,11 @@ class MogaReplacementTypeRouletteWheel(DakotaBaseModel):
 
 
 class MogaReplacementTypeUniqueRouletteWheel(DakotaBaseModel):
-    """Generated model for MogaReplacementTypeUniqueRouletteWheel"""
+    "Replace population"
 
     unique_roulette_wheel: Literal[True] = DakotaField(
         default=True,
+        description="Replace population",
         dakota={
             "materialization": [
                 {
@@ -108,7 +113,7 @@ class MogaReplacementTypeUniqueRouletteWheel(DakotaBaseModel):
 
 
 class BelowLimitConfig(DakotaBaseModel):
-    """Generated model for BelowLimitConfig"""
+    "Limit number of designs dominating those kept"
 
     threshhold: DakotaFloat = DakotaField(
         gt=0,
@@ -145,7 +150,7 @@ class BelowLimitConfig(DakotaBaseModel):
 
 
 class Radial(DakotaBaseModel):
-    """Generated model for Radial"""
+    "Set niching distance to percentage of non-dominated range"
 
     radial: list[DakotaFloat] = DakotaField(
         description="Set niching distance to percentage of non-dominated range",
@@ -165,7 +170,7 @@ class Radial(DakotaBaseModel):
 
 
 class NichingTypeDistance(DakotaBaseModel):
-    """Generated model for NichingTypeDistance"""
+    "Enforce minimum Euclidean distance between designs"
 
     distance: list[DakotaFloat] = DakotaField(
         description="Enforce minimum Euclidean distance between designs",
@@ -185,7 +190,7 @@ class NichingTypeDistance(DakotaBaseModel):
 
 
 class MaxDesignsConfig(DakotaBaseModel):
-    """Generated model for MaxDesignsConfig"""
+    "Limit number of solutions to remain in the population"
 
     min_distances: list[DakotaFloat] = DakotaField(
         description="Limit number of solutions to remain in the population",
@@ -219,7 +224,7 @@ class MaxDesignsConfig(DakotaBaseModel):
 
 
 class ConvergenceType(DakotaBaseModel):
-    """Generated model for ConvergenceType"""
+    "Select the convergence type for JEGA methods"
 
     metric_tracker: Literal[True] = DakotaField(
         description="Track changes in the non-dominated frontier",
@@ -270,7 +275,7 @@ class ConvergenceType(DakotaBaseModel):
 
 
 class PostprocessorType(DakotaBaseModel):
-    """Generated model for PostprocessorType"""
+    "Post process the final solution from ``moga``"
 
     orthogonal_distance: list[DakotaFloat] = DakotaField(
         description="Get subset of Pareto front based on distance",
@@ -290,7 +295,7 @@ class PostprocessorType(DakotaBaseModel):
 
 
 class BelowLimit(DakotaBaseModel):
-    """Generated model for BelowLimit"""
+    "Limit number of designs dominating those kept"
 
     below_limit: BelowLimitConfig = DakotaField(
         default=...,
@@ -300,7 +305,7 @@ class BelowLimit(DakotaBaseModel):
 
 
 class MaxDesigns(DakotaBaseModel):
-    """Generated model for MaxDesigns"""
+    "Limit number of solutions to remain in the population"
 
     max_designs: MaxDesignsConfig = DakotaField(
         default=...,
@@ -316,7 +321,7 @@ class MogaConfig(
     DefaultScalingMixin,
     MethodJegaCommonOptsMixin,
 ):
-    """Generated model for MogaConfig"""
+    "Multi-objective Genetic Algorithm (a.k.a Evolutionary Algorithm)"
 
     fitness_type: Union[LayerRank, DominationCount] | None = DakotaField(
         default=None,
@@ -350,7 +355,7 @@ class MogaConfig(
 
 
 class MogaSelection(MethodSelection):
-    """Generated model for MogaSelection"""
+    "Generated model for MogaSelection"
 
     moga: MogaConfig = DakotaField(
         dakota={

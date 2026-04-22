@@ -11,10 +11,11 @@ from .validation.rules import CheckAnalysisDrivers, CheckInterfaceBlock
 
 
 class SystemParametersFormatStandard(DakotaBaseModel):
-    """Generated model for SystemParametersFormatStandard"""
+    "Use the standard format for parameters files"
 
     standard: Literal[True] = DakotaField(
         default=True,
+        description="Use the standard format for parameters files",
         dakota={
             "materialization": [
                 {
@@ -29,10 +30,11 @@ class SystemParametersFormatStandard(DakotaBaseModel):
 
 
 class SystemParametersFormatAprepro(DakotaBaseModel):
-    """Generated model for SystemParametersFormatAprepro"""
+    "Use the APREPRO format for parameters files"
 
     aprepro: Literal[True] = DakotaField(
         default=True,
+        description="Use the APREPRO format for parameters files",
         dakota={
             "materialization": [
                 {
@@ -47,10 +49,11 @@ class SystemParametersFormatAprepro(DakotaBaseModel):
 
 
 class SystemParametersFormatJsonFormat(DakotaBaseModel):
-    """Generated model for SystemParametersFormatJsonFormat"""
+    "Use the JSON format for parameters files"
 
     json_format: Literal[True] = DakotaField(
         default=True,
+        description="Use the JSON format for parameters files",
         dakota={
             "materialization": [
                 {
@@ -65,7 +68,7 @@ class SystemParametersFormatJsonFormat(DakotaBaseModel):
 
 
 class SystemResultsFormatStandardConfig(DakotaBaseModel):
-    """Generated model for SystemResultsFormatStandardConfig"""
+    "Expect results files in standard format"
 
     labeled: Literal[True] | None = DakotaField(
         default=None,
@@ -83,10 +86,11 @@ class SystemResultsFormatStandardConfig(DakotaBaseModel):
 
 
 class SystemResultsFormatJsonFormat(DakotaBaseModel):
-    """Generated model for SystemResultsFormatJsonFormat"""
+    "Expect results files in JSON format"
 
     json_format: Literal[True] = DakotaField(
         default=True,
+        description="Expect results files in JSON format",
         dakota={
             "materialization": [
                 {
@@ -101,7 +105,7 @@ class SystemResultsFormatJsonFormat(DakotaBaseModel):
 
 
 class SystemWorkDirectory(DakotaBaseModel):
-    """Generated model for SystemWorkDirectory"""
+    "Perform each function evaluation in a separate working directory"
 
     named: str | None = DakotaField(
         default=None,
@@ -186,10 +190,11 @@ class SystemWorkDirectory(DakotaBaseModel):
 
 
 class ForkParametersFormatStandard(DakotaBaseModel):
-    """Generated model for ForkParametersFormatStandard"""
+    "Use the standard format for parameters files"
 
     standard: Literal[True] = DakotaField(
         default=True,
+        description="Use the standard format for parameters files",
         dakota={
             "materialization": [
                 {
@@ -204,10 +209,11 @@ class ForkParametersFormatStandard(DakotaBaseModel):
 
 
 class ForkParametersFormatAprepro(DakotaBaseModel):
-    """Generated model for ForkParametersFormatAprepro"""
+    "Use the APREPRO format for parameters files"
 
     aprepro: Literal[True] = DakotaField(
         default=True,
+        description="Use the APREPRO format for parameters files",
         dakota={
             "materialization": [
                 {
@@ -222,10 +228,11 @@ class ForkParametersFormatAprepro(DakotaBaseModel):
 
 
 class ForkParametersFormatJsonFormat(DakotaBaseModel):
-    """Generated model for ForkParametersFormatJsonFormat"""
+    "Use the JSON format for parameters files"
 
     json_format: Literal[True] = DakotaField(
         default=True,
+        description="Use the JSON format for parameters files",
         dakota={
             "materialization": [
                 {
@@ -240,7 +247,7 @@ class ForkParametersFormatJsonFormat(DakotaBaseModel):
 
 
 class ForkResultsFormatStandardConfig(DakotaBaseModel):
-    """Generated model for ForkResultsFormatStandardConfig"""
+    "Expect results files in standard format"
 
     labeled: Literal[True] | None = DakotaField(
         default=None,
@@ -258,10 +265,11 @@ class ForkResultsFormatStandardConfig(DakotaBaseModel):
 
 
 class ForkResultsFormatJsonFormat(DakotaBaseModel):
-    """Generated model for ForkResultsFormatJsonFormat"""
+    "Expect results files in JSON format"
 
     json_format: Literal[True] = DakotaField(
         default=True,
+        description="Expect results files in JSON format",
         dakota={
             "materialization": [
                 {
@@ -276,7 +284,7 @@ class ForkResultsFormatJsonFormat(DakotaBaseModel):
 
 
 class ForkWorkDirectory(DakotaBaseModel):
-    """Generated model for ForkWorkDirectory"""
+    "Perform each function evaluation in a separate working directory"
 
     named: str | None = DakotaField(
         default=None,
@@ -361,7 +369,7 @@ class ForkWorkDirectory(DakotaBaseModel):
 
 
 class DirectConfig(DakotaBaseModel):
-    """Generated model for DirectConfig"""
+    "Run analysis drivers that are linked-to or compiled-with Dakota"
 
     processors_per_analysis: int | None = DakotaField(
         default=None,
@@ -380,7 +388,7 @@ class DirectConfig(DakotaBaseModel):
 
 
 class PluginConfig(DakotaBaseModel):
-    """Generated model for PluginConfig"""
+    "Dynamically load a plugin analysis driver"
 
     library_path: str = DakotaField(
         description="Path to the plugin shared object file",
@@ -397,10 +405,11 @@ class PluginConfig(DakotaBaseModel):
 
 
 class Matlab(DakotaBaseModel):
-    """Generated model for Matlab"""
+    "Run Matlab through a direct interface - requires special Dakota build"
 
     matlab: Literal[True] = DakotaField(
         default=True,
+        description="Run Matlab through a direct interface - requires special Dakota build",
         dakota={
             "materialization": [
                 {
@@ -415,7 +424,7 @@ class Matlab(DakotaBaseModel):
 
 
 class PythonConfig(DakotaBaseModel):
-    """Generated model for PythonConfig"""
+    "Run Python through a Pybind11-based direct interface - requires a special Dakota build"
 
     numpy: Literal[True] | None = DakotaField(
         default=None,
@@ -433,10 +442,11 @@ class PythonConfig(DakotaBaseModel):
 
 
 class Scilab(DakotaBaseModel):
-    """Generated model for Scilab"""
+    "Run Scilab through a direct interface - requires special Dakota build"
 
     scilab: Literal[True] = DakotaField(
         default=True,
+        description="Run Scilab through a direct interface - requires special Dakota build",
         dakota={
             "materialization": [
                 {
@@ -451,10 +461,11 @@ class Scilab(DakotaBaseModel):
 
 
 class AnalysisDriversGrid(DakotaBaseModel):
-    """Generated model for AnalysisDriversGrid"""
+    "Deprecated grid computing interface"
 
     grid: Literal[True] = DakotaField(
         default=True,
+        description="Deprecated grid computing interface",
         dakota={
             "materialization": [
                 {
@@ -469,10 +480,11 @@ class AnalysisDriversGrid(DakotaBaseModel):
 
 
 class Abort(DakotaBaseModel):
-    """Generated model for Abort"""
+    "(Default) Abort the Dakota job"
 
     abort: Literal[True] = DakotaField(
         default=True,
+        description="(Default) Abort the Dakota job",
         dakota={
             "materialization": [
                 {
@@ -487,7 +499,7 @@ class Abort(DakotaBaseModel):
 
 
 class Retry(DakotaBaseModel):
-    """Generated model for Retry"""
+    "Rerun failed analyses"
 
     retry: int = DakotaField(
         description="Rerun failed analyses",
@@ -507,7 +519,7 @@ class Retry(DakotaBaseModel):
 
 
 class Recover(DakotaBaseModel):
-    """Generated model for Recover"""
+    "Substitute dummy values for the responses"
 
     recover: list[DakotaFloat] = DakotaField(
         description="Substitute dummy values for the responses",
@@ -527,10 +539,11 @@ class Recover(DakotaBaseModel):
 
 
 class Continuation(DakotaBaseModel):
-    """Generated model for Continuation"""
+    'Cause Dakota to step toward the failed \\"target\\" simulation from a nearby successful \\"source\\"'
 
     continuation: Literal[True] = DakotaField(
         default=True,
+        description='Cause Dakota to step toward the failed "target" simulation from a nearby successful "source"',
         dakota={
             "materialization": [
                 {
@@ -545,7 +558,7 @@ class Continuation(DakotaBaseModel):
 
 
 class StrictCacheEquality(DakotaBaseModel):
-    """Generated model for StrictCacheEquality"""
+    "Do not require strict cache equality when finding duplicates"
 
     cache_tolerance: DakotaFloat = DakotaField(
         default=DBL_EPSILON,
@@ -563,7 +576,7 @@ class StrictCacheEquality(DakotaBaseModel):
 
 
 class BatchConfig(DakotaBaseModel):
-    """Generated model for BatchConfig"""
+    "Perform evaluations in batches"
 
     size: int | None = DakotaField(
         default=None,
@@ -582,10 +595,11 @@ class BatchConfig(DakotaBaseModel):
 
 
 class LocalEvaluationSchedulingDynamic(DakotaBaseModel):
-    """Generated model for LocalEvaluationSchedulingDynamic"""
+    "Dynamic local scheduling (sequential)"
 
     dynamic: Literal[True] = DakotaField(
         default=True,
+        description="Dynamic local scheduling (sequential)",
         dakota={
             "materialization": [
                 {
@@ -600,10 +614,11 @@ class LocalEvaluationSchedulingDynamic(DakotaBaseModel):
 
 
 class LocalEvaluationSchedulingStatic(DakotaBaseModel):
-    """Generated model for LocalEvaluationSchedulingStatic"""
+    "Static local scheduling (tiled)"
 
     static: Literal[True] = DakotaField(
         default=True,
+        description="Static local scheduling (tiled)",
         dakota={
             "materialization": [
                 {
@@ -618,10 +633,11 @@ class LocalEvaluationSchedulingStatic(DakotaBaseModel):
 
 
 class EvaluationSchedulingDedicated(DakotaBaseModel):
-    """Generated model for EvaluationSchedulingDedicated"""
+    "Specify a dedicated scheduler partition for concurrent evaluation scheduling"
 
     dedicated: Literal[True] = DakotaField(
         default=True,
+        description="Specify a dedicated scheduler partition for concurrent evaluation scheduling",
         dakota={
             "materialization": [
                 {
@@ -636,10 +652,11 @@ class EvaluationSchedulingDedicated(DakotaBaseModel):
 
 
 class PeerDynamic(DakotaBaseModel):
-    """Generated model for PeerDynamic"""
+    "Specify dynamic scheduling in a peer partition when Dakota is run in parallel."
 
     dynamic: Literal[True] = DakotaField(
         default=True,
+        description="Specify dynamic scheduling in a peer partition when Dakota is run in parallel.",
         dakota={
             "materialization": [
                 {
@@ -654,10 +671,11 @@ class PeerDynamic(DakotaBaseModel):
 
 
 class PeerStatic(DakotaBaseModel):
-    """Generated model for PeerStatic"""
+    "Specify static scheduling in a peer partition when Dakota is run in parallel."
 
     static: Literal[True] = DakotaField(
         default=True,
+        description="Specify static scheduling in a peer partition when Dakota is run in parallel.",
         dakota={
             "materialization": [
                 {
@@ -672,10 +690,11 @@ class PeerStatic(DakotaBaseModel):
 
 
 class AnalysisSchedulingDedicated(DakotaBaseModel):
-    """Generated model for AnalysisSchedulingDedicated"""
+    "Specify a dedicated scheduler partition for concurrent analysis executions"
 
     dedicated: Literal[True] = DakotaField(
         default=True,
+        description="Specify a dedicated scheduler partition for concurrent analysis executions",
         dakota={
             "materialization": [
                 {
@@ -690,10 +709,11 @@ class AnalysisSchedulingDedicated(DakotaBaseModel):
 
 
 class AnalysisSchedulingPeer(DakotaBaseModel):
-    """Generated model for AnalysisSchedulingPeer"""
+    "Specify a peer partition for parallel analysis scheduling"
 
     peer: Literal[True] = DakotaField(
         default=True,
+        description="Specify a peer partition for parallel analysis scheduling",
         dakota={
             "materialization": [
                 {
@@ -708,7 +728,7 @@ class AnalysisSchedulingPeer(DakotaBaseModel):
 
 
 class SystemResultsFormatStandard(DakotaBaseModel):
-    """Generated model for SystemResultsFormatStandard"""
+    "Expect results files in standard format"
 
     standard: SystemResultsFormatStandardConfig = DakotaField(
         description="Expect results files in standard format",
@@ -726,7 +746,7 @@ class SystemResultsFormatStandard(DakotaBaseModel):
 
 
 class ForkResultsFormatStandard(DakotaBaseModel):
-    """Generated model for ForkResultsFormatStandard"""
+    "Expect results files in standard format"
 
     standard: ForkResultsFormatStandardConfig = DakotaField(
         description="Expect results files in standard format",
@@ -744,7 +764,7 @@ class ForkResultsFormatStandard(DakotaBaseModel):
 
 
 class Direct(DakotaBaseModel):
-    """Generated model for Direct"""
+    "Run analysis drivers that are linked-to or compiled-with Dakota"
 
     direct: DirectConfig = DakotaField(
         description="Run analysis drivers that are linked-to or compiled-with Dakota",
@@ -762,7 +782,7 @@ class Direct(DakotaBaseModel):
 
 
 class Plugin(DakotaBaseModel):
-    """Generated model for Plugin"""
+    "Dynamically load a plugin analysis driver"
 
     plugin: PluginConfig = DakotaField(
         description="Dynamically load a plugin analysis driver",
@@ -780,7 +800,7 @@ class Plugin(DakotaBaseModel):
 
 
 class Python(DakotaBaseModel):
-    """Generated model for Python"""
+    "Run Python through a Pybind11-based direct interface - requires a special Dakota build"
 
     python: PythonConfig = DakotaField(
         description="Run Python through a Pybind11-based direct interface - requires a special Dakota build",
@@ -798,7 +818,7 @@ class Python(DakotaBaseModel):
 
 
 class Deactivate(DakotaBaseModel):
-    """Generated model for Deactivate"""
+    "Deactivate Dakota interface features for simplicity or efficiency"
 
     active_set_vector: Literal[True] | None = DakotaField(
         default=None,
@@ -855,7 +875,7 @@ class Deactivate(DakotaBaseModel):
 
 
 class Batch(DakotaBaseModel):
-    """Generated model for Batch"""
+    "Perform evaluations in batches"
 
     batch: BatchConfig = DakotaField(
         description="Perform evaluations in batches",
@@ -872,7 +892,7 @@ class Batch(DakotaBaseModel):
 
 
 class AsynchronousConfig(DakotaBaseModel):
-    """Generated model for AsynchronousConfig"""
+    "Specify local evaluation or analysis concurrency"
 
     evaluation_concurrency: int | None = DakotaField(
         default=None,
@@ -912,13 +932,15 @@ class AsynchronousConfig(DakotaBaseModel):
 
 
 class EvaluationSchedulingPeer(DakotaBaseModel):
-    """Generated model for EvaluationSchedulingPeer"""
+    "Specify a peer partition for parallel evaluation scheduling"
 
-    peer: Union[PeerDynamic, PeerStatic]
+    peer: Union[PeerDynamic, PeerStatic] = DakotaField(
+        description="Specify a peer partition for parallel evaluation scheduling"
+    )
 
 
 class SystemConfig(DakotaBaseModel):
-    """Generated model for SystemConfig"""
+    "(Not recommended) Launch analysis drivers with a system call"
 
     parameters_file: str | None = DakotaField(
         default=None,
@@ -1053,7 +1075,7 @@ class SystemConfig(DakotaBaseModel):
 
 
 class ForkConfig(DakotaBaseModel):
-    """Generated model for ForkConfig"""
+    "Launch analysis drivers using fork command"
 
     parameters_file: str | None = DakotaField(
         default=None,
@@ -1188,7 +1210,7 @@ class ForkConfig(DakotaBaseModel):
 
 
 class Asynchronous(DakotaBaseModel):
-    """Generated model for Asynchronous"""
+    "Specify local evaluation or analysis concurrency"
 
     asynchronous: AsynchronousConfig = DakotaField(
         description="Specify local evaluation or analysis concurrency",
@@ -1205,7 +1227,7 @@ class Asynchronous(DakotaBaseModel):
 
 
 class System(DakotaBaseModel):
-    """Generated model for System"""
+    "(Not recommended) Launch analysis drivers with a system call"
 
     system: SystemConfig = DakotaField(
         description="(Not recommended) Launch analysis drivers with a system call",
@@ -1223,7 +1245,7 @@ class System(DakotaBaseModel):
 
 
 class Fork(DakotaBaseModel):
-    """Generated model for Fork"""
+    "Launch analysis drivers using fork command"
 
     fork: ForkConfig = DakotaField(
         description="Launch analysis drivers using fork command",
@@ -1241,7 +1263,7 @@ class Fork(DakotaBaseModel):
 
 
 class AnalysisDrivers(DakotaBaseModel):
-    """Generated model for AnalysisDrivers"""
+    "Define how Dakota should run a function evaluation"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CheckAnalysisDrivers(context="analysis_drivers"),
@@ -1306,7 +1328,7 @@ class AnalysisDrivers(DakotaBaseModel):
 
 
 class InterfaceConfig(DakotaBaseModel):
-    """Generated model for InterfaceConfig"""
+    "Specifies how function evaluations will be performed in order to map the variables into the responses."
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CheckInterfaceBlock(context="interface"),

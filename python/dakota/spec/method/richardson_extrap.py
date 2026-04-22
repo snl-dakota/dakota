@@ -16,10 +16,11 @@ from dakota.spec.shared.misc import (
 
 
 class EstimateOrder(DakotaBaseModel):
-    """Generated model for EstimateOrder"""
+    "Compute the best estimate of the convergence order from three points"
 
     estimate_order: Literal[True] = DakotaField(
         default=True,
+        description="Compute the best estimate of the convergence order from three points",
         dakota={
             "materialization": [
                 {
@@ -34,10 +35,11 @@ class EstimateOrder(DakotaBaseModel):
 
 
 class ConvergeOrder(DakotaBaseModel):
-    """Generated model for ConvergeOrder"""
+    "Refine until the estimated covergence order converges"
 
     converge_order: Literal[True] = DakotaField(
         default=True,
+        description="Refine until the estimated covergence order converges",
         dakota={
             "materialization": [
                 {
@@ -52,10 +54,11 @@ class ConvergeOrder(DakotaBaseModel):
 
 
 class ConvergeQoi(DakotaBaseModel):
-    """Generated model for ConvergeQoi"""
+    "Refine until the response converges"
 
     converge_qoi: Literal[True] = DakotaField(
         default=True,
+        description="Refine until the response converges",
         dakota={
             "materialization": [
                 {
@@ -75,7 +78,7 @@ class RichardsonExtrapConfig(
     MethodMaxIterationsContext1Mixin,
     MethodOptionalModelPointerMixin,
 ):
-    """Generated model for RichardsonExtrapConfig"""
+    "Estimate order of convergence of a response as model fidelity increases"
 
     mode: Union[EstimateOrder, ConvergeOrder, ConvergeQoi] = DakotaField(
         description="Verification Mode", dakota={"anchor": True, "union_pattern": 4}
@@ -96,7 +99,7 @@ class RichardsonExtrapConfig(
 
 
 class RichardsonExtrapSelection(MethodSelection):
-    """Generated model for RichardsonExtrapSelection"""
+    "Generated model for RichardsonExtrapSelection"
 
     richardson_extrap: RichardsonExtrapConfig = DakotaField(
         dakota={

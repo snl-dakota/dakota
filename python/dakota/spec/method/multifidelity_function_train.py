@@ -38,13 +38,13 @@ class MultifidelityFtConfig(
     MethodSeedSequenceMixin,
     MethodOptionalModelPointerMixin,
 ):
-    """Generated model for MultifidelityFtConfig"""
+    "Multifidelity uncertainty quantification using function train expansions"
 
     pass
 
 
 class MultifidelityFtSelection(MethodSelection):
-    """Generated model for MultifidelityFtSelection"""
+    "Generated model for MultifidelityFtSelection"
 
     multifidelity_function_train: MultifidelityFtConfig = DakotaField(
         dakota={

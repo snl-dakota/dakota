@@ -13,13 +13,13 @@ from dakota.spec.shared.misc import (
 
 
 class DotSlpConfig(MethodThreeOptionalKeywordsMixin, MethodDotCommonOptsMixin):
-    """Generated model for DotSlpConfig"""
+    "DOT Sequential Linear Program"
 
     pass
 
 
 class DotSlpSelection(MethodSelection):
-    """Generated model for DotSlpSelection"""
+    "Generated model for DotSlpSelection"
 
     dot_slp: DotSlpConfig = DakotaField(
         dakota={

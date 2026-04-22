@@ -20,13 +20,13 @@ class LocalIntervalEstConfig(
     MethodConvergenceTolMixin,
     MethodOptionalModelPointerMixin,
 ):
-    """Generated model for LocalIntervalEstConfig"""
+    "Interval analysis using local optimization"
 
     pass
 
 
 class LocalIntervalEstSelection(MethodSelection):
-    """Generated model for LocalIntervalEstSelection"""
+    "Generated model for LocalIntervalEstSelection"
 
     local_interval_est: LocalIntervalEstConfig = DakotaField(
         dakota={

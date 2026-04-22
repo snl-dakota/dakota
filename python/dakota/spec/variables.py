@@ -93,10 +93,11 @@ from .validation.computed_fields import (
 
 
 class ActiveAll(DakotaBaseModel):
-    """Generated model for ActiveAll"""
+    "Option for the ``active`` keyword"
 
     all: Literal[True] = DakotaField(
         default=True,
+        description="Option for the ``active`` keyword",
         dakota={
             "materialization": [
                 {
@@ -111,10 +112,11 @@ class ActiveAll(DakotaBaseModel):
 
 
 class Design(DakotaBaseModel):
-    """Generated model for Design"""
+    "Option for the ``active`` keyword"
 
     design: Literal[True] = DakotaField(
         default=True,
+        description="Option for the ``active`` keyword",
         dakota={
             "materialization": [
                 {
@@ -129,10 +131,11 @@ class Design(DakotaBaseModel):
 
 
 class Uncertain(DakotaBaseModel):
-    """Generated model for Uncertain"""
+    "Option for the ``active`` keyword"
 
     uncertain: Literal[True] = DakotaField(
         default=True,
+        description="Option for the ``active`` keyword",
         dakota={
             "materialization": [
                 {
@@ -147,10 +150,11 @@ class Uncertain(DakotaBaseModel):
 
 
 class Aleatory(DakotaBaseModel):
-    """Generated model for Aleatory"""
+    "Option for the ``active`` keyword"
 
     aleatory: Literal[True] = DakotaField(
         default=True,
+        description="Option for the ``active`` keyword",
         dakota={
             "materialization": [
                 {
@@ -165,10 +169,11 @@ class Aleatory(DakotaBaseModel):
 
 
 class Epistemic(DakotaBaseModel):
-    """Generated model for Epistemic"""
+    "Option for the ``active`` keyword"
 
     epistemic: Literal[True] = DakotaField(
         default=True,
+        description="Option for the ``active`` keyword",
         dakota={
             "materialization": [
                 {
@@ -183,10 +188,11 @@ class Epistemic(DakotaBaseModel):
 
 
 class State(DakotaBaseModel):
-    """Generated model for State"""
+    "Option for the ``active`` keyword"
 
     state: Literal[True] = DakotaField(
         default=True,
+        description="Option for the ``active`` keyword",
         dakota={
             "materialization": [
                 {
@@ -201,10 +207,11 @@ class State(DakotaBaseModel):
 
 
 class Mixed(DakotaBaseModel):
-    """Generated model for Mixed"""
+    "Maintain continuous/discrete variable distinction"
 
     mixed: Literal[True] = DakotaField(
         default=True,
+        description="Maintain continuous/discrete variable distinction",
         dakota={
             "materialization": [
                 {
@@ -219,10 +226,11 @@ class Mixed(DakotaBaseModel):
 
 
 class Relaxed(DakotaBaseModel):
-    """Generated model for Relaxed"""
+    "Allow treatment of discrete variables as continuous"
 
     relaxed: Literal[True] = DakotaField(
         default=True,
+        description="Allow treatment of discrete variables as continuous",
         dakota={
             "materialization": [
                 {
@@ -237,7 +245,7 @@ class Relaxed(DakotaBaseModel):
 
 
 class ContinuousDesign(DakotaBaseModel):
-    """Generated model for ContinuousDesign"""
+    "Design variable - continuous"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CompareLength(
@@ -395,7 +403,7 @@ class ContinuousDesign(DakotaBaseModel):
 
 
 class DiscreteDesignRange(DakotaBaseModel):
-    """Generated model for DiscreteDesignRange"""
+    "Design variable - discrete range-valued"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CompareLength(
@@ -517,7 +525,7 @@ class DiscreteDesignRange(DakotaBaseModel):
 
 
 class IntegerCategorical(DakotaBaseModel):
-    """Generated model for IntegerCategorical"""
+    "Whether the set-valued variables are categorical or relaxable"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CheckPermittedValues(
@@ -555,7 +563,7 @@ class IntegerCategorical(DakotaBaseModel):
 
 
 class DiscreteDesignSetString(DakotaBaseModel):
-    """Generated model for DiscreteDesignSetString"""
+    "String-valued discrete design set variables"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CompareLength(
@@ -720,7 +728,7 @@ class DiscreteDesignSetString(DakotaBaseModel):
 
 
 class RealCategorical(DakotaBaseModel):
-    """Generated model for RealCategorical"""
+    "Whether the set-valued variables are categorical or relaxable"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CheckPermittedValues(
@@ -758,7 +766,7 @@ class RealCategorical(DakotaBaseModel):
 
 
 class NormalUncertain(DakotaBaseModel):
-    """Generated model for NormalUncertain"""
+    "Aleatory uncertain variable - normal (Gaussian)"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CompareLength(
@@ -953,7 +961,7 @@ class NormalUncertain(DakotaBaseModel):
 
 
 class Option1Config(DakotaBaseModel):
-    """Generated model for Option1Config"""
+    "Specify means and standard deviations for the lognormal distributions"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CheckRealLowerBound(context="option_1", list_field="means", lower_bound=0),
@@ -991,7 +999,7 @@ class Option1Config(DakotaBaseModel):
 
 
 class Option2Config(DakotaBaseModel):
-    """Generated model for Option2Config"""
+    "Specify means and error factors for the lognormal distributions"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CheckRealLowerBound(context="option_2", list_field="means", lower_bound=0),
@@ -1029,7 +1037,7 @@ class Option2Config(DakotaBaseModel):
 
 
 class Option3Config(DakotaBaseModel):
-    """Generated model for Option3Config"""
+    "Specify lambdas and zetas for the lognormal distributions"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CheckRealLowerBound(context="option_3", list_field="zetas", lower_bound=0),
@@ -1064,7 +1072,7 @@ class Option3Config(DakotaBaseModel):
 
 
 class UniformUncertain(DakotaBaseModel):
-    """Generated model for UniformUncertain"""
+    "Aleatory uncertain variable - uniform"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CompareLength(
@@ -1199,7 +1207,7 @@ class UniformUncertain(DakotaBaseModel):
 
 
 class LoguniformUncertain(DakotaBaseModel):
-    """Generated model for LoguniformUncertain"""
+    "Aleatory uncertain variable - loguniform"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CompareLength(
@@ -1340,7 +1348,7 @@ class LoguniformUncertain(DakotaBaseModel):
 
 
 class TriangularUncertain(DakotaBaseModel):
-    """Generated model for TriangularUncertain"""
+    "Aleatory uncertain variable - triangular"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CompareLength(
@@ -1497,7 +1505,7 @@ class TriangularUncertain(DakotaBaseModel):
 
 
 class ExponentialUncertain(DakotaBaseModel):
-    """Generated model for ExponentialUncertain"""
+    "Aleatory uncertain variable - exponential"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CompareLength(
@@ -1653,7 +1661,7 @@ class ExponentialUncertain(DakotaBaseModel):
 
 
 class BetaUncertain(DakotaBaseModel):
-    """Generated model for BetaUncertain"""
+    "Aleatory uncertain variable - beta"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CompareLength(
@@ -1818,7 +1826,7 @@ class BetaUncertain(DakotaBaseModel):
 
 
 class GammaUncertain(DakotaBaseModel):
-    """Generated model for GammaUncertain"""
+    "Aleatory uncertain variable - gamma"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CompareLength(
@@ -1989,7 +1997,7 @@ class GammaUncertain(DakotaBaseModel):
 
 
 class GumbelUncertain(DakotaBaseModel):
-    """Generated model for GumbelUncertain"""
+    "Aleatory uncertain variable - gumbel"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CompareLength(
@@ -2157,7 +2165,7 @@ class GumbelUncertain(DakotaBaseModel):
 
 
 class FrechetUncertain(DakotaBaseModel):
-    """Generated model for FrechetUncertain"""
+    "Aleatory uncertain variable - Frechet"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CompareLength(
@@ -2327,7 +2335,7 @@ class FrechetUncertain(DakotaBaseModel):
 
 
 class WeibullUncertain(DakotaBaseModel):
-    """Generated model for WeibullUncertain"""
+    "Aleatory uncertain variable - Weibull"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CompareLength(
@@ -2500,7 +2508,7 @@ class WeibullUncertain(DakotaBaseModel):
 
 
 class Ordinates(DakotaBaseModel):
-    """Generated model for Ordinates"""
+    'Ordinates specifying a \\"skyline\\" probability density function'
 
     ordinates: list[DakotaFloat] = DakotaField(
         description='Ordinates specifying a "skyline" probability density function',
@@ -2509,7 +2517,7 @@ class Ordinates(DakotaBaseModel):
 
 
 class Counts(DakotaBaseModel):
-    """Generated model for Counts"""
+    "Frequency or relative probability of each bin"
 
     counts: list[DakotaFloat] = DakotaField(
         description="Frequency or relative probability of each bin",
@@ -2518,7 +2526,7 @@ class Counts(DakotaBaseModel):
 
 
 class PoissonUncertain(DakotaBaseModel):
-    """Generated model for PoissonUncertain"""
+    "Aleatory uncertain discrete variable - Poisson"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CompareLength(
@@ -2670,7 +2678,7 @@ class PoissonUncertain(DakotaBaseModel):
 
 
 class BinomialUncertain(DakotaBaseModel):
-    """Generated model for BinomialUncertain"""
+    "Aleatory uncertain discrete variable - binomial"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CompareLength(
@@ -2840,7 +2848,7 @@ class BinomialUncertain(DakotaBaseModel):
 
 
 class NegativeBinomialUncertain(DakotaBaseModel):
-    """Generated model for NegativeBinomialUncertain"""
+    "Aleatory uncertain discrete variable - negative binomial"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CompareLength(
@@ -3020,7 +3028,7 @@ class NegativeBinomialUncertain(DakotaBaseModel):
 
 
 class GeometricUncertain(DakotaBaseModel):
-    """Generated model for GeometricUncertain"""
+    "Aleatory uncertain discrete variable - geometric"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CompareLength(
@@ -3174,7 +3182,7 @@ class GeometricUncertain(DakotaBaseModel):
 
 
 class HypergeometricUncertain(DakotaBaseModel):
-    """Generated model for HypergeometricUncertain"""
+    "Aleatory uncertain discrete variable - hypergeometric"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CompareLength(
@@ -3376,7 +3384,7 @@ class HypergeometricUncertain(DakotaBaseModel):
 
 
 class HistogramPointUncertainInteger(DakotaBaseModel):
-    """Generated model for HistogramPointUncertainInteger"""
+    "Integer valued point histogram variable"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CompareLength(
@@ -3539,7 +3547,7 @@ class HistogramPointUncertainInteger(DakotaBaseModel):
 
 
 class HistogramPointUncertainString(DakotaBaseModel):
-    """Generated model for HistogramPointUncertainString"""
+    "String (categorical) valued point histogram variable"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CompareLength(
@@ -3702,7 +3710,7 @@ class HistogramPointUncertainString(DakotaBaseModel):
 
 
 class HistogramPointUncertainReal(DakotaBaseModel):
-    """Generated model for HistogramPointUncertainReal"""
+    "Real valued point histogram variable"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CompareLength(
@@ -3865,7 +3873,7 @@ class HistogramPointUncertainReal(DakotaBaseModel):
 
 
 class ContinuousIntervalUncertain(DakotaBaseModel):
-    """Generated model for ContinuousIntervalUncertain"""
+    "Epistemic uncertain variable - values from one or more continuous intervals"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CompareLength(
@@ -4023,7 +4031,7 @@ class ContinuousIntervalUncertain(DakotaBaseModel):
 
 
 class DiscreteIntervalUncertain(DakotaBaseModel):
-    """Generated model for DiscreteIntervalUncertain"""
+    "Epistemic uncertain variable - values from one or more discrete intervals"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CompareLength(
@@ -4178,7 +4186,7 @@ class DiscreteIntervalUncertain(DakotaBaseModel):
 
 
 class DiscreteUncertainSetInteger(DakotaBaseModel):
-    """Generated model for DiscreteUncertainSetInteger"""
+    "Discrete, epistemic uncertain variable - integers within a set"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CompareLength(
@@ -4366,7 +4374,7 @@ class DiscreteUncertainSetInteger(DakotaBaseModel):
 
 
 class DiscreteUncertainSetString(DakotaBaseModel):
-    """Generated model for DiscreteUncertainSetString"""
+    "Discrete, epistemic uncertain variable - strings within a set"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CompareLength(
@@ -4531,7 +4539,7 @@ class DiscreteUncertainSetString(DakotaBaseModel):
 
 
 class DiscreteUncertainSetReal(DakotaBaseModel):
-    """Generated model for DiscreteUncertainSetReal"""
+    "Discrete, epistemic uncertain variable - real numbers within a set"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CompareLength(
@@ -4719,7 +4727,7 @@ class DiscreteUncertainSetReal(DakotaBaseModel):
 
 
 class ContinuousState(DakotaBaseModel):
-    """Generated model for ContinuousState"""
+    "State variable - continuous"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CompareLength(
@@ -4831,7 +4839,7 @@ class ContinuousState(DakotaBaseModel):
 
 
 class DiscreteStateRange(DakotaBaseModel):
-    """Generated model for DiscreteStateRange"""
+    "State variables - discrete range-valued"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CompareLength(
@@ -4953,7 +4961,7 @@ class DiscreteStateRange(DakotaBaseModel):
 
 
 class DiscreteStateSetInteger(DakotaBaseModel):
-    """Generated model for DiscreteStateSetInteger"""
+    "Discrete state variables, each defined by a set of permissible integers"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CompareLength(
@@ -5120,7 +5128,7 @@ class DiscreteStateSetInteger(DakotaBaseModel):
 
 
 class DiscreteStateSetString(DakotaBaseModel):
-    """Generated model for DiscreteStateSetString"""
+    "String-valued discrete state set variables"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CompareLength(
@@ -5264,7 +5272,7 @@ class DiscreteStateSetString(DakotaBaseModel):
 
 
 class DiscreteStateSetReal(DakotaBaseModel):
-    """Generated model for DiscreteStateSetReal"""
+    "Discrete state variables, each defined by a set of permissible real numbers"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CompareLength(
@@ -5431,7 +5439,7 @@ class DiscreteStateSetReal(DakotaBaseModel):
 
 
 class DiscreteDesignSetInteger(DakotaBaseModel):
-    """Generated model for DiscreteDesignSetInteger"""
+    "Integer-valued discrete design variables"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CompareLength(
@@ -5593,7 +5601,7 @@ class DiscreteDesignSetInteger(DakotaBaseModel):
 
 
 class DiscreteDesignSetReal(DakotaBaseModel):
-    """Generated model for DiscreteDesignSetReal"""
+    "Real-valued discrete design variables"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CompareLength(
@@ -5755,7 +5763,7 @@ class DiscreteDesignSetReal(DakotaBaseModel):
 
 
 class Option1(DakotaBaseModel):
-    """Generated model for Option1"""
+    "Specify means and standard deviations for the lognormal distributions"
 
     option_1: Option1Config = DakotaField(
         description="Specify means and standard deviations for the lognormal distributions"
@@ -5763,7 +5771,7 @@ class Option1(DakotaBaseModel):
 
 
 class Option2(DakotaBaseModel):
-    """Generated model for Option2"""
+    "Specify means and error factors for the lognormal distributions"
 
     option_2: Option2Config = DakotaField(
         description="Specify means and error factors for the lognormal distributions"
@@ -5771,7 +5779,7 @@ class Option2(DakotaBaseModel):
 
 
 class Option3(DakotaBaseModel):
-    """Generated model for Option3"""
+    "Specify lambdas and zetas for the lognormal distributions"
 
     option_3: Option3Config = DakotaField(
         description="Specify lambdas and zetas for the lognormal distributions"
@@ -5779,7 +5787,7 @@ class Option3(DakotaBaseModel):
 
 
 class HistogramBinUncertain(DakotaBaseModel):
-    """Generated model for HistogramBinUncertain"""
+    "Aleatory uncertain variable - continuous histogram"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CompareLength(
@@ -5955,7 +5963,7 @@ class HistogramBinUncertain(DakotaBaseModel):
 
 
 class HistogramPointUncertain(DakotaBaseModel):
-    """Generated model for HistogramPointUncertain"""
+    "Aleatory uncertain variable - discrete histogram"
 
     integer: HistogramPointUncertainInteger | None = DakotaField(
         default=None,
@@ -6002,7 +6010,7 @@ class HistogramPointUncertain(DakotaBaseModel):
 
 
 class DiscreteUncertainSet(DakotaBaseModel):
-    """Generated model for DiscreteUncertainSet"""
+    "Epistemic uncertain variable - discrete set-valued"
 
     integer: DiscreteUncertainSetInteger | None = DakotaField(
         default=None,
@@ -6049,7 +6057,7 @@ class DiscreteUncertainSet(DakotaBaseModel):
 
 
 class DiscreteStateSet(DakotaBaseModel):
-    """Generated model for DiscreteStateSet"""
+    "State variable - discrete set-valued"
 
     integer: DiscreteStateSetInteger | None = DakotaField(
         default=None,
@@ -6096,7 +6104,7 @@ class DiscreteStateSet(DakotaBaseModel):
 
 
 class DiscreteDesignSet(DakotaBaseModel):
-    """Generated model for DiscreteDesignSet"""
+    "Design variable - discrete set-valued"
 
     integer: DiscreteDesignSetInteger | None = DakotaField(
         default=None,
@@ -6143,7 +6151,7 @@ class DiscreteDesignSet(DakotaBaseModel):
 
 
 class LognormalUncertain(DakotaBaseModel):
-    """Generated model for LognormalUncertain"""
+    "Aleatory uncertain variable - lognormal"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CompareLength(
@@ -6341,7 +6349,7 @@ class LognormalUncertain(DakotaBaseModel):
 
 
 class VariablesConfig(DakotaBaseModel):
-    """Generated model for VariablesConfig"""
+    "Specifies the parameter set to be iterated by a particular method."
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CheckAllVariableDescriptorsUnique(context="variables"),

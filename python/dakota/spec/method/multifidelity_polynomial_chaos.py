@@ -24,10 +24,11 @@ from dakota.spec.shared.misc import (
 
 
 class MfPceQuadratureOrderSequenceNested(DakotaBaseModel):
-    """Generated model for MfPceQuadratureOrderSequenceNested"""
+    "Enforce use of nested quadrature rules if available"
 
     nested: Literal[True] = DakotaField(
         default=True,
+        description="Enforce use of nested quadrature rules if available",
         dakota={
             "materialization": [
                 {
@@ -43,10 +44,11 @@ class MfPceQuadratureOrderSequenceNested(DakotaBaseModel):
 
 
 class MfPceQuadratureOrderSequenceNonNested(DakotaBaseModel):
-    """Generated model for MfPceQuadratureOrderSequenceNonNested"""
+    "Enforce use of non-nested quadrature rules"
 
     non_nested: Literal[True] = DakotaField(
         default=True,
+        description="Enforce use of non-nested quadrature rules",
         dakota={
             "materialization": [
                 {
@@ -62,10 +64,11 @@ class MfPceQuadratureOrderSequenceNonNested(DakotaBaseModel):
 
 
 class MfPceSGLevelSequenceRestricted(DakotaBaseModel):
-    """Generated model for MfPceSGLevelSequenceRestricted"""
+    "Restrict the growth rates for nested and non-nested rules can be synchronized for consistency."
 
     restricted: Literal[True] = DakotaField(
         default=True,
+        description="Restrict the growth rates for nested and non-nested rules can be synchronized for consistency.",
         dakota={
             "materialization": [
                 {
@@ -81,10 +84,11 @@ class MfPceSGLevelSequenceRestricted(DakotaBaseModel):
 
 
 class MfPceSGLevelSequenceUnrestricted(DakotaBaseModel):
-    """Generated model for MfPceSGLevelSequenceUnrestricted"""
+    "Overide the default restriction of growth rates for nested and non-nested rules that are by defualt synchronized for consistency."
 
     unrestricted: Literal[True] = DakotaField(
         default=True,
+        description="Overide the default restriction of growth rates for nested and non-nested rules that are by defualt synchronized for consistency.",
         dakota={
             "materialization": [
                 {
@@ -100,10 +104,11 @@ class MfPceSGLevelSequenceUnrestricted(DakotaBaseModel):
 
 
 class MfPceSGLevelSequenceNested(DakotaBaseModel):
-    """Generated model for MfPceSGLevelSequenceNested"""
+    "Enforce use of nested quadrature rules if available"
 
     nested: Literal[True] = DakotaField(
         default=True,
+        description="Enforce use of nested quadrature rules if available",
         dakota={
             "materialization": [
                 {
@@ -119,10 +124,11 @@ class MfPceSGLevelSequenceNested(DakotaBaseModel):
 
 
 class MfPceSGLevelSequenceNonNested(DakotaBaseModel):
-    """Generated model for MfPceSGLevelSequenceNonNested"""
+    "Enforce use of non-nested quadrature rules"
 
     non_nested: Literal[True] = DakotaField(
         default=True,
+        description="Enforce use of non-nested quadrature rules",
         dakota={
             "materialization": [
                 {
@@ -138,10 +144,11 @@ class MfPceSGLevelSequenceNonNested(DakotaBaseModel):
 
 
 class MfPceExpansionOrderSequenceBasisTypeTensorProduct(DakotaBaseModel):
-    """Generated model for MfPceExpansionOrderSequenceBasisTypeTensorProduct"""
+    "Use a tensor-product index set to construct a polynomial chaos expansion."
 
     tensor_product: Literal[True] = DakotaField(
         default=True,
+        description="Use a tensor-product index set to construct a polynomial chaos expansion.",
         dakota={
             "materialization": [
                 {
@@ -157,10 +164,11 @@ class MfPceExpansionOrderSequenceBasisTypeTensorProduct(DakotaBaseModel):
 
 
 class MfPceExpansionOrderSequenceBasisTypeTotalOrder(DakotaBaseModel):
-    """Generated model for MfPceExpansionOrderSequenceBasisTypeTotalOrder"""
+    "Use a total-order index set to construct a polynomial chaos expansion."
 
     total_order: Literal[True] = DakotaField(
         default=True,
+        description="Use a total-order index set to construct a polynomial chaos expansion.",
         dakota={
             "materialization": [
                 {
@@ -176,7 +184,7 @@ class MfPceExpansionOrderSequenceBasisTypeTotalOrder(DakotaBaseModel):
 
 
 class MfPceExpansionOrderSequenceBasisTypeAdaptedConfig(DakotaBaseModel):
-    """Generated model for MfPceExpansionOrderSequenceBasisTypeAdaptedConfig"""
+    "Use adaptive basis selection to choose the basis terms in a polynomial chaos expansion."
 
     advancements: int = DakotaField(
         default=3,
@@ -207,10 +215,11 @@ class MfPceExpansionOrderSequenceBasisTypeAdaptedConfig(DakotaBaseModel):
 
 
 class MfPceExpansionOrderSequenceCollocRatioLeastSquaresSvd(DakotaBaseModel):
-    """Generated model for MfPceExpansionOrderSequenceCollocRatioLeastSquaresSvd"""
+    "Calculate the coefficients of a polynomial chaos expansion using the singular value decomposition."
 
     svd: Literal[True] = DakotaField(
         default=True,
+        description="Calculate the coefficients of a polynomial chaos expansion using the singular value decomposition.",
         dakota={
             "materialization": [
                 {
@@ -225,10 +234,11 @@ class MfPceExpansionOrderSequenceCollocRatioLeastSquaresSvd(DakotaBaseModel):
 
 
 class MfPceExpansionOrderSequenceCollocRatioLeastSquaresEqCon(DakotaBaseModel):
-    """Generated model for MfPceExpansionOrderSequenceCollocRatioLeastSquaresEqCon"""
+    "Calculate the coefficients of a polynomial chaos expansion using equality constrained least squares."
 
     equality_constrained: Literal[True] = DakotaField(
         default=True,
+        description="Calculate the coefficients of a polynomial chaos expansion using equality constrained least squares.",
         dakota={
             "materialization": [
                 {
@@ -243,7 +253,7 @@ class MfPceExpansionOrderSequenceCollocRatioLeastSquaresEqCon(DakotaBaseModel):
 
 
 class MfPceExpansionOrderSequenceCollocRatioOMPConfig(DakotaBaseModel):
-    """Generated model for MfPceExpansionOrderSequenceCollocRatioOMPConfig"""
+    "Compute the coefficients of a polynomial expansion using orthogonal matching pursuit (OMP)"
 
     noise_tolerance: list[DakotaFloat] | None = DakotaField(
         default=None,
@@ -261,10 +271,11 @@ class MfPceExpansionOrderSequenceCollocRatioOMPConfig(DakotaBaseModel):
 
 
 class MfPceExpansionOrderSequenceCollocRatioBP(DakotaBaseModel):
-    """Generated model for MfPceExpansionOrderSequenceCollocRatioBP"""
+    "Compute the coefficients of a polynomial expansion by solving the Basis Pursuit L1 -minimization problem using linear programming."
 
     basis_pursuit: Literal[True] = DakotaField(
         default=True,
+        description="Compute the coefficients of a polynomial expansion by solving the Basis Pursuit L1 -minimization problem using linear programming.",
         dakota={
             "aliases": ["bp"],
             "materialization": [
@@ -281,7 +292,7 @@ class MfPceExpansionOrderSequenceCollocRatioBP(DakotaBaseModel):
 
 
 class MfPceExpansionOrderSequenceCollocRatioBPDNConfig(DakotaBaseModel):
-    """Generated model for MfPceExpansionOrderSequenceCollocRatioBPDNConfig"""
+    "Compute the coefficients of a polynomial expansion by solving the Basis Pursuit Denoising L1 -minimization problem using second order cone optimization."
 
     noise_tolerance: list[DakotaFloat] | None = DakotaField(
         default=None,
@@ -299,7 +310,7 @@ class MfPceExpansionOrderSequenceCollocRatioBPDNConfig(DakotaBaseModel):
 
 
 class MfPceExpansionOrderSequenceCollocRatioLarsConfig(DakotaBaseModel):
-    """Generated model for MfPceExpansionOrderSequenceCollocRatioLarsConfig"""
+    "Compute the coefficients of a polynomial expansion by using the greedy least angle regression (LAR) method."
 
     noise_tolerance: list[DakotaFloat] | None = DakotaField(
         default=None,
@@ -317,7 +328,7 @@ class MfPceExpansionOrderSequenceCollocRatioLarsConfig(DakotaBaseModel):
 
 
 class MfPceExpansionOrderSequenceCollocRatioLassoConfig(DakotaBaseModel):
-    """Generated model for MfPceExpansionOrderSequenceCollocRatioLassoConfig"""
+    "Compute the coefficients of a polynomial expansion by using the LASSO problem."
 
     noise_tolerance: list[DakotaFloat] | None = DakotaField(
         default=None,
@@ -348,7 +359,7 @@ class MfPceExpansionOrderSequenceCollocRatioLassoConfig(DakotaBaseModel):
 
 
 class MfPceExpansionOrderSequenceCollocRatioCV(DakotaBaseModel):
-    """Generated model for MfPceExpansionOrderSequenceCollocRatioCV"""
+    "Use cross validation to choose the 'best' polynomial order of a polynomial chaos expansion."
 
     noise_only: Literal[True] | None = DakotaField(
         default=None,
@@ -380,7 +391,7 @@ class MfPceExpansionOrderSequenceCollocRatioCV(DakotaBaseModel):
 
 
 class MfPceExpansionOrderSequenceExpansionSamplesSequenceConfig(DakotaBaseModel):
-    """Generated model for MfPceExpansionOrderSequenceExpansionSamplesSequenceConfig"""
+    "Sequence of expansion samples used in a multi-stage polynomial chaos expansion Each level entry of the ``expansion_samples_sequence`` applies to one expansion within a multi-stage expansion.  Current multi-stage expansions that support expansion samples sequences include multilevel and multifidelity polynomial chaos. If adaptive refinement is active, then this sequence specifies the starting point for each level within either an individual or integrated refinement approach. A corresponding scalar specification is documented at, e.g., :dakkw:`method-polynomial_chaos-expansion_order-expansion_samples`"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CheckNonnegativeList(
@@ -421,7 +432,7 @@ class MfPceExpansionOrderSequenceExpansionSamplesSequenceConfig(DakotaBaseModel)
 class MfPceExpansionOrderSequenceImportBuildPointsFileCustomAnnotatedConfig(
     DakotaBaseModel
 ):
-    """Generated model for MfPceExpansionOrderSequenceImportBuildPointsFileCustomAnnotatedConfig"""
+    "Selects custom-annotated tabular file format"
 
     header: Literal[True] | None = DakotaField(
         default=None,
@@ -468,10 +479,11 @@ class MfPceExpansionOrderSequenceImportBuildPointsFileCustomAnnotatedConfig(
 
 
 class MfPceExpansionOrderSequenceImportBuildPointsFileAnnotated(DakotaBaseModel):
-    """Generated model for MfPceExpansionOrderSequenceImportBuildPointsFileAnnotated"""
+    "Selects annotated tabular file format"
 
     annotated: Literal[True] = DakotaField(
         default=True,
+        description="Selects annotated tabular file format",
         dakota={
             "materialization": [
                 {
@@ -486,10 +498,11 @@ class MfPceExpansionOrderSequenceImportBuildPointsFileAnnotated(DakotaBaseModel)
 
 
 class MfPceExpansionOrderSequenceImportBuildPointsFileFreeform(DakotaBaseModel):
-    """Generated model for MfPceExpansionOrderSequenceImportBuildPointsFileFreeform"""
+    "Selects freeform file format"
 
     freeform: Literal[True] = DakotaField(
         default=True,
+        description="Selects freeform file format",
         dakota={
             "materialization": [
                 {
@@ -504,7 +517,7 @@ class MfPceExpansionOrderSequenceImportBuildPointsFileFreeform(DakotaBaseModel):
 
 
 class MfPceOrthogLeastInterpImportBuildPointsFileCustomAnnotatedConfig(DakotaBaseModel):
-    """Generated model for MfPceOrthogLeastInterpImportBuildPointsFileCustomAnnotatedConfig"""
+    "Selects custom-annotated tabular file format"
 
     header: Literal[True] | None = DakotaField(
         default=None,
@@ -551,10 +564,11 @@ class MfPceOrthogLeastInterpImportBuildPointsFileCustomAnnotatedConfig(DakotaBas
 
 
 class MfPceOrthogLeastInterpImportBuildPointsFileAnnotated(DakotaBaseModel):
-    """Generated model for MfPceOrthogLeastInterpImportBuildPointsFileAnnotated"""
+    "Selects annotated tabular file format"
 
     annotated: Literal[True] = DakotaField(
         default=True,
+        description="Selects annotated tabular file format",
         dakota={
             "materialization": [
                 {
@@ -569,10 +583,11 @@ class MfPceOrthogLeastInterpImportBuildPointsFileAnnotated(DakotaBaseModel):
 
 
 class MfPceOrthogLeastInterpImportBuildPointsFileFreeform(DakotaBaseModel):
-    """Generated model for MfPceOrthogLeastInterpImportBuildPointsFileFreeform"""
+    "Selects freeform file format"
 
     freeform: Literal[True] = DakotaField(
         default=True,
+        description="Selects freeform file format",
         dakota={
             "materialization": [
                 {
@@ -587,7 +602,7 @@ class MfPceOrthogLeastInterpImportBuildPointsFileFreeform(DakotaBaseModel):
 
 
 class MfPceQuadratureOrderSequenceConfig(DakotaBaseModel):
-    """Generated model for MfPceQuadratureOrderSequenceConfig"""
+    "Sequence of quadrature orders used in a multi-stage expansion"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CheckNonnegativeList(
@@ -631,7 +646,7 @@ class MfPceQuadratureOrderSequenceConfig(DakotaBaseModel):
 
 
 class MfPceSGLevelSequenceConfig(DakotaBaseModel):
-    """Generated model for MfPceSGLevelSequenceConfig"""
+    "Sequence of sparse grid levels used in a multi-stage expansion"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CheckNonnegativeList(
@@ -681,7 +696,7 @@ class MfPceSGLevelSequenceConfig(DakotaBaseModel):
 
 
 class MfPceExpansionOrderSequenceBasisTypeAdapted(DakotaBaseModel):
-    """Generated model for MfPceExpansionOrderSequenceBasisTypeAdapted"""
+    "Use adaptive basis selection to choose the basis terms in a polynomial chaos expansion."
 
     adapted: MfPceExpansionOrderSequenceBasisTypeAdaptedConfig = DakotaField(
         description="Use adaptive basis selection to choose the basis terms in a polynomial chaos expansion.",
@@ -700,13 +715,14 @@ class MfPceExpansionOrderSequenceBasisTypeAdapted(DakotaBaseModel):
 
 
 class MfPceExpansionOrderSequenceCollocRatioLeastSquares(DakotaBaseModel):
-    """Generated model for MfPceExpansionOrderSequenceCollocRatioLeastSquares"""
+    "Compute the coefficients of a polynomial expansion using least squares"
 
     least_squares: Union[
         MfPceExpansionOrderSequenceCollocRatioLeastSquaresSvd,
         MfPceExpansionOrderSequenceCollocRatioLeastSquaresEqCon,
         dict,
     ] = DakotaField(
+        description="Compute the coefficients of a polynomial expansion using least squares",
         dakota={
             "materialization": [
                 {
@@ -717,12 +733,12 @@ class MfPceExpansionOrderSequenceCollocRatioLeastSquares(DakotaBaseModel):
                     "ir_value_type": "short",
                 }
             ]
-        }
+        },
     )
 
 
 class MfPceExpansionOrderSequenceCollocRatioOMP(DakotaBaseModel):
-    """Generated model for MfPceExpansionOrderSequenceCollocRatioOMP"""
+    "Compute the coefficients of a polynomial expansion using orthogonal matching pursuit (OMP)"
 
     orthogonal_matching_pursuit: MfPceExpansionOrderSequenceCollocRatioOMPConfig = DakotaField(
         description="Compute the coefficients of a polynomial expansion using orthogonal matching pursuit (OMP)",
@@ -742,7 +758,7 @@ class MfPceExpansionOrderSequenceCollocRatioOMP(DakotaBaseModel):
 
 
 class MfPceExpansionOrderSequenceCollocRatioBPDN(DakotaBaseModel):
-    """Generated model for MfPceExpansionOrderSequenceCollocRatioBPDN"""
+    "Compute the coefficients of a polynomial expansion by solving the Basis Pursuit Denoising L1 -minimization problem using second order cone optimization."
 
     basis_pursuit_denoising: MfPceExpansionOrderSequenceCollocRatioBPDNConfig = DakotaField(
         description="Compute the coefficients of a polynomial expansion by solving the Basis Pursuit Denoising L1 -minimization problem using second order cone optimization.",
@@ -762,7 +778,7 @@ class MfPceExpansionOrderSequenceCollocRatioBPDN(DakotaBaseModel):
 
 
 class MfPceExpansionOrderSequenceCollocRatioLars(DakotaBaseModel):
-    """Generated model for MfPceExpansionOrderSequenceCollocRatioLars"""
+    "Compute the coefficients of a polynomial expansion by using the greedy least angle regression (LAR) method."
 
     least_angle_regression: MfPceExpansionOrderSequenceCollocRatioLarsConfig = DakotaField(
         description="Compute the coefficients of a polynomial expansion by using the greedy least angle regression (LAR) method.",
@@ -782,7 +798,7 @@ class MfPceExpansionOrderSequenceCollocRatioLars(DakotaBaseModel):
 
 
 class MfPceExpansionOrderSequenceCollocRatioLasso(DakotaBaseModel):
-    """Generated model for MfPceExpansionOrderSequenceCollocRatioLasso"""
+    "Compute the coefficients of a polynomial expansion by using the LASSO problem."
 
     least_absolute_shrinkage: MfPceExpansionOrderSequenceCollocRatioLassoConfig = DakotaField(
         description="Compute the coefficients of a polynomial expansion by using the LASSO problem.",
@@ -802,7 +818,7 @@ class MfPceExpansionOrderSequenceCollocRatioLasso(DakotaBaseModel):
 
 
 class MfPceExpansionOrderSequenceExpansionSamplesSequence(DakotaBaseModel):
-    """Generated model for MfPceExpansionOrderSequenceExpansionSamplesSequence"""
+    "Sequence of expansion samples used in a multi-stage polynomial chaos expansion Each level entry of the ``expansion_samples_sequence`` applies to one expansion within a multi-stage expansion.  Current multi-stage expansions that support expansion samples sequences include multilevel and multifidelity polynomial chaos. If adaptive refinement is active, then this sequence specifies the starting point for each level within either an individual or integrated refinement approach. A corresponding scalar specification is documented at, e.g., :dakkw:`method-polynomial_chaos-expansion_order-expansion_samples`"
 
     expansion_samples_sequence: MfPceExpansionOrderSequenceExpansionSamplesSequenceConfig = DakotaField(
         default=...,
@@ -812,7 +828,7 @@ class MfPceExpansionOrderSequenceExpansionSamplesSequence(DakotaBaseModel):
 
 
 class MfPceExpansionOrderSequenceImportBuildPointsFileCustomAnnotated(DakotaBaseModel):
-    """Generated model for MfPceExpansionOrderSequenceImportBuildPointsFileCustomAnnotated"""
+    "Selects custom-annotated tabular file format"
 
     custom_annotated: MfPceExpansionOrderSequenceImportBuildPointsFileCustomAnnotatedConfig = DakotaField(
         default_factory=MfPceExpansionOrderSequenceImportBuildPointsFileCustomAnnotatedConfig,
@@ -832,7 +848,7 @@ class MfPceExpansionOrderSequenceImportBuildPointsFileCustomAnnotated(DakotaBase
 
 
 class MfPceOrthogLeastInterpImportBuildPointsFileCustomAnnotated(DakotaBaseModel):
-    """Generated model for MfPceOrthogLeastInterpImportBuildPointsFileCustomAnnotated"""
+    "Selects custom-annotated tabular file format"
 
     custom_annotated: MfPceOrthogLeastInterpImportBuildPointsFileCustomAnnotatedConfig = DakotaField(
         default_factory=MfPceOrthogLeastInterpImportBuildPointsFileCustomAnnotatedConfig,
@@ -852,7 +868,7 @@ class MfPceOrthogLeastInterpImportBuildPointsFileCustomAnnotated(DakotaBaseModel
 
 
 class MfPceQuadratureOrderSequence(DakotaBaseModel):
-    """Generated model for MfPceQuadratureOrderSequence"""
+    "Sequence of quadrature orders used in a multi-stage expansion"
 
     quadrature_order_sequence: MfPceQuadratureOrderSequenceConfig = DakotaField(
         default=...,
@@ -862,7 +878,7 @@ class MfPceQuadratureOrderSequence(DakotaBaseModel):
 
 
 class MfPceSGLevelSequence(DakotaBaseModel):
-    """Generated model for MfPceSGLevelSequence"""
+    "Sequence of sparse grid levels used in a multi-stage expansion"
 
     sparse_grid_level_sequence: MfPceSGLevelSequenceConfig = DakotaField(
         default=...,
@@ -872,7 +888,7 @@ class MfPceSGLevelSequence(DakotaBaseModel):
 
 
 class MfPceExpansionOrderSequenceCollocRatioConfig(DakotaBaseModel):
-    """Generated model for MfPceExpansionOrderSequenceCollocRatioConfig"""
+    "Set the number of points used to build a PCE via regression to be proportional to the number of terms in the expansion."
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CheckNonnegativeList(
@@ -1021,7 +1037,7 @@ class MfPceExpansionOrderSequenceCollocRatioConfig(DakotaBaseModel):
 
 
 class MfPceExpansionOrderSequenceImportBuildPointsFile(DakotaBaseModel):
-    """Generated model for MfPceExpansionOrderSequenceImportBuildPointsFile"""
+    "File containing points you wish to use to build a surrogate"
 
     filename: str = DakotaField(
         description="File containing points you wish to use to build a surrogate",
@@ -1064,7 +1080,7 @@ class MfPceExpansionOrderSequenceImportBuildPointsFile(DakotaBaseModel):
 
 
 class MfPceOrthogLeastInterpImportBuildPointsFile(DakotaBaseModel):
-    """Generated model for MfPceOrthogLeastInterpImportBuildPointsFile"""
+    "File containing points you wish to use to build a surrogate"
 
     filename: str = DakotaField(
         description="File containing points you wish to use to build a surrogate",
@@ -1107,7 +1123,7 @@ class MfPceOrthogLeastInterpImportBuildPointsFile(DakotaBaseModel):
 
 
 class MfPceExpansionOrderSequenceCollocRatio(DakotaBaseModel):
-    """Generated model for MfPceExpansionOrderSequenceCollocRatio"""
+    "Set the number of points used to build a PCE via regression to be proportional to the number of terms in the expansion."
 
     collocation_ratio: MfPceExpansionOrderSequenceCollocRatioConfig = DakotaField(
         default=...,
@@ -1117,7 +1133,7 @@ class MfPceExpansionOrderSequenceCollocRatio(DakotaBaseModel):
 
 
 class MfPceOrthogLeastInterpConfig(DakotaBaseModel):
-    """Generated model for MfPceOrthogLeastInterpConfig"""
+    "Build a polynomial chaos expansion from simulation samples using orthogonal least interpolation."
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CheckNonnegativeList(
@@ -1179,7 +1195,7 @@ class MfPceOrthogLeastInterpConfig(DakotaBaseModel):
 
 
 class MfPceExpansionOrderSequenceConfig(DakotaBaseModel):
-    """Generated model for MfPceExpansionOrderSequenceConfig"""
+    "Sequence of expansion orders used in a multi-stage expansion"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CheckNonnegativeList(
@@ -1238,7 +1254,7 @@ class MfPceExpansionOrderSequenceConfig(DakotaBaseModel):
 
 
 class MfPceOrthogLeastInterp(DakotaBaseModel):
-    """Generated model for MfPceOrthogLeastInterp"""
+    "Build a polynomial chaos expansion from simulation samples using orthogonal least interpolation."
 
     orthogonal_least_interpolation: MfPceOrthogLeastInterpConfig = DakotaField(
         description="Build a polynomial chaos expansion from simulation samples using orthogonal least interpolation.",
@@ -1258,7 +1274,7 @@ class MfPceOrthogLeastInterp(DakotaBaseModel):
 
 
 class MfPceExpansionOrderSequence(DakotaBaseModel):
-    """Generated model for MfPceExpansionOrderSequence"""
+    "Sequence of expansion orders used in a multi-stage expansion"
 
     expansion_order_sequence: MfPceExpansionOrderSequenceConfig = DakotaField(
         default=...,
@@ -1278,7 +1294,7 @@ class MfPceConfig(
     MethodSeedSequenceMixin,
     MethodOptionalModelPointerMixin,
 ):
-    """Generated model for MfPceConfig"""
+    "Multifidelity uncertainty quantification using polynomial chaos expansions"
 
     coefficient_approach: Union[
         MfPceQuadratureOrderSequence,
@@ -1292,7 +1308,7 @@ class MfPceConfig(
 
 
 class MfPceSelection(MethodSelection):
-    """Generated model for MfPceSelection"""
+    "Generated model for MfPceSelection"
 
     multifidelity_polynomial_chaos: MfPceConfig = DakotaField(
         dakota={

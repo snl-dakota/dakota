@@ -10,10 +10,11 @@ from ...validation.rules import CheckSumEqualsLength, CompareLength, CompareLeng
 
 
 class NoGradients(DakotaBaseModel):
-    """Generated model for NoGradients"""
+    "Gradients will not be used"
 
     no_gradients: Literal[True] = DakotaField(
         default=True,
+        description="Gradients will not be used",
         dakota={
             "materialization": [
                 {
@@ -28,10 +29,11 @@ class NoGradients(DakotaBaseModel):
 
 
 class AnalyticGradients(DakotaBaseModel):
-    """Generated model for AnalyticGradients"""
+    "Analysis driver will return gradients"
 
     analytic_gradients: Literal[True] = DakotaField(
         default=True,
+        description="Analysis driver will return gradients",
         dakota={
             "materialization": [
                 {
@@ -46,10 +48,11 @@ class AnalyticGradients(DakotaBaseModel):
 
 
 class MixedGradientsMethodSourceDakotaRelative(DakotaBaseModel):
-    """Generated model for MixedGradientsMethodSourceDakotaRelative"""
+    "(Default) Scale step size by the parameter value"
 
     relative: Literal[True] = DakotaField(
         default=True,
+        description="(Default) Scale step size by the parameter value",
         dakota={
             "materialization": [
                 {
@@ -64,10 +67,11 @@ class MixedGradientsMethodSourceDakotaRelative(DakotaBaseModel):
 
 
 class MixedGradientsMethodSourceDakotaAbsolute(DakotaBaseModel):
-    """Generated model for MixedGradientsMethodSourceDakotaAbsolute"""
+    "Do not scale step-size"
 
     absolute: Literal[True] = DakotaField(
         default=True,
+        description="Do not scale step-size",
         dakota={
             "materialization": [
                 {
@@ -82,10 +86,11 @@ class MixedGradientsMethodSourceDakotaAbsolute(DakotaBaseModel):
 
 
 class MixedGradientsMethodSourceDakotaBounds(DakotaBaseModel):
-    """Generated model for MixedGradientsMethodSourceDakotaBounds"""
+    "Scale step-size by the domain of the parameter"
 
     bounds: Literal[True] = DakotaField(
         default=True,
+        description="Scale step-size by the domain of the parameter",
         dakota={
             "materialization": [
                 {
@@ -100,10 +105,11 @@ class MixedGradientsMethodSourceDakotaBounds(DakotaBaseModel):
 
 
 class MixedGradientsMethodSourceVendor(DakotaBaseModel):
-    """Generated model for MixedGradientsMethodSourceVendor"""
+    "Use non-Dakota fd algorithm"
 
     vendor: Literal[True] = DakotaField(
         default=True,
+        description="Use non-Dakota fd algorithm",
         dakota={
             "materialization": [
                 {
@@ -118,10 +124,11 @@ class MixedGradientsMethodSourceVendor(DakotaBaseModel):
 
 
 class MixedGradientsIntervalTypeForward(DakotaBaseModel):
-    """Generated model for MixedGradientsIntervalTypeForward"""
+    "(Default) Use forward differences"
 
     forward: Literal[True] = DakotaField(
         default=True,
+        description="(Default) Use forward differences",
         dakota={
             "materialization": [
                 {
@@ -136,10 +143,11 @@ class MixedGradientsIntervalTypeForward(DakotaBaseModel):
 
 
 class MixedGradientsIntervalTypeCentral(DakotaBaseModel):
-    """Generated model for MixedGradientsIntervalTypeCentral"""
+    "Use central differences"
 
     central: Literal[True] = DakotaField(
         default=True,
+        description="Use central differences",
         dakota={
             "materialization": [
                 {
@@ -154,10 +162,11 @@ class MixedGradientsIntervalTypeCentral(DakotaBaseModel):
 
 
 class NumericalGradientsMethodSourceDakotaRelative(DakotaBaseModel):
-    """Generated model for NumericalGradientsMethodSourceDakotaRelative"""
+    "(Default) Scale step size by the parameter value"
 
     relative: Literal[True] = DakotaField(
         default=True,
+        description="(Default) Scale step size by the parameter value",
         dakota={
             "materialization": [
                 {
@@ -172,10 +181,11 @@ class NumericalGradientsMethodSourceDakotaRelative(DakotaBaseModel):
 
 
 class NumericalGradientsMethodSourceDakotaAbsolute(DakotaBaseModel):
-    """Generated model for NumericalGradientsMethodSourceDakotaAbsolute"""
+    "Do not scale step-size"
 
     absolute: Literal[True] = DakotaField(
         default=True,
+        description="Do not scale step-size",
         dakota={
             "materialization": [
                 {
@@ -190,10 +200,11 @@ class NumericalGradientsMethodSourceDakotaAbsolute(DakotaBaseModel):
 
 
 class NumericalGradientsMethodSourceDakotaBounds(DakotaBaseModel):
-    """Generated model for NumericalGradientsMethodSourceDakotaBounds"""
+    "Scale step-size by the domain of the parameter"
 
     bounds: Literal[True] = DakotaField(
         default=True,
+        description="Scale step-size by the domain of the parameter",
         dakota={
             "materialization": [
                 {
@@ -208,10 +219,11 @@ class NumericalGradientsMethodSourceDakotaBounds(DakotaBaseModel):
 
 
 class NumericalGradientsMethodSourceVendor(DakotaBaseModel):
-    """Generated model for NumericalGradientsMethodSourceVendor"""
+    "Use non-Dakota fd algorithm"
 
     vendor: Literal[True] = DakotaField(
         default=True,
+        description="Use non-Dakota fd algorithm",
         dakota={
             "materialization": [
                 {
@@ -226,10 +238,11 @@ class NumericalGradientsMethodSourceVendor(DakotaBaseModel):
 
 
 class NumericalGradientsIntervalTypeForward(DakotaBaseModel):
-    """Generated model for NumericalGradientsIntervalTypeForward"""
+    "(Default) Use forward differences"
 
     forward: Literal[True] = DakotaField(
         default=True,
+        description="(Default) Use forward differences",
         dakota={
             "materialization": [
                 {
@@ -244,10 +257,11 @@ class NumericalGradientsIntervalTypeForward(DakotaBaseModel):
 
 
 class NumericalGradientsIntervalTypeCentral(DakotaBaseModel):
-    """Generated model for NumericalGradientsIntervalTypeCentral"""
+    "Use central differences"
 
     central: Literal[True] = DakotaField(
         default=True,
+        description="Use central differences",
         dakota={
             "materialization": [
                 {
@@ -262,10 +276,11 @@ class NumericalGradientsIntervalTypeCentral(DakotaBaseModel):
 
 
 class NoHessians(DakotaBaseModel):
-    """Generated model for NoHessians"""
+    "Hessians will not be used"
 
     no_hessians: Literal[True] = DakotaField(
         default=True,
+        description="Hessians will not be used",
         dakota={
             "materialization": [
                 {
@@ -280,10 +295,11 @@ class NoHessians(DakotaBaseModel):
 
 
 class NumericalHessiansRelative(DakotaBaseModel):
-    """Generated model for NumericalHessiansRelative"""
+    "(Default) Scale step size by the parameter value"
 
     relative: Literal[True] = DakotaField(
         default=True,
+        description="(Default) Scale step size by the parameter value",
         dakota={
             "materialization": [
                 {
@@ -298,10 +314,11 @@ class NumericalHessiansRelative(DakotaBaseModel):
 
 
 class NumericalHessiansAbsolute(DakotaBaseModel):
-    """Generated model for NumericalHessiansAbsolute"""
+    "Do not scale step-size"
 
     absolute: Literal[True] = DakotaField(
         default=True,
+        description="Do not scale step-size",
         dakota={
             "materialization": [
                 {
@@ -316,10 +333,11 @@ class NumericalHessiansAbsolute(DakotaBaseModel):
 
 
 class NumericalHessiansBounds(DakotaBaseModel):
-    """Generated model for NumericalHessiansBounds"""
+    "Scale step-size by the domain of the parameter"
 
     bounds: Literal[True] = DakotaField(
         default=True,
+        description="Scale step-size by the domain of the parameter",
         dakota={
             "materialization": [
                 {
@@ -334,10 +352,11 @@ class NumericalHessiansBounds(DakotaBaseModel):
 
 
 class NumericalHessiansIntervalTypeForward(DakotaBaseModel):
-    """Generated model for NumericalHessiansIntervalTypeForward"""
+    "(Default) Use forward differences"
 
     forward: Literal[True] = DakotaField(
         default=True,
+        description="(Default) Use forward differences",
         dakota={
             "materialization": [
                 {
@@ -351,10 +370,11 @@ class NumericalHessiansIntervalTypeForward(DakotaBaseModel):
 
 
 class NumericalHessiansIntervalTypeCentral(DakotaBaseModel):
-    """Generated model for NumericalHessiansIntervalTypeCentral"""
+    "Use central differences"
 
     central: Literal[True] = DakotaField(
         default=True,
+        description="Use central differences",
         dakota={
             "materialization": [
                 {
@@ -368,7 +388,7 @@ class NumericalHessiansIntervalTypeCentral(DakotaBaseModel):
 
 
 class QuasiHessiansBfgsConfig(DakotaBaseModel):
-    """Generated model for QuasiHessiansBfgsConfig"""
+    "Use BFGS method to compute quasi-hessians"
 
     damped: Literal[True] | None = DakotaField(
         default=None,
@@ -387,10 +407,11 @@ class QuasiHessiansBfgsConfig(DakotaBaseModel):
 
 
 class QuasiHessiansSr1(DakotaBaseModel):
-    """Generated model for QuasiHessiansSr1"""
+    "Use the Symmetric Rank 1 update method to compute quasi-Hessians"
 
     sr1: Literal[True] = DakotaField(
         default=True,
+        description="Use the Symmetric Rank 1 update method to compute quasi-Hessians",
         dakota={
             "materialization": [
                 {
@@ -405,10 +426,11 @@ class QuasiHessiansSr1(DakotaBaseModel):
 
 
 class AnalyticHessians(DakotaBaseModel):
-    """Generated model for AnalyticHessians"""
+    "Hessians are needed and are available directly from the analysis driver"
 
     analytic_hessians: Literal[True] = DakotaField(
         default=True,
+        description="Hessians are needed and are available directly from the analysis driver",
         dakota={
             "materialization": [
                 {
@@ -423,7 +445,7 @@ class AnalyticHessians(DakotaBaseModel):
 
 
 class IdNumericalHessians(DakotaBaseModel):
-    """Generated model for IdNumericalHessians"""
+    "Identify which numerical-Hessian corresponds to which response"
 
     values: list[int] = DakotaField(
         description="Identify which numerical-Hessian corresponds to which response",
@@ -454,10 +476,11 @@ class IdNumericalHessians(DakotaBaseModel):
 
 
 class MixedHessiansRelative(DakotaBaseModel):
-    """Generated model for MixedHessiansRelative"""
+    "(Default) Scale step size by the parameter value"
 
     relative: Literal[True] = DakotaField(
         default=True,
+        description="(Default) Scale step size by the parameter value",
         dakota={
             "materialization": [
                 {
@@ -472,10 +495,11 @@ class MixedHessiansRelative(DakotaBaseModel):
 
 
 class MixedHessiansAbsolute(DakotaBaseModel):
-    """Generated model for MixedHessiansAbsolute"""
+    "Do not scale step-size"
 
     absolute: Literal[True] = DakotaField(
         default=True,
+        description="Do not scale step-size",
         dakota={
             "materialization": [
                 {
@@ -490,10 +514,11 @@ class MixedHessiansAbsolute(DakotaBaseModel):
 
 
 class MixedHessiansBounds(DakotaBaseModel):
-    """Generated model for MixedHessiansBounds"""
+    "Scale step-size by the domain of the parameter"
 
     bounds: Literal[True] = DakotaField(
         default=True,
+        description="Scale step-size by the domain of the parameter",
         dakota={
             "materialization": [
                 {
@@ -508,10 +533,11 @@ class MixedHessiansBounds(DakotaBaseModel):
 
 
 class MixedHessiansIntervalTypeForward(DakotaBaseModel):
-    """Generated model for MixedHessiansIntervalTypeForward"""
+    "(Default) Use forward differences"
 
     forward: Literal[True] = DakotaField(
         default=True,
+        description="(Default) Use forward differences",
         dakota={
             "materialization": [
                 {
@@ -525,10 +551,11 @@ class MixedHessiansIntervalTypeForward(DakotaBaseModel):
 
 
 class MixedHessiansIntervalTypeCentral(DakotaBaseModel):
-    """Generated model for MixedHessiansIntervalTypeCentral"""
+    "Use central differences"
 
     central: Literal[True] = DakotaField(
         default=True,
+        description="Use central differences",
         dakota={
             "materialization": [
                 {
@@ -542,7 +569,7 @@ class MixedHessiansIntervalTypeCentral(DakotaBaseModel):
 
 
 class IdQuasiHessiansBfgsConfig(DakotaBaseModel):
-    """Generated model for IdQuasiHessiansBfgsConfig"""
+    "Use BFGS method to compute quasi-hessians"
 
     damped: Literal[True] | None = DakotaField(
         default=None,
@@ -561,10 +588,11 @@ class IdQuasiHessiansBfgsConfig(DakotaBaseModel):
 
 
 class IdQuasiHessiansSr1(DakotaBaseModel):
-    """Generated model for IdQuasiHessiansSr1"""
+    "Use the Symmetric Rank 1 update method to compute quasi-Hessians"
 
     sr1: Literal[True] = DakotaField(
         default=True,
+        description="Use the Symmetric Rank 1 update method to compute quasi-Hessians",
         dakota={
             "materialization": [
                 {
@@ -579,10 +607,11 @@ class IdQuasiHessiansSr1(DakotaBaseModel):
 
 
 class ResponseLevelsComputeProbGenContext1Probabilities(DakotaBaseModel):
-    """Generated model for ResponseLevelsComputeProbGenContext1Probabilities"""
+    "Computes probabilities associated with response levels"
 
     probabilities: Literal[True] = DakotaField(
         default=True,
+        description="Computes probabilities associated with response levels",
         dakota={
             "materialization": [
                 {
@@ -597,10 +626,11 @@ class ResponseLevelsComputeProbGenContext1Probabilities(DakotaBaseModel):
 
 
 class ResponseLevelsComputeProbGenContext1GenReliabilities(DakotaBaseModel):
-    """Generated model for ResponseLevelsComputeProbGenContext1GenReliabilities"""
+    "Computes generalized reliabilities associated with response levels"
 
     gen_reliabilities: Literal[True] = DakotaField(
         default=True,
+        description="Computes generalized reliabilities associated with response levels",
         dakota={
             "materialization": [
                 {
@@ -615,10 +645,11 @@ class ResponseLevelsComputeProbGenContext1GenReliabilities(DakotaBaseModel):
 
 
 class ResponseLevelsComputeProbGenContext1SystemSeries(DakotaBaseModel):
-    """Generated model for ResponseLevelsComputeProbGenContext1SystemSeries"""
+    "Aggregate response statistics assuming a series system"
 
     series: Literal[True] = DakotaField(
         default=True,
+        description="Aggregate response statistics assuming a series system",
         dakota={
             "materialization": [
                 {
@@ -633,10 +664,11 @@ class ResponseLevelsComputeProbGenContext1SystemSeries(DakotaBaseModel):
 
 
 class ResponseLevelsComputeProbGenContext1SystemParallel(DakotaBaseModel):
-    """Generated model for ResponseLevelsComputeProbGenContext1SystemParallel"""
+    "Aggregate response statistics assuming a parallel system"
 
     parallel: Literal[True] = DakotaField(
         default=True,
+        description="Aggregate response statistics assuming a parallel system",
         dakota={
             "materialization": [
                 {
@@ -651,10 +683,11 @@ class ResponseLevelsComputeProbGenContext1SystemParallel(DakotaBaseModel):
 
 
 class ResponseLevelsComputeProbGenContext2Probabilities(DakotaBaseModel):
-    """Generated model for ResponseLevelsComputeProbGenContext2Probabilities"""
+    "Computes probabilities associated with response levels"
 
     probabilities: Literal[True] = DakotaField(
         default=True,
+        description="Computes probabilities associated with response levels",
         dakota={
             "materialization": [
                 {
@@ -669,10 +702,11 @@ class ResponseLevelsComputeProbGenContext2Probabilities(DakotaBaseModel):
 
 
 class ResponseLevelsComputeProbGenContext2GenReliabilities(DakotaBaseModel):
-    """Generated model for ResponseLevelsComputeProbGenContext2GenReliabilities"""
+    "Computes generalized reliabilities associated with response levels"
 
     gen_reliabilities: Literal[True] = DakotaField(
         default=True,
+        description="Computes generalized reliabilities associated with response levels",
         dakota={
             "materialization": [
                 {
@@ -687,10 +721,11 @@ class ResponseLevelsComputeProbGenContext2GenReliabilities(DakotaBaseModel):
 
 
 class ResponseLevelsComputeProbGenContext2SystemSeries(DakotaBaseModel):
-    """Generated model for ResponseLevelsComputeProbGenContext2SystemSeries"""
+    "Aggregate response statistics assuming a series system"
 
     series: Literal[True] = DakotaField(
         default=True,
+        description="Aggregate response statistics assuming a series system",
         dakota={
             "materialization": [
                 {
@@ -705,10 +740,11 @@ class ResponseLevelsComputeProbGenContext2SystemSeries(DakotaBaseModel):
 
 
 class ResponseLevelsComputeProbGenContext2SystemParallel(DakotaBaseModel):
-    """Generated model for ResponseLevelsComputeProbGenContext2SystemParallel"""
+    "Aggregate response statistics assuming a parallel system"
 
     parallel: Literal[True] = DakotaField(
         default=True,
+        description="Aggregate response statistics assuming a parallel system",
         dakota={
             "materialization": [
                 {
@@ -723,7 +759,7 @@ class ResponseLevelsComputeProbGenContext2SystemParallel(DakotaBaseModel):
 
 
 class ResponseScalarDataFormatCustomAnnotatedConfig(DakotaBaseModel):
-    """Generated model for ResponseScalarDataFormatCustomAnnotatedConfig"""
+    "Selects custom-annotated tabular file format for experiment data"
 
     header: Literal[True] | None = DakotaField(
         default=None,
@@ -756,10 +792,11 @@ class ResponseScalarDataFormatCustomAnnotatedConfig(DakotaBaseModel):
 
 
 class ResponseScalarDataFormatAnnotated(DakotaBaseModel):
-    """Generated model for ResponseScalarDataFormatAnnotated"""
+    "Selects annotated tabular file format for experiment data"
 
     annotated: Literal[True] = DakotaField(
         default=True,
+        description="Selects annotated tabular file format for experiment data",
         dakota={
             "materialization": [
                 {
@@ -774,10 +811,11 @@ class ResponseScalarDataFormatAnnotated(DakotaBaseModel):
 
 
 class ResponseScalarDataFormatFreeform(DakotaBaseModel):
-    """Generated model for ResponseScalarDataFormatFreeform"""
+    "Selects free-form tabular file format for experiment data"
 
     freeform: Literal[True] = DakotaField(
         default=True,
+        description="Selects free-form tabular file format for experiment data",
         dakota={
             "materialization": [
                 {
@@ -792,7 +830,7 @@ class ResponseScalarDataFormatFreeform(DakotaBaseModel):
 
 
 class MixedGradientsMethodSourceDakotaConfig(DakotaBaseModel):
-    """Generated model for MixedGradientsMethodSourceDakotaConfig"""
+    "(Default) Use internal Dakota finite differences algorithm"
 
     ignore_bounds: Literal[True] | None = DakotaField(
         default=None,
@@ -823,7 +861,7 @@ class MixedGradientsMethodSourceDakotaConfig(DakotaBaseModel):
 
 
 class NumericalGradientsMethodSourceDakotaConfig(DakotaBaseModel):
-    """Generated model for NumericalGradientsMethodSourceDakotaConfig"""
+    "(Default) Use internal Dakota finite differences algorithm"
 
     ignore_bounds: Literal[True] | None = DakotaField(
         default=None,
@@ -854,7 +892,7 @@ class NumericalGradientsMethodSourceDakotaConfig(DakotaBaseModel):
 
 
 class NumericalHessiansConfig(DakotaBaseModel):
-    """Generated model for NumericalHessiansConfig"""
+    "Hessians are needed and will be approximated by finite differences"
 
     fd_step_size: list[DakotaFloat] | None = DakotaField(
         default=None,
@@ -894,7 +932,7 @@ class NumericalHessiansConfig(DakotaBaseModel):
 
 
 class QuasiHessiansBfgs(DakotaBaseModel):
-    """Generated model for QuasiHessiansBfgs"""
+    "Use BFGS method to compute quasi-hessians"
 
     bfgs: QuasiHessiansBfgsConfig = DakotaField(
         description="Use BFGS method to compute quasi-hessians",
@@ -912,7 +950,7 @@ class QuasiHessiansBfgs(DakotaBaseModel):
 
 
 class IdQuasiHessiansBfgs(DakotaBaseModel):
-    """Generated model for IdQuasiHessiansBfgs"""
+    "Use BFGS method to compute quasi-hessians"
 
     bfgs: IdQuasiHessiansBfgsConfig = DakotaField(
         description="Use BFGS method to compute quasi-hessians",
@@ -930,7 +968,7 @@ class IdQuasiHessiansBfgs(DakotaBaseModel):
 
 
 class ResponseLevelsComputeProbGenContext1Compute(DakotaBaseModel):
-    """Generated model for ResponseLevelsComputeProbGenContext1Compute"""
+    "Selection of statistics to compute at each response level"
 
     statistic: Union[
         ResponseLevelsComputeProbGenContext1Probabilities,
@@ -952,7 +990,7 @@ class ResponseLevelsComputeProbGenContext1Compute(DakotaBaseModel):
 
 
 class ResponseLevelsComputeProbGenContext2Compute(DakotaBaseModel):
-    """Generated model for ResponseLevelsComputeProbGenContext2Compute"""
+    "Selection of statistics to compute at each response level"
 
     statistic: Union[
         ResponseLevelsComputeProbGenContext2Probabilities,
@@ -974,7 +1012,7 @@ class ResponseLevelsComputeProbGenContext2Compute(DakotaBaseModel):
 
 
 class ResponseScalarDataFormatCustomAnnotated(DakotaBaseModel):
-    """Generated model for ResponseScalarDataFormatCustomAnnotated"""
+    "Selects custom-annotated tabular file format for experiment data"
 
     custom_annotated: ResponseScalarDataFormatCustomAnnotatedConfig = DakotaField(
         default_factory=ResponseScalarDataFormatCustomAnnotatedConfig,
@@ -994,7 +1032,7 @@ class ResponseScalarDataFormatCustomAnnotated(DakotaBaseModel):
 
 
 class MixedGradientsMethodSourceDakota(DakotaBaseModel):
-    """Generated model for MixedGradientsMethodSourceDakota"""
+    "(Default) Use internal Dakota finite differences algorithm"
 
     dakota: MixedGradientsMethodSourceDakotaConfig = DakotaField(
         default_factory=MixedGradientsMethodSourceDakotaConfig,
@@ -1014,7 +1052,7 @@ class MixedGradientsMethodSourceDakota(DakotaBaseModel):
 
 
 class NumericalGradientsMethodSourceDakota(DakotaBaseModel):
-    """Generated model for NumericalGradientsMethodSourceDakota"""
+    "(Default) Use internal Dakota finite differences algorithm"
 
     dakota: NumericalGradientsMethodSourceDakotaConfig = DakotaField(
         default_factory=NumericalGradientsMethodSourceDakotaConfig,
@@ -1034,7 +1072,7 @@ class NumericalGradientsMethodSourceDakota(DakotaBaseModel):
 
 
 class NumericalHessians(DakotaBaseModel):
-    """Generated model for NumericalHessians"""
+    "Hessians are needed and will be approximated by finite differences"
 
     numerical_hessians: NumericalHessiansConfig = DakotaField(
         description="Hessians are needed and will be approximated by finite differences",
@@ -1052,9 +1090,10 @@ class NumericalHessians(DakotaBaseModel):
 
 
 class QuasiHessians(DakotaBaseModel):
-    """Generated model for QuasiHessians"""
+    "Hessians are needed and will be approximated by secant updates (BFGS or SR1) from a series of gradient evaluations"
 
     quasi_hessians: Union[QuasiHessiansBfgs, QuasiHessiansSr1] = DakotaField(
+        description="Hessians are needed and will be approximated by secant updates (BFGS or SR1) from a series of gradient evaluations",
         dakota={
             "materialization": [
                 {
@@ -1064,12 +1103,12 @@ class QuasiHessians(DakotaBaseModel):
                     "ir_value_type": "String",
                 }
             ]
-        }
+        },
     )
 
 
 class IdQuasiHessians(DakotaBaseModel):
-    """Generated model for IdQuasiHessians"""
+    "Identify which quasi-Hessian corresponds to which response"
 
     values: list[int] = DakotaField(
         description="Identify which quasi-Hessian corresponds to which response",
@@ -1090,7 +1129,7 @@ class IdQuasiHessians(DakotaBaseModel):
 
 
 class ResponseLevelsComputeProbGenContext1ResponseLevels(DakotaBaseModel):
-    """Generated model for ResponseLevelsComputeProbGenContext1ResponseLevels"""
+    "Values at which to estimate desired statistics for each response"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CheckSumEqualsLength(
@@ -1114,7 +1153,7 @@ class ResponseLevelsComputeProbGenContext1ResponseLevels(DakotaBaseModel):
 
 
 class ResponseLevelsComputeProbGenContext2ResponseLevels(DakotaBaseModel):
-    """Generated model for ResponseLevelsComputeProbGenContext2ResponseLevels"""
+    "Undocumented: Recursive k-d (RKD) Darts is an experimental capability."
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CheckSumEqualsLength(
@@ -1138,7 +1177,7 @@ class ResponseLevelsComputeProbGenContext2ResponseLevels(DakotaBaseModel):
 
 
 class ResponseScalarDataFormatMixin(DakotaBaseModel):
-    """Generated model for ResponseScalarDataFormatMixin"""
+    "Generated model for ResponseScalarDataFormatMixin"
 
     format: Union[
         ResponseScalarDataFormatCustomAnnotated,
@@ -1156,7 +1195,7 @@ class ResponseScalarDataFormatMixin(DakotaBaseModel):
 
 
 class MixedGradientsConfig(DakotaBaseModel):
-    """Generated model for MixedGradientsConfig"""
+    "Gradients are needed and will be obtained from a mix of numerical and analytic sources"
 
     id_numerical_gradients: list[int] = DakotaField(
         description="Identify which numerical gradient corresponds to which response",
@@ -1219,7 +1258,7 @@ class MixedGradientsConfig(DakotaBaseModel):
 
 
 class NumericalGradientsConfig(DakotaBaseModel):
-    """Generated model for NumericalGradientsConfig"""
+    "Gradients are needed and will be approximated by finite differences"
 
     method_source: Union[
         NumericalGradientsMethodSourceDakota, NumericalGradientsMethodSourceVendor
@@ -1258,7 +1297,7 @@ class NumericalGradientsConfig(DakotaBaseModel):
 
 
 class MixedHessiansConfig(DakotaBaseModel):
-    """Generated model for MixedHessiansConfig"""
+    'Hessians are needed and will be obtained from a mix of numerical, analytic, and \\"quasi\\" sources'
 
     id_numerical_hessians: IdNumericalHessians | None = DakotaField(
         default=None,
@@ -1307,7 +1346,7 @@ class MixedHessiansConfig(DakotaBaseModel):
 
 
 class ResponseLevelsComputeProbGenContext1Mixin(DakotaBaseModel):
-    """Generated model for ResponseLevelsComputeProbGenContext1Mixin"""
+    "Generated model for ResponseLevelsComputeProbGenContext1Mixin"
 
     response_levels: ResponseLevelsComputeProbGenContext1ResponseLevels | None = (
         DakotaField(
@@ -1328,7 +1367,7 @@ class ResponseLevelsComputeProbGenContext1Mixin(DakotaBaseModel):
 
 
 class ResponseLevelsComputeProbGenContext2Mixin(DakotaBaseModel):
-    """Generated model for ResponseLevelsComputeProbGenContext2Mixin"""
+    "Generated model for ResponseLevelsComputeProbGenContext2Mixin"
 
     response_levels: ResponseLevelsComputeProbGenContext2ResponseLevels | None = (
         DakotaField(
@@ -1349,7 +1388,7 @@ class ResponseLevelsComputeProbGenContext2Mixin(DakotaBaseModel):
 
 
 class MixedGradients(DakotaBaseModel):
-    """Generated model for MixedGradients"""
+    "Gradients are needed and will be obtained from a mix of numerical and analytic sources"
 
     mixed_gradients: MixedGradientsConfig = DakotaField(
         description="Gradients are needed and will be obtained from a mix of numerical and analytic sources",
@@ -1367,7 +1406,7 @@ class MixedGradients(DakotaBaseModel):
 
 
 class NumericalGradients(DakotaBaseModel):
-    """Generated model for NumericalGradients"""
+    "Gradients are needed and will be approximated by finite differences"
 
     numerical_gradients: NumericalGradientsConfig = DakotaField(
         description="Gradients are needed and will be approximated by finite differences",
@@ -1385,7 +1424,7 @@ class NumericalGradients(DakotaBaseModel):
 
 
 class MixedHessians(DakotaBaseModel):
-    """Generated model for MixedHessians"""
+    'Hessians are needed and will be obtained from a mix of numerical, analytic, and \\"quasi\\" sources'
 
     mixed_hessians: MixedHessiansConfig = DakotaField(
         description='Hessians are needed and will be obtained from a mix of numerical, analytic, and "quasi" sources',
@@ -1403,7 +1442,7 @@ class MixedHessians(DakotaBaseModel):
 
 
 class ResponseGradientsMixin(DakotaBaseModel):
-    """Generated model for ResponseGradientsMixin"""
+    "Generated model for ResponseGradientsMixin"
 
     gradient_type: Union[
         NoGradients, AnalyticGradients, MixedGradients, NumericalGradients
@@ -1413,7 +1452,7 @@ class ResponseGradientsMixin(DakotaBaseModel):
 
 
 class ResponseHessiansMixin(DakotaBaseModel):
-    """Generated model for ResponseHessiansMixin"""
+    "Generated model for ResponseHessiansMixin"
 
     hessian_type: Union[
         NoHessians, NumericalHessians, QuasiHessians, AnalyticHessians, MixedHessians

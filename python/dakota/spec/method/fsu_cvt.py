@@ -17,10 +17,11 @@ from dakota.spec.shared.misc import (
 
 
 class TrialTypeGrid(DakotaBaseModel):
-    """Generated model for TrialTypeGrid"""
+    "Samples on a regular grid"
 
     grid: Literal[True] = DakotaField(
         default=True,
+        description="Samples on a regular grid",
         dakota={
             "materialization": [
                 {
@@ -35,10 +36,11 @@ class TrialTypeGrid(DakotaBaseModel):
 
 
 class TrialTypeHalton(DakotaBaseModel):
-    """Generated model for TrialTypeHalton"""
+    "Generate samples from a Halton sequence"
 
     halton: Literal[True] = DakotaField(
         default=True,
+        description="Generate samples from a Halton sequence",
         dakota={
             "materialization": [
                 {
@@ -53,10 +55,11 @@ class TrialTypeHalton(DakotaBaseModel):
 
 
 class TrialTypeRandom(DakotaBaseModel):
-    """Generated model for TrialTypeRandom"""
+    "Uses purely random Monte Carlo sampling to sample variables"
 
     random: Literal[True] = DakotaField(
         default=True,
+        description="Uses purely random Monte Carlo sampling to sample variables",
         dakota={
             "materialization": [
                 {
@@ -77,7 +80,7 @@ class FsuCvtConfig(
     MethodMaxIterationsContext1Mixin,
     MethodOptionalModelPointerMixin,
 ):
-    """Generated model for FsuCvtConfig"""
+    "Design of Computer Experiments - Centroidal Voronoi Tessellation"
 
     samples: int = DakotaField(
         default=0,
@@ -141,7 +144,7 @@ class FsuCvtConfig(
 
 
 class FsuCvtSelection(MethodSelection):
-    """Generated model for FsuCvtSelection"""
+    "Generated model for FsuCvtSelection"
 
     fsu_cvt: FsuCvtConfig = DakotaField(
         dakota={

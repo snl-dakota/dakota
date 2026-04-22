@@ -13,13 +13,13 @@ from dakota.spec.shared.misc import (
 
 
 class DotFrcgConfig(MethodThreeOptionalKeywordsMixin, MethodDotCommonOptsMixin):
-    """Generated model for DotFrcgConfig"""
+    "DOT conjugate gradient optimization method"
 
     pass
 
 
 class DotFrcgSelection(MethodSelection):
-    """Generated model for DotFrcgSelection"""
+    "Generated model for DotFrcgSelection"
 
     dot_frcg: DotFrcgConfig = DakotaField(
         dakota={

@@ -14,7 +14,7 @@ from dakota.spec.shared.misc import (
 
 
 class MultiStartMethodNameConfig(DakotaBaseModel):
-    """Generated model for MultiStartMethodNameConfig"""
+    "Specify sub-method by name"
 
     method_name: str = DakotaField(
         description="Specify sub-method by name",
@@ -45,7 +45,7 @@ class MultiStartMethodNameConfig(DakotaBaseModel):
 
 
 class MultiStartMethodPointer(DakotaBaseModel):
-    """Generated model for MultiStartMethodPointer"""
+    "Pointer to sub-method to run from each starting point"
 
     method_pointer: str = DakotaField(
         description="Pointer to sub-method to run from each starting point",
@@ -63,7 +63,7 @@ class MultiStartMethodPointer(DakotaBaseModel):
 
 
 class RandomStarts(DakotaBaseModel):
-    """Generated model for RandomStarts"""
+    "Number of random starting points"
 
     count: int = DakotaField(
         default=0,
@@ -94,7 +94,7 @@ class RandomStarts(DakotaBaseModel):
 
 
 class MultiStartMethodName(DakotaBaseModel):
-    """Generated model for MultiStartMethodName"""
+    "Specify sub-method by name"
 
     method_name: MultiStartMethodNameConfig = DakotaField(
         default=...,
@@ -106,7 +106,7 @@ class MultiStartMethodName(DakotaBaseModel):
 class MultiStartConfig(
     MethodThreeOptionalKeywordsMixin, MethodIteratorServerSchedulingMixin
 ):
-    """Generated model for MultiStartConfig"""
+    "Multi-Start Optimization Method"
 
     sub_method: Union[MultiStartMethodName, MultiStartMethodPointer] = DakotaField(
         description="Sub-method Selection", dakota={"anchor": True, "union_pattern": 4}
@@ -132,7 +132,7 @@ class MultiStartConfig(
 
 
 class MultiStartSelection(MethodSelection):
-    """Generated model for MultiStartSelection"""
+    "Generated model for MultiStartSelection"
 
     multi_start: MultiStartConfig = DakotaField(
         dakota={

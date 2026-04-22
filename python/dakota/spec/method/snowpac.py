@@ -24,7 +24,7 @@ class SnowpacConfig(
     DefaultScalingMixin,
     MethodOptionalModelPointerMixin,
 ):
-    """Generated model for SnowpacConfig"""
+    "Stochastic version of NOWPAC that incorporates error estimates and noise mitigation."
 
     seed: int | None = DakotaField(
         default=None,
@@ -43,7 +43,7 @@ class SnowpacConfig(
 
 
 class SnowpacSelection(MethodSelection):
-    """Generated model for SnowpacSelection"""
+    "Generated model for SnowpacSelection"
 
     snowpac: SnowpacConfig = DakotaField(
         dakota={

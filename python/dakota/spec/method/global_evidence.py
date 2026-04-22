@@ -22,7 +22,7 @@ class GlobalEvidenceConfig(
     RngOptionsContext2Mixin,
     MethodOptionalModelPointerMixin,
 ):
-    """Generated model for GlobalEvidenceConfig"""
+    "Evidence theory with evidence measures computed with global optimization methods"
 
     samples: int = DakotaField(
         default=0,
@@ -54,7 +54,7 @@ class GlobalEvidenceConfig(
 
 
 class GlobalEvidenceSelection(MethodSelection):
-    """Generated model for GlobalEvidenceSelection"""
+    "Generated model for GlobalEvidenceSelection"
 
     global_evidence: GlobalEvidenceConfig = DakotaField(
         dakota={

@@ -13,13 +13,13 @@ from dakota.spec.shared.misc import (
 
 
 class OptppCgConfig(MethodThreeOptionalKeywordsMixin, MethodOptppGradBasedOptsMixin):
-    """Generated model for OptppCgConfig"""
+    "A conjugate gradient optimization method"
 
     pass
 
 
 class OptppCgSelection(MethodSelection):
-    """Generated model for OptppCgSelection"""
+    "Generated model for OptppCgSelection"
 
     optpp_cg: OptppCgConfig = DakotaField(
         dakota={

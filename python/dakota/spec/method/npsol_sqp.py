@@ -13,13 +13,13 @@ from dakota.spec.shared.misc import (
 
 
 class NpsolSqpConfig(MethodThreeOptionalKeywordsMixin, MethodNpsolCommonOptsMixin):
-    """Generated model for NpsolSqpConfig"""
+    "NPSOL Sequential Quadratic Program"
 
     pass
 
 
 class NpsolSqpSelection(MethodSelection):
-    """Generated model for NpsolSqpSelection"""
+    "Generated model for NpsolSqpSelection"
 
     npsol_sqp: NpsolSqpConfig = DakotaField(
         dakota={

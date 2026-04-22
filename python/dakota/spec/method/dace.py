@@ -16,10 +16,11 @@ from dakota.spec.shared.misc import (
 
 
 class DaceGrid(DakotaBaseModel):
-    """Generated model for DaceGrid"""
+    "Grid Sampling"
 
     grid: Literal[True] = DakotaField(
         default=True,
+        description="Grid Sampling",
         dakota={
             "materialization": [
                 {
@@ -34,10 +35,11 @@ class DaceGrid(DakotaBaseModel):
 
 
 class DaceRandom(DakotaBaseModel):
-    """Generated model for DaceRandom"""
+    "Uses purely random Monte Carlo sampling to sample variables"
 
     random: Literal[True] = DakotaField(
         default=True,
+        description="Uses purely random Monte Carlo sampling to sample variables",
         dakota={
             "materialization": [
                 {
@@ -52,10 +54,11 @@ class DaceRandom(DakotaBaseModel):
 
 
 class Oas(DakotaBaseModel):
-    """Generated model for Oas"""
+    "Orthogonal Array Sampling"
 
     oas: Literal[True] = DakotaField(
         default=True,
+        description="Orthogonal Array Sampling",
         dakota={
             "materialization": [
                 {
@@ -70,10 +73,11 @@ class Oas(DakotaBaseModel):
 
 
 class DaceLhs(DakotaBaseModel):
-    """Generated model for DaceLhs"""
+    "Uses Latin Hypercube Sampling (LHS) to sample variables"
 
     lhs: Literal[True] = DakotaField(
         default=True,
+        description="Uses Latin Hypercube Sampling (LHS) to sample variables",
         dakota={
             "materialization": [
                 {
@@ -88,10 +92,11 @@ class DaceLhs(DakotaBaseModel):
 
 
 class OaLhs(DakotaBaseModel):
-    """Generated model for OaLhs"""
+    "Orthogonal Array Latin Hypercube Sampling"
 
     oa_lhs: Literal[True] = DakotaField(
         default=True,
+        description="Orthogonal Array Latin Hypercube Sampling",
         dakota={
             "materialization": [
                 {
@@ -106,10 +111,11 @@ class OaLhs(DakotaBaseModel):
 
 
 class BoxBehnken(DakotaBaseModel):
-    """Generated model for BoxBehnken"""
+    "Box-Behnken Design"
 
     box_behnken: Literal[True] = DakotaField(
         default=True,
+        description="Box-Behnken Design",
         dakota={
             "materialization": [
                 {
@@ -124,10 +130,11 @@ class BoxBehnken(DakotaBaseModel):
 
 
 class CentralComposite(DakotaBaseModel):
-    """Generated model for CentralComposite"""
+    "Central Composite Design"
 
     central_composite: Literal[True] = DakotaField(
         default=True,
+        description="Central Composite Design",
         dakota={
             "materialization": [
                 {
@@ -147,7 +154,7 @@ class DaceConfig(
     VbdSamplingMixin,
     MethodOptionalModelPointerMixin,
 ):
-    """Generated model for DaceConfig"""
+    "Design and Analysis of Computer Experiments"
 
     sub_method: Union[
         DaceGrid, DaceRandom, Oas, DaceLhs, OaLhs, BoxBehnken, CentralComposite
@@ -209,7 +216,7 @@ class DaceConfig(
 
 
 class DaceSelection(MethodSelection):
-    """Generated model for DaceSelection"""
+    "Generated model for DaceSelection"
 
     dace: DaceConfig = DakotaField(
         dakota={

@@ -20,7 +20,7 @@ from dakota.spec.shared.surrogate import MethodExportApproxFormatMixin
 
 
 class BatchSize(MethodSynchronizationMixin):
-    """Generated model for BatchSize"""
+    "Total batch size in parallel EGO"
 
     count: int = DakotaField(
         default=1,
@@ -53,7 +53,7 @@ class BatchSize(MethodSynchronizationMixin):
 
 
 class EfficientGlobalImportBuildPointsFile(MethodImportBuildFormatMixin):
-    """Generated model for EfficientGlobalImportBuildPointsFile"""
+    "File containing points you wish to use to build a surrogate"
 
     filename: str = DakotaField(
         description="File containing points you wish to use to build a surrogate",
@@ -83,7 +83,7 @@ class EfficientGlobalImportBuildPointsFile(MethodImportBuildFormatMixin):
 
 
 class EfficientGlobalExportApproxPointsFile(MethodExportApproxFormatMixin):
-    """Generated model for EfficientGlobalExportApproxPointsFile"""
+    "Output file for surrogate model value evaluations"
 
     filename: str = DakotaField(
         description="Output file for surrogate model value evaluations",
@@ -105,7 +105,7 @@ class EfficientGlobalConfig(
     MethodGpAlternativesWithExportContext2Mixin,
     MethodOptionalModelPointerMixin,
 ):
-    """Generated model for EfficientGlobalConfig"""
+    "Global Surrogate Based Optimization, a.k.a. EGO"
 
     initial_samples: int = DakotaField(
         default=0,
@@ -198,7 +198,7 @@ class EfficientGlobalConfig(
 
 
 class EfficientGlobalSelection(MethodSelection):
-    """Generated model for EfficientGlobalSelection"""
+    "Generated model for EfficientGlobalSelection"
 
     efficient_global: EfficientGlobalConfig = DakotaField(
         dakota={

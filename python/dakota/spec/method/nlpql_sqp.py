@@ -24,13 +24,13 @@ class NlpqlSqpConfig(
     DefaultScalingMixin,
     MethodOptionalModelPointerMixin,
 ):
-    """Generated model for NlpqlSqpConfig"""
+    "NLPQL Sequential Quadratic Program"
 
     pass
 
 
 class NlpqlSqpSelection(MethodSelection):
-    """Generated model for NlpqlSqpSelection"""
+    "Generated model for NlpqlSqpSelection"
 
     nlpql_sqp: NlpqlSqpConfig = DakotaField(
         dakota={

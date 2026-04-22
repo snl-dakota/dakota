@@ -13,13 +13,13 @@ from dakota.spec.shared.misc import (
 
 
 class DotSqpConfig(MethodThreeOptionalKeywordsMixin, MethodDotCommonOptsMixin):
-    """Generated model for DotSqpConfig"""
+    "DOT Sequential Quadratic Program"
 
     pass
 
 
 class DotSqpSelection(MethodSelection):
-    """Generated model for DotSqpSelection"""
+    "Generated model for DotSqpSelection"
 
     dot_sqp: DotSqpConfig = DakotaField(
         dakota={

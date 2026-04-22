@@ -17,7 +17,7 @@ from ....validation.rules import (
 
 
 class ExpansionDimPrefMixin(DakotaBaseModel):
-    """Generated model for ExpansionDimPrefMixin"""
+    "Generated model for ExpansionDimPrefMixin"
 
     dimension_preference: list[DakotaFloat] | None = DakotaField(
         default=None,
@@ -35,10 +35,11 @@ class ExpansionDimPrefMixin(DakotaBaseModel):
 
 
 class ExpansionOptionsSampleTypeLhs(DakotaBaseModel):
-    """Generated model for ExpansionOptionsSampleTypeLhs"""
+    "Uses Latin Hypercube Sampling (LHS) to sample variables"
 
     lhs: Literal[True] = DakotaField(
         default=True,
+        description="Uses Latin Hypercube Sampling (LHS) to sample variables",
         dakota={
             "materialization": [
                 {
@@ -53,10 +54,11 @@ class ExpansionOptionsSampleTypeLhs(DakotaBaseModel):
 
 
 class ExpansionOptionsSampleTypeRandom(DakotaBaseModel):
-    """Generated model for ExpansionOptionsSampleTypeRandom"""
+    "Uses purely random Monte Carlo sampling to sample variables"
 
     random: Literal[True] = DakotaField(
         default=True,
+        description="Uses purely random Monte Carlo sampling to sample variables",
         dakota={
             "materialization": [
                 {
@@ -71,10 +73,11 @@ class ExpansionOptionsSampleTypeRandom(DakotaBaseModel):
 
 
 class ExpansionOptionsRngMt19937(DakotaBaseModel):
-    """Generated model for ExpansionOptionsRngMt19937"""
+    "Generates random numbers using the Mersenne twister"
 
     mt19937: Literal[True] = DakotaField(
         default=True,
+        description="Generates random numbers using the Mersenne twister",
         dakota={
             "materialization": [
                 {
@@ -89,10 +92,11 @@ class ExpansionOptionsRngMt19937(DakotaBaseModel):
 
 
 class ExpansionOptionsRngRnum2(DakotaBaseModel):
-    """Generated model for ExpansionOptionsRngRnum2"""
+    "Generates pseudo-random numbers using the Pecos package"
 
     rnum2: Literal[True] = DakotaField(
         default=True,
+        description="Generates pseudo-random numbers using the Pecos package",
         dakota={
             "materialization": [
                 {
@@ -107,10 +111,11 @@ class ExpansionOptionsRngRnum2(DakotaBaseModel):
 
 
 class ExpansionOptionsProbabilityRefinementImportance(DakotaBaseModel):
-    """Generated model for ExpansionOptionsProbabilityRefinementImportance"""
+    "Importance sampling option for probability refinement"
 
     importance: Literal[True] = DakotaField(
         default=True,
+        description="Importance sampling option for probability refinement",
         dakota={
             "materialization": [
                 {
@@ -125,10 +130,11 @@ class ExpansionOptionsProbabilityRefinementImportance(DakotaBaseModel):
 
 
 class ExpansionOptionsProbabilityRefinementAdaptImport(DakotaBaseModel):
-    """Generated model for ExpansionOptionsProbabilityRefinementAdaptImport"""
+    "Importance sampling option for probability refinement"
 
     adapt_import: Literal[True] = DakotaField(
         default=True,
+        description="Importance sampling option for probability refinement",
         dakota={
             "materialization": [
                 {
@@ -143,10 +149,11 @@ class ExpansionOptionsProbabilityRefinementAdaptImport(DakotaBaseModel):
 
 
 class ExpansionOptionsProbabilityRefinementMmAdaptImport(DakotaBaseModel):
-    """Generated model for ExpansionOptionsProbabilityRefinementMmAdaptImport"""
+    "Importance sampling option for probability refinement"
 
     mm_adapt_import: Literal[True] = DakotaField(
         default=True,
+        description="Importance sampling option for probability refinement",
         dakota={
             "materialization": [
                 {
@@ -161,10 +168,11 @@ class ExpansionOptionsProbabilityRefinementMmAdaptImport(DakotaBaseModel):
 
 
 class ExpansionOptionsFinalMomentsNoneKeyword(DakotaBaseModel):
-    """Generated model for ExpansionOptionsFinalMomentsNoneKeyword"""
+    "Omit moments from the set of final statistics."
 
     none: Literal[True] = DakotaField(
         default=True,
+        description="Omit moments from the set of final statistics.",
         dakota={
             "materialization": [
                 {
@@ -180,10 +188,11 @@ class ExpansionOptionsFinalMomentsNoneKeyword(DakotaBaseModel):
 
 
 class ExpansionOptionsFinalMomentsStandard(DakotaBaseModel):
-    """Generated model for ExpansionOptionsFinalMomentsStandard"""
+    "Output standardized moments and include them within the set of final statistics."
 
     standard: Literal[True] = DakotaField(
         default=True,
+        description="Output standardized moments and include them within the set of final statistics.",
         dakota={
             "materialization": [
                 {
@@ -199,10 +208,11 @@ class ExpansionOptionsFinalMomentsStandard(DakotaBaseModel):
 
 
 class ExpansionOptionsFinalMomentsCentral(DakotaBaseModel):
-    """Generated model for ExpansionOptionsFinalMomentsCentral"""
+    "Output central moments and include them within the set of final statistics."
 
     central: Literal[True] = DakotaField(
         default=True,
+        description="Output central moments and include them within the set of final statistics.",
         dakota={
             "materialization": [
                 {
@@ -218,10 +228,11 @@ class ExpansionOptionsFinalMomentsCentral(DakotaBaseModel):
 
 
 class ExpansionOptionsResponseLevelsComputeProbabilities(DakotaBaseModel):
-    """Generated model for ExpansionOptionsResponseLevelsComputeProbabilities"""
+    "Computes probabilities associated with response levels"
 
     probabilities: Literal[True] = DakotaField(
         default=True,
+        description="Computes probabilities associated with response levels",
         dakota={
             "materialization": [
                 {
@@ -236,10 +247,11 @@ class ExpansionOptionsResponseLevelsComputeProbabilities(DakotaBaseModel):
 
 
 class ExpansionOptionsResponseLevelsComputeReliabilities(DakotaBaseModel):
-    """Generated model for ExpansionOptionsResponseLevelsComputeReliabilities"""
+    "Computes reliabilities associated with response levels"
 
     reliabilities: Literal[True] = DakotaField(
         default=True,
+        description="Computes reliabilities associated with response levels",
         dakota={
             "materialization": [
                 {
@@ -254,10 +266,11 @@ class ExpansionOptionsResponseLevelsComputeReliabilities(DakotaBaseModel):
 
 
 class ExpansionOptionsResponseLevelsComputeGenReliabilities(DakotaBaseModel):
-    """Generated model for ExpansionOptionsResponseLevelsComputeGenReliabilities"""
+    "Computes generalized reliabilities associated with response levels"
 
     gen_reliabilities: Literal[True] = DakotaField(
         default=True,
+        description="Computes generalized reliabilities associated with response levels",
         dakota={
             "materialization": [
                 {
@@ -272,10 +285,11 @@ class ExpansionOptionsResponseLevelsComputeGenReliabilities(DakotaBaseModel):
 
 
 class ExpansionOptionsResponseLevelsComputeSystemSeries(DakotaBaseModel):
-    """Generated model for ExpansionOptionsResponseLevelsComputeSystemSeries"""
+    "Aggregate response statistics assuming a series system"
 
     series: Literal[True] = DakotaField(
         default=True,
+        description="Aggregate response statistics assuming a series system",
         dakota={
             "materialization": [
                 {
@@ -290,10 +304,11 @@ class ExpansionOptionsResponseLevelsComputeSystemSeries(DakotaBaseModel):
 
 
 class ExpansionOptionsResponseLevelsComputeSystemParallel(DakotaBaseModel):
-    """Generated model for ExpansionOptionsResponseLevelsComputeSystemParallel"""
+    "Aggregate response statistics assuming a parallel system"
 
     parallel: Literal[True] = DakotaField(
         default=True,
+        description="Aggregate response statistics assuming a parallel system",
         dakota={
             "materialization": [
                 {
@@ -308,7 +323,7 @@ class ExpansionOptionsResponseLevelsComputeSystemParallel(DakotaBaseModel):
 
 
 class ExpansionOptionsProbabilityLevels(DakotaBaseModel):
-    """Generated model for ExpansionOptionsProbabilityLevels"""
+    "Specify probability levels at which to estimate the corresponding response value"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CheckProbabilityList(
@@ -331,7 +346,7 @@ class ExpansionOptionsProbabilityLevels(DakotaBaseModel):
 
 
 class ExpansionOptionsReliabilityLevels(DakotaBaseModel):
-    """Generated model for ExpansionOptionsReliabilityLevels"""
+    "Specify reliability levels at which the response values will be estimated"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CheckSumEqualsLength(
@@ -351,7 +366,7 @@ class ExpansionOptionsReliabilityLevels(DakotaBaseModel):
 
 
 class ExpansionOptionsGenReliabilityLevels(DakotaBaseModel):
-    """Generated model for ExpansionOptionsGenReliabilityLevels"""
+    "Specify generalized relability levels at which to estimate the corresponding response value"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CheckSumEqualsLength(
@@ -371,10 +386,11 @@ class ExpansionOptionsGenReliabilityLevels(DakotaBaseModel):
 
 
 class ExpansionOptionsDistributionCumulative(DakotaBaseModel):
-    """Generated model for ExpansionOptionsDistributionCumulative"""
+    "Computes statistics according to cumulative functions"
 
     cumulative: Literal[True] = DakotaField(
         default=True,
+        description="Computes statistics according to cumulative functions",
         dakota={
             "materialization": [
                 {
@@ -389,10 +405,11 @@ class ExpansionOptionsDistributionCumulative(DakotaBaseModel):
 
 
 class ExpansionOptionsDistributionComplementary(DakotaBaseModel):
-    """Generated model for ExpansionOptionsDistributionComplementary"""
+    "Computes statistics according to complementary cumulative functions"
 
     complementary: Literal[True] = DakotaField(
         default=True,
+        description="Computes statistics according to complementary cumulative functions",
         dakota={
             "materialization": [
                 {
@@ -407,7 +424,7 @@ class ExpansionOptionsDistributionComplementary(DakotaBaseModel):
 
 
 class ExpansionOptionsVarianceBasedDecomp(DakotaBaseModel):
-    """Generated model for ExpansionOptionsVarianceBasedDecomp"""
+    "Activates global sensitivity analysis based on decomposition of response variance into main, interaction, and total effects"
 
     interaction_order: int | None = DakotaField(
         default=None,
@@ -439,7 +456,7 @@ class ExpansionOptionsVarianceBasedDecomp(DakotaBaseModel):
 
 
 class ImportApproxPointsFileCustomAnnotatedConfig(DakotaBaseModel):
-    """Generated model for ImportApproxPointsFileCustomAnnotatedConfig"""
+    "Selects custom-annotated tabular file format"
 
     header: Literal[True] | None = DakotaField(
         default=None,
@@ -486,10 +503,11 @@ class ImportApproxPointsFileCustomAnnotatedConfig(DakotaBaseModel):
 
 
 class ImportApproxPointsFileAnnotated(DakotaBaseModel):
-    """Generated model for ImportApproxPointsFileAnnotated"""
+    "Selects annotated tabular file format"
 
     annotated: Literal[True] = DakotaField(
         default=True,
+        description="Selects annotated tabular file format",
         dakota={
             "materialization": [
                 {
@@ -504,10 +522,11 @@ class ImportApproxPointsFileAnnotated(DakotaBaseModel):
 
 
 class ImportApproxPointsFileFreeform(DakotaBaseModel):
-    """Generated model for ImportApproxPointsFileFreeform"""
+    "Selects freeform file format"
 
     freeform: Literal[True] = DakotaField(
         default=True,
+        description="Selects freeform file format",
         dakota={
             "materialization": [
                 {
@@ -522,7 +541,7 @@ class ImportApproxPointsFileFreeform(DakotaBaseModel):
 
 
 class ExpansionOptionsExportApproxPointsFileCustomAnnotatedConfig(DakotaBaseModel):
-    """Generated model for ExpansionOptionsExportApproxPointsFileCustomAnnotatedConfig"""
+    "Selects custom-annotated tabular file format"
 
     header: Literal[True] | None = DakotaField(
         default=None,
@@ -569,10 +588,11 @@ class ExpansionOptionsExportApproxPointsFileCustomAnnotatedConfig(DakotaBaseMode
 
 
 class ExpansionOptionsExportApproxPointsFileAnnotated(DakotaBaseModel):
-    """Generated model for ExpansionOptionsExportApproxPointsFileAnnotated"""
+    "Selects annotated tabular file format"
 
     annotated: Literal[True] = DakotaField(
         default=True,
+        description="Selects annotated tabular file format",
         dakota={
             "materialization": [
                 {
@@ -587,10 +607,11 @@ class ExpansionOptionsExportApproxPointsFileAnnotated(DakotaBaseModel):
 
 
 class ExpansionOptionsExportApproxPointsFileFreeform(DakotaBaseModel):
-    """Generated model for ExpansionOptionsExportApproxPointsFileFreeform"""
+    "Selects freeform file format"
 
     freeform: Literal[True] = DakotaField(
         default=True,
+        description="Selects freeform file format",
         dakota={
             "materialization": [
                 {
@@ -605,10 +626,11 @@ class ExpansionOptionsExportApproxPointsFileFreeform(DakotaBaseModel):
 
 
 class ExpansionOptionsDiagCov(DakotaBaseModel):
-    """Generated model for ExpansionOptionsDiagCov"""
+    "Display only the diagonal terms of the covariance matrix"
 
     diagonal_covariance: Literal[True] = DakotaField(
         default=True,
+        description="Display only the diagonal terms of the covariance matrix",
         dakota={
             "materialization": [
                 {
@@ -623,10 +645,11 @@ class ExpansionOptionsDiagCov(DakotaBaseModel):
 
 
 class ExpansionOptionsFullCov(DakotaBaseModel):
-    """Generated model for ExpansionOptionsFullCov"""
+    "Display the full covariance matrix"
 
     full_covariance: Literal[True] = DakotaField(
         default=True,
+        description="Display the full covariance matrix",
         dakota={
             "materialization": [
                 {
@@ -641,10 +664,11 @@ class ExpansionOptionsFullCov(DakotaBaseModel):
 
 
 class ExpansionQuadratureOrderNested(DakotaBaseModel):
-    """Generated model for ExpansionQuadratureOrderNested"""
+    "Enforce use of nested quadrature rules if available"
 
     nested: Literal[True] = DakotaField(
         default=True,
+        description="Enforce use of nested quadrature rules if available",
         dakota={
             "materialization": [
                 {
@@ -660,10 +684,11 @@ class ExpansionQuadratureOrderNested(DakotaBaseModel):
 
 
 class ExpansionQuadratureOrderNonNested(DakotaBaseModel):
-    """Generated model for ExpansionQuadratureOrderNonNested"""
+    "Enforce use of non-nested quadrature rules"
 
     non_nested: Literal[True] = DakotaField(
         default=True,
+        description="Enforce use of non-nested quadrature rules",
         dakota={
             "materialization": [
                 {
@@ -679,10 +704,11 @@ class ExpansionQuadratureOrderNonNested(DakotaBaseModel):
 
 
 class ExpansionQuadratureSequenceOrderSequenceNested(DakotaBaseModel):
-    """Generated model for ExpansionQuadratureSequenceOrderSequenceNested"""
+    "Enforce use of nested quadrature rules if available"
 
     nested: Literal[True] = DakotaField(
         default=True,
+        description="Enforce use of nested quadrature rules if available",
         dakota={
             "materialization": [
                 {
@@ -698,10 +724,11 @@ class ExpansionQuadratureSequenceOrderSequenceNested(DakotaBaseModel):
 
 
 class ExpansionQuadratureSequenceOrderSequenceNonNested(DakotaBaseModel):
-    """Generated model for ExpansionQuadratureSequenceOrderSequenceNonNested"""
+    "Enforce use of non-nested quadrature rules"
 
     non_nested: Literal[True] = DakotaField(
         default=True,
+        description="Enforce use of non-nested quadrature rules",
         dakota={
             "materialization": [
                 {
@@ -717,10 +744,11 @@ class ExpansionQuadratureSequenceOrderSequenceNonNested(DakotaBaseModel):
 
 
 class ExpansionRuleGrowthRestricted(DakotaBaseModel):
-    """Generated model for ExpansionRuleGrowthRestricted"""
+    "Restrict the growth rates for nested and non-nested rules can be synchronized for consistency."
 
     restricted: Literal[True] = DakotaField(
         default=True,
+        description="Restrict the growth rates for nested and non-nested rules can be synchronized for consistency.",
         dakota={
             "materialization": [
                 {
@@ -736,10 +764,11 @@ class ExpansionRuleGrowthRestricted(DakotaBaseModel):
 
 
 class ExpansionRuleGrowthUnrestricted(DakotaBaseModel):
-    """Generated model for ExpansionRuleGrowthUnrestricted"""
+    "Overide the default restriction of growth rates for nested and non-nested rules that are by defualt synchronized for consistency."
 
     unrestricted: Literal[True] = DakotaField(
         default=True,
+        description="Overide the default restriction of growth rates for nested and non-nested rules that are by defualt synchronized for consistency.",
         dakota={
             "materialization": [
                 {
@@ -755,10 +784,11 @@ class ExpansionRuleGrowthUnrestricted(DakotaBaseModel):
 
 
 class ExpansionRuleNestingNested(DakotaBaseModel):
-    """Generated model for ExpansionRuleNestingNested"""
+    "Enforce use of nested quadrature rules if available"
 
     nested: Literal[True] = DakotaField(
         default=True,
+        description="Enforce use of nested quadrature rules if available",
         dakota={
             "materialization": [
                 {
@@ -774,10 +804,11 @@ class ExpansionRuleNestingNested(DakotaBaseModel):
 
 
 class ExpansionRuleNestingNonNested(DakotaBaseModel):
-    """Generated model for ExpansionRuleNestingNonNested"""
+    "Enforce use of non-nested quadrature rules"
 
     non_nested: Literal[True] = DakotaField(
         default=True,
+        description="Enforce use of non-nested quadrature rules",
         dakota={
             "materialization": [
                 {
@@ -793,7 +824,7 @@ class ExpansionRuleNestingNonNested(DakotaBaseModel):
 
 
 class VbdExpansionVarianceBasedDecomp(DakotaBaseModel):
-    """Generated model for VbdExpansionVarianceBasedDecomp"""
+    "Activates global sensitivity analysis based on decomposition of response variance into main, interaction, and total effects"
 
     interaction_order: int | None = DakotaField(
         default=None,
@@ -825,7 +856,7 @@ class VbdExpansionVarianceBasedDecomp(DakotaBaseModel):
 
 
 class ExpansionOptionsProbabilityRefinement(DakotaBaseModel):
-    """Generated model for ExpansionOptionsProbabilityRefinement"""
+    "Allow refinement of probability and generalized reliability results using importance sampling"
 
     importance_sampling_approach: Union[
         ExpansionOptionsProbabilityRefinementImportance,
@@ -851,7 +882,7 @@ class ExpansionOptionsProbabilityRefinement(DakotaBaseModel):
 
 
 class ExpansionOptionsResponseLevelsCompute(DakotaBaseModel):
-    """Generated model for ExpansionOptionsResponseLevelsCompute"""
+    "Selection of statistics to compute at each response level"
 
     statistic: Union[
         ExpansionOptionsResponseLevelsComputeProbabilities,
@@ -874,7 +905,7 @@ class ExpansionOptionsResponseLevelsCompute(DakotaBaseModel):
 
 
 class ImportApproxPointsFileCustomAnnotated(DakotaBaseModel):
-    """Generated model for ImportApproxPointsFileCustomAnnotated"""
+    "Selects custom-annotated tabular file format"
 
     custom_annotated: ImportApproxPointsFileCustomAnnotatedConfig = DakotaField(
         default_factory=ImportApproxPointsFileCustomAnnotatedConfig,
@@ -894,7 +925,7 @@ class ImportApproxPointsFileCustomAnnotated(DakotaBaseModel):
 
 
 class ExpansionOptionsExportApproxPointsFileCustomAnnotated(DakotaBaseModel):
-    """Generated model for ExpansionOptionsExportApproxPointsFileCustomAnnotated"""
+    "Selects custom-annotated tabular file format"
 
     custom_annotated: ExpansionOptionsExportApproxPointsFileCustomAnnotatedConfig = DakotaField(
         default_factory=ExpansionOptionsExportApproxPointsFileCustomAnnotatedConfig,
@@ -914,7 +945,7 @@ class ExpansionOptionsExportApproxPointsFileCustomAnnotated(DakotaBaseModel):
 
 
 class ExpansionQuadratureQuadratureOrder(DakotaBaseModel):
-    """Generated model for ExpansionQuadratureQuadratureOrder"""
+    "Order for tensor-products of Gaussian quadrature rules"
 
     order: int = DakotaField(
         default=USHRT_MAX,
@@ -952,7 +983,7 @@ class ExpansionQuadratureQuadratureOrder(DakotaBaseModel):
 
 
 class ExpansionQuadratureSequenceQuadratureOrderSequence(DakotaBaseModel):
-    """Generated model for ExpansionQuadratureSequenceQuadratureOrderSequence"""
+    "Sequence of quadrature orders used in a multi-stage expansion"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CheckNonnegativeList(
@@ -1000,7 +1031,7 @@ class ExpansionQuadratureSequenceQuadratureOrderSequence(DakotaBaseModel):
 
 
 class ExpansionRuleGrowthMixin(DakotaBaseModel):
-    """Generated model for ExpansionRuleGrowthMixin"""
+    "Generated model for ExpansionRuleGrowthMixin"
 
     growth_rule: (
         Union[ExpansionRuleGrowthRestricted, ExpansionRuleGrowthUnrestricted] | None
@@ -1012,7 +1043,7 @@ class ExpansionRuleGrowthMixin(DakotaBaseModel):
 
 
 class ExpansionRuleNestingMixin(DakotaBaseModel):
-    """Generated model for ExpansionRuleNestingMixin"""
+    "Generated model for ExpansionRuleNestingMixin"
 
     nesting_rule: (
         Union[ExpansionRuleNestingNested, ExpansionRuleNestingNonNested] | None
@@ -1024,7 +1055,7 @@ class ExpansionRuleNestingMixin(DakotaBaseModel):
 
 
 class VbdExpansionMixin(DakotaBaseModel):
-    """Generated model for VbdExpansionMixin"""
+    "Generated model for VbdExpansionMixin"
 
     variance_based_decomp: VbdExpansionVarianceBasedDecomp | None = DakotaField(
         default=None,
@@ -1042,7 +1073,7 @@ class VbdExpansionMixin(DakotaBaseModel):
 
 
 class ExpansionOptionsResponseLevels(DakotaBaseModel):
-    """Generated model for ExpansionOptionsResponseLevels"""
+    "Values at which to estimate desired statistics for each response"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CheckSumEqualsLength(
@@ -1066,7 +1097,7 @@ class ExpansionOptionsResponseLevels(DakotaBaseModel):
 
 
 class ImportApproxPointsFile(DakotaBaseModel):
-    """Generated model for ImportApproxPointsFile"""
+    "Filename for points at which to evaluate the PCE/SC surrogate"
 
     filename: str = DakotaField(
         description="Filename for points at which to evaluate the PCE/SC surrogate",
@@ -1109,7 +1140,7 @@ class ImportApproxPointsFile(DakotaBaseModel):
 
 
 class ExpansionOptionsExportApproxPointsFile(DakotaBaseModel):
-    """Generated model for ExpansionOptionsExportApproxPointsFile"""
+    "Output file for surrogate model value evaluations"
 
     filename: str = DakotaField(
         description="Output file for surrogate model value evaluations",
@@ -1139,7 +1170,7 @@ class ExpansionOptionsExportApproxPointsFile(DakotaBaseModel):
 
 
 class ExpansionQuadratureMixin(DakotaBaseModel):
-    """Generated model for ExpansionQuadratureMixin"""
+    "Generated model for ExpansionQuadratureMixin"
 
     quadrature_order: ExpansionQuadratureQuadratureOrder = DakotaField(
         default=...,
@@ -1149,7 +1180,7 @@ class ExpansionQuadratureMixin(DakotaBaseModel):
 
 
 class ExpansionQuadratureSequenceMixin(DakotaBaseModel):
-    """Generated model for ExpansionQuadratureSequenceMixin"""
+    "Generated model for ExpansionQuadratureSequenceMixin"
 
     quadrature_order_sequence: ExpansionQuadratureSequenceQuadratureOrderSequence = (
         DakotaField(
@@ -1161,7 +1192,7 @@ class ExpansionQuadratureSequenceMixin(DakotaBaseModel):
 
 
 class ExpansionOptionsMixin(DakotaBaseModel):
-    """Generated model for ExpansionOptionsMixin"""
+    "Generated model for ExpansionOptionsMixin"
 
     samples_on_emulator: int = DakotaField(
         default=0,

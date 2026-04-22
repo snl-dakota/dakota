@@ -18,7 +18,7 @@ from dakota.spec.shared.misc import (
 class MultidimParameterStudyConfig(
     MethodThreeOptionalKeywordsMixin, MethodOptionalModelPointerMixin
 ):
-    """Generated model for MultidimParameterStudyConfig"""
+    "Samples variables on full factorial grid of study points"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CheckNonnegativeList(
@@ -41,7 +41,7 @@ class MultidimParameterStudyConfig(
 
 
 class MultidimParameterStudySelection(MethodSelection):
-    """Generated model for MultidimParameterStudySelection"""
+    "Generated model for MultidimParameterStudySelection"
 
     multidim_parameter_study: MultidimParameterStudyConfig = DakotaField(
         dakota={

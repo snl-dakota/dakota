@@ -18,7 +18,7 @@ from dakota.spec.shared.surrogate import MethodExportApproxFormatMixin
 
 
 class GpaisExportApproxPointsFile(MethodExportApproxFormatMixin):
-    """Generated model for GpaisExportApproxPointsFile"""
+    "Output file for surrogate model value evaluations"
 
     filename: str = DakotaField(
         description="Output file for surrogate model value evaluations",
@@ -42,7 +42,7 @@ class GpaisConfig(
     RngOptionsContext2Mixin,
     MethodOptionalModelPointerMixin,
 ):
-    """Generated model for GpaisConfig"""
+    "Gaussian Process Adaptive Importance Sampling"
 
     build_samples: int = DakotaField(
         default=0,
@@ -93,7 +93,7 @@ class GpaisConfig(
 
 
 class GpaisSelection(MethodSelection):
-    """Generated model for GpaisSelection"""
+    "Generated model for GpaisSelection"
 
     gpais: GpaisConfig = DakotaField(
         dakota={

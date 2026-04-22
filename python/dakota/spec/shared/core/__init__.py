@@ -11,7 +11,7 @@ from ...validation.rules import CheckSumEqualsLength, CompareLength, CompareLeng
 
 
 class DefaultConstraintTolMixin(DakotaBaseModel):
-    """Generated model for DefaultConstraintTolMixin"""
+    "Generated model for DefaultConstraintTolMixin"
 
     constraint_tolerance: DakotaFloat = DakotaField(
         default=0.0,
@@ -29,7 +29,7 @@ class DefaultConstraintTolMixin(DakotaBaseModel):
 
 
 class MethodConvergenceTolMixin(DakotaBaseModel):
-    """Generated model for MethodConvergenceTolMixin"""
+    "Generated model for MethodConvergenceTolMixin"
 
     convergence_tolerance: DakotaFloat = DakotaField(
         default=-DBL_MAX,
@@ -52,10 +52,11 @@ class MethodConvergenceTolMixin(DakotaBaseModel):
 
 
 class MethodConvergenceTolWithTypeContext1Relative(DakotaBaseModel):
-    """Generated model for MethodConvergenceTolWithTypeContext1Relative"""
+    "Assess convergence in adaptive UQ methods using statistical metrics that are relative to a benchmark"
 
     relative: Literal[True] = DakotaField(
         default=True,
+        description="Assess convergence in adaptive UQ methods using statistical metrics that are relative to a benchmark",
         dakota={
             "materialization": [
                 {
@@ -70,10 +71,11 @@ class MethodConvergenceTolWithTypeContext1Relative(DakotaBaseModel):
 
 
 class MethodConvergenceTolWithTypeContext1Absolute(DakotaBaseModel):
-    """Generated model for MethodConvergenceTolWithTypeContext1Absolute"""
+    "Use absolute statistical metrics for assessing convergence in adaptive UQ methods"
 
     absolute: Literal[True] = DakotaField(
         default=True,
+        description="Use absolute statistical metrics for assessing convergence in adaptive UQ methods",
         dakota={
             "materialization": [
                 {
@@ -88,10 +90,11 @@ class MethodConvergenceTolWithTypeContext1Absolute(DakotaBaseModel):
 
 
 class MethodConvergenceTolWithTypeContext2Relative(DakotaBaseModel):
-    """Generated model for MethodConvergenceTolWithTypeContext2Relative"""
+    "Assess convergence in adaptive UQ methods using statistical metrics that are relative to a benchmark"
 
     relative: Literal[True] = DakotaField(
         default=True,
+        description="Assess convergence in adaptive UQ methods using statistical metrics that are relative to a benchmark",
         dakota={
             "materialization": [
                 {
@@ -106,10 +109,11 @@ class MethodConvergenceTolWithTypeContext2Relative(DakotaBaseModel):
 
 
 class MethodConvergenceTolWithTypeContext2Absolute(DakotaBaseModel):
-    """Generated model for MethodConvergenceTolWithTypeContext2Absolute"""
+    "Use absolute statistical metrics for assessing convergence in adaptive UQ methods"
 
     absolute: Literal[True] = DakotaField(
         default=True,
+        description="Use absolute statistical metrics for assessing convergence in adaptive UQ methods",
         dakota={
             "materialization": [
                 {
@@ -124,10 +128,11 @@ class MethodConvergenceTolWithTypeContext2Absolute(DakotaBaseModel):
 
 
 class MethodConvergenceTolWithTypeContext3Relative(DakotaBaseModel):
-    """Generated model for MethodConvergenceTolWithTypeContext3Relative"""
+    "Assess convergence in adaptive UQ methods using statistical metrics that are relative to a benchmark"
 
     relative: Literal[True] = DakotaField(
         default=True,
+        description="Assess convergence in adaptive UQ methods using statistical metrics that are relative to a benchmark",
         dakota={
             "materialization": [
                 {
@@ -142,10 +147,11 @@ class MethodConvergenceTolWithTypeContext3Relative(DakotaBaseModel):
 
 
 class MethodConvergenceTolWithTypeContext3Absolute(DakotaBaseModel):
-    """Generated model for MethodConvergenceTolWithTypeContext3Absolute"""
+    "Use absolute statistical metrics for assessing convergence in adaptive UQ methods"
 
     absolute: Literal[True] = DakotaField(
         default=True,
+        description="Use absolute statistical metrics for assessing convergence in adaptive UQ methods",
         dakota={
             "materialization": [
                 {
@@ -160,10 +166,11 @@ class MethodConvergenceTolWithTypeContext3Absolute(DakotaBaseModel):
 
 
 class Active(DakotaBaseModel):
-    """Generated model for Active"""
+    "use statistics for the active expansion within multifidelity refinement"
 
     active: Literal[True] = DakotaField(
         default=True,
+        description="use statistics for the active expansion within multifidelity refinement",
         dakota={
             "materialization": [
                 {
@@ -179,10 +186,11 @@ class Active(DakotaBaseModel):
 
 
 class StatisticsModeCombined(DakotaBaseModel):
-    """Generated model for StatisticsModeCombined"""
+    "use statistics for the combined expansion within multifidelity refinement"
 
     combined: Literal[True] = DakotaField(
         default=True,
+        description="use statistics for the combined expansion within multifidelity refinement",
         dakota={
             "materialization": [
                 {
@@ -198,10 +206,11 @@ class StatisticsModeCombined(DakotaBaseModel):
 
 
 class LevelMappings(DakotaBaseModel):
-    """Generated model for LevelMappings"""
+    "Utilize the level mappings metric for guiding adaptive refinement during UQ."
 
     level_mappings: Literal[True] = DakotaField(
         default=True,
+        description="Utilize the level mappings metric for guiding adaptive refinement during UQ.",
         dakota={
             "materialization": [
                 {
@@ -217,10 +226,11 @@ class LevelMappings(DakotaBaseModel):
 
 
 class RefinementMetricCov(DakotaBaseModel):
-    """Generated model for RefinementMetricCov"""
+    "Utilize the response covariance metric for guiding adaptive refinement during UQ."
 
     covariance: Literal[True] = DakotaField(
         default=True,
+        description="Utilize the response covariance metric for guiding adaptive refinement during UQ.",
         dakota={
             "materialization": [
                 {
@@ -236,10 +246,11 @@ class RefinementMetricCov(DakotaBaseModel):
 
 
 class NumericalGradientOptionsMethodSourceDakotaRelative(DakotaBaseModel):
-    """Generated model for NumericalGradientOptionsMethodSourceDakotaRelative"""
+    "(Default) Scale step size by the parameter value"
 
     relative: Literal[True] = DakotaField(
         default=True,
+        description="(Default) Scale step size by the parameter value",
         dakota={
             "materialization": [
                 {
@@ -254,10 +265,11 @@ class NumericalGradientOptionsMethodSourceDakotaRelative(DakotaBaseModel):
 
 
 class NumericalGradientOptionsMethodSourceDakotaAbsolute(DakotaBaseModel):
-    """Generated model for NumericalGradientOptionsMethodSourceDakotaAbsolute"""
+    "Do not scale step-size"
 
     absolute: Literal[True] = DakotaField(
         default=True,
+        description="Do not scale step-size",
         dakota={
             "materialization": [
                 {
@@ -272,10 +284,11 @@ class NumericalGradientOptionsMethodSourceDakotaAbsolute(DakotaBaseModel):
 
 
 class NumericalGradientOptionsMethodSourceDakotaBounds(DakotaBaseModel):
-    """Generated model for NumericalGradientOptionsMethodSourceDakotaBounds"""
+    "Scale step-size by the domain of the parameter"
 
     bounds: Literal[True] = DakotaField(
         default=True,
+        description="Scale step-size by the domain of the parameter",
         dakota={
             "materialization": [
                 {
@@ -290,10 +303,11 @@ class NumericalGradientOptionsMethodSourceDakotaBounds(DakotaBaseModel):
 
 
 class NumericalGradientOptionsMethodSourceVendor(DakotaBaseModel):
-    """Generated model for NumericalGradientOptionsMethodSourceVendor"""
+    "Use non-Dakota fd algorithm"
 
     vendor: Literal[True] = DakotaField(
         default=True,
+        description="Use non-Dakota fd algorithm",
         dakota={
             "materialization": [
                 {
@@ -308,10 +322,11 @@ class NumericalGradientOptionsMethodSourceVendor(DakotaBaseModel):
 
 
 class NumericalGradientOptionsIntervalTypeForward(DakotaBaseModel):
-    """Generated model for NumericalGradientOptionsIntervalTypeForward"""
+    "(Default) Use forward differences"
 
     forward: Literal[True] = DakotaField(
         default=True,
+        description="(Default) Use forward differences",
         dakota={
             "materialization": [
                 {
@@ -326,10 +341,11 @@ class NumericalGradientOptionsIntervalTypeForward(DakotaBaseModel):
 
 
 class NumericalGradientOptionsIntervalTypeCentral(DakotaBaseModel):
-    """Generated model for NumericalGradientOptionsIntervalTypeCentral"""
+    "Use central differences"
 
     central: Literal[True] = DakotaField(
         default=True,
+        description="Use central differences",
         dakota={
             "materialization": [
                 {
@@ -344,10 +360,11 @@ class NumericalGradientOptionsIntervalTypeCentral(DakotaBaseModel):
 
 
 class ResponseLevelsComputeProbRelGenProbabilities(DakotaBaseModel):
-    """Generated model for ResponseLevelsComputeProbRelGenProbabilities"""
+    "Computes probabilities associated with response levels"
 
     probabilities: Literal[True] = DakotaField(
         default=True,
+        description="Computes probabilities associated with response levels",
         dakota={
             "materialization": [
                 {
@@ -362,10 +379,11 @@ class ResponseLevelsComputeProbRelGenProbabilities(DakotaBaseModel):
 
 
 class ResponseLevelsComputeProbRelGenReliabilities(DakotaBaseModel):
-    """Generated model for ResponseLevelsComputeProbRelGenReliabilities"""
+    "Computes reliabilities associated with response levels"
 
     reliabilities: Literal[True] = DakotaField(
         default=True,
+        description="Computes reliabilities associated with response levels",
         dakota={
             "materialization": [
                 {
@@ -380,10 +398,11 @@ class ResponseLevelsComputeProbRelGenReliabilities(DakotaBaseModel):
 
 
 class ResponseLevelsComputeProbRelGenGenReliabilities(DakotaBaseModel):
-    """Generated model for ResponseLevelsComputeProbRelGenGenReliabilities"""
+    "Computes generalized reliabilities associated with response levels"
 
     gen_reliabilities: Literal[True] = DakotaField(
         default=True,
+        description="Computes generalized reliabilities associated with response levels",
         dakota={
             "materialization": [
                 {
@@ -398,10 +417,11 @@ class ResponseLevelsComputeProbRelGenGenReliabilities(DakotaBaseModel):
 
 
 class ResponseLevelsComputeProbRelGenSystemSeries(DakotaBaseModel):
-    """Generated model for ResponseLevelsComputeProbRelGenSystemSeries"""
+    "Aggregate response statistics assuming a series system"
 
     series: Literal[True] = DakotaField(
         default=True,
+        description="Aggregate response statistics assuming a series system",
         dakota={
             "materialization": [
                 {
@@ -416,10 +436,11 @@ class ResponseLevelsComputeProbRelGenSystemSeries(DakotaBaseModel):
 
 
 class ResponseLevelsComputeProbRelGenSystemParallel(DakotaBaseModel):
-    """Generated model for ResponseLevelsComputeProbRelGenSystemParallel"""
+    "Aggregate response statistics assuming a parallel system"
 
     parallel: Literal[True] = DakotaField(
         default=True,
+        description="Aggregate response statistics assuming a parallel system",
         dakota={
             "materialization": [
                 {
@@ -434,7 +455,7 @@ class ResponseLevelsComputeProbRelGenSystemParallel(DakotaBaseModel):
 
 
 class MethodConvergenceTolWithTypeContext1ConvergenceTol(DakotaBaseModel):
-    """Generated model for MethodConvergenceTolWithTypeContext1ConvergenceTol"""
+    "Stopping criterion based on relative error"
 
     value: DakotaFloat = DakotaField(
         default=-DBL_MAX,
@@ -468,7 +489,7 @@ class MethodConvergenceTolWithTypeContext1ConvergenceTol(DakotaBaseModel):
 
 
 class MethodConvergenceTolWithTypeContext2ConvergenceTol(DakotaBaseModel):
-    """Generated model for MethodConvergenceTolWithTypeContext2ConvergenceTol"""
+    "Stopping criterion based on objective function or statistics convergence"
 
     value: DakotaFloat = DakotaField(
         default=-DBL_MAX,
@@ -502,7 +523,7 @@ class MethodConvergenceTolWithTypeContext2ConvergenceTol(DakotaBaseModel):
 
 
 class MethodConvergenceTolWithTypeContext3ConvergenceTol(DakotaBaseModel):
-    """Generated model for MethodConvergenceTolWithTypeContext3ConvergenceTol"""
+    "Stopping criterion based on relative error reduction"
 
     value: DakotaFloat = DakotaField(
         default=-DBL_MAX,
@@ -536,7 +557,7 @@ class MethodConvergenceTolWithTypeContext3ConvergenceTol(DakotaBaseModel):
 
 
 class MethodMfRefineStatsModeMixin(DakotaBaseModel):
-    """Generated model for MethodMfRefineStatsModeMixin"""
+    "Generated model for MethodMfRefineStatsModeMixin"
 
     statistics_mode: Union[Active, StatisticsModeCombined] | None = DakotaField(
         default=None,
@@ -546,7 +567,7 @@ class MethodMfRefineStatsModeMixin(DakotaBaseModel):
 
 
 class MethodRefineMetricTypeMixin(DakotaBaseModel):
-    """Generated model for MethodRefineMetricTypeMixin"""
+    "Generated model for MethodRefineMetricTypeMixin"
 
     refinement_metric: Union[LevelMappings, RefinementMetricCov] | None = DakotaField(
         default=None,
@@ -556,7 +577,7 @@ class MethodRefineMetricTypeMixin(DakotaBaseModel):
 
 
 class NumericalGradientOptionsMethodSourceDakotaConfig(DakotaBaseModel):
-    """Generated model for NumericalGradientOptionsMethodSourceDakotaConfig"""
+    "(Default) Use internal Dakota finite differences algorithm"
 
     ignore_bounds: Literal[True] | None = DakotaField(
         default=None,
@@ -587,7 +608,7 @@ class NumericalGradientOptionsMethodSourceDakotaConfig(DakotaBaseModel):
 
 
 class ResponseLevelsComputeProbRelGenCompute(DakotaBaseModel):
-    """Generated model for ResponseLevelsComputeProbRelGenCompute"""
+    "Selection of statistics to compute at each response level"
 
     statistic: Union[
         ResponseLevelsComputeProbRelGenProbabilities,
@@ -610,7 +631,7 @@ class ResponseLevelsComputeProbRelGenCompute(DakotaBaseModel):
 
 
 class MethodConvergenceTolWithTypeContext1Mixin(DakotaBaseModel):
-    """Generated model for MethodConvergenceTolWithTypeContext1Mixin"""
+    "Generated model for MethodConvergenceTolWithTypeContext1Mixin"
 
     convergence_tolerance: MethodConvergenceTolWithTypeContext1ConvergenceTol | None = (
         DakotaField(
@@ -622,7 +643,7 @@ class MethodConvergenceTolWithTypeContext1Mixin(DakotaBaseModel):
 
 
 class MethodConvergenceTolWithTypeContext2Mixin(DakotaBaseModel):
-    """Generated model for MethodConvergenceTolWithTypeContext2Mixin"""
+    "Generated model for MethodConvergenceTolWithTypeContext2Mixin"
 
     convergence_tolerance: MethodConvergenceTolWithTypeContext2ConvergenceTol | None = (
         DakotaField(
@@ -634,7 +655,7 @@ class MethodConvergenceTolWithTypeContext2Mixin(DakotaBaseModel):
 
 
 class MethodConvergenceTolWithTypeContext3Mixin(DakotaBaseModel):
-    """Generated model for MethodConvergenceTolWithTypeContext3Mixin"""
+    "Generated model for MethodConvergenceTolWithTypeContext3Mixin"
 
     convergence_tolerance: MethodConvergenceTolWithTypeContext3ConvergenceTol | None = (
         DakotaField(
@@ -646,7 +667,7 @@ class MethodConvergenceTolWithTypeContext3Mixin(DakotaBaseModel):
 
 
 class NumericalGradientOptionsMethodSourceDakota(DakotaBaseModel):
-    """Generated model for NumericalGradientOptionsMethodSourceDakota"""
+    "(Default) Use internal Dakota finite differences algorithm"
 
     dakota: NumericalGradientOptionsMethodSourceDakotaConfig = DakotaField(
         default_factory=NumericalGradientOptionsMethodSourceDakotaConfig,
@@ -666,7 +687,7 @@ class NumericalGradientOptionsMethodSourceDakota(DakotaBaseModel):
 
 
 class ResponseLevelsComputeProbRelGenResponseLevels(DakotaBaseModel):
-    """Generated model for ResponseLevelsComputeProbRelGenResponseLevels"""
+    "Values at which to estimate desired statistics for each response"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CheckSumEqualsLength(
@@ -692,7 +713,7 @@ class ResponseLevelsComputeProbRelGenResponseLevels(DakotaBaseModel):
 class MethodExpConvergenceToleranceMixin(
     MethodConvergenceTolWithTypeContext2Mixin, MethodRefineMetricTypeMixin
 ):
-    """Generated model for MethodExpConvergenceToleranceMixin"""
+    "Generated model for MethodExpConvergenceToleranceMixin"
 
     pass
 
@@ -702,13 +723,13 @@ class MethodMfExpConvergenceToleranceMixin(
     MethodMfRefineStatsModeMixin,
     MethodRefineMetricTypeMixin,
 ):
-    """Generated model for MethodMfExpConvergenceToleranceMixin"""
+    "Generated model for MethodMfExpConvergenceToleranceMixin"
 
     pass
 
 
 class NumericalGradientOptionsMixin(DakotaBaseModel):
-    """Generated model for NumericalGradientOptionsMixin"""
+    "Generated model for NumericalGradientOptionsMixin"
 
     method_source: Union[
         NumericalGradientOptionsMethodSourceDakota,
@@ -749,7 +770,7 @@ class NumericalGradientOptionsMixin(DakotaBaseModel):
 
 
 class ResponseLevelsComputeProbRelGenMixin(DakotaBaseModel):
-    """Generated model for ResponseLevelsComputeProbRelGenMixin"""
+    "Generated model for ResponseLevelsComputeProbRelGenMixin"
 
     response_levels: ResponseLevelsComputeProbRelGenResponseLevels | None = DakotaField(
         default=None,

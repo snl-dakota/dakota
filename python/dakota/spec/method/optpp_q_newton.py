@@ -18,13 +18,13 @@ class OptppQNewtonConfig(
     MethodOptppNewtonOptsMixin,
     MethodOptppGradBasedOptsMixin,
 ):
-    """Generated model for OptppQNewtonConfig"""
+    "Quasi-Newton optimization method"
 
     pass
 
 
 class OptppQNewtonSelection(MethodSelection):
-    """Generated model for OptppQNewtonSelection"""
+    "Generated model for OptppQNewtonSelection"
 
     optpp_q_newton: OptppQNewtonConfig = DakotaField(
         dakota={

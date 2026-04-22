@@ -19,7 +19,7 @@ class ColinySolisWetsConfig(
     ColinyCommonOptsMixin,
     MethodOptionalModelPointerMixin,
 ):
-    """Generated model for ColinySolisWetsConfig"""
+    "Simple greedy local search method"
 
     contract_after_failure: int = DakotaField(
         default=0,
@@ -128,7 +128,7 @@ class ColinySolisWetsConfig(
 
 
 class ColinySolisWetsSelection(MethodSelection):
-    """Generated model for ColinySolisWetsSelection"""
+    "Generated model for ColinySolisWetsSelection"
 
     coliny_solis_wets: ColinySolisWetsConfig = DakotaField(
         dakota={

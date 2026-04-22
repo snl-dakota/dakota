@@ -11,7 +11,7 @@ from ....validation.rules import CheckNonnegativeList, CompareLength, CompareLen
 
 
 class FtMethodOrderScalarsMixin(DakotaBaseModel):
-    """Generated model for FtMethodOrderScalarsMixin"""
+    "Generated model for FtMethodOrderScalarsMixin"
 
     adapt_order: Literal[True] | None = DakotaField(
         default=None,
@@ -71,7 +71,7 @@ class FtMethodOrderScalarsMixin(DakotaBaseModel):
 
 
 class FtMethodRankMixin(DakotaBaseModel):
-    """Generated model for FtMethodRankMixin"""
+    "Generated model for FtMethodRankMixin"
 
     start_rank: int = DakotaField(
         default=2,
@@ -146,7 +146,7 @@ class FtMethodRankMixin(DakotaBaseModel):
 
 
 class FtMethodRankScalarsMixin(DakotaBaseModel):
-    """Generated model for FtMethodRankScalarsMixin"""
+    "Generated model for FtMethodRankScalarsMixin"
 
     adapt_rank: Literal[True] | None = DakotaField(
         default=None,
@@ -206,7 +206,7 @@ class FtMethodRankScalarsMixin(DakotaBaseModel):
 
 
 class FtMethodTolsMixin(DakotaBaseModel):
-    """Generated model for FtMethodTolsMixin"""
+    "Generated model for FtMethodTolsMixin"
 
     rounding_tolerance: DakotaFloat = DakotaField(
         default=1.0e-10,
@@ -237,7 +237,7 @@ class FtMethodTolsMixin(DakotaBaseModel):
 
 
 class FtModelRankMixin(DakotaBaseModel):
-    """Generated model for FtModelRankMixin"""
+    "Generated model for FtModelRankMixin"
 
     start_rank: int = DakotaField(
         default=2,
@@ -312,7 +312,7 @@ class FtModelRankMixin(DakotaBaseModel):
 
 
 class FtModelTolsMixin(DakotaBaseModel):
-    """Generated model for FtModelTolsMixin"""
+    "Generated model for FtModelTolsMixin"
 
     rounding_tolerance: DakotaFloat = DakotaField(
         default=1.0e-10,
@@ -343,7 +343,7 @@ class FtModelTolsMixin(DakotaBaseModel):
 
 
 class MlftMethodRankSequenceMixin(DakotaBaseModel):
-    """Generated model for MlftMethodRankSequenceMixin"""
+    "Generated model for MlftMethodRankSequenceMixin"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CheckNonnegativeList(
@@ -423,7 +423,7 @@ class MlftMethodRankSequenceMixin(DakotaBaseModel):
 
 
 class FtMethodOrderStartOrder(DakotaBaseModel):
-    """Generated model for FtMethodOrderStartOrder"""
+    "(Initial) polynomial order of each univariate function within the functional tensor train."
 
     value: int = DakotaField(
         default=2,
@@ -455,10 +455,11 @@ class FtMethodOrderStartOrder(DakotaBaseModel):
 
 
 class IncrementStartRank(DakotaBaseModel):
-    """Generated model for IncrementStartRank"""
+    "candidate generation by advancement of starting rank"
 
     increment_start_rank: Literal[True] = DakotaField(
         default=True,
+        description="candidate generation by advancement of starting rank",
         dakota={
             "materialization": [
                 {
@@ -473,10 +474,11 @@ class IncrementStartRank(DakotaBaseModel):
 
 
 class IncrementStartOrder(DakotaBaseModel):
-    """Generated model for IncrementStartOrder"""
+    "candidate generation by advancement of starting basis order"
 
     increment_start_order: Literal[True] = DakotaField(
         default=True,
+        description="candidate generation by advancement of starting basis order",
         dakota={
             "materialization": [
                 {
@@ -491,10 +493,11 @@ class IncrementStartOrder(DakotaBaseModel):
 
 
 class IncrementMaxRank(DakotaBaseModel):
-    """Generated model for IncrementMaxRank"""
+    "candidate generation by advancement of maximum rank"
 
     increment_max_rank: Literal[True] = DakotaField(
         default=True,
+        description="candidate generation by advancement of maximum rank",
         dakota={
             "materialization": [
                 {
@@ -509,10 +512,11 @@ class IncrementMaxRank(DakotaBaseModel):
 
 
 class IncrementMaxOrder(DakotaBaseModel):
-    """Generated model for IncrementMaxOrder"""
+    "candidate generation by advancement of maximum basis order"
 
     increment_max_order: Literal[True] = DakotaField(
         default=True,
+        description="candidate generation by advancement of maximum basis order",
         dakota={
             "materialization": [
                 {
@@ -527,10 +531,11 @@ class IncrementMaxOrder(DakotaBaseModel):
 
 
 class IncrementMaxRankOrder(DakotaBaseModel):
-    """Generated model for IncrementMaxRankOrder"""
+    "candidate generation by advancement of maximum rank and maximum basis order"
 
     increment_max_rank_order: Literal[True] = DakotaField(
         default=True,
+        description="candidate generation by advancement of maximum rank and maximum basis order",
         dakota={
             "materialization": [
                 {
@@ -545,10 +550,11 @@ class IncrementMaxRankOrder(DakotaBaseModel):
 
 
 class FtMethodRegressionTypeLs(DakotaBaseModel):
-    """Generated model for FtMethodRegressionTypeLs"""
+    "Use least squares solver for forming function train approximations by regression"
 
     ls: Literal[True] = DakotaField(
         default=True,
+        description="Use least squares solver for forming function train approximations by regression",
         dakota={
             "materialization": [
                 {
@@ -563,7 +569,7 @@ class FtMethodRegressionTypeLs(DakotaBaseModel):
 
 
 class FtMethodRegressionTypeRls2Config(DakotaBaseModel):
-    """Generated model for FtMethodRegressionTypeRls2Config"""
+    "Use regularized regression solver for forming function train approximations"
 
     l2_penalty: DakotaFloat = DakotaField(
         description="Penalty value applied in regularized regression solver for function train approximations",
@@ -580,7 +586,7 @@ class FtMethodRegressionTypeRls2Config(DakotaBaseModel):
 
 
 class FtMethodRegressionCollocPoints(DakotaBaseModel):
-    """Generated model for FtMethodRegressionCollocPoints"""
+    "Number of collocation points used to estimate expansion coefficients"
 
     collocation_points: int = DakotaField(
         description="Number of collocation points used to estimate expansion coefficients",
@@ -597,7 +603,7 @@ class FtMethodRegressionCollocPoints(DakotaBaseModel):
 
 
 class FtMethodRegressionCollocRatio(DakotaBaseModel):
-    """Generated model for FtMethodRegressionCollocRatio"""
+    "Set the number of points used to build a PCE via regression to be proportional to the number of terms in the expansion."
 
     collocation_ratio: DakotaFloat = DakotaField(
         gt=0,
@@ -615,10 +621,11 @@ class FtMethodRegressionCollocRatio(DakotaBaseModel):
 
 
 class FtMethodRegressionOptsTypeLs(DakotaBaseModel):
-    """Generated model for FtMethodRegressionOptsTypeLs"""
+    "Use least squares solver for forming function train approximations by regression"
 
     ls: Literal[True] = DakotaField(
         default=True,
+        description="Use least squares solver for forming function train approximations by regression",
         dakota={
             "materialization": [
                 {
@@ -633,7 +640,7 @@ class FtMethodRegressionOptsTypeLs(DakotaBaseModel):
 
 
 class FtMethodRegressionOptsTypeRls2Config(DakotaBaseModel):
-    """Generated model for FtMethodRegressionOptsTypeRls2Config"""
+    "Use regularized regression solver for forming function train approximations"
 
     l2_penalty: DakotaFloat = DakotaField(
         description="Penalty value applied in regularized regression solver for function train approximations",
@@ -650,10 +657,11 @@ class FtMethodRegressionOptsTypeRls2Config(DakotaBaseModel):
 
 
 class FtMethodRegressionSequenceTypeLs(DakotaBaseModel):
-    """Generated model for FtMethodRegressionSequenceTypeLs"""
+    "Use least squares solver for forming function train approximations by regression"
 
     ls: Literal[True] = DakotaField(
         default=True,
+        description="Use least squares solver for forming function train approximations by regression",
         dakota={
             "materialization": [
                 {
@@ -668,7 +676,7 @@ class FtMethodRegressionSequenceTypeLs(DakotaBaseModel):
 
 
 class FtMethodRegressionSequenceTypeRls2Config(DakotaBaseModel):
-    """Generated model for FtMethodRegressionSequenceTypeRls2Config"""
+    "Use regularized regression solver for forming function train approximations"
 
     l2_penalty: DakotaFloat = DakotaField(
         description="Penalty value applied in regularized regression solver for function train approximations",
@@ -685,7 +693,7 @@ class FtMethodRegressionSequenceTypeRls2Config(DakotaBaseModel):
 
 
 class FtModelOrderStartOrder(DakotaBaseModel):
-    """Generated model for FtModelOrderStartOrder"""
+    "(Initial) polynomial order of each univariate function within the functional tensor train."
 
     value: int = DakotaField(
         default=2,
@@ -717,10 +725,11 @@ class FtModelOrderStartOrder(DakotaBaseModel):
 
 
 class FtModelRegressionTypeLs(DakotaBaseModel):
-    """Generated model for FtModelRegressionTypeLs"""
+    "Use least squares solver for forming function train approximations by regression"
 
     ls: Literal[True] = DakotaField(
         default=True,
+        description="Use least squares solver for forming function train approximations by regression",
         dakota={
             "materialization": [
                 {
@@ -735,7 +744,7 @@ class FtModelRegressionTypeLs(DakotaBaseModel):
 
 
 class FtModelRegressionTypeRls2Config(DakotaBaseModel):
-    """Generated model for FtModelRegressionTypeRls2Config"""
+    "Use regularized regression solver for forming function train approximations"
 
     l2_penalty: DakotaFloat = DakotaField(
         description="Penalty value applied in regularized regression solver for function train approximations",
@@ -752,10 +761,11 @@ class FtModelRegressionTypeRls2Config(DakotaBaseModel):
 
 
 class FtModelRegressionOptsTypeLs(DakotaBaseModel):
-    """Generated model for FtModelRegressionOptsTypeLs"""
+    "Use least squares solver for forming function train approximations by regression"
 
     ls: Literal[True] = DakotaField(
         default=True,
+        description="Use least squares solver for forming function train approximations by regression",
         dakota={
             "materialization": [
                 {
@@ -770,7 +780,7 @@ class FtModelRegressionOptsTypeLs(DakotaBaseModel):
 
 
 class FtModelRegressionOptsTypeRls2Config(DakotaBaseModel):
-    """Generated model for FtModelRegressionOptsTypeRls2Config"""
+    "Use regularized regression solver for forming function train approximations"
 
     l2_penalty: DakotaFloat = DakotaField(
         description="Penalty value applied in regularized regression solver for function train approximations",
@@ -787,7 +797,7 @@ class FtModelRegressionOptsTypeRls2Config(DakotaBaseModel):
 
 
 class MlftAllocControlAllocationControlEstimatorVarianceConfig(DakotaBaseModel):
-    """Generated model for MlftAllocControlAllocationControlEstimatorVarianceConfig"""
+    "Variance of mean estimator within multilevel polynomial chaos"
 
     estimator_rate: DakotaFloat = DakotaField(
         default=2.0,
@@ -805,10 +815,11 @@ class MlftAllocControlAllocationControlEstimatorVarianceConfig(DakotaBaseModel):
 
 
 class RankSampling(DakotaBaseModel):
-    """Generated model for RankSampling"""
+    "Sample allocation based on rank sampling within multilevel function train"
 
     rank_sampling: Literal[True] = DakotaField(
         default=True,
+        description="Sample allocation based on rank sampling within multilevel function train",
         dakota={
             "materialization": [
                 {
@@ -823,7 +834,7 @@ class RankSampling(DakotaBaseModel):
 
 
 class StartOrderSequence(DakotaBaseModel):
-    """Generated model for StartOrderSequence"""
+    "Sequence of start orders used in a multi-stage expansion"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CheckNonnegativeList(
@@ -859,7 +870,7 @@ class StartOrderSequence(DakotaBaseModel):
 
 
 class FtMethodOrderMixin(DakotaBaseModel):
-    """Generated model for FtMethodOrderMixin"""
+    "Generated model for FtMethodOrderMixin"
 
     start_order: FtMethodOrderStartOrder | None = DakotaField(
         default=None,
@@ -924,7 +935,7 @@ class FtMethodOrderMixin(DakotaBaseModel):
 
 
 class FtMethodRefinementPRefinement(DakotaBaseModel):
-    """Generated model for FtMethodRefinementPRefinement"""
+    "Automatic polynomial order refinement"
 
     uniform: Union[
         IncrementStartRank,
@@ -950,7 +961,7 @@ class FtMethodRefinementPRefinement(DakotaBaseModel):
 
 
 class FtMethodRegressionTypeRls2(DakotaBaseModel):
-    """Generated model for FtMethodRegressionTypeRls2"""
+    "Use regularized regression solver for forming function train approximations"
 
     rls2: FtMethodRegressionTypeRls2Config = DakotaField(
         description="Use regularized regression solver for forming function train approximations",
@@ -968,7 +979,7 @@ class FtMethodRegressionTypeRls2(DakotaBaseModel):
 
 
 class FtMethodRegressionOptsTypeRls2(DakotaBaseModel):
-    """Generated model for FtMethodRegressionOptsTypeRls2"""
+    "Use regularized regression solver for forming function train approximations"
 
     rls2: FtMethodRegressionOptsTypeRls2Config = DakotaField(
         description="Use regularized regression solver for forming function train approximations",
@@ -986,7 +997,7 @@ class FtMethodRegressionOptsTypeRls2(DakotaBaseModel):
 
 
 class FtMethodRegressionSequenceTypeRls2(DakotaBaseModel):
-    """Generated model for FtMethodRegressionSequenceTypeRls2"""
+    "Use regularized regression solver for forming function train approximations"
 
     rls2: FtMethodRegressionSequenceTypeRls2Config = DakotaField(
         description="Use regularized regression solver for forming function train approximations",
@@ -1004,7 +1015,7 @@ class FtMethodRegressionSequenceTypeRls2(DakotaBaseModel):
 
 
 class FtModelOrderMixin(DakotaBaseModel):
-    """Generated model for FtModelOrderMixin"""
+    "Generated model for FtModelOrderMixin"
 
     start_order: FtModelOrderStartOrder | None = DakotaField(
         default=None,
@@ -1069,7 +1080,7 @@ class FtModelOrderMixin(DakotaBaseModel):
 
 
 class FtModelRegressionTypeRls2(DakotaBaseModel):
-    """Generated model for FtModelRegressionTypeRls2"""
+    "Use regularized regression solver for forming function train approximations"
 
     rls2: FtModelRegressionTypeRls2Config = DakotaField(
         description="Use regularized regression solver for forming function train approximations",
@@ -1087,7 +1098,7 @@ class FtModelRegressionTypeRls2(DakotaBaseModel):
 
 
 class FtModelRegressionOptsTypeRls2(DakotaBaseModel):
-    """Generated model for FtModelRegressionOptsTypeRls2"""
+    "Use regularized regression solver for forming function train approximations"
 
     rls2: FtModelRegressionOptsTypeRls2Config = DakotaField(
         description="Use regularized regression solver for forming function train approximations",
@@ -1105,7 +1116,7 @@ class FtModelRegressionOptsTypeRls2(DakotaBaseModel):
 
 
 class MlftAllocControlAllocationControlEstimatorVariance(DakotaBaseModel):
-    """Generated model for MlftAllocControlAllocationControlEstimatorVariance"""
+    "Variance of mean estimator within multilevel polynomial chaos"
 
     estimator_variance: MlftAllocControlAllocationControlEstimatorVarianceConfig = (
         DakotaField(
@@ -1125,7 +1136,7 @@ class MlftAllocControlAllocationControlEstimatorVariance(DakotaBaseModel):
 
 
 class MlftMethodOrderSequenceMixin(DakotaBaseModel):
-    """Generated model for MlftMethodOrderSequenceMixin"""
+    "Generated model for MlftMethodOrderSequenceMixin"
 
     start_order_sequence: StartOrderSequence | None = DakotaField(
         default=None,
@@ -1190,7 +1201,7 @@ class MlftMethodOrderSequenceMixin(DakotaBaseModel):
 
 
 class FtMethodRefinementMixin(DakotaBaseModel):
-    """Generated model for FtMethodRefinementMixin"""
+    "Generated model for FtMethodRefinementMixin"
 
     p_refinement: FtMethodRefinementPRefinement | None = DakotaField(
         default=None,
@@ -1224,7 +1235,7 @@ class FtMethodRefinementMixin(DakotaBaseModel):
 
 
 class FtMethodRegressionMixin(DakotaBaseModel):
-    """Generated model for FtMethodRegressionMixin"""
+    "Generated model for FtMethodRegressionMixin"
 
     regression_type: (
         Union[FtMethodRegressionTypeLs, FtMethodRegressionTypeRls2] | None
@@ -1308,7 +1319,7 @@ class FtMethodRegressionMixin(DakotaBaseModel):
 
 
 class FtMethodRegressionOptsMixin(DakotaBaseModel):
-    """Generated model for FtMethodRegressionOptsMixin"""
+    "Generated model for FtMethodRegressionOptsMixin"
 
     regression_type: (
         Union[FtMethodRegressionOptsTypeLs, FtMethodRegressionOptsTypeRls2] | None
@@ -1387,7 +1398,7 @@ class FtMethodRegressionOptsMixin(DakotaBaseModel):
 
 
 class FtMethodRegressionSequenceMixin(DakotaBaseModel):
-    """Generated model for FtMethodRegressionSequenceMixin"""
+    "Generated model for FtMethodRegressionSequenceMixin"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CheckNonnegativeList(
@@ -1502,7 +1513,7 @@ class FtMethodRegressionSequenceMixin(DakotaBaseModel):
 
 
 class FtModelRegressionMixin(DakotaBaseModel):
-    """Generated model for FtModelRegressionMixin"""
+    "Generated model for FtModelRegressionMixin"
 
     regression_type: (
         Union[FtModelRegressionTypeLs, FtModelRegressionTypeRls2] | None
@@ -1581,7 +1592,7 @@ class FtModelRegressionMixin(DakotaBaseModel):
 
 
 class FtModelRegressionOptsMixin(DakotaBaseModel):
-    """Generated model for FtModelRegressionOptsMixin"""
+    "Generated model for FtModelRegressionOptsMixin"
 
     regression_type: (
         Union[FtModelRegressionOptsTypeLs, FtModelRegressionOptsTypeRls2] | None
@@ -1660,7 +1671,7 @@ class FtModelRegressionOptsMixin(DakotaBaseModel):
 
 
 class MlftAllocControlMixin(DakotaBaseModel):
-    """Generated model for MlftAllocControlMixin"""
+    "Generated model for MlftAllocControlMixin"
 
     allocation_control: (
         Union[MlftAllocControlAllocationControlEstimatorVariance, RankSampling] | None

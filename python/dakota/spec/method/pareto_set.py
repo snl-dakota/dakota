@@ -14,7 +14,7 @@ from dakota.spec.shared.misc import (
 
 
 class ParetoSetMethodNameConfig(DakotaBaseModel):
-    """Generated model for ParetoSetMethodNameConfig"""
+    "Specify sub-method by name"
 
     method_name: str = DakotaField(
         description="Specify sub-method by name",
@@ -46,7 +46,7 @@ class ParetoSetMethodNameConfig(DakotaBaseModel):
 
 
 class ParetoSetMethodPointer(DakotaBaseModel):
-    """Generated model for ParetoSetMethodPointer"""
+    "Pointer to optimization or least-squares sub-method"
 
     method_pointer: str = DakotaField(
         description="Pointer to optimization or least-squares sub-method",
@@ -65,7 +65,7 @@ class ParetoSetMethodPointer(DakotaBaseModel):
 
 
 class RandomWeightSets(DakotaBaseModel):
-    """Generated model for RandomWeightSets"""
+    "Number of random weighting sets"
 
     count: int = DakotaField(
         default=0,
@@ -96,7 +96,7 @@ class RandomWeightSets(DakotaBaseModel):
 
 
 class ParetoSetMethodName(DakotaBaseModel):
-    """Generated model for ParetoSetMethodName"""
+    "Specify sub-method by name"
 
     method_name: ParetoSetMethodNameConfig = DakotaField(
         default=...,
@@ -108,7 +108,7 @@ class ParetoSetMethodName(DakotaBaseModel):
 class ParetoSetConfig(
     MethodThreeOptionalKeywordsMixin, MethodIteratorServerSchedulingMixin
 ):
-    """Generated model for ParetoSetConfig"""
+    "Pareto set optimization"
 
     sub_method: Union[ParetoSetMethodName, ParetoSetMethodPointer] = DakotaField(
         description="Sub-method Selection", dakota={"anchor": True, "union_pattern": 4}
@@ -135,7 +135,7 @@ class ParetoSetConfig(
 
 
 class ParetoSetSelection(MethodSelection):
-    """Generated model for ParetoSetSelection"""
+    "Generated model for ParetoSetSelection"
 
     pareto_set: ParetoSetConfig = DakotaField(
         dakota={

@@ -17,10 +17,11 @@ from dakota.spec.shared.misc import (
 
 
 class InformSearch(DakotaBaseModel):
-    """Generated model for InformSearch"""
+    "Surrogate informs evaluation order in mesh adaptive search"
 
     inform_search: Literal[True] = DakotaField(
         default=True,
+        description="Surrogate informs evaluation order in mesh adaptive search",
         dakota={
             "materialization": [
                 {
@@ -35,10 +36,11 @@ class InformSearch(DakotaBaseModel):
 
 
 class Optimize(DakotaBaseModel):
-    """Generated model for Optimize"""
+    "Surrogate is used in lieu of true model for mesh adaptive search"
 
     optimize: Literal[True] = DakotaField(
         default=True,
+        description="Surrogate is used in lieu of true model for mesh adaptive search",
         dakota={
             "materialization": [
                 {
@@ -59,7 +61,7 @@ class MeshAdaptiveSearchConfig(
     DefaultScalingMixin,
     MethodOptionalModelPointerMixin,
 ):
-    """Generated model for MeshAdaptiveSearchConfig"""
+    "Finds optimal variable values using adaptive mesh-based search"
 
     initial_delta: DakotaFloat = DakotaField(
         default=1.0,
@@ -188,7 +190,7 @@ class MeshAdaptiveSearchConfig(
 
 
 class MeshAdaptiveSearchSelection(MethodSelection):
-    """Generated model for MeshAdaptiveSearchSelection"""
+    "Generated model for MeshAdaptiveSearchSelection"
 
     mesh_adaptive_search: MeshAdaptiveSearchConfig = DakotaField(
         dakota={

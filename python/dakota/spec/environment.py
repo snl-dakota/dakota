@@ -7,7 +7,7 @@ from typing import Literal, Union
 
 
 class TabularDataCustomAnnotatedConfig(DakotaBaseModel):
-    """Generated model for TabularDataCustomAnnotatedConfig"""
+    "Selects custom-annotated tabular file format"
 
     header: Literal[True] | None = DakotaField(
         default=None,
@@ -54,10 +54,11 @@ class TabularDataCustomAnnotatedConfig(DakotaBaseModel):
 
 
 class TabularDataAnnotated(DakotaBaseModel):
-    """Generated model for TabularDataAnnotated"""
+    "Selects annotated tabular file format"
 
     annotated: Literal[True] = DakotaField(
         default=True,
+        description="Selects annotated tabular file format",
         dakota={
             "materialization": [
                 {
@@ -72,10 +73,11 @@ class TabularDataAnnotated(DakotaBaseModel):
 
 
 class TabularDataFreeform(DakotaBaseModel):
-    """Generated model for TabularDataFreeform"""
+    "Selects freeform file format"
 
     freeform: Literal[True] = DakotaField(
         default=True,
+        description="Selects freeform file format",
         dakota={
             "materialization": [
                 {
@@ -90,7 +92,7 @@ class TabularDataFreeform(DakotaBaseModel):
 
 
 class ReadRestart(DakotaBaseModel):
-    """Generated model for ReadRestart"""
+    "Base filename for restart file read"
 
     filename: str = DakotaField(
         description="Base filename for restart file read",
@@ -121,10 +123,11 @@ class ReadRestart(DakotaBaseModel):
 
 
 class TopMethod(DakotaBaseModel):
-    """Generated model for TopMethod"""
+    "Write evaluation data only for the top-level method's model to HDF5"
 
     top_method: Literal[True] = DakotaField(
         default=True,
+        description="Write evaluation data only for the top-level method's model to HDF5",
         dakota={
             "materialization": [
                 {
@@ -139,10 +142,11 @@ class TopMethod(DakotaBaseModel):
 
 
 class ModelSelectionNone(DakotaBaseModel):
-    """Generated model for ModelSelectionNone"""
+    "Write evaluation data for no models to HDF5"
 
     none: Literal[True] = DakotaField(
         default=True,
+        description="Write evaluation data for no models to HDF5",
         dakota={
             "materialization": [
                 {
@@ -157,10 +161,11 @@ class ModelSelectionNone(DakotaBaseModel):
 
 
 class AllMethods(DakotaBaseModel):
-    """Generated model for AllMethods"""
+    "Write evaluation data to HDF5 for all models that belong directly to methods"
 
     all_methods: Literal[True] = DakotaField(
         default=True,
+        description="Write evaluation data to HDF5 for all models that belong directly to methods",
         dakota={
             "materialization": [
                 {
@@ -175,10 +180,11 @@ class AllMethods(DakotaBaseModel):
 
 
 class ModelSelectionAll(DakotaBaseModel):
-    """Generated model for ModelSelectionAll"""
+    "Write evaluation data to HDF5 for all models"
 
     all: Literal[True] = DakotaField(
         default=True,
+        description="Write evaluation data to HDF5 for all models",
         dakota={
             "materialization": [
                 {
@@ -193,10 +199,11 @@ class ModelSelectionAll(DakotaBaseModel):
 
 
 class InterfaceSelectionNone(DakotaBaseModel):
-    """Generated model for InterfaceSelectionNone"""
+    "Write evaluation data for no interfaces to HDF5"
 
     none: Literal[True] = DakotaField(
         default=True,
+        description="Write evaluation data for no interfaces to HDF5",
         dakota={
             "materialization": [
                 {
@@ -211,10 +218,11 @@ class InterfaceSelectionNone(DakotaBaseModel):
 
 
 class Simulation(DakotaBaseModel):
-    """Generated model for Simulation"""
+    "Write evaluation data only for simulation interfaces to HDF5"
 
     simulation: Literal[True] = DakotaField(
         default=True,
+        description="Write evaluation data only for simulation interfaces to HDF5",
         dakota={
             "materialization": [
                 {
@@ -229,10 +237,11 @@ class Simulation(DakotaBaseModel):
 
 
 class InterfaceSelectionAll(DakotaBaseModel):
-    """Generated model for InterfaceSelectionAll"""
+    "Write evaluation data for all interfaces to HDF5"
 
     all: Literal[True] = DakotaField(
         default=True,
+        description="Write evaluation data for all interfaces to HDF5",
         dakota={
             "materialization": [
                 {
@@ -247,7 +256,7 @@ class InterfaceSelectionAll(DakotaBaseModel):
 
 
 class OutputCustomAnnotatedConfig(DakotaBaseModel):
-    """Generated model for OutputCustomAnnotatedConfig"""
+    "Selects custom-annotated tabular file format"
 
     header: Literal[True] | None = DakotaField(
         default=None,
@@ -294,10 +303,11 @@ class OutputCustomAnnotatedConfig(DakotaBaseModel):
 
 
 class OutputAnnotated(DakotaBaseModel):
-    """Generated model for OutputAnnotated"""
+    "Selects annotated tabular file format"
 
     annotated: Literal[True] = DakotaField(
         default=True,
+        description="Selects annotated tabular file format",
         dakota={
             "materialization": [
                 {
@@ -312,10 +322,11 @@ class OutputAnnotated(DakotaBaseModel):
 
 
 class OutputFreeform(DakotaBaseModel):
-    """Generated model for OutputFreeform"""
+    "Selects freeform file format"
 
     freeform: Literal[True] = DakotaField(
         default=True,
+        description="Selects freeform file format",
         dakota={
             "materialization": [
                 {
@@ -330,7 +341,7 @@ class OutputFreeform(DakotaBaseModel):
 
 
 class Run(DakotaBaseModel):
-    """Generated model for Run"""
+    "Invoke Dakota with run mode active"
 
     input: str | None = DakotaField(
         default=None,
@@ -361,7 +372,7 @@ class Run(DakotaBaseModel):
 
 
 class InputCustomAnnotatedConfig(DakotaBaseModel):
-    """Generated model for InputCustomAnnotatedConfig"""
+    "Selects custom-annotated tabular file format"
 
     header: Literal[True] | None = DakotaField(
         default=None,
@@ -408,10 +419,11 @@ class InputCustomAnnotatedConfig(DakotaBaseModel):
 
 
 class InputAnnotated(DakotaBaseModel):
-    """Generated model for InputAnnotated"""
+    "Selects annotated tabular file format"
 
     annotated: Literal[True] = DakotaField(
         default=True,
+        description="Selects annotated tabular file format",
         dakota={
             "materialization": [
                 {
@@ -426,10 +438,11 @@ class InputAnnotated(DakotaBaseModel):
 
 
 class InputFreeform(DakotaBaseModel):
-    """Generated model for InputFreeform"""
+    "Selects freeform file format"
 
     freeform: Literal[True] = DakotaField(
         default=True,
+        description="Selects freeform file format",
         dakota={
             "materialization": [
                 {
@@ -444,7 +457,7 @@ class InputFreeform(DakotaBaseModel):
 
 
 class TabularDataCustomAnnotated(DakotaBaseModel):
-    """Generated model for TabularDataCustomAnnotated"""
+    "Selects custom-annotated tabular file format"
 
     custom_annotated: TabularDataCustomAnnotatedConfig = DakotaField(
         default_factory=TabularDataCustomAnnotatedConfig,
@@ -464,7 +477,7 @@ class TabularDataCustomAnnotated(DakotaBaseModel):
 
 
 class Hdf5(DakotaBaseModel):
-    """Generated model for Hdf5"""
+    "Write results to file in HDF5 format"
 
     model_selection: Union[
         TopMethod, ModelSelectionNone, AllMethods, ModelSelectionAll
@@ -483,7 +496,7 @@ class Hdf5(DakotaBaseModel):
 
 
 class OutputCustomAnnotated(DakotaBaseModel):
-    """Generated model for OutputCustomAnnotated"""
+    "Selects custom-annotated tabular file format"
 
     custom_annotated: OutputCustomAnnotatedConfig = DakotaField(
         default_factory=OutputCustomAnnotatedConfig,
@@ -503,7 +516,7 @@ class OutputCustomAnnotated(DakotaBaseModel):
 
 
 class InputCustomAnnotated(DakotaBaseModel):
-    """Generated model for InputCustomAnnotated"""
+    "Selects custom-annotated tabular file format"
 
     custom_annotated: InputCustomAnnotatedConfig = DakotaField(
         default_factory=InputCustomAnnotatedConfig,
@@ -523,7 +536,7 @@ class InputCustomAnnotated(DakotaBaseModel):
 
 
 class TabularData(DakotaBaseModel):
-    """Generated model for TabularData"""
+    "Write a tabular results file with variable and response history"
 
     tabular_data_file: str = DakotaField(
         default="dakota_tabular.dat",
@@ -553,7 +566,7 @@ class TabularData(DakotaBaseModel):
 
 
 class ResultsOutput(DakotaBaseModel):
-    """Generated model for ResultsOutput"""
+    "(Experimental) Write a summary file containing the final results"
 
     results_output_file: str = DakotaField(
         default="dakota_results",
@@ -599,7 +612,7 @@ class ResultsOutput(DakotaBaseModel):
 
 
 class Output(DakotaBaseModel):
-    """Generated model for Output"""
+    "Base filename for pre-run mode data output"
 
     filename: str = DakotaField(
         description="Base filename for pre-run mode data output",
@@ -621,7 +634,7 @@ class Output(DakotaBaseModel):
 
 
 class Input(DakotaBaseModel):
-    """Generated model for Input"""
+    "Base filename for post-run mode data input"
 
     filename: str = DakotaField(
         description="Base filename for post-run mode data input",
@@ -643,7 +656,7 @@ class Input(DakotaBaseModel):
 
 
 class PreRun(DakotaBaseModel):
-    """Generated model for PreRun"""
+    "Invoke Dakota with pre-run mode active"
 
     input: str | None = DakotaField(
         default=None,
@@ -666,7 +679,7 @@ class PreRun(DakotaBaseModel):
 
 
 class PostRun(DakotaBaseModel):
-    """Generated model for PostRun"""
+    "Invoke Dakota with post-run mode active"
 
     input: Input | None = DakotaField(
         default=None,
@@ -689,7 +702,7 @@ class PostRun(DakotaBaseModel):
 
 
 class EnvironmentConfig(DakotaBaseModel):
-    """Generated model for EnvironmentConfig"""
+    "Top-level settings for Dakota execution"
 
     tabular_data: TabularData | None = DakotaField(
         default=None,

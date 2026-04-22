@@ -16,10 +16,11 @@ from dakota.spec.shared.misc import (
 
 
 class Coordinate(DakotaBaseModel):
-    """Generated model for Coordinate"""
+    "Use coordinate directions as search pattern"
 
     coordinate: Literal[True] = DakotaField(
         default=True,
+        description="Use coordinate directions as search pattern",
         dakota={
             "materialization": [
                 {
@@ -34,10 +35,11 @@ class Coordinate(DakotaBaseModel):
 
 
 class Simplex(DakotaBaseModel):
-    """Generated model for Simplex"""
+    "Use a minimal simplex for the search pattern"
 
     simplex: Literal[True] = DakotaField(
         default=True,
+        description="Use a minimal simplex for the search pattern",
         dakota={
             "materialization": [
                 {
@@ -52,10 +54,11 @@ class Simplex(DakotaBaseModel):
 
 
 class MultiStep(DakotaBaseModel):
-    """Generated model for MultiStep"""
+    "Examine trial step around successful new point"
 
     multi_step: Literal[True] = DakotaField(
         default=True,
+        description="Examine trial step around successful new point",
         dakota={
             "materialization": [
                 {
@@ -70,10 +73,11 @@ class MultiStep(DakotaBaseModel):
 
 
 class AdaptivePattern(DakotaBaseModel):
-    """Generated model for AdaptivePattern"""
+    "Adaptively rescale search directions"
 
     adaptive_pattern: Literal[True] = DakotaField(
         default=True,
+        description="Adaptively rescale search directions",
         dakota={
             "materialization": [
                 {
@@ -88,10 +92,11 @@ class AdaptivePattern(DakotaBaseModel):
 
 
 class BasicPattern(DakotaBaseModel):
-    """Generated model for BasicPattern"""
+    "Use the same search pattern every iteration"
 
     basic_pattern: Literal[True] = DakotaField(
         default=True,
+        description="Use the same search pattern every iteration",
         dakota={
             "materialization": [
                 {
@@ -111,7 +116,7 @@ class ColinyPatternSearchConfig(
     ColinyCommonOptsMixin,
     MethodOptionalModelPointerMixin,
 ):
-    """Generated model for ColinyPatternSearchConfig"""
+    "Pattern search, derivative free optimization method"
 
     constant_penalty: Literal[True] | None = DakotaField(
         default=None,
@@ -243,7 +248,7 @@ class ColinyPatternSearchConfig(
 
 
 class ColinyPatternSearchSelection(MethodSelection):
-    """Generated model for ColinyPatternSearchSelection"""
+    "Generated model for ColinyPatternSearchSelection"
 
     coliny_pattern_search: ColinyPatternSearchConfig = DakotaField(
         dakota={

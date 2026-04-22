@@ -20,7 +20,7 @@ class GenieOptDartsConfig(
     DefaultScalingMixin,
     MethodOptionalModelPointerMixin,
 ):
-    """Generated model for GenieOptDartsConfig"""
+    "Voronoi-based high-dimensional global Lipschitzian optimization"
 
     seed: int | None = DakotaField(
         default=None,
@@ -39,7 +39,7 @@ class GenieOptDartsConfig(
 
 
 class GenieOptDartsSelection(MethodSelection):
-    """Generated model for GenieOptDartsSelection"""
+    "Generated model for GenieOptDartsSelection"
 
     genie_opt_darts: GenieOptDartsConfig = DakotaField(
         dakota={

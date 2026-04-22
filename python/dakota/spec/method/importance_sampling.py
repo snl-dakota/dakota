@@ -18,10 +18,11 @@ from dakota.spec.shared.misc import (
 
 
 class ImportanceSamplingImportance(DakotaBaseModel):
-    """Generated model for ImportanceSamplingImportance"""
+    "Importance sampling option for probability refinement"
 
     importance: Literal[True] = DakotaField(
         default=True,
+        description="Importance sampling option for probability refinement",
         dakota={
             "materialization": [
                 {
@@ -36,10 +37,11 @@ class ImportanceSamplingImportance(DakotaBaseModel):
 
 
 class ImportanceSamplingAdaptImport(DakotaBaseModel):
-    """Generated model for ImportanceSamplingAdaptImport"""
+    "Importance sampling option for probability refinement"
 
     adapt_import: Literal[True] = DakotaField(
         default=True,
+        description="Importance sampling option for probability refinement",
         dakota={
             "materialization": [
                 {
@@ -54,10 +56,11 @@ class ImportanceSamplingAdaptImport(DakotaBaseModel):
 
 
 class ImportanceSamplingMmAdaptImport(DakotaBaseModel):
-    """Generated model for ImportanceSamplingMmAdaptImport"""
+    "Importance sampling option for probability refinement"
 
     mm_adapt_import: Literal[True] = DakotaField(
         default=True,
+        description="Importance sampling option for probability refinement",
         dakota={
             "materialization": [
                 {
@@ -79,7 +82,7 @@ class ImportanceSamplingConfig(
     RngOptionsContext2Mixin,
     MethodOptionalModelPointerMixin,
 ):
-    """Generated model for ImportanceSamplingConfig"""
+    "Importance sampling"
 
     samples: int = DakotaField(
         default=0,
@@ -133,7 +136,7 @@ class ImportanceSamplingConfig(
 
 
 class ImportanceSamplingSelection(MethodSelection):
-    """Generated model for ImportanceSamplingSelection"""
+    "Generated model for ImportanceSamplingSelection"
 
     importance_sampling: ImportanceSamplingConfig = DakotaField(
         dakota={

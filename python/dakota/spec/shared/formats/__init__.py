@@ -7,7 +7,7 @@ from typing import Literal, Union
 
 
 class MethodImportBuildFormatCustomAnnotatedConfig(DakotaBaseModel):
-    """Generated model for MethodImportBuildFormatCustomAnnotatedConfig"""
+    "Selects custom-annotated tabular file format"
 
     header: Literal[True] | None = DakotaField(
         default=None,
@@ -54,10 +54,11 @@ class MethodImportBuildFormatCustomAnnotatedConfig(DakotaBaseModel):
 
 
 class MethodImportBuildFormatAnnotated(DakotaBaseModel):
-    """Generated model for MethodImportBuildFormatAnnotated"""
+    "Selects annotated tabular file format"
 
     annotated: Literal[True] = DakotaField(
         default=True,
+        description="Selects annotated tabular file format",
         dakota={
             "materialization": [
                 {
@@ -72,10 +73,11 @@ class MethodImportBuildFormatAnnotated(DakotaBaseModel):
 
 
 class MethodImportBuildFormatFreeform(DakotaBaseModel):
-    """Generated model for MethodImportBuildFormatFreeform"""
+    "Selects freeform file format"
 
     freeform: Literal[True] = DakotaField(
         default=True,
+        description="Selects freeform file format",
         dakota={
             "materialization": [
                 {
@@ -90,7 +92,7 @@ class MethodImportBuildFormatFreeform(DakotaBaseModel):
 
 
 class ModelFullSurfpackExportFormatFormats(DakotaBaseModel):
-    """Generated model for ModelFullSurfpackExportFormatFormats"""
+    "Formats for surrogate model export"
 
     text_archive: Literal[True] | None = DakotaField(
         default=None,
@@ -151,7 +153,7 @@ class ModelFullSurfpackExportFormatFormats(DakotaBaseModel):
 
 
 class MethodImportBuildFormatCustomAnnotated(DakotaBaseModel):
-    """Generated model for MethodImportBuildFormatCustomAnnotated"""
+    "Selects custom-annotated tabular file format"
 
     custom_annotated: MethodImportBuildFormatCustomAnnotatedConfig = DakotaField(
         default_factory=MethodImportBuildFormatCustomAnnotatedConfig,
@@ -171,7 +173,7 @@ class MethodImportBuildFormatCustomAnnotated(DakotaBaseModel):
 
 
 class ModelFullSurfpackExportFormatExportModel(DakotaBaseModel):
-    """Generated model for ModelFullSurfpackExportFormatExportModel"""
+    "Exports surrogate model in user-specified format(s)"
 
     filename_prefix: str = DakotaField(
         default="exported_surrogate",
@@ -192,7 +194,7 @@ class ModelFullSurfpackExportFormatExportModel(DakotaBaseModel):
 
 
 class MethodImportBuildFormatMixin(DakotaBaseModel):
-    """Generated model for MethodImportBuildFormatMixin"""
+    "Generated model for MethodImportBuildFormatMixin"
 
     format: Union[
         MethodImportBuildFormatCustomAnnotated,
@@ -210,7 +212,7 @@ class MethodImportBuildFormatMixin(DakotaBaseModel):
 
 
 class ModelFullSurfpackExportFormatMixin(DakotaBaseModel):
-    """Generated model for ModelFullSurfpackExportFormatMixin"""
+    "Generated model for ModelFullSurfpackExportFormatMixin"
 
     export_model: ModelFullSurfpackExportFormatExportModel | None = DakotaField(
         default=None,

@@ -21,10 +21,11 @@ from dakota.spec.shared.misc import (
 
 
 class SamplingSampleTypeLhs(DakotaBaseModel):
-    """Generated model for SamplingSampleTypeLhs"""
+    "Uses Latin Hypercube Sampling (LHS) to sample variables"
 
     lhs: Literal[True] = DakotaField(
         default=True,
+        description="Uses Latin Hypercube Sampling (LHS) to sample variables",
         dakota={
             "materialization": [
                 {
@@ -39,10 +40,11 @@ class SamplingSampleTypeLhs(DakotaBaseModel):
 
 
 class SamplingSampleTypeRandom(DakotaBaseModel):
-    """Generated model for SamplingSampleTypeRandom"""
+    "Uses purely random Monte Carlo sampling to sample variables"
 
     random: Literal[True] = DakotaField(
         default=True,
+        description="Uses purely random Monte Carlo sampling to sample variables",
         dakota={
             "materialization": [
                 {
@@ -57,10 +59,11 @@ class SamplingSampleTypeRandom(DakotaBaseModel):
 
 
 class IncrementalLhs(DakotaBaseModel):
-    """Generated model for IncrementalLhs"""
+    "(Deprecated keyword) Augments an existing Latin Hypercube Sampling (LHS) study"
 
     incremental_lhs: Literal[True] = DakotaField(
         default=True,
+        description="(Deprecated keyword) Augments an existing Latin Hypercube Sampling (LHS) study",
         dakota={
             "materialization": [
                 {
@@ -75,10 +78,11 @@ class IncrementalLhs(DakotaBaseModel):
 
 
 class IncrementalRandom(DakotaBaseModel):
-    """Generated model for IncrementalRandom"""
+    "(Deprecated keyword) Augments an existing random sampling study"
 
     incremental_random: Literal[True] = DakotaField(
         default=True,
+        description="(Deprecated keyword) Augments an existing random sampling study",
         dakota={
             "materialization": [
                 {
@@ -93,19 +97,19 @@ class IncrementalRandom(DakotaBaseModel):
 
 
 class Rank1Lattice(Rank1LatticeOptionsMixin):
-    """Generated model for Rank1Lattice"""
+    "Uses rank-1 lattice points to sample variables"
 
     pass
 
 
 class DigitalNet(DigitalNetOptionsMixin):
-    """Generated model for DigitalNet"""
+    "Uses digital net points to sample variables"
 
     pass
 
 
 class CandidateDesigns(DakotaBaseModel):
-    """Generated model for CandidateDesigns"""
+    "Number of candidate sampling designs from which to select the most D-optimal"
 
     candidate_designs: int = DakotaField(
         gt=0,
@@ -123,7 +127,7 @@ class CandidateDesigns(DakotaBaseModel):
 
 
 class LejaOversampleRatio(DakotaBaseModel):
-    """Generated model for LejaOversampleRatio"""
+    "Oversampling ratio for generating candidate point set"
 
     leja_oversample_ratio: DakotaFloat = DakotaField(
         description="Oversampling ratio for generating candidate point set",
@@ -140,7 +144,7 @@ class LejaOversampleRatio(DakotaBaseModel):
 
 
 class SamplingPrincipalComponents(DakotaBaseModel):
-    """Generated model for SamplingPrincipalComponents"""
+    "Activates principal components analysis of the response matrix of N samples * L responses."
 
     percent_variance_explained: DakotaFloat = DakotaField(
         default=0.95,
@@ -158,7 +162,7 @@ class SamplingPrincipalComponents(DakotaBaseModel):
 
 
 class Wilks(DakotaBaseModel):
-    """Generated model for Wilks"""
+    "Number of samples for random sampling using Wilks statistics"
 
     order: int = DakotaField(
         default=1,
@@ -231,7 +235,7 @@ class Wilks(DakotaBaseModel):
 
 
 class SamplingTolIntervals(DakotaBaseModel):
-    """Generated model for SamplingTolIntervals"""
+    "Computes the double sided tolerance interval equivalent normal distribuion."
 
     coverage: DakotaFloat = DakotaField(
         default=0.95,
@@ -266,7 +270,7 @@ class SamplingTolIntervals(DakotaBaseModel):
 
 
 class LowDiscrepancyConfig(DakotaBaseModel):
-    """Generated model for LowDiscrepancyConfig"""
+    "Uses low-discrepancy points to sample variables"
 
     rank_1_lattice: Rank1Lattice | None = DakotaField(
         default=None,
@@ -298,7 +302,7 @@ class LowDiscrepancyConfig(DakotaBaseModel):
 
 
 class LowDiscrepancy(DakotaBaseModel):
-    """Generated model for LowDiscrepancy"""
+    "Uses low-discrepancy points to sample variables"
 
     low_discrepancy: LowDiscrepancyConfig = DakotaField(
         description="Uses low-discrepancy points to sample variables",
@@ -325,7 +329,7 @@ class SamplingConfig(
     RngOptionsContext2Mixin,
     MethodOptionalModelPointerMixin,
 ):
-    """Generated model for SamplingConfig"""
+    "Randomly samples variables according to their distributions"
 
     samples: int = DakotaField(
         default=0,
@@ -450,7 +454,7 @@ class SamplingConfig(
 
 
 class SamplingSelection(MethodSelection):
-    """Generated model for SamplingSelection"""
+    "Generated model for SamplingSelection"
 
     sampling: SamplingConfig = DakotaField(
         dakota={

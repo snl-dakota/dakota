@@ -16,7 +16,7 @@ from dakota.spec.shared.misc import (
 
 
 class ImportPointsFileCustomAnnotatedHeader(DakotaBaseModel):
-    """Generated model for ImportPointsFileCustomAnnotatedHeader"""
+    "Enable header row in custom-annotated tabular file"
 
     use_variable_labels: Literal[True] | None = DakotaField(
         default=None,
@@ -34,7 +34,7 @@ class ImportPointsFileCustomAnnotatedHeader(DakotaBaseModel):
 
 
 class ImportPointsFileAnnotatedConfig(DakotaBaseModel):
-    """Generated model for ImportPointsFileAnnotatedConfig"""
+    "Selects annotated tabular file format"
 
     use_variable_labels: Literal[True] | None = DakotaField(
         default=None,
@@ -52,10 +52,11 @@ class ImportPointsFileAnnotatedConfig(DakotaBaseModel):
 
 
 class ImportPointsImportPointsFileFreeform(DakotaBaseModel):
-    """Generated model for ImportPointsImportPointsFileFreeform"""
+    "Selects freeform file format"
 
     freeform: Literal[True] = DakotaField(
         default=True,
+        description="Selects freeform file format",
         dakota={
             "materialization": [
                 {
@@ -70,7 +71,7 @@ class ImportPointsImportPointsFileFreeform(DakotaBaseModel):
 
 
 class ImportPointsVarianceBasedDecomp(DakotaBaseModel):
-    """Generated model for ImportPointsVarianceBasedDecomp"""
+    "Computes Sobol' main effects using a binned approach"
 
     drop_tolerance: DakotaFloat = DakotaField(
         default=-1.0,
@@ -101,7 +102,7 @@ class ImportPointsVarianceBasedDecomp(DakotaBaseModel):
 
 
 class ImportPointsTolIntervals(DakotaBaseModel):
-    """Generated model for ImportPointsTolIntervals"""
+    "Computes the double sided tolerance interval equivalent normal distribuion."
 
     coverage: DakotaFloat = DakotaField(
         default=0.95,
@@ -136,7 +137,7 @@ class ImportPointsTolIntervals(DakotaBaseModel):
 
 
 class ImportPointsImportPointsFileCustomAnnotatedConfig(DakotaBaseModel):
-    """Generated model for ImportPointsImportPointsFileCustomAnnotatedConfig"""
+    "Selects custom-annotated tabular file format"
 
     header: ImportPointsFileCustomAnnotatedHeader | None = DakotaField(
         default=None,
@@ -183,7 +184,7 @@ class ImportPointsImportPointsFileCustomAnnotatedConfig(DakotaBaseModel):
 
 
 class ImportPointsImportPointsFileAnnotated(DakotaBaseModel):
-    """Generated model for ImportPointsImportPointsFileAnnotated"""
+    "Selects annotated tabular file format"
 
     annotated: ImportPointsFileAnnotatedConfig = DakotaField(
         default_factory=ImportPointsFileAnnotatedConfig,
@@ -203,7 +204,7 @@ class ImportPointsImportPointsFileAnnotated(DakotaBaseModel):
 
 
 class ImportPointsImportPointsFileCustomAnnotated(DakotaBaseModel):
-    """Generated model for ImportPointsImportPointsFileCustomAnnotated"""
+    "Selects custom-annotated tabular file format"
 
     custom_annotated: ImportPointsImportPointsFileCustomAnnotatedConfig = DakotaField(
         default_factory=ImportPointsImportPointsFileCustomAnnotatedConfig,
@@ -223,7 +224,7 @@ class ImportPointsImportPointsFileCustomAnnotated(DakotaBaseModel):
 
 
 class ImportPointsImportPointsFile(DakotaBaseModel):
-    """Generated model for ImportPointsImportPointsFile"""
+    "File containing list of variable and response values to import for analysis."
 
     filename: str = DakotaField(
         description="File containing list of variable and response values to import for analysis.",
@@ -271,7 +272,7 @@ class ImportPointsConfig(
     LevelMappingsMixin,
     MethodOptionalModelPointerMixin,
 ):
-    """Generated model for ImportPointsConfig"""
+    "Imports points from file and computes statistics for them."
 
     import_points_file: ImportPointsImportPointsFile = DakotaField(
         default=...,
@@ -320,7 +321,7 @@ class ImportPointsConfig(
 
 
 class ImportPointsSelection(MethodSelection):
-    """Generated model for ImportPointsSelection"""
+    "Generated model for ImportPointsSelection"
 
     import_points: ImportPointsConfig = DakotaField(
         dakota={

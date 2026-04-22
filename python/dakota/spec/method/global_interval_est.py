@@ -26,7 +26,7 @@ class GlobalIntervalEstConfig(
     RngOptionsContext2Mixin,
     MethodOptionalModelPointerMixin,
 ):
-    """Generated model for GlobalIntervalEstConfig"""
+    "Interval analysis using global optimization methods"
 
     samples: int = DakotaField(
         default=0,
@@ -58,7 +58,7 @@ class GlobalIntervalEstConfig(
 
 
 class GlobalIntervalEstSelection(MethodSelection):
-    """Generated model for GlobalIntervalEstSelection"""
+    "Generated model for GlobalIntervalEstSelection"
 
     global_interval_est: GlobalIntervalEstConfig = DakotaField(
         dakota={

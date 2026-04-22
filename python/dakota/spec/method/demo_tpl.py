@@ -21,7 +21,7 @@ class DemoTplConfig(
     MethodMaxIterationsContext1Mixin,
     MethodConvergenceTolMixin,
 ):
-    """Generated model for DemoTplConfig"""
+    "Third-party optimization library integration demonstration."
 
     variable_tolerance: DakotaFloat = DakotaField(
         default=0.01,
@@ -71,7 +71,7 @@ class DemoTplConfig(
 
 
 class DemoTplSelection(MethodSelection):
-    """Generated model for DemoTplSelection"""
+    "Generated model for DemoTplSelection"
 
     demo_tpl: DemoTplConfig = DakotaField(
         dakota={

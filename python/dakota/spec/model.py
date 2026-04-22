@@ -61,13 +61,13 @@ class ModelSelection(DakotaBaseModel):
 
 
 class ModelConfig(DakotaBaseModel):
-    """Generated model for ModelConfig"""
+    "Generated model for ModelConfig"
 
     model: ModelUnion | None = DakotaField(default=None, dakota={"union_pattern": 2})
 
 
 class SolutionLevelCost(DakotaBaseModel):
-    """Generated model for SolutionLevelCost"""
+    "Cost estimates associated with a set of solution control values."
 
     solution_level_cost: list[DakotaFloat] = DakotaField(
         description="Cost estimates associated with a set of solution control values.",
@@ -84,7 +84,7 @@ class SolutionLevelCost(DakotaBaseModel):
 
 
 class CostRecoveryMetadata(DakotaBaseModel):
-    """Generated model for CostRecoveryMetadata"""
+    "Identify metadata by label for capturing online cost estimates"
 
     cost_recovery_metadata: str = DakotaField(
         description="Identify metadata by label for capturing online cost estimates",
@@ -101,10 +101,11 @@ class CostRecoveryMetadata(DakotaBaseModel):
 
 
 class TrendNone(DakotaBaseModel):
-    """Generated model for TrendNone"""
+    "No trend function"
 
     none: Literal[True] = DakotaField(
         default=True,
+        description="No trend function",
         dakota={
             "materialization": [
                 {
@@ -119,10 +120,11 @@ class TrendNone(DakotaBaseModel):
 
 
 class ExperimentalGPTrendConstant(DakotaBaseModel):
-    """Generated model for ExperimentalGPTrendConstant"""
+    "Constant trend function"
 
     constant: Literal[True] = DakotaField(
         default=True,
+        description="Constant trend function",
         dakota={
             "materialization": [
                 {
@@ -137,10 +139,11 @@ class ExperimentalGPTrendConstant(DakotaBaseModel):
 
 
 class ExperimentalGPTrendLinear(DakotaBaseModel):
-    """Generated model for ExperimentalGPTrendLinear"""
+    "Use a linear polynomial or trend function"
 
     linear: Literal[True] = DakotaField(
         default=True,
+        description="Use a linear polynomial or trend function",
         dakota={
             "materialization": [
                 {
@@ -155,10 +158,11 @@ class ExperimentalGPTrendLinear(DakotaBaseModel):
 
 
 class ExperimentalGPTrendReducedQuadratic(DakotaBaseModel):
-    """Generated model for ExperimentalGPTrendReducedQuadratic"""
+    "Quadratic polynomials - main effects only"
 
     reduced_quadratic: Literal[True] = DakotaField(
         default=True,
+        description="Quadratic polynomials - main effects only",
         dakota={
             "materialization": [
                 {
@@ -173,10 +177,11 @@ class ExperimentalGPTrendReducedQuadratic(DakotaBaseModel):
 
 
 class ExperimentalGPTrendQuadratic(DakotaBaseModel):
-    """Generated model for ExperimentalGPTrendQuadratic"""
+    "Use a quadratic polynomial or trend function"
 
     quadratic: Literal[True] = DakotaField(
         default=True,
+        description="Use a quadratic polynomial or trend function",
         dakota={
             "materialization": [
                 {
@@ -191,7 +196,7 @@ class ExperimentalGPTrendQuadratic(DakotaBaseModel):
 
 
 class ExperimentalGPNugget(DakotaBaseModel):
-    """Generated model for ExperimentalGPNugget"""
+    "Value for the fixed nugget parameter"
 
     nugget: DakotaFloat = DakotaField(
         gt=0,
@@ -209,7 +214,7 @@ class ExperimentalGPNugget(DakotaBaseModel):
 
 
 class ExperimentalGPFindNugget(DakotaBaseModel):
-    """Generated model for ExperimentalGPFindNugget"""
+    "Use regression to estimate the nugget."
 
     find_nugget: int = DakotaField(
         description="Use regression to estimate the nugget.",
@@ -226,10 +231,11 @@ class ExperimentalGPFindNugget(DakotaBaseModel):
 
 
 class DakotaTrendConstant(DakotaBaseModel):
-    """Generated model for DakotaTrendConstant"""
+    "Constant trend function"
 
     constant: Literal[True] = DakotaField(
         default=True,
+        description="Constant trend function",
         dakota={
             "materialization": [
                 {
@@ -244,10 +250,11 @@ class DakotaTrendConstant(DakotaBaseModel):
 
 
 class DakotaTrendLinear(DakotaBaseModel):
-    """Generated model for DakotaTrendLinear"""
+    "Use a linear polynomial or trend function"
 
     linear: Literal[True] = DakotaField(
         default=True,
+        description="Use a linear polynomial or trend function",
         dakota={
             "materialization": [
                 {
@@ -262,10 +269,11 @@ class DakotaTrendLinear(DakotaBaseModel):
 
 
 class DakotaTrendReducedQuadratic(DakotaBaseModel):
-    """Generated model for DakotaTrendReducedQuadratic"""
+    "Quadratic polynomials - main effects only"
 
     reduced_quadratic: Literal[True] = DakotaField(
         default=True,
+        description="Quadratic polynomials - main effects only",
         dakota={
             "materialization": [
                 {
@@ -280,10 +288,11 @@ class DakotaTrendReducedQuadratic(DakotaBaseModel):
 
 
 class SurfpackTrendConstant(DakotaBaseModel):
-    """Generated model for SurfpackTrendConstant"""
+    "Constant trend function"
 
     constant: Literal[True] = DakotaField(
         default=True,
+        description="Constant trend function",
         dakota={
             "materialization": [
                 {
@@ -298,10 +307,11 @@ class SurfpackTrendConstant(DakotaBaseModel):
 
 
 class SurfpackTrendLinear(DakotaBaseModel):
-    """Generated model for SurfpackTrendLinear"""
+    "Use a linear polynomial or trend function"
 
     linear: Literal[True] = DakotaField(
         default=True,
+        description="Use a linear polynomial or trend function",
         dakota={
             "materialization": [
                 {
@@ -316,10 +326,11 @@ class SurfpackTrendLinear(DakotaBaseModel):
 
 
 class SurfpackTrendReducedQuadratic(DakotaBaseModel):
-    """Generated model for SurfpackTrendReducedQuadratic"""
+    "Quadratic polynomials - main effects only"
 
     reduced_quadratic: Literal[True] = DakotaField(
         default=True,
+        description="Quadratic polynomials - main effects only",
         dakota={
             "materialization": [
                 {
@@ -334,10 +345,11 @@ class SurfpackTrendReducedQuadratic(DakotaBaseModel):
 
 
 class SurfpackTrendQuadratic(DakotaBaseModel):
-    """Generated model for SurfpackTrendQuadratic"""
+    "Use a quadratic polynomial or trend function"
 
     quadratic: Literal[True] = DakotaField(
         default=True,
+        description="Use a quadratic polynomial or trend function",
         dakota={
             "materialization": [
                 {
@@ -352,7 +364,7 @@ class SurfpackTrendQuadratic(DakotaBaseModel):
 
 
 class SurfpackNugget(DakotaBaseModel):
-    """Generated model for SurfpackNugget"""
+    "Specify a nugget to handle ill-conditioning"
 
     nugget: DakotaFloat = DakotaField(
         gt=0,
@@ -370,7 +382,7 @@ class SurfpackNugget(DakotaBaseModel):
 
 
 class SurfpackFindNugget(DakotaBaseModel):
-    """Generated model for SurfpackFindNugget"""
+    "Have Surfpack compute a nugget to handle ill-conditioning"
 
     find_nugget: int = DakotaField(
         description="Have Surfpack compute a nugget to handle ill-conditioning",
@@ -387,10 +399,11 @@ class SurfpackFindNugget(DakotaBaseModel):
 
 
 class InterpLinear(DakotaBaseModel):
-    """Generated model for InterpLinear"""
+    "Linear interpolation"
 
     linear: Literal[True] = DakotaField(
         default=True,
+        description="Linear interpolation",
         dakota={
             "materialization": [
                 {
@@ -405,10 +418,11 @@ class InterpLinear(DakotaBaseModel):
 
 
 class InterpCubic(DakotaBaseModel):
-    """Generated model for InterpCubic"""
+    "Cubic interpolation"
 
     cubic: Literal[True] = DakotaField(
         default=True,
+        description="Cubic interpolation",
         dakota={
             "materialization": [
                 {
@@ -425,7 +439,7 @@ class InterpCubic(DakotaBaseModel):
 class MovingLeastSquaresConfig(
     ModelPartialSurrogateExportFormatMixin, ModelSurrogateImportMixin
 ):
-    """Generated model for MovingLeastSquaresConfig"""
+    "Moving Least Squares surrogate models"
 
     basis_order: int = DakotaField(
         default=2,
@@ -460,7 +474,7 @@ class MovingLeastSquaresConfig(
 class ModelSurrogateGlobalApproxFtConfig(
     FtModelRegressionOptsMixin, FtModelTolsMixin, FtModelOrderMixin, FtModelRankMixin
 ):
-    """Generated model for ModelSurrogateGlobalApproxFtConfig"""
+    "Global surrogate model based on functional tensor train decomposition"
 
     pass
 
@@ -468,7 +482,7 @@ class ModelSurrogateGlobalApproxFtConfig(
 class NeuralNetworkConfig(
     ModelFullSurfpackExportFormatMixin, ModelSurrogateImportMixin
 ):
-    """Generated model for NeuralNetworkConfig"""
+    "Artificial neural network model"
 
     max_nodes: int = DakotaField(
         default=0,
@@ -513,7 +527,7 @@ class NeuralNetworkConfig(
 
 
 class RadialBasisConfig(ModelFullSurfpackExportFormatMixin, ModelSurrogateImportMixin):
-    """Generated model for RadialBasisConfig"""
+    "Radial basis function (RBF) model"
 
     bases: int = DakotaField(
         default=0,
@@ -570,7 +584,7 @@ class RadialBasisConfig(ModelFullSurfpackExportFormatMixin, ModelSurrogateImport
 
 
 class BasisOrder(DakotaBaseModel):
-    """Generated model for BasisOrder"""
+    "Polynomial order"
 
     basis_order: int = DakotaField(
         ge=0,
@@ -588,10 +602,11 @@ class BasisOrder(DakotaBaseModel):
 
 
 class PolynomialLinear(DakotaBaseModel):
-    """Generated model for PolynomialLinear"""
+    "Use a linear polynomial or trend function"
 
     linear: Literal[True] = DakotaField(
         default=True,
+        description="Use a linear polynomial or trend function",
         dakota={
             "materialization": [
                 {
@@ -606,10 +621,11 @@ class PolynomialLinear(DakotaBaseModel):
 
 
 class PolynomialQuadratic(DakotaBaseModel):
-    """Generated model for PolynomialQuadratic"""
+    "Use a quadratic polynomial or trend function"
 
     quadratic: Literal[True] = DakotaField(
         default=True,
+        description="Use a quadratic polynomial or trend function",
         dakota={
             "materialization": [
                 {
@@ -624,10 +640,11 @@ class PolynomialQuadratic(DakotaBaseModel):
 
 
 class PolynomialCubic(DakotaBaseModel):
-    """Generated model for PolynomialCubic"""
+    "Use a cubic polynomial"
 
     cubic: Literal[True] = DakotaField(
         default=True,
+        description="Use a cubic polynomial",
         dakota={
             "materialization": [
                 {
@@ -644,7 +661,7 @@ class PolynomialCubic(DakotaBaseModel):
 class ExperimentalPolynomialConfig(
     ModelPartialSurrogateExportFormatMixin, ModelSurrogateImportMixin
 ):
-    """Generated model for ExperimentalPolynomialConfig"""
+    "Use a deterministic polynomial surrogate"
 
     basis_order: int = DakotaField(
         default=2,
@@ -676,7 +693,7 @@ class ExperimentalPolynomialConfig(
 
 
 class ExperimentalPythonConfig(DakotaBaseModel):
-    """Generated model for ExperimentalPythonConfig"""
+    "Use the experimental python surrogates interface"
 
     class_path_and_name: str = DakotaField(
         description="Specify the module and class names of the python surrogate",
@@ -693,7 +710,7 @@ class ExperimentalPythonConfig(DakotaBaseModel):
 
 
 class JumpThreshold(DakotaBaseModel):
-    """Generated model for JumpThreshold"""
+    "Gradient Threshold Parameter of the Optional Discontinuity Detection Capability for the Piecewise Decomposition Option of Global Surrogates"
 
     jump_threshold: DakotaFloat = DakotaField(
         description="Gradient Threshold Parameter of the Optional Discontinuity Detection Capability for the Piecewise Decomposition Option of Global Surrogates",
@@ -710,7 +727,7 @@ class JumpThreshold(DakotaBaseModel):
 
 
 class GradientThreshold(DakotaBaseModel):
-    """Generated model for GradientThreshold"""
+    "Gradient Threshold Parameter of the Optional Discontinuity Detection Capability for the Piecewise Decomposition Option of Global Surrogates"
 
     gradient_threshold: DakotaFloat = DakotaField(
         description="Gradient Threshold Parameter of the Optional Discontinuity Detection Capability for the Piecewise Decomposition Option of Global Surrogates",
@@ -727,7 +744,7 @@ class GradientThreshold(DakotaBaseModel):
 
 
 class TotalPoints(DakotaBaseModel):
-    """Generated model for TotalPoints"""
+    "Specified number of training points"
 
     total_points: int = DakotaField(
         description="Specified number of training points",
@@ -744,10 +761,11 @@ class TotalPoints(DakotaBaseModel):
 
 
 class MinimumPoints(DakotaBaseModel):
-    """Generated model for MinimumPoints"""
+    "Construct surrogate with minimum number of points"
 
     minimum_points: Literal[True] = DakotaField(
         default=True,
+        description="Construct surrogate with minimum number of points",
         dakota={
             "materialization": [
                 {
@@ -762,10 +780,11 @@ class MinimumPoints(DakotaBaseModel):
 
 
 class RecommendedPoints(DakotaBaseModel):
-    """Generated model for RecommendedPoints"""
+    "Construct surrogate with recommended number of points"
 
     recommended_points: Literal[True] = DakotaField(
         default=True,
+        description="Construct surrogate with recommended number of points",
         dakota={
             "materialization": [
                 {
@@ -780,7 +799,7 @@ class RecommendedPoints(DakotaBaseModel):
 
 
 class CVMetric(DakotaBaseModel):
-    """Generated model for CVMetric"""
+    "Choice of error metric to satisfy"
 
     metric: str = DakotaField(
         default="root_mean_squared",
@@ -812,7 +831,7 @@ class CVMetric(DakotaBaseModel):
 
 
 class GlobalApproxTruthModelPointer(DakotaBaseModel):
-    """Generated model for GlobalApproxTruthModelPointer"""
+    "A surrogate model pointer that guides a method to whether it should use a surrogate model or compute truth function evaluations"
 
     truth_model_pointer: str = DakotaField(
         description="A surrogate model pointer that guides a method to whether it should use a surrogate model or compute truth function evaluations",
@@ -831,10 +850,11 @@ class GlobalApproxTruthModelPointer(DakotaBaseModel):
 
 
 class ReusePointsAll(DakotaBaseModel):
-    """Generated model for ReusePointsAll"""
+    "Option for ``reuse_points``"
 
     all: Literal[True] = DakotaField(
         default=True,
+        description="Option for ``reuse_points``",
         dakota={
             "materialization": [
                 {
@@ -849,10 +869,11 @@ class ReusePointsAll(DakotaBaseModel):
 
 
 class Region(DakotaBaseModel):
-    """Generated model for Region"""
+    "Option for ``reuse_points``"
 
     region: Literal[True] = DakotaField(
         default=True,
+        description="Option for ``reuse_points``",
         dakota={
             "materialization": [
                 {
@@ -867,10 +888,11 @@ class Region(DakotaBaseModel):
 
 
 class ReusePointsNone(DakotaBaseModel):
-    """Generated model for ReusePointsNone"""
+    "Option for ``reuse_points``"
 
     none: Literal[True] = DakotaField(
         default=True,
+        description="Option for ``reuse_points``",
         dakota={
             "materialization": [
                 {
@@ -885,7 +907,7 @@ class ReusePointsNone(DakotaBaseModel):
 
 
 class ImportBuildPointsFileCustomAnnotatedHeader(DakotaBaseModel):
-    """Generated model for ImportBuildPointsFileCustomAnnotatedHeader"""
+    "Enable header row in custom-annotated tabular file"
 
     use_variable_labels: Literal[True] | None = DakotaField(
         default=None,
@@ -903,7 +925,7 @@ class ImportBuildPointsFileCustomAnnotatedHeader(DakotaBaseModel):
 
 
 class ImportBuildPointsFileAnnotatedConfig(DakotaBaseModel):
-    """Generated model for ImportBuildPointsFileAnnotatedConfig"""
+    "Selects annotated tabular file format"
 
     use_variable_labels: Literal[True] | None = DakotaField(
         default=None,
@@ -921,10 +943,11 @@ class ImportBuildPointsFileAnnotatedConfig(DakotaBaseModel):
 
 
 class GlobalApproxImportBuildPointsFileFreeform(DakotaBaseModel):
-    """Generated model for GlobalApproxImportBuildPointsFileFreeform"""
+    "Selects freeform file format"
 
     freeform: Literal[True] = DakotaField(
         default=True,
+        description="Selects freeform file format",
         dakota={
             "materialization": [
                 {
@@ -939,7 +962,7 @@ class GlobalApproxImportBuildPointsFileFreeform(DakotaBaseModel):
 
 
 class GlobalApproxExportApproxPointsFileCustomAnnotatedConfig(DakotaBaseModel):
-    """Generated model for GlobalApproxExportApproxPointsFileCustomAnnotatedConfig"""
+    "Selects custom-annotated tabular file format"
 
     header: Literal[True] | None = DakotaField(
         default=None,
@@ -986,10 +1009,11 @@ class GlobalApproxExportApproxPointsFileCustomAnnotatedConfig(DakotaBaseModel):
 
 
 class GlobalApproxExportApproxPointsFileAnnotated(DakotaBaseModel):
-    """Generated model for GlobalApproxExportApproxPointsFileAnnotated"""
+    "Selects annotated tabular file format"
 
     annotated: Literal[True] = DakotaField(
         default=True,
+        description="Selects annotated tabular file format",
         dakota={
             "materialization": [
                 {
@@ -1004,10 +1028,11 @@ class GlobalApproxExportApproxPointsFileAnnotated(DakotaBaseModel):
 
 
 class GlobalApproxExportApproxPointsFileFreeform(DakotaBaseModel):
-    """Generated model for GlobalApproxExportApproxPointsFileFreeform"""
+    "Selects freeform file format"
 
     freeform: Literal[True] = DakotaField(
         default=True,
+        description="Selects freeform file format",
         dakota={
             "materialization": [
                 {
@@ -1022,7 +1047,7 @@ class GlobalApproxExportApproxPointsFileFreeform(DakotaBaseModel):
 
 
 class Folds(DakotaBaseModel):
-    """Generated model for Folds"""
+    "Number of cross validation folds"
 
     folds: int = DakotaField(
         description="Number of cross validation folds",
@@ -1039,7 +1064,7 @@ class Folds(DakotaBaseModel):
 
 
 class Percent(DakotaBaseModel):
-    """Generated model for Percent"""
+    "Percent data per cross validation fold"
 
     percent: DakotaFloat = DakotaField(
         description="Percent data per cross validation fold",
@@ -1056,7 +1081,7 @@ class Percent(DakotaBaseModel):
 
 
 class ImportChallengePointsFileCustomAnnotatedHeader(DakotaBaseModel):
-    """Generated model for ImportChallengePointsFileCustomAnnotatedHeader"""
+    "Enable header row in custom-annotated tabular file"
 
     use_variable_labels: Literal[True] | None = DakotaField(
         default=None,
@@ -1074,7 +1099,7 @@ class ImportChallengePointsFileCustomAnnotatedHeader(DakotaBaseModel):
 
 
 class ImportChallengePointsFileAnnotatedConfig(DakotaBaseModel):
-    """Generated model for ImportChallengePointsFileAnnotatedConfig"""
+    "Selects annotated tabular file format"
 
     use_variable_labels: Literal[True] | None = DakotaField(
         default=None,
@@ -1092,10 +1117,11 @@ class ImportChallengePointsFileAnnotatedConfig(DakotaBaseModel):
 
 
 class ImportChallengePointsFileFreeform(DakotaBaseModel):
-    """Generated model for ImportChallengePointsFileFreeform"""
+    "Selects freeform file format"
 
     freeform: Literal[True] = DakotaField(
         default=True,
+        description="Selects freeform file format",
         dakota={
             "materialization": [
                 {
@@ -1110,10 +1136,11 @@ class ImportChallengePointsFileFreeform(DakotaBaseModel):
 
 
 class Tana(DakotaBaseModel):
-    """Generated model for Tana"""
+    "Local multi-point model via two-point nonlinear approximation"
 
     tana: Literal[True] = DakotaField(
         default=True,
+        description="Local multi-point model via two-point nonlinear approximation",
         dakota={
             "materialization": [
                 {
@@ -1128,10 +1155,11 @@ class Tana(DakotaBaseModel):
 
 
 class Qmea(DakotaBaseModel):
-    """Generated model for Qmea"""
+    "Multi-point surrogate approximation based on QMEA algorithm"
 
     qmea: Literal[True] = DakotaField(
         default=True,
+        description="Multi-point surrogate approximation based on QMEA algorithm",
         dakota={
             "materialization": [
                 {
@@ -1146,7 +1174,7 @@ class Qmea(DakotaBaseModel):
 
 
 class LocalConfig(DakotaBaseModel):
-    """Generated model for LocalConfig"""
+    "Build a locally accurate surrogate from data at a single point"
 
     taylor_series: bool = DakotaField(
         description="Construct a Taylor Series expansion around a point"
@@ -1168,7 +1196,7 @@ class LocalConfig(DakotaBaseModel):
 
 
 class OrderedModelFidelitiesConfig(SurrogateCorrectionMixin):
-    """Generated model for OrderedModelFidelitiesConfig"""
+    "Specification of an hierarchy of model fidelities, ordered from low to high."
 
     pointers: list[str] = DakotaField(
         description="Specification of an hierarchy of model fidelities, ordered from low to high.",
@@ -1186,7 +1214,7 @@ class OrderedModelFidelitiesConfig(SurrogateCorrectionMixin):
 
 
 class TruthModelPointerConfig(DakotaBaseModel):
-    """Generated model for TruthModelPointerConfig"""
+    'Pointer to specify a \\"truth\\" model, from which to construct a surrogate'
 
     pointer: str = DakotaField(
         description='Pointer to specify a "truth" model, from which to construct a surrogate',
@@ -1219,7 +1247,7 @@ class TruthModelPointerConfig(DakotaBaseModel):
 
 
 class OptionalInterfacePointer(DakotaBaseModel):
-    """Generated model for OptionalInterfacePointer"""
+    "Pointer to interface that provides non-nested responses"
 
     pointer: str = DakotaField(
         description="Pointer to interface that provides non-nested responses",
@@ -1251,10 +1279,11 @@ class OptionalInterfacePointer(DakotaBaseModel):
 
 
 class SubMethodPointerIteratorSchedulingDedicated(DakotaBaseModel):
-    """Generated model for SubMethodPointerIteratorSchedulingDedicated"""
+    "Specify a dedicated scheduler partition for concurrent iterator executions"
 
     dedicated: Literal[True] = DakotaField(
         default=True,
+        description="Specify a dedicated scheduler partition for concurrent iterator executions",
         dakota={
             "materialization": [
                 {
@@ -1269,10 +1298,11 @@ class SubMethodPointerIteratorSchedulingDedicated(DakotaBaseModel):
 
 
 class SubMethodPointerIteratorSchedulingPeer(DakotaBaseModel):
-    """Generated model for SubMethodPointerIteratorSchedulingPeer"""
+    "Specify a peer partition for parallel iterator scheduling"
 
     peer: Literal[True] = DakotaField(
         default=True,
+        description="Specify a peer partition for parallel iterator scheduling",
         dakota={
             "materialization": [
                 {
@@ -1287,10 +1317,11 @@ class SubMethodPointerIteratorSchedulingPeer(DakotaBaseModel):
 
 
 class ActiveSubspaceSampleTypeLhs(DakotaBaseModel):
-    """Generated model for ActiveSubspaceSampleTypeLhs"""
+    "Uses Latin Hypercube Sampling (LHS) to sample variables"
 
     lhs: Literal[True] = DakotaField(
         default=True,
+        description="Uses Latin Hypercube Sampling (LHS) to sample variables",
         dakota={
             "materialization": [
                 {
@@ -1305,10 +1336,11 @@ class ActiveSubspaceSampleTypeLhs(DakotaBaseModel):
 
 
 class ActiveSubspaceSampleTypeRandom(DakotaBaseModel):
-    """Generated model for ActiveSubspaceSampleTypeRandom"""
+    "Uses purely random Monte Carlo sampling to sample variables"
 
     random: Literal[True] = DakotaField(
         default=True,
+        description="Uses purely random Monte Carlo sampling to sample variables",
         dakota={
             "materialization": [
                 {
@@ -1323,7 +1355,7 @@ class ActiveSubspaceSampleTypeRandom(DakotaBaseModel):
 
 
 class Energy(DakotaBaseModel):
-    """Generated model for Energy"""
+    "Truncate the subspace based on eigenvalue energy"
 
     truncation_tolerance: DakotaFloat = DakotaField(
         default=1.0e-6,
@@ -1346,10 +1378,11 @@ class Energy(DakotaBaseModel):
 
 
 class Minimum(DakotaBaseModel):
-    """Generated model for Minimum"""
+    "Select subspace to minimize cross-validation error"
 
     minimum: Literal[True] = DakotaField(
         default=True,
+        description="Select subspace to minimize cross-validation error",
         dakota={
             "materialization": [
                 {
@@ -1364,10 +1397,11 @@ class Minimum(DakotaBaseModel):
 
 
 class CVRelative(DakotaBaseModel):
-    """Generated model for CVRelative"""
+    "Choose subspace with cross-validation error less than tolerance"
 
     relative: Literal[True] = DakotaField(
         default=True,
+        description="Choose subspace with cross-validation error less than tolerance",
         dakota={
             "materialization": [
                 {
@@ -1382,10 +1416,11 @@ class CVRelative(DakotaBaseModel):
 
 
 class Decrease(DakotaBaseModel):
-    """Generated model for Decrease"""
+    "Choose subspace where cross-validation error stabilizes"
 
     decrease: Literal[True] = DakotaField(
         default=True,
+        description="Choose subspace where cross-validation error stabilizes",
         dakota={
             "materialization": [
                 {
@@ -1400,7 +1435,7 @@ class Decrease(DakotaBaseModel):
 
 
 class BuildSurrogate(DakotaBaseModel):
-    """Generated model for BuildSurrogate"""
+    "Construct moving least squares surrogate over active subspace"
 
     refinement_samples: list[int] | None = DakotaField(
         default=None,
@@ -1418,10 +1453,11 @@ class BuildSurrogate(DakotaBaseModel):
 
 
 class MeanValue(DakotaBaseModel):
-    """Generated model for MeanValue"""
+    "Normalize by sample mean of function values"
 
     mean_value: Literal[True] = DakotaField(
         default=True,
+        description="Normalize by sample mean of function values",
         dakota={
             "materialization": [
                 {
@@ -1436,10 +1472,11 @@ class MeanValue(DakotaBaseModel):
 
 
 class MeanGradient(DakotaBaseModel):
-    """Generated model for MeanGradient"""
+    "Normalize by sample mean of gradient norms"
 
     mean_gradient: Literal[True] = DakotaField(
         default=True,
+        description="Normalize by sample mean of gradient norms",
         dakota={
             "materialization": [
                 {
@@ -1454,10 +1491,11 @@ class MeanGradient(DakotaBaseModel):
 
 
 class LocalGradient(DakotaBaseModel):
-    """Generated model for LocalGradient"""
+    "Normalize each gradient sample by its norm"
 
     local_gradient: Literal[True] = DakotaField(
         default=True,
+        description="Normalize each gradient sample by its norm",
         dakota={
             "materialization": [
                 {
@@ -1472,7 +1510,7 @@ class LocalGradient(DakotaBaseModel):
 
 
 class TruthModelPointerSGLevel(DakotaBaseModel):
-    """Generated model for TruthModelPointerSGLevel"""
+    "Level to use in sparse grid integration or interpolation"
 
     sparse_grid_level: int = DakotaField(
         description="Level to use in sparse grid integration or interpolation",
@@ -1489,7 +1527,7 @@ class TruthModelPointerSGLevel(DakotaBaseModel):
 
 
 class TruthModelPointerExpansionOrderConfig(DakotaBaseModel):
-    """Generated model for TruthModelPointerExpansionOrderConfig"""
+    "The (initial) order of a polynomial expansion"
 
     order: int = DakotaField(
         description="The (initial) order of a polynomial expansion",
@@ -1518,10 +1556,11 @@ class TruthModelPointerExpansionOrderConfig(DakotaBaseModel):
 
 
 class Unranked(DakotaBaseModel):
-    """Generated model for Unranked"""
+    "Use the unranked method to obtain the rotation matrix"
 
     unranked: Literal[True] = DakotaField(
         default=True,
+        description="Use the unranked method to obtain the rotation matrix",
         dakota={
             "materialization": [
                 {
@@ -1536,10 +1575,11 @@ class Unranked(DakotaBaseModel):
 
 
 class Ranked(DakotaBaseModel):
-    """Generated model for Ranked"""
+    "Use the ranked method to obtain the rotation matrix"
 
     ranked: Literal[True] = DakotaField(
         default=True,
+        description="Use the ranked method to obtain the rotation matrix",
         dakota={
             "materialization": [
                 {
@@ -1554,7 +1594,7 @@ class Ranked(DakotaBaseModel):
 
 
 class RfDataFile(DakotaBaseModel):
-    """Generated model for RfDataFile"""
+    "Specify that the random field will be built from a file of data. THIS IS AN EXPERIMENTAL CAPABILITY."
 
     rf_data_file: str = DakotaField(
         description="Specify that the random field will be built from a file of data. THIS IS AN EXPERIMENTAL CAPABILITY.",
@@ -1571,7 +1611,7 @@ class RfDataFile(DakotaBaseModel):
 
 
 class BuildSourceDaceMethodPointer(DakotaBaseModel):
-    """Generated model for BuildSourceDaceMethodPointer"""
+    "Pointer to a DACE method for purposes of generating an ensemble of field responses to be used in estimating a random field model. THIS IS AN EXPERIMENTAL CAPABILITY."
 
     dace_method_pointer: str = DakotaField(
         description="Pointer to a DACE method for purposes of generating an ensemble of field responses to be used in estimating a random field model. THIS IS AN EXPERIMENTAL CAPABILITY.",
@@ -1594,10 +1634,11 @@ class BuildSourceDaceMethodPointer(DakotaBaseModel):
 
 
 class SquaredExponential(DakotaBaseModel):
-    """Generated model for SquaredExponential"""
+    "Specify a squared exponential covariance in the case where the random field is built from an analytic covariance functio. THIS IS AN EXPERIMENTAL CAPABILITY."
 
     squared_exponential: Literal[True] = DakotaField(
         default=True,
+        description="Specify a squared exponential covariance in the case where the random field is built from an analytic covariance functio. THIS IS AN EXPERIMENTAL CAPABILITY.",
         dakota={
             "materialization": [
                 {
@@ -1612,10 +1653,11 @@ class SquaredExponential(DakotaBaseModel):
 
 
 class Exponential(DakotaBaseModel):
-    """Generated model for Exponential"""
+    "Specify an exponential covariance in the case where the random field is built from an analytic covariance functio. THIS IS AN EXPERIMENTAL CAPABILITY."
 
     exponential: Literal[True] = DakotaField(
         default=True,
+        description="Specify an exponential covariance in the case where the random field is built from an analytic covariance functio. THIS IS AN EXPERIMENTAL CAPABILITY.",
         dakota={
             "materialization": [
                 {
@@ -1630,10 +1672,11 @@ class Exponential(DakotaBaseModel):
 
 
 class KarhunenLoeve(DakotaBaseModel):
-    """Generated model for KarhunenLoeve"""
+    "Specify Karhunen-Loeve as the expansion form to be used in the random field representation. THIS IS AN EXPERIMENTAL CAPABILITY."
 
     karhunen_loeve: Literal[True] = DakotaField(
         default=True,
+        description="Specify Karhunen-Loeve as the expansion form to be used in the random field representation. THIS IS AN EXPERIMENTAL CAPABILITY.",
         dakota={
             "materialization": [
                 {
@@ -1648,10 +1691,11 @@ class KarhunenLoeve(DakotaBaseModel):
 
 
 class ExpansionFormPrincipalComponents(DakotaBaseModel):
-    """Generated model for ExpansionFormPrincipalComponents"""
+    "Specify Principal Components as the form of the expansion to be used in the random field representation. THIS IS AN EXPERIMENTAL CAPABILITY."
 
     principal_components: Literal[True] = DakotaField(
         default=True,
+        description="Specify Principal Components as the form of the expansion to be used in the random field representation. THIS IS AN EXPERIMENTAL CAPABILITY.",
         dakota={
             "materialization": [
                 {
@@ -1666,7 +1710,7 @@ class ExpansionFormPrincipalComponents(DakotaBaseModel):
 
 
 class SingleConfig(ModelFourOptionalKeywordsMixin):
-    """Generated model for SingleConfig"""
+    "A model with one of each block: variable, interface, and response"
 
     interface_pointer: str | None = DakotaField(
         default=None,
@@ -1707,7 +1751,7 @@ class ExperimentalGPConfig(
     ModelPartialSurrogateExportFormatMixin,
     ModelSurrogateImportMixin,
 ):
-    """Generated model for ExperimentalGPConfig"""
+    "Use the Gaussian process regression surrogate from the surrogates module"
 
     trend: Union[
         TrendNone,
@@ -1756,7 +1800,7 @@ class ExperimentalGPConfig(
 
 
 class GPDakotaConfig(DakotaBaseModel):
-    """Generated model for GPDakotaConfig"""
+    "Select the built in Gaussian Process surrogate"
 
     point_selection: Literal[True] | None = DakotaField(
         default=None,
@@ -1783,7 +1827,7 @@ class GPDakotaConfig(DakotaBaseModel):
 class GlobalApproxGPSurfpackConfig(
     ModelFullSurfpackExportFormatMixin, ModelSurrogateImportMixin
 ):
-    """Generated model for GlobalApproxGPSurfpackConfig"""
+    "Use the Surfpack version of Gaussian Process surrogates"
 
     trend: Union[
         SurfpackTrendConstant,
@@ -1841,7 +1885,7 @@ class GlobalApproxGPSurfpackConfig(
 
 
 class MarsConfig(ModelPartialSurrogateExportFormatMixin, ModelSurrogateImportMixin):
-    """Generated model for MarsConfig"""
+    "Multivariate Adaptive Regression Spline (MARS)"
 
     max_bases: int = DakotaField(
         default=0,
@@ -1864,7 +1908,7 @@ class MarsConfig(ModelPartialSurrogateExportFormatMixin, ModelSurrogateImportMix
 
 
 class MovingLeastSquares(DakotaBaseModel):
-    """Generated model for MovingLeastSquares"""
+    "Moving Least Squares surrogate models"
 
     moving_least_squares: MovingLeastSquaresConfig = DakotaField(
         description="Moving Least Squares surrogate models",
@@ -1882,7 +1926,7 @@ class MovingLeastSquares(DakotaBaseModel):
 
 
 class Ft(DakotaBaseModel):
-    """Generated model for Ft"""
+    "Global surrogate model based on functional tensor train decomposition"
 
     function_train: ModelSurrogateGlobalApproxFtConfig = DakotaField(
         description="Global surrogate model based on functional tensor train decomposition",
@@ -1900,7 +1944,7 @@ class Ft(DakotaBaseModel):
 
 
 class NeuralNetwork(DakotaBaseModel):
-    """Generated model for NeuralNetwork"""
+    "Artificial neural network model"
 
     neural_network: NeuralNetworkConfig = DakotaField(
         description="Artificial neural network model",
@@ -1918,7 +1962,7 @@ class NeuralNetwork(DakotaBaseModel):
 
 
 class RadialBasis(DakotaBaseModel):
-    """Generated model for RadialBasis"""
+    "Radial basis function (RBF) model"
 
     radial_basis: RadialBasisConfig = DakotaField(
         description="Radial basis function (RBF) model",
@@ -1938,7 +1982,7 @@ class RadialBasis(DakotaBaseModel):
 class GlobalApproxPolynomialConfig(
     ModelFullSurfpackExportFormatMixin, ModelSurrogateImportMixin
 ):
-    """Generated model for GlobalApproxPolynomialConfig"""
+    "Polynomial surrogate model"
 
     order: Union[BasisOrder, PolynomialLinear, PolynomialQuadratic, PolynomialCubic] = (
         DakotaField(
@@ -1948,7 +1992,7 @@ class GlobalApproxPolynomialConfig(
 
 
 class ExperimentalPolynomial(DakotaBaseModel):
-    """Generated model for ExperimentalPolynomial"""
+    "Use a deterministic polynomial surrogate"
 
     experimental_polynomial: ExperimentalPolynomialConfig = DakotaField(
         description="Use a deterministic polynomial surrogate",
@@ -1966,7 +2010,7 @@ class ExperimentalPolynomial(DakotaBaseModel):
 
 
 class ExperimentalPython(DakotaBaseModel):
-    """Generated model for ExperimentalPython"""
+    "Use the experimental python surrogates interface"
 
     experimental_python: ExperimentalPythonConfig = DakotaField(
         description="Use the experimental python surrogates interface",
@@ -1984,7 +2028,7 @@ class ExperimentalPython(DakotaBaseModel):
 
 
 class DomainDecomposition(DakotaBaseModel):
-    """Generated model for DomainDecomposition"""
+    "Piecewise Domain Decomposition for Global Surrogate Models"
 
     cell_type: str = DakotaField(
         default="voronoi",
@@ -2031,7 +2075,7 @@ class DomainDecomposition(DakotaBaseModel):
 
 
 class AutoRefinement(DakotaBaseModel):
-    """Generated model for AutoRefinement"""
+    "Experimental auto-refinement of surrogate model"
 
     max_iterations: int = DakotaField(
         default=SZ_MAX,
@@ -2096,7 +2140,7 @@ class AutoRefinement(DakotaBaseModel):
 
 
 class ReusePoints(DakotaBaseModel):
-    """Generated model for ReusePoints"""
+    "Surrogate model training data reuse control"
 
     reuse_domain: Union[ReusePointsAll, Region, ReusePointsNone] = DakotaField(
         description="Reuse Domain", dakota={"anchor": True, "union_pattern": 4}
@@ -2104,7 +2148,7 @@ class ReusePoints(DakotaBaseModel):
 
 
 class GlobalApproxImportBuildPointsFileCustomAnnotatedConfig(DakotaBaseModel):
-    """Generated model for GlobalApproxImportBuildPointsFileCustomAnnotatedConfig"""
+    "Selects custom-annotated tabular file format"
 
     header: ImportBuildPointsFileCustomAnnotatedHeader | None = DakotaField(
         default=None,
@@ -2151,7 +2195,7 @@ class GlobalApproxImportBuildPointsFileCustomAnnotatedConfig(DakotaBaseModel):
 
 
 class GlobalApproxImportBuildPointsFileAnnotated(DakotaBaseModel):
-    """Generated model for GlobalApproxImportBuildPointsFileAnnotated"""
+    "Selects annotated tabular file format"
 
     annotated: ImportBuildPointsFileAnnotatedConfig = DakotaField(
         default_factory=ImportBuildPointsFileAnnotatedConfig,
@@ -2171,7 +2215,7 @@ class GlobalApproxImportBuildPointsFileAnnotated(DakotaBaseModel):
 
 
 class GlobalApproxExportApproxPointsFileCustomAnnotated(DakotaBaseModel):
-    """Generated model for GlobalApproxExportApproxPointsFileCustomAnnotated"""
+    "Selects custom-annotated tabular file format"
 
     custom_annotated: GlobalApproxExportApproxPointsFileCustomAnnotatedConfig = DakotaField(
         default_factory=GlobalApproxExportApproxPointsFileCustomAnnotatedConfig,
@@ -2191,7 +2235,7 @@ class GlobalApproxExportApproxPointsFileCustomAnnotated(DakotaBaseModel):
 
 
 class Metrics(DakotaBaseModel):
-    """Generated model for Metrics"""
+    "Compute surrogate quality metrics"
 
     metrics: list[str] = DakotaField(
         description="Compute surrogate quality metrics",
@@ -2240,7 +2284,7 @@ class Metrics(DakotaBaseModel):
 
 
 class ImportChallengePointsFileCustomAnnotatedConfig(DakotaBaseModel):
-    """Generated model for ImportChallengePointsFileCustomAnnotatedConfig"""
+    "Selects custom-annotated tabular file format"
 
     header: ImportChallengePointsFileCustomAnnotatedHeader | None = DakotaField(
         default=None,
@@ -2287,7 +2331,7 @@ class ImportChallengePointsFileCustomAnnotatedConfig(DakotaBaseModel):
 
 
 class ImportChallengePointsFileAnnotated(DakotaBaseModel):
-    """Generated model for ImportChallengePointsFileAnnotated"""
+    "Selects annotated tabular file format"
 
     annotated: ImportChallengePointsFileAnnotatedConfig = DakotaField(
         default_factory=ImportChallengePointsFileAnnotatedConfig,
@@ -2307,7 +2351,7 @@ class ImportChallengePointsFileAnnotated(DakotaBaseModel):
 
 
 class MultipointConfig(DakotaBaseModel):
-    """Generated model for MultipointConfig"""
+    "Construct a surrogate from multiple existing training points"
 
     type: Union[Tana, Qmea] = DakotaField(
         description="Multipoint Surrogate", dakota={"anchor": True, "union_pattern": 4}
@@ -2329,7 +2373,7 @@ class MultipointConfig(DakotaBaseModel):
 
 
 class Local(DakotaBaseModel):
-    """Generated model for Local"""
+    "Build a locally accurate surrogate from data at a single point"
 
     local: LocalConfig = DakotaField(
         description="Build a locally accurate surrogate from data at a single point",
@@ -2347,7 +2391,7 @@ class Local(DakotaBaseModel):
 
 
 class OrderedModelFidelities(DakotaBaseModel):
-    """Generated model for OrderedModelFidelities"""
+    "Specification of an hierarchy of model fidelities, ordered from low to high."
 
     ordered_model_fidelities: OrderedModelFidelitiesConfig = DakotaField(
         default=...,
@@ -2357,7 +2401,7 @@ class OrderedModelFidelities(DakotaBaseModel):
 
 
 class EnsembleTruthModelPointer(DakotaBaseModel):
-    """Generated model for EnsembleTruthModelPointer"""
+    'Pointer to specify a \\"truth\\" model, from which to construct a surrogate'
 
     truth_model_pointer: TruthModelPointerConfig = DakotaField(
         default=...,
@@ -2367,7 +2411,7 @@ class EnsembleTruthModelPointer(DakotaBaseModel):
 
 
 class SubMethodPointer(DakotaBaseModel):
-    """Generated model for SubMethodPointer"""
+    "The ``sub_method_pointer`` specifies the method block for the sub-iterator"
 
     pointer: str = DakotaField(
         description="The ``sub_method_pointer`` specifies the method block for the sub-iterator",
@@ -2494,7 +2538,7 @@ class SubMethodPointer(DakotaBaseModel):
 
 
 class TruncationMethodCV(DakotaBaseModel):
-    """Generated model for TruncationMethodCV"""
+    "Truncate the subspace to minimize surrogate cross-validation error"
 
     criterion: Union[Minimum, CVRelative, Decrease] | None = DakotaField(
         default=None,
@@ -2556,7 +2600,7 @@ class TruncationMethodCV(DakotaBaseModel):
 
 
 class TruthModelPointerExpansionOrder(DakotaBaseModel):
-    """Generated model for TruthModelPointerExpansionOrder"""
+    "The (initial) order of a polynomial expansion"
 
     expansion_order: TruthModelPointerExpansionOrderConfig = DakotaField(
         default=...,
@@ -2566,13 +2610,15 @@ class TruthModelPointerExpansionOrder(DakotaBaseModel):
 
 
 class AnalyticCov(DakotaBaseModel):
-    """Generated model for AnalyticCov"""
+    "Use an analytic covariance function for the purposes of generating a random field model. THIS IS AN EXPERIMENTAL CAPABILITY."
 
-    analytic_covariance: Union[SquaredExponential, Exponential]
+    analytic_covariance: Union[SquaredExponential, Exponential] = DakotaField(
+        description="Use an analytic covariance function for the purposes of generating a random field model. THIS IS AN EXPERIMENTAL CAPABILITY."
+    )
 
 
 class SingleSelection(ModelSelection):
-    """Generated model for SingleSelection"""
+    "A model with one of each block: variable, interface, and response"
 
     single: SingleConfig = DakotaField(
         description="A model with one of each block: variable, interface, and response",
@@ -2591,7 +2637,7 @@ class SingleSelection(ModelSelection):
 
 
 class ExperimentalGP(DakotaBaseModel):
-    """Generated model for ExperimentalGP"""
+    "Use the Gaussian process regression surrogate from the surrogates module"
 
     experimental_gaussian_process: ExperimentalGPConfig = DakotaField(
         description="Use the Gaussian process regression surrogate from the surrogates module",
@@ -2609,7 +2655,7 @@ class ExperimentalGP(DakotaBaseModel):
 
 
 class GlobalApproxGPDakota(DakotaBaseModel):
-    """Generated model for GlobalApproxGPDakota"""
+    "Select the built in Gaussian Process surrogate"
 
     dakota: GPDakotaConfig = DakotaField(
         description="Select the built in Gaussian Process surrogate",
@@ -2627,7 +2673,7 @@ class GlobalApproxGPDakota(DakotaBaseModel):
 
 
 class GlobalApproxGPSurfpack(DakotaBaseModel):
-    """Generated model for GlobalApproxGPSurfpack"""
+    "Use the Surfpack version of Gaussian Process surrogates"
 
     surfpack: GlobalApproxGPSurfpackConfig = DakotaField(
         description="Use the Surfpack version of Gaussian Process surrogates",
@@ -2645,7 +2691,7 @@ class GlobalApproxGPSurfpack(DakotaBaseModel):
 
 
 class Mars(DakotaBaseModel):
-    """Generated model for Mars"""
+    "Multivariate Adaptive Regression Spline (MARS)"
 
     mars: MarsConfig = DakotaField(
         description="Multivariate Adaptive Regression Spline (MARS)",
@@ -2663,7 +2709,7 @@ class Mars(DakotaBaseModel):
 
 
 class GlobalApproxPolynomial(DakotaBaseModel):
-    """Generated model for GlobalApproxPolynomial"""
+    "Polynomial surrogate model"
 
     polynomial: GlobalApproxPolynomialConfig = DakotaField(
         description="Polynomial surrogate model",
@@ -2681,7 +2727,7 @@ class GlobalApproxPolynomial(DakotaBaseModel):
 
 
 class DaceMethodPointerConfig(DakotaBaseModel):
-    """Generated model for DaceMethodPointerConfig"""
+    "Specify a method to gather training data"
 
     pointer: str = DakotaField(
         description="Specify a method to gather training data",
@@ -2717,7 +2763,7 @@ class DaceMethodPointerConfig(DakotaBaseModel):
 
 
 class GlobalApproxImportBuildPointsFileCustomAnnotated(DakotaBaseModel):
-    """Generated model for GlobalApproxImportBuildPointsFileCustomAnnotated"""
+    "Selects custom-annotated tabular file format"
 
     custom_annotated: GlobalApproxImportBuildPointsFileCustomAnnotatedConfig = DakotaField(
         default_factory=GlobalApproxImportBuildPointsFileCustomAnnotatedConfig,
@@ -2737,7 +2783,7 @@ class GlobalApproxImportBuildPointsFileCustomAnnotated(DakotaBaseModel):
 
 
 class GlobalApproxExportApproxPointsFile(DakotaBaseModel):
-    """Generated model for GlobalApproxExportApproxPointsFile"""
+    "Output file for surrogate model value evaluations"
 
     filename: str = DakotaField(
         description="Output file for surrogate model value evaluations",
@@ -2767,7 +2813,7 @@ class GlobalApproxExportApproxPointsFile(DakotaBaseModel):
 
 
 class ImportChallengePointsFileCustomAnnotated(DakotaBaseModel):
-    """Generated model for ImportChallengePointsFileCustomAnnotated"""
+    "Selects custom-annotated tabular file format"
 
     custom_annotated: ImportChallengePointsFileCustomAnnotatedConfig = DakotaField(
         default_factory=ImportChallengePointsFileCustomAnnotatedConfig,
@@ -2787,7 +2833,7 @@ class ImportChallengePointsFileCustomAnnotated(DakotaBaseModel):
 
 
 class Multipoint(DakotaBaseModel):
-    """Generated model for Multipoint"""
+    "Construct a surrogate from multiple existing training points"
 
     multipoint: MultipointConfig = DakotaField(
         description="Construct a surrogate from multiple existing training points"
@@ -2795,9 +2841,10 @@ class Multipoint(DakotaBaseModel):
 
 
 class Ensemble(DakotaBaseModel):
-    """Generated model for Ensemble"""
+    "Ensemble surrogates employ a collection of lower-fidelity models to approximate a truth reference model at reduced cost."
 
     ensemble: Union[OrderedModelFidelities, EnsembleTruthModelPointer] = DakotaField(
+        description="Ensemble surrogates employ a collection of lower-fidelity models to approximate a truth reference model at reduced cost.",
         dakota={
             "materialization": [
                 {
@@ -2807,12 +2854,12 @@ class Ensemble(DakotaBaseModel):
                     "ir_value_type": "String",
                 }
             ]
-        }
+        },
     )
 
 
 class NestedConfig(ModelFourOptionalKeywordsMixin):
-    """Generated model for NestedConfig"""
+    "A model whose responses are computed through the use of a sub-iterator"
 
     optional_interface_pointer: OptionalInterfacePointer | None = DakotaField(
         default=None,
@@ -2827,7 +2874,7 @@ class NestedConfig(ModelFourOptionalKeywordsMixin):
 
 
 class TruncationMethod(DakotaBaseModel):
-    """Generated model for TruncationMethod"""
+    "Metric that estimates active subspace size"
 
     bing_li: Literal[True] | None = DakotaField(
         default=None,
@@ -2884,7 +2931,7 @@ class TruncationMethod(DakotaBaseModel):
 
 
 class AdaptedBasisTruthModelPointer(DakotaBaseModel):
-    """Generated model for AdaptedBasisTruthModelPointer"""
+    'Pointer to specify a \\"truth\\" model, from which to construct a surrogate'
 
     pointer: str = DakotaField(
         description='Pointer to specify a "truth" model, from which to construct a surrogate',
@@ -2931,7 +2978,7 @@ class AdaptedBasisTruthModelPointer(DakotaBaseModel):
 
 
 class RandomFieldConfig(ModelFourOptionalKeywordsMixin):
-    """Generated model for RandomFieldConfig"""
+    "Experimental capability to generate a random field representation. from data, from simulation runs, or from a covariance matrix.  The representation may then be sampled for use as a random field input to another simulation.  THIS IS AN EXPERIMENTAL CAPABILITY."
 
     build_source: (
         Union[RfDataFile, BuildSourceDaceMethodPointer, AnalyticCov] | None
@@ -2999,7 +3046,7 @@ class RandomFieldConfig(ModelFourOptionalKeywordsMixin):
 
 
 class GlobalApproxGPConfig(ModelVarianceExportMixin):
-    """Generated model for GlobalApproxGPConfig"""
+    "Gaussian Process surrogate model"
 
     gp_implementation: Union[GlobalApproxGPDakota, GlobalApproxGPSurfpack] | None = (
         DakotaField(
@@ -3011,7 +3058,7 @@ class GlobalApproxGPConfig(ModelVarianceExportMixin):
 
 
 class GlobalApproxDaceMethodPointer(DakotaBaseModel):
-    """Generated model for GlobalApproxDaceMethodPointer"""
+    "Specify a method to gather training data"
 
     dace_method_pointer: DaceMethodPointerConfig = DakotaField(
         default=...,
@@ -3021,7 +3068,7 @@ class GlobalApproxDaceMethodPointer(DakotaBaseModel):
 
 
 class GlobalApproxImportBuildPointsFile(DakotaBaseModel):
-    """Generated model for GlobalApproxImportBuildPointsFile"""
+    "File containing points you wish to use to build a surrogate"
 
     filename: str = DakotaField(
         description="File containing points you wish to use to build a surrogate",
@@ -3064,7 +3111,7 @@ class GlobalApproxImportBuildPointsFile(DakotaBaseModel):
 
 
 class ImportChallengePointsFile(DakotaBaseModel):
-    """Generated model for ImportChallengePointsFile"""
+    "Datafile of points to assess surrogate quality"
 
     filename: str = DakotaField(
         description="Datafile of points to assess surrogate quality",
@@ -3107,7 +3154,7 @@ class ImportChallengePointsFile(DakotaBaseModel):
 
 
 class NestedSelection(ModelSelection):
-    """Generated model for NestedSelection"""
+    "A model whose responses are computed through the use of a sub-iterator"
 
     nested: NestedConfig = DakotaField(
         description="A model whose responses are computed through the use of a sub-iterator",
@@ -3125,7 +3172,7 @@ class NestedSelection(ModelSelection):
 
 
 class ActiveSubspaceConfig(ModelFourOptionalKeywordsMixin):
-    """Generated model for ActiveSubspaceConfig"""
+    "Active (variable) subspace model"
 
     truth_model_pointer: str = DakotaField(
         description="Pointer to specify a full-space model, from which to construct a lower dimensional surrogate",
@@ -3216,7 +3263,7 @@ class ActiveSubspaceConfig(ModelFourOptionalKeywordsMixin):
 
 
 class AdaptedBasisConfig(ModelFourOptionalKeywordsMixin):
-    """Generated model for AdaptedBasisConfig"""
+    "Basis adaptation model"
 
     truth_model_pointer: AdaptedBasisTruthModelPointer = DakotaField(
         default=...,
@@ -3239,7 +3286,7 @@ class AdaptedBasisConfig(ModelFourOptionalKeywordsMixin):
 
 
 class RandomFieldSelection(ModelSelection):
-    """Generated model for RandomFieldSelection"""
+    "Experimental capability to generate a random field representation. from data, from simulation runs, or from a covariance matrix.  The representation may then be sampled for use as a random field input to another simulation.  THIS IS AN EXPERIMENTAL CAPABILITY."
 
     random_field: RandomFieldConfig = DakotaField(
         description="Experimental capability to generate a random field representation. from data, from simulation runs, or from a covariance matrix.  The representation may then be sampled for use as a random field input to another simulation.  THIS IS AN EXPERIMENTAL CAPABILITY.",
@@ -3257,7 +3304,7 @@ class RandomFieldSelection(ModelSelection):
 
 
 class GlobalApproxGP(DakotaBaseModel):
-    """Generated model for GlobalApproxGP"""
+    "Gaussian Process surrogate model"
 
     gaussian_process: GlobalApproxGPConfig = DakotaField(
         description="Gaussian Process surrogate model", dakota={"aliases": ["kriging"]}
@@ -3265,7 +3312,7 @@ class GlobalApproxGP(DakotaBaseModel):
 
 
 class ActiveSubspaceSelection(ModelSelection):
-    """Generated model for ActiveSubspaceSelection"""
+    "Active (variable) subspace model"
 
     active_subspace: ActiveSubspaceConfig = DakotaField(
         description="Active (variable) subspace model",
@@ -3284,7 +3331,7 @@ class ActiveSubspaceSelection(ModelSelection):
 
 
 class AdaptedBasisSelection(ModelSelection):
-    """Generated model for AdaptedBasisSelection"""
+    "Basis adaptation model"
 
     adapted_basis: AdaptedBasisConfig = DakotaField(
         description="Basis adaptation model",
@@ -3302,7 +3349,7 @@ class AdaptedBasisSelection(ModelSelection):
 
 
 class GlobalApproxConfig(SurrogateCorrectionMixin):
-    """Generated model for GlobalApproxConfig"""
+    "Select a surrogate model with global support"
 
     type: Union[
         ExperimentalGP,
@@ -3389,7 +3436,7 @@ class GlobalApproxConfig(SurrogateCorrectionMixin):
 
 
 class GlobalApprox(DakotaBaseModel):
-    """Generated model for GlobalApprox"""
+    "Select a surrogate model with global support"
 
     global_approx: GlobalApproxConfig = DakotaField(
         description="Select a surrogate model with global support"
@@ -3397,7 +3444,7 @@ class GlobalApprox(DakotaBaseModel):
 
 
 class SurrogateConfig(ModelFourOptionalKeywordsMixin):
-    """Generated model for SurrogateConfig"""
+    "An empirical model that is created from data or the results of a submodel"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CheckPositiveList(context="surrogateconfig", list_field="id_surrogates"),
@@ -3422,7 +3469,7 @@ class SurrogateConfig(ModelFourOptionalKeywordsMixin):
 
 
 class SurrogateSelection(ModelSelection):
-    """Generated model for SurrogateSelection"""
+    "An empirical model that is created from data or the results of a submodel"
 
     surrogate: SurrogateConfig = DakotaField(
         description="An empirical model that is created from data or the results of a submodel",

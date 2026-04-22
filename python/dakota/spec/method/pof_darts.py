@@ -16,10 +16,11 @@ from dakota.spec.shared.misc import (
 
 
 class PofDartsLipschitzLocalEst(DakotaBaseModel):
-    """Generated model for PofDartsLipschitzLocalEst"""
+    "Specify local estimation of the Lipschitz constant"
 
     local_est: Literal[True] = DakotaField(
         default=True,
+        description="Specify local estimation of the Lipschitz constant",
         dakota={
             "materialization": [
                 {
@@ -34,10 +35,11 @@ class PofDartsLipschitzLocalEst(DakotaBaseModel):
 
 
 class PofDartsLipschitzGlobalEst(DakotaBaseModel):
-    """Generated model for PofDartsLipschitzGlobalEst"""
+    "Specify global estimation of the Lipschitz estimate"
 
     global_est: Literal[True] = DakotaField(
         default=True,
+        description="Specify global estimation of the Lipschitz estimate",
         dakota={
             "materialization": [
                 {
@@ -57,7 +59,7 @@ class PofDartsConfig(
     RngOptionsContext2Mixin,
     MethodOptionalModelPointerMixin,
 ):
-    """Generated model for PofDartsConfig"""
+    "Probability-of-Failure (POF) darts is a novel method for estimating the probability of failure based on random sphere-packing."
 
     build_samples: int = DakotaField(
         description="Number of initial model evaluations used in build phase",
@@ -109,7 +111,7 @@ class PofDartsConfig(
 
 
 class PofDartsSelection(MethodSelection):
-    """Generated model for PofDartsSelection"""
+    "Generated model for PofDartsSelection"
 
     pof_darts: PofDartsConfig = DakotaField(
         dakota={

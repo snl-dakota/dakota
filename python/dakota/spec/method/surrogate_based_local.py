@@ -16,7 +16,7 @@ from dakota.spec.shared.misc import (
 
 
 class SurrogateBasedLocalMethodPointer(DakotaBaseModel):
-    """Generated model for SurrogateBasedLocalMethodPointer"""
+    "Pointer to sub-method to apply to a surrogate or branch-and-bound sub-problem"
 
     method_pointer: str = DakotaField(
         description="Pointer to sub-method to apply to a surrogate or branch-and-bound sub-problem",
@@ -35,7 +35,7 @@ class SurrogateBasedLocalMethodPointer(DakotaBaseModel):
 
 
 class SurrogateBasedLocalMethodName(DakotaBaseModel):
-    """Generated model for SurrogateBasedLocalMethodName"""
+    "Specify sub-method by name"
 
     method_name: str = DakotaField(
         description="Specify sub-method by name",
@@ -53,10 +53,11 @@ class SurrogateBasedLocalMethodName(DakotaBaseModel):
 
 
 class OriginalPrimary(DakotaBaseModel):
-    """Generated model for OriginalPrimary"""
+    "Construct approximations of all primary functions"
 
     original_primary: Literal[True] = DakotaField(
         default=True,
+        description="Construct approximations of all primary functions",
         dakota={
             "materialization": [
                 {
@@ -71,10 +72,11 @@ class OriginalPrimary(DakotaBaseModel):
 
 
 class SingleObjective(DakotaBaseModel):
-    """Generated model for SingleObjective"""
+    "Construct approximation a single objective functions only"
 
     single_objective: Literal[True] = DakotaField(
         default=True,
+        description="Construct approximation a single objective functions only",
         dakota={
             "materialization": [
                 {
@@ -89,10 +91,11 @@ class SingleObjective(DakotaBaseModel):
 
 
 class AugmentedLagrangianObjective(DakotaBaseModel):
-    """Generated model for AugmentedLagrangianObjective"""
+    "Augmented Lagrangian approximate subproblem formulation"
 
     augmented_lagrangian_objective: Literal[True] = DakotaField(
         default=True,
+        description="Augmented Lagrangian approximate subproblem formulation",
         dakota={
             "materialization": [
                 {
@@ -107,10 +110,11 @@ class AugmentedLagrangianObjective(DakotaBaseModel):
 
 
 class LagrangianObjective(DakotaBaseModel):
-    """Generated model for LagrangianObjective"""
+    "Lagrangian approximate subproblem formulation"
 
     lagrangian_objective: Literal[True] = DakotaField(
         default=True,
+        description="Lagrangian approximate subproblem formulation",
         dakota={
             "materialization": [
                 {
@@ -125,10 +129,11 @@ class LagrangianObjective(DakotaBaseModel):
 
 
 class OriginalConstraints(DakotaBaseModel):
-    """Generated model for OriginalConstraints"""
+    "Use the constraints directly"
 
     original_constraints: Literal[True] = DakotaField(
         default=True,
+        description="Use the constraints directly",
         dakota={
             "materialization": [
                 {
@@ -143,10 +148,11 @@ class OriginalConstraints(DakotaBaseModel):
 
 
 class LinearizedConstraints(DakotaBaseModel):
-    """Generated model for LinearizedConstraints"""
+    "Use linearized approximations to the constraints"
 
     linearized_constraints: Literal[True] = DakotaField(
         default=True,
+        description="Use linearized approximations to the constraints",
         dakota={
             "materialization": [
                 {
@@ -161,10 +167,11 @@ class LinearizedConstraints(DakotaBaseModel):
 
 
 class NoConstraints(DakotaBaseModel):
-    """Generated model for NoConstraints"""
+    "Don't use constraints"
 
     no_constraints: Literal[True] = DakotaField(
         default=True,
+        description="Don't use constraints",
         dakota={
             "materialization": [
                 {
@@ -179,10 +186,11 @@ class NoConstraints(DakotaBaseModel):
 
 
 class PenaltyMerit(DakotaBaseModel):
-    """Generated model for PenaltyMerit"""
+    "Use penalty merit function"
 
     penalty_merit: Literal[True] = DakotaField(
         default=True,
+        description="Use penalty merit function",
         dakota={
             "materialization": [
                 {
@@ -197,10 +205,11 @@ class PenaltyMerit(DakotaBaseModel):
 
 
 class AdaptivePenaltyMerit(DakotaBaseModel):
-    """Generated model for AdaptivePenaltyMerit"""
+    "Use adaptive penalty merit function"
 
     adaptive_penalty_merit: Literal[True] = DakotaField(
         default=True,
+        description="Use adaptive penalty merit function",
         dakota={
             "materialization": [
                 {
@@ -215,10 +224,11 @@ class AdaptivePenaltyMerit(DakotaBaseModel):
 
 
 class LagrangianMerit(DakotaBaseModel):
-    """Generated model for LagrangianMerit"""
+    "Use first-order Lagrangian merit function"
 
     lagrangian_merit: Literal[True] = DakotaField(
         default=True,
+        description="Use first-order Lagrangian merit function",
         dakota={
             "materialization": [
                 {
@@ -233,10 +243,11 @@ class LagrangianMerit(DakotaBaseModel):
 
 
 class AugmentedLagrangianMerit(DakotaBaseModel):
-    """Generated model for AugmentedLagrangianMerit"""
+    "Use combined penalty and zeroth-order Lagrangian merit function"
 
     augmented_lagrangian_merit: Literal[True] = DakotaField(
         default=True,
+        description="Use combined penalty and zeroth-order Lagrangian merit function",
         dakota={
             "materialization": [
                 {
@@ -251,10 +262,11 @@ class AugmentedLagrangianMerit(DakotaBaseModel):
 
 
 class TrRatio(DakotaBaseModel):
-    """Generated model for TrRatio"""
+    "Surrogate-Based Local iterate acceptance logic"
 
     tr_ratio: Literal[True] = DakotaField(
         default=True,
+        description="Surrogate-Based Local iterate acceptance logic",
         dakota={
             "materialization": [
                 {
@@ -269,10 +281,11 @@ class TrRatio(DakotaBaseModel):
 
 
 class Filter(DakotaBaseModel):
-    """Generated model for Filter"""
+    "Surrogate-Based Local iterate acceptance logic"
 
     filter: Literal[True] = DakotaField(
         default=True,
+        description="Surrogate-Based Local iterate acceptance logic",
         dakota={
             "materialization": [
                 {
@@ -287,7 +300,7 @@ class Filter(DakotaBaseModel):
 
 
 class ConstraintRelax(DakotaBaseModel):
-    """Generated model for ConstraintRelax"""
+    "Enable constraint relaxation"
 
     homotopy: Literal[True] = DakotaField(
         description="Surrogate-Based local constraint relaxation method for infeasible iterates",
@@ -305,7 +318,7 @@ class ConstraintRelax(DakotaBaseModel):
 
 
 class ApproxSubproblem(DakotaBaseModel):
-    """Generated model for ApproxSubproblem"""
+    "Identify functions to be included in surrogate merit function"
 
     objective_formulation: Union[
         OriginalPrimary,
@@ -330,7 +343,7 @@ class SurrogateBasedLocalConfig(
     MethodConvergenceTolMixin,
     DefaultConstraintTolMixin,
 ):
-    """Generated model for SurrogateBasedLocalConfig"""
+    "Local Surrogate Based Optimization"
 
     sub_method: Union[
         SurrogateBasedLocalMethodPointer, SurrogateBasedLocalMethodName
@@ -400,7 +413,7 @@ class SurrogateBasedLocalConfig(
 
 
 class SurrogateBasedLocalSelection(MethodSelection):
-    """Generated model for SurrogateBasedLocalSelection"""
+    "Generated model for SurrogateBasedLocalSelection"
 
     surrogate_based_local: SurrogateBasedLocalConfig = DakotaField(
         dakota={

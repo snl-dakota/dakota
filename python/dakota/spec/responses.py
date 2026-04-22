@@ -31,7 +31,7 @@ from dakota.spec.shared.responses import (
 
 
 class ObjectiveFunctionsNonlinearInequalityConstraints(DakotaBaseModel):
-    """Generated model for ObjectiveFunctionsNonlinearInequalityConstraints"""
+    "Group to specify nonlinear inequality constraints"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CompareLength(
@@ -140,7 +140,7 @@ class ObjectiveFunctionsNonlinearInequalityConstraints(DakotaBaseModel):
 
 
 class ObjectiveFunctionsNonlinearEqualityConstraints(DakotaBaseModel):
-    """Generated model for ObjectiveFunctionsNonlinearEqualityConstraints"""
+    "Group to specify nonlinear equality constraints"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CompareLength(
@@ -229,7 +229,7 @@ class ObjectiveFunctionsNonlinearEqualityConstraints(DakotaBaseModel):
 
 
 class FieldObjectives(DakotaBaseModel):
-    """Generated model for FieldObjectives"""
+    "Number of field objective functions"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CompareLength(
@@ -293,7 +293,7 @@ class FieldObjectives(DakotaBaseModel):
 
 
 class FieldCalibrationTerms(DakotaBaseModel):
-    """Generated model for FieldCalibrationTerms"""
+    "Number of field calibration terms"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CompareLength(
@@ -357,7 +357,7 @@ class FieldCalibrationTerms(DakotaBaseModel):
 
 
 class ScalarDataFile(ResponseScalarDataFormatMixin):
-    """Generated model for ScalarDataFile"""
+    "Specify a scalar data file to complement field data files (mixed case)"
 
     filename: str = DakotaField(
         description="Specify a scalar data file to complement field data files (mixed case)",
@@ -374,7 +374,7 @@ class ScalarDataFile(ResponseScalarDataFormatMixin):
 
 
 class CalibrationDataFileConfig(ResponseScalarDataFormatMixin):
-    """Generated model for CalibrationDataFileConfig"""
+    "Supply scalar calibration data only"
 
     filename: str = DakotaField(
         description="Supply scalar calibration data only",
@@ -433,7 +433,7 @@ class CalibrationDataFileConfig(ResponseScalarDataFormatMixin):
 
 
 class CalibrationTermsNonlinearInequalityConstraints(DakotaBaseModel):
-    """Generated model for CalibrationTermsNonlinearInequalityConstraints"""
+    "Group to specify nonlinear inequality constraints"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CompareLength(
@@ -542,7 +542,7 @@ class CalibrationTermsNonlinearInequalityConstraints(DakotaBaseModel):
 
 
 class CalibrationTermsNonlinearEqualityConstraints(DakotaBaseModel):
-    """Generated model for CalibrationTermsNonlinearEqualityConstraints"""
+    "Group to specify nonlinear equality constraints"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CompareLength(
@@ -631,7 +631,7 @@ class CalibrationTermsNonlinearEqualityConstraints(DakotaBaseModel):
 
 
 class FieldResponses(DakotaBaseModel):
-    """Generated model for FieldResponses"""
+    "Number of field responses functions"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CompareLength(
@@ -695,7 +695,7 @@ class FieldResponses(DakotaBaseModel):
 
 
 class ObjectiveFunctionsConfig(DakotaBaseModel):
-    """Generated model for ObjectiveFunctionsConfig"""
+    "Response type suitable for optimization"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CompareLength(
@@ -829,7 +829,7 @@ class ObjectiveFunctionsConfig(DakotaBaseModel):
 
 
 class CalibrationDataConfig(DakotaBaseModel):
-    """Generated model for CalibrationDataConfig"""
+    "Supply field or mixed field/scalar calibration data"
 
     data_directory: str | None = DakotaField(
         default=None,
@@ -907,7 +907,7 @@ class CalibrationDataConfig(DakotaBaseModel):
 
 
 class CalibrationDataFile(DakotaBaseModel):
-    """Generated model for CalibrationDataFile"""
+    "Supply scalar calibration data only"
 
     calibration_data_file: CalibrationDataFileConfig = DakotaField(
         default=...,
@@ -917,7 +917,7 @@ class CalibrationDataFile(DakotaBaseModel):
 
 
 class ResponseFunctionsConfig(DakotaBaseModel):
-    """Generated model for ResponseFunctionsConfig"""
+    "Generic response type"
 
     count: int = DakotaField(
         ge=0,
@@ -955,7 +955,7 @@ class ResponseFunctionsConfig(DakotaBaseModel):
 
 
 class ObjectiveFunctions(DakotaBaseModel):
-    """Generated model for ObjectiveFunctions"""
+    "Response type suitable for optimization"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CheckPermittedValues(
@@ -978,7 +978,7 @@ class ObjectiveFunctions(DakotaBaseModel):
 
 
 class CalibrationData(DakotaBaseModel):
-    """Generated model for CalibrationData"""
+    "Supply field or mixed field/scalar calibration data"
 
     calibration_data: CalibrationDataConfig = DakotaField(
         description="Supply field or mixed field/scalar calibration data",
@@ -995,7 +995,7 @@ class CalibrationData(DakotaBaseModel):
 
 
 class ResponseFunctions(DakotaBaseModel):
-    """Generated model for ResponseFunctions"""
+    "Generic response type"
 
     response_functions: ResponseFunctionsConfig = DakotaField(
         default=...,
@@ -1005,7 +1005,7 @@ class ResponseFunctions(DakotaBaseModel):
 
 
 class CalibrationTermsConfig(DakotaBaseModel):
-    """Generated model for CalibrationTermsConfig"""
+    "Response type suitable for calibration or least squares"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CompareLength(
@@ -1128,7 +1128,7 @@ class CalibrationTermsConfig(DakotaBaseModel):
 
 
 class CalibrationTerms(DakotaBaseModel):
-    """Generated model for CalibrationTerms"""
+    "Response type suitable for calibration or least squares"
 
     calibration_terms: CalibrationTermsConfig = DakotaField(
         default=...,
@@ -1141,7 +1141,7 @@ class CalibrationTerms(DakotaBaseModel):
 
 
 class ResponsesConfig(ResponseGradientsMixin, ResponseHessiansMixin):
-    """Generated model for ResponsesConfig"""
+    "Description of the model output data returned to Dakota upon evaluation of an interface."
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CheckResponseDescriptorsLength(context="responses"),

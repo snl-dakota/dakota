@@ -18,7 +18,7 @@ class ColinyCobylaConfig(
     ColinyCommonOptsMixin,
     MethodOptionalModelPointerMixin,
 ):
-    """Generated model for ColinyCobylaConfig"""
+    "Constrained Optimization BY Linear Approximations (COBYLA)"
 
     initial_delta: DakotaFloat = DakotaField(
         default=-1.0,
@@ -49,7 +49,7 @@ class ColinyCobylaConfig(
 
 
 class ColinyCobylaSelection(MethodSelection):
-    """Generated model for ColinyCobylaSelection"""
+    "Generated model for ColinyCobylaSelection"
 
     coliny_cobyla: ColinyCobylaConfig = DakotaField(
         dakota={

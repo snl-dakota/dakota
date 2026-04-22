@@ -15,7 +15,7 @@ from dakota.spec.shared.misc import (
 class CenteredParameterStudyConfig(
     MethodThreeOptionalKeywordsMixin, MethodOptionalModelPointerMixin
 ):
-    """Generated model for CenteredParameterStudyConfig"""
+    "Samples variables along points moving out from a center point"
 
     step_vector: list[DakotaFloat] = DakotaField(
         description="Size of steps to be taken in each dimension of a centered parameter study",
@@ -45,7 +45,7 @@ class CenteredParameterStudyConfig(
 
 
 class CenteredParameterStudySelection(MethodSelection):
-    """Generated model for CenteredParameterStudySelection"""
+    "Generated model for CenteredParameterStudySelection"
 
     centered_parameter_study: CenteredParameterStudyConfig = DakotaField(
         dakota={

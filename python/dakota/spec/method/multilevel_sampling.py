@@ -32,22 +32,23 @@ class Weighted(
     MethodMlmfSubProblemSolverMixin,
     MethodMlmfSolverMetricMixin,
 ):
-    """Generated model for Weighted"""
+    "Include control variate weights for each of the recursive differences using in multilevel Monte Carlo (MLMC)"
 
     pass
 
 
 class MultilevelSamplingExportSampleSequence(MethodExportSamplesFormatMixin):
-    """Generated model for MultilevelSamplingExportSampleSequence"""
+    "Enable export of multilevel/multifidelity sample sequences to individual files"
 
     pass
 
 
 class Mean(DakotaBaseModel):
-    """Generated model for Mean"""
+    "Fit MLMC sample allocation to control the variance of the estimator for the mean."
 
     mean: Literal[True] = DakotaField(
         default=True,
+        description="Fit MLMC sample allocation to control the variance of the estimator for the mean.",
         dakota={
             "materialization": [
                 {
@@ -62,7 +63,7 @@ class Mean(DakotaBaseModel):
 
 
 class VarianceConfig(DakotaBaseModel):
-    """Generated model for VarianceConfig"""
+    "Fit MLMC sample allocation to control the variance of the estimator for the variance."
 
     optimization: Literal[True] | None = DakotaField(
         default=None,
@@ -80,7 +81,7 @@ class VarianceConfig(DakotaBaseModel):
 
 
 class StandardDeviationConfig(DakotaBaseModel):
-    """Generated model for StandardDeviationConfig"""
+    "Fit MLMC sample allocation to control the variance of the estimator for the standard deviation."
 
     optimization: Literal[True] | None = DakotaField(
         default=None,
@@ -98,7 +99,7 @@ class StandardDeviationConfig(DakotaBaseModel):
 
 
 class ScalarizationConfig(DakotaBaseModel):
-    """Generated model for ScalarizationConfig"""
+    "Fit MLMC sample allocation to a mixture of terms of means and standard deviations."
 
     scalarization_response_mapping: list[DakotaFloat] | None = DakotaField(
         default=None,
@@ -129,10 +130,11 @@ class ScalarizationConfig(DakotaBaseModel):
 
 
 class Sum(DakotaBaseModel):
-    """Generated model for Sum"""
+    "Aggregate the variances over all QoIs to generate a target for each level in a MLMC algorithm."
 
     sum: Literal[True] = DakotaField(
         default=True,
+        description="Aggregate the variances over all QoIs to generate a target for each level in a MLMC algorithm.",
         dakota={
             "materialization": [
                 {
@@ -147,10 +149,11 @@ class Sum(DakotaBaseModel):
 
 
 class Max(DakotaBaseModel):
-    """Generated model for Max"""
+    "Compute sample allocation for each response and use maximum over responses for each level in a MLMC algorithm"
 
     max: Literal[True] = DakotaField(
         default=True,
+        description="Compute sample allocation for each response and use maximum over responses for each level in a MLMC algorithm",
         dakota={
             "materialization": [
                 {
@@ -165,10 +168,11 @@ class Max(DakotaBaseModel):
 
 
 class VarianceConstraint(DakotaBaseModel):
-    """Generated model for VarianceConstraint"""
+    "Allocate samples to target specified variance"
 
     variance_constraint: Literal[True] = DakotaField(
         default=True,
+        description="Allocate samples to target specified variance",
         dakota={
             "materialization": [
                 {
@@ -183,10 +187,11 @@ class VarianceConstraint(DakotaBaseModel):
 
 
 class CostConstraint(DakotaBaseModel):
-    """Generated model for CostConstraint"""
+    "Allocate samples to target specified cost"
 
     cost_constraint: Literal[True] = DakotaField(
         default=True,
+        description="Allocate samples to target specified cost",
         dakota={
             "materialization": [
                 {
@@ -201,7 +206,7 @@ class CostConstraint(DakotaBaseModel):
 
 
 class Variance(DakotaBaseModel):
-    """Generated model for Variance"""
+    "Fit MLMC sample allocation to control the variance of the estimator for the variance."
 
     variance: VarianceConfig = DakotaField(
         default_factory=VarianceConfig,
@@ -221,7 +226,7 @@ class Variance(DakotaBaseModel):
 
 
 class StandardDeviation(DakotaBaseModel):
-    """Generated model for StandardDeviation"""
+    "Fit MLMC sample allocation to control the variance of the estimator for the standard deviation."
 
     standard_deviation: StandardDeviationConfig = DakotaField(
         default_factory=StandardDeviationConfig,
@@ -241,7 +246,7 @@ class StandardDeviation(DakotaBaseModel):
 
 
 class Scalarization(DakotaBaseModel):
-    """Generated model for Scalarization"""
+    "Fit MLMC sample allocation to a mixture of terms of means and standard deviations."
 
     scalarization: ScalarizationConfig = DakotaField(
         default_factory=ScalarizationConfig,
@@ -272,7 +277,7 @@ class MultilevelSamplingConfig(
     RngOptionsContext2Mixin,
     MethodOptionalModelPointerMixin,
 ):
-    """Generated model for MultilevelSamplingConfig"""
+    "Multilevel Monte Carlo (MLMC) sampling method for UQ"
 
     weighted: Weighted | None = DakotaField(
         default=None,
@@ -323,7 +328,7 @@ class MultilevelSamplingConfig(
 
 
 class MultilevelSamplingSelection(MethodSelection):
-    """Generated model for MultilevelSamplingSelection"""
+    "Generated model for MultilevelSamplingSelection"
 
     multilevel_sampling: MultilevelSamplingConfig = DakotaField(
         dakota={

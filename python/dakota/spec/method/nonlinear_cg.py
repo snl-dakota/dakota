@@ -22,7 +22,7 @@ class NonlinearCgConfig(
     DefaultScalingMixin,
     MethodOptionalModelPointerMixin,
 ):
-    """Generated model for NonlinearCgConfig"""
+    "(Experimental) nonlinear conjugate gradient optimization"
 
     misc_options: list[str] | None = DakotaField(
         default=None,
@@ -40,7 +40,7 @@ class NonlinearCgConfig(
 
 
 class NonlinearCgSelection(MethodSelection):
-    """Generated model for NonlinearCgSelection"""
+    "Generated model for NonlinearCgSelection"
 
     nonlinear_cg: NonlinearCgConfig = DakotaField(
         dakota={

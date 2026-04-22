@@ -18,7 +18,7 @@ from dakota.spec.shared.misc import (
 
 
 class FitnessType(DakotaBaseModel):
-    """Generated model for FitnessType"""
+    "Select the fitness type for JEGA methods"
 
     merit_function: Literal[True] = DakotaField(
         description="Balance goals of reducing objective function and satisfying constraints",
@@ -50,10 +50,11 @@ class FitnessType(DakotaBaseModel):
 
 
 class SogaReplacementTypeElitist(DakotaBaseModel):
-    """Generated model for SogaReplacementTypeElitist"""
+    "Use the best designs to form a new population"
 
     elitist: Literal[True] = DakotaField(
         default=True,
+        description="Use the best designs to form a new population",
         dakota={
             "materialization": [
                 {
@@ -68,10 +69,11 @@ class SogaReplacementTypeElitist(DakotaBaseModel):
 
 
 class FavorFeasible(DakotaBaseModel):
-    """Generated model for FavorFeasible"""
+    "Prioritize feasible designs"
 
     favor_feasible: Literal[True] = DakotaField(
         default=True,
+        description="Prioritize feasible designs",
         dakota={
             "materialization": [
                 {
@@ -86,10 +88,11 @@ class FavorFeasible(DakotaBaseModel):
 
 
 class SogaReplacementTypeRouletteWheel(DakotaBaseModel):
-    """Generated model for SogaReplacementTypeRouletteWheel"""
+    "Replace population"
 
     roulette_wheel: Literal[True] = DakotaField(
         default=True,
+        description="Replace population",
         dakota={
             "materialization": [
                 {
@@ -104,10 +107,11 @@ class SogaReplacementTypeRouletteWheel(DakotaBaseModel):
 
 
 class SogaReplacementTypeUniqueRouletteWheel(DakotaBaseModel):
-    """Generated model for SogaReplacementTypeUniqueRouletteWheel"""
+    "Replace population"
 
     unique_roulette_wheel: Literal[True] = DakotaField(
         default=True,
+        description="Replace population",
         dakota={
             "materialization": [
                 {
@@ -122,7 +126,7 @@ class SogaReplacementTypeUniqueRouletteWheel(DakotaBaseModel):
 
 
 class BestFitnessTrackerConfig(DakotaBaseModel):
-    """Generated model for BestFitnessTrackerConfig"""
+    "Tracks the best fitness of the population"
 
     percent_change: DakotaFloat = DakotaField(
         default=-DBL_MAX,
@@ -160,7 +164,7 @@ class BestFitnessTrackerConfig(DakotaBaseModel):
 
 
 class AverageFitnessTrackerConfig(DakotaBaseModel):
-    """Generated model for AverageFitnessTrackerConfig"""
+    "Tracks the average fitness of the population"
 
     percent_change: DakotaFloat = DakotaField(
         default=-DBL_MAX,
@@ -198,7 +202,7 @@ class AverageFitnessTrackerConfig(DakotaBaseModel):
 
 
 class BestFitnessTracker(DakotaBaseModel):
-    """Generated model for BestFitnessTracker"""
+    "Tracks the best fitness of the population"
 
     best_fitness_tracker: BestFitnessTrackerConfig = DakotaField(
         description="Tracks the best fitness of the population",
@@ -216,7 +220,7 @@ class BestFitnessTracker(DakotaBaseModel):
 
 
 class AverageFitnessTracker(DakotaBaseModel):
-    """Generated model for AverageFitnessTracker"""
+    "Tracks the average fitness of the population"
 
     average_fitness_tracker: AverageFitnessTrackerConfig = DakotaField(
         description="Tracks the average fitness of the population",
@@ -240,7 +244,7 @@ class SogaConfig(
     DefaultScalingMixin,
     MethodJegaCommonOptsMixin,
 ):
-    """Generated model for SogaConfig"""
+    "Single-objective Genetic Algorithm (a.k.a Evolutionary Algorithm)"
 
     fitness_type: FitnessType | None = DakotaField(
         default=None, description="Select the fitness type for JEGA methods"
@@ -268,7 +272,7 @@ class SogaConfig(
 
 
 class SogaSelection(MethodSelection):
-    """Generated model for SogaSelection"""
+    "Generated model for SogaSelection"
 
     soga: SogaConfig = DakotaField(
         dakota={

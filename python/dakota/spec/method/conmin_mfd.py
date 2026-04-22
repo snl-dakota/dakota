@@ -11,13 +11,13 @@ from dakota.spec.shared.optimization import MethodConminCommonOptsMixin
 
 
 class ConminMfdConfig(MethodThreeOptionalKeywordsMixin, MethodConminCommonOptsMixin):
-    """Generated model for ConminMfdConfig"""
+    "CONMIN method of feasible directions"
 
     pass
 
 
 class ConminMfdSelection(MethodSelection):
-    """Generated model for ConminMfdSelection"""
+    "Generated model for ConminMfdSelection"
 
     conmin_mfd: ConminMfdConfig = DakotaField(
         dakota={

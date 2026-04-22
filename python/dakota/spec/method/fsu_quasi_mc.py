@@ -16,10 +16,11 @@ from dakota.spec.shared.misc import (
 
 
 class FsuQuasiMcHalton(DakotaBaseModel):
-    """Generated model for FsuQuasiMcHalton"""
+    "Generate samples from a Halton sequence"
 
     halton: Literal[True] = DakotaField(
         default=True,
+        description="Generate samples from a Halton sequence",
         dakota={
             "materialization": [
                 {
@@ -34,10 +35,11 @@ class FsuQuasiMcHalton(DakotaBaseModel):
 
 
 class Hammersley(DakotaBaseModel):
-    """Generated model for Hammersley"""
+    "Use Hammersley sequences"
 
     hammersley: Literal[True] = DakotaField(
         default=True,
+        description="Use Hammersley sequences",
         dakota={
             "materialization": [
                 {
@@ -57,7 +59,7 @@ class FsuQuasiMcConfig(
     MethodMaxIterationsContext1Mixin,
     MethodOptionalModelPointerMixin,
 ):
-    """Generated model for FsuQuasiMcConfig"""
+    "Design of Computer Experiments - Quasi-Monte Carlo sampling"
 
     sequence: Union[FsuQuasiMcHalton, Hammersley] = DakotaField(
         description="Sequence Type", dakota={"anchor": True, "union_pattern": 4}
@@ -156,6 +158,6 @@ class FsuQuasiMcConfig(
 
 
 class FsuQuasiMcSelection(MethodSelection):
-    """Generated model for FsuQuasiMcSelection"""
+    "Generated model for FsuQuasiMcSelection"
 
     fsu_quasi_mc: FsuQuasiMcConfig

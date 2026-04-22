@@ -19,10 +19,11 @@ from dakota.spec.shared.surrogate import MethodExportApproxFormatMixin
 
 
 class PredictedVariance(DakotaBaseModel):
-    """Generated model for PredictedVariance"""
+    "Pick points with highest variance"
 
     predicted_variance: Literal[True] = DakotaField(
         default=True,
+        description="Pick points with highest variance",
         dakota={
             "materialization": [
                 {
@@ -37,10 +38,11 @@ class PredictedVariance(DakotaBaseModel):
 
 
 class FitnessMetricDistance(DakotaBaseModel):
-    """Generated model for FitnessMetricDistance"""
+    "Space filling metric"
 
     distance: Literal[True] = DakotaField(
         default=True,
+        description="Space filling metric",
         dakota={
             "materialization": [
                 {
@@ -55,10 +57,11 @@ class FitnessMetricDistance(DakotaBaseModel):
 
 
 class Gradient(DakotaBaseModel):
-    """Generated model for Gradient"""
+    "Fill the range space of the surrogate"
 
     gradient: Literal[True] = DakotaField(
         default=True,
+        description="Fill the range space of the surrogate",
         dakota={
             "materialization": [
                 {
@@ -73,10 +76,11 @@ class Gradient(DakotaBaseModel):
 
 
 class Naive(DakotaBaseModel):
-    """Generated model for Naive"""
+    "Take the highest scoring candidates"
 
     naive: Literal[True] = DakotaField(
         default=True,
+        description="Take the highest scoring candidates",
         dakota={
             "materialization": [
                 {
@@ -91,10 +95,11 @@ class Naive(DakotaBaseModel):
 
 
 class DistancePenalty(DakotaBaseModel):
-    """Generated model for DistancePenalty"""
+    "Add a penalty to spread out the points in the batch"
 
     distance_penalty: Literal[True] = DakotaField(
         default=True,
+        description="Add a penalty to spread out the points in the batch",
         dakota={
             "materialization": [
                 {
@@ -109,10 +114,11 @@ class DistancePenalty(DakotaBaseModel):
 
 
 class Topology(DakotaBaseModel):
-    """Generated model for Topology"""
+    "In this selection strategy, we use information about the topology of the space from the Morse-Smale complex to identify next points to select."
 
     topology: Literal[True] = DakotaField(
         default=True,
+        description="In this selection strategy, we use information about the topology of the space from the Morse-Smale complex to identify next points to select.",
         dakota={
             "materialization": [
                 {
@@ -127,10 +133,11 @@ class Topology(DakotaBaseModel):
 
 
 class ConstantLiar(DakotaBaseModel):
-    """Generated model for ConstantLiar"""
+    "Use information from the existing surrogate model to predict what the surrogate upgrade will be with new points."
 
     constant_liar: Literal[True] = DakotaField(
         default=True,
+        description="Use information from the existing surrogate model to predict what the surrogate upgrade will be with new points.",
         dakota={
             "materialization": [
                 {
@@ -145,7 +152,7 @@ class ConstantLiar(DakotaBaseModel):
 
 
 class AdaptiveSamplingExportApproxPointsFile(MethodExportApproxFormatMixin):
-    """Generated model for AdaptiveSamplingExportApproxPointsFile"""
+    "Output file for surrogate model value evaluations"
 
     filename: str = DakotaField(
         description="Output file for surrogate model value evaluations",
@@ -169,7 +176,7 @@ class AdaptiveSamplingConfig(
     RngOptionsContext2Mixin,
     MethodOptionalModelPointerMixin,
 ):
-    """Generated model for AdaptiveSamplingConfig"""
+    "(Experimental) Adaptively refine a Gaussian process surrogate"
 
     initial_samples: int = DakotaField(
         default=0,
@@ -262,7 +269,7 @@ class AdaptiveSamplingConfig(
 
 
 class AdaptiveSamplingSelection(MethodSelection):
-    """Generated model for AdaptiveSamplingSelection"""
+    "Generated model for AdaptiveSamplingSelection"
 
     adaptive_sampling: AdaptiveSamplingConfig = DakotaField(
         dakota={

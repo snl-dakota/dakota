@@ -18,7 +18,7 @@ from dakota.spec.shared.misc import (
 class PsuadeMoatConfig(
     MethodThreeOptionalKeywordsMixin, MethodOptionalModelPointerMixin
 ):
-    """Generated model for PsuadeMoatConfig"""
+    "Morris One-at-a-Time"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CheckNonnegativeList(context="psuademoatconfig", list_field="partitions"),
@@ -67,7 +67,7 @@ class PsuadeMoatConfig(
 
 
 class PsuadeMoatSelection(MethodSelection):
-    """Generated model for PsuadeMoatSelection"""
+    "Generated model for PsuadeMoatSelection"
 
     psuade_moat: PsuadeMoatConfig = DakotaField(
         dakota={

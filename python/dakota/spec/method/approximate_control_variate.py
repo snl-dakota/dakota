@@ -27,10 +27,11 @@ from dakota.spec.shared.sampling import (
 
 
 class AcvIndependentSampling(DakotaBaseModel):
-    """Generated model for AcvIndependentSampling"""
+    "Sampling scheme within the approximate control variate (ACV) algorithm that employs independent samples (IS) across model pairings"
 
     acv_independent_sampling: Literal[True] = DakotaField(
         default=True,
+        description="Sampling scheme within the approximate control variate (ACV) algorithm that employs independent samples (IS) across model pairings",
         dakota={
             "aliases": ["acv_is"],
             "materialization": [
@@ -46,10 +47,11 @@ class AcvIndependentSampling(DakotaBaseModel):
 
 
 class AcvMultifidelity(DakotaBaseModel):
-    """Generated model for AcvMultifidelity"""
+    "Approximate control variate (ACV) algorithm that employs a nested pyramid sample pattern, similar to MFMC"
 
     acv_multifidelity: Literal[True] = DakotaField(
         default=True,
+        description="Approximate control variate (ACV) algorithm that employs a nested pyramid sample pattern, similar to MFMC",
         dakota={
             "aliases": ["acv_mf"],
             "materialization": [
@@ -65,10 +67,11 @@ class AcvMultifidelity(DakotaBaseModel):
 
 
 class AcvRecursiveDiff(DakotaBaseModel):
-    """Generated model for AcvRecursiveDiff"""
+    "Sampling scheme within the approximate control variate (ACV) algorithm that employs weighted recursive differences (RD) across model pairings"
 
     acv_recursive_diff: Literal[True] = DakotaField(
         default=True,
+        description="Sampling scheme within the approximate control variate (ACV) algorithm that employs weighted recursive differences (RD) across model pairings",
         dakota={
             "aliases": ["acv_rd"],
             "materialization": [
@@ -84,10 +87,11 @@ class AcvRecursiveDiff(DakotaBaseModel):
 
 
 class ApproximateControlVariateSearchModelGraphsNoRecursion(DakotaBaseModel):
-    """Generated model for ApproximateControlVariateSearchModelGraphsNoRecursion"""
+    "Do not recur over admissible DAGs for a given model ensemble"
 
     no_recursion: Literal[True] = DakotaField(
         default=True,
+        description="Do not recur over admissible DAGs for a given model ensemble",
         dakota={
             "materialization": [
                 {
@@ -102,10 +106,11 @@ class ApproximateControlVariateSearchModelGraphsNoRecursion(DakotaBaseModel):
 
 
 class KlRecursion(DakotaBaseModel):
-    """Generated model for KlRecursion"""
+    "Model graph enumeration that follows the ACV-KL partitioning scheme"
 
     kl_recursion: Literal[True] = DakotaField(
         default=True,
+        description="Model graph enumeration that follows the ACV-KL partitioning scheme",
         dakota={
             "materialization": [
                 {
@@ -120,7 +125,7 @@ class KlRecursion(DakotaBaseModel):
 
 
 class PartialRecursionConfig(DakotaBaseModel):
-    """Generated model for PartialRecursionConfig"""
+    "Perform a partial recursion of admissible DAGs"
 
     depth_limit: int = DakotaField(
         description="Throttle the depth for a partial recursion of admissible DAGs",
@@ -137,10 +142,11 @@ class PartialRecursionConfig(DakotaBaseModel):
 
 
 class ApproximateControlVariateSearchModelGraphsFullRecursion(DakotaBaseModel):
-    """Generated model for ApproximateControlVariateSearchModelGraphsFullRecursion"""
+    "Perform a full recursion of all admissible DAGs for a given model ensemble"
 
     full_recursion: Literal[True] = DakotaField(
         default=True,
+        description="Perform a full recursion of all admissible DAGs for a given model ensemble",
         dakota={
             "materialization": [
                 {
@@ -155,13 +161,13 @@ class ApproximateControlVariateSearchModelGraphsFullRecursion(DakotaBaseModel):
 
 
 class ApproximateControlVariateExportSampleSequence(MethodExportSamplesFormatMixin):
-    """Generated model for ApproximateControlVariateExportSampleSequence"""
+    "Enable export of multilevel/multifidelity sample sequences to individual files"
 
     pass
 
 
 class PartialRecursion(DakotaBaseModel):
-    """Generated model for PartialRecursion"""
+    "Perform a partial recursion of admissible DAGs"
 
     partial_recursion: PartialRecursionConfig = DakotaField(
         description="Perform a partial recursion of admissible DAGs",
@@ -179,7 +185,7 @@ class PartialRecursion(DakotaBaseModel):
 
 
 class ApproximateControlVariateSearchModelGraphs(DakotaBaseModel):
-    """Generated model for ApproximateControlVariateSearchModelGraphs"""
+    "Perform a recursion of admissible DAGs for a given model ensemble"
 
     model_selection: Literal[True] | None = DakotaField(
         default=None,
@@ -220,7 +226,7 @@ class ApproximateControlVariateConfig(
     RngOptionsContext2Mixin,
     MethodOptionalModelPointerMixin,
 ):
-    """Generated model for ApproximateControlVariateConfig"""
+    "Approximate control variate (ACV) sampling methods for UQ"
 
     solution_approach: Union[
         AcvIndependentSampling, AcvMultifidelity, AcvRecursiveDiff
@@ -264,7 +270,7 @@ class ApproximateControlVariateConfig(
 
 
 class ApproximateControlVariateSelection(MethodSelection):
-    """Generated model for ApproximateControlVariateSelection"""
+    "Generated model for ApproximateControlVariateSelection"
 
     approximate_control_variate: ApproximateControlVariateConfig = DakotaField(
         dakota={

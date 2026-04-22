@@ -19,10 +19,11 @@ from dakota.spec.shared.misc import (
 
 
 class MeritMax(DakotaBaseModel):
-    """Generated model for MeritMax"""
+    "Nonsmoothed merit function"
 
     merit_max: Literal[True] = DakotaField(
         default=True,
+        description="Nonsmoothed merit function",
         dakota={
             "materialization": [
                 {
@@ -37,10 +38,11 @@ class MeritMax(DakotaBaseModel):
 
 
 class MeritMaxSmooth(DakotaBaseModel):
-    """Generated model for MeritMaxSmooth"""
+    "Smoothed merit function"
 
     merit_max_smooth: Literal[True] = DakotaField(
         default=True,
+        description="Smoothed merit function",
         dakota={
             "materialization": [
                 {
@@ -55,10 +57,11 @@ class MeritMaxSmooth(DakotaBaseModel):
 
 
 class Merit1(DakotaBaseModel):
-    """Generated model for Merit1"""
+    "Nonsmoothed merit function"
 
     merit1: Literal[True] = DakotaField(
         default=True,
+        description="Nonsmoothed merit function",
         dakota={
             "materialization": [
                 {
@@ -73,10 +76,11 @@ class Merit1(DakotaBaseModel):
 
 
 class Merit1Smooth(DakotaBaseModel):
-    """Generated model for Merit1Smooth"""
+    "Smoothed merit function"
 
     merit1_smooth: Literal[True] = DakotaField(
         default=True,
+        description="Smoothed merit function",
         dakota={
             "materialization": [
                 {
@@ -91,10 +95,11 @@ class Merit1Smooth(DakotaBaseModel):
 
 
 class Merit2(DakotaBaseModel):
-    """Generated model for Merit2"""
+    "Nonsmoothed merit function"
 
     merit2: Literal[True] = DakotaField(
         default=True,
+        description="Nonsmoothed merit function",
         dakota={
             "materialization": [
                 {
@@ -109,10 +114,11 @@ class Merit2(DakotaBaseModel):
 
 
 class Merit2Smooth(DakotaBaseModel):
-    """Generated model for Merit2Smooth"""
+    "Smoothed merit function"
 
     merit2_smooth: Literal[True] = DakotaField(
         default=True,
+        description="Smoothed merit function",
         dakota={
             "materialization": [
                 {
@@ -127,10 +133,11 @@ class Merit2Smooth(DakotaBaseModel):
 
 
 class Merit2Squared(DakotaBaseModel):
-    """Generated model for Merit2Squared"""
+    "Nonsmoothed merit function"
 
     merit2_squared: Literal[True] = DakotaField(
         default=True,
+        description="Nonsmoothed merit function",
         dakota={
             "materialization": [
                 {
@@ -152,7 +159,7 @@ class AsynchPatternSearchConfig(
     DefaultScalingMixin,
     MethodOptionalModelPointerMixin,
 ):
-    """Generated model for AsynchPatternSearchConfig"""
+    "Pattern search, derivative free optimization method"
 
     initial_delta: DakotaFloat = DakotaField(
         default=1.0,
@@ -254,7 +261,7 @@ class AsynchPatternSearchConfig(
 
 
 class AsynchPatternSearchSelection(MethodSelection):
-    """Generated model for AsynchPatternSearchSelection"""
+    "Generated model for AsynchPatternSearchSelection"
 
     asynch_pattern_search: AsynchPatternSearchConfig = DakotaField(
         dakota={

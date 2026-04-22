@@ -15,10 +15,11 @@ from dakota.spec.shared.misc import (
 
 
 class MajorDim(DakotaBaseModel):
-    """Generated model for MajorDim"""
+    "(default) Longest edge of subregion is subdivided"
 
     major_dimension: Literal[True] = DakotaField(
         default=True,
+        description="(default) Longest edge of subregion is subdivided",
         dakota={
             "materialization": [
                 {
@@ -33,10 +34,11 @@ class MajorDim(DakotaBaseModel):
 
 
 class AllDims(DakotaBaseModel):
-    """Generated model for AllDims"""
+    "All dimensions are simultaneously subdivided"
 
     all_dimensions: Literal[True] = DakotaField(
         default=True,
+        description="All dimensions are simultaneously subdivided",
         dakota={
             "materialization": [
                 {
@@ -55,7 +57,7 @@ class ColinyDirectConfig(
     ColinyCommonOptsMixin,
     MethodOptionalModelPointerMixin,
 ):
-    """Generated model for ColinyDirectConfig"""
+    "DIviding RECTangles method"
 
     division: Union[MajorDim, AllDims] | None = DakotaField(
         default=None,
@@ -130,7 +132,7 @@ class ColinyDirectConfig(
 
 
 class ColinyDirectSelection(MethodSelection):
-    """Generated model for ColinyDirectSelection"""
+    "Generated model for ColinyDirectSelection"
 
     coliny_direct: ColinyDirectConfig = DakotaField(
         dakota={

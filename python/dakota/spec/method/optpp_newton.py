@@ -18,13 +18,13 @@ class OptppNewtonConfig(
     MethodOptppNewtonOptsMixin,
     MethodOptppGradBasedOptsMixin,
 ):
-    """Generated model for OptppNewtonConfig"""
+    "Newton method based optimization"
 
     pass
 
 
 class OptppNewtonSelection(MethodSelection):
-    """Generated model for OptppNewtonSelection"""
+    "Generated model for OptppNewtonSelection"
 
     optpp_newton: OptppNewtonConfig = DakotaField(
         dakota={

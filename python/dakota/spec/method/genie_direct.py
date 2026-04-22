@@ -20,7 +20,7 @@ class GenieDirectConfig(
     DefaultScalingMixin,
     MethodOptionalModelPointerMixin,
 ):
-    """Generated model for GenieDirectConfig"""
+    "Classical high-dimensional global Lipschitzian optimization Classical high-dimensional global Lipschitzian optimization"
 
     seed: int | None = DakotaField(
         default=None,
@@ -39,7 +39,7 @@ class GenieDirectConfig(
 
 
 class GenieDirectSelection(MethodSelection):
-    """Generated model for GenieDirectSelection"""
+    "Generated model for GenieDirectSelection"
 
     genie_direct: GenieDirectConfig = DakotaField(
         dakota={

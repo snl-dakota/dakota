@@ -24,10 +24,11 @@ from dakota.spec.shared.misc import (
 
 
 class MultifidelityStochCollocQuadratureOrderSequenceNested(DakotaBaseModel):
-    """Generated model for MultifidelityStochCollocQuadratureOrderSequenceNested"""
+    "Enforce use of nested quadrature rules if available"
 
     nested: Literal[True] = DakotaField(
         default=True,
+        description="Enforce use of nested quadrature rules if available",
         dakota={
             "materialization": [
                 {
@@ -43,10 +44,11 @@ class MultifidelityStochCollocQuadratureOrderSequenceNested(DakotaBaseModel):
 
 
 class MultifidelityStochCollocQuadratureOrderSequenceNonNested(DakotaBaseModel):
-    """Generated model for MultifidelityStochCollocQuadratureOrderSequenceNonNested"""
+    "Enforce use of non-nested quadrature rules"
 
     non_nested: Literal[True] = DakotaField(
         default=True,
+        description="Enforce use of non-nested quadrature rules",
         dakota={
             "materialization": [
                 {
@@ -62,10 +64,11 @@ class MultifidelityStochCollocQuadratureOrderSequenceNonNested(DakotaBaseModel):
 
 
 class MultifidelityStochCollocSGLevelSequenceNodal(DakotaBaseModel):
-    """Generated model for MultifidelityStochCollocSGLevelSequenceNodal"""
+    "Employ a nodal sparse grid construction in stochastic collocation"
 
     nodal: Literal[True] = DakotaField(
         default=True,
+        description="Employ a nodal sparse grid construction in stochastic collocation",
         dakota={
             "materialization": [
                 {
@@ -81,10 +84,11 @@ class MultifidelityStochCollocSGLevelSequenceNodal(DakotaBaseModel):
 
 
 class MultifidelityStochCollocSGLevelSequenceHierarchical(DakotaBaseModel):
-    """Generated model for MultifidelityStochCollocSGLevelSequenceHierarchical"""
+    "Employ a hierarchical sparse grid construction"
 
     hierarchical: Literal[True] = DakotaField(
         default=True,
+        description="Employ a hierarchical sparse grid construction",
         dakota={
             "materialization": [
                 {
@@ -100,10 +104,11 @@ class MultifidelityStochCollocSGLevelSequenceHierarchical(DakotaBaseModel):
 
 
 class MultifidelityStochCollocSGLevelSequenceRestricted(DakotaBaseModel):
-    """Generated model for MultifidelityStochCollocSGLevelSequenceRestricted"""
+    "Restrict the growth rates for nested and non-nested rules can be synchronized for consistency."
 
     restricted: Literal[True] = DakotaField(
         default=True,
+        description="Restrict the growth rates for nested and non-nested rules can be synchronized for consistency.",
         dakota={
             "materialization": [
                 {
@@ -119,10 +124,11 @@ class MultifidelityStochCollocSGLevelSequenceRestricted(DakotaBaseModel):
 
 
 class MultifidelityStochCollocSGLevelSequenceUnrestricted(DakotaBaseModel):
-    """Generated model for MultifidelityStochCollocSGLevelSequenceUnrestricted"""
+    "Overide the default restriction of growth rates for nested and non-nested rules that are by defualt synchronized for consistency."
 
     unrestricted: Literal[True] = DakotaField(
         default=True,
+        description="Overide the default restriction of growth rates for nested and non-nested rules that are by defualt synchronized for consistency.",
         dakota={
             "materialization": [
                 {
@@ -138,10 +144,11 @@ class MultifidelityStochCollocSGLevelSequenceUnrestricted(DakotaBaseModel):
 
 
 class MultifidelityStochCollocSGLevelSequenceNested(DakotaBaseModel):
-    """Generated model for MultifidelityStochCollocSGLevelSequenceNested"""
+    "Enforce use of nested quadrature rules if available"
 
     nested: Literal[True] = DakotaField(
         default=True,
+        description="Enforce use of nested quadrature rules if available",
         dakota={
             "materialization": [
                 {
@@ -157,10 +164,11 @@ class MultifidelityStochCollocSGLevelSequenceNested(DakotaBaseModel):
 
 
 class MultifidelityStochCollocSGLevelSequenceNonNested(DakotaBaseModel):
-    """Generated model for MultifidelityStochCollocSGLevelSequenceNonNested"""
+    "Enforce use of non-nested quadrature rules"
 
     non_nested: Literal[True] = DakotaField(
         default=True,
+        description="Enforce use of non-nested quadrature rules",
         dakota={
             "materialization": [
                 {
@@ -176,7 +184,7 @@ class MultifidelityStochCollocSGLevelSequenceNonNested(DakotaBaseModel):
 
 
 class MultifidelityStochCollocQuadratureOrderSequenceConfig(DakotaBaseModel):
-    """Generated model for MultifidelityStochCollocQuadratureOrderSequenceConfig"""
+    "Sequence of quadrature orders used in a multi-stage expansion"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CheckNonnegativeList(
@@ -224,7 +232,7 @@ class MultifidelityStochCollocQuadratureOrderSequenceConfig(DakotaBaseModel):
 
 
 class MultifidelityStochCollocSGLevelSequenceConfig(DakotaBaseModel):
-    """Generated model for MultifidelityStochCollocSGLevelSequenceConfig"""
+    "Sequence of sparse grid levels used in a multi-stage expansion"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CheckNonnegativeList(
@@ -290,7 +298,7 @@ class MultifidelityStochCollocSGLevelSequenceConfig(DakotaBaseModel):
 
 
 class MultifidelityStochCollocQuadratureOrderSequence(DakotaBaseModel):
-    """Generated model for MultifidelityStochCollocQuadratureOrderSequence"""
+    "Sequence of quadrature orders used in a multi-stage expansion"
 
     quadrature_order_sequence: MultifidelityStochCollocQuadratureOrderSequenceConfig = (
         DakotaField(
@@ -302,7 +310,7 @@ class MultifidelityStochCollocQuadratureOrderSequence(DakotaBaseModel):
 
 
 class MultifidelityStochCollocSGLevelSequence(DakotaBaseModel):
-    """Generated model for MultifidelityStochCollocSGLevelSequence"""
+    "Sequence of sparse grid levels used in a multi-stage expansion"
 
     sparse_grid_level_sequence: MultifidelityStochCollocSGLevelSequenceConfig = DakotaField(
         default=...,
@@ -322,7 +330,7 @@ class MultifidelityStochCollocConfig(
     MethodSeedSequenceMixin,
     MethodOptionalModelPointerMixin,
 ):
-    """Generated model for MultifidelityStochCollocConfig"""
+    "Multifidelity uncertainty quantification using stochastic collocation"
 
     grid_type: Union[
         MultifidelityStochCollocQuadratureOrderSequence,
@@ -334,7 +342,7 @@ class MultifidelityStochCollocConfig(
 
 
 class MultifidelityStochCollocSelection(MethodSelection):
-    """Generated model for MultifidelityStochCollocSelection"""
+    "Generated model for MultifidelityStochCollocSelection"
 
     multifidelity_stoch_collocation: MultifidelityStochCollocConfig = DakotaField(
         dakota={

@@ -19,10 +19,11 @@ from dakota.spec.shared.misc import (
 
 
 class XTaylorMean(DakotaBaseModel):
-    """Generated model for XTaylorMean"""
+    'Form Taylor series approximation in \\"x-space\\" at variable means'
 
     x_taylor_mean: Literal[True] = DakotaField(
         default=True,
+        description='Form Taylor series approximation in "x-space" at variable means',
         dakota={
             "materialization": [
                 {
@@ -37,10 +38,11 @@ class XTaylorMean(DakotaBaseModel):
 
 
 class UTaylorMean(DakotaBaseModel):
-    """Generated model for UTaylorMean"""
+    'Form Taylor series approximation in \\"u-space\\" at variable means'
 
     u_taylor_mean: Literal[True] = DakotaField(
         default=True,
+        description='Form Taylor series approximation in "u-space" at variable means',
         dakota={
             "materialization": [
                 {
@@ -55,10 +57,11 @@ class UTaylorMean(DakotaBaseModel):
 
 
 class XTaylorMpp(DakotaBaseModel):
-    """Generated model for XTaylorMpp"""
+    "X-space Taylor series approximation with iterative updates"
 
     x_taylor_mpp: Literal[True] = DakotaField(
         default=True,
+        description="X-space Taylor series approximation with iterative updates",
         dakota={
             "materialization": [
                 {
@@ -73,10 +76,11 @@ class XTaylorMpp(DakotaBaseModel):
 
 
 class UTaylorMpp(DakotaBaseModel):
-    """Generated model for UTaylorMpp"""
+    "U-space Taylor series approximation with iterative updates"
 
     u_taylor_mpp: Literal[True] = DakotaField(
         default=True,
+        description="U-space Taylor series approximation with iterative updates",
         dakota={
             "materialization": [
                 {
@@ -91,10 +95,11 @@ class UTaylorMpp(DakotaBaseModel):
 
 
 class XTwoPoint(DakotaBaseModel):
-    """Generated model for XTwoPoint"""
+    'Predict MPP using Two-point Adaptive Nonlinear Approximation in \\"x-space\\"'
 
     x_two_point: Literal[True] = DakotaField(
         default=True,
+        description='Predict MPP using Two-point Adaptive Nonlinear Approximation in "x-space"',
         dakota={
             "materialization": [
                 {
@@ -109,10 +114,11 @@ class XTwoPoint(DakotaBaseModel):
 
 
 class UTwoPoint(DakotaBaseModel):
-    """Generated model for UTwoPoint"""
+    'Predict MPP using Two-point Adaptive Nonlinear Approximation in \\"u-space\\"'
 
     u_two_point: Literal[True] = DakotaField(
         default=True,
+        description='Predict MPP using Two-point Adaptive Nonlinear Approximation in "u-space"',
         dakota={
             "materialization": [
                 {
@@ -127,10 +133,11 @@ class UTwoPoint(DakotaBaseModel):
 
 
 class XMultiPoint(DakotaBaseModel):
-    """Generated model for XMultiPoint"""
+    "MPP search for local reliability based on QMEA multi-point approximation in u-space"
 
     x_multi_point: Literal[True] = DakotaField(
         default=True,
+        description="MPP search for local reliability based on QMEA multi-point approximation in u-space",
         dakota={
             "materialization": [
                 {
@@ -145,10 +152,11 @@ class XMultiPoint(DakotaBaseModel):
 
 
 class UMultiPoint(DakotaBaseModel):
-    """Generated model for UMultiPoint"""
+    "MPP search for local reliability based on QMEA multi-point approximation in x-space"
 
     u_multi_point: Literal[True] = DakotaField(
         default=True,
+        description="MPP search for local reliability based on QMEA multi-point approximation in x-space",
         dakota={
             "materialization": [
                 {
@@ -163,10 +171,11 @@ class UMultiPoint(DakotaBaseModel):
 
 
 class NoApprox(DakotaBaseModel):
-    """Generated model for NoApprox"""
+    "Perform MPP search on original response functions (use no approximation)"
 
     no_approx: Literal[True] = DakotaField(
         default=True,
+        description="Perform MPP search on original response functions (use no approximation)",
         dakota={
             "materialization": [
                 {
@@ -181,10 +190,11 @@ class NoApprox(DakotaBaseModel):
 
 
 class IntegrationFirstOrder(DakotaBaseModel):
-    """Generated model for IntegrationFirstOrder"""
+    "First-order integration scheme"
 
     first_order: Literal[True] = DakotaField(
         default=True,
+        description="First-order integration scheme",
         dakota={
             "materialization": [
                 {
@@ -199,10 +209,11 @@ class IntegrationFirstOrder(DakotaBaseModel):
 
 
 class IntegrationSecondOrder(DakotaBaseModel):
-    """Generated model for IntegrationSecondOrder"""
+    "Second-order integration scheme"
 
     second_order: Literal[True] = DakotaField(
         default=True,
+        description="Second-order integration scheme",
         dakota={
             "materialization": [
                 {
@@ -217,10 +228,11 @@ class IntegrationSecondOrder(DakotaBaseModel):
 
 
 class IntegrationProbabilityRefinementImportance(DakotaBaseModel):
-    """Generated model for IntegrationProbabilityRefinementImportance"""
+    "Importance sampling option for probability refinement"
 
     importance: Literal[True] = DakotaField(
         default=True,
+        description="Importance sampling option for probability refinement",
         dakota={
             "materialization": [
                 {
@@ -235,10 +247,11 @@ class IntegrationProbabilityRefinementImportance(DakotaBaseModel):
 
 
 class IntegrationProbabilityRefinementAdaptImport(DakotaBaseModel):
-    """Generated model for IntegrationProbabilityRefinementAdaptImport"""
+    "Importance sampling option for probability refinement"
 
     adapt_import: Literal[True] = DakotaField(
         default=True,
+        description="Importance sampling option for probability refinement",
         dakota={
             "materialization": [
                 {
@@ -253,10 +266,11 @@ class IntegrationProbabilityRefinementAdaptImport(DakotaBaseModel):
 
 
 class IntegrationProbabilityRefinementMmAdaptImport(DakotaBaseModel):
-    """Generated model for IntegrationProbabilityRefinementMmAdaptImport"""
+    "Importance sampling option for probability refinement"
 
     mm_adapt_import: Literal[True] = DakotaField(
         default=True,
+        description="Importance sampling option for probability refinement",
         dakota={
             "materialization": [
                 {
@@ -271,7 +285,7 @@ class IntegrationProbabilityRefinementMmAdaptImport(DakotaBaseModel):
 
 
 class IntegrationProbabilityRefinement(DakotaBaseModel):
-    """Generated model for IntegrationProbabilityRefinement"""
+    "Allow refinement of probability and generalized reliability results using importance sampling"
 
     approach: Union[
         IntegrationProbabilityRefinementImportance,
@@ -311,7 +325,7 @@ class IntegrationProbabilityRefinement(DakotaBaseModel):
 
 
 class Integration(DakotaBaseModel):
-    """Generated model for Integration"""
+    "Integration approach"
 
     order: Union[IntegrationFirstOrder, IntegrationSecondOrder] = DakotaField(
         description="Integration Order", dakota={"anchor": True, "union_pattern": 4}
@@ -324,7 +338,7 @@ class Integration(DakotaBaseModel):
 
 
 class MppSearch(MethodGradientSubProblemSolverMixin):
-    """Generated model for MppSearch"""
+    "Specify which MPP search option to use"
 
     sub_method: Union[
         XTaylorMean,
@@ -352,7 +366,7 @@ class LocalReliabilityConfig(
     DefaultFinalMomentsMixin,
     MethodOptionalModelPointerMixin,
 ):
-    """Generated model for LocalReliabilityConfig"""
+    "Local reliability method"
 
     mpp_search: MppSearch | None = DakotaField(
         default=None, description="Specify which MPP search option to use"
@@ -360,7 +374,7 @@ class LocalReliabilityConfig(
 
 
 class LocalReliabilitySelection(MethodSelection):
-    """Generated model for LocalReliabilitySelection"""
+    "Generated model for LocalReliabilitySelection"
 
     local_reliability: LocalReliabilityConfig = DakotaField(
         dakota={

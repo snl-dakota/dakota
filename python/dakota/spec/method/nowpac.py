@@ -24,13 +24,13 @@ class NowpacConfig(
     DefaultScalingMixin,
     MethodOptionalModelPointerMixin,
 ):
-    """Generated model for NowpacConfig"""
+    "Gradient-free inequality-constrained optimization using Nonlinear Optimization With Path Augmented Constraints (NOWPAC)."
 
     pass
 
 
 class NowpacSelection(MethodSelection):
-    """Generated model for NowpacSelection"""
+    "Generated model for NowpacSelection"
 
     nowpac: NowpacConfig = DakotaField(
         dakota={

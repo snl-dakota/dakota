@@ -27,7 +27,7 @@ from dakota.spec.shared.sampling import (
 
 
 class MultilevelBlueExportSampleSequence(MethodExportSamplesFormatMixin):
-    """Generated model for MultilevelBlueExportSampleSequence"""
+    "Enable export of multilevel/multifidelity sample sequences to individual files"
 
     pass
 
@@ -47,7 +47,7 @@ class MultilevelBlueConfig(
     RngOptionsContext2Mixin,
     MethodOptionalModelPointerMixin,
 ):
-    """Generated model for MultilevelBlueConfig"""
+    "The multilevel best linear unbiased estimator (ML BLUE) sampling method for UQ"
 
     export_sample_sequence: MultilevelBlueExportSampleSequence | None = DakotaField(
         default=None,
@@ -65,7 +65,7 @@ class MultilevelBlueConfig(
 
 
 class MultilevelBlueSelection(MethodSelection):
-    """Generated model for MultilevelBlueSelection"""
+    "Generated model for MultilevelBlueSelection"
 
     multilevel_blue: MultilevelBlueConfig = DakotaField(
         dakota={

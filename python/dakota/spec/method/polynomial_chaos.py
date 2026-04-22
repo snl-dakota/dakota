@@ -22,10 +22,11 @@ from dakota.spec.shared.misc import (
 
 
 class PceQuadratureOrderNested(DakotaBaseModel):
-    """Generated model for PceQuadratureOrderNested"""
+    "Enforce use of nested quadrature rules if available"
 
     nested: Literal[True] = DakotaField(
         default=True,
+        description="Enforce use of nested quadrature rules if available",
         dakota={
             "materialization": [
                 {
@@ -41,10 +42,11 @@ class PceQuadratureOrderNested(DakotaBaseModel):
 
 
 class PceQuadratureOrderNonNested(DakotaBaseModel):
-    """Generated model for PceQuadratureOrderNonNested"""
+    "Enforce use of non-nested quadrature rules"
 
     non_nested: Literal[True] = DakotaField(
         default=True,
+        description="Enforce use of non-nested quadrature rules",
         dakota={
             "materialization": [
                 {
@@ -60,10 +62,11 @@ class PceQuadratureOrderNonNested(DakotaBaseModel):
 
 
 class PceSGLevelRestricted(DakotaBaseModel):
-    """Generated model for PceSGLevelRestricted"""
+    "Restrict the growth rates for nested and non-nested rules can be synchronized for consistency."
 
     restricted: Literal[True] = DakotaField(
         default=True,
+        description="Restrict the growth rates for nested and non-nested rules can be synchronized for consistency.",
         dakota={
             "materialization": [
                 {
@@ -79,10 +82,11 @@ class PceSGLevelRestricted(DakotaBaseModel):
 
 
 class PceSGLevelUnrestricted(DakotaBaseModel):
-    """Generated model for PceSGLevelUnrestricted"""
+    "Overide the default restriction of growth rates for nested and non-nested rules that are by defualt synchronized for consistency."
 
     unrestricted: Literal[True] = DakotaField(
         default=True,
+        description="Overide the default restriction of growth rates for nested and non-nested rules that are by defualt synchronized for consistency.",
         dakota={
             "materialization": [
                 {
@@ -98,10 +102,11 @@ class PceSGLevelUnrestricted(DakotaBaseModel):
 
 
 class PceSGLevelNested(DakotaBaseModel):
-    """Generated model for PceSGLevelNested"""
+    "Enforce use of nested quadrature rules if available"
 
     nested: Literal[True] = DakotaField(
         default=True,
+        description="Enforce use of nested quadrature rules if available",
         dakota={
             "materialization": [
                 {
@@ -117,10 +122,11 @@ class PceSGLevelNested(DakotaBaseModel):
 
 
 class PceSGLevelNonNested(DakotaBaseModel):
-    """Generated model for PceSGLevelNonNested"""
+    "Enforce use of non-nested quadrature rules"
 
     non_nested: Literal[True] = DakotaField(
         default=True,
+        description="Enforce use of non-nested quadrature rules",
         dakota={
             "materialization": [
                 {
@@ -136,7 +142,7 @@ class PceSGLevelNonNested(DakotaBaseModel):
 
 
 class PceCubatureIntegrand(DakotaBaseModel):
-    """Generated model for PceCubatureIntegrand"""
+    "Cubature using Stroud rules and their extensions"
 
     cubature_integrand: int = DakotaField(
         description="Cubature using Stroud rules and their extensions",
@@ -153,10 +159,11 @@ class PceCubatureIntegrand(DakotaBaseModel):
 
 
 class PceExpansionOrderBasisTypeTensorProduct(DakotaBaseModel):
-    """Generated model for PceExpansionOrderBasisTypeTensorProduct"""
+    "Use a tensor-product index set to construct a polynomial chaos expansion."
 
     tensor_product: Literal[True] = DakotaField(
         default=True,
+        description="Use a tensor-product index set to construct a polynomial chaos expansion.",
         dakota={
             "materialization": [
                 {
@@ -172,10 +179,11 @@ class PceExpansionOrderBasisTypeTensorProduct(DakotaBaseModel):
 
 
 class PceExpansionOrderBasisTypeTotalOrder(DakotaBaseModel):
-    """Generated model for PceExpansionOrderBasisTypeTotalOrder"""
+    "Use a total-order index set to construct a polynomial chaos expansion."
 
     total_order: Literal[True] = DakotaField(
         default=True,
+        description="Use a total-order index set to construct a polynomial chaos expansion.",
         dakota={
             "materialization": [
                 {
@@ -191,7 +199,7 @@ class PceExpansionOrderBasisTypeTotalOrder(DakotaBaseModel):
 
 
 class PceExpansionOrderBasisTypeAdaptedConfig(DakotaBaseModel):
-    """Generated model for PceExpansionOrderBasisTypeAdaptedConfig"""
+    "Use adaptive basis selection to choose the basis terms in a polynomial chaos expansion."
 
     advancements: int = DakotaField(
         default=3,
@@ -222,10 +230,11 @@ class PceExpansionOrderBasisTypeAdaptedConfig(DakotaBaseModel):
 
 
 class PceExpansionOrderCollocPointsLeastSquaresSvd(DakotaBaseModel):
-    """Generated model for PceExpansionOrderCollocPointsLeastSquaresSvd"""
+    "Calculate the coefficients of a polynomial chaos expansion using the singular value decomposition."
 
     svd: Literal[True] = DakotaField(
         default=True,
+        description="Calculate the coefficients of a polynomial chaos expansion using the singular value decomposition.",
         dakota={
             "materialization": [
                 {
@@ -240,10 +249,11 @@ class PceExpansionOrderCollocPointsLeastSquaresSvd(DakotaBaseModel):
 
 
 class PceExpansionOrderCollocPointsLeastSquaresEqCon(DakotaBaseModel):
-    """Generated model for PceExpansionOrderCollocPointsLeastSquaresEqCon"""
+    "Calculate the coefficients of a polynomial chaos expansion using equality constrained least squares."
 
     equality_constrained: Literal[True] = DakotaField(
         default=True,
+        description="Calculate the coefficients of a polynomial chaos expansion using equality constrained least squares.",
         dakota={
             "materialization": [
                 {
@@ -258,7 +268,7 @@ class PceExpansionOrderCollocPointsLeastSquaresEqCon(DakotaBaseModel):
 
 
 class PceExpansionOrderCollocPointsOMPConfig(DakotaBaseModel):
-    """Generated model for PceExpansionOrderCollocPointsOMPConfig"""
+    "Compute the coefficients of a polynomial expansion using orthogonal matching pursuit (OMP)"
 
     noise_tolerance: list[DakotaFloat] | None = DakotaField(
         default=None,
@@ -276,10 +286,11 @@ class PceExpansionOrderCollocPointsOMPConfig(DakotaBaseModel):
 
 
 class PceExpansionOrderCollocPointsBP(DakotaBaseModel):
-    """Generated model for PceExpansionOrderCollocPointsBP"""
+    "Compute the coefficients of a polynomial expansion by solving the Basis Pursuit L1 -minimization problem using linear programming."
 
     basis_pursuit: Literal[True] = DakotaField(
         default=True,
+        description="Compute the coefficients of a polynomial expansion by solving the Basis Pursuit L1 -minimization problem using linear programming.",
         dakota={
             "aliases": ["bp"],
             "materialization": [
@@ -296,7 +307,7 @@ class PceExpansionOrderCollocPointsBP(DakotaBaseModel):
 
 
 class ExpansionOrderCollocPointsBPDNConfig(DakotaBaseModel):
-    """Generated model for ExpansionOrderCollocPointsBPDNConfig"""
+    "Compute the coefficients of a polynomial expansion by solving the Basis Pursuit Denoising L1 -minimization problem using second order cone optimization."
 
     noise_tolerance: list[DakotaFloat] | None = DakotaField(
         default=None,
@@ -314,7 +325,7 @@ class ExpansionOrderCollocPointsBPDNConfig(DakotaBaseModel):
 
 
 class ExpansionOrderCollocPointsLarsConfig(DakotaBaseModel):
-    """Generated model for ExpansionOrderCollocPointsLarsConfig"""
+    "Compute the coefficients of a polynomial expansion by using the greedy least angle regression (LAR) method."
 
     noise_tolerance: list[DakotaFloat] | None = DakotaField(
         default=None,
@@ -332,7 +343,7 @@ class ExpansionOrderCollocPointsLarsConfig(DakotaBaseModel):
 
 
 class PceExpansionOrderCollocPointsLassoConfig(DakotaBaseModel):
-    """Generated model for PceExpansionOrderCollocPointsLassoConfig"""
+    "Compute the coefficients of a polynomial expansion by using the LASSO problem."
 
     noise_tolerance: list[DakotaFloat] | None = DakotaField(
         default=None,
@@ -363,7 +374,7 @@ class PceExpansionOrderCollocPointsLassoConfig(DakotaBaseModel):
 
 
 class PceExpansionOrderCollocPointsCV(DakotaBaseModel):
-    """Generated model for PceExpansionOrderCollocPointsCV"""
+    "Use cross validation to choose the 'best' polynomial order of a polynomial chaos expansion."
 
     noise_only: Literal[True] | None = DakotaField(
         default=None,
@@ -395,10 +406,11 @@ class PceExpansionOrderCollocPointsCV(DakotaBaseModel):
 
 
 class ExpansionOrderCollocRatioLeastSquaresSvd(DakotaBaseModel):
-    """Generated model for ExpansionOrderCollocRatioLeastSquaresSvd"""
+    "Calculate the coefficients of a polynomial chaos expansion using the singular value decomposition."
 
     svd: Literal[True] = DakotaField(
         default=True,
+        description="Calculate the coefficients of a polynomial chaos expansion using the singular value decomposition.",
         dakota={
             "materialization": [
                 {
@@ -413,10 +425,11 @@ class ExpansionOrderCollocRatioLeastSquaresSvd(DakotaBaseModel):
 
 
 class ExpansionOrderCollocRatioLeastSquaresEqCon(DakotaBaseModel):
-    """Generated model for ExpansionOrderCollocRatioLeastSquaresEqCon"""
+    "Calculate the coefficients of a polynomial chaos expansion using equality constrained least squares."
 
     equality_constrained: Literal[True] = DakotaField(
         default=True,
+        description="Calculate the coefficients of a polynomial chaos expansion using equality constrained least squares.",
         dakota={
             "materialization": [
                 {
@@ -431,7 +444,7 @@ class ExpansionOrderCollocRatioLeastSquaresEqCon(DakotaBaseModel):
 
 
 class ExpansionOrderCollocRatioOMPConfig(DakotaBaseModel):
-    """Generated model for ExpansionOrderCollocRatioOMPConfig"""
+    "Compute the coefficients of a polynomial expansion using orthogonal matching pursuit (OMP)"
 
     noise_tolerance: list[DakotaFloat] | None = DakotaField(
         default=None,
@@ -449,10 +462,11 @@ class ExpansionOrderCollocRatioOMPConfig(DakotaBaseModel):
 
 
 class ExpansionOrderCollocRatioBP(DakotaBaseModel):
-    """Generated model for ExpansionOrderCollocRatioBP"""
+    "Compute the coefficients of a polynomial expansion by solving the Basis Pursuit L1 -minimization problem using linear programming."
 
     basis_pursuit: Literal[True] = DakotaField(
         default=True,
+        description="Compute the coefficients of a polynomial expansion by solving the Basis Pursuit L1 -minimization problem using linear programming.",
         dakota={
             "aliases": ["bp"],
             "materialization": [
@@ -469,7 +483,7 @@ class ExpansionOrderCollocRatioBP(DakotaBaseModel):
 
 
 class ExpansionOrderCollocRatioBPDNConfig(DakotaBaseModel):
-    """Generated model for ExpansionOrderCollocRatioBPDNConfig"""
+    "Compute the coefficients of a polynomial expansion by solving the Basis Pursuit Denoising L1 -minimization problem using second order cone optimization."
 
     noise_tolerance: list[DakotaFloat] | None = DakotaField(
         default=None,
@@ -487,7 +501,7 @@ class ExpansionOrderCollocRatioBPDNConfig(DakotaBaseModel):
 
 
 class ExpansionOrderCollocRatioLarsConfig(DakotaBaseModel):
-    """Generated model for ExpansionOrderCollocRatioLarsConfig"""
+    "Compute the coefficients of a polynomial expansion by using the greedy least angle regression (LAR) method."
 
     noise_tolerance: list[DakotaFloat] | None = DakotaField(
         default=None,
@@ -505,7 +519,7 @@ class ExpansionOrderCollocRatioLarsConfig(DakotaBaseModel):
 
 
 class ExpansionOrderCollocRatioLassoConfig(DakotaBaseModel):
-    """Generated model for ExpansionOrderCollocRatioLassoConfig"""
+    "Compute the coefficients of a polynomial expansion by using the LASSO problem."
 
     noise_tolerance: list[DakotaFloat] | None = DakotaField(
         default=None,
@@ -536,7 +550,7 @@ class ExpansionOrderCollocRatioLassoConfig(DakotaBaseModel):
 
 
 class ExpansionOrderCollocRatioCV(DakotaBaseModel):
-    """Generated model for ExpansionOrderCollocRatioCV"""
+    "Use cross validation to choose the 'best' polynomial order of a polynomial chaos expansion."
 
     noise_only: Literal[True] | None = DakotaField(
         default=None,
@@ -568,7 +582,7 @@ class ExpansionOrderCollocRatioCV(DakotaBaseModel):
 
 
 class PceExpansionOrderExpansionSamplesConfig(DakotaBaseModel):
-    """Generated model for PceExpansionOrderExpansionSamplesConfig"""
+    "Number of simulation samples used to estimate the expected value of a set of PCE coefficients"
 
     value: int = DakotaField(
         default=SZ_MAX,
@@ -601,7 +615,7 @@ class PceExpansionOrderExpansionSamplesConfig(DakotaBaseModel):
 
 
 class PceExpansionOrderImportBuildPointsFileCustomAnnotatedConfig(DakotaBaseModel):
-    """Generated model for PceExpansionOrderImportBuildPointsFileCustomAnnotatedConfig"""
+    "Selects custom-annotated tabular file format"
 
     header: Literal[True] | None = DakotaField(
         default=None,
@@ -648,10 +662,11 @@ class PceExpansionOrderImportBuildPointsFileCustomAnnotatedConfig(DakotaBaseMode
 
 
 class PceExpansionOrderImportBuildPointsFileAnnotated(DakotaBaseModel):
-    """Generated model for PceExpansionOrderImportBuildPointsFileAnnotated"""
+    "Selects annotated tabular file format"
 
     annotated: Literal[True] = DakotaField(
         default=True,
+        description="Selects annotated tabular file format",
         dakota={
             "materialization": [
                 {
@@ -666,10 +681,11 @@ class PceExpansionOrderImportBuildPointsFileAnnotated(DakotaBaseModel):
 
 
 class PceExpansionOrderImportBuildPointsFileFreeform(DakotaBaseModel):
-    """Generated model for PceExpansionOrderImportBuildPointsFileFreeform"""
+    "Selects freeform file format"
 
     freeform: Literal[True] = DakotaField(
         default=True,
+        description="Selects freeform file format",
         dakota={
             "materialization": [
                 {
@@ -684,7 +700,7 @@ class PceExpansionOrderImportBuildPointsFileFreeform(DakotaBaseModel):
 
 
 class PceOrthogLeastInterpImportBuildPointsFileCustomAnnotatedConfig(DakotaBaseModel):
-    """Generated model for PceOrthogLeastInterpImportBuildPointsFileCustomAnnotatedConfig"""
+    "Selects custom-annotated tabular file format"
 
     header: Literal[True] | None = DakotaField(
         default=None,
@@ -731,10 +747,11 @@ class PceOrthogLeastInterpImportBuildPointsFileCustomAnnotatedConfig(DakotaBaseM
 
 
 class PceOrthogLeastInterpImportBuildPointsFileAnnotated(DakotaBaseModel):
-    """Generated model for PceOrthogLeastInterpImportBuildPointsFileAnnotated"""
+    "Selects annotated tabular file format"
 
     annotated: Literal[True] = DakotaField(
         default=True,
+        description="Selects annotated tabular file format",
         dakota={
             "materialization": [
                 {
@@ -749,10 +766,11 @@ class PceOrthogLeastInterpImportBuildPointsFileAnnotated(DakotaBaseModel):
 
 
 class PceOrthogLeastInterpImportBuildPointsFileFreeform(DakotaBaseModel):
-    """Generated model for PceOrthogLeastInterpImportBuildPointsFileFreeform"""
+    "Selects freeform file format"
 
     freeform: Literal[True] = DakotaField(
         default=True,
+        description="Selects freeform file format",
         dakota={
             "materialization": [
                 {
@@ -767,7 +785,7 @@ class PceOrthogLeastInterpImportBuildPointsFileFreeform(DakotaBaseModel):
 
 
 class PceImportExpansionFile(DakotaBaseModel):
-    """Generated model for PceImportExpansionFile"""
+    "Build a Polynomial Chaos Expansion (PCE) by importing expansion coefficients and a corresponding multi-index from a file"
 
     import_expansion_file: str = DakotaField(
         description="Build a Polynomial Chaos Expansion (PCE) by importing expansion coefficients and a corresponding multi-index from a file",
@@ -784,7 +802,7 @@ class PceImportExpansionFile(DakotaBaseModel):
 
 
 class PceQuadratureOrderConfig(DakotaBaseModel):
-    """Generated model for PceQuadratureOrderConfig"""
+    "Order for tensor-products of Gaussian quadrature rules"
 
     order: int = DakotaField(
         default=USHRT_MAX,
@@ -822,7 +840,7 @@ class PceQuadratureOrderConfig(DakotaBaseModel):
 
 
 class PceSGLevelConfig(DakotaBaseModel):
-    """Generated model for PceSGLevelConfig"""
+    "Level to use in sparse grid integration or interpolation"
 
     level: int = DakotaField(
         default=USHRT_MAX,
@@ -865,7 +883,7 @@ class PceSGLevelConfig(DakotaBaseModel):
 
 
 class PceExpansionOrderBasisTypeAdapted(DakotaBaseModel):
-    """Generated model for PceExpansionOrderBasisTypeAdapted"""
+    "Use adaptive basis selection to choose the basis terms in a polynomial chaos expansion."
 
     adapted: PceExpansionOrderBasisTypeAdaptedConfig = DakotaField(
         description="Use adaptive basis selection to choose the basis terms in a polynomial chaos expansion.",
@@ -884,13 +902,14 @@ class PceExpansionOrderBasisTypeAdapted(DakotaBaseModel):
 
 
 class PceExpansionOrderCollocPointsLeastSquares(DakotaBaseModel):
-    """Generated model for PceExpansionOrderCollocPointsLeastSquares"""
+    "Compute the coefficients of a polynomial expansion using least squares"
 
     least_squares: Union[
         PceExpansionOrderCollocPointsLeastSquaresSvd,
         PceExpansionOrderCollocPointsLeastSquaresEqCon,
         dict,
     ] = DakotaField(
+        description="Compute the coefficients of a polynomial expansion using least squares",
         dakota={
             "materialization": [
                 {
@@ -901,12 +920,12 @@ class PceExpansionOrderCollocPointsLeastSquares(DakotaBaseModel):
                     "ir_value_type": "short",
                 }
             ]
-        }
+        },
     )
 
 
 class PceExpansionOrderCollocPointsOMP(DakotaBaseModel):
-    """Generated model for PceExpansionOrderCollocPointsOMP"""
+    "Compute the coefficients of a polynomial expansion using orthogonal matching pursuit (OMP)"
 
     orthogonal_matching_pursuit: PceExpansionOrderCollocPointsOMPConfig = DakotaField(
         description="Compute the coefficients of a polynomial expansion using orthogonal matching pursuit (OMP)",
@@ -926,7 +945,7 @@ class PceExpansionOrderCollocPointsOMP(DakotaBaseModel):
 
 
 class PceExpansionOrderCollocPointsBPDN(DakotaBaseModel):
-    """Generated model for PceExpansionOrderCollocPointsBPDN"""
+    "Compute the coefficients of a polynomial expansion by solving the Basis Pursuit Denoising L1 -minimization problem using second order cone optimization."
 
     basis_pursuit_denoising: ExpansionOrderCollocPointsBPDNConfig = DakotaField(
         description="Compute the coefficients of a polynomial expansion by solving the Basis Pursuit Denoising L1 -minimization problem using second order cone optimization.",
@@ -946,7 +965,7 @@ class PceExpansionOrderCollocPointsBPDN(DakotaBaseModel):
 
 
 class PceExpansionOrderCollocPointsLars(DakotaBaseModel):
-    """Generated model for PceExpansionOrderCollocPointsLars"""
+    "Compute the coefficients of a polynomial expansion by using the greedy least angle regression (LAR) method."
 
     least_angle_regression: ExpansionOrderCollocPointsLarsConfig = DakotaField(
         description="Compute the coefficients of a polynomial expansion by using the greedy least angle regression (LAR) method.",
@@ -966,7 +985,7 @@ class PceExpansionOrderCollocPointsLars(DakotaBaseModel):
 
 
 class PceExpansionOrderCollocPointsLasso(DakotaBaseModel):
-    """Generated model for PceExpansionOrderCollocPointsLasso"""
+    "Compute the coefficients of a polynomial expansion by using the LASSO problem."
 
     least_absolute_shrinkage: PceExpansionOrderCollocPointsLassoConfig = DakotaField(
         description="Compute the coefficients of a polynomial expansion by using the LASSO problem.",
@@ -986,13 +1005,14 @@ class PceExpansionOrderCollocPointsLasso(DakotaBaseModel):
 
 
 class PceExpansionOrderCollocRatioLeastSquares(DakotaBaseModel):
-    """Generated model for PceExpansionOrderCollocRatioLeastSquares"""
+    "Compute the coefficients of a polynomial expansion using least squares"
 
     least_squares: Union[
         ExpansionOrderCollocRatioLeastSquaresSvd,
         ExpansionOrderCollocRatioLeastSquaresEqCon,
         dict,
     ] = DakotaField(
+        description="Compute the coefficients of a polynomial expansion using least squares",
         dakota={
             "materialization": [
                 {
@@ -1003,12 +1023,12 @@ class PceExpansionOrderCollocRatioLeastSquares(DakotaBaseModel):
                     "ir_value_type": "short",
                 }
             ]
-        }
+        },
     )
 
 
 class PceExpansionOrderCollocRatioOMP(DakotaBaseModel):
-    """Generated model for PceExpansionOrderCollocRatioOMP"""
+    "Compute the coefficients of a polynomial expansion using orthogonal matching pursuit (OMP)"
 
     orthogonal_matching_pursuit: ExpansionOrderCollocRatioOMPConfig = DakotaField(
         description="Compute the coefficients of a polynomial expansion using orthogonal matching pursuit (OMP)",
@@ -1028,7 +1048,7 @@ class PceExpansionOrderCollocRatioOMP(DakotaBaseModel):
 
 
 class ExpansionOrderCollocRatioBPDN(DakotaBaseModel):
-    """Generated model for ExpansionOrderCollocRatioBPDN"""
+    "Compute the coefficients of a polynomial expansion by solving the Basis Pursuit Denoising L1 -minimization problem using second order cone optimization."
 
     basis_pursuit_denoising: ExpansionOrderCollocRatioBPDNConfig = DakotaField(
         description="Compute the coefficients of a polynomial expansion by solving the Basis Pursuit Denoising L1 -minimization problem using second order cone optimization.",
@@ -1048,7 +1068,7 @@ class ExpansionOrderCollocRatioBPDN(DakotaBaseModel):
 
 
 class ExpansionOrderCollocRatioLars(DakotaBaseModel):
-    """Generated model for ExpansionOrderCollocRatioLars"""
+    "Compute the coefficients of a polynomial expansion by using the greedy least angle regression (LAR) method."
 
     least_angle_regression: ExpansionOrderCollocRatioLarsConfig = DakotaField(
         description="Compute the coefficients of a polynomial expansion by using the greedy least angle regression (LAR) method.",
@@ -1068,7 +1088,7 @@ class ExpansionOrderCollocRatioLars(DakotaBaseModel):
 
 
 class PceExpansionOrderCollocRatioLasso(DakotaBaseModel):
-    """Generated model for PceExpansionOrderCollocRatioLasso"""
+    "Compute the coefficients of a polynomial expansion by using the LASSO problem."
 
     least_absolute_shrinkage: ExpansionOrderCollocRatioLassoConfig = DakotaField(
         description="Compute the coefficients of a polynomial expansion by using the LASSO problem.",
@@ -1088,7 +1108,7 @@ class PceExpansionOrderCollocRatioLasso(DakotaBaseModel):
 
 
 class PceExpansionOrderExpansionSamples(DakotaBaseModel):
-    """Generated model for PceExpansionOrderExpansionSamples"""
+    "Number of simulation samples used to estimate the expected value of a set of PCE coefficients"
 
     expansion_samples: PceExpansionOrderExpansionSamplesConfig = DakotaField(
         default=...,
@@ -1098,7 +1118,7 @@ class PceExpansionOrderExpansionSamples(DakotaBaseModel):
 
 
 class PceExpansionOrderImportBuildPointsFileCustomAnnotated(DakotaBaseModel):
-    """Generated model for PceExpansionOrderImportBuildPointsFileCustomAnnotated"""
+    "Selects custom-annotated tabular file format"
 
     custom_annotated: PceExpansionOrderImportBuildPointsFileCustomAnnotatedConfig = DakotaField(
         default_factory=PceExpansionOrderImportBuildPointsFileCustomAnnotatedConfig,
@@ -1118,7 +1138,7 @@ class PceExpansionOrderImportBuildPointsFileCustomAnnotated(DakotaBaseModel):
 
 
 class PceOrthogLeastInterpImportBuildPointsFileCustomAnnotated(DakotaBaseModel):
-    """Generated model for PceOrthogLeastInterpImportBuildPointsFileCustomAnnotated"""
+    "Selects custom-annotated tabular file format"
 
     custom_annotated: PceOrthogLeastInterpImportBuildPointsFileCustomAnnotatedConfig = DakotaField(
         default_factory=PceOrthogLeastInterpImportBuildPointsFileCustomAnnotatedConfig,
@@ -1138,7 +1158,7 @@ class PceOrthogLeastInterpImportBuildPointsFileCustomAnnotated(DakotaBaseModel):
 
 
 class PceQuadratureOrder(DakotaBaseModel):
-    """Generated model for PceQuadratureOrder"""
+    "Order for tensor-products of Gaussian quadrature rules"
 
     quadrature_order: PceQuadratureOrderConfig = DakotaField(
         default=...,
@@ -1148,7 +1168,7 @@ class PceQuadratureOrder(DakotaBaseModel):
 
 
 class PceSGLevel(DakotaBaseModel):
-    """Generated model for PceSGLevel"""
+    "Level to use in sparse grid integration or interpolation"
 
     sparse_grid_level: PceSGLevelConfig = DakotaField(
         default=...,
@@ -1158,7 +1178,7 @@ class PceSGLevel(DakotaBaseModel):
 
 
 class PceExpansionOrderCollocPointsConfig(DakotaBaseModel):
-    """Generated model for PceExpansionOrderCollocPointsConfig"""
+    "Number of collocation points used to estimate expansion coefficients"
 
     points: int = DakotaField(
         description="Number of collocation points used to estimate expansion coefficients",
@@ -1285,7 +1305,7 @@ class PceExpansionOrderCollocPointsConfig(DakotaBaseModel):
 
 
 class PceExpansionOrderCollocRatioConfig(DakotaBaseModel):
-    """Generated model for PceExpansionOrderCollocRatioConfig"""
+    "Set the number of points used to build a PCE via regression to be proportional to the number of terms in the expansion."
 
     value: DakotaFloat = DakotaField(
         gt=0,
@@ -1413,7 +1433,7 @@ class PceExpansionOrderCollocRatioConfig(DakotaBaseModel):
 
 
 class PceExpansionOrderImportBuildPointsFile(DakotaBaseModel):
-    """Generated model for PceExpansionOrderImportBuildPointsFile"""
+    "File containing points you wish to use to build a surrogate"
 
     filename: str = DakotaField(
         description="File containing points you wish to use to build a surrogate",
@@ -1456,7 +1476,7 @@ class PceExpansionOrderImportBuildPointsFile(DakotaBaseModel):
 
 
 class PceOrthogLeastInterpImportBuildPointsFile(DakotaBaseModel):
-    """Generated model for PceOrthogLeastInterpImportBuildPointsFile"""
+    "File containing points you wish to use to build a surrogate"
 
     filename: str = DakotaField(
         description="File containing points you wish to use to build a surrogate",
@@ -1499,7 +1519,7 @@ class PceOrthogLeastInterpImportBuildPointsFile(DakotaBaseModel):
 
 
 class PceExpansionOrderCollocPoints(DakotaBaseModel):
-    """Generated model for PceExpansionOrderCollocPoints"""
+    "Number of collocation points used to estimate expansion coefficients"
 
     collocation_points: PceExpansionOrderCollocPointsConfig = DakotaField(
         default=...,
@@ -1509,7 +1529,7 @@ class PceExpansionOrderCollocPoints(DakotaBaseModel):
 
 
 class PceExpansionOrderCollocRatio(DakotaBaseModel):
-    """Generated model for PceExpansionOrderCollocRatio"""
+    "Set the number of points used to build a PCE via regression to be proportional to the number of terms in the expansion."
 
     collocation_ratio: PceExpansionOrderCollocRatioConfig = DakotaField(
         default=...,
@@ -1519,7 +1539,7 @@ class PceExpansionOrderCollocRatio(DakotaBaseModel):
 
 
 class PceOrthogLeastInterpConfig(DakotaBaseModel):
-    """Generated model for PceOrthogLeastInterpConfig"""
+    "Build a polynomial chaos expansion from simulation samples using orthogonal least interpolation."
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CheckNonnegativeList(
@@ -1577,7 +1597,7 @@ class PceOrthogLeastInterpConfig(DakotaBaseModel):
 
 
 class PceExpansionOrderConfig(DakotaBaseModel):
-    """Generated model for PceExpansionOrderConfig"""
+    "The (initial) order of a polynomial expansion"
 
     order: int = DakotaField(
         default=USHRT_MAX,
@@ -1632,7 +1652,7 @@ class PceExpansionOrderConfig(DakotaBaseModel):
 
 
 class PceOrthogLeastInterp(DakotaBaseModel):
-    """Generated model for PceOrthogLeastInterp"""
+    "Build a polynomial chaos expansion from simulation samples using orthogonal least interpolation."
 
     orthogonal_least_interpolation: PceOrthogLeastInterpConfig = DakotaField(
         description="Build a polynomial chaos expansion from simulation samples using orthogonal least interpolation.",
@@ -1652,7 +1672,7 @@ class PceOrthogLeastInterp(DakotaBaseModel):
 
 
 class PceExpansionOrder(DakotaBaseModel):
-    """Generated model for PceExpansionOrder"""
+    "The (initial) order of a polynomial expansion"
 
     expansion_order: PceExpansionOrderConfig = DakotaField(
         default=...,
@@ -1670,7 +1690,7 @@ class PceConfig(
     MethodSeedMixin,
     MethodOptionalModelPointerMixin,
 ):
-    """Generated model for PceConfig"""
+    "Uncertainty quantification using polynomial chaos expansions"
 
     coefficient_approach: Union[
         PceQuadratureOrder,
@@ -1686,7 +1706,7 @@ class PceConfig(
 
 
 class PceSelection(MethodSelection):
-    """Generated model for PceSelection"""
+    "Generated model for PceSelection"
 
     polynomial_chaos: PceConfig = DakotaField(
         dakota={

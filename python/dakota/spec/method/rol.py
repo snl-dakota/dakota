@@ -22,7 +22,7 @@ class RolConfig(
     DefaultScalingMixin,
     MethodOptionalModelPointerMixin,
 ):
-    """Generated model for RolConfig"""
+    "Rapid Optimization Library (ROL) is a large-scale optimization package within Trilinos."
 
     variable_tolerance: DakotaFloat = DakotaField(
         default=0.01,
@@ -66,7 +66,7 @@ class RolConfig(
 
 
 class RolSelection(MethodSelection):
-    """Generated model for RolSelection"""
+    "Generated model for RolSelection"
 
     rol: RolConfig = DakotaField(
         dakota={

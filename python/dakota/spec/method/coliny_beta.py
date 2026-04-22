@@ -18,7 +18,7 @@ class ColinyBetaConfig(
     ColinyCommonOptsMixin,
     MethodOptionalModelPointerMixin,
 ):
-    """Generated model for ColinyBetaConfig"""
+    "(Experimental) Coliny beta solver"
 
     beta_solver_name: str = DakotaField(
         description="Use an in-development SCOLIB solver",
@@ -35,7 +35,7 @@ class ColinyBetaConfig(
 
 
 class ColinyBetaSelection(MethodSelection):
-    """Generated model for ColinyBetaSelection"""
+    "Generated model for ColinyBetaSelection"
 
     coliny_beta: ColinyBetaConfig = DakotaField(
         dakota={

@@ -24,7 +24,7 @@ class OptppPdsConfig(
     DefaultScalingMixin,
     MethodOptionalModelPointerMixin,
 ):
-    """Generated model for OptppPdsConfig"""
+    "Simplex-based derivative free optimization method"
 
     search_scheme_size: int = DakotaField(
         default=32,
@@ -42,7 +42,7 @@ class OptppPdsConfig(
 
 
 class OptppPdsSelection(MethodSelection):
-    """Generated model for OptppPdsSelection"""
+    "Generated model for OptppPdsSelection"
 
     optpp_pds: OptppPdsConfig = DakotaField(
         dakota={

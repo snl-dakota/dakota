@@ -16,10 +16,11 @@ from dakota.spec.shared.misc import (
 
 
 class ColinyEaInitializationTypeSimpleRandom(DakotaBaseModel):
-    """Generated model for ColinyEaInitializationTypeSimpleRandom"""
+    "Create random initial solutions"
 
     simple_random: Literal[True] = DakotaField(
         default=True,
+        description="Create random initial solutions",
         dakota={
             "materialization": [
                 {
@@ -34,10 +35,11 @@ class ColinyEaInitializationTypeSimpleRandom(DakotaBaseModel):
 
 
 class ColinyEaInitializationTypeUniqueRandom(DakotaBaseModel):
-    """Generated model for ColinyEaInitializationTypeUniqueRandom"""
+    "Create random initial solutions, but enforce uniqueness (default)"
 
     unique_random: Literal[True] = DakotaField(
         default=True,
+        description="Create random initial solutions, but enforce uniqueness (default)",
         dakota={
             "materialization": [
                 {
@@ -52,7 +54,7 @@ class ColinyEaInitializationTypeUniqueRandom(DakotaBaseModel):
 
 
 class ColinyEaInitializationTypeFlatFile(DakotaBaseModel):
-    """Generated model for ColinyEaInitializationTypeFlatFile"""
+    "Read initial solutions from file"
 
     flat_file: str = DakotaField(
         description="Read initial solutions from file",
@@ -72,10 +74,11 @@ class ColinyEaInitializationTypeFlatFile(DakotaBaseModel):
 
 
 class LinearRank(DakotaBaseModel):
-    """Generated model for LinearRank"""
+    "Set selection scaling"
 
     linear_rank: Literal[True] = DakotaField(
         default=True,
+        description="Set selection scaling",
         dakota={
             "materialization": [
                 {
@@ -90,10 +93,11 @@ class LinearRank(DakotaBaseModel):
 
 
 class MeritFunction(DakotaBaseModel):
-    """Generated model for MeritFunction"""
+    "Balance goals of reducing objective function and satisfying constraints"
 
     merit_function: Literal[True] = DakotaField(
         default=True,
+        description="Balance goals of reducing objective function and satisfying constraints",
         dakota={
             "materialization": [
                 {
@@ -108,7 +112,7 @@ class MeritFunction(DakotaBaseModel):
 
 
 class ReplacementTypeRandom(DakotaBaseModel):
-    """Generated model for ReplacementTypeRandom"""
+    "Create new population randomly"
 
     random: int = DakotaField(
         description="Create new population randomly",
@@ -128,7 +132,7 @@ class ReplacementTypeRandom(DakotaBaseModel):
 
 
 class Chc(DakotaBaseModel):
-    """Generated model for Chc"""
+    "Create new population using replacement"
 
     chc: int = DakotaField(
         description="Create new population using replacement",
@@ -148,7 +152,7 @@ class Chc(DakotaBaseModel):
 
 
 class ColinyEaReplacementTypeElitist(DakotaBaseModel):
-    """Generated model for ColinyEaReplacementTypeElitist"""
+    "Use the best designs to form a new population"
 
     elitist: int = DakotaField(
         description="Use the best designs to form a new population",
@@ -168,10 +172,11 @@ class ColinyEaReplacementTypeElitist(DakotaBaseModel):
 
 
 class TwoPoint(DakotaBaseModel):
-    """Generated model for TwoPoint"""
+    "Combine middle of one parent with end of another"
 
     two_point: Literal[True] = DakotaField(
         default=True,
+        description="Combine middle of one parent with end of another",
         dakota={
             "materialization": [
                 {
@@ -186,10 +191,11 @@ class TwoPoint(DakotaBaseModel):
 
 
 class Blend(DakotaBaseModel):
-    """Generated model for Blend"""
+    "Random blend of parents"
 
     blend: Literal[True] = DakotaField(
         default=True,
+        description="Random blend of parents",
         dakota={
             "materialization": [
                 {
@@ -204,10 +210,11 @@ class Blend(DakotaBaseModel):
 
 
 class CrossoverTypeUniform(DakotaBaseModel):
-    """Generated model for CrossoverTypeUniform"""
+    "Randomly combine coordinates from parents"
 
     uniform: Literal[True] = DakotaField(
         default=True,
+        description="Randomly combine coordinates from parents",
         dakota={
             "materialization": [
                 {
@@ -222,10 +229,11 @@ class CrossoverTypeUniform(DakotaBaseModel):
 
 
 class ColinyEaMutationTypeReplaceUniform(DakotaBaseModel):
-    """Generated model for ColinyEaMutationTypeReplaceUniform"""
+    "Replace coordinate with randomly generated value"
 
     replace_uniform: Literal[True] = DakotaField(
         default=True,
+        description="Replace coordinate with randomly generated value",
         dakota={
             "materialization": [
                 {
@@ -240,7 +248,7 @@ class ColinyEaMutationTypeReplaceUniform(DakotaBaseModel):
 
 
 class ColinyEaMutationTypeOffsetNormal(DakotaBaseModel):
-    """Generated model for ColinyEaMutationTypeOffsetNormal"""
+    "Set mutation offset to use a normal distribution"
 
     offset_normal: ColinyMutationScaleRangeMixin = DakotaField(
         description="Set mutation offset to use a normal distribution",
@@ -258,7 +266,7 @@ class ColinyEaMutationTypeOffsetNormal(DakotaBaseModel):
 
 
 class ColinyEaMutationTypeOffsetCauchy(DakotaBaseModel):
-    """Generated model for ColinyEaMutationTypeOffsetCauchy"""
+    "Use a Cauchy distribution for the mutation offset"
 
     offset_cauchy: ColinyMutationScaleRangeMixin = DakotaField(
         description="Use a Cauchy distribution for the mutation offset",
@@ -276,7 +284,7 @@ class ColinyEaMutationTypeOffsetCauchy(DakotaBaseModel):
 
 
 class ColinyEaMutationTypeOffsetUniform(DakotaBaseModel):
-    """Generated model for ColinyEaMutationTypeOffsetUniform"""
+    "Set mutation offset to use a uniform distribution"
 
     offset_uniform: ColinyMutationScaleRangeMixin = DakotaField(
         description="Set mutation offset to use a uniform distribution",
@@ -294,7 +302,7 @@ class ColinyEaMutationTypeOffsetUniform(DakotaBaseModel):
 
 
 class ColinyEaMutationType(DakotaBaseModel):
-    """Generated model for ColinyEaMutationType"""
+    "Select a mutation type"
 
     strategy: Union[
         ColinyEaMutationTypeReplaceUniform,
@@ -311,7 +319,7 @@ class ColinyEaConfig(
     ColinyCommonOptsMixin,
     MethodOptionalModelPointerMixin,
 ):
-    """Generated model for ColinyEaConfig"""
+    "Evolutionary Algorithm"
 
     population_size: int = DakotaField(
         default=50,
@@ -423,7 +431,7 @@ class ColinyEaConfig(
 
 
 class ColinyEaSelection(MethodSelection):
-    """Generated model for ColinyEaSelection"""
+    "Generated model for ColinyEaSelection"
 
     coliny_ea: ColinyEaConfig = DakotaField(
         dakota={

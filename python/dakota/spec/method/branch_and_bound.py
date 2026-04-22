@@ -15,7 +15,7 @@ from dakota.spec.shared.misc import (
 
 
 class BranchAndBoundMethodPointer(DakotaBaseModel):
-    """Generated model for BranchAndBoundMethodPointer"""
+    "Pointer to sub-method to apply to a surrogate or branch-and-bound sub-problem"
 
     method_pointer: str = DakotaField(
         description="Pointer to sub-method to apply to a surrogate or branch-and-bound sub-problem",
@@ -33,7 +33,7 @@ class BranchAndBoundMethodPointer(DakotaBaseModel):
 
 
 class BranchAndBoundMethodNameConfig(MethodOptionalModelPointerMixin):
-    """Generated model for BranchAndBoundMethodNameConfig"""
+    "Specify sub-method by name"
 
     name: str = DakotaField(
         description="Specify sub-method by name",
@@ -50,7 +50,7 @@ class BranchAndBoundMethodNameConfig(MethodOptionalModelPointerMixin):
 
 
 class BranchAndBoundMethodName(DakotaBaseModel):
-    """Generated model for BranchAndBoundMethodName"""
+    "Specify sub-method by name"
 
     method_name: BranchAndBoundMethodNameConfig = DakotaField(
         default=...,
@@ -60,7 +60,7 @@ class BranchAndBoundMethodName(DakotaBaseModel):
 
 
 class BranchAndBoundConfig(MethodThreeOptionalKeywordsMixin, DefaultScalingMixin):
-    """Generated model for BranchAndBoundConfig"""
+    "(Experimental Capability) Solves a mixed integer nonlinear optimization problem"
 
     sub_method: Union[BranchAndBoundMethodPointer, BranchAndBoundMethodName] = (
         DakotaField(
@@ -71,7 +71,7 @@ class BranchAndBoundConfig(MethodThreeOptionalKeywordsMixin, DefaultScalingMixin
 
 
 class BranchAndBoundSelection(MethodSelection):
-    """Generated model for BranchAndBoundSelection"""
+    "Generated model for BranchAndBoundSelection"
 
     branch_and_bound: BranchAndBoundConfig = DakotaField(
         dakota={

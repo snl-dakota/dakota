@@ -14,7 +14,7 @@ from dakota.spec.shared.misc import (
 
 
 class SurrogateBasedGlobalMethodPointer(DakotaBaseModel):
-    """Generated model for SurrogateBasedGlobalMethodPointer"""
+    "Pointer to sub-method to apply to a surrogate or branch-and-bound sub-problem"
 
     method_pointer: str = DakotaField(
         description="Pointer to sub-method to apply to a surrogate or branch-and-bound sub-problem",
@@ -33,7 +33,7 @@ class SurrogateBasedGlobalMethodPointer(DakotaBaseModel):
 
 
 class SurrogateBasedGlobalMethodName(DakotaBaseModel):
-    """Generated model for SurrogateBasedGlobalMethodName"""
+    "Specify sub-method by name"
 
     method_name: str = DakotaField(
         description="Specify sub-method by name",
@@ -53,7 +53,7 @@ class SurrogateBasedGlobalMethodName(DakotaBaseModel):
 class SurrogateBasedGlobalConfig(
     MethodThreeOptionalKeywordsMixin, MethodMaxIterationsContext1Mixin
 ):
-    """Generated model for SurrogateBasedGlobalConfig"""
+    "Adaptive Global Surrogate-Based Optimization"
 
     sub_method: Union[
         SurrogateBasedGlobalMethodPointer, SurrogateBasedGlobalMethodName
@@ -90,7 +90,7 @@ class SurrogateBasedGlobalConfig(
 
 
 class SurrogateBasedGlobalSelection(MethodSelection):
-    """Generated model for SurrogateBasedGlobalSelection"""
+    "Generated model for SurrogateBasedGlobalSelection"
 
     surrogate_based_global: SurrogateBasedGlobalConfig = DakotaField(
         dakota={

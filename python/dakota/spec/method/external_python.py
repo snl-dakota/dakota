@@ -10,7 +10,7 @@ from dakota.spec.shared.misc import MethodThreeOptionalKeywordsMixin
 
 
 class ExternalPythonConfig(MethodThreeOptionalKeywordsMixin):
-    """Generated model for ExternalPythonConfig"""
+    "Use the external python methods interface"
 
     class_path_and_name: str = DakotaField(
         description="Specify the module and class name of the external python method",
@@ -40,7 +40,7 @@ class ExternalPythonConfig(MethodThreeOptionalKeywordsMixin):
 
 
 class ExternalPythonSelection(MethodSelection):
-    """Generated model for ExternalPythonSelection"""
+    "Generated model for ExternalPythonSelection"
 
     external_python: ExternalPythonConfig = DakotaField(
         dakota={

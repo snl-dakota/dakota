@@ -25,7 +25,7 @@ from dakota.spec.shared.sampling import MethodExportSamplesFormatMixin
 
 
 class QuesoExportChainPointsFile(MethodExportSamplesFormatMixin):
-    """Generated model for QuesoExportChainPointsFile"""
+    "Export the MCMC chain to the specified filename"
 
     filename: str = DakotaField(
         description="Export the MCMC chain to the specified filename",
@@ -42,10 +42,11 @@ class QuesoExportChainPointsFile(MethodExportSamplesFormatMixin):
 
 
 class QuesoDram(DakotaBaseModel):
-    """Generated model for QuesoDram"""
+    "Use the DRAM MCMC algorithm"
 
     dram: Literal[True] = DakotaField(
         default=True,
+        description="Use the DRAM MCMC algorithm",
         dakota={
             "materialization": [
                 {
@@ -60,10 +61,11 @@ class QuesoDram(DakotaBaseModel):
 
 
 class QuesoDelayedRejection(DakotaBaseModel):
-    """Generated model for QuesoDelayedRejection"""
+    "Use the Delayed Rejection MCMC algorithm"
 
     delayed_rejection: Literal[True] = DakotaField(
         default=True,
+        description="Use the Delayed Rejection MCMC algorithm",
         dakota={
             "materialization": [
                 {
@@ -78,10 +80,11 @@ class QuesoDelayedRejection(DakotaBaseModel):
 
 
 class QuesoAdaptiveMetropolis(DakotaBaseModel):
-    """Generated model for QuesoAdaptiveMetropolis"""
+    "Use the Adaptive Metropolis MCMC algorithm"
 
     adaptive_metropolis: Literal[True] = DakotaField(
         default=True,
+        description="Use the Adaptive Metropolis MCMC algorithm",
         dakota={
             "materialization": [
                 {
@@ -96,10 +99,11 @@ class QuesoAdaptiveMetropolis(DakotaBaseModel):
 
 
 class QuesoMetropolisHastings(DakotaBaseModel):
-    """Generated model for QuesoMetropolisHastings"""
+    "Use the Metropolis-Hastings MCMC algorithm"
 
     metropolis_hastings: Literal[True] = DakotaField(
         default=True,
+        description="Use the Metropolis-Hastings MCMC algorithm",
         dakota={
             "materialization": [
                 {
@@ -114,10 +118,11 @@ class QuesoMetropolisHastings(DakotaBaseModel):
 
 
 class Multilevel(DakotaBaseModel):
-    """Generated model for Multilevel"""
+    "Use the multilevel MCMC algorithm."
 
     multilevel: Literal[True] = DakotaField(
         default=True,
+        description="Use the multilevel MCMC algorithm.",
         dakota={
             "materialization": [
                 {
@@ -132,10 +137,11 @@ class Multilevel(DakotaBaseModel):
 
 
 class QuesoPreSolveSqp(DakotaBaseModel):
-    """Generated model for QuesoPreSolveSqp"""
+    "Use a sequential quadratic programming method for solving an optimization sub-problem"
 
     sqp: Literal[True] = DakotaField(
         default=True,
+        description="Use a sequential quadratic programming method for solving an optimization sub-problem",
         dakota={
             "materialization": [
                 {
@@ -150,10 +156,11 @@ class QuesoPreSolveSqp(DakotaBaseModel):
 
 
 class QuesoPreSolveNip(DakotaBaseModel):
-    """Generated model for QuesoPreSolveNip"""
+    "Use a nonlinear interior point method for solving an optimization sub-problem"
 
     nip: Literal[True] = DakotaField(
         default=True,
+        description="Use a nonlinear interior point method for solving an optimization sub-problem",
         dakota={
             "materialization": [
                 {
@@ -168,10 +175,11 @@ class QuesoPreSolveNip(DakotaBaseModel):
 
 
 class QuesoPreSolveNone(DakotaBaseModel):
-    """Generated model for QuesoPreSolveNone"""
+    "Deactivates MAP pre-solve prior to initiating the MCMC process."
 
     none: Literal[True] = DakotaField(
         default=True,
+        description="Deactivates MAP pre-solve prior to initiating the MCMC process.",
         dakota={
             "materialization": [
                 {
@@ -186,7 +194,7 @@ class QuesoPreSolveNone(DakotaBaseModel):
 
 
 class GpmsaImportBuildPointsFile(MethodImportBuildFormatMixin):
-    """Generated model for GpmsaImportBuildPointsFile"""
+    "File containing points you wish to use to build a surrogate"
 
     filename: str = DakotaField(
         description="File containing points you wish to use to build a surrogate",
@@ -203,7 +211,7 @@ class GpmsaImportBuildPointsFile(MethodImportBuildFormatMixin):
 
 
 class GpmsaExportChainPointsFile(MethodExportSamplesFormatMixin):
-    """Generated model for GpmsaExportChainPointsFile"""
+    "Export the MCMC chain to the specified filename"
 
     filename: str = DakotaField(
         description="Export the MCMC chain to the specified filename",
@@ -220,10 +228,11 @@ class GpmsaExportChainPointsFile(MethodExportSamplesFormatMixin):
 
 
 class GpmsaDram(DakotaBaseModel):
-    """Generated model for GpmsaDram"""
+    "Use the DRAM MCMC algorithm"
 
     dram: Literal[True] = DakotaField(
         default=True,
+        description="Use the DRAM MCMC algorithm",
         dakota={
             "materialization": [
                 {
@@ -238,10 +247,11 @@ class GpmsaDram(DakotaBaseModel):
 
 
 class GpmsaDelayedRejection(DakotaBaseModel):
-    """Generated model for GpmsaDelayedRejection"""
+    "Use the Delayed Rejection MCMC algorithm"
 
     delayed_rejection: Literal[True] = DakotaField(
         default=True,
+        description="Use the Delayed Rejection MCMC algorithm",
         dakota={
             "materialization": [
                 {
@@ -256,10 +266,11 @@ class GpmsaDelayedRejection(DakotaBaseModel):
 
 
 class GpmsaAdaptiveMetropolis(DakotaBaseModel):
-    """Generated model for GpmsaAdaptiveMetropolis"""
+    "Use the Adaptive Metropolis MCMC algorithm"
 
     adaptive_metropolis: Literal[True] = DakotaField(
         default=True,
+        description="Use the Adaptive Metropolis MCMC algorithm",
         dakota={
             "materialization": [
                 {
@@ -274,10 +285,11 @@ class GpmsaAdaptiveMetropolis(DakotaBaseModel):
 
 
 class GpmsaMetropolisHastings(DakotaBaseModel):
-    """Generated model for GpmsaMetropolisHastings"""
+    "Use the Metropolis-Hastings MCMC algorithm"
 
     metropolis_hastings: Literal[True] = DakotaField(
         default=True,
+        description="Use the Metropolis-Hastings MCMC algorithm",
         dakota={
             "materialization": [
                 {
@@ -292,10 +304,11 @@ class GpmsaMetropolisHastings(DakotaBaseModel):
 
 
 class CovDiag(DakotaBaseModel):
-    """Generated model for CovDiag"""
+    "(Experimental Capability) Diagonal error covariance"
 
     diagonal: Literal[True] = DakotaField(
         default=True,
+        description="(Experimental Capability) Diagonal error covariance",
         dakota={
             "materialization": [
                 {
@@ -310,10 +323,11 @@ class CovDiag(DakotaBaseModel):
 
 
 class CovMatrix(DakotaBaseModel):
-    """Generated model for CovMatrix"""
+    "(Experimental Capability) Symmetric positive definite error covariance"
 
     matrix: Literal[True] = DakotaField(
         default=True,
+        description="(Experimental Capability) Symmetric positive definite error covariance",
         dakota={
             "materialization": [
                 {
@@ -328,7 +342,7 @@ class CovMatrix(DakotaBaseModel):
 
 
 class ObsDataFilename(DakotaBaseModel):
-    """Generated model for ObsDataFilename"""
+    "(Experimental Capability) Filename from which to read experimental data"
 
     obs_data_filename: str = DakotaField(
         description="(Experimental Capability) Filename from which to read experimental data",
@@ -345,7 +359,7 @@ class ObsDataFilename(DakotaBaseModel):
 
 
 class GeneratePosteriorSamples(DakotaBaseModel):
-    """Generated model for GeneratePosteriorSamples"""
+    "(Experimental Capability) Generate random samples from the posterior density"
 
     posterior_samples_export_filename: str | None = DakotaField(
         default=None,
@@ -363,7 +377,7 @@ class GeneratePosteriorSamples(DakotaBaseModel):
 
 
 class EvaluatePosteriorDensity(DakotaBaseModel):
-    """Generated model for EvaluatePosteriorDensity"""
+    "(Experimental Capability) Evaluate the posterior density and output to the specified file"
 
     posterior_density_export_filename: str | None = DakotaField(
         default=None,
@@ -381,7 +395,7 @@ class EvaluatePosteriorDensity(DakotaBaseModel):
 
 
 class DreamExportChainPointsFile(MethodExportSamplesFormatMixin):
-    """Generated model for DreamExportChainPointsFile"""
+    "Export the MCMC chain to the specified filename"
 
     filename: str = DakotaField(
         description="Export the MCMC chain to the specified filename",
@@ -398,7 +412,7 @@ class DreamExportChainPointsFile(MethodExportSamplesFormatMixin):
 
 
 class MuqExportChainPointsFile(MethodExportSamplesFormatMixin):
-    """Generated model for MuqExportChainPointsFile"""
+    "Export the MCMC chain to the specified filename"
 
     filename: str = DakotaField(
         description="Export the MCMC chain to the specified filename",
@@ -415,7 +429,7 @@ class MuqExportChainPointsFile(MethodExportSamplesFormatMixin):
 
 
 class AdaptiveMetropolisConfig(DakotaBaseModel):
-    """Generated model for AdaptiveMetropolisConfig"""
+    "Use the Adaptive Metropolis MCMC algorithm"
 
     period_num_steps: int = DakotaField(
         default=100,
@@ -459,7 +473,7 @@ class AdaptiveMetropolisConfig(DakotaBaseModel):
 
 
 class DelayedRejectionConfig(DakotaBaseModel):
-    """Generated model for DelayedRejectionConfig"""
+    "Use the Delayed Rejection MCMC algorithm"
 
     num_stages: int = DakotaField(
         default=3,
@@ -503,7 +517,7 @@ class DelayedRejectionConfig(DakotaBaseModel):
 
 
 class DiliConfig(DakotaBaseModel):
-    """Generated model for DiliConfig"""
+    "Dimension-independent likelihood-informed MCMC"
 
     hessian_type: str = DakotaField(
         default="GaussNewton",
@@ -677,7 +691,7 @@ class DiliConfig(DakotaBaseModel):
 
 
 class DramConfig(DakotaBaseModel):
-    """Generated model for DramConfig"""
+    "Use the DRAM MCMC algorithm"
 
     num_stages: int = DakotaField(
         default=3,
@@ -760,7 +774,7 @@ class DramConfig(DakotaBaseModel):
 
 
 class MultilevelMcmcConfig(DakotaBaseModel):
-    """Generated model for MultilevelMcmcConfig"""
+    "Use the Multi-level MCMC algorithm"
 
     initial_chain_samples: int = DakotaField(
         default=1000,
@@ -817,7 +831,7 @@ class MultilevelMcmcConfig(DakotaBaseModel):
 
 
 class MalaConfig(DakotaBaseModel):
-    """Generated model for MalaConfig"""
+    "Metropolis-adjusted Langevin algorithm"
 
     step_size: DakotaFloat = DakotaField(
         default=1.0,
@@ -835,10 +849,11 @@ class MalaConfig(DakotaBaseModel):
 
 
 class MuqMetropolisHastings(DakotaBaseModel):
-    """Generated model for MuqMetropolisHastings"""
+    "Use the Metropolis-Hastings MCMC algorithm"
 
     metropolis_hastings: Literal[True] = DakotaField(
         default=True,
+        description="Use the Metropolis-Hastings MCMC algorithm",
         dakota={
             "materialization": [
                 {
@@ -853,10 +868,11 @@ class MuqMetropolisHastings(DakotaBaseModel):
 
 
 class MuqPreSolveSqp(DakotaBaseModel):
-    """Generated model for MuqPreSolveSqp"""
+    "Use a sequential quadratic programming method for solving an optimization sub-problem"
 
     sqp: Literal[True] = DakotaField(
         default=True,
+        description="Use a sequential quadratic programming method for solving an optimization sub-problem",
         dakota={
             "materialization": [
                 {
@@ -871,10 +887,11 @@ class MuqPreSolveSqp(DakotaBaseModel):
 
 
 class MuqPreSolveNip(DakotaBaseModel):
-    """Generated model for MuqPreSolveNip"""
+    "Use a nonlinear interior point method for solving an optimization sub-problem"
 
     nip: Literal[True] = DakotaField(
         default=True,
+        description="Use a nonlinear interior point method for solving an optimization sub-problem",
         dakota={
             "materialization": [
                 {
@@ -889,10 +906,11 @@ class MuqPreSolveNip(DakotaBaseModel):
 
 
 class MuqPreSolveNone(DakotaBaseModel):
-    """Generated model for MuqPreSolveNone"""
+    "Deactivates MAP pre-solve prior to initiating the MCMC process."
 
     none: Literal[True] = DakotaField(
         default=True,
+        description="Deactivates MAP pre-solve prior to initiating the MCMC process.",
         dakota={
             "materialization": [
                 {
@@ -907,7 +925,7 @@ class MuqPreSolveNone(DakotaBaseModel):
 
 
 class ImportCandidatePointsFileCustomAnnotatedConfig(DakotaBaseModel):
-    """Generated model for ImportCandidatePointsFileCustomAnnotatedConfig"""
+    "Selects custom-annotated tabular file format"
 
     header: Literal[True] | None = DakotaField(
         default=None,
@@ -954,10 +972,11 @@ class ImportCandidatePointsFileCustomAnnotatedConfig(DakotaBaseModel):
 
 
 class ImportCandidatePointsFileAnnotated(DakotaBaseModel):
-    """Generated model for ImportCandidatePointsFileAnnotated"""
+    "Selects annotated tabular file format"
 
     annotated: Literal[True] = DakotaField(
         default=True,
+        description="Selects annotated tabular file format",
         dakota={
             "materialization": [
                 {
@@ -972,10 +991,11 @@ class ImportCandidatePointsFileAnnotated(DakotaBaseModel):
 
 
 class ImportCandidatePointsFileFreeform(DakotaBaseModel):
-    """Generated model for ImportCandidatePointsFileFreeform"""
+    "Selects freeform file format"
 
     freeform: Literal[True] = DakotaField(
         default=True,
+        description="Selects freeform file format",
         dakota={
             "materialization": [
                 {
@@ -990,10 +1010,11 @@ class ImportCandidatePointsFileFreeform(DakotaBaseModel):
 
 
 class One(DakotaBaseModel):
-    """Generated model for One"""
+    "Calibrate one hyper-parameter multiplier across all responses/experiments"
 
     one: Literal[True] = DakotaField(
         default=True,
+        description="Calibrate one hyper-parameter multiplier across all responses/experiments",
         dakota={
             "materialization": [
                 {
@@ -1008,10 +1029,11 @@ class One(DakotaBaseModel):
 
 
 class PerExperiment(DakotaBaseModel):
-    """Generated model for PerExperiment"""
+    "Calibrate one hyper-parameter multiplier per experiment"
 
     per_experiment: Literal[True] = DakotaField(
         default=True,
+        description="Calibrate one hyper-parameter multiplier per experiment",
         dakota={
             "materialization": [
                 {
@@ -1026,10 +1048,11 @@ class PerExperiment(DakotaBaseModel):
 
 
 class PerResponse(DakotaBaseModel):
-    """Generated model for PerResponse"""
+    "Calibrate one hyper-parameter multiplier per response"
 
     per_response: Literal[True] = DakotaField(
         default=True,
+        description="Calibrate one hyper-parameter multiplier per response",
         dakota={
             "materialization": [
                 {
@@ -1044,10 +1067,11 @@ class PerResponse(DakotaBaseModel):
 
 
 class Both(DakotaBaseModel):
-    """Generated model for Both"""
+    "Calibrate one hyper-parameter multiplier for each response/experiment pair"
 
     both: Literal[True] = DakotaField(
         default=True,
+        description="Calibrate one hyper-parameter multiplier for each response/experiment pair",
         dakota={
             "materialization": [
                 {
@@ -1062,7 +1086,7 @@ class Both(DakotaBaseModel):
 
 
 class HyperpriorParameters(DakotaBaseModel):
-    """Generated model for HyperpriorParameters"""
+    "Specify shape (alpha) and scale (beta) of the inverse gamma hyper-parameter prior"
 
     alphas: list[DakotaFloat] = DakotaField(
         description="Shape (alpha) of the inverse gamma hyper-parameter prior",
@@ -1091,7 +1115,7 @@ class HyperpriorParameters(DakotaBaseModel):
 
 
 class MutualInfo(DakotaBaseModel):
-    """Generated model for MutualInfo"""
+    "Calculate the mutual information between prior and posterior"
 
     ksg2: Literal[True] | None = DakotaField(
         default=None,
@@ -1109,7 +1133,7 @@ class MutualInfo(DakotaBaseModel):
 
 
 class ChainDiagnostics(DakotaBaseModel):
-    """Generated model for ChainDiagnostics"""
+    "Compute diagnostic metrics for Markov chain"
 
     confidence_intervals: Literal[True] | None = DakotaField(
         default=None,
@@ -1127,7 +1151,7 @@ class ChainDiagnostics(DakotaBaseModel):
 
 
 class ModelEvidence(DakotaBaseModel):
-    """Generated model for ModelEvidence"""
+    "Calculate model evidence (marginal likelihood of model) when using Bayesian methods"
 
     mc_approx: Literal[True] | None = DakotaField(
         default=None,
@@ -1171,7 +1195,7 @@ class ModelEvidence(DakotaBaseModel):
 
 
 class DiscrepancyTypeGPConfig(DakotaBaseModel):
-    """Generated model for DiscrepancyTypeGPConfig"""
+    "Use the Surfpack version of Gaussain process as the discrepancy model"
 
     trend_order: int = DakotaField(
         default=2,
@@ -1190,7 +1214,7 @@ class DiscrepancyTypeGPConfig(DakotaBaseModel):
 
 
 class DiscrepancyTypePolynomialConfig(DakotaBaseModel):
-    """Generated model for DiscrepancyTypePolynomialConfig"""
+    "Use a polynomial surrogate as the discrepancy model"
 
     basis_order: int = DakotaField(
         default=2,
@@ -1209,7 +1233,7 @@ class DiscrepancyTypePolynomialConfig(DakotaBaseModel):
 
 
 class ImportPredictionConfigsCustomAnnotatedConfig(DakotaBaseModel):
-    """Generated model for ImportPredictionConfigsCustomAnnotatedConfig"""
+    "Selects custom-annotated tabular file format"
 
     header: Literal[True] | None = DakotaField(
         default=None,
@@ -1256,10 +1280,11 @@ class ImportPredictionConfigsCustomAnnotatedConfig(DakotaBaseModel):
 
 
 class ImportPredictionConfigsAnnotated(DakotaBaseModel):
-    """Generated model for ImportPredictionConfigsAnnotated"""
+    "Selects annotated tabular file format"
 
     annotated: Literal[True] = DakotaField(
         default=True,
+        description="Selects annotated tabular file format",
         dakota={
             "materialization": [
                 {
@@ -1274,10 +1299,11 @@ class ImportPredictionConfigsAnnotated(DakotaBaseModel):
 
 
 class ImportPredictionConfigsFreeform(DakotaBaseModel):
-    """Generated model for ImportPredictionConfigsFreeform"""
+    "Selects freeform file format"
 
     freeform: Literal[True] = DakotaField(
         default=True,
+        description="Selects freeform file format",
         dakota={
             "materialization": [
                 {
@@ -1292,7 +1318,7 @@ class ImportPredictionConfigsFreeform(DakotaBaseModel):
 
 
 class ExportDiscrepancyFileCustomAnnotatedConfig(DakotaBaseModel):
-    """Generated model for ExportDiscrepancyFileCustomAnnotatedConfig"""
+    "Selects custom-annotated tabular file format"
 
     header: Literal[True] | None = DakotaField(
         default=None,
@@ -1339,10 +1365,11 @@ class ExportDiscrepancyFileCustomAnnotatedConfig(DakotaBaseModel):
 
 
 class ExportDiscrepancyFileAnnotated(DakotaBaseModel):
-    """Generated model for ExportDiscrepancyFileAnnotated"""
+    "Selects annotated tabular file format"
 
     annotated: Literal[True] = DakotaField(
         default=True,
+        description="Selects annotated tabular file format",
         dakota={
             "materialization": [
                 {
@@ -1357,10 +1384,11 @@ class ExportDiscrepancyFileAnnotated(DakotaBaseModel):
 
 
 class ExportDiscrepancyFileFreeform(DakotaBaseModel):
-    """Generated model for ExportDiscrepancyFileFreeform"""
+    "Selects freeform file format"
 
     freeform: Literal[True] = DakotaField(
         default=True,
+        description="Selects freeform file format",
         dakota={
             "materialization": [
                 {
@@ -1375,7 +1403,7 @@ class ExportDiscrepancyFileFreeform(DakotaBaseModel):
 
 
 class ExportCorrectedModelFileCustomAnnotatedConfig(DakotaBaseModel):
-    """Generated model for ExportCorrectedModelFileCustomAnnotatedConfig"""
+    "Selects custom-annotated tabular file format"
 
     header: Literal[True] | None = DakotaField(
         default=None,
@@ -1422,10 +1450,11 @@ class ExportCorrectedModelFileCustomAnnotatedConfig(DakotaBaseModel):
 
 
 class ExportCorrectedModelFileAnnotated(DakotaBaseModel):
-    """Generated model for ExportCorrectedModelFileAnnotated"""
+    "Selects annotated tabular file format"
 
     annotated: Literal[True] = DakotaField(
         default=True,
+        description="Selects annotated tabular file format",
         dakota={
             "materialization": [
                 {
@@ -1440,10 +1469,11 @@ class ExportCorrectedModelFileAnnotated(DakotaBaseModel):
 
 
 class ExportCorrectedModelFileFreeform(DakotaBaseModel):
-    """Generated model for ExportCorrectedModelFileFreeform"""
+    "Selects freeform file format"
 
     freeform: Literal[True] = DakotaField(
         default=True,
+        description="Selects freeform file format",
         dakota={
             "materialization": [
                 {
@@ -1458,7 +1488,7 @@ class ExportCorrectedModelFileFreeform(DakotaBaseModel):
 
 
 class ExportCorrectedVarianceFileCustomAnnotatedConfig(DakotaBaseModel):
-    """Generated model for ExportCorrectedVarianceFileCustomAnnotatedConfig"""
+    "Selects custom-annotated tabular file format"
 
     header: Literal[True] | None = DakotaField(
         default=None,
@@ -1505,10 +1535,11 @@ class ExportCorrectedVarianceFileCustomAnnotatedConfig(DakotaBaseModel):
 
 
 class ExportCorrectedVarianceFileAnnotated(DakotaBaseModel):
-    """Generated model for ExportCorrectedVarianceFileAnnotated"""
+    "Selects annotated tabular file format"
 
     annotated: Literal[True] = DakotaField(
         default=True,
+        description="Selects annotated tabular file format",
         dakota={
             "materialization": [
                 {
@@ -1523,10 +1554,11 @@ class ExportCorrectedVarianceFileAnnotated(DakotaBaseModel):
 
 
 class ExportCorrectedVarianceFileFreeform(DakotaBaseModel):
-    """Generated model for ExportCorrectedVarianceFileFreeform"""
+    "Selects freeform file format"
 
     freeform: Literal[True] = DakotaField(
         default=True,
+        description="Selects freeform file format",
         dakota={
             "materialization": [
                 {
@@ -1541,7 +1573,7 @@ class ExportCorrectedVarianceFileFreeform(DakotaBaseModel):
 
 
 class QuesoConfig(BayesSeedRngMixin, BayesEmulatorMixin, BayesProposalCovMixin):
-    """Generated model for QuesoConfig"""
+    "Markov Chain Monte Carlo algorithms from the QUESO package"
 
     chain_samples: int = DakotaField(
         description="Number of Markov Chain Monte Carlo posterior samples",
@@ -1621,7 +1653,7 @@ class QuesoConfig(BayesSeedRngMixin, BayesEmulatorMixin, BayesProposalCovMixin):
 
 
 class GpmsaConfig(BayesSeedRngMixin, BayesProposalCovMixin):
-    """Generated model for GpmsaConfig"""
+    "(Experimental) Gaussian Process Models for Simulation Analysis (GPMSA) Bayesian calibration"
 
     chain_samples: int = DakotaField(
         description="Number of Markov Chain Monte Carlo posterior samples",
@@ -1723,7 +1755,7 @@ class GpmsaConfig(BayesSeedRngMixin, BayesProposalCovMixin):
 
 
 class GaussianCov(DakotaBaseModel):
-    """Generated model for GaussianCov"""
+    "(Experimental Capability) Covariance of a Gaussian error distribution"
 
     values: list[DakotaFloat] = DakotaField(
         description="(Experimental Capability) Covariance of a Gaussian error distribution",
@@ -1743,7 +1775,7 @@ class GaussianCov(DakotaBaseModel):
 
 
 class DreamConfig(BayesEmulatorMixin):
-    """Generated model for DreamConfig"""
+    "DREAM (DiffeRential Evolution Adaptive Metropolis)"
 
     chain_samples: int = DakotaField(
         description="Number of Markov Chain Monte Carlo posterior samples",
@@ -1863,7 +1895,7 @@ class DreamConfig(BayesEmulatorMixin):
 
 
 class MuqAdaptiveMetropolis(DakotaBaseModel):
-    """Generated model for MuqAdaptiveMetropolis"""
+    "Use the Adaptive Metropolis MCMC algorithm"
 
     adaptive_metropolis: AdaptiveMetropolisConfig = DakotaField(
         default_factory=AdaptiveMetropolisConfig,
@@ -1883,7 +1915,7 @@ class MuqAdaptiveMetropolis(DakotaBaseModel):
 
 
 class MuqDelayedRejection(DakotaBaseModel):
-    """Generated model for MuqDelayedRejection"""
+    "Use the Delayed Rejection MCMC algorithm"
 
     delayed_rejection: DelayedRejectionConfig = DakotaField(
         default_factory=DelayedRejectionConfig,
@@ -1903,7 +1935,7 @@ class MuqDelayedRejection(DakotaBaseModel):
 
 
 class Dili(DakotaBaseModel):
-    """Generated model for Dili"""
+    "Dimension-independent likelihood-informed MCMC"
 
     dili: DiliConfig = DakotaField(
         default_factory=DiliConfig,
@@ -1923,7 +1955,7 @@ class Dili(DakotaBaseModel):
 
 
 class MuqDram(DakotaBaseModel):
-    """Generated model for MuqDram"""
+    "Use the DRAM MCMC algorithm"
 
     dram: DramConfig = DakotaField(
         default_factory=DramConfig,
@@ -1943,7 +1975,7 @@ class MuqDram(DakotaBaseModel):
 
 
 class MultilevelMcmc(DakotaBaseModel):
-    """Generated model for MultilevelMcmc"""
+    "Use the Multi-level MCMC algorithm"
 
     multilevel_mcmc: MultilevelMcmcConfig = DakotaField(
         default_factory=MultilevelMcmcConfig,
@@ -1963,7 +1995,7 @@ class MultilevelMcmc(DakotaBaseModel):
 
 
 class Mala(DakotaBaseModel):
-    """Generated model for Mala"""
+    "Metropolis-adjusted Langevin algorithm"
 
     mala: MalaConfig = DakotaField(
         default_factory=MalaConfig,
@@ -1983,7 +2015,7 @@ class Mala(DakotaBaseModel):
 
 
 class ImportCandidatePointsFileCustomAnnotated(DakotaBaseModel):
-    """Generated model for ImportCandidatePointsFileCustomAnnotated"""
+    "Selects custom-annotated tabular file format"
 
     custom_annotated: ImportCandidatePointsFileCustomAnnotatedConfig = DakotaField(
         default_factory=ImportCandidatePointsFileCustomAnnotatedConfig,
@@ -2003,7 +2035,7 @@ class ImportCandidatePointsFileCustomAnnotated(DakotaBaseModel):
 
 
 class CalibrateErrorMultipliers(DakotaBaseModel):
-    """Generated model for CalibrateErrorMultipliers"""
+    "Calibrate hyper-parameter multipliers on the observation error covariance"
 
     selection: Union[One, PerExperiment, PerResponse, Both] = DakotaField(
         description="Calibrate Error Multipliers",
@@ -2016,7 +2048,7 @@ class CalibrateErrorMultipliers(DakotaBaseModel):
 
 
 class PosteriorStats(DakotaBaseModel):
-    """Generated model for PosteriorStats"""
+    "Compute information-theoretic metrics on posterior parameter distribution"
 
     kl_divergence: Literal[True] | None = DakotaField(
         default=None,
@@ -2060,7 +2092,7 @@ class PosteriorStats(DakotaBaseModel):
 
 
 class DiscrepancyTypeGP(DakotaBaseModel):
-    """Generated model for DiscrepancyTypeGP"""
+    "Use the Surfpack version of Gaussain process as the discrepancy model"
 
     gaussian_process: DiscrepancyTypeGPConfig = DakotaField(
         default_factory=DiscrepancyTypeGPConfig,
@@ -2081,7 +2113,7 @@ class DiscrepancyTypeGP(DakotaBaseModel):
 
 
 class DiscrepancyTypePolynomial(DakotaBaseModel):
-    """Generated model for DiscrepancyTypePolynomial"""
+    "Use a polynomial surrogate as the discrepancy model"
 
     polynomial: DiscrepancyTypePolynomialConfig = DakotaField(
         default_factory=DiscrepancyTypePolynomialConfig,
@@ -2101,7 +2133,7 @@ class DiscrepancyTypePolynomial(DakotaBaseModel):
 
 
 class ImportPredictionConfigsCustomAnnotated(DakotaBaseModel):
-    """Generated model for ImportPredictionConfigsCustomAnnotated"""
+    "Selects custom-annotated tabular file format"
 
     custom_annotated: ImportPredictionConfigsCustomAnnotatedConfig = DakotaField(
         default_factory=ImportPredictionConfigsCustomAnnotatedConfig,
@@ -2121,7 +2153,7 @@ class ImportPredictionConfigsCustomAnnotated(DakotaBaseModel):
 
 
 class ExportDiscrepancyFileCustomAnnotated(DakotaBaseModel):
-    """Generated model for ExportDiscrepancyFileCustomAnnotated"""
+    "Selects custom-annotated tabular file format"
 
     custom_annotated: ExportDiscrepancyFileCustomAnnotatedConfig = DakotaField(
         default_factory=ExportDiscrepancyFileCustomAnnotatedConfig,
@@ -2141,7 +2173,7 @@ class ExportDiscrepancyFileCustomAnnotated(DakotaBaseModel):
 
 
 class ExportCorrectedModelFileCustomAnnotated(DakotaBaseModel):
-    """Generated model for ExportCorrectedModelFileCustomAnnotated"""
+    "Selects custom-annotated tabular file format"
 
     custom_annotated: ExportCorrectedModelFileCustomAnnotatedConfig = DakotaField(
         default_factory=ExportCorrectedModelFileCustomAnnotatedConfig,
@@ -2161,7 +2193,7 @@ class ExportCorrectedModelFileCustomAnnotated(DakotaBaseModel):
 
 
 class ExportCorrectedVarianceFileCustomAnnotated(DakotaBaseModel):
-    """Generated model for ExportCorrectedVarianceFileCustomAnnotated"""
+    "Selects custom-annotated tabular file format"
 
     custom_annotated: ExportCorrectedVarianceFileCustomAnnotatedConfig = DakotaField(
         default_factory=ExportCorrectedVarianceFileCustomAnnotatedConfig,
@@ -2181,7 +2213,7 @@ class ExportCorrectedVarianceFileCustomAnnotated(DakotaBaseModel):
 
 
 class Queso(DakotaBaseModel):
-    """Generated model for Queso"""
+    "Markov Chain Monte Carlo algorithms from the QUESO package"
 
     queso: QuesoConfig = DakotaField(
         description="Markov Chain Monte Carlo algorithms from the QUESO package",
@@ -2199,7 +2231,7 @@ class Queso(DakotaBaseModel):
 
 
 class Gpmsa(DakotaBaseModel):
-    """Generated model for Gpmsa"""
+    "(Experimental) Gaussian Process Models for Simulation Analysis (GPMSA) Bayesian calibration"
 
     gpmsa: GpmsaConfig = DakotaField(
         description="(Experimental) Gaussian Process Models for Simulation Analysis (GPMSA) Bayesian calibration",
@@ -2217,7 +2249,7 @@ class Gpmsa(DakotaBaseModel):
 
 
 class GaussianConfig(DakotaBaseModel):
-    """Generated model for GaussianConfig"""
+    "(Experimental Capability) Gaussian error distribution"
 
     means: list[DakotaFloat] = DakotaField(
         description="(Experimental Capability) Means of Gaussian error distribution",
@@ -2239,7 +2271,7 @@ class GaussianConfig(DakotaBaseModel):
 
 
 class Dream(DakotaBaseModel):
-    """Generated model for Dream"""
+    "DREAM (DiffeRential Evolution Adaptive Metropolis)"
 
     dream: DreamConfig = DakotaField(
         description="DREAM (DiffeRential Evolution Adaptive Metropolis)",
@@ -2257,7 +2289,7 @@ class Dream(DakotaBaseModel):
 
 
 class MuqConfig(BayesSeedRngMixin, BayesProposalCovMixin):
-    """Generated model for MuqConfig"""
+    "Markov Chain Monte Carlo algorithms from the MUQ package"
 
     chain_samples: int = DakotaField(
         description="Number of Markov Chain Monte Carlo posterior samples",
@@ -2300,7 +2332,7 @@ class MuqConfig(BayesSeedRngMixin, BayesProposalCovMixin):
 
 
 class ImportCandidatePointsFile(DakotaBaseModel):
-    """Generated model for ImportCandidatePointsFile"""
+    "Specify text file containing candidate design points"
 
     filename: str = DakotaField(
         description="Specify text file containing candidate design points",
@@ -2330,7 +2362,7 @@ class ImportCandidatePointsFile(DakotaBaseModel):
 
 
 class ImportPredictionConfigs(DakotaBaseModel):
-    """Generated model for ImportPredictionConfigs"""
+    "Specify text file containing prediction configurations for model discrepancy"
 
     filename: str = DakotaField(
         description="Specify text file containing prediction configurations for model discrepancy",
@@ -2360,7 +2392,7 @@ class ImportPredictionConfigs(DakotaBaseModel):
 
 
 class ExportDiscrepancyFile(DakotaBaseModel):
-    """Generated model for ExportDiscrepancyFile"""
+    "Output file for prediction discrepancy calculations"
 
     filename: str = DakotaField(
         description="Output file for prediction discrepancy calculations",
@@ -2390,7 +2422,7 @@ class ExportDiscrepancyFile(DakotaBaseModel):
 
 
 class ExportCorrectedModelFile(DakotaBaseModel):
-    """Generated model for ExportCorrectedModelFile"""
+    "Output file for corrected model prediction calculations"
 
     filename: str = DakotaField(
         description="Output file for corrected model prediction calculations",
@@ -2420,7 +2452,7 @@ class ExportCorrectedModelFile(DakotaBaseModel):
 
 
 class ExportCorrectedVarianceFile(DakotaBaseModel):
-    """Generated model for ExportCorrectedVarianceFile"""
+    "Output file for prediction variance calculations"
 
     filename: str = DakotaField(
         description="Output file for prediction variance calculations",
@@ -2450,7 +2482,7 @@ class ExportCorrectedVarianceFile(DakotaBaseModel):
 
 
 class Gaussian(DakotaBaseModel):
-    """Generated model for Gaussian"""
+    "(Experimental Capability) Gaussian error distribution"
 
     gaussian: GaussianConfig = DakotaField(
         description="(Experimental Capability) Gaussian error distribution"
@@ -2458,7 +2490,7 @@ class Gaussian(DakotaBaseModel):
 
 
 class Muq(DakotaBaseModel):
-    """Generated model for Muq"""
+    "Markov Chain Monte Carlo algorithms from the MUQ package"
 
     muq: MuqConfig = DakotaField(
         description="Markov Chain Monte Carlo algorithms from the MUQ package",
@@ -2476,7 +2508,7 @@ class Muq(DakotaBaseModel):
 
 
 class ExperimentalDesign(DakotaBaseModel):
-    """Generated model for ExperimentalDesign"""
+    "(Experimental) Adaptively select experimental designs for iterative Bayesian updating"
 
     initial_samples: int = DakotaField(
         description="Number of data points used during initial Bayesian calibration",
@@ -2553,7 +2585,7 @@ class ExperimentalDesign(DakotaBaseModel):
 
 
 class ModelDiscrepancy(DakotaBaseModel):
-    """Generated model for ModelDiscrepancy"""
+    "(Experimental) Post-calibration calculation of model discrepancy correction"
 
     discrepancy_type: Union[DiscrepancyTypeGP, DiscrepancyTypePolynomial] = DakotaField(
         default_factory=DiscrepancyTypeGP,
@@ -2610,7 +2642,7 @@ class ModelDiscrepancy(DakotaBaseModel):
 
 
 class WasabiConfig(BayesEmulatorMixin):
-    """Generated model for WasabiConfig"""
+    "(Experimental Method) Non-MCMC Bayesian inference using interval analysis"
 
     pushforward_samples: int = DakotaField(
         description="(Experimental Capability) Number of samples of the prior to push forward through the model",
@@ -2697,7 +2729,7 @@ class WasabiConfig(BayesEmulatorMixin):
 
 
 class Wasabi(DakotaBaseModel):
-    """Generated model for Wasabi"""
+    "(Experimental Method) Non-MCMC Bayesian inference using interval analysis"
 
     wasabi: WasabiConfig = DakotaField(
         description="(Experimental Method) Non-MCMC Bayesian inference using interval analysis",
@@ -2722,7 +2754,7 @@ class BayesCalibrationConfig(
     MethodOptionalModelPointerMixin,
     DefaultScalingMixin,
 ):
-    """Generated model for BayesCalibrationConfig"""
+    "Bayesian calibration"
 
     sub_method: Union[Queso, Gpmsa, Wasabi, Dream, Muq] = DakotaField(
         description="Bayesian Calibration Method",
@@ -2817,7 +2849,7 @@ class BayesCalibrationConfig(
 
 
 class BayesCalibrationSelection(MethodSelection):
-    """Generated model for BayesCalibrationSelection"""
+    "Generated model for BayesCalibrationSelection"
 
     bayes_calibration: BayesCalibrationConfig = DakotaField(
         dakota={

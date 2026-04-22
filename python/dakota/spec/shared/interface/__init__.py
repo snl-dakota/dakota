@@ -7,10 +7,11 @@ from typing import Literal, Union
 
 
 class MethodSystemReliabilitySeries(DakotaBaseModel):
-    """Generated model for MethodSystemReliabilitySeries"""
+    "Aggregate response statistics assuming a series system"
 
     series: Literal[True] = DakotaField(
         default=True,
+        description="Aggregate response statistics assuming a series system",
         dakota={
             "materialization": [
                 {
@@ -25,10 +26,11 @@ class MethodSystemReliabilitySeries(DakotaBaseModel):
 
 
 class MethodSystemReliabilityParallel(DakotaBaseModel):
-    """Generated model for MethodSystemReliabilityParallel"""
+    "Aggregate response statistics assuming a parallel system"
 
     parallel: Literal[True] = DakotaField(
         default=True,
+        description="Aggregate response statistics assuming a parallel system",
         dakota={
             "materialization": [
                 {
@@ -43,7 +45,7 @@ class MethodSystemReliabilityParallel(DakotaBaseModel):
 
 
 class MethodSystemReliabilityMixin(DakotaBaseModel):
-    """Generated model for MethodSystemReliabilityMixin"""
+    "Generated model for MethodSystemReliabilityMixin"
 
     system: (
         Union[MethodSystemReliabilitySeries, MethodSystemReliabilityParallel] | None

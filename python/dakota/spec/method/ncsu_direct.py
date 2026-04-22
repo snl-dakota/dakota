@@ -25,7 +25,7 @@ class NcsuDirectConfig(
     DefaultScalingMixin,
     MethodOptionalModelPointerMixin,
 ):
-    """Generated model for NcsuDirectConfig"""
+    "DIviding RECTangles method"
 
     solution_target: DakotaFloat = DakotaField(
         default=-DBL_MAX,
@@ -75,7 +75,7 @@ class NcsuDirectConfig(
 
 
 class NcsuDirectSelection(MethodSelection):
-    """Generated model for NcsuDirectSelection"""
+    "Generated model for NcsuDirectSelection"
 
     ncsu_direct: NcsuDirectConfig = DakotaField(
         dakota={

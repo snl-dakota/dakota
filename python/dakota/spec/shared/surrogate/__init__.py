@@ -7,7 +7,7 @@ from typing import Literal, Union
 
 
 class MethodExportApproxFormatCustomAnnotatedConfig(DakotaBaseModel):
-    """Generated model for MethodExportApproxFormatCustomAnnotatedConfig"""
+    "Selects custom-annotated tabular file format"
 
     header: Literal[True] | None = DakotaField(
         default=None,
@@ -54,10 +54,11 @@ class MethodExportApproxFormatCustomAnnotatedConfig(DakotaBaseModel):
 
 
 class MethodExportApproxFormatAnnotated(DakotaBaseModel):
-    """Generated model for MethodExportApproxFormatAnnotated"""
+    "Selects annotated tabular file format"
 
     annotated: Literal[True] = DakotaField(
         default=True,
+        description="Selects annotated tabular file format",
         dakota={
             "materialization": [
                 {
@@ -72,10 +73,11 @@ class MethodExportApproxFormatAnnotated(DakotaBaseModel):
 
 
 class MethodExportApproxFormatFreeform(DakotaBaseModel):
-    """Generated model for MethodExportApproxFormatFreeform"""
+    "Selects freeform file format"
 
     freeform: Literal[True] = DakotaField(
         default=True,
+        description="Selects freeform file format",
         dakota={
             "materialization": [
                 {
@@ -90,7 +92,7 @@ class MethodExportApproxFormatFreeform(DakotaBaseModel):
 
 
 class MethodExportApproxPointsFileCustomAnnotatedConfig(DakotaBaseModel):
-    """Generated model for MethodExportApproxPointsFileCustomAnnotatedConfig"""
+    "Selects custom-annotated tabular file format"
 
     header: Literal[True] | None = DakotaField(
         default=None,
@@ -137,10 +139,11 @@ class MethodExportApproxPointsFileCustomAnnotatedConfig(DakotaBaseModel):
 
 
 class MethodExportApproxPointsFileAnnotated(DakotaBaseModel):
-    """Generated model for MethodExportApproxPointsFileAnnotated"""
+    "Selects annotated tabular file format"
 
     annotated: Literal[True] = DakotaField(
         default=True,
+        description="Selects annotated tabular file format",
         dakota={
             "materialization": [
                 {
@@ -155,10 +158,11 @@ class MethodExportApproxPointsFileAnnotated(DakotaBaseModel):
 
 
 class MethodExportApproxPointsFileFreeform(DakotaBaseModel):
-    """Generated model for MethodExportApproxPointsFileFreeform"""
+    "Selects freeform file format"
 
     freeform: Literal[True] = DakotaField(
         default=True,
+        description="Selects freeform file format",
         dakota={
             "materialization": [
                 {
@@ -173,7 +177,7 @@ class MethodExportApproxPointsFileFreeform(DakotaBaseModel):
 
 
 class MethodImportApproxFormatCustomAnnotatedConfig(DakotaBaseModel):
-    """Generated model for MethodImportApproxFormatCustomAnnotatedConfig"""
+    "Selects custom-annotated tabular file format"
 
     header: Literal[True] | None = DakotaField(
         default=None,
@@ -220,10 +224,11 @@ class MethodImportApproxFormatCustomAnnotatedConfig(DakotaBaseModel):
 
 
 class MethodImportApproxFormatAnnotated(DakotaBaseModel):
-    """Generated model for MethodImportApproxFormatAnnotated"""
+    "Selects annotated tabular file format"
 
     annotated: Literal[True] = DakotaField(
         default=True,
+        description="Selects annotated tabular file format",
         dakota={
             "materialization": [
                 {
@@ -238,10 +243,11 @@ class MethodImportApproxFormatAnnotated(DakotaBaseModel):
 
 
 class MethodImportApproxFormatFreeform(DakotaBaseModel):
-    """Generated model for MethodImportApproxFormatFreeform"""
+    "Selects freeform file format"
 
     freeform: Literal[True] = DakotaField(
         default=True,
+        description="Selects freeform file format",
         dakota={
             "materialization": [
                 {
@@ -256,7 +262,7 @@ class MethodImportApproxFormatFreeform(DakotaBaseModel):
 
 
 class ModelPartialSurrogateExportFormatFormats(DakotaBaseModel):
-    """Generated model for ModelPartialSurrogateExportFormatFormats"""
+    "Formats for surrogate model export"
 
     text_archive: Literal[True] | None = DakotaField(
         default=None,
@@ -289,10 +295,11 @@ class ModelPartialSurrogateExportFormatFormats(DakotaBaseModel):
 
 
 class TextArchive(DakotaBaseModel):
-    """Generated model for TextArchive"""
+    "Surrogate model plain-text archive file format"
 
     text_archive: Literal[True] = DakotaField(
         default=True,
+        description="Surrogate model plain-text archive file format",
         dakota={
             "materialization": [
                 {
@@ -307,10 +314,11 @@ class TextArchive(DakotaBaseModel):
 
 
 class BinaryArchive(DakotaBaseModel):
-    """Generated model for BinaryArchive"""
+    "Surrogate model binary archive file format"
 
     binary_archive: Literal[True] = DakotaField(
         default=True,
+        description="Surrogate model binary archive file format",
         dakota={
             "materialization": [
                 {
@@ -325,10 +333,11 @@ class BinaryArchive(DakotaBaseModel):
 
 
 class ZerothOrder(DakotaBaseModel):
-    """Generated model for ZerothOrder"""
+    "Specify that truth values must be matched."
 
     zeroth_order: Literal[True] = DakotaField(
         default=True,
+        description="Specify that truth values must be matched.",
         dakota={
             "materialization": [
                 {
@@ -343,10 +352,11 @@ class ZerothOrder(DakotaBaseModel):
 
 
 class CorrectionFirstOrder(DakotaBaseModel):
-    """Generated model for CorrectionFirstOrder"""
+    "Specify that truth values and gradients must be matched."
 
     first_order: Literal[True] = DakotaField(
         default=True,
+        description="Specify that truth values and gradients must be matched.",
         dakota={
             "materialization": [
                 {
@@ -361,10 +371,11 @@ class CorrectionFirstOrder(DakotaBaseModel):
 
 
 class CorrectionSecondOrder(DakotaBaseModel):
-    """Generated model for CorrectionSecondOrder"""
+    "Specify that truth values, gradients and Hessians must be matched."
 
     second_order: Literal[True] = DakotaField(
         default=True,
+        description="Specify that truth values, gradients and Hessians must be matched.",
         dakota={
             "materialization": [
                 {
@@ -379,10 +390,11 @@ class CorrectionSecondOrder(DakotaBaseModel):
 
 
 class Additive(DakotaBaseModel):
-    """Generated model for Additive"""
+    "Additive correction factor for local surrogate accuracy"
 
     additive: Literal[True] = DakotaField(
         default=True,
+        description="Additive correction factor for local surrogate accuracy",
         dakota={
             "materialization": [
                 {
@@ -397,10 +409,11 @@ class Additive(DakotaBaseModel):
 
 
 class Multiplicative(DakotaBaseModel):
-    """Generated model for Multiplicative"""
+    "Multiplicative correction factor for local surrogate accuracy."
 
     multiplicative: Literal[True] = DakotaField(
         default=True,
+        description="Multiplicative correction factor for local surrogate accuracy.",
         dakota={
             "materialization": [
                 {
@@ -415,10 +428,11 @@ class Multiplicative(DakotaBaseModel):
 
 
 class CorrectionCombined(DakotaBaseModel):
-    """Generated model for CorrectionCombined"""
+    "Multipoint correction for a hierarchical surrogate"
 
     combined: Literal[True] = DakotaField(
         default=True,
+        description="Multipoint correction for a hierarchical surrogate",
         dakota={
             "materialization": [
                 {
@@ -433,7 +447,7 @@ class CorrectionCombined(DakotaBaseModel):
 
 
 class MethodExportApproxFormatCustomAnnotated(DakotaBaseModel):
-    """Generated model for MethodExportApproxFormatCustomAnnotated"""
+    "Selects custom-annotated tabular file format"
 
     custom_annotated: MethodExportApproxFormatCustomAnnotatedConfig = DakotaField(
         default_factory=MethodExportApproxFormatCustomAnnotatedConfig,
@@ -453,7 +467,7 @@ class MethodExportApproxFormatCustomAnnotated(DakotaBaseModel):
 
 
 class MethodExportApproxPointsFileCustomAnnotated(DakotaBaseModel):
-    """Generated model for MethodExportApproxPointsFileCustomAnnotated"""
+    "Selects custom-annotated tabular file format"
 
     custom_annotated: MethodExportApproxPointsFileCustomAnnotatedConfig = DakotaField(
         default_factory=MethodExportApproxPointsFileCustomAnnotatedConfig,
@@ -473,7 +487,7 @@ class MethodExportApproxPointsFileCustomAnnotated(DakotaBaseModel):
 
 
 class MethodImportApproxFormatCustomAnnotated(DakotaBaseModel):
-    """Generated model for MethodImportApproxFormatCustomAnnotated"""
+    "Selects custom-annotated tabular file format"
 
     custom_annotated: MethodImportApproxFormatCustomAnnotatedConfig = DakotaField(
         default_factory=MethodImportApproxFormatCustomAnnotatedConfig,
@@ -493,7 +507,7 @@ class MethodImportApproxFormatCustomAnnotated(DakotaBaseModel):
 
 
 class ModelPartialSurrogateExportFormatExportModel(DakotaBaseModel):
-    """Generated model for ModelPartialSurrogateExportFormatExportModel"""
+    "Exports surrogate model in user-specified format(s)"
 
     filename_prefix: str = DakotaField(
         default="exported_surrogate",
@@ -514,7 +528,7 @@ class ModelPartialSurrogateExportFormatExportModel(DakotaBaseModel):
 
 
 class ImportModel(DakotaBaseModel):
-    """Generated model for ImportModel"""
+    "Import surrogate model from archive file"
 
     filename_prefix: str = DakotaField(
         default="exported_surrogate",
@@ -536,7 +550,7 @@ class ImportModel(DakotaBaseModel):
 
 
 class Correction(DakotaBaseModel):
-    """Generated model for Correction"""
+    "Correction approaches for surrogate models"
 
     correction_order: Union[
         ZerothOrder, CorrectionFirstOrder, CorrectionSecondOrder
@@ -549,7 +563,7 @@ class Correction(DakotaBaseModel):
 
 
 class MethodExportApproxFormatMixin(DakotaBaseModel):
-    """Generated model for MethodExportApproxFormatMixin"""
+    "Generated model for MethodExportApproxFormatMixin"
 
     format: Union[
         MethodExportApproxFormatCustomAnnotated,
@@ -567,7 +581,7 @@ class MethodExportApproxFormatMixin(DakotaBaseModel):
 
 
 class MethodExportApproxPointsFileExportApproxPointsFile(DakotaBaseModel):
-    """Generated model for MethodExportApproxPointsFileExportApproxPointsFile"""
+    "Output file for surrogate model value evaluations"
 
     filename: str = DakotaField(
         description="Output file for surrogate model value evaluations",
@@ -597,7 +611,7 @@ class MethodExportApproxPointsFileExportApproxPointsFile(DakotaBaseModel):
 
 
 class MethodImportApproxFormatMixin(DakotaBaseModel):
-    """Generated model for MethodImportApproxFormatMixin"""
+    "Generated model for MethodImportApproxFormatMixin"
 
     format: Union[
         MethodImportApproxFormatCustomAnnotated,
@@ -615,7 +629,7 @@ class MethodImportApproxFormatMixin(DakotaBaseModel):
 
 
 class ModelPartialSurrogateExportFormatMixin(DakotaBaseModel):
-    """Generated model for ModelPartialSurrogateExportFormatMixin"""
+    "Generated model for ModelPartialSurrogateExportFormatMixin"
 
     export_model: ModelPartialSurrogateExportFormatExportModel | None = DakotaField(
         default=None,
@@ -633,7 +647,7 @@ class ModelPartialSurrogateExportFormatMixin(DakotaBaseModel):
 
 
 class ModelSurrogateImportMixin(DakotaBaseModel):
-    """Generated model for ModelSurrogateImportMixin"""
+    "Generated model for ModelSurrogateImportMixin"
 
     import_model: ImportModel | None = DakotaField(
         default=None,
@@ -651,7 +665,7 @@ class ModelSurrogateImportMixin(DakotaBaseModel):
 
 
 class SurrogateCorrectionMixin(DakotaBaseModel):
-    """Generated model for SurrogateCorrectionMixin"""
+    "Generated model for SurrogateCorrectionMixin"
 
     correction: Correction | None = DakotaField(
         default=None, description="Correction approaches for surrogate models"
@@ -659,7 +673,7 @@ class SurrogateCorrectionMixin(DakotaBaseModel):
 
 
 class MethodExportApproxPointsFileMixin(DakotaBaseModel):
-    """Generated model for MethodExportApproxPointsFileMixin"""
+    "Generated model for MethodExportApproxPointsFileMixin"
 
     export_approx_points_file: (
         MethodExportApproxPointsFileExportApproxPointsFile | None

@@ -38,13 +38,13 @@ class MultilevelFtConfig(
     MethodSeedSequenceMixin,
     MethodOptionalModelPointerMixin,
 ):
-    """Generated model for MultilevelFtConfig"""
+    "Multilevel uncertainty quantification using function train expansions"
 
     pass
 
 
 class MultilevelFtSelection(MethodSelection):
-    """Generated model for MultilevelFtSelection"""
+    "Generated model for MultilevelFtSelection"
 
     multilevel_function_train: MultilevelFtConfig = DakotaField(
         dakota={

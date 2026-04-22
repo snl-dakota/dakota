@@ -14,7 +14,7 @@ from dakota.spec.shared.misc import (
 
 
 class ListOfPoints(DakotaBaseModel):
-    """Generated model for ListOfPoints"""
+    "List of variable values to evaluate in a list parameter study"
 
     list_of_points: list[DakotaFloat] = DakotaField(
         description="List of variable values to evaluate in a list parameter study",
@@ -31,7 +31,7 @@ class ListOfPoints(DakotaBaseModel):
 
 
 class ListParameterStudyImportPointsFileCustomAnnotatedConfig(DakotaBaseModel):
-    """Generated model for ListParameterStudyImportPointsFileCustomAnnotatedConfig"""
+    "Selects custom-annotated tabular file format"
 
     header: Literal[True] | None = DakotaField(
         default=None,
@@ -78,10 +78,11 @@ class ListParameterStudyImportPointsFileCustomAnnotatedConfig(DakotaBaseModel):
 
 
 class ListParameterStudyImportPointsFileAnnotated(DakotaBaseModel):
-    """Generated model for ListParameterStudyImportPointsFileAnnotated"""
+    "Selects annotated tabular file format"
 
     annotated: Literal[True] = DakotaField(
         default=True,
+        description="Selects annotated tabular file format",
         dakota={
             "materialization": [
                 {
@@ -96,10 +97,11 @@ class ListParameterStudyImportPointsFileAnnotated(DakotaBaseModel):
 
 
 class ListParameterStudyImportPointsFileFreeform(DakotaBaseModel):
-    """Generated model for ListParameterStudyImportPointsFileFreeform"""
+    "Selects freeform file format"
 
     freeform: Literal[True] = DakotaField(
         default=True,
+        description="Selects freeform file format",
         dakota={
             "materialization": [
                 {
@@ -114,7 +116,7 @@ class ListParameterStudyImportPointsFileFreeform(DakotaBaseModel):
 
 
 class ListParameterStudyImportPointsFileCustomAnnotated(DakotaBaseModel):
-    """Generated model for ListParameterStudyImportPointsFileCustomAnnotated"""
+    "Selects custom-annotated tabular file format"
 
     custom_annotated: ListParameterStudyImportPointsFileCustomAnnotatedConfig = DakotaField(
         default_factory=ListParameterStudyImportPointsFileCustomAnnotatedConfig,
@@ -134,7 +136,7 @@ class ListParameterStudyImportPointsFileCustomAnnotated(DakotaBaseModel):
 
 
 class ImportPointsFileConfig(DakotaBaseModel):
-    """Generated model for ImportPointsFileConfig"""
+    "File containing list of variable values to evaluate in a list parameter study"
 
     filename: str = DakotaField(
         description="File containing list of variable values to evaluate in a list parameter study",
@@ -177,7 +179,7 @@ class ImportPointsFileConfig(DakotaBaseModel):
 
 
 class ListParameterStudyImportPointsFile(DakotaBaseModel):
-    """Generated model for ListParameterStudyImportPointsFile"""
+    "File containing list of variable values to evaluate in a list parameter study"
 
     import_points_file: ImportPointsFileConfig = DakotaField(
         default=...,
@@ -189,7 +191,7 @@ class ListParameterStudyImportPointsFile(DakotaBaseModel):
 class ListParameterStudyConfig(
     MethodThreeOptionalKeywordsMixin, MethodOptionalModelPointerMixin
 ):
-    """Generated model for ListParameterStudyConfig"""
+    "Samples variables as a specified values"
 
     source: Union[ListOfPoints, ListParameterStudyImportPointsFile] = DakotaField(
         description="Points Source", dakota={"anchor": True, "union_pattern": 4}
@@ -197,7 +199,7 @@ class ListParameterStudyConfig(
 
 
 class ListParameterStudySelection(MethodSelection):
-    """Generated model for ListParameterStudySelection"""
+    "Generated model for ListParameterStudySelection"
 
     list_parameter_study: ListParameterStudyConfig = DakotaField(
         dakota={

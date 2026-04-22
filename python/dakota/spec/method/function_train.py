@@ -34,13 +34,13 @@ class FtConfig(
     MethodSeedMixin,
     MethodOptionalModelPointerMixin,
 ):
-    """Generated model for FtConfig"""
+    "UQ method leveraging a functional tensor train surrogate model."
 
     pass
 
 
 class FtSelection(MethodSelection):
-    """Generated model for FtSelection"""
+    "Generated model for FtSelection"
 
     function_train: FtConfig = DakotaField(
         dakota={

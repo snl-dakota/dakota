@@ -27,7 +27,7 @@ class Nl2solConfig(
     DefaultScalingMixin,
     MethodOptionalModelPointerMixin,
 ):
-    """Generated model for Nl2solConfig"""
+    "Trust-region method for nonlinear least squares"
 
     function_precision: DakotaFloat = DakotaField(
         default=1.0e-10,
@@ -149,7 +149,7 @@ class Nl2solConfig(
 
 
 class Nl2solSelection(MethodSelection):
-    """Generated model for Nl2solSelection"""
+    "Generated model for Nl2solSelection"
 
     nl2sol: Nl2solConfig = DakotaField(
         dakota={

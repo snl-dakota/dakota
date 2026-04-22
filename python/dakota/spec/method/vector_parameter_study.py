@@ -14,7 +14,7 @@ from dakota.spec.shared.misc import (
 
 
 class FinalPoint(DakotaBaseModel):
-    """Generated model for FinalPoint"""
+    "Final variable values defining vector in vector parameter study"
 
     final_point: list[DakotaFloat] = DakotaField(
         description="Final variable values defining vector in vector parameter study",
@@ -31,7 +31,7 @@ class FinalPoint(DakotaBaseModel):
 
 
 class StepVector(DakotaBaseModel):
-    """Generated model for StepVector"""
+    "Size of step for each variable"
 
     step_vector: list[DakotaFloat] = DakotaField(
         description="Size of step for each variable",
@@ -50,7 +50,7 @@ class StepVector(DakotaBaseModel):
 class VectorParameterStudyConfig(
     MethodThreeOptionalKeywordsMixin, MethodOptionalModelPointerMixin
 ):
-    """Generated model for VectorParameterStudyConfig"""
+    "Samples variables along a user-defined vector"
 
     step_control: Union[FinalPoint, StepVector] = DakotaField(
         description="Step Control", dakota={"anchor": True, "union_pattern": 4}
@@ -70,7 +70,7 @@ class VectorParameterStudyConfig(
 
 
 class VectorParameterStudySelection(MethodSelection):
-    """Generated model for VectorParameterStudySelection"""
+    "Generated model for VectorParameterStudySelection"
 
     vector_parameter_study: VectorParameterStudyConfig = DakotaField(
         dakota={

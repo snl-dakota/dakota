@@ -20,12 +20,12 @@ class DlSolverConfig(
     DefaultScalingMixin,
     MethodOptionalModelPointerMixin,
 ):
-    """Generated model for DlSolverConfig"""
+    "(Experimental) Dynamically-loaded solver"
 
     name: str = DakotaField(description="(Experimental) Dynamically-loaded solver")
 
 
 class DlSolverSelection(MethodSelection):
-    """Generated model for DlSolverSelection"""
+    "Generated model for DlSolverSelection"
 
     dl_solver: DlSolverConfig

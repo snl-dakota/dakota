@@ -20,13 +20,13 @@ class SurrogateBasedUqConfig(
     MethodSeedMixin,
     MethodOptionalModelPointerMixin,
 ):
-    """Generated model for SurrogateBasedUqConfig"""
+    "Generic UQ method for constructing and interrogating a surrogate model."
 
     pass
 
 
 class SurrogateBasedUqSelection(MethodSelection):
-    """Generated model for SurrogateBasedUqSelection"""
+    "Generated model for SurrogateBasedUqSelection"
 
     surrogate_based_uq: SurrogateBasedUqConfig = DakotaField(
         dakota={

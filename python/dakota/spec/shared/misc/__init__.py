@@ -29,7 +29,7 @@ from dakota.spec.shared.responses import (
 
 
 class ColinyCommonOptsMixin(DakotaBaseModel):
-    """Generated model for ColinyCommonOptsMixin"""
+    "Generated model for ColinyCommonOptsMixin"
 
     solution_target: DakotaFloat = DakotaField(
         default=-DBL_MAX,
@@ -152,7 +152,7 @@ class ColinyCommonOptsMixin(DakotaBaseModel):
 
 
 class ColinyMutationScaleRangeMixin(DakotaBaseModel):
-    """Generated model for ColinyMutationScaleRangeMixin"""
+    "Generated model for ColinyMutationScaleRangeMixin"
 
     mutation_scale: DakotaFloat = DakotaField(
         default=0.1,
@@ -183,7 +183,7 @@ class ColinyMutationScaleRangeMixin(DakotaBaseModel):
 
 
 class DefaultScalingMixin(DakotaBaseModel):
-    """Generated model for DefaultScalingMixin"""
+    "Generated model for DefaultScalingMixin"
 
     scaling: Literal[True] | None = DakotaField(
         default=None,
@@ -201,7 +201,7 @@ class DefaultScalingMixin(DakotaBaseModel):
 
 
 class DefaultSpeculativeMixin(DakotaBaseModel):
-    """Generated model for DefaultSpeculativeMixin"""
+    "Generated model for DefaultSpeculativeMixin"
 
     speculative: Literal[True] | None = DakotaField(
         default=None,
@@ -219,7 +219,7 @@ class DefaultSpeculativeMixin(DakotaBaseModel):
 
 
 class MethodGaMutationScaleMixin(DakotaBaseModel):
-    """Generated model for MethodGaMutationScaleMixin"""
+    "Generated model for MethodGaMutationScaleMixin"
 
     mutation_scale: DakotaFloat = DakotaField(
         default=0.1,
@@ -239,7 +239,7 @@ class MethodGaMutationScaleMixin(DakotaBaseModel):
 
 
 class MethodMaxFunctionEvaluationsContext1Mixin(DakotaBaseModel):
-    """Generated model for MethodMaxFunctionEvaluationsContext1Mixin"""
+    "Generated model for MethodMaxFunctionEvaluationsContext1Mixin"
 
     max_function_evaluations: int = DakotaField(
         default=SZ_MAX,
@@ -258,7 +258,7 @@ class MethodMaxFunctionEvaluationsContext1Mixin(DakotaBaseModel):
 
 
 class MethodMaxFunctionEvaluationsContext2Mixin(DakotaBaseModel):
-    """Generated model for MethodMaxFunctionEvaluationsContext2Mixin"""
+    "Generated model for MethodMaxFunctionEvaluationsContext2Mixin"
 
     max_function_evaluations: int = DakotaField(
         default=SZ_MAX,
@@ -277,7 +277,7 @@ class MethodMaxFunctionEvaluationsContext2Mixin(DakotaBaseModel):
 
 
 class MethodMaxIterationsContext1Mixin(DakotaBaseModel):
-    """Generated model for MethodMaxIterationsContext1Mixin"""
+    "Generated model for MethodMaxIterationsContext1Mixin"
 
     max_iterations: int = DakotaField(
         default=SZ_MAX,
@@ -296,7 +296,7 @@ class MethodMaxIterationsContext1Mixin(DakotaBaseModel):
 
 
 class MethodMaxIterationsContext2Mixin(DakotaBaseModel):
-    """Generated model for MethodMaxIterationsContext2Mixin"""
+    "Generated model for MethodMaxIterationsContext2Mixin"
 
     max_iterations: int = DakotaField(
         default=SZ_MAX,
@@ -315,7 +315,7 @@ class MethodMaxIterationsContext2Mixin(DakotaBaseModel):
 
 
 class MethodMaxRefinementIterationsMixin(DakotaBaseModel):
-    """Generated model for MethodMaxRefinementIterationsMixin"""
+    "Generated model for MethodMaxRefinementIterationsMixin"
 
     max_refinement_iterations: int = DakotaField(
         default=SZ_MAX,
@@ -334,7 +334,7 @@ class MethodMaxRefinementIterationsMixin(DakotaBaseModel):
 
 
 class MethodMaxSolverIterationsMixin(DakotaBaseModel):
-    """Generated model for MethodMaxSolverIterationsMixin"""
+    "Generated model for MethodMaxSolverIterationsMixin"
 
     max_solver_iterations: int = DakotaField(
         default=SZ_MAX,
@@ -353,7 +353,7 @@ class MethodMaxSolverIterationsMixin(DakotaBaseModel):
 
 
 class MethodNpsolCommonOptsMixin(DakotaBaseModel):
-    """Generated model for MethodNpsolCommonOptsMixin"""
+    "Generated model for MethodNpsolCommonOptsMixin"
 
     verify_level: int = DakotaField(
         default=-1,
@@ -496,7 +496,7 @@ class MethodNpsolCommonOptsMixin(DakotaBaseModel):
 
 
 class MethodOptionalModelPointerMixin(DakotaBaseModel):
-    """Generated model for MethodOptionalModelPointerMixin"""
+    "Generated model for MethodOptionalModelPointerMixin"
 
     model_pointer: str | None = DakotaField(
         default=None,
@@ -515,7 +515,7 @@ class MethodOptionalModelPointerMixin(DakotaBaseModel):
 
 
 class MethodOptppGradBasedOptsMixin(DakotaBaseModel):
-    """Generated model for MethodOptppGradBasedOptsMixin"""
+    "Generated model for MethodOptppGradBasedOptsMixin"
 
     max_step: DakotaFloat = DakotaField(
         default=1.0e3,
@@ -632,7 +632,7 @@ class MethodOptppGradBasedOptsMixin(DakotaBaseModel):
 
 
 class MethodSeedMixin(DakotaBaseModel):
-    """Generated model for MethodSeedMixin"""
+    "Generated model for MethodSeedMixin"
 
     seed: int | None = DakotaField(
         default=None,
@@ -664,7 +664,7 @@ class MethodSeedMixin(DakotaBaseModel):
 
 
 class MethodSeedSequenceMixin(DakotaBaseModel):
-    """Generated model for MethodSeedSequenceMixin"""
+    "Generated model for MethodSeedSequenceMixin"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CheckNonnegativeList(
@@ -701,7 +701,7 @@ class MethodSeedSequenceMixin(DakotaBaseModel):
 
 
 class MethodUseDerivativesMixin(DakotaBaseModel):
-    """Generated model for MethodUseDerivativesMixin"""
+    "Generated model for MethodUseDerivativesMixin"
 
     use_derivatives: Literal[True] | None = DakotaField(
         default=None,
@@ -719,7 +719,7 @@ class MethodUseDerivativesMixin(DakotaBaseModel):
 
 
 class ModelFourOptionalKeywordsMixin(DakotaBaseModel):
-    """Generated model for ModelFourOptionalKeywordsMixin"""
+    "Generated model for ModelFourOptionalKeywordsMixin"
 
     id_model: str | None = DakotaField(
         default=None,
@@ -778,10 +778,11 @@ class ModelFourOptionalKeywordsMixin(DakotaBaseModel):
 
 
 class DefaultFinalMomentsNoneKeyword(DakotaBaseModel):
-    """Generated model for DefaultFinalMomentsNoneKeyword"""
+    "Omit moments from the set of final statistics."
 
     none: Literal[True] = DakotaField(
         default=True,
+        description="Omit moments from the set of final statistics.",
         dakota={
             "materialization": [
                 {
@@ -797,10 +798,11 @@ class DefaultFinalMomentsNoneKeyword(DakotaBaseModel):
 
 
 class DefaultFinalMomentsStandard(DakotaBaseModel):
-    """Generated model for DefaultFinalMomentsStandard"""
+    "Output standardized moments and include them within the set of final statistics."
 
     standard: Literal[True] = DakotaField(
         default=True,
+        description="Output standardized moments and include them within the set of final statistics.",
         dakota={
             "materialization": [
                 {
@@ -816,10 +818,11 @@ class DefaultFinalMomentsStandard(DakotaBaseModel):
 
 
 class DefaultFinalMomentsCentral(DakotaBaseModel):
-    """Generated model for DefaultFinalMomentsCentral"""
+    "Output central moments and include them within the set of final statistics."
 
     central: Literal[True] = DakotaField(
         default=True,
+        description="Output central moments and include them within the set of final statistics.",
         dakota={
             "materialization": [
                 {
@@ -835,7 +838,7 @@ class DefaultFinalMomentsCentral(DakotaBaseModel):
 
 
 class DefaultTrustRegionContext1TrustRegion(DakotaBaseModel):
-    """Generated model for DefaultTrustRegionContext1TrustRegion"""
+    "Specification group for trust region model management"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         TrustRegionValidate(
@@ -930,7 +933,7 @@ class DefaultTrustRegionContext1TrustRegion(DakotaBaseModel):
 
 
 class DefaultTrustRegionContext2TrustRegion(DakotaBaseModel):
-    """Generated model for DefaultTrustRegionContext2TrustRegion"""
+    "Use trust region as the globalization strategy."
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         TrustRegionValidate(
@@ -1025,10 +1028,11 @@ class DefaultTrustRegionContext2TrustRegion(DakotaBaseModel):
 
 
 class MostSignificantBitFirst(DakotaBaseModel):
-    """Generated model for MostSignificantBitFirst"""
+    "Assume integers are stored with most significant bit first"
 
     most_significant_bit_first: Literal[True] = DakotaField(
         default=True,
+        description="Assume integers are stored with most significant bit first",
         dakota={
             "materialization": [
                 {
@@ -1042,10 +1046,11 @@ class MostSignificantBitFirst(DakotaBaseModel):
 
 
 class LeastSignificantBitFirst(DakotaBaseModel):
-    """Generated model for LeastSignificantBitFirst"""
+    "Assume integers are stored with least significant bit first"
 
     least_significant_bit_first: Literal[True] = DakotaField(
         default=True,
+        description="Assume integers are stored with least significant bit first",
         dakota={
             "materialization": [
                 {
@@ -1059,7 +1064,7 @@ class LeastSignificantBitFirst(DakotaBaseModel):
 
 
 class GeneratingMatricesInline(DakotaBaseModel):
-    """Generated model for GeneratingMatricesInline"""
+    "Specify inline generating matrices"
 
     inline: list[int] = DakotaField(
         description="Specify inline generating matrices",
@@ -1076,7 +1081,7 @@ class GeneratingMatricesInline(DakotaBaseModel):
 
 
 class GeneratingMatricesFile(DakotaBaseModel):
-    """Generated model for GeneratingMatricesFile"""
+    "Specify generating matrices read from file"
 
     file: str = DakotaField(
         description="Specify generating matrices read from file",
@@ -1093,10 +1098,11 @@ class GeneratingMatricesFile(DakotaBaseModel):
 
 
 class JoeKuo(DakotaBaseModel):
-    """Generated model for JoeKuo"""
+    "Generating matrices that provide up to 2\\ :sup:`32` points in up to 250 dimensions"
 
     joe_kuo: Literal[True] = DakotaField(
         default=True,
+        description="Generating matrices that provide up to 2\ :sup:`32` points in up to 250 dimensions",
         dakota={
             "materialization": [
                 {
@@ -1111,10 +1117,11 @@ class JoeKuo(DakotaBaseModel):
 
 
 class SobolOrder2(DakotaBaseModel):
-    """Generated model for SobolOrder2"""
+    "Generating matrices that provide up to 2\\ :sup:`32` points in up to 1024 dimensions"
 
     sobol_order_2: Literal[True] = DakotaField(
         default=True,
+        description="Generating matrices that provide up to 2\ :sup:`32` points in up to 1024 dimensions",
         dakota={
             "materialization": [
                 {
@@ -1129,10 +1136,11 @@ class SobolOrder2(DakotaBaseModel):
 
 
 class DigitalNetOptionsOrderingNatural(DakotaBaseModel):
-    """Generated model for DigitalNetOptionsOrderingNatural"""
+    "Natural ordering of the points of this digital net"
 
     natural: Literal[True] = DakotaField(
         default=True,
+        description="Natural ordering of the points of this digital net",
         dakota={
             "materialization": [
                 {
@@ -1147,10 +1155,11 @@ class DigitalNetOptionsOrderingNatural(DakotaBaseModel):
 
 
 class GrayCode(DakotaBaseModel):
-    """Generated model for GrayCode"""
+    "Gray code ordering of the points of this digital net"
 
     gray_code: Literal[True] = DakotaField(
         default=True,
+        description="Gray code ordering of the points of this digital net",
         dakota={
             "materialization": [
                 {
@@ -1165,10 +1174,11 @@ class GrayCode(DakotaBaseModel):
 
 
 class DiscrepEmulationDiscrepancyEmulationDistinct(DakotaBaseModel):
-    """Generated model for DiscrepEmulationDiscrepancyEmulationDistinct"""
+    "Distinct formulation for emulation of model discrepancies."
 
     distinct: Literal[True] = DakotaField(
         default=True,
+        description="Distinct formulation for emulation of model discrepancies.",
         dakota={
             "aliases": ["paired"],
             "materialization": [
@@ -1184,10 +1194,11 @@ class DiscrepEmulationDiscrepancyEmulationDistinct(DakotaBaseModel):
 
 
 class DiscrepEmulationDiscrepancyEmulationRecursive(DakotaBaseModel):
-    """Generated model for DiscrepEmulationDiscrepancyEmulationRecursive"""
+    "Recursive formulation for emulation of model discrepancies."
 
     recursive: Literal[True] = DakotaField(
         default=True,
+        description="Recursive formulation for emulation of model discrepancies.",
         dakota={
             "materialization": [
                 {
@@ -1202,10 +1213,11 @@ class DiscrepEmulationDiscrepancyEmulationRecursive(DakotaBaseModel):
 
 
 class DistributionCumulComplContext2Cumulative(DakotaBaseModel):
-    """Generated model for DistributionCumulComplContext2Cumulative"""
+    "Placeholder for future capabilities"
 
     cumulative: Literal[True] = DakotaField(
         default=True,
+        description="Placeholder for future capabilities",
         dakota={
             "materialization": [
                 {
@@ -1220,10 +1232,11 @@ class DistributionCumulComplContext2Cumulative(DakotaBaseModel):
 
 
 class DistributionCumulComplContext2Complementary(DakotaBaseModel):
-    """Generated model for DistributionCumulComplContext2Complementary"""
+    "Placeholder for future capabilities"
 
     complementary: Literal[True] = DakotaField(
         default=True,
+        description="Placeholder for future capabilities",
         dakota={
             "materialization": [
                 {
@@ -1238,10 +1251,11 @@ class DistributionCumulComplContext2Complementary(DakotaBaseModel):
 
 
 class DistributionCumulComplContext1Cumulative(DakotaBaseModel):
-    """Generated model for DistributionCumulComplContext1Cumulative"""
+    "Computes statistics according to cumulative functions"
 
     cumulative: Literal[True] = DakotaField(
         default=True,
+        description="Computes statistics according to cumulative functions",
         dakota={
             "materialization": [
                 {
@@ -1256,10 +1270,11 @@ class DistributionCumulComplContext1Cumulative(DakotaBaseModel):
 
 
 class DistributionCumulComplContext1Complementary(DakotaBaseModel):
-    """Generated model for DistributionCumulComplContext1Complementary"""
+    "Computes statistics according to complementary cumulative functions"
 
     complementary: Literal[True] = DakotaField(
         default=True,
+        description="Computes statistics according to complementary cumulative functions",
         dakota={
             "materialization": [
                 {
@@ -1274,7 +1289,7 @@ class DistributionCumulComplContext1Complementary(DakotaBaseModel):
 
 
 class EgoSubProblemSolverContext2GPSurfpackExportModelFormats(DakotaBaseModel):
-    """Generated model for EgoSubProblemSolverContext2GPSurfpackExportModelFormats"""
+    "Formats for surrogate model export"
 
     text_archive: Literal[True] | None = DakotaField(
         default=None,
@@ -1307,10 +1322,11 @@ class EgoSubProblemSolverContext2GPSurfpackExportModelFormats(DakotaBaseModel):
 
 
 class EgoSubProblemSolverContext2GPDakota(DakotaBaseModel):
-    """Generated model for EgoSubProblemSolverContext2GPDakota"""
+    "Select the built in Gaussian Process surrogate"
 
     dakota: Literal[True] = DakotaField(
         default=True,
+        description="Select the built in Gaussian Process surrogate",
         dakota={
             "materialization": [
                 {
@@ -1327,7 +1343,7 @@ class EgoSubProblemSolverContext2GPDakota(DakotaBaseModel):
 class EgoSubProblemSolverContext2ImportBuildPointsFileCustomAnnotatedConfig(
     DakotaBaseModel
 ):
-    """Generated model for EgoSubProblemSolverContext2ImportBuildPointsFileCustomAnnotatedConfig"""
+    "Selects custom-annotated tabular file format"
 
     header: Literal[True] | None = DakotaField(
         default=None,
@@ -1374,10 +1390,11 @@ class EgoSubProblemSolverContext2ImportBuildPointsFileCustomAnnotatedConfig(
 
 
 class EgoSubProblemSolverContext2ImportBuildPointsFileAnnotated(DakotaBaseModel):
-    """Generated model for EgoSubProblemSolverContext2ImportBuildPointsFileAnnotated"""
+    "Selects annotated tabular file format"
 
     annotated: Literal[True] = DakotaField(
         default=True,
+        description="Selects annotated tabular file format",
         dakota={
             "materialization": [
                 {
@@ -1392,10 +1409,11 @@ class EgoSubProblemSolverContext2ImportBuildPointsFileAnnotated(DakotaBaseModel)
 
 
 class EgoSubProblemSolverContext2ImportBuildPointsFileFreeform(DakotaBaseModel):
-    """Generated model for EgoSubProblemSolverContext2ImportBuildPointsFileFreeform"""
+    "Selects freeform file format"
 
     freeform: Literal[True] = DakotaField(
         default=True,
+        description="Selects freeform file format",
         dakota={
             "materialization": [
                 {
@@ -1412,7 +1430,7 @@ class EgoSubProblemSolverContext2ImportBuildPointsFileFreeform(DakotaBaseModel):
 class EgoSubProblemSolverContext2ExportApproxPointsFileCustomAnnotatedConfig(
     DakotaBaseModel
 ):
-    """Generated model for EgoSubProblemSolverContext2ExportApproxPointsFileCustomAnnotatedConfig"""
+    "Selects custom-annotated tabular file format"
 
     header: Literal[True] | None = DakotaField(
         default=None,
@@ -1459,10 +1477,11 @@ class EgoSubProblemSolverContext2ExportApproxPointsFileCustomAnnotatedConfig(
 
 
 class EgoSubProblemSolverContext2ExportApproxPointsFileAnnotated(DakotaBaseModel):
-    """Generated model for EgoSubProblemSolverContext2ExportApproxPointsFileAnnotated"""
+    "Selects annotated tabular file format"
 
     annotated: Literal[True] = DakotaField(
         default=True,
+        description="Selects annotated tabular file format",
         dakota={
             "materialization": [
                 {
@@ -1477,10 +1496,11 @@ class EgoSubProblemSolverContext2ExportApproxPointsFileAnnotated(DakotaBaseModel
 
 
 class EgoSubProblemSolverContext2ExportApproxPointsFileFreeform(DakotaBaseModel):
-    """Generated model for EgoSubProblemSolverContext2ExportApproxPointsFileFreeform"""
+    "Selects freeform file format"
 
     freeform: Literal[True] = DakotaField(
         default=True,
+        description="Selects freeform file format",
         dakota={
             "materialization": [
                 {
@@ -1495,7 +1515,7 @@ class EgoSubProblemSolverContext2ExportApproxPointsFileFreeform(DakotaBaseModel)
 
 
 class EgoSubProblemSolverContext1GPSurfpackExportModelFormats(DakotaBaseModel):
-    """Generated model for EgoSubProblemSolverContext1GPSurfpackExportModelFormats"""
+    "export_model not active"
 
     text_archive: Literal[True] | None = DakotaField(
         default=None,
@@ -1528,10 +1548,11 @@ class EgoSubProblemSolverContext1GPSurfpackExportModelFormats(DakotaBaseModel):
 
 
 class EgoSubProblemSolverContext1GPDakota(DakotaBaseModel):
-    """Generated model for EgoSubProblemSolverContext1GPDakota"""
+    "Select the built in Gaussian Process surrogate"
 
     dakota: Literal[True] = DakotaField(
         default=True,
+        description="Select the built in Gaussian Process surrogate",
         dakota={
             "materialization": [
                 {
@@ -1548,7 +1569,7 @@ class EgoSubProblemSolverContext1GPDakota(DakotaBaseModel):
 class EgoSubProblemSolverContext1ImportBuildPointsFileCustomAnnotatedConfig(
     DakotaBaseModel
 ):
-    """Generated model for EgoSubProblemSolverContext1ImportBuildPointsFileCustomAnnotatedConfig"""
+    "Selects custom-annotated tabular file format"
 
     header: Literal[True] | None = DakotaField(
         default=None,
@@ -1595,10 +1616,11 @@ class EgoSubProblemSolverContext1ImportBuildPointsFileCustomAnnotatedConfig(
 
 
 class EgoSubProblemSolverContext1ImportBuildPointsFileAnnotated(DakotaBaseModel):
-    """Generated model for EgoSubProblemSolverContext1ImportBuildPointsFileAnnotated"""
+    "Selects annotated tabular file format"
 
     annotated: Literal[True] = DakotaField(
         default=True,
+        description="Selects annotated tabular file format",
         dakota={
             "materialization": [
                 {
@@ -1613,10 +1635,11 @@ class EgoSubProblemSolverContext1ImportBuildPointsFileAnnotated(DakotaBaseModel)
 
 
 class EgoSubProblemSolverContext1ImportBuildPointsFileFreeform(DakotaBaseModel):
-    """Generated model for EgoSubProblemSolverContext1ImportBuildPointsFileFreeform"""
+    "Selects freeform file format"
 
     freeform: Literal[True] = DakotaField(
         default=True,
+        description="Selects freeform file format",
         dakota={
             "materialization": [
                 {
@@ -1633,7 +1656,7 @@ class EgoSubProblemSolverContext1ImportBuildPointsFileFreeform(DakotaBaseModel):
 class EgoSubProblemSolverContext1ExportApproxPointsFileCustomAnnotatedConfig(
     DakotaBaseModel
 ):
-    """Generated model for EgoSubProblemSolverContext1ExportApproxPointsFileCustomAnnotatedConfig"""
+    "Selects custom-annotated tabular file format"
 
     header: Literal[True] | None = DakotaField(
         default=None,
@@ -1680,10 +1703,11 @@ class EgoSubProblemSolverContext1ExportApproxPointsFileCustomAnnotatedConfig(
 
 
 class EgoSubProblemSolverContext1ExportApproxPointsFileAnnotated(DakotaBaseModel):
-    """Generated model for EgoSubProblemSolverContext1ExportApproxPointsFileAnnotated"""
+    "Selects annotated tabular file format"
 
     annotated: Literal[True] = DakotaField(
         default=True,
+        description="Selects annotated tabular file format",
         dakota={
             "materialization": [
                 {
@@ -1698,10 +1722,11 @@ class EgoSubProblemSolverContext1ExportApproxPointsFileAnnotated(DakotaBaseModel
 
 
 class EgoSubProblemSolverContext1ExportApproxPointsFileFreeform(DakotaBaseModel):
-    """Generated model for EgoSubProblemSolverContext1ExportApproxPointsFileFreeform"""
+    "Selects freeform file format"
 
     freeform: Literal[True] = DakotaField(
         default=True,
+        description="Selects freeform file format",
         dakota={
             "materialization": [
                 {
@@ -1716,7 +1741,7 @@ class EgoSubProblemSolverContext1ExportApproxPointsFileFreeform(DakotaBaseModel)
 
 
 class GenReliabilityLevelsGenReliabilityLevels(DakotaBaseModel):
-    """Generated model for GenReliabilityLevelsGenReliabilityLevels"""
+    "Specify generalized relability levels at which to estimate the corresponding response value"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CheckSumEqualsLength(
@@ -1736,7 +1761,7 @@ class GenReliabilityLevelsGenReliabilityLevels(DakotaBaseModel):
 
 
 class ImportBuildPointsFileCustomAnnotatedConfig(DakotaBaseModel):
-    """Generated model for ImportBuildPointsFileCustomAnnotatedConfig"""
+    "Selects custom-annotated tabular file format"
 
     header: Literal[True] | None = DakotaField(
         default=None,
@@ -1783,10 +1808,11 @@ class ImportBuildPointsFileCustomAnnotatedConfig(DakotaBaseModel):
 
 
 class ImportBuildPointsFileAnnotated(DakotaBaseModel):
-    """Generated model for ImportBuildPointsFileAnnotated"""
+    "Selects annotated tabular file format"
 
     annotated: Literal[True] = DakotaField(
         default=True,
+        description="Selects annotated tabular file format",
         dakota={
             "materialization": [
                 {
@@ -1801,10 +1827,11 @@ class ImportBuildPointsFileAnnotated(DakotaBaseModel):
 
 
 class ImportBuildPointsFileFreeform(DakotaBaseModel):
-    """Generated model for ImportBuildPointsFileFreeform"""
+    "Selects freeform file format"
 
     freeform: Literal[True] = DakotaField(
         default=True,
+        description="Selects freeform file format",
         dakota={
             "materialization": [
                 {
@@ -1819,10 +1846,11 @@ class ImportBuildPointsFileFreeform(DakotaBaseModel):
 
 
 class MethodCovTypeDiagCov(DakotaBaseModel):
-    """Generated model for MethodCovTypeDiagCov"""
+    "Display only the diagonal terms of the covariance matrix"
 
     diagonal_covariance: Literal[True] = DakotaField(
         default=True,
+        description="Display only the diagonal terms of the covariance matrix",
         dakota={
             "materialization": [
                 {
@@ -1837,10 +1865,11 @@ class MethodCovTypeDiagCov(DakotaBaseModel):
 
 
 class MethodCovTypeFullCov(DakotaBaseModel):
-    """Generated model for MethodCovTypeFullCov"""
+    "Display the full covariance matrix"
 
     full_covariance: Literal[True] = DakotaField(
         default=True,
+        description="Display the full covariance matrix",
         dakota={
             "materialization": [
                 {
@@ -1855,7 +1884,7 @@ class MethodCovTypeFullCov(DakotaBaseModel):
 
 
 class MethodExportModelContext2Formats(DakotaBaseModel):
-    """Generated model for MethodExportModelContext2Formats"""
+    "export_model not active"
 
     text_archive: Literal[True] | None = DakotaField(
         default=None,
@@ -1888,7 +1917,7 @@ class MethodExportModelContext2Formats(DakotaBaseModel):
 
 
 class MethodExportModelContext1Formats(DakotaBaseModel):
-    """Generated model for MethodExportModelContext1Formats"""
+    "Formats for surrogate model export"
 
     text_archive: Literal[True] | None = DakotaField(
         default=None,
@@ -1921,10 +1950,11 @@ class MethodExportModelContext1Formats(DakotaBaseModel):
 
 
 class MethodGPSurfpack(DakotaBaseModel):
-    """Generated model for MethodGPSurfpack"""
+    "surfpack"
 
     surfpack: Literal[True] = DakotaField(
         default=True,
+        description="surfpack",
         dakota={
             "materialization": [
                 {
@@ -1939,10 +1969,11 @@ class MethodGPSurfpack(DakotaBaseModel):
 
 
 class MethodGPDakota(DakotaBaseModel):
-    """Generated model for MethodGPDakota"""
+    "dakota"
 
     dakota: Literal[True] = DakotaField(
         default=True,
+        description="dakota",
         dakota={
             "materialization": [
                 {
@@ -1957,10 +1988,11 @@ class MethodGPDakota(DakotaBaseModel):
 
 
 class MethodGlobalSubProblemSolverContext2SbgoGPSurfpack(DakotaBaseModel):
-    """Generated model for MethodGlobalSubProblemSolverContext2SbgoGPSurfpack"""
+    "Use the Surfpack version of Gaussian Process surrogates"
 
     surfpack: Literal[True] = DakotaField(
         default=True,
+        description="Use the Surfpack version of Gaussian Process surrogates",
         dakota={
             "materialization": [
                 {
@@ -1975,10 +2007,11 @@ class MethodGlobalSubProblemSolverContext2SbgoGPSurfpack(DakotaBaseModel):
 
 
 class MethodGlobalSubProblemSolverContext2SbgoGPDakota(DakotaBaseModel):
-    """Generated model for MethodGlobalSubProblemSolverContext2SbgoGPDakota"""
+    "Select the built in Gaussian Process surrogate"
 
     dakota: Literal[True] = DakotaField(
         default=True,
+        description="Select the built in Gaussian Process surrogate",
         dakota={
             "materialization": [
                 {
@@ -1993,7 +2026,7 @@ class MethodGlobalSubProblemSolverContext2SbgoGPDakota(DakotaBaseModel):
 
 
 class MethodGlobalSubProblemSolverContext2SbgoGPExperimentalConfig(DakotaBaseModel):
-    """Generated model for MethodGlobalSubProblemSolverContext2SbgoGPExperimentalConfig"""
+    "Use the experimental Gaussian Process surrogate"
 
     options_file: str | None = DakotaField(
         default=None,
@@ -2013,7 +2046,7 @@ class MethodGlobalSubProblemSolverContext2SbgoGPExperimentalConfig(DakotaBaseMod
 class MethodGlobalSubProblemSolverContext2SbgoImportBuildPointsFileCustomAnnotatedConfig(
     DakotaBaseModel
 ):
-    """Generated model for MethodGlobalSubProblemSolverContext2SbgoImportBuildPointsFileCustomAnnotatedConfig"""
+    "Selects custom-annotated tabular file format"
 
     header: Literal[True] | None = DakotaField(
         default=None,
@@ -2062,10 +2095,11 @@ class MethodGlobalSubProblemSolverContext2SbgoImportBuildPointsFileCustomAnnotat
 class MethodGlobalSubProblemSolverContext2SbgoImportBuildPointsFileAnnotated(
     DakotaBaseModel
 ):
-    """Generated model for MethodGlobalSubProblemSolverContext2SbgoImportBuildPointsFileAnnotated"""
+    "Selects annotated tabular file format"
 
     annotated: Literal[True] = DakotaField(
         default=True,
+        description="Selects annotated tabular file format",
         dakota={
             "materialization": [
                 {
@@ -2082,10 +2116,11 @@ class MethodGlobalSubProblemSolverContext2SbgoImportBuildPointsFileAnnotated(
 class MethodGlobalSubProblemSolverContext2SbgoImportBuildPointsFileFreeform(
     DakotaBaseModel
 ):
-    """Generated model for MethodGlobalSubProblemSolverContext2SbgoImportBuildPointsFileFreeform"""
+    "Selects freeform file format"
 
     freeform: Literal[True] = DakotaField(
         default=True,
+        description="Selects freeform file format",
         dakota={
             "materialization": [
                 {
@@ -2102,7 +2137,7 @@ class MethodGlobalSubProblemSolverContext2SbgoImportBuildPointsFileFreeform(
 class MethodGlobalSubProblemSolverContext2SbgoExportApproxPointsFileCustomAnnotatedConfig(
     DakotaBaseModel
 ):
-    """Generated model for MethodGlobalSubProblemSolverContext2SbgoExportApproxPointsFileCustomAnnotatedConfig"""
+    "Selects custom-annotated tabular file format"
 
     header: Literal[True] | None = DakotaField(
         default=None,
@@ -2151,10 +2186,11 @@ class MethodGlobalSubProblemSolverContext2SbgoExportApproxPointsFileCustomAnnota
 class MethodGlobalSubProblemSolverContext2SbgoExportApproxPointsFileAnnotated(
     DakotaBaseModel
 ):
-    """Generated model for MethodGlobalSubProblemSolverContext2SbgoExportApproxPointsFileAnnotated"""
+    "Selects annotated tabular file format"
 
     annotated: Literal[True] = DakotaField(
         default=True,
+        description="Selects annotated tabular file format",
         dakota={
             "materialization": [
                 {
@@ -2171,10 +2207,11 @@ class MethodGlobalSubProblemSolverContext2SbgoExportApproxPointsFileAnnotated(
 class MethodGlobalSubProblemSolverContext2SbgoExportApproxPointsFileFreeform(
     DakotaBaseModel
 ):
-    """Generated model for MethodGlobalSubProblemSolverContext2SbgoExportApproxPointsFileFreeform"""
+    "Selects freeform file format"
 
     freeform: Literal[True] = DakotaField(
         default=True,
+        description="Selects freeform file format",
         dakota={
             "materialization": [
                 {
@@ -2191,7 +2228,7 @@ class MethodGlobalSubProblemSolverContext2SbgoExportApproxPointsFileFreeform(
 class MethodGlobalSubProblemSolverContext2EgoGPSurfpackExportModelFormats(
     DakotaBaseModel
 ):
-    """Generated model for MethodGlobalSubProblemSolverContext2EgoGPSurfpackExportModelFormats"""
+    "Formats for surrogate model export"
 
     text_archive: Literal[True] | None = DakotaField(
         default=None,
@@ -2224,10 +2261,11 @@ class MethodGlobalSubProblemSolverContext2EgoGPSurfpackExportModelFormats(
 
 
 class MethodGlobalSubProblemSolverContext2EgoGPDakota(DakotaBaseModel):
-    """Generated model for MethodGlobalSubProblemSolverContext2EgoGPDakota"""
+    "Select the built in Gaussian Process surrogate"
 
     dakota: Literal[True] = DakotaField(
         default=True,
+        description="Select the built in Gaussian Process surrogate",
         dakota={
             "materialization": [
                 {
@@ -2244,7 +2282,7 @@ class MethodGlobalSubProblemSolverContext2EgoGPDakota(DakotaBaseModel):
 class MethodGlobalSubProblemSolverContext2EgoGPExperimentalExportModelFormats(
     DakotaBaseModel
 ):
-    """Generated model for MethodGlobalSubProblemSolverContext2EgoGPExperimentalExportModelFormats"""
+    "Formats for surrogate model export"
 
     text_archive: Literal[True] | None = DakotaField(
         default=None,
@@ -2279,7 +2317,7 @@ class MethodGlobalSubProblemSolverContext2EgoGPExperimentalExportModelFormats(
 class MethodGlobalSubProblemSolverContext2EgoImportBuildPointsFileCustomAnnotatedConfig(
     DakotaBaseModel
 ):
-    """Generated model for MethodGlobalSubProblemSolverContext2EgoImportBuildPointsFileCustomAnnotatedConfig"""
+    "Selects custom-annotated tabular file format"
 
     header: Literal[True] | None = DakotaField(
         default=None,
@@ -2328,10 +2366,11 @@ class MethodGlobalSubProblemSolverContext2EgoImportBuildPointsFileCustomAnnotate
 class MethodGlobalSubProblemSolverContext2EgoImportBuildPointsFileAnnotated(
     DakotaBaseModel
 ):
-    """Generated model for MethodGlobalSubProblemSolverContext2EgoImportBuildPointsFileAnnotated"""
+    "Selects annotated tabular file format"
 
     annotated: Literal[True] = DakotaField(
         default=True,
+        description="Selects annotated tabular file format",
         dakota={
             "materialization": [
                 {
@@ -2348,10 +2387,11 @@ class MethodGlobalSubProblemSolverContext2EgoImportBuildPointsFileAnnotated(
 class MethodGlobalSubProblemSolverContext2EgoImportBuildPointsFileFreeform(
     DakotaBaseModel
 ):
-    """Generated model for MethodGlobalSubProblemSolverContext2EgoImportBuildPointsFileFreeform"""
+    "Selects freeform file format"
 
     freeform: Literal[True] = DakotaField(
         default=True,
+        description="Selects freeform file format",
         dakota={
             "materialization": [
                 {
@@ -2368,7 +2408,7 @@ class MethodGlobalSubProblemSolverContext2EgoImportBuildPointsFileFreeform(
 class MethodGlobalSubProblemSolverContext2EgoExportApproxPointsFileCustomAnnotatedConfig(
     DakotaBaseModel
 ):
-    """Generated model for MethodGlobalSubProblemSolverContext2EgoExportApproxPointsFileCustomAnnotatedConfig"""
+    "Selects custom-annotated tabular file format"
 
     header: Literal[True] | None = DakotaField(
         default=None,
@@ -2417,10 +2457,11 @@ class MethodGlobalSubProblemSolverContext2EgoExportApproxPointsFileCustomAnnotat
 class MethodGlobalSubProblemSolverContext2EgoExportApproxPointsFileAnnotated(
     DakotaBaseModel
 ):
-    """Generated model for MethodGlobalSubProblemSolverContext2EgoExportApproxPointsFileAnnotated"""
+    "Selects annotated tabular file format"
 
     annotated: Literal[True] = DakotaField(
         default=True,
+        description="Selects annotated tabular file format",
         dakota={
             "materialization": [
                 {
@@ -2437,10 +2478,11 @@ class MethodGlobalSubProblemSolverContext2EgoExportApproxPointsFileAnnotated(
 class MethodGlobalSubProblemSolverContext2EgoExportApproxPointsFileFreeform(
     DakotaBaseModel
 ):
-    """Generated model for MethodGlobalSubProblemSolverContext2EgoExportApproxPointsFileFreeform"""
+    "Selects freeform file format"
 
     freeform: Literal[True] = DakotaField(
         default=True,
+        description="Selects freeform file format",
         dakota={
             "materialization": [
                 {
@@ -2455,10 +2497,11 @@ class MethodGlobalSubProblemSolverContext2EgoExportApproxPointsFileFreeform(
 
 
 class MethodGlobalSubProblemSolverContext2Ea(DakotaBaseModel):
-    """Generated model for MethodGlobalSubProblemSolverContext2Ea"""
+    "Use an evolutionary algorithm"
 
     ea: Literal[True] = DakotaField(
         default=True,
+        description="Use an evolutionary algorithm",
         dakota={
             "materialization": [
                 {
@@ -2473,10 +2516,11 @@ class MethodGlobalSubProblemSolverContext2Ea(DakotaBaseModel):
 
 
 class MethodGlobalSubProblemSolverContext2Lhs(DakotaBaseModel):
-    """Generated model for MethodGlobalSubProblemSolverContext2Lhs"""
+    "Uses Latin Hypercube Sampling (LHS) to sample variables"
 
     lhs: Literal[True] = DakotaField(
         default=True,
+        description="Uses Latin Hypercube Sampling (LHS) to sample variables",
         dakota={
             "materialization": [
                 {
@@ -2491,10 +2535,11 @@ class MethodGlobalSubProblemSolverContext2Lhs(DakotaBaseModel):
 
 
 class MethodGlobalSubProblemSolverContext1SbgoGPSurfpack(DakotaBaseModel):
-    """Generated model for MethodGlobalSubProblemSolverContext1SbgoGPSurfpack"""
+    "Use the Surfpack version of Gaussian Process surrogates"
 
     surfpack: Literal[True] = DakotaField(
         default=True,
+        description="Use the Surfpack version of Gaussian Process surrogates",
         dakota={
             "materialization": [
                 {
@@ -2509,10 +2554,11 @@ class MethodGlobalSubProblemSolverContext1SbgoGPSurfpack(DakotaBaseModel):
 
 
 class MethodGlobalSubProblemSolverContext1SbgoGPDakota(DakotaBaseModel):
-    """Generated model for MethodGlobalSubProblemSolverContext1SbgoGPDakota"""
+    "Select the built in Gaussian Process surrogate"
 
     dakota: Literal[True] = DakotaField(
         default=True,
+        description="Select the built in Gaussian Process surrogate",
         dakota={
             "materialization": [
                 {
@@ -2527,7 +2573,7 @@ class MethodGlobalSubProblemSolverContext1SbgoGPDakota(DakotaBaseModel):
 
 
 class MethodGlobalSubProblemSolverContext1SbgoGPExperimentalConfig(DakotaBaseModel):
-    """Generated model for MethodGlobalSubProblemSolverContext1SbgoGPExperimentalConfig"""
+    "Use the experimental Gaussian Process surrogate"
 
     options_file: str | None = DakotaField(
         default=None,
@@ -2547,7 +2593,7 @@ class MethodGlobalSubProblemSolverContext1SbgoGPExperimentalConfig(DakotaBaseMod
 class MethodGlobalSubProblemSolverContext1SbgoImportBuildPointsFileCustomAnnotatedConfig(
     DakotaBaseModel
 ):
-    """Generated model for MethodGlobalSubProblemSolverContext1SbgoImportBuildPointsFileCustomAnnotatedConfig"""
+    "Selects custom-annotated tabular file format"
 
     header: Literal[True] | None = DakotaField(
         default=None,
@@ -2596,10 +2642,11 @@ class MethodGlobalSubProblemSolverContext1SbgoImportBuildPointsFileCustomAnnotat
 class MethodGlobalSubProblemSolverContext1SbgoImportBuildPointsFileAnnotated(
     DakotaBaseModel
 ):
-    """Generated model for MethodGlobalSubProblemSolverContext1SbgoImportBuildPointsFileAnnotated"""
+    "Selects annotated tabular file format"
 
     annotated: Literal[True] = DakotaField(
         default=True,
+        description="Selects annotated tabular file format",
         dakota={
             "materialization": [
                 {
@@ -2616,10 +2663,11 @@ class MethodGlobalSubProblemSolverContext1SbgoImportBuildPointsFileAnnotated(
 class MethodGlobalSubProblemSolverContext1SbgoImportBuildPointsFileFreeform(
     DakotaBaseModel
 ):
-    """Generated model for MethodGlobalSubProblemSolverContext1SbgoImportBuildPointsFileFreeform"""
+    "Selects freeform file format"
 
     freeform: Literal[True] = DakotaField(
         default=True,
+        description="Selects freeform file format",
         dakota={
             "materialization": [
                 {
@@ -2636,7 +2684,7 @@ class MethodGlobalSubProblemSolverContext1SbgoImportBuildPointsFileFreeform(
 class MethodGlobalSubProblemSolverContext1SbgoExportApproxPointsFileCustomAnnotatedConfig(
     DakotaBaseModel
 ):
-    """Generated model for MethodGlobalSubProblemSolverContext1SbgoExportApproxPointsFileCustomAnnotatedConfig"""
+    "Selects custom-annotated tabular file format"
 
     header: Literal[True] | None = DakotaField(
         default=None,
@@ -2685,10 +2733,11 @@ class MethodGlobalSubProblemSolverContext1SbgoExportApproxPointsFileCustomAnnota
 class MethodGlobalSubProblemSolverContext1SbgoExportApproxPointsFileAnnotated(
     DakotaBaseModel
 ):
-    """Generated model for MethodGlobalSubProblemSolverContext1SbgoExportApproxPointsFileAnnotated"""
+    "Selects annotated tabular file format"
 
     annotated: Literal[True] = DakotaField(
         default=True,
+        description="Selects annotated tabular file format",
         dakota={
             "materialization": [
                 {
@@ -2705,10 +2754,11 @@ class MethodGlobalSubProblemSolverContext1SbgoExportApproxPointsFileAnnotated(
 class MethodGlobalSubProblemSolverContext1SbgoExportApproxPointsFileFreeform(
     DakotaBaseModel
 ):
-    """Generated model for MethodGlobalSubProblemSolverContext1SbgoExportApproxPointsFileFreeform"""
+    "Selects freeform file format"
 
     freeform: Literal[True] = DakotaField(
         default=True,
+        description="Selects freeform file format",
         dakota={
             "materialization": [
                 {
@@ -2725,7 +2775,7 @@ class MethodGlobalSubProblemSolverContext1SbgoExportApproxPointsFileFreeform(
 class MethodGlobalSubProblemSolverContext1EgoGPSurfpackExportModelFormats(
     DakotaBaseModel
 ):
-    """Generated model for MethodGlobalSubProblemSolverContext1EgoGPSurfpackExportModelFormats"""
+    "export_model not active"
 
     text_archive: Literal[True] | None = DakotaField(
         default=None,
@@ -2758,10 +2808,11 @@ class MethodGlobalSubProblemSolverContext1EgoGPSurfpackExportModelFormats(
 
 
 class MethodGlobalSubProblemSolverContext1EgoGPDakota(DakotaBaseModel):
-    """Generated model for MethodGlobalSubProblemSolverContext1EgoGPDakota"""
+    "Select the built in Gaussian Process surrogate"
 
     dakota: Literal[True] = DakotaField(
         default=True,
+        description="Select the built in Gaussian Process surrogate",
         dakota={
             "materialization": [
                 {
@@ -2778,7 +2829,7 @@ class MethodGlobalSubProblemSolverContext1EgoGPDakota(DakotaBaseModel):
 class MethodGlobalSubProblemSolverContext1EgoGPExperimentalExportModelFormats(
     DakotaBaseModel
 ):
-    """Generated model for MethodGlobalSubProblemSolverContext1EgoGPExperimentalExportModelFormats"""
+    "export_model not active"
 
     text_archive: Literal[True] | None = DakotaField(
         default=None,
@@ -2813,7 +2864,7 @@ class MethodGlobalSubProblemSolverContext1EgoGPExperimentalExportModelFormats(
 class MethodGlobalSubProblemSolverContext1EgoImportBuildPointsFileCustomAnnotatedConfig(
     DakotaBaseModel
 ):
-    """Generated model for MethodGlobalSubProblemSolverContext1EgoImportBuildPointsFileCustomAnnotatedConfig"""
+    "Selects custom-annotated tabular file format"
 
     header: Literal[True] | None = DakotaField(
         default=None,
@@ -2862,10 +2913,11 @@ class MethodGlobalSubProblemSolverContext1EgoImportBuildPointsFileCustomAnnotate
 class MethodGlobalSubProblemSolverContext1EgoImportBuildPointsFileAnnotated(
     DakotaBaseModel
 ):
-    """Generated model for MethodGlobalSubProblemSolverContext1EgoImportBuildPointsFileAnnotated"""
+    "Selects annotated tabular file format"
 
     annotated: Literal[True] = DakotaField(
         default=True,
+        description="Selects annotated tabular file format",
         dakota={
             "materialization": [
                 {
@@ -2882,10 +2934,11 @@ class MethodGlobalSubProblemSolverContext1EgoImportBuildPointsFileAnnotated(
 class MethodGlobalSubProblemSolverContext1EgoImportBuildPointsFileFreeform(
     DakotaBaseModel
 ):
-    """Generated model for MethodGlobalSubProblemSolverContext1EgoImportBuildPointsFileFreeform"""
+    "Selects freeform file format"
 
     freeform: Literal[True] = DakotaField(
         default=True,
+        description="Selects freeform file format",
         dakota={
             "materialization": [
                 {
@@ -2902,7 +2955,7 @@ class MethodGlobalSubProblemSolverContext1EgoImportBuildPointsFileFreeform(
 class MethodGlobalSubProblemSolverContext1EgoExportApproxPointsFileCustomAnnotatedConfig(
     DakotaBaseModel
 ):
-    """Generated model for MethodGlobalSubProblemSolverContext1EgoExportApproxPointsFileCustomAnnotatedConfig"""
+    "Selects custom-annotated tabular file format"
 
     header: Literal[True] | None = DakotaField(
         default=None,
@@ -2951,10 +3004,11 @@ class MethodGlobalSubProblemSolverContext1EgoExportApproxPointsFileCustomAnnotat
 class MethodGlobalSubProblemSolverContext1EgoExportApproxPointsFileAnnotated(
     DakotaBaseModel
 ):
-    """Generated model for MethodGlobalSubProblemSolverContext1EgoExportApproxPointsFileAnnotated"""
+    "Selects annotated tabular file format"
 
     annotated: Literal[True] = DakotaField(
         default=True,
+        description="Selects annotated tabular file format",
         dakota={
             "materialization": [
                 {
@@ -2971,10 +3025,11 @@ class MethodGlobalSubProblemSolverContext1EgoExportApproxPointsFileAnnotated(
 class MethodGlobalSubProblemSolverContext1EgoExportApproxPointsFileFreeform(
     DakotaBaseModel
 ):
-    """Generated model for MethodGlobalSubProblemSolverContext1EgoExportApproxPointsFileFreeform"""
+    "Selects freeform file format"
 
     freeform: Literal[True] = DakotaField(
         default=True,
+        description="Selects freeform file format",
         dakota={
             "materialization": [
                 {
@@ -2989,10 +3044,11 @@ class MethodGlobalSubProblemSolverContext1EgoExportApproxPointsFileFreeform(
 
 
 class MethodGlobalSubProblemSolverContext1Ea(DakotaBaseModel):
-    """Generated model for MethodGlobalSubProblemSolverContext1Ea"""
+    "Use an evolutionary algorithm"
 
     ea: Literal[True] = DakotaField(
         default=True,
+        description="Use an evolutionary algorithm",
         dakota={
             "materialization": [
                 {
@@ -3007,10 +3063,11 @@ class MethodGlobalSubProblemSolverContext1Ea(DakotaBaseModel):
 
 
 class MethodGlobalSubProblemSolverContext1Lhs(DakotaBaseModel):
-    """Generated model for MethodGlobalSubProblemSolverContext1Lhs"""
+    "Uses Latin Hypercube Sampling (LHS) to sample variables"
 
     lhs: Literal[True] = DakotaField(
         default=True,
+        description="Uses Latin Hypercube Sampling (LHS) to sample variables",
         dakota={
             "materialization": [
                 {
@@ -3025,10 +3082,11 @@ class MethodGlobalSubProblemSolverContext1Lhs(DakotaBaseModel):
 
 
 class MethodGpAlternativesNoExportGPSurfpack(DakotaBaseModel):
-    """Generated model for MethodGpAlternativesNoExportGPSurfpack"""
+    "Use the Surfpack version of Gaussian Process surrogates"
 
     surfpack: Literal[True] = DakotaField(
         default=True,
+        description="Use the Surfpack version of Gaussian Process surrogates",
         dakota={
             "materialization": [
                 {
@@ -3043,10 +3101,11 @@ class MethodGpAlternativesNoExportGPSurfpack(DakotaBaseModel):
 
 
 class MethodGpAlternativesNoExportGPDakota(DakotaBaseModel):
-    """Generated model for MethodGpAlternativesNoExportGPDakota"""
+    "Select the built in Gaussian Process surrogate"
 
     dakota: Literal[True] = DakotaField(
         default=True,
+        description="Select the built in Gaussian Process surrogate",
         dakota={
             "materialization": [
                 {
@@ -3061,7 +3120,7 @@ class MethodGpAlternativesNoExportGPDakota(DakotaBaseModel):
 
 
 class MethodGpAlternativesNoExportGPExperimentalConfig(DakotaBaseModel):
-    """Generated model for MethodGpAlternativesNoExportGPExperimentalConfig"""
+    "Use the experimental Gaussian Process surrogate"
 
     options_file: str | None = DakotaField(
         default=None,
@@ -3081,7 +3140,7 @@ class MethodGpAlternativesNoExportGPExperimentalConfig(DakotaBaseModel):
 class MethodGpAlternativesWithExportContext2GPSurfpackExportModelFormats(
     DakotaBaseModel
 ):
-    """Generated model for MethodGpAlternativesWithExportContext2GPSurfpackExportModelFormats"""
+    "Formats for surrogate model export"
 
     text_archive: Literal[True] | None = DakotaField(
         default=None,
@@ -3114,10 +3173,11 @@ class MethodGpAlternativesWithExportContext2GPSurfpackExportModelFormats(
 
 
 class MethodGpAlternativesWithExportContext2GPDakota(DakotaBaseModel):
-    """Generated model for MethodGpAlternativesWithExportContext2GPDakota"""
+    "Select the built in Gaussian Process surrogate"
 
     dakota: Literal[True] = DakotaField(
         default=True,
+        description="Select the built in Gaussian Process surrogate",
         dakota={
             "materialization": [
                 {
@@ -3134,7 +3194,7 @@ class MethodGpAlternativesWithExportContext2GPDakota(DakotaBaseModel):
 class MethodGpAlternativesWithExportContext1GPSurfpackExportModelFormats(
     DakotaBaseModel
 ):
-    """Generated model for MethodGpAlternativesWithExportContext1GPSurfpackExportModelFormats"""
+    "export_model not active"
 
     text_archive: Literal[True] | None = DakotaField(
         default=None,
@@ -3167,10 +3227,11 @@ class MethodGpAlternativesWithExportContext1GPSurfpackExportModelFormats(
 
 
 class MethodGpAlternativesWithExportContext1GPDakota(DakotaBaseModel):
-    """Generated model for MethodGpAlternativesWithExportContext1GPDakota"""
+    "Select the built in Gaussian Process surrogate"
 
     dakota: Literal[True] = DakotaField(
         default=True,
+        description="Select the built in Gaussian Process surrogate",
         dakota={
             "materialization": [
                 {
@@ -3185,10 +3246,11 @@ class MethodGpAlternativesWithExportContext1GPDakota(DakotaBaseModel):
 
 
 class MethodGradientSubProblemSolverSqp(DakotaBaseModel):
-    """Generated model for MethodGradientSubProblemSolverSqp"""
+    "Use a sequential quadratic programming method for solving an optimization sub-problem"
 
     sqp: Literal[True] = DakotaField(
         default=True,
+        description="Use a sequential quadratic programming method for solving an optimization sub-problem",
         dakota={
             "materialization": [
                 {
@@ -3203,10 +3265,11 @@ class MethodGradientSubProblemSolverSqp(DakotaBaseModel):
 
 
 class MethodGradientSubProblemSolverNip(DakotaBaseModel):
-    """Generated model for MethodGradientSubProblemSolverNip"""
+    "Use a nonlinear interior point method for solving an optimization sub-problem"
 
     nip: Literal[True] = DakotaField(
         default=True,
+        description="Use a nonlinear interior point method for solving an optimization sub-problem",
         dakota={
             "materialization": [
                 {
@@ -3221,10 +3284,11 @@ class MethodGradientSubProblemSolverNip(DakotaBaseModel):
 
 
 class MethodIteratorServerSchedulingDedicated(DakotaBaseModel):
-    """Generated model for MethodIteratorServerSchedulingDedicated"""
+    "Specify a dedicated scheduler partition for concurrent iterator executions"
 
     dedicated: Literal[True] = DakotaField(
         default=True,
+        description="Specify a dedicated scheduler partition for concurrent iterator executions",
         dakota={
             "materialization": [
                 {
@@ -3239,10 +3303,11 @@ class MethodIteratorServerSchedulingDedicated(DakotaBaseModel):
 
 
 class MethodIteratorServerSchedulingPeer(DakotaBaseModel):
-    """Generated model for MethodIteratorServerSchedulingPeer"""
+    "Specify a peer partition for parallel iterator scheduling"
 
     peer: Literal[True] = DakotaField(
         default=True,
+        description="Specify a peer partition for parallel iterator scheduling",
         dakota={
             "materialization": [
                 {
@@ -3257,10 +3322,11 @@ class MethodIteratorServerSchedulingPeer(DakotaBaseModel):
 
 
 class MethodJegaCommonOptsInitializationTypeSimpleRandom(DakotaBaseModel):
-    """Generated model for MethodJegaCommonOptsInitializationTypeSimpleRandom"""
+    "Create random initial solutions"
 
     simple_random: Literal[True] = DakotaField(
         default=True,
+        description="Create random initial solutions",
         dakota={
             "materialization": [
                 {
@@ -3275,10 +3341,11 @@ class MethodJegaCommonOptsInitializationTypeSimpleRandom(DakotaBaseModel):
 
 
 class MethodJegaCommonOptsInitializationTypeUniqueRandom(DakotaBaseModel):
-    """Generated model for MethodJegaCommonOptsInitializationTypeUniqueRandom"""
+    "Create random initial solutions, but enforce uniqueness (default)"
 
     unique_random: Literal[True] = DakotaField(
         default=True,
+        description="Create random initial solutions, but enforce uniqueness (default)",
         dakota={
             "materialization": [
                 {
@@ -3293,7 +3360,7 @@ class MethodJegaCommonOptsInitializationTypeUniqueRandom(DakotaBaseModel):
 
 
 class MethodJegaCommonOptsInitializationTypeFlatFile(DakotaBaseModel):
-    """Generated model for MethodJegaCommonOptsInitializationTypeFlatFile"""
+    "Read initial solutions from file"
 
     flat_file: str = DakotaField(
         description="Read initial solutions from file",
@@ -3313,7 +3380,7 @@ class MethodJegaCommonOptsInitializationTypeFlatFile(DakotaBaseModel):
 
 
 class MultiPointBinary(DakotaBaseModel):
-    """Generated model for MultiPointBinary"""
+    "Use bit switching for crossover events"
 
     multi_point_binary: int = DakotaField(
         default=2,
@@ -3335,7 +3402,7 @@ class MultiPointBinary(DakotaBaseModel):
 
 
 class MultiPointParameterizedBinary(DakotaBaseModel):
-    """Generated model for MultiPointParameterizedBinary"""
+    "Use bit switching to crossover each design variable"
 
     multi_point_parameterized_binary: int = DakotaField(
         default=2,
@@ -3357,7 +3424,7 @@ class MultiPointParameterizedBinary(DakotaBaseModel):
 
 
 class MultiPointReal(DakotaBaseModel):
-    """Generated model for MultiPointReal"""
+    "Perform crossover in real valued genome"
 
     multi_point_real: int = DakotaField(
         default=2,
@@ -3379,7 +3446,7 @@ class MultiPointReal(DakotaBaseModel):
 
 
 class ShuffleRandomConfig(DakotaBaseModel):
-    """Generated model for ShuffleRandomConfig"""
+    "Perform crossover by choosing design variable(s)"
 
     num_parents: int = DakotaField(
         default=2,
@@ -3412,10 +3479,11 @@ class ShuffleRandomConfig(DakotaBaseModel):
 
 
 class BitRandom(DakotaBaseModel):
-    """Generated model for BitRandom"""
+    "Mutate by flipping a random bit"
 
     bit_random: Literal[True] = DakotaField(
         default=True,
+        description="Mutate by flipping a random bit",
         dakota={
             "materialization": [
                 {
@@ -3430,10 +3498,11 @@ class BitRandom(DakotaBaseModel):
 
 
 class MethodJegaCommonOptsMutationTypeReplaceUniform(DakotaBaseModel):
-    """Generated model for MethodJegaCommonOptsMutationTypeReplaceUniform"""
+    "Use uniformly distributed value over range of parameter"
 
     replace_uniform: Literal[True] = DakotaField(
         default=True,
+        description="Use uniformly distributed value over range of parameter",
         dakota={
             "materialization": [
                 {
@@ -3448,7 +3517,7 @@ class MethodJegaCommonOptsMutationTypeReplaceUniform(DakotaBaseModel):
 
 
 class OffsetNormalConfig(DakotaBaseModel):
-    """Generated model for OffsetNormalConfig"""
+    "Set mutation offset to use a normal distribution"
 
     mutation_scale: DakotaFloat = DakotaField(
         default=0.1,
@@ -3468,10 +3537,11 @@ class OffsetNormalConfig(DakotaBaseModel):
 
 
 class MethodMlmfSolverMetricAverageEstimatorVariance(DakotaBaseModel):
-    """Generated model for MethodMlmfSolverMetricAverageEstimatorVariance"""
+    "Utilize the estimator variance averaged over the QoI as the solver metric for sampling-based multifidelity methods."
 
     average_estimator_variance: Literal[True] = DakotaField(
         default=True,
+        description="Utilize the estimator variance averaged over the QoI as the solver metric for sampling-based multifidelity methods.",
         dakota={
             "materialization": [
                 {
@@ -3486,7 +3556,7 @@ class MethodMlmfSolverMetricAverageEstimatorVariance(DakotaBaseModel):
 
 
 class MethodMlmfSolverMetricNormEstimatorVarianceConfig(DakotaBaseModel):
-    """Generated model for MethodMlmfSolverMetricNormEstimatorVarianceConfig"""
+    "Utilize a p-norm over the vector of QoI estimator variances as the solver metric for sampling-based multifidelity methods."
 
     norm_order: DakotaFloat = DakotaField(
         default=2.0,
@@ -3505,10 +3575,11 @@ class MethodMlmfSolverMetricNormEstimatorVarianceConfig(DakotaBaseModel):
 
 
 class MethodMlmfSolverMetricMaxEstimatorVariance(DakotaBaseModel):
-    """Generated model for MethodMlmfSolverMetricMaxEstimatorVariance"""
+    "Utilize the maximum estimator variance as the solver metric for sampling-based multifidelity methods."
 
     max_estimator_variance: Literal[True] = DakotaField(
         default=True,
+        description="Utilize the maximum estimator variance as the solver metric for sampling-based multifidelity methods.",
         dakota={
             "materialization": [
                 {
@@ -3523,10 +3594,11 @@ class MethodMlmfSolverMetricMaxEstimatorVariance(DakotaBaseModel):
 
 
 class MethodMlmfSubProblemSolverSqp(DakotaBaseModel):
-    """Generated model for MethodMlmfSubProblemSolverSqp"""
+    "Use a sequential quadratic programming method for solving an optimization sub-problem"
 
     sqp: Literal[True] = DakotaField(
         default=True,
+        description="Use a sequential quadratic programming method for solving an optimization sub-problem",
         dakota={
             "materialization": [
                 {
@@ -3541,10 +3613,11 @@ class MethodMlmfSubProblemSolverSqp(DakotaBaseModel):
 
 
 class MethodMlmfSubProblemSolverNip(DakotaBaseModel):
-    """Generated model for MethodMlmfSubProblemSolverNip"""
+    "Use a nonlinear interior point method for solving an optimization sub-problem"
 
     nip: Literal[True] = DakotaField(
         default=True,
+        description="Use a nonlinear interior point method for solving an optimization sub-problem",
         dakota={
             "materialization": [
                 {
@@ -3559,10 +3632,11 @@ class MethodMlmfSubProblemSolverNip(DakotaBaseModel):
 
 
 class MethodMlmfSubProblemSolverGlobalLocal(DakotaBaseModel):
-    """Generated model for MethodMlmfSubProblemSolverGlobalLocal"""
+    "Use a hybrid global-local scheme for solving an optimization sub-problem"
 
     global_local: Literal[True] = DakotaField(
         default=True,
+        description="Use a hybrid global-local scheme for solving an optimization sub-problem",
         dakota={
             "materialization": [
                 {
@@ -3577,10 +3651,11 @@ class MethodMlmfSubProblemSolverGlobalLocal(DakotaBaseModel):
 
 
 class MethodMlmfSubProblemSolverCompetedLocal(DakotaBaseModel):
-    """Generated model for MethodMlmfSubProblemSolverCompetedLocal"""
+    "Use a competed local solver scheme for solving an optimization sub-problem"
 
     competed_local: Literal[True] = DakotaField(
         default=True,
+        description="Use a competed local solver scheme for solving an optimization sub-problem",
         dakota={
             "materialization": [
                 {
@@ -3595,10 +3670,11 @@ class MethodMlmfSubProblemSolverCompetedLocal(DakotaBaseModel):
 
 
 class ValueBasedLineSearch(DakotaBaseModel):
-    """Generated model for ValueBasedLineSearch"""
+    "Use only function values for line search"
 
     value_based_line_search: Literal[True] = DakotaField(
         default=True,
+        description="Use only function values for line search",
         dakota={
             "materialization": [
                 {
@@ -3613,10 +3689,11 @@ class ValueBasedLineSearch(DakotaBaseModel):
 
 
 class GradientBasedLineSearch(DakotaBaseModel):
-    """Generated model for GradientBasedLineSearch"""
+    "Set the search method to use the gradient"
 
     gradient_based_line_search: Literal[True] = DakotaField(
         default=True,
+        description="Set the search method to use the gradient",
         dakota={
             "materialization": [
                 {
@@ -3631,10 +3708,11 @@ class GradientBasedLineSearch(DakotaBaseModel):
 
 
 class SearchMethodTrustRegion(DakotaBaseModel):
-    """Generated model for SearchMethodTrustRegion"""
+    "Use trust region as the globalization strategy."
 
     trust_region: Literal[True] = DakotaField(
         default=True,
+        description="Use trust region as the globalization strategy.",
         dakota={
             "materialization": [
                 {
@@ -3649,10 +3727,11 @@ class SearchMethodTrustRegion(DakotaBaseModel):
 
 
 class TrPds(DakotaBaseModel):
-    """Generated model for TrPds"""
+    "Use direct search as the local search in a trust region method"
 
     tr_pds: Literal[True] = DakotaField(
         default=True,
+        description="Use direct search as the local search in a trust region method",
         dakota={
             "materialization": [
                 {
@@ -3667,10 +3746,11 @@ class TrPds(DakotaBaseModel):
 
 
 class ElBakry(DakotaBaseModel):
-    """Generated model for ElBakry"""
+    "El-Bakry merit function"
 
     el_bakry: Literal[True] = DakotaField(
         default=True,
+        description="El-Bakry merit function",
         dakota={
             "materialization": [
                 {
@@ -3686,10 +3766,11 @@ class ElBakry(DakotaBaseModel):
 
 
 class ArgaezTapia(DakotaBaseModel):
-    """Generated model for ArgaezTapia"""
+    "The merit function by Tapia and Argaez"
 
     argaez_tapia: Literal[True] = DakotaField(
         default=True,
+        description="The merit function by Tapia and Argaez",
         dakota={
             "materialization": [
                 {
@@ -3705,10 +3786,11 @@ class ArgaezTapia(DakotaBaseModel):
 
 
 class VanShanno(DakotaBaseModel):
-    """Generated model for VanShanno"""
+    "The merit function by Vanderbei and Shanno"
 
     van_shanno: Literal[True] = DakotaField(
         default=True,
+        description="The merit function by Vanderbei and Shanno",
         dakota={
             "materialization": [
                 {
@@ -3724,10 +3806,11 @@ class VanShanno(DakotaBaseModel):
 
 
 class Blocking(DakotaBaseModel):
-    """Generated model for Blocking"""
+    "Complete concurrent evaluation of all evaluations within a batch"
 
     blocking: Literal[True] = DakotaField(
         default=True,
+        description="Complete concurrent evaluation of all evaluations within a batch",
         dakota={
             "materialization": [
                 {
@@ -3742,10 +3825,11 @@ class Blocking(DakotaBaseModel):
 
 
 class Nonblocking(DakotaBaseModel):
-    """Generated model for Nonblocking"""
+    "A batch of concurrent evaluations are queried for completions and a partial set is returned to the algorithm"
 
     nonblocking: Literal[True] = DakotaField(
         default=True,
+        description="A batch of concurrent evaluations are queried for completions and a partial set is returned to the algorithm",
         dakota={
             "materialization": [
                 {
@@ -3760,10 +3844,11 @@ class Nonblocking(DakotaBaseModel):
 
 
 class Debug(DakotaBaseModel):
-    """Generated model for Debug"""
+    "Level 5 of 5 - maximum"
 
     debug: Literal[True] = DakotaField(
         default=True,
+        description="Level 5 of 5 - maximum",
         dakota={
             "materialization": [
                 {
@@ -3778,10 +3863,11 @@ class Debug(DakotaBaseModel):
 
 
 class Verbose(DakotaBaseModel):
-    """Generated model for Verbose"""
+    "Level 4 of 5 - more than normal"
 
     verbose: Literal[True] = DakotaField(
         default=True,
+        description="Level 4 of 5 - more than normal",
         dakota={
             "materialization": [
                 {
@@ -3796,10 +3882,11 @@ class Verbose(DakotaBaseModel):
 
 
 class Normal(DakotaBaseModel):
-    """Generated model for Normal"""
+    "Level 3 of 5 - default"
 
     normal: Literal[True] = DakotaField(
         default=True,
+        description="Level 3 of 5 - default",
         dakota={
             "materialization": [
                 {
@@ -3814,10 +3901,11 @@ class Normal(DakotaBaseModel):
 
 
 class Quiet(DakotaBaseModel):
-    """Generated model for Quiet"""
+    "Level 2 of 5 - less than normal"
 
     quiet: Literal[True] = DakotaField(
         default=True,
+        description="Level 2 of 5 - less than normal",
         dakota={
             "materialization": [
                 {
@@ -3832,10 +3920,11 @@ class Quiet(DakotaBaseModel):
 
 
 class Silent(DakotaBaseModel):
-    """Generated model for Silent"""
+    "Level 1 of 5 - minimum"
 
     silent: Literal[True] = DakotaField(
         default=True,
+        description="Level 1 of 5 - minimum",
         dakota={
             "materialization": [
                 {
@@ -3850,10 +3939,11 @@ class Silent(DakotaBaseModel):
 
 
 class MfAllocControlContext2AllocationControlGreedy(DakotaBaseModel):
-    """Generated model for MfAllocControlContext2AllocationControlGreedy"""
+    "Sample allocation based on greedy refinement within multifidelity polynomial chaos"
 
     greedy: Literal[True] = DakotaField(
         default=True,
+        description="Sample allocation based on greedy refinement within multifidelity polynomial chaos",
         dakota={
             "materialization": [
                 {
@@ -3868,10 +3958,11 @@ class MfAllocControlContext2AllocationControlGreedy(DakotaBaseModel):
 
 
 class MfAllocControlContext1AllocationControlGreedy(DakotaBaseModel):
-    """Generated model for MfAllocControlContext1AllocationControlGreedy"""
+    "Sample allocation based on greedy refinement within multifidelity stochastic collocation"
 
     greedy: Literal[True] = DakotaField(
         default=True,
+        description="Sample allocation based on greedy refinement within multifidelity stochastic collocation",
         dakota={
             "materialization": [
                 {
@@ -3886,10 +3977,11 @@ class MfAllocControlContext1AllocationControlGreedy(DakotaBaseModel):
 
 
 class MfAllocControlContext3AllocationControlGreedy(DakotaBaseModel):
-    """Generated model for MfAllocControlContext3AllocationControlGreedy"""
+    "Sample allocation based on greedy refinement within multifidelity function train"
 
     greedy: Literal[True] = DakotaField(
         default=True,
+        description="Sample allocation based on greedy refinement within multifidelity function train",
         dakota={
             "materialization": [
                 {
@@ -3904,10 +3996,11 @@ class MfAllocControlContext3AllocationControlGreedy(DakotaBaseModel):
 
 
 class MlmfFinalStatsStatisticsEstimatorPerformance(DakotaBaseModel):
-    """Generated model for MlmfFinalStatsStatisticsEstimatorPerformance"""
+    "Return estimator performance as the final results of a UQ method"
 
     estimator_performance: Literal[True] = DakotaField(
         default=True,
+        description="Return estimator performance as the final results of a UQ method",
         dakota={
             "materialization": [
                 {
@@ -3922,10 +4015,11 @@ class MlmfFinalStatsStatisticsEstimatorPerformance(DakotaBaseModel):
 
 
 class MlmfFinalStatsStatisticsQoiStatisticsFinalMomentsNoneKeyword(DakotaBaseModel):
-    """Generated model for MlmfFinalStatsStatisticsQoiStatisticsFinalMomentsNoneKeyword"""
+    "Omit moments from the set of final statistics."
 
     none: Literal[True] = DakotaField(
         default=True,
+        description="Omit moments from the set of final statistics.",
         dakota={
             "materialization": [
                 {
@@ -3941,10 +4035,11 @@ class MlmfFinalStatsStatisticsQoiStatisticsFinalMomentsNoneKeyword(DakotaBaseMod
 
 
 class MlmfFinalStatsStatisticsQoiStatisticsFinalMomentsStandard(DakotaBaseModel):
-    """Generated model for MlmfFinalStatsStatisticsQoiStatisticsFinalMomentsStandard"""
+    "Output standardized moments and include them within the set of final statistics."
 
     standard: Literal[True] = DakotaField(
         default=True,
+        description="Output standardized moments and include them within the set of final statistics.",
         dakota={
             "materialization": [
                 {
@@ -3960,10 +4055,11 @@ class MlmfFinalStatsStatisticsQoiStatisticsFinalMomentsStandard(DakotaBaseModel)
 
 
 class MlmfFinalStatsStatisticsQoiStatisticsFinalMomentsCentral(DakotaBaseModel):
-    """Generated model for MlmfFinalStatsStatisticsQoiStatisticsFinalMomentsCentral"""
+    "Output central moments and include them within the set of final statistics."
 
     central: Literal[True] = DakotaField(
         default=True,
+        description="Output central moments and include them within the set of final statistics.",
         dakota={
             "materialization": [
                 {
@@ -3979,10 +4075,11 @@ class MlmfFinalStatsStatisticsQoiStatisticsFinalMomentsCentral(DakotaBaseModel):
 
 
 class MlmfFinalStatsStatisticsQoiStatisticsDistributionCumulative(DakotaBaseModel):
-    """Generated model for MlmfFinalStatsStatisticsQoiStatisticsDistributionCumulative"""
+    "Placeholder for future capabilities"
 
     cumulative: Literal[True] = DakotaField(
         default=True,
+        description="Placeholder for future capabilities",
         dakota={
             "materialization": [
                 {
@@ -3997,10 +4094,11 @@ class MlmfFinalStatsStatisticsQoiStatisticsDistributionCumulative(DakotaBaseMode
 
 
 class MlmfFinalStatsStatisticsQoiStatisticsDistributionComplementary(DakotaBaseModel):
-    """Generated model for MlmfFinalStatsStatisticsQoiStatisticsDistributionComplementary"""
+    "Placeholder for future capabilities"
 
     complementary: Literal[True] = DakotaField(
         default=True,
+        description="Placeholder for future capabilities",
         dakota={
             "materialization": [
                 {
@@ -4015,10 +4113,11 @@ class MlmfFinalStatsStatisticsQoiStatisticsDistributionComplementary(DakotaBaseM
 
 
 class MfmcGroups(DakotaBaseModel):
-    """Generated model for MfmcGroups"""
+    "Throttle multilevel BLUE to only search over MFMC groups"
 
     mfmc_groups: Literal[True] = DakotaField(
         default=True,
+        description="Throttle multilevel BLUE to only search over MFMC groups",
         dakota={
             "materialization": [
                 {
@@ -4033,10 +4132,11 @@ class MfmcGroups(DakotaBaseModel):
 
 
 class CommonGroups(DakotaBaseModel):
-    """Generated model for CommonGroups"""
+    "Throttle multilevel BLUE to only search over common groups"
 
     common_groups: Literal[True] = DakotaField(
         default=True,
+        description="Throttle multilevel BLUE to only search over common groups",
         dakota={
             "materialization": [
                 {
@@ -4051,7 +4151,7 @@ class CommonGroups(DakotaBaseModel):
 
 
 class GroupSize(DakotaBaseModel):
-    """Generated model for GroupSize"""
+    "Throttle multilevel BLUE to only search over groups of a maximum size"
 
     group_size: int = DakotaField(
         gt=0,
@@ -4069,7 +4169,7 @@ class GroupSize(DakotaBaseModel):
 
 
 class BestConditioned(DakotaBaseModel):
-    """Generated model for BestConditioned"""
+    "Throttle multilevel BLUE to only solve for allocations using the groups with the best conditioning in their group covariances"
 
     best_conditioned: int = DakotaField(
         gt=0,
@@ -4087,7 +4187,7 @@ class BestConditioned(DakotaBaseModel):
 
 
 class RcondTol(DakotaBaseModel):
-    """Generated model for RcondTol"""
+    "Throttle multilevel BLUE to only solve for allocations using groups with prescribed conditioning in their group covariances"
 
     rcond_tolerance: DakotaFloat = DakotaField(
         ge=0,
@@ -4105,7 +4205,7 @@ class RcondTol(DakotaBaseModel):
 
 
 class MlmfRelaxationFactorSequence(DakotaBaseModel):
-    """Generated model for MlmfRelaxationFactorSequence"""
+    "For under-relaxation of shared sample increments, apply a sequence of factors, one per iteration"
 
     factor_sequence: list[DakotaFloat] = DakotaField(
         description="For under-relaxation of shared sample increments, apply a sequence of factors, one per iteration",
@@ -4122,7 +4222,7 @@ class MlmfRelaxationFactorSequence(DakotaBaseModel):
 
 
 class MlmfRelaxationFixedFactor(DakotaBaseModel):
-    """Generated model for MlmfRelaxationFixedFactor"""
+    "For under-relaxation of shared sample increments, apply a fixed factor that is invariant with iteration"
 
     fixed_factor: DakotaFloat = DakotaField(
         description="For under-relaxation of shared sample increments, apply a fixed factor that is invariant with iteration",
@@ -4139,7 +4239,7 @@ class MlmfRelaxationFixedFactor(DakotaBaseModel):
 
 
 class MlmfRelaxationRecursiveFactor(DakotaBaseModel):
-    """Generated model for MlmfRelaxationRecursiveFactor"""
+    "For under-relaxation of shared sample increments, apply a recursive factor on each iteration that advances the relaxation factor toward 1"
 
     recursive_factor: DakotaFloat = DakotaField(
         description="For under-relaxation of shared sample increments, apply a recursive factor on each iteration that advances the relaxation factor toward 1",
@@ -4156,7 +4256,7 @@ class MlmfRelaxationRecursiveFactor(DakotaBaseModel):
 
 
 class OnlinePilotRelaxationFactorSequence(DakotaBaseModel):
-    """Generated model for OnlinePilotRelaxationFactorSequence"""
+    "For under-relaxation of shared sample increments, apply a sequence of factors, one per iteration"
 
     factor_sequence: list[DakotaFloat] = DakotaField(
         description="For under-relaxation of shared sample increments, apply a sequence of factors, one per iteration",
@@ -4173,7 +4273,7 @@ class OnlinePilotRelaxationFactorSequence(DakotaBaseModel):
 
 
 class OnlinePilotRelaxationFixedFactor(DakotaBaseModel):
-    """Generated model for OnlinePilotRelaxationFixedFactor"""
+    "For under-relaxation of shared sample increments, apply a fixed factor that is invariant with iteration"
 
     fixed_factor: DakotaFloat = DakotaField(
         description="For under-relaxation of shared sample increments, apply a fixed factor that is invariant with iteration",
@@ -4190,7 +4290,7 @@ class OnlinePilotRelaxationFixedFactor(DakotaBaseModel):
 
 
 class OnlinePilotRelaxationRecursiveFactor(DakotaBaseModel):
-    """Generated model for OnlinePilotRelaxationRecursiveFactor"""
+    "For under-relaxation of shared sample increments, apply a recursive factor on each iteration that advances the relaxation factor toward 1"
 
     recursive_factor: DakotaFloat = DakotaField(
         description="For under-relaxation of shared sample increments, apply a recursive factor on each iteration that advances the relaxation factor toward 1",
@@ -4207,10 +4307,11 @@ class OnlinePilotRelaxationRecursiveFactor(DakotaBaseModel):
 
 
 class OnlinePilotFinalStatisticsEstimatorPerformance(DakotaBaseModel):
-    """Generated model for OnlinePilotFinalStatisticsEstimatorPerformance"""
+    "Return estimator performance as the final results of a UQ method"
 
     estimator_performance: Literal[True] = DakotaField(
         default=True,
+        description="Return estimator performance as the final results of a UQ method",
         dakota={
             "materialization": [
                 {
@@ -4225,10 +4326,11 @@ class OnlinePilotFinalStatisticsEstimatorPerformance(DakotaBaseModel):
 
 
 class OnlinePilotFinalStatisticsQoiStatisticsFinalMomentsNone(DakotaBaseModel):
-    """Generated model for OnlinePilotFinalStatisticsQoiStatisticsFinalMomentsNone"""
+    "Omit moments from the set of final statistics."
 
     none: Literal[True] = DakotaField(
         default=True,
+        description="Omit moments from the set of final statistics.",
         dakota={
             "materialization": [
                 {
@@ -4244,10 +4346,11 @@ class OnlinePilotFinalStatisticsQoiStatisticsFinalMomentsNone(DakotaBaseModel):
 
 
 class OnlinePilotFinalStatisticsQoiStatisticsFinalMomentsStandard(DakotaBaseModel):
-    """Generated model for OnlinePilotFinalStatisticsQoiStatisticsFinalMomentsStandard"""
+    "Output standardized moments and include them within the set of final statistics."
 
     standard: Literal[True] = DakotaField(
         default=True,
+        description="Output standardized moments and include them within the set of final statistics.",
         dakota={
             "materialization": [
                 {
@@ -4263,10 +4366,11 @@ class OnlinePilotFinalStatisticsQoiStatisticsFinalMomentsStandard(DakotaBaseMode
 
 
 class OnlinePilotFinalStatisticsQoiStatisticsFinalMomentsCentral(DakotaBaseModel):
-    """Generated model for OnlinePilotFinalStatisticsQoiStatisticsFinalMomentsCentral"""
+    "Output central moments and include them within the set of final statistics."
 
     central: Literal[True] = DakotaField(
         default=True,
+        description="Output central moments and include them within the set of final statistics.",
         dakota={
             "materialization": [
                 {
@@ -4282,10 +4386,11 @@ class OnlinePilotFinalStatisticsQoiStatisticsFinalMomentsCentral(DakotaBaseModel
 
 
 class OnlinePilotFinalStatisticsQoiStatisticsDistributionCumulative(DakotaBaseModel):
-    """Generated model for OnlinePilotFinalStatisticsQoiStatisticsDistributionCumulative"""
+    "Placeholder for future capabilities"
 
     cumulative: Literal[True] = DakotaField(
         default=True,
+        description="Placeholder for future capabilities",
         dakota={
             "materialization": [
                 {
@@ -4300,10 +4405,11 @@ class OnlinePilotFinalStatisticsQoiStatisticsDistributionCumulative(DakotaBaseMo
 
 
 class OnlinePilotFinalStatisticsQoiStatisticsDistributionComplementary(DakotaBaseModel):
-    """Generated model for OnlinePilotFinalStatisticsQoiStatisticsDistributionComplementary"""
+    "Placeholder for future capabilities"
 
     complementary: Literal[True] = DakotaField(
         default=True,
+        description="Placeholder for future capabilities",
         dakota={
             "materialization": [
                 {
@@ -4318,10 +4424,11 @@ class OnlinePilotFinalStatisticsQoiStatisticsDistributionComplementary(DakotaBas
 
 
 class OnlineProjection(DakotaBaseModel):
-    """Generated model for OnlineProjection"""
+    "Specify a solution mode that estimates performance based on projecting initial correlation / covariance estimates from an online pilot sample"
 
     online_projection: Literal[True] = DakotaField(
         default=True,
+        description="Specify a solution mode that estimates performance based on projecting initial correlation / covariance estimates from an online pilot sample",
         dakota={
             "materialization": [
                 {
@@ -4336,10 +4443,11 @@ class OnlineProjection(DakotaBaseModel):
 
 
 class OfflineProjection(DakotaBaseModel):
-    """Generated model for OfflineProjection"""
+    "Specify a solution mode that estimates performance based on projecting initial correlation/variance estimates from an offline pilot sample"
 
     offline_projection: Literal[True] = DakotaField(
         default=True,
+        description="Specify a solution mode that estimates performance based on projecting initial correlation/variance estimates from an offline pilot sample",
         dakota={
             "materialization": [
                 {
@@ -4354,7 +4462,7 @@ class OfflineProjection(DakotaBaseModel):
 
 
 class ExportApproxVarianceFileCustomAnnotatedConfig(DakotaBaseModel):
-    """Generated model for ExportApproxVarianceFileCustomAnnotatedConfig"""
+    "Selects custom-annotated tabular file format"
 
     header: Literal[True] | None = DakotaField(
         default=None,
@@ -4401,10 +4509,11 @@ class ExportApproxVarianceFileCustomAnnotatedConfig(DakotaBaseModel):
 
 
 class ExportApproxVarianceFileAnnotated(DakotaBaseModel):
-    """Generated model for ExportApproxVarianceFileAnnotated"""
+    "Selects annotated tabular file format"
 
     annotated: Literal[True] = DakotaField(
         default=True,
+        description="Selects annotated tabular file format",
         dakota={
             "materialization": [
                 {
@@ -4419,10 +4528,11 @@ class ExportApproxVarianceFileAnnotated(DakotaBaseModel):
 
 
 class ExportApproxVarianceFileFreeform(DakotaBaseModel):
-    """Generated model for ExportApproxVarianceFileFreeform"""
+    "Selects freeform file format"
 
     freeform: Literal[True] = DakotaField(
         default=True,
+        description="Selects freeform file format",
         dakota={
             "materialization": [
                 {
@@ -4437,7 +4547,7 @@ class ExportApproxVarianceFileFreeform(DakotaBaseModel):
 
 
 class ProbabilityLevelsContext1ProbabilityLevels(DakotaBaseModel):
-    """Generated model for ProbabilityLevelsContext1ProbabilityLevels"""
+    "Specify probability levels at which to compute credible and prediction intervals"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CheckProbabilityList(
@@ -4459,7 +4569,7 @@ class ProbabilityLevelsContext1ProbabilityLevels(DakotaBaseModel):
 
 
 class ProbabilityLevelsContext2ProbabilityLevels(DakotaBaseModel):
-    """Generated model for ProbabilityLevelsContext2ProbabilityLevels"""
+    "Specify probability levels at which to estimate the corresponding response value"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CheckProbabilityList(
@@ -4482,10 +4592,11 @@ class ProbabilityLevelsContext2ProbabilityLevels(DakotaBaseModel):
 
 
 class PromotedModelSelectionContext2SearchModelGraphsNoRecursion(DakotaBaseModel):
-    """Generated model for PromotedModelSelectionContext2SearchModelGraphsNoRecursion"""
+    "Do not recur over admissible DAGs for a given model ensemble"
 
     no_recursion: Literal[True] = DakotaField(
         default=True,
+        description="Do not recur over admissible DAGs for a given model ensemble",
         dakota={
             "materialization": [
                 {
@@ -4500,10 +4611,11 @@ class PromotedModelSelectionContext2SearchModelGraphsNoRecursion(DakotaBaseModel
 
 
 class PromotedModelSelectionContext2SearchModelGraphsFullRecursion(DakotaBaseModel):
-    """Generated model for PromotedModelSelectionContext2SearchModelGraphsFullRecursion"""
+    "Perform a full recursion of all admissible DAGs for a given model ensemble"
 
     full_recursion: Literal[True] = DakotaField(
         default=True,
+        description="Perform a full recursion of all admissible DAGs for a given model ensemble",
         dakota={
             "materialization": [
                 {
@@ -4518,10 +4630,11 @@ class PromotedModelSelectionContext2SearchModelGraphsFullRecursion(DakotaBaseMod
 
 
 class PromotedModelSelectionContext1SearchModelGraphsNoRecursion(DakotaBaseModel):
-    """Generated model for PromotedModelSelectionContext1SearchModelGraphsNoRecursion"""
+    "Do not recur over admissible DAGs for a given model ensemble"
 
     no_recursion: Literal[True] = DakotaField(
         default=True,
+        description="Do not recur over admissible DAGs for a given model ensemble",
         dakota={
             "materialization": [
                 {
@@ -4536,10 +4649,11 @@ class PromotedModelSelectionContext1SearchModelGraphsNoRecursion(DakotaBaseModel
 
 
 class PromotedModelSelectionContext1SearchModelGraphsFullRecursion(DakotaBaseModel):
-    """Generated model for PromotedModelSelectionContext1SearchModelGraphsFullRecursion"""
+    "Perform a full recursion of all admissible DAGs for a given model ensemble"
 
     full_recursion: Literal[True] = DakotaField(
         default=True,
+        description="Perform a full recursion of all admissible DAGs for a given model ensemble",
         dakota={
             "materialization": [
                 {
@@ -4554,7 +4668,7 @@ class PromotedModelSelectionContext1SearchModelGraphsFullRecursion(DakotaBaseMod
 
 
 class GeneratingVectorInline(DakotaBaseModel):
-    """Generated model for GeneratingVectorInline"""
+    "Specify an inline generating vector"
 
     inline: list[int] = DakotaField(
         description="Specify an inline generating vector",
@@ -4571,7 +4685,7 @@ class GeneratingVectorInline(DakotaBaseModel):
 
 
 class GeneratingVectorFile(DakotaBaseModel):
-    """Generated model for GeneratingVectorFile"""
+    "Specify a generating vector read from file"
 
     file: str = DakotaField(
         description="Specify a generating vector read from file",
@@ -4588,10 +4702,11 @@ class GeneratingVectorFile(DakotaBaseModel):
 
 
 class Kuo(DakotaBaseModel):
-    """Generated model for Kuo"""
+    "A generating vector that provides up to 2\\ :sup:`20` points in up to 3600 dimensions"
 
     kuo: Literal[True] = DakotaField(
         default=True,
+        description="A generating vector that provides up to 2\ :sup:`20` points in up to 3600 dimensions",
         dakota={
             "materialization": [
                 {
@@ -4606,10 +4721,11 @@ class Kuo(DakotaBaseModel):
 
 
 class CoolsKuoNuyens(DakotaBaseModel):
-    """Generated model for CoolsKuoNuyens"""
+    "A generating vector that provides up to 2\\ :sup:`20` points in up to 250 dimensions"
 
     cools_kuo_nuyens: Literal[True] = DakotaField(
         default=True,
+        description="A generating vector that provides up to 2\ :sup:`20` points in up to 250 dimensions",
         dakota={
             "materialization": [
                 {
@@ -4624,10 +4740,11 @@ class CoolsKuoNuyens(DakotaBaseModel):
 
 
 class Rank1LatticeOptionsOrderingNatural(DakotaBaseModel):
-    """Generated model for Rank1LatticeOptionsOrderingNatural"""
+    "Natural ordering of the points of this rank-1 lattice"
 
     natural: Literal[True] = DakotaField(
         default=True,
+        description="Natural ordering of the points of this rank-1 lattice",
         dakota={
             "materialization": [
                 {
@@ -4642,10 +4759,11 @@ class Rank1LatticeOptionsOrderingNatural(DakotaBaseModel):
 
 
 class RadicalInverse(DakotaBaseModel):
-    """Generated model for RadicalInverse"""
+    "Radical inverse ordering of the points of this rank-1 lattice"
 
     radical_inverse: Literal[True] = DakotaField(
         default=True,
+        description="Radical inverse ordering of the points of this rank-1 lattice",
         dakota={
             "materialization": [
                 {
@@ -4660,7 +4778,7 @@ class RadicalInverse(DakotaBaseModel):
 
 
 class ReliabilityLevelsReliabilityLevels(DakotaBaseModel):
-    """Generated model for ReliabilityLevelsReliabilityLevels"""
+    "Specify reliability levels at which the response values will be estimated"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CheckSumEqualsLength(
@@ -4680,10 +4798,11 @@ class ReliabilityLevelsReliabilityLevels(DakotaBaseModel):
 
 
 class RngOptionsContext2Mt19937(DakotaBaseModel):
-    """Generated model for RngOptionsContext2Mt19937"""
+    "Generates random numbers using the Mersenne twister"
 
     mt19937: Literal[True] = DakotaField(
         default=True,
+        description="Generates random numbers using the Mersenne twister",
         dakota={
             "materialization": [
                 {
@@ -4698,10 +4817,11 @@ class RngOptionsContext2Mt19937(DakotaBaseModel):
 
 
 class RngOptionsContext2Rnum2(DakotaBaseModel):
-    """Generated model for RngOptionsContext2Rnum2"""
+    "Generates pseudo-random numbers using the Pecos package"
 
     rnum2: Literal[True] = DakotaField(
         default=True,
+        description="Generates pseudo-random numbers using the Pecos package",
         dakota={
             "materialization": [
                 {
@@ -4716,10 +4836,11 @@ class RngOptionsContext2Rnum2(DakotaBaseModel):
 
 
 class RngOptionsContext1Mt19937(DakotaBaseModel):
-    """Generated model for RngOptionsContext1Mt19937"""
+    "Undocumented: Recursive k-d (RKD) Darts is an experimental capability."
 
     mt19937: Literal[True] = DakotaField(
         default=True,
+        description="Undocumented: Recursive k-d (RKD) Darts is an experimental capability.",
         dakota={
             "materialization": [
                 {
@@ -4734,10 +4855,11 @@ class RngOptionsContext1Mt19937(DakotaBaseModel):
 
 
 class RngOptionsContext1Rnum2(DakotaBaseModel):
-    """Generated model for RngOptionsContext1Rnum2"""
+    "Undocumented: Recursive k-d (RKD) Darts is an experimental capability."
 
     rnum2: Literal[True] = DakotaField(
         default=True,
+        description="Undocumented: Recursive k-d (RKD) Darts is an experimental capability.",
         dakota={
             "materialization": [
                 {
@@ -4752,10 +4874,11 @@ class RngOptionsContext1Rnum2(DakotaBaseModel):
 
 
 class SbgoSubProblemSolverGPSurfpack(DakotaBaseModel):
-    """Generated model for SbgoSubProblemSolverGPSurfpack"""
+    "Use the Surfpack version of Gaussian Process surrogates"
 
     surfpack: Literal[True] = DakotaField(
         default=True,
+        description="Use the Surfpack version of Gaussian Process surrogates",
         dakota={
             "materialization": [
                 {
@@ -4770,10 +4893,11 @@ class SbgoSubProblemSolverGPSurfpack(DakotaBaseModel):
 
 
 class SbgoSubProblemSolverGPDakota(DakotaBaseModel):
-    """Generated model for SbgoSubProblemSolverGPDakota"""
+    "Select the built in Gaussian Process surrogate"
 
     dakota: Literal[True] = DakotaField(
         default=True,
+        description="Select the built in Gaussian Process surrogate",
         dakota={
             "materialization": [
                 {
@@ -4788,7 +4912,7 @@ class SbgoSubProblemSolverGPDakota(DakotaBaseModel):
 
 
 class SbgoSubProblemSolverGPExperimentalConfig(DakotaBaseModel):
-    """Generated model for SbgoSubProblemSolverGPExperimentalConfig"""
+    "Use the experimental Gaussian Process surrogate"
 
     options_file: str | None = DakotaField(
         default=None,
@@ -4806,7 +4930,7 @@ class SbgoSubProblemSolverGPExperimentalConfig(DakotaBaseModel):
 
 
 class SbgoSubProblemSolverImportBuildPointsFileCustomAnnotatedConfig(DakotaBaseModel):
-    """Generated model for SbgoSubProblemSolverImportBuildPointsFileCustomAnnotatedConfig"""
+    "Selects custom-annotated tabular file format"
 
     header: Literal[True] | None = DakotaField(
         default=None,
@@ -4853,10 +4977,11 @@ class SbgoSubProblemSolverImportBuildPointsFileCustomAnnotatedConfig(DakotaBaseM
 
 
 class SbgoSubProblemSolverImportBuildPointsFileAnnotated(DakotaBaseModel):
-    """Generated model for SbgoSubProblemSolverImportBuildPointsFileAnnotated"""
+    "Selects annotated tabular file format"
 
     annotated: Literal[True] = DakotaField(
         default=True,
+        description="Selects annotated tabular file format",
         dakota={
             "materialization": [
                 {
@@ -4871,10 +4996,11 @@ class SbgoSubProblemSolverImportBuildPointsFileAnnotated(DakotaBaseModel):
 
 
 class SbgoSubProblemSolverImportBuildPointsFileFreeform(DakotaBaseModel):
-    """Generated model for SbgoSubProblemSolverImportBuildPointsFileFreeform"""
+    "Selects freeform file format"
 
     freeform: Literal[True] = DakotaField(
         default=True,
+        description="Selects freeform file format",
         dakota={
             "materialization": [
                 {
@@ -4889,7 +5015,7 @@ class SbgoSubProblemSolverImportBuildPointsFileFreeform(DakotaBaseModel):
 
 
 class SbgoSubProblemSolverExportApproxPointsFileCustomAnnotatedConfig(DakotaBaseModel):
-    """Generated model for SbgoSubProblemSolverExportApproxPointsFileCustomAnnotatedConfig"""
+    "Selects custom-annotated tabular file format"
 
     header: Literal[True] | None = DakotaField(
         default=None,
@@ -4936,10 +5062,11 @@ class SbgoSubProblemSolverExportApproxPointsFileCustomAnnotatedConfig(DakotaBase
 
 
 class SbgoSubProblemSolverExportApproxPointsFileAnnotated(DakotaBaseModel):
-    """Generated model for SbgoSubProblemSolverExportApproxPointsFileAnnotated"""
+    "Selects annotated tabular file format"
 
     annotated: Literal[True] = DakotaField(
         default=True,
+        description="Selects annotated tabular file format",
         dakota={
             "materialization": [
                 {
@@ -4954,10 +5081,11 @@ class SbgoSubProblemSolverExportApproxPointsFileAnnotated(DakotaBaseModel):
 
 
 class SbgoSubProblemSolverExportApproxPointsFileFreeform(DakotaBaseModel):
-    """Generated model for SbgoSubProblemSolverExportApproxPointsFileFreeform"""
+    "Selects freeform file format"
 
     freeform: Literal[True] = DakotaField(
         default=True,
+        description="Selects freeform file format",
         dakota={
             "materialization": [
                 {
@@ -4974,7 +5102,7 @@ class SbgoSubProblemSolverExportApproxPointsFileFreeform(DakotaBaseModel):
 class SbloSubProblemSolverSbgoExportApproxPointsFileCustomAnnotatedConfig(
     DakotaBaseModel
 ):
-    """Generated model for SbloSubProblemSolverSbgoExportApproxPointsFileCustomAnnotatedConfig"""
+    "Selects custom-annotated tabular file format"
 
     header: Literal[True] | None = DakotaField(
         default=None,
@@ -5021,10 +5149,11 @@ class SbloSubProblemSolverSbgoExportApproxPointsFileCustomAnnotatedConfig(
 
 
 class SbloSubProblemSolverSbgoExportApproxPointsFileAnnotated(DakotaBaseModel):
-    """Generated model for SbloSubProblemSolverSbgoExportApproxPointsFileAnnotated"""
+    "Selects annotated tabular file format"
 
     annotated: Literal[True] = DakotaField(
         default=True,
+        description="Selects annotated tabular file format",
         dakota={
             "materialization": [
                 {
@@ -5039,10 +5168,11 @@ class SbloSubProblemSolverSbgoExportApproxPointsFileAnnotated(DakotaBaseModel):
 
 
 class SbloSubProblemSolverSbgoExportApproxPointsFileFreeform(DakotaBaseModel):
-    """Generated model for SbloSubProblemSolverSbgoExportApproxPointsFileFreeform"""
+    "Selects freeform file format"
 
     freeform: Literal[True] = DakotaField(
         default=True,
+        description="Selects freeform file format",
         dakota={
             "materialization": [
                 {
@@ -5057,10 +5187,11 @@ class SbloSubProblemSolverSbgoExportApproxPointsFileFreeform(DakotaBaseModel):
 
 
 class ScOptionsPiecewise(DakotaBaseModel):
-    """Generated model for ScOptionsPiecewise"""
+    "Use piecewise local basis functions"
 
     piecewise: Literal[True] = DakotaField(
         default=True,
+        description="Use piecewise local basis functions",
         dakota={
             "materialization": [
                 {
@@ -5078,10 +5209,11 @@ class ScOptionsPiecewise(DakotaBaseModel):
 
 
 class ScOptionsAskey(DakotaBaseModel):
-    """Generated model for ScOptionsAskey"""
+    "Select the standardized random variables (and associated basis polynomials) from the Askey family that best match the user-specified random variables."
 
     askey: Literal[True] = DakotaField(
         default=True,
+        description="Select the standardized random variables (and associated basis polynomials) from the Askey family that best match the user-specified random variables.",
         dakota={
             "materialization": [
                 {
@@ -5096,10 +5228,11 @@ class ScOptionsAskey(DakotaBaseModel):
 
 
 class ScOptionsWiener(DakotaBaseModel):
-    """Generated model for ScOptionsWiener"""
+    "Use standard normal random variables (along with Hermite orthogonal basis polynomials) when transforming to a standardized probability space."
 
     wiener: Literal[True] = DakotaField(
         default=True,
+        description="Use standard normal random variables (along with Hermite orthogonal basis polynomials) when transforming to a standardized probability space.",
         dakota={
             "materialization": [
                 {
@@ -5114,10 +5247,11 @@ class ScOptionsWiener(DakotaBaseModel):
 
 
 class ScRefinementPRefinementUniform(DakotaBaseModel):
-    """Generated model for ScRefinementPRefinementUniform"""
+    "Refine an expansion uniformly in all dimensions."
 
     uniform: Literal[True] = DakotaField(
         default=True,
+        description="Refine an expansion uniformly in all dimensions.",
         dakota={
             "materialization": [
                 {
@@ -5133,10 +5267,11 @@ class ScRefinementPRefinementUniform(DakotaBaseModel):
 
 
 class ScRefinementPRefinementDimAdaptiveSobol(DakotaBaseModel):
-    """Generated model for ScRefinementPRefinementDimAdaptiveSobol"""
+    "Estimate dimension preference for automated refinement of stochastic expansion using total Sobol' sensitivity indices."
 
     sobol: Literal[True] = DakotaField(
         default=True,
+        description="Estimate dimension preference for automated refinement of stochastic expansion using total Sobol' sensitivity indices.",
         dakota={
             "materialization": [
                 {
@@ -5152,10 +5287,11 @@ class ScRefinementPRefinementDimAdaptiveSobol(DakotaBaseModel):
 
 
 class ScRefinementPRefinementDimAdaptiveGeneralized(DakotaBaseModel):
-    """Generated model for ScRefinementPRefinementDimAdaptiveGeneralized"""
+    "Use the generalized sparse grid dimension adaptive algorithm to refine a sparse grid approximation of stochastic expansion."
 
     generalized: Literal[True] = DakotaField(
         default=True,
+        description="Use the generalized sparse grid dimension adaptive algorithm to refine a sparse grid approximation of stochastic expansion.",
         dakota={
             "materialization": [
                 {
@@ -5171,10 +5307,11 @@ class ScRefinementPRefinementDimAdaptiveGeneralized(DakotaBaseModel):
 
 
 class HRefinementUniform(DakotaBaseModel):
-    """Generated model for HRefinementUniform"""
+    "Refine an expansion uniformly in all dimensions."
 
     uniform: Literal[True] = DakotaField(
         default=True,
+        description="Refine an expansion uniformly in all dimensions.",
         dakota={
             "materialization": [
                 {
@@ -5190,10 +5327,11 @@ class HRefinementUniform(DakotaBaseModel):
 
 
 class HRefinementDimAdaptiveSobol(DakotaBaseModel):
-    """Generated model for HRefinementDimAdaptiveSobol"""
+    "Estimate dimension preference for automated refinement of stochastic expansion using total Sobol' sensitivity indices."
 
     sobol: Literal[True] = DakotaField(
         default=True,
+        description="Estimate dimension preference for automated refinement of stochastic expansion using total Sobol' sensitivity indices.",
         dakota={
             "materialization": [
                 {
@@ -5209,10 +5347,11 @@ class HRefinementDimAdaptiveSobol(DakotaBaseModel):
 
 
 class HRefinementDimAdaptiveGeneralized(DakotaBaseModel):
-    """Generated model for HRefinementDimAdaptiveGeneralized"""
+    "Use the generalized sparse grid dimension adaptive algorithm to refine a sparse grid approximation of stochastic expansion."
 
     generalized: Literal[True] = DakotaField(
         default=True,
+        description="Use the generalized sparse grid dimension adaptive algorithm to refine a sparse grid approximation of stochastic expansion.",
         dakota={
             "materialization": [
                 {
@@ -5228,10 +5367,11 @@ class HRefinementDimAdaptiveGeneralized(DakotaBaseModel):
 
 
 class ScRefinementHRefinementLocalAdaptive(DakotaBaseModel):
-    """Generated model for ScRefinementHRefinementLocalAdaptive"""
+    "Planned future capability for local pointwise refinement within a generalized sparse grid."
 
     local_adaptive: Literal[True] = DakotaField(
         default=True,
+        description="Planned future capability for local pointwise refinement within a generalized sparse grid.",
         dakota={
             "materialization": [
                 {
@@ -5247,10 +5387,11 @@ class ScRefinementHRefinementLocalAdaptive(DakotaBaseModel):
 
 
 class ScSGLevelNodal(DakotaBaseModel):
-    """Generated model for ScSGLevelNodal"""
+    "Employ a nodal sparse grid construction in stochastic collocation"
 
     nodal: Literal[True] = DakotaField(
         default=True,
+        description="Employ a nodal sparse grid construction in stochastic collocation",
         dakota={
             "materialization": [
                 {
@@ -5266,10 +5407,11 @@ class ScSGLevelNodal(DakotaBaseModel):
 
 
 class ScSGLevelHierarchical(DakotaBaseModel):
-    """Generated model for ScSGLevelHierarchical"""
+    "Employ a hierarchical sparse grid construction"
 
     hierarchical: Literal[True] = DakotaField(
         default=True,
+        description="Employ a hierarchical sparse grid construction",
         dakota={
             "materialization": [
                 {
@@ -5285,10 +5427,11 @@ class ScSGLevelHierarchical(DakotaBaseModel):
 
 
 class ScSGLevelRestricted(DakotaBaseModel):
-    """Generated model for ScSGLevelRestricted"""
+    "Restrict the growth rates for nested and non-nested rules can be synchronized for consistency."
 
     restricted: Literal[True] = DakotaField(
         default=True,
+        description="Restrict the growth rates for nested and non-nested rules can be synchronized for consistency.",
         dakota={
             "materialization": [
                 {
@@ -5304,10 +5447,11 @@ class ScSGLevelRestricted(DakotaBaseModel):
 
 
 class ScSGLevelUnrestricted(DakotaBaseModel):
-    """Generated model for ScSGLevelUnrestricted"""
+    "Overide the default restriction of growth rates for nested and non-nested rules that are by defualt synchronized for consistency."
 
     unrestricted: Literal[True] = DakotaField(
         default=True,
+        description="Overide the default restriction of growth rates for nested and non-nested rules that are by defualt synchronized for consistency.",
         dakota={
             "materialization": [
                 {
@@ -5323,10 +5467,11 @@ class ScSGLevelUnrestricted(DakotaBaseModel):
 
 
 class ScSGLevelNested(DakotaBaseModel):
-    """Generated model for ScSGLevelNested"""
+    "Enforce use of nested quadrature rules if available"
 
     nested: Literal[True] = DakotaField(
         default=True,
+        description="Enforce use of nested quadrature rules if available",
         dakota={
             "materialization": [
                 {
@@ -5342,10 +5487,11 @@ class ScSGLevelNested(DakotaBaseModel):
 
 
 class ScSGLevelNonNested(DakotaBaseModel):
-    """Generated model for ScSGLevelNonNested"""
+    "Enforce use of non-nested quadrature rules"
 
     non_nested: Literal[True] = DakotaField(
         default=True,
+        description="Enforce use of non-nested quadrature rules",
         dakota={
             "materialization": [
                 {
@@ -5361,10 +5507,11 @@ class ScSGLevelNonNested(DakotaBaseModel):
 
 
 class ScSGSequenceLevelSequenceNodal(DakotaBaseModel):
-    """Generated model for ScSGSequenceLevelSequenceNodal"""
+    "Employ a nodal sparse grid construction in stochastic collocation"
 
     nodal: Literal[True] = DakotaField(
         default=True,
+        description="Employ a nodal sparse grid construction in stochastic collocation",
         dakota={
             "materialization": [
                 {
@@ -5380,10 +5527,11 @@ class ScSGSequenceLevelSequenceNodal(DakotaBaseModel):
 
 
 class ScSGSequenceLevelSequenceHierarchical(DakotaBaseModel):
-    """Generated model for ScSGSequenceLevelSequenceHierarchical"""
+    "Employ a hierarchical sparse grid construction"
 
     hierarchical: Literal[True] = DakotaField(
         default=True,
+        description="Employ a hierarchical sparse grid construction",
         dakota={
             "materialization": [
                 {
@@ -5399,10 +5547,11 @@ class ScSGSequenceLevelSequenceHierarchical(DakotaBaseModel):
 
 
 class ScSGSequenceLevelSequenceRestricted(DakotaBaseModel):
-    """Generated model for ScSGSequenceLevelSequenceRestricted"""
+    "Restrict the growth rates for nested and non-nested rules can be synchronized for consistency."
 
     restricted: Literal[True] = DakotaField(
         default=True,
+        description="Restrict the growth rates for nested and non-nested rules can be synchronized for consistency.",
         dakota={
             "materialization": [
                 {
@@ -5418,10 +5567,11 @@ class ScSGSequenceLevelSequenceRestricted(DakotaBaseModel):
 
 
 class ScSGSequenceLevelSequenceUnrestricted(DakotaBaseModel):
-    """Generated model for ScSGSequenceLevelSequenceUnrestricted"""
+    "Overide the default restriction of growth rates for nested and non-nested rules that are by defualt synchronized for consistency."
 
     unrestricted: Literal[True] = DakotaField(
         default=True,
+        description="Overide the default restriction of growth rates for nested and non-nested rules that are by defualt synchronized for consistency.",
         dakota={
             "materialization": [
                 {
@@ -5437,10 +5587,11 @@ class ScSGSequenceLevelSequenceUnrestricted(DakotaBaseModel):
 
 
 class ScSGSequenceLevelSequenceNested(DakotaBaseModel):
-    """Generated model for ScSGSequenceLevelSequenceNested"""
+    "Enforce use of nested quadrature rules if available"
 
     nested: Literal[True] = DakotaField(
         default=True,
+        description="Enforce use of nested quadrature rules if available",
         dakota={
             "materialization": [
                 {
@@ -5456,10 +5607,11 @@ class ScSGSequenceLevelSequenceNested(DakotaBaseModel):
 
 
 class ScSGSequenceLevelSequenceNonNested(DakotaBaseModel):
-    """Generated model for ScSGSequenceLevelSequenceNonNested"""
+    "Enforce use of non-nested quadrature rules"
 
     non_nested: Literal[True] = DakotaField(
         default=True,
+        description="Enforce use of non-nested quadrature rules",
         dakota={
             "materialization": [
                 {
@@ -5475,10 +5627,11 @@ class ScSGSequenceLevelSequenceNonNested(DakotaBaseModel):
 
 
 class ScSparseInterpolantNodal(DakotaBaseModel):
-    """Generated model for ScSparseInterpolantNodal"""
+    "Employ a nodal sparse grid construction in stochastic collocation"
 
     nodal: Literal[True] = DakotaField(
         default=True,
+        description="Employ a nodal sparse grid construction in stochastic collocation",
         dakota={
             "materialization": [
                 {
@@ -5494,10 +5647,11 @@ class ScSparseInterpolantNodal(DakotaBaseModel):
 
 
 class ScSparseInterpolantHierarchical(DakotaBaseModel):
-    """Generated model for ScSparseInterpolantHierarchical"""
+    "Employ a hierarchical sparse grid construction"
 
     hierarchical: Literal[True] = DakotaField(
         default=True,
+        description="Employ a hierarchical sparse grid construction",
         dakota={
             "materialization": [
                 {
@@ -5513,7 +5667,7 @@ class ScSparseInterpolantHierarchical(DakotaBaseModel):
 
 
 class BinnedConfig(DakotaBaseModel):
-    """Generated model for BinnedConfig"""
+    "Computes Sobol' main effects using a binned approach"
 
     num_bins: int = DakotaField(
         default=-1,
@@ -5531,10 +5685,11 @@ class BinnedConfig(DakotaBaseModel):
 
 
 class PickAndFreeze(DakotaBaseModel):
-    """Generated model for PickAndFreeze"""
+    "Use the pick-and-freeze variance-based decomposition method"
 
     pick_and_freeze: Literal[True] = DakotaField(
         default=True,
+        description="Use the pick-and-freeze variance-based decomposition method",
         dakota={
             "materialization": [
                 {
@@ -5557,13 +5712,13 @@ class MethodDotCommonOptsMixin(
     MethodMaxIterationsContext1Mixin,
     MethodOptionalModelPointerMixin,
 ):
-    """Generated model for MethodDotCommonOptsMixin"""
+    "Generated model for MethodDotCommonOptsMixin"
 
     pass
 
 
 class DefaultFinalMomentsMixin(DakotaBaseModel):
-    """Generated model for DefaultFinalMomentsMixin"""
+    "Generated model for DefaultFinalMomentsMixin"
 
     final_moments: Union[
         DefaultFinalMomentsNoneKeyword,
@@ -5577,7 +5732,7 @@ class DefaultFinalMomentsMixin(DakotaBaseModel):
 
 
 class DefaultTrustRegionContext1Mixin(DakotaBaseModel):
-    """Generated model for DefaultTrustRegionContext1Mixin"""
+    "Generated model for DefaultTrustRegionContext1Mixin"
 
     trust_region: DefaultTrustRegionContext1TrustRegion | None = DakotaField(
         default=None,
@@ -5586,7 +5741,7 @@ class DefaultTrustRegionContext1Mixin(DakotaBaseModel):
 
 
 class DefaultTrustRegionContext2Mixin(DakotaBaseModel):
-    """Generated model for DefaultTrustRegionContext2Mixin"""
+    "Generated model for DefaultTrustRegionContext2Mixin"
 
     trust_region: DefaultTrustRegionContext2TrustRegion | None = DakotaField(
         default=None, description="Use trust region as the globalization strategy."
@@ -5594,13 +5749,15 @@ class DefaultTrustRegionContext2Mixin(DakotaBaseModel):
 
 
 class GeneratingMatricesPredefined(DakotaBaseModel):
-    """Generated model for GeneratingMatricesPredefined"""
+    "Specify predefined generating matrices"
 
-    predefined: Union[JoeKuo, SobolOrder2]
+    predefined: Union[JoeKuo, SobolOrder2] = DakotaField(
+        description="Specify predefined generating matrices"
+    )
 
 
 class DiscrepEmulationMixin(DakotaBaseModel):
-    """Generated model for DiscrepEmulationMixin"""
+    "Generated model for DiscrepEmulationMixin"
 
     discrepancy_emulation: (
         Union[
@@ -5616,7 +5773,7 @@ class DiscrepEmulationMixin(DakotaBaseModel):
 
 
 class DistributionCumulComplContext2Mixin(DakotaBaseModel):
-    """Generated model for DistributionCumulComplContext2Mixin"""
+    "Generated model for DistributionCumulComplContext2Mixin"
 
     distribution: Union[
         DistributionCumulComplContext2Cumulative,
@@ -5632,7 +5789,7 @@ class DistributionCumulComplContext2Mixin(DakotaBaseModel):
 
 
 class DistributionCumulComplContext1Mixin(DakotaBaseModel):
-    """Generated model for DistributionCumulComplContext1Mixin"""
+    "Generated model for DistributionCumulComplContext1Mixin"
 
     distribution: Union[
         DistributionCumulComplContext1Cumulative,
@@ -5648,7 +5805,7 @@ class DistributionCumulComplContext1Mixin(DakotaBaseModel):
 
 
 class EgoSubProblemSolverContext2GPSurfpackExportModel(DakotaBaseModel):
-    """Generated model for EgoSubProblemSolverContext2GPSurfpackExportModel"""
+    "Exports surrogate model in user-specified format(s)"
 
     filename_prefix: str = DakotaField(
         default="exported_surrogate",
@@ -5669,7 +5826,7 @@ class EgoSubProblemSolverContext2GPSurfpackExportModel(DakotaBaseModel):
 
 
 class EgoSubProblemSolverContext2GPExperimentalExportModel(DakotaBaseModel):
-    """Generated model for EgoSubProblemSolverContext2GPExperimentalExportModel"""
+    "Exports surrogate model in user-specified format(s)"
 
     filename_prefix: str = DakotaField(
         default="exported_surrogate",
@@ -5690,7 +5847,7 @@ class EgoSubProblemSolverContext2GPExperimentalExportModel(DakotaBaseModel):
 
 
 class EgoSubProblemSolverContext2ImportBuildPointsFileCustomAnnotated(DakotaBaseModel):
-    """Generated model for EgoSubProblemSolverContext2ImportBuildPointsFileCustomAnnotated"""
+    "Selects custom-annotated tabular file format"
 
     custom_annotated: EgoSubProblemSolverContext2ImportBuildPointsFileCustomAnnotatedConfig = DakotaField(
         default_factory=EgoSubProblemSolverContext2ImportBuildPointsFileCustomAnnotatedConfig,
@@ -5710,7 +5867,7 @@ class EgoSubProblemSolverContext2ImportBuildPointsFileCustomAnnotated(DakotaBase
 
 
 class EgoSubProblemSolverContext2ExportApproxPointsFileCustomAnnotated(DakotaBaseModel):
-    """Generated model for EgoSubProblemSolverContext2ExportApproxPointsFileCustomAnnotated"""
+    "Selects custom-annotated tabular file format"
 
     custom_annotated: EgoSubProblemSolverContext2ExportApproxPointsFileCustomAnnotatedConfig = DakotaField(
         default_factory=EgoSubProblemSolverContext2ExportApproxPointsFileCustomAnnotatedConfig,
@@ -5730,7 +5887,7 @@ class EgoSubProblemSolverContext2ExportApproxPointsFileCustomAnnotated(DakotaBas
 
 
 class EgoSubProblemSolverContext1GPSurfpackExportModel(DakotaBaseModel):
-    """Generated model for EgoSubProblemSolverContext1GPSurfpackExportModel"""
+    "export_model not active"
 
     filename_prefix: str = DakotaField(
         default="exported_surrogate",
@@ -5751,7 +5908,7 @@ class EgoSubProblemSolverContext1GPSurfpackExportModel(DakotaBaseModel):
 
 
 class EgoSubProblemSolverContext1GPExperimentalExportModel(DakotaBaseModel):
-    """Generated model for EgoSubProblemSolverContext1GPExperimentalExportModel"""
+    "export_model not active"
 
     filename_prefix: str = DakotaField(
         default="exported_surrogate",
@@ -5772,7 +5929,7 @@ class EgoSubProblemSolverContext1GPExperimentalExportModel(DakotaBaseModel):
 
 
 class EgoSubProblemSolverContext1ImportBuildPointsFileCustomAnnotated(DakotaBaseModel):
-    """Generated model for EgoSubProblemSolverContext1ImportBuildPointsFileCustomAnnotated"""
+    "Selects custom-annotated tabular file format"
 
     custom_annotated: EgoSubProblemSolverContext1ImportBuildPointsFileCustomAnnotatedConfig = DakotaField(
         default_factory=EgoSubProblemSolverContext1ImportBuildPointsFileCustomAnnotatedConfig,
@@ -5792,7 +5949,7 @@ class EgoSubProblemSolverContext1ImportBuildPointsFileCustomAnnotated(DakotaBase
 
 
 class EgoSubProblemSolverContext1ExportApproxPointsFileCustomAnnotated(DakotaBaseModel):
-    """Generated model for EgoSubProblemSolverContext1ExportApproxPointsFileCustomAnnotated"""
+    "Selects custom-annotated tabular file format"
 
     custom_annotated: EgoSubProblemSolverContext1ExportApproxPointsFileCustomAnnotatedConfig = DakotaField(
         default_factory=EgoSubProblemSolverContext1ExportApproxPointsFileCustomAnnotatedConfig,
@@ -5812,7 +5969,7 @@ class EgoSubProblemSolverContext1ExportApproxPointsFileCustomAnnotated(DakotaBas
 
 
 class GenReliabilityLevelsMixin(DakotaBaseModel):
-    """Generated model for GenReliabilityLevelsMixin"""
+    "Generated model for GenReliabilityLevelsMixin"
 
     gen_reliability_levels: GenReliabilityLevelsGenReliabilityLevels | None = (
         DakotaField(
@@ -5833,7 +5990,7 @@ class GenReliabilityLevelsMixin(DakotaBaseModel):
 
 
 class ImportBuildPointsFileCustomAnnotated(DakotaBaseModel):
-    """Generated model for ImportBuildPointsFileCustomAnnotated"""
+    "Selects custom-annotated tabular file format"
 
     custom_annotated: ImportBuildPointsFileCustomAnnotatedConfig = DakotaField(
         default_factory=ImportBuildPointsFileCustomAnnotatedConfig,
@@ -5853,7 +6010,7 @@ class ImportBuildPointsFileCustomAnnotated(DakotaBaseModel):
 
 
 class MethodCovTypeMixin(DakotaBaseModel):
-    """Generated model for MethodCovTypeMixin"""
+    "Generated model for MethodCovTypeMixin"
 
     covariance_type: Union[MethodCovTypeDiagCov, MethodCovTypeFullCov] | None = (
         DakotaField(
@@ -5865,7 +6022,7 @@ class MethodCovTypeMixin(DakotaBaseModel):
 
 
 class MethodExportModelContext2ExportModel(DakotaBaseModel):
-    """Generated model for MethodExportModelContext2ExportModel"""
+    "export_model not active"
 
     filename_prefix: str = DakotaField(
         default="exported_surrogate",
@@ -5886,7 +6043,7 @@ class MethodExportModelContext2ExportModel(DakotaBaseModel):
 
 
 class MethodExportModelContext1ExportModel(DakotaBaseModel):
-    """Generated model for MethodExportModelContext1ExportModel"""
+    "Exports surrogate model in user-specified format(s)"
 
     filename_prefix: str = DakotaField(
         default="exported_surrogate",
@@ -5907,7 +6064,7 @@ class MethodExportModelContext1ExportModel(DakotaBaseModel):
 
 
 class MethodGPGP(DakotaBaseModel):
-    """Generated model for MethodGPGP"""
+    "gaussian_process"
 
     implementation: Union[MethodGPSurfpack, MethodGPDakota] = DakotaField(
         default=..., description="GP Implementation", dakota={"anchor": True}
@@ -5915,7 +6072,7 @@ class MethodGPGP(DakotaBaseModel):
 
 
 class MethodGlobalSubProblemSolverContext2SbgoGPExperimental(DakotaBaseModel):
-    """Generated model for MethodGlobalSubProblemSolverContext2SbgoGPExperimental"""
+    "Use the experimental Gaussian Process surrogate"
 
     experimental: MethodGlobalSubProblemSolverContext2SbgoGPExperimentalConfig = (
         DakotaField(
@@ -5937,7 +6094,7 @@ class MethodGlobalSubProblemSolverContext2SbgoGPExperimental(DakotaBaseModel):
 class MethodGlobalSubProblemSolverContext2SbgoImportBuildPointsFileCustomAnnotated(
     DakotaBaseModel
 ):
-    """Generated model for MethodGlobalSubProblemSolverContext2SbgoImportBuildPointsFileCustomAnnotated"""
+    "Selects custom-annotated tabular file format"
 
     custom_annotated: MethodGlobalSubProblemSolverContext2SbgoImportBuildPointsFileCustomAnnotatedConfig = DakotaField(
         default_factory=MethodGlobalSubProblemSolverContext2SbgoImportBuildPointsFileCustomAnnotatedConfig,
@@ -5959,7 +6116,7 @@ class MethodGlobalSubProblemSolverContext2SbgoImportBuildPointsFileCustomAnnotat
 class MethodGlobalSubProblemSolverContext2SbgoExportApproxPointsFileCustomAnnotated(
     DakotaBaseModel
 ):
-    """Generated model for MethodGlobalSubProblemSolverContext2SbgoExportApproxPointsFileCustomAnnotated"""
+    "Selects custom-annotated tabular file format"
 
     custom_annotated: MethodGlobalSubProblemSolverContext2SbgoExportApproxPointsFileCustomAnnotatedConfig = DakotaField(
         default_factory=MethodGlobalSubProblemSolverContext2SbgoExportApproxPointsFileCustomAnnotatedConfig,
@@ -5979,7 +6136,7 @@ class MethodGlobalSubProblemSolverContext2SbgoExportApproxPointsFileCustomAnnota
 
 
 class MethodGlobalSubProblemSolverContext2EgoGPSurfpackExportModel(DakotaBaseModel):
-    """Generated model for MethodGlobalSubProblemSolverContext2EgoGPSurfpackExportModel"""
+    "Exports surrogate model in user-specified format(s)"
 
     filename_prefix: str = DakotaField(
         default="exported_surrogate",
@@ -6000,7 +6157,7 @@ class MethodGlobalSubProblemSolverContext2EgoGPSurfpackExportModel(DakotaBaseMod
 
 
 class MethodGlobalSubProblemSolverContext2EgoGPExperimentalExportModel(DakotaBaseModel):
-    """Generated model for MethodGlobalSubProblemSolverContext2EgoGPExperimentalExportModel"""
+    "Exports surrogate model in user-specified format(s)"
 
     filename_prefix: str = DakotaField(
         default="exported_surrogate",
@@ -6023,7 +6180,7 @@ class MethodGlobalSubProblemSolverContext2EgoGPExperimentalExportModel(DakotaBas
 class MethodGlobalSubProblemSolverContext2EgoImportBuildPointsFileCustomAnnotated(
     DakotaBaseModel
 ):
-    """Generated model for MethodGlobalSubProblemSolverContext2EgoImportBuildPointsFileCustomAnnotated"""
+    "Selects custom-annotated tabular file format"
 
     custom_annotated: MethodGlobalSubProblemSolverContext2EgoImportBuildPointsFileCustomAnnotatedConfig = DakotaField(
         default_factory=MethodGlobalSubProblemSolverContext2EgoImportBuildPointsFileCustomAnnotatedConfig,
@@ -6045,7 +6202,7 @@ class MethodGlobalSubProblemSolverContext2EgoImportBuildPointsFileCustomAnnotate
 class MethodGlobalSubProblemSolverContext2EgoExportApproxPointsFileCustomAnnotated(
     DakotaBaseModel
 ):
-    """Generated model for MethodGlobalSubProblemSolverContext2EgoExportApproxPointsFileCustomAnnotated"""
+    "Selects custom-annotated tabular file format"
 
     custom_annotated: MethodGlobalSubProblemSolverContext2EgoExportApproxPointsFileCustomAnnotatedConfig = DakotaField(
         default_factory=MethodGlobalSubProblemSolverContext2EgoExportApproxPointsFileCustomAnnotatedConfig,
@@ -6065,7 +6222,7 @@ class MethodGlobalSubProblemSolverContext2EgoExportApproxPointsFileCustomAnnotat
 
 
 class MethodGlobalSubProblemSolverContext1SbgoGPExperimental(DakotaBaseModel):
-    """Generated model for MethodGlobalSubProblemSolverContext1SbgoGPExperimental"""
+    "Use the experimental Gaussian Process surrogate"
 
     experimental: MethodGlobalSubProblemSolverContext1SbgoGPExperimentalConfig = (
         DakotaField(
@@ -6087,7 +6244,7 @@ class MethodGlobalSubProblemSolverContext1SbgoGPExperimental(DakotaBaseModel):
 class MethodGlobalSubProblemSolverContext1SbgoImportBuildPointsFileCustomAnnotated(
     DakotaBaseModel
 ):
-    """Generated model for MethodGlobalSubProblemSolverContext1SbgoImportBuildPointsFileCustomAnnotated"""
+    "Selects custom-annotated tabular file format"
 
     custom_annotated: MethodGlobalSubProblemSolverContext1SbgoImportBuildPointsFileCustomAnnotatedConfig = DakotaField(
         default_factory=MethodGlobalSubProblemSolverContext1SbgoImportBuildPointsFileCustomAnnotatedConfig,
@@ -6109,7 +6266,7 @@ class MethodGlobalSubProblemSolverContext1SbgoImportBuildPointsFileCustomAnnotat
 class MethodGlobalSubProblemSolverContext1SbgoExportApproxPointsFileCustomAnnotated(
     DakotaBaseModel
 ):
-    """Generated model for MethodGlobalSubProblemSolverContext1SbgoExportApproxPointsFileCustomAnnotated"""
+    "Selects custom-annotated tabular file format"
 
     custom_annotated: MethodGlobalSubProblemSolverContext1SbgoExportApproxPointsFileCustomAnnotatedConfig = DakotaField(
         default_factory=MethodGlobalSubProblemSolverContext1SbgoExportApproxPointsFileCustomAnnotatedConfig,
@@ -6129,7 +6286,7 @@ class MethodGlobalSubProblemSolverContext1SbgoExportApproxPointsFileCustomAnnota
 
 
 class MethodGlobalSubProblemSolverContext1EgoGPSurfpackExportModel(DakotaBaseModel):
-    """Generated model for MethodGlobalSubProblemSolverContext1EgoGPSurfpackExportModel"""
+    "export_model not active"
 
     filename_prefix: str = DakotaField(
         default="exported_surrogate",
@@ -6150,7 +6307,7 @@ class MethodGlobalSubProblemSolverContext1EgoGPSurfpackExportModel(DakotaBaseMod
 
 
 class MethodGlobalSubProblemSolverContext1EgoGPExperimentalExportModel(DakotaBaseModel):
-    """Generated model for MethodGlobalSubProblemSolverContext1EgoGPExperimentalExportModel"""
+    "export_model not active"
 
     filename_prefix: str = DakotaField(
         default="exported_surrogate",
@@ -6173,7 +6330,7 @@ class MethodGlobalSubProblemSolverContext1EgoGPExperimentalExportModel(DakotaBas
 class MethodGlobalSubProblemSolverContext1EgoImportBuildPointsFileCustomAnnotated(
     DakotaBaseModel
 ):
-    """Generated model for MethodGlobalSubProblemSolverContext1EgoImportBuildPointsFileCustomAnnotated"""
+    "Selects custom-annotated tabular file format"
 
     custom_annotated: MethodGlobalSubProblemSolverContext1EgoImportBuildPointsFileCustomAnnotatedConfig = DakotaField(
         default_factory=MethodGlobalSubProblemSolverContext1EgoImportBuildPointsFileCustomAnnotatedConfig,
@@ -6195,7 +6352,7 @@ class MethodGlobalSubProblemSolverContext1EgoImportBuildPointsFileCustomAnnotate
 class MethodGlobalSubProblemSolverContext1EgoExportApproxPointsFileCustomAnnotated(
     DakotaBaseModel
 ):
-    """Generated model for MethodGlobalSubProblemSolverContext1EgoExportApproxPointsFileCustomAnnotated"""
+    "Selects custom-annotated tabular file format"
 
     custom_annotated: MethodGlobalSubProblemSolverContext1EgoExportApproxPointsFileCustomAnnotatedConfig = DakotaField(
         default_factory=MethodGlobalSubProblemSolverContext1EgoExportApproxPointsFileCustomAnnotatedConfig,
@@ -6215,7 +6372,7 @@ class MethodGlobalSubProblemSolverContext1EgoExportApproxPointsFileCustomAnnotat
 
 
 class MethodGpAlternativesNoExportGPExperimental(DakotaBaseModel):
-    """Generated model for MethodGpAlternativesNoExportGPExperimental"""
+    "Use the experimental Gaussian Process surrogate"
 
     experimental: MethodGpAlternativesNoExportGPExperimentalConfig = DakotaField(
         description="Use the experimental Gaussian Process surrogate",
@@ -6233,7 +6390,7 @@ class MethodGpAlternativesNoExportGPExperimental(DakotaBaseModel):
 
 
 class MethodGpAlternativesWithExportContext2GPSurfpackExportModel(DakotaBaseModel):
-    """Generated model for MethodGpAlternativesWithExportContext2GPSurfpackExportModel"""
+    "Exports surrogate model in user-specified format(s)"
 
     filename_prefix: str = DakotaField(
         default="exported_surrogate",
@@ -6254,7 +6411,7 @@ class MethodGpAlternativesWithExportContext2GPSurfpackExportModel(DakotaBaseMode
 
 
 class MethodGpAlternativesWithExportContext2GPExperimentalExportModel(DakotaBaseModel):
-    """Generated model for MethodGpAlternativesWithExportContext2GPExperimentalExportModel"""
+    "Exports surrogate model in user-specified format(s)"
 
     filename_prefix: str = DakotaField(
         default="exported_surrogate",
@@ -6275,7 +6432,7 @@ class MethodGpAlternativesWithExportContext2GPExperimentalExportModel(DakotaBase
 
 
 class MethodGpAlternativesWithExportContext1GPSurfpackExportModel(DakotaBaseModel):
-    """Generated model for MethodGpAlternativesWithExportContext1GPSurfpackExportModel"""
+    "export_model not active"
 
     filename_prefix: str = DakotaField(
         default="exported_surrogate",
@@ -6296,7 +6453,7 @@ class MethodGpAlternativesWithExportContext1GPSurfpackExportModel(DakotaBaseMode
 
 
 class MethodGpAlternativesWithExportContext1GPExperimentalExportModel(DakotaBaseModel):
-    """Generated model for MethodGpAlternativesWithExportContext1GPExperimentalExportModel"""
+    "export_model not active"
 
     filename_prefix: str = DakotaField(
         default="exported_surrogate",
@@ -6317,7 +6474,7 @@ class MethodGpAlternativesWithExportContext1GPExperimentalExportModel(DakotaBase
 
 
 class MethodGradientSubProblemSolverMixin(DakotaBaseModel):
-    """Generated model for MethodGradientSubProblemSolverMixin"""
+    "Generated model for MethodGradientSubProblemSolverMixin"
 
     optimization_solver: (
         Union[MethodGradientSubProblemSolverSqp, MethodGradientSubProblemSolverNip]
@@ -6330,7 +6487,7 @@ class MethodGradientSubProblemSolverMixin(DakotaBaseModel):
 
 
 class MethodIteratorServerSchedulingMixin(DakotaBaseModel):
-    """Generated model for MethodIteratorServerSchedulingMixin"""
+    "Generated model for MethodIteratorServerSchedulingMixin"
 
     iterator_servers: int | None = DakotaField(
         default=None,
@@ -6373,7 +6530,7 @@ class MethodIteratorServerSchedulingMixin(DakotaBaseModel):
 
 
 class ShuffleRandom(DakotaBaseModel):
-    """Generated model for ShuffleRandom"""
+    "Perform crossover by choosing design variable(s)"
 
     shuffle_random: ShuffleRandomConfig = DakotaField(
         description="Perform crossover by choosing design variable(s)",
@@ -6391,7 +6548,7 @@ class ShuffleRandom(DakotaBaseModel):
 
 
 class MethodJegaCommonOptsMutationTypeOffsetNormal(DakotaBaseModel):
-    """Generated model for MethodJegaCommonOptsMutationTypeOffsetNormal"""
+    "Set mutation offset to use a normal distribution"
 
     offset_normal: OffsetNormalConfig = DakotaField(
         description="Set mutation offset to use a normal distribution",
@@ -6409,7 +6566,7 @@ class MethodJegaCommonOptsMutationTypeOffsetNormal(DakotaBaseModel):
 
 
 class MethodJegaCommonOptsMutationTypeOffsetCauchy(DakotaBaseModel):
-    """Generated model for MethodJegaCommonOptsMutationTypeOffsetCauchy"""
+    "Use a Cauchy distribution for the mutation offset"
 
     offset_cauchy: OffsetNormalConfig = DakotaField(
         description="Use a Cauchy distribution for the mutation offset",
@@ -6427,7 +6584,7 @@ class MethodJegaCommonOptsMutationTypeOffsetCauchy(DakotaBaseModel):
 
 
 class MethodJegaCommonOptsMutationTypeOffsetUniform(DakotaBaseModel):
-    """Generated model for MethodJegaCommonOptsMutationTypeOffsetUniform"""
+    "Set mutation offset to use a uniform distribution"
 
     offset_uniform: OffsetNormalConfig = DakotaField(
         description="Set mutation offset to use a uniform distribution",
@@ -6445,7 +6602,7 @@ class MethodJegaCommonOptsMutationTypeOffsetUniform(DakotaBaseModel):
 
 
 class MethodMlmfSolverMetricNormEstimatorVariance(DakotaBaseModel):
-    """Generated model for MethodMlmfSolverMetricNormEstimatorVariance"""
+    "Utilize a p-norm over the vector of QoI estimator variances as the solver metric for sampling-based multifidelity methods."
 
     norm_estimator_variance: MethodMlmfSolverMetricNormEstimatorVarianceConfig = DakotaField(
         description="Utilize a p-norm over the vector of QoI estimator variances as the solver metric for sampling-based multifidelity methods.",
@@ -6463,7 +6620,7 @@ class MethodMlmfSolverMetricNormEstimatorVariance(DakotaBaseModel):
 
 
 class MethodMlmfSubProblemSolverMixin(DakotaBaseModel):
-    """Generated model for MethodMlmfSubProblemSolverMixin"""
+    "Generated model for MethodMlmfSubProblemSolverMixin"
 
     optimization_solver: (
         Union[
@@ -6481,7 +6638,7 @@ class MethodMlmfSubProblemSolverMixin(DakotaBaseModel):
 
 
 class MethodOptppNewtonOptsMixin(DakotaBaseModel):
-    """Generated model for MethodOptppNewtonOptsMixin"""
+    "Generated model for MethodOptppNewtonOptsMixin"
 
     search_method: (
         Union[
@@ -6530,7 +6687,7 @@ class MethodOptppNewtonOptsMixin(DakotaBaseModel):
 
 
 class MethodSynchronizationMixin(DakotaBaseModel):
-    """Generated model for MethodSynchronizationMixin"""
+    "Generated model for MethodSynchronizationMixin"
 
     synchronization: Union[Blocking, Nonblocking] | None = DakotaField(
         default=None,
@@ -6540,7 +6697,7 @@ class MethodSynchronizationMixin(DakotaBaseModel):
 
 
 class MethodThreeOptionalKeywordsMixin(DakotaBaseModel):
-    """Generated model for MethodThreeOptionalKeywordsMixin"""
+    "Generated model for MethodThreeOptionalKeywordsMixin"
 
     id_method: str | None = DakotaField(
         default=None,
@@ -6577,7 +6734,7 @@ class MethodThreeOptionalKeywordsMixin(DakotaBaseModel):
 
 
 class MfAllocControlContext2Mixin(DakotaBaseModel):
-    """Generated model for MfAllocControlContext2Mixin"""
+    "Generated model for MfAllocControlContext2Mixin"
 
     allocation_control: Union[MfAllocControlContext2AllocationControlGreedy] | None = (
         DakotaField(
@@ -6589,7 +6746,7 @@ class MfAllocControlContext2Mixin(DakotaBaseModel):
 
 
 class MfAllocControlContext1Mixin(DakotaBaseModel):
-    """Generated model for MfAllocControlContext1Mixin"""
+    "Generated model for MfAllocControlContext1Mixin"
 
     allocation_control: Union[MfAllocControlContext1AllocationControlGreedy] | None = (
         DakotaField(
@@ -6601,7 +6758,7 @@ class MfAllocControlContext1Mixin(DakotaBaseModel):
 
 
 class MfAllocControlContext3Mixin(DakotaBaseModel):
-    """Generated model for MfAllocControlContext3Mixin"""
+    "Generated model for MfAllocControlContext3Mixin"
 
     allocation_control: Union[MfAllocControlContext3AllocationControlGreedy] | None = (
         DakotaField(
@@ -6613,7 +6770,7 @@ class MfAllocControlContext3Mixin(DakotaBaseModel):
 
 
 class MlmfFinalStatsStatisticsQoiStatisticsConfig(DakotaBaseModel):
-    """Generated model for MlmfFinalStatsStatisticsQoiStatisticsConfig"""
+    "Return the quantity of interest (QoI) statistics as the final results of a UQ method"
 
     final_moments: Union[
         MlmfFinalStatsStatisticsQoiStatisticsFinalMomentsNoneKeyword,
@@ -6641,7 +6798,7 @@ class MlmfFinalStatsStatisticsQoiStatisticsConfig(DakotaBaseModel):
 
 
 class MlmfGroupThrottleMixin(DakotaBaseModel):
-    """Generated model for MlmfGroupThrottleMixin"""
+    "Generated model for MlmfGroupThrottleMixin"
 
     group_throttle: (
         Union[MfmcGroups, CommonGroups, GroupSize, BestConditioned, RcondTol] | None
@@ -6653,7 +6810,7 @@ class MlmfGroupThrottleMixin(DakotaBaseModel):
 
 
 class MlmfRelaxationMixin(DakotaBaseModel):
-    """Generated model for MlmfRelaxationMixin"""
+    "Generated model for MlmfRelaxationMixin"
 
     relaxation: (
         Union[
@@ -6670,7 +6827,7 @@ class MlmfRelaxationMixin(DakotaBaseModel):
 
 
 class OnlinePilotFinalStatisticsQoiStatisticsConfig(DakotaBaseModel):
-    """Generated model for OnlinePilotFinalStatisticsQoiStatisticsConfig"""
+    "Return the quantity of interest (QoI) statistics as the final results of a UQ method"
 
     final_moments: Union[
         OnlinePilotFinalStatisticsQoiStatisticsFinalMomentsNone,
@@ -6698,7 +6855,7 @@ class OnlinePilotFinalStatisticsQoiStatisticsConfig(DakotaBaseModel):
 
 
 class OfflinePilotFinalStatisticsQoiStatisticsConfig(DakotaBaseModel):
-    """Generated model for OfflinePilotFinalStatisticsQoiStatisticsConfig"""
+    "Return the quantity of interest (QoI) statistics as the final results of a UQ method"
 
     final_moments: Union[
         OnlinePilotFinalStatisticsQoiStatisticsFinalMomentsNone,
@@ -6726,7 +6883,7 @@ class OfflinePilotFinalStatisticsQoiStatisticsConfig(DakotaBaseModel):
 
 
 class ExportApproxVarianceFileCustomAnnotated(DakotaBaseModel):
-    """Generated model for ExportApproxVarianceFileCustomAnnotated"""
+    "Selects custom-annotated tabular file format"
 
     custom_annotated: ExportApproxVarianceFileCustomAnnotatedConfig = DakotaField(
         default_factory=ExportApproxVarianceFileCustomAnnotatedConfig,
@@ -6746,7 +6903,7 @@ class ExportApproxVarianceFileCustomAnnotated(DakotaBaseModel):
 
 
 class ProbabilityLevelsContext1Mixin(DakotaBaseModel):
-    """Generated model for ProbabilityLevelsContext1Mixin"""
+    "Generated model for ProbabilityLevelsContext1Mixin"
 
     probability_levels: ProbabilityLevelsContext1ProbabilityLevels | None = DakotaField(
         default=None,
@@ -6765,7 +6922,7 @@ class ProbabilityLevelsContext1Mixin(DakotaBaseModel):
 
 
 class ProbabilityLevelsContext2Mixin(DakotaBaseModel):
-    """Generated model for ProbabilityLevelsContext2Mixin"""
+    "Generated model for ProbabilityLevelsContext2Mixin"
 
     probability_levels: ProbabilityLevelsContext2ProbabilityLevels | None = DakotaField(
         default=None,
@@ -6784,7 +6941,7 @@ class ProbabilityLevelsContext2Mixin(DakotaBaseModel):
 
 
 class PromotedModelSelectionContext2SearchModelGraphs(DakotaBaseModel):
-    """Generated model for PromotedModelSelectionContext2SearchModelGraphs"""
+    "For weighted multilevel Monte Carlo, this option activates a search over possible hierarchical model graphs"
 
     model_selection: Literal[True] | None = DakotaField(
         default=None,
@@ -6810,7 +6967,7 @@ class PromotedModelSelectionContext2SearchModelGraphs(DakotaBaseModel):
 
 
 class PromotedModelSelectionContext1SearchModelGraphs(DakotaBaseModel):
-    """Generated model for PromotedModelSelectionContext1SearchModelGraphs"""
+    "Perform a search over admissible model relationships for a given model ensemble"
 
     model_selection: Literal[True] | None = DakotaField(
         default=None,
@@ -6836,13 +6993,15 @@ class PromotedModelSelectionContext1SearchModelGraphs(DakotaBaseModel):
 
 
 class GeneratingVectorPredefined(DakotaBaseModel):
-    """Generated model for GeneratingVectorPredefined"""
+    "Specify a predefined generating vector"
 
-    predefined: Union[Kuo, CoolsKuoNuyens]
+    predefined: Union[Kuo, CoolsKuoNuyens] = DakotaField(
+        description="Specify a predefined generating vector"
+    )
 
 
 class ReliabilityLevelsMixin(DakotaBaseModel):
-    """Generated model for ReliabilityLevelsMixin"""
+    "Generated model for ReliabilityLevelsMixin"
 
     reliability_levels: ReliabilityLevelsReliabilityLevels | None = DakotaField(
         default=None,
@@ -6861,7 +7020,7 @@ class ReliabilityLevelsMixin(DakotaBaseModel):
 
 
 class RngOptionsContext2Mixin(DakotaBaseModel):
-    """Generated model for RngOptionsContext2Mixin"""
+    "Generated model for RngOptionsContext2Mixin"
 
     rng: Union[RngOptionsContext2Mt19937, RngOptionsContext2Rnum2] = DakotaField(
         default_factory=RngOptionsContext2Mt19937,
@@ -6871,7 +7030,7 @@ class RngOptionsContext2Mixin(DakotaBaseModel):
 
 
 class RngOptionsContext1Mixin(DakotaBaseModel):
-    """Generated model for RngOptionsContext1Mixin"""
+    "Generated model for RngOptionsContext1Mixin"
 
     rng: Union[RngOptionsContext1Mt19937, RngOptionsContext1Rnum2] = DakotaField(
         default_factory=RngOptionsContext1Mt19937,
@@ -6881,7 +7040,7 @@ class RngOptionsContext1Mixin(DakotaBaseModel):
 
 
 class SbgoSubProblemSolverGPExperimental(DakotaBaseModel):
-    """Generated model for SbgoSubProblemSolverGPExperimental"""
+    "Use the experimental Gaussian Process surrogate"
 
     experimental: SbgoSubProblemSolverGPExperimentalConfig = DakotaField(
         description="Use the experimental Gaussian Process surrogate",
@@ -6899,7 +7058,7 @@ class SbgoSubProblemSolverGPExperimental(DakotaBaseModel):
 
 
 class SbgoSubProblemSolverImportBuildPointsFileCustomAnnotated(DakotaBaseModel):
-    """Generated model for SbgoSubProblemSolverImportBuildPointsFileCustomAnnotated"""
+    "Selects custom-annotated tabular file format"
 
     custom_annotated: SbgoSubProblemSolverImportBuildPointsFileCustomAnnotatedConfig = DakotaField(
         default_factory=SbgoSubProblemSolverImportBuildPointsFileCustomAnnotatedConfig,
@@ -6919,7 +7078,7 @@ class SbgoSubProblemSolverImportBuildPointsFileCustomAnnotated(DakotaBaseModel):
 
 
 class SbgoSubProblemSolverExportApproxPointsFileCustomAnnotated(DakotaBaseModel):
-    """Generated model for SbgoSubProblemSolverExportApproxPointsFileCustomAnnotated"""
+    "Selects custom-annotated tabular file format"
 
     custom_annotated: SbgoSubProblemSolverExportApproxPointsFileCustomAnnotatedConfig = DakotaField(
         default_factory=SbgoSubProblemSolverExportApproxPointsFileCustomAnnotatedConfig,
@@ -6939,7 +7098,7 @@ class SbgoSubProblemSolverExportApproxPointsFileCustomAnnotated(DakotaBaseModel)
 
 
 class SbloSubProblemSolverSbgoExportApproxPointsFileCustomAnnotated(DakotaBaseModel):
-    """Generated model for SbloSubProblemSolverSbgoExportApproxPointsFileCustomAnnotated"""
+    "Selects custom-annotated tabular file format"
 
     custom_annotated: SbloSubProblemSolverSbgoExportApproxPointsFileCustomAnnotatedConfig = DakotaField(
         default_factory=SbloSubProblemSolverSbgoExportApproxPointsFileCustomAnnotatedConfig,
@@ -6959,7 +7118,7 @@ class SbloSubProblemSolverSbgoExportApproxPointsFileCustomAnnotated(DakotaBaseMo
 
 
 class ScOptionsMixin(DakotaBaseModel):
-    """Generated model for ScOptionsMixin"""
+    "Generated model for ScOptionsMixin"
 
     use_derivatives: Literal[True] | None = DakotaField(
         default=None,
@@ -6984,24 +7143,28 @@ class ScOptionsMixin(DakotaBaseModel):
 
 
 class ScRefinementPRefinementDimAdaptive(DakotaBaseModel):
-    """Generated model for ScRefinementPRefinementDimAdaptive"""
+    'Perform anisotropic expansion refinement by preferentially adapting in dimensions that are detected to have higher \\"importance\\".'
 
     dimension_adaptive: Union[
         ScRefinementPRefinementDimAdaptiveSobol,
         ScRefinementPRefinementDimAdaptiveGeneralized,
-    ]
+    ] = DakotaField(
+        description='Perform anisotropic expansion refinement by preferentially adapting in dimensions that are detected to have higher "importance".'
+    )
 
 
 class ScRefinementHRefinementDimAdaptive(DakotaBaseModel):
-    """Generated model for ScRefinementHRefinementDimAdaptive"""
+    'Perform anisotropic expansion refinement by preferentially adapting in dimensions that are detected to have higher \\"importance\\".'
 
     dimension_adaptive: Union[
         HRefinementDimAdaptiveSobol, HRefinementDimAdaptiveGeneralized
-    ]
+    ] = DakotaField(
+        description='Perform anisotropic expansion refinement by preferentially adapting in dimensions that are detected to have higher "importance".'
+    )
 
 
 class ScSGSGLevel(DakotaBaseModel):
-    """Generated model for ScSGSGLevel"""
+    "Level to use in sparse grid integration or interpolation"
 
     level: int = DakotaField(
         default=USHRT_MAX,
@@ -7045,7 +7208,7 @@ class ScSGSGLevel(DakotaBaseModel):
 
 
 class ScSGSequenceSGLevelSequence(DakotaBaseModel):
-    """Generated model for ScSGSequenceSGLevelSequence"""
+    "Sequence of sparse grid levels used in a multi-stage expansion"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
         CheckNonnegativeList(
@@ -7103,7 +7266,7 @@ class ScSGSequenceSGLevelSequence(DakotaBaseModel):
 
 
 class ScSparseInterpolantMixin(DakotaBaseModel):
-    """Generated model for ScSparseInterpolantMixin"""
+    "Generated model for ScSparseInterpolantMixin"
 
     interpolant: (
         Union[ScSparseInterpolantNodal, ScSparseInterpolantHierarchical] | None
@@ -7111,7 +7274,7 @@ class ScSparseInterpolantMixin(DakotaBaseModel):
 
 
 class Binned(DakotaBaseModel):
-    """Generated model for Binned"""
+    "Computes Sobol' main effects using a binned approach"
 
     binned: BinnedConfig = DakotaField(
         description="Computes Sobol' main effects using a binned approach",
@@ -7129,7 +7292,7 @@ class Binned(DakotaBaseModel):
 
 
 class DigitalNetOptionsMixin(DakotaBaseModel):
-    """Generated model for DigitalNetOptionsMixin"""
+    "Generated model for DigitalNetOptionsMixin"
 
     no_digital_shift: Literal[True] | None = DakotaField(
         default=None,
@@ -7226,7 +7389,7 @@ class DigitalNetOptionsMixin(DakotaBaseModel):
 
 
 class EgoSubProblemSolverContext2GPSurfpackConfig(DakotaBaseModel):
-    """Generated model for EgoSubProblemSolverContext2GPSurfpackConfig"""
+    "Use the Surfpack version of Gaussian Process surrogates"
 
     export_model: EgoSubProblemSolverContext2GPSurfpackExportModel | None = DakotaField(
         default=None,
@@ -7244,7 +7407,7 @@ class EgoSubProblemSolverContext2GPSurfpackConfig(DakotaBaseModel):
 
 
 class EgoSubProblemSolverContext2GPExperimentalConfig(DakotaBaseModel):
-    """Generated model for EgoSubProblemSolverContext2GPExperimentalConfig"""
+    "Use the experimental Gaussian Process surrogate"
 
     export_model: EgoSubProblemSolverContext2GPExperimentalExportModel | None = (
         DakotaField(
@@ -7277,7 +7440,7 @@ class EgoSubProblemSolverContext2GPExperimentalConfig(DakotaBaseModel):
 
 
 class EgoSubProblemSolverContext2ImportBuildPointsFile(DakotaBaseModel):
-    """Generated model for EgoSubProblemSolverContext2ImportBuildPointsFile"""
+    "File containing points you wish to use to build a surrogate"
 
     filename: str = DakotaField(
         description="File containing points you wish to use to build a surrogate",
@@ -7320,7 +7483,7 @@ class EgoSubProblemSolverContext2ImportBuildPointsFile(DakotaBaseModel):
 
 
 class EgoSubProblemSolverContext2ExportApproxPointsFile(DakotaBaseModel):
-    """Generated model for EgoSubProblemSolverContext2ExportApproxPointsFile"""
+    "Output file for surrogate model value evaluations"
 
     filename: str = DakotaField(
         description="Output file for surrogate model value evaluations",
@@ -7350,7 +7513,7 @@ class EgoSubProblemSolverContext2ExportApproxPointsFile(DakotaBaseModel):
 
 
 class EgoSubProblemSolverContext1GPSurfpackConfig(DakotaBaseModel):
-    """Generated model for EgoSubProblemSolverContext1GPSurfpackConfig"""
+    "Use the Surfpack version of Gaussian Process surrogates"
 
     export_model: EgoSubProblemSolverContext1GPSurfpackExportModel | None = DakotaField(
         default=None,
@@ -7368,7 +7531,7 @@ class EgoSubProblemSolverContext1GPSurfpackConfig(DakotaBaseModel):
 
 
 class EgoSubProblemSolverContext1GPExperimentalConfig(DakotaBaseModel):
-    """Generated model for EgoSubProblemSolverContext1GPExperimentalConfig"""
+    "Use the experimental Gaussian Process surrogate"
 
     export_model: EgoSubProblemSolverContext1GPExperimentalExportModel | None = (
         DakotaField(
@@ -7401,7 +7564,7 @@ class EgoSubProblemSolverContext1GPExperimentalConfig(DakotaBaseModel):
 
 
 class EgoSubProblemSolverContext1ImportBuildPointsFile(DakotaBaseModel):
-    """Generated model for EgoSubProblemSolverContext1ImportBuildPointsFile"""
+    "File containing points you wish to use to build a surrogate"
 
     filename: str = DakotaField(
         description="File containing points you wish to use to build a surrogate",
@@ -7444,7 +7607,7 @@ class EgoSubProblemSolverContext1ImportBuildPointsFile(DakotaBaseModel):
 
 
 class EgoSubProblemSolverContext1ExportApproxPointsFile(DakotaBaseModel):
-    """Generated model for EgoSubProblemSolverContext1ExportApproxPointsFile"""
+    "Output file for surrogate model value evaluations"
 
     filename: str = DakotaField(
         description="Output file for surrogate model value evaluations",
@@ -7474,7 +7637,7 @@ class EgoSubProblemSolverContext1ExportApproxPointsFile(DakotaBaseModel):
 
 
 class ImportBuildImportBuildPointsFile(DakotaBaseModel):
-    """Generated model for ImportBuildImportBuildPointsFile"""
+    "File containing points you wish to use to build a surrogate"
 
     filename: str = DakotaField(
         description="File containing points you wish to use to build a surrogate",
@@ -7517,7 +7680,7 @@ class ImportBuildImportBuildPointsFile(DakotaBaseModel):
 
 
 class MethodExportModelContext2Mixin(DakotaBaseModel):
-    """Generated model for MethodExportModelContext2Mixin"""
+    "Generated model for MethodExportModelContext2Mixin"
 
     export_model: MethodExportModelContext2ExportModel | None = DakotaField(
         default=None,
@@ -7535,7 +7698,7 @@ class MethodExportModelContext2Mixin(DakotaBaseModel):
 
 
 class MethodExportModelContext1Mixin(DakotaBaseModel):
-    """Generated model for MethodExportModelContext1Mixin"""
+    "Generated model for MethodExportModelContext1Mixin"
 
     export_model: MethodExportModelContext1ExportModel | None = DakotaField(
         default=None,
@@ -7553,7 +7716,7 @@ class MethodExportModelContext1Mixin(DakotaBaseModel):
 
 
 class MethodGPMixin(DakotaBaseModel):
-    """Generated model for MethodGPMixin"""
+    "Generated model for MethodGPMixin"
 
     gaussian_process: MethodGPGP | None = DakotaField(
         default=None, description="gaussian_process", dakota={"aliases": ["kriging"]}
@@ -7561,7 +7724,7 @@ class MethodGPMixin(DakotaBaseModel):
 
 
 class MethodGlobalSubProblemSolverContext2SbgoGP(DakotaBaseModel):
-    """Generated model for MethodGlobalSubProblemSolverContext2SbgoGP"""
+    "Gaussian Process surrogate model"
 
     implementation: Union[
         MethodGlobalSubProblemSolverContext2SbgoGPSurfpack,
@@ -7573,7 +7736,7 @@ class MethodGlobalSubProblemSolverContext2SbgoGP(DakotaBaseModel):
 
 
 class MethodGlobalSubProblemSolverContext2SbgoImportBuildPointsFile(DakotaBaseModel):
-    """Generated model for MethodGlobalSubProblemSolverContext2SbgoImportBuildPointsFile"""
+    "File containing points you wish to use to build a surrogate"
 
     filename: str = DakotaField(
         description="File containing points you wish to use to build a surrogate",
@@ -7616,7 +7779,7 @@ class MethodGlobalSubProblemSolverContext2SbgoImportBuildPointsFile(DakotaBaseMo
 
 
 class MethodGlobalSubProblemSolverContext2SbgoExportApproxPointsFile(DakotaBaseModel):
-    """Generated model for MethodGlobalSubProblemSolverContext2SbgoExportApproxPointsFile"""
+    "Output file for surrogate model value evaluations"
 
     filename: str = DakotaField(
         description="Output file for surrogate model value evaluations",
@@ -7646,7 +7809,7 @@ class MethodGlobalSubProblemSolverContext2SbgoExportApproxPointsFile(DakotaBaseM
 
 
 class MethodGlobalSubProblemSolverContext2EgoGPSurfpackConfig(DakotaBaseModel):
-    """Generated model for MethodGlobalSubProblemSolverContext2EgoGPSurfpackConfig"""
+    "Use the Surfpack version of Gaussian Process surrogates"
 
     export_model: (
         MethodGlobalSubProblemSolverContext2EgoGPSurfpackExportModel | None
@@ -7666,7 +7829,7 @@ class MethodGlobalSubProblemSolverContext2EgoGPSurfpackConfig(DakotaBaseModel):
 
 
 class MethodGlobalSubProblemSolverContext2EgoGPExperimentalConfig(DakotaBaseModel):
-    """Generated model for MethodGlobalSubProblemSolverContext2EgoGPExperimentalConfig"""
+    "Use the experimental Gaussian Process surrogate"
 
     export_model: (
         MethodGlobalSubProblemSolverContext2EgoGPExperimentalExportModel | None
@@ -7699,7 +7862,7 @@ class MethodGlobalSubProblemSolverContext2EgoGPExperimentalConfig(DakotaBaseMode
 
 
 class MethodGlobalSubProblemSolverContext2EgoImportBuildPointsFile(DakotaBaseModel):
-    """Generated model for MethodGlobalSubProblemSolverContext2EgoImportBuildPointsFile"""
+    "File containing points you wish to use to build a surrogate"
 
     filename: str = DakotaField(
         description="File containing points you wish to use to build a surrogate",
@@ -7742,7 +7905,7 @@ class MethodGlobalSubProblemSolverContext2EgoImportBuildPointsFile(DakotaBaseMod
 
 
 class MethodGlobalSubProblemSolverContext2EgoExportApproxPointsFile(DakotaBaseModel):
-    """Generated model for MethodGlobalSubProblemSolverContext2EgoExportApproxPointsFile"""
+    "Output file for surrogate model value evaluations"
 
     filename: str = DakotaField(
         description="Output file for surrogate model value evaluations",
@@ -7772,7 +7935,7 @@ class MethodGlobalSubProblemSolverContext2EgoExportApproxPointsFile(DakotaBaseMo
 
 
 class MethodGlobalSubProblemSolverContext1SbgoGP(DakotaBaseModel):
-    """Generated model for MethodGlobalSubProblemSolverContext1SbgoGP"""
+    "Gaussian Process surrogate model"
 
     implementation: Union[
         MethodGlobalSubProblemSolverContext1SbgoGPSurfpack,
@@ -7784,7 +7947,7 @@ class MethodGlobalSubProblemSolverContext1SbgoGP(DakotaBaseModel):
 
 
 class MethodGlobalSubProblemSolverContext1SbgoImportBuildPointsFile(DakotaBaseModel):
-    """Generated model for MethodGlobalSubProblemSolverContext1SbgoImportBuildPointsFile"""
+    "File containing points you wish to use to build a surrogate"
 
     filename: str = DakotaField(
         description="File containing points you wish to use to build a surrogate",
@@ -7827,7 +7990,7 @@ class MethodGlobalSubProblemSolverContext1SbgoImportBuildPointsFile(DakotaBaseMo
 
 
 class MethodGlobalSubProblemSolverContext1SbgoExportApproxPointsFile(DakotaBaseModel):
-    """Generated model for MethodGlobalSubProblemSolverContext1SbgoExportApproxPointsFile"""
+    "Output file for surrogate model value evaluations"
 
     filename: str = DakotaField(
         description="Output file for surrogate model value evaluations",
@@ -7857,7 +8020,7 @@ class MethodGlobalSubProblemSolverContext1SbgoExportApproxPointsFile(DakotaBaseM
 
 
 class MethodGlobalSubProblemSolverContext1EgoGPSurfpackConfig(DakotaBaseModel):
-    """Generated model for MethodGlobalSubProblemSolverContext1EgoGPSurfpackConfig"""
+    "Use the Surfpack version of Gaussian Process surrogates"
 
     export_model: (
         MethodGlobalSubProblemSolverContext1EgoGPSurfpackExportModel | None
@@ -7877,7 +8040,7 @@ class MethodGlobalSubProblemSolverContext1EgoGPSurfpackConfig(DakotaBaseModel):
 
 
 class MethodGlobalSubProblemSolverContext1EgoGPExperimentalConfig(DakotaBaseModel):
-    """Generated model for MethodGlobalSubProblemSolverContext1EgoGPExperimentalConfig"""
+    "Use the experimental Gaussian Process surrogate"
 
     export_model: (
         MethodGlobalSubProblemSolverContext1EgoGPExperimentalExportModel | None
@@ -7910,7 +8073,7 @@ class MethodGlobalSubProblemSolverContext1EgoGPExperimentalConfig(DakotaBaseMode
 
 
 class MethodGlobalSubProblemSolverContext1EgoImportBuildPointsFile(DakotaBaseModel):
-    """Generated model for MethodGlobalSubProblemSolverContext1EgoImportBuildPointsFile"""
+    "File containing points you wish to use to build a surrogate"
 
     filename: str = DakotaField(
         description="File containing points you wish to use to build a surrogate",
@@ -7953,7 +8116,7 @@ class MethodGlobalSubProblemSolverContext1EgoImportBuildPointsFile(DakotaBaseMod
 
 
 class MethodGlobalSubProblemSolverContext1EgoExportApproxPointsFile(DakotaBaseModel):
-    """Generated model for MethodGlobalSubProblemSolverContext1EgoExportApproxPointsFile"""
+    "Output file for surrogate model value evaluations"
 
     filename: str = DakotaField(
         description="Output file for surrogate model value evaluations",
@@ -7983,7 +8146,7 @@ class MethodGlobalSubProblemSolverContext1EgoExportApproxPointsFile(DakotaBaseMo
 
 
 class MethodGpAlternativesNoExportGP(DakotaBaseModel):
-    """Generated model for MethodGpAlternativesNoExportGP"""
+    "Gaussian Process surrogate model"
 
     implementation: Union[
         MethodGpAlternativesNoExportGPSurfpack,
@@ -7995,7 +8158,7 @@ class MethodGpAlternativesNoExportGP(DakotaBaseModel):
 
 
 class MethodGpAlternativesWithExportContext2GPSurfpackConfig(DakotaBaseModel):
-    """Generated model for MethodGpAlternativesWithExportContext2GPSurfpackConfig"""
+    "Use the Surfpack version of Gaussian Process surrogates"
 
     export_model: MethodGpAlternativesWithExportContext2GPSurfpackExportModel | None = (
         DakotaField(
@@ -8015,7 +8178,7 @@ class MethodGpAlternativesWithExportContext2GPSurfpackConfig(DakotaBaseModel):
 
 
 class MethodGpAlternativesWithExportContext2GPExperimentalConfig(DakotaBaseModel):
-    """Generated model for MethodGpAlternativesWithExportContext2GPExperimentalConfig"""
+    "Use the experimental Gaussian Process surrogate"
 
     export_model: (
         MethodGpAlternativesWithExportContext2GPExperimentalExportModel | None
@@ -8048,7 +8211,7 @@ class MethodGpAlternativesWithExportContext2GPExperimentalConfig(DakotaBaseModel
 
 
 class MethodGpAlternativesWithExportContext1GPSurfpackConfig(DakotaBaseModel):
-    """Generated model for MethodGpAlternativesWithExportContext1GPSurfpackConfig"""
+    "Use the Surfpack version of Gaussian Process surrogates"
 
     export_model: MethodGpAlternativesWithExportContext1GPSurfpackExportModel | None = (
         DakotaField(
@@ -8068,7 +8231,7 @@ class MethodGpAlternativesWithExportContext1GPSurfpackConfig(DakotaBaseModel):
 
 
 class MethodGpAlternativesWithExportContext1GPExperimentalConfig(DakotaBaseModel):
-    """Generated model for MethodGpAlternativesWithExportContext1GPExperimentalConfig"""
+    "Use the experimental Gaussian Process surrogate"
 
     export_model: (
         MethodGpAlternativesWithExportContext1GPExperimentalExportModel | None
@@ -8101,7 +8264,7 @@ class MethodGpAlternativesWithExportContext1GPExperimentalConfig(DakotaBaseModel
 
 
 class CrossoverType(DakotaBaseModel):
-    """Generated model for CrossoverType"""
+    "Select a crossover type for JEGA methods"
 
     strategy: Union[
         MultiPointBinary, MultiPointParameterizedBinary, MultiPointReal, ShuffleRandom
@@ -8128,7 +8291,7 @@ class CrossoverType(DakotaBaseModel):
 
 
 class MethodJegaCommonOptsMutationType(DakotaBaseModel):
-    """Generated model for MethodJegaCommonOptsMutationType"""
+    "Select a mutation type for JEGA methods"
 
     strategy: Union[
         BitRandom,
@@ -8159,7 +8322,7 @@ class MethodJegaCommonOptsMutationType(DakotaBaseModel):
 
 
 class MethodMlmfSolverMetricMixin(DakotaBaseModel):
-    """Generated model for MethodMlmfSolverMetricMixin"""
+    "Generated model for MethodMlmfSolverMetricMixin"
 
     solver_metric: (
         Union[
@@ -8176,7 +8339,7 @@ class MethodMlmfSolverMetricMixin(DakotaBaseModel):
 
 
 class MlmfFinalStatsStatisticsQoiStatistics(DakotaBaseModel):
-    """Generated model for MlmfFinalStatsStatisticsQoiStatistics"""
+    "Return the quantity of interest (QoI) statistics as the final results of a UQ method"
 
     qoi_statistics: MlmfFinalStatsStatisticsQoiStatisticsConfig = DakotaField(
         description="Return the quantity of interest (QoI) statistics as the final results of a UQ method",
@@ -8194,7 +8357,7 @@ class MlmfFinalStatsStatisticsQoiStatistics(DakotaBaseModel):
 
 
 class OnlinePilotFinalStatisticsQoiStatistics(DakotaBaseModel):
-    """Generated model for OnlinePilotFinalStatisticsQoiStatistics"""
+    "Return the quantity of interest (QoI) statistics as the final results of a UQ method"
 
     qoi_statistics: OnlinePilotFinalStatisticsQoiStatisticsConfig = DakotaField(
         description="Return the quantity of interest (QoI) statistics as the final results of a UQ method",
@@ -8212,7 +8375,7 @@ class OnlinePilotFinalStatisticsQoiStatistics(DakotaBaseModel):
 
 
 class OfflinePilotFinalStatisticsQoiStatistics(DakotaBaseModel):
-    """Generated model for OfflinePilotFinalStatisticsQoiStatistics"""
+    "Return the quantity of interest (QoI) statistics as the final results of a UQ method"
 
     qoi_statistics: OfflinePilotFinalStatisticsQoiStatisticsConfig = DakotaField(
         description="Return the quantity of interest (QoI) statistics as the final results of a UQ method",
@@ -8230,7 +8393,7 @@ class OfflinePilotFinalStatisticsQoiStatistics(DakotaBaseModel):
 
 
 class ExportApproxVarianceFile(DakotaBaseModel):
-    """Generated model for ExportApproxVarianceFile"""
+    "Output file for surrogate model variance evaluations"
 
     filename: str = DakotaField(
         description="Output file for surrogate model variance evaluations",
@@ -8265,7 +8428,7 @@ class LevelMappingsNoRelContext2Mixin(
     ProbabilityLevelsContext2Mixin,
     ResponseLevelsComputeProbGenContext2Mixin,
 ):
-    """Generated model for LevelMappingsNoRelContext2Mixin"""
+    "Generated model for LevelMappingsNoRelContext2Mixin"
 
     pass
 
@@ -8276,13 +8439,13 @@ class LevelMappingsNoRelContext1Mixin(
     ProbabilityLevelsContext2Mixin,
     ResponseLevelsComputeProbGenContext1Mixin,
 ):
-    """Generated model for LevelMappingsNoRelContext1Mixin"""
+    "Generated model for LevelMappingsNoRelContext1Mixin"
 
     pass
 
 
 class PromotedModelSelectionContext2Mixin(DakotaBaseModel):
-    """Generated model for PromotedModelSelectionContext2Mixin"""
+    "Generated model for PromotedModelSelectionContext2Mixin"
 
     search_model_graphs: PromotedModelSelectionContext2SearchModelGraphs | None = (
         DakotaField(
@@ -8293,7 +8456,7 @@ class PromotedModelSelectionContext2Mixin(DakotaBaseModel):
 
 
 class PromotedModelSelectionContext1Mixin(DakotaBaseModel):
-    """Generated model for PromotedModelSelectionContext1Mixin"""
+    "Generated model for PromotedModelSelectionContext1Mixin"
 
     search_model_graphs: PromotedModelSelectionContext1SearchModelGraphs | None = (
         DakotaField(
@@ -8304,7 +8467,7 @@ class PromotedModelSelectionContext1Mixin(DakotaBaseModel):
 
 
 class Rank1LatticeOptionsMixin(DakotaBaseModel):
-    """Generated model for Rank1LatticeOptionsMixin"""
+    "Generated model for Rank1LatticeOptionsMixin"
 
     no_random_shift: Literal[True] | None = DakotaField(
         default=None,
@@ -8357,13 +8520,13 @@ class LevelMappingsMixin(
     ReliabilityLevelsMixin,
     ResponseLevelsComputeProbRelGenMixin,
 ):
-    """Generated model for LevelMappingsMixin"""
+    "Generated model for LevelMappingsMixin"
 
     pass
 
 
 class SbgoSubProblemSolverGP(DakotaBaseModel):
-    """Generated model for SbgoSubProblemSolverGP"""
+    "Gaussian Process surrogate model"
 
     implementation: Union[
         SbgoSubProblemSolverGPSurfpack,
@@ -8375,7 +8538,7 @@ class SbgoSubProblemSolverGP(DakotaBaseModel):
 
 
 class SbgoSubProblemSolverImportBuildPointsFile(DakotaBaseModel):
-    """Generated model for SbgoSubProblemSolverImportBuildPointsFile"""
+    "File containing points you wish to use to build a surrogate"
 
     filename: str = DakotaField(
         description="File containing points you wish to use to build a surrogate",
@@ -8418,7 +8581,7 @@ class SbgoSubProblemSolverImportBuildPointsFile(DakotaBaseModel):
 
 
 class SbgoSubProblemSolverExportApproxPointsFile(DakotaBaseModel):
-    """Generated model for SbgoSubProblemSolverExportApproxPointsFile"""
+    "Output file for surrogate model value evaluations"
 
     filename: str = DakotaField(
         description="Output file for surrogate model value evaluations",
@@ -8448,7 +8611,7 @@ class SbgoSubProblemSolverExportApproxPointsFile(DakotaBaseModel):
 
 
 class SbloSubProblemSolverSbgoExportApproxPointsFile(DakotaBaseModel):
-    """Generated model for SbloSubProblemSolverSbgoExportApproxPointsFile"""
+    "Output file for surrogate model value evaluations"
 
     filename: str = DakotaField(
         description="Output file for surrogate model value evaluations",
@@ -8478,11 +8641,12 @@ class SbloSubProblemSolverSbgoExportApproxPointsFile(DakotaBaseModel):
 
 
 class ScRefinementPRefinement(DakotaBaseModel):
-    """Generated model for ScRefinementPRefinement"""
+    "Automatic polynomial order refinement"
 
     p_refinement: Union[
         ScRefinementPRefinementUniform, ScRefinementPRefinementDimAdaptive
     ] = DakotaField(
+        description="Automatic polynomial order refinement",
         dakota={
             "materialization": [
                 {
@@ -8493,18 +8657,19 @@ class ScRefinementPRefinement(DakotaBaseModel):
                     "ir_value_type": "short",
                 }
             ]
-        }
+        },
     )
 
 
 class ScRefinementHRefinement(DakotaBaseModel):
-    """Generated model for ScRefinementHRefinement"""
+    "Employ h-refinement to refine the grid"
 
     h_refinement: Union[
         HRefinementUniform,
         ScRefinementHRefinementDimAdaptive,
         ScRefinementHRefinementLocalAdaptive,
     ] = DakotaField(
+        description="Employ h-refinement to refine the grid",
         dakota={
             "materialization": [
                 {
@@ -8515,12 +8680,12 @@ class ScRefinementHRefinement(DakotaBaseModel):
                     "ir_value_type": "short",
                 }
             ]
-        }
+        },
     )
 
 
 class ScSGMixin(DakotaBaseModel):
-    """Generated model for ScSGMixin"""
+    "Generated model for ScSGMixin"
 
     sparse_grid_level: ScSGSGLevel = DakotaField(
         default=...,
@@ -8530,7 +8695,7 @@ class ScSGMixin(DakotaBaseModel):
 
 
 class ScSGSequenceMixin(DakotaBaseModel):
-    """Generated model for ScSGSequenceMixin"""
+    "Generated model for ScSGSequenceMixin"
 
     sparse_grid_level_sequence: ScSGSequenceSGLevelSequence = DakotaField(
         default=...,
@@ -8540,7 +8705,7 @@ class ScSGSequenceMixin(DakotaBaseModel):
 
 
 class VbdSamplingVarianceBasedDecomp(DakotaBaseModel):
-    """Generated model for VbdSamplingVarianceBasedDecomp"""
+    "Activates global sensitivity analysis based on decomposition of response variance into contributions from variables"
 
     drop_tolerance: DakotaFloat = DakotaField(
         default=-1.0,
@@ -8563,7 +8728,7 @@ class VbdSamplingVarianceBasedDecomp(DakotaBaseModel):
 
 
 class EgoSubProblemSolverContext2GPSurfpack(DakotaBaseModel):
-    """Generated model for EgoSubProblemSolverContext2GPSurfpack"""
+    "Use the Surfpack version of Gaussian Process surrogates"
 
     surfpack: EgoSubProblemSolverContext2GPSurfpackConfig = DakotaField(
         description="Use the Surfpack version of Gaussian Process surrogates",
@@ -8581,7 +8746,7 @@ class EgoSubProblemSolverContext2GPSurfpack(DakotaBaseModel):
 
 
 class EgoSubProblemSolverContext2GPExperimental(DakotaBaseModel):
-    """Generated model for EgoSubProblemSolverContext2GPExperimental"""
+    "Use the experimental Gaussian Process surrogate"
 
     experimental: EgoSubProblemSolverContext2GPExperimentalConfig = DakotaField(
         description="Use the experimental Gaussian Process surrogate",
@@ -8599,7 +8764,7 @@ class EgoSubProblemSolverContext2GPExperimental(DakotaBaseModel):
 
 
 class EgoSubProblemSolverContext1GPSurfpack(DakotaBaseModel):
-    """Generated model for EgoSubProblemSolverContext1GPSurfpack"""
+    "Use the Surfpack version of Gaussian Process surrogates"
 
     surfpack: EgoSubProblemSolverContext1GPSurfpackConfig = DakotaField(
         description="Use the Surfpack version of Gaussian Process surrogates",
@@ -8617,7 +8782,7 @@ class EgoSubProblemSolverContext1GPSurfpack(DakotaBaseModel):
 
 
 class EgoSubProblemSolverContext1GPExperimental(DakotaBaseModel):
-    """Generated model for EgoSubProblemSolverContext1GPExperimental"""
+    "Use the experimental Gaussian Process surrogate"
 
     experimental: EgoSubProblemSolverContext1GPExperimentalConfig = DakotaField(
         description="Use the experimental Gaussian Process surrogate",
@@ -8635,7 +8800,7 @@ class EgoSubProblemSolverContext1GPExperimental(DakotaBaseModel):
 
 
 class ImportBuildMixin(DakotaBaseModel):
-    """Generated model for ImportBuildMixin"""
+    "Generated model for ImportBuildMixin"
 
     import_build_points_file: ImportBuildImportBuildPointsFile | None = DakotaField(
         default=None,
@@ -8645,7 +8810,7 @@ class ImportBuildMixin(DakotaBaseModel):
 
 
 class MethodGlobalSubProblemSolverContext2SbgoConfig(DakotaBaseModel):
-    """Generated model for MethodGlobalSubProblemSolverContext2SbgoConfig"""
+    "Use the surrogate based optimization method"
 
     gaussian_process: MethodGlobalSubProblemSolverContext2SbgoGP | None = DakotaField(
         default=None,
@@ -8682,7 +8847,7 @@ class MethodGlobalSubProblemSolverContext2SbgoConfig(DakotaBaseModel):
 
 
 class MethodGlobalSubProblemSolverContext2EgoGPSurfpack(DakotaBaseModel):
-    """Generated model for MethodGlobalSubProblemSolverContext2EgoGPSurfpack"""
+    "Use the Surfpack version of Gaussian Process surrogates"
 
     surfpack: MethodGlobalSubProblemSolverContext2EgoGPSurfpackConfig = DakotaField(
         description="Use the Surfpack version of Gaussian Process surrogates",
@@ -8700,7 +8865,7 @@ class MethodGlobalSubProblemSolverContext2EgoGPSurfpack(DakotaBaseModel):
 
 
 class MethodGlobalSubProblemSolverContext2EgoGPExperimental(DakotaBaseModel):
-    """Generated model for MethodGlobalSubProblemSolverContext2EgoGPExperimental"""
+    "Use the experimental Gaussian Process surrogate"
 
     experimental: MethodGlobalSubProblemSolverContext2EgoGPExperimentalConfig = (
         DakotaField(
@@ -8720,7 +8885,7 @@ class MethodGlobalSubProblemSolverContext2EgoGPExperimental(DakotaBaseModel):
 
 
 class MethodGlobalSubProblemSolverContext1SbgoConfig(DakotaBaseModel):
-    """Generated model for MethodGlobalSubProblemSolverContext1SbgoConfig"""
+    "Use the surrogate based optimization method"
 
     gaussian_process: MethodGlobalSubProblemSolverContext1SbgoGP | None = DakotaField(
         default=None,
@@ -8757,7 +8922,7 @@ class MethodGlobalSubProblemSolverContext1SbgoConfig(DakotaBaseModel):
 
 
 class MethodGlobalSubProblemSolverContext1EgoGPSurfpack(DakotaBaseModel):
-    """Generated model for MethodGlobalSubProblemSolverContext1EgoGPSurfpack"""
+    "Use the Surfpack version of Gaussian Process surrogates"
 
     surfpack: MethodGlobalSubProblemSolverContext1EgoGPSurfpackConfig = DakotaField(
         description="Use the Surfpack version of Gaussian Process surrogates",
@@ -8775,7 +8940,7 @@ class MethodGlobalSubProblemSolverContext1EgoGPSurfpack(DakotaBaseModel):
 
 
 class MethodGlobalSubProblemSolverContext1EgoGPExperimental(DakotaBaseModel):
-    """Generated model for MethodGlobalSubProblemSolverContext1EgoGPExperimental"""
+    "Use the experimental Gaussian Process surrogate"
 
     experimental: MethodGlobalSubProblemSolverContext1EgoGPExperimentalConfig = (
         DakotaField(
@@ -8795,7 +8960,7 @@ class MethodGlobalSubProblemSolverContext1EgoGPExperimental(DakotaBaseModel):
 
 
 class MethodGpAlternativesNoExportMixin(DakotaBaseModel):
-    """Generated model for MethodGpAlternativesNoExportMixin"""
+    "Generated model for MethodGpAlternativesNoExportMixin"
 
     gaussian_process: MethodGpAlternativesNoExportGP | None = DakotaField(
         default=None,
@@ -8805,7 +8970,7 @@ class MethodGpAlternativesNoExportMixin(DakotaBaseModel):
 
 
 class MethodGpAlternativesWithExportContext2GPSurfpack(DakotaBaseModel):
-    """Generated model for MethodGpAlternativesWithExportContext2GPSurfpack"""
+    "Use the Surfpack version of Gaussian Process surrogates"
 
     surfpack: MethodGpAlternativesWithExportContext2GPSurfpackConfig = DakotaField(
         description="Use the Surfpack version of Gaussian Process surrogates",
@@ -8823,7 +8988,7 @@ class MethodGpAlternativesWithExportContext2GPSurfpack(DakotaBaseModel):
 
 
 class MethodGpAlternativesWithExportContext2GPExperimental(DakotaBaseModel):
-    """Generated model for MethodGpAlternativesWithExportContext2GPExperimental"""
+    "Use the experimental Gaussian Process surrogate"
 
     experimental: MethodGpAlternativesWithExportContext2GPExperimentalConfig = (
         DakotaField(
@@ -8843,7 +9008,7 @@ class MethodGpAlternativesWithExportContext2GPExperimental(DakotaBaseModel):
 
 
 class MethodGpAlternativesWithExportContext1GPSurfpack(DakotaBaseModel):
-    """Generated model for MethodGpAlternativesWithExportContext1GPSurfpack"""
+    "Use the Surfpack version of Gaussian Process surrogates"
 
     surfpack: MethodGpAlternativesWithExportContext1GPSurfpackConfig = DakotaField(
         description="Use the Surfpack version of Gaussian Process surrogates",
@@ -8861,7 +9026,7 @@ class MethodGpAlternativesWithExportContext1GPSurfpack(DakotaBaseModel):
 
 
 class MethodGpAlternativesWithExportContext1GPExperimental(DakotaBaseModel):
-    """Generated model for MethodGpAlternativesWithExportContext1GPExperimental"""
+    "Use the experimental Gaussian Process surrogate"
 
     experimental: MethodGpAlternativesWithExportContext1GPExperimentalConfig = (
         DakotaField(
@@ -8881,7 +9046,7 @@ class MethodGpAlternativesWithExportContext1GPExperimental(DakotaBaseModel):
 
 
 class MethodJegaCommonOptsMixin(DakotaBaseModel):
-    """Generated model for MethodJegaCommonOptsMixin"""
+    "Generated model for MethodJegaCommonOptsMixin"
 
     population_size: int = DakotaField(
         default=50,
@@ -8990,7 +9155,7 @@ class MethodJegaCommonOptsMixin(DakotaBaseModel):
 
 
 class MlmfFinalStatsMixin(DakotaBaseModel):
-    """Generated model for MlmfFinalStatsMixin"""
+    "Generated model for MlmfFinalStatsMixin"
 
     final_statistics: (
         Union[
@@ -9006,7 +9171,7 @@ class MlmfFinalStatsMixin(DakotaBaseModel):
 
 
 class OnlinePilotConfig(DakotaBaseModel):
-    """Generated model for OnlinePilotConfig"""
+    "Specify a solution mode that includes the pilot cost within the sample allocation logic"
 
     relaxation: (
         Union[
@@ -9034,7 +9199,7 @@ class OnlinePilotConfig(DakotaBaseModel):
 
 
 class OfflinePilotConfig(DakotaBaseModel):
-    """Generated model for OfflinePilotConfig"""
+    "Specify a solution mode that excludes the pilot cost from sample allocation logic"
 
     final_statistics: (
         Union[
@@ -9050,7 +9215,7 @@ class OfflinePilotConfig(DakotaBaseModel):
 
 
 class ModelVarianceExportMixin(DakotaBaseModel):
-    """Generated model for ModelVarianceExportMixin"""
+    "Generated model for ModelVarianceExportMixin"
 
     export_approx_variance_file: ExportApproxVarianceFile | None = DakotaField(
         default=None,
@@ -9060,7 +9225,7 @@ class ModelVarianceExportMixin(DakotaBaseModel):
 
 
 class SbgoSubProblemSolverSbgo(DakotaBaseModel):
-    """Generated model for SbgoSubProblemSolverSbgo"""
+    "Use the surrogate based optimization method"
 
     gaussian_process: SbgoSubProblemSolverGP | None = DakotaField(
         default=None,
@@ -9097,7 +9262,7 @@ class SbgoSubProblemSolverSbgo(DakotaBaseModel):
 
 
 class SbloSubProblemSolverSbgo(DakotaBaseModel):
-    """Generated model for SbloSubProblemSolverSbgo"""
+    "sblo"
 
     export_approx_points_file: SbloSubProblemSolverSbgoExportApproxPointsFile | None = (
         DakotaField(
@@ -9109,7 +9274,7 @@ class SbloSubProblemSolverSbgo(DakotaBaseModel):
 
 
 class ScRefinementMixin(DakotaBaseModel):
-    """Generated model for ScRefinementMixin"""
+    "Generated model for ScRefinementMixin"
 
     max_refinement_iterations: int = DakotaField(
         default=SZ_MAX,
@@ -9135,7 +9300,7 @@ class ScRefinementMixin(DakotaBaseModel):
 
 
 class VbdSamplingMixin(DakotaBaseModel):
-    """Generated model for VbdSamplingMixin"""
+    "Generated model for VbdSamplingMixin"
 
     variance_based_decomp: VbdSamplingVarianceBasedDecomp | None = DakotaField(
         default=None,
@@ -9153,7 +9318,7 @@ class VbdSamplingMixin(DakotaBaseModel):
 
 
 class EgoSubProblemSolverContext2Ego(DakotaBaseModel):
-    """Generated model for EgoSubProblemSolverContext2Ego"""
+    "Use the Efficient Global Optimization method"
 
     gaussian_process: (
         Union[
@@ -9197,7 +9362,7 @@ class EgoSubProblemSolverContext2Ego(DakotaBaseModel):
 
 
 class EgoSubProblemSolverContext1Ego(DakotaBaseModel):
-    """Generated model for EgoSubProblemSolverContext1Ego"""
+    "Use the Efficient Global Optimization method"
 
     gaussian_process: (
         Union[
@@ -9241,7 +9406,7 @@ class EgoSubProblemSolverContext1Ego(DakotaBaseModel):
 
 
 class MethodGlobalSubProblemSolverContext2Sbgo(DakotaBaseModel):
-    """Generated model for MethodGlobalSubProblemSolverContext2Sbgo"""
+    "Use the surrogate based optimization method"
 
     sbgo: MethodGlobalSubProblemSolverContext2SbgoConfig = DakotaField(
         description="Use the surrogate based optimization method",
@@ -9259,7 +9424,7 @@ class MethodGlobalSubProblemSolverContext2Sbgo(DakotaBaseModel):
 
 
 class MethodGlobalSubProblemSolverContext2EgoConfig(DakotaBaseModel):
-    """Generated model for MethodGlobalSubProblemSolverContext2EgoConfig"""
+    "Use the Efficient Global Optimization method"
 
     gaussian_process: (
         Union[
@@ -9303,7 +9468,7 @@ class MethodGlobalSubProblemSolverContext2EgoConfig(DakotaBaseModel):
 
 
 class MethodGlobalSubProblemSolverContext1Sbgo(DakotaBaseModel):
-    """Generated model for MethodGlobalSubProblemSolverContext1Sbgo"""
+    "Use the surrogate based optimization method"
 
     sbgo: MethodGlobalSubProblemSolverContext1SbgoConfig = DakotaField(
         description="Use the surrogate based optimization method",
@@ -9321,7 +9486,7 @@ class MethodGlobalSubProblemSolverContext1Sbgo(DakotaBaseModel):
 
 
 class MethodGlobalSubProblemSolverContext1EgoConfig(DakotaBaseModel):
-    """Generated model for MethodGlobalSubProblemSolverContext1EgoConfig"""
+    "Use the Efficient Global Optimization method"
 
     gaussian_process: (
         Union[
@@ -9365,7 +9530,7 @@ class MethodGlobalSubProblemSolverContext1EgoConfig(DakotaBaseModel):
 
 
 class MethodGpAlternativesWithExportContext2Mixin(DakotaBaseModel):
-    """Generated model for MethodGpAlternativesWithExportContext2Mixin"""
+    "Generated model for MethodGpAlternativesWithExportContext2Mixin"
 
     gaussian_process: (
         Union[
@@ -9382,7 +9547,7 @@ class MethodGpAlternativesWithExportContext2Mixin(DakotaBaseModel):
 
 
 class MethodGpAlternativesWithExportContext1Mixin(DakotaBaseModel):
-    """Generated model for MethodGpAlternativesWithExportContext1Mixin"""
+    "Generated model for MethodGpAlternativesWithExportContext1Mixin"
 
     gaussian_process: (
         Union[
@@ -9399,7 +9564,7 @@ class MethodGpAlternativesWithExportContext1Mixin(DakotaBaseModel):
 
 
 class OnlinePilot(DakotaBaseModel):
-    """Generated model for OnlinePilot"""
+    "Specify a solution mode that includes the pilot cost within the sample allocation logic"
 
     online_pilot: OnlinePilotConfig = DakotaField(
         default_factory=OnlinePilotConfig,
@@ -9419,7 +9584,7 @@ class OnlinePilot(DakotaBaseModel):
 
 
 class OfflinePilot(DakotaBaseModel):
-    """Generated model for OfflinePilot"""
+    "Specify a solution mode that excludes the pilot cost from sample allocation logic"
 
     offline_pilot: OfflinePilotConfig = DakotaField(
         default_factory=OfflinePilotConfig,
@@ -9439,7 +9604,7 @@ class OfflinePilot(DakotaBaseModel):
 
 
 class SbgoSubProblemSolverMixin(DakotaBaseModel):
-    """Generated model for SbgoSubProblemSolverMixin"""
+    "Generated model for SbgoSubProblemSolverMixin"
 
     sbgo: SbgoSubProblemSolverSbgo = DakotaField(
         description="Use the surrogate based optimization method",
@@ -9457,13 +9622,13 @@ class SbgoSubProblemSolverMixin(DakotaBaseModel):
 
 
 class SbloSubProblemSolverMixin(DakotaBaseModel):
-    """Generated model for SbloSubProblemSolverMixin"""
+    "Generated model for SbloSubProblemSolverMixin"
 
     sbgo: SbloSubProblemSolverSbgo = DakotaField(description="sblo")
 
 
 class EgoSubProblemSolverContext2Mixin(DakotaBaseModel):
-    """Generated model for EgoSubProblemSolverContext2Mixin"""
+    "Generated model for EgoSubProblemSolverContext2Mixin"
 
     ego: EgoSubProblemSolverContext2Ego = DakotaField(
         description="Use the Efficient Global Optimization method",
@@ -9481,7 +9646,7 @@ class EgoSubProblemSolverContext2Mixin(DakotaBaseModel):
 
 
 class EgoSubProblemSolverContext1Mixin(DakotaBaseModel):
-    """Generated model for EgoSubProblemSolverContext1Mixin"""
+    "Generated model for EgoSubProblemSolverContext1Mixin"
 
     ego: EgoSubProblemSolverContext1Ego = DakotaField(
         description="Use the Efficient Global Optimization method",
@@ -9499,7 +9664,7 @@ class EgoSubProblemSolverContext1Mixin(DakotaBaseModel):
 
 
 class MethodGlobalSubProblemSolverContext2Ego(DakotaBaseModel):
-    """Generated model for MethodGlobalSubProblemSolverContext2Ego"""
+    "Use the Efficient Global Optimization method"
 
     ego: MethodGlobalSubProblemSolverContext2EgoConfig = DakotaField(
         description="Use the Efficient Global Optimization method",
@@ -9517,7 +9682,7 @@ class MethodGlobalSubProblemSolverContext2Ego(DakotaBaseModel):
 
 
 class MethodGlobalSubProblemSolverContext1Ego(DakotaBaseModel):
-    """Generated model for MethodGlobalSubProblemSolverContext1Ego"""
+    "Use the Efficient Global Optimization method"
 
     ego: MethodGlobalSubProblemSolverContext1EgoConfig = DakotaField(
         description="Use the Efficient Global Optimization method",
@@ -9535,7 +9700,7 @@ class MethodGlobalSubProblemSolverContext1Ego(DakotaBaseModel):
 
 
 class MlmfSolutionModeMixin(DakotaBaseModel):
-    """Generated model for MlmfSolutionModeMixin"""
+    "Generated model for MlmfSolutionModeMixin"
 
     solution_mode: Union[
         OnlinePilot, OfflinePilot, OnlineProjection, OfflineProjection
@@ -9547,7 +9712,7 @@ class MlmfSolutionModeMixin(DakotaBaseModel):
 
 
 class MethodGlobalSubProblemSolverContext2Mixin(DakotaBaseModel):
-    """Generated model for MethodGlobalSubProblemSolverContext2Mixin"""
+    "Generated model for MethodGlobalSubProblemSolverContext2Mixin"
 
     solution_approach: (
         Union[
@@ -9565,7 +9730,7 @@ class MethodGlobalSubProblemSolverContext2Mixin(DakotaBaseModel):
 
 
 class MethodGlobalSubProblemSolverContext1Mixin(DakotaBaseModel):
-    """Generated model for MethodGlobalSubProblemSolverContext1Mixin"""
+    "Generated model for MethodGlobalSubProblemSolverContext1Mixin"
 
     solution_approach: (
         Union[

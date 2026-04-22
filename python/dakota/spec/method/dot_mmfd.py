@@ -13,13 +13,13 @@ from dakota.spec.shared.misc import (
 
 
 class DotMmfdConfig(MethodThreeOptionalKeywordsMixin, MethodDotCommonOptsMixin):
-    """Generated model for DotMmfdConfig"""
+    "DOT modified method of feasible directions"
 
     pass
 
 
 class DotMmfdSelection(MethodSelection):
-    """Generated model for DotMmfdSelection"""
+    "Generated model for DotMmfdSelection"
 
     dot_mmfd: DotMmfdConfig = DakotaField(
         dakota={

@@ -13,13 +13,13 @@ from dakota.spec.shared.misc import (
 
 
 class DotBfgsConfig(MethodThreeOptionalKeywordsMixin, MethodDotCommonOptsMixin):
-    """Generated model for DotBfgsConfig"""
+    "DOT BFGS optimization method"
 
     pass
 
 
 class DotBfgsSelection(MethodSelection):
-    """Generated model for DotBfgsSelection"""
+    "Generated model for DotBfgsSelection"
 
     dot_bfgs: DotBfgsConfig = DakotaField(
         dakota={

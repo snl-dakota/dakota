@@ -20,13 +20,13 @@ class LocalEvidenceConfig(
     LevelMappingsNoRelContext1Mixin,
     MethodOptionalModelPointerMixin,
 ):
-    """Generated model for LocalEvidenceConfig"""
+    "Evidence theory with evidence measures computed with local optimization methods"
 
     pass
 
 
 class LocalEvidenceSelection(MethodSelection):
-    """Generated model for LocalEvidenceSelection"""
+    "Generated model for LocalEvidenceSelection"
 
     local_evidence: LocalEvidenceConfig = DakotaField(
         dakota={

@@ -24,6 +24,6 @@ class MethodConminCommonOptsMixin(
     MethodMaxIterationsContext1Mixin,
     MethodOptionalModelPointerMixin,
 ):
-    """Generated model for MethodConminCommonOptsMixin"""
+    "Generated model for MethodConminCommonOptsMixin"
 
     pass

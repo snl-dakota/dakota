@@ -26,7 +26,7 @@ from dakota.spec.shared.sampling import (
 
 
 class MultifidelitySamplingExportSampleSequence(MethodExportSamplesFormatMixin):
-    """Generated model for MultifidelitySamplingExportSampleSequence"""
+    "Enable export of multilevel/multifidelity sample sequences to individual files"
 
     pass
 
@@ -45,7 +45,7 @@ class MultifidelitySamplingConfig(
     RngOptionsContext2Mixin,
     MethodOptionalModelPointerMixin,
 ):
-    """Generated model for MultifidelitySamplingConfig"""
+    "Multifidelity Monte Carlo sampling method for UQ"
 
     export_sample_sequence: MultifidelitySamplingExportSampleSequence | None = (
         DakotaField(
@@ -65,7 +65,7 @@ class MultifidelitySamplingConfig(
 
 
 class MultifidelitySamplingSelection(MethodSelection):
-    """Generated model for MultifidelitySamplingSelection"""
+    "Generated model for MultifidelitySamplingSelection"
 
     multifidelity_sampling: MultifidelitySamplingConfig = DakotaField(
         dakota={
