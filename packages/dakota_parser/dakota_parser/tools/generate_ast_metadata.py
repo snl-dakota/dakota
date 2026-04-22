@@ -560,6 +560,38 @@ class ASTMetadataGenerator:
         lines.append("}")
         lines.append("")
         
+        # Anchor child → variant def: for each (parent_def, discriminator_key), 
+        # return the variant def that owns that key inside an anchor field.
+        # Used by ast_to_json to pick the correct parent_def when converting anchor children.
+        lines.append("// For a discriminator key inside an anchor field, return the variant def that owns it.")
+        lines.append("inline std::string get_anchor_variant_def(const std::string& parent_def, const std::string& disc_key) {")
+        lines.append("    static const std::map<std::string, std::map<std::string, std::string>> m = {")
+        # Build (parent_def -> disc_key -> variant_def) map
+        import schema_utils as su_local
+        acv = {}
+        for dn, defn in self.defs.items():
+            for fn, fs in defn.get("properties", {}).items():
+                if not su_local.is_anchor(fs): continue
+                for opt in fs.get("anyOf", []):
+                    ref = opt.get("$ref", "")
+                    if not ref.startswith("#/$defs/"): continue
+                    vdef_name = ref[8:]
+                    vdef = self.defs.get(vdef_name, {})
+                    for disc_key_name in vdef.get("properties", {}):
+                        acv.setdefault(dn, {})[disc_key_name] = vdef_name
+        for parent_def_name, disc_map in sorted(acv.items()):
+            inner = ", ".join(f'{{"{dk}", "{vd}"}}' for dk, vd in sorted(disc_map.items()))
+            lines.append(f'        {{"{parent_def_name}", {{{inner}}}}},')
+        lines.append("    };")
+        lines.append("    auto it = m.find(parent_def);")
+        lines.append("    if (it != m.end()) {")
+        lines.append("        auto jt = it->second.find(disc_key);")
+        lines.append("        if (jt != it->second.end()) return jt->second;")
+        lines.append("    }")
+        lines.append('    return "";')
+        lines.append("}")
+        lines.append("")
+        
         # Array fields
         lines.append("// Fields that are array type")
         lines.append("inline bool is_array_field(const std::string& field_name) {")

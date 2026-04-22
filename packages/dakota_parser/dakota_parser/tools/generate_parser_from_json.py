@@ -688,7 +688,7 @@ def main():
             json_parser = JSONSchemaParser(args.schema_file)
             block = json_parser.parse_block(args.block)
             
-            generator = CodeGenerator(block, source_output_dir)
+            generator = CodeGenerator(block, source_output_dir, json_parser.defs)
             generator.generate_all()
             
             # Generate stubs for the other blocks
@@ -721,7 +721,7 @@ def main():
                 # Parse and generate each block
                 block = json_parser.parse_block(block_name)
                 
-                generator = CodeGenerator(block, source_output_dir)
+                generator = CodeGenerator(block, source_output_dir, json_parser.defs)
                 generator.generate_all()
             
             print()

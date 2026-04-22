@@ -259,7 +259,7 @@ inline json convert_keyword(const KeywordNode& kw, const std::string& parent_def
         }
     }
     
-    bool is_boolean = ast_metadata::is_boolean_field(kw_name);
+    [[maybe_unused]] bool is_boolean = ast_metadata::is_boolean_field(kw_name);
     bool is_array = ast_metadata::is_array_field(kw_name);
     bool is_number = ast_metadata::should_output_as_float(kw_name, parent_context);
     
@@ -285,9 +285,20 @@ inline json convert_keyword(const KeywordNode& kw, const std::string& parent_def
         return json::object();
     }
     
-    // Case 1b: Boolean flag with explicit value (e.g., default false)
-    if (kw.is_flag && is_boolean && !kw.param_values.empty() && !kw.has_children()) {
-        return bool_from_value(kw.param_values);
+    // Case 1b: Boolean flag with explicit value (e.g., default false).
+    // Use context-specific child def (not the global discriminator fallback) to
+    // decide: if annotated is a $ref config object HERE return {}, if it's a
+    // plain boolean HERE return true.  The global child_def may be polluted by
+    // get_discriminator_config_type() returning a $ref from a different context.
+    if (kw.is_flag && !kw.param_values.empty() && !kw.has_children()) {
+        std::string context_child_def = ast_metadata::get_child_config_type(parent_def, kw_name);
+        if (!context_child_def.empty()) {
+            // $ref config object in this specific context → empty object.
+            return json::object();
+        }
+        if (is_boolean_in_context(kw_name, parent_def)) {
+            return bool_from_value(kw.param_values);
+        }
     }
     
     // Case 2: Keyword with values only (no children)
@@ -511,6 +522,11 @@ inline json ast_to_json(const Document& doc) {
 inline void replace_inf_values(json& j) {
     if (j.is_number_float()) {
         double val = j.get<double>();
+        // Emit "inf"/"-inf" for:
+        //   1. IEEE infinity (user-supplied inf in DSL/JSON)
+        //   2. ±1e308 (Python metadata sentinel for infinity in schema defaults)
+        // Do NOT convert ±1.7976931348623157e+308 (DBL_MAX) — that is a legitimate
+        // finite schema default (e.g. solution_target).
         bool pos = (std::isinf(val) && val > 0) || val == 1e308;
         bool neg = (std::isinf(val) && val < 0) || val == -1e308;
         if (pos) j = "inf";
@@ -540,7 +556,8 @@ inline std::string shortest_float_repr(double val) {
     
     char buf[64];
     
-    // Find the shortest %g representation that round-trips
+    // Find the shortest %g representation that round-trips exactly (up to 17 sig figs).
+    // Matches Python repr() / pydantic output used in validated JSON targets.
     for (int prec = 1; prec <= 17; ++prec) {
         int n = std::snprintf(buf, sizeof(buf), "%.*g", prec, val);
         char* end;
@@ -567,6 +584,37 @@ inline std::string shortest_float_repr(double val) {
     return buf;
 }
 
+// DSL float representation: capped at 15 significant digits to match Dakota's
+// ordered DSL output (output_precision = 16 in Dakota means 15 sig figs displayed).
+inline std::string dsl_float_repr(double val) {
+    if (std::isinf(val)) return val > 0 ? "inf" : "-inf";
+    if (std::isnan(val)) return "0.0";
+    if (val == 0.0) return "0.0";
+
+    int exponent = static_cast<int>(std::floor(std::log10(std::abs(val))));
+    bool prefer_fixed = (exponent >= -4 && exponent < 16);
+
+    char buf[64];
+    for (int prec = 1; prec <= 15; ++prec) {
+        int n = std::snprintf(buf, sizeof(buf), "%.*g", prec, val);
+        char* end;
+        double reparsed = std::strtod(buf, &end);
+        if (reparsed == val) {
+            std::string s(buf, n);
+            bool is_sci = s.find('e') != std::string::npos || s.find('E') != std::string::npos;
+            if (prefer_fixed && is_sci) continue;
+            if (!is_sci && s.find('.') == std::string::npos) s += ".0";
+            return s;
+        }
+    }
+    // Fallback: 15 sig figs (may not round-trip, but matches Dakota's display)
+    std::snprintf(buf, sizeof(buf), "%.15g", val);
+    std::string s(buf);
+    if (s.find('.') == std::string::npos && s.find('e') == std::string::npos &&
+        s.find('E') == std::string::npos) s += ".0";
+    return s;
+}
+
 // Custom JSON serializer with shortest float representation
 inline void serialize_json(std::string& out, const json& j, int indent, int depth) {
     std::string pad(depth * indent, ' ');
@@ -583,6 +631,11 @@ inline void serialize_json(std::string& out, const json& j, int indent, int dept
     } else if (j.is_number_float()) {
         double val = j.get<double>();
         // Handle inf/1e308 sentinels
+        // Emit "inf"/"-inf" for:
+        //   1. IEEE infinity (user-supplied inf in DSL/JSON)
+        //   2. ±1e308 (Python metadata sentinel for infinity in schema defaults)
+        // Do NOT convert ±1.7976931348623157e+308 (DBL_MAX) — that is a legitimate
+        // finite schema default (e.g. solution_target).
         bool pos = (std::isinf(val) && val > 0) || val == 1e308;
         bool neg = (std::isinf(val) && val < 0) || val == -1e308;
         if (pos) { out += "\"inf\""; }

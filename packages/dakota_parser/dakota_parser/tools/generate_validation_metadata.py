@@ -169,8 +169,59 @@ class ValidationMetadataGenerator:
         lines.append(self._generate_computed_fields_function())
         lines.append(self._generate_schema_walk_map_function())
         lines.append(self._generate_block_definitions_function())
+        lines.append(self._generate_internal_only_defaults_function())
+        lines.append(self._generate_integer_field_coercion_function())
         lines.append(self._generate_validate_definition_function())
         lines.append(self._generate_validate_json_document_function())
+        return '\n'.join(lines)
+
+    def _generate_internal_only_defaults_function(self) -> str:
+        """Generate accessor for x-internal-only field defaults.
+
+        These fields must NOT be in the instance when the validator runs
+        (the library rejects them as user-provided).  After validation they
+        must be present with their schema default if the library did not set
+        them via mutation.  This mirrors pydantic's field-default behaviour.
+        """
+        # Collect x-internal-only fields that have a non-null default
+        internal: Dict[str, Dict[str, Any]] = {}
+        for defname, defn in self.defs.items():
+            for prop, pschema in defn.get('properties', {}).items():
+                if (pschema.get('x-internal-only')
+                        and 'default' in pschema
+                        and pschema['default'] is not None):
+                    internal.setdefault(defname, {})[prop] = pschema['default']
+
+        lines = []
+        lines.append("// ============================================================================")
+        lines.append("// x-internal-only field defaults (post-validation insertion)")
+        lines.append("// ============================================================================")
+        lines.append("")
+        lines.append("inline const json& get_internal_only_defaults(const std::string& def_name) {")
+        lines.append("    static const std::map<std::string, json> data = []() {")
+        lines.append("        std::map<std::string, json> m;")
+
+        for defname in sorted(internal):
+            fields = internal[defname]
+            field_parts = []
+            for fname, fval in fields.items():
+                if isinstance(fval, bool):
+                    jval = 'true' if fval else 'false'
+                elif isinstance(fval, str):
+                    escaped = fval.replace('\\', '\\\\'').replace('"\', '\\"'')
+                    jval = f'"{escaped}"'
+                else:
+                    jval = str(fval)
+                field_parts.append(f'{{"{fname}", {jval}}}')
+            lines.append(f'        m["{defname}"] = json::object({{{", ".join(field_parts)}}});')
+
+        lines.append("        return m;")
+        lines.append("    }();")
+        lines.append("    static const json empty = json::object();")
+        lines.append("    auto it = data.find(def_name);")
+        lines.append("    return it != data.end() ? it->second : empty;")
+        lines.append("}")
+        lines.append("")
         return '\n'.join(lines)
 
     def _generate_preamble(self) -> str:
@@ -201,6 +252,7 @@ class ValidationMetadataGenerator:
 #include <string>
 #include <vector>
 #include <map>
+#include <set>
 #include <stdexcept>
 #include <cmath>
 #include <limits>
@@ -265,18 +317,27 @@ struct FieldConstraint {{
 
     @staticmethod
     def _sanitize_json_str(obj: Any) -> str:
-        """Serialize to JSON, replacing Python infinity with C++-parseable values.
-        
-        Python's json.dumps produces 'Infinity'/'-Infinity' which is not valid JSON.
-        We replace with 1e308/-1e308 (largest representable double ≈ 1.7e308),
-        which is effectively infinity for Dakota's bound-checking validators.
+        """Serialize to JSON, replacing all infinity representations with 1e308/-1e308.
+
+        Handles two schema variants:
+          - Old schema: Python float('inf') from json.dumps producing 'Infinity'
+          - New schema: string "inf"/"-inf" written directly in validationLiterals
+
+        Both are normalised to 1e308/-1e308 (finite doubles that the C++ runtime
+        recognises as infinity sentinels), keeping the generated header valid JSON
+        and leaving the existing sentinel-conversion code untouched.
         """
+        INF_STRINGS  = {'inf', 'infinity'}
+        NINF_STRINGS = {'-inf', '-infinity'}
+
         def replace_inf(o):
             if isinstance(o, float):
-                if o == float('inf'):
-                    return 1e308
-                elif o == float('-inf'):
-                    return -1e308
+                if o == float('inf'):  return 1e308
+                if o == float('-inf'): return -1e308
+            elif isinstance(o, str):
+                low = o.lower()
+                if low in INF_STRINGS:  return 1e308
+                if low in NINF_STRINGS: return -1e308
             elif isinstance(o, dict):
                 return {k: replace_inf(v) for k, v in o.items()}
             elif isinstance(o, list):
@@ -390,6 +451,123 @@ struct FieldConstraint {{
         lines.append("")
         return '\n'.join(lines)
 
+
+    def _generate_integer_field_coercion_function(self) -> str:
+        """Generate get_integer_array_fields() for schema integer-type enforcement.
+
+        When REALLIST and INTEGERLIST types conflict, the grammar uses REALLIST.
+        Users writing integer values as "0." get doubles in the AST, producing
+        "0.0" instead of the schema-correct "0". This enforces the schema type.
+        """
+        lines = []
+        lines.append("// ============================================================================")
+        lines.append("// Schema integer-type enforcement (float->int coercion)")
+        lines.append("// ============================================================================")
+        lines.append("")
+        lines.append("inline const std::set<std::string>&")
+        lines.append("get_integer_array_fields(const std::string& def_name) {")
+        lines.append("    static const std::map<std::string, std::set<std::string>> data = []() {")
+        lines.append("        std::map<std::string, std::set<std::string>> m;")
+        lines.append("        m[\"AdaptiveSamplingConfig\"] = {\"refinement_samples\"};")
+        lines.append("        m[\"ApproximateControlVariateConfig\"] = {\"pilot_samples\", \"seed_sequence\"};")
+        lines.append("        m[\"BinomialUncertain\"] = {\"initial_point\", \"num_trials\"};")
+        lines.append("        m[\"BuildSurrogate\"] = {\"refinement_samples\"};")
+        lines.append("        m[\"CenteredParameterStudyConfig\"] = {\"steps_per_variable\"};")
+        lines.append("        m[\"ContinuousIntervalUncertain\"] = {\"num_intervals\"};")
+        lines.append("        m[\"DiscreteDesignRange\"] = {\"initial_point\", \"lower_bounds\", \"upper_bounds\"};")
+        lines.append("        m[\"DiscreteDesignSetInteger\"] = {\"elements\", \"elements_per_variable\", \"initial_point\"};")
+        lines.append("        m[\"DiscreteDesignSetReal\"] = {\"elements_per_variable\"};")
+        lines.append("        m[\"DiscreteDesignSetString\"] = {\"adjacency_matrix\", \"elements_per_variable\"};")
+        lines.append("        m[\"DiscreteIntervalUncertain\"] = {\"initial_point\", \"lower_bounds\", \"num_intervals\", \"upper_bounds\"};")
+        lines.append("        m[\"DiscreteStateRange\"] = {\"initial_state\", \"lower_bounds\", \"upper_bounds\"};")
+        lines.append("        m[\"DiscreteStateSetInteger\"] = {\"elements\", \"elements_per_variable\", \"initial_state\"};")
+        lines.append("        m[\"DiscreteStateSetReal\"] = {\"elements_per_variable\"};")
+        lines.append("        m[\"DiscreteStateSetString\"] = {\"elements_per_variable\"};")
+        lines.append("        m[\"DiscreteUncertainSetInteger\"] = {\"elements\", \"elements_per_variable\", \"initial_point\"};")
+        lines.append("        m[\"DiscreteUncertainSetReal\"] = {\"elements_per_variable\"};")
+        lines.append("        m[\"DiscreteUncertainSetString\"] = {\"elements_per_variable\"};")
+        lines.append("        m[\"EmulatorMfPceExpansionOrderSequenceCollocRatioConfig\"] = {\"collocation_points_sequence\"};")
+        lines.append("        m[\"EmulatorMfPceExpansionOrderSequenceConfig\"] = {\"sequence\"};")
+        lines.append("        m[\"EmulatorMfPceQuadratureOrderSequenceConfig\"] = {\"sequence\"};")
+        lines.append("        m[\"EmulatorMfPceSGLevelSequenceConfig\"] = {\"sequence\"};")
+        lines.append("        m[\"EmulatorMfScSGLevelSequenceConfig\"] = {\"sequence\"};")
+        lines.append("        m[\"EmulatorMlPceExpansionOrderSequenceCollocRatioConfig\"] = {\"collocation_points_sequence\"};")
+        lines.append("        m[\"EmulatorMlPceExpansionOrderSequenceConfig\"] = {\"sequence\"};")
+        lines.append("        m[\"EmulatorMlPceExpansionOrderSequenceExpansionSamplesSequenceConfig\"] = {\"sequence\"};")
+        lines.append("        m[\"EmulatorMlPceOrthogLeastInterpConfig\"] = {\"collocation_points_sequence\", \"tensor_grid\"};")
+        lines.append("        m[\"EmulatorPceOrthogLeastInterpConfig\"] = {\"tensor_grid\"};")
+        lines.append("        m[\"ExpansionOptionsGenReliabilityLevels\"] = {\"num_gen_reliability_levels\"};")
+        lines.append("        m[\"ExpansionOptionsProbabilityLevels\"] = {\"num_probability_levels\"};")
+        lines.append("        m[\"ExpansionOptionsProbabilityRefinement\"] = {\"refinement_samples\"};")
+        lines.append("        m[\"ExpansionOptionsReliabilityLevels\"] = {\"num_reliability_levels\"};")
+        lines.append("        m[\"ExpansionOptionsResponseLevels\"] = {\"num_response_levels\"};")
+        lines.append("        m[\"FieldCalibrationTerms\"] = {\"lengths\", \"num_coordinates_per_field\"};")
+        lines.append("        m[\"FieldObjectives\"] = {\"lengths\", \"num_coordinates_per_field\"};")
+        lines.append("        m[\"FieldResponses\"] = {\"lengths\", \"num_coordinates_per_field\"};")
+        lines.append("        m[\"FsuQuasiMcConfig\"] = {\"prime_base\", \"sequence_leap\", \"sequence_start\"};")
+        lines.append("        m[\"GenReliabilityLevelsGenReliabilityLevels\"] = {\"num_gen_reliability_levels\"};")
+        lines.append("        m[\"GeneratingMatricesInline\"] = {\"inline\"};")
+        lines.append("        m[\"GeneratingVectorInline\"] = {\"inline\"};")
+        lines.append("        m[\"GeometricUncertain\"] = {\"initial_point\"};")
+        lines.append("        m[\"HistogramBinUncertain\"] = {\"pairs_per_variable\"};")
+        lines.append("        m[\"HistogramPointUncertainInteger\"] = {\"abscissas\", \"initial_point\", \"pairs_per_variable\"};")
+        lines.append("        m[\"HistogramPointUncertainReal\"] = {\"pairs_per_variable\"};")
+        lines.append("        m[\"HistogramPointUncertainString\"] = {\"pairs_per_variable\"};")
+        lines.append("        m[\"HypergeometricUncertain\"] = {\"initial_point\", \"num_drawn\", \"selected_population\", \"total_population\"};")
+        lines.append("        m[\"IdNumericalHessians\"] = {\"values\"};")
+        lines.append("        m[\"IdQuasiHessians\"] = {\"values\"};")
+        lines.append("        m[\"ImportanceSamplingConfig\"] = {\"refinement_samples\"};")
+        lines.append("        m[\"IntegerCategorical\"] = {\"adjacency_matrix\"};")
+        lines.append("        m[\"IntegrationProbabilityRefinement\"] = {\"refinement_samples\"};")
+        lines.append("        m[\"MfPceConfig\"] = {\"seed_sequence\"};")
+        lines.append("        m[\"MfPceExpansionOrderSequenceCollocRatioConfig\"] = {\"collocation_points_sequence\"};")
+        lines.append("        m[\"MfPceExpansionOrderSequenceConfig\"] = {\"sequence\"};")
+        lines.append("        m[\"MfPceExpansionOrderSequenceExpansionSamplesSequenceConfig\"] = {\"sequence\"};")
+        lines.append("        m[\"MfPceOrthogLeastInterpConfig\"] = {\"collocation_points_sequence\", \"tensor_grid\"};")
+        lines.append("        m[\"MfPceQuadratureOrderSequenceConfig\"] = {\"sequence\"};")
+        lines.append("        m[\"MfPceSGLevelSequenceConfig\"] = {\"sequence\"};")
+        lines.append("        m[\"MixedGradientsConfig\"] = {\"id_analytic_gradients\", \"id_numerical_gradients\"};")
+        lines.append("        m[\"MixedHessiansConfig\"] = {\"id_analytic_hessians\"};")
+        lines.append("        m[\"MlPceConfig\"] = {\"seed_sequence\"};")
+        lines.append("        m[\"MlPceExpansionOrderSequenceCollocRatioConfig\"] = {\"collocation_points_sequence\"};")
+        lines.append("        m[\"MlPceExpansionOrderSequenceConfig\"] = {\"sequence\"};")
+        lines.append("        m[\"MlPceExpansionOrderSequenceExpansionSamplesSequenceConfig\"] = {\"sequence\"};")
+        lines.append("        m[\"MlPceOrthogLeastInterpConfig\"] = {\"collocation_points_sequence\", \"tensor_grid\"};")
+        lines.append("        m[\"MultidimParameterStudyConfig\"] = {\"partitions\"};")
+        lines.append("        m[\"MultifidelityFtConfig\"] = {\"collocation_points_sequence\", \"seed_sequence\", \"start_rank_sequence\"};")
+        lines.append("        m[\"MultifidelitySamplingConfig\"] = {\"pilot_samples\", \"seed_sequence\"};")
+        lines.append("        m[\"MultifidelityStochCollocConfig\"] = {\"seed_sequence\"};")
+        lines.append("        m[\"MultifidelityStochCollocQuadratureOrderSequenceConfig\"] = {\"sequence\"};")
+        lines.append("        m[\"MultifidelityStochCollocSGLevelSequenceConfig\"] = {\"sequence\"};")
+        lines.append("        m[\"MultilevelBlueConfig\"] = {\"seed_sequence\"};")
+        lines.append("        m[\"MultilevelFtConfig\"] = {\"collocation_points_sequence\", \"seed_sequence\", \"start_rank_sequence\"};")
+        lines.append("        m[\"MultilevelMcmcConfig\"] = {\"subsampling_steps\"};")
+        lines.append("        m[\"MultilevelMultifidelitySamplingConfig\"] = {\"pilot_samples\", \"seed_sequence\"};")
+        lines.append("        m[\"MultilevelSamplingConfig\"] = {\"pilot_samples\", \"seed_sequence\"};")
+        lines.append("        m[\"NegativeBinomialUncertain\"] = {\"initial_point\", \"num_trials\"};")
+        lines.append("        m[\"PceOrthogLeastInterpConfig\"] = {\"tensor_grid\"};")
+        lines.append("        m[\"PilotSamples\"] = {\"counts\"};")
+        lines.append("        m[\"PoissonUncertain\"] = {\"initial_point\"};")
+        lines.append("        m[\"ProbabilityLevelsContext1ProbabilityLevels\"] = {\"num_probability_levels\"};")
+        lines.append("        m[\"ProbabilityLevelsContext2ProbabilityLevels\"] = {\"num_probability_levels\"};")
+        lines.append("        m[\"PsuadeMoatConfig\"] = {\"partitions\"};")
+        lines.append("        m[\"RealCategorical\"] = {\"adjacency_matrix\"};")
+        lines.append("        m[\"ReliabilityLevelsReliabilityLevels\"] = {\"num_reliability_levels\"};")
+        lines.append("        m[\"ResponseLevelsComputeProbGenContext1ResponseLevels\"] = {\"num_response_levels\"};")
+        lines.append("        m[\"ResponseLevelsComputeProbGenContext2ResponseLevels\"] = {\"num_response_levels\"};")
+        lines.append("        m[\"ResponseLevelsComputeProbRelGenResponseLevels\"] = {\"num_response_levels\"};")
+        lines.append("        m[\"SamplingConfig\"] = {\"refinement_samples\"};")
+        lines.append("        m[\"StartOrderSequence\"] = {\"sequence\"};")
+        lines.append("        m[\"SurrogateConfig\"] = {\"id_surrogates\"};")
+        lines.append("        return m;")
+        lines.append("    }();")
+        lines.append("    static const std::set<std::string> empty;")
+        lines.append("    auto it = data.find(def_name);")
+        lines.append("    return it != data.end() ? it->second : empty;")
+        lines.append("}")
+        lines.append("")
+        return '\n'.join(lines)
+
     def _generate_validate_definition_function(self) -> str:
         return """\
 // ============================================================================
@@ -498,31 +676,58 @@ inline json validate_definition(const std::string& def_name, json instance) {
             std::string context = rule_spec.at("validationContext").get<std::string>();
 
             // The JSON metadata encodes Python float('inf') as ±1e308 because
-            // JSON has no infinity literal.  Convert to real IEEE infinity so
-            // validators can compare naturally (e.g. "must be < inf" passes).
-            json resolved_literals = literals;
-            for (auto& lit : resolved_literals) {
-                if (lit.is_number_float()) {
-                    double v = lit.get<double>();
-                    if (v == 1e308)  lit = std::numeric_limits<double>::infinity();
-                    else if (v == -1e308) lit = -std::numeric_limits<double>::infinity();
-                }
-            }
+            // JSON has no infinity literal.
+            //
+            // For bound-check rules (check_real_upper/lower_bound), we convert
+            // the sentinel to IEEE infinity so comparisons like "v <= inf" work
+            // correctly — then skip the vacuous ones that are always true.
+            //
+            // For all other rules (e.g. default_bounds_real, default_initial_point_real),
+            // we keep ±1e308 as-is.  These functions use the sentinel values to
+            // construct default arrays, not for comparisons; passing IEEE infinity
+            // changes their internal behaviour and causes type errors when the
+            // instance already has populated fields.
+            const bool is_bound_check = (rule_name == "check_real_upper_bound" ||
+                                         rule_name == "check_real_lower_bound");
 
-            // Skip vacuous bound checks: "must be < inf" or "must be > -inf"
-            // are true by definition for all finite values, and infinity values
-            // in the instance are always defaults (never user-specified).
-            if ((rule_name == "check_real_upper_bound" || rule_name == "check_real_lower_bound") &&
-                !resolved_literals.empty() && resolved_literals[0].is_number_float() &&
-                std::isinf(resolved_literals[0].get<double>())) {
-                continue;
+            json resolved_literals = literals;
+            if (is_bound_check) {
+                for (auto& lit : resolved_literals) {
+                    if (lit.is_number_float()) {
+                        double v = lit.get<double>();
+                        if (v == 1e308)  lit = std::numeric_limits<double>::infinity();
+                        else if (v == -1e308) lit = -std::numeric_limits<double>::infinity();
+                    }
+                }
+                // Skip vacuous bound checks that are always true for finite values.
+                if (!resolved_literals.empty() && resolved_literals[0].is_number_float() &&
+                    std::isinf(resolved_literals[0].get<double>())) {
+                    continue;
+                }
             }
 
             if (g_validation_debug) {
                 std::cerr << "[VAL_DEBUG]   rule: " << rule_name << "\\n";
             }
 
-            json mutations = registry.validate(instance, rule_name, fields, resolved_literals, context);
+            // Guard: skip default-setter rules when their target fields are
+            // already populated.  The C++ library implementations of these
+            json mutations;
+            try {
+                mutations = registry.validate(instance, rule_name, fields, resolved_literals, context);
+            } catch (const validation::ValidationError& e) {
+                throw;  // Let ValidationError propagate as-is
+            } catch (const std::exception& e) {
+                std::string field_list;
+                for (size_t fi = 0; fi < fields.size(); ++fi) {
+                    if (fi) field_list += ", ";
+                    field_list += fields[fi];
+                }
+                throw std::runtime_error(
+                    "rule '" + rule_name + "' on def '" + def_name +
+                    "' (fields: [" + field_list + "]): " + e.what() +
+                    " | instance: " + instance.dump());
+            }
 
             if (g_validation_debug && !mutations.is_null() && !mutations.empty()) {
                 std::cerr << "[VAL_DEBUG]   mutations from " << rule_name << ": "
@@ -556,6 +761,42 @@ inline json validate_definition(const std::string& def_name, json instance) {
                     std::cerr << "[VAL_DEBUG] computed_field FAILED: "
                               << func_name << ": " << e.what() << "\\n";
                 }
+                throw std::runtime_error(
+                    "computed_field '" + field_name + "' (function '" +
+                    func_name + "') in def '" + def_name + "': " + e.what());
+            }
+        }
+    }
+
+    // Enforce schema integer types: coerce whole-number doubles to int64_t.
+    // Needed when REALLIST grammar parses "0." as 0.0 but the schema
+    // declares the field as items.type=integer.
+    {
+        const auto& int_fields = get_integer_array_fields(def_name);
+        for (const auto& field_name : int_fields) {
+            if (!instance.contains(field_name) || !instance[field_name].is_array()) continue;
+            for (auto& elem : instance[field_name]) {
+                if (elem.is_number_float()) {
+                    double v = elem.get<double>();
+                    auto iv = static_cast<int64_t>(v);
+                    if (static_cast<double>(iv) == v) {
+                        elem = iv;
+                    }
+                }
+            }
+        }
+    }
+
+    // Post-validation: insert x-internal-only field defaults where absent.
+    // Pydantic sets these via field defaults BEFORE validation so the validator
+    // can read but not modify them directly.  We insert them AFTER validation
+    // so the library\'s "must not be user-provided" guard never sees them,
+    // but they still appear in the final output with the correct default value.
+    const auto& internal_defs = get_internal_only_defaults(def_name);
+    if (!internal_defs.empty()) {
+        for (auto& [field, default_val] : internal_defs.items()) {
+            if (!instance.contains(field)) {
+                instance[field] = default_val;
             }
         }
     }
@@ -591,7 +832,7 @@ inline void walk_and_validate(
         errors.push_back(path + ": " + e.what());
         return;  // instance is moved-from; cannot walk children
     } catch (const std::exception& e) {
-        errors.push_back(path + ": [internal] " + e.what());
+        errors.push_back(path + " (def=" + def_name + "): [internal] " + e.what());
         if (g_validation_debug) {
             std::cerr << "[VAL_DEBUG] EXCEPTION at " << path
                       << " (def=" << def_name << "): " << e.what() << "\\n";

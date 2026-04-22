@@ -88,6 +88,7 @@ struct repeat_base_string : quoted_string {};
 // Real repeat: 9*-1.0, 9* 1.0, 3*1.5e-3
 struct repeat_real_value : pegtl::seq<
     repeat_count,
+    pegtl::star<pegtl::blank>,  // Allow optional spaces/tabs before *
     repeat_operator,
     pegtl::star<pegtl::blank>,  // Allow optional spaces/tabs after *
     repeat_base_number
@@ -96,6 +97,7 @@ struct repeat_real_value : pegtl::seq<
 // String repeat: 3*'hello', 5* "world"
 struct repeat_string_value : pegtl::seq<
     repeat_count,
+    pegtl::star<pegtl::blank>,  // Allow optional spaces/tabs before *
     repeat_operator,
     pegtl::star<pegtl::blank>,  // Allow optional spaces/tabs after *
     repeat_base_string
@@ -103,6 +105,61 @@ struct repeat_string_value : pegtl::seq<
 
 // Combined repeat value (tries real first since it's more specific)
 struct repeat_value : pegtl::sor<repeat_string_value, repeat_real_value> {};
+
+// ============================================================================
+// RANGE VALUE SUPPORT (start:end syntax)
+// ============================================================================
+
+// Range notation: integer:integer  e.g. "5:50" expands to 5.0 6.0 ... 50.0
+// The range start and end are non-negative or negative integers (no decimals).
+struct range_start : pegtl::seq<
+    pegtl::opt<pegtl::one<'-', '+'>>,
+    pegtl::plus<pegtl::digit>
+> {};
+
+struct range_separator : pegtl::one<':'> {};
+
+struct range_end : pegtl::seq<
+    pegtl::opt<pegtl::one<'-', '+'>>,
+    pegtl::plus<pegtl::digit>
+> {};
+
+// range_value: integer start:end (no step), e.g. "5:50"
+// Must NOT be followed by ':' to avoid misparsing "1:2:3".
+struct range_value : pegtl::seq<
+    range_start,
+    range_separator,
+    range_end,
+    pegtl::not_at<pegtl::one<':'>>
+> {};
+
+// range_real_component: a real number (with optional sign, digits, dot, exponent)
+// used in the start:step:end form, e.g. "1000.:1000.:8000."
+struct range_real_component : pegtl::seq<
+    pegtl::opt<pegtl::one<'-', '+'>>,
+    pegtl::sor<
+        // digits then optional dot+digits
+        pegtl::seq<pegtl::plus<pegtl::digit>,
+                   pegtl::opt<pegtl::seq<pegtl::one<'.'>, pegtl::star<pegtl::digit>>>>,
+        // dot then digits
+        pegtl::seq<pegtl::one<'.'>, pegtl::plus<pegtl::digit>>
+    >,
+    // optional exponent
+    pegtl::opt<pegtl::seq<
+        pegtl::one<'e', 'E'>,
+        pegtl::opt<pegtl::one<'-', '+'>>,
+        pegtl::plus<pegtl::digit>
+    >>
+> {};
+
+// range_value_step: start:step:end with real components, e.g. "1000.:1000.:8000."
+struct range_value_step : pegtl::seq<
+    range_real_component,
+    range_separator,
+    range_real_component,
+    range_separator,
+    range_real_component
+> {};
 
 // ============================================================================
 // TYPE-SPECIFIC VALUE ITEMS
@@ -146,6 +203,16 @@ struct opt_value_separator : pegtl::star<pegtl::sor<
 
 // Value terminator: stops when we see a new keyword or block
 // Uses opt_value_separator to skip comments before checking for keywords
+// Value terminator fires at "inf"/"infinity"/"nan" without this guard,
+// because their first letter is alpha and matches keyword_start.
+// Exclude them explicitly so real_list can consume infinity literals.
+struct not_infinity_literal : pegtl::not_at<pegtl::seq<
+    pegtl::opt<pegtl::one<'-', '+'>>,
+    pegtl::sor<TAO_PEGTL_ISTRING("infinity"), TAO_PEGTL_ISTRING("inf"),
+               TAO_PEGTL_ISTRING("nan")>,
+    pegtl::not_at<pegtl::sor<pegtl::alnum, pegtl::one<'_'>>>
+>> {};
+
 struct value_terminator : pegtl::sor<
     pegtl::at<pegtl::seq<opt_value_separator, pegtl::sor<
         pegtl::seq<TAO_PEGTL_STRING("environment"), pegtl::not_at<pegtl::sor<pegtl::alnum, pegtl::one<'_'>>>>,
@@ -155,13 +222,14 @@ struct value_terminator : pegtl::sor<
         pegtl::seq<TAO_PEGTL_STRING("interface"), pegtl::not_at<pegtl::sor<pegtl::alnum, pegtl::one<'_'>>>>,
         pegtl::seq<TAO_PEGTL_STRING("responses"), pegtl::not_at<pegtl::sor<pegtl::alnum, pegtl::one<'_'>>>>
     >>>,
-    pegtl::at<pegtl::seq<opt_value_separator, keyword_start>>
+    pegtl::at<pegtl::seq<opt_value_separator, not_infinity_literal, keyword_start>>
 > {};
 
 // String list: one or more quoted strings (with repeat support)
 struct string_or_repeat_string : pegtl::sor<repeat_string_value, string_value> {};
 
 struct string_list_items : pegtl::seq<
+    opt_value_separator,   // skip leading whitespace/comments before first value
     string_or_repeat_string,
     pegtl::star<
         pegtl::seq<
@@ -180,9 +248,10 @@ struct string_list : string_list_items {};
 
 // Integer list: one or more integers (with repeat support)
 // Note: repeat_real_value handles integers too (9*0 parses as 9*0.0 which converts to int)
-struct integer_or_repeat : pegtl::sor<repeat_real_value, integer_value> {};
+struct integer_or_repeat : pegtl::sor<range_value_step, range_value, repeat_real_value, real_value, integer_value> {};
 
 struct integer_list_items : pegtl::seq<
+    opt_value_separator,   // skip leading whitespace/comments before first value
     integer_or_repeat,
     pegtl::star<
         pegtl::seq<
@@ -200,9 +269,10 @@ struct integer_list_items : pegtl::seq<
 struct integer_list : integer_list_items {};
 
 // Real list: one or more real numbers (with repeat support)
-struct real_or_repeat : pegtl::sor<repeat_real_value, real_value> {};
+struct real_or_repeat : pegtl::sor<range_value_step, range_value, repeat_real_value, real_value> {};
 
 struct real_list_items : pegtl::seq<
+    opt_value_separator,   // skip leading whitespace/comments before first value
     real_or_repeat,
     pegtl::star<
         pegtl::seq<
@@ -222,6 +292,8 @@ struct real_list : real_list_items {};
 // Generic value item (for backwards compatibility or unknown types)
 // NOTE: This includes identifier which can cause ambiguity - use type-specific rules when possible
 struct value_item : pegtl::sor<
+    range_value_step,
+    range_value,
     repeat_value,
     quoted_string,
     number,
@@ -279,8 +351,8 @@ template<typename KeywordRule>
 struct keyword_with_integer : pegtl::seq<
     KeywordRule,
     pegtl::must<pegtl::sor<
-        pegtl::seq<equals_with_ws, integer_value>,
-        pegtl::seq<pegtl::plus<pegtl::space>, integer_value>
+        pegtl::seq<equals_with_ws, integer_or_repeat>,
+        pegtl::seq<pegtl::plus<pegtl::space>, integer_or_repeat>
     >>
 > {};
 
@@ -337,7 +409,7 @@ struct keyword_flag : KeywordRule {};
 struct safe_value_item : pegtl::sor<
     repeat_value,
     quoted_string,
-    number
+    real_value   // covers infinity literals (inf/-inf) and all numbers
 > {};
 
 // Safe value list - only numbers and quoted strings, no bare identifiers
@@ -364,12 +436,13 @@ struct keyword_with_optional_param : pegtl::seq<
     pegtl::opt<pegtl::sor<
         // With equals sign - definitely has a value
         pegtl::seq<equals_with_ws, safe_value_list>,
-        // Without equals - only parse value if next thing looks like a value (number or quote)
+        // Without equals - only parse value if next thing looks like a value (number, quote, or inf)
         pegtl::seq<
             pegtl::plus<pegtl::space>,
             pegtl::at<pegtl::sor<
                 pegtl::one<'"', '\''>,  // Quote for string
-                pegtl::seq<pegtl::opt<pegtl::one<'-', '+'>>, pegtl::sor<pegtl::digit, pegtl::one<'.'>>>  // Number
+                pegtl::seq<pegtl::opt<pegtl::one<'-', '+'>>, pegtl::sor<pegtl::digit, pegtl::one<'.'>>>,  // Number
+                infinity_literal  // inf/-inf/infinity/-infinity
             >>,
             safe_value_list
         >

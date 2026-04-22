@@ -58,9 +58,10 @@ ALL_BLOCKS = ["environment", "method", "model", "variables", "interface", "respo
 class CodeGenerator:
     """Generate C++ code for staged parsing"""
     
-    def __init__(self, block: BlockInfo, output_dir: Path):
+    def __init__(self, block: BlockInfo, output_dir: Path, schema_defs: dict = None):
         self.block = block
         self.output_dir = output_dir
+        self.schema_defs = schema_defs or {}
     
     def generate_all(self):
         """Generate all files for the block"""
@@ -345,8 +346,13 @@ class CodeGenerator:
             
             entry_rules.append(f"    {wrapper}")
         
-        # Add catch-all rules at the end (lowest priority)
-        entry_rules.append(f"    keyword_with_param<{self.block.name}_unknown_keyword>")
+        # Add catch-all rules at the end (lowest priority).
+        # Use keyword_with_optional_param (safe_value_list: numbers + quoted strings only),
+        # NOT keyword_with_param (value_list: also matches bare identifiers).
+        # keyword_with_param would greedily consume the next keyword name as a string
+        # value when an unrecognised truncated keyword appears (e.g. "asynch" consuming
+        # "evaluation_concurrency" before it can be parsed as its own keyword).
+        entry_rules.append(f"    keyword_with_optional_param<{self.block.name}_unknown_keyword>")
         entry_rules.append(f"    keyword_flag<{self.block.name}_unknown_keyword>")
         
         lines.append(",\n".join(entry_rules))
@@ -359,8 +365,8 @@ class CodeGenerator:
         comment = "zero or more keywords (all optional)" if quantifier == "star" else "at least one keyword required"
         lines.append(f"// {self.block.name.upper()} content - {comment}")
         lines.append(f"struct {self.block.name}_content : pegtl::seq<")
-        lines.append("    opt_separator,")
-        lines.append(f"    pegtl::{quantifier}<pegtl::seq<{self.block.name}_entry, opt_separator>>")
+        lines.append("    opt_value_separator,")
+        lines.append(f"    pegtl::{quantifier}<pegtl::seq<{self.block.name}_entry, opt_value_separator>>")
         lines.append("> {};")
         lines.append("")
         
@@ -373,6 +379,55 @@ class CodeGenerator:
         if VERBOSE_MODE:
             print(f"  Generated {output_file.name}")
     
+    def _compute_reallist_keywords(self) -> set:
+        """Return keyword names that have REAL or REALLIST type in any context.
+        These need int64_t→double coercion at Phase 2 placement time when the
+        grammar wrapper is generic (e.g. due to STRINGLIST type conflicts)."""
+        reallist_names = set()
+        for kw_id, kw in self.block.keywords.items():
+            if kw.has_param and kw.param_type:
+                pt = kw.param_type.upper()
+                if 'REAL' in pt:
+                    reallist_names.add(kw.name)
+        return reallist_names
+
+    def _compute_union_default_variants(self) -> dict:
+        """Return map of {union_dotted_path: default_variant_name} for Pass 3 tiebreaker.
+        When Pass 3 has tied candidates, prefer the path whose next component
+        matches the union's x-model-default (e.g. solution_mode → online_pilot)."""
+        import re as _re
+        defs = self.schema_defs
+        pcm = self.block.parent_child_map
+        result = {}
+        for defname, defn in defs.items():
+            for prop, pschema in defn.get('properties', {}).items():
+                xmd = pschema.get('x-model-default')
+                if not xmd or not pschema.get('x-union-pattern'): continue
+                snake = _re.sub(r'(?<!^)(?=[A-Z])', '_', xmd).lower()
+                for pcm_path, children in pcm.items():
+                    if prop not in children: continue
+                    union_path = pcm_path + '.' + prop
+                    if snake in pcm.get(union_path, set()):
+                        result[union_path] = snake
+        return result
+
+    def _compute_integerlist_keywords(self) -> set:
+        """Return keyword names that are ONLY INTEGER/INTEGERLIST in ALL contexts.
+        These need double→int64_t coercion when scientific notation like 1.E5
+        is parsed as real_value fallback in integer_or_repeat.
+        Keywords that also appear as REALLIST (e.g. initial_point) must NOT
+        be coerced — they legitimately hold floating-point values."""
+        integer_names = set()
+        non_integer_names = set()  # any name that appears as REAL in any context
+        for kw_id, kw in self.block.keywords.items():
+            if kw.has_param and kw.param_type:
+                pt = kw.param_type.upper()
+                if 'REAL' in pt or 'STRING' in pt:
+                    non_integer_names.add(kw.name)
+                elif 'INTEGER' in pt:
+                    integer_names.add(kw.name)
+        return integer_names - non_integer_names
+
     def generate_actions(self, block_dir: Path):
         """Generate actions file with reorganization"""
         output_file = block_dir / f'dakota_actions_{self.block.name}.hpp'
@@ -387,6 +442,7 @@ class CodeGenerator:
         lines.append(f'#include "{self.block.name}_parent_child_map.hpp"')
         lines.append(f'#include "dakota_semantic_{self.block.name}.hpp"')
         lines.append(f'#include "dakota_grammar_{self.block.name}.hpp"')
+        lines.append('#include <unordered_set>')
         lines.append("")
         lines.append("namespace dakota {")
         lines.append("namespace actions {")
@@ -427,6 +483,40 @@ class CodeGenerator:
         lines.append("")
         lines.append("    // Clear the block - we'll rebuild it")
         lines.append("    block->keywords.clear();")
+        lines.append("")
+
+        # ---- Emit static set of REALLIST-typed keyword names ----
+        # Keywords that have REALLIST type in any context get their
+        # int64_t param values coerced to double at placement time.
+        # This fixes the case where the grammar collapses to generic
+        # keyword_with_param (due to STRINGLIST conflicts) and bare
+        # integers like "1" are stored as int64_t instead of double.
+        reallist_kws = self._compute_reallist_keywords()
+        if reallist_kws:
+            kw_literals = ", ".join(f'"{k}"' for k in sorted(reallist_kws))
+            lines.append("    // Keywords whose param values must be stored as double,")
+            lines.append("    // even when the generic value_item parser stored them as int64_t.")
+            lines.append(f"    static const std::unordered_set<std::string> reallist_keywords = {{{kw_literals}}};")
+        else:
+            lines.append("    static const std::unordered_set<std::string> reallist_keywords = {};")
+        lines.append("")
+        integerlist_kws = self._compute_integerlist_keywords()
+        if integerlist_kws:
+            int_literals = ", ".join(f'"{k}"' for k in sorted(integerlist_kws))
+            lines.append("    // Keywords whose param values must be stored as int64_t,")
+            lines.append("    // even when scientific notation caused them to parse as double.")
+            lines.append(f"    static const std::unordered_set<std::string> integerlist_keywords = {{{int_literals}}};")
+        else:
+            lines.append("    static const std::unordered_set<std::string> integerlist_keywords = {};")
+        lines.append("")
+        udvs = self._compute_union_default_variants()
+        if udvs:
+            udv_entries = ", ".join(f'{{"{k}", "{v}"}}' for k, v in sorted(udvs.items()))
+            lines.append("    // Union x-model-default variants: used in Pass 3 tiebreaker.")
+            lines.append(f"    static const std::map<std::string, std::string> union_default_variants = {{{udv_entries}}};")
+        else:
+            lines.append("    static const std::map<std::string, std::string> union_default_variants = {};")
+        lines.append("")
         lines.append("")
         lines.append(f"    // Step 2: Create processing stack with block keyword (\"{self.block.name}\")")
         lines.append("    // The stack represents our current nesting context")
@@ -524,6 +614,22 @@ class CodeGenerator:
         lines.append("                            matches.push_back(valid_child);")
         lines.append("                        }")
         lines.append("                    }")
+        lines.append("                    // Also check aliases: if kw_name is a prefix of an alias")
+        lines.append("                    // that maps to a valid canonical child, use that.")
+        lines.append("                    // e.g. 'sobol' is a prefix of alias 'sobol_sequence'")
+        lines.append("                    // which maps to canonical 'digital_net'.")
+        lines.append("                    if (matches.empty()) {")
+        lines.append(f"                        const auto& alias_map = {self.block.name}_semantic::get_alias_map();")
+        lines.append("                        for (const auto& [alias_key, canonical] : alias_map) {")
+        lines.append("                            if (alias_key.first != potential_parent.dotted_path) continue;")
+        lines.append("                            const std::string& alias_name = alias_key.second;")
+        lines.append("                            if (alias_name.rfind(kw_name, 0) != 0) continue;  // kw_name not a prefix of alias")
+        lines.append("                            if (valid_children.find(canonical) == valid_children.end()) continue;")
+        lines.append("                            // Unique alias prefix match: resolve to canonical")
+        lines.append("                            matches.push_back(canonical);")
+        lines.append('                            DEBUG_OUT("[DEBUG]       Alias prefix match: " << kw_name << " -> alias " << alias_name << " -> canonical " << canonical << "\\n");')
+        lines.append("                        }")
+        lines.append("                    }")
         lines.append("")
         lines.append("                    // Check if truncation is valid (unique and not ambiguous)")
         lines.append("                    if (matches.size() == 1) {")
@@ -566,26 +672,145 @@ class CodeGenerator:
         lines.append("            if (parent_index == -1 && try_implicit_containers) {")
         lines.append('                DEBUG_OUT("[DEBUG]   Pass 3: Trying implicit container creation\\n");')
         lines.append("")
-        lines.append("                // Search all paths in parent_child_map for this keyword")
+        lines.append("                // Search all paths in parent_child_map for this keyword.")
+        lines.append("                // Prefer the path that shares the longest common prefix with")
+        lines.append("                // the current stack — this prevents choosing a bayes_calibration")
+        lines.append("                // path alphabetically over the correct mfpc path when the stack")
+        lines.append("                // already has mfpc as an ancestor.")
         lines.append("                std::string found_path;")
+        lines.append("                size_t best_prefix_len = 0;")
+        lines.append("                std::string best_alias_resolved;")
         lines.append("                for (const auto& [path, children] : parent_child_map) {")
-        lines.append("                    if (children.find(kw_name) != children.end() ||")
-        lines.append("                        children.find(resolved_name) != children.end()) {")
-        lines.append("                        found_path = path;")
-        lines.append("                        break;")
-        lines.append("                    }")
-        lines.append("                    // Also check aliases")
-        lines.append(f"                    auto alias_key = std::make_pair(path, kw_name);")
-        lines.append(f"                    auto alias_it = {self.block.name}_semantic::get_alias_map().find(alias_key);")
-        lines.append(f"                    if (alias_it != {self.block.name}_semantic::get_alias_map().end()) {{")
-        lines.append("                        if (children.find(alias_it->second) != children.end()) {")
-        lines.append("                            found_path = path;")
-        lines.append("                            resolved_name = alias_it->second;")
-        lines.append("                            kw->resolved_name = resolved_name;")
-        lines.append("                            kw->unresolved = false;")
-        lines.append("                            break;")
+        lines.append("                    // Exact match on kw_name or resolved_name")
+        lines.append("                    bool matches_kw = children.find(kw_name) != children.end() ||")
+        lines.append("                                      children.find(resolved_name) != children.end();")
+        lines.append("                    std::string candidate_alias;")
+        lines.append("                    // Truncation match: kw_name is a prefix of a canonical child")
+        lines.append("                    // (e.g. 'scale_type' is prefix of 'scale_types').")
+        lines.append("                    // Resolve to that child just as Pass 2 would.")
+        lines.append("                    if (!matches_kw) {")
+        lines.append("                        std::vector<std::string> trunc_matches;")
+        lines.append("                        for (const auto& child : children) {")
+        lines.append("                            if (child.rfind(kw_name, 0) == 0 && child != kw_name)")
+        lines.append("                                trunc_matches.push_back(child);")
+        lines.append("                        }")
+        lines.append("                        if (trunc_matches.size() == 1) {")
+        lines.append("                            matches_kw = true;")
+        lines.append("                            candidate_alias = trunc_matches[0];  // resolve to full canonical name")
         lines.append("                        }")
         lines.append("                    }")
+        lines.append("                    if (!matches_kw) {")
+        lines.append(f"                        auto alias_key = std::make_pair(path, kw_name);")
+        lines.append(f"                        auto alias_it = {self.block.name}_semantic::get_alias_map().find(alias_key);")
+        lines.append(f"                        if (alias_it != {self.block.name}_semantic::get_alias_map().end() &&")
+        lines.append("                            children.find(alias_it->second) != children.end()) {")
+        lines.append("                            matches_kw = true;")
+        lines.append("                            candidate_alias = alias_it->second;")
+        lines.append("                        }")
+        lines.append("                    }")
+        lines.append("                    if (!matches_kw) continue;")
+        lines.append("                    // Compute how many stack levels share a prefix with this path")
+        lines.append("                    size_t prefix_len = 0;")
+        lines.append("                    for (int si = 0; si < (int)processing_stack.size(); ++si) {")
+        lines.append("                        const std::string& sp = processing_stack[si].dotted_path;")
+        lines.append("                        if (path.rfind(sp, 0) == 0 &&")
+        lines.append("                            (path.length() == sp.length() || path[sp.length()] == '.')) {")
+        lines.append("                            prefix_len = sp.length();")
+        lines.append("                        }")
+        lines.append("                    }")
+        lines.append("                    // Tiebreaker: when prefix_len ties, prefer the path whose")
+        lines.append("                    // route through the AST follows committed nodes most deeply.")
+        lines.append("                    // e.g. with collocation_ratio committed under expansion_order,")
+        lines.append("                    // prefer pc.eo.collocation_ratio over pc.eo.collocation_points.")
+        lines.append("                    bool is_better = found_path.empty() || prefix_len > best_prefix_len;")
+        lines.append("                    if (!is_better && prefix_len == best_prefix_len) {")
+        lines.append("                        // Count committed steps along candidate path after the prefix")
+        lines.append("                        auto count_committed_depth = [&](const std::string& cand_path) -> int {")
+        lines.append("                            // Find the ancestor node on the stack at prefix depth")
+        lines.append("                            const KeywordNode* node = nullptr;")
+        lines.append("                            for (int si = (int)processing_stack.size() - 1; si >= 0; --si) {")
+        lines.append("                                if (processing_stack[si].dotted_path.length() == prefix_len) {")
+        lines.append("                                    node = processing_stack[si].node.get(); break;")
+        lines.append("                                }")
+        lines.append("                            }")
+        lines.append("                            // Parse remaining path components")
+        lines.append("                            std::string rem = cand_path.substr(prefix_len);")
+        lines.append("                            if (!rem.empty() && rem[0] == '.') rem = rem.substr(1);")
+        lines.append("                            int depth = 0;")
+        lines.append("                            while (!rem.empty()) {")
+        lines.append("                                size_t dot = rem.find('.');")
+        lines.append("                                std::string cpt = (dot != std::string::npos) ? rem.substr(0, dot) : rem;")
+        lines.append('                                rem = (dot != std::string::npos) ? rem.substr(dot + 1) : "";')
+        lines.append("                                // Check committed children (node) or block keywords (root)")
+        lines.append("                                if (node) {")
+        lines.append("                                    auto ci = node->children.find(cpt);")
+        lines.append("                                    if (ci == node->children.end() || ci->second.empty()) break;")
+        lines.append("                                    node = ci->second.back().get();")
+        lines.append("                                } else {")
+        lines.append("                                    auto ki = block->keywords.find(cpt);")
+        lines.append("                                    if (ki == block->keywords.end() || ki->second.empty()) break;")
+        lines.append("                                    node = ki->second.back().get();")
+        lines.append("                                }")
+        lines.append("                                ++depth;")
+        lines.append("                            }")
+        lines.append("                            return depth;")
+        lines.append("                        };")
+        lines.append("                        int new_depth = count_committed_depth(path);")
+        lines.append("                        int cur_depth = count_committed_depth(found_path);")
+        lines.append("                        if (new_depth > cur_depth) is_better = true;")
+        lines.append("                        // Secondary tiebreaker: if depths still tie,")
+        lines.append("                        // prefer path whose variant component matches")
+        lines.append("                        // the union x-model-default (e.g. online_pilot).")
+        lines.append("                        if (!is_better && new_depth == cur_depth && prefix_len > 0) {")
+        lines.append("                            auto next_after = [](const std::string& p, size_t pfx) {")
+        lines.append("                                std::string a = p.substr(pfx);")
+        lines.append("                                if (!a.empty() && a[0] == '.') a = a.substr(1);")
+        lines.append("                                size_t d = a.find('.');")
+        lines.append("                                return d != std::string::npos ? a.substr(0, d) : a;")
+        lines.append("                            };")
+        lines.append("                            std::string new_sel = next_after(path, prefix_len);")
+        lines.append("                            std::string cur_sel = next_after(found_path, prefix_len);")
+        lines.append("                            // Look up one level deeper: prefix + '.' + sel = union path")
+        lines.append("                            std::string anc = path.substr(0, prefix_len);")
+        lines.append("                            std::string new_first = next_after(path, prefix_len);")
+        lines.append("                            if (new_first == cur_sel) {")
+        lines.append("                                // Same first component — check second")
+        lines.append("                                std::string u_path = anc + \".\" + new_first;")
+        lines.append("                                size_t u_len = u_path.size();")
+        lines.append("                                std::string new_var = next_after(path, u_len);")
+        lines.append("                                std::string cur_var = next_after(found_path, u_len);")
+        lines.append("                                auto udv_it = union_default_variants.find(u_path);")
+        lines.append("                                if (udv_it != union_default_variants.end()")
+        lines.append("                                    && new_var == udv_it->second")
+        lines.append("                                    && cur_var != udv_it->second)")
+        lines.append("                                    is_better = true;")
+        lines.append("                            } else {")
+        lines.append("                                // Different first component — new_sel is the union selector")
+        lines.append("                                std::string u_path = anc;")
+        lines.append("                                auto udv_it = union_default_variants.find(u_path + \".\" + new_sel);")
+        lines.append("                                // not this level; check if anc itself is a union")
+        lines.append("                                udv_it = union_default_variants.find(anc);")
+        lines.append("                                if (udv_it != union_default_variants.end()")
+        lines.append("                                    && new_sel == udv_it->second")
+        lines.append("                                    && cur_sel != udv_it->second)")
+        lines.append("                                    is_better = true;")
+        lines.append("                            }")
+        lines.append("                        }")
+        lines.append("                    }")
+        lines.append("                    if (is_better) {")
+        lines.append("                        found_path = path;")
+        lines.append("                        best_prefix_len = prefix_len;")
+        lines.append("                        if (!candidate_alias.empty()) {")
+        lines.append("                            best_alias_resolved = candidate_alias;")
+        lines.append("                        } else {")
+        lines.append("                            best_alias_resolved.clear();")
+        lines.append("                        }")
+        lines.append("                    }")
+        lines.append("                }")
+        lines.append("                if (!best_alias_resolved.empty()) {")
+        lines.append("                    resolved_name = best_alias_resolved;")
+        lines.append("                    kw->resolved_name = resolved_name;")
+        lines.append("                    kw->unresolved = false;")
         lines.append("                }")
         lines.append("")
         lines.append("                if (!found_path.empty()) {")
@@ -639,16 +864,35 @@ class CodeGenerator:
         lines.append("                            containers.push_back(remainder);")
         lines.append("                        }")
         lines.append("")
-        lines.append("                        // Create implicit containers")
+        lines.append("                        // Create implicit containers, reusing any already-committed")
+        lines.append("                        // nodes of the same name to avoid duplicates.")
         lines.append("                        for (const auto& container_name : containers) {")
-        lines.append('                            DEBUG_OUT("[DEBUG]       Creating implicit container: " << container_name << "\\n");')
-        lines.append("                            auto container_kw = create_keyword(container_name, true);  // Containers are flags")
-        lines.append("")
-        lines.append("                            auto& current_parent = processing_stack.back();")
-        lines.append("                            std::string container_path = current_parent.dotted_path + \".\" + container_name;")
+        lines.append("                            auto& cur = processing_stack.back();")
+        lines.append("                            std::string container_path = cur.dotted_path + \".\" + container_name;")
+        lines.append("                            std::shared_ptr<KeywordNode> container_kw;")
+        lines.append("                            if (cur.node) {")
+        lines.append("                                auto ci = cur.node->children.find(container_name);")
+        lines.append("                                if (ci != cur.node->children.end() && !ci->second.empty()) {")
+        lines.append("                                    container_kw = ci->second.back();")
+        lines.append("                                    ci->second.pop_back();")
+        lines.append("                                    if (ci->second.empty()) cur.node->children.erase(ci);")
+        lines.append('                                    DEBUG_OUT("[DEBUG]       Re-using committed container: " << container_name << "\\\\n");')
+        lines.append("                                }")
+        lines.append("                            } else {")
+        lines.append("                                auto ki = block->keywords.find(container_name);")
+        lines.append("                                if (ki != block->keywords.end() && !ki->second.empty()) {")
+        lines.append("                                    container_kw = ki->second.back();")
+        lines.append("                                    ki->second.pop_back();")
+        lines.append("                                    if (ki->second.empty()) block->keywords.erase(ki);")
+        lines.append('                                    DEBUG_OUT("[DEBUG]       Re-using committed block container: " << container_name << "\\\\n");')
+        lines.append("                                }")
+        lines.append("                            }")
+        lines.append("                            if (!container_kw) {")
+        lines.append('                                DEBUG_OUT("[DEBUG]       Creating implicit container: " << container_name << "\\\\n");')
+        lines.append("                                container_kw = create_keyword(container_name, true);")
+        lines.append("                            }")
         lines.append("                            processing_stack.push_back({container_name, container_path, container_kw});")
         lines.append("                        }")
-        lines.append("")
         lines.append("                        // Now we can place the keyword")
         lines.append("                        parent_index = processing_stack.size() - 1;")
         lines.append("                    }")
@@ -657,6 +901,25 @@ class CodeGenerator:
         lines.append("")
         lines.append("            // Step 3b: If parent found, handle keyword placement")
         lines.append("            if (parent_index >= 0) {")
+        lines.append("                // Coerce int64_t param values to double for REALLIST-typed keywords.")
+        lines.append("                // Needed when the grammar used generic keyword_with_param (due to")
+        lines.append("                // STRINGLIST type conflicts) and bare integers were stored as int64_t.")
+        lines.append("                if (reallist_keywords.count(resolved_name)) {")
+        lines.append("                    for (auto& v : kw->param_values) {")
+        lines.append("                        if (std::holds_alternative<int64_t>(v)) {")
+        lines.append("                            v = static_cast<double>(std::get<int64_t>(v));")
+        lines.append("                        }")
+        lines.append("                    }")
+        lines.append("                }")
+        lines.append("                // Coerce double→int64_t for INTEGER-typed keywords")
+        lines.append("                // (e.g. 1.E5 parsed as real_value fallback in integer_or_repeat).")
+        lines.append("                if (integerlist_keywords.count(resolved_name)) {")
+        lines.append("                    for (auto& v : kw->param_values) {")
+        lines.append("                        if (std::holds_alternative<double>(v)) {")
+        lines.append("                            v = static_cast<int64_t>(std::get<double>(v));")
+        lines.append("                        }")
+        lines.append("                    }")
+        lines.append("                }")
         lines.append("                // Check if resolved keyword already exists on the stack")
         lines.append("                // (e.g., analysis_driver truncates to analysis_drivers which may already exist)")
         lines.append("                bool found_existing = false;")
@@ -707,11 +970,39 @@ class CodeGenerator:
         lines.append("                        }")
         lines.append("                    }")
         lines.append("")
-        lines.append("                    // Now push the new keyword onto stack")
-        lines.append("                    auto& parent = processing_stack.back();")
-        lines.append("                    std::string new_path = parent.dotted_path + \".\" + resolved_name;")
-        lines.append("                    processing_stack.push_back({resolved_name, new_path, kw});")
-        lines.append('                    DEBUG_OUT("[DEBUG]   Pushed \'" << resolved_name << "\' onto stack (depth " << processing_stack.size() << ")\\n");')
+        lines.append("")
+        lines.append("                    // Before pushing a new node, check whether a committed node")
+        lines.append("                    // with the same name already exists at the parent level.")
+        lines.append("                    // This handles e.g. analysis_driver arriving after")
+        lines.append("                    // analysis_drivers was already committed as implicit container.")
+        lines.append("                    {")
+        lines.append("                        auto& tgt = processing_stack.back();")
+        lines.append("                        std::shared_ptr<KeywordNode> reused;")
+        lines.append("                        if (tgt.node) {")
+        lines.append("                            auto ci = tgt.node->children.find(resolved_name);")
+        lines.append("                            if (ci != tgt.node->children.end() && !ci->second.empty()) {")
+        lines.append("                                reused = ci->second.back(); ci->second.pop_back();")
+        lines.append("                                if (ci->second.empty()) tgt.node->children.erase(ci);")
+        lines.append('                                DEBUG_OUT("[DEBUG]   Re-using committed child node " << resolved_name << "\\\\n");' )
+        lines.append("                            }")
+        lines.append("                        } else {")
+        lines.append("                            auto ki = block->keywords.find(resolved_name);")
+        lines.append("                            if (ki != block->keywords.end() && !ki->second.empty()) {")
+        lines.append("                                reused = ki->second.back(); ki->second.pop_back();")
+        lines.append("                                if (ki->second.empty()) block->keywords.erase(ki);")
+        lines.append('                                DEBUG_OUT("[DEBUG]   Re-using committed block node " << resolved_name << "\\\\n");' )
+        lines.append("                            }")
+        lines.append("                        }")
+        lines.append("                        if (reused) {")
+        lines.append("                            for (const auto& v : kw->param_values) reused->param_values.push_back(v);")
+        lines.append("                            for (const auto& s : kw->original_value_strings) reused->original_value_strings.push_back(s);")
+        lines.append("                            processing_stack.push_back({resolved_name, tgt.dotted_path + \".\" + resolved_name, reused});")
+        lines.append('                            DEBUG_OUT("[DEBUG]   Pushed re-used \'" << resolved_name << "\'\\n");')
+        lines.append("                        } else {")
+        lines.append("                            processing_stack.push_back({resolved_name, tgt.dotted_path + \".\" + resolved_name, kw});")
+        lines.append('                            DEBUG_OUT("[DEBUG]   Pushed \'" << resolved_name << "\' onto stack (depth " << processing_stack.size() << ")\\n");')
+        lines.append("                        }")
+        lines.append("                    }")
         lines.append("                }")
         lines.append("")
         lines.append("                // Successfully matched - remove from list and restart from beginning")

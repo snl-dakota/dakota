@@ -192,6 +192,12 @@ class DefaultExpansionSchemaExtractor:
         required = set(config.get('required', []))
         
         for field_name, field_schema in properties.items():
+            # Skip internal-only fields — they are set by the validator library,
+            # not by the user or the default expander.  Injecting them causes
+            # validation errors ("must not be provided by the user").
+            if field_schema.get('x-internal-only'):
+                continue
+
             field_path = f"{parent_path}.{field_name}"
             
             # Create FieldInfo
@@ -465,7 +471,8 @@ def generate_default_metadata_header(block_name: str, fields: Dict[str, FieldInf
         lines.append(f'            "{ref_type}",')
         lines.append(f'            "{argument_field}",')
         lines.append(f'            {str(info.is_anchor).lower()},')
-        lines.append(f'            {str(info.is_union_variant).lower()}')
+        lines.append(f'            {str(info.is_union_variant).lower()},')
+        lines.append(f'            {str(info.is_discriminator).lower()}')
         lines.append(f'        }}}},')
     
     lines.append("    };")
@@ -699,6 +706,7 @@ struct FieldMetadata {
     std::string argument_field;  // If set, parent's param_values provide this nested field's value
     bool is_anchor = false;  // True if field exists only in JSON (not in DSL)
     bool is_union_variant = false;  // True if this field is a variant child of a union (should not be auto-populated)
+    bool is_discriminator = false;  // True if this is the discriminator key of a union variant
 };
 
 } // namespace defaults
@@ -797,7 +805,10 @@ bool DefaultExpander::expand_block(
     const std::set<std::string>& required_fields,
     std::vector<std::string>& errors) 
 {
+    (void)required_fields;
+    (void)errors;
     std::set<std::string> populated_paths;
+    std::set<std::string> initial_populated_paths;
     populated_paths.insert(block.name);  // The block itself is populated
     
     // First pass: mark all existing paths as populated
@@ -841,6 +852,8 @@ bool DefaultExpander::expand_block(
             mark_children(node, path);
         }
     }
+    
+    initial_populated_paths = populated_paths;
     
     // Second pass: add non-null defaults for block-level fields
     for (const auto& field_path : auto_populate) {
@@ -1060,6 +1073,58 @@ bool DefaultExpander::expand_block(
     // Fifth pass: re-run nested defaults for nodes created by passes 3+4
     // e.g., pass 3 added method_source.dakota, now fill dakota.ignore_bounds etc.
     populate_nested_defaults();
+    
+    // Sixth pass: enforce union exclusivity.
+    // For each union node, ensure only ONE discriminator child is present.
+    // Keeps the user-provided variant (tracked in initial_populated_paths);
+    // removes any extras that the default expander may have introduced.
+    {
+        // Sixth pass: enforce union exclusivity — ensure only ONE discriminator
+        // child is present per union node. Keeps the user-provided variant
+        // (recorded in initial_populated_paths); removes any extra variants
+        // the default expander may have added.
+        // Build union_discs from metadata at runtime: for each union entry,
+        // collect sibling discriminator children.
+        std::map<std::string, std::vector<std::string>> union_discs;
+        for (const auto& [union_path, pv] : union_defaults) {
+            // Find all discriminator names for this union from metadata
+            std::string prefix = union_path + ".";
+            std::vector<std::string> disc_names;
+            for (const auto& [mpath, minfo] : metadata) {
+                if (mpath.rfind(prefix, 0) == 0) {
+                    std::string rest = mpath.substr(prefix.size());
+                    if (rest.find('.') == std::string::npos && minfo.is_discriminator)
+                        disc_names.push_back(rest);
+                }
+            }
+            if (disc_names.size() > 1)
+                union_discs[union_path] = disc_names;
+        }
+        std::function<void(std::shared_ptr<KeywordNode>&, const std::string&)>
+        enforce_excl = [&](auto& node, const std::string& np) {
+            auto it = union_discs.find(np);
+            if (it != union_discs.end()) {
+                std::string keep;
+                for (const auto& d : it->second) {
+                    bool present = node->children.count(d) && !node->children.at(d).empty();
+                    bool user_set = initial_populated_paths.count(np + "." + d) > 0;
+                    if (present) {
+                        if (user_set) { keep = d; break; }
+                        if (keep.empty()) keep = d;
+                    }
+                }
+                if (!keep.empty())
+                    for (const auto& d : it->second)
+                        if (d != keep) node->children.erase(d);
+            }
+            for (auto& [cn, cl] : node->children)
+                for (auto& c : cl)
+                    enforce_excl(c, np + "." + c->effective_name());
+        };
+        for (auto& [kn, kl] : block.keywords)
+            for (auto& kw : kl)
+                enforce_excl(kw, block.name + "." + kw->effective_name());
+    }
     
     // Validate required fields
     return validate_required(populated_paths, required_fields, block.name, errors);

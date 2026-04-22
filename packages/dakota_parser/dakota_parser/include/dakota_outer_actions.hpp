@@ -116,7 +116,80 @@ template<> struct action<block> {
             content_start++;
         }
         
-        state.current_block_content = full_text.substr(content_start);
+        // Normalize "keyword = bare_identifier" → "keyword\n  bare_identifier"
+        // Dakota DSL allows e.g. "allocation_target = variance" as an alternative
+        // to "allocation_target\n  variance". The inner grammar expects flag keywords
+        // as separate tokens; the "= identifier" form bypasses that.
+        // We pre-process here so the inner parser sees the canonical form.
+        {
+            std::string raw_content = full_text.substr(content_start);
+            std::string normalized;
+            normalized.reserve(raw_content.size() + 32);
+            size_t n = raw_content.size();
+            size_t p = 0;
+            while (p < n) {
+                // Look for pattern: whitespace* '=' whitespace* [a-zA-Z_][a-zA-Z0-9_]*
+                // but only when NOT inside a quoted string and NOT followed by another '='
+                if (raw_content[p] == '=') {
+                    // Check it's not '==' 
+                    if (p + 1 < n && raw_content[p + 1] == '=') {
+                        normalized += raw_content[p++];
+                        continue;
+                    }
+                    // Scan forward past whitespace
+                    size_t q = p + 1;
+                    while (q < n && (raw_content[q] == ' ' || raw_content[q] == '\t')) ++q;
+                    // Check if next non-whitespace is a bare identifier (alpha or _)
+                    if (q < n && (std::isalpha((unsigned char)raw_content[q]) || raw_content[q] == '_')) {
+                        // Scan the identifier
+                        size_t id_start = q;
+                        while (q < n && (std::isalnum((unsigned char)raw_content[q]) || raw_content[q] == '_')) ++q;
+                        // Check it's not followed by '=' (would be "key = other_key = val" form)
+                        size_t after = q;
+                        while (after < n && (raw_content[after] == ' ' || raw_content[after] == '\t')) ++after;
+                        bool next_is_eq = (after < n && raw_content[after] == '=' && 
+                                           (after + 1 >= n || raw_content[after + 1] != '='));
+                        // Don't rewrite infinity literals — they are values, not keyword names.
+                        std::string id_str = raw_content.substr(id_start, q - id_start);
+                        std::string id_lower = id_str;
+                        std::transform(id_lower.begin(), id_lower.end(), id_lower.begin(), ::tolower);
+                        bool is_inf_literal = (id_lower == "inf" || id_lower == "infinity"
+                                               || id_lower == "nan");
+                        if (!next_is_eq && !is_inf_literal) {
+                            // Replace "= identifier" with "\n  identifier"
+                            normalized += "\n  ";
+                            normalized += id_str;
+                            p = q;
+                            continue;
+                        }
+                    }
+                }
+                // Skip # comments — append everything from '#' to end-of-line unchanged.
+                // Without this, "= identifier" inside a comment would be converted.
+                if (raw_content[p] == '#') {
+                    while (p < n && raw_content[p] != '\n') normalized += raw_content[p++];
+                    continue;
+                }
+                // Handle quoted strings — pass through unchanged.
+                // If a quote immediately follows a keyword (no space), insert one.
+                // e.g. "descriptors'x1'" → "descriptors 'x1'"
+                if (raw_content[p] == '\'' || raw_content[p] == '"') {
+                    if (!normalized.empty()) {
+                        char last = normalized.back();
+                        if (std::isalnum((unsigned char)last) || last == '_') {
+                            normalized += ' ';
+                        }
+                    }
+                    char quote = raw_content[p];
+                    normalized += raw_content[p++];
+                    while (p < n && raw_content[p] != quote) normalized += raw_content[p++];
+                    if (p < n) normalized += raw_content[p++];  // closing quote
+                    continue;
+                }
+                normalized += raw_content[p++];
+            }
+            state.current_block_content = normalized;
+        }
         
         // Debug: Print content being passed to inner grammar with line numbers
         #ifdef DAKOTA_PARSER_DEBUG
