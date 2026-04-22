@@ -10,8 +10,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # Options
 # =============================================================================
 option(BUILD_PYTHON_BINDINGS "Build Python bindings" ON)
-option(BUILD_TESTS "Build tests" ON)
-option(BUILD_EXAMPLES "Build example programs" ON)
+option(BUILD_TESTS "Build tests" OFF)
+option(BUILD_EXAMPLES "Build example programs" OFF)
 option(GENERATE_PYDANTIC_MODELS "Generate Pydantic models from XML grammar" ON)
 
 # Detect scikit-build-core
