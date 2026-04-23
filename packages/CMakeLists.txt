@@ -19,13 +19,28 @@ ManageRelocatablePackage(NCSUOPT external/NCSUOpt)
 
 add_subdirectory(external/nidr)
 
-set(NLOHMANN_JSON_ROOT "${PROJECT_SOURCE_DIR}/packages/external/json")
-set(PEGTL_ROOT_DIR "${PROJECT_SOURCE_DIR}/packages/external/pegtl")
-set(PYBIND11_ROOT_DIR "${PROJECT_SOURCE_DIR}/packages/external/pybind11")
-set(PYBIND11_JSON_ROOT_DIR "${PROJECT_SOURCE_DIR}/packages/external/pybind11_json")
-message(STATUS "Using pegtl from ${PEGTL_ROOT_DIR}")
-set(FETCHCONTENT_FULLY_DISCONNECTED ON CACHE BOOL "" FORCE)
+set(NLOHMANN_JSON_ROOT "${PROJECT_SOURCE_DIR}/packages/external/json" CACHE PATH
+        "Path to the nlohmann json library" FORCE)
+set(PEGTL_ROOT_DIR "${PROJECT_SOURCE_DIR}/packages/external/pegtl" CACHE PATH
+        "Path to the pegtl library" FORCE)
+set(PYBIND11_ROOT_DIR "${PROJECT_SOURCE_DIR}/packages/external/pybind11" CACHE PATH
+        "Path to the pybind11 library" FORCE)
+set(PYBIND11_JSON_ROOT_DIR "${PROJECT_SOURCE_DIR}/packages/external/pybind11_json" CACHE PATH
+        "Path to the pybind11_json library" FORCE)
+set(PYTHON_INSTALL_DIR "share/dakota/Python/dakota/spec/validation" CACHE PATH
+        "Install path for dakota_validation target")
+set(FETCHCONTENT_FULLY_DISCONNECTED ON CACHE BOOL
+        "Disallow remote downloads of TPLs" FORCE)
 add_subdirectory(dakota_parser)
+
+# Copy the validation target(s) into the build tree
+add_custom_target(copy_dakota_validation ALL
+  COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/python/dakota/spec/validation"
+  COMMAND ${CMAKE_COMMAND} -E copy_if_different
+          "$<TARGET_FILE:dakota_validation_cpp>"
+          "${CMAKE_BINARY_DIR}/python/dakota/spec/validation/"
+  DEPENDS dakota_validation_cpp
+)
 
 if(HAVE_AMPL)
   if (NOT AMPL_INCLUDE_DIRS)
