@@ -88,11 +88,37 @@ Measures of Sensitivity
 Various metrics can quantify parameter influence, each with different
 interpretations and computational requirements:
 
-**Correlation coefficients**: Simple (Pearson) or rank (Spearman)
-correlations between input parameters and output responses, computed
-from sampling data. These measure linear or monotonic relationships,
-respectively, and are inexpensive to compute from existing samples.
-.. TNP TODO: mention partial correlation coeffs.
+**Correlation coefficients**: Correlation coefficients, computed from sampling
+data, measure the strength of linear or monotonic relationships between two 
+quantities. Correlations can be computed between input parameters, between
+output responses, and between inputs and outputs. They are inexpensive to
+compute from existing samples. As such, they are computed by default as part
+of the results of a :dakkw:`method-sampling` study. For the purposes of 
+sensitivity analysis, this discussion focuses on correlations between inputs
+and outputs.
+
+The sample (Pearson) correlation coefficient measures the strength of the 
+linear relationship between an input and an output, ignoring all other
+inputs. Their efficacy can break down as a sensitivity measure if the relationship 
+is nonlinear.
+
+The rank (Spearman) correlation coefficient measures the strength of the 
+monotonic relationship between an input and an output, ignoring all other
+inputs. For this reason, they are robust to nonlinear monotonic relationships,
+but can break down for non-monotonic cases.
+
+Partial correlation coefficients measure correlation between inputs and outputs,
+after removing linear effects of other inputs. In this sense, they control for 
+other inputs in the computation of correlation between a given input and output.
+However, their accuracy can degrade when the sample size is small relative to
+the number of inputs (e.g., less than 10-20x the number of inputs).
+
+Correlation coefficients can struggle in the following contexts: 
+- non-monotonic, nonlinear input-output relationships
+- correlated inputs
+- input-output relationships driven by interactions between inputs
+
+.. TNP TODO: add picture of correlation coefficients for different functions?
 
 **Standardized regression coefficients**: 
 .. TNP TODO: add description.
