@@ -120,8 +120,7 @@ private:
   static int objective_eval(int *n, double c[], double l[], double u[],
 		            int point[], int *maxI, int *start, int *maxfunc,
 			    double fvec[], int iidata[], int *iisize,
-			    double ddata[], int *idsize, char cdata[],
-			    int *icsize);
+			    double ddata[], int *idsize);
 
   //
   //- Heading: Convenience member functions
