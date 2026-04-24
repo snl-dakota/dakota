@@ -318,6 +318,27 @@ struct value_list : pegtl::seq<
 // Optional equals sign with surrounding whitespace
 struct equals_with_ws : pegtl::seq<opt_ws, pegtl::one<'='>, opt_ws> {};
 
+// Equals sign followed by any valid value separator content, including comments.
+// This accepts forms like:
+//   keyword = # comment
+//     value
+struct equals_with_value_separator : pegtl::seq<opt_ws, pegtl::one<'='>, opt_value_separator> {};
+
+// Required separator between a keyword and its value when no equals sign is used.
+// This accepts inline comments before a continued value on the next line, e.g.
+//   objective_functions  # comment
+//                        6
+struct keyword_value_separator : value_separator {};
+
+// Separator after a keyword when an equals sign may still appear later.
+// This accepts forms like:
+//   keyword # comment
+//     = value
+struct keyword_then_equals_value_separator : pegtl::seq<
+    keyword_value_separator,
+    pegtl::opt<equals_with_value_separator>
+> {};
+
 // ============================================================================
 // KEYWORD TEMPLATES
 // ============================================================================
@@ -331,8 +352,8 @@ template<typename KeywordRule>
 struct keyword_with_string : pegtl::seq<
     KeywordRule,
     pegtl::must<pegtl::sor<
-        pegtl::seq<equals_with_ws, string_value>,
-        pegtl::seq<pegtl::plus<pegtl::space>, string_value>
+        pegtl::seq<equals_with_value_separator, string_value>,
+        pegtl::seq<keyword_then_equals_value_separator, string_value>
     >>
 > {};
 
@@ -341,8 +362,8 @@ template<typename KeywordRule>
 struct keyword_with_stringlist : pegtl::seq<
     KeywordRule,
     pegtl::must<pegtl::sor<
-        pegtl::seq<equals_with_ws, string_list>,
-        pegtl::seq<pegtl::plus<pegtl::space>, string_list>
+        pegtl::seq<equals_with_value_separator, string_list>,
+        pegtl::seq<keyword_then_equals_value_separator, string_list>
     >>
 > {};
 
@@ -351,8 +372,8 @@ template<typename KeywordRule>
 struct keyword_with_integer : pegtl::seq<
     KeywordRule,
     pegtl::must<pegtl::sor<
-        pegtl::seq<equals_with_ws, integer_or_repeat>,
-        pegtl::seq<pegtl::plus<pegtl::space>, integer_or_repeat>
+        pegtl::seq<equals_with_value_separator, integer_or_repeat>,
+        pegtl::seq<keyword_then_equals_value_separator, integer_or_repeat>
     >>
 > {};
 
@@ -361,8 +382,8 @@ template<typename KeywordRule>
 struct keyword_with_integerlist : pegtl::seq<
     KeywordRule,
     pegtl::must<pegtl::sor<
-        pegtl::seq<equals_with_ws, integer_list>,
-        pegtl::seq<pegtl::plus<pegtl::space>, integer_list>
+        pegtl::seq<equals_with_value_separator, integer_list>,
+        pegtl::seq<keyword_then_equals_value_separator, integer_list>
     >>
 > {};
 
@@ -371,8 +392,8 @@ template<typename KeywordRule>
 struct keyword_with_real : pegtl::seq<
     KeywordRule,
     pegtl::must<pegtl::sor<
-        pegtl::seq<equals_with_ws, real_value>,
-        pegtl::seq<pegtl::plus<pegtl::space>, real_value>
+        pegtl::seq<equals_with_value_separator, real_value>,
+        pegtl::seq<keyword_then_equals_value_separator, real_value>
     >>
 > {};
 
@@ -381,8 +402,8 @@ template<typename KeywordRule>
 struct keyword_with_reallist : pegtl::seq<
     KeywordRule,
     pegtl::must<pegtl::sor<
-        pegtl::seq<equals_with_ws, real_list>,
-        pegtl::seq<pegtl::plus<pegtl::space>, real_list>
+        pegtl::seq<equals_with_value_separator, real_list>,
+        pegtl::seq<keyword_then_equals_value_separator, real_list>
     >>
 > {};
 
@@ -391,8 +412,8 @@ template<typename KeywordRule>
 struct keyword_with_param : pegtl::seq<
     KeywordRule,
     pegtl::must<pegtl::sor<
-        pegtl::seq<equals_with_ws, value_list>,
-        pegtl::seq<pegtl::plus<pegtl::space>, value_list>
+        pegtl::seq<equals_with_value_separator, value_list>,
+        pegtl::seq<keyword_then_equals_value_separator, value_list>
     >>
 > {};
 
@@ -433,12 +454,12 @@ struct safe_value_list : pegtl::seq<
 template<typename KeywordRule>
 struct keyword_with_optional_param : pegtl::seq<
     KeywordRule,
-    pegtl::opt<pegtl::sor<
+        pegtl::opt<pegtl::sor<
         // With equals sign - definitely has a value
-        pegtl::seq<equals_with_ws, safe_value_list>,
+        pegtl::seq<equals_with_value_separator, safe_value_list>,
         // Without equals - only parse value if next thing looks like a value (number, quote, or inf)
         pegtl::seq<
-            pegtl::plus<pegtl::space>,
+            keyword_then_equals_value_separator,
             pegtl::at<pegtl::sor<
                 pegtl::one<'"', '\''>,  // Quote for string
                 pegtl::seq<pegtl::opt<pegtl::one<'-', '+'>>, pegtl::sor<pegtl::digit, pegtl::one<'.'>>>,  // Number
