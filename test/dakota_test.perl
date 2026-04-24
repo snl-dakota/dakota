@@ -17,17 +17,6 @@ use Cwd 'abs_path';
 use Config;
 
 my $DTP_DEBUG = 0;  # set to 1 to debug
-my $use_json_input = $ENV{'DAKOTA_TEST_JSON_INPUT'} ? 1 : 0;
-my $json_python = $ENV{'DAKOTA_TEST_JSON_PYTHON'} || "python3";
-my $script_dir = dirname(abs_path($0));
-my $dakota_source_dir = "@Dakota_SOURCE_DIR@";
-if ($dakota_source_dir =~ /^\@/ || $dakota_source_dir =~ /Dakota_SOURCE_DIR\@$/) {
-  $dakota_source_dir = abs_path(File::Spec->catdir($script_dir, ".."));
-}
-my $json_converter = $ENV{'DAKOTA_TEST_JSON_CONVERTER'} ||
-  File::Spec->catfile($script_dir, "dsl_to_json.py");
-my $json_grammar = $ENV{'DAKOTA_TEST_JSON_GRAMMAR'} ||
-  File::Spec->catfile($dakota_source_dir, "src", "dakota.xml");
 
 # set default options (global to this script)
 my $baseline_indir ="";      # default reference baselines are in pwd
@@ -210,7 +199,6 @@ foreach my $file (@test_inputs) {
     my $dakota_args = get_test_option_value($cnt, "ExecArgs", "");
     # default is dakota_input.in_
     my $dakota_input = get_test_option_value($cnt, "InputFile", "$input");
-    my $saved_dakota_input = $dakota_input;
 
     # Default is to write a unique restart per test, named for the test input
     # no restart options by default
@@ -317,15 +305,6 @@ foreach my $file (@test_inputs) {
     # nothing more to do for this input file if extracting
     next if ($mode eq "extract");
 
-    my @json_temp_files = ();
-    if ($use_json_input) {
-      my ($validated_json, $ordered_input) =
-        prepare_json_test_input($dakota_input);
-      $dakota_args = "-json $validated_json $dakota_args";
-      $dakota_input = "";
-      @json_temp_files = grep { defined $_ && $_ ne "" } ($ordered_input, $validated_json);
-    }
-
     # Run the test
     print "Test Number $cnt ";
 
@@ -354,15 +333,11 @@ foreach my $file (@test_inputs) {
 
     # Catalog data from each run, if requested
     if ($save_output) {
-      copy("$saved_dakota_input", "${saved_dakota_input}.${cnt}")
-        if (-e "$saved_dakota_input");
+      copy("$dakota_input", "${dakota_input}.${cnt}") if (-e "$dakota_input");
       copy("$output", "${output}.${cnt}") if (-e "$output");
       copy("$error", "${error}.${cnt}") if (-e "$error");
       copy("$restart_file", "${restart_file}.${cnt}") if (-e "$restart_file");
       copy("dakota_tabular.dat", "dakota_tabular.dat.${cnt}") if (-e "dakota_tabular.dat");
-      for my $json_file (@json_temp_files) {
-        copy("$json_file", "${json_file}.${cnt}") if (-e "$json_file");
-      }
     }
 
     # parse out return codes from $? (the Perl $CHILD_ERROR special variable)
@@ -446,10 +421,6 @@ foreach my $file (@test_inputs) {
     unlink $input;
     unlink $output;
     unlink $error;
-    if ($use_json_input) {
-      unlink "$input.ordered";
-      unlink "$input.validated.json";
-    }
     # Remove restart if not explicitly requested
     if ( ! ($restart =~ /write/) ) {
       unlink $restart_file;
@@ -1054,80 +1025,6 @@ sub parse_restart_command() {
     print "Restart file: explicitly removing restart arguments\n";
   }	
   return $restart_command;
-}
-
-
-sub fix_environment_bug {
-  my ($filepath) = @_;
-  open(my $fh, '<', $filepath) or die "cannot open ordered input $filepath\n$!";
-  local $/ = undef;
-  my $content = <$fh>;
-  close($fh);
-
-  $content =~ s/^(environment)(\S)/$1\n$2/gm;
-
-  open(my $out, '>', $filepath) or die "cannot rewrite ordered input $filepath\n$!";
-  print $out $content;
-  close($out);
-}
-
-
-sub prepare_json_test_input {
-  my ($dakota_input) = @_;
-
-  my $order_util = "${bin_dir}dakota_order_input${bin_ext}";
-  if (! -x $order_util) {
-    $order_util = "dakota_order_input${bin_ext}";
-  }
-
-  if (! -f $json_converter) {
-    die "JSON input mode requires converter script $json_converter\n";
-  }
-  if (! -f $json_grammar) {
-    die "JSON input mode requires grammar file $json_grammar\n";
-  }
-
-  my $ordered_input = "${dakota_input}.ordered";
-  my $validated_json = "${dakota_input}.validated.json";
-
-  my $ordered_text = `$order_util -p -1 $dakota_input`;
-  if ($? != 0) {
-    die "dakota_order_input failed for $dakota_input\n";
-  }
-  open(my $ordered_fh, '>', $ordered_input) ||
-    die "cannot open ordered input $ordered_input\n$!";
-  print $ordered_fh $ordered_text;
-  close($ordered_fh);
-  fix_environment_bug($ordered_input);
-
-  my @convert_cmd = (
-    $json_python,
-    $json_converter,
-    "--grammar", $json_grammar,
-    "--quiet",
-    "--output", $validated_json,
-    $ordered_input
-  );
-
-  my $convert_status;
-  if ($ENV{'DAKOTA_TEST_JSON_PYTHON'}) {
-    local $ENV{'PYTHONPATH'};
-    if ($ENV{'DAKOTA_PYTHON_PACKAGE_DIR'}) {
-      $ENV{'PYTHONPATH'} = $ENV{'DAKOTA_PYTHON_PACKAGE_DIR'};
-    }
-    else {
-      delete $ENV{'PYTHONPATH'};
-    }
-    $convert_status = system(@convert_cmd);
-  }
-  else {
-    $convert_status = system(@convert_cmd);
-  }
-  if ($convert_status != 0) {
-    die "JSON conversion failed for $ordered_input\n";
-  }
-
-  return ($validated_json, $ordered_input);
 }
 
 
