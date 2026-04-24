@@ -39,7 +39,7 @@ class JSONSchemaParser:
         if VERBOSE_MODE:
             print(f"Loading JSON Schema: {schema_path}")
         
-        with open(schema_path) as f:
+        with open(schema_path, encoding='utf-8') as f:
             self.schema = json.load(f)
         
         self.defs = self.schema.get('$defs', {})
@@ -755,7 +755,7 @@ def main():
                 generate_default_expander_cpp
             )
             
-            with open(args.schema_file) as f:
+            with open(args.schema_file, encoding='utf-8') as f:
                 schema = json.load(f)
             
             extractor = DefaultExpansionSchemaExtractor(schema)
@@ -796,7 +796,7 @@ def main():
             
             header_content = ast_gen.generate_header()
             output_path = source_output_dir / "dakota_ast_metadata.hpp"
-            with open(output_path, "w") as f:
+            with open(output_path, "w", encoding='utf-8') as f:
                 f.write(header_content)
             
             # Count context-specific argument fields
@@ -831,7 +831,7 @@ def main():
             
             header_content = val_gen.generate_header()
             output_path = source_output_dir / "dakota_validation_metadata.hpp"
-            with open(output_path, "w") as f:
+            with open(output_path, "w", encoding='utf-8') as f:
                 f.write(header_content)
             
             num_nc = len(val_gen.numeric_constraints)

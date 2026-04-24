@@ -724,7 +724,7 @@ class ConstraintTestGenerator:
         test_file = target_dir / f"{safe_filename}.in"
         
         # Write test file
-        with open(test_file, 'w') as f:
+        with open(test_file, 'w', encoding='utf-8') as f:
             f.write(f"# {test.description}\n")
             f.write(test.content)
             f.write("\n")

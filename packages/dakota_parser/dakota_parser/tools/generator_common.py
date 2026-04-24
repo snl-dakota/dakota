@@ -375,7 +375,7 @@ class CodeGenerator:
         lines.append(f"#endif // {guard}")
         lines.append("")
         
-        output_file.write_text('\n'.join(lines))
+        output_file.write_text('\n'.join(lines), encoding='utf-8')
         if VERBOSE_MODE:
             print(f"  Generated {output_file.name}")
     
@@ -1219,7 +1219,7 @@ class CodeGenerator:
         lines.append(f"#endif // {guard}")
         lines.append("")
         
-        output_file.write_text('\n'.join(lines))
+        output_file.write_text('\n'.join(lines), encoding='utf-8')
         if VERBOSE_MODE:
             print(f"  Generated {output_file.name}")
     
@@ -1255,7 +1255,7 @@ class CodeGenerator:
         lines.append(f"#endif // {guard}")
         lines.append("")
         
-        output_file.write_text('\n'.join(lines))
+        output_file.write_text('\n'.join(lines), encoding='utf-8')
         if VERBOSE_MODE:
             print(f"  Generated {output_file.name}")
     
@@ -1318,7 +1318,7 @@ class CodeGenerator:
         lines.append('')
         
         cpp_file.parent.mkdir(parents=True, exist_ok=True)
-        cpp_file.write_text('\n'.join(lines))
+        cpp_file.write_text('\n'.join(lines), encoding='utf-8')
         if VERBOSE_MODE:
             print(f"  Generated {cpp_file.name}")
     
@@ -1439,7 +1439,7 @@ class CodeGenerator:
         lines.append(f"#endif // DAKOTA_CONSTRAINTS_{self.block.name.upper()}_HPP")
         lines.append("")
         
-        header_file.write_text('\n'.join(lines))
+        header_file.write_text('\n'.join(lines), encoding='utf-8')
         if VERBOSE_MODE:
             print(f"  Generated {header_file.name}")
     
@@ -1491,7 +1491,7 @@ class CodeGenerator:
         lines.append(f"#endif // DAKOTA_SEMANTIC_{self.block.name.upper()}_HPP")
         lines.append("")
         
-        header_file.write_text('\n'.join(lines))
+        header_file.write_text('\n'.join(lines), encoding='utf-8')
         if VERBOSE_MODE:
             print(f"  Generated {header_file.name}")
 
@@ -1651,7 +1651,7 @@ def generate_error_message_tests(blocks: Dict[str, BlockInfo], block_name: str, 
         test_file = error_test_dir / f"error_{kw_info.id}_wrong_type.in"
         invalid_value = _generate_invalid_value(kw_info.param_type)
         
-        with open(test_file, 'w') as f:
+        with open(test_file, 'w', encoding='utf-8') as f:
             f.write(f"# Error test: {kw_info.name} (id={kw_info.id}) with wrong type\n")
             f.write(f"{block_name}\n  {kw_info.name} = {invalid_value}\n")
         test_count += 1
@@ -1680,13 +1680,13 @@ def write_file_if_changed(filepath: Path, content: str):
     """
     # Check if file exists and has same content
     if filepath.exists():
-        existing_content = filepath.read_text()
+        existing_content = filepath.read_text(encoding='utf-8')
         if existing_content == content:
             # Content is identical, don't write
             return False
     
     # Write new/changed content
-    filepath.write_text(content)
+    filepath.write_text(content, encoding='utf-8')
     return True
 
 
@@ -1703,14 +1703,16 @@ def generate_stub_parser(block_name: str, output_dir: Path):
         f"#define DAKOTA_GRAMMAR_{block_name.upper()}_HPP\n"
         f"#include <tao/pegtl.hpp>\n"
         f"namespace dakota {{ struct {block_name}_content : tao::pegtl::star<tao::pegtl::any> {{ }}; }}\n"
-        f"#endif\n")
+        f"#endif\n",
+        encoding='utf-8')
     
     # Create minimal stub actions file
     (block_dir / f"dakota_actions_{block_name}.hpp").write_text(
         f"#ifndef DAKOTA_ACTIONS_{block_name.upper()}_HPP\n"
         f"#define DAKOTA_ACTIONS_{block_name.upper()}_HPP\n"
         f"namespace dakota {{ namespace actions {{ template<typename Rule> struct action {{ }}; }} }}\n"
-        f"#endif\n")
+        f"#endif\n",
+        encoding='utf-8')
     
     # Create minimal stub parent_child_map file
     (block_dir / f"{block_name}_parent_child_map.hpp").write_text(
@@ -1720,7 +1722,8 @@ def generate_stub_parser(block_name: str, output_dir: Path):
         "#include <set>\n"
         "#include <string>\n"
         f"namespace dakota {{ inline const std::map<std::string, std::set<std::string>> {block_name}_parent_child_map = {{}}; }}\n"
-        f"#endif\n")
+        f"#endif\n",
+        encoding='utf-8')
     
     # Create minimal stub constraints file
     (block_dir / f"dakota_constraints_{block_name}.hpp").write_text(
@@ -1766,7 +1769,8 @@ def generate_stub_parser(block_name: str, output_dir: Path):
         "    }\n"
         "};\n"
         "}\n"
-        f"#endif // DAKOTA_CONSTRAINTS_{block_name.upper()}_HPP\n")
+        f"#endif // DAKOTA_CONSTRAINTS_{block_name.upper()}_HPP\n",
+        encoding='utf-8')
     
     # Create minimal stub semantic file
     (block_dir / f"dakota_semantic_{block_name}.hpp").write_text(
@@ -1803,7 +1807,8 @@ def generate_stub_parser(block_name: str, output_dir: Path):
         "\n"
         "};\n"
         "}\n"
-        f"#endif // DAKOTA_SEMANTIC_{block_name.upper()}_HPP\n")
+        f"#endif // DAKOTA_SEMANTIC_{block_name.upper()}_HPP\n",
+        encoding='utf-8')
     
     # Create stub parser implementation
     cpp_file = output_dir / "src" / f"{block_name}_parser.cpp"
@@ -1827,7 +1832,8 @@ def generate_stub_parser(block_name: str, output_dir: Path):
         f"}}\n"
         f"\n"
         f"}} // namespace outer\n"
-        f"}} // namespace dakota\n")
+        f"}} // namespace dakota\n",
+        encoding='utf-8')
 
 def generate_error_messages_stub(block_name: str, output_dir: Path):
     """
@@ -1926,7 +1932,7 @@ inline constexpr auto error_message<outer::responses_kw> =
 #endif // DAKOTA_ERROR_MESSAGES_HPP
 """
     
-    error_file.write_text(content)
+    error_file.write_text(content, encoding='utf-8')
 
 
 def generate_error_message_tests_stub(all_blocks, block_name, test_output_dir):

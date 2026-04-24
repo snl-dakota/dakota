@@ -39,7 +39,7 @@ class ValidationMetadataGenerator:
     """Extract and generate validation metadata from JSON Schema."""
 
     def __init__(self, schema_path: str):
-        with open(schema_path) as f:
+        with open(schema_path, encoding='utf-8') as f:
             self.schema = json.load(f)
         self.defs = self.schema.get('$defs', {})
 
@@ -972,7 +972,7 @@ def main():
     args.output_dir.mkdir(parents=True, exist_ok=True)
     output_path = args.output_dir / "dakota_validation_metadata.hpp"
     header = gen.generate_header()
-    with open(output_path, 'w') as f:
+    with open(output_path, 'w', encoding='utf-8') as f:
         f.write(header)
 
     print(f"  Generated {output_path}")

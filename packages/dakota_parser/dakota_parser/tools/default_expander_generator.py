@@ -586,7 +586,7 @@ def generate_default_metadata_header(block_name: str, fields: Dict[str, FieldInf
     lines.append(f"#endif // {guard}")
     lines.append("")
     
-    header_path.write_text('\n'.join(lines))
+    header_path.write_text('\n'.join(lines), encoding='utf-8')
     print(f"  Generated {header_path.name}")
 
 
@@ -669,7 +669,7 @@ private:
 #endif // DAKOTA_DEFAULT_EXPANDER_HPP
 '''
     
-    header_path.write_text(content)
+    header_path.write_text(content, encoding='utf-8')
     print(f"  Generated {header_path.name}")
 
 
@@ -715,7 +715,7 @@ struct FieldMetadata {
 #endif // DAKOTA_DEFAULT_TYPES_HPP
 '''
     
-    header_path.write_text(content)
+    header_path.write_text(content, encoding='utf-8')
     print(f"  Generated {header_path.name}")
 
 
@@ -1218,7 +1218,7 @@ std::shared_ptr<KeywordNode> DefaultExpander::create_union_default_node(
 } // namespace dakota
 '''
     
-    cpp_path.write_text(content)
+    cpp_path.write_text(content, encoding='utf-8')
     print(f"  Generated {cpp_path.name}")
 
 
@@ -1233,7 +1233,7 @@ def main():
     
     args = parser.parse_args()
     
-    with open(args.schema_file) as f:
+    with open(args.schema_file, encoding='utf-8') as f:
         schema = json.load(f)
     
     extractor = DefaultExpansionSchemaExtractor(schema)
