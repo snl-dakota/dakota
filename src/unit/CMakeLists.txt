@@ -212,6 +212,10 @@ if(DAKOTA_PYTHON_WRAPPER)
     "${CMAKE_CURRENT_BINARY_DIR}/test_dakota_python_env.in"
     dakota_unit_test_copied_files
     )
+  dakota_copy_test_file("${CMAKE_CURRENT_SOURCE_DIR}/test_dakota_python_env.json"
+    "${CMAKE_CURRENT_BINARY_DIR}/test_dakota_python_env.json"
+    dakota_unit_test_copied_files
+    )
   add_test(NAME dakota_python_env
     COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_dakota_python_env.py
     )

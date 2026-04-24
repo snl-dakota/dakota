@@ -21,6 +21,11 @@ class UserModes;
 
 namespace ProblemDescDBUtils {
 
+/// @brief Read an input file into a string
+/// @param input_file path to the input file
+/// @return file contents
+std::string read_input_file(std::string_view input_file);
+
 /// @brief Return strings containing the final (preprocessed) input and (possibly empty) template
 /// @param prog_opts 
 /// @return The final (preprocessed, if necessary) input, read from file or copied from string, and the template (possibly empty) 

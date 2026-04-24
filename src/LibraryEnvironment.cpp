@@ -17,6 +17,19 @@ static const char rcsId[]="@(#) $Id: LibraryEnvironment.cpp 6492 2009-12-19 00:0
 
 namespace Dakota {
 
+namespace {
+
+ProgramOptions library_json_program_options(const nlohmann::json& study_json)
+{
+  ProgramOptions opts;
+  opts.echo_input(false);
+  opts.exit_mode("throw");
+  opts.json_input(study_json);
+  return opts;
+}
+
+} // namespace
+
 
 LibraryEnvironment::LibraryEnvironment():
   Environment(BaseConstructor())
@@ -42,6 +55,15 @@ LibraryEnvironment(ProgramOptions prog_opts, bool check_bcast_construct,
 }
 
 
+LibraryEnvironment::
+LibraryEnvironment(const nlohmann::json& study_json,
+		   bool check_bcast_construct,
+		   DbCallbackFunctionPtr callback, void* callback_data):
+  LibraryEnvironment(library_json_program_options(study_json),
+                     check_bcast_construct, callback, callback_data)
+{ }
+
+
 /** Construct library environment on passed MPI Comm, optionally
     performing check/bcast of database and iterator construction.  MPI
     Comm is first argument so client doesn't have to pass all args */
@@ -61,6 +83,16 @@ LibraryEnvironment(MPI_Comm dakota_mpi_comm,
   if (check_bcast_construct)
     construct();
 }
+
+
+LibraryEnvironment::
+LibraryEnvironment(MPI_Comm dakota_mpi_comm,
+		   const nlohmann::json& study_json,
+		   bool check_bcast_construct,
+		   DbCallbackFunctionPtr callback, void* callback_data):
+  LibraryEnvironment(dakota_mpi_comm, library_json_program_options(study_json),
+                     check_bcast_construct, callback, callback_data)
+{ }
 
 
 LibraryEnvironment::~LibraryEnvironment()

@@ -14,10 +14,26 @@
 // #ifdef DAKOTA_HAVE_MPI
 // #include <mpi.h>
 // #endif // DAKOTA_HAVE_MPI
+#include <cstring>
 #include <string>
 
 
 namespace Dakota {
+
+namespace {
+
+bool valid_parser_option(const char* parser_option)
+{
+  if (!parser_option)
+    return true;
+
+  return std::strcmp(parser_option, "new") == 0 ||
+         std::strcmp(parser_option, "nidr") == 0 ||
+         std::strcmp(parser_option, "nidrstrict") == 0 ||
+         std::strncmp(parser_option, "nidr:", 5) == 0;
+}
+
+} // namespace
 
 GetLongOpt::GetLongOpt(const char optmark)
 {
@@ -352,7 +368,7 @@ void CommandLineHandler::initialize_options()
          "Dump parsed IR / ProblemDescDB JSON to file $val", NULL);
 
   enroll("parser",  GetLongOpt::MandatoryValue,
-	 "Parsing technology: nidr[strict][:dumpfile]", NULL);
+	 "Parsing technology: new | nidr[strict][:dumpfile]", NULL);
 
   enroll("no_input_echo", GetLongOpt::Valueless, 
 	 "Do not echo DAKOTA input file", NULL);
@@ -458,9 +474,11 @@ void CommandLineHandler::check_usage(int argc, char** argv)
   }
 
   cs = retrieve("parser");
-  if (cs /*&& std::strncmp(cs,"idr",3)*/ && std::strncmp(cs,"nidr",4)) {
+  if (!valid_parser_option(cs)) {
     usage();
-    output_helper("\n-parser must specify nidr....", Cerr);
+    output_helper(
+      "\n-parser must specify one of: new, nidr, nidrstrict, nidr:<dumpfile>.",
+      Cerr);
     abort_handler(-1);
   }
   

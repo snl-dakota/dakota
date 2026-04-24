@@ -12,7 +12,10 @@
 #include "ProgramOptions.hpp"
 #include "UserModes.hpp"
 #include "ParallelLibrary.hpp"
+#include "dakota_data_io.hpp"
 #include "dakota_global_defs.hpp"
+
+#include <cstdint>
 
 namespace Dakota {
 namespace ProblemDescDBUtils {
@@ -110,6 +113,32 @@ void check_and_broadcast_pdb(ProblemDescDB& problem_db, const std::string& dump_
     // Now, world rank 0 yyparse's and sends all the parsed data in a single
     // buffer to all other ranks.
     if (parallel_lib.world_size() > 1) {
+      int has_validated_json = 0;
+      if (parallel_lib.world_rank() == 0) {
+        has_validated_json = problem_db.has_validated_json() ? 1 : 0;
+      }
+      parallel_lib.bcast_w(has_validated_json);
+
+      if (has_validated_json) {
+        if (parallel_lib.world_rank() == 0) {
+          std::vector<std::uint8_t> json_cbor =
+            nlohmann::json::to_cbor(problem_db.validated_json());
+          MPIPackBuffer json_send_buffer;
+          json_send_buffer << json_cbor;
+          int json_buffer_len = json_send_buffer.size();
+          parallel_lib.bcast_w(json_buffer_len);
+          parallel_lib.bcast_w(json_send_buffer);
+        } else {
+          int json_buffer_len;
+          parallel_lib.bcast_w(json_buffer_len);
+          MPIUnpackBuffer json_recv_buffer(json_buffer_len);
+          parallel_lib.bcast_w(json_recv_buffer);
+          std::vector<std::uint8_t> json_cbor;
+          json_recv_buffer >> json_cbor;
+          problem_db.enable_json_input(nlohmann::json::from_cbor(json_cbor));
+        }
+      }
+
       if (parallel_lib.world_rank() == 0) {
 	    problem_db.enforce_unique_ids();
             if (problem_db.is_json_null())

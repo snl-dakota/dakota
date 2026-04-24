@@ -79,6 +79,8 @@ public:
 		    void* callback_data = NULL);
   /// Enables JSON input
   void enable_json_input(const String &);
+  /// Enables validated JSON input from an in-memory study object
+  void enable_json_input(const nlohmann::json&);
   /// performs check_input, broadcast, and post_process, but for now,
   /// allowing separate invocation through the public API as well
   void check_and_broadcast(const UserModes& user_modes);
@@ -346,6 +348,10 @@ public:
 
   /// function to check if validated JSON has been materialized into IR state
   bool has_ir_state() const;
+  /// function to check if validated JSON study is available
+  bool has_validated_json() const;
+  /// access the validated JSON study
+  const nlohmann::json& validated_json() const;
 
 protected:
 
@@ -500,6 +506,8 @@ private:
 
   /// materialized IR for validated JSON input
   std::shared_ptr<IRState> irState;
+  /// validated JSON study for broadcast/re-materialization
+  nlohmann::json validatedStudyJson;
 
   // default data objects to use for json-only (when nidr is not used)
   DataMethod    defaultDataMethod;
@@ -697,6 +705,18 @@ inline bool ProblemDescDB::has_ir_state() const
 {
   const ProblemDescDB* db = dbRep ? dbRep.get() : this;
   return static_cast<bool>(db->irState);
+}
+
+inline bool ProblemDescDB::has_validated_json() const
+{
+  const ProblemDescDB* db = dbRep ? dbRep.get() : this;
+  return !db->validatedStudyJson.is_null();
+}
+
+inline const nlohmann::json& ProblemDescDB::validated_json() const
+{
+  const ProblemDescDB* db = dbRep ? dbRep.get() : this;
+  return db->validatedStudyJson;
 }
 
 inline int ProblemDescDB::get_active_method_index() const

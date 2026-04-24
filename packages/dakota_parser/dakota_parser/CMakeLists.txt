@@ -34,14 +34,20 @@ endif()
 
 # Generator script
 set(GENERATOR_SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/tools/generate_parser_from_json.py")
+set(EMBEDDED_SCHEMA_SCRIPT
+    "${CMAKE_CURRENT_SOURCE_DIR}/tools/generate_embedded_schema_header.py")
 
 # Generated files directory (in build dir)
 set(GENERATED_DIR "${CMAKE_CURRENT_BINARY_DIR}/generated")
 set(GENERATED_TEST_DIR "${CMAKE_CURRENT_BINARY_DIR}/generated_tests")
+set(EMBEDDED_SCHEMA_HEADER "${GENERATED_DIR}/dakota_embedded_schema_cbor.hpp")
 
 # Validate generator script exists
 if(NOT EXISTS "${GENERATOR_SCRIPT}")
     message(FATAL_ERROR "Generator script not found at: ${GENERATOR_SCRIPT}")
+endif()
+if(NOT EXISTS "${EMBEDDED_SCHEMA_SCRIPT}")
+    message(FATAL_ERROR "Embedded schema generator not found at: ${EMBEDDED_SCHEMA_SCRIPT}")
 endif()
 
 # =============================================================================
@@ -64,18 +70,23 @@ list(APPEND GENERATED_SOURCES
     ${GENERATED_DIR}/dakota_default_expander.cpp
 )
 
+set(GENERATED_ARTIFACTS ${GENERATED_SOURCES} ${EMBEDDED_SCHEMA_HEADER})
+
 # Single command to generate ALL blocks at once
 # (If we generate each block separately with --block, each one creates stubs for the others)
 # The generator also produces dakota_default_expander.cpp/.hpp and per-block defaults headers
 add_custom_command(
-    OUTPUT ${GENERATED_SOURCES}
+    OUTPUT ${GENERATED_ARTIFACTS}
     COMMAND ${PYTHON_EXE} ${GENERATOR_SCRIPT}
             ${DAKOTA_SCHEMA_PATH}
             --output-dir ${CMAKE_CURRENT_BINARY_DIR}
             --force
+    COMMAND ${PYTHON_EXE} ${EMBEDDED_SCHEMA_SCRIPT}
+            ${DAKOTA_SCHEMA_PATH}
+            ${EMBEDDED_SCHEMA_HEADER}
     DEPENDS ${DAKOTA_SCHEMA_PATH}
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    COMMENT "Generating parser and default expander for all blocks from JSON schema"
+    COMMENT "Generating parser sources and embedded schema from JSON schema"
     VERBATIM
 )
 
@@ -85,7 +96,7 @@ add_custom_command(
 
 # Create object library for generated sources
 # CMake will automatically trigger the custom command to generate these files
-add_library(dakota_generated_sources OBJECT ${GENERATED_SOURCES})
+add_library(dakota_generated_sources OBJECT ${GENERATED_ARTIFACTS})
 
 # Set include directories for generated sources
 target_include_directories(dakota_generated_sources PRIVATE
@@ -258,8 +269,11 @@ add_custom_target(regenerate_parser
             --output-dir ${CMAKE_CURRENT_BINARY_DIR}
             --generate-tests
             --force
+    COMMAND ${PYTHON_EXE} ${EMBEDDED_SCHEMA_SCRIPT}
+            ${DAKOTA_SCHEMA_PATH}
+            ${EMBEDDED_SCHEMA_HEADER}
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    COMMENT "Force regenerating parser and tests..."
+    COMMENT "Force regenerating parser, tests, and embedded schema..."
     VERBATIM
 )
 # Note: For manual regeneration, ensure schema has been built first
@@ -285,6 +299,11 @@ install(DIRECTORY include/
     FILES_MATCHING PATTERN "*.hpp"
 )
 
+install(FILES ${EMBEDDED_SCHEMA_HEADER}
+    DESTINATION include/dakota/parser
+    COMPONENT parser
+)
+
 # =============================================================================
 # Status
 # =============================================================================
@@ -294,6 +313,7 @@ message(STATUS "========================================")
 message(STATUS "Dakota Parser Configuration:")
 message(STATUS "  Schema: ${DAKOTA_SCHEMA_PATH}")
 message(STATUS "  Generated code: ${GENERATED_DIR}")
+message(STATUS "  Embedded schema: ${EMBEDDED_SCHEMA_HEADER}")
 message(STATUS "  Blocks: ${ALL_BLOCKS}")
 message(STATUS "  Generation: At build time (after schema)")
 message(STATUS "  Debug output: ${DAKOTA_PARSER_DEBUG}")

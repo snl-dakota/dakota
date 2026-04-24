@@ -15,6 +15,7 @@
 #include "IteratorScheduler.hpp"
 #include "dakota_preproc_util.hpp"
 #include "ProblemDescDBUtils.hpp"
+#include "dakota_input_reader.hpp"
 
 static const char rcsId[]="@(#) $Id: DakotaEnvironment.cpp 6749 2010-05-03 17:11:57Z briadam $";
 
@@ -276,6 +277,11 @@ void Environment::parse(bool check_bcast_database,
   // push_output_tag() follow ParallelLibrary::init_iterator_communicators()
   // within IteratorScheduler::partition().
 
+  const auto invoke_callback_if_needed = [&]() {
+    if (callback && parallelLib.world_rank() == 0)
+      (*callback)(&probDescDB, callback_data);
+  };
+
   // parse input and callback functions
   if ( !programOptions.input_file().empty() || 
        !programOptions.input_string().empty()) {
@@ -283,14 +289,51 @@ void Environment::parse(bool check_bcast_database,
       ProblemDescDBUtils::final_input_and_template(programOptions);
     if(programOptions.echo_input())
       ProblemDescDBUtils::echo_input(final_input, template_string);
-    probDescDB.parse_inputs(final_input, programOptions.parser_options(), programOptions.user_modes().run, callback, callback_data);
+    if (parallelLib.world_rank() == 0 && programOptions.use_new_parser()) {
+      nlohmann::json validated_json;
+      if (programOptions.input_string().empty()) {
+        const String& parser_input_path = programOptions.preproc_input() ?
+          programOptions.preprocessed_file() : programOptions.input_file();
+        validated_json = dakota::read_freeform_input_file_to_json(parser_input_path);
+      }
+      else {
+        validated_json = dakota::read_freeform_input_string_to_json(final_input);
+      }
+      probDescDB.enable_json_input(validated_json);
+      invoke_callback_if_needed();
+    }
+    else if (programOptions.use_legacy_nidr_parser()) {
+      probDescDB.parse_inputs(final_input, programOptions.parser_options(),
+        programOptions.user_modes().run, callback, callback_data);
+    }
     if(programOptions.preproc_input())
         std::filesystem::remove(programOptions.preprocessed_file());
   }
 
   // Allow optional JSON input
-  if ( !programOptions.json_input_file().empty() )
-    probDescDB.enable_json_input(programOptions.json_input_file());
+  if ( parallelLib.world_rank() == 0 &&
+       !programOptions.json_input_file().empty() ) {
+    if (programOptions.echo_input()) {
+      const std::string json_input =
+        ProblemDescDBUtils::read_input_file(programOptions.json_input_file());
+      ProblemDescDBUtils::echo_input(json_input, std::string());
+    }
+    auto validated_json = dakota::read_json_input_file_to_json(
+      programOptions.json_input_file());
+    probDescDB.enable_json_input(validated_json);
+    invoke_callback_if_needed();
+  }
+
+  if ( parallelLib.world_rank() == 0 && programOptions.has_json_input() ) {
+    if (programOptions.echo_input()) {
+      ProblemDescDBUtils::echo_input(programOptions.json_input().dump(2),
+                                     std::string());
+    }
+    auto validated_json =
+      dakota::validate_json_input_to_json(programOptions.json_input());
+    probDescDB.enable_json_input(validated_json);
+    invoke_callback_if_needed();
+  }
 
   // check if true, otherwise caller assumes responsibility  
   if (check_bcast_database)

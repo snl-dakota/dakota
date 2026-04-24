@@ -9,6 +9,7 @@
 
 
 # Tests of top-level Dakota Python interface
+import json
 import os
 #import numpy as np # DTS: looks like numpy is already imported if Dakota
 # is built with Numpy because get_variables_values_np(daklib) works fine
@@ -157,6 +158,34 @@ def test_lib():
 
     print("\n+++ Done LibEnv.\n")
 
+
+def test_lib_json_object():
+    json_input_path = "test_dakota_python_env.json"
+
+    with open(json_input_path, "r") as fp:
+        study_json = json.load(fp)
+
+    # Reuse a realistic raw JSON study, but switch the interface to Dakota's
+    # Python direct interface so the test stays self-contained.
+    study_json["interface"][0]["analysis_drivers"]["drivers"] = ["text_book"]
+    study_json["interface"][0]["analysis_drivers"]["interface_type"] = {
+        "python": {}
+    }
+    study_json["interface"][0].pop("concurrency", None)
+
+    print("\n+++ Constructing dakota.environment.study from JSON object...\n")
+    daklib = dakenv.study(callback=text_book, input_json=study_json)
+
+    print("\n+++ Running dakota.environment.study from JSON object...\n")
+    daklib.execute()
+
+    resp_res = daklib.response_results()
+    assert(resp_res.function_value(0) >= 0.0)
+    assert(resp_res.function_value(1) >= 0.0)
+    assert(resp_res.function_value(2) >= 0.0)
+
+    print("\n+++ Done JSON LibEnv.\n")
+
     # Conditionally test values written to the h5 file if h5py is available
     # JAS: HDF5 doesn't play well with the environment module all the time because
     # Dakota holds the hdf5 file open until the environment is destructed. This doesn't
@@ -199,3 +228,4 @@ if __name__ == "__main__":
     # with each test case; better manage destructors.
     test_cmd()
     test_lib()
+    test_lib_json_object()

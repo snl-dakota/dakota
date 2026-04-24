@@ -2,6 +2,7 @@
 // Updated to use PEGTL's template variable error message approach
 
 #include "dakota_ast.hpp"
+#include "dakota_input_reader.hpp"
 #include "dakota_json_input.hpp"
 #include "dakota_grammar_common.hpp"
 #include "dakota_outer_grammar.hpp"
@@ -68,9 +69,10 @@ const std::string error_control<Rule>::error_message =
 // Clang-Style Error Printing
 // =============================================================================
 
+template <typename Input>
 void print_parse_error(const std::string& filename, 
                       const tao::pegtl::parse_error& e,
-                      const tao::pegtl::file_input<>* input = nullptr)
+                      const Input* input = nullptr)
 {
     const auto& pos = e.positions().front();
     
@@ -142,28 +144,41 @@ size_t analyze_all_grammars() {
 // Main Parser Function
 // =============================================================================
 
-// Parse Dakota file using staged approach with custom error messages
-bool parse_dakota_file(const std::string& filename, Document& doc, bool enable_trace = false) {
-    tao::pegtl::file_input input(filename);
-    
+template <typename Input>
+bool parse_dakota_input(Input& input, const std::string& source_name,
+                        Document& doc, bool enable_trace = false) {
     outer::OuterState outer_state;
     outer_state.doc = &doc;
     outer_state.enable_trace = enable_trace;
-    
+
     try {
         if (enable_trace) {
             std::cout << "\n=== Tracing OUTER grammar ===\n";
-            return tao::pegtl::standard_trace<outer::grammar, outer::action, error_control>(input, outer_state);
+            return tao::pegtl::standard_trace<outer::grammar, outer::action, error_control>(
+                input, outer_state);
         } else {
-            return tao::pegtl::parse<outer::grammar, outer::action, error_control>(input, outer_state);
+            return tao::pegtl::parse<outer::grammar, outer::action, error_control>(
+                input, outer_state);
         }
     } catch (const tao::pegtl::parse_error& e) {
-        print_parse_error(filename, e, &input);
+        print_parse_error(source_name, e, &input);
         return false;
     } catch (const std::exception& e) {
         std::cerr << "\nError: " << e.what() << "\n\n";
         return false;
     }
+}
+
+// Parse Dakota file using staged approach with custom error messages
+bool parse_dakota_file(const std::string& filename, Document& doc, bool enable_trace = false) {
+    tao::pegtl::file_input input(filename);
+    return parse_dakota_input(input, filename, doc, enable_trace);
+}
+
+bool parse_dakota_string(const std::string& input_text, const std::string& source_name,
+                         Document& doc, bool enable_trace = false) {
+    tao::pegtl::memory_input input(input_text, source_name);
+    return parse_dakota_input(input, source_name, doc, enable_trace);
 }
 
 // =============================================================================
@@ -315,6 +330,222 @@ bool expand_defaults(Document& doc) {
     return true;
 }
 
+namespace {
+
+dakota::InputFormat detect_input_format(const std::string& filename,
+                                        dakota::InputFormat format) {
+    if (format != dakota::InputFormat::Auto) {
+        return format;
+    }
+
+    auto dot = filename.rfind('.');
+    std::string ext = (dot != std::string::npos) ? filename.substr(dot) : "";
+    return (ext == ".json") ? dakota::InputFormat::Json
+                             : dakota::InputFormat::DakotaFreeform;
+}
+
+bool validate_json_document_in_place(json& doc,
+                                     std::vector<std::string>& errors,
+                                     bool debug) {
+    validation_metadata::g_validation_debug = debug;
+    std::vector<std::string> val_errors;
+    const int n_errors = validation_metadata::validate_json_document(doc, val_errors);
+    if (n_errors > 0) {
+        errors.insert(errors.end(), val_errors.begin(), val_errors.end());
+        return false;
+    }
+    return true;
+}
+
+bool parse_freeform_document_to_json(Document& doc, json& output,
+                                     std::vector<std::string>& errors,
+                                     const std::string& context,
+                                     bool debug) {
+    if (!validate_document(doc)) {
+        errors.push_back("Constraint validation failed for Dakota freeform input: " + context);
+        return false;
+    }
+    if (!analyze_semantics(doc)) {
+        errors.push_back("Semantic analysis failed for Dakota freeform input: " + context);
+        return false;
+    }
+    if (!expand_defaults(doc)) {
+        errors.push_back("Default expansion failed for Dakota freeform input: " + context);
+        return false;
+    }
+
+    output = ast_to_json(doc);
+    return validate_json_document_in_place(output, errors, debug);
+}
+
+json throw_for_reader_errors(const std::string& context,
+                             const std::vector<std::string>& errors) {
+    std::string message = context;
+    if (!errors.empty()) {
+        message += ": " + errors.front();
+        for (size_t i = 1; i < errors.size(); ++i) {
+            message += "\n" + errors[i];
+        }
+    }
+    throw std::runtime_error(message);
+}
+
+} // namespace
+
+bool read_freeform_input_file_to_json(const std::string& filename,
+                                      json& output,
+                                      std::vector<std::string>& errors,
+                                      bool debug)
+{
+    g_enable_debug = debug;
+
+    Document doc;
+    if (!parse_dakota_file(filename, doc, false)) {
+        errors.push_back("Failed to parse Dakota freeform input: " + filename);
+        return false;
+    }
+    return parse_freeform_document_to_json(doc, output, errors, filename, debug);
+}
+
+json read_freeform_input_file_to_json(const std::string& filename,
+                                      bool debug)
+{
+    json output;
+    std::vector<std::string> errors;
+    if (!read_freeform_input_file_to_json(filename, output, errors, debug)) {
+        return throw_for_reader_errors("Failed to read freeform input file '" + filename + "'",
+                                       errors);
+    }
+    return output;
+}
+
+bool read_freeform_input_string_to_json(const std::string& input,
+                                        json& output,
+                                        std::vector<std::string>& errors,
+                                        bool debug)
+{
+    g_enable_debug = debug;
+
+    Document doc;
+    if (!parse_dakota_string(input, "<dakota-input-string>", doc, false)) {
+        errors.push_back("Failed to parse Dakota freeform input string.");
+        return false;
+    }
+    return parse_freeform_document_to_json(doc, output, errors,
+                                           "<dakota-input-string>", debug);
+}
+
+json read_freeform_input_string_to_json(const std::string& input,
+                                        bool debug)
+{
+    json output;
+    std::vector<std::string> errors;
+    if (!read_freeform_input_string_to_json(input, output, errors, debug)) {
+        return throw_for_reader_errors("Failed to read freeform input string", errors);
+    }
+    return output;
+}
+
+bool validate_json_input_to_json(const json& input,
+                                 json& output,
+                                 std::vector<std::string>& errors,
+                                 bool debug)
+{
+    g_enable_debug = debug;
+
+    output = input;
+    if (!expand_json_defaults(output, errors, debug)) {
+        return false;
+    }
+    return validate_json_document_in_place(output, errors, debug);
+}
+
+json validate_json_input_to_json(const json& input,
+                                 bool debug)
+{
+    json output;
+    std::vector<std::string> errors;
+    if (!validate_json_input_to_json(input, output, errors, debug)) {
+        return throw_for_reader_errors("Failed to validate JSON input", errors);
+    }
+    return output;
+}
+
+bool read_json_input_file_to_json(const std::string& filename,
+                                  json& output,
+                                  std::vector<std::string>& errors,
+                                  bool debug)
+{
+    json doc;
+    if (!load_json_file(filename, doc, errors)) {
+        return false;
+    }
+    return validate_json_input_to_json(doc, output, errors, debug);
+}
+
+json read_json_input_file_to_json(const std::string& filename,
+                                  bool debug)
+{
+    json output;
+    std::vector<std::string> errors;
+    if (!read_json_input_file_to_json(filename, output, errors, debug)) {
+        return throw_for_reader_errors("Failed to read JSON input file '" + filename + "'",
+                                       errors);
+    }
+    return output;
+}
+
+bool read_json_input_string_to_json(const std::string& input,
+                                    json& output,
+                                    std::vector<std::string>& errors,
+                                    bool debug)
+{
+    json doc;
+    try {
+        doc = json::parse(sanitize_json_for_parse(input));
+        restore_inf_sentinels(doc);
+    } catch (const json::parse_error& e) {
+        errors.push_back(std::string("JSON parse error: ") + e.what());
+        return false;
+    }
+    return validate_json_input_to_json(doc, output, errors, debug);
+}
+
+json read_json_input_string_to_json(const std::string& input,
+                                    bool debug)
+{
+    json output;
+    std::vector<std::string> errors;
+    if (!read_json_input_string_to_json(input, output, errors, debug)) {
+        return throw_for_reader_errors("Failed to read JSON input string", errors);
+    }
+    return output;
+}
+
+bool read_input_file_to_json(const std::string& filename,
+                             json& output,
+                             std::vector<std::string>& errors,
+                             InputFormat format,
+                             bool debug)
+{
+    const InputFormat resolved = detect_input_format(filename, format);
+    if (resolved == InputFormat::Json) {
+        return read_json_input_file_to_json(filename, output, errors, debug);
+    }
+    return read_freeform_input_file_to_json(filename, output, errors, debug);
+}
+
+json read_input_file_to_json(const std::string& filename,
+                             InputFormat format,
+                             bool debug)
+{
+    const InputFormat resolved = detect_input_format(filename, format);
+    if (resolved == InputFormat::Json) {
+        return read_json_input_file_to_json(filename, debug);
+    }
+    return read_freeform_input_file_to_json(filename, debug);
+}
+
 } // namespace dakota
 
 // =============================================================================
@@ -421,7 +652,7 @@ void print_usage(const char* prog) {
     std::cout << "Input mode (auto-detected from .json extension by default):\n";
     std::cout << "  --json-input         Force JSON input mode (e.g. file lacks .json extension)\n";
     std::cout << "  --dsl-input          Force DSL input mode (overrides .json extension)\n";
-    std::cout << "  --schema <path>      Schema for JSON input [default: dakota_study_schema.json]\n";
+    std::cout << "  --schema <path>      Deprecated; JSON input uses embedded schema metadata\n";
     std::cout << "\nDSL-mode options:\n";
     std::cout << "  --trace              Enable grammar tracing\n";
     std::cout << "  --analyze            Analyze grammar for issues\n";
@@ -456,7 +687,6 @@ int main(int argc, char* argv[]) {
     bool output_json   = false;
     bool force_json_in = false;   // --json-input
     bool force_dsl_in  = false;   // --dsl-input
-    std::string schema_path = "dakota_study_schema.json";
     std::string filename;
 
     for (int i = 1; i < argc; ++i) {
@@ -482,7 +712,7 @@ int main(int argc, char* argv[]) {
                 std::cerr << "Error: --schema requires a path argument\n";
                 return 1;
             }
-            schema_path = argv[++i];
+            ++i; // accepted for backwards compatibility, but ignored
         } else if (arg == "--debug") {
             dakota::g_enable_debug = true;
         } else if (arg == "-h" || arg == "--help") {
@@ -533,7 +763,7 @@ int main(int argc, char* argv[]) {
     if (json_input_mode) {
         if (dakota::g_enable_debug) {
             std::cout << "Input mode: JSON\n";
-            std::cout << "Schema:     " << schema_path << "\n";
+            std::cout << "Schema:     embedded\n";
             std::cout << "File:       " << filename << "\n";
         }
 
@@ -550,15 +780,9 @@ int main(int argc, char* argv[]) {
 
         // Expand schema defaults
         if (do_expand) {
-            if (!std::filesystem::exists(schema_path)) {
-                std::cerr << "Error: Schema file not found: " << schema_path << "\n"
-                          << "  Specify with --schema <path>, or use --no-expand to skip.\n";
-                return 1;
-            }
             if (dakota::g_enable_debug) std::cout << "\nExpanding JSON defaults...\n";
             std::vector<std::string> exp_errors;
-            if (!dakota::expand_json_defaults(doc, schema_path, exp_errors,
-                                              dakota::g_enable_debug)) {
+            if (!dakota::expand_json_defaults(doc, exp_errors, dakota::g_enable_debug)) {
                 for (const auto& e : exp_errors) std::cerr << "Error: " << e << "\n";
                 return 1;
             }

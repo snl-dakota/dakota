@@ -989,6 +989,7 @@ endif()
 target_link_libraries(dakota_src dakota_src_fortran ${DAKOTA_BOOST_TARGETS})
 # Dakota should always depend on util (consider removing option in DakotaOptions.cmamke
 target_link_libraries(dakota_src dakota_util)
+set_property(TARGET dakota_src APPEND PROPERTY LINK_LIBRARIES dakota_parser_lib)
 set_property(TARGET dakota_src APPEND PROPERTY LINK_LIBRARIES dakota_ir)
 list(APPEND EXPORT_TARGETS dakota_util)
 list(APPEND DAKOTA_LIBS dakota_util dakota_ir)
@@ -1195,6 +1196,8 @@ if(DAKOTA_PYTHON_WRAPPER)
   add_dependencies(environment dakota_python_package)
   # TODO: transitive includes when merging from devel
 #  target_include_directories(surrogates PRIVATE ${Teuchos_INCLUDE_DIRS})
+  target_include_directories(environment PRIVATE
+    ${PYBIND11_JSON_ROOT_DIR}/include)
   target_link_libraries(environment PRIVATE dakota_src
     ${Dakota_LIBRARIES} ${Dakota_TPL_LIBRARIES}
     )

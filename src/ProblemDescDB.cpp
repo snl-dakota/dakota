@@ -192,6 +192,8 @@ parse_inputs(const std::string_view input_string, const std::string_view parser_
 
     // Only world rank 0 parses the input file.
     if (worldRank == 0) {
+        irState.reset();
+        validatedStudyJson = json();
         // Parse the input file using one of the derived parser-specific classes
         derived_parse_inputs(input_string, parser_options, command_line_run);
     }
@@ -219,23 +221,33 @@ void ProblemDescDB::enable_json_input(const String & json_file)
   const json study_json = load_json_from_file(json_file);
   log_top_level_json_shape(study_json, json_file);
 
+  enable_json_input(study_json);
+}
+
+void ProblemDescDB::enable_json_input(const nlohmann::json& study_json)
+{
+  if (ir_debug_logging_enabled())
+    log_top_level_json_shape(study_json, "<in-memory>");
+
   InstructionMaterializer materializer;
   std::shared_ptr<IRState> materialized;
   try {
     materialized = std::make_shared<IRState>(materializer.materialize(study_json));
   }
   catch (const std::exception& e) {
-    std::cerr << "ProblemDescDB::enable_json_input: failed while materializing '"
-              << json_file << "': " << e.what() << std::endl;
+    std::cerr << "ProblemDescDB::enable_json_input: failed while materializing study JSON: "
+              << e.what() << std::endl;
     throw;
   }
 
   if (dbRep) {
+    dbRep->validatedStudyJson = study_json;
     dbRep->irState = std::move(materialized);
     if (dbRep->dataMethodList.empty())
       dbRep->populate_skeleton_data_from_ir();
   }
   else {
+    validatedStudyJson = study_json;
     irState = std::move(materialized);
     if (dataMethodList.empty())
       populate_skeleton_data_from_ir();

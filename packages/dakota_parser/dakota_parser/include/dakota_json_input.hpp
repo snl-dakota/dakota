@@ -39,7 +39,10 @@
 #include <map>
 #include <fstream>
 #include <iostream>
+#include <limits>
 #include <stdexcept>
+
+#include "dakota_embedded_schema_cbor.hpp"
 
 namespace dakota {
 
@@ -604,6 +607,32 @@ inline bool expand_json_defaults(json& doc,
 
     JsonDefaultExpander expander(schema);
     return expander.expand(doc, debug);
+}
+
+inline const json& embedded_schema_json() {
+    static const json schema = json::from_cbor(
+        embedded_schema::kDakotaSchemaCbor,
+        embedded_schema::kDakotaSchemaCbor +
+            embedded_schema::kDakotaSchemaCborSize
+    );
+    return schema;
+}
+
+inline bool expand_json_defaults(json& doc,
+                                 std::vector<std::string>& errors,
+                                 bool debug = false) {
+    try {
+        JsonDefaultExpander expander(embedded_schema_json());
+        if (!expander.expand(doc, debug)) {
+            errors.push_back("JSON default expansion requires a top-level object.");
+            return false;
+        }
+    } catch (const std::exception& e) {
+        errors.push_back(std::string("Embedded schema decode/default expansion error: ") +
+                         e.what());
+        return false;
+    }
+    return true;
 }
 
 } // namespace dakota
