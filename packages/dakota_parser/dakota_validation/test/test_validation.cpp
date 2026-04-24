@@ -5,6 +5,7 @@
 #include <dakota/validation.hpp>
 #include <dakota/variable_validators.hpp>
 #include <dakota/computed_fields.hpp>
+#define _USE_MATH_DEFINES // required for MSVS
 #include <cmath>
 #include <limits>
 

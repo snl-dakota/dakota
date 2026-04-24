@@ -6,6 +6,7 @@
 #define DAKOTA_VARIABLE_VALIDATORS_HPP
 
 #include <dakota/validation.hpp>
+#define _USE_MATH_DEFINES // required for MSVS
 #include <cmath>
 
 namespace dakota::validation {

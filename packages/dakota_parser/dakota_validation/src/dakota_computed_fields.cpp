@@ -2,6 +2,7 @@
 // Implementation of computed field functions
 
 #include <dakota/computed_fields.hpp>
+#define _USE_MATH_DEFINES // required for MSVS
 #include <cmath>
 #include <algorithm>
 
