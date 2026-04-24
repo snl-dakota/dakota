@@ -979,6 +979,25 @@ target_link_libraries(dakota_ir PUBLIC Boost::serialization)
 DakotaApplyMPISettings(dakota_ir)
 
 add_library(dakota_src ${Dakota_src})
+target_include_directories(dakota_src
+  PUBLIC
+    $<BUILD_INTERFACE:${JSON_INCLUDE_DIR}>
+    $<BUILD_INTERFACE:${JSON_SINGLE_INCDIR}>
+    $<BUILD_INTERFACE:${DAKOTA_IR_GENERATED_DIR}>
+    $<BUILD_INTERFACE:${Dakota_SOURCE_DIR}/src/generated_ir_tables>
+    $<BUILD_INTERFACE:${Dakota_SOURCE_DIR}/packages/dakota_parser/dakota_parser/include>
+    $<BUILD_INTERFACE:${Dakota_BINARY_DIR}/packages/dakota_parser/dakota_parser/generated>
+    $<BUILD_INTERFACE:${Dakota_BINARY_DIR}/packages/dakota_parser/dakota_parser/generated/environment>
+    $<BUILD_INTERFACE:${Dakota_BINARY_DIR}/packages/dakota_parser/dakota_parser/generated/method>
+    $<BUILD_INTERFACE:${Dakota_BINARY_DIR}/packages/dakota_parser/dakota_parser/generated/model>
+    $<BUILD_INTERFACE:${Dakota_BINARY_DIR}/packages/dakota_parser/dakota_parser/generated/variables>
+    $<BUILD_INTERFACE:${Dakota_BINARY_DIR}/packages/dakota_parser/dakota_parser/generated/interface>
+    $<BUILD_INTERFACE:${Dakota_BINARY_DIR}/packages/dakota_parser/dakota_parser/generated/responses>
+)
+add_dependencies(dakota_src dakota_ir_generated_tables)
+if(TARGET dakota_generated_sources)
+  add_dependencies(dakota_src dakota_generated_sources)
+endif()
 # handle special case for gcc filesystem support
 if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9.0) OR DAKOTA_LINK_STDCPPFS)
   #message(STATUS "GCC version is less than 9.0, adding -lstdc++fs")
@@ -989,8 +1008,6 @@ endif()
 target_link_libraries(dakota_src dakota_src_fortran ${DAKOTA_BOOST_TARGETS})
 # Dakota should always depend on util (consider removing option in DakotaOptions.cmamke
 target_link_libraries(dakota_src dakota_util)
-set_property(TARGET dakota_src APPEND PROPERTY LINK_LIBRARIES dakota_parser_lib)
-set_property(TARGET dakota_src APPEND PROPERTY LINK_LIBRARIES dakota_ir)
 list(APPEND EXPORT_TARGETS dakota_util)
 list(APPEND DAKOTA_LIBS dakota_util dakota_ir)
 if(DAKOTA_MODULE_SURROGATES)
