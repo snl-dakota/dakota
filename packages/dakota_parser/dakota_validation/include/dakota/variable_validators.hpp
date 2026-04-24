@@ -2,12 +2,12 @@
 // Distribution-specific validation functions for Dakota variable types
 // Used by both Python (via pybind11) and C++ DSL reader
 
+#define _USE_MATH_DEFINES // required for MSVS
 #ifndef DAKOTA_VARIABLE_VALIDATORS_HPP
 #define DAKOTA_VARIABLE_VALIDATORS_HPP
 
 #include <dakota/validation.hpp>
-#define _USE_MATH_DEFINES // required for MSVS
-#include <cmath>
+#include <math.h>
 
 namespace dakota::validation {
 

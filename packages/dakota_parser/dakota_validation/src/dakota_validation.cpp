@@ -1,10 +1,10 @@
 // dakota_validation.cpp
 // Implementation of core validation functions and registry
 
+#define _USE_MATH_DEFINES // required for MSVS
 #include <dakota/validation.hpp>
 #include <dakota/variable_validators.hpp>
-#define _USE_MATH_DEFINES // required for MSVS
-#include <cmath>
+#include <math.h>
 #include <cctype>
 #include <string>
 #include <iostream>

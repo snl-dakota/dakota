@@ -1,12 +1,12 @@
 // test_validation.cpp
 // C++ unit tests for validation functions
 
+#define _USE_MATH_DEFINES // required for MSVS
 #include <gtest/gtest.h>
 #include <dakota/validation.hpp>
 #include <dakota/variable_validators.hpp>
 #include <dakota/computed_fields.hpp>
-#define _USE_MATH_DEFINES // required for MSVS
-#include <cmath>
+#include <math.h>
 #include <limits>
 
 using namespace dakota::validation;

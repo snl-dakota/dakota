@@ -1,9 +1,9 @@
 // dakota_computed_fields.cpp
 // Implementation of computed field functions
 
-#include <dakota/computed_fields.hpp>
 #define _USE_MATH_DEFINES // required for MSVS
-#include <cmath>
+#include <dakota/computed_fields.hpp>
+#include <math.h>
 #include <algorithm>
 
 namespace dakota::computed_fields {
