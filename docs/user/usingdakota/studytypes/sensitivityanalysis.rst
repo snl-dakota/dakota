@@ -416,106 +416,284 @@ D: Dakota-generated; P: Post-processing required with third-party tools
 Usage Guidelines
 ----------------
 
-Selecting an appropriate sensitivity analysis method depends on several
-factors including computational budget, model characteristics, and
-analysis objectives.
+This section provides guidance for selecting sensitivity analysis methods 
+based on model cost, input dimension, response characteristics, and intended
+downstream use. 
 
-.. 
-  TNP TODO: We may want to distinguish recommendations based on the anticipated
-  downstream analysis. If it's UQ and your model is anything but stupidly cheap
-  I think I would recommend you go straight to doing LHS sampling. Maybe there
-  would be justification for doing something like MOAT or centered param if you're
-  going to do an optimization after, without a surrogate where it would be better
-  to have space-filling samples, since optimization will follow some particular 
-  trajector through parameter space anyway, so any initial SA samples will be
-  "thrown out"
+Available methods for sensitivity analysis in Dakota, or via postprocessing 
+Dakota output, include: 
 
-.. 
-  TNP TODO: How many steps do people do? I guess it would be a bit less than the 
-  lower limit of LHS recommendation if they do less than 5 steps. I'm 
-  still not convinced this is the thing we should be recommending as the 
-  first pass since they can be effectively wasted evaluations if you 
-  move on to UQ. Change my mind!
-**For initial screening** with limited computational budget, start with
-a centered parameter study to identify obviously influential or
-non-influential parameters. This requires only :math:`2kd + 1` evaluations
-for :math:`d` parameters with :math:`k` steps per variable.
+- Centered parameter studies (one-at-a-time, conditional)
+- Scatterplots (visual diagnostics)
+- Morris one-at-a-time (MOAT) screening
+- Random sampling (e.g., Latin hypercube) with:
 
-.. TNP TODO: Same concern applies here
-**For moderate budgets** with potentially nonlinear or non-monotonic
-responses, Morris MOAT provides efficient screening with more robustness
-than centered parameter studies. The modified mean and standard deviation
-metrics help distinguish between linear influence, nonlinear influence,
-and interaction effects.
+  - Correlation coefficients (Pearson, Spearman, partial)
+  - Standardized regression coefficients (SRC)
+  - Binned Sobol' main-effect indices
+  - Saltelli sampling for Sobol' indices (main and total effects)
 
-.. TNP TODO: what about sampling-based, just getting things like CCs? This 
-   has always been my go-to if a precursor to UQ. 
-**For comprehensive analysis** when computational resources permit,
-sampling-based methods with variance-based decomposition provide the
-most complete picture of parameter importance. For smooth responses,
-polynomial chaos expansion offers an efficient route to Sobol indices.
+- Polynomial chaos expansions (PCE) for Sobol' indices
 
-.. TNP TODO: review. I definitely woudln't recommend CCs for noisy responses. 
-**Consider model characteristics** when selecting methods:
-- Smooth, well-behaved responses: PCE-based VBD is typically most efficient
-- Noisy or discontinuous responses: Sampling with correlations or MOAT
-- High-dimensional problems: MOAT for screening, then detailed analysis
-  on down-selected parameters
-- Expensive simulations: Start with centered studies, proceed to MOAT,
-  use PCE if smoothness permits
+The choice of method depends primarily on:
+- Computational cost per model evaluation
+- Number of input variables
+- Smoothness and structure of the response
+- Whether model evaluations should be reusable
+- Downstream analysis goals (optimization, surrogate modeling, UQ)
 
-.. _`sa:postprocessing`:
+**Model cost considerations**
+- **Very Expensive Models**
 
-.. TNP TODO: Not sure this section is necessary?
-Using Dakota-Generated Data
----------------------------
+  When the number of model evaluations is severely limited (i.e., :math:`N \lessim 100` overall or :math:`N \lesssim 10 \, d` to :math:`20 \, d`  where :math:`d` is the number of input variables):
 
-Dakota produces tabular output files (``dakota_tabular.dat`` by default
-or HDF5 format with ``dakota_results.h5``) containing all evaluation
-data. These files can be imported into external tools for additional
-analysis:
+  - Use Morris one-at-a-time screening for global sensitivity
+  - Supplement with centered parameter sweeps or scatterplots for diagnostics
+  - Random sampling-based screening can be effective, but Morris designs generally provide more stable sensitivity rankings for the same computational cost.
 
-- **Scatterplots**: Visualize input-output relationships to identify
-  trends missed by correlation coefficients
-- **Regression analysis**: Perform stepwise or best-subsets regression
-  to identify significant parameters
-- **Statistical tests**: Apply formal significance tests available in
-  statistical packages
-- **Visualization**: Create publication-quality figures using MATLAB,
-  Python (matplotlib), R, or similar tools
+  Avoid:
 
-Common post-processing workflows include:
+  - Saltelli Sobol' indices (high cost)
+  - Large random sampling designs
 
-1. Import tabular data into analysis software
-2. Generate scatter plots for all input-output pairs
-3. Identify nonlinear trends or interactions
-4. Perform formal regression or ANOVA analysis
-5. Use results to prune variables and design follow-on studies
+- **Moderate Cost Models**
 
-.. _`sa:vs_uq`:
+  When a moderate number of evaluations is feasible (i.e., :math:`N \sim 100 - 1000` or :math:`N \sim 10 \, d` to :math:`100 \, d`):
 
-Relationship to Uncertainty Quantification
-------------------------------------------
+  - Generate a random sample (e.g., Latin hypercube sampling)
+  - Compute:
 
-Sensitivity analysis and uncertainty quantification (UQ) are closely
-related but serve different primary purposes:
+    - Correlation coefficients
+    - Standardized regression coefficients
+    - Binned Sobol' main-effect indices
 
-- **SA focuses on parameters**: The primary goal is to rank parameter
-  importance and understand how parameters influence responses
-- **UQ focuses on responses**: The primary goal is to characterize
-  statistical properties of outputs given uncertain inputs
+  - Compare to scatter plots to corroborate computed metrics
 
-Some methods serve both purposes. For example, Latin hypercube sampling
-is commonly used for SA (computing correlations) and UQ (estimating
-response moments, PDFs, and CDFs). Polynomial chaos expansions are
-often considered a UQ method but efficiently produce Sobol' indices
-for parameter ranking.
+  Advantages:
 
-A typical workflow combines SA and UQ: first use SA to identify the
-most important parameters, then perform detailed UQ analysis on the
-reduced parameter set.
+  - A single dataset supports multiple sensitivity metrics
+  - Enables reuse for surrogate modeling and uncertainty quantification
 
-.. _`sa:references`:
+- **Cheap Models**
+
+  When model evaluations are inexpensive:
+
+  - Use Saltelli sampling to compute Sobol' indices (main and total effects)
+  - Optionally compare with correlation or regression-based measures
+
+
+**Input Dimension Considerations** 
+
+- **High-Dimensional Problems (e.g., :math:`d \gtsim 20-30`)**
+
+  Problems with tens to hundreds of inputs are considered high-dimensional.
+  In this regime, the number of model evaluations required for many sensitivity
+  metrics grows rapidly with the number of inputs.
+
+  - Prefer:
+
+    - Morris screening (cost scales linearly with dimension, but with few samples)
+    - Correlation or SRC from random samples (independent of dimension)
+
+  - Use caution with:
+
+    - Saltelli Sobol' (cost scales with dimension and require more samples)
+    - High-order PCE unless sparse/adaptive methods are used
+  
+  - Recommended goal:
+    
+    - Screen out unimportant variable before applying more expensive methods
+
+- **Moderate-Dimensional Problems (e.g., :math:`d \approx 5-20``)**
+
+  In this range, most methods are feasible with moderate computational effort.
+ - Viable approaches:
+
+    - Random sampling with correlation or SRC
+    - Binned Sobol' indices (main effects only)
+    - Morris screening
+    - Saltelli Sobol' indices (budget permitting)
+    - PCE (often practical)
+
+  - Recommended goal:
+
+    - Combine screening with more quantitative methods as needed
+
+**Low-Dimensional Problems (e.g., :math:`d \lesssim 5-10``)**
+
+  With relatively few inputs, more comprehensive methods become practical, 
+  and screening methods such as MOAT are typically unnecessary
+
+  - Prefer:
+
+    - Sobol' indices (Saltelli can be tractable)
+    - PCE-based Sobol' indices
+
+  - Advantages:
+
+    - Interaction effects can be more fully explored
+    - High-fidelity variance decomposition is feasible
+
+**Model Smoothness**
+
+- **Smooth Responses**
+
+  If the model is smooth and well-approximated by polynomials:
+
+  - Use PCE-based Sobol' indices
+
+  Advantages:
+
+  - Analytical computation of Sobol' indices
+  - Surrogate can be reused for UQ and optimization
+
+  Caveats:
+  
+  - Efficiency depends on input dimension, since the number of PCE terms (and correspondingly, the number of model evaluations to approximate them) grows rapidly with input dimension and polynomial order.
+  - PCEs will be most effective when the response admits a sparse representation (e.g., is dominated by low-order terms and limited interactions).
+  - High-dimensional problems may require sparse or adaptive truncation strategies to remain tractable.
+
+- **Non-smooth or Unknown Structure**
+
+  - Start with:
+
+    - Morris screening
+    - Spearman correlation
+
+  - Be cautious with:
+
+    - Regression-based methods
+    - Low-order PCE
+
+**Downstream Use Cases**
+
+- **Reusable Sampling Designs**
+
+  If model evaluations should be reused:
+
+  - Prefer random sampling designs (e.g., Latin hypercube)
+
+  These support:
+
+  - Sensitivity analysis (correlation, SRC, Sobol')
+  - Surrogate modeling
+  - Uncertainty quantification
+
+  Avoid relying solely on:
+
+  - Morris (design-specific)
+  - Saltelli sampling (specialized for Sobol' estimation)
+
+- **Surrogate Modeling**
+
+  For building surrogate models:
+
+  - Use space-filling random samples
+  - Optionally construct PCE or other surrogates
+
+  Avoid:
+
+  - Centered parameter studies
+  - Morris designs (poor coverage of input space)
+
+- **Optimization**
+
+  If optimization is the primary goal:
+
+  - Use sensitivity methods for insight and screening:
+
+    - Centered parameter studies
+    - Scatterplots
+    - Correlation or MOAT
+
+- **Uncertainty Quantification**
+
+  For full uncertainty quantification:
+
+  - Prefer:
+
+    - Sobol' indices (Saltelli or PCE-based)
+    - Surrogate-based sensitivity analysis
+
+  - Avoid relying solely on:
+
+    - Correlation coefficients
+    - Morris screening
+
+**Method Roles and Limitations**
+
+- **Centered Parameter Sweeps**
+
+  - One-at-a-time variation of a single input over its specified range
+    while holding other inputs fixed.
+  - Provides a one-dimensional conditional response:
+
+    .. math::
+
+       f(x_i \mid x_{-i} = x_{-i}^*)
+
+  - Useful for:
+
+    - Visualizing response shape (linearity, saturation, thresholds)
+    - Identifying inputs with strong influence along the chosen slice
+    - Diagnosing model behavior
+
+  Limitations:
+
+  - Results are conditional on the fixed values of other inputs
+  - Do not account for variability in other inputs
+  - Do not capture interactions unless additional sweeps are performed
+  - Not a global sensitivity measure
+
+- **Scatterplots**
+
+  - Reveals trends, monotonicity, nonlinear behavior, and interaction effects
+  - Useful for exploratory analysis and comparing to computed metrics
+
+- **Morris One-at-a-Time**
+
+  - Efficient global screening method
+  - Detects nonlinearity and interactions qualitatively
+  - Does not provide variance decomposition
+
+- **Correlation and SRC**
+
+  - Low-cost, easy to compute
+  - Suitable for monotonic or near-linear models
+  - Limited in capturing interactions and non-monotonic effects
+
+- **Binned Sobol' Indices**
+
+  - Approximate main effects using existing samples
+  - Exploits reusable random samples
+  - Don't provide total-effect indices
+
+- **Saltelli Sobol' Indices**
+
+  - Provide quantitative main and total effects
+  - Capture interactions
+  - High computational cost and specialized sampling design
+
+- **PCE-Based Sobol' Indices**
+
+  - Efficient for smooth models
+  - Provide analytical variance decomposition
+  - Depend on quality and structure of the surrogate
+
+**Summary**
+
+- Use Morris for low-cost screening
+- Use random sampling when reuse and flexibility are important
+- Use Sobol' indices for quantitative variance attribution
+- Use PCE when the model is smooth and surrogate reuse is desired
+- Use sweeps and scatterplots for conditional response insight and diagnostics
+
+Practical Tips
+~~~~~~~~~~~~~~
+- For studies where the number of model evaluations isn't influenced by the number of inputs (e.g., random sampling), include a "dummy" variable in your sensitivity analyses that is not used in the model. This lets you assess how well a noninfluential input is identified by the sensitivity metric. 
+- Assess convergence of the metrics by considering incremental increases in the number of model evaluations/samples (incremental studies or increased sample size exploiting Dakota's restart capability mean you don't repeat model evaluations).
+- Always use plots (e.g., scatter plots) to confirm conclusions.
+
 
 References
 ----------
