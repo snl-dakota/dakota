@@ -12,7 +12,6 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 option(BUILD_PYTHON_BINDINGS "Build Python bindings" ON)
 option(BUILD_TESTS "Build tests" OFF)
 option(BUILD_EXAMPLES "Build example programs" OFF)
-option(GENERATE_PYDANTIC_MODELS "Generate Pydantic models from XML grammar" ON)
 
 # Detect scikit-build-core
 if(DEFINED SKBUILD)
@@ -185,9 +184,6 @@ endif()
 # dakota_validation library (custom validators and computed fields)
 add_subdirectory(dakota_validation)
 
-# dakota_schema_validator library (JSON Schema validator)
-add_subdirectory(dakota_schema_validator)
-
 # =============================================================================
 # Dakota Parser (requires JSON schema to be generated first)
 # =============================================================================
@@ -207,51 +203,6 @@ add_subdirectory(dakota_parser)
 # =============================================================================
 if(BUILD_EXAMPLES)
     add_subdirectory(examples)
-endif()
-
-# =============================================================================
-# Model Generation (Pydantic models from Dakota XML grammar)
-# =============================================================================
-if(GENERATE_PYDANTIC_MODELS AND BUILD_PYTHON_BINDINGS)
-    # Include the model generation module
-    list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-    include(DakotaModelGeneration)
-    
-    # Set up model generation
-    dakota_setup_model_generation()
-    
-    # Set up validation tests (requires BUILD_TESTS)
-    dakota_setup_validation_test()
-    
-    # Set up JSON schema generation
-    dakota_setup_schema_generation()
-    
-    # Configure installation of generated package
-    dakota_install_generated_package()
-    
-    # Configure installation of schema files
-    dakota_install_schema()
-    
-    # Make sure the combined package is built by default
-    if(TARGET dakota_combine_package)
-        set(DAKOTA_MODELS_DEFAULT_DEPENDENCY dakota_combine_package)
-        if(TARGET dakota_schema_header)
-            set(DAKOTA_MODELS_DEFAULT_DEPENDENCY dakota_schema_header)
-        elseif(TARGET dakota_json_schema)
-            set(DAKOTA_MODELS_DEFAULT_DEPENDENCY dakota_json_schema)
-        endif()
-
-        # Add dependency so 'make all' builds the package
-        add_custom_target(dakota_models ALL
-            DEPENDS ${DAKOTA_MODELS_DEFAULT_DEPENDENCY}
-            COMMENT "Building Dakota Pydantic models"
-        )
-        
-        # C++ Python module should be built before we can run validation tests
-        if(TARGET dakota_validation_cpp)
-            add_dependencies(dakota_models dakota_validation_cpp)
-        endif()
-    endif()
 endif()
 
 # =============================================================================
@@ -278,12 +229,7 @@ message(STATUS "  C++ Standard:         ${CMAKE_CXX_STANDARD}")
 message(STATUS "  Build Python bindings: ${BUILD_PYTHON_BINDINGS}")
 message(STATUS "  Build tests:          ${BUILD_TESTS}")
 message(STATUS "  Build examples:       ${BUILD_EXAMPLES}")
-message(STATUS "  Generate models:      ${GENERATE_PYDANTIC_MODELS}")
 if(BUILD_PYTHON_BINDINGS)
     message(STATUS "  Python install dir:   ${PYTHON_INSTALL_DIR}")
-endif()
-if(GENERATE_PYDANTIC_MODELS AND DAKOTA_MODELS_GENERATED)
-    message(STATUS "  XML grammar:          ${DAKOTA_XML_INPUT}")
-    message(STATUS "  Model extensions:     ${DAKOTA_MODEL_EXTENSIONS}")
 endif()
 message(STATUS "")

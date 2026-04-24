@@ -178,9 +178,7 @@ if(BUILD_PYTHON_BINDINGS)
             COMPONENT python
         )
         # NOTE: Do NOT install python/dakota/spec/__init__.py here.
-        # When GENERATE_PYDANTIC_MODELS is ON, the generated __init__.py 
-        # (with proper imports) is installed by DakotaModelGeneration.cmake.
-        # When GENERATE_PYDANTIC_MODELS is OFF, user must provide their own spec package.
+        # Dakota's main build installs the spec package separately.
     else()
         # Direct CMake: install from subdirectory (may not exist)
         if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/python/dakota/spec/validation")
