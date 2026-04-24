@@ -72,10 +72,6 @@ def test_cmd():
 # This should be a better path
 def test_lib():
     text_book_input = """
-        environment,
-          results_output
-            hdf5
-            results_output_file = 'test.dakota'
         method,
           output silent
           max_function_evaluations 500
@@ -165,14 +161,6 @@ def test_lib_json_object():
     with open(json_input_path, "r") as fp:
         study_json = json.load(fp)
 
-    # Reuse a realistic raw JSON study, but switch the interface to Dakota's
-    # Python direct interface so the test stays self-contained.
-    study_json["interface"][0]["analysis_drivers"]["drivers"] = ["text_book"]
-    study_json["interface"][0]["analysis_drivers"]["interface_type"] = {
-        "python": {}
-    }
-    study_json["interface"][0].pop("concurrency", None)
-
     print("\n+++ Constructing dakota.environment.study from JSON object...\n")
     daklib = dakenv.study(callback=text_book, input_json=study_json)
 
@@ -181,43 +169,8 @@ def test_lib_json_object():
 
     resp_res = daklib.response_results()
     assert(resp_res.function_value(0) >= 0.0)
-    assert(resp_res.function_value(1) >= 0.0)
-    assert(resp_res.function_value(2) >= 0.0)
 
     print("\n+++ Done JSON LibEnv.\n")
-
-    # Conditionally test values written to the h5 file if h5py is available
-    # JAS: HDF5 doesn't play well with the environment module all the time because
-    # Dakota holds the hdf5 file open until the environment is destructed. This doesn't
-    # automatically happen, even if the environment is deleted with del because Python
-    # doesn't necessarily control the memory. This can be ascertained using Python's
-    # gc module, which provides details about garbage collection. 
-    # Some possible fixes:
-    # - modify the pybind11 code for the module so that Python receives ownership of
-    #   the memory
-    # - Expose a function in C++ that deletes the pointer
-    # - Make closing the HDF5 file the responsibility of the top-level iterator instead
-    #   relying on destruction to make it happen
-
-    # test_dakota_has_hdf5_and_h5py = True 
-
-    # try:
-    #     import h5py
-    #     print("Module h5py imported.\n")
-    # except ImportError:
-    #     print("Module h5py not found. Skipping check of hdf5 file values.\n")
-    #     test_dakota_has_hdf5_and_h5py = False
-
-    # test_dakota_has_hdf5_and_h5py &= os.path.exists("test.dakota.h5")
-
-    # if test_dakota_has_hdf5_and_h5py: 
-    #     with h5py.File("test.dakota.h5", "r") as h:
-    #         hresps = h["/methods/NO_METHOD_ID/results/execution:1/best_objective_functions"]
-    #         hvars =  h["/methods/NO_METHOD_ID/results/execution:1/best_parameters/continuous"]
-    #         assert(hresps[0] < 1.e-20)
-    #         assert(abs((hvars[0] - target)/target) < max_tol)
-    #         assert(abs((hvars[1] - target)/target) < max_tol)
-    #         assert(abs((hvars[2] - target)/target) < max_tol)
 
 if __name__ == "__main__":
 

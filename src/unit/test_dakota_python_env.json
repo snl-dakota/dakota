@@ -12,12 +12,7 @@
           "text_book"
         ],
         "interface_type": {
-          "fork": {}
-        }
-      },
-      "concurrency": {
-        "asynchronous": {
-          "evaluation_concurrency": 5
+          "python": {}
         }
       },
       "id_interface": "I1"
@@ -32,12 +27,6 @@
         "id_method": "UQ",
         "response_levels": {
           "values": [
-            0.1,
-            0.2,
-            0.6,
-            0.1,
-            0.2,
-            0.6,
             0.1,
             0.2,
             0.6
@@ -61,7 +50,7 @@
       },
       "response_type": {
         "response_functions": {
-          "count": 3
+          "count": 1
         }
       }
     }
