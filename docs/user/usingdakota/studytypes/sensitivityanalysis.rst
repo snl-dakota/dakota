@@ -112,7 +112,16 @@ analysis results. They can reveal:
 
 - Monotonic or non-monotonic relationships
 - Nonlinear trends (e.g., saturation, thresholds)
-- Interaction effects (e.g., diffuse or multi-valued relationships)
+- Interaction effects (e.g., changing output variation as a function of multiple inputs)
+
+.. figure:: img/scatterplots_only.png
+   :alt: An example of scatterplots for a function exhibiting nonmonotonic, 
+         nonlinear relationships, and interactions. 
+   :name: sa:figure01
+   :align: center
+
+   An example of scatterplots for a function exhibiting nonmonotonic, 
+   nonlinear relationships, and interactions. 
 
 Unlike quantitative sensitivity metrics, scatterplots:
 
@@ -134,8 +143,6 @@ Limitations:
 
 - They can become difficult to interpret in high-dimensional problems
 - They don't isolate interaction effects without additional visualization
-
-.. TNP TODO: Add scatterplot example
 
 .. _`sa:global:corr_coeffs`: 
 
@@ -171,8 +178,51 @@ Correlation coefficients can struggle in the following contexts:
 - non-monotonic, nonlinear input-output relationships
 - correlated inputs
 - input-output relationships driven by interactions between inputs
+- noisy input-output relationships
 
-.. TNP TODO: add picture of correlation coefficients for different functions
+Below are examples, with scatterplots, showing how simple correlations behave
+in a range of scenarios.
+
+.. figure:: img/cc_noise_effects.png
+   :alt: For the same underlying function, increasing noise in the response decreases the 
+        computed correlation coefficient. The Pearson correlation coefficient is shown.
+   :name: sa:figure02
+   :align: center
+
+   For the same underlying function, increasing noise in the response decreases the 
+   computed correlation coefficient. The Pearson correlation coefficient :math:`\rho`
+   is shown here.
+
+ .. figure:: img/cc_slope_effects.png
+   :alt: Correlation coefficients for different variations of y=ax, where the coefficient
+         is always -1 or 1, no matter what a is.
+   :name: sa:figure03
+   :align: center
+
+   Correlation coefficients aren't impacted by the magnitude of 
+   slope of a linear relationship; they are only influenced by the direction 
+   (upward or downward) and the strength of the linear relationship (how closely 
+   points fall on a line).
+
+.. figure:: img/cc_edge_cases.png
+   :alt: Pearson and Spearman correlation coefficients can diverge for monotonic, nonlinear  or 
+   discontinuous functions. They both can fail to identify a significant relationship for
+   non-monotonic relationships. 
+   :name: sa:figure04
+   :align: center
+
+   Pearson and Spearman correlation coefficients can diverge for monotonic, nonlinear  or 
+   discontinuous functions. They both can fail to identify a significant relationship for
+   non-monotonic relationships. 
+
+.. figure:: img/cc_interaction_driven.png
+   :alt: Correlation coefficients can fail to identify significant relationships for functions 
+   driven by interactions between inputs, as is shown in this example.
+   :name: sa:figure05
+   :align: center
+
+   Correlation coefficients can fail to identify significant relationships for functions 
+   driven by interactions between inputs, as is shown in this example.
 
 .. _`sa:global:std_regression_coeffs`:
 
