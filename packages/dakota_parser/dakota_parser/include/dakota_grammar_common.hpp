@@ -45,16 +45,24 @@ struct integer : pegtl::seq<
 // Positive integer (for repeat counts - no sign allowed)
 struct positive_integer : pegtl::plus<pegtl::digit> {};
 
-// Non-finite literals: inf, -inf, infinity, -infinity, nan (case-insensitive)
-struct nonfinite_literal : pegtl::seq<
+// Infinity literals: inf, -inf, infinity, -infinity (case-insensitive)
+struct infinity_literal : pegtl::seq<
     pegtl::opt<pegtl::one<'-', '+'>>,
     pegtl::sor<
-        TAO_PEGTL_ISTRING("nan"),
         TAO_PEGTL_ISTRING("infinity"),
         TAO_PEGTL_ISTRING("inf")
     >,
     pegtl::not_at<pegtl::sor<pegtl::alnum, pegtl::one<'_'>>>
 > {};
+
+// NaN literal: nan (case-insensitive), optionally signed for consistency
+struct nan_literal : pegtl::seq<
+    pegtl::opt<pegtl::one<'-', '+'>>,
+    TAO_PEGTL_ISTRING("nan"),
+    pegtl::not_at<pegtl::sor<pegtl::alnum, pegtl::one<'_'>>>
+> {};
+
+struct nonfinite_literal : pegtl::sor<infinity_literal, nan_literal> {};
 
 // Quoted strings: single or double quotes
 struct single_quoted_string : pegtl::seq<
@@ -207,12 +215,7 @@ struct opt_value_separator : pegtl::star<pegtl::sor<
 // Value terminator fires at "inf"/"infinity"/"nan" without this guard,
 // because their first letter is alpha and matches keyword_start.
 // Exclude them explicitly so real_list can consume non-finite literals.
-struct not_infinity_literal : pegtl::not_at<pegtl::seq<
-    pegtl::opt<pegtl::one<'-', '+'>>,
-    pegtl::sor<TAO_PEGTL_ISTRING("infinity"), TAO_PEGTL_ISTRING("inf"),
-               TAO_PEGTL_ISTRING("nan")>,
-    pegtl::not_at<pegtl::sor<pegtl::alnum, pegtl::one<'_'>>>
->> {};
+struct not_nonfinite_literal : pegtl::not_at<nonfinite_literal> {};
 
 struct value_terminator : pegtl::sor<
     pegtl::at<pegtl::seq<opt_value_separator, pegtl::sor<
@@ -223,7 +226,7 @@ struct value_terminator : pegtl::sor<
         pegtl::seq<TAO_PEGTL_STRING("interface"), pegtl::not_at<pegtl::sor<pegtl::alnum, pegtl::one<'_'>>>>,
         pegtl::seq<TAO_PEGTL_STRING("responses"), pegtl::not_at<pegtl::sor<pegtl::alnum, pegtl::one<'_'>>>>
     >>>,
-    pegtl::at<pegtl::seq<opt_value_separator, not_infinity_literal, keyword_start>>
+    pegtl::at<pegtl::seq<opt_value_separator, not_nonfinite_literal, keyword_start>>
 > {};
 
 // String list: one or more quoted strings (with repeat support)
