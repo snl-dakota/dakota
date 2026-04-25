@@ -14,7 +14,9 @@
 #include "ast_to_json.hpp"
 #include "dakota_validation_metadata.hpp"
 #include <tao/pegtl.hpp>
+#ifndef _MSC_VER
 #include <tao/pegtl/contrib/analyze.hpp>
+#endif
 #include <tao/pegtl/contrib/trace.hpp>
 #include <iostream>
 #include <fstream>
@@ -102,7 +104,11 @@ void print_parse_error(const std::string& filename,
 
 // Analyze outer grammar for cycles
 size_t analyze_outer_grammar() {
+#ifdef _MSC_VER
+    return 0;
+#else
     return tao::pegtl::analyze<outer::grammar>();
+#endif
 }
 
 // Analyze all grammars (outer + all blocks)
