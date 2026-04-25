@@ -2,6 +2,7 @@
 // Computed field functions for Dakota variable types
 // Used by both Python (via pybind11) and C++ DSL reader
 
+#define _USE_MATH_DEFINES // required for MSVS
 #ifndef DAKOTA_COMPUTED_FIELDS_HPP
 #define DAKOTA_COMPUTED_FIELDS_HPP
 
@@ -10,6 +11,7 @@
 #include <functional>
 #include <unordered_map>
 #include <stdexcept>
+#include <math.h>
 
 namespace dakota::computed_fields {
 
