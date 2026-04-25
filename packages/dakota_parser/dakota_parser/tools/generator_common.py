@@ -325,7 +325,6 @@ class CodeGenerator:
         lines.append(f"// {self.block.name.upper()} ENTRY POINT")
         lines.append("// " + "=" * 76)
         lines.append("")
-        lines.append(f"struct {self.block.name}_entry : pegtl::sor<")
         
         entry_rules = []
         # Use the unified keyword texts
@@ -354,9 +353,28 @@ class CodeGenerator:
         # "evaluation_concurrency" before it can be parsed as its own keyword).
         entry_rules.append(f"    keyword_with_optional_param<{self.block.name}_unknown_keyword>")
         entry_rules.append(f"    keyword_flag<{self.block.name}_unknown_keyword>")
-        
-        lines.append(",\n".join(entry_rules))
-        lines.append("> {};")
+
+        # MSVC struggles with a single enormous pegtl::sor<...> in large blocks
+        # like METHOD. Emit a small hierarchy of sor groups to keep template
+        # instantiation depth manageable while preserving rule order.
+        entry_chunk_size = 32
+        if len(entry_rules) <= entry_chunk_size:
+            lines.append(f"struct {self.block.name}_entry : pegtl::sor<")
+            lines.append(",\n".join(entry_rules))
+            lines.append("> {};")
+        else:
+            group_names = []
+            for idx in range(0, len(entry_rules), entry_chunk_size):
+                group_name = f"{self.block.name}_entry_group_{idx // entry_chunk_size}"
+                group_names.append(group_name)
+                lines.append(f"struct {group_name} : pegtl::sor<")
+                lines.append(",\n".join(entry_rules[idx:idx + entry_chunk_size]))
+                lines.append("> {};")
+                lines.append("")
+
+            lines.append(f"struct {self.block.name}_entry : pegtl::sor<")
+            lines.append(",\n".join(f"    {name}" for name in group_names))
+            lines.append("> {};")
         lines.append("")
         
         # Generate content rule
