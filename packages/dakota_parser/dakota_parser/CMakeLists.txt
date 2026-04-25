@@ -114,14 +114,9 @@ target_link_libraries(dakota_generated_sources PRIVATE taocpp::pegtl)
 
 # Main parser executable
 add_executable(dakota_parser 
-    src/dakota_parser.cpp
+    src/dakota_parser_main.cpp
 )
-
-# Link the generated sources object library
-target_link_libraries(dakota_parser PRIVATE dakota_generated_sources)
-
-# Also link PEGTL directly since dakota_parser.cpp includes PEGTL headers
-target_link_libraries(dakota_parser PRIVATE taocpp::pegtl)
+target_link_libraries(dakota_parser PRIVATE dakota_parser_lib)
 
 # =============================================================================
 # Compiler Options
@@ -151,19 +146,7 @@ if(DAKOTA_PARSER_DEBUG)
     message(STATUS "Debug output enabled for parser")
 endif()
 
-# Set include directories for main parser
-target_include_directories(dakota_parser PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
-    ${GENERATED_DIR}
-)
-foreach(block ${ALL_BLOCKS})
-    target_include_directories(dakota_parser PRIVATE
-        ${GENERATED_DIR}/${block}
-    )
-endforeach()
-
 # Link nlohmann_json (fetched by parent project, needed for JSON output)
-target_link_libraries(dakota_parser PRIVATE nlohmann_json::nlohmann_json dakota_validation)
 target_link_libraries(dakota_generated_sources PRIVATE nlohmann_json::nlohmann_json dakota_validation)
 
 # =============================================================================

@@ -981,6 +981,9 @@ DakotaApplyMPISettings(dakota_ir)
 add_library(dakota_src ${Dakota_src})
 target_include_directories(dakota_src
   PUBLIC
+    # Dakota core headers now include JSON/IR/parser-generated headers directly.
+    # Keep these build-tree includes on dakota_src itself so compilation does not
+    # depend on transitive link behavior from auxiliary targets.
     $<BUILD_INTERFACE:${JSON_INCLUDE_DIR}>
     $<BUILD_INTERFACE:${JSON_SINGLE_INCDIR}>
     $<BUILD_INTERFACE:${DAKOTA_IR_GENERATED_DIR}>
@@ -1008,6 +1011,12 @@ endif()
 target_link_libraries(dakota_src dakota_src_fortran ${DAKOTA_BOOST_TARGETS})
 # Dakota should always depend on util (consider removing option in DakotaOptions.cmamke
 target_link_libraries(dakota_src dakota_util)
+# Keep parser/IR as implementation-only link dependencies of libdakota_src.
+# Using the raw LINK_LIBRARIES property avoids making these part of dakota_src's
+# exported interface, which would otherwise require exporting/installing them
+# through DakotaTargets as public requirements.
+set_property(TARGET dakota_src APPEND PROPERTY LINK_LIBRARIES dakota_parser_lib)
+set_property(TARGET dakota_src APPEND PROPERTY LINK_LIBRARIES dakota_ir)
 list(APPEND EXPORT_TARGETS dakota_util)
 list(APPEND DAKOTA_LIBS dakota_util dakota_ir)
 if(DAKOTA_MODULE_SURROGATES)
@@ -1076,6 +1085,7 @@ add_executable(dakota_library_mode library_mode.cpp)
 if (DAKOTA_HAVE_MPI)
   add_executable(dakota_library_split library_split.cpp)
   target_link_libraries(dakota_library_split ${DAKOTA_ALL_LIBS})
+  target_link_libraries(dakota_library_split dakota_parser_lib)
   DakotaApplyMPISettings(dakota_library_split)
   install(TARGETS dakota_library_split DESTINATION bin)
 endif()
@@ -1123,13 +1133,17 @@ endif()
 
 
 target_link_libraries(dakota ${DAKOTA_ALL_LIBS})
+target_link_libraries(dakota dakota_parser_lib)
 DakotaApplyMPISettings(dakota)
 target_link_libraries(dakota_restart_util ${DAKOTA_ALL_LIBS})
+target_link_libraries(dakota_restart_util dakota_parser_lib)
 DakotaApplyMPISettings(dakota_restart_util)
 target_link_libraries(dakota_library_mode ${DAKOTA_ALL_LIBS})
+target_link_libraries(dakota_library_mode dakota_parser_lib)
 DakotaApplyMPISettings(dakota_library_mode)
 if(DAKOTA_DLL_API)
   target_link_libraries(dll_tester ${DAKOTA_ALL_LIBS})
+  target_link_libraries(dll_tester dakota_parser_lib)
   DakotaApplyMPISettings(dll_tester)
 endif()
 
@@ -1156,6 +1170,7 @@ install(FILES dakota.xsd dakota.xml dakota.input.nspec
 if (DAKOTA_DLL_API)
   add_library(dakota_dll_api dakota_dll_api.cpp)
   target_link_libraries(dakota_dll_api ${DAKOTA_ALL_LIBS})
+  target_link_libraries(dakota_dll_api dakota_parser_lib)
   install(TARGETS dakota_dll_api DESTINATION lib)
   DakotaApplyMPISettings(dakota_dll_api)
 endif()
@@ -1218,6 +1233,7 @@ if(DAKOTA_PYTHON_WRAPPER)
   target_link_libraries(environment PRIVATE dakota_src
     ${Dakota_LIBRARIES} ${Dakota_TPL_LIBRARIES}
     )
+  target_link_libraries(environment PRIVATE dakota_parser_lib)
 
   set(_dakota_python_environment_dir
     "${DAKOTA_PYTHON_PATH}/dakota/environment")
