@@ -45,10 +45,11 @@ struct integer : pegtl::seq<
 // Positive integer (for repeat counts - no sign allowed)
 struct positive_integer : pegtl::plus<pegtl::digit> {};
 
-// Infinity literals: inf, -inf, infinity, -infinity (case-insensitive)
-struct infinity_literal : pegtl::seq<
+// Non-finite literals: inf, -inf, infinity, -infinity, nan (case-insensitive)
+struct nonfinite_literal : pegtl::seq<
     pegtl::opt<pegtl::one<'-', '+'>>,
     pegtl::sor<
+        TAO_PEGTL_ISTRING("nan"),
         TAO_PEGTL_ISTRING("infinity"),
         TAO_PEGTL_ISTRING("inf")
     >,
@@ -81,7 +82,7 @@ struct repeat_count : positive_integer {};
 struct repeat_operator : pegtl::one<'*'> {};
 
 // Base values that can be repeated
-struct repeat_base_number : pegtl::sor<infinity_literal, number> {};
+struct repeat_base_number : pegtl::sor<nonfinite_literal, number> {};
 struct repeat_base_string : quoted_string {};
 
 // Repeat value patterns: N*value (optional space after *)
@@ -171,8 +172,8 @@ struct string_value : quoted_string {};
 // Integer values
 struct integer_value : integer {};
 
-// Real (float) values — includes infinity literals
-struct real_value : pegtl::sor<infinity_literal, number> {};
+// Real (float) values — includes non-finite literals
+struct real_value : pegtl::sor<nonfinite_literal, number> {};
 
 // Filename values - must be quoted
 struct filename_value : quoted_string {};
@@ -205,7 +206,7 @@ struct opt_value_separator : pegtl::star<pegtl::sor<
 // Uses opt_value_separator to skip comments before checking for keywords
 // Value terminator fires at "inf"/"infinity"/"nan" without this guard,
 // because their first letter is alpha and matches keyword_start.
-// Exclude them explicitly so real_list can consume infinity literals.
+// Exclude them explicitly so real_list can consume non-finite literals.
 struct not_infinity_literal : pegtl::not_at<pegtl::seq<
     pegtl::opt<pegtl::one<'-', '+'>>,
     pegtl::sor<TAO_PEGTL_ISTRING("infinity"), TAO_PEGTL_ISTRING("inf"),
@@ -463,7 +464,7 @@ struct keyword_with_optional_param : pegtl::seq<
             pegtl::at<pegtl::sor<
                 pegtl::one<'"', '\''>,  // Quote for string
                 pegtl::seq<pegtl::opt<pegtl::one<'-', '+'>>, pegtl::sor<pegtl::digit, pegtl::one<'.'>>>,  // Number
-                infinity_literal  // inf/-inf/infinity/-infinity
+                nonfinite_literal  // inf/-inf/infinity/-infinity/nan
             >>,
             safe_value_list
         >

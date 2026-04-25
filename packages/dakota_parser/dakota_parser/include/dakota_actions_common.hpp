@@ -117,11 +117,13 @@ inline Value parse_real_to_value(const std::string& text) {
   auto quoted = unquote_and_trim(text);
   if (quoted) return *quoted;  // Shouldn't happen in a real context, but safe
 
-  // Infinity literals
+  // Non-finite literals
   std::string lower = text;
   std::transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
   if (lower == "inf" || lower == "infinity")   return std::numeric_limits<double>::infinity();
   if (lower == "-inf" || lower == "-infinity") return -std::numeric_limits<double>::infinity();
+  if (lower == "nan" || lower == "+nan" || lower == "-nan")
+    return std::numeric_limits<double>::quiet_NaN();
 
   // Always parse as double (even for bare integers like "1" or "-2")
   char *end = nullptr;

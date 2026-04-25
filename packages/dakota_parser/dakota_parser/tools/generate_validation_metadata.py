@@ -47,6 +47,7 @@ class ValidationMetadataGenerator:
         self.numeric_constraints: Dict[str, List[Tuple[str, str, float]]] = {}
         self.model_validations: Dict[str, List[dict]] = {}
         self.computed_fields: Dict[str, dict] = {}
+        self.float_fields: Dict[str, Dict[str, bool]] = {}
         self.schema_walk_map: Dict[str, Dict[str, str]] = {}
         self.block_definitions: Dict[str, Tuple[str, bool, bool]] = {}
         self.required_blocks: Set[str] = set(self.schema.get('required', []))
@@ -57,6 +58,7 @@ class ValidationMetadataGenerator:
             self._extract_numeric_constraints(def_name, defn)
             self._extract_model_validations(def_name, defn)
             self._extract_computed_fields(def_name, defn)
+            self._extract_float_fields(def_name, defn)
             self._extract_child_refs(def_name, defn)
 
         self._extract_block_definitions()
@@ -95,6 +97,30 @@ class ValidationMetadataGenerator:
         computed = defn.get('x-computed-fields', {})
         if computed:
             self.computed_fields[def_name] = computed
+
+    def _extract_float_fields(self, def_name: str, defn: dict):
+        fields: Dict[str, bool] = {}
+        for field_name, field_schema in defn.get('properties', {}).items():
+            field_kind = self._get_float_field_kind(field_schema)
+            if field_kind is not None:
+                fields[field_name] = (field_kind == 'array')
+        if fields:
+            self.float_fields[def_name] = fields
+
+    def _get_float_field_kind(self, field_schema: dict) -> Optional[str]:
+        if field_schema.get('type') == 'number':
+            return 'scalar'
+        if (field_schema.get('type') == 'array'
+                and field_schema.get('items', {}).get('type') == 'number'):
+            return 'array'
+
+        for variant in field_schema.get('anyOf', []):
+            if variant.get('type') == 'null':
+                continue
+            variant_kind = self._get_float_field_kind(variant)
+            if variant_kind is not None:
+                return variant_kind
+        return None
 
     def _extract_child_refs(self, def_name: str, defn: dict):
         children = {}
@@ -170,6 +196,7 @@ class ValidationMetadataGenerator:
         lines.append(self._generate_schema_walk_map_function())
         lines.append(self._generate_block_definitions_function())
         lines.append(self._generate_internal_only_defaults_function())
+        lines.append(self._generate_float_field_coercion_function())
         lines.append(self._generate_integer_field_coercion_function())
         lines.append(self._generate_validate_definition_function())
         lines.append(self._generate_validate_json_document_function())
@@ -249,6 +276,7 @@ class ValidationMetadataGenerator:
 #include <dakota/validation.hpp>
 #include <dakota/computed_fields.hpp>
 #include <nlohmann/json.hpp>
+#include <cctype>
 #include <string>
 #include <vector>
 #include <map>
@@ -568,6 +596,32 @@ struct FieldConstraint {{
         lines.append("")
         return '\n'.join(lines)
 
+    def _generate_float_field_coercion_function(self) -> str:
+        lines = []
+        lines.append("// ============================================================================")
+        lines.append("// Schema float-type fields (for non-finite string coercion)")
+        lines.append("// ============================================================================")
+        lines.append("")
+        lines.append("inline const std::map<std::string, bool>&")
+        lines.append("get_float_fields(const std::string& def_name) {")
+        lines.append("    static const std::map<std::string, std::map<std::string, bool>> data = {")
+
+        for def_name in sorted(self.float_fields.keys()):
+            fields = self.float_fields[def_name]
+            field_entries = ', '.join(
+                f'{{"{field_name}", {"true" if is_array else "false"}}}'
+                for field_name, is_array in sorted(fields.items())
+            )
+            lines.append(f'        {{"{def_name}", {{{field_entries}}}}},')
+
+        lines.append("    };")
+        lines.append("    static const std::map<std::string, bool> empty;")
+        lines.append("    auto it = data.find(def_name);")
+        lines.append("    return it != data.end() ? it->second : empty;")
+        lines.append("}")
+        lines.append("")
+        return '\n'.join(lines)
+
     def _generate_validate_definition_function(self) -> str:
         return """\
 // ============================================================================
@@ -625,6 +679,59 @@ inline void check_numeric_constraints(
     }
 }
 
+inline bool parse_nonfinite_float_string(const std::string& text, double& value) {
+    std::string lowered;
+    lowered.reserve(text.size());
+    for (unsigned char ch : text) {
+        lowered.push_back(static_cast<char>(std::tolower(ch)));
+    }
+
+    if (lowered == "inf" || lowered == "+inf" ||
+        lowered == "infinity" || lowered == "+infinity") {
+        value = std::numeric_limits<double>::infinity();
+        return true;
+    }
+    if (lowered == "-inf" || lowered == "-infinity") {
+        value = -std::numeric_limits<double>::infinity();
+        return true;
+    }
+    if (lowered == "nan" || lowered == "+nan" || lowered == "-nan") {
+        value = std::numeric_limits<double>::quiet_NaN();
+        return true;
+    }
+    return false;
+}
+
+inline void coerce_nonfinite_float_value(json& value) {
+    if (!value.is_string()) return;
+
+    double parsed_value;
+    if (parse_nonfinite_float_string(value.get<std::string>(), parsed_value)) {
+        value = parsed_value;
+    }
+}
+
+inline void coerce_nonfinite_float_fields(json& instance, const std::string& def_name) {
+    const auto& float_fields = get_float_fields(def_name);
+    if (float_fields.empty()) return;
+
+    for (const auto& [field_name, is_array] : float_fields) {
+        if (!instance.contains(field_name) || instance[field_name].is_null()) {
+            continue;
+        }
+
+        json& field_value = instance[field_name];
+        if (is_array) {
+            if (!field_value.is_array()) continue;
+            for (auto& elem : field_value) {
+                coerce_nonfinite_float_value(elem);
+            }
+        } else {
+            coerce_nonfinite_float_value(field_value);
+        }
+    }
+}
+
 // Apply mutations that may contain dotted path keys.
 // Simple keys are applied directly; dotted keys navigate into nested JSON.
 inline void apply_dotted_mutations(json& target, const json& mutations) {
@@ -652,10 +759,13 @@ inline void apply_dotted_mutations(json& target, const json& mutations) {
 }
 
 inline json validate_definition(const std::string& def_name, json instance) {
-    // 1. Check field-level numeric constraints
+    // 1. Coerce string representations of non-finite values for float fields.
+    coerce_nonfinite_float_fields(instance, def_name);
+
+    // 2. Check field-level numeric constraints
     check_numeric_constraints(instance, def_name);
 
-    // 2. Run x-model-validations individually with null-mutation guard
+    // 3. Run x-model-validations individually with null-mutation guard
     //    We inline the loop here instead of calling validate_all() because
     //    validate_all uses merge_patch(mutations) which, per RFC 7396, replaces
     //    the entire instance with null when a validator returns an uninitialized
@@ -743,7 +853,7 @@ inline json validate_definition(const std::string& def_name, json instance) {
         }
     }
 
-    // 3. Compute x-computed-fields
+    // 4. Compute x-computed-fields
     const auto& cf = get_computed_fields(def_name);
     if (!cf.empty()) {
         auto& registry = computed_fields::ComputedFieldRegistry::instance();
@@ -768,7 +878,7 @@ inline json validate_definition(const std::string& def_name, json instance) {
         }
     }
 
-    // Enforce schema integer types: coerce whole-number doubles to int64_t.
+    // 5. Enforce schema integer types: coerce whole-number doubles to int64_t.
     // Needed when REALLIST grammar parses "0." as 0.0 but the schema
     // declares the field as items.type=integer.
     {
@@ -787,7 +897,7 @@ inline json validate_definition(const std::string& def_name, json instance) {
         }
     }
 
-    // Post-validation: insert x-internal-only field defaults where absent.
+    // 6. Post-validation: insert x-internal-only field defaults where absent.
     // Pydantic sets these via field defaults BEFORE validation so the validator
     // can read but not modify them directly.  We insert them AFTER validation
     // so the library\'s "must not be user-provided" guard never sees them,

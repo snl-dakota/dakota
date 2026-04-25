@@ -511,7 +511,8 @@ inline json ast_to_json(const Document& doc) {
 // Utility Functions
 // =============================================================================
 
-// Replace IEEE ±infinity and ±1e308 sentinel with "inf"/"-inf" strings.
+// Replace IEEE non-finite values and ±1e308 sentinel with JSON string
+// representations ("inf", "-inf", "nan").
 // nlohmann::json stores IEEE infinity correctly in its internal double field
 // (round-trips through get<double>()) but dump() outputs "null" since JSON
 // has no infinity literal.  Two sources of infinity values:
@@ -522,6 +523,10 @@ inline json ast_to_json(const Document& doc) {
 inline void replace_inf_values(json& j) {
     if (j.is_number_float()) {
         double val = j.get<double>();
+        if (std::isnan(val)) {
+            j = "nan";
+            return;
+        }
         // Emit "inf"/"-inf" for:
         //   1. IEEE infinity (user-supplied inf in DSL/JSON)
         //   2. ±1e308 (Python metadata sentinel for infinity in schema defaults)
@@ -547,7 +552,7 @@ inline void replace_inf_values(json& j) {
 // scientific notation otherwise.
 inline std::string shortest_float_repr(double val) {
     if (std::isinf(val)) return val > 0 ? "inf" : "-inf";
-    if (std::isnan(val)) return "null";
+    if (std::isnan(val)) return "nan";
     if (val == 0.0) return "0.0";
     
     // Determine the base-10 exponent to decide format
@@ -588,7 +593,7 @@ inline std::string shortest_float_repr(double val) {
 // ordered DSL output (output_precision = 16 in Dakota means 15 sig figs displayed).
 inline std::string dsl_float_repr(double val) {
     if (std::isinf(val)) return val > 0 ? "inf" : "-inf";
-    if (std::isnan(val)) return "0.0";
+    if (std::isnan(val)) return "nan";
     if (val == 0.0) return "0.0";
 
     int exponent = static_cast<int>(std::floor(std::log10(std::abs(val))));
@@ -630,17 +635,20 @@ inline void serialize_json(std::string& out, const json& j, int indent, int dept
         out += std::to_string(j.get<uint64_t>());
     } else if (j.is_number_float()) {
         double val = j.get<double>();
+        if (std::isnan(val)) { out += "\"nan\""; }
         // Handle inf/1e308 sentinels
         // Emit "inf"/"-inf" for:
         //   1. IEEE infinity (user-supplied inf in DSL/JSON)
         //   2. ±1e308 (Python metadata sentinel for infinity in schema defaults)
         // Do NOT convert ±1.7976931348623157e+308 (DBL_MAX) — that is a legitimate
         // finite schema default (e.g. solution_target).
-        bool pos = (std::isinf(val) && val > 0) || val == 1e308;
-        bool neg = (std::isinf(val) && val < 0) || val == -1e308;
-        if (pos) { out += "\"inf\""; }
-        else if (neg) { out += "\"-inf\""; }
-        else { out += shortest_float_repr(val); }
+        else {
+            bool pos = (std::isinf(val) && val > 0) || val == 1e308;
+            bool neg = (std::isinf(val) && val < 0) || val == -1e308;
+            if (pos) { out += "\"inf\""; }
+            else if (neg) { out += "\"-inf\""; }
+            else { out += shortest_float_repr(val); }
+        }
     } else if (j.is_string()) {
         out += j.dump();  // nlohmann handles string escaping correctly
     } else if (j.is_array()) {
