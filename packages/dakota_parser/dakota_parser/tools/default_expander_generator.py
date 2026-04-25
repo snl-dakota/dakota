@@ -425,7 +425,8 @@ def generate_default_metadata_header(block_name: str, fields: Dict[str, FieldInf
     lines.append("// Get all field metadata for this block")
     lines.append("// NOTE: All paths are AST-level (anchor segments stripped)")
     lines.append("inline const std::map<std::string, FieldMetadata>& get_field_metadata() {")
-    lines.append("    static const std::map<std::string, FieldMetadata> metadata = {")
+    lines.append("    static const auto* metadata = []() {")
+    lines.append("        auto* m = new std::map<std::string, FieldMetadata>();")
     
     for path, info in sorted(fields.items()):
         # Skip anchor fields - they don't exist as AST nodes.
@@ -459,7 +460,7 @@ def generate_default_metadata_header(block_name: str, fields: Dict[str, FieldInf
         ref_type = info.ref_type or ""
         argument_field = info.argument_field or ""
         
-        lines.append(f'        {{"{ast_path}", FieldMetadata{{')
+        lines.append(f'        m->emplace("{ast_path}", FieldMetadata{{')
         lines.append(f'            "{ast_path}",')
         lines.append(f'            {str(info.has_non_null_default).lower()},')
         lines.append(f'            {default_str},')
@@ -473,10 +474,11 @@ def generate_default_metadata_header(block_name: str, fields: Dict[str, FieldInf
         lines.append(f'            {str(info.is_anchor).lower()},')
         lines.append(f'            {str(info.is_union_variant).lower()},')
         lines.append(f'            {str(info.is_discriminator).lower()}')
-        lines.append(f'        }}}},')
+        lines.append(f'        }});')
     
-    lines.append("    };")
-    lines.append("    return metadata;")
+    lines.append("        return m;")
+    lines.append("    }();")
+    lines.append("    return *metadata;")
     lines.append("}")
     lines.append("")
     
