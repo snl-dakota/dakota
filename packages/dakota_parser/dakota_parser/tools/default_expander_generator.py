@@ -424,10 +424,7 @@ def generate_default_metadata_header(block_name: str, fields: Dict[str, FieldInf
     # Generate metadata map (with AST-level paths)
     lines.append("// Get all field metadata for this block")
     lines.append("// NOTE: All paths are AST-level (anchor segments stripped)")
-    lines.append("inline const std::map<std::string, FieldMetadata>& get_field_metadata() {")
-    lines.append("    static const auto* metadata = []() {")
-    lines.append("        auto* m = new std::map<std::string, FieldMetadata>();")
-    
+    metadata_entries = []
     for path, info in sorted(fields.items()):
         # Skip anchor fields - they don't exist as AST nodes.
         # Their schema-level structure is handled during JSON conversion.
@@ -459,23 +456,42 @@ def generate_default_metadata_header(block_name: str, fields: Dict[str, FieldInf
         
         ref_type = info.ref_type or ""
         argument_field = info.argument_field or ""
-        
-        lines.append(f'        m->emplace("{ast_path}", FieldMetadata{{')
-        lines.append(f'            "{ast_path}",')
-        lines.append(f'            {str(info.has_non_null_default).lower()},')
-        lines.append(f'            {default_str},')
-        lines.append(f'            {str(info.is_required).lower()},')
-        lines.append(f'            {str(info.is_union).lower()},')
-        lines.append(f'            {info.union_pattern or 0},')
-        lines.append(f'            "{union_default}",')
-        lines.append(f'            "{info.field_type}",')
-        lines.append(f'            "{ref_type}",')
-        lines.append(f'            "{argument_field}",')
-        lines.append(f'            {str(info.is_anchor).lower()},')
-        lines.append(f'            {str(info.is_union_variant).lower()},')
-        lines.append(f'            {str(info.is_discriminator).lower()}')
-        lines.append(f'        }});')
-    
+
+        metadata_entries.append([
+            f'    metadata.emplace("{ast_path}", FieldMetadata{{',
+            f'        "{ast_path}",',
+            f'        {str(info.has_non_null_default).lower()},',
+            f'        {default_str},',
+            f'        {str(info.is_required).lower()},',
+            f'        {str(info.is_union).lower()},',
+            f'        {info.union_pattern or 0},',
+            f'        "{union_default}",',
+            f'        "{info.field_type}",',
+            f'        "{ref_type}",',
+            f'        "{argument_field}",',
+            f'        {str(info.is_anchor).lower()},',
+            f'        {str(info.is_union_variant).lower()},',
+            f'        {str(info.is_discriminator).lower()}',
+            f'    }});',
+        ])
+
+    chunk_size = 200
+    num_chunks = (len(metadata_entries) + chunk_size - 1) // chunk_size
+    for chunk_index in range(num_chunks):
+        start = chunk_index * chunk_size
+        end = min(start + chunk_size, len(metadata_entries))
+        lines.append(f"inline void append_field_metadata_chunk_{chunk_index}(")
+        lines.append("    std::map<std::string, FieldMetadata>& metadata) {")
+        for entry_lines in metadata_entries[start:end]:
+            lines.extend(entry_lines)
+        lines.append("}")
+        lines.append("")
+
+    lines.append("inline const std::map<std::string, FieldMetadata>& get_field_metadata() {")
+    lines.append("    static const auto* metadata = []() {")
+    lines.append("        auto* m = new std::map<std::string, FieldMetadata>();")
+    for chunk_index in range(num_chunks):
+        lines.append(f"        append_field_metadata_chunk_{chunk_index}(*m);")
     lines.append("        return m;")
     lines.append("    }();")
     lines.append("    return *metadata;")
