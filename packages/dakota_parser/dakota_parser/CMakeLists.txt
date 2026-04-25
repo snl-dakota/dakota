@@ -130,6 +130,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     )
 elseif(MSVC)
     set(DAKOTA_COMPILE_OPTIONS
+        /bigobj
         /constexpr:depth1024
         /W4
     )
