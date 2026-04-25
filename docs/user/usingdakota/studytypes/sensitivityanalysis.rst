@@ -35,56 +35,6 @@ Sensitivity analysis methods can be broadly categorized by their scope
 (local vs. global) and by the metrics they produce for quantifying
 parameter influence.
 
-.. TNP Note: Text taken from the DoE page.
-.. This information is helpful prior to an optimization study as it can be
-.. used to remove design parameters that do not strongly influence the
-.. responses. In addition, these techniques can provide assessments as to
-.. the behavior of the response functions (smooth or nonsmooth, unimodal or
-.. multimodal) which can be invaluable in algorithm selection for
-.. optimization, uncertainty quantification, and related methods. In a
-.. post-optimization role, sensitivity information is useful is determining
-.. whether or not the response functions are robust with respect to small
-.. changes in the optimum design point.
-
-.. In some instances, the term sensitivity analysis is used in a local
-.. sense to denote the computation of response derivatives at a point.
-.. These derivatives are then used in a simple analysis to make design
-.. decisions. Dakota supports this type of study through numerical
-.. finite-differencing or retrieval of analytic gradients computed within
-.. the analysis code. The desired gradient data is specified in the
-.. responses section of the Dakota input file and the collection of this
-.. data at a single point is accomplished through a parameter study method
-.. with no steps. This approach to sensitivity analysis should be
-.. distinguished from the activity of augmenting analysis codes to
-.. internally compute derivatives using techniques such as direct or
-.. adjoint differentiation, automatic differentiation (e.g., ADIFOR), or
-.. complex step modifications. These sensitivity augmentation activities
-.. are completely separate from Dakota and are outside the scope of this
-.. manual. However, once completed, Dakota can utilize these analytic
-.. gradients to perform optimization, uncertainty quantification, and
-.. related studies more reliably and efficiently.
-
-.. In other instances, the term sensitivity analysis is used in a more
-.. global sense to denote the investigation of variability in the response
-.. functions. Dakota supports this type of study through computation of
-.. response data sets (typically function values only, but all data sets
-.. are supported) at a series of points in the parameter space. The series
-.. of points is defined using either a vector, list, centered, or
-.. multidimensional parameter study method. For example, a set of
-.. closely-spaced points in a vector parameter study could be used to
-.. assess the smoothness of the response functions in order to select a
-.. finite difference step size, and a set of more widely-spaced points in a
-.. centered or multidimensional parameter study could be used to determine
-.. whether the response function variation is likely to be unimodal or
-.. multimodal. See :ref:`Parameter Studies Capabilities <ps>` for additional information on
-.. these methods. These more global approaches to sensitivity analysis can
-.. be used to obtain trend data even in situations when gradients are
-.. unavailable or unreliable, and they are conceptually similar to the
-.. design of experiments methods and sampling approaches to uncertainty
-.. quantification described in the following sections.
-
-
-
 .. _`sa:local`:
 
 Local Sensitivity
@@ -104,6 +54,21 @@ surface at the nominal point :math:`x_0`. This can be useful for
 understanding instantaneous rates of change, but may not capture the
 full picture if the response is highly nonlinear or if the parameter
 ranges of interest are large relative to the local curvature.
+
+Dakota supports this type of study through numerical
+finite-differencing or retrieval of analytic gradients computed within
+the analysis code. The desired gradient data is specified in the
+responses section of the Dakota input file and the collection of this
+data at a single point is accomplished through a parameter study method
+with no steps. This approach to sensitivity analysis should be
+distinguished from the activity of augmenting analysis codes to
+internally compute derivatives using techniques such as direct or
+adjoint differentiation, automatic differentiation, or
+complex step modifications. These sensitivity augmentation activities
+are completely separate from Dakota and are outside the scope of this
+manual. However, once completed, Dakota can utilize these analytic
+gradients to perform optimization, uncertainty quantification, and
+related studies more reliably and efficiently.
 
 .. _`sa:global`:
 
@@ -239,10 +204,12 @@ Morris one-at-a-time (elementary effects) method
 
 The Morris one-at-a-time (MOAT) method is a global approach to screen 
 out unimportant inputs. The algorithm is described in detail in 
-:ref:`the PSUADE MOAD documentation <dace:psuade>`.
+:ref:`the PSUADE MOAT documentation <dace:psuade>`.
 
 At a high level, the method creates a distribution of elementary effects for 
-a single input by computing finite-difference derivative approximations of the partial derivative of the output with respect to the input at random points in the input domain.
+a single input by computing finite-difference derivative approximations 
+of the partial derivative of the output with respect to the input at random
+points in the input domain.
 
 From this sample set, the following metrics are computed:
 - **Modified mean** (:math:`\mu^*`): The average absolute value of
@@ -330,7 +297,7 @@ variance, including all interactions. They are defined as
 
 .. math::
 
-  S_{T_i} = \frac{\sum_{u \ni i} V_u}{\mathrm{Var}(Y)}, 
+  T_i = \frac{\sum_{u \ni i} V_u}{\mathrm{Var}(Y)}, 
 
 where the numerator is sum of all terms in the ANOVA decomposition involving 
 input :math:`X_i`.
@@ -339,9 +306,11 @@ Important notes for interpreting Sobol' indices (assuming inputs are
 statistically independent):
   - All indices are bounded between 0 and 1.
   - Main effects sum to :math:`\leq 1`. If they sum to significantly less than one, interaction effects are significant.
-  - If :math:`S_i = S_{T_i}`, there are no interactions.
+  - If :math:`S_i = T_i`, there are no interaction effects.
   - If :math:`S_i` is close to 0, :math:`X_i` may be influential through interaction effects.
-  - If :math:`S_{T_i}` is close to zero, :math:`X_i` is not influential. 
+  - If :math:`T_i` is close to zero, :math:`X_i` is not influential. 
+More details on the calculations and interpretation of the sensitivity indices can be found
+in :cite:p:`Sal04`.
 
 Sobol' indices are robust to nonlinear, non-monotonic input-output relationships
 and to relationships driven by interactions between inputs.
@@ -357,7 +326,8 @@ decomposition (VBD):
   - Polynomial Chaos Expansion (PCE)
   - Sampling-based
 
-The sampling-based methods are activated via the :dakkw:`method-sampling-variance_based_decomp` keyword for sampling methods.
+The sampling-based methods are activated via the 
+:dakkw:`method-sampling-variance_based_decomp` keyword for sampling methods.
 There are two sampling-based algorithms available:
   - Saltelli Pick-and-Freeze
   - Binned
@@ -409,6 +379,9 @@ The binned method computes main-effect Sobol' indices for all parameters using
    :name: sa:vbd_binned
 
 .. _`sa:pstudy`:
+
+Implementation details for the Sobol' index estimators in Dakota 
+are provided in :cite:p:`Weirs10`. 
 
 Parameter Studies
 -----------------
