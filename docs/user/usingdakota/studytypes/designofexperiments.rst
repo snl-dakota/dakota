@@ -605,7 +605,7 @@ In addition to direct interrogation and visualization of the sampling results,
 a number of techniques have been developed for assessing the parameters 
 which are most influential in the observed variability in the response
 functions. The range of sensitivity analysis methods supported by Dakota are 
-described and compared in the :ref:`Sensitivity Analsis Study Type <sa>` 
+described and compared in the :ref:`Sensitivity Analsis <sa>` 
 documentation. 
 
 Correlation coefficients are computed by default for any LHS study.

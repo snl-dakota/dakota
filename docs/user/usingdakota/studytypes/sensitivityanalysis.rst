@@ -12,8 +12,9 @@ Sensitivity analysis (SA) reveals the extent to which simulation outputs
 depend on each simulation input. The primary goal is to identify the most
 important input variables and their interactions, enabling analysts to
 focus resources on the parameters that matter most. This page summarizes
-SA concepts and terminology, the practical process for conducting SA studies,
-:ref:`available methods in Dakota <sa:methods>`, and offers
+SA concepts and terminology, describes :ref:`local <sa:local>` and 
+:ref:`global <sa:global>` methods for SA as well as 
+:ref:`parameter studies <sa:pstudy>`, and offers
 :ref:`usage guidelines <sa:usage>`.
 
 Sensitivity analysis serves several key purposes in computational modeling:
@@ -93,7 +94,7 @@ Dakota primarily focuses on global sensitivity analysis methods.
 Various metrics and approaches can quantify parameter influence, each with 
 different interpretations and computational requirements:
 
-.. _`sa:global:scatterplots`
+.. _`sa:global:scatterplots`:
 
 Scatterplots
 ~~~~~~~~~~~~
@@ -121,11 +122,12 @@ analysis results. They can reveal:
    :align: center
 
    An example of scatterplots for a function exhibiting nonmonotonic, 
-   nonlinear relationships, and interactions. 
+   nonlinear relationships, and interactions. Since :math:`X_3` exhibits little
+   to no trend, it may not be an influential parameter.
 
 Unlike quantitative sensitivity metrics, scatterplots:
 
-- Don'T provide a scalar measure of importance or ranking
+- Don't provide a scalar measure of importance or ranking
 - Are conditional on the sampled input space
 - Require interpretation
 
@@ -175,6 +177,7 @@ However, their accuracy can degrade when the sample size is small relative to
 the number of inputs (e.g., less than 10-20x the number of inputs).
 
 Correlation coefficients can struggle in the following contexts: 
+
 - non-monotonic, nonlinear input-output relationships
 - correlated inputs
 - input-output relationships driven by interactions between inputs
@@ -183,41 +186,42 @@ Correlation coefficients can struggle in the following contexts:
 Below are examples, with scatterplots, showing how simple correlations behave
 in a range of scenarios.
 
-.. figure:: img/cc_noise_effects.png
-   :alt: For the same underlying function, increasing noise in the response decreases the 
-        computed correlation coefficient. The Pearson correlation coefficient is shown.
+.. figure:: img/ccs_noise_effects.png
+   :alt: For the same underlying function, increasing noise in the response 
+         decreases the computed correlation coefficient. The Pearson correlation 
+         coefficient is shown.
    :name: sa:figure02
    :align: center
 
-   For the same underlying function, increasing noise in the response decreases the 
-   computed correlation coefficient. The Pearson correlation coefficient :math:`\rho`
-   is shown here.
+   For the same underlying function, increasing noise in the response decreases 
+   the computed correlation coefficient. The Pearson correlation coefficient 
+   :math:`\rho` is shown here.
 
- .. figure:: img/cc_slope_effects.png
-   :alt: Correlation coefficients for different variations of y=ax, where the coefficient
-         is always -1 or 1, no matter what a is.
+.. figure:: img/ccs_slope_effects.png
+   :alt: Correlation coefficients for different variations of y=ax, where the 
+         coefficient is always -1 or 1, no matter what a is.
    :name: sa:figure03
    :align: center
 
-   Correlation coefficients aren't impacted by the magnitude of 
-   slope of a linear relationship; they are only influenced by the direction 
-   (upward or downward) and the strength of the linear relationship (how closely 
-   points fall on a line).
+   Correlation coefficients aren't impacted by the magnitude of slope of a linear 
+   relationship; they are only influenced by the direction (upward or downward) 
+   and the strength of the linear relationship (how closely points fall on a line).
 
-.. figure:: img/cc_edge_cases.png
-   :alt: Pearson and Spearman correlation coefficients can diverge for monotonic, nonlinear  or 
-   discontinuous functions. They both can fail to identify a significant relationship for
-   non-monotonic relationships. 
+.. figure:: img/ccs_edge_cases.png
+   :alt: Pearson and Spearman correlation coefficients can diverge for monotonic, 
+         nonlinear or discontinuous functions. They both can fail to identify a 
+         significant relationship for non-monotonic relationships. 
    :name: sa:figure04
    :align: center
 
-   Pearson and Spearman correlation coefficients can diverge for monotonic, nonlinear  or 
-   discontinuous functions. They both can fail to identify a significant relationship for
-   non-monotonic relationships. 
+   Pearson and Spearman correlation coefficients (:math:`\rho` and :math:`\rho_s`, 
+   respectivey) can diverge for monotonic, nonlinear or discontinuous functions. 
+   They both can fail to identify a significant relationship for non-monotonic 
+   relationships. 
 
-.. figure:: img/cc_interaction_driven.png
-   :alt: Correlation coefficients can fail to identify significant relationships for functions 
-   driven by interactions between inputs, as is shown in this example.
+.. figure:: img/ccs_interaction_driven.png
+   :alt: Correlation coefficients can fail to identify significant relationships for 
+         functions driven by interactions between inputs, as is shown in this example.
    :name: sa:figure05
    :align: center
 
@@ -262,6 +266,7 @@ of the partial derivative of the output with respect to the input at random
 points in the input domain.
 
 From this sample set, the following metrics are computed:
+
 - **Modified mean** (:math:`\mu^*`): The average absolute value of
   elementary effects. Large values indicate the input has a
   significant effect on the output.
@@ -282,6 +287,7 @@ Morris sensitivity metrics can be a useful tool for screening out unimportant
 inputs at relatively low computational cost while being robust to nonlinear
 input-output relationships and relationships driven by interactions. However, 
 they have some downsides: 
+
 - Input-output samples generated by the algorithm are not independent, identically distributed, so are poorly suited for reuse in Monte Carlo-based uncertainty analysis.
 - While they can provide an indication of the presence of nonlinearity or interaction effects, they can't distinguish between the two or attribute output variance to specific inputs.
 
@@ -307,6 +313,7 @@ where the functional terms of the decomposition are orthogonal and are defined r
   f_0 = \mathbb{E}[Y]
   f_i(X_i) = \mathbb{E}[Y \mid X_i] - f_0
   f_{ij}(X_i) = \mathbb{E}[Y \mid X_i,X_j] - f_0 - f_i - f_j
+
 and so on.
 Assuming :math:`f` is square integrable, taking variance on both sides gives
 
@@ -354,11 +361,13 @@ input :math:`X_i`.
 
 Important notes for interpreting Sobol' indices (assuming inputs are 
 statistically independent):
+
   - All indices are bounded between 0 and 1.
   - Main effects sum to :math:`\leq 1`. If they sum to significantly less than one, interaction effects are significant.
   - If :math:`S_i = T_i`, there are no interaction effects.
   - If :math:`S_i` is close to 0, :math:`X_i` may be influential through interaction effects.
   - If :math:`T_i` is close to zero, :math:`X_i` is not influential. 
+
 More details on the calculations and interpretation of the sensitivity indices can be found
 in :cite:p:`Sal04`.
 
@@ -373,14 +382,21 @@ breaks down for correlated inputs.
 
 Dakota provides two main approaches for computing Sobol' indices, a.k.a. variance-based
 decomposition (VBD):
+
   - Polynomial Chaos Expansion (PCE)
   - Sampling-based
 
 The sampling-based methods are activated via the 
 :dakkw:`method-sampling-variance_based_decomp` keyword for sampling methods.
 There are two sampling-based algorithms available:
+
   - Saltelli Pick-and-Freeze
   - Binned
+
+
+Implementation details for the Saltelli and PCE-based Sobol' index estimators
+in Dakota are provided in :cite:p:`Weirs10`. Details of the binned implementation
+are provided in :cite:p:`Li16` (Method B).
 
 **VBD via Polynomial Chaos Expansion**: 
 
@@ -389,7 +405,7 @@ an efficient means of computing Sobol' indices. Once a PCE surrogate is
 constructed, Sobol' indices can be computed analytically from the expansion
 coefficients at negligible additional cost.
 
-.. literalinclude:: samples/vbd_pce.in
+.. literalinclude:: vbd_pce.in
    :language: dakota
    :tab-width: 2
    :caption: VBD via PCE input excerpt
@@ -406,32 +422,31 @@ PCE can also be constructed from pre-existing sampling data using the
 additional simulation evaluations.
 
 **VBD via Saltelli Pick-and-Freeze**:
+
 The Saltelli sampling method (which we also call pick-and-freeze) employs 
 structured sampling to compute the full set of main- and total-effect Sobol' 
 indices for all parameters, using :math:`N(d+2)` samples for :math:`d` parameters
 for :math:`N` independent samples. While the Saltelli method can be used to 
 compute interaction effects, the Dakota implementation does not support this. 
 
-.. literalinclude:: samples/vbd_saltelli.in
+.. literalinclude:: vbd_saltelli.in
    :language: dakota
    :tab-width: 2
    :caption: VBD via Saltelli sampling input excerpt
    :name: sa:vbd_saltelli
 
 **VBD via Binned Approach**: 
+
 The binned method computes main-effect Sobol' indices for all parameters using 
 :math:`N` independent samples. 
 
-.. literalinclude:: samples/vbd_binned.in
+.. literalinclude:: vbd_binned.in
    :language: dakota
    :tab-width: 2
    :caption: VBD via sampling-based binned method input excerpt
    :name: sa:vbd_binned
 
 .. _`sa:pstudy`:
-
-Implementation details for the Sobol' index estimators in Dakota 
-are provided in :cite:p:`Weirs10`. 
 
 Parameter Studies
 -----------------
@@ -455,7 +470,7 @@ The centered parameter study requires specifying:
   each parameter
 - ``step_vector``: Step size for each parameter
 
-.. literalinclude:: samples/centered_pstudy.in
+.. literalinclude:: centered_pstudy.in
    :language: dakota
    :tab-width: 2
    :caption: Centered parameter study input excerpt
@@ -561,7 +576,7 @@ The choice of method depends primarily on:
 **Model cost considerations**
 - **Very Expensive Models**
 
-  When the number of model evaluations is severely limited (i.e., :math:`N \lessim 100` overall or :math:`N \lesssim 10 \, d` to :math:`20 \, d`  where :math:`d` is the number of input variables):
+  When the number of model evaluations is severely limited (i.e., :math:`N \lesssim 100` overall or :math:`N \lesssim 10 \, d` to :math:`20 \, d`  where :math:`d` is the number of input variables):
 
   - Use Morris one-at-a-time screening for global sensitivity
   - Supplement with centered parameter sweeps or scatterplots for diagnostics
@@ -600,7 +615,7 @@ The choice of method depends primarily on:
 
 **Input Dimension Considerations** 
 
-- **High-Dimensional Problems (e.g., :math:`d \gtsim 20-30`)**
+- **High-Dimensional Problems** (e.g., :math:`d \gtrsim 20-30`)
 
   Problems with tens to hundreds of inputs are considered high-dimensional.
   In this regime, the number of model evaluations required for many sensitivity
@@ -620,9 +635,10 @@ The choice of method depends primarily on:
     
     - Screen out unimportant variable before applying more expensive methods
 
-- **Moderate-Dimensional Problems (e.g., :math:`d \approx 5-20``)**
+- **Moderate-Dimensional Problems** (e.g., :math:`d \approx 5-20`)
 
   In this range, most methods are feasible with moderate computational effort.
+
  - Viable approaches:
 
     - Random sampling with correlation or SRC
@@ -635,7 +651,7 @@ The choice of method depends primarily on:
 
     - Combine screening with more quantitative methods as needed
 
-**Low-Dimensional Problems (e.g., :math:`d \lesssim 5-10``)**
+**Low-Dimensional Problems**  (e.g., :math:`d \lesssim 5-10`)
 
   With relatively few inputs, more comprehensive methods become practical, 
   and screening methods such as MOAT are typically unnecessary
@@ -806,9 +822,9 @@ The choice of method depends primarily on:
 
 Practical Tips
 ~~~~~~~~~~~~~~
-- For studies where the number of model evaluations isn't influenced by the number of inputs (e.g., random sampling), include a "dummy" variable in your sensitivity analyses that is not used in the model. This lets you assess how well a noninfluential input is identified by the sensitivity metric. 
-- Assess convergence of the metrics by considering incremental increases in the number of model evaluations/samples (incremental studies or increased sample size exploiting Dakota's restart capability mean you don't repeat model evaluations).
-- Always use plots (e.g., scatter plots) to confirm conclusions.
+- For studies where the number of model evaluations isn't influenced by the number of inputs (e.g., random sampling), include a "dummy" variable in your sensitivity analyses that is not used in the model. This lets you assess how well a noninfluential input is identified by your sensitivity metric of interest for your given sample set.
+- Assess convergence of sensitivity metrics by considering incremental increases in the number of model evaluations/samples (incremental studies or increased sample size exploiting Dakota's restart capability mean you don't repeat model evaluations).
+- Whenever possible, use plots (e.g., scatter plots) to confirm conclusions.
 
 
 References
@@ -820,9 +836,8 @@ consult:
 .. bibliography::
    :filter: False
 
-   Saltelli08
-   Helton00
-   Oakley04
+   Sal04
+   Hel00
 
 Additional information is available in the Dakota User's Manual sections on:
 
