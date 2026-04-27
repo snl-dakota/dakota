@@ -7,8 +7,8 @@ macro(dakota_find_python)
 
     if(DAKOTA_PYTHON_DIRECT_INTERFACE OR DAKOTA_PYTHON_SURROGATES OR
 	DAKOTA_PYTHON_WRAPPER OR DAKOTA_PYBIND11)
-      message(STATUS "Dakota enabling Python3 (Development) for direct or surrogate interface")
-      list(APPEND dakota_python_components Development)
+      message(STATUS "Dakota enabling Python3 (Development.Embed) for direct or surrogate interface")
+      list(APPEND dakota_python_components Development.Embed)
       
       if (DAKOTA_PYTHON_DIRECT_INTERFACE_NUMPY)
 	if (DAKOTA_PYTHON_DIRECT_INTERFACE)
@@ -23,6 +23,16 @@ macro(dakota_find_python)
     endif()
 
     find_package(Python3 REQUIRED ${dakota_python_components})
+
+    # Set Python_* aliases for Python3_* variables for compatibility
+    # with Dakota code that references the unprefixed names.
+    set(Python_FOUND ${Python3_FOUND})
+    set(Python_EXECUTABLE ${Python3_EXECUTABLE})
+    set(Python_INCLUDE_DIRS ${Python3_INCLUDE_DIRS})
+    set(Python_LIBRARIES ${Python3_LIBRARIES})
+    set(Python_VERSION ${Python3_VERSION})
+    set(Python_NumPy_INCLUDE_DIRS ${Python3_NumPy_INCLUDE_DIRS})
+    set(Python_NumPy_VERSION ${Python3_NumPy_VERSION})
 
     if (DAKOTA_PYTHON_DIRECT_INTERFACE_NUMPY)
 	message(STATUS "NumPy version ${Python_NumPy_VERSION} found at ${Python_NumPy_INCLUDE_DIRS}")
