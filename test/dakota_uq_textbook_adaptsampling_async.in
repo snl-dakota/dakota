@@ -21,8 +21,12 @@ variables,
           upper_bounds =  2.0   2.0
 
 interface,
-        direct
-          analysis_driver = 'text_book'
+        fork
+          analysis_driver = 'python text_book_driver.py'
+          parameters_file = 'params.in'
+          results_file = 'results.out'
+          file_tag
+          file_save
           asynchronous evaluation_concurrency = 4
 
 responses,
