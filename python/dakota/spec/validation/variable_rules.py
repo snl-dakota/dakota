@@ -987,12 +987,14 @@ class WeibullUncertainInitial(ValidationRule):
 class UncertainCorrelationMatrixSize(ValidationRule):
     """Validate uncertain_correlation_matrix length equals n^2.
 
-    n is the sum of counts for continuous aleatory uncertain variable blocks:
+    n is the sum of counts for aleatory uncertain variable blocks:
     normal, lognormal, uniform, loguniform, triangular, exponential, beta,
-    gamma, gumbel, frechet, weibull, and histogram_bin_uncertain.
+    gamma, gumbel, frechet, weibull, histogram_bin_uncertain, poisson,
+    binomial, negative_binomial, geometric, hypergeometric, and
+    histogram_point_uncertain.
     """
 
-    _CONTINUOUS_ALEATORY_FIELDS = (
+    _ALEATORY_FIELDS = (
         "normal_uncertain",
         "lognormal_uncertain",
         "uniform_uncertain",
@@ -1005,6 +1007,12 @@ class UncertainCorrelationMatrixSize(ValidationRule):
         "frechet_uncertain",
         "weibull_uncertain",
         "histogram_bin_uncertain",
+        "poisson_uncertain",
+        "binomial_uncertain",
+        "negative_binomial_uncertain",
+        "geometric_uncertain",
+        "hypergeometric_uncertain",
+        "histogram_point_uncertain",
     )
 
     def __init__(self, context: str = "variables"):
@@ -1015,7 +1023,7 @@ class UncertainCorrelationMatrixSize(ValidationRule):
             literals=[],
             error_message=(
                 "For {context}, uncertain_correlation_matrix must have length n^2, "
-                "where n is the total count of continuous aleatory uncertain variables"
+                "where n is the total count of aleatory uncertain variables"
             ),
         )
 
@@ -1035,13 +1043,25 @@ class UncertainCorrelationMatrixSize(ValidationRule):
             return
 
         n = 0
-        for field_name in self._CONTINUOUS_ALEATORY_FIELDS:
+        for field_name in self._ALEATORY_FIELDS:
             var_block = getattr(instance, field_name, None)
             if var_block is None:
                 continue
             count = getattr(var_block, "count", None)
             if count is not None:
                 n += int(count)
+                continue
+
+            if field_name == "histogram_point_uncertain":
+                for subtype_name in ("integer", "string", "real"):
+                    subtype_block = getattr(var_block, subtype_name, None)
+                    subtype_count = (
+                        getattr(subtype_block, "count", None)
+                        if subtype_block is not None
+                        else None
+                    )
+                    if subtype_count is not None:
+                        n += int(subtype_count)
 
         expected = n * n
         actual = len(correlation_matrix)

@@ -1786,7 +1786,7 @@ json uncertain_correlation_matrix_size(
         return json::object();
     }
 
-    static const std::array<const char*, 12> aleatory_blocks = {{
+    static const std::array<const char*, 18> aleatory_blocks = {{
         "normal_uncertain",
         "lognormal_uncertain",
         "uniform_uncertain",
@@ -1798,7 +1798,13 @@ json uncertain_correlation_matrix_size(
         "gumbel_uncertain",
         "frechet_uncertain",
         "weibull_uncertain",
-        "histogram_bin_uncertain"
+        "histogram_bin_uncertain",
+        "poisson_uncertain",
+        "binomial_uncertain",
+        "negative_binomial_uncertain",
+        "geometric_uncertain",
+        "hypergeometric_uncertain",
+        "histogram_point_uncertain"
     }};
 
     std::size_t n = 0;
@@ -1807,10 +1813,33 @@ json uncertain_correlation_matrix_size(
             continue;
         }
         const auto& block = instance.at(block_name);
-        if (!block.is_object() || !block.contains("count") || block.at("count").is_null()) {
+        if (!block.is_object()) {
             continue;
         }
-        n += static_cast<std::size_t>(block.at("count").get<int>());
+        if (block.contains("count") && !block.at("count").is_null()) {
+            n += static_cast<std::size_t>(block.at("count").get<int>());
+            continue;
+        }
+
+        if (std::string_view(block_name) == "histogram_point_uncertain") {
+            static const std::array<const char*, 3> histogram_point_subtypes = {{
+                "integer",
+                "string",
+                "real"
+            }};
+            for (const char* subtype_name : histogram_point_subtypes) {
+                if (!block.contains(subtype_name) || block.at(subtype_name).is_null()) {
+                    continue;
+                }
+                const auto& subtype_block = block.at(subtype_name);
+                if (!subtype_block.is_object() ||
+                    !subtype_block.contains("count") ||
+                    subtype_block.at("count").is_null()) {
+                    continue;
+                }
+                n += static_cast<std::size_t>(subtype_block.at("count").get<int>());
+            }
+        }
     }
 
     const std::size_t expected = n * n;

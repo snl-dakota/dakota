@@ -1,12 +1,12 @@
 // test_validation.cpp
 // C++ unit tests for validation functions
 
-#define _USE_MATH_DEFINES // required for MSVS
 #include <gtest/gtest.h>
 #include <dakota/validation.hpp>
 #include <dakota/variable_validators.hpp>
 #include <dakota/computed_fields.hpp>
-#include <math.h>
+#define _USE_MATH_DEFINES // required for MSVS
+#include <cmath>
 #include <limits>
 
 using namespace dakota::validation;
@@ -2942,6 +2942,28 @@ TEST(UncertainCorrelationMatrixSize, PassesWhenLengthMatchesN2) {
     json instance = {
         {"normal_uncertain", {{"count", 2}}},
         {"uncertain_correlation_matrix", {1.0, 0.0, 0.0, 1.0}}
+    };
+
+    json mutations = uncertain_correlation_matrix_size(
+        instance,
+        {"uncertain_correlation_matrix"},
+        json::array(),
+        "variables"
+    );
+    EXPECT_TRUE(mutations.empty());
+}
+
+TEST(UncertainCorrelationMatrixSize, CountsContinuousDiscreteAndSubtypeAleatoryVariables) {
+    json instance = {
+        {"normal_uncertain", {{"count", 2}}},
+        {"poisson_uncertain", {{"count", 1}}},
+        {"histogram_point_uncertain", {{"real", {{"count", 1}}}}},
+        {"uncertain_correlation_matrix", {
+            1.0, 0.0, 0.0, 0.0,
+            0.0, 1.0, 0.0, 0.0,
+            0.0, 0.0, 1.0, 0.0,
+            0.0, 0.0, 0.0, 1.0
+        }}
     };
 
     json mutations = uncertain_correlation_matrix_size(
