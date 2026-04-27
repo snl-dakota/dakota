@@ -17,7 +17,65 @@ static const char rcsId[]="@(#) $Id";
 
 using json = nlohmann::json;
 
+
+
+
+
 namespace Dakota {
+
+namespace {
+
+// helpers for constructor to get information from ProblemDescDB 
+// and insert it into member variables
+
+template <typename T>
+int len(const T& v) { return v.length(); }
+int len(const int& v) { return 1; }
+int len(const StringArray& v) { return v.size(); }
+
+const RealVector& get_rv(const ProblemDescDB& db, const char* key) {
+  return db.get_rv(key);
+}
+const IntVector& get_iv(const ProblemDescDB& db, const char* key) {
+  return db.get_iv(key);
+}
+const StringArray& get_sa(const ProblemDescDB& db, const char* key) {
+  return db.get_sa(key);
+}
+
+template <typename Vec, typename Getter>
+void copy_from_db(const ProblemDescDB& db,
+    const std::initializer_list<const char*>& keys,
+    Vec& dest, size_t& offset, Getter get)
+{
+  for (const auto& key : keys) {
+    const auto& vals = get(db, key);
+    copy_data_partial(vals, dest, offset);
+    offset += len(vals);
+  }
+}
+
+template <typename DiscVec, typename Getter>
+void relax_from_db(const ProblemDescDB& db,
+    const std::initializer_list<const char*>& keys,
+    const BitArray& relax, size_t& relax_cntr,
+    RealVector& cont, size_t& acv_offset,
+    DiscVec& disc, size_t& disc_offset,
+    Getter get)
+{
+  for (const auto& key : keys) {
+    const auto& vals = get(db, key);
+    for (int i = 0; i < vals.length(); ++i, ++relax_cntr)
+      if (relax[relax_cntr])
+        cont[acv_offset++] = (Real)vals[i];
+      else
+        disc[disc_offset++] = vals[i];
+  }
+}
+
+} // anonymous namespace
+
+
 
 /** In this class, a relaxed data approach is used in which continuous
     and discrete arrays are combined into a single continuous array
@@ -31,116 +89,106 @@ RelaxedVariables::
 RelaxedVariables(const ProblemDescDB& problem_db, const ShortShortPair& view):
   Variables(BaseConstructor(), problem_db, view)
 {
-  const RealVector& cdv  = problem_db.get_rv(
-    "variables.continuous_design.initial_point");
-  const RealVector& cauv = problem_db.get_rv(
-    "variables.continuous_aleatory_uncertain.initial_point");
-  const RealVector& ceuv = problem_db.get_rv(
-    "variables.continuous_epistemic_uncertain.initial_point");
-  const RealVector& csv  = problem_db.get_rv(
-    "variables.continuous_state.initial_state");
-
-  const IntVector& ddrv  = problem_db.get_iv(
-    "variables.discrete_design_range.initial_point");
-  const IntVector& ddsiv = problem_db.get_iv(
-    "variables.discrete_design_set_int.initial_point");
-  const IntVector& dauiv = problem_db.get_iv(
-    "variables.discrete_aleatory_uncertain_int.initial_point");
-  const IntVector& deuiv = problem_db.get_iv(
-   "variables.discrete_epistemic_uncertain_int.initial_point");
-  const IntVector& dsrv  = problem_db.get_iv(
-    "variables.discrete_state_range.initial_state");
-  const IntVector& dssiv = problem_db.get_iv(
-    "variables.discrete_state_set_int.initial_state");
-
-  const StringArray& ddssv = problem_db.get_sa(
-    "variables.discrete_design_set_string.initial_point");
-  const StringArray& dausv = problem_db.get_sa(
-    "variables.discrete_aleatory_uncertain_string.initial_point");
-  const StringArray& deusv = problem_db.get_sa(
-   "variables.discrete_epistemic_uncertain_string.initial_point");
-  const StringArray& dsssv = problem_db.get_sa(
-    "variables.discrete_state_set_string.initial_state");
-
-  const RealVector& ddsrv = problem_db.get_rv(
-    "variables.discrete_design_set_real.initial_point");
-  const RealVector& daurv = problem_db.get_rv(
-    "variables.discrete_aleatory_uncertain_real.initial_point");
-  const RealVector& deurv = problem_db.get_rv(
-   "variables.discrete_epistemic_uncertain_real.initial_point");
-  const RealVector& dssrv = problem_db.get_rv(
-    "variables.discrete_state_set_real.initial_state");
-
-  size_t i, ardi_cntr = 0, ardr_cntr = 0,
-    acv_offset = 0, adiv_offset = 0, adsv_offset = 0, adrv_offset = 0,
-    num_ddrv  =  ddrv.length(), num_ddsiv = ddsiv.length(),
-    num_ddsrv = ddsrv.length(), num_dauiv = dauiv.length(),
-    num_daurv = daurv.length(), num_deuiv = deuiv.length(),
-    num_deurv = deurv.length(), num_dsrv  =  dsrv.length(),
-    num_dssiv = dssiv.length(), num_dssrv = dssrv.length();
   const BitArray& all_relax_di = sharedVarsData.all_relaxed_discrete_int();
   const BitArray& all_relax_dr = sharedVarsData.all_relaxed_discrete_real();
-  copy_data_partial(cdv, allContinuousVars, acv_offset);
-  acv_offset += cdv.length();
-  for (i=0; i<num_ddrv; ++i, ++ardi_cntr)
-    if (all_relax_di[ardi_cntr])
-      allContinuousVars[acv_offset++]   = (Real)ddrv[i];
-    else
-      allDiscreteIntVars[adiv_offset++] = ddrv[i];
-  for (i=0; i<num_ddsiv; ++i, ++ardi_cntr)
-    if (all_relax_di[ardi_cntr])
-      allContinuousVars[acv_offset++]   = (Real)ddsiv[i];
-    else
-      allDiscreteIntVars[adiv_offset++] = ddsiv[i];
-  copy_data_partial(ddssv, allDiscreteStringVars, adsv_offset);
-  adsv_offset += ddssv.size();
-  for (i=0; i<num_ddsrv; ++i, ++ardr_cntr)
-    if (all_relax_dr[ardr_cntr]) allContinuousVars[acv_offset++]    = ddsrv[i];
-    else                         allDiscreteRealVars[adrv_offset++] = ddsrv[i];
 
-  copy_data_partial(cauv, allContinuousVars, acv_offset);
-  acv_offset += cauv.length();
-  for (i=0; i<num_dauiv; ++i, ++ardi_cntr)
-    if (all_relax_di[ardi_cntr])
-      allContinuousVars[acv_offset++]   = (Real)dauiv[i];
-    else
-      allDiscreteIntVars[adiv_offset++] = dauiv[i];
-  copy_data_partial(dausv, allDiscreteStringVars, adsv_offset);
-  adsv_offset += dausv.size();
-  for (i=0; i<num_daurv; ++i, ++ardr_cntr)
-    if (all_relax_dr[ardr_cntr]) allContinuousVars[acv_offset++]    = daurv[i];
-    else                         allDiscreteRealVars[adrv_offset++] = daurv[i];
+  size_t acv_offset = 0, adiv_offset = 0, adsv_offset = 0, adrv_offset = 0,
+         ardi_cntr = 0, ardr_cntr = 0;
 
-  copy_data_partial(ceuv, allContinuousVars, acv_offset);
-  acv_offset += ceuv.length();
-  for (i=0; i<num_deuiv; ++i, ++ardi_cntr)
-    if (all_relax_di[ardi_cntr])
-      allContinuousVars[acv_offset++]   = (Real)deuiv[i];
-    else
-      allDiscreteIntVars[adiv_offset++] = deuiv[i];
-  copy_data_partial(deusv, allDiscreteStringVars, adsv_offset);
-  adsv_offset += deusv.size();
-  for (i=0; i<num_deurv; ++i, ++ardr_cntr)
-    if (all_relax_dr[ardr_cntr]) allContinuousVars[acv_offset++]    = deurv[i];
-    else                         allDiscreteRealVars[adrv_offset++] = deurv[i];
+  // --- Design ---
+  copy_from_db(problem_db, {
+    "variables.continuous_design.initial_point"
+  }, allContinuousVars, acv_offset, get_rv);
 
-  copy_data_partial(csv, allContinuousVars, acv_offset);
-  acv_offset += csv.length();
-  for (i=0; i<num_dsrv; ++i, ++ardi_cntr)
-    if (all_relax_di[ardi_cntr])
-      allContinuousVars[acv_offset++]   = (Real)dsrv[i];
-    else
-      allDiscreteIntVars[adiv_offset++] = dsrv[i];
-  for (i=0; i<num_dssiv; ++i, ++ardi_cntr)
-    if (all_relax_di[ardi_cntr])
-      allContinuousVars[acv_offset++]   = (Real)dssiv[i];
-    else
-      allDiscreteIntVars[adiv_offset++] = dssiv[i];
-  copy_data_partial(dsssv, allDiscreteStringVars, adsv_offset);
-  adsv_offset += dsssv.size();
-  for (i=0; i<num_dssrv; ++i, ++ardr_cntr)
-    if (all_relax_dr[ardr_cntr]) allContinuousVars[acv_offset++]    = dssrv[i];
-    else                         allDiscreteRealVars[adrv_offset++] = dssrv[i];
+  relax_from_db(problem_db, {
+    "variables.discrete_design_range.initial_point",
+    "variables.discrete_design_set_int.initial_point"
+  }, all_relax_di, ardi_cntr,
+     allContinuousVars, acv_offset, allDiscreteIntVars, adiv_offset, get_iv);
+
+  copy_from_db(problem_db, {
+    "variables.discrete_design_set_string.initial_point"
+  }, allDiscreteStringVars, adsv_offset, get_sa);
+
+  relax_from_db(problem_db, {
+    "variables.discrete_design_set_real.initial_point"
+  }, all_relax_dr, ardr_cntr,
+     allContinuousVars, acv_offset, allDiscreteRealVars, adrv_offset, get_rv);
+
+  // --- Aleatory ---
+  copy_from_db(problem_db, {
+    "variables.normal_uncertain.initial_point",
+    "variables.lognormal_uncertain.initial_point",
+    "variables.uniform_uncertain.initial_point",
+    "variables.loguniform_uncertain.initial_point",
+    "variables.triangular_uncertain.initial_point",
+    "variables.exponential_uncertain.initial_point",
+    "variables.beta_uncertain.initial_point",
+    "variables.gamma_uncertain.initial_point",
+    "variables.gumbel_uncertain.initial_point",
+    "variables.frechet_uncertain.initial_point",
+    "variables.weibull_uncertain.initial_point",
+    "variables.histogram_bin_uncertain.initial_point"
+  }, allContinuousVars, acv_offset, get_rv);
+
+  relax_from_db(problem_db, {
+    "variables.poisson_uncertain.initial_point",
+    "variables.binomial_uncertain.initial_point",
+    "variables.negative_binomial_uncertain.initial_point",
+    "variables.geometric_uncertain.initial_point",
+    "variables.hypergeometric_uncertain.initial_point",
+    "variables.histogram_uncertain.point_int.initial_point"
+  }, all_relax_di, ardi_cntr,
+     allContinuousVars, acv_offset, allDiscreteIntVars, adiv_offset, get_iv);
+
+  copy_from_db(problem_db, {
+    "variables.histogram_uncertain.point_string.initial_point"
+  }, allDiscreteStringVars, adsv_offset, get_sa);
+
+  relax_from_db(problem_db, {
+    "variables.histogram_uncertain.point_real.initial_point"
+  }, all_relax_dr, ardr_cntr,
+     allContinuousVars, acv_offset, allDiscreteRealVars, adrv_offset, get_rv);
+
+  // --- Epistemic ---
+  copy_from_db(problem_db, {
+    "variables.continuous_interval_uncertain.initial_point"
+  }, allContinuousVars, acv_offset, get_rv);
+
+  relax_from_db(problem_db, {
+    "variables.discrete_interval_uncertain.initial_point",
+    "variables.discrete_uncertain_set_int.initial_point"
+  }, all_relax_di, ardi_cntr,
+     allContinuousVars, acv_offset, allDiscreteIntVars, adiv_offset, get_iv);
+
+  copy_from_db(problem_db, {
+    "variables.discrete_uncertain_set_string.initial_point"
+  }, allDiscreteStringVars, adsv_offset, get_sa);
+
+  relax_from_db(problem_db, {
+    "variables.discrete_uncertain_set_real.initial_point"
+  }, all_relax_dr, ardr_cntr,
+     allContinuousVars, acv_offset, allDiscreteRealVars, adrv_offset, get_rv);
+
+  // --- State ---
+  copy_from_db(problem_db, {
+    "variables.continuous_state.initial_state"
+  }, allContinuousVars, acv_offset, get_rv);
+
+  relax_from_db(problem_db, {
+    "variables.discrete_state_range.initial_state",
+    "variables.discrete_state_set_int.initial_state"
+  }, all_relax_di, ardi_cntr,
+     allContinuousVars, acv_offset, allDiscreteIntVars, adiv_offset, get_iv);
+
+  copy_from_db(problem_db, {
+    "variables.discrete_state_set_string.initial_state"
+  }, allDiscreteStringVars, adsv_offset, get_sa);
+
+  relax_from_db(problem_db, {
+    "variables.discrete_state_set_real.initial_state"
+  }, all_relax_dr, ardr_cntr,
+     allContinuousVars, acv_offset, allDiscreteRealVars, adrv_offset, get_rv);
 }
 
 

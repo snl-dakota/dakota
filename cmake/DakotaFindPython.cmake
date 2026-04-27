@@ -4,11 +4,17 @@ macro(dakota_find_python)
   if(DAKOTA_PYTHON)
     message(STATUS "Dakota enabling Python3 (Interpreter)")
     set(dakota_python_components Interpreter)
+    set(_dakota_python_minimum_version "")
+    if(DAKOTA_GENERATE_JSON_SCHEMA)
+      set(_dakota_python_minimum_version 3.9)
+    endif()
 
     if(DAKOTA_PYTHON_DIRECT_INTERFACE OR DAKOTA_PYTHON_SURROGATES OR
 	DAKOTA_PYTHON_WRAPPER OR DAKOTA_PYBIND11)
-      message(STATUS "Dakota enabling Python3 (Development) for direct or surrogate interface")
-      list(APPEND dakota_python_components Development)
+      message(STATUS
+        "Dakota enabling Python3 Development.Module and Development.Embed "
+        "for Python modules and embedded interpreter support")
+      list(APPEND dakota_python_components Development.Module Development.Embed)
       
       if (DAKOTA_PYTHON_DIRECT_INTERFACE_NUMPY)
 	if (DAKOTA_PYTHON_DIRECT_INTERFACE)
@@ -22,16 +28,18 @@ macro(dakota_find_python)
 
     endif()
 
-    find_package(Python3 REQUIRED ${dakota_python_components})
+    if(_dakota_python_minimum_version)
+      find_package(Python3 ${_dakota_python_minimum_version} REQUIRED ${dakota_python_components})
+    else()
+      find_package(Python3 REQUIRED ${dakota_python_components})
+    endif()
 
     if (DAKOTA_PYTHON_DIRECT_INTERFACE_NUMPY)
 	message(STATUS "NumPy version ${Python_NumPy_VERSION} found at ${Python_NumPy_INCLUDE_DIRS}")
     endif()
 
 
-    # pybind11, C3, Acro, etc., use older CMake FindPythonInterp, so we
-    # coerce it to use same as Dakota; more complex situations may
-    # require setting other variables
+    # Keep legacy consumers aligned on the selected interpreter.
     if(NOT PYTHON_EXECUTABLE)
       set(PYTHON_EXECUTABLE "${Python3_EXECUTABLE}" CACHE FILEPATH
 	"Dakota set PYTHON_EXECUTABLE to match Python3_EXECUTABLE")
@@ -41,9 +49,24 @@ macro(dakota_find_python)
     # if(DAKOTA_PYTHON_DIRECT_INTERFACE and NOT Python_Development_FOUND)
 
     if(DAKOTA_PYBIND11)
+      set(PYBIND11_FINDPYTHON ON CACHE BOOL
+        "Force pybind11 to use CMake FindPython targets" FORCE)
       # This add_subdirectory must be done at top-level so pybind11's
       # CMake functions are pulled in for src/ and below
       add_subdirectory(packages/external/pybind11)
+    endif()
+
+    if(DAKOTA_GENERATE_JSON_SCHEMA)
+      execute_process(
+        COMMAND ${Python3_EXECUTABLE} -c
+          "import re, sys; import pydantic; parts = [int(x) for x in re.findall(r'\\d+', pydantic.__version__)[:3]]; sys.exit(0 if tuple(parts) >= (2, 12, 0) else 1)"
+        RESULT_VARIABLE dakota_pydantic_version_ok
+        OUTPUT_QUIET
+        ERROR_QUIET)
+      if(NOT dakota_pydantic_version_ok EQUAL 0)
+        message(FATAL_ERROR
+          "DAKOTA_GENERATE_JSON_SCHEMA requires Pydantic >= 2.12 in ${Python3_EXECUTABLE}")
+      endif()
     endif()
 
     # Check for default and user-requested python module support

@@ -6,11 +6,22 @@ macro(dakota_find_trilinos)
   # TODO: Have etphipp remove Trilinos-specific code and instead set in TriKota
   # when building inside Trilinos, the path to Teuchos will already be set
   if (NOT BUILD_IN_TRILINOS)
+    set(_dakota_trilinos_build_dir
+      ${CMAKE_CURRENT_BINARY_DIR}/packages/external/trilinos/cmake_packages/Trilinos)
+    set(_dakota_teuchos_build_dir
+      ${CMAKE_CURRENT_BINARY_DIR}/packages/external/trilinos/cmake_packages/Teuchos)
+    set(_dakota_internal_trilinos_config FALSE)
+
+    if(DAKOTA_BUILDING_TEUCHOS OR
+       (Trilinos_DIR AND Trilinos_DIR STREQUAL "${_dakota_trilinos_build_dir}") OR
+       (Teuchos_DIR AND Teuchos_DIR STREQUAL "${_dakota_teuchos_build_dir}"))
+      set(_dakota_internal_trilinos_config TRUE)
+    endif()
 
     # Workaround to skip finding system Trilinos until this probe is
     # simplified and follows find_package semantics. Double negative to
     # preserve historical behavior without overcomplicating things.
-    if(NOT DAKOTA_NO_FIND_TRILINOS)
+    if(NOT DAKOTA_NO_FIND_TRILINOS AND NOT _dakota_internal_trilinos_config)
       # First probe for system-installed Trilinos, respecting Trilinos_DIR if set
       find_package(Trilinos QUIET)
     endif()
@@ -31,15 +42,16 @@ macro(dakota_find_trilinos)
       endif()
     else()
 
-      # If no parent project configured Teuchos, do so, using Teuchos_DIR if set
-      if(Teuchos_DIR)
-	message(STATUS
-	  "Dakota using previously specified Teuchos in ${Teuchos_DIR}")
-      else()
-	# Directory containing TeuchosConfig.cmake at build time
-	set(Teuchos_DIR
-          ${CMAKE_CURRENT_BINARY_DIR}/packages/external/trilinos/cmake_packages/Teuchos)
-	set(Trilinos_ENABLE_Teuchos ON CACHE BOOL
+      # Directory containing TeuchosConfig.cmake when Dakota builds Trilinos.
+      if(DAKOTA_BUILDING_TEUCHOS OR
+         NOT Teuchos_DIR OR
+         (Teuchos_DIR AND Teuchos_DIR STREQUAL "${_dakota_teuchos_build_dir}"))
+        # Keep rebuilding the in-tree Trilinos targets on every configure pass.
+        # Otherwise a cached Teuchos_DIR from the prior configure is mistaken for
+        # an external package and downstream Teuchos imported targets vanish.
+        set(Teuchos_DIR "${_dakota_teuchos_build_dir}" CACHE PATH
+          "Directory containing TeuchosConfig.cmake at build time" FORCE)
+        set(Trilinos_ENABLE_Teuchos ON CACHE BOOL
           "Dakota enabling Trilinos Teuchos" FORCE)
         #set(Trilinos_VERBOSE_CONFIGURE OFF CACHE BOOL
         #  "Dakota enabling Trilinos VERBOSE Configure" FORCE)
@@ -62,7 +74,7 @@ macro(dakota_find_trilinos)
 
 	# Dakota doesn't use any Teuchos MPI features; may want to force off
 	#set( TPL_ENABLE_MPI ${DAKOTA_HAVE_MPI} )
-	# This doesn't do as name implies; setting OFF doesn't generate Config.cmake 
+	# This doesn't do as name implies; setting OFF doesn't generate Config.cmake
 	# at all; doesn't just control whether installed!  Want Config.cmake in build
 	#        set(Trilinos_ENABLE_INSTALL_CMAKE_CONFIG_FILES OFF CACHE BOOL
 	#	  "Dakota is the top-level package; don't write Trilinos config files")
@@ -108,8 +120,13 @@ macro(dakota_find_trilinos)
 	if(HAVE_ROL)
           get_target_property(ROL_INCLUDE_DIRS rol INCLUDE_DIRECTORIES)
 	endif()
-
-      endif() # Teuchos_DIR
+      elseif(Teuchos_DIR)
+	message(STATUS
+	  "Dakota using previously specified Teuchos in ${Teuchos_DIR}")
+        find_package(Teuchos REQUIRED CONFIG)
+        set(DAKOTA_BUILDING_TEUCHOS FALSE CACHE BOOL
+          "Dakota is building Teuchos in its build tree" FORCE)
+      endif()
 
       # Additional setting to prevent multiple targets with the same name
       set(Trilinos_TARGETS_IMPORTED 1)

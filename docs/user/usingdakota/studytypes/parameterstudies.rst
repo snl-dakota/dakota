@@ -495,6 +495,10 @@ studies, see :ref:`dace:usage` and especially
 :numref:`dace:usage:table`, which clarifies the different purposes of
 the method types.
 
+The use of parameter studies for sensitivity analysis and other sensitivity
+analysis methods are discussed in detail in the :ref:`Sensitivity Analysis <sa>`
+documentation.
+
 .. _`ps:example:vector`:
 
 Example: Vector Parameter Study with Rosenbrock

@@ -1,0 +1,77 @@
+{
+  "environment": {
+    "tabular_data": {
+      "tabular_data_file": "textbook_uq_sampling.dat"
+    },
+    "top_method_pointer": "UQ"
+  },
+  "interface": [
+    {
+      "analysis_drivers": {
+        "drivers": [
+          "text_book"
+        ],
+        "interface_type": {
+          "python": {}
+        }
+      },
+      "id_interface": "I1"
+    }
+  ],
+  "method": [
+    {
+      "sampling": {
+        "distribution": {
+          "cumulative": true
+        },
+        "id_method": "UQ",
+        "response_levels": {
+          "values": [
+            0.1,
+            0.2,
+            0.6
+          ]
+        },
+        "sample_type": {
+          "lhs": true
+        },
+        "samples": 10,
+        "seed": 98765
+      }
+    }
+  ],
+  "responses": [
+    {
+      "gradient_type": {
+        "no_gradients": true
+      },
+      "hessian_type": {
+        "no_hessians": true
+      },
+      "response_type": {
+        "response_functions": {
+          "count": 1
+        }
+      }
+    }
+  ],
+  "variables": [
+    {
+      "uniform_uncertain": {
+        "count": 2,
+        "descriptors": [
+          "x1",
+          "x2"
+        ],
+        "lower_bounds": [
+          0.0,
+          0.0
+        ],
+        "upper_bounds": [
+          1.0,
+          1.0
+        ]
+      }
+    }
+  ]
+}

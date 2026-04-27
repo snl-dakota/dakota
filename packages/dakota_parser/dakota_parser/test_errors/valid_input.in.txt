@@ -1,0 +1,27 @@
+# Test: Valid Dakota input file
+# Expected: Parse successfully
+
+environment
+  tabular_data
+    tabular_data_file = 'output.dat'
+
+method
+  sampling
+    samples = 100
+    seed = 12345
+    sample_type lhs
+
+variables
+  continuous_design = 2
+    lower_bounds  -2.0  -2.0
+    upper_bounds   2.0   2.0
+    descriptors  'x1'  'x2'
+
+interface
+  fork
+    analysis_drivers = 'simulator.sh'
+
+responses
+  objective_functions = 1
+  no_gradients
+  no_hessians

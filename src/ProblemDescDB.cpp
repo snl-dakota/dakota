@@ -20,6 +20,8 @@
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
 #include "NIDRProblemDescDB.hpp"
+#include "InstructionMaterializer.hpp"
+#include "IRQuery.hpp"
 #include "DakotaIterator.hpp"
 #include "DakotaInterface.hpp"
 #include "WorkdirHelper.hpp"  // bfs utils and prepend_preferred_env_path
@@ -27,10 +29,18 @@
 #include <boost/function.hpp>
 #include <string>
 #include "delete_study_components.hpp"
+#include <cstdlib>
+#include <fstream>
+#include <nlohmann/json.hpp>
+#include <iostream>
 #include <string_view>
+#include <type_traits>
+#include <variant>
 
 //#define DEBUG
 //#define MPI_DEBUG
+
+#define JSONDB_VERBOSE true
 
 static const char rcsId[]="@(#) $Id: ProblemDescDB.cpp 7007 2010-10-06 15:54:39Z wjbohnh $";
 
@@ -39,6 +49,61 @@ namespace Dakota {
 
 extern ParallelLibrary dummy_lib; // defined in dakota_global_defs.cpp
 extern ProblemDescDB *Dak_pddb;	  // defined in dakota_global_defs.cpp
+
+namespace {
+
+using json = nlohmann::json;
+
+json load_json_from_file(const String& filename)
+{
+  std::ifstream file(filename);
+  if (!file.is_open())
+    throw std::runtime_error("Could not open the file: " + filename);
+
+  json j;
+  file >> j;
+  return j;
+}
+
+bool ir_debug_logging_enabled()
+{
+  const char* value = std::getenv("DAKOTA_DEBUG_IR");
+  return value && *value;
+}
+
+void log_top_level_json_shape(const json& j, const String& filename)
+{
+  if (!ir_debug_logging_enabled())
+    return;
+
+  std::cerr << "ProblemDescDB::enable_json_input: loaded '" << filename << "'";
+  if (!j.is_object()) {
+    std::cerr << " with top-level type " << j.type_name() << std::endl;
+    return;
+  }
+
+  std::cerr << " with top-level keys:";
+  for (auto it = j.begin(); it != j.end(); ++it) {
+    std::cerr << " " << it.key() << "("
+              << (it->is_object() ? "object" :
+                  it->is_array() ? "array" :
+                  it->type_name())
+              << ")";
+  }
+  std::cerr << std::endl;
+}
+
+template <class T, class Variant>
+struct variant_contains;
+
+template <class T, class... Alts>
+struct variant_contains<T, std::variant<Alts...>>
+  : std::disjunction<std::is_same<T, Alts>...> {};
+
+template <class T, class Variant>
+inline constexpr bool variant_contains_v = variant_contains<T, Variant>::value;
+
+} // namespace
 
 
 /** This constructor is the one which must build the base class data for all
@@ -81,7 +146,6 @@ ProblemDescDB::get_db(int world_size, int world_rank)
   //else
   return std::make_shared<NIDRProblemDescDB>(world_size, world_rank);
 }
-
 
 /** Copy constructor manages sharing of dbRep */
 ProblemDescDB::ProblemDescDB(const ProblemDescDB& db):
@@ -128,6 +192,8 @@ parse_inputs(const std::string_view input_string, const std::string_view parser_
 
     // Only world rank 0 parses the input file.
     if (worldRank == 0) {
+        irState.reset();
+        validatedStudyJson = json();
         // Parse the input file using one of the derived parser-specific classes
         derived_parse_inputs(input_string, parser_options, command_line_run);
     }
@@ -142,8 +208,63 @@ parse_inputs(const std::string_view input_string, const std::string_view parser_
     // if (callback)
     // 	(*callback)(this, callback_data);
   }
+  //Cout << "ProblemDescDB::parse_inputs: using data from input ..."
+  //     << " dataMethodList is " << String(dataMethodList.empty() ? "" : "NOT")
+  //     << " empty." << std::endl;
 }
 
+void ProblemDescDB::enable_json_input(const String & json_file)
+{
+  if (ir_debug_logging_enabled())
+    std::cerr << "ProblemDescDB::enable_json_input: starting for '" << json_file << "'" << std::endl;
+
+  const json study_json = load_json_from_file(json_file);
+  log_top_level_json_shape(study_json, json_file);
+
+  enable_json_input(study_json);
+}
+
+void ProblemDescDB::enable_json_input(const nlohmann::json& study_json)
+{
+  if (ir_debug_logging_enabled())
+    log_top_level_json_shape(study_json, "<in-memory>");
+
+  InstructionMaterializer materializer;
+  std::shared_ptr<IRState> materialized;
+  try {
+    materialized = std::make_shared<IRState>(materializer.materialize(study_json));
+  }
+  catch (const std::exception& e) {
+    std::cerr << "ProblemDescDB::enable_json_input: failed while materializing study JSON: "
+              << e.what() << std::endl;
+    throw;
+  }
+
+  if (dbRep) {
+    dbRep->validatedStudyJson = study_json;
+    dbRep->irState = std::move(materialized);
+    if (dbRep->dataMethodList.empty())
+      dbRep->populate_skeleton_data_from_ir();
+  }
+  else {
+    validatedStudyJson = study_json;
+    irState = std::move(materialized);
+    if (dataMethodList.empty())
+      populate_skeleton_data_from_ir();
+  }
+
+  if (ir_debug_logging_enabled()) {
+    const ProblemDescDB* db = dbRep ? dbRep.get() : this;
+    std::cerr << "ProblemDescDB::enable_json_input: materialized IR sizes"
+              << " environment=" << db->irState->environment.values().size()
+              << " method=" << db->irState->method.size()
+              << " model=" << db->irState->model.size()
+              << " variables=" << db->irState->variables.size()
+              << " interface=" << db->irState->interface.size()
+              << " responses=" << db->irState->responses.size()
+              << std::endl;
+  }
+}
 
 /** DB setup phase 3: perform basic checks on keywords counts in
     current DB state, then sync to all processors. */
@@ -171,6 +292,86 @@ void ProblemDescDB::check_and_broadcast(const UserModes& user_modes) {
 }
 
 
+void ProblemDescDB::populate_skeleton_data_from_ir()
+{
+  ProblemDescDB* db = dbRep ? dbRep.get() : this;
+  if (!db->irState)
+    return;
+
+  db->environmentCntr = 0;
+  db->environmentSpec = DataEnvironment();
+  if (db->irState->environment.contains("top_method_pointer"))
+    db->environmentSpec.data_rep()->topMethodPointer =
+      db->irState->environment.get<String>("top_method_pointer");
+  if (!db->irState->environment.values().empty())
+    db->environmentCntr = 1;
+
+  db->dataMethodList.clear();
+  for (const auto& store : db->irState->method) {
+    DataMethod method;
+    if (store.contains("algorithm"))
+      method.data_rep()->methodName = store.get<unsigned short>("algorithm");
+    if (store.contains("id"))
+      method.data_rep()->idMethod = store.get<String>("id");
+    if (store.contains("sub_method"))
+      method.data_rep()->subMethod = store.get<unsigned short>("sub_method");
+    if (store.contains("sub_method_name"))
+      method.data_rep()->subMethodName = store.get<String>("sub_method_name");
+    if (store.contains("sub_model_pointer"))
+      method.data_rep()->subModelPointer = store.get<String>("sub_model_pointer");
+    if (store.contains("model_pointer"))
+      method.data_rep()->modelPointer = store.get<String>("model_pointer");
+    if (store.contains("sub_method_pointer"))
+      method.data_rep()->subMethodPointer = store.get<String>("sub_method_pointer");
+    db->dataMethodList.push_back(method);
+  }
+
+  db->dataModelList.clear();
+  for (const auto& store : db->irState->model) {
+    DataModel model;
+    if (store.contains("id"))
+      model.data_rep()->idModel = store.get<String>("id");
+    if (store.contains("variables_pointer"))
+      model.data_rep()->variablesPointer = store.get<String>("variables_pointer");
+    if (store.contains("interface_pointer"))
+      model.data_rep()->interfacePointer = store.get<String>("interface_pointer");
+    if (store.contains("responses_pointer"))
+      model.data_rep()->responsesPointer = store.get<String>("responses_pointer");
+    if (store.contains("sub_method_pointer"))
+      model.data_rep()->subMethodPointer = store.get<String>("sub_method_pointer");
+    if (store.contains("type"))
+      model.data_rep()->modelType = store.get<String>("type");
+    if (store.contains("surrogate.type"))
+      model.data_rep()->surrogateType = store.get<String>("surrogate.type");
+    db->dataModelList.push_back(model);
+  }
+
+  db->dataVariablesList.clear();
+  for (const auto& store : db->irState->variables) {
+    DataVariables variables;
+    if (store.contains("id"))
+      variables.data_rep()->idVariables = store.get<String>("id");
+    db->dataVariablesList.push_back(variables);
+  }
+
+  db->dataInterfaceList.clear();
+  for (const auto& store : db->irState->interface) {
+    DataInterface interface;
+    if (store.contains("id"))
+      interface.data_rep()->idInterface = store.get<String>("id");
+    db->dataInterfaceList.push_back(interface);
+  }
+
+  db->dataResponsesList.clear();
+  for (const auto& store : db->irState->responses) {
+    DataResponses responses;
+    if (store.contains("id"))
+      responses.data_rep()->idResponses = store.get<String>("id");
+    db->dataResponsesList.push_back(responses);
+  }
+}
+
+
 
 void ProblemDescDB::broadcast()
 {
@@ -189,7 +390,8 @@ void ProblemDescDB::broadcast()
     if (worldSize > 1) {
       if (worldRank == 0) {
 	enforce_unique_ids();
-	derived_broadcast(); // pre-processor
+        if( !irState )
+          derived_broadcast(); // pre-processor
 	send_db_buffer();
 #ifdef MPI_DEBUG
 	Cout << "DB buffer to send on world rank " << worldRank
@@ -214,7 +416,9 @@ void ProblemDescDB::broadcast()
 	   << std::endl;
 #endif // DEBUG
       enforce_unique_ids();
-      derived_broadcast();
+      // Skip NIDR if using IR-backed JSON input
+      if( !irState )
+        derived_broadcast();
     }
   }
 }
@@ -431,7 +635,6 @@ void ProblemDescDB::set_db_list_nodes(size_t method_index)
   }
 }
 
-
 void ProblemDescDB::resolve_top_method(bool set_model_nodes)
 {
   if (dbRep)
@@ -488,9 +691,12 @@ void ProblemDescDB::resolve_top_method(bool set_model_nodes)
     // set all subordinate list nodes for this method
     if (set_model_nodes)
       set_db_model_nodes(dataMethodIter->dataMethodRep->modelPointer);
+
+    if (irState && !methodDBLocked)
+      irState->active.method =
+        static_cast<size_t>(std::distance(dataMethodList.begin(), dataMethodIter));
   }
 }
-
 
 void ProblemDescDB::set_db_method_node(const String& method_tag)
 {
@@ -544,6 +750,9 @@ void ProblemDescDB::set_db_method_node(const String& method_tag)
 	       << "specification will be used.\n";
       }
     }
+    if (irState && !methodDBLocked)
+      irState->active.method =
+        static_cast<size_t>(std::distance(dataMethodList.begin(), dataMethodIter));
   }
 }
 
@@ -566,6 +775,8 @@ void ProblemDescDB::set_db_method_node(size_t method_index)
     std::advance(dataMethodIter, method_index);
     // unlock if not advanced to end()
     methodDBLocked = (method_index == num_meth_spec);
+    if (irState && method_index < irState->method.size())
+      irState->active.method = method_index;
   }
 }
 
@@ -592,6 +803,8 @@ void ProblemDescDB::set_db_model_nodes(size_t model_index)
       modelDBLocked = variablesDBLocked = interfaceDBLocked = responsesDBLocked
 	= true;
     else {
+      if (irState && model_index < irState->model.size())
+        irState->active.model = model_index;
       const DataModelRep& MoRep = *dataModelIter->dataModelRep;
       set_db_variables_node(MoRep.variablesPointer);
       if (model_has_interface(MoRep))
@@ -666,6 +879,9 @@ void ProblemDescDB::set_db_model_nodes(const String& model_tag)
     if (modelDBLocked)
       variablesDBLocked = interfaceDBLocked = responsesDBLocked	= true;
     else {
+      if (irState)
+        irState->active.model =
+          static_cast<size_t>(std::distance(dataModelList.begin(), dataModelIter));
       const DataModelRep& MoRep = *dataModelIter->dataModelRep;
       set_db_variables_node(MoRep.variablesPointer);
       if (model_has_interface(MoRep))
@@ -734,6 +950,9 @@ void ProblemDescDB::set_db_variables_node(const String& variables_tag)
 	       << "specification will be used.\n";
       }
     }
+    if (irState && !variablesDBLocked)
+      irState->active.variables =
+        static_cast<size_t>(std::distance(dataVariablesList.begin(), dataVariablesIter));
   }
 }
 
@@ -803,6 +1022,9 @@ void ProblemDescDB::set_db_interface_node(const String& interface_tag)
 	       << "specification will be used.\n";
       }
     }
+    if (irState && !interfaceDBLocked)
+      irState->active.interface =
+        static_cast<size_t>(std::distance(dataInterfaceList.begin(), dataInterfaceIter));
   }
 }
 
@@ -863,6 +1085,9 @@ void ProblemDescDB::set_db_responses_node(const String& responses_tag)
 	       << "specification will be used.\n";
       }
     }
+    if (irState && !responsesDBLocked)
+      irState->active.responses =
+        static_cast<size_t>(std::distance(dataResponsesList.begin(), dataResponsesIter));
   }
 }
 
@@ -1004,7 +1229,7 @@ split_entry_name(const std::string& entry_name, const std::string& context_msg)
 }
 
 template <typename T>
-T& ProblemDescDB::
+const T& ProblemDescDB::
 get(const std::string& context_msg,
     const std::map<std::string, T DataEnvironmentRep::*>& env_map,
     const std::map<std::string, T DataMethodRep::*>& met_map,
@@ -1017,7 +1242,83 @@ get(const std::string& context_msg,
 {
   if (!db_rep)
     Null_rep(context_msg);
-  
+
+  std::string block, entry;
+  std::tie(block, entry) = split_entry_name(entry_name, context_msg);
+
+  if (block == "method" && db_rep->methodDBLocked)
+    Locked_db();
+  else if (block == "model" && db_rep->modelDBLocked)
+    Locked_db();
+  else if (block == "variables" && db_rep->variablesDBLocked)
+    Locked_db();
+  else if (block == "interface" && db_rep->interfaceDBLocked)
+    Locked_db();
+  else if (block == "responses" && db_rep->responsesDBLocked)
+    Locked_db();
+
+  using QueryT = std::remove_const_t<T>;
+  if constexpr (variant_contains_v<QueryT, IRValue>) {
+    if (db_rep->irState) {
+      try {
+        return ir_query::get<QueryT>(*db_rep->irState, entry_name);
+      }
+      catch (const std::exception&) {
+        // Fall through to legacy Data*Rep access while the IR implementation
+        // is still being filled in incrementally.
+      }
+    }
+  }
+
+  if (block == "environment") {
+    auto it = env_map.find(entry);
+    if (it != env_map.end())
+      return (db_rep->environmentSpec.dataEnvRep).get()->*(it->second);
+  }
+  else if (block == "method") {
+    auto it = met_map.find(entry);
+    if (it != met_map.end())
+      return (db_rep->dataMethodIter->dataMethodRep).get()->*(it->second);
+  }
+  else if (block == "model") {
+    auto it = mod_map.find(entry);
+    if (it != mod_map.end())
+      return (db_rep->dataModelIter->dataModelRep).get()->*(it->second);
+  }
+  else if (block == "variables") {
+    auto it = var_map.find(entry);
+    if (it != var_map.end())
+      return (db_rep->dataVariablesIter->dataVarsRep).get()->*(it->second);
+  }
+  else if (block == "interface") {
+    auto it = int_map.find(entry);
+    if (it != int_map.end())
+      return (db_rep->dataInterfaceIter->dataIfaceRep).get()->*(it->second);
+  }
+  else if (block == "responses") {
+    auto it = res_map.find(entry);
+    if (it != res_map.end())
+      return (db_rep->dataResponsesIter->dataRespRep).get()->*(it->second);
+  }
+  Bad_name(entry_name, context_msg);
+  return abort_handler_t<const T&>(PARSE_ERROR);
+}
+
+template <typename T>
+T& ProblemDescDB::
+get_mutable(const std::string& context_msg,
+    const std::map<std::string, T DataEnvironmentRep::*>& env_map,
+    const std::map<std::string, T DataMethodRep::*>& met_map,
+    const std::map<std::string, T DataModelRep::*>& mod_map,
+    const std::map<std::string, T DataVariablesRep::*>& var_map,
+    const std::map<std::string, T DataInterfaceRep::*>& int_map,
+    const std::map<std::string, T DataResponsesRep::*>& res_map,
+    const std::string& entry_name,
+    const std::shared_ptr<ProblemDescDB>& db_rep) const
+{
+  if (!db_rep)
+    Null_rep(context_msg);
+
   std::string block, entry;
   std::tie(block, entry) = split_entry_name(entry_name, context_msg);
 
@@ -1065,17 +1366,6 @@ get(const std::string& context_msg,
   return abort_handler_t<T&>(PARSE_ERROR);
 }
 
-// couldn't get const-correctness right with a simple forwarder...
-// template <typename T>
-// void ProblemDescDB::LookerUpper<T>::
-// set(const std::string& entry_name,
-//     std::shared_ptr<ProblemDescDB>& db_rep, const T entry_value) const
-// {
-//   T& entry_rep_ref = get(entry_name, db_rep);
-//   entry_rep_ref = entry_value;
-// }
-
-
 // shorthand for pointer to Data*Rep members for use in key to data maps;
 // these names are super terse on purpose and only used in this compilation unit
 #define P_ENV &DataEnvironmentRep::
@@ -1102,7 +1392,6 @@ const RealMatrixArray& ProblemDescDB::get_rma(const String& entry_name) const
     { /* responses */ },
     entry_name, dbRep);
 }
-
 
 const RealVector& ProblemDescDB::get_rv(const String& entry_name) const
 {  
@@ -1132,13 +1421,12 @@ const RealVector& ProblemDescDB::get_rv(const String& entry_name) const
       {"nested.primary_response_mapping", P_MOD primaryRespCoeffs},
       {"nested.secondary_response_mapping", P_MOD secondaryRespCoeffs},
       {"simulation.solution_level_cost", P_MOD solutionLevelCost},
-      {"surrogate.kriging_correlations", P_MOD krigingCorrelations},
-      {"surrogate.kriging_max_correlations", P_MOD krigingMaxCorrelations},
-      {"surrogate.kriging_min_correlations", P_MOD krigingMinCorrelations}
+      {"surrogate.kriging_correlations", P_MOD krigingCorrelations}
     },
     { /* variables */
       {"beta_uncertain.alphas", P_VAR betaUncAlphas},
       {"beta_uncertain.betas", P_VAR betaUncBetas},
+      {"beta_uncertain.initial_point", P_VAR betaUncVars},
       {"beta_uncertain.lower_bounds", P_VAR betaUncLowerBnds},
       {"beta_uncertain.upper_bounds", P_VAR betaUncUpperBnds},
       {"binomial_uncertain.prob_per_trial", P_VAR binomialUncProbPerTrial},
@@ -1158,6 +1446,12 @@ const RealVector& ProblemDescDB::get_rv(const String& entry_name) const
     	  P_VAR continuousEpistemicUncLowerBnds},
       {"continuous_epistemic_uncertain.upper_bounds",
     	  P_VAR continuousEpistemicUncUpperBnds},
+      {"continuous_interval_uncertain.lower_bounds",
+    	  P_VAR continuousIntervalUncLowerBnds},
+      {"continuous_interval_uncertain.upper_bounds",
+    	  P_VAR continuousIntervalUncUpperBnds},
+      {"continuous_interval_uncertain.initial_point",
+    	  P_VAR continuousIntervalUncVars},
       {"continuous_state.initial_state", P_VAR continuousStateVars},
       {"continuous_state.lower_bounds", P_VAR continuousStateLowerBnds},
       {"continuous_state.upper_bounds", P_VAR continuousStateUpperBnds},
@@ -1183,14 +1477,41 @@ const RealVector& ProblemDescDB::get_rv(const String& entry_name) const
     	  P_VAR discreteStateSetRealLowerBnds},
       {"discrete_state_set_real.upper_bounds",
     	  P_VAR discreteStateSetRealUpperBnds},
+      {"discrete_uncertain_set_real.lower_bounds",
+    	  P_VAR discreteUncSetRealLowerBnds},
+      {"discrete_uncertain_set_real.upper_bounds",
+    	  P_VAR discreteUncSetRealUpperBnds},
+      {"discrete_uncertain_set_real.initial_point",
+    	  P_VAR discreteUncSetRealVars},
       {"exponential_uncertain.betas", P_VAR exponentialUncBetas},
+      {"exponential_uncertain.lower_bounds", P_VAR exponentialUncLowerBnds},
+      {"exponential_uncertain.upper_bounds", P_VAR exponentialUncUpperBnds},
+      {"exponential_uncertain.initial_point", P_VAR exponentialUncVars},
       {"frechet_uncertain.alphas", P_VAR frechetUncAlphas},
       {"frechet_uncertain.betas", P_VAR frechetUncBetas},
+      {"frechet_uncertain.lower_bounds", P_VAR frechetUncLowerBnds},
+      {"frechet_uncertain.upper_bounds", P_VAR frechetUncUpperBnds},
+      {"frechet_uncertain.initial_point", P_VAR frechetUncVars},
       {"gamma_uncertain.alphas", P_VAR gammaUncAlphas},
       {"gamma_uncertain.betas", P_VAR gammaUncBetas},
+      {"gamma_uncertain.lower_bounds", P_VAR gammaUncLowerBnds},
+      {"gamma_uncertain.upper_bounds", P_VAR gammaUncUpperBnds},
+      {"gamma_uncertain.initial_point", P_VAR gammaUncVars},
       {"geometric_uncertain.prob_per_trial", P_VAR geometricUncProbPerTrial},
       {"gumbel_uncertain.alphas", P_VAR gumbelUncAlphas},
       {"gumbel_uncertain.betas", P_VAR gumbelUncBetas},
+      {"gumbel_uncertain.lower_bounds", P_VAR gumbelUncLowerBnds},
+      {"gumbel_uncertain.upper_bounds", P_VAR gumbelUncUpperBnds},
+      {"gumbel_uncertain.initial_point", P_VAR gumbelUncVars},
+      {"histogram_bin_uncertain.lower_bounds", P_VAR histogramBinUncLowerBnds},
+      {"histogram_bin_uncertain.upper_bounds", P_VAR histogramBinUncUpperBnds},
+      {"histogram_bin_uncertain.initial_point", P_VAR histogramBinUncVars},
+      {"histogram_uncertain.point_real.lower_bounds",
+    	  P_VAR histogramPointRealUncLowerBnds},
+      {"histogram_uncertain.point_real.upper_bounds",
+    	  P_VAR histogramPointRealUncUpperBnds},
+      {"histogram_uncertain.point_real.initial_point",
+    	  P_VAR histogramPointRealUncVars},
       {"linear_equality_constraints", P_VAR linearEqConstraintCoeffs},
       {"linear_equality_scales", P_VAR linearEqScales},
       {"linear_equality_targets", P_VAR linearEqTargets},
@@ -1199,36 +1520,47 @@ const RealVector& ProblemDescDB::get_rv(const String& entry_name) const
       {"linear_inequality_scales", P_VAR linearIneqScales},
       {"linear_inequality_upper_bounds", P_VAR linearIneqUpperBnds},
       {"lognormal_uncertain.error_factors", P_VAR lognormalUncErrFacts},
+      {"lognormal_uncertain.inferred_upper_bounds",
+          P_VAR lognormalUncInferredUpperBnds},
       {"lognormal_uncertain.lambdas", P_VAR lognormalUncLambdas},
+      {"lognormal_uncertain.initial_point", P_VAR lognormalUncVars},
       {"lognormal_uncertain.lower_bounds", P_VAR lognormalUncLowerBnds},
       {"lognormal_uncertain.means", P_VAR lognormalUncMeans},
       {"lognormal_uncertain.std_deviations", P_VAR lognormalUncStdDevs},
       {"lognormal_uncertain.upper_bounds", P_VAR lognormalUncUpperBnds},
       {"lognormal_uncertain.zetas", P_VAR lognormalUncZetas},
+      {"loguniform_uncertain.initial_point", P_VAR loguniformUncVars},
       {"loguniform_uncertain.lower_bounds", P_VAR loguniformUncLowerBnds},
       {"loguniform_uncertain.upper_bounds", P_VAR loguniformUncUpperBnds},
       {"negative_binomial_uncertain.prob_per_trial",
     	  P_VAR negBinomialUncProbPerTrial},
+      {"normal_uncertain.inferred_lower_bounds",
+          P_VAR normalUncInferredLowerBnds},
+      {"normal_uncertain.inferred_upper_bounds",
+          P_VAR normalUncInferredUpperBnds},
+      {"normal_uncertain.initial_point", P_VAR normalUncVars},
       {"normal_uncertain.lower_bounds", P_VAR normalUncLowerBnds},
       {"normal_uncertain.means", P_VAR normalUncMeans},
       {"normal_uncertain.std_deviations", P_VAR normalUncStdDevs},
       {"normal_uncertain.upper_bounds", P_VAR normalUncUpperBnds},
       {"poisson_uncertain.lambdas", P_VAR poissonUncLambdas},
+      {"triangular_uncertain.initial_point", P_VAR triangularUncVars},
       {"triangular_uncertain.lower_bounds", P_VAR triangularUncLowerBnds},
       {"triangular_uncertain.modes", P_VAR triangularUncModes},
       {"triangular_uncertain.upper_bounds", P_VAR triangularUncUpperBnds},
+      {"uniform_uncertain.initial_point", P_VAR uniformUncVars},
       {"uniform_uncertain.lower_bounds", P_VAR uniformUncLowerBnds},
       {"uniform_uncertain.upper_bounds", P_VAR uniformUncUpperBnds},
       {"weibull_uncertain.alphas", P_VAR weibullUncAlphas},
-      {"weibull_uncertain.betas", P_VAR weibullUncBetas}
+      {"weibull_uncertain.betas", P_VAR weibullUncBetas},
+      {"weibull_uncertain.lower_bounds", P_VAR weibullUncLowerBnds},
+      {"weibull_uncertain.upper_bounds", P_VAR weibullUncUpperBnds},
+      {"weibull_uncertain.initial_point", P_VAR weibullUncVars}
     },
     { /* interface */
       {"failure_capture.recovery_fn_vals", P_INT recoveryFnVals}
     },
     { /* responses */
-      {"exp_config_variables", P_RES expConfigVars},
-      {"exp_observations", P_RES expObservations},
-      {"exp_std_deviations", P_RES expStdDeviations},
       {"fd_gradient_step_size", P_RES fdGradStepSize},
       {"fd_hessian_step_size", P_RES fdHessStepSize},
       {"nonlinear_equality_scales", P_RES nonlinearEqScales},
@@ -1264,6 +1596,9 @@ const IntVector& ProblemDescDB::get_iv(const String& entry_name) const
     },
     { /* variables */
       {"binomial_uncertain.num_trials", P_VAR binomialUncNumTrials},
+      {"binomial_uncertain.lower_bounds", P_VAR binomialUncLowerBnds},
+      {"binomial_uncertain.upper_bounds", P_VAR binomialUncUpperBnds},
+      {"binomial_uncertain.initial_point", P_VAR binomialUncVars},
       {"discrete_aleatory_uncertain_int.initial_point",
     	  P_VAR discreteIntAleatoryUncVars},
       {"discrete_aleatory_uncertain_int.lower_bounds",
@@ -1284,17 +1619,50 @@ const IntVector& ProblemDescDB::get_iv(const String& entry_name) const
     	  P_VAR discreteIntEpistemicUncLowerBnds},
       {"discrete_epistemic_uncertain_int.upper_bounds",
     	  P_VAR discreteIntEpistemicUncUpperBnds},
+      {"discrete_interval_uncertain.lower_bounds",
+    	  P_VAR discreteIntervalUncLowerBnds},
+      {"discrete_interval_uncertain.upper_bounds",
+    	  P_VAR discreteIntervalUncUpperBnds},
+      {"discrete_interval_uncertain.initial_point",
+    	  P_VAR discreteIntervalUncVars},
       {"discrete_state_range.initial_state", P_VAR discreteStateRangeVars},
       {"discrete_state_range.lower_bounds", P_VAR discreteStateRangeLowerBnds},
       {"discrete_state_range.upper_bounds", P_VAR discreteStateRangeUpperBnds},
       {"discrete_state_set_int.initial_state", P_VAR discreteStateSetIntVars},
       {"discrete_state_set_int.lower_bounds", P_VAR discreteStateSetIntLowerBnds},
       {"discrete_state_set_int.upper_bounds", P_VAR discreteStateSetIntUpperBnds},
+      {"discrete_uncertain_set_int.lower_bounds",
+    	  P_VAR discreteUncSetIntLowerBnds},
+      {"discrete_uncertain_set_int.upper_bounds",
+    	  P_VAR discreteUncSetIntUpperBnds},
+      {"discrete_uncertain_set_int.initial_point",
+    	  P_VAR discreteUncSetIntVars},
+      {"geometric_uncertain.lower_bounds", P_VAR geometricUncLowerBnds},
+      {"geometric_uncertain.upper_bounds", P_VAR geometricUncUpperBnds},
+      {"geometric_uncertain.initial_point", P_VAR geometricUncVars},
+      {"histogram_uncertain.point_int.lower_bounds",
+    	  P_VAR histogramPointIntUncLowerBnds},
+      {"histogram_uncertain.point_int.upper_bounds",
+    	  P_VAR histogramPointIntUncUpperBnds},
+      {"histogram_uncertain.point_int.initial_point",
+    	  P_VAR histogramPointIntUncVars},
+      {"hypergeometric_uncertain.lower_bounds", P_VAR hyperGeomUncLowerBnds},
+      {"hypergeometric_uncertain.upper_bounds", P_VAR hyperGeomUncUpperBnds},
+      {"hypergeometric_uncertain.initial_point", P_VAR hyperGeomUncVars},
       {"hypergeometric_uncertain.num_drawn", P_VAR hyperGeomUncNumDrawn},
       {"hypergeometric_uncertain.selected_population",
     	  P_VAR hyperGeomUncSelectedPop},
       {"hypergeometric_uncertain.total_population", P_VAR hyperGeomUncTotalPop},
-      {"negative_binomial_uncertain.num_trials", P_VAR negBinomialUncNumTrials}
+      {"negative_binomial_uncertain.lower_bounds",
+    	  P_VAR negBinomialUncLowerBnds},
+      {"negative_binomial_uncertain.upper_bounds",
+    	  P_VAR negBinomialUncUpperBnds},
+      {"negative_binomial_uncertain.initial_point",
+    	  P_VAR negBinomialUncVars},
+      {"negative_binomial_uncertain.num_trials", P_VAR negBinomialUncNumTrials},
+      {"poisson_uncertain.lower_bounds", P_VAR poissonUncLowerBnds},
+      {"poisson_uncertain.upper_bounds", P_VAR poissonUncUpperBnds},
+      {"poisson_uncertain.initial_point", P_VAR poissonUncVars}
     },
     { /* interface */ },
     { /* responses */
@@ -1345,8 +1713,8 @@ const SizetArray& ProblemDescDB::get_sza(const String& entry_name) const
     { /* environment */ },
     { /* method */
       {"nond.c3function_train.start_rank_sequence", P_MET startRankSeq},
-      {"nond.collocation_points", P_MET collocationPointsSeq},
-      {"nond.expansion_samples", P_MET expansionSamplesSeq},
+      {"nond.collocation_points_sequence", P_MET collocationPointsSeq},
+      {"nond.expansion_samples_sequence", P_MET expansionSamplesSeq},
       {"nond.pilot_samples", P_MET pilotSamples},
       {"random_seed_sequence", P_MET randomSeedSeq}
     },
@@ -1365,9 +1733,9 @@ const UShortArray& ProblemDescDB::get_usa(const String& entry_name) const
     { /* environment */ },
     { /* method */
       {"nond.c3function_train.start_order_sequence", P_MET startOrderSeq},
-      {"nond.expansion_order", P_MET expansionOrderSeq},
-      {"nond.quadrature_order", P_MET quadratureOrderSeq},
-      {"nond.sparse_grid_level", P_MET sparseGridLevelSeq},
+      {"nond.expansion_order_sequence", P_MET expansionOrderSeq},
+      {"nond.quadrature_order_sequence", P_MET quadratureOrderSeq},
+      {"nond.sparse_grid_level_sequence", P_MET sparseGridLevelSeq},
       {"nond.tensor_grid_order", P_MET tensorGridOrder},
       {"partitions", P_MET varPartitions}
     },
@@ -1569,7 +1937,6 @@ const RealRealMapArray& ProblemDescDB::get_rrma(const String& entry_name) const
     entry_name, dbRep);
 }
 
-
 const RealRealPairRealMapArray& ProblemDescDB::
 get_rrrma(const String& entry_name) const
 {
@@ -1587,7 +1954,6 @@ get_rrrma(const String& entry_name) const
     entry_name, dbRep);
 }
 
-
 const IntIntPairRealMapArray& ProblemDescDB::
 get_iirma(const String& entry_name) const
 {
@@ -1604,7 +1970,6 @@ get_iirma(const String& entry_name) const
     { /* responses */ },
     entry_name, dbRep);
 }
-
 
 const StringArray& ProblemDescDB::get_sa(const String& entry_name) const
 {
@@ -1625,19 +1990,40 @@ const StringArray& ProblemDescDB::get_sa(const String& entry_name) const
     },
     { /* variables */
       {"continuous_aleatory_uncertain.labels", P_VAR continuousAleatoryUncLabels},
+      {"normal_uncertain.labels", P_VAR normalUncLabels},
+      {"lognormal_uncertain.labels", P_VAR lognormalUncLabels},
+      {"uniform_uncertain.labels", P_VAR uniformUncLabels},
+      {"loguniform_uncertain.labels", P_VAR loguniformUncLabels},
+      {"triangular_uncertain.labels", P_VAR triangularUncLabels},
+      {"exponential_uncertain.labels", P_VAR exponentialUncLabels},
+      {"beta_uncertain.labels", P_VAR betaUncLabels},
+      {"gamma_uncertain.labels", P_VAR gammaUncLabels},
+      {"gumbel_uncertain.labels", P_VAR gumbelUncLabels},
+      {"frechet_uncertain.labels", P_VAR frechetUncLabels},
+      {"weibull_uncertain.labels", P_VAR weibullUncLabels},
+      {"histogram_bin_uncertain.labels", P_VAR histogramBinUncLabels},
       {"continuous_design.labels", P_VAR continuousDesignLabels},
       {"continuous_design.scale_types", P_VAR continuousDesignScaleTypes},
       {"continuous_epistemic_uncertain.labels",
     	  P_VAR continuousEpistemicUncLabels},
+      {"continuous_interval_uncertain.labels", P_VAR continuousIntervalUncLabels},
       {"continuous_state.labels", P_VAR continuousStateLabels},
       {"discrete_aleatory_uncertain_int.labels",
     	  P_VAR discreteIntAleatoryUncLabels},
+      {"poisson_uncertain.labels", P_VAR poissonUncLabels},
+      {"binomial_uncertain.labels", P_VAR binomialUncLabels},
+      {"negative_binomial_uncertain.labels", P_VAR negBinomialUncLabels},
+      {"geometric_uncertain.labels", P_VAR geometricUncLabels},
+      {"hypergeometric_uncertain.labels", P_VAR hyperGeomUncLabels},
+      {"histogram_uncertain.point_int.labels", P_VAR histogramPointIntUncLabels},
       {"discrete_aleatory_uncertain_real.labels",
     	  P_VAR discreteRealAleatoryUncLabels},
+      {"histogram_uncertain.point_real.labels", P_VAR histogramPointRealUncLabels},
       {"discrete_aleatory_uncertain_string.initial_point",
     	  P_VAR discreteStrAleatoryUncVars},
       {"discrete_aleatory_uncertain_string.labels",
     	  P_VAR discreteStrAleatoryUncLabels},
+      {"histogram_uncertain.point_string.labels", P_VAR histogramPointStrUncLabels},
       {"discrete_aleatory_uncertain_string.lower_bounds",
     	  P_VAR discreteStrAleatoryUncLowerBnds},
       {"discrete_aleatory_uncertain_string.upper_bounds",
@@ -1651,12 +2037,16 @@ const StringArray& ProblemDescDB::get_sa(const String& entry_name) const
       {"discrete_design_set_string.upper_bounds", P_VAR discreteDesignSetStrUpperBnds},
       {"discrete_epistemic_uncertain_int.labels",
     	  P_VAR discreteIntEpistemicUncLabels},
+      {"discrete_interval_uncertain.labels", P_VAR discreteIntervalUncLabels},
+      {"discrete_uncertain_set_int.labels", P_VAR discreteUncSetIntLabels},
       {"discrete_epistemic_uncertain_real.labels",
     	  P_VAR discreteRealEpistemicUncLabels},
+      {"discrete_uncertain_set_real.labels", P_VAR discreteUncSetRealLabels},
       {"discrete_epistemic_uncertain_string.initial_point",
     	  P_VAR discreteStrEpistemicUncVars},
       {"discrete_epistemic_uncertain_string.labels",
     	  P_VAR discreteStrEpistemicUncLabels},
+      {"discrete_uncertain_set_string.labels", P_VAR discreteUncSetStrLabels},
       {"discrete_epistemic_uncertain_string.lower_bounds",
     	  P_VAR discreteStrEpistemicUncLowerBnds},
       {"discrete_epistemic_uncertain_string.upper_bounds",
@@ -1668,7 +2058,17 @@ const StringArray& ProblemDescDB::get_sa(const String& entry_name) const
       {"discrete_state_set_string.labels", P_VAR discreteStateSetStrLabels},
       {"discrete_state_set_string.lower_bounds", P_VAR discreteStateSetStrLowerBnds},
       {"discrete_state_set_string.upper_bounds", P_VAR discreteStateSetStrUpperBnds},
+      {"discrete_uncertain_set_string.lower_bounds",
+    	  P_VAR discreteUncSetStrLowerBnds},
+      {"discrete_uncertain_set_string.upper_bounds",
+    	  P_VAR discreteUncSetStrUpperBnds},
       {"discrete_uncertain_set_string.initial_point", P_VAR discreteUncSetStrVars},
+      {"histogram_uncertain.point_string.lower_bounds",
+    	  P_VAR histogramPointStrUncLowerBnds},
+      {"histogram_uncertain.point_string.upper_bounds",
+    	  P_VAR histogramPointStrUncUpperBnds},
+      {"histogram_uncertain.point_string.initial_point",
+    	  P_VAR histogramPointStrUncVars},
       {"linear_equality_scale_types", P_VAR linearEqScaleTypes},
       {"linear_inequality_scale_types", P_VAR linearIneqScaleTypes}
     },
@@ -1977,6 +2377,7 @@ int ProblemDescDB::get_int(const String& entry_name) const
       {"stop_restart", P_ENV stopRestart}
     },
     { /* method */
+      {"adapt_exp_design_samples", P_MET adaptExpSamples},
       {"batch_size", P_MET batchSize},
       {"batch_size.exploration", P_MET batchSizeExplore},
       {"build_samples", P_MET buildSamples},
@@ -2114,7 +2515,7 @@ short ProblemDescDB::get_short(const String& entry_name) const
       {"wilks.sided_interval", P_MET wilksSidedInterval}
     },
     { /* model */
-      {"adapted_basis.rotation_method", P_MOD method_rotation},
+      {"adapted_basis.rotation_method", P_MOD methodRotation},
       {"c3function_train.advancement_type", P_MOD c3AdvanceType},
       //{"c3function_train.refinement_control", P_MOD refinementControl},
       //{"c3function_train.refinement_type", P_MOD refinementType},
@@ -2246,6 +2647,16 @@ size_t ProblemDescDB::get_sizet(const String& entry_name) const
       Null_rep("get_sizet()");
     if (dbRep->variablesDBLocked)
       Locked_db();
+
+    if (dbRep->irState) {
+      try {
+        return ir_query::get<size_t>(*dbRep->irState, entry_name);
+      }
+      catch (const std::exception&) {
+        // Fall through to legacy aggregate helpers while IR coverage is
+        // still being filled in incrementally.
+      }
+    }
 
     // string for lookup key without the leading "variables."
     auto v_iter = dbRep->dataVariablesIter;
@@ -2531,7 +2942,7 @@ void** ProblemDescDB::get_voidss(const String& entry_name) const
 
 void ProblemDescDB::set(const String& entry_name, const RealVector& rv)
 {
-  RealVector& rep_rv = get<RealVector>
+  RealVector& rep_rv = get_mutable<RealVector>
   ( "set(RealVector&)",
     { /* environment */ },
     { /* method */ 
@@ -2544,6 +2955,7 @@ void ProblemDescDB::set(const String& entry_name, const RealVector& rv)
     { /* variables */
       {"beta_uncertain.alphas", P_VAR betaUncAlphas},
       {"beta_uncertain.betas", P_VAR betaUncBetas},
+      {"beta_uncertain.initial_point", P_VAR betaUncVars},
       {"beta_uncertain.lower_bounds", P_VAR betaUncLowerBnds},
       {"beta_uncertain.upper_bounds", P_VAR betaUncUpperBnds},
       {"binomial_uncertain.prob_per_trial", P_VAR binomialUncProbPerTrial},
@@ -2566,6 +2978,12 @@ void ProblemDescDB::set(const String& entry_name, const RealVector& rv)
 	  P_VAR continuousEpistemicUncLowerBnds},
       {"continuous_epistemic_uncertain.upper_bounds",
 	  P_VAR continuousEpistemicUncUpperBnds},
+      {"continuous_interval_uncertain.lower_bounds",
+    	  P_VAR continuousIntervalUncLowerBnds},
+      {"continuous_interval_uncertain.upper_bounds",
+    	  P_VAR continuousIntervalUncUpperBnds},
+      {"continuous_interval_uncertain.initial_point",
+    	  P_VAR continuousIntervalUncVars},
       {"continuous_state.initial_state", P_VAR continuousStateVars},
       {"continuous_state.lower_bounds", P_VAR continuousStateLowerBnds},
       {"continuous_state.upper_bounds", P_VAR continuousStateUpperBnds},
@@ -2584,14 +3002,41 @@ void ProblemDescDB::set(const String& entry_name, const RealVector& rv)
       {"discrete_epistemic_uncertain_real.upper_bounds",
 	  P_VAR discreteRealEpistemicUncUpperBnds},
       {"discrete_state_set_real.initial_state", P_VAR discreteStateSetRealVars},
+      {"discrete_uncertain_set_real.lower_bounds",
+    	  P_VAR discreteUncSetRealLowerBnds},
+      {"discrete_uncertain_set_real.upper_bounds",
+    	  P_VAR discreteUncSetRealUpperBnds},
+      {"discrete_uncertain_set_real.initial_point",
+    	  P_VAR discreteUncSetRealVars},
       {"exponential_uncertain.betas", P_VAR exponentialUncBetas},
+      {"exponential_uncertain.lower_bounds", P_VAR exponentialUncLowerBnds},
+      {"exponential_uncertain.upper_bounds", P_VAR exponentialUncUpperBnds},
+      {"exponential_uncertain.initial_point", P_VAR exponentialUncVars},
       {"frechet_uncertain.alphas", P_VAR frechetUncAlphas},
       {"frechet_uncertain.betas", P_VAR frechetUncBetas},
+      {"frechet_uncertain.lower_bounds", P_VAR frechetUncLowerBnds},
+      {"frechet_uncertain.upper_bounds", P_VAR frechetUncUpperBnds},
+      {"frechet_uncertain.initial_point", P_VAR frechetUncVars},
       {"gamma_uncertain.alphas", P_VAR gammaUncAlphas},
       {"gamma_uncertain.betas", P_VAR gammaUncBetas},
+      {"gamma_uncertain.lower_bounds", P_VAR gammaUncLowerBnds},
+      {"gamma_uncertain.upper_bounds", P_VAR gammaUncUpperBnds},
+      {"gamma_uncertain.initial_point", P_VAR gammaUncVars},
       {"geometric_uncertain.prob_per_trial", P_VAR geometricUncProbPerTrial},
       {"gumbel_uncertain.alphas", P_VAR gumbelUncAlphas},
       {"gumbel_uncertain.betas", P_VAR gumbelUncBetas},
+      {"gumbel_uncertain.lower_bounds", P_VAR gumbelUncLowerBnds},
+      {"gumbel_uncertain.upper_bounds", P_VAR gumbelUncUpperBnds},
+      {"gumbel_uncertain.initial_point", P_VAR gumbelUncVars},
+      {"histogram_bin_uncertain.lower_bounds", P_VAR histogramBinUncLowerBnds},
+      {"histogram_bin_uncertain.upper_bounds", P_VAR histogramBinUncUpperBnds},
+      {"histogram_bin_uncertain.initial_point", P_VAR histogramBinUncVars},
+      {"histogram_uncertain.point_real.lower_bounds",
+    	  P_VAR histogramPointRealUncLowerBnds},
+      {"histogram_uncertain.point_real.upper_bounds",
+    	  P_VAR histogramPointRealUncUpperBnds},
+      {"histogram_uncertain.point_real.initial_point",
+    	  P_VAR histogramPointRealUncVars},
       {"linear_equality_constraints", P_VAR linearEqConstraintCoeffs},
       {"linear_equality_scales", P_VAR linearEqScales},
       {"linear_equality_targets", P_VAR linearEqTargets},
@@ -2600,28 +3045,42 @@ void ProblemDescDB::set(const String& entry_name, const RealVector& rv)
       {"linear_inequality_scales", P_VAR linearIneqScales},
       {"linear_inequality_upper_bounds", P_VAR linearIneqUpperBnds},
       {"lognormal_uncertain.error_factors", P_VAR lognormalUncErrFacts},
+      {"lognormal_uncertain.inferred_upper_bounds",
+          P_VAR lognormalUncInferredUpperBnds},
       {"lognormal_uncertain.lambdas", P_VAR lognormalUncLambdas},
+      {"lognormal_uncertain.initial_point", P_VAR lognormalUncVars},
       {"lognormal_uncertain.lower_bounds", P_VAR lognormalUncLowerBnds},
       {"lognormal_uncertain.means", P_VAR lognormalUncMeans},
       {"lognormal_uncertain.std_deviations", P_VAR lognormalUncStdDevs},
       {"lognormal_uncertain.upper_bounds", P_VAR lognormalUncUpperBnds},
       {"lognormal_uncertain.zetas", P_VAR lognormalUncZetas},
+      {"loguniform_uncertain.initial_point", P_VAR loguniformUncVars},
       {"loguniform_uncertain.lower_bounds", P_VAR loguniformUncLowerBnds},
       {"loguniform_uncertain.upper_bounds", P_VAR loguniformUncUpperBnds},
       {"negative_binomial_uncertain.prob_per_trial",
 	  P_VAR negBinomialUncProbPerTrial},
+      {"normal_uncertain.inferred_lower_bounds",
+          P_VAR normalUncInferredLowerBnds},
+      {"normal_uncertain.inferred_upper_bounds",
+          P_VAR normalUncInferredUpperBnds},
+      {"normal_uncertain.initial_point", P_VAR normalUncVars},
       {"normal_uncertain.lower_bounds", P_VAR normalUncLowerBnds},
       {"normal_uncertain.means", P_VAR normalUncMeans},
       {"normal_uncertain.std_deviations", P_VAR normalUncStdDevs},
       {"normal_uncertain.upper_bounds", P_VAR normalUncUpperBnds},
       {"poisson_uncertain.lambdas", P_VAR poissonUncLambdas},
+      {"triangular_uncertain.initial_point", P_VAR triangularUncVars},
       {"triangular_uncertain.lower_bounds", P_VAR triangularUncLowerBnds},
       {"triangular_uncertain.modes", P_VAR triangularUncModes},
       {"triangular_uncertain.upper_bounds", P_VAR triangularUncUpperBnds},
+      {"uniform_uncertain.initial_point", P_VAR uniformUncVars},
       {"uniform_uncertain.lower_bounds", P_VAR uniformUncLowerBnds},
       {"uniform_uncertain.upper_bounds", P_VAR uniformUncUpperBnds},
       {"weibull_uncertain.alphas", P_VAR weibullUncAlphas},
-      {"weibull_uncertain.betas", P_VAR weibullUncBetas}
+      {"weibull_uncertain.betas", P_VAR weibullUncBetas},
+      {"weibull_uncertain.lower_bounds", P_VAR weibullUncLowerBnds},
+      {"weibull_uncertain.upper_bounds", P_VAR weibullUncUpperBnds},
+      {"weibull_uncertain.initial_point", P_VAR weibullUncVars}
     },
     { /* interface */ },
     { /* responses */
@@ -2641,7 +3100,7 @@ void ProblemDescDB::set(const String& entry_name, const RealVector& rv)
 
 void ProblemDescDB::set(const String& entry_name, const IntVector& iv)
 {
-  IntVector& rep_iv = get<IntVector>
+  IntVector& rep_iv = get_mutable<IntVector>
   ( "set(IntVector&)",
     { /* environment */ },
     { /* method */
@@ -2651,6 +3110,9 @@ void ProblemDescDB::set(const String& entry_name, const IntVector& iv)
     { /* model */ },
     { /* variables */
       {"binomial_uncertain.num_trials", P_VAR binomialUncNumTrials},
+      {"binomial_uncertain.lower_bounds", P_VAR binomialUncLowerBnds},
+      {"binomial_uncertain.upper_bounds", P_VAR binomialUncUpperBnds},
+      {"binomial_uncertain.initial_point", P_VAR binomialUncVars},
       {"discrete_aleatory_uncertain_int.initial_point",
 	  P_VAR discreteIntAleatoryUncVars},
       {"discrete_aleatory_uncertain_int.lower_bounds",
@@ -2667,15 +3129,48 @@ void ProblemDescDB::set(const String& entry_name, const IntVector& iv)
 	  P_VAR discreteIntEpistemicUncLowerBnds},
       {"discrete_epistemic_uncertain_int.upper_bounds",
 	  P_VAR discreteIntEpistemicUncUpperBnds},
+      {"discrete_interval_uncertain.lower_bounds",
+    	  P_VAR discreteIntervalUncLowerBnds},
+      {"discrete_interval_uncertain.upper_bounds",
+    	  P_VAR discreteIntervalUncUpperBnds},
+      {"discrete_interval_uncertain.initial_point",
+    	  P_VAR discreteIntervalUncVars},
       {"discrete_state_range.initial_state", P_VAR discreteStateRangeVars},
       {"discrete_state_range.lower_bounds", P_VAR discreteStateRangeLowerBnds},
       {"discrete_state_range.upper_bounds", P_VAR discreteStateRangeUpperBnds},
       {"discrete_state_set_int.initial_state", P_VAR discreteStateSetIntVars},
+      {"discrete_uncertain_set_int.lower_bounds",
+    	  P_VAR discreteUncSetIntLowerBnds},
+      {"discrete_uncertain_set_int.upper_bounds",
+    	  P_VAR discreteUncSetIntUpperBnds},
+      {"discrete_uncertain_set_int.initial_point",
+    	  P_VAR discreteUncSetIntVars},
+      {"geometric_uncertain.lower_bounds", P_VAR geometricUncLowerBnds},
+      {"geometric_uncertain.upper_bounds", P_VAR geometricUncUpperBnds},
+      {"geometric_uncertain.initial_point", P_VAR geometricUncVars},
+      {"histogram_uncertain.point_int.lower_bounds",
+    	  P_VAR histogramPointIntUncLowerBnds},
+      {"histogram_uncertain.point_int.upper_bounds",
+    	  P_VAR histogramPointIntUncUpperBnds},
+      {"histogram_uncertain.point_int.initial_point",
+    	  P_VAR histogramPointIntUncVars},
+      {"hypergeometric_uncertain.lower_bounds", P_VAR hyperGeomUncLowerBnds},
+      {"hypergeometric_uncertain.upper_bounds", P_VAR hyperGeomUncUpperBnds},
+      {"hypergeometric_uncertain.initial_point", P_VAR hyperGeomUncVars},
       {"hypergeometric_uncertain.num_drawn", P_VAR hyperGeomUncNumDrawn},
       {"hypergeometric_uncertain.selected_population",
 	  P_VAR hyperGeomUncSelectedPop},
       {"hypergeometric_uncertain.total_population", P_VAR hyperGeomUncTotalPop},
-      {"negative_binomial_uncertain.num_trials", P_VAR negBinomialUncNumTrials}
+      {"negative_binomial_uncertain.lower_bounds",
+    	  P_VAR negBinomialUncLowerBnds},
+      {"negative_binomial_uncertain.upper_bounds",
+    	  P_VAR negBinomialUncUpperBnds},
+      {"negative_binomial_uncertain.initial_point",
+    	  P_VAR negBinomialUncVars},
+      {"negative_binomial_uncertain.num_trials", P_VAR negBinomialUncNumTrials},
+      {"poisson_uncertain.lower_bounds", P_VAR poissonUncLowerBnds},
+      {"poisson_uncertain.upper_bounds", P_VAR poissonUncUpperBnds},
+      {"poisson_uncertain.initial_point", P_VAR poissonUncVars}
     },
     { /* interface */ },
     { /* responses */ },
@@ -2687,7 +3182,7 @@ void ProblemDescDB::set(const String& entry_name, const IntVector& iv)
 
 void ProblemDescDB::set(const String& entry_name, const BitArray& ba)
 {
-  BitArray& rep_ba = get<BitArray>
+  BitArray& rep_ba = get_mutable<BitArray>
   ( "set(BitArray&)",
     { /* environment */ },
     { /* method */ },
@@ -2722,7 +3217,7 @@ void ProblemDescDB::set(const String& entry_name, const BitArray& ba)
 
 void ProblemDescDB::set(const String& entry_name, const RealSymMatrix& rsm)
 {
-  RealSymMatrix& rep_rsm = get<RealSymMatrix>
+  RealSymMatrix& rep_rsm = get_mutable<RealSymMatrix>
   ( "set(RealSymMatrix&)",
     { /* environment */ },
     { /* method */ },
@@ -2740,7 +3235,7 @@ void ProblemDescDB::set(const String& entry_name, const RealSymMatrix& rsm)
 
 void ProblemDescDB::set(const String& entry_name, const RealVectorArray& rva)
 {
-  RealVectorArray& rep_rva = get<RealVectorArray>
+  RealVectorArray& rep_rva = get_mutable<RealVectorArray>
   ( "set(RealVectorArray&)",
     { /* environment */ },
     { /* method */
@@ -2761,7 +3256,7 @@ void ProblemDescDB::set(const String& entry_name, const RealVectorArray& rva)
 
 void ProblemDescDB::set(const String& entry_name, const IntVectorArray& iva)
 {
-  IntVectorArray& rep_iva = get<IntVectorArray>
+  IntVectorArray& rep_iva = get_mutable<IntVectorArray>
   ( "set(IntVectorArray&)",
     { /* environment */ },
     { /* method */ },
@@ -2777,7 +3272,7 @@ void ProblemDescDB::set(const String& entry_name, const IntVectorArray& iva)
 
 void ProblemDescDB::set(const String& entry_name, const IntSetArray& isa)
 {
-  IntSetArray& rep_isa = get<IntSetArray>
+  IntSetArray& rep_isa = get_mutable<IntSetArray>
   ( "set(IntSetArray&)",
     { /* environment */ },
     { /* method */ },
@@ -2796,7 +3291,7 @@ void ProblemDescDB::set(const String& entry_name, const IntSetArray& isa)
 
 void ProblemDescDB::set(const String& entry_name, const RealSetArray& rsa)
 {
-  RealSetArray& rep_rsa = get<RealSetArray>
+  RealSetArray& rep_rsa = get_mutable<RealSetArray>
   ( "set(RealSetArray&)",
     { /* environment */ },
     { /* method */ },
@@ -2815,7 +3310,7 @@ void ProblemDescDB::set(const String& entry_name, const RealSetArray& rsa)
 
 void ProblemDescDB::set(const String& entry_name, const IntRealMapArray& irma)
 {
-  IntRealMapArray& rep_irma = get<IntRealMapArray>
+  IntRealMapArray& rep_irma = get_mutable<IntRealMapArray>
   ( "set(IntRealMapArray&)",
     { /* environment */ },
     { /* method */ },
@@ -2835,7 +3330,7 @@ void ProblemDescDB::set(const String& entry_name, const IntRealMapArray& irma)
 
 void ProblemDescDB::set(const String& entry_name, const StringRealMapArray& srma)
 {
-  StringRealMapArray& rep_srma = get<StringRealMapArray>
+  StringRealMapArray& rep_srma = get_mutable<StringRealMapArray>
   ( "set(StringRealMapArray&)",
     { /* environment */ },
     { /* method */ },
@@ -2853,7 +3348,7 @@ void ProblemDescDB::set(const String& entry_name, const StringRealMapArray& srma
 
 void ProblemDescDB::set(const String& entry_name, const RealRealMapArray& rrma)
 {
-  RealRealMapArray& rep_rrma = get<RealRealMapArray>
+  RealRealMapArray& rep_rrma = get_mutable<RealRealMapArray>
   ( "set(RealRealMapArray&)",
     { /* environment */ },
     { /* method */ },
@@ -2872,7 +3367,7 @@ void ProblemDescDB::set(const String& entry_name, const RealRealMapArray& rrma)
 void ProblemDescDB::
 set(const String& entry_name, const RealRealPairRealMapArray& rrrma)
 {
-  RealRealPairRealMapArray& rep_rrrma = get<RealRealPairRealMapArray>
+  RealRealPairRealMapArray& rep_rrrma = get_mutable<RealRealPairRealMapArray>
   ( "set(RealRealPairRealMapArray&)",
     { /* environment */ },
     { /* method */ },
@@ -2891,7 +3386,7 @@ set(const String& entry_name, const RealRealPairRealMapArray& rrrma)
 void ProblemDescDB::
 set(const String& entry_name, const IntIntPairRealMapArray& iirma)
 {
-  IntIntPairRealMapArray& rep_iirma = get<IntIntPairRealMapArray>
+  IntIntPairRealMapArray& rep_iirma = get_mutable<IntIntPairRealMapArray>
   ( "set(IntIntPairRealMapArray&)",
     { /* environment */ },
     { /* method */ },
@@ -2910,7 +3405,7 @@ set(const String& entry_name, const IntIntPairRealMapArray& iirma)
 
 void ProblemDescDB::set(const String& entry_name, const StringArray& sa)
 {
-  StringArray& rep_sa = get<StringArray>
+  StringArray& rep_sa = get_mutable<StringArray>
   ( "set(StringArray&)",
     { /* environment */ },
     { /* method */ },
@@ -2921,22 +3416,45 @@ void ProblemDescDB::set(const String& entry_name, const StringArray& sa)
     },
     { /* variables */
       {"continuous_aleatory_uncertain.labels", P_VAR continuousAleatoryUncLabels},
+      {"normal_uncertain.labels", P_VAR normalUncLabels},
+      {"lognormal_uncertain.labels", P_VAR lognormalUncLabels},
+      {"uniform_uncertain.labels", P_VAR uniformUncLabels},
+      {"loguniform_uncertain.labels", P_VAR loguniformUncLabels},
+      {"triangular_uncertain.labels", P_VAR triangularUncLabels},
+      {"exponential_uncertain.labels", P_VAR exponentialUncLabels},
+      {"beta_uncertain.labels", P_VAR betaUncLabels},
+      {"gamma_uncertain.labels", P_VAR gammaUncLabels},
+      {"gumbel_uncertain.labels", P_VAR gumbelUncLabels},
+      {"frechet_uncertain.labels", P_VAR frechetUncLabels},
+      {"weibull_uncertain.labels", P_VAR weibullUncLabels},
+      {"histogram_bin_uncertain.labels", P_VAR histogramBinUncLabels},
       {"continuous_design.labels", P_VAR continuousDesignLabels},
       {"continuous_design.scale_types", P_VAR continuousDesignScaleTypes},
       {"continuous_epistemic_uncertain.labels",
 	  P_VAR continuousEpistemicUncLabels},
+      {"continuous_interval_uncertain.labels", P_VAR continuousIntervalUncLabels},
       {"continuous_state.labels", P_VAR continuousStateLabels},
       {"discrete_aleatory_uncertain_int.labels",
 	  P_VAR discreteIntAleatoryUncLabels},
+      {"poisson_uncertain.labels", P_VAR poissonUncLabels},
+      {"binomial_uncertain.labels", P_VAR binomialUncLabels},
+      {"negative_binomial_uncertain.labels", P_VAR negBinomialUncLabels},
+      {"geometric_uncertain.labels", P_VAR geometricUncLabels},
+      {"hypergeometric_uncertain.labels", P_VAR hyperGeomUncLabels},
+      {"histogram_uncertain.point_int.labels", P_VAR histogramPointIntUncLabels},
       {"discrete_aleatory_uncertain_real.labels",
 	  P_VAR discreteRealAleatoryUncLabels},
+      {"histogram_uncertain.point_real.labels", P_VAR histogramPointRealUncLabels},
       {"discrete_design_range.labels", P_VAR discreteDesignRangeLabels},
       {"discrete_design_set_int.labels", P_VAR discreteDesignSetIntLabels},
       {"discrete_design_set_real.labels", P_VAR discreteDesignSetRealLabels},
       {"discrete_epistemic_uncertain_int.labels",
 	  P_VAR discreteIntEpistemicUncLabels},
+      {"discrete_interval_uncertain.labels", P_VAR discreteIntervalUncLabels},
+      {"discrete_uncertain_set_int.labels", P_VAR discreteUncSetIntLabels},
       {"discrete_epistemic_uncertain_real.labels",
 	  P_VAR discreteRealEpistemicUncLabels},
+      {"discrete_uncertain_set_real.labels", P_VAR discreteUncSetRealLabels},
       {"discrete_state_range.labels", P_VAR discreteStateRangeLabels},
       {"discrete_state_set_int.labels", P_VAR discreteStateSetIntLabels},
       {"discrete_state_set_real.labels", P_VAR discreteStateSetRealLabels},
@@ -3019,5 +3537,65 @@ void ProblemDescDB::enforce_unique_ids()
 #undef P_INT
 #undef P_RES
 
+
+void ProblemDescDB::lock_method_db()
+{
+  if (dbRep) dbRep->lock_method_db();
+  else       methodDBLocked = true;
+}
+
+void ProblemDescDB::unlock_method_db()
+{
+  if (dbRep) dbRep->unlock_method_db();
+  else       methodDBLocked = false;
+}
+
+void ProblemDescDB::lock_model_db()
+{
+  if (dbRep) dbRep->lock_model_db();
+  else       modelDBLocked = true;
+}
+
+void ProblemDescDB::unlock_model_db()
+{
+  if (dbRep) dbRep->unlock_model_db();
+  else       modelDBLocked = false;
+}
+
+void ProblemDescDB::lock_variables_db()
+{
+  if (dbRep) dbRep->lock_variables_db();
+  else       variablesDBLocked = true;
+}
+
+void ProblemDescDB::unlock_variables_db()
+{
+  if (dbRep) dbRep->unlock_variables_db();
+  else       variablesDBLocked = false;
+}
+
+void ProblemDescDB::lock_interface_db()
+{
+  if (dbRep) dbRep->lock_interface_db();
+  else       interfaceDBLocked = true;
+}
+
+void ProblemDescDB::unlock_interface_db()
+{
+  if (dbRep) dbRep->unlock_interface_db();
+  else       interfaceDBLocked = false;
+}
+
+void ProblemDescDB::lock_responses_db()
+{
+  if (dbRep) dbRep->lock_responses_db();
+  else       responsesDBLocked = true;
+}
+
+void ProblemDescDB::unlock_responses_db()
+{
+  if (dbRep) dbRep->unlock_responses_db();
+  else       responsesDBLocked = false;
+}
 
 } // namespace Dakota

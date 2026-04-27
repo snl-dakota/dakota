@@ -24,7 +24,7 @@ environment,
 
 method,
   importance_sampling
-	  import                                   #s0,#s3,#s4
+	  importance                               #s0,#s3,#s4
 #	  adapt_import                             #s1
 #	  mm_adapt_import                          #s2
 	  response_levels = 0.5 5 50 500 

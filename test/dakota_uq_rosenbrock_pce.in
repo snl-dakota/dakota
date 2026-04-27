@@ -82,6 +82,7 @@ variables
 #    std_deviations    =  1.   1.		      #s12,#s13
 #    descriptors       = 'x3' 'x4'		    #s12,#s13
 #  lognormal_uncertain = 2			          #s21,#s22,#s30,#s31,#s44,#s45,#s58,#s59
+#    parameters option_1                                  #s21,#s22,#s30,#s31,#s44,#s45,#s58,#s59
 #    means             =  1.   1.		      #s21,#s22,#s30,#s31,#s44,#s45,#s58,#s59
 #    std_deviations    =  0.5  0.5		    #s21,#s22,#s30,#s31,#s44,#s45,#s58,#s59
 #    lower_bounds      =  0.25 0.25		    #s22,#s31,#s45,#s59
