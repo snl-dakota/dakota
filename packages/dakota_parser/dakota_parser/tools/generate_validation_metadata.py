@@ -788,20 +788,22 @@ inline json validate_definition(const std::string& def_name, json instance) {
             // The JSON metadata encodes Python float('inf') as ±1e308 because
             // JSON has no infinity literal.
             //
-            // For bound-check rules (check_real_upper/lower_bound), we convert
+            // For bound-check and real-bound-defaulting rules, we convert
             // the sentinel to IEEE infinity so comparisons like "v <= inf" work
-            // correctly — then skip the vacuous ones that are always true.
+            // correctly and defaulted bound arrays preserve unbounded semantics.
             //
-            // For all other rules (e.g. default_bounds_real, default_initial_point_real),
+            // For all other rules (e.g. default_initial_point_real),
             // we keep ±1e308 as-is.  These functions use the sentinel values to
             // construct default arrays, not for comparisons; passing IEEE infinity
             // changes their internal behaviour and causes type errors when the
             // instance already has populated fields.
-            const bool is_bound_check = (rule_name == "check_real_upper_bound" ||
-                                         rule_name == "check_real_lower_bound");
+            const bool restore_real_infinity_literals =
+                (rule_name == "check_real_upper_bound" ||
+                 rule_name == "check_real_lower_bound" ||
+                 rule_name == "default_bounds_real");
 
             json resolved_literals = literals;
-            if (is_bound_check) {
+            if (restore_real_infinity_literals) {
                 for (auto& lit : resolved_literals) {
                     if (lit.is_number_float()) {
                         double v = lit.get<double>();
@@ -810,7 +812,9 @@ inline json validate_definition(const std::string& def_name, json instance) {
                     }
                 }
                 // Skip vacuous bound checks that are always true for finite values.
-                if (!resolved_literals.empty() && resolved_literals[0].is_number_float() &&
+                if ((rule_name == "check_real_upper_bound" ||
+                     rule_name == "check_real_lower_bound") &&
+                    !resolved_literals.empty() && resolved_literals[0].is_number_float() &&
                     std::isinf(resolved_literals[0].get<double>())) {
                     continue;
                 }
