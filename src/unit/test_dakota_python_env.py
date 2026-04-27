@@ -11,7 +11,8 @@
 # Tests of top-level Dakota Python interface
 import os
 import sys
-#import numpy as np # DTS: looks like numpy is already imported if Dakota
+
+# import numpy as np # DTS: looks like numpy is already imported if Dakota
 # is built with Numpy because get_variables_values_np(daklib) works fine
 # when this import is commented out
 
@@ -25,33 +26,34 @@ if len(sys.argv) > 1:
 #   import dakota.environment as dakenv
 import environment as dakenv
 
+
 # DTS: changed input variable dictionary name from kwargs to params
 # because it is a dict that contains the contents of the Dakota
 # parameters file and not an arbitrary list of keyword arguments.
 def text_book(params):
 
-    num_fns = params['functions']
-    x = params['cv']
-    ASV = params['asv']
+    num_fns = params["functions"]
+    x = params["cv"]
+    ASV = params["asv"]
 
     retval = {}
 
-    if (ASV[0] & 1): # **** f:
+    if ASV[0] & 1:  # **** f:
         fn = 0.0
         for val in x:
             fn += pow(val - 1.0, 4)
-        retval['fns'] = [fn]
+        retval["fns"] = [fn]
 
     # The gradient format causes Dakota to complain that the matrix must have 1 row ...
-    # I think it does. ? 
-    if (ASV[0] & 2): # **** df/dx:
+    # I think it does. ?
+    if ASV[0] & 2:  # **** df/dx:
         g = []
         for val in x:
             g.append(4.0 * pow(val - 1.0, 3))
-        retval['fnGrads'] = [g]
+        retval["fnGrads"] = [g]
 
-    if (ASV[0] & 4): # **** d^2f/dx^2:
-        raise("Hessians not currently supported for this driver.")
+    if ASV[0] & 4:  # **** d^2f/dx^2:
+        raise ("Hessians not currently supported for this driver.")
 
     return retval
 
@@ -61,9 +63,10 @@ def text_book_fn_only(params):
     retval = {}
 
     all_vals = text_book(params)
-    retval['fns'] = all_vals['fns']
+    retval["fns"] = all_vals["fns"]
 
     return retval
+
 
 # Probably don't want / need this...
 def test_cmd():
@@ -72,6 +75,7 @@ def test_cmd():
     print("\n+++ Running CommandLine...\n")
     dakcmd.execute()
     print("\n+++ Done CommandLine.\n")
+
 
 # This should be a better path
 def test_lib():
@@ -118,17 +122,18 @@ def test_lib():
 """
 
     print("\n+++ Constructing dakota.environment.study...\n")
-    
+
     #### Need to test this use case too - RWH ####
     # DTS: This works fine.
-    #daklib = dakenv.study(callback=text_book, input_string = text_book_input)
+    # daklib = dakenv.study(callback=text_book, input_string = text_book_input)
 
     # Try a collection of callbacks
-    multiple_callbacks = {"interface_id_1": text_book,
-                          "interface_id_2": text_book_fn_only}
+    multiple_callbacks = {
+        "interface_id_1": text_book,
+        "interface_id_2": text_book_fn_only,
+    }
 
-    daklib = dakenv.study(callbacks=multiple_callbacks,
-                               input_string=text_book_input)
+    daklib = dakenv.study(callbacks=multiple_callbacks, input_string=text_book_input)
 
     print("\n+++ Running dakota.environment.study...\n")
     daklib.execute()
@@ -137,28 +142,28 @@ def test_lib():
     print("\tUsing free fn: " + str(dakenv.get_response_fn_val(daklib)))
     resp_res = daklib.response_results()
     print("\tUsing wrapped objs: " + str(resp_res.function_value(0)))
-    assert(resp_res.function_value(0) < 1.e-20)
+    assert resp_res.function_value(0) < 1.0e-20
 
     vars_res = daklib.variables_results()
     print("\tNumber active continuous variables: " + str(vars_res.num_active_cv()))
-    assert(vars_res.num_active_cv() == 3)
+    assert vars_res.num_active_cv() == 3
 
     # --- Requires numpy
     # DTS: numpy variable read working -- commenting out for those who are not
     # building Dakota with Numpy
-    #dak_vars = dakenv.get_variable_values_np(daklib)
-    #print(dak_vars)
+    # dak_vars = dakenv.get_variable_values_np(daklib)
+    # print(dak_vars)
 
     # --- Default: uses python arrays # DTS: this is a list
     dak_vars2 = dakenv.get_variable_values(daklib)
-    #print("Python object dak_vars2 is a " + str(type(dak_vars2)) + ".")
-    #print(dak_vars2)
+    # print("Python object dak_vars2 is a " + str(type(dak_vars2)) + ".")
+    # print(dak_vars2)
 
-    target = 1.0;
-    max_tol = 1.e-4;
-    assert(abs((dak_vars2[0] - target)/target) < max_tol)
-    assert(abs((dak_vars2[1] - target)/target) < max_tol)
-    assert(abs((dak_vars2[2] - target)/target) < max_tol)
+    target = 1.0
+    max_tol = 1.0e-4
+    assert abs((dak_vars2[0] - target) / target) < max_tol
+    assert abs((dak_vars2[1] - target) / target) < max_tol
+    assert abs((dak_vars2[2] - target) / target) < max_tol
 
     print("\n+++ Done LibEnv.\n")
 
@@ -167,7 +172,7 @@ def test_lib():
     # Dakota holds the hdf5 file open until the environment is destructed. This doesn't
     # automatically happen, even if the environment is deleted with del because Python
     # doesn't necessarily control the memory. This can be ascertained using Python's
-    # gc module, which provides details about garbage collection. 
+    # gc module, which provides details about garbage collection.
     # Some possible fixes:
     # - modify the pybind11 code for the module so that Python receives ownership of
     #   the memory
@@ -175,7 +180,7 @@ def test_lib():
     # - Make closing the HDF5 file the responsibility of the top-level iterator instead
     #   relying on destruction to make it happen
 
-    # test_dakota_has_hdf5_and_h5py = True 
+    # test_dakota_has_hdf5_and_h5py = True
 
     # try:
     #     import h5py
@@ -186,7 +191,7 @@ def test_lib():
 
     # test_dakota_has_hdf5_and_h5py &= os.path.exists("test.dakota.h5")
 
-    # if test_dakota_has_hdf5_and_h5py: 
+    # if test_dakota_has_hdf5_and_h5py:
     #     with h5py.File("test.dakota.h5", "r") as h:
     #         hresps = h["/methods/NO_METHOD_ID/results/execution:1/best_objective_functions"]
     #         hvars =  h["/methods/NO_METHOD_ID/results/execution:1/best_parameters/continuous"]
@@ -194,6 +199,71 @@ def test_lib():
     #         assert(abs((hvars[0] - target)/target) < max_tol)
     #         assert(abs((hvars[1] - target)/target) < max_tol)
     #         assert(abs((hvars[2] - target)/target) < max_tol)
+
+
+def test_lib_restart():
+    """Test the read_restart parameter of the study constructor.
+
+    1. Run a small sampling study that writes a restart file.
+    2. Re-run with read_restart pointing at that file; the evaluator
+       raises an error so any *new* evaluation would fail.  If all
+       evaluations come from the restart file the study succeeds.
+    """
+    import tempfile, shutil
+
+    workdir = tempfile.mkdtemp(prefix="dak_restart_")
+    rst_file = os.path.join(workdir, "dakota.rst")
+
+    sampling_input = """
+        method,
+          sampling
+            sample_type lhs
+            samples = 5
+            seed = 42
+        variables,
+          uniform_uncertain = 2
+            lower_bounds  -2.0  -2.0
+            upper_bounds   2.0   2.0
+            descriptors   'x1'  'x2'
+        interface,
+          python
+            analysis_driver = 'tb'
+        responses,
+          response_functions = 1
+          no_gradients
+          no_hessians
+"""
+
+    call_count = [0]
+
+    def tb(params):
+        call_count[0] += 1
+        x = params["cv"]
+        fn = sum((v - 1.0) ** 4 for v in x)
+        return {"fns": [fn]}
+
+    print("\n+++ Restart test: initial run (should evaluate 5 points)...\n")
+    env1 = dakenv.study(callback=tb, input_string=sampling_input)
+    env1.execute()
+    assert call_count[0] == 5, f"Expected 5 evaluations, got {call_count[0]}"
+
+    # The restart file is written to cwd; move it to our workdir
+    if os.path.exists("dakota.rst"):
+        shutil.move("dakota.rst", rst_file)
+
+    def tb_fail(params):
+        raise RuntimeError("Should not be called — all evals from restart")
+
+    print("\n+++ Restart test: restart run (no new evaluations expected)...\n")
+    env2 = dakenv.study(
+        callback=tb_fail, input_string=sampling_input, read_restart=rst_file
+    )
+    env2.execute()
+
+    # Clean up
+    shutil.rmtree(workdir, ignore_errors=True)
+    print("\n+++ Restart test passed.\n")
+
 
 if __name__ == "__main__":
 
@@ -204,3 +274,4 @@ if __name__ == "__main__":
     # with each test case; better manage destructors.
     test_cmd()
     test_lib()
+    test_lib_restart()
