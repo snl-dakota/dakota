@@ -260,10 +260,9 @@ The Morris one-at-a-time (MOAT) method is a global approach to screen
 out unimportant inputs. The algorithm is described in detail in 
 :ref:`the PSUADE MOAT documentation <dace:psuade>`.
 
-At a high level, the method creates a distribution of elementary effects for 
-a single input by computing finite-difference derivative approximations 
-of the partial derivative of the output with respect to the input at random
-points in the input domain.
+At a high level, the method creates a distribution of elementary 
+effects for each input. Elementary effects are computed at random points 
+using forward finite differences with large step sizes.
 
 From this sample set, the following metrics are computed:
 
@@ -851,12 +850,16 @@ method options and settings.
 Video Resources
 ---------------
 
-+----------------------+-----------------+----------------+
-| Title                | Link            | Resources      |
-+======================+=================+================+
-| Sensitivity Analysis | |Training|_     | `Slides`__ /   |
-|                      |                 | `Exercises`__  |
-+----------------------+-----------------+----------------+
++----------------------+---------------------------------------------+----------------+
+| Title                | Link                                        | Resources      |
++======================+=============================================+================+
+| Sensitivity Analysis | |Training|_                                 | `Slides`__ /   |
+|                      |                                             | `Exercises`__  |
++----------------------+---------------------------------------------+----------------+
+| Scatterplot Analyses | `Sandia ASC V&V/UQ Scatterplots Webinar`_   |                |
++----------------------+---------------------------------------------+----------------+
+| Sobol' Indices       | `Sandia ASC V&V/UQ Sobol' Indices Webinar`_ |                |
++----------------------+---------------------------------------------+----------------+
 
 .. __: https://dakota.sandia.gov/sites/default/files/training/DakotaTraining_SensitivityAnalysis.pdf
 __ https://dakota.sandia.gov/sites/default/files/training/sensitivity_analysis.zip
@@ -864,3 +867,7 @@ __ https://dakota.sandia.gov/sites/default/files/training/sensitivity_analysis.z
 .. |Training| image:: img/SensitivityAnalysisTrainingTeaser.png
                 :alt: Sensitivity Analysis
 .. _Training: https://digitalops.sandia.gov/Mediasite/Play/PLACEHOLDER
+
+.. _Sandia ASC V&V/UQ Scatterplots Webinar: https://digitalops.sandia.gov/Mediasite/Play/7aade94c468a4a408a69ce4251bc8d4d1d
+
+.. _Sandia ASC V&V/UQ Sobol' Indices Webinar: https://digitalops.sandia.gov/Mediasite/Play/8ae40104faa54e429f55dca34c05dee51d
