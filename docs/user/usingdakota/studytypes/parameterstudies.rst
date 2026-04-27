@@ -495,9 +495,9 @@ studies, see :ref:`dace:usage` and especially
 :numref:`dace:usage:table`, which clarifies the different purposes of
 the method types.
 
-.. 
-   TNP TODO: add comment on that you don't get sensitivity metrics
-   so if you want those, you should look at the SA page?
+The use of parameter studies for sensitivity analysis and other sensitivity
+analysis methods are discussed in detail in the :ref:`Sensitivity Analysis <sa>`
+documentation.
 
 .. _`ps:example:vector`:
 
