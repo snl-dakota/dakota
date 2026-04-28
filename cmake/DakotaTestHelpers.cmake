@@ -12,7 +12,8 @@ include(CMakeParseArguments)
 include(ListFilterEmacsBackups)
 
 
-# Generate the test properties for ${src_dir}/dakota_*.in to a file
+# Generate the test properties for ${src_dir}/dakota_*.in and
+# ${src_dir}/dakota_*.json to a file
 # ${bin_dir}/dakota_tests.props by parsing test input files. Output
 # the properties to the specified props_output_var in parent scope.
 #
@@ -24,7 +25,8 @@ function(dakota_generate_test_properties src_dir bin_dir props_output_var)
   execute_process(COMMAND "${PERL_EXECUTABLE}" 
     "${Dakota_SOURCE_DIR}/test/dakota_test.perl" 
     "--test-properties=${bin_dir}" 
-    "dakota_*.in" 
+    "dakota_*.in"
+    "dakota_*.json"
     WORKING_DIRECTORY "${src_dir}"
     OUTPUT_VARIABLE test_props_output  # Let errors go to the console
     RESULT_VARIABLE test_props_code
@@ -133,7 +135,8 @@ macro(dakota_get_test_properties test_name serpar_str test_props)
 endmacro()
 
 
-# Glob up all files associated with a test input file ${test_name}.in,
+# Glob up all files associated with a test input file ${test_name}.in
+# or ${test_name}.json,
 # filtering out emacs tmp files. Set parent variables with all
 # (includes the input file) and aux (omits the input file) file lists
 function(dakota_test_dependent_files src_dir test_name
@@ -147,6 +150,7 @@ function(dakota_test_dependent_files src_dir test_name
     # All files associated with the test, less the input file itself
     set(test_aux_files ${test_all_files})
     list(REMOVE_ITEM test_aux_files "${test_name}.in")
+    list(REMOVE_ITEM test_aux_files "${test_name}.json")
 
     set(${all_files_output_var} ${test_all_files} PARENT_SCOPE)
     set(${aux_files_output_var} ${test_aux_files} PARENT_SCOPE)
@@ -161,7 +165,7 @@ endfunction()
 function(dakota_app_test _input_name _last_subtest)
   # Parse options
   set(_option_args SERIAL PARALLEL) # SERIAL default if not specified
-  set(_one_value_keyword_args BIN_DIR NAME_PREFIX)
+  set(_one_value_keyword_args BIN_DIR INPUT_EXTENSION NAME_PREFIX)
   set(_multi_value_keyword_args FILE_DEPENDENCIES CONFIGURE_FILES LABELS)
   cmake_parse_arguments(
     _dat
@@ -172,7 +176,11 @@ function(dakota_app_test _input_name _last_subtest)
     )
 
   # Default values and parallel overrides
-  set(_test_input_file "${_input_name}.in")
+  set(_test_input_ext ".in")
+  if (_dat_INPUT_EXTENSION)
+    set(_test_input_ext "${_dat_INPUT_EXTENSION}")
+  endif()
+  set(_test_input_file "${_input_name}${_test_input_ext}")
   set(_ctest_name "${_dat_NAME_PREFIX}${_input_name}")
   set(_diffs_filename dakota_diffs.out)
   set(_par_clopt "")
@@ -265,7 +273,7 @@ endfunction()
 # Relys on:
 #   dakota_test_configured_inputs in parent scope
 #   test_copied_files in parent scope
-function(dakota_regression_test test_name serpar_string test_props
+function(dakota_regression_test test_name test_ext serpar_string test_props
     test_aux_files)
 
    # test properties may disable a specific test based on configuration
@@ -284,14 +292,16 @@ function(dakota_regression_test test_name serpar_string test_props
      string(TOUPPER "${serpar_string}" upper_serpar)
      if(${test_name} IN_LIST dakota_test_configured_inputs)
        dakota_app_test(${test_name} ${last_subtest} ${upper_serpar}
-	 CONFIGURE_FILES "${test_name}.in"
+	 INPUT_EXTENSION "${test_ext}"
+	 CONFIGURE_FILES "${test_name}${test_ext}"
 	 FILE_DEPENDENCIES "${test_aux_files}" "${test_req_files}"
 	 LABELS ${test_labels}
 	 )
      else()
        dakota_app_test(${test_name} ${last_subtest} ${upper_serpar}
+	 INPUT_EXTENSION "${test_ext}"
 	 FILE_DEPENDENCIES
-	 "${test_name}.in" "${test_aux_files}" "${test_req_files}"
+	 "${test_name}${test_ext}" "${test_aux_files}" "${test_req_files}"
 	 LABELS ${test_labels}
 	 )
      endif()
