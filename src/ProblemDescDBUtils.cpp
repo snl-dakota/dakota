@@ -12,7 +12,10 @@
 #include "ProgramOptions.hpp"
 #include "UserModes.hpp"
 #include "ParallelLibrary.hpp"
+#include "dakota_data_io.hpp"
 #include "dakota_global_defs.hpp"
+
+#include <cstdint>
 
 namespace Dakota {
 namespace ProblemDescDBUtils {
@@ -88,7 +91,8 @@ void echo_input_helper(std::string_view input_string, bool template_flag) {
     Cout << "----------------\n" << std::endl;
 }
 
-void check_and_broadcast_pdb(ProblemDescDB& problem_db, const UserModes& user_modes, ParallelLibrary& parallel_lib) {
+void check_and_broadcast_pdb(ProblemDescDB& problem_db, const std::string& dump_ir_path,
+                             const UserModes& user_modes, ParallelLibrary& parallel_lib) {
 
     auto rep = problem_db.get_rep();
     // Check to make sure at least one of each of the keywords was found
@@ -109,9 +113,36 @@ void check_and_broadcast_pdb(ProblemDescDB& problem_db, const UserModes& user_mo
     // Now, world rank 0 yyparse's and sends all the parsed data in a single
     // buffer to all other ranks.
     if (parallel_lib.world_size() > 1) {
+      int has_validated_json = 0;
+      if (parallel_lib.world_rank() == 0) {
+        has_validated_json = problem_db.has_validated_json() ? 1 : 0;
+      }
+      parallel_lib.bcast_w(has_validated_json);
+
+      if (has_validated_json) {
+        if (parallel_lib.world_rank() == 0) {
+          std::vector<std::uint8_t> json_cbor =
+            nlohmann::json::to_cbor(problem_db.validated_json());
+          MPIPackBuffer json_send_buffer;
+          json_send_buffer << json_cbor;
+          int json_buffer_len = json_send_buffer.size();
+          parallel_lib.bcast_w(json_buffer_len);
+          parallel_lib.bcast_w(json_send_buffer);
+        } else {
+          int json_buffer_len;
+          parallel_lib.bcast_w(json_buffer_len);
+          MPIUnpackBuffer json_recv_buffer(json_buffer_len);
+          parallel_lib.bcast_w(json_recv_buffer);
+          std::vector<std::uint8_t> json_cbor;
+          json_recv_buffer >> json_cbor;
+          problem_db.enable_json_input(nlohmann::json::from_cbor(json_cbor));
+        }
+      }
+
       if (parallel_lib.world_rank() == 0) {
 	    problem_db.enforce_unique_ids();
-	    problem_db.derived_broadcast(); // pre-processor
+            if (problem_db.is_json_null())
+              problem_db.derived_broadcast(); // pre-processor
         MPIPackBuffer send_buffer;
         send_buffer << rep->environmentSpec   << rep->dataMethodList    << rep->dataModelList
                 << rep->dataVariablesList << rep->dataInterfaceList << rep->dataResponsesList;
@@ -151,13 +182,17 @@ void check_and_broadcast_pdb(ProblemDescDB& problem_db, const UserModes& user_mo
 	   << std::endl;
 #endif // DEBUG
       problem_db.enforce_unique_ids();
-      problem_db.derived_broadcast();
+      if (problem_db.is_json_null())
+        problem_db.derived_broadcast();
     }
 
     // After broadcast, perform post-processing on all processors to
     // size default variables/responses specification vectors (avoid
     // sending large vectors over an MPI buffer).
     problem_db.post_process();
+
+    if (!dump_ir_path.empty() && parallel_lib.world_rank() == 0)
+      problem_db.write_json_dump(dump_ir_path);
 }
 
 

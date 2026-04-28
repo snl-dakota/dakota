@@ -19,7 +19,11 @@
 # Residuals      [82.0, 15.0, 2.0] so 
 # Best Residuals [ 0.0, -0.5, 0.0]
 
+environment
+ top_method_pointer 'OPT' 
+
 method
+  id_method 'OPT'
   model_pointer = 'TEXTBOOK_MINUS_DATA'		#s0,#s1,#s2,#s3,#s4,#s6,#s7
 #  model_pointer = 'SURROGATE_MINUS_DATA'	#s5
   max_iterations = 50				#s0,#s1,#s2,#s3,#s6,#s7

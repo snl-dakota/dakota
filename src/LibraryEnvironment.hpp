@@ -11,6 +11,7 @@
 #define LIBRARY_ENVIRONMENT_H
 
 #include "DakotaEnvironment.hpp"
+#include <nlohmann/json.hpp>
 
 namespace Dakota {
 
@@ -42,9 +43,22 @@ public:
 		     DbCallbackFunctionPtr callback = NULL,
 		     void* callback_data = NULL);
 
+  /// Alternate constructor for in-memory JSON study input
+  LibraryEnvironment(const nlohmann::json& study_json,
+		     bool check_bcast_construct = true,
+		     DbCallbackFunctionPtr callback = NULL,
+		     void* callback_data = NULL);
+
   /// Alternate constructor accepting communicator, same options as primary
   LibraryEnvironment(MPI_Comm dakota_mpi_comm,
 		     ProgramOptions prog_opts = ProgramOptions(),
+		     bool check_bcast_construct = true,
+		     DbCallbackFunctionPtr callback = NULL,
+		     void* callback_data = NULL);
+
+  /// Alternate constructor accepting communicator and in-memory JSON study
+  LibraryEnvironment(MPI_Comm dakota_mpi_comm,
+		     const nlohmann::json& study_json,
 		     bool check_bcast_construct = true,
 		     DbCallbackFunctionPtr callback = NULL,
 		     void* callback_data = NULL);

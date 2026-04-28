@@ -9,22 +9,18 @@
 
 
 # Tests of top-level Dakota Python interface
+import json
 import os
-import sys
 
 # import numpy as np # DTS: looks like numpy is already imported if Dakota
 # is built with Numpy because get_variables_values_np(daklib) works fine
 # when this import is commented out
 
 
-# Optionally append a path to the python library, passed as argv[1]
-if len(sys.argv) > 1:
-    dakpy_lib_path = sys.argv[1]
-    sys.path.append(dakpy_lib_path)
-
 # NOTE: users would see:
 #   import dakota.environment as dakenv
-import environment as dakenv
+print("importing")
+import dakota.environment as dakenv
 
 
 # DTS: changed input variable dictionary name from kwargs to params
@@ -80,10 +76,6 @@ def test_cmd():
 # This should be a better path
 def test_lib():
     text_book_input = """
-        environment,
-          results_output
-            hdf5
-            results_output_file = 'test.dakota'
         method,
           output silent
           max_function_evaluations 500
@@ -167,38 +159,23 @@ def test_lib():
 
     print("\n+++ Done LibEnv.\n")
 
-    # Conditionally test values written to the h5 file if h5py is available
-    # JAS: HDF5 doesn't play well with the environment module all the time because
-    # Dakota holds the hdf5 file open until the environment is destructed. This doesn't
-    # automatically happen, even if the environment is deleted with del because Python
-    # doesn't necessarily control the memory. This can be ascertained using Python's
-    # gc module, which provides details about garbage collection.
-    # Some possible fixes:
-    # - modify the pybind11 code for the module so that Python receives ownership of
-    #   the memory
-    # - Expose a function in C++ that deletes the pointer
-    # - Make closing the HDF5 file the responsibility of the top-level iterator instead
-    #   relying on destruction to make it happen
 
-    # test_dakota_has_hdf5_and_h5py = True
+def test_lib_json_object():
+    json_input_path = "test_dakota_python_env.json"
 
-    # try:
-    #     import h5py
-    #     print("Module h5py imported.\n")
-    # except ImportError:
-    #     print("Module h5py not found. Skipping check of hdf5 file values.\n")
-    #     test_dakota_has_hdf5_and_h5py = False
+    with open(json_input_path, "r") as fp:
+        study_json = json.load(fp)
 
-    # test_dakota_has_hdf5_and_h5py &= os.path.exists("test.dakota.h5")
+    print("\n+++ Constructing dakota.environment.study from JSON object...\n")
+    daklib = dakenv.study(callback=text_book, input_json=study_json)
 
-    # if test_dakota_has_hdf5_and_h5py:
-    #     with h5py.File("test.dakota.h5", "r") as h:
-    #         hresps = h["/methods/NO_METHOD_ID/results/execution:1/best_objective_functions"]
-    #         hvars =  h["/methods/NO_METHOD_ID/results/execution:1/best_parameters/continuous"]
-    #         assert(hresps[0] < 1.e-20)
-    #         assert(abs((hvars[0] - target)/target) < max_tol)
-    #         assert(abs((hvars[1] - target)/target) < max_tol)
-    #         assert(abs((hvars[2] - target)/target) < max_tol)
+    print("\n+++ Running dakota.environment.study from JSON object...\n")
+    daklib.execute()
+
+    resp_res = daklib.response_results()
+    assert resp_res.function_value(0) >= 0.0
+
+    print("\n+++ Done JSON LibEnv.\n")
 
 
 def test_lib_restart():
@@ -274,4 +251,5 @@ if __name__ == "__main__":
     # with each test case; better manage destructors.
     test_cmd()
     test_lib()
+    test_lib_json_object()
     test_lib_restart()

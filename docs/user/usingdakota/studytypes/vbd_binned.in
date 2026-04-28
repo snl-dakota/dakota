@@ -1,0 +1,7 @@
+method
+  sampling
+    sample_type lhs
+    seed 52983
+    samples 500
+    variance_based_decomp
+      vbd_sampling_method binned

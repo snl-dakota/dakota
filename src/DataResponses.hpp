@@ -152,18 +152,10 @@ public:
   /// number of experimental configuration vars (state variables) in
   /// each row of data
   size_t numExpConfigVars;
-  /// list of num_experiments x num_config_vars configuration variable values
-  RealVector expConfigVars;
   /// list of variances of errors to be added to simulation responses
   RealVector simVariance;
   /// whether one should interpolate between the experiment and simulation field data 
   bool interpolateFlag;
-
-  // next two can be retired?
-  /// list of num_calibration_terms observation data
-  RealVector expObservations;
-  /// list of 1 or num_calibration_terms observation standard deviations
-  RealVector expStdDeviations;
 
   /// name of experimental data file containing response data (with
   /// optional state variable and sigma data) to read

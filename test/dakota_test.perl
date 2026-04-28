@@ -15,6 +15,7 @@ use POSIX "sys_wait_h";
 use POSIX "uname";
 use Cwd 'abs_path';
 use Config;
+use JSON::PP;
 
 my $DTP_DEBUG = 0;  # set to 1 to debug
 
@@ -139,15 +140,16 @@ foreach my $file (@test_inputs) {
   print "Testing $file\n";  # name of source test input file
 
   # get the intermediate file names
-  my($base_filename, $output, $error, $input, $test, $restart_file) = 
-    get_filenames($file);
+  my($source_filename, $name_root, $input_suffix, $output, $error, $input,
+     $test, $restart_file) = get_filenames($file);
+  my $is_json_input = ($input_suffix eq ".json");
 
-  # replace .in witn .[p]base
+  # replace the input suffix with .[p]base
   if ($parallelism eq "parallel") {
-    $baseline_filename = substr($base_filename, 0, -2) . "pbase"
+    $baseline_filename = "${name_root}.pbase"
   }
   else {
-    $baseline_filename = substr($base_filename, 0, -2) . "base"
+    $baseline_filename = "${name_root}.base"
   }
 
   if ($mode eq "base" && ${last_test} >= 0) {
@@ -220,87 +222,92 @@ foreach my $file (@test_inputs) {
     # absolute timeout for a single job (20 minutes)
     my $timeout = get_test_option_value($cnt, "TimeoutAbsolute", 1200);
 
-    # open original input file
-    open (INPUT_MASTER, "$file") ||
-      die "cannot open original input file $file\n$!";
-    # open temporary input file
-    open (INPUT_TMP, ">$input") || die "cannot open temp file $input\n$!";
+    if ($is_json_input) {
+      write_json_test_input($file, $input);
+    }
+    else {
+      # open original input file
+      open (INPUT_MASTER, "$file") ||
+        die "cannot open original input file $file\n$!";
+      # open temporary input file
+      open (INPUT_TMP, ">$input") || die "cannot open temp file $input\n$!";
 
-    my $last_line_blank = 0;  # for detecting subsequent blank lines
+      my $last_line_blank = 0;  # for detecting subsequent blank lines
 
-    # read input file until EOF
-    while (<INPUT_MASTER>) { # read each line of file
+      # read input file until EOF
+      while (<INPUT_MASTER>) { # read each line of file
 
-      # no further processing for #@ (test annotation) lines
-      next if /^#@/;
+        # no further processing for #@ (test annotation) lines
+        next if /^#@/;
 
-      # Extracts a particular test (using pretty output) for inclusion in docs.
-      # Does not deactivate graphics.
-      if ($mode eq "extract") {
+        # Extracts a particular test (using pretty output) for inclusion in docs.
+        # Does not deactivate graphics.
+        if ($mode eq "extract") {
 
-	# if line contains $test_num tag, then comment/uncomment
-	if (/$test0_tag/) {   # line is initially uncommented
-	  if (/$test_tag/) {  # leave uncommented
-	    s/#[sp]\d+,?//g;    # remove tags
-	    s/\s*([\r\n])/$1/g; # remove trailing whitespace, leave newline
+	  # if line contains $test_num tag, then comment/uncomment
+	  if (/$test0_tag/) {   # line is initially uncommented
+	    if (/$test_tag/) {  # leave uncommented
+	      s/#[sp]\d+,?//g;    # remove tags
+	      s/\s*([\r\n])/$1/g; # remove trailing whitespace, leave newline
+	      print INPUT_TMP;
+	      $last_line_blank = 0;
+	    }
+	    # else don't output inactive line to STDOUT
+	  }
+	  elsif (/$test_tag/) { # line is initially commented
+	    s/^#//;             # uncomment line
+	    s/#[sp]\d+,?//g;      # remove tags
+	    s/\s*([\r\n])/$1/g;   # remove trailing whitespace, leave newline
 	    print INPUT_TMP;
 	    $last_line_blank = 0;
 	  }
-	  # else don't output inactive line to STDOUT
-	}
-	elsif (/$test_tag/) { # line is initially commented
-	  s/^#//;             # uncomment line
-	  s/#[sp]\d+,?//g;      # remove tags
-	  s/\s*([\r\n])/$1/g;   # remove trailing whitespace, leave newline
-	  print INPUT_TMP;
-	  $last_line_blank = 0;
-	}
-	elsif (/^#/) {        # inactive line: do not output to STDOUT
-	}
-	else {                # active line not tagged by test number
-	  s/\s*([\r\n])/$1/g;   # remove trailing whitespace, leave newline
-	  # in extract mode, don't print subsequent blank lines
-	  if (/^\s*$/) {
-	    print INPUT_TMP if ($last_line_blank == 0);
-	    $last_line_blank = 1;
+	  elsif (/^#/) {        # inactive line: do not output to STDOUT
 	  }
-	  else {
-	    print INPUT_TMP;
-	    $last_line_blank = 0;
+	  else {                # active line not tagged by test number
+	    s/\s*([\r\n])/$1/g;   # remove trailing whitespace, leave newline
+	    # in extract mode, don't print subsequent blank lines
+	    if (/^\s*$/) {
+	      print INPUT_TMP if ($last_line_blank == 0);
+	      $last_line_blank = 1;
+	    }
+	    else {
+	      print INPUT_TMP;
+	      $last_line_blank = 0;
+	    }
 	  }
-	}
-      }
-      # runs a particular test (normal output)
-      else {
+        }
+        # runs a particular test (normal output)
+        else {
 
-	# turn off graphics for all test files
-	# requires 'graphics' on a line by itself, so it can appear in comments
-        if ( s/^[\s]*graphics[,\s#sp0-9]*$/# graphics\n/) {
-	  print INPUT_TMP;
-	}
-	# if line contains $cnt tag, then comment/uncomment
-	elsif (/$test0_tag/) { # line is initially uncommented
-	  if (/$test_tag/) {   # leave uncommented
+	  # turn off graphics for all test files
+	  # requires 'graphics' on a line by itself, so it can appear in comments
+          if ( s/^[\s]*graphics[,\s#sp0-9]*$/# graphics\n/) {
 	    print INPUT_TMP;
 	  }
-	  else {               # comment it out
-	    print INPUT_TMP "#$_";
+	  # if line contains $cnt tag, then comment/uncomment
+	  elsif (/$test0_tag/) { # line is initially uncommented
+	    if (/$test_tag/) {   # leave uncommented
+	      print INPUT_TMP;
+	    }
+	    else {               # comment it out
+	      print INPUT_TMP "#$_";
+	    }
 	  }
-	}
-	elsif (/$test_tag/) {  # line is initially commented
-	  s/#//;               # uncomment line
-	  print INPUT_TMP;
-	}
-	else {                 # line is not tagged by test number
-	  print INPUT_TMP;
-	}
-      }
+	  elsif (/$test_tag/) {  # line is initially commented
+	    s/#//;               # uncomment line
+	    print INPUT_TMP;
+	  }
+	  else {                 # line is not tagged by test number
+	    print INPUT_TMP;
+	  }
+        }
 
-    }  # end read each line of file
+      }  # end read each line of file
 
-    # close both files
-    close (INPUT_MASTER); # or could rewind it
-    close (INPUT_TMP);
+      # close both files
+      close (INPUT_MASTER); # or could rewind it
+      close (INPUT_TMP);
+    }
 
     # nothing more to do for this input file if extracting
     next if ($mode eq "extract");
@@ -401,12 +408,12 @@ foreach my $file (@test_inputs) {
     # diff the test output against the base output and save to a file
     my $perlexe = $Config{perlpath};
     if ($parallelism eq "parallel") {
-      system("${perlexe} ${diff_script} $base_filename $baseline_indir" . 
+      system("${perlexe} ${diff_script} $source_filename $baseline_indir" .
 	     "${baseline_filename} $test >> $output_dir" .
 	     "dakota_pdiffs.out");
     }
     else {
-      system("${perlexe} ${diff_script} $base_filename $baseline_indir" . 
+      system("${perlexe} ${diff_script} $source_filename $baseline_indir" .
 	     "${baseline_filename} $test >> $output_dir" .
 	     "dakota_diffs.out");
     }
@@ -567,8 +574,12 @@ sub process_command_line {
     }
   }
   else {
-    # default for all test modes is all dakota_*.in files in $input_dir
-    @test_inputs = glob("$input_dir" . "dakota_*.in");
+    # default for all test modes is all dakota_*.in and dakota_*.json
+    # files in $input_dir
+    @test_inputs = (
+      glob("$input_dir" . "dakota_*.in"),
+      glob("$input_dir" . "dakota_*.json")
+    );
   }
   
   # extract mode needs a number; if no filename specified, do all
@@ -632,7 +643,8 @@ sub manage_parallelism {
 sub get_filenames {
   my $qualified_filename = shift(@_);
   my $output_filename = "";
-  my($filename, $directories, $suffix) = fileparse($qualified_filename);
+  my($filename, $directories, $suffix) =
+    fileparse($qualified_filename, qr/\.[^.]*/);
   if ($output_dir) {
     $output_filename = "$output_dir" . "$filename";
   } 
@@ -641,25 +653,20 @@ sub get_filenames {
     $output_filename = "$filename";
   }
 
-  # create necessary filenames, then change suffixes
-  my $output = $output_filename;
-  my $error = $output_filename;
-  my $input = $output_filename;
-  my $test = $output_filename;
-  my $restart_file = $output_filename;
-
-  substr($output,-2, 2) = "out";
-  substr($error, -2, 2) = "err";
-  substr($input, -2, 2) = "in_";
-  substr($test,  -2, 2) = "tst";
-  substr($restart_file, -2, 2) = "rst";
+  # create necessary filenames
+  my $output = "${output_filename}.out";
+  my $error = "${output_filename}.err";
+  my $input = "${output_filename}${suffix}_";
+  my $test = "${output_filename}.tst";
+  my $restart_file = "${output_filename}.rst";
 
   # allow override of the extract name used
   if ($extract_filename) {
     $input = "$output_dir" . "$extract_filename";
   }
 
-  return ($filename, $output, $error, $input, $test, $restart_file);
+  return ("${filename}${suffix}", $filename, $suffix, $output, $error, $input,
+          $test, $restart_file);
 }
 
 
@@ -681,6 +688,9 @@ sub get_filenames {
 sub parse_test_options {
 
   my $file = shift(@_);
+  if ($file =~ /\.json$/i) {
+    return parse_json_test_options($file);
+  }
   my $max_serial = -1;
   my $max_parallel = -1;
   open (INPUT_FILE, "$file") ||
@@ -753,6 +763,123 @@ sub parse_test_options {
   $test_opts{"s*"}{"Count"} = $max_serial;
   $test_opts{"p*"}{"Count"} = $max_parallel;
   return ($max_serial, $max_parallel);
+}
+
+
+sub parse_json_test_options {
+
+  my $file = shift(@_);
+  my $max_serial = 0;
+  my $max_parallel = -1;
+  my $json_data = read_json_test_file($file);
+  my $test_directives = $json_data->{"test_directives"};
+
+  if (ref($test_directives) eq "HASH") {
+    apply_json_test_options("*", $test_directives);
+
+    if (ref($test_directives->{"all"}) eq "HASH") {
+      apply_json_test_options("*", $test_directives->{"all"});
+    }
+    if (ref($test_directives->{"serial"}) eq "HASH") {
+      apply_json_test_options("s*", $test_directives->{"serial"});
+    }
+    if (ref($test_directives->{"parallel"}) eq "HASH") {
+      apply_json_test_options("p*", $test_directives->{"parallel"});
+      $max_parallel = 0;
+    }
+  }
+
+  $test_opts{"s*"}{"Count"} = $max_serial;
+  $test_opts{"p*"}{"Count"} = $max_parallel;
+  return ($max_serial, $max_parallel);
+}
+
+
+sub read_json_test_file {
+
+  my $file = shift(@_);
+  local $/ = undef;
+  open(my $json_fh, "<", $file) ||
+    die "cannot open Dakota JSON input file $file\n$!";
+  my $json_text = <$json_fh>;
+  close($json_fh);
+
+  my $json = JSON::PP->new->relaxed(1);
+  my $json_data = eval { $json->decode($json_text) };
+  die "Error parsing JSON test input $file: $@\n" if $@;
+  die "Error: JSON test input $file must contain a top-level object\n"
+    if (ref($json_data) ne "HASH");
+
+  return $json_data;
+}
+
+
+sub apply_json_test_options {
+
+  my ($test_selection, $options_ref) = @_;
+  return if (ref($options_ref) ne "HASH");
+
+  my %supported_json_options = map { $_ => 1 } (
+    "CheckOutput",
+    "DakotaConfig",
+    "DependsOn",
+    "ExecArgs",
+    "ExecCmd",
+    "InputFile",
+    "Label",
+    "Labels",
+    "MPIProcs",
+    "ReqFiles",
+    "Restart",
+    "TimeoutAbsolute",
+    "TimeoutDelay",
+    "UserMan",
+    "WillFail"
+  );
+
+  while (my ($key, $value) = each %{$options_ref}) {
+    next if (!exists $supported_json_options{$key});
+    my $normalized_key = ($key eq "Labels") ? "Label" : $key;
+    my $normalized_value =
+      normalize_json_test_option_value($normalized_key, $value);
+    next if (!defined $normalized_value);
+    $test_opts{$test_selection}{$normalized_key} = $normalized_value;
+  }
+}
+
+
+sub normalize_json_test_option_value {
+
+  my ($key, $value) = @_;
+
+  return "" if (!defined $value);
+  return $value ? "true" : undef if ($key eq "WillFail");
+
+  if ($key eq "DakotaConfig" || $key eq "Label" || $key eq "ReqFiles") {
+    return join(",", @{$value}) if (ref($value) eq "ARRAY");
+    return "$value";
+  }
+
+  die "Error: JSON test_directives option ${key} must not be an array\n"
+    if (ref($value) eq "ARRAY");
+  die "Error: JSON test_directives option ${key} must not be an object\n"
+    if (ref($value) eq "HASH");
+
+  return "$value";
+}
+
+
+sub write_json_test_input {
+
+  my ($source_file, $output_file) = @_;
+  my $json_data = read_json_test_file($source_file);
+  delete $json_data->{"test_directives"};
+
+  open(my $json_out, ">", $output_file) ||
+    die "cannot open temp file $output_file\n$!";
+  my $json = JSON::PP->new->ascii(1)->pretty(1)->canonical(1);
+  print {$json_out} $json->encode($json_data);
+  close($json_out);
 }
 
 
@@ -910,7 +1037,8 @@ sub get_test_option_value() {
 sub write_test_options {
   
   my ($input_file) = @_;
-  substr($input_file,-3, 3) = "";  # trim .in
+  my ($input_root) = fileparse($input_file, qr/\.[^.]*/);
+  $input_file = $input_root;
  
   # TODO: print all?  Need another hash with all possible properties
   # to regex matches
@@ -1040,7 +1168,9 @@ sub form_test_command {
   my ($cnt, $num_proc, $dakota_command, $dakota_args, $restart_command,
       $dakota_input, $output, $error) = @_;
   
-  my $fulldakota = "${bin_dir}${dakota_command}${bin_ext} ${dakota_args} $restart_command $dakota_input";
+  my $input_arg = ($dakota_input =~ /\.json_?$/) ? "-json $dakota_input" :
+    $dakota_input;
+  my $fulldakota = "${bin_dir}${dakota_command}${bin_ext} ${dakota_args} $restart_command $input_arg";
   my $redir = "> $output 2> $error";     
 
 
@@ -1734,6 +1864,14 @@ selection is allowed per line.
 
 The markup header is terminated by any line not starting with #@.  #@
 lines will always be omitted from extracted tests.
+
+Single-test dakota_*.json inputs may alternatively provide an optional
+top-level C<test_directives> object.  Any recognized test-harness
+properties in that object are interpreted like C<*> properties for the
+file and the C<test_directives> object is stripped before Dakota is
+invoked.  Optional C<test_directives.serial> and
+C<test_directives.parallel> objects may be used to apply properties to
+just the serial or parallel variant of the JSON test.
 
 =item B<Test Selection>
 

@@ -57,8 +57,13 @@ if(DAKOTA_PYTHON_SURROGATES)
     SOURCES PythonSurrogatesTest.cpp
     LINK_LIBS dakota_surrogates Boost::system )
   # Rationale: This includes Teuchos headers and needs to link to the
-  # ParameterList components
-  target_include_directories(surrogates_python_pybind11 PRIVATE "${Teuchos_INCLUDE_DIRS}")
+  # ParameterList components. It also includes SurrogatesPython.hpp, which
+  # depends on pybind11 headers that are build-only details of dakota_surrogates.
+  target_include_directories(surrogates_python_pybind11 PRIVATE
+    "${Teuchos_INCLUDE_DIRS}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/.."
+    "${pybind11_INCLUDE_DIRS}")
+  target_link_libraries(surrogates_python_pybind11 pybind11::embed)
 
 endif()
 

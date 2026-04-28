@@ -37,6 +37,19 @@ elseif(NOT IS_DIRECTORY "${Dakota_SOURCE_DIR}/packages/external/nidr")
     )
 endif()
 
+# -----------------
+# Set path for nlohmann::json header needed by new parser
+
+set(JSON_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/packages/external/json/include")
+set(JSON_SINGLE_INCDIR "${PROJECT_SOURCE_DIR}/packages/external/json/single_include")
+if(EXISTS "${JSON_INCLUDE_DIR}/nlohmann/json_fwd.hpp")
+  list(APPEND EXT_TPL_INCDIRS ${JSON_INCLUDE_DIR})
+else()
+  message(FATAL_ERROR
+    "JSON forward header file not found in ${JSON_INCLUDE_DIR}.\n"
+    "You may need run `git submodule update --init --recursive`" )
+endif()
+
 # Dakota requires C++17
 include(DakotaCxxOptions)
 dakota_cxx_standard()
@@ -256,6 +269,13 @@ endif(HAVE_ROL)
 # the targets can be used to add unit tests
 dakota_find_googletest()
 
+# Needed for the new input file reader
+set(DAKOTA_SCHEMA_PATH ${CMAKE_SOURCE_DIR}/src/dakota.json CACHE STRING "Dakota Schema file")
+set(DAKOTA_XML_INPUT ${CMAKE_SOURCE_DIR}/src/dakota.xml CACHE STRING "Dakota XML grammar file")
+
+include(DakotaJsonSchema)
+include(DakotaIRGeneration)
+
 # -----
 # Configuration of Dakota components
 # -----
@@ -276,6 +296,8 @@ endif()
 if(DAKOTA_MODULE_DAKOTA)
 
   add_subdirectory(packages)
+
+  add_subdirectory(python)
 
   add_subdirectory(src)
   # Build the executables in the test directory even if BUILD_TESTING is OFF
