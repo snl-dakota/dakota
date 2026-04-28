@@ -24,9 +24,25 @@ function(dakota_add_unit_test)
   if (${DAUT_LINK_DAKOTA_LIBS})
     target_link_libraries(${exe_target} 
       ${Dakota_LIBRARIES} ${Dakota_TPL_LIBRARIES})
+    if (TARGET dakota_parser_lib)
+      # Tests that exercise Environment/Dakota core paths may reach parser
+      # entry points compiled into libdakota_src; link the parser library
+      # explicitly so those symbols are always available to the final executable.
+      target_link_libraries(${exe_target} dakota_parser_lib)
+    endif()
+    if (TARGET dakota_ir AND NOT APPLE)
+      # ELF linkers are order-sensitive for static archives; append dakota_ir
+      # after the Dakota core libraries on non-Apple platforms to satisfy
+      # InstructionMaterializer references pulled in from dakota_src.
+      target_link_libraries(${exe_target} dakota_ir)
+    endif()
   endif()
   if (DAUT_LINK_LIBS)
     target_link_libraries(${exe_target} ${DAUT_LINK_LIBS})
+  endif()
+  if(DAKOTA_PYBIND11 AND
+     (DAKOTA_PYTHON_DIRECT_INTERFACE OR DAKOTA_PYTHON_SURROGATES OR HAVE_EXT_PYTHON_METHOD))
+    target_link_libraries(${exe_target} pybind11::embed)
   endif()
   # Link to googletest
   target_link_libraries(${exe_target} GTest::gtest_main)

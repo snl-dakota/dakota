@@ -15,12 +15,83 @@
 #include "IteratorScheduler.hpp"
 #include "dakota_preproc_util.hpp"
 #include "ProblemDescDBUtils.hpp"
+#include "dakota_input_reader.hpp"
 
 static const char rcsId[]="@(#) $Id: DakotaEnvironment.cpp 6749 2010-05-03 17:11:57Z briadam $";
 
 using std::cout;
 
 namespace Dakota {
+
+namespace {
+
+void invoke_parse_callback_if_requested(ProblemDescDB& problem_db,
+                                        DbCallbackFunctionPtr callback,
+                                        void* callback_data,
+                                        int world_rank)
+{
+  if (callback && world_rank == 0)
+    (*callback)(&problem_db, callback_data);
+}
+
+void load_validated_json_input(ProblemDescDB& problem_db,
+                               const nlohmann::json& validated_json,
+                               DbCallbackFunctionPtr callback,
+                               void* callback_data,
+                               int world_rank)
+{
+  problem_db.enable_json_input(validated_json);
+  invoke_parse_callback_if_requested(problem_db, callback, callback_data,
+                                     world_rank);
+}
+
+nlohmann::json parse_new_freeform_input(const ProgramOptions& program_options,
+                                        const String& final_input)
+{
+  if (program_options.input_string().empty()) {
+    const String& parser_input_path = program_options.preproc_input() ?
+      program_options.preprocessed_file() : program_options.input_file();
+    return dakota::read_freeform_input_file_to_json(parser_input_path);
+  }
+
+  return dakota::read_freeform_input_string_to_json(final_input);
+}
+
+void process_json_input_file(const ProgramOptions& program_options,
+                             ProblemDescDB& problem_db,
+                             DbCallbackFunctionPtr callback,
+                             void* callback_data,
+                             int world_rank)
+{
+  if (program_options.echo_input()) {
+    const std::string json_input =
+      ProblemDescDBUtils::read_input_file(program_options.json_input_file());
+    ProblemDescDBUtils::echo_input(json_input, std::string());
+  }
+
+  load_validated_json_input(
+    problem_db,
+    dakota::read_json_input_file_to_json(program_options.json_input_file()),
+    callback, callback_data, world_rank);
+}
+
+void process_json_input_object(const ProgramOptions& program_options,
+                               ProblemDescDB& problem_db,
+                               DbCallbackFunctionPtr callback,
+                               void* callback_data,
+                               int world_rank)
+{
+  if (program_options.echo_input())
+    ProblemDescDBUtils::echo_input(program_options.json_input().dump(2),
+                                   std::string());
+
+  load_validated_json_input(
+    problem_db,
+    dakota::validate_json_input_to_json(program_options.json_input()),
+    callback, callback_data, world_rank);
+}
+
+} // namespace
 
 
 /** This letter constructor initializes base class data for inherited
@@ -276,21 +347,46 @@ void Environment::parse(bool check_bcast_database,
   // push_output_tag() follow ParallelLibrary::init_iterator_communicators()
   // within IteratorScheduler::partition().
 
+  const bool on_rank_zero = (parallelLib.world_rank() == 0);
+  const bool has_freeform_input = !programOptions.input_file().empty() ||
+                                  !programOptions.input_string().empty(); 
+
+  
   // parse input and callback functions
-  if ( !programOptions.input_file().empty() || 
-       !programOptions.input_string().empty()) {
+  if ( has_freeform_input) {
     auto [final_input, template_string] = 
       ProblemDescDBUtils::final_input_and_template(programOptions);
     if(programOptions.echo_input())
       ProblemDescDBUtils::echo_input(final_input, template_string);
-    probDescDB.parse_inputs(final_input, programOptions.parser_options(), programOptions.user_modes().run, callback, callback_data);
+    if (on_rank_zero && programOptions.use_new_parser()) {
+      load_validated_json_input(
+        probDescDB,
+        parse_new_freeform_input(programOptions, final_input),
+        callback, callback_data, parallelLib.world_rank());
+    }
+    else if (programOptions.use_legacy_nidr_parser()) {
+      probDescDB.parse_inputs(final_input, programOptions.parser_options(),
+        programOptions.user_modes().run, callback, callback_data);
+    }
     if(programOptions.preproc_input())
         std::filesystem::remove(programOptions.preprocessed_file());
   }
 
+  // Allow optional JSON input
+  if (on_rank_zero && !programOptions.json_input_file().empty()) {
+    process_json_input_file(programOptions, probDescDB, callback, callback_data,
+                            parallelLib.world_rank());
+  }
+
+  if (on_rank_zero && programOptions.has_json_input()) {
+    process_json_input_object(programOptions, probDescDB, callback,
+                              callback_data, parallelLib.world_rank());
+  }
+
   // check if true, otherwise caller assumes responsibility  
   if (check_bcast_database)
-    ProblemDescDBUtils::check_and_broadcast_pdb(probDescDB, programOptions.user_modes(), parallelLib); 
+    ProblemDescDBUtils::check_and_broadcast_pdb(probDescDB, programOptions.dump_ir_file(),
+      programOptions.user_modes(), parallelLib); 
 }
 
 

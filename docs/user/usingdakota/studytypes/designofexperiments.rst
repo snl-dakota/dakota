@@ -585,7 +585,6 @@ required and will be scaled as needed by the method.
 
 Sensitivity Analysis
 --------------------
-
 .. _`dace:sa:overview`:
 
 Sensitivity Analysis Overview
@@ -594,171 +593,30 @@ Sensitivity Analysis Overview
 In many engineering design applications, sensitivity analysis techniques
 and parameter study methods are useful in identifying which of the
 design parameters have the most influence on the response quantities.
-This information is helpful prior to an optimization study as it can be
-used to remove design parameters that do not strongly influence the
-responses. In addition, these techniques can provide assessments as to
-the behavior of the response functions (smooth or nonsmooth, unimodal or
-multimodal) which can be invaluable in algorithm selection for
-optimization, uncertainty quantification, and related methods. In a
-post-optimization role, sensitivity information is useful is determining
-whether or not the response functions are robust with respect to small
-changes in the optimum design point.
-
-In some instances, the term sensitivity analysis is used in a local
-sense to denote the computation of response derivatives at a point.
-These derivatives are then used in a simple analysis to make design
-decisions. Dakota supports this type of study through numerical
-finite-differencing or retrieval of analytic gradients computed within
-the analysis code. The desired gradient data is specified in the
-responses section of the Dakota input file and the collection of this
-data at a single point is accomplished through a parameter study method
-with no steps. This approach to sensitivity analysis should be
-distinguished from the activity of augmenting analysis codes to
-internally compute derivatives using techniques such as direct or
-adjoint differentiation, automatic differentiation (e.g., ADIFOR), or
-complex step modifications. These sensitivity augmentation activities
-are completely separate from Dakota and are outside the scope of this
-manual. However, once completed, Dakota can utilize these analytic
-gradients to perform optimization, uncertainty quantification, and
-related studies more reliably and efficiently.
-
-In other instances, the term sensitivity analysis is used in a more
-global sense to denote the investigation of variability in the response
-functions. Dakota supports this type of study through computation of
-response data sets (typically function values only, but all data sets
-are supported) at a series of points in the parameter space. The series
-of points is defined using either a vector, list, centered, or
-multidimensional parameter study method. For example, a set of
-closely-spaced points in a vector parameter study could be used to
-assess the smoothness of the response functions in order to select a
-finite difference step size, and a set of more widely-spaced points in a
-centered or multidimensional parameter study could be used to determine
-whether the response function variation is likely to be unimodal or
-multimodal. See :ref:`Parameter Studies Capabilities <ps>` for additional information on
-these methods. These more global approaches to sensitivity analysis can
-be used to obtain trend data even in situations when gradients are
-unavailable or unreliable, and they are conceptually similar to the
-design of experiments methods and sampling approaches to uncertainty
-quantification described in the following sections.
 
 .. _`dace:sa:assessing`:
 
 Assessing Sensitivity with DACE
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Like :ref:`parameter studies <ps>`, the DACE techniques
-are useful for characterizing the behavior of the response functions of
-interest through the parameter ranges of interest. In addition to direct
-interrogation and visualization of the sampling results, a number of
-techniques have been developed for assessing the parameters which are
-most influential in the observed variability in the response functions.
-One example of this is the well-known technique of scatter plots, in
-which the set of samples is projected down and plotted against one
-parameter dimension, for each parameter in turn. Scatter plots with a
-uniformly distributed cloud of points indicate parameters with little
-influence on the results, whereas scatter plots with a defined shape to
-the cloud indicate parameters which are more significant. Related
-techniques include analysis of variance
-(ANOVA) :cite:p:`Mye95` and main effects analysis, in which
-the parameters which have the greatest influence on the results are
-identified from sampling results. Scatter plots and ANOVA may be
-accessed through :ref:`import of Dakota tabular results <output:tabular>` into external
-statistical analysis programs such as S-plus, Minitab, etc.
+The DACE techniques are useful for characterizing the behavior of the 
+response functions of interest through the parameter ranges of interest. 
+In addition to direct interrogation and visualization of the sampling results, 
+a number of techniques have been developed for assessing the parameters 
+which are most influential in the observed variability in the response
+functions. The range of sensitivity analysis methods supported by Dakota are 
+described and compared in the :ref:`Sensitivity Analsis <sa>` 
+documentation. 
 
-Running any of the design of experiments or sampling methods allows the
-user to save the results in a tabular data file, which then can be read
-into a spreadsheet or statistical package for further analysis. In
-addition, we have provided some functions to help determine the most
-important variables.
+Correlation coefficients are computed by default for any LHS study.
+Their description and interpretation is provided in :ref:`sa:global:corr_coeffs`.
 
-We take the definition of uncertainty analysis
-from :cite:p:`Sal04`: “The study of how uncertainty in the
-output of a model can be apportioned to different sources of uncertainty
-in the model input.”
-
-As a default, Dakota provides correlation analyses when running LHS.
-Correlation tables are printed with the simple, partial, and rank
-correlations between inputs and outputs. These can be useful to get a
-quick sense of how correlated the inputs are to each other, and how
-correlated various outputs are to inputs. The correlation analyses are
-explained further in :ref:`the sampling section <uq:sampling>`.
-
-We also have the capability to calculate sensitivity indices through
-Variance-based Decomposition (VBD). Variance-based decomposition is a
-global sensitivity method that summarizes how the uncertainty in model
-output can be apportioned to uncertainty in individual input variables.
-VBD uses two primary measures, the main effect sensitivity index
-:math:`S_{i}` and the total effect index :math:`T_{i}`. The main effect
-sensitivity index corresponds to the fraction of the uncertainty in the
-output, :math:`Y`, that can be attributed to input :math:`x_{i}` alone.
-The total effects index corresponds to the fraction of the uncertainty
-in the output, :math:`Y`, that can be attributed to input :math:`x_{i}`
-and its interactions with other variables. The main effect sensitivity
-index compares the variance of the conditional expectation
-:math:`Var_{x_{i}}[E(Y|x_{i})]` against the total variance
-:math:`Var(Y)`. Formulas for the indices are:
-
-.. math:: S_{i}=\frac{Var_{x_{i}}[E(Y|x_{i})]}{Var(Y)} \label{eq:VBD_Si}
-
-and
-
-.. math:: T_{i}=\frac{E(Var(Y|x_{-i}))}{Var(Y)}=\frac{Var(Y)-Var(E[Y|x_{-i}])}{Var(Y)} \label{eq:VBD_Ti}
-
-where :math:`Y=f({\bf x})` and
-:math:`{x_{-i}=(x_{1},...,x_{i-1},x_{i+1},...,x_{m})}`.
-
-The calculation of :math:`S_{i}` and :math:`T_{i}` requires the
-evaluation of m-dimensional integrals which are typically approximated
-by Monte-Carlo sampling. More details on the calculations and
-interpretation of the sensitivity indices can be found
-in :cite:p:`Sal04`. In Dakota version 5.1, we have improved
-calculations for the calculation of the :math:`S_{i}` and :math:`T_{i}`
-indices when using sampling. The implementation details of these
-calculatiosn are provided in :cite:p:`Weirs10`. VBD can be
+It is also possible to compute Sobol' indices through variance-based 
+decomposition (VBD), which attributes fractions of output variance to inputs
+and their interactions. Discussion of computation and interpretation of
+these indices is provided in :ref:`sa:global:vbd`. VBD can be
 specified for any of the sampling or DACE methods using the command
-:dakkw:`method-dace-variance_based_decomp`. Note that VBD is extremely
-computationally intensive when using sampling since replicated sets of
-sample values are evaluated. If the user specified a number of samples,
-:math:`N`, and a number of nondeterministic variables, :math:`M`,
-variance-based decomposition requires the evaluation of :math:`N(M+2)`
-samples. To obtain sensitivity indices that are reasonably accurate, we
-recommend that :math:`N`, the number of samples, be at least one hundred
-and preferably several hundred or thousands. Because of the
-computational cost, variance-based decomposition is turned off as a
-default for sampling or DACE. Another alternative, however, is to obtain
-these indices using :ref:`one of the stochastic expansion methods <uq:expansion>`. The calculation of the
-indices using expansion methods is much more efficient since the VBD
-indices are analytic functions of the coefficients in the stochastic
-expansion. The paper by Weirs et al. :cite:p:`Weirs10`
-compares different methods for calculating the sensitivity indices for
-nonlinear problems with significant interaction effects.
-
-In terms of interpretation of the sensitivity indices, a larger value of
-the sensitivity index, :math:`S_{i}`, means that the uncertainty in the
-input variable :math:`i` has a larger effect on the variance of the
-output. Note that the sum of the main effect indices will be less than
-or equal to one. If the sum of the main effect indices is much less than
-one, it indicates that there are significant two-way, three-way, or
-higher order interactions that contribute significantly to the variance.
-There is no requirement that the sum of the total effect indices is one:
-in most cases, the sum of the total effect indices will be greater than
-one. An example of the Main and Total effects indices as calculated by
-Dakota using sampling is shown in the following spinnet of Dakota output:
-
-.. code-block::
-
-   Global sensitivity indices for each response function:
-   response_fn_1 Sobol indices:
-                                       Main             Total
-                           4.7508913283e-01  5.3242162037e-01 uuv_1
-                           3.8112392892e-01  4.9912486515e-01 uuv_2
-
-Finally, we have the capability to calculate a set of quality metrics
-for a particular input sample. These quality metrics measure various
-aspects relating to the volumetric spacing of the samples: are the
-points equally spaced, do they cover the region, are they isotropically
-distributed, do they have directional bias, etc.? The quality metrics
-are explained in more detail in the Reference Manual.
+:dakkw:`method-dace-variance_based_decomp`.
 
 .. _`dace:usage`:
 

@@ -62,35 +62,37 @@ void DataVariablesRep::write(MPIPackBuffer& s) const
 
   // Aleatory uncertain arrays
   s << normalUncMeans << normalUncStdDevs << normalUncLowerBnds
-    << normalUncUpperBnds << normalUncVars << lognormalUncLambdas
+    << normalUncUpperBnds << normalUncVars
+    << normalUncInferredLowerBnds << normalUncInferredUpperBnds
+    << lognormalUncLambdas
     << lognormalUncZetas << lognormalUncMeans << lognormalUncStdDevs
     << lognormalUncErrFacts << lognormalUncLowerBnds << lognormalUncUpperBnds
-    << lognormalUncVars << uniformUncLowerBnds << uniformUncUpperBnds
+    << lognormalUncVars << lognormalUncInferredUpperBnds << uniformUncLowerBnds << uniformUncUpperBnds
     << uniformUncVars << loguniformUncLowerBnds << loguniformUncUpperBnds
     << loguniformUncVars << triangularUncModes << triangularUncLowerBnds
     << triangularUncUpperBnds << triangularUncVars << exponentialUncBetas
-    << exponentialUncVars << betaUncAlphas << betaUncBetas << betaUncLowerBnds
+    << exponentialUncVars << exponentialUncLowerBnds << exponentialUncUpperBnds << betaUncAlphas << betaUncBetas << betaUncLowerBnds
     << betaUncUpperBnds << betaUncVars << gammaUncAlphas << gammaUncBetas
-    << gammaUncVars << gumbelUncAlphas << gumbelUncBetas << gumbelUncVars
-    << frechetUncAlphas << frechetUncBetas << frechetUncVars << weibullUncAlphas
-    << weibullUncBetas << weibullUncVars << histogramUncBinPairs
-    << histogramBinUncVars << poissonUncLambdas << poissonUncVars << poissonUncCat
-    << binomialUncProbPerTrial << binomialUncNumTrials << binomialUncVars << binomialUncCat
+    << gammaUncVars << gammaUncLowerBnds << gammaUncUpperBnds << gumbelUncAlphas << gumbelUncBetas << gumbelUncVars << gumbelUncLowerBnds << gumbelUncUpperBnds
+    << frechetUncAlphas << frechetUncBetas << frechetUncVars << frechetUncLowerBnds << frechetUncUpperBnds << weibullUncAlphas
+    << weibullUncBetas << weibullUncVars << weibullUncLowerBnds << weibullUncUpperBnds << histogramUncBinPairs
+    << histogramBinUncVars << histogramBinUncLowerBnds << histogramBinUncUpperBnds << poissonUncLambdas << poissonUncVars << poissonUncLowerBnds << poissonUncUpperBnds << poissonUncCat
+    << binomialUncProbPerTrial << binomialUncNumTrials << binomialUncVars << binomialUncLowerBnds << binomialUncUpperBnds << binomialUncCat
     << negBinomialUncProbPerTrial << negBinomialUncNumTrials
-    << negBinomialUncVars << negBinomialUncCat << geometricUncProbPerTrial << geometricUncVars << geometricUncCat
+    << negBinomialUncVars << negBinomialUncLowerBnds << negBinomialUncUpperBnds << negBinomialUncCat << geometricUncProbPerTrial << geometricUncVars << geometricUncLowerBnds << geometricUncUpperBnds << geometricUncCat
     << hyperGeomUncTotalPop << hyperGeomUncSelectedPop << hyperGeomUncNumDrawn
-    << hyperGeomUncVars << hyperGeomUncCat 
-    << histogramUncPointIntPairs << histogramPointIntUncVars << histogramUncPointIntCat 
-    << histogramUncPointStrPairs << histogramPointStrUncVars
-    << histogramUncPointRealPairs << histogramPointRealUncVars << histogramUncPointRealCat 
+    << hyperGeomUncVars << hyperGeomUncLowerBnds << hyperGeomUncUpperBnds << hyperGeomUncCat 
+    << histogramUncPointIntPairs << histogramPointIntUncVars << histogramPointIntUncLowerBnds << histogramPointIntUncUpperBnds << histogramUncPointIntCat 
+    << histogramUncPointStrPairs << histogramPointStrUncVars << histogramPointStrUncLowerBnds << histogramPointStrUncUpperBnds
+    << histogramUncPointRealPairs << histogramPointRealUncVars << histogramPointRealUncLowerBnds << histogramPointRealUncUpperBnds << histogramUncPointRealCat 
     << uncertainCorrelations;
 
   // Epistemic uncertain arrays
-  s << continuousIntervalUncBasicProbs << continuousIntervalUncVars
-    << discreteIntervalUncBasicProbs << discreteIntervalUncVars << discreteIntervalUncCat
-    << discreteUncSetIntValuesProbs << discreteUncSetIntVars << discreteUncSetIntCat
-    << discreteUncSetStrValuesProbs << discreteUncSetStrVars
-    << discreteUncSetRealValuesProbs << discreteUncSetRealVars << discreteUncSetRealCat;
+  s << continuousIntervalUncBasicProbs << continuousIntervalUncVars << continuousIntervalUncLowerBnds << continuousIntervalUncUpperBnds
+    << discreteIntervalUncBasicProbs << discreteIntervalUncVars << discreteIntervalUncLowerBnds << discreteIntervalUncUpperBnds << discreteIntervalUncCat
+    << discreteUncSetIntValuesProbs << discreteUncSetIntVars << discreteUncSetIntLowerBnds << discreteUncSetIntUpperBnds << discreteUncSetIntCat
+    << discreteUncSetStrValuesProbs << discreteUncSetStrVars << discreteUncSetStrLowerBnds << discreteUncSetStrUpperBnds
+    << discreteUncSetRealValuesProbs << discreteUncSetRealVars << discreteUncSetRealLowerBnds << discreteUncSetRealUpperBnds << discreteUncSetRealCat;
 
   // State arrays
   s << continuousStateVars         << continuousStateLowerBnds
@@ -124,6 +126,17 @@ void DataVariablesRep::write(MPIPackBuffer& s) const
     << discreteStateSetIntLowerBnds << discreteStateSetIntUpperBnds
     << discreteStateSetStrLowerBnds << discreteStateSetStrUpperBnds
     << discreteStateSetRealLowerBnds << discreteStateSetRealUpperBnds;
+
+  // Per-type labels for uncertain variables
+  s << normalUncLabels << lognormalUncLabels << uniformUncLabels
+    << loguniformUncLabels << triangularUncLabels << exponentialUncLabels
+    << betaUncLabels << gammaUncLabels << gumbelUncLabels
+    << frechetUncLabels << weibullUncLabels << histogramBinUncLabels
+    << poissonUncLabels << binomialUncLabels << negBinomialUncLabels
+    << geometricUncLabels << hyperGeomUncLabels << histogramPointIntUncLabels
+    << histogramPointStrUncLabels << histogramPointRealUncLabels
+    << continuousIntervalUncLabels << discreteIntervalUncLabels
+    << discreteUncSetIntLabels << discreteUncSetStrLabels << discreteUncSetRealLabels;
 
   // Linear constraints
   s << linearIneqConstraintCoeffs << linearIneqLowerBnds << linearIneqUpperBnds
@@ -162,35 +175,37 @@ void DataVariablesRep::read(MPIUnpackBuffer& s)
 
   // Aleatory uncertain arrays
   s >> normalUncMeans >> normalUncStdDevs >> normalUncLowerBnds
-    >> normalUncUpperBnds >> normalUncVars >> lognormalUncLambdas
+    >> normalUncUpperBnds >> normalUncVars
+    >> normalUncInferredLowerBnds >> normalUncInferredUpperBnds
+    >> lognormalUncLambdas
     >> lognormalUncZetas >> lognormalUncMeans >> lognormalUncStdDevs
     >> lognormalUncErrFacts >> lognormalUncLowerBnds >> lognormalUncUpperBnds
-    >> lognormalUncVars >> uniformUncLowerBnds >> uniformUncUpperBnds
+    >> lognormalUncVars >> lognormalUncInferredUpperBnds >> uniformUncLowerBnds >> uniformUncUpperBnds
     >> uniformUncVars >> loguniformUncLowerBnds >> loguniformUncUpperBnds
     >> loguniformUncVars >> triangularUncModes >> triangularUncLowerBnds
     >> triangularUncUpperBnds >> triangularUncVars >> exponentialUncBetas
-    >> exponentialUncVars >> betaUncAlphas >> betaUncBetas >> betaUncLowerBnds
+    >> exponentialUncVars >> exponentialUncLowerBnds >> exponentialUncUpperBnds >> betaUncAlphas >> betaUncBetas >> betaUncLowerBnds
     >> betaUncUpperBnds >> betaUncVars >> gammaUncAlphas >> gammaUncBetas
-    >> gammaUncVars >> gumbelUncAlphas >> gumbelUncBetas >> gumbelUncVars
-    >> frechetUncAlphas >> frechetUncBetas >> frechetUncVars >> weibullUncAlphas
-    >> weibullUncBetas >> weibullUncVars >> histogramUncBinPairs
-    >> histogramBinUncVars >> poissonUncLambdas >> poissonUncVars >> poissonUncCat
-    >> binomialUncProbPerTrial >> binomialUncNumTrials >> binomialUncVars >> binomialUncCat
+    >> gammaUncVars >> gammaUncLowerBnds >> gammaUncUpperBnds >> gumbelUncAlphas >> gumbelUncBetas >> gumbelUncVars >> gumbelUncLowerBnds >> gumbelUncUpperBnds
+    >> frechetUncAlphas >> frechetUncBetas >> frechetUncVars >> frechetUncLowerBnds >> frechetUncUpperBnds >> weibullUncAlphas
+    >> weibullUncBetas >> weibullUncVars >> weibullUncLowerBnds >> weibullUncUpperBnds >> histogramUncBinPairs
+    >> histogramBinUncVars >> histogramBinUncLowerBnds >> histogramBinUncUpperBnds >> poissonUncLambdas >> poissonUncVars >> poissonUncLowerBnds >> poissonUncUpperBnds >> poissonUncCat
+    >> binomialUncProbPerTrial >> binomialUncNumTrials >> binomialUncVars >> binomialUncLowerBnds >> binomialUncUpperBnds >> binomialUncCat
     >> negBinomialUncProbPerTrial >> negBinomialUncNumTrials
-    >> negBinomialUncVars >> negBinomialUncCat >> geometricUncProbPerTrial >> geometricUncVars >> geometricUncCat
+    >> negBinomialUncVars >> negBinomialUncLowerBnds >> negBinomialUncUpperBnds >> negBinomialUncCat >> geometricUncProbPerTrial >> geometricUncVars >> geometricUncLowerBnds >> geometricUncUpperBnds >> geometricUncCat
     >> hyperGeomUncTotalPop >> hyperGeomUncSelectedPop >> hyperGeomUncNumDrawn
-    >> hyperGeomUncVars >>hyperGeomUncCat 
-    >> histogramUncPointIntPairs >> histogramPointIntUncVars >> histogramUncPointIntCat 
-    >> histogramUncPointStrPairs >> histogramPointStrUncVars
-    >> histogramUncPointRealPairs >> histogramPointRealUncVars >> histogramUncPointRealCat
+    >> hyperGeomUncVars >> hyperGeomUncLowerBnds >> hyperGeomUncUpperBnds >>hyperGeomUncCat 
+    >> histogramUncPointIntPairs >> histogramPointIntUncVars >> histogramPointIntUncLowerBnds >> histogramPointIntUncUpperBnds >> histogramUncPointIntCat 
+    >> histogramUncPointStrPairs >> histogramPointStrUncVars >> histogramPointStrUncLowerBnds >> histogramPointStrUncUpperBnds
+    >> histogramUncPointRealPairs >> histogramPointRealUncVars >> histogramPointRealUncLowerBnds >> histogramPointRealUncUpperBnds >> histogramUncPointRealCat
     >> uncertainCorrelations;
 
   // Epistemic uncertain arrays
-  s >> continuousIntervalUncBasicProbs >> continuousIntervalUncVars
-    >> discreteIntervalUncBasicProbs >> discreteIntervalUncVars >> discreteIntervalUncCat
-    >> discreteUncSetIntValuesProbs >> discreteUncSetIntVars >> discreteUncSetIntCat
-    >> discreteUncSetStrValuesProbs >> discreteUncSetStrVars
-    >> discreteUncSetRealValuesProbs >> discreteUncSetRealVars >> discreteUncSetRealCat;
+  s >> continuousIntervalUncBasicProbs >> continuousIntervalUncVars >> continuousIntervalUncLowerBnds >> continuousIntervalUncUpperBnds
+    >> discreteIntervalUncBasicProbs >> discreteIntervalUncVars >> discreteIntervalUncLowerBnds >> discreteIntervalUncUpperBnds >> discreteIntervalUncCat
+    >> discreteUncSetIntValuesProbs >> discreteUncSetIntVars >> discreteUncSetIntLowerBnds >> discreteUncSetIntUpperBnds >> discreteUncSetIntCat
+    >> discreteUncSetStrValuesProbs >> discreteUncSetStrVars >> discreteUncSetStrLowerBnds >> discreteUncSetStrUpperBnds
+    >> discreteUncSetRealValuesProbs >> discreteUncSetRealVars >> discreteUncSetRealLowerBnds >> discreteUncSetRealUpperBnds >> discreteUncSetRealCat;
 
   // State arrays
   s >> continuousStateVars         >> continuousStateLowerBnds
@@ -225,6 +240,16 @@ void DataVariablesRep::read(MPIUnpackBuffer& s)
     >> discreteStateSetStrLowerBnds >> discreteStateSetStrUpperBnds
     >> discreteStateSetRealLowerBnds >> discreteStateSetRealUpperBnds;
 
+  // Per-type labels for uncertain variables
+  s >> normalUncLabels >> lognormalUncLabels >> uniformUncLabels
+    >> loguniformUncLabels >> triangularUncLabels >> exponentialUncLabels
+    >> betaUncLabels >> gammaUncLabels >> gumbelUncLabels
+    >> frechetUncLabels >> weibullUncLabels >> histogramBinUncLabels
+    >> poissonUncLabels >> binomialUncLabels >> negBinomialUncLabels
+    >> geometricUncLabels >> hyperGeomUncLabels >> histogramPointIntUncLabels
+    >> histogramPointStrUncLabels >> histogramPointRealUncLabels
+    >> continuousIntervalUncLabels >> discreteIntervalUncLabels
+    >> discreteUncSetIntLabels >> discreteUncSetStrLabels >> discreteUncSetRealLabels;
   // Linear constraints
   s >> linearIneqConstraintCoeffs >> linearIneqLowerBnds >> linearIneqUpperBnds
     >> linearIneqScaleTypes >> linearIneqScales >> linearEqConstraintCoeffs
@@ -261,35 +286,37 @@ void DataVariablesRep::write(std::ostream& s) const
 
   // Aleatory uncertain arrays
   s << normalUncMeans << normalUncStdDevs << normalUncLowerBnds
-    << normalUncUpperBnds << normalUncVars << lognormalUncLambdas
+    << normalUncUpperBnds << normalUncVars
+    << normalUncInferredLowerBnds << normalUncInferredUpperBnds
+    << lognormalUncLambdas
     << lognormalUncZetas << lognormalUncMeans << lognormalUncStdDevs
     << lognormalUncErrFacts << lognormalUncLowerBnds << lognormalUncUpperBnds
-    << lognormalUncVars << uniformUncLowerBnds << uniformUncUpperBnds
+    << lognormalUncVars << lognormalUncInferredUpperBnds << uniformUncLowerBnds << uniformUncUpperBnds
     << uniformUncVars << loguniformUncLowerBnds << loguniformUncUpperBnds
     << loguniformUncVars << triangularUncModes << triangularUncLowerBnds
     << triangularUncUpperBnds << triangularUncVars << exponentialUncBetas
-    << exponentialUncVars << betaUncAlphas << betaUncBetas << betaUncLowerBnds
+    << exponentialUncVars << exponentialUncLowerBnds << exponentialUncUpperBnds << betaUncAlphas << betaUncBetas << betaUncLowerBnds
     << betaUncUpperBnds << betaUncVars << gammaUncAlphas << gammaUncBetas
-    << gammaUncVars << gumbelUncAlphas << gumbelUncBetas << gumbelUncVars
-    << frechetUncAlphas << frechetUncBetas << frechetUncVars << weibullUncAlphas
-    << weibullUncBetas << weibullUncVars << histogramUncBinPairs
-    << histogramBinUncVars << poissonUncLambdas << poissonUncVars << poissonUncCat
-    << binomialUncProbPerTrial << binomialUncNumTrials << binomialUncVars << binomialUncCat
+    << gammaUncVars << gammaUncLowerBnds << gammaUncUpperBnds << gumbelUncAlphas << gumbelUncBetas << gumbelUncVars << gumbelUncLowerBnds << gumbelUncUpperBnds
+    << frechetUncAlphas << frechetUncBetas << frechetUncVars << frechetUncLowerBnds << frechetUncUpperBnds << weibullUncAlphas
+    << weibullUncBetas << weibullUncVars << weibullUncLowerBnds << weibullUncUpperBnds << histogramUncBinPairs
+    << histogramBinUncVars << histogramBinUncLowerBnds << histogramBinUncUpperBnds << poissonUncLambdas << poissonUncVars << poissonUncLowerBnds << poissonUncUpperBnds << poissonUncCat
+    << binomialUncProbPerTrial << binomialUncNumTrials << binomialUncVars << binomialUncLowerBnds << binomialUncUpperBnds << binomialUncCat
     << negBinomialUncProbPerTrial << negBinomialUncNumTrials
-    << negBinomialUncVars << negBinomialUncCat << geometricUncProbPerTrial << geometricUncVars << geometricUncCat
+    << negBinomialUncVars << negBinomialUncLowerBnds << negBinomialUncUpperBnds << negBinomialUncCat << geometricUncProbPerTrial << geometricUncVars << geometricUncLowerBnds << geometricUncUpperBnds << geometricUncCat
     << hyperGeomUncTotalPop << hyperGeomUncSelectedPop << hyperGeomUncNumDrawn
-    << hyperGeomUncVars << hyperGeomUncCat 
-    << histogramUncPointIntPairs << histogramPointIntUncVars << histogramUncPointIntCat 
-    << histogramUncPointStrPairs << histogramPointStrUncVars
-    << histogramUncPointRealPairs << histogramPointRealUncVars << histogramUncPointRealCat
+    << hyperGeomUncVars << hyperGeomUncLowerBnds << hyperGeomUncUpperBnds << hyperGeomUncCat 
+    << histogramUncPointIntPairs << histogramPointIntUncVars << histogramPointIntUncLowerBnds << histogramPointIntUncUpperBnds << histogramUncPointIntCat 
+    << histogramUncPointStrPairs << histogramPointStrUncVars << histogramPointStrUncLowerBnds << histogramPointStrUncUpperBnds
+    << histogramUncPointRealPairs << histogramPointRealUncVars << histogramPointRealUncLowerBnds << histogramPointRealUncUpperBnds << histogramUncPointRealCat
     << uncertainCorrelations;
 
   // Epistemic uncertain arrays
-  s << continuousIntervalUncBasicProbs << continuousIntervalUncVars
-    << discreteIntervalUncBasicProbs << discreteIntervalUncVars << discreteIntervalUncCat
-    << discreteUncSetIntValuesProbs << discreteUncSetIntVars << discreteUncSetIntCat
-    << discreteUncSetStrValuesProbs << discreteUncSetStrVars
-    << discreteUncSetRealValuesProbs << discreteUncSetRealVars << discreteUncSetRealCat;
+  s << continuousIntervalUncBasicProbs << continuousIntervalUncVars << continuousIntervalUncLowerBnds << continuousIntervalUncUpperBnds
+    << discreteIntervalUncBasicProbs << discreteIntervalUncVars << discreteIntervalUncLowerBnds << discreteIntervalUncUpperBnds << discreteIntervalUncCat
+    << discreteUncSetIntValuesProbs << discreteUncSetIntVars << discreteUncSetIntLowerBnds << discreteUncSetIntUpperBnds << discreteUncSetIntCat
+    << discreteUncSetStrValuesProbs << discreteUncSetStrVars << discreteUncSetStrLowerBnds << discreteUncSetStrUpperBnds
+    << discreteUncSetRealValuesProbs << discreteUncSetRealVars << discreteUncSetRealLowerBnds << discreteUncSetRealUpperBnds << discreteUncSetRealCat;
 
   // State arrays
   s << continuousStateVars         << continuousStateLowerBnds
@@ -324,6 +351,16 @@ void DataVariablesRep::write(std::ostream& s) const
     << discreteStateSetStrLowerBnds << discreteStateSetStrUpperBnds
     << discreteStateSetRealLowerBnds << discreteStateSetRealUpperBnds;
 
+  // Per-type labels for uncertain variables
+  s << normalUncLabels << lognormalUncLabels << uniformUncLabels
+    << loguniformUncLabels << triangularUncLabels << exponentialUncLabels
+    << betaUncLabels << gammaUncLabels << gumbelUncLabels
+    << frechetUncLabels << weibullUncLabels << histogramBinUncLabels
+    << poissonUncLabels << binomialUncLabels << negBinomialUncLabels
+    << geometricUncLabels << hyperGeomUncLabels << histogramPointIntUncLabels
+    << histogramPointStrUncLabels << histogramPointRealUncLabels
+    << continuousIntervalUncLabels << discreteIntervalUncLabels
+    << discreteUncSetIntLabels << discreteUncSetStrLabels << discreteUncSetRealLabels;
   // Linear constraints
   s << linearIneqConstraintCoeffs << linearIneqLowerBnds << linearIneqUpperBnds
     << linearIneqScaleTypes << linearIneqScales << linearEqConstraintCoeffs
