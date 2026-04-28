@@ -103,6 +103,10 @@ add_subdirectory(dakota_json_results_parser)
 
 add_subdirectory(dakota_json_utils)
 
+add_subdirectory(dakota_instruction_materializer)
+
+add_subdirectory(dakota_problem_desc_db_dump)
+
 # Copy needed unit test auxiliary data files
 dakota_copy_test_file("${CMAKE_CURRENT_SOURCE_DIR}/expt_data_test_files"
   "${CMAKE_CURRENT_BINARY_DIR}/expt_data_test_files"
@@ -208,11 +212,21 @@ if(DAKOTA_PYTHON_WRAPPER)
     "${CMAKE_CURRENT_BINARY_DIR}/test_dakota_python_env.in"
     dakota_unit_test_copied_files
     )
+  dakota_copy_test_file("${CMAKE_CURRENT_SOURCE_DIR}/test_dakota_python_env.json"
+    "${CMAKE_CURRENT_BINARY_DIR}/test_dakota_python_env.json"
+    dakota_unit_test_copied_files
+    )
   add_test(NAME dakota_python_env
     COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_dakota_python_env.py
-    $<TARGET_FILE_DIR:environment>
     )
   set_property(TEST dakota_python_env PROPERTY LABELS Unit)
+  if(WIN32)
+    set_property(TEST dakota_python_env PROPERTY
+      ENVIRONMENT "PYTHONPATH=${DAKOTA_PYTHON_PATH};$ENV{PYTHONPATH}")
+  else()
+    set_property(TEST dakota_python_env PROPERTY
+      ENVIRONMENT "PYTHONPATH=${DAKOTA_PYTHON_PATH}:$ENV{PYTHONPATH}")
+  endif()
 endif()
 
 

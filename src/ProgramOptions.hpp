@@ -12,6 +12,7 @@
 
 #include "dakota_data_io.hpp"
 #include "UserModes.hpp"
+#include <nlohmann/json.hpp>
 
 // ProgramOptions is currently default constructible and we pass it by
 // value to the Environment constructors.  If it becomes larger or more 
@@ -58,6 +59,12 @@ public:
   bool stdin_input() const;
   /// is input echo specified?
   bool echo_input() const;
+  /// Dakota JSON input file name
+  const String& json_input_file() const;
+  /// Dakota JSON input object for library mode
+  const nlohmann::json& json_input() const;
+  /// true when an in-memory JSON input object is present
+  bool has_json_input() const;
 
   /// pre-process input file
   bool preproc_input() const;
@@ -68,6 +75,10 @@ public:
 
   /// (deprecated) NIDR parser options
   const String& parser_options() const;
+  /// true when the legacy NIDR parser is selected
+  bool use_legacy_nidr_parser() const;
+  /// true when the new parser is selected
+  bool use_new_parser() const;
   
   /// output (user-provided or default) file base name (no tag)
   String output_file() const;
@@ -91,6 +102,8 @@ public:
   String version_query() const;
   /// is check mode active?
   bool check() const;
+  /// path for dumping the parsed IR / ProblemDescDB as JSON
+  const String& dump_ir_file() const;
 
   /// UserModes object
   const UserModes& user_modes() const;
@@ -119,6 +132,10 @@ public:
   void input_string(const String& in_string);
   /// set whether to echo input to output
   void echo_input(bool echo_flag);
+  /// set Dakota JSON input file name
+  void json_input_file(const String& in_file);
+  /// set Dakota JSON input object
+  void json_input(const nlohmann::json& in_json);
   /// set whether to pre-process input file
   void preproc_input(bool pp_flag);
   /// set name of preprocessed input file
@@ -145,6 +162,8 @@ public:
   void version(bool version_flag);
   /// set true to check input and instantiate objects, then exit
   void check(bool check_flag);
+  /// set the path for dumping the parsed IR / ProblemDescDB as JSON
+  void dump_ir_file(const String& dump_ir_path);
   /// set to enable/disable pre-run phase
   void pre_run(bool pre_run_flag);
   /// set to enable/disable run phase
@@ -188,6 +207,8 @@ private:
 
   /// verify consistency of user settings (helpful for library mode especially)
   void validate();
+  /// validate parser selection / options
+  void validate_parser_options();
 
   /// validate user run modes and set userModesFlag
   void validate_run_modes();
@@ -211,6 +232,10 @@ private:
   /// @brief true when user indicated input from stdin (inputFile == "-)
   bool stdinInput;
   bool echoInput;         ///< whether to echo client's input file at parse 
+  /// Dakota JSON input file name, e.g., "dakota.json"
+  String jsonFile;
+  /// alternate input means for library clients: in-memory JSON object
+  nlohmann::json jsonInput;
 
   bool preprocInput;      ///< whether to pre-process input with pyprepro/etc.
   String preprocCmd;      ///< pre-processing command (default pyprepro.py)
@@ -225,6 +250,7 @@ private:
   String readRestartFile;    ///< e.g., "dakota.old.rst"
   size_t stopRestartEvals;   ///< eval number at which to stop restart read
   String writeRestartFile;   ///< e.g., "dakota.new.rst"
+  String dumpIrFile;         ///< path for JSON dump of parsed IR/problem DB
   String versionQuery;     /// argument passed to "version"
 
   // Run mode flags; intially only valid on rank 0.

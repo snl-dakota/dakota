@@ -17,7 +17,7 @@ method,
 #	  mpp_search no_approx				#s5,#s11
 #	  nip						#s1,#s2,#s3,#s4,#s5,#s7,#s8,#s9,#s10,#s11
 #	  integration first_order                       #s12
-#	  probability_refinement import seed = 6837     #s12
+#	  probability_refinement importance seed = 6837     #s12
 	  num_response_levels = 0 11 11			   #s0,#s1,#s2,#s3,#s4,#s5,#s12
 	  response_levels = 				   #s0,#s1,#s2,#s3,#s4,#s5,#s12
 	0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0	   #s0,#s1,#s2,#s3,#s4,#s5,#s12

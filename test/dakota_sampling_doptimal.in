@@ -54,7 +54,8 @@ variables,
   normal_uncertain = 1                            #s0,#s2
     means = 69.0       	                          #s0,#s2
     std_deviations = 1.0  	                      #s0,#s2
-	lognormal_uncertain = 1		                      #s0,#s2
+	lognormal_uncertain = 1		              #s0,#s2
+          parameters option_1                         #s0,#s2
     means             =  1.	                      #s0,#s2
     std_deviations    =  0.5                      #s0,#s2
 	uniform_uncertain = 1                           #s0,#s2     

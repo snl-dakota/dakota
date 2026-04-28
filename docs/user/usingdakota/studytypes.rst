@@ -8,6 +8,7 @@ Study Types
    
    studytypes/parameterstudies
    studytypes/designofexperiments
+   studytypes/sensitivityanalysis.rst
    studytypes/uq
    studytypes/optimization
    studytypes/nonlinearleastsquares

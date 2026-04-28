@@ -1,0 +1,9 @@
+# Test: Unterminated quoted string
+# Expected error: unterminated double-quoted string
+
+interface
+  analysis_driver = "my_script.sh
+  
+method
+  sampling
+    samples = 100

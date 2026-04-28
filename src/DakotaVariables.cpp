@@ -351,6 +351,7 @@ short Variables::method_view(const ProblemDescDB& problem_db) const
 	method_name == MULTILEVEL_SAMPLING || method_name == IMPORT_POINTS ) { // MC/LHS, MLMC, import samples
       size_t num_auv = problem_db.get_sizet("variables.aleatory_uncertain"),
 	     num_euv = problem_db.get_sizet("variables.epistemic_uncertain");
+       std::cout << "num_auv = " << num_auv << " num_euv = " << num_euv << std::endl;
       if (num_auv && num_euv) return UNCERTAIN_VIEW;
       else if (num_euv)       return EPISTEMIC_UNCERTAIN_VIEW;
       else if (num_auv)       return ALEATORY_UNCERTAIN_VIEW;
