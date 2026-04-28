@@ -65,6 +65,10 @@ target_include_directories(dakota_surrogates PUBLIC
   )
 target_link_libraries(dakota_surrogates PUBLIC ${Teuchos_LIBRARIES})
 
+if(DAKOTA_PYBIND11 AND DAKOTA_PYTHON_SURROGATES)
+  target_link_libraries(dakota_surrogates PUBLIC pybind11::embed)
+endif()
+
 
 if(HAVE_ROL)
   target_include_directories(dakota_surrogates PUBLIC
