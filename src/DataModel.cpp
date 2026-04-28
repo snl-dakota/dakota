@@ -59,8 +59,9 @@ DataModelRep::DataModelRep():
   maxFunctionEvals(SZ_MAX), refineCVMetric("root_mean_squared"),
   refineCVFolds(10), adaptedBasisSparseGridLev(0), adaptedBasisExpOrder(0),
   adaptedBasisCollocRatio(1.), truncationTolerance(1.0e-6),
+  randomFieldIdForm(RF_KARHUNEN_LOEVE),
   analyticCovIdForm(NOCOVAR),
-  method_rotation(ROTATION_METHOD_RANKED),
+  methodRotation(ROTATION_METHOD_RANKED),
   adaptedBasisTruncationTolerance(0.9)
 { }
 
@@ -82,7 +83,6 @@ void DataModelRep::write(MPIPackBuffer& s) const
     << numRestarts << approxCorrectionType << approxCorrectionOrder
     << modelUseDerivsFlag << respScalingFlag << polynomialOrder
     << krigingCorrelations << krigingOptMethod << krigingMaxTrials
-    << krigingMaxCorrelations << krigingMinCorrelations
     << krigingNugget << krigingFindNugget << mlsWeightFunction
     << rbfBases << rbfMaxPts << rbfMaxSubsets << rbfMinPartition
     << marsMaxBases << marsInterpolation << annRandomWeight << annNodes
@@ -111,7 +111,7 @@ void DataModelRep::write(MPIPackBuffer& s) const
     << rfDataFileName << randomFieldIdForm << analyticCovIdForm
     << subspaceSampleType << subspaceIdCV << relTolerance
     << decreaseTolerance << subspaceCVMaxRank << subspaceCVIncremental
-    << subspaceIdCVMethod << method_rotation << adaptedBasisTruncationTolerance;
+    << subspaceIdCVMethod << methodRotation << adaptedBasisTruncationTolerance;
 }
 
 
@@ -132,7 +132,6 @@ void DataModelRep::read(MPIUnpackBuffer& s)
     >> numRestarts >> approxCorrectionType >> approxCorrectionOrder
     >> modelUseDerivsFlag >> respScalingFlag >> polynomialOrder
     >> krigingCorrelations >> krigingOptMethod >> krigingMaxTrials
-    >> krigingMaxCorrelations >> krigingMinCorrelations
     >> krigingNugget >> krigingFindNugget >> mlsWeightFunction
     >> rbfBases >> rbfMaxPts >> rbfMaxSubsets >> rbfMinPartition
     >> marsMaxBases >> marsInterpolation >> annRandomWeight >> annNodes
@@ -161,7 +160,7 @@ void DataModelRep::read(MPIUnpackBuffer& s)
     >> rfDataFileName >> randomFieldIdForm >> analyticCovIdForm
     >> subspaceSampleType >> subspaceIdCV >> relTolerance
     >> decreaseTolerance >> subspaceCVMaxRank >> subspaceCVIncremental
-    >> subspaceIdCVMethod >> method_rotation >> adaptedBasisTruncationTolerance;
+    >> subspaceIdCVMethod >> methodRotation >> adaptedBasisTruncationTolerance;
 }
 
 
@@ -182,7 +181,6 @@ void DataModelRep::write(std::ostream& s) const
     << numRestarts << approxCorrectionType << approxCorrectionOrder
     << modelUseDerivsFlag << respScalingFlag << polynomialOrder
     << krigingCorrelations << krigingOptMethod << krigingMaxTrials
-    << krigingMaxCorrelations << krigingMinCorrelations
     << krigingNugget << krigingFindNugget << mlsWeightFunction
     << rbfBases << rbfMaxPts << rbfMaxSubsets << rbfMinPartition
     << marsMaxBases << marsInterpolation << annRandomWeight << annNodes
@@ -211,7 +209,7 @@ void DataModelRep::write(std::ostream& s) const
     << rfDataFileName << randomFieldIdForm << analyticCovIdForm
     << subspaceSampleType << subspaceIdCV << relTolerance
     << decreaseTolerance << subspaceCVMaxRank << subspaceCVIncremental
-    << subspaceIdCVMethod << method_rotation << adaptedBasisTruncationTolerance;
+    << subspaceIdCVMethod << methodRotation << adaptedBasisTruncationTolerance;
 }
 
 

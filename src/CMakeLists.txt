@@ -129,18 +129,6 @@ if(NOT DAKOTA_VERSION_FOUND)
 endif()
 
 # -----------------
-# Set path for nlohmann::json header
-
-set(JSON_SINGLE_INCDIR "${PROJECT_SOURCE_DIR}/packages/external/json/single_include")
-if(EXISTS "${JSON_SINGLE_INCDIR}/nlohmann/json.hpp")
-  message( "Found JSON header file" )
-  list( APPEND EXT_TPL_INCDIRS ${JSON_SINGLE_INCDIR} )
-else()
-  message( FATAL_ERROR "JSON header file not found in ${JSON_SINGLE_INCDIR}.
-                        You may need run `git submodule update --init --recursive`" )
-endif()
-
-# -----------------
 
 # -----------------
 # Boost Adjustments
@@ -436,7 +424,9 @@ set(evaldata_src DakotaVariables.cpp MixedVariables.cpp RelaxedVariables.cpp
     ParamResponsePair.cpp)
 
 ## DB sources.
-set(db_src ProblemDescDB.cpp NIDRProblemDescDB.cpp ProblemDescDBUtils.cpp
+set(db_src ProblemDescDB.cpp NIDRProblemDescDB.cpp
+  ProblemDescDBUtils.cpp
+  ProblemDescDBDump.cpp
   DataEnvironment.cpp DataMethod.cpp DataModel.cpp DataVariables.cpp
   DataInterface.cpp DataResponses.cpp)
 
@@ -837,9 +827,25 @@ endif(HAVE_DEMO_TPL)
 if(HAVE_EXT_PYTHON_METHOD)
   set(iterator_src ${iterator_src} ${Dakota_SOURCE_DIR}/src/DakotaExtPythonMethod.cpp)
   add_definitions("-DHAVE_EXT_PYTHON_METHOD")
+  list(APPEND DAKOTA_INCDIRS ${pybind11_INCLUDE_DIRS})
+  if(Python3_INCLUDE_DIRS)
+    list(APPEND DAKOTA_INCDIRS ${Python3_INCLUDE_DIRS})
+  elseif(PYTHON_INCLUDE_DIRS)
+    list(APPEND DAKOTA_INCDIRS ${PYTHON_INCLUDE_DIRS})
+  endif()
 
   pybind11_add_module(ext_method DakotaExtPythonMethod.cpp)
-  target_link_libraries(ext_method PRIVATE dakota_src
+  add_dependencies(ext_method dakota_ir_generated_tables)
+  target_include_directories(ext_method PRIVATE
+            ${DAKOTA_IR_GENERATED_DIR}
+            ${Dakota_SOURCE_DIR}/src/generated_ir_tables
+            ${DAKOTA_INCDIRS}
+            ${EXT_TPL_INCDIRS}
+            ${JSON_INCLUDE_DIR}
+            ${JSON_SINGLE_INCDIR}
+            )  
+  
+    target_link_libraries(ext_method PRIVATE dakota_src
     ${Dakota_LIBRARIES} ${Dakota_TPL_LIBRARIES}
     )
 
@@ -873,6 +879,17 @@ endif(HAVE_X_GRAPHICS)
 set(Dakota_src ${Dakota_src} ${util_src} ${evaldata_src} ${db_src}
     ${model_src} ${constraint_src} ${interface_src} ${env_src}
     ${iterator_src})
+
+set(dakota_ir_src
+  InstructionMaterializer.cpp
+  InstructionMaterializerHandlersComplexVariables.cpp
+  InstructionMaterializerHandlersContinuous.cpp
+  InstructionMaterializerHandlersDiscrete.cpp
+  InstructionMaterializerHandlersHistogram.cpp
+  InstructionMaterializerHandlersPrimitive.cpp
+  InstructionMaterializerUtils.cpp
+  ${dakota_ir_generated_files}
+  )
 
 # Experiment with moving AMPL here; if cross-platform link errors, revert
 if(HAVE_AMPL)
@@ -939,7 +956,51 @@ add_library(dakota_src_fortran ${Dakota_src_fortran})
 set_target_properties(dakota_src_fortran PROPERTIES INCLUDE_DIRECTORIES "")
 list(APPEND EXPORT_TARGETS dakota_src_fortran)
 
+
+add_library(dakota_ir STATIC ${dakota_ir_src})
+add_dependencies(dakota_ir dakota_ir_generated_tables)
+set_target_properties(dakota_ir PROPERTIES POSITION_INDEPENDENT_CODE ON)
+target_include_directories(dakota_ir
+  PUBLIC
+    $<BUILD_INTERFACE:${Dakota_SOURCE_DIR}/src>
+    $<BUILD_INTERFACE:${DAKOTA_IR_GENERATED_DIR}>
+    $<BUILD_INTERFACE:${Dakota_SOURCE_DIR}/src/generated_ir_tables>
+    $<BUILD_INTERFACE:${JSON_INCLUDE_DIR}>
+    "$<BUILD_INTERFACE:${Teuchos_INCLUDE_DIRS}>"
+    "$<BUILD_INTERFACE:${Boost_INCLUDE_DIR}>"
+    "$<BUILD_INTERFACE:${Boost_INCLUDE_DIRS}>"
+    $<BUILD_INTERFACE:${EXT_TPL_INCDIRS}>
+  )
+if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9.0) OR DAKOTA_LINK_STDCPPFS)
+  target_link_libraries(dakota_ir PUBLIC stdc++fs)
+endif()
+target_link_libraries(dakota_ir PUBLIC ${Teuchos_LIBRARIES})
+target_link_libraries(dakota_ir PUBLIC Boost::serialization)
+DakotaApplyMPISettings(dakota_ir)
+
 add_library(dakota_src ${Dakota_src})
+target_include_directories(dakota_src
+  PUBLIC
+    # Dakota core headers now include JSON/IR/parser-generated headers directly.
+    # Keep these build-tree includes on dakota_src itself so compilation does not
+    # depend on transitive link behavior from auxiliary targets.
+    $<BUILD_INTERFACE:${JSON_INCLUDE_DIR}>
+    $<BUILD_INTERFACE:${JSON_SINGLE_INCDIR}>
+    $<BUILD_INTERFACE:${DAKOTA_IR_GENERATED_DIR}>
+    $<BUILD_INTERFACE:${Dakota_SOURCE_DIR}/src/generated_ir_tables>
+    $<BUILD_INTERFACE:${Dakota_SOURCE_DIR}/packages/dakota_parser/dakota_parser/include>
+    $<BUILD_INTERFACE:${Dakota_BINARY_DIR}/packages/dakota_parser/dakota_parser/generated>
+    $<BUILD_INTERFACE:${Dakota_BINARY_DIR}/packages/dakota_parser/dakota_parser/generated/environment>
+    $<BUILD_INTERFACE:${Dakota_BINARY_DIR}/packages/dakota_parser/dakota_parser/generated/method>
+    $<BUILD_INTERFACE:${Dakota_BINARY_DIR}/packages/dakota_parser/dakota_parser/generated/model>
+    $<BUILD_INTERFACE:${Dakota_BINARY_DIR}/packages/dakota_parser/dakota_parser/generated/variables>
+    $<BUILD_INTERFACE:${Dakota_BINARY_DIR}/packages/dakota_parser/dakota_parser/generated/interface>
+    $<BUILD_INTERFACE:${Dakota_BINARY_DIR}/packages/dakota_parser/dakota_parser/generated/responses>
+)
+add_dependencies(dakota_src dakota_ir_generated_tables)
+if(TARGET dakota_generated_sources)
+  add_dependencies(dakota_src dakota_generated_sources)
+endif()
 # handle special case for gcc filesystem support
 if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9.0) OR DAKOTA_LINK_STDCPPFS)
   #message(STATUS "GCC version is less than 9.0, adding -lstdc++fs")
@@ -950,8 +1011,14 @@ endif()
 target_link_libraries(dakota_src dakota_src_fortran ${DAKOTA_BOOST_TARGETS})
 # Dakota should always depend on util (consider removing option in DakotaOptions.cmamke
 target_link_libraries(dakota_src dakota_util)
+# Keep parser/IR as implementation-only link dependencies of libdakota_src.
+# Using the raw LINK_LIBRARIES property avoids making these part of dakota_src's
+# exported interface, which would otherwise require exporting/installing them
+# through DakotaTargets as public requirements.
+set_property(TARGET dakota_src APPEND PROPERTY LINK_LIBRARIES dakota_parser_lib)
+set_property(TARGET dakota_src APPEND PROPERTY LINK_LIBRARIES dakota_ir)
 list(APPEND EXPORT_TARGETS dakota_util)
-list(APPEND DAKOTA_LIBS dakota_util)
+list(APPEND DAKOTA_LIBS dakota_util dakota_ir)
 if(DAKOTA_MODULE_SURROGATES)
   target_link_libraries(dakota_src dakota_surrogates)
   #list(APPEND DAKOTA_PKG_LIBS dakota_surrogates)
@@ -1018,12 +1085,24 @@ add_executable(dakota_library_mode library_mode.cpp)
 if (DAKOTA_HAVE_MPI)
   add_executable(dakota_library_split library_split.cpp)
   target_link_libraries(dakota_library_split ${DAKOTA_ALL_LIBS})
+  target_link_libraries(dakota_library_split dakota_parser_lib)
   DakotaApplyMPISettings(dakota_library_split)
   install(TARGETS dakota_library_split DESTINATION bin)
 endif()
 
 #add_executable(test_sv test_stringvars.cpp)
 #target_link_libraries(test_sv ${DAKOTA_ALL_LIBS})
+
+if(DAKOTA_PYBIND11 AND
+   (DAKOTA_PYTHON_DIRECT_INTERFACE OR DAKOTA_PYTHON_SURROGATES OR
+    HAVE_EXT_PYTHON_METHOD))
+  target_link_libraries(dakota pybind11::embed)
+  target_link_libraries(dakota_restart_util pybind11::embed)
+  target_link_libraries(dakota_library_mode pybind11::embed)
+  if (DAKOTA_HAVE_MPI)
+    target_link_libraries(dakota_library_split pybind11::embed)
+  endif()
+endif()
 
 if(DAKOTA_DLL_API)
   if (DAKOTA_MODELCENTER)
@@ -1034,6 +1113,11 @@ if(DAKOTA_DLL_API)
   add_executable(dll_tester dll_tester.cpp)
   
   target_link_libraries(dll_tester dakota_dll_api)
+  if(DAKOTA_PYBIND11 AND
+     (DAKOTA_PYTHON_DIRECT_INTERFACE OR DAKOTA_PYTHON_SURROGATES OR
+      HAVE_EXT_PYTHON_METHOD))
+    target_link_libraries(dll_tester pybind11::embed)
+  endif()
   if (DAKOTA_MODELCENTER)
     # likely not needed due to CMake dependency management of dakota_dll_api library
     target_link_libraries(dll_tester PHXCppApi)
@@ -1049,13 +1133,17 @@ endif()
 
 
 target_link_libraries(dakota ${DAKOTA_ALL_LIBS})
+target_link_libraries(dakota dakota_parser_lib)
 DakotaApplyMPISettings(dakota)
 target_link_libraries(dakota_restart_util ${DAKOTA_ALL_LIBS})
+target_link_libraries(dakota_restart_util dakota_parser_lib)
 DakotaApplyMPISettings(dakota_restart_util)
 target_link_libraries(dakota_library_mode ${DAKOTA_ALL_LIBS})
+target_link_libraries(dakota_library_mode dakota_parser_lib)
 DakotaApplyMPISettings(dakota_library_mode)
 if(DAKOTA_DLL_API)
   target_link_libraries(dll_tester ${DAKOTA_ALL_LIBS})
+  target_link_libraries(dll_tester dakota_parser_lib)
   DakotaApplyMPISettings(dll_tester)
 endif()
 
@@ -1082,6 +1170,7 @@ install(FILES dakota.xsd dakota.xml dakota.input.nspec
 if (DAKOTA_DLL_API)
   add_library(dakota_dll_api dakota_dll_api.cpp)
   target_link_libraries(dakota_dll_api ${DAKOTA_ALL_LIBS})
+  target_link_libraries(dakota_dll_api dakota_parser_lib)
   install(TARGETS dakota_dll_api DESTINATION lib)
   DakotaApplyMPISettings(dakota_dll_api)
 endif()
@@ -1136,11 +1225,29 @@ if(DAKOTA_PYTHON_WRAPPER)
   # TODO: Need to always compile libs PIC when using Python
   # TODO: Consider -undefined dynamic_lookup link flag on Mac
   pybind11_add_module(environment dakota_python.cpp)
+  add_dependencies(environment dakota_python_package)
   # TODO: transitive includes when merging from devel
 #  target_include_directories(surrogates PRIVATE ${Teuchos_INCLUDE_DIRS})
+  target_include_directories(environment PRIVATE
+    ${PYBIND11_JSON_ROOT_DIR}/include)
   target_link_libraries(environment PRIVATE dakota_src
     ${Dakota_LIBRARIES} ${Dakota_TPL_LIBRARIES}
     )
+  target_link_libraries(environment PRIVATE dakota_parser_lib)
+
+  set(_dakota_python_environment_dir
+    "${DAKOTA_PYTHON_PATH}/dakota/environment")
+  set_target_properties(environment PROPERTIES
+    LIBRARY_OUTPUT_DIRECTORY "${_dakota_python_environment_dir}"
+    RUNTIME_OUTPUT_DIRECTORY "${_dakota_python_environment_dir}"
+    ARCHIVE_OUTPUT_DIRECTORY "${_dakota_python_environment_dir}")
+  foreach(_dakota_cfg ${CMAKE_CONFIGURATION_TYPES})
+    string(TOUPPER "${_dakota_cfg}" _dakota_cfg_upper)
+    set_target_properties(environment PROPERTIES
+      "LIBRARY_OUTPUT_DIRECTORY_${_dakota_cfg_upper}" "${_dakota_python_environment_dir}"
+      "RUNTIME_OUTPUT_DIRECTORY_${_dakota_cfg_upper}" "${_dakota_python_environment_dir}"
+      "ARCHIVE_OUTPUT_DIRECTORY_${_dakota_cfg_upper}" "${_dakota_python_environment_dir}")
+  endforeach()
 
   # The generated link.txt has too long a single argument to RPATH
   if(DAKOTA_SPLIT_ENVIRONMENT_LINK_TXT)

@@ -1,0 +1,9 @@
+method
+  centered_parameter_study
+    steps_per_variable 5 2
+    step_vector        0.1 0.5
+
+variables
+  continuous_design 2
+    descriptors    'power' 'expPBM'
+    initial_point  1.0     2.0

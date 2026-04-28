@@ -21,6 +21,7 @@ variables,
 	  std_deviations  =  2.7
 	  descriptors     = 'Z'
 	lognormal_uncertain = 1
+          parameters option_1
        	  means          = 38.0
 	  std_deviations =  3.8
 	  descriptors    = 'F_y'

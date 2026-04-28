@@ -461,7 +461,7 @@ static void callback_function(Dakota::ProblemDescDB* db, void *ptr)
   // more advanced usage would require set_db_list_nodes() or equivalent.
   db->resolve_top_method();
 
-  if ( !(db->get_ushort("interface.type") & DIRECT_INTERFACE_BIT) )
+  if ( !(db->get_ushort("interface.type") & Dakota::DIRECT_INTERFACE_BIT) )
     return;
 
   // supply labels, initial_point, and bounds

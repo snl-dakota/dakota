@@ -7,7 +7,7 @@ if(DAKOTA_ENABLE_TESTS AND Python_Interpreter_FOUND AND
 	  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
   set_property(TEST pyprepro_test PROPERTY LABELS Unit Python)
   set_property(TEST pyprepro_test 
-	  PROPERTY ENVIRONMENT PYTHONPATH "$ENV{PYTHONPATH}:${CMAKE_SOURCE_DIR}/interfaces/Python")
+	  PROPERTY ENVIRONMENT PYTHONPATH "$ENV{PYTHONPATH}:${Dakota_BINARY_DIR}/python")
 endif()
 
 # Install both tool (for backward comat) and tool.py (for Windows

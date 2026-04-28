@@ -26,6 +26,7 @@
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
+#include <pybind11_json/pybind11_json.hpp>
 
 #ifdef DAKOTA_PYTHON_NUMPY
 #include <pybind11/numpy.h>
@@ -108,6 +109,13 @@ namespace python {
       auto p_libEnv = new Dakota::LibraryEnvironment(opts);
 
       return p_libEnv;
+    }
+
+  Dakota::LibraryEnvironment* create_libEnv(const nlohmann::json& input_json) {
+
+      assert(!input_json.is_null());
+
+      return new Dakota::LibraryEnvironment(input_json);
     }
 }
 }
@@ -200,7 +208,7 @@ PYBIND11_MODULE(environment, m) {
             for( auto & interface : interfaces )
             {
               auto py11_int = std::dynamic_pointer_cast<Dakota::Pybind11Interface>(
-                                (*Dakota::Interface::interface_cache(p_libEnv->problem_description_db()).begin()));
+                                interface);
               
               if( py11_int )
                 py11_int->register_pybind11_callback_fn(callback);
@@ -223,7 +231,7 @@ PYBIND11_MODULE(environment, m) {
             for( auto & interface : interfaces )
             {
               auto py11_int = std::dynamic_pointer_cast<Dakota::Pybind11Interface>(
-                                (*Dakota::Interface::interface_cache(p_libEnv->problem_description_db()).begin()));
+                                interface);
               if( py11_int )
               {
                 for( auto const & idrv : interface->analysis_drivers() )
@@ -242,6 +250,61 @@ PYBIND11_MODULE(environment, m) {
 	    return p_libEnv;
 	  })
 	 , py::arg("callbacks"), py::arg("input_string"))
+
+    .def(py::init
+	 ([](py::object callback,
+	     const nlohmann::json& input_json)
+	  {
+	    assert(!input_json.is_null());
+            auto p_libEnv = Dakota::python::create_libEnv(input_json);
+
+            // Associate the single python callback with all Pybind11Interface interfaces
+            Dakota::InterfaceList & interfaces = Dakota::Interface::interface_cache(p_libEnv->problem_description_db());
+            for( auto & interface : interfaces )
+            {
+              auto py11_int = std::dynamic_pointer_cast<Dakota::Pybind11Interface>(
+                                interface);
+
+              if( py11_int )
+                py11_int->register_pybind11_callback_fn(callback);
+            }
+
+	    return p_libEnv;
+	  })
+	 , py::arg("callback"), py::arg("input_json"))
+
+    .def(py::init
+	 ([]( py::dict callbacks,
+	     const nlohmann::json& input_json)
+	  {
+	    assert(!input_json.is_null());
+            auto p_libEnv = Dakota::python::create_libEnv(input_json);
+
+            // Associate callbacks with interface specs
+            auto callbacks_map = callbacks.cast< std::map<std::string,py::function> >();
+            Dakota::InterfaceList & interfaces = Dakota::Interface::interface_cache(p_libEnv->problem_description_db());
+            for( auto & interface : interfaces )
+            {
+              auto py11_int = std::dynamic_pointer_cast<Dakota::Pybind11Interface>(
+                                interface);
+              if( py11_int )
+              {
+                for( auto const & idrv : interface->analysis_drivers() )
+                {
+                  if( callbacks_map.count(idrv) > 0 )
+                    py11_int->register_pybind11_callback_fn(callbacks_map[idrv]);
+                  else {
+                    Cout << "Warning: Could not find a pybind11 callback \"" << idrv << "\" needed "
+                            "by Dakota interface \"" << interface->interface_id() << "\".\n"
+                            "... will try to use module:function interface specification.\n";
+                  }
+                }
+              }
+            }
+
+	    return p_libEnv;
+	  })
+	 , py::arg("callbacks"), py::arg("input_json"))
 
     .def("execute", &Dakota::LibraryEnvironment::execute)
     .def("variables_results", &Dakota::LibraryEnvironment::variables_results)
