@@ -27,7 +27,7 @@ def setup(app):
 
 def dakota_keyword_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
 
-    # TODO: Separate role or options for 
+    # TODO: Separate role or options for
     #  Linking full text, e.g., variables-normal_uncertain vs. normal_uncertain
 
     # Lifted this title parsing from sphinx/util/docutil.py as can't
@@ -75,14 +75,14 @@ def dakota_keyword_role(name, rawtext, text, lineno, inliner, options={}, conten
 # This approach should let Sphinx resolve the reference, but then
 # Dakota customize the title and formatting, but not yet working...
 class KwRefRole(XRefRole):
-    
+
     def __init__(self, fix_parens: bool = False, lowercase: bool = False,
                  nodeclass: Optional[Type[Element]] = None,
                  innernodeclass: Optional[Type[TextElement]] = None,
                  warn_dangling: bool = False) -> None:
         super().__init__(fix_parens, lowercase, nodeclass,
                          innernodeclass, warn_dangling)
-    
+
     def process_link(self, env: "BuildEnvironment", refnode: Element, has_explicit_title: bool, title: str, target: str) -> Tuple[str, str]:
         tmp_title, tmp_target = super().process_link(env, refnode, has_explicit_title, title, target)
         abbrev_title = tmp_title.split('-')[-1]
