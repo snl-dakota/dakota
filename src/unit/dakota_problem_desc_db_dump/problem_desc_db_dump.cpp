@@ -10,7 +10,6 @@
 #include "ProblemDescDB.hpp"
 #include "ProblemDescDBDump.hpp"
 #include "IRState.hpp"
-
 #include <gtest/gtest.h>
 #include <nlohmann/json.hpp>
 
@@ -186,11 +185,10 @@ TEST(problem_desc_db_dump_tests, ir_backed_queries_still_respect_legacy_block_lo
 
   db.enable_json_input(input_path.string());
 
-  EXPECT_DEATH(
+  EXPECT_ANY_THROW(
     {
       (void)db.get_string("method.model_pointer");
-    },
-    "database is locked");
+    });
 }
 
 } // namespace

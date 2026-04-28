@@ -1198,6 +1198,7 @@ static void Bad_name(const String& entry_name, const String& where)
   Cerr << "\nBad entry_name '" << entry_name << "' in ProblemDescDB::"
        << where << std::endl;
   abort_handler(PARSE_ERROR);
+  throw PARSE_ERROR;
 }
 
 static void Locked_db()
@@ -1205,6 +1206,7 @@ static void Locked_db()
   Cerr << "\nError: database is locked.  You must first unlock the database\n"
        << "       by setting the list nodes." << std::endl;
   abort_handler(PARSE_ERROR);
+  throw PARSE_ERROR;
 }
 
 static void Null_rep(const String& who)
@@ -1212,6 +1214,7 @@ static void Null_rep(const String& who)
   Cerr << "\nError: ProblemDescDB::" << who
        << " called with NULL representation." << std::endl;
   abort_handler(PARSE_ERROR);
+  throw PARSE_ERROR;
 }
 
 // split the entry name on the first period into block.entry
