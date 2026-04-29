@@ -376,7 +376,7 @@ void CommandLineHandler::initialize_options()
 	 "Input parser: standard | nidr[strict][:dumpfile]", NULL);
 
   enroll("no_input_echo", GetLongOpt::Valueless, 
-	 "Do not echo DAKOTA input file", NULL);
+	 "Do not echo Dakota input file", NULL);
 
   // run mode options
  
