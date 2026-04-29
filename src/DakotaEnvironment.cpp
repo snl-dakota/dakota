@@ -358,7 +358,11 @@ void Environment::parse(bool check_bcast_database,
       ProblemDescDBUtils::final_input_and_template(programOptions);
     if(programOptions.echo_input())
       ProblemDescDBUtils::echo_input(final_input, template_string);
-    if (on_rank_zero && programOptions.use_new_parser()) {
+    if (on_rank_zero)
+      Cout << "Using Dakota parser: " << programOptions.parser_options()
+           << std::endl;
+
+    if (on_rank_zero && programOptions.use_standard_parser()) {
       load_validated_json_input(
         probDescDB,
         parse_new_freeform_input(programOptions, final_input),
