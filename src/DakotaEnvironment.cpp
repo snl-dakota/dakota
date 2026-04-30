@@ -351,46 +351,53 @@ void Environment::parse(bool check_bcast_database,
   const bool has_freeform_input = !programOptions.input_file().empty() ||
                                   !programOptions.input_string().empty(); 
 
-  
-  // parse input and callback functions
-  if ( has_freeform_input) {
-    auto [final_input, template_string] = 
-      ProblemDescDBUtils::final_input_and_template(programOptions);
-    if(programOptions.echo_input())
-      ProblemDescDBUtils::echo_input(final_input, template_string);
-    if (on_rank_zero)
-      Cout << "Using Dakota parser: " << programOptions.parser_options()
-           << std::endl;
+  try {
+    // parse input and callback functions
+    if ( has_freeform_input) {
+      auto [final_input, template_string] = 
+        ProblemDescDBUtils::final_input_and_template(programOptions);
+      if(programOptions.echo_input())
+        ProblemDescDBUtils::echo_input(final_input, template_string);
+      if (on_rank_zero)
+        Cout << "Using Dakota parser: " << programOptions.parser_options()
+             << std::endl;
 
-    if (on_rank_zero && programOptions.use_standard_parser()) {
-      load_validated_json_input(
-        probDescDB,
-        parse_new_freeform_input(programOptions, final_input),
-        callback, callback_data, parallelLib.world_rank());
+      if (on_rank_zero && programOptions.use_standard_parser()) {
+        load_validated_json_input(
+          probDescDB,
+          parse_new_freeform_input(programOptions, final_input),
+          callback, callback_data, parallelLib.world_rank());
+      }
+      else if (programOptions.use_legacy_nidr_parser()) {
+        probDescDB.parse_inputs(final_input, programOptions.parser_options(),
+          programOptions.user_modes().run, callback, callback_data);
+      }
+      if(programOptions.preproc_input())
+          std::filesystem::remove(programOptions.preprocessed_file());
     }
-    else if (programOptions.use_legacy_nidr_parser()) {
-      probDescDB.parse_inputs(final_input, programOptions.parser_options(),
-        programOptions.user_modes().run, callback, callback_data);
+
+    // Allow optional JSON input
+    if (on_rank_zero && !programOptions.json_input_file().empty()) {
+      process_json_input_file(programOptions, probDescDB, callback, callback_data,
+                              parallelLib.world_rank());
     }
-    if(programOptions.preproc_input())
-        std::filesystem::remove(programOptions.preprocessed_file());
-  }
 
-  // Allow optional JSON input
-  if (on_rank_zero && !programOptions.json_input_file().empty()) {
-    process_json_input_file(programOptions, probDescDB, callback, callback_data,
-                            parallelLib.world_rank());
-  }
+    if (on_rank_zero && programOptions.has_json_input()) {
+      process_json_input_object(programOptions, probDescDB, callback,
+                                callback_data, parallelLib.world_rank());
+    }
 
-  if (on_rank_zero && programOptions.has_json_input()) {
-    process_json_input_object(programOptions, probDescDB, callback,
-                              callback_data, parallelLib.world_rank());
+    // check if true, otherwise caller assumes responsibility  
+    if (check_bcast_database)
+      ProblemDescDBUtils::check_and_broadcast_pdb(probDescDB, programOptions.dump_ir_file(),
+        programOptions.user_modes(), parallelLib); 
   }
-
-  // check if true, otherwise caller assumes responsibility  
-  if (check_bcast_database)
-    ProblemDescDBUtils::check_and_broadcast_pdb(probDescDB, programOptions.dump_ir_file(),
-      programOptions.user_modes(), parallelLib); 
+  catch (const std::exception& e) {
+    if (abort_mode == ABORT_THROWS)
+      throw;
+    Cerr << e.what() << std::endl;
+    abort_handler(PARSE_ERROR);
+  }
 }
 
 
