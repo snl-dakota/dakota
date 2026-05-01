@@ -277,6 +277,12 @@ void ProgramOptions::preproc_cmd(const String& pp_cmd)
 void ProgramOptions::preprocessed_file(const String& prepro_file)
 { preprocFilename = prepro_file; }
 
+void ProgramOptions::parser_options(const String& parser_opts)
+{
+  parserOptions = parser_opts;
+  validate_parser_options();
+}
+
 void ProgramOptions::output_file(const String& out_file)
 { outputFile = out_file; }
 

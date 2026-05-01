@@ -142,6 +142,8 @@ public:
   void preprocessed_file(const String& prepro_file);
   /// set alternate pre-processing command
   void preproc_cmd(const String& pp_cmd);
+  /// set parser selection for freeform input
+  void parser_options(const String& parser_opts);
   /// set behavior for abort_handler
   void exit_mode(const String& mode);
   /// set base file name for Dakota output

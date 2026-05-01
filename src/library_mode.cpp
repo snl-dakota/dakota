@@ -294,6 +294,9 @@ void /*Dakota::*/run_dakota_data()
 void run_dakota_mixed(const char* dakota_input_file, bool mpirun_flag)
 {
   Dakota::ProgramOptions opts;
+  // Mixed library mode mutates the legacy ProblemDescDB after parsing,
+  // so keep it on the legacy parser until that API is retired.
+  opts.parser_options("nidr");
   // Could specify output redirection & restart processing in opts if needed
   opts.echo_input(true);
 
