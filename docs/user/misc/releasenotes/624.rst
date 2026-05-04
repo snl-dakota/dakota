@@ -1,0 +1,75 @@
+"""""""""""""""""""""""""
+Version 6.24 (2026/05/15)
+"""""""""""""""""""""""""
+
+**Highlight: Feature A**
+
+*Enabling / Accessing:* Where available and how to access
+
+*Documentation:* Where to learn more
+
+**Highlight: Sensitivity Analysis Section**
+
+A new section that focuses on Dakota's sensitivity analysis
+capabilities has been added the User Manual.
+
+*Enabling / Accessing:* Available in the User Manual
+
+
+**Highlight: JSON-format Input Files**
+
+In addition to the existing freeform input file format, Dakota
+now accepts JSON-format input files. The schema and other usage
+tips are documented in XXX. JSON support simplifies incorporation 
+of Dakota into larger workflows, use in agentic workflows, and iss a
+stepping stone toward more capable Python bindings.
+
+The capability is experimental, and we appreciate your bug
+reports. To fall back to the old input file reader, run Dakota
+with the `-parser nidr` command line argument.
+
+*Enabling / Accessing:* Write a JSON format input file and use the
+`-json` command line argument (e.g. `dakota -json dakota_in.json`).
+
+*Documentation*: TODO
+
+
+
+
+**Improvements by Category**
+
+*Interfaces, Input/Output*
+
+- The `pyprepro` function is now available in the 
+  `dakota.interfacing <interfaces:dprepro-and-pyprepro>` module.
+
+*Models*
+
+*Optimization Methods*
+
+
+*UQ Methods*
+
+
+*MLMF Sampling*
+ 
+*Sensitivity Analysis*
+
+- The :dakref:`method-sampling-variance_based_decomp-vbd_sampling_method-binned` approach 
+  to variance-based decomposition now works with discrete variables.
+
+**Miscellaneous Enhancements and Bugfixes**
+
+**Deprecated and Changed**
+
+- Dakota's NIDR (New Input Deck Reader) is being deprecated and replaced with
+  a newly written input parser. For this release, NIDR is available as a fallback.
+  Use the command line argument `-parser legacy` to use it.
+
+**Compatibility**
+
+- The schema for JSON input files is defined by Pydantic models, which are
+  located at `python/dakota/spec/` in the source tree. To update Dakota's
+  input grammar, Python >=3.9 and Pydantic >=2.12 are required.
+
+**Other Notes and Known Issues**
