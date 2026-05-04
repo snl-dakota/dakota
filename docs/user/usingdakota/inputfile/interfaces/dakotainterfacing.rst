@@ -26,8 +26,9 @@ The following sections describe the components of
 -  The :class:`BatchParameters` and :class:`BatchResults` classes. Containers for
    multiple :class:`Parameters` and :class:`Results` objects; used when
    evaluations are performed by Dakota in :ref:`batch mode <interfaces:batch>`
--  The :func:`dprepro` function, which provides programmatic access to the `dprepro`
-   tool for template configuration. 
+-  The :func:`dprepro` and :func:`pyprepro` functions, which provide programmatic
+   access to the :ref:`dprepro and pyprepro tools <interfaces:dprepro-and-pyprepro>`
+   for template configuration.
 -  The :class:`BatchSplitter` class, for splitting batch parameters files into the text
    for individual evaluations. Useful when converting an existing workflow that
    expects individual parameters files to work with Dakota's batch interface.
@@ -352,6 +353,52 @@ a file-like object (that has a ``.read()`` method), the template will be
 read from it. (Templates that are already in string form can be passed
 in by first wrapping them in a `StringIO <https://docs.python.org/3/library/io.html?highlight=stringio#io.StringIO>`_
 object.)
+
+.. function:: pyrepro(tpl, include_files=None, json_include=None, python_include=None, \
+   dakota_include=None, env=None, immutable_env=None, fmt="%0.10g", code="%", code_block="{% %}", \
+   inline="{ }", warn=True, output=None, **kwargs)
+
+If *tpl* is a string, it is assumed to contain a template. If it is
+a file-like object (that has a ``.read()`` method), the template will be
+read from it. (Templates that are already in string form can be passed
+in by first wrapping them in a `StringIO <https://docs.python.org/3/library/io.html?highlight=stringio#io.StringIO>`_
+object.)
+
+- *include_files*: (filename string or list of filenames)
+        Files to be read *first* and take precendance (i.e. set as immutable).
+        No output from these are printed! See include order below.
+- *json_include*: (filename string or list of filenames)
+        JSON files of variables to be read that take precendance
+        (i.e. set as immutable). See include order below
+- *python_include*: (filename string or list of filenames)
+        python files to be evaluated as pure python where indentation
+        matters and blocks should *not* have an `end` statement (contrary
+        to the modified python language in a template code block). All
+        variables take precedence (i.e. set as immutable). See include
+        order below.
+- *dakota_include*: (filename string or list of filenames)
+        Input files that are formatted as Dakota paramater files.
+        All variables are immutable. See include
+        order below.
+- *env*:(dictionary) A dictionary of additional settings. If passed as an ImmutableValDict,
+        immutability of the params will be maintained
+- *immutable_env*: (dictionary)
+        Like `env` but will automatically set every element as immutable. Just
+        for convenience
+- *fmt: String formatting code for numerical output. Can be overidden inline
+        with (for example) `{ "%5.2e" % var }`, Can specify with '%' or '{}'
+        notation
+- *code*: ['%'] Specify the string that, when it is the first non-whitespace character
+        on a line, signifies a code line
+- *code_block*: ['{% %}'] Specify the open and closing strings to delineate a code block.
+        Note tha the inner-most character must *not* be any of "{}[]()"
+- *inline*: ['{ }'] Specify the open and closing strings to specify an inline expression.
+        Use a space to separate the start and the end.
+- *warn*: [True] Whether to allow warnings on changed param names (likely from
+        Dakota)
+- *output*: [None] Convenience option to write the output string.
+
+Returns resulting string from the template
 
 :class:`Parameters` and :class:`Results`
 
