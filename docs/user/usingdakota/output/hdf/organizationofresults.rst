@@ -95,7 +95,7 @@ A shortcoming of HDF5 is that datasets are homogeneous; for example, string- and
 Sampling Moments
 ================
 
-:ref:`sampling<method-sampling>` produces moments (e.g. mean, standard deviation or variance) of all responses, as well as 95% lower and upper confidence intervals for the 1st and 2nd moments. These are stored as described below. When sampling is used in incremental mode by specifying refinement_samples, all results, including the moments group, are placed within groups named increment:<N>, where <N> indicates the increment number beginning with 1.
+:dakkw:`sampling<method-sampling>` produces moments (e.g. mean, standard deviation or variance) of all responses, as well as 95% lower and upper confidence intervals for the 1st and 2nd moments. These are stored as described below. When sampling is used in incremental mode by specifying refinement_samples, all results, including the moments group, are placed within groups named increment:<N>, where <N> indicates the increment number beginning with 1.
 
 +------------------------------+--------------------------------------------------------------------------------------------------------------+
 |                              | Moments                                                                                                      |
@@ -354,7 +354,7 @@ Aleatory UQ methods can calculate level mappings (from user-specified probabilit
 Variance-Based Decomposition (Sobol' Indices)
 =============================================
 
-Dakota's :ref:`sampling<method-sampling>` method can produce main and total effects; stochastic expansions ( :ref:`polynomial_chaos<method-polynomial_chaos>`, :ref:`stoch_collocation<method-stoch_collocation>` ) additionally can produce interaction effects. 
+Dakota's :dakkw:`sampling<method-sampling>` method can produce main and total effects; stochastic expansions ( :dakkw:`polynomial_chaos<method-polynomial_chaos>`, :dakkw:`stoch_collocation<method-stoch_collocation>` ) additionally can produce interaction effects. 
 
 +------------------------------+------------------------------------------------------------------------------+
 |                              | Main Effects                                                                 |
@@ -466,7 +466,7 @@ Stochastic expansion methods can obtain moments two ways.
 Extreme Responses
 =================
 
-:ref:`sampling<method-sampling>` with epistemic variables produces extreme values (minimum and maximum) for each response. 
+:dakkw:`sampling<method-sampling>` with epistemic variables produces extreme values (minimum and maximum) for each response. 
 
 +------------------------------+------------------------------------------------------+
 |                              | Extreme Responses                                    |
@@ -496,7 +496,7 @@ Extreme Responses
 Parameter Sets
 ==============
 
-All parameter studies ( :ref:`vector_parameter_study<method-vector_parameter_study>`, :ref:`list_parameter_study<method-list_parameter_study>`, :ref:`multidim_parameter_study<method-multidim_parameter_study>`, :ref:`centered_parameter_study<method-centered_parameter_study>` ) record tables of evaluations (parameter-response pairs), similar to Dakota's tabular output file. Centered parameter studies additionally store evaluations in an order that is more natural to intepret, which is described below.
+All parameter studies ( :dakkw:`vector_parameter_study<method-vector_parameter_study>`, :dakkw:`list_parameter_study<method-list_parameter_study>`, :dakkw:`multidim_parameter_study<method-multidim_parameter_study>`, :dakkw:`centered_parameter_study<method-centered_parameter_study>` ) record tables of evaluations (parameter-response pairs), similar to Dakota's tabular output file. Centered parameter studies additionally store evaluations in an order that is more natural to intepret, which is described below.
 
 In the tabular-like listing, variables are stored according to the scheme described in :ref:`a previous section<hdf5_results-variables>`.
  
@@ -565,9 +565,9 @@ Centered paramter studies store "slices" of the tabular data that make evaluatin
 Best Parameters
 ===============
 
-Dakota's optimization and calibration methods report the parameters at the best point (or points, for multiple :ref:`final solutions<method-final_solutions>`) discovered. These are stored using the scheme decribed in the variables section. When more than one solution is reported, the best parameters are nested in groups named set:<N>, where <N> is a integer numbering the set and beginning with 1.
+Dakota's optimization and calibration methods report the parameters at the best point (or points, for multiple :dakkw:`final solutions<method-final_solutions>`) discovered. These are stored using the scheme decribed in the variables section. When more than one solution is reported, the best parameters are nested in groups named set:<N>, where <N> is a integer numbering the set and beginning with 1.
 
-State (and other inactive variables) are reported when using :ref:`objective functions<responses-objective_functions>` and for some :ref:`calibration<responses-calibration_terms>` studies. However, when using configuration variables in a calibration, state variables are suppressed.
+State (and other inactive variables) are reported when using :dakkw:`objective functions<responses-objective_functions>` and for some :dakkw:`calibration<responses-calibration_terms>` studies. However, when using configuration variables in a calibration, state variables are suppressed.
 
 +------------------------------+------------------------------------------------------------------------------+
 |                              | Best Parameters                                                              |
@@ -597,7 +597,7 @@ State (and other inactive variables) are reported when using :ref:`objective fun
 Best Objective Functions
 ========================
 
-Dakota's optimization methods report the objective functions at the best point (or points, for multiple :ref:`final solutions<method-final_solutions>`) discovered. When more than one solution is reported, the best objective functions are nested in groups named set:<N>, where <N> is a integer numbering the set and beginning with 1.
+Dakota's optimization methods report the objective functions at the best point (or points, for multiple `final solutions`) discovered. When more than one solution is reported, the best objective functions are nested in groups named set:<N>, where <N> is a integer numbering the set and beginning with 1.
 
 +------------------------------+------------------------------------------------------------------------------+
 |                              | Best Objective Functions                                                     |
@@ -626,7 +626,7 @@ Dakota's optimization methods report the objective functions at the best point (
 Best Nonlinear Constraints
 ==========================
 
-Dakota's optimization and calibration methods report the nonlinear constraints at the best point (or points, for multiple :ref:`final solutions<method-final_solutions>`) discovered. When more than one solution is reported, the best constraints are nested in groups named set:<N>, where N is a integer numbering the set and beginning with 1.
+Dakota's optimization and calibration methods report the nonlinear constraints at the best point (or points, for multiple :dakkw:`final solutions<method-final_solutions>`) discovered. When more than one solution is reported, the best constraints are nested in groups named set:<N>, where N is a integer numbering the set and beginning with 1.
 
 +------------------------------+------------------------------------------------------------------------------+
 |                              | Best Nonlinear Constraints                                                   |
@@ -655,7 +655,7 @@ Dakota's optimization and calibration methods report the nonlinear constraints a
 Calibration
 ===========
 
-When using :ref:`calibration terms<responses-calibration_terms>` with an optimization method, or when using a nonlinear least squares method such as :ref:`nl2sol<method-nl2sol>`, Dakota reports residuals and residual norms for the best point (or points, for multiple :ref:`final solutions<method-final_solutions>`) discovered.
+When using :dakkw:`calibration terms<responses-calibration_terms>` with an optimization method, or when using a nonlinear least squares method such as :dakkw:`nl2sol<method-nl2sol>`, Dakota reports residuals and residual norms for the best point (or points, for multiple :dakkw:`final solutions<method-final_solutions>`) discovered.
 
 +------------------------------+------------------------------------------------------------+
 |                              | Best Residuals                                             |
@@ -687,7 +687,7 @@ When using :ref:`calibration terms<responses-calibration_terms>` with an optimiz
 Parameter Confidence Intervals
 ==============================
 
-Least squares methods (:ref:`nl2sol<method-nl2sol>`, :ref:`nlssol_sqp<method-nlssol_sqp>`, :ref:`optpp_g_newton<method-optpp_g_newton>`) compute confidence intervals on the calibration parameters.
+Least squares methods (:dakkw:`nl2sol<method-nl2sol>`, :dakkw:`nlssol_sqp<method-nlssol_sqp>`, :dakkw:`optpp_g_newton<method-optpp_g_newton>`) compute confidence intervals on the calibration parameters.
 
 +------------------------------+-----------------------------------------------------------------------------+
 |                              | Parameter Confidence Intervals                                              |
@@ -786,7 +786,7 @@ When performing calibration with experimental data that includes configuration v
 Multistart and Pareto Set
 =========================
 
-The :ref:`multi_start<method-multi_start>` and :ref:`pareto_set<method-pareto_set>` methods are meta-iterators that control multiple optimization sub-iterators. For both methods, Dakota stores the results of the sub-iterators (best parameters and best results). For ``multi_start``, Dakota additionally stores the initial points, and for ``pareto_set``, it stores the objective function weights.
+The :dakkw:`multi_start<method-multi_start>` and :dakkw:`pareto_set<method-pareto_set>` methods are meta-iterators that control multiple optimization sub-iterators. For both methods, Dakota stores the results of the sub-iterators (best parameters and best results). For ``multi_start``, Dakota additionally stores the initial points, and for ``pareto_set``, it stores the objective function weights.
 
 +------------------------------+-------------------------------------------------------------------------------+
 |                              | Starting Points (multi_start)                                                 |
