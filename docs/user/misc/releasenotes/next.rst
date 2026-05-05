@@ -59,7 +59,7 @@ with the `-parser legacy` command line argument.
  
 *Sensitivity Analysis*
 
-- The :dakref:`method-sampling-variance_based_decomp-vbd_sampling_method-binned` approach to variance-based decomposition now
+- The :dakkw:`method-sampling-variance_based_decomp-vbd_sampling_method-binned` approach to variance-based decomposition now
   works with discrete variables.
 
 **Miscellaneous Enhancements and Bugfixes**
