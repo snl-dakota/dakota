@@ -1,5 +1,5 @@
-Mesh Adaptive Search
-====================
+``mesh_adaptive_search``
+========================
 
 .. autopydantic_model:: dakota.spec.method.mesh_adaptive_search.MeshAdaptiveSearchConfig
 

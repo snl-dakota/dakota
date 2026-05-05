@@ -1,5 +1,5 @@
-Richardson Extrap
-=================
+``richardson_extrap``
+=====================
 
 .. autopydantic_model:: dakota.spec.method.richardson_extrap.RichardsonExtrapConfig
 

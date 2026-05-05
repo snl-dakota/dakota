@@ -1,5 +1,5 @@
-Sampling
-========
+``sampling``
+============
 
 .. autopydantic_model:: dakota.spec.method.sampling.SamplingConfig
 

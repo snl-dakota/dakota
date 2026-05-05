@@ -1,5 +1,5 @@
-Dot Sqp
-=======
+``dot_sqp``
+===========
 
 .. autopydantic_model:: dakota.spec.method.dot_sqp.DotSqpConfig
 

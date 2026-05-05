@@ -1,5 +1,5 @@
-Local Reliability
-=================
+``local_reliability``
+=====================
 
 .. autopydantic_model:: dakota.spec.method.local_reliability.LocalReliabilityConfig
 

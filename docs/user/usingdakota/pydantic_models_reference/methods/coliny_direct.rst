@@ -1,5 +1,5 @@
-Coliny Direct
-=============
+``coliny_direct``
+=================
 
 .. autopydantic_model:: dakota.spec.method.coliny_direct.ColinyDirectConfig
 

@@ -1,5 +1,5 @@
-Global Reliability
-==================
+``global_reliability``
+======================
 
 .. autopydantic_model:: dakota.spec.method.global_reliability.GlobalReliabilityConfig
 

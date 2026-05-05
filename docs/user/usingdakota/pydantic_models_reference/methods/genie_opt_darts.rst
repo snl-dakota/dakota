@@ -1,5 +1,5 @@
-Genie Opt Darts
-===============
+``genie_opt_darts``
+===================
 
 .. autopydantic_model:: dakota.spec.method.genie_opt_darts.GenieOptDartsConfig
 

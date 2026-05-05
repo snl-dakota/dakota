@@ -1,5 +1,5 @@
-Dot Bfgs
-========
+``dot_bfgs``
+============
 
 .. autopydantic_model:: dakota.spec.method.dot_bfgs.DotBfgsConfig
 

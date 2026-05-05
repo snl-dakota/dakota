@@ -1,5 +1,5 @@
-Branch And Bound
-================
+``branch_and_bound``
+====================
 
 .. autopydantic_model:: dakota.spec.method.branch_and_bound.BranchAndBoundConfig
 

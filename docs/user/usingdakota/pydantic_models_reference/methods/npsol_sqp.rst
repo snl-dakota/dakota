@@ -1,5 +1,5 @@
-Npsol Sqp
-=========
+``npsol_sqp``
+=============
 
 .. autopydantic_model:: dakota.spec.method.npsol_sqp.NpsolSqpConfig
 

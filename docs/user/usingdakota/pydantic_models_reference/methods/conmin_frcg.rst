@@ -1,5 +1,5 @@
-Conmin Frcg
-===========
+``conmin_frcg``
+===============
 
 .. autopydantic_model:: dakota.spec.method.conmin_frcg.ConminFrcgConfig
 

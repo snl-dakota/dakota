@@ -1,5 +1,5 @@
-Adaptive Sampling
-=================
+``adaptive_sampling``
+=====================
 
 .. autopydantic_model:: dakota.spec.method.adaptive_sampling.AdaptiveSamplingConfig
 

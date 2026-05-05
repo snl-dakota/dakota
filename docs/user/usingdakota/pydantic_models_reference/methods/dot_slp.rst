@@ -1,5 +1,5 @@
-Dot Slp
-=======
+``dot_slp``
+===========
 
 .. autopydantic_model:: dakota.spec.method.dot_slp.DotSlpConfig
 

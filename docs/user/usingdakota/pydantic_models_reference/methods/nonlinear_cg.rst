@@ -1,5 +1,5 @@
-Nonlinear Cg
-============
+``nonlinear_cg``
+================
 
 .. autopydantic_model:: dakota.spec.method.nonlinear_cg.NonlinearCgConfig
 

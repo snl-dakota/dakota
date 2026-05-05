@@ -1,5 +1,5 @@
-Import Points
-=============
+``import_points``
+=================
 
 .. autopydantic_model:: dakota.spec.method.import_points.ImportPointsConfig
 

@@ -1,5 +1,5 @@
-Local Evidence
-==============
+``local_evidence``
+==================
 
 .. autopydantic_model:: dakota.spec.method.local_evidence.LocalEvidenceConfig
 

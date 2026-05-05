@@ -1,5 +1,5 @@
-Multifidelity Function Train
-============================
+``multifidelity_function_train``
+================================
 
 .. autopydantic_model:: dakota.spec.method.multifidelity_function_train.MultifidelityFtConfig
 

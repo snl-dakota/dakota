@@ -1,5 +1,5 @@
-Ncsu Direct
-===========
+``ncsu_direct``
+===============
 
 .. autopydantic_model:: dakota.spec.method.ncsu_direct.NcsuDirectConfig
 

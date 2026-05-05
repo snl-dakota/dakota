@@ -1,5 +1,5 @@
-Optpp Pds
-=========
+``optpp_pds``
+=============
 
 .. autopydantic_model:: dakota.spec.method.optpp_pds.OptppPdsConfig
 

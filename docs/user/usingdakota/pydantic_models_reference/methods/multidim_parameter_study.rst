@@ -1,5 +1,5 @@
-Multidim Parameter Study
-========================
+``multidim_parameter_study``
+============================
 
 .. autopydantic_model:: dakota.spec.method.multidim_parameter_study.MultidimParameterStudyConfig
 

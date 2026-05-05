@@ -1,5 +1,5 @@
-List Parameter Study
-====================
+``list_parameter_study``
+========================
 
 .. autopydantic_model:: dakota.spec.method.list_parameter_study.ListParameterStudyConfig
 

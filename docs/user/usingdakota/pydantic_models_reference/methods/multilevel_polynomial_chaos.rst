@@ -1,5 +1,5 @@
-Multilevel Polynomial Chaos
-===========================
+``multilevel_polynomial_chaos``
+===============================
 
 .. autopydantic_model:: dakota.spec.method.multilevel_polynomial_chaos.MlPceConfig
 

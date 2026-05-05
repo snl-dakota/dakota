@@ -1,5 +1,5 @@
-Bayes Calibration
-=================
+``bayes_calibration``
+=====================
 
 .. autopydantic_model:: dakota.spec.method.bayes_calibration.BayesCalibrationConfig
 

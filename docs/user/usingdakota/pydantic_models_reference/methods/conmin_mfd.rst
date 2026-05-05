@@ -1,5 +1,5 @@
-Conmin Mfd
-==========
+``conmin_mfd``
+==============
 
 .. autopydantic_model:: dakota.spec.method.conmin_mfd.ConminMfdConfig
 

@@ -1,5 +1,5 @@
-Approximate Control Variate
-===========================
+``approximate_control_variate``
+===============================
 
 .. autopydantic_model:: dakota.spec.method.approximate_control_variate.ApproximateControlVariateConfig
 

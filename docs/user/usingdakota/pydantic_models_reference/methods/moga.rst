@@ -1,5 +1,5 @@
-Moga
-====
+``moga``
+========
 
 .. autopydantic_model:: dakota.spec.method.moga.MogaConfig
 

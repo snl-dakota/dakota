@@ -1,5 +1,5 @@
-Genie Direct
-============
+``genie_direct``
+================
 
 .. autopydantic_model:: dakota.spec.method.genie_direct.GenieDirectConfig
 

@@ -1,5 +1,5 @@
-Surrogate Based Global
-======================
+``surrogate_based_global``
+==========================
 
 .. autopydantic_model:: dakota.spec.method.surrogate_based_global.SurrogateBasedGlobalConfig
 

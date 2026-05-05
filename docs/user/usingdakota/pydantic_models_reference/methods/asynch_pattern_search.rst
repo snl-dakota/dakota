@@ -1,5 +1,5 @@
-Asynch Pattern Search
-=====================
+``asynch_pattern_search``
+=========================
 
 .. autopydantic_model:: dakota.spec.method.asynch_pattern_search.AsynchPatternSearchConfig
 

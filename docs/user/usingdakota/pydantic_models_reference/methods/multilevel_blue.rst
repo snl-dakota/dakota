@@ -1,5 +1,5 @@
-Multilevel Blue
-===============
+``multilevel_blue``
+===================
 
 .. autopydantic_model:: dakota.spec.method.multilevel_blue.MultilevelBlueConfig
 

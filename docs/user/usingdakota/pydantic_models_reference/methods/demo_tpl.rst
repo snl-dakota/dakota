@@ -1,5 +1,5 @@
-Demo Tpl
-========
+``demo_tpl``
+============
 
 .. autopydantic_model:: dakota.spec.method.demo_tpl.DemoTplConfig
 

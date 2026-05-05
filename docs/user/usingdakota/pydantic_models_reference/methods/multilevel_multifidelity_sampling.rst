@@ -1,5 +1,5 @@
-Multilevel Multifidelity Sampling
-=================================
+``multilevel_multifidelity_sampling``
+=====================================
 
 .. autopydantic_model:: dakota.spec.method.multilevel_multifidelity_sampling.MultilevelMultifidelitySamplingConfig
 

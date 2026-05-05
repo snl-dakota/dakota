@@ -1,5 +1,5 @@
-Nowpac
-======
+``nowpac``
+==========
 
 .. autopydantic_model:: dakota.spec.method.nowpac.NowpacConfig
 

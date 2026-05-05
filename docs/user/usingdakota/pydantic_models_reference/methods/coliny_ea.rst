@@ -1,5 +1,5 @@
-Coliny Ea
-=========
+``coliny_ea``
+=============
 
 .. autopydantic_model:: dakota.spec.method.coliny_ea.ColinyEaConfig
 

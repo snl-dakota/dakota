@@ -1,5 +1,5 @@
-Snowpac
-=======
+``snowpac``
+===========
 
 .. autopydantic_model:: dakota.spec.method.snowpac.SnowpacConfig
 

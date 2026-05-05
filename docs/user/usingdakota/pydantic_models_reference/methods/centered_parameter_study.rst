@@ -1,5 +1,5 @@
-Centered Parameter Study
-========================
+``centered_parameter_study``
+============================
 
 .. autopydantic_model:: dakota.spec.method.centered_parameter_study.CenteredParameterStudyConfig
 

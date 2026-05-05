@@ -1,5 +1,5 @@
-Polynomial Chaos
-================
+``polynomial_chaos``
+====================
 
 .. autopydantic_model:: dakota.spec.method.polynomial_chaos.PceConfig
 

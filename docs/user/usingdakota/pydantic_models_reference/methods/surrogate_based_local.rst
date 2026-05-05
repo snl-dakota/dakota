@@ -1,5 +1,5 @@
-Surrogate Based Local
-=====================
+``surrogate_based_local``
+=========================
 
 .. autopydantic_model:: dakota.spec.method.surrogate_based_local.SurrogateBasedLocalConfig
 

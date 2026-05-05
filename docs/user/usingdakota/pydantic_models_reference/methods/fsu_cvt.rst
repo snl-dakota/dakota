@@ -1,5 +1,5 @@
-Fsu Cvt
-=======
+``fsu_cvt``
+===========
 
 .. autopydantic_model:: dakota.spec.method.fsu_cvt.FsuCvtConfig
 

@@ -1,5 +1,5 @@
-Gpais
-=====
+``gpais``
+=========
 
 .. autopydantic_model:: dakota.spec.method.gpais.GpaisConfig
 

@@ -1,5 +1,5 @@
-Dot Mmfd
-========
+``dot_mmfd``
+============
 
 .. autopydantic_model:: dakota.spec.method.dot_mmfd.DotMmfdConfig
 

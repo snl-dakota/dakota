@@ -1,5 +1,5 @@
-Function Train
-==============
+``function_train``
+==================
 
 .. autopydantic_model:: dakota.spec.method.function_train.FtConfig
 

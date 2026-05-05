@@ -1,5 +1,5 @@
-Multifidelity Stoch Collocation
-===============================
+``multifidelity_stoch_collocation``
+===================================
 
 .. autopydantic_model:: dakota.spec.method.multifidelity_stoch_collocation.MultifidelityStochCollocConfig
 

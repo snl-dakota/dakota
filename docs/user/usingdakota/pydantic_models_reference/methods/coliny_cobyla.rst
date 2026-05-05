@@ -1,5 +1,5 @@
-Coliny Cobyla
-=============
+``coliny_cobyla``
+=================
 
 .. autopydantic_model:: dakota.spec.method.coliny_cobyla.ColinyCobylaConfig
 

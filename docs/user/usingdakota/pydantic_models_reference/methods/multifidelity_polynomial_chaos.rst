@@ -1,5 +1,5 @@
-Multifidelity Polynomial Chaos
-==============================
+``multifidelity_polynomial_chaos``
+==================================
 
 .. autopydantic_model:: dakota.spec.method.multifidelity_polynomial_chaos.MfPceConfig
 

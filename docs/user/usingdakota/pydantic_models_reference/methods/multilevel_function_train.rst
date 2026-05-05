@@ -1,5 +1,5 @@
-Multilevel Function Train
-=========================
+``multilevel_function_train``
+=============================
 
 .. autopydantic_model:: dakota.spec.method.multilevel_function_train.MultilevelFtConfig
 

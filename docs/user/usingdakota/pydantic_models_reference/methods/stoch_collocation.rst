@@ -1,5 +1,5 @@
-Stoch Collocation
-=================
+``stoch_collocation``
+=====================
 
 .. autopydantic_model:: dakota.spec.method.stoch_collocation.StochCollocConfig
 

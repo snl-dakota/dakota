@@ -1,5 +1,5 @@
-Global Evidence
-===============
+``global_evidence``
+===================
 
 .. autopydantic_model:: dakota.spec.method.global_evidence.GlobalEvidenceConfig
 

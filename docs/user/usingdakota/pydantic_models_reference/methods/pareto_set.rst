@@ -1,5 +1,5 @@
-Pareto Set
-==========
+``pareto_set``
+==============
 
 .. autopydantic_model:: dakota.spec.method.pareto_set.ParetoSetConfig
 

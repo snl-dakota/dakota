@@ -1,5 +1,5 @@
-Global Interval Est
-===================
+``global_interval_est``
+=======================
 
 .. autopydantic_model:: dakota.spec.method.global_interval_est.GlobalIntervalEstConfig
 

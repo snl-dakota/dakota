@@ -1,5 +1,5 @@
-Dot Frcg
-========
+``dot_frcg``
+============
 
 .. autopydantic_model:: dakota.spec.method.dot_frcg.DotFrcgConfig
 

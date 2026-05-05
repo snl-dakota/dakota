@@ -1,5 +1,5 @@
-Dl Solver
-=========
+``dl_solver``
+=============
 
 .. autopydantic_model:: dakota.spec.method.dl_solver.DlSolverConfig
 

@@ -1,5 +1,5 @@
-Dace
-====
+``dace``
+========
 
 .. autopydantic_model:: dakota.spec.method.dace.DaceConfig
 

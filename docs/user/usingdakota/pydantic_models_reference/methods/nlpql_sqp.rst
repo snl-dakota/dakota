@@ -1,5 +1,5 @@
-Nlpql Sqp
-=========
+``nlpql_sqp``
+=============
 
 .. autopydantic_model:: dakota.spec.method.nlpql_sqp.NlpqlSqpConfig
 

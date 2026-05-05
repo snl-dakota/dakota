@@ -1,5 +1,5 @@
-Rkd Darts
-=========
+``rkd_darts``
+=============
 
 .. autopydantic_model:: dakota.spec.method.rkd_darts.RkdDartsConfig
 

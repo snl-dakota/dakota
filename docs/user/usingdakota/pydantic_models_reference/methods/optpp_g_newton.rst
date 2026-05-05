@@ -1,5 +1,5 @@
-Optpp G Newton
-==============
+``optpp_g_newton``
+==================
 
 .. autopydantic_model:: dakota.spec.method.optpp_g_newton.OptppGNewtonConfig
 

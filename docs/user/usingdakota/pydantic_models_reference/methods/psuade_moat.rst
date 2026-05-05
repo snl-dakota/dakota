@@ -1,5 +1,5 @@
-Psuade Moat
-===========
+``psuade_moat``
+===============
 
 .. autopydantic_model:: dakota.spec.method.psuade_moat.PsuadeMoatConfig
 

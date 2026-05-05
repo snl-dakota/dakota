@@ -1,5 +1,5 @@
-Soga
-====
+``soga``
+========
 
 .. autopydantic_model:: dakota.spec.method.soga.SogaConfig
 

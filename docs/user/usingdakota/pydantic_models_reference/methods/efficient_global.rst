@@ -1,5 +1,5 @@
-Efficient Global
-================
+``efficient_global``
+====================
 
 .. autopydantic_model:: dakota.spec.method.efficient_global.EfficientGlobalConfig
 

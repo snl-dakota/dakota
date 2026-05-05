@@ -1,5 +1,5 @@
-Local Interval Est
-==================
+``local_interval_est``
+======================
 
 .. autopydantic_model:: dakota.spec.method.local_interval_est.LocalIntervalEstConfig
 

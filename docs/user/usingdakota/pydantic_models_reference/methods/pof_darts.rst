@@ -1,5 +1,5 @@
-Pof Darts
-=========
+``pof_darts``
+=============
 
 .. autopydantic_model:: dakota.spec.method.pof_darts.PofDartsConfig
 

@@ -1,5 +1,5 @@
-Vector Parameter Study
-======================
+``vector_parameter_study``
+==========================
 
 .. autopydantic_model:: dakota.spec.method.vector_parameter_study.VectorParameterStudyConfig
 

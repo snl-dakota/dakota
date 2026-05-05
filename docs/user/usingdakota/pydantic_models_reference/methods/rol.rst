@@ -1,5 +1,5 @@
-Rol
-===
+``rol``
+=======
 
 .. autopydantic_model:: dakota.spec.method.rol.RolConfig
 

@@ -1,5 +1,5 @@
-Surrogate Based Uq
-==================
+``surrogate_based_uq``
+======================
 
 .. autopydantic_model:: dakota.spec.method.surrogate_based_uq.SurrogateBasedUqConfig
 

@@ -1,5 +1,5 @@
-Importance Sampling
-===================
+``importance_sampling``
+=======================
 
 .. autopydantic_model:: dakota.spec.method.importance_sampling.ImportanceSamplingConfig
 

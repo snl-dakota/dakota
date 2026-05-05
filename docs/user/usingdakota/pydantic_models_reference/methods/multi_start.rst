@@ -1,5 +1,5 @@
-Multi Start
-===========
+``multi_start``
+===============
 
 .. autopydantic_model:: dakota.spec.method.multi_start.MultiStartConfig
 

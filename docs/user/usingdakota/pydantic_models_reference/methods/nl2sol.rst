@@ -1,5 +1,5 @@
-Nl2Sol
-======
+``nl2sol``
+==========
 
 .. autopydantic_model:: dakota.spec.method.nl2sol.Nl2solConfig
 

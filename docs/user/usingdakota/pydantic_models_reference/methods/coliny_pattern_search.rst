@@ -1,5 +1,5 @@
-Coliny Pattern Search
-=====================
+``coliny_pattern_search``
+=========================
 
 .. autopydantic_model:: dakota.spec.method.coliny_pattern_search.ColinyPatternSearchConfig
 

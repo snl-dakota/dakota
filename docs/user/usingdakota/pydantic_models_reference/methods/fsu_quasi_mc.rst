@@ -1,5 +1,5 @@
-Fsu Quasi Mc
-============
+``fsu_quasi_mc``
+================
 
 .. autopydantic_model:: dakota.spec.method.fsu_quasi_mc.FsuQuasiMcConfig
 

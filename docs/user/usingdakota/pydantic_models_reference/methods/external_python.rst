@@ -1,5 +1,5 @@
-External Python
-===============
+``external_python``
+===================
 
 .. autopydantic_model:: dakota.spec.method.external_python.ExternalPythonConfig
 

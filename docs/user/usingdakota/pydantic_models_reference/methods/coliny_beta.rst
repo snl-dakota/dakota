@@ -1,5 +1,5 @@
-Coliny Beta
-===========
+``coliny_beta``
+===============
 
 .. autopydantic_model:: dakota.spec.method.coliny_beta.ColinyBetaConfig
 

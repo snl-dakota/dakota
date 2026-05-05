@@ -1,5 +1,5 @@
-Coliny Solis Wets
-=================
+``coliny_solis_wets``
+=====================
 
 .. autopydantic_model:: dakota.spec.method.coliny_solis_wets.ColinySolisWetsConfig
 
