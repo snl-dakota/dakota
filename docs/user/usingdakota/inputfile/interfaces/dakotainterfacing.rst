@@ -385,7 +385,7 @@ object.)
 - *immutable_env*: (dictionary)
         Like `env` but will automatically set every element as immutable. Just
         for convenience
-- *fmt: String formatting code for numerical output. Can be overidden inline
+- *fmt*: String formatting code for numerical output. Can be overidden inline
         with (for example) `{ "%5.2e" % var }`, Can specify with '%' or '{}'
         notation
 - *code*: ['%'] Specify the string that, when it is the first non-whitespace character
