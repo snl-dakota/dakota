@@ -33,7 +33,21 @@ with the `-parser nidr` command line argument.
 
 *Documentation*: TODO
 
+**Highlight: Robustness enhancements for multifidelity sampling**
 
+All multifidelity sampling estimators that involve numerical solutions
+for sample allocations (MFMC, ACV, parameterized ACV, and MLBLUE) now
+include analytic derivatives of all accuracy and cost metrics, rendering
+these allocations more accurate and numerically robust.
+
+*Enabling / Accessing:* no additional specification is required, as
+all numerical solutions have been promoted to analytic gradients.
+
+*Documentation:* multifidelity sampling methods that support/require
+numerical solutions are described at
+:dakkw:`method-multifidelity_sampling`, 
+:dakkw:`method-approximate_control_variate`, and
+:dakkw:`method-multilevel_blue`.
 
 
 **Improvements by Category**
@@ -50,6 +64,13 @@ with the `-parser nidr` command line argument.
 
 *UQ Methods*
 
+- Enhancements to numerical solutions within multifidelity Monte Carlo
+  (MFMC) implementation: fix any remaining model order dependencies
+  when using the default reorder-on-the-fly approach
+  (:dakkw:`method-multifidelity_sampling-numerical_solve-model_reordering-auto_reorder`),
+  and add an option to enable solutions for a specified model ordering
+  by enforcing ordered sample allocations through linear constraints
+  (:dakkw:`method-multifidelity_sampling-numerical_solve-model_reordering-fixed_order`).
 
 *MLMF Sampling*
  

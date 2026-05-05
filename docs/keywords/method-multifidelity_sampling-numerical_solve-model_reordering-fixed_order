@@ -1,0 +1,33 @@
+Blurb::
+Enforce a prescribed model ordering in MFMC numerical solutions through additional linear constraints.
+
+Description::
+A model hierarchy is prescribed for MFMC according to the model order
+given in the ensemble surrogate model specification.  Additional
+linear constraints enforce that model allocations are strictly
+decreasing across the model order from lowest to highest fidelity.
+
+The solution provided is optimal for the MFMC estimator given the
+ordering constraints.  Allowing model reordering (the default behavior)
+may result in lower estimator variance, but can complicate comparisons
+with published MFMC implementations.
+
+Topics::
+
+Examples::
+
+.. code-block::
+
+    method,
+	multifidelity_sampling
+	  numerical_solve override
+	  model_reordering fixed_order   # optional order enforcement
+	solution_mode online_pilot
+	pilot_samples = 50 seed = 8674132
+	max_function_evaluations = 500
+
+Theory::
+
+Faq::
+
+See_Also::

@@ -1,0 +1,32 @@
+Blurb::
+Address any model misordering in MFMC numerical solutions by reordering on the fly.
+
+Description::
+The ordering of the model hierarchy is continuously redefined for MFMC
+as needed to allow for proper evaluation of estimator variance
+expressions.  Specification of a model order in the ensemble surrogate
+model specification is only used as the starting point for the algorithm.
+
+On-the-fly model reordering can result in lower estimator variance, but
+it can affect solution robustness (due to discontinuous gradients) and
+complicate comparisons with published MFMC implementations.
+
+Topics::
+
+Examples::
+
+.. code-block::
+
+    method,
+	multifidelity_sampling
+	  numerical_solve override
+	  model_reordering auto_reorder   # default
+	solution_mode online_pilot
+	pilot_samples = 50 seed = 8674132
+	max_function_evaluations = 500
+
+Theory::
+
+Faq::
+
+See_Also::
