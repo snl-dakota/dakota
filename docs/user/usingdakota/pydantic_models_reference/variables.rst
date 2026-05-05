@@ -1,5 +1,8 @@
-Variables Models
-================
+Variables
+=========
+
+.. autopydantic_model:: dakota.spec.variables.VariablesConfig
 
 .. automodule:: dakota.spec.variables
-   :members:
+    :members:
+    :exclude-members: VariablesConfig

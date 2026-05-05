@@ -1,5 +1,5 @@
-Study Models
-============
+Studies
+=======
 
 .. automodule:: dakota.spec.study
    :members:

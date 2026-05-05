@@ -194,6 +194,7 @@ Pydantic Model Documentation
    :maxdepth: 1
 
    pydantic_models_reference/study
+   pydantic_models_reference/methods
    pydantic_models_reference/environment
    pydantic_models_reference/interface
    pydantic_models_reference/model

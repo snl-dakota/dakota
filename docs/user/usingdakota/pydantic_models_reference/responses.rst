@@ -1,5 +1,8 @@
-Response Models
-===============
+Responses
+=========
+
+.. autopydantic_model:: dakota.spec.responses.ResponsesConfig
 
 .. automodule:: dakota.spec.responses
-   :members:
+    :members:
+    :exclude-members: ResponsesConfig

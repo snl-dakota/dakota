@@ -1,5 +1,8 @@
-Environment Models
-==================
+Environment
+===========
+
+.. autopydantic_model:: dakota.spec.environment.EnvironmentConfig
 
 .. automodule:: dakota.spec.environment
-   :members:
+    :members:
+    :exclude-members: EnvironmentConfig

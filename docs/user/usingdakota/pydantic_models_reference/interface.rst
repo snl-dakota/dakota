@@ -1,5 +1,8 @@
-Interface Models
-================
+Interface
+=========
+
+.. autopydantic_model:: dakota.spec.interface.InterfaceConfig
 
 .. automodule:: dakota.spec.interface
-   :members:
+    :members:
+    :exclude-members: InterfaceConfig
