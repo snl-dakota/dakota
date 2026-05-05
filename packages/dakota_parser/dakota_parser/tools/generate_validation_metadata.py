@@ -52,6 +52,7 @@ class ValidationMetadataGenerator:
         self.schema_walk_map: Dict[str, Dict[str, str]] = {}
         self.synthetic_allowed: Dict[str, Set[str]] = {}
         self.block_definitions: Dict[str, Tuple[str, bool, bool]] = {}
+        self.union_block_variants: Dict[str, List[str]] = {}
         self.required_blocks: Set[str] = set(self.schema.get('required', []))
 
     def process_all(self):
@@ -203,18 +204,20 @@ class ValidationMetadataGenerator:
             def classify_items(items_schema):
                 refs = su.all_refs(items_schema) if 'anyOf' in items_schema else []
                 if '$ref' in items_schema:
-                    return (su.ref_name(items_schema['$ref']), False, True)
+                    return (su.ref_name(items_schema['$ref']), False, True, [])
                 elif len(refs) > 1:
-                    return ('', True, True)
+                    return ('', True, True, refs)
                 elif len(refs) == 1:
-                    return (refs[0], False, True)
+                    return (refs[0], False, True, [])
                 return None
 
             items = block_schema.get('items', {})
             if items:
                 result = classify_items(items)
                 if result:
-                    self.block_definitions[block_name] = result
+                    self.block_definitions[block_name] = result[:3]
+                    if result[1] and result[3]:
+                        self.union_block_variants[block_name] = result[3]
                 continue
 
             # Nullable patterns via anyOf
@@ -228,7 +231,9 @@ class ValidationMetadataGenerator:
                 if items2:
                     result = classify_items(items2)
                     if result:
-                        self.block_definitions[block_name] = result
+                        self.block_definitions[block_name] = result[:3]
+                        if result[1] and result[3]:
+                            self.union_block_variants[block_name] = result[3]
                     break
 
     # =========================================================================
@@ -246,6 +251,7 @@ class ValidationMetadataGenerator:
         lines.append(self._generate_top_level_blocks_function())
         lines.append(self._generate_schema_walk_map_function())
         lines.append(self._generate_block_definitions_function())
+        lines.append(self._generate_union_block_selector_function())
         lines.append(self._generate_internal_only_defaults_function())
         lines.append(self._generate_float_field_coercion_function())
         lines.append(self._generate_integer_field_coercion_function())
@@ -565,6 +571,31 @@ struct FieldConstraint {{
             )
             lines.append(f'        m["{def_name}"] = {{{pairs}}};')
 
+        lines.append("        return m;")
+        lines.append("    }();")
+        lines.append("    return data;")
+        lines.append("}")
+        lines.append("")
+        return '\n'.join(lines)
+
+    def _generate_union_block_selector_function(self) -> str:
+        lines = []
+        lines.append("// ============================================================================")
+        lines.append("// Top-level union block selectors")
+        lines.append("// ============================================================================")
+        lines.append("")
+        lines.append("inline const std::map<std::string, std::map<std::string, std::string>>&")
+        lines.append("get_union_block_selector_map() {")
+        lines.append("    static const auto data = []() {")
+        lines.append("        std::map<std::string, std::map<std::string, std::string>> m;")
+        for block_name in sorted(self.union_block_variants.keys()):
+            selector_pairs = []
+            for sel_def in self.union_block_variants[block_name]:
+                child_map = self.schema_walk_map.get(sel_def, {})
+                for prop, child_def in sorted(child_map.items()):
+                    selector_pairs.append(f'{{"{prop}", "{child_def}"}}')
+            pairs = ', '.join(selector_pairs)
+            lines.append(f'        m["{block_name}"] = {{{pairs}}};')
         lines.append("        return m;")
         lines.append("    }();")
         lines.append("    return data;")
@@ -1158,6 +1189,7 @@ inline void walk_and_validate(
 inline int validate_json_document(json& doc, std::vector<std::string>& errors) {
     const auto& block_defs = get_block_definitions();
     const auto& walk_map = get_schema_walk_map();
+    const auto& union_selector_map = get_union_block_selector_map();
     const auto& allowed_blocks = get_allowed_top_level_blocks();
     int initial_errors = static_cast<int>(errors.size());
 
@@ -1188,28 +1220,26 @@ inline int validate_json_document(json& doc, std::vector<std::string>& errors) {
                 walk_and_validate(block_json, block_def.config_type, block_name, errors);
             }
         } else if (block_def.is_union) {
-            // Union block (method, model): find discriminator keywords
+            // Union block (method, model): validate against the explicit
+            // top-level selector map for that block. Do not scan the entire
+            // walk map, since nested contexts may reuse the same property names.
             auto process_union = [&](json& instance, const std::string& path) {
                 if (!instance.is_object()) return;
 
-                for (auto& [prop_name, prop_val] : instance.items()) {
-                    bool matched = false;
+                auto sel_map_it = union_selector_map.find(block_name);
+                if (sel_map_it == union_selector_map.end()) return;
+                const auto& selector_children = sel_map_it->second;
 
-                    // Search walk map for any definition that has this property
-                    for (const auto& [sel_def, sel_children] : walk_map) {
-                        auto child_it = sel_children.find(prop_name);
-                        if (child_it != sel_children.end()) {
-                            matched = true;
-                            std::string child_path = path + "." + prop_name;
-                            if (prop_val.is_object()) {
-                                walk_and_validate(prop_val, child_it->second, child_path, errors);
-                            }
-                            break;
-                        }
+                for (auto& [prop_name, prop_val] : instance.items()) {
+                    auto child_it = selector_children.find(prop_name);
+                    if (child_it == selector_children.end()) {
+                        errors.push_back(path + ": unexpected property '" + prop_name + "'");
+                        continue;
                     }
 
-                    if (!matched) {
-                        errors.push_back(path + ": unexpected property '" + prop_name + "'");
+                    std::string child_path = path + "." + prop_name;
+                    if (prop_val.is_object()) {
+                        walk_and_validate(prop_val, child_it->second, child_path, errors);
                     }
                 }
             };
