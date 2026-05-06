@@ -26,7 +26,7 @@ stepping stone toward more capable Python bindings.
 
 The capability is experimental, and we appreciate your bug
 reports. To fall back to the old input file reader, run Dakota
-with the `-parser nidr` command line argument.
+with the ``-parser nidr`` command line argument.
 
 *Enabling / Accessing:* Write a JSON format input file and use the
 `-json` command line argument (e.g. `dakota -json dakota_in.json`).
@@ -55,7 +55,7 @@ numerical solutions are described at
 *Interfaces, Input/Output*
 
 - The `pyprepro` function is now available in the 
-  `dakota.interfacing <interfaces:dprepro-and-pyprepro>` module.
+  :ref:`dakota.interfacing <interfaces:dprepro-and-pyprepro>` module.
 
 *Models*
 
@@ -85,7 +85,7 @@ numerical solutions are described at
 
 - Dakota's NIDR (New Input Deck Reader) is being deprecated and replaced with
   a newly written input parser. For this release, NIDR is available as a fallback.
-  Use the command line argument `-parser legacy` to use it.
+  Use the command line argument ``-parser legacy`` to use it.
 
 **Compatibility**
 

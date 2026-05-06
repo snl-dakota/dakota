@@ -565,7 +565,7 @@ Centered paramter studies store "slices" of the tabular data that make evaluatin
 Best Parameters
 ===============
 
-Dakota's optimization and calibration methods report the parameters at the best point (or points, for multiple :dakkw:`final solutions<method-final_solutions>`) discovered. These are stored using the scheme decribed in the variables section. When more than one solution is reported, the best parameters are nested in groups named set:<N>, where <N> is a integer numbering the set and beginning with 1.
+Dakota's optimization and calibration methods report the parameters at the best point (or points, for multiple ``final solutions``) discovered. These are stored using the scheme decribed in the variables section. When more than one solution is reported, the best parameters are nested in groups named set:<N>, where <N> is a integer numbering the set and beginning with 1.
 
 State (and other inactive variables) are reported when using :dakkw:`objective functions<responses-objective_functions>` and for some :dakkw:`calibration<responses-calibration_terms>` studies. However, when using configuration variables in a calibration, state variables are suppressed.
 
@@ -597,7 +597,7 @@ State (and other inactive variables) are reported when using :dakkw:`objective f
 Best Objective Functions
 ========================
 
-Dakota's optimization methods report the objective functions at the best point (or points, for multiple `final solutions`) discovered. When more than one solution is reported, the best objective functions are nested in groups named set:<N>, where <N> is a integer numbering the set and beginning with 1.
+Dakota's optimization methods report the objective functions at the best point (or points, for multiple ``final solutions``) discovered. When more than one solution is reported, the best objective functions are nested in groups named set:<N>, where <N> is a integer numbering the set and beginning with 1.
 
 +------------------------------+------------------------------------------------------------------------------+
 |                              | Best Objective Functions                                                     |
@@ -626,7 +626,7 @@ Dakota's optimization methods report the objective functions at the best point (
 Best Nonlinear Constraints
 ==========================
 
-Dakota's optimization and calibration methods report the nonlinear constraints at the best point (or points, for multiple :dakkw:`final solutions<method-final_solutions>`) discovered. When more than one solution is reported, the best constraints are nested in groups named set:<N>, where N is a integer numbering the set and beginning with 1.
+Dakota's optimization and calibration methods report the nonlinear constraints at the best point (or points, for multiple ``final solutions``) discovered. When more than one solution is reported, the best constraints are nested in groups named set:<N>, where N is a integer numbering the set and beginning with 1.
 
 +------------------------------+------------------------------------------------------------------------------+
 |                              | Best Nonlinear Constraints                                                   |
@@ -655,7 +655,7 @@ Dakota's optimization and calibration methods report the nonlinear constraints a
 Calibration
 ===========
 
-When using :dakkw:`calibration terms<responses-calibration_terms>` with an optimization method, or when using a nonlinear least squares method such as :dakkw:`nl2sol<method-nl2sol>`, Dakota reports residuals and residual norms for the best point (or points, for multiple :dakkw:`final solutions<method-final_solutions>`) discovered.
+When using :dakkw:`calibration terms<responses-calibration_terms>` with an optimization method, or when using a nonlinear least squares method such as :dakkw:`nl2sol<method-nl2sol>`, Dakota reports residuals and residual norms for the best point (or points, for multiple ``final solutions``) discovered.
 
 +------------------------------+------------------------------------------------------------+
 |                              | Best Residuals                                             |
