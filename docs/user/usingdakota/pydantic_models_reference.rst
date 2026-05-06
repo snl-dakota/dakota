@@ -30,8 +30,9 @@ understand how nested structures correspond to Dakota concepts.
 
 The Pydantic model documentation is arranged by module, which
 corresponds roughly to top-level Dakota blocks (environment, method,
-etc). The `DakotaStudy` model in the Study section defines the overall
-organization of the input.
+etc). The `DakotaStudy` model in the `Study` section defines the overall
+organization of the input. The `Shared` section documents models
+that are shared via inheritance by other models.
 
 Before consulting the Pydantic model reference, readers are advised
 to read the remainder of this page. A JSON reference more integrated 
@@ -52,7 +53,9 @@ Relationship to the Traditional Keyword Format
 ----------------------------------------------
 
 A key design goal for Dakota's JSON format was to mimic the traditional
-freeform as closely as possible. However, the mapping is not one-to-one.
+freeform as closely as possible. The two formats largely have the same
+key names, hierarchy, argument types, etc, and the JSON format will seem
+familiar to existing Dakota users. However, the mapping is not one-to-one.
 Several differences are especially important and will be illustrated
 using the following example.
 
@@ -190,6 +193,15 @@ Nonfinite numbers
 Nonfinite numbers such as `inf` and `nan` are not natively supported
 by JSON. They must be provided as quoted strings ("inf", "nan") in
 Dakota input.
+
+Aliases, abbreviations, and other features
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Some of the convenience features supported in freeform inputs files do not
+work in JSON. These include keyword aliases (e.g. using `nond_sampling` in place of
+:dakkw:`method-sampling`), abbreviations (e.g. using `analysis_driver` when the full keyword is
+:dakkw:`interface-analysis_drivers`), :ref:`shortcut notations <inputfile_formatting_args>`
+such as `N*Value` and `L:S:U` sequences, and input file template pre-processing.
 
 How to Work with the Pydantic Documentation
 -------------------------------------------
