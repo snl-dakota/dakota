@@ -1,11 +1,11 @@
 ``pof_darts``
 =============
 
-.. autopydantic_model:: dakota.spec.method.pof_darts.PofDartsConfig
-
 .. autopydantic_model:: dakota.spec.method.pof_darts.PofDartsSelection
+
+.. autopydantic_model:: dakota.spec.method.pof_darts.PofDartsConfig
 
 .. automodule:: dakota.spec.method.pof_darts
     :members:
-    :exclude-members: PofDartsConfig, PofDartsSelection
+    :exclude-members: PofDartsSelection, PofDartsConfig
 

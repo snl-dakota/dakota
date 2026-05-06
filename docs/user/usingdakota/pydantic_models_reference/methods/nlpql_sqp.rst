@@ -1,11 +1,11 @@
 ``nlpql_sqp``
 =============
 
-.. autopydantic_model:: dakota.spec.method.nlpql_sqp.NlpqlSqpConfig
-
 .. autopydantic_model:: dakota.spec.method.nlpql_sqp.NlpqlSqpSelection
+
+.. autopydantic_model:: dakota.spec.method.nlpql_sqp.NlpqlSqpConfig
 
 .. automodule:: dakota.spec.method.nlpql_sqp
     :members:
-    :exclude-members: NlpqlSqpConfig, NlpqlSqpSelection
+    :exclude-members: NlpqlSqpSelection, NlpqlSqpConfig
 

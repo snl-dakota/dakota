@@ -1,11 +1,11 @@
 ``pareto_set``
 ==============
 
-.. autopydantic_model:: dakota.spec.method.pareto_set.ParetoSetConfig
-
 .. autopydantic_model:: dakota.spec.method.pareto_set.ParetoSetSelection
+
+.. autopydantic_model:: dakota.spec.method.pareto_set.ParetoSetConfig
 
 .. automodule:: dakota.spec.method.pareto_set
     :members:
-    :exclude-members: ParetoSetConfig, ParetoSetSelection
+    :exclude-members: ParetoSetSelection, ParetoSetConfig
 

@@ -1,11 +1,11 @@
 ``global_interval_est``
 =======================
 
-.. autopydantic_model:: dakota.spec.method.global_interval_est.GlobalIntervalEstConfig
-
 .. autopydantic_model:: dakota.spec.method.global_interval_est.GlobalIntervalEstSelection
+
+.. autopydantic_model:: dakota.spec.method.global_interval_est.GlobalIntervalEstConfig
 
 .. automodule:: dakota.spec.method.global_interval_est
     :members:
-    :exclude-members: GlobalIntervalEstConfig, GlobalIntervalEstSelection
+    :exclude-members: GlobalIntervalEstSelection, GlobalIntervalEstConfig
 

@@ -1,11 +1,11 @@
 ``rkd_darts``
 =============
 
-.. autopydantic_model:: dakota.spec.method.rkd_darts.RkdDartsConfig
-
 .. autopydantic_model:: dakota.spec.method.rkd_darts.RkdDartsSelection
+
+.. autopydantic_model:: dakota.spec.method.rkd_darts.RkdDartsConfig
 
 .. automodule:: dakota.spec.method.rkd_darts
     :members:
-    :exclude-members: RkdDartsConfig, RkdDartsSelection
+    :exclude-members: RkdDartsSelection, RkdDartsConfig
 

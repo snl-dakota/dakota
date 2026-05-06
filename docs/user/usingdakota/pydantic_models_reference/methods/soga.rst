@@ -1,11 +1,11 @@
 ``soga``
 ========
 
-.. autopydantic_model:: dakota.spec.method.soga.SogaConfig
-
 .. autopydantic_model:: dakota.spec.method.soga.SogaSelection
+
+.. autopydantic_model:: dakota.spec.method.soga.SogaConfig
 
 .. automodule:: dakota.spec.method.soga
     :members:
-    :exclude-members: SogaConfig, SogaSelection
+    :exclude-members: SogaSelection, SogaConfig
 

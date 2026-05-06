@@ -1,11 +1,11 @@
 ``multi_start``
 ===============
 
-.. autopydantic_model:: dakota.spec.method.multi_start.MultiStartConfig
-
 .. autopydantic_model:: dakota.spec.method.multi_start.MultiStartSelection
+
+.. autopydantic_model:: dakota.spec.method.multi_start.MultiStartConfig
 
 .. automodule:: dakota.spec.method.multi_start
     :members:
-    :exclude-members: MultiStartConfig, MultiStartSelection
+    :exclude-members: MultiStartSelection, MultiStartConfig
 

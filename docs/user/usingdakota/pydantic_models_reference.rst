@@ -35,13 +35,14 @@ organization of the input. The `Shared` section documents models
 that are shared via inheritance by other models.
 
 Before consulting the Pydantic model reference, readers are advised
-to read the remainder of this page. A JSON reference more integrated 
+to read the remainder of this page. A JSON reference more integrated
 with the existing keyowrd documenation is planned for the next release.
- 
+
 .. toctree::
    :maxdepth: 1
 
    pydantic_models_reference/study
+   pydantic_models_reference/shared
    pydantic_models_reference/methods
    pydantic_models_reference/environment
    pydantic_models_reference/interface
@@ -139,11 +140,11 @@ A JSON format input file must contain a single object. As specified in the
 
 * an optional ``environment`` key (line 2), whose value is another object that
   contains configuration information for the environment block.
-* a required ``method`` key (line 5), whose value is an array of length 1 or more of 
+* a required ``method`` key (line 5), whose value is an array of length 1 or more of
   method configuration objects.
 * an optional ``model`` key (line 13), whose value is an array of length 0
   or more of model configuration objects.
-* required ``interface``,``responses``, and ``interface``  keys (lines 18, 30, 45), 
+* required ``interface``,``responses``, and ``interface``  keys (lines 18, 30, 45),
   whose values are arrays of length 1 or more of configuration objects for those
   blocks
 
@@ -153,7 +154,7 @@ Leaf Keywords
 ~~~~~~~~~~~~~
 
 Keywords that have no children ("leaf" keywords) receive
-a constant ``true`` argument. In the exapmle input in the 
+a constant ``true`` argument. In the exapmle input in the
 preceeding section, they keys ``analytic_gradients`` (line 33) and
 ``no_hessians`` (line 35) are instances of this.
 
@@ -206,9 +207,9 @@ such as `N*Value` and `L:S:U` sequences, and input file template pre-processing.
 How to Work with the Pydantic Documentation
 -------------------------------------------
 
-When using the generated Pydantic documentation, think of each model as 
+When using the generated Pydantic documentation, think of each model as
 representing a portion of the Dakota input hierarchy. Field names within
-a model correspond to JSON keys. Nested models represent nested blocks 
+a model correspond to JSON keys. Nested models represent nested blocks
 of the input structure. Required vs optional fields, default values, and
 allowed types are all defined there.
 

@@ -1,11 +1,11 @@
 ``psuade_moat``
 ===============
 
-.. autopydantic_model:: dakota.spec.method.psuade_moat.PsuadeMoatConfig
-
 .. autopydantic_model:: dakota.spec.method.psuade_moat.PsuadeMoatSelection
+
+.. autopydantic_model:: dakota.spec.method.psuade_moat.PsuadeMoatConfig
 
 .. automodule:: dakota.spec.method.psuade_moat
     :members:
-    :exclude-members: PsuadeMoatConfig, PsuadeMoatSelection
+    :exclude-members: PsuadeMoatSelection, PsuadeMoatConfig
 

@@ -1,11 +1,11 @@
 ``conmin_mfd``
 ==============
 
-.. autopydantic_model:: dakota.spec.method.conmin_mfd.ConminMfdConfig
-
 .. autopydantic_model:: dakota.spec.method.conmin_mfd.ConminMfdSelection
+
+.. autopydantic_model:: dakota.spec.method.conmin_mfd.ConminMfdConfig
 
 .. automodule:: dakota.spec.method.conmin_mfd
     :members:
-    :exclude-members: ConminMfdConfig, ConminMfdSelection
+    :exclude-members: ConminMfdSelection, ConminMfdConfig
 

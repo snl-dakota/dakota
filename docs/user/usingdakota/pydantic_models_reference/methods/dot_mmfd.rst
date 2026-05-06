@@ -1,11 +1,11 @@
 ``dot_mmfd``
 ============
 
-.. autopydantic_model:: dakota.spec.method.dot_mmfd.DotMmfdConfig
-
 .. autopydantic_model:: dakota.spec.method.dot_mmfd.DotMmfdSelection
+
+.. autopydantic_model:: dakota.spec.method.dot_mmfd.DotMmfdConfig
 
 .. automodule:: dakota.spec.method.dot_mmfd
     :members:
-    :exclude-members: DotMmfdConfig, DotMmfdSelection
+    :exclude-members: DotMmfdSelection, DotMmfdConfig
 

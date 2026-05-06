@@ -1,11 +1,11 @@
 ``global_reliability``
 ======================
 
-.. autopydantic_model:: dakota.spec.method.global_reliability.GlobalReliabilityConfig
-
 .. autopydantic_model:: dakota.spec.method.global_reliability.GlobalReliabilitySelection
+
+.. autopydantic_model:: dakota.spec.method.global_reliability.GlobalReliabilityConfig
 
 .. automodule:: dakota.spec.method.global_reliability
     :members:
-    :exclude-members: GlobalReliabilityConfig, GlobalReliabilitySelection
+    :exclude-members: GlobalReliabilitySelection, GlobalReliabilityConfig
 

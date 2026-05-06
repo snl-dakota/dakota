@@ -1,11 +1,11 @@
 ``import_points``
 =================
 
-.. autopydantic_model:: dakota.spec.method.import_points.ImportPointsConfig
-
 .. autopydantic_model:: dakota.spec.method.import_points.ImportPointsSelection
+
+.. autopydantic_model:: dakota.spec.method.import_points.ImportPointsConfig
 
 .. automodule:: dakota.spec.method.import_points
     :members:
-    :exclude-members: ImportPointsConfig, ImportPointsSelection
+    :exclude-members: ImportPointsSelection, ImportPointsConfig
 

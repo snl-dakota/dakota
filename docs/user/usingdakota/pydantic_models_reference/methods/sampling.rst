@@ -1,11 +1,11 @@
 ``sampling``
 ============
 
-.. autopydantic_model:: dakota.spec.method.sampling.SamplingConfig
-
 .. autopydantic_model:: dakota.spec.method.sampling.SamplingSelection
+
+.. autopydantic_model:: dakota.spec.method.sampling.SamplingConfig
 
 .. automodule:: dakota.spec.method.sampling
     :members:
-    :exclude-members: SamplingConfig, SamplingSelection
+    :exclude-members: SamplingSelection, SamplingConfig
 
