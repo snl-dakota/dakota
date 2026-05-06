@@ -274,7 +274,7 @@ the keyword ``use_variable_labels`` will trigger validation and potential reorde
 imported variable columns based on labels provided in the tabular
 header. Surfpack global surrogate models may also be evaluated at a
 user-provided file containing challenge (test) points. Refer to the
-:ref:`model-surrogate-global` keywords for additional information on
+:dakkw:`model->surrogate->global <model-surrogate-global>` keywords for additional information on
 these specifications.
 
 Previously exported surfpack and experimental global surrogate models

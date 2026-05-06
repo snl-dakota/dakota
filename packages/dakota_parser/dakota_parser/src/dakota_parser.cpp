@@ -199,37 +199,37 @@ bool validate_document(const Document& doc) {
     for (const auto& block : doc.blocks) {
         if (block.name == "method") {
             Validator<method_constraints> validator;
-            validator.validate(doc);
+            validator.validate(block);
             const auto& errors = validator.get_errors();
             all_errors.insert(all_errors.end(), errors.begin(), errors.end());
         }
         else if (block.name == "variables") {
             Validator<variables_constraints> validator;
-            validator.validate(doc);
+            validator.validate(block);
             const auto& errors = validator.get_errors();
             all_errors.insert(all_errors.end(), errors.begin(), errors.end());
         }
         else if (block.name == "interface") {
             Validator<interface_constraints> validator;
-            validator.validate(doc);
+            validator.validate(block);
             const auto& errors = validator.get_errors();
             all_errors.insert(all_errors.end(), errors.begin(), errors.end());
         }
         else if (block.name == "responses") {
             Validator<responses_constraints> validator;
-            validator.validate(doc);
+            validator.validate(block);
             const auto& errors = validator.get_errors();
             all_errors.insert(all_errors.end(), errors.begin(), errors.end());
         }
         else if (block.name == "environment") {
             Validator<environment_constraints> validator;
-            validator.validate(doc);
+            validator.validate(block);
             const auto& errors = validator.get_errors();
             all_errors.insert(all_errors.end(), errors.begin(), errors.end());
         }
         else if (block.name == "model") {
             Validator<model_constraints> validator;
-            validator.validate(doc);
+            validator.validate(block);
             const auto& errors = validator.get_errors();
             all_errors.insert(all_errors.end(), errors.begin(), errors.end());
         }
@@ -257,42 +257,42 @@ bool analyze_semantics(Document& doc) {
     for (auto& block : doc.blocks) {
         if (block.name == "method") {
             SemanticAnalyzer<method_semantic> analyzer;
-            analyzer.analyze(doc);
+            analyzer.analyze(block);
             total_resolved += analyzer.get_aliases_resolved();
             const auto& errors = analyzer.get_errors();
             all_errors.insert(all_errors.end(), errors.begin(), errors.end());
         }
         else if (block.name == "variables") {
             SemanticAnalyzer<variables_semantic> analyzer;
-            analyzer.analyze(doc);
+            analyzer.analyze(block);
             total_resolved += analyzer.get_aliases_resolved();
             const auto& errors = analyzer.get_errors();
             all_errors.insert(all_errors.end(), errors.begin(), errors.end());
         }
         else if (block.name == "interface") {
             SemanticAnalyzer<interface_semantic> analyzer;
-            analyzer.analyze(doc);
+            analyzer.analyze(block);
             total_resolved += analyzer.get_aliases_resolved();
             const auto& errors = analyzer.get_errors();
             all_errors.insert(all_errors.end(), errors.begin(), errors.end());
         }
         else if (block.name == "responses") {
             SemanticAnalyzer<responses_semantic> analyzer;
-            analyzer.analyze(doc);
+            analyzer.analyze(block);
             total_resolved += analyzer.get_aliases_resolved();
             const auto& errors = analyzer.get_errors();
             all_errors.insert(all_errors.end(), errors.begin(), errors.end());
         }
         else if (block.name == "environment") {
             SemanticAnalyzer<environment_semantic> analyzer;
-            analyzer.analyze(doc);
+            analyzer.analyze(block);
             total_resolved += analyzer.get_aliases_resolved();
             const auto& errors = analyzer.get_errors();
             all_errors.insert(all_errors.end(), errors.begin(), errors.end());
         }
         else if (block.name == "model") {
             SemanticAnalyzer<model_semantic> analyzer;
-            analyzer.analyze(doc);
+            analyzer.analyze(block);
             total_resolved += analyzer.get_aliases_resolved();
             const auto& errors = analyzer.get_errors();
             all_errors.insert(all_errors.end(), errors.begin(), errors.end());

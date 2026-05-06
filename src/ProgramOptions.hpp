@@ -77,8 +77,8 @@ public:
   const String& parser_options() const;
   /// true when the legacy NIDR parser is selected
   bool use_legacy_nidr_parser() const;
-  /// true when the new parser is selected
-  bool use_new_parser() const;
+  /// true when the standard parser is selected
+  bool use_standard_parser() const;
   
   /// output (user-provided or default) file base name (no tag)
   String output_file() const;
@@ -142,6 +142,8 @@ public:
   void preprocessed_file(const String& prepro_file);
   /// set alternate pre-processing command
   void preproc_cmd(const String& pp_cmd);
+  /// set parser selection for freeform input
+  void parser_options(const String& parser_opts);
   /// set behavior for abort_handler
   void exit_mode(const String& mode);
   /// set base file name for Dakota output
@@ -241,7 +243,7 @@ private:
   String preprocCmd;      ///< pre-processing command (default pyprepro.py)
   String preprocFilename; ///< pre-processed input file
 
-  String parserOptions;   ///< Deprecated option for NIDR parser options
+  String parserOptions;   ///< Parser selection/options from CLI or environment
   String exitMode;        ///< Abort or throw on error
 
   String outputFile;      ///< Dakota output base file name, e.g., "dakota.out"

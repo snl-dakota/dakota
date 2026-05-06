@@ -27,7 +27,7 @@ bool valid_parser_option(const char* parser_option)
   if (!parser_option)
     return true;
 
-  return std::strcmp(parser_option, "new") == 0 ||
+  return std::strcmp(parser_option, "standard") == 0 ||
          std::strcmp(parser_option, "nidr") == 0 ||
          std::strcmp(parser_option, "nidrstrict") == 0 ||
          std::strncmp(parser_option, "nidr:", 5) == 0;
@@ -348,33 +348,38 @@ void CommandLineHandler::initialize_options()
   // information options
   enroll("help",    GetLongOpt::Valueless, "Print this summary", NULL);
 
-  enroll("version", GetLongOpt::OptionalValue, "Print DAKOTA version number", NULL);
+  enroll("version", GetLongOpt::OptionalValue, "Print Dakota version number", NULL);
 
   // I/O options
   enroll("input",   GetLongOpt::MandatoryValue,
-	 "REQUIRED DAKOTA input file $val", NULL);
+	 "Freeform Dakota input file $val", NULL);
+   
+  enroll("json", GetLongOpt::MandatoryValue,
+         "JSON Dakota input file $val", NULL);
 
   enroll("preproc", GetLongOpt::OptionalValue,
-	 "Pre-process input file with pyprepro or tool $val",
+	 "Pre-process freeform input file with pyprepro or tool $val",
 	 NULL);
 
   enroll("output",  GetLongOpt::MandatoryValue,
-	 "Redirect DAKOTA standard output to file $val", NULL);
+	 "Redirect Dakota standard output to file $val", NULL);
 
   enroll("error",   GetLongOpt::MandatoryValue,
-         "Redirect DAKOTA standard error to file $val", NULL);
+         "Redirect Dakota standard error to file $val", NULL);
+
+  enroll("check",   GetLongOpt::Valueless, "Perform input checks", NULL);
 
   enroll("dump_ir", GetLongOpt::MandatoryValue,
          "Dump parsed IR / ProblemDescDB JSON to file $val", NULL);
 
   enroll("parser",  GetLongOpt::MandatoryValue,
-	 "Parsing technology: new | nidr[strict][:dumpfile]", NULL);
+	 "Input parser: standard | nidr[strict][:dumpfile]", NULL);
 
   enroll("no_input_echo", GetLongOpt::Valueless, 
-	 "Do not echo DAKOTA input file", NULL);
+	 "Do not echo Dakota input file", NULL);
 
   // run mode options
-  enroll("check",   GetLongOpt::Valueless, "Perform input checks", NULL);
+ 
 
   enroll("pre_run",  GetLongOpt::OptionalValue, 
   	 "Perform pre-run (variables generation) phase", NULL);
@@ -390,7 +395,7 @@ void CommandLineHandler::initialize_options()
   // read_restart no value:    retrieve returns empty string
   // read_restart with value:  retrieve returns value
   enroll("read_restart", GetLongOpt::OptionalValue,
-         "Read an existing DAKOTA restart file $val", NULL);
+         "Read an existing Dakota restart file $val", NULL);
 
   enroll("stop_restart", GetLongOpt::MandatoryValue,
          "Stop restart file processing at evaluation $val", NULL);
@@ -405,9 +410,6 @@ void CommandLineHandler::initialize_options()
 
   //enroll("mpi", GetLongOpt::Valueless,
   //       "Turn on message passing within an executable built with MPI", 0);
-
-  enroll("json", GetLongOpt::MandatoryValue,
-         "Use input options contained in a JSON file", NULL);
 }
 
 
@@ -477,7 +479,8 @@ void CommandLineHandler::check_usage(int argc, char** argv)
   if (!valid_parser_option(cs)) {
     usage();
     output_helper(
-      "\n-parser must specify one of: new, nidr, nidrstrict, nidr:<dumpfile>.",
+      "\n-parser must specify one of: standard, nidr, nidrstrict, "
+      "nidr:<dumpfile>.",
       Cerr);
     abort_handler(-1);
   }

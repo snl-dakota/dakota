@@ -94,13 +94,13 @@ Note that because it is unwieldy to report gradients (or Hessians) in a tabular 
 
 This pair of examples hopefully provides a basic understanding of the flow of evaluation data between a method, model, and interface, and explains why models and interfaces are producers of evaluation data.
 
-Next consider a somewhat more complex study that includes a Dakota model of type :ref:`surrogate<model-surrogate>`. A surrogate model performs evaluations requested by a method by executing a special kind of interface called an approximation interface, which Dakota implicitly creates without the direct knowledge of the user. Approximation interfaces are a generic container for the various kinds of surrogates Dakota can use, such as :ref:`gaussian processes<model-surrogate-global-gaussian_process>`.
+Next consider a somewhat more complex study that includes a Dakota model of type :dakkw:`surrogate<model-surrogate>`. A surrogate model performs evaluations requested by a method by executing a special kind of interface called an approximation interface, which Dakota implicitly creates without the direct knowledge of the user. Approximation interfaces are a generic container for the various kinds of surrogates Dakota can use, such as :dakkw:`gaussian processes<model-surrogate-global-gaussian_process>`.
 
-A Dakota model of type global surrogate may use a user-specified :ref:`dace method<model-surrogate-global-dace_method_pointer>` to construct the actual underlying model(s) that it evaluates via its approximation interface. The dace method will have its own model (typically of type single/simulation), which will have a user-specified interface.
+A Dakota model of type global surrogate may use a user-specified :dakkw:`dace method<model-surrogate-global-dace_method_pointer>` to construct the actual underlying model(s) that it evaluates via its approximation interface. The dace method will have its own model (typically of type single/simulation), which will have a user-specified interface.
 
-In this more complicated case there are at least four components that produce evaluation data: (1) the surrogate model and (2) its approximation interface, and (3) the dace method's model and (4) its interface. Although only components (1), (3), and (4) are user-specified, evaluation data produced by (2) may be written to HDF5, as well. (:ref:`As explained below<hdf5_evaluations-selection>`, only evaluations performed by the surrogate model and the dace interface will be recorded by default. This can be overriden using :ref:`hdf5<environment-results_output-hdf5>` sub-keywords.) This is an example where "extra" and potentially confusing data appears in Dakota's output due to an auto-generated component.
+In this more complicated case there are at least four components that produce evaluation data: (1) the surrogate model and (2) its approximation interface, and (3) the dace method's model and (4) its interface. Although only components (1), (3), and (4) are user-specified, evaluation data produced by (2) may be written to HDF5, as well. (:ref:`As explained below<hdf5_evaluations-selection>`, only evaluations performed by the surrogate model and the dace interface will be recorded by default. This can be overriden using :dakkw:`environment-results_output-hdf5` sub-keywords.) This is an example where "extra" and potentially confusing data appears in Dakota's output due to an auto-generated component.
 
-An important family of implicitly-created models is the recast models, which have the responsibility of transforming variables and responses. One type of recast called a data transform model is responsible for computing residuals when a user provides :ref:`experimental data<responses-calibration_terms-calibration_data>` in a calibration study. Scaling recast models are employed when scaling is requested by the user for variables and/or responses.
+An important family of implicitly-created models is the recast models, which have the responsibility of transforming variables and responses. One type of recast called a data transform model is responsible for computing residuals when a user provides :dakkw:`experimental data<responses-calibration_terms-calibration_data>` in a calibration study. Scaling recast models are employed when scaling is requested by the user for variables and/or responses.
 
 Recast models work on the principle of function composition, and "wrap" a submodel, which may itself also be a recast model. The innermost model in the recursion often will be the simulation or surrogate model specified by the user in the input file. Dakota is capable of recording evaluation data at each level of recast.
 
@@ -145,7 +145,7 @@ Recast models are a special case and receive the name ``RECAST_<WRAPPED-MODEL>_<
 
  - N is an incrementing integer that begins with 1. It is employed to distinguish recasts of the same type that wrap the same underlying model.
 
-The model's evaluations may be the result of combining information from multiple sources. A simulation/single model will receive all the information it requires from its interface, but more complicated model types may use information not only from interfaces, but also other models and the results of method executions. Nested models, for instance, receive information from a submethod (the mean of a response from a sampling study, for instance) and potentially also an :ref:`optional interface<model-nested-optional_interface_pointer>`.
+The model's evaluations may be the result of combining information from multiple sources. A simulation/single model will receive all the information it requires from its interface, but more complicated model types may use information not only from interfaces, but also other models and the results of method executions. Nested models, for instance, receive information from a submethod (the mean of a response from a sampling study, for instance) and potentially also an :dakkw:`optional interface<model-nested-optional_interface_pointer>`.
 
 The sources of a model's evaluations may be roughly identified by examining the contents of that models' ``sources`` group. The ``sources`` group contains softlinks (note: softlinks are an HDF5 feature analogous to soft or symbolic links on many file systems) to groups for the interfaces, models, or methods that the model used to produce its evaluation data. (At this time, Dakota does not report the specific interface or model evaluations or method executions that were used to produce a specific model evaluation, but this is a planned feature.)
 
@@ -215,7 +215,7 @@ The responses group contains datasets for functions and, when available, gradien
 |                              | +-----------+---------+----------------+----------------------+------------------+ |
 +------------------------------+------------------------------------------------------------------------------------+
 
-*Gradients:* The gradients dataset is three-dimensional. It has the shape :math:`evaluations \times responses \times variables`. Dakota supports a specification of :ref:`mixed_gradients<responses-mixed_gradients>`, and the gradients dataset is sized and organized such that only those responses for which gradients are available are stored. When ``mixed_gradients`` are employed, a response will not necessarily have the same index in the functions and gradients datasets.
+*Gradients:* The gradients dataset is three-dimensional. It has the shape :math:`evaluations \times responses \times variables`. Dakota supports a specification of :dakkw:`mixed_gradients<responses-mixed_gradients>`, and the gradients dataset is sized and organized such that only those responses for which gradients are available are stored. When ``mixed_gradients`` are employed, a response will not necessarily have the same index in the functions and gradients datasets.
 
 Because it is possible that the gradient could be computed with respect to any of the continuous variables, active or inactive, that belong to the associated model, the ``gradients`` dataset is sized to accomodate gradients taken with respect to all continuous variables. Components that were not included in a particular evaluation will be set to NaN (not a number), and the ``derivative_variables_vector`` (in the matadata group) for that evaluation can be examined as well.
 
@@ -328,7 +328,7 @@ The final possible member of the properties group is the ``variable_parameters``
 
 **Metadata**
 
-Beginning with release 6.16, Dakota supports response :ref:`metadata<responses-metadata>`. If configured, metadata values are stored in the ``metadata`` dataset.
+Beginning with release 6.16, Dakota supports response :dakkw:`metadata<responses-metadata>`. If configured, metadata values are stored in the ``metadata`` dataset.
 
 TODO
 
@@ -338,24 +338,24 @@ TODO
 Selecting Models and Interfaces to Store
 ========================================
 
-When HDF5 output is enabled (by including the :ref:`hdf5<environment-results_output-hdf5>` keyword), then by default evaluation data for the following components will be stored:
+When HDF5 output is enabled (by including the :dakkw:`environment-results_output-hdf5` keyword), then by default evaluation data for the following components will be stored:
 
  - The model that belongs to the top-level method. (Currently, if the top-level method is a metaiterator such as method-hybrid, no model evaluation data will be stored.)
- - All simulation interfaces. (interfaces of type :ref:`fork<interface-analysis_drivers-fork>`, :ref:`system<interface-analysis_drivers-system>`, :ref:`direct<interface-analysis_drivers-direct>`, etc).
+ - All simulation interfaces. (interfaces of type :dakkw:`interface-analysis_drivers-fork`, :dakkw:`interface-analysis_drivers-system`, :dakkw:`interface-analysis_drivers-direct`, etc).
 
-The user can override these defaults using the keywords :ref:`model_selection<environment-results_output-hdf5-model_selection>` and :ref:`interface_selection<environment-results_output-hdf5-interface_selection>`.
+The user can override these defaults using the keywords :dakkw:`environment-results_output-hdf5-model_selection` and :dakkw:`environment-results_output-hdf5-interface_selection`.
 
 The choices for ``model_selection`` are:
 
- - :ref:`top_method<environment-results_output-hdf5-model_selection-top_method>` : (default) Store evaluation data for the top method's model only.
- - :ref:`all_methods<environment-results_output-hdf5-model_selection-all_methods>` : Store evaluation data for all models that belong directly to a method. Note that a these models may be recasts of user-specified models, not the user-specified models themselves.
- - :ref:`all<environment-results_output-hdf5-model_selection-all>` : Store evaluation data for all models.
- - :ref:`none<environment-results_output-hdf5-model_selection-none>` : Store evaluation data for no models.
+ - :dakkw:`environment-results_output-hdf5-model_selection-top_method` : (default) Store evaluation data for the top method's model only.
+ - :dakkw:`environment-results_output-hdf5-model_selection-all_methods` : Store evaluation data for all models that belong directly to a method. Note that a these models may be recasts of user-specified models, not the user-specified models themselves.
+ - :dakkw:`environment-results_output-hdf5-model_selection-all` : Store evaluation data for all models.
+ - :dakkw:`environment-results_output-hdf5-model_selection-none` : Store evaluation data for no models.
 
 The choices for interface_selection are:
 
- - :ref:`simulation<environment-results_output-hdf5-interface_selection-simulation>` : (default) Store evaluation data for simulation interfaces.
- - :ref:`all<environment-results_output-hdf5-interface_selection-all>` : Store evaluation data for all interfaces.
- - :ref:`none<environment-results_output-hdf5-interface_selection-none>` : Store evaluation data for no interfaces.
+ - :dakkw:`environment-results_output-hdf5-interface_selection-simulation` : (default) Store evaluation data for simulation interfaces.
+ - :dakkw:`environment-results_output-hdf5-interface_selection-all` : Store evaluation data for all interfaces.
+ - :dakkw:`environment-results_output-hdf5-interface_selection-none` : Store evaluation data for no interfaces.
 
 If a model or interface is excluded from storage by these selections, then they cannot appear in the sources group for methods or models.

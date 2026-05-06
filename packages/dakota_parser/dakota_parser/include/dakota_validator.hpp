@@ -64,6 +64,13 @@ public:
         }
         VAL_DEBUG_OUT("Validation complete. Errors found: " << errors.size() << "\n");
     }
+
+    // Validate a single block
+    void validate(const Block& block) {
+        VAL_DEBUG_OUT("Starting constraint validation for block\n");
+        validate_block(block);
+        VAL_DEBUG_OUT("Validation complete. Errors found: " << errors.size() << "\n");
+    }
     
     // Get all validation errors
     const std::vector<ValidationError>& get_errors() const {

@@ -2,7 +2,7 @@ Blurb::
 Specify how to compute gradients and hessians
 Description::
 The ``interval_type`` setting is used to select between ``forward`` and
-``central`` differences in the numerical gradient calculations. The
+``central`` differences in numerical gradient and hessian calculations. The
 ``dakota``, DOT ``vendor``, and OPT++ ``vendor`` routines have both forward
 and central differences available, the CONMIN, NL2SOL and ROL ``vendor``
 routines support forward differences only, and the NPSOL and NLSSOL

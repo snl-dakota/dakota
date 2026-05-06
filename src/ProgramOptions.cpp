@@ -160,9 +160,9 @@ bool ProgramOptions::use_legacy_nidr_parser() const
          parserOptions.rfind("nidr:", 0) == 0;
 }
 
-bool ProgramOptions::use_new_parser() const
+bool ProgramOptions::use_standard_parser() const
 {
-  return parserOptions == "new";
+  return parserOptions == "standard";
 }
 
 String ProgramOptions::output_file() const
@@ -276,6 +276,12 @@ void ProgramOptions::preproc_cmd(const String& pp_cmd)
 
 void ProgramOptions::preprocessed_file(const String& prepro_file)
 { preprocFilename = prepro_file; }
+
+void ProgramOptions::parser_options(const String& parser_opts)
+{
+  parserOptions = parser_opts;
+  validate_parser_options();
+}
 
 void ProgramOptions::output_file(const String& out_file)
 { outputFile = out_file; }
@@ -529,25 +535,26 @@ void ProgramOptions::validate() {
 void ProgramOptions::validate_parser_options() {
 
   if (parserOptions.empty()) {
-    parserOptions = "new";
+    parserOptions = "standard";
   }
 
   const bool valid_nidr = (parserOptions == "nidr" ||
                            parserOptions == "nidrstrict" ||
                            parserOptions.rfind("nidr:", 0) == 0);
-  const bool valid_new = (parserOptions == "new");
+  const bool valid_standard = (parserOptions == "standard");
 
-  if (!valid_nidr && !valid_new) {
+  if (!valid_nidr && !valid_standard) {
     if (worldRank == 0)
       Cerr << "\nError: invalid parser option '" << parserOptions
-           << "'. Valid values are 'new', 'nidr', 'nidrstrict', and "
+           << "'. Valid values are 'standard', 'nidr', 'nidrstrict', and "
            << "'nidr:<filename>'." << std::endl;
     abort_handler(-1);
   }
 
   if ((!jsonFile.empty() || !jsonInput.is_null()) && valid_nidr) {
     if (worldRank == 0)
-      Cerr << "\nError: JSON input is only supported with parser option 'new'."
+      Cerr << "\nError: JSON input is only supported with parser option "
+           << "'standard'."
            << std::endl;
     abort_handler(-1);
   }
