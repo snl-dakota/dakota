@@ -12,8 +12,12 @@
 #
 import os
 import sys
-sys.path.insert(0, os.path.abspath("./_extensions"))
-sys.path.append(os.path.abspath("./_pygments"))
+from pathlib import Path
+sys.path[:0] = [
+    os.path.abspath("./_extensions"),
+    os.path.abspath("./_pygments"),
+    str(Path('..', '..', 'python').resolve())
+]
 
 from lexer.dakota import DakotaLexer
 
@@ -44,9 +48,10 @@ release = ''
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['myst_parser', 'sphinxcontrib.bibtex', 'dakota',
+extensions = ['myst_parser', 'sphinxcontrib.bibtex', 'sphinx_dakota',
               'sphinx.ext.imgmath',
-              'sphinx_copybutton']
+              'sphinx_copybutton',
+              'sphinxcontrib.autodoc_pydantic']
 #              'sphinx.ext.mathjax']
 
 # Dakota input file syntax highlighting
@@ -104,3 +109,10 @@ numfig = True
 
 ##math_numfig = True
 ##numfig_secnum_depth = 1
+
+autodoc_pydantic_model_show_validator_summary = False
+autodoc_pydantic_model_show_config_summary = False
+autodoc_pydantic_model_show_validator_members = False
+autodoc_pydantic_field_list_validators = False
+
+autodoc_default_options = {"inherited-members": "BaseModel"}
