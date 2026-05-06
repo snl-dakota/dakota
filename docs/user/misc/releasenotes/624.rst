@@ -2,36 +2,27 @@
 Version 6.24 (2026/05/15)
 """""""""""""""""""""""""
 
-**Highlight: Feature A**
-
-*Enabling / Accessing:* Where available and how to access
-
-*Documentation:* Where to learn more
-
 **Highlight: Sensitivity Analysis Section**
 
-A new section that focuses on Dakota's sensitivity analysis
-capabilities has been added the User Manual.
+A new section that describes Dakota's sensitivity analysis
+capabilities has been added to the User Manual.
 
-*Enabling / Accessing:* Available in the User Manual
-
+*Enabling / Accessing:* Visit :ref:`sa`.
 
 **Highlight: JSON-format Input Files**
 
 In addition to the existing freeform input file format, Dakota
 now accepts JSON-format input files. The schema and other usage
-tips are documented in XXX. JSON support simplifies incorporation 
-of Dakota into larger workflows, use in agentic workflows, and iss a
-stepping stone toward more capable Python bindings.
+tips are described in the :ref:`jsoninput` section. JSON input
+provides a foundation for more structured, tool-friendly workflows,
+and is a stepping stone toward more capable Python bindings.
 
 The capability is experimental, and we appreciate your bug
 reports. To fall back to the old input file reader, run Dakota
 with the ``-parser nidr`` command line argument.
 
 *Enabling / Accessing:* Write a JSON format input file and use the
-`-json` command line argument (e.g. `dakota -json dakota_in.json`).
-
-*Documentation*: TODO
+``-json`` command line argument (e.g. ``dakota -json dakota_in.json``).
 
 **Highlight: Robustness enhancements for multifidelity sampling**
 
@@ -57,11 +48,6 @@ numerical solutions are described at
 - The `pyprepro` function is now available in the 
   :ref:`dakota.interfacing <interfaces:dprepro-and-pyprepro>` module.
 
-*Models*
-
-*Optimization Methods*
-
-
 *UQ Methods*
 
 - Enhancements to numerical solutions within multifidelity Monte Carlo
@@ -72,14 +58,14 @@ numerical solutions are described at
   by enforcing ordered sample allocations through linear constraints
   (:dakkw:`method-multifidelity_sampling-numerical_solve-model_reordering-fixed_order`).
 
-*MLMF Sampling*
- 
 *Sensitivity Analysis*
 
 - The :dakkw:`method-sampling-variance_based_decomp-vbd_sampling_method-binned` approach 
   to variance-based decomposition now works with discrete variables.
 
 **Miscellaneous Enhancements and Bugfixes**
+
+- Fix issue with trilinos that prevented re-configuration in the same build directory
 
 **Deprecated and Changed**
 
@@ -93,4 +79,3 @@ numerical solutions are described at
   located at `python/dakota/spec/` in the source tree. To update Dakota's
   input grammar, Python >=3.9 and Pydantic >=2.12 are required.
 
-**Other Notes and Known Issues**
