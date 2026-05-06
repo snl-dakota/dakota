@@ -36,18 +36,21 @@ command-line inputs are optional.
 - The ``-version`` option prints the version number of the executable. With the optional
   argument will also print information about the configuration parameters related to that
   query, e.g., ``--version CXX`` will print information about the C++ compiler used.
-- The ``-check`` option invokes a dry-run mode in which the input file is processed and
-  checked for errors, but the study is not performed.
 - The ``-input`` option provides the name of a freeform Dakota input file, which can
   optionally be pre-processed as a template using the ``-preproc`` option.
-- The `-json` option provides the name of a JSON format Dakota input file. It is mutually exclusive
+- The ``-json`` option provides the name of a JSON format Dakota input file. It is mutually exclusive
   with the ``-input`` option. JSON format input files are not pre-processed.
-- The `-dump_ir` option causes the intermediate representation of the user input to
+- The ``-preproc`` option directs Dakota to pre-process the input file as a template using
+  :ref:`pyprepro <interfaces:dprepro-and-pyprepro>` before executing the study. Only freefrom
+  input files can be pre-processed.
+- The ``-check`` option invokes a dry-run mode in which the input file is processed and
+  checked for errors, but the study is not performed.
+- The ``-dump_ir`` option causes the intermediate representation of the user input to
   be dumped to a JSON file. This is primarily for use by developers.
+- The ``-parser`` input selects between the default `standard` and deprecated `nidr` input file readers.
 - The ``-output`` and ``-error`` options provide file names for redirection of the
   Dakota standard output (stdout) and standard error (stderr), respectively. By default,
   Dakota will echo the input file to the output stream, but ``-no input echo`` can override this behavior.
-- The ``-parser`` input selects between the default `standard` and deprecated `nidr` input file readers.
 - The ``-read restart`` and ``-write restart`` options provide the names of restart
   databases to read from and write to, respectively.
 - The ``-stop restart`` option limits the number of function evaluations read
