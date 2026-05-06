@@ -1,3 +1,5 @@
+.. _jsoninput:
+
 JSON Input Reference
 ====================
 
@@ -42,19 +44,19 @@ with the existing keyowrd documenation is planned for the next release.
    :maxdepth: 1
 
    pydantic_models_reference/study
-   pydantic_models_reference/shared
    pydantic_models_reference/methods
    pydantic_models_reference/environment
    pydantic_models_reference/interface
    pydantic_models_reference/model
    pydantic_models_reference/responses
    pydantic_models_reference/variables
+   pydantic_models_reference/shared
 
-Relationship to the Traditional Keyword Format
-----------------------------------------------
+Relationship to the Freeform Input Format
+-----------------------------------------
 
-A key design goal for Dakota's JSON format was to mimic the traditional
-freeform as closely as possible. The two formats largely have the same
+A key design goal for Dakota's JSON format was to mimic freeform 
+input as closely as possible. The two formats largely have the same
 key names, hierarchy, argument types, etc, and the JSON format will seem
 familiar to existing Dakota users. However, the mapping is not one-to-one.
 Several differences are especially important and will be illustrated
@@ -239,9 +241,11 @@ This can be a practical way to get started:
 
 1. Begin with a working traditional input file.
 2. Run `dakota_parser`, located in the `bin` folder of the Dakota install, to
-   generate the corresponding JSON.
+   generate the corresponding JSON: 
+   ``dakota_parser <freeform dakota input> --json``
 3. Use the result as a starting point, modifying it as needed.
-4. Refer to the Pydantic documentation to understand and refine specific fields.
+4. Refer to the Keyword Reference and Pydantic documentation to 
+   understand and refine specific fields.
 
 This workflow avoids having to construct JSON inputs from scratch while the
 documentation is still evolving.
