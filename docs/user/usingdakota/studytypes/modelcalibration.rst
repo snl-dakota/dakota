@@ -1,7 +1,7 @@
 .. _nls:
 
-Nonlinear Least Squares
-=======================
+Model Calibration
+=================
 
 ..
    TODO: discuss calibration overall, then NLS
@@ -16,6 +16,11 @@ arising in parameter estimation, system identification, and
 test/analysis reconciliation. However, nonlinear least-squares methods
 are optimization algorithms that exploit the special structure of a sum
 of the squares objective function :cite:p:`Gil81`.
+
+.. note::
+
+   Bayesian calibration methods are discussed under
+   :ref:`uncertainty quantification <uq:bayesian>`.
 
 To exploit the problem structure, more granularity is needed in the
 response data than is required for a typical optimization problem. That
