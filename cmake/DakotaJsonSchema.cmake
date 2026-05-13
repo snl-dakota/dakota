@@ -13,7 +13,7 @@ if(DAKOTA_GENERATE_JSON_SCHEMA)
   add_custom_command(
     OUTPUT "${DAKOTA_SCHEMA_PATH}"
     COMMAND "${Python3_EXECUTABLE}" -c
-      "import json, sys; sys.path.insert(0, r'${Dakota_SOURCE_DIR}/python'); from dakota.spec import DakotaStudy; schema = DakotaStudy.model_json_schema(mode='validation'); open(r'${DAKOTA_SCHEMA_PATH}', 'w').write(json.dumps(schema, indent=4, sort_keys=True))"
+      "import json, sys; sys.path.insert(0, r'${Dakota_SOURCE_DIR}/python'); from dakota.spec import DakotaStudy; schema = DakotaStudy.model_json_schema(mode='validation'); open(r'${DAKOTA_SCHEMA_PATH}', 'w').write(json.dumps(schema, indent=4))"
     DEPENDS
       "${DAKOTA_SCHEMA_DUMP_SCRIPT}"
       ${dakota_schema_python_sources}
