@@ -96,7 +96,8 @@ namespace python {
     return resp.function_value(0);
   }
   
-  Dakota::LibraryEnvironment* create_libEnv( const std::string& input_string) {
+  Dakota::LibraryEnvironment* create_libEnv( const std::string& input_string,
+                                            const std::string& read_restart) {
 
       assert(!input_string.empty());
 
@@ -105,6 +106,10 @@ namespace python {
       // avoid calling std::exit and taking down the Python instance too
       opts.exit_mode("throw");
       opts.input_string(input_string);
+      if (!read_restart.empty())
+      {
+        opts.read_restart_file(read_restart);
+      };
 
       auto p_libEnv = new Dakota::LibraryEnvironment(opts);
 
@@ -198,10 +203,11 @@ PYBIND11_MODULE(environment, m) {
   py::class_<Dakota::LibraryEnvironment>(m, "study")
     .def(py::init
 	 ([](py::object callback,
-	     const std::string& input_string)
+	     const std::string& input_string,
+       const std::string& read_restart = "")
 	  {
 	    assert(!input_string.empty());
-            auto p_libEnv = Dakota::python::create_libEnv(input_string);
+            auto p_libEnv = Dakota::python::create_libEnv(input_string, read_restart);
 
             // Associate the single python callback with all Pybind11Interface interfaces
             Dakota::InterfaceList & interfaces = Dakota::Interface::interface_cache(p_libEnv->problem_description_db());
@@ -216,14 +222,15 @@ PYBIND11_MODULE(environment, m) {
 
 	    return p_libEnv;
 	  })
-	 , py::arg("callback"), py::arg("input_string"))
+	 , py::arg("callback"), py::arg("input_string"), py::arg("read_restart") = "")
 
     .def(py::init
 	 ([]( py::dict callbacks,
-	     const std::string& input_string)
+	     const std::string& input_string,
+         const std::string& read_restart = "")
 	  {
 	    assert(!input_string.empty());
-            auto p_libEnv = Dakota::python::create_libEnv(input_string);
+            auto p_libEnv = Dakota::python::create_libEnv(input_string, read_restart);
 
             // Associate callbacks with interface specs
             auto callbacks_map = callbacks.cast< std::map<std::string,py::function> >();
@@ -249,7 +256,7 @@ PYBIND11_MODULE(environment, m) {
 
 	    return p_libEnv;
 	  })
-	 , py::arg("callbacks"), py::arg("input_string"))
+	 , py::arg("callbacks"), py::arg("input_string"), py::arg("read_restart") = "")
 
     .def(py::init
 	 ([](py::object callback,
