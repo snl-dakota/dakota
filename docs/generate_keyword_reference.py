@@ -86,6 +86,7 @@ class KeywordMetadataStore:
         self.metadata_dir = metadata_dir
         self.entries: dict[str, Metadata] = {}
         self.raw_files: set[str] = set()
+        self.warnings: list[str] = []
         self._parse()
 
     def _parse(self) -> None:
@@ -102,9 +103,8 @@ class KeywordMetadataStore:
         if lines and lines[0].strip().startswith("DUPLICATE-"):
             duplicate_path = self.metadata_dir / lines[0].strip()
             if not duplicate_path.is_file():
-                print(
-                    f"Warning: Missing DUPLICATE metadata file {duplicate_path}",
-                    file=sys.stderr,
+                self.warnings.append(
+                    f"Warning: Missing DUPLICATE metadata file {duplicate_path}"
                 )
                 return Metadata()
             return self._read_fields(duplicate_path.read_text(encoding="utf-8").splitlines())
@@ -142,7 +142,7 @@ class KeywordReferenceGenerator:
         self.metadata_store = metadata_store
         self.pages: dict[str, KeywordPage] = {}
         self.synthetic_paths: set[str] = set()
-        self.reported_missing_metadata: set[str] = set()
+        self.warnings: list[str] = list(metadata_store.warnings)
 
     def build_pages(self) -> dict[str, KeywordPage]:
         for root_name in ("environment", "interface", "method", "model", "responses", "variables"):
@@ -165,15 +165,22 @@ class KeywordReferenceGenerator:
         )
         misses = sorted(name for name in page_names if name not in self.metadata_store.entries)
         for name in extras:
-            print(
-                f"Warning: keyword metadata file {name} exists, but no such keyword in dakota.json. Skipping.",
-                file=sys.stderr,
+            self.warnings.append(
+                f"Warning: keyword metadata file {name} exists, but no such keyword in dakota.json. Skipping."
             )
         for name in misses:
-            print(
-                f"Warning: Missing metadata entry for keyword {name}",
-                file=sys.stderr,
-            )
+            self.warnings.append(f"Warning: Missing metadata entry for keyword {name}")
+
+    def emit_warnings(self) -> None:
+        for warning in self.warnings:
+            print(warning, file=sys.stderr)
+
+    def write_warning_report(self, output_dir: Path) -> None:
+        report_path = output_dir / "keyword_reference_warnings.txt"
+        if self.warnings:
+            report_path.write_text("\n".join(self.warnings) + "\n", encoding="utf-8")
+        else:
+            report_path.write_text("No warnings.\n", encoding="utf-8")
 
     def write_pages(self, output_dir: Path) -> None:
         output_dir.mkdir(parents=True, exist_ok=True)
@@ -217,8 +224,15 @@ class KeywordReferenceGenerator:
 
         rows: list[ChildRow] = []
         required_names = set(object_schema.get("required", []))
+        computed_field_names = self._computed_field_names(object_schema)
         json_argument_key = schema_node.get("argument")
         for child_name, child_schema in object_schema.get("properties", {}).items():
+            if child_name in computed_field_names:
+                self.synthetic_paths.add(f"{parent_hierarchy}-{child_name}")
+                continue
+            if self._is_internal_only(child_schema):
+                self.synthetic_paths.add(f"{parent_hierarchy}-{child_name}")
+                continue
             if child_name == json_argument_key:
                 self.synthetic_paths.add(f"{parent_hierarchy}-{child_name}")
                 continue
@@ -285,8 +299,15 @@ class KeywordReferenceGenerator:
             return []
         rows: list[ChildRow] = []
         required_names = set(object_schema.get("required", []))
+        computed_field_names = self._computed_field_names(object_schema)
         json_argument_key = schema_node.get("argument")
         for child_name, child_schema in object_schema.get("properties", {}).items():
+            if child_name in computed_field_names:
+                self.synthetic_paths.add(f"{parent_hierarchy}-{child_name}")
+                continue
+            if self._is_internal_only(child_schema):
+                self.synthetic_paths.add(f"{parent_hierarchy}-{child_name}")
+                continue
             if child_name == json_argument_key:
                 self.synthetic_paths.add(f"{parent_hierarchy}-{child_name}")
                 continue
@@ -339,6 +360,9 @@ class KeywordReferenceGenerator:
             if flattened is None:
                 continue
             child_name, child_schema = flattened
+            if self._is_internal_only(child_schema):
+                self.synthetic_paths.add(f"{parent_hierarchy}-{child_name}")
+                continue
             child_hierarchy = f"{parent_hierarchy}-{child_name}"
             rows.append(
                 ChildRow(
@@ -389,6 +413,26 @@ class KeywordReferenceGenerator:
         if "properties" in node:
             return node
         return None
+
+    def _is_internal_only(self, schema_node: dict[str, Any]) -> bool:
+        node = schema_node
+        if node.get("x-internal-only"):
+            return True
+        if "$ref" in node:
+            node = self.resolver.resolve_ref(node["$ref"])
+        elif "anyOf" in node:
+            non_null_anyof = self.resolver.strip_null_anyof(node)
+            if len(non_null_anyof) == 1 and "$ref" in non_null_anyof[0]:
+                node = self.resolver.resolve_ref(non_null_anyof[0]["$ref"])
+            elif len(non_null_anyof) == 1:
+                node = non_null_anyof[0]
+        return bool(node.get("x-internal-only"))
+
+    def _computed_field_names(self, object_schema: dict[str, Any]) -> set[str]:
+        computed = object_schema.get("x-computed-fields", {})
+        if isinstance(computed, dict):
+            return set(computed)
+        return set()
 
     def _render_page(self, page: KeywordPage) -> str:
         metadata = self.metadata_store.entries.get(page.hierarchy, Metadata())
@@ -709,6 +753,8 @@ def main() -> int:
     generator.build_pages()
     generator.validate_metadata()
     generator.write_pages(args.output_dir)
+    generator.write_warning_report(args.output_dir)
+    generator.emit_warnings()
     return 0
 
 
