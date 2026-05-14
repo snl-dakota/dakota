@@ -1,4 +1,4 @@
-.. _topic-package_scolib:
+.. _`topic-package_scolib`:
 
 Package: SCOLIB
 ===============

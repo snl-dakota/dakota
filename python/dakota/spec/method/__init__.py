@@ -126,7 +126,6 @@ MethodUnion = MethodSelection.get_union()
 
 
 __all__ = [
-    "MethodConfig",
     "MethodSelection",
     "MethodUnion",
     "AdaptiveSamplingConfig",

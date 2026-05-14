@@ -3,7 +3,7 @@ Using Dakota
 
 .. toctree::
    :maxdepth: 1
-   
+
    introduction/aboutdakota
    introduction/helloworld
    examples
@@ -16,3 +16,4 @@ Using Dakota
    advanced
    theory
    reference
+   pydantic_models_reference

@@ -60,12 +60,6 @@ class ModelSelection(DakotaBaseModel):
         return Union[tuple(cls._registry.values())]
 
 
-class ModelConfig(DakotaBaseModel):
-    "Generated model for ModelConfig"
-
-    model: ModelUnion | None = DakotaField(default=None, dakota={"union_pattern": 2})
-
-
 class SolutionLevelCost(DakotaBaseModel):
     "Cost estimates associated with a set of solution control values."
 

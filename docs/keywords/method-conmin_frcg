@@ -4,8 +4,8 @@ Description::
 The interpretations of the method independent controls for CONMIN are
 essentially identical to those for DOT.
 
-See :ref:`topic-package_dot` for information related to ``CONMIN``
-methods, specifically :dakkw:`method-dot_frcg`.
+See :ref:`topic-package_conmin` for information related to ``CONMIN``
+methods.
 
 *Expected HDF5 Output*
 
