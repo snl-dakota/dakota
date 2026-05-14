@@ -90,8 +90,12 @@ function(generate_users_examples_interfacing _output_dir
   add_custom_command(
     OUTPUT  "${_output_dir}/dprepro_usage"
     DEPENDS "${Dakota_SOURCE_DIR}/scripts/pyprepro/dprepro"
-    COMMAND "${Python3_EXECUTABLE}"
-    ARGS    "${Dakota_SOURCE_DIR}/scripts/pyprepro/dprepro" --help > "${_output_dir}/dprepro_usage"
+    COMMAND "${CMAKE_COMMAND}"
+    ARGS
+            "-DPython_EXECUTABLE=${Python_EXECUTABLE}"
+            "-DDPREPRO_SCRIPT=${Dakota_SOURCE_DIR}/scripts/pyprepro/dprepro"
+            "-DOUTPUT_FILE=${_output_dir}/dprepro_usage"
+            -P "${Dakota_SOURCE_DIR}/cmake/WriteDpreproUsage.cmake"
     )
 
   list(APPEND users_inputs_abs
