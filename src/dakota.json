@@ -16121,7 +16121,14 @@
                 "name": {
                     "description": "(Experimental) Dynamically-loaded solver",
                     "title": "Name",
-                    "type": "string"
+                    "type": "string",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.dl_solver.dlDetails",
+                            "ir_value_type": "String",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 }
             },
             "required": [
@@ -16135,7 +16142,16 @@
             "description": "Generated model for DlSolverSelection",
             "properties": {
                 "dl_solver": {
-                    "$ref": "#/$defs/DlSolverConfig"
+                    "$ref": "#/$defs/DlSolverConfig",
+                    "argument": "name",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.algorithm",
+                            "ir_value_type": "unsigned short",
+                            "storage_type": "PRESENCE_ENUM",
+                            "stored_value": "DL_SOLVER"
+                        }
+                    ]
                 }
             },
             "required": [
