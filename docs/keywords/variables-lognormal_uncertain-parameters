@@ -1,0 +1,24 @@
+Blurb::
+Select a parmaterization of the lognormal distribution
+
+Description::
+
+Lognormal variables must be parameterized in one of three ways:
+
+- `option_1`: mean and standard deviation
+- `option_2`: mean and error factor
+- `option_3`: lambda and zeta
+
+This keyword anchors that selection.
+
+Topics::
+
+Examples::
+
+
+
+Theory::
+
+Faq::
+
+See_Also::

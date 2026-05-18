@@ -2,6 +2,7 @@
 import logging
 import os
 import pathlib
+import stat
 import shutil
 import subprocess
 import sys
@@ -126,6 +127,23 @@ def strip_at_executable(lines: List[str]) -> List[str]:
     return [line for line in lines if not line.startswith("@executable")]
 
 
+def copy_writable(src: str, dst: str) -> None:
+    """Copy src to dst and ensure dst remains user-writable.
+
+    shutil.copy() preserves permission bits from the source file. When a
+    dependency is read-only, the copied file becomes read-only too, which can
+    break subsequent overwrites or later install_name_tool/codesign updates.
+    """
+    if os.path.exists(dst):
+        current_mode = os.stat(dst).st_mode
+        os.chmod(dst, current_mode | stat.S_IWUSR)
+
+    shutil.copy(src, dst, follow_symlinks=True)
+
+    current_mode = os.stat(dst).st_mode
+    os.chmod(dst, current_mode | stat.S_IWUSR)
+
+
 def copy_external_deps(filename: str, copied: List[str], dest: str, exclude: List[str]) -> List[str]:
     """Copy external dependencies of filename into the dest folder
 
@@ -162,7 +180,7 @@ def copy_external_deps(filename: str, copied: List[str], dest: str, exclude: Lis
             p = pathlib.Path(dep)
             dest_filename = os.path.join(dest, p.name)
             if not any(dep.startswith(e) for e in exclude):
-                shutil.copy(dep, dest_filename, follow_symlinks=True)
+                copy_writable(dep, dest_filename)
                 newly_copied.append(dep)
                 logging.debug(f"Copy: {dep} copied")
             newly_copied += copy_external_deps(dep, copied + newly_copied, dest, exclude)

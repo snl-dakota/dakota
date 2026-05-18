@@ -13,45 +13,29 @@
 #include "dakota_system_defs.hpp"
 #include "dakota_data_types.hpp"
 #include "dakota_global_defs.hpp"
+#include "DakotaInterfaceEnums.hpp"
 #include "MPIPackBuffer.hpp"
 
 namespace Dakota {
 
-
-/// offset for external process interface types
-#define PROCESS_INTERFACE_BIT 8
-/// offset for direct coupled interface types
-#define DIRECT_INTERFACE_BIT  16
-
-/// special values for interface type
-enum { 
-  // default is for algebraic-only and all other interface types
-  DEFAULT_INTERFACE=0, APPROX_INTERFACE,
-  // external process interfaces
-  FORK_INTERFACE=PROCESS_INTERFACE_BIT, SYSTEM_INTERFACE, GRID_INTERFACE,
-  // direct coupled interfaces
-  TEST_INTERFACE=DIRECT_INTERFACE_BIT, PLUGIN_INTERFACE,
-  MATLAB_INTERFACE, PYTHON_INTERFACE, SCILAB_INTERFACE
-};
-
-// put this helper function here to encourage sync with enum above
-inline String interface_enum_to_string(unsigned short interface_type) 
+// Keep this helper near interface data usage. Enum definitions live in
+// DakotaInterfaceEnums.hpp.
+inline String interface_enum_to_string(unsigned short interface_type)
 {
   switch (interface_type) {
-  case DEFAULT_INTERFACE: return String("default");       break;
-  case APPROX_INTERFACE:  return String("approximation"); break;
-  case FORK_INTERFACE:    return String("fork");          break;
-  case SYSTEM_INTERFACE:  return String("system");        break;
-  case GRID_INTERFACE:    return String("grid");          break;
-  case TEST_INTERFACE:    return String("direct");        break;
-  case MATLAB_INTERFACE:  return String("matlab");        break;
-  case PYTHON_INTERFACE:  return String("pybind11");      break;
-  case SCILAB_INTERFACE:  return String("scilab");        break;
+  case DEFAULT_INTERFACE: return String("default");
+  case APPROX_INTERFACE:  return String("approximation");
+  case FORK_INTERFACE:    return String("fork");
+  case SYSTEM_INTERFACE:  return String("system");
+  case GRID_INTERFACE:    return String("grid");
+  case TEST_INTERFACE:    return String("direct");
+  case MATLAB_INTERFACE:  return String("matlab");
+  case PYTHON_INTERFACE:  return String("pybind11");
+  case SCILAB_INTERFACE:  return String("scilab");
   default:
     Cerr << "\nError: Unknown interface enum " << interface_type << std::endl;
-    abort_handler(-1); 
+    abort_handler(-1);
     return String();
-    break;
   }
 }
 

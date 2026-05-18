@@ -838,6 +838,7 @@ WARN_LOGFILE           =
 
 INPUT                  = @CMAKE_CURRENT_SOURCE_DIR@/Dev_Main.dox \
                          @CMAKE_CURRENT_SOURCE_DIR@/Dev_Style_Conventions.dox \
+                         @CMAKE_CURRENT_SOURCE_DIR@/Dev_Pydantic_Spec.dox \
                          @CMAKE_CURRENT_SOURCE_DIR@/Dev_Spec_Change.dox \
                          @CMAKE_CURRENT_SOURCE_DIR@/Dev_Iterator_Flow.dox \
                          @CMAKE_CURRENT_SOURCE_DIR@/Dev_Library.dox \

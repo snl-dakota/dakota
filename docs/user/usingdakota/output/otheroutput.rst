@@ -51,7 +51,7 @@ Dakota or other contexts, such as evaluation from C or Python, or with
 the ``surfpack`` executable or library API. Select Surfpack models can
 export to a human-readable and self-documenting algebraic form, suitable
 for reuse in user-developed tools. The
-:ref:`keyword group for surfpack <model-surrogate-global-gaussian_process-surfpack>`
+:dakkw:`keyword group for surfpack <model-surrogate-global-gaussian_process-surfpack>`
 is used to specify model export filenames and formats.
 
 .. _`other:output:prerun`:

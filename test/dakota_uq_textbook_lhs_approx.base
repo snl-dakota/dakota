@@ -3,179 +3,179 @@ Test Number 0 succeeded
 <<<<< Function evaluation summary (I1): 6 total (6 new, 0 duplicate)
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  8.5704157163e-05  2.3330675376e-04  5.0483508069e-02  4.8866206502e+00
+ response_fn_1  9.8529104010e-05  2.7023637985e-04  2.8462870864e-02  4.9072469300e+00
 95% confidence intervals for each response function:
-                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
- response_fn_1  7.9235776591e-05  9.2172537736e-05  2.2882222085e-04  2.3797185881e-04
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
+ response_fn_1  9.1036857338e-05  1.0602135068e-04  2.6504199983e-04  2.7563991437e-04
           Bin Lower          Bin Upper      Density Value
           ---------          ---------      -------------
-  -1.3556166547e-03   2.0000000000e-05   2.1299538575e+02
-   2.0000000000e-05   3.0000000000e-05   1.9200000000e+03
-   3.0000000000e-05   4.0000000000e-05   2.3400000000e+03
-   4.0000000000e-05   1.4875110576e-03   4.5899476658e+02
+  -1.5805306090e-03   2.0000000000e-05   1.7944049204e+02
+   2.0000000000e-05   3.0000000000e-05   1.8000000000e+03
+   3.0000000000e-05   4.0000000000e-05   1.8600000000e+03
+   4.0000000000e-05   1.7160851890e-03   4.0344011416e+02
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-   2.0000000000e-05   2.9300000000e-01
-   3.0000000000e-05   3.1220000000e-01
-   4.0000000000e-05   3.3560000000e-01
+   2.0000000000e-05   2.8720000000e-01
+   3.0000000000e-05   3.0520000000e-01
+   4.0000000000e-05   3.2380000000e-01
 Simple Correlation Matrix among all inputs and outputs:
                     TF1ln        TF2ln response_fn_1 
        TF1ln  1.00000e+00 
-       TF2ln -3.37566e-05  1.00000e+00 
-response_fn_1 -4.61960e-01 -1.90702e-01  1.00000e+00 
+       TF2ln -2.30031e-05  1.00000e+00 
+response_fn_1 -4.61900e-01 -1.91218e-01  1.00000e+00 
 Partial Correlation Matrix between input and output:
              response_fn_1 
-       TF1ln -4.70602e-01 
-       TF2ln -2.15038e-01 
+       TF1ln -4.70587e-01 
+       TF2ln -2.15607e-01 
 Simple Rank Correlation Matrix among all inputs and outputs:
                     TF1ln        TF2ln response_fn_1 
        TF1ln  1.00000e+00 
        TF2ln  3.43526e-03  1.00000e+00 
-response_fn_1 -4.58344e-01 -2.00770e-01  1.00000e+00 
+response_fn_1 -4.58249e-01 -1.99890e-01  1.00000e+00 
 Partial Rank Correlation Matrix between input and output:
              response_fn_1 
-       TF1ln -4.67169e-01 
-       TF2ln -2.24125e-01 
+       TF1ln -4.66990e-01 
+       TF2ln -2.23123e-01 
 Test Number 1 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE_1): 5000 total (5000 new, 0 duplicate)
 <<<<< Function evaluation summary (I1): 10 total (10 new, 0 duplicate)
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  3.1850517949e-05  4.8985126703e-05  1.4937075617e+00  1.1880470589e+00
+ response_fn_1  3.6484457825e-05  5.6099720153e-05  1.4936274428e+00  1.1870657253e+00
 95% confidence intervals for each response function:
-                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
- response_fn_1  3.0492415636e-05  3.3208620262e-05  4.8043553390e-05  4.9964612971e-05
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
+ response_fn_1  3.4929104909e-05  3.8039810742e-05  5.5021392853e-05  5.7221466880e-05
           Bin Lower          Bin Upper      Density Value
           ---------          ---------      -------------
-  -1.9234821366e-05   2.0000000000e-05   1.5445463466e+04
-   2.0000000000e-05   3.0000000000e-05   6.9000000000e+03
-   3.0000000000e-05   4.0000000000e-05   5.0800000000e+03
-   4.0000000000e-05   1.7315123971e-04   2.0593124075e+03
+  -2.2029607789e-05   2.0000000000e-05   1.3875932484e+04
+   2.0000000000e-05   3.0000000000e-05   6.5800000000e+03
+   3.0000000000e-05   4.0000000000e-05   5.2600000000e+03
+   4.0000000000e-05   1.9830941327e-04   1.8849163410e+03
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-   2.0000000000e-05   6.0600000000e-01
-   3.0000000000e-05   6.7500000000e-01
-   4.0000000000e-05   7.2580000000e-01
+   2.0000000000e-05   5.8320000000e-01
+   3.0000000000e-05   6.4900000000e-01
+   4.0000000000e-05   7.0160000000e-01
 Simple Correlation Matrix among all inputs and outputs:
                     TF1ln        TF2ln response_fn_1 
        TF1ln  1.00000e+00 
-       TF2ln -3.37566e-05  1.00000e+00 
-response_fn_1 -6.07440e-02  2.59465e-01  1.00000e+00 
+       TF2ln -2.30031e-05  1.00000e+00 
+response_fn_1 -5.89040e-02  2.59629e-01  1.00000e+00 
 Partial Correlation Matrix between input and output:
              response_fn_1 
-       TF1ln -6.28890e-02 
-       TF2ln  2.59943e-01 
+       TF1ln -6.09894e-02 
+       TF2ln  2.60079e-01 
 Simple Rank Correlation Matrix among all inputs and outputs:
                     TF1ln        TF2ln response_fn_1 
        TF1ln  1.00000e+00 
        TF2ln  3.43526e-03  1.00000e+00 
-response_fn_1 -7.01133e-02  3.25962e-01  1.00000e+00 
+response_fn_1 -7.01989e-02  3.25450e-01  1.00000e+00 
 Partial Rank Correlation Matrix between input and output:
              response_fn_1 
-       TF1ln -7.53488e-02 
-       TF2ln  3.27009e-01 
+       TF1ln -7.54235e-02 
+       TF2ln  3.26499e-01 
 Test Number 2 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE_1): 5000 total (5000 new, 0 duplicate)
 <<<<< Function evaluation summary (I1): 10 total (10 new, 0 duplicate)
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  3.9544236834e-05  6.4685142676e-05  4.1282635933e+00  2.8773582405e+01
+ response_fn_1  4.5615422954e-05  7.4283908256e-05  4.0845832482e+00  2.7986153740e+01
 95% confidence intervals for each response function:
-                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
- response_fn_1  3.7750854888e-05  4.1337618781e-05  6.3441789679e-05  6.5978559949e-05
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
+ response_fn_1  4.3555917254e-05  4.7674928653e-05  7.2856051469e-05  7.5769258463e-05
           Bin Lower          Bin Upper      Density Value
           ---------          ---------      -------------
-  -4.8773842565e-06   2.0000000000e-05   2.1216056904e+04
-   2.0000000000e-05   3.0000000000e-05   9.6800000000e+03
-   3.0000000000e-05   4.0000000000e-05   6.9200000000e+03
-   4.0000000000e-05   1.0000723701e-03   3.1893429030e+02
+  -5.5171599874e-06   2.0000000000e-05   1.9539792055e+04
+   2.0000000000e-05   3.0000000000e-05   9.1000000000e+03
+   3.0000000000e-05   4.0000000000e-05   6.8000000000e+03
+   4.0000000000e-05   1.1350977462e-03   3.1266615349e+02
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-   2.0000000000e-05   5.2780000000e-01
-   3.0000000000e-05   6.2460000000e-01
-   4.0000000000e-05   6.9380000000e-01
+   2.0000000000e-05   4.9860000000e-01
+   3.0000000000e-05   5.8960000000e-01
+   4.0000000000e-05   6.5760000000e-01
 Simple Correlation Matrix among all inputs and outputs:
                     TF1ln        TF2ln response_fn_1 
        TF1ln  1.00000e+00 
-       TF2ln -3.37566e-05  1.00000e+00 
-response_fn_1  3.89984e-02  3.39566e-01  1.00000e+00 
+       TF2ln -2.30031e-05  1.00000e+00 
+response_fn_1  4.34930e-02  3.36410e-01  1.00000e+00 
 Partial Correlation Matrix between input and output:
              response_fn_1 
-       TF1ln  4.14742e-02 
-       TF2ln  3.39826e-01 
+       TF1ln  4.61931e-02 
+       TF2ln  3.36729e-01 
 Simple Rank Correlation Matrix among all inputs and outputs:
                     TF1ln        TF2ln response_fn_1 
        TF1ln  1.00000e+00 
        TF2ln  3.43526e-03  1.00000e+00 
-response_fn_1  2.67787e-02  1.68635e-01  1.00000e+00 
+response_fn_1  3.05657e-02  1.61311e-01  1.00000e+00 
 Partial Rank Correlation Matrix between input and output:
              response_fn_1 
-       TF1ln  2.65802e-02 
-       TF2ln  1.68605e-01 
+       TF1ln  3.04099e-02 
+       TF2ln  1.61282e-01 
 Test Number 3 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE_1): 5000 total (5000 new, 0 duplicate)
 <<<<< Function evaluation summary (I1): 20 total (20 new, 0 duplicate)
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  5.6344985110e-05  7.2655586068e-05  1.6408230174e+00  2.8215377402e+00
+ response_fn_1  6.4573052518e-05  8.3192538720e-05  1.6439408627e+00  2.8461043572e+00
 95% confidence intervals for each response function:
-                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
- response_fn_1  5.4330624300e-05  5.8359345920e-05  7.1259028266e-05  7.4108377021e-05
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
+ response_fn_1  6.2266556917e-05  6.6879548119e-05  8.1593443656e-05  8.4856022206e-05
           Bin Lower          Bin Upper      Density Value
           ---------          ---------      -------------
-  -5.7169927459e-06   2.0000000000e-05   1.7412611359e+04
-   2.0000000000e-05   3.0000000000e-05   6.8800000000e+03
-   3.0000000000e-05   4.0000000000e-05   5.6200000000e+03
-   4.0000000000e-05   5.1554111997e-04   8.9834502646e+02
+  -6.4691121224e-06   2.0000000000e-05   1.6124454724e+04
+   2.0000000000e-05   3.0000000000e-05   6.5200000000e+03
+   3.0000000000e-05   4.0000000000e-05   5.3200000000e+03
+   4.0000000000e-05   5.9408234665e-04   8.2081662184e+02
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-   2.0000000000e-05   4.4780000000e-01
-   3.0000000000e-05   5.1660000000e-01
-   4.0000000000e-05   5.7280000000e-01
+   2.0000000000e-05   4.2680000000e-01
+   3.0000000000e-05   4.9200000000e-01
+   4.0000000000e-05   5.4520000000e-01
 Simple Correlation Matrix among all inputs and outputs:
                     TF1ln        TF2ln response_fn_1 
        TF1ln  1.00000e+00 
-       TF2ln -3.37566e-05  1.00000e+00 
-response_fn_1 -1.04577e-03 -8.45495e-02  1.00000e+00 
+       TF2ln -2.30031e-05  1.00000e+00 
+response_fn_1 -1.09431e-03 -7.73936e-02  1.00000e+00 
 Partial Correlation Matrix between input and output:
              response_fn_1 
-       TF1ln -1.05240e-03 
-       TF2ln -8.45496e-02 
+       TF1ln -1.09938e-03 
+       TF2ln -7.73937e-02 
 Simple Rank Correlation Matrix among all inputs and outputs:
                     TF1ln        TF2ln response_fn_1 
        TF1ln  1.00000e+00 
        TF2ln  3.43526e-03  1.00000e+00 
-response_fn_1 -1.52297e-03 -1.74661e-01  1.00000e+00 
+response_fn_1 -1.52818e-03 -1.71161e-01  1.00000e+00 
 Partial Rank Correlation Matrix between input and output:
              response_fn_1 
-       TF1ln -9.37375e-04 
-       TF2ln -1.74657e-01 
+       TF1ln -9.54285e-04 
+       TF2ln -1.71157e-01 
 Test Number 4 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE_1): 5000 total (5000 new, 0 duplicate)
 <<<<< Function evaluation summary (I1): 20 total (20 new, 0 duplicate)
-response_fn_1:  Min = -8.8337140958e-02  Max = 2.5603281319e+02
+response_fn_1:  Min = -7.9486176278e-02  Max = 2.5601887369e+02
 Simple Correlation Matrix among all inputs and outputs:
                     TF1ln        TF2ln    ModelForm response_fn_1 
        TF1ln  1.00000e+00 
-       TF2ln  5.20767e-05  1.00000e+00 
-   ModelForm  9.86780e-03  1.55966e-03  1.00000e+00 
-response_fn_1  5.15426e-03 -3.32458e-04  8.17847e-01  1.00000e+00 
+       TF2ln  3.94761e-05  1.00000e+00 
+   ModelForm  9.87465e-03  1.58403e-03  1.00000e+00 
+response_fn_1  5.15645e-03 -3.35271e-04  8.17845e-01  1.00000e+00 
 Partial Correlation Matrix between input and output:
              response_fn_1 
-       TF1ln -5.06777e-03 
-       TF2ln -2.79430e-03 
-   ModelForm  8.17848e-01 
+       TF1ln -5.07370e-03 
+       TF2ln -2.83387e-03 
+   ModelForm  8.17846e-01 
 Simple Rank Correlation Matrix among all inputs and outputs:
                     TF1ln        TF2ln    ModelForm response_fn_1 
        TF1ln  1.00000e+00 
        TF2ln -5.18345e-03  1.00000e+00 
    ModelForm  5.88310e-03  3.15767e-03  1.00000e+00 
-response_fn_1  5.11013e-02  7.77031e-02  9.58123e-01  1.00000e+00 
+response_fn_1  5.18512e-02  1.11791e-01  9.58123e-01  1.00000e+00 
 Partial Rank Correlation Matrix between input and output:
              response_fn_1 
-       TF1ln  1.65871e-01 
-       TF2ln  2.64978e-01 
-   ModelForm  9.61784e-01 
+       TF1ln  1.76604e-01 
+       TF2ln  3.85731e-01 
+   ModelForm  9.64866e-01 
 Test Number 5 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE_1): 5000 total (5000 new, 0 duplicate)
 <<<<< Function evaluation summary (I1): 20 total (16 new, 4 duplicate)
@@ -183,7 +183,7 @@ Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  7.0242243161e+03  7.1669982166e+03  9.7683111723e-01  2.1402322292e-01
 95% confidence intervals for each response function:
-                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
  response_fn_1  6.8255208012e+03  7.2229278310e+03  7.0292369264e+03  7.3103065392e+03
 Simple Correlation Matrix among all inputs and outputs:
                   hpruv_1      hpruv_2 response_fn_1 
@@ -208,112 +208,112 @@ Test Number 6 succeeded
 <<<<< Function evaluation summary (I1): 0 total (0 new, 0 duplicate)
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  3.9539486068e-05  6.4677008194e-05  4.1282563599e+00  2.8773311651e+01
+ response_fn_1  4.3455288887e-05  7.0635272806e-05  4.0833231616e+00  2.7921279477e+01
 95% confidence intervals for each response function:
-                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
- response_fn_1  3.7746329648e-05  4.1332642488e-05  6.3433811554e-05  6.5970262814e-05
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
+ response_fn_1  4.1496940837e-05  4.5413636937e-05  6.9277548691e-05  7.2047666413e-05
           Bin Lower          Bin Upper      Density Value
           ---------          ---------      -------------
-  -4.8758246951e-06   2.0000000000e-05   2.1217387020e+04
-   2.0000000000e-05   3.0000000000e-05   9.6800000000e+03
-   3.0000000000e-05   4.0000000000e-05   6.9200000000e+03
-   4.0000000000e-05   9.9994188671e-04   3.1897764254e+02
+  -4.8824246599e-06   2.0000000000e-05   2.0407979003e+04
+   2.0000000000e-05   3.0000000000e-05   9.4400000000e+03
+   3.0000000000e-05   4.0000000000e-05   6.6800000000e+03
+   4.0000000000e-05   1.0778913186e-03   3.1891585765e+02
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-   2.0000000000e-05   5.2780000000e-01
-   3.0000000000e-05   6.2460000000e-01
-   4.0000000000e-05   6.9380000000e-01
+   2.0000000000e-05   5.0780000000e-01
+   3.0000000000e-05   6.0220000000e-01
+   4.0000000000e-05   6.6900000000e-01
 Simple Correlation Matrix among all inputs and outputs:
                     TF1ln        TF2ln response_fn_1 
        TF1ln  1.00000e+00 
-       TF2ln -3.37566e-05  1.00000e+00 
-response_fn_1  3.89781e-02  3.39579e-01  1.00000e+00 
+       TF2ln -2.30031e-05  1.00000e+00 
+response_fn_1  3.53604e-02  3.43075e-01  1.00000e+00 
 Partial Correlation Matrix between input and output:
              response_fn_1 
-       TF1ln  4.14528e-02 
-       TF2ln  3.39839e-01 
+       TF1ln  3.76536e-02 
+       TF2ln  3.43291e-01 
 Simple Rank Correlation Matrix among all inputs and outputs:
                     TF1ln        TF2ln response_fn_1 
        TF1ln  1.00000e+00 
        TF2ln  3.43526e-03  1.00000e+00 
-response_fn_1  2.67538e-02  1.68669e-01  1.00000e+00 
+response_fn_1  2.07266e-02  1.73346e-01  1.00000e+00 
 Partial Rank Correlation Matrix between input and output:
              response_fn_1 
-       TF1ln  2.65550e-02 
-       TF2ln  1.68638e-01 
+       TF1ln  2.04407e-02 
+       TF2ln  1.73313e-01 
 Test Number 7 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE_1): 5000 total (5000 new, 0 duplicate)
 <<<<< Function evaluation summary (I1): 0 total (0 new, 0 duplicate)
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  3.9539486068e-05  6.4677008194e-05  4.1282563599e+00  2.8773311651e+01
+ response_fn_1  4.3455288887e-05  7.0635272806e-05  4.0833231616e+00  2.7921279477e+01
 95% confidence intervals for each response function:
-                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
- response_fn_1  3.7746329648e-05  4.1332642488e-05  6.3433811554e-05  6.5970262814e-05
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
+ response_fn_1  4.1496940837e-05  4.5413636937e-05  6.9277548691e-05  7.2047666413e-05
           Bin Lower          Bin Upper      Density Value
           ---------          ---------      -------------
-  -4.8758246951e-06   2.0000000000e-05   2.1217387020e+04
-   2.0000000000e-05   3.0000000000e-05   9.6800000000e+03
-   3.0000000000e-05   4.0000000000e-05   6.9200000000e+03
-   4.0000000000e-05   9.9994188671e-04   3.1897764254e+02
+  -4.8824246599e-06   2.0000000000e-05   2.0407979003e+04
+   2.0000000000e-05   3.0000000000e-05   9.4400000000e+03
+   3.0000000000e-05   4.0000000000e-05   6.6800000000e+03
+   4.0000000000e-05   1.0778913186e-03   3.1891585765e+02
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-   2.0000000000e-05   5.2780000000e-01
-   3.0000000000e-05   6.2460000000e-01
-   4.0000000000e-05   6.9380000000e-01
+   2.0000000000e-05   5.0780000000e-01
+   3.0000000000e-05   6.0220000000e-01
+   4.0000000000e-05   6.6900000000e-01
 Simple Correlation Matrix among all inputs and outputs:
                     TF1ln        TF2ln response_fn_1 
        TF1ln  1.00000e+00 
-       TF2ln -3.37566e-05  1.00000e+00 
-response_fn_1  3.89781e-02  3.39579e-01  1.00000e+00 
+       TF2ln -2.30031e-05  1.00000e+00 
+response_fn_1  3.53604e-02  3.43075e-01  1.00000e+00 
 Partial Correlation Matrix between input and output:
              response_fn_1 
-       TF1ln  4.14528e-02 
-       TF2ln  3.39839e-01 
+       TF1ln  3.76536e-02 
+       TF2ln  3.43291e-01 
 Simple Rank Correlation Matrix among all inputs and outputs:
                     TF1ln        TF2ln response_fn_1 
        TF1ln  1.00000e+00 
        TF2ln  3.43526e-03  1.00000e+00 
-response_fn_1  2.67538e-02  1.68669e-01  1.00000e+00 
+response_fn_1  2.07266e-02  1.73346e-01  1.00000e+00 
 Partial Rank Correlation Matrix between input and output:
              response_fn_1 
-       TF1ln  2.65550e-02 
-       TF2ln  1.68638e-01 
+       TF1ln  2.04407e-02 
+       TF2ln  1.73313e-01 
 Test Number 8 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE_1): 5000 total (5000 new, 0 duplicate)
 <<<<< Function evaluation summary (I1): 0 total (0 new, 0 duplicate)
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  3.9544236834e-05  6.4685142676e-05  4.1282635933e+00  2.8773582405e+01
+ response_fn_1  4.5615422954e-05  7.4283908256e-05  4.0845832482e+00  2.7986153740e+01
 95% confidence intervals for each response function:
-                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
- response_fn_1  3.7750854888e-05  4.1337618781e-05  6.3441789679e-05  6.5978559949e-05
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
+ response_fn_1  4.3555917254e-05  4.7674928653e-05  7.2856051469e-05  7.5769258463e-05
           Bin Lower          Bin Upper      Density Value
           ---------          ---------      -------------
-  -4.8773842565e-06   2.0000000000e-05   2.1216056904e+04
-   2.0000000000e-05   3.0000000000e-05   9.6800000000e+03
-   3.0000000000e-05   4.0000000000e-05   6.9200000000e+03
-   4.0000000000e-05   1.0000723701e-03   3.1893429030e+02
+  -5.5171599874e-06   2.0000000000e-05   1.9539792055e+04
+   2.0000000000e-05   3.0000000000e-05   9.1000000000e+03
+   3.0000000000e-05   4.0000000000e-05   6.8000000000e+03
+   4.0000000000e-05   1.1350977462e-03   3.1266615349e+02
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-   2.0000000000e-05   5.2780000000e-01
-   3.0000000000e-05   6.2460000000e-01
-   4.0000000000e-05   6.9380000000e-01
+   2.0000000000e-05   4.9860000000e-01
+   3.0000000000e-05   5.8960000000e-01
+   4.0000000000e-05   6.5760000000e-01
 Simple Correlation Matrix among all inputs and outputs:
                     TF1ln        TF2ln response_fn_1 
        TF1ln  1.00000e+00 
-       TF2ln -3.37566e-05  1.00000e+00 
-response_fn_1  3.89984e-02  3.39566e-01  1.00000e+00 
+       TF2ln -2.30031e-05  1.00000e+00 
+response_fn_1  4.34930e-02  3.36410e-01  1.00000e+00 
 Partial Correlation Matrix between input and output:
              response_fn_1 
-       TF1ln  4.14742e-02 
-       TF2ln  3.39826e-01 
+       TF1ln  4.61931e-02 
+       TF2ln  3.36729e-01 
 Simple Rank Correlation Matrix among all inputs and outputs:
                     TF1ln        TF2ln response_fn_1 
        TF1ln  1.00000e+00 
        TF2ln  3.43526e-03  1.00000e+00 
-response_fn_1  2.67787e-02  1.68635e-01  1.00000e+00 
+response_fn_1  3.05657e-02  1.61311e-01  1.00000e+00 
 Partial Rank Correlation Matrix between input and output:
              response_fn_1 
-       TF1ln  2.65802e-02 
-       TF2ln  1.68605e-01 
+       TF1ln  3.04099e-02 
+       TF2ln  1.61282e-01 

@@ -14,10 +14,26 @@
 // #ifdef DAKOTA_HAVE_MPI
 // #include <mpi.h>
 // #endif // DAKOTA_HAVE_MPI
+#include <cstring>
 #include <string>
 
 
 namespace Dakota {
+
+namespace {
+
+bool valid_parser_option(const char* parser_option)
+{
+  if (!parser_option)
+    return true;
+
+  return std::strcmp(parser_option, "standard") == 0 ||
+         std::strcmp(parser_option, "nidr") == 0 ||
+         std::strcmp(parser_option, "nidrstrict") == 0 ||
+         std::strncmp(parser_option, "nidr:", 5) == 0;
+}
+
+} // namespace
 
 GetLongOpt::GetLongOpt(const char optmark)
 {
@@ -332,30 +348,38 @@ void CommandLineHandler::initialize_options()
   // information options
   enroll("help",    GetLongOpt::Valueless, "Print this summary", NULL);
 
-  enroll("version", GetLongOpt::OptionalValue, "Print DAKOTA version number", NULL);
+  enroll("version", GetLongOpt::OptionalValue, "Print Dakota version number", NULL);
 
   // I/O options
   enroll("input",   GetLongOpt::MandatoryValue,
-	 "REQUIRED DAKOTA input file $val", NULL);
+	 "Freeform Dakota input file $val", NULL);
+   
+  enroll("json", GetLongOpt::MandatoryValue,
+         "JSON Dakota input file $val", NULL);
 
   enroll("preproc", GetLongOpt::OptionalValue,
-	 "Pre-process input file with pyprepro or tool $val",
+	 "Pre-process freeform input file with pyprepro or tool $val",
 	 NULL);
 
   enroll("output",  GetLongOpt::MandatoryValue,
-	 "Redirect DAKOTA standard output to file $val", NULL);
+	 "Redirect Dakota standard output to file $val", NULL);
 
   enroll("error",   GetLongOpt::MandatoryValue,
-         "Redirect DAKOTA standard error to file $val", NULL);
+         "Redirect Dakota standard error to file $val", NULL);
+
+  enroll("check",   GetLongOpt::Valueless, "Perform input checks", NULL);
+
+  enroll("dump_ir", GetLongOpt::MandatoryValue,
+         "Dump parsed IR / ProblemDescDB JSON to file $val", NULL);
 
   enroll("parser",  GetLongOpt::MandatoryValue,
-	 "Parsing technology: nidr[strict][:dumpfile]", NULL);
+	 "Input parser: standard | nidr[strict][:dumpfile]", NULL);
 
   enroll("no_input_echo", GetLongOpt::Valueless, 
-	 "Do not echo DAKOTA input file", NULL);
+	 "Do not echo Dakota input file", NULL);
 
   // run mode options
-  enroll("check",   GetLongOpt::Valueless, "Perform input checks", NULL);
+ 
 
   enroll("pre_run",  GetLongOpt::OptionalValue, 
   	 "Perform pre-run (variables generation) phase", NULL);
@@ -371,7 +395,7 @@ void CommandLineHandler::initialize_options()
   // read_restart no value:    retrieve returns empty string
   // read_restart with value:  retrieve returns value
   enroll("read_restart", GetLongOpt::OptionalValue,
-         "Read an existing DAKOTA restart file $val", NULL);
+         "Read an existing Dakota restart file $val", NULL);
 
   enroll("stop_restart", GetLongOpt::MandatoryValue,
          "Stop restart file processing at evaluation $val", NULL);
@@ -420,13 +444,18 @@ void CommandLineHandler::check_usage(int argc, char** argv)
     return;  // no further processing for version
   }
 
+  //if (retrieve("json") != NULL) // a json input file is optional
+  //  Cout << "CommandLineHandler::check_usage: json = " << retrieve("json") << std::endl;
+
   if (retrieve("input") == NULL) { // an input file is REQUIRED
-    if (optind == argc - 1)
-      GetLongOpt::store("input", argv[optind]);
-    else {
-      usage();
-      output_helper("Missing input file command line argument.", Cerr);
-      abort_handler(-1);
+    if (retrieve("json") == NULL) {
+      if (optind == argc - 1)
+        GetLongOpt::store("input", argv[optind]);
+      else {
+        usage();
+        output_helper("Missing input file command line argument.", Cerr);
+        abort_handler(-1);
+      }
     }
   }
 
@@ -447,9 +476,12 @@ void CommandLineHandler::check_usage(int argc, char** argv)
   }
 
   cs = retrieve("parser");
-  if (cs /*&& std::strncmp(cs,"idr",3)*/ && std::strncmp(cs,"nidr",4)) {
+  if (!valid_parser_option(cs)) {
     usage();
-    output_helper("\n-parser must specify nidr....", Cerr);
+    output_helper(
+      "\n-parser must specify one of: standard, nidr, nidrstrict, "
+      "nidr:<dumpfile>.",
+      Cerr);
     abort_handler(-1);
   }
   

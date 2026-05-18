@@ -1,0 +1,11 @@
+# Test: Unexpected content after valid input
+# Expected error: unexpected content after input file
+
+method
+  sampling
+    samples = 100
+
+variables
+  continuous_design = 2
+
+this should not be here!

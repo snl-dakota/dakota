@@ -11,6 +11,8 @@
 #include "CommandLineHandler.hpp"
 #include "ProblemDescDB.hpp"
 
+#include <cstdint>
+
 namespace Dakota {
 
 // BMA TODO: review default settings from parallel library
@@ -75,6 +77,9 @@ ProgramOptions::ProgramOptions(int argc, char* argv[], int world_rank):
     inputFile = "";
   }
 
+  if (clh.retrieve("json"))
+    jsonFile = clh.retrieve("json");
+
   if (clh.retrieve("preproc")) {
     preprocInput = true;
     preprocCmd = clh.retrieve("preproc");
@@ -86,6 +91,8 @@ ProgramOptions::ProgramOptions(int argc, char* argv[], int world_rank):
     outputFile = clh.retrieve("output");
   if (clh.retrieve("error"))
     errorFile = clh.retrieve("error");
+  if (clh.retrieve("dump_ir"))
+    dumpIrFile = clh.retrieve("dump_ir");
 
   // only specify this file if the user passed the option
   if (clh.retrieve("read_restart")) {
@@ -125,6 +132,15 @@ bool ProgramOptions::stdin_input() const
 bool ProgramOptions::echo_input() const
 { return echoInput; }
 
+const String& ProgramOptions::json_input_file() const
+{ return jsonFile; }
+
+const nlohmann::json& ProgramOptions::json_input() const
+{ return jsonInput; }
+
+bool ProgramOptions::has_json_input() const
+{ return !jsonInput.is_null(); }
+
 bool ProgramOptions::preproc_input() const
 { return preprocInput; }
 
@@ -136,6 +152,18 @@ const String& ProgramOptions::preprocessed_file() const
 
 const String& ProgramOptions::parser_options() const
 { return parserOptions; }
+
+bool ProgramOptions::use_legacy_nidr_parser() const
+{
+  return parserOptions == "nidr" ||
+         parserOptions == "nidrstrict" ||
+         parserOptions.rfind("nidr:", 0) == 0;
+}
+
+bool ProgramOptions::use_standard_parser() const
+{
+  return parserOptions == "standard";
+}
 
 String ProgramOptions::output_file() const
 { return outputFile.empty() ? "dakota.out" : outputFile; }
@@ -167,6 +195,9 @@ String ProgramOptions::version_query() const
 
 bool ProgramOptions::check() const
 { return checkFlag; }
+
+const String& ProgramOptions::dump_ir_file() const
+{ return dumpIrFile; }
 
 const UserModes& ProgramOptions::user_modes() const
 { return userModes; }
@@ -227,6 +258,16 @@ void ProgramOptions::input_string(const String& in_string)
 void ProgramOptions::echo_input(bool echo_flag)
 { echoInput = echo_flag; }
 
+void ProgramOptions::json_input_file(const String& in_file)
+{ 
+  jsonFile = in_file; 
+}
+
+void ProgramOptions::json_input(const nlohmann::json& in_json)
+{
+  jsonInput = in_json;
+}
+
 void ProgramOptions::preproc_input(bool pp_flag)
 { preprocInput = pp_flag; }
 
@@ -235,6 +276,12 @@ void ProgramOptions::preproc_cmd(const String& pp_cmd)
 
 void ProgramOptions::preprocessed_file(const String& prepro_file)
 { preprocFilename = prepro_file; }
+
+void ProgramOptions::parser_options(const String& parser_opts)
+{
+  parserOptions = parser_opts;
+  validate_parser_options();
+}
 
 void ProgramOptions::output_file(const String& out_file)
 { outputFile = out_file; }
@@ -263,6 +310,9 @@ void ProgramOptions::version(bool version_flag)
 
 void ProgramOptions::check(bool check_flag)
 { checkFlag = check_flag; }
+
+void ProgramOptions::dump_ir_file(const String& dump_ir_path)
+{ dumpIrFile = dump_ir_path; }
 
 void ProgramOptions::pre_run(bool pre_run_flag)
 { userModes.preRun = pre_run_flag; }
@@ -366,21 +416,29 @@ void ProgramOptions::parse(const ProblemDescDB& problem_db)
 
 void ProgramOptions::read(MPIUnpackBuffer& s) 
 {
+  std::vector<std::uint8_t> json_input_cbor;
   // core files and options
-  s >> inputFile >> inputString >> echoInput >> parserOptions 
-    >> outputFile >> errorFile 
+  s >> inputFile >> jsonFile >> inputString >> echoInput >> parserOptions 
+    >> outputFile >> errorFile >> dumpIrFile
     >> readRestartFile >> stopRestartEvals >> writeRestartFile;
+  s >> json_input_cbor;
   // run mode controls
   s >> helpFlag >> versionFlag >> checkFlag >> userModes;
+  jsonInput = json_input_cbor.empty() ?
+    nlohmann::json() : nlohmann::json::from_cbor(json_input_cbor);
 }
 
 
 void ProgramOptions::write(MPIPackBuffer& s) const
 {
+  const std::vector<std::uint8_t> json_input_cbor =
+    jsonInput.is_null() ? std::vector<std::uint8_t>() :
+                          nlohmann::json::to_cbor(jsonInput);
   // core files and options
-  s << inputFile << inputString << echoInput << parserOptions 
-    << outputFile << errorFile 
+  s << inputFile << jsonFile << inputString << echoInput << parserOptions 
+    << outputFile << errorFile << dumpIrFile
     << readRestartFile << stopRestartEvals << writeRestartFile;
+  s << json_input_cbor;
   // run mode controls
   s << helpFlag << versionFlag << checkFlag << userModes;
 }
@@ -458,7 +516,48 @@ void ProgramOptions::validate() {
     abort_handler(-1);
   }
 
+  const int input_source_count =
+    (!inputFile.empty() ? 1 : 0) +
+    (!inputString.empty() ? 1 : 0) +
+    (!jsonFile.empty() ? 1 : 0) +
+    (!jsonInput.is_null() ? 1 : 0);
+  if (input_source_count > 1) {
+    if (worldRank == 0)
+      Cerr << "\nError: multiple input sources specified in ProgramOptions."
+           << std::endl;
+    abort_handler(-1);
+  }
+
+  validate_parser_options();
   validate_run_modes();
+}
+
+void ProgramOptions::validate_parser_options() {
+
+  if (parserOptions.empty()) {
+    parserOptions = "standard";
+  }
+
+  const bool valid_nidr = (parserOptions == "nidr" ||
+                           parserOptions == "nidrstrict" ||
+                           parserOptions.rfind("nidr:", 0) == 0);
+  const bool valid_standard = (parserOptions == "standard");
+
+  if (!valid_nidr && !valid_standard) {
+    if (worldRank == 0)
+      Cerr << "\nError: invalid parser option '" << parserOptions
+           << "'. Valid values are 'standard', 'nidr', 'nidrstrict', and "
+           << "'nidr:<filename>'." << std::endl;
+    abort_handler(-1);
+  }
+
+  if ((!jsonFile.empty() || !jsonInput.is_null()) && valid_nidr) {
+    if (worldRank == 0)
+      Cerr << "\nError: JSON input is only supported with parser option "
+           << "'standard'."
+           << std::endl;
+    abort_handler(-1);
+  }
 }
 
 

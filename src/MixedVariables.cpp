@@ -18,7 +18,42 @@ static const char rcsId[]="@(#) $Id";
 
 using json = nlohmann::json;
 
+
 namespace Dakota {
+
+namespace {
+
+// helpers for constructor to get information from ProblemDescDB 
+// and insert it into member variables
+
+template <typename T>
+int len(const T& v) { return v.length(); }
+int len(const int& v) { return 1; }
+int len(const StringArray& v) { return v.size(); }
+
+const RealVector& get_rv(const ProblemDescDB& db, const char* key) {
+  return db.get_rv(key);
+}
+const IntVector& get_iv(const ProblemDescDB& db, const char* key) {
+  return db.get_iv(key);
+}
+const StringArray& get_sa(const ProblemDescDB& db, const char* key) {
+  return db.get_sa(key);
+}
+
+template <typename Vec, typename Getter>
+void copy_from_db(const ProblemDescDB& db,
+    const std::initializer_list<const char*>& keys,
+    Vec& dest, size_t& offset, Getter get)
+{
+  for (const auto& key : keys) {
+    const auto& vals = get(db, key);
+    copy_data_partial(vals, dest, offset);
+    offset += len(vals);
+  }
+}
+
+} // anonymous namespace
 
 /** In this class, the distinct approach is used (design, uncertain, and
     state variable types and continuous and discrete domain types are 
@@ -27,67 +62,70 @@ MixedVariables::
 MixedVariables(const ProblemDescDB& problem_db, const ShortShortPair& view):
   Variables(BaseConstructor(), problem_db, view)
 {
-  int start = 0;
-  const RealVector& cdv  = problem_db.get_rv(
-    "variables.continuous_design.initial_point");
-  const RealVector& cauv = problem_db.get_rv(
-    "variables.continuous_aleatory_uncertain.initial_point");
-  const RealVector& ceuv = problem_db.get_rv(
-    "variables.continuous_epistemic_uncertain.initial_point");
-  const RealVector& csv  = problem_db.get_rv(
-    "variables.continuous_state.initial_state");
-  copy_data_partial(cdv,  allContinuousVars, start); start += cdv.length();
-  copy_data_partial(cauv, allContinuousVars, start); start += cauv.length();
-  copy_data_partial(ceuv, allContinuousVars, start); start += ceuv.length();
-  copy_data_partial(csv,  allContinuousVars, start);
+ size_t acv_offset = 0, adiv_offset = 0, adsv_offset = 0, adrv_offset = 0;
 
-  start = 0;
-  const IntVector& ddrv  = problem_db.get_iv(
-    "variables.discrete_design_range.initial_point");
-  const IntVector& ddsiv = problem_db.get_iv(
-    "variables.discrete_design_set_int.initial_point");
-  const IntVector& dauiv = problem_db.get_iv(
-    "variables.discrete_aleatory_uncertain_int.initial_point");
-  const IntVector& deuiv = problem_db.get_iv(
-   "variables.discrete_epistemic_uncertain_int.initial_point");
-  const IntVector& dsrv  = problem_db.get_iv(
-    "variables.discrete_state_range.initial_state");
-  const IntVector& dssiv = problem_db.get_iv(
-    "variables.discrete_state_set_int.initial_state");
-  copy_data_partial(ddrv,  allDiscreteIntVars, start); start += ddrv.length();
-  copy_data_partial(ddsiv, allDiscreteIntVars, start); start += ddsiv.length();
-  copy_data_partial(dauiv, allDiscreteIntVars, start); start += dauiv.length();
-  copy_data_partial(deuiv, allDiscreteIntVars, start); start += deuiv.length();
-  copy_data_partial(dsrv,  allDiscreteIntVars, start); start += dsrv.length();
-  copy_data_partial(dssiv, allDiscreteIntVars, start);
+  // --- Continuous variables ---
+  copy_from_db(problem_db, {
+    "variables.continuous_design.initial_point",
+    // continuous aleatory uncertain
+    "variables.normal_uncertain.initial_point",
+    "variables.lognormal_uncertain.initial_point",
+    "variables.uniform_uncertain.initial_point",
+    "variables.loguniform_uncertain.initial_point",
+    "variables.triangular_uncertain.initial_point",
+    "variables.exponential_uncertain.initial_point",
+    "variables.beta_uncertain.initial_point",
+    "variables.gamma_uncertain.initial_point",
+    "variables.gumbel_uncertain.initial_point",
+    "variables.frechet_uncertain.initial_point",
+    "variables.weibull_uncertain.initial_point",
+    "variables.histogram_bin_uncertain.initial_point",
+    // continuous epistemic uncertain
+    "variables.continuous_interval_uncertain.initial_point",
+    // continuous state
+    "variables.continuous_state.initial_state"
+  }, allContinuousVars, acv_offset, get_rv);
 
-  start = 0;
-  const StringArray& ddssv = problem_db.get_sa(
-    "variables.discrete_design_set_string.initial_point");
-  const StringArray& dausv = problem_db.get_sa(
-    "variables.discrete_aleatory_uncertain_string.initial_point");
-  const StringArray& deusv = problem_db.get_sa(
-   "variables.discrete_epistemic_uncertain_string.initial_point");
-  const StringArray& dsssv = problem_db.get_sa(
-    "variables.discrete_state_set_string.initial_state");
-  copy_data_partial(ddssv, allDiscreteStringVars, start); start += ddssv.size();
-  copy_data_partial(dausv, allDiscreteStringVars, start); start += dausv.size();
-  copy_data_partial(deusv, allDiscreteStringVars, start); start += deusv.size();
-  copy_data_partial(dsssv, allDiscreteStringVars, start);
+  // --- Discrete integer variables ---
+  copy_from_db(problem_db, {
+    "variables.discrete_design_range.initial_point",
+    "variables.discrete_design_set_int.initial_point",
+    // discrete aleatory uncertain int
+    "variables.poisson_uncertain.initial_point",
+    "variables.binomial_uncertain.initial_point",
+    "variables.negative_binomial_uncertain.initial_point",
+    "variables.geometric_uncertain.initial_point",
+    "variables.hypergeometric_uncertain.initial_point",
+    "variables.histogram_uncertain.point_int.initial_point",
+    // discrete epistemic uncertain int
+    "variables.discrete_interval_uncertain.initial_point",
+    "variables.discrete_uncertain_set_int.initial_point",
+    // discrete state int
+    "variables.discrete_state_range.initial_state",
+    "variables.discrete_state_set_int.initial_state"
+  }, allDiscreteIntVars, adiv_offset, get_iv);
 
-  start = 0;
-  const RealVector& ddsrv = problem_db.get_rv(
-    "variables.discrete_design_set_real.initial_point");
-  const RealVector& daurv = problem_db.get_rv(
-    "variables.discrete_aleatory_uncertain_real.initial_point");
-  const RealVector& deurv = problem_db.get_rv(
-   "variables.discrete_epistemic_uncertain_real.initial_point");
-  const RealVector& dssrv = problem_db.get_rv(
-    "variables.discrete_state_set_real.initial_state");
-  copy_data_partial(ddsrv, allDiscreteRealVars, start); start += ddsrv.length();
-  copy_data_partial(daurv, allDiscreteRealVars, start); start += daurv.length();
-  copy_data_partial(deurv, allDiscreteRealVars, start); start += deurv.length();
-  copy_data_partial(dssrv, allDiscreteRealVars, start);
+  // --- Discrete string variables ---
+  copy_from_db(problem_db, {
+    "variables.discrete_design_set_string.initial_point",
+    // discrete aleatory uncertain string
+    "variables.histogram_uncertain.point_string.initial_point",
+    // discrete epistemic uncertain string
+    "variables.discrete_uncertain_set_string.initial_point",
+    // discrete state string
+    "variables.discrete_state_set_string.initial_state"
+  }, allDiscreteStringVars, adsv_offset, get_sa);
+
+  // --- Discrete real variables ---
+  copy_from_db(problem_db, {
+    "variables.discrete_design_set_real.initial_point",
+    // discrete aleatory uncertain real
+    "variables.histogram_uncertain.point_real.initial_point",
+    // discrete epistemic uncertain real
+    "variables.discrete_uncertain_set_real.initial_point",
+    // discrete state real
+    "variables.discrete_state_set_real.initial_state"
+  }, allDiscreteRealVars, adrv_offset, get_rv);
 }
 
 

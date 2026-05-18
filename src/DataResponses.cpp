@@ -48,8 +48,7 @@ void DataResponsesRep::write(MPIPackBuffer& s) const
     << nonlinearIneqScales << nonlinearEqScaleTypes << nonlinearEqScales 
     // experimental data
     << calibrationDataFlag << numExperiments << numExpConfigVars
-    << expConfigVars << simVariance << expObservations << expStdDeviations 
-    << scalarDataFileName << scalarDataFormat
+    << simVariance << scalarDataFileName << scalarDataFormat
     // derivative settings
     << gradientType << hessianType << ignoreBounds << centralHess
     << quasiHessianType << methodSource << intervalType << interpolateFlag 
@@ -81,8 +80,7 @@ void DataResponsesRep::read(MPIUnpackBuffer& s)
     >> nonlinearIneqScales >> nonlinearEqScaleTypes >> nonlinearEqScales 
     // experimental data
     >> calibrationDataFlag >> numExperiments  >> numExpConfigVars
-    >> expConfigVars >> simVariance >> expObservations >> expStdDeviations 
-    >> scalarDataFileName >> scalarDataFormat
+    >> simVariance >> scalarDataFileName >> scalarDataFormat
     // derivative settings
     >> gradientType >> hessianType >> ignoreBounds >> centralHess
     >> quasiHessianType >> methodSource >> intervalType >> interpolateFlag 
@@ -115,8 +113,7 @@ void DataResponsesRep::write(std::ostream& s) const
     << nonlinearIneqScales << nonlinearEqScaleTypes << nonlinearEqScales 
     // experimental data
     << calibrationDataFlag << numExperiments << numExpConfigVars
-    << expConfigVars << simVariance << expObservations << expStdDeviations 
-    << scalarDataFileName << scalarDataFormat
+    << simVariance << scalarDataFileName << scalarDataFormat
     // derivative settings
     << gradientType << hessianType << ignoreBounds << centralHess
     << quasiHessianType << methodSource << intervalType << interpolateFlag 

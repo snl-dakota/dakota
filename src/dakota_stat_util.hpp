@@ -200,26 +200,120 @@ inline void average(const Sizet2DArray& array, RealVector& avg_array,
 
 inline Real power_sum(const RealVector& vec, Real p)
 {
-  Real sum = 0.;  size_t i, len = vec.length();
+  Real sum = 0.;  int i, len = vec.length();
   for (i=0; i<len; ++i)
     sum += std::pow(std::abs(vec[i]), p);
   return sum;
 }
 
 
-inline Real p_norm(const RealVector& vec, Real p)
+inline Real power_sum(const RealMatrix& rm, Real p)
 {
-  // Note that p >= 1 is required to satisfy the formal definition of a norm
-  // (0 < p < 1 is computable but not a norm: violates triangle inequality)
+  Real sum = 0.;  int r, c, nr = rm.numRows(), nc = rm.numCols();
+  for (r=0; r<nr; ++r)
+    for (c=0; c<nc; ++c)
+      sum += std::pow(std::abs(rm(r,c)), p);
+  return sum;
+}
 
-  return std::pow(power_sum(vec, p), 1./p);
+
+inline Real power_sum(const RealSymMatrix& rsm, Real p)
+{
+  Real sum = 0.;  int r, c, nrc = rsm.numRows();
+  for (r=0; r<nrc; ++r) {
+    sum += std::pow(std::abs(rsm(r,r)), p);
+    for (c=0; c<r; ++c)
+      sum += 2.*std::pow(std::abs(rsm(r,c)), p);
+  }
+  return sum;
+}
+
+
+// Note that p >= 1 is required to satisfy the formal definition of a norm
+// (0 < p < 1 is computable but not a norm: violates triangle inequality)
+inline Real p_norm(const RealVector& vec, Real p)
+{ return std::pow(power_sum(vec, p), 1./p); }
+
+
+inline Real p_norm(const RealMatrix& rm, Real p)
+{ return std::pow(power_sum(rm, p), 1./p); }
+
+
+inline Real p_norm(const RealSymMatrix& rsm, Real p)
+{ return std::pow(power_sum(rsm, p), 1./p); }
+
+
+inline Real p_norm_diff(const RealVector& v1, const RealVector& v2, Real p)
+{
+  int i, len = v1.length();
+  if (v2.length() != len) {
+    Cerr << "Error: incompatible vector lengths in p_norm_diff()." << std::endl;
+    abort_handler(-1);
+  }
+  Real sum = 0.;
+  for (i=0; i<len; ++i)
+    sum += std::pow(std::abs(v1[i] - v2[i]), p);
+  return std::pow(sum, 1./p);
+}
+
+
+inline Real p_norm_diff(const RealMatrix& rm1, const RealMatrix& rm2, Real p)
+{
+  int r, c, nr = rm1.numRows(), nc = rm1.numCols();
+  if (rm2.numRows() != nr || rm2.numCols() != nc) {
+    Cerr << "Error: incompatible matrix dimensions in p_norm_diff()."
+	 << std::endl;
+    abort_handler(-1);
+  }
+  Real sum = 0.;
+  for (r=0; r<nr; ++r)
+    for (c=0; c<nc; ++c)
+      sum += std::pow(std::abs(rm1(r,c) - rm2(r,c)), p);
+  return std::pow(sum, 1./p);
+}
+
+
+inline Real p_norm_diff(const RealSymMatrix& rsm1,
+			const RealSymMatrix& rsm2, Real p)
+{
+  int r, c, nrc = rsm1.numRows();
+  if (rsm2.numRows() != nrc) {
+    Cerr << "Error: incompatible symmetric matrix dimension in p_norm_diff()."
+	 << std::endl;
+    abort_handler(-1);
+  }
+  Real sum = 0.;
+  for (r=0; r<nrc; ++r) {
+    sum += std::pow(std::abs(rsm1(r,r) - rsm2(r,r)), p);
+    for (c=0; c<r; ++c)
+      sum += 2.*std::pow(std::abs(rsm1(r,c) - rsm2(r,c)), p);
+  }
+  return std::pow(sum, 1./p);
+}
+
+
+inline Real p_norm_diff(const RealSymMatrix& rsm, const RealMatrix& rm, Real p)
+{
+  int r, c, nrc = rsm.numRows();
+  if (rm.numRows() != nrc || rm.numCols() != nrc) {
+    Cerr << "Error: incompatible matrix dimensions in p_norm_diff()."
+	 << std::endl;
+    abort_handler(-1);
+  }
+  // rsm access to upper triangle is managed by operator()
+  Real sum = 0.;
+  for (r=0; r<nrc; ++r)
+    for (c=0; c<nrc; ++c)
+      sum += std::pow(std::abs(rsm(r,c) - rm(r,c)), p);
+  return std::pow(sum, 1./p);
 }
 
 
 /// compute maximum of a vector of values
 inline Real maximum(const RealVector& vec)
 {
-  Real max = -DBL_MAX;  size_t i, len = vec.length();
+  Real max = -DBL_MAX;
+  size_t i, len = vec.length();
   for (i=0; i<len; ++i)
     if (vec[i] > max)
       max = vec[i];

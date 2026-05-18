@@ -1,0 +1,50 @@
+#pragma once
+
+namespace Dakota {
+
+// special values for domain: Relaxed or Mixed
+enum { DEFAULT_DOMAIN=0, RELAXED_DOMAIN, MIXED_DOMAIN };
+// special values for active view: All, Design, {A+E,A,E} Uncertain, or State
+enum { DEFAULT_VIEW=0, ALL_VIEW, DESIGN_VIEW, UNCERTAIN_VIEW,
+       ALEATORY_UNCERTAIN_VIEW, EPISTEMIC_UNCERTAIN_VIEW, STATE_VIEW };
+// special values for active and inactive views include EMPTY_VIEW plus the
+// 12 combinations of All, Design, {A+E,A,E} Uncertain, or State active view
+// [6 total] and Relaxed or Mixed domain [2 total].
+enum { EMPTY_VIEW=0, RELAXED_ALL, MIXED_ALL,
+       RELAXED_DESIGN, RELAXED_UNCERTAIN, RELAXED_ALEATORY_UNCERTAIN,
+       RELAXED_EPISTEMIC_UNCERTAIN, RELAXED_STATE,
+       MIXED_DESIGN, MIXED_UNCERTAIN, MIXED_ALEATORY_UNCERTAIN,
+       MIXED_EPISTEMIC_UNCERTAIN, MIXED_STATE };
+
+/// values differentiating subsets of variables for I/O
+enum { ALL_VARS=0, ACTIVE_VARS, INACTIVE_VARS};
+
+// special values for SharedVariablesData::variablesComponents and
+// SharedVariablesData::all*Types (Note: these differ from the
+// pecos_global_defs.hpp enumeration, which is focused on ranVarTypesX/U)
+enum { EMPTY_TYPE=0, CONTINUOUS_DESIGN, DISCRETE_DESIGN_RANGE,
+       DISCRETE_DESIGN_SET_INT, DISCRETE_DESIGN_SET_STRING,
+       DISCRETE_DESIGN_SET_REAL, NORMAL_UNCERTAIN, LOGNORMAL_UNCERTAIN,
+       UNIFORM_UNCERTAIN, LOGUNIFORM_UNCERTAIN, TRIANGULAR_UNCERTAIN,
+       EXPONENTIAL_UNCERTAIN, BETA_UNCERTAIN, GAMMA_UNCERTAIN, GUMBEL_UNCERTAIN,
+       FRECHET_UNCERTAIN, WEIBULL_UNCERTAIN, HISTOGRAM_BIN_UNCERTAIN,
+       POISSON_UNCERTAIN, BINOMIAL_UNCERTAIN, NEGATIVE_BINOMIAL_UNCERTAIN,
+       GEOMETRIC_UNCERTAIN, HYPERGEOMETRIC_UNCERTAIN,
+       HISTOGRAM_POINT_UNCERTAIN_INT, HISTOGRAM_POINT_UNCERTAIN_STRING,
+       HISTOGRAM_POINT_UNCERTAIN_REAL, CONTINUOUS_INTERVAL_UNCERTAIN,
+       DISCRETE_INTERVAL_UNCERTAIN, DISCRETE_UNCERTAIN_SET_INT,
+       DISCRETE_UNCERTAIN_SET_STRING, DISCRETE_UNCERTAIN_SET_REAL,
+       CONTINUOUS_STATE, DISCRETE_STATE_RANGE, DISCRETE_STATE_SET_INT,
+       DISCRETE_STATE_SET_STRING, DISCRETE_STATE_SET_REAL };
+
+// special values for indexing of SharedVariablesData::variablesCompsTotals;
+// last value is used for sizing arrays of vars_comps_totals
+enum { TOTAL_CDV=0, TOTAL_DDIV,  TOTAL_DDSV,  TOTAL_DDRV,
+       TOTAL_CAUV,  TOTAL_DAUIV, TOTAL_DAUSV, TOTAL_DAURV,
+       TOTAL_CEUV,  TOTAL_DEUIV, TOTAL_DEUSV, TOTAL_DEURV,
+       TOTAL_CSV,   TOTAL_DSIV,  TOTAL_DSSV,  TOTAL_DSRV,
+       NUM_VC_TOTALS };
+
+
+
+} // namespace Dakota

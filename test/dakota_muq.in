@@ -45,7 +45,7 @@ method,
 #   matrix                                                  #s6
 #     values 1.0 0.1                                        #s6
 #            0.1 2.0                                        #s6
-#   filename 'dakota_cantilever_queso.matrix.dat'  matrix   #s7
+#   file 'dakota_cantilever_queso.matrix.dat'  matrix       #s7
 
 variables,
   uniform_uncertain = 1                 #s0,#s1,#s2,#s3

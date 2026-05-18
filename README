@@ -119,6 +119,7 @@ dakota	      	    GNU Lesser General Public License (LGPL) [SNL]
   NPSOL		    Commercial license (optional add-on)
   OPTPP		    GNU Lesser General Public License (LGPL) [SNL]
   pecos		    GNU Lesser General Public License (LGPL) [SNL]
+  PEGTL		    MIT License
   PSUADE	    GNU Lesser General Public License (LGPL)
   pybind11	    BSD 3-clause
   pyprepro          MIT License [SNL]
@@ -208,6 +209,7 @@ Versions
 
 Versions of the Dakota software have been tagged as follows:
 
+6.24               05/15/26 (refer to git submodules for TPL SHA1s)
 6.23               11/17/25 (refer to git submodules for TPL SHA1s)
 6.22               05/15/25 (refer to git submodules for TPL SHA1s)
 6.21               11/14/24 (refer to git submodules for TPL SHA1s)

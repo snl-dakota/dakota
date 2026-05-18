@@ -1,5 +1,5 @@
 Blurb::
-Stopping criterion based on objective function convergence
+Stopping criterion based on objective function or statistics convergence
 Description::
 The ``convergence_tolerance`` specification provides a real value for
 controlling the termination of iteration.

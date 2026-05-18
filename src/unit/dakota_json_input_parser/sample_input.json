@@ -1,0 +1,65 @@
+[
+  {
+    "environment": {
+      "results_output": {
+        "results_output_file": "dakota_results",
+        "hdf5": {
+          "model_selection": {
+            "all": true
+          },
+          "interface_selection": {
+            "all": true
+          }
+        }
+      },
+      "output_precision": 6
+    }
+  },
+  {
+    "method": {
+      "sampling": {
+        "sample_type": {
+          "lhs": true
+        },
+        "seed": 1337,
+        "samples": 100
+      }
+    }
+  },
+  {
+    "variables": {
+      "active": {
+        "all": true
+      },
+      "uniform_uncertain": {
+        "count": 2,
+        "descriptors": ["x2", "x3"],
+        "lower_bounds": [-1.0, -1.0],
+        "upper_bounds": [1.0, 1.0]
+      },
+      "continuous_design": {
+        "count": 1,
+        "descriptors": ["x1"],
+        "lower_bounds": [0.0],
+        "upper_bounds": [1.0]
+      }
+    }
+  },
+  {
+    "responses": {
+      "response_type": {
+        "response_functions": {
+            "count": 1
+        }
+      },
+      "descriptors": ["f"],
+      "gradient_type": {
+        "no_gradients": true
+      },
+      "hessian_type": {
+        "no_hessians": true
+      }
+    }
+  }
+]
+ 

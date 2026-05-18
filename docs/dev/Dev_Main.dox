@@ -555,6 +555,8 @@ specific development activities:
 
 \li \ref StyleConventions - coding practices used by the %Dakota 
     development team.
+\li \ref PydanticSpec - maintain the authoritative Pydantic grammar in
+    \c dakota/python/dakota/spec.
 \li \ref SpecChange - how to interact with NIDR and the associated %Dakota
     classes.
 \li \ref DakLibrary - embed %Dakota as a service within your application.

@@ -17,6 +17,7 @@ method,
 
 variables,
 	lognormal_uncertain = 6
+          parameters option_1
        	  means          = 120. 120. 120. 120.  50.  40.
 	  std_deviations =  12.  12.  12.  12.  15.  12.
 	  descriptors    = 'x1' 'x2' 'x3' 'x4' 'x5' 'x6'

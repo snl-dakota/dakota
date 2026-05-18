@@ -1,0 +1,215 @@
+"""Generated Pydantic models for method.list_parameter_study"""
+
+from __future__ import annotations
+
+from ..base import DakotaBaseModel, DakotaField, DakotaFloat
+from .base import MethodSelection
+from typing import Literal, Union
+
+# Cross-module model imports
+from dakota.spec.shared.misc import (
+    MethodOptionalModelPointerMixin,
+    MethodThreeOptionalKeywordsMixin,
+)
+
+
+class ListOfPoints(DakotaBaseModel):
+    "List of variable values to evaluate in a list parameter study"
+
+    list_of_points: list[DakotaFloat] = DakotaField(
+        description="List of variable values to evaluate in a list parameter study",
+        dakota={
+            "materialization": [
+                {
+                    "ir_key": "method.parameter_study.list_of_points",
+                    "storage_type": "DIRECT_VALUE",
+                    "ir_value_type": "RealVector",
+                }
+            ]
+        },
+    )
+
+
+class ListParameterStudyImportPointsFileCustomAnnotatedConfig(DakotaBaseModel):
+    "Selects custom-annotated tabular file format"
+
+    header: Literal[True] | None = DakotaField(
+        default=None,
+        description="Enable header row in custom-annotated tabular file",
+        dakota={
+            "materialization": [
+                {
+                    "ir_key": "method.pstudy.import_format",
+                    "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_HEADER",
+                    "ir_value_type": "unsigned short",
+                }
+            ]
+        },
+    )
+    eval_id: Literal[True] | None = DakotaField(
+        default=None,
+        description="Enable evaluation ID column in custom-annotated tabular file",
+        dakota={
+            "materialization": [
+                {
+                    "ir_key": "method.pstudy.import_format",
+                    "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_EVAL_ID",
+                    "ir_value_type": "unsigned short",
+                }
+            ]
+        },
+    )
+    interface_id: Literal[True] | None = DakotaField(
+        default=None,
+        description="Enable interface ID column in custom-annotated tabular file",
+        dakota={
+            "materialization": [
+                {
+                    "ir_key": "method.pstudy.import_format",
+                    "storage_type": "AUGMENT_ENUM",
+                    "stored_value": "TABULAR_IFACE_ID",
+                    "ir_value_type": "unsigned short",
+                }
+            ]
+        },
+    )
+
+
+class ListParameterStudyImportPointsFileAnnotated(DakotaBaseModel):
+    "Selects annotated tabular file format"
+
+    annotated: Literal[True] = DakotaField(
+        default=True,
+        description="Selects annotated tabular file format",
+        dakota={
+            "materialization": [
+                {
+                    "ir_key": "method.pstudy.import_format",
+                    "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_ANNOTATED",
+                    "ir_value_type": "unsigned short",
+                }
+            ]
+        },
+    )
+
+
+class ListParameterStudyImportPointsFileFreeform(DakotaBaseModel):
+    "Selects freeform file format"
+
+    freeform: Literal[True] = DakotaField(
+        default=True,
+        description="Selects freeform file format",
+        dakota={
+            "materialization": [
+                {
+                    "ir_key": "method.pstudy.import_format",
+                    "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
+                    "ir_value_type": "unsigned short",
+                }
+            ]
+        },
+    )
+
+
+class ListParameterStudyImportPointsFileCustomAnnotated(DakotaBaseModel):
+    "Selects custom-annotated tabular file format"
+
+    custom_annotated: ListParameterStudyImportPointsFileCustomAnnotatedConfig = DakotaField(
+        default_factory=ListParameterStudyImportPointsFileCustomAnnotatedConfig,
+        description="Selects custom-annotated tabular file format",
+        dakota={
+            "model_default": "ListParameterStudyImportPointsFileCustomAnnotatedConfig",
+            "materialization": [
+                {
+                    "ir_key": "method.pstudy.import_format",
+                    "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "TABULAR_NONE",
+                    "ir_value_type": "unsigned short",
+                }
+            ],
+        },
+    )
+
+
+class ImportPointsFileConfig(DakotaBaseModel):
+    "File containing list of variable values to evaluate in a list parameter study"
+
+    filename: str = DakotaField(
+        description="File containing list of variable values to evaluate in a list parameter study",
+        dakota={
+            "materialization": [
+                {
+                    "ir_key": "method.pstudy.import_file",
+                    "storage_type": "DIRECT_VALUE",
+                    "ir_value_type": "String",
+                }
+            ]
+        },
+    )
+    format: Union[
+        ListParameterStudyImportPointsFileCustomAnnotated,
+        ListParameterStudyImportPointsFileAnnotated,
+        ListParameterStudyImportPointsFileFreeform,
+    ] = DakotaField(
+        default_factory=ListParameterStudyImportPointsFileAnnotated,
+        description="Tabular Format",
+        dakota={
+            "anchor": True,
+            "union_pattern": 1,
+            "model_default": "ListParameterStudyImportPointsFileAnnotated",
+        },
+    )
+    active_only: Literal[True] | None = DakotaField(
+        default=None,
+        description="Import only active variables from tabular data file",
+        dakota={
+            "materialization": [
+                {
+                    "ir_key": "method.pstudy.import_active_only",
+                    "storage_type": "PRESENCE_TRUE",
+                    "ir_value_type": "bool",
+                }
+            ]
+        },
+    )
+
+
+class ListParameterStudyImportPointsFile(DakotaBaseModel):
+    "File containing list of variable values to evaluate in a list parameter study"
+
+    import_points_file: ImportPointsFileConfig = DakotaField(
+        default=...,
+        description="File containing list of variable values to evaluate in a list parameter study",
+        dakota={"argument": "filename"},
+    )
+
+
+class ListParameterStudyConfig(
+    MethodThreeOptionalKeywordsMixin, MethodOptionalModelPointerMixin
+):
+    "Samples variables as a specified values"
+
+    source: Union[ListOfPoints, ListParameterStudyImportPointsFile] = DakotaField(
+        description="Points Source", dakota={"anchor": True, "union_pattern": 4}
+    )
+
+
+class ListParameterStudySelection(MethodSelection):
+    "Generated model for ListParameterStudySelection"
+
+    list_parameter_study: ListParameterStudyConfig = DakotaField(
+        dakota={
+            "materialization": [
+                {
+                    "ir_key": "method.algorithm",
+                    "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "LIST_PARAMETER_STUDY",
+                    "ir_value_type": "unsigned short",
+                }
+            ]
+        }
+    )

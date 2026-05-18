@@ -90,8 +90,9 @@ variables,
 	  std_deviations     =  100.0    400.0
 	  descriptors        =   'P'      'M'
 	lognormal_uncertain = 1
-       	  means             =  5.0
-	  std_deviations    =  0.5
+          parameters option_1
+       	    means             =  5.0
+	    std_deviations    =  0.5
 	  descriptors       =  'Y'
 	uncertain_correlation_matrix =  1   0.5 0
 					0.5 1   0

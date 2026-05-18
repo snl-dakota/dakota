@@ -69,6 +69,7 @@ variables
 #    betas            =  2.		        #s5,#s11
 #    descriptors      = 'x5'		      #s5,#s11
 #  lognormal_uncertain = 2		        #s13,#s14,#s22,#s23,#s36,#s37
+#    parameters option_1                         #s13,#s14,#s22,#s23,#s36,#s37
 #    means             =  1.   1.	    #s13,#s14,#s22,#s23,#s36,#s37
 #    std_deviations    =  0.5  0.5	  #s13,#s14,#s22,#s23,#s36,#s37
 #    lower_bounds      =  0.25 0.25	  #s14,#s23,#s37

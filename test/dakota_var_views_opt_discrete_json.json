@@ -1,0 +1,220 @@
+{
+  "interface": [
+    {
+      "analysis_drivers": {
+        "drivers": [
+          "text_book"
+        ],
+        "interface_type": {
+          "direct": {}
+        }
+      }
+    }
+  ],
+  "method": [
+    {
+      "soga": {
+        "max_function_evaluations": 5000,
+        "seed": 34785
+      }
+    }
+  ],
+  "responses": [
+    {
+      "gradient_type": {
+        "no_gradients": true
+      },
+      "hessian_type": {
+        "no_hessians": true
+      },
+      "response_type": {
+        "objective_functions": {
+          "count": 1,
+          "nonlinear_inequality_constraints": {
+            "count": 2
+          }
+        }
+      }
+    }
+  ],
+  "variables": [
+    {
+      "active": {
+        "all": true
+      },
+      "binomial_uncertain": {
+        "count": 1,
+        "descriptors": [
+          "x4"
+        ],
+        "num_trials": [
+          10
+        ],
+        "probability_per_trial": [
+          0.3
+        ]
+      },
+      "discrete_design_range": {
+        "count": 1,
+        "descriptors": [
+          "x1"
+        ],
+        "initial_point": [
+          3
+        ],
+        "lower_bounds": [
+          0
+        ],
+        "upper_bounds": [
+          6
+        ]
+      },
+      "discrete_design_set": {
+        "integer": {
+          "count": 1,
+          "descriptors": [
+            "x2"
+          ],
+          "elements": [
+            2,
+            4,
+            6,
+            8,
+            10
+          ],
+          "initial_point": [
+            6
+          ]
+        },
+        "real": {
+          "count": 1,
+          "descriptors": [
+            "x3"
+          ],
+          "elements": [
+            1.0,
+            3.0,
+            5.0,
+            7.0,
+            9.0
+          ],
+          "initial_point": [
+            5.0
+          ]
+        }
+      },
+      "discrete_interval_uncertain": {
+        "count": 1,
+        "descriptors": [
+          "x5"
+        ],
+        "interval_probabilities": [
+          0.5,
+          0.5
+        ],
+        "lower_bounds": [
+          0,
+          3
+        ],
+        "num_intervals": [
+          2
+        ],
+        "upper_bounds": [
+          3,
+          6
+        ]
+      },
+      "discrete_state_range": {
+        "count": 1,
+        "descriptors": [
+          "x8"
+        ],
+        "initial_state": [
+          3
+        ],
+        "lower_bounds": [
+          0
+        ],
+        "upper_bounds": [
+          6
+        ]
+      },
+      "discrete_state_set": {
+        "integer": {
+          "count": 1,
+          "descriptors": [
+            "x9"
+          ],
+          "elements": [
+            2,
+            4,
+            6,
+            8,
+            10
+          ],
+          "initial_state": [
+            6
+          ]
+        },
+        "real": {
+          "count": 1,
+          "descriptors": [
+            "x10"
+          ],
+          "elements": [
+            1.0,
+            3.0,
+            5.0,
+            7.0,
+            9.0
+          ],
+          "initial_state": [
+            5.0
+          ]
+        }
+      },
+      "discrete_uncertain_set": {
+        "integer": {
+          "count": 1,
+          "descriptors": [
+            "x6"
+          ],
+          "elements": [
+            2,
+            4,
+            6,
+            8,
+            10
+          ],
+          "set_probabilities": [
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2
+          ]
+        },
+        "real": {
+          "count": 1,
+          "descriptors": [
+            "x7"
+          ],
+          "elements": [
+            1.0,
+            3.0,
+            5.0,
+            7.0,
+            9.0
+          ],
+          "set_probabilities": [
+            0.2,
+            0.2,
+            0.2,
+            0.2,
+            0.2
+          ]
+        }
+      }
+    }
+  ]
+}

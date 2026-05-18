@@ -19,13 +19,12 @@ extern "C" {
 void NCSU_DIRECT_F77(int (*objfun)(int *n, double c[], double l[], double u[],
 				   int point[], int *maxI, int *start,
 				   int *maxfunc, double fvec[], int iidata[],
-				   int *iisize, double ddata[], int *idsize,
-				   char cdata[], int *icsize),
+				   int *iisize, double ddata[], int *idsize),
 		     double* x, int& n, double& eps, int& maxf, int& maxT,
 		     double& fmin, double* l, double* u, int& algmethod,
 		     int& ierror, int& logfile, double& fglobal, double& fglper,
 		     double& volper, double& sigmaper, int* idata, int& isize, 
-		     double* ddata, int& dsize, char* cdata, int& csize,
+		     double* ddata, int& dsize,
 		     int& quiet_flag);
 
 }
@@ -232,8 +231,7 @@ update_callback_data(const RealVector& cv_initial,
 int NCSUOptimizer::
 objective_eval(int *n, double c[], double l[], double u[], int point[],
 	       int *maxI, int *start, int *maxfunc, double fvec[], int iidata[],
-	       int *iisize, double ddata[], int *idsize, char cdata[],
-	       int *icsize)
+	       int *iisize, double ddata[], int *idsize)
 {
   // TODO: set to 1 if a constraint violated 
   int feasible = 0;  // 0: no violation of hidden constraints
@@ -341,7 +339,7 @@ void NCSUOptimizer::core_run()
   NCSUOptimizer* prev_instance = ncsudirectInstance;
   ncsudirectInstance = this;
 
-  int ierror, num_cv = numContinuousVars, algmethod = 1, logfile = 13,
+  int ierror, num_cv = numContinuousVars, algmethod = 1, logfile = 0,
       quiet_flag  = 1;
   double fmin = 0., eps = 1.e-4;
 
@@ -354,10 +352,9 @@ void NCSUOptimizer::core_run()
   double fglper   = (solutionTarget > -DBL_MAX) ? convergenceTol : 0.;
 
   // for passing additional data to objective_eval()
-  int isize = 0, dsize = 0, csize = 0;
+  int isize = 0, dsize = 0;
   int*    idata = NULL;
   double* ddata = NULL;
-  char*   cdata = NULL;
 
 //PDH: RealVector to double *
 //     copy_data and .values() already used here.
@@ -381,7 +378,7 @@ void NCSUOptimizer::core_run()
 		  max_eval, max_iter, fmin, lowerBounds.values(),
 		  upperBounds.values(), algmethod, ierror, logfile,
 		  solutionTarget, fglper, volper, sigmaper, idata, isize,
-		  ddata, dsize, cdata, csize, quiet_flag);
+		  ddata, dsize, quiet_flag);
 
   if (ierror < 0) {
     Cerr << "NCSU DIRECT failed with fatal error code " << ierror << "\n";

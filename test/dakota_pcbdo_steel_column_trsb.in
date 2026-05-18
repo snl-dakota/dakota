@@ -123,6 +123,7 @@ variables,
 	  std_deviations  =  10.  50000.
 	  descriptors     = 'F0'  'P1'
 	lognormal_uncertain = 4
+          parameters option_1
 	  means          = 300.  20. 300. 400.
 	  std_deviations =   3.   2.   5.  35.
 	  descriptors    =  'B'  'D'  'H' 'Fs'

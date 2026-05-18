@@ -294,6 +294,9 @@ void /*Dakota::*/run_dakota_data()
 void run_dakota_mixed(const char* dakota_input_file, bool mpirun_flag)
 {
   Dakota::ProgramOptions opts;
+  // Mixed library mode mutates the legacy ProblemDescDB after parsing,
+  // so keep it on the legacy parser until that API is retired.
+  opts.parser_options("nidr");
   // Could specify output redirection & restart processing in opts if needed
   opts.echo_input(true);
 
@@ -461,7 +464,7 @@ static void callback_function(Dakota::ProblemDescDB* db, void *ptr)
   // more advanced usage would require set_db_list_nodes() or equivalent.
   db->resolve_top_method();
 
-  if ( !(db->get_ushort("interface.type") & DIRECT_INTERFACE_BIT) )
+  if ( !(db->get_ushort("interface.type") & Dakota::DIRECT_INTERFACE_BIT) )
     return;
 
   // supply labels, initial_point, and bounds

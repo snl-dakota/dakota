@@ -18,8 +18,10 @@
 #include "DataVariables.hpp"
 #include "DataInterface.hpp"
 #include "DataResponses.hpp"
+#include "IRState.hpp"
 #include "UserModes.hpp"
 #include "ProblemDescDBUtils.hpp"
+#include <nlohmann/json.hpp>
 
 namespace Dakota {
 
@@ -40,7 +42,10 @@ class ParallelLibrary;
 class ProblemDescDB
 {
   
-  friend void ProblemDescDBUtils::check_and_broadcast_pdb(ProblemDescDB& problem_db, const UserModes& user_modes, ParallelLibrary& parallel_lib);
+  friend void ProblemDescDBUtils::check_and_broadcast_pdb(ProblemDescDB& problem_db,
+    const String& dump_ir_path, const UserModes& user_modes,
+    ParallelLibrary& parallel_lib);
+  friend nlohmann::json dump_problem_desc_db_json(const ProblemDescDB& db);
 
 public:
 
@@ -72,6 +77,10 @@ public:
         bool command_line_run,
 		    DbCallbackFunctionPtr callback = NULL,
 		    void* callback_data = NULL);
+  /// Enables JSON input
+  void enable_json_input(const String &);
+  /// Enables validated JSON input from an in-memory study object
+  void enable_json_input(const nlohmann::json&);
   /// performs check_input, broadcast, and post_process, but for now,
   /// allowing separate invocation through the public API as well
   void check_and_broadcast(const UserModes& user_modes);
@@ -89,6 +98,19 @@ public:
   void lock();
   /// Explicitly unlocks the database.  Use with care.
   void unlock();
+
+  void lock_method_db();
+  void unlock_method_db();
+  void lock_model_db();
+  void unlock_model_db();
+  void lock_variables_db();
+  void unlock_variables_db();
+  void lock_interface_db();
+  void unlock_interface_db();
+  void lock_responses_db();
+  void unlock_responses_db();
+  
+
 
   /// set dataMethodIter based on a method identifier string to activate a
   /// particular method specification in dataMethodList and use pointers from
@@ -122,6 +144,20 @@ public:
   void set_db_model_nodes(size_t model_index);
   /// return the index of the active node in dataModelList
   size_t get_db_model_node(); // restoration usage: return by value
+
+  size_t get_db_responses_node(const String& responses_tag) const;
+
+  size_t get_db_interface_node(const String& interface_tag) const;
+
+  size_t get_db_variables_node(const String& variables_tag) const;
+
+  /// Return the active indices of each top-level specification list.
+  /// These are primarily used to synchronize state with the IR runtime.
+  int get_active_method_index() const;
+  int get_active_model_index() const;
+  int get_active_variables_index() const;
+  int get_active_interface_index() const;
+  int get_active_responses_index() const;
 
   /// set dataVariablesIter based on the variables identifier string
   void set_db_variables_node(const String& variables_tag);
@@ -214,6 +250,8 @@ public:
   bool get_bool(const String& entry_name) const;
   /// for getting a void**, e.g., &dlLib
   void** get_voidss(const String& entry_name) const;
+  /// write the full stored ProblemDescDB contents to a JSON file for debugging
+  void write_json_dump(const String& output_path) const;
 
   // These functions support a library mode with external parsing.  Rather
   // than using manage_inputs() to parse an input file, Data objects
@@ -305,6 +343,16 @@ public:
   /// function to check dbRep (does this envelope contain a letter)
   bool is_null() const;
 
+  /// function to check if IR-backed JSON input is inactive
+  bool is_json_null() const;
+
+  /// function to check if validated JSON has been materialized into IR state
+  bool has_ir_state() const;
+  /// function to check if validated JSON study is available
+  bool has_validated_json() const;
+  /// access the validated JSON study
+  const nlohmann::json& validated_json() const;
+
 protected:
 
   //
@@ -367,7 +415,18 @@ private:
   /// entry_name = block.entry_key, return the corresponding member
   /// value from the appropriate Data*Rep in the ProblemDescDB rep.
   template<typename T>
-  T& get(const std::string& context_msg,
+  const T& get(const std::string& context_msg,
+	 const std::map<std::string, T DataEnvironmentRep::*>& env_map,
+	 const std::map<std::string, T DataMethodRep::*>& met_map,
+	 const std::map<std::string, T DataModelRep::*>& mod_map,
+	 const std::map<std::string, T DataVariablesRep::*>& var_map,
+	 const std::map<std::string, T DataInterfaceRep::*>& int_map,
+	 const std::map<std::string, T DataResponsesRep::*>& res_map,
+	 const std::string& entry_name,
+	 const std::shared_ptr<ProblemDescDB>& db_rep) const;
+
+  template<typename T>
+  T& get_mutable(const std::string& context_msg,
 	 const std::map<std::string, T DataEnvironmentRep::*>& env_map,
 	 const std::map<std::string, T DataMethodRep::*>& met_map,
 	 const std::map<std::string, T DataModelRep::*>& mod_map,
@@ -403,6 +462,10 @@ private:
 
   /// require user-specified block identifiers to be unique
   void enforce_unique_ids();
+
+  /// Build minimal Data* list nodes from IR ids/pointers so existing list
+  /// selection logic can keep working while getters read from IR.
+  void populate_skeleton_data_from_ir();
 
 
   //
@@ -441,6 +504,18 @@ private:
   /// pointer to the letter (initialized only for the envelope)
   std::shared_ptr<ProblemDescDB> dbRep;
 
+  /// materialized IR for validated JSON input
+  std::shared_ptr<IRState> irState;
+  /// validated JSON study for broadcast/re-materialization
+  nlohmann::json validatedStudyJson;
+
+  // default data objects to use for json-only (when nidr is not used)
+  DataMethod    defaultDataMethod;
+  DataModel     defaultDataModel;
+  DataVariables defaultDataVariables;
+  DataInterface defaultDataInterface;
+  DataResponses defaultDataResponses;
+
   /// MPI world rank
   int worldRank;
   /// MPI world size
@@ -471,15 +546,48 @@ inline void ProblemDescDB::unlock()
 
 
 inline std::string_view ProblemDescDB::method_id() const {
-  return dbRep->dataMethodIter->dataMethodRep->idMethod;
+  const ProblemDescDB* db = dbRep ? dbRep.get() : this;
+  static const String empty_id;
+  if (db->irState && !db->method_locked() &&
+      db->irState->active.method < db->irState->method.size() &&
+      db->irState->method[db->irState->active.method].contains("id"))
+    return db->irState->method[db->irState->active.method].get<String>("id");
+  if (db->method_locked()) {
+    if (db->dataMethodList.size() == 1)
+      return db->dataMethodList.begin()->dataMethodRep->idMethod;
+    return empty_id;
+  }
+  return db->dataMethodIter->dataMethodRep->idMethod;
 }
 
 inline std::string_view ProblemDescDB::model_id() const {
-  return dbRep->dataModelIter->dataModelRep->idModel;
+  const ProblemDescDB* db = dbRep ? dbRep.get() : this;
+  static const String empty_id;
+  if (db->irState && !db->model_locked() &&
+      db->irState->active.model < db->irState->model.size() &&
+      db->irState->model[db->irState->active.model].contains("id"))
+    return db->irState->model[db->irState->active.model].get<String>("id");
+  if (db->model_locked()) {
+    if (db->dataModelList.size() == 1)
+      return db->dataModelList.begin()->dataModelRep->idModel;
+    return empty_id;
+  }
+  return db->dataModelIter->dataModelRep->idModel;
 }
 
 inline std::string_view ProblemDescDB::interface_id() const {
-  return dbRep->dataInterfaceIter->dataIfaceRep->idInterface;
+  const ProblemDescDB* db = dbRep ? dbRep.get() : this;
+  static const String empty_id;
+  if (db->irState && !db->interface_locked() &&
+      db->irState->active.interface < db->irState->interface.size() &&
+      db->irState->interface[db->irState->active.interface].contains("id"))
+    return db->irState->interface[db->irState->active.interface].get<String>("id");
+  if (db->interface_locked()) {
+    if (db->dataInterfaceList.size() == 1)
+      return db->dataInterfaceList.begin()->dataIfaceRep->idInterface;
+    return empty_id;
+  }
+  return db->dataInterfaceIter->dataIfaceRep->idInterface;
 }
 
 inline std::shared_ptr<ProblemDescDB> ProblemDescDB::get_rep() const {
@@ -586,6 +694,85 @@ inline bool ProblemDescDB::responses_locked() const
 
 inline bool ProblemDescDB::is_null() const
 { return (dbRep) ? false : true; }
+
+inline bool ProblemDescDB::is_json_null() const
+{
+  const ProblemDescDB* db = dbRep ? dbRep.get() : this;
+  return (db->irState) ? false : true;
+}
+
+inline bool ProblemDescDB::has_ir_state() const
+{
+  const ProblemDescDB* db = dbRep ? dbRep.get() : this;
+  return static_cast<bool>(db->irState);
+}
+
+inline bool ProblemDescDB::has_validated_json() const
+{
+  const ProblemDescDB* db = dbRep ? dbRep.get() : this;
+  return !db->validatedStudyJson.is_null();
+}
+
+inline const nlohmann::json& ProblemDescDB::validated_json() const
+{
+  const ProblemDescDB* db = dbRep ? dbRep.get() : this;
+  return db->validatedStudyJson;
+}
+
+inline int ProblemDescDB::get_active_method_index() const
+{
+  const ProblemDescDB* db = dbRep ? dbRep.get() : this;
+  if (db->irState)
+    return static_cast<int>(db->irState->active.method);
+  return db->methodDBLocked ? 0 :
+    static_cast<int>(std::distance(
+      db->dataMethodList.cbegin(),
+      std::list<DataMethod>::const_iterator(db->dataMethodIter)));
+}
+
+inline int ProblemDescDB::get_active_model_index() const
+{
+  const ProblemDescDB* db = dbRep ? dbRep.get() : this;
+  if (db->irState)
+    return static_cast<int>(db->irState->active.model);
+  return db->modelDBLocked ? 0 :
+    static_cast<int>(std::distance(
+      db->dataModelList.cbegin(),
+      std::list<DataModel>::const_iterator(db->dataModelIter)));
+}
+
+inline int ProblemDescDB::get_active_variables_index() const
+{
+  const ProblemDescDB* db = dbRep ? dbRep.get() : this;
+  if (db->irState)
+    return static_cast<int>(db->irState->active.variables);
+  return db->variablesDBLocked ? 0 :
+    static_cast<int>(std::distance(
+      db->dataVariablesList.cbegin(),
+      std::list<DataVariables>::const_iterator(db->dataVariablesIter)));
+}
+
+inline int ProblemDescDB::get_active_interface_index() const
+{
+  const ProblemDescDB* db = dbRep ? dbRep.get() : this;
+  if (db->irState)
+    return static_cast<int>(db->irState->active.interface);
+  return db->interfaceDBLocked ? 0 :
+    static_cast<int>(std::distance(
+      db->dataInterfaceList.cbegin(),
+      std::list<DataInterface>::const_iterator(db->dataInterfaceIter)));
+}
+
+inline int ProblemDescDB::get_active_responses_index() const
+{
+  const ProblemDescDB* db = dbRep ? dbRep.get() : this;
+  if (db->irState)
+    return static_cast<int>(db->irState->active.responses);
+  return db->responsesDBLocked ? 0 :
+    static_cast<int>(std::distance(
+      db->dataResponsesList.cbegin(),
+      std::list<DataResponses>::const_iterator(db->dataResponsesIter)));
+}
 
 
 inline int ProblemDescDB::

@@ -40,11 +40,12 @@ endif()
 
 remove_definitions("-DHAVE_CONFIG_H")
 
-# Generate regression tests for all dakota_*.in in this directory
+# Generate regression tests for all dakota_*.in and dakota_*.json in
+# this directory
 if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
 
   if(NOT DAKOTA_PYTHON_PATH)
-    set(DAKOTA_PYTHON_PATH "${Dakota_SOURCE_DIR}/interfaces/Python")
+    set(DAKOTA_PYTHON_PATH "${Dakota_BINARY_DIR}/python")
   endif()
 
   if(HAVE_EXT_PYTHON_METHOD)
@@ -64,18 +65,19 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
     ${CMAKE_CURRENT_BINARY_DIR}/dakota_test.perl @ONLY)
 
   # copied primary scripts
-  set(file "dakota_diff.perl")
-  add_file_copy_command(${CMAKE_CURRENT_SOURCE_DIR}/${file} 
-    ${CMAKE_CURRENT_BINARY_DIR}/${file})
-  list(APPEND copied_test_files_abs "${CMAKE_CURRENT_BINARY_DIR}/${file}")  
-
+  add_file_copy_command(${CMAKE_CURRENT_SOURCE_DIR}/dakota_diff.perl
+      ${CMAKE_CURRENT_BINARY_DIR}/dakota_diff.perl)
+  list(APPEND copied_test_files_abs "${CMAKE_CURRENT_BINARY_DIR}/dakota_diff.perl")
 
   # Create one CTest per Dakota input file, each in a protected subdirectory
 
-  file(GLOB dakota_test_input_files 
-    RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "dakota_*.in")
+  file(GLOB dakota_test_input_files
+    RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+    "dakota_*.in"
+    "dakota_*.json")
 
-  # Parse dakota_*.in to generate test properties to file and test_props var
+  # Parse dakota_*.in and dakota_*.json to generate test properties to
+  # file and test_props var
   dakota_generate_test_properties(${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_BINARY_DIR} test_props)
 
@@ -83,6 +85,7 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
   foreach(test_input_file ${dakota_test_input_files})
 
     get_filename_component(test_name ${test_input_file} NAME_WE)
+    get_filename_component(test_ext ${test_input_file} EXT)
 
     # Glob up all files associated with this test input file
     # These get copied by add_application_test into test/dakota_*/
@@ -105,12 +108,12 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
     set(test_all_req_files)
 
     # --- Add serial test ---
-    dakota_regression_test("${test_name}" "serial" "${test_props}"
+    dakota_regression_test("${test_name}" "${test_ext}" "serial" "${test_props}"
       "${test_aux_files}")
 
     # --- Add parallel test when MPI enabled, and file contains #p<int> ---
     if (DAKOTA_HAVE_MPI)
-      dakota_regression_test("${test_name}" "parallel" "${test_props}"
+      dakota_regression_test("${test_name}" "${test_ext}" "parallel" "${test_props}"
 	"${test_aux_files}")
     endif()
 

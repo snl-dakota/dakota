@@ -49,7 +49,7 @@ SharedPecosApproxData(ProblemDescDB& problem_db, size_t num_vars):
   short basis_type; approx_type_to_basis_type(approxType, basis_type);
   UShortArray approx_order;
   if (basis_type == Pecos::GLOBAL_ORTHOGONAL_POLYNOMIAL)
-    approx_order = problem_db.get_usa("method.nond.expansion_order");
+    approx_order = problem_db.get_usa("method.nond.expansion_order_sequence");
 
   // override selected ConfigOptions defaults, as supported by SharedApproxData
   // API.  All options are updated later in NonD*::initialize_u_space_model(),

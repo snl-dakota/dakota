@@ -64,6 +64,9 @@ if(ENABLE_SPEC_MAINT AND NOT UNIX)
     "DAKOTA specification maintenance mode only available on UNIX platforms")
 endif()
 
+option(DAKOTA_GENERATE_JSON_SCHEMA
+  "Regenerate src/dakota.json from Dakota Pydantic models during the build" OFF)
+
 
 ## Python options
 
@@ -78,6 +81,11 @@ endif()
 # Scripts and tests based on interpreter
 # (Formerly, DAKOTA_PYTHON controlled linked/direct Python interface only)
 option(DAKOTA_PYTHON "Dakota Python scripts (Interpreter); default ON" ON)
+
+if(DAKOTA_GENERATE_JSON_SCHEMA AND NOT DAKOTA_PYTHON)
+  message(FATAL_ERROR
+    "DAKOTA_GENERATE_JSON_SCHEMA requires DAKOTA_PYTHON=ON")
+endif()
 
 # External python methods defaults to OFF to avoid Python library dependencies
 # and because some tests require scipy

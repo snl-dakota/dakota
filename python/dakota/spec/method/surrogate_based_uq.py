@@ -1,0 +1,42 @@
+"""Generated Pydantic models for method.surrogate_based_uq"""
+
+from __future__ import annotations
+
+from ..base import DakotaField
+from .base import MethodSelection
+
+# Cross-module model imports
+from dakota.spec.shared.expansion.options import ExpansionOptionsMixin
+from dakota.spec.shared.misc import (
+    MethodOptionalModelPointerMixin,
+    MethodSeedMixin,
+    MethodThreeOptionalKeywordsMixin,
+)
+
+
+class SurrogateBasedUqConfig(
+    MethodThreeOptionalKeywordsMixin,
+    ExpansionOptionsMixin,
+    MethodSeedMixin,
+    MethodOptionalModelPointerMixin,
+):
+    "Generic UQ method for constructing and interrogating a surrogate model."
+
+    pass
+
+
+class SurrogateBasedUqSelection(MethodSelection):
+    "Generated model for SurrogateBasedUqSelection"
+
+    surrogate_based_uq: SurrogateBasedUqConfig = DakotaField(
+        dakota={
+            "materialization": [
+                {
+                    "ir_key": "method.algorithm",
+                    "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SURROGATE_BASED_UQ",
+                    "ir_value_type": "unsigned short",
+                }
+            ]
+        }
+    )

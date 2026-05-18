@@ -27,111 +27,102 @@ MixedVarConstraints(const ProblemDescDB& problem_db,
 		    const SharedVariablesData& svd):
   Constraints(BaseConstructor(), problem_db, svd)
 {
-  int start = 0;
-  const RealVector& cdv_l_bnds = problem_db.get_rv(
-    "variables.continuous_design.lower_bounds");
-  const RealVector& cdv_u_bnds = problem_db.get_rv(
-    "variables.continuous_design.upper_bounds");
-  const RealVector& cauv_l_bnds = problem_db.get_rv(
-    "variables.continuous_aleatory_uncertain.lower_bounds");
-  const RealVector& cauv_u_bnds = problem_db.get_rv(
-    "variables.continuous_aleatory_uncertain.upper_bounds");
-  const RealVector& ceuv_l_bnds = problem_db.get_rv(
-    "variables.continuous_epistemic_uncertain.lower_bounds");
-  const RealVector& ceuv_u_bnds = problem_db.get_rv(
-    "variables.continuous_epistemic_uncertain.upper_bounds");
-  const RealVector& csv_l_bnds  = problem_db.get_rv(
-    "variables.continuous_state.lower_bounds");
-  const RealVector& csv_u_bnds  = problem_db.get_rv(
-    "variables.continuous_state.upper_bounds");
-  copy_data_partial(cdv_l_bnds, allContinuousLowerBnds, start);
-  copy_data_partial(cdv_u_bnds, allContinuousUpperBnds, start);
-  start += cdv_l_bnds.length();
-  copy_data_partial(cauv_l_bnds, allContinuousLowerBnds, start);
-  copy_data_partial(cauv_u_bnds, allContinuousUpperBnds, start);
-  start += cauv_l_bnds.length();
-  copy_data_partial(ceuv_l_bnds, allContinuousLowerBnds, start);
-  copy_data_partial(ceuv_u_bnds, allContinuousUpperBnds, start);
-  start += ceuv_l_bnds.length();
-  copy_data_partial(csv_l_bnds, allContinuousLowerBnds, start);
-  copy_data_partial(csv_u_bnds, allContinuousUpperBnds, start);
-  //start += csv_l_bnds.length();
+  // --- Continuous variable bounds ---
+  {
+    int start = 0;
+    // Helper: copy bounds from explicit keys into concatenated arrays
+    auto copy_cv = [&](const String& lb_key, const String& ub_key) {
+      const RealVector& lb = problem_db.get_rv(lb_key);
+      const RealVector& ub = problem_db.get_rv(ub_key);
+      copy_data_partial(lb, allContinuousLowerBnds, start);
+      copy_data_partial(ub, allContinuousUpperBnds, start);
+      start += lb.length();
+    };
+    // Helper: standard pattern using base + ".lower_bounds"/".upper_bounds"
+    auto copy_cv_std = [&](const char* base) {
+      copy_cv(String(base)+".lower_bounds", String(base)+".upper_bounds");
+    };
 
-  start = 0;
-  const IntVector& ddrv_l_bnds = problem_db.get_iv(
-    "variables.discrete_design_range.lower_bounds");
-  const IntVector& ddrv_u_bnds = problem_db.get_iv(
-    "variables.discrete_design_range.upper_bounds");
-  copy_data_partial(ddrv_l_bnds, allDiscreteIntLowerBnds, start);
-  copy_data_partial(ddrv_u_bnds, allDiscreteIntUpperBnds, start);
-  start += ddrv_l_bnds.length();
-  const IntVector& ddsiv_l_bnds = problem_db.get_iv(
-    "variables.discrete_design_set_int.lower_bounds");
-  const IntVector& ddsiv_u_bnds = problem_db.get_iv(
-    "variables.discrete_design_set_int.upper_bounds");
-  copy_data_partial(ddsiv_l_bnds, allDiscreteIntLowerBnds, start);
-  copy_data_partial(ddsiv_u_bnds, allDiscreteIntUpperBnds, start);
-  start += ddsiv_l_bnds.length();
-  const IntVector& dauiv_l_bnds = problem_db.get_iv(
-    "variables.discrete_aleatory_uncertain_int.lower_bounds");
-  const IntVector& dauiv_u_bnds = problem_db.get_iv(
-    "variables.discrete_aleatory_uncertain_int.upper_bounds");
-  copy_data_partial(dauiv_l_bnds, allDiscreteIntLowerBnds, start);
-  copy_data_partial(dauiv_u_bnds, allDiscreteIntUpperBnds, start);
-  start += dauiv_l_bnds.length();
-  const IntVector& deuiv_l_bnds = problem_db.get_iv(
-    "variables.discrete_epistemic_uncertain_int.lower_bounds");
-  const IntVector& deuiv_u_bnds = problem_db.get_iv(
-    "variables.discrete_epistemic_uncertain_int.upper_bounds");
-  copy_data_partial(deuiv_l_bnds, allDiscreteIntLowerBnds, start);
-  copy_data_partial(deuiv_u_bnds, allDiscreteIntUpperBnds, start);
-  start += deuiv_l_bnds.length();
-  const IntVector& dsrv_l_bnds = problem_db.get_iv(
-    "variables.discrete_state_range.lower_bounds");
-  const IntVector& dsrv_u_bnds = problem_db.get_iv(
-    "variables.discrete_state_range.upper_bounds");
-  copy_data_partial(dsrv_l_bnds, allDiscreteIntLowerBnds, start);
-  copy_data_partial(dsrv_u_bnds, allDiscreteIntUpperBnds, start);
-  start += dsrv_l_bnds.length();
-  const IntVector& dssiv_l_bnds = problem_db.get_iv(
-    "variables.discrete_state_set_int.lower_bounds");
-  const IntVector& dssiv_u_bnds = problem_db.get_iv(
-    "variables.discrete_state_set_int.upper_bounds");
-  copy_data_partial(dssiv_l_bnds, allDiscreteIntLowerBnds, start);
-  copy_data_partial(dssiv_u_bnds, allDiscreteIntUpperBnds, start);
-  //start += dssiv_l_bnds.length();
+    // design
+    copy_cv_std("variables.continuous_design");
+    // aleatory uncertain: normal/lognormal use inferred bounds
+    copy_cv("variables.normal_uncertain.inferred_lower_bounds",
+            "variables.normal_uncertain.inferred_upper_bounds");
+    copy_cv("variables.lognormal_uncertain.lower_bounds",
+            "variables.lognormal_uncertain.inferred_upper_bounds");
+    // remaining aleatory uncertain use distribution bounds directly
+    const char* cauv_remaining[] = {
+      "variables.uniform_uncertain",
+      "variables.loguniform_uncertain",
+      "variables.triangular_uncertain",
+      "variables.exponential_uncertain",
+      "variables.beta_uncertain",
+      "variables.gamma_uncertain",
+      "variables.gumbel_uncertain",
+      "variables.frechet_uncertain",
+      "variables.weibull_uncertain",
+      "variables.histogram_bin_uncertain"
+    };
+    for (const char* base : cauv_remaining) copy_cv_std(base);
+    // epistemic uncertain
+    copy_cv_std("variables.continuous_interval_uncertain");
+    // state
+    copy_cv_std("variables.continuous_state");
+  }
+
+  // --- Discrete integer variable bounds ---
+  {
+    int start = 0;
+    const char* div_keys[] = {
+      // design
+      "variables.discrete_design_range",
+      "variables.discrete_design_set_int",
+      // aleatory uncertain
+      "variables.poisson_uncertain",
+      "variables.binomial_uncertain",
+      "variables.negative_binomial_uncertain",
+      "variables.geometric_uncertain",
+      "variables.hypergeometric_uncertain",
+      "variables.histogram_uncertain.point_int",
+      // epistemic uncertain
+      "variables.discrete_interval_uncertain",
+      "variables.discrete_uncertain_set_int",
+      // state
+      "variables.discrete_state_range",
+      "variables.discrete_state_set_int"
+    };
+    for (const char* base : div_keys) {
+      const IntVector& lb = problem_db.get_iv(String(base)+".lower_bounds");
+      const IntVector& ub = problem_db.get_iv(String(base)+".upper_bounds");
+      copy_data_partial(lb, allDiscreteIntLowerBnds, start);
+      copy_data_partial(ub, allDiscreteIntUpperBnds, start);
+      start += lb.length();
+    }
+  }
 
   // discrete string variable bounds?  (not needed for exclusively categorical)
 
-  start = 0;
-  const RealVector& ddsrv_l_bnds = problem_db.get_rv(
-    "variables.discrete_design_set_real.lower_bounds");
-  const RealVector& ddsrv_u_bnds = problem_db.get_rv(
-    "variables.discrete_design_set_real.upper_bounds");
-  copy_data_partial(ddsrv_l_bnds, allDiscreteRealLowerBnds, start);
-  copy_data_partial(ddsrv_u_bnds, allDiscreteRealUpperBnds, start);
-  start += ddsrv_l_bnds.length();
-  const RealVector& daurv_l_bnds = problem_db.get_rv(
-    "variables.discrete_aleatory_uncertain_real.lower_bounds");
-  const RealVector& daurv_u_bnds = problem_db.get_rv(
-    "variables.discrete_aleatory_uncertain_real.upper_bounds");
-   copy_data_partial(daurv_l_bnds, allDiscreteRealLowerBnds, start);
-  copy_data_partial(daurv_u_bnds, allDiscreteRealUpperBnds, start);
-  start += daurv_l_bnds.length();
-  const RealVector& deurv_l_bnds = problem_db.get_rv(
-    "variables.discrete_epistemic_uncertain_real.lower_bounds");
-  const RealVector& deurv_u_bnds = problem_db.get_rv(
-    "variables.discrete_epistemic_uncertain_real.upper_bounds");
-  copy_data_partial(deurv_l_bnds, allDiscreteRealLowerBnds, start);
-  copy_data_partial(deurv_u_bnds, allDiscreteRealUpperBnds, start);
-  start += deurv_l_bnds.length();
-  const RealVector& dssrv_l_bnds = problem_db.get_rv(
-    "variables.discrete_state_set_real.lower_bounds");
-  const RealVector& dssrv_u_bnds = problem_db.get_rv(
-    "variables.discrete_state_set_real.upper_bounds");
-  copy_data_partial(dssrv_l_bnds, allDiscreteRealLowerBnds, start);
-  copy_data_partial(dssrv_u_bnds, allDiscreteRealUpperBnds, start);
-  //start += dssrv_l_bnds.length();
+  // --- Discrete real variable bounds ---
+  {
+    int start = 0;
+    const char* drv_keys[] = {
+      // design
+      "variables.discrete_design_set_real",
+      // aleatory uncertain
+      "variables.histogram_uncertain.point_real",
+      // epistemic uncertain
+      "variables.discrete_uncertain_set_real",
+      // state
+      "variables.discrete_state_set_real"
+    };
+    for (const char* base : drv_keys) {
+      const RealVector& lb = problem_db.get_rv(String(base)+".lower_bounds");
+      const RealVector& ub = problem_db.get_rv(String(base)+".upper_bounds");
+      copy_data_partial(lb, allDiscreteRealLowerBnds, start);
+      copy_data_partial(ub, allDiscreteRealUpperBnds, start);
+      start += lb.length();
+    }
+  }
 }
 
 

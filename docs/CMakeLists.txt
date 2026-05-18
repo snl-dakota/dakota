@@ -15,13 +15,6 @@ cmake_minimum_required(VERSION 3.17)
 
 # TODO: make documentation build cross-platform
 
-# TODO: Should this specify COMPONENTS Development?
-find_package(Java 11 REQUIRED)
-if (NOT Java_FOUND)
-  message(SEND_ERROR "Dakota docs-sphinx requires JDK 11.")
-endif()
-include(UseJava)
-
 find_package(Python REQUIRED)
 
 # Required for generated included input files
@@ -56,47 +49,6 @@ include(DakotaUsersExamples)
 
 dakota_version_set_helper_vars()
 
-set(DAKOTA_JAVA_UTIL_DIR
-  "${Dakota_SOURCE_DIR}/src/java_utils/src/gov/sandia/dart/dakota")
-
-set(CMAKE_JAVA_INCLUDE_PATH 
-  "${Dakota_SOURCE_DIR}/src/java_utils/antlr-runtime-4.1.jar")
-set(NIDRANTLR_DIR "${DAKOTA_JAVA_UTIL_DIR}/nidr/antlr")
-add_jar(docs_genrefman
-  ${DAKOTA_JAVA_UTIL_DIR}/refman/RefManGenerator.java
-  # don't currently neeed .nspec to .dox translation, but need to compile
-  ${DAKOTA_JAVA_UTIL_DIR}/nidr/NIDRToRefManSpec.java
-  ${DAKOTA_JAVA_UTIL_DIR}/refman/RefManMetaData.java
-  ${DAKOTA_JAVA_UTIL_DIR}/refman/RefManInputSpec.java
-  ${DAKOTA_JAVA_UTIL_DIR}/refman/metadata/InputSpecKeywordMetaData.java
-  ${DAKOTA_JAVA_UTIL_DIR}/refman/metadata/RefManKeywordMetaData.java
-  ${DAKOTA_JAVA_UTIL_DIR}/refman/print/DoxygenToRSTConverter.java
-  ${DAKOTA_JAVA_UTIL_DIR}/refman/print/KeywordPageRSTPrinter.java
-  ${DAKOTA_JAVA_UTIL_DIR}/refman/print/KeywordPageRSTTablePrinter.java
-  ${DAKOTA_JAVA_UTIL_DIR}/refman/print/KeywordPrinter.java
-  ${DAKOTA_JAVA_UTIL_DIR}/refman/print/TableKeyword.java
-  ${DAKOTA_JAVA_UTIL_DIR}/refman/print/rst/table/CellFormatter.java
-  ${DAKOTA_JAVA_UTIL_DIR}/refman/print/rst/table/CellPayload.java
-  ${DAKOTA_JAVA_UTIL_DIR}/refman/print/rst/table/CellUtil.java
-  ${DAKOTA_JAVA_UTIL_DIR}/refman/print/rst/table/GenericCell.java
-  ${DAKOTA_JAVA_UTIL_DIR}/refman/print/rst/table/GenericRow.java
-  ${DAKOTA_JAVA_UTIL_DIR}/refman/print/rst/table/GenericTable.java
-  ${DAKOTA_JAVA_UTIL_DIR}/refman/print/rst/table/RstDividerPrinter.java
-  ${DAKOTA_JAVA_UTIL_DIR}/refman/print/rst/table/RstRowPrinter.java
-  ${DAKOTA_JAVA_UTIL_DIR}/refman/print/rst/table/RstTablePrinter.java
-  ${DAKOTA_JAVA_UTIL_DIR}/refman/print/rst/table/SpanHoldCell.java
-  ${DAKOTA_JAVA_UTIL_DIR}/xml/XMLToRefManSpec.java
-  # Would prefer to put these all on classpath, can't figure out how
-  ${NIDRANTLR_DIR}/NIDRBaseListener.java
-  ${NIDRANTLR_DIR}/NIDRBaseVisitor.java  # may not need
-  ${NIDRANTLR_DIR}/NIDRLexer.java
-#  ${NIDRANTLR_DIR}/NIDRLexer.tokens      # may not need
-  ${NIDRANTLR_DIR}/NIDRListener.java
-  ${NIDRANTLR_DIR}/NIDRParser.java
-#  ${NIDRANTLR_DIR}/NIDR.tokens           # may not need
-  ${NIDRANTLR_DIR}/NIDRVisitor.java
-  )
-
 # Keyword reference dependencies
 file(GLOB ref_kw_md "keywords/*")
 list_filter_emacs_backups(ref_kw_md)
@@ -104,21 +56,19 @@ list_filter_emacs_backups(ref_kw_md)
 # TODO: Generate all reference manual to build tree
 
 # Generate the ultimate RST files for ref man keywords, specifying
-# only required dependencies.  The genrefman Java tool takes
-# dakota.xml together with reference metadata files to create
-# reference manual keyword pages.
-get_target_property(docs_genrefman_jar docs_genrefman JAR_FILE)
+# only required dependencies. The Python generator takes dakota.json
+# together with reference metadata files to create reference manual
+# keyword pages.
 add_custom_command( 
   OUTPUT ${DakotaDocs_SOURCE_DIR}/user/usingdakota/reference/environment.rst
-  DEPENDS docs_genrefman
-          ${Dakota_SOURCE_DIR}/src/dakota.xml
+  DEPENDS ${Dakota_SOURCE_DIR}/src/dakota.json
+          ${DakotaDocs_SOURCE_DIR}/generate_keyword_reference.py
 	  ${ref_kw_md}
   COMMAND ${CMAKE_COMMAND}
   ARGS -E make_directory ${DakotaDocs_SOURCE_DIR}/user/usingdakota/reference
-  COMMAND ${Java_JAVA_EXECUTABLE} 
-  ARGS -classpath ${docs_genrefman_jar} 
-    gov.sandia.dart.dakota.refman.RefManGenerator
-    ${Dakota_SOURCE_DIR}/src/dakota.xml
+  COMMAND ${Python_EXECUTABLE}
+  ARGS ${DakotaDocs_SOURCE_DIR}/generate_keyword_reference.py
+    ${Dakota_SOURCE_DIR}/src/dakota.json
     ${DakotaDocs_SOURCE_DIR}/keywords
     ${DakotaDocs_SOURCE_DIR}/user/usingdakota/reference
   COMMENT "Generating keyword reference RST files to ${DakotaDocs_SOURCE_DIR}/user/usingdakota/reference/"

@@ -1,0 +1,23 @@
+interface,
+	id_interface = 'HIFI_FN'
+  direct
+	fork
+	  asynch evaluation_concurrency = 2
+ 	  analysis_driver = 'rosenbrock'
+	  deactivate restart_file
+
+interface,
+	id_interface = 'HIFI_FN'
+  direct
+  deactivate restart_file
+	fork
+	  asynch evaluation_concurrency = 2
+ 	  analysis_driver = 'rosenbrock'
+
+interface,
+	id_interface = 'HIFI_FN'
+  direct
+  deactivate restart_file
+		fork
+		  asynch evaluation_concurrency = 2
+	 	  analysis_driver = 'rosenbrock'

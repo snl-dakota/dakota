@@ -8,10 +8,11 @@
 
 environment,
 #	tabular_data
-
+#       top_method_pointer = 'mads'  				#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16         
 method,
+        id_method 'mads'
 	mesh_adaptive_search
-#	model_pointer = 'SURROGATE'				#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16
+#	model_pointer = 'SURROGATE' 				#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16
 #	use_surrogate optimize					#s10,#s11,#s12
 #	use_surrogate inform_search				#s14,#s15,#s16
 	seed = 1234

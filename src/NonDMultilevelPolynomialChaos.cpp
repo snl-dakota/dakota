@@ -29,10 +29,10 @@ NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db,
 			      ParallelLibrary& parallel_lib,
 			      std::shared_ptr<Model> model):
   NonDPolynomialChaos(DEFAULT_METHOD, problem_db, parallel_lib, model), // bypass PCE ctor
-  expOrderSeqSpec(problem_db.get_usa("method.nond.expansion_order")),
-  expSamplesSeqSpec(problem_db.get_sza("method.nond.expansion_samples")),
-  quadOrderSeqSpec(problem_db.get_usa("method.nond.quadrature_order")),
-  ssgLevelSeqSpec(problem_db.get_usa("method.nond.sparse_grid_level")),
+  expOrderSeqSpec(problem_db.get_usa("method.nond.expansion_order_sequence")),
+  expSamplesSeqSpec(problem_db.get_sza("method.nond.expansion_samples_sequence")),
+  quadOrderSeqSpec(problem_db.get_usa("method.nond.quadrature_order_sequence")),
+  ssgLevelSeqSpec(problem_db.get_usa("method.nond.sparse_grid_level_sequence")),
   sequenceIndex(0) //resizedFlag(false), callResize(false)
 {
   randomSeedSeqSpec = problem_db.get_sza("method.random_seed_sequence");
@@ -76,7 +76,7 @@ NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db,
 	u_space_sampler, g_u_model, approx_type) &&
       !config_expectation(expansion_samples(), sample_type, random_seed(), rng,
 	u_space_sampler, g_u_model, approx_type) &&
-      !config_regression(exp_orders, collocation_points(),
+	!config_regression(exp_orders, collocation_points(),
 	probDescDB.get_real("method.nond.collocation_ratio_terms_order"),
 	probDescDB.get_short("method.nond.regression_type"),
 	probDescDB.get_short("method.nond.least_squares_regression_type"),

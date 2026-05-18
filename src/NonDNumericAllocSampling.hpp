@@ -353,7 +353,7 @@ protected:
   void compute_covariance(Real sum_Q1, Real sum_Q2, Real sum_Q1Q2,
 			  size_t N_shared, Real& cov_Q1Q2);
 
-  void covariance_to_correlation_sq(const RealMatrix& cov_LH,
+  void covariance_to_correlation_sq(const RealVectorArray&    cov_LH,
 				    const RealSymMatrixArray& cov_LL,
 				    const RealVector& var_H,
 				    RealMatrix& rho2_LH);
@@ -466,6 +466,7 @@ protected:
   void print_estimator_performance(std::ostream& s,
 				   const MFSolutionData& soln) const;
 
+  Real find_solution_reference(bool actual = true);
   void r_and_N_to_N_vec(const RealVector& avg_eval_ratios, Real N_H,
 			RealVector& N_vec);
   void r_and_N_to_design_vars(const RealVector& avg_eval_ratios, Real N_H,
@@ -1690,6 +1691,21 @@ enforce_bounds(RealVector& x0, const RealVector& x_lb, const RealVector& x_ub)
 }
 
 
+inline Real NonDNumericAllocSampling::find_solution_reference(bool actual)
+{
+  // this function is helpful when N_H is neither provided nor optimized,
+  // so pull from latest counter values
+  // > estimator_variance_metric() uses actual (not alloc) to sync with varH
+  //   so pass backfill=false when defining G,g in precompute_*_controls()
+  //   and estimator_variances/estimator_variance_ratios()
+
+  size_t hf_form_index, hf_lev_index;
+  hf_indices(hf_form_index, hf_lev_index);
+  return (actual) ? average(NLevActual[hf_form_index][hf_lev_index]) :
+    NLevAlloc[hf_form_index][hf_lev_index];
+}
+
+
 inline void NonDNumericAllocSampling::
 r_and_N_to_N_vec(const RealVector& avg_eval_ratios, Real N_H, RealVector& N_vec)
 {
@@ -1723,13 +1739,22 @@ r_and_N_to_design_vars(const RealVector& avg_eval_ratios, Real N_H,
 inline void NonDNumericAllocSampling::
 design_vars_to_r(const RealVector& cd_vars, RealVector& avg_eval_ratios)
 {
+  // works for full numApprox or partial approx_set, so long as N_H is
+  // omitted for R_ONLY_LINEAR_CONSTRAINT
+
+  int num_cdv = cd_vars.length();
   switch (optSubProblemForm) {
-  case N_MODEL_LINEAR_OBJECTIVE:  case N_MODEL_LINEAR_CONSTRAINT:
-    copy_data_partial(cd_vars, 0, (int)numApprox, avg_eval_ratios); // N_i
-    avg_eval_ratios.scale(1./cd_vars[numApprox]); // r_i = N_i / N
+  case N_MODEL_LINEAR_OBJECTIVE:  case N_MODEL_LINEAR_CONSTRAINT: {
+    int num_approx = num_cdv - 1;
+    copy_data_partial(cd_vars, 0, num_approx, avg_eval_ratios); // N_i
+    avg_eval_ratios.scale(1./cd_vars[num_approx]); // r_i = N_i / N
     break;
-  default: // r_and_N provided: pass leading numApprox terms of cd_vars
-    avg_eval_ratios = RealVector(Teuchos::View, cd_vars.values(), numApprox);
+  }
+  case R_ONLY_LINEAR_CONSTRAINT: // cd_vars must be of length num_approx
+    avg_eval_ratios = RealVector(Teuchos::View, cd_vars.values(), num_cdv);
+    break;
+  case R_AND_N_NONLINEAR_CONSTRAINT:
+    avg_eval_ratios = RealVector(Teuchos::View, cd_vars.values(), num_cdv - 1);
     break;
   }
 }
@@ -1738,17 +1763,29 @@ design_vars_to_r(const RealVector& cd_vars, RealVector& avg_eval_ratios)
 inline void NonDNumericAllocSampling::
 design_vars_to_N(const RealVector& cd_vars, RealVector& N_samp)
 {
-  int num_m = numApprox+1;
+  // works for full numApprox or partial approx_set, so long as N_H is included
+
+  int num_cdv = cd_vars.length();
   switch (optSubProblemForm) {
   case N_MODEL_LINEAR_OBJECTIVE:  case N_MODEL_LINEAR_CONSTRAINT:
-    N_samp = RealVector(Teuchos::View, cd_vars.values(), num_m);
+    N_samp = RealVector(Teuchos::View, cd_vars.values(), num_cdv);
     break;
-  default: // r_and_N provided: pass leading numApprox terms of cd_vars
+  case R_ONLY_LINEAR_CONSTRAINT: { // inflate to include N_H
+    Real N_H = find_solution_reference(); // use NLevActual
+    N_samp.sizeUninitialized(num_cdv+1);
+    for (int i=0; i<num_cdv; ++i)
+      N_samp[i] = N_H * cd_vars[i]; // N_i = r_i * N
+    N_samp[num_cdv] = N_H;
+    break;
+  }
+  case R_AND_N_NONLINEAR_CONSTRAINT: {
     copy_data(cd_vars, N_samp);
-    Real N_H = cd_vars[numApprox];
-    for (size_t i=0; i<numApprox; ++i)
+    int i, num_approx = num_cdv - 1;
+    Real N_H = cd_vars[num_approx];
+    for (i=0; i<num_approx; ++i)
       N_samp[i] *= N_H; // N_i = r_i * N
     break;
+  }
   }
 }
 
@@ -2069,7 +2106,7 @@ compute_covariance(Real sum_Q1, Real sum_Q2, Real sum_Q1Q2, size_t N_shared,
 
 
 inline void NonDNumericAllocSampling::
-covariance_to_correlation_sq(const RealMatrix& cov_LH,
+covariance_to_correlation_sq(const RealVectorArray&    cov_LH,
 			     const RealSymMatrixArray& cov_LL,
 			     const RealVector& var_H, RealMatrix& rho2_LH)
 {
@@ -2079,8 +2116,9 @@ covariance_to_correlation_sq(const RealMatrix& cov_LH,
   for (qoi=0; qoi<numFunctions; ++qoi) {
     var_H_q = var_H[qoi];
     const RealSymMatrix& cov_LL_q = cov_LL[qoi];
+    const RealVector&    cov_LH_q = cov_LH[qoi];
     for (approx=0; approx<numApprox; ++approx) {
-      cov_LH_aq = cov_LH(qoi,approx);
+      cov_LH_aq = cov_LH_q[approx];
       rho2_LH(qoi,approx) = cov_LH_aq / cov_LL_q(approx,approx)
 	                  * cov_LH_aq / var_H_q;
     }

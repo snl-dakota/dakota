@@ -1,0 +1,561 @@
+namespace Dakota {
+
+/** \page PydanticSpec Pydantic Input Grammar: Complete Reference and Procedure
+
+\htmlonly
+<b>Pydantic Grammar Table of Contents</b>
+<ul>
+<li> <a href="PydanticSpec.html#PydanticSpecOverview">Overview</a>
+<li> <a
+    href="PydanticSpec.html#PydanticSpecProcedure">Procedure: Adding a New
+    Keyword</a>
+<li> <a href="PydanticSpec.html#PydanticSpecUnions">How Union fields
+    are processed</a>
+<li> <a href="PydanticSpec.html#PydanticSpecDakotaField">DakotaField
+    authoring</a>
+<li> <a
+    href="PydanticSpec.html#PydanticSpecMaterialization">Materialization and
+    IR writes</a>
+<li> <a href="PydanticSpec.html#PydanticSpecIrDefaults">IR default
+    values</a>
+<li> <a href="PydanticSpec.html#PydanticSpecAddModel">Adding a new
+    method or model</a>
+<li> <a
+    href="PydanticSpec.html#PydanticSpecValidation">Validation and computed
+    fields</a>
+<li> <a href="PydanticSpec.html#PydanticSpecFloat">DakotaFloat</a>
+</ul>
+\endhtmlonly
+
+\section PydanticSpecOverview Overview
+
+The Pydantic models in \c dakota/python/dakota/spec constitute the canonical
+specification of Dakota's input grammar. Implement grammar edits and
+additions in these Python models and, where required, provide matching
+C++ validation or computed-field implementations so that the shared
+grammar contract remains consistent between schema generation and runtime.
+
+Most models inherit from \c DakotaBaseModel
+(\c dakota/python/dakota/spec/base.py). Parsed fields are declared with
+\c DakotaField and represent user-visible keywords and arguments.
+\c ValidationRule subclasses capture checks or mutations that depend on
+multiple parsed fields. \c ComputedFieldSpec entries paired with
+\c @computed_field properties export derived values in the schema
+or validated models. This page is self-contained: procedural steps reference
+the detailed authoring sections that follow; readers may consult any
+section on demand.
+
+\section PydanticSpecProcedure Procedure: Adding a New Keyword
+
+Follow these steps when adding a new keyword. Each step references the
+authoritative section on this page that documents the required authoring
+surface and implementation details.
+
+<ol>
+<li>Decide grammar role and one-of semantics.
+Choose whether the keyword is a scalar or collection argument, a pointer-
+style keyword that names another block, a Union branch, or a selection-
+wrapper (method or model family). If the keyword participates in a \c Union,
+ensure the Python annotation, \c default/\c default_factory, and
+\c dakota \c union_pattern metadata express identical one-of semantics.
+See \ref PydanticSpecUnions.</li>
+
+<li>Declare the parsed field on the appropriate model class.
+Add a typed class attribute to a \c DakotaBaseModel-derived class and
+declare it with \c DakotaField. Provide Pydantic parameters
+(\c default, \c default_factory, \c description, bounds) as appropriate.
+Include \c dakota metadata keys only as required: \c aliases,
+\c argument, \c block_pointer, \c anchor, \c union_pattern,
+\c model_default, \c internal_only, and \c materialization. For a new
+method or model selection, follow the selection-wrapper pattern described
+in \ref PydanticSpecDakotaField and \ref PydanticSpecAddModel.</li>
+
+<li>Author materialization mapping to IR.
+Select the IR key or keys that the field should modify and author the
+materialization metadata describing the write instructions. Each item
+must include at minimum \c ir_key, \c storage_type, and
+\c ir_value_type. Some \c storage_type values require additional
+properties (\c stored_value, \c secondary_ir_key,
+\c secondary_ir_value_type, \c enum_scope,
+\c secondary_literal_value). Prefer reusing existing storage-type handlers
+for identical IR effects; for domain-specific shapes use an existing
+model as a template. See \ref PydanticSpecMaterialization.</li>
+
+<li>Select the IR-default source.
+Choose one canonical source for any IR key's default: a grammar-level
+default on the Pydantic field, an implementation-level override in
+\c default_overrides_registry.json, or a type-policy default in
+\c default_policy_registry.json. The IR codegen merges these disjoint
+sources; \c generate_ir_tables.py treats collisions as errors. See
+\ref PydanticSpecIrDefaults.</li>
+
+<li>Add validation rules or computed fields if required.
+If correctness depends on relationships among fields, author a
+\c ValidationRule subclass, attach it via \c _VALIDATION_RULES on the
+model, and provide the matching C++ implementation and registration. If a
+derived value must appear in schema or the validated model, add a
+\c ComputedFieldSpec to \c _COMPUTED_FIELDS and implement the
+corresponding \c @computed_field property with a matching C++
+registration. Both features require exact string-name agreement between
+Python metadata and the C++ registry entries. See
+\ref PydanticSpecValidation.</li>
+
+<li>Implement and register required C++ logic and bindings.
+Any new \c ValidationRule or computed-field function requires a C++
+declaration and implementation, registration in the appropriate registry
+constructor, and exposure via pybind so the Python layer can invoke it.
+Typical files to edit are under
+\c packages/dakota_parser/dakota_validation (include, src, and test).
+Ensure the registered C++ string names match the Python metadata. See
+\ref PydanticSpecValidation.</li>
+
+<li>Regenerate schema and run IR code generation.
+Generate JSON schema from the updated Pydantic models and confirm that
+\c x-materialization, \c x-model-validations, \c x-computed-fields, and
+\c x-model-default metadata appear as expected. Run
+\c dakota/src/ir_codegen/extract_defaults_from_schema.py and
+\c dakota/src/ir_codegen/generate_ir_tables.py and inspect the generated
+IR contracts and write-instruction tables. Confirm intended \c ir_keys,
+\c ir_value_types, and defaults are present and that no collisions exist.
+See \ref PydanticSpecMaterialization and \ref PydanticSpecIrDefaults.</li>
+
+<li>Test, document, and publish.
+Add or update Python unit tests for parsing and schema output and C++
+tests for validation and computed-field behavior. Execute integration
+tests that exercise materialization through \c ProblemDescDB reads.
+Update documentation and example inputs to demonstrate the new keyword.
+Verify CI and style checks succeed before submitting the change.</li>
+</ol>
+
+\section PydanticSpecUnions How Union fields are processed
+
+Dakota recognizes several \c Union patterns to express one-of semantics.
+The \c DakotaBaseModel layer applies a model-level validator to enforce
+single-branch selection for \c Union fields represented as single-field
+wrapper models. The wrapper field name is the user-visible discriminator.
+
+Example:
+\code
+trend: Union[TrendNone, ExperimentalGPTrendConstant, ExperimentalGPTrendLinear]
+\endcode
+
+Accepted user input is a single-key dictionary matching a branch wrapper,
+for example \c {"linear": {...}} or \c {"none": true}.
+
+\subsection PydanticSpecUnionPattern1 Pattern 1: Optional with model default
+
+Python shape: \c Union[OptionA,...] with a model \c default_factory.
+
+Semantics: omission yields a meaningful default branch.
+
+\subsection PydanticSpecUnionPattern2 Pattern 2: Optional with no default branch
+
+Python shape: \c Union[OptionA,...] | None with \c default=None.
+
+Semantics: omission disables the feature.
+
+\subsection PydanticSpecUnionPattern3 Pattern 3: Three-state optional with default branch
+
+Python shape: \c Union[OptionA,...,dict] | None with
+\c default_factory.
+
+Semantics: omission => disabled; \c {} => enabled with defaults; branch
+object => enabled with explicit configuration.
+
+\subsection PydanticSpecUnionPattern4 Pattern 4: Required Union
+
+Python shape: \c Union[OptionA,...].
+
+Semantics: user must select a branch.
+
+\subsection PydanticSpecUnionPattern5 Pattern 5: Three-state optional without grammar default
+
+Python shape: \c Union[OptionA,...,dict] | None with \c default=None.
+
+Semantics: omission => disabled; \c {} => implementation defaults; branch
+=> explicit.
+
+\subsection PydanticSpecUnionPattern6 Pattern 6: Required parent with optional subselection
+
+Python shape: \c Union[OptionA,...,dict].
+
+Semantics: parent must exist; \c {} is a valid "no subselection" choice.
+
+\subsection PydanticSpecUnionRuntime Runtime validation rules
+
+<ul>
+<li>If a \c Union has multiple branches, exactly one branch must be
+    selected.</li>
+<li>Validated model instances matching a branch are accepted.</li>
+<li>Dictionaries with more than one key fail validation.</li>
+<li>Unrecognized keys fail validation.</li>
+<li>If \c dict is a branch, empty-dictionary semantics depend on the
+    pattern.</li>
+<li>For Pattern 3, omission converts to \c None while \c {} instantiates
+    from \c default_factory, preserving three states.</li>
+</ul>
+
+\subsection PydanticSpecUnionAuthoring Authoring guidance
+
+<ul>
+<li>Record the intended pattern with \c union_pattern.</li>
+<li>Set \c model_default when the pattern specifies a default branch.</li>
+<li>Keep the Python annotation, \c default/\c default_factory,
+    \c union_pattern, and \c model_default consistent.</li>
+</ul>
+
+\section PydanticSpecDakotaField DakotaField authoring
+
+\c DakotaField extends \c pydantic.Field with a \c dakota dictionary that
+controls parser, schema, and materialization behavior. Standard Pydantic
+kwargs (\c default, \c default_factory, \c description, \c gt, \c ge,
+etc.) remain valid.
+
+Common \c dakota keys:
+<ul>
+<li>\c aliases: \c list[str] or \c str for accepted alternative
+    spellings.</li>
+<li>\c block_pointer: string naming the referenced block family/role.</li>
+<li>\c argument: child field treated as inline parameter.</li>
+<li>\c anchor: boolean \c True to attach branches to parent context.</li>
+<li>\c union_pattern: integer pattern id for one-of semantics.</li>
+<li>\c model_default: default branch name for patterns with defaults.</li>
+<li>\c internal_only: boolean to reject user input for the field.</li>
+<li>\c materialization: \c list[dict] describing IR writes and presence
+    effects.</li>
+</ul>
+
+Notes:
+<ul>
+<li>Use \c aliases only for backward compatibility.</li>
+<li>Use \c block_pointer when the keyword names another block.</li>
+<li>Use \c argument when a child field acts as the inline argument.</li>
+<li>Use \c anchor=True only when grammar requires attached
+    discriminators.</li>
+<li>\c internal_only fields are rejected from user input by
+    \c DakotaBaseModel.</li>
+</ul>
+
+Example:
+\code
+directory_tag: Literal[True] | None = DakotaField(
+    default=None,
+    description="Tag evaluation directories with identifiers",
+    dakota={"aliases": ["dir_tag"]},
+)
+\endcode
+
+\section PydanticSpecMaterialization Materialization and IR writes
+
+Materialization maps validated Pydantic JSON into Dakota's IR. The models
+describe valid input, \c dakota["materialization"] prescribes how input affects
+IR keys, and the IR codegen emits write-instruction tables.
+
+Pipeline:
+- Models export JSON schema with \c x-materialization metadata.
+- Codegen scripts under \c dakota/src/ir_codegen read schema and produce IR
+  contracts and write tables.
+- At runtime, validated JSON is traversed and generated write instructions
+  populate IR keys consumed by \c ProblemDescDB.
+
+Key scripts:
+- \c dakota/src/ir_codegen/extract_defaults_from_schema.py
+- \c dakota/src/ir_codegen/generate_ir_tables.py
+
+Materialization item shape:
+- \c ir_key: destination IR key.
+- \c storage_type: write-handler identifier.
+- \c ir_value_type: Dakota IR type (\c Real, \c size_t,
+  \c StringArray, \c short, etc.).
+- \c stored_value: optional literal for presence-driven writes.
+- Additional handler-specific properties as required.
+
+Common materialization cases:
+These are the \c storage_type values authors are most likely to use when
+adding or editing grammar.
+
+\htmlonly
+<table border="1" cellspacing="0" cellpadding="4">
+<thead>
+<tr>
+  <th><code>storage_type</code></th>
+  <th>expected fields</th>
+  <th>when to use</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>DIRECT_VALUE</code></td>
+  <td><code>ir_key</code>, <code>ir_value_type</code></td>
+  <td>Write the field's validated value directly to the IR key. Use for
+  1:1 scalar or collection values.</td>
+</tr>
+<tr>
+  <td><code>ADD_TO_VALUE</code></td>
+  <td><code>ir_key</code>, <code>ir_value_type</code></td>
+  <td>Add the field's value into an existing numeric aggregate instead of
+  replacing it. Use for roll-up counters.</td>
+</tr>
+<tr>
+  <td><code>PRESENCE_TRUE</code></td>
+  <td><code>ir_key</code>, <code>ir_value_type</code></td>
+  <td>Set the target IR key to boolean true when the field is present.
+  Use for presence-driven boolean flags.</td>
+</tr>
+<tr>
+  <td><code>PRESENCE_FALSE</code></td>
+  <td><code>ir_key</code>, <code>ir_value_type</code></td>
+  <td>Set the target IR key to boolean false when the field is present.
+  Use for presence-driven negating flags.</td>
+</tr>
+<tr>
+  <td><code>PRESENCE_LITERAL</code></td>
+  <td><code>ir_key</code>, <code>ir_value_type</code>, <code>stored_value</code>[, <code>enum_scope</code>]</td>
+  <td>Write a literal <code>stored_value</code> when the field is present. Use when
+  presence selects a specific enumerated or literal runtime value.</td>
+</tr>
+<tr>
+  <td><code>PRESENCE_ENUM</code></td>
+  <td><code>ir_key</code>, <code>ir_value_type</code>, <code>stored_value</code>[, <code>enum_scope</code>]</td>
+  <td>Presence selects one of a set of enumerated IR values. Use when the
+  field is a symbolic enumerant.</td>
+</tr>
+<tr>
+  <td><code>AUGMENT_ENUM</code></td>
+  <td><code>ir_key</code>, <code>ir_value_type</code>, <code>stored_value</code></td>
+  <td>Augment an enum-like IR setting with an additional symbolic value.
+  Use when presence should extend an enumerated configuration.</td>
+</tr>
+<tr>
+  <td><code>TYPE_DATA_COMBINED</code></td>
+  <td><code>ir_key</code>, <code>ir_value_type</code>, <code>stored_value</code>, <code>secondary_ir_key</code>, <code>secondary_ir_value_type</code></td>
+  <td>Composite handler: primary literal selection plus secondary direct
+  value write. Use when a symbolic choice and an argument are required.</td>
+</tr>
+<tr>
+  <td><code>METHOD_PIECEWISE</code></td>
+  <td><code>ir_key</code>, <code>ir_value_type</code>, <code>stored_value</code>, <code>secondary_ir_key</code>, <code>secondary_ir_value_type</code>, <code>secondary_literal_value</code></td>
+<td>Composite handler for piecewise method semantics; expands into
+  primitive writes during codegen. Use for piecewise method configs.</td>
+</tr>
+</tbody>
+</table>
+\endhtmlonly
+
+Specialized materialization handlers:
+These handlers are for established Dakota-specific data shapes. Reuse an
+existing model that already uses the handler as your template.
+
+\htmlonly
+<table border="1" cellspacing="0" cellpadding="4">
+<thead>
+<tr>
+  <th><code>storage_type</code></th>
+  <th>expected fields</th>
+  <th>when to use</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><code>ANALYSIS_COMPONENTS</code></td>
+  <td><code>ir_key</code>, <code>ir_value_type</code>, handler-specific props</td>
+  <td>TODO</td>
+</tr>
+<tr>
+  <td><code>ADJACENCY_MATRIX</code></td>
+  <td><code>ir_key</code>, <code>ir_value_type</code>, handler-specific props</td>
+  <td>TODO</td>
+</tr>
+<tr>
+  <td><code>CATEGORICAL</code></td>
+  <td><code>ir_key</code>, <code>ir_value_type</code>, handler-specific props</td>
+  <td>TODO</td>
+</tr>
+<tr>
+  <td><code>CONTINUOUS_INTERVAL_UNCERTAIN</code></td>
+  <td><code>ir_key</code>, <code>ir_value_type</code>, handler-specific props</td>
+  <td>TODO</td>
+</tr>
+<tr>
+  <td><code>DISCRETE_INTERVAL_UNCERTAIN</code></td>
+  <td><code>ir_key</code>, <code>ir_value_type</code>, handler-specific props</td>
+  <td>TODO</td>
+</tr>
+<tr>
+  <td><code>DISCRETE_SET_VALUES</code></td>
+  <td><code>ir_key</code>, <code>ir_value_type</code>, handler-specific props</td>
+  <td>TODO</td>
+</tr>
+<tr>
+  <td><code>DISCRETE_UNCERTAIN_SET_VALUES_PROBS</code></td>
+  <td><code>ir_key</code>, <code>ir_value_type</code>, handler-specific props</td>
+  <td>TODO</td>
+</tr>
+<tr>
+  <td><code>HISTOGRAM_BIN_UNCERTAIN</code></td>
+  <td><code>ir_key</code>, <code>ir_value_type</code>, handler-specific props</td>
+  <td>TODO</td>
+</tr>
+<tr>
+  <td><code>HISTOGRAM_POINT_UNCERTAIN</code></td>
+  <td><code>ir_key</code>, <code>ir_value_type</code>, handler-specific props</td>
+  <td>TODO</td>
+</tr>
+<tr>
+  <td><code>ID_TO_INDEX_SET</code></td>
+  <td><code>ir_key</code>, <code>ir_value_type</code>, handler-specific props</td>
+  <td>TODO</td>
+</tr>
+<tr>
+  <td><code>INT_SET</code></td>
+  <td><code>ir_key</code>, <code>ir_value_type</code>, handler-specific props</td>
+  <td>TODO</td>
+</tr>
+<tr>
+  <td><code>RESPONSE_LEVELS_ARRAY</code></td>
+  <td><code>ir_key</code>, <code>ir_value_type</code>, handler-specific props</td>
+  <td>TODO</td>
+</tr>
+<tr>
+  <td><code>UNCERTAIN_CORRELATION_MATRIX</code></td>
+  <td><code>ir_key</code>, <code>ir_value_type</code>, handler-specific props</td>
+  <td>TODO</td>
+</tr>
+<tr>
+  <td><code>UNCERTAIN_INIT_POINT_FLAG</code></td>
+  <td><code>ir_key</code>, <code>ir_value_type</code>, handler-specific props</td>
+  <td>TODO</td>
+</tr>
+</tbody>
+</table>
+\endhtmlonly
+
+For domain-specific handlers marked TODO, consult models under
+\c dakota/python/dakota/spec that already use the handler. Those handlers
+typically require additional, handler-specific metadata beyond the generic
+\c ir_key / \c ir_value_type shape.
+
+\section PydanticSpecIrDefaults IR default values
+
+IR defaults ensure a complete runtime IR even when users omit inputs.
+The generator merges three disjoint sources:
+
+- schema-extracted defaults recorded in
+  \c dakota/src/schema_defaults_extracted.json;
+- explicit override defaults in
+  \c dakota/src/default_overrides_registry.json;
+  and
+- type-policy defaults in
+  \c dakota/src/default_policy_registry.json.
+
+The generator reads these via \c load_schema_defaults(),
+\c load_overrides(), and \c load_policies() and merges them into per-block
+IR contracts. Place
+a default in the Pydantic model when it is a grammar-level default.
+Use \c default_overrides_registry.json when the default is implementation-
+specific or not representable in schema. Use the policy registry for
+ordinary type zero/false/empty defaults. Ensure only one source claims
+an IR key; collisions cause \c generate_ir_tables.py to error.
+
+\section PydanticSpecAddModel Adding a new method or model
+
+Follow the selection-wrapper pattern when adding a method or model family.
+
+Steps:
+- Create a module in \c dakota/python/dakota/spec/method or
+  \c dakota/python/dakota/spec/model.
+- Define a config class for the body; reuse mixins for shared syntax.
+- Declare parsed keywords as typed class attributes with \c DakotaField.
+- Define a single-field selection wrapper inheriting from
+  \c MethodSelection or \c ModelSelection. The wrapper must contain
+  exactly one field named with
+  the user-visible keyword.
+- Import the wrapper in package \c __init__.py so it becomes part of the
+  union assembly (\c MethodUnion or \c ModelUnion).
+
+Minimal example:
+\code
+class MyMethodConfig(DakotaBaseModel):
+    max_iterations: int | None = DakotaField(default=None, description="...")
+
+class MyMethodSelection(MethodSelection):
+    my_method: MyMethodConfig = DakotaField(...)
+\endcode
+
+\section PydanticSpecValidation Validation rules and computed fields
+
+Validation rules and computed fields constitute part of the shared grammar
+contract and require coordinated Python and C++ changes. The Python side
+provides schema metadata and dispatch; the authoritative execution logic
+resides in the C++ \c dakota_validation module.
+
+To add a \c ValidationRule:
+- Implement a \c ValidationRule subclass in
+  \c dakota/python/dakota/spec/validation.
+- Call \c super().__init__ with rule name, context, referenced fields, literals,
+  and error message.
+- Implement \c __call__(self,\ instance) to dispatch to C++ via
+  \c _call_cpp_validator.
+- Add C++ declaration and implementation in
+  \c packages/dakota_parser/dakota_validation.
+- Register the rule name in \c ValidatorRegistry::ValidatorRegistry().
+- Expose the function via pybind in \c bindings.cpp.
+- Add/update C++ tests under
+  \c packages/dakota_parser/dakota_validation/test.
+- Attach the rule on the model via \c _VALIDATION_RULES.
+
+Validation call contract:
+- \c instance: model serialized to \c dict.
+- \c fields: paths from \c validationFields.
+- \c literals: from \c validationLiterals.
+- \c context: descriptive string.
+- return: \c dict of mutations or empty \c dict for check-only rules.
+
+To add a computed field:
+- Declare \c _COMPUTED_FIELDS:\ ClassVar[dict[str,\ ComputedFieldSpec]]
+  on the model.
+- Add a matching \c @computed_field property that computes the value.
+- Implement C++ declaration and function in \c computed_fields.hpp and source.
+- Register the function in
+  \c ComputedFieldRegistry::ComputedFieldRegistry().
+- Ensure pybind bindings expose the function.
+- Add/update C++ tests.
+
+Example:
+\code
+_COMPUTED_FIELDS: ClassVar[dict[str, ComputedFieldSpec]] = {
+    "lower_bounds": ComputedFieldSpec(
+        function="discrete_set_str_lower_bounds",
+        description="Lower bounds: min element per variable",
+        return_type=list[str],
+    ),
+}
+
+@computed_field
+@property
+def lower_bounds(self) -> List[str]:
+    return DiscreteSetStrBounds.lower_bounds(self)
+\endcode
+
+\c DakotaBaseModel.__init_subclass__ detects \c _VALIDATION_RULES and
+\c _COMPUTED_FIELDS and exports them as \c x-model-validations and
+\c x-computed-fields in schema. Keep Python property names,
+\c ComputedFieldSpec function strings, and C++ registry entries in exact
+agreement.
+
+\section PydanticSpecFloat DakotaFloat
+
+Use DakotaFloat for fields that may carry non-finite values (NaN, inf,
+-inf). DakotaFloat is an Annotated float with a custom serializer:
+- finite values remain numeric;
+- NaN serializes as "nan";
+- +inf serializes as "inf";
+- -inf serializes as "-inf".
+
+This preserves compatibility between Python JSON and downstream C++
+handling. Prefer DakotaFloat for fields that historically used sentinel
+floating values (e.g., DBL_MAX or -DBL_MAX).
+
+*/
+
+} // namespace Dakota

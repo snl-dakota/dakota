@@ -466,159 +466,319 @@ initialize_all_labels(const ProblemDescDB& problem_db)
     acv_offset = 0, adiv_offset = 0, adsv_offset = 0, adrv_offset = 0;
   bool relax = (allRelaxedDiscreteInt.any() || allRelaxedDiscreteReal.any());
 
-  // design
-  const StringArray& cdv_labels
-    = problem_db.get_sa("variables.continuous_design.labels");
-  const StringArray& ddrv_labels
-    = problem_db.get_sa("variables.discrete_design_range.labels");
-  const StringArray& ddsiv_labels
-    = problem_db.get_sa("variables.discrete_design_set_int.labels");
-  const StringArray& ddssv_labels
-    = problem_db.get_sa("variables.discrete_design_set_string.labels");
-  const StringArray& ddsrv_labels
-    = problem_db.get_sa("variables.discrete_design_set_real.labels");
-  copy_data_partial(cdv_labels, allContinuousLabels, acv_offset);
-  acv_offset += cdv_labels.size();
-  copy_data_partial(ddssv_labels, allDiscreteStringLabels, adsv_offset);
-  adsv_offset += ddssv_labels.size();
+  // design - continuous types
+  {
+    const char* cdv_keys[] = {
+      "variables.continuous_design.labels"
+    };
+    for (const char* key : cdv_keys) {
+      const StringArray& lbl = problem_db.get_sa(key);
+      copy_data_partial(lbl, allContinuousLabels, acv_offset);
+      acv_offset += lbl.size();
+    }
+  }
+  // design - discrete string types
+  {
+    const char* ddsv_keys[] = {
+      "variables.discrete_design_set_string.labels"
+    };
+    for (const char* key : ddsv_keys) {
+      const StringArray& lbl = problem_db.get_sa(key);
+      copy_data_partial(lbl, allDiscreteStringLabels, adsv_offset);
+      adsv_offset += lbl.size();
+    }
+  }
+  // design - discrete int types (design_range, design_set_int)
   if (relax) {
-    size_t num_ddrv  = ddrv_labels.size(), num_ddsiv = ddsiv_labels.size(),
-           num_ddsrv = ddsrv_labels.size();
-    for (i=0; i<num_ddrv; ++i, ++ardi_cntr)
-      if (allRelaxedDiscreteInt[ardi_cntr])
-	allContinuousLabels[acv_offset++]    = ddrv_labels[i];
-      else
-	allDiscreteIntLabels[adiv_offset++]  = ddrv_labels[i];
-    for (i=0; i<num_ddsiv; ++i, ++ardi_cntr)
-      if (allRelaxedDiscreteInt[ardi_cntr])
-	allContinuousLabels[acv_offset++]    = ddsiv_labels[i];
-      else
-	allDiscreteIntLabels[adiv_offset++]  = ddsiv_labels[i];
-    for (i=0; i<num_ddsrv; ++i, ++ardr_cntr)
-      if (allRelaxedDiscreteReal[ardr_cntr])
-	allContinuousLabels[acv_offset++]    = ddsrv_labels[i];
-      else
-	allDiscreteRealLabels[adrv_offset++] = ddsrv_labels[i];
+    const char* ddiv_keys[] = {
+      "variables.discrete_design_range.labels",
+      "variables.discrete_design_set_int.labels"
+    };
+    for (const char* key : ddiv_keys) {
+      const StringArray& lbl = problem_db.get_sa(key);
+      for (i=0; i<lbl.size(); ++i, ++ardi_cntr)
+	if (allRelaxedDiscreteInt[ardi_cntr])
+	  allContinuousLabels[acv_offset++]    = lbl[i];
+	else
+	  allDiscreteIntLabels[adiv_offset++]  = lbl[i];
+    }
   }
   else {
-    copy_data_partial(ddrv_labels, allDiscreteIntLabels, adiv_offset);
-    adiv_offset += ddrv_labels.size();
-    copy_data_partial(ddsiv_labels, allDiscreteIntLabels, adiv_offset);
-    adiv_offset += ddsiv_labels.size();
-    copy_data_partial(ddsrv_labels, allDiscreteRealLabels, adrv_offset);
-    adrv_offset += ddsrv_labels.size();
+    const char* ddiv_keys[] = {
+      "variables.discrete_design_range.labels",
+      "variables.discrete_design_set_int.labels"
+    };
+    for (const char* key : ddiv_keys) {
+      const StringArray& lbl = problem_db.get_sa(key);
+      copy_data_partial(lbl, allDiscreteIntLabels, adiv_offset);
+      adiv_offset += lbl.size();
+    }
+  }
+  // design - discrete real types (design_set_real)
+  if (relax) {
+    const char* ddrv_keys[] = {
+      "variables.discrete_design_set_real.labels"
+    };
+    for (const char* key : ddrv_keys) {
+      const StringArray& lbl = problem_db.get_sa(key);
+      for (i=0; i<lbl.size(); ++i, ++ardr_cntr)
+	if (allRelaxedDiscreteReal[ardr_cntr])
+	  allContinuousLabels[acv_offset++]    = lbl[i];
+	else
+	  allDiscreteRealLabels[adrv_offset++] = lbl[i];
+    }
+  }
+  else {
+    const char* ddrv_keys[] = {
+      "variables.discrete_design_set_real.labels"
+    };
+    for (const char* key : ddrv_keys) {
+      const StringArray& lbl = problem_db.get_sa(key);
+      copy_data_partial(lbl, allDiscreteRealLabels, adrv_offset);
+      adrv_offset += lbl.size();
+    }
   }
 
-  // aleatory uncertain
-  const StringArray& cauv_labels
-    = problem_db.get_sa("variables.continuous_aleatory_uncertain.labels");
-  const StringArray& dauiv_labels
-    = problem_db.get_sa("variables.discrete_aleatory_uncertain_int.labels");
-  const StringArray& dausv_labels
-    = problem_db.get_sa("variables.discrete_aleatory_uncertain_string.labels");
-  const StringArray& daurv_labels
-    = problem_db.get_sa("variables.discrete_aleatory_uncertain_real.labels");
-  copy_data_partial(cauv_labels, allContinuousLabels, acv_offset);
-  acv_offset += cauv_labels.size();
-  copy_data_partial(dausv_labels, allDiscreteStringLabels, adsv_offset);
-  adsv_offset += dausv_labels.size();
+  // aleatory uncertain - continuous types
+  // (normal, lognormal, uniform, loguniform, triangular, exponential,
+  //  beta, gamma, gumbel, frechet, weibull, histogram_bin)
+  {
+    const char* cauv_keys[] = {
+      "variables.normal_uncertain.labels",
+      "variables.lognormal_uncertain.labels",
+      "variables.uniform_uncertain.labels",
+      "variables.loguniform_uncertain.labels",
+      "variables.triangular_uncertain.labels",
+      "variables.exponential_uncertain.labels",
+      "variables.beta_uncertain.labels",
+      "variables.gamma_uncertain.labels",
+      "variables.gumbel_uncertain.labels",
+      "variables.frechet_uncertain.labels",
+      "variables.weibull_uncertain.labels",
+      "variables.histogram_bin_uncertain.labels"
+    };
+    for (const char* key : cauv_keys) {
+      const StringArray& lbl = problem_db.get_sa(key);
+      copy_data_partial(lbl, allContinuousLabels, acv_offset);
+      acv_offset += lbl.size();
+    }
+  }
+  // aleatory uncertain - discrete string types (histogram_point_string)
+  {
+    const char* dausv_keys[] = {
+      "variables.histogram_uncertain.point_string.labels"
+    };
+    for (const char* key : dausv_keys) {
+      const StringArray& lbl = problem_db.get_sa(key);
+      copy_data_partial(lbl, allDiscreteStringLabels, adsv_offset);
+      adsv_offset += lbl.size();
+    }
+  }
+  // aleatory uncertain - discrete int types
+  // (poisson, binomial, negative_binomial, geometric, hypergeometric, histogram_point_int)
   if (relax) {
-    // Note: for generality/consistency, we also support {,non}categorical for
-    // all discrete aleatory random variables, even though continuous relaxation
-    // is a logical stretch for poisson,{,negative_}binominal,{,hyper}geometric
-    size_t num_dauiv = dauiv_labels.size(), num_daurv = daurv_labels.size();
-    for (i=0; i<num_dauiv; ++i, ++ardi_cntr)
-      if (allRelaxedDiscreteInt[ardi_cntr]) 
-	allContinuousLabels[acv_offset++]    = dauiv_labels[i];
-      else
-	allDiscreteIntLabels[adiv_offset++]  = dauiv_labels[i];
-    for (i=0; i<num_daurv; ++i, ++ardr_cntr)
-      if (allRelaxedDiscreteReal[ardr_cntr])
-	allContinuousLabels[acv_offset++]    = daurv_labels[i];
-      else
-	allDiscreteRealLabels[adrv_offset++] = daurv_labels[i];
+    const char* dauiv_keys[] = {
+      "variables.poisson_uncertain.labels",
+      "variables.binomial_uncertain.labels",
+      "variables.negative_binomial_uncertain.labels",
+      "variables.geometric_uncertain.labels",
+      "variables.hypergeometric_uncertain.labels",
+      "variables.histogram_uncertain.point_int.labels"
+    };
+    for (const char* key : dauiv_keys) {
+      const StringArray& lbl = problem_db.get_sa(key);
+      for (i=0; i<lbl.size(); ++i, ++ardi_cntr)
+	if (allRelaxedDiscreteInt[ardi_cntr])
+	  allContinuousLabels[acv_offset++]    = lbl[i];
+	else
+	  allDiscreteIntLabels[adiv_offset++]  = lbl[i];
+    }
   }
   else {
-    copy_data_partial(dauiv_labels, allDiscreteIntLabels, adiv_offset);
-    adiv_offset += dauiv_labels.size();
-    copy_data_partial(daurv_labels, allDiscreteRealLabels, adrv_offset);
-    adrv_offset += daurv_labels.size();
+    const char* dauiv_keys[] = {
+      "variables.poisson_uncertain.labels",
+      "variables.binomial_uncertain.labels",
+      "variables.negative_binomial_uncertain.labels",
+      "variables.geometric_uncertain.labels",
+      "variables.hypergeometric_uncertain.labels",
+      "variables.histogram_uncertain.point_int.labels"
+    };
+    for (const char* key : dauiv_keys) {
+      const StringArray& lbl = problem_db.get_sa(key);
+      copy_data_partial(lbl, allDiscreteIntLabels, adiv_offset);
+      adiv_offset += lbl.size();
+    }
+  }
+  // aleatory uncertain - discrete real types (histogram_point_real)
+  if (relax) {
+    const char* daurv_keys[] = {
+      "variables.histogram_uncertain.point_real.labels"
+    };
+    for (const char* key : daurv_keys) {
+      const StringArray& lbl = problem_db.get_sa(key);
+      for (i=0; i<lbl.size(); ++i, ++ardr_cntr)
+	if (allRelaxedDiscreteReal[ardr_cntr])
+	  allContinuousLabels[acv_offset++]    = lbl[i];
+	else
+	  allDiscreteRealLabels[adrv_offset++] = lbl[i];
+    }
+  }
+  else {
+    const char* daurv_keys[] = {
+      "variables.histogram_uncertain.point_real.labels"
+    };
+    for (const char* key : daurv_keys) {
+      const StringArray& lbl = problem_db.get_sa(key);
+      copy_data_partial(lbl, allDiscreteRealLabels, adrv_offset);
+      adrv_offset += lbl.size();
+    }
   }
 
-  // epistemic uncertain
-  const StringArray& ceuv_labels
-    = problem_db.get_sa("variables.continuous_epistemic_uncertain.labels");
-  const StringArray& deuiv_labels
-    = problem_db.get_sa("variables.discrete_epistemic_uncertain_int.labels");
-  const StringArray& deusv_labels
-    = problem_db.get_sa("variables.discrete_epistemic_uncertain_string.labels");
-  const StringArray& deurv_labels
-    = problem_db.get_sa("variables.discrete_epistemic_uncertain_real.labels");
-  copy_data_partial(ceuv_labels, allContinuousLabels, acv_offset);
-  acv_offset += ceuv_labels.size();
-  copy_data_partial(deusv_labels, allDiscreteStringLabels, adsv_offset);
-  adsv_offset += deusv_labels.size();
+  // epistemic uncertain - continuous types (continuous_interval)
+  {
+    const char* ceuv_keys[] = {
+      "variables.continuous_interval_uncertain.labels"
+    };
+    for (const char* key : ceuv_keys) {
+      const StringArray& lbl = problem_db.get_sa(key);
+      copy_data_partial(lbl, allContinuousLabels, acv_offset);
+      acv_offset += lbl.size();
+    }
+  }
+  // epistemic uncertain - discrete string types (discrete_uncertain_set_string)
+  {
+    const char* deusv_keys[] = {
+      "variables.discrete_uncertain_set_string.labels"
+    };
+    for (const char* key : deusv_keys) {
+      const StringArray& lbl = problem_db.get_sa(key);
+      copy_data_partial(lbl, allDiscreteStringLabels, adsv_offset);
+      adsv_offset += lbl.size();
+    }
+  }
+  // epistemic uncertain - discrete int types
+  // (discrete_interval, discrete_uncertain_set_int)
   if (relax) {
-    size_t num_deuiv = deuiv_labels.size(), num_deurv = deurv_labels.size();
-    for (i=0; i<num_deuiv; ++i, ++ardi_cntr)
-      if (allRelaxedDiscreteInt[ardi_cntr]) 
-	allContinuousLabels[acv_offset++]    = deuiv_labels[i];
-      else
-	allDiscreteIntLabels[adiv_offset++]  = deuiv_labels[i];
-    for (i=0; i<num_deurv; ++i, ++ardr_cntr)
-      if (allRelaxedDiscreteReal[ardr_cntr])
-	allContinuousLabels[acv_offset++]    = deurv_labels[i];
-      else
-	allDiscreteRealLabels[adrv_offset++] = deurv_labels[i];
+    const char* deuiv_keys[] = {
+      "variables.discrete_interval_uncertain.labels",
+      "variables.discrete_uncertain_set_int.labels"
+    };
+    for (const char* key : deuiv_keys) {
+      const StringArray& lbl = problem_db.get_sa(key);
+      for (i=0; i<lbl.size(); ++i, ++ardi_cntr)
+	if (allRelaxedDiscreteInt[ardi_cntr])
+	  allContinuousLabels[acv_offset++]    = lbl[i];
+	else
+	  allDiscreteIntLabels[adiv_offset++]  = lbl[i];
+    }
   }
   else {
-    copy_data_partial(deuiv_labels, allDiscreteIntLabels,  adiv_offset);
-    adiv_offset += deuiv_labels.size();
-    copy_data_partial(deurv_labels, allDiscreteRealLabels, adrv_offset);
-    adrv_offset += deurv_labels.size();
+    const char* deuiv_keys[] = {
+      "variables.discrete_interval_uncertain.labels",
+      "variables.discrete_uncertain_set_int.labels"
+    };
+    for (const char* key : deuiv_keys) {
+      const StringArray& lbl = problem_db.get_sa(key);
+      copy_data_partial(lbl, allDiscreteIntLabels, adiv_offset);
+      adiv_offset += lbl.size();
+    }
+  }
+  // epistemic uncertain - discrete real types (discrete_uncertain_set_real)
+  if (relax) {
+    const char* deurv_keys[] = {
+      "variables.discrete_uncertain_set_real.labels"
+    };
+    for (const char* key : deurv_keys) {
+      const StringArray& lbl = problem_db.get_sa(key);
+      for (i=0; i<lbl.size(); ++i, ++ardr_cntr)
+	if (allRelaxedDiscreteReal[ardr_cntr])
+	  allContinuousLabels[acv_offset++]    = lbl[i];
+	else
+	  allDiscreteRealLabels[adrv_offset++] = lbl[i];
+    }
+  }
+  else {
+    const char* deurv_keys[] = {
+      "variables.discrete_uncertain_set_real.labels"
+    };
+    for (const char* key : deurv_keys) {
+      const StringArray& lbl = problem_db.get_sa(key);
+      copy_data_partial(lbl, allDiscreteRealLabels, adrv_offset);
+      adrv_offset += lbl.size();
+    }
   }
 
-  // state
-  const StringArray& csv_labels
-    = problem_db.get_sa("variables.continuous_state.labels");
-  const StringArray& dsrv_labels
-    = problem_db.get_sa("variables.discrete_state_range.labels");
-  const StringArray& dssiv_labels
-    = problem_db.get_sa("variables.discrete_state_set_int.labels");
-  const StringArray& dsssv_labels
-    = problem_db.get_sa("variables.discrete_state_set_string.labels");
-  const StringArray& dssrv_labels
-    = problem_db.get_sa("variables.discrete_state_set_real.labels");
-  copy_data_partial(csv_labels, allContinuousLabels, acv_offset);
-  acv_offset += csv_labels.size();
-  copy_data_partial(dsssv_labels, allDiscreteStringLabels, adsv_offset);
-  adsv_offset += dsssv_labels.size();
+  // state - continuous types
+  {
+    const char* csv_keys[] = {
+      "variables.continuous_state.labels"
+    };
+    for (const char* key : csv_keys) {
+      const StringArray& lbl = problem_db.get_sa(key);
+      copy_data_partial(lbl, allContinuousLabels, acv_offset);
+      acv_offset += lbl.size();
+    }
+  }
+  // state - discrete string types
+  {
+    const char* dssv_keys[] = {
+      "variables.discrete_state_set_string.labels"
+    };
+    for (const char* key : dssv_keys) {
+      const StringArray& lbl = problem_db.get_sa(key);
+      copy_data_partial(lbl, allDiscreteStringLabels, adsv_offset);
+      adsv_offset += lbl.size();
+    }
+  }
+  // state - discrete int types (state_range, state_set_int)
   if (relax) {
-    size_t num_dsrv  = dsrv_labels.size(), num_dssiv = dssiv_labels.size(),
-           num_dssrv = dssrv_labels.size();
-    for (i=0; i<num_dsrv; ++i, ++ardi_cntr)
-      if (allRelaxedDiscreteInt[ardi_cntr])
-	allContinuousLabels[acv_offset++]    = dsrv_labels[i];
-      else
-	allDiscreteIntLabels[adiv_offset++]  = dsrv_labels[i];
-    for (i=0; i<num_dssiv; ++i, ++ardi_cntr)
-      if (allRelaxedDiscreteInt[ardi_cntr])
-	allContinuousLabels[acv_offset++]    = dssiv_labels[i];
-      else
-	allDiscreteIntLabels[adiv_offset++]  = dssiv_labels[i];
-    for (i=0; i<num_dssrv; ++i, ++ardr_cntr)
-      if (allRelaxedDiscreteReal[ardr_cntr])
-	allContinuousLabels[acv_offset++]    = dssrv_labels[i];
-      else
-	allDiscreteRealLabels[adrv_offset++] = dssrv_labels[i];
+    const char* dsiv_keys[] = {
+      "variables.discrete_state_range.labels",
+      "variables.discrete_state_set_int.labels"
+    };
+    for (const char* key : dsiv_keys) {
+      const StringArray& lbl = problem_db.get_sa(key);
+      for (i=0; i<lbl.size(); ++i, ++ardi_cntr)
+	if (allRelaxedDiscreteInt[ardi_cntr])
+	  allContinuousLabels[acv_offset++]    = lbl[i];
+	else
+	  allDiscreteIntLabels[adiv_offset++]  = lbl[i];
+    }
   }
   else {
-    copy_data_partial(dsrv_labels, allDiscreteIntLabels, adiv_offset);
-    adiv_offset += dsrv_labels.size();
-    copy_data_partial(dssiv_labels, allDiscreteIntLabels, adiv_offset);
-    adiv_offset += dssiv_labels.size();
-    copy_data_partial(dssrv_labels, allDiscreteRealLabels, adrv_offset);
-    adrv_offset += dssrv_labels.size();
+    const char* dsiv_keys[] = {
+      "variables.discrete_state_range.labels",
+      "variables.discrete_state_set_int.labels"
+    };
+    for (const char* key : dsiv_keys) {
+      const StringArray& lbl = problem_db.get_sa(key);
+      copy_data_partial(lbl, allDiscreteIntLabels, adiv_offset);
+      adiv_offset += lbl.size();
+    }
+  }
+  // state - discrete real types (state_set_real)
+  if (relax) {
+    const char* dsrv_keys[] = {
+      "variables.discrete_state_set_real.labels"
+    };
+    for (const char* key : dsrv_keys) {
+      const StringArray& lbl = problem_db.get_sa(key);
+      for (i=0; i<lbl.size(); ++i, ++ardr_cntr)
+	if (allRelaxedDiscreteReal[ardr_cntr])
+	  allContinuousLabels[acv_offset++]    = lbl[i];
+	else
+	  allDiscreteRealLabels[adrv_offset++] = lbl[i];
+    }
+  }
+  else {
+    const char* dsrv_keys[] = {
+      "variables.discrete_state_set_real.labels"
+    };
+    for (const char* key : dsrv_keys) {
+      const StringArray& lbl = problem_db.get_sa(key);
+      copy_data_partial(lbl, allDiscreteRealLabels, adrv_offset);
+      adrv_offset += lbl.size();
+    }
   }
 }
 

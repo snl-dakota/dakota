@@ -159,9 +159,10 @@ void TrackerHTTP::initialize(int world_rank)
   if (curlPtr == NULL)
     return;
 
-  // get the list of URLs and optional proxies from configure
+  // get the list of URLs and optional proxies from environment or configure
+  char *env_tracking_var = std::getenv("DAKOTA_TRACKING_URL_AND_PROXY");
 #ifdef DAKOTA_USAGE_TRACKING
-  std::string dt = DAKOTA_USAGE_TRACKING;
+  std::string dt = std::string(env_tracking_var ? env_tracking_var : DAKOTA_USAGE_TRACKING);
   parse_tracking_string(dt);
 #endif
   curl_easy_setopt(curlPtr, CURLOPT_TIMEOUT, timeoutSeconds);

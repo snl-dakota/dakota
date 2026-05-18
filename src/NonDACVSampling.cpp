@@ -10,7 +10,6 @@
 #include "dakota_system_defs.hpp"
 #include "dakota_data_io.hpp"
 //#include "dakota_tabular_io.hpp"
-#include "dakota_linear_algebra.hpp"
 #include "DakotaModel.hpp"
 #include "DakotaResponse.hpp"
 #include "NonDACVSampling.hpp"
@@ -33,6 +32,7 @@ NonDACVSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
   //, multiStartACV(true)
 {
   mlmfSubMethod = problem_db.get_ushort("method.sub_method");
+  //analyticEstVarDerivs = false; // for gradient verification in ACV,GenACV
 
   if (maxFunctionEvals == SZ_MAX) // accuracy constraint (convTol)
     optSubProblemForm = N_MODEL_LINEAR_OBJECTIVE;
@@ -357,7 +357,7 @@ compute_LH_statistics(RealMatrix& sum_L_pilot, RealVector& sum_H_pilot,
 		      RealMatrix& sum_LH_pilot, RealVector& sum_HH_pilot,
 		      SizetArray& N_pilot, //RealMatrix& var_L,
 		      RealVector& var_H, RealSymMatrixArray& cov_LL,
-		      RealMatrix& cov_LH, const UShortArray& approx_set)
+		      RealVectorArray& cov_LH, const UShortArray& approx_set)
 {
   //if (mlmfIter == 0) // see var_L usage in compute_allocations()
   //  compute_L_variance(sum_L_pilot, sum_LL_pilot, N_pilot, var_L);
@@ -498,77 +498,470 @@ compute_acv_controls(const IntRealMatrixMap& sum_L_covar,
 
 
 void NonDACVSampling::
-solve_for_C_F_c_f(RealSymMatrix& C_F, RealVector& c_f, RealVector& lhs,
-		  bool copy_C_F, bool copy_c_f)
+compute_F_matrix_from_r(const RealVector& r_and_N, RealSymMatrix& F)
 {
-  // The idea behind this approach is to leverage both the solution refinement
-  // in solve() and equilibration during factorization (inverting C_F in place
-  // can only leverage the latter).
+  size_t i, j;
+  if (F.empty()) F.shapeUninitialized(numApprox);
 
-  size_t n = c_f.length();
-  lhs.size(n); // not sure if initialization matters here...
-
-  if (hardenNumericSoln) {
-    RealMatrix C_F_inv;  Real rcond;
-    pseudo_inverse(C_F, C_F_inv, rcond);
-    lhs.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1., C_F_inv, c_f, 0.);
-    if (outputLevel >= DEBUG_OUTPUT)
-      Cout << "ACV pseudo-inverse solve for LHS:\n" << lhs << "has rcond = "
-	   << rcond << std::endl;
-  }
-  else
-    cholesky_solve(C_F, lhs, c_f, copy_C_F, copy_c_f);
-}
-
-
-void NonDACVSampling::update_model_groups()
-{
-  // Note: model selection case handled by NonDDGenACV, so here numGroups
-  // is the total number of model instances
-  if (modelGroups.size() != numGroups)
-    modelGroups.resize(numGroups);
   switch (mlmfSubMethod) {
-  case SUBMETHOD_ACV_MF:
-    for (size_t g=0; g<numGroups; ++g)
-      mfmc_model_group(g, modelGroups[g]);
-    break;
-  case SUBMETHOD_ACV_IS:
-    for (size_t g=0; g<numGroups; ++g)
-      cvmc_model_group(g, modelGroups[g]);
-    break;
-  case SUBMETHOD_ACV_RD:
-    for (size_t g=0; g<numGroups; ++g)
-      mlmc_model_group(g, modelGroups[g]);
+
+  // NonDMultifidelitySampling uses the decoupled form for hierarchical
+  // DAGs (Eq. 16 in JCP ACV paper), bypassing the need for an F matrix.
+  // GenACV-MF uses the parametric G,g form.  The code below, included for
+  // completeness, is not active.
+  //case SUBMETHOD_MFMC: { // diagonal (see Eq. 16 in JCP ACV paper)
+  //  size_t num_am1 = numApprox - 1;  Real r_i, r_ip1;
+  //  for (i=0; i<num_am1; ++i) {
+  //    r_i = r_and_N[i]; r_ip1 = r_and_N[i+1];
+  //    F(i,i) = (r_i - r_ip1) / (r_i * r_ip1);
+  //    for (j=0; j<i; ++j) F(i,j) = 0.;
+  //  }
+  //  r_i = r_ip1; //r_ip1 = 1.;
+  //  F(num_am1,num_am1) = (r_i - 1.) / r_i;
+  //  break;
+  //}
+
+  case SUBMETHOD_ACV_IS: { // Eq. 30
+    Real ri_ratio;
+    for (i=0; i<numApprox; ++i) {
+      F(i,i)   = ri_ratio = (r_and_N[i] - 1.) / r_and_N[i];
+      for (j=0; j<i; ++j)
+	F(i,j) = ri_ratio * (r_and_N[j] - 1.) / r_and_N[j];
+    }
     break;
   }
+
+  case SUBMETHOD_ACV_MF: { // Eq. 34
+    Real r_i, min_r;
+    for (i=0; i<numApprox; ++i) {
+      r_i = r_and_N[i];  F(i,i) = (r_i - 1.) / r_i;
+      for (j=0; j<i; ++j) {
+	min_r = std::min(r_i, r_and_N[j]);
+	F(i,j) = (min_r - 1.) / min_r;
+      }
+    }
+    break;
+  }
+
+  // *** CURRENT OPTIONS: GenACV-RD (searchable DAG) or weighted MLMC
+  // (searchable hierarch DAG).  All ACV-RD cases are currently promoted to
+  // GenACV-RD in iterator_utils, and GenACV ctor selects a hierarchical
+  // default DAG (dagWidthLimit = 1).  Peer DAG case (with no searchable
+  // alternatives) is not currently supported from NonDACVSampling, but
+  // can be recovered in GenACV by overriding hierarchical to peer using
+  // "search_model_graphs partial_recursion depth_limit = 1".
+
+  // > Note that Fig 2 in JCP ACV shows different DAGs: hierarchical for (a,b)
+  //   and peer for (c,d) --> for the same DAG, W-RDiff and ACV-IS only differ
+  //   in their re-use of the target samples: only z^1 includes target for
+  //   W-RDiff while both z^1 and z^2 include target for ACV-IS
+  // > RD with a hierarch DAG decouples (Eq. 24, JCP ACV), yielding a diagonal
+  //   F as for MFMC at top (Eq. 16, JCP ACV)
+  // > Implementing peer DAG here is coupled and would require a F matrix solve
+
+  //case SUBMETHOD_ACV_RD: {
+  //  // TO DO: convert r_and_N to N_vec
+  //  Real z1_i, z2_i, N_H = N_vec[numApprox];
+  //  for (i=0; i<numApprox; ++i) {
+  //    z1_i = N_H;            // z1s = z2t
+  //    z2_i = N_vec[i] - N_H; // z2i = N_vec[source] - z1s
+  //    //g[i] = 1./z1_i;
+  //    G(i,i) = 1./z2_i + 1./z1_i;// *** Need G -> F (differ by N_H)
+  //    for (j=0; j<i; ++j) {
+  // 	  G(i,j) = 1./z1_i; // *** Need G -> F (differ by N_H)
+  // 	  // From GenACV-RD: (
+  // 	  //if (tgt_i == tgt_j) G(i,j) += 1./z1_i; // always true (all tgt=root)
+  // 	  //if (tgt_i == src_j) G(i,j) -= 1./z1_i; // always false for peer dag
+  // 	  //if (src_i == tgt_j) G(i,j) -= 1./z2_i; // always false for root dag
+  // 	  //if (src_i == src_j) G(i,j) += 1./z2_i; // diagonal
+  //    }
+  //  }
+  //  break;
+  //}
+
+  default:
+    Cerr << "Error: bad sub-method name (" << mlmfSubMethod
+	 << ") in NonDACVSampling::compute_F_matrix_from_r()" << std::endl;
+    abort_handler(METHOD_ERROR); break;
+  }
+
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "Given r_and_N vector:\n" << r_and_N << "F matrix for sub-method "
+	 << mlmfSubMethod << ":\n" << F << std::endl;
 }
 
 
-void NonDACVSampling::update_model_groups(const SizetArray& approx_sequence)
+void NonDACVSampling::
+compute_F_matrix_from_N(const RealVector& N, RealSymMatrix& F)
 {
-  if (approx_sequence.empty())
-    { update_model_groups(); return; }
+  size_t i, j;
+  if (F.empty()) F.shapeUninitialized(numApprox);
 
-  // Note: model selection case handled by NonDDGenACV, so here numGroups
-  // is the total number of model instances
-  if (modelGroups.size() != numGroups)
-    modelGroups.resize(numGroups);
+  Real N_i, N_A = N[numApprox];
   switch (mlmfSubMethod) {
-  case SUBMETHOD_ACV_MF:
-    for (size_t g=0; g<numGroups; ++g)
-      mfmc_model_group(g, approx_sequence, modelGroups[g]);
-    break;
-  case SUBMETHOD_ACV_IS:
-    for (size_t g=0; g<numGroups; ++g)
-      cvmc_model_group(g, approx_sequence, modelGroups[g]);
-    break;
-  case SUBMETHOD_ACV_RD:
-    for (size_t g=0; g<numGroups; ++g)
-      mlmc_model_group(g, approx_sequence, modelGroups[g]);
+  case SUBMETHOD_MFMC: { // diagonal (see Eq. 16 in JCP ACV paper)
+    size_t num_am1 = numApprox - 1;  Real N_ip1;
+    for (i=0; i<num_am1; ++i) {
+      N_i = N[i]; N_ip1 = N[i+1];
+      F(i,i) = N_A * (N_i - N_ip1) / (N_i * N_ip1);
+      for (j=0; j<i; ++j) F(i,j) = 0.;
+    }
+    N_i = N_ip1;
+    F(num_am1,num_am1) = (N_i - N_A) / N_i;
     break;
   }
+  case SUBMETHOD_ACV_IS: { // Eq. 30 modified
+    Real N_j, Ni_ratio;
+    for (i=0; i<numApprox; ++i) {
+      N_i    = N[i];
+      F(i,i) = Ni_ratio = (N_i - N_A) / N_i;
+      for (j=0; j<i; ++j) {
+	N_j    = N[j];
+	F(i,j) = Ni_ratio * (N_j - N_A) / N_j;
+      }
+    }
+    break;
+  }
+  case SUBMETHOD_ACV_MF: { // Eq. 34 modified
+    Real min_N;
+    for (i=0; i<numApprox; ++i) {
+      N_i = N[i];  F(i,i) = (N_i - N_A) / N_i;
+      for (j=0; j<i; ++j) {
+	min_N = std::min(N_i, N[j]);
+	F(i,j) = (min_N - N_A) / min_N;
+      }
+    }
+    break;
+  }
+  //case SUBMETHOD_ACV_RD:// refer to comments in compute_F_matrix_from_r()
+  default:
+    Cerr << "Error: bad sub-method name (" << mlmfSubMethod
+	 << ") in NonDACVSampling::compute_F_matrix_from_N()" << std::endl;
+    abort_handler(METHOD_ERROR); break;
+  }
+
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "Given N vector:\n" << N << "F matrix for sub-method "
+	 << mlmfSubMethod << ":\n" << F << std::endl;
 }
 
+
+void NonDACVSampling::
+compute_F_gradients_from_N(const RealVector& N, RealSymMatrixArray& dF_dN)
+{
+  // no dependence on QoI, only dependence is on N
+  size_t i, j, v, num_v = N.length();
+  if (dF_dN.empty()) {
+    dF_dN.resize(num_v);
+    for (v=0; v<num_v; ++v)
+      dF_dN[v].shape(numApprox); // init to 0
+  }
+
+  Real N_i, N_A = N[numApprox];
+  RealSymMatrix& dF_dN_A = dF_dN[numApprox];
+  switch (mlmfSubMethod) {
+  // MFMC case is untested/inactive due to matrix-free approach in
+  // NonDMultifidelitySampling::estimator_variance_ratio_gradients()
+  case SUBMETHOD_MFMC: { // diagonal (see Eq. 16 in JCP ACV paper)
+    // F(i,i) = N_A * (N_i - N_ip1) / (N_i * N_ip1)
+    size_t ip1, num_am1 = numApprox - 1;  Real N_i, N_ip1;
+    for (i=0; i<num_am1; ++i) { // ip1 < A  (i < A-1)
+      ip1 = i+1;  N_i = N[i];  N_ip1 = N[ip1];
+      dF_dN[i](i,i)   =  N_A / (N_i   * N_i);  // v == i
+      dF_dN[ip1](i,i) = -N_A / (N_ip1 * N_ip1);// v == i+1
+      dF_dN_A(i,i)    = (N_i - N_ip1) / (N_i * N_ip1);         // v == numApprox
+    }
+    // ip1 == A  (i == A-1)
+    // F(num_am1,num_am1) = (N_am1 - N_A) / N_am1     [since N_ip1 = N_A]
+    i = num_am1;  N_i = N[i];
+    dF_dN[i](i,i) = N_A / (N_i * N_i); // v == A-1 == i
+    dF_dN_A(i,i)  = -1. / N_i;                       // v == A   == ip1
+    break;
+  }
+  case SUBMETHOD_ACV_IS: { // refer to Eq. 30 in JCP ACV paper
+    Real N_j, Ni_ratio, Nj_ratio, N_A_div_N_sq_i, N_A_div_N_sq_j;
+    for (i=0; i<numApprox; ++i) {
+      N_i = N[i];  Ni_ratio = (N_i - N_A) / N_i;
+      N_A_div_N_sq_i = N_A / (N_i * N_i);
+      dF_dN[i](i,i) = N_A_div_N_sq_i; // v == i
+      dF_dN_A(i,i)  = -1. / N_i;      // v == numApprox
+      for (j=0; j<i; ++j) {
+	N_j = N[j];  Nj_ratio = (N_j - N_A) / N_j;
+	N_A_div_N_sq_j = N_A / (N_j * N_j);
+	dF_dN[i](i,j) = Nj_ratio * N_A_div_N_sq_i;        // v == i
+	dF_dN[j](i,j) = Ni_ratio * N_A_div_N_sq_j;        // v == j
+	dF_dN_A(i,j)  = -Ni_ratio / N_j - Nj_ratio / N_i; // v == numApprox
+      }
+    }
+    break;
+  }
+  case SUBMETHOD_ACV_MF: { // refer to Eq. 34 in JCP ACV paper
+    Real N_j, neg_inv_N_i, N_A_div_N_sq_i;
+    for (i=0; i<numApprox; ++i) {
+      N_i = N[i];  neg_inv_N_i = -1. / N_i;
+      N_A_div_N_sq_i = N_A / (N_i * N_i);
+      dF_dN[i](i,i) = N_A_div_N_sq_i; // v == i
+      dF_dN_A(i,i)  = neg_inv_N_i;    // v == numApprox
+      for (j=0; j<i; ++j) {
+	N_j = N[j];
+	// C++ standard: min,max return 1st arg when args are equivalent
+	if (N_i <= N_j) { // F(i,j) = (N_i - N_A) / N_i from min(N_i,N_j)
+	  dF_dN[i](i,j) = N_A_div_N_sq_i; // v == i
+	  dF_dN_A(i,j)  = neg_inv_N_i;    // v == numApprox
+	}
+	else {           // F(i,j) = (N_j - N_A) / N_j from min(N_i,N_j)
+	  dF_dN[j](i,j) = N_A / (N_j * N_j); // v == j
+	  dF_dN_A(i,j)  = -1. / N_j;         // v == numApprox
+	}
+      }
+    }
+    break;
+  }
+  //case SUBMETHOD_ACV_RD:// refer to comments/code in compute_F_matrix_from_r()
+  default:
+    Cerr << "Error: bad sub-method name (" << mlmfSubMethod
+	 << ") in NonDACVSampling::compute_F_f_gradients()" << std::endl;
+    abort_handler(METHOD_ERROR); break;
+  }
+
+  //if (outputLevel >= DEBUG_OUTPUT)
+  //  Cout << "For sub-method " << mlmfSubMethod << ", N vector:\n" << N
+  // 	   << "dF/dN matrix array:\n" << dF_dN << std::endl;
+}
+
+
+void NonDACVSampling::
+estimator_variances(const RealVector& cd_vars, RealVector& est_var)
+{
+  // map incoming continuous design vars into r_i factors and compute F
+
+  /*
+  switch (optSubProblemForm) {
+  case N_MODEL_LINEAR_OBJECTIVE:  case N_MODEL_LINEAR_CONSTRAINT:
+    compute_F_matrix_from_N(cd_vars, F);  break;
+  case R_ONLY_LINEAR_CONSTRAINT: // N is a vector constant for opt sub-problem
+  case R_AND_N_NONLINEAR_CONSTRAINT:
+    compute_F_matrix_from_r(cd_vars, F); // admits r as leading numApprox terms
+    break;
+  }
+  */
+
+  RealSymMatrix F;  RealVector N_vec;
+  design_vars_to_N(cd_vars, N_vec);
+  compute_F_matrix_from_N(cd_vars, F);
+  acv_estimator_variances(F, varH, N_vec[numApprox], est_var);
+
+  // compute ACV estimator variance given F
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "ACV estimator variances:\n" << est_var << std::endl;
+}
+
+
+void NonDACVSampling::
+estimator_variance_gradients(const RealVector& cd_vars, RealMatrix& ev_grads)
+{
+  size_t q, v, num_v = numApprox+1;
+  if (ev_grads.numRows() != num_v || ev_grads.numCols() != numFunctions)
+    ev_grads.shapeUninitialized(num_v, numFunctions);
+
+  // d(abc) = abc' + ab'c + a'bc
+  // d[triple_prod]/dN = cf^T d[CF_inv] cf + 2 d[cf]^T CF_inv cf
+  //   where d[CF_inv] = -CF_inv dCF/dN CF_inv [see also ML BLUE]
+
+  RealVector cf, N_vec, lhs;  RealMatrix CF_inv_rm;
+  RealSymMatrix F, CF, CF_inv, dCF_inv_dN(numApprox);
+  RealVectorArray dcf_dN;  RealSymMatrixArray dF_dN, dCF_dN;
+
+  design_vars_to_N(cd_vars, N_vec);
+  compute_F_matrix_from_N(N_vec, F);
+  compute_F_gradients_from_N(N_vec, dF_dN);
+  Real trip_prod, trip_prod_grad, N_H = N_vec[numApprox];
+
+  for (q=0; q<numFunctions; ++q) {
+    const RealSymMatrix& covLL_q = covLL[q];
+    const RealVector&    covLH_q = covLH[q];
+    // form d[triple_prod]/dN:
+    combine_with_covariance(covLL_q, covLH_q, F, CF, cf);
+    combine_gradients_with_covariance(covLL_q, covLH_q, dF_dN, dCF_dN, dcf_dN);
+    solve_for_C_F_c_f(CF, CF_inv_rm, cf, lhs, false, true);
+    trip_prod = cf.dot(lhs);
+    copy_data(CF_inv_rm, CF_inv);
+    for (v=0; v<num_v; ++v) {
+      Teuchos::symMatTripleProduct(Teuchos::NO_TRANS, -1., dCF_dN[v],
+				   CF_inv_rm, dCF_inv_dN);
+      // form d[triple_product]/dN:
+      // symmetry allows combination of terms 1 + 3 = 2 cf^T CF_inv d[cf]
+      trip_prod_grad = matVecTripleProduct(2., cf, CF_inv,     dcf_dN[v])
+	             + matVecTripleProduct(1., cf, dCF_inv_dN, cf);
+      // EV = (var_H - trip_prod) / N_H
+      // dEV/dN = (-var_H + trip_prod - N_H trip_prod_grad) / N_H^2 (N_i = N_H)
+      //        = -trip_prod_grad / N_H                             (otherwise)
+      ev_grads(v,q) = (v == numApprox) ?
+	(trip_prod - N_H * trip_prod_grad - varH[q]) / (N_H * N_H) :
+	-trip_prod_grad / N_H;
+    }
+  }
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "ACV estimator variance gradients:\n" << ev_grads << std::endl;
+}
+
+
+void NonDACVSampling::
+estimator_variances_and_gradients(const RealVector& cd_vars,
+				  RealVector& est_var, RealMatrix& ev_grads)
+{
+  size_t q, v, num_v = numApprox+1;
+  if (est_var.empty()) est_var.sizeUninitialized(numFunctions);
+  if (ev_grads.numRows() != num_v || ev_grads.numCols() != numFunctions)
+    ev_grads.shapeUninitialized(num_v, numFunctions);
+
+  RealSymMatrix F, CF, CF_inv, dCF_inv_dN(numApprox);
+  RealSymMatrixArray dF_dN, dCF_dN;  RealMatrix CF_inv_rm;
+  RealVector cf, lhs, N_vec;         RealVectorArray dcf_dN;
+
+  design_vars_to_N(cd_vars, N_vec);
+  compute_F_matrix_from_N(N_vec, F);
+  compute_F_gradients_from_N(N_vec, dF_dN);
+  Real trip_prod, trip_prod_grad, varH_q, N_H = N_vec[numApprox];
+
+  for (q=0; q<numFunctions; ++q) {
+    const RealSymMatrix& covLL_q = covLL[q];  varH_q = varH[q];
+    const RealVector&    covLH_q = covLH[q];
+    combine_with_covariance(covLL_q, covLH_q, F, CF, cf);
+    combine_gradients_with_covariance(covLL_q, covLH_q, dF_dN, dCF_dN, dcf_dN);
+    solve_for_C_F_c_f(CF, CF_inv_rm, cf, lhs, false, true);
+    trip_prod = cf.dot(lhs);
+    est_var[q] = (varH_q - trip_prod) / N_H;
+    copy_data(CF_inv_rm, CF_inv);
+    for (v=0; v<num_v; ++v) {
+      Teuchos::symMatTripleProduct(Teuchos::NO_TRANS, -1., dCF_dN[v],
+				   CF_inv_rm, dCF_inv_dN);
+      // form d[triple_product]/dN:
+      // symmetry allows combination of terms 1 + 3 = 2 cf^T CF_inv d[cf]
+      trip_prod_grad = matVecTripleProduct(2., cf, CF_inv,     dcf_dN[v])
+	             + matVecTripleProduct(1., cf, dCF_inv_dN, cf);
+      // EV = (var_H - trip_prod) / N_H
+      // dEV/dN = (-var_H + trip_prod - N_H trip_prod_grad) / N_H^2 (N_i = N_H)
+      //        = -trip_prod_grad / N_H                             (otherwise)
+      ev_grads(v,q) = (v == numApprox) ?
+	(trip_prod - N_H * trip_prod_grad - varH_q) / (N_H * N_H) :
+	-trip_prod_grad / N_H;
+    }
+  }
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "ACV estimator variances:\n" << est_var
+	 << "ACV estimator variance gradients:\n" << ev_grads << std::endl;
+}
+
+
+/*
+void NonDACVSampling::
+estimator_variance_ratios(const RealVector& cd_vars, RealVector& estvar_ratios)
+{
+  // map incoming continuous design vars into r_i factors and compute F
+  RealSymMatrix F;
+  switch (optSubProblemForm) {
+  case N_MODEL_LINEAR_OBJECTIVE:  case N_MODEL_LINEAR_CONSTRAINT: {
+    compute_F_matrix_from_N(cd_vars, F);
+    break;
+  }
+  case R_ONLY_LINEAR_CONSTRAINT: // N is a vector constant for opt sub-problem
+  case R_AND_N_NONLINEAR_CONSTRAINT:
+    compute_F_matrix_from_r(cd_vars, F); // admits r as leading numApprox terms
+    break;
+  }
+  // compute ACV estimator variance given F
+  acv_estimator_variance_ratios(F, estvar_ratios);
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "estimator variance ratios:\n" << estvar_ratios << std::endl;
+}
+
+
+void NonDACVSampling::
+estimator_variance_ratio_gradients(const RealVector& cd_vars,
+				   RealMatrix& evr_grads)
+{
+  size_t q, v, num_v = numApprox+1;
+  if (evr_grads.numRows() != num_v || evr_grads.numCols() != numFunctions)
+    evr_grads.shapeUninitialized(num_v, numFunctions);
+
+  // d(abc) = abc' + ab'c + a'bc
+  // d[triple_prod]/dN = cf^T d[CF_inv] cf + 2 d[cf]^T CF_inv cf
+  //   where d[CF_inv] = -CF_inv dCF/dN CF_inv [see also ML BLUE]
+
+  Real rcond;  RealVector cf, N_vec;  RealMatrix CF_inv_rm;
+  RealSymMatrix F, CF, CF_inv, dCF_inv_dN(numApprox);
+  RealVectorArray dcf_dN;  RealSymMatrixArray dF_dN, dCF_dN;
+
+  design_vars_to_N(cd_vars, N_vec);
+  compute_F_matrix_from_N(N_vec, F);
+  compute_F_gradients_from_N(N_vec, dF_dN);
+
+  for (q=0; q<numFunctions; ++q) {
+    const RealSymMatrix& covLL_q = covLL[q];
+    const RealVector&    covLH_q = covLH[q];
+    // form d[triple_prod]/dN:
+    combine_with_covariance(covLL_q, covLH_q, F, CF, cf);
+    combine_gradients_with_covariance(covLL_q, covLH_q, dF_dN, dCF_dN, dcf_dN);
+    pseudo_inverse(CF, CF_inv_rm, rcond);
+    copy_data(CF_inv_rm, CF_inv);
+    for (v=0; v<num_v; ++v) {
+      Teuchos::symMatTripleProduct(Teuchos::NO_TRANS, -1., dCF_dN[v],
+				   CF_inv_rm, dCF_inv_dN);
+      // symmetry allows combination of terms 1 + 3 = 2 cf^T CF_inv d[cf]
+      Real& evr_grad_vq = evr_grads(v,q);
+      evr_grad_vq = matVecTripleProduct(2., cf, CF_inv,     dcf_dN[v])
+	          + matVecTripleProduct(1., cf, dCF_inv_dN, cf);
+      // from d(triple) to evr_grads:
+      evr_grad_vq /= -varH[q];
+    }
+  }
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "estimator variance ratio gradients:\n" << evr_grads << std::endl;
+}
+
+
+void NonDACVSampling::
+estimator_variance_ratios_and_gradients(const RealVector& cd_vars,
+					RealVector& estvar_ratios,
+					RealMatrix& evr_grads)
+{
+  size_t q, v, num_v = numApprox+1;
+  if (estvar_ratios.empty()) estvar_ratios.sizeUninitialized(numFunctions);
+  if (evr_grads.numRows() != num_v || evr_grads.numCols() != numFunctions)
+    evr_grads.shapeUninitialized(num_v, numFunctions);
+
+  RealSymMatrix F, CF, CF_inv, dCF_inv_dN(numApprox);
+  RealSymMatrixArray dF_dN, dCF_dN;  RealMatrix CF_inv_rm;
+  RealVector cf, lhs, N_vec;  RealVectorArray dcf_dN;  Real varH_q;
+
+  design_vars_to_N(cd_vars, N_vec);
+  compute_F_matrix_from_N(N_vec, F);
+  compute_F_gradients_from_N(N_vec, dF_dN);
+
+  for (q=0; q<numFunctions; ++q) {
+    const RealSymMatrix& covLL_q = covLL[q];  varH_q = varH[q];
+    const RealVector&    covLH_q = covLH[q];
+    combine_with_covariance(covLL_q, covLH_q, F, CF, cf);
+    solve_for_C_F_c_f(CF, CF_inv_rm, cf, lhs, false, true);
+    estvar_ratios[q] = 1. - compute_R_sq(cf, lhs, varH_q);
+    combine_gradients_with_covariance(covLL_q, covLH_q, dF_dN, dCF_dN, dcf_dN);
+    copy_data(CF_inv_rm, CF_inv);
+    for (v=0; v<num_v; ++v) {
+      Teuchos::symMatTripleProduct(Teuchos::NO_TRANS, -1., dCF_dN[v],
+				   CF_inv_rm, dCF_inv_dN);
+      Real& evr_grad_vq = evr_grads(v,q);
+      evr_grad_vq = matVecTripleProduct(2., cf, CF_inv,     dcf_dN[v])
+	          + matVecTripleProduct(1., cf, dCF_inv_dN, cf);
+      // from d(triple) to evr_grads (also from c to c-bar in JCP ACV):
+      evr_grad_vq /= -varH_q;
+    }
+  }
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "estimator variance ratios:\n" << estvar_ratios
+	 << "estimator variance ratio gradients:\n" << evr_grads << std::endl;
+}
+*/
 
 void NonDACVSampling::compute_allocations(MFSolutionData& soln)
 {
@@ -685,24 +1078,6 @@ analytic_initialization_from_ensemble_cvmc(const RealMatrix& rho2_LH,
 	 << avg_eval_ratios << std::endl;
 
   analytic_ratios_to_solution_variables(avg_eval_ratios, avg_N_H, soln);
-}
-
-
-void NonDACVSampling::
-analytic_ratios_to_solution_variables(RealVector& avg_eval_ratios,
-				      Real avg_N_H, MFSolutionData& soln)
-{
-  Real hf_target;
-  if (maxFunctionEvals == SZ_MAX) {// HF tgt from ACV estvar using analytic soln
-    hf_target = (convergenceTolType == ABSOLUTE_CONVERGENCE_TOLERANCE) ?
-      update_hf_target(avg_eval_ratios, avg_N_H, varH) :
-      update_hf_target(avg_eval_ratios, avg_N_H, varH, estVarIter0);
-  }
-  else // allocate_budget(), then manage lower bounds and pilot over-estimation
-    scale_to_target(avg_N_H, sequenceCost, avg_eval_ratios, hf_target,
-		    activeBudget);
-
-  soln.anchored_solution_ratios(avg_eval_ratios, hf_target);
 }
 
 
@@ -1023,20 +1398,22 @@ accumulate_lf_hf_qoi(const RealVector& fn_vals, const ShortArray& asv,
 void NonDACVSampling::
 compute_LH_covariance(const RealMatrix& sum_L_shared, const RealVector& sum_H,
 		      const RealMatrix& sum_LH, const SizetArray& N_shared,
-		      RealMatrix& cov_LH, const UShortArray& approx_set)
+		      RealVectorArray& cov_LH, const UShortArray& approx_set)
 {
-  if (cov_LH.numRows() != numFunctions) cov_LH.shape(numFunctions, numApprox);
-  else                                  cov_LH = 0.;
-
   size_t i, approx, num_approx = approx_set.size(), qoi;
+  if (cov_LH.size() != numFunctions)
+    cov_LH.resize(numFunctions);
+  for (i=0; i<numFunctions; ++i)
+    if (cov_LH[i].length() != numApprox) cov_LH[i].size(numApprox);
+    else                                 cov_LH[i] = 0.;
+
   for (i=0; i<num_approx; ++i) {
     approx = approx_set[i];
     const Real* sum_L_shared_a = sum_L_shared[approx];
     const Real*       sum_LH_a =       sum_LH[approx];
-    Real*             cov_LH_a =       cov_LH[approx];
     for (qoi=0; qoi<numFunctions; ++qoi)
       compute_covariance(sum_L_shared_a[qoi], sum_H[qoi], sum_LH_a[qoi],
-			 N_shared[qoi], cov_LH_a[qoi]);
+			 N_shared[qoi], cov_LH[qoi][approx]);
   }
 
   if (outputLevel >= DEBUG_OUTPUT)

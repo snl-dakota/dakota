@@ -1,0 +1,504 @@
+/*  _______________________________________________________________________
+
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2025
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    This software is distributed under the GNU Lesser General Public License.
+    For more information, see the README file in the top Dakota directory.
+    _______________________________________________________________________ */
+
+#include "InstructionMaterializer.hpp"
+#include "InstructionMaterializerUtils.hpp"
+#include "JSONUtils.hpp"
+
+#include <nlohmann/json.hpp>
+
+#include <cctype>
+#include <cstdint>
+#include <stdexcept>
+#include <string>
+
+namespace {
+
+using json = nlohmann::json;
+
+Dakota::IRValue convert_direct_value(const json& value, dakota::irgen::IrValueType t)
+{
+  using namespace Dakota;
+
+  switch (t) {
+  case irgen::IrValueType::String: return IRValue(value.get<String>());
+  case irgen::IrValueType::Bool: return IRValue(value.get<bool>());
+  case irgen::IrValueType::Int: return IRValue(value.get<int>());
+  case irgen::IrValueType::Short: return IRValue(value.get<short>());
+  case irgen::IrValueType::SizeT: return IRValue(value.get<size_t>());
+  case irgen::IrValueType::UnsignedShort: return IRValue(value.get<unsigned short>());
+  case irgen::IrValueType::Real: return IRValue(value.get<Real>());
+  case irgen::IrValueType::StringArray: return IRValue(value.get<StringArray>());
+  case irgen::IrValueType::String2DArray: return IRValue(value.get<String2DArray>());
+  case irgen::IrValueType::IntVector: return IRValue(value.get<JSONIntVector>().value);
+  case irgen::IrValueType::RealVector: return IRValue(value.get<JSONRealVector>().value);
+  case irgen::IrValueType::BitArray: return IRValue(value.get<JSONBitArray>().value);
+  case irgen::IrValueType::SizetArray: return IRValue(value.get<SizetArray>());
+  case irgen::IrValueType::UShortArray: return IRValue(value.get<UShortArray>());
+  case irgen::IrValueType::RealSymMatrix: return IRValue(value.get<JSONRealSymMatrix>().value);
+  case irgen::IrValueType::IntSet: return IRValue(value.get<IntSet>());
+  case irgen::IrValueType::SizetSet: return IRValue(value.get<SizetSet>());
+  case irgen::IrValueType::IntSetArray: return IRValue(value.get<IntSetArray>());
+  case irgen::IrValueType::StringSetArray: return IRValue(value.get<StringSetArray>());
+  case irgen::IrValueType::RealSetArray: return IRValue(value.get<RealSetArray>());
+  case irgen::IrValueType::IntRealMapArray: return IRValue(value.get<IntRealMapArray>());
+  case irgen::IrValueType::StringRealMapArray: return IRValue(value.get<StringRealMapArray>());
+  case irgen::IrValueType::RealRealMapArray: return IRValue(value.get<RealRealMapArray>());
+  case irgen::IrValueType::RealRealPairRealMapArray:
+    return IRValue(value.get<RealRealPairRealMapArray>());
+  case irgen::IrValueType::IntIntPairRealMapArray:
+    return IRValue(value.get<IntIntPairRealMapArray>());
+  case irgen::IrValueType::RealMatrixArray:
+    return IRValue(value.get<JSONRealMatrixArray>().value);
+  case irgen::IrValueType::RealVectorArray:
+    return IRValue(value.get<JSONRealVectorArray>().value);
+  case irgen::IrValueType::UnspecifiedType:
+    return IRValue(value);
+  }
+
+  return IRValue(value);
+}
+
+uint64_t convert_integral_direct_value(const json& value, dakota::irgen::IrValueType t)
+{
+  using namespace Dakota;
+
+  switch (t) {
+  case irgen::IrValueType::SizeT:
+    return static_cast<uint64_t>(value.get<size_t>());
+  case irgen::IrValueType::UnsignedShort:
+    return static_cast<uint64_t>(value.get<unsigned short>());
+  case irgen::IrValueType::Int:
+    return static_cast<uint64_t>(value.get<int>());
+  case irgen::IrValueType::Short:
+    return static_cast<uint64_t>(value.get<short>());
+  default:
+    throw std::runtime_error(
+      "InstructionMaterializer::handle_add_to_value unsupported contract type");
+  }
+}
+std::vector<int> infer_response_level_partition(const json& block_json,
+                                               const std::string& container_path)
+{
+  const auto* node = Dakota::InstructionMaterializerUtils::optional_path(
+    block_json, container_path);
+  if (!node || !node->is_object()) {
+    throw std::runtime_error(
+      "InstructionMaterializer::handle_response_levels_array expected object at '" +
+      container_path + "'");
+  }
+
+  const auto sibling_names = {
+    std::string("num_response_levels"),
+    std::string("num_probability_levels"),
+    std::string("num_reliability_levels"),
+    std::string("num_gen_reliability_levels"),
+  };
+  for (const auto& sibling : sibling_names) {
+    if (const auto* counts = Dakota::InstructionMaterializerUtils::optional_path(
+          block_json, container_path + "/" + sibling)) {
+      return counts->get<std::vector<int>>();
+    }
+  }
+  return {};
+}
+
+uint64_t enum_literal_to_u64(const Dakota::irgen::OpLiteral& lit,
+                             const Dakota::irgen::IrValueType t)
+{
+  using Dakota::IRValue;
+  using Dakota::irgen::IrValueType;
+
+  auto as_u64 = [](const IRValue& v, const char* what) -> uint64_t {
+    if (const auto* p = std::get_if<unsigned short>(&v)) return static_cast<uint64_t>(*p);
+    if (const auto* p = std::get_if<short>(&v)) return static_cast<uint64_t>(*p);
+    if (const auto* p = std::get_if<int>(&v)) return static_cast<uint64_t>(*p);
+    if (const auto* p = std::get_if<size_t>(&v)) return static_cast<uint64_t>(*p);
+    throw std::runtime_error(std::string("InstructionMaterializer::") + what +
+                             " literal has non-integral variant value");
+  };
+
+  switch (t) {
+  case IrValueType::UnsignedShort:
+  case IrValueType::Short:
+  case IrValueType::Int:
+  case IrValueType::SizeT:
+    return as_u64(lit.value, "enum handler");
+  default:
+    throw std::runtime_error(
+      "InstructionMaterializer enum handler requires integral contract type");
+  }
+}
+
+Dakota::IRValue enum_u64_to_irvalue(uint64_t v, Dakota::irgen::IrValueType t)
+{
+  using Dakota::IRValue;
+  using Dakota::irgen::IrValueType;
+  switch (t) {
+  case IrValueType::UnsignedShort:
+    return IRValue(static_cast<unsigned short>(v));
+  case IrValueType::Short:
+    return IRValue(static_cast<short>(v));
+  case IrValueType::Int:
+    return IRValue(static_cast<int>(v));
+  case IrValueType::SizeT:
+    return IRValue(static_cast<size_t>(v));
+  default:
+    throw std::runtime_error(
+      "InstructionMaterializer enum handler requires integral contract type");
+  }
+}
+
+uint64_t current_enum_value_or_zero(const Dakota::IRStore& store,
+                                    const std::string& key,
+                                    Dakota::irgen::IrValueType t)
+{
+  using Dakota::irgen::IrValueType;
+  if (!store.contains(key))
+    return 0;
+
+  switch (t) {
+  case IrValueType::UnsignedShort:
+    return static_cast<uint64_t>(store.get<unsigned short>(key));
+  case IrValueType::Short:
+    return static_cast<uint64_t>(store.get<short>(key));
+  case IrValueType::Int:
+    return static_cast<uint64_t>(store.get<int>(key));
+  case IrValueType::SizeT:
+    return static_cast<uint64_t>(store.get<size_t>(key));
+  default:
+    throw std::runtime_error(
+      "InstructionMaterializer enum handler requires integral contract type");
+  }
+}
+
+Dakota::IRValue integral_u64_to_irvalue(uint64_t v, Dakota::irgen::IrValueType t)
+{
+  using Dakota::IRValue;
+  using Dakota::irgen::IrValueType;
+  switch (t) {
+  case IrValueType::SizeT:
+    return IRValue(static_cast<size_t>(v));
+  case IrValueType::UnsignedShort:
+    return IRValue(static_cast<unsigned short>(v));
+  case IrValueType::Int:
+    return IRValue(static_cast<int>(v));
+  case IrValueType::Short:
+    return IRValue(static_cast<short>(v));
+  default:
+    throw std::runtime_error(
+      "InstructionMaterializer::handle_add_to_value unsupported contract type");
+  }
+}
+
+} // namespace
+
+namespace Dakota {
+
+void InstructionMaterializer::handle_direct_value(const irgen::WriteOp& op,
+                                                  const irgen::KeyContract& contract,
+                                                  const HandlerContext& ctx)
+{
+  const auto& value = InstructionMaterializerUtils::required_path(
+    ctx.block_json, ctx.current_path);
+  ctx.store.set_value(
+    op.target_local_ir_key, convert_direct_value(value, contract.ir_value_type));
+}
+
+void InstructionMaterializer::handle_add_to_value(const irgen::WriteOp& op,
+                                                  const irgen::KeyContract& contract,
+                                                  const HandlerContext& ctx)
+{
+  const auto& value = InstructionMaterializerUtils::required_path(
+    ctx.block_json, ctx.current_path);
+  const uint64_t delta = convert_integral_direct_value(value, contract.ir_value_type);
+  const uint64_t base = current_enum_value_or_zero(
+    ctx.store, op.target_local_ir_key, contract.ir_value_type);
+  ctx.store.set_value(
+    op.target_local_ir_key,
+    integral_u64_to_irvalue(base + delta, contract.ir_value_type));
+}
+
+void InstructionMaterializer::handle_literal_assign(const irgen::WriteOp& op,
+                                                    const irgen::KeyContract& contract,
+                                                    const HandlerContext& ctx)
+{
+  (void)contract;
+  ctx.store.set_value(op.target_local_ir_key, op.literal.value);
+}
+
+void InstructionMaterializer::handle_presence_true(const irgen::WriteOp& op,
+                                                   const irgen::KeyContract& contract,
+                                                   const HandlerContext& ctx)
+{
+  (void)contract;
+  const auto& value = InstructionMaterializerUtils::required_path(
+    ctx.block_json, ctx.current_path);
+  if (value.is_object() || value.is_boolean()) {
+    ctx.store.set_value(op.target_local_ir_key, IRValue(true));
+    return;
+  } else {
+    throw std::runtime_error(
+      "InstructionMaterializer::handle_presence_true expected object or boolean at '" +
+      std::string(ctx.current_path) + "'");
+  }
+}
+
+void InstructionMaterializer::handle_presence_false(const irgen::WriteOp& op,
+                                                    const irgen::KeyContract& contract,
+                                                    const HandlerContext& ctx)
+{
+  (void)contract;
+  const auto& value = InstructionMaterializerUtils::required_path(
+    ctx.block_json, ctx.current_path);
+  if (value.is_object() || value.is_boolean()) {
+    ctx.store.set_value(op.target_local_ir_key, IRValue(false));
+    return;
+  } else {
+    throw std::runtime_error(
+      "InstructionMaterializer::handle_presence_false expected object or boolean at '" +
+      std::string(ctx.current_path) + "'");
+  }
+}
+
+void InstructionMaterializer::handle_uncertain_init_point_flag(
+  const irgen::WriteOp& op,
+  const irgen::KeyContract& contract,
+  const HandlerContext& ctx)
+{
+  (void)contract;
+  const auto& value = InstructionMaterializerUtils::required_path(
+    ctx.block_json, ctx.current_path);
+  if (!value.is_boolean()) {
+    throw std::runtime_error(
+      "InstructionMaterializer::handle_uncertain_init_point_flag expected boolean at '" +
+      std::string(ctx.current_path) + "'");
+  }
+  if (value.get<bool>())
+    ctx.store.set_value(op.target_local_ir_key, IRValue(true));
+}
+
+void InstructionMaterializer::handle_presence_enum(const irgen::WriteOp& op,
+                                                   const irgen::KeyContract& contract,
+                                                   const HandlerContext& ctx)
+{
+  const auto& value = InstructionMaterializerUtils::required_path(
+    ctx.block_json, ctx.current_path);
+  if (value.is_boolean()) {
+    if (!value.get<bool>())
+      return;
+  }
+  const uint64_t lit = enum_literal_to_u64(op.literal, contract.ir_value_type);
+  ctx.store.set_value(op.target_local_ir_key, enum_u64_to_irvalue(lit, contract.ir_value_type));
+}
+
+void InstructionMaterializer::handle_augment_enum(const irgen::WriteOp& op,
+                                                  const irgen::KeyContract& contract,
+                                                  const HandlerContext& ctx)
+{
+  (void)InstructionMaterializerUtils::required_path(ctx.block_json, ctx.current_path);
+  const uint64_t base = current_enum_value_or_zero(
+    ctx.store, op.target_local_ir_key, contract.ir_value_type);
+  const uint64_t lit = enum_literal_to_u64(op.literal, contract.ir_value_type);
+  const uint64_t out = (base | lit);
+  ctx.store.set_value(op.target_local_ir_key, enum_u64_to_irvalue(out, contract.ir_value_type));
+}
+
+void InstructionMaterializer::handle_categorical(const irgen::WriteOp& op,
+                                                 const irgen::KeyContract& contract,
+                                                 const HandlerContext& ctx)
+{
+  (void)contract;
+  const auto& value = InstructionMaterializerUtils::required_path(
+    ctx.block_json, ctx.current_path);
+  if (!value.is_array()) {
+    throw std::runtime_error(
+      "InstructionMaterializer::handle_categorical expected array at '" +
+      std::string(ctx.current_path) + "'");
+  }
+
+  BitArray bits(value.size());
+  for (size_t i = 0; i < value.size(); ++i) {
+    if (!value[i].is_string()) {
+      throw std::runtime_error(
+        "InstructionMaterializer::handle_categorical expected string entries at '" +
+        std::string(ctx.current_path) + "'");
+    }
+    const std::string s = value[i].get<std::string>();
+    if (!s.empty()) {
+      const char c = static_cast<char>(std::tolower(static_cast<unsigned char>(s[0])));
+      bits[i] = (c == 't' || c == 'y');
+    }
+    else {
+      bits[i] = false;
+    }
+  }
+  ctx.store.set_value(op.target_local_ir_key, IRValue(std::move(bits)));
+}
+
+void InstructionMaterializer::handle_id_to_index_set(const irgen::WriteOp& op,
+                                                     const irgen::KeyContract& contract,
+                                                     const HandlerContext& ctx)
+{
+  (void)contract;
+  const auto& value = InstructionMaterializerUtils::required_path(
+    ctx.block_json, ctx.current_path);
+  if (!value.is_array()) {
+    throw std::runtime_error(
+      "InstructionMaterializer::handle_id_to_index_set expected array at '" +
+      std::string(ctx.current_path) + "'");
+  }
+
+  SizetSet out;
+  for (size_t i = 0; i < value.size(); ++i) {
+    if (!value[i].is_number_integer()) {
+      throw std::runtime_error(
+        "InstructionMaterializer::handle_id_to_index_set expected integer entries at '" +
+        std::string(ctx.current_path) + "'");
+    }
+    const int id = value[i].get<int>();
+    out.insert(static_cast<size_t>(id - 1));
+  }
+
+  ctx.store.set_value(op.target_local_ir_key, IRValue(std::move(out)));
+}
+
+void InstructionMaterializer::handle_int_set(const irgen::WriteOp& op,
+                                             const irgen::KeyContract& contract,
+                                             const HandlerContext& ctx)
+{
+  (void)contract;
+  const auto& value = InstructionMaterializerUtils::required_path(
+    ctx.block_json, ctx.current_path);
+  if (!value.is_array()) {
+    throw std::runtime_error(
+      "InstructionMaterializer::handle_int_set expected array at '" +
+      std::string(ctx.current_path) + "'");
+  }
+
+  IntSet out;
+  for (size_t i = 0; i < value.size(); ++i) {
+    if (!value[i].is_number_integer()) {
+      throw std::runtime_error(
+        "InstructionMaterializer::handle_int_set expected integer entries at '" +
+        std::string(ctx.current_path) + "'");
+    }
+    out.insert(value[i].get<int>());
+  }
+
+  ctx.store.set_value(op.target_local_ir_key, IRValue(std::move(out)));
+}
+
+void InstructionMaterializer::handle_response_levels_array(
+  const irgen::WriteOp& op,
+  const irgen::KeyContract& contract,
+  const HandlerContext& ctx)
+{
+  (void)op;
+  if (contract.ir_value_type != irgen::IrValueType::RealVectorArray) {
+    throw std::runtime_error(
+      "InstructionMaterializer::handle_response_levels_array requires RealVectorArray contract type");
+  }
+
+  const auto& level_spec = InstructionMaterializerUtils::required_path(
+    ctx.block_json, ctx.current_path);
+  if (!level_spec.is_object() || !level_spec.contains("values") ||
+      !level_spec["values"].is_array()) {
+    throw std::runtime_error(
+      "InstructionMaterializer::handle_response_levels_array expected object-with-values at '" +
+      std::string(ctx.current_path) + "'");
+  }
+
+  const std::vector<int> partition = infer_response_level_partition(
+    ctx.block_json, std::string(ctx.current_path));
+  const auto& values = level_spec["values"];
+  const size_t total_levels = values.size();
+
+  RealVectorArray out;
+  if (partition.empty()) {
+    out.resize(1);
+    RealVector& vec = out[0];
+    vec.sizeUninitialized(static_cast<int>(total_levels));
+    for (size_t i = 0; i < total_levels; ++i)
+      vec[static_cast<int>(i)] = values[i].get<JSONDoubleElement>().value;
+  }
+  else {
+    out.resize(partition.size());
+    size_t offset = 0;
+    for (size_t i = 0; i < partition.size(); ++i) {
+      if (partition[i] < 0) {
+        throw std::runtime_error(
+          "InstructionMaterializer::handle_response_levels_array does not support implicit repartitioning");
+      }
+      const size_t count = static_cast<size_t>(partition[i]);
+      if (offset + count > total_levels) {
+        throw std::runtime_error(
+          "InstructionMaterializer::handle_response_levels_array partition exceeds values length");
+      }
+      RealVector& vec = out[i];
+      vec.sizeUninitialized(static_cast<int>(count));
+      for (size_t j = 0; j < count; ++j, ++offset)
+        vec[static_cast<int>(j)] = values[offset].get<JSONDoubleElement>().value;
+    }
+    if (offset != total_levels) {
+      throw std::runtime_error(
+        "InstructionMaterializer::handle_response_levels_array partition does not consume all values");
+    }
+  }
+  ctx.store.set_value(op.target_local_ir_key, IRValue(std::move(out)));
+}
+
+void InstructionMaterializer::handle_analysis_components(
+  const irgen::WriteOp& op,
+  const irgen::KeyContract& contract,
+  const HandlerContext& ctx)
+{
+  if (contract.ir_value_type != irgen::IrValueType::String2DArray) {
+    throw std::runtime_error(
+      "InstructionMaterializer::handle_analysis_components requires String2DArray contract type");
+  }
+
+  const auto& value = InstructionMaterializerUtils::required_path(
+    ctx.block_json, ctx.current_path);
+  if (!value.is_array()) {
+    throw std::runtime_error(
+      "InstructionMaterializer::handle_analysis_components expected array at '" +
+      std::string(ctx.current_path) + "'");
+  }
+
+  const StringArray flat = value.get<StringArray>();
+  size_t num_drivers = 0;
+  if (ctx.store.contains("application.analysis_drivers")) {
+    const auto& drivers = ctx.store.get<StringArray>("application.analysis_drivers");
+    num_drivers = drivers.size();
+  }
+  if (num_drivers == 0) {
+    if (const auto* drivers_json =
+          InstructionMaterializerUtils::optional_path(
+            ctx.block_json, "analysis_drivers/drivers")) {
+      if (drivers_json->is_array())
+        num_drivers = drivers_json->size();
+    }
+  }
+  if (num_drivers == 0)
+    throw std::runtime_error(
+      "InstructionMaterializer::handle_analysis_components requires analysis_drivers/drivers");
+
+  String2DArray out(num_drivers);
+  const size_t comps_per_driver = flat.size() / num_drivers;
+  size_t k = 0;
+  for (size_t i = 0; i < num_drivers; ++i) {
+    out[i].resize(comps_per_driver);
+    for (size_t j = 0; j < comps_per_driver; ++j, ++k)
+      out[i][j] = flat[k];
+  }
+  ctx.store.set_value(op.target_local_ir_key, IRValue(std::move(out)));
+}
+
+} // namespace Dakota

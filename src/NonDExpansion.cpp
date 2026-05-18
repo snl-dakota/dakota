@@ -46,7 +46,7 @@ NonDExpansion(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
   relativeMetric(problem_db.get_short("method.nond.convergence_tolerance_type")
 		 != ABSOLUTE_CONVERGENCE_TOLERANCE), // include DEFAULT,RELATIVE
   dimPrefSpec(problem_db.get_rv("method.nond.dimension_preference")),
-  collocPtsSeqSpec(problem_db.get_sza("method.nond.collocation_points")),
+  collocPtsSeqSpec(problem_db.get_sza("method.nond.collocation_points_sequence")),
   collocRatio(problem_db.get_real("method.nond.collocation_ratio")),
   termsOrder(1.),
   tensorRegression(problem_db.get_bool("method.nond.tensor_grid")),

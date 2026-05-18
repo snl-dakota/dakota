@@ -1,0 +1,439 @@
+{
+  "blocks": {
+    "environment": {},
+    "method": {
+      "algorithm": {
+        "key": "method.algorithm",
+        "value_type": "unsigned short",
+        "value": "DEFAULT_METHOD"
+      },
+      "coliny.expansion": {
+        "key": "method.coliny.expansion",
+        "value_type": "bool",
+        "value": true
+      },
+      "coliny.number_retained": {
+        "key": "method.coliny.number_retained",
+        "value_type": "int",
+        "value": -9999
+      },
+      "iterator_scheduling": {
+        "key": "method.iterator_scheduling",
+        "value_type": "short",
+        "value": "DEFAULT_SCHEDULING"
+      },
+      "jega.fitness_limit": {
+        "key": "method.jega.fitness_limit",
+        "value_type": "Real",
+        "value": 6.0
+      },
+      "jega.niching_type": {
+        "key": "method.jega.niching_type",
+        "value_type": "String",
+        "value": "null_niching"
+      },
+      "jega.postprocessor_type": {
+        "key": "method.jega.postprocessor_type",
+        "value_type": "String",
+        "value": "null_postprocessor"
+      },
+      "ld.digitalnet.generating_matrix_scheme": {
+        "key": "method.ld.digitalnet.generating_matrix_scheme",
+        "value_type": "short",
+        "value": "JOE_KUO"
+      },
+      "ld.digitalnet.ordering": {
+        "key": "method.ld.digitalnet.ordering",
+        "value_type": "short",
+        "value": "DIGITAL_NET_GRAY_CODE_ORDERING"
+      },
+      "ld.rank1.generating_vector_scheme": {
+        "key": "method.ld.rank1.generating_vector_scheme",
+        "value_type": "short",
+        "value": "GEN_VECTOR_COOLS_KUO_NUYENS"
+      },
+      "ld.rank1.ordering": {
+        "key": "method.ld.rank1.ordering",
+        "value_type": "short",
+        "value": "RANK_1_LATTICE_RADICAL_INVERSE_ORDERING"
+      },
+      "max_hifi_evaluations": {
+        "key": "method.max_hifi_evaluations",
+        "value_type": "int",
+        "value": -1
+      },
+      "mesh_adaptive_search.use_surrogate": {
+        "key": "method.mesh_adaptive_search.use_surrogate",
+        "value_type": "String",
+        "value": "none"
+      },
+      "model_export_format": {
+        "key": "method.model_export_format",
+        "value_type": "unsigned short",
+        "value": "NO_MODEL_FORMAT"
+      },
+      "mutation_adaptive": {
+        "key": "method.mutation_adaptive",
+        "value_type": "bool",
+        "value": true
+      },
+      "nond.c3function_train.advancement_type": {
+        "key": "method.nond.c3function_train.advancement_type",
+        "value_type": "short",
+        "value": "NO_C3_ADVANCEMENT"
+      },
+      "nond.calibrate_error_mode": {
+        "key": "method.nond.calibrate_error_mode",
+        "value_type": "unsigned short",
+        "value": "CALIBRATE_NONE"
+      },
+      "nond.collocation_points": {
+        "key": "method.nond.collocation_points",
+        "value_type": "size_t",
+        "value": "SZ_MAX"
+      },
+      "nond.convergence_tolerance_type": {
+        "key": "method.nond.convergence_tolerance_type",
+        "value_type": "short",
+        "value": "DEFAULT_CONVERGENCE_TOLERANCE"
+      },
+      "nond.covariance_control": {
+        "key": "method.nond.covariance_control",
+        "value_type": "short",
+        "value": "DEFAULT_COVARIANCE"
+      },
+      "nond.cubature_integrand": {
+        "key": "method.nond.cubature_integrand",
+        "value_type": "unsigned short",
+        "value": "USHRT_MAX"
+      },
+      "nond.emulator": {
+        "key": "method.nond.emulator",
+        "value_type": "short",
+        "value": "NO_EMULATOR"
+      },
+      "nond.estimator_variance_metric": {
+        "key": "method.nond.estimator_variance_metric",
+        "value_type": "short",
+        "value": "DEFAULT_ESTVAR_METRIC"
+      },
+      "nond.expansion_basis_type": {
+        "key": "method.nond.expansion_basis_type",
+        "value_type": "short",
+        "value": "Pecos::DEFAULT_BASIS"
+      },
+      "nond.expansion_refinement_control": {
+        "key": "method.nond.expansion_refinement_control",
+        "value_type": "short",
+        "value": "Pecos::NO_CONTROL"
+      },
+      "nond.expansion_refinement_metric": {
+        "key": "method.nond.expansion_refinement_metric",
+        "value_type": "short",
+        "value": "Pecos::DEFAULT_METRIC"
+      },
+      "nond.expansion_refinement_type": {
+        "key": "method.nond.expansion_refinement_type",
+        "value_type": "short",
+        "value": "Pecos::NO_REFINEMENT"
+      },
+      "nond.expansion_type": {
+        "key": "method.nond.expansion_type",
+        "value_type": "short",
+        "value": "EXTENDED_U"
+      },
+      "nond.final_statistics": {
+        "key": "method.nond.final_statistics",
+        "value_type": "short",
+        "value": "DEFAULT_FINAL_STATS"
+      },
+      "nond.graph_depth_limit": {
+        "key": "method.nond.graph_depth_limit",
+        "value_type": "unsigned short",
+        "value": "USHRT_MAX"
+      },
+      "nond.group_size_throttle": {
+        "key": "method.nond.group_size_throttle",
+        "value_type": "unsigned short",
+        "value": "USHRT_MAX"
+      },
+      "nond.group_throttle_type": {
+        "key": "method.nond.group_throttle_type",
+        "value_type": "short",
+        "value": "NO_GROUP_THROTTLE"
+      },
+      "nond.growth_override": {
+        "key": "method.nond.growth_override",
+        "value_type": "short",
+        "value": "Pecos::NO_GROWTH_OVERRIDE"
+      },
+      "nond.integration_refinement": {
+        "key": "method.nond.integration_refinement",
+        "value_type": "unsigned short",
+        "value": "NO_INT_REFINE"
+      },
+      "nond.least_squares_regression_type": {
+        "key": "method.nond.least_squares_regression_type",
+        "value_type": "short",
+        "value": "DEFAULT_LS"
+      },
+      "nond.multilevel_allocation_control": {
+        "key": "method.nond.multilevel_allocation_control",
+        "value_type": "short",
+        "value": "DEFAULT_MLMF_CONTROL"
+      },
+      "nond.multilevel_discrepancy_emulation": {
+        "key": "method.nond.multilevel_discrepancy_emulation",
+        "value_type": "short",
+        "value": "DEFAULT_EMULATION"
+      },
+      "nond.nesting_override": {
+        "key": "method.nond.nesting_override",
+        "value_type": "short",
+        "value": "Pecos::NO_NESTING_OVERRIDE"
+      },
+      "nond.opt_subproblem_solver": {
+        "key": "method.nond.opt_subproblem_solver",
+        "value_type": "unsigned short",
+        "value": "SUBMETHOD_DEFAULT"
+      },
+      "nond.pilot_samples.mode": {
+        "key": "method.nond.pilot_samples.mode",
+        "value_type": "short",
+        "value": "SHARED_PILOT"
+      },
+      "nond.pushforward_samples": {
+        "key": "method.nond.pushforward_samples",
+        "value_type": "int",
+        "value": 10000
+      },
+      "nond.rcond_best_throttle": {
+        "key": "method.nond.rcond_best_throttle",
+        "value_type": "size_t",
+        "value": "SZ_MAX"
+      },
+      "nond.rcond_tol_throttle": {
+        "key": "method.nond.rcond_tol_throttle",
+        "value_type": "Real",
+        "value": "DBL_MAX"
+      },
+      "nond.refinement_statistics_mode": {
+        "key": "method.nond.refinement_statistics_mode",
+        "value_type": "short",
+        "value": "Pecos::DEFAULT_EXPANSION_STATS"
+      },
+      "nond.regression_type": {
+        "key": "method.nond.regression_type",
+        "value_type": "short",
+        "value": "Pecos::DEFAULT_REGRESSION"
+      },
+      "nond.response_level_target": {
+        "key": "method.nond.response_level_target",
+        "value_type": "short",
+        "value": "PROBABILITIES"
+      },
+      "nond.response_level_target_reduce": {
+        "key": "method.nond.response_level_target_reduce",
+        "value_type": "short",
+        "value": "COMPONENT"
+      },
+      "nond.search_model_graphs.recursion": {
+        "key": "method.nond.search_model_graphs.recursion",
+        "value_type": "short",
+        "value": "NO_GRAPH_RECURSION"
+      },
+      "nond.search_model_graphs.selection": {
+        "key": "method.nond.search_model_graphs.selection",
+        "value_type": "short",
+        "value": "NO_MODEL_SELECTION"
+      },
+      "sample_type": {
+        "key": "method.sample_type",
+        "value_type": "unsigned short",
+        "value": "SUBMETHOD_DEFAULT"
+      },
+      "sbl.constraint_relax": {
+        "key": "method.sbl.constraint_relax",
+        "value_type": "short",
+        "value": "NO_RELAX"
+      },
+      "sbl.subproblem_constraints": {
+        "key": "method.sbl.subproblem_constraints",
+        "value_type": "short",
+        "value": "ORIGINAL_CONSTRAINTS"
+      },
+      "sbl.subproblem_objective": {
+        "key": "method.sbl.subproblem_objective",
+        "value_type": "short",
+        "value": "ORIGINAL_PRIMARY"
+      },
+      "sub_method": {
+        "key": "method.sub_method",
+        "value_type": "unsigned short",
+        "value": "SUBMETHOD_DEFAULT"
+      },
+      "synchronization": {
+        "key": "method.synchronization",
+        "value_type": "short",
+        "value": "DEFAULT_SYNCHRONIZATION"
+      },
+      "vbd_via_sampling_method": {
+        "key": "method.vbd_via_sampling_method",
+        "value_type": "unsigned short",
+        "value": "VBD_PICK_AND_FREEZE"
+      },
+      "wilks.sided_interval": {
+        "key": "method.wilks.sided_interval",
+        "value_type": "short",
+        "value": "ONE_SIDED_UPPER"
+      }
+    },
+    "model": {
+      "active_subspace.cv.id_method": {
+        "key": "model.active_subspace.cv.id_method",
+        "value_type": "unsigned short",
+        "value": "CV_ID_DEFAULT"
+      },
+      "active_subspace.cv.incremental": {
+        "key": "model.active_subspace.cv.incremental",
+        "value_type": "bool",
+        "value": true
+      },
+      "active_subspace.normalization": {
+        "key": "model.active_subspace.normalization",
+        "value_type": "unsigned short",
+        "value": "SUBSPACE_NORM_DEFAULT"
+      },
+      "active_subspace.sample_type": {
+        "key": "model.active_subspace.sample_type",
+        "value_type": "unsigned short",
+        "value": "SUBMETHOD_DEFAULT"
+      },
+      "adapted_basis.collocation_ratio": {
+        "key": "model.adapted_basis.collocation_ratio",
+        "value_type": "Real",
+        "value": 1.0
+      },
+      "c3function_train.advancement_type": {
+        "key": "model.c3function_train.advancement_type",
+        "value_type": "short",
+        "value": "NO_C3_ADVANCEMENT"
+      },
+      "c3function_train.collocation_points": {
+        "key": "model.c3function_train.collocation_points",
+        "value_type": "size_t",
+        "value": "SZ_MAX"
+      },
+      "nested.iterator_scheduling": {
+        "key": "model.nested.iterator_scheduling",
+        "value_type": "short",
+        "value": "DEFAULT_SCHEDULING"
+      },
+      "rf.analytic_covariance": {
+        "key": "model.rf.analytic_covariance",
+        "value_type": "unsigned short",
+        "value": "NOCOVAR"
+      },
+      "rf.expansion_form": {
+        "key": "model.rf.expansion_form",
+        "value_type": "unsigned short",
+        "value": "RF_KARHUNEN_LOEVE"
+      },
+      "surrogate.correction_type": {
+        "key": "model.surrogate.correction_type",
+        "value_type": "short",
+        "value": "NO_CORRECTION"
+      },
+      "surrogate.model_export_format": {
+        "key": "model.surrogate.model_export_format",
+        "value_type": "unsigned short",
+        "value": "NO_MODEL_FORMAT"
+      },
+      "surrogate.model_import_format": {
+        "key": "model.surrogate.model_import_format",
+        "value_type": "unsigned short",
+        "value": "NO_MODEL_FORMAT"
+      },
+      "surrogate.points_management": {
+        "key": "model.surrogate.points_management",
+        "value_type": "short",
+        "value": "DEFAULT_POINTS"
+      },
+      "surrogate.regression_type": {
+        "key": "model.surrogate.regression_type",
+        "value_type": "short",
+        "value": "FT_LS"
+      },
+      "type": {
+        "key": "model.type",
+        "value_type": "String",
+        "value": "simulation"
+      }
+    },
+    "variables": {
+      "domain": {
+        "key": "variables.domain",
+        "value_type": "short",
+        "value": "DEFAULT_DOMAIN"
+      },
+      "view": {
+        "key": "variables.view",
+        "value_type": "short",
+        "value": "DEFAULT_VIEW"
+      }
+    },
+    "interface": {
+      "active_set_vector": {
+        "key": "interface.active_set_vector",
+        "value_type": "bool",
+        "value": true
+      },
+      "analysis_scheduling": {
+        "key": "interface.analysis_scheduling",
+        "value_type": "short",
+        "value": "DEFAULT_SCHEDULING"
+      },
+      "application.parameters_file_format": {
+        "key": "interface.application.parameters_file_format",
+        "value_type": "unsigned short",
+        "value": "PARAMETERS_FILE_STANDARD"
+      },
+      "application.results_file_format": {
+        "key": "interface.application.results_file_format",
+        "value_type": "unsigned short",
+        "value": "RESULTS_FILE_STANDARD"
+      },
+      "evaluation_cache": {
+        "key": "interface.evaluation_cache",
+        "value_type": "bool",
+        "value": true
+      },
+      "evaluation_scheduling": {
+        "key": "interface.evaluation_scheduling",
+        "value_type": "short",
+        "value": "DEFAULT_SCHEDULING"
+      },
+      "failure_capture.retry_limit": {
+        "key": "interface.failure_capture.retry_limit",
+        "value_type": "int",
+        "value": 1
+      },
+      "local_evaluation_scheduling": {
+        "key": "interface.local_evaluation_scheduling",
+        "value_type": "short",
+        "value": "DEFAULT_SCHEDULING"
+      },
+      "restart_file": {
+        "key": "interface.restart_file",
+        "value_type": "bool",
+        "value": true
+      },
+      "type": {
+        "key": "interface.type",
+        "value_type": "unsigned short",
+        "value": "DEFAULT_INTERFACE"
+      }
+    },
+    "responses": {}
+  }
+}

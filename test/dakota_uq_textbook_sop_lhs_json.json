@@ -1,0 +1,218 @@
+{
+  "environment": {
+    "top_method_pointer": "PSTUDY"
+  },
+  "interface": [
+    {
+      "analysis_drivers": {
+        "drivers": [
+          "text_book"
+        ],
+        "interface_type": {
+          "direct": {}
+        }
+      },
+      "deactivate": {
+        "evaluation_cache": true,
+        "restart_file": true
+      },
+      "id_interface": "ALEAT_I"
+    }
+  ],
+  "method": [
+    {
+      "sampling": {
+        "id_method": "PSTUDY",
+        "model_pointer": "PS_M",
+        "samples": 10,
+        "seed": 12347
+      }
+    },
+    {
+      "sampling": {
+        "distribution": {
+          "complementary": true
+        },
+        "id_method": "ALEATORY",
+        "model_pointer": "ALEAT_M",
+        "response_levels": {
+          "compute": {
+            "statistic": {
+              "reliabilities": true
+            }
+          },
+          "num_response_levels": [
+            0,
+            1,
+            1
+          ],
+          "values": [
+            10000.0,
+            10000.0
+          ]
+        },
+        "samples": 50,
+        "seed": 12347
+      }
+    }
+  ],
+  "model": [
+    {
+      "nested": {
+        "id_model": "PS_M",
+        "responses_pointer": "PS_R",
+        "sub_method_pointer": {
+          "pointer": "ALEATORY",
+          "primary_response_mapping": [
+            1.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "primary_variable_mapping": [
+            "X1",
+            "X3"
+          ],
+          "secondary_response_mapping": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "secondary_variable_mapping": [
+            "mean",
+            "mean"
+          ]
+        },
+        "variables_pointer": "PS_V"
+      }
+    },
+    {
+      "single": {
+        "id_model": "ALEAT_M",
+        "interface_pointer": "ALEAT_I",
+        "responses_pointer": "ALEAT_R",
+        "variables_pointer": "ALEAT_V"
+      }
+    }
+  ],
+  "responses": [
+    {
+      "descriptors": [
+        "mean_f1",
+        "ccdf_beta_f2",
+        "ccdf_beta_f3"
+      ],
+      "gradient_type": {
+        "no_gradients": true
+      },
+      "hessian_type": {
+        "no_hessians": true
+      },
+      "id_responses": "PS_R",
+      "response_type": {
+        "objective_functions": {
+          "count": 1,
+          "nonlinear_inequality_constraints": {
+            "count": 2
+          }
+        }
+      }
+    },
+    {
+      "gradient_type": {
+        "no_gradients": true
+      },
+      "hessian_type": {
+        "no_hessians": true
+      },
+      "id_responses": "ALEAT_R",
+      "response_type": {
+        "response_functions": {
+          "count": 3
+        }
+      }
+    }
+  ],
+  "variables": [
+    {
+      "active": {
+        "all": true
+      },
+      "histogram_point_uncertain": {
+        "real": {
+          "abscissas": [
+            50.0,
+            60.0,
+            70.0,
+            80.0,
+            90.0,
+            30.0,
+            40.0,
+            50.0,
+            60.0,
+            70.0
+          ],
+          "count": 2,
+          "counts": [
+            10.0,
+            20.0,
+            30.0,
+            20.0,
+            10.0,
+            10.0,
+            20.0,
+            30.0,
+            20.0,
+            10.0
+          ],
+          "descriptors": [
+            "X1_mean",
+            "X3_mean"
+          ]
+        }
+      },
+      "id_variables": "PS_V"
+    },
+    {
+      "id_variables": "ALEAT_V",
+      "normal_uncertain": {
+        "count": 4,
+        "descriptors": [
+          "X1",
+          "X2",
+          "X3",
+          "X4"
+        ],
+        "means": [
+          40.0,
+          30.0,
+          20.0,
+          10.0
+        ],
+        "std_deviations": [
+          8.0,
+          6.0,
+          4.0,
+          2.0
+        ]
+      }
+    }
+  ]
+}
