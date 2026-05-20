@@ -7,11 +7,11 @@ construction for Dakota components.
    `Variables` retaining its materialized component `IRStore`, and the
    friend free functions `initialize_multivariate_distribution_from_variables(...)`
    and `initialize_distribution_parameters_from_variables(...)` use that
-   retained config to synthesize a temporary variables-only `ProblemDescDB`.
+   retained config directly.
    Reason: this removes the public `variables_store` constructor wart from
    `SimulationModel` and restores broad legacy variable-family support, but
-   the implementation still bridges through `ProblemDescDB` rather than a
-   richer variables-owned runtime representation.
+   the implementation still interprets raw retained IR rather than a richer
+   variables-owned runtime representation.
 
 2. `ForkApplicInterface` DI construction temporarily takes an injected
    `Response`.
