@@ -292,10 +292,6 @@ private:
   bool duplication_detect(const Variables& vars, Response& response,
 			  bool asynch_flag);
 
-  /// initialize default ASV if needed; this is done at run time due
-  /// to post-construct time Response size changes.
-  void init_default_asv(size_t num_fns);
-
   // Scheduling routines employed by synchronize():
 
   /// blocking dynamic schedule of all evaluations in beforeSynchCorePRPQueue
@@ -518,9 +514,6 @@ private:
 
   /// IDs of analytic gradients when mixed gradients present
   IntSet hessMixedAnalyticIds;
-
-  /// the static ASV values used when the user has selected asvControl = off
-  ShortArray defaultASV;
 
   // Failure capture settings:
 

@@ -15,9 +15,9 @@ construction for Dakota components.
 
 2. `ForkApplicInterface` DI construction temporarily takes an injected
    `Response`.
-   Reason: `ApplicationInterface` still caches `SharedResponseData` and some
-   response-derived evaluation policy for temporary response allocation and ASV
-   logic.
+   Reason: `ApplicationInterface` still caches `SharedResponseData` for
+   temporary response allocation in paths that do not yet have the current
+   response object available directly.
 
 3. `Model` DI construction still relies on a synthetic `ProblemDescDB`.
    Reason: portions of legacy model initialization still pull config through

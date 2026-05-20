@@ -51,6 +51,36 @@ String to_legacy_string(Response::HessianType value)
   return "none";
 }
 
+ShortArray build_default_asv(const Response& response)
+{
+  const size_t num_fns = response.num_functions();
+  ShortArray default_asv(num_fns, 1);
+
+  const auto& grad_cfg = response.gradient_config();
+  if (grad_cfg.type == Response::GradientType::Analytic) {
+    for (size_t i = 0; i < num_fns; ++i)
+      default_asv[i] |= 2;
+  }
+  else if (grad_cfg.type == Response::GradientType::Mixed) {
+    for (int fn_id : grad_cfg.id_analytic)
+      if (fn_id > 0 && static_cast<size_t>(fn_id) <= num_fns)
+        default_asv[fn_id - 1] |= 2;
+  }
+
+  const auto& hess_cfg = response.hessian_config();
+  if (hess_cfg.type == Response::HessianType::Analytic) {
+    for (size_t i = 0; i < num_fns; ++i)
+      default_asv[i] |= 4;
+  }
+  else if (hess_cfg.type == Response::HessianType::Mixed) {
+    for (int fn_id : hess_cfg.id_analytic)
+      if (fn_id > 0 && static_cast<size_t>(fn_id) <= num_fns)
+        default_asv[fn_id - 1] |= 4;
+  }
+
+  return default_asv;
+}
+
 } // namespace
 
 extern PRPCache data_pairs;
@@ -529,7 +559,7 @@ void ApplicationInterface::map(const Variables& vars, const ActiveSet& set,
     // requested set and response.
     ActiveSet algebraic_set;
     asv_mapping(set, algebraic_set, core_set);
-    algebraic_resp = Response(sharedRespData, algebraic_set);
+    algebraic_resp = Response(response.shared_data(), algebraic_set);
     if (asynch_flag) {
       ParamResponsePair prp(vars, interfaceId, algebraic_resp, evalIdCntr);
       beforeSynchAlgPRPQueue.insert(prp);
@@ -569,9 +599,8 @@ void ApplicationInterface::map(const Variables& vars, const ActiveSet& set,
       // For new evaluations, manage the user's active_set_vector specification.
       //    on: asv seen by user's interface may change on each eval (default)
       //   off: asv seen by user's interface is constant for all evals
-      if (!asvControlFlag) { // set ASV's to defaultASV for the mapping
-	init_default_asv(num_fns);  // initialize if not already done
-	core_set.request_vector(defaultASV); // DVV assigned above
+      if (!asvControlFlag) { // set ASV from the current response for the mapping
+	core_set.request_vector(build_default_asv(core_resp)); // DVV assigned above
 	core_resp.active_set(core_set);
       }
 
@@ -744,37 +773,6 @@ duplication_detect(const Variables& vars, Response& response, bool asynch_flag)
   return false; // Duplication not detected
 }
 
-/** If the user has specified active_set_vector as off, then map()
-    uses a default ASV which is constant for all function evaluations
-    (so that the user need not check the content of the ASV on each
-    evaluation).  Only initialized if needed and not already sized. */
-void ApplicationInterface::init_default_asv(size_t num_fns) {
-  if (!asvControlFlag && defaultASV.size() != num_fns) {
-    short asv_value = 1;
-    if (gradientType == "analytic")
-      asv_value |= 2;
-    if (hessianType == "analytic")
-      asv_value |= 4;
-    defaultASV.assign(num_fns, asv_value);
-    // TODO: the mixed ID sizes from the problem DB may not be
-    // commensurate with num_fns due to Recast transformations (MO
-    // reduce or experiment data); consider managing this in Model
-    if (gradientType == "mixed") {
-      ISCIter cit = gradMixedAnalyticIds.begin();
-      ISCIter cend = gradMixedAnalyticIds.end();
-      for ( ; cit != cend; ++cit)
-        defaultASV[*cit - 1] |= 2;
-    }
-    if (hessianType == "mixed") {
-      ISCIter cit = hessMixedAnalyticIds.begin();
-      ISCIter cend = hessMixedAnalyticIds.end();
-      for ( ; cit != cend; ++cit)
-        defaultASV[*cit - 1] |= 4;
-    }
-  }
-}
-
-
 /** This function provides blocking synchronization for all cases of
     asynchronous evaluations, including the local asynchronous case
     (background system call, nonblocking fork, & multithreads), the
@@ -879,7 +877,7 @@ const IntResponseMap& ApplicationInterface::synchronize()
 	// doesn't have a valid Response to update
 	ActiveSet total_set(alg_prp_it->active_set());
 	asv_mapping(alg_prp_it->active_set(), total_set);
-	Response total_response = Response(sharedRespData, total_set);
+	Response total_response = Response(alg_response.shared_data(), total_set);
 	response_mapping(alg_response, total_response, total_response);
 	rawResponseMap[alg_prp_it->eval_id()] = total_response;
       }
@@ -1019,7 +1017,7 @@ const IntResponseMap& ApplicationInterface::synchronize_nowait()
       // valid Response to update
       ActiveSet total_set(alg_prp_it->active_set());
       asv_mapping(alg_prp_it->active_set(), total_set);
-      Response total_response = Response(sharedRespData, total_set);
+      Response total_response = Response(algebraic_resp.shared_data(), total_set);
       response_mapping(algebraic_resp, total_response, total_response);
       rawResponseMap[alg_prp_it->eval_id()] = total_response;
     }
