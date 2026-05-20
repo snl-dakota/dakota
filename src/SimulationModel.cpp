@@ -52,6 +52,7 @@ SimulationModel::SimulationModel(const IRStore& model_store,
                                  ParallelLibrary& parallel_lib):
   Model(ir_component_db::make_problem_db(parallel_lib, nullptr, nullptr,
           &model_store, nullptr, nullptr, nullptr),
+        model_store,
         parallel_lib, variables, response),
   userDefinedInterface(std::move(interface)), solnCntlVarType(EMPTY_TYPE),
   solnCntlADVIndex(_NPOS), solnCntlAVIndex(_NPOS), costMetadataIndex(_NPOS),
@@ -63,11 +64,11 @@ SimulationModel::SimulationModel(const IRStore& model_store,
                   Response::IntervalType::Central);
 
   initialize_solution_control(
-    probDescDB.get<const String>("model.simulation.solution_level_control"),
-    probDescDB.get<const RealVector>("model.simulation.solution_level_cost"));
+    model_store.get<String>("simulation.solution_level_control"),
+    model_store.get<RealVector>("simulation.solution_level_cost"));
 
   initialize_solution_recovery(
-    probDescDB.get<const String>("model.simulation.cost_recovery_metadata"));
+    model_store.get<String>("simulation.cost_recovery_metadata"));
 }
 
 

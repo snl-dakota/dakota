@@ -855,9 +855,10 @@ protected:
   /// DI constructor using injected variables/response and an owned IR-backed
   /// ProblemDescDB bridge for configuration queries needed at runtime.
   Model(std::shared_ptr<ProblemDescDB> owned_problem_db,
-        ParallelLibrary& parallel_lib,
-        const Variables& variables,
-        const Response& response);
+        const IRStore& model_store,
+	ParallelLibrary& parallel_lib,
+	const Variables& variables,
+	const Response& response);
 
   //
   //- Heading: Constructors

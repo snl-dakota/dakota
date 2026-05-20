@@ -955,6 +955,7 @@ Model::Model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
 
 
 Model::Model(std::shared_ptr<ProblemDescDB> owned_problem_db,
+	     const IRStore& model_store,
 	     ParallelLibrary& parallel_lib,
 	     const Variables& variables,
 	     const Response& response):
@@ -964,8 +965,8 @@ Model::Model(std::shared_ptr<ProblemDescDB> owned_problem_db,
   numFns(currentResponse.num_functions()),
   userDefinedConstraints(currentVariables.shared_data()),
   evaluationsDB(evaluation_store_db),
-  modelType(owned_problem_db->get_string("model.type")),
-  surrogateType(owned_problem_db->get_string("model.surrogate.type")),
+  modelType(model_store.get<String>("type")),
+  surrogateType(model_store.get<String>("surrogate.type")),
   gradientType(to_legacy_string(currentResponse.gradient_config().type)),
   methodSource(to_legacy_string(currentResponse.gradient_config().method_source)),
   intervalType(to_legacy_string(currentResponse.gradient_config().interval_type)),
@@ -992,7 +993,7 @@ Model::Model(std::shared_ptr<ProblemDescDB> owned_problem_db,
   scalingOpts(),
   modelEvaluationsDBState(EvaluationsDBState::UNINITIALIZED),
   interfEvaluationsDBState(EvaluationsDBState::UNINITIALIZED),
-  modelId(owned_problem_db->get_string("model.id")), modelEvalCntr(0),
+  modelId(model_store.get<String>("id")), modelEvalCntr(0),
   estDerivsFlag(false), initCommsBcastFlag(false), modelAutoGraphicsFlag(false)
 {
   initialize_multivariate_distribution_from_variables(currentVariables, mvDist);
