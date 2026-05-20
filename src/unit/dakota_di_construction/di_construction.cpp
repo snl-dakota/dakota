@@ -97,7 +97,7 @@ TEST(di_construction_tests, can_construct_pilot_components_from_irstores)
 
   std::cerr << "[di] constructing ForkApplicInterface\n";
   auto interface = std::make_shared<ForkApplicInterface>(
-    interface_store, response, parallel_lib);
+    interface_store, parallel_lib);
   ASSERT_NE(interface, nullptr);
 
   std::cerr << "[di] constructing SimulationModel\n";

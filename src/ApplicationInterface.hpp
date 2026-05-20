@@ -51,8 +51,8 @@ public:
 
 protected:
 
-  /// constructor for DI assembly from interface-local config plus response state
-  ApplicationInterface(const IRStore& interface_store, const Response& response,
+  /// constructor for DI assembly from interface-local config
+  ApplicationInterface(const IRStore& interface_store,
                        ParallelLibrary& parallel_lib);
 
   //
@@ -329,9 +329,6 @@ private:
 
   /// convenience function for broadcasting an evaluation over an evalComm
   void broadcast_evaluation(const ParamResponsePair& pair);
-  /// convenience function for broadcasting an evaluation over an evalComm
-  void broadcast_evaluation(int fn_eval_id, const Variables& vars,
-			    const ActiveSet& set);
 
   /// helper function for sending sendBuffers[buff_index] to server
   void send_evaluation(PRPQueueIter& prp_it, size_t buff_index, int server_id,
@@ -499,21 +496,6 @@ private:
   /// used to manage a user request to deactivate the restart file (i.e., 
   /// insertions into write_restart).
   bool restartFileFlag;
-
-  /// SharedResponseData of associated Response
-  SharedResponseData sharedRespData;
-
-  /// type of gradients present in associated Response
-  String gradientType;
-
-  /// type of Hessians present in associated Response
-  String hessianType;
-
-  /// IDs of analytic gradients when mixed gradients present
-  IntSet gradMixedAnalyticIds;
-
-  /// IDs of analytic gradients when mixed gradients present
-  IntSet hessMixedAnalyticIds;
 
   // Failure capture settings:
 
@@ -688,7 +670,21 @@ synchronous_local_analysis(int analysis_id)
 
 inline void ApplicationInterface::
 broadcast_evaluation(const ParamResponsePair& pair)
-{ broadcast_evaluation(pair.eval_id(), pair.variables(), pair.active_set()); }
+{
+  // match bcast_e()'s in serve_evaluations_{synch,asynch,peer}
+  int fn_eval_id = pair.eval_id();
+  parallelLib.bcast_e(fn_eval_id);
+  MPIPackBuffer send_buffer(lenPRPairMessage);
+  send_buffer << pair;
+
+#ifdef MPI_DEBUG
+  Cout << "broadcast_evaluation() for eval " << fn_eval_id
+       << " with send_buffer size = " << send_buffer.size()
+       << " and ActiveSet:\n" << pair.active_set() << std::endl;
+#endif // MPI_DEBUG
+
+  parallelLib.bcast_e(send_buffer);
+}
 
 
 //inline void ApplicationInterface::clear_bookkeeping()

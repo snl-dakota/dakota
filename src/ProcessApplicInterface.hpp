@@ -54,8 +54,8 @@ public:
 
 protected:
 
-  /// constructor for DI assembly from interface-local config plus response state
-  ProcessApplicInterface(const IRStore& interface_store, const Response& response,
+  /// constructor for DI assembly from interface-local config
+  ProcessApplicInterface(const IRStore& interface_store,
                          ParallelLibrary& parallel_lib);
 
   //

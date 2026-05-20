@@ -29,16 +29,7 @@ ForkApplicInterface(const ProblemDescDB& problem_db, ParallelLibrary& parallel_l
 
 ForkApplicInterface::
 ForkApplicInterface(const IRStore& interface_store, ParallelLibrary& parallel_lib):
-  ForkApplicInterface(ir_component_db::temporary_problem_db(
-    parallel_lib, nullptr, nullptr, nullptr, nullptr, &interface_store, nullptr),
-    parallel_lib)
-{ }
-
-
-ForkApplicInterface::
-ForkApplicInterface(const IRStore& interface_store, const Response& response,
-                    ParallelLibrary& parallel_lib):
-  ProcessHandleApplicInterface(interface_store, response, parallel_lib)
+  ProcessHandleApplicInterface(interface_store, parallel_lib)
 { }
 
 

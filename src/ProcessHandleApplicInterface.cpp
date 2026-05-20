@@ -30,9 +30,8 @@ ProcessHandleApplicInterface(const ProblemDescDB& problem_db, ParallelLibrary& p
 
 ProcessHandleApplicInterface::
 ProcessHandleApplicInterface(const IRStore& interface_store,
-                             const Response& response,
                              ParallelLibrary& parallel_lib):
-  ProcessApplicInterface(interface_store, response, parallel_lib), argList(3)
+  ProcessApplicInterface(interface_store, parallel_lib), argList(3)
 { }
 
 

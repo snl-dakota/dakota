@@ -13,23 +13,17 @@ construction for Dakota components.
    the implementation still interprets raw retained IR rather than a richer
    variables-owned runtime representation.
 
-2. `ForkApplicInterface` DI construction temporarily takes an injected
-   `Response`.
-   Reason: `ApplicationInterface` still caches `SharedResponseData` for
-   temporary response allocation in paths that do not yet have the current
-   response object available directly.
-
-3. `Model` DI construction still relies on a synthetic `ProblemDescDB`.
+2. `Model` DI construction still relies on a synthetic `ProblemDescDB`.
    Reason: portions of legacy model initialization still pull config through
    `ProblemDescDB` instead of from component-owned objects or component-local
    `IRStore`s.
 
-4. DI `Model` currently uses conservative defaults for some study-wide
+3. DI `Model` currently uses conservative defaults for some study-wide
    settings instead of reading them from a complete study context.
    Current examples: `outputLevel`, `hierarchicalTagging`, `ScalingOptions`,
    primary response weights, and primary response sense.
 
-5. `Response` / `SharedResponseData` DI construction currently normalizes
+4. `Response` / `SharedResponseData` DI construction currently normalizes
    missing response labels by generating defaults.
    Reason: the component-local DI path bypasses some whole-study
    post-processing assumptions present in the legacy construction path.

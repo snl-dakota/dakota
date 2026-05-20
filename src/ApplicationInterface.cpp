@@ -125,13 +125,6 @@ ApplicationInterface(const ProblemDescDB& problem_db, ParallelLibrary& parallel_
   nearbyTolerance(
     problem_db.get<const Real>("interface.nearby_evaluation_cache_tolerance")),
   restartFileFlag(problem_db.get<bool>("interface.restart_file")),
-  sharedRespData(SharedResponseData(problem_db)),
-  gradientType(problem_db.get<const String>("responses.gradient_type")),
-  hessianType(problem_db.get<const String>("responses.hessian_type")),
-  gradMixedAnalyticIds(
-    problem_db.get<const IntSet>("responses.gradients.mixed.id_analytic")),
-  hessMixedAnalyticIds(
-    problem_db.get<const IntSet>("responses.hessians.mixed.id_analytic")),
   failAction(problem_db.get<const String>("interface.failure_capture.action")),
   failRetryLimit(problem_db.get<int>("interface.failure_capture.retry_limit")),
   failRecoveryFnVals(
@@ -152,7 +145,7 @@ ApplicationInterface::~ApplicationInterface()
 
 
 ApplicationInterface::
-ApplicationInterface(const IRStore& interface_store, const Response& response,
+ApplicationInterface(const IRStore& interface_store,
                      ParallelLibrary& parallel_lib):
   Interface(interface_store),
   parallelLib(parallel_lib),
@@ -197,11 +190,6 @@ ApplicationInterface(const IRStore& interface_store, const Response& response,
   nearbyTolerance(get_or_default<Real>(interface_store,
     "nearby_evaluation_cache_tolerance", 0.)),
   restartFileFlag(get_or_default<bool>(interface_store, "restart_file", false)),
-  sharedRespData(response.shared_data()),
-  gradientType(to_legacy_string(response.gradient_config().type)),
-  hessianType(to_legacy_string(response.hessian_config().type)),
-  gradMixedAnalyticIds(response.gradient_config().id_analytic),
-  hessMixedAnalyticIds(response.hessian_config().id_analytic),
   failAction(get_or_default<String>(interface_store,
     "failure_capture.action", "")),
   failRetryLimit(get_or_default<int>(interface_store,
@@ -615,8 +603,10 @@ void ApplicationInterface::map(const Variables& vars, const ActiveSet& set,
       else { // local synchronous evaluation
 
 	// bcast the job to other processors within peer 1 (if required)
-	if (multiProcEvalFlag)
-	  broadcast_evaluation(evalIdCntr, vars, core_set);
+	if (multiProcEvalFlag) {
+          ParamResponsePair prp(vars, interfaceId, core_resp, evalIdCntr, false);
+	  broadcast_evaluation(prp);
+        }
 
 	//common_input_filtering(vars);
 
@@ -2262,34 +2252,16 @@ void ApplicationInterface::launch_asynch_local(PRPQueueIter& prp_it)
 
 
 void ApplicationInterface::
-broadcast_evaluation(int fn_eval_id, const Variables& vars,
-		     const ActiveSet& set)
-{
-  // match bcast_e()'s in serve_evaluations_{synch,asynch,peer}
-  parallelLib.bcast_e(fn_eval_id);
-  MPIPackBuffer send_buffer(lenVarsActSetMessage);
-  send_buffer << vars << set;
-
-#ifdef MPI_DEBUG
-  Cout << "broadcast_evaluation() for eval " << fn_eval_id
-       << " with send_buffer size = " << send_buffer.size()
-       << " and ActiveSet:\n" << set << std::endl;
-#endif // MPI_DEBUG
-
-  parallelLib.bcast_e(send_buffer);
-}
-
-void ApplicationInterface::
 send_evaluation(PRPQueueIter& prp_it, size_t buff_index, int server_id,
 		bool peer_flag)
 {
   if (sendBuffers[buff_index].size()) // reuse of existing send/recv buffers
     { sendBuffers[buff_index].reset(); recvBuffers[buff_index].reset(); }
   else {                              // freshly allocated send/recv buffers
-    //sendBuffers[buff_index].resize(lenVarsActSetMessage); // protected
+    //sendBuffers[buff_index].resize(lenPRPairMessage); // protected
     recvBuffers[buff_index].resize(lenResponseMessage);
   }
-  sendBuffers[buff_index] << prp_it->variables() << prp_it->active_set();
+  sendBuffers[buff_index] << *prp_it;
 
   int fn_eval_id = prp_it->eval_id();
   if (outputLevel > SILENT_OUTPUT) {
@@ -2327,13 +2299,9 @@ launch_asynch_local(MPIUnpackBuffer& recv_buffer, int fn_eval_id)
 {
   if (multiProcEvalFlag)
     parallelLib.bcast_e(recv_buffer);
-  // unpack
-  Variables vars; ActiveSet set;
-  recv_buffer >> vars >> set;
+  ParamResponsePair prp;
+  recv_buffer >> prp;
   recv_buffer.reset();
-  Response local_response(sharedRespData, set); // special ctor
-  ParamResponsePair
-    prp(vars, interfaceId, local_response, fn_eval_id, false); // shallow copy
   asynchLocalActivePRPQueue.insert(prp);
   // execute
   derived_map_asynch(prp);
@@ -2385,7 +2353,7 @@ void ApplicationInterface::serve_evaluations_synch()
   MPI_Request request = MPI_REQUEST_NULL; // bypass MPI_Wait on first pass
   MPIPackBuffer send_buffer(lenResponseMessage); // prevent dealloc @loop end
   while (currEvalId) {
-    MPIUnpackBuffer recv_buffer(lenVarsActSetMessage);
+    MPIUnpackBuffer recv_buffer(lenPRPairMessage);
     // blocking receive of x & set
     if (evalCommRank == 0) { // 1-level or local comm. leader in 2-level
       parallelLib.recv_ie(recv_buffer, 0, MPI_ANY_TAG, status);
@@ -2399,21 +2367,22 @@ void ApplicationInterface::serve_evaluations_synch()
 
     if (currEvalId) { // currEvalId = 0 is the termination signal
 
-      // could server's Model::currentVariables be used instead?
-      // (would remove need to pass vars flags in MPI buffers)
-      Variables vars; ActiveSet set;
-      recv_buffer >> vars >> set;
+      ParamResponsePair prp;
+      recv_buffer >> prp;
 
 #ifdef MPI_DEBUG
-      Cout << "Server receives vars/set buffer which unpacks to:\n" << vars 
+      Cout << "Server receives PRP buffer which unpacks to:\n"
+           << prp.variables()
            << "Active set vector = { ";
-      array_write_annotated(Cout, set.request_vector(), false);
+      array_write_annotated(Cout, prp.active_set().request_vector(), false);
       Cout << "} Deriv values vector = { ";
-      array_write_annotated(Cout, set.derivative_vector(), false);
+      array_write_annotated(Cout, prp.active_set().derivative_vector(), false);
       Cout << '}' << std::endl;
 #endif // MPI_DEBUG
 
-      Response local_response(sharedRespData, set); // special constructor
+      const Variables& vars = prp.variables();
+      const ActiveSet& set = prp.active_set();
+      Response local_response = prp.response();
 
       // servers invoke derived_map to avoid repeating overhead of map fn.
       try { derived_map(vars, set, local_response, currEvalId); } // synch local
@@ -2461,22 +2430,25 @@ void ApplicationInterface::serve_evaluations_synch_peer()
 
     if (currEvalId) { // currEvalId = 0 is the termination signal
 
-      MPIUnpackBuffer recv_buffer(lenVarsActSetMessage);
+      MPIUnpackBuffer recv_buffer(lenPRPairMessage);
       parallelLib.bcast_e(recv_buffer); // incoming from iterator
 
-      Variables vars; ActiveSet set;
-      recv_buffer >> vars >> set;
+      ParamResponsePair prp;
+      recv_buffer >> prp;
 
 #ifdef MPI_DEBUG
-      Cout << "Peer receives vars/set buffer which unpacks to:\n" << vars 
+      Cout << "Peer receives PRP buffer which unpacks to:\n"
+           << prp.variables()
            << "Active set vector = { ";
-      array_write_annotated(Cout, set.request_vector(), false);
+      array_write_annotated(Cout, prp.active_set().request_vector(), false);
       Cout << "} Deriv values vector = { ";
-      array_write_annotated(Cout, set.derivative_vector(), false);
+      array_write_annotated(Cout, prp.active_set().derivative_vector(), false);
       Cout << '}' << std::endl;
 #endif // MPI_DEBUG
 
-      Response local_response(sharedRespData, set); // special constructor
+      const Variables& vars = prp.variables();
+      const ActiveSet& set = prp.active_set();
+      Response local_response = prp.response();
 
       // servers invoke derived_map to avoid repeating overhead of map fn.
       try { derived_map(vars, set, local_response, currEvalId); } //synch local
@@ -2518,7 +2490,7 @@ void ApplicationInterface::serve_evaluations_asynch()
   // ----------------------------------------------------------
   // Step 1: block on first message before entering while loops
   // ----------------------------------------------------------
-  MPIUnpackBuffer recv_buffer(lenVarsActSetMessage);
+  MPIUnpackBuffer recv_buffer(lenPRPairMessage);
   MPI_Status status; // holds MPI_SOURCE, MPI_TAG, & MPI_ERROR
   int fn_eval_id = 1, num_active = 0;
   MPI_Request recv_request = MPI_REQUEST_NULL; // bypass MPI_Test on first pass
@@ -2603,7 +2575,7 @@ void ApplicationInterface::serve_evaluations_asynch()
     ApplicationInterface::asynchronous_local_evaluations(). */
 void ApplicationInterface::serve_evaluations_asynch_peer()
 {
-  MPIUnpackBuffer recv_buffer(lenVarsActSetMessage);
+  MPIUnpackBuffer recv_buffer(lenPRPairMessage);
   int fn_eval_id = 1, num_jobs;
   size_t num_active = 0, num_launch = 0, num_completed;
 

@@ -206,9 +206,9 @@ ProcessApplicInterface(const ProblemDescDB& problem_db, ParallelLibrary& paralle
 
 
 ProcessApplicInterface::
-ProcessApplicInterface(const IRStore& interface_store, const Response& response,
+ProcessApplicInterface(const IRStore& interface_store,
                        ParallelLibrary& parallel_lib):
-  ApplicationInterface(interface_store, response, parallel_lib),
+  ApplicationInterface(interface_store, parallel_lib),
   fileTagFlag(interface_store.contains("application.file_tag") ?
     interface_store.get<bool>("application.file_tag") : false),
   fileSaveFlag(interface_store.contains("application.file_save") ?
