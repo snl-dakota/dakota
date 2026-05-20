@@ -8,6 +8,7 @@
     _______________________________________________________________________ */
 
 #include "DakotaVariables.hpp"
+#include "IRStoreComponentProblemDescDB.hpp"
 #include "ProblemDescDB.hpp"
 #include "RelaxedVariables.hpp"
 #include "MixedVariables.hpp"
@@ -127,6 +128,12 @@ Variables::Variables(const ProblemDescDB& problem_db):
   if (!variablesRep) // bad type or insufficient memory
     abort_handler(-1);
 }
+
+
+Variables::Variables(const IRStore& variables_store):
+  Variables(ir_component_db::temporary_problem_db(
+    1, 0, nullptr, nullptr, nullptr, &variables_store, nullptr, nullptr))
+{ }
 
 
 /** Initializes variablesRep to the appropriate derived type, as given

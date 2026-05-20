@@ -10,6 +10,7 @@
 #include "DakotaResponse.hpp"
 #include "ParamResponsePair.hpp"
 #include "ForkApplicInterface.hpp"
+#include "IRStoreComponentProblemDescDB.hpp"
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
 #include "WorkdirHelper.hpp"
@@ -23,6 +24,21 @@ namespace Dakota {
 ForkApplicInterface::
 ForkApplicInterface(const ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
   ProcessHandleApplicInterface(problem_db, parallel_lib)
+{ }
+
+
+ForkApplicInterface::
+ForkApplicInterface(const IRStore& interface_store, ParallelLibrary& parallel_lib):
+  ForkApplicInterface(ir_component_db::temporary_problem_db(
+    parallel_lib, nullptr, nullptr, nullptr, nullptr, &interface_store, nullptr),
+    parallel_lib)
+{ }
+
+
+ForkApplicInterface::
+ForkApplicInterface(const IRStore& interface_store, const Response& response,
+                    ParallelLibrary& parallel_lib):
+  ProcessHandleApplicInterface(interface_store, response, parallel_lib)
 { }
 
 

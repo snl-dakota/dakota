@@ -1,0 +1,31 @@
+# DI Cleanup TODO
+
+Temporary cleanup items introduced while prototyping direct `IRStore`-based
+construction for Dakota components.
+
+1. `SimulationModel` DI construction temporarily needs both a `Variables`
+   object and a `variables_store`.
+   Reason: legacy `Model::initialize_distribution(...)` and
+   `initialize_distribution_parameters(...)` still read variable distribution
+   metadata from `ProblemDescDB` instead of querying `Variables` directly.
+
+2. `ForkApplicInterface` DI construction temporarily takes an injected
+   `Response`.
+   Reason: `ApplicationInterface` still caches `SharedResponseData` and some
+   response-derived evaluation policy for temporary response allocation and ASV
+   logic.
+
+3. `Model` DI construction still relies on a synthetic `ProblemDescDB`.
+   Reason: portions of legacy model initialization still pull config through
+   `ProblemDescDB` instead of from component-owned objects or component-local
+   `IRStore`s.
+
+4. DI `Model` currently uses conservative defaults for some study-wide
+   settings instead of reading them from a complete study context.
+   Current examples: `outputLevel`, `hierarchicalTagging`, `ScalingOptions`,
+   primary response weights, and primary response sense.
+
+5. `Response` / `SharedResponseData` DI construction currently normalizes
+   missing response labels by generating defaults.
+   Reason: the component-local DI path bypasses some whole-study
+   post-processing assumptions present in the legacy construction path.

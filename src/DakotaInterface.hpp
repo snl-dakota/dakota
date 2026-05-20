@@ -26,6 +26,7 @@ namespace Dakota {
 // forward declarations
 class ParallelLibrary;
 class ProblemDescDB;
+class IRStore;
 class Variables;
 class ActiveSet;
 class Response;
@@ -320,6 +321,9 @@ protected:
 
   /// constructor initializes the base class configuration
   Interface(const ProblemDescDB& problem_db);
+
+  /// constructor initializes the base class configuration from an interface store
+  Interface(const IRStore& interface_store);
 
   /// constructor initializes the base class configuration
   /// for on the fly instantiations without a DB)

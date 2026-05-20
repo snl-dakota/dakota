@@ -13,6 +13,7 @@
 #include "DakotaInterface.hpp"
 #include "DakotaResponse.hpp"
 #include "DakotaVariables.hpp"
+#include "IRStore.hpp"
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
 
@@ -25,6 +26,16 @@
 //#define DEBUG
 
 namespace Dakota {
+
+namespace {
+
+template <class T>
+T get_or_default(const IRStore& store, const String& key, T default_value)
+{
+  return store.contains(key) ? store.get<T>(key) : std::move(default_value);
+}
+
+} // namespace
 
 // Initialization of static interface ID counters
 size_t Interface::noSpecIdNum = 0;
@@ -203,6 +214,27 @@ Interface::Interface(const ProblemDescDB& problem_db):
     abort_handler(-1);
 #endif // HAVE_AMPL
   }
+}
+
+
+Interface::Interface(const IRStore& interface_store):
+  interfaceType(get_or_default<unsigned short>(
+    interface_store, "type", DEFAULT_INTERFACE)),
+  interfaceId(get_or_default<String>(interface_store, "id", "")),
+  analysisComponents(get_or_default<String2DArray>(
+    interface_store, "application.analysis_components", {})),
+  algebraicMappings(false),
+  coreMappings(true), outputLevel(NORMAL_OUTPUT),
+  currEvalId(0), fineGrainEvalCounters(outputLevel > NORMAL_OUTPUT),
+  evalIdCntr(0), newEvalIdCntr(0), evalIdRefPt(0), newEvalIdRefPt(0),
+  multiProcEvalFlag(false), ieDedSchedFlag(false),
+  appendIfaceId(true), asl(NULL)
+{
+#ifdef DEBUG
+  outputLevel = DEBUG_OUTPUT;
+#endif // DEBUG
+  if (interfaceId.empty())
+    interfaceId = user_auto_id();
 }
 
 

@@ -10,6 +10,7 @@
 #include "DakotaResponse.hpp"
 #include "ParamResponsePair.hpp"
 #include "ProcessApplicInterface.hpp"
+#include "IRStore.hpp"
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
 #include "WorkdirHelper.hpp"
@@ -201,6 +202,103 @@ ProcessApplicInterface(const ProblemDescDB& problem_db, ParallelLibrary& paralle
     }
   }
 
+}
+
+
+ProcessApplicInterface::
+ProcessApplicInterface(const IRStore& interface_store, const Response& response,
+                       ParallelLibrary& parallel_lib):
+  ApplicationInterface(interface_store, response, parallel_lib),
+  fileTagFlag(interface_store.contains("application.file_tag") ?
+    interface_store.get<bool>("application.file_tag") : false),
+  fileSaveFlag(interface_store.contains("application.file_save") ?
+    interface_store.get<bool>("application.file_save") : false),
+  commandLineArgs(!(interface_store.contains("application.verbatim") &&
+    interface_store.get<bool>("application.verbatim"))),
+  paramsFileWriter(ParametersFileWriter::get_writer(
+    interface_store.contains("application.parameters_file_format") ?
+    interface_store.get<unsigned short>("application.parameters_file_format") :
+    PARAMETERS_FILE_STANDARD)),
+  resultsFileReader(ResultsFileReader::get_reader(
+    interface_store.contains("application.results_file_format") ?
+    interface_store.get<unsigned short>("application.results_file_format") :
+    RESULTS_FILE_STANDARD,
+    interface_store.contains("labeled_results") ?
+    interface_store.get<bool>("labeled_results") : false
+  )),
+  multipleParamsFiles(false),
+  iFilterName(interface_store.contains("application.input_filter") ?
+    interface_store.get<String>("application.input_filter") : ""),
+  oFilterName(interface_store.contains("application.output_filter") ?
+    interface_store.get<String>("application.output_filter") : ""),
+  programNames(interface_store.contains("application.analysis_drivers") ?
+    interface_store.get<StringArray>("application.analysis_drivers") :
+    StringArray()),
+  specifiedParamsFileName(interface_store.contains("application.parameters_file") ?
+    interface_store.get<String>("application.parameters_file") : ""),
+  specifiedResultsFileName(interface_store.contains("application.results_file") ?
+    interface_store.get<String>("application.results_file") : ""),
+  allowExistingResults(interface_store.contains("allow_existing_results") ?
+    interface_store.get<bool>("allow_existing_results") : false),
+  useWorkdir(interface_store.contains("useWorkdir") ?
+    interface_store.get<bool>("useWorkdir") : false),
+  workDirName(interface_store.contains("workDir") ?
+    interface_store.get<String>("workDir") : ""),
+  dirTag(interface_store.contains("dirTag") ?
+    interface_store.get<bool>("dirTag") : false),
+  dirSave(interface_store.contains("dirSave") ?
+    interface_store.get<bool>("dirSave") : false),
+  linkFiles(interface_store.contains("linkFiles") ?
+    interface_store.get<StringArray>("linkFiles") : StringArray()),
+  copyFiles(interface_store.contains("copyFiles") ?
+    interface_store.get<StringArray>("copyFiles") : StringArray()),
+  templateReplace(interface_store.contains("templateReplace") ?
+    interface_store.get<bool>("templateReplace") : false)
+{
+  if (useWorkdir) {
+    StringArray::iterator pn_it  = programNames.begin();
+    StringArray::iterator pn_end = programNames.end();
+    for (; pn_it != pn_end; ++pn_it)
+      if (WorkdirHelper::resolve_driver_path(*pn_it) &&
+          outputLevel >= DEBUG_OUTPUT)
+        Cout << "Adjusted relative analysis_driver to absolute path:\n  "
+             << *pn_it << std::endl;
+  }
+
+  size_t num_programs = programNames.size();
+  if (num_programs > 1 && !analysisComponents.empty())
+    multipleParamsFiles = true;
+
+  bool require_unique = (!batchEval && asynchFlag &&
+                         asynchLocalEvalConcSpec > serializeThreshold);
+  if (require_unique) {
+    if (useWorkdir) {
+      if (!dirTag && !workDirName.empty()) {
+        Cout << "\nWarning: Concurrent local evaluations with named "
+             << "work_directory require\n         directory_tag; "
+             << "enabling directory_tag." << std::endl;
+        dirTag = true;
+      }
+      std::filesystem::path spf_path(specifiedParamsFileName);
+      std::filesystem::path srf_path(specifiedResultsFileName);
+      bool exist_abs_filenames =
+        spf_path.is_absolute() || srf_path.is_absolute();
+      if (!fileTagFlag && exist_abs_filenames) {
+        Cout << "\nWarning: Concurrent local evaluations with absolute named "
+             << "parameters_file or\n         results_file require file_tag; "
+             << "enabling file_tag." << std::endl;
+        fileTagFlag = true;
+      }
+    }
+    else if (!fileTagFlag &&
+             (!specifiedParamsFileName.empty() ||
+              !specifiedResultsFileName.empty())) {
+      Cout << "\nWarning: Concurrent local evaluations with named "
+           << "parameters_file or\n         results_file require file_tag; "
+           << "enabling file_tag." << std::endl;
+      fileTagFlag = true;
+    }
+  }
 }
 
 

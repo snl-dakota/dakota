@@ -10,6 +10,7 @@
 #include "dakota_system_defs.hpp"
 #include "ApplicationInterface.hpp"
 //#include "ParamResponsePair.hpp"
+#include "IRStore.hpp"
 #include "ProblemDescDB.hpp"
 #include <thread>
 
@@ -18,6 +19,39 @@
 
 
 namespace Dakota {
+
+namespace {
+
+template <class T>
+T get_or_default(const IRStore& store, const String& key, T default_value)
+{
+  return store.contains(key) ? store.get<T>(key) : std::move(default_value);
+}
+
+String to_legacy_string(Response::GradientType value)
+{
+  switch (value) {
+  case Response::GradientType::None:      return "none";
+  case Response::GradientType::Analytic:  return "analytic";
+  case Response::GradientType::Numerical: return "numerical";
+  case Response::GradientType::Mixed:     return "mixed";
+  }
+  return "none";
+}
+
+String to_legacy_string(Response::HessianType value)
+{
+  switch (value) {
+  case Response::HessianType::None:      return "none";
+  case Response::HessianType::Analytic:  return "analytic";
+  case Response::HessianType::Numerical: return "numerical";
+  case Response::HessianType::Mixed:     return "mixed";
+  case Response::HessianType::Quasi:     return "quasi";
+  }
+  return "none";
+}
+
+} // namespace
 
 extern PRPCache data_pairs;
 
@@ -85,6 +119,73 @@ ApplicationInterface(const ProblemDescDB& problem_db, ParallelLibrary& parallel_
 
 ApplicationInterface::~ApplicationInterface() 
 { }
+
+
+ApplicationInterface::
+ApplicationInterface(const IRStore& interface_store, const Response& response,
+                     ParallelLibrary& parallel_lib):
+  Interface(interface_store),
+  parallelLib(parallel_lib),
+  batchEval(get_or_default<bool>(interface_store, "batch", false)),
+  asynchFlag(get_or_default<bool>(interface_store, "asynch", false)),
+  batchIdCntr(0),
+  suppressOutput(false), evalCommSize(1), evalCommRank(0), evalServerId(1),
+  eaDedSchedFlag(false), analysisCommSize(1), analysisCommRank(0),
+  analysisServerId(1), multiProcAnalysisFlag(false),
+  asynchLocalEvalFlag(false), asynchLocalAnalysisFlag(false),
+  asynchLocalEvalConcSpec(get_or_default<int>(
+    interface_store, "asynch_local_evaluation_concurrency", 0)),
+  asynchLocalAnalysisConcSpec(get_or_default<int>(
+    interface_store, "asynch_local_analysis_concurrency", 0)),
+  numAnalysisDrivers(get_or_default<StringArray>(
+    interface_store, "application.analysis_drivers", {}).size()),
+  failureMessage("Failure captured"),
+  worldSize(parallelLib.world_size()), worldRank(parallelLib.world_rank()),
+  iteratorCommSize(1), iteratorCommRank(0), ieMessagePass(false),
+  numEvalServersSpec(get_or_default<int>(interface_store,
+    "evaluation_servers", 0)),
+  procsPerEvalSpec(get_or_default<int>(interface_store,
+    "processors_per_evaluation", 0)),
+  eaMessagePass(false),
+  numAnalysisServersSpec(get_or_default<int>(interface_store,
+    "analysis_servers", 0)),
+  procsPerAnalysisSpec(get_or_default<int>(interface_store,
+    "direct.processors_per_analysis", 0)),
+  lenVarsMessage(0), lenVarsActSetMessage(0), lenResponseMessage(0),
+  lenPRPairMessage(0),
+  evalScheduling(get_or_default<short>(interface_store,
+    "evaluation_scheduling", DEFAULT_SCHEDULING)),
+  analysisScheduling(get_or_default<short>(interface_store,
+    "analysis_scheduling", DEFAULT_SCHEDULING)),
+  asynchLocalEvalStatic(get_or_default<short>(interface_store,
+    "local_evaluation_scheduling", DEFAULT_SCHEDULING) == STATIC_SCHEDULING),
+  serializeThreshold(1), headerFlag(true),
+  asvControlFlag(get_or_default<bool>(interface_store, "active_set_vector", true)),
+  evalCacheFlag(get_or_default<bool>(interface_store, "evaluation_cache", false)),
+  nearbyDuplicateDetect(get_or_default<bool>(interface_store,
+    "nearby_evaluation_cache", false)),
+  nearbyTolerance(get_or_default<Real>(interface_store,
+    "nearby_evaluation_cache_tolerance", 0.)),
+  restartFileFlag(get_or_default<bool>(interface_store, "restart_file", false)),
+  sharedRespData(response.shared_data()),
+  gradientType(to_legacy_string(response.gradient_config().type)),
+  hessianType(to_legacy_string(response.hessian_config().type)),
+  gradMixedAnalyticIds(response.gradient_config().id_analytic),
+  hessMixedAnalyticIds(response.hessian_config().id_analytic),
+  failAction(get_or_default<String>(interface_store,
+    "failure_capture.action", "")),
+  failRetryLimit(get_or_default<int>(interface_store,
+    "failure_capture.retry_limit", 0)),
+  failRecoveryFnVals(get_or_default<RealVector>(interface_store,
+    "failure_capture.recovery_fn_vals", {}))
+{
+  coreMappings = (numAnalysisDrivers > 0);
+  if (!coreMappings && !algebraicMappings && interfaceType > DEFAULT_INTERFACE) {
+    Cerr << "\nError: no parameter to response mapping defined in "
+         << "ApplicationInterface.\n" << std::endl;
+    abort_handler(-1);
+  }
+}
 
 
 void ApplicationInterface::

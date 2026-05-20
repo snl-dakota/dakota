@@ -19,6 +19,7 @@ namespace Dakota {
 
 // forward declarations
 class ProblemDescDB;
+class IRStore;
 class MPIPackBuffer;
 class MPIUnpackBuffer;
 
@@ -169,6 +170,8 @@ public:
   /// standard constructor (explicit disallows its use for implicit
   /// type conversion)
   explicit Variables(const ProblemDescDB& problem_db);
+  /// DI constructor from a materialized variables IR store
+  explicit Variables(const IRStore& variables_store);
   /// alternate constructor for instantiations on the fly (explicit
   /// disallows its use for implicit type conversion)
   explicit Variables(const SharedVariablesData& svd);

@@ -25,6 +25,7 @@ class ProblemDescDB;
 class Variables;
 class Response;
 class EvaluationStore;
+class IRStore;
 
 /// Base class for the iterator class hierarchy.
 
@@ -424,6 +425,11 @@ protected:
   Iterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, 
 	   std::shared_ptr<TraitsBase> traits =
 	   std::shared_ptr<TraitsBase>(new TraitsBase()));
+  /// DI constructor using an owned IR-backed ProblemDescDB bridge
+  Iterator(std::shared_ptr<ProblemDescDB> owned_problem_db,
+	   ParallelLibrary& parallel_lib,
+	   std::shared_ptr<TraitsBase> traits =
+	   std::shared_ptr<TraitsBase>(new TraitsBase()));
 
   /// alternate constructor for base iterator classes constructed on the fly
   Iterator(unsigned short method_name, std::shared_ptr<Model> model,
@@ -480,6 +486,9 @@ protected:
   /// the model to be iterated (for iterators and meta-iterators
   /// employing a single model instance)
   std::shared_ptr<Model> iteratedModel;
+
+  /// optional ownership of a DI bridge ProblemDescDB
+  std::shared_ptr<ProblemDescDB> ownedProbDescDB;
 
   /// class member reference to the problem description database
   /** Iterator and Model cannot use a shallow copy of ProblemDescDB

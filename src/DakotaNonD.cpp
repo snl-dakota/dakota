@@ -67,6 +67,38 @@ NonD::NonD(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared
 }
 
 
+NonD::NonD(std::shared_ptr<ProblemDescDB> owned_problem_db,
+	   ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  Analyzer(std::move(owned_problem_db), parallel_lib, model),
+  respLevelTarget(probDescDB.get_short("method.nond.response_level_target")),
+  respLevelTargetReduce(
+    probDescDB.get_short("method.nond.response_level_target_reduce")),
+  requestedRespLevels(probDescDB.get_rva("method.nond.response_levels")),
+  requestedProbLevels(probDescDB.get_rva("method.nond.probability_levels")),
+  requestedRelLevels(probDescDB.get_rva("method.nond.reliability_levels")),
+  requestedGenRelLevels(
+    probDescDB.get_rva("method.nond.gen_reliability_levels")),
+  totalLevelRequests(0),
+  cdfFlag(probDescDB.get_short("method.nond.distribution") != COMPLEMENTARY),
+  pdfOutput(false),
+  finalMomentsType(probDescDB.get_short("method.nond.final_moments"))
+{
+  initialize_counts();
+  distribute_levels(requestedRespLevels);
+  distribute_levels(requestedProbLevels, cdfFlag);
+  distribute_levels(requestedRelLevels, !cdfFlag);
+  distribute_levels(requestedGenRelLevels, !cdfFlag);
+
+  for (size_t i=0; i<numFunctions; i++)
+    totalLevelRequests += requestedRespLevels[i].length() +
+      requestedProbLevels[i].length() + requestedRelLevels[i].length() +
+      requestedGenRelLevels[i].length();
+
+  if (totalLevelRequests && outputLevel >= NORMAL_OUTPUT)
+    pdfOutput = true;
+}
+
+
 NonD::NonD(unsigned short method_name, std::shared_ptr<Model> model):
   Analyzer(method_name, model), totalLevelRequests(0),
   cdfFlag(true), pdfOutput(false), finalMomentsType(Pecos::STANDARD_MOMENTS)

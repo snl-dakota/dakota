@@ -24,12 +24,79 @@
 #include "DakotaGraphics.hpp"
 #include "pecos_stat_util.hpp"
 #include "EvaluationStore.hpp"
+#include <stdexcept>
 
 static const char rcsId[]="@(#) $Id: DakotaModel.cpp 7029 2010-10-22 00:17:02Z mseldre $";
 
 
 namespace Dakota 
 {
+namespace {
+
+String to_legacy_string(Response::GradientType value)
+{
+  switch (value) {
+  case Response::GradientType::None:      return "none";
+  case Response::GradientType::Analytic:  return "analytic";
+  case Response::GradientType::Numerical: return "numerical";
+  case Response::GradientType::Mixed:     return "mixed";
+  }
+  throw std::runtime_error("Unhandled Response::GradientType");
+}
+
+String to_legacy_string(Response::HessianType value)
+{
+  switch (value) {
+  case Response::HessianType::None:      return "none";
+  case Response::HessianType::Analytic:  return "analytic";
+  case Response::HessianType::Numerical: return "numerical";
+  case Response::HessianType::Mixed:     return "mixed";
+  case Response::HessianType::Quasi:     return "quasi";
+  }
+  throw std::runtime_error("Unhandled Response::HessianType");
+}
+
+String to_legacy_string(Response::MethodSource value)
+{
+  switch (value) {
+  case Response::MethodSource::Dakota: return "dakota";
+  case Response::MethodSource::Vendor: return "vendor";
+  }
+  throw std::runtime_error("Unhandled Response::MethodSource");
+}
+
+String to_legacy_string(Response::IntervalType value)
+{
+  switch (value) {
+  case Response::IntervalType::Forward: return "forward";
+  case Response::IntervalType::Central: return "central";
+  }
+  throw std::runtime_error("Unhandled Response::IntervalType");
+}
+
+String to_legacy_string(Response::StepType value)
+{
+  switch (value) {
+  case Response::StepType::Relative: return "relative";
+  case Response::StepType::Absolute: return "absolute";
+  case Response::StepType::Bounds:   return "bounds";
+  }
+  throw std::runtime_error("Unhandled Response::StepType");
+}
+
+String to_legacy_string(Response::QuasiHessianType value)
+{
+  switch (value) {
+  case Response::QuasiHessianType::None:       return "";
+  case Response::QuasiHessianType::BFGS:       return "bfgs";
+  case Response::QuasiHessianType::DampedBFGS: return "damped_bfgs";
+  case Response::QuasiHessianType::SR1:        return "sr1";
+  }
+  throw std::runtime_error("Unhandled Response::QuasiHessianType");
+}
+
+} // namespace
+
 extern PRPCache        data_pairs;
 extern EvaluationStore evaluation_store_db; // defined in dakota_global_defs.cpp
 
@@ -107,21 +174,21 @@ Model::Model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
   evaluationsDB(evaluation_store_db),
   modelType(problem_db.get<const String>("model.type")),
   surrogateType(problem_db.get<const String>("model.surrogate.type")),
-  gradientType(problem_db.get<const String>("responses.gradient_type")),
-  methodSource(problem_db.get<const String>("responses.method_source")),
-  intervalType(problem_db.get<const String>("responses.interval_type")),
-  fdGradStepSize(problem_db.get<const RealVector>("responses.fd_gradient_step_size")),
-  fdGradStepType(problem_db.get<const String>("responses.fd_gradient_step_type")),
-  gradIdAnalytic(problem_db.get<const IntSet>("responses.gradients.mixed.id_analytic")),
-  gradIdNumerical(problem_db.get<const IntSet>("responses.gradients.mixed.id_numerical")),
-  hessianType(problem_db.get<const String>("responses.hessian_type")),
-  quasiHessType(problem_db.get<const String>("responses.quasi_hessian_type")),
-  fdHessByFnStepSize(problem_db.get<const RealVector>("responses.fd_hessian_step_size")),
-  fdHessByGradStepSize(problem_db.get<const RealVector>("responses.fd_hessian_step_size")),
-  fdHessStepType(problem_db.get<const String>("responses.fd_hessian_step_type")),
-  hessIdAnalytic(problem_db.get<const IntSet>("responses.hessians.mixed.id_analytic")),
-  hessIdNumerical(problem_db.get<const IntSet>("responses.hessians.mixed.id_numerical")),
-  hessIdQuasi(problem_db.get<const IntSet>("responses.hessians.mixed.id_quasi")),
+  gradientType(to_legacy_string(currentResponse.gradient_config().type)),
+  methodSource(to_legacy_string(currentResponse.gradient_config().method_source)),
+  intervalType(to_legacy_string(currentResponse.gradient_config().interval_type)),
+  fdGradStepSize(currentResponse.gradient_config().fd_step_size),
+  fdGradStepType(to_legacy_string(currentResponse.gradient_config().fd_step_type)),
+  gradIdAnalytic(currentResponse.gradient_config().id_analytic),
+  gradIdNumerical(currentResponse.gradient_config().id_numerical),
+  hessianType(to_legacy_string(currentResponse.hessian_config().type)),
+  quasiHessType(to_legacy_string(currentResponse.hessian_config().quasi_type)),
+  fdHessByFnStepSize(currentResponse.hessian_config().fd_step_size),
+  fdHessByGradStepSize(currentResponse.hessian_config().fd_step_size),
+  fdHessStepType(to_legacy_string(currentResponse.hessian_config().fd_step_type)),
+  hessIdAnalytic(currentResponse.hessian_config().id_analytic),
+  hessIdNumerical(currentResponse.hessian_config().id_numerical),
+  hessIdQuasi(currentResponse.hessian_config().id_quasi),
   warmStartFlag(false), supportsEstimDerivs(true), mappingInitialized(false),
   probDescDB(problem_db), parallelLib(parallel_lib),
   modelPCIter(parallelLib.parallel_configuration_iterator()),
@@ -255,6 +322,86 @@ Model::Model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
       fdHessByGradStepSize = fdHessByFnStepSize = fdhss[0];
   }
   */
+}
+
+
+Model::Model(std::shared_ptr<ProblemDescDB> owned_problem_db,
+	     ParallelLibrary& parallel_lib,
+	     const Variables& variables,
+	     const Response& response):
+  currentVariables(variables),
+  numDerivVars(currentVariables.cv()),
+  currentResponse(response),
+  numFns(currentResponse.num_functions()),
+  userDefinedConstraints(currentVariables.shared_data()),
+  evaluationsDB(evaluation_store_db),
+  modelType(owned_problem_db->get_string("model.type")),
+  surrogateType(owned_problem_db->get_string("model.surrogate.type")),
+  gradientType(to_legacy_string(currentResponse.gradient_config().type)),
+  methodSource(to_legacy_string(currentResponse.gradient_config().method_source)),
+  intervalType(to_legacy_string(currentResponse.gradient_config().interval_type)),
+  fdGradStepSize(currentResponse.gradient_config().fd_step_size),
+  fdGradStepType(to_legacy_string(currentResponse.gradient_config().fd_step_type)),
+  gradIdAnalytic(currentResponse.gradient_config().id_analytic),
+  gradIdNumerical(currentResponse.gradient_config().id_numerical),
+  hessianType(to_legacy_string(currentResponse.hessian_config().type)),
+  quasiHessType(to_legacy_string(currentResponse.hessian_config().quasi_type)),
+  fdHessByFnStepSize(currentResponse.hessian_config().fd_step_size),
+  fdHessByGradStepSize(currentResponse.hessian_config().fd_step_size),
+  fdHessStepType(to_legacy_string(currentResponse.hessian_config().fd_step_type)),
+  hessIdAnalytic(currentResponse.hessian_config().id_analytic),
+  hessIdNumerical(currentResponse.hessian_config().id_numerical),
+  hessIdQuasi(currentResponse.hessian_config().id_quasi),
+  warmStartFlag(false), supportsEstimDerivs(true), mappingInitialized(false),
+  ownedProbDescDB(std::move(owned_problem_db)),
+  probDescDB(*ownedProbDescDB), parallelLib(parallel_lib),
+  modelPCIter(parallel_lib.parallel_configuration_iterator()),
+  componentParallelMode(NO_PARALLEL_MODE), asynchEvalFlag(false),
+  evaluationCapacity(1),
+  outputLevel(NORMAL_OUTPUT),
+  hierarchicalTagging(false),
+  scalingOpts(),
+  modelEvaluationsDBState(EvaluationsDBState::UNINITIALIZED),
+  interfEvaluationsDBState(EvaluationsDBState::UNINITIALIZED),
+  modelId(owned_problem_db->get_string("model.id")), modelEvalCntr(0),
+  estDerivsFlag(false), initCommsBcastFlag(false), modelAutoGraphicsFlag(false)
+{
+  Cerr << "[di-model] entering Model DI ctor"
+       << " numFns=" << numFns
+       << " numDerivVars=" << numDerivVars << std::endl;
+  Cerr << "[di-model] before initialize_distribution" << std::endl;
+  initialize_distribution(mvDist);
+  Cerr << "[di-model] after initialize_distribution" << std::endl;
+  Cerr << "[di-model] before initialize_distribution_parameters" << std::endl;
+  initialize_distribution_parameters(mvDist);
+  Cerr << "[di-model] after initialize_distribution_parameters" << std::endl;
+
+  if (modelId.empty())
+    modelId = user_auto_id();
+
+  bool estimating_derivs = false;
+  if (gradientType == "numerical" ||
+      (gradientType == "mixed" && !gradIdNumerical.empty())) {
+    estimating_derivs = true;
+    if (fdGradStepSize.empty()) {
+      fdGradStepSize.resize(1);
+      fdGradStepSize[0] = 0.001;
+    }
+  }
+  if (hessianType == "numerical" ||
+      (hessianType == "mixed" && !hessIdNumerical.empty())) {
+    estimating_derivs = true;
+    if (fdHessByFnStepSize.empty()) {
+      fdHessByFnStepSize.resize(1);
+      fdHessByFnStepSize[0] = 0.002;
+    }
+    if (fdHessByGradStepSize.empty()) {
+      fdHessByGradStepSize.resize(1);
+      fdHessByGradStepSize[0] = 0.001;
+    }
+  }
+  (void)estimating_derivs;
+  Cerr << "[di-model] leaving Model DI ctor" << std::endl;
 }
 
 

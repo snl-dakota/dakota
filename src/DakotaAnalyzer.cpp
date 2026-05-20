@@ -61,6 +61,36 @@ Analyzer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_p
 
 
 Analyzer::
+Analyzer(std::shared_ptr<ProblemDescDB> owned_problem_db,
+	 ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  Iterator(std::move(owned_problem_db), parallel_lib), compactMode(true),
+  numObjFns(0), numLSqTerms(0),
+  vbdFlag(probDescDB.get_bool("method.variance_based_decomp")),
+  writePrecision(probDescDB.get_int("environment.output_precision"))
+{
+  iteratedModel = model;
+  update_from_model(*iteratedModel);
+
+  if (convergenceTol < 0.) convergenceTol = 1.e-4;
+
+  if (model->primary_fn_type() == OBJECTIVE_FNS)
+    numObjFns = model->num_primary_fns();
+  else if (model->primary_fn_type() == CALIB_TERMS)
+    numLSqTerms = model->num_primary_fns();
+  else if (model->primary_fn_type() != GENERIC_FNS) {
+    Cerr << "\nError: Unknown primary function type in Analyzer." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+
+  if (vbdFlag)
+    vbdDropTol = probDescDB.get_real("method.vbd_drop_tolerance");
+
+  if (!numFinalSolutions)
+    numFinalSolutions = 1;
+}
+
+
+Analyzer::
 Analyzer(unsigned short method_name, std::shared_ptr<Model> model):
   Iterator(method_name, model), compactMode(true),
   numObjFns(0), numLSqTerms(0), // default: no best data tracking

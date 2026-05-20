@@ -131,6 +131,85 @@ NonDSampling::NonDSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_
 }
 
 
+NonDSampling::NonDSampling(std::shared_ptr<ProblemDescDB> owned_problem_db,
+			   ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  NonD(std::move(owned_problem_db), parallel_lib, model),
+  seedSpec(probDescDB.get_int("method.random_seed")),
+  randomSeed(seedSpec), samplesSpec(probDescDB.get_int("method.samples")),
+  samplesRef(samplesSpec), numSamples(samplesSpec),
+  rngName(probDescDB.get_string("method.random_number_generator")),
+  sampleType(probDescDB.get_ushort("method.sample_type")), samplesIncrement(0),
+  stdRegressionCoeffs(probDescDB.get_bool("method.std_regression_coeffs")),
+  toleranceIntervalsFlag(probDescDB.get_bool("method.tolerance_intervals")),
+  statsFlag(true), allDataFlag(false), samplingVarsMode(ACTIVE),
+  sampleRanksMode(IGNORE_RANKS),
+  varyPattern(!probDescDB.get_bool("method.fixed_seed")),
+  backfillDuplicates(probDescDB.get_bool("method.backfill")),
+  wilksFlag(probDescDB.get_bool("method.wilks")), numLHSRuns(0),
+  samplerDriver(
+    ( probDescDB.get_ushort("method.sample_type") == SUBMETHOD_LOW_DISCREPANCY_SAMPLING ) ?
+    std::unique_ptr<SamplerDriver>(std::make_unique<LDDriverAdapter>(probDescDB)) :
+    std::unique_ptr<SamplerDriver>(std::make_unique<LHSDriverAdapter>()) )
+{
+  if (epistemicStats && totalLevelRequests) {
+    Cerr << "\nError: sampling does not support level requests for "
+	 << "analyses containing epistemic uncertainties." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+
+#ifndef HAVE_DAKOTA_SURROGATES
+  if (stdRegressionCoeffs) {
+    Cerr << "Warning: Standardized Regression Coefficients are not available"
+         << " for Dakota builds without the surrogates module enabled."
+         << " Disabling requested output.\n";
+  }
+#endif
+
+  if (wilksFlag) {
+    if (sampleType != SUBMETHOD_RANDOM) {
+      Cerr << "Error: Wilks sample sizes require use of \"random\" sample_type."
+	   << std::endl;
+      abort_handler(METHOD_ERROR);
+    }
+    if (numSamples > 0) {
+      Cerr << "Error: Cannot specify both \"samples\" and \"wilks\"."
+	   << std::endl;
+      abort_handler(METHOD_ERROR);
+    }
+    wilksOrder = probDescDB.get_ushort("method.order");
+    wilksSidedness = probDescDB.get_short("method.wilks.sided_interval");
+    bool wilks_twosided = (wilksSidedness == TWO_SIDED);
+
+    Real max_prob_level = 0.0;
+    for (size_t i=0; i<numFunctions; ++i) {
+      size_t pl_len = requestedProbLevels[i].length();
+      for (size_t j=0; j<pl_len; ++j)
+        if (requestedProbLevels[i][j] > max_prob_level)
+          max_prob_level = requestedProbLevels[i][j];
+    }
+    wilksAlpha = max_prob_level;
+    if (wilksAlpha <= 0.0)
+      wilksAlpha = 0.95;
+
+    wilksBeta = probDescDB.get_real("method.confidence_level");
+    if (wilksBeta <= 0.0)
+      wilksBeta = 0.95;
+    numSamples = compute_wilks_sample_size(wilksOrder, wilksAlpha,
+					   wilksBeta, wilks_twosided);
+    samplesRef = numSamples;
+  }
+
+  if (toleranceIntervalsFlag) {
+    tiCoverage = probDescDB.get_real("method.ti_coverage");
+    tiConfidenceLevel = probDescDB.get_real("method.ti_confidence_level");
+    tiNumValidSamples = 0;
+  }
+
+  if (numSamples)
+    maxEvalConcurrency *= numSamples;
+}
+
+
 /** This alternate constructor is used for generation and evaluation
     of on-the-fly sample sets. */
 NonDSampling::

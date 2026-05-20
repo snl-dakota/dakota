@@ -58,6 +58,9 @@ protected:
   Analyzer();
   /// standard constructor
   Analyzer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
+  /// DI constructor using an owned IR-backed ProblemDescDB bridge
+  Analyzer(std::shared_ptr<ProblemDescDB> owned_problem_db,
+           ParallelLibrary& parallel_lib, std::shared_ptr<Model> model);
   /// alternate constructor for instantiations "on the fly" with a Model
   Analyzer(unsigned short method_name, std::shared_ptr<Model> model);
   /// alternate constructor for instantiations "on the fly" with a Model

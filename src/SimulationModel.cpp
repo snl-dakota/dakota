@@ -9,6 +9,7 @@
 
 #include "dakota_system_defs.hpp"
 #include "SimulationModel.hpp"
+#include "IRStoreComponentProblemDescDB.hpp"
 #include "ProblemDescDB.hpp"
 #include "MarginalsCorrDistribution.hpp"
 
@@ -27,8 +28,9 @@ SimulationModel::SimulationModel(ProblemDescDB& problem_db, ParallelLibrary& par
   simModelEvalCntr(0)
 {
   componentParallelMode = INTERFACE_MODE;
-  ignoreBounds = problem_db.get<bool>("responses.ignore_bounds");
-  centralHess  = problem_db.get<bool>("responses.central_hess");
+  ignoreBounds = currentResponse.gradient_config().ignore_bounds;
+  centralHess  = (currentResponse.hessian_config().interval_type ==
+                  Response::IntervalType::Central);
 
   initialize_solution_control(
     problem_db.get<const String>("model.simulation.solution_level_control"),
@@ -40,6 +42,33 @@ SimulationModel::SimulationModel(ProblemDescDB& problem_db, ParallelLibrary& par
   // Error checks can encompass a model ensemble at a higher level
   //if (solnCntlCostMap.empty() && costMetadataIndex == _NPOS)
   //  Cerr << "Error: insufficient cost data provided." << std::endl;
+}
+
+
+SimulationModel::SimulationModel(const IRStore& model_store,
+                                 const IRStore& variables_store,
+                                 const Variables& variables,
+                                 std::shared_ptr<Interface> interface,
+                                 const Response& response,
+                                 ParallelLibrary& parallel_lib):
+  Model(ir_component_db::make_problem_db(parallel_lib, nullptr, nullptr,
+          &model_store, &variables_store, nullptr, nullptr),
+        parallel_lib, variables, response),
+  userDefinedInterface(std::move(interface)), solnCntlVarType(EMPTY_TYPE),
+  solnCntlADVIndex(_NPOS), solnCntlAVIndex(_NPOS), costMetadataIndex(_NPOS),
+  simModelEvalCntr(0)
+{
+  componentParallelMode = INTERFACE_MODE;
+  ignoreBounds = currentResponse.gradient_config().ignore_bounds;
+  centralHess  = (currentResponse.hessian_config().interval_type ==
+                  Response::IntervalType::Central);
+
+  initialize_solution_control(
+    probDescDB.get<const String>("model.simulation.solution_level_control"),
+    probDescDB.get<const RealVector>("model.simulation.solution_level_cost"));
+
+  initialize_solution_recovery(
+    probDescDB.get<const String>("model.simulation.cost_recovery_metadata"));
 }
 
 

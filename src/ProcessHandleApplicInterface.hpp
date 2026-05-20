@@ -38,6 +38,11 @@ public:
 
 protected:
 
+  /// constructor for DI assembly from interface-local config plus response state
+  ProcessHandleApplicInterface(const IRStore& interface_store,
+                               const Response& response,
+                               ParallelLibrary& parallel_lib);
+
   //
   //- Heading: Virtual function redefinitions
   //

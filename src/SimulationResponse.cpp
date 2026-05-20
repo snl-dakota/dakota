@@ -23,6 +23,12 @@ SimulationResponse(const Variables& vars, const ProblemDescDB& problem_db):
 
 
 SimulationResponse::
+SimulationResponse(const Variables& vars, const IRStore& responses_store):
+  Response(BaseConstructor(), vars, responses_store)
+{ sharedRespData.response_type(SIMULATION_RESPONSE); }
+
+
+SimulationResponse::
 SimulationResponse(const SharedResponseData& srd, const ActiveSet& set):
   Response(BaseConstructor(), srd, set)
 { }

@@ -91,6 +91,14 @@ Iterator::Iterator(ProblemDescDB& problem_db,
 }
 
 
+Iterator::Iterator(std::shared_ptr<ProblemDescDB> owned_problem_db,
+		   ParallelLibrary& parallel_lib, std::shared_ptr<TraitsBase> traits):
+  Iterator(*owned_problem_db, parallel_lib, std::move(traits))
+{
+  ownedProbDescDB = std::move(owned_problem_db);
+}
+
+
 /** This alternate constructor builds base class data for inherited iterators.
     It is used for on-the-fly instantiations for which DB queries cannot be
     used, and is not used for construction of meta-iterators. */

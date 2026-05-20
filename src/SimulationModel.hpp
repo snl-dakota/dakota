@@ -18,6 +18,8 @@
 
 namespace Dakota {
 
+class IRStore;
+
 /// Derived model class which utilizes a simulation-based application
 /// interface to map variables into responses.
 
@@ -36,6 +38,10 @@ public:
   //
 
   SimulationModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib); ///< constructor
+  SimulationModel(const IRStore& model_store, const IRStore& variables_store,
+                  const Variables& variables,
+                  std::shared_ptr<Interface> interface, const Response& response,
+                  ParallelLibrary& parallel_lib); ///< DI constructor
   
   /// Return the "default" or maximal ActiveSet for the model
   //ActiveSet default_active_set();

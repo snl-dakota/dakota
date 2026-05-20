@@ -21,6 +21,7 @@ using json = nlohmann::json;
 namespace Dakota {
 
 class ProblemDescDB;
+class IRStore;
 using RespMetadataT = double;
 
 
@@ -45,7 +46,67 @@ using RespMetadataT = double;
 
 class Response
 {
-  public:
+public:
+  enum class GradientType {
+    None,
+    Analytic,
+    Numerical,
+    Mixed
+  };
+
+  enum class HessianType {
+    None,
+    Analytic,
+    Numerical,
+    Mixed,
+    Quasi
+  };
+
+  enum class MethodSource {
+    Dakota,
+    Vendor
+  };
+
+  enum class IntervalType {
+    Forward,
+    Central
+  };
+
+  enum class StepType {
+    Relative,
+    Absolute,
+    Bounds
+  };
+
+  enum class QuasiHessianType {
+    None,
+    BFGS,
+    DampedBFGS,
+    SR1
+  };
+
+  struct GradientConfig {
+    GradientType type{GradientType::None};
+    MethodSource method_source{MethodSource::Dakota};
+    IntervalType interval_type{IntervalType::Forward};
+    RealVector fd_step_size;
+    StepType fd_step_type{StepType::Relative};
+    IntSet id_analytic;
+    IntSet id_numerical;
+    bool ignore_bounds{false};
+  };
+
+  struct HessianConfig {
+    HessianType type{HessianType::None};
+    QuasiHessianType quasi_type{QuasiHessianType::None};
+    IntervalType interval_type{IntervalType::Forward};
+    RealVector fd_step_size;
+    StepType fd_step_type{StepType::Relative};
+    IntSet id_analytic;
+    IntSet id_numerical;
+    IntSet id_quasi;
+  };
+
   // Functions and data for instantiating and caching Responses
 
   /// @brief retrieve an existing Response, if it exists, or instantiate a new one
@@ -84,6 +145,8 @@ public:
   Response();
   /// standard constructor built from problem description database
   Response(short type, const Variables& vars, const ProblemDescDB& problem_db);
+  /// DI constructor from a materialized responses IR store
+  Response(const IRStore& responses_store, const Variables& vars);
   /// alternate constructor that shares response data
   Response(const SharedResponseData& srd, const ActiveSet& set);
   /// alternate constructor using limited data without sharing
@@ -111,6 +174,11 @@ public:
   const SharedResponseData& shared_data() const;
   /// return sharedRespData
   SharedResponseData& shared_data();
+
+  /// return the typed gradient-related response configuration
+  const GradientConfig& gradient_config() const;
+  /// return the typed hessian-related response configuration
+  const HessianConfig& hessian_config() const;
 
   /// return the number of response functions
   size_t num_functions() const;
@@ -393,6 +461,8 @@ protected:
   /// derived class constructors - Coplien, p. 139)
   Response(BaseConstructor, const Variables& vars,
 	   const ProblemDescDB& problem_db);
+  /// DI constructor from a materialized responses IR store
+  Response(BaseConstructor, const Variables& vars, const IRStore& responses_store);
   /// constructor initializes the base class part of letter classes
   /// (BaseConstructor overloading avoids infinite recursion in the
   /// derived class constructors - Coplien, p. 139)
@@ -422,6 +492,11 @@ protected:
 
   /// reference-counted instance of shared response data: id's, labels
   SharedResponseData sharedRespData;
+
+  /// typed gradient-related configuration owned by this response
+  GradientConfig gradientConfig;
+  /// typed hessian-related configuration owned by this response
+  HessianConfig hessianConfig;
 
   // An abstract set of functions and their first and second derivatives.
 
@@ -480,6 +555,9 @@ private:
   /// Used by standard envelope constructor to instantiate a new letter class
   std::shared_ptr<Response>get_response(short type, const Variables& vars,
 					const ProblemDescDB& problem_db) const;
+  /// Used by DI envelope constructor to instantiate a new letter class
+  std::shared_ptr<Response>get_response(short type, const Variables& vars,
+                                        const IRStore& responses_store) const;
   /// Used by alternate envelope constructor to instantiate a new letter class
   std::shared_ptr<Response> get_response(const SharedResponseData& srd,
 					 const ActiveSet& set) const;
@@ -590,6 +668,14 @@ inline const SharedResponseData& Response::shared_data() const
 
 inline SharedResponseData& Response::shared_data()
 { return (responseRep) ? responseRep->sharedRespData : sharedRespData; }
+
+
+inline const Response::GradientConfig& Response::gradient_config() const
+{ return (responseRep) ? responseRep->gradientConfig : gradientConfig; }
+
+
+inline const Response::HessianConfig& Response::hessian_config() const
+{ return (responseRep) ? responseRep->hessianConfig : hessianConfig; }
 
 
 inline size_t Response::num_functions() const

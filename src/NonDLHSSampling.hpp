@@ -16,6 +16,8 @@
 
 namespace Dakota {
 
+class IRStore;
+
 /// Performs LHS and Monte Carlo sampling for uncertainty quantification.
 
 /** The Latin Hypercube Sampling (LHS) package from Sandia
@@ -49,6 +51,9 @@ public:
 
   /// standard constructor
   NonDLHSSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
+  /// DI constructor from a materialized method IR store
+  NonDLHSSampling(const IRStore& method_store, ParallelLibrary& parallel_lib,
+                  std::shared_ptr<Model> model);
   /// alternate constructor for sample generation and evaluation "on the fly"
   NonDLHSSampling(std::shared_ptr<Model> model, unsigned short sample_type,
 		  int samples, int seed, const String& rng,

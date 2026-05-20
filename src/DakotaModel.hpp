@@ -38,6 +38,7 @@ namespace Dakota {
 class Iterator;
 class ParallelLibrary;
 class ProblemDescDB;
+class IRStore;
 class Approximation;
 class SharedApproxData;
 class DiscrepancyCorrection;
@@ -851,6 +852,13 @@ public:
 
 protected:
 
+  /// DI constructor using injected variables/response and an owned IR-backed
+  /// ProblemDescDB bridge for configuration queries needed at runtime.
+  Model(std::shared_ptr<ProblemDescDB> owned_problem_db,
+        ParallelLibrary& parallel_lib,
+        const Variables& variables,
+        const Response& response);
+
   //
   //- Heading: Constructors
   //
@@ -1091,6 +1099,9 @@ protected:
 
   /// track use of initialize_mapping() and finalize_mapping()
   bool mappingInitialized;
+
+  /// optional ownership of a DI bridge ProblemDescDB
+  std::shared_ptr<ProblemDescDB> ownedProbDescDB;
 
   /// class member reference to the problem description database
   /** Iterator and Model cannot use a shallow copy of ProblemDescDB

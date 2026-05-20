@@ -15,6 +15,8 @@
 
 namespace Dakota {
 
+class IRStore;
+
 /// Derived application interface class which spawns simulation codes
 /// using fork/execvp/waitpid.
 
@@ -31,6 +33,11 @@ public:
 
   /// constructor
   ForkApplicInterface(const ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
+  /// DI constructor from a materialized interface IR store
+  ForkApplicInterface(const IRStore& interface_store, ParallelLibrary& parallel_lib);
+  /// DI constructor from interface-local config plus injected response state
+  ForkApplicInterface(const IRStore& interface_store, const Response& response,
+                      ParallelLibrary& parallel_lib);
   /// destructor
   ~ForkApplicInterface() override;
 

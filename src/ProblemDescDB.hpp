@@ -83,8 +83,32 @@ split_entry_name(const std::string& entry_name, const std::string& context_msg)
 
 } // namespace pdb_detail
 
-// define the callback function for user updates to the problem DB
 class ProblemDescDB;
+class IRStore;
+class ParallelLibrary;
+
+namespace ir_component_db {
+std::shared_ptr<ProblemDescDB> make_problem_db(
+  int world_size,
+  int world_rank,
+  const IRStore* environment_store,
+  const IRStore* method_store,
+  const IRStore* model_store,
+  const IRStore* variables_store,
+  const IRStore* interface_store,
+  const IRStore* responses_store);
+const ProblemDescDB& temporary_problem_db(
+  int world_size,
+  int world_rank,
+  const IRStore* environment_store,
+  const IRStore* method_store,
+  const IRStore* model_store,
+  const IRStore* variables_store,
+  const IRStore* interface_store,
+  const IRStore* responses_store);
+} // namespace ir_component_db
+
+// define the callback function for user updates to the problem DB
 typedef void(*DbCallbackFunctionPtr)(Dakota::ProblemDescDB* db, void *data_ptr);
 
 
@@ -104,6 +128,24 @@ class ProblemDescDB
     const String& dump_ir_path, const UserModes& user_modes,
     ParallelLibrary& parallel_lib);
   friend nlohmann::json dump_problem_desc_db_json(const ProblemDescDB& db);
+  friend std::shared_ptr<ProblemDescDB> ir_component_db::make_problem_db(
+    int world_size,
+    int world_rank,
+    const IRStore* environment_store,
+    const IRStore* method_store,
+    const IRStore* model_store,
+    const IRStore* variables_store,
+    const IRStore* interface_store,
+    const IRStore* responses_store);
+  friend const ProblemDescDB& ir_component_db::temporary_problem_db(
+    int world_size,
+    int world_rank,
+    const IRStore* environment_store,
+    const IRStore* method_store,
+    const IRStore* model_store,
+    const IRStore* variables_store,
+    const IRStore* interface_store,
+    const IRStore* responses_store);
 
 public:
 

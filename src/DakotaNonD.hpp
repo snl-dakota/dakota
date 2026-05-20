@@ -84,6 +84,9 @@ protected:
 
   /// constructor
   NonD(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
+  /// DI constructor using an owned IR-backed ProblemDescDB bridge
+  NonD(std::shared_ptr<ProblemDescDB> owned_problem_db,
+       ParallelLibrary& parallel_lib, std::shared_ptr<Model> model);
   /// alternate constructor for sample generation and evaluation "on the fly"
   NonD(unsigned short method_name, std::shared_ptr<Model>);
   /// alternate constructor for sample generation and evaluation "on the fly"
