@@ -102,7 +102,7 @@ TEST(di_construction_tests, can_construct_pilot_components_from_irstores)
 
   std::cerr << "[di] constructing SimulationModel\n";
   auto model = std::make_shared<SimulationModel>(
-    model_store, variables_store, variables, interface, response, parallel_lib);
+    model_store, variables, interface, response, parallel_lib);
   EXPECT_EQ(model->current_response().num_functions(), 1);
   EXPECT_EQ(model->current_variables().tv(), 2);
   EXPECT_EQ(model->current_response().shared_data().num_functions(), 1);

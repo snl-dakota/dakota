@@ -133,7 +133,12 @@ Variables::Variables(const ProblemDescDB& problem_db):
 Variables::Variables(const IRStore& variables_store):
   Variables(ir_component_db::temporary_problem_db(
     1, 0, nullptr, nullptr, nullptr, &variables_store, nullptr, nullptr))
-{ }
+{
+  if (variablesRep)
+    variablesRep->variablesStore = std::make_shared<IRStore>(variables_store);
+  else
+    variablesStore = std::make_shared<IRStore>(variables_store);
+}
 
 
 /** Initializes variablesRep to the appropriate derived type, as given
@@ -936,6 +941,7 @@ void Variables::copy_rep(std::shared_ptr<Variables> source_vars_rep)
   allDiscreteIntVars    = source_vars_rep->allDiscreteIntVars;
   allDiscreteStringVars = source_vars_rep->allDiscreteStringVars;
   allDiscreteRealVars   = source_vars_rep->allDiscreteRealVars;
+  variablesStore        = source_vars_rep->variablesStore;
 
   build_views();
 }

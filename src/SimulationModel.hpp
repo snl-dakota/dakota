@@ -38,8 +38,7 @@ public:
   //
 
   SimulationModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib); ///< constructor
-  SimulationModel(const IRStore& model_store, const IRStore& variables_store,
-                  const Variables& variables,
+  SimulationModel(const IRStore& model_store, const Variables& variables,
                   std::shared_ptr<Interface> interface, const Response& response,
                   ParallelLibrary& parallel_lib); ///< DI constructor
   

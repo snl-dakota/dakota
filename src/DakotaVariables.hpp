@@ -15,6 +15,8 @@
 #include "SharedVariablesData.hpp"
 #include "dakota_data_io.hpp"
 
+namespace Pecos { class MultivariateDistribution; }
+
 namespace Dakota {
 
 // forward declarations
@@ -158,6 +160,15 @@ private:
 
   /// hash_value
   friend std::size_t hash_value(const Variables& vars);
+
+  /// initialize a multivariate distribution from Variables-owned config
+  friend void initialize_multivariate_distribution_from_variables(
+    const Variables& vars, Pecos::MultivariateDistribution& mv_dist,
+    bool active_only);
+  /// initialize multivariate distribution parameters from Variables-owned config
+  friend void initialize_distribution_parameters_from_variables(
+    const Variables& vars, Pecos::MultivariateDistribution& mv_dist,
+    bool active_only);
 
 public:
 
@@ -651,6 +662,9 @@ protected:
   /// array combining all of the discrete real variables
   RealVector allDiscreteRealVars;
 
+  /// temporary storage of materialized variables config for DI helpers
+  std::shared_ptr<IRStore> variablesStore;
+
   //
   //- Heading: Data views
   //
@@ -718,6 +732,14 @@ private:
   /// pointer to the letter (initialized only for the envelope)
   std::shared_ptr<Variables> variablesRep;
 };
+
+void initialize_multivariate_distribution_from_variables(
+  const Variables& vars, Pecos::MultivariateDistribution& mv_dist,
+  bool active_only = false);
+
+void initialize_distribution_parameters_from_variables(
+  const Variables& vars, Pecos::MultivariateDistribution& mv_dist,
+  bool active_only = false);
 
 
 inline const SharedVariablesData& Variables::shared_data() const

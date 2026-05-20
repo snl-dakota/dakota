@@ -13,6 +13,7 @@
 #include "PRPMultiIndex.hpp"
 #include "ParallelLibrary.hpp"
 #include "ProblemDescDB.hpp"
+#include "IRStore.hpp"
 #include "SimulationModel.hpp"
 #include "NestedModel.hpp"
 #include "DataFitSurrModel.hpp"
@@ -95,7 +96,131 @@ String to_legacy_string(Response::QuasiHessianType value)
   throw std::runtime_error("Unhandled Response::QuasiHessianType");
 }
 
+const RealVector& get_variables_rv(const IRStore& store, const String& key)
+{
+  if (store.contains(key))
+    return store.get<RealVector>(key);
+  const String prefixed_key = "variables." + key;
+  return store.get<RealVector>(prefixed_key);
+}
+
 } // namespace
+
+void initialize_multivariate_distribution_from_variables(
+  const Variables& vars, Pecos::MultivariateDistribution& mv_dist,
+  bool active_only)
+{
+  if (active_only) {
+    Cerr << "Error: active-only DI multivariate distribution construction "
+         << "is not yet supported." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+
+  const auto& store_ptr = (vars.variablesRep) ?
+    vars.variablesRep->variablesStore : vars.variablesStore;
+  if (!store_ptr) {
+    Cerr << "Error: DI multivariate distribution construction requires "
+         << "Variables-owned component configuration." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+
+  const SharedVariablesData& svd = vars.shared_data();
+
+  if (svd.vc_lookup(CONTINUOUS_DESIGN) ||
+      svd.vc_lookup(DISCRETE_DESIGN_RANGE) ||
+      svd.vc_lookup(DISCRETE_DESIGN_SET_INT) ||
+      svd.vc_lookup(DISCRETE_DESIGN_SET_STRING) ||
+      svd.vc_lookup(DISCRETE_DESIGN_SET_REAL) ||
+      svd.vc_lookup(NORMAL_UNCERTAIN) ||
+      svd.vc_lookup(LOGNORMAL_UNCERTAIN) ||
+      svd.vc_lookup(LOGUNIFORM_UNCERTAIN) ||
+      svd.vc_lookup(TRIANGULAR_UNCERTAIN) ||
+      svd.vc_lookup(EXPONENTIAL_UNCERTAIN) ||
+      svd.vc_lookup(BETA_UNCERTAIN) ||
+      svd.vc_lookup(GAMMA_UNCERTAIN) ||
+      svd.vc_lookup(GUMBEL_UNCERTAIN) ||
+      svd.vc_lookup(FRECHET_UNCERTAIN) ||
+      svd.vc_lookup(WEIBULL_UNCERTAIN) ||
+      svd.vc_lookup(HISTOGRAM_BIN_UNCERTAIN) ||
+      svd.vc_lookup(POISSON_UNCERTAIN) ||
+      svd.vc_lookup(BINOMIAL_UNCERTAIN) ||
+      svd.vc_lookup(NEGATIVE_BINOMIAL_UNCERTAIN) ||
+      svd.vc_lookup(GEOMETRIC_UNCERTAIN) ||
+      svd.vc_lookup(HYPERGEOMETRIC_UNCERTAIN) ||
+      svd.vc_lookup(HISTOGRAM_POINT_UNCERTAIN_INT) ||
+      svd.vc_lookup(HISTOGRAM_POINT_UNCERTAIN_STRING) ||
+      svd.vc_lookup(HISTOGRAM_POINT_UNCERTAIN_REAL) ||
+      svd.vc_lookup(CONTINUOUS_INTERVAL_UNCERTAIN) ||
+      svd.vc_lookup(DISCRETE_INTERVAL_UNCERTAIN) ||
+      svd.vc_lookup(DISCRETE_UNCERTAIN_SET_INT) ||
+      svd.vc_lookup(DISCRETE_UNCERTAIN_SET_STRING) ||
+      svd.vc_lookup(DISCRETE_UNCERTAIN_SET_REAL) ||
+      svd.vc_lookup(CONTINUOUS_STATE) ||
+      svd.vc_lookup(DISCRETE_STATE_RANGE) ||
+      svd.vc_lookup(DISCRETE_STATE_SET_INT) ||
+      svd.vc_lookup(DISCRETE_STATE_SET_STRING) ||
+      svd.vc_lookup(DISCRETE_STATE_SET_REAL)) {
+    // Continue below; the pilot currently supports only a subset and checks
+    // explicitly after sizing/order are known.
+  }
+
+  const size_t num_rv = vars.tv();
+  ShortArray rv_types(num_rv, 0);
+  const BitArray active_vars = svd.active_to_all_mask();
+  size_t start_rv = 0;
+
+  const size_t num_uniform = svd.vc_lookup(UNIFORM_UNCERTAIN);
+  if (num_uniform != num_rv) {
+    Cerr << "Error: pilot DI multivariate distribution construction currently "
+         << "supports only all-uniform-uncertain variable sets." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+
+  assign_value(rv_types, Pecos::UNIFORM, start_rv, num_uniform);
+
+  mv_dist = Pecos::MultivariateDistribution(Pecos::MARGINALS_CORRELATIONS);
+  std::shared_ptr<Pecos::MarginalsCorrDistribution> mvd_rep =
+    std::static_pointer_cast<Pecos::MarginalsCorrDistribution>(
+      mv_dist.multivar_dist_rep());
+  mvd_rep->initialize_types(rv_types, active_vars);
+}
+
+void initialize_distribution_parameters_from_variables(
+  const Variables& vars, Pecos::MultivariateDistribution& mv_dist,
+  bool active_only)
+{
+  if (active_only) {
+    Cerr << "Error: active-only DI multivariate distribution parameter "
+         << "construction is not yet supported." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+
+  const auto& store_ptr = (vars.variablesRep) ?
+    vars.variablesRep->variablesStore : vars.variablesStore;
+  if (!store_ptr) {
+    Cerr << "Error: DI multivariate distribution construction requires "
+         << "Variables-owned component configuration." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+
+  const SharedVariablesData& svd = vars.shared_data();
+  const IRStore& variables_store = *store_ptr;
+  const size_t num_uniform = svd.vc_lookup(UNIFORM_UNCERTAIN);
+
+  if (num_uniform != vars.tv()) {
+    Cerr << "Error: pilot DI multivariate distribution construction currently "
+         << "supports only all-uniform-uncertain variable sets." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+
+  std::shared_ptr<Pecos::MarginalsCorrDistribution> mvd_rep =
+    std::static_pointer_cast<Pecos::MarginalsCorrDistribution>(
+      mv_dist.multivar_dist_rep());
+  mvd_rep->push_parameters(Pecos::UNIFORM, Pecos::U_LWR_BND,
+    get_variables_rv(variables_store, "uniform_uncertain.lower_bounds"));
+  mvd_rep->push_parameters(Pecos::UNIFORM, Pecos::U_UPR_BND,
+    get_variables_rv(variables_store, "uniform_uncertain.upper_bounds"));
+}
 
 extern PRPCache        data_pairs;
 extern EvaluationStore evaluation_store_db; // defined in dakota_global_defs.cpp
@@ -366,15 +491,8 @@ Model::Model(std::shared_ptr<ProblemDescDB> owned_problem_db,
   modelId(owned_problem_db->get_string("model.id")), modelEvalCntr(0),
   estDerivsFlag(false), initCommsBcastFlag(false), modelAutoGraphicsFlag(false)
 {
-  Cerr << "[di-model] entering Model DI ctor"
-       << " numFns=" << numFns
-       << " numDerivVars=" << numDerivVars << std::endl;
-  Cerr << "[di-model] before initialize_distribution" << std::endl;
-  initialize_distribution(mvDist);
-  Cerr << "[di-model] after initialize_distribution" << std::endl;
-  Cerr << "[di-model] before initialize_distribution_parameters" << std::endl;
-  initialize_distribution_parameters(mvDist);
-  Cerr << "[di-model] after initialize_distribution_parameters" << std::endl;
+  initialize_multivariate_distribution_from_variables(currentVariables, mvDist);
+  initialize_distribution_parameters_from_variables(currentVariables, mvDist);
 
   if (modelId.empty())
     modelId = user_auto_id();

@@ -46,13 +46,12 @@ SimulationModel::SimulationModel(ProblemDescDB& problem_db, ParallelLibrary& par
 
 
 SimulationModel::SimulationModel(const IRStore& model_store,
-                                 const IRStore& variables_store,
                                  const Variables& variables,
                                  std::shared_ptr<Interface> interface,
                                  const Response& response,
                                  ParallelLibrary& parallel_lib):
   Model(ir_component_db::make_problem_db(parallel_lib, nullptr, nullptr,
-          &model_store, &variables_store, nullptr, nullptr),
+          &model_store, nullptr, nullptr, nullptr),
         parallel_lib, variables, response),
   userDefinedInterface(std::move(interface)), solnCntlVarType(EMPTY_TYPE),
   solnCntlADVIndex(_NPOS), solnCntlAVIndex(_NPOS), costMetadataIndex(_NPOS),
