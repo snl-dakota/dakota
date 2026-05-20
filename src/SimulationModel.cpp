@@ -553,11 +553,7 @@ derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 IntIntPair SimulationModel::
 estimate_partition_bounds(int max_eval_concurrency)
 {
-  // Note: accesses DB data
-  // > for use at construct/init_comms time
-  // > DB list nodes set by calling context
-  return IntIntPair(probDescDB.min_procs_per_ie(), 
-		    probDescDB.max_procs_per_ie(max_eval_concurrency));
+  return userDefinedInterface->estimate_partition_bounds(max_eval_concurrency);
 }
 
 void SimulationModel::declare_sources()

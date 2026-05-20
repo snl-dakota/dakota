@@ -773,6 +773,12 @@ short Interface::interface_synchronization() const
 }
 
 
+IntIntPair Interface::estimate_partition_bounds(int max_eval_concurrency) const
+{
+  return IntIntPair(1, max_eval_concurrency);
+}
+
+
 int Interface::minimum_points(bool constraint_flag) const
 {
   return 0; // default (currently redefined only for ApproximationInterfaces)

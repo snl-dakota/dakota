@@ -29,16 +29,6 @@ BOOST_CLASS_EXPORT(Dakota::SharedResponseData)
 
 namespace Dakota {
 
-namespace {
-
-template <class T>
-const T& get_required(const IRStore& store, const String& key)
-{
-  return store.get<T>(key);
-}
-
-} // namespace
-
 
 SharedResponseDataRep::
 SharedResponseDataRep(const ProblemDescDB& problem_db):
@@ -48,21 +38,6 @@ SharedResponseDataRep(const ProblemDescDB& problem_db):
   simulationVariance(problem_db.get<const RealVector>("responses.simulation_variance")),
   metadataLabels(problem_db.get<const StringArray>("responses.metadata_labels"))
 {
-  auto normalize_scalar_labels = [this](size_t expected_count) {
-    if (functionLabels.size() != expected_count) {
-      functionLabels.resize(expected_count);
-      build_labels(functionLabels, "f");
-    }
-  };
-
-  auto init_default_field_labels =
-    [this](size_t num_field_primary, size_t num_field_functions) {
-      functionLabels.resize(numScalarResponses + num_field_functions);
-      build_labels(functionLabels, "f");
-      copy_data_partial(functionLabels, numScalarResponses, num_field_primary,
-                        priFieldLabels);
-    };
-
   // scalar-specific response counts
   size_t num_scalar_primary = std::max
     ( problem_db.get<size_t>("responses.num_scalar_objectives"),
@@ -127,13 +102,7 @@ SharedResponseDataRep(const ProblemDescDB& problem_db):
 	   << primary_fn_name() << "."  << std::endl;
       abort_handler(-1);
     } 
-    size_t expected_group_labels =
-      numScalarResponses + priFieldLengths.length();
-    if (user_labels.size() == expected_group_labels)
-      build_field_labels(user_labels);
-    else
-      init_default_field_labels(priFieldLengths.length(),
-                                priFieldLengths.normOne());
+    build_field_labels(user_labels);
   } 
   else if (num_scalar_responses) {
     // no fields present, but scalar apportionment given; must agree with total
@@ -150,7 +119,6 @@ SharedResponseDataRep(const ProblemDescDB& problem_db):
     // can't use num_scalar_responses, as constraints are only specified via total
     numScalarResponses = num_scalar_primary + num_total_secondary;
     functionLabels = user_labels;
-    normalize_scalar_labels(numScalarResponses);
   }
   else if (num_total_responses) {
     // only top-level keywords were specified
@@ -158,7 +126,6 @@ SharedResponseDataRep(const ProblemDescDB& problem_db):
     numScalarPrimary = num_total_primary;
     numScalarResponses = num_total_responses;
     functionLabels = user_labels;
-    normalize_scalar_labels(numScalarResponses);
   }
   else
     Cerr << "Warning: total number of response functions is zero.  This is "
@@ -178,66 +145,51 @@ SharedResponseDataRep::
 SharedResponseDataRep(const IRStore& responses_store):
   responseType(BASE_RESPONSE), // overridden in derived class ctors
   primaryFnType(GENERIC_FNS),
-  responsesId(get_required<String>(responses_store, "id")),
-  simulationVariance(get_required<RealVector>(responses_store,
+  responsesId(responses_store.get<String>("id")),
+  simulationVariance(responses_store.get<RealVector>(
     "simulation_variance")),
-  metadataLabels(get_required<StringArray>(responses_store, "metadata_labels"))
+  metadataLabels(responses_store.get<StringArray>("metadata_labels"))
 {
-  auto normalize_scalar_labels = [this](size_t expected_count) {
-    if (functionLabels.size() != expected_count) {
-      functionLabels.resize(expected_count);
-      build_labels(functionLabels, "f");
-    }
-  };
-
-  auto init_default_field_labels =
-    [this](size_t num_field_primary, size_t num_field_functions) {
-      functionLabels.resize(numScalarResponses + num_field_functions);
-      build_labels(functionLabels, "f");
-      copy_data_partial(functionLabels, numScalarResponses, num_field_primary,
-                        priFieldLabels);
-    };
-
   size_t num_scalar_primary = std::max(
-    get_required<size_t>(responses_store, "num_scalar_objectives"),
+    responses_store.get<size_t>("num_scalar_objectives"),
     std::max(
-      get_required<size_t>(responses_store, "num_scalar_calibration_terms"),
-      get_required<size_t>(responses_store, "num_scalar_responses")));
+      responses_store.get<size_t>("num_scalar_calibration_terms"),
+      responses_store.get<size_t>("num_scalar_responses")));
   size_t num_scalar_responses = num_scalar_primary +
-    get_required<size_t>(responses_store,
+    responses_store.get<size_t>(
       "num_scalar_nonlinear_inequality_constraints") +
-    get_required<size_t>(responses_store,
+    responses_store.get<size_t>(
       "num_scalar_nonlinear_equality_constraints");
 
   size_t num_field_primary = std::max(
-    get_required<size_t>(responses_store, "num_field_objectives"),
+    responses_store.get<size_t>("num_field_objectives"),
     std::max(
-      get_required<size_t>(responses_store, "num_field_calibration_terms"),
-      get_required<size_t>(responses_store, "num_field_responses")));
+      responses_store.get<size_t>("num_field_calibration_terms"),
+      responses_store.get<size_t>("num_field_responses")));
   size_t num_field_responses = num_field_primary +
-    get_required<size_t>(responses_store,
+    responses_store.get<size_t>(
       "num_field_nonlinear_inequality_constraints") +
-    get_required<size_t>(responses_store,
+    responses_store.get<size_t>(
       "num_field_nonlinear_equality_constraints");
 
   size_t num_total_primary = std::max(
-    get_required<size_t>(responses_store, "num_objective_functions"),
+    responses_store.get<size_t>("num_objective_functions"),
     std::max(
-      get_required<size_t>(responses_store, "num_calibration_terms"),
-      get_required<size_t>(responses_store, "num_response_functions")));
+      responses_store.get<size_t>("num_calibration_terms"),
+      responses_store.get<size_t>("num_response_functions")));
   size_t num_total_secondary =
-    get_required<size_t>(responses_store,
+    responses_store.get<size_t>(
       "num_nonlinear_inequality_constraints") +
-    get_required<size_t>(responses_store,
+    responses_store.get<size_t>(
       "num_nonlinear_equality_constraints");
   size_t num_total_responses = num_total_primary + num_total_secondary;
 
-  if (get_required<size_t>(responses_store, "num_objective_functions") > 0)
+  if (responses_store.get<size_t>("num_objective_functions") > 0)
     primaryFnType = OBJECTIVE_FNS;
-  else if (get_required<size_t>(responses_store, "num_calibration_terms") > 0)
+  else if (responses_store.get<size_t>("num_calibration_terms") > 0)
     primaryFnType = CALIB_TERMS;
 
-  const StringArray& user_labels = get_required<StringArray>(responses_store,
+  const StringArray& user_labels = responses_store.get<StringArray>(
     "labels");
 
   if (num_field_responses) {
@@ -252,7 +204,7 @@ SharedResponseDataRep(const IRStore& responses_store):
     numScalarPrimary = num_scalar_primary;
     numScalarResponses = num_scalar_primary + num_total_secondary;
 
-    priFieldLengths = get_required<IntVector>(responses_store, "lengths");
+    priFieldLengths = responses_store.get<IntVector>("lengths");
     if (num_field_primary != priFieldLengths.length()) {
       Cerr << "Error: For each field in " << primary_fn_name()
 	   << ", you must specify the length of that field."
@@ -261,13 +213,7 @@ SharedResponseDataRep(const IRStore& responses_store):
 	   << primary_fn_name() << "."  << std::endl;
       abort_handler(-1);
     }
-    size_t expected_group_labels =
-      numScalarResponses + priFieldLengths.length();
-    if (user_labels.size() == expected_group_labels)
-      build_field_labels(user_labels);
-    else
-      init_default_field_labels(priFieldLengths.length(),
-                                priFieldLengths.normOne());
+    build_field_labels(user_labels);
   }
   else if (num_scalar_responses) {
     if (num_scalar_primary != num_total_primary) {
@@ -280,13 +226,11 @@ SharedResponseDataRep(const IRStore& responses_store):
     numScalarPrimary = num_scalar_primary;
     numScalarResponses = num_scalar_primary + num_total_secondary;
     functionLabels = user_labels;
-    normalize_scalar_labels(numScalarResponses);
   }
   else if (num_total_responses) {
     numScalarPrimary = num_total_primary;
     numScalarResponses = num_total_responses;
     functionLabels = user_labels;
-    normalize_scalar_labels(numScalarResponses);
   }
   else
     Cerr << "Warning: total number of response functions is zero.  This is "

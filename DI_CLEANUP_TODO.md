@@ -13,10 +13,11 @@ construction for Dakota components.
    the implementation still interprets raw retained IR rather than a richer
    variables-owned runtime representation.
 
-2. `Model` DI construction still relies on a synthetic `ProblemDescDB`.
-   Reason: portions of legacy model initialization still pull config through
-   `ProblemDescDB` instead of from component-owned objects or component-local
-   `IRStore`s.
+2. `Model` DI construction still carries a synthetic `ProblemDescDB`.
+   Reason: the exercised DI pilot path no longer appears to rely on
+   `ProblemDescDB` reads in the `Model` / `SimulationModel` hot path, but the
+   base `Model` abstraction still stores a `ProblemDescDB&` and exposes it via
+   API, so the DI path retains a bridge object as structural scaffolding.
 
 3. DI `Model` currently uses conservative defaults for some study-wide
    settings instead of reading them from a complete study context.

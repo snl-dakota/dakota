@@ -206,6 +206,31 @@ ApplicationInterface(const IRStore& interface_store,
 }
 
 
+IntIntPair ApplicationInterface::
+estimate_partition_bounds(int max_eval_concurrency) const
+{
+  int min_ea = ProblemDescDB::min_procs_per_level(
+    1, procsPerAnalysisSpec, numAnalysisServersSpec);
+
+  int max_ppa = (interfaceType & DIRECT_INTERFACE_BIT) ? worldSize : 1;
+  int max_ea = ProblemDescDB::max_procs_per_level(
+    max_ppa, procsPerAnalysisSpec, numAnalysisServersSpec,
+    analysisScheduling, asynchLocalAnalysisConcSpec,
+    false, std::max(1, numAnalysisDrivers));
+
+  int max_pps = (procsPerEvalSpec) ? procsPerEvalSpec : max_ea;
+  bool peer_dynamic_avail = (!asynchLocalEvalStatic && max_pps == 1);
+
+  return IntIntPair(
+    ProblemDescDB::min_procs_per_level(
+      min_ea, procsPerEvalSpec, numEvalServersSpec),
+    ProblemDescDB::max_procs_per_level(
+      max_ea, procsPerEvalSpec, numEvalServersSpec,
+      evalScheduling, asynchLocalEvalConcSpec,
+      peer_dynamic_avail, max_eval_concurrency));
+}
+
+
 void ApplicationInterface::
 init_communicators(const IntArray& message_lengths, int max_eval_concurrency)
 {

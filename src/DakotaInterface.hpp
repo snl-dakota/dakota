@@ -310,6 +310,9 @@ public:
   /// at the iterator-evaluation scheduling level
   bool iterator_eval_dedicated_scheduler() const;
 
+  /// estimate processor bounds for one interface evaluation level
+  virtual IntIntPair estimate_partition_bounds(int max_eval_concurrency) const;
+
   /// set the evaluation tag prefix (does not recurse)
   void eval_tag_prefix(const String& eval_id_str, bool append_iface_id = true);
 

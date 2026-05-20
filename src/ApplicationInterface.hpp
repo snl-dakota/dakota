@@ -77,6 +77,8 @@ protected:
   void serialize_threshold(size_t thresh) override;
   /// return whether interface supports synchronous or asynchronous jobs
   short interface_synchronization() const override;
+  /// estimate processor bounds for one interface evaluation level
+  IntIntPair estimate_partition_bounds(int max_eval_concurrency) const override;
 
   /// return evalCacheFlag
   bool evaluation_cache() const override;
