@@ -15,7 +15,7 @@ method
     gradient_tolerance   1.0e-4
     variable_tolerance   1.0e-5
     max_iterations       100
-    constraint_tolerance 1.0e-4					#s2
+#    constraint_tolerance 1.0e-4			        #s2
 
 variables
 # s0: Unconstrained - should converge to [1, 1]
