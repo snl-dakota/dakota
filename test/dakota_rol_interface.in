@@ -1,4 +1,4 @@
-#@ *: DakotaConfig=HAVE_DAKOTA_ROL_INTERFACE
+#@ *: DakotaConfig=HAVE_ROL
 # Integration tests for the refactored ROL interface using ROL::Problem and ROL::Solver
 #
 # Test cases:

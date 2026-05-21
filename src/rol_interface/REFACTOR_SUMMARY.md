@@ -1,3 +1,7 @@
+Content related to the Old monolithic implementation has been removed.
+The summary below is kept for archival purposes related to the transition
+from the old ROL iterface to the new one.
+
 # ROL Interface Refactor Summary
 
 ## Overview

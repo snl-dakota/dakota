@@ -95,11 +95,7 @@
 #include "NCSUOptimizer.hpp"
 #endif
 #ifdef HAVE_ROL
-#if defined(HAVE_DAKOTA_ROL_INTERFACE)
 #include "DakotaROLOptimizer.hpp"
-#else
-#include "ROLOptimizer.hpp"
-#endif
 #endif
 #ifdef HAVE_DEMO_TPL
 #include "DemoOptimizer.hpp"

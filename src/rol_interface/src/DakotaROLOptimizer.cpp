@@ -7,7 +7,7 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-#ifdef HAVE_DAKOTA_ROL_INTERFACE
+#ifdef HAVE_ROL
 
 #include "DakotaROLOptimizer.hpp"
 #include "DakotaROLInterface.hpp"
@@ -460,4 +460,4 @@ void ROLOptimizer::set_rol_parameters()
 
 } // namespace Dakota
 
-#endif // HAVE_DAKOTA_ROL_INTERFACE
+#endif // HAVE_ROL

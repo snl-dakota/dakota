@@ -16,7 +16,7 @@
 #ifndef DAKOTA_ROL_OPTIMIZER_HPP
 #define DAKOTA_ROL_OPTIMIZER_HPP
 
-#ifdef HAVE_DAKOTA_ROL_INTERFACE
+#ifdef HAVE_ROL
 
 // Dakota headers
 #include "DakotaOptimizer.hpp"
@@ -155,5 +155,5 @@ public:
 
 } // namespace Dakota
 
-#endif // HAVE_DAKOTA_ROL_INTERFACE
+#endif // HAVE_ROL
 #endif // DAKOTA_ROL_OPTIMIZER_HPP
