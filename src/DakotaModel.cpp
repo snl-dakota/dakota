@@ -827,7 +827,8 @@ Model::Model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
   // verbosity.  For models, QUIET_OUTPUT turns off response reporting and
   // SILENT_OUTPUT additionally turns off fd_gradient parameter set reporting.
   outputLevel(problem_db.get<short>("method.output")),
-  primaryRespFnWts(probDescDB.get<const RealVector>("responses.primary_response_fn_weights")),
+  primaryRespFnSense(currentResponse.primary_response_fn_sense()),
+  primaryRespFnWts(currentResponse.primary_response_fn_weights()),
   hierarchicalTagging(probDescDB.get<bool>("model.hierarchical_tags")),
   scalingOpts(problem_db, currentResponse.shared_data()),
   modelEvaluationsDBState(EvaluationsDBState::UNINITIALIZED),
@@ -838,33 +839,8 @@ Model::Model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
   initialize_distribution(mvDist);
   initialize_distribution_parameters(mvDist);
 
-  // weights have length group if given; expand if fields present
-  expand_for_fields_sdv(currentResponse.shared_data(),
-    probDescDB.get<const RealVector>("responses.primary_response_fn_weights"),
-    "primary response weights", false, primaryRespFnWts);
-
   if (modelId.empty())
     modelId = user_auto_id();
-
-  // TODO: Latent bug here as sense will be size 1 or group (must acct for fields)
-  // Define primaryRespFnSense BoolDeque from DB StringArray
-  StringArray db_sense
-    = problem_db.get<const StringArray>("responses.primary_response_fn_sense");
-  if (!db_sense.empty()) {
-    size_t i, num_sense = db_sense.size(), num_primary = num_primary_fns();
-    primaryRespFnSense.resize(num_primary);
-    if (num_sense == num_primary)
-      for (i=0; i<num_primary; ++i)
-	primaryRespFnSense[i] = strbegins(strtolower(db_sense[i]), "max");
-    else if (num_sense == 1)
-      primaryRespFnSense.assign(num_primary, 
-				strbegins(strtolower(db_sense[0]), "max"));
-    else {
-      Cerr << "Error: wrong length in sense array.  Expected 0, 1, or "
-	   << num_primary << " but saw " << num_sense << "." << std::endl;
-      abort_handler(MODEL_ERROR);
-    }
-  }
 
   bool estimating_derivs = false;
   // Promote fdGradStepSize/fdHessByFnStepSize/fdHessByGradStepSize to defaults
@@ -989,7 +965,9 @@ Model::Model(std::shared_ptr<ProblemDescDB> owned_problem_db,
   componentParallelMode(NO_PARALLEL_MODE), asynchEvalFlag(false),
   evaluationCapacity(1),
   outputLevel(NORMAL_OUTPUT),
-  hierarchicalTagging(false),
+  primaryRespFnSense(currentResponse.primary_response_fn_sense()),
+  primaryRespFnWts(currentResponse.primary_response_fn_weights()),
+  hierarchicalTagging(model_store.get<bool>("hierarchical_tags")),
   scalingOpts(),
   modelEvaluationsDBState(EvaluationsDBState::UNINITIALIZED),
   interfEvaluationsDBState(EvaluationsDBState::UNINITIALIZED),

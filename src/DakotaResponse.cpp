@@ -164,6 +164,71 @@ Response::HessianConfig build_hessian_config(const IRStore& responses_store)
   return cfg;
 }
 
+RealVector build_primary_response_fn_weights(const SharedResponseData& srd,
+                                             const RealVector& raw_weights)
+{
+  RealVector expanded_weights;
+  expand_for_fields_sdv(srd, raw_weights, "primary response weights", false,
+                        expanded_weights);
+  return expanded_weights;
+}
+
+RealVector build_primary_response_fn_weights(const ProblemDescDB& problem_db,
+                                             const SharedResponseData& srd)
+{
+  return build_primary_response_fn_weights(
+    srd, problem_db.get_rv("responses.primary_response_fn_weights"));
+}
+
+RealVector build_primary_response_fn_weights(const IRStore& responses_store,
+                                             const SharedResponseData& srd)
+{
+  return build_primary_response_fn_weights(
+    srd, responses_store.get<RealVector>("primary_response_fn_weights"));
+}
+
+BoolDeque build_primary_response_fn_sense(const SharedResponseData& srd,
+                                          const StringArray& raw_sense)
+{
+  BoolDeque sense;
+
+  if (raw_sense.empty())
+    return sense;
+
+  size_t num_sense = raw_sense.size();
+  size_t num_primary = srd.num_primary_functions();
+  sense.resize(num_primary);
+
+  if (num_sense == num_primary) {
+    for (size_t i = 0; i < num_primary; ++i)
+      sense[i] = strbegins(strtolower(raw_sense[i]), "max");
+  }
+  else if (num_sense == 1) {
+    sense.assign(num_primary, strbegins(strtolower(raw_sense[0]), "max"));
+  }
+  else {
+    Cerr << "Error: wrong length in sense array.  Expected 0, 1, or "
+         << num_primary << " but saw " << num_sense << "." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+
+  return sense;
+}
+
+BoolDeque build_primary_response_fn_sense(const ProblemDescDB& problem_db,
+                                          const SharedResponseData& srd)
+{
+  return build_primary_response_fn_sense(
+    srd, problem_db.get_sa("responses.primary_response_fn_sense"));
+}
+
+BoolDeque build_primary_response_fn_sense(const IRStore& responses_store,
+                                          const SharedResponseData& srd)
+{
+  return build_primary_response_fn_sense(
+    srd, responses_store.get<StringArray>("primary_response_fn_sense"));
+}
+
 } // namespace
 
   const Response& Dakota::Response::get_response(ProblemDescDB& problem_db, short type, const Variables& vars) {
@@ -221,7 +286,9 @@ Response(BaseConstructor, const Variables& vars,
 	 const ProblemDescDB& problem_db):
   sharedRespData(problem_db),
   gradientConfig(build_gradient_config(problem_db)),
-  hessianConfig(build_hessian_config(problem_db))
+  hessianConfig(build_hessian_config(problem_db)),
+  primaryRespFnWts(build_primary_response_fn_weights(problem_db, sharedRespData)),
+  primaryRespFnSense(build_primary_response_fn_sense(problem_db, sharedRespData))
 {
   // the derivative arrays must accomodate either active or inactive variables,
   // but the default is active variables.  Derivative arrays are resized if a
@@ -279,7 +346,11 @@ Response(BaseConstructor, const Variables& vars,
          const IRStore& responses_store):
   sharedRespData(responses_store),
   gradientConfig(build_gradient_config(responses_store)),
-  hessianConfig(build_hessian_config(responses_store))
+  hessianConfig(build_hessian_config(responses_store)),
+  primaryRespFnWts(build_primary_response_fn_weights(responses_store,
+                                                     sharedRespData)),
+  primaryRespFnSense(build_primary_response_fn_sense(responses_store,
+                                                     sharedRespData))
 {
   size_t num_params = vars.cv(), num_fns = sharedRespData.num_functions();
 
@@ -592,14 +663,16 @@ Response Response::copy(bool deep_srd) const
 
 void Response::copy_rep(std::shared_ptr<Response> source_resp_rep)
 {
-  gradientConfig    = source_resp_rep->gradientConfig;
-  hessianConfig     = source_resp_rep->hessianConfig;
-  functionValues    = source_resp_rep->functionValues;
-  functionGradients = source_resp_rep->functionGradients;
-  functionHessians  = source_resp_rep->functionHessians;
-  fieldCoords       = source_resp_rep->fieldCoords;
-  responseActiveSet = source_resp_rep->responseActiveSet;
-  metaData          = source_resp_rep->metaData;
+  gradientConfig     = source_resp_rep->gradientConfig;
+  hessianConfig      = source_resp_rep->hessianConfig;
+  primaryRespFnWts   = source_resp_rep->primaryRespFnWts;
+  primaryRespFnSense = source_resp_rep->primaryRespFnSense;
+  functionValues     = source_resp_rep->functionValues;
+  functionGradients  = source_resp_rep->functionGradients;
+  functionHessians   = source_resp_rep->functionHessians;
+  fieldCoords        = source_resp_rep->fieldCoords;
+  responseActiveSet  = source_resp_rep->responseActiveSet;
+  metaData           = source_resp_rep->metaData;
 }
 
 

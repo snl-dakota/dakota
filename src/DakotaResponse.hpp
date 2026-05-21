@@ -179,6 +179,10 @@ public:
   const GradientConfig& gradient_config() const;
   /// return the typed hessian-related response configuration
   const HessianConfig& hessian_config() const;
+  /// return primary response weights expanded for field responses
+  const RealVector& primary_response_fn_weights() const;
+  /// return primary response maximize/minimize sense flags
+  const BoolDeque& primary_response_fn_sense() const;
 
   /// return the number of response functions
   size_t num_functions() const;
@@ -497,6 +501,10 @@ protected:
   GradientConfig gradientConfig;
   /// typed hessian-related configuration owned by this response
   HessianConfig hessianConfig;
+  /// primary response weights expanded to the shared response structure
+  RealVector primaryRespFnWts;
+  /// maximize/minimize flags for primary responses
+  BoolDeque primaryRespFnSense;
 
   // An abstract set of functions and their first and second derivatives.
 
@@ -676,6 +684,14 @@ inline const Response::GradientConfig& Response::gradient_config() const
 
 inline const Response::HessianConfig& Response::hessian_config() const
 { return (responseRep) ? responseRep->hessianConfig : hessianConfig; }
+
+
+inline const RealVector& Response::primary_response_fn_weights() const
+{ return (responseRep) ? responseRep->primaryRespFnWts : primaryRespFnWts; }
+
+
+inline const BoolDeque& Response::primary_response_fn_sense() const
+{ return (responseRep) ? responseRep->primaryRespFnSense : primaryRespFnSense; }
 
 
 inline size_t Response::num_functions() const

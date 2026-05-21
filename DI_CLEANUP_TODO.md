@@ -21,10 +21,4 @@ construction for Dakota components.
 
 3. DI `Model` currently uses conservative defaults for some study-wide
    settings instead of reading them from a complete study context.
-   Current examples: `outputLevel`, `hierarchicalTagging`, `ScalingOptions`,
-   primary response weights, and primary response sense.
-
-4. `Response` / `SharedResponseData` DI construction currently normalizes
-   missing response labels by generating defaults.
-   Reason: the component-local DI path bypasses some whole-study
-   post-processing assumptions present in the legacy construction path.
+   Current examples: `outputLevel` and `ScalingOptions`.
