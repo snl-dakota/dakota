@@ -18,6 +18,8 @@
 
 namespace Dakota {
 
+class IRStore;
+
 
 /// Base class for all nondetermistic iterators (the DAKOTA/UQ branch).
 
@@ -84,8 +86,9 @@ protected:
 
   /// constructor
   NonD(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
-  /// DI constructor using an owned IR-backed ProblemDescDB bridge
+  /// DI constructor using method IR plus an owned ProblemDescDB bridge
   NonD(std::shared_ptr<ProblemDescDB> owned_problem_db,
+       const IRStore& method_store,
        ParallelLibrary& parallel_lib, std::shared_ptr<Model> model);
   /// alternate constructor for sample generation and evaluation "on the fly"
   NonD(unsigned short method_name, std::shared_ptr<Model>);

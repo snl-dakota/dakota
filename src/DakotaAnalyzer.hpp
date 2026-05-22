@@ -18,6 +18,8 @@
 
 namespace Dakota {
 
+class IRStore;
+
 /// Base class for NonD, DACE, and ParamStudy branches of the iterator
 /// hierarchy.
 
@@ -58,8 +60,9 @@ protected:
   Analyzer();
   /// standard constructor
   Analyzer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
-  /// DI constructor using an owned IR-backed ProblemDescDB bridge
+  /// DI constructor using method IR plus an owned ProblemDescDB bridge
   Analyzer(std::shared_ptr<ProblemDescDB> owned_problem_db,
+           const IRStore& method_store,
            ParallelLibrary& parallel_lib, std::shared_ptr<Model> model);
   /// alternate constructor for instantiations "on the fly" with a Model
   Analyzer(unsigned short method_name, std::shared_ptr<Model> model);

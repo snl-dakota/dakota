@@ -9,5 +9,5 @@ docs/user/usingdakota/samples
 .vscode
 __pycache__
 *.pyc
-build
+build*
 .cache

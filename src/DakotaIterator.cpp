@@ -14,6 +14,7 @@
 #include "DakotaTraitsBase.hpp"
 #include "ParallelLibrary.hpp"
 #include "ProblemDescDB.hpp"
+#include "IRStore.hpp"
 #include "ParallelLibrary.hpp"
 #include "DakotaGraphics.hpp"
 #include "ResultsManager.hpp"
@@ -92,10 +93,34 @@ Iterator::Iterator(ProblemDescDB& problem_db,
 
 
 Iterator::Iterator(std::shared_ptr<ProblemDescDB> owned_problem_db,
+                   const IRStore& method_store,
 		   ParallelLibrary& parallel_lib, std::shared_ptr<TraitsBase> traits):
-  Iterator(*owned_problem_db, parallel_lib, std::move(traits))
+  probDescDB(*owned_problem_db), parallelLib(parallel_lib),
+  methodPCIter(parallelLib.parallel_configuration_iterator()),
+  myModelLayers(0), methodName(method_store.get<unsigned short>("algorithm")),
+  convergenceTol(method_store.get<Real>("convergence_tolerance")),
+  maxIterations(method_store.get<size_t>("max_iterations")),
+  maxFunctionEvals(method_store.get<size_t>("max_function_evaluations")),
+  subIteratorFlag(false),
+  numFinalSolutions(method_store.get<size_t>("final_solutions")),
+  outputLevel(method_store.get<short>("output")), summaryOutputFlag(true),
+  topLevel(false), resultsDB(iterator_results_db),
+  evaluationsDB(evaluation_store_db),
+  evaluationsDBState(EvaluationsDBState::UNINITIALIZED),
+  methodId(method_store.get<String>("id")), execNum(0),
+  methodTraits(traits),
+  exportSurrogate(method_store.get<bool>("export_surrogate")),
+  surrExportPrefix(method_store.get<String>("model_export_prefix")),
+  surrExportFormat(method_store.get<unsigned short>("model_export_format")),
+  iteratedModel(std::make_shared<Model>())
 {
   ownedProbDescDB = std::move(owned_problem_db);
+
+  if (methodId.empty())
+    methodId = user_auto_id();
+
+  if (outputLevel >= VERBOSE_OUTPUT)
+    Cout << "methodName = " << method_enum_to_string(methodName) << '\n';
 }
 
 

@@ -116,17 +116,17 @@ NonDLHSSampling::NonDLHSSampling(const IRStore& method_store,
 				 std::shared_ptr<Model> model):
   NonDSampling(ir_component_db::make_problem_db(parallel_lib, nullptr,
                  &method_store, nullptr, nullptr, nullptr, nullptr),
-               parallel_lib, model),
+               method_store, parallel_lib, model),
   numResponseFunctions(0),
-  refineSamples(probDescDB.get_iv("method.nond.refinement_samples")),
-  dOptimal(probDescDB.get_bool("method.nond.d_optimal")),
-  numCandidateDesigns(probDescDB.get_sizet("method.num_candidate_designs")),
-  oversampleRatio(probDescDB.get_real("method.nond.collocation_ratio")),
-  pcaFlag(probDescDB.get_bool("method.principal_components")),
-  vbdViaSamplingMethod(probDescDB.get_ushort("method.vbd_via_sampling_method")),
-  vbdViaSamplingNumBins(probDescDB.get_int("method.vbd_via_sampling_num_bins")),
+  refineSamples(method_store.get<IntVector>("nond.refinement_samples")),
+  dOptimal(method_store.get<bool>("nond.d_optimal")),
+  numCandidateDesigns(method_store.get<size_t>("num_candidate_designs")),
+  oversampleRatio(method_store.get<Real>("nond.collocation_ratio")),
+  pcaFlag(method_store.get<bool>("principal_components")),
+  vbdViaSamplingMethod(method_store.get<unsigned short>("vbd_via_sampling_method")),
+  vbdViaSamplingNumBins(method_store.get<int>("vbd_via_sampling_num_bins")),
   percentVarianceExplained(
-    probDescDB.get_real("method.percent_variance_explained"))
+    method_store.get<Real>("percent_variance_explained"))
 {
   if (sampleType == SUBMETHOD_DEFAULT)
     sampleType = SUBMETHOD_LHS;

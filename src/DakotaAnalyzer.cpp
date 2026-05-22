@@ -14,6 +14,7 @@
 #include "RecastModel.hpp"
 #include "DakotaAnalyzer.hpp"
 #include "ProblemDescDB.hpp"
+#include "IRStore.hpp"
 #include "ParallelLibrary.hpp"
 #include "IteratorScheduler.hpp"
 #include "PRPMultiIndex.hpp"
@@ -62,10 +63,11 @@ Analyzer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_p
 
 Analyzer::
 Analyzer(std::shared_ptr<ProblemDescDB> owned_problem_db,
+         const IRStore& method_store,
 	 ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
-  Iterator(std::move(owned_problem_db), parallel_lib), compactMode(true),
+  Iterator(std::move(owned_problem_db), method_store, parallel_lib), compactMode(true),
   numObjFns(0), numLSqTerms(0),
-  vbdFlag(probDescDB.get_bool("method.variance_based_decomp")),
+  vbdFlag(method_store.get<bool>("variance_based_decomp")),
   writePrecision(probDescDB.get_int("environment.output_precision"))
 {
   iteratedModel = model;
@@ -83,7 +85,7 @@ Analyzer(std::shared_ptr<ProblemDescDB> owned_problem_db,
   }
 
   if (vbdFlag)
-    vbdDropTol = probDescDB.get_real("method.vbd_drop_tolerance");
+    vbdDropTol = method_store.get<Real>("vbd_drop_tolerance");
 
   if (!numFinalSolutions)
     numFinalSolutions = 1;

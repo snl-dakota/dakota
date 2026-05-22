@@ -425,8 +425,9 @@ protected:
   Iterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, 
 	   std::shared_ptr<TraitsBase> traits =
 	   std::shared_ptr<TraitsBase>(new TraitsBase()));
-  /// DI constructor using an owned IR-backed ProblemDescDB bridge
+  /// DI constructor using a method IR store plus an owned ProblemDescDB bridge
   Iterator(std::shared_ptr<ProblemDescDB> owned_problem_db,
+           const IRStore& method_store,
 	   ParallelLibrary& parallel_lib,
 	   std::shared_ptr<TraitsBase> traits =
 	   std::shared_ptr<TraitsBase>(new TraitsBase()));

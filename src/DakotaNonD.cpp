@@ -11,6 +11,7 @@
 #include "DakotaNonD.hpp"
 #include "NonDLHSSampling.hpp"
 #include "ProblemDescDB.hpp"
+#include "IRStore.hpp"
 #include "dakota_tabular_io.hpp"
 #include "NormalRandomVariable.hpp"
 #include "ParallelLibrary.hpp"
@@ -68,20 +69,21 @@ NonD::NonD(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared
 
 
 NonD::NonD(std::shared_ptr<ProblemDescDB> owned_problem_db,
+	   const IRStore& method_store,
 	   ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
-  Analyzer(std::move(owned_problem_db), parallel_lib, model),
-  respLevelTarget(probDescDB.get_short("method.nond.response_level_target")),
+  Analyzer(std::move(owned_problem_db), method_store, parallel_lib, model),
+  respLevelTarget(method_store.get<short>("nond.response_level_target")),
   respLevelTargetReduce(
-    probDescDB.get_short("method.nond.response_level_target_reduce")),
-  requestedRespLevels(probDescDB.get_rva("method.nond.response_levels")),
-  requestedProbLevels(probDescDB.get_rva("method.nond.probability_levels")),
-  requestedRelLevels(probDescDB.get_rva("method.nond.reliability_levels")),
+    method_store.get<short>("nond.response_level_target_reduce")),
+  requestedRespLevels(method_store.get<RealVectorArray>("nond.response_levels")),
+  requestedProbLevels(method_store.get<RealVectorArray>("nond.probability_levels")),
+  requestedRelLevels(method_store.get<RealVectorArray>("nond.reliability_levels")),
   requestedGenRelLevels(
-    probDescDB.get_rva("method.nond.gen_reliability_levels")),
+    method_store.get<RealVectorArray>("nond.gen_reliability_levels")),
   totalLevelRequests(0),
-  cdfFlag(probDescDB.get_short("method.nond.distribution") != COMPLEMENTARY),
+  cdfFlag(method_store.get<short>("nond.distribution") != COMPLEMENTARY),
   pdfOutput(false),
-  finalMomentsType(probDescDB.get_short("method.nond.final_moments"))
+  finalMomentsType(method_store.get<short>("nond.final_moments"))
 {
   initialize_counts();
   distribute_levels(requestedRespLevels);

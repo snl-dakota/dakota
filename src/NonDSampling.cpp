@@ -17,6 +17,7 @@
 #include "LHSDriverAdapter.hpp"
 #include "NonDSampling.hpp"
 #include "ProblemDescDB.hpp"
+#include "IRStore.hpp"
 #include "Rank1Lattice.hpp"
 #include "SamplerDriver.hpp"
 #include "SensAnalysisGlobal.hpp"
@@ -132,22 +133,23 @@ NonDSampling::NonDSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_
 
 
 NonDSampling::NonDSampling(std::shared_ptr<ProblemDescDB> owned_problem_db,
-			   ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
-  NonD(std::move(owned_problem_db), parallel_lib, model),
-  seedSpec(probDescDB.get_int("method.random_seed")),
-  randomSeed(seedSpec), samplesSpec(probDescDB.get_int("method.samples")),
+                           const IRStore& method_store,
+                           ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+  NonD(std::move(owned_problem_db), method_store, parallel_lib, model),
+  seedSpec(method_store.get<int>("random_seed")),
+  randomSeed(seedSpec), samplesSpec(method_store.get<int>("samples")),
   samplesRef(samplesSpec), numSamples(samplesSpec),
-  rngName(probDescDB.get_string("method.random_number_generator")),
-  sampleType(probDescDB.get_ushort("method.sample_type")), samplesIncrement(0),
-  stdRegressionCoeffs(probDescDB.get_bool("method.std_regression_coeffs")),
-  toleranceIntervalsFlag(probDescDB.get_bool("method.tolerance_intervals")),
+  rngName(method_store.get<String>("random_number_generator")),
+  sampleType(method_store.get<unsigned short>("sample_type")), samplesIncrement(0),
+  stdRegressionCoeffs(method_store.get<bool>("std_regression_coeffs")),
+  toleranceIntervalsFlag(method_store.get<bool>("tolerance_intervals")),
   statsFlag(true), allDataFlag(false), samplingVarsMode(ACTIVE),
   sampleRanksMode(IGNORE_RANKS),
-  varyPattern(!probDescDB.get_bool("method.fixed_seed")),
-  backfillDuplicates(probDescDB.get_bool("method.backfill")),
-  wilksFlag(probDescDB.get_bool("method.wilks")), numLHSRuns(0),
+  varyPattern(!method_store.get<bool>("fixed_seed")),
+  backfillDuplicates(method_store.get<bool>("backfill")),
+  wilksFlag(method_store.get<bool>("wilks")), numLHSRuns(0),
   samplerDriver(
-    ( probDescDB.get_ushort("method.sample_type") == SUBMETHOD_LOW_DISCREPANCY_SAMPLING ) ?
+    ( method_store.get<unsigned short>("sample_type") == SUBMETHOD_LOW_DISCREPANCY_SAMPLING ) ?
     std::unique_ptr<SamplerDriver>(std::make_unique<LDDriverAdapter>(probDescDB)) :
     std::unique_ptr<SamplerDriver>(std::make_unique<LHSDriverAdapter>()) )
 {
@@ -176,8 +178,8 @@ NonDSampling::NonDSampling(std::shared_ptr<ProblemDescDB> owned_problem_db,
 	   << std::endl;
       abort_handler(METHOD_ERROR);
     }
-    wilksOrder = probDescDB.get_ushort("method.order");
-    wilksSidedness = probDescDB.get_short("method.wilks.sided_interval");
+    wilksOrder = method_store.get<unsigned short>("order");
+    wilksSidedness = method_store.get<short>("wilks.sided_interval");
     bool wilks_twosided = (wilksSidedness == TWO_SIDED);
 
     Real max_prob_level = 0.0;
@@ -191,7 +193,7 @@ NonDSampling::NonDSampling(std::shared_ptr<ProblemDescDB> owned_problem_db,
     if (wilksAlpha <= 0.0)
       wilksAlpha = 0.95;
 
-    wilksBeta = probDescDB.get_real("method.confidence_level");
+    wilksBeta = method_store.get<Real>("confidence_level");
     if (wilksBeta <= 0.0)
       wilksBeta = 0.95;
     numSamples = compute_wilks_sample_size(wilksOrder, wilksAlpha,
@@ -200,8 +202,8 @@ NonDSampling::NonDSampling(std::shared_ptr<ProblemDescDB> owned_problem_db,
   }
 
   if (toleranceIntervalsFlag) {
-    tiCoverage = probDescDB.get_real("method.ti_coverage");
-    tiConfidenceLevel = probDescDB.get_real("method.ti_confidence_level");
+    tiCoverage = method_store.get<Real>("ti_coverage");
+    tiConfidenceLevel = method_store.get<Real>("ti_confidence_level");
     tiNumValidSamples = 0;
   }
 
