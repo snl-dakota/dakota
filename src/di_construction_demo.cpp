@@ -8,6 +8,7 @@
 #include "ParallelLibrary.hpp"
 #include "ProgramOptions.hpp"
 #include "SimulationModel.hpp"
+#include "WorkdirHelper.hpp"
 
 #include <iostream>
 #include <memory>
@@ -18,6 +19,11 @@ using json = nlohmann::json;
 int main()
 {
   using namespace Dakota;
+
+  // Environment normally initializes workdir/path bookkeeping. Without this,
+  // driver lookup can degrade to current-directory-only behavior when Dakota
+  // rewrites PATH prior to fork/exec.
+  WorkdirHelper::initialize();
 
   InstructionMaterializer materializer;
 
@@ -78,6 +84,12 @@ int main()
   const IRStore model_store =
     materializer.materialize_block(model_json, irgen::BlockType::Model);
 
+  // This is all set up that previously was done by the Environment. We need
+  // to figure out a nice way to do it in the new DI construction framework
+  
+  // In a normal study, Environment constructs and wires these runtime
+  // services together. The standalone DI demo does it explicitly so the
+  // execution path has a real OutputManager instead of the dummy default.
   MPIManager mpi_mgr;
   ProgramOptions prog_opts(mpi_mgr.world_rank());
   prog_opts.write_restart_file("di_construction_demo.rst");
@@ -85,6 +97,11 @@ int main()
                            mpi_mgr.mpirun_flag());
   output_mgr.startup_message("Running Dakota DI construction demo.");
   ParallelLibrary parallel_lib(mpi_mgr, prog_opts, output_mgr);
+
+  // This mirrors Environment/ParallelLibrary output setup for a real run. It
+  // initializes restart handling even when restart output is effectively just
+  // a runtime service detail for the demo; without it, write_restart() can
+  // fail because no restart destination stack has been established.
   output_mgr.push_output_tag("", prog_opts, false, true);
 
   std::cout << "Constructing DI study components...\n";
@@ -109,6 +126,8 @@ int main()
                 << first_response.function_value(0) << '\n';
   }
 
+  // Match the explicit push above so any output/restart state is unwound
+  // cleanly before shutdown.
   output_mgr.pop_output_tag();
 
   return 0;
