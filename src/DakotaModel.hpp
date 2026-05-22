@@ -28,6 +28,8 @@ class ActiveKey;
 
 namespace Dakota {
 
+class StudyRuntimeServices;
+
 // define special values for serve_init_mapping()
 #define FREE_COMMS 1
 #define INIT_COMMS 2
@@ -852,11 +854,10 @@ public:
 
 protected:
 
-  /// DI constructor using injected variables/response and an owned IR-backed
-  /// ProblemDescDB bridge for configuration queries needed at runtime.
-  Model(std::shared_ptr<ProblemDescDB> owned_problem_db,
+  /// DI constructor using injected variables/response and explicit runtime
+  /// services for study-wide behavior.
+  Model(std::shared_ptr<StudyRuntimeServices> runtime_services,
         const IRStore& model_store,
-	ParallelLibrary& parallel_lib,
 	const Variables& variables,
 	const Response& response);
 
@@ -1101,8 +1102,8 @@ protected:
   /// track use of initialize_mapping() and finalize_mapping()
   bool mappingInitialized;
 
-  /// optional ownership of a DI bridge ProblemDescDB
-  std::shared_ptr<ProblemDescDB> ownedProbDescDB;
+  /// optional shared runtime services for DI/library-mode construction
+  std::shared_ptr<StudyRuntimeServices> runtimeServices;
 
   /// class member reference to the problem description database
   /** Iterator and Model cannot use a shallow copy of ProblemDescDB

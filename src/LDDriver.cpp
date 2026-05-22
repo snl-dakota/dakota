@@ -13,6 +13,7 @@
 #include "LDDriver.hpp"
 #include "ProbabilityTransformModel.hpp"
 #include "ProblemDescDB.hpp"
+#include "IRStore.hpp"
 #include "RandomVariable.hpp"
 #include "Rank1Lattice.hpp"
 

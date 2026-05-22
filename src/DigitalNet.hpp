@@ -16,6 +16,8 @@
 
 namespace Dakota {
 
+class IRStore;
+
 /// Class for digital nets in Dakota
 class DigitalNet : public LowDiscrepancySequence
 {
@@ -56,6 +58,11 @@ public:
     ProblemDescDB& problem_db
   );
 
+  /// A constructor that takes a method IR store
+  DigitalNet(
+    const IRStore& method_store
+  );
+
   /// A constructor that takes a tuple and a problem description database
   /// The tuple contains the generating matrices, corresponding log2 of the
   /// maximum number of points, number of bits in each integer of the
@@ -64,6 +71,11 @@ public:
   DigitalNet(
     std::tuple<UInt64Matrix, int, int> data,
     ProblemDescDB& problem_db
+  );
+
+  DigitalNet(
+    std::tuple<UInt64Matrix, int, int> data,
+    const IRStore& method_store
   );
 
   /// Destructor
@@ -121,9 +133,17 @@ private:
     ProblemDescDB& problem_db
   );
 
+  std::tuple<UInt64Matrix, int, int> get_data(
+    const IRStore& method_store
+  );
+
   /// Case I: the generating matrices are provided in an external file
   const std::tuple<UInt64Matrix, int, int> get_generating_matrices_from_file(
     ProblemDescDB& problem_db
+  );
+
+  const std::tuple<UInt64Matrix, int, int> get_generating_matrices_from_file(
+    const IRStore& method_store
   );
 
   /// Case II: the generating matrices are provided in the input file
@@ -131,9 +151,17 @@ private:
     ProblemDescDB& problem_db
   );
 
+  const std::tuple<UInt64Matrix, int, int> get_inline_generating_matrices(
+    const IRStore& method_store
+  );
+
   /// Case III: a set of default generating matrices has been selected
   const std::tuple<UInt64Matrix, int, int> get_default_generating_matrices(
     ProblemDescDB& problem_db
+  );
+
+  const std::tuple<UInt64Matrix, int, int> get_default_generating_matrices(
+    const IRStore& method_store
   );
 
   /// Apply digital shift to this digital net

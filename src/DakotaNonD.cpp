@@ -12,6 +12,7 @@
 #include "NonDLHSSampling.hpp"
 #include "ProblemDescDB.hpp"
 #include "IRStore.hpp"
+#include "StudyRuntimeServices.hpp"
 #include "dakota_tabular_io.hpp"
 #include "NormalRandomVariable.hpp"
 #include "ParallelLibrary.hpp"
@@ -68,10 +69,9 @@ NonD::NonD(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared
 }
 
 
-NonD::NonD(std::shared_ptr<ProblemDescDB> owned_problem_db,
-	   const IRStore& method_store,
-	   ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
-  Analyzer(std::move(owned_problem_db), method_store, parallel_lib, model),
+NonD::NonD(std::shared_ptr<StudyRuntimeServices> runtime_services,
+	   const IRStore& method_store, std::shared_ptr<Model> model):
+  Analyzer(runtime_services, method_store, model),
   respLevelTarget(method_store.get<short>("nond.response_level_target")),
   respLevelTargetReduce(
     method_store.get<short>("nond.response_level_target_reduce")),

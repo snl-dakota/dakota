@@ -13,21 +13,26 @@ construction for Dakota components.
    the implementation still interprets raw retained IR rather than a richer
    variables-owned runtime representation.
 
-2. DI `Model` and `Iterator` construction still carry synthetic
-   `ProblemDescDB` bridges.
-   Reason: the exercised DI pilot path no longer appears to rely heavily on
-   `ProblemDescDB` reads in the `Model` / `SimulationModel` hot path, and the
-   iterator-side DI path now sources most `method.*` settings from `method_store`,
-   but the base `Model` and `Iterator` abstractions still store a
-   `ProblemDescDB&` and expose it via API, so the DI path retains bridge
-   objects as structural scaffolding.
+2. `Variables(const IRStore&)` now builds directly from materialized IR, but
+   its component-local `DEFAULT_VIEW` fallback resolves to `ALL_VIEW` because
+   the old method/response-driven view inference is intentionally absent from
+   the standalone variables constructor.
+   Reason: the DI path now avoids the temporary `ProblemDescDB` shim entirely,
+   but component-local variables construction still needs a deliberate story
+   for any view behavior that used to depend on broader study context.
 
-3. DI construction still uses bridge-based study/runtime seams for some
+3. DI `Model` and `Iterator` no longer synthesize IR-backed `ProblemDescDB`
+   objects for the pilot path, but the base abstractions still store a
+   `ProblemDescDB&` and expose it via API. DI-built instances currently bind
+   that reference to `dummy_db`.
+   Reason: this preserves legacy API shape while removing the temporary shim,
+   but it is still structural scaffolding that should eventually be redesigned.
+
+4. DI construction still relies on runtime-context defaults for some
    non-component-owned concerns.
-   Current examples: `outputLevel`, `ScalingOptions`,
-   `environment.output_precision`, and `LDDriverAdapter(probDescDB)`.
+   Current examples: `outputLevel` and `ScalingOptions`.
 
-4. `Model` still converts typed derivative configuration from `Response`
+5. `Model` still converts typed derivative configuration from `Response`
    back into legacy strings.
    Reason: `Response` now owns typed derivative enums/config, but `Model`
    still stores derivative state in string members (`gradientType`,

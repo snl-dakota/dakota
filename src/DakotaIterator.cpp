@@ -15,6 +15,7 @@
 #include "ParallelLibrary.hpp"
 #include "ProblemDescDB.hpp"
 #include "IRStore.hpp"
+#include "StudyRuntimeServices.hpp"
 #include "ParallelLibrary.hpp"
 #include "DakotaGraphics.hpp"
 #include "ResultsManager.hpp"
@@ -92,10 +93,11 @@ Iterator::Iterator(ProblemDescDB& problem_db,
 }
 
 
-Iterator::Iterator(std::shared_ptr<ProblemDescDB> owned_problem_db,
+Iterator::Iterator(std::shared_ptr<StudyRuntimeServices> runtime_services,
                    const IRStore& method_store,
-		   ParallelLibrary& parallel_lib, std::shared_ptr<TraitsBase> traits):
-  probDescDB(*owned_problem_db), parallelLib(parallel_lib),
+		   std::shared_ptr<TraitsBase> traits):
+  runtimeServices(std::move(runtime_services)), probDescDB(dummy_db),
+  parallelLib(this->runtimeServices->parallel_library()),
   methodPCIter(parallelLib.parallel_configuration_iterator()),
   myModelLayers(0), methodName(method_store.get<unsigned short>("algorithm")),
   convergenceTol(method_store.get<Real>("convergence_tolerance")),
@@ -114,8 +116,6 @@ Iterator::Iterator(std::shared_ptr<ProblemDescDB> owned_problem_db,
   surrExportFormat(method_store.get<unsigned short>("model_export_format")),
   iteratedModel(std::make_shared<Model>())
 {
-  ownedProbDescDB = std::move(owned_problem_db);
-
   if (methodId.empty())
     methodId = user_auto_id();
 

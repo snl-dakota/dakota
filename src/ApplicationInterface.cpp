@@ -12,6 +12,7 @@
 //#include "ParamResponsePair.hpp"
 #include "IRStore.hpp"
 #include "ProblemDescDB.hpp"
+#include "StudyRuntimeServices.hpp"
 #include <thread>
 
 //#define DEBUG
@@ -140,9 +141,10 @@ ApplicationInterface::~ApplicationInterface()
 
 ApplicationInterface::
 ApplicationInterface(const IRStore& interface_store,
-                     ParallelLibrary& parallel_lib):
+                     std::shared_ptr<StudyRuntimeServices> runtime_services):
   Interface(interface_store),
-  parallelLib(parallel_lib),
+  runtimeServices(std::move(runtime_services)),
+  parallelLib(runtimeServices->parallel_library()),
   batchEval(interface_store.get<bool>("batch")),
   asynchFlag(interface_store.get<bool>("asynch")),
   batchIdCntr(0),

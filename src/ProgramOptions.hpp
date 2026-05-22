@@ -25,6 +25,7 @@
 namespace Dakota {
 
 class CommandLineHandler;
+class IRStore;
 class ProblemDescDB;
 
 /// ProgramOptions stores options whether from the CLH or from library
@@ -188,6 +189,8 @@ public:
 
   /// Extract environment options from ProblemDescDB
   void parse(const ProblemDescDB& problem_db);
+  /// Extract environment options from a materialized environment IR store
+  void parse(const IRStore& environment_store);
 
   /// helper function for reading some class data from MPI buffer
   void read(MPIUnpackBuffer& s);

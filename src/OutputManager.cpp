@@ -15,6 +15,7 @@
 #include "OutputManager.hpp"
 #include "ProgramOptions.hpp"
 #include "ProblemDescDB.hpp"
+#include "IRStore.hpp"
 #include "ParamResponsePair.hpp"
 #include "PRPMultiIndex.hpp"
 #include "DakotaGraphics.hpp"
@@ -268,6 +269,37 @@ void OutputManager::parse(const ProgramOptions& prog_opts,
     }
     else
       write_precision = db_write_precision;
+  }
+}
+
+
+void OutputManager::parse(const ProgramOptions& prog_opts,
+                          const IRStore& environment_store)
+{
+  initial_redirects(prog_opts);
+
+  graph2DFlag = environment_store.get<bool>("graphics");
+  tabularDataFlag = environment_store.get<bool>("tabular_graphics_data");
+  tabularDataFile = environment_store.get<String>("tabular_graphics_file");
+  resultsOutputFlag = environment_store.get<bool>("results_output");
+  resultsOutputFile = environment_store.get<String>("results_output_file");
+  modelEvalsSelection = environment_store.get<unsigned short>("model_evals_selection");
+  interfEvalsSelection = environment_store.get<unsigned short>("interface_evals_selection");
+  tabularFormat = environment_store.get<unsigned short>("tabular_format");
+  resultsOutputFormat = environment_store.get<unsigned short>("results_output_format");
+  if (resultsOutputFlag && resultsOutputFormat == 0)
+    resultsOutputFormat = RESULTS_OUTPUT_TEXT;
+
+  int env_write_precision = environment_store.get<int>("output_precision");
+  if (env_write_precision > 0) {
+    if (env_write_precision > 16) {
+      std::cout << "\nWarning: requested output_precision exceeds DAKOTA's "
+                << "internal precision;\n         resetting to 16."
+                << std::endl;
+      write_precision = 16;
+    }
+    else
+      write_precision = env_write_precision;
   }
 }
 

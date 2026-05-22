@@ -16,6 +16,7 @@
 namespace Dakota {
 
 class IRStore;
+class StudyRuntimeServices;
 
 /// Derived application interface class which spawns simulation codes
 /// using fork/execvp/waitpid.
@@ -34,7 +35,8 @@ public:
   /// constructor
   ForkApplicInterface(const ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
   /// DI constructor from a materialized interface IR store
-  ForkApplicInterface(const IRStore& interface_store, ParallelLibrary& parallel_lib);
+  ForkApplicInterface(const IRStore& interface_store,
+                      std::shared_ptr<StudyRuntimeServices> runtime_services);
   /// destructor
   ~ForkApplicInterface() override;
 

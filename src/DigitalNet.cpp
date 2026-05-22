@@ -20,6 +20,7 @@
 #include <boost/random/mersenne_twister.hpp>
 
 #include "ProblemDescDB.hpp"
+#include "IRStore.hpp"
 
 namespace Dakota {
 
@@ -284,6 +285,18 @@ DigitalNet(
 
 }
 
+/// A constructor that takes a method IR store
+DigitalNet::DigitalNet(
+  const IRStore& method_store
+) :
+DigitalNet(
+  get_data(method_store),
+  method_store
+)
+{
+
+}
+
 /// A constructor that takes a tuple and a problem description database
 DigitalNet::DigitalNet(
   std::tuple<UInt64Matrix, int, int> data,
@@ -304,6 +317,30 @@ DigitalNet(
   problem_db.get<short>("method.ld.digitalnet.ordering"),
   problem_db.get<bool>("method.most_significant_bit_first"),
   problem_db.get<short>("method.output")
+)
+{
+
+}
+
+DigitalNet::DigitalNet(
+  std::tuple<UInt64Matrix, int, int> data,
+  const IRStore& method_store
+) :
+DigitalNet(
+  std::get<0>(data),
+  std::get<1>(data),
+  std::get<2>(data),
+  method_store.get<int>("t_scramble") ?
+    method_store.get<int>("t_scramble") :
+    std::numeric_limits<UInt64>::digits,
+  !method_store.get<bool>("no_digital_shift"),
+  !method_store.get<bool>("no_scrambling"),
+  method_store.get<int>("random_seed") ?
+    method_store.get<int>("random_seed") :
+    generate_system_seed(),
+  method_store.get<short>("ld.digitalnet.ordering"),
+  method_store.get<bool>("most_significant_bit_first"),
+  method_store.get<short>("output")
 )
 {
 
@@ -352,9 +389,8 @@ std::tuple<UInt64Matrix, int, int> DigitalNet::get_data(
 
   /// NOTE: outputLevel has not been set yet, so gettting it directly from
   /// the 'problem_db' instead
-  bool outputLevel = problem_db.get<short>("method.output");
+  short outputLevel = problem_db.get<short>("method.output");
 
-  ///
   /// Case I: the generating matrices are provided in an external file
   ///
   if ( !file.empty() )
@@ -417,6 +453,50 @@ std::tuple<UInt64Matrix, int, int> DigitalNet::get_data(
   }
 }
 
+
+std::tuple<UInt64Matrix, int, int> DigitalNet::get_data(
+  const IRStore& method_store
+)
+{
+  String file = method_store.get<String>("generating_matrices.file");
+  IntVector inlineMatrices = method_store.get<IntVector>("generating_matrices.inline");
+  short outputLevel = method_store.get<short>("output");
+
+  if (!file.empty()) {
+    if (outputLevel >= DEBUG_OUTPUT) {
+      Cout << "Reading generating matrices from file " << file << "..."
+        << std::endl;
+    }
+    return get_generating_matrices_from_file(method_store);
+  }
+  else if (inlineMatrices.length()) {
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "Reading inline generating matrices..." << std::endl;
+    return get_inline_generating_matrices(method_store);
+  }
+  else {
+    if (method_store.get<int>("m_max")) {
+      Cerr << "\nError: you can't specify default generating matrices and "
+        << "the log2 of the maximum number of points 'm_max' at the same "
+        << "time." << std::endl;
+      abort_handler(METHOD_ERROR);
+    }
+    if (method_store.get<int>("t_max")) {
+      Cerr << "\nError: you can't specify default generating matrices and "
+        << "the number of bits of the integers in the generating matrices "
+        << "'t_max' at the same time." << std::endl;
+      abort_handler(METHOD_ERROR);
+    }
+    if (method_store.get<bool>("least_significant_bit_first") ||
+        method_store.get<bool>("most_significant_bit_first")) {
+      Cerr << "\nError: you can't specify default generating matrices and "
+        << "an integer format at the same time." << std::endl;
+      abort_handler(METHOD_ERROR);
+    }
+    return get_default_generating_matrices(method_store);
+  }
+}
+
 /// Case I: the generating matrices are provided in an external file
 const std::tuple<UInt64Matrix, int, int> DigitalNet::get_generating_matrices_from_file(
   ProblemDescDB& problem_db
@@ -455,6 +535,41 @@ const std::tuple<UInt64Matrix, int, int> DigitalNet::get_generating_matrices_fro
       << fileName << "'" << std::endl;
     abort_handler(METHOD_ERROR);
     throw; // to silence warning
+  }
+}
+
+const std::tuple<UInt64Matrix, int, int> DigitalNet::get_generating_matrices_from_file(
+  const IRStore& method_store
+)
+{
+  String fileName = method_store.get<String>("generating_matrices.file");
+
+  try {
+    int nbOfRows = count_rows(fileName);
+    int nbOfCols = count_columns(fileName);
+    UInt64Matrix generatingMatrices(nbOfRows, nbOfCols);
+    std::fstream file(fileName);
+    String line;
+    String number;
+    int row = 0;
+    while (std::getline(file, line)) {
+      std::stringstream numbers(line);
+      int col = 0;
+      while (numbers >> number)
+        generatingMatrices(row, col++) = std::stoull(number);
+      row++;
+    }
+    return std::make_tuple(
+      generatingMatrices,
+      method_store.get<int>("m_max"),
+      method_store.get<int>("t_max")
+    );
+  }
+  catch (...) {
+    Cerr << "Error: error while parsing generating vector from file '"
+      << fileName << "'" << std::endl;
+    abort_handler(METHOD_ERROR);
+    throw;
   }
 }
 
@@ -500,6 +615,32 @@ const std::tuple<UInt64Matrix, int, int> DigitalNet::get_inline_generating_matri
   );
 }
 
+const std::tuple<UInt64Matrix, int, int> DigitalNet::get_inline_generating_matrices(
+  const IRStore& method_store
+)
+{
+  IntVector inlineMatrices = method_store.get<IntVector>("generating_matrices.inline");
+  int numCols = method_store.get<int>("m_max");
+  if (!numCols) {
+    Cerr << "Error: you must provide the keyword 'm_max' (> 0) when "
+      << "specifying inline generating matrices" << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+  int numRows = inlineMatrices.length() / numCols;
+
+  UInt64Matrix generatingMatrices;
+  generatingMatrices.reshape(numRows, numCols);
+  for (int row = 0; row < numRows; ++row)
+    for (int col = 0; col < numCols; ++col)
+      generatingMatrices(row, col) = inlineMatrices(row*numCols + col);
+
+  return std::make_tuple(
+    generatingMatrices,
+    numCols,
+    method_store.get<int>("t_max")
+  );
+}
+
 /// Case III: a set of default generating matrices has been selected
 const std::tuple<UInt64Matrix, int, int> DigitalNet::get_default_generating_matrices(
   ProblemDescDB& problem_db
@@ -507,7 +648,7 @@ const std::tuple<UInt64Matrix, int, int> DigitalNet::get_default_generating_matr
 {
   /// NOTE: outputLevel has not been set yet, so gettting it directly from
   /// the 'problem_db' instead
-  bool outputLevel = problem_db.get<short>("method.output");
+  short outputLevel = problem_db.get<short>("method.output");
 
   /// Select predefined generating matrices
   if ( problem_db.get<short>("method.ld.digitalnet.generating_matrix_scheme") == SOBOL_ORDER_2 )
@@ -539,6 +680,36 @@ const std::tuple<UInt64Matrix, int, int> DigitalNet::get_default_generating_matr
       }
     }
 
+    return std::make_tuple(
+      UInt64Matrix(Teuchos::View, &joe_kuo_d1024_t32_m32[0][0], 1024, 1024, 32),
+      32,
+      64
+    );
+  }
+}
+
+const std::tuple<UInt64Matrix, int, int> DigitalNet::get_default_generating_matrices(
+  const IRStore& method_store
+)
+{
+  short outputLevel = method_store.get<short>("output");
+
+  if (method_store.get<short>("ld.digitalnet.generating_matrix_scheme") == SOBOL_ORDER_2) {
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "Found predefined generating matrices 'sobol_order_2'." << std::endl;
+    return std::make_tuple(
+      UInt64Matrix(Teuchos::View, &sobol_d250_t64_m32[0][0], 250, 250, 32),
+      32,
+      32
+    );
+  }
+  else {
+    if (outputLevel >= DEBUG_OUTPUT) {
+      if (method_store.get<short>("ld.digitalnet.generating_matrix_scheme") == JOE_KUO)
+        Cout << "Found predefined generating matrices 'joe_kuo'." << std::endl;
+      else
+        Cout << "No generating matrices provided, using fall-back option 'joe_kuo'" << std::endl;
+    }
     return std::make_tuple(
       UInt64Matrix(Teuchos::View, &joe_kuo_d1024_t32_m32[0][0], 1024, 1024, 32),
       32,

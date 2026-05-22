@@ -15,6 +15,7 @@
 #include "PRPMultiIndex.hpp"
 #include "DataMethod.hpp"
 #include <DataInterface.hpp>
+#include <memory>
 
 namespace Dakota {
 
@@ -24,6 +25,7 @@ namespace Dakota {
 class ParamResponsePair;
 class ActiveSet;
 class ParallelLibrary;
+class StudyRuntimeServices;
 
 
 
@@ -53,7 +55,7 @@ protected:
 
   /// constructor for DI assembly from interface-local config
   ApplicationInterface(const IRStore& interface_store,
-                       ParallelLibrary& parallel_lib);
+                       std::shared_ptr<StudyRuntimeServices> runtime_services);
 
   //
   //- Heading: Member functions
@@ -215,6 +217,9 @@ protected:
   //
   //- Heading: Data
   //
+
+  /// optional shared runtime services for DI/library-mode construction
+  std::shared_ptr<StudyRuntimeServices> runtimeServices;
 
   /// reference to the ParallelLibrary object used to manage MPI partitions for
   /// the concurrent evaluations and concurrent analyses parallelism levels

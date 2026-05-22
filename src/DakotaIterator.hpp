@@ -20,6 +20,8 @@
 
 namespace Dakota {
 
+class StudyRuntimeServices;
+
 class ParallelLib;
 class ProblemDescDB;
 class Variables;
@@ -425,10 +427,9 @@ protected:
   Iterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, 
 	   std::shared_ptr<TraitsBase> traits =
 	   std::shared_ptr<TraitsBase>(new TraitsBase()));
-  /// DI constructor using a method IR store plus an owned ProblemDescDB bridge
-  Iterator(std::shared_ptr<ProblemDescDB> owned_problem_db,
+  /// DI constructor using a method IR store plus explicit runtime services
+  Iterator(std::shared_ptr<StudyRuntimeServices> runtime_services,
            const IRStore& method_store,
-	   ParallelLibrary& parallel_lib,
 	   std::shared_ptr<TraitsBase> traits =
 	   std::shared_ptr<TraitsBase>(new TraitsBase()));
 
@@ -488,8 +489,8 @@ protected:
   /// employing a single model instance)
   std::shared_ptr<Model> iteratedModel;
 
-  /// optional ownership of a DI bridge ProblemDescDB
-  std::shared_ptr<ProblemDescDB> ownedProbDescDB;
+  /// optional shared runtime services for DI/library-mode construction
+  std::shared_ptr<StudyRuntimeServices> runtimeServices;
 
   /// class member reference to the problem description database
   /** Iterator and Model cannot use a shallow copy of ProblemDescDB

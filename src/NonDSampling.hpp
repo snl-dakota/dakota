@@ -20,6 +20,7 @@
 namespace Dakota {
 
 class IRStore;
+class StudyRuntimeServices;
 
 
 /// Base class for common code between NonDLHSSampling,
@@ -206,10 +207,9 @@ protected:
 
   /// constructor
   NonDSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
-  /// DI constructor using method IR plus an owned ProblemDescDB bridge
-  NonDSampling(std::shared_ptr<ProblemDescDB> owned_problem_db,
-               const IRStore& method_store,
-               ParallelLibrary& parallel_lib, std::shared_ptr<Model> model);
+  /// DI constructor using method IR plus runtime services
+  NonDSampling(std::shared_ptr<StudyRuntimeServices> runtime_services,
+               const IRStore& method_store, std::shared_ptr<Model> model);
   /// alternate constructor for sample generation and evaluation "on the fly"
   NonDSampling(unsigned short method_name, std::shared_ptr<Model> model,
 	       unsigned short sample_type, size_t samples, int seed,

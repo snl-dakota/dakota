@@ -3,7 +3,7 @@
 #include "ForkApplicInterface.hpp"
 #include "InstructionMaterializer.hpp"
 #include "NonDLHSSampling.hpp"
-#include "ParallelLibrary.hpp"
+#include "StudyRuntimeServices.hpp"
 #include "SimulationModel.hpp"
 
 #include <gtest/gtest.h>
@@ -15,9 +15,23 @@ using json = nlohmann::json;
 namespace Dakota {
 namespace {
 
+TEST(di_construction_tests, can_construct_runtime_services_from_environment_irstore)
+{
+  InstructionMaterializer materializer;
+  const IRStore environment_store =
+    materializer.materialize_block(json::object(), irgen::BlockType::Environment);
+
+  auto runtime_services = make_study_runtime_services(environment_store);
+  ASSERT_NE(runtime_services, nullptr);
+  EXPECT_EQ(runtime_services->parallel_library().world_rank(), 0);
+  EXPECT_EQ(runtime_services->program_options().write_restart_file(), "dakota.rst");
+}
+
 TEST(di_construction_tests, can_construct_pilot_components_from_irstores)
 {
   InstructionMaterializer materializer;
+
+  const json environment_json = json::object();
 
   const json method_json = {
     {"sampling", {
@@ -53,6 +67,8 @@ TEST(di_construction_tests, can_construct_pilot_components_from_irstores)
 
   const json model_json = json::object();
 
+  const IRStore environment_store =
+    materializer.materialize_block(environment_json, irgen::BlockType::Environment);
   const IRStore method_store =
     materializer.materialize_block(method_json, irgen::BlockType::Method);
   const IRStore variables_store =
@@ -79,7 +95,7 @@ TEST(di_construction_tests, can_construct_pilot_components_from_irstores)
   ASSERT_FALSE(interface_store.get<StringArray>("application.analysis_drivers").empty());
   EXPECT_EQ(interface_store.get<StringArray>("application.analysis_drivers")[0], "text_book");
 
-  ParallelLibrary parallel_lib;
+  auto runtime_services = make_study_runtime_services(environment_store);
 
   std::cerr << "[di] constructing Variables\n";
   Variables variables(variables_store);
@@ -97,18 +113,18 @@ TEST(di_construction_tests, can_construct_pilot_components_from_irstores)
 
   std::cerr << "[di] constructing ForkApplicInterface\n";
   auto interface = std::make_shared<ForkApplicInterface>(
-    interface_store, parallel_lib);
+    interface_store, runtime_services);
   ASSERT_NE(interface, nullptr);
 
   std::cerr << "[di] constructing SimulationModel\n";
   auto model = std::make_shared<SimulationModel>(
-    model_store, variables, interface, response, parallel_lib);
+    model_store, variables, interface, response, runtime_services);
   EXPECT_EQ(model->current_response().num_functions(), 1);
   EXPECT_EQ(model->current_variables().tv(), 2);
   EXPECT_EQ(model->current_response().shared_data().num_functions(), 1);
 
   std::cerr << "[di] constructing NonDLHSSampling\n";
-  NonDLHSSampling sampling(method_store, parallel_lib, model);
+  NonDLHSSampling sampling(method_store, runtime_services, model);
   EXPECT_EQ(sampling.sampling_scheme(), SUBMETHOD_LHS);
   std::cerr << "[di] completed test\n";
 }

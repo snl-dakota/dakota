@@ -9,6 +9,7 @@
 
 #include "ProgramOptions.hpp"
 #include "CommandLineHandler.hpp"
+#include "IRStore.hpp"
 #include "ProblemDescDB.hpp"
 
 #include <cstdint>
@@ -411,6 +412,76 @@ void ProgramOptions::parse(const ProblemDescDB& problem_db)
 
   }
 
+}
+
+
+void ProgramOptions::parse(const IRStore& environment_store)
+{
+  auto set_option = [&](const String& store_key, const String& option_name,
+                        String& data_member) {
+    const String& store_str = environment_store.get<String>(store_key);
+    if (!store_str.empty()) {
+      if (data_member.empty())
+        data_member = store_str;
+      else if (worldRank == 0)
+        Cout << "Warning: " << option_name
+             << " specified in environment IR and passed options; option\n"
+             << "         specifying '" << data_member
+             << "' takes precedence over environment IR value."
+             << std::endl;
+    }
+  };
+
+  set_option("output_file", "output_file", outputFile);
+  set_option("error_file", "error_file", errorFile);
+  set_option("read_restart", "read_restart", readRestartFile);
+
+  const int stoprst = environment_store.get<int>("stop_restart");
+  if (stoprst > 0) {
+    if (stopRestartEvals == 0)
+      stopRestartEvals = stoprst;
+    else if (worldRank == 0)
+      Cout << "Warning: stop restart evals specified in environment IR and passed "
+           << "options; option\n         specifying '" << stopRestartEvals
+           << "' takes precedence over environment IR value." << std::endl;
+  }
+
+  set_option("write_restart", "write_restart", writeRestartFile);
+
+  const bool check_flag = environment_store.get<bool>("check");
+  if (!checkFlag && check_flag)
+    checkFlag = check_flag;
+
+  const bool pre_run = environment_store.get<bool>("pre_run");
+  const bool run = environment_store.get<bool>("run");
+  const bool post_run = environment_store.get<bool>("post_run");
+
+  if (pre_run || run || post_run) {
+    if (userModes.requestedUserModes) {
+      if (worldRank == 0)
+        Cout << "Warning: run mode options already passed; environment IR run "
+             << "modes will be ignored." << std::endl;
+    }
+    else {
+      userModes.preRun = pre_run;
+      userModes.run = run;
+      userModes.postRun = post_run;
+
+      set_option("pre_run_input", "pre_run_input", userModes.preRunInput);
+      set_option("pre_run_output", "pre_run_output", userModes.preRunOutput);
+      set_option("run_input", "run_input", userModes.runInput);
+      set_option("run_output", "run_output", userModes.runOutput);
+      set_option("post_run_input", "post_run_input", userModes.postRunInput);
+      set_option("post_run_output", "post_run_output", userModes.postRunOutput);
+
+      userModes.preRunOutputFormat =
+        environment_store.get<unsigned short>("pre_run_output_format");
+      userModes.postRunInputFormat =
+        environment_store.get<unsigned short>("post_run_input_format");
+    }
+
+    validate_run_modes();
+  }
 }
 
 

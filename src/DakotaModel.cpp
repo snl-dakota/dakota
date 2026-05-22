@@ -14,6 +14,7 @@
 #include "ParallelLibrary.hpp"
 #include "ProblemDescDB.hpp"
 #include "IRStore.hpp"
+#include "StudyRuntimeServices.hpp"
 #include "SimulationModel.hpp"
 #include "NestedModel.hpp"
 #include "DataFitSurrModel.hpp"
@@ -930,9 +931,8 @@ Model::Model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
 }
 
 
-Model::Model(std::shared_ptr<ProblemDescDB> owned_problem_db,
+Model::Model(std::shared_ptr<StudyRuntimeServices> runtime_services,
 	     const IRStore& model_store,
-	     ParallelLibrary& parallel_lib,
 	     const Variables& variables,
 	     const Response& response):
   currentVariables(variables),
@@ -959,9 +959,9 @@ Model::Model(std::shared_ptr<ProblemDescDB> owned_problem_db,
   hessIdNumerical(currentResponse.hessian_config().id_numerical),
   hessIdQuasi(currentResponse.hessian_config().id_quasi),
   warmStartFlag(false), supportsEstimDerivs(true), mappingInitialized(false),
-  ownedProbDescDB(std::move(owned_problem_db)),
-  probDescDB(*ownedProbDescDB), parallelLib(parallel_lib),
-  modelPCIter(parallel_lib.parallel_configuration_iterator()),
+  runtimeServices(std::move(runtime_services)),
+  probDescDB(dummy_db), parallelLib(runtimeServices->parallel_library()),
+  modelPCIter(parallelLib.parallel_configuration_iterator()),
   componentParallelMode(NO_PARALLEL_MODE), asynchEvalFlag(false),
   evaluationCapacity(1),
   outputLevel(NORMAL_OUTPUT),

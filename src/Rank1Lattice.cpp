@@ -18,6 +18,7 @@
 #include "Rank1Lattice.hpp"
 
 #include "ProblemDescDB.hpp"
+#include "IRStore.hpp"
 
 #include <boost/random/uniform_01.hpp>
 
@@ -179,6 +180,18 @@ Rank1Lattice(
 
 }
 
+/// A constructor that takes a method IR store
+Rank1Lattice::Rank1Lattice(
+  const IRStore& method_store
+) :
+Rank1Lattice(
+  get_data(method_store),
+  method_store
+)
+{
+
+}
+
 /// A constructor that takes a tuple and a problem description database
 Rank1Lattice::Rank1Lattice(
   std::tuple<UInt32Vector, int> data,
@@ -193,6 +206,24 @@ Rank1Lattice(
     generate_system_seed(),
   problem_db.get<short>("method.ld.rank1.ordering"), 
   problem_db.get<short>("method.output")
+)
+{
+
+}
+
+Rank1Lattice::Rank1Lattice(
+  std::tuple<UInt32Vector, int> data,
+  const IRStore& method_store
+) :
+Rank1Lattice(
+  std::get<0>(data),
+  std::get<1>(data),
+  !method_store.get<bool>("no_random_shift"),
+  method_store.get<int>("random_seed") ?
+    method_store.get<int>("random_seed") :
+    generate_system_seed(),
+  method_store.get<short>("ld.rank1.ordering"),
+  method_store.get<short>("output")
 )
 {
 
@@ -240,7 +271,7 @@ std::tuple<UInt32Vector, int> Rank1Lattice::get_data(
 
   /// NOTE: outputLevel has not been set yet, so gettting it directly from
   /// the 'problem_db' instead
-  bool outputLevel = problem_db.get<short>("method.output");
+  short outputLevel = problem_db.get<short>("method.output");
 
   /// Case I: the generating vector is provided in an external file
   if ( !file.empty() )
@@ -281,6 +312,37 @@ std::tuple<UInt32Vector, int> Rank1Lattice::get_data(
   }
 }
 
+
+std::tuple<UInt32Vector, int> Rank1Lattice::get_data(
+  const IRStore& method_store
+)
+{
+  String file = method_store.get<String>("generating_vector.file");
+  IntVector inlineVector = method_store.get<IntVector>("generating_vector.inline");
+  size_t len = inlineVector.length();
+  short outputLevel = method_store.get<short>("output");
+
+  if (!file.empty()) {
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "Reading generating vector from file " << file << "..." << std::endl;
+    return get_generating_vector_from_file(method_store);
+  }
+  else if (len > 0) {
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "Reading inline generating vector..." << std::endl;
+    return get_inline_generating_vector(method_store);
+  }
+  else {
+    if (method_store.get<int>("m_max")) {
+      Cerr << "\nError: you can't specify a default generating vector and "
+        << "the log2 of the maximum number of points 'm_max' at the same "
+        << "time." << std::endl;
+      abort_handler(METHOD_ERROR);
+    }
+    return get_default_generating_vector(method_store);
+  }
+}
+
 /// Case I: the generating vector is provided in an external file
 const std::tuple<UInt32Vector, int> Rank1Lattice::get_generating_vector_from_file(
   ProblemDescDB& problem_db
@@ -313,6 +375,33 @@ const std::tuple<UInt32Vector, int> Rank1Lattice::get_generating_vector_from_fil
   }
 }
 
+const std::tuple<UInt32Vector, int> Rank1Lattice::get_generating_vector_from_file(
+  const IRStore& method_store
+)
+{
+  String fileName = method_store.get<String>("generating_vector.file");
+
+  try {
+    int nbOfRows = count_rows(fileName);
+    UInt32Vector generatingVector(nbOfRows);
+    std::fstream file(fileName);
+    String line;
+    int j = 0;
+    while (std::getline(file, line))
+      generatingVector[j++] = std::stoull(line);
+    return std::make_tuple(
+      generatingVector,
+      method_store.get<int>("m_max")
+    );
+  }
+  catch (...) {
+    Cerr << "Error: error while parsing generating vector from file '"
+      << fileName << "'" << std::endl;
+    abort_handler(METHOD_ERROR);
+    throw;
+  }
+}
+
 /// Case II: the generating vector is provided in the input file
 const std::tuple<UInt32Vector, int> Rank1Lattice::get_inline_generating_vector(
   ProblemDescDB& problem_db
@@ -340,6 +429,24 @@ const std::tuple<UInt32Vector, int> Rank1Lattice::get_inline_generating_vector(
   );
 }
 
+const std::tuple<UInt32Vector, int> Rank1Lattice::get_inline_generating_vector(
+  const IRStore& method_store
+)
+{
+  IntVector inlineVector = method_store.get<IntVector>("generating_vector.inline");
+  size_t len = inlineVector.length();
+
+  UInt32Vector generatingVector;
+  generatingVector.resize(len);
+  for (size_t j = 0; j < len; ++j)
+    generatingVector[j] = inlineVector[j];
+
+  return std::make_tuple(
+    generatingVector,
+    method_store.get<int>("m_max")
+  );
+}
+
 /// Case III: a default generating vector has been selected
 const std::tuple<UInt32Vector, int> Rank1Lattice::get_default_generating_vector(
   ProblemDescDB& problem_db
@@ -347,7 +454,7 @@ const std::tuple<UInt32Vector, int> Rank1Lattice::get_default_generating_vector(
 {
   /// NOTE: outputLevel has not been set yet, so gettting it directly from
   /// the 'problem_db' instead
-  bool outputLevel = problem_db.get<short>("method.output");
+  short outputLevel = problem_db.get<short>("method.output");
 
   /// Select predefined generating vector
   if ( problem_db.get<short>("method.ld.rank1.generating_vector_scheme") == GEN_VECTOR_KUO )
@@ -379,6 +486,34 @@ const std::tuple<UInt32Vector, int> Rank1Lattice::get_default_generating_vector(
       }
     }
 
+    return std::make_tuple(
+      UInt32Vector(Teuchos::View, &cools_kuo_nuyens_d250_m20[0], 250),
+      20
+    );
+  }
+}
+
+const std::tuple<UInt32Vector, int> Rank1Lattice::get_default_generating_vector(
+  const IRStore& method_store
+)
+{
+  short outputLevel = method_store.get<short>("output");
+
+  if (method_store.get<short>("ld.rank1.generating_vector_scheme") == GEN_VECTOR_KUO) {
+    if (outputLevel >= DEBUG_OUTPUT)
+      Cout << "Found predefined generating vector 'kuo'" << std::endl;
+    return std::make_tuple(
+      UInt32Vector(Teuchos::View, &kuo_d3600_m20[0], 3600),
+      20
+    );
+  }
+  else {
+    if (outputLevel >= DEBUG_OUTPUT) {
+      if (method_store.get<short>("ld.rank1.generating_vector_scheme") == GEN_VECTOR_COOLS_KUO_NUYENS)
+        Cout << "Found predefined generating vector 'cools_kuo_nuyens'" << std::endl;
+      else
+        Cout << "No generating vector provided, using fall-back option 'cools_kuo_nuyens'" << std::endl;
+    }
     return std::make_tuple(
       UInt32Vector(Teuchos::View, &cools_kuo_nuyens_d250_m20[0], 250),
       20

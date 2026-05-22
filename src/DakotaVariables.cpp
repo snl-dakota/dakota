@@ -8,7 +8,6 @@
     _______________________________________________________________________ */
 
 #include "DakotaVariables.hpp"
-#include "IRStoreComponentProblemDescDB.hpp"
 #include "ProblemDescDB.hpp"
 #include "RelaxedVariables.hpp"
 #include "MixedVariables.hpp"
@@ -131,8 +130,7 @@ Variables::Variables(const ProblemDescDB& problem_db):
 
 
 Variables::Variables(const IRStore& variables_store):
-  Variables(ir_component_db::temporary_problem_db(
-    1, 0, nullptr, nullptr, nullptr, &variables_store, nullptr, nullptr))
+  Variables(SharedVariablesData(variables_store, get_view(variables_store)))
 {
   if (variablesRep)
     variablesRep->variablesStore = std::make_shared<IRStore>(variables_store);
@@ -240,6 +238,32 @@ ShortShortPair Variables::get_view(const ProblemDescDB& problem_db) const
   }
 
   view.second = EMPTY_VIEW; // inactive views only set by NestedModel
+#ifdef DEBUG
+  Cout << "Variables view: active_view = " << view.first
+       << " inactive_view = " << view.second << std::endl;
+#endif // DEBUG
+  return view;
+}
+
+
+ShortShortPair Variables::get_view(const IRStore& variables_store) const
+{
+  ShortShortPair view;
+
+  short view_spec = variables_store.get<short>("view"),
+        domain_spec = variables_store.get<short>("domain");
+  bool relaxed = (domain_spec == RELAXED_DOMAIN);
+
+  switch (view_spec) {
+  case DEFAULT_VIEW:
+    view.first = (relaxed) ? RELAXED_ALL : MIXED_ALL;
+    break;
+  default:
+    view.first = method_map(view_spec, relaxed);
+    break;
+  }
+
+  view.second = EMPTY_VIEW;
 #ifdef DEBUG
   Cout << "Variables view: active_view = " << view.first
        << " inactive_view = " << view.second << std::endl;

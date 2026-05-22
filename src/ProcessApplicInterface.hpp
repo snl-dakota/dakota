@@ -21,6 +21,7 @@ typedef intptr_t pid_t;
 
 namespace Dakota {
 
+class StudyRuntimeServices;
 
 class ParametersFileWriter;
 class ResultsFileReader;
@@ -56,7 +57,7 @@ protected:
 
   /// constructor for DI assembly from interface-local config
   ProcessApplicInterface(const IRStore& interface_store,
-                         ParallelLibrary& parallel_lib);
+                         std::shared_ptr<StudyRuntimeServices> runtime_services);
 
   //
   //- Heading: Virtual function redefinitions

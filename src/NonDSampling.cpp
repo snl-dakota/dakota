@@ -18,6 +18,7 @@
 #include "NonDSampling.hpp"
 #include "ProblemDescDB.hpp"
 #include "IRStore.hpp"
+#include "StudyRuntimeServices.hpp"
 #include "Rank1Lattice.hpp"
 #include "SamplerDriver.hpp"
 #include "SensAnalysisGlobal.hpp"
@@ -132,10 +133,9 @@ NonDSampling::NonDSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_
 }
 
 
-NonDSampling::NonDSampling(std::shared_ptr<ProblemDescDB> owned_problem_db,
-                           const IRStore& method_store,
-                           ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
-  NonD(std::move(owned_problem_db), method_store, parallel_lib, model),
+NonDSampling::NonDSampling(std::shared_ptr<StudyRuntimeServices> runtime_services,
+                           const IRStore& method_store, std::shared_ptr<Model> model):
+  NonD(runtime_services, method_store, model),
   seedSpec(method_store.get<int>("random_seed")),
   randomSeed(seedSpec), samplesSpec(method_store.get<int>("samples")),
   samplesRef(samplesSpec), numSamples(samplesSpec),
@@ -150,7 +150,7 @@ NonDSampling::NonDSampling(std::shared_ptr<ProblemDescDB> owned_problem_db,
   wilksFlag(method_store.get<bool>("wilks")), numLHSRuns(0),
   samplerDriver(
     ( method_store.get<unsigned short>("sample_type") == SUBMETHOD_LOW_DISCREPANCY_SAMPLING ) ?
-    std::unique_ptr<SamplerDriver>(std::make_unique<LDDriverAdapter>(probDescDB)) :
+    std::unique_ptr<SamplerDriver>(std::make_unique<LDDriverAdapter>(method_store)) :
     std::unique_ptr<SamplerDriver>(std::make_unique<LHSDriverAdapter>()) )
 {
   if (epistemicStats && totalLevelRequests) {

@@ -9,7 +9,7 @@
 
 #include "dakota_system_defs.hpp"
 #include "SimulationModel.hpp"
-#include "IRStoreComponentProblemDescDB.hpp"
+#include "StudyRuntimeServices.hpp"
 #include "ProblemDescDB.hpp"
 #include "MarginalsCorrDistribution.hpp"
 
@@ -49,11 +49,8 @@ SimulationModel::SimulationModel(const IRStore& model_store,
                                  const Variables& variables,
                                  std::shared_ptr<Interface> interface,
                                  const Response& response,
-                                 ParallelLibrary& parallel_lib):
-  Model(ir_component_db::make_problem_db(parallel_lib, nullptr, nullptr,
-          &model_store, nullptr, nullptr, nullptr),
-        model_store,
-        parallel_lib, variables, response),
+                                 std::shared_ptr<StudyRuntimeServices> runtime_services):
+  Model(runtime_services, model_store, variables, response),
   userDefinedInterface(std::move(interface)), solnCntlVarType(EMPTY_TYPE),
   solnCntlADVIndex(_NPOS), solnCntlAVIndex(_NPOS), costMetadataIndex(_NPOS),
   simModelEvalCntr(0)

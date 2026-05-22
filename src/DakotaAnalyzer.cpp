@@ -15,6 +15,7 @@
 #include "DakotaAnalyzer.hpp"
 #include "ProblemDescDB.hpp"
 #include "IRStore.hpp"
+#include "StudyRuntimeServices.hpp"
 #include "ParallelLibrary.hpp"
 #include "IteratorScheduler.hpp"
 #include "PRPMultiIndex.hpp"
@@ -62,13 +63,12 @@ Analyzer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_p
 
 
 Analyzer::
-Analyzer(std::shared_ptr<ProblemDescDB> owned_problem_db,
-         const IRStore& method_store,
-	 ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
-  Iterator(std::move(owned_problem_db), method_store, parallel_lib), compactMode(true),
+Analyzer(std::shared_ptr<StudyRuntimeServices> runtime_services,
+         const IRStore& method_store, std::shared_ptr<Model> model):
+  Iterator(runtime_services, method_store), compactMode(true),
   numObjFns(0), numLSqTerms(0),
   vbdFlag(method_store.get<bool>("variance_based_decomp")),
-  writePrecision(probDescDB.get_int("environment.output_precision"))
+  writePrecision(runtime_services->environment_store().get<int>("output_precision"))
 {
   iteratedModel = model;
   update_from_model(*iteratedModel);

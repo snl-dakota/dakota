@@ -2,13 +2,9 @@
 #include "DakotaResponse.hpp"
 #include "ForkApplicInterface.hpp"
 #include "InstructionMaterializer.hpp"
-#include "MPIManager.hpp"
+#include "StudyRuntimeServices.hpp"
 #include "NonDLHSSampling.hpp"
-#include "OutputManager.hpp"
-#include "ParallelLibrary.hpp"
-#include "ProgramOptions.hpp"
 #include "SimulationModel.hpp"
-#include "WorkdirHelper.hpp"
 
 #include <iostream>
 #include <memory>
@@ -20,12 +16,9 @@ int main()
 {
   using namespace Dakota;
 
-  // Environment normally initializes workdir/path bookkeeping. Without this,
-  // driver lookup can degrade to current-directory-only behavior when Dakota
-  // rewrites PATH prior to fork/exec.
-  WorkdirHelper::initialize();
-
   InstructionMaterializer materializer;
+
+  const json environment_json = json::object();
 
   const json method_json = {
     {"sampling", {
@@ -73,6 +66,8 @@ int main()
 
   const json model_json = json::object();
 
+  const IRStore environment_store =
+    materializer.materialize_block(environment_json, irgen::BlockType::Environment);
   const IRStore method_store =
     materializer.materialize_block(method_json, irgen::BlockType::Method);
   const IRStore variables_store =
@@ -84,34 +79,21 @@ int main()
   const IRStore model_store =
     materializer.materialize_block(model_json, irgen::BlockType::Model);
 
-  // This is all set up that previously was done by the Environment. We need
-  // to figure out a nice way to do it in the new DI construction framework
-  
-  // In a normal study, Environment constructs and wires these runtime
-  // services together. The standalone DI demo does it explicitly so the
-  // execution path has a real OutputManager instead of the dummy default.
-  MPIManager mpi_mgr;
-  ProgramOptions prog_opts(mpi_mgr.world_rank());
-  prog_opts.write_restart_file("di_construction_demo.rst");
-  OutputManager output_mgr(prog_opts, mpi_mgr.world_rank(),
-                           mpi_mgr.mpirun_flag());
-  output_mgr.startup_message("Running Dakota DI construction demo.");
-  ParallelLibrary parallel_lib(mpi_mgr, prog_opts, output_mgr);
-
-  // This mirrors Environment/ParallelLibrary output setup for a real run. It
-  // initializes restart handling even when restart output is effectively just
-  // a runtime service detail for the demo; without it, write_restart() can
-  // fail because no restart destination stack has been established.
-  output_mgr.push_output_tag("", prog_opts, false, true);
+  // In DI/library mode, the Environment-owned runtime setup is assembled
+  // explicitly from environment IR. This helper covers the pieces the demo
+  // previously had to do by hand: workdir/PATH initialization for driver
+  // lookup, ProgramOptions/OutputManager/ParallelLibrary wiring, and the
+  // top-level output/restart activation needed by write_restart().
+  auto runtime_services = make_study_runtime_services(environment_store);
 
   std::cout << "Constructing DI study components...\n";
   Variables variables(variables_store);
   Response response(responses_store, variables);
   auto interface = std::make_shared<ForkApplicInterface>(
-    interface_store, parallel_lib);
+    interface_store, runtime_services);
   auto model = std::make_shared<SimulationModel>(
-    model_store, variables, interface, response, parallel_lib);
-  NonDLHSSampling sampling(method_store, parallel_lib, model);
+    model_store, variables, interface, response, runtime_services);
+  NonDLHSSampling sampling(method_store, runtime_services, model);
 
   std::cout << "Running sampling study...\n";
   sampling.run();
@@ -125,10 +107,6 @@ int main()
       std::cout << "First response value: "
                 << first_response.function_value(0) << '\n';
   }
-
-  // Match the explicit push above so any output/restart state is unwound
-  // cleanly before shutdown.
-  output_mgr.pop_output_tag();
 
   return 0;
 }

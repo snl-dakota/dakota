@@ -416,7 +416,6 @@ set(evaldata_src DakotaVariables.cpp MixedVariables.cpp RelaxedVariables.cpp
 set(db_src ProblemDescDB.cpp
   ProblemDescDBUtils.cpp
   ProblemDescDBDump.cpp
-  IRStoreComponentProblemDescDB.cpp
   DataEnvironment.cpp DataMethod.cpp DataModel.cpp DataVariables.cpp
   DataInterface.cpp DataResponses.cpp)
 
@@ -493,7 +492,7 @@ endif()
 
 ## Environment sources.
 set(env_src DakotaEnvironment.cpp ExecutableEnvironment.cpp
-    LibraryEnvironment.cpp)
+    LibraryEnvironment.cpp StudyRuntimeServices.cpp)
 
 ## Iterator sources.
 set(iterator_src DakotaIterator.cpp DakotaAnalyzer.cpp DakotaPStudyDACE.cpp

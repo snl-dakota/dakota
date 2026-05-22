@@ -605,6 +605,7 @@ public:
   const ShortShortPair& view() const;
   /// defines variablesView from problem_db attributes
   ShortShortPair get_view(const ProblemDescDB& problem_db) const;
+  ShortShortPair get_view(const IRStore& variables_store) const;
   /// overrides the active view
   void active_view(short view1);
   /// sets the inactive view based on higher level (nested) context

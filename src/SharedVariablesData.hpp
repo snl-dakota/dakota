@@ -20,6 +20,7 @@ namespace Dakota {
 
 // forward declarations
 class ProblemDescDB;
+class IRStore;
 
 
 /// The representation of a SharedVariablesData instance.  This representation,
@@ -53,6 +54,9 @@ private:
   /// standard constructor
   SharedVariablesDataRep(const ProblemDescDB& problem_db,
 			 const ShortShortPair& view);
+  /// DI constructor from a materialized variables IR store
+  SharedVariablesDataRep(const IRStore& variables_store,
+                         const ShortShortPair& view);
   /// medium weight constructor providing detailed variable counts
   SharedVariablesDataRep(const ShortShortPair& view,
 			 const std::map<unsigned short, size_t>& vars_comps,
@@ -73,12 +77,16 @@ private:
   /// populate variables{Components,CompsTotals} from user variable
   /// type and count specifications
   void initialize_components_totals(const ProblemDescDB& problem_db);
+  /// populate variables{Components,CompsTotals} from IRStore count keys
+  void initialize_components_totals(const IRStore& variables_store);
   /// update variablesCompsTotals from variablesComponents
   void components_to_totals();
 
   /// populate allRelaxedDiscrete{Int,Real} from user specifications
   /// (relax variables that are not declared as categorical)
   void relax_noncategorical(const ProblemDescDB& problem_db);
+  /// populate allRelaxedDiscrete{Int,Real} from IRStore specifications
+  void relax_noncategorical(const IRStore& variables_store);
 
   /// Set the ard_cntr entry in the all-relaxed-discrete integer or
   /// real container ard_container, based on user-specification of
@@ -178,6 +186,8 @@ private:
   /// aggregate all{Continuous,DiscreteInt,DiscreteString,DiscreteReal}Labels
   /// from user specification or defaults
   void initialize_all_labels(const ProblemDescDB& problem_db);
+  /// aggregate all labels from a materialized IR store
+  void initialize_all_labels(const IRStore& variables_store);
   /// initialize all{Continuous,DiscreteInt,DiscreteString,DiscreteReal}Types,
   /// with or without discrete relaxation
   void initialize_all_types();
@@ -590,6 +600,9 @@ public:
   /// standard constructor
   SharedVariablesData(const ProblemDescDB& problem_db,
 		      const ShortShortPair& view);
+  /// DI constructor from a materialized variables IR store
+  SharedVariablesData(const IRStore& variables_store,
+                      const ShortShortPair& view);
   /// medium weight constructor providing detailed variable counts
   SharedVariablesData(const ShortShortPair& view,
 		      const std::map<unsigned short, size_t>& vars_comps,
@@ -1004,6 +1017,13 @@ inline SharedVariablesData::
 SharedVariablesData(const ProblemDescDB& problem_db,
 		    const ShortShortPair& view):
   svdRep(new SharedVariablesDataRep(problem_db, view))
+{ /* empty ctor */ }
+
+
+inline SharedVariablesData::
+SharedVariablesData(const IRStore& variables_store,
+                    const ShortShortPair& view):
+  svdRep(new SharedVariablesDataRep(variables_store, view))
 { /* empty ctor */ }
 
 

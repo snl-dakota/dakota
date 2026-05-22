@@ -16,6 +16,8 @@
 
 namespace Dakota {
 
+class IRStore;
+
 /// Class for rank-1 lattice rules in Dakota
 class Rank1Lattice : public LowDiscrepancySequence
 {
@@ -50,12 +52,22 @@ public:
     ProblemDescDB& problem_db
   );
 
+  /// A constructor that takes a method IR store
+  Rank1Lattice(
+    const IRStore& method_store
+  );
+
   /// A constructor that takes a tuple and a problem description database
   /// The tuple contains the generating vector and corresponding log2 of the
   /// maximum number of points
   Rank1Lattice(
     std::tuple<UInt32Vector, int> data,
     ProblemDescDB& problem_db
+  );
+
+  Rank1Lattice(
+    std::tuple<UInt32Vector, int> data,
+    const IRStore& method_store
   );
 
   /// Destructor
@@ -93,9 +105,17 @@ private:
     ProblemDescDB& problem_db
   );
 
+  std::tuple<UInt32Vector, int> get_data(
+    const IRStore& method_store
+  );
+
   /// Case I: the generating vector is provided in an external file
   const std::tuple<UInt32Vector, int> get_generating_vector_from_file(
     ProblemDescDB& problem_db
+  );
+
+  const std::tuple<UInt32Vector, int> get_generating_vector_from_file(
+    const IRStore& method_store
   );
 
   /// Case II: the generating vector is provided in the input file
@@ -103,9 +123,17 @@ private:
     ProblemDescDB& problem_db
   );
 
+  const std::tuple<UInt32Vector, int> get_inline_generating_vector(
+    const IRStore& method_store
+  );
+
   /// Case III: a default generating vector has been selected
   const std::tuple<UInt32Vector, int> get_default_generating_vector(
     ProblemDescDB& problem_db
+  );
+
+  const std::tuple<UInt32Vector, int> get_default_generating_vector(
+    const IRStore& method_store
   );
 
   /// Apply random shift to this rank-1 lattice rule

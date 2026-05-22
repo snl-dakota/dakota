@@ -14,6 +14,7 @@
 #include "LowDiscrepancySequence.hpp"
 #include "MultivariateDistribution.hpp"
 #include "ProblemDescDB.hpp"
+#include "IRStore.hpp"
 
 namespace Dakota {
 
@@ -24,6 +25,7 @@ public:
 
     // Default constructor
     LDDriver(ProblemDescDB& problem_db);
+    LDDriver(const IRStore& method_store);
 
     // Get the seed of the wrapped low-discrepancy sequence
     int get_seed();
