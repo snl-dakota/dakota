@@ -1,8 +1,8 @@
 .. _`inputfile_formatting_main`:
 
-"""""""""""""""""""""
-Input File Formatting
-"""""""""""""""""""""
+""""""""""""""""""""
+Freeform Input Files
+""""""""""""""""""""
  
 ------------------------
 General Formatting Rules

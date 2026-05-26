@@ -1,9 +1,10 @@
 .. _keyword-reference-area:
 
 Keyword Reference
-=======================================
+=================
 
-This page summarizes the overall input file structure, syntax, and the six types of blocks that may appear in Dakota input. Some are optional and some may appear multiple times:
+This section provides reference information for all Dakota keywords. It is organized by the six types
+of blocks that are permitted in Dakota input files: 
 
 .. toctree::
    :maxdepth: 1
@@ -14,19 +15,34 @@ This page summarizes the overall input file structure, syntax, and the six types
    reference/variables
    reference/interface
    reference/responses
+
+The purpose of these blocks and relationships between them are described on the :ref:`inputfile-main` page.
    
-**Introduction to Dakota Keywords**
+Keyword Pages
+-------------
 
-In Dakota, the environment manages execution modes and I/O streams and defines the top-level iterator. Generally speaking, an iterator contains a model and a model contains a set of variables, an interface, and a set of responses. An iterator repeatedly operates on the model to map the variables into responses using the interface. Each of these six components (environment, method, model, variables, interface, and responses) are separate specifications in the user's input file, and as a whole, determine the study to be performed during an execution of the Dakota software.
+Every Dakota keyword has its own page in this manual. Each page contains the following
+information about the keyword:
 
-A Dakota execution is limited to a single environment, but may involve multiple methods and multiple models. In particular, advanced iterators (i.e., meta- and component-based iterators) and advanced models (i.e., nested and surrogate models) may specialize to include recursions with additional sub-iterators and sub-models. Since each model may contain its own variables, interface, and responses, there may be multiple specifications of the method, model, variables, interface, and responses sections.
+- A short blurb describing the keyword and its purpose in Dakota
+- A `Specification` section that describes:
+  
+  - Whether the keyword accepts a literal argument, and, if so, its type
+  - Any aliases for the keyword
+  - The keyword's :ref:`JSON argument key <jsoninput:argumentkeys>`, if it has one
 
-**Keyword Pages**
+- A `Child Keywords` table which contains information about all of the keyword's children.
+  For each child keyword, the table specifies:
 
-Every Dakota keyword has its own page in this manual. The page describes:
+   - Whether the child keyword is optional or required, or part of an exclusive (choose one)
+     group
+   - If it's part of a group, whether the group has a :ref:`JSON group key <jsoninput:groupkeys>`
+   - The name of the keyword, and its blurb
 
-- Whether the keyword takes ARGUMENTS, and the data type Additional notes about ARGUMENTS can be found here: Specifying Arguments.
-- Whether it has an ALIAS
-- Which additional keywords can be specified to change its behavior
-- Which of these additional keywords are required or optional
-- Additional information about how to use the keyword in an input file
+- A longer `Description` of the keyword, which may include examples, HDF5 output, and other pertinent
+  information.
+
+
+
+
+
