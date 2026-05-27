@@ -450,7 +450,7 @@ class KeywordReferenceGenerator:
             parts.extend([metadata.blurb, ""])
 
         if metadata.topics:
-            parts.extend(["**Topics**", "", metadata.topics, ""])
+            parts.extend(["**Topics**", "", self._render_topics(metadata.topics), ""])
 
         parts.extend(self._render_toc(page))
         parts.extend(self._render_specification(page))
@@ -681,6 +681,16 @@ class KeywordReferenceGenerator:
         if isinstance(value, list):
             return ", ".join(self._format_default(item) for item in value)
         return str(value)
+
+    def _render_topics(self, value: str) -> str:
+        topics = []
+        for part in value.replace("\n", ",").split(","):
+            cleaned = part.strip()
+            if cleaned:
+                topics.append(f":ref:`{cleaned} <topic-{cleaned}>`")
+        if len(topics) <= 1:
+            return "".join(topics)
+        return "\n".join(f"- {topic}" for topic in topics)
 
     def _split_see_also(self, value: str) -> list[str]:
         links = []
