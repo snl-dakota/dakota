@@ -20,7 +20,7 @@ export/import context.
 - In ``freeform``, the num_rows x num_cols total data entries may be separated with any whitespace including spaces, tabs, and newlines. In this format, vectors may therefore appear as a single row or single column (or mixture; entries will populate the vector in order).
 - Some TPLs like SCOLIB and JEGA manage their own file I/O and only support the ``freeform`` option.
 Topics::
-file_formats
+
 Examples::
 Export a freeform tabular file containing only data for variables and
 responses.  Input file fragment:

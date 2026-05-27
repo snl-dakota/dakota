@@ -10,6 +10,7 @@ Dakota Input File
    :maxdepth: 1
    
    inputfile/formatting
+   inputfile/json
    inputfile/model
    inputfile/variables
    inputfile/interfaces
@@ -94,7 +95,7 @@ multiple blocks may appear in Dakota input files for advanced studies.
 
 The :ref:`responses block <responses:main>` of the input file specifies the types of data that the interface will return to Dakota. They are categorized
 primarily according to usage. Objective functions are used in optimization, calibration terms in calibration, and response
-functions in sensitivity analysis and UQ. For the example shown in :numref:`tutorial:rosenbrock_multidim`, the assignment ``response functions = 1``
+functions in sensitivity analysis and UQ. For the example shown in :numref:`tutorial:rosenbrock_multidim`, the assignment ``response_functions = 1``
 indicates that there is only one response function. The responses block can include additional information returned by the
 interface. That includes constraints and derivative information. In this example, there are no
 constraints associated with Rosenbrock’s function, so the keywords for constraint specifications are omitted. The keywords
