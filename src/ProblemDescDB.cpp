@@ -19,7 +19,7 @@
 #include "dakota_data_util.hpp"
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
-#include "NIDRProblemDescDB.hpp"
+#include "EmptyProblemDescDB.hpp"
 #include "InstructionMaterializer.hpp"
 #include "IRQuery.hpp"
 #include "DakotaIterator.hpp"
@@ -144,7 +144,7 @@ ProblemDescDB::get_db(int world_size, int world_rank)
   //if (xml_flag)
   //  return new XMLProblemDescDB(parallel_lib);
   //else
-  return std::make_shared<NIDRProblemDescDB>(world_size, world_rank);
+  return std::make_shared<EmptyProblemDescDB>(world_size, world_rank);
 }
 
 /** Copy constructor manages sharing of dbRep */
@@ -194,8 +194,6 @@ parse_inputs(const std::string_view input_string, const std::string_view parser_
     if (worldRank == 0) {
         irState.reset();
         validatedStudyJson = json();
-        // Parse the input file using one of the derived parser-specific classes
-        derived_parse_inputs(input_string, parser_options, command_line_run);
     }
 
     // Allow user input by callback function.
@@ -390,8 +388,6 @@ void ProblemDescDB::broadcast()
     if (worldSize > 1) {
       if (worldRank == 0) {
 	enforce_unique_ids();
-        if( !irState )
-          derived_broadcast(); // pre-processor
 	send_db_buffer();
 #ifdef MPI_DEBUG
 	Cout << "DB buffer to send on world rank " << worldRank
@@ -406,7 +402,6 @@ void ProblemDescDB::broadcast()
 	     << ":\n" << environmentSpec << dataMethodList << dataVariablesList
 	     << dataInterfaceList << dataResponsesList << std::endl;
 #endif // MPI_DEBUG
-	//derived_broadcast(); // post-processor
       }
     }
     else {
@@ -416,9 +411,6 @@ void ProblemDescDB::broadcast()
 	   << std::endl;
 #endif // DEBUG
       enforce_unique_ids();
-      // Skip NIDR if using IR-backed JSON input
-      if( !irState )
-        derived_broadcast();
     }
   }
 }
@@ -429,41 +421,6 @@ void ProblemDescDB::broadcast()
     minimal problem specification. */
 void ProblemDescDB::post_process()
 {
-  // no base class post-processing operations to perform
-  if (dbRep)
-    dbRep->derived_post_process();
-  else
-    derived_post_process();
-}
-
-
-void ProblemDescDB::
-derived_parse_inputs(const std::string_view dakota_input,
-		     const std::string_view parser_options, bool command_line_run)
-{
-  if (dbRep)
-    dbRep->derived_parse_inputs(dakota_input, parser_options, command_line_run);
-  else { // this fn must be redefined
-    Cerr << "Error: Letter lacking redefinition of virtual derived_parse_inputs"
-	 << " function.\n       No default defined at base class." << std::endl;
-    abort_handler(-1);
-  }
-}
-
-
-void ProblemDescDB::derived_broadcast()
-{
-  if (dbRep)
-    dbRep->derived_broadcast();
-  // else do nothing: this fn is optional
-}
-
-
-void ProblemDescDB::derived_post_process()
-{
-  if (dbRep)
-    dbRep->derived_post_process();
-  // else do nothing: this fn is optional
 }
 
 
@@ -1234,12 +1191,6 @@ split_entry_name(const std::string& entry_name, const std::string& context_msg)
 template <typename T>
 const T& ProblemDescDB::
 get(const std::string& context_msg,
-    const std::map<std::string, T DataEnvironmentRep::*>& env_map,
-    const std::map<std::string, T DataMethodRep::*>& met_map,
-    const std::map<std::string, T DataModelRep::*>& mod_map,
-    const std::map<std::string, T DataVariablesRep::*>& var_map,
-    const std::map<std::string, T DataInterfaceRep::*>& int_map,
-    const std::map<std::string, T DataResponsesRep::*>& res_map,
     const std::string& entry_name,
     const std::shared_ptr<ProblemDescDB>& db_rep) const
 {
@@ -1269,104 +1220,14 @@ get(const std::string& context_msg,
       catch (const std::exception&) {
         // Fall through to legacy Data*Rep access while the IR implementation
         // is still being filled in incrementally.
+        Cerr << "\nParser is using NIDR..." << std::endl;
+        abort_handler(PARSE_ERROR);
       }
     }
   }
 
-  if (block == "environment") {
-    auto it = env_map.find(entry);
-    if (it != env_map.end())
-      return (db_rep->environmentSpec.dataEnvRep).get()->*(it->second);
-  }
-  else if (block == "method") {
-    auto it = met_map.find(entry);
-    if (it != met_map.end())
-      return (db_rep->dataMethodIter->dataMethodRep).get()->*(it->second);
-  }
-  else if (block == "model") {
-    auto it = mod_map.find(entry);
-    if (it != mod_map.end())
-      return (db_rep->dataModelIter->dataModelRep).get()->*(it->second);
-  }
-  else if (block == "variables") {
-    auto it = var_map.find(entry);
-    if (it != var_map.end())
-      return (db_rep->dataVariablesIter->dataVarsRep).get()->*(it->second);
-  }
-  else if (block == "interface") {
-    auto it = int_map.find(entry);
-    if (it != int_map.end())
-      return (db_rep->dataInterfaceIter->dataIfaceRep).get()->*(it->second);
-  }
-  else if (block == "responses") {
-    auto it = res_map.find(entry);
-    if (it != res_map.end())
-      return (db_rep->dataResponsesIter->dataRespRep).get()->*(it->second);
-  }
   Bad_name(entry_name, context_msg);
   return abort_handler_t<const T&>(PARSE_ERROR);
-}
-
-template <typename T>
-T& ProblemDescDB::
-get_mutable(const std::string& context_msg,
-    const std::map<std::string, T DataEnvironmentRep::*>& env_map,
-    const std::map<std::string, T DataMethodRep::*>& met_map,
-    const std::map<std::string, T DataModelRep::*>& mod_map,
-    const std::map<std::string, T DataVariablesRep::*>& var_map,
-    const std::map<std::string, T DataInterfaceRep::*>& int_map,
-    const std::map<std::string, T DataResponsesRep::*>& res_map,
-    const std::string& entry_name,
-    const std::shared_ptr<ProblemDescDB>& db_rep) const
-{
-  if (!db_rep)
-    Null_rep(context_msg);
-
-  std::string block, entry;
-  std::tie(block, entry) = split_entry_name(entry_name, context_msg);
-
-  if (block == "environment") {
-    auto it = env_map.find(entry);
-    if (it != env_map.end())
-      return (db_rep->environmentSpec.dataEnvRep).get()->*(it->second);
-  }
-  else if (block == "method") {
-    if (db_rep->methodDBLocked)
-      Locked_db();
-    auto it = met_map.find(entry);
-    if (it != met_map.end())
-      return (db_rep->dataMethodIter->dataMethodRep).get()->*(it->second);
-  }
-  else if (block == "model") {
-    if (db_rep->modelDBLocked)
-      Locked_db();
-    auto it = mod_map.find(entry);
-    if (it != mod_map.end())
-      return (db_rep->dataModelIter->dataModelRep).get()->*(it->second);
-  }
-  else if (block == "variables") {
-    if (db_rep->variablesDBLocked)
-      Locked_db();
-    auto it = var_map.find(entry);
-    if (it != var_map.end())
-      return (db_rep->dataVariablesIter->dataVarsRep).get()->*(it->second);
-  }
-  else if (block == "interface") {
-    if (db_rep->interfaceDBLocked)
-      Locked_db();
-    auto it = int_map.find(entry);
-    if (it != int_map.end())
-      return (db_rep->dataInterfaceIter->dataIfaceRep).get()->*(it->second);
-  }
-  else if (block == "responses") {
-    if (db_rep->responsesDBLocked)
-      Locked_db();
-    auto it = res_map.find(entry);
-    if (it != res_map.end())
-      return (db_rep->dataResponsesIter->dataRespRep).get()->*(it->second);
-  }
-  Bad_name(entry_name, context_msg);
-  return abort_handler_t<T&>(PARSE_ERROR);
 }
 
 // shorthand for pointer to Data*Rep members for use in key to data maps;
@@ -1383,16 +1244,6 @@ const RealMatrixArray& ProblemDescDB::get_rma(const String& entry_name) const
 {
   return get<RealMatrixArray>
   ( "get_rma()",
-    { /* environment */ },
-    { /* method */ },
-    { /* model */ },
-    { /* variables */
-      {"discrete_design_set_int.adjacency_matrix", P_VAR discreteDesignSetIntAdj},
-      {"discrete_design_set_real.adjacency_matrix", P_VAR discreteDesignSetRealAdj},
-      {"discrete_design_set_str.adjacency_matrix", P_VAR discreteDesignSetStrAdj}
-    },
-    { /* interface */ },
-    { /* responses */ },
     entry_name, dbRep);
 }
 
@@ -1400,181 +1251,6 @@ const RealVector& ProblemDescDB::get_rv(const String& entry_name) const
 {  
   return get<const RealVector>
   ( "get_rv()",
-    { /* environment */ },
-    { /* method */
-      {"concurrent.parameter_sets", P_MET concurrentParameterSets},
-      {"jega.distance_vector", P_MET distanceVector},
-      {"jega.niche_vector", P_MET nicheVector},
-      {"nond.data_dist_covariance", P_MET dataDistCovariance},
-      {"nond.data_dist_means", P_MET dataDistMeans},
-      {"nond.dimension_preference", P_MET anisoDimPref},
-      {"nond.hyperprior_alphas", P_MET hyperPriorAlphas},
-      {"nond.hyperprior_betas", P_MET hyperPriorBetas},
-      {"nond.prediction_configs", P_MET predictionConfigList},
-      {"nond.proposal_covariance_data", P_MET proposalCovData},
-      {"nond.regression_noise_tolerance", P_MET regressionNoiseTol},
-      {"nond.relaxation.factor_sequence", P_MET relaxFactorSequence},
-      {"nond.scalarization_response_mapping", P_MET scalarizationRespCoeffs},
-      {"parameter_study.final_point", P_MET finalPoint},
-      {"parameter_study.list_of_points", P_MET listOfPoints},
-      {"parameter_study.step_vector", P_MET stepVector},
-      {"trust_region.initial_size", P_MET trustRegionInitSize}
-    },
-    { /* model */
-      {"nested.primary_response_mapping", P_MOD primaryRespCoeffs},
-      {"nested.secondary_response_mapping", P_MOD secondaryRespCoeffs},
-      {"simulation.solution_level_cost", P_MOD solutionLevelCost},
-      {"surrogate.kriging_correlations", P_MOD krigingCorrelations}
-    },
-    { /* variables */
-      {"beta_uncertain.alphas", P_VAR betaUncAlphas},
-      {"beta_uncertain.betas", P_VAR betaUncBetas},
-      {"beta_uncertain.initial_point", P_VAR betaUncVars},
-      {"beta_uncertain.lower_bounds", P_VAR betaUncLowerBnds},
-      {"beta_uncertain.upper_bounds", P_VAR betaUncUpperBnds},
-      {"binomial_uncertain.prob_per_trial", P_VAR binomialUncProbPerTrial},
-      {"continuous_aleatory_uncertain.initial_point",
-    	  P_VAR continuousAleatoryUncVars},
-      {"continuous_aleatory_uncertain.lower_bounds",
-    	  P_VAR continuousAleatoryUncLowerBnds},
-      {"continuous_aleatory_uncertain.upper_bounds",
-    	  P_VAR continuousAleatoryUncUpperBnds},
-      {"continuous_design.initial_point", P_VAR continuousDesignVars},
-      {"continuous_design.lower_bounds", P_VAR continuousDesignLowerBnds},
-      {"continuous_design.scales", P_VAR continuousDesignScales},
-      {"continuous_design.upper_bounds", P_VAR continuousDesignUpperBnds},
-      {"continuous_epistemic_uncertain.initial_point",
-    	  P_VAR continuousEpistemicUncVars},
-      {"continuous_epistemic_uncertain.lower_bounds",
-    	  P_VAR continuousEpistemicUncLowerBnds},
-      {"continuous_epistemic_uncertain.upper_bounds",
-    	  P_VAR continuousEpistemicUncUpperBnds},
-      {"continuous_interval_uncertain.lower_bounds",
-    	  P_VAR continuousIntervalUncLowerBnds},
-      {"continuous_interval_uncertain.upper_bounds",
-    	  P_VAR continuousIntervalUncUpperBnds},
-      {"continuous_interval_uncertain.initial_point",
-    	  P_VAR continuousIntervalUncVars},
-      {"continuous_state.initial_state", P_VAR continuousStateVars},
-      {"continuous_state.lower_bounds", P_VAR continuousStateLowerBnds},
-      {"continuous_state.upper_bounds", P_VAR continuousStateUpperBnds},
-      {"discrete_aleatory_uncertain_real.initial_point",
-    	  P_VAR discreteRealAleatoryUncVars},
-      {"discrete_aleatory_uncertain_real.lower_bounds",
-    	  P_VAR discreteRealAleatoryUncLowerBnds},
-      {"discrete_aleatory_uncertain_real.upper_bounds",
-    	  P_VAR discreteRealAleatoryUncUpperBnds},
-      {"discrete_design_set_real.initial_point", P_VAR discreteDesignSetRealVars},
-      {"discrete_design_set_real.lower_bounds",
-    	  P_VAR discreteDesignSetRealLowerBnds},
-      {"discrete_design_set_real.upper_bounds",
-    	  P_VAR discreteDesignSetRealUpperBnds},
-      {"discrete_epistemic_uncertain_real.initial_point",
-    	  P_VAR discreteRealEpistemicUncVars},
-      {"discrete_epistemic_uncertain_real.lower_bounds",
-    	  P_VAR discreteRealEpistemicUncLowerBnds},
-      {"discrete_epistemic_uncertain_real.upper_bounds",
-    	  P_VAR discreteRealEpistemicUncUpperBnds},
-      {"discrete_state_set_real.initial_state", P_VAR discreteStateSetRealVars},
-      {"discrete_state_set_real.lower_bounds",
-    	  P_VAR discreteStateSetRealLowerBnds},
-      {"discrete_state_set_real.upper_bounds",
-    	  P_VAR discreteStateSetRealUpperBnds},
-      {"discrete_uncertain_set_real.lower_bounds",
-    	  P_VAR discreteUncSetRealLowerBnds},
-      {"discrete_uncertain_set_real.upper_bounds",
-    	  P_VAR discreteUncSetRealUpperBnds},
-      {"discrete_uncertain_set_real.initial_point",
-    	  P_VAR discreteUncSetRealVars},
-      {"exponential_uncertain.betas", P_VAR exponentialUncBetas},
-      {"exponential_uncertain.lower_bounds", P_VAR exponentialUncLowerBnds},
-      {"exponential_uncertain.upper_bounds", P_VAR exponentialUncUpperBnds},
-      {"exponential_uncertain.initial_point", P_VAR exponentialUncVars},
-      {"frechet_uncertain.alphas", P_VAR frechetUncAlphas},
-      {"frechet_uncertain.betas", P_VAR frechetUncBetas},
-      {"frechet_uncertain.lower_bounds", P_VAR frechetUncLowerBnds},
-      {"frechet_uncertain.upper_bounds", P_VAR frechetUncUpperBnds},
-      {"frechet_uncertain.initial_point", P_VAR frechetUncVars},
-      {"gamma_uncertain.alphas", P_VAR gammaUncAlphas},
-      {"gamma_uncertain.betas", P_VAR gammaUncBetas},
-      {"gamma_uncertain.lower_bounds", P_VAR gammaUncLowerBnds},
-      {"gamma_uncertain.upper_bounds", P_VAR gammaUncUpperBnds},
-      {"gamma_uncertain.initial_point", P_VAR gammaUncVars},
-      {"geometric_uncertain.prob_per_trial", P_VAR geometricUncProbPerTrial},
-      {"gumbel_uncertain.alphas", P_VAR gumbelUncAlphas},
-      {"gumbel_uncertain.betas", P_VAR gumbelUncBetas},
-      {"gumbel_uncertain.lower_bounds", P_VAR gumbelUncLowerBnds},
-      {"gumbel_uncertain.upper_bounds", P_VAR gumbelUncUpperBnds},
-      {"gumbel_uncertain.initial_point", P_VAR gumbelUncVars},
-      {"histogram_bin_uncertain.lower_bounds", P_VAR histogramBinUncLowerBnds},
-      {"histogram_bin_uncertain.upper_bounds", P_VAR histogramBinUncUpperBnds},
-      {"histogram_bin_uncertain.initial_point", P_VAR histogramBinUncVars},
-      {"histogram_uncertain.point_real.lower_bounds",
-    	  P_VAR histogramPointRealUncLowerBnds},
-      {"histogram_uncertain.point_real.upper_bounds",
-    	  P_VAR histogramPointRealUncUpperBnds},
-      {"histogram_uncertain.point_real.initial_point",
-    	  P_VAR histogramPointRealUncVars},
-      {"linear_equality_constraints", P_VAR linearEqConstraintCoeffs},
-      {"linear_equality_scales", P_VAR linearEqScales},
-      {"linear_equality_targets", P_VAR linearEqTargets},
-      {"linear_inequality_constraints", P_VAR linearIneqConstraintCoeffs},
-      {"linear_inequality_lower_bounds", P_VAR linearIneqLowerBnds},
-      {"linear_inequality_scales", P_VAR linearIneqScales},
-      {"linear_inequality_upper_bounds", P_VAR linearIneqUpperBnds},
-      {"lognormal_uncertain.error_factors", P_VAR lognormalUncErrFacts},
-      {"lognormal_uncertain.inferred_upper_bounds",
-          P_VAR lognormalUncInferredUpperBnds},
-      {"lognormal_uncertain.lambdas", P_VAR lognormalUncLambdas},
-      {"lognormal_uncertain.initial_point", P_VAR lognormalUncVars},
-      {"lognormal_uncertain.lower_bounds", P_VAR lognormalUncLowerBnds},
-      {"lognormal_uncertain.means", P_VAR lognormalUncMeans},
-      {"lognormal_uncertain.std_deviations", P_VAR lognormalUncStdDevs},
-      {"lognormal_uncertain.upper_bounds", P_VAR lognormalUncUpperBnds},
-      {"lognormal_uncertain.zetas", P_VAR lognormalUncZetas},
-      {"loguniform_uncertain.initial_point", P_VAR loguniformUncVars},
-      {"loguniform_uncertain.lower_bounds", P_VAR loguniformUncLowerBnds},
-      {"loguniform_uncertain.upper_bounds", P_VAR loguniformUncUpperBnds},
-      {"negative_binomial_uncertain.prob_per_trial",
-    	  P_VAR negBinomialUncProbPerTrial},
-      {"normal_uncertain.inferred_lower_bounds",
-          P_VAR normalUncInferredLowerBnds},
-      {"normal_uncertain.inferred_upper_bounds",
-          P_VAR normalUncInferredUpperBnds},
-      {"normal_uncertain.initial_point", P_VAR normalUncVars},
-      {"normal_uncertain.lower_bounds", P_VAR normalUncLowerBnds},
-      {"normal_uncertain.means", P_VAR normalUncMeans},
-      {"normal_uncertain.std_deviations", P_VAR normalUncStdDevs},
-      {"normal_uncertain.upper_bounds", P_VAR normalUncUpperBnds},
-      {"poisson_uncertain.lambdas", P_VAR poissonUncLambdas},
-      {"triangular_uncertain.initial_point", P_VAR triangularUncVars},
-      {"triangular_uncertain.lower_bounds", P_VAR triangularUncLowerBnds},
-      {"triangular_uncertain.modes", P_VAR triangularUncModes},
-      {"triangular_uncertain.upper_bounds", P_VAR triangularUncUpperBnds},
-      {"uniform_uncertain.initial_point", P_VAR uniformUncVars},
-      {"uniform_uncertain.lower_bounds", P_VAR uniformUncLowerBnds},
-      {"uniform_uncertain.upper_bounds", P_VAR uniformUncUpperBnds},
-      {"weibull_uncertain.alphas", P_VAR weibullUncAlphas},
-      {"weibull_uncertain.betas", P_VAR weibullUncBetas},
-      {"weibull_uncertain.lower_bounds", P_VAR weibullUncLowerBnds},
-      {"weibull_uncertain.upper_bounds", P_VAR weibullUncUpperBnds},
-      {"weibull_uncertain.initial_point", P_VAR weibullUncVars}
-    },
-    { /* interface */
-      {"failure_capture.recovery_fn_vals", P_INT recoveryFnVals}
-    },
-    { /* responses */
-      {"fd_gradient_step_size", P_RES fdGradStepSize},
-      {"fd_hessian_step_size", P_RES fdHessStepSize},
-      {"nonlinear_equality_scales", P_RES nonlinearEqScales},
-      {"nonlinear_equality_targets", P_RES nonlinearEqTargets},
-      {"nonlinear_inequality_lower_bounds", P_RES nonlinearIneqLowerBnds},
-      {"nonlinear_inequality_scales", P_RES nonlinearIneqScales},
-      {"nonlinear_inequality_upper_bounds", P_RES nonlinearIneqUpperBnds},
-      {"primary_response_fn_scales", P_RES primaryRespFnScales},
-      {"primary_response_fn_weights", P_RES primaryRespFnWeights},
-      {"simulation_variance", P_RES simVariance}
-    },
     entry_name, dbRep);
 }
 
@@ -1583,95 +1259,6 @@ const IntVector& ProblemDescDB::get_iv(const String& entry_name) const
 {
   return get<const IntVector>
   ( "get_iv()",
-    { /* environment */ },
-    { /* method */
-      {"fsu_quasi_mc.primeBase", P_MET primeBase},
-      {"fsu_quasi_mc.sequenceLeap", P_MET sequenceLeap},
-      {"fsu_quasi_mc.sequenceStart", P_MET sequenceStart},
-      {"nond.refinement_samples", P_MET refineSamples},
-      {"parameter_study.steps_per_variable", P_MET stepsPerVariable},
-      {"generating_vector.inline", P_MET generatingVector},
-      {"generating_matrices.inline", P_MET generatingMatrices},
-      {"nond.mlmcmc_subsampling_steps", P_MET mlmcmcSubsamplingSteps}
-    },
-    { /* model */
-      {"refinement_samples", P_MOD refineSamples}
-    },
-    { /* variables */
-      {"binomial_uncertain.num_trials", P_VAR binomialUncNumTrials},
-      {"binomial_uncertain.lower_bounds", P_VAR binomialUncLowerBnds},
-      {"binomial_uncertain.upper_bounds", P_VAR binomialUncUpperBnds},
-      {"binomial_uncertain.initial_point", P_VAR binomialUncVars},
-      {"discrete_aleatory_uncertain_int.initial_point",
-    	  P_VAR discreteIntAleatoryUncVars},
-      {"discrete_aleatory_uncertain_int.lower_bounds",
-    	  P_VAR discreteIntAleatoryUncLowerBnds},
-      {"discrete_aleatory_uncertain_int.upper_bounds",
-    	  P_VAR discreteIntAleatoryUncUpperBnds},
-      {"discrete_design_range.initial_point", P_VAR discreteDesignRangeVars},
-      {"discrete_design_range.lower_bounds", P_VAR discreteDesignRangeLowerBnds},
-      {"discrete_design_range.upper_bounds", P_VAR discreteDesignRangeUpperBnds},
-      {"discrete_design_set_int.initial_point", P_VAR discreteDesignSetIntVars},
-      {"discrete_design_set_int.lower_bounds",
-    	  P_VAR discreteDesignSetIntLowerBnds},
-      {"discrete_design_set_int.upper_bounds",
-    	  P_VAR discreteDesignSetIntUpperBnds},
-      {"discrete_epistemic_uncertain_int.initial_point",
-    	  P_VAR discreteIntEpistemicUncVars},
-      {"discrete_epistemic_uncertain_int.lower_bounds",
-    	  P_VAR discreteIntEpistemicUncLowerBnds},
-      {"discrete_epistemic_uncertain_int.upper_bounds",
-    	  P_VAR discreteIntEpistemicUncUpperBnds},
-      {"discrete_interval_uncertain.lower_bounds",
-    	  P_VAR discreteIntervalUncLowerBnds},
-      {"discrete_interval_uncertain.upper_bounds",
-    	  P_VAR discreteIntervalUncUpperBnds},
-      {"discrete_interval_uncertain.initial_point",
-    	  P_VAR discreteIntervalUncVars},
-      {"discrete_state_range.initial_state", P_VAR discreteStateRangeVars},
-      {"discrete_state_range.lower_bounds", P_VAR discreteStateRangeLowerBnds},
-      {"discrete_state_range.upper_bounds", P_VAR discreteStateRangeUpperBnds},
-      {"discrete_state_set_int.initial_state", P_VAR discreteStateSetIntVars},
-      {"discrete_state_set_int.lower_bounds", P_VAR discreteStateSetIntLowerBnds},
-      {"discrete_state_set_int.upper_bounds", P_VAR discreteStateSetIntUpperBnds},
-      {"discrete_uncertain_set_int.lower_bounds",
-    	  P_VAR discreteUncSetIntLowerBnds},
-      {"discrete_uncertain_set_int.upper_bounds",
-    	  P_VAR discreteUncSetIntUpperBnds},
-      {"discrete_uncertain_set_int.initial_point",
-    	  P_VAR discreteUncSetIntVars},
-      {"geometric_uncertain.lower_bounds", P_VAR geometricUncLowerBnds},
-      {"geometric_uncertain.upper_bounds", P_VAR geometricUncUpperBnds},
-      {"geometric_uncertain.initial_point", P_VAR geometricUncVars},
-      {"histogram_uncertain.point_int.lower_bounds",
-    	  P_VAR histogramPointIntUncLowerBnds},
-      {"histogram_uncertain.point_int.upper_bounds",
-    	  P_VAR histogramPointIntUncUpperBnds},
-      {"histogram_uncertain.point_int.initial_point",
-    	  P_VAR histogramPointIntUncVars},
-      {"hypergeometric_uncertain.lower_bounds", P_VAR hyperGeomUncLowerBnds},
-      {"hypergeometric_uncertain.upper_bounds", P_VAR hyperGeomUncUpperBnds},
-      {"hypergeometric_uncertain.initial_point", P_VAR hyperGeomUncVars},
-      {"hypergeometric_uncertain.num_drawn", P_VAR hyperGeomUncNumDrawn},
-      {"hypergeometric_uncertain.selected_population",
-    	  P_VAR hyperGeomUncSelectedPop},
-      {"hypergeometric_uncertain.total_population", P_VAR hyperGeomUncTotalPop},
-      {"negative_binomial_uncertain.lower_bounds",
-    	  P_VAR negBinomialUncLowerBnds},
-      {"negative_binomial_uncertain.upper_bounds",
-    	  P_VAR negBinomialUncUpperBnds},
-      {"negative_binomial_uncertain.initial_point",
-    	  P_VAR negBinomialUncVars},
-      {"negative_binomial_uncertain.num_trials", P_VAR negBinomialUncNumTrials},
-      {"poisson_uncertain.lower_bounds", P_VAR poissonUncLowerBnds},
-      {"poisson_uncertain.upper_bounds", P_VAR poissonUncUpperBnds},
-      {"poisson_uncertain.initial_point", P_VAR poissonUncVars}
-    },
-    { /* interface */ },
-    { /* responses */
-      {"lengths", P_RES fieldLengths},
-      {"num_coordinates_per_field", P_RES numCoordsPerField}
-    },
     entry_name, dbRep);
 }
 
@@ -1680,31 +1267,6 @@ const BitArray& ProblemDescDB::get_ba(const String& entry_name) const
 {
   return get<const BitArray>
   ( "get_ba()",
-    { /* environment */ },
-    { /* method */ },
-    { /* model */ },
-    { /* variables */
-      {"binomial_uncertain.categorical", P_VAR binomialUncCat},
-      {"discrete_design_range.categorical", P_VAR discreteDesignRangeCat},
-      {"discrete_design_set_int.categorical", P_VAR discreteDesignSetIntCat},
-      {"discrete_design_set_real.categorical", P_VAR discreteDesignSetRealCat},
-      {"discrete_interval_uncertain.categorical", P_VAR discreteIntervalUncCat},
-      {"discrete_state_range.categorical", P_VAR discreteStateRangeCat},
-      {"discrete_state_set_int.categorical", P_VAR discreteStateSetIntCat},
-      {"discrete_state_set_real.categorical", P_VAR discreteStateSetRealCat},
-      {"discrete_uncertain_set_int.categorical", P_VAR discreteUncSetIntCat},
-      {"discrete_uncertain_set_real.categorical", P_VAR discreteUncSetRealCat},
-      {"geometric_uncertain.categorical", P_VAR geometricUncCat},
-      {"histogram_uncertain.point_int.categorical",
-    	  P_VAR histogramUncPointIntCat},
-      {"histogram_uncertain.point_real.categorical",
-    	  P_VAR histogramUncPointRealCat},
-      {"hypergeometric_uncertain.categorical", P_VAR hyperGeomUncCat},
-      {"negative_binomial_uncertain.categorical", P_VAR negBinomialUncCat},
-      {"poisson_uncertain.categorical", P_VAR poissonUncCat}
-    },
-    { /* interface */ },
-    { /* responses */ },
     entry_name, dbRep);
 }
 
@@ -1713,18 +1275,6 @@ const SizetArray& ProblemDescDB::get_sza(const String& entry_name) const
 {
   return get<const SizetArray>
   ( "get_sza()",
-    { /* environment */ },
-    { /* method */
-      {"nond.c3function_train.start_rank_sequence", P_MET startRankSeq},
-      {"nond.collocation_points_sequence", P_MET collocationPointsSeq},
-      {"nond.expansion_samples_sequence", P_MET expansionSamplesSeq},
-      {"nond.pilot_samples", P_MET pilotSamples},
-      {"random_seed_sequence", P_MET randomSeedSeq}
-    },
-    { /* model */ },
-    { /* variables */ },
-    { /* interface */ },
-    { /* responses */ },
     entry_name, dbRep);
 }
 
@@ -1733,19 +1283,6 @@ const UShortArray& ProblemDescDB::get_usa(const String& entry_name) const
 {
   return get<const UShortArray>
   ( "get_usa()",
-    { /* environment */ },
-    { /* method */
-      {"nond.c3function_train.start_order_sequence", P_MET startOrderSeq},
-      {"nond.expansion_order_sequence", P_MET expansionOrderSeq},
-      {"nond.quadrature_order_sequence", P_MET quadratureOrderSeq},
-      {"nond.sparse_grid_level_sequence", P_MET sparseGridLevelSeq},
-      {"nond.tensor_grid_order", P_MET tensorGridOrder},
-      {"partitions", P_MET varPartitions}
-    },
-    { /* model */ },
-    { /* variables */ },
-    { /* interface */ },
-    { /* responses */ },
     entry_name, dbRep);
 }
 
@@ -1754,14 +1291,6 @@ const RealSymMatrix& ProblemDescDB::get_rsm(const String& entry_name) const
 {
   return get<const RealSymMatrix>
   ( "get_rsm()",
-    { /* environment */ },
-    { /* method */ },
-    { /* model */ },
-    { /* variables */
-      { "uncertain.correlation_matrix", P_VAR uncertainCorrelations}
-    },
-    { /* interface */ },
-    { /* responses */ },
     entry_name, dbRep);
 }
 
@@ -1770,17 +1299,6 @@ const RealVectorArray& ProblemDescDB::get_rva(const String& entry_name) const
 {
   return get<const RealVectorArray>
   ( "get_rva()",
-    { /* environment */ },
-    { /* method */
-      {"nond.gen_reliability_levels", P_MET genReliabilityLevels},
-      {"nond.probability_levels", P_MET probabilityLevels},
-      {"nond.reliability_levels", P_MET reliabilityLevels},
-      {"nond.response_levels", P_MET responseLevels}
-    },
-    { /* model */ },
-    { /* variables */ },
-    { /* interface */ },
-    { /* responses */ },
     entry_name, dbRep);
 }
 
@@ -1790,12 +1308,6 @@ const IntVectorArray& ProblemDescDB::get_iva(const String& entry_name) const
   // BMA: no current use cases
   return get<const IntVectorArray>
   ( "get_iva()",
-    { /* environment */ },
-    { /* method */ },
-    { /* model */ },
-    { /* variables */ },
-    { /* interface */ },
-    { /* responses */ },
     entry_name, dbRep);
 }
 
@@ -1804,18 +1316,6 @@ const IntSet& ProblemDescDB::get_is(const String& entry_name) const
 {
   return get<const IntSet>
   ( "get_is()",
-    { /* environment */ },
-    { /* method */ },
-    { /* model */ },
-    { /* variables */ },
-    { /* interface */ },
-    { /* responses */
-      {"gradients.mixed.id_analytic", P_RES idAnalyticGrads},
-      {"gradients.mixed.id_numerical", P_RES idNumericalGrads},
-      {"hessians.mixed.id_analytic", P_RES idAnalyticHessians},
-      {"hessians.mixed.id_numerical", P_RES idNumericalHessians},
-      {"hessians.mixed.id_quasi", P_RES idQuasiHessians}
-    },
     entry_name, dbRep);
 }
 
@@ -1824,15 +1324,6 @@ const IntSetArray& ProblemDescDB::get_isa(const String& entry_name) const
 {
   return get<const IntSetArray>
   ( "get_isa()",
-    { /* environment */ },
-    { /* method */ },
-    { /* model */ },
-    { /* variables */
-      {"discrete_design_set_int.values", P_VAR discreteDesignSetInt},
-      {"discrete_state_set_int.values", P_VAR discreteStateSetInt}
-    },
-    { /* interface */ },
-    { /* responses */ },
     entry_name, dbRep);
 }
 
@@ -1841,14 +1332,6 @@ const SizetSet& ProblemDescDB::get_szs(const String& entry_name) const
 {
   return get<const SizetSet>
   ( "get_szs()",
-    { /* environment */ },
-    { /* method */ },
-    { /* model */
-      {"surrogate.function_indices", P_MOD surrogateFnIndices}
-    },
-    { /* variables */ },
-    { /* interface */ },
-    { /* responses */ },
     entry_name, dbRep);
 }
 
@@ -1857,15 +1340,6 @@ const StringSetArray& ProblemDescDB::get_ssa(const String& entry_name) const
 {
   return get <const StringSetArray>
   ( "get_ssa()",
-    { /* environment */ },
-    { /* method */ },
-    { /* model */ },
-    { /* variables */
-      {"discrete_design_set_string.values", P_VAR discreteDesignSetStr},
-      {"discrete_state_set_string.values", P_VAR discreteStateSetStr}
-    },
-    { /* interface */ },
-    { /* responses */ },
     entry_name, dbRep);
 }
 
@@ -1874,15 +1348,6 @@ const RealSetArray& ProblemDescDB::get_rsa(const String& entry_name) const
 {
   return get<const RealSetArray>
   ( "get_rsa()",
-    { /* environment */ },
-    { /* method */ },
-    { /* model */ },
-    { /* variables */
-      {"discrete_design_set_real.values", P_VAR discreteDesignSetReal},
-      {"discrete_state_set_real.values", P_VAR discreteStateSetReal}
-    },
-    { /* interface */ },
-    { /* responses */ },
     entry_name, dbRep);
 }
 
@@ -1891,16 +1356,6 @@ const IntRealMapArray& ProblemDescDB::get_irma(const String& entry_name) const
 {
   return get<const IntRealMapArray>
   ( "get_irma()",
-    { /* environment */ },
-    { /* method */ },
-    { /* model */ },
-    { /* variables */
-      {"discrete_uncertain_set_int.values_probs",
-    	  P_VAR discreteUncSetIntValuesProbs},
-      {"histogram_uncertain.point_int_pairs", P_VAR histogramUncPointIntPairs}
-    },
-    { /* interface */ },
-    { /* responses */ },
     entry_name, dbRep);
 }
 
@@ -1908,16 +1363,6 @@ const StringRealMapArray& ProblemDescDB::get_srma(const String& entry_name) cons
 {
   return get<const StringRealMapArray>
   ( "get_srma()",
-    { /* environment */ },
-    { /* method */ },
-    { /* model */ },
-    { /* variables */
-      {"discrete_uncertain_set_string.values_probs",
-    	  P_VAR discreteUncSetStrValuesProbs},
-      {"histogram_uncertain.point_string_pairs", P_VAR histogramUncPointStrPairs}
-    },
-    { /* interface */ },
-    { /* responses */ },
     entry_name, dbRep);
 }
 
@@ -1926,17 +1371,6 @@ const RealRealMapArray& ProblemDescDB::get_rrma(const String& entry_name) const
 {
   return get<const RealRealMapArray>
   ( "get_rrma()",
-    { /* environment */ },
-    { /* method */ },
-    { /* model */ },
-    { /* variables */
-      {"discrete_uncertain_set_real.values_probs",
-    	  P_VAR discreteUncSetRealValuesProbs},
-      {"histogram_uncertain.bin_pairs",   P_VAR histogramUncBinPairs},
-      {"histogram_uncertain.point_real_pairs", P_VAR histogramUncPointRealPairs}
-    },
-    { /* interface */ },
-    { /* responses */ },
     entry_name, dbRep);
 }
 
@@ -1945,15 +1379,6 @@ get_rrrma(const String& entry_name) const
 {
   return get<const RealRealPairRealMapArray>
   ( "get_rrrma()",
-    { /* environment */ },
-    { /* method */ },
-    { /* model */ },
-    { /* variables */
-      {"continuous_interval_uncertain.basic_probs",
-    	  P_VAR continuousIntervalUncBasicProbs}
-    },
-    { /* interface */ },
-    { /* responses */ },
     entry_name, dbRep);
 }
 
@@ -1962,15 +1387,6 @@ get_iirma(const String& entry_name) const
 {
   return get<const IntIntPairRealMapArray>
   ( "get_iirma()",
-    { /* environment */ },
-    { /* method */ },
-    { /* model */ },
-    { /* variables */
-      {"discrete_interval_uncertain.basic_probs",
-    	  P_VAR discreteIntervalUncBasicProbs}
-    },
-    { /* interface */ },
-    { /* responses */ },
     entry_name, dbRep);
 }
 
@@ -1978,117 +1394,6 @@ const StringArray& ProblemDescDB::get_sa(const String& entry_name) const
 {
   return get<const StringArray>
   ( "get_sa()",
-    { /* environment */ },
-    { /* method */
-      {"coliny.misc_options", P_MET miscOptions},
-      {"hybrid.method_names", P_MET hybridMethodNames},
-      {"hybrid.method_pointers", P_MET hybridMethodPointers},
-      {"hybrid.model_pointers", P_MET hybridModelPointers}
-    },
-    { /* model */
-      {"metrics", P_MOD diagMetrics},
-      {"nested.primary_variable_mapping", P_MOD primaryVarMaps},
-      {"nested.secondary_variable_mapping", P_MOD secondaryVarMaps},
-      {"surrogate.ensemble_model_pointers", P_MOD ensembleModelPointers}
-    },
-    { /* variables */
-      {"continuous_aleatory_uncertain.labels", P_VAR continuousAleatoryUncLabels},
-      {"normal_uncertain.labels", P_VAR normalUncLabels},
-      {"lognormal_uncertain.labels", P_VAR lognormalUncLabels},
-      {"uniform_uncertain.labels", P_VAR uniformUncLabels},
-      {"loguniform_uncertain.labels", P_VAR loguniformUncLabels},
-      {"triangular_uncertain.labels", P_VAR triangularUncLabels},
-      {"exponential_uncertain.labels", P_VAR exponentialUncLabels},
-      {"beta_uncertain.labels", P_VAR betaUncLabels},
-      {"gamma_uncertain.labels", P_VAR gammaUncLabels},
-      {"gumbel_uncertain.labels", P_VAR gumbelUncLabels},
-      {"frechet_uncertain.labels", P_VAR frechetUncLabels},
-      {"weibull_uncertain.labels", P_VAR weibullUncLabels},
-      {"histogram_bin_uncertain.labels", P_VAR histogramBinUncLabels},
-      {"continuous_design.labels", P_VAR continuousDesignLabels},
-      {"continuous_design.scale_types", P_VAR continuousDesignScaleTypes},
-      {"continuous_epistemic_uncertain.labels",
-    	  P_VAR continuousEpistemicUncLabels},
-      {"continuous_interval_uncertain.labels", P_VAR continuousIntervalUncLabels},
-      {"continuous_state.labels", P_VAR continuousStateLabels},
-      {"discrete_aleatory_uncertain_int.labels",
-    	  P_VAR discreteIntAleatoryUncLabels},
-      {"poisson_uncertain.labels", P_VAR poissonUncLabels},
-      {"binomial_uncertain.labels", P_VAR binomialUncLabels},
-      {"negative_binomial_uncertain.labels", P_VAR negBinomialUncLabels},
-      {"geometric_uncertain.labels", P_VAR geometricUncLabels},
-      {"hypergeometric_uncertain.labels", P_VAR hyperGeomUncLabels},
-      {"histogram_uncertain.point_int.labels", P_VAR histogramPointIntUncLabels},
-      {"discrete_aleatory_uncertain_real.labels",
-    	  P_VAR discreteRealAleatoryUncLabels},
-      {"histogram_uncertain.point_real.labels", P_VAR histogramPointRealUncLabels},
-      {"discrete_aleatory_uncertain_string.initial_point",
-    	  P_VAR discreteStrAleatoryUncVars},
-      {"discrete_aleatory_uncertain_string.labels",
-    	  P_VAR discreteStrAleatoryUncLabels},
-      {"histogram_uncertain.point_string.labels", P_VAR histogramPointStrUncLabels},
-      {"discrete_aleatory_uncertain_string.lower_bounds",
-    	  P_VAR discreteStrAleatoryUncLowerBnds},
-      {"discrete_aleatory_uncertain_string.upper_bounds",
-    	  P_VAR discreteStrAleatoryUncUpperBnds},
-      {"discrete_design_range.labels", P_VAR discreteDesignRangeLabels},
-      {"discrete_design_set_int.labels", P_VAR discreteDesignSetIntLabels},
-      {"discrete_design_set_real.labels", P_VAR discreteDesignSetRealLabels},
-      {"discrete_design_set_string.initial_point", P_VAR discreteDesignSetStrVars},
-      {"discrete_design_set_string.labels", P_VAR discreteDesignSetStrLabels},
-      {"discrete_design_set_string.lower_bounds", P_VAR discreteDesignSetStrLowerBnds},
-      {"discrete_design_set_string.upper_bounds", P_VAR discreteDesignSetStrUpperBnds},
-      {"discrete_epistemic_uncertain_int.labels",
-    	  P_VAR discreteIntEpistemicUncLabels},
-      {"discrete_interval_uncertain.labels", P_VAR discreteIntervalUncLabels},
-      {"discrete_uncertain_set_int.labels", P_VAR discreteUncSetIntLabels},
-      {"discrete_epistemic_uncertain_real.labels",
-    	  P_VAR discreteRealEpistemicUncLabels},
-      {"discrete_uncertain_set_real.labels", P_VAR discreteUncSetRealLabels},
-      {"discrete_epistemic_uncertain_string.initial_point",
-    	  P_VAR discreteStrEpistemicUncVars},
-      {"discrete_epistemic_uncertain_string.labels",
-    	  P_VAR discreteStrEpistemicUncLabels},
-      {"discrete_uncertain_set_string.labels", P_VAR discreteUncSetStrLabels},
-      {"discrete_epistemic_uncertain_string.lower_bounds",
-    	  P_VAR discreteStrEpistemicUncLowerBnds},
-      {"discrete_epistemic_uncertain_string.upper_bounds",
-    	  P_VAR discreteStrEpistemicUncUpperBnds},
-      {"discrete_state_range.labels", P_VAR discreteStateRangeLabels},
-      {"discrete_state_set_int.labels", P_VAR discreteStateSetIntLabels},
-      {"discrete_state_set_real.labels", P_VAR discreteStateSetRealLabels},
-      {"discrete_state_set_string.initial_state", P_VAR discreteStateSetStrVars},
-      {"discrete_state_set_string.labels", P_VAR discreteStateSetStrLabels},
-      {"discrete_state_set_string.lower_bounds", P_VAR discreteStateSetStrLowerBnds},
-      {"discrete_state_set_string.upper_bounds", P_VAR discreteStateSetStrUpperBnds},
-      {"discrete_uncertain_set_string.lower_bounds",
-    	  P_VAR discreteUncSetStrLowerBnds},
-      {"discrete_uncertain_set_string.upper_bounds",
-    	  P_VAR discreteUncSetStrUpperBnds},
-      {"discrete_uncertain_set_string.initial_point", P_VAR discreteUncSetStrVars},
-      {"histogram_uncertain.point_string.lower_bounds",
-    	  P_VAR histogramPointStrUncLowerBnds},
-      {"histogram_uncertain.point_string.upper_bounds",
-    	  P_VAR histogramPointStrUncUpperBnds},
-      {"histogram_uncertain.point_string.initial_point",
-    	  P_VAR histogramPointStrUncVars},
-      {"linear_equality_scale_types", P_VAR linearEqScaleTypes},
-      {"linear_inequality_scale_types", P_VAR linearIneqScaleTypes}
-    },
-    { /* interface */
-      { "application.analysis_drivers", P_INT analysisDrivers},
-      { "copyFiles", P_INT copyFiles},
-      { "linkFiles", P_INT linkFiles}
-    },
-    { /* responses */
-      { "labels", P_RES responseLabels},
-      { "metadata_labels", P_RES metadataLabels},
-      { "nonlinear_equality_scale_types", P_RES nonlinearEqScaleTypes},
-      { "nonlinear_inequality_scale_types", P_RES nonlinearIneqScaleTypes},
-      { "primary_response_fn_scale_types", P_RES primaryRespFnScaleTypes},
-      { "primary_response_fn_sense", P_RES primaryRespFnSense},
-      { "variance_type", P_RES varianceType}
-    },
     entry_name, dbRep);
 }
 
@@ -2097,14 +1402,6 @@ const String2DArray& ProblemDescDB::get_s2a(const String& entry_name) const
 {
   return get<const String2DArray>
   ( "get_s2a()",
-    { /* environment */ },
-    { /* method */ },
-    { /* model */ },
-    { /* variables */ },
-    { /* interface */
-      {"application.analysis_components", P_INT analysisComponents}
-    },
-    { /* responses */ },
     entry_name, dbRep);
 }
 
@@ -2113,148 +1410,6 @@ const String& ProblemDescDB::get_string(const String& entry_name) const
 {
   return get<const String>
   ( "get_string()",
-    { /* environment */
-      {"error_file", P_ENV errorFile},
-      {"output_file", P_ENV outputFile},
-      {"post_run_input", P_ENV postRunInput},
-      {"post_run_output", P_ENV postRunOutput},
-      {"pre_run_input", P_ENV preRunInput},
-      {"pre_run_output", P_ENV preRunOutput},
-      {"read_restart", P_ENV readRestart},
-      {"results_output_file", P_ENV resultsOutputFile},
-      {"run_input", P_ENV runInput},
-      {"run_output", P_ENV runOutput},
-      {"tabular_graphics_file", P_ENV tabularDataFile},
-      {"top_method_pointer", P_ENV topMethodPointer},
-      {"write_restart", P_ENV writeRestart}
-    },
-    { /* method */
-      {"advanced_options_file", P_MET advancedOptionsFilename},
-      {"asynch_pattern_search.merit_function", P_MET meritFunction},
-      {"batch_selection", P_MET batchSelectionType},
-      {"class_path_and_name", P_MET moduleAndClassName},
-      {"coliny.beta_solver_name", P_MET betaSolverName},
-      {"coliny.division", P_MET boxDivision},
-      {"coliny.exploratory_moves", P_MET exploratoryMoves},
-      {"coliny.pattern_basis", P_MET patternBasis},
-      {"crossover_type", P_MET crossoverType},
-      {"dl_solver.dlDetails", P_MET dlDetails},
-      {"export_approx_points_file", P_MET exportApproxPtsFile},
-      {"fitness_metric", P_MET fitnessMetricType},
-      {"fitness_type", P_MET fitnessType},
-      {"flat_file", P_MET flatFile},
-      {"hybrid.global_method_name", P_MET hybridGlobalMethodName},
-      {"hybrid.global_method_pointer", P_MET hybridGlobalMethodPointer},
-      {"hybrid.global_model_pointer", P_MET hybridGlobalModelPointer},
-      {"hybrid.local_method_name", P_MET hybridLocalMethodName},
-      {"hybrid.local_method_pointer", P_MET hybridLocalMethodPointer},
-      {"hybrid.local_model_pointer", P_MET hybridLocalModelPointer},
-      {"id", P_MET idMethod},
-      {"import_approx_points_file", P_MET importApproxPtsFile},
-      {"import_build_points_file", P_MET importBuildPtsFile},
-      {"import_points_file", P_MET importPtsFile},
-      {"import_candidate_points_file", P_MET importCandPtsFile},
-      {"import_prediction_configs", P_MET importPredConfigs},
-      {"initialization_type", P_MET initializationType},
-      {"jega.convergence_type", P_MET convergenceType},
-      {"jega.niching_type", P_MET nichingType},
-      {"jega.postprocessor_type", P_MET postProcessorType},
-      {"lipschitz", P_MET lipschitzType},
-      {"log_file", P_MET logFile},
-      {"low_fidelity_model_pointer", P_MET lowFidModelPointer},
-      {"mesh_adaptive_search.display_format", P_MET displayFormat},
-      {"mesh_adaptive_search.history_file", P_MET historyFile},
-      {"mesh_adaptive_search.use_surrogate", P_MET useSurrogate},
-      {"model_export_prefix", P_MET modelExportPrefix},
-      {"model_pointer", P_MET modelPointer},
-      {"mutation_type", P_MET mutationType},
-      {"nond.data_dist_cov_type", P_MET dataDistCovInputType},
-      {"nond.data_dist_filename", P_MET dataDistFile},
-      {"nond.data_dist_type", P_MET dataDistType},
-      {"nond.dili_hessian_type", P_MET diliHessianType},
-      {"nond.discrepancy_type", P_MET modelDiscrepancyType},
-    //{"nond.expansion_sample_type", P_MET expansionSampleType},
-      {"nond.dr_scale_type", P_MET drScaleType},
-      {"nond.export_corrected_model_file", P_MET exportCorrModelFile},
-      {"nond.export_corrected_variance_file", P_MET exportCorrVarFile},
-      {"nond.export_discrepancy_file", P_MET exportDiscrepFile},
-      {"nond.export_expansion_file", P_MET exportExpansionFile},
-      {"nond.export_mcmc_points_file", P_MET exportMCMCPtsFile},
-      {"nond.import_expansion_file", P_MET importExpansionFile},
-      {"nond.mcmc_type", P_MET mcmcType},
-      {"nond.point_reuse", P_MET pointReuse},
-      {"nond.posterior_density_export_file", P_MET posteriorDensityExportFilename},
-      {"nond.posterior_samples_export_file", P_MET posteriorSamplesExportFilename},
-      {"nond.posterior_samples_import_file", P_MET posteriorSamplesImportFilename},
-      {"nond.proposal_covariance_filename", P_MET proposalCovFile},
-      {"nond.proposal_covariance_input_type", P_MET proposalCovInputType},
-      {"nond.proposal_covariance_type", P_MET proposalCovType},
-      {"nond.reliability_integration", P_MET reliabilityIntegration},
-      {"optpp.search_method", P_MET searchMethod},
-      {"pstudy.import_file", P_MET pstudyFilename},
-      {"random_number_generator", P_MET rngName},
-      {"replacement_type", P_MET replacementType},
-      {"sub_method_name", P_MET subMethodName},
-      {"sub_method_pointer", P_MET subMethodPointer},
-      {"sub_model_pointer", P_MET subModelPointer},
-      {"trial_type", P_MET trialType},
-      {"generating_vector.file", P_MET generatingVectorFileName},
-      {"generating_matrices.file", P_MET generatingMatricesFileName}
-    },
-    { /* model */
-      {"advanced_options_file", P_MOD advancedOptionsFilename},
-      {"dace_method_pointer", P_MOD subMethodPointer},
-      {"id", P_MOD idModel},
-      {"interface_pointer", P_MOD interfacePointer},
-      {"nested.sub_method_pointer", P_MOD subMethodPointer},
-      {"optional_interface_responses_pointer", P_MOD optionalInterfRespPointer},
-      {"rf.propagation_model_pointer", P_MOD propagationModelPointer},
-      {"rf_data_file", P_MOD rfDataFileName},
-      {"simulation.cost_recovery_metadata", P_MOD costRecoveryMetadata},
-      {"simulation.solution_level_control", P_MOD solutionLevelControl},
-      {"surrogate.truth_model_pointer", P_MOD truthModelPointer},
-      {"surrogate.challenge_points_file", P_MOD importChallengePtsFile},
-      {"surrogate.decomp_cell_type", P_MOD decompCellType},
-      {"surrogate.export_approx_points_file", P_MOD exportApproxPtsFile},
-      {"surrogate.export_approx_variance_file", P_MOD exportApproxVarianceFile},
-      {"surrogate.import_build_points_file", P_MOD importBuildPtsFile},
-      {"surrogate.kriging_opt_method", P_MOD krigingOptMethod},
-      {"surrogate.mars_interpolation", P_MOD marsInterpolation},
-      {"surrogate.model_export_prefix", P_MOD modelExportPrefix},
-      {"surrogate.model_import_prefix", P_MOD modelImportPrefix},
-      {"surrogate.class_path_and_name", P_MOD moduleAndClassName},
-      {"surrogate.point_reuse", P_MOD approxPointReuse},
-      {"surrogate.refine_cv_metric", P_MOD refineCVMetric},
-      {"surrogate.trend_order", P_MOD trendOrder},
-      {"surrogate.type", P_MOD surrogateType},
-      {"type", P_MOD modelType}
-    },
-    { /* variables */
-      {"id", P_VAR idVariables}
-    },
-    { /* interface */
-      {"algebraic_mappings", P_INT algebraicMappings},
-      {"application.input_filter", P_INT inputFilter},
-      {"application.output_filter", P_INT outputFilter},
-      {"application.parameters_file", P_INT parametersFile},
-      {"application.results_file", P_INT resultsFile},
-      {"failure_capture.action", P_INT failAction},
-      {"id", P_INT idInterface},
-      {"plugin_library_path", P_INT pluginLibraryPath},
-      {"workDir", P_INT workDir}
-    },
-    { /* responses */
-      {"data_directory", P_RES dataPathPrefix},
-      {"fd_gradient_step_type", P_RES fdGradStepType},
-      {"fd_hessian_step_type", P_RES fdHessStepType},
-      {"gradient_type", P_RES gradientType},
-      {"hessian_type", P_RES hessianType},
-      {"id", P_RES idResponses},
-      {"interval_type", P_RES intervalType},
-      {"method_source", P_RES methodSource},
-      {"quasi_hessian_type", P_RES quasiHessianType},
-      {"scalar_data_filename", P_RES scalarDataFileName}
-    },
     entry_name, dbRep);
 }
 
@@ -2263,110 +1418,6 @@ const Real& ProblemDescDB::get_real(const String& entry_name) const
 {
   return get<const Real>
   ( "get_real()",
-    { /* environment */ },
-    { /* method */
-      {"asynch_pattern_search.constraint_penalty", P_MET constrPenalty},
-      {"asynch_pattern_search.contraction_factor", P_MET contractStepLength},
-      {"asynch_pattern_search.initial_delta", P_MET initStepLength},
-      {"asynch_pattern_search.smoothing_factor", P_MET smoothFactor},
-      {"asynch_pattern_search.solution_target", P_MET solnTarget},
-      {"coliny.contraction_factor", P_MET contractFactor},
-      {"coliny.global_balance_parameter", P_MET globalBalanceParam},
-      {"coliny.initial_delta", P_MET initDelta},
-      {"coliny.local_balance_parameter", P_MET localBalanceParam},
-      {"coliny.max_boxsize_limit", P_MET maxBoxSize},
-      {"coliny.variable_tolerance", P_MET threshDelta},
-      {"confidence_level", P_MET wilksConfidenceLevel},
-      {"constraint_penalty", P_MET constraintPenalty},
-      {"constraint_tolerance", P_MET constraintTolerance},
-      {"convergence_tolerance", P_MET convergenceTolerance},
-      {"crossover_rate", P_MET crossoverRate},
-      {"dream.gr_threshold", P_MET grThreshold},
-      {"function_precision", P_MET functionPrecision},
-      {"gradient_tolerance", P_MET gradientTolerance},
-      {"hybrid.local_search_probability", P_MET hybridLSProb},
-      {"jega.fitness_limit", P_MET fitnessLimit},
-      {"jega.percent_change", P_MET convergenceTolerance},
-      {"jega.shrinkage_percentage", P_MET shrinkagePercent},
-      {"mesh_adaptive_search.initial_delta", P_MET initMeshSize},
-      {"mesh_adaptive_search.variable_neighborhood_search", P_MET vns},
-      {"mesh_adaptive_search.variable_tolerance", P_MET minMeshSize},
-      {"min_boxsize_limit", P_MET minBoxSize},
-      {"mutation_rate", P_MET mutationRate},
-      {"mutation_scale", P_MET mutationScale},
-      {"nl2sol.absolute_conv_tol", P_MET absConvTol},
-      {"nl2sol.false_conv_tol", P_MET falseConvTol},
-      {"nl2sol.initial_trust_radius", P_MET initTRRadius},
-      {"nl2sol.singular_conv_tol", P_MET singConvTol},
-      {"nl2sol.singular_radius", P_MET singRadius},
-      {"nond.am_scale", P_MET amScale},
-      {"nond.c3function_train.solver_rounding_tolerance",
-       P_MET solverRoundingTol},
-      {"nond.c3function_train.solver_tolerance", P_MET solverTol},
-      {"nond.c3function_train.stats_rounding_tolerance",
-       P_MET statsRoundingTol},
-      {"nond.collocation_ratio", P_MET collocationRatio},
-      {"nond.collocation_ratio_terms_order", P_MET collocRatioTermsOrder},
-      {"nond.dili_hess_tolerance", P_MET diliHessTolerance},
-      {"nond.dili_lis_tolerance", P_MET diliLISTolerance},
-      {"nond.dili_ses_abs_tol", P_MET diliSesAbsTol},
-      {"nond.dili_ses_rel_tol", P_MET diliSesRelTol},
-      {"nond.dr_scale", P_MET drScale},
-      {"nond.estimator_variance_metric_norm_order",
-       P_MET estVarMetricNormOrder},
-      {"nond.mala_step_size", P_MET malaStepSize},
-      {"nond.mlmcmc_greedy_resampling_factor", P_MET mlmcmcGreedyResamplingFactor},
-      {"nond.mlmcmc_target_variance", P_MET mlmcmcTargetVariance},
-      {"nond.multilevel_estimator_rate", P_MET multilevEstimatorRate},
-      {"nond.rcond_tol_throttle", P_MET rCondTolThrottle},
-      {"nond.regression_penalty", P_MET regressionL2Penalty},
-      {"nond.relaxation.fixed_factor", P_MET relaxFixedFactor},
-      {"nond.relaxation.recursive_factor", P_MET relaxRecursiveFactor},
-      {"npsol.linesearch_tolerance", P_MET lineSearchTolerance},
-      {"optpp.centering_parameter", P_MET centeringParam},
-      {"optpp.max_step", P_MET maxStep},
-      {"optpp.steplength_to_boundary", P_MET stepLenToBoundary},
-      {"percent_variance_explained", P_MET percentVarianceExplained},
-      {"prior_prop_cov_mult", P_MET priorPropCovMult},
-      {"solution_target", P_MET solnTarget},
-      {"ti_coverage", P_MET tiCoverage},
-      {"ti_confidence_level", P_MET tiConfidenceLevel},
-      {"trust_region.contract_threshold", P_MET trustRegionContractTrigger},
-      {"trust_region.contraction_factor", P_MET trustRegionContract},
-      {"trust_region.expand_threshold", P_MET trustRegionExpandTrigger},
-      {"trust_region.expansion_factor", P_MET trustRegionExpand},
-      {"trust_region.minimum_size", P_MET trustRegionMinSize},
-      {"variable_tolerance", P_MET threshStepLength},
-      {"vbd_drop_tolerance", P_MET vbdDropTolerance},
-      {"verification.refinement_rate", P_MET refinementRate},
-      {"volume_boxsize_limit", P_MET volBoxSize},
-      {"x_conv_tol", P_MET xConvTol}
-    },
-    { /* model */
-      {"active_subspace.cv.decrease_tolerance", P_MOD decreaseTolerance},
-      {"active_subspace.cv.relative_tolerance", P_MOD relTolerance},
-      {"active_subspace.truncation_method.energy.truncation_tolerance",
-    	  P_MOD truncationTolerance},
-      {"adapted_basis.collocation_ratio", P_MOD adaptedBasisCollocRatio},
-      {"adapted_basis.truncation_tolerance", P_MOD adaptedBasisTruncationTolerance},
-      {"c3function_train.collocation_ratio", P_MOD collocationRatio},
-      {"c3function_train.solver_rounding_tolerance", P_MOD solverRoundingTol},
-      {"c3function_train.solver_tolerance", P_MOD solverTol},
-      {"c3function_train.stats_rounding_tolerance", P_MOD statsRoundingTol},
-      {"convergence_tolerance", P_MOD convergenceTolerance},
-      {"surrogate.discont_grad_thresh", P_MOD discontGradThresh},
-      {"surrogate.discont_jump_thresh", P_MOD discontJumpThresh},
-      {"surrogate.neural_network_range", P_MOD annRange},
-      {"surrogate.nugget", P_MOD krigingNugget},
-      {"surrogate.percent", P_MOD percentFold},
-      {"surrogate.regression_penalty", P_MOD regressionL2Penalty},
-      {"truncation_tolerance", P_MOD truncationTolerance}
-    },
-    { /* variables */ },
-    { /* interface */
-      {"nearby_evaluation_cache_tolerance", P_INT nearbyEvalCacheTol}
-    },
-    { /* responses */ },
     entry_name, dbRep);
 }
 
@@ -2375,92 +1426,6 @@ int ProblemDescDB::get_int(const String& entry_name) const
 {
   return get<int>
   ( "get_int()",
-    { /* environment */
-      {"output_precision", P_ENV outputPrecision},
-      {"stop_restart", P_ENV stopRestart}
-    },
-    { /* method */
-      {"adapt_exp_design_samples", P_MET adaptExpSamples},
-      {"batch_size", P_MET batchSize},
-      {"batch_size.exploration", P_MET batchSizeExplore},
-      {"build_samples", P_MET buildSamples},
-      {"burn_in_samples", P_MET burnInSamples},
-      {"coliny.contract_after_failure", P_MET contractAfterFail},
-      {"coliny.expand_after_success", P_MET expandAfterSuccess},
-      {"coliny.mutation_range", P_MET mutationRange},
-      {"coliny.new_solutions_generated", P_MET newSolnsGenerated},
-      {"coliny.number_retained", P_MET numberRetained},
-      {"coliny.total_pattern_size", P_MET totalPatternSize},
-      {"concurrent.random_jobs", P_MET concurrentRandomJobs},
-      {"dream.crossover_chain_pairs", P_MET crossoverChainPairs},
-      {"dream.jump_step", P_MET jumpStep},
-      {"dream.num_chains", P_MET numChains},
-      {"dream.num_cr", P_MET numCR},
-      {"evidence_samples", P_MET evidenceSamples},
-      {"fsu_cvt.num_trials", P_MET numTrials},
-      {"iterator_servers", P_MET iteratorServers},
-      {"max_hifi_evaluations", P_MET maxHifiEvals},
-      {"mesh_adaptive_search.neighbor_order", P_MET neighborOrder},
-      {"nl2sol.covariance", P_MET covarianceType},
-      {"nond.am_period_num_steps", P_MET amPeriodNumSteps},
-      {"nond.am_starting_step", P_MET amStartingStep},
-      {"nond.c3function_train.max_cross_iterations", P_MET maxCrossIterations},
-      {"nond.chain_samples", P_MET chainSamples},
-      {"nond.dili_adapt_end", P_MET diliAdaptEnd},
-      {"nond.dili_adapt_interval", P_MET diliAdaptInterval},
-      {"nond.dili_adapt_start", P_MET diliAdaptStart},
-      {"nond.dili_initial_weight", P_MET diliInitialWeight},
-      {"nond.dili_ses_block_size", P_MET diliSesBlockSize},
-      {"nond.dili_ses_exp_rank", P_MET diliSesExpRank},
-      {"nond.dili_ses_num_eigs", P_MET diliSesNumEigs},
-      {"nond.dili_ses_overs_factor", P_MET diliSesOversFactor},
-      {"nond.dr_num_stages", P_MET drNumStages},
-      {"nond.mlmcmc_initial_chain_samples", P_MET mlmcmcInitialChainSamples},
-      {"nond.prop_cov_update_period", P_MET proposalCovUpdatePeriod},
-      {"nond.pushforward_samples", P_MET numPushforwardSamples},
-      {"nond.samples_on_emulator", P_MET samplesOnEmulator},
-      {"nond.surrogate_order", P_MET emulatorOrder},
-      {"npsol.verify_level", P_MET verifyLevel},
-      {"optpp.search_scheme_size", P_MET searchSchemeSize},
-      {"parameter_study.num_steps", P_MET numSteps},
-      {"population_size", P_MET populationSize},
-      {"processors_per_iterator", P_MET procsPerIterator},
-      {"random_seed", P_MET randomSeed},
-      {"samples", P_MET numSamples},
-      {"sub_sampling_period", P_MET subSamplingPeriod},
-      {"symbols", P_MET numSymbols},
-      {"vbd_via_sampling_num_bins", P_MET vbdViaSamplingNumBins},
-      {"m_max", P_MET log2MaxPoints},
-      {"t_max", P_MET numberOfBits},
-      {"t_scramble", P_MET scrambleSize}
-    },
-    { /* model */
-      {"active_subspace.bootstrap_samples", P_MOD numReplicates},
-      {"active_subspace.cv.max_rank", P_MOD subspaceCVMaxRank},
-      {"c3function_train.max_cross_iterations", P_MOD maxCrossIterations},
-      {"initial_samples", P_MOD initialSamples},
-      {"nested.iterator_servers", P_MOD subMethodServers},
-      {"nested.processors_per_iterator", P_MOD subMethodProcs},
-      {"rf.expansion_bases", P_MOD subspaceDimension},
-      {"soft_convergence_limit", P_MOD softConvergenceLimit},
-      {"subspace.dimension", P_MOD subspaceDimension},
-      {"surrogate.decomp_support_layers", P_MOD decompSupportLayers},
-      {"surrogate.folds", P_MOD numFolds},
-      {"surrogate.num_restarts", P_MOD numRestarts},
-      {"surrogate.points_total", P_MOD pointsTotal},
-      {"surrogate.refine_cv_folds", P_MOD refineCVFolds}
-    },
-    { /* variables */ },
-    { /* interface */
-      {"analysis_servers", P_INT analysisServers},
-      {"asynch_local_analysis_concurrency", P_INT asynchLocalAnalysisConcurrency},
-      {"asynch_local_evaluation_concurrency", P_INT asynchLocalEvalConcurrency},
-      {"direct.processors_per_analysis", P_INT procsPerAnalysis},
-      {"evaluation_servers", P_INT evalServers},
-      {"failure_capture.retry_limit", P_INT retryLimit},
-      {"processors_per_evaluation", P_INT procsPerEval}
-    },
-    { /* responses */ },
     entry_name, dbRep);
 }
 
@@ -2469,86 +1434,6 @@ short ProblemDescDB::get_short(const String& entry_name) const
 {
   return get<short>
   ( "get_short()",
-    { /* environment */ },
-    { /* method */
-      {"iterator_scheduling", P_MET iteratorScheduling},
-      {"ld.digitalnet.generating_matrix_scheme", P_MET digitalNetGeneratingMatrixScheme},
-      {"ld.digitalnet.ordering", P_MET digitalNetOrdering},
-      {"ld.rank1.generating_vector_scheme", P_MET rank1GeneratingVectorScheme},
-      {"ld.rank1.ordering", P_MET rank1Ordering},
-      {"nond.allocation_target", P_MET allocationTarget},
-      {"nond.c3function_train.advancement_type", P_MET c3AdvanceType},
-      {"nond.convergence_tolerance_target", P_MET convergenceToleranceTarget},
-      {"nond.convergence_tolerance_type", P_MET convergenceToleranceType},
-      {"nond.covariance_control", P_MET covarianceControl},
-      {"nond.distribution", P_MET distributionType},
-      {"nond.emulator", P_MET emulatorType},
-      {"nond.ensemble_pilot_solution_mode", P_MET ensemblePilotSolnMode},
-      {"nond.estimator_variance_metric", P_MET estVarMetricType},
-      {"nond.expansion_basis_type", P_MET expansionBasisType},
-      {"nond.expansion_refinement_control", P_MET refinementControl},
-      {"nond.expansion_refinement_metric", P_MET refinementMetric},
-      {"nond.expansion_refinement_type", P_MET refinementType},
-      {"nond.expansion_type", P_MET expansionType},
-      {"nond.final_moments", P_MET finalMomentsType},
-      {"nond.final_statistics", P_MET finalStatsType},
-      {"nond.group_throttle_type", P_MET groupThrottleType},
-      {"nond.growth_override", P_MET growthOverride},
-      {"nond.least_squares_regression_type", P_MET lsRegressionType},
-      {"nond.model_discrepancy.polynomial_order", P_MET polynomialOrder},
-      {"nond.multilevel_allocation_control", P_MET multilevAllocControl},
-      {"nond.multilevel_discrepancy_emulation", P_MET multilevDiscrepEmulation},
-      {"nond.nesting_override", P_MET nestingOverride},
-      {"nond.pilot_samples.mode", P_MET pilotGroupSampling},
-      {"nond.qoi_aggregation", P_MET qoiAggregation},
-      {"nond.refinement_statistics_mode", P_MET statsMetricMode},
-      {"nond.regression_type", P_MET regressionType},
-      {"nond.response_level_target", P_MET responseLevelTarget},
-      {"nond.response_level_target_reduce", P_MET responseLevelTargetReduce},
-      {"nond.search_model_graphs.recursion", P_MET dagRecursionType},
-      {"nond.search_model_graphs.selection", P_MET modelSelectType},
-      {"optpp.merit_function", P_MET meritFn},
-      {"output", P_MET methodOutput},
-      {"sbl.acceptance_logic", P_MET surrBasedLocalAcceptLogic},
-      {"sbl.constraint_relax", P_MET surrBasedLocalConstrRelax},
-      {"sbl.merit_function", P_MET surrBasedLocalMeritFn},
-      {"sbl.subproblem_constraints", P_MET surrBasedLocalSubProbCon},
-      {"sbl.subproblem_objective", P_MET surrBasedLocalSubProbObj},
-      {"synchronization", P_MET evalSynchronize},
-      {"wilks.sided_interval", P_MET wilksSidedInterval}
-    },
-    { /* model */
-      {"adapted_basis.rotation_method", P_MOD methodRotation},
-      {"c3function_train.advancement_type", P_MOD c3AdvanceType},
-      //{"c3function_train.refinement_control", P_MOD refinementControl},
-      //{"c3function_train.refinement_type", P_MOD refinementType},
-      {"nested.iterator_scheduling", P_MOD subMethodScheduling},
-      {"surrogate.correction_order", P_MOD approxCorrectionOrder},
-      {"surrogate.correction_type", P_MOD approxCorrectionType},
-      {"surrogate.find_nugget", P_MOD krigingFindNugget},
-      {"surrogate.kriging_max_trials", P_MOD krigingMaxTrials},
-      {"surrogate.mars_max_bases", P_MOD marsMaxBases},
-      {"surrogate.mls_weight_function", P_MOD mlsWeightFunction},
-      {"surrogate.neural_network_nodes", P_MOD annNodes},
-      {"surrogate.neural_network_random_weight", P_MOD annRandomWeight},
-      {"surrogate.points_management", P_MOD pointsManagement},
-      {"surrogate.polynomial_order", P_MOD polynomialOrder},
-      {"surrogate.rbf_bases", P_MOD rbfBases},
-      {"surrogate.rbf_max_pts", P_MOD rbfMaxPts},
-      {"surrogate.rbf_max_subsets", P_MOD rbfMaxSubsets},
-      {"surrogate.rbf_min_partition", P_MOD rbfMinPartition},
-      {"surrogate.regression_type", P_MOD regressionType}
-    },
-    { /* variables */
-      {"domain", P_VAR varsDomain},
-      {"view", P_VAR varsView}
-    },
-    { /* interface */
-      {"analysis_scheduling", P_INT analysisScheduling},
-      {"evaluation_scheduling", P_INT evalScheduling},
-      {"local_evaluation_scheduling", P_INT asynchLocalEvalScheduling}
-    },
-    { /* responses */},
     entry_name, dbRep);
 }
 
@@ -2557,83 +1442,6 @@ unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
 {
   return get<unsigned short>
   ( "get_ushort()",
-    { /* environment */
-      {"interface_evals_selection", P_ENV interfEvalsSelection},
-      {"model_evals_selection", P_ENV modelEvalsSelection},
-      {"post_run_input_format", P_ENV postRunInputFormat},
-      {"pre_run_output_format", P_ENV preRunOutputFormat},
-      {"results_output_format", P_ENV resultsOutputFormat},
-      {"tabular_format", P_ENV tabularFormat}
-    },
-    { /* method */
-      {"algorithm", P_MET methodName},
-      {"export_approx_format", P_MET exportApproxFormat},
-      {"import_approx_format", P_MET importApproxFormat},
-      {"import_build_format", P_MET importBuildFormat},
-      {"import_points_format", P_MET importPtsFormat},
-      {"import_candidate_format", P_MET importCandFormat},
-      {"import_prediction_configs_format", P_MET importPredConfigFormat},
-      {"model_export_format", P_MET modelExportFormat},
-      {"nond.adapted_basis.advancements", P_MET adaptedBasisAdvancements},
-      //{"nond.adapted_basis.initial_level", P_MET adaptedBasisInitLevel},
-      {"nond.c3function_train.kick_order", P_MET kickOrder},
-      {"nond.c3function_train.max_order", P_MET maxOrder},
-      {"nond.c3function_train.start_order", P_MET startOrder},
-      {"nond.calibrate_error_mode", P_MET calibrateErrorMode},
-      {"nond.cross_validation.max_order_candidates",
-       P_MET maxCVOrderCandidates},
-      {"nond.cubature_integrand", P_MET cubIntOrder},
-      {"nond.expansion_order", P_MET expansionOrder},
-      {"nond.export_corrected_model_format", P_MET exportCorrModelFormat},
-      {"nond.export_corrected_variance_format", P_MET exportCorrVarFormat},
-      {"nond.export_discrep_format", P_MET exportDiscrepFormat},
-      {"nond.export_samples_format", P_MET exportSamplesFormat},
-      {"nond.graph_depth_limit", P_MET dagDepthLimit},
-      {"nond.group_size_throttle", P_MET groupSizeThrottle},
-      {"nond.integration_refinement", P_MET integrationRefine},
-      {"nond.model_reordering", P_MET modelReordering},
-      {"nond.numerical_solve_mode", P_MET numericalSolveMode},
-      {"nond.opt_subproblem_solver", P_MET optSubProbSolver},
-      {"nond.quadrature_order", P_MET quadratureOrder},
-    //{"nond.reliability_search_type", P_MET reliabilitySearchType},
-      {"nond.sparse_grid_level", P_MET sparseGridLevel},
-      {"nond.vbd_interaction_order", P_MET vbdOrder},
-      {"order", P_MET wilksOrder},
-      {"pstudy.import_format", P_MET pstudyFileFormat},
-      {"sample_type", P_MET sampleType},
-      {"soft_convergence_limit", P_MET softConvLimit},
-      {"sub_method", P_MET subMethod},
-      {"vbd_via_sampling_method", P_MET vbdViaSamplingMethod}
-    },
-    { /* model */
-      {"active_subspace.cv.id_method", P_MOD subspaceIdCVMethod},
-      {"active_subspace.normalization", P_MOD subspaceNormalization},
-      {"active_subspace.sample_type", P_MOD subspaceSampleType},
-      {"adapted_basis.expansion_order", P_MOD adaptedBasisExpOrder},
-      {"adapted_basis.sparse_grid_level", P_MOD adaptedBasisSparseGridLev},
-      {"c3function_train.cross_validation.max_order_candidates",
-       P_MOD maxCVOrderCandidates},
-      {"c3function_train.kick_order", P_MOD kickOrder},
-      {"c3function_train.max_order", P_MOD maxOrder},
-      {"c3function_train.start_order", P_MOD startOrder},
-      {"rf.analytic_covariance", P_MOD analyticCovIdForm},
-      {"rf.expansion_form", P_MOD randomFieldIdForm},
-      {"surrogate.challenge_points_file_format", P_MOD importChallengeFormat},
-      {"surrogate.export_approx_format", P_MOD exportApproxFormat},
-      {"surrogate.export_approx_variance_format", P_MOD exportApproxVarianceFormat},
-      {"surrogate.import_build_format", P_MOD importBuildFormat},
-      {"surrogate.model_export_format", P_MOD modelExportFormat},
-      {"surrogate.model_import_format", P_MOD modelImportFormat}
-    },
-    { /* variables */ },
-    { /* interface */
-      {"application.parameters_file_format", P_INT parametersFileFormat},
-      {"application.results_file_format", P_INT resultsFileFormat},
-      {"type", P_INT interfaceType}
-    },
-    { /* responses */
-      {"scalar_data_format", P_RES scalarDataFormat}
-    },
     entry_name, dbRep);
 }
 
@@ -2684,102 +1492,6 @@ size_t ProblemDescDB::get_sizet(const String& entry_name) const
 
   return get<size_t>
   ( "get_sizet()",
-    { /* environment */ },
-    { /* method */
-      {"final_solutions", P_MET numFinalSolutions},
-      {"jega.num_cross_points", P_MET numCrossPoints},
-      {"jega.num_designs", P_MET numDesigns},
-      {"jega.num_generations", P_MET numGenerations},
-      {"jega.num_offspring", P_MET numOffspring},
-      {"jega.num_parents", P_MET numParents},
-      {"max_function_evaluations", P_MET maxFunctionEvals},
-      {"max_iterations", P_MET maxIterations},
-      {"nond.c3function_train.kick_rank", P_MET kickRank},
-      {"nond.c3function_train.max_rank", P_MET maxRank},
-      {"nond.c3function_train.start_rank", P_MET startRank},
-      {"nond.collocation_points", P_MET collocationPoints},
-      {"nond.cross_validation.max_rank_candidates", P_MET maxCVRankCandidates},
-      {"nond.expansion_samples", P_MET expansionSamples},
-      {"nond.max_refinement_iterations", P_MET maxRefineIterations},
-      {"nond.max_solver_iterations", P_MET maxSolverIterations},
-      {"nond.rcond_best_throttle", P_MET rCondBestThrottle},
-      {"num_candidate_designs", P_MET numCandidateDesigns},
-      {"num_candidates", P_MET numCandidates},
-      {"num_prediction_configs", P_MET numPredConfigs}
-    },
-    { /* model */
-      {"c3function_train.collocation_points", P_MOD collocationPoints},
-      {"c3function_train.cross_validation.max_rank_candidates",
-       P_MOD maxCVRankCandidates},
-      {"c3function_train.kick_rank", P_MOD kickRank},
-      {"c3function_train.max_rank", P_MOD maxRank},
-      {"c3function_train.start_rank", P_MOD startRank},
-      //{"c3function_train.verbosity", P_MOD verbosity},
-      {"max_function_evals", P_MOD maxFunctionEvals},
-      {"max_iterations", P_MOD maxIterations},
-      {"max_solver_iterations", P_MOD maxSolverIterations}//,
-    },
-    { /* variables */
-      {"beta_uncertain", P_VAR numBetaUncVars},
-      {"binomial_uncertain", P_VAR numBinomialUncVars},
-      {"continuous_design", P_VAR numContinuousDesVars},
-      {"continuous_interval_uncertain", P_VAR numContinuousIntervalUncVars},
-      {"continuous_state", P_VAR numContinuousStateVars},
-      {"discrete_design_range", P_VAR numDiscreteDesRangeVars},
-      {"discrete_design_set_int", P_VAR numDiscreteDesSetIntVars},
-      {"discrete_design_set_real", P_VAR numDiscreteDesSetRealVars},
-      {"discrete_design_set_string", P_VAR numDiscreteDesSetStrVars},
-      {"discrete_interval_uncertain", P_VAR numDiscreteIntervalUncVars},
-      {"discrete_state_range", P_VAR numDiscreteStateRangeVars},
-      {"discrete_state_set_int", P_VAR numDiscreteStateSetIntVars},
-      {"discrete_state_set_real", P_VAR numDiscreteStateSetRealVars},
-      {"discrete_state_set_string", P_VAR numDiscreteStateSetStrVars},
-      {"discrete_uncertain_set_int", P_VAR numDiscreteUncSetIntVars},
-      {"discrete_uncertain_set_real", P_VAR numDiscreteUncSetRealVars},
-      {"discrete_uncertain_set_string", P_VAR numDiscreteUncSetStrVars},
-      {"exponential_uncertain", P_VAR numExponentialUncVars},
-      {"frechet_uncertain", P_VAR numFrechetUncVars},
-      {"gamma_uncertain", P_VAR numGammaUncVars},
-      {"geometric_uncertain", P_VAR numGeometricUncVars},
-      {"gumbel_uncertain", P_VAR numGumbelUncVars},
-      {"histogram_uncertain.bin", P_VAR numHistogramBinUncVars},
-      {"histogram_uncertain.point_int", P_VAR numHistogramPtIntUncVars},
-      {"histogram_uncertain.point_real", P_VAR numHistogramPtRealUncVars},
-      {"histogram_uncertain.point_string", P_VAR numHistogramPtStrUncVars},
-      {"hypergeometric_uncertain", P_VAR numHyperGeomUncVars},
-      {"lognormal_uncertain", P_VAR numLognormalUncVars},
-      {"loguniform_uncertain", P_VAR numLoguniformUncVars},
-      {"negative_binomial_uncertain", P_VAR numNegBinomialUncVars},
-      {"normal_uncertain", P_VAR numNormalUncVars},
-      {"poisson_uncertain", P_VAR numPoissonUncVars},
-      {"triangular_uncertain", P_VAR numTriangularUncVars},
-      {"uniform_uncertain", P_VAR numUniformUncVars},
-      {"weibull_uncertain", P_VAR numWeibullUncVars}
-    },
-    { /* interface */ },
-    { /* responses */
-      {"num_calibration_terms", P_RES numLeastSqTerms},
-      {"num_config_vars", P_RES numExpConfigVars},
-      {"num_experiments", P_RES numExperiments},
-      {"num_field_calibration_terms", P_RES numFieldLeastSqTerms},
-      {"num_field_nonlinear_equality_constraints",
-	  P_RES numFieldNonlinearEqConstraints},
-      {"num_field_nonlinear_inequality_constraints",
-	  P_RES numFieldNonlinearIneqConstraints},
-      {"num_field_objectives", P_RES numFieldObjectiveFunctions},
-      {"num_field_responses", P_RES numFieldResponseFunctions},
-      {"num_nonlinear_equality_constraints", P_RES numNonlinearEqConstraints},
-      {"num_nonlinear_inequality_constraints", P_RES numNonlinearIneqConstraints},
-      {"num_objective_functions", P_RES numObjectiveFunctions},
-      {"num_response_functions", P_RES numResponseFunctions},
-      {"num_scalar_calibration_terms", P_RES numScalarLeastSqTerms},
-      {"num_scalar_nonlinear_equality_constraints",
-	  P_RES numScalarNonlinearEqConstraints},
-      {"num_scalar_nonlinear_inequality_constraints",
-	  P_RES numScalarNonlinearIneqConstraints},
-      {"num_scalar_objectives", P_RES numScalarObjectiveFunctions},
-      {"num_scalar_responses", P_RES numScalarResponseFunctions}
-    },
     entry_name, dbRep);
 }
 
@@ -2788,145 +1500,6 @@ bool ProblemDescDB::get_bool(const String& entry_name) const
 {
   return get<bool>
   ( "get_bool()",
-    { /* environment */
-      {"check", P_ENV checkFlag},
-      {"graphics", P_ENV graphicsFlag},
-      {"post_run", P_ENV postRunFlag},
-      {"pre_run", P_ENV preRunFlag},
-      {"results_output", P_ENV resultsOutputFlag},
-      {"run", P_ENV runFlag},
-      {"tabular_graphics_data", P_ENV tabularDataFlag}
-    },
-    { /* method */
-      {"backfill", P_MET backfillFlag},
-      {"chain_diagnostics", P_MET chainDiagnostics},
-      {"chain_diagnostics.confidence_intervals", P_MET chainDiagnosticsCI},
-      {"coliny.constant_penalty", P_MET constantPenalty},
-      {"coliny.expansion", P_MET expansionFlag},
-      {"coliny.randomize", P_MET randomizeOrderFlag},
-      {"coliny.show_misc_options", P_MET showMiscOptions},
-      {"derivative_usage", P_MET methodUseDerivsFlag},
-      {"export_surrogate", P_MET exportSurrogate},
-      {"fixed_seed", P_MET fixedSeedFlag},
-      {"fsu_quasi_mc.fixed_sequence", P_MET fixedSequenceFlag},
-      {"import_approx_active_only", P_MET importApproxActive},
-      {"import_build_active_only", P_MET importBuildActive},
-      {"import_points.active_only", P_MET importPtsActive},
-      {"import_points.use_variable_labels", P_MET importPtsUseVariableLabels},
-      {"laplace_approx", P_MET modelEvidLaplace},
-      {"latinize", P_MET latinizeFlag},
-      {"main_effects", P_MET mainEffectsFlag},
-      {"mc_approx", P_MET modelEvidMC},
-      {"mesh_adaptive_search.display_all_evaluations", P_MET showAllEval},
-      {"model_evidence", P_MET modelEvidence},
-      {"mutation_adaptive", P_MET mutationAdaptive},
-      {"nl2sol.regression_diagnostics", P_MET regressDiag},
-      {"nond.adapt_exp_design", P_MET adaptExpDesign},
-      {"nond.adaptive_posterior_refinement", P_MET adaptPosteriorRefine},
-      {"nond.allocation_target.optimization", P_MET useTargetVarianceOptimizationFlag},
-      {"nond.c3function_train.adapt_order", P_MET adaptOrder},
-      {"nond.c3function_train.adapt_rank", P_MET adaptRank},
-      {"nond.cross_validation", P_MET crossValidation},
-      {"nond.cross_validation.noise_only", P_MET crossValidNoiseOnly},
-      {"nond.d_optimal", P_MET dOptimal},
-      {"nond.evaluate_posterior_density", P_MET evaluatePosteriorDensity},
-      {"nond.export_sample_sequence", P_MET exportSampleSeqFlag},
-      {"nond.generate_posterior_samples", P_MET generatePosteriorSamples},
-      {"nond.gpmsa_normalize", P_MET gpmsaNormalize},
-      {"nond.logit_transform", P_MET logitTransform},
-      {"nond.model_discrepancy", P_MET calModelDiscrepancy},
-      {"nond.mutual_info_ksg2", P_MET mutualInfoKSG2},
-      {"nond.normalized", P_MET normalizedCoeffs},
-      {"nond.piecewise_basis", P_MET piecewiseBasis},
-      {"nond.response_scaling", P_MET respScalingFlag},
-      {"nond.standardized_space", P_MET standardizedSpace},
-      {"nond.tensor_grid", P_MET tensorGridFlag},
-      {"nond.truth_fixed_by_pilot", P_MET truthPilotConstraint},
-      {"posterior_stats.kde", P_MET posteriorStatsKDE},
-      {"posterior_stats.kl_divergence", P_MET posteriorStatsKL},
-      {"posterior_stats.mutual_info", P_MET posteriorStatsMutual},
-      {"principal_components", P_MET pcaFlag},
-      {"print_each_pop", P_MET printPopFlag},
-      {"pstudy.import_active_only", P_MET pstudyFileActive},
-      {"quality_metrics", P_MET volQualityFlag},
-      {"sbg.replace_points", P_MET surrBasedGlobalReplacePts},
-      {"sbl.truth_surrogate_bypass", P_MET surrBasedLocalLayerBypass},
-      {"scaling", P_MET methodScaling},
-      {"speculative", P_MET speculativeFlag},
-      {"std_regression_coeffs", P_MET stdRegressionCoeffs},
-      {"tolerance_intervals", P_MET toleranceIntervalsFlag},
-      {"variance_based_decomp", P_MET vbdFlag},
-      {"wilks", P_MET wilksFlag},
-      {"rank_1_lattice", P_MET rank1LatticeFlag},
-      {"no_random_shift", P_MET noRandomShiftFlag},
-      {"kuo", P_MET kuo},
-      {"cools_kuo_nuyens", P_MET cools_kuo_nuyens},
-      {"ordering.natural", P_MET naturalOrdering},
-      {"ordering.radical_inverse", P_MET radicalInverseOrdering},
-      {"digital_net", P_MET digitalNetFlag},
-      {"no_digital_shift", P_MET noDigitalShiftFlag},
-      {"no_scrambling", P_MET noScramblingFlag},
-      {"most_significant_bit_first", P_MET mostSignificantBitFirst},
-      {"least_significant_bit_first", P_MET leastSignificantBitFirst},
-      {"joe_kuo", P_MET joe_kuo},
-      {"sobol_order_2", P_MET sobol_order_2},
-      {"gray_code_ordering", P_MET grayCodeOrdering}
-    },
-    { /* model */
-      {"active_subspace.build_surrogate", P_MOD subspaceBuildSurrogate},
-      {"active_subspace.cv.incremental", P_MOD subspaceCVIncremental},
-      {"active_subspace.truncation_method.bing_li", P_MOD subspaceIdBingLi},
-      {"active_subspace.truncation_method.constantine", P_MOD subspaceIdConstantine},
-      {"active_subspace.truncation_method.cv", P_MOD subspaceIdCV},
-      {"active_subspace.truncation_method.energy", P_MOD subspaceIdEnergy},
-      {"c3function_train.adapt_order", P_MOD adaptOrder},
-      {"c3function_train.adapt_rank", P_MOD adaptRank},
-      {"c3function_train.tensor_grid", P_MOD tensorGridFlag},
-      {"hierarchical_tags", P_MOD hierarchicalTags},
-      {"nested.identity_resp_map", P_MOD identityRespMap},
-      {"surrogate.auto_refine", P_MOD autoRefine},
-      {"surrogate.challenge_points_file_active", P_MOD importChallengeActive},
-      {"surrogate.challenge_use_variable_labels", P_MOD importChalUseVariableLabels},
-      {"surrogate.cross_validate", P_MOD crossValidateFlag},
-      {"surrogate.decomp_discont_detect", P_MOD decompDiscontDetect},
-      {"surrogate.derivative_usage", P_MOD modelUseDerivsFlag},
-      {"surrogate.domain_decomp", P_MOD domainDecomp},
-      {"surrogate.export_surrogate", P_MOD exportSurrogate},
-      {"surrogate.import_build_active_only", P_MOD importBuildActive},
-      {"surrogate.import_surrogate", P_MOD importSurrogate},
-      {"surrogate.import_use_variable_labels", P_MOD importUseVariableLabels},
-      {"surrogate.point_selection", P_MOD pointSelection},
-      {"surrogate.press", P_MOD pressFlag},
-      {"surrogate.response_scaling", P_MOD respScalingFlag}
-    },
-    { /* variables */
-      {"uncertain.initial_point_flag", P_VAR uncertainVarsInitPt}
-    },
-    { /* interface */
-      {"active_set_vector", P_INT activeSetVectorFlag},
-      {"allow_existing_results", P_INT allowExistingResultsFlag},
-      {"application.file_save", P_INT fileSaveFlag},
-      {"application.file_tag", P_INT fileTagFlag},
-      {"application.verbatim", P_INT verbatimFlag},
-      {"asynch", P_INT asynchFlag},
-      {"batch", P_INT batchEvalFlag},
-      {"dirSave", P_INT dirSave},
-      {"dirTag", P_INT dirTag},
-      {"evaluation_cache", P_INT evalCacheFlag},
-      {"labeled_results", P_INT dakotaResultsFileLabeled},
-      {"nearby_evaluation_cache", P_INT nearbyEvalCacheFlag},
-      {"python.numpy", P_INT numpyFlag},
-      {"restart_file", P_INT restartFileFlag},
-      {"templateReplace", P_INT templateReplace},
-      {"useWorkdir", P_INT useWorkdir}
-    },
-    { /* responses */
-      {"calibration_data", P_RES calibrationDataFlag},
-      {"central_hess", P_RES centralHess},
-      {"ignore_bounds", P_RES ignoreBounds},
-      {"interpolate", P_RES interpolateFlag},
-      {"read_field_coordinates", P_RES readFieldCoords}
-    },
     entry_name, dbRep);
 }
 
@@ -2940,541 +1513,6 @@ void** ProblemDescDB::get_voidss(const String& entry_name) const
   }
   Bad_name(entry_name, "get_voidss");
   return abort_handler_t<void**>(PARSE_ERROR);
-}
-
-
-void ProblemDescDB::set(const String& entry_name, const RealVector& rv)
-{
-  RealVector& rep_rv = get_mutable<RealVector>
-  ( "set(RealVector&)",
-    { /* environment */ },
-    { /* method */ 
-      {"nond.scalarization_response_mapping", P_MET scalarizationRespCoeffs}
-    },
-    { /* model */
-      {"nested.primary_response_mapping", P_MOD primaryRespCoeffs},
-      {"nested.secondary_response_mapping", P_MOD secondaryRespCoeffs}
-    },
-    { /* variables */
-      {"beta_uncertain.alphas", P_VAR betaUncAlphas},
-      {"beta_uncertain.betas", P_VAR betaUncBetas},
-      {"beta_uncertain.initial_point", P_VAR betaUncVars},
-      {"beta_uncertain.lower_bounds", P_VAR betaUncLowerBnds},
-      {"beta_uncertain.upper_bounds", P_VAR betaUncUpperBnds},
-      {"binomial_uncertain.prob_per_trial", P_VAR binomialUncProbPerTrial},
-      {"continuous_aleatory_uncertain.initial_point",
-	  P_VAR continuousAleatoryUncVars},
-      {"continuous_aleatory_uncertain.lower_bounds",
-	  P_VAR continuousAleatoryUncLowerBnds},
-      {"continuous_aleatory_uncertain.upper_bounds",
-	  P_VAR continuousAleatoryUncUpperBnds},
-      {"continuous_design.initial_point", P_VAR continuousDesignVars},
-      {"continuous_design.initial_point", P_VAR continuousDesignVars},
-      {"continuous_design.lower_bounds", P_VAR continuousDesignLowerBnds},
-      {"continuous_design.lower_bounds", P_VAR continuousDesignLowerBnds},
-      {"continuous_design.scales", P_VAR continuousDesignScales},
-      {"continuous_design.upper_bounds", P_VAR continuousDesignUpperBnds},
-      {"continuous_design.upper_bounds", P_VAR continuousDesignUpperBnds},
-      {"continuous_epistemic_uncertain.initial_point",
-	  P_VAR continuousEpistemicUncVars},
-      {"continuous_epistemic_uncertain.lower_bounds",
-	  P_VAR continuousEpistemicUncLowerBnds},
-      {"continuous_epistemic_uncertain.upper_bounds",
-	  P_VAR continuousEpistemicUncUpperBnds},
-      {"continuous_interval_uncertain.lower_bounds",
-    	  P_VAR continuousIntervalUncLowerBnds},
-      {"continuous_interval_uncertain.upper_bounds",
-    	  P_VAR continuousIntervalUncUpperBnds},
-      {"continuous_interval_uncertain.initial_point",
-    	  P_VAR continuousIntervalUncVars},
-      {"continuous_state.initial_state", P_VAR continuousStateVars},
-      {"continuous_state.lower_bounds", P_VAR continuousStateLowerBnds},
-      {"continuous_state.upper_bounds", P_VAR continuousStateUpperBnds},
-      {"discrete_aleatory_uncertain_real.initial_point",
-	  P_VAR discreteRealAleatoryUncVars},
-      {"discrete_aleatory_uncertain_real.lower_bounds",
-	  P_VAR discreteRealAleatoryUncLowerBnds},
-      {"discrete_aleatory_uncertain_real.upper_bounds",
-	  P_VAR discreteRealAleatoryUncUpperBnds},
-      {"discrete_design_set_real.initial_point", P_VAR discreteDesignSetRealVars},
-      {"discrete_design_set_real.initial_point", P_VAR discreteDesignSetRealVars},
-      {"discrete_epistemic_uncertain_real.initial_point",
-	  P_VAR discreteRealEpistemicUncVars},
-      {"discrete_epistemic_uncertain_real.lower_bounds",
-	  P_VAR discreteRealEpistemicUncLowerBnds},
-      {"discrete_epistemic_uncertain_real.upper_bounds",
-	  P_VAR discreteRealEpistemicUncUpperBnds},
-      {"discrete_state_set_real.initial_state", P_VAR discreteStateSetRealVars},
-      {"discrete_uncertain_set_real.lower_bounds",
-    	  P_VAR discreteUncSetRealLowerBnds},
-      {"discrete_uncertain_set_real.upper_bounds",
-    	  P_VAR discreteUncSetRealUpperBnds},
-      {"discrete_uncertain_set_real.initial_point",
-    	  P_VAR discreteUncSetRealVars},
-      {"exponential_uncertain.betas", P_VAR exponentialUncBetas},
-      {"exponential_uncertain.lower_bounds", P_VAR exponentialUncLowerBnds},
-      {"exponential_uncertain.upper_bounds", P_VAR exponentialUncUpperBnds},
-      {"exponential_uncertain.initial_point", P_VAR exponentialUncVars},
-      {"frechet_uncertain.alphas", P_VAR frechetUncAlphas},
-      {"frechet_uncertain.betas", P_VAR frechetUncBetas},
-      {"frechet_uncertain.lower_bounds", P_VAR frechetUncLowerBnds},
-      {"frechet_uncertain.upper_bounds", P_VAR frechetUncUpperBnds},
-      {"frechet_uncertain.initial_point", P_VAR frechetUncVars},
-      {"gamma_uncertain.alphas", P_VAR gammaUncAlphas},
-      {"gamma_uncertain.betas", P_VAR gammaUncBetas},
-      {"gamma_uncertain.lower_bounds", P_VAR gammaUncLowerBnds},
-      {"gamma_uncertain.upper_bounds", P_VAR gammaUncUpperBnds},
-      {"gamma_uncertain.initial_point", P_VAR gammaUncVars},
-      {"geometric_uncertain.prob_per_trial", P_VAR geometricUncProbPerTrial},
-      {"gumbel_uncertain.alphas", P_VAR gumbelUncAlphas},
-      {"gumbel_uncertain.betas", P_VAR gumbelUncBetas},
-      {"gumbel_uncertain.lower_bounds", P_VAR gumbelUncLowerBnds},
-      {"gumbel_uncertain.upper_bounds", P_VAR gumbelUncUpperBnds},
-      {"gumbel_uncertain.initial_point", P_VAR gumbelUncVars},
-      {"histogram_bin_uncertain.lower_bounds", P_VAR histogramBinUncLowerBnds},
-      {"histogram_bin_uncertain.upper_bounds", P_VAR histogramBinUncUpperBnds},
-      {"histogram_bin_uncertain.initial_point", P_VAR histogramBinUncVars},
-      {"histogram_uncertain.point_real.lower_bounds",
-    	  P_VAR histogramPointRealUncLowerBnds},
-      {"histogram_uncertain.point_real.upper_bounds",
-    	  P_VAR histogramPointRealUncUpperBnds},
-      {"histogram_uncertain.point_real.initial_point",
-    	  P_VAR histogramPointRealUncVars},
-      {"linear_equality_constraints", P_VAR linearEqConstraintCoeffs},
-      {"linear_equality_scales", P_VAR linearEqScales},
-      {"linear_equality_targets", P_VAR linearEqTargets},
-      {"linear_inequality_constraints", P_VAR linearIneqConstraintCoeffs},
-      {"linear_inequality_lower_bounds", P_VAR linearIneqLowerBnds},
-      {"linear_inequality_scales", P_VAR linearIneqScales},
-      {"linear_inequality_upper_bounds", P_VAR linearIneqUpperBnds},
-      {"lognormal_uncertain.error_factors", P_VAR lognormalUncErrFacts},
-      {"lognormal_uncertain.inferred_upper_bounds",
-          P_VAR lognormalUncInferredUpperBnds},
-      {"lognormal_uncertain.lambdas", P_VAR lognormalUncLambdas},
-      {"lognormal_uncertain.initial_point", P_VAR lognormalUncVars},
-      {"lognormal_uncertain.lower_bounds", P_VAR lognormalUncLowerBnds},
-      {"lognormal_uncertain.means", P_VAR lognormalUncMeans},
-      {"lognormal_uncertain.std_deviations", P_VAR lognormalUncStdDevs},
-      {"lognormal_uncertain.upper_bounds", P_VAR lognormalUncUpperBnds},
-      {"lognormal_uncertain.zetas", P_VAR lognormalUncZetas},
-      {"loguniform_uncertain.initial_point", P_VAR loguniformUncVars},
-      {"loguniform_uncertain.lower_bounds", P_VAR loguniformUncLowerBnds},
-      {"loguniform_uncertain.upper_bounds", P_VAR loguniformUncUpperBnds},
-      {"negative_binomial_uncertain.prob_per_trial",
-	  P_VAR negBinomialUncProbPerTrial},
-      {"normal_uncertain.inferred_lower_bounds",
-          P_VAR normalUncInferredLowerBnds},
-      {"normal_uncertain.inferred_upper_bounds",
-          P_VAR normalUncInferredUpperBnds},
-      {"normal_uncertain.initial_point", P_VAR normalUncVars},
-      {"normal_uncertain.lower_bounds", P_VAR normalUncLowerBnds},
-      {"normal_uncertain.means", P_VAR normalUncMeans},
-      {"normal_uncertain.std_deviations", P_VAR normalUncStdDevs},
-      {"normal_uncertain.upper_bounds", P_VAR normalUncUpperBnds},
-      {"poisson_uncertain.lambdas", P_VAR poissonUncLambdas},
-      {"triangular_uncertain.initial_point", P_VAR triangularUncVars},
-      {"triangular_uncertain.lower_bounds", P_VAR triangularUncLowerBnds},
-      {"triangular_uncertain.modes", P_VAR triangularUncModes},
-      {"triangular_uncertain.upper_bounds", P_VAR triangularUncUpperBnds},
-      {"uniform_uncertain.initial_point", P_VAR uniformUncVars},
-      {"uniform_uncertain.lower_bounds", P_VAR uniformUncLowerBnds},
-      {"uniform_uncertain.upper_bounds", P_VAR uniformUncUpperBnds},
-      {"weibull_uncertain.alphas", P_VAR weibullUncAlphas},
-      {"weibull_uncertain.betas", P_VAR weibullUncBetas},
-      {"weibull_uncertain.lower_bounds", P_VAR weibullUncLowerBnds},
-      {"weibull_uncertain.upper_bounds", P_VAR weibullUncUpperBnds},
-      {"weibull_uncertain.initial_point", P_VAR weibullUncVars}
-    },
-    { /* interface */ },
-    { /* responses */
-      {"nonlinear_equality_scales", P_RES nonlinearEqScales},
-      {"nonlinear_equality_targets", P_RES nonlinearEqTargets},
-      {"nonlinear_inequality_lower_bounds", P_RES nonlinearIneqLowerBnds},
-      {"nonlinear_inequality_scales", P_RES nonlinearIneqScales},
-      {"nonlinear_inequality_upper_bounds", P_RES nonlinearIneqUpperBnds},
-      {"primary_response_fn_scales", P_RES primaryRespFnScales},
-      {"primary_response_fn_weights", P_RES primaryRespFnWeights}
-    },
-    entry_name, dbRep);
-
-  rep_rv = rv;
-}
-
-
-void ProblemDescDB::set(const String& entry_name, const IntVector& iv)
-{
-  IntVector& rep_iv = get_mutable<IntVector>
-  ( "set(IntVector&)",
-    { /* environment */ },
-    { /* method */
-      {"generating_vector.inline", P_MET generatingVector},
-      {"generating_matrices.inline", P_MET generatingMatrices}
-    },
-    { /* model */ },
-    { /* variables */
-      {"binomial_uncertain.num_trials", P_VAR binomialUncNumTrials},
-      {"binomial_uncertain.lower_bounds", P_VAR binomialUncLowerBnds},
-      {"binomial_uncertain.upper_bounds", P_VAR binomialUncUpperBnds},
-      {"binomial_uncertain.initial_point", P_VAR binomialUncVars},
-      {"discrete_aleatory_uncertain_int.initial_point",
-	  P_VAR discreteIntAleatoryUncVars},
-      {"discrete_aleatory_uncertain_int.lower_bounds",
-	  P_VAR discreteIntAleatoryUncLowerBnds},
-      {"discrete_aleatory_uncertain_int.upper_bounds",
-	  P_VAR discreteIntAleatoryUncUpperBnds},
-      {"discrete_design_range.initial_point", P_VAR discreteDesignRangeVars},
-      {"discrete_design_range.lower_bounds", P_VAR discreteDesignRangeLowerBnds},
-      {"discrete_design_range.upper_bounds", P_VAR discreteDesignRangeUpperBnds},
-      {"discrete_design_set_int.initial_point", P_VAR discreteDesignSetIntVars},
-      {"discrete_epistemic_uncertain_int.initial_point",
-	  P_VAR discreteIntEpistemicUncVars},
-      {"discrete_epistemic_uncertain_int.lower_bounds",
-	  P_VAR discreteIntEpistemicUncLowerBnds},
-      {"discrete_epistemic_uncertain_int.upper_bounds",
-	  P_VAR discreteIntEpistemicUncUpperBnds},
-      {"discrete_interval_uncertain.lower_bounds",
-    	  P_VAR discreteIntervalUncLowerBnds},
-      {"discrete_interval_uncertain.upper_bounds",
-    	  P_VAR discreteIntervalUncUpperBnds},
-      {"discrete_interval_uncertain.initial_point",
-    	  P_VAR discreteIntervalUncVars},
-      {"discrete_state_range.initial_state", P_VAR discreteStateRangeVars},
-      {"discrete_state_range.lower_bounds", P_VAR discreteStateRangeLowerBnds},
-      {"discrete_state_range.upper_bounds", P_VAR discreteStateRangeUpperBnds},
-      {"discrete_state_set_int.initial_state", P_VAR discreteStateSetIntVars},
-      {"discrete_uncertain_set_int.lower_bounds",
-    	  P_VAR discreteUncSetIntLowerBnds},
-      {"discrete_uncertain_set_int.upper_bounds",
-    	  P_VAR discreteUncSetIntUpperBnds},
-      {"discrete_uncertain_set_int.initial_point",
-    	  P_VAR discreteUncSetIntVars},
-      {"geometric_uncertain.lower_bounds", P_VAR geometricUncLowerBnds},
-      {"geometric_uncertain.upper_bounds", P_VAR geometricUncUpperBnds},
-      {"geometric_uncertain.initial_point", P_VAR geometricUncVars},
-      {"histogram_uncertain.point_int.lower_bounds",
-    	  P_VAR histogramPointIntUncLowerBnds},
-      {"histogram_uncertain.point_int.upper_bounds",
-    	  P_VAR histogramPointIntUncUpperBnds},
-      {"histogram_uncertain.point_int.initial_point",
-    	  P_VAR histogramPointIntUncVars},
-      {"hypergeometric_uncertain.lower_bounds", P_VAR hyperGeomUncLowerBnds},
-      {"hypergeometric_uncertain.upper_bounds", P_VAR hyperGeomUncUpperBnds},
-      {"hypergeometric_uncertain.initial_point", P_VAR hyperGeomUncVars},
-      {"hypergeometric_uncertain.num_drawn", P_VAR hyperGeomUncNumDrawn},
-      {"hypergeometric_uncertain.selected_population",
-	  P_VAR hyperGeomUncSelectedPop},
-      {"hypergeometric_uncertain.total_population", P_VAR hyperGeomUncTotalPop},
-      {"negative_binomial_uncertain.lower_bounds",
-    	  P_VAR negBinomialUncLowerBnds},
-      {"negative_binomial_uncertain.upper_bounds",
-    	  P_VAR negBinomialUncUpperBnds},
-      {"negative_binomial_uncertain.initial_point",
-    	  P_VAR negBinomialUncVars},
-      {"negative_binomial_uncertain.num_trials", P_VAR negBinomialUncNumTrials},
-      {"poisson_uncertain.lower_bounds", P_VAR poissonUncLowerBnds},
-      {"poisson_uncertain.upper_bounds", P_VAR poissonUncUpperBnds},
-      {"poisson_uncertain.initial_point", P_VAR poissonUncVars}
-    },
-    { /* interface */ },
-    { /* responses */ },
-    entry_name, dbRep);
-
-  rep_iv = iv;
-}
-
-
-void ProblemDescDB::set(const String& entry_name, const BitArray& ba)
-{
-  BitArray& rep_ba = get_mutable<BitArray>
-  ( "set(BitArray&)",
-    { /* environment */ },
-    { /* method */ },
-    { /* model */ },
-    { /* variables */
-      {"binomial_uncertain.categorical", P_VAR binomialUncCat},
-      {"discrete_design_range.categorical", P_VAR discreteDesignRangeCat},
-      {"discrete_design_set_int.categorical", P_VAR discreteDesignSetIntCat},
-      {"discrete_design_set_real.categorical", P_VAR discreteDesignSetRealCat},
-      {"discrete_interval_uncertain.categorical", P_VAR discreteIntervalUncCat},
-      {"discrete_state_range.categorical", P_VAR discreteStateRangeCat},
-      {"discrete_state_set_int.categorical", P_VAR discreteStateSetIntCat},
-      {"discrete_state_set_real.categorical", P_VAR discreteStateSetRealCat},
-      {"discrete_uncertain_set_int.categorical", P_VAR discreteUncSetIntCat},
-      {"discrete_uncertain_set_real.categorical", P_VAR discreteUncSetRealCat},
-      {"geometric_uncertain.categorical", P_VAR geometricUncCat},
-      {"histogram_uncertain.point_int.categorical",
-	  P_VAR histogramUncPointIntCat},
-      {"histogram_uncertain.point_real.categorical",
-	  P_VAR histogramUncPointRealCat},
-      {"hypergeometric_uncertain.categorical", P_VAR hyperGeomUncCat},
-      {"negative_binomial_uncertain.categorical", P_VAR negBinomialUncCat},
-      {"poisson_uncertain.categorical", P_VAR poissonUncCat}
-    },
-    { /* interface */ },
-    { /* responses */ },
-    entry_name, dbRep);
-
-  rep_ba = ba;
-}
-
-
-void ProblemDescDB::set(const String& entry_name, const RealSymMatrix& rsm)
-{
-  RealSymMatrix& rep_rsm = get_mutable<RealSymMatrix>
-  ( "set(RealSymMatrix&)",
-    { /* environment */ },
-    { /* method */ },
-    { /* model */ },
-    { /* variables */
-      {"uncertain.correlation_matrix", P_VAR uncertainCorrelations}
-    },
-    { /* interface */ },
-    { /* responses */ },
-    entry_name, dbRep);
-
-  rep_rsm = rsm;
-}
-
-
-void ProblemDescDB::set(const String& entry_name, const RealVectorArray& rva)
-{
-  RealVectorArray& rep_rva = get_mutable<RealVectorArray>
-  ( "set(RealVectorArray&)",
-    { /* environment */ },
-    { /* method */
-      {"nond.gen_reliability_levels", P_MET genReliabilityLevels},
-      {"nond.probability_levels", P_MET probabilityLevels},
-      {"nond.reliability_levels", P_MET reliabilityLevels},
-      {"nond.response_levels", P_MET responseLevels}
-    },
-    { /* model */ },
-    { /* variables */ },
-    { /* interface */ },
-    { /* responses */ },
-    entry_name, dbRep);
-
-  rep_rva = rva;
-}
-
-
-void ProblemDescDB::set(const String& entry_name, const IntVectorArray& iva)
-{
-  IntVectorArray& rep_iva = get_mutable<IntVectorArray>
-  ( "set(IntVectorArray&)",
-    { /* environment */ },
-    { /* method */ },
-    { /* model */ },
-    { /* variables */ },
-    { /* interface */ },
-    { /* responses */ },
-    entry_name, dbRep);
-
-  rep_iva = iva;
-}
-
-
-void ProblemDescDB::set(const String& entry_name, const IntSetArray& isa)
-{
-  IntSetArray& rep_isa = get_mutable<IntSetArray>
-  ( "set(IntSetArray&)",
-    { /* environment */ },
-    { /* method */ },
-    { /* model */ },
-    { /* variables */
-      {"discrete_design_set_int.values", P_VAR discreteDesignSetInt},
-      {"discrete_state_set_int.values",  P_VAR discreteStateSetInt}
-    },
-    { /* interface */ },
-    { /* responses */ },
-    entry_name, dbRep);
-
-  rep_isa = isa;
-}
-
-
-void ProblemDescDB::set(const String& entry_name, const RealSetArray& rsa)
-{
-  RealSetArray& rep_rsa = get_mutable<RealSetArray>
-  ( "set(RealSetArray&)",
-    { /* environment */ },
-    { /* method */ },
-    { /* model */ },
-    { /* variables */
-      {"discrete_design_set_real.values", P_VAR discreteDesignSetReal},
-      {"discrete_state_set_real.values",  P_VAR discreteStateSetReal}
-    },
-    { /* interface */ },
-    { /* responses */ },
-    entry_name, dbRep);
-
-  rep_rsa = rsa;
-}
-
-
-void ProblemDescDB::set(const String& entry_name, const IntRealMapArray& irma)
-{
-  IntRealMapArray& rep_irma = get_mutable<IntRealMapArray>
-  ( "set(IntRealMapArray&)",
-    { /* environment */ },
-    { /* method */ },
-    { /* model */ },
-    { /* variables */
-      {"discrete_uncertain_set_int.values_probs",
-	  P_VAR discreteUncSetIntValuesProbs},
-      {"histogram_uncertain.point_int_pairs", P_VAR histogramUncPointIntPairs}
-    },
-    { /* interface */ },
-    { /* responses */ },
-    entry_name, dbRep);
-
-  rep_irma = irma;
-}
-
-
-void ProblemDescDB::set(const String& entry_name, const StringRealMapArray& srma)
-{
-  StringRealMapArray& rep_srma = get_mutable<StringRealMapArray>
-  ( "set(StringRealMapArray&)",
-    { /* environment */ },
-    { /* method */ },
-    { /* model */ },
-    { /* variables */
-      {"histogram_uncertain.point_string_pairs", P_VAR histogramUncPointStrPairs}
-    },
-    { /* interface */ },
-    { /* responses */ },
-    entry_name, dbRep);
-
-  rep_srma = srma;
-}
-
-
-void ProblemDescDB::set(const String& entry_name, const RealRealMapArray& rrma)
-{
-  RealRealMapArray& rep_rrma = get_mutable<RealRealMapArray>
-  ( "set(RealRealMapArray&)",
-    { /* environment */ },
-    { /* method */ },
-    { /* model */ },
-    { /* variables */
-      {"discrete_uncertain_set_real.values_probs",
-	  P_VAR discreteUncSetRealValuesProbs}
-    },
-    { /* interface */ },
-    { /* responses */ },
-    entry_name, dbRep);
-
-  rep_rrma = rrma;
-}
-
-void ProblemDescDB::
-set(const String& entry_name, const RealRealPairRealMapArray& rrrma)
-{
-  RealRealPairRealMapArray& rep_rrrma = get_mutable<RealRealPairRealMapArray>
-  ( "set(RealRealPairRealMapArray&)",
-    { /* environment */ },
-    { /* method */ },
-    { /* model */ },
-    { /* variables */
-      {"continuous_interval_uncertain.basic_probs",
-	  P_VAR continuousIntervalUncBasicProbs}
-    },
-    { /* interface */ },
-    { /* responses */ },
-    entry_name, dbRep);
-
-  rep_rrrma = rrrma;
-}
-
-void ProblemDescDB::
-set(const String& entry_name, const IntIntPairRealMapArray& iirma)
-{
-  IntIntPairRealMapArray& rep_iirma = get_mutable<IntIntPairRealMapArray>
-  ( "set(IntIntPairRealMapArray&)",
-    { /* environment */ },
-    { /* method */ },
-    { /* model */ },
-    { /* variables */
-      {"discrete_interval_uncertain.basic_probs",
-	  P_VAR discreteIntervalUncBasicProbs}
-    },
-    { /* interface */ },
-    { /* responses */ },
-    entry_name, dbRep);
-
-  rep_iirma = iirma;
-}
-
-
-void ProblemDescDB::set(const String& entry_name, const StringArray& sa)
-{
-  StringArray& rep_sa = get_mutable<StringArray>
-  ( "set(StringArray&)",
-    { /* environment */ },
-    { /* method */ },
-    { /* model */
-      {"diagnostics", P_MOD diagMetrics},
-      {"nested.primary_variable_mapping", P_MOD primaryVarMaps},
-      {"nested.secondary_variable_mapping", P_MOD secondaryVarMaps}
-    },
-    { /* variables */
-      {"continuous_aleatory_uncertain.labels", P_VAR continuousAleatoryUncLabels},
-      {"normal_uncertain.labels", P_VAR normalUncLabels},
-      {"lognormal_uncertain.labels", P_VAR lognormalUncLabels},
-      {"uniform_uncertain.labels", P_VAR uniformUncLabels},
-      {"loguniform_uncertain.labels", P_VAR loguniformUncLabels},
-      {"triangular_uncertain.labels", P_VAR triangularUncLabels},
-      {"exponential_uncertain.labels", P_VAR exponentialUncLabels},
-      {"beta_uncertain.labels", P_VAR betaUncLabels},
-      {"gamma_uncertain.labels", P_VAR gammaUncLabels},
-      {"gumbel_uncertain.labels", P_VAR gumbelUncLabels},
-      {"frechet_uncertain.labels", P_VAR frechetUncLabels},
-      {"weibull_uncertain.labels", P_VAR weibullUncLabels},
-      {"histogram_bin_uncertain.labels", P_VAR histogramBinUncLabels},
-      {"continuous_design.labels", P_VAR continuousDesignLabels},
-      {"continuous_design.scale_types", P_VAR continuousDesignScaleTypes},
-      {"continuous_epistemic_uncertain.labels",
-	  P_VAR continuousEpistemicUncLabels},
-      {"continuous_interval_uncertain.labels", P_VAR continuousIntervalUncLabels},
-      {"continuous_state.labels", P_VAR continuousStateLabels},
-      {"discrete_aleatory_uncertain_int.labels",
-	  P_VAR discreteIntAleatoryUncLabels},
-      {"poisson_uncertain.labels", P_VAR poissonUncLabels},
-      {"binomial_uncertain.labels", P_VAR binomialUncLabels},
-      {"negative_binomial_uncertain.labels", P_VAR negBinomialUncLabels},
-      {"geometric_uncertain.labels", P_VAR geometricUncLabels},
-      {"hypergeometric_uncertain.labels", P_VAR hyperGeomUncLabels},
-      {"histogram_uncertain.point_int.labels", P_VAR histogramPointIntUncLabels},
-      {"discrete_aleatory_uncertain_real.labels",
-	  P_VAR discreteRealAleatoryUncLabels},
-      {"histogram_uncertain.point_real.labels", P_VAR histogramPointRealUncLabels},
-      {"discrete_design_range.labels", P_VAR discreteDesignRangeLabels},
-      {"discrete_design_set_int.labels", P_VAR discreteDesignSetIntLabels},
-      {"discrete_design_set_real.labels", P_VAR discreteDesignSetRealLabels},
-      {"discrete_epistemic_uncertain_int.labels",
-	  P_VAR discreteIntEpistemicUncLabels},
-      {"discrete_interval_uncertain.labels", P_VAR discreteIntervalUncLabels},
-      {"discrete_uncertain_set_int.labels", P_VAR discreteUncSetIntLabels},
-      {"discrete_epistemic_uncertain_real.labels",
-	  P_VAR discreteRealEpistemicUncLabels},
-      {"discrete_uncertain_set_real.labels", P_VAR discreteUncSetRealLabels},
-      {"discrete_state_range.labels", P_VAR discreteStateRangeLabels},
-      {"discrete_state_set_int.labels", P_VAR discreteStateSetIntLabels},
-      {"discrete_state_set_real.labels", P_VAR discreteStateSetRealLabels},
-      {"discrete_state_set_string.labels", P_VAR discreteStateSetStrLabels},
-      {"linear_equality_scale_types", P_VAR linearEqScaleTypes},
-      {"linear_inequality_scale_types", P_VAR linearIneqScaleTypes}
-    },
-    { /* interface */ },
-    { /* responses */
-      {"labels", P_RES responseLabels },
-      {"nonlinear_equality_scale_types", P_RES nonlinearEqScaleTypes },
-      {"nonlinear_inequality_scale_types", P_RES nonlinearIneqScaleTypes },
-      {"primary_response_fn_scale_types", P_RES primaryRespFnScaleTypes }
-    },
-    entry_name, dbRep);
-
-  rep_sa = sa;
 }
 
 /** Require string idenfitiers id_* to be unique across all blocks of

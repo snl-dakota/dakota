@@ -270,39 +270,6 @@ public:
   /// add a DataResponses object to the dataResponsesList
   void insert_node(const DataResponses& data_responses);
 
-  // These functions support a mixed library mode: DAKOTA input file parsing is
-  // combined with some external updates, particularly to vector inputs that
-  // may be large and inconvenient to include in the DAKOTA input.
-
-  /// set a RealVector within the database based on an identifier string
-  void set(const String& entry_name, const RealVector& rv);
-  /// set an IntVector within the database based on an identifier string
-  void set(const String& entry_name, const IntVector& iv);
-  /// set a BitArray within the database based on an identifier string
-  void set(const String& entry_name, const BitArray& ba);
-  /// set a RealMatrix within the database based on an identifier string
-  void set(const String& entry_name, const RealSymMatrix& rsm);
-  /// set a RealVectorArray within the database based on an identifier string
-  void set(const String& entry_name, const RealVectorArray& rva);
-  /// set an IntVectorArray within the database based on an identifier string
-  void set(const String& entry_name, const IntVectorArray& iva);
-  /// set an IntSetArray within the database based on an identifier string
-  void set(const String& entry_name, const IntSetArray& isa);
-  /// set a RealSetArray within the database based on an identifier string
-  void set(const String& entry_name, const RealSetArray& rsa);
-  /// set an IntRealMapArray within the database based on an identifier string
-  void set(const String& entry_name, const IntRealMapArray& irma);
-  /// set a StringRealMapArray within the database based on an identifier string
-  void set(const String& entry_name, const StringRealMapArray& srma);
-  /// set a RealRealMapArray within the database based on an identifier string
-  void set(const String& entry_name, const RealRealMapArray& rrma);
-  /// set a RealRealPairRealMapArray in the db based on an identifier string
-  void set(const String& entry_name, const RealRealPairRealMapArray& iirma);
-  /// set an IntIntPairRealMapArray in the db based on an identifier string
-  void set(const String& entry_name, const IntIntPairRealMapArray& iirma);
-  /// set a StringArray within the database based on an identifier string
-  void set(const String& entry_name, const StringArray& sa);
-
   // These functions are more convenient to locate within the DB in
   // terms of data access, parallel existence, and code reuse:
 
@@ -365,19 +332,6 @@ protected:
   ProblemDescDB(BaseConstructor, int world_size, int world_rank);
 
   //
-  //- Heading: Virtual functions
-  //
-
-  /// derived class specifics within parse_inputs()
-  virtual void derived_parse_inputs(const std::string_view dakota_input,
-				    const std::string_view parser_options,
-            bool command_line_run);
-  /// derived class specifics within broadcast()
-  virtual void derived_broadcast();
-  /// derived class specifics within post_process()
-  virtual void derived_post_process();
-
-  //
   //- Heading: Data
   //
  
@@ -416,23 +370,6 @@ private:
   /// value from the appropriate Data*Rep in the ProblemDescDB rep.
   template<typename T>
   const T& get(const std::string& context_msg,
-	 const std::map<std::string, T DataEnvironmentRep::*>& env_map,
-	 const std::map<std::string, T DataMethodRep::*>& met_map,
-	 const std::map<std::string, T DataModelRep::*>& mod_map,
-	 const std::map<std::string, T DataVariablesRep::*>& var_map,
-	 const std::map<std::string, T DataInterfaceRep::*>& int_map,
-	 const std::map<std::string, T DataResponsesRep::*>& res_map,
-	 const std::string& entry_name,
-	 const std::shared_ptr<ProblemDescDB>& db_rep) const;
-
-  template<typename T>
-  T& get_mutable(const std::string& context_msg,
-	 const std::map<std::string, T DataEnvironmentRep::*>& env_map,
-	 const std::map<std::string, T DataMethodRep::*>& met_map,
-	 const std::map<std::string, T DataModelRep::*>& mod_map,
-	 const std::map<std::string, T DataVariablesRep::*>& var_map,
-	 const std::map<std::string, T DataInterfaceRep::*>& int_map,
-	 const std::map<std::string, T DataResponsesRep::*>& res_map,
 	 const std::string& entry_name,
 	 const std::shared_ptr<ProblemDescDB>& db_rep) const;
 

@@ -342,7 +342,8 @@ void run_dakota_mixed(const char* dakota_input_file, bool mpirun_flag)
     if (drivers.size() == 1 && drivers[0] == "plugin_rosenbrock") {
       Dakota::RealVector ip(2);
       ip[0] =  1.1;  ip[1] = -1.3;
-      problem_db.set("variables.continuous_design.initial_point", ip);
+      // TODO: fix this - RWH
+      //problem_db.set("variables.continuous_design.initial_point", ip);
     }
   }
 
@@ -472,25 +473,26 @@ static void callback_function(Dakota::ProblemDescDB* db, void *ptr)
   Dakota::RealVector rv(2);
   const Dakota::StringArray& drivers
     = db->get_sa("interface.application.analysis_drivers");
-  if (Dakota::contains(drivers, "plugin_rosenbrock")) {
-    // Rosenbrock
-    rv[0] = -1.2; rv[1] =  1.;
-    db->set("variables.continuous_design.initial_point", rv);
-    rv[0] = -2.;  rv[1] = -2.;
-    db->set("variables.continuous_design.lower_bounds", rv);
-    rv[0] =  my_rosen_ub;
-    rv[1] =  my_rosen_ub;
-    db->set("variables.continuous_design.upper_bounds", rv);
-  }
-  else if (Dakota::contains(drivers, "plugin_text_book")) {
-    // text_book
-    rv[0] =  0.2;  rv[1] =  1.1;
-    db->set("variables.continuous_design.initial_point", rv);
-    rv[0] =  0.5;  rv[1] = -2.9;
-    db->set("variables.continuous_design.lower_bounds", rv);
-    rv[0] =  5.8;  rv[1] =  2.9;
-    db->set("variables.continuous_design.upper_bounds", rv);
-  }
+  // TODO: fix these - RWH
+  //if (Dakota::contains(drivers, "plugin_rosenbrock")) {
+  //  // Rosenbrock
+  //  rv[0] = -1.2; rv[1] =  1.;
+  //  db->set("variables.continuous_design.initial_point", rv);
+  //  rv[0] = -2.;  rv[1] = -2.;
+  //  db->set("variables.continuous_design.lower_bounds", rv);
+  //  rv[0] =  my_rosen_ub;
+  //  rv[1] =  my_rosen_ub;
+  //  db->set("variables.continuous_design.upper_bounds", rv);
+  //}
+  //else if (Dakota::contains(drivers, "plugin_text_book")) {
+  //  // text_book
+  //  rv[0] =  0.2;  rv[1] =  1.1;
+  //  db->set("variables.continuous_design.initial_point", rv);
+  //  rv[0] =  0.5;  rv[1] = -2.9;
+  //  db->set("variables.continuous_design.lower_bounds", rv);
+  //  rv[0] =  5.8;  rv[1] =  2.9;
+  //  db->set("variables.continuous_design.upper_bounds", rv);
+  //}
 }
 
 
