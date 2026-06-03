@@ -770,6 +770,19 @@ inline bool ProblemDescDB::model_has_interface(const DataModelRep& model_rep) co
 	     model_rep.surrogateType != "ensemble") );
 }
 
+/// A minimal letter (Rep) class to preserve the existing LO setup
+class ProblemDescDBRep: public ProblemDescDB
+{
+  public:
+    /// constructor
+    ProblemDescDBRep(int world_size, int world_rank):
+      ProblemDescDB(BaseConstructor(), world_size, world_rank)
+  { }
+
+    /// destructor
+    ~ProblemDescDBRep() { }
+};
+
 } // namespace Dakota
 
 #endif

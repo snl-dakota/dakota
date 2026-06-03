@@ -19,7 +19,6 @@
 #include "dakota_data_util.hpp"
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
-#include "EmptyProblemDescDB.hpp"
 #include "InstructionMaterializer.hpp"
 #include "IRQuery.hpp"
 #include "DakotaIterator.hpp"
@@ -144,7 +143,7 @@ ProblemDescDB::get_db(int world_size, int world_rank)
   //if (xml_flag)
   //  return new XMLProblemDescDB(parallel_lib);
   //else
-  return std::make_shared<EmptyProblemDescDB>(world_size, world_rank);
+  return std::make_shared<ProblemDescDBRep>(world_size, world_rank);
 }
 
 /** Copy constructor manages sharing of dbRep */

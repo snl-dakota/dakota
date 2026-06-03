@@ -413,7 +413,7 @@ set(evaldata_src DakotaVariables.cpp MixedVariables.cpp RelaxedVariables.cpp
     ParamResponsePair.cpp)
 
 ## DB sources.
-set(db_src ProblemDescDB.cpp EmptyProblemDescDB.cpp
+set(db_src ProblemDescDB.cpp
   ProblemDescDBUtils.cpp
   ProblemDescDBDump.cpp
   DataEnvironment.cpp DataMethod.cpp DataModel.cpp DataVariables.cpp
