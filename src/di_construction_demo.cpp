@@ -88,7 +88,7 @@ int main()
 
   std::cout << "Constructing DI study components...\n";
   Variables variables(variables_store);
-  Response response(responses_store, variables);
+  Response response(responses_store, variables /* really only need num continuous variables; could be sharedVariablesData */);
   auto interface = std::make_shared<ForkApplicInterface>(
     interface_store, runtime_services);
   auto model = std::make_shared<SimulationModel>(
