@@ -49,7 +49,7 @@ endif()
 include(DakotaCxxOptions)
 dakota_cxx_standard()
 
-# Init code coverage if requested 
+# Init code coverage if requested
 include(DakotaGcov)
 dakota_gcov_init()
 
@@ -152,7 +152,7 @@ endif()
 # Copy library installation script for Darwin so that it can be found by CPack
 if(APPLE)
    file(COPY cmake/install_macos_libs.py DESTINATION ${CMAKE_BINARY_DIR})
-endif() 
+endif()
 
 # Now check languages after compiler flags and options are set
 enable_language(C)
@@ -163,14 +163,14 @@ enable_language(Fortran)
 # version must be known
 dakota_platform_specific_compile_options()
 
-# Ensure that GCC is being used if DAKOTA_GCOV was requested. 
+# Ensure that GCC is being used if DAKOTA_GCOV was requested.
 if(DAKOTA_GCOV AND NOT CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
    message(FATAL_ERROR "DAKOTA_GCOV requires building with GCC")
 endif()
 
 
 if(MSVC_VERSION EQUAL 1400 OR MSVC_VERSION GREATER 1400 OR MSVC10)
-  add_definitions(-D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE 
+  add_definitions(-D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE
     -D_CRT_SECURE_NO_WARNINGS)
   add_definitions(-D_SCL_SECURE_NO_DEPRECATE -D_SCL_SECURE_NO_WARNINGS)
 endif()
@@ -217,8 +217,8 @@ endif()
 # set compiler flag to prevent issues in boost::serialization for c++17.
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   if(CMAKE_CXX_STANDARD GREATER 11)
-    set(CMAKE_CXX_FLAGS "-fno-new-ttp-matching ${CMAKE_CXX_FLAGS}"
-        CACHE STRING "fix boost::serialization" FORCE)
+   #set(CMAKE_CXX_FLAGS "-fno-new-ttp-matching ${CMAKE_CXX_FLAGS}"
+   #     CACHE STRING "fix boost::serialization" FORCE)
   endif()
 endif()
 
@@ -240,7 +240,7 @@ include(CTest)
 
 # Set the export name for install targets; parent packages likely want
 # to override this to the name of their target
-set(ExportTarget DakotaTargets CACHE STRING 
+set(ExportTarget DakotaTargets CACHE STRING
   "Export set name for ${CMAKE_PROJECT_NAME}")
 
 # Unconditionally find Trilinos/Teuchos, optionally ROL
@@ -283,7 +283,7 @@ endif()
 # BMA TODO: Finer granularity in packages to build Trilinos, Eigen
 # first, then optionally Pecos, Surfpack, surrogates.
 
-if(DAKOTA_MODULE_SURROGATES) 
+if(DAKOTA_MODULE_SURROGATES)
   add_subdirectory(src/surrogates)
   add_definitions("-DHAVE_DAKOTA_SURROGATES")
 endif()
@@ -333,22 +333,22 @@ install(FILES INSTALL LICENSE COPYRIGHT README
 install(DIRECTORY examples DESTINATION ${DAKOTA_EXAMPLES_INSTALL}
   USE_SOURCE_PERMISSIONS
   PATTERN "CMakeLists.txt" EXCLUDE
-  PATTERN "*.c" EXCLUDE 
-  PATTERN "*.f" EXCLUDE 
+  PATTERN "*.c" EXCLUDE
+  PATTERN "*.f" EXCLUDE
   )
 
 install(DIRECTORY test DESTINATION ${DAKOTA_TEST_INSTALL}
   PATTERN "CMakeLists.txt" EXCLUDE
-  PATTERN "*.c" EXCLUDE 
-  PATTERN "*.cpp" EXCLUDE 
-  PATTERN "*.f" EXCLUDE 
+  PATTERN "*.c" EXCLUDE
+  PATTERN "*.cpp" EXCLUDE
+  PATTERN "*.f" EXCLUDE
   )
 
 if(DAKOTA_VERSION_FOUND)
    install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/VERSION DESTINATION
     ${DAKOTA_TOPFILES_INSTALL})
 endif()
- 
+
 # Final CPack settings
 dakota_cpack_finalize()
 include(CPack)

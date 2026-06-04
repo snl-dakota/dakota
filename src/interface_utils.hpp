@@ -12,6 +12,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include "util/generic_factory.hpp"
 
 namespace Dakota {
     class Interface;
@@ -40,4 +41,33 @@ namespace Dakota {
           abort_handler(-1);
         }
     }
+
+    struct InterfaceRegistryErrorPolicy
+    {
+      std::unique_ptr<Interface> on_unknown_key(unsigned short key, ProblemDescDB &problem_db, ParallelLibrary &parallel_lib) const;
+    };
+
+    class InterfaceRegistry {
+    public:
+      using registry_fun = std::unique_ptr<Interface>(ProblemDescDB&,
+                                                      ParallelLibrary&);
+
+      InterfaceRegistry();
+
+      std::shared_ptr<Interface> get_interface(ProblemDescDB &db,
+                                               ParallelLibrary &par);
+
+     private:
+      template <typename T>
+      static std::unique_ptr<Interface> default_factory_fun(ProblemDescDB& db,
+                                                            ParallelLibrary& par) {
+        return std::make_unique<T>(db, par);
+      }
+
+      Util::GenericFactory<unsigned short, registry_fun,
+                          InterfaceRegistryErrorPolicy>
+          m_factory;
+
+      std::unordered_map<std::string, std::shared_ptr<Interface>> m_cache;
+    };
 }

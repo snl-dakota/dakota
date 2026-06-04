@@ -30,7 +30,11 @@ namespace Dakota {
 size_t Interface::noSpecIdNum = 0;
 
 std::shared_ptr<Interface> Interface::get_interface(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib) {
+#if 1
+  static std::unordered_map<const ProblemDescDB *, InterfaceRegistry> reg{};
 
+  return reg[&problem_db].get_interface(problem_db, parallel_lib);
+#else
   ProblemDescDB* const study_ptr = problem_db.get_rep().get();
   auto& study_cache = Interface::interfaceCache[study_ptr];
 
@@ -69,6 +73,7 @@ std::shared_ptr<Interface> Interface::get_interface(ProblemDescDB& problem_db, P
     m_it = --study_cache.end();
   }
   return *m_it;
+#endif
 }
 
 std::list<std::shared_ptr<Interface>>& Interface::interface_cache(ProblemDescDB& problem_db) {
@@ -99,9 +104,9 @@ std::map<const ProblemDescDB*, std::list<std::shared_ptr<Interface>>> Interface:
     inherited interfaces.  InterfaceUtils::get_interface(...)
     instantiates derived classs */
 
-Interface::Interface(const ProblemDescDB& problem_db): 
+Interface::Interface(const ProblemDescDB& problem_db):
   interfaceType(problem_db.get<unsigned short>("interface.type")),
-  interfaceId(problem_db.get<const String>("interface.id")), 
+  interfaceId(problem_db.get<const String>("interface.id")),
   analysisComponents(
     problem_db.get<const String2DArray>("interface.application.analysis_components")),
   algebraicMappings(false),
@@ -131,7 +136,7 @@ Interface::Interface(const ProblemDescDB& problem_db):
       = (problem_db.get<const String>("responses.hessian_type") == "analytic");
     asl = (hess_flag) ? ASL_alloc(ASL_read_pfgh) : ASL_alloc(ASL_read_fg);
     // allow user input of either stub or stub.nl
-    String stub = (strends(ampl_file_name, ".nl")) ? 
+    String stub = (strends(ampl_file_name, ".nl")) ?
       String(ampl_file_name, 0, ampl_file_name.size() - 3) : ampl_file_name;
     //std::ifstream ampl_nl(ampl_file_name);
     fint stub_str_len = stub.size();
@@ -208,8 +213,8 @@ Interface::Interface(const ProblemDescDB& problem_db):
 
 Interface::Interface(size_t num_fns, short output_level):
   interfaceId(no_spec_id()), algebraicMappings(false), coreMappings(true),
-  outputLevel(output_level), currEvalId(0), 
-  fineGrainEvalCounters(outputLevel > NORMAL_OUTPUT), evalIdCntr(0), 
+  outputLevel(output_level), currEvalId(0),
+  fineGrainEvalCounters(outputLevel > NORMAL_OUTPUT), evalIdCntr(0),
   newEvalIdCntr(0), evalIdRefPt(0), newEvalIdRefPt(0), multiProcEvalFlag(false),
   ieDedSchedFlag(false), appendIfaceId(true)
 {
@@ -497,8 +502,8 @@ algebraic_mappings(const Variables& vars, const ActiveSet& algebraic_set,
       else {
 	algebraicConstraintWeights.assign(algebraicConstraintWeights.size(), 0);
 	algebraicConstraintWeights[-1-algebraicFnTypes[i]] = 1;
-	fullhes(fn_hess.values(), num_alg_vars, num_alg_vars, NULL, 
-		&algebraicConstraintWeights[0]); 
+	fullhes(fn_hess.values(), num_alg_vars, num_alg_vars, NULL,
+		&algebraicConstraintWeights[0]);
       }
     }
   }
@@ -515,8 +520,8 @@ algebraic_mappings(const Variables& vars, const ActiveSet& algebraic_set,
 }
 
 
-/** This function will get invoked even when only algebraic mappings are 
-    active (no core mappings from derived_map), since the AMPL 
+/** This function will get invoked even when only algebraic mappings are
+    active (no core mappings from derived_map), since the AMPL
     algebraic_response may be ordered differently from the total_response.
     In this case, the core_response object is unused. */
 void Interface::
@@ -636,7 +641,7 @@ String Interface::final_eval_id_tag(int iface_eval_id)
 }
 
 
-int Interface::algebraic_function_type(String functionTag) 
+int Interface::algebraic_function_type(String functionTag)
 {
 #ifdef HAVE_AMPL
   int i;
@@ -647,7 +652,7 @@ int Interface::algebraic_function_type(String functionTag)
     if (strcontains(functionTag, con_name(i)))
       return -(i+1);
 
-  Cerr << "Error: No function type available for \'" << functionTag << "\' " 
+  Cerr << "Error: No function type available for \'" << functionTag << "\' "
        << "via algebraic_mappings interface." << std::endl;
   abort_handler(INTERFACE_ERROR);
   return 0; // does not get returned but quiets compiler warning
