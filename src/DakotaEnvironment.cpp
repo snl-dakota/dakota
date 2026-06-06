@@ -12,7 +12,7 @@
 #include "LibraryEnvironment.hpp"
 #include "WorkdirHelper.hpp"
 #include "ProblemDescDB.hpp"
-#include "IteratorScheduler.hpp"
+#include "StudyRuntime.hpp"
 #include "dakota_preproc_util.hpp"
 #include "ProblemDescDBUtils.hpp"
 #include "dakota_input_reader.hpp"
@@ -105,7 +105,9 @@ void process_json_input_object(const ProgramOptions& program_options,
 Environment::Environment(BaseConstructor):
   mpiManager(), programOptions(mpiManager.world_rank()), outputManager(),
   parallelLib(mpiManager, programOptions, outputManager),
-  probDescDB(mpiManager.world_size(), mpiManager.world_rank()), usageTracker(mpiManager.world_rank())
+  probDescDB(mpiManager.world_size(), mpiManager.world_rank()),
+  studyRuntime(parallelLib, &outputManager),
+  usageTracker(mpiManager.world_rank())
 {
   // set exit mode as early as possible
   if (!programOptions.exit_mode().empty())
@@ -137,7 +139,9 @@ Environment::Environment(BaseConstructor, int argc, char* argv[]):
 		mpiManager.mpirun_flag()),
   // now instantiate the parallel library and problem description DB
   parallelLib(mpiManager, programOptions, outputManager),
-  probDescDB(mpiManager.world_size(), mpiManager.world_rank()), usageTracker(mpiManager.world_rank())
+  probDescDB(mpiManager.world_size(), mpiManager.world_rank()),
+  studyRuntime(parallelLib, &outputManager),
+  usageTracker(mpiManager.world_rank())
 {
   // set exit mode as early as possible
   if (!programOptions.exit_mode().empty())
@@ -164,7 +168,9 @@ Environment::Environment(BaseConstructor, ProgramOptions prog_opts,
   outputManager(programOptions, mpiManager.world_rank(),
 		mpiManager.mpirun_flag()), 
   parallelLib(mpiManager, programOptions, outputManager),
-  probDescDB(mpiManager.world_size(), mpiManager.world_rank()), usageTracker(mpiManager.world_rank())
+  probDescDB(mpiManager.world_size(), mpiManager.world_rank()),
+  studyRuntime(parallelLib, &outputManager),
+  usageTracker(mpiManager.world_rank())
 {
   // set exit mode as early as possible
   if (!programOptions.exit_mode().empty())
@@ -345,7 +351,7 @@ void Environment::parse(bool check_bcast_database,
 
   // Output/restart management utilizes iterator partitions, so calls to
   // push_output_tag() follow ParallelLibrary::init_iterator_communicators()
-  // within IteratorScheduler::partition().
+  // within IteratorExecutor::partition().
 
   const bool on_rank_zero = (parallelLib.world_rank() == 0);
   const bool has_freeform_input = !programOptions.input_file().empty() ||
@@ -356,7 +362,7 @@ void Environment::parse(bool check_bcast_database,
     if ( has_freeform_input) {
       auto [final_input, template_string] = 
         ProblemDescDBUtils::final_input_and_template(programOptions);
-      if(programOptions.echo_input())
+      if (on_rank_zero && programOptions.echo_input())
         ProblemDescDBUtils::echo_input(final_input, template_string);
       if (on_rank_zero)
         Cout << "Using Dakota parser: " << programOptions.parser_options()
@@ -441,7 +447,7 @@ void Environment::construct()
 
   // Instantiate topLevelIterator in parallel
   // (invoke ProblemDescDB ctor chain on all processors)
-  IteratorScheduler::init_iterator(probDescDB, parallelLib, topLevelIterator, w_pl_iter);
+  studyRuntime.initialize_top_level_iterator(probDescDB, topLevelIterator, w_pl_iter);
   // Notfiy the iterator that it is the top level
   topLevelIterator->top_level(true);
 }
@@ -474,7 +480,7 @@ void Environment::execute()
       topLevelIterator->initialize_graphics(); // default to server_id = 1
 
     ParLevLIter w_pl_iter = parallelLib.w_parallel_level_iterator();
-    IteratorScheduler::run_iterator(*topLevelIterator, w_pl_iter);
+    studyRuntime.execute_top_level_iterator(*topLevelIterator, w_pl_iter);
 
     if (output_rank)
       Cout << "<<<<< Environment execution completed.\n";
@@ -510,7 +516,7 @@ void Environment::destruct()
     return;
 
   ParLevLIter w_pl_iter = parallelLib.w_parallel_level_iterator();
-  IteratorScheduler::free_iterator(*topLevelIterator, w_pl_iter);
+  studyRuntime.free_top_level_iterator(*topLevelIterator, w_pl_iter);
 
   // decrement hierarchical output/restart streams (w_pl does not induce a tag)
   parallelLib.pop_output_tag(*w_pl_iter);

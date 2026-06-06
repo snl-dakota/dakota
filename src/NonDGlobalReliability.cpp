@@ -270,7 +270,7 @@ NonDGlobalReliability(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, 
     }
   }
 
-  // Following this ctor, IteratorScheduler::init_iterator() initializes the
+  // Following this ctor, IteratorExecutor::init_iterator() initializes the
   // parallel configuration for NonDGlobalReliability + iteratedModel using
   // NonDGlobalReliability's maxEvalConcurrency. During uSpaceModel construction
   // above, DataFitSurrModel::derived_init_communicators() initializes the
@@ -279,7 +279,7 @@ NonDGlobalReliability(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, 
   // currently exercised is that used by dace_iterator within the initial GP
   // construction, but the NonDGlobalReliability maxEvalConcurrency must still
   // be set so as to avoid parallel configuration errors resulting from
-  // avail_procs > max_concurrency within IteratorScheduler::init_iterator().
+  // avail_procs > max_concurrency within IteratorExecutor::init_iterator().
   // A max of the local derivative concurrency and the DACE concurrency is used
   // for this purpose.
   maxEvalConcurrency = std::max(maxEvalConcurrency,
@@ -406,7 +406,7 @@ void NonDGlobalReliability::pre_run()
 {
   Analyzer::pre_run();
 
-  // IteratorScheduler::run_iterator() + Analyzer::initialize_run() ensure
+  // IteratorExecutor::run_iterator() + Analyzer::initialize_run() ensure
   // initialization of Model mappings for iteratedModel, but local recursions
   // are not visible -> recur DataFitSurr +  ProbabilityTransform if needed.
   // > Note: part of this occurs at DataFit build time. Therefore, take

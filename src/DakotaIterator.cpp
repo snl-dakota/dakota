@@ -15,7 +15,8 @@
 #include "ParallelLibrary.hpp"
 #include "ProblemDescDB.hpp"
 #include "IRStore.hpp"
-#include "StudyRuntimeServices.hpp"
+#include "LibraryRuntimeSupport.hpp"
+#include "StudyRuntime.hpp"
 #include "ParallelLibrary.hpp"
 #include "DakotaGraphics.hpp"
 #include "ResultsManager.hpp"
@@ -93,11 +94,22 @@ Iterator::Iterator(ProblemDescDB& problem_db,
 }
 
 
-Iterator::Iterator(std::shared_ptr<StudyRuntimeServices> runtime_services,
+Iterator::Iterator(std::shared_ptr<ParallelLibrary> parallel_lib,
+                   std::shared_ptr<OutputManager> output_mgr,
                    const IRStore& method_store,
 		   std::shared_ptr<TraitsBase> traits):
-  runtimeServices(std::move(runtime_services)), probDescDB(dummy_db),
-  parallelLib(this->runtimeServices->parallel_library()),
+  Iterator(detail::resolve_runtime(std::move(parallel_lib), std::move(output_mgr)),
+           method_store, traits)
+{ }
+
+
+Iterator::Iterator(detail::ResolvedRuntime runtime,
+                   const IRStore& method_store,
+		   std::shared_ptr<TraitsBase> traits):
+  ownedRuntime(std::move(runtime.ownedRuntime)),
+  sharedParallelLibrary(std::move(runtime.sharedParallelLibrary)),
+  sharedOutputManager(std::move(runtime.sharedOutputManager)),
+  probDescDB(dummy_db), parallelLib(*runtime.parallelLibrary),
   methodPCIter(parallelLib.parallel_configuration_iterator()),
   myModelLayers(0), methodName(method_store.get<unsigned short>("algorithm")),
   convergenceTol(method_store.get<Real>("convergence_tolerance")),
@@ -1283,6 +1295,24 @@ void Iterator::export_final_surrogates(Model& data_fit_surr_model)
     const Variables& vars = data_fit_surr_model.current_variables();
     approx_it->export_model(vars, *rlabel_it, surrExportPrefix, surrExportFormat);
   }
+}
+
+ParallelLibrary* Iterator::parallel_library_ptr() const
+{
+  return (&parallelLib == &dummy_lib) ? nullptr : &parallelLib;
+}
+
+
+OutputManager* Iterator::output_manager_ptr() const
+{
+  ParallelLibrary* parallel_lib = parallel_library_ptr();
+  return parallel_lib ? &parallel_lib->output_manager() : nullptr;
+}
+
+
+StudyRuntime Iterator::study_runtime() const
+{
+  return StudyRuntime(parallelLib, output_manager_ptr());
 }
 
 } // namespace Dakota

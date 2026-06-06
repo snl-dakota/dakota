@@ -7,8 +7,8 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-#ifndef ITERATOR_SCHEDULER_H
-#define ITERATOR_SCHEDULER_H
+#ifndef ITERATOR_EXECUTOR_H
+#define ITERATOR_EXECUTOR_H
 
 //#include "Scheduler.hpp"
 #include "DataMethod.hpp"
@@ -21,14 +21,14 @@ class Model;
 class ProblemDescDB;
 
 
-/// This class encapsulates scheduling operations for concurrent
-/// sub-iteration within an outer level context (e.g., meta-iteration,
-/// nested models).
+/// This class encapsulates runtime execution and scheduling for
+/// concurrent sub-iteration within an outer level context (e.g.,
+/// meta-iteration, nested models).
 
 /** In time, a Scheduler class hierarchy is envisioned, but for now,
     this class is not part of a hierarchy. */
 
-class IteratorScheduler //: public Scheduler
+class IteratorExecutor //: public Scheduler
 {
 public:
   
@@ -37,13 +37,13 @@ public:
   //
 
   // default constructor
-  //IteratorScheduler();
+  //IteratorExecutor();
   /// constructor
-  IteratorScheduler(ParallelLibrary& parallel_lib, bool peer_assign_jobs,
+  IteratorExecutor(ParallelLibrary& parallel_lib, bool peer_assign_jobs,
 		    int num_servers = 0, int procs_per_iterator = 0,
 		    short scheduling = DEFAULT_SCHEDULING);
   /// destructor
-  ~IteratorScheduler();
+  ~IteratorExecutor();
     
   //
   //- Heading: Static member functions
@@ -196,16 +196,16 @@ private:
 };
 
 
-//inline IteratorScheduler::IteratorScheduler():
+//inline IteratorExecutor::IteratorExecutor():
 //  numIteratorServers(1), numIteratorJobs(1), maxIteratorConcurrency(1)
 //{ }
 
 
-inline IteratorScheduler::~IteratorScheduler()
+inline IteratorExecutor::~IteratorExecutor()
 { }
 
 
-inline void IteratorScheduler::
+inline void IteratorExecutor::
 init_iterator(ProblemDescDB& problem_db, std::shared_ptr<Iterator>& sub_iterator,
 	      std::shared_ptr<Model> sub_model)
 {
@@ -222,7 +222,7 @@ init_iterator(ProblemDescDB& problem_db, std::shared_ptr<Iterator>& sub_iterator
 }
 
 
-inline void IteratorScheduler::
+inline void IteratorExecutor::
 init_iterator(const String& method_string,
 	      std::shared_ptr<Iterator>& sub_iterator, std::shared_ptr<Model> sub_model)
 {
@@ -239,32 +239,32 @@ init_iterator(const String& method_string,
 }
 
 
-inline void IteratorScheduler::set_iterator(Iterator& sub_iterator)
+inline void IteratorExecutor::set_iterator(Iterator& sub_iterator)
 {
   set_iterator(sub_iterator,
 	       schedPCIter->mi_parallel_level_iterator(miPLIndex));
 }
 
 
-inline void IteratorScheduler::run_iterator(Iterator& sub_iterator)
+inline void IteratorExecutor::run_iterator(Iterator& sub_iterator)
 {
   run_iterator(sub_iterator,
 	       schedPCIter->mi_parallel_level_iterator(miPLIndex));
 }
 
 
-inline void IteratorScheduler::free_iterator(Iterator& sub_iterator)
+inline void IteratorExecutor::free_iterator(Iterator& sub_iterator)
 {
   free_iterator(sub_iterator,
 		schedPCIter->mi_parallel_level_iterator(miPLIndex));
 }
 
 
-inline void IteratorScheduler::update(ParConfigLIter pc_iter)
+inline void IteratorExecutor::update(ParConfigLIter pc_iter)
 { schedPCIter = pc_iter; }
 
 
-inline void IteratorScheduler::update(size_t index)
+inline void IteratorExecutor::update(size_t index)
 {
   // Note: update(ParConfigLIter) must precede this update for access to mi_pl
 
@@ -285,14 +285,14 @@ inline void IteratorScheduler::update(size_t index)
 }
 
 
-inline void IteratorScheduler::update(ParConfigLIter pc_iter, size_t index)
+inline void IteratorExecutor::update(ParConfigLIter pc_iter, size_t index)
 { update(pc_iter); update(index); }
 
 
 /** This implementation supports the scheduling of multiple jobs using
     a single iterator/model pair.  Additional future (overloaded)
     implementations could involve independent iterator instances. */
-template <typename MetaType> void IteratorScheduler::
+template <typename MetaType> void IteratorExecutor::
 schedule_iterators(MetaType& meta_object, Iterator& sub_iterator)
 {
   // As for invocations of an Interface (see SimulationModel.hpp and
@@ -327,7 +327,7 @@ schedule_iterators(MetaType& meta_object, Iterator& sub_iterator)
 
 /** This function is adapted from
     ApplicationInterface::dedicated_dynamic_scheduler_evaluations(). */
-template <typename MetaType> void IteratorScheduler::
+template <typename MetaType> void IteratorExecutor::
 dedicated_dynamic_scheduler_iterators(MetaType& meta_object)
 {
   int i, j, num_sends = std::min(numIteratorServers, numIteratorJobs);
@@ -397,7 +397,7 @@ dedicated_dynamic_scheduler_iterators(MetaType& meta_object)
 }
 
 
-template <typename MetaType> void IteratorScheduler::
+template <typename MetaType> void IteratorExecutor::
 peer_static_schedule_iterators(MetaType& meta_object, Iterator& sub_iterator)
 {
   bool rank0 = (iteratorCommRank == 0); int i;
@@ -491,7 +491,7 @@ peer_static_schedule_iterators(MetaType& meta_object, Iterator& sub_iterator)
 
 /** This function is similar in structure to
     ApplicationInterface::serve_evaluations_synch(). */
-template <typename MetaType> void IteratorScheduler::
+template <typename MetaType> void IteratorExecutor::
 serve_iterators(MetaType& meta_object, Iterator& sub_iterator)
 {
   RealArray param_set;
@@ -536,12 +536,12 @@ serve_iterators(MetaType& meta_object, Iterator& sub_iterator)
 }
 
 
-inline void IteratorScheduler::
+inline void IteratorExecutor::
 iterator_message_lengths(int params_msg_len, int results_msg_len)
 { paramsMsgLen = params_msg_len; resultsMsgLen = results_msg_len; }
 
 
-inline bool IteratorScheduler::lead_rank() const
+inline bool IteratorExecutor::lead_rank() const
 {
   return ( iteratorCommRank == 0 && ( !messagePass ||
     ( iteratorScheduling == DEDICATED_SCHEDULER_DYNAMIC &&

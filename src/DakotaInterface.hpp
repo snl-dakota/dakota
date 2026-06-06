@@ -24,6 +24,7 @@ namespace Pecos { class SurrogateData; class ActiveKey; }
 namespace Dakota {
 
 // forward declarations
+class OutputManager;
 class ParallelLibrary;
 class ProblemDescDB;
 class IRStore;
@@ -88,6 +89,9 @@ public:
   //
   //- Heading: Virtual functions
   //
+
+  virtual ParallelLibrary* parallel_library_ptr() const { return nullptr; }
+  virtual OutputManager* output_manager_ptr() const { return nullptr; }
 
   /// the function evaluator: provides a "mapping" from the
   /// variables to the responses.

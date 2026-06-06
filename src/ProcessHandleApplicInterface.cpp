@@ -11,7 +11,7 @@
 #include "ParamResponsePair.hpp"
 #include "ProcessHandleApplicInterface.hpp"
 #include "ProblemDescDB.hpp"
-#include "StudyRuntimeServices.hpp"
+#include "LibraryRuntimeSupport.hpp"
 #include "ParallelLibrary.hpp"
 #include "WorkdirHelper.hpp"
 #include <algorithm>
@@ -31,8 +31,9 @@ ProcessHandleApplicInterface(const ProblemDescDB& problem_db, ParallelLibrary& p
 
 ProcessHandleApplicInterface::
 ProcessHandleApplicInterface(const IRStore& interface_store,
-                             std::shared_ptr<StudyRuntimeServices> runtime_services):
-  ProcessApplicInterface(interface_store, runtime_services), argList(3)
+                             std::shared_ptr<ParallelLibrary> parallel_lib,
+                             std::shared_ptr<OutputManager> output_mgr):
+  ProcessApplicInterface(interface_store, std::move(parallel_lib), std::move(output_mgr)), argList(3)
 { }
 
 

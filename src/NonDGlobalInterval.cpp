@@ -148,7 +148,7 @@ NonDGlobalInterval::NonDGlobalInterval(ProblemDescDB& problem_db, ParallelLibrar
 #endif
     }
 
-    // Following this ctor, IteratorScheduler::init_iterator() initializes the
+    // Following this ctor, IteratorExecutor::init_iterator() initializes the
     // parallel configuration for NonDGlobalInterval + iteratedModel using
     // NonDGlobalInterval's maxEvalConcurrency.  During fHatModel construction
     // above, DataFitSurrModel::derived_init_communicators() initializes the
@@ -157,7 +157,7 @@ NonDGlobalInterval::NonDGlobalInterval(ProblemDescDB& problem_db, ParallelLibrar
     // currently exercised is that used by daceIterator within the initial GP
     // construction, but the NonDGlobalInterval maxEvalConcurrency must still be
     // set so as to avoid parallel config errors resulting from avail_procs
-    // > max_concurrency within IteratorScheduler::init_iterator().  Max of the
+    // > max_concurrency within IteratorExecutor::init_iterator().  Max of the
     // local deriv concurrency & the DACE concurrency is used for this purpose.
     maxEvalConcurrency = std::max(maxEvalConcurrency,
       daceIterator->maximum_evaluation_concurrency());

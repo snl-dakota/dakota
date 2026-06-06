@@ -12,7 +12,7 @@
 //#include "ParamResponsePair.hpp"
 #include "IRStore.hpp"
 #include "ProblemDescDB.hpp"
-#include "StudyRuntimeServices.hpp"
+#include "LibraryRuntimeSupport.hpp"
 #include <thread>
 
 //#define DEBUG
@@ -20,6 +20,8 @@
 
 
 namespace Dakota {
+
+extern ParallelLibrary dummy_lib;
 
 namespace {
 
@@ -137,14 +139,39 @@ ApplicationInterface(const ProblemDescDB& problem_db, ParallelLibrary& parallel_
 
 ApplicationInterface::~ApplicationInterface() 
 { }
+ParallelLibrary* ApplicationInterface::parallel_library_ptr() const
+{
+  return (&parallelLib == &dummy_lib) ? nullptr : &parallelLib;
+}
+
+
+OutputManager* ApplicationInterface::output_manager_ptr() const
+{
+  ParallelLibrary* parallel_lib = parallel_library_ptr();
+  return parallel_lib ? &parallel_lib->output_manager() : nullptr;
+}
+
+
 
 
 ApplicationInterface::
 ApplicationInterface(const IRStore& interface_store,
-                     std::shared_ptr<StudyRuntimeServices> runtime_services):
+                     std::shared_ptr<ParallelLibrary> parallel_lib,
+                     std::shared_ptr<OutputManager> output_mgr):
+  ApplicationInterface(interface_store,
+                       detail::resolve_runtime(std::move(parallel_lib),
+                                               std::move(output_mgr)))
+{ }
+
+
+ApplicationInterface::
+ApplicationInterface(const IRStore& interface_store,
+                     detail::ResolvedRuntime runtime):
   Interface(interface_store),
-  runtimeServices(std::move(runtime_services)),
-  parallelLib(runtimeServices->parallel_library()),
+  ownedRuntime(std::move(runtime.ownedRuntime)),
+  sharedParallelLibrary(std::move(runtime.sharedParallelLibrary)),
+  sharedOutputManager(std::move(runtime.sharedOutputManager)),
+  parallelLib(*runtime.parallelLibrary),
   batchEval(interface_store.get<bool>("batch")),
   asynchFlag(interface_store.get<bool>("asynch")),
   batchIdCntr(0),
@@ -302,7 +329,7 @@ set_evaluation_communicators(const IntArray& message_lengths)
   // Buffer sizes for function evaluation message transfers are estimated in 
   // Model::init_communicators() so that hard-coded MPIUnpackBuffer
   // lengths can be avoided.  This estimation is reperformed on every call to
-  // IteratorScheduler::run_iterator().  A Bcast is not currently needed since
+  // IteratorExecutor::run_iterator().  A Bcast is not currently needed since
   // every processor performs the estimation.
   //MPI_Bcast(message_lengths.data(), 4, MPI_INT, 0, iteratorComm);
   lenVarsMessage       = message_lengths[0];

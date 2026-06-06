@@ -28,9 +28,12 @@ construction for Dakota components.
    Reason: this preserves legacy API shape while removing the temporary shim,
    but it is still structural scaffolding that should eventually be redesigned.
 
-4. DI construction still relies on runtime-context defaults for some
-   non-component-owned concerns.
-   Current examples: `outputLevel` and `ScalingOptions`.
+4. DI construction now uses optional `ParallelLibrary` / `OutputManager`
+   injection with internal defaults when callers omit them, but the long-term
+   runtime-service split is still unsettled.
+   Current examples: `outputLevel`, `ScalingOptions`, and the broader
+   separation of `ProgramOptions` command-line behavior from library-mode
+   runtime services.
 
 5. `Model` still converts typed derivative configuration from `Response`
    back into legacy strings.

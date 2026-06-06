@@ -15,9 +15,8 @@
 #include "DakotaAnalyzer.hpp"
 #include "ProblemDescDB.hpp"
 #include "IRStore.hpp"
-#include "StudyRuntimeServices.hpp"
+#include "LibraryRuntimeSupport.hpp"
 #include "ParallelLibrary.hpp"
-#include "IteratorScheduler.hpp"
 #include "PRPMultiIndex.hpp"
 
 static const char rcsId[]="@(#) $Id: DakotaAnalyzer.cpp 7035 2010-10-22 21:45:39Z mseldre $";
@@ -63,12 +62,18 @@ Analyzer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_p
 
 
 Analyzer::
-Analyzer(std::shared_ptr<StudyRuntimeServices> runtime_services,
+Analyzer(std::shared_ptr<ParallelLibrary> parallel_lib,
+         std::shared_ptr<OutputManager> output_mgr,
          const IRStore& method_store, std::shared_ptr<Model> model):
-  Iterator(runtime_services, method_store), compactMode(true),
+  Iterator(detail::resolve_runtime(std::move(parallel_lib), std::move(output_mgr),
+                                   model->parallel_library_ptr(),
+                                   model->output_manager_ptr(),
+                                   "Analyzer", "Model"),
+           method_store),
+  compactMode(true),
   numObjFns(0), numLSqTerms(0),
   vbdFlag(method_store.get<bool>("variance_based_decomp")),
-  writePrecision(runtime_services->environment_store().get<int>("output_precision"))
+  writePrecision(0)
 {
   iteratedModel = model;
   update_from_model(*iteratedModel);
@@ -205,7 +210,7 @@ void Analyzer::initialize_run()
     //iteratedModel.db_scope_reset(); // TO DO: need better name?
 
     // This is to catch un-initialized models used by local iterators that
-    // are not called through IteratorScheduler::run_iterator().  Within a
+    // are not called through IteratorExecutor::run_iterator().  Within a
     // recursion, it will correspond to the first initialize_run() with an
     // uninitialized mapping, such as the outer-iterator on the first pass
     // of a recursion.  On subsequent passes, it may correspond to the inner

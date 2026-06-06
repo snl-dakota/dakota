@@ -10,6 +10,7 @@
 #include "CollabHybridMetaIterator.hpp"
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
+#include "StudyRuntime.hpp"
 
 static const char rcsId[]="@(#) $Id: CollabHybridMetaIterator.cpp 6715 2010-04-02 21:58:15Z wjbohnh $";
 
@@ -115,7 +116,7 @@ void CollabHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
   if (!singlePassedModel)
     selectedModels.resize(num_iterators);
 
-  iterSched.update(methodPCIter);
+  study_runtime().update_iterator_executor(iterSched, methodPCIter);
 
   IntIntPair ppi_pr_i, ppi_pr(INT_MAX, 0);
   String empty_str;
@@ -136,7 +137,7 @@ void CollabHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
   // from this point on, we can specialize logic in terms of iterator servers.
   // An idle partition need not instantiate iterators/models (empty Iterator
   // envelopes are adequate for serve_iterators()), so return now.  A dedicated
-  // scheduler processor is managed in IteratorScheduler::init_iterator().
+  // scheduler processor is managed in IteratorExecutor::init_iterator().
   if (iterSched.iteratorServerId > iterSched.numIteratorServers)
     return;
 
@@ -160,13 +161,13 @@ void CollabHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
 void CollabHybridMetaIterator::derived_set_communicators(ParLevLIter pl_iter)
 {
   size_t mi_pl_index = methodPCIter->mi_parallel_level_index(pl_iter) + 1;
-  iterSched.update(methodPCIter, mi_pl_index);
+  study_runtime().update_iterator_executor(iterSched, methodPCIter, mi_pl_index);
   if (iterSched.iteratorServerId <= iterSched.numIteratorServers) {
     ParLevLIter si_pl_iter
       = methodPCIter->mi_parallel_level_iterator(mi_pl_index);
     size_t i, num_iterators = methodStrings.size();
     for (i=0; i<num_iterators; ++i)
-      iterSched.set_iterator(*selectedIterators[i], si_pl_iter);
+      study_runtime().set_iterator(iterSched, *selectedIterators[i], si_pl_iter);
   }
 }
 
@@ -174,17 +175,17 @@ void CollabHybridMetaIterator::derived_set_communicators(ParLevLIter pl_iter)
 void CollabHybridMetaIterator::derived_free_communicators(ParLevLIter pl_iter)
 {
   size_t mi_pl_index = methodPCIter->mi_parallel_level_index(pl_iter) + 1;
-  iterSched.update(methodPCIter, mi_pl_index);
+  study_runtime().update_iterator_executor(iterSched, methodPCIter, mi_pl_index);
   if (iterSched.iteratorServerId <= iterSched.numIteratorServers) {
     ParLevLIter si_pl_iter
       = methodPCIter->mi_parallel_level_iterator(mi_pl_index);
     size_t i, num_iterators = methodStrings.size();
     for (i=0; i<num_iterators; ++i)
-      iterSched.free_iterator(*selectedIterators[i], si_pl_iter);
+      study_runtime().free_iterator(iterSched, *selectedIterators[i]);
   }
 
   // deallocate the mi_pl parallelism level
-  iterSched.free_iterator_parallelism();
+  study_runtime().free_iterator_parallelism(iterSched);
 }
 
 
@@ -210,7 +211,7 @@ void CollabHybridMetaIterator::core_run()
     if (rank0 && server_id > 0 && server_id <= iterSched.numIteratorServers)
       curr_iterator.initialize_graphics(server_id);
 
-    iterSched.schedule_iterators(*this, curr_iterator);
+    study_runtime().schedule_iterators(iterSched, *this, curr_iterator);
   }
 }
 

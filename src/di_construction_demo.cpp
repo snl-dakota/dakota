@@ -2,9 +2,14 @@
 #include "DakotaResponse.hpp"
 #include "ForkApplicInterface.hpp"
 #include "InstructionMaterializer.hpp"
-#include "StudyRuntimeServices.hpp"
+#include "MPIManager.hpp"
 #include "NonDLHSSampling.hpp"
+#include "OutputManager.hpp"
+#include "ParallelLibrary.hpp"
+#include "ProgramOptions.hpp"
 #include "SimulationModel.hpp"
+#include "StudyRuntime.hpp"
+#include "WorkdirHelper.hpp"
 
 #include <iostream>
 #include <memory>
@@ -12,13 +17,44 @@
 
 using json = nlohmann::json;
 
+namespace {
+
+struct ExplicitRuntime {
+  ExplicitRuntime():
+    mpiManager(),
+    programOptions(mpiManager.world_rank()),
+    outputManager(std::make_shared<Dakota::OutputManager>(
+      programOptions, mpiManager.world_rank(), mpiManager.mpirun_flag())),
+    parallelLibrary(std::make_shared<Dakota::ParallelLibrary>(
+      mpiManager, programOptions, *outputManager)),
+    studyRuntime(std::make_shared<Dakota::StudyRuntime>(
+      *parallelLibrary, outputManager.get()))
+  {
+    // Explicitly mirror the Environment-owned setup that library-mode callers
+    // currently need for driver PATH handling and restart/output activation.
+    Dakota::WorkdirHelper::initialize();
+    outputManager->push_output_tag("", programOptions, false, true);
+  }
+
+  ~ExplicitRuntime()
+  {
+    outputManager->pop_output_tag();
+  }
+
+  Dakota::MPIManager mpiManager;
+  Dakota::ProgramOptions programOptions;
+  std::shared_ptr<Dakota::OutputManager> outputManager;
+  std::shared_ptr<Dakota::ParallelLibrary> parallelLibrary;
+  std::shared_ptr<Dakota::StudyRuntime> studyRuntime;
+};
+
+} // namespace
+
 int main()
 {
   using namespace Dakota;
 
   InstructionMaterializer materializer;
-
-  const json environment_json = json::object();
 
   const json method_json = {
     {"sampling", {
@@ -48,7 +84,7 @@ int main()
   const json interface_json = {
     {"analysis_drivers", {
       {"drivers", {"text_book"}},
-      {"interface_type", 
+      {"interface_type",
         {
           {
             "fork", {
@@ -66,8 +102,6 @@ int main()
 
   const json model_json = json::object();
 
-  const IRStore environment_store =
-    materializer.materialize_block(environment_json, irgen::BlockType::Environment);
   const IRStore method_store =
     materializer.materialize_block(method_json, irgen::BlockType::Method);
   const IRStore variables_store =
@@ -79,24 +113,24 @@ int main()
   const IRStore model_store =
     materializer.materialize_block(model_json, irgen::BlockType::Model);
 
-  // In DI/library mode, the Environment-owned runtime setup is assembled
-  // explicitly from environment IR. This helper covers the pieces the demo
-  // previously had to do by hand: workdir/PATH initialization for driver
-  // lookup, ProgramOptions/OutputManager/ParallelLibrary wiring, and the
-  // top-level output/restart activation needed by write_restart().
-  auto runtime_services = make_study_runtime_services(environment_store);
+  // This explicit service setup demonstrates the current library-mode knobs:
+  // ParallelLibrary coordinates evaluation execution, and OutputManager owns
+  // restart/output state needed by the pilot path.
+  ExplicitRuntime runtime;
 
   std::cout << "Constructing DI study components...\n";
   Variables variables(variables_store);
-  Response response(responses_store, variables /* really only need num continuous variables; could be sharedVariablesData */);
+  Response response(responses_store, variables);
   auto interface = std::make_shared<ForkApplicInterface>(
-    interface_store, runtime_services);
+    interface_store, runtime.parallelLibrary, runtime.outputManager);
   auto model = std::make_shared<SimulationModel>(
-    model_store, variables, interface, response, runtime_services);
-  NonDLHSSampling sampling(method_store, runtime_services, model);
+    model_store, variables, interface, response,
+    runtime.parallelLibrary, runtime.outputManager);
+  NonDLHSSampling sampling(
+    method_store, model, runtime.parallelLibrary, runtime.outputManager);
 
   std::cout << "Running sampling study...\n";
-  sampling.run();
+  runtime.studyRuntime->execute_iterator(sampling);
 
   const auto& responses = sampling.all_responses();
   std::cout << "Completed DI study.\n";

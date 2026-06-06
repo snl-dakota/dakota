@@ -13,6 +13,7 @@
 #include "ParamResponsePair.hpp"
 #include "dakota_data_io.hpp"
 #include "EvaluationStore.hpp"
+#include "StudyRuntime.hpp"
 
 static const char rcsId[]="@(#) $Id: SeqHybridMetaIterator.cpp 6972 2010-09-17 22:18:50Z briadam $";
 
@@ -31,7 +32,7 @@ SeqHybridMetaIterator::SeqHybridMetaIterator(ProblemDescDB& problem_db, Parallel
   // ***************************************************************************
 
   // ***************************************************************************
-  // TO DO: once NestedModel has been updated to use IteratorScheduler, consider
+  // TO DO: once NestedModel has been updated to use IteratorExecutor, consider
   // design using NestedModel lightweight ctor for simple Iterator sequences.
   // Iterators define available I/O and the meta-iterator checks compatibility.
   // ***************************************************************************
@@ -117,7 +118,7 @@ void SeqHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
   if (!singlePassedModel)
     selectedModels.resize(num_iterators);
 
-  iterSched.update(methodPCIter);
+  study_runtime().update_iterator_executor(iterSched, methodPCIter);
 
   int pl_rank = pl_iter->server_communicator_rank();
   IntIntPair ppi_pr_i, ppi_pr(INT_MAX, 0);
@@ -172,7 +173,7 @@ void SeqHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
   // from this point on, we can specialize logic in terms of iterator servers.
   // An idle partition need not instantiate iterators/models (empty Iterator
   // envelopes are adequate for serve_iterators()), so return now.  A dedicated
-  // scheduler processor is managed in IteratorScheduler::init_iterator().
+  // scheduler processor is managed in IteratorExecutor::init_iterator().
   if (iterSched.iteratorServerId > iterSched.numIteratorServers)
     return;
 
@@ -231,13 +232,13 @@ void SeqHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
 void SeqHybridMetaIterator::derived_set_communicators(ParLevLIter pl_iter)
 {
   size_t mi_pl_index = methodPCIter->mi_parallel_level_index(pl_iter) + 1;
-  iterSched.update(methodPCIter, mi_pl_index);
+  study_runtime().update_iterator_executor(iterSched, methodPCIter, mi_pl_index);
   if (iterSched.iteratorServerId <= iterSched.numIteratorServers) {
     ParLevLIter si_pl_iter
       = methodPCIter->mi_parallel_level_iterator(mi_pl_index);
     size_t i, num_iterators = methodStrings.size();
     for (i=0; i<num_iterators; ++i)
-      iterSched.set_iterator(*selectedIterators[i], si_pl_iter);
+      study_runtime().set_iterator(iterSched, *selectedIterators[i], si_pl_iter);
   }
 }
 
@@ -245,17 +246,17 @@ void SeqHybridMetaIterator::derived_set_communicators(ParLevLIter pl_iter)
 void SeqHybridMetaIterator::derived_free_communicators(ParLevLIter pl_iter)
 {
   size_t mi_pl_index = methodPCIter->mi_parallel_level_index(pl_iter) + 1;
-  iterSched.update(methodPCIter, mi_pl_index);
+  study_runtime().update_iterator_executor(iterSched, methodPCIter, mi_pl_index);
   if (iterSched.iteratorServerId <= iterSched.numIteratorServers) {
     ParLevLIter si_pl_iter
       = methodPCIter->mi_parallel_level_iterator(mi_pl_index);
     size_t i, num_iterators = methodStrings.size();
     for (i=0; i<num_iterators; ++i)
-      iterSched.free_iterator(*selectedIterators[i], si_pl_iter);
+      study_runtime().free_iterator(iterSched, *selectedIterators[i]);
   }
 
   // deallocate the mi_pl parallelism level
-  iterSched.free_iterator_parallelism();
+  study_runtime().free_iterator_parallelism(iterSched);
 }
 
 IntIntPair SeqHybridMetaIterator::estimate_partition_bounds()
@@ -405,15 +406,15 @@ void SeqHybridMetaIterator::run_sequential()
         for (size_t i=0; i<prp_return_size; ++i)
           results_buffer << prp_star;
         results_msg_len = results_buffer.size();
-        // publish lengths to IteratorScheduler
-        iterSched.iterator_message_lengths(params_msg_len, results_msg_len);
+        // publish lengths to IteratorExecutor
+        study_runtime().iterator_message_lengths(iterSched, params_msg_len, results_msg_len);
       }
     }
 
     // ---------------------------------------------------
     // Schedule the runs for this iterator in the sequence
     // ---------------------------------------------------
-    iterSched.schedule_iterators(*this, curr_iterator);
+    study_runtime().schedule_iterators(iterSched, *this, curr_iterator);
 
     // ---------------------------------
     // Post-process the iterator results
@@ -437,7 +438,7 @@ void SeqHybridMetaIterator::run_sequential()
       //   dedicated scheduler and no additional migration is required.
       // > for peer static scheduling, the full parameterSets array needs to be
       //   propagated back to peers 2 though n (like an All-Reduce, except that
-      //   IteratorScheduler::static_schedule_iterators() enforces reduction to
+      //   IteratorExecutor::static_schedule_iterators() enforces reduction to
       //   peer 1 and the code below enforces repropagation from 1 to 2-n).
       if (iterSched.iteratorScheduling == PEER_SCHEDULING &&
 	  iterSched.numIteratorServers > 1) {

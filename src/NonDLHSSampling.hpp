@@ -17,7 +17,7 @@
 namespace Dakota {
 
 class IRStore;
-class StudyRuntimeServices;
+class OutputManager;
 
 /// Performs LHS and Monte Carlo sampling for uncertainty quantification.
 
@@ -54,8 +54,9 @@ public:
   NonDLHSSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
   /// DI constructor from a materialized method IR store
   NonDLHSSampling(const IRStore& method_store,
-                  std::shared_ptr<StudyRuntimeServices> runtime_services,
-                  std::shared_ptr<Model> model);
+                  std::shared_ptr<Model> model,
+                  std::shared_ptr<ParallelLibrary> parallel_lib = nullptr,
+                  std::shared_ptr<OutputManager> output_mgr = nullptr);
   /// alternate constructor for sample generation and evaluation "on the fly"
   NonDLHSSampling(std::shared_ptr<Model> model, unsigned short sample_type,
 		  int samples, int seed, const String& rng,

@@ -13,7 +13,7 @@
 #include "dakota_tabular_io.hpp"
 #include "DakotaModel.hpp"
 #include "ProblemDescDB.hpp"
-#include "IteratorScheduler.hpp"
+#include "ParallelLibrary.hpp"
 #include "ParamResponsePair.hpp"
 #include "PRPMultiIndex.hpp"
 #include "RecastModel.hpp"
@@ -299,7 +299,7 @@ void Minimizer::initialize_run()
     //iteratedModel.db_scope_reset(); // TO DO: need better name?
 
     // This is to catch un-initialized models used by local iterators that
-    // are not called through IteratorScheduler::run_iterator().  Within a
+    // are not called through IteratorExecutor::run_iterator().  Within a
     // recursion, it will correspond to the first initialize_run() with an
     // uninitialized mapping, such as the outer-iterator on the first pass
     // of a recursion.  On subsequent passes, it may correspond to the inner

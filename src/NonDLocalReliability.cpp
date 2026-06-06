@@ -545,7 +545,7 @@ void NonDLocalReliability::pre_run()
 {
   Analyzer::pre_run();
 
-  // IteratorScheduler::run_iterator() + Analyzer::initialize_run() ensure
+  // IteratorExecutor::run_iterator() + Analyzer::initialize_run() ensure
   // initialization of Model mappings for iteratedModel, but local recursions
   // are not visible -> recur DataFitSurr +  ProbabilityTransform if needed.
   // > Note: part of this occurs at DataFit build time. Therefore, take
@@ -2851,7 +2851,7 @@ void NonDLocalReliability::print_results(std::ostream& s, short results_state)
 
 void NonDLocalReliability::method_recourse(unsigned short method_name)
 {
-  // This must now occur at runtime, due to introduction of IteratorScheduler
+  // This must now occur at runtime, due to introduction of IteratorExecutor
   // within NestedModel (there is a circular dependency that is managed within
   // NestedModel::derived_init_communicators() after construction, so
   // subIterator is not available for method query until then).  Among several

@@ -13,7 +13,7 @@
 #include "dakota_data_types.hpp"
 #include "DakotaIterator.hpp"
 #include "DakotaModel.hpp"
-#include "IteratorScheduler.hpp"
+#include "IteratorExecutor.hpp"
 
 
 namespace Dakota {
@@ -91,7 +91,7 @@ protected:
   //
 
   /// scheduler for concurrent execution of Iterators
-  IteratorScheduler iterSched;
+  IteratorExecutor iterSched;
 
   /// maximum number of concurrent sub-iterator executions
   int maxIteratorConcurrency;

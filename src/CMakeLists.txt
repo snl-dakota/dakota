@@ -373,7 +373,7 @@ set(Dakota_src ${DAKOTA_BUILDINFO_PATH}DakotaBuildInfo.cpp
   ${Dakota_BINARY_DIR}/generated/src/ir/generated_ir_types.hpp)
 
 ## UTIL sources.
-set(util_src ParallelLibrary.cpp IteratorScheduler.cpp MPIPackBuffer.cpp
+set(util_src ParallelLibrary.cpp IteratorExecutor.cpp StudyRuntime.cpp MPIPackBuffer.cpp
     dakota_data_util.cpp dakota_data_io.cpp dakota_global_defs.cpp 
     dakota_linear_algebra.cpp dakota_preproc_util.cpp
     dakota_stat_util.cpp dakota_tabular_io.cpp
@@ -492,7 +492,7 @@ endif()
 
 ## Environment sources.
 set(env_src DakotaEnvironment.cpp ExecutableEnvironment.cpp
-    LibraryEnvironment.cpp StudyRuntimeServices.cpp)
+    LibraryEnvironment.cpp LibraryRuntimeSupport.cpp)
 
 ## Iterator sources.
 set(iterator_src DakotaIterator.cpp DakotaAnalyzer.cpp DakotaPStudyDACE.cpp

@@ -13,6 +13,7 @@
 #include "ParamResponsePair.hpp"
 #include "NonDLHSSampling.hpp"
 #include "EvaluationStore.hpp"
+#include "StudyRuntime.hpp"
 
 static const char rcsId[]="@(#) $Id: ConcurrentMetaIterator.cpp 7018 2010-10-12 02:25:22Z mseldre $";
 
@@ -32,7 +33,7 @@ ConcurrentMetaIterator::ConcurrentMetaIterator(ProblemDescDB& problem_db, Parall
   // ***************************************************************************
 
   // ***************************************************************************
-  // TO DO: once NestedModel has been updated to use IteratorScheduler, consider
+  // TO DO: once NestedModel has been updated to use IteratorExecutor, consider
   // design using NestedModel lightweight ctor for Iterator concurrency.
   // Iterators define available I/O and the meta-iterator checks compatibility.
   // ***************************************************************************
@@ -174,7 +175,7 @@ void ConcurrentMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
     probDescDB.set_db_list_nodes(sub_meth_ptr);
   }
 
-  iterSched.update(methodPCIter);
+  study_runtime().update_iterator_executor(iterSched, methodPCIter);
 
   // It is not practical to estimate the evaluation concurrency without 
   // instantiating the iterator (see, e.g., NonDPolynomialChaos), and here we
@@ -197,17 +198,17 @@ void ConcurrentMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
   // from this point on, we can specialize logic in terms of iterator servers.
   // An idle partition need not instantiate iterators (empty selectedIterator
   // envelope is adequate) or initialize, so return now.  A dedicated
-  // scheduler processor is managed in IteratorScheduler::init_iterator().
+  // scheduler processor is managed in IteratorExecutor::init_iterator().
   if (iterSched.iteratorServerId <= iterSched.numIteratorServers) {
     // Instantiate the iterator
     if (lightwt_ctor) {
-      iterSched.init_iterator(sub_meth_name, selectedIterator,
+      study_runtime().initialize_iterator(iterSched, sub_meth_name, selectedIterator,
 			      iteratedModel);
       if (summaryOutputFlag && outputLevel >= VERBOSE_OUTPUT)
 	Cout << "Concurrent Iterator = " << sub_meth_name << std::endl;
     }
     else {
-      iterSched.init_iterator(probDescDB, selectedIterator, iteratedModel);
+      study_runtime().initialize_iterator(iterSched, probDescDB, selectedIterator, iteratedModel);
       if (summaryOutputFlag && outputLevel >= VERBOSE_OUTPUT)
 	Cout << "Concurrent Iterator = "
 	     << method_enum_to_string(probDescDB.get<unsigned short>("method.algorithm"))
@@ -224,11 +225,11 @@ void ConcurrentMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
 void ConcurrentMetaIterator::derived_set_communicators(ParLevLIter pl_iter)
 {
   size_t mi_pl_index = methodPCIter->mi_parallel_level_index(pl_iter) + 1;
-  iterSched.update(methodPCIter, mi_pl_index);
+  study_runtime().update_iterator_executor(iterSched, methodPCIter, mi_pl_index);
   if (iterSched.iteratorServerId <= iterSched.numIteratorServers) {
     ParLevLIter si_pl_iter
       = methodPCIter->mi_parallel_level_iterator(mi_pl_index);
-    iterSched.set_iterator(*selectedIterator, si_pl_iter);
+    study_runtime().set_iterator(iterSched, *selectedIterator, si_pl_iter);
   }
 }
 
@@ -236,22 +237,22 @@ void ConcurrentMetaIterator::derived_set_communicators(ParLevLIter pl_iter)
 void ConcurrentMetaIterator::derived_free_communicators(ParLevLIter pl_iter)
 {
   size_t mi_pl_index = methodPCIter->mi_parallel_level_index(pl_iter) + 1;
-  iterSched.update(methodPCIter, mi_pl_index);
+  study_runtime().update_iterator_executor(iterSched, methodPCIter, mi_pl_index);
   if (iterSched.iteratorServerId <= iterSched.numIteratorServers) {
     ParLevLIter si_pl_iter
       = methodPCIter->mi_parallel_level_iterator(mi_pl_index);
-    iterSched.free_iterator(*selectedIterator, si_pl_iter);
+    study_runtime().free_iterator(iterSched, *selectedIterator);
   }
 
   // deallocate the mi_pl parallelism level
-  iterSched.free_iterator_parallelism();
+  study_runtime().free_iterator_parallelism(iterSched);
 }
 
 
 IntIntPair ConcurrentMetaIterator::estimate_partition_bounds()
 {
   // Note: ConcurrentMetaIterator::derived_init_communicators() calls
-  // IteratorScheduler::configure() to estimate_partition_bounds() on the
+  // IteratorExecutor::configure() to estimate_partition_bounds() on the
   // subIterator, not the MetaIterator.  When ConcurrentMetaIterator is a
   // sub-iterator, we augment the subIterator concurrency with the MetaIterator
   // concurrency.  [Thus, this is not redundant with configure().]
@@ -302,7 +303,7 @@ void ConcurrentMetaIterator::pre_run()
   if (methodName != MULTI_START)
     copy_data(ModelUtils::continuous_variables(*iteratedModel), initialPt); // view->copy
 
-  // estimate params_msg_len & results_msg_len and publish to IteratorScheduler
+  // estimate params_msg_len & results_msg_len and publish to IteratorExecutor
   int params_msg_len = 0, results_msg_len; // peer sched doesn't send params
   if (iterSched.iteratorScheduling == DEDICATED_SCHEDULER_DYNAMIC) {
     // define params_msg_len
@@ -315,7 +316,7 @@ void ConcurrentMetaIterator::pre_run()
       iteratedModel->estimate_message_lengths();
   }
   results_msg_len = iteratedModel->message_lengths()[3];
-  iterSched.iterator_message_lengths(params_msg_len, results_msg_len);
+  study_runtime().iterator_message_lengths(iterSched, params_msg_len, results_msg_len);
 
   // -------------------------------------------------------------------------
   // Define parameterSets from the combination of user-specified & random jobs
@@ -420,7 +421,7 @@ void ConcurrentMetaIterator::core_run()
       selectedIterator->initialize_graphics(server_id);
   }
 
-  iterSched.schedule_iterators(*this, *selectedIterator);
+  study_runtime().schedule_iterators(iterSched, *this, *selectedIterator);
 }
 
 

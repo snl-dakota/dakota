@@ -9,7 +9,7 @@
 
 #include "DakotaResponse.hpp"
 #include "ParamResponsePair.hpp"
-#include "StudyRuntimeServices.hpp"
+#include "LibraryRuntimeSupport.hpp"
 #include "ForkApplicInterface.hpp"
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
@@ -29,8 +29,9 @@ ForkApplicInterface(const ProblemDescDB& problem_db, ParallelLibrary& parallel_l
 
 ForkApplicInterface::
 ForkApplicInterface(const IRStore& interface_store,
-                   std::shared_ptr<StudyRuntimeServices> runtime_services):
-  ProcessHandleApplicInterface(interface_store, runtime_services)
+                   std::shared_ptr<ParallelLibrary> parallel_lib,
+                   std::shared_ptr<OutputManager> output_mgr):
+  ProcessHandleApplicInterface(interface_store, std::move(parallel_lib), std::move(output_mgr))
 { }
 
 

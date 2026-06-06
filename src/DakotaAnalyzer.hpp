@@ -19,7 +19,7 @@
 namespace Dakota {
 
 class IRStore;
-class StudyRuntimeServices;
+class OutputManager;
 
 /// Base class for NonD, DACE, and ParamStudy branches of the iterator
 /// hierarchy.
@@ -61,8 +61,9 @@ protected:
   Analyzer();
   /// standard constructor
   Analyzer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
-  /// DI constructor using method IR plus runtime services
-  Analyzer(std::shared_ptr<StudyRuntimeServices> runtime_services,
+  /// DI constructor using method IR plus optional runtime services
+  Analyzer(std::shared_ptr<ParallelLibrary> parallel_lib,
+           std::shared_ptr<OutputManager> output_mgr,
            const IRStore& method_store, std::shared_ptr<Model> model);
   /// alternate constructor for instantiations "on the fly" with a Model
   Analyzer(unsigned short method_name, std::shared_ptr<Model> model);

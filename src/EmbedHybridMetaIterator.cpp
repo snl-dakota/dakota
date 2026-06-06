@@ -124,7 +124,7 @@ void EmbedHybridMetaIterator::derived_free_communicators(ParLevLIter pl_iter)
 IntIntPair EmbedHybridMetaIterator::estimate_partition_bounds()
 {
   // Note: EmbedHybridMetaIterator::derived_init_communicators() calls
-  // IteratorScheduler::configure() to estimate_partition_bounds() on the
+  // IteratorExecutor::configure() to estimate_partition_bounds() on the
   // subIterator, not the MetaIterator.  When EmbedHybridMetaIterator is a
   // sub-iterator, we augment the subIterator concurrency with the MetaIterator
   // concurrency.  [Thus, this is not redundant with configure().]

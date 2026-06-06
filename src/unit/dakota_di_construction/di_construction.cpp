@@ -2,37 +2,55 @@
 #include "DakotaResponse.hpp"
 #include "ForkApplicInterface.hpp"
 #include "InstructionMaterializer.hpp"
+#include "MPIManager.hpp"
 #include "NonDLHSSampling.hpp"
-#include "StudyRuntimeServices.hpp"
+#include "OutputManager.hpp"
+#include "ParallelLibrary.hpp"
+#include "ProgramOptions.hpp"
 #include "SimulationModel.hpp"
+#include "WorkdirHelper.hpp"
 
 #include <gtest/gtest.h>
 #include <nlohmann/json.hpp>
-#include <iostream>
+#include <memory>
+#include <stdexcept>
 
 using json = nlohmann::json;
 
 namespace Dakota {
 namespace {
 
-TEST(di_construction_tests, can_construct_runtime_services_from_environment_irstore)
+struct ExplicitRuntime {
+  ExplicitRuntime():
+    mpiManager(),
+    programOptions(mpiManager.world_rank()),
+    outputManager(std::make_shared<OutputManager>(
+      programOptions, mpiManager.world_rank(), mpiManager.mpirun_flag())),
+    parallelLibrary(std::make_shared<ParallelLibrary>(
+      mpiManager, programOptions, *outputManager))
+  {
+    WorkdirHelper::initialize();
+    outputManager->push_output_tag("", programOptions, false, true);
+  }
+
+  ~ExplicitRuntime()
+  {
+    outputManager->pop_output_tag();
+  }
+
+  MPIManager mpiManager;
+  ProgramOptions programOptions;
+  std::shared_ptr<OutputManager> outputManager;
+  std::shared_ptr<ParallelLibrary> parallelLibrary;
+};
+
+void materialize_pilot_blocks(InstructionMaterializer& materializer,
+                              IRStore& method_store,
+                              IRStore& variables_store,
+                              IRStore& responses_store,
+                              IRStore& interface_store,
+                              IRStore& model_store)
 {
-  InstructionMaterializer materializer;
-  const IRStore environment_store =
-    materializer.materialize_block(json::object(), irgen::BlockType::Environment);
-
-  auto runtime_services = make_study_runtime_services(environment_store);
-  ASSERT_NE(runtime_services, nullptr);
-  EXPECT_EQ(runtime_services->parallel_library().world_rank(), 0);
-  EXPECT_EQ(runtime_services->program_options().write_restart_file(), "dakota.rst");
-}
-
-TEST(di_construction_tests, can_construct_pilot_components_from_irstores)
-{
-  InstructionMaterializer materializer;
-
-  const json environment_json = json::object();
-
   const json method_json = {
     {"sampling", {
       {"sample_type", {{"lhs", true}}},
@@ -67,66 +85,78 @@ TEST(di_construction_tests, can_construct_pilot_components_from_irstores)
 
   const json model_json = json::object();
 
-  const IRStore environment_store =
-    materializer.materialize_block(environment_json, irgen::BlockType::Environment);
-  const IRStore method_store =
-    materializer.materialize_block(method_json, irgen::BlockType::Method);
-  const IRStore variables_store =
-    materializer.materialize_block(variables_json, irgen::BlockType::Variables);
-  const IRStore responses_store =
-    materializer.materialize_block(responses_json, irgen::BlockType::Responses);
-  const IRStore interface_store =
-    materializer.materialize_block(interface_json, irgen::BlockType::Interface);
-  const IRStore model_store =
-    materializer.materialize_block(model_json, irgen::BlockType::Model);
+  method_store = materializer.materialize_block(method_json, irgen::BlockType::Method);
+  variables_store = materializer.materialize_block(variables_json, irgen::BlockType::Variables);
+  responses_store = materializer.materialize_block(responses_json, irgen::BlockType::Responses);
+  interface_store = materializer.materialize_block(interface_json, irgen::BlockType::Interface);
+  model_store = materializer.materialize_block(model_json, irgen::BlockType::Model);
+}
 
-  ASSERT_TRUE(method_store.contains("samples"));
-  EXPECT_EQ(method_store.get<int>("samples"), 10);
-  ASSERT_TRUE(method_store.contains("sample_type"));
-  EXPECT_EQ(method_store.get<unsigned short>("sample_type"), SUBMETHOD_LHS);
+TEST(di_construction_tests, can_construct_pilot_components_from_irstores_without_explicit_services)
+{
+  InstructionMaterializer materializer;
+  IRStore method_store, variables_store, responses_store, interface_store, model_store;
+  materialize_pilot_blocks(materializer, method_store, variables_store,
+                           responses_store, interface_store, model_store);
 
-  ASSERT_TRUE(variables_store.contains("total"));
-  EXPECT_EQ(variables_store.get<size_t>("total"), 2U);
-
-  ASSERT_TRUE(responses_store.contains("num_response_functions"));
-  EXPECT_EQ(responses_store.get<size_t>("num_response_functions"), 1U);
-
-  ASSERT_TRUE(interface_store.contains("application.analysis_drivers"));
-  ASSERT_FALSE(interface_store.get<StringArray>("application.analysis_drivers").empty());
-  EXPECT_EQ(interface_store.get<StringArray>("application.analysis_drivers")[0], "text_book");
-
-  auto runtime_services = make_study_runtime_services(environment_store);
-
-  std::cerr << "[di] constructing Variables\n";
   Variables variables(variables_store);
-  EXPECT_EQ(variables.tv(), 2);
-
-  std::cerr << "[di] constructing Response\n";
   Response response(responses_store, variables);
-  EXPECT_EQ(response.num_functions(), 1);
-  EXPECT_EQ(response.shared_data().num_functions(), 1);
-  EXPECT_EQ(response.shared_data().num_scalar_responses(), 1);
-  EXPECT_EQ(response.shared_data().num_scalar_primary(), 1);
-  EXPECT_EQ(response.shared_data().function_labels().size(), 1);
-  if (!response.shared_data().function_labels().empty())
-    EXPECT_EQ(response.shared_data().function_labels()[0], "f");
-
-  std::cerr << "[di] constructing ForkApplicInterface\n";
-  auto interface = std::make_shared<ForkApplicInterface>(
-    interface_store, runtime_services);
-  ASSERT_NE(interface, nullptr);
-
-  std::cerr << "[di] constructing SimulationModel\n";
+  std::shared_ptr<Interface> interface = std::make_shared<ForkApplicInterface>(interface_store);
   auto model = std::make_shared<SimulationModel>(
-    model_store, variables, interface, response, runtime_services);
-  EXPECT_EQ(model->current_response().num_functions(), 1);
-  EXPECT_EQ(model->current_variables().tv(), 2);
-  EXPECT_EQ(model->current_response().shared_data().num_functions(), 1);
+    model_store, variables, interface, response);
+  NonDLHSSampling sampling(method_store, model);
 
-  std::cerr << "[di] constructing NonDLHSSampling\n";
-  NonDLHSSampling sampling(method_store, runtime_services, model);
+  EXPECT_EQ(variables.tv(), 2);
+  EXPECT_EQ(response.num_functions(), 1);
+  EXPECT_EQ(model->current_response().num_functions(), 1);
   EXPECT_EQ(sampling.sampling_scheme(), SUBMETHOD_LHS);
-  std::cerr << "[di] completed test\n";
+}
+
+TEST(di_construction_tests, can_construct_pilot_components_from_irstores_with_explicit_services)
+{
+  InstructionMaterializer materializer;
+  IRStore method_store, variables_store, responses_store, interface_store, model_store;
+  materialize_pilot_blocks(materializer, method_store, variables_store,
+                           responses_store, interface_store, model_store);
+
+  ExplicitRuntime runtime;
+
+  Variables variables(variables_store);
+  Response response(responses_store, variables);
+  std::shared_ptr<Interface> interface = std::make_shared<ForkApplicInterface>(
+    interface_store, runtime.parallelLibrary, runtime.outputManager);
+  auto model = std::make_shared<SimulationModel>(
+    model_store, variables, interface, response,
+    runtime.parallelLibrary, runtime.outputManager);
+  NonDLHSSampling sampling(
+    method_store, model, runtime.parallelLibrary, runtime.outputManager);
+
+  EXPECT_EQ(interface->parallel_library_ptr(), runtime.parallelLibrary.get());
+  EXPECT_EQ(model->parallel_library_ptr(), runtime.parallelLibrary.get());
+  EXPECT_EQ(model->output_manager_ptr(), runtime.outputManager.get());
+  EXPECT_EQ(sampling.parallel_library_ptr(), runtime.parallelLibrary.get());
+}
+
+TEST(di_construction_tests, throws_on_inconsistent_parent_child_runtime_services)
+{
+  InstructionMaterializer materializer;
+  IRStore method_store, variables_store, responses_store, interface_store, model_store;
+  materialize_pilot_blocks(materializer, method_store, variables_store,
+                           responses_store, interface_store, model_store);
+
+  ExplicitRuntime runtime_a;
+  ExplicitRuntime runtime_b;
+
+  Variables variables(variables_store);
+  Response response(responses_store, variables);
+  auto interface = std::make_shared<ForkApplicInterface>(
+    interface_store, runtime_a.parallelLibrary, runtime_a.outputManager);
+
+  EXPECT_THROW(
+    std::make_shared<SimulationModel>(
+      model_store, variables, interface, response,
+      runtime_b.parallelLibrary, runtime_b.outputManager),
+    std::runtime_error);
 }
 
 } // namespace

@@ -28,7 +28,10 @@ class ActiveKey;
 
 namespace Dakota {
 
-class StudyRuntimeServices;
+class OutputManager;
+class StudyRuntime;
+class ParallelLibrary;
+namespace detail { class OwnedLibraryRuntime; struct ResolvedRuntime; }
 
 // define special values for serve_init_mapping()
 #define FREE_COMMS 1
@@ -139,17 +142,17 @@ public:
   /// returns true if the variables size has changed
   virtual bool finalize_mapping();
 
-  /// called from IteratorScheduler::run_iterator() for iteratorComm rank 0 to
+  /// called from IteratorExecutor::run_iterator() for iteratorComm rank 0 to
   /// terminate serve_init_mapping() on other iteratorComm processors
   virtual void stop_init_mapping(ParLevLIter pl_iter);
-  /// called from IteratorScheduler::run_iterator() for iteratorComm rank != 0
+  /// called from IteratorExecutor::run_iterator() for iteratorComm rank != 0
   /// to balance resize() calls on iteratorComm rank 0
   virtual int serve_init_mapping(ParLevLIter pl_iter);
 
-  /// called from IteratorScheduler::run_iterator() for iteratorComm rank 0 to
+  /// called from IteratorExecutor::run_iterator() for iteratorComm rank 0 to
   /// terminate serve_finalize_mapping() on other iteratorComm processors
   virtual void stop_finalize_mapping(ParLevLIter pl_iter);
-  /// called from IteratorScheduler::run_iterator() for iteratorComm rank != 0
+  /// called from IteratorExecutor::run_iterator() for iteratorComm rank != 0
   /// to balance resize() calls on iteratorComm rank 0
   virtual int serve_finalize_mapping(ParLevLIter pl_iter);
 
@@ -656,10 +659,10 @@ public:
   /// conduct function evaluation analyses (provided for library clients)
   MPI_Comm analysis_comm() const;
 
-  /// called from IteratorScheduler::init_iterator() for iteratorComm rank 0 to
+  /// called from IteratorExecutor::init_iterator() for iteratorComm rank 0 to
   /// terminate serve_init_communicators() on other iteratorComm processors
   void stop_init_communicators(ParLevLIter pl_iter);
-  /// called from IteratorScheduler::init_iterator() for iteratorComm rank != 0
+  /// called from IteratorExecutor::init_iterator() for iteratorComm rank != 0
   /// to balance init_communicators() calls on iteratorComm rank 0
   int serve_init_communicators(ParLevLIter pl_iter);
 
@@ -845,6 +848,10 @@ public:
   static void evaluate(const VariablesArray& sample_vars,
 		       Model& model, RealMatrix& resp_matrix);
 
+  ParallelLibrary* parallel_library_ptr() const;
+  OutputManager* output_manager_ptr() const;
+  StudyRuntime study_runtime() const;
+
   /// Return the model ID of the "innermost" model. 
   /// For all derived Models except RecastModels, return modelId.
   /// The RecastModel override returns the root_model_id() of the subModel.
@@ -854,9 +861,15 @@ public:
 
 protected:
 
-  /// DI constructor using injected variables/response and explicit runtime
+  /// DI constructor using injected variables/response and optional runtime
   /// services for study-wide behavior.
-  Model(std::shared_ptr<StudyRuntimeServices> runtime_services,
+  Model(std::shared_ptr<ParallelLibrary> parallel_lib,
+        std::shared_ptr<OutputManager> output_mgr,
+        const IRStore& model_store,
+	const Variables& variables,
+	const Response& response);
+
+  Model(detail::ResolvedRuntime runtime,
         const IRStore& model_store,
 	const Variables& variables,
 	const Response& response);
@@ -1102,8 +1115,12 @@ protected:
   /// track use of initialize_mapping() and finalize_mapping()
   bool mappingInitialized;
 
+  /// optional owned runtime state for default-constructed library services
+  std::shared_ptr<detail::OwnedLibraryRuntime> ownedRuntime;
+
   /// optional shared runtime services for DI/library-mode construction
-  std::shared_ptr<StudyRuntimeServices> runtimeServices;
+  std::shared_ptr<ParallelLibrary> sharedParallelLibrary;
+  std::shared_ptr<OutputManager> sharedOutputManager;
 
   /// class member reference to the problem description database
   /** Iterator and Model cannot use a shallow copy of ProblemDescDB
@@ -1254,7 +1271,7 @@ private:
   std::map<SizetIntPair, ParConfigLIter> modelPCIterMap;
 
   /// flag for determining need to bcast the max concurrency from
-  /// init_communicators(); set from IteratorScheduler::init_iterator()
+  /// init_communicators(); set from IteratorExecutor::init_iterator()
   bool initCommsBcastFlag;
 
   /// flag for posting of graphics data within evaluate()

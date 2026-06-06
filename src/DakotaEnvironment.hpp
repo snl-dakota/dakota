@@ -17,6 +17,7 @@
 #include "ParallelLibrary.hpp"
 #include "ProblemDescDB.hpp"
 #include "DakotaIterator.hpp"
+#include "StudyRuntime.hpp"
 #include "UsageTracker.hpp"
 
 /// The primary namespace for DAKOTA
@@ -151,6 +152,7 @@ protected:
 
   ParallelLibrary parallelLib; ///< the parallel library instance
   ProblemDescDB   probDescDB;  ///< the parser database instance
+  StudyRuntime    studyRuntime; ///< shared execution runtime
 
   std::shared_ptr<Iterator> topLevelIterator;  ///< the top level (meta-)iterator
 

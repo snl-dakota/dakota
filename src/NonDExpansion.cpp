@@ -767,7 +767,7 @@ void NonDExpansion::core_run()
 
 void NonDExpansion::initialize_expansion()
 {
-  // IteratorScheduler::run_iterator() + Analyzer::initialize_run() ensure
+  // IteratorExecutor::run_iterator() + Analyzer::initialize_run() ensure
   // initialization of Model mappings for iteratedModel, but local recursions
   // are not visible -> recur DataFitSurr +  ProbabilityTransform if needed.
   if (!uSpaceModel->mapping_initialized()) {
@@ -1053,7 +1053,7 @@ void NonDExpansion::finalize_expansion()
 {
   ++numUncertainQuant;
 
-  // IteratorScheduler::run_iterator() + Analyzer::initialize_run() ensure
+  // IteratorExecutor::run_iterator() + Analyzer::initialize_run() ensure
   // finalization of Model mappings for iteratedModel, but local recursions
   // are not visible -> recur DataFitSurr +  ProbabilityTransform if needed.
   if (uSpaceModel->mapping_initialized()) {

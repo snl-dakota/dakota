@@ -20,7 +20,9 @@
 
 namespace Dakota {
 
-class StudyRuntimeServices;
+class OutputManager;
+class StudyRuntime;
+namespace detail { class OwnedLibraryRuntime; struct ResolvedRuntime; }
 
 class ParallelLib;
 class ProblemDescDB;
@@ -162,24 +164,24 @@ public:
   virtual void nested_response_mappings(const RealMatrix& primary_coeffs,
 					const RealMatrix& secondary_coeffs);
 
-  /// used by IteratorScheduler to set the starting data for a run
+  /// used by IteratorExecutor to set the starting data for a run
   virtual void initialize_iterator(int job_index);
-  /// used by IteratorScheduler to pack starting data for an iterator run
+  /// used by IteratorExecutor to pack starting data for an iterator run
   virtual void pack_parameters_buffer(MPIPackBuffer& send_buffer,
 				      int job_index);
-  /// used by IteratorScheduler to unpack starting data for an iterator run
+  /// used by IteratorExecutor to unpack starting data for an iterator run
   virtual void unpack_parameters_buffer(MPIUnpackBuffer& recv_buffer,
 					int job_index);
-  /// used by IteratorScheduler to unpack starting data and initialize
+  /// used by IteratorExecutor to unpack starting data and initialize
   /// an iterator run
   virtual void unpack_parameters_initialize(MPIUnpackBuffer& recv_buffer,
 					    int job_index);
-  /// used by IteratorScheduler to pack results data from an iterator run
+  /// used by IteratorExecutor to pack results data from an iterator run
   virtual void pack_results_buffer(MPIPackBuffer& send_buffer, int job_index);
-  /// used by IteratorScheduler to unpack results data from an iterator run
+  /// used by IteratorExecutor to unpack results data from an iterator run
   virtual void unpack_results_buffer(MPIUnpackBuffer& recv_buffer,
 				     int job_index);
-  /// used by IteratorScheduler to update local results arrays
+  /// used by IteratorExecutor to update local results arrays
   virtual void update_local_results(int job_index);
 
   /// return a single final iterator solution (variables)
@@ -333,6 +335,9 @@ public:
   ProblemDescDB& problem_description_db() const;
   /// return the parallel library (parallelLib)
   ParallelLibrary& parallel_library() const;
+  ParallelLibrary* parallel_library_ptr() const;
+  OutputManager* output_manager_ptr() const;
+  StudyRuntime study_runtime() const;
 
   /// set the method name to an enumeration value
   void method_name(unsigned short m_name);
@@ -427,8 +432,14 @@ protected:
   Iterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, 
 	   std::shared_ptr<TraitsBase> traits =
 	   std::shared_ptr<TraitsBase>(new TraitsBase()));
-  /// DI constructor using a method IR store plus explicit runtime services
-  Iterator(std::shared_ptr<StudyRuntimeServices> runtime_services,
+  /// DI constructor using a method IR store plus optional runtime services
+  Iterator(std::shared_ptr<ParallelLibrary> parallel_lib,
+           std::shared_ptr<OutputManager> output_mgr,
+           const IRStore& method_store,
+	   std::shared_ptr<TraitsBase> traits =
+	   std::shared_ptr<TraitsBase>(new TraitsBase()));
+
+  Iterator(detail::ResolvedRuntime runtime,
            const IRStore& method_store,
 	   std::shared_ptr<TraitsBase> traits =
 	   std::shared_ptr<TraitsBase>(new TraitsBase()));
@@ -489,8 +500,12 @@ protected:
   /// employing a single model instance)
   std::shared_ptr<Model> iteratedModel;
 
+  /// optional owned runtime state for default-constructed library services
+  std::shared_ptr<detail::OwnedLibraryRuntime> ownedRuntime;
+
   /// optional shared runtime services for DI/library-mode construction
-  std::shared_ptr<StudyRuntimeServices> runtimeServices;
+  std::shared_ptr<ParallelLibrary> sharedParallelLibrary;
+  std::shared_ptr<OutputManager> sharedOutputManager;
 
   /// class member reference to the problem description database
   /** Iterator and Model cannot use a shallow copy of ProblemDescDB

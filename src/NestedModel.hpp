@@ -17,7 +17,7 @@
 #include "DataInterface.hpp"
 #include "DataInterface.hpp"
 #include "PRPMultiIndex.hpp"
-#include "IteratorScheduler.hpp"
+#include "IteratorExecutor.hpp"
 
 
 namespace Dakota {
@@ -42,8 +42,8 @@ class NestedModel: public Model
   //- Heading: Friends
   //
 
-  /// protect scheduler callback functions from general access
-  friend class IteratorScheduler;
+  /// protect executor callback functions from general access
+  friend class IteratorExecutor;
 
 public:
   
@@ -289,7 +289,7 @@ private:
   /// job queue for asynchronous execution of subIterator jobs
   PRPQueue subIteratorPRPQueue;
   /// scheduling object for concurrent iterator parallelism
-  IteratorScheduler subIteratorSched;
+  IteratorExecutor subIteratorSched;
   /// the sub-method pointer from the nested model specification
   String subMethodPointer;
   /// subIterator job counter since last synchronize()

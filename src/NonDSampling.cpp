@@ -18,7 +18,7 @@
 #include "NonDSampling.hpp"
 #include "ProblemDescDB.hpp"
 #include "IRStore.hpp"
-#include "StudyRuntimeServices.hpp"
+#include "LibraryRuntimeSupport.hpp"
 #include "Rank1Lattice.hpp"
 #include "SamplerDriver.hpp"
 #include "SensAnalysisGlobal.hpp"
@@ -133,9 +133,10 @@ NonDSampling::NonDSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_
 }
 
 
-NonDSampling::NonDSampling(std::shared_ptr<StudyRuntimeServices> runtime_services,
+NonDSampling::NonDSampling(std::shared_ptr<ParallelLibrary> parallel_lib,
+                           std::shared_ptr<OutputManager> output_mgr,
                            const IRStore& method_store, std::shared_ptr<Model> model):
-  NonD(runtime_services, method_store, model),
+  NonD(std::move(parallel_lib), std::move(output_mgr), method_store, model),
   seedSpec(method_store.get<int>("random_seed")),
   randomSeed(seedSpec), samplesSpec(method_store.get<int>("samples")),
   samplesRef(samplesSpec), numSamples(samplesSpec),

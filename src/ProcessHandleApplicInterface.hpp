@@ -15,7 +15,7 @@
 
 namespace Dakota {
 
-class StudyRuntimeServices;
+class OutputManager;
 
 /// Derived application interface class that spawns a simulation code
 /// using a separate process, receives a process identifier, and
@@ -42,7 +42,8 @@ protected:
 
   /// constructor for DI assembly from interface-local config
   ProcessHandleApplicInterface(const IRStore& interface_store,
-                               std::shared_ptr<StudyRuntimeServices> runtime_services);
+                               std::shared_ptr<ParallelLibrary> parallel_lib = nullptr,
+                               std::shared_ptr<OutputManager> output_mgr = nullptr);
 
   //
   //- Heading: Virtual function redefinitions

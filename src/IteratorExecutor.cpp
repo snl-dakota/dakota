@@ -7,12 +7,12 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-#include "IteratorScheduler.hpp"
+#include "IteratorExecutor.hpp"
 #include "DakotaIterator.hpp"
 #include "ParallelLibrary.hpp"
 #include "ProblemDescDB.hpp"
 
-static const char rcsId[]="@(#) $Id: IteratorScheduler.cpp 6492 2009-12-19 00:04:28Z briadam $";
+static const char rcsId[]="IteratorExecutor runtime migration";
 
 
 namespace Dakota {
@@ -20,8 +20,8 @@ namespace Dakota {
 /** Current constructor parameters are the input specification
     components, which are requests subject to override by
     ParallelLibrary::init_iterator_communicators(). */
-IteratorScheduler::
-IteratorScheduler(ParallelLibrary& parallel_lib, bool peer_assign_jobs,
+IteratorExecutor::
+IteratorExecutor(ParallelLibrary& parallel_lib, bool peer_assign_jobs,
 		  int num_servers, int procs_per_iterator, short scheduling):
   parallelLib(parallel_lib), numIteratorJobs(1),
   numIteratorServers(num_servers), procsPerIterator(procs_per_iterator),
@@ -49,7 +49,7 @@ IteratorScheduler(ParallelLibrary& parallel_lib, bool peer_assign_jobs,
 }
 
 
-void IteratorScheduler::
+void IteratorExecutor::
 construct_sub_iterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Iterator>& sub_iterator,
 		       std::shared_ptr<Model> sub_model, const String& method_ptr,
 		       const String& method_name, const String& model_ptr)
@@ -69,7 +69,7 @@ construct_sub_iterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
 
 /** This is a convenience function for computing the minimum and maximum
     partition size prior to concurrent iterator partitioning. */
-IntIntPair IteratorScheduler::
+IntIntPair IteratorExecutor::
 configure(ProblemDescDB& problem_db, std::shared_ptr<Iterator>& sub_iterator, std::shared_ptr<Model> sub_model)
 {
   // minimally instantiate the sub_iterator for concurrency estimation
@@ -83,7 +83,7 @@ configure(ProblemDescDB& problem_db, std::shared_ptr<Iterator>& sub_iterator, st
 
 /** This is a convenience function for computing the minimum and maximum
     partition size prior to concurrent iterator partitioning. */
-IntIntPair IteratorScheduler::
+IntIntPair IteratorExecutor::
 configure(ProblemDescDB& problem_db, const String& method_string,
 	  std::shared_ptr<Iterator>& sub_iterator, std::shared_ptr<Model> sub_model)
 {
@@ -99,10 +99,10 @@ configure(ProblemDescDB& problem_db, const String& method_string,
 
 /** This is a convenience function for computing the minimum and maximum
     partition size prior to concurrent iterator partitioning. */
-IntIntPair IteratorScheduler::
+IntIntPair IteratorExecutor::
 configure(ProblemDescDB& problem_db, std::shared_ptr<Iterator>& sub_iterator)
 {
-  // Prior to IteratorScheduler::partition(), we utilize the trailing mi_pl
+  // Prior to IteratorExecutor::partition(), we utilize the trailing mi_pl
   // (often the world pl) for the concurrency estimation.  If this is not the
   // correct reference point, the calling code must increment the parallel
   // configuration prior to invocation of this fn.
@@ -144,7 +144,7 @@ configure(ProblemDescDB& problem_db, std::shared_ptr<Iterator>& sub_iterator)
 
 /** Called from derived class constructors once maxIteratorConcurrency is
     defined but prior to instantiating Iterators and Models. */
-void IteratorScheduler::
+void IteratorExecutor::
 partition(int max_iterator_concurrency, IntIntPair& ppi_pr)
 {
   // Default parallel config for concurrent iterators is currently PUSH_DOWN:
@@ -178,12 +178,12 @@ partition(int max_iterator_concurrency, IntIntPair& ppi_pr)
 
 
 /* Called for serialization of concurrent-iterator parallelism levels.
-void IteratorScheduler::init_serial_iterators(ParallelLibrary& parallel_lib)
+void IteratorExecutor::init_serial_iterators(ParallelLibrary& parallel_lib)
 {
   // This is logically equivalent to partition(1), but static declaration
-  // allows its use in contexts without an IteratorScheduler instance
+  // allows its use in contexts without an IteratorExecutor instance
   // (e.g., Dakota::Environment).  Since it is static, it does not update
-  // IteratorScheduler state.
+  // IteratorExecutor state.
 
   // Initialize iterator partitions for one iterator execution at a time
   const ParallelLevel& mi_pl = parallel_lib.init_iterator_communicators(0, 0,
@@ -194,7 +194,7 @@ void IteratorScheduler::init_serial_iterators(ParallelLibrary& parallel_lib)
 */
 
 
-void IteratorScheduler::free_iterator_parallelism()
+void IteratorExecutor::free_iterator_parallelism()
 {
   // decrement the stream tagging
   parallelLib.pop_output_tag(schedPCIter->mi_parallel_level(miPLIndex));
@@ -203,7 +203,7 @@ void IteratorScheduler::free_iterator_parallelism()
 
 /** This is a convenience function for encapsulating the allocation of
     communicators prior to running an iterator.*/
-void IteratorScheduler::
+void IteratorExecutor::
 init_iterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Iterator>& sub_iterator,
 	      ParLevLIter pl_iter)
 {
@@ -214,8 +214,8 @@ init_iterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::sha
   // Parallel iterators are constructed/initialized on all processors
   if (problem_db.get<unsigned short>("method.algorithm") & PARALLEL_BIT) {
     sub_iterator = Iterator::get_iterator(problem_db, parallel_lib); // all procs
-    // init_communicators() manages IteratorScheduler::partition() and
-    // IteratorScheduler::init_iterator()
+    // init_communicators() manages IteratorExecutor::partition() and
+    // IteratorExecutor::init_iterator()
     sub_iterator->init_communicators(pl_iter);
     return;
   }
@@ -272,7 +272,7 @@ init_iterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::sha
 
 /** This is a convenience function for encapsulating the allocation of
     communicators prior to running an iterator. */
-void IteratorScheduler::
+void IteratorExecutor::
 init_iterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Iterator>& sub_iterator,
 	      std::shared_ptr<Model> sub_model, ParLevLIter pl_iter)
 {
@@ -314,7 +314,7 @@ init_iterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::sha
 
 /** This is a convenience function for encapsulating the allocation of
     communicators prior to running an iterator. */
-void IteratorScheduler::
+void IteratorExecutor::
 init_iterator(const String& method_string,
 	      std::shared_ptr<Iterator>& sub_iterator, std::shared_ptr<Model> sub_model, ParLevLIter pl_iter)
 {
@@ -356,7 +356,7 @@ init_iterator(const String& method_string,
 
 /** This is a convenience function for encapsulating the deallocation
     of communicators after running an iterator. */
-void IteratorScheduler::
+void IteratorExecutor::
 set_iterator(Iterator& sub_iterator, ParLevLIter pl_iter)
 {
   // check for dedicated scheduler overload -> no iterator jobs can run
@@ -380,7 +380,7 @@ set_iterator(Iterator& sub_iterator, ParLevLIter pl_iter)
     allocation/deallocation of communicators to provide greater efficiency
     in approaches that involve multiple iterator executions but only
     require communicator allocation/deallocation to be performed once. */
-void IteratorScheduler::
+void IteratorExecutor::
 run_iterator(Iterator& sub_iterator, ParLevLIter pl_iter)
 {
   // Parallel iterators are executed on all processors
@@ -413,7 +413,7 @@ run_iterator(Iterator& sub_iterator, ParLevLIter pl_iter)
     return;
 
   // for iterator ranks > 0, sub_model is stored in the empty iterator
-  // envelope in IteratorScheduler::init_iterator()
+  // envelope in IteratorExecutor::init_iterator()
   auto sub_model = sub_iterator.iterated_model();
 
   // segregate processors into run/serve
@@ -457,13 +457,13 @@ run_iterator(Iterator& sub_iterator, ParLevLIter pl_iter)
 
 /** This is a convenience function for encapsulating the deallocation
     of communicators after running an iterator. */
-void IteratorScheduler::
+void IteratorExecutor::
 free_iterator(Iterator& sub_iterator, ParLevLIter pl_iter)
 {
   // Parallel iterators are freed on all processors
   if (sub_iterator.method_name() & PARALLEL_BIT) {
     // MetaIterators free their subordinate iterator(s) as well as iterator
-    // parallelism levels (IteratorScheduler::free_iterator_parallelism())
+    // parallelism levels (IteratorExecutor::free_iterator_parallelism())
     sub_iterator.free_communicators(pl_iter);
     return;
   }
@@ -486,7 +486,7 @@ free_iterator(Iterator& sub_iterator, ParLevLIter pl_iter)
 }
 
 
-void IteratorScheduler::stop_iterator_servers()
+void IteratorExecutor::stop_iterator_servers()
 {
   // Only used for dedicated scheduler iterator partitioning
   // (see ApplicationInterface::stop_evaluation_servers() for example where

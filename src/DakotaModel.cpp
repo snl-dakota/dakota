@@ -14,7 +14,8 @@
 #include "ParallelLibrary.hpp"
 #include "ProblemDescDB.hpp"
 #include "IRStore.hpp"
-#include "StudyRuntimeServices.hpp"
+#include "LibraryRuntimeSupport.hpp"
+#include "StudyRuntime.hpp"
 #include "SimulationModel.hpp"
 #include "NestedModel.hpp"
 #include "DataFitSurrModel.hpp"
@@ -931,7 +932,17 @@ Model::Model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
 }
 
 
-Model::Model(std::shared_ptr<StudyRuntimeServices> runtime_services,
+Model::Model(std::shared_ptr<ParallelLibrary> parallel_lib,
+	     std::shared_ptr<OutputManager> output_mgr,
+	     const IRStore& model_store,
+	     const Variables& variables,
+	     const Response& response):
+  Model(detail::resolve_runtime(std::move(parallel_lib), std::move(output_mgr)),
+        model_store, variables, response)
+{ }
+
+
+Model::Model(detail::ResolvedRuntime runtime,
 	     const IRStore& model_store,
 	     const Variables& variables,
 	     const Response& response):
@@ -959,8 +970,10 @@ Model::Model(std::shared_ptr<StudyRuntimeServices> runtime_services,
   hessIdNumerical(currentResponse.hessian_config().id_numerical),
   hessIdQuasi(currentResponse.hessian_config().id_quasi),
   warmStartFlag(false), supportsEstimDerivs(true), mappingInitialized(false),
-  runtimeServices(std::move(runtime_services)),
-  probDescDB(dummy_db), parallelLib(runtimeServices->parallel_library()),
+  ownedRuntime(std::move(runtime.ownedRuntime)),
+  sharedParallelLibrary(std::move(runtime.sharedParallelLibrary)),
+  sharedOutputManager(std::move(runtime.sharedOutputManager)),
+  probDescDB(dummy_db), parallelLib(*runtime.parallelLibrary),
   modelPCIter(parallelLib.parallel_configuration_iterator()),
   componentParallelMode(NO_PARALLEL_MODE), asynchEvalFlag(false),
   evaluationCapacity(1),
@@ -1049,6 +1062,25 @@ Model(const ShortShortPair& vars_view,
 /** This constructor also builds the base class data for inherited models.
     However, it is used for derived models which are instantiated on the fly.
     Therefore it only initializes a small subset of attributes. */
+ParallelLibrary* Model::parallel_library_ptr() const
+{
+  return (&parallelLib == &dummy_lib) ? nullptr : &parallelLib;
+}
+
+
+OutputManager* Model::output_manager_ptr() const
+{
+  ParallelLibrary* parallel_lib = parallel_library_ptr();
+  return parallel_lib ? &parallel_lib->output_manager() : nullptr;
+}
+
+
+StudyRuntime Model::study_runtime() const
+{
+  return StudyRuntime(parallelLib, output_manager_ptr());
+}
+
+
 Model::Model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, Model::ModelCtor dummy):
   warmStartFlag(false), supportsEstimDerivs(true), mappingInitialized(false),
   probDescDB(problem_db), parallelLib(parallel_lib),
@@ -5032,9 +5064,9 @@ void Model::
 init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 		   bool recurse_flag)
 {
-  // Undefined mi_pl can happen for IteratorScheduler::configure(), as
+  // Undefined mi_pl can happen for IteratorExecutor::configure(), as
   // estimation of concurrency involves instantiation of Iterators
-  // prior to IteratorScheduler::partition(), and some Iterators invoke
+  // prior to IteratorExecutor::partition(), and some Iterators invoke
   // init_communicators() for contained helper iterators.  Abandoning a
   // parallel configuration means that these iterator instances should
   // be discarded and replaced once the mi_pl context is available.
@@ -5046,7 +5078,7 @@ init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
   // out for now. 
 
   // matches bcast in Model::serve_init() called from
-  // IteratorScheduler::init_iterator().  bcastFlag assures that, when Model
+  // IteratorExecutor::init_iterator().  bcastFlag assures that, when Model
   // recursions are present in Iterator instantiations, only the matching
   // Model instance participates in this collective communication.
   if (initCommsBcastFlag && pl_iter->server_communicator_rank() == 0)

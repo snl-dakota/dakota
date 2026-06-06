@@ -14,6 +14,7 @@
 #include "dakota_system_defs.hpp"
 #include "pecos_global_defs.hpp"
 #include "EvaluationStore.hpp"
+#include "StudyRuntime.hpp"
 
 static const char rcsId[]="@(#) $Id: NestedModel.cpp 7024 2010-10-16 01:24:42Z mseldre $";
 
@@ -25,11 +26,12 @@ namespace Dakota {
 NestedModel::NestedModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
   Model(problem_db, parallel_lib),
   nestedModelEvalCntr(0), firstUpdate(true), outerMIPLIndex(0),
-  subIteratorSched(parallelLib,
-		   true, // peer 1 must assign jobs to peers 2-n
-		   problem_db.get<int>("model.nested.iterator_servers"),
-		   problem_db.get<int>("model.nested.processors_per_iterator"),
-		   problem_db.get<short>("model.nested.iterator_scheduling")),
+  subIteratorSched(StudyRuntime(parallelLib, &parallelLib.output_manager())
+                    .create_iterator_executor(
+                      true, // peer 1 must assign jobs to peers 2-n
+                      problem_db.get<int>("model.nested.iterator_servers"),
+                      problem_db.get<int>("model.nested.processors_per_iterator"),
+                      problem_db.get<short>("model.nested.iterator_scheduling"))),
   subMethodPointer(problem_db.get<const String>("model.nested.sub_method_pointer")),
   subIteratorJobCntr(0)
 {
@@ -624,7 +626,7 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
   probDescDB.set_db_list_nodes(subMethodPointer);
 
   // > init_eval_concurrency instantiates subIterator on previous pl ranks
-  subIteratorSched.update(modelPCIter);
+  study_runtime().update_iterator_executor(subIteratorSched, modelPCIter);
   // > define min and max processors per iterator
   IntIntPair ppi_pr
     = subIteratorSched.configure(probDescDB, subIterator, subModel);
@@ -633,9 +635,9 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
   // > now augment prev subIterator instantiations for additional mi_pl ranks
   //   (new mi_pl is used via miPLIndex update in partition())
   // > idle server is managed here; a dedicated scheduler processor is managed
-  //   within IteratorScheduler::init_iterator().
+  //   within IteratorExecutor::init_iterator().
   if (subIteratorSched.iteratorServerId <= subIteratorSched.numIteratorServers)
-    subIteratorSched.init_iterator(probDescDB, subIterator, subModel);
+    study_runtime().initialize_iterator(subIteratorSched, probDescDB, subIterator, subModel);
 
   // > restore all DB nodes
   probDescDB.set_db_method_node(method_index);
@@ -653,7 +655,7 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
       buff << currentVariables << si_resp.active_set() << eval_id;
       int params_buff_len = buff.size(); buff.reset();
       buff << si_resp;
-      subIteratorSched.iterator_message_lengths(params_buff_len, buff.size());
+      study_runtime().iterator_message_lengths(subIteratorSched, params_buff_len, buff.size());
     }
   }
 }
@@ -699,12 +701,12 @@ derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
     // > pl_iter is incoming context prior to subIterator partitioning
     // > mi_pl_index reflects the miPL depth after subIterator partitioning
     size_t mi_pl_index = outerMIPLIndex + 1;
-    subIteratorSched.update(modelPCIter, mi_pl_index);
+    study_runtime().update_iterator_executor(subIteratorSched, modelPCIter, mi_pl_index);
     if (subIteratorSched.iteratorServerId <=
 	subIteratorSched.numIteratorServers) {
       ParLevLIter si_pl_iter
 	= modelPCIter->mi_parallel_level_iterator(mi_pl_index);
-      subIteratorSched.set_iterator(*subIterator, si_pl_iter);
+      study_runtime().set_iterator(subIteratorSched, *subIterator, si_pl_iter);
     }
 
     // update asynchEvalFlag & evaluationCapacity based on subIteratorSched
@@ -732,14 +734,12 @@ derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
     // > pl_iter is incoming context prior to subIterator partitioning
     // > mi_pl_index reflects the miPL depth after subIterator partitioning
     size_t mi_pl_index = modelPCIter->mi_parallel_level_index(pl_iter) + 1;
-    subIteratorSched.update(modelPCIter, mi_pl_index);
+    study_runtime().update_iterator_executor(subIteratorSched, modelPCIter, mi_pl_index);
     if (subIteratorSched.iteratorServerId <=
 	subIteratorSched.numIteratorServers) {
-      ParLevLIter si_pl_iter
-	= modelPCIter->mi_parallel_level_iterator(mi_pl_index);
-      subIteratorSched.free_iterator(*subIterator, si_pl_iter);
+      study_runtime().free_iterator(subIteratorSched, *subIterator);
     }
-    subIteratorSched.free_iterator_parallelism();
+    study_runtime().free_iterator_parallelism(subIteratorSched);
   }
 }
 
@@ -1418,7 +1418,7 @@ void NestedModel::derived_evaluate(const ActiveSet& set)
     //++subIteratorJobCntr; // does not encompass blocking evals
 
     // need comm set up and scheduler break off
-    // (see IteratorScheduler::run_iterator())
+    // (see IteratorExecutor::run_iterator())
     Cout << "\n-------------------------------------------------\nNestedModel "
 	 << "Evaluation " << std::setw(4) << nestedModelEvalCntr << ": running "
 	 << "sub_iterator\n-------------------------------------------------\n";
@@ -1440,7 +1440,7 @@ void NestedModel::derived_evaluate(const ActiveSet& set)
       // Given this protection, don't schedule the job -- execute it locally.
       if (subIteratorSched.iteratorScheduling == PEER_SCHEDULING &&
 	  subIteratorSched.peerAssignJobs) {
-	// match 2 bcasts in IteratorScheduler::peer_static_schedule_iterators()
+	// match 2 bcasts in IteratorExecutor::peer_static_schedule_iterators()
 	// needed by procs in NestedModel::serve_run()
 	int num_jobs = 1;
 	parallelLib.bcast_hs(num_jobs, *pl_iter); // over pl.hubServerIntraComm
@@ -1449,7 +1449,7 @@ void NestedModel::derived_evaluate(const ActiveSet& set)
       }
       // run_iterator() is used since we stop subModel servers for consistency
       // with fall through behavior of schedule_iterators()
-      subIteratorSched.run_iterator(*subIterator, pl_iter);
+      study_runtime().execute_iterator(*subIterator, pl_iter);
       if (subIteratorSched.iteratorScheduling == DEDICATED_SCHEDULER_DYNAMIC)
 	subIteratorSched.stop_iterator_servers();
 
@@ -1463,7 +1463,7 @@ void NestedModel::derived_evaluate(const ActiveSet& set)
       ParamResponsePair current_pair(currentVariables, subIterator->method_id(),
 				     subIterator->response_results(), 1, false);
       subIteratorPRPQueue.insert(current_pair);
-      subIteratorSched.schedule_iterators(*this, subIterator);
+      study_runtime().schedule_iterators(subIteratorSched, *this, subIterator);
       */
     }
     else // run_iterator() is not used since we don't stop subModel servers
@@ -1526,7 +1526,7 @@ void NestedModel::derived_evaluate_nowait(const ActiveSet& set)
     ++subIteratorJobCntr;
 
     // need comm set up and scheduler break off
-    // (see IteratorScheduler::run_iterator())
+    // (see IteratorExecutor::run_iterator())
     Cout << "\n-------------------------------------------------\n"
 	 << "NestedModel Evaluation " << std::setw(4) << nestedModelEvalCntr 
 	 << ": queueing sub_iterator"
@@ -1546,7 +1546,7 @@ void NestedModel::derived_evaluate_nowait(const ActiveSet& set)
 				   nestedModelEvalCntr);
     subIteratorPRPQueue.insert(current_pair);
 
-    // update bookkeeping for job_index mappings in IteratorScheduler callbacks
+    // update bookkeeping for job_index mappings in IteratorExecutor callbacks
     subIteratorIdMap[subIteratorJobCntr] = nestedModelEvalCntr;
   }
 }
@@ -1559,7 +1559,7 @@ const IntResponseMap& NestedModel::derived_synchronize()
   nestedResponseMap.clear();
 
   // TO DO: optInt/subIter scheduling is currently sequential, but could be
-  // overlapped as in EnsembleSurrModel, given IteratorScheduler nowait support
+  // overlapped as in EnsembleSurrModel, given IteratorExecutor nowait support
 
   IntIntMIter id_it; IntRespMCIter r_cit;
   if (optionalInterface) {
@@ -1592,7 +1592,7 @@ const IntResponseMap& NestedModel::derived_synchronize()
     // schedule subIteratorPRPQueue jobs
     component_parallel_mode(SUB_MODEL_MODE);
     subIteratorSched.numIteratorJobs = subIteratorPRPQueue.size();
-    subIteratorSched.schedule_iterators(*this, *subIterator);
+    study_runtime().schedule_iterators(subIteratorSched, *this, *subIterator);
     // overlay response sets (no rekey or cache necessary)
     for (PRPQueueIter q_it=subIteratorPRPQueue.begin();
 	 q_it!=subIteratorPRPQueue.end(); ++q_it)
@@ -1600,7 +1600,7 @@ const IntResponseMap& NestedModel::derived_synchronize()
 				nested_response(q_it->eval_id()));
     // clear sub-iterator jobs
     subIteratorPRPQueue.clear();
-    // Reset bookkeeping used in IteratorScheduler callbacks (e.g.,
+    // Reset bookkeeping used in IteratorExecutor callbacks (e.g.,
     // {pack,unpack}_* in NestedModel.hpp); sub-iterator job counter
     // mirrors the passed job_index and maps to nestedModelEvalCntr
     // for subIteratorPRPQueue lookups.
@@ -1621,7 +1621,7 @@ const IntResponseMap& NestedModel::derived_synchronize()
    NestedModels.  Return a dummy to satisfy the compiler.
 const IntResponseMap& NestedModel::derived_synchronize_nowait()
 {
-  // TO DO: will require nowait support in IteratorScheduler
+  // TO DO: will require nowait support in IteratorExecutor
 
   //nestedVarsMap.erase(eval_id);
   return nestedResponseMap;
@@ -2079,7 +2079,7 @@ void NestedModel::component_parallel_mode(short mode)
 	parallelLib.parallel_configuration_iterator(pc_iter); // restore
       }
     }
-    // concurrent subIterator scheduling exits on its own (see IteratorScheduler
+    // concurrent subIterator scheduling exits on its own (see IteratorExecutor
     // ::schedule_iterators(), but subModel eval scheduling is terminated here.
     else if (componentParallelMode == SUB_MODEL_MODE &&
 	     !subIteratorSched.messagePass) {
@@ -2105,7 +2105,7 @@ void NestedModel::component_parallel_mode(short mode)
   // > INTERFACE_MODE & subModel eval scheduling only broadcasts
   //   for mode change
   // > concurrent subIterator scheduling rebroadcasts every time since this
-  //   scheduling exits on its own (see IteratorScheduler::schedule_iterators())
+  //   scheduling exits on its own (see IteratorExecutor::schedule_iterators())
   if ( ( componentParallelMode != mode ||
 	 ( mode == SUB_MODEL_MODE && subIteratorSched.messagePass ) ) &&
        modelPCIter->mi_parallel_level_defined(outerMIPLIndex) ) {
@@ -2137,7 +2137,7 @@ void NestedModel::serve_run(ParLevLIter pl_iter, int max_eval_concurrency)
     }
     else if (componentParallelMode == SUB_MODEL_MODE) {
       if (subIteratorSched.messagePass) // serve concurrent subIterator execs
-	subIteratorSched.schedule_iterators(*this, *subIterator);
+	study_runtime().schedule_iterators(subIteratorSched, *this, *subIterator);
       else { // service the subModel for a single subIterator execution
 	ParLevLIter si_pl_iter // inner context
 	  = modelPCIter->mi_parallel_level_iterator(subIteratorSched.miPLIndex);

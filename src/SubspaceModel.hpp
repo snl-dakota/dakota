@@ -50,11 +50,11 @@ public:
   //bool finalize_mapping();
   bool resize_pending() const override;
 
-  /// called from IteratorScheduler::init_iterator() for iteratorComm rank 0 to
+  /// called from IteratorExecutor::init_iterator() for iteratorComm rank 0 to
   /// terminate serve_init_mapping() on other iteratorComm processors
   void stop_init_mapping(ParLevLIter pl_iter) override;
 
-  /// called from IteratorScheduler::init_iterator() for iteratorComm rank != 0
+  /// called from IteratorExecutor::init_iterator() for iteratorComm rank != 0
   /// to balance resize() calls on iteratorComm rank 0
   int serve_init_mapping(ParLevLIter pl_iter) override;
 

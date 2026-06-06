@@ -12,7 +12,7 @@
 #include "ProcessApplicInterface.hpp"
 #include "IRStore.hpp"
 #include "ProblemDescDB.hpp"
-#include "StudyRuntimeServices.hpp"
+#include "LibraryRuntimeSupport.hpp"
 #include "ParallelLibrary.hpp"
 #include "WorkdirHelper.hpp"
 #include "ParametersFileWriter.hpp"
@@ -208,8 +208,9 @@ ProcessApplicInterface(const ProblemDescDB& problem_db, ParallelLibrary& paralle
 
 ProcessApplicInterface::
 ProcessApplicInterface(const IRStore& interface_store,
-                       std::shared_ptr<StudyRuntimeServices> runtime_services):
-  ApplicationInterface(interface_store, runtime_services),
+                       std::shared_ptr<ParallelLibrary> parallel_lib,
+                       std::shared_ptr<OutputManager> output_mgr):
+  ApplicationInterface(interface_store, std::move(parallel_lib), std::move(output_mgr)),
   fileTagFlag(interface_store.contains("application.file_tag") ?
     interface_store.get<bool>("application.file_tag") : false),
   fileSaveFlag(interface_store.contains("application.file_save") ?

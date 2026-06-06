@@ -24,8 +24,9 @@ namespace Dakota {
 
 class ParamResponsePair;
 class ActiveSet;
+class OutputManager;
 class ParallelLibrary;
-class StudyRuntimeServices;
+namespace detail { class OwnedLibraryRuntime; struct ResolvedRuntime; }
 
 
 
@@ -55,7 +56,11 @@ protected:
 
   /// constructor for DI assembly from interface-local config
   ApplicationInterface(const IRStore& interface_store,
-                       std::shared_ptr<StudyRuntimeServices> runtime_services);
+                       std::shared_ptr<ParallelLibrary> parallel_lib = nullptr,
+                       std::shared_ptr<OutputManager> output_mgr = nullptr);
+
+  ApplicationInterface(const IRStore& interface_store,
+                       detail::ResolvedRuntime runtime);
 
   //
   //- Heading: Member functions
@@ -81,6 +86,9 @@ protected:
   short interface_synchronization() const override;
   /// estimate processor bounds for one interface evaluation level
   IntIntPair estimate_partition_bounds(int max_eval_concurrency) const override;
+
+  ParallelLibrary* parallel_library_ptr() const override;
+  OutputManager* output_manager_ptr() const override;
 
   /// return evalCacheFlag
   bool evaluation_cache() const override;
@@ -218,8 +226,12 @@ protected:
   //- Heading: Data
   //
 
+  /// optional owned runtime state for default-constructed library services
+  std::shared_ptr<detail::OwnedLibraryRuntime> ownedRuntime;
+
   /// optional shared runtime services for DI/library-mode construction
-  std::shared_ptr<StudyRuntimeServices> runtimeServices;
+  std::shared_ptr<ParallelLibrary> sharedParallelLibrary;
+  std::shared_ptr<OutputManager> sharedOutputManager;
 
   /// reference to the ParallelLibrary object used to manage MPI partitions for
   /// the concurrent evaluations and concurrent analyses parallelism levels

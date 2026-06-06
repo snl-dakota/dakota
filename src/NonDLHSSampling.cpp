@@ -9,7 +9,7 @@
 
 #include "NonDLHSSampling.hpp"
 #include "DakotaResponse.hpp"
-#include "StudyRuntimeServices.hpp"
+#include "LibraryRuntimeSupport.hpp"
 #include "ProblemDescDB.hpp"
 #include "DakotaApproximation.hpp"
 #include "ProbabilityTransformModel.hpp"
@@ -112,9 +112,10 @@ NonDLHSSampling::NonDLHSSampling(ProblemDescDB& problem_db, ParallelLibrary& par
 
 
 NonDLHSSampling::NonDLHSSampling(const IRStore& method_store,
-			 std::shared_ptr<StudyRuntimeServices> runtime_services,
-			 std::shared_ptr<Model> model):
-  NonDSampling(runtime_services, method_store, model),
+			 std::shared_ptr<Model> model,
+			 std::shared_ptr<ParallelLibrary> parallel_lib,
+			 std::shared_ptr<OutputManager> output_mgr):
+  NonDSampling(std::move(parallel_lib), std::move(output_mgr), method_store, model),
   numResponseFunctions(0),
   refineSamples(method_store.get<IntVector>("nond.refinement_samples")),
   dOptimal(method_store.get<bool>("nond.d_optimal")),

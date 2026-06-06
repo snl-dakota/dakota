@@ -204,7 +204,7 @@ initialize_sub_problem(const String& approx_type, int samples, int seed,
   abort_handler(METHOD_ERROR);
 #endif //HAVE_NCSU
 
-  // IteratorScheduler::init_iterator() initializes the parallel configuration
+  // IteratorExecutor::init_iterator() initializes the parallel configuration
   // for EffGlobalMinimizer + iteratedModel using EffGlobalMinimizer's
   // maxEvalConcurrency.  During fHatModel construction above,
   // DataFitSurrModel::derived_init_communicators() initializes the parallel
@@ -213,7 +213,7 @@ initialize_sub_problem(const String& approx_type, int samples, int seed,
   // is that used by dace_iterator within the initial GP construction, but the
   // EffGlobalMinimizer maxEvalConcurrency must still be set so as to avoid
   // parallel config errors resulting from avail_procs > max_concurrency within
-  // IteratorScheduler::init_iterator().  A max of the local derivative
+  // IteratorExecutor::init_iterator().  A max of the local derivative
   // concurrency and the DACE concurrency is used for this purpose.
   maxEvalConcurrency = std::max(maxEvalConcurrency,
 				dace_iterator->maximum_evaluation_concurrency());
