@@ -366,7 +366,7 @@ processed within Python analysis drivers without externally invoking
 * *warn*: controls whether warnings are printed by the
   template engine.
 
-.. function:: pyrepro(tpl, include_files=None, json_include=None, python_include=None, \
+.. function:: pyprepro(tpl, include_files=None, json_include=None, python_include=None, \
    dakota_include=None, env=None, immutable_env=None, fmt="%0.10g", code="%", code_block="{% %}", \
    inline="{ }", warn=True, output=None, **kwargs)
 
