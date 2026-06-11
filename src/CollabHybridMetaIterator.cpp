@@ -116,7 +116,7 @@ void CollabHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
   if (!singlePassedModel)
     selectedModels.resize(num_iterators);
 
-  study_runtime().update_iterator_executor(iterSched, methodPCIter);
+  iterSched.update(methodPCIter);
 
   IntIntPair ppi_pr_i, ppi_pr(INT_MAX, 0);
   String empty_str;
@@ -138,7 +138,7 @@ void CollabHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
   // An idle partition need not instantiate iterators/models (empty Iterator
   // envelopes are adequate for serve_iterators()), so return now.  A dedicated
   // scheduler processor is managed in IteratorExecutor::init_iterator().
-  if (iterSched.iteratorServerId > iterSched.numIteratorServers)
+  if (iterSched.idle_partition())
     return;
 
   // Instantiate all Models and Iterators
@@ -161,13 +161,13 @@ void CollabHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
 void CollabHybridMetaIterator::derived_set_communicators(ParLevLIter pl_iter)
 {
   size_t mi_pl_index = methodPCIter->mi_parallel_level_index(pl_iter) + 1;
-  study_runtime().update_iterator_executor(iterSched, methodPCIter, mi_pl_index);
-  if (iterSched.iteratorServerId <= iterSched.numIteratorServers) {
+  iterSched.update(methodPCIter, mi_pl_index);
+  if (iterSched.active_server()) {
     ParLevLIter si_pl_iter
       = methodPCIter->mi_parallel_level_iterator(mi_pl_index);
     size_t i, num_iterators = methodStrings.size();
     for (i=0; i<num_iterators; ++i)
-      study_runtime().set_iterator(iterSched, *selectedIterators[i], si_pl_iter);
+      iterSched.set_iterator(*selectedIterators[i], si_pl_iter);
   }
 }
 
@@ -175,17 +175,15 @@ void CollabHybridMetaIterator::derived_set_communicators(ParLevLIter pl_iter)
 void CollabHybridMetaIterator::derived_free_communicators(ParLevLIter pl_iter)
 {
   size_t mi_pl_index = methodPCIter->mi_parallel_level_index(pl_iter) + 1;
-  study_runtime().update_iterator_executor(iterSched, methodPCIter, mi_pl_index);
-  if (iterSched.iteratorServerId <= iterSched.numIteratorServers) {
-    ParLevLIter si_pl_iter
-      = methodPCIter->mi_parallel_level_iterator(mi_pl_index);
+  iterSched.update(methodPCIter, mi_pl_index);
+  if (iterSched.active_server()) {
     size_t i, num_iterators = methodStrings.size();
     for (i=0; i<num_iterators; ++i)
-      study_runtime().free_iterator(iterSched, *selectedIterators[i]);
+      iterSched.free_iterator(*selectedIterators[i]);
   }
 
   // deallocate the mi_pl parallelism level
-  study_runtime().free_iterator_parallelism(iterSched);
+  iterSched.free_iterator_parallelism();
 }
 
 
@@ -195,8 +193,6 @@ void CollabHybridMetaIterator::core_run()
 
   bool lead_rank = iterSched.lead_rank();
   size_t i, num_iterators = methodStrings.size();
-  int server_id =  iterSched.iteratorServerId;
-  bool    rank0 = (iterSched.iteratorCommRank == 0);
   for (i=0; i<num_iterators; i++) {
 
     if (lead_rank)
@@ -208,10 +204,10 @@ void CollabHybridMetaIterator::core_run()
     // For graphics data, limit to iterator server comm leaders; this is further
     // segregated w/i initialize_graphics(): all iterator dedicated schedulers
     // stream tabular data, but only server 1 generates a graphics window.
-    if (rank0 && server_id > 0 && server_id <= iterSched.numIteratorServers)
-      curr_iterator.initialize_graphics(server_id);
+    if (iterSched.graphics_server())
+      curr_iterator.initialize_graphics(iterSched.iteratorServerId());
 
-    study_runtime().schedule_iterators(iterSched, *this, curr_iterator);
+    iterSched.schedule_iterators(*this, curr_iterator);
   }
 }
 
@@ -236,10 +232,10 @@ IntIntPair CollabHybridMetaIterator::estimate_partition_bounds()
 
   // now apply scheduling data for this level (recursion is complete)
   min_max.first = ProblemDescDB::min_procs_per_level(min_procs,
-    iterSched.procsPerIterator, iterSched.numIteratorServers);
+    iterSched.procsPerIterator(), iterSched.numIteratorServers());
   min_max.second = ProblemDescDB::max_procs_per_level(max_procs,
-    iterSched.procsPerIterator, iterSched.numIteratorServers,
-    iterSched.iteratorScheduling, 1, false, maxIteratorConcurrency);
+    iterSched.procsPerIterator(), iterSched.numIteratorServers(),
+    iterSched.iteratorScheduling(), 1, false, maxIteratorConcurrency);
   return min_max;
 }
 

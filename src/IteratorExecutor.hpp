@@ -99,6 +99,10 @@ public:
   /// performs sufficient initialization to define partitioning controls
   /// (min and max processors per iterator server)
   IntIntPair configure(ProblemDescDB& problem_db, std::shared_ptr<Iterator>& sub_iterator);
+  /// performs sufficient initialization to define partitioning controls
+  /// (min and max processors per iterator server) for a preconstructed
+  /// iterator without requiring ProblemDescDB state.
+  IntIntPair configure(std::shared_ptr<Iterator>& sub_iterator);
 
   /// convenience function for initializing iterator communicators, setting
   /// parallel configuration attributes, and managing outputs and restart.

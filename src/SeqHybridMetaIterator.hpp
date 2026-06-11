@@ -153,8 +153,8 @@ inline void SeqHybridMetaIterator::
 partition_sets(size_t num_sets, int job_index, size_t& start_index,
 	       size_t& job_size)
 {
-  size_t set_remainder = num_sets % iterSched.numIteratorJobs;
-  job_size = num_sets / iterSched.numIteratorJobs;
+  size_t set_remainder = num_sets % iterSched.numIteratorJobs();
+  job_size = num_sets / iterSched.numIteratorJobs();
   start_index = job_index * job_size;
   if (set_remainder) { // allocate 1 addtnl job to first set_remainder jobs
     if (set_remainder > job_index) { // this job is offset and grown

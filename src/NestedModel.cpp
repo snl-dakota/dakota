@@ -15,6 +15,9 @@
 #include "pecos_global_defs.hpp"
 #include "EvaluationStore.hpp"
 #include "StudyRuntime.hpp"
+#include "LibraryRuntimeSupport.hpp"
+
+#include <stdexcept>
 
 static const char rcsId[]="@(#) $Id: NestedModel.cpp 7024 2010-10-16 01:24:42Z mseldre $";
 
@@ -27,112 +30,255 @@ NestedModel::NestedModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_li
   Model(problem_db, parallel_lib),
   nestedModelEvalCntr(0), firstUpdate(true), outerMIPLIndex(0),
   subIteratorSched(StudyRuntime(parallelLib, &parallelLib.output_manager())
-                    .create_iterator_executor(
-                      true, // peer 1 must assign jobs to peers 2-n
-                      problem_db.get<int>("model.nested.iterator_servers"),
-                      problem_db.get<int>("model.nested.processors_per_iterator"),
-                      problem_db.get<short>("model.nested.iterator_scheduling"))),
-  subMethodPointer(problem_db.get<const String>("model.nested.sub_method_pointer")),
+                    .create_iterator_context(true)),
   subIteratorJobCntr(0)
 {
-  const String& oi_ptr = problem_db.get<const String>("model.interface_pointer");
-  ignoreBounds = problem_db.get<bool>("responses.ignore_bounds");
-  centralHess  = problem_db.get<bool>("responses.central_hess");
+  ignoreBounds = currentResponse.gradient_config().ignore_bounds;
+  centralHess  = (currentResponse.hessian_config().interval_type ==
+                  Response::IntervalType::Central);
 
-  // Retrieve the variable mapping inputs
+  initialize_runtime_execution_context(
+    problem_db.get<int>("model.nested.iterator_servers"),
+    problem_db.get<int>("model.nested.processors_per_iterator"),
+    problem_db.get<short>("model.nested.iterator_scheduling"));
+  initialize_response_mapping_inputs(
+    problem_db.get<bool>("model.nested.identity_resp_map"),
+    problem_db.get<const RealVector>("model.nested.primary_response_mapping"),
+    problem_db.get<const RealVector>("model.nested.secondary_response_mapping"));
+  subMethodPointer = problem_db.get<const String>("model.nested.sub_method_pointer");
+
   const StringArray& primary_var_mapping
     = problem_db.get<const StringArray>("model.nested.primary_variable_mapping");
   const StringArray& secondary_var_mapping
     = problem_db.get<const StringArray>("model.nested.secondary_variable_mapping");
 
+  const String& oi_ptr = problem_db.get<const String>("model.interface_pointer");
+  if (!oi_ptr.empty()) {
+    optionalInterface = Interface::get_interface(problem_db, parallel_lib);
+    detail::validate_runtime_consistency(
+      "NestedModel", parallel_library_ptr(), output_manager_ptr(),
+      "Interface", optionalInterface->parallel_library_ptr(),
+      optionalInterface->output_manager_ptr());
+  }
+  initialize_optional_interface_state(
+    problem_db.get<const String>("model.optional_interface_responses_pointer"));
+
   // NestedModel may set the DB list nodes, but is required to restore them
   // to their previous setting in order to remove the need to continuously
   // reset at the environment level (which would be wasteful since the type
   // of derived model may not be known at the environment level).
-  size_t method_index = problem_db.get_db_method_node(); // for restoration
-  size_t model_index  = problem_db.get_db_model_node();  // for restoration
+  size_t method_index = problem_db.get_db_method_node();
+  size_t model_index  = problem_db.get_db_model_node();
 
-  // interface for non-nested data is optional
-  if (oi_ptr.empty())
+  problem_db.set_db_list_nodes(subMethodPointer);
+  std::shared_ptr<Model> constructed_sub_model =
+    Model::get_model(problem_db, parallel_lib);
+  problem_db.set_db_method_node(method_index);
+  problem_db.set_db_model_nodes(model_index);
+
+  initialize_subordinate_study_state(nullptr, constructed_sub_model,
+                                     subMethodPointer);
+  initialize_variable_mappings(primary_var_mapping, secondary_var_mapping);
+}
+
+
+NestedModel::NestedModel(const IRStore& model_store,
+                         std::shared_ptr<Iterator> sub_iterator,
+                         std::shared_ptr<Interface> optional_interface,
+                         const Variables& variables,
+                         const Response& response,
+                         std::shared_ptr<ParallelLibrary> parallel_lib,
+                         std::shared_ptr<OutputManager> output_mgr):
+  Model(detail::resolve_runtime(
+          std::move(parallel_lib), std::move(output_mgr),
+          {detail::RuntimeDependency("Iterator",
+                                     sub_iterator ? sub_iterator->parallel_library_ptr() : nullptr,
+                                     sub_iterator ? sub_iterator->output_manager_ptr() : nullptr),
+           detail::RuntimeDependency("Interface",
+                                     optional_interface ? optional_interface->parallel_library_ptr() : nullptr,
+                                     optional_interface ? optional_interface->output_manager_ptr() : nullptr)},
+          "NestedModel"),
+        model_store, variables, response),
+  nestedModelEvalCntr(0), firstUpdate(true), outerMIPLIndex(0),
+  subIteratorSched(study_runtime().create_iterator_context(true)),
+  subIteratorJobCntr(0)
+{
+  if (!sub_iterator) {
+    throw std::runtime_error(
+      "NestedModel requires a non-null subIterator in DI construction.");
+  }
+
+  optionalInterface = std::move(optional_interface);
+  ignoreBounds = currentResponse.gradient_config().ignore_bounds;
+  centralHess  = (currentResponse.hessian_config().interval_type ==
+                  Response::IntervalType::Central);
+
+  initialize_runtime_execution_context(
+    model_store.contains("nested.iterator_servers") ?
+      model_store.get<int>("nested.iterator_servers") : 0,
+    model_store.contains("nested.processors_per_iterator") ?
+      model_store.get<int>("nested.processors_per_iterator") : 0,
+    model_store.contains("nested.iterator_scheduling") ?
+      model_store.get<short>("nested.iterator_scheduling") :
+      DEFAULT_SCHEDULING);
+  initialize_response_mapping_inputs(
+    model_store.contains("nested.identity_resp_map") ?
+      model_store.get<bool>("nested.identity_resp_map") : false,
+    model_store.contains("nested.primary_response_mapping") ?
+      model_store.get<RealVector>("nested.primary_response_mapping") :
+      RealVector(),
+    model_store.contains("nested.secondary_response_mapping") ?
+      model_store.get<RealVector>("nested.secondary_response_mapping") :
+      RealVector());
+  initialize_optional_interface_state(
+    model_store.contains("optional_interface_responses_pointer") ?
+      model_store.get<String>("optional_interface_responses_pointer") :
+      String());
+  initialize_subordinate_study_state(
+    std::move(sub_iterator), nullptr,
+    model_store.contains("nested.sub_method_pointer") ?
+      model_store.get<String>("nested.sub_method_pointer") : String());
+  initialize_variable_mappings(
+    model_store.contains("nested.primary_variable_mapping") ?
+      model_store.get<StringArray>("nested.primary_variable_mapping") :
+      StringArray(),
+    model_store.contains("nested.secondary_variable_mapping") ?
+      model_store.get<StringArray>("nested.secondary_variable_mapping") :
+      StringArray());
+}
+
+
+void NestedModel::initialize_runtime_execution_context(int iterator_servers,
+                                                       int processors_per_iterator,
+                                                       short iterator_scheduling)
+{
+  nestedIteratorServers = iterator_servers;
+  nestedProcessorsPerIterator = processors_per_iterator;
+  nestedIteratorScheduling = iterator_scheduling;
+  subIteratorSched.reset_configuration(
+    true, nestedIteratorServers, nestedProcessorsPerIterator,
+    nestedIteratorScheduling);
+}
+
+
+void NestedModel::initialize_optional_interface_state(const String& oi_resp_ptr)
+{
+  if (!optionalInterface) {
     numOptInterfPrimary = numOptInterfIneqCon = numOptInterfEqCon = 0;
-  else {
-    const String& oi_resp_ptr
-      = problem_db.get<const String>("model.optional_interface_responses_pointer");
+    return;
+  }
+
+  bool db_backed = (&probDescDB != &dummy_db);
+  if (db_backed) {
     bool oi_resp_ptr_defined = !oi_resp_ptr.empty();
     if (oi_resp_ptr_defined)
-      problem_db.set_db_responses_node(oi_resp_ptr);
-    // JAS: We need to work a little harder here to make sure that the
-    // optional interface responses have a gradient and hessian spec that is
-    // compatible with the gradient and hessian spec for the nested model's
-    // responses. Currently, if the nested model's responses specify analytic
-    // or mixed gradients or hessians but the optional interface responses just 
-    // have numerical or no, Dakota dies with a segfault and no error message.
-    // An even better solution might be to wrap the optional interface in a
-    // SimulationModel, which would allow gradient/hessian requests to be 
-    // satisfied however the user wants, and would make it easier for us to
-    // honor a request for scaling.
+      probDescDB.set_db_responses_node(oi_resp_ptr);
 
-    optInterfGradientType = problem_db.get<const String>("responses.gradient_type");
-    optInterfHessianType = problem_db.get<const String>("responses.hessian_type");
+    optInterfGradientType = probDescDB.get<const String>("responses.gradient_type");
+    optInterfHessianType  = probDescDB.get<const String>("responses.hessian_type");
     optInterfGradIdAnalytic
-      = problem_db.get<const IntSet>("responses.gradients.mixed.id_analytic");
+      = probDescDB.get<const IntSet>("responses.gradients.mixed.id_analytic");
     optInterfHessIdAnalytic
-      = problem_db.get<const IntSet>("responses.hessians.mixed.id_analytic");
+      = probDescDB.get<const IntSet>("responses.hessians.mixed.id_analytic");
 
-    numOptInterfIneqCon
-      = problem_db.get<size_t>("responses.num_nonlinear_inequality_constraints");
-    numOptInterfEqCon
-      = problem_db.get<size_t>("responses.num_nonlinear_equality_constraints");
-    optInterfaceResponse
-      = Response::get_response(problem_db, SIMULATION_RESPONSE, currentVariables);
-    optionalInterface = Interface::get_interface(problem_db, parallel_lib);
+    numOptInterfIneqCon =
+      probDescDB.get<size_t>("responses.num_nonlinear_inequality_constraints");
+    numOptInterfEqCon =
+      probDescDB.get<size_t>("responses.num_nonlinear_equality_constraints");
+    optInterfaceResponse =
+      Response::get_response(probDescDB, SIMULATION_RESPONSE, currentVariables);
     size_t num_fns = optInterfaceResponse.num_functions();
     numOptInterfPrimary = num_fns - numOptInterfIneqCon - numOptInterfEqCon;
 
     if (oi_resp_ptr_defined) {
-      // Echo a warning if there is a user specification of constraint bounds/
-      // targets that will be superceded by top level constraint bounds/targets.
-      const RealVector& interf_ineq_l_bnds
-	= problem_db.get<const RealVector>("responses.nonlinear_inequality_lower_bounds");
-      const RealVector& interf_ineq_u_bnds
-	= problem_db.get<const RealVector>("responses.nonlinear_inequality_upper_bounds");
-      const RealVector& interf_eq_targets
-	= problem_db.get<const RealVector>("responses.nonlinear_equality_targets");
+      const RealVector& interf_ineq_l_bnds =
+        probDescDB.get<const RealVector>("responses.nonlinear_inequality_lower_bounds");
+      const RealVector& interf_ineq_u_bnds =
+        probDescDB.get<const RealVector>("responses.nonlinear_inequality_upper_bounds");
+      const RealVector& interf_eq_targets =
+        probDescDB.get<const RealVector>("responses.nonlinear_equality_targets");
       bool warning_flag = false;
-      size_t i;
       Real dbl_inf = std::numeric_limits<Real>::infinity();
-      for (i=0; i<numOptInterfIneqCon; ++i)
-	if ( interf_ineq_l_bnds[i] > -dbl_inf || interf_ineq_u_bnds[i] != 0. )
-	  warning_flag = true;
-      for (i=0; i<numOptInterfEqCon; ++i)
-	if ( interf_eq_targets[i] != 0. )
-	  warning_flag = true;
+      for (size_t i=0; i<numOptInterfIneqCon; ++i)
+        if (interf_ineq_l_bnds[i] > -dbl_inf || interf_ineq_u_bnds[i] != 0.)
+          warning_flag = true;
+      for (size_t i=0; i<numOptInterfEqCon; ++i)
+        if (interf_eq_targets[i] != 0.)
+          warning_flag = true;
       if (warning_flag)
-	Cerr << "Warning: nonlinear constraint bounds and targets in nested "
-	     << "model optional interfaces\n         are superceded by "
-	     << "composite response constraint bounds and targets."
-	     << std::endl;
+        Cerr << "Warning: nonlinear constraint bounds and targets in nested "
+             << "model optional interfaces\n         are superceded by "
+             << "composite response constraint bounds and targets."
+             << std::endl;
+    }
+  }
+  else {
+    if (!oi_resp_ptr.empty()) {
+      throw std::runtime_error(
+        "NestedModel DI construction does not yet support "
+        "optional_interface_responses_pointer. Inject an optional interface "
+        "that reuses the top-level response specification.");
     }
 
-    // don't serialize for asynch concurrency = 1
-    optionalInterface->serialize_threshold(0);
-
-    // db_responses restore not needed since set_db_list_nodes below will reset
+    optInterfGradientType = gradientType;
+    optInterfHessianType  = hessianType;
+    optInterfGradIdAnalytic = currentResponse.gradient_config().id_analytic;
+    optInterfHessIdAnalytic = currentResponse.hessian_config().id_analytic;
+    numOptInterfIneqCon = userDefinedConstraints.num_nonlinear_ineq_constraints();
+    numOptInterfEqCon   = userDefinedConstraints.num_nonlinear_eq_constraints();
+    optInterfaceResponse = currentResponse.copy();
+    optInterfaceResponse.reset();
+    size_t num_fns = optInterfaceResponse.num_functions();
+    numOptInterfPrimary = num_fns - numOptInterfIneqCon - numOptInterfEqCon;
   }
 
-  problem_db.set_db_list_nodes(subMethodPointer); // even if empty
+  optionalInterface->serialize_threshold(0);
+}
 
-  subModel = Model::get_model(problem_db, parallel_lib);
-  //check_submodel_compatibility(subModel); // sanity checks performed below
-  // if outer level output is verbose/debug, request fine-grained evaluation 
-  // reporting for purposes of the final output summary.  This allows verbose
-  // final summaries without verbose output on every sub-iterator completion.
+
+void NestedModel::initialize_subordinate_study_state(
+  std::shared_ptr<Iterator> sub_iterator,
+  std::shared_ptr<Model> sub_model,
+  const String& sub_method_pointer)
+{
+  subMethodPointer = sub_method_pointer;
+  subIterator = std::move(sub_iterator);
+  if (subIterator) {
+    subModel = subIterator->iterated_model();
+    if (!subModel) {
+      throw std::runtime_error(
+        "NestedModel requires subIterator->iterated_model() to be non-null.");
+    }
+  }
+  else {
+    subModel = std::move(sub_model);
+  }
+
+  if (!subModel) {
+    throw std::runtime_error(
+      "NestedModel requires a subordinate model during construction.");
+  }
+
   if (outputLevel > NORMAL_OUTPUT)
     subModel->fine_grained_evaluation_counters();
+}
 
-  problem_db.set_db_method_node(method_index); // restore method only
-  problem_db.set_db_model_nodes(model_index);  // restore all model nodes
 
+void NestedModel::initialize_response_mapping_inputs(
+  bool identity_resp_map,
+  const RealVector& primary_resp_mapping,
+  const RealVector& secondary_resp_mapping)
+{
+  identityRespMap = identity_resp_map;
+  primaryRespMappingSpec = primary_resp_mapping;
+  secondaryRespMappingSpec = secondary_resp_mapping;
+}
+
+
+void NestedModel::initialize_variable_mappings(
+  const StringArray& primary_var_mapping,
+  const StringArray& secondary_var_mapping)
+{
   // Perform error checks on variable mapping inputs and convert from
   // strings to indices for efficiency at run time.
   size_t i, num_var_map_1 = primary_var_mapping.size(),
@@ -142,21 +288,18 @@ NestedModel::NestedModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_li
     num_curr_dsv  = currentVariables.dsv(),
     num_curr_drv  = currentVariables.drv(),
     num_curr_vars = num_curr_cv + num_curr_div + num_curr_dsv + num_curr_drv;
-  // Error checks: maps can be empty strings, but must be present to assure
-  // correct association.
   if (num_var_map_1 && num_var_map_1 != num_curr_vars) {
     Cerr << "\nError: length of primary variable mapping specification ("
-	 << num_var_map_1 << ") does not match number of active variables ("
-	 << num_curr_vars << ")." << std::endl;
+         << num_var_map_1 << ") does not match number of active variables ("
+         << num_curr_vars << ")." << std::endl;
     abort_handler(MODEL_ERROR);
   }
   if (num_var_map_2 && num_var_map_2 != num_var_map_1) {
     Cerr << "\nError: length of secondary variable mapping specification ("
-	 << num_var_map_2 << ") does not match number of primary variables ("
-	 << num_var_map_1 << ")." << std::endl;
+         << num_var_map_2 << ") does not match number of primary variables ("
+         << num_var_map_1 << ")." << std::endl;
     abort_handler(MODEL_ERROR);
   }
-  // active are sized based on totals due to different mapping options
   active1ACVarMapIndices.resize(num_curr_vars);
   active1ADIVarMapIndices.resize(num_curr_vars);
   active1ADSVarMapIndices.resize(num_curr_vars);
@@ -196,7 +339,6 @@ NestedModel::NestedModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_li
   String empty_str;
 
   const SharedVariablesData& svd = currentVariables.shared_data();
-
   // Map ACTIVE CONTINUOUS VARIABLES from currentVariables
   for (i=0; i<num_curr_cv; ++i) {
     curr_i = svd.cv_index_to_active_index(i);
@@ -563,30 +705,28 @@ void NestedModel::declare_sources()
 IntIntPair NestedModel::
 estimate_partition_bounds(int max_eval_concurrency)
 {
-  // extract scheduling data for this level prior to dive
-  int ppi       = probDescDB.get<int>("model.nested.processors_per_iterator"),
-    i_servers   = probDescDB.get<int>("model.nested.iterator_servers");
-  short i_sched = probDescDB.get<short>("model.nested.iterator_scheduling");
-
-  int oi_min_procs, oi_max_procs;
+  int oi_min_procs = 1, oi_max_procs = 1;
   if (optionalInterface) {
-    oi_min_procs = probDescDB.min_procs_per_ie();
-    oi_max_procs = probDescDB.max_procs_per_ie(max_eval_concurrency);
+    IntIntPair oi_min_max =
+      optionalInterface->estimate_partition_bounds(max_eval_concurrency);
+    oi_min_procs = oi_min_max.first;
+    oi_max_procs = oi_min_max.second;
   }
-  else
-    oi_min_procs = oi_max_procs = 1;
 
-  String empty_str;
-  subIteratorSched.construct_sub_iterator(probDescDB, parallelLib, subIterator, subModel,
-    subMethodPointer, empty_str, empty_str);
+  if (!subIterator && &probDescDB != &dummy_db) {
+    String empty_str;
+    subIteratorSched.construct_sub_iterator(probDescDB, parallelLib, subIterator,
+      subModel, subMethodPointer, empty_str, empty_str);
+  }
+
   IntIntPair min_max, si_min_max = subIterator->estimate_partition_bounds();
-
-  // apply multiplier from concurrent iterator scheduling overrides
   min_max.first = ProblemDescDB::min_procs_per_level(
-    std::min(oi_min_procs, si_min_max.first), ppi, i_servers);
+    std::min(oi_min_procs, si_min_max.first), nestedProcessorsPerIterator,
+    nestedIteratorServers);
   min_max.second = ProblemDescDB::max_procs_per_level(
-    std::max(oi_max_procs, si_min_max.second), ppi, i_servers, i_sched, 1,
-    false, max_eval_concurrency);
+    std::max(oi_max_procs, si_min_max.second), nestedProcessorsPerIterator,
+    nestedIteratorServers, nestedIteratorScheduling, 1, false,
+    max_eval_concurrency);
   return min_max;
 }
 
@@ -600,6 +740,9 @@ void NestedModel::
 derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 			   bool recurse_flag)
 {
+  Cout << "[NestedModel] derived_init_communicators begin"
+       << " recurse=" << recurse_flag
+       << " max_eval_concurrency=" << max_eval_concurrency << '\n';
   // initialize optionalInterface for parallel operations
   if (optionalInterface) {
     // allow recursion to progress - don't store/set/restore
@@ -621,54 +764,76 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
   //   ConcurrentMetaIterator::init_communicators().
   // > as for constructors, we recursively set and restore DB list nodes
   //   (initiated from the restored starting point following construction).
-  size_t method_index = probDescDB.get_db_method_node(),
-         model_index  = probDescDB.get_db_model_node();  // for restoration
-  probDescDB.set_db_list_nodes(subMethodPointer);
+  bool db_backed = (&probDescDB != &dummy_db);
+  size_t method_index = 0, model_index = 0;
+  if (db_backed) {
+    method_index = probDescDB.get_db_method_node();
+    model_index  = probDescDB.get_db_model_node();
+    probDescDB.set_db_list_nodes(subMethodPointer);
+  }
 
   // > init_eval_concurrency instantiates subIterator on previous pl ranks
-  study_runtime().update_iterator_executor(subIteratorSched, modelPCIter);
-  // > define min and max processors per iterator
-  IntIntPair ppi_pr
-    = subIteratorSched.configure(probDescDB, subIterator, subModel);
-  // > passed in max_eval_concurrency is the outer nested model concurrency
+  Cout << "[NestedModel] before subIteratorSched.update\n";
+  subIteratorSched.update(modelPCIter);
+  Cout << "[NestedModel] after subIteratorSched.update\n";
+  Cout << "[NestedModel] before subIteratorSched.configure"
+       << " subIterator?=" << static_cast<bool>(subIterator) << '\n';
+  IntIntPair ppi_pr;
+  if (subIterator)
+    ppi_pr = db_backed ?
+      subIteratorSched.configure(probDescDB, subIterator) :
+      subIteratorSched.configure(subIterator);
+  else
+    ppi_pr = subIteratorSched.configure(probDescDB, subIterator, subModel);
+  Cout << "[NestedModel] after subIteratorSched.configure"
+       << " min=" << ppi_pr.first << " max=" << ppi_pr.second << '\n';
+  Cout << "[NestedModel] before subIteratorSched.partition\n";
   subIteratorSched.partition(max_eval_concurrency, ppi_pr);
-  // > now augment prev subIterator instantiations for additional mi_pl ranks
-  //   (new mi_pl is used via miPLIndex update in partition())
-  // > idle server is managed here; a dedicated scheduler processor is managed
-  //   within IteratorExecutor::init_iterator().
-  if (subIteratorSched.iteratorServerId <= subIteratorSched.numIteratorServers)
-    study_runtime().initialize_iterator(subIteratorSched, probDescDB, subIterator, subModel);
+  Cout << "[NestedModel] after subIteratorSched.partition"
+       << " active_server=" << subIteratorSched.active_server()
+       << " messagePass=" << subIteratorSched.messagePass() << '\n';
+  if (subIteratorSched.active_server()) {
+    Cout << "[NestedModel] before subIteratorSched.initialize_iterator\n";
+    if (db_backed)
+      subIteratorSched.initialize_iterator(probDescDB, subIterator, subModel);
+    else
+      subIteratorSched.initialize_iterator(subIterator->method_string(),
+                                           subIterator, subModel);
+    Cout << "[NestedModel] after subIteratorSched.initialize_iterator\n";
+  }
 
-  // > restore all DB nodes
-  probDescDB.set_db_method_node(method_index);
-  probDescDB.set_db_model_nodes(model_index);
+  if (db_backed) {
+    probDescDB.set_db_method_node(method_index);
+    probDescDB.set_db_model_nodes(model_index);
+  }
 
-  // > Perform downstream updates
-  // In parallel execution on ranks other than 0, subIterator is default
-  // constructed and its method_id() is not set.
-  if (!subIterator->method_id().empty()) {
-    init_sub_iterator(); // follow DB restore: extracts data from nested spec
-    if (subIteratorSched.messagePass) {
-      // msg lengths: vars from this model, set & final results from subIterator
+  if (subIterator && subIteratorSched.active_server() &&
+      subIteratorSched.iterator_comm_lead()) {
+    Cout << "[NestedModel] init_sub_iterator during derived_init_communicators\n";
+    init_sub_iterator();
+    if (subIteratorSched.messagePass()) {
       MPIPackBuffer buff; int eval_id = 0;
       const Response& si_resp = subIterator->response_results();
       buff << currentVariables << si_resp.active_set() << eval_id;
       int params_buff_len = buff.size(); buff.reset();
       buff << si_resp;
-      study_runtime().iterator_message_lengths(subIteratorSched, params_buff_len, buff.size());
+      subIteratorSched.iterator_message_lengths(params_buff_len, buff.size());
     }
   }
+  Cout << "[NestedModel] derived_init_communicators end\n";
 }
 
 void NestedModel::derived_init_serial()
 {
-  // serial instantiation of subIterator
-  size_t method_index = probDescDB.get_db_method_node(),
-         model_index  = probDescDB.get_db_model_node(); // for restoration
-  probDescDB.set_db_list_nodes(subMethodPointer);       // even if empty
-  subIterator = Iterator::get_iterator(probDescDB, parallelLib, subModel);
-  probDescDB.set_db_method_node(method_index); // restore method only
-  probDescDB.set_db_model_nodes(model_index);  // restore all model nodes
+  Cout << "[NestedModel] derived_init_serial begin\n";
+  if (!subIterator) {
+    size_t method_index = probDescDB.get_db_method_node(),
+           model_index  = probDescDB.get_db_model_node();
+    probDescDB.set_db_list_nodes(subMethodPointer);
+    subIterator = Iterator::get_iterator(probDescDB, parallelLib, subModel);
+    probDescDB.set_db_method_node(method_index);
+    probDescDB.set_db_model_nodes(model_index);
+  }
 
   init_sub_iterator();
 
@@ -678,6 +843,7 @@ void NestedModel::derived_init_serial()
   if (optionalInterface)
     optionalInterface->init_serial();
   subModel->init_serial();
+  Cout << "[NestedModel] derived_init_serial end\n";
 }
 
 
@@ -701,19 +867,18 @@ derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
     // > pl_iter is incoming context prior to subIterator partitioning
     // > mi_pl_index reflects the miPL depth after subIterator partitioning
     size_t mi_pl_index = outerMIPLIndex + 1;
-    study_runtime().update_iterator_executor(subIteratorSched, modelPCIter, mi_pl_index);
-    if (subIteratorSched.iteratorServerId <=
-	subIteratorSched.numIteratorServers) {
+    subIteratorSched.update(modelPCIter, mi_pl_index);
+    if (subIteratorSched.active_server()) {
       ParLevLIter si_pl_iter
 	= modelPCIter->mi_parallel_level_iterator(mi_pl_index);
-      study_runtime().set_iterator(subIteratorSched, *subIterator, si_pl_iter);
+      subIteratorSched.set_iterator(*subIterator, si_pl_iter);
     }
 
     // update asynchEvalFlag & evaluationCapacity based on subIteratorSched
-    if (subIteratorSched.messagePass)
+    if (subIteratorSched.messagePass())
       asynchEvalFlag = true;
-    if (subIteratorSched.numIteratorServers > evaluationCapacity)
-      evaluationCapacity = subIteratorSched.numIteratorServers;
+    if (subIteratorSched.numIteratorServers() > evaluationCapacity)
+      evaluationCapacity = subIteratorSched.numIteratorServers();
   }
 }
 
@@ -734,12 +899,11 @@ derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
     // > pl_iter is incoming context prior to subIterator partitioning
     // > mi_pl_index reflects the miPL depth after subIterator partitioning
     size_t mi_pl_index = modelPCIter->mi_parallel_level_index(pl_iter) + 1;
-    study_runtime().update_iterator_executor(subIteratorSched, modelPCIter, mi_pl_index);
-    if (subIteratorSched.iteratorServerId <=
-	subIteratorSched.numIteratorServers) {
-      study_runtime().free_iterator(subIteratorSched, *subIterator);
+    subIteratorSched.update(modelPCIter, mi_pl_index);
+    if (subIteratorSched.active_server()) {
+      subIteratorSched.free_iterator(*subIterator);
     }
-    study_runtime().free_iterator_parallelism(subIteratorSched);
+    subIteratorSched.free_iterator_parallelism();
   }
 }
 
@@ -760,10 +924,10 @@ void NestedModel::init_sub_iterator()
   // Back out the number of eq/ineq constraints within secondaryRespCoeffs
   // (subIterator constraints) from the total number of equality/inequality
   // constraints and the number of interface equality/inequality constraints.
-  size_t num_mapped_ineq_con
-    = probDescDB.get<size_t>("responses.num_nonlinear_inequality_constraints"),
-    num_mapped_eq_con
-    = probDescDB.get<size_t>("responses.num_nonlinear_equality_constraints");
+  size_t num_mapped_ineq_con =
+      userDefinedConstraints.num_nonlinear_ineq_constraints(),
+    num_mapped_eq_con =
+      userDefinedConstraints.num_nonlinear_eq_constraints();
   numSubIterMappedIneqCon = num_mapped_ineq_con - numOptInterfIneqCon;
   numSubIterMappedEqCon   = num_mapped_eq_con   - numOptInterfEqCon;
 
@@ -782,11 +946,8 @@ void NestedModel::init_sub_iterator()
     num_mapped_pri = num_mapped_total - num_mapped_sec;
   numSubIterFns = subIterator->response_results().num_functions();
 
-  identityRespMap = probDescDB.get<bool>("model.nested.identity_resp_map");
-  const RealVector& primary_resp_coeffs
-    = probDescDB.get<const RealVector>("model.nested.primary_response_mapping");
-  const RealVector& secondary_resp_coeffs
-    = probDescDB.get<const RealVector>("model.nested.secondary_response_mapping");
+  const RealVector& primary_resp_coeffs = primaryRespMappingSpec;
+  const RealVector& secondary_resp_coeffs = secondaryRespMappingSpec;
 
   if (identityRespMap) {
     bool found_error = false;
@@ -1432,38 +1593,37 @@ void NestedModel::derived_evaluate(const ActiveSet& set)
     }
 
     ParLevLIter pl_iter
-      = modelPCIter->mi_parallel_level_iterator(subIteratorSched.miPLIndex);
-    if (subIteratorSched.messagePass) {
+      = modelPCIter->mi_parallel_level_iterator(subIteratorSched.miPLIndex());
+    if (subIteratorSched.messagePass()) {
       // For derived_evaluate(), subIterator scheduling would not
       // normally be expected, but singleton jobs could use this fn assuming
       // no dedicated scheduler overload (enforced in Model::evaluate()).
       // Given this protection, don't schedule the job -- execute it locally.
-      if (subIteratorSched.iteratorScheduling == PEER_SCHEDULING &&
-	  subIteratorSched.peerAssignJobs) {
+      if (subIteratorSched.peer_assigns_local_jobs()) {
 	// match 2 bcasts in IteratorExecutor::peer_static_schedule_iterators()
 	// needed by procs in NestedModel::serve_run()
 	int num_jobs = 1;
 	parallelLib.bcast_hs(num_jobs, *pl_iter); // over pl.hubServerIntraComm
-	if (subIteratorSched.iteratorCommSize > 1)
+	if (subIteratorSched.iterator_comm_parallel())
 	  parallelLib.bcast(num_jobs, *pl_iter);  // over pl.serverIntraComm
       }
       // run_iterator() is used since we stop subModel servers for consistency
       // with fall through behavior of schedule_iterators()
-      study_runtime().execute_iterator(*subIterator, pl_iter);
-      if (subIteratorSched.iteratorScheduling == DEDICATED_SCHEDULER_DYNAMIC)
+      subIteratorSched.execute_iterator(*subIterator, pl_iter);
+      if (subIteratorSched.dedicated_scheduler())
 	subIteratorSched.stop_iterator_servers();
 
       /* This approach has 2 issues: (1) a single-processor subIterator job is
 	 always assigned by ded scheduler to server 1 (ded scheduler overload
 	 bypassed), (2) peer static init/update bookkeeping is redundant of
 	 above/below.
-      subIteratorSched.numIteratorJobs = 1;
+      subIteratorSched.numIteratorJobs() = 1;
       // can use shallow copy for queue of 1 job (avoids need to copy updated
       // entry in subIteratorPRPQueue back to subIterator->response_results())
       ParamResponsePair current_pair(currentVariables, subIterator->method_id(),
 				     subIterator->response_results(), 1, false);
       subIteratorPRPQueue.insert(current_pair);
-      study_runtime().schedule_iterators(subIteratorSched, *this, subIterator);
+      subIteratorSched.schedule_iterators(*this, subIterator);
       */
     }
     else // run_iterator() is not used since we don't stop subModel servers
@@ -1591,8 +1751,8 @@ const IntResponseMap& NestedModel::derived_synchronize()
   if (!subIteratorPRPQueue.empty()) {
     // schedule subIteratorPRPQueue jobs
     component_parallel_mode(SUB_MODEL_MODE);
-    subIteratorSched.numIteratorJobs = subIteratorPRPQueue.size();
-    study_runtime().schedule_iterators(subIteratorSched, *this, *subIterator);
+    subIteratorSched.numIteratorJobs() = subIteratorPRPQueue.size();
+    subIteratorSched.schedule_iterators(*this, *subIterator);
     // overlay response sets (no rekey or cache necessary)
     for (PRPQueueIter q_it=subIteratorPRPQueue.begin();
 	 q_it!=subIteratorPRPQueue.end(); ++q_it)
@@ -2070,7 +2230,7 @@ void NestedModel::component_parallel_mode(short mode)
   // terminate previous serve mode (if active)
   if (componentParallelMode != mode) {
     if (componentParallelMode == INTERFACE_MODE) {
-      size_t index = subIteratorSched.miPLIndex;
+      size_t index = subIteratorSched.miPLIndex();
       if (modelPCIter->mi_parallel_level_defined(index) && 
 	  modelPCIter->mi_parallel_level(index).server_communicator_size() > 1){
 	ParConfigLIter pc_iter = parallelLib.parallel_configuration_iterator();
@@ -2082,7 +2242,7 @@ void NestedModel::component_parallel_mode(short mode)
     // concurrent subIterator scheduling exits on its own (see IteratorExecutor
     // ::schedule_iterators(), but subModel eval scheduling is terminated here.
     else if (componentParallelMode == SUB_MODEL_MODE &&
-	     !subIteratorSched.messagePass) {
+	     !subIteratorSched.messagePass()) {
       ParConfigLIter pc_it = subModel->parallel_configuration_iterator();
       size_t index = subModel->mi_parallel_level_index();
       if (pc_it->mi_parallel_level_defined(index) && 
@@ -2107,7 +2267,7 @@ void NestedModel::component_parallel_mode(short mode)
   // > concurrent subIterator scheduling rebroadcasts every time since this
   //   scheduling exits on its own (see IteratorExecutor::schedule_iterators())
   if ( ( componentParallelMode != mode ||
-	 ( mode == SUB_MODEL_MODE && subIteratorSched.messagePass ) ) &&
+	 ( mode == SUB_MODEL_MODE && subIteratorSched.messagePass() ) ) &&
        modelPCIter->mi_parallel_level_defined(outerMIPLIndex) ) {
     const ParallelLevel& mi_pl = modelPCIter->mi_parallel_level(outerMIPLIndex);
     if (mi_pl.server_communicator_size() > 1)
@@ -2136,11 +2296,11 @@ void NestedModel::serve_run(ParLevLIter pl_iter, int max_eval_concurrency)
       parallelLib.parallel_configuration_iterator(pc_iter); // restore
     }
     else if (componentParallelMode == SUB_MODEL_MODE) {
-      if (subIteratorSched.messagePass) // serve concurrent subIterator execs
-	study_runtime().schedule_iterators(subIteratorSched, *this, *subIterator);
+      if (subIteratorSched.messagePass()) // serve concurrent subIterator execs
+	subIteratorSched.schedule_iterators(*this, *subIterator);
       else { // service the subModel for a single subIterator execution
 	ParLevLIter si_pl_iter // inner context
-	  = modelPCIter->mi_parallel_level_iterator(subIteratorSched.miPLIndex);
+	  = modelPCIter->mi_parallel_level_iterator(subIteratorSched.miPLIndex());
 	subModel->serve_run(si_pl_iter,
 			   subIterator->maximum_evaluation_concurrency());
       }

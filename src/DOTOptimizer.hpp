@@ -90,6 +90,10 @@ public:
 
   /// standard constructor
   DOTOptimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
+  /// DI constructor using method IR plus optional runtime services
+  DOTOptimizer(const IRStore& method_store, std::shared_ptr<Model> model,
+               std::shared_ptr<ParallelLibrary> parallel_lib = nullptr,
+               std::shared_ptr<OutputManager> output_mgr = nullptr);
   /// alternate constructor; construct without ProblemDescDB
   DOTOptimizer(const String& method_string, std::shared_ptr<Model> model);
   /// destructor

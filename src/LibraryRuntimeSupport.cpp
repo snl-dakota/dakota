@@ -8,6 +8,7 @@
 
 #include <sstream>
 #include <stdexcept>
+#include <string>
 
 namespace Dakota {
 namespace detail {
@@ -22,6 +23,28 @@ std::string service_name(const char* owner_name, const char* dependency_name,
       << " were constructed with different " << service_name
       << " instances.";
   return oss.str();
+}
+
+std::string missing_parallel_library_name(const char* owner_name)
+{
+  std::ostringstream oss;
+  oss << owner_name << " could not resolve a ParallelLibrary from the "
+      << "provided runtime services or dependencies.";
+  return oss.str();
+}
+
+void validate_runtime_against_dependencies(
+  const char* owner_name,
+  ParallelLibrary* owner_parallel_lib,
+  OutputManager* owner_output_mgr,
+  std::initializer_list<RuntimeDependency> dependencies)
+{
+  for (const RuntimeDependency& dependency: dependencies)
+    validate_runtime_consistency(owner_name, owner_parallel_lib,
+                                 owner_output_mgr,
+                                 dependency.dependencyName,
+                                 dependency.parallelLibrary,
+                                 dependency.outputManager);
 }
 
 } // namespace
@@ -109,16 +132,64 @@ ResolvedRuntime resolve_runtime(std::shared_ptr<ParallelLibrary> parallel_lib,
   if (runtime.sharedParallelLibrary) {
     runtime.parallelLibrary = runtime.sharedParallelLibrary.get();
     runtime.outputManager = runtime.sharedOutputManager ?
-      runtime.sharedOutputManager.get() :
-      &runtime.parallelLibrary->output_manager();
+      runtime.sharedOutputManager.get() : nullptr;
     return runtime;
   }
 
   runtime.ownedRuntime =
     std::make_shared<OwnedLibraryRuntime>(runtime.sharedOutputManager);
   runtime.parallelLibrary = &runtime.ownedRuntime->parallel_library();
-  runtime.outputManager = runtime.ownedRuntime->output_manager();
+  runtime.outputManager = runtime.sharedOutputManager ?
+    runtime.sharedOutputManager.get() : runtime.ownedRuntime->output_manager();
   return runtime;
+}
+
+ResolvedRuntime resolve_runtime(std::shared_ptr<ParallelLibrary> parallel_lib,
+                                std::shared_ptr<OutputManager> output_mgr,
+                                std::initializer_list<RuntimeDependency> dependencies,
+                                const char* owner_name)
+{
+  if (parallel_lib || output_mgr) {
+    ResolvedRuntime runtime =
+      resolve_runtime(std::move(parallel_lib), std::move(output_mgr));
+    validate_runtime_against_dependencies(owner_name, runtime.parallelLibrary,
+                                          runtime.outputManager,
+                                          dependencies);
+    return runtime;
+  }
+
+  ParallelLibrary* inherited_parallel_lib = nullptr;
+  OutputManager* inherited_output_mgr = nullptr;
+  for (const RuntimeDependency& dependency: dependencies) {
+    if (!inherited_parallel_lib)
+      inherited_parallel_lib = dependency.parallelLibrary;
+    else if (dependency.parallelLibrary &&
+             dependency.parallelLibrary != inherited_parallel_lib) {
+      throw std::runtime_error(
+        service_name(owner_name, dependency.dependencyName, "ParallelLibrary"));
+    }
+
+    if (!inherited_output_mgr)
+      inherited_output_mgr = dependency.outputManager;
+    else if (dependency.outputManager &&
+             dependency.outputManager != inherited_output_mgr) {
+      throw std::runtime_error(
+        service_name(owner_name, dependency.dependencyName, "OutputManager"));
+    }
+  }
+
+  if (inherited_parallel_lib || inherited_output_mgr) {
+    if (!inherited_parallel_lib)
+      throw std::runtime_error(missing_parallel_library_name(owner_name));
+
+    ResolvedRuntime inherited_runtime;
+    inherited_runtime.parallelLibrary = inherited_parallel_lib;
+    inherited_runtime.outputManager = inherited_output_mgr;
+    return inherited_runtime;
+  }
+
+  return resolve_runtime(std::shared_ptr<ParallelLibrary>(),
+                         std::shared_ptr<OutputManager>());
 }
 
 ResolvedRuntime resolve_runtime(std::shared_ptr<ParallelLibrary> parallel_lib,
@@ -128,20 +199,11 @@ ResolvedRuntime resolve_runtime(std::shared_ptr<ParallelLibrary> parallel_lib,
                                 const char* owner_name,
                                 const char* dependency_name)
 {
-  if (!parallel_lib && !output_mgr && inherited_parallel_lib) {
-    ResolvedRuntime inherited_runtime;
-    inherited_runtime.parallelLibrary = inherited_parallel_lib;
-    inherited_runtime.outputManager = inherited_output_mgr ?
-      inherited_output_mgr : &inherited_parallel_lib->output_manager();
-    return inherited_runtime;
-  }
-
-  ResolvedRuntime runtime =
-    resolve_runtime(std::move(parallel_lib), std::move(output_mgr));
-  validate_runtime_consistency(owner_name, runtime.parallelLibrary,
-                               runtime.outputManager, dependency_name,
-                               inherited_parallel_lib, inherited_output_mgr);
-  return runtime;
+  return resolve_runtime(
+    std::move(parallel_lib), std::move(output_mgr),
+    {RuntimeDependency(dependency_name, inherited_parallel_lib,
+                       inherited_output_mgr)},
+    owner_name);
 }
 
 } // namespace detail

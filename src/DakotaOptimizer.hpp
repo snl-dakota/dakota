@@ -484,6 +484,11 @@ protected:
   Optimizer(std::shared_ptr<TraitsBase> traits);
   /// alternate constructor; accepts a model
   Optimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model, std::shared_ptr<TraitsBase> traits);
+  /// DI constructor using method IR plus optional runtime services
+  Optimizer(std::shared_ptr<ParallelLibrary> parallel_lib,
+            std::shared_ptr<OutputManager> output_mgr,
+            const IRStore& method_store, std::shared_ptr<Model> model,
+            std::shared_ptr<TraitsBase> traits);
 
   /// alternate constructor for "on the fly" instantiations
   Optimizer(unsigned short method_name, std::shared_ptr<Model> model, std::shared_ptr<TraitsBase> traits);

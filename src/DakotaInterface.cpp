@@ -775,6 +775,8 @@ short Interface::interface_synchronization() const
 
 IntIntPair Interface::estimate_partition_bounds(int max_eval_concurrency) const
 {
+  Cout << "[Interface] estimate_partition_bounds default max_eval_concurrency="
+       << max_eval_concurrency << '\n';
   return IntIntPair(1, max_eval_concurrency);
 }
 

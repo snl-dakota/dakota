@@ -86,9 +86,15 @@ void StudyRuntime::free_top_level_iterator(Iterator& iterator,
 void StudyRuntime::execute_iterator(Iterator& iterator) const
 {
   ParLevLIter w_pl_iter = parallelLib->w_parallel_level_iterator();
+  Cout << "[StudyRuntime] init_communicators begin\n";
   iterator.init_communicators(w_pl_iter);
+  Cout << "[StudyRuntime] init_communicators end\n";
+  Cout << "[StudyRuntime] execute_iterator begin\n";
   execute_iterator(iterator, w_pl_iter);
+  Cout << "[StudyRuntime] execute_iterator end\n";
+  Cout << "[StudyRuntime] free_communicators begin\n";
   iterator.free_communicators(w_pl_iter);
+  Cout << "[StudyRuntime] free_communicators end\n";
 }
 
 

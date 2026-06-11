@@ -110,8 +110,7 @@ void initialize_multivariate_distribution_from_variables(
   const Variables& vars, Pecos::MultivariateDistribution& mv_dist,
   bool active_only)
 {
-  const auto& store_ptr = (vars.variablesRep) ?
-    vars.variablesRep->variablesStore : vars.variablesStore;
+  const auto& store_ptr = vars.variables_store_ptr();
   if (!store_ptr) {
     Cerr << "Error: DI multivariate distribution construction requires "
          << "Variables-owned component configuration." << std::endl;
@@ -391,8 +390,7 @@ void initialize_distribution_parameters_from_variables(
   const Variables& vars, Pecos::MultivariateDistribution& mv_dist,
   bool active_only)
 {
-  const auto& store_ptr = (vars.variablesRep) ?
-    vars.variablesRep->variablesStore : vars.variablesStore;
+  const auto& store_ptr = vars.variables_store_ptr();
   if (!store_ptr) {
     Cerr << "Error: DI multivariate distribution construction requires "
          << "Variables-owned component configuration." << std::endl;
@@ -932,6 +930,75 @@ Model::Model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
 }
 
 
+void initialize_constraints_from_variables(
+  const Variables& vars, Constraints& constraints)
+{
+  const auto& store_ptr = vars.variables_store_ptr();
+  if (!store_ptr)
+    return;
+
+  const IRStore& store = *store_ptr;
+  const SharedVariablesData& svd = vars.shared_data();
+  bool cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv;
+  svd.active_subsets(cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv);
+
+  const size_t num_cdv = ir_get<size_t>(store, "continuous_design");
+  if (cdv && num_cdv) {
+    const RealVector& lower = ir_get<RealVector>(store,
+      "continuous_design.lower_bounds");
+    const RealVector& upper = ir_get<RealVector>(store,
+      "continuous_design.upper_bounds");
+    constraints.continuous_lower_bounds(lower);
+    constraints.continuous_upper_bounds(upper);
+    if (svd.acv() == num_cdv) {
+      constraints.all_continuous_lower_bounds(lower);
+      constraints.all_continuous_upper_bounds(upper);
+    }
+  }
+
+  const size_t num_csv = ir_get<size_t>(store, "continuous_state");
+  if (csv && num_csv) {
+    const RealVector& lower = ir_get<RealVector>(store,
+      "continuous_state.lower_bounds");
+    const RealVector& upper = ir_get<RealVector>(store,
+      "continuous_state.upper_bounds");
+    constraints.continuous_lower_bounds(lower);
+    constraints.continuous_upper_bounds(upper);
+    if (svd.acv() == num_csv) {
+      constraints.all_continuous_lower_bounds(lower);
+      constraints.all_continuous_upper_bounds(upper);
+    }
+  }
+
+  const size_t num_ddr = ir_get<size_t>(store, "discrete_design_range");
+  if (ddv && num_ddr) {
+    const IntVector& lower = ir_get<IntVector>(store,
+      "discrete_design_range.lower_bounds");
+    const IntVector& upper = ir_get<IntVector>(store,
+      "discrete_design_range.upper_bounds");
+    constraints.discrete_int_lower_bounds(lower);
+    constraints.discrete_int_upper_bounds(upper);
+    if (svd.adiv() == num_ddr) {
+      constraints.all_discrete_int_lower_bounds(lower);
+      constraints.all_discrete_int_upper_bounds(upper);
+    }
+  }
+
+  const size_t num_dsr = ir_get<size_t>(store, "discrete_state_range");
+  if (dsv && num_dsr) {
+    const IntVector& lower = ir_get<IntVector>(store,
+      "discrete_state_range.lower_bounds");
+    const IntVector& upper = ir_get<IntVector>(store,
+      "discrete_state_range.upper_bounds");
+    constraints.discrete_int_lower_bounds(lower);
+    constraints.discrete_int_upper_bounds(upper);
+    if (svd.adiv() == num_dsr) {
+      constraints.all_discrete_int_lower_bounds(lower);
+      constraints.all_discrete_int_upper_bounds(upper);
+    }
+  }
+}
+
 Model::Model(std::shared_ptr<ParallelLibrary> parallel_lib,
 	     std::shared_ptr<OutputManager> output_mgr,
 	     const IRStore& model_store,
@@ -987,6 +1054,7 @@ Model::Model(detail::ResolvedRuntime runtime,
   modelId(model_store.get<String>("id")), modelEvalCntr(0),
   estDerivsFlag(false), initCommsBcastFlag(false), modelAutoGraphicsFlag(false)
 {
+  initialize_constraints_from_variables(currentVariables, userDefinedConstraints);
   initialize_multivariate_distribution_from_variables(currentVariables, mvDist);
   initialize_distribution_parameters_from_variables(currentVariables, mvDist);
 

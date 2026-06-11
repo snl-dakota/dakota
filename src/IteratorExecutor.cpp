@@ -102,24 +102,27 @@ configure(ProblemDescDB& problem_db, const String& method_string,
 IntIntPair IteratorExecutor::
 configure(ProblemDescDB& problem_db, std::shared_ptr<Iterator>& sub_iterator)
 {
+  Cout << "[IteratorExecutor] configure(existing iterator, db-backed) begin"
+       << " sub_iterator?=" << static_cast<bool>(sub_iterator) << '\n';
+
   // Prior to IteratorExecutor::partition(), we utilize the trailing mi_pl
   // (often the world pl) for the concurrency estimation.  If this is not the
   // correct reference point, the calling code must increment the parallel
   // configuration prior to invocation of this fn.
-  const ParallelLevel& mi_pl = schedPCIter->mi_parallel_level(); // last level
+  const ParallelLevel& mi_pl = schedPCIter->mi_parallel_level();
+  Cout << "[IteratorExecutor] configure(existing iterator, db-backed) mi_pl rank="
+       << mi_pl.server_communicator_rank()
+       << " size=" << mi_pl.server_communicator_size() << '\n';
 
-  // sub_iterator has been minimally instantiated by calling context
   IntIntPair min_max_procs;
   if (mi_pl.server_communicator_rank() == 0) {
-
-    // Incoming context: DB list nodes for (sub)method/(sub)model have been set
-    size_t method_index = problem_db.get_db_method_node(); // for restoration
-    size_t model_index  = problem_db.get_db_model_node();  // for restoration
+    size_t method_index = problem_db.get_db_method_node();
+    size_t model_index  = problem_db.get_db_model_node();
 
     min_max_procs = sub_iterator->estimate_partition_bounds();
 
-    problem_db.set_db_method_node(method_index); // restore method only
-    problem_db.set_db_model_nodes(model_index);  // restore all model nodes
+    problem_db.set_db_method_node(method_index);
+    problem_db.set_db_model_nodes(model_index);
 
     if (mi_pl.server_communicator_size() > 1) {
       MPIPackBuffer send_buffer;
@@ -128,16 +131,59 @@ configure(ProblemDescDB& problem_db, std::shared_ptr<Iterator>& sub_iterator)
     }
   }
   else {
-    // estimate size, rather than receive it over bcast
     MPIPackBuffer send_buffer;
-    min_max_procs.first = min_max_procs.second = 0;// don't pack uninitialized
-    send_buffer << min_max_procs; int min_max_size = send_buffer.size();
-    // now receive buffer of precise length
+    min_max_procs.first = min_max_procs.second = 0;
+    send_buffer << min_max_procs;
+    int min_max_size = send_buffer.size();
     MPIUnpackBuffer recv_buffer(min_max_size);
     parallelLib.bcast(recv_buffer, mi_pl);
     recv_buffer >> min_max_procs;
   }
 
+  Cout << "[IteratorExecutor] configure(existing iterator, db-backed) end"
+       << " min=" << min_max_procs.first
+       << " max=" << min_max_procs.second << '\n';
+  return min_max_procs;
+}
+
+
+/** This is a convenience function for computing the minimum and maximum
+    partition size prior to concurrent iterator partitioning without touching
+    ProblemDescDB state. */
+IntIntPair IteratorExecutor::
+configure(std::shared_ptr<Iterator>& sub_iterator)
+{
+  Cout << "[IteratorExecutor] configure(existing iterator, db-free) begin"
+       << " sub_iterator?=" << static_cast<bool>(sub_iterator) << '\n';
+
+  const ParallelLevel& mi_pl = schedPCIter->mi_parallel_level();
+  Cout << "[IteratorExecutor] configure(existing iterator, db-free) mi_pl rank="
+       << mi_pl.server_communicator_rank()
+       << " size=" << mi_pl.server_communicator_size() << '\n';
+
+  IntIntPair min_max_procs;
+  if (mi_pl.server_communicator_rank() == 0) {
+    min_max_procs = sub_iterator->estimate_partition_bounds();
+
+    if (mi_pl.server_communicator_size() > 1) {
+      MPIPackBuffer send_buffer;
+      send_buffer << min_max_procs;
+      parallelLib.bcast(send_buffer, mi_pl);
+    }
+  }
+  else {
+    MPIPackBuffer send_buffer;
+    min_max_procs.first = min_max_procs.second = 0;
+    send_buffer << min_max_procs;
+    int min_max_size = send_buffer.size();
+    MPIUnpackBuffer recv_buffer(min_max_size);
+    parallelLib.bcast(recv_buffer, mi_pl);
+    recv_buffer >> min_max_procs;
+  }
+
+  Cout << "[IteratorExecutor] configure(existing iterator, db-free) end"
+       << " min=" << min_max_procs.first
+       << " max=" << min_max_procs.second << '\n';
   return min_max_procs;
 }
 

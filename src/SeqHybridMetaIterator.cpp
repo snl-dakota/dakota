@@ -118,7 +118,7 @@ void SeqHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
   if (!singlePassedModel)
     selectedModels.resize(num_iterators);
 
-  study_runtime().update_iterator_executor(iterSched, methodPCIter);
+  iterSched.update(methodPCIter);
 
   int pl_rank = pl_iter->server_communicator_rank();
   IntIntPair ppi_pr_i, ppi_pr(INT_MAX, 0);
@@ -174,7 +174,7 @@ void SeqHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
   // An idle partition need not instantiate iterators/models (empty Iterator
   // envelopes are adequate for serve_iterators()), so return now.  A dedicated
   // scheduler processor is managed in IteratorExecutor::init_iterator().
-  if (iterSched.iteratorServerId > iterSched.numIteratorServers)
+  if (iterSched.idle_partition())
     return;
 
   if (!num_iterators) { // verify at least one method in list
@@ -187,7 +187,7 @@ void SeqHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
     Cout << "maxIteratorConcurrency = " << maxIteratorConcurrency << '\n';
 
   if (seqHybridType == "adaptive") {
-    if (iterSched.messagePass) {
+    if (iterSched.messagePass()) {
       // adaptive hybrid does not support iterator concurrency
       if (summaryOutputFlag)
 	Cerr << "Error: adaptive Sequential Hybrid does not support concurrent "
@@ -219,7 +219,7 @@ void SeqHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
   // now that parallel paritioning and iterator allocation has occurred,
   // manage acceptable values for Iterator::numFinalSolutions (needed for
   // results_msg_len estimation in run function)
-  if (sizet_max_replace && iterSched.iteratorCommRank == 0)
+  if (sizet_max_replace && iterSched.iterator_comm_lead())
     for (i=0; i<num_iterators; ++i) {
       Iterator& the_iterator = *selectedIterators[i];
       if (the_iterator.num_final_solutions() == SZ_MAX)
@@ -232,13 +232,13 @@ void SeqHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
 void SeqHybridMetaIterator::derived_set_communicators(ParLevLIter pl_iter)
 {
   size_t mi_pl_index = methodPCIter->mi_parallel_level_index(pl_iter) + 1;
-  study_runtime().update_iterator_executor(iterSched, methodPCIter, mi_pl_index);
-  if (iterSched.iteratorServerId <= iterSched.numIteratorServers) {
+  iterSched.update(methodPCIter, mi_pl_index);
+  if (iterSched.active_server()) {
     ParLevLIter si_pl_iter
       = methodPCIter->mi_parallel_level_iterator(mi_pl_index);
     size_t i, num_iterators = methodStrings.size();
     for (i=0; i<num_iterators; ++i)
-      study_runtime().set_iterator(iterSched, *selectedIterators[i], si_pl_iter);
+      iterSched.set_iterator(*selectedIterators[i], si_pl_iter);
   }
 }
 
@@ -246,17 +246,15 @@ void SeqHybridMetaIterator::derived_set_communicators(ParLevLIter pl_iter)
 void SeqHybridMetaIterator::derived_free_communicators(ParLevLIter pl_iter)
 {
   size_t mi_pl_index = methodPCIter->mi_parallel_level_index(pl_iter) + 1;
-  study_runtime().update_iterator_executor(iterSched, methodPCIter, mi_pl_index);
-  if (iterSched.iteratorServerId <= iterSched.numIteratorServers) {
-    ParLevLIter si_pl_iter
-      = methodPCIter->mi_parallel_level_iterator(mi_pl_index);
+  iterSched.update(methodPCIter, mi_pl_index);
+  if (iterSched.active_server()) {
     size_t i, num_iterators = methodStrings.size();
     for (i=0; i<num_iterators; ++i)
-      study_runtime().free_iterator(iterSched, *selectedIterators[i]);
+      iterSched.free_iterator(*selectedIterators[i]);
   }
 
   // deallocate the mi_pl parallelism level
-  study_runtime().free_iterator_parallelism(iterSched);
+  iterSched.free_iterator_parallelism();
 }
 
 IntIntPair SeqHybridMetaIterator::estimate_partition_bounds()
@@ -280,10 +278,10 @@ IntIntPair SeqHybridMetaIterator::estimate_partition_bounds()
 
   // now apply scheduling data for this level (recursion is complete)
   min_max.first = ProblemDescDB::min_procs_per_level(min_procs,
-    iterSched.procsPerIterator, iterSched.numIteratorServers);
+    iterSched.procsPerIterator(), iterSched.numIteratorServers());
   min_max.second = ProblemDescDB::max_procs_per_level(max_procs,
-    iterSched.procsPerIterator, iterSched.numIteratorServers,
-    iterSched.iteratorScheduling, 1, false, maxIteratorConcurrency);
+    iterSched.procsPerIterator(), iterSched.numIteratorServers(),
+    iterSched.iteratorScheduling(), 1, false, maxIteratorConcurrency);
   return min_max;
 }
 
@@ -300,14 +298,14 @@ void SeqHybridMetaIterator::core_run()
 void SeqHybridMetaIterator::run_sequential()
 {
   size_t num_iterators = methodStrings.size();
-  int server_id =  iterSched.iteratorServerId;
-  bool    rank0 = (iterSched.iteratorCommRank == 0);
+  int server_id =  iterSched.iteratorServerId();
+  bool rank0 = iterSched.iterator_comm_lead();
 
   // use methodPCIter rather than relying on ParallelLibrary::currPCIter
   const ParallelLevel& mi_pl
-    = methodPCIter->mi_parallel_level(iterSched.miPLIndex);
-  const ParallelLevel& parent_pl = (iterSched.miPLIndex) ? 
-    methodPCIter->mi_parallel_level(iterSched.miPLIndex - 1) : mi_pl;
+    = methodPCIter->mi_parallel_level(iterSched.miPLIndex());
+  const ParallelLevel& parent_pl = (iterSched.miPLIndex()) ? 
+    methodPCIter->mi_parallel_level(iterSched.miPLIndex() - 1) : mi_pl;
 
   for (seqCount=0; seqCount<num_iterators; seqCount++) {
 
@@ -320,14 +318,14 @@ void SeqHybridMetaIterator::run_sequential()
       Cout << "\n>>>>> Running Sequential Hybrid with iterator "
 	   << methodStrings[seqCount] << ".\n";
 
-    if (server_id <= iterSched.numIteratorServers) {
+    if (iterSched.active_server()) {
 
       // For graphics data, limit to iterator server comm leaders; this is
       // further segregated within initialize_graphics(): all iterator
       // schedulers stream tabular data, but only server 1 generates a
       // graphics window.
-      if (rank0 && server_id > 0)
-	      curr_iterator.initialize_graphics(server_id);
+      if (iterSched.graphics_server())
+	      curr_iterator.initialize_graphics(iterSched.iteratorServerId());
 
       // -------------------------------------------------------------
       // Define total number of runs for this iterator in the sequence
@@ -338,12 +336,12 @@ void SeqHybridMetaIterator::run_sequential()
       //   prior to additional specification data, we either have a single
       //   multipoint iterator or concurrent single-point iterators.
       if (seqCount == 0) // initialize numIteratorJobs
-	iterSched.numIteratorJobs = 1;
+	iterSched.numIteratorJobs() = 1;
       else {
 	bool curr_accepts_multi = curr_iterator.accepts_multiple_points();
 	//bool curr_returns_multi = curr_iterator.returns_multiple_points();
 	// update numIteratorJobs
-	if (iterSched.iteratorScheduling == DEDICATED_SCHEDULER_DYNAMIC) {
+	if (iterSched.dedicated_scheduler()) {
 	  // send curr_accepts_multi from 1st iterator to strategy
 	  if (rank0 && server_id == 1) {
 	    int multi_flag = (int)curr_accepts_multi; // bool -> int
@@ -353,17 +351,17 @@ void SeqHybridMetaIterator::run_sequential()
 	    int multi_flag; MPI_Status status;
 	    parallelLib.recv(multi_flag, 1, 0, status, parent_pl, mi_pl);
 	    curr_accepts_multi = (bool)multi_flag; // int -> bool
-	    iterSched.numIteratorJobs
+	    iterSched.numIteratorJobs()
 	      = (curr_accepts_multi) ? 1 : parameterSets.size();
 	  }
 	}
 	else { // static scheduling
 	  if (rank0)
-	    iterSched.numIteratorJobs
+	    iterSched.numIteratorJobs()
 	      = (curr_accepts_multi) ? 1 : parameterSets.size();
 	  // bcast numIteratorJobs over iteratorComm
-	  if (iterSched.iteratorCommSize > 1)
-	    parallelLib.bcast(iterSched.numIteratorJobs, mi_pl);
+	  if (iterSched.iterator_comm_parallel())
+	    parallelLib.bcast(iterSched.numIteratorJobs(), mi_pl);
 	}
       }
       // --------------------------
@@ -375,15 +373,15 @@ void SeqHybridMetaIterator::run_sequential()
       // > can only shrink in the case where single instance returns fewer
       //   than used for initialization
       if (rank0)
-	prpResults.resize(iterSched.numIteratorJobs);
+	prpResults.resize(iterSched.numIteratorJobs());
 
       // -----------------------------------------
       // Define buffer lengths for message passing
       // -----------------------------------------
-      if (iterSched.messagePass && rank0) {
+      if (iterSched.messagePass() && rank0) {
         int params_msg_len, results_msg_len;
         // define params_msg_len
-        if (iterSched.iteratorScheduling == DEDICATED_SCHEDULER_DYNAMIC) {
+        if (iterSched.dedicated_scheduler()) {
           MPIPackBuffer params_buffer;
           pack_parameters_buffer(params_buffer, 0);
           params_msg_len = params_buffer.size();
@@ -407,26 +405,26 @@ void SeqHybridMetaIterator::run_sequential()
           results_buffer << prp_star;
         results_msg_len = results_buffer.size();
         // publish lengths to IteratorExecutor
-        study_runtime().iterator_message_lengths(iterSched, params_msg_len, results_msg_len);
+        iterSched.iterator_message_lengths(params_msg_len, results_msg_len);
       }
     }
 
     // ---------------------------------------------------
     // Schedule the runs for this iterator in the sequence
     // ---------------------------------------------------
-    study_runtime().schedule_iterators(iterSched, *this, curr_iterator);
+    iterSched.schedule_iterators(*this, curr_iterator);
 
     // ---------------------------------
     // Post-process the iterator results
     // ---------------------------------
     // convert prpResults to parameterSets for next iteration
-    if (server_id <= iterSched.numIteratorServers && rank0 &&
+    if (iterSched.active_server() && rank0 &&
 	seqCount+1 < num_iterators) {
       size_t i, j, num_param_sets = 0, cntr = 0, num_prp_i;
-      for (i=0; i<iterSched.numIteratorJobs; ++i)
+      for (i=0; i<iterSched.numIteratorJobs(); ++i)
 	num_param_sets += prpResults[i].size();
       parameterSets.resize(num_param_sets);
-      for (i=0; i<iterSched.numIteratorJobs; ++i) {
+      for (i=0; i<iterSched.numIteratorJobs(); ++i) {
 	const PRPArray& prp_results_i = prpResults[i];
 	num_prp_i = prp_results_i.size();
 	for (j=0; j<num_prp_i; ++j, ++cntr)
@@ -440,8 +438,8 @@ void SeqHybridMetaIterator::run_sequential()
       //   propagated back to peers 2 though n (like an All-Reduce, except that
       //   IteratorExecutor::static_schedule_iterators() enforces reduction to
       //   peer 1 and the code below enforces repropagation from 1 to 2-n).
-      if (iterSched.iteratorScheduling == PEER_SCHEDULING &&
-	  iterSched.numIteratorServers > 1) {
+      if (iterSched.peer_scheduling() &&
+	  iterSched.multiple_iterator_servers()) {
 	if (server_id == 1) { // send complete list
 	  MPIPackBuffer send_buffer;
 	  send_buffer << parameterSets;
@@ -476,8 +474,8 @@ void SeqHybridMetaIterator::run_sequential_adaptive()
   // code will fail if non-default iterator servers or scheduling is specified).
 
   size_t num_iterators = methodStrings.size();
-  int server_id =  iterSched.iteratorServerId;
-  bool    rank0 = (iterSched.iteratorCommRank == 0);
+  int server_id =  iterSched.iteratorServerId();
+  bool rank0 = iterSched.iterator_comm_lead();
   Real progress_metric = 1.0;
   for (seqCount=0; seqCount<num_iterators; seqCount++) {
 
@@ -489,8 +487,8 @@ void SeqHybridMetaIterator::run_sequential_adaptive()
     // For graphics data, limit to iterator server comm leaders; this is
     // further segregated within initialize_graphics(): all iterator schedulers
     // stream tabular data, but only server 1 generates a graphics window.
-    if (rank0 && server_id > 0 && server_id <= iterSched.numIteratorServers)
-      curr_iterator.initialize_graphics(server_id);
+    if (iterSched.graphics_server())
+      curr_iterator.initialize_graphics(iterSched.iteratorServerId());
 
     if (summaryOutputFlag)
       Cout << "\n>>>>> Running adaptive Sequential Hybrid with iterator "
@@ -571,7 +569,7 @@ void SeqHybridMetaIterator::print_results(std::ostream& s, short results_state)
 {
   // provide a final summary in cases where the default iterator output
   // is insufficient
-  if (iterSched.messagePass) {// || numIteratorJobs > 1
+  if (iterSched.messagePass()) {// || numIteratorJobs > 1
     size_t i, j, cntr = 0, num_prp_res = prpResults.size(), num_prp_i;
     s << "\n<<<<< Sequential hybrid final solution sets:\n";
     for (i=0; i<num_prp_res; ++i) {

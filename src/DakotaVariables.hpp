@@ -620,6 +620,9 @@ public:
   /// function to check variablesRep (does this envelope contain a letter)
   bool is_null() const;
 
+  /// return DI-backed variables configuration when available
+  const std::shared_ptr<IRStore>& variables_store_ptr() const;
+
 protected:
 
   //
@@ -749,6 +752,12 @@ inline const SharedVariablesData& Variables::shared_data() const
 
 inline SharedVariablesData& Variables::shared_data()
 { return (variablesRep) ? variablesRep->sharedVarsData : sharedVarsData; }
+
+
+inline const std::shared_ptr<IRStore>& Variables::variables_store_ptr() const
+{
+  return (variablesRep) ? variablesRep->variablesStore : variablesStore;
+}
 
 
 // nonvirtual functions can access letter attributes directly (only need to fwd

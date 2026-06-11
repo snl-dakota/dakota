@@ -11,6 +11,8 @@
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
 #include "StudyRuntime.hpp"
+#include "LibraryRuntimeSupport.hpp"
+#include "IRStore.hpp"
 
 static const char rcsId[]="@(#) $Id: MetaIterator.cpp 6715 2010-04-02 21:58:15Z wjbohnh $";
 
@@ -20,7 +22,7 @@ namespace Dakota {
 MetaIterator::MetaIterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
   Iterator(problem_db, parallel_lib),
   iterSched(StudyRuntime(parallel_lib, &parallel_lib.output_manager())
-              .create_iterator_executor(
+              .create_iterator_context(
                 false, // peers can manage local jobs (initial extracted from DB)
                 problem_db.get<int>("method.iterator_servers"),
                 problem_db.get<int>("method.processors_per_iterator"),
@@ -37,7 +39,7 @@ MetaIterator::MetaIterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_
 MetaIterator::MetaIterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
   Iterator(problem_db, parallel_lib),
   iterSched(StudyRuntime(parallel_lib, &parallel_lib.output_manager())
-              .create_iterator_executor(
+              .create_iterator_context(
                 false, // peers can manage local jobs (initial extracted from DB)
                 problem_db.get<int>("method.iterator_servers"),
                 problem_db.get<int>("method.processors_per_iterator"),
@@ -51,6 +53,39 @@ MetaIterator::MetaIterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_
 
   if (!numFinalSolutions)  // default is zero
     numFinalSolutions = 1; // for now...  (TO DO: hybrids, concurrent)
+}
+
+
+MetaIterator::MetaIterator(std::shared_ptr<ParallelLibrary> parallel_lib,
+                           std::shared_ptr<OutputManager> output_mgr,
+                           const IRStore& method_store,
+                           std::shared_ptr<Model> model):
+  MetaIterator(detail::resolve_runtime(std::move(parallel_lib),
+                                       std::move(output_mgr),
+                                       model->parallel_library_ptr(),
+                                       model->output_manager_ptr(),
+                                       "MetaIterator", "Model"),
+               method_store, model)
+{
+}
+
+
+MetaIterator::MetaIterator(detail::ResolvedRuntime runtime,
+                           const IRStore& method_store,
+                           std::shared_ptr<Model> model):
+  Iterator(std::move(runtime), method_store),
+  iterSched(study_runtime().create_iterator_context(
+              false,
+              method_store.get<int>("iterator_servers"),
+              method_store.get<int>("processors_per_iterator"),
+              method_store.get<short>("iterator_scheduling")))
+{
+  iteratedModel = model;
+
+  if (convergenceTol < 0.0) convergenceTol = 1.0e-4;
+
+  if (!numFinalSolutions)
+    numFinalSolutions = 1;
 }
 
 
@@ -105,7 +140,7 @@ allocate_by_pointer(const String& method_ptr, std::shared_ptr<Iterator>& the_ite
 
   if (!the_model)
     the_model = Model::get_model(probDescDB, parallelLib);
-  study_runtime().initialize_iterator(iterSched, probDescDB, the_iterator, the_model);
+  iterSched.initialize_iterator(probDescDB, the_iterator, the_model);
 
   probDescDB.set_db_method_node(method_index);          // restore
   probDescDB.set_db_model_nodes(model_index);           // restore
@@ -129,7 +164,7 @@ allocate_by_name(const String& method_string, const String& model_ptr,
 
   if (!the_model)
     the_model = Model::get_model(probDescDB, parallelLib);
-  study_runtime().initialize_iterator(iterSched, method_string, the_iterator, the_model);
+  iterSched.initialize_iterator(method_string, the_iterator, the_model);
 
   //if (set)
     probDescDB.set_db_model_nodes(model_index);   // restore

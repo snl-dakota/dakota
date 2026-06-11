@@ -1,6 +1,7 @@
 #ifndef DAKOTA_LIBRARY_RUNTIME_SUPPORT_H
 #define DAKOTA_LIBRARY_RUNTIME_SUPPORT_H
 
+#include <initializer_list>
 #include <memory>
 
 namespace Dakota {
@@ -23,8 +24,29 @@ struct ResolvedRuntime
   ResolvedRuntime();
 };
 
+struct RuntimeDependency
+{
+  const char* dependencyName;
+  ParallelLibrary* parallelLibrary;
+  OutputManager* outputManager;
+
+  RuntimeDependency(const char* dependency_name,
+                    ParallelLibrary* parallel_lib = nullptr,
+                    OutputManager* output_mgr = nullptr):
+    dependencyName(dependency_name),
+    parallelLibrary(parallel_lib),
+    outputManager(output_mgr)
+  {
+  }
+};
+
 ResolvedRuntime resolve_runtime(std::shared_ptr<ParallelLibrary> parallel_lib,
                                 std::shared_ptr<OutputManager> output_mgr);
+
+ResolvedRuntime resolve_runtime(std::shared_ptr<ParallelLibrary> parallel_lib,
+                                std::shared_ptr<OutputManager> output_mgr,
+                                std::initializer_list<RuntimeDependency> dependencies,
+                                const char* owner_name);
 
 ResolvedRuntime resolve_runtime(std::shared_ptr<ParallelLibrary> parallel_lib,
                                 std::shared_ptr<OutputManager> output_mgr,

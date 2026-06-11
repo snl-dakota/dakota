@@ -77,7 +77,7 @@ void EmbedHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
 
   iterSched.partition(maxIteratorConcurrency, ppi_pr);
   summaryOutputFlag = iterSched.lead_rank();
-  if (iterSched.iteratorServerId > iterSched.numIteratorServers)
+  if (iterSched.idle_partition())
     return;
 
   if (!global_method_ptr.empty())
@@ -97,7 +97,7 @@ void EmbedHybridMetaIterator::derived_set_communicators(ParLevLIter pl_iter)
 {
   size_t mi_pl_index = methodPCIter->mi_parallel_level_index(pl_iter) + 1;
   iterSched.update(methodPCIter, mi_pl_index);
-  if (iterSched.iteratorServerId <= iterSched.numIteratorServers) {
+  if (iterSched.active_server()) {
     ParLevLIter si_pl_iter
       = methodPCIter->mi_parallel_level_iterator(mi_pl_index);
     iterSched.set_iterator(*globalIterator, si_pl_iter);
@@ -110,11 +110,9 @@ void EmbedHybridMetaIterator::derived_free_communicators(ParLevLIter pl_iter)
 {
   size_t mi_pl_index = methodPCIter->mi_parallel_level_index(pl_iter) + 1;
   iterSched.update(methodPCIter, mi_pl_index);
-  if (iterSched.iteratorServerId <= iterSched.numIteratorServers) {
-    ParLevLIter si_pl_iter
-      = methodPCIter->mi_parallel_level_iterator(mi_pl_index);
-    iterSched.free_iterator(*globalIterator, si_pl_iter);
-    iterSched.free_iterator(*localIterator,  si_pl_iter);
+  if (iterSched.active_server()) {
+    iterSched.free_iterator(*globalIterator);
+    iterSched.free_iterator(*localIterator);
   }
 
   // deallocate the mi_pl parallelism level
@@ -155,10 +153,10 @@ IntIntPair EmbedHybridMetaIterator::estimate_partition_bounds()
 
   // now apply scheduling data for this level (recursion is complete)
   min_max.first  = ProblemDescDB::min_procs_per_level(min_procs,
-    iterSched.procsPerIterator,	iterSched.numIteratorServers);
+    iterSched.procsPerIterator(),	iterSched.numIteratorServers());
   min_max.second = ProblemDescDB::max_procs_per_level(max_procs,
-    iterSched.procsPerIterator, iterSched.numIteratorServers,
-    iterSched.iteratorScheduling, 1, false, maxIteratorConcurrency);
+    iterSched.procsPerIterator(), iterSched.numIteratorServers(),
+    iterSched.iteratorScheduling(), 1, false, maxIteratorConcurrency);
   return min_max;
 }
 
@@ -176,10 +174,8 @@ void EmbedHybridMetaIterator::core_run()
   // For graphics data, limit to iterator server comm leaders; this is
   // further segregated within initialize_graphics(): all iterator leaders
   // stream tabular data, but only server 1 generates a graphics window.
-  int server_id = iterSched.iteratorServerId;
-  if (iterSched.iteratorCommRank == 0 && server_id > 0 &&
-      server_id <= iterSched.numIteratorServers)
-    globalIterator->initialize_graphics(server_id);
+  if (iterSched.graphics_server())
+    globalIterator->initialize_graphics(iterSched.iteratorServerId());
 
   iterSched.schedule_iterators(*this, *globalIterator);
 }
