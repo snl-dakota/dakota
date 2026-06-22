@@ -10,7 +10,7 @@ from 1 through the total number of functions, must appear once and
 only once within the union of the ``id_analytic_hessians``,
 ``id_numerical_hessians``, and ``id_quasi_hessians`` lists.
 Topics::
-objective_function_pointer
+
 Examples::
 
 Theory::

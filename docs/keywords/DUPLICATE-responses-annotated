@@ -19,7 +19,7 @@ this.
 - Prior to October 2011, calibration and surrogate data files were in free-form format. They now default to ``annotated`` format, though ``freeform`` remains an option.
 - When importing tabular data, a warning will be generated if a specific number of data are expected, but extra is found and an error generated when there is insufficient data.
 Topics::
-file_formats
+
 Examples::
 Import an annotated experimental data file containing a header row, leading
 exp_id column, and experiment data in a calibration study

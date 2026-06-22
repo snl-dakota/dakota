@@ -20,7 +20,7 @@ this.
 - When importing tabular data, a warning will be generated if a specific number of data are expected, but extra is found and an error generated when there is insufficient data.
 - Some TPLs like SCOLIB and JEGA manage their own file I/O and only support the ``freeform`` option.
 Topics::
-file_formats
+
 Examples::
 Export an annotated top-level tabular data file containing a header
 row, leading eval_id and interface_id columns, and data for variables

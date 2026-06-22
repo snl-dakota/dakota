@@ -13,7 +13,7 @@ not be used in more complex nested contexts, where the values of
 inactive variables are relevant to the function evaluations used to
 build the surrogate.
 Topics::
-file_formats
+
 Examples::
 
 Theory::
