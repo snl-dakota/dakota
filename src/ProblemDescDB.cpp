@@ -1216,10 +1216,8 @@ get(const std::string& context_msg,
       try {
         return ir_query::get<QueryT>(*db_rep->irState, entry_name);
       }
-      catch (const std::exception&) {
-        // Fall through to legacy Data*Rep access while the IR implementation
-        // is still being filled in incrementally.
-        Cerr << "\nParser is using NIDR..." << std::endl;
+      catch (const std::exception& e) {
+        Cerr << "\nParser failed with exception: " << e.what() << std::endl;
         abort_handler(PARSE_ERROR);
       }
     }
@@ -1228,15 +1226,6 @@ get(const std::string& context_msg,
   Bad_name(entry_name, context_msg);
   return abort_handler_t<const T&>(PARSE_ERROR);
 }
-
-// shorthand for pointer to Data*Rep members for use in key to data maps;
-// these names are super terse on purpose and only used in this compilation unit
-#define P_ENV &DataEnvironmentRep::
-#define P_MET &DataMethodRep::
-#define P_MOD &DataModelRep::
-#define P_VAR &DataVariablesRep::
-#define P_INT &DataInterfaceRep::
-#define P_RES &DataResponsesRep::
 
 
 const RealMatrixArray& ProblemDescDB::get_rma(const String& entry_name) const
@@ -1568,14 +1557,6 @@ void ProblemDescDB::enforce_unique_ids()
   if (found_error)
     abort_handler(PARSE_ERROR);
 }
-
-
-#undef P_ENV
-#undef P_MET
-#undef P_MOD
-#undef P_VAR
-#undef P_INT
-#undef P_RES
 
 
 void ProblemDescDB::lock_method_db()
