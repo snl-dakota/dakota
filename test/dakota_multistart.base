@@ -56,7 +56,7 @@ Test Number 0 succeeded
                       7.3776094113e-02
 <<<<< Best evaluation ID: 177
 <<<<< Results summary:
-   set_id             x1             x2            x1*            x2*         obj_fn 
+   set_id             x1             x2            x1*            x2*       obj_fn_1 
         1           -0.8           -0.8  -0.8543728666  -0.8543728666   0.5584096919 
         2           -0.8            0.8             -1    0.177092822   0.2913715524 
         3            0.8           -0.8    0.177092822             -1   0.2913715524 
@@ -123,7 +123,7 @@ Test Number 1 succeeded
                       9.6089745799e-02
 <<<<< Best evaluation ID: 232
 <<<<< Results summary:
-   set_id             x1             x2            x1*            x2*         obj_fn 
+   set_id             x1             x2            x1*            x2*       obj_fn_1 
         1           -0.8           -0.8             -1             -1   0.5224959102 
         2           -0.8            0.8             -1   0.1770928216   0.2913715524 
         3            0.8           -0.8   0.1770858424  -0.8543755556   0.3093284443 
@@ -190,7 +190,7 @@ Test Number 2 succeeded
                       7.3776094113e-02
 <<<<< Best evaluation ID: 177
 <<<<< Results summary:
-   set_id             x1             x2            x1*            x2*         obj_fn 
+   set_id             x1             x2            x1*            x2*       obj_fn_1 
         1           -0.8           -0.8  -0.8543728666  -0.8543728666   0.5584096919 
         2           -0.8            0.8             -1    0.177092822   0.2913715524 
         3            0.8           -0.8    0.177092822             -1   0.2913715524 
@@ -201,7 +201,7 @@ Test Number 2 succeeded
         8   0.5240928925   0.7939232343  0.03572734101   0.1770874415  0.07377609411 
 Test Number 3 succeeded
 <<<<< Results summary:
-   set_id             x1             x2            x1*            x2*         obj_fn 
+   set_id             x1             x2            x1*            x2*       obj_fn_1 
         1           -0.8           -0.8  -0.8543728666  -0.8543728666   0.5584096919 
         2           -0.8            0.8             -1    0.177092822   0.2913715524 
         3            0.8           -0.8    0.177092822             -1   0.2913715524 
@@ -211,69 +211,69 @@ Test Number 3 succeeded
         7   0.1419702143  -0.7143527167   0.1770937162  -0.7024110525   0.3030233398 
         8   0.5240928925   0.7939232343  0.03572734101   0.1770874415  0.07377609411 
 Test Number 4 succeeded
-<<<<< Function evaluation summary: 7 total (4 new, 3 duplicate)
+<<<<< Function evaluation summary: 2 total (2 new, 0 duplicate)
 <<<<< Best parameters          =
                      -1.0000000000e+00 x1
                      -1.0000000000e+00 x2
 <<<<< Best objective function  =
                       5.2249591022e-01
-<<<<< Best evaluation ID: 6
-<<<<< Function evaluation summary: 74 total (29 new, 45 duplicate)
+<<<<< Best evaluation ID: 2
+<<<<< Function evaluation summary: 2 total (1 new, 1 duplicate)
 <<<<< Best parameters          =
                      -1.0000000000e+00 x1
-                     -1.0748129330e-01 x2
-<<<<< Best objective function  =
-                      3.4458202255e-01
-<<<<< Best evaluation ID: 57
-<<<<< Function evaluation summary: 74 total (29 new, 45 duplicate)
-<<<<< Best parameters          =
-                     -1.0748129330e-01 x1
                      -1.0000000000e+00 x2
 <<<<< Best objective function  =
-                      3.4458202255e-01
-<<<<< Best evaluation ID: 131
-<<<<< Function evaluation summary: 53 total (28 new, 25 duplicate)
+                      5.2249591022e-01
+<<<<< Best evaluation ID: 2
+<<<<< Function evaluation summary: 2 total (1 new, 1 duplicate)
+<<<<< Best parameters          =
+                     -1.0000000000e+00 x1
+                     -1.0000000000e+00 x2
+<<<<< Best objective function  =
+                      5.2249591022e-01
+<<<<< Best evaluation ID: 2
+<<<<< Function evaluation summary: 2 total (1 new, 1 duplicate)
+<<<<< Best parameters          =
+                     -1.0000000000e+00 x1
+                     -1.0000000000e+00 x2
+<<<<< Best objective function  =
+                      5.2249591022e-01
+<<<<< Best evaluation ID: 2
+<<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
 <<<<< Best parameters          =
                       3.5729261426e-02 x1
                       3.5729261426e-02 x2
 <<<<< Best objective function  =
                       8.7304992388e-02
-<<<<< Best evaluation ID: 207
-<<<<< Function evaluation summary: 57 total (20 new, 37 duplicate)
+<<<<< Best evaluation ID: 18
+<<<<< Function evaluation summary: 17 total (17 new, 0 duplicate)
 <<<<< Best parameters          =
-                      3.5729261426e-02 x1
-                      3.5729261426e-02 x2
+                     -7.0241174514e-01 x1
+                      1.7709282202e-01 x2
 <<<<< Best objective function  =
-                      8.7304992388e-02
-<<<<< Best evaluation ID: 241
-<<<<< Function evaluation summary: 104 total (43 new, 61 duplicate)
-<<<<< Best parameters          =
-                      3.5729261426e-02 x1
-                      3.1676124421e-01 x2
-<<<<< Best objective function  =
-                      9.6089726404e-02
-<<<<< Best evaluation ID: 345
-<<<<< Function evaluation summary: 75 total (29 new, 46 duplicate)
+                      3.0302333980e-01
+<<<<< Best evaluation ID: 35
+<<<<< Function evaluation summary: 10 total (10 new, 0 duplicate)
 <<<<< Best parameters          =
                       1.7709282202e-01 x1
                      -7.0241174514e-01 x2
 <<<<< Best objective function  =
                       3.0302333980e-01
-<<<<< Best evaluation ID: 420
-<<<<< Function evaluation summary: 89 total (38 new, 51 duplicate)
+<<<<< Best evaluation ID: 45
+<<<<< Function evaluation summary: 17 total (16 new, 1 duplicate)
 <<<<< Best parameters          =
                       1.7709282202e-01 x1
-                     -1.0748129330e-01 x2
+                      3.1676124421e-01 x2
 <<<<< Best objective function  =
-                      1.1345766474e-01
-<<<<< Best evaluation ID: 509
+                      8.2560827509e-02
+<<<<< Best evaluation ID: 62
 <<<<< Results summary:
-   set_id             x1             x2            x1*            x2*         obj_fn 
+   set_id             x1             x2            x1*            x2*       obj_fn_1 
         1           -0.8           -0.8             -1             -1   0.5224959102 
-        2           -0.8            0.8             -1  -0.1074812933   0.3445820226 
-        3            0.8           -0.8  -0.1074812933             -1   0.3445820226 
-        4            0.8            0.8  0.03572926143  0.03572926143  0.08730499239 
+        2           -0.8            0.8             -1             -1   0.5224959102 
+        3            0.8           -0.8             -1             -1   0.5224959102 
+        4            0.8            0.8             -1             -1   0.5224959102 
         5              0              0  0.03572926143  0.03572926143  0.08730499239 
-        6  -0.5356872085    -0.18209903  0.03572926143   0.3167612442   0.0960897264 
+        6  -0.5356872085    -0.18209903  -0.7024117451    0.177092822   0.3030233398 
         7   0.1419702143  -0.7143527167    0.177092822  -0.7024117451   0.3030233398 
-        8   0.5240928925   0.7939232343    0.177092822  -0.1074812933   0.1134576647 
+        8   0.5240928925   0.7939232343    0.177092822   0.3167612442  0.08256082751 

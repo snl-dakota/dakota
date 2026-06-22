@@ -1,0 +1,10 @@
+{
+  "name" : "foo",
+  "type" : "int",
+  "value" : 0,
+  "lower" : -1,
+  "upper" : 1 
+
+
+
+}

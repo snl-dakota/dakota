@@ -1,0 +1,21 @@
+Test Number 0 succeeded
+<<<<< Best parameters          =
+                      9.7982427299e-01 x1
+                      9.7982427299e-01 x2
+<<<<< Best objective function  =
+                      3.3139562286e-07
+Test Number 1 succeeded
+<<<<< Best parameters          =
+                      2.0000000000e+00 x1
+                      2.0000000000e+00 x2
+<<<<< Best objective function  =
+                      2.0000000000e+00
+Test Number 2 succeeded
+<<<<< Best parameters          =
+                      5.0009585233e-01 x1
+                      5.0009585240e-01 x2
+<<<<< Best objective function  =
+                      1.2490417520e-01
+<<<<< Best constraint values   =
+                      4.7935317303e-05
+                      4.7935421591e-05

@@ -77,15 +77,15 @@ Test Number 5 succeeded
                       4.2224795632e-06
 <<<<< Best evaluation ID: 13
 Test Number 6 succeeded
-<<<<< Function evaluation summary: 507 total (95 new, 412 duplicate)
+<<<<< Function evaluation summary: 124 total (57 new, 67 duplicate)
 <<<<< Best parameters          =
-                      6.0160156783e+00 x1
-                      5.3091722743e+00 x2
-                      4.4943315255e+00 x3
-                      3.5014733804e+00 x4
-                      2.1526669106e+00 x5
+                      6.0160124754e+00 x1
+                      5.3091739512e+00 x2
+                      4.4943294222e+00 x3
+                      3.5014729133e+00 x4
+                      2.1526639802e+00 x5
 <<<<< Best objective function  =
-                      1.3399563696e+00
+                      1.3399559311e+00
 <<<<< Best constraint values   =
-                     -2.0112371824e-08
-<<<<< Best evaluation ID: 489
+                      9.6154020239e-07
+<<<<< Best evaluation ID: 123

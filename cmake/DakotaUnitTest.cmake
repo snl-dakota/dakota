@@ -3,50 +3,109 @@ include(AddFileCopyCommand)
 # Add a Dakota unit test, creating executable from sources, optionally
 # linking Dakota libraries, and registering it with CTest
 #
-# NAME: the name of the test as seen by CTest, and executable target 
+# NAME: the name of the test as seen by CTest, and executable target
 #       created
 # SOURCES: source .cpp files
 # LABELS: extra labels to apply to this test (UnitTest added by default)
 # LINK_DAKOTA_LIBS: if specified will link against Dakota core libraries
+# PROPERTIES: optional properties to set on the test target
+#
+# INCLUDE_DIRECTORIES: PRIVATE include directories. For backward compatibility.
+# PRIVATE_INCLUDE_DIRECTORIES: PRIVATE include directories.
+# PUBLIC_INCLUDE_DIRECTORIES: PUBLIC include directories.
+# INTERFACE_INCLUDE_DIRECTORIES: INTERFACE include directories.
+#
+# LINK_LIBS: PRIVATE libraries. For backward compatibility.
+# ADDITIONAL_LIBRARIES: PRIVATE libraries. For backward compatibility.
+# PRIVATE_LIBRARIES: PRIVATE libraries.
+# PUBLIC_LIBRARIES: PUBLIC libraries.
+# INTERFACE_LIBRARIES: INTERFACE libraries.
 #
 # TODO: decide if separate args for name and target are needed
 function(dakota_add_unit_test)
 
   set(options LINK_DAKOTA_LIBS)
   set(oneValueArgs NAME)
-  set(multiValueArgs SOURCES LABELS DEPENDS LINK_LIBS)
-  cmake_parse_arguments(DAUT 
+  set(multiValueArgs
+    SOURCES
+    LABELS
+    DEPENDS
+    PROPERTIES
+    # For backward compatibility
+    INCLUDE_DIRECTORIES
+    LINK_LIBS
+    ADDITIONAL_LIBRARIES
+    # Scoped includes
+    PRIVATE_INCLUDE_DIRECTORIES
+    PUBLIC_INCLUDE_DIRECTORIES
+    INTERFACE_INCLUDE_DIRECTORIES
+    # Scoped libraries
+    PRIVATE_LIBRARIES
+    PUBLIC_LIBRARIES
+    INTERFACE_LIBRARIES
+  )
+  cmake_parse_arguments(DAUT
     "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
   #message(STATUS "Dakota adding unit test ${DAUT_NAME}")
   set(exe_target ${DAUT_NAME})
   add_executable(${exe_target} ${DAUT_SOURCES})
+
+  # Handle include directories
+  target_include_directories(${exe_target} PRIVATE
+    ${DAUT_INCLUDE_DIRECTORIES}
+    ${DAUT_PRIVATE_INCLUDE_DIRECTORIES}
+  )
+  if(DAUT_PUBLIC_INCLUDE_DIRECTORIES)
+    target_include_directories(${exe_target} PUBLIC ${DAUT_PUBLIC_INCLUDE_DIRECTORIES})
+  endif()
+  if(DAUT_INTERFACE_INCLUDE_DIRECTORIES)
+    target_include_directories(${exe_target} INTERFACE ${DAUT_INTERFACE_INCLUDE_DIRECTORIES})
+  endif()
+
+  # Link core Dakota libraries if requested
   if (${DAUT_LINK_DAKOTA_LIBS})
-    target_link_libraries(${exe_target} 
+    target_link_libraries(${exe_target} PRIVATE
       ${Dakota_LIBRARIES} ${Dakota_TPL_LIBRARIES})
     if (TARGET dakota_parser_lib)
       # Tests that exercise Environment/Dakota core paths may reach parser
       # entry points compiled into libdakota_src; link the parser library
       # explicitly so those symbols are always available to the final executable.
-      target_link_libraries(${exe_target} dakota_parser_lib)
+      target_link_libraries(${exe_target} PUBLIC dakota_parser_lib)
     endif()
     if (TARGET dakota_ir AND NOT APPLE)
       # ELF linkers are order-sensitive for static archives; append dakota_ir
       # after the Dakota core libraries on non-Apple platforms to satisfy
       # InstructionMaterializer references pulled in from dakota_src.
-      target_link_libraries(${exe_target} dakota_ir)
+      target_link_libraries(${exe_target} PUBLIC dakota_ir)
     endif()
   endif()
-  if (DAUT_LINK_LIBS)
-    target_link_libraries(${exe_target} ${DAUT_LINK_LIBS})
+
+  # Handle other library linkage
+  target_link_libraries(${exe_target} PUBLIC
+    ${DAUT_LINK_LIBS}
+    ${DAUT_ADDITIONAL_LIBRARIES}
+    ${DAUT_PRIVATE_LIBRARIES}
+  )
+  if(DAUT_PUBLIC_LIBRARIES)
+    target_link_libraries(${exe_target} PUBLIC ${DAUT_PUBLIC_LIBRARIES})
   endif()
+  if(DAUT_INTERFACE_LIBRARIES)
+    target_link_libraries(${exe_target} INTERFACE ${DAUT_INTERFACE_LIBRARIES})
+  endif()
+
   if(DAKOTA_PYBIND11 AND
      (DAKOTA_PYTHON_DIRECT_INTERFACE OR DAKOTA_PYTHON_SURROGATES OR HAVE_EXT_PYTHON_METHOD))
-    target_link_libraries(${exe_target} pybind11::embed)
+     target_link_libraries(${exe_target} PRIVATE pybind11::embed)
   endif()
   # Link to googletest
-  target_link_libraries(${exe_target} GTest::gtest_main)
+  target_link_libraries(${exe_target} PRIVATE GTest::gtest_main)
   target_include_directories(${exe_target} PRIVATE ${Dakota_SOURCE_DIR}/packages/external/googletest/googletest/include)
+
+  if(DAUT_PROPERTIES)
+    set_target_properties(${exe_target} PROPERTIES ${DAUT_PROPERTIES})
+  endif()
+
   # TODO: support dependencies directly in this call with DEPENDS
   #add_dependencies(${exe_target} ${DAUT_DEPENDS})
   add_test(${DAUT_NAME} ${exe_target})

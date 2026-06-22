@@ -1,0 +1,51 @@
+#@ *: DakotaConfig=HAVE_ROL
+# Integration tests for the refactored ROL interface using ROL::Problem and ROL::Solver
+#
+# Test cases:
+#   s0: Unconstrained textbook - minimum at x=[1,1] with f=0
+#   s1: Bound-constrained textbook - lower bounds force minimum to [2,2]
+#   s2: Nonlinear inequality constrained - textbook with two constraints
+
+environment
+  tabular_data
+    tabular_data_file 'rol_interface.dat'
+
+method
+  rol
+    gradient_tolerance   1.0e-4
+    variable_tolerance   1.0e-5
+    max_iterations       100
+#    constraint_tolerance 1.0e-4			        #s2
+
+variables
+# s0: Unconstrained - should converge to [1, 1]
+  continuous_design  2						#s0
+    initial_point 0.5    0.5					#s0
+    descriptors  'x1'   'x2'					#s0
+
+# s1: Bound-constrained - lower bound at 2.0 forces minimum to [2, 2]
+#  continuous_design  2						#s1
+#    initial_point 3.0    3.0					#s1
+#    lower_bounds  2.0    2.0					#s1
+#    upper_bounds  5.0    5.0					#s1
+#    descriptors  'x1'   'x2'					#s1
+
+# s2: Constrained - nonlinear inequality constraints
+#  continuous_design  2						#s2
+#    initial_point 0.9    1.1					#s2
+#    upper_bounds  5.8    2.9					#s2
+#    lower_bounds  0.5   -2.9					#s2
+#    descriptors  'x1'   'x2'					#s2
+
+interface
+  direct
+  analysis_drivers  'text_book'
+
+responses
+  descriptors 'f'						#s0,#s1
+  objective_functions  1
+#  descriptors 'f' 'c1' 'c2'					#s2
+#  nonlinear_inequality_constraints  2				#s2
+#    upper_bounds   0.0   0.0					#s2
+  analytic_gradients
+  no_hessians
