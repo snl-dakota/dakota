@@ -26,6 +26,7 @@
 #include <unordered_map>
 
 // C++ compiler using new, h-less standard C headers
+#include <cstdint>
 #include <cstdlib>
 #include <cstdint>
 #include <cstdio>

@@ -31,6 +31,10 @@ include_directories(
   ${Teuchos_INCLUDE_DIRS}
 )
 
+if(HAVE_ROL)  
+  add_definitions("-DHAVE_ROL")
+endif()
+
 remove_definitions("-DHAVE_CONFIG_H")
 
 # Generate regression tests for all dakota_*.in and dakota_*.json in

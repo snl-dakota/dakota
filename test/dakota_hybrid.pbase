@@ -1,6 +1,6 @@
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 405 total (405 new, 0 duplicate)
-         obj_fn: 405 val (405 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+       obj_fn_1: 405 val (405 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          (set 1) =
                       1.0527006153e+00 x1
                       1.0825664856e+00 x2
@@ -20,7 +20,7 @@ Test Number 0 succeeded
                       8.6794182534e+01
 <<<<< Best evaluation ID: 403
 <<<<< Function evaluation summary: 235 total (234 new, 1 duplicate)
-         obj_fn: 235 val (234 n, 1 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+       obj_fn_1: 235 val (234 n, 1 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                       1.0121224903e+00 x1
                       1.0117657044e+00 x2
@@ -28,7 +28,7 @@ Test Number 0 succeeded
                       4.0759068116e-08
 <<<<< Best evaluation ID: 640
 <<<<< Function evaluation summary: 36 total (36 new, 0 duplicate)
-         obj_fn: 13 val (13 n, 0 d), 13 grad (13 n, 0 d), 12 Hess (12 n, 0 d)
+       obj_fn_1: 13 val (13 n, 0 d), 13 grad (13 n, 0 d), 12 Hess (12 n, 0 d)
 <<<<< Best parameters          =
                       1.0000934323e+00 x1
                       1.0000906824e+00 x2
@@ -52,7 +52,7 @@ Test Number 0 succeeded
                       2.2761478478e-16
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 405 total (405 new, 0 duplicate)
-         obj_fn: 405 val (405 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+       obj_fn_1: 405 val (405 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          (set 1) =
                       1.0527006153e+00 x1
                       1.0825664856e+00 x2
@@ -72,33 +72,33 @@ Test Number 1 succeeded
                       8.6794182534e+01
 <<<<< Best evaluation ID: 403
 <<<<< Function evaluation summary: 235 total (234 new, 1 duplicate)
-         obj_fn: 235 val (234 n, 1 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+       obj_fn_1: 235 val (234 n, 1 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                       1.0121224903e+00 x1
                       1.0117657044e+00 x2
 <<<<< Best objective function  =
                       4.0759068116e-08
 <<<<< Best evaluation ID: 640
-<<<<< Function evaluation summary: 34 total (14 new, 20 duplicate)
-         obj_fn: 34 val (14 n, 20 d), 34 grad (14 n, 20 d), 34 Hess (14 n, 20 d)
+<<<<< Function evaluation summary: 13 total (13 new, 0 duplicate)
+       obj_fn_1: 13 val (13 n, 0 d), 13 grad (13 n, 0 d), 13 Hess (13 n, 0 d)
 <<<<< Best parameters          =
-                      1.0010492764e+00 x1
-                      1.0010492764e+00 x2
+                      1.0008396107e+00 x1
+                      1.0008389994e+00 x2
 <<<<< Best objective function  =
-                      2.4243177401e-12
-<<<<< Best evaluation ID: 673
+                      9.9245234789e-13
+<<<<< Best evaluation ID: 653
 <<<<< Best parameters          (set 1) =
-                      1.0010492764e+00 x1
-                      1.0010492764e+00 x2
+                      1.0008396107e+00 x1
+                      1.0008389994e+00 x2
 <<<<< Best response functions  (set 1) =
-                      2.4243177401e-12
+                      9.9245234789e-13
 <<<<< Best parameters          (set 2) =
-                      1.0008123242e+00 x1
-                      1.0008123242e+00 x2
+                      1.0006610914e+00 x1
+                      1.0006609873e+00 x2
 <<<<< Best response functions  (set 2) =
-                      8.7085863611e-13
+                      3.8189077832e-13
 <<<<< Best parameters          (set 3) =
-                      9.9882254252e-01 x1
-                      1.0011774575e+00 x2
+                      9.9945892179e-01 x1
+                      1.0005409960e+00 x2
 <<<<< Best response functions  (set 3) =
-                      3.8442438432e-12
+                      1.7137134549e-13

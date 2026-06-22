@@ -321,34 +321,34 @@ Test Number 24 succeeded
                      -1.2023554985e-07
 <<<<< Best evaluation ID: 168
 Test Number 25 succeeded
-<<<<< Function evaluation summary: 89934 total (17900 new, 72034 duplicate)
+<<<<< Function evaluation summary: 678 total (324 new, 354 duplicate)
 <<<<< Best parameters          =
-                      1.9314438548e+00 intake_dia
-                      1.7685562096e+00 flatness
+                      2.1224188661e+00 intake_dia
+                      1.7664438474e+00 flatness
 <<<<< Best objective function  =
-                     -2.3776816988e+00
+                     -2.4613482581e+00
 <<<<< Best constraint values   =
-                     -4.4086817453e-01
-                     -3.3471656857e-01
-                      1.0478239298e-07
-<<<<< Best evaluation ID: 89773
+                      2.9944696567e-07
+                     -3.3503342289e-01
+                      3.5517694921e-04
+<<<<< Best evaluation ID: 673
 Test Number 26 succeeded
-<<<<< Function evaluation summary: 237819 total (33732 new, 204087 duplicate)
+<<<<< Function evaluation summary: 12018 total (6006 new, 6012 duplicate)
 <<<<< Best parameters          =
-                      1.9314432739e+00 intake_dia
-                      1.7685567961e+00 flatness
+                      2.1224732527e+00 intake_dia
+                      1.7163960721e+00 flatness
 <<<<< Best objective function  =
-                     -2.3776813573e+00
+                     -2.4688791610e+00
 <<<<< Best constraint values   =
-                     -4.4086843275e-01
-                     -3.3471648058e-01
-                      6.2043450377e-09
-<<<<< Best evaluation ID: 237784
+                      4.8079464689e-04
+                     -3.4254058918e-01
+                      8.8167833673e-03
+<<<<< Best evaluation ID: 12013
 Test Number 27 succeeded
-<<<<< Function evaluation summary: 679 total (255 new, 424 duplicate)
+<<<<< Function evaluation summary: 101 total (101 new, 0 duplicate)
 <<<<< Best parameters          =
-                      1.0000000004e+00 x1
-                      1.0000000007e+00 x2
+                      1.9971802376e+00 x1
+                      3.9890256475e+00 x2
 <<<<< Best objective function  =
-                      1.3135121075e-19
-<<<<< Best evaluation ID: 678
+                      9.9437723213e-01
+<<<<< Best evaluation ID: 101

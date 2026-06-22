@@ -95,7 +95,7 @@
 #include "NCSUOptimizer.hpp"
 #endif
 #ifdef HAVE_ROL
-#include "ROLOptimizer.hpp"
+#include "DakotaROLOptimizer.hpp"
 #endif
 #ifdef HAVE_DEMO_TPL
 #include "DemoOptimizer.hpp"
