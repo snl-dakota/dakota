@@ -1,4 +1,5 @@
 #@ *: DakotaConfig=HAVE_OPTPP
+#@ *: DakotaConfig=HAVE_LIBMODE
 #@ *: ExecCmd='dakota_library_mode' Restart=none
 #@
 #@ -------------------------
