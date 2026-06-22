@@ -141,8 +141,6 @@ void check_and_broadcast_pdb(ProblemDescDB& problem_db, const std::string& dump_
 
       if (parallel_lib.world_rank() == 0) {
 	    problem_db.enforce_unique_ids();
-            if (problem_db.is_json_null())
-              problem_db.derived_broadcast(); // pre-processor
         MPIPackBuffer send_buffer;
         send_buffer << rep->environmentSpec   << rep->dataMethodList    << rep->dataModelList
                 << rep->dataVariablesList << rep->dataInterfaceList << rep->dataResponsesList;
@@ -173,7 +171,6 @@ void check_and_broadcast_pdb(ProblemDescDB& problem_db, const std::string& dump_
 	     << ":\n" << rep->environmentSpec << rep->dataMethodList << rep->dataVariablesList
 	     << rep->dataInterfaceList << rep->dataResponsesList << std::endl;
 #endif // MPI_DEBUG
-	//derived_broadcast(); // post-processor
       }
     } else {
 #ifdef DEBUG
@@ -182,8 +179,6 @@ void check_and_broadcast_pdb(ProblemDescDB& problem_db, const std::string& dump_
 	   << std::endl;
 #endif // DEBUG
       problem_db.enforce_unique_ids();
-      if (problem_db.is_json_null())
-        problem_db.derived_broadcast();
     }
 
     // After broadcast, perform post-processing on all processors to

@@ -51,17 +51,6 @@ if (ENABLE_SPEC_MAINT OR ENABLE_DAKOTA_DOCS)
   # (dakota.input.nspec) translation and/or reference manual generation.
   add_subdirectory(java_utils)
 endif()
-include(DakotaSpecMaint)
-if(ENABLE_SPEC_MAINT)
-  # dakota.xml to dakota.input.nspec is conditional as it requires Java
-  DakotaXml2Nspec()
-endif()
-DakotaNidrgen()
-
-# Use TPL_LIBS for libraries built as part of this project
-list(APPEND DAKOTA_PKG_LIBS nidr)
-
-set(EXPORT_TARGETS dakota_src nidr)
 
 # We don't want to export Teuchos libs unless we're building in our
 # tree.  However, when building under Trilinos, targets like pecos_src
@@ -379,9 +368,9 @@ else()
 endif()
 
 
-## DAKOTA library sources.  Depend on NIDR_keywds.hpp to force generation
+## DAKOTA library sources.  Depend on generated_ir_types.hpp to force generation
 set(Dakota_src ${DAKOTA_BUILDINFO_PATH}DakotaBuildInfo.cpp 
-  ${Dakota_BINARY_DIR}/generated/src/NIDR_keywds.hpp)
+  ${Dakota_BINARY_DIR}/generated/src/ir/generated_ir_types.hpp)
 
 ## UTIL sources.
 set(util_src ParallelLibrary.cpp IteratorScheduler.cpp MPIPackBuffer.cpp
@@ -424,7 +413,7 @@ set(evaldata_src DakotaVariables.cpp MixedVariables.cpp RelaxedVariables.cpp
     ParamResponsePair.cpp)
 
 ## DB sources.
-set(db_src ProblemDescDB.cpp NIDRProblemDescDB.cpp
+set(db_src ProblemDescDB.cpp
   ProblemDescDBUtils.cpp
   ProblemDescDBDump.cpp
   DataEnvironment.cpp DataMethod.cpp DataModel.cpp DataVariables.cpp
@@ -1175,8 +1164,7 @@ install(TARGETS dakota_library_mode DESTINATION bin)
 #  install(TARGETS dakota_surrogates EXPORT ${ExportTarget} DESTINATION lib)
 #endif(DAKOTA_MODULE_SURROGATES)
 file(GLOB Dakota_hdr *.hpp *.h)
-# We don't install NIDR_keywds0.hpp as is not needed by clients
-install(FILES ${Dakota_hdr} ${Dakota_BINARY_DIR}/generated/src/NIDR_keywds.hpp
+install(FILES ${Dakota_hdr}
   DESTINATION include)
 install(FILES dakota.xsd dakota.xml dakota.input.nspec
   ${Dakota_BINARY_DIR}/generated/src/dakota.input.summary

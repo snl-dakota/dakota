@@ -292,8 +292,6 @@ class DataResponses
 
   // the problem description database
   friend class ProblemDescDB;
-  // the NIDR derived problem description database
-  friend class NIDRProblemDescDB;
 
 public:
 

@@ -143,7 +143,7 @@ Environment::Environment(BaseConstructor, int argc, char* argv[]):
   if (!programOptions.exit_mode().empty())
     exit_mode(programOptions.exit_mode());
 
-  // Initialize paths used by WorkdirHelper and NIDR
+  // Initialize paths used by WorkdirHelper
 
   // these data were previously statically initialized, so perform first
   WorkdirHelper::initialize();
@@ -369,8 +369,9 @@ void Environment::parse(bool check_bcast_database,
           callback, callback_data, parallelLib.world_rank());
       }
       else if (programOptions.use_legacy_nidr_parser()) {
-        probDescDB.parse_inputs(final_input, programOptions.parser_options(),
-          programOptions.user_modes().run, callback, callback_data);
+        Cerr << "\nError: NIDR parser is no longer supported."
+             << std::endl;
+        abort_handler(-1);
       }
       if(programOptions.preproc_input())
           std::filesystem::remove(programOptions.preprocessed_file());
