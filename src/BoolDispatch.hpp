@@ -28,12 +28,12 @@ struct BoolDispatch {
 
   template<class F>
   void receive( F&& f ) const {
-    static_assert(std::is_invocable_v<decltype(f),std::bool_constant<true>>,
+    static_assert(std::is_invocable_v<F,std::bool_constant<true>>,
                   "Error: Function must be callable with an argument of type std::bool_constant<true>");
-    static_assert(std::is_invocable_v<decltype(f),std::bool_constant<false>>,
+    static_assert(std::is_invocable_v<F,std::bool_constant<false>>,
                   "Error: Function must be callable with an argument of type std::bool_constant<true>");
-    if(value) std::forward<decltype(f)>(f)(std::bool_constant<true>{});
-    else      std::forward<decltype(f)>(f)(std::bool_constant<false>{});
+    if(value) std::forward<F>(f)(std::bool_constant<true>{});
+    else      std::forward<F>(f)(std::bool_constant<false>{});
   }  
 
   const bool value;

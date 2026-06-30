@@ -129,11 +129,13 @@ int main() {
     // This simulates what the actual ROL interface would do
     has_gradient.receive([&](auto has_grad) {
       has_hessian.receive([&](auto has_hess) {
-        if constexpr( has_grad && has_hess ) {
+        constexpr bool HG = decltype(has_grad)::value;
+        constexpr bool HH = decltype(has_hess)::value;
+        if constexpr( HG && HH ) {
           std::cout << "   Selected: Trust Region Newton with exact Hessian" << std::endl;
-        } else if constexpr( has_grad && !has_hess ) {
+        } else if constexpr( HG && !HH ) {
           std::cout << "   Selected: L-BFGS (limited memory quasi-Newton)" << std::endl;
-        } else if constexpr( !has_grad && !has_hess ) {
+        } else if constexpr( !HG && !HH ) {
           std::cout << "   Selected: Nelder-Mead simplex" << std::endl;
         } else {
           std::cout << "   Selected: Custom Hessian-based method" << std::endl;
