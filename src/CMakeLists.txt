@@ -1166,8 +1166,8 @@ install(TARGETS dakota_library_mode DESTINATION bin)
 file(GLOB Dakota_hdr *.hpp *.h)
 install(FILES ${Dakota_hdr}
   DESTINATION include)
-install(FILES dakota.xsd dakota.xml dakota.input.nspec
-  ${Dakota_BINARY_DIR}/generated/src/dakota.input.summary
+# We don't install NIDR_keywds0.hpp as is not needed by clients
+install(FILES dakota.xsd dakota.xml 
   DESTINATION bin)
 
 if (DAKOTA_DLL_API)
