@@ -18,12 +18,70 @@
 #include "DataVariables.hpp"
 #include "DataInterface.hpp"
 #include "DataResponses.hpp"
+#include "IRQuery.hpp"
 #include "IRState.hpp"
 #include "UserModes.hpp"
 #include "ProblemDescDBUtils.hpp"
 #include <nlohmann/json.hpp>
 
+#include <type_traits>
+#include <variant>
+
 namespace Dakota {
+
+// If IRValue is a std::variant<...>, detect whether T is one of its alternatives
+template <class T, class Variant>
+struct variant_contains;
+
+template <class T, class... Alts>
+struct variant_contains<T, std::variant<Alts...>>
+  : std::disjunction<std::is_same<T, Alts>...> {};
+
+template <class T, class Variant>
+inline constexpr bool variant_contains_v = variant_contains<T, Variant>::value;
+
+namespace pdb_detail {
+
+// split the entry name on the first period into block.entry
+inline std::pair<std::string, std::string>
+split_entry_name(const std::string& entry_name, const std::string& context_msg)
+{
+  auto first_dot = entry_name.find(".");
+  if (first_dot == std::string::npos || first_dot == entry_name.size() - 1) {
+    Cerr << "\nBad entry_name '" << entry_name
+         << "' in ProblemDescDB::" << context_msg << std::endl;
+    abort_handler(PARSE_ERROR);
+    throw PARSE_ERROR;
+  }
+  return { entry_name.substr(0, first_dot),
+           entry_name.substr(first_dot + 1) };
+}
+
+[[noreturn]] inline void Bad_name(const String& entry_name, const String& where)
+{
+  Cerr << "\nBad entry_name '" << entry_name << "' in ProblemDescDB::"
+       << where << std::endl;
+  abort_handler(PARSE_ERROR);
+  throw PARSE_ERROR;
+}
+
+[[noreturn]] inline void Locked_db()
+{
+  Cerr << "\nError: database is locked.  You must first unlock the database\n"
+       << "       by setting the list nodes." << std::endl;
+  abort_handler(PARSE_ERROR);
+  throw PARSE_ERROR;
+}
+
+[[noreturn]] inline void Null_rep(const String& who)
+{
+  Cerr << "\nError: ProblemDescDB::" << who
+       << " called with NULL representation." << std::endl;
+  abort_handler(PARSE_ERROR);
+  throw PARSE_ERROR;
+}
+
+} // namespace pdb_detail
 
 // define the callback function for user updates to the problem DB
 class ProblemDescDB;
@@ -184,6 +242,9 @@ public:
 
   /// @brief return the dbRep
   std::shared_ptr<ProblemDescDB> get_rep() const;
+
+  template <typename T>
+  decltype(auto) get(const std::string& entry_name) const;
 
   // These functions get values out of the database.  A value is found by its
   // entry_name. Need a HashTable or other container with an efficient lookup
@@ -459,6 +520,45 @@ private:
   int worldSize;
 };
 
+
+template <typename T>
+decltype(auto) ProblemDescDB::get(const std::string& entry_name) const
+{
+  // pick the “active db” (letter if envelope, else this)
+  const ProblemDescDB* db = dbRep ? dbRep.get() : this;
+
+  // lock checks
+  std::string block, entry;
+  std::tie(block, entry) = pdb_detail::split_entry_name(entry_name, "get<T>()");
+
+  if (block == "method" && db->methodDBLocked)
+    pdb_detail::Locked_db();
+  else if (block == "model" && db->modelDBLocked)
+    pdb_detail::Locked_db();
+  else if (block == "variables" && db->variablesDBLocked)
+    pdb_detail::Locked_db();
+  else if (block == "interface" && db->interfaceDBLocked)
+    pdb_detail::Locked_db();
+  else if (block == "responses" && db->responsesDBLocked)
+    pdb_detail::Locked_db();
+
+  using QueryT = std::remove_const_t<T>;
+
+  // Only allow IR-backed queries for types supported by IRValue (same as your cpp)
+  if constexpr (variant_contains_v<QueryT, IRValue>) {
+    if (db->irState) {
+      try {
+        return ir_query::get<QueryT>(*db->irState, entry_name);
+      }
+      catch (const std::exception& e) {
+        Cerr << "\nParser failed with exception: " << e.what() << std::endl;
+        abort_handler(PARSE_ERROR);
+      }
+    }
+  }
+
+  pdb_detail::Bad_name(entry_name, "get<T>()");
+}
 
 inline void ProblemDescDB::lock()
 {

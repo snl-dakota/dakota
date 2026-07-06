@@ -20,7 +20,6 @@
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
 #include "InstructionMaterializer.hpp"
-#include "IRQuery.hpp"
 #include "DakotaIterator.hpp"
 #include "DakotaInterface.hpp"
 #include "WorkdirHelper.hpp"  // bfs utils and prepend_preferred_env_path
@@ -33,8 +32,6 @@
 #include <nlohmann/json.hpp>
 #include <iostream>
 #include <string_view>
-#include <type_traits>
-#include <variant>
 
 //#define DEBUG
 //#define MPI_DEBUG
@@ -91,16 +88,6 @@ void log_top_level_json_shape(const json& j, const String& filename)
   }
   std::cerr << std::endl;
 }
-
-template <class T, class Variant>
-struct variant_contains;
-
-template <class T, class... Alts>
-struct variant_contains<T, std::variant<Alts...>>
-  : std::disjunction<std::is_same<T, Alts>...> {};
-
-template <class T, class Variant>
-inline constexpr bool variant_contains_v = variant_contains<T, Variant>::value;
 
 } // namespace
 
