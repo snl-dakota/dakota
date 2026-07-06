@@ -15,10 +15,16 @@ class OwnedLibraryRuntime;
 
 struct ResolvedRuntime
 {
+  /// Owned library-mode runtime bundle used when no services were supplied
+  /// explicitly or inherited from dependencies.
   std::shared_ptr<OwnedLibraryRuntime> ownedRuntime;
+  /// Shared ownership of an explicitly supplied ParallelLibrary, when present.
   std::shared_ptr<ParallelLibrary> sharedParallelLibrary;
+  /// Shared ownership of an explicitly supplied OutputManager, when present.
   std::shared_ptr<OutputManager> sharedOutputManager;
+  /// Normalized raw access to the ParallelLibrary selected for this runtime.
   ParallelLibrary* parallelLibrary;
+  /// Normalized raw access to the OutputManager selected for this runtime.
   OutputManager* outputManager;
 
   ResolvedRuntime();

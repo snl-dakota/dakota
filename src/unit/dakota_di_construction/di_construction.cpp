@@ -252,7 +252,7 @@ TEST(di_construction_tests, resolve_runtime_accepts_matching_multiple_dependenci
   EXPECT_EQ(resolved.outputManager, runtime.outputManager.get());
 }
 
-TEST(di_construction_tests, resolve_runtime_keeps_output_manager_independent_from_dependency_parallel_library)
+TEST(di_construction_tests, resolve_runtime_uses_parallel_library_output_manager_when_dependency_output_manager_missing)
 {
   ExplicitRuntime runtime;
 
@@ -262,7 +262,8 @@ TEST(di_construction_tests, resolve_runtime_keeps_output_manager_independent_fro
     "Owner");
 
   EXPECT_EQ(resolved.parallelLibrary, runtime.parallelLibrary.get());
-  EXPECT_EQ(resolved.outputManager, nullptr);
+  EXPECT_EQ(resolved.outputManager,
+            &runtime.parallelLibrary->output_manager());
 }
 
 TEST(di_construction_tests, resolve_runtime_throws_on_conflicting_multiple_dependencies)

@@ -118,7 +118,8 @@ ResolvedRuntime resolve_runtime(std::shared_ptr<ParallelLibrary> parallel_lib,
                                 std::shared_ptr<OutputManager> output_mgr)
 {
   ResolvedRuntime runtime;
-
+  // This check can be eliminated after ParallelLibrary is refactored
+  // to remove OutputManager
   if (parallel_lib && output_mgr &&
       &parallel_lib->output_manager() != output_mgr.get()) {
     throw std::runtime_error(
@@ -126,16 +127,23 @@ ResolvedRuntime resolve_runtime(std::shared_ptr<ParallelLibrary> parallel_lib,
       "runtime services.");
   }
 
+  // If the caller explicitly provided shared runtime services, preserve
+  // that ownership model and normalize raw pointer access for downstream
+  // component constructors.
   runtime.sharedParallelLibrary = std::move(parallel_lib);
   runtime.sharedOutputManager = std::move(output_mgr);
 
   if (runtime.sharedParallelLibrary) {
     runtime.parallelLibrary = runtime.sharedParallelLibrary.get();
     runtime.outputManager = runtime.sharedOutputManager ?
-      runtime.sharedOutputManager.get() : nullptr;
+      runtime.sharedOutputManager.get() :
+      &runtime.sharedParallelLibrary->output_manager();
     return runtime;
   }
 
+  // No ParallelLibrary was supplied, so create a small owned runtime bundle
+  // that bootstraps MPI/program options/output setup for library-mode use.
+  // Raw pointer access still flows through the normalized fields below.
   runtime.ownedRuntime =
     std::make_shared<OwnedLibraryRuntime>(runtime.sharedOutputManager);
   runtime.parallelLibrary = &runtime.ownedRuntime->parallel_library();
@@ -149,6 +157,8 @@ ResolvedRuntime resolve_runtime(std::shared_ptr<ParallelLibrary> parallel_lib,
                                 std::initializer_list<RuntimeDependency> dependencies,
                                 const char* owner_name)
 {
+  // Case 1: the caller supplied explicit services. Validate them against
+  // dependency-owned services, then preserve the caller's ownership model.
   if (parallel_lib || output_mgr) {
     ResolvedRuntime runtime =
       resolve_runtime(std::move(parallel_lib), std::move(output_mgr));
@@ -158,6 +168,9 @@ ResolvedRuntime resolve_runtime(std::shared_ptr<ParallelLibrary> parallel_lib,
     return runtime;
   }
 
+  // Case 2 setup: no explicit services were provided, so scan dependencies
+  // to determine whether they collectively imply a single inherited runtime,
+  // i.e. they are have a consistent ParallelLibrary and OutputManager.
   ParallelLibrary* inherited_parallel_lib = nullptr;
   OutputManager* inherited_output_mgr = nullptr;
   for (const RuntimeDependency& dependency: dependencies) {
@@ -178,16 +191,22 @@ ResolvedRuntime resolve_runtime(std::shared_ptr<ParallelLibrary> parallel_lib,
     }
   }
 
+  // Case 2: dependencies agreed on an existing runtime. Borrow those
+  // services by pointer; the dependency graph remains responsible for
+  // their lifetime.
   if (inherited_parallel_lib || inherited_output_mgr) {
     if (!inherited_parallel_lib)
       throw std::runtime_error(missing_parallel_library_name(owner_name));
 
     ResolvedRuntime inherited_runtime;
     inherited_runtime.parallelLibrary = inherited_parallel_lib;
-    inherited_runtime.outputManager = inherited_output_mgr;
+    inherited_runtime.outputManager = inherited_output_mgr ?
+      inherited_output_mgr : &inherited_parallel_lib->output_manager();
     return inherited_runtime;
   }
 
+  // Case 3: neither the caller nor dependencies provide runtime services.
+  // Fall back to constructing an owned library-mode runtime bundle.
   return resolve_runtime(std::shared_ptr<ParallelLibrary>(),
                          std::shared_ptr<OutputManager>());
 }

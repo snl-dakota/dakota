@@ -2,53 +2,15 @@
 #include "DakotaResponse.hpp"
 #include "ForkApplicInterface.hpp"
 #include "InstructionMaterializer.hpp"
-#include "MPIManager.hpp"
+#include "ExplicitRuntime.hpp"
 #include "NonDLHSSampling.hpp"
-#include "OutputManager.hpp"
-#include "ParallelLibrary.hpp"
-#include "ProgramOptions.hpp"
 #include "SimulationModel.hpp"
-#include "StudyRuntime.hpp"
-#include "WorkdirHelper.hpp"
 
 #include <iostream>
 #include <memory>
 #include <nlohmann/json.hpp>
 
 using json = nlohmann::json;
-
-namespace {
-
-struct ExplicitRuntime {
-  ExplicitRuntime():
-    mpiManager(),
-    programOptions(mpiManager.world_rank()),
-    outputManager(std::make_shared<Dakota::OutputManager>(
-      programOptions, mpiManager.world_rank(), mpiManager.mpirun_flag())),
-    parallelLibrary(std::make_shared<Dakota::ParallelLibrary>(
-      mpiManager, programOptions, *outputManager)),
-    studyRuntime(std::make_shared<Dakota::StudyRuntime>(
-      *parallelLibrary, outputManager.get()))
-  {
-    // Explicitly mirror the Environment-owned setup that library-mode callers
-    // currently need for driver PATH handling and restart/output activation.
-    Dakota::WorkdirHelper::initialize();
-    outputManager->push_output_tag("", programOptions, false, true);
-  }
-
-  ~ExplicitRuntime()
-  {
-    outputManager->pop_output_tag();
-  }
-
-  Dakota::MPIManager mpiManager;
-  Dakota::ProgramOptions programOptions;
-  std::shared_ptr<Dakota::OutputManager> outputManager;
-  std::shared_ptr<Dakota::ParallelLibrary> parallelLibrary;
-  std::shared_ptr<Dakota::StudyRuntime> studyRuntime;
-};
-
-} // namespace
 
 int main()
 {
@@ -116,7 +78,7 @@ int main()
   // This explicit service setup demonstrates the current library-mode knobs:
   // ParallelLibrary coordinates evaluation execution, and OutputManager owns
   // restart/output state needed by the pilot path.
-  ExplicitRuntime runtime;
+  DemoRuntime runtime;
 
   std::cout << "Constructing DI study components...\n";
   Variables variables(variables_store);
@@ -130,7 +92,7 @@ int main()
     method_store, model, runtime.parallelLibrary, runtime.outputManager);
 
   std::cout << "Running sampling study...\n";
-  runtime.studyRuntime->execute_iterator(sampling);
+  runtime.execute_iterator(sampling);
 
   const auto& responses = sampling.all_responses();
   std::cout << "Completed DI study.\n";

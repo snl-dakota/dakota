@@ -2,52 +2,16 @@
 #include "DakotaResponse.hpp"
 #include "ForkApplicInterface.hpp"
 #include "InstructionMaterializer.hpp"
-#include "MPIManager.hpp"
+#include "ExplicitRuntime.hpp"
 #include "NestedModel.hpp"
 #include "NonDLHSSampling.hpp"
-#include "OutputManager.hpp"
-#include "ParallelLibrary.hpp"
-#include "ProgramOptions.hpp"
 #include "SimulationModel.hpp"
-#include "StudyRuntime.hpp"
-#include "WorkdirHelper.hpp"
 
 #include <iostream>
 #include <memory>
 #include <nlohmann/json.hpp>
 
 using json = nlohmann::json;
-
-namespace {
-
-struct ExplicitRuntime {
-  ExplicitRuntime():
-    mpiManager(),
-    programOptions(mpiManager.world_rank()),
-    outputManager(std::make_shared<Dakota::OutputManager>(
-      programOptions, mpiManager.world_rank(), mpiManager.mpirun_flag())),
-    parallelLibrary(std::make_shared<Dakota::ParallelLibrary>(
-      mpiManager, programOptions, *outputManager)),
-    studyRuntime(std::make_shared<Dakota::StudyRuntime>(
-      *parallelLibrary, outputManager.get()))
-  {
-    Dakota::WorkdirHelper::initialize();
-    outputManager->push_output_tag("", programOptions, false, true);
-  }
-
-  ~ExplicitRuntime()
-  {
-    outputManager->pop_output_tag();
-  }
-
-  Dakota::MPIManager mpiManager;
-  Dakota::ProgramOptions programOptions;
-  std::shared_ptr<Dakota::OutputManager> outputManager;
-  std::shared_ptr<Dakota::ParallelLibrary> parallelLibrary;
-  std::shared_ptr<Dakota::StudyRuntime> studyRuntime;
-};
-
-} // namespace
 
 int main()
 {
@@ -183,7 +147,7 @@ int main()
   const IRStore nested_model_store =
     materializer.materialize_block(nested_model_json, irgen::BlockType::Model);
 
-  ExplicitRuntime runtime;
+  DemoRuntime runtime;
 
   std::cout << "Constructing DI nested-model study components...\n";
 
@@ -208,7 +172,7 @@ int main()
     runtime.outputManager);
 
   std::cout << "Running outer sampling study over NestedModel...\n";
-  runtime.studyRuntime->execute_iterator(outer_sampling);
+  runtime.execute_iterator(outer_sampling);
 
   const auto& outer_responses = outer_sampling.all_responses();
   Iterator& outer_iterator = outer_sampling;

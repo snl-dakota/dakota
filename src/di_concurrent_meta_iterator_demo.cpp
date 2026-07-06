@@ -4,51 +4,15 @@
 #include "DakotaResponse.hpp"
 #include "ForkApplicInterface.hpp"
 #include "InstructionMaterializer.hpp"
-#include "MPIManager.hpp"
-#include "OutputManager.hpp"
-#include "ParallelLibrary.hpp"
-#include "ProgramOptions.hpp"
+#include "ExplicitRuntime.hpp"
 #include "SimulationModel.hpp"
-#include "StudyRuntime.hpp"
 #include "model_utils.hpp"
-#include "WorkdirHelper.hpp"
 
 #include <iostream>
 #include <memory>
 #include <nlohmann/json.hpp>
 
 using json = nlohmann::json;
-
-namespace {
-
-struct ExplicitRuntime {
-  ExplicitRuntime():
-    mpiManager(),
-    programOptions(mpiManager.world_rank()),
-    outputManager(std::make_shared<Dakota::OutputManager>(
-      programOptions, mpiManager.world_rank(), mpiManager.mpirun_flag())),
-    parallelLibrary(std::make_shared<Dakota::ParallelLibrary>(
-      mpiManager, programOptions, *outputManager)),
-    studyRuntime(std::make_shared<Dakota::StudyRuntime>(
-      *parallelLibrary, outputManager.get()))
-  {
-    Dakota::WorkdirHelper::initialize();
-    outputManager->push_output_tag("", programOptions, false, true);
-  }
-
-  ~ExplicitRuntime()
-  {
-    outputManager->pop_output_tag();
-  }
-
-  Dakota::MPIManager mpiManager;
-  Dakota::ProgramOptions programOptions;
-  std::shared_ptr<Dakota::OutputManager> outputManager;
-  std::shared_ptr<Dakota::ParallelLibrary> parallelLibrary;
-  std::shared_ptr<Dakota::StudyRuntime> studyRuntime;
-};
-
-} // namespace
 
 int main()
 {
@@ -131,7 +95,7 @@ int main()
   const IRStore model_store =
     materializer.materialize_block(json::object(), irgen::BlockType::Model);
 
-  ExplicitRuntime runtime;
+  DemoRuntime runtime;
 
   std::cout << "Constructing DI concurrent meta-iterator study components...\n";
 
@@ -161,7 +125,7 @@ int main()
     runtime.parallelLibrary, runtime.outputManager);
 
   std::cout << "Running DI multi_start study over DOTOptimizer...\n";
-  runtime.studyRuntime->execute_iterator(multistart);
+  runtime.execute_iterator(multistart);
 
   std::cout << "Completed DI concurrent meta-iterator study.\n";
   std::cout << "See the multi_start results summary above for per-start optima.\n";
