@@ -187,12 +187,12 @@ Rank1Lattice::Rank1Lattice(
 Rank1Lattice(
   std::get<0>(data), /// Unpack generating vector
   std::get<1>(data), /// Unpack log2 of maximum number of points
-  !problem_db.get_bool("method.no_random_shift"),
-  problem_db.get_int("method.random_seed") ?
-    problem_db.get_int("method.random_seed") :
+  !problem_db.get<bool>("method.no_random_shift"),
+  problem_db.get<int>("method.random_seed") ?
+    problem_db.get<int>("method.random_seed") :
     generate_system_seed(),
-  problem_db.get_short("method.ld.rank1.ordering"), 
-  problem_db.get_short("method.output")
+  problem_db.get<short>("method.ld.rank1.ordering"), 
+  problem_db.get<short>("method.output")
 )
 {
 
@@ -231,16 +231,16 @@ std::tuple<UInt32Vector, int> Rank1Lattice::get_data(
 )
 {
   /// Name of the file with the generating vector
-  String file = problem_db.get_string("method.generating_vector.file");
+  String file = problem_db.get<const String>("method.generating_vector.file");
 
   /// Get the inline generating vector
   IntVector inlineVector = 
-    problem_db.get_iv("method.generating_vector.inline");
+    problem_db.get<const IntVector>("method.generating_vector.inline");
   size_t len = inlineVector.length();
 
   /// NOTE: outputLevel has not been set yet, so gettting it directly from
   /// the 'problem_db' instead
-  bool outputLevel = problem_db.get_short("method.output");
+  bool outputLevel = problem_db.get<short>("method.output");
 
   /// Case I: the generating vector is provided in an external file
   if ( !file.empty() )
@@ -269,7 +269,7 @@ std::tuple<UInt32Vector, int> Rank1Lattice::get_data(
   else
   {
     /// Verify that `mMax` has not been provided
-    if ( problem_db.get_int("method.m_max") )
+    if ( problem_db.get<int>("method.m_max") )
     {
       Cerr << "\nError: you can't specify a default generating vector and "
         << "the log2 of the maximum number of points 'm_max' at the same "
@@ -286,7 +286,7 @@ const std::tuple<UInt32Vector, int> Rank1Lattice::get_generating_vector_from_fil
   ProblemDescDB& problem_db
 )
 {
-  String fileName = problem_db.get_string("method.generating_vector.file");
+  String fileName = problem_db.get<const String>("method.generating_vector.file");
 
   /// Wrap in try-block
   try{
@@ -301,7 +301,7 @@ const std::tuple<UInt32Vector, int> Rank1Lattice::get_generating_vector_from_fil
     }
     return std::make_tuple(
       generatingVector,
-      problem_db.get_int("method.m_max")
+      problem_db.get<int>("method.m_max")
     );
   }
   catch (...) /// Catch-all handler
@@ -320,7 +320,7 @@ const std::tuple<UInt32Vector, int> Rank1Lattice::get_inline_generating_vector(
 {
   /// Get the inline generating vector
   IntVector inlineVector = 
-    problem_db.get_iv("method.generating_vector.inline");
+    problem_db.get<const IntVector>("method.generating_vector.inline");
   size_t len = inlineVector.length();
   
   /// Can't get away without making a copy here, conversion from
@@ -336,7 +336,7 @@ const std::tuple<UInt32Vector, int> Rank1Lattice::get_inline_generating_vector(
 
   return std::make_tuple(
     generatingVector,
-    problem_db.get_int("method.m_max")
+    problem_db.get<int>("method.m_max")
   );
 }
 
@@ -347,10 +347,10 @@ const std::tuple<UInt32Vector, int> Rank1Lattice::get_default_generating_vector(
 {
   /// NOTE: outputLevel has not been set yet, so gettting it directly from
   /// the 'problem_db' instead
-  bool outputLevel = problem_db.get_short("method.output");
+  bool outputLevel = problem_db.get<short>("method.output");
 
   /// Select predefined generating vector
-  if ( problem_db.get_short("method.ld.rank1.generating_vector_scheme") == GEN_VECTOR_KUO )
+  if ( problem_db.get<short>("method.ld.rank1.generating_vector_scheme") == GEN_VECTOR_KUO )
   {
     if ( outputLevel >= DEBUG_OUTPUT )
     {
@@ -367,7 +367,7 @@ const std::tuple<UInt32Vector, int> Rank1Lattice::get_default_generating_vector(
   {
     if ( outputLevel >= DEBUG_OUTPUT )
     {
-      if ( problem_db.get_short("method.ld.rank1.generating_vector_scheme") == GEN_VECTOR_COOLS_KUO_NUYENS )
+      if ( problem_db.get<short>("method.ld.rank1.generating_vector_scheme") == GEN_VECTOR_COOLS_KUO_NUYENS )
       {
         Cout << "Found predefined generating vector 'cools_kuo_nuyens'"
           << std::endl;

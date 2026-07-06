@@ -34,30 +34,30 @@ namespace Dakota {
 NonDPolynomialChaos::
 NonDPolynomialChaos(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
   NonDExpansion(problem_db, parallel_lib, model),
-  crossValidation(problem_db.get_bool("method.nond.cross_validation")),
+  crossValidation(problem_db.get<bool>("method.nond.cross_validation")),
   crossValidNoiseOnly(
-    problem_db.get_bool("method.nond.cross_validation.noise_only")),
+    problem_db.get<bool>("method.nond.cross_validation.noise_only")),
   maxCVOrderCandidates(
-    problem_db.get_ushort("method.nond.cross_validation.max_order_candidates")),
-  respScaling(problem_db.get_bool("method.nond.response_scaling")),
-  noiseTols(problem_db.get_rv("method.nond.regression_noise_tolerance")),
-  l2Penalty(problem_db.get_real("method.nond.regression_penalty")),
-//initSGLevel(problem_db.get_ushort("method.nond.adapted_basis.initial_level")),
-  numAdvance(problem_db.get_ushort("method.nond.adapted_basis.advancements")),
-  expOrderSpec(problem_db.get_ushort("method.nond.expansion_order")),
-  collocPtsSpec(problem_db.get_sizet("method.nond.collocation_points")),
-  expSamplesSpec(problem_db.get_sizet("method.nond.expansion_samples")),
-  normalizedCoeffOutput(problem_db.get_bool("method.nond.normalized")),
-  uSpaceType(problem_db.get_short("method.nond.expansion_type")),
-  quadOrderSpec(problem_db.get_ushort("method.nond.quadrature_order")),
-  ssgLevelSpec(problem_db.get_ushort("method.nond.sparse_grid_level")),
-  cubIntSpec(problem_db.get_ushort("method.nond.cubature_integrand")),
+    problem_db.get<unsigned short>("method.nond.cross_validation.max_order_candidates")),
+  respScaling(problem_db.get<bool>("method.nond.response_scaling")),
+  noiseTols(problem_db.get<const RealVector>("method.nond.regression_noise_tolerance")),
+  l2Penalty(problem_db.get<const Real>("method.nond.regression_penalty")),
+//initSGLevel(problem_db.get<unsigned short>("method.nond.adapted_basis.initial_level")),
+  numAdvance(problem_db.get<unsigned short>("method.nond.adapted_basis.advancements")),
+  expOrderSpec(problem_db.get<unsigned short>("method.nond.expansion_order")),
+  collocPtsSpec(problem_db.get<size_t>("method.nond.collocation_points")),
+  expSamplesSpec(problem_db.get<size_t>("method.nond.expansion_samples")),
+  normalizedCoeffOutput(problem_db.get<bool>("method.nond.normalized")),
+  uSpaceType(problem_db.get<short>("method.nond.expansion_type")),
+  quadOrderSpec(problem_db.get<unsigned short>("method.nond.quadrature_order")),
+  ssgLevelSpec(problem_db.get<unsigned short>("method.nond.sparse_grid_level")),
+  cubIntSpec(problem_db.get<unsigned short>("method.nond.cubature_integrand")),
   importBuildPointsFile(
-    problem_db.get_string("method.import_build_points_file")),
+    problem_db.get<const String>("method.import_build_points_file")),
   expansionImportFile(
-    problem_db.get_string("method.nond.import_expansion_file")),
+    problem_db.get<const String>("method.nond.import_expansion_file")),
   expansionExportFile(
-    problem_db.get_string("method.nond.export_expansion_file"))
+    problem_db.get<const String>("method.nond.export_expansion_file"))
   //resizedFlag(false), callResize(false)
 {
   // ----------------
@@ -69,7 +69,7 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, st
   // --------------------
   // Data import settings
   // --------------------
-  String pt_reuse = problem_db.get_string("method.nond.point_reuse");
+  String pt_reuse = problem_db.get<const String>("method.nond.point_reuse");
   if (!importBuildPointsFile.empty() && pt_reuse.empty())
     pt_reuse = "all"; // reassign default if data import
 
@@ -84,8 +84,8 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, st
   // -------------------------
   std::shared_ptr<Iterator> u_space_sampler;
   String approx_type;
-  unsigned short sample_type = problem_db.get_ushort("method.sample_type");
-  const String& rng = problem_db.get_string("method.random_number_generator");
+  unsigned short sample_type = problem_db.get<unsigned short>("method.sample_type");
+  const String& rng = problem_db.get<const String>("method.random_number_generator");
 
   UShortArray exp_orders; // defined for expansion_samples/regression
   configure_expansion_orders(expOrderSpec, dimPrefSpec, exp_orders);
@@ -98,10 +98,10 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, st
 	   !config_expectation(expSamplesSpec, sample_type, randomSeed, rng,
 	     u_space_sampler, g_u_model, approx_type) &&
 	   !config_regression(exp_orders, collocPtsSpec,
-	     problem_db.get_real("method.nond.collocation_ratio_terms_order"),
-	     problem_db.get_short("method.nond.regression_type"),
-	     problem_db.get_short("method.nond.least_squares_regression_type"),
-	     problem_db.get_usa("method.nond.tensor_grid_order"), sample_type,
+	     problem_db.get<const Real>("method.nond.collocation_ratio_terms_order"),
+	     problem_db.get<short>("method.nond.regression_type"),
+	     problem_db.get<short>("method.nond.least_squares_regression_type"),
+	     problem_db.get<const UShortArray>("method.nond.tensor_grid_order"), sample_type,
 	     randomSeed, rng, pt_reuse, u_space_sampler, g_u_model,
 	     approx_type)) {
     Cerr << "Error: incomplete configuration in NonDPolynomialChaos "
@@ -125,22 +125,22 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, st
   uSpaceModel = std::make_shared<DataFitSurrModel>(u_space_sampler,
     g_u_model, pce_set, pce_view, approx_type, exp_orders, corr_type,
     corr_order, data_order, outputLevel, pt_reuse, importBuildPointsFile,
-    problem_db.get_ushort("method.import_build_format"),
-    problem_db.get_bool("method.import_build_active_only"),
-    problem_db.get_string("method.export_approx_points_file"),
-    problem_db.get_ushort("method.export_approx_format"));
+    problem_db.get<unsigned short>("method.import_build_format"),
+    problem_db.get<bool>("method.import_build_active_only"),
+    problem_db.get<const String>("method.export_approx_points_file"),
+    problem_db.get<unsigned short>("method.export_approx_format"));
   initialize_u_space_model();
 
   // -------------------------------------
   // Construct expansionSampler, if needed
   // -------------------------------------
-  construct_expansion_sampler(problem_db.get_ushort("method.sample_type"),
-    problem_db.get_string("method.random_number_generator"),
-    problem_db.get_ushort("method.nond.integration_refinement"),
-    problem_db.get_iv("method.nond.refinement_samples"),
-    problem_db.get_string("method.import_approx_points_file"),
-    problem_db.get_ushort("method.import_approx_format"), 
-    problem_db.get_bool("method.import_approx_active_only"));
+  construct_expansion_sampler(problem_db.get<unsigned short>("method.sample_type"),
+    problem_db.get<const String>("method.random_number_generator"),
+    problem_db.get<unsigned short>("method.nond.integration_refinement"),
+    problem_db.get<const IntVector>("method.nond.refinement_samples"),
+    problem_db.get<const String>("method.import_approx_points_file"),
+    problem_db.get<unsigned short>("method.import_approx_format"), 
+    problem_db.get<bool>("method.import_approx_active_only"));
 
   if (parallelLib.command_line_check())
     Cout << "\nPolynomial_chaos construction completed: initial grid size of "
@@ -311,11 +311,11 @@ NonDPolynomialChaos(std::shared_ptr<Model> model, const String& exp_import_file,
 		Pecos::NO_REFINEMENT, Pecos::NO_CONTROL, DEFAULT_COVARIANCE,
 		0., Pecos::NO_NESTING_OVERRIDE, Pecos::NO_GROWTH_OVERRIDE,
 		false, false),
-  //expOrderSpec(problem_db.get_ushort("method.nond.expansion_order")),
+  //expOrderSpec(problem_db.get<unsigned short>("method.nond.expansion_order")),
   normalizedCoeffOutput(false), // TO DO: need to detect this in file
   uSpaceType(u_space_type), expansionImportFile(exp_import_file)
   //expansionExportFile(
-  //  problem_db.get_string("method.nond.export_expansion_file"))
+  //  problem_db.get<const String>("method.nond.export_expansion_file"))
 {
   if (expansionImportFile.empty()) {
     Cerr << "Error: coefficient import ctor requires a file name." << std::endl;
@@ -368,25 +368,25 @@ NonDPolynomialChaos::
 NonDPolynomialChaos(unsigned short method_name, ProblemDescDB& problem_db,
 		    ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
   NonDExpansion(problem_db, parallel_lib, model),
-  crossValidation(problem_db.get_bool("method.nond.cross_validation")),
+  crossValidation(problem_db.get<bool>("method.nond.cross_validation")),
   crossValidNoiseOnly(
-    problem_db.get_bool("method.nond.cross_validation.noise_only")),
+    problem_db.get<bool>("method.nond.cross_validation.noise_only")),
   maxCVOrderCandidates(
-    problem_db.get_ushort("method.nond.cross_validation.max_order_candidates")),
-  respScaling(problem_db.get_bool("method.nond.response_scaling")),
-  noiseTols(problem_db.get_rv("method.nond.regression_noise_tolerance")),
-  l2Penalty(problem_db.get_real("method.nond.regression_penalty")),
-//initSGLevel(problem_db.get_ushort("method.nond.adapted_basis.initial_level")),
-  numAdvance(problem_db.get_ushort("method.nond.adapted_basis.advancements")),
-  normalizedCoeffOutput(problem_db.get_bool("method.nond.normalized")),
-  uSpaceType(problem_db.get_short("method.nond.expansion_type")),
-  cubIntSpec(problem_db.get_ushort("method.nond.cubature_integrand")),
+    problem_db.get<unsigned short>("method.nond.cross_validation.max_order_candidates")),
+  respScaling(problem_db.get<bool>("method.nond.response_scaling")),
+  noiseTols(problem_db.get<const RealVector>("method.nond.regression_noise_tolerance")),
+  l2Penalty(problem_db.get<const Real>("method.nond.regression_penalty")),
+//initSGLevel(problem_db.get<unsigned short>("method.nond.adapted_basis.initial_level")),
+  numAdvance(problem_db.get<unsigned short>("method.nond.adapted_basis.advancements")),
+  normalizedCoeffOutput(problem_db.get<bool>("method.nond.normalized")),
+  uSpaceType(problem_db.get<short>("method.nond.expansion_type")),
+  cubIntSpec(problem_db.get<unsigned short>("method.nond.cubature_integrand")),
   importBuildPointsFile(
-    problem_db.get_string("method.import_build_points_file")),
+    problem_db.get<const String>("method.import_build_points_file")),
   expansionImportFile(
-    problem_db.get_string("method.nond.import_expansion_file")),
+    problem_db.get<const String>("method.nond.import_expansion_file")),
   expansionExportFile(
-    problem_db.get_string("method.nond.export_expansion_file"))
+    problem_db.get<const String>("method.nond.export_expansion_file"))
   //resizedFlag(false), callResize(false)
 {
   // Rest is in derived class...

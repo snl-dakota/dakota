@@ -89,8 +89,8 @@ Response(BaseConstructor, const Variables& vars,
 
   // Resize & initialize response data
   // Conserve memory by checking DB info prior to sizing grad/hessian arrays
-  bool grad_flag = (problem_db.get_string("responses.gradient_type") != "none");
-  bool hess_flag = (problem_db.get_string("responses.hessian_type")  != "none");
+  bool grad_flag = (problem_db.get<const String>("responses.gradient_type") != "none");
+  bool hess_flag = (problem_db.get<const String>("responses.hessian_type")  != "none");
   functionValues.size(num_fns); // init to 0
   short asv_value = 1;
   if (grad_flag) {
@@ -111,10 +111,10 @@ Response(BaseConstructor, const Variables& vars,
   responseActiveSet.request_vector(asv);
   responseActiveSet.derivative_vector(vars.continuous_variable_ids());
 
-  if (problem_db.get_bool("responses.read_field_coordinates")) {
+  if (problem_db.get<bool>("responses.read_field_coordinates")) {
     size_t num_fields = shared_data().num_field_response_groups(); 
     const StringArray& field_labels = shared_data().field_group_labels();
-    std::filesystem::path data_path_prefix = problem_db.get_string("responses.data_directory");
+    std::filesystem::path data_path_prefix = problem_db.get<const String>("responses.data_directory");
 
     for (size_t field_index = 0; field_index < num_fields; ++field_index) {
       const String& field_name = field_labels[field_index];

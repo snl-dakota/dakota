@@ -293,8 +293,8 @@ void Optimizer::print_results(std::ostream& s, short results_state)
 max_fn_evals =  maxFunctionEvals;
 max_iters = maxIterations;
 conv_tol = convergenceTol;
-min_var_chg = probDescDB.get_real("method.variable_tolerance");
-obj_target = probDescDB.get_real("method.solution_target");
+min_var_chg = probDescDB.get<const Real>("method.variable_tolerance");
+obj_target = probDescDB.get<const Real>("method.solution_target");
 }
 
 

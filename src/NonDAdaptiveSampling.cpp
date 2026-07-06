@@ -61,12 +61,12 @@ namespace Dakota
                 if (numRounds == -1)
                   numRounds = 100;
                 
-                numEmulEval = probDescDB.get_int("method.nond.samples_on_emulator");
+                numEmulEval = probDescDB.get<int>("method.nond.samples_on_emulator");
                 if (numEmulEval == 0)
                   numEmulEval = 400; 
 		batchSize = 1;
 		const IntVector& db_refine_samples = 
-		  probDescDB.get_iv("method.nond.refinement_samples");
+		  probDescDB.get<const IntVector>("method.nond.refinement_samples");
 		if (db_refine_samples.length() == 1)
 		  batchSize = db_refine_samples[0];
 		else if (db_refine_samples.length() > 1) {
@@ -74,10 +74,10 @@ namespace Dakota
 		       << "length 1 if specified." << std::endl;
 		  abort_handler(PARSE_ERROR);
 		}
-                batchStrategy = probDescDB.get_string("method.batch_selection");
+                batchStrategy = probDescDB.get<const String>("method.batch_selection");
                 if (batchStrategy.empty())
 		  batchStrategy="naive";
-                scoringMetric = probDescDB.get_string("method.fitness_metric");
+                scoringMetric = probDescDB.get<const String>("method.fitness_metric");
                 if (scoringMetric == "predicted_variance") 
                   scoringMetric = "alm";
                 if (scoringMetric.empty())
@@ -97,7 +97,7 @@ namespace Dakota
 		outputDir = "adaptive.results";
 
 		//Now parse the inputs
-		const StringArray& misc_options = probDescDB.get_sa("method.coliny.misc_options");
+		const StringArray& misc_options = probDescDB.get<const StringArray>("method.coliny.misc_options");
                 if (misc_options.size() > 0)
                   parse_options();
 
@@ -105,14 +105,14 @@ namespace Dakota
 		String sample_reuse;
 		UShortArray approx_order; // not used by GP/kriging
 		short corr_order = -1, data_order = 1, corr_type = NO_CORRECTION;
-		if (probDescDB.get_bool("method.derivative_usage"))
+		if (probDescDB.get<bool>("method.derivative_usage"))
 		{
 		  if (iteratedModel->gradient_type() != "none") data_order |= 2;
 		  if (iteratedModel->hessian_type()  != "none") data_order |= 4;
 		}
 
 		bool vary_pattern = false;
-		const String& import_pts_file = probDescDB.get_string("method.import_build_points_file");
+		const String& import_pts_file = probDescDB.get<const String>("method.import_build_points_file");
 		int samples = numSamples;
 		if (!import_pts_file.empty())
 		{
@@ -139,10 +139,10 @@ namespace Dakota
 				   (gp_build, iteratedModel,
 				    gp_set, gp_view, approx_type, approx_order, corr_type, corr_order, data_order,
 				    outputLevel, sample_reuse, import_pts_file,
-				    probDescDB.get_ushort("method.import_build_format"),
-				    probDescDB.get_bool("method.import_build_active_only"),
-				    probDescDB.get_string("method.export_approx_points_file"),
-				    probDescDB.get_ushort("method.export_approx_format"));
+				    probDescDB.get<unsigned short>("method.import_build_format"),
+				    probDescDB.get<bool>("method.import_build_active_only"),
+				    probDescDB.get<const String>("method.export_approx_points_file"),
+				    probDescDB.get<unsigned short>("method.export_approx_format"));
 
 		vary_pattern = true; // allow seed to run among multiple approx sample sets
 							 // need to add to input spec
@@ -1377,7 +1377,7 @@ Real NonDAdaptiveSampling::compute_rmspe()
 	void NonDAdaptiveSampling::parse_options()
 	{
 		#pragma region Parse Options:
-		const StringArray& db_opts = probDescDB.get_sa("method.coliny.misc_options");
+		const StringArray& db_opts = probDescDB.get<const StringArray>("method.coliny.misc_options");
 		StringArray::const_iterator db_it = db_opts.begin();
 		StringArray::const_iterator db_end = db_opts.end();
 		String::const_iterator delim;

@@ -23,10 +23,10 @@ RandomFieldModel::RandomFieldModel(ProblemDescDB& problem_db, ParallelLibrary& p
   RecastModel(problem_db, parallel_lib, get_sub_model(problem_db, parallel_lib)),
   // LPS TODO: initialize other class data members off problemDB
   numObservations(0), 
-  expansionForm(problem_db.get_ushort("model.rf.expansion_form")),
-  covarianceForm(problem_db.get_ushort("model.rf.analytic_covariance")),
-  requestedReducedRank(problem_db.get_int("model.rf.expansion_bases")),
-  percentVariance(problem_db.get_real("model.truncation_tolerance")),
+  expansionForm(problem_db.get<unsigned short>("model.rf.expansion_form")),
+  covarianceForm(problem_db.get<unsigned short>("model.rf.analytic_covariance")),
+  requestedReducedRank(problem_db.get<int>("model.rf.expansion_bases")),
+  percentVariance(problem_db.get<const Real>("model.truncation_tolerance")),
   actualReducedRank(5)
 {
   modelType = "random_field";
@@ -40,7 +40,7 @@ RandomFieldModel::RandomFieldModel(ProblemDescDB& problem_db, ParallelLibrary& p
 std::shared_ptr<Model> RandomFieldModel::get_sub_model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib)
 {
   const String& propagation_model_pointer
-    = problem_db.get_string("model.rf.propagation_model_pointer");
+    = problem_db.get<const String>("model.rf.propagation_model_pointer");
   size_t model_index = problem_db.get_db_model_node(); // for restoration
   problem_db.set_db_model_nodes(propagation_model_pointer);
   auto sub_model = Model::get_model(problem_db, parallel_lib);
@@ -54,7 +54,7 @@ std::shared_ptr<Model> RandomFieldModel::get_sub_model(ProblemDescDB& problem_db
 void RandomFieldModel::init_dace_iterator(ProblemDescDB& problem_db)
 {
   const String& dace_method_pointer
-    = problem_db.get_string("model.dace_method_pointer");
+    = problem_db.get<const String>("model.dace_method_pointer");
 
   if (!dace_method_pointer.empty()) { // global DACE approximations
     size_t method_index = problem_db.get_db_method_node(); // for restoration

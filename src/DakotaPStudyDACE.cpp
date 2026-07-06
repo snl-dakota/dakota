@@ -25,9 +25,9 @@ namespace Dakota {
 
 PStudyDACE::PStudyDACE(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
   Analyzer(problem_db, parallel_lib, model),
-  volQualityFlag(probDescDB.get_bool("method.quality_metrics")),
-  vbdViaSamplingMethod(probDescDB.get_ushort("method.vbd_via_sampling_method")),
-  vbdViaSamplingNumBins(probDescDB.get_int("method.vbd_via_sampling_num_bins"))
+  volQualityFlag(probDescDB.get<bool>("method.quality_metrics")),
+  vbdViaSamplingMethod(probDescDB.get<unsigned short>("method.vbd_via_sampling_method")),
+  vbdViaSamplingNumBins(probDescDB.get<int>("method.vbd_via_sampling_num_bins"))
 {
   // Check for discrete variable types
   if ( (numDiscreteIntVars || numDiscreteRealVars) &&

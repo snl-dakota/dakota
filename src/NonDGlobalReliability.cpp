@@ -73,7 +73,7 @@ NonDGlobalReliability(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, 
   // standard reliability indices are not defined and should be precluded
   // via the input spec.  requestedRelLevels is default sized in NonD and
   // cannot be used for the empty() test below.
-  if (!probDescDB.get_rva("method.nond.reliability_levels").empty() ||
+  if (!probDescDB.get<const RealVectorArray>("method.nond.reliability_levels").empty() ||
       respLevelTarget == RELIABILITIES) {
     Cerr << "Error: reliability indices are not defined for global reliability "
 	 << "methods.  Use generalized reliability instead." << std::endl;
@@ -84,8 +84,8 @@ NonDGlobalReliability(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, 
   // since PMA EGRA requires additional R&D.  Note: requestedProbLevels and
   // requestedGenRelLevels are default sized in NonD and cannot be used for
   // the empty() tests below.
-  if (!probDescDB.get_rva("method.nond.probability_levels").empty() ||
-      !probDescDB.get_rva("method.nond.gen_reliability_levels").empty()) {
+  if (!probDescDB.get<const RealVectorArray>("method.nond.probability_levels").empty() ||
+      !probDescDB.get<const RealVectorArray>("method.nond.gen_reliability_levels").empty()) {
     Cerr << "Error: Inverse reliability mappings not currently supported in "
 	 << "global_reliability."<< std::endl;
     abort_handler(-1); 
@@ -120,16 +120,16 @@ NonDGlobalReliability(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, 
   
   // Always build a global Gaussian process model.  No correction is needed.
   String approx_type = "global_kriging";
-  if (probDescDB.get_short("method.nond.emulator") == GP_EMULATOR)
+  if (probDescDB.get<short>("method.nond.emulator") == GP_EMULATOR)
     approx_type = "global_gaussian";
-  else if (probDescDB.get_short("method.nond.emulator") == EXPGP_EMULATOR)
+  else if (probDescDB.get<short>("method.nond.emulator") == EXPGP_EMULATOR)
     approx_type = "global_exp_gauss_proc";
 
   unsigned short sample_type = SUBMETHOD_DEFAULT;
   UShortArray approx_order; // not used for GP/kriging
   short corr_order = -1, corr_type = NO_CORRECTION,
     active_view = iteratedModel->current_variables().view().first;
-  if (probDescDB.get_bool("method.derivative_usage")) {
+  if (probDescDB.get<bool>("method.derivative_usage")) {
     if (approx_type == "global_gaussian") {
       Cerr << "\nError: efficient_global does not support gaussian_process "
 	   << "when derivatives present; use kriging instead." << std::endl;
@@ -141,16 +141,16 @@ NonDGlobalReliability(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, 
   String sample_reuse
     = (active_view == RELAXED_ALL || active_view == MIXED_ALL) ? "all" : "none";
 
-  int db_samples = probDescDB.get_int("method.samples");  
+  int db_samples = probDescDB.get<int>("method.samples");  
   int samples = (db_samples > 0) ? db_samples : 
     (numContinuousVars+1)*(numContinuousVars+2)/2;
 
-  int lhs_seed = probDescDB.get_int("method.random_seed");
-  const String& rng = probDescDB.get_string("method.random_number_generator");
+  int lhs_seed = probDescDB.get<int>("method.random_seed");
+  const String& rng = probDescDB.get<const String>("method.random_number_generator");
   bool vary_pattern = false; // for consistency across outer loop invocations
   // get point samples file
   const String& import_pts_file
-    = probDescDB.get_string("method.import_build_points_file");
+    = probDescDB.get<const String>("method.import_build_points_file");
   if (!import_pts_file.empty())
     { samples = 0; sample_reuse = "all"; }
 
@@ -188,16 +188,16 @@ NonDGlobalReliability(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, 
     g_hat_x_model = std::make_shared<DataFitSurrModel>(dace_iterator,
       iteratedModel, gp_set, gp_view, approx_type, approx_order, corr_type,
       corr_order, dataOrder, outputLevel, sample_reuse, import_pts_file,
-       probDescDB.get_ushort("method.import_build_format"),
-       probDescDB.get_bool("method.import_build_active_only"),
-       probDescDB.get_string("method.export_approx_points_file"),
-       probDescDB.get_ushort("method.export_approx_format"));
+       probDescDB.get<unsigned short>("method.import_build_format"),
+       probDescDB.get<bool>("method.import_build_active_only"),
+       probDescDB.get<const String>("method.export_approx_points_file"),
+       probDescDB.get<unsigned short>("method.export_approx_format"));
     g_hat_x_model->surrogate_function_indices(surr_fn_indices);
 
     if (approx_type == "global_exp_gauss_proc") {
 #if defined(HAVE_DAKOTA_SURROGATES) && defined(HAVE_ROL)
       String advanced_options_file
-          = problem_db.get_string("method.advanced_options_file");
+          = problem_db.get<const String>("method.advanced_options_file");
       if (!advanced_options_file.empty())
         set_model_gp_options(*g_hat_x_model, advanced_options_file);
 #else
@@ -250,16 +250,16 @@ NonDGlobalReliability(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, 
     uSpaceModel = std::make_shared<DataFitSurrModel>(dace_iterator,
        g_u_model, gp_set, gp_view, approx_type, approx_order, corr_type,
        corr_order, dataOrder, outputLevel, sample_reuse, import_pts_file,
-       probDescDB.get_ushort("method.import_build_format"),
-       probDescDB.get_bool("method.import_build_active_only"),
-       probDescDB.get_string("method.export_approx_points_file"),
-       probDescDB.get_ushort("method.export_approx_format"));
+       probDescDB.get<unsigned short>("method.import_build_format"),
+       probDescDB.get<bool>("method.import_build_active_only"),
+       probDescDB.get<const String>("method.export_approx_points_file"),
+       probDescDB.get<unsigned short>("method.export_approx_format"));
     uSpaceModel->surrogate_function_indices(surr_fn_indices);
 
     if (approx_type == "global_exp_gauss_proc") {
 #if defined(HAVE_DAKOTA_SURROGATES) && defined(HAVE_ROL)
       String advanced_options_file
-          = problem_db.get_string("method.advanced_options_file");
+          = problem_db.get<const String>("method.advanced_options_file");
       if (!advanced_options_file.empty())
         set_model_gp_options(*uSpaceModel, advanced_options_file);
 #else

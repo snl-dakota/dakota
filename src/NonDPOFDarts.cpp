@@ -45,10 +45,10 @@ static const char rcsId[] = "@(#) $Id: NonDPOFDart.cpp 6080 2009-09-08 19:03:20Z
 namespace Dakota {
 
 NonDPOFDarts::NonDPOFDarts(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
-  NonD(problem_db, parallel_lib, model), seed(probDescDB.get_int("method.random_seed")),
-  emulatorSamples(probDescDB.get_int("method.nond.samples_on_emulator")),
-  lipschitzType(probDescDB.get_string("method.lipschitz")),
-  samples(probDescDB.get_int("method.build_samples"))
+  NonD(problem_db, parallel_lib, model), seed(probDescDB.get<int>("method.random_seed")),
+  emulatorSamples(probDescDB.get<int>("method.nond.samples_on_emulator")),
+  lipschitzType(probDescDB.get<const String>("method.lipschitz")),
+  samples(probDescDB.get<int>("method.build_samples"))
 {
     // any initialization is done here.   For now, you should just specify
     // the number of samples, but eventually we will get that from the input spec

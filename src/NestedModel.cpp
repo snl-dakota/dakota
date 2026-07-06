@@ -27,21 +27,21 @@ NestedModel::NestedModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_li
   nestedModelEvalCntr(0), firstUpdate(true), outerMIPLIndex(0),
   subIteratorSched(parallelLib,
 		   true, // peer 1 must assign jobs to peers 2-n
-		   problem_db.get_int("model.nested.iterator_servers"),
-		   problem_db.get_int("model.nested.processors_per_iterator"),
-		   problem_db.get_short("model.nested.iterator_scheduling")),
-  subMethodPointer(problem_db.get_string("model.nested.sub_method_pointer")),
+		   problem_db.get<int>("model.nested.iterator_servers"),
+		   problem_db.get<int>("model.nested.processors_per_iterator"),
+		   problem_db.get<short>("model.nested.iterator_scheduling")),
+  subMethodPointer(problem_db.get<const String>("model.nested.sub_method_pointer")),
   subIteratorJobCntr(0)
 {
-  const String& oi_ptr = problem_db.get_string("model.interface_pointer");
-  ignoreBounds = problem_db.get_bool("responses.ignore_bounds");
-  centralHess  = problem_db.get_bool("responses.central_hess");
+  const String& oi_ptr = problem_db.get<const String>("model.interface_pointer");
+  ignoreBounds = problem_db.get<bool>("responses.ignore_bounds");
+  centralHess  = problem_db.get<bool>("responses.central_hess");
 
   // Retrieve the variable mapping inputs
   const StringArray& primary_var_mapping
-    = problem_db.get_sa("model.nested.primary_variable_mapping");
+    = problem_db.get<const StringArray>("model.nested.primary_variable_mapping");
   const StringArray& secondary_var_mapping
-    = problem_db.get_sa("model.nested.secondary_variable_mapping");
+    = problem_db.get<const StringArray>("model.nested.secondary_variable_mapping");
 
   // NestedModel may set the DB list nodes, but is required to restore them
   // to their previous setting in order to remove the need to continuously
@@ -55,7 +55,7 @@ NestedModel::NestedModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_li
     numOptInterfPrimary = numOptInterfIneqCon = numOptInterfEqCon = 0;
   else {
     const String& oi_resp_ptr
-      = problem_db.get_string("model.optional_interface_responses_pointer");
+      = problem_db.get<const String>("model.optional_interface_responses_pointer");
     bool oi_resp_ptr_defined = !oi_resp_ptr.empty();
     if (oi_resp_ptr_defined)
       problem_db.set_db_responses_node(oi_resp_ptr);
@@ -70,17 +70,17 @@ NestedModel::NestedModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_li
     // satisfied however the user wants, and would make it easier for us to
     // honor a request for scaling.
 
-    optInterfGradientType = problem_db.get_string("responses.gradient_type");
-    optInterfHessianType = problem_db.get_string("responses.hessian_type");
+    optInterfGradientType = problem_db.get<const String>("responses.gradient_type");
+    optInterfHessianType = problem_db.get<const String>("responses.hessian_type");
     optInterfGradIdAnalytic
-      = problem_db.get_is("responses.gradients.mixed.id_analytic");
+      = problem_db.get<const IntSet>("responses.gradients.mixed.id_analytic");
     optInterfHessIdAnalytic
-      = problem_db.get_is("responses.hessians.mixed.id_analytic");
+      = problem_db.get<const IntSet>("responses.hessians.mixed.id_analytic");
 
     numOptInterfIneqCon
-      = problem_db.get_sizet("responses.num_nonlinear_inequality_constraints");
+      = problem_db.get<size_t>("responses.num_nonlinear_inequality_constraints");
     numOptInterfEqCon
-      = problem_db.get_sizet("responses.num_nonlinear_equality_constraints");
+      = problem_db.get<size_t>("responses.num_nonlinear_equality_constraints");
     optInterfaceResponse
       = Response::get_response(problem_db, SIMULATION_RESPONSE, currentVariables);
     optionalInterface = Interface::get_interface(problem_db, parallel_lib);
@@ -91,11 +91,11 @@ NestedModel::NestedModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_li
       // Echo a warning if there is a user specification of constraint bounds/
       // targets that will be superceded by top level constraint bounds/targets.
       const RealVector& interf_ineq_l_bnds
-	= problem_db.get_rv("responses.nonlinear_inequality_lower_bounds");
+	= problem_db.get<const RealVector>("responses.nonlinear_inequality_lower_bounds");
       const RealVector& interf_ineq_u_bnds
-	= problem_db.get_rv("responses.nonlinear_inequality_upper_bounds");
+	= problem_db.get<const RealVector>("responses.nonlinear_inequality_upper_bounds");
       const RealVector& interf_eq_targets
-	= problem_db.get_rv("responses.nonlinear_equality_targets");
+	= problem_db.get<const RealVector>("responses.nonlinear_equality_targets");
       bool warning_flag = false;
       size_t i;
       Real dbl_inf = std::numeric_limits<Real>::infinity();
@@ -562,9 +562,9 @@ IntIntPair NestedModel::
 estimate_partition_bounds(int max_eval_concurrency)
 {
   // extract scheduling data for this level prior to dive
-  int ppi       = probDescDB.get_int("model.nested.processors_per_iterator"),
-    i_servers   = probDescDB.get_int("model.nested.iterator_servers");
-  short i_sched = probDescDB.get_short("model.nested.iterator_scheduling");
+  int ppi       = probDescDB.get<int>("model.nested.processors_per_iterator"),
+    i_servers   = probDescDB.get<int>("model.nested.iterator_servers");
+  short i_sched = probDescDB.get<short>("model.nested.iterator_scheduling");
 
   int oi_min_procs, oi_max_procs;
   if (optionalInterface) {
@@ -761,9 +761,9 @@ void NestedModel::init_sub_iterator()
   // (subIterator constraints) from the total number of equality/inequality
   // constraints and the number of interface equality/inequality constraints.
   size_t num_mapped_ineq_con
-    = probDescDB.get_sizet("responses.num_nonlinear_inequality_constraints"),
+    = probDescDB.get<size_t>("responses.num_nonlinear_inequality_constraints"),
     num_mapped_eq_con
-    = probDescDB.get_sizet("responses.num_nonlinear_equality_constraints");
+    = probDescDB.get<size_t>("responses.num_nonlinear_equality_constraints");
   numSubIterMappedIneqCon = num_mapped_ineq_con - numOptInterfIneqCon;
   numSubIterMappedEqCon   = num_mapped_eq_con   - numOptInterfEqCon;
 
@@ -782,11 +782,11 @@ void NestedModel::init_sub_iterator()
     num_mapped_pri = num_mapped_total - num_mapped_sec;
   numSubIterFns = subIterator->response_results().num_functions();
 
-  identityRespMap = probDescDB.get_bool("model.nested.identity_resp_map");
+  identityRespMap = probDescDB.get<bool>("model.nested.identity_resp_map");
   const RealVector& primary_resp_coeffs
-    = probDescDB.get_rv("model.nested.primary_response_mapping");
+    = probDescDB.get<const RealVector>("model.nested.primary_response_mapping");
   const RealVector& secondary_resp_coeffs
-    = probDescDB.get_rv("model.nested.secondary_response_mapping");
+    = probDescDB.get<const RealVector>("model.nested.secondary_response_mapping");
 
   if (identityRespMap) {
     bool found_error = false;

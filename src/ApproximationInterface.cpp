@@ -29,16 +29,16 @@ ApproximationInterface(ProblemDescDB& problem_db, const Variables& am_vars,
 		       bool am_cache, const String& am_interface_id,
 		       const StringArray& fn_labels):
   Interface(problem_db), 
-  approxFnIndices(problem_db.get_szs("model.surrogate.function_indices")),
+  approxFnIndices(problem_db.get<const SizetSet>("model.surrogate.function_indices")),
   trackEvalIds(false),
-  //graph3DFlag(problem_db.get_bool("environment.graphics")),
-  challengeFile(problem_db.get_string("model.surrogate.challenge_points_file")),
+  //graph3DFlag(problem_db.get<bool>("environment.graphics")),
+  challengeFile(problem_db.get<const String>("model.surrogate.challenge_points_file")),
   challengeFormat(
-    problem_db.get_ushort("model.surrogate.challenge_points_file_format")),
+    problem_db.get<unsigned short>("model.surrogate.challenge_points_file_format")),
   challengeUseVarLabels(
-    problem_db.get_bool("model.surrogate.challenge_use_variable_labels")),
+    problem_db.get<bool>("model.surrogate.challenge_use_variable_labels")),
   challengeActiveOnly(
-    problem_db.get_bool("model.surrogate.challenge_points_file_active")),
+    problem_db.get<bool>("model.surrogate.challenge_points_file_active")),
   actualModelVars(am_vars.copy()), actualModelCache(am_cache),
   actualModelInterfaceId(am_interface_id)
 {

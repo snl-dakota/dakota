@@ -293,17 +293,17 @@ DigitalNet(
   std::get<0>(data),
   std::get<1>(data),
   std::get<2>(data),
-  problem_db.get_int("method.t_scramble") ?
-    problem_db.get_int("method.t_scramble") :
+  problem_db.get<int>("method.t_scramble") ?
+    problem_db.get<int>("method.t_scramble") :
     std::numeric_limits<UInt64>::digits,
-  !problem_db.get_bool("method.no_digital_shift"),
-  !problem_db.get_bool("method.no_scrambling"),
-  problem_db.get_int("method.random_seed") ?
-    problem_db.get_int("method.random_seed") :
+  !problem_db.get<bool>("method.no_digital_shift"),
+  !problem_db.get<bool>("method.no_scrambling"),
+  problem_db.get<int>("method.random_seed") ?
+    problem_db.get<int>("method.random_seed") :
     generate_system_seed(),
-  problem_db.get_short("method.ld.digitalnet.ordering"),
-  problem_db.get_bool("method.most_significant_bit_first"),
-  problem_db.get_short("method.output")
+  problem_db.get<short>("method.ld.digitalnet.ordering"),
+  problem_db.get<bool>("method.most_significant_bit_first"),
+  problem_db.get<short>("method.output")
 )
 {
 
@@ -344,15 +344,15 @@ std::tuple<UInt64Matrix, int, int> DigitalNet::get_data(
 )
 {
   /// Name of the file with the generating matrices
-  String file = problem_db.get_string("method.generating_matrices.file");
+  String file = problem_db.get<const String>("method.generating_matrices.file");
 
   /// Get the inline generating matrices
   IntVector inlineMatrices = 
-    problem_db.get_iv("method.generating_matrices.inline");
+    problem_db.get<const IntVector>("method.generating_matrices.inline");
 
   /// NOTE: outputLevel has not been set yet, so gettting it directly from
   /// the 'problem_db' instead
-  bool outputLevel = problem_db.get_short("method.output");
+  bool outputLevel = problem_db.get<short>("method.output");
 
   ///
   /// Case I: the generating matrices are provided in an external file
@@ -387,7 +387,7 @@ std::tuple<UInt64Matrix, int, int> DigitalNet::get_data(
   else
   {
     /// Verify that `mMax` has not been provided
-    if ( problem_db.get_int("method.m_max") )
+    if ( problem_db.get<int>("method.m_max") )
     {
       Cerr << "\nError: you can't specify default generating matrices and "
         << "the log2 of the maximum number of points 'm_max' at the same "
@@ -396,7 +396,7 @@ std::tuple<UInt64Matrix, int, int> DigitalNet::get_data(
     }
 
     /// Verify that `tMax` has not been provided
-    if ( problem_db.get_int("method.t_max") )
+    if ( problem_db.get<int>("method.t_max") )
     {
       Cerr << "\nError: you can't specify default generating matrices and "
         << "the number of bits of the integers in the generating matrices "
@@ -405,8 +405,8 @@ std::tuple<UInt64Matrix, int, int> DigitalNet::get_data(
     }
 
     /// Verify that `{most|least}_significant_bit_first` has not been set
-    if ( problem_db.get_bool("method.least_significant_bit_first") ||
-      problem_db.get_bool("method.most_significant_bit_first") )
+    if ( problem_db.get<bool>("method.least_significant_bit_first") ||
+      problem_db.get<bool>("method.most_significant_bit_first") )
     {
       Cerr << "\nError: you can't specify default generating matrices and "
         << "an integer format at the same time." << std::endl;
@@ -422,7 +422,7 @@ const std::tuple<UInt64Matrix, int, int> DigitalNet::get_generating_matrices_fro
   ProblemDescDB& problem_db
 )
 {
-  String fileName = problem_db.get_string("method.generating_matrices.file");
+  String fileName = problem_db.get<const String>("method.generating_matrices.file");
 
   /// Wrap in try-block
   try{
@@ -445,8 +445,8 @@ const std::tuple<UInt64Matrix, int, int> DigitalNet::get_generating_matrices_fro
     }
     return std::make_tuple(
       generatingMatrices,
-      problem_db.get_int("method.m_max"),
-      problem_db.get_int("method.t_max")
+      problem_db.get<int>("method.m_max"),
+      problem_db.get<int>("method.t_max")
     );
   }
   catch (...) /// Catch-all handler
@@ -468,8 +468,8 @@ const std::tuple<UInt64Matrix, int, int> DigitalNet::get_inline_generating_matri
   /// into matrices here, using the number of columns given in the
   /// 'm_max' keyword
   IntVector inlineMatrices = 
-    problem_db.get_iv("method.generating_matrices.inline");
-  int numCols = problem_db.get_int("method.m_max");
+    problem_db.get<const IntVector>("method.generating_matrices.inline");
+  int numCols = problem_db.get<int>("method.m_max");
   /// NOTE: Catch missing 'm_max' here to avoid division by 0 in numRows
   if ( !numCols )
   {
@@ -496,7 +496,7 @@ const std::tuple<UInt64Matrix, int, int> DigitalNet::get_inline_generating_matri
   return std::make_tuple(
     generatingMatrices,
     numCols,
-    problem_db.get_int("method.t_max")
+    problem_db.get<int>("method.t_max")
   );
 }
 
@@ -507,10 +507,10 @@ const std::tuple<UInt64Matrix, int, int> DigitalNet::get_default_generating_matr
 {
   /// NOTE: outputLevel has not been set yet, so gettting it directly from
   /// the 'problem_db' instead
-  bool outputLevel = problem_db.get_short("method.output");
+  bool outputLevel = problem_db.get<short>("method.output");
 
   /// Select predefined generating matrices
-  if ( problem_db.get_short("method.ld.digitalnet.generating_matrix_scheme") == SOBOL_ORDER_2 )
+  if ( problem_db.get<short>("method.ld.digitalnet.generating_matrix_scheme") == SOBOL_ORDER_2 )
   {
     if ( outputLevel >= DEBUG_OUTPUT )
     {
@@ -527,7 +527,7 @@ const std::tuple<UInt64Matrix, int, int> DigitalNet::get_default_generating_matr
   {
     if ( outputLevel >= DEBUG_OUTPUT )
     {
-      if ( problem_db.get_short("method.ld.digitalnet.generating_matrix_scheme") == JOE_KUO )
+      if ( problem_db.get<short>("method.ld.digitalnet.generating_matrix_scheme") == JOE_KUO )
       {
         Cout << "Found predefined generating matrices 'joe_kuo'."
           << std::endl;

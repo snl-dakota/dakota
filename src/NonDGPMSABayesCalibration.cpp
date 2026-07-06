@@ -112,14 +112,14 @@ NonDGPMSABayesCalibration* NonDGPMSABayesCalibration::nonDGPMSAInstance(NULL);
 NonDGPMSABayesCalibration::
 NonDGPMSABayesCalibration(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
   NonDQUESOBayesCalibration(problem_db, parallel_lib, model),
-  buildSamples(probDescDB.get_int("method.build_samples")),
-  approxImportFile(probDescDB.get_string("method.import_build_points_file")),
-  approxImportFormat(probDescDB.get_ushort("method.import_build_format")),
+  buildSamples(probDescDB.get<int>("method.build_samples")),
+  approxImportFile(probDescDB.get<const String>("method.import_build_points_file")),
+  approxImportFormat(probDescDB.get<unsigned short>("method.import_build_format")),
   approxImportActiveOnly(
-    probDescDB.get_bool("method.import_build_active_only")),
+    probDescDB.get<bool>("method.import_build_active_only")),
   userConfigVars(expData.num_config_vars()),
   gpmsaConfigVars(std::max(userConfigVars, (unsigned int) 1)),
-  gpmsaNormalize(probDescDB.get_bool("method.nond.gpmsa_normalize"))
+  gpmsaNormalize(probDescDB.get<bool>("method.nond.gpmsa_normalize"))
 {   
   bool found_error = false;
 
@@ -158,12 +158,12 @@ NonDGPMSABayesCalibration(ProblemDescDB& problem_db, ParallelLibrary& parallel_l
   // TODO: conditionally enable sampler only if needed to augment
   // samples and allow both to be specified
   // if (approxImportFile.empty())
-  //   buildSamples = probDescDB.get_int("method.build_samples");
+  //   buildSamples = probDescDB.get<int>("method.build_samples");
   // else buildSamples will get set after reading the file at run-time
 
   // BMA TODO: should we always instantiate this or not?  Allow augmentation?
   int samples = approxImportFile.empty() ? buildSamples : 0;
-  const String& rng = probDescDB.get_string("method.random_number_generator");
+  const String& rng = probDescDB.get<const String>("method.random_number_generator");
   unsigned short sample_type = SUBMETHOD_DEFAULT;
   lhsIter = std::make_unique<NonDLHSSampling>
 		     (mcmcModel, sample_type, samples, randomSeed, rng);

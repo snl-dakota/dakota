@@ -34,8 +34,8 @@ RelaxedVarConstraints(const ProblemDescDB& problem_db,
 
   // Helper lambda: copy continuous bounds from explicit keys
   auto copy_cv = [&](const String& lb_key, const String& ub_key) {
-    const RealVector& lb = problem_db.get_rv(lb_key);
-    const RealVector& ub = problem_db.get_rv(ub_key);
+    const RealVector& lb = problem_db.get<const RealVector>(lb_key);
+    const RealVector& ub = problem_db.get<const RealVector>(ub_key);
     copy_data_partial(lb, allContinuousLowerBnds, acv_offset);
     copy_data_partial(ub, allContinuousUpperBnds, acv_offset);
     acv_offset += lb.length();

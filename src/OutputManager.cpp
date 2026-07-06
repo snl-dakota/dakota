@@ -247,19 +247,19 @@ void OutputManager::parse(const ProgramOptions& prog_opts,
 {
   initial_redirects(prog_opts);
 
-  graph2DFlag = problem_db.get_bool("environment.graphics");
-  tabularDataFlag = problem_db.get_bool("environment.tabular_graphics_data");
-  tabularDataFile = problem_db.get_string("environment.tabular_graphics_file");
-  resultsOutputFlag = problem_db.get_bool("environment.results_output");
-  resultsOutputFile = problem_db.get_string("environment.results_output_file");
-  modelEvalsSelection = problem_db.get_ushort("environment.model_evals_selection");
-  interfEvalsSelection = problem_db.get_ushort("environment.interface_evals_selection");
-  tabularFormat = problem_db.get_ushort("environment.tabular_format");
-  resultsOutputFormat = problem_db.get_ushort("environment.results_output_format");
+  graph2DFlag = problem_db.get<bool>("environment.graphics");
+  tabularDataFlag = problem_db.get<bool>("environment.tabular_graphics_data");
+  tabularDataFile = problem_db.get<const String>("environment.tabular_graphics_file");
+  resultsOutputFlag = problem_db.get<bool>("environment.results_output");
+  resultsOutputFile = problem_db.get<const String>("environment.results_output_file");
+  modelEvalsSelection = problem_db.get<unsigned short>("environment.model_evals_selection");
+  interfEvalsSelection = problem_db.get<unsigned short>("environment.interface_evals_selection");
+  tabularFormat = problem_db.get<unsigned short>("environment.tabular_format");
+  resultsOutputFormat = problem_db.get<unsigned short>("environment.results_output_format");
   if(resultsOutputFlag && resultsOutputFormat == 0)
     resultsOutputFormat = RESULTS_OUTPUT_TEXT;
   
-  int db_write_precision = problem_db.get_int("environment.output_precision");
+  int db_write_precision = problem_db.get<int>("environment.output_precision");
   if (db_write_precision > 0) {  // assign global write_precision
     if (db_write_precision > 16) {
       std::cout << "\nWarning: requested output_precision exceeds DAKOTA's "

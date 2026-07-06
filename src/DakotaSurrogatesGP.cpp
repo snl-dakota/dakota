@@ -31,7 +31,7 @@ SurrogatesGPApprox(const ProblemDescDB& problem_db,
   // keyword is absent there is no trend)
   surrogateOpts.sublist("Trend").set("estimate trend", true);
   const String& trend_string =
-    problem_db.get_string("model.surrogate.trend_order");
+    problem_db.get<const String>("model.surrogate.trend_order");
   if (trend_string == "constant")
     surrogateOpts.sublist("Trend").sublist("Options").set("max degree", 0);
   else if (trend_string == "linear")
@@ -50,8 +50,8 @@ SurrogatesGPApprox(const ProblemDescDB& problem_db,
 
   // TODO: Surfpack find_nugget is an integer; likely want bool or
   // different semantics
-  Real nugget = problem_db.get_real("model.surrogate.nugget");
-  short find_nugget = problem_db.get_short("model.surrogate.find_nugget");
+  Real nugget = problem_db.get<const Real>("model.surrogate.nugget");
+  short find_nugget = problem_db.get<short>("model.surrogate.find_nugget");
   if (find_nugget > 0) {
     surrogateOpts.sublist("Nugget").set("estimate nugget", true);
     surrogateOpts.sublist("Nugget").set("fixed nugget", 0.0);
@@ -63,7 +63,7 @@ SurrogatesGPApprox(const ProblemDescDB& problem_db,
   }
 
   // Number of optimization restarts
-  int num_restarts = problem_db.get_int("model.surrogate.num_restarts");
+  int num_restarts = problem_db.get<int>("model.surrogate.num_restarts");
   surrogateOpts.set("num restarts", num_restarts);
 
   // validate supported metrics
@@ -76,7 +76,7 @@ SurrogatesGPApprox(const ProblemDescDB& problem_db,
     std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep);
   shared_surf_data_rep->validate_metrics(allowed_metrics);
 
-  if (problem_db.get_bool("model.surrogate.import_surrogate"))
+  if (problem_db.get<bool>("model.surrogate.import_surrogate"))
     import_model(problem_db);
 }
 

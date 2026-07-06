@@ -22,7 +22,7 @@ namespace Dakota {
 
 Pybind11Interface::Pybind11Interface(const ProblemDescDB& problem_db, ParallelLibrary& parallel_lib)
   : DirectApplicInterface(problem_db, parallel_lib),
-    userNumpyFlag(problem_db.get_bool("interface.python.numpy")),
+    userNumpyFlag(problem_db.get<bool>("interface.python.numpy")),
     ownPython(false),
     py11Active(false)
 {

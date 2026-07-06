@@ -28,10 +28,10 @@ SurrogatesPolyApprox(const ProblemDescDB& problem_db,
   SurrogatesBaseApprox(problem_db, shared_data, approx_label)
 {
   surrogateOpts.set("max degree",
-		    static_cast<int>(problem_db.get_short("model.surrogate.polynomial_order"))
+		    static_cast<int>(problem_db.get<short>("model.surrogate.polynomial_order"))
 		    );
 //  surrogateOpts.set("advanced_options_file",
-//		    problem_db.get_string("model.advanced_options_file"));
+//		    problem_db.get<const String>("model.advanced_options_file"));
 
   // validate supported metrics
   std::set<std::string> allowed_metrics =

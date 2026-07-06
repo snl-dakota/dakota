@@ -100,12 +100,12 @@ std::map<const ProblemDescDB*, std::list<std::shared_ptr<Interface>>> Interface:
     instantiates derived classs */
 
 Interface::Interface(const ProblemDescDB& problem_db): 
-  interfaceType(problem_db.get_ushort("interface.type")),
-  interfaceId(problem_db.get_string("interface.id")), 
+  interfaceType(problem_db.get<unsigned short>("interface.type")),
+  interfaceId(problem_db.get<const String>("interface.id")), 
   analysisComponents(
-    problem_db.get_s2a("interface.application.analysis_components")),
+    problem_db.get<const String2DArray>("interface.application.analysis_components")),
   algebraicMappings(false),
-  coreMappings(true), outputLevel(problem_db.get_short("method.output")),
+  coreMappings(true), outputLevel(problem_db.get<short>("method.output")),
   currEvalId(0), fineGrainEvalCounters(outputLevel > NORMAL_OUTPUT),
   evalIdCntr(0), newEvalIdCntr(0), evalIdRefPt(0), newEvalIdRefPt(0),
   multiProcEvalFlag(false), ieDedSchedFlag(false),
@@ -123,12 +123,12 @@ Interface::Interface(const ProblemDescDB& problem_db):
   // at evaluation time, using the passed vars and response).
   // TO DO: parallel bcast of data or very proc reads file?
   const String& ampl_file_name
-    = problem_db.get_string("interface.algebraic_mappings");
+    = problem_db.get<const String>("interface.algebraic_mappings");
   if (!ampl_file_name.empty()) {
 #ifdef HAVE_AMPL
     algebraicMappings = true;
     bool hess_flag
-      = (problem_db.get_string("responses.hessian_type") == "analytic");
+      = (problem_db.get<const String>("responses.hessian_type") == "analytic");
     asl = (hess_flag) ? ASL_alloc(ASL_read_pfgh) : ASL_alloc(ASL_read_fg);
     // allow user input of either stub or stub.nl
     String stub = (strends(ampl_file_name, ".nl")) ? 

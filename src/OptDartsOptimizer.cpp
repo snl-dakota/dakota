@@ -35,12 +35,12 @@ OptDartsOptimizer::OptDartsOptimizer(ProblemDescDB& problem_db, ParallelLibrary&
      this->load_parameters(*model);
 
      // Set Rnd Seed
-     randomSeed = probDescDB.get_int("method.random_seed");
+     randomSeed = probDescDB.get<int>("method.random_seed");
           
      // Set Max # of BB Evaluations
-     //maxBlackBoxEvals = probDescDB.get_sizet("method.max_function_evaluations");
+     //maxBlackBoxEvals = probDescDB.get<size_t>("method.max_function_evaluations");
           
-     //maxIterations = probDescDB.get_sizet("method.max_iterations");
+     //maxIterations = probDescDB.get<size_t>("method.max_iterations");
      if (methodName == GENIE_OPT_DARTS) 
        use_DIRECT = false;
      else 

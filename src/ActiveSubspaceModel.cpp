@@ -29,30 +29,29 @@ ActiveSubspaceModel* ActiveSubspaceModel::asmInstance(NULL);
 
 ActiveSubspaceModel::ActiveSubspaceModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
   SubspaceModel(problem_db, parallel_lib, get_sub_model(problem_db, parallel_lib)),
-  initialSamples(problem_db.get_int("model.initial_samples")),
+  initialSamples(problem_db.get<int>("model.initial_samples")),
   subspaceIdBingLi(
-    probDescDB.get_bool("model.active_subspace.truncation_method.bing_li")),
+    probDescDB.get<bool>("model.active_subspace.truncation_method.bing_li")),
   subspaceIdConstantine(
-    probDescDB.get_bool("model.active_subspace.truncation_method.constantine")),
+    probDescDB.get<bool>("model.active_subspace.truncation_method.constantine")),
   subspaceIdEnergy(
-    probDescDB.get_bool("model.active_subspace.truncation_method.energy")),
+    probDescDB.get<bool>("model.active_subspace.truncation_method.energy")),
   subspaceIdCV(
-    probDescDB.get_bool("model.active_subspace.truncation_method.cv")),
-  numReplicates(problem_db.get_int("model.active_subspace.bootstrap_samples")),
+    probDescDB.get<bool>("model.active_subspace.truncation_method.cv")),
+  numReplicates(problem_db.get<int>("model.active_subspace.bootstrap_samples")),
   totalSamples(0), gradientScaleFactors(RealArray(numFns, 1.)),
-  truncationTolerance(probDescDB.get_real(
-    "model.active_subspace.truncation_method.energy.truncation_tolerance")),
-  buildSurrogate(probDescDB.get_bool("model.active_subspace.build_surrogate")),
+  truncationTolerance(probDescDB.get<const Real>("model.active_subspace.truncation_method.energy.truncation_tolerance")),
+  buildSurrogate(probDescDB.get<bool>("model.active_subspace.build_surrogate")),
   refinementSamples(0),
   subspaceNormalization(
-    probDescDB.get_ushort("model.active_subspace.normalization")),
-  cvIncremental(probDescDB.get_bool("model.active_subspace.cv.incremental")),
-  cvIdMethod(probDescDB.get_ushort("model.active_subspace.cv.id_method")),
+    probDescDB.get<unsigned short>("model.active_subspace.normalization")),
+  cvIncremental(probDescDB.get<bool>("model.active_subspace.cv.incremental")),
+  cvIdMethod(probDescDB.get<unsigned short>("model.active_subspace.cv.id_method")),
   cvRelTolerance(
-    probDescDB.get_real("model.active_subspace.cv.relative_tolerance")),
+    probDescDB.get<const Real>("model.active_subspace.cv.relative_tolerance")),
   cvDecreaseTolerance(
-    probDescDB.get_real("model.active_subspace.cv.decrease_tolerance")),
-  cvMaxRank(problem_db.get_int("model.active_subspace.cv.max_rank"))
+    probDescDB.get<const Real>("model.active_subspace.cv.decrease_tolerance")),
+  cvMaxRank(problem_db.get<int>("model.active_subspace.cv.max_rank"))
 {
   modelType = "active_subspace";
   modelId = RecastModel::recast_model_id(root_model_id(), "ACTIVE_SUBSPACE");
@@ -66,10 +65,10 @@ ActiveSubspaceModel::ActiveSubspaceModel(ProblemDescDB& problem_db, ParallelLibr
   // initialize the fullspace derivative sampler; this
   // will configure it to perform initialSamples
   init_fullspace_sampler(
-    probDescDB.get_ushort("model.active_subspace.sample_type"));
+    probDescDB.get<unsigned short>("model.active_subspace.sample_type"));
 
   const IntVector& db_refine_samples =
-    problem_db.get_iv("model.refinement_samples");
+    problem_db.get<const IntVector>("model.refinement_samples");
   if (db_refine_samples.length() == 1)
     refinementSamples = db_refine_samples[0];
   else if (db_refine_samples.length() > 1) {
@@ -115,7 +114,7 @@ ActiveSubspaceModel(std::shared_ptr<Model> sub_model, unsigned int dimension,
 std::shared_ptr<Model> ActiveSubspaceModel::get_sub_model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib)
 {
   const String& actual_model_pointer
-    = problem_db.get_string("model.surrogate.truth_model_pointer");
+    = problem_db.get<const String>("model.surrogate.truth_model_pointer");
   size_t model_index = problem_db.get_db_model_node(); // for restoration
   problem_db.set_db_model_nodes(actual_model_pointer);
 

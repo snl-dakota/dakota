@@ -33,7 +33,7 @@ NonDAdaptImpSampling::
 NonDAdaptImpSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
   NonDSampling(problem_db, parallel_lib, model),
   importanceSamplingType(
-    probDescDB.get_ushort("method.nond.integration_refinement")),
+    probDescDB.get<unsigned short>("method.nond.integration_refinement")),
   initLHS(true), useModelBounds(false), invertProb(false),
   trackExtremeValues(pdfOutput) // used for defining PDF bounds
 {
@@ -48,7 +48,7 @@ NonDAdaptImpSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, s
 
   // size of refinement batches is separate from initial LHS size (numSamples)
   const IntVector& db_refine_samples = 
-    probDescDB.get_iv("method.nond.refinement_samples");
+    probDescDB.get<const IntVector>("method.nond.refinement_samples");
   // if separate refinement batch size not provided, reuse initial LHS size
   refineSamples = numSamples; // default
   if (db_refine_samples.length() == 1)

@@ -38,14 +38,14 @@ ParamStudy::ParamStudy(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
   switch (methodName) {
   case LIST_PARAMETER_STUDY: {
     const RealVector& pt_list
-      = probDescDB.get_rv("method.parameter_study.list_of_points");
+      = probDescDB.get<const RealVector>("method.parameter_study.list_of_points");
     if (pt_list.empty()) {
       const String& pt_fname
-	= probDescDB.get_string("method.pstudy.import_file");
+	= probDescDB.get<const String>("method.pstudy.import_file");
       unsigned short tabular_format
-	= probDescDB.get_ushort("method.pstudy.import_format");
+	= probDescDB.get<unsigned short>("method.pstudy.import_format");
       bool active_only
-	= probDescDB.get_bool("method.pstudy.import_active_only");
+	= probDescDB.get<bool>("method.pstudy.import_active_only");
       if (load_distribute_points(pt_fname, tabular_format, active_only))
 	err_flag = true;
     }
@@ -55,15 +55,15 @@ ParamStudy::ParamStudy(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
   }
   case VECTOR_PARAMETER_STUDY: {
     const RealVector& step_vector
-      = probDescDB.get_rv("method.parameter_study.step_vector");
+      = probDescDB.get<const RealVector>("method.parameter_study.step_vector");
     if (step_vector.empty()) { // final_point & num_steps spec.
       // check length and distribute
       if (check_final_point(
-	  probDescDB.get_rv("method.parameter_study.final_point")))
+	  probDescDB.get<const RealVector>("method.parameter_study.final_point")))
 	err_flag = true;
       // check value
       if (check_num_steps(
-	  probDescDB.get_int("method.parameter_study.num_steps")))
+	  probDescDB.get<int>("method.parameter_study.num_steps")))
 	err_flag = true;
       // precompute steps (using construct-time initialPoint) and perform error
       // checks only if in check mode; else avoid additional overhead and rely
@@ -83,7 +83,7 @@ ParamStudy::ParamStudy(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
 	err_flag = true;
        // check value
      if (check_num_steps(
-	  probDescDB.get_int("method.parameter_study.num_steps")))
+	  probDescDB.get<int>("method.parameter_study.num_steps")))
 	err_flag = true;
       // discrete initial pts needed for check_sets(); reassigned in pre-run
       initialDIVPoint = ModelUtils::discrete_int_variables(*iteratedModel);    // view
@@ -97,10 +97,10 @@ ParamStudy::ParamStudy(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
   }
   case CENTERED_PARAMETER_STUDY:
     if (check_step_vector(
-	probDescDB.get_rv("method.parameter_study.step_vector")))
+	probDescDB.get<const RealVector>("method.parameter_study.step_vector")))
       err_flag = true;
     if (check_steps_per_variable(
-	probDescDB.get_iv("method.parameter_study.steps_per_variable")))
+	probDescDB.get<const IntVector>("method.parameter_study.steps_per_variable")))
       err_flag = true;
     initialDIVPoint = ModelUtils::discrete_int_variables(*iteratedModel);    // view
     initialDSVPoint.resize(boost::extents[numDiscreteStringVars]);
@@ -111,7 +111,7 @@ ParamStudy::ParamStudy(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
       err_flag = true;
     break;
   case MULTIDIM_PARAMETER_STUDY:
-    if (check_variable_partitions(probDescDB.get_usa("method.partitions")))
+    if (check_variable_partitions(probDescDB.get<const UShortArray>("method.partitions")))
       err_flag = true;
     if (check_finite_bounds())
       err_flag = true;

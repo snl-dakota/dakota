@@ -35,7 +35,7 @@ namespace Dakota {
 NonDMultifidelitySampling::
 NonDMultifidelitySampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
   NonDNumericAllocSampling(problem_db, parallel_lib, model),
-  numericalSolveMode(problem_db.get_ushort("method.nond.numerical_solve_mode"))
+  numericalSolveMode(problem_db.get<unsigned short>("method.nond.numerical_solve_mode"))
 {
   //analyticEstVarDerivs = true; // now adopted for all numerical estimators
   //hardenNumericSoln    = true; // now adopted for all numerical estimators
@@ -43,7 +43,7 @@ NonDMultifidelitySampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_l
 
   // reorderModelsOnTheFly affects finite_solution_bounds() so restrict
   // activation to MFMC:
-  reorderModelsOnTheFly = (problem_db.get_ushort("method.nond.model_reordering")
+  reorderModelsOnTheFly = (problem_db.get<unsigned short>("method.nond.model_reordering")
 			   == REORDER_MODELS_ON_THE_FLY); // on by default
 
   // defining fullApproxSet allows reuse of fns that support model selection
@@ -54,7 +54,7 @@ NonDMultifidelitySampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_l
   // model{Groups,GroupCost} have run-time dependency on approx sequence
   //if (costSource == USER_COST_SPEC) update_model_group_costs(); 
 
-  load_pilot_sample(problem_db.get_sza("method.nond.pilot_samples"),
+  load_pilot_sample(problem_db.get<const SizetArray>("method.nond.pilot_samples"),
 		    numGroups, pilotSamples);
 
   size_t max_ps = find_max(pilotSamples);

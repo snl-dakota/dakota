@@ -51,12 +51,12 @@ Iterator::Iterator(ProblemDescDB& problem_db,
 		   ParallelLibrary& parallel_lib, std::shared_ptr<TraitsBase> traits):
   probDescDB(problem_db), parallelLib(parallel_lib),
   methodPCIter(parallelLib.parallel_configuration_iterator()),
-  myModelLayers(0), methodName(problem_db.get_ushort("method.algorithm")),
-  convergenceTol(problem_db.get_real("method.convergence_tolerance")),
-  maxIterations(problem_db.get_sizet("method.max_iterations")),
-  maxFunctionEvals(problem_db.get_sizet("method.max_function_evaluations")),
+  myModelLayers(0), methodName(problem_db.get<unsigned short>("method.algorithm")),
+  convergenceTol(problem_db.get<const Real>("method.convergence_tolerance")),
+  maxIterations(problem_db.get<size_t>("method.max_iterations")),
+  maxFunctionEvals(problem_db.get<size_t>("method.max_function_evaluations")),
   subIteratorFlag(false),
-  numFinalSolutions(problem_db.get_sizet("method.final_solutions")),
+  numFinalSolutions(problem_db.get<size_t>("method.final_solutions")),
   // Output verbosity is observed within Iterator (algorithm verbosity),
   // Model (synchronize/estimate_derivatives verbosity), Interface
   // (map/synch verbosity, file operations verbosity), and Approximation
@@ -70,14 +70,14 @@ Iterator::Iterator(ProblemDescDB& problem_db,
   // where "silent," "quiet", "verbose" and "debug" must be user specified and
   // "normal" is the default for no user specification.  Note that iterators
   // and interfaces have the most granularity in verbosity.
-  outputLevel(problem_db.get_short("method.output")), summaryOutputFlag(true),
+  outputLevel(problem_db.get<short>("method.output")), summaryOutputFlag(true),
   topLevel(false), resultsDB(iterator_results_db),
   evaluationsDB(evaluation_store_db),
   evaluationsDBState(EvaluationsDBState::UNINITIALIZED),
-  methodId(problem_db.get_string("method.id")), execNum(0),
-  methodTraits(traits), exportSurrogate(problem_db.get_bool("method.export_surrogate")),
-  surrExportPrefix(problem_db.get_string("method.model_export_prefix")),
-  surrExportFormat(problem_db.get_ushort("method.model_export_format")),
+  methodId(problem_db.get<const String>("method.id")), execNum(0),
+  methodTraits(traits), exportSurrogate(problem_db.get<bool>("method.export_surrogate")),
+  surrExportPrefix(problem_db.get<const String>("method.model_export_prefix")),
+  surrExportFormat(problem_db.get<unsigned short>("method.model_export_format")),
   // default construct a Model so instantiation of MetaIterators won't fail when
   // eval_prefix_id, which requires a model instance, is called from
   // Iterator::init_communicators.

@@ -39,20 +39,20 @@ namespace Dakota {
     instantiation.  In this case, set_db_list_nodes has been called and
     probDescDB can be queried for settings from the method specification. */
 NonDSampling::NonDSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
-  NonD(problem_db, parallel_lib, model), seedSpec(probDescDB.get_int("method.random_seed")),
-  randomSeed(seedSpec), samplesSpec(probDescDB.get_int("method.samples")),
+  NonD(problem_db, parallel_lib, model), seedSpec(probDescDB.get<int>("method.random_seed")),
+  randomSeed(seedSpec), samplesSpec(probDescDB.get<int>("method.samples")),
   samplesRef(samplesSpec), numSamples(samplesSpec),
-  rngName(probDescDB.get_string("method.random_number_generator")),
-  sampleType(probDescDB.get_ushort("method.sample_type")), samplesIncrement(0),
-  stdRegressionCoeffs(probDescDB.get_bool("method.std_regression_coeffs")),
-  toleranceIntervalsFlag(probDescDB.get_bool("method.tolerance_intervals")),
+  rngName(probDescDB.get<const String>("method.random_number_generator")),
+  sampleType(probDescDB.get<unsigned short>("method.sample_type")), samplesIncrement(0),
+  stdRegressionCoeffs(probDescDB.get<bool>("method.std_regression_coeffs")),
+  toleranceIntervalsFlag(probDescDB.get<bool>("method.tolerance_intervals")),
   statsFlag(true), allDataFlag(false), samplingVarsMode(ACTIVE),
   sampleRanksMode(IGNORE_RANKS),
-  varyPattern(!probDescDB.get_bool("method.fixed_seed")), 
-  backfillDuplicates(probDescDB.get_bool("method.backfill")),
-  wilksFlag(probDescDB.get_bool("method.wilks")), numLHSRuns(0),
+  varyPattern(!probDescDB.get<bool>("method.fixed_seed")), 
+  backfillDuplicates(probDescDB.get<bool>("method.backfill")),
+  wilksFlag(probDescDB.get<bool>("method.wilks")), numLHSRuns(0),
   samplerDriver(
-    ( problem_db.get_ushort("method.sample_type") == SUBMETHOD_LOW_DISCREPANCY_SAMPLING ) ?
+    ( problem_db.get<unsigned short>("method.sample_type") == SUBMETHOD_LOW_DISCREPANCY_SAMPLING ) ?
     std::unique_ptr<SamplerDriver>(std::make_unique<LDDriverAdapter>(problem_db)) :
     std::unique_ptr<SamplerDriver>(std::make_unique<LHSDriverAdapter>()) )
 {
@@ -92,9 +92,9 @@ NonDSampling::NonDSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_
     }
 
     // Wilks order statistics
-    wilksOrder = probDescDB.get_ushort("method.order");
+    wilksOrder = probDescDB.get<unsigned short>("method.order");
     // Wilks interval sidedness
-    wilksSidedness = probDescDB.get_short("method.wilks.sided_interval");
+    wilksSidedness = probDescDB.get<short>("method.wilks.sided_interval");
     bool wilks_twosided = (wilksSidedness == TWO_SIDED);
 
     // Support multiple probability_levels
@@ -110,7 +110,7 @@ NonDSampling::NonDSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_
     if (wilksAlpha <= 0.0) // Assign a default if probability_levels unspecified
       wilksAlpha = 0.95;
 
-    wilksBeta = probDescDB.get_real("method.confidence_level");
+    wilksBeta = probDescDB.get<const Real>("method.confidence_level");
     if (wilksBeta <= 0.0) // Assign a default if probability_levels unspecified
       wilksBeta = 0.95;
     numSamples = compute_wilks_sample_size(wilksOrder, wilksAlpha,
@@ -119,8 +119,8 @@ NonDSampling::NonDSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_
   }
 
   if (toleranceIntervalsFlag) {
-    tiCoverage = probDescDB.get_real("method.ti_coverage");
-    tiConfidenceLevel = probDescDB.get_real("method.ti_confidence_level");
+    tiCoverage = probDescDB.get<const Real>("method.ti_coverage");
+    tiConfidenceLevel = probDescDB.get<const Real>("method.ti_confidence_level");
 
     tiNumValidSamples = 0;
   }

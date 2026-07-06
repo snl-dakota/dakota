@@ -106,30 +106,30 @@ String substitute_params_and_results(const String &driver, const String &params,
 ProcessApplicInterface::
 ProcessApplicInterface(const ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
   ApplicationInterface(problem_db, parallel_lib), 
-  fileTagFlag(problem_db.get_bool("interface.application.file_tag")),
-  fileSaveFlag(problem_db.get_bool("interface.application.file_save")),
-  commandLineArgs(!problem_db.get_bool("interface.application.verbatim")),
-  paramsFileWriter(ParametersFileWriter::get_writer(problem_db.get_ushort("interface.application.parameters_file_format"))),
+  fileTagFlag(problem_db.get<bool>("interface.application.file_tag")),
+  fileSaveFlag(problem_db.get<bool>("interface.application.file_save")),
+  commandLineArgs(!problem_db.get<bool>("interface.application.verbatim")),
+  paramsFileWriter(ParametersFileWriter::get_writer(problem_db.get<unsigned short>("interface.application.parameters_file_format"))),
   resultsFileReader(ResultsFileReader::get_reader(
-    problem_db.get_ushort("interface.application.results_file_format"),
-    problem_db.get_bool("interface.labeled_results")
+    problem_db.get<unsigned short>("interface.application.results_file_format"),
+    problem_db.get<bool>("interface.labeled_results")
   )),
   multipleParamsFiles(false),
-  iFilterName(problem_db.get_string("interface.application.input_filter")),
-  oFilterName(problem_db.get_string("interface.application.output_filter")),
-  programNames(problem_db.get_sa("interface.application.analysis_drivers")),
+  iFilterName(problem_db.get<const String>("interface.application.input_filter")),
+  oFilterName(problem_db.get<const String>("interface.application.output_filter")),
+  programNames(problem_db.get<const StringArray>("interface.application.analysis_drivers")),
   specifiedParamsFileName(
-    problem_db.get_string("interface.application.parameters_file")),
+    problem_db.get<const String>("interface.application.parameters_file")),
   specifiedResultsFileName(
-    problem_db.get_string("interface.application.results_file")),
-  allowExistingResults(problem_db.get_bool("interface.allow_existing_results")),
-  useWorkdir(problem_db.get_bool("interface.useWorkdir")),
-  workDirName(problem_db.get_string("interface.workDir")),
-  dirTag(problem_db.get_bool("interface.dirTag")),
-  dirSave(problem_db.get_bool("interface.dirSave")),
-  linkFiles(problem_db.get_sa("interface.linkFiles")),
-  copyFiles(problem_db.get_sa("interface.copyFiles")),
-  templateReplace(problem_db.get_bool("interface.templateReplace"))
+    problem_db.get<const String>("interface.application.results_file")),
+  allowExistingResults(problem_db.get<bool>("interface.allow_existing_results")),
+  useWorkdir(problem_db.get<bool>("interface.useWorkdir")),
+  workDirName(problem_db.get<const String>("interface.workDir")),
+  dirTag(problem_db.get<bool>("interface.dirTag")),
+  dirSave(problem_db.get<bool>("interface.dirSave")),
+  linkFiles(problem_db.get<const StringArray>("interface.linkFiles")),
+  copyFiles(problem_db.get<const StringArray>("interface.copyFiles")),
+  templateReplace(problem_db.get<bool>("interface.templateReplace"))
 {
   // When using work directory, relative analysis drivers starting
   // with . or .. may need to be converted to absolute so they work

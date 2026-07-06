@@ -16,17 +16,17 @@ namespace Dakota {
 
 ScalingOptions::ScalingOptions(const ProblemDescDB& pdb,
 			       const SharedResponseData& srd):
-  cvScales(pdb.get_rv("variables.continuous_design.scales")),
-  nlnIneqScales(pdb.get_rv("responses.nonlinear_inequality_scales")),
-  nlnEqScales(pdb.get_rv("responses.nonlinear_equality_scales")),
-  linIneqScales(pdb.get_rv("variables.linear_inequality_scales")),
-  linEqScales(pdb.get_rv("variables.linear_equality_scales"))
+  cvScales(pdb.get<const RealVector>("variables.continuous_design.scales")),
+  nlnIneqScales(pdb.get<const RealVector>("responses.nonlinear_inequality_scales")),
+  nlnEqScales(pdb.get<const RealVector>("responses.nonlinear_equality_scales")),
+  linIneqScales(pdb.get<const RealVector>("variables.linear_inequality_scales")),
+  linEqScales(pdb.get<const RealVector>("variables.linear_equality_scales"))
 {
-  cvScaleTypes = scale_str2enum(pdb.get_sa("variables.continuous_design.scale_types"));
-  nlnIneqScaleTypes = scale_str2enum(pdb.get_sa("responses.nonlinear_inequality_scale_types"));
-  nlnEqScaleTypes = scale_str2enum(pdb.get_sa("responses.nonlinear_equality_scale_types"));
-  linIneqScaleTypes = scale_str2enum(pdb.get_sa("variables.linear_inequality_scale_types"));
-  linEqScaleTypes = scale_str2enum(pdb.get_sa("variables.linear_equality_scale_types"));
+  cvScaleTypes = scale_str2enum(pdb.get<const StringArray>("variables.continuous_design.scale_types"));
+  nlnIneqScaleTypes = scale_str2enum(pdb.get<const StringArray>("responses.nonlinear_inequality_scale_types"));
+  nlnEqScaleTypes = scale_str2enum(pdb.get<const StringArray>("responses.nonlinear_equality_scale_types"));
+  linIneqScaleTypes = scale_str2enum(pdb.get<const StringArray>("variables.linear_inequality_scale_types"));
+  linEqScaleTypes = scale_str2enum(pdb.get<const StringArray>("variables.linear_equality_scale_types"));
 
   // For downstream code, populate a single SCALE_VALUE if needed
   default_scale_types(cvScales, cvScaleTypes);
@@ -37,8 +37,8 @@ ScalingOptions::ScalingOptions(const ProblemDescDB& pdb,
 
   // TODO: relax overly conservative expansion of primary weights, scales, sense
 
-  UShortArray pri_st = scale_str2enum(pdb.get_sa("responses.primary_response_fn_scale_types"));
-  const RealVector& pri_s = pdb.get_rv("responses.primary_response_fn_scales");
+  UShortArray pri_st = scale_str2enum(pdb.get<const StringArray>("responses.primary_response_fn_scale_types"));
+  const RealVector& pri_s = pdb.get<const RealVector>("responses.primary_response_fn_scales");
 
   default_scale_types(pri_s, pri_st);
 

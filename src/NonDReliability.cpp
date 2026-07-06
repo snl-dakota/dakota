@@ -19,12 +19,12 @@ namespace Dakota {
 
 NonDReliability::NonDReliability(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
   NonD(problem_db, parallel_lib, model),
-  mppSearchType(probDescDB.get_ushort("method.sub_method")),
+  mppSearchType(probDescDB.get<unsigned short>("method.sub_method")),
   integrationRefinement(
-    probDescDB.get_ushort("method.nond.integration_refinement")),
+    probDescDB.get<unsigned short>("method.nond.integration_refinement")),
   numRelAnalyses(0)
-  //refinementSamples(probDescDB.get_int("method.samples")),
-  //refinementSeed(probDescDB.get_int("method.random_seed"))
+  //refinementSamples(probDescDB.get<int>("method.samples")),
+  //refinementSeed(probDescDB.get<int>("method.random_seed"))
 {
   // Check for suitable distribution types.
   if (numDiscreteIntVars || numDiscreteStringVars || numDiscreteRealVars) {

@@ -32,26 +32,26 @@ extern PRPCache data_pairs;
 
 DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
   SurrogateModel(problem_db, parallel_lib),
-  pointsTotal(problem_db.get_int("model.surrogate.points_total")),
-  pointsManagement(problem_db.get_short("model.surrogate.points_management")),
-  pointReuse(problem_db.get_string("model.surrogate.point_reuse")),
-  exportSurrogate(problem_db.get_bool("model.surrogate.export_surrogate")),
+  pointsTotal(problem_db.get<int>("model.surrogate.points_total")),
+  pointsManagement(problem_db.get<short>("model.surrogate.points_management")),
+  pointReuse(problem_db.get<const String>("model.surrogate.point_reuse")),
+  exportSurrogate(problem_db.get<bool>("model.surrogate.export_surrogate")),
   importPointsFile(
-    problem_db.get_string("model.surrogate.import_build_points_file")),
+    problem_db.get<const String>("model.surrogate.import_build_points_file")),
   exportPointsFile(
-    problem_db.get_string("model.surrogate.export_approx_points_file")),
-  exportFormat(problem_db.get_ushort("model.surrogate.export_approx_format")),
+    problem_db.get<const String>("model.surrogate.export_approx_points_file")),
+  exportFormat(problem_db.get<unsigned short>("model.surrogate.export_approx_format")),
   exportVarianceFile(
-    problem_db.get_string("model.surrogate.export_approx_variance_file")),
+    problem_db.get<const String>("model.surrogate.export_approx_variance_file")),
   exportVarianceFormat(
-    problem_db.get_ushort("model.surrogate.export_approx_variance_format")),
-  autoRefine(problem_db.get_bool("model.surrogate.auto_refine")),
-  maxIterations(problem_db.get_sizet("model.max_iterations")),
-  maxFuncEvals(problem_db.get_sizet("model.max_function_evals")),
-  convergenceTolerance(problem_db.get_real("model.convergence_tolerance")),
-  softConvergenceLimit(problem_db.get_int("model.soft_convergence_limit")),
-  refineCVMetric(problem_db.get_string("model.surrogate.refine_cv_metric")),
-  refineCVFolds(problem_db.get_int("model.surrogate.refine_cv_folds"))
+    problem_db.get<unsigned short>("model.surrogate.export_approx_variance_format")),
+  autoRefine(problem_db.get<bool>("model.surrogate.auto_refine")),
+  maxIterations(problem_db.get<size_t>("model.max_iterations")),
+  maxFuncEvals(problem_db.get<size_t>("model.max_function_evals")),
+  convergenceTolerance(problem_db.get<const Real>("model.convergence_tolerance")),
+  softConvergenceLimit(problem_db.get<int>("model.soft_convergence_limit")),
+  refineCVMetric(problem_db.get<const String>("model.surrogate.refine_cv_metric")),
+  refineCVFolds(problem_db.get<int>("model.surrogate.refine_cv_folds"))
 {
   // ignore bounds when finite differencing on data fits, since the bounds are
   // artificial in this case (and reflecting the stencil degrades accuracy)
@@ -73,9 +73,9 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db, ParallelLibrary& p
   // DataFitSurrModel is allowed to set the db list nodes, so long as it 
   // restores the list nodes to their previous setting
   const String& dace_method_pointer
-    = problem_db.get_string("model.dace_method_pointer");
+    = problem_db.get<const String>("model.dace_method_pointer");
   const String& actual_model_pointer
-    = problem_db.get_string("model.surrogate.truth_model_pointer");
+    = problem_db.get<const String>("model.surrogate.truth_model_pointer");
   bool dace_construct = !dace_method_pointer.empty(),
       model_construct = (dace_construct || !actual_model_pointer.empty());
   size_t method_index = _NPOS, model_index = _NPOS;
@@ -98,12 +98,12 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db, ParallelLibrary& p
     if (strends(surrogateType, "_orthogonal_polynomial") ||
 	strends(surrogateType, "_interpolation_polynomial")) {
       basis_expansion = true;
-      u_space_type = problem_db.get_short("model.surrogate.expansion_type");
+      u_space_type = problem_db.get<short>("model.surrogate.expansion_type");
     }
     else if (strends(surrogateType, "_function_train" )) {
       basis_expansion = true;
       // Hardwire for C3 case prior to availability of XML spec:
-      u_space_type = PARTIAL_ASKEY_U;//problem_db.get_short("model.surrogate.expansion_type");
+      u_space_type = PARTIAL_ASKEY_U;//problem_db.get<short>("model.surrogate.expansion_type");
     }
     else {
       actualModel = Model::get_model(problem_db, parallel_lib);
@@ -197,9 +197,9 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db, ParallelLibrary& p
   }
 
   if (import_pts)
-    import_points(problem_db.get_ushort("model.surrogate.import_build_format"),
-      problem_db.get_bool("model.surrogate.import_use_variable_labels"),
-      problem_db.get_bool("model.surrogate.import_build_active_only"));
+    import_points(problem_db.get<unsigned short>("model.surrogate.import_build_format"),
+      problem_db.get<bool>("model.surrogate.import_use_variable_labels"),
+      problem_db.get<bool>("model.surrogate.import_build_active_only"));
   if (export_pts)
     initialize_export();
   if (import_pts || export_pts)
@@ -207,7 +207,7 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db, ParallelLibrary& p
 
   // actual import of the model happens in ctor of specific Approximations
   // this prevents an initial build
-  if (problem_db.get_bool("model.surrogate.import_surrogate")) {
+  if (problem_db.get<bool>("model.surrogate.import_surrogate")) {
     for (auto& approx : approxInterface->approximations())
       approx.map_variable_labels(vars);
     ++approxBuilds;

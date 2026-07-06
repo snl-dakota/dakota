@@ -49,7 +49,7 @@ NonDInterval::NonDInterval(ProblemDescDB& problem_db, ParallelLibrary& parallel_
   }
   else {
     // reliability_levels not currently supported, but could be
-    if (!probDescDB.get_rva("method.nond.reliability_levels").empty()) {
+    if (!probDescDB.get<const RealVectorArray>("method.nond.reliability_levels").empty()) {
       Cerr << "Error: reliability_levels not supported in NonDInterval "
 	   << "evidence mode." << std::endl;
       err_flag = true;

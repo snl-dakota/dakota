@@ -32,7 +32,7 @@ SurrogatesBaseApprox(const ProblemDescDB& problem_db,
 		     const String& approx_label):
   FieldApproximation(BaseConstructor(), problem_db, shared_data, StringArray{approx_label})
 {
-  advanced_options_file = problem_db.get_string("model.advanced_options_file");
+  advanced_options_file = problem_db.get<const String>("model.advanced_options_file");
   set_verbosity();
 }
 
@@ -43,7 +43,7 @@ SurrogatesBaseApprox(const ProblemDescDB& problem_db,
 		     const StringArray& approx_labels):
   FieldApproximation(BaseConstructor(), problem_db, shared_data, approx_labels)
 {
-  advanced_options_file = problem_db.get_string("model.advanced_options_file");
+  advanced_options_file = problem_db.get<const String>("model.advanced_options_file");
   set_verbosity();
 }
 
@@ -322,9 +322,9 @@ void SurrogatesBaseApprox::
 import_model(const ProblemDescDB& problem_db)
 {
   auto import_prefix =
-    problem_db.get_string("model.surrogate.model_import_prefix");
+    problem_db.get<const String>("model.surrogate.model_import_prefix");
   auto import_format =
-    problem_db.get_ushort("model.surrogate.model_import_format");
+    problem_db.get<unsigned short>("model.surrogate.model_import_format");
   bool is_binary = import_format & BINARY_ARCHIVE;
   std::string filename = import_prefix + "." + approxLabel +
     (is_binary ? ".bin" : ".txt");

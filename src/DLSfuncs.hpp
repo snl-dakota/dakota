@@ -74,9 +74,9 @@ Dakota_funcs
 	void (*SetBestContVars)(Optimizer1*, int n, double *x);	// set best continuous var values
 	void (*SetBestDiscVars)(Optimizer1*, int n, int *x);	// set best discrete var values
 	void (*SetBestRespFns)(Optimizer1*, int n, double *x);	// set best resp func values
-	double (*get_real)(Optimizer1*, const char*);	// for probDescDB.get_real()
-	int    (*get_int) (Optimizer1*, const char*);	// for probDescDB.get_int()
-	bool   (*get_bool)(Optimizer1*, const char*);	// for probDescDB.get_bool()
+	double (*get_real)(Optimizer1*, const char*);	// for probDescDB.get<const Real>()
+	int    (*get_int) (Optimizer1*, const char*);	// for probDescDB.get<int>()
+	bool   (*get_bool)(Optimizer1*, const char*);	// for probDescDB.get<bool>()
 	Dakota_probsize *ps;
 	std::ostream *dakota_cerr, *dakota_cout;
 	FILE *Stderr;

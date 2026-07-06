@@ -25,53 +25,53 @@ ApplicationInterface::
 ApplicationInterface(const ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
   Interface(problem_db),
   parallelLib(parallel_lib), 
-  batchEval(problem_db.get_bool("interface.batch")),
-  asynchFlag(problem_db.get_bool("interface.asynch")), batchIdCntr(0),
+  batchEval(problem_db.get<bool>("interface.batch")),
+  asynchFlag(problem_db.get<bool>("interface.asynch")), batchIdCntr(0),
   suppressOutput(false), evalCommSize(1), evalCommRank(0), evalServerId(1),
   eaDedSchedFlag(false), analysisCommSize(1), analysisCommRank(0),
   analysisServerId(1), multiProcAnalysisFlag(false),
   asynchLocalAnalysisFlag(false),
   asynchLocalEvalConcSpec(
-    problem_db.get_int("interface.asynch_local_evaluation_concurrency")),
+    problem_db.get<int>("interface.asynch_local_evaluation_concurrency")),
   asynchLocalAnalysisConcSpec(
-    problem_db.get_int("interface.asynch_local_analysis_concurrency")),
+    problem_db.get<int>("interface.asynch_local_analysis_concurrency")),
   numAnalysisDrivers(
-    problem_db.get_sa("interface.application.analysis_drivers").size()),
+    problem_db.get<const StringArray>("interface.application.analysis_drivers").size()),
   failureMessage("Failure captured"),
   worldSize(parallelLib.world_size()), worldRank(parallelLib.world_rank()),
   iteratorCommSize(1), iteratorCommRank(0), ieMessagePass(false),
-  numEvalServersSpec(problem_db.get_int("interface.evaluation_servers")),
-  procsPerEvalSpec(problem_db.get_int("interface.processors_per_evaluation")),
+  numEvalServersSpec(problem_db.get<int>("interface.evaluation_servers")),
+  procsPerEvalSpec(problem_db.get<int>("interface.processors_per_evaluation")),
   eaMessagePass(false), 
-  numAnalysisServersSpec(problem_db.get_int("interface.analysis_servers")),
+  numAnalysisServersSpec(problem_db.get<int>("interface.analysis_servers")),
   procsPerAnalysisSpec(
-    problem_db.get_int("interface.direct.processors_per_analysis")),
+    problem_db.get<int>("interface.direct.processors_per_analysis")),
   lenVarsMessage(0), lenVarsActSetMessage(0), lenResponseMessage(0),
   lenPRPairMessage(0),
-  evalScheduling(problem_db.get_short("interface.evaluation_scheduling")),
-  analysisScheduling(problem_db.get_short("interface.analysis_scheduling")),
+  evalScheduling(problem_db.get<short>("interface.evaluation_scheduling")),
+  analysisScheduling(problem_db.get<short>("interface.analysis_scheduling")),
   asynchLocalEvalStatic(
-    problem_db.get_short("interface.local_evaluation_scheduling") ==
+    problem_db.get<short>("interface.local_evaluation_scheduling") ==
     STATIC_SCHEDULING),
   serializeThreshold(1), headerFlag(true),
-  asvControlFlag(problem_db.get_bool("interface.active_set_vector")),
-  evalCacheFlag(problem_db.get_bool("interface.evaluation_cache")),
+  asvControlFlag(problem_db.get<bool>("interface.active_set_vector")),
+  evalCacheFlag(problem_db.get<bool>("interface.evaluation_cache")),
   nearbyDuplicateDetect(
-    problem_db.get_bool("interface.nearby_evaluation_cache")),
+    problem_db.get<bool>("interface.nearby_evaluation_cache")),
   nearbyTolerance(
-    problem_db.get_real("interface.nearby_evaluation_cache_tolerance")),
-  restartFileFlag(problem_db.get_bool("interface.restart_file")),
+    problem_db.get<const Real>("interface.nearby_evaluation_cache_tolerance")),
+  restartFileFlag(problem_db.get<bool>("interface.restart_file")),
   sharedRespData(SharedResponseData(problem_db)),
-  gradientType(problem_db.get_string("responses.gradient_type")),
-  hessianType(problem_db.get_string("responses.hessian_type")),
+  gradientType(problem_db.get<const String>("responses.gradient_type")),
+  hessianType(problem_db.get<const String>("responses.hessian_type")),
   gradMixedAnalyticIds(
-    problem_db.get_is("responses.gradients.mixed.id_analytic")),
+    problem_db.get<const IntSet>("responses.gradients.mixed.id_analytic")),
   hessMixedAnalyticIds(
-    problem_db.get_is("responses.hessians.mixed.id_analytic")),
-  failAction(problem_db.get_string("interface.failure_capture.action")),
-  failRetryLimit(problem_db.get_int("interface.failure_capture.retry_limit")),
+    problem_db.get<const IntSet>("responses.hessians.mixed.id_analytic")),
+  failAction(problem_db.get<const String>("interface.failure_capture.action")),
+  failRetryLimit(problem_db.get<int>("interface.failure_capture.retry_limit")),
   failRecoveryFnVals(
-    problem_db.get_rv("interface.failure_capture.recovery_fn_vals"))
+    problem_db.get<const RealVector>("interface.failure_capture.recovery_fn_vals"))
 {
   // set coreMappings flag based on presence of analysis_drivers specification
   coreMappings = (numAnalysisDrivers > 0);

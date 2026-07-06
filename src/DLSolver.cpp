@@ -240,7 +240,7 @@ DLSolver::DLSolver(std::shared_ptr<Model> model):
 	Optimizer1(model, std::shared_ptr<TraitsBase>(new DLSolverTraits())),
 	dl_core_run(0), dl_destructor(0), dlLib(0)
 {
-	const String &dlDetails = probDescDB.get_string("method.dl_solver.dlDetails");
+	const String &dlDetails = probDescDB.get<const String>("method.dl_solver.dlDetails");
 	char *s, *s0;
 	size_t L;
 	void *h, **vp;

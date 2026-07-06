@@ -31,8 +31,8 @@ NonDMultilevelStochCollocation(ProblemDescDB& problem_db,
 			       ParallelLibrary& parallel_lib,
 			       std::shared_ptr<Model> model):
   NonDStochCollocation(DEFAULT_METHOD, problem_db, parallel_lib, model), // bypass SC ctor
-  quadOrderSeqSpec(problem_db.get_usa("method.nond.quadrature_order_sequence")),
-  ssgLevelSeqSpec(problem_db.get_usa("method.nond.sparse_grid_level_sequence")),
+  quadOrderSeqSpec(problem_db.get<const UShortArray>("method.nond.quadrature_order_sequence")),
+  ssgLevelSeqSpec(problem_db.get<const UShortArray>("method.nond.sparse_grid_level_sequence")),
   sequenceIndex(0)
 {
   assign_modes();
@@ -44,7 +44,7 @@ NonDMultilevelStochCollocation(ProblemDescDB& problem_db,
   // Resolve settings
   // ----------------
   short data_order,
-    u_space_type = probDescDB.get_short("method.nond.expansion_type");
+    u_space_type = probDescDB.get<short>("method.nond.expansion_type");
   resolve_inputs(u_space_type, data_order);
 
   // -------------------
@@ -67,7 +67,7 @@ NonDMultilevelStochCollocation(ProblemDescDB& problem_db,
     ssg_level = (sequenceIndex < ssgLevelSeqSpec.size()) ?
       ssgLevelSeqSpec[sequenceIndex] : ssgLevelSeqSpec.back();
   config_integration(quad_order, ssg_level,
-		     probDescDB.get_rv("method.nond.dimension_preference"),
+		     probDescDB.get<const RealVector>("method.nond.dimension_preference"),
 		     u_space_type, u_space_sampler, g_u_model);
   String pt_reuse, approx_type;
   config_approximation_type(approx_type);
@@ -90,20 +90,20 @@ NonDMultilevelStochCollocation(ProblemDescDB& problem_db,
   uSpaceModel = std::make_shared<DataFitSurrModel>(u_space_sampler,
     g_u_model, sc_set, sc_view, approx_type, approx_order, corr_type,
     corr_order, data_order, outputLevel, pt_reuse, empty_str, TABULAR_ANNOTATED,
-    false, probDescDB.get_string("method.export_approx_points_file"),
-    probDescDB.get_ushort("method.export_approx_format"));
+    false, probDescDB.get<const String>("method.export_approx_points_file"),
+    probDescDB.get<unsigned short>("method.export_approx_format"));
   initialize_u_space_model();
 
   // -------------------------------
   // Construct expSampler, if needed
   // -------------------------------
-  construct_expansion_sampler(problem_db.get_ushort("method.sample_type"),
-    problem_db.get_string("method.random_number_generator"),
-    problem_db.get_ushort("method.nond.integration_refinement"),
-    problem_db.get_iv("method.nond.refinement_samples"),
-    probDescDB.get_string("method.import_approx_points_file"),
-    probDescDB.get_ushort("method.import_approx_format"),
-    probDescDB.get_bool("method.import_approx_active_only"));
+  construct_expansion_sampler(problem_db.get<unsigned short>("method.sample_type"),
+    problem_db.get<const String>("method.random_number_generator"),
+    problem_db.get<unsigned short>("method.nond.integration_refinement"),
+    problem_db.get<const IntVector>("method.nond.refinement_samples"),
+    probDescDB.get<const String>("method.import_approx_points_file"),
+    probDescDB.get<unsigned short>("method.import_approx_format"),
+    probDescDB.get<bool>("method.import_approx_active_only"));
 
   if (parallelLib.command_line_check())
     Cout << "\nStochastic collocation construction completed: initial grid "

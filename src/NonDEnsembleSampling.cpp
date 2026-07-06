@@ -29,30 +29,30 @@ namespace Dakota {
 NonDEnsembleSampling::
 NonDEnsembleSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
   NonDSampling(problem_db, parallel_lib, model),
-  //pilotSamples(problem_db.get_sza("method.nond.pilot_samples")),
+  //pilotSamples(problem_db.get<const SizetArray>("method.nond.pilot_samples")),
   pilotMgmtMode(
-    problem_db.get_short("method.nond.ensemble_pilot_solution_mode")),
+    problem_db.get<short>("method.nond.ensemble_pilot_solution_mode")),
   optSubProblemForm(NO_OPTIMAL_ALLOCATION), optSubProblemSolver(SUBMETHOD_NONE),
-  randomSeedSeqSpec(problem_db.get_sza("method.random_seed_sequence")),
+  randomSeedSeqSpec(problem_db.get<const SizetArray>("method.random_seed_sequence")),
   backfillFailures(false), // inactive option for now
   mlmfIter(0), equivHFEvals(0.), // also reset in pre_run()
-  //allocationTarget(problem_db.get_short("method.nond.allocation_target")),
-  //qoiAggregation(problem_db.get_short("method.nond.qoi_aggregation")),
+  //allocationTarget(problem_db.get<short>("method.nond.allocation_target")),
+  //qoiAggregation(problem_db.get<short>("method.nond.qoi_aggregation")),
   convergenceTolType(
-    problem_db.get_short("method.nond.convergence_tolerance_type")),
+    problem_db.get<short>("method.nond.convergence_tolerance_type")),
   estVarMetricType(
-    problem_db.get_short("method.nond.estimator_variance_metric")),
+    problem_db.get<short>("method.nond.estimator_variance_metric")),
   estVarMetricNormOrder(
-    problem_db.get_real("method.nond.estimator_variance_metric_norm_order")),
-  finalStatsType(problem_db.get_short("method.nond.final_statistics")),
-  exportSampleSets(problem_db.get_bool("method.nond.export_sample_sequence")),
+    problem_db.get<const Real>("method.nond.estimator_variance_metric_norm_order")),
+  finalStatsType(problem_db.get<short>("method.nond.final_statistics")),
+  exportSampleSets(problem_db.get<bool>("method.nond.export_sample_sequence")),
   exportSamplesFormat(
-    problem_db.get_ushort("method.nond.export_samples_format")),
+    problem_db.get<unsigned short>("method.nond.export_samples_format")),
   relaxFactor(1.), relaxIndex(0),
   relaxFactorSequence(
-    problem_db.get_rv("method.nond.relaxation.factor_sequence")),
+    problem_db.get<const RealVector>("method.nond.relaxation.factor_sequence")),
   relaxRecursiveFactor(
-    problem_db.get_real("method.nond.relaxation.recursive_factor")),
+    problem_db.get<const Real>("method.nond.relaxation.recursive_factor")),
   seedIndex(SZ_MAX)
 {
   // check iteratedModel for model form hierarchy and/or discretization levels;
@@ -127,7 +127,7 @@ NonDEnsembleSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, s
   if (!sampleType) // SUBMETHOD_DEFAULT
     sampleType = SUBMETHOD_RANDOM;
 
-  Real relax_fixed = problem_db.get_real("method.nond.relaxation.fixed_factor");
+  Real relax_fixed = problem_db.get<const Real>("method.nond.relaxation.fixed_factor");
   if (relax_fixed > 0.) relaxFactor = relax_fixed; // else initialized to 1.
 
   switch (pilotMgmtMode) {

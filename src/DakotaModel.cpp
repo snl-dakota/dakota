@@ -105,23 +105,23 @@ Model::Model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
   numFns(currentResponse.num_functions()),
   userDefinedConstraints(problem_db, currentVariables.shared_data()),
   evaluationsDB(evaluation_store_db),
-  modelType(problem_db.get_string("model.type")),
-  surrogateType(problem_db.get_string("model.surrogate.type")),
-  gradientType(problem_db.get_string("responses.gradient_type")),
-  methodSource(problem_db.get_string("responses.method_source")),
-  intervalType(problem_db.get_string("responses.interval_type")),
-  fdGradStepSize(problem_db.get_rv("responses.fd_gradient_step_size")),
-  fdGradStepType(problem_db.get_string("responses.fd_gradient_step_type")),
-  gradIdAnalytic(problem_db.get_is("responses.gradients.mixed.id_analytic")),
-  gradIdNumerical(problem_db.get_is("responses.gradients.mixed.id_numerical")),
-  hessianType(problem_db.get_string("responses.hessian_type")),
-  quasiHessType(problem_db.get_string("responses.quasi_hessian_type")),
-  fdHessByFnStepSize(problem_db.get_rv("responses.fd_hessian_step_size")),
-  fdHessByGradStepSize(problem_db.get_rv("responses.fd_hessian_step_size")),
-  fdHessStepType(problem_db.get_string("responses.fd_hessian_step_type")),
-  hessIdAnalytic(problem_db.get_is("responses.hessians.mixed.id_analytic")),
-  hessIdNumerical(problem_db.get_is("responses.hessians.mixed.id_numerical")),
-  hessIdQuasi(problem_db.get_is("responses.hessians.mixed.id_quasi")),
+  modelType(problem_db.get<const String>("model.type")),
+  surrogateType(problem_db.get<const String>("model.surrogate.type")),
+  gradientType(problem_db.get<const String>("responses.gradient_type")),
+  methodSource(problem_db.get<const String>("responses.method_source")),
+  intervalType(problem_db.get<const String>("responses.interval_type")),
+  fdGradStepSize(problem_db.get<const RealVector>("responses.fd_gradient_step_size")),
+  fdGradStepType(problem_db.get<const String>("responses.fd_gradient_step_type")),
+  gradIdAnalytic(problem_db.get<const IntSet>("responses.gradients.mixed.id_analytic")),
+  gradIdNumerical(problem_db.get<const IntSet>("responses.gradients.mixed.id_numerical")),
+  hessianType(problem_db.get<const String>("responses.hessian_type")),
+  quasiHessType(problem_db.get<const String>("responses.quasi_hessian_type")),
+  fdHessByFnStepSize(problem_db.get<const RealVector>("responses.fd_hessian_step_size")),
+  fdHessByGradStepSize(problem_db.get<const RealVector>("responses.fd_hessian_step_size")),
+  fdHessStepType(problem_db.get<const String>("responses.fd_hessian_step_type")),
+  hessIdAnalytic(problem_db.get<const IntSet>("responses.hessians.mixed.id_analytic")),
+  hessIdNumerical(problem_db.get<const IntSet>("responses.hessians.mixed.id_numerical")),
+  hessIdQuasi(problem_db.get<const IntSet>("responses.hessians.mixed.id_quasi")),
   warmStartFlag(false), supportsEstimDerivs(true), mappingInitialized(false),
   probDescDB(problem_db), parallelLib(parallel_lib),
   modelPCIter(parallelLib.parallel_configuration_iterator()),
@@ -130,13 +130,13 @@ Model::Model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
   // See base constructor in DakotaIterator.cpp for full discussion of output
   // verbosity.  For models, QUIET_OUTPUT turns off response reporting and
   // SILENT_OUTPUT additionally turns off fd_gradient parameter set reporting.
-  outputLevel(problem_db.get_short("method.output")),
-  primaryRespFnWts(probDescDB.get_rv("responses.primary_response_fn_weights")),
-  hierarchicalTagging(probDescDB.get_bool("model.hierarchical_tags")),
+  outputLevel(problem_db.get<short>("method.output")),
+  primaryRespFnWts(probDescDB.get<const RealVector>("responses.primary_response_fn_weights")),
+  hierarchicalTagging(probDescDB.get<bool>("model.hierarchical_tags")),
   scalingOpts(problem_db, currentResponse.shared_data()),
   modelEvaluationsDBState(EvaluationsDBState::UNINITIALIZED),
   interfEvaluationsDBState(EvaluationsDBState::UNINITIALIZED),
-  modelId(problem_db.get_string("model.id")), modelEvalCntr(0),
+  modelId(problem_db.get<const String>("model.id")), modelEvalCntr(0),
   estDerivsFlag(false), initCommsBcastFlag(false), modelAutoGraphicsFlag(false)
 {
   initialize_distribution(mvDist);
@@ -144,7 +144,7 @@ Model::Model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
 
   // weights have length group if given; expand if fields present
   expand_for_fields_sdv(currentResponse.shared_data(),
-    probDescDB.get_rv("responses.primary_response_fn_weights"),
+    probDescDB.get<const RealVector>("responses.primary_response_fn_weights"),
     "primary response weights", false, primaryRespFnWts);
 
   if (modelId.empty())
@@ -153,7 +153,7 @@ Model::Model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
   // TODO: Latent bug here as sense will be size 1 or group (must acct for fields)
   // Define primaryRespFnSense BoolDeque from DB StringArray
   StringArray db_sense
-    = problem_db.get_sa("responses.primary_response_fn_sense");
+    = problem_db.get<const StringArray>("responses.primary_response_fn_sense");
   if (!db_sense.empty()) {
     size_t i, num_sense = db_sense.size(), num_primary = num_primary_fns();
     primaryRespFnSense.resize(num_primary);
@@ -218,7 +218,7 @@ Model::Model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
   if (gradientType == "numerical") {
     if (methodSource == "vendor") {
       const RealVector& fdgss
-	= probDescDB.get_rv("responses.fd_gradient_step_size");
+	= probDescDB.get<const RealVector>("responses.fd_gradient_step_size");
       if (fdgss.length()) // else use default from initializer list
 	fdGradStepSize = fdgss[0];
     }
@@ -248,9 +248,9 @@ Model::Model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
   }
   Cout << "hessianType = " << hessianType << '\n';
   if ( hessianType == "numerical" || ( hessianType == "mixed" &&
-      !probDescDB.get_is("responses.hessians.mixed.id_numerical").empty() ) ) {
+      !probDescDB.get<const IntSet>("responses.hessians.mixed.id_numerical").empty() ) ) {
     const RealVector& fdhss
-      = probDescDB.get_rv("responses.fd_hessian_step_size");
+      = probDescDB.get<const RealVector>("responses.fd_hessian_step_size");
     if (fdhss.length()) // else use defaults from initializer list
       fdHessByGradStepSize = fdHessByFnStepSize = fdhss[0];
   }
@@ -349,7 +349,7 @@ initialize_distribution(Pecos::MultivariateDistribution& mv_dist,
 
   // Previous (transformation-based) logic was restricted to active continuous:
   //ShortArray x_types(currentVariables.cv()); // active cont
-  //ShortArray rv_types(probDescDB.get_sizet("variables.uncertain")); c/d uv
+  //ShortArray rv_types(probDescDB.get<size_t>("variables.uncertain")); c/d uv
   size_t num_rv = (active_only) ?
     currentVariables.cv()  + currentVariables.div() +
     currentVariables.dsv() + currentVariables.drv() :
@@ -368,7 +368,7 @@ initialize_distribution(Pecos::MultivariateDistribution& mv_dist,
   // Continuous design
 
   if (!active_only || cdv) {
-    num_rv = probDescDB.get_sizet("variables.continuous_design");
+    num_rv = probDescDB.get<size_t>("variables.continuous_design");
     if (num_rv) {
       assign_value(rv_types, Pecos::CONTINUOUS_RANGE, start_rv, num_rv);
       if (cdv) assign_value(active_vars, true, start_rv, num_rv);
@@ -379,25 +379,25 @@ initialize_distribution(Pecos::MultivariateDistribution& mv_dist,
   // Discrete design
 
   if (!active_only || ddv) {
-    num_rv = probDescDB.get_sizet("variables.discrete_design_range");
+    num_rv = probDescDB.get<size_t>("variables.discrete_design_range");
     if (num_rv) {
       assign_value(rv_types, Pecos::DISCRETE_RANGE, start_rv, num_rv);
       if (ddv) assign_value(active_vars, true, start_rv, num_rv);
       start_rv += num_rv;
     }
-    num_rv = probDescDB.get_sizet("variables.discrete_design_set_int");
+    num_rv = probDescDB.get<size_t>("variables.discrete_design_set_int");
     if (num_rv) {
       assign_value(rv_types, Pecos::DISCRETE_SET_INT, start_rv, num_rv);
       if (ddv) assign_value(active_vars, true, start_rv, num_rv);
       start_rv += num_rv;
     }
-    num_rv = probDescDB.get_sizet("variables.discrete_design_set_string");
+    num_rv = probDescDB.get<size_t>("variables.discrete_design_set_string");
     if (num_rv) {
       assign_value(rv_types, Pecos::DISCRETE_SET_STRING, start_rv, num_rv);
       if (ddv) assign_value(active_vars, true, start_rv, num_rv);
       start_rv += num_rv;
     }
-    num_rv = probDescDB.get_sizet("variables.discrete_design_set_real");
+    num_rv = probDescDB.get<size_t>("variables.discrete_design_set_real");
     if (num_rv) {
       assign_value(rv_types, Pecos::DISCRETE_SET_REAL, start_rv, num_rv);
       if (ddv) assign_value(active_vars, true, start_rv, num_rv);
@@ -409,12 +409,12 @@ initialize_distribution(Pecos::MultivariateDistribution& mv_dist,
 
   if (!active_only || cauv) {
     Real dbl_inf = std::numeric_limits<Real>::infinity();
-    num_rv = probDescDB.get_sizet("variables.normal_uncertain");
+    num_rv = probDescDB.get<size_t>("variables.normal_uncertain");
     if (num_rv) {
       const RealVector& n_l_bnds
-	= probDescDB.get_rv("variables.normal_uncertain.lower_bounds");
+	= probDescDB.get<const RealVector>("variables.normal_uncertain.lower_bounds");
       const RealVector& n_u_bnds
-	= probDescDB.get_rv("variables.normal_uncertain.upper_bounds");
+	= probDescDB.get<const RealVector>("variables.normal_uncertain.upper_bounds");
       bool l_bnds = !n_l_bnds.empty(), u_bnds = !n_u_bnds.empty();
       if (!l_bnds && !u_bnds) // won't happen: parser -> +/-inf
 	assign_value(rv_types, Pecos::NORMAL, start_rv, num_rv);
@@ -426,12 +426,12 @@ initialize_distribution(Pecos::MultivariateDistribution& mv_dist,
       if (cauv) assign_value(active_vars, true, start_rv, num_rv);
       start_rv += num_rv;
     }
-    num_rv = probDescDB.get_sizet("variables.lognormal_uncertain");
+    num_rv = probDescDB.get<size_t>("variables.lognormal_uncertain");
     if (num_rv) {
       const RealVector& ln_l_bnds
-	= probDescDB.get_rv("variables.lognormal_uncertain.lower_bounds");
+	= probDescDB.get<const RealVector>("variables.lognormal_uncertain.lower_bounds");
       const RealVector& ln_u_bnds
-	= probDescDB.get_rv("variables.lognormal_uncertain.upper_bounds");
+	= probDescDB.get<const RealVector>("variables.lognormal_uncertain.upper_bounds");
       bool l_bnds = !ln_l_bnds.empty(), u_bnds = !ln_u_bnds.empty();
       if (!l_bnds && !u_bnds) // won't happen: parser -> 0/inf
 	assign_value(rv_types, Pecos::LOGNORMAL, start_rv, num_rv);
@@ -443,37 +443,37 @@ initialize_distribution(Pecos::MultivariateDistribution& mv_dist,
       if (cauv) assign_value(active_vars, true, start_rv, num_rv);
       start_rv += num_rv;
     }
-    num_rv = probDescDB.get_sizet("variables.uniform_uncertain");
+    num_rv = probDescDB.get<size_t>("variables.uniform_uncertain");
     if (num_rv) {
       assign_value(rv_types, Pecos::UNIFORM, start_rv, num_rv);
       if (cauv) assign_value(active_vars, true, start_rv, num_rv);
       start_rv += num_rv;
     }
-    num_rv = probDescDB.get_sizet("variables.loguniform_uncertain");
+    num_rv = probDescDB.get<size_t>("variables.loguniform_uncertain");
     if (num_rv) {
       assign_value(rv_types, Pecos::LOGUNIFORM, start_rv, num_rv);
       if (cauv) assign_value(active_vars, true, start_rv, num_rv);
       start_rv += num_rv;
     }
-    num_rv = probDescDB.get_sizet("variables.triangular_uncertain");
+    num_rv = probDescDB.get<size_t>("variables.triangular_uncertain");
     if (num_rv) {
       assign_value(rv_types, Pecos::TRIANGULAR, start_rv, num_rv);
       if (cauv) assign_value(active_vars, true, start_rv, num_rv);
       start_rv += num_rv;
     }
-    num_rv = probDescDB.get_sizet("variables.exponential_uncertain");
+    num_rv = probDescDB.get<size_t>("variables.exponential_uncertain");
     if (num_rv) {
       assign_value(rv_types, Pecos::EXPONENTIAL, start_rv, num_rv);
       if (cauv) assign_value(active_vars, true, start_rv, num_rv);
       start_rv += num_rv;
     }
-    num_rv = probDescDB.get_sizet("variables.beta_uncertain");
+    num_rv = probDescDB.get<size_t>("variables.beta_uncertain");
     if (num_rv) {
       assign_value(rv_types, Pecos::BETA, start_rv, num_rv);
       if (cauv) assign_value(active_vars, true, start_rv, num_rv);
       start_rv += num_rv;
     }
-    num_rv = probDescDB.get_sizet("variables.gamma_uncertain");
+    num_rv = probDescDB.get<size_t>("variables.gamma_uncertain");
     if (num_rv) {
       assign_value(rv_types, Pecos::GAMMA, start_rv, num_rv);
       if (cauv) assign_value(active_vars, true, start_rv, num_rv);
@@ -482,25 +482,25 @@ initialize_distribution(Pecos::MultivariateDistribution& mv_dist,
 
     // Note: Inv gamma is not part of variable spec (calibration hyperparameter)
 
-    num_rv = probDescDB.get_sizet("variables.gumbel_uncertain");
+    num_rv = probDescDB.get<size_t>("variables.gumbel_uncertain");
     if (num_rv) {
       assign_value(rv_types, Pecos::GUMBEL, start_rv, num_rv);
       if (cauv) assign_value(active_vars, true, start_rv, num_rv);
       start_rv += num_rv;
     }
-    num_rv = probDescDB.get_sizet("variables.frechet_uncertain");
+    num_rv = probDescDB.get<size_t>("variables.frechet_uncertain");
     if (num_rv) {
       assign_value(rv_types, Pecos::FRECHET, start_rv, num_rv);
       if (cauv) assign_value(active_vars, true, start_rv, num_rv);
       start_rv += num_rv;
     }
-    num_rv = probDescDB.get_sizet("variables.weibull_uncertain");
+    num_rv = probDescDB.get<size_t>("variables.weibull_uncertain");
     if (num_rv) {
       assign_value(rv_types, Pecos::WEIBULL, start_rv, num_rv);
       if (cauv) assign_value(active_vars, true, start_rv, num_rv);
       start_rv += num_rv;
     }
-    num_rv = probDescDB.get_sizet("variables.histogram_uncertain.bin");
+    num_rv = probDescDB.get<size_t>("variables.histogram_uncertain.bin");
     if (num_rv) {
       assign_value(rv_types, Pecos::HISTOGRAM_BIN, start_rv, num_rv);
       if (cauv) assign_value(active_vars, true, start_rv, num_rv);
@@ -511,49 +511,49 @@ initialize_distribution(Pecos::MultivariateDistribution& mv_dist,
   // Discrete aleatory
 
   if (!active_only || dauv) {
-    num_rv = probDescDB.get_sizet("variables.poisson_uncertain");
+    num_rv = probDescDB.get<size_t>("variables.poisson_uncertain");
     if (num_rv) {
       assign_value(rv_types, Pecos::POISSON, start_rv, num_rv);
       if (dauv) assign_value(active_vars, true, start_rv, num_rv);
       start_rv += num_rv;
     }
-    num_rv = probDescDB.get_sizet("variables.binomial_uncertain");
+    num_rv = probDescDB.get<size_t>("variables.binomial_uncertain");
     if (num_rv) {
       assign_value(rv_types, Pecos::BINOMIAL, start_rv, num_rv);
       if (dauv) assign_value(active_vars, true, start_rv, num_rv);
       start_rv += num_rv;
     }
-    num_rv = probDescDB.get_sizet("variables.negative_binomial_uncertain");
+    num_rv = probDescDB.get<size_t>("variables.negative_binomial_uncertain");
     if (num_rv) {
       assign_value(rv_types, Pecos::NEGATIVE_BINOMIAL, start_rv, num_rv);
       if (dauv) assign_value(active_vars, true, start_rv, num_rv);
       start_rv += num_rv;
     }
-    num_rv = probDescDB.get_sizet("variables.geometric_uncertain");
+    num_rv = probDescDB.get<size_t>("variables.geometric_uncertain");
     if (num_rv) {
       assign_value(rv_types, Pecos::GEOMETRIC, start_rv, num_rv);
       if (dauv) assign_value(active_vars, true, start_rv, num_rv);
       start_rv += num_rv;
     }
-    num_rv = probDescDB.get_sizet("variables.hypergeometric_uncertain");
+    num_rv = probDescDB.get<size_t>("variables.hypergeometric_uncertain");
     if (num_rv) {
       assign_value(rv_types, Pecos::HYPERGEOMETRIC, start_rv, num_rv);
       if (dauv) assign_value(active_vars, true, start_rv, num_rv);
       start_rv += num_rv;
     }
-    num_rv = probDescDB.get_sizet("variables.histogram_uncertain.point_int");
+    num_rv = probDescDB.get<size_t>("variables.histogram_uncertain.point_int");
     if (num_rv) {
       assign_value(rv_types, Pecos::HISTOGRAM_PT_INT, start_rv, num_rv);
       if (dauv) assign_value(active_vars, true, start_rv, num_rv);
       start_rv += num_rv;
     }
-    num_rv = probDescDB.get_sizet("variables.histogram_uncertain.point_string");
+    num_rv = probDescDB.get<size_t>("variables.histogram_uncertain.point_string");
     if (num_rv) {
       assign_value(rv_types, Pecos::HISTOGRAM_PT_STRING, start_rv, num_rv);
       if (dauv) assign_value(active_vars, true, start_rv, num_rv);
       start_rv += num_rv;
     }
-    num_rv = probDescDB.get_sizet("variables.histogram_uncertain.point_real");
+    num_rv = probDescDB.get<size_t>("variables.histogram_uncertain.point_real");
     if (num_rv) {
       assign_value(rv_types, Pecos::HISTOGRAM_PT_REAL, start_rv, num_rv);
       if (dauv) assign_value(active_vars, true, start_rv, num_rv);
@@ -564,7 +564,7 @@ initialize_distribution(Pecos::MultivariateDistribution& mv_dist,
   // Continuous epistemic
 
   if (!active_only || ceuv) {
-    num_rv = probDescDB.get_sizet("variables.continuous_interval_uncertain");
+    num_rv = probDescDB.get<size_t>("variables.continuous_interval_uncertain");
     if (num_rv) {
       assign_value(rv_types, Pecos::CONTINUOUS_INTERVAL_UNCERTAIN,
 		   start_rv, num_rv);
@@ -576,26 +576,26 @@ initialize_distribution(Pecos::MultivariateDistribution& mv_dist,
   // Discrete epistemic
 
   if (!active_only || deuv) {
-    num_rv = probDescDB.get_sizet("variables.discrete_interval_uncertain");
+    num_rv = probDescDB.get<size_t>("variables.discrete_interval_uncertain");
     if (num_rv) {
       assign_value(rv_types,Pecos::DISCRETE_INTERVAL_UNCERTAIN,start_rv,num_rv);
       if (deuv) assign_value(active_vars, true, start_rv, num_rv);
       start_rv += num_rv;
     }
-    num_rv = probDescDB.get_sizet("variables.discrete_uncertain_set_int");
+    num_rv = probDescDB.get<size_t>("variables.discrete_uncertain_set_int");
     if (num_rv) {
       assign_value(rv_types, Pecos::DISCRETE_UNCERTAIN_SET_INT,start_rv,num_rv);
       if (deuv) assign_value(active_vars, true, start_rv, num_rv);
       start_rv += num_rv;
     }
-    num_rv = probDescDB.get_sizet("variables.discrete_uncertain_set_string");
+    num_rv = probDescDB.get<size_t>("variables.discrete_uncertain_set_string");
     if (num_rv) {
       assign_value(rv_types, Pecos::DISCRETE_UNCERTAIN_SET_STRING,
 		   start_rv, num_rv);
       if (deuv) assign_value(active_vars, true, start_rv, num_rv);
       start_rv += num_rv;
     }
-    num_rv = probDescDB.get_sizet("variables.discrete_uncertain_set_real");
+    num_rv = probDescDB.get<size_t>("variables.discrete_uncertain_set_real");
     if (num_rv) {
       assign_value(rv_types,Pecos::DISCRETE_UNCERTAIN_SET_REAL,start_rv,num_rv);
       if (deuv) assign_value(active_vars, true, start_rv, num_rv);
@@ -606,7 +606,7 @@ initialize_distribution(Pecos::MultivariateDistribution& mv_dist,
   // Continuous state
 
   if (!active_only || csv) {
-    num_rv = probDescDB.get_sizet("variables.continuous_state");
+    num_rv = probDescDB.get<size_t>("variables.continuous_state");
     if (num_rv) {
       assign_value(rv_types, Pecos::CONTINUOUS_RANGE, start_rv, num_rv);
       if (csv) assign_value(active_vars, true, start_rv, num_rv);
@@ -616,25 +616,25 @@ initialize_distribution(Pecos::MultivariateDistribution& mv_dist,
     // Discrete state
 
     if (!active_only || dsv) {
-      num_rv = probDescDB.get_sizet("variables.discrete_state_range");
+      num_rv = probDescDB.get<size_t>("variables.discrete_state_range");
       if (num_rv) {
 	assign_value(rv_types, Pecos::DISCRETE_RANGE, start_rv, num_rv);
 	if (dsv) assign_value(active_vars, true, start_rv, num_rv);
 	start_rv += num_rv;
       }
-      num_rv = probDescDB.get_sizet("variables.discrete_state_set_int");
+      num_rv = probDescDB.get<size_t>("variables.discrete_state_set_int");
       if (num_rv) {
 	assign_value(rv_types, Pecos::DISCRETE_SET_INT, start_rv, num_rv);
 	if (dsv) assign_value(active_vars, true, start_rv, num_rv);
 	start_rv += num_rv;
       }
-      num_rv = probDescDB.get_sizet("variables.discrete_state_set_string");
+      num_rv = probDescDB.get<size_t>("variables.discrete_state_set_string");
       if (num_rv) {
 	assign_value(rv_types, Pecos::DISCRETE_SET_STRING, start_rv, num_rv);
 	if (dsv) assign_value(active_vars, true, start_rv, num_rv);
 	start_rv += num_rv;
       }
-      num_rv = probDescDB.get_sizet("variables.discrete_state_set_real");
+      num_rv = probDescDB.get<size_t>("variables.discrete_state_set_real");
       if (num_rv) {
 	assign_value(rv_types, Pecos::DISCRETE_SET_REAL, start_rv, num_rv);
 	if (dsv) assign_value(active_vars, true, start_rv, num_rv);
@@ -690,12 +690,12 @@ initialize_distribution_parameters(Pecos::MultivariateDistribution& mv_dist,
     // RANGE type could be design or state, so use count-based API
 
     if (!active_only || cdv) {
-      num_rv = probDescDB.get_sizet("variables.continuous_design");
+      num_rv = probDescDB.get<size_t>("variables.continuous_design");
       if (num_rv) {
 	mvd_rep->push_parameters(start_rv, num_rv, Pecos::CR_LWR_BND,
-	  probDescDB.get_rv("variables.continuous_design.lower_bounds"));
+	  probDescDB.get<const RealVector>("variables.continuous_design.lower_bounds"));
 	mvd_rep->push_parameters(start_rv, num_rv, Pecos::CR_UPR_BND,
-	  probDescDB.get_rv("variables.continuous_design.upper_bounds"));
+	  probDescDB.get<const RealVector>("variables.continuous_design.upper_bounds"));
 	start_rv += num_rv;
       }
     }
@@ -704,30 +704,30 @@ initialize_distribution_parameters(Pecos::MultivariateDistribution& mv_dist,
     // RANGE and SET types could be design or state, so use count-based API
 
     if (!active_only || ddv) {
-      num_rv = probDescDB.get_sizet("variables.discrete_design_range");
+      num_rv = probDescDB.get<size_t>("variables.discrete_design_range");
       if (num_rv) {
 	mvd_rep->push_parameters(start_rv, num_rv, Pecos::DR_LWR_BND,
-          probDescDB.get_iv("variables.discrete_design_range.lower_bounds"));
+          probDescDB.get<const IntVector>("variables.discrete_design_range.lower_bounds"));
 	mvd_rep->push_parameters(start_rv, num_rv, Pecos::DR_UPR_BND,
-          probDescDB.get_iv("variables.discrete_design_range.upper_bounds"));
+          probDescDB.get<const IntVector>("variables.discrete_design_range.upper_bounds"));
 	start_rv += num_rv;
       }
-      num_rv = probDescDB.get_sizet("variables.discrete_design_set_int");
+      num_rv = probDescDB.get<size_t>("variables.discrete_design_set_int");
       if (num_rv) {
 	mvd_rep->push_parameters(start_rv, num_rv, Pecos::DSI_VALUES,
-          probDescDB.get_isa("variables.discrete_design_set_int.values"));
+          probDescDB.get<const IntSetArray>("variables.discrete_design_set_int.values"));
 	start_rv += num_rv;
       }
-      num_rv = probDescDB.get_sizet("variables.discrete_design_set_string");
+      num_rv = probDescDB.get<size_t>("variables.discrete_design_set_string");
       if (num_rv) {
 	mvd_rep->push_parameters(start_rv, num_rv, Pecos::DSS_VALUES,
-          probDescDB.get_ssa("variables.discrete_design_set_string.values"));
+          probDescDB.get<const StringSetArray>("variables.discrete_design_set_string.values"));
 	start_rv += num_rv;
       }
-      num_rv = probDescDB.get_sizet("variables.discrete_design_set_real");
+      num_rv = probDescDB.get<size_t>("variables.discrete_design_set_real");
       if (num_rv) {
 	mvd_rep->push_parameters(start_rv, num_rv, Pecos::DSR_VALUES,
-          probDescDB.get_rsa("variables.discrete_design_set_real.values"));
+          probDescDB.get<const RealSetArray>("variables.discrete_design_set_real.values"));
 	start_rv += num_rv;
       }
     }
@@ -736,134 +736,134 @@ initialize_distribution_parameters(Pecos::MultivariateDistribution& mv_dist,
 
     if (!active_only || cauv) {
       // RV type could be {,BOUNDED_}NORMAL, so use count-based API
-      num_rv = probDescDB.get_sizet("variables.normal_uncertain");
+      num_rv = probDescDB.get<size_t>("variables.normal_uncertain");
       if (num_rv) {
 	mvd_rep->push_parameters(start_rv, num_rv, Pecos::N_MEAN,
-          probDescDB.get_rv("variables.normal_uncertain.means"));
+          probDescDB.get<const RealVector>("variables.normal_uncertain.means"));
 	mvd_rep->push_parameters(start_rv, num_rv, Pecos::N_STD_DEV,
-          probDescDB.get_rv("variables.normal_uncertain.std_deviations"));
+          probDescDB.get<const RealVector>("variables.normal_uncertain.std_deviations"));
 	mvd_rep->push_parameters(start_rv, num_rv, Pecos::N_LWR_BND,
-          probDescDB.get_rv("variables.normal_uncertain.lower_bounds"));
+          probDescDB.get<const RealVector>("variables.normal_uncertain.lower_bounds"));
 	mvd_rep->push_parameters(start_rv, num_rv, Pecos::N_UPR_BND,
-          probDescDB.get_rv("variables.normal_uncertain.upper_bounds"));
+          probDescDB.get<const RealVector>("variables.normal_uncertain.upper_bounds"));
 	//N_LOCATION,N_SCALE not mapped from ProblemDescDB
 	assign_value(active_corr, true, start_rv, num_rv);
 	start_rv += num_rv;
       }
       // RV type could be {,BOUNDED_}LOGNORMAL, so use count-based API
-      num_rv = probDescDB.get_sizet("variables.lognormal_uncertain");
+      num_rv = probDescDB.get<size_t>("variables.lognormal_uncertain");
       if (num_rv) {
 	mvd_rep->push_parameters(start_rv, num_rv, Pecos::LN_MEAN,
-          probDescDB.get_rv("variables.lognormal_uncertain.means"));
+          probDescDB.get<const RealVector>("variables.lognormal_uncertain.means"));
 	mvd_rep->push_parameters(start_rv, num_rv, Pecos::LN_STD_DEV,
-          probDescDB.get_rv("variables.lognormal_uncertain.std_deviations"));
+          probDescDB.get<const RealVector>("variables.lognormal_uncertain.std_deviations"));
 	mvd_rep->push_parameters(start_rv, num_rv, Pecos::LN_LAMBDA,
-          probDescDB.get_rv("variables.lognormal_uncertain.lambdas"));
+          probDescDB.get<const RealVector>("variables.lognormal_uncertain.lambdas"));
 	mvd_rep->push_parameters(start_rv, num_rv, Pecos::LN_ZETA,
-          probDescDB.get_rv("variables.lognormal_uncertain.zetas"));
+          probDescDB.get<const RealVector>("variables.lognormal_uncertain.zetas"));
 	mvd_rep->push_parameters(start_rv, num_rv, Pecos::LN_ERR_FACT,
-          probDescDB.get_rv("variables.lognormal_uncertain.error_factors"));
+          probDescDB.get<const RealVector>("variables.lognormal_uncertain.error_factors"));
 	mvd_rep->push_parameters(start_rv, num_rv, Pecos::LN_LWR_BND,
-          probDescDB.get_rv("variables.lognormal_uncertain.lower_bounds"));
+          probDescDB.get<const RealVector>("variables.lognormal_uncertain.lower_bounds"));
 	mvd_rep->push_parameters(start_rv, num_rv, Pecos::LN_UPR_BND,
-          probDescDB.get_rv("variables.lognormal_uncertain.upper_bounds"));
+          probDescDB.get<const RealVector>("variables.lognormal_uncertain.upper_bounds"));
 	assign_value(active_corr, true, start_rv, num_rv);
 	start_rv += num_rv;
       }
-      num_rv = probDescDB.get_sizet("variables.uniform_uncertain");
+      num_rv = probDescDB.get<size_t>("variables.uniform_uncertain");
       if (num_rv) {
 	mvd_rep->push_parameters(Pecos::UNIFORM, Pecos::U_LWR_BND,
-          probDescDB.get_rv("variables.uniform_uncertain.lower_bounds"));
+          probDescDB.get<const RealVector>("variables.uniform_uncertain.lower_bounds"));
 	mvd_rep->push_parameters(Pecos::UNIFORM, Pecos::U_UPR_BND,
-          probDescDB.get_rv("variables.uniform_uncertain.upper_bounds"));
+          probDescDB.get<const RealVector>("variables.uniform_uncertain.upper_bounds"));
 	//U_LOCATION,U_SCALE not mapped from ProblemDescDB
 	assign_value(active_corr, true, start_rv, num_rv);
 	start_rv += num_rv;
       }
-      num_rv = probDescDB.get_sizet("variables.loguniform_uncertain");
+      num_rv = probDescDB.get<size_t>("variables.loguniform_uncertain");
       if (num_rv) {
 	mvd_rep->push_parameters(Pecos::LOGUNIFORM, Pecos::LU_LWR_BND,
-          probDescDB.get_rv("variables.loguniform_uncertain.lower_bounds"));
+          probDescDB.get<const RealVector>("variables.loguniform_uncertain.lower_bounds"));
 	mvd_rep->push_parameters(Pecos::LOGUNIFORM, Pecos::LU_UPR_BND,
-          probDescDB.get_rv("variables.loguniform_uncertain.upper_bounds"));
+          probDescDB.get<const RealVector>("variables.loguniform_uncertain.upper_bounds"));
 	assign_value(active_corr, true, start_rv, num_rv);
 	start_rv += num_rv;
       }
-      num_rv = probDescDB.get_sizet("variables.triangular_uncertain");
+      num_rv = probDescDB.get<size_t>("variables.triangular_uncertain");
       if (num_rv) {
 	mvd_rep->push_parameters(Pecos::TRIANGULAR, Pecos::T_MODE,
-          probDescDB.get_rv("variables.triangular_uncertain.modes"));
+          probDescDB.get<const RealVector>("variables.triangular_uncertain.modes"));
 	mvd_rep->push_parameters(Pecos::TRIANGULAR, Pecos::T_LWR_BND,
-          probDescDB.get_rv("variables.triangular_uncertain.lower_bounds"));
+          probDescDB.get<const RealVector>("variables.triangular_uncertain.lower_bounds"));
 	mvd_rep->push_parameters(Pecos::TRIANGULAR, Pecos::T_UPR_BND,
-          probDescDB.get_rv("variables.triangular_uncertain.upper_bounds"));
+          probDescDB.get<const RealVector>("variables.triangular_uncertain.upper_bounds"));
 	//T_LOCATION,T_SCALE not mapped from ProblemDescDB
 	assign_value(active_corr, true, start_rv, num_rv);
 	start_rv += num_rv;
       }
-      num_rv = probDescDB.get_sizet("variables.exponential_uncertain");
+      num_rv = probDescDB.get<size_t>("variables.exponential_uncertain");
       if (num_rv) {
 	mvd_rep->push_parameters(Pecos::EXPONENTIAL, Pecos::E_BETA,
-          probDescDB.get_rv("variables.exponential_uncertain.betas"));
+          probDescDB.get<const RealVector>("variables.exponential_uncertain.betas"));
 	assign_value(active_corr, true, start_rv, num_rv);
 	start_rv += num_rv;
       }
-      num_rv = probDescDB.get_sizet("variables.beta_uncertain");
+      num_rv = probDescDB.get<size_t>("variables.beta_uncertain");
       if (num_rv) {
 	mvd_rep->push_parameters(Pecos::BETA, Pecos::BE_ALPHA,
-          probDescDB.get_rv("variables.beta_uncertain.alphas"));
+          probDescDB.get<const RealVector>("variables.beta_uncertain.alphas"));
 	mvd_rep->push_parameters(Pecos::BETA, Pecos::BE_BETA,
-          probDescDB.get_rv("variables.beta_uncertain.betas"));
+          probDescDB.get<const RealVector>("variables.beta_uncertain.betas"));
 	mvd_rep->push_parameters(Pecos::BETA, Pecos::BE_LWR_BND,
-          probDescDB.get_rv("variables.beta_uncertain.lower_bounds"));
+          probDescDB.get<const RealVector>("variables.beta_uncertain.lower_bounds"));
 	mvd_rep->push_parameters(Pecos::BETA, Pecos::BE_UPR_BND,
-          probDescDB.get_rv("variables.beta_uncertain.upper_bounds"));
+          probDescDB.get<const RealVector>("variables.beta_uncertain.upper_bounds"));
 	assign_value(active_corr, true, start_rv, num_rv);
 	start_rv += num_rv;
       }
-      num_rv = probDescDB.get_sizet("variables.gamma_uncertain");
+      num_rv = probDescDB.get<size_t>("variables.gamma_uncertain");
       if (num_rv) {
 	mvd_rep->push_parameters(Pecos::GAMMA, Pecos::GA_ALPHA,
-          probDescDB.get_rv("variables.gamma_uncertain.alphas"));
+          probDescDB.get<const RealVector>("variables.gamma_uncertain.alphas"));
 	mvd_rep->push_parameters(Pecos::GAMMA, Pecos::GA_BETA,
-          probDescDB.get_rv("variables.gamma_uncertain.betas"));
+          probDescDB.get<const RealVector>("variables.gamma_uncertain.betas"));
 	assign_value(active_corr, true, start_rv, num_rv);
 	start_rv += num_rv;
       }
 
       // Inverse gamma is not part of variable spec (calibration hyperparameter)
 
-      num_rv = probDescDB.get_sizet("variables.gumbel_uncertain");
+      num_rv = probDescDB.get<size_t>("variables.gumbel_uncertain");
       if (num_rv) {
 	mvd_rep->push_parameters(Pecos::GUMBEL, Pecos::GU_ALPHA,
-          probDescDB.get_rv("variables.gumbel_uncertain.alphas"));
+          probDescDB.get<const RealVector>("variables.gumbel_uncertain.alphas"));
 	mvd_rep->push_parameters(Pecos::GUMBEL, Pecos::GU_BETA,
-          probDescDB.get_rv("variables.gumbel_uncertain.betas"));
+          probDescDB.get<const RealVector>("variables.gumbel_uncertain.betas"));
 	assign_value(active_corr, true, start_rv, num_rv);
 	start_rv += num_rv;
       }
-      num_rv = probDescDB.get_sizet("variables.frechet_uncertain");
+      num_rv = probDescDB.get<size_t>("variables.frechet_uncertain");
       if (num_rv) {
 	mvd_rep->push_parameters(Pecos::FRECHET, Pecos::F_ALPHA,
-          probDescDB.get_rv("variables.frechet_uncertain.alphas"));
+          probDescDB.get<const RealVector>("variables.frechet_uncertain.alphas"));
 	mvd_rep->push_parameters(Pecos::FRECHET, Pecos::F_BETA,
-          probDescDB.get_rv("variables.frechet_uncertain.betas"));
+          probDescDB.get<const RealVector>("variables.frechet_uncertain.betas"));
 	assign_value(active_corr, true, start_rv, num_rv);
 	start_rv += num_rv;
       }
-      num_rv = probDescDB.get_sizet("variables.weibull_uncertain");
+      num_rv = probDescDB.get<size_t>("variables.weibull_uncertain");
       if (num_rv) {
 	mvd_rep->push_parameters(Pecos::WEIBULL, Pecos::W_ALPHA,
-          probDescDB.get_rv("variables.weibull_uncertain.alphas"));
+          probDescDB.get<const RealVector>("variables.weibull_uncertain.alphas"));
 	mvd_rep->push_parameters(Pecos::WEIBULL, Pecos::W_BETA,
-          probDescDB.get_rv("variables.weibull_uncertain.betas"));
+          probDescDB.get<const RealVector>("variables.weibull_uncertain.betas"));
 	assign_value(active_corr, true, start_rv, num_rv);
 	start_rv += num_rv;
       }
-      num_rv = probDescDB.get_sizet("variables.histogram_uncertain.bin");
+      num_rv = probDescDB.get<size_t>("variables.histogram_uncertain.bin");
       if (num_rv) {
 	mvd_rep->push_parameters(Pecos::HISTOGRAM_BIN, Pecos::H_BIN_PAIRS,
-          probDescDB.get_rrma("variables.histogram_uncertain.bin_pairs"));
+          probDescDB.get<const RealRealMapArray>("variables.histogram_uncertain.bin_pairs"));
 	assign_value(active_corr, true, start_rv, num_rv);
 	start_rv += num_rv;
       }
@@ -872,53 +872,47 @@ initialize_distribution_parameters(Pecos::MultivariateDistribution& mv_dist,
     // Discrete aleatory
 
     if (!active_only || dauv) {
-      num_rv = probDescDB.get_sizet("variables.poisson_uncertain");
+      num_rv = probDescDB.get<size_t>("variables.poisson_uncertain");
       if (num_rv) {
 	mvd_rep->push_parameters(Pecos::POISSON, Pecos::P_LAMBDA,
-          probDescDB.get_rv("variables.poisson_uncertain.lambdas"));
+          probDescDB.get<const RealVector>("variables.poisson_uncertain.lambdas"));
 	assign_value(active_corr, true, start_rv, num_rv);
 	start_rv += num_rv;
       }
-      num_rv = probDescDB.get_sizet("variables.binomial_uncertain");
+      num_rv = probDescDB.get<size_t>("variables.binomial_uncertain");
       if (num_rv) {
 	mvd_rep->push_parameters(Pecos::BINOMIAL, Pecos::BI_P_PER_TRIAL,
-          probDescDB.get_rv("variables.binomial_uncertain.prob_per_trial"));
+          probDescDB.get<const RealVector>("variables.binomial_uncertain.prob_per_trial"));
 	UIntArray num_tr;
-	copy_data(probDescDB.get_iv(
-	  "variables.binomial_uncertain.num_trials"), num_tr);
+	copy_data(probDescDB.get<const IntVector>("variables.binomial_uncertain.num_trials"), num_tr);
 	mvd_rep->push_parameters(Pecos::BINOMIAL, Pecos::BI_TRIALS, num_tr);
 	assign_value(active_corr, true, start_rv, num_rv);
 	start_rv += num_rv;
       }
-      num_rv = probDescDB.get_sizet("variables.negative_binomial_uncertain");
+      num_rv = probDescDB.get<size_t>("variables.negative_binomial_uncertain");
       if (num_rv) {
 	mvd_rep->push_parameters(Pecos::NEGATIVE_BINOMIAL,
-	  Pecos::NBI_P_PER_TRIAL, probDescDB.get_rv(
-          "variables.negative_binomial_uncertain.prob_per_trial"));
+	  Pecos::NBI_P_PER_TRIAL, probDescDB.get<const RealVector>("variables.negative_binomial_uncertain.prob_per_trial"));
 	UIntArray num_tr;
-	copy_data(probDescDB.get_iv(
-	  "variables.negative_binomial_uncertain.num_trials"), num_tr);
+	copy_data(probDescDB.get<const IntVector>("variables.negative_binomial_uncertain.num_trials"), num_tr);
 	mvd_rep->
 	  push_parameters(Pecos::NEGATIVE_BINOMIAL, Pecos::NBI_TRIALS, num_tr);
 	assign_value(active_corr, true, start_rv, num_rv);
 	start_rv += num_rv;
       }
-      num_rv = probDescDB.get_sizet("variables.geometric_uncertain");
+      num_rv = probDescDB.get<size_t>("variables.geometric_uncertain");
       if (num_rv) {
 	mvd_rep->push_parameters(Pecos::GEOMETRIC, Pecos::GE_P_PER_TRIAL,
-          probDescDB.get_rv("variables.geometric_uncertain.prob_per_trial"));
+          probDescDB.get<const RealVector>("variables.geometric_uncertain.prob_per_trial"));
 	assign_value(active_corr, true, start_rv, num_rv);
 	start_rv += num_rv;
       }
-      num_rv = probDescDB.get_sizet("variables.hypergeometric_uncertain");
+      num_rv = probDescDB.get<size_t>("variables.hypergeometric_uncertain");
       if (num_rv) {
 	UIntArray tot_pop, sel_pop, num_drawn;
-	copy_data(probDescDB.get_iv(
-	  "variables.hypergeometric_uncertain.total_population"), tot_pop);
-	copy_data(probDescDB.get_iv(
-          "variables.hypergeometric_uncertain.selected_population"), sel_pop);
-	copy_data(probDescDB.get_iv(
-	  "variables.hypergeometric_uncertain.num_drawn"), num_drawn);
+	copy_data(probDescDB.get<const IntVector>("variables.hypergeometric_uncertain.total_population"), tot_pop);
+	copy_data(probDescDB.get<const IntVector>("variables.hypergeometric_uncertain.selected_population"), sel_pop);
+	copy_data(probDescDB.get<const IntVector>("variables.hypergeometric_uncertain.num_drawn"), num_drawn);
 	mvd_rep->
 	  push_parameters(Pecos::HYPERGEOMETRIC, Pecos::HGE_TOT_POP, tot_pop);
 	mvd_rep->
@@ -928,27 +922,24 @@ initialize_distribution_parameters(Pecos::MultivariateDistribution& mv_dist,
 	assign_value(active_corr, true, start_rv, num_rv);
 	start_rv += num_rv;
       }
-      num_rv = probDescDB.get_sizet("variables.histogram_uncertain.point_int");
+      num_rv = probDescDB.get<size_t>("variables.histogram_uncertain.point_int");
       if (num_rv) {
 	mvd_rep->push_parameters(Pecos::HISTOGRAM_PT_INT, Pecos::H_PT_INT_PAIRS,
-          probDescDB.get_irma("variables.histogram_uncertain.point_int_pairs"));
+          probDescDB.get<const IntRealMapArray>("variables.histogram_uncertain.point_int_pairs"));
 	assign_value(active_corr, true, start_rv, num_rv);
 	start_rv += num_rv;
       }
-      num_rv = probDescDB.get_sizet(
-	"variables.histogram_uncertain.point_string");
+      num_rv = probDescDB.get<size_t>("variables.histogram_uncertain.point_string");
       if (num_rv) {
 	mvd_rep->push_parameters(Pecos::HISTOGRAM_PT_STRING,
-	  Pecos::H_PT_STR_PAIRS, probDescDB.get_srma(
-	  "variables.histogram_uncertain.point_string_pairs"));
+	  Pecos::H_PT_STR_PAIRS, probDescDB.get<const StringRealMapArray>("variables.histogram_uncertain.point_string_pairs"));
 	assign_value(active_corr, true, start_rv, num_rv);
 	start_rv += num_rv;
       }
-      num_rv = probDescDB.get_sizet("variables.histogram_uncertain.point_real");
+      num_rv = probDescDB.get<size_t>("variables.histogram_uncertain.point_real");
       if (num_rv) {
 	mvd_rep->push_parameters(Pecos::HISTOGRAM_PT_REAL,
-	  Pecos::H_PT_REAL_PAIRS, probDescDB.get_rrma(
-	  "variables.histogram_uncertain.point_real_pairs"));
+	  Pecos::H_PT_REAL_PAIRS, probDescDB.get<const RealRealMapArray>("variables.histogram_uncertain.point_real_pairs"));
 	assign_value(active_corr, true, start_rv, num_rv);
 	start_rv += num_rv;
       }
@@ -957,11 +948,10 @@ initialize_distribution_parameters(Pecos::MultivariateDistribution& mv_dist,
     // Continuous epistemic
 
     if (!active_only || ceuv) {
-      num_rv = probDescDB.get_sizet("variables.continuous_interval_uncertain");
+      num_rv = probDescDB.get<size_t>("variables.continuous_interval_uncertain");
       if (num_rv) {
 	mvd_rep->push_parameters(Pecos::CONTINUOUS_INTERVAL_UNCERTAIN,
-          Pecos::CIU_BPA, probDescDB.get_rrrma(
-          "variables.continuous_interval_uncertain.basic_probs"));
+          Pecos::CIU_BPA, probDescDB.get<const RealRealPairRealMapArray>("variables.continuous_interval_uncertain.basic_probs"));
 	start_rv += num_rv;
       }
     }
@@ -969,32 +959,28 @@ initialize_distribution_parameters(Pecos::MultivariateDistribution& mv_dist,
     // Discrete epistemic
 
     if (!active_only || deuv) {
-      num_rv = probDescDB.get_sizet("variables.discrete_interval_uncertain");
+      num_rv = probDescDB.get<size_t>("variables.discrete_interval_uncertain");
       if (num_rv) {
 	mvd_rep->push_parameters(Pecos::DISCRETE_INTERVAL_UNCERTAIN,
-          Pecos::DIU_BPA, probDescDB.get_iirma(
-          "variables.discrete_interval_uncertain.basic_probs"));
+          Pecos::DIU_BPA, probDescDB.get<const IntIntPairRealMapArray>("variables.discrete_interval_uncertain.basic_probs"));
 	start_rv += num_rv;
       }
-      num_rv = probDescDB.get_sizet("variables.discrete_uncertain_set_int");
+      num_rv = probDescDB.get<size_t>("variables.discrete_uncertain_set_int");
       if (num_rv) {
 	mvd_rep->push_parameters(Pecos::DISCRETE_UNCERTAIN_SET_INT,
-          Pecos::DUSI_VALUES_PROBS, probDescDB.get_irma(
-          "variables.discrete_uncertain_set_int.values_probs"));
+          Pecos::DUSI_VALUES_PROBS, probDescDB.get<const IntRealMapArray>("variables.discrete_uncertain_set_int.values_probs"));
 	start_rv += num_rv;
       }
-      num_rv = probDescDB.get_sizet("variables.discrete_uncertain_set_string");
+      num_rv = probDescDB.get<size_t>("variables.discrete_uncertain_set_string");
       if (num_rv) {
 	mvd_rep->push_parameters(Pecos::DISCRETE_UNCERTAIN_SET_STRING,
-          Pecos::DUSS_VALUES_PROBS, probDescDB.get_srma(
-          "variables.discrete_uncertain_set_string.values_probs"));
+          Pecos::DUSS_VALUES_PROBS, probDescDB.get<const StringRealMapArray>("variables.discrete_uncertain_set_string.values_probs"));
 	start_rv += num_rv;
       }
-      num_rv = probDescDB.get_sizet("variables.discrete_uncertain_set_real");
+      num_rv = probDescDB.get<size_t>("variables.discrete_uncertain_set_real");
       if (num_rv) {
 	mvd_rep->push_parameters(Pecos::DISCRETE_UNCERTAIN_SET_REAL,
-          Pecos::DUSR_VALUES_PROBS, probDescDB.get_rrma(
-          "variables.discrete_uncertain_set_real.values_probs"));
+          Pecos::DUSR_VALUES_PROBS, probDescDB.get<const RealRealMapArray>("variables.discrete_uncertain_set_real.values_probs"));
 	start_rv += num_rv;
       }
     }
@@ -1003,12 +989,12 @@ initialize_distribution_parameters(Pecos::MultivariateDistribution& mv_dist,
     // RANGE type could be design or state, so use count-based API
 
     if (!active_only || csv) {
-      num_rv = probDescDB.get_sizet("variables.continuous_state");
+      num_rv = probDescDB.get<size_t>("variables.continuous_state");
       if (num_rv) {
 	mvd_rep->push_parameters(start_rv, num_rv, Pecos::CR_LWR_BND,
-          probDescDB.get_rv("variables.continuous_state.lower_bounds"));
+          probDescDB.get<const RealVector>("variables.continuous_state.lower_bounds"));
 	mvd_rep->push_parameters(start_rv, num_rv, Pecos::CR_UPR_BND,
-          probDescDB.get_rv("variables.continuous_state.upper_bounds"));
+          probDescDB.get<const RealVector>("variables.continuous_state.upper_bounds"));
 	start_rv += num_rv;
       }
     }
@@ -1017,36 +1003,36 @@ initialize_distribution_parameters(Pecos::MultivariateDistribution& mv_dist,
     // RANGE and SET types could be design or state, so use count-based API
 
     if (!active_only || dsv) {
-      num_rv = probDescDB.get_sizet("variables.discrete_state_range");
+      num_rv = probDescDB.get<size_t>("variables.discrete_state_range");
       if (num_rv) {
 	mvd_rep->push_parameters(start_rv, num_rv, Pecos::DR_LWR_BND,
-          probDescDB.get_iv("variables.discrete_state_range.lower_bounds"));
+          probDescDB.get<const IntVector>("variables.discrete_state_range.lower_bounds"));
 	mvd_rep->push_parameters(start_rv, num_rv, Pecos::DR_UPR_BND,
-          probDescDB.get_iv("variables.discrete_state_range.upper_bounds"));
+          probDescDB.get<const IntVector>("variables.discrete_state_range.upper_bounds"));
 	start_rv += num_rv;
       }
-      num_rv = probDescDB.get_sizet("variables.discrete_state_set_int");
+      num_rv = probDescDB.get<size_t>("variables.discrete_state_set_int");
       if (num_rv) {
 	mvd_rep->push_parameters(start_rv, num_rv, Pecos::DSI_VALUES,
-          probDescDB.get_isa("variables.discrete_state_set_int.values"));
+          probDescDB.get<const IntSetArray>("variables.discrete_state_set_int.values"));
 	start_rv += num_rv;
       }
-      num_rv = probDescDB.get_sizet("variables.discrete_state_set_string");
+      num_rv = probDescDB.get<size_t>("variables.discrete_state_set_string");
       if (num_rv) {
 	mvd_rep->push_parameters(start_rv, num_rv, Pecos::DSS_VALUES,
-          probDescDB.get_ssa("variables.discrete_state_set_string.values"));
+          probDescDB.get<const StringSetArray>("variables.discrete_state_set_string.values"));
 	start_rv += num_rv;
       }
-      num_rv = probDescDB.get_sizet("variables.discrete_state_set_real");
+      num_rv = probDescDB.get<size_t>("variables.discrete_state_set_real");
       if (num_rv) {
 	mvd_rep->push_parameters(start_rv, num_rv, Pecos::DSR_VALUES,
-          probDescDB.get_rsa("variables.discrete_state_set_real.values"));
+          probDescDB.get<const RealSetArray>("variables.discrete_state_set_real.values"));
 	//start_rv += num_rv;
       }
     }
 
     mvd_rep->initialize_correlations(
-      probDescDB.get_rsm("variables.uncertain.correlation_matrix"),
+      probDescDB.get<const RealSymMatrix>("variables.uncertain.correlation_matrix"),
       active_corr);
 
   //  break;

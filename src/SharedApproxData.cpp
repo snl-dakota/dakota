@@ -34,29 +34,29 @@ SharedApproxData::
 SharedApproxData(BaseConstructor, ProblemDescDB& problem_db, size_t num_vars):
   // See base constructor in DakotaIterator.cpp for full discussion of output
   // verbosity.  For approximations, verbose adds quad poly coeff reporting.
-  numVars(num_vars), approxType(problem_db.get_string("model.surrogate.type")),
-  buildDataOrder(1), outputLevel(problem_db.get_short("method.output")),
+  numVars(num_vars), approxType(problem_db.get<const String>("model.surrogate.type")),
+  buildDataOrder(1), outputLevel(problem_db.get<short>("method.output")),
   modelExportPrefix(
-    problem_db.get_string("model.surrogate.model_export_prefix")),
+    problem_db.get<const String>("model.surrogate.model_export_prefix")),
   modelExportFormat(
-    problem_db.get_ushort("model.surrogate.model_export_format"))
+    problem_db.get<unsigned short>("model.surrogate.model_export_format"))
 {
   // increment the buildDataOrder based on derivative usage and response
   // gradient/Hessian specifications and approximation type support.  The
   // converse of enforcing minimal data requirements (e.g., TANA) is
   // enforced in the derived classes.
   bool global_approx = strbegins(approxType, "global_"),
-    use_derivs = problem_db.get_bool("model.surrogate.derivative_usage");
+    use_derivs = problem_db.get<bool>("model.surrogate.derivative_usage");
   buildDataOrder = 1;
   if ( !global_approx || (global_approx && use_derivs) ) {
 
     // retrieve actual_model_pointer specification and set the DB
     const String& actual_model_ptr
-      = problem_db.get_string("model.surrogate.truth_model_pointer");
+      = problem_db.get<const String>("model.surrogate.truth_model_pointer");
     size_t model_index = problem_db.get_db_model_node(); // for restoration
     problem_db.set_db_model_nodes(actual_model_ptr);
 
-    if (problem_db.get_string("responses.gradient_type") != "none") {
+    if (problem_db.get<const String>("responses.gradient_type") != "none") {
       if (!global_approx || approxType == "global_polynomial"      ||
 	  approxType == "global_regression_orthogonal_polynomial"  ||
 #ifdef ALLOW_GLOBAL_HERMITE_INTERPOLATION
@@ -71,7 +71,7 @@ SharedApproxData(BaseConstructor, ProblemDescDB& problem_db, size_t num_vars):
 	Cerr << "Warning: use_derivatives is not currently supported by "
 	     << approxType << " for gradient incorporation.\n\n";
     }
-    if (problem_db.get_string("responses.hessian_type")  != "none") {
+    if (problem_db.get<const String>("responses.hessian_type")  != "none") {
       if (approxType == "local_taylor" || approxType == "global_polynomial")
 	buildDataOrder |= 4;
       else
@@ -149,7 +149,7 @@ SharedApproxData::SharedApproxData(ProblemDescDB& problem_db, size_t num_vars):
 std::shared_ptr<SharedApproxData> SharedApproxData::
 get_shared_data(ProblemDescDB& problem_db, size_t num_vars)
 {
-  const String& approx_type = problem_db.get_string("model.surrogate.type");
+  const String& approx_type = problem_db.get<const String>("model.surrogate.type");
   //if (approx_type == "local_taylor")
   //  return new SharedTaylorApproxData(problem_db, num_vars);
   //else if (approx_type == "multipoint_tana")

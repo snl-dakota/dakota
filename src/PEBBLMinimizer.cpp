@@ -25,13 +25,13 @@ PebbldMinimizer::PebbldMinimizer(ProblemDescDB& problem_db, ParallelLibrary& par
 
   // Instantiate the approximate sub-problem minimizer
   const String& subprob_method_ptr
-    = probDescDB.get_string("method.sub_method_pointer");
+    = probDescDB.get<const String>("method.sub_method_pointer");
   const String& subprob_method_name
-    = probDescDB.get_string("method.sub_method_name");
+    = probDescDB.get<const String>("method.sub_method_name");
 
   if (!subprob_method_ptr.empty()) {
     // Approach 1: method spec support for subProbMinimizer
-    const String& model_ptr = probDescDB.get_string("method.model_pointer");
+    const String& model_ptr = probDescDB.get<const String>("method.model_pointer");
     size_t method_index = probDescDB.get_db_method_node(); // for restoration
     probDescDB.set_db_method_node(subprob_method_ptr); // method only
     // sub-problem minimizer will use shallow copy of iteratedModel
@@ -40,7 +40,7 @@ PebbldMinimizer::PebbldMinimizer(ProblemDescDB& problem_db, ParallelLibrary& par
     // suppress DB ctor default and don't output summary info
     subProbMinimizer->summary_output(false);
     // verify method's modelPointer is empty or consistent
-    const String& am_model_ptr = probDescDB.get_string("method.model_pointer");
+    const String& am_model_ptr = probDescDB.get<const String>("method.model_pointer");
     if (!am_model_ptr.empty() && am_model_ptr != model_ptr)
       Cerr << "Warning: BandB method_pointer specification includes an\n"
 	   << "         inconsistent model_pointer that will be ignored."

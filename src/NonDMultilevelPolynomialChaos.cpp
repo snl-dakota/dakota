@@ -29,13 +29,13 @@ NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db,
 			      ParallelLibrary& parallel_lib,
 			      std::shared_ptr<Model> model):
   NonDPolynomialChaos(DEFAULT_METHOD, problem_db, parallel_lib, model), // bypass PCE ctor
-  expOrderSeqSpec(problem_db.get_usa("method.nond.expansion_order_sequence")),
-  expSamplesSeqSpec(problem_db.get_sza("method.nond.expansion_samples_sequence")),
-  quadOrderSeqSpec(problem_db.get_usa("method.nond.quadrature_order_sequence")),
-  ssgLevelSeqSpec(problem_db.get_usa("method.nond.sparse_grid_level_sequence")),
+  expOrderSeqSpec(problem_db.get<const UShortArray>("method.nond.expansion_order_sequence")),
+  expSamplesSeqSpec(problem_db.get<const SizetArray>("method.nond.expansion_samples_sequence")),
+  quadOrderSeqSpec(problem_db.get<const UShortArray>("method.nond.quadrature_order_sequence")),
+  ssgLevelSeqSpec(problem_db.get<const UShortArray>("method.nond.sparse_grid_level_sequence")),
   sequenceIndex(0) //resizedFlag(false), callResize(false)
 {
-  randomSeedSeqSpec = problem_db.get_sza("method.random_seed_sequence");
+  randomSeedSeqSpec = problem_db.get<const SizetArray>("method.random_seed_sequence");
 
   assign_modes();
   configure_1d_sequence(numSteps, secondaryIndex, sequenceType);
@@ -51,7 +51,7 @@ NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db,
   // --------------------
   // Data import settings
   // --------------------
-  String pt_reuse = probDescDB.get_string("method.nond.point_reuse");
+  String pt_reuse = probDescDB.get<const String>("method.nond.point_reuse");
   if (!importBuildPointsFile.empty() && pt_reuse.empty())
     pt_reuse = "all"; // reassign default if data import
 
@@ -66,8 +66,8 @@ NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db,
   // -------------------------
   std::shared_ptr<Iterator> u_space_sampler;
   String approx_type;
-  unsigned short sample_type = probDescDB.get_ushort("method.sample_type");
-  const String& rng = probDescDB.get_string("method.random_number_generator");
+  unsigned short sample_type = probDescDB.get<unsigned short>("method.sample_type");
+  const String& rng = probDescDB.get<const String>("method.random_number_generator");
 
   UShortArray exp_orders; // defined for expansion_samples/regression
   configure_expansion_orders(expansion_order(), dimPrefSpec, exp_orders);
@@ -77,10 +77,10 @@ NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db,
       !config_expectation(expansion_samples(), sample_type, random_seed(), rng,
 	u_space_sampler, g_u_model, approx_type) &&
 	!config_regression(exp_orders, collocation_points(),
-	probDescDB.get_real("method.nond.collocation_ratio_terms_order"),
-	probDescDB.get_short("method.nond.regression_type"),
-	probDescDB.get_short("method.nond.least_squares_regression_type"),
-	probDescDB.get_usa("method.nond.tensor_grid_order"), sample_type,
+	probDescDB.get<const Real>("method.nond.collocation_ratio_terms_order"),
+	probDescDB.get<short>("method.nond.regression_type"),
+	probDescDB.get<short>("method.nond.least_squares_regression_type"),
+	probDescDB.get<const UShortArray>("method.nond.tensor_grid_order"), sample_type,
 	random_seed(), rng, pt_reuse, u_space_sampler, g_u_model, approx_type)){
     Cerr << "Error: incomplete configuration in NonDMultilevelPolynomialChaos "
 	 << "constructor." << std::endl;
@@ -106,22 +106,22 @@ NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db,
   uSpaceModel = std::make_shared<DataFitSurrModel>(u_space_sampler,
     g_u_model, pce_set, pce_view, approx_type, exp_orders, corr_type,
     corr_order, data_order, outputLevel, pt_reuse, importBuildPointsFile,
-    probDescDB.get_ushort("method.import_build_format"),
-    probDescDB.get_bool("method.import_build_active_only"),
-    probDescDB.get_string("method.export_approx_points_file"),
-    probDescDB.get_ushort("method.export_approx_format"));
+    probDescDB.get<unsigned short>("method.import_build_format"),
+    probDescDB.get<bool>("method.import_build_active_only"),
+    probDescDB.get<const String>("method.export_approx_points_file"),
+    probDescDB.get<unsigned short>("method.export_approx_format"));
   initialize_u_space_model();
 
   // -------------------------------------
   // Construct expansionSampler, if needed
   // -------------------------------------
-  construct_expansion_sampler(problem_db.get_ushort("method.sample_type"),
-    problem_db.get_string("method.random_number_generator"),
-    problem_db.get_ushort("method.nond.integration_refinement"),
-    problem_db.get_iv("method.nond.refinement_samples"),
-    probDescDB.get_string("method.import_approx_points_file"),
-    probDescDB.get_ushort("method.import_approx_format"),
-    probDescDB.get_bool("method.import_approx_active_only"));
+  construct_expansion_sampler(problem_db.get<unsigned short>("method.sample_type"),
+    problem_db.get<const String>("method.random_number_generator"),
+    problem_db.get<unsigned short>("method.nond.integration_refinement"),
+    problem_db.get<const IntVector>("method.nond.refinement_samples"),
+    probDescDB.get<const String>("method.import_approx_points_file"),
+    probDescDB.get<unsigned short>("method.import_approx_format"),
+    probDescDB.get<bool>("method.import_approx_active_only"));
 
   if (parallelLib.command_line_check())
     Cout << "\nPolynomial_chaos construction completed: initial grid size of "
