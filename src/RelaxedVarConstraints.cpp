@@ -47,8 +47,8 @@ RelaxedVarConstraints(const ProblemDescDB& problem_db,
 
   // Helper lambda: relax discrete int bounds from a per-type key
   auto relax_div = [&](const char* base) {
-    const IntVector& lb = problem_db.get_iv(String(base)+".lower_bounds");
-    const IntVector& ub = problem_db.get_iv(String(base)+".upper_bounds");
+    const IntVector& lb = problem_db.get<const IntVector>(String(base)+".lower_bounds");
+    const IntVector& ub = problem_db.get<const IntVector>(String(base)+".upper_bounds");
     for (i=0; i<lb.length(); ++i, ++ardi_cntr)
       if (all_relax_di[ardi_cntr]) {
 	allContinuousLowerBnds[acv_offset]   = (Real)lb[i];
@@ -64,8 +64,8 @@ RelaxedVarConstraints(const ProblemDescDB& problem_db,
 
   // Helper lambda: relax discrete real bounds from a per-type key
   auto relax_drv = [&](const char* base) {
-    const RealVector& lb = problem_db.get_rv(String(base)+".lower_bounds");
-    const RealVector& ub = problem_db.get_rv(String(base)+".upper_bounds");
+    const RealVector& lb = problem_db.get<const RealVector>(String(base)+".lower_bounds");
+    const RealVector& ub = problem_db.get<const RealVector>(String(base)+".upper_bounds");
     for (i=0; i<lb.length(); ++i, ++ardr_cntr)
       if (all_relax_dr[ardr_cntr]) {
 	allContinuousLowerBnds[acv_offset]    = lb[i];
