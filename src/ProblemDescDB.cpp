@@ -1070,8 +1070,8 @@ inline int ProblemDescDB::min_procs_per_ea()
   // Note: DataInterfaceRep::procsPerAnalysis defaults to zero, which is used
   // when the processors_per_analysis spec is unreachable (system/fork/spawn)
   return min_procs_per_level(1, // min_ppa
-    get_int("interface.direct.processors_per_analysis"), // 0 for non-direct
-    get_int("interface.analysis_servers"));
+    get<int>("interface.direct.processors_per_analysis"), // 0 for non-direct
+    get<int>("interface.analysis_servers"));
 }
 
 
@@ -1083,17 +1083,17 @@ int ProblemDescDB::max_procs_per_ea()
   // TO DO: can we be more fine grained on parallel testers?
   //        default tester could get hidden by plug-in...
 
-  int max_ppa = (get_ushort("interface.type") & DIRECT_INTERFACE_BIT) ?
+  int max_ppa = (get<unsigned short>("interface.type") & DIRECT_INTERFACE_BIT) ?
     world_size : 1; // system/fork/spawn
   // Note: DataInterfaceRep::procsPerAnalysis defaults to zero, which is used
   // when the processors_per_analysis spec is unreachable (system/fork/spawn)
   return max_procs_per_level(max_ppa,
-    get_int("interface.direct.processors_per_analysis"), // 0 for non-direct
-    get_int("interface.analysis_servers"),
-    get_short("interface.analysis_scheduling"),
-    get_int("interface.asynch_local_analysis_concurrency"),
+    get<int>("interface.direct.processors_per_analysis"), // 0 for non-direct
+    get<int>("interface.analysis_servers"),
+    get<short>("interface.analysis_scheduling"),
+    get<int>("interface.asynch_local_analysis_concurrency"),
     false, // peer dynamic not supported
-    std::max(1, (int)get_sa("interface.application.analysis_drivers").size()));
+    std::max(1, (int)get<const StringArray>("interface.application.analysis_drivers").size()));
 }
 
 
@@ -1102,9 +1102,9 @@ int ProblemDescDB::min_procs_per_ie()
   // Note: get_*() requires envelope execution (throws error if !dbRep)
 
   return min_procs_per_level(min_procs_per_ea(),
-			     get_int("interface.processors_per_evaluation"),
-			     get_int("interface.evaluation_servers"));
-			   //get_short("interface.evaluation_scheduling"));
+			     get<int>("interface.processors_per_evaluation"),
+			     get<int>("interface.evaluation_servers"));
+			   //get<short>("interface.evaluation_scheduling"));
 }
 
 
@@ -1120,18 +1120,18 @@ int ProblemDescDB::max_procs_per_ie(int max_eval_concurrency)
   // current level can be managed by resolve_inputs()).
 
   int max_ea   = max_procs_per_ea(),
-      ppe_spec = get_int("interface.processors_per_evaluation"),
+      ppe_spec = get<int>("interface.processors_per_evaluation"),
       max_pps  = (ppe_spec) ? ppe_spec : max_ea;
   // for peer dynamic, max_pps == 1 is imperfect in that it does not capture
   // all possibilities, but this is conservative and hopefully close enough
   // for this context (an upper bound estimate).
-  bool peer_dynamic_avail = (get_short("interface.local_evaluation_scheduling")
+  bool peer_dynamic_avail = (get<short>("interface.local_evaluation_scheduling")
 			     != STATIC_SCHEDULING && max_pps == 1);
 
   return max_procs_per_level(max_ea, ppe_spec,
-    get_int("interface.evaluation_servers"),
-    get_short("interface.evaluation_scheduling"),
-    get_int("interface.asynch_local_evaluation_concurrency"),
+    get<int>("interface.evaluation_servers"),
+    get<short>("interface.evaluation_scheduling"),
+    get<int>("interface.asynch_local_evaluation_concurrency"),
     peer_dynamic_avail, max_eval_concurrency);
 }
 
@@ -1215,212 +1215,6 @@ get(const std::string& context_msg,
 }
 
 
-const RealMatrixArray& ProblemDescDB::get_rma(const String& entry_name) const
-{
-  return get<RealMatrixArray>
-  ( "get_rma()",
-    entry_name, dbRep);
-}
-
-const RealVector& ProblemDescDB::get_rv(const String& entry_name) const
-{  
-  return get<const RealVector>
-  ( "get_rv()",
-    entry_name, dbRep);
-}
-
-
-const IntVector& ProblemDescDB::get_iv(const String& entry_name) const
-{
-  return get<const IntVector>
-  ( "get_iv()",
-    entry_name, dbRep);
-}
-
-
-const BitArray& ProblemDescDB::get_ba(const String& entry_name) const
-{
-  return get<const BitArray>
-  ( "get_ba()",
-    entry_name, dbRep);
-}
-
-
-const SizetArray& ProblemDescDB::get_sza(const String& entry_name) const
-{
-  return get<const SizetArray>
-  ( "get_sza()",
-    entry_name, dbRep);
-}
-
-
-const UShortArray& ProblemDescDB::get_usa(const String& entry_name) const
-{
-  return get<const UShortArray>
-  ( "get_usa()",
-    entry_name, dbRep);
-}
-
-
-const RealSymMatrix& ProblemDescDB::get_rsm(const String& entry_name) const
-{
-  return get<const RealSymMatrix>
-  ( "get_rsm()",
-    entry_name, dbRep);
-}
-
-
-const RealVectorArray& ProblemDescDB::get_rva(const String& entry_name) const
-{
-  return get<const RealVectorArray>
-  ( "get_rva()",
-    entry_name, dbRep);
-}
-
-
-const IntVectorArray& ProblemDescDB::get_iva(const String& entry_name) const
-{
-  // BMA: no current use cases
-  return get<const IntVectorArray>
-  ( "get_iva()",
-    entry_name, dbRep);
-}
-
-
-const IntSet& ProblemDescDB::get_is(const String& entry_name) const
-{
-  return get<const IntSet>
-  ( "get_is()",
-    entry_name, dbRep);
-}
-
-
-const IntSetArray& ProblemDescDB::get_isa(const String& entry_name) const
-{
-  return get<const IntSetArray>
-  ( "get_isa()",
-    entry_name, dbRep);
-}
-
-
-const SizetSet& ProblemDescDB::get_szs(const String& entry_name) const
-{
-  return get<const SizetSet>
-  ( "get_szs()",
-    entry_name, dbRep);
-}
-
-
-const StringSetArray& ProblemDescDB::get_ssa(const String& entry_name) const
-{
-  return get <const StringSetArray>
-  ( "get_ssa()",
-    entry_name, dbRep);
-}
-
-
-const RealSetArray& ProblemDescDB::get_rsa(const String& entry_name) const
-{
-  return get<const RealSetArray>
-  ( "get_rsa()",
-    entry_name, dbRep);
-}
-
-
-const IntRealMapArray& ProblemDescDB::get_irma(const String& entry_name) const
-{
-  return get<const IntRealMapArray>
-  ( "get_irma()",
-    entry_name, dbRep);
-}
-
-const StringRealMapArray& ProblemDescDB::get_srma(const String& entry_name) const
-{
-  return get<const StringRealMapArray>
-  ( "get_srma()",
-    entry_name, dbRep);
-}
-
-
-const RealRealMapArray& ProblemDescDB::get_rrma(const String& entry_name) const
-{
-  return get<const RealRealMapArray>
-  ( "get_rrma()",
-    entry_name, dbRep);
-}
-
-const RealRealPairRealMapArray& ProblemDescDB::
-get_rrrma(const String& entry_name) const
-{
-  return get<const RealRealPairRealMapArray>
-  ( "get_rrrma()",
-    entry_name, dbRep);
-}
-
-const IntIntPairRealMapArray& ProblemDescDB::
-get_iirma(const String& entry_name) const
-{
-  return get<const IntIntPairRealMapArray>
-  ( "get_iirma()",
-    entry_name, dbRep);
-}
-
-const StringArray& ProblemDescDB::get_sa(const String& entry_name) const
-{
-  return get<const StringArray>
-  ( "get_sa()",
-    entry_name, dbRep);
-}
-
-
-const String2DArray& ProblemDescDB::get_s2a(const String& entry_name) const
-{
-  return get<const String2DArray>
-  ( "get_s2a()",
-    entry_name, dbRep);
-}
-
-
-const String& ProblemDescDB::get_string(const String& entry_name) const
-{
-  return get<const String>
-  ( "get_string()",
-    entry_name, dbRep);
-}
-
-
-const Real& ProblemDescDB::get_real(const String& entry_name) const
-{
-  return get<const Real>
-  ( "get_real()",
-    entry_name, dbRep);
-}
-
-
-int ProblemDescDB::get_int(const String& entry_name) const
-{
-  return get<int>
-  ( "get_int()",
-    entry_name, dbRep);
-}
-
-
-short ProblemDescDB::get_short(const String& entry_name) const
-{
-  return get<short>
-  ( "get_short()",
-    entry_name, dbRep);
-}
-
-
-unsigned short ProblemDescDB::get_ushort(const String& entry_name) const
-{
-  return get<unsigned short>
-  ( "get_ushort()",
-    entry_name, dbRep);
-}
-
-
 size_t ProblemDescDB::get_sizet(const String& entry_name) const
 {
   // first handle special case for variable group queries
@@ -1470,13 +1264,6 @@ size_t ProblemDescDB::get_sizet(const String& entry_name) const
     entry_name, dbRep);
 }
 
-
-bool ProblemDescDB::get_bool(const String& entry_name) const
-{
-  return get<bool>
-  ( "get_bool()",
-    entry_name, dbRep);
-}
 
 /** This special case involving pointers doesn't use generic lookups */
 void** ProblemDescDB::get_voidss(const String& entry_name) const
