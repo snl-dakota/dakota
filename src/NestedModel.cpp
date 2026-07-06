@@ -114,37 +114,21 @@ NestedModel::NestedModel(const IRStore& model_store,
                   Response::IntervalType::Central);
 
   initialize_runtime_execution_context(
-    model_store.contains("nested.iterator_servers") ?
-      model_store.get<int>("nested.iterator_servers") : 0,
-    model_store.contains("nested.processors_per_iterator") ?
-      model_store.get<int>("nested.processors_per_iterator") : 0,
-    model_store.contains("nested.iterator_scheduling") ?
-      model_store.get<short>("nested.iterator_scheduling") :
-      DEFAULT_SCHEDULING);
+    model_store.get<int>("nested.iterator_servers"),
+    model_store.get<int>("nested.processors_per_iterator"),
+    model_store.get<short>("nested.iterator_scheduling"));
   initialize_response_mapping_inputs(
-    model_store.contains("nested.identity_resp_map") ?
-      model_store.get<bool>("nested.identity_resp_map") : false,
-    model_store.contains("nested.primary_response_mapping") ?
-      model_store.get<RealVector>("nested.primary_response_mapping") :
-      RealVector(),
-    model_store.contains("nested.secondary_response_mapping") ?
-      model_store.get<RealVector>("nested.secondary_response_mapping") :
-      RealVector());
+    model_store.get<bool>("nested.identity_resp_map"),
+    model_store.get<RealVector>("nested.primary_response_mapping"),
+    model_store.get<RealVector>("nested.secondary_response_mapping"));
   initialize_optional_interface_state(
-    model_store.contains("optional_interface_responses_pointer") ?
-      model_store.get<String>("optional_interface_responses_pointer") :
-      String());
+    model_store.get<String>("optional_interface_responses_pointer"));
   initialize_subordinate_study_state(
     std::move(sub_iterator), nullptr,
-    model_store.contains("nested.sub_method_pointer") ?
-      model_store.get<String>("nested.sub_method_pointer") : String());
+    model_store.get<String>("nested.sub_method_pointer"));
   initialize_variable_mappings(
-    model_store.contains("nested.primary_variable_mapping") ?
-      model_store.get<StringArray>("nested.primary_variable_mapping") :
-      StringArray(),
-    model_store.contains("nested.secondary_variable_mapping") ?
-      model_store.get<StringArray>("nested.secondary_variable_mapping") :
-      StringArray());
+    model_store.get<StringArray>("nested.primary_variable_mapping"),
+    model_store.get<StringArray>("nested.secondary_variable_mapping"));
 }
 
 
