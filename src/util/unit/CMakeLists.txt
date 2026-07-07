@@ -42,6 +42,11 @@ dakota_add_unit_test(NAME FunctionalTest
   LINK_LIBS dakota_util
   )
 
+dakota_add_unit_test(NAME GenericFactoryTest
+  SOURCES GenericFactoryTest.cpp
+  LINK_LIBS dakota_util
+  )
+
 #target_include_directories(DataScalerTest PRIVATE
 #  "${CMAKE_CURRENT_SOURCE_DIR}/.." "${Teuchos_INCLUDE_DIRS}")
 
