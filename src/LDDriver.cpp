@@ -31,6 +31,17 @@ LDDriver::LDDriver(ProblemDescDB& problem_db) :
 
 }
 
+LDDriver::LDDriver(const IRStore& method_store) :
+    sequence_(
+        method_store.get<bool>("rank_1_lattice") ?
+            static_cast<LowDiscrepancySequence*>(new Rank1Lattice(method_store)) :
+            static_cast<LowDiscrepancySequence*>(new DigitalNet(method_store))
+    ),
+    numSamples_(0)
+{
+
+}
+
 // Get the seed of the wrapped low-discrepancy sequence
 int LDDriver::get_seed() {
     return sequence_->get_seed();
