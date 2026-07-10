@@ -95,28 +95,15 @@ void EmbedHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
 
 void EmbedHybridMetaIterator::derived_set_communicators(ParLevLIter pl_iter)
 {
-  size_t mi_pl_index = methodPCIter->mi_parallel_level_index(pl_iter) + 1;
-  iterSched.update(methodPCIter, mi_pl_index);
-  if (iterSched.active_server()) {
-    ParLevLIter si_pl_iter
-      = methodPCIter->mi_parallel_level_iterator(mi_pl_index);
-    iterSched.set_iterator(*globalIterator, si_pl_iter);
-    iterSched.set_iterator(*localIterator,  si_pl_iter);
-  }
+  iterSched.set_child_iterators({globalIterator.get(), localIterator.get()},
+                                methodPCIter, pl_iter);
 }
 
 
 void EmbedHybridMetaIterator::derived_free_communicators(ParLevLIter pl_iter)
 {
-  size_t mi_pl_index = methodPCIter->mi_parallel_level_index(pl_iter) + 1;
-  iterSched.update(methodPCIter, mi_pl_index);
-  if (iterSched.active_server()) {
-    iterSched.free_iterator(*globalIterator);
-    iterSched.free_iterator(*localIterator);
-  }
-
-  // deallocate the mi_pl parallelism level
-  iterSched.free_iterator_parallelism();
+  iterSched.free_child_iterators({globalIterator.get(), localIterator.get()},
+                                 methodPCIter, pl_iter);
 }
 
 IntIntPair EmbedHybridMetaIterator::estimate_partition_bounds()

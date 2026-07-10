@@ -102,18 +102,11 @@ configure(ProblemDescDB& problem_db, const String& method_string,
 IntIntPair IteratorExecutor::
 configure(ProblemDescDB& problem_db, std::shared_ptr<Iterator>& sub_iterator)
 {
-  Cout << "[IteratorExecutor] configure(existing iterator, db-backed) begin"
-       << " sub_iterator?=" << static_cast<bool>(sub_iterator) << '\n';
-
   // Prior to IteratorExecutor::partition(), we utilize the trailing mi_pl
   // (often the world pl) for the concurrency estimation.  If this is not the
   // correct reference point, the calling code must increment the parallel
   // configuration prior to invocation of this fn.
   const ParallelLevel& mi_pl = schedPCIter->mi_parallel_level();
-  Cout << "[IteratorExecutor] configure(existing iterator, db-backed) mi_pl rank="
-       << mi_pl.server_communicator_rank()
-       << " size=" << mi_pl.server_communicator_size() << '\n';
-
   IntIntPair min_max_procs;
   if (mi_pl.server_communicator_rank() == 0) {
     size_t method_index = problem_db.get_db_method_node();
@@ -140,9 +133,6 @@ configure(ProblemDescDB& problem_db, std::shared_ptr<Iterator>& sub_iterator)
     recv_buffer >> min_max_procs;
   }
 
-  Cout << "[IteratorExecutor] configure(existing iterator, db-backed) end"
-       << " min=" << min_max_procs.first
-       << " max=" << min_max_procs.second << '\n';
   return min_max_procs;
 }
 
@@ -153,14 +143,7 @@ configure(ProblemDescDB& problem_db, std::shared_ptr<Iterator>& sub_iterator)
 IntIntPair IteratorExecutor::
 configure(std::shared_ptr<Iterator>& sub_iterator)
 {
-  Cout << "[IteratorExecutor] configure(existing iterator, db-free) begin"
-       << " sub_iterator?=" << static_cast<bool>(sub_iterator) << '\n';
-
   const ParallelLevel& mi_pl = schedPCIter->mi_parallel_level();
-  Cout << "[IteratorExecutor] configure(existing iterator, db-free) mi_pl rank="
-       << mi_pl.server_communicator_rank()
-       << " size=" << mi_pl.server_communicator_size() << '\n';
-
   IntIntPair min_max_procs;
   if (mi_pl.server_communicator_rank() == 0) {
     min_max_procs = sub_iterator->estimate_partition_bounds();
@@ -181,9 +164,6 @@ configure(std::shared_ptr<Iterator>& sub_iterator)
     recv_buffer >> min_max_procs;
   }
 
-  Cout << "[IteratorExecutor] configure(existing iterator, db-free) end"
-       << " min=" << min_max_procs.first
-       << " max=" << min_max_procs.second << '\n';
   return min_max_procs;
 }
 

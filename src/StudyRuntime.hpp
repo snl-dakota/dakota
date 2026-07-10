@@ -2,6 +2,7 @@
 #define STUDY_RUNTIME_H
 
 #include "IteratorExecutor.hpp"
+#include <initializer_list>
 
 namespace Dakota {
 
@@ -95,6 +96,46 @@ public:
       runtime().initialize_iterator(executor, method_string, iterator, model);
     }
 
+    bool prepare_child_iterator(std::shared_ptr<Iterator>& iterator,
+                                ParConfigLIter pc_iter,
+                                int max_iterator_concurrency)
+    {
+      update(pc_iter);
+      IntIntPair ppi_pr = configure(iterator);
+      partition(max_iterator_concurrency, ppi_pr);
+      if (!active_server())
+        return false;
+      initialize_child_iterator(iterator);
+      return true;
+    }
+
+    template <typename IteratorPtrContainer>
+    bool prepare_child_iterators(IteratorPtrContainer& iterators,
+                                 ParConfigLIter pc_iter,
+                                 int max_iterator_concurrency)
+    {
+      update(pc_iter);
+      IntIntPair ppi_pr;
+      bool have_bounds = false;
+      for (auto& iterator : iterators) {
+        IntIntPair candidate = configure(iterator);
+        if (have_bounds)
+          update_partition_bounds(candidate, ppi_pr);
+        else {
+          ppi_pr = candidate;
+          have_bounds = true;
+        }
+      }
+      if (!have_bounds)
+        return false;
+      partition(max_iterator_concurrency, ppi_pr);
+      if (!active_server())
+        return false;
+      for (auto& iterator : iterators)
+        initialize_child_iterator(iterator);
+      return true;
+    }
+
     void update(ParConfigLIter pc_iter)
     {
       runtime().update_iterator_executor(executor, pc_iter);
@@ -116,6 +157,41 @@ public:
       runtime().set_iterator(executor, iterator, pl_iter);
     }
 
+    bool set_child_iterator(Iterator& iterator, ParConfigLIter pc_iter,
+                            ParLevLIter parent_pl_iter)
+    {
+      ParLevLIter child_pl_iter;
+      if (!activate_child_context(pc_iter, parent_pl_iter, child_pl_iter))
+        return false;
+      set_iterator(iterator, child_pl_iter);
+      return true;
+    }
+
+    bool set_child_iterators(std::initializer_list<Iterator*> iterators,
+                             ParConfigLIter pc_iter,
+                             ParLevLIter parent_pl_iter)
+    {
+      ParLevLIter child_pl_iter;
+      if (!activate_child_context(pc_iter, parent_pl_iter, child_pl_iter))
+        return false;
+      for (Iterator* iterator : iterators)
+        set_iterator(*iterator, child_pl_iter);
+      return true;
+    }
+
+    template <typename IteratorPtrContainer>
+    bool set_child_iterators(const IteratorPtrContainer& iterators,
+                             ParConfigLIter pc_iter,
+                             ParLevLIter parent_pl_iter)
+    {
+      ParLevLIter child_pl_iter;
+      if (!activate_child_context(pc_iter, parent_pl_iter, child_pl_iter))
+        return false;
+      for (const auto& iterator : iterators)
+        set_iterator(*iterator, child_pl_iter);
+      return true;
+    }
+
     void execute_iterator(Iterator& iterator, ParLevLIter pl_iter) const
     {
       runtime().execute_iterator(iterator, pl_iter);
@@ -124,6 +200,53 @@ public:
     void free_iterator(Iterator& iterator)
     {
       runtime().free_iterator(executor, iterator);
+    }
+
+    bool free_child_iterator(Iterator& iterator, ParConfigLIter pc_iter,
+                             ParLevLIter parent_pl_iter,
+                             bool free_parallelism = true)
+    {
+      ParLevLIter child_pl_iter;
+      bool active = activate_child_context(pc_iter, parent_pl_iter,
+                                           child_pl_iter);
+      if (active)
+        free_iterator(iterator);
+      if (free_parallelism)
+        free_iterator_parallelism();
+      return active;
+    }
+
+    bool free_child_iterators(std::initializer_list<Iterator*> iterators,
+                              ParConfigLIter pc_iter,
+                              ParLevLIter parent_pl_iter,
+                              bool free_parallelism = true)
+    {
+      ParLevLIter child_pl_iter;
+      bool active = activate_child_context(pc_iter, parent_pl_iter,
+                                           child_pl_iter);
+      if (active)
+        for (Iterator* iterator : iterators)
+          free_iterator(*iterator);
+      if (free_parallelism)
+        free_iterator_parallelism();
+      return active;
+    }
+
+    template <typename IteratorPtrContainer>
+    bool free_child_iterators(const IteratorPtrContainer& iterators,
+                              ParConfigLIter pc_iter,
+                              ParLevLIter parent_pl_iter,
+                              bool free_parallelism = true)
+    {
+      ParLevLIter child_pl_iter;
+      bool active = activate_child_context(pc_iter, parent_pl_iter,
+                                           child_pl_iter);
+      if (active)
+        for (const auto& iterator : iterators)
+          free_iterator(*iterator);
+      if (free_parallelism)
+        free_iterator_parallelism();
+      return active;
     }
 
     void free_iterator_parallelism()
@@ -250,6 +373,28 @@ public:
     }
 
   private:
+    void initialize_child_iterator(std::shared_ptr<Iterator>& iterator);
+
+    void update_partition_bounds(const IntIntPair& candidate,
+                                 IntIntPair& aggregate) const
+    {
+      if (candidate.first  < aggregate.first)  aggregate.first  = candidate.first;
+      if (candidate.second > aggregate.second) aggregate.second = candidate.second;
+    }
+
+    bool activate_child_context(ParConfigLIter pc_iter,
+                                ParLevLIter parent_pl_iter,
+                                ParLevLIter& child_pl_iter)
+    {
+      size_t child_mi_pl_index =
+        pc_iter->mi_parallel_level_index(parent_pl_iter) + 1;
+      update(pc_iter, child_mi_pl_index);
+      if (!active_server())
+        return false;
+      child_pl_iter = pc_iter->mi_parallel_level_iterator(child_mi_pl_index);
+      return true;
+    }
+
     StudyRuntime runtime() const
     {
       return StudyRuntime(parallelLib, outputManager);

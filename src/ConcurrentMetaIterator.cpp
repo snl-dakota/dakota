@@ -222,22 +222,16 @@ void ConcurrentMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
     }
   }
 
-  iterSched.update(methodPCIter);
-
-  IntIntPair ppi_pr;
   if (db_backed) {
-    ppi_pr = (lightwt_ctor) ?
+    iterSched.update(methodPCIter);
+    IntIntPair ppi_pr = (lightwt_ctor) ?
       iterSched.configure(probDescDB, sub_meth_name, selectedIterator,
                           iteratedModel) :
       iterSched.configure(probDescDB, selectedIterator, iteratedModel);
-  }
-  else
-    ppi_pr = iterSched.configure(selectedIterator);
-  iterSched.partition(maxIteratorConcurrency, ppi_pr);
-  summaryOutputFlag = iterSched.lead_rank();
+    iterSched.partition(maxIteratorConcurrency, ppi_pr);
+    summaryOutputFlag = iterSched.lead_rank();
 
-  if (iterSched.active_server()) {
-    if (db_backed) {
+    if (iterSched.active_server()) {
       if (lightwt_ctor) {
         iterSched.initialize_iterator(sub_meth_name, selectedIterator,
                                       iteratedModel);
@@ -252,13 +246,15 @@ void ConcurrentMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
                << std::endl;
       }
     }
-    else {
-      iterSched.initialize_iterator(selectedIterator->method_string(),
-                                    selectedIterator, iteratedModel);
-      if (summaryOutputFlag && outputLevel >= VERBOSE_OUTPUT)
-        Cout << "Concurrent Iterator = "
-             << selectedIterator->method_string() << std::endl;
-    }
+  }
+  else {
+    iterSched.prepare_child_iterator(
+      selectedIterator, methodPCIter, maxIteratorConcurrency);
+    summaryOutputFlag = iterSched.lead_rank();
+    if (iterSched.active_server() && summaryOutputFlag &&
+        outputLevel >= VERBOSE_OUTPUT)
+      Cout << "Concurrent Iterator = "
+           << selectedIterator->method_string() << std::endl;
   }
 
   if (restore_method) probDescDB.set_db_method_node(method_index);
@@ -269,25 +265,13 @@ void ConcurrentMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
 
 void ConcurrentMetaIterator::derived_set_communicators(ParLevLIter pl_iter)
 {
-  size_t mi_pl_index = methodPCIter->mi_parallel_level_index(pl_iter) + 1;
-  iterSched.update(methodPCIter, mi_pl_index);
-  if (iterSched.active_server()) {
-    ParLevLIter si_pl_iter
-      = methodPCIter->mi_parallel_level_iterator(mi_pl_index);
-    iterSched.set_iterator(*selectedIterator, si_pl_iter);
-  }
+  iterSched.set_child_iterator(*selectedIterator, methodPCIter, pl_iter);
 }
 
 
 void ConcurrentMetaIterator::derived_free_communicators(ParLevLIter pl_iter)
 {
-  size_t mi_pl_index = methodPCIter->mi_parallel_level_index(pl_iter) + 1;
-  iterSched.update(methodPCIter, mi_pl_index);
-  if (iterSched.active_server())
-    iterSched.free_iterator(*selectedIterator);
-
-  // deallocate the mi_pl parallelism level
-  iterSched.free_iterator_parallelism();
+  iterSched.free_child_iterator(*selectedIterator, methodPCIter, pl_iter);
 }
 
 

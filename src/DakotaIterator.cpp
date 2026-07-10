@@ -1153,14 +1153,7 @@ bool Iterator::compact_mode() const
 
 IntIntPair Iterator::estimate_partition_bounds()
 {
-  Cout << "[Iterator] estimate_partition_bounds begin method="
-       << method_string() << " maxEvalConcurrency=" << maxEvalConcurrency
-       << '\n';
-  IntIntPair bounds =
-    iteratedModel->estimate_partition_bounds(maxEvalConcurrency);
-  Cout << "[Iterator] estimate_partition_bounds end min=" << bounds.first
-       << " max=" << bounds.second << '\n';
-  return bounds;
+  return iteratedModel->estimate_partition_bounds(maxEvalConcurrency);
 }
 
 

@@ -559,13 +559,7 @@ derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 IntIntPair SimulationModel::
 estimate_partition_bounds(int max_eval_concurrency)
 {
-  Cout << "[SimulationModel] estimate_partition_bounds begin max_eval_concurrency="
-       << max_eval_concurrency << '\n';
-  IntIntPair bounds =
-    userDefinedInterface->estimate_partition_bounds(max_eval_concurrency);
-  Cout << "[SimulationModel] estimate_partition_bounds end min="
-       << bounds.first << " max=" << bounds.second << '\n';
-  return bounds;
+  return userDefinedInterface->estimate_partition_bounds(max_eval_concurrency);
 }
 
 void SimulationModel::declare_sources()

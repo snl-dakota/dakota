@@ -160,30 +160,13 @@ void CollabHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
 
 void CollabHybridMetaIterator::derived_set_communicators(ParLevLIter pl_iter)
 {
-  size_t mi_pl_index = methodPCIter->mi_parallel_level_index(pl_iter) + 1;
-  iterSched.update(methodPCIter, mi_pl_index);
-  if (iterSched.active_server()) {
-    ParLevLIter si_pl_iter
-      = methodPCIter->mi_parallel_level_iterator(mi_pl_index);
-    size_t i, num_iterators = methodStrings.size();
-    for (i=0; i<num_iterators; ++i)
-      iterSched.set_iterator(*selectedIterators[i], si_pl_iter);
-  }
+  iterSched.set_child_iterators(selectedIterators, methodPCIter, pl_iter);
 }
 
 
 void CollabHybridMetaIterator::derived_free_communicators(ParLevLIter pl_iter)
 {
-  size_t mi_pl_index = methodPCIter->mi_parallel_level_index(pl_iter) + 1;
-  iterSched.update(methodPCIter, mi_pl_index);
-  if (iterSched.active_server()) {
-    size_t i, num_iterators = methodStrings.size();
-    for (i=0; i<num_iterators; ++i)
-      iterSched.free_iterator(*selectedIterators[i]);
-  }
-
-  // deallocate the mi_pl parallelism level
-  iterSched.free_iterator_parallelism();
+  iterSched.free_child_iterators(selectedIterators, methodPCIter, pl_iter);
 }
 
 

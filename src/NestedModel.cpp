@@ -724,9 +724,6 @@ void NestedModel::
 derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 			   bool recurse_flag)
 {
-  Cout << "[NestedModel] derived_init_communicators begin"
-       << " recurse=" << recurse_flag
-       << " max_eval_concurrency=" << max_eval_concurrency << '\n';
   // initialize optionalInterface for parallel operations
   if (optionalInterface) {
     // allow recursion to progress - don't store/set/restore
@@ -757,43 +754,24 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
   }
 
   // > init_eval_concurrency instantiates subIterator on previous pl ranks
-  Cout << "[NestedModel] before subIteratorSched.update\n";
-  subIteratorSched.update(modelPCIter);
-  Cout << "[NestedModel] after subIteratorSched.update\n";
-  Cout << "[NestedModel] before subIteratorSched.configure"
-       << " subIterator?=" << static_cast<bool>(subIterator) << '\n';
-  IntIntPair ppi_pr;
-  if (subIterator)
-    ppi_pr = db_backed ?
-      subIteratorSched.configure(probDescDB, subIterator) :
-      subIteratorSched.configure(subIterator);
-  else
-    ppi_pr = subIteratorSched.configure(probDescDB, subIterator, subModel);
-  Cout << "[NestedModel] after subIteratorSched.configure"
-       << " min=" << ppi_pr.first << " max=" << ppi_pr.second << '\n';
-  Cout << "[NestedModel] before subIteratorSched.partition\n";
-  subIteratorSched.partition(max_eval_concurrency, ppi_pr);
-  Cout << "[NestedModel] after subIteratorSched.partition"
-       << " active_server=" << subIteratorSched.active_server()
-       << " messagePass=" << subIteratorSched.messagePass() << '\n';
-  if (subIteratorSched.active_server()) {
-    Cout << "[NestedModel] before subIteratorSched.initialize_iterator\n";
-    if (db_backed)
-      subIteratorSched.initialize_iterator(probDescDB, subIterator, subModel);
-    else
-      subIteratorSched.initialize_iterator(subIterator->method_string(),
-                                           subIterator, subModel);
-    Cout << "[NestedModel] after subIteratorSched.initialize_iterator\n";
-  }
-
   if (db_backed) {
+    subIteratorSched.update(modelPCIter);
+    IntIntPair ppi_pr = subIterator ?
+      subIteratorSched.configure(probDescDB, subIterator) :
+      subIteratorSched.configure(probDescDB, subIterator, subModel);
+    subIteratorSched.partition(max_eval_concurrency, ppi_pr);
+    if (subIteratorSched.active_server())
+      subIteratorSched.initialize_iterator(probDescDB, subIterator, subModel);
+
     probDescDB.set_db_method_node(method_index);
     probDescDB.set_db_model_nodes(model_index);
   }
+  else
+    subIteratorSched.prepare_child_iterator(
+      subIterator, modelPCIter, max_eval_concurrency);
 
   if (subIterator && subIteratorSched.active_server() &&
       subIteratorSched.iterator_comm_lead()) {
-    Cout << "[NestedModel] init_sub_iterator during derived_init_communicators\n";
     init_sub_iterator();
     if (subIteratorSched.messagePass()) {
       MPIPackBuffer buff; int eval_id = 0;
@@ -804,12 +782,10 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
       subIteratorSched.iterator_message_lengths(params_buff_len, buff.size());
     }
   }
-  Cout << "[NestedModel] derived_init_communicators end\n";
 }
 
 void NestedModel::derived_init_serial()
 {
-  Cout << "[NestedModel] derived_init_serial begin\n";
   if (!subIterator) {
     size_t method_index = probDescDB.get_db_method_node(),
            model_index  = probDescDB.get_db_model_node();
@@ -827,7 +803,6 @@ void NestedModel::derived_init_serial()
   if (optionalInterface)
     optionalInterface->init_serial();
   subModel->init_serial();
-  Cout << "[NestedModel] derived_init_serial end\n";
 }
 
 
@@ -847,16 +822,7 @@ derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
     set_ie_asynchronous_mode(max_eval_concurrency);
   }
   if (recurse_flag) {
-    // Inner context: set comms for subIterator
-    // > pl_iter is incoming context prior to subIterator partitioning
-    // > mi_pl_index reflects the miPL depth after subIterator partitioning
-    size_t mi_pl_index = outerMIPLIndex + 1;
-    subIteratorSched.update(modelPCIter, mi_pl_index);
-    if (subIteratorSched.active_server()) {
-      ParLevLIter si_pl_iter
-	= modelPCIter->mi_parallel_level_iterator(mi_pl_index);
-      subIteratorSched.set_iterator(*subIterator, si_pl_iter);
-    }
+    subIteratorSched.set_child_iterator(*subIterator, modelPCIter, pl_iter);
 
     // update asynchEvalFlag & evaluationCapacity based on subIteratorSched
     if (subIteratorSched.messagePass())
@@ -878,17 +844,8 @@ derived_free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
     optionalInterface->free_communicators();
   }
   */
-  if (recurse_flag) {
-    // finalize comms for subIterator
-    // > pl_iter is incoming context prior to subIterator partitioning
-    // > mi_pl_index reflects the miPL depth after subIterator partitioning
-    size_t mi_pl_index = modelPCIter->mi_parallel_level_index(pl_iter) + 1;
-    subIteratorSched.update(modelPCIter, mi_pl_index);
-    if (subIteratorSched.active_server()) {
-      subIteratorSched.free_iterator(*subIterator);
-    }
-    subIteratorSched.free_iterator_parallelism();
-  }
+  if (recurse_flag)
+    subIteratorSched.free_child_iterator(*subIterator, modelPCIter, pl_iter);
 }
 
 
