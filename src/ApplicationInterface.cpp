@@ -588,7 +588,7 @@ void ApplicationInterface::map(const Variables& vars, const ActiveSet& set,
     // requested set and response.
     ActiveSet algebraic_set;
     asv_mapping(set, algebraic_set, core_set);
-    algebraic_resp = Response(response.shared_data(), algebraic_set);
+    algebraic_resp = Response(response.shared_data().copy(), algebraic_set);
     if (asynch_flag) {
       ParamResponsePair prp(vars, interfaceId, algebraic_resp, evalIdCntr);
       beforeSynchAlgPRPQueue.insert(prp);
