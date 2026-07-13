@@ -8,6 +8,7 @@
     _______________________________________________________________________ */
 
 #include "NestedModel.hpp"
+#include "StudyServices.hpp"
 #include "ParallelLibrary.hpp"
 #include "ProblemDescDB.hpp"
 #include "MarginalsCorrDistribution.hpp"
@@ -87,16 +88,57 @@ NestedModel::NestedModel(const IRStore& model_store,
                          std::shared_ptr<Interface> optional_interface,
                          const Variables& variables,
                          const Response& response,
+                         std::shared_ptr<StudyServices> services):
+  Model(detail::resolve_runtime(
+          std::move(services),
+          {detail::runtime_dependency("Iterator", sub_iterator),
+           detail::runtime_dependency("Interface", optional_interface)},
+          "NestedModel"),
+        model_store, variables, response),
+  nestedModelEvalCntr(0), firstUpdate(true), outerMIPLIndex(0),
+  subIteratorSched(study_runtime().create_iterator_context(true)),
+  subIteratorJobCntr(0)
+{
+  if (!sub_iterator) {
+    throw std::runtime_error(
+      "NestedModel requires a non-null subIterator in DI construction.");
+  }
+
+  optionalInterface = std::move(optional_interface);
+  ignoreBounds = currentResponse.gradient_config().ignore_bounds;
+  centralHess  = (currentResponse.hessian_config().interval_type ==
+                  Response::IntervalType::Central);
+
+  initialize_runtime_execution_context(
+    model_store.get<int>("nested.iterator_servers"),
+    model_store.get<int>("nested.processors_per_iterator"),
+    model_store.get<short>("nested.iterator_scheduling"));
+  initialize_response_mapping_inputs(
+    model_store.get<bool>("nested.identity_resp_map"),
+    model_store.get<RealVector>("nested.primary_response_mapping"),
+    model_store.get<RealVector>("nested.secondary_response_mapping"));
+  initialize_optional_interface_state(
+    model_store.get<String>("optional_interface_responses_pointer"));
+  initialize_subordinate_study_state(
+    std::move(sub_iterator), nullptr,
+    model_store.get<String>("nested.sub_method_pointer"));
+  initialize_variable_mappings(
+    model_store.get<StringArray>("nested.primary_variable_mapping"),
+    model_store.get<StringArray>("nested.secondary_variable_mapping"));
+}
+
+
+NestedModel::NestedModel(const IRStore& model_store,
+                         std::shared_ptr<Iterator> sub_iterator,
+                         std::shared_ptr<Interface> optional_interface,
+                         const Variables& variables,
+                         const Response& response,
                          std::shared_ptr<ParallelLibrary> parallel_lib,
                          std::shared_ptr<OutputManager> output_mgr):
   Model(detail::resolve_runtime(
           std::move(parallel_lib), std::move(output_mgr),
-          {detail::RuntimeDependency("Iterator",
-                                     sub_iterator ? sub_iterator->parallel_library_ptr() : nullptr,
-                                     sub_iterator ? sub_iterator->output_manager_ptr() : nullptr),
-           detail::RuntimeDependency("Interface",
-                                     optional_interface ? optional_interface->parallel_library_ptr() : nullptr,
-                                     optional_interface ? optional_interface->output_manager_ptr() : nullptr)},
+          {detail::runtime_dependency("Iterator", sub_iterator),
+           detail::runtime_dependency("Interface", optional_interface)},
           "NestedModel"),
         model_store, variables, response),
   nestedModelEvalCntr(0), firstUpdate(true), outerMIPLIndex(0),

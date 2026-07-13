@@ -83,6 +83,10 @@ OutputManager::~OutputManager()
 }
 
 
+int OutputManager::write_precision() const
+{ return Dakota::write_precision; }
+
+
 void OutputManager::initial_redirects(const ProgramOptions& prog_opts)
 {
   // This will duplicate a redirector for the case of command-line
@@ -265,10 +269,10 @@ void OutputManager::parse(const ProgramOptions& prog_opts,
     if (db_write_precision > 16) {
       std::cout << "\nWarning: requested output_precision exceeds DAKOTA's "
 		<< "internal precision;\n         resetting to 16."<< std::endl;
-      write_precision = 16;
+      Dakota::write_precision = 16;
     }
     else
-      write_precision = db_write_precision;
+      Dakota::write_precision = db_write_precision;
   }
 }
 
@@ -296,10 +300,10 @@ void OutputManager::parse(const ProgramOptions& prog_opts,
       std::cout << "\nWarning: requested output_precision exceeds DAKOTA's "
                 << "internal precision;\n         resetting to 16."
                 << std::endl;
-      write_precision = 16;
+      Dakota::write_precision = 16;
     }
     else
-      write_precision = env_write_precision;
+      Dakota::write_precision = env_write_precision;
   }
 }
 

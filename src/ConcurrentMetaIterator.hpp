@@ -18,6 +18,8 @@
 
 namespace Dakota {
 
+class StudyServices;
+
 class IRStore;
 class OutputManager;
 
@@ -56,6 +58,9 @@ public:
                          std::shared_ptr<Iterator> sub_iterator,
                          std::shared_ptr<ParallelLibrary> parallel_lib = nullptr,
                          std::shared_ptr<OutputManager> output_mgr = nullptr);
+  ConcurrentMetaIterator(const IRStore& method_store,
+                         std::shared_ptr<Iterator> sub_iterator,
+                         std::shared_ptr<StudyServices> services);
   /// destructor
   ~ConcurrentMetaIterator() override;
 

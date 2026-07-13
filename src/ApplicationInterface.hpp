@@ -27,6 +27,8 @@ class ActiveSet;
 class OutputManager;
 class ParallelLibrary;
 namespace detail { class OwnedLibraryRuntime; struct ResolvedRuntime; }
+class RunOptions;
+class StudyServices;
 
 
 
@@ -60,6 +62,9 @@ protected:
                        std::shared_ptr<OutputManager> output_mgr = nullptr);
 
   ApplicationInterface(const IRStore& interface_store,
+                       std::shared_ptr<StudyServices> services);
+
+  ApplicationInterface(const IRStore& interface_store,
                        detail::ResolvedRuntime runtime);
 
   //
@@ -89,6 +94,7 @@ protected:
 
   ParallelLibrary* parallel_library_ptr() const override;
   OutputManager* output_manager_ptr() const override;
+  RunOptions* run_options_ptr() const override;
 
   /// return evalCacheFlag
   bool evaluation_cache() const override;
@@ -232,10 +238,15 @@ protected:
   /// optional shared runtime services for DI/library-mode construction
   std::shared_ptr<ParallelLibrary> sharedParallelLibrary;
   std::shared_ptr<OutputManager> sharedOutputManager;
+  std::shared_ptr<RunOptions> sharedRunOptions;
+  std::shared_ptr<StudyServices> sharedStudyServices;
 
   /// reference to the ParallelLibrary object used to manage MPI partitions for
   /// the concurrent evaluations and concurrent analyses parallelism levels
   ParallelLibrary& parallelLib;
+
+  /// run-phase options inherited from the resolved study services
+  RunOptions& runOptions;
 
   /// flag indicating usage of batch evaluation facilities, where a set of
   /// jobs is launched and scheduled as a unit rather than individually

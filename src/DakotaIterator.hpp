@@ -23,6 +23,8 @@ namespace Dakota {
 class OutputManager;
 class StudyRuntime;
 namespace detail { class OwnedLibraryRuntime; struct ResolvedRuntime; }
+class RunOptions;
+class StudyServices;
 
 class ParallelLib;
 class ProblemDescDB;
@@ -337,6 +339,7 @@ public:
   ParallelLibrary& parallel_library() const;
   ParallelLibrary* parallel_library_ptr() const;
   OutputManager* output_manager_ptr() const;
+  RunOptions* run_options_ptr() const;
   StudyRuntime study_runtime() const;
 
   /// set the method name to an enumeration value
@@ -439,6 +442,11 @@ protected:
 	   std::shared_ptr<TraitsBase> traits =
 	   std::shared_ptr<TraitsBase>(new TraitsBase()));
 
+  Iterator(std::shared_ptr<StudyServices> services,
+           const IRStore& method_store,
+	   std::shared_ptr<TraitsBase> traits =
+	   std::shared_ptr<TraitsBase>(new TraitsBase()));
+
   Iterator(detail::ResolvedRuntime runtime,
            const IRStore& method_store,
 	   std::shared_ptr<TraitsBase> traits =
@@ -506,6 +514,8 @@ protected:
   /// optional shared runtime services for DI/library-mode construction
   std::shared_ptr<ParallelLibrary> sharedParallelLibrary;
   std::shared_ptr<OutputManager> sharedOutputManager;
+  std::shared_ptr<RunOptions> sharedRunOptions;
+  std::shared_ptr<StudyServices> sharedStudyServices;
 
   /// class member reference to the problem description database
   /** Iterator and Model cannot use a shallow copy of ProblemDescDB
@@ -515,6 +525,9 @@ protected:
 
   /// class member reference to the parallel library
   ParallelLibrary& parallelLib;
+
+  /// run-phase options used by Iterator::run and pre/post helpers
+  RunOptions& runOptions;
 
   /// the active ParallelConfiguration used by this Iterator instance
   ParConfigLIter methodPCIter;

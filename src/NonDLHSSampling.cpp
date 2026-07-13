@@ -8,6 +8,7 @@
     _______________________________________________________________________ */
 
 #include "NonDLHSSampling.hpp"
+#include "StudyServices.hpp"
 #include "DakotaResponse.hpp"
 #include "LibraryRuntimeSupport.hpp"
 #include "ProblemDescDB.hpp"
@@ -107,6 +108,73 @@ NonDLHSSampling::NonDLHSSampling(ProblemDescDB& problem_db, ParallelLibrary& par
   }
   qoiSamplesMatrix.shape(numFunctions, 0);
 
+  initialize_final_statistics();
+}
+
+
+NonDLHSSampling::NonDLHSSampling(const IRStore& method_store,
+			 std::shared_ptr<Model> model,
+			 std::shared_ptr<StudyServices> services):
+  NonDSampling(std::move(services), method_store, model),
+  numResponseFunctions(0),
+  refineSamples(method_store.get<IntVector>("nond.refinement_samples")),
+  dOptimal(method_store.get<bool>("nond.d_optimal")),
+  numCandidateDesigns(method_store.get<size_t>("num_candidate_designs")),
+  oversampleRatio(method_store.get<Real>("nond.collocation_ratio")),
+  pcaFlag(method_store.get<bool>("principal_components")),
+  vbdViaSamplingMethod(method_store.get<unsigned short>("vbd_via_sampling_method")),
+  vbdViaSamplingNumBins(method_store.get<int>("vbd_via_sampling_num_bins")),
+  percentVarianceExplained(
+    method_store.get<Real>("percent_variance_explained"))
+{
+  if (sampleType == SUBMETHOD_DEFAULT)
+    sampleType = SUBMETHOD_LHS;
+
+  if (model->primary_fn_type() == GENERIC_FNS)
+    numResponseFunctions = model->num_primary_fns();
+
+  if (dOptimal) {
+    const SharedVariablesData& svd = model->current_variables().shared_data();
+    const SizetArray& ac_totals = svd.active_components_totals();
+    if (ac_totals[TOTAL_CDV]   || ac_totals[TOTAL_DDIV]  ||
+	ac_totals[TOTAL_DDSV]  || ac_totals[TOTAL_DDRV]  ||
+	ac_totals[TOTAL_CEUV]  || ac_totals[TOTAL_DEUIV] ||
+	ac_totals[TOTAL_DEUSV] || ac_totals[TOTAL_DEURV] ||
+	ac_totals[TOTAL_CSV]   || ac_totals[TOTAL_DSIV]  ||
+	ac_totals[TOTAL_DSSV]  || ac_totals[TOTAL_DSRV]) {
+      Cerr << "\nError: 'd_optimal' sampling not supported for design, "
+	   << "epistemic, or state\n       variables. Consider aleatory "
+	   << "uncertain variables instead.\n";
+      abort_handler(METHOD_ERROR);
+    }
+    bool leja = (oversampleRatio > 0.);
+    if (leja) {
+      if (oversampleRatio < 1.) {
+        Cerr << "\nError: 'leja_oversample_ratio' must be at least 1.0\n";
+        abort_handler(METHOD_ERROR);
+      }
+      if (numDiscreteIntVars || numDiscreteStringVars || numDiscreteRealVars) {
+        Cerr << "\nError: 'd_optimal', 'leja_oversample_ratio' does not "
+             << "support discrete variables.\n";
+        abort_handler(METHOD_ERROR);
+      }
+    }
+    else if (numCandidateDesigns == 0)
+      numCandidateDesigns = 100;
+
+    if ((sampleType == SUBMETHOD_LHS ||
+         sampleType == SUBMETHOD_LOW_DISCREPANCY_SAMPLING) &&
+        outputLevel > SILENT_OUTPUT) {
+      if (refineSamples.length())
+        Cout << "Warning: 'd_optimal' currently has no effect for incrementally"
+             << " refined LHS \n         sampling" << std::endl;
+      else if (leja)
+        Cout << "Warning: 'd_optimal', 'leja_oversample_ratio' specified with "
+	     << "LHS sampling;\n         candidate design will be Latin, but "
+	     << "final design will not." << std::endl;
+    }
+  }
+  qoiSamplesMatrix.shape(numFunctions, 0);
   initialize_final_statistics();
 }
 

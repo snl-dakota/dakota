@@ -8,6 +8,7 @@
     _______________________________________________________________________ */
 
 #include "ConcurrentMetaIterator.hpp"
+#include "StudyServices.hpp"
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
 #include "ParamResponsePair.hpp"
@@ -144,18 +145,52 @@ ConcurrentMetaIterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
 ConcurrentMetaIterator::
 ConcurrentMetaIterator(const IRStore& method_store,
                        std::shared_ptr<Iterator> sub_iterator,
+                       std::shared_ptr<StudyServices> services):
+  MetaIterator(detail::resolve_runtime(
+                 std::move(services),
+                 {detail::runtime_dependency("Iterator", sub_iterator),
+                  detail::runtime_dependency("Model",
+                                             sub_iterator ? sub_iterator->iterated_model() : nullptr)},
+                 "ConcurrentMetaIterator"),
+               method_store,
+               sub_iterator ? sub_iterator->iterated_model() : nullptr),
+  numRandomJobs(method_store.get<int>("concurrent.random_jobs")),
+  randomSeed(method_store.get<int>("random_seed"))
+{
+  if (!sub_iterator)
+    throw std::runtime_error(
+      "ConcurrentMetaIterator requires a non-null sub_iterator in DI construction.");
+
+  if (!iteratedModel)
+    throw std::runtime_error(
+      "ConcurrentMetaIterator requires sub_iterator->iterated_model() in DI construction.");
+
+  selectedIterator = std::move(sub_iterator);
+
+  const RealVector& raw_param_sets =
+    method_store.get<RealVector>("concurrent.parameter_sets");
+
+  initialize_model();
+  copy_data(raw_param_sets, parameterSets, 0, paramSetLen);
+
+  maxIteratorConcurrency = iterSched.numIteratorJobs()
+    = parameterSets.size() + numRandomJobs;
+  if (!maxIteratorConcurrency)
+    throw std::runtime_error(
+      "ConcurrentMetaIterator requires at least one parameter set or random job.");
+}
+
+
+ConcurrentMetaIterator::
+ConcurrentMetaIterator(const IRStore& method_store,
+                       std::shared_ptr<Iterator> sub_iterator,
                        std::shared_ptr<ParallelLibrary> parallel_lib,
                        std::shared_ptr<OutputManager> output_mgr):
   MetaIterator(detail::resolve_runtime(
                  std::move(parallel_lib), std::move(output_mgr),
-                 {detail::RuntimeDependency("Iterator",
-                                            sub_iterator ? sub_iterator->parallel_library_ptr() : nullptr,
-                                            sub_iterator ? sub_iterator->output_manager_ptr() : nullptr),
-                  detail::RuntimeDependency("Model",
-                                            sub_iterator && sub_iterator->iterated_model() ?
-                                              sub_iterator->iterated_model()->parallel_library_ptr() : nullptr,
-                                            sub_iterator && sub_iterator->iterated_model() ?
-                                              sub_iterator->iterated_model()->output_manager_ptr() : nullptr)},
+                 {detail::runtime_dependency("Iterator", sub_iterator),
+                  detail::runtime_dependency("Model",
+                                             sub_iterator ? sub_iterator->iterated_model() : nullptr)},
                  "ConcurrentMetaIterator"),
                method_store,
                sub_iterator ? sub_iterator->iterated_model() : nullptr),

@@ -160,16 +160,14 @@ int main()
     interface_store, runtime.parallelLibrary, runtime.outputManager);
   auto simulation_model = std::make_shared<SimulationModel>(
     simulation_model_store, inner_variables, interface, simulation_response,
-    runtime.parallelLibrary, runtime.outputManager);
+    runtime.services);
   auto inner_sampling = std::make_shared<NonDLHSSampling>(
-    inner_method_store, simulation_model, runtime.parallelLibrary,
-    runtime.outputManager);
+    inner_method_store, simulation_model, runtime.services);
   auto nested_model = std::make_shared<NestedModel>(
     nested_model_store, inner_sampling, nullptr, outer_variables,
-    nested_response, runtime.parallelLibrary, runtime.outputManager);
+    nested_response, runtime.services);
   NonDLHSSampling outer_sampling(
-    outer_method_store, nested_model, runtime.parallelLibrary,
-    runtime.outputManager);
+    outer_method_store, nested_model, runtime.services);
 
   std::cout << "Running outer sampling study over NestedModel...\n";
   runtime.execute_iterator(outer_sampling);

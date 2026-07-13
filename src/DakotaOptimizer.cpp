@@ -13,6 +13,7 @@
 #include "DataTransformModel.hpp"
 #include "ScalingModel.hpp"
 #include "DakotaOptimizer.hpp"
+#include "StudyServices.hpp"
 #include "ParamResponsePair.hpp"
 #include "PRPMultiIndex.hpp"
 #include "ProblemDescDB.hpp"
@@ -143,6 +144,105 @@ Optimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_
   if (localObjectiveRecast)
     reduce_model(have_lsq, require_hessians);
 }
+
+
+Optimizer::
+Optimizer(std::shared_ptr<StudyServices> services,
+          const IRStore& method_store, std::shared_ptr<Model> model,
+          std::shared_ptr<TraitsBase> traits):
+  Minimizer(std::move(services), method_store, model, traits),
+  numObjectiveFns(numUserPrimaryFns), localObjectiveRecast(false)
+{
+  if (convergenceTol < 0.0) convergenceTol = 1.0e-4;
+
+  optimizationFlag = true;
+
+  bool err_flag = false;
+  if ( !(methodName & OPTIMIZER_BIT) ) {
+    Cerr << "\nError: optimizer bit not activated for method instantiation "
+         << "within Optimizer branch." << std::endl;
+    err_flag = true;
+  }
+  if ( boundConstraintFlag && methodName == OPTPP_CG ) {
+    Cerr << "\nError: bound constraints not currently supported by "
+         << method_enum_to_string(methodName) << ".\n       Please select a "
+         << "different method for bound constrained problems." << std::endl;
+    err_flag = true;
+  }
+  if ( (methodName == COLINY_DIRECT) || (methodName == COLINY_EA) ) {
+    const RealVector& c_l_bnds = ModelUtils::continuous_lower_bounds(*model);
+    const RealVector& c_u_bnds = ModelUtils::continuous_upper_bounds(*model);
+    for (size_t i=0; i<numContinuousVars; ++i)
+      if (c_l_bnds[i] <= -bigRealBoundSize || c_u_bnds[i] >= bigRealBoundSize) {
+        Cerr << "\nError: finite bound constraints are required for global optimizer "
+             << method_enum_to_string(methodName) << ".\n       Please specify both "
+             << "lower_bounds and upper_bounds." << std::endl;
+        err_flag = true;
+        break;
+      }
+  }
+
+  if ( speculativeFlag && methodName < NONLINEAR_CG ) {
+    Cerr << "\nWarning: Speculative specification for a nongradient-based "
+         << "optimizer is ignored.\n";
+    speculativeFlag = false;
+  }
+
+  bool require_hessians = false;
+  bool have_lsq = (model->primary_fn_type() == CALIB_TERMS);
+  if (methodName == OPTPP_NEWTON) {
+    require_hessians = true;
+    if (have_lsq) {
+      if (iteratedModel->gradient_type() == "none" ) {
+        Cerr << "\nError: full Newton optimization of least-squares problem requires calibration term gradients."
+             << std::endl;
+        err_flag = true;
+      }
+      if (numNonlinearConstraints && ( iteratedModel->hessian_type()  == "none" )) {
+        Cerr << "\nError: full Newton optimization of least-squares problem with nonlinear constraints "
+             << "requires constraint Hessians.  Alternatively, consider using optpp_g_newton."
+             << std::endl;
+        err_flag = true;
+      }
+    }
+    else if (iteratedModel->hessian_type()  == "none") {
+      Cerr << "\nError: full Newton optimization requires objective Hessians. "
+           << "Alternatively, consider using optpp_q_newton."
+           << std::endl;
+      err_flag = true;
+    }
+  }
+
+  bestVariablesArray.push_back(iteratedModel->current_variables().copy());
+
+  if (have_lsq) {
+    Cerr << "Warning: coercing least squares data set into optimization data "
+         << "set." << std::endl;
+    optimizationFlag = false;
+    localObjectiveRecast = true;
+  }
+  else if (model->primary_fn_type() == OBJECTIVE_FNS) {
+    if (numUserPrimaryFns > 1 &&
+        (methodName != MOGA && methodName != SOGA))
+      localObjectiveRecast = true;
+  }
+  else {
+    Cerr << "\nError: responses specification is incompatible with "
+         << "optimization methods." << std::endl;
+    err_flag = true;
+  }
+
+  if (err_flag)
+    abort_handler(-1);
+
+  if (calibrationDataFlag)
+    data_transform_model();
+  if (scaleFlag)
+    scale_model();
+  if (localObjectiveRecast)
+    reduce_model(have_lsq, require_hessians);
+}
+
 
 
 Optimizer::

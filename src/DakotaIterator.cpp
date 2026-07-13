@@ -17,6 +17,7 @@
 #include "IRStore.hpp"
 #include "LibraryRuntimeSupport.hpp"
 #include "StudyRuntime.hpp"
+#include "StudyServices.hpp"
 #include "ParallelLibrary.hpp"
 #include "DakotaGraphics.hpp"
 #include "ResultsManager.hpp"
@@ -53,6 +54,7 @@ std::list<std::shared_ptr<Iterator>> Iterator::iteratorByNameCache{};
 Iterator::Iterator(ProblemDescDB& problem_db,
 		   ParallelLibrary& parallel_lib, std::shared_ptr<TraitsBase> traits):
   probDescDB(problem_db), parallelLib(parallel_lib),
+  runOptions(const_cast<RunOptions&>(parallelLib.user_modes())),
   methodPCIter(parallelLib.parallel_configuration_iterator()),
   myModelLayers(0), methodName(problem_db.get<unsigned short>("method.algorithm")),
   convergenceTol(problem_db.get<const Real>("method.convergence_tolerance")),
@@ -103,13 +105,23 @@ Iterator::Iterator(std::shared_ptr<ParallelLibrary> parallel_lib,
 { }
 
 
+Iterator::Iterator(std::shared_ptr<StudyServices> services,
+                   const IRStore& method_store,
+		   std::shared_ptr<TraitsBase> traits):
+  Iterator(detail::resolve_runtime(std::move(services)), method_store, traits)
+{ }
+
+
 Iterator::Iterator(detail::ResolvedRuntime runtime,
                    const IRStore& method_store,
 		   std::shared_ptr<TraitsBase> traits):
   ownedRuntime(std::move(runtime.ownedRuntime)),
   sharedParallelLibrary(std::move(runtime.sharedParallelLibrary)),
   sharedOutputManager(std::move(runtime.sharedOutputManager)),
+  sharedRunOptions(std::move(runtime.sharedRunOptions)),
+  sharedStudyServices(std::move(runtime.sharedStudyServices)),
   probDescDB(dummy_db), parallelLib(*runtime.parallelLibrary),
+  runOptions(*runtime.runOptions),
   methodPCIter(parallelLib.parallel_configuration_iterator()),
   myModelLayers(0), methodName(method_store.get<unsigned short>("algorithm")),
   convergenceTol(method_store.get<Real>("convergence_tolerance")),
@@ -143,6 +155,7 @@ Iterator::
 Iterator(unsigned short method_name, std::shared_ptr<Model> model,
 	 std::shared_ptr<TraitsBase> traits):
   probDescDB(dummy_db), parallelLib(model->parallel_library()),
+  runOptions(*model->run_options_ptr()),
   methodPCIter(parallelLib.parallel_configuration_iterator()),
   myModelLayers(0), iteratedModel(model), methodName(method_name),
   convergenceTol(0.0001), maxIterations(100), maxFunctionEvals(1000),
@@ -164,7 +177,8 @@ Iterator(unsigned short method_name, std::shared_ptr<Model> model,
     default constructor, which should remain as minimal as possible. */
 Iterator::Iterator(unsigned short method_name,
 		   std::shared_ptr<TraitsBase> traits):
-  probDescDB(dummy_db), parallelLib(dummy_lib), 
+  probDescDB(dummy_db), parallelLib(dummy_lib),
+  runOptions(const_cast<RunOptions&>(dummy_lib.user_modes())),
   myModelLayers(0), methodName(method_name),
   convergenceTol(0.0001), maxIterations(100), maxFunctionEvals(1000),
   maxEvalConcurrency(1), subIteratorFlag(false), numFinalSolutions(1),
@@ -183,6 +197,7 @@ Iterator::
 Iterator(std::shared_ptr<Model> model, size_t max_iter, size_t max_eval,
 	 Real conv_tol, std::shared_ptr<TraitsBase> traits):
   probDescDB(dummy_db), parallelLib(model->parallel_library()),
+  runOptions(*model->run_options_ptr()),
   methodPCIter(parallelLib.parallel_configuration_iterator()),
   myModelLayers(0), iteratedModel(model), //methodName(method_name),
   convergenceTol(conv_tol), maxIterations(max_iter), maxFunctionEvals(max_eval),
@@ -202,6 +217,7 @@ Iterator(std::shared_ptr<Model> model, size_t max_iter, size_t max_eval,
     case. */
 Iterator::Iterator(std::shared_ptr<TraitsBase> traits):
   probDescDB(dummy_db), parallelLib(dummy_lib),
+  runOptions(const_cast<RunOptions&>(dummy_lib.user_modes())),
   resultsDB(iterator_results_db), evaluationsDB(evaluation_store_db), 
   evaluationsDBState(EvaluationsDBState::UNINITIALIZED),
   myModelLayers(0), methodName(DEFAULT_METHOD),
@@ -547,20 +563,20 @@ void Iterator::run()
   initialize_run();
   if (summaryOutputFlag)
     Cout << "\n>>>>> Running "  << method_string <<" iterator.\n";
-  if (parallelLib.user_modes().preRun) {
+  if (runOptions.preRun) {
     if (summaryOutputFlag && outputLevel > NORMAL_OUTPUT)
 Cout << "\n>>>>> " << method_string <<": pre-run phase.\n";
     pre_run();
     pre_output(); // for now, the helper manages whether output is needed
   }
-  if (parallelLib.user_modes().run) {
+  if (runOptions.run) {
     //core_input();
     if (summaryOutputFlag && outputLevel > NORMAL_OUTPUT)
 Cout << "\n>>>>> " << method_string <<": core run phase.\n";
     core_run();
     //core_output();
   }
-  if (parallelLib.user_modes().postRun) {
+  if (runOptions.postRun) {
     post_input();
     if (summaryOutputFlag && outputLevel > NORMAL_OUTPUT)
 Cout << "\n>>>>> " << method_string <<": post-run phase.\n";
@@ -1201,10 +1217,10 @@ StrStrSizet Iterator::run_identifier() const
 void Iterator::pre_output()
 {
   // distinguish between defaulted pre-run and user-specified
-  if (!parallelLib.user_modes().requestedUserModes)
+  if (!runOptions.requestedUserModes)
     return;
 
-  const String& filename = parallelLib. user_modes().preRunOutput;
+  const String& filename = runOptions.preRunOutput;
   if (filename.empty()) {
     if (outputLevel > QUIET_OUTPUT)
       Cout << "\nPre-run phase complete: no output requested.\n" << std::endl;
@@ -1220,10 +1236,10 @@ void Iterator::pre_output()
 void Iterator::post_input()
 {
     // distinguish between defaulted post-run and user-specified
-    if (!parallelLib.user_modes().requestedUserModes)
+    if (!runOptions.requestedUserModes)
       return;
 
-    const String& filename = parallelLib.user_modes().postRunInput;
+    const String& filename = runOptions.postRunInput;
     if (outputLevel > QUIET_OUTPUT) {
       if (filename.empty())
 	      Cout << "\nPost-run phase initialized: no input requested.\n"
@@ -1307,6 +1323,12 @@ OutputManager* Iterator::output_manager_ptr() const
 {
   ParallelLibrary* parallel_lib = parallel_library_ptr();
   return parallel_lib ? &parallel_lib->output_manager() : nullptr;
+}
+
+
+RunOptions* Iterator::run_options_ptr() const
+{
+  return &runOptions;
 }
 
 

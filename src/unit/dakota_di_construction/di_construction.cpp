@@ -12,6 +12,8 @@
 #include "ParallelLibrary.hpp"
 #include "ProgramOptions.hpp"
 #include "SimulationModel.hpp"
+#include "StudyServices.hpp"
+#include "RunOptions.hpp"
 #include "WorkdirHelper.hpp"
 
 #include <gtest/gtest.h>
@@ -30,8 +32,11 @@ struct ExplicitRuntime {
     programOptions(mpiManager.world_rank()),
     outputManager(std::make_shared<OutputManager>(
       programOptions, mpiManager.world_rank(), mpiManager.mpirun_flag())),
+    runOptions(std::make_shared<RunOptions>(programOptions.user_modes())),
     parallelLibrary(std::make_shared<ParallelLibrary>(
-      mpiManager, programOptions, *outputManager))
+      mpiManager, programOptions, *outputManager)),
+    services(std::make_shared<StudyServices>(
+      parallelLibrary, outputManager, runOptions))
   {
     WorkdirHelper::initialize();
     outputManager->push_output_tag("", programOptions, false, true);
@@ -45,7 +50,9 @@ struct ExplicitRuntime {
   MPIManager mpiManager;
   ProgramOptions programOptions;
   std::shared_ptr<OutputManager> outputManager;
+  std::shared_ptr<RunOptions> runOptions;
   std::shared_ptr<ParallelLibrary> parallelLibrary;
+  std::shared_ptr<StudyServices> services;
 };
 
 void materialize_pilot_blocks(InstructionMaterializer& materializer,
@@ -203,15 +210,14 @@ TEST(di_construction_tests, can_construct_pilot_components_from_irstores_with_ex
   std::shared_ptr<Interface> interface = std::make_shared<ForkApplicInterface>(
     interface_store, runtime.parallelLibrary, runtime.outputManager);
   auto model = std::make_shared<SimulationModel>(
-    model_store, variables, interface, response,
-    runtime.parallelLibrary, runtime.outputManager);
-  NonDLHSSampling sampling(
-    method_store, model, runtime.parallelLibrary, runtime.outputManager);
+    model_store, variables, interface, response, runtime.services);
+  NonDLHSSampling sampling(method_store, model, runtime.services);
 
   EXPECT_EQ(interface->parallel_library_ptr(), runtime.parallelLibrary.get());
   EXPECT_EQ(model->parallel_library_ptr(), runtime.parallelLibrary.get());
   EXPECT_EQ(model->output_manager_ptr(), runtime.outputManager.get());
   EXPECT_EQ(sampling.parallel_library_ptr(), runtime.parallelLibrary.get());
+  EXPECT_EQ(sampling.run_options_ptr(), runtime.runOptions.get());
 }
 
 TEST(di_construction_tests, throws_on_inconsistent_parent_child_runtime_services)
@@ -243,13 +249,16 @@ TEST(di_construction_tests, resolve_runtime_accepts_matching_multiple_dependenci
   auto resolved = detail::resolve_runtime(
     std::shared_ptr<ParallelLibrary>(), std::shared_ptr<OutputManager>(),
     {detail::RuntimeDependency("dep_a", runtime.parallelLibrary.get(),
-                               runtime.outputManager.get()),
+                               runtime.outputManager.get(),
+                               runtime.runOptions.get()),
      detail::RuntimeDependency("dep_b", runtime.parallelLibrary.get(),
-                               runtime.outputManager.get())},
+                               runtime.outputManager.get(),
+                               runtime.runOptions.get())},
     "Owner");
 
   EXPECT_EQ(resolved.parallelLibrary, runtime.parallelLibrary.get());
   EXPECT_EQ(resolved.outputManager, runtime.outputManager.get());
+  EXPECT_EQ(resolved.runOptions, runtime.runOptions.get());
 }
 
 TEST(di_construction_tests, resolve_runtime_uses_parallel_library_output_manager_when_dependency_output_manager_missing)
@@ -258,12 +267,31 @@ TEST(di_construction_tests, resolve_runtime_uses_parallel_library_output_manager
 
   auto resolved = detail::resolve_runtime(
     std::shared_ptr<ParallelLibrary>(), std::shared_ptr<OutputManager>(),
-    {detail::RuntimeDependency("dep", runtime.parallelLibrary.get(), nullptr)},
+    {detail::RuntimeDependency("dep", runtime.parallelLibrary.get(), nullptr,
+                               runtime.runOptions.get())},
     "Owner");
 
   EXPECT_EQ(resolved.parallelLibrary, runtime.parallelLibrary.get());
   EXPECT_EQ(resolved.outputManager,
             &runtime.parallelLibrary->output_manager());
+  EXPECT_EQ(resolved.runOptions, runtime.runOptions.get());
+}
+
+TEST(di_construction_tests, resolve_runtime_normalizes_partial_study_services)
+{
+  ExplicitRuntime runtime;
+  auto partial_services = std::make_shared<StudyServices>(
+    runtime.parallelLibrary, nullptr, nullptr);
+
+  auto resolved = detail::resolve_runtime(partial_services);
+
+  ASSERT_TRUE(resolved.sharedStudyServices);
+  EXPECT_EQ(resolved.parallelLibrary, runtime.parallelLibrary.get());
+  EXPECT_EQ(resolved.outputManager, runtime.outputManager.get());
+  EXPECT_NE(resolved.sharedStudyServices.get(), partial_services.get());
+  EXPECT_EQ(resolved.sharedStudyServices->output_manager_ptr(),
+            runtime.outputManager.get());
+  EXPECT_TRUE(resolved.sharedStudyServices->run_options_ptr());
 }
 
 TEST(di_construction_tests, resolve_runtime_throws_on_conflicting_multiple_dependencies)
@@ -275,9 +303,28 @@ TEST(di_construction_tests, resolve_runtime_throws_on_conflicting_multiple_depen
     detail::resolve_runtime(
       std::shared_ptr<ParallelLibrary>(), std::shared_ptr<OutputManager>(),
       {detail::RuntimeDependency("dep_a", runtime_a.parallelLibrary.get(),
-                                 runtime_a.outputManager.get()),
+                                 runtime_a.outputManager.get(),
+                                 runtime_a.runOptions.get()),
        detail::RuntimeDependency("dep_b", runtime_b.parallelLibrary.get(),
-                                 runtime_b.outputManager.get())},
+                                 runtime_b.outputManager.get(),
+                                 runtime_b.runOptions.get())},
+      "Owner"),
+    std::runtime_error);
+}
+
+
+TEST(di_construction_tests, resolve_runtime_throws_on_conflicting_run_options_values)
+{
+  ExplicitRuntime runtime;
+  auto alternate_run_options = std::make_shared<RunOptions>(*runtime.runOptions);
+  alternate_run_options->run = !alternate_run_options->run;
+
+  EXPECT_THROW(
+    detail::resolve_runtime(
+      runtime.parallelLibrary, runtime.outputManager,
+      {detail::RuntimeDependency("dep", runtime.parallelLibrary.get(),
+                                 runtime.outputManager.get(),
+                                 alternate_run_options.get())},
       "Owner"),
     std::runtime_error);
 }
@@ -297,15 +344,12 @@ TEST(di_construction_tests, can_construct_concurrent_meta_iterator_from_irstore)
   auto interface = std::make_shared<ForkApplicInterface>(
     interface_store, runtime.parallelLibrary, runtime.outputManager);
   auto simulation_model = std::make_shared<SimulationModel>(
-    model_store, variables, interface, response,
-    runtime.parallelLibrary, runtime.outputManager);
+    model_store, variables, interface, response, runtime.services);
   auto sub_iterator = std::make_shared<NonDLHSSampling>(
-    sampling_method_store, simulation_model, runtime.parallelLibrary,
-    runtime.outputManager);
+    sampling_method_store, simulation_model, runtime.services);
 
   ConcurrentMetaIterator concurrent_iterator(
-    concurrent_method_store, sub_iterator,
-    runtime.parallelLibrary, runtime.outputManager);
+    concurrent_method_store, sub_iterator, runtime.services);
 
   EXPECT_EQ(concurrent_iterator.parallel_library_ptr(),
             runtime.parallelLibrary.get());
@@ -328,11 +372,9 @@ TEST(di_construction_tests, can_construct_dot_optimizer_from_irstore)
   auto interface = std::make_shared<ForkApplicInterface>(
     interface_store, runtime.parallelLibrary, runtime.outputManager);
   auto simulation_model = std::make_shared<SimulationModel>(
-    model_store, variables, interface, response,
-    runtime.parallelLibrary, runtime.outputManager);
+    model_store, variables, interface, response, runtime.services);
 
-  DOTOptimizer optimizer(method_store, simulation_model,
-                         runtime.parallelLibrary, runtime.outputManager);
+  DOTOptimizer optimizer(method_store, simulation_model, runtime.services);
 
   EXPECT_EQ(optimizer.parallel_library_ptr(), runtime.parallelLibrary.get());
   EXPECT_EQ(optimizer.output_manager_ptr(), runtime.outputManager.get());
@@ -354,15 +396,13 @@ TEST(di_construction_tests, can_construct_nested_model_from_irstore_without_opti
   auto interface = std::make_shared<ForkApplicInterface>(
     interface_store, runtime.parallelLibrary, runtime.outputManager);
   auto simulation_model = std::make_shared<SimulationModel>(
-    model_store, variables, interface, response,
-    runtime.parallelLibrary, runtime.outputManager);
+    model_store, variables, interface, response, runtime.services);
   auto sub_iterator = std::make_shared<NonDLHSSampling>(
-    method_store, simulation_model, runtime.parallelLibrary,
-    runtime.outputManager);
+    method_store, simulation_model, runtime.services);
 
   NestedModel nested_model(
     make_nested_model_store(model_store), sub_iterator, nullptr,
-    variables, response, runtime.parallelLibrary, runtime.outputManager);
+    variables, response, runtime.services);
   Model& nested_as_model = nested_model;
 
   EXPECT_EQ(nested_model.parallel_library_ptr(), runtime.parallelLibrary.get());
@@ -387,15 +427,13 @@ TEST(di_construction_tests, can_construct_nested_model_from_irstore_with_optiona
   auto optional_interface = std::make_shared<ForkApplicInterface>(
     interface_store, runtime.parallelLibrary, runtime.outputManager);
   auto simulation_model = std::make_shared<SimulationModel>(
-    model_store, variables, simulation_interface, response,
-    runtime.parallelLibrary, runtime.outputManager);
+    model_store, variables, simulation_interface, response, runtime.services);
   auto sub_iterator = std::make_shared<NonDLHSSampling>(
-    method_store, simulation_model, runtime.parallelLibrary,
-    runtime.outputManager);
+    method_store, simulation_model, runtime.services);
 
   NestedModel nested_model(
     make_nested_model_store(model_store), sub_iterator, optional_interface,
-    variables, response, runtime.parallelLibrary, runtime.outputManager);
+    variables, response, runtime.services);
   Model& nested_as_model = nested_model;
 
   EXPECT_EQ(nested_model.parallel_library_ptr(), runtime.parallelLibrary.get());

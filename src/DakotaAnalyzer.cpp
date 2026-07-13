@@ -17,6 +17,8 @@
 #include "IRStore.hpp"
 #include "LibraryRuntimeSupport.hpp"
 #include "ParallelLibrary.hpp"
+#include "OutputManager.hpp"
+#include "StudyServices.hpp"
 #include "PRPMultiIndex.hpp"
 
 static const char rcsId[]="@(#) $Id: DakotaAnalyzer.cpp 7035 2010-10-22 21:45:39Z mseldre $";
@@ -62,18 +64,53 @@ Analyzer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_p
 
 
 Analyzer::
-Analyzer(std::shared_ptr<ParallelLibrary> parallel_lib,
-         std::shared_ptr<OutputManager> output_mgr,
+Analyzer(std::shared_ptr<StudyServices> services,
          const IRStore& method_store, std::shared_ptr<Model> model):
-  Iterator(detail::resolve_runtime(std::move(parallel_lib), std::move(output_mgr),
-                                   model->parallel_library_ptr(),
-                                   model->output_manager_ptr(),
-                                   "Analyzer", "Model"),
+  Iterator(detail::resolve_runtime(
+             std::move(services),
+             {detail::runtime_dependency("Model", model)},
+             "Analyzer"),
            method_store),
   compactMode(true),
   numObjFns(0), numLSqTerms(0),
   vbdFlag(method_store.get<bool>("variance_based_decomp")),
-  writePrecision(0)
+  writePrecision(output_manager_ptr()->write_precision())
+{
+  iteratedModel = model;
+  update_from_model(*iteratedModel);
+
+  if (convergenceTol < 0.) convergenceTol = 1.e-4;
+
+  if (model->primary_fn_type() == OBJECTIVE_FNS)
+    numObjFns = model->num_primary_fns();
+  else if (model->primary_fn_type() == CALIB_TERMS)
+    numLSqTerms = model->num_primary_fns();
+  else if (model->primary_fn_type() != GENERIC_FNS) {
+    Cerr << "\nError: Unknown primary function type in Analyzer." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+
+  if (vbdFlag)
+    vbdDropTol = method_store.get<Real>("vbd_drop_tolerance");
+
+  if (!numFinalSolutions)
+    numFinalSolutions = 1;
+}
+
+
+Analyzer::
+Analyzer(std::shared_ptr<ParallelLibrary> parallel_lib,
+         std::shared_ptr<OutputManager> output_mgr,
+         const IRStore& method_store, std::shared_ptr<Model> model):
+  Iterator(detail::resolve_runtime(
+             std::move(parallel_lib), std::move(output_mgr),
+             {detail::runtime_dependency("Model", model)},
+             "Analyzer"),
+           method_store),
+  compactMode(true),
+  numObjFns(0), numLSqTerms(0),
+  vbdFlag(method_store.get<bool>("variance_based_decomp")),
+  writePrecision(output_manager_ptr() ? output_manager_ptr()->write_precision() : 0)
 {
   iteratedModel = model;
   update_from_model(*iteratedModel);
@@ -582,10 +619,10 @@ void Analyzer::get_vbd_parameter_sets(std::shared_ptr<Model> model, size_t num_s
 void Analyzer::pre_output()
 {
   // distinguish between defaulted pre-run and user-specified
-  if (!parallelLib.user_modes().requestedUserModes)
+  if (!runOptions.requestedUserModes)
     return;
 
-  const String& filename = parallelLib.user_modes().preRunOutput;
+  const String& filename = runOptions.preRunOutput;
   if (filename.empty()) {
     if (outputLevel > QUIET_OUTPUT)
       Cout << "\nPre-run phase complete: no output requested.\n" << std::endl;
@@ -618,7 +655,7 @@ void Analyzer::pre_output()
   // use sample_to_variables to set the discrete variables not treated
   // by allSamples.
   unsigned short tabular_format = 
-    parallelLib.program_options().user_modes().preRunOutputFormat;
+    runOptions.preRunOutputFormat;
   TabularIO::write_header_tabular(tabular_file,
 				  iteratedModel->current_variables(), 
 				  iteratedModel->current_response(),
@@ -661,10 +698,10 @@ void Analyzer::pre_output()
 void Analyzer::read_variables_responses(int num_evals, size_t num_vars)
 {
   // distinguish between defaulted post-run and user-specified
-  if (!parallelLib.user_modes().requestedUserModes)
+  if (!runOptions.requestedUserModes)
     return;
 
-  const String& filename = parallelLib.user_modes().postRunInput;
+  const String& filename = runOptions.postRunInput;
   if (filename.empty()) {
     if (outputLevel > QUIET_OUTPUT)
       Cout << "\nPost-run phase initialized: no input requested.\n" 
@@ -681,7 +718,7 @@ void Analyzer::read_variables_responses(int num_evals, size_t num_vars)
 
   // pre/post only supports annotated; could detect
   unsigned short tabular_format = 
-    parallelLib.program_options().user_modes().postRunInputFormat;
+    runOptions.postRunInputFormat;
 
   // Define modelList and recastFlags to support any recastings within
   // a model recursion

@@ -16,6 +16,8 @@
 
 namespace Dakota {
 
+class StudyServices;
+
 class IRStore;
 class OutputManager;
 
@@ -57,6 +59,9 @@ public:
                   std::shared_ptr<Model> model,
                   std::shared_ptr<ParallelLibrary> parallel_lib = nullptr,
                   std::shared_ptr<OutputManager> output_mgr = nullptr);
+  NonDLHSSampling(const IRStore& method_store,
+                  std::shared_ptr<Model> model,
+                  std::shared_ptr<StudyServices> services);
   /// alternate constructor for sample generation and evaluation "on the fly"
   NonDLHSSampling(std::shared_ptr<Model> model, unsigned short sample_type,
 		  int samples, int seed, const String& rng,

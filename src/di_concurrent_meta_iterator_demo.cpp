@@ -104,15 +104,14 @@ int main()
   auto interface = std::make_shared<ForkApplicInterface>(
     interface_store, runtime.parallelLibrary, runtime.outputManager);
   auto model = std::make_shared<SimulationModel>(
-    model_store, variables, interface, response,
-    runtime.parallelLibrary, runtime.outputManager);
+    model_store, variables, interface, response, runtime.services);
   Cout << "[di_concurrent_meta_iterator_demo] simulation model bounds lower="
        << ModelUtils::continuous_lower_bounds(*model)
        << " upper=" << ModelUtils::continuous_upper_bounds(*model)
        << std::endl;
 
   auto sub_optimizer = std::make_shared<DOTOptimizer>(
-    dot_method_store, model, runtime.parallelLibrary, runtime.outputManager);
+    dot_method_store, model, runtime.services);
 
   Cout << "[di_concurrent_meta_iterator_demo] optimizer iterated model bounds lower="
        << ModelUtils::continuous_lower_bounds(*sub_optimizer->iterated_model())
@@ -121,8 +120,7 @@ int main()
        << std::endl;
 
   ConcurrentMetaIterator multistart(
-    multistart_method_store, sub_optimizer,
-    runtime.parallelLibrary, runtime.outputManager);
+    multistart_method_store, sub_optimizer, runtime.services);
 
   std::cout << "Running DI multi_start study over DOTOptimizer...\n";
   runtime.execute_iterator(multistart);

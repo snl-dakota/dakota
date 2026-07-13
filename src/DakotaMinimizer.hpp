@@ -17,6 +17,8 @@
 
 namespace Dakota {
 
+class StudyServices;
+
 class IRStore;
 class OutputManager;
 
@@ -103,6 +105,10 @@ protected:
   /// DI constructor using method IR plus optional runtime services
   Minimizer(std::shared_ptr<ParallelLibrary> parallel_lib,
       std::shared_ptr<OutputManager> output_mgr,
+      const IRStore& method_store, std::shared_ptr<Model> model,
+      std::shared_ptr<TraitsBase> traits =
+      std::shared_ptr<TraitsBase>(new TraitsBase()));
+  Minimizer(std::shared_ptr<StudyServices> services,
       const IRStore& method_store, std::shared_ptr<Model> model,
       std::shared_ptr<TraitsBase> traits =
       std::shared_ptr<TraitsBase>(new TraitsBase()));

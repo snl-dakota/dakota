@@ -32,6 +32,8 @@ class OutputManager;
 class StudyRuntime;
 class ParallelLibrary;
 namespace detail { class OwnedLibraryRuntime; struct ResolvedRuntime; }
+class RunOptions;
+class StudyServices;
 
 // define special values for serve_init_mapping()
 #define FREE_COMMS 1
@@ -850,6 +852,7 @@ public:
 
   ParallelLibrary* parallel_library_ptr() const;
   OutputManager* output_manager_ptr() const;
+  RunOptions* run_options_ptr() const;
   StudyRuntime study_runtime() const;
 
   /// Return the model ID of the "innermost" model. 
@@ -865,6 +868,11 @@ protected:
   /// services for study-wide behavior.
   Model(std::shared_ptr<ParallelLibrary> parallel_lib,
         std::shared_ptr<OutputManager> output_mgr,
+        const IRStore& model_store,
+	const Variables& variables,
+	const Response& response);
+
+  Model(std::shared_ptr<StudyServices> services,
         const IRStore& model_store,
 	const Variables& variables,
 	const Response& response);
@@ -1121,6 +1129,8 @@ protected:
   /// optional shared runtime services for DI/library-mode construction
   std::shared_ptr<ParallelLibrary> sharedParallelLibrary;
   std::shared_ptr<OutputManager> sharedOutputManager;
+  std::shared_ptr<RunOptions> sharedRunOptions;
+  std::shared_ptr<StudyServices> sharedStudyServices;
 
   /// class member reference to the problem description database
   /** Iterator and Model cannot use a shallow copy of ProblemDescDB
@@ -1130,6 +1140,9 @@ protected:
 
   /// class member reference to the parallel library
   ParallelLibrary& parallelLib;
+
+  /// run-phase options inherited from the resolved study services
+  RunOptions& runOptions;
 
   /// the ParallelConfiguration node used by this Model instance
   ParConfigLIter modelPCIter;

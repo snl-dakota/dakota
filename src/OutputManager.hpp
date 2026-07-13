@@ -201,6 +201,9 @@ public:
   /// retrieve the graphics handler object
   Graphics& graphics() { return dakotaGraphics; }
 
+  /// retrieve the current global write precision used for Dakota output
+  int write_precision() const;
+
 
   // -----
   // Modify output settings

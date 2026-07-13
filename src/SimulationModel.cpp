@@ -9,6 +9,7 @@
 
 #include "dakota_system_defs.hpp"
 #include "SimulationModel.hpp"
+#include "StudyServices.hpp"
 #include "LibraryRuntimeSupport.hpp"
 #include "ProblemDescDB.hpp"
 #include "MarginalsCorrDistribution.hpp"
@@ -53,12 +54,39 @@ SimulationModel::SimulationModel(const IRStore& model_store,
                                  const Variables& variables,
                                  std::shared_ptr<Interface> interface,
                                  const Response& response,
+                                 std::shared_ptr<StudyServices> services):
+  Model(detail::resolve_runtime(
+          std::move(services),
+          {detail::runtime_dependency("Interface", interface)},
+          "SimulationModel"),
+        model_store, variables, response),
+  userDefinedInterface(std::move(interface)), solnCntlVarType(EMPTY_TYPE),
+  solnCntlADVIndex(_NPOS), solnCntlAVIndex(_NPOS), costMetadataIndex(_NPOS),
+  simModelEvalCntr(0)
+{
+  componentParallelMode = INTERFACE_MODE;
+  ignoreBounds = currentResponse.gradient_config().ignore_bounds;
+  centralHess  = (currentResponse.hessian_config().interval_type ==
+                  Response::IntervalType::Central);
+
+  initialize_solution_control(
+    model_store.get<String>("simulation.solution_level_control"),
+    model_store.get<RealVector>("simulation.solution_level_cost"));
+
+  initialize_solution_recovery(
+    model_store.get<String>("simulation.cost_recovery_metadata"));
+}
+
+SimulationModel::SimulationModel(const IRStore& model_store,
+                                 const Variables& variables,
+                                 std::shared_ptr<Interface> interface,
+                                 const Response& response,
                                  std::shared_ptr<ParallelLibrary> parallel_lib,
                                  std::shared_ptr<OutputManager> output_mgr):
-  Model(detail::resolve_runtime(std::move(parallel_lib), std::move(output_mgr),
-                                interface->parallel_library_ptr(),
-                                interface->output_manager_ptr(),
-                                "SimulationModel", "Interface"),
+  Model(detail::resolve_runtime(
+          std::move(parallel_lib), std::move(output_mgr),
+          {detail::runtime_dependency("Interface", interface)},
+          "SimulationModel"),
         model_store, variables, response),
   userDefinedInterface(std::move(interface)), solnCntlVarType(EMPTY_TYPE),
   solnCntlADVIndex(_NPOS), solnCntlAVIndex(_NPOS), costMetadataIndex(_NPOS),

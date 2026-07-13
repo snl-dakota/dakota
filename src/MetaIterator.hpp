@@ -18,6 +18,8 @@
 
 namespace Dakota {
 
+class StudyServices;
+
 class IRStore;
 class OutputManager;
 
@@ -52,6 +54,9 @@ protected:
   /// DI constructor using method IR plus optional runtime services
   MetaIterator(std::shared_ptr<ParallelLibrary> parallel_lib,
                std::shared_ptr<OutputManager> output_mgr,
+               const IRStore& method_store,
+               std::shared_ptr<Model> model);
+  MetaIterator(std::shared_ptr<StudyServices> services,
                const IRStore& method_store,
                std::shared_ptr<Model> model);
   MetaIterator(detail::ResolvedRuntime runtime,

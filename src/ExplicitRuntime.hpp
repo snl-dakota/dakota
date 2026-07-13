@@ -6,6 +6,8 @@
 #include "ParallelLibrary.hpp"
 #include "ProgramOptions.hpp"
 #include "StudyRuntime.hpp"
+#include "StudyServices.hpp"
+#include "RunOptions.hpp"
 #include "WorkdirHelper.hpp"
 
 #include <memory>
@@ -20,8 +22,11 @@ struct DemoRuntime {
     programOptions(mpiManager.world_rank()),
     outputManager(std::make_shared<OutputManager>(
       programOptions, mpiManager.world_rank(), mpiManager.mpirun_flag())),
+    runOptions(std::make_shared<RunOptions>(programOptions.user_modes())),
     parallelLibrary(std::make_shared<ParallelLibrary>(
       mpiManager, programOptions, *outputManager)),
+    services(std::make_shared<StudyServices>(
+      parallelLibrary, outputManager, runOptions)),
     studyRuntime(std::make_shared<StudyRuntime>(
       *parallelLibrary, outputManager.get()))
   {
@@ -42,7 +47,9 @@ struct DemoRuntime {
   MPIManager mpiManager;
   ProgramOptions programOptions;
   std::shared_ptr<OutputManager> outputManager;
+  std::shared_ptr<RunOptions> runOptions;
   std::shared_ptr<ParallelLibrary> parallelLibrary;
+  std::shared_ptr<StudyServices> services;
   std::shared_ptr<StudyRuntime> studyRuntime;
 };
 

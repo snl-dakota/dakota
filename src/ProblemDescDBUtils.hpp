@@ -11,13 +11,13 @@
 #include <string_view>
 #include <string>
 #include <utility>
+#include "UserModes.hpp"
 
 namespace Dakota {
 
 class ProgramOptions;
 class ParallelLibrary;
 class ProblemDescDB;
-class UserModes;
 
 namespace ProblemDescDBUtils {
 

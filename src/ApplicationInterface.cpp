@@ -13,6 +13,7 @@
 #include "IRStore.hpp"
 #include "ProblemDescDB.hpp"
 #include "LibraryRuntimeSupport.hpp"
+#include "StudyServices.hpp"
 #include <thread>
 
 //#define DEBUG
@@ -85,7 +86,8 @@ extern PRPCache data_pairs;
 ApplicationInterface::
 ApplicationInterface(const ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
   Interface(problem_db),
-  parallelLib(parallel_lib), 
+  parallelLib(parallel_lib),
+  runOptions(const_cast<RunOptions&>(parallelLib.user_modes())),
   batchEval(problem_db.get<bool>("interface.batch")),
   asynchFlag(problem_db.get<bool>("interface.asynch")), batchIdCntr(0),
   suppressOutput(false), evalCommSize(1), evalCommRank(0), evalServerId(1),
@@ -151,6 +153,11 @@ OutputManager* ApplicationInterface::output_manager_ptr() const
   return parallel_lib ? &parallel_lib->output_manager() : nullptr;
 }
 
+RunOptions* ApplicationInterface::run_options_ptr() const
+{
+  return &runOptions;
+}
+
 
 
 
@@ -166,12 +173,22 @@ ApplicationInterface(const IRStore& interface_store,
 
 ApplicationInterface::
 ApplicationInterface(const IRStore& interface_store,
+                     std::shared_ptr<StudyServices> services):
+  ApplicationInterface(interface_store, detail::resolve_runtime(std::move(services)))
+{ }
+
+
+ApplicationInterface::
+ApplicationInterface(const IRStore& interface_store,
                      detail::ResolvedRuntime runtime):
   Interface(interface_store),
   ownedRuntime(std::move(runtime.ownedRuntime)),
   sharedParallelLibrary(std::move(runtime.sharedParallelLibrary)),
   sharedOutputManager(std::move(runtime.sharedOutputManager)),
+  sharedRunOptions(std::move(runtime.sharedRunOptions)),
+  sharedStudyServices(std::move(runtime.sharedStudyServices)),
   parallelLib(*runtime.parallelLibrary),
+  runOptions(*runtime.runOptions),
   batchEval(interface_store.get<bool>("batch")),
   asynchFlag(interface_store.get<bool>("asynch")),
   batchIdCntr(0),

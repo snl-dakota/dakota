@@ -8,6 +8,7 @@
     _______________________________________________________________________ */
 
 #include "MetaIterator.hpp"
+#include "StudyServices.hpp"
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
 #include "StudyRuntime.hpp"
@@ -60,11 +61,22 @@ MetaIterator::MetaIterator(std::shared_ptr<ParallelLibrary> parallel_lib,
                            std::shared_ptr<OutputManager> output_mgr,
                            const IRStore& method_store,
                            std::shared_ptr<Model> model):
-  MetaIterator(detail::resolve_runtime(std::move(parallel_lib),
-                                       std::move(output_mgr),
-                                       model->parallel_library_ptr(),
-                                       model->output_manager_ptr(),
-                                       "MetaIterator", "Model"),
+  MetaIterator(detail::resolve_runtime(
+                 std::move(parallel_lib), std::move(output_mgr),
+                 {detail::runtime_dependency("Model", model)},
+                 "MetaIterator"),
+               method_store, model)
+{
+}
+
+
+MetaIterator::MetaIterator(std::shared_ptr<StudyServices> services,
+                           const IRStore& method_store,
+                           std::shared_ptr<Model> model):
+  MetaIterator(detail::resolve_runtime(
+                 std::move(services),
+                 {detail::runtime_dependency("Model", model)},
+                 "MetaIterator"),
                method_store, model)
 {
 }

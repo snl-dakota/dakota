@@ -86,10 +86,8 @@ int main()
   auto interface = std::make_shared<ForkApplicInterface>(
     interface_store, runtime.parallelLibrary, runtime.outputManager);
   auto model = std::make_shared<SimulationModel>(
-    model_store, variables, interface, response,
-    runtime.parallelLibrary, runtime.outputManager);
-  NonDLHSSampling sampling(
-    method_store, model, runtime.parallelLibrary, runtime.outputManager);
+    model_store, variables, interface, response, runtime.services);
+  NonDLHSSampling sampling(method_store, model, runtime.services);
 
   std::cout << "Running sampling study...\n";
   runtime.execute_iterator(sampling);

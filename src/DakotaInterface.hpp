@@ -26,6 +26,7 @@ namespace Dakota {
 // forward declarations
 class OutputManager;
 class ParallelLibrary;
+class RunOptions;
 class ProblemDescDB;
 class IRStore;
 class Variables;
@@ -92,6 +93,7 @@ public:
 
   virtual ParallelLibrary* parallel_library_ptr() const { return nullptr; }
   virtual OutputManager* output_manager_ptr() const { return nullptr; }
+  virtual RunOptions* run_options_ptr() const { return nullptr; }
 
   /// the function evaluator: provides a "mapping" from the
   /// variables to the responses.

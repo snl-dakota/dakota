@@ -15,6 +15,8 @@
 
 namespace Dakota {
 
+class StudyServices;
+
 /// Wrapper class for the DOT optimization library.
 
 /** The DOTOptimizer class provides a wrapper for DOT, a commercial
@@ -94,6 +96,8 @@ public:
   DOTOptimizer(const IRStore& method_store, std::shared_ptr<Model> model,
                std::shared_ptr<ParallelLibrary> parallel_lib = nullptr,
                std::shared_ptr<OutputManager> output_mgr = nullptr);
+  DOTOptimizer(const IRStore& method_store, std::shared_ptr<Model> model,
+               std::shared_ptr<StudyServices> services);
   /// alternate constructor; construct without ProblemDescDB
   DOTOptimizer(const String& method_string, std::shared_ptr<Model> model);
   /// destructor

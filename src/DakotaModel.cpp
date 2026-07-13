@@ -15,6 +15,7 @@
 #include "ProblemDescDB.hpp"
 #include "IRStore.hpp"
 #include "LibraryRuntimeSupport.hpp"
+#include "StudyServices.hpp"
 #include "StudyRuntime.hpp"
 #include "SimulationModel.hpp"
 #include "NestedModel.hpp"
@@ -820,6 +821,7 @@ Model::Model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
   hessIdQuasi(currentResponse.hessian_config().id_quasi),
   warmStartFlag(false), supportsEstimDerivs(true), mappingInitialized(false),
   probDescDB(problem_db), parallelLib(parallel_lib),
+  runOptions(const_cast<RunOptions&>(parallelLib.user_modes())),
   modelPCIter(parallelLib.parallel_configuration_iterator()),
   componentParallelMode(NO_PARALLEL_MODE), asynchEvalFlag(false),
   evaluationCapacity(1), 
@@ -1009,6 +1011,15 @@ Model::Model(std::shared_ptr<ParallelLibrary> parallel_lib,
 { }
 
 
+Model::Model(std::shared_ptr<StudyServices> services,
+	     const IRStore& model_store,
+	     const Variables& variables,
+	     const Response& response):
+  Model(detail::resolve_runtime(std::move(services)), model_store, variables,
+        response)
+{ }
+
+
 Model::Model(detail::ResolvedRuntime runtime,
 	     const IRStore& model_store,
 	     const Variables& variables,
@@ -1040,7 +1051,10 @@ Model::Model(detail::ResolvedRuntime runtime,
   ownedRuntime(std::move(runtime.ownedRuntime)),
   sharedParallelLibrary(std::move(runtime.sharedParallelLibrary)),
   sharedOutputManager(std::move(runtime.sharedOutputManager)),
+  sharedRunOptions(std::move(runtime.sharedRunOptions)),
+  sharedStudyServices(std::move(runtime.sharedStudyServices)),
   probDescDB(dummy_db), parallelLib(*runtime.parallelLibrary),
+  runOptions(*runtime.runOptions),
   modelPCIter(parallelLib.parallel_configuration_iterator()),
   componentParallelMode(NO_PARALLEL_MODE), asynchEvalFlag(false),
   evaluationCapacity(1),
@@ -1097,6 +1111,7 @@ Model(const ShortShortPair& vars_view,
   fdGradStepType("relative"), fdHessStepType("relative"), warmStartFlag(false), 
   supportsEstimDerivs(true), mappingInitialized(false), probDescDB(problem_db),
   parallelLib(parallel_lib),
+  runOptions(const_cast<RunOptions&>(parallel_lib.user_modes())),
   modelPCIter(parallel_lib.parallel_configuration_iterator()),
   componentParallelMode(NO_PARALLEL_MODE), asynchEvalFlag(false),
   evaluationCapacity(1), outputLevel(output_level),
@@ -1143,6 +1158,12 @@ OutputManager* Model::output_manager_ptr() const
 }
 
 
+RunOptions* Model::run_options_ptr() const
+{
+  return &runOptions;
+}
+
+
 StudyRuntime Model::study_runtime() const
 {
   return StudyRuntime(parallelLib, output_manager_ptr());
@@ -1152,6 +1173,7 @@ StudyRuntime Model::study_runtime() const
 Model::Model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, Model::ModelCtor dummy):
   warmStartFlag(false), supportsEstimDerivs(true), mappingInitialized(false),
   probDescDB(problem_db), parallelLib(parallel_lib),
+  runOptions(const_cast<RunOptions&>(parallelLib.user_modes())),
   evaluationsDB(evaluation_store_db),
   modelPCIter(parallel_lib.parallel_configuration_iterator()),
   componentParallelMode(NO_PARALLEL_MODE), asynchEvalFlag(false),
@@ -1170,6 +1192,7 @@ Model::Model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, Model::Mo
     (a populated problem_db is needed to build a meaningful Model object). */
 Model::Model():
   probDescDB(dummy_db), parallelLib(dummy_lib),
+  runOptions(const_cast<RunOptions&>(dummy_lib.user_modes())),
   evaluationsDB(evaluation_store_db)
 { /* empty ctor */ }
 
