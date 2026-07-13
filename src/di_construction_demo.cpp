@@ -2,7 +2,8 @@
 #include "DakotaResponse.hpp"
 #include "ForkApplicInterface.hpp"
 #include "InstructionMaterializer.hpp"
-#include "ExplicitRuntime.hpp"
+#include "Study.hpp"
+#include "StudyConfig.hpp"
 #include "NonDLHSSampling.hpp"
 #include "SimulationModel.hpp"
 
@@ -75,24 +76,31 @@ int main()
   const IRStore model_store =
     materializer.materialize_block(model_json, irgen::BlockType::Model);
 
-  // This explicit service setup demonstrates the current library-mode knobs:
-  // ParallelLibrary coordinates evaluation execution, and OutputManager owns
-  // restart/output state needed by the pilot path.
-  DemoRuntime runtime;
+  StudyConfig config;
+  config.output.precision = 12;
+  config.output.outputFile = "di_construction_demo.out";
+  config.output.errorFile = "di_construction_demo.err";
+  config.output.writeRestart = "di_construction_demo.rst";
+  config.output.resultsOutput = true;
+  config.output.resultsOutputFile = "di_construction_demo_results";
+
+  // Study owns the library-mode services used by DI-constructed components.
+  Study study(config);
 
   std::cout << "Constructing DI study components...\n";
+  std::cout << "Configured output precision: "
+            << study.output_manager()->write_precision() << '\n';
   Variables variables(variables_store);
   Response response(responses_store, variables);
-  auto interface = std::make_shared<ForkApplicInterface>(
-    interface_store, runtime.parallelLibrary, runtime.outputManager);
-  auto model = std::make_shared<SimulationModel>(
-    model_store, variables, interface, response, runtime.services);
-  NonDLHSSampling sampling(method_store, model, runtime.services);
+  auto interface = study.interface(interface_store);
+  auto model = study.model().simulation(
+    model_store, variables, interface, response);
+  auto sampling = study.method().sampling(method_store, model);
 
   std::cout << "Running sampling study...\n";
-  runtime.execute_iterator(sampling);
+  study.run(sampling);
 
-  const auto& responses = sampling.all_responses();
+  const auto& responses = sampling->all_responses();
   std::cout << "Completed DI study.\n";
   std::cout << "Samples evaluated: " << responses.size() << '\n';
   if (!responses.empty()) {

@@ -12,6 +12,7 @@
 #include "ParallelLibrary.hpp"
 #include "ProgramOptions.hpp"
 #include "SimulationModel.hpp"
+#include "Study.hpp"
 #include "StudyServices.hpp"
 #include "RunOptions.hpp"
 #include "WorkdirHelper.hpp"
@@ -194,6 +195,101 @@ TEST(di_construction_tests, can_construct_pilot_components_from_irstores_without
   EXPECT_EQ(response.num_functions(), 1);
   EXPECT_EQ(model->current_response().num_functions(), 1);
   EXPECT_EQ(sampling.sampling_scheme(), SUBMETHOD_LHS);
+}
+
+TEST(di_construction_tests, default_study_constructs_coherent_services)
+{
+  Study study;
+
+  ASSERT_TRUE(study.services());
+  ASSERT_TRUE(study.parallel_library());
+  ASSERT_TRUE(study.output_manager());
+  ASSERT_TRUE(study.run_options());
+  EXPECT_EQ(study.services()->parallel_library_ptr(),
+            study.parallel_library().get());
+  EXPECT_EQ(study.services()->output_manager_ptr(),
+            study.output_manager().get());
+  EXPECT_EQ(study.services()->run_options_ptr(),
+            study.run_options().get());
+}
+
+TEST(di_construction_tests, study_config_output_precision_reaches_output_manager)
+{
+  const int saved_precision = Dakota::write_precision;
+
+  StudyConfig config;
+  config.output.precision = 12;
+  Study study(config);
+
+  EXPECT_EQ(study.output_manager()->write_precision(), 12);
+  Dakota::write_precision = saved_precision;
+}
+
+TEST(di_construction_tests, study_config_run_defaults_to_all_phases)
+{
+  Study study;
+  const RunOptions& run_options = *study.run_options();
+
+  EXPECT_TRUE(run_options.preRun);
+  EXPECT_TRUE(run_options.run);
+  EXPECT_TRUE(run_options.postRun);
+  EXPECT_FALSE(run_options.requestedUserModes);
+}
+
+TEST(di_construction_tests, study_config_run_preserves_explicit_phase_selection)
+{
+  StudyConfig config;
+  config.run.run = true;
+  config.run.preRunOutput = "pre.out";
+  Study study(config);
+  const RunOptions& run_options = *study.run_options();
+
+  EXPECT_FALSE(run_options.preRun);
+  EXPECT_TRUE(run_options.run);
+  EXPECT_FALSE(run_options.postRun);
+  EXPECT_TRUE(run_options.requestedUserModes);
+  EXPECT_EQ(run_options.preRunOutput, "pre.out");
+}
+
+TEST(di_construction_tests, study_factory_constructs_fork_interface)
+{
+  InstructionMaterializer materializer;
+  IRStore method_store, variables_store, responses_store, interface_store, model_store;
+  materialize_pilot_blocks(materializer, method_store, variables_store,
+                           responses_store, interface_store, model_store);
+
+  Study study;
+  auto interface = study.interface(interface_store);
+
+  ASSERT_TRUE(interface);
+  EXPECT_TRUE(std::dynamic_pointer_cast<ForkApplicInterface>(interface));
+  EXPECT_EQ(interface->parallel_library_ptr(), study.parallel_library().get());
+  EXPECT_EQ(interface->output_manager_ptr(), study.output_manager().get());
+}
+
+TEST(di_construction_tests, study_factories_construct_components_with_shared_services)
+{
+  InstructionMaterializer materializer;
+  IRStore method_store, variables_store, responses_store, interface_store, model_store;
+  materialize_pilot_blocks(materializer, method_store, variables_store,
+                           responses_store, interface_store, model_store);
+
+  Study study;
+
+  Variables variables(variables_store);
+  Response response(responses_store, variables);
+  auto interface = study.interface(interface_store);
+  auto model = study.model().simulation(model_store, variables, interface, response);
+  auto sampling = study.method().sampling(method_store, model);
+
+  ASSERT_TRUE(model);
+  ASSERT_TRUE(sampling);
+  EXPECT_EQ(model->parallel_library_ptr(), study.parallel_library().get());
+  EXPECT_EQ(model->output_manager_ptr(), study.output_manager().get());
+  EXPECT_EQ(model->run_options_ptr(), study.run_options().get());
+  EXPECT_EQ(sampling->parallel_library_ptr(), study.parallel_library().get());
+  EXPECT_EQ(sampling->output_manager_ptr(), study.output_manager().get());
+  EXPECT_EQ(sampling->run_options_ptr(), study.run_options().get());
 }
 
 TEST(di_construction_tests, can_construct_pilot_components_from_irstores_with_explicit_services)

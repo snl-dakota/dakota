@@ -2,7 +2,7 @@
 #include "DakotaResponse.hpp"
 #include "ForkApplicInterface.hpp"
 #include "InstructionMaterializer.hpp"
-#include "ExplicitRuntime.hpp"
+#include "Study.hpp"
 #include "NestedModel.hpp"
 #include "NonDLHSSampling.hpp"
 #include "SimulationModel.hpp"
@@ -147,7 +147,7 @@ int main()
   const IRStore nested_model_store =
     materializer.materialize_block(nested_model_json, irgen::BlockType::Model);
 
-  DemoRuntime runtime;
+  Study study;
 
   std::cout << "Constructing DI nested-model study components...\n";
 
@@ -156,24 +156,22 @@ int main()
   Response simulation_response(simulation_responses_store, inner_variables);
   Response nested_response(nested_responses_store, outer_variables);
 
-  auto interface = std::make_shared<ForkApplicInterface>(
-    interface_store, runtime.parallelLibrary, runtime.outputManager);
-  auto simulation_model = std::make_shared<SimulationModel>(
-    simulation_model_store, inner_variables, interface, simulation_response,
-    runtime.services);
-  auto inner_sampling = std::make_shared<NonDLHSSampling>(
-    inner_method_store, simulation_model, runtime.services);
-  auto nested_model = std::make_shared<NestedModel>(
+  auto interface = study.interface(interface_store);
+  auto simulation_model = study.model().simulation(
+    simulation_model_store, inner_variables, interface, simulation_response);
+  auto inner_sampling = study.method().sampling(
+    inner_method_store, simulation_model);
+  auto nested_model = study.model().nested(
     nested_model_store, inner_sampling, nullptr, outer_variables,
-    nested_response, runtime.services);
-  NonDLHSSampling outer_sampling(
-    outer_method_store, nested_model, runtime.services);
+    nested_response);
+  auto outer_sampling = study.method().sampling(
+    outer_method_store, nested_model);
 
   std::cout << "Running outer sampling study over NestedModel...\n";
-  runtime.execute_iterator(outer_sampling);
+  study.run(outer_sampling);
 
-  const auto& outer_responses = outer_sampling.all_responses();
-  Iterator& outer_iterator = outer_sampling;
+  const auto& outer_responses = outer_sampling->all_responses();
+  Iterator& outer_iterator = *outer_sampling;
   const Response& outer_stats = outer_iterator.response_results();
 
   std::cout << "Completed nested DI study.\n";

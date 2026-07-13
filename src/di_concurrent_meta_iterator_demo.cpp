@@ -4,7 +4,7 @@
 #include "DakotaResponse.hpp"
 #include "ForkApplicInterface.hpp"
 #include "InstructionMaterializer.hpp"
-#include "ExplicitRuntime.hpp"
+#include "Study.hpp"
 #include "SimulationModel.hpp"
 #include "model_utils.hpp"
 
@@ -95,23 +95,21 @@ int main()
   const IRStore model_store =
     materializer.materialize_block(json::object(), irgen::BlockType::Model);
 
-  DemoRuntime runtime;
+  Study study;
 
   std::cout << "Constructing DI concurrent meta-iterator study components...\n";
 
   Variables variables(variables_store);
   Response response(responses_store, variables);
-  auto interface = std::make_shared<ForkApplicInterface>(
-    interface_store, runtime.parallelLibrary, runtime.outputManager);
-  auto model = std::make_shared<SimulationModel>(
-    model_store, variables, interface, response, runtime.services);
+  auto interface = study.interface(interface_store);
+  auto model = study.model().simulation(
+    model_store, variables, interface, response);
   Cout << "[di_concurrent_meta_iterator_demo] simulation model bounds lower="
        << ModelUtils::continuous_lower_bounds(*model)
        << " upper=" << ModelUtils::continuous_upper_bounds(*model)
        << std::endl;
 
-  auto sub_optimizer = std::make_shared<DOTOptimizer>(
-    dot_method_store, model, runtime.services);
+  auto sub_optimizer = study.method().dot_bfgs(dot_method_store, model);
 
   Cout << "[di_concurrent_meta_iterator_demo] optimizer iterated model bounds lower="
        << ModelUtils::continuous_lower_bounds(*sub_optimizer->iterated_model())
@@ -119,11 +117,11 @@ int main()
        << ModelUtils::continuous_upper_bounds(*sub_optimizer->iterated_model())
        << std::endl;
 
-  ConcurrentMetaIterator multistart(
-    multistart_method_store, sub_optimizer, runtime.services);
+  auto multistart = study.method().multi_start(
+    multistart_method_store, sub_optimizer);
 
   std::cout << "Running DI multi_start study over DOTOptimizer...\n";
-  runtime.execute_iterator(multistart);
+  study.run(multistart);
 
   std::cout << "Completed DI concurrent meta-iterator study.\n";
   std::cout << "See the multi_start results summary above for per-start optima.\n";

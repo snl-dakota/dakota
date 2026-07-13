@@ -26,6 +26,7 @@ class ProgramOptions;
 class IRStore;
 class ProblemDescDB;
 class ParamResponsePair;
+struct StudyOutputConfig;
 
 
 /** Component to manage a redirected output or error stream */
@@ -216,6 +217,9 @@ public:
   /// Extract environment options from an IR store and update from
   /// late updates to ProgramOptions
   void parse(const ProgramOptions& prog_opts, const IRStore& environment_store);
+
+  /// Apply typed DI/library-mode output configuration.
+  void apply(const StudyOutputConfig& output_config);
 
   /// Set the Dakota startup message ("Running on...")
   void startup_message(const String& start_msg);

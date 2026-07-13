@@ -13,6 +13,7 @@
 #include <boost/regex.hpp>
 #include "dakota_global_defs.hpp"
 #include "OutputManager.hpp"
+#include "StudyConfig.hpp"
 #include "ProgramOptions.hpp"
 #include "ProblemDescDB.hpp"
 #include "IRStore.hpp"
@@ -304,6 +305,33 @@ void OutputManager::parse(const ProgramOptions& prog_opts,
     }
     else
       Dakota::write_precision = env_write_precision;
+  }
+}
+
+
+void OutputManager::apply(const StudyOutputConfig& output_config)
+{
+  graph2DFlag = output_config.graphics;
+  tabularDataFlag = output_config.tabularGraphicsData;
+  tabularDataFile = output_config.tabularGraphicsFile;
+  resultsOutputFlag = output_config.resultsOutput;
+  resultsOutputFile = output_config.resultsOutputFile;
+  modelEvalsSelection = output_config.modelEvalsSelection;
+  interfEvalsSelection = output_config.interfaceEvalsSelection;
+  tabularFormat = output_config.tabularFormat;
+  resultsOutputFormat = output_config.resultsOutputFormat;
+  if (resultsOutputFlag && resultsOutputFormat == 0)
+    resultsOutputFormat = RESULTS_OUTPUT_TEXT;
+
+  if (output_config.precision > 0) {
+    if (output_config.precision > 16) {
+      std::cout << "\nWarning: requested output_precision exceeds DAKOTA's "
+                << "internal precision;\n         resetting to 16."
+                << std::endl;
+      Dakota::write_precision = 16;
+    }
+    else
+      Dakota::write_precision = output_config.precision;
   }
 }
 
