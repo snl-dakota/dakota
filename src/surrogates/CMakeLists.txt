@@ -66,7 +66,11 @@ target_include_directories(dakota_surrogates PUBLIC
 target_link_libraries(dakota_surrogates PUBLIC ${Teuchos_LIBRARIES})
 
 if(DAKOTA_PYBIND11 AND DAKOTA_PYTHON_SURROGATES)
-  target_link_libraries(dakota_surrogates PUBLIC pybind11::embed)
+  # Python embedding is an implementation detail of dakota_surrogates.
+  # Do not propagate pybind11::embed to Python extension modules that link
+  # Dakota core libraries; on macOS extension modules should not inherit
+  # an embedding-style libpython link.
+  target_link_libraries(dakota_surrogates PRIVATE pybind11::embed)
 endif()
 
 

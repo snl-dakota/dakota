@@ -1245,16 +1245,16 @@ if(DAKOTA_PYTHON_WRAPPER)
   # simple Python packaging scheme we're using; revisit.
   # TODO: Need to always compile libs PIC when using Python
   # TODO: Consider -undefined dynamic_lookup link flag on Mac
-  pybind11_add_module(environment dakota_python.cpp)
+  pybind11_add_module(environment python/environment/DakotaEnvironmentPython.cpp)
   add_dependencies(environment dakota_python_package)
   # TODO: transitive includes when merging from devel
 #  target_include_directories(surrogates PRIVATE ${Teuchos_INCLUDE_DIRS})
   target_include_directories(environment PRIVATE
     ${PYBIND11_JSON_ROOT_DIR}/include)
-  target_link_libraries(environment PRIVATE dakota_src
-    ${Dakota_LIBRARIES} ${Dakota_TPL_LIBRARIES}
-    )
+  target_link_libraries(environment PRIVATE dakota_src)
   target_link_libraries(environment PRIVATE dakota_parser_lib)
+  target_link_libraries(environment PRIVATE ${DAKOTA_PKG_LIBS} ${DAKOTA_EXTPROJ_LIBS})
+  target_link_libraries(environment PRIVATE ${Dakota_TPL_LIBRARIES})
 
   set(_dakota_python_environment_dir
     "${DAKOTA_PYTHON_PATH}/dakota/environment")
@@ -1279,8 +1279,9 @@ if(DAKOTA_PYTHON_WRAPPER)
   endif()
 
   if (APPLE)
-    set_target_properties(environment PROPERTIES INSTALL_RPATH
-      "@rpath;@rpath/../../../../../lib;@rpath/../../../../../lib64;@rpath/../../../../../bin")
+    set_target_properties(environment PROPERTIES
+      LINK_FLAGS "-undefined dynamic_lookup"
+      INSTALL_RPATH "@rpath;@rpath/../../../../../lib;@rpath/../../../../../lib64;@rpath/../../../../../bin")
   elseif (UNIX)
     set_target_properties(environment PROPERTIES INSTALL_RPATH
       "\$ORIGIN;\$ORIGIN/../../../../../lib;\$ORIGIN/../../../../../lib64;\$ORIGIN/../../../../../bin")
@@ -1288,6 +1289,50 @@ if(DAKOTA_PYTHON_WRAPPER)
   install(TARGETS environment EXPORT ${ExportTarget}
     DESTINATION share/dakota/Python/dakota/environment/)
   install(FILES __init__.py DESTINATION share/dakota/Python/dakota/environment)
+
+  set(dakota_study_python_src
+    python/study/DakotaStudyPython.cpp
+    python/study/StudyPythonIRHelpers.cpp
+    python/study/BindStudyConfig.cpp
+    python/study/BindVariables.cpp
+    python/study/BindResponse.cpp
+    python/study/BindInterface.cpp
+    python/study/BindModel.cpp
+    python/study/BindIterator.cpp
+    python/study/BindStudy.cpp)
+  pybind11_add_module(_study ${dakota_study_python_src})
+  add_dependencies(_study dakota_python_package)
+  target_include_directories(_study PRIVATE
+    ${PYBIND11_JSON_ROOT_DIR}/include)
+  target_link_libraries(_study PRIVATE dakota_src)
+  target_link_libraries(_study PRIVATE dakota_parser_lib)
+  target_link_libraries(_study PRIVATE ${DAKOTA_PKG_LIBS} ${DAKOTA_EXTPROJ_LIBS})
+  target_link_libraries(_study PRIVATE ${Dakota_TPL_LIBRARIES})
+
+  set(_dakota_python_study_dir
+    "${DAKOTA_PYTHON_PATH}/dakota/study")
+  set_target_properties(_study PROPERTIES
+    LIBRARY_OUTPUT_DIRECTORY "${_dakota_python_study_dir}"
+    RUNTIME_OUTPUT_DIRECTORY "${_dakota_python_study_dir}"
+    ARCHIVE_OUTPUT_DIRECTORY "${_dakota_python_study_dir}")
+  foreach(_dakota_cfg ${CMAKE_CONFIGURATION_TYPES})
+    string(TOUPPER "${_dakota_cfg}" _dakota_cfg_upper)
+    set_target_properties(_study PROPERTIES
+      "LIBRARY_OUTPUT_DIRECTORY_${_dakota_cfg_upper}" "${_dakota_python_study_dir}"
+      "RUNTIME_OUTPUT_DIRECTORY_${_dakota_cfg_upper}" "${_dakota_python_study_dir}"
+      "ARCHIVE_OUTPUT_DIRECTORY_${_dakota_cfg_upper}" "${_dakota_python_study_dir}")
+  endforeach()
+
+  if (APPLE)
+    set_target_properties(_study PROPERTIES
+      LINK_FLAGS "-undefined dynamic_lookup"
+      INSTALL_RPATH "@rpath;@rpath/../../../../../lib;@rpath/../../../../../lib64;@rpath/../../../../../bin")
+  elseif (UNIX)
+    set_target_properties(_study PROPERTIES INSTALL_RPATH
+      "\$ORIGIN;\$ORIGIN/../../../../../lib;\$ORIGIN/../../../../../lib64;\$ORIGIN/../../../../../bin")
+  endif()
+  install(TARGETS _study EXPORT ${ExportTarget}
+    DESTINATION share/dakota/Python/dakota/study/)
 endif()
 
 
