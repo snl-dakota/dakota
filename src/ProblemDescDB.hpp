@@ -250,8 +250,6 @@ public:
   // entry_name. Need a HashTable or other container with an efficient lookup
   // function here.
 
-  /// get a size_t out of the database based on an identifier string
-  size_t get_sizet(const String& entry_name) const;
   /// for getting a void**, e.g., &dlLib
   void** get_voidss(const String& entry_name) const;
   /// write the full stored ProblemDescDB contents to a JSON file for debugging

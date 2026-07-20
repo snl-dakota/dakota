@@ -1215,56 +1215,6 @@ get(const std::string& context_msg,
 }
 
 
-size_t ProblemDescDB::get_sizet(const String& entry_name) const
-{
-  // first handle special case for variable group queries
-
-  std::string block, entry;
-  std::tie(block, entry) = split_entry_name(entry_name, "get_sizet");
-
-  if (block == "variables") {
-    if (!dbRep)
-      Null_rep("get_sizet()");
-    if (dbRep->variablesDBLocked)
-      Locked_db();
-
-    if (dbRep->irState) {
-      try {
-        return ir_query::get<size_t>(*dbRep->irState, entry_name);
-      }
-      catch (const std::exception&) {
-        // Fall through to legacy aggregate helpers while IR coverage is
-        // still being filled in incrementally.
-      }
-    }
-
-    // string for lookup key without the leading "variables."
-    auto v_iter = dbRep->dataVariablesIter;
-    if (entry == "aleatory_uncertain")
-      return v_iter->aleatory_uncertain();
-    else if (entry == "continuous")
-      return v_iter->continuous_variables();
-    else if (entry == "design")
-      return v_iter->design();
-    else if (entry == "discrete")
-      return v_iter->discrete_variables();
-    else if (entry == "epistemic_uncertain")
-      return v_iter->epistemic_uncertain();
-    else if (entry == "state")
-      return v_iter->state();
-    else if (entry == "total")
-      return v_iter->total_variables();
-    else if (entry == "uncertain")
-      return v_iter->uncertain();
-    // else fall through to normal queries
-  }
-
-  return get<size_t>
-  ( "get_sizet()",
-    entry_name, dbRep);
-}
-
-
 /** This special case involving pointers doesn't use generic lookups */
 void** ProblemDescDB::get_voidss(const String& entry_name) const
 {
