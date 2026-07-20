@@ -47,7 +47,7 @@ NonDNumericAllocSampling(ProblemDescDB& problem_db,
 			std::shared_ptr<Model> model):
   NonDEnsembleSampling(problem_db, parallel_lib, model),
   activeBudget((Real)maxFunctionEvals),
-  truthFixedByPilot(problem_db.get_bool("method.nond.truth_fixed_by_pilot")),
+  truthFixedByPilot(problem_db.get<bool>("method.nond.truth_fixed_by_pilot")),
   analyticEstVarDerivs(true),   // true for MFMC,ACV,GenACV,ML BLUE
   hardenNumericSoln(true),      // Cholesky option not currently exposed in spec
   reorderModelsOnTheFly(false), // active for MFMC
@@ -58,7 +58,7 @@ NonDNumericAllocSampling(ProblemDescDB& problem_db,
   //   fallback, but since this is a runtime detection, go ahead and enforce
   //   that a numerical solution fallback is available.
   optSubProblemSolver = sub_optimizer_select(
-    probDescDB.get_ushort("method.nond.opt_subproblem_solver"),
+    probDescDB.get<unsigned short>("method.nond.opt_subproblem_solver"),
     SUBMETHOD_DIRECT_NPSOL_OPTPP); // default is global + competed local
   if (!optSubProblemSolver) // error messages output by sub_optimizer_select()
     abort_handler(METHOD_ERROR);

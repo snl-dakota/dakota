@@ -35,9 +35,9 @@ NonDGlobalInterval* NonDGlobalInterval::nondGIInstance(NULL);
 
 NonDGlobalInterval::NonDGlobalInterval(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
   NonDInterval(problem_db, parallel_lib, model),
-  seedSpec(probDescDB.get_int("method.random_seed")),
-  numSamples(probDescDB.get_int("method.samples")),
-  rngName(probDescDB.get_string("method.random_number_generator")),
+  seedSpec(probDescDB.get<int>("method.random_seed")),
+  numSamples(probDescDB.get<int>("method.samples")),
+  rngName(probDescDB.get<const String>("method.random_number_generator")),
   allResponsesPerIter(false), dataOrder(1), distanceTol(convergenceTol),
   distanceConvergeLimit(1), improvementConvergeLimit(2)
 {
@@ -45,7 +45,7 @@ NonDGlobalInterval::NonDGlobalInterval(ProblemDescDB& problem_db, ParallelLibrar
 
   // Define optimization sub-problem solver
   unsigned short opt_alg
-    = probDescDB.get_ushort("method.nond.opt_subproblem_solver");
+    = probDescDB.get<unsigned short>("method.nond.opt_subproblem_solver");
   bool discrete
     = (numDiscreteIntVars || numDiscreteStringVars || numDiscreteRealVars);
   if (opt_alg == SUBMETHOD_EGO) {
@@ -84,13 +84,13 @@ NonDGlobalInterval::NonDGlobalInterval(ProblemDescDB& problem_db, ParallelLibrar
     if (!numSamples) // use a default of #terms in a quadratic polynomial
       numSamples = (num_uv+1)*(num_uv+2)/2;
     String approx_type = "global_kriging";
-    if (probDescDB.get_short("method.nond.emulator") == GP_EMULATOR)
+    if (probDescDB.get<short>("method.nond.emulator") == GP_EMULATOR)
       approx_type = "global_gaussian";
-    else if (probDescDB.get_short("method.nond.emulator") == EXPGP_EMULATOR)
+    else if (probDescDB.get<short>("method.nond.emulator") == EXPGP_EMULATOR)
       approx_type = "global_exp_gauss_proc";
     unsigned short sample_type = SUBMETHOD_DEFAULT;
     String sample_reuse = "none";
-    if (probDescDB.get_bool("method.derivative_usage")) {
+    if (probDescDB.get<bool>("method.derivative_usage")) {
       if (approx_type == "global_gaussian") {
 	Cerr << "\nError: efficient_global does not support gaussian_process "
 	     << "when derivatives present; use kriging instead." << std::endl;
@@ -101,7 +101,7 @@ NonDGlobalInterval::NonDGlobalInterval(ProblemDescDB& problem_db, ParallelLibrar
     }
     // get point samples file
     const String& import_pts_file
-      = probDescDB.get_string("method.import_build_points_file");
+      = probDescDB.get<const String>("method.import_build_points_file");
     if (!import_pts_file.empty())
       { numSamples = 0; sample_reuse = "all"; }
  
@@ -130,15 +130,15 @@ NonDGlobalInterval::NonDGlobalInterval(ProblemDescDB& problem_db, ParallelLibrar
     fHatModel = std::make_shared<DataFitSurrModel>(daceIterator,
       iteratedModel, gp_set, gp_view, approx_type, approx_order, corr_type,
       corr_order, dataOrder, outputLevel, sample_reuse, import_pts_file,
-      probDescDB.get_ushort("method.import_build_format"),
-      probDescDB.get_bool("method.import_build_active_only"),
-      probDescDB.get_string("method.export_approx_points_file"),
-      probDescDB.get_ushort("method.export_approx_format"));
+      probDescDB.get<unsigned short>("method.import_build_format"),
+      probDescDB.get<bool>("method.import_build_active_only"),
+      probDescDB.get<const String>("method.export_approx_points_file"),
+      probDescDB.get<unsigned short>("method.export_approx_format"));
 
     if (approx_type == "global_exp_gauss_proc") {
 #if defined(HAVE_DAKOTA_SURROGATES) && defined(HAVE_ROL)
       String advanced_options_file
-          = problem_db.get_string("method.advanced_options_file");
+          = problem_db.get<const String>("method.advanced_options_file");
       if (!advanced_options_file.empty())
         set_model_gp_options(*fHatModel, advanced_options_file);
 #else

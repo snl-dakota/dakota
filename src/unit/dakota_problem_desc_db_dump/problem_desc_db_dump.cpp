@@ -187,7 +187,7 @@ TEST(problem_desc_db_dump_tests, ir_backed_queries_still_respect_legacy_block_lo
 
   EXPECT_ANY_THROW(
     {
-      (void)db.get_string("method.model_pointer");
+      (void)db.get<const String>("method.model_pointer");
     });
 }
 

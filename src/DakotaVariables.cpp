@@ -211,8 +211,8 @@ ShortShortPair Variables::get_view(const ProblemDescDB& problem_db) const
   // ---------------------------------------------------------------
   // ACTIVE VIEW: ALL, DESIGN, UNCERTAIN, ALEATORY, EPISTEMIC, STATE
   // ---------------------------------------------------------------
-  short view_spec = problem_db.get_short("variables.view"),
-      domain_spec = problem_db.get_short("variables.domain");
+  short view_spec = problem_db.get<short>("variables.view"),
+      domain_spec = problem_db.get<short>("variables.domain");
   bool relaxed = ( domain_spec   == RELAXED_DOMAIN ||      // level 1 domain
 		   ( domain_spec == DEFAULT_DOMAIN &&      // level 2 domain
 		     method_domain(problem_db) == RELAXED_DOMAIN ) );
@@ -333,7 +333,7 @@ short Variables::method_map(short view_spec, bool relaxed) const
 short Variables::method_domain(const ProblemDescDB& problem_db) const
 {
   // B&B employs relaxation, all other employ mixed continuous-discrete
-  return (problem_db.get_ushort("method.algorithm") == BRANCH_AND_BOUND) ?
+  return (problem_db.get<unsigned short>("method.algorithm") == BRANCH_AND_BOUND) ?
     RELAXED_DOMAIN : MIXED_DOMAIN;
 }
 
@@ -342,15 +342,15 @@ short Variables::method_view(const ProblemDescDB& problem_db) const
 {
   // last resort: active view if no user spec and no responses inference
 
-  unsigned short method_name = problem_db.get_ushort("method.algorithm");
+  unsigned short method_name = problem_db.get<unsigned short>("method.algorithm");
   if (method_name & PSTUDYDACE_BIT)
     return ALL_VIEW;
   else if (method_name & NOND_BIT) {
     // NonD method enum vals are ordered as aleatory, both (sampling), epistemic
     if (method_name == RANDOM_SAMPLING || method_name == LIST_SAMPLING ||
 	method_name == MULTILEVEL_SAMPLING || method_name == IMPORT_POINTS ) { // MC/LHS, MLMC, import samples
-      size_t num_auv = problem_db.get_sizet("variables.aleatory_uncertain"),
-	     num_euv = problem_db.get_sizet("variables.epistemic_uncertain");
+      size_t num_auv = problem_db.get<size_t>("variables.aleatory_uncertain"),
+	     num_euv = problem_db.get<size_t>("variables.epistemic_uncertain");
       if (num_auv && num_euv) return UNCERTAIN_VIEW;
       else if (num_euv)       return EPISTEMIC_UNCERTAIN_VIEW;
       else if (num_auv)       return ALEATORY_UNCERTAIN_VIEW;
@@ -375,10 +375,10 @@ short Variables::response_view(const ProblemDescDB& problem_db) const
   // all NOND_BIT methods complicates DACE with nond_sampling, so this is
   // avoided for now.  Another alternative would be to make RANDOM_SAMPLING
   // the special case (potentally only for submethods LHS and RANDOM).
-  return ( problem_db.get_sizet("responses.num_objective_functions") ||
-	   ( problem_db.get_sizet("responses.num_calibration_terms") && 
-	// ( problem_db.get_ushort("method.algorithm") & NOND_BIT ) == 0) ) ?
-	     problem_db.get_ushort("method.algorithm") != BAYES_CALIBRATION ) )
+  return ( problem_db.get<size_t>("responses.num_objective_functions") ||
+	   ( problem_db.get<size_t>("responses.num_calibration_terms") && 
+	// ( problem_db.get<unsigned short>("method.algorithm") & NOND_BIT ) == 0) ) ?
+	     problem_db.get<unsigned short>("method.algorithm") != BAYES_CALIBRATION ) )
     ? DESIGN_VIEW : DEFAULT_VIEW;
 }
 

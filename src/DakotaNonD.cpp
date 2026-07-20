@@ -28,18 +28,18 @@ NonD* NonD::nondInstance(NULL);
 
 NonD::NonD(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
   Analyzer(problem_db, parallel_lib, model),
-  respLevelTarget(problem_db.get_short("method.nond.response_level_target")),
+  respLevelTarget(problem_db.get<short>("method.nond.response_level_target")),
   respLevelTargetReduce(
-    problem_db.get_short("method.nond.response_level_target_reduce")),
-  requestedRespLevels(problem_db.get_rva("method.nond.response_levels")),
-  requestedProbLevels(problem_db.get_rva("method.nond.probability_levels")),
-  requestedRelLevels(problem_db.get_rva("method.nond.reliability_levels")),
+    problem_db.get<short>("method.nond.response_level_target_reduce")),
+  requestedRespLevels(problem_db.get<const RealVectorArray>("method.nond.response_levels")),
+  requestedProbLevels(problem_db.get<const RealVectorArray>("method.nond.probability_levels")),
+  requestedRelLevels(problem_db.get<const RealVectorArray>("method.nond.reliability_levels")),
   requestedGenRelLevels(
-    problem_db.get_rva("method.nond.gen_reliability_levels")),
+    problem_db.get<const RealVectorArray>("method.nond.gen_reliability_levels")),
   totalLevelRequests(0),
-  cdfFlag(problem_db.get_short("method.nond.distribution") != COMPLEMENTARY),
+  cdfFlag(problem_db.get<short>("method.nond.distribution") != COMPLEMENTARY),
   pdfOutput(false),
-  finalMomentsType(problem_db.get_short("method.nond.final_moments"))
+  finalMomentsType(problem_db.get<short>("method.nond.final_moments"))
 {
   initialize_counts();
 

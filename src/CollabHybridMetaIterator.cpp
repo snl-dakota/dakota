@@ -19,18 +19,18 @@ namespace Dakota {
 CollabHybridMetaIterator::CollabHybridMetaIterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
   MetaIterator(problem_db, parallel_lib), singlePassedModel(false)
   //hybridCollabType(
-  //  problem_db.get_string("method.hybrid.collaborative_type"))
+  //  problem_db.get<const String>("method.hybrid.collaborative_type"))
 {
   const StringArray& method_ptrs
-    = problem_db.get_sa("method.hybrid.method_pointers");
+    = problem_db.get<const StringArray>("method.hybrid.method_pointers");
   const StringArray& method_names
-    = problem_db.get_sa("method.hybrid.method_names");
+    = problem_db.get<const StringArray>("method.hybrid.method_names");
 
   if (!method_ptrs.empty())
     { lightwtMethodCtor = false; methodStrings = method_ptrs;  }
   else if (!method_names.empty()) {
     lightwtMethodCtor = true;    methodStrings = method_names;
-    modelStrings = problem_db.get_sa("method.hybrid.model_pointers");
+    modelStrings = problem_db.get<const StringArray>("method.hybrid.model_pointers");
     // define an array of null strings to use for set_db_model_nodes()
     if (modelStrings.empty()) modelStrings.resize(method_names.size());
     // allow input of single string
@@ -55,14 +55,14 @@ CollabHybridMetaIterator::
 CollabHybridMetaIterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
   MetaIterator(problem_db, parallel_lib, model), singlePassedModel(true)
   //hybridCollabType(
-  //  problem_db.get_string("method.hybrid.collaborative_type"))
+  //  problem_db.get<const String>("method.hybrid.collaborative_type"))
 {
   const StringArray& method_ptrs
-    = problem_db.get_sa("method.hybrid.method_pointers");
+    = problem_db.get<const StringArray>("method.hybrid.method_pointers");
   const StringArray& method_names
-    = problem_db.get_sa("method.hybrid.method_names");
+    = problem_db.get<const StringArray>("method.hybrid.method_names");
   const StringArray& model_ptrs
-    = problem_db.get_sa("method.hybrid.model_pointers");
+    = problem_db.get<const StringArray>("method.hybrid.model_pointers");
 
   // process and validate method and model strings
   size_t i, num_iterators; String empty_str;

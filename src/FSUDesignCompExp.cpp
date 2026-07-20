@@ -26,20 +26,20 @@ namespace Dakota {
     probDescDB. */
 FSUDesignCompExp::FSUDesignCompExp(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
   PStudyDACE(problem_db, parallel_lib, model),
-  samplesSpec(probDescDB.get_int("method.samples")), numSamples(samplesSpec),
+  samplesSpec(probDescDB.get<int>("method.samples")), numSamples(samplesSpec),
   allDataFlag(false), numDACERuns(0),
-  latinizeFlag(probDescDB.get_bool("method.latinize"))
+  latinizeFlag(probDescDB.get<bool>("method.latinize"))
 {
   switch (methodName) {
   case FSU_CVT: {
     // CVT inputs
-    randomSeed   = seedSpec =  probDescDB.get_int("method.random_seed");
+    randomSeed   = seedSpec =  probDescDB.get<int>("method.random_seed");
     rng.seed(randomSeed);
-    varyPattern  = !probDescDB.get_bool("method.fixed_seed");
-    numCVTTrials =  probDescDB.get_int("method.fsu_cvt.num_trials");
+    varyPattern  = !probDescDB.get<bool>("method.fixed_seed");
+    numCVTTrials =  probDescDB.get<int>("method.fsu_cvt.num_trials");
 
     // Map sample_type string to trialType integer
-    const String& trial_type = probDescDB.get_string("method.trial_type");
+    const String& trial_type = probDescDB.get<const String>("method.trial_type");
     if (trial_type == "grid")
       trialType = 2;
     else if (trial_type == "halton")
@@ -50,10 +50,10 @@ FSUDesignCompExp::FSUDesignCompExp(ProblemDescDB& problem_db, ParallelLibrary& p
   }
   case FSU_HALTON: case FSU_HAMMERSLEY: {
     // QMC inputs
-    sequenceStart =  probDescDB.get_iv("method.fsu_quasi_mc.sequenceStart");
-    sequenceLeap  =  probDescDB.get_iv("method.fsu_quasi_mc.sequenceLeap");
-    primeBase     =  probDescDB.get_iv("method.fsu_quasi_mc.primeBase");
-    varyPattern   = !probDescDB.get_bool("method.fsu_quasi_mc.fixed_sequence");
+    sequenceStart =  probDescDB.get<const IntVector>("method.fsu_quasi_mc.sequenceStart");
+    sequenceLeap  =  probDescDB.get<const IntVector>("method.fsu_quasi_mc.sequenceLeap");
+    primeBase     =  probDescDB.get<const IntVector>("method.fsu_quasi_mc.primeBase");
+    varyPattern   = !probDescDB.get<bool>("method.fsu_quasi_mc.fixed_sequence");
     // perform error checks and initialize defaults
     if (sequenceStart.empty()) {
       sequenceStart.resize(numContinuousVars);

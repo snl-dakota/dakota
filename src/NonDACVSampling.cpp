@@ -31,7 +31,7 @@ NonDACVSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
   NonDNumericAllocSampling(problem_db, parallel_lib, model)
   //, multiStartACV(true)
 {
-  mlmfSubMethod = problem_db.get_ushort("method.sub_method");
+  mlmfSubMethod = problem_db.get<unsigned short>("method.sub_method");
   //analyticEstVarDerivs = false; // for gradient verification in ACV,GenACV
 
   if (maxFunctionEvals == SZ_MAX) // accuracy constraint (convTol)
@@ -57,7 +57,7 @@ NonDACVSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
   for (size_t i=0; i<numApprox; ++i)
     fullApproxSet[i] = i;
 
-  load_pilot_sample(problem_db.get_sza("method.nond.pilot_samples"),
+  load_pilot_sample(problem_db.get<const SizetArray>("method.nond.pilot_samples"),
 		    numGroups, pilotSamples);
 
   size_t max_ps = find_max(pilotSamples);

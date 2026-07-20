@@ -22,9 +22,9 @@ EnsembleSurrModel::EnsembleSurrModel(ProblemDescDB& problem_db, ParallelLibrary&
   modeKeyBufferSize(0), correctionMode(SINGLE_CORRECTION)
 {
   const String& truth_model_ptr
-    = problem_db.get_string("model.surrogate.truth_model_pointer");
+    = problem_db.get<const String>("model.surrogate.truth_model_pointer");
   const StringArray& ensemble_model_ptrs
-    = problem_db.get_sa("model.surrogate.ensemble_model_pointers");
+    = problem_db.get<const StringArray>("model.surrogate.ensemble_model_pointers");
 
   size_t i, num_models = ensemble_model_ptrs.size(),
            model_index = problem_db.get_db_model_node(); // for restoration
@@ -83,9 +83,9 @@ EnsembleSurrModel::EnsembleSurrModel(ProblemDescDB& problem_db, ParallelLibrary&
   // Ensemble surrogate models pass through numerical derivatives
   supportsEstimDerivs = false;
   // initialize ignoreBounds even though it's irrelevant for pass through
-  ignoreBounds = problem_db.get_bool("responses.ignore_bounds");
+  ignoreBounds = problem_db.get<bool>("responses.ignore_bounds");
   // initialize centralHess even though it's irrelevant for pass through
-  centralHess = problem_db.get_bool("responses.central_hess");
+  centralHess = problem_db.get<bool>("responses.central_hess");
 }
 
 
@@ -220,7 +220,7 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
     // For now, use the DB method name to construct a list of methods that
     // might perform gradient-based minimization.  Note: EnsembleSurrModel
     // has no construct on the fly option at this time.
-    unsigned short method_name = probDescDB.get_ushort("method.algorithm");
+    unsigned short method_name = probDescDB.get<unsigned short>("method.algorithm");
     bool extra_deriv_config = (method_name  & MINIMIZER_BIT      ||
 			       method_name == BAYES_CALIBRATION  ||
 			       method_name == LOCAL_RELIABILITY  ||

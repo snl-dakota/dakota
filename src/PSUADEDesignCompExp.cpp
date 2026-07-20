@@ -27,10 +27,10 @@ namespace Dakota {
 PSUADEDesignCompExp::
 PSUADEDesignCompExp(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
   PStudyDACE(problem_db, parallel_lib, model),
-  samplesSpec(probDescDB.get_int("method.samples")), numSamples(samplesSpec),
-  varPartitionsSpec(probDescDB.get_usa("method.partitions")),
+  samplesSpec(probDescDB.get<int>("method.samples")), numSamples(samplesSpec),
+  varPartitionsSpec(probDescDB.get<const UShortArray>("method.partitions")),
   numPartitions(0), allDataFlag(false), numDACERuns(0), varyPattern(true), 
-  seedSpec(probDescDB.get_int("method.random_seed")), randomSeed(seedSpec)
+  seedSpec(probDescDB.get<int>("method.random_seed")), randomSeed(seedSpec)
 {
   if (methodName != PSUADE_MOAT) {
     Cerr << "\nError: PSUADE method \"" << method_string() 

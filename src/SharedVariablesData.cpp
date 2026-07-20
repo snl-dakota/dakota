@@ -36,7 +36,7 @@ namespace Dakota {
 SharedVariablesDataRep::
 SharedVariablesDataRep(const ProblemDescDB& problem_db,
 		       const ShortShortPair& view):
-  variablesId(problem_db.get_string("variables.id")),
+  variablesId(problem_db.get<const String>("variables.id")),
   variablesCompsTotals(NUM_VC_TOTALS, 0), variablesView(view), cvStart(0), 
   divStart(0), dsvStart(0), drvStart(0), icvStart(0), idivStart(0),
   idsvStart(0), idrvStart(0), numCV(0), numDIV(0), numDSV(0), numDRV(0),
@@ -92,159 +92,159 @@ initialize_components_totals(const ProblemDescDB& problem_db)
 {
   size_t count;
   // continuous design
-  if (count = problem_db.get_sizet("variables.continuous_design")) {
+  if (count = problem_db.get<size_t>("variables.continuous_design")) {
     variablesComponents[CONTINUOUS_DESIGN] = count;
     variablesCompsTotals[TOTAL_CDV] += count;
   }
   // discrete integer design
-  if (count = problem_db.get_sizet("variables.discrete_design_range")) {
+  if (count = problem_db.get<size_t>("variables.discrete_design_range")) {
     variablesComponents[DISCRETE_DESIGN_RANGE] = count;
     variablesCompsTotals[TOTAL_DDIV] += count;
   }
-  if (count = problem_db.get_sizet("variables.discrete_design_set_int")) {
+  if (count = problem_db.get<size_t>("variables.discrete_design_set_int")) {
     variablesComponents[DISCRETE_DESIGN_SET_INT] = count;
     variablesCompsTotals[TOTAL_DDIV] += count;
   }
   // discrete string design
-  if (count = problem_db.get_sizet("variables.discrete_design_set_string")){
+  if (count = problem_db.get<size_t>("variables.discrete_design_set_string")){
     variablesComponents[DISCRETE_DESIGN_SET_STRING] = count;
     variablesCompsTotals[TOTAL_DDSV] += count;
   }
   // discrete real design
-  if (count = problem_db.get_sizet("variables.discrete_design_set_real")) {
+  if (count = problem_db.get<size_t>("variables.discrete_design_set_real")) {
     variablesComponents[DISCRETE_DESIGN_SET_REAL] = count;
     variablesCompsTotals[TOTAL_DDRV] += count;
   }
   // continuous aleatory uncertain
-  if (count = problem_db.get_sizet("variables.normal_uncertain")) {
+  if (count = problem_db.get<size_t>("variables.normal_uncertain")) {
     variablesComponents[NORMAL_UNCERTAIN] = count;
     variablesCompsTotals[TOTAL_CAUV] += count;
   }
-  if (count = problem_db.get_sizet("variables.lognormal_uncertain")) {
+  if (count = problem_db.get<size_t>("variables.lognormal_uncertain")) {
     variablesComponents[LOGNORMAL_UNCERTAIN] = count;
     variablesCompsTotals[TOTAL_CAUV] += count;
   }
-  if (count = problem_db.get_sizet("variables.uniform_uncertain")) {
+  if (count = problem_db.get<size_t>("variables.uniform_uncertain")) {
     variablesComponents[UNIFORM_UNCERTAIN] = count;
     variablesCompsTotals[TOTAL_CAUV] += count;
   }
-  if (count = problem_db.get_sizet("variables.loguniform_uncertain")) {
+  if (count = problem_db.get<size_t>("variables.loguniform_uncertain")) {
     variablesComponents[LOGUNIFORM_UNCERTAIN] = count;
     variablesCompsTotals[TOTAL_CAUV] += count;
   }
-  if (count = problem_db.get_sizet("variables.triangular_uncertain")) {
+  if (count = problem_db.get<size_t>("variables.triangular_uncertain")) {
     variablesComponents[TRIANGULAR_UNCERTAIN] = count;
     variablesCompsTotals[TOTAL_CAUV] += count;
   }
-  if (count = problem_db.get_sizet("variables.exponential_uncertain")) {
+  if (count = problem_db.get<size_t>("variables.exponential_uncertain")) {
     variablesComponents[EXPONENTIAL_UNCERTAIN] = count;
     variablesCompsTotals[TOTAL_CAUV] += count;
   }
-  if (count = problem_db.get_sizet("variables.beta_uncertain")) {
+  if (count = problem_db.get<size_t>("variables.beta_uncertain")) {
     variablesComponents[BETA_UNCERTAIN] = count;
     variablesCompsTotals[TOTAL_CAUV] += count;
   }
-  if (count = problem_db.get_sizet("variables.gamma_uncertain")) {
+  if (count = problem_db.get<size_t>("variables.gamma_uncertain")) {
     variablesComponents[GAMMA_UNCERTAIN] = count;
     variablesCompsTotals[TOTAL_CAUV] += count;
   }
-  if (count = problem_db.get_sizet("variables.gumbel_uncertain")) {
+  if (count = problem_db.get<size_t>("variables.gumbel_uncertain")) {
     variablesComponents[GUMBEL_UNCERTAIN] = count;
     variablesCompsTotals[TOTAL_CAUV] += count;
   }
-  if (count = problem_db.get_sizet("variables.frechet_uncertain")) {
+  if (count = problem_db.get<size_t>("variables.frechet_uncertain")) {
     variablesComponents[FRECHET_UNCERTAIN] = count;
     variablesCompsTotals[TOTAL_CAUV] += count;
   }
-  if (count = problem_db.get_sizet("variables.weibull_uncertain")) {
+  if (count = problem_db.get<size_t>("variables.weibull_uncertain")) {
     variablesComponents[WEIBULL_UNCERTAIN] = count;
     variablesCompsTotals[TOTAL_CAUV] += count;
   }
-  if (count = problem_db.get_sizet("variables.histogram_uncertain.bin")) {
+  if (count = problem_db.get<size_t>("variables.histogram_uncertain.bin")) {
     variablesComponents[HISTOGRAM_BIN_UNCERTAIN] = count;
     variablesCompsTotals[TOTAL_CAUV] += count;
   }
   // discrete integer aleatory uncertain
-  if (count = problem_db.get_sizet("variables.poisson_uncertain")) {
+  if (count = problem_db.get<size_t>("variables.poisson_uncertain")) {
     variablesComponents[POISSON_UNCERTAIN] = count;
     variablesCompsTotals[TOTAL_DAUIV] += count;
   }
-  if (count = problem_db.get_sizet("variables.binomial_uncertain")) {
+  if (count = problem_db.get<size_t>("variables.binomial_uncertain")) {
     variablesComponents[BINOMIAL_UNCERTAIN] = count;
     variablesCompsTotals[TOTAL_DAUIV] += count;
   }
-  if (count = problem_db.get_sizet("variables.negative_binomial_uncertain")){
+  if (count = problem_db.get<size_t>("variables.negative_binomial_uncertain")){
     variablesComponents[NEGATIVE_BINOMIAL_UNCERTAIN] = count;
     variablesCompsTotals[TOTAL_DAUIV] += count;
   }
-  if (count = problem_db.get_sizet("variables.geometric_uncertain")) {
+  if (count = problem_db.get<size_t>("variables.geometric_uncertain")) {
     variablesComponents[GEOMETRIC_UNCERTAIN] = count;
     variablesCompsTotals[TOTAL_DAUIV] += count;
   }
-  if (count = problem_db.get_sizet("variables.hypergeometric_uncertain")) {
+  if (count = problem_db.get<size_t>("variables.hypergeometric_uncertain")) {
     variablesComponents[HYPERGEOMETRIC_UNCERTAIN] = count;
     variablesCompsTotals[TOTAL_DAUIV] += count;
   }
-  if (count = problem_db.get_sizet("variables.histogram_uncertain.point_int")) {
+  if (count = problem_db.get<size_t>("variables.histogram_uncertain.point_int")) {
     variablesComponents[HISTOGRAM_POINT_UNCERTAIN_INT] = count;
     variablesCompsTotals[TOTAL_DAUIV] += count;
   }
   // discrete string aleatory uncertain
   if (count =
-      problem_db.get_sizet("variables.histogram_uncertain.point_string")) {
+      problem_db.get<size_t>("variables.histogram_uncertain.point_string")) {
     variablesComponents[HISTOGRAM_POINT_UNCERTAIN_STRING] = count;
     variablesCompsTotals[TOTAL_DAUSV] += count;
   }
   // discrete real aleatory uncertain
-  if (count = problem_db.get_sizet("variables.histogram_uncertain.point_real")){
+  if (count = problem_db.get<size_t>("variables.histogram_uncertain.point_real")){
     variablesComponents[HISTOGRAM_POINT_UNCERTAIN_REAL] = count;
     variablesCompsTotals[TOTAL_DAURV] += count;
   }
   // continuous epistemic uncertain
-  if (count = problem_db.get_sizet("variables.continuous_interval_uncertain")) {
+  if (count = problem_db.get<size_t>("variables.continuous_interval_uncertain")) {
     variablesComponents[CONTINUOUS_INTERVAL_UNCERTAIN] = count;
     variablesCompsTotals[TOTAL_CEUV] += count;
   }
   // discrete integer epistemic uncertain
-  if (count = problem_db.get_sizet("variables.discrete_interval_uncertain")){
+  if (count = problem_db.get<size_t>("variables.discrete_interval_uncertain")){
     variablesComponents[DISCRETE_INTERVAL_UNCERTAIN] = count;
     variablesCompsTotals[TOTAL_DEUIV] += count;
   }
-  if (count = problem_db.get_sizet("variables.discrete_uncertain_set_int")){
+  if (count = problem_db.get<size_t>("variables.discrete_uncertain_set_int")){
     variablesComponents[DISCRETE_UNCERTAIN_SET_INT] = count;
     variablesCompsTotals[TOTAL_DEUIV] += count;
   }
   // discrete string epistemic uncertain
-  if (count = problem_db.get_sizet("variables.discrete_uncertain_set_string")) {
+  if (count = problem_db.get<size_t>("variables.discrete_uncertain_set_string")) {
     variablesComponents[DISCRETE_UNCERTAIN_SET_STRING] = count;
     variablesCompsTotals[TOTAL_DEUSV] += count;
   }
   // discrete real epistemic uncertain
-  if (count = problem_db.get_sizet("variables.discrete_uncertain_set_real")) {
+  if (count = problem_db.get<size_t>("variables.discrete_uncertain_set_real")) {
     variablesComponents[DISCRETE_UNCERTAIN_SET_REAL] = count;
     variablesCompsTotals[TOTAL_DEURV] += count;
   }
   // continuous state
-  if (count = problem_db.get_sizet("variables.continuous_state")) {
+  if (count = problem_db.get<size_t>("variables.continuous_state")) {
     variablesComponents[CONTINUOUS_STATE] = count;
     variablesCompsTotals[TOTAL_CSV] += count;
   }
   // discrete integer state
-  if (count = problem_db.get_sizet("variables.discrete_state_range")) {
+  if (count = problem_db.get<size_t>("variables.discrete_state_range")) {
     variablesComponents[DISCRETE_STATE_RANGE] = count;
     variablesCompsTotals[TOTAL_DSIV] += count;
   }
-  if (count = problem_db.get_sizet("variables.discrete_state_set_int")) {
+  if (count = problem_db.get<size_t>("variables.discrete_state_set_int")) {
     variablesComponents[DISCRETE_STATE_SET_INT] = count;
     variablesCompsTotals[TOTAL_DSIV] += count;
   }
   // discrete string state
-  if (count = problem_db.get_sizet("variables.discrete_state_set_string")) {
+  if (count = problem_db.get<size_t>("variables.discrete_state_set_string")) {
     variablesComponents[DISCRETE_STATE_SET_STRING] = count;
     variablesCompsTotals[TOTAL_DSSV] += count;
   }
   // discrete real state
-  if (count = problem_db.get_sizet("variables.discrete_state_set_real")) {
+  if (count = problem_db.get<size_t>("variables.discrete_state_set_real")) {
     variablesComponents[DISCRETE_STATE_SET_REAL] = count;
     variablesCompsTotals[TOTAL_DSRV] += count;
   }
@@ -327,41 +327,25 @@ relax_noncategorical(const ProblemDescDB& problem_db)
 
   // Note: NIDR ensures BitArray is empty or sized by number of variables
 
-  const BitArray& ddrv_cat = problem_db.get_ba(
-    "variables.discrete_design_range.categorical");
-  const BitArray& ddsiv_cat = problem_db.get_ba(
-    "variables.discrete_design_set_int.categorical");
-  const BitArray& ddsrv_cat = problem_db.get_ba(
-    "variables.discrete_design_set_real.categorical");
+  const BitArray& ddrv_cat = problem_db.get<const BitArray>("variables.discrete_design_range.categorical");
+  const BitArray& ddsiv_cat = problem_db.get<const BitArray>("variables.discrete_design_set_int.categorical");
+  const BitArray& ddsrv_cat = problem_db.get<const BitArray>("variables.discrete_design_set_real.categorical");
 
-  const BitArray& puv_cat = problem_db.get_ba(
-    "variables.poisson_uncertain.categorical");
-  const BitArray& biuv_cat = problem_db.get_ba(
-    "variables.binomial_uncertain.categorical");
-  const BitArray& nbuv_cat = problem_db.get_ba(
-    "variables.negative_binomial_uncertain.categorical");
-  const BitArray& geuv_cat = problem_db.get_ba(
-    "variables.geometric_uncertain.categorical");
-  const BitArray& hguv_cat = problem_db.get_ba(
-    "variables.hypergeometric_uncertain.categorical");
-  const BitArray& hupiv_cat = problem_db.get_ba(
-    "variables.histogram_uncertain.point_int.categorical");
-  const BitArray& huprv_cat = problem_db.get_ba(
-    "variables.histogram_uncertain.point_real.categorical");
+  const BitArray& puv_cat = problem_db.get<const BitArray>("variables.poisson_uncertain.categorical");
+  const BitArray& biuv_cat = problem_db.get<const BitArray>("variables.binomial_uncertain.categorical");
+  const BitArray& nbuv_cat = problem_db.get<const BitArray>("variables.negative_binomial_uncertain.categorical");
+  const BitArray& geuv_cat = problem_db.get<const BitArray>("variables.geometric_uncertain.categorical");
+  const BitArray& hguv_cat = problem_db.get<const BitArray>("variables.hypergeometric_uncertain.categorical");
+  const BitArray& hupiv_cat = problem_db.get<const BitArray>("variables.histogram_uncertain.point_int.categorical");
+  const BitArray& huprv_cat = problem_db.get<const BitArray>("variables.histogram_uncertain.point_real.categorical");
 
-  const BitArray& diuv_cat = problem_db.get_ba(
-    "variables.discrete_interval_uncertain.categorical");
-  const BitArray& dusiv_cat = problem_db.get_ba(
-    "variables.discrete_uncertain_set_int.categorical");
-  const BitArray& dusrv_cat = problem_db.get_ba(
-    "variables.discrete_uncertain_set_real.categorical");
+  const BitArray& diuv_cat = problem_db.get<const BitArray>("variables.discrete_interval_uncertain.categorical");
+  const BitArray& dusiv_cat = problem_db.get<const BitArray>("variables.discrete_uncertain_set_int.categorical");
+  const BitArray& dusrv_cat = problem_db.get<const BitArray>("variables.discrete_uncertain_set_real.categorical");
 
-  const BitArray& dsrv_cat = problem_db.get_ba(
-    "variables.discrete_state_range.categorical");
-  const BitArray& dssiv_cat = problem_db.get_ba(
-    "variables.discrete_state_set_int.categorical");
-  const BitArray& dssrv_cat = problem_db.get_ba(
-    "variables.discrete_state_set_real.categorical");
+  const BitArray& dsrv_cat = problem_db.get<const BitArray>("variables.discrete_state_range.categorical");
+  const BitArray& dssiv_cat = problem_db.get<const BitArray>("variables.discrete_state_set_int.categorical");
+  const BitArray& dssrv_cat = problem_db.get<const BitArray>("variables.discrete_state_set_real.categorical");
 
   /* Would require negation!
   size_t offset_di = 0, offset_dr = 0;
@@ -472,7 +456,7 @@ initialize_all_labels(const ProblemDescDB& problem_db)
       "variables.continuous_design.labels"
     };
     for (const char* key : cdv_keys) {
-      const StringArray& lbl = problem_db.get_sa(key);
+      const StringArray& lbl = problem_db.get<const StringArray>(key);
       copy_data_partial(lbl, allContinuousLabels, acv_offset);
       acv_offset += lbl.size();
     }
@@ -483,7 +467,7 @@ initialize_all_labels(const ProblemDescDB& problem_db)
       "variables.discrete_design_set_string.labels"
     };
     for (const char* key : ddsv_keys) {
-      const StringArray& lbl = problem_db.get_sa(key);
+      const StringArray& lbl = problem_db.get<const StringArray>(key);
       copy_data_partial(lbl, allDiscreteStringLabels, adsv_offset);
       adsv_offset += lbl.size();
     }
@@ -495,7 +479,7 @@ initialize_all_labels(const ProblemDescDB& problem_db)
       "variables.discrete_design_set_int.labels"
     };
     for (const char* key : ddiv_keys) {
-      const StringArray& lbl = problem_db.get_sa(key);
+      const StringArray& lbl = problem_db.get<const StringArray>(key);
       for (i=0; i<lbl.size(); ++i, ++ardi_cntr)
 	if (allRelaxedDiscreteInt[ardi_cntr])
 	  allContinuousLabels[acv_offset++]    = lbl[i];
@@ -509,7 +493,7 @@ initialize_all_labels(const ProblemDescDB& problem_db)
       "variables.discrete_design_set_int.labels"
     };
     for (const char* key : ddiv_keys) {
-      const StringArray& lbl = problem_db.get_sa(key);
+      const StringArray& lbl = problem_db.get<const StringArray>(key);
       copy_data_partial(lbl, allDiscreteIntLabels, adiv_offset);
       adiv_offset += lbl.size();
     }
@@ -520,7 +504,7 @@ initialize_all_labels(const ProblemDescDB& problem_db)
       "variables.discrete_design_set_real.labels"
     };
     for (const char* key : ddrv_keys) {
-      const StringArray& lbl = problem_db.get_sa(key);
+      const StringArray& lbl = problem_db.get<const StringArray>(key);
       for (i=0; i<lbl.size(); ++i, ++ardr_cntr)
 	if (allRelaxedDiscreteReal[ardr_cntr])
 	  allContinuousLabels[acv_offset++]    = lbl[i];
@@ -533,7 +517,7 @@ initialize_all_labels(const ProblemDescDB& problem_db)
       "variables.discrete_design_set_real.labels"
     };
     for (const char* key : ddrv_keys) {
-      const StringArray& lbl = problem_db.get_sa(key);
+      const StringArray& lbl = problem_db.get<const StringArray>(key);
       copy_data_partial(lbl, allDiscreteRealLabels, adrv_offset);
       adrv_offset += lbl.size();
     }
@@ -558,7 +542,7 @@ initialize_all_labels(const ProblemDescDB& problem_db)
       "variables.histogram_bin_uncertain.labels"
     };
     for (const char* key : cauv_keys) {
-      const StringArray& lbl = problem_db.get_sa(key);
+      const StringArray& lbl = problem_db.get<const StringArray>(key);
       copy_data_partial(lbl, allContinuousLabels, acv_offset);
       acv_offset += lbl.size();
     }
@@ -569,7 +553,7 @@ initialize_all_labels(const ProblemDescDB& problem_db)
       "variables.histogram_uncertain.point_string.labels"
     };
     for (const char* key : dausv_keys) {
-      const StringArray& lbl = problem_db.get_sa(key);
+      const StringArray& lbl = problem_db.get<const StringArray>(key);
       copy_data_partial(lbl, allDiscreteStringLabels, adsv_offset);
       adsv_offset += lbl.size();
     }
@@ -586,7 +570,7 @@ initialize_all_labels(const ProblemDescDB& problem_db)
       "variables.histogram_uncertain.point_int.labels"
     };
     for (const char* key : dauiv_keys) {
-      const StringArray& lbl = problem_db.get_sa(key);
+      const StringArray& lbl = problem_db.get<const StringArray>(key);
       for (i=0; i<lbl.size(); ++i, ++ardi_cntr)
 	if (allRelaxedDiscreteInt[ardi_cntr])
 	  allContinuousLabels[acv_offset++]    = lbl[i];
@@ -604,7 +588,7 @@ initialize_all_labels(const ProblemDescDB& problem_db)
       "variables.histogram_uncertain.point_int.labels"
     };
     for (const char* key : dauiv_keys) {
-      const StringArray& lbl = problem_db.get_sa(key);
+      const StringArray& lbl = problem_db.get<const StringArray>(key);
       copy_data_partial(lbl, allDiscreteIntLabels, adiv_offset);
       adiv_offset += lbl.size();
     }
@@ -615,7 +599,7 @@ initialize_all_labels(const ProblemDescDB& problem_db)
       "variables.histogram_uncertain.point_real.labels"
     };
     for (const char* key : daurv_keys) {
-      const StringArray& lbl = problem_db.get_sa(key);
+      const StringArray& lbl = problem_db.get<const StringArray>(key);
       for (i=0; i<lbl.size(); ++i, ++ardr_cntr)
 	if (allRelaxedDiscreteReal[ardr_cntr])
 	  allContinuousLabels[acv_offset++]    = lbl[i];
@@ -628,7 +612,7 @@ initialize_all_labels(const ProblemDescDB& problem_db)
       "variables.histogram_uncertain.point_real.labels"
     };
     for (const char* key : daurv_keys) {
-      const StringArray& lbl = problem_db.get_sa(key);
+      const StringArray& lbl = problem_db.get<const StringArray>(key);
       copy_data_partial(lbl, allDiscreteRealLabels, adrv_offset);
       adrv_offset += lbl.size();
     }
@@ -640,7 +624,7 @@ initialize_all_labels(const ProblemDescDB& problem_db)
       "variables.continuous_interval_uncertain.labels"
     };
     for (const char* key : ceuv_keys) {
-      const StringArray& lbl = problem_db.get_sa(key);
+      const StringArray& lbl = problem_db.get<const StringArray>(key);
       copy_data_partial(lbl, allContinuousLabels, acv_offset);
       acv_offset += lbl.size();
     }
@@ -651,7 +635,7 @@ initialize_all_labels(const ProblemDescDB& problem_db)
       "variables.discrete_uncertain_set_string.labels"
     };
     for (const char* key : deusv_keys) {
-      const StringArray& lbl = problem_db.get_sa(key);
+      const StringArray& lbl = problem_db.get<const StringArray>(key);
       copy_data_partial(lbl, allDiscreteStringLabels, adsv_offset);
       adsv_offset += lbl.size();
     }
@@ -664,7 +648,7 @@ initialize_all_labels(const ProblemDescDB& problem_db)
       "variables.discrete_uncertain_set_int.labels"
     };
     for (const char* key : deuiv_keys) {
-      const StringArray& lbl = problem_db.get_sa(key);
+      const StringArray& lbl = problem_db.get<const StringArray>(key);
       for (i=0; i<lbl.size(); ++i, ++ardi_cntr)
 	if (allRelaxedDiscreteInt[ardi_cntr])
 	  allContinuousLabels[acv_offset++]    = lbl[i];
@@ -678,7 +662,7 @@ initialize_all_labels(const ProblemDescDB& problem_db)
       "variables.discrete_uncertain_set_int.labels"
     };
     for (const char* key : deuiv_keys) {
-      const StringArray& lbl = problem_db.get_sa(key);
+      const StringArray& lbl = problem_db.get<const StringArray>(key);
       copy_data_partial(lbl, allDiscreteIntLabels, adiv_offset);
       adiv_offset += lbl.size();
     }
@@ -689,7 +673,7 @@ initialize_all_labels(const ProblemDescDB& problem_db)
       "variables.discrete_uncertain_set_real.labels"
     };
     for (const char* key : deurv_keys) {
-      const StringArray& lbl = problem_db.get_sa(key);
+      const StringArray& lbl = problem_db.get<const StringArray>(key);
       for (i=0; i<lbl.size(); ++i, ++ardr_cntr)
 	if (allRelaxedDiscreteReal[ardr_cntr])
 	  allContinuousLabels[acv_offset++]    = lbl[i];
@@ -702,7 +686,7 @@ initialize_all_labels(const ProblemDescDB& problem_db)
       "variables.discrete_uncertain_set_real.labels"
     };
     for (const char* key : deurv_keys) {
-      const StringArray& lbl = problem_db.get_sa(key);
+      const StringArray& lbl = problem_db.get<const StringArray>(key);
       copy_data_partial(lbl, allDiscreteRealLabels, adrv_offset);
       adrv_offset += lbl.size();
     }
@@ -714,7 +698,7 @@ initialize_all_labels(const ProblemDescDB& problem_db)
       "variables.continuous_state.labels"
     };
     for (const char* key : csv_keys) {
-      const StringArray& lbl = problem_db.get_sa(key);
+      const StringArray& lbl = problem_db.get<const StringArray>(key);
       copy_data_partial(lbl, allContinuousLabels, acv_offset);
       acv_offset += lbl.size();
     }
@@ -725,7 +709,7 @@ initialize_all_labels(const ProblemDescDB& problem_db)
       "variables.discrete_state_set_string.labels"
     };
     for (const char* key : dssv_keys) {
-      const StringArray& lbl = problem_db.get_sa(key);
+      const StringArray& lbl = problem_db.get<const StringArray>(key);
       copy_data_partial(lbl, allDiscreteStringLabels, adsv_offset);
       adsv_offset += lbl.size();
     }
@@ -737,7 +721,7 @@ initialize_all_labels(const ProblemDescDB& problem_db)
       "variables.discrete_state_set_int.labels"
     };
     for (const char* key : dsiv_keys) {
-      const StringArray& lbl = problem_db.get_sa(key);
+      const StringArray& lbl = problem_db.get<const StringArray>(key);
       for (i=0; i<lbl.size(); ++i, ++ardi_cntr)
 	if (allRelaxedDiscreteInt[ardi_cntr])
 	  allContinuousLabels[acv_offset++]    = lbl[i];
@@ -751,7 +735,7 @@ initialize_all_labels(const ProblemDescDB& problem_db)
       "variables.discrete_state_set_int.labels"
     };
     for (const char* key : dsiv_keys) {
-      const StringArray& lbl = problem_db.get_sa(key);
+      const StringArray& lbl = problem_db.get<const StringArray>(key);
       copy_data_partial(lbl, allDiscreteIntLabels, adiv_offset);
       adiv_offset += lbl.size();
     }
@@ -762,7 +746,7 @@ initialize_all_labels(const ProblemDescDB& problem_db)
       "variables.discrete_state_set_real.labels"
     };
     for (const char* key : dsrv_keys) {
-      const StringArray& lbl = problem_db.get_sa(key);
+      const StringArray& lbl = problem_db.get<const StringArray>(key);
       for (i=0; i<lbl.size(); ++i, ++ardr_cntr)
 	if (allRelaxedDiscreteReal[ardr_cntr])
 	  allContinuousLabels[acv_offset++]    = lbl[i];
@@ -775,7 +759,7 @@ initialize_all_labels(const ProblemDescDB& problem_db)
       "variables.discrete_state_set_real.labels"
     };
     for (const char* key : dsrv_keys) {
-      const StringArray& lbl = problem_db.get_sa(key);
+      const StringArray& lbl = problem_db.get<const StringArray>(key);
       copy_data_partial(lbl, allDiscreteRealLabels, adrv_offset);
       adrv_offset += lbl.size();
     }

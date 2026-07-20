@@ -27,15 +27,15 @@ SimulationModel::SimulationModel(ProblemDescDB& problem_db, ParallelLibrary& par
   simModelEvalCntr(0)
 {
   componentParallelMode = INTERFACE_MODE;
-  ignoreBounds = problem_db.get_bool("responses.ignore_bounds");
-  centralHess  = problem_db.get_bool("responses.central_hess");
+  ignoreBounds = problem_db.get<bool>("responses.ignore_bounds");
+  centralHess  = problem_db.get<bool>("responses.central_hess");
 
   initialize_solution_control(
-    problem_db.get_string("model.simulation.solution_level_control"),
-    problem_db.get_rv("model.simulation.solution_level_cost"));
+    problem_db.get<const String>("model.simulation.solution_level_control"),
+    problem_db.get<const RealVector>("model.simulation.solution_level_cost"));
 
   initialize_solution_recovery(
-    probDescDB.get_string("model.simulation.cost_recovery_metadata"));
+    probDescDB.get<const String>("model.simulation.cost_recovery_metadata"));
 
   // Error checks can encompass a model ensemble at a higher level
   //if (solnCntlCostMap.empty() && costMetadataIndex == _NPOS)

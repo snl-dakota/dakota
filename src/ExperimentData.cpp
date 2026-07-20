@@ -25,19 +25,19 @@ ExperimentData::ExperimentData():
 ExperimentData::
 ExperimentData(const ProblemDescDB& pddb, 
                const SharedResponseData& srd, short output_level):
-  calibrationDataFlag(pddb.get_bool("responses.calibration_data")),
-  numExperiments(pddb.get_sizet("responses.num_experiments")), 
-  numConfigVars(pddb.get_sizet("responses.num_config_vars")),
+  calibrationDataFlag(pddb.get<bool>("responses.calibration_data")),
+  numExperiments(pddb.get<size_t>("responses.num_experiments")), 
+  numConfigVars(pddb.get<size_t>("responses.num_config_vars")),
   covarianceDeterminant(1.0), logCovarianceDeterminant(0.0),
-  dataPathPrefix(pddb.get_string("responses.data_directory")),
-  scalarDataFilename(pddb.get_string("responses.scalar_data_filename")),
-  scalarDataFormat(pddb.get_ushort("responses.scalar_data_format")),
+  dataPathPrefix(pddb.get<const String>("responses.data_directory")),
+  scalarDataFilename(pddb.get<const String>("responses.scalar_data_filename")),
+  scalarDataFormat(pddb.get<unsigned short>("responses.scalar_data_format")),
   scalarSigmaPerRow(0), 
-  readSimFieldCoords(pddb.get_bool("responses.read_field_coordinates")), 
-  interpolateFlag(pddb.get_bool("responses.interpolate")),
+  readSimFieldCoords(pddb.get<bool>("responses.read_field_coordinates")), 
+  interpolateFlag(pddb.get<bool>("responses.interpolate")),
   outputLevel(output_level)
 { 
-  initialize(pddb.get_sa("responses.variance_type"), srd);
+  initialize(pddb.get<const StringArray>("responses.variance_type"), srd);
 }                                
 
 

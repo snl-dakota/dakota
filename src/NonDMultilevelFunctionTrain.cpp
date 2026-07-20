@@ -29,12 +29,12 @@ NonDMultilevelFunctionTrain(ProblemDescDB& problem_db,
 			    std::shared_ptr<Model> model):
   NonDC3FunctionTrain(DEFAULT_METHOD, problem_db, parallel_lib, model),
   startRankSeqSpec(
-    problem_db.get_sza("method.nond.c3function_train.start_rank_sequence")),
+    problem_db.get<const SizetArray>("method.nond.c3function_train.start_rank_sequence")),
   startOrderSeqSpec(
-    problem_db.get_usa("method.nond.c3function_train.start_order_sequence")),
+    problem_db.get<const UShortArray>("method.nond.c3function_train.start_order_sequence")),
   sequenceIndex(0) //resizedFlag(false), callResize(false)
 {
-  randomSeedSeqSpec = problem_db.get_sza("method.random_seed_sequence");
+  randomSeedSeqSpec = problem_db.get<const SizetArray>("method.random_seed_sequence");
 
   assign_modes();
   configure_1d_sequence(numSteps, secondaryIndex, sequenceType);
@@ -47,7 +47,7 @@ NonDMultilevelFunctionTrain(ProblemDescDB& problem_db,
   short data_order;
   // See SharedC3ApproxData::construct_basis().  C3 won't support STD_{BETA,
   // GAMMA,EXPONENTIAL} so use PARTIAL_ASKEY_U to map to STD_{NORMAL,UNIFORM}.
-  short u_space_type = PARTIAL_ASKEY_U;//probDescDB.get_short("method.nond.expansion_type");
+  short u_space_type = PARTIAL_ASKEY_U;//probDescDB.get<short>("method.nond.expansion_type");
   resolve_inputs(u_space_type, data_order);
 
   // -------------------
@@ -78,7 +78,7 @@ NonDMultilevelFunctionTrain(ProblemDescDB& problem_db,
   UShortArray start_orders;
   configure_expansion_orders(start_order(), dimPrefSpec, start_orders);
   short corr_order = -1, corr_type = NO_CORRECTION;
-  String pt_reuse = probDescDB.get_string("method.nond.point_reuse");
+  String pt_reuse = probDescDB.get<const String>("method.nond.point_reuse");
   if (!importBuildPointsFile.empty() && pt_reuse.empty())
     pt_reuse = "all"; // reassign default if data import
   String approx_type = "global_function_train";
@@ -90,10 +90,10 @@ NonDMultilevelFunctionTrain(ProblemDescDB& problem_db,
   uSpaceModel = std::make_shared<DataFitSurrModel>(u_space_sampler,
     g_u_model, mlft_set, mlft_view, approx_type, start_orders, corr_type,
     corr_order, data_order, outputLevel, pt_reuse, importBuildPointsFile,
-    probDescDB.get_ushort("method.import_build_format"),
-    probDescDB.get_bool("method.import_build_active_only"),
-    probDescDB.get_string("method.export_approx_points_file"),
-    probDescDB.get_ushort("method.export_approx_format"));
+    probDescDB.get<unsigned short>("method.import_build_format"),
+    probDescDB.get<bool>("method.import_build_active_only"),
+    probDescDB.get<const String>("method.export_approx_points_file"),
+    probDescDB.get<unsigned short>("method.export_approx_format"));
   initialize_u_space_model();
 
   // Configure settings for ML allocation (requires uSpaceModel)
@@ -102,13 +102,13 @@ NonDMultilevelFunctionTrain(ProblemDescDB& problem_db,
   // -------------------------------------
   // Construct expansionSampler, if needed
   // -------------------------------------
-  construct_expansion_sampler(problem_db.get_ushort("method.sample_type"),
-    problem_db.get_string("method.random_number_generator"),
-    problem_db.get_ushort("method.nond.integration_refinement"),
-    problem_db.get_iv("method.nond.refinement_samples"),
-    probDescDB.get_string("method.import_approx_points_file"),
-    probDescDB.get_ushort("method.import_approx_format"),
-    probDescDB.get_bool("method.import_approx_active_only"));
+  construct_expansion_sampler(problem_db.get<unsigned short>("method.sample_type"),
+    problem_db.get<const String>("method.random_number_generator"),
+    problem_db.get<unsigned short>("method.nond.integration_refinement"),
+    problem_db.get<const IntVector>("method.nond.refinement_samples"),
+    probDescDB.get<const String>("method.import_approx_points_file"),
+    probDescDB.get<unsigned short>("method.import_approx_format"),
+    probDescDB.get<bool>("method.import_approx_active_only"));
 
   if (parallelLib.command_line_check())
     Cout << "\nFunction train construction completed: initial grid size of "

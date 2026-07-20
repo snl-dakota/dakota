@@ -44,15 +44,15 @@ RealArray NonDLHSSampling::rawData;
     probDescDB can be queried for settings from the method specification. */
 NonDLHSSampling::NonDLHSSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
   NonDSampling(problem_db, parallel_lib, model), numResponseFunctions(0),
-  refineSamples(probDescDB.get_iv("method.nond.refinement_samples")),
-  dOptimal(probDescDB.get_bool("method.nond.d_optimal")),
-  numCandidateDesigns(probDescDB.get_sizet("method.num_candidate_designs")),
-  oversampleRatio(probDescDB.get_real("method.nond.collocation_ratio")),
-  pcaFlag(probDescDB.get_bool("method.principal_components")),
-  vbdViaSamplingMethod(probDescDB.get_ushort("method.vbd_via_sampling_method")),
-  vbdViaSamplingNumBins(probDescDB.get_int("method.vbd_via_sampling_num_bins")),
+  refineSamples(probDescDB.get<const IntVector>("method.nond.refinement_samples")),
+  dOptimal(probDescDB.get<bool>("method.nond.d_optimal")),
+  numCandidateDesigns(probDescDB.get<size_t>("method.num_candidate_designs")),
+  oversampleRatio(probDescDB.get<const Real>("method.nond.collocation_ratio")),
+  pcaFlag(probDescDB.get<bool>("method.principal_components")),
+  vbdViaSamplingMethod(probDescDB.get<unsigned short>("method.vbd_via_sampling_method")),
+  vbdViaSamplingNumBins(probDescDB.get<int>("method.vbd_via_sampling_num_bins")),
   percentVarianceExplained(
-    probDescDB.get_real("method.percent_variance_explained"))
+    probDescDB.get<const Real>("method.percent_variance_explained"))
 {
   // sampleType default in DataMethod.cpp is SUBMETHOD_DEFAULT (0).
   // Enforce an LHS default for this method.

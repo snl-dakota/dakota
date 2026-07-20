@@ -20,11 +20,11 @@ namespace Dakota {
 NonDImportPoints::NonDImportPoints(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
   NonDSampling(problem_db, parallel_lib, model), numResponseFunctions(0),
   vbdViaSamplingMethod(VBD_BINNED),
-  vbdViaSamplingNumBins(probDescDB.get_int("method.vbd_via_sampling_num_bins")),
-  importPointsFile(problem_db.get_string("method.import_points_file")),
-  importPointsFormat(problem_db.get_ushort("method.import_points_format")),
-  importUseVariableLabels(problem_db.get_bool("method.import_points.use_variable_labels")),
-  importActiveVariablesOnly(problem_db.get_bool("method.import_points.active_only") )
+  vbdViaSamplingNumBins(probDescDB.get<int>("method.vbd_via_sampling_num_bins")),
+  importPointsFile(problem_db.get<const String>("method.import_points_file")),
+  importPointsFormat(problem_db.get<unsigned short>("method.import_points_format")),
+  importUseVariableLabels(problem_db.get<bool>("method.import_points.use_variable_labels")),
+  importActiveVariablesOnly(problem_db.get<bool>("method.import_points.active_only") )
 {
 
   if (model->primary_fn_type() == GENERIC_FNS)

@@ -31,8 +31,8 @@ Analyzer::
 Analyzer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
   Iterator(problem_db, parallel_lib), compactMode(true),
   numObjFns(0), numLSqTerms(0), // default: no best data tracking
-  vbdFlag(problem_db.get_bool("method.variance_based_decomp")),
-  writePrecision(problem_db.get_int("environment.output_precision"))
+  vbdFlag(problem_db.get<bool>("method.variance_based_decomp")),
+  writePrecision(problem_db.get<int>("environment.output_precision"))
 {
   // set_db_list_nodes() is set by a higher context
   iteratedModel = model;
@@ -53,7 +53,7 @@ Analyzer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_p
   }
   
   if (vbdFlag) 
-    vbdDropTol = probDescDB.get_real("method.vbd_drop_tolerance");
+    vbdDropTol = probDescDB.get<const Real>("method.vbd_drop_tolerance");
 
   if (!numFinalSolutions)  // default is zero
     numFinalSolutions = 1; // iterator-specific default assignment

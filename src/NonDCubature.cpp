@@ -26,7 +26,7 @@ namespace Dakota {
     separate nond_cubature method specification. */
 NonDCubature::NonDCubature(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
   NonDIntegration(problem_db, parallel_lib, model),
-  cubIntOrderRef(probDescDB.get_ushort("method.nond.cubature_integrand"))
+  cubIntOrderRef(probDescDB.get<unsigned short>("method.nond.cubature_integrand"))
 {
   // initialize the numerical integration driver
   numIntDriver =  Pecos::IntegrationDriver(Pecos::CUBATURE);

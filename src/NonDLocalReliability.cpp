@@ -48,7 +48,7 @@ NonDLocalReliability::
 NonDLocalReliability(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
   NonDReliability(problem_db, parallel_lib, model), 
   initialPtUserSpec(
-    probDescDB.get_bool("variables.uncertain.initial_point_flag")),
+    probDescDB.get<bool>("variables.uncertain.initial_point_flag")),
   npsolFlag(false), warmStartFlag(true), nipModeOverrideFlag(true),
   curvatureDataAvailable(false), kappaUpdated(false),
   secondOrderIntType(HOHENRACK), curvatureThresh(1.e-10), warningBits(0)
@@ -65,7 +65,7 @@ NonDLocalReliability(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, s
   if (mppSearchType) { // default is MV = 0
 
     switch (sub_optimizer_select(
-	    probDescDB.get_ushort("method.nond.opt_subproblem_solver"))) {
+	    probDescDB.get<unsigned short>("method.nond.opt_subproblem_solver"))) {
     case SUBMETHOD_NPSOL: npsolFlag =  true; break;
     case SUBMETHOD_OPTPP: npsolFlag = false; break;
     default:
@@ -130,7 +130,7 @@ NonDLocalReliability(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, s
   // verification function values at u* (no Hessians).  For an AMV-like
   // approach with 2nd-order integration, use AMV+ with max_iterations = 1.
   const String& integration_method
-    = probDescDB.get_string("method.nond.reliability_integration");
+    = probDescDB.get<const String>("method.nond.reliability_integration");
   if (integration_method.empty() || integration_method == "first_order")
     integrationOrder = 1;
   else if (integration_method == "second_order") {
@@ -324,7 +324,7 @@ NonDLocalReliability(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, s
     // For NonDLocal, integration refinement is applied to the original model
     int refine_samples = 1000; // context-specific default
     const IntVector& db_refine_samples = 
-      probDescDB.get_iv("method.nond.refinement_samples");
+      probDescDB.get<const IntVector>("method.nond.refinement_samples");
     if (db_refine_samples.length() == 1)
       refine_samples = db_refine_samples[0];
     else if (db_refine_samples.length() > 1) {
@@ -332,7 +332,7 @@ NonDLocalReliability(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, s
            << "length 1 if specified." << std::endl;
       abort_handler(PARSE_ERROR);
     }
-    int refine_seed    = probDescDB.get_int("method.random_seed");
+    int refine_seed    = probDescDB.get<int>("method.random_seed");
    
     unsigned short sample_type = SUBMETHOD_DEFAULT;
     String rng; // empty string: use default

@@ -39,24 +39,24 @@ SurrBasedLocalMinimizer::
 SurrBasedLocalMinimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model,
 			std::shared_ptr<TraitsBase> traits):
   SurrBasedMinimizer(problem_db, parallel_lib, model, traits),
-  approxSubProbObj(probDescDB.get_short("method.sbl.subproblem_objective")),
-  approxSubProbCon(probDescDB.get_short("method.sbl.subproblem_constraints")),
-  meritFnType(probDescDB.get_short("method.sbl.merit_function")),
-  acceptLogic(probDescDB.get_short("method.sbl.acceptance_logic")),
-  trConstraintRelax(probDescDB.get_short("method.sbl.constraint_relax")),
+  approxSubProbObj(probDescDB.get<short>("method.sbl.subproblem_objective")),
+  approxSubProbCon(probDescDB.get<short>("method.sbl.subproblem_constraints")),
+  meritFnType(probDescDB.get<short>("method.sbl.merit_function")),
+  acceptLogic(probDescDB.get<short>("method.sbl.acceptance_logic")),
+  trConstraintRelax(probDescDB.get<short>("method.sbl.constraint_relax")),
   minimizeCycles(0), penaltyIterOffset(-200), 
   origTrustRegionFactor(
-    probDescDB.get_rv("method.trust_region.initial_size")),
+    probDescDB.get<const RealVector>("method.trust_region.initial_size")),
   minTrustRegionFactor(
-    probDescDB.get_real("method.trust_region.minimum_size")),
+    probDescDB.get<const Real>("method.trust_region.minimum_size")),
   trRatioContractValue(
-    probDescDB.get_real("method.trust_region.contract_threshold")),
+    probDescDB.get<const Real>("method.trust_region.contract_threshold")),
   trRatioExpandValue(
-    probDescDB.get_real("method.trust_region.expand_threshold")),
+    probDescDB.get<const Real>("method.trust_region.expand_threshold")),
   gammaContract(
-    probDescDB.get_real("method.trust_region.contraction_factor")),
-  gammaExpand(probDescDB.get_real("method.trust_region.expansion_factor")),
-  softConvLimit(probDescDB.get_ushort("method.soft_convergence_limit"))
+    probDescDB.get<const Real>("method.trust_region.contraction_factor")),
+  gammaExpand(probDescDB.get<const Real>("method.trust_region.expansion_factor")),
+  softConvLimit(probDescDB.get<unsigned short>("method.soft_convergence_limit"))
 { initialize(); }
 
 
@@ -228,13 +228,13 @@ void SurrBasedLocalMinimizer::initialize_sub_model()
 void SurrBasedLocalMinimizer::initialize_sub_minimizer()
 {
   const String& approx_method_ptr
-    = probDescDB.get_string("method.sub_method_pointer");
+    = probDescDB.get<const String>("method.sub_method_pointer");
   const String& approx_method_name
-    = probDescDB.get_string("method.sub_method_name");
+    = probDescDB.get<const String>("method.sub_method_name");
 
   if (!approx_method_ptr.empty()) {
     // Approach 1: method spec support for approxSubProbMinimizer
-    const String& model_ptr = probDescDB.get_string("method.model_pointer");
+    const String& model_ptr = probDescDB.get<const String>("method.model_pointer");
     // NOTE: set_db_list_nodes is not used for instantiating a Model for the
     // approxSubProbMinimizer->  Rather, the iteratedModel passed into the SBLM
     // iterator, or a recasting of it, is used.  Thus, the SBLM model_pointer
@@ -245,7 +245,7 @@ void SurrBasedLocalMinimizer::initialize_sub_minimizer()
     // suppress DB ctor default and don't output summary info
     approxSubProbMinimizer->summary_output(false);
     // verify approx method's modelPointer is empty or consistent
-    const String& am_model_ptr = probDescDB.get_string("method.model_pointer");
+    const String& am_model_ptr = probDescDB.get<const String>("method.model_pointer");
     if (!am_model_ptr.empty() && am_model_ptr != model_ptr)
       Cerr << "Warning: SBLM approx_method_pointer specification includes an\n"
 	   << "         inconsistent model_pointer that will be ignored."
@@ -255,7 +255,7 @@ void SurrBasedLocalMinimizer::initialize_sub_minimizer()
     // It would be preferable to support tolerance rtn in NPSOL/DOT/CONMIN & use
     // constraintTol = approxSubProbMinimizer->constraint_tolerance();
     if (constraintTol <= 0.) { // not specified in SBLM method spec
-      Real aspm_constr_tol = probDescDB.get_real("method.constraint_tolerance");
+      Real aspm_constr_tol = probDescDB.get<const Real>("method.constraint_tolerance");
       if (aspm_constr_tol > 0.) // sub-method has spec: enforce SBLM consistency
 	constraintTol = aspm_constr_tol;
       else { // neither has spec: assign default and enforce consistency

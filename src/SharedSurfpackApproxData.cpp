@@ -31,18 +31,18 @@ namespace Dakota {
 SharedSurfpackApproxData::
 SharedSurfpackApproxData(ProblemDescDB& problem_db, size_t num_vars):
   SharedApproxData(BaseConstructor(), problem_db, num_vars),
-  diagnosticSet(problem_db.get_sa("model.metrics")),
-  crossValidateFlag(problem_db.get_bool("model.surrogate.cross_validate")),
-  numFolds(problem_db.get_int("model.surrogate.folds")),
-  percentFold(problem_db.get_real("model.surrogate.percent")),
-  pressFlag(problem_db.get_bool("model.surrogate.press"))
+  diagnosticSet(problem_db.get<const StringArray>("model.metrics")),
+  crossValidateFlag(problem_db.get<bool>("model.surrogate.cross_validate")),
+  numFolds(problem_db.get<int>("model.surrogate.folds")),
+  percentFold(problem_db.get<const Real>("model.surrogate.percent")),
+  pressFlag(problem_db.get<bool>("model.surrogate.press"))
 {
   // For Polynomial surface fits
   if (approxType == "global_polynomial")
-    approxOrder = problem_db.get_short("model.surrogate.polynomial_order");
+    approxOrder = problem_db.get<short>("model.surrogate.polynomial_order");
   else if (approxType == "global_kriging") {
     const String& trend_string = 
-      problem_db.get_string("model.surrogate.trend_order");
+      problem_db.get<const String>("model.surrogate.trend_order");
     if (trend_string == "constant")    approxOrder = 0;
     else if (trend_string == "linear") approxOrder = 1;
     else approxOrder = 2; // empty, reduced_quadratic, quadratic

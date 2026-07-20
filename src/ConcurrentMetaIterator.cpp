@@ -21,8 +21,8 @@ namespace Dakota {
 
 ConcurrentMetaIterator::ConcurrentMetaIterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
   MetaIterator(problem_db, parallel_lib),
-  numRandomJobs(probDescDB.get_int("method.concurrent.random_jobs")),
-  randomSeed(probDescDB.get_int("method.random_seed"))
+  numRandomJobs(probDescDB.get<int>("method.concurrent.random_jobs")),
+  randomSeed(probDescDB.get<int>("method.random_seed"))
 {
   // ***************************************************************************
   // TO DO: support concurrent meta-iteration for both Minimizer & Analyzer:
@@ -39,13 +39,13 @@ ConcurrentMetaIterator::ConcurrentMetaIterator(ProblemDescDB& problem_db, Parall
 
   // pull these from the DB before any resetting of DB nodes
   const RealVector& raw_param_sets
-    = problem_db.get_rv("method.concurrent.parameter_sets");
+    = problem_db.get<const RealVector>("method.concurrent.parameter_sets");
 
   const String& sub_meth_ptr
-    = problem_db.get_string("method.sub_method_pointer");
-  const String& sub_meth_name = problem_db.get_string("method.sub_method_name");
+    = problem_db.get<const String>("method.sub_method_pointer");
+  const String& sub_meth_name = problem_db.get<const String>("method.sub_method_name");
   const String& sub_model_ptr
-    = problem_db.get_string("method.sub_model_pointer");
+    = problem_db.get<const String>("method.sub_model_pointer");
 
   // store/restore the method/model indices separately (the current state of the
   // iterator/model DB nodes may not be synched due to Model ctor recursions in
@@ -103,15 +103,15 @@ ConcurrentMetaIterator::ConcurrentMetaIterator(ProblemDescDB& problem_db, Parall
 ConcurrentMetaIterator::
 ConcurrentMetaIterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
   MetaIterator(problem_db, parallel_lib, model),
-  numRandomJobs(probDescDB.get_int("method.concurrent.random_jobs")),
-  randomSeed(probDescDB.get_int("method.random_seed"))
+  numRandomJobs(probDescDB.get<int>("method.concurrent.random_jobs")),
+  randomSeed(probDescDB.get<int>("method.random_seed"))
 {
   const RealVector& raw_param_sets
-    = problem_db.get_rv("method.concurrent.parameter_sets");
+    = problem_db.get<const RealVector>("method.concurrent.parameter_sets");
 
   // ensure consistency between model and any method/model pointers
-  check_model(problem_db.get_string("method.sub_method_pointer"),
-	      problem_db.get_string("method.sub_model_pointer"));
+  check_model(problem_db.get<const String>("method.sub_method_pointer"),
+	      problem_db.get<const String>("method.sub_model_pointer"));
   // For this ctor with an incoming model, we can simplify DB node assignment
   // and mirror logic in check_model()
   size_t model_index = problem_db.get_db_model_node();  // for restoration
@@ -151,10 +151,10 @@ ConcurrentMetaIterator::~ConcurrentMetaIterator()
 void ConcurrentMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
 {
   const String& sub_meth_ptr
-    = probDescDB.get_string("method.sub_method_pointer");
-  const String& sub_meth_name = probDescDB.get_string("method.sub_method_name");
+    = probDescDB.get<const String>("method.sub_method_pointer");
+  const String& sub_meth_name = probDescDB.get<const String>("method.sub_method_name");
   //const String& sub_model_ptr
-  //  = probDescDB.get_string("method.sub_model_pointer");
+  //  = probDescDB.get<const String>("method.sub_model_pointer");
 
   // Model recursions may update method or model nodes and restoration may not
   // occur until the recursion completes, so don't assume that method and
@@ -210,7 +210,7 @@ void ConcurrentMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
       iterSched.init_iterator(probDescDB, selectedIterator, iteratedModel);
       if (summaryOutputFlag && outputLevel >= VERBOSE_OUTPUT)
 	Cout << "Concurrent Iterator = "
-	     << method_enum_to_string(probDescDB.get_ushort("method.algorithm"))
+	     << method_enum_to_string(probDescDB.get<unsigned short>("method.algorithm"))
 	     << std::endl;
     }
   }
@@ -260,9 +260,9 @@ IntIntPair ConcurrentMetaIterator::estimate_partition_bounds()
   // to this point.  However, this call may precede derived_init_communicators
   // when the ConcurrentMetaIterator is a sub-iterator.
   iterSched.construct_sub_iterator(probDescDB, parallelLib, selectedIterator, iteratedModel,
-    probDescDB.get_string("method.sub_method_pointer"),
-    probDescDB.get_string("method.sub_method_name"),
-    probDescDB.get_string("method.sub_model_pointer"));
+    probDescDB.get<const String>("method.sub_method_pointer"),
+    probDescDB.get<const String>("method.sub_method_name"),
+    probDescDB.get<const String>("method.sub_model_pointer"));
   IntIntPair min_max, si_min_max = selectedIterator->estimate_partition_bounds();
 
   // now apply scheduling data for this level (recursion is complete)
@@ -278,7 +278,7 @@ IntIntPair ConcurrentMetaIterator::estimate_partition_bounds()
 void ConcurrentMetaIterator::initialize_model()
 {
   if (methodName == PARETO_SET) {
-    paramSetLen = probDescDB.get_sizet("responses.num_objective_functions");
+    paramSetLen = probDescDB.get<size_t>("responses.num_objective_functions");
     // define dummy weights to trigger model recasting in iterator construction
     // (replaced at run-time with weight sets from specification)
     if (iteratedModel->primary_response_fn_weights().empty()) {

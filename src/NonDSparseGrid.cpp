@@ -31,14 +31,14 @@ namespace Dakota {
     separate sparse_grid method specification. */
 NonDSparseGrid::NonDSparseGrid(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
   NonDIntegration(problem_db, parallel_lib, model),  
-  ssgLevelSpec(probDescDB.get_ushort("method.nond.sparse_grid_level"))
+  ssgLevelSpec(probDescDB.get<unsigned short>("method.nond.sparse_grid_level"))
 {
   short exp_basis_type
-    = probDescDB.get_short("method.nond.expansion_basis_type");
+    = probDescDB.get<short>("method.nond.expansion_basis_type");
   short refine_type
-    = probDescDB.get_short("method.nond.expansion_refinement_type");
+    = probDescDB.get<short>("method.nond.expansion_refinement_type");
   short refine_control
-    = probDescDB.get_short("method.nond.expansion_refinement_control");
+    = probDescDB.get<short>("method.nond.expansion_refinement_control");
   if (exp_basis_type == Pecos::HIERARCHICAL_INTERPOLANT)
     ssgDriverType = Pecos::HIERARCHICAL_SPARSE_GRID;
   else
@@ -62,27 +62,27 @@ NonDSparseGrid::NonDSparseGrid(ProblemDescDB& problem_db, ParallelLibrary& paral
     Pecos::ACTIVE_EXPANSION_STATS : Pecos::NO_EXPANSION_STATS;
   Pecos::ExpansionConfigOptions ec_options(ssgDriverType, exp_basis_type,
     model->correction_type(),
-    probDescDB.get_short("method.nond.multilevel_discrepancy_emulation"),
-    outputLevel, probDescDB.get_bool("method.variance_based_decomp"),
-    probDescDB.get_ushort("method.nond.vbd_interaction_order"), //refine_type,
+    probDescDB.get<short>("method.nond.multilevel_discrepancy_emulation"),
+    outputLevel, probDescDB.get<bool>("method.variance_based_decomp"),
+    probDescDB.get<unsigned short>("method.nond.vbd_interaction_order"), //refine_type,
     refine_control, refine_metric, refine_stats,
-    probDescDB.get_sizet("method.nond.max_refinement_iterations"),
-    probDescDB.get_sizet("method.nond.max_solver_iterations"), convergenceTol,
-    probDescDB.get_ushort("method.sofmake NonDSt_convergence_limit"));
+    probDescDB.get<size_t>("method.nond.max_refinement_iterations"),
+    probDescDB.get<size_t>("method.nond.max_solver_iterations"), convergenceTol,
+    probDescDB.get<unsigned short>("method.sofmake NonDSt_convergence_limit"));
 
   // define BasisConfigOptions
-  bool nested_rules = (probDescDB.get_short("method.nond.nesting_override")
+  bool nested_rules = (probDescDB.get<short>("method.nond.nesting_override")
 		       != Pecos::NON_NESTED);
-  bool piecewise_basis = (probDescDB.get_bool("method.nond.piecewise_basis") ||
+  bool piecewise_basis = (probDescDB.get<bool>("method.nond.piecewise_basis") ||
 			  refine_type == Pecos::H_REFINEMENT);
   bool equidist_rules = true; // NEWTON_COTES pts for piecewise interpolants
   Pecos::BasisConfigOptions
     bc_options(nested_rules, piecewise_basis, equidist_rules,
-	       probDescDB.get_bool("method.derivative_usage"));
+	       probDescDB.get<bool>("method.derivative_usage"));
 
   // initialize ssgDriver
   short growth_rate;
-  short growth_override = probDescDB.get_short("method.nond.growth_override");
+  short growth_override = probDescDB.get<short>("method.nond.growth_override");
   // moderate growth is helpful for iso and aniso sparse grids, but not
   // necessary for generalized grids
   if (growth_override == Pecos::UNRESTRICTED ||

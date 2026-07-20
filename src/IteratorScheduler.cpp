@@ -212,7 +212,7 @@ init_iterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::sha
   // *** TO DO ***: proliferate to other cases (allow meta-iterator recursion)
   //
   // Parallel iterators are constructed/initialized on all processors
-  if (problem_db.get_ushort("method.algorithm") & PARALLEL_BIT) {
+  if (problem_db.get<unsigned short>("method.algorithm") & PARALLEL_BIT) {
     sub_iterator = Iterator::get_iterator(problem_db, parallel_lib); // all procs
     // init_communicators() manages IteratorScheduler::partition() and
     // IteratorScheduler::init_iterator()
@@ -265,7 +265,7 @@ init_iterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::sha
     sub_iterator->iterated_model(sub_model);
     // store for meta-iterator bit logic applied to all ranks
     // (e.g., Environment::execute/destruct()):
-    sub_iterator->method_name(problem_db.get_ushort("method.algorithm"));
+    sub_iterator->method_name(problem_db.get<unsigned short>("method.algorithm"));
   }
 }
 
@@ -307,7 +307,7 @@ init_iterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::sha
     sub_iterator->iterated_model(sub_model);
     // store for meta-iterator bit logic applied to all ranks
     // (e.g., Environment::execute/destruct()):
-    sub_iterator->method_name(problem_db.get_ushort("method.algorithm"));
+    sub_iterator->method_name(problem_db.get<unsigned short>("method.algorithm"));
   }
 }
 

@@ -205,7 +205,7 @@ void APPSOptimizer::set_apps_parameters()
     // A null string is the DB default and nonblocking is the HOPS default, so
     // the flag is true only for an explicit blocking user specification.
 
-    if (probDescDB.get_short("method.synchronization") ==
+    if (probDescDB.get<short>("method.synchronization") ==
 	BLOCKING_SYNCHRONIZATION) {
       mediatorParams->setParameter("Synchronous Evaluations", true);
       citizenParams->setParameter("Use Random Order", false);
@@ -217,7 +217,7 @@ void APPSOptimizer::set_apps_parameters()
     // Set GSS algorithm control parameters.
 
     const Real& init_step_length
-      = probDescDB.get_real("method.asynch_pattern_search.initial_delta");
+      = probDescDB.get<const Real>("method.asynch_pattern_search.initial_delta");
     if (init_step_length > 0.0)
       citizenParams->setParameter("Initial Step", init_step_length);
     else
@@ -225,7 +225,7 @@ void APPSOptimizer::set_apps_parameters()
 	   << "\n         Using default value of 1.0.\n\n";
 
     const Real& contract_step_length
-      = probDescDB.get_real("method.asynch_pattern_search.contraction_factor");
+      = probDescDB.get<const Real>("method.asynch_pattern_search.contraction_factor");
     if (contract_step_length > 0.0 && contract_step_length < 1.0)
       citizenParams->setParameter("Contraction Factor", contract_step_length);
     else
@@ -233,7 +233,7 @@ void APPSOptimizer::set_apps_parameters()
 	   << "\n         Using default value of 0.5.\n\n";
 
     const Real& thresh_step_length
-      = probDescDB.get_real("method.variable_tolerance");
+      = probDescDB.get<const Real>("method.variable_tolerance");
     if (thresh_step_length >= 4.4e-16)
       citizenParams->setParameter("Step Tolerance", thresh_step_length);
     else
@@ -241,14 +241,14 @@ void APPSOptimizer::set_apps_parameters()
 	   << "\n         Using default value of 0.01.\n\n";
 
     const Real& solution_target
-      = probDescDB.get_real("method.solution_target");
+      = probDescDB.get<const Real>("method.solution_target");
     if (solution_target > -DBL_MAX)
       problemParams->setParameter("Objective Target", solution_target);
 
     // For nonlinearly constrained problems, set penalty-related parameters.
 
     if (numNonlinearConstraints > 0) {
-      const String merit_function = probDescDB.get_string("method.asynch_pattern_search.merit_function");
+      const String merit_function = probDescDB.get<const String>("method.asynch_pattern_search.merit_function");
       if (merit_function == "merit_max")
 	citizenParams->setParameter("Penalty Function", "L_inf");
       else if (merit_function == "merit_max_smooth")
@@ -267,14 +267,14 @@ void APPSOptimizer::set_apps_parameters()
 	Cout << "\nWarning: merit_function invalid."
 	     << "\n         Using default L2 Squared.\n\n";
 
-      Real constr_penalty = probDescDB.get_real("method.asynch_pattern_search.constraint_penalty");
+      Real constr_penalty = probDescDB.get<const Real>("method.asynch_pattern_search.constraint_penalty");
       if (constr_penalty >= 0.0)
 	citizenParams->setParameter("Penalty Parameter", constr_penalty);
       else
 	Cout << "\nWarning: constraint_penalty must be between greater than or equal to 0.0."
 	     << "\n         Using default value of 1.0.\n\n";
 
-      Real smooth_factor = probDescDB.get_real("method.asynch_pattern_search.smoothing_factor");
+      Real smooth_factor = probDescDB.get<const Real>("method.asynch_pattern_search.smoothing_factor");
       if (smooth_factor >= 0.0 && smooth_factor <= 1.0)
 	citizenParams->setParameter("Penalty Smoothing Value", smooth_factor);
       else

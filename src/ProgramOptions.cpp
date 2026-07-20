@@ -356,7 +356,7 @@ void ProgramOptions::parse(const ProblemDescDB& problem_db)
   set_option(problem_db, "error_file", errorFile);
   set_option(problem_db, "read_restart", readRestartFile);
 
-  const int& stoprst = problem_db.get_int("environment.stop_restart");
+  const int& stoprst = problem_db.get<int>("environment.stop_restart");
   if (stoprst > 0) {
     if (stopRestartEvals == 0)
       stopRestartEvals = stoprst;
@@ -369,15 +369,15 @@ void ProgramOptions::parse(const ProblemDescDB& problem_db)
   set_option(problem_db, "write_restart", writeRestartFile);
 
   // only override if non-default, no need to warn
-  const bool& check_flag = problem_db.get_bool("environment.check");
+  const bool& check_flag = problem_db.get<bool>("environment.check");
   if (!checkFlag && check_flag) {
     checkFlag = check_flag;
   }
 
 
-  const bool& pre_run = problem_db.get_bool("environment.pre_run");
-  const bool& run = problem_db.get_bool("environment.run");
-  const bool& post_run = problem_db.get_bool("environment.post_run");
+  const bool& pre_run = problem_db.get<bool>("environment.pre_run");
+  const bool& run = problem_db.get<bool>("environment.run");
+  const bool& post_run = problem_db.get<bool>("environment.post_run");
   
   // if command line options already set, ignore all input file pre/run/post
   if (pre_run || run || post_run) {
@@ -400,9 +400,9 @@ void ProgramOptions::parse(const ProblemDescDB& problem_db)
       set_option(problem_db, "post_run_output", userModes.postRunOutput);
 
       userModes.preRunOutputFormat = 
-	problem_db.get_ushort("environment.pre_run_output_format");
+	problem_db.get<unsigned short>("environment.pre_run_output_format");
       userModes.postRunInputFormat = 
-	problem_db.get_ushort("environment.post_run_input_format");
+	problem_db.get<unsigned short>("environment.post_run_input_format");
 
     }
 
@@ -585,7 +585,7 @@ set_option(const ProblemDescDB& problem_db, const String& db_name,
 	   String& data_member) {
     
   String lookup_prefix("environment.");
-  const String& db_str = problem_db.get_string(lookup_prefix + db_name);
+  const String& db_str = problem_db.get<const String>(lookup_prefix + db_name);
   
   if (!db_str.empty()) {
     if (data_member.empty())

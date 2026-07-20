@@ -338,7 +338,7 @@ void run_dakota_mixed(const char* dakota_input_file, bool mpirun_flag)
   if (world_rank == 0) {
     problem_db.resolve_top_method(); // allow DB set/get operations
     const Dakota::StringArray& drivers
-      = problem_db.get_sa("interface.application.analysis_drivers");
+      = problem_db.get<const Dakota::StringArray>("interface.application.analysis_drivers");
     if (drivers.size() == 1 && drivers[0] == "plugin_rosenbrock") {
       Dakota::RealVector ip(2);
       ip[0] =  1.1;  ip[1] = -1.3;
@@ -465,14 +465,14 @@ static void callback_function(Dakota::ProblemDescDB* db, void *ptr)
   // more advanced usage would require set_db_list_nodes() or equivalent.
   db->resolve_top_method();
 
-  if ( !(db->get_ushort("interface.type") & Dakota::DIRECT_INTERFACE_BIT) )
+  if ( !(db->get<unsigned short>("interface.type") & Dakota::DIRECT_INTERFACE_BIT) )
     return;
 
   // supply labels, initial_point, and bounds
   // Both Rosenbrock and text_book have the same number of variables (2).
   Dakota::RealVector rv(2);
   const Dakota::StringArray& drivers
-    = db->get_sa("interface.application.analysis_drivers");
+    = db->get<const Dakota::StringArray>("interface.application.analysis_drivers");
   // TODO: fix these - RWH
   //if (Dakota::contains(drivers, "plugin_rosenbrock")) {
   //  // Rosenbrock

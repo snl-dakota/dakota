@@ -43,16 +43,16 @@ Minimizer::
 Minimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model,
 	  std::shared_ptr<TraitsBase> traits): 
   Iterator(problem_db, parallel_lib, traits),
-  constraintTol(probDescDB.get_real("method.constraint_tolerance")),
+  constraintTol(probDescDB.get<const Real>("method.constraint_tolerance")),
   bigRealBoundSize(BIG_REAL_BOUND), bigIntBoundSize(1000000000),
   boundConstraintFlag(false),
-  speculativeFlag(probDescDB.get_bool("method.speculative")),
+  speculativeFlag(probDescDB.get<bool>("method.speculative")),
   optimizationFlag(true),
-  calibrationDataFlag(probDescDB.get_bool("responses.calibration_data") ||
-    !probDescDB.get_string("responses.scalar_data_filename").empty()),
+  calibrationDataFlag(probDescDB.get<bool>("responses.calibration_data") ||
+    !probDescDB.get<const String>("responses.scalar_data_filename").empty()),
   expData(probDescDB, model->current_response().shared_data(), outputLevel),
   numExperiments(0), numTotalCalibTerms(0),
-  scaleFlag(probDescDB.get_bool("method.scaling"))
+  scaleFlag(probDescDB.get<bool>("method.scaling"))
 {
   iteratedModel = model;
   update_from_model(*iteratedModel); // variable,response counts & checks
@@ -405,7 +405,7 @@ void Minimizer::data_transform_model()
     Cout << "Initializing calibration data transformation" << std::endl;
   
   // TODO: need better validation of these sizes and data with error msgs
-  numExperiments = probDescDB.get_sizet("responses.num_experiments");
+  numExperiments = probDescDB.get<size_t>("responses.num_experiments");
   if (numExperiments < 1) {
       Cerr << "Error in number of experiments" << std::endl;
       abort_handler(-1);

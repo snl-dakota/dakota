@@ -21,7 +21,7 @@ namespace Dakota {
 // Default constructor
 LDDriver::LDDriver(ProblemDescDB& problem_db) :
     sequence_(
-        problem_db.get_bool("method.rank_1_lattice") ? 
+        problem_db.get<bool>("method.rank_1_lattice") ? 
             static_cast<LowDiscrepancySequence*>(new Rank1Lattice(problem_db)) :
             static_cast<LowDiscrepancySequence*>(new DigitalNet(problem_db))
     ),

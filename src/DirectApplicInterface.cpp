@@ -18,11 +18,11 @@ namespace Dakota {
 DirectApplicInterface::
 DirectApplicInterface(const ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
   ApplicationInterface(problem_db, parallel_lib),
-  iFilterName(problem_db.get_string("interface.application.input_filter")),
-  oFilterName(problem_db.get_string("interface.application.output_filter")),
+  iFilterName(problem_db.get<const String>("interface.application.input_filter")),
+  oFilterName(problem_db.get<const String>("interface.application.output_filter")),
   gradFlag(false), hessFlag(false), numFns(0), numVars(0), numDerivVars(0),
   analysisDrivers(
-    problem_db.get_sa("interface.application.analysis_drivers")),
+    problem_db.get<const StringArray>("interface.application.analysis_drivers")),
   prevVarsId("NO_MATCH_DUMMY_ID"), prevRespId("NO_MATCH_DUMMY_ID")
 {
   // "interface direct" always instantiates a TestDriverInterface, but

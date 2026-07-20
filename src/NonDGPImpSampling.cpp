@@ -42,7 +42,7 @@ NonDGPImpSampling::NonDGPImpSampling(ProblemDescDB& problem_db, ParallelLibrary&
   String sample_reuse, approx_type("global_kriging");/*("global_kriging");*/
   UShortArray approx_order; // not used by GP/kriging
   short corr_order = -1, data_order = 1, corr_type = NO_CORRECTION;
-  if (probDescDB.get_bool("method.derivative_usage")) {
+  if (probDescDB.get<bool>("method.derivative_usage")) {
     if (iteratedModel->gradient_type() != "none") data_order |= 2;
     if (iteratedModel->hessian_type()  != "none") data_order |= 4;
   }
@@ -51,9 +51,9 @@ NonDGPImpSampling::NonDGPImpSampling(ProblemDescDB& problem_db, ParallelLibrary&
   bool vary_pattern = false; // for consistency across outer loop invocations
   // get point samples file
   const String& import_pts_file
-    = probDescDB.get_string("method.import_build_points_file");
+    = probDescDB.get<const String>("method.import_build_points_file");
   // BMA: This was previously using numSamples = initial_samples from base class
-  numSamples = probDescDB.get_int("method.build_samples");
+  numSamples = probDescDB.get<int>("method.build_samples");
   int samples = numSamples;
   if (!import_pts_file.empty())
     { samples = 0; sample_reuse = "all"; }
@@ -72,13 +72,13 @@ NonDGPImpSampling::NonDGPImpSampling(ProblemDescDB& problem_db, ParallelLibrary&
   gpModel = std::make_shared<DataFitSurrModel>(gpBuild, iteratedModel,
     gp_set, gp_view, approx_type, approx_order, corr_type, corr_order,
     data_order, outputLevel, sample_reuse, import_pts_file,
-    probDescDB.get_ushort("method.import_build_format"),
-    probDescDB.get_bool("method.import_build_active_only"),
-    probDescDB.get_string("method.export_approx_points_file"),
-    probDescDB.get_ushort("method.export_approx_format"));
+    probDescDB.get<unsigned short>("method.import_build_format"),
+    probDescDB.get<bool>("method.import_build_active_only"),
+    probDescDB.get<const String>("method.export_approx_points_file"),
+    probDescDB.get<unsigned short>("method.export_approx_format"));
   vary_pattern = true; // allow seed to run among multiple approx sample sets
   // need to add to input spec
-  numEmulEval = probDescDB.get_int("method.nond.samples_on_emulator");
+  numEmulEval = probDescDB.get<int>("method.nond.samples_on_emulator");
   if (numEmulEval==0)
     numEmulEval = 10000;
   construct_lhs(gpEval, gpModel, sample_type, numEmulEval, randomSeed,

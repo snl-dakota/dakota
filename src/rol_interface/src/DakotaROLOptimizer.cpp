@@ -416,12 +416,12 @@ void ROLOptimizer::set_rol_parameters()
 
   // Set the stopping criteria.
   pimpl_->solverParams.sublist("Status Test").
-    set("Gradient Tolerance", probDescDB.get_real("method.gradient_tolerance"));
+    set("Gradient Tolerance", probDescDB.get<const Real>("method.gradient_tolerance"));
   pimpl_->solverParams.sublist("Status Test").
     set("Constraint Tolerance",
-        probDescDB.get_real("method.constraint_tolerance"));
+        probDescDB.get<const Real>("method.constraint_tolerance"));
   pimpl_->solverParams.sublist("Status Test").
-    set("Step Tolerance", probDescDB.get_real("method.variable_tolerance"));
+    set("Step Tolerance", probDescDB.get<const Real>("method.variable_tolerance"));
   // ROL enforces an int; cast is Ok since SZ_MAX default removed at Minimizer
   pimpl_->solverParams.sublist("Status Test").
     set("Iteration Limit", (int)maxIterations);
@@ -429,7 +429,7 @@ void ROLOptimizer::set_rol_parameters()
   // PRECEDENCE 3: power-user advanced options
 
   // Check for ROL XML input file.
-  String adv_opts_file = probDescDB.get_string("method.advanced_options_file");
+  String adv_opts_file = probDescDB.get<const String>("method.advanced_options_file");
   if (!adv_opts_file.empty()) {
     if (std::filesystem::exists(adv_opts_file)) {
       if (outputLevel >= NORMAL_OUTPUT)

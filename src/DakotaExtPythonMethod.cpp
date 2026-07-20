@@ -35,9 +35,9 @@ ExtPythonMethod::ExtPythonMethod(ProblemDescDB& problem_db,
   executor_ = std::make_shared<ModelExecutor>(iteratedModel);
 
   // Support optional configuration file
-  optionsFilename = probDescDB.get_string("method.advanced_options_file");
+  optionsFilename = probDescDB.get<const String>("method.advanced_options_file");
 
-  moduleAndClassName = problem_db.get_string("method.class_path_and_name");
+  moduleAndClassName = problem_db.get<const String>("method.class_path_and_name");
   initialize_python();
 
 }

@@ -33,50 +33,50 @@ SharedResponseDataRep::
 SharedResponseDataRep(const ProblemDescDB& problem_db):
   responseType(BASE_RESPONSE), // overridden in derived class ctors
   primaryFnType(GENERIC_FNS),
-  responsesId(problem_db.get_string("responses.id")), 
-  simulationVariance(problem_db.get_rv("responses.simulation_variance")),
-  metadataLabels(problem_db.get_sa("responses.metadata_labels"))
+  responsesId(problem_db.get<const String>("responses.id")), 
+  simulationVariance(problem_db.get<const RealVector>("responses.simulation_variance")),
+  metadataLabels(problem_db.get<const StringArray>("responses.metadata_labels"))
 {
   // scalar-specific response counts
   size_t num_scalar_primary = std::max
-    ( problem_db.get_sizet("responses.num_scalar_objectives"),
-      std::max ( problem_db.get_sizet("responses.num_scalar_calibration_terms"),
-		 problem_db.get_sizet("responses.num_scalar_responses") )
+    ( problem_db.get<size_t>("responses.num_scalar_objectives"),
+      std::max ( problem_db.get<size_t>("responses.num_scalar_calibration_terms"),
+		 problem_db.get<size_t>("responses.num_scalar_responses") )
       );
   size_t num_scalar_responses = num_scalar_primary +
     // secondary counts will always be zero as not exposed in input spec
-    problem_db.get_sizet("responses.num_scalar_nonlinear_inequality_constraints") +
-    problem_db.get_sizet("responses.num_scalar_nonlinear_equality_constraints");
+    problem_db.get<size_t>("responses.num_scalar_nonlinear_inequality_constraints") +
+    problem_db.get<size_t>("responses.num_scalar_nonlinear_equality_constraints");
 
   // field-specific response counts
   size_t num_field_primary = std::max
-    ( problem_db.get_sizet("responses.num_field_objectives"),
-      std::max ( problem_db.get_sizet("responses.num_field_calibration_terms"),
-		 problem_db.get_sizet("responses.num_field_responses") )
+    ( problem_db.get<size_t>("responses.num_field_objectives"),
+      std::max ( problem_db.get<size_t>("responses.num_field_calibration_terms"),
+		 problem_db.get<size_t>("responses.num_field_responses") )
       );
   size_t num_field_responses = num_field_primary +
     // secondary counts will always be zero as not exposed in input spec
-    problem_db.get_sizet("responses.num_field_nonlinear_inequality_constraints") +
-    problem_db.get_sizet("responses.num_field_nonlinear_equality_constraints");
+    problem_db.get<size_t>("responses.num_field_nonlinear_inequality_constraints") +
+    problem_db.get<size_t>("responses.num_field_nonlinear_equality_constraints");
 
   // parent (aggregate/total) response counts
   size_t num_total_primary = std::max
-    ( problem_db.get_sizet("responses.num_objective_functions"),
-      std::max( problem_db.get_sizet("responses.num_calibration_terms"),
-		problem_db.get_sizet("responses.num_response_functions") )
+    ( problem_db.get<size_t>("responses.num_objective_functions"),
+      std::max( problem_db.get<size_t>("responses.num_calibration_terms"),
+		problem_db.get<size_t>("responses.num_response_functions") )
       );
   size_t num_total_secondary =
-    problem_db.get_sizet("responses.num_nonlinear_inequality_constraints") +
-    problem_db.get_sizet("responses.num_nonlinear_equality_constraints");
+    problem_db.get<size_t>("responses.num_nonlinear_inequality_constraints") +
+    problem_db.get<size_t>("responses.num_nonlinear_equality_constraints");
   size_t num_total_responses = num_total_primary + num_total_secondary;
 
   // update primary response type based on user specified type
-  if (problem_db.get_sizet("responses.num_objective_functions") > 0) 
+  if (problem_db.get<size_t>("responses.num_objective_functions") > 0) 
     primaryFnType = OBJECTIVE_FNS;
-  else if (problem_db.get_sizet("responses.num_calibration_terms") > 0)
+  else if (problem_db.get<size_t>("responses.num_calibration_terms") > 0)
     primaryFnType = CALIB_TERMS;
 
-  const StringArray& user_labels = problem_db.get_sa("responses.labels");
+  const StringArray& user_labels = problem_db.get<const StringArray>("responses.labels");
 
   if (num_field_responses) {
     // validate required apportionment of total = scalar + field
@@ -92,7 +92,7 @@ SharedResponseDataRep(const ProblemDescDB& problem_db):
     // can't use num_scalar_responses, as constraints are only specified via total
     numScalarResponses = num_scalar_primary + num_total_secondary;
 
-    priFieldLengths = problem_db.get_iv("responses.lengths");
+    priFieldLengths = problem_db.get<const IntVector>("responses.lengths");
     if (num_field_primary != priFieldLengths.length()) {
       Cerr << "Error: For each field in " << primary_fn_name()
 	   << ", you must specify the length of that field."

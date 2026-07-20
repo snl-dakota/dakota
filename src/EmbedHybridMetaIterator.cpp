@@ -18,20 +18,20 @@ namespace Dakota {
 
 EmbedHybridMetaIterator::EmbedHybridMetaIterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
   MetaIterator(problem_db, parallel_lib), singlePassedModel(false),
-  localSearchProb(problem_db.get_real("method.hybrid.local_search_probability"))
+  localSearchProb(problem_db.get<const Real>("method.hybrid.local_search_probability"))
 { maxIteratorConcurrency = 1; }
 
 
 EmbedHybridMetaIterator::
 EmbedHybridMetaIterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
   MetaIterator(problem_db, parallel_lib, model), singlePassedModel(true),
-  localSearchProb(problem_db.get_real("method.hybrid.local_search_probability"))
+  localSearchProb(problem_db.get<const Real>("method.hybrid.local_search_probability"))
 {
   // Ensure consistency between iteratedModel and any method/model pointers
-  check_model(problem_db.get_string("method.hybrid.global_method_pointer"),
-	      problem_db.get_string("method.hybrid.global_model_pointer"));
-  check_model(problem_db.get_string("method.hybrid.local_method_pointer"),
-	      problem_db.get_string("method.hybrid.local_model_pointer"));
+  check_model(problem_db.get<const String>("method.hybrid.global_method_pointer"),
+	      problem_db.get<const String>("method.hybrid.global_model_pointer"));
+  check_model(problem_db.get<const String>("method.hybrid.local_method_pointer"),
+	      problem_db.get<const String>("method.hybrid.local_model_pointer"));
 
   maxIteratorConcurrency = 1;
 }
@@ -46,18 +46,18 @@ void EmbedHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
   // See notes in ConcurrentMetaIterator::derived_init_communicators()
 
   const String& global_method_ptr
-    = probDescDB.get_string("method.hybrid.global_method_pointer");
+    = probDescDB.get<const String>("method.hybrid.global_method_pointer");
   const String& global_method_name
-    = probDescDB.get_string("method.hybrid.global_method_name");
+    = probDescDB.get<const String>("method.hybrid.global_method_name");
   const String& global_model_ptr
-    = probDescDB.get_string("method.hybrid.global_model_pointer");
+    = probDescDB.get<const String>("method.hybrid.global_model_pointer");
 
   const String& local_method_ptr
-    = probDescDB.get_string("method.hybrid.local_method_pointer");
+    = probDescDB.get<const String>("method.hybrid.local_method_pointer");
   const String& local_method_name
-    = probDescDB.get_string("method.hybrid.local_method_name");
+    = probDescDB.get<const String>("method.hybrid.local_method_name");
   const String& local_model_ptr
-    = probDescDB.get_string("method.hybrid.local_model_pointer");
+    = probDescDB.get<const String>("method.hybrid.local_model_pointer");
 
   auto& global_model = (singlePassedModel) ? iteratedModel : globalModel;
   auto& local_model  = (singlePassedModel) ? iteratedModel :  localModel;
@@ -130,22 +130,22 @@ IntIntPair EmbedHybridMetaIterator::estimate_partition_bounds()
   // concurrency.  [Thus, this is not redundant with configure().]
 
   const String& global_method_ptr
-    = probDescDB.get_string("method.hybrid.global_method_pointer");
+    = probDescDB.get<const String>("method.hybrid.global_method_pointer");
   const String& global_model_ptr
-    = probDescDB.get_string("method.hybrid.global_model_pointer");
+    = probDescDB.get<const String>("method.hybrid.global_model_pointer");
   const String& local_method_ptr
-    = probDescDB.get_string("method.hybrid.local_method_pointer");
+    = probDescDB.get<const String>("method.hybrid.local_method_pointer");
   const String& local_model_ptr
-    = probDescDB.get_string("method.hybrid.local_model_pointer");
+    = probDescDB.get<const String>("method.hybrid.local_model_pointer");
 
   auto global_model = (singlePassedModel) ? iteratedModel : globalModel;
   auto local_model  = (singlePassedModel) ? iteratedModel :  localModel;
 
   iterSched.construct_sub_iterator(probDescDB, parallelLib, globalIterator, global_model,
-    global_method_ptr,probDescDB.get_string("method.hybrid.global_method_name"),
+    global_method_ptr,probDescDB.get<const String>("method.hybrid.global_method_name"),
     global_model_ptr);
   iterSched.construct_sub_iterator(probDescDB, parallelLib, localIterator, local_model,
-    local_method_ptr, probDescDB.get_string("method.hybrid.local_method_name"),
+    local_method_ptr, probDescDB.get<const String>("method.hybrid.local_method_name"),
     local_model_ptr);
 
   IntIntPair global_min_max = globalIterator->estimate_partition_bounds(),

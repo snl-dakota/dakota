@@ -51,13 +51,13 @@ namespace Dakota {
         // Derived class factory
         std::shared_ptr<Interface> get_interface(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib)
         {
-          const unsigned short interface_type = problem_db.get_ushort("interface.type");
+          const unsigned short interface_type = problem_db.get<unsigned short>("interface.type");
 
           // In the case where a derived interface type has been selected for managing
           // analysis_drivers, then this determines the instantiation and any 
           // algebraic mappings are overlayed by ApplicationInterface.
           const String& algebraic_map_file
-            = problem_db.get_string("interface.algebraic_mappings");
+            = problem_db.get<const String>("interface.algebraic_mappings");
           if (interface_type == SYSTEM_INTERFACE)
             return std::make_shared<SysCallApplicInterface>(problem_db, parallel_lib);
           else if (interface_type == FORK_INTERFACE) {

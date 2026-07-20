@@ -420,7 +420,7 @@ void Environment::construct()
   // populated in the calls to the keyword handlers is used to build the
   // model and the iterator.
   const String& method_ptr
-    = probDescDB.get_string("environment.top_method_pointer");
+    = probDescDB.get<const String>("environment.top_method_pointer");
   // The method pointer is optional and some detective work may be required to
   // resolve which method sits on top of a recursion.  Only set the method node:
   // leave model nodes locked for meta-iterators; standard iterators set model
@@ -431,7 +431,7 @@ void Environment::construct()
   // (std iterators need model; meta-iterators may need a default model spec)
   if (assign_model_pointer())
     probDescDB.set_db_model_nodes(
-      probDescDB.get_string("method.model_pointer"));
+      probDescDB.get<const String>("method.model_pointer"));
 
   // w_pl is the same for all parallel configurations
   ParLevLIter w_pl_iter = parallelLib.w_parallel_level_iterator();

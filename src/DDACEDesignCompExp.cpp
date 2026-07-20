@@ -33,13 +33,13 @@ namespace Dakota {
     probDescDB. */
 DDACEDesignCompExp::DDACEDesignCompExp(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
   PStudyDACE(problem_db, parallel_lib, model),
-  daceMethod(probDescDB.get_ushort("method.sub_method")),
-  samplesSpec(probDescDB.get_int("method.samples")), numSamples(samplesSpec),
-  symbolsSpec(probDescDB.get_int("method.symbols")), numSymbols(symbolsSpec),
-  seedSpec(probDescDB.get_int("method.random_seed")), randomSeed(seedSpec),
+  daceMethod(probDescDB.get<unsigned short>("method.sub_method")),
+  samplesSpec(probDescDB.get<int>("method.samples")), numSamples(samplesSpec),
+  symbolsSpec(probDescDB.get<int>("method.symbols")), numSymbols(symbolsSpec),
+  seedSpec(probDescDB.get<int>("method.random_seed")), randomSeed(seedSpec),
   allDataFlag(false), numDACERuns(0),
-  varyPattern(!probDescDB.get_bool("method.fixed_seed")),
-  mainEffectsFlag(probDescDB.get_bool("method.main_effects"))
+  varyPattern(!probDescDB.get<bool>("method.fixed_seed")),
+  mainEffectsFlag(probDescDB.get<bool>("method.main_effects"))
 {
   if (numDiscreteIntVars > 0 || numDiscreteStringVars > 0 || 
       numDiscreteRealVars > 0) {

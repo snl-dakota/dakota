@@ -54,9 +54,9 @@ NLSSOLLeastSq::NLSSOLLeastSq(ProblemDescDB& problem_db, ParallelLibrary& paralle
 
   // invoke SOLBase set function (shared with NPSOLOptimizer)
   set_options(speculativeFlag, vendorNumericalGradFlag, outputLevel,
-              probDescDB.get_int("method.npsol.verify_level"),
-              probDescDB.get_real("method.function_precision"),
-              probDescDB.get_real("method.npsol.linesearch_tolerance"),
+              probDescDB.get<int>("method.npsol.verify_level"),
+              probDescDB.get<const Real>("method.function_precision"),
+              probDescDB.get<const Real>("method.npsol.linesearch_tolerance"),
               maxIterations, constraintTol, convergenceTol,
 	      iteratedModel->gradient_type(),
 	      iteratedModel->fd_gradient_step_size());

@@ -34,12 +34,12 @@ namespace Dakota {
 NonDMultilevelSampling::
 NonDMultilevelSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
   NonDEnsembleSampling(problem_db, parallel_lib, model),
-  allocationTarget(problem_db.get_short("method.nond.allocation_target")),
+  allocationTarget(problem_db.get<short>("method.nond.allocation_target")),
   useTargetVarianceOptimizationFlag(
-    problem_db.get_bool("method.nond.allocation_target.optimization")),
-  qoiAggregation(problem_db.get_short("method.nond.qoi_aggregation")),
+    problem_db.get<bool>("method.nond.allocation_target.optimization")),
+  qoiAggregation(problem_db.get<short>("method.nond.qoi_aggregation")),
   convergenceTolTarget(
-    problem_db.get_short("method.nond.convergence_tolerance_target"))
+    problem_db.get<short>("method.nond.convergence_tolerance_target"))
 {
   bool err_flag = false;
   /*
@@ -57,7 +57,7 @@ NonDMultilevelSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
   }
   */
 
-  pilotSamples = problem_db.get_sza("method.nond.pilot_samples");
+  pilotSamples = problem_db.get<const SizetArray>("method.nond.pilot_samples");
   if ( !std::all_of( std::begin(pilotSamples), std::end(pilotSamples),
 		     [](int i){ return i > 0; }) ) {
     Cerr << "\nError: Some levels have pilot samples of size 0 in "
@@ -109,7 +109,7 @@ NonDMultilevelSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
     }
     // Retrieve the variable mapping inputs
     const RealVector& scalarization_resp_vector
-      = probDescDB.get_rv("method.nond.scalarization_response_mapping");
+      = probDescDB.get<const RealVector>("method.nond.scalarization_response_mapping");
     if (scalarization_resp_vector.empty() ||
 	scalarization_resp_vector.length() != numFunctions*(2*numFunctions) )
       Cerr << "\n Warning: no or incomplete mappings provided for scalarization"
