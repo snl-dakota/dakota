@@ -240,4 +240,11 @@ namespace Dakota {
       }
       return pos->second;
     }
+
+    void
+    InterfaceRegistry::file_cleanup()
+    {
+      for ( auto &[_, iface] : m_cache )
+        iface->file_cleanup();
+    }
 }

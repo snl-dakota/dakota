@@ -54,8 +54,12 @@ namespace Dakota {
 
       InterfaceRegistry();
 
-      std::shared_ptr<Interface> get_interface(ProblemDescDB &db,
-                                               ParallelLibrary &par);
+      std::shared_ptr<Interface> get_interface(ProblemDescDB& db,
+                                               ParallelLibrary& par);
+
+      void file_cleanup();
+
+      const std::unordered_map<std::string, std::shared_ptr<Interface>> &cache() const noexcept { return m_cache; }
 
      private:
       template <typename T>

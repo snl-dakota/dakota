@@ -30,15 +30,14 @@ namespace Dakota {
 size_t Interface::noSpecIdNum = 0;
 
 std::shared_ptr<Interface> Interface::get_interface(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib) {
-  static std::unordered_map<const ProblemDescDB *, InterfaceRegistry> reg{};
-
-  return reg[&problem_db].get_interface(problem_db, parallel_lib);
+  return interfaceCache[&problem_db].get_interface(problem_db, parallel_lib);
 }
 
-std::list<std::shared_ptr<Interface>>& Interface::interface_cache(ProblemDescDB& problem_db) {
+const std::unordered_map<std::string, std::shared_ptr<Interface>> &
+Interface::interface_cache(ProblemDescDB& problem_db) {
   const ProblemDescDB* const study_ptr = problem_db.get_rep().get();
   try {
-    return Interface::interfaceCache.at(study_ptr);
+    return Interface::interfaceCache.at(study_ptr).cache();
   } catch(std::out_of_range) {
     Cerr << "Interface::interface_cache() called with nonexistent study!\n";
     throw;
@@ -51,12 +50,11 @@ void Interface::remove_cached_interface(const ProblemDescDB& problem_db) {
 }
 
 void Interface::clean_up_all_interfaces() {
-  for(auto& icache_pair : Interface::interfaceCache)
-    for(auto& interface : icache_pair.second)
-      interface->file_cleanup();
+  for(auto& [_, reg] : Interface::interfaceCache)
+    reg.file_cleanup();
 }
 
-std::map<const ProblemDescDB*, std::list<std::shared_ptr<Interface>>> Interface::interfaceCache{};
+std::unordered_map<const ProblemDescDB *, InterfaceRegistry> Interface::interfaceCache{};
 
 
 /** Base class constructor to initialize class data for all

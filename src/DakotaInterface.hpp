@@ -33,6 +33,7 @@ class Iterator;
 class Model;
 class Approximation;
 class SharedApproxData;
+class InterfaceRegistry;
 
 /// Base class for the interface class hierarchy.
 
@@ -54,7 +55,7 @@ public:
   /// @brief return the interface cache for the study
   /// @param problem_db
   /// @return interface cache
-  static std::list<std::shared_ptr<Interface>>& interface_cache(ProblemDescDB& problem_db);
+  static const std::unordered_map<std::string, std::shared_ptr<Interface>> &interface_cache(ProblemDescDB& problem_db);
 
   /// @brief remove a cached Interface for the study
   static void remove_cached_interface(const ProblemDescDB& problem_db);
@@ -67,7 +68,7 @@ private:
   friend class CleanUpAllInterfacesAttorney;
 
   /// @brief Cache of Interfaces created for each study
-  static std::map<const ProblemDescDB*, std::list<std::shared_ptr<Interface>>> interfaceCache;
+  static std::unordered_map<const ProblemDescDB *, InterfaceRegistry> interfaceCache;
 
 public:
   //
