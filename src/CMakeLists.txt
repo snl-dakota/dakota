@@ -1289,7 +1289,10 @@ if(DAKOTA_PYTHON_WRAPPER)
   install(TARGETS environment EXPORT ${ExportTarget}
     DESTINATION share/dakota/Python/dakota/environment/)
   install(FILES __init__.py DESTINATION share/dakota/Python/dakota/environment)
+endif()
 
+# DI/library-mode dakota.study Python module
+if(DAKOTA_PYTHON_STUDY)
   set(dakota_study_python_src
     python/study/DakotaStudyPython.cpp
     python/study/StudyPythonIRHelpers.cpp
@@ -1333,6 +1336,8 @@ if(DAKOTA_PYTHON_WRAPPER)
   endif()
   install(TARGETS _study EXPORT ${ExportTarget}
     DESTINATION share/dakota/Python/dakota/study/)
+  install(FILES ${Dakota_SOURCE_DIR}/python/dakota/study/__init__.py
+    DESTINATION share/dakota/Python/dakota/study)
 endif()
 
 
