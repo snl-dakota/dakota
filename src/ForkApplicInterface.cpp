@@ -29,9 +29,8 @@ ForkApplicInterface(const ProblemDescDB& problem_db, ParallelLibrary& parallel_l
 
 ForkApplicInterface::
 ForkApplicInterface(const IRStore& interface_store,
-                   std::shared_ptr<ParallelLibrary> parallel_lib,
-                   std::shared_ptr<OutputManager> output_mgr):
-  ProcessHandleApplicInterface(interface_store, std::move(parallel_lib), std::move(output_mgr))
+                   std::shared_ptr<StudyServices> services):
+  ProcessHandleApplicInterface(interface_store, std::move(services))
 { }
 
 

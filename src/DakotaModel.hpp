@@ -31,7 +31,6 @@ namespace Dakota {
 class OutputManager;
 class StudyRuntime;
 class ParallelLibrary;
-namespace detail { class OwnedLibraryRuntime; struct ResolvedRuntime; }
 class RunOptions;
 class StudyServices;
 
@@ -853,6 +852,8 @@ public:
   ParallelLibrary* parallel_library_ptr() const;
   OutputManager* output_manager_ptr() const;
   RunOptions* run_options_ptr() const;
+  StudyServices* study_services_ptr() const;
+  std::shared_ptr<StudyServices> study_services() const;
   StudyRuntime study_runtime() const;
 
   /// Return the model ID of the "innermost" model. 
@@ -864,23 +865,12 @@ public:
 
 protected:
 
-  /// DI constructor using injected variables/response and optional runtime
-  /// services for study-wide behavior.
-  Model(std::shared_ptr<ParallelLibrary> parallel_lib,
-        std::shared_ptr<OutputManager> output_mgr,
-        const IRStore& model_store,
-	const Variables& variables,
-	const Response& response);
-
+  /// DI constructor using injected variables/response and study services.
   Model(std::shared_ptr<StudyServices> services,
         const IRStore& model_store,
 	const Variables& variables,
 	const Response& response);
 
-  Model(detail::ResolvedRuntime runtime,
-        const IRStore& model_store,
-	const Variables& variables,
-	const Response& response);
 
   //
   //- Heading: Constructors
@@ -1123,13 +1113,7 @@ protected:
   /// track use of initialize_mapping() and finalize_mapping()
   bool mappingInitialized;
 
-  /// optional owned runtime state for default-constructed library services
-  std::shared_ptr<detail::OwnedLibraryRuntime> ownedRuntime;
-
-  /// optional shared runtime services for DI/library-mode construction
-  std::shared_ptr<ParallelLibrary> sharedParallelLibrary;
-  std::shared_ptr<OutputManager> sharedOutputManager;
-  std::shared_ptr<RunOptions> sharedRunOptions;
+  /// shared runtime services for DI/library-mode construction
   std::shared_ptr<StudyServices> sharedStudyServices;
 
   /// class member reference to the problem description database

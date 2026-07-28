@@ -11,6 +11,10 @@
 
 #include "StudyConfig.hpp"
 
+#ifdef DAKOTA_HAVE_MPI
+#include <mpi.h>
+#endif
+
 #include <memory>
 
 namespace Dakota {
@@ -42,6 +46,10 @@ public:
   class ModelFactory;
 
   explicit Study(const StudyConfig& config = StudyConfig{});
+#ifdef DAKOTA_HAVE_MPI
+  Study(MPI_Comm dakota_mpi_comm,
+        const StudyConfig& config = StudyConfig{});
+#endif
   ~Study();
 
   std::shared_ptr<StudyServices> services() const;
@@ -58,6 +66,8 @@ public:
   void run(const std::shared_ptr<Iterator>& iterator) const;
 
 private:
+  Study(std::shared_ptr<MPIManager> mpi_manager, const StudyConfig& config);
+
   std::shared_ptr<MPIManager> mpiManager;
   std::shared_ptr<ProgramOptions> programOptions;
   std::shared_ptr<OutputManager> outputManager;

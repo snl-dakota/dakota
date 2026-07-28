@@ -177,19 +177,21 @@ void materialize_dot_blocks(InstructionMaterializer& materializer,
   model_store = materializer.materialize_block(model_json, irgen::BlockType::Model);
 }
 
-TEST(di_construction_tests, can_construct_pilot_components_from_irstores_without_explicit_services)
+TEST(di_construction_tests, can_construct_pilot_components_from_irstores_with_default_services)
 {
   InstructionMaterializer materializer;
   IRStore method_store, variables_store, responses_store, interface_store, model_store;
   materialize_pilot_blocks(materializer, method_store, variables_store,
                            responses_store, interface_store, model_store);
 
+  auto services = std::make_shared<StudyServices>();
   Variables variables(variables_store);
   Response response(responses_store, variables);
-  std::shared_ptr<Interface> interface = std::make_shared<ForkApplicInterface>(interface_store);
+  std::shared_ptr<Interface> interface = std::make_shared<ForkApplicInterface>(
+    interface_store, services);
   auto model = std::make_shared<SimulationModel>(
-    model_store, variables, interface, response);
-  NonDLHSSampling sampling(method_store, model);
+    model_store, variables, interface, response, services);
+  NonDLHSSampling sampling(method_store, model, services);
 
   EXPECT_EQ(variables.tv(), 2);
   EXPECT_EQ(response.num_functions(), 1);
@@ -304,7 +306,7 @@ TEST(di_construction_tests, can_construct_pilot_components_from_irstores_with_ex
   Variables variables(variables_store);
   Response response(responses_store, variables);
   std::shared_ptr<Interface> interface = std::make_shared<ForkApplicInterface>(
-    interface_store, runtime.parallelLibrary, runtime.outputManager);
+    interface_store, runtime.services);
   auto model = std::make_shared<SimulationModel>(
     model_store, variables, interface, response, runtime.services);
   NonDLHSSampling sampling(method_store, model, runtime.services);
@@ -329,100 +331,60 @@ TEST(di_construction_tests, throws_on_inconsistent_parent_child_runtime_services
   Variables variables(variables_store);
   Response response(responses_store, variables);
   auto interface = std::make_shared<ForkApplicInterface>(
-    interface_store, runtime_a.parallelLibrary, runtime_a.outputManager);
+    interface_store, runtime_a.services);
 
   EXPECT_THROW(
     std::make_shared<SimulationModel>(
-      model_store, variables, interface, response,
-      runtime_b.parallelLibrary, runtime_b.outputManager),
+      model_store, variables, interface, response, runtime_b.services),
     std::runtime_error);
 }
 
-TEST(di_construction_tests, resolve_runtime_accepts_matching_multiple_dependencies)
+TEST(di_construction_tests, validate_services_accepts_matching_multiple_dependencies)
 {
   ExplicitRuntime runtime;
 
-  auto resolved = detail::resolve_runtime(
-    std::shared_ptr<ParallelLibrary>(), std::shared_ptr<OutputManager>(),
-    {detail::RuntimeDependency("dep_a", runtime.parallelLibrary.get(),
-                               runtime.outputManager.get(),
-                               runtime.runOptions.get()),
-     detail::RuntimeDependency("dep_b", runtime.parallelLibrary.get(),
-                               runtime.outputManager.get(),
-                               runtime.runOptions.get())},
-    "Owner");
-
-  EXPECT_EQ(resolved.parallelLibrary, runtime.parallelLibrary.get());
-  EXPECT_EQ(resolved.outputManager, runtime.outputManager.get());
-  EXPECT_EQ(resolved.runOptions, runtime.runOptions.get());
+  EXPECT_NO_THROW(detail::validate_services(
+    "Owner", runtime.services,
+    {detail::RuntimeDependency("dep_a", runtime.services.get()),
+     detail::RuntimeDependency("dep_b", runtime.services.get())}));
 }
 
-TEST(di_construction_tests, resolve_runtime_uses_parallel_library_output_manager_when_dependency_output_manager_missing)
+TEST(di_construction_tests, validate_services_ignores_null_dependencies)
 {
   ExplicitRuntime runtime;
 
-  auto resolved = detail::resolve_runtime(
-    std::shared_ptr<ParallelLibrary>(), std::shared_ptr<OutputManager>(),
-    {detail::RuntimeDependency("dep", runtime.parallelLibrary.get(), nullptr,
-                               runtime.runOptions.get())},
-    "Owner");
-
-  EXPECT_EQ(resolved.parallelLibrary, runtime.parallelLibrary.get());
-  EXPECT_EQ(resolved.outputManager,
-            &runtime.parallelLibrary->output_manager());
-  EXPECT_EQ(resolved.runOptions, runtime.runOptions.get());
+  EXPECT_NO_THROW(detail::validate_services(
+    "Owner", runtime.services,
+    {detail::RuntimeDependency("dep", static_cast<const StudyServices*>(nullptr))}));
 }
 
-TEST(di_construction_tests, resolve_runtime_normalizes_partial_study_services)
+TEST(di_construction_tests, validate_services_throws_on_missing_owner_services)
 {
-  ExplicitRuntime runtime;
-  auto partial_services = std::make_shared<StudyServices>(
-    runtime.parallelLibrary, nullptr, nullptr);
-
-  auto resolved = detail::resolve_runtime(partial_services);
-
-  ASSERT_TRUE(resolved.sharedStudyServices);
-  EXPECT_EQ(resolved.parallelLibrary, runtime.parallelLibrary.get());
-  EXPECT_EQ(resolved.outputManager, runtime.outputManager.get());
-  EXPECT_NE(resolved.sharedStudyServices.get(), partial_services.get());
-  EXPECT_EQ(resolved.sharedStudyServices->output_manager_ptr(),
-            runtime.outputManager.get());
-  EXPECT_TRUE(resolved.sharedStudyServices->run_options_ptr());
+  EXPECT_THROW(
+    detail::validate_services("Owner", std::shared_ptr<StudyServices>()),
+    std::runtime_error);
 }
 
-TEST(di_construction_tests, resolve_runtime_throws_on_conflicting_multiple_dependencies)
+TEST(di_construction_tests, validate_services_throws_on_conflicting_multiple_dependencies)
 {
   ExplicitRuntime runtime_a;
   ExplicitRuntime runtime_b;
 
   EXPECT_THROW(
-    detail::resolve_runtime(
-      std::shared_ptr<ParallelLibrary>(), std::shared_ptr<OutputManager>(),
-      {detail::RuntimeDependency("dep_a", runtime_a.parallelLibrary.get(),
-                                 runtime_a.outputManager.get(),
-                                 runtime_a.runOptions.get()),
-       detail::RuntimeDependency("dep_b", runtime_b.parallelLibrary.get(),
-                                 runtime_b.outputManager.get(),
-                                 runtime_b.runOptions.get())},
-      "Owner"),
+    detail::validate_services(
+      "Owner", runtime_a.services,
+      {detail::RuntimeDependency("dep_a", runtime_a.services.get()),
+       detail::RuntimeDependency("dep_b", runtime_b.services.get())}),
     std::runtime_error);
 }
 
-
-TEST(di_construction_tests, resolve_runtime_throws_on_conflicting_run_options_values)
+TEST(di_construction_tests, study_services_can_construct_owned_default_bundle)
 {
-  ExplicitRuntime runtime;
-  auto alternate_run_options = std::make_shared<RunOptions>(*runtime.runOptions);
-  alternate_run_options->run = !alternate_run_options->run;
+  auto services = std::make_shared<StudyServices>();
 
-  EXPECT_THROW(
-    detail::resolve_runtime(
-      runtime.parallelLibrary, runtime.outputManager,
-      {detail::RuntimeDependency("dep", runtime.parallelLibrary.get(),
-                                 runtime.outputManager.get(),
-                                 alternate_run_options.get())},
-      "Owner"),
-    std::runtime_error);
+  ASSERT_TRUE(services->parallel_library_ptr());
+  ASSERT_TRUE(services->output_manager_ptr());
+  ASSERT_TRUE(services->run_options_ptr());
 }
 
 TEST(di_construction_tests, can_construct_concurrent_meta_iterator_from_irstore)
@@ -438,7 +400,7 @@ TEST(di_construction_tests, can_construct_concurrent_meta_iterator_from_irstore)
   Variables variables(variables_store);
   Response response(responses_store, variables);
   auto interface = std::make_shared<ForkApplicInterface>(
-    interface_store, runtime.parallelLibrary, runtime.outputManager);
+    interface_store, runtime.services);
   auto simulation_model = std::make_shared<SimulationModel>(
     model_store, variables, interface, response, runtime.services);
   auto sub_iterator = std::make_shared<NonDLHSSampling>(
@@ -466,7 +428,7 @@ TEST(di_construction_tests, can_construct_dot_optimizer_from_irstore)
   Variables variables(variables_store);
   Response response(responses_store, variables);
   auto interface = std::make_shared<ForkApplicInterface>(
-    interface_store, runtime.parallelLibrary, runtime.outputManager);
+    interface_store, runtime.services);
   auto simulation_model = std::make_shared<SimulationModel>(
     model_store, variables, interface, response, runtime.services);
 
@@ -490,7 +452,7 @@ TEST(di_construction_tests, can_construct_nested_model_from_irstore_without_opti
   Variables variables(variables_store);
   Response response(responses_store, variables);
   auto interface = std::make_shared<ForkApplicInterface>(
-    interface_store, runtime.parallelLibrary, runtime.outputManager);
+    interface_store, runtime.services);
   auto simulation_model = std::make_shared<SimulationModel>(
     model_store, variables, interface, response, runtime.services);
   auto sub_iterator = std::make_shared<NonDLHSSampling>(
@@ -519,9 +481,9 @@ TEST(di_construction_tests, can_construct_nested_model_from_irstore_with_optiona
   Variables variables(variables_store);
   Response response(responses_store, variables);
   auto simulation_interface = std::make_shared<ForkApplicInterface>(
-    interface_store, runtime.parallelLibrary, runtime.outputManager);
+    interface_store, runtime.services);
   auto optional_interface = std::make_shared<ForkApplicInterface>(
-    interface_store, runtime.parallelLibrary, runtime.outputManager);
+    interface_store, runtime.services);
   auto simulation_model = std::make_shared<SimulationModel>(
     model_store, variables, simulation_interface, response, runtime.services);
   auto sub_iterator = std::make_shared<NonDLHSSampling>(
@@ -550,7 +512,7 @@ TEST(di_construction_tests, nested_model_throws_when_subiterator_has_no_model)
 
   EXPECT_THROW(
     NestedModel(make_nested_model_store(model_store), sub_iterator, nullptr,
-                variables, response),
+                variables, response, std::make_shared<StudyServices>()),
     std::runtime_error);
 }
 
@@ -567,19 +529,17 @@ TEST(di_construction_tests, nested_model_throws_on_inconsistent_runtime_services
   Variables variables(variables_store);
   Response response(responses_store, variables);
   auto simulation_interface = std::make_shared<ForkApplicInterface>(
-    interface_store, runtime_a.parallelLibrary, runtime_a.outputManager);
+    interface_store, runtime_a.services);
   auto optional_interface = std::make_shared<ForkApplicInterface>(
-    interface_store, runtime_b.parallelLibrary, runtime_b.outputManager);
+    interface_store, runtime_b.services);
   auto simulation_model = std::make_shared<SimulationModel>(
-    model_store, variables, simulation_interface, response,
-    runtime_a.parallelLibrary, runtime_a.outputManager);
+    model_store, variables, simulation_interface, response, runtime_a.services);
   auto sub_iterator = std::make_shared<NonDLHSSampling>(
-    method_store, simulation_model, runtime_a.parallelLibrary,
-    runtime_a.outputManager);
+    method_store, simulation_model, runtime_a.services);
 
   EXPECT_THROW(
     NestedModel(make_nested_model_store(model_store), sub_iterator,
-                optional_interface, variables, response),
+                optional_interface, variables, response, runtime_a.services),
     std::runtime_error);
 }
 

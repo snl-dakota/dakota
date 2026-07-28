@@ -103,7 +103,20 @@ void apply_run_options_to_program_options(ProgramOptions& program_options,
 } // namespace
 
 Study::Study(const StudyConfig& config):
-  mpiManager(std::make_shared<MPIManager>()),
+  Study(std::make_shared<MPIManager>(), config)
+{ }
+
+
+#ifdef DAKOTA_HAVE_MPI
+Study::Study(MPI_Comm dakota_mpi_comm, const StudyConfig& config):
+  Study(std::make_shared<MPIManager>(dakota_mpi_comm), config)
+{ }
+#endif
+
+
+Study::Study(std::shared_ptr<MPIManager> mpi_manager,
+             const StudyConfig& config):
+  mpiManager(std::move(mpi_manager)),
   programOptions(std::make_shared<ProgramOptions>(mpiManager->world_rank()))
 {
   WorkdirHelper::initialize();
@@ -123,13 +136,13 @@ Study::Study(const StudyConfig& config):
   studyRuntime = std::make_shared<StudyRuntime>(
     *parallelLibrary, outputManager.get());
 
-  outputManager->push_output_tag("", *programOptions, false, true);
+  parallelLibrary->push_output_tag(*parallelLibrary->w_parallel_level_iterator());
 }
 
 Study::~Study()
 {
-  if (outputManager)
-    outputManager->pop_output_tag();
+  if (parallelLibrary)
+    parallelLibrary->pop_output_tag(*parallelLibrary->w_parallel_level_iterator());
 }
 
 std::shared_ptr<StudyServices> Study::services() const
@@ -151,7 +164,7 @@ std::shared_ptr<Interface> Study::interface(const IRStore& interface_store) cons
 
   if (interface_type == FORK_INTERFACE)
     return std::make_shared<ForkApplicInterface>(
-      interface_store, parallelLibrary, outputManager);
+      interface_store, studyServices);
 
   throw std::runtime_error(
     "Study::interface currently supports only fork interfaces.");

@@ -51,15 +51,8 @@ protected:
   MetaIterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
   /// alternate constructor
   MetaIterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
-  /// DI constructor using method IR plus optional runtime services
-  MetaIterator(std::shared_ptr<ParallelLibrary> parallel_lib,
-               std::shared_ptr<OutputManager> output_mgr,
-               const IRStore& method_store,
-               std::shared_ptr<Model> model);
+  /// DI constructor using method IR plus study services
   MetaIterator(std::shared_ptr<StudyServices> services,
-               const IRStore& method_store,
-               std::shared_ptr<Model> model);
-  MetaIterator(detail::ResolvedRuntime runtime,
                const IRStore& method_store,
                std::shared_ptr<Model> model);
   /// destructor

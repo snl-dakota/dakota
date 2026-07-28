@@ -64,9 +64,6 @@ protected:
   /// standard constructor
   Analyzer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
   /// DI constructor using method IR plus optional runtime services
-  Analyzer(std::shared_ptr<ParallelLibrary> parallel_lib,
-           std::shared_ptr<OutputManager> output_mgr,
-           const IRStore& method_store, std::shared_ptr<Model> model);
   Analyzer(std::shared_ptr<StudyServices> services,
            const IRStore& method_store, std::shared_ptr<Model> model);
   /// alternate constructor for instantiations "on the fly" with a Model

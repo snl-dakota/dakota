@@ -66,16 +66,16 @@ Analyzer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_p
 Analyzer::
 Analyzer(std::shared_ptr<StudyServices> services,
          const IRStore& method_store, std::shared_ptr<Model> model):
-  Iterator(detail::resolve_runtime(
-             std::move(services),
-             {detail::runtime_dependency("Model", model)},
-             "Analyzer"),
-           method_store),
+  Iterator(std::move(services), method_store),
   compactMode(true),
   numObjFns(0), numLSqTerms(0),
   vbdFlag(method_store.get<bool>("variance_based_decomp")),
   writePrecision(output_manager_ptr()->write_precision())
 {
+  detail::validate_services(
+    "Analyzer", study_services(),
+    {detail::runtime_dependency("Model", model)});
+
   iteratedModel = model;
   update_from_model(*iteratedModel);
 
@@ -97,41 +97,6 @@ Analyzer(std::shared_ptr<StudyServices> services,
     numFinalSolutions = 1;
 }
 
-
-Analyzer::
-Analyzer(std::shared_ptr<ParallelLibrary> parallel_lib,
-         std::shared_ptr<OutputManager> output_mgr,
-         const IRStore& method_store, std::shared_ptr<Model> model):
-  Iterator(detail::resolve_runtime(
-             std::move(parallel_lib), std::move(output_mgr),
-             {detail::runtime_dependency("Model", model)},
-             "Analyzer"),
-           method_store),
-  compactMode(true),
-  numObjFns(0), numLSqTerms(0),
-  vbdFlag(method_store.get<bool>("variance_based_decomp")),
-  writePrecision(output_manager_ptr() ? output_manager_ptr()->write_precision() : 0)
-{
-  iteratedModel = model;
-  update_from_model(*iteratedModel);
-
-  if (convergenceTol < 0.) convergenceTol = 1.e-4;
-
-  if (model->primary_fn_type() == OBJECTIVE_FNS)
-    numObjFns = model->num_primary_fns();
-  else if (model->primary_fn_type() == CALIB_TERMS)
-    numLSqTerms = model->num_primary_fns();
-  else if (model->primary_fn_type() != GENERIC_FNS) {
-    Cerr << "\nError: Unknown primary function type in Analyzer." << std::endl;
-    abort_handler(METHOD_ERROR);
-  }
-
-  if (vbdFlag)
-    vbdDropTol = method_store.get<Real>("vbd_drop_tolerance");
-
-  if (!numFinalSolutions)
-    numFinalSolutions = 1;
-}
 
 
 Analyzer::

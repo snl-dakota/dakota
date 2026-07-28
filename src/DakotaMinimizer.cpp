@@ -75,11 +75,7 @@ Minimizer::
 Minimizer(std::shared_ptr<StudyServices> services,
           const IRStore& method_store, std::shared_ptr<Model> model,
           std::shared_ptr<TraitsBase> traits):
-  Iterator(detail::resolve_runtime(
-             std::move(services),
-             {detail::runtime_dependency("Model", model)},
-             "Minimizer"),
-           method_store, traits),
+  Iterator(std::move(services), method_store, traits),
   constraintTol(method_store.get<Real>("constraint_tolerance")),
   bigRealBoundSize(BIG_REAL_BOUND), bigIntBoundSize(1000000000),
   boundConstraintFlag(false),
@@ -90,6 +86,10 @@ Minimizer(std::shared_ptr<StudyServices> services,
   numExperiments(0), numTotalCalibTerms(0),
   scaleFlag(method_store.get<bool>("scaling"))
 {
+  detail::validate_services(
+    "Minimizer", study_services(),
+    {detail::runtime_dependency("Model", model)});
+
   iteratedModel = model;
   update_from_model(*iteratedModel);
 
@@ -99,35 +99,6 @@ Minimizer(std::shared_ptr<StudyServices> services,
     numFinalSolutions = 1;
 }
 
-
-Minimizer::
-Minimizer(std::shared_ptr<ParallelLibrary> parallel_lib,
-          std::shared_ptr<OutputManager> output_mgr,
-          const IRStore& method_store, std::shared_ptr<Model> model,
-          std::shared_ptr<TraitsBase> traits):
-  Iterator(detail::resolve_runtime(
-             std::move(parallel_lib), std::move(output_mgr),
-             {detail::runtime_dependency("Model", model)},
-             "Minimizer"),
-           method_store, traits),
-  constraintTol(method_store.get<Real>("constraint_tolerance")),
-  bigRealBoundSize(BIG_REAL_BOUND), bigIntBoundSize(1000000000),
-  boundConstraintFlag(false),
-  speculativeFlag(method_store.get<bool>("speculative")),
-  optimizationFlag(true),
-  calibrationDataFlag(false),
-  expData(),
-  numExperiments(0), numTotalCalibTerms(0),
-  scaleFlag(method_store.get<bool>("scaling"))
-{
-  iteratedModel = model;
-  update_from_model(*iteratedModel);
-
-  if (maxIterations == SZ_MAX)    maxIterations = 100;
-  if (maxFunctionEvals == SZ_MAX) maxFunctionEvals = 1000;
-  if (!numFinalSolutions && methodName != MOGA)
-    numFinalSolutions = 1;
-}
 
 
 Minimizer::

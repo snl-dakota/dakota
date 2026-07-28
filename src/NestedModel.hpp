@@ -59,13 +59,6 @@ public:
               std::shared_ptr<Interface> optional_interface,
               const Variables& variables,
               const Response& response,
-              std::shared_ptr<ParallelLibrary> parallel_lib = nullptr,
-              std::shared_ptr<OutputManager> output_mgr = nullptr);
-  NestedModel(const IRStore& model_store,
-              std::shared_ptr<Iterator> sub_iterator,
-              std::shared_ptr<Interface> optional_interface,
-              const Variables& variables,
-              const Response& response,
               std::shared_ptr<StudyServices> services);
 
   void declare_sources() override;

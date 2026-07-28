@@ -83,28 +83,6 @@ DOTOptimizer::DOTOptimizer(const IRStore& method_store,
 
 
 
-DOTOptimizer::DOTOptimizer(const IRStore& method_store,
-                           std::shared_ptr<Model> model,
-                           std::shared_ptr<ParallelLibrary> parallel_lib,
-                           std::shared_ptr<OutputManager> output_mgr):
-  Optimizer(std::move(parallel_lib), std::move(output_mgr), method_store,
-            model, std::shared_ptr<TraitsBase>(new DOTTraits())),
-  realCntlParmArray(20, 0.0),
-  intCntlParmArray(20, 0)
-{
-  if (speculativeFlag && vendorNumericalGradFlag)
-    Cerr << "\nWarning: speculative method specification is ignored for"
-         << "\n         vendor numerical gradients.\n\n";
-
-  if (outputLevel > NORMAL_OUTPUT) {
-    printControl = 7;
-    Cout << "DOT print control = " << printControl << std::endl;
-  }
-  else
-    printControl = 3;
-
-  initialize();
-}
 
 
 

@@ -96,32 +96,12 @@ Iterator::Iterator(ProblemDescDB& problem_db,
 }
 
 
-Iterator::Iterator(std::shared_ptr<ParallelLibrary> parallel_lib,
-                   std::shared_ptr<OutputManager> output_mgr,
-                   const IRStore& method_store,
-		   std::shared_ptr<TraitsBase> traits):
-  Iterator(detail::resolve_runtime(std::move(parallel_lib), std::move(output_mgr)),
-           method_store, traits)
-{ }
-
-
 Iterator::Iterator(std::shared_ptr<StudyServices> services,
                    const IRStore& method_store,
 		   std::shared_ptr<TraitsBase> traits):
-  Iterator(detail::resolve_runtime(std::move(services)), method_store, traits)
-{ }
-
-
-Iterator::Iterator(detail::ResolvedRuntime runtime,
-                   const IRStore& method_store,
-		   std::shared_ptr<TraitsBase> traits):
-  ownedRuntime(std::move(runtime.ownedRuntime)),
-  sharedParallelLibrary(std::move(runtime.sharedParallelLibrary)),
-  sharedOutputManager(std::move(runtime.sharedOutputManager)),
-  sharedRunOptions(std::move(runtime.sharedRunOptions)),
-  sharedStudyServices(std::move(runtime.sharedStudyServices)),
-  probDescDB(dummy_db), parallelLib(*runtime.parallelLibrary),
-  runOptions(*runtime.runOptions),
+  sharedStudyServices(detail::require_services("Iterator", std::move(services))),
+  probDescDB(dummy_db), parallelLib(*sharedStudyServices->parallel_library_ptr()),
+  runOptions(*sharedStudyServices->run_options_ptr()),
   methodPCIter(parallelLib.parallel_configuration_iterator()),
   myModelLayers(0), methodName(method_store.get<unsigned short>("algorithm")),
   convergenceTol(method_store.get<Real>("convergence_tolerance")),
@@ -1329,6 +1309,18 @@ OutputManager* Iterator::output_manager_ptr() const
 RunOptions* Iterator::run_options_ptr() const
 {
   return &runOptions;
+}
+
+
+StudyServices* Iterator::study_services_ptr() const
+{
+  return sharedStudyServices.get();
+}
+
+
+std::shared_ptr<StudyServices> Iterator::study_services() const
+{
+  return sharedStudyServices;
 }
 
 

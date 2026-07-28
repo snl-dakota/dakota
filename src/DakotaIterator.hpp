@@ -22,7 +22,6 @@ namespace Dakota {
 
 class OutputManager;
 class StudyRuntime;
-namespace detail { class OwnedLibraryRuntime; struct ResolvedRuntime; }
 class RunOptions;
 class StudyServices;
 
@@ -340,6 +339,8 @@ public:
   ParallelLibrary* parallel_library_ptr() const;
   OutputManager* output_manager_ptr() const;
   RunOptions* run_options_ptr() const;
+  StudyServices* study_services_ptr() const;
+  std::shared_ptr<StudyServices> study_services() const;
   StudyRuntime study_runtime() const;
 
   /// set the method name to an enumeration value
@@ -435,22 +436,12 @@ protected:
   Iterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, 
 	   std::shared_ptr<TraitsBase> traits =
 	   std::shared_ptr<TraitsBase>(new TraitsBase()));
-  /// DI constructor using a method IR store plus optional runtime services
-  Iterator(std::shared_ptr<ParallelLibrary> parallel_lib,
-           std::shared_ptr<OutputManager> output_mgr,
-           const IRStore& method_store,
-	   std::shared_ptr<TraitsBase> traits =
-	   std::shared_ptr<TraitsBase>(new TraitsBase()));
-
+  /// DI constructor using a method IR store plus study services
   Iterator(std::shared_ptr<StudyServices> services,
            const IRStore& method_store,
 	   std::shared_ptr<TraitsBase> traits =
 	   std::shared_ptr<TraitsBase>(new TraitsBase()));
 
-  Iterator(detail::ResolvedRuntime runtime,
-           const IRStore& method_store,
-	   std::shared_ptr<TraitsBase> traits =
-	   std::shared_ptr<TraitsBase>(new TraitsBase()));
 
   /// alternate constructor for base iterator classes constructed on the fly
   Iterator(unsigned short method_name, std::shared_ptr<Model> model,
@@ -508,13 +499,7 @@ protected:
   /// employing a single model instance)
   std::shared_ptr<Model> iteratedModel;
 
-  /// optional owned runtime state for default-constructed library services
-  std::shared_ptr<detail::OwnedLibraryRuntime> ownedRuntime;
-
-  /// optional shared runtime services for DI/library-mode construction
-  std::shared_ptr<ParallelLibrary> sharedParallelLibrary;
-  std::shared_ptr<OutputManager> sharedOutputManager;
-  std::shared_ptr<RunOptions> sharedRunOptions;
+  /// shared runtime services for DI/library-mode construction
   std::shared_ptr<StudyServices> sharedStudyServices;
 
   /// class member reference to the problem description database

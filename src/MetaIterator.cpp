@@ -57,47 +57,24 @@ MetaIterator::MetaIterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_
 }
 
 
-MetaIterator::MetaIterator(std::shared_ptr<ParallelLibrary> parallel_lib,
-                           std::shared_ptr<OutputManager> output_mgr,
-                           const IRStore& method_store,
-                           std::shared_ptr<Model> model):
-  MetaIterator(detail::resolve_runtime(
-                 std::move(parallel_lib), std::move(output_mgr),
-                 {detail::runtime_dependency("Model", model)},
-                 "MetaIterator"),
-               method_store, model)
-{
-}
-
-
 MetaIterator::MetaIterator(std::shared_ptr<StudyServices> services,
                            const IRStore& method_store,
                            std::shared_ptr<Model> model):
-  MetaIterator(detail::resolve_runtime(
-                 std::move(services),
-                 {detail::runtime_dependency("Model", model)},
-                 "MetaIterator"),
-               method_store, model)
-{
-}
-
-
-MetaIterator::MetaIterator(detail::ResolvedRuntime runtime,
-                           const IRStore& method_store,
-                           std::shared_ptr<Model> model):
-  Iterator(std::move(runtime), method_store),
+  Iterator(std::move(services), method_store),
   iterSched(study_runtime().create_iterator_context(
               false,
               method_store.get<int>("iterator_servers"),
               method_store.get<int>("processors_per_iterator"),
               method_store.get<short>("iterator_scheduling")))
 {
+  detail::validate_services(
+    "MetaIterator", study_services(),
+    {detail::runtime_dependency("Model", model)});
+
   iteratedModel = model;
 
-  if (convergenceTol < 0.0) convergenceTol = 1.0e-4;
-
-  if (!numFinalSolutions)
-    numFinalSolutions = 1;
+  if (!numFinalSolutions)  // default is zero
+    numFinalSolutions = 1; // iterator-specific default assignment
 }
 
 

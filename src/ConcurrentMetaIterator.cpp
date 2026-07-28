@@ -146,17 +146,17 @@ ConcurrentMetaIterator::
 ConcurrentMetaIterator(const IRStore& method_store,
                        std::shared_ptr<Iterator> sub_iterator,
                        std::shared_ptr<StudyServices> services):
-  MetaIterator(detail::resolve_runtime(
-                 std::move(services),
-                 {detail::runtime_dependency("Iterator", sub_iterator),
-                  detail::runtime_dependency("Model",
-                                             sub_iterator ? sub_iterator->iterated_model() : nullptr)},
-                 "ConcurrentMetaIterator"),
-               method_store,
+  MetaIterator(std::move(services), method_store,
                sub_iterator ? sub_iterator->iterated_model() : nullptr),
   numRandomJobs(method_store.get<int>("concurrent.random_jobs")),
   randomSeed(method_store.get<int>("random_seed"))
 {
+  detail::validate_services(
+    "ConcurrentMetaIterator", study_services(),
+    {detail::runtime_dependency("Iterator", sub_iterator),
+     detail::runtime_dependency("Model",
+                                sub_iterator ? sub_iterator->iterated_model() : nullptr)});
+
   if (!sub_iterator)
     throw std::runtime_error(
       "ConcurrentMetaIterator requires a non-null sub_iterator in DI construction.");
@@ -180,45 +180,6 @@ ConcurrentMetaIterator(const IRStore& method_store,
       "ConcurrentMetaIterator requires at least one parameter set or random job.");
 }
 
-
-ConcurrentMetaIterator::
-ConcurrentMetaIterator(const IRStore& method_store,
-                       std::shared_ptr<Iterator> sub_iterator,
-                       std::shared_ptr<ParallelLibrary> parallel_lib,
-                       std::shared_ptr<OutputManager> output_mgr):
-  MetaIterator(detail::resolve_runtime(
-                 std::move(parallel_lib), std::move(output_mgr),
-                 {detail::runtime_dependency("Iterator", sub_iterator),
-                  detail::runtime_dependency("Model",
-                                             sub_iterator ? sub_iterator->iterated_model() : nullptr)},
-                 "ConcurrentMetaIterator"),
-               method_store,
-               sub_iterator ? sub_iterator->iterated_model() : nullptr),
-  numRandomJobs(method_store.get<int>("concurrent.random_jobs")),
-  randomSeed(method_store.get<int>("random_seed"))
-{
-  if (!sub_iterator)
-    throw std::runtime_error(
-      "ConcurrentMetaIterator requires a non-null sub_iterator in DI construction.");
-
-  if (!iteratedModel)
-    throw std::runtime_error(
-      "ConcurrentMetaIterator requires sub_iterator->iterated_model() in DI construction.");
-
-  selectedIterator = std::move(sub_iterator);
-
-  const RealVector& raw_param_sets =
-    method_store.get<RealVector>("concurrent.parameter_sets");
-
-  initialize_model();
-  copy_data(raw_param_sets, parameterSets, 0, paramSetLen);
-
-  maxIteratorConcurrency = iterSched.numIteratorJobs()
-    = parameterSets.size() + numRandomJobs;
-  if (!maxIteratorConcurrency)
-    throw std::runtime_error(
-      "ConcurrentMetaIterator requires at least one parameter set or random job.");
-}
 
 
 void ConcurrentMetaIterator::declare_sources() {

@@ -43,10 +43,6 @@ public:
   SimulationModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib); ///< constructor
   SimulationModel(const IRStore& model_store, const Variables& variables,
                   std::shared_ptr<Interface> interface, const Response& response,
-                  std::shared_ptr<ParallelLibrary> parallel_lib = nullptr,
-                  std::shared_ptr<OutputManager> output_mgr = nullptr); ///< DI constructor
-  SimulationModel(const IRStore& model_store, const Variables& variables,
-                  std::shared_ptr<Interface> interface, const Response& response,
                   std::shared_ptr<StudyServices> services); ///< DI constructor
   
   /// Return the "default" or maximal ActiveSet for the model

@@ -159,36 +159,27 @@ RunOptions* ApplicationInterface::run_options_ptr() const
 }
 
 
+StudyServices* ApplicationInterface::study_services_ptr() const
+{
+  return sharedStudyServices.get();
+}
 
 
-ApplicationInterface::
-ApplicationInterface(const IRStore& interface_store,
-                     std::shared_ptr<ParallelLibrary> parallel_lib,
-                     std::shared_ptr<OutputManager> output_mgr):
-  ApplicationInterface(interface_store,
-                       detail::resolve_runtime(std::move(parallel_lib),
-                                               std::move(output_mgr)))
-{ }
+std::shared_ptr<StudyServices> ApplicationInterface::study_services() const
+{
+  return sharedStudyServices;
+}
+
+
 
 
 ApplicationInterface::
 ApplicationInterface(const IRStore& interface_store,
                      std::shared_ptr<StudyServices> services):
-  ApplicationInterface(interface_store, detail::resolve_runtime(std::move(services)))
-{ }
-
-
-ApplicationInterface::
-ApplicationInterface(const IRStore& interface_store,
-                     detail::ResolvedRuntime runtime):
   Interface(interface_store),
-  ownedRuntime(std::move(runtime.ownedRuntime)),
-  sharedParallelLibrary(std::move(runtime.sharedParallelLibrary)),
-  sharedOutputManager(std::move(runtime.sharedOutputManager)),
-  sharedRunOptions(std::move(runtime.sharedRunOptions)),
-  sharedStudyServices(std::move(runtime.sharedStudyServices)),
-  parallelLib(*runtime.parallelLibrary),
-  runOptions(*runtime.runOptions),
+  sharedStudyServices(detail::require_services("ApplicationInterface", std::move(services))),
+  parallelLib(*sharedStudyServices->parallel_library_ptr()),
+  runOptions(*sharedStudyServices->run_options_ptr()),
   batchEval(interface_store.get<bool>("batch")),
   asynchFlag(interface_store.get<bool>("asynch")),
   batchIdCntr(0),

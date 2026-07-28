@@ -15,6 +15,8 @@
 
 namespace Dakota {
 
+class StudyServices;
+
 class IRStore;
 class OutputManager;
 
@@ -36,8 +38,7 @@ public:
   ForkApplicInterface(const ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
   /// DI constructor from a materialized interface IR store
   ForkApplicInterface(const IRStore& interface_store,
-                      std::shared_ptr<ParallelLibrary> parallel_lib = nullptr,
-                      std::shared_ptr<OutputManager> output_mgr = nullptr);
+                      std::shared_ptr<StudyServices> services);
   /// destructor
   ~ForkApplicInterface() override;
 

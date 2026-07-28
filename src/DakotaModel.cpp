@@ -1001,26 +1001,7 @@ void initialize_constraints_from_variables(
   }
 }
 
-Model::Model(std::shared_ptr<ParallelLibrary> parallel_lib,
-	     std::shared_ptr<OutputManager> output_mgr,
-	     const IRStore& model_store,
-	     const Variables& variables,
-	     const Response& response):
-  Model(detail::resolve_runtime(std::move(parallel_lib), std::move(output_mgr)),
-        model_store, variables, response)
-{ }
-
-
 Model::Model(std::shared_ptr<StudyServices> services,
-	     const IRStore& model_store,
-	     const Variables& variables,
-	     const Response& response):
-  Model(detail::resolve_runtime(std::move(services)), model_store, variables,
-        response)
-{ }
-
-
-Model::Model(detail::ResolvedRuntime runtime,
 	     const IRStore& model_store,
 	     const Variables& variables,
 	     const Response& response):
@@ -1048,13 +1029,9 @@ Model::Model(detail::ResolvedRuntime runtime,
   hessIdNumerical(currentResponse.hessian_config().id_numerical),
   hessIdQuasi(currentResponse.hessian_config().id_quasi),
   warmStartFlag(false), supportsEstimDerivs(true), mappingInitialized(false),
-  ownedRuntime(std::move(runtime.ownedRuntime)),
-  sharedParallelLibrary(std::move(runtime.sharedParallelLibrary)),
-  sharedOutputManager(std::move(runtime.sharedOutputManager)),
-  sharedRunOptions(std::move(runtime.sharedRunOptions)),
-  sharedStudyServices(std::move(runtime.sharedStudyServices)),
-  probDescDB(dummy_db), parallelLib(*runtime.parallelLibrary),
-  runOptions(*runtime.runOptions),
+  sharedStudyServices(detail::require_services("Model", std::move(services))),
+  probDescDB(dummy_db), parallelLib(*sharedStudyServices->parallel_library_ptr()),
+  runOptions(*sharedStudyServices->run_options_ptr()),
   modelPCIter(parallelLib.parallel_configuration_iterator()),
   componentParallelMode(NO_PARALLEL_MODE), asynchEvalFlag(false),
   evaluationCapacity(1),
@@ -1161,6 +1138,18 @@ OutputManager* Model::output_manager_ptr() const
 RunOptions* Model::run_options_ptr() const
 {
   return &runOptions;
+}
+
+
+StudyServices* Model::study_services_ptr() const
+{
+  return sharedStudyServices.get();
+}
+
+
+std::shared_ptr<StudyServices> Model::study_services() const
+{
+  return sharedStudyServices;
 }
 
 

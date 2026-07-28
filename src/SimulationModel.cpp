@@ -28,10 +28,6 @@ SimulationModel::SimulationModel(ProblemDescDB& problem_db, ParallelLibrary& par
   solnCntlADVIndex(_NPOS), solnCntlAVIndex(_NPOS), costMetadataIndex(_NPOS),
   simModelEvalCntr(0)
 {
-  detail::validate_runtime_consistency("SimulationModel", parallel_library_ptr(),
-                                     output_manager_ptr(), "Interface",
-                                     userDefinedInterface->parallel_library_ptr(),
-                                     userDefinedInterface->output_manager_ptr());
   componentParallelMode = INTERFACE_MODE;
   ignoreBounds = currentResponse.gradient_config().ignore_bounds;
   centralHess  = (currentResponse.hessian_config().interval_type ==
@@ -55,43 +51,15 @@ SimulationModel::SimulationModel(const IRStore& model_store,
                                  std::shared_ptr<Interface> interface,
                                  const Response& response,
                                  std::shared_ptr<StudyServices> services):
-  Model(detail::resolve_runtime(
-          std::move(services),
-          {detail::runtime_dependency("Interface", interface)},
-          "SimulationModel"),
-        model_store, variables, response),
+  Model(std::move(services), model_store, variables, response),
   userDefinedInterface(std::move(interface)), solnCntlVarType(EMPTY_TYPE),
   solnCntlADVIndex(_NPOS), solnCntlAVIndex(_NPOS), costMetadataIndex(_NPOS),
   simModelEvalCntr(0)
 {
-  componentParallelMode = INTERFACE_MODE;
-  ignoreBounds = currentResponse.gradient_config().ignore_bounds;
-  centralHess  = (currentResponse.hessian_config().interval_type ==
-                  Response::IntervalType::Central);
+  detail::validate_services(
+    "SimulationModel", study_services(),
+    {detail::runtime_dependency("Interface", userDefinedInterface)});
 
-  initialize_solution_control(
-    model_store.get<String>("simulation.solution_level_control"),
-    model_store.get<RealVector>("simulation.solution_level_cost"));
-
-  initialize_solution_recovery(
-    model_store.get<String>("simulation.cost_recovery_metadata"));
-}
-
-SimulationModel::SimulationModel(const IRStore& model_store,
-                                 const Variables& variables,
-                                 std::shared_ptr<Interface> interface,
-                                 const Response& response,
-                                 std::shared_ptr<ParallelLibrary> parallel_lib,
-                                 std::shared_ptr<OutputManager> output_mgr):
-  Model(detail::resolve_runtime(
-          std::move(parallel_lib), std::move(output_mgr),
-          {detail::runtime_dependency("Interface", interface)},
-          "SimulationModel"),
-        model_store, variables, response),
-  userDefinedInterface(std::move(interface)), solnCntlVarType(EMPTY_TYPE),
-  solnCntlADVIndex(_NPOS), solnCntlAVIndex(_NPOS), costMetadataIndex(_NPOS),
-  simModelEvalCntr(0)
-{
   componentParallelMode = INTERFACE_MODE;
   ignoreBounds = currentResponse.gradient_config().ignore_bounds;
   centralHess  = (currentResponse.hessian_config().interval_type ==

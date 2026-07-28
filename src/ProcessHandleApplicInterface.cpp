@@ -31,9 +31,8 @@ ProcessHandleApplicInterface(const ProblemDescDB& problem_db, ParallelLibrary& p
 
 ProcessHandleApplicInterface::
 ProcessHandleApplicInterface(const IRStore& interface_store,
-                             std::shared_ptr<ParallelLibrary> parallel_lib,
-                             std::shared_ptr<OutputManager> output_mgr):
-  ProcessApplicInterface(interface_store, std::move(parallel_lib), std::move(output_mgr)), argList(3)
+                             std::shared_ptr<StudyServices> services):
+  ProcessApplicInterface(interface_store, std::move(services)), argList(3)
 { }
 
 

@@ -373,7 +373,7 @@ set(Dakota_src ${DAKOTA_BUILDINFO_PATH}DakotaBuildInfo.cpp
   ${Dakota_BINARY_DIR}/generated/src/ir/generated_ir_types.hpp)
 
 ## UTIL sources.
-set(util_src ParallelLibrary.cpp IteratorExecutor.cpp StudyRuntime.cpp Study.cpp MPIPackBuffer.cpp
+set(util_src ParallelLibrary.cpp IteratorExecutor.cpp StudyRuntime.cpp Study.cpp StudyServices.cpp MPIPackBuffer.cpp
     dakota_data_util.cpp dakota_data_io.cpp dakota_global_defs.cpp 
     dakota_linear_algebra.cpp dakota_preproc_util.cpp
     dakota_stat_util.cpp dakota_tabular_io.cpp
@@ -1091,10 +1091,15 @@ add_executable(dakota_di_nested_model_demo di_nested_model_demo.cpp)
 add_executable(dakota_di_concurrent_meta_iterator_demo di_concurrent_meta_iterator_demo.cpp)
 if (DAKOTA_HAVE_MPI)
   add_executable(dakota_library_split library_split.cpp)
+  add_executable(dakota_di_mpi_communicator_demo di_mpi_communicator_demo.cpp)
   target_link_libraries(dakota_library_split ${DAKOTA_ALL_LIBS})
   target_link_libraries(dakota_library_split dakota_parser_lib)
   DakotaApplyMPISettings(dakota_library_split)
+  target_link_libraries(dakota_di_mpi_communicator_demo ${DAKOTA_ALL_LIBS})
+  target_link_libraries(dakota_di_mpi_communicator_demo dakota_parser_lib)
+  DakotaApplyMPISettings(dakota_di_mpi_communicator_demo)
   install(TARGETS dakota_library_split DESTINATION bin)
+  install(TARGETS dakota_di_mpi_communicator_demo DESTINATION bin)
 endif()
 
 #add_executable(test_sv test_stringvars.cpp)
@@ -1111,6 +1116,7 @@ if(DAKOTA_PYBIND11 AND
   target_link_libraries(dakota_di_concurrent_meta_iterator_demo pybind11::embed)
   if (DAKOTA_HAVE_MPI)
     target_link_libraries(dakota_library_split pybind11::embed)
+    target_link_libraries(dakota_di_mpi_communicator_demo pybind11::embed)
   endif()
 endif()
 

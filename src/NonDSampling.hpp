@@ -210,9 +210,6 @@ protected:
   /// constructor
   NonDSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
   /// DI constructor using method IR plus runtime services
-  NonDSampling(std::shared_ptr<ParallelLibrary> parallel_lib,
-               std::shared_ptr<OutputManager> output_mgr,
-               const IRStore& method_store, std::shared_ptr<Model> model);
   NonDSampling(std::shared_ptr<StudyServices> services,
                const IRStore& method_store, std::shared_ptr<Model> model);
   /// alternate constructor for sample generation and evaluation "on the fly"
