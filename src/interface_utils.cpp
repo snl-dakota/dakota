@@ -206,7 +206,7 @@ namespace Dakota {
 
       m_factory.register_key(DEFAULT_INTERFACE, [](ProblemDescDB &problem_db, ParallelLibrary &parallel_lib) {
         const String& algebraic_map_file
-          = problem_db.get_string("interface.algebraic_mappings");
+          = problem_db.get<std::string>("interface.algebraic_mappings");
         if (!algebraic_map_file.empty()) {
   #ifdef DEBUG
           Cout << ">>>>> new ApplicationInterface: " << algebraic_map_file
@@ -235,7 +235,7 @@ namespace Dakota {
       auto id = std::string(db.interface_id());
       auto pos = m_cache.find(id);
       if (pos == m_cache.end()) {
-        const auto interface_type = db.get_ushort("interface.type");
+        const auto interface_type = db.get<unsigned short>("interface.type");
         pos = m_cache.try_emplace(id, m_factory.create(interface_type, db, par)).first;
       }
       return pos->second;
