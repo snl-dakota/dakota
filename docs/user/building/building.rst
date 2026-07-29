@@ -1,6 +1,6 @@
 .. _compiling-main:
 
-Compiling Dakota
+Building Dakota
 ================
 
 For more experienced users, Dakota can be built from source

@@ -222,7 +222,7 @@ Set up your platform environment to access the Dakota executable, libraries, and
 Build from Source Code (Advanced)
 ---------------------------------
 
-For custom installations, download and build Dakota from source code.
+For custom installations, :ref:`download and build Dakota from source <compiling-main>`.
 
 .. _setupdakota-environment:
 
