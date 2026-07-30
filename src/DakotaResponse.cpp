@@ -177,7 +177,7 @@ RealVector build_primary_response_fn_weights(const ProblemDescDB& problem_db,
                                              const SharedResponseData& srd)
 {
   return build_primary_response_fn_weights(
-    srd, problem_db.get_rv("responses.primary_response_fn_weights"));
+    srd, problem_db.get<const RealVector>("responses.primary_response_fn_weights"));
 }
 
 RealVector build_primary_response_fn_weights(const IRStore& responses_store,
@@ -219,7 +219,7 @@ BoolDeque build_primary_response_fn_sense(const ProblemDescDB& problem_db,
                                           const SharedResponseData& srd)
 {
   return build_primary_response_fn_sense(
-    srd, problem_db.get_sa("responses.primary_response_fn_sense"));
+    srd, problem_db.get<const StringArray>("responses.primary_response_fn_sense"));
 }
 
 BoolDeque build_primary_response_fn_sense(const IRStore& responses_store,
