@@ -23,7 +23,9 @@
 #include "Teuchos_XMLParameterListHelpers.hpp"
 #include "Teuchos_StandardCatchMacros.hpp"
 
+#include <cmath>
 #include <filesystem>
+#include <limits>
 
 namespace Dakota {
 
@@ -65,6 +67,12 @@ public:
   /// ROL Solver
   ROL::Ptr<ROL::Solver<Real>> rolSolver;
 
+  /// Best fully evaluated incumbent seen during the run
+  std::shared_ptr<Variables> bestEvaluatedVars;
+  std::shared_ptr<Response> bestEvaluatedResp;
+  Real bestEvaluatedObjective;
+  Real bestEvaluatedViolation;
+
   /// Constructor
   ROLOptimizerImpl()
     : solverParams("Dakota::ROL"),
@@ -73,7 +81,11 @@ public:
       lowerBounds(ROL::nullPtr),
       upperBounds(ROL::nullPtr),
       rolProblem(ROL::nullPtr),
-      rolSolver(ROL::nullPtr)
+      rolSolver(ROL::nullPtr),
+      bestEvaluatedVars(),
+      bestEvaluatedResp(),
+      bestEvaluatedObjective(std::numeric_limits<Real>::infinity()),
+      bestEvaluatedViolation(std::numeric_limits<Real>::infinity())
   {}
 };
 
@@ -94,12 +106,9 @@ ROLOptimizer::ROLOptimizer(ProblemDescDB& problem_db,
               std::shared_ptr<TraitsBase>(new ROLTraits())),
     pimpl_(std::make_unique<rol_optimizer_impl::ROLOptimizerImpl>())
 {
-  // Populate ROL data with user-provided problem dimensions and
-  // initial values, and set ROL solver parameters. These calls are
-  // order-dependent in that the solver settings depend on
-  // problemType, which is set with the problem data.
-
-  set_problem();
+  // Determine problem type now; defer full ROL problem construction until
+  // core_run(), after communicator initialization for nested iterator cases.
+  determine_problem_type();
   set_rol_parameters();
 }
 
@@ -112,12 +121,9 @@ ROLOptimizer::ROLOptimizer(const String& method_string,
               std::shared_ptr<TraitsBase>(new ROLTraits())),
     pimpl_(std::make_unique<rol_optimizer_impl::ROLOptimizerImpl>())
 {
-  // Populate ROL data with user-provided problem dimensions and
-  // initial values, and set ROL solver parameters. These calls are
-  // order-dependent in that the solver settings depend on
-  // problemType, which is set with the problem data.
-
-  set_problem();
+  // Determine problem type now; defer full ROL problem construction until
+  // core_run(), after communicator initialization for nested iterator cases.
+  determine_problem_type();
   set_rol_parameters();
 }
 
@@ -140,11 +146,167 @@ void ROLOptimizer::initialize_run()
 }
 
 
+ROLOptimizer* ROLOptimizer::active_instance()
+{
+  return dynamic_cast<ROLOptimizer*>(optimizerInstance);
+}
+
+
+Real ROLOptimizer::constraint_violation(const Variables& vars, const Response& resp) const
+{
+  auto orig_model = original_model();
+  Real violation = 0.;
+  const auto& x = vars.continuous_variables();
+
+  if (boundConstraintFlag) {
+    const auto& lower = ModelUtils::continuous_lower_bounds(*orig_model);
+    const auto& upper = ModelUtils::continuous_upper_bounds(*orig_model);
+    for (int i = 0; i < x.length(); ++i) {
+      if (lower[i] > -bigRealBoundSize)
+        violation = std::max(violation, lower[i] - x[i]);
+      if (upper[i] < bigRealBoundSize)
+        violation = std::max(violation, x[i] - upper[i]);
+    }
+  }
+
+  if (numLinearEqConstraints) {
+    const auto& coeffs = ModelUtils::linear_eq_constraint_coeffs(*orig_model);
+    const auto& targets = ModelUtils::linear_eq_constraint_targets(*orig_model);
+    for (size_t row = 0; row < numLinearEqConstraints; ++row) {
+      Real lhs = 0.;
+      for (size_t col = 0; col < numContinuousVars; ++col)
+        lhs += coeffs(static_cast<int>(row), static_cast<int>(col)) * x[static_cast<int>(col)];
+      violation = std::max(violation, std::abs(lhs - targets[static_cast<int>(row)]));
+    }
+  }
+
+  if (numLinearIneqConstraints) {
+    const auto& coeffs = ModelUtils::linear_ineq_constraint_coeffs(*orig_model);
+    const auto& lower = ModelUtils::linear_ineq_constraint_lower_bounds(*orig_model);
+    const auto& upper = ModelUtils::linear_ineq_constraint_upper_bounds(*orig_model);
+    for (size_t row = 0; row < numLinearIneqConstraints; ++row) {
+      Real lhs = 0.;
+      for (size_t col = 0; col < numContinuousVars; ++col)
+        lhs += coeffs(static_cast<int>(row), static_cast<int>(col)) * x[static_cast<int>(col)];
+      if (lower[static_cast<int>(row)] > -bigRealBoundSize)
+        violation = std::max(violation, lower[static_cast<int>(row)] - lhs);
+      if (upper[static_cast<int>(row)] < bigRealBoundSize)
+        violation = std::max(violation, lhs - upper[static_cast<int>(row)]);
+    }
+  }
+
+  const auto& fn_vals = resp.function_values();
+  size_t offset = numUserPrimaryFns;
+
+  if (numNonlinearIneqConstraints) {
+    const auto& lower = ModelUtils::nonlinear_ineq_constraint_lower_bounds(*orig_model);
+    const auto& upper = ModelUtils::nonlinear_ineq_constraint_upper_bounds(*orig_model);
+    for (size_t i = 0; i < numNonlinearIneqConstraints; ++i) {
+      const Real value = fn_vals[static_cast<int>(offset + i)];
+      if (lower[static_cast<int>(i)] > -bigRealBoundSize)
+        violation = std::max(violation, lower[static_cast<int>(i)] - value);
+      if (upper[static_cast<int>(i)] < bigRealBoundSize)
+        violation = std::max(violation, value - upper[static_cast<int>(i)]);
+    }
+    offset += numNonlinearIneqConstraints;
+  }
+
+  if (numNonlinearEqConstraints) {
+    const auto& targets = ModelUtils::nonlinear_eq_constraint_targets(*orig_model);
+    for (size_t i = 0; i < numNonlinearEqConstraints; ++i)
+      violation = std::max(violation, std::abs(fn_vals[static_cast<int>(offset + i)] - targets[static_cast<int>(i)]));
+  }
+
+  return violation;
+}
+
+
+bool ROLOptimizer::candidate_is_better(Real objective_value, Real constraint_violation) const
+{
+  if (!pimpl_->bestEvaluatedVars || !pimpl_->bestEvaluatedResp)
+    return true;
+
+  const Real tol = constraint_tolerance();
+  const bool candidate_feasible = (constraint_violation <= tol);
+  const bool incumbent_feasible = (pimpl_->bestEvaluatedViolation <= tol);
+  const Real eps = 1.e-12;
+
+  if (candidate_feasible != incumbent_feasible)
+    return candidate_feasible;
+
+  if (candidate_feasible) {
+    if (objective_value < pimpl_->bestEvaluatedObjective - eps)
+      return true;
+    if (std::abs(objective_value - pimpl_->bestEvaluatedObjective) <= eps &&
+        constraint_violation < pimpl_->bestEvaluatedViolation - eps)
+      return true;
+    return false;
+  }
+
+  if (constraint_violation < pimpl_->bestEvaluatedViolation - eps)
+    return true;
+  if (std::abs(constraint_violation - pimpl_->bestEvaluatedViolation) <= eps &&
+      objective_value < pimpl_->bestEvaluatedObjective - eps)
+    return true;
+
+  return false;
+}
+
+
+void ROLOptimizer::record_evaluated_point()
+{
+  if (!localObjectiveRecast)
+    return;
+
+  const auto& reduced_resp = iteratedModel->current_response();
+  if (!reduced_resp.num_functions())
+    return;
+
+  auto orig_model = original_model();
+  Variables candidate_vars(orig_model->current_variables().copy());
+  Response candidate_resp(orig_model->current_response().copy());
+  const Real objective_value = reduced_resp.function_value(0);
+  const Real violation = constraint_violation(candidate_vars, candidate_resp);
+
+  if (!candidate_is_better(objective_value, violation))
+    return;
+
+  pimpl_->bestEvaluatedObjective = objective_value;
+  pimpl_->bestEvaluatedViolation = violation;
+
+  if (!pimpl_->bestEvaluatedVars)
+    pimpl_->bestEvaluatedVars = std::make_shared<Variables>(candidate_vars);
+  else
+    *pimpl_->bestEvaluatedVars = candidate_vars;
+
+  if (!pimpl_->bestEvaluatedResp)
+    pimpl_->bestEvaluatedResp = std::make_shared<Response>(candidate_resp);
+  else
+    *pimpl_->bestEvaluatedResp = candidate_resp;
+}
+
+
 // core_run redefines the Optimizer virtual function to perform the
 // optimization using ROL and catalogue the results.
+void ROLOptimizer::post_run(std::ostream& s)
+{
+  if (localObjectiveRecast && pimpl_->bestEvaluatedVars && pimpl_->bestEvaluatedResp) {
+    Minimizer::post_run(s);
+    return;
+  }
+
+  Optimizer::post_run(s);
+}
+
+
 void ROLOptimizer::core_run()
 {
   using namespace rol_interface;
+
+  pimpl_->bestEvaluatedVars.reset();
+  pimpl_->bestEvaluatedResp.reset();
+  pimpl_->bestEvaluatedObjective = std::numeric_limits<Real>::infinity();
+  pimpl_->bestEvaluatedViolation = std::numeric_limits<Real>::infinity();
 
   // Rebuild the problem in case it needs to be updated
   set_problem();
@@ -155,8 +317,16 @@ void ROLOptimizer::core_run()
   // Solve the optimization problem
   pimpl_->rolSolver->solve(rolOutputStream.stream());
 
-  // Copy ROL solution to Dakota bestVariablesArray
   Variables& best_vars = bestVariablesArray.front();
+  Response& best_resp = bestResponseArray.front();
+
+  if (localObjectiveRecast && pimpl_->bestEvaluatedVars && pimpl_->bestEvaluatedResp) {
+    best_vars = *pimpl_->bestEvaluatedVars;
+    best_resp = *pimpl_->bestEvaluatedResp;
+    return;
+  }
+
+  // Copy ROL solution to Dakota bestVariablesArray
   RealVector& cont_vars = best_vars.continuous_variables_view();
   const auto& x_dakota = as_dakota_vector(*pimpl_->rolX);
   copy_data(x_dakota, cont_vars);
@@ -165,7 +335,6 @@ void ROLOptimizer::core_run()
   // attempt a model database lookup directly into best.
   if (!localObjectiveRecast)
   {
-    Response& best_resp = bestResponseArray.front();
     ActiveSet search_set(best_resp.active_set());
     search_set.request_values(1); // Function values only
     best_resp.active_set(search_set);
@@ -190,25 +359,38 @@ void ROLOptimizer::core_run()
 }
 
 
+// Helper function to determine the ROL problem type without
+// constructing the full ROL problem.
+void ROLOptimizer::determine_problem_type()
+{
+  size_t num_eq_const = numLinearEqConstraints + numNonlinearEqConstraints;
+  size_t num_ineq_const = numLinearIneqConstraints + numNonlinearIneqConstraints;
+
+  if ((num_ineq_const > 0) ||
+      ((num_eq_const > 0) && (boundConstraintFlag)))
+    pimpl_->problemType = TYPE_EB;
+  else if (!boundConstraintFlag)
+    pimpl_->problemType = (num_eq_const > 0) ? TYPE_E : TYPE_U;
+  else
+    pimpl_->problemType = TYPE_B;
+}
+
+
 // Helper function to populate ROL data with user-provided problem
 // dimensions and initial values.
 void ROLOptimizer::set_problem()
 {
   using namespace rol_interface;
 
-  size_t num_cv = numContinuousVars;
-  size_t num_eq_const = numLinearEqConstraints + numNonlinearEqConstraints;
-  size_t num_ineq_const = numLinearIneqConstraints + numNonlinearIneqConstraints;
+  // ROL problem construction may trigger model evaluations through the
+  // local objective recast callback before initialize_run() installs the
+  // active optimizer instance.
+  Optimizer* saved_optimizer_instance = optimizerInstance;
+  optimizerInstance = this;
 
-  // Set the ROL problem type. Default is TYPE_B (bound constrained),
-  // so overwrite for other constraint scenarios.
-  if ((num_ineq_const > 0) ||
-      ((num_eq_const > 0) && (boundConstraintFlag)))
-    pimpl_->problemType = TYPE_EB;
-  else {
-    if (!boundConstraintFlag)
-      pimpl_->problemType = (num_eq_const > 0) ? TYPE_E : TYPE_U;
-  }
+  determine_problem_type();
+
+  size_t num_cv = numContinuousVars;
 
   // Create initial guess vector
   pimpl_->rolX = make_vector(num_cv, true);
@@ -340,6 +522,8 @@ void ROLOptimizer::set_problem()
   // Create the solver
   pimpl_->rolSolver = ROL::makePtr<ROL::Solver<Real>>(pimpl_->rolProblem,
                                                        pimpl_->solverParams);
+
+  optimizerInstance = saved_optimizer_instance;
 }
 
 

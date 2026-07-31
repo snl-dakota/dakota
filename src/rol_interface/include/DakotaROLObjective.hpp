@@ -35,9 +35,15 @@ public:
 
   static ROL::Ptr<ROL::Objective<Dakota::Real>> createFromModel( Dakota::Model& model ); 
 
- 
+private:
+  void evaluateIfNeeded(const ROL::Vector<Dakota::Real>& x, short request_values);
+  void cacheGradientIfNeeded();
+
   std::size_t numOpt;
   Dakota::RealVector gradientCopy;  // Stores a COPY of gradient data (not a view)
+  Dakota::RealVector lastEvaluatedX;
+  bool hasEvaluatedPoint{false};
+  short lastRequestValues{0};
   BoolDispatch hasGradient, hasHessian;
   Dakota::Model& dakotaModel;
 }; // class Objective

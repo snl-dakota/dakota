@@ -55,6 +55,7 @@ public:
               Dakota::Model& model );
 
 private:
+  void evaluateIfNeeded(const ROL::Vector<Dakota::Real>& x, short request_values);
   void copy_response_data();
 
   Dakota::Model& dakotaModel;
@@ -63,10 +64,12 @@ private:
   Dakota::RealVector targetView;     // Target values are static, view is OK
   Dakota::RealMatrix jacobianCopy;   // Stores a COPY of Jacobian data (not a view)
   Dakota::RealSymMatrixArray hessianView;
+  Dakota::RealVector lastEvaluatedX;
+  bool hasEvaluatedPoint{false};
+  short lastRequestValues{0};
   BoolDispatch isLinear, isEquality, hasJacobian, hasHessian;
 };        
 
 } // namespace rol_interface
 
 #endif // DAKOTA_ROL_CONSTRAINT
-

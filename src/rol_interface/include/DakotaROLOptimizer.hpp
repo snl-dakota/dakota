@@ -73,8 +73,17 @@ public:
   /// Iterates the ROL solver to determine the optimal solution
   void core_run() override;
 
+  /// Finalize ROL results, bypassing generic local-recast recovery when not needed
+  void post_run(std::ostream& s) override;
+
   /// Support resetting ROL solver options
   void reset_solver_options(const Teuchos::ParameterList&); // ROL solver settings
+
+  /// Return the active ROL optimizer instance when ROL callbacks are executing
+  static ROLOptimizer* active_instance();
+
+  /// Record the best fully evaluated Dakota point encountered during the run
+  void record_evaluated_point();
 
 protected:
 
@@ -86,11 +95,17 @@ protected:
   /// information from the Model and set it for ROL
   void set_problem();
 
+  /// Determine ROL problem type without constructing the full ROL problem
+  void determine_problem_type();
+
   /// Convenience function to map Dakota input and power-user
   /// parameters to ROL
   void set_rol_parameters();
 
 private:
+
+  Real constraint_violation(const Variables& vars, const Response& resp) const;
+  bool candidate_is_better(Real objective_value, Real constraint_violation) const;
 
   //
   //- Heading: Data (using pIMPL idiom to hide ROL types)
