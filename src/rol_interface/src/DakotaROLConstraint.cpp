@@ -1,28 +1,6 @@
 #include "DakotaROLInterface.hpp"
 #include "model_utils.hpp"
 
-#include <cmath>
-#include <sstream>
-
-namespace {
-
-bool same_vector(const Dakota::RealVector& a,
-                 const Dakota::RealVector& b,
-                 double tol = 1.e-14)
-{
-  if (a.length() != b.length())
-    return false;
-
-  for (int i = 0; i < a.length(); ++i) {
-    if (std::abs(a[i] - b[i]) > tol)
-      return false;
-  }
-
-  return true;
-}
-
-} // namespace
-
 namespace rol_interface {
 
 void Constraint::evaluateIfNeeded(const ROL::Vector<Dakota::Real>& x,
@@ -33,7 +11,7 @@ void Constraint::evaluateIfNeeded(const ROL::Vector<Dakota::Real>& x,
       const auto& x_dakota =
         as_dakota_vector(const_cast<ROL::Vector<Dakota::Real>&>(x));
 
-      const bool can_reuse = hasEvaluatedPoint && same_vector(x_dakota, lastEvaluatedX) &&
+      const bool can_reuse = hasEvaluatedPoint && x_dakota == lastEvaluatedX &&
                              lastRequestValues >= request_values;
       if (can_reuse)
         return;
