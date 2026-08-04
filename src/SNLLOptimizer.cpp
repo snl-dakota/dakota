@@ -256,6 +256,220 @@ SNLLOptimizer::SNLLOptimizer(ProblemDescDB& problem_db, ParallelLibrary& paralle
 }
 
 
+/** This is the DI constructor using method IR plus optional runtime services. */
+SNLLOptimizer::SNLLOptimizer(const IRStore& method_store, std::shared_ptr<Model> model, std::shared_ptr<StudyServices> services):
+  Optimizer(std::move(services), method_store, model, std::shared_ptr<TraitsBase>(new SNLLTraits())),
+  SNLLBase(method_store), nlfObjective(NULL), nlfConstraint(NULL),
+  nlpConstraint(NULL), fdnlf1(NULL), fdnlf1Con(NULL), theOptimizer(NULL),
+  setUpType("model"), userObjective0(NULL), userObjective1(NULL),
+  userConstraint0(NULL), userConstraint1(NULL)
+{
+  // convenience function from SNLLBase
+  snll_pre_instantiate(boundConstraintFlag, numConstraints); // from SNLLBase
+
+  // Instantiate NLF & Optimizer objects based on method & gradient selections
+
+  // Parallel Direct Search (Dennis & Torczon from Rice Univ.)
+  switch (methodName) {
+  case OPTPP_PDS: {
+    // ************************************************************************
+    // NOTE: the parallelism of PDS is peer partition, not dedicated scheduler.
+    // That is, PDS cannot use a simple launch/synchronize protocol like most 
+    // other optimizers in DAKOTA.  Rather it will be necessary to implement
+    // a communicator partition for the PDS processors (with hidden layers of
+    // underlying parallelism) as was done for PICO.
+    // ************************************************************************
+    if (numConstraints) {
+      Cerr << "Error: optpp_pds does not support linear or nonlinear "
+           << "constraints.\n       Please select a different method for "
+           << "generally constrained problems." << std::endl;
+      abort_handler(-1);
+    }
+    if (outputLevel == DEBUG_OUTPUT)
+      Cout << "Instantiating OptPDS optimizer with NLF0 evaluator.\n";
+    nlf0 = new OPTPP::NLF0(numContinuousVars, nlf0_evaluator, init_fn);
+    nlfObjective = nlf0;
+    optpds = new OPTPP::OptPDS(nlf0);
+    int search_scheme_size
+      = probDescDB.get<int>("method.optpp.search_scheme_size");
+    maxEvalConcurrency *= search_scheme_size;
+    optpds->setSSS(search_scheme_size); 
+    theOptimizer = optpds;
+    break;
+  }
+
+  // Polak-Ribiere Conjugate Gradient (CG)
+  case OPTPP_CG:
+    if (numConstraints || boundConstraintFlag) {
+      Cerr << "Error: optpp_cg does not support bound, linear, or nonlinear "
+           << "constraints.\n       Please select a different method for "
+           << "constrained problems." << std::endl;
+      abort_handler(-1);
+    }
+    if (vendorNumericalGradFlag) {
+      if (outputLevel == DEBUG_OUTPUT)
+        Cout << "Instantiating OptCG optimizer with FDNLF1 evaluator.\n";
+      fdnlf1 = new OPTPP::FDNLF1(numContinuousVars, nlf0_evaluator, init_fn);
+      nlfObjective = fdnlf1;
+      optcg = new OPTPP::OptCG(fdnlf1);
+    }
+    else {
+      if (outputLevel == DEBUG_OUTPUT)
+        Cout << "Instantiating OptCG optimizer with NLF1 evaluator.\n";
+      nlf1 = new OPTPP::NLF1(numContinuousVars, nlf1_evaluator, init_fn);
+      nlfObjective = nlf1;
+      optcg = new OPTPP::OptCG(nlf1);
+    }
+    theOptimizer = optcg;
+    break;
+
+  // quasi-Newton: unconstrained, bound-constrained, & nonlinear interior-point
+  case OPTPP_Q_NEWTON:
+    if (vendorNumericalGradFlag) {
+      fdnlf1 = new OPTPP::FDNLF1(numContinuousVars, nlf0_evaluator, init_fn);
+      nlfObjective = fdnlf1;
+      if (numConstraints) { // nonlinear interior-point
+        if (outputLevel == DEBUG_OUTPUT)
+          Cout << "Instantiating OptQNIPS optimizer with FDNLF1 evaluator.\n";
+	theOptimizer = optqnips = new OPTPP::OptQNIPS(fdnlf1);
+	//optqnips->setSearchStrategy(searchStrat); // not supported
+	optqnips->setMeritFcn(meritFn);
+	optqnips->setStepLengthToBdry(stepLenToBndry);
+	optqnips->setCenteringParameter(centeringParam);
+
+        fdnlf1Con
+	  = new OPTPP::FDNLF1(numContinuousVars, numNonlinearConstraints,
+			      constraint0_evaluator, init_fn);
+        nlfConstraint = fdnlf1Con;
+        nlpConstraint = new OPTPP::NLP(fdnlf1Con);
+      }
+      else if (boundConstraintFlag) { // bound-constrained
+        if (outputLevel == DEBUG_OUTPUT)
+          Cout << "Instantiating OptBCQNewton optimizer with FDNLF1 evaluator."
+               << '\n';
+        theOptimizer = optbcqnewton = new OPTPP::OptBCQNewton(fdnlf1);
+	optbcqnewton->setSearchStrategy(searchStrat);
+	if (searchStrat == OPTPP::TrustRegion) optbcqnewton->setTRSize(maxStep);
+      }
+      else { // unconstrained
+        if (numContinuousVars < LARGE_SCALE) {
+          if (outputLevel == DEBUG_OUTPUT)
+            Cout << "Instantiating OptQNewton optimizer with FDNLF1 evaluator."
+               << '\n';
+          theOptimizer = optqnewton = new OPTPP::OptQNewton(fdnlf1);
+	  optqnewton->setSearchStrategy(searchStrat);
+	  if (searchStrat == OPTPP::TrustRegion) optqnewton->setTRSize(maxStep);
+        }
+        else {
+          if (outputLevel == DEBUG_OUTPUT)
+            Cout << "Instantiating OptLBFGS optimizer with FDNLF1 evaluator.\n";
+          theOptimizer = optlbfgs = new OPTPP::OptLBFGS(fdnlf1);
+	  //optlbfgs->setSearchStrategy(searchStrat); // not supported
+        }
+      }
+    }
+    else {
+      default_instantiate_q_newton(nlf1_evaluator);
+      if (numConstraints)
+	default_instantiate_constraint(constraint1_evaluator);
+    }
+    break;
+
+  // finite-difference Newton: unconstrained, bound-constrained, & nonlinear
+  // interior-point
+  case OPTPP_FD_NEWTON:
+    if (vendorNumericalGradFlag) {
+      fdnlf1 = new OPTPP::FDNLF1(numContinuousVars, nlf0_evaluator, init_fn);
+      nlfObjective = fdnlf1;
+      if (numConstraints) { // nonlinear interior-point
+        if (outputLevel == DEBUG_OUTPUT)
+          Cout << "Instantiating OptFDNIPS optimizer with FDNLF1 evaluator.\n";
+        optfdnips = new OPTPP::OptFDNIPS(fdnlf1);
+        fdnlf1Con
+	  = new OPTPP::FDNLF1(numContinuousVars, numNonlinearConstraints,
+			      constraint0_evaluator, init_fn);
+        nlfConstraint = fdnlf1Con;
+        nlpConstraint = new OPTPP::NLP(fdnlf1Con);
+      }
+      else if (boundConstraintFlag) { // bound-constrained
+        if (outputLevel == DEBUG_OUTPUT)
+          Cout << "Instantiating OptBCFDNewton optimizer with FDNLF1 evaluator."
+               << '\n';
+        optbcfdnewton = new OPTPP::OptBCFDNewton(fdnlf1);
+      }
+      else { // unconstrained
+        if (outputLevel == DEBUG_OUTPUT)
+          Cout << "Instantiating OptFDNewton optimizer with FDNLF1 evaluator."
+               << '\n';
+        optfdnewton = new OPTPP::OptFDNewton(fdnlf1);
+      }
+    }
+    else {
+      nlf1 = new OPTPP::NLF1(numContinuousVars, nlf1_evaluator, init_fn);
+      nlfObjective = nlf1;
+      if (numConstraints) { // nonlinear interior-point
+        if (outputLevel == DEBUG_OUTPUT)
+          Cout << "Instantiating OptFDNIPS optimizer with NLF1 evaluator.\n";
+        optfdnips = new OPTPP::OptFDNIPS(nlf1);
+        nlf1Con = new OPTPP::NLF1(numContinuousVars, numNonlinearConstraints,
+				  constraint1_evaluator, init_fn);
+        nlfConstraint = nlf1Con;
+        nlpConstraint = new OPTPP::NLP(nlf1Con);
+      }
+      else if (boundConstraintFlag) { // bound-constrained
+        if (outputLevel == DEBUG_OUTPUT)
+          Cout << "Instantiating OptBCFDNewton optimizer with NLF1 evaluator."
+               << '\n';
+        optbcfdnewton = new OPTPP::OptBCFDNewton(nlf1);
+      }
+      else { // unconstrained
+        if (outputLevel == DEBUG_OUTPUT)
+          Cout << "Instantiating OptFDNewton optimizer with NLF1 evaluator.\n";
+        optfdnewton = new OPTPP::OptFDNewton(nlf1);
+      }
+    }
+
+    if (numConstraints) { // nonlinear interior-point
+      theOptimizer = optfdnips;
+      //optfdnips->setSearchStrategy(searchStrat);// search strat. not supported
+      optfdnips->setMeritFcn(meritFn);
+      optfdnips->setStepLengthToBdry(stepLenToBndry);
+      optfdnips->setCenteringParameter(centeringParam);
+    }
+    else if (boundConstraintFlag) { // bound-constrained
+      theOptimizer = optbcfdnewton;
+      optbcfdnewton->setSearchStrategy(searchStrat);
+      if (searchStrat == OPTPP::TrustRegion) optbcfdnewton->setTRSize(maxStep);
+    }
+    else { // unconstrained
+      theOptimizer = optfdnewton;
+      optfdnewton->setSearchStrategy(searchStrat);  
+      if (searchStrat == OPTPP::TrustRegion) optfdnewton->setTRSize(maxStep);
+    }
+    break;
+
+  // full Newton: unconstrained, bound-constrained, & nonlinear interior-point
+  case OPTPP_NEWTON:
+    default_instantiate_newton(nlf2_evaluator, constraint2_evaluator);    break;
+
+  default:
+    Cerr << "Method name " << method_enum_to_string(methodName)
+	 << " currently unavailable within\nDAKOTA's SNLLOptimizer "
+	 << "implementation of OPT++." << std::endl;
+    abort_handler(-1); break;
+  }
+
+  // convenience function from SNLLBase
+  snll_post_instantiate(numContinuousVars, vendorNumericalGradFlag,
+			iteratedModel->interval_type(),
+			iteratedModel->fd_gradient_step_size(),
+			maxIterations, maxFunctionEvals, convergenceTol,
+			gradientTol, maxStep, boundConstraintFlag,
+			numConstraints,	outputLevel, theOptimizer,
+			nlfObjective, fdnlf1, fdnlf1Con);
+}
+
+
 /** This is an alternate constructor for instantiations on the fly
     using a Model but no ProblemDescDB. */
 SNLLOptimizer::SNLLOptimizer(const String& method_string, std::shared_ptr<Model> model):

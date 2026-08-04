@@ -86,6 +86,9 @@ public:
 
   /// standard constructor
   COLINOptimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
+  /// DI constructor using method IR plus optional runtime services
+  COLINOptimizer(const IRStore& method_store, std::shared_ptr<Model> model,
+               std::shared_ptr<StudyServices> services);
   /// alternate constructor for on-the-fly instantiations
   COLINOptimizer(const String& method_name, std::shared_ptr<Model> model, int seed,
 		 size_t max_iter, size_t max_eval);

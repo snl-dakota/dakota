@@ -56,6 +56,19 @@ NCSUOptimizer::NCSUOptimizer(ProblemDescDB& problem_db, ParallelLibrary& paralle
 }
 
 
+/** This is DI constructor using method IR plus optional runtime services. */ 
+NCSUOptimizer::NCSUOptimizer(const IRStore& method_store, std::shared_ptr<Model> model, std::shared_ptr<StudyServices> services):
+  Optimizer(std::move(services), method_store, model, std::shared_ptr<TraitsBase>(new NCSUTraits())),
+  setUpType(SETUP_MODEL),
+  minBoxSize(method_store.get<Real>("min_boxsize_limit")), 
+  volBoxSize(method_store.get<Real>("volume_boxsize_limit")),
+  solutionTarget(method_store.get<Real>("solution_target")),
+  userObjectiveEval(NULL)
+{
+  check_inputs();
+}
+
+
 /** This is an alternate constructor for instantiations on the fly
     using a Model but no ProblemDescDB. */
 NCSUOptimizer::

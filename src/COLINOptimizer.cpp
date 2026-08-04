@@ -251,6 +251,17 @@ COLINOptimizer::COLINOptimizer(ProblemDescDB& problem_db, ParallelLibrary& paral
   set_solver_parameters();
 }
 
+COLINOptimizer::COLINOptimizer(const IRStore& method_store, std::shared_ptr<Model> model, std::shared_ptr<StudyServices> services):
+  Optimizer(std::move(services), method_store, model, std::shared_ptr<TraitsBase>(new COLINTraits()))
+{
+  // (iteratedModel initialized in Optimizer(Model&))
+  // Set solver properties.
+
+  solver_setup(method_store.get<unsigned short>("algorithm"));
+  set_rng(method_store.get<int>("random_seed"));
+  set_solver_parameters();
+}
+
   /// Alternate constructor for on-the-fly instantiations.
 
 COLINOptimizer::

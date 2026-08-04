@@ -22,6 +22,15 @@ APPSOptimizer::APPSOptimizer(ProblemDescDB& problem_db, ParallelLibrary& paralle
   set_apps_parameters(); // set specification values using DB
 }
 
+APPSOptimizer::APPSOptimizer(const IRStore& method_store, std::shared_ptr<Model> model, std::shared_ptr<StudyServices> services):
+  Optimizer(std::move(services), method_store, model, std::shared_ptr<TraitsBase>(new AppsTraits()))
+{
+  // (iteratedModel initialized in Optimizer(Model&))
+
+  evalMgr = new APPSEvalMgr(*this, iteratedModel);
+  set_apps_parameters(); // set specification values using DB
+}
+
 APPSOptimizer::APPSOptimizer(std::shared_ptr<Model> model):
   Optimizer(ASYNCH_PATTERN_SEARCH, model, std::shared_ptr<TraitsBase>(new AppsTraits()))
 {

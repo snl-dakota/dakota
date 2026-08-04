@@ -59,6 +59,26 @@ NonlinearCGOptimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, s
 }
 
 
+NonlinearCGOptimizer::
+NonlinearCGOptimizer(const IRStore& method_store, std::shared_ptr<Model> model, std::shared_ptr<StudyServices> services): 
+  Optimizer(std::move(services), method_store, model, std::shared_ptr<TraitsBase>(new NonlinearCGTraits())),
+  initialStep(0.01), linesearchTolerance(1.0e-2),
+  linesearchType(CG_LS_SIMPLE), maxLinesearchIters(10), relFunctionTol(0.0),
+  relGradientTol(0.0), resetStep(true), restartIter(1000000),
+  updateType(CG_FLETCHER_REEVES)
+{
+  if (numFunctions > 1 || numConstraints > 0 || boundConstraintFlag) {
+    Cerr << "ERROR: NonlinearCG only supports unconstrainted single objective "
+	 << "problems!" << endl;
+    abort_handler(-1);
+  }
+  // some of the defaults may be overridden by user-supplied options
+  parse_options();
+
+  stepLength = initialStep;
+}
+
+
 NonlinearCGOptimizer::~NonlinearCGOptimizer()
 { }
 

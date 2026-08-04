@@ -1,6 +1,31 @@
 #include "DakotaVariables.hpp"
 #include "DakotaResponse.hpp"
+#ifdef DAKOTA_HOPS
+#include "APPSOptimizer.hpp"
+#endif
+#ifdef HAVE_ACRO
+#include "COLINOptimizer.hpp"
+#endif
+#ifdef HAVE_CONMIN
+#include "CONMINOptimizer.hpp"
+#endif
+#ifdef HAVE_DOT
 #include "DOTOptimizer.hpp"
+#endif
+#ifdef HAVE_JEGA
+#include "JEGAOptimizer.hpp"
+#endif
+#ifdef HAVE_NCSU
+#include "NCSUOptimizer.hpp"
+#endif
+#include "NonlinearCGOptimizer.hpp"
+#ifdef HAVE_NOWPAC
+#include "NOWPACOptimizer.hpp"
+#endif
+#include "OptDartsOptimizer.hpp"
+#ifdef HAVE_OPTPP
+#include "SNLLOptimizer.hpp"
+#endif
 #include "ConcurrentMetaIterator.hpp"
 #ifndef _WIN32
 #include "ForkApplicInterface.hpp"
@@ -138,28 +163,12 @@ IRStore make_concurrent_multistart_store(InstructionMaterializer& materializer)
   return materializer.materialize_block(method_json, irgen::BlockType::Method);
 }
 
-IRStore make_dot_method_store(InstructionMaterializer& materializer)
+void materialize_default_opt_blocks(InstructionMaterializer& materializer,
+                                    IRStore& variables_store,
+                                    IRStore& responses_store,
+                                    IRStore& interface_store,
+                                    IRStore& model_store)
 {
-  const json method_json = {
-    {"dot_bfgs", {
-      {"max_iterations", 10},
-      {"convergence_tolerance", 1.e-4},
-      {"constraint_tolerance", 0.0}
-    }}
-  };
-
-  return materializer.materialize_block(method_json, irgen::BlockType::Method);
-}
-
-void materialize_dot_blocks(InstructionMaterializer& materializer,
-                            IRStore& method_store,
-                            IRStore& variables_store,
-                            IRStore& responses_store,
-                            IRStore& interface_store,
-                            IRStore& model_store)
-{
-  method_store = make_dot_method_store(materializer);
-
   const json variables_json = {
     {"continuous_design", {
       {"count", 2},
@@ -433,31 +442,253 @@ TEST(di_construction_tests, can_construct_concurrent_meta_iterator_from_irstore)
   EXPECT_EQ(concurrent_iterator.iterated_model().get(), simulation_model.get());
 }
 
-
 #ifdef HAVE_DOT
-TEST(di_construction_tests, can_construct_dot_optimizer_from_irstore)
+struct DOTTestTraits {
+  using OptimizerT = DOTOptimizer;
+
+  static IRStore make_method_store(InstructionMaterializer& materializer) {
+    const json method_json = {
+      {"dot_bfgs", {
+        {"max_iterations", 10},
+        {"convergence_tolerance", 1.e-4},
+        {"constraint_tolerance", 0.0}
+      }}
+    };
+
+    return materializer.materialize_block(method_json, irgen::BlockType::Method);
+  }
+
+  static constexpr const char* name = "DOT";
+};
+#endif
+
+#ifdef DAKOTA_HOPS
+struct APPSTestTraits {
+  using OptimizerT = APPSOptimizer;
+
+  static IRStore make_method_store(InstructionMaterializer& materializer) {
+    const json method_json = {
+      {"asynch_pattern_search", {
+        {"variable_tolerance", 1.e-10},
+        {"synchronization blocking"}
+      }}
+    };
+
+    return materializer.materialize_block(method_json, irgen::BlockType::Method);
+  }
+
+  static constexpr const char* name = "APPS";
+};
+#endif
+
+#ifdef HAVE_ACRO
+struct COLINTestTraits {
+  using OptimizerT = COLINOptimizer;
+
+  static IRStore make_method_store(InstructionMaterializer& materializer) {
+    const json method_json = {
+      {"coliny_ea", {
+        {"seed", 11011011},
+        {"population_size", 100},
+        {"fitness_type", "merit_function"},
+        {"mutation_type", "offset_normal"},
+        {"mutation_rate", 1.0},
+        {"crossover_type", "two_point"},
+        {"crossover_rate", 0.0}
+      }}
+    };
+
+    return materializer.materialize_block(method_json, irgen::BlockType::Method);
+  }
+
+  static constexpr const char* name = "COLIN";
+};
+#endif
+
+#ifdef HAVE_CONMIN
+struct CONMINTestTraits {
+  using OptimizerT = CONMINOptimizer;
+
+  static IRStore make_method_store(InstructionMaterializer& materializer) {
+    const json method_json = {
+      {"conmin_mfd", {
+        {"max_iterations", 10},
+        {"convergence_tolerance", 1.e-4}
+      }}
+    };
+
+    return materializer.materialize_block(method_json, irgen::BlockType::Method);
+  }
+
+  static constexpr const char* name = "CONMIN";
+};
+#endif
+
+#ifdef HAVE_JEGA
+struct JEGATestTraits {
+  using OptimizerT = JEGAOptimizer;
+
+  static IRStore make_method_store(InstructionMaterializer& materializer) {
+    const json method_json = {
+      {"moga", {
+        {"seed", 1234},
+        {"max_function_evaluations", 100}
+      }}
+    };
+
+    return materializer.materialize_block(method_json, irgen::BlockType::Method);
+  }
+
+  static constexpr const char* name = "JEGA";
+};
+#endif
+
+#ifdef HAVE_NCSU
+struct NCSUTestTraits {
+  using OptimizerT = NCSUOptimizer;
+
+  static IRStore make_method_store(InstructionMaterializer& materializer) {
+    const json method_json = {
+      {"ncsu_direct", {} }
+    };
+
+    return materializer.materialize_block(method_json, irgen::BlockType::Method);
+  }
+
+  static constexpr const char* name = "NCSU";
+};
+#endif
+
+struct NonlinearCGTestTraits {
+  using OptimizerT = NonlinearCGOptimizer;
+
+  static IRStore make_method_store(InstructionMaterializer& materializer) {
+    const json method_json = {
+      {"nonlinear_cg", {
+        {"max_iterations", 10},
+        {"convergence_tolerance", 1.e-4}
+      }}
+    };
+
+    return materializer.materialize_block(method_json, irgen::BlockType::Method);
+  }
+
+  static constexpr const char* name = "NonlinearCG";
+};
+
+#ifdef HAVE_NOWPAC
+struct NOWPACTestTraits {
+  using OptimizerT = NOWPACOptimizer;
+
+  static IRStore make_method_store(InstructionMaterializer& materializer) {
+    const json method_json = {
+      {"need_to_add_minimal_params"}
+    };
+
+    return materializer.materialize_block(method_json, irgen::BlockType::Method);
+  }
+
+  static constexpr const char* name = "NOWPAC";
+};
+#endif
+
+struct OptDartsTestTraits {
+  using OptimizerT = OptDartsOptimizer;
+
+  static IRStore make_method_store(InstructionMaterializer& materializer) {
+    const json method_json = {
+      {"genie_opt_darts", {
+        {"seed", 1234}
+      }}
+    };
+
+    return materializer.materialize_block(method_json, irgen::BlockType::Method);
+  }
+
+  static constexpr const char* name = "OptDarts";
+};
+
+#ifdef HAVE_OPTPP
+struct SNLLTestTraits {
+  using OptimizerT = SNLLOptimizer;
+
+  static IRStore make_method_store(InstructionMaterializer& materializer) {
+    const json method_json = {
+      {"optpp_q_newton", {
+        {"max_iterations", 10},
+        {"convergence_tolerance", 1.e-4}
+      }}
+    };
+
+    return materializer.materialize_block(method_json, irgen::BlockType::Method);
+  }
+
+  static constexpr const char* name = "SNLL";
+};
+#endif
+
+template <class Traits>
+class di_construction_tests_typed : public ::testing::Test {};
+
+using OptimizerTraits =
+        ::testing::Types<
+#ifdef HAVE_DOT
+                DOTTestTraits,
+#endif
+#ifdef DAKOTA_HOPS
+                APPSTestTraits,
+#endif
+#ifdef HAVE_ACRO
+                COLINTestTraits,
+#endif
+#ifdef HAVE_CONMIN
+                CONMINTestTraits,
+#endif
+#ifdef HAVE_JEGA
+                JEGATestTraits,
+#endif
+#ifdef HAVE_NCSU
+                NCSUTestTraits,
+#endif
+#ifdef HAVE_NOWPAC
+                NOWPACTestTraits,
+#endif
+#ifdef HAVE_OPTPP
+                SNLLTestTraits,
+#endif
+//                NonlinearCGTestTraits, // need to remove bounds from variables
+                                         // or find a setting that supports them
+                OptDartsTestTraits
+              >;
+TYPED_TEST_SUITE(di_construction_tests_typed, OptimizerTraits);
+
+TYPED_TEST(di_construction_tests_typed, can_construct_optimizer_from_irstore)
 {
+  using Traits = TypeParam;
+  using OptimizerT = typename Traits::OptimizerT;
+
   InstructionMaterializer materializer;
   IRStore method_store, variables_store, responses_store, interface_store, model_store;
-  materialize_dot_blocks(materializer, method_store, variables_store,
-                         responses_store, interface_store, model_store);
+
+  method_store = Traits::make_method_store(materializer);
+  materialize_default_opt_blocks(materializer, variables_store,
+                                 responses_store, interface_store, model_store);
 
   ExplicitRuntime runtime;
 
   Variables variables(variables_store);
   Response response(responses_store, variables);
-  auto interface = make_test_interface(
-    interface_store, runtime.services);
-  auto simulation_model = std::make_shared<SimulationModel>(
-    model_store, variables, interface, response, runtime.services);
+  auto interface = make_test_interface(interface_store, runtime.services);
 
-  DOTOptimizer optimizer(method_store, simulation_model, runtime.services);
+  auto simulation_model = std::make_shared<SimulationModel>(
+      model_store, variables, interface, response, runtime.services);
+
+  OptimizerT optimizer(method_store, simulation_model, runtime.services);
 
   EXPECT_EQ(optimizer.parallel_library_ptr(), runtime.parallelLibrary.get());
   EXPECT_EQ(optimizer.output_manager_ptr(), runtime.outputManager.get());
   EXPECT_EQ(optimizer.iterated_model().get(), simulation_model.get());
 }
-#endif
 
 TEST(di_construction_tests, can_construct_nested_model_from_irstore_without_optional_interface)
 {

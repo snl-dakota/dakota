@@ -62,6 +62,21 @@ SNLLBase::SNLLBase(ProblemDescDB& problem_db):
 }
 
 
+SNLLBase::SNLLBase(const IRStore& method_store):
+  searchMethod(method_store.get<String>("optpp.search_method")),
+  gradientTol(method_store.get<Real>("gradient_tolerance")),
+  maxStep(method_store.get<Real>("optpp.max_step")),
+  stepLenToBndry(method_store.get<Real>("optpp.steplength_to_boundary")),
+  centeringParam(method_store.get<Real>("optpp.centering_parameter"))
+{
+  switch (method_store.get<short>("optpp.merit_function")) {
+  case OPTPP::NormFmu:     meritFn = OPTPP::NormFmu; break;
+  case OPTPP::ArgaezTapia: meritFn = OPTPP::ArgaezTapia; break;
+  case OPTPP::VanShanno:   meritFn = OPTPP::VanShanno; break;
+  }
+}
+
+
 void SNLLBase::snll_pre_instantiate(bool bound_constr_flag, int num_constr)
 {
   // OPT++ options are set here, in post_instantiate() below, and in the

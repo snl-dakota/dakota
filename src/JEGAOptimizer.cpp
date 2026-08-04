@@ -1957,6 +1957,92 @@ JEGAOptimizer::JEGAOptimizer(
     this->numInstances++;
 }
 
+JEGAOptimizer::JEGAOptimizer(
+    const IRStore& method_store, std::shared_ptr<Model> model, std::shared_ptr<StudyServices> services
+    ) :
+        //Optimizer(problem_db, model, std::shared_ptr<TraitsBase>(new JEGATraits())),
+        Optimizer(std::move(services), method_store, model, std::shared_ptr<TraitsBase>(new JEGATraits())),
+        _theParamDB(0x0),
+        _theEvalCreator(0x0)
+{
+    EDDY_FUNC_DEBUGSCOPE
+
+    // JEGAOptimizer now makes use of the JEGA front end core project to run
+    // an algorithm.  In order to do this, it creates and loads a DesignTarget,
+    // a ProblemConfig, and an AlgorithmConfig.
+
+    // The first step is to initialize JEGA via the front end Driver
+    // class.  The data needed is available from the problem description
+    // database.  This should only happen once in any run of Dakota regardless
+    // of how many JEGAOptimizers are used.
+    if(!JEGA::FrontEnd::Driver::IsJEGAInitialized())
+    {
+        // The random seed must be handled separately because the sentry value
+        // for JEGA (0) is not the same as the sentry value for Dakota (-1).
+        int rseed_temp = method_store.get<int>("random_seed");
+
+        // if the rseed is negative, it is the sentry value and we will use the
+        // JEGA sentry value of 0.
+        unsigned int rSeed = (rseed_temp < 0) ? 0 :
+            static_cast<unsigned int>(rseed_temp);
+
+        // For now, we will use the level of the first instance of an optimizer
+        // as the level for the global log.  This is only potentially not ideal
+        // in the case of strategies.  The 4 - below is to account for the fact
+        // that the actual dakota levels count upwards by increasing amount of
+        // output while the dakota_levels must count downwards in order to be
+        // compatable with the logging library code.
+        short dakLev = method_store.get<short>("output");
+        LogLevel jegaLev;
+
+        switch (dakLev)
+        {
+            case SILENT_OUTPUT: jegaLev = lsilent(); break;
+            case NORMAL_OUTPUT: jegaLev = lnormal(); break;
+            case DEBUG_OUTPUT: jegaLev = ldebug(); break;
+            case QUIET_OUTPUT: jegaLev = lquiet(); break;
+            case VERBOSE_OUTPUT: jegaLev = lverbose(); break;
+            default: jegaLev = ldefault();
+        }
+
+	// We use JEGA as a library, so want signals to raise up to
+	// us, lest they get ignored:
+	const bool jega_register_signals = false;
+        JEGA::FrontEnd::Driver::InitializeJEGA(
+	    "JEGAGlobal.log", jegaLev, rSeed, JEGA::Logging::Logger::ABORT,
+	    jega_register_signals
+            );
+    }
+
+    // If we failed to init, we cannot continue.
+    JEGAIFLOG_II_G_F(!JEGA::FrontEnd::Driver::IsJEGAInitialized(), this,
+        text_entry(lfatal(), "JEGAOptimizer Error: Unable to initialize JEGA")
+        );
+
+    // we only need to load up the parameter database at this point.
+    // ----- This method or another one is needed to support IRStore params - RWH
+    //this->LoadTheParameterDatabase();
+
+    // population_size is extracted by JEGA in
+    // GeneticAlgorithmInitializer::PollForParameters(), but it is
+    // also needed here to specify the algorithmic concurrency.  Note
+    // that the JEGA population size may grow or shrink during its
+    // iterations, so this is only an initial estimate.
+    int pop_size = method_store.get<int>("population_size");
+    this->maxEvalConcurrency *= pop_size;
+
+    // Assign iterator-specific default for numFinalSolutions
+    if (methodName == MOGA && !this->numFinalSolutions)
+      this->numFinalSolutions
+	= std::numeric_limits<std::size_t>::max(); // moga returns all Pareto
+
+    // We only ever need one EvaluatorCreator so we can create it now.
+    this->_theEvalCreator = new EvaluatorCreator(*iteratedModel);
+
+    // Increment object counter
+    this->numInstances++;
+}
+
 JEGAOptimizer::~JEGAOptimizer(
     )
 {
