@@ -67,6 +67,11 @@ public:
   /// ROL Solver
   ROL::Ptr<ROL::Solver<Real>> rolSolver;
 
+  // Shared callback evaluation cache
+  RealVector lastEvaluatedX;
+  bool hasEvaluatedPoint;
+  short lastRequestValues;
+
   /// Best fully evaluated incumbent seen during the run
   std::shared_ptr<Variables> bestEvaluatedVars;
   std::shared_ptr<Response> bestEvaluatedResp;
@@ -82,6 +87,9 @@ public:
       upperBounds(ROL::nullPtr),
       rolProblem(ROL::nullPtr),
       rolSolver(ROL::nullPtr),
+      lastEvaluatedX(),
+      hasEvaluatedPoint(false),
+      lastRequestValues(0),
       bestEvaluatedVars(),
       bestEvaluatedResp(),
       bestEvaluatedObjective(std::numeric_limits<Real>::infinity()),
@@ -149,6 +157,30 @@ void ROLOptimizer::initialize_run()
 ROLOptimizer* ROLOptimizer::active_instance()
 {
   return dynamic_cast<ROLOptimizer*>(optimizerInstance);
+}
+
+
+void ROLOptimizer::evaluate_model_if_needed(Model& model,
+                                            const RealVector& x,
+                                            short request_values)
+{
+  const bool can_reuse = pimpl_->hasEvaluatedPoint &&
+                         x == pimpl_->lastEvaluatedX &&
+                         pimpl_->lastRequestValues >= request_values;
+  if (can_reuse)
+    return;
+
+  ModelUtils::continuous_variables(model, x);
+
+  ActiveSet eval_set(model.current_response().active_set());
+  eval_set.request_values(request_values);
+  model.evaluate(eval_set);
+
+  pimpl_->lastEvaluatedX = x;
+  pimpl_->hasEvaluatedPoint = true;
+  pimpl_->lastRequestValues = request_values;
+
+  record_evaluated_point();
 }
 
 
@@ -303,6 +335,9 @@ void ROLOptimizer::core_run()
 {
   using namespace rol_interface;
 
+  pimpl_->hasEvaluatedPoint = false;
+  pimpl_->lastRequestValues = 0;
+  pimpl_->lastEvaluatedX.resize(0);
   pimpl_->bestEvaluatedVars.reset();
   pimpl_->bestEvaluatedResp.reset();
   pimpl_->bestEvaluatedObjective = std::numeric_limits<Real>::infinity();

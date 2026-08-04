@@ -11,28 +11,22 @@ void Constraint::evaluateIfNeeded(const ROL::Vector<Dakota::Real>& x,
       const auto& x_dakota =
         as_dakota_vector(const_cast<ROL::Vector<Dakota::Real>&>(x));
 
-      const bool can_reuse = hasEvaluatedPoint && x_dakota == lastEvaluatedX &&
-                             lastRequestValues >= request_values;
-      if (can_reuse)
-        return;
-
-      Dakota::ModelUtils::continuous_variables(dakotaModel, x_dakota);
-
-      Dakota::ActiveSet eval_set(dakotaModel.current_response().active_set());
-      eval_set.request_values(request_values);
-      dakotaModel.evaluate(eval_set);
       if (auto* optimizer = Dakota::ROLOptimizer::active_instance())
-        optimizer->record_evaluated_point();
+        optimizer->evaluate_model_if_needed(dakotaModel, x_dakota, request_values);
+      else {
+        Dakota::ModelUtils::continuous_variables(dakotaModel, x_dakota);
 
-      lastEvaluatedX = x_dakota;
-      hasEvaluatedPoint = true;
-      lastRequestValues = request_values;
-      copy_response_data();
+        Dakota::ActiveSet eval_set(dakotaModel.current_response().active_set());
+        eval_set.request_values(request_values);
+        dakotaModel.evaluate(eval_set);
+      }
+
+      copy_response_data(request_values);
     }
   });
 }
 
-void Constraint::copy_response_data() {
+void Constraint::copy_response_data(short request_values) {
   const_pointer val_ptr{nullptr}, jac_ptr{nullptr}, target_ptr{nullptr};
   std::ptrdiff_t val_offset{0}, jac_offset{0};
 
@@ -70,7 +64,7 @@ void Constraint::copy_response_data() {
       hessianView.clear();
       hasHessian.receive([&,this](auto has_hessian) {
         if constexpr( has_hessian ) {
-          if (!(lastRequestValues & 4))
+          if (!(request_values & 4))
             return;
 
           std::size_t offset = static_cast<std::size_t>(val_offset);
@@ -101,7 +95,7 @@ void Constraint::copy_response_data() {
 
   hasJacobian.receive([&,this](auto has_jacobian){
     if constexpr( has_jacobian ) {
-      if (!(lastRequestValues & 2))
+      if (!(request_values & 2))
         return;
 
       isLinear.receive([&,this](auto is_linear) {
@@ -139,7 +133,6 @@ Constraint::Constraint( BoolDispatch   IsLinear,
   numCon{0},
   valueCopy(1, true),
   jacobianCopy(1, 1, true),
-  lastEvaluatedX(static_cast<int>(numOpt), true),
   isLinear{IsLinear},
   isEquality{IsEquality},
   hasJacobian{HasJacobian},

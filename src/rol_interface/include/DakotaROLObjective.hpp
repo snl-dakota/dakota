@@ -41,9 +41,6 @@ private:
 
   std::size_t numOpt;
   Dakota::RealVector gradientCopy;  // Stores a COPY of gradient data (not a view)
-  Dakota::RealVector lastEvaluatedX;
-  bool hasEvaluatedPoint{false};
-  short lastRequestValues{0};
   BoolDispatch hasGradient, hasHessian;
   Dakota::Model& dakotaModel;
 }; // class Objective

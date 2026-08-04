@@ -8,7 +8,6 @@ Objective::Objective( BoolDispatch   HasGradient,
                       Dakota::Model& model )
   : numOpt{Dakota::ModelUtils::cv(model)},
     gradientCopy(static_cast<int>(numOpt), true),
-    lastEvaluatedX(static_cast<int>(numOpt), true),
     hasGradient{HasGradient},
     hasHessian{HasHessian},
     dakotaModel{model} {
@@ -20,21 +19,15 @@ void Objective::evaluateIfNeeded(const ROL::Vector<Dakota::Real>& x,
   const auto& x_dakota =
     as_dakota_vector(const_cast<ROL::Vector<Dakota::Real>&>(x));
 
-  const bool can_reuse = hasEvaluatedPoint && x_dakota == lastEvaluatedX &&
-                         lastRequestValues >= request_values;
-  if (can_reuse)
-    return;
-
-  Dakota::ModelUtils::continuous_variables(dakotaModel, x_dakota);
-
-  Dakota::ActiveSet eval_set(dakotaModel.current_response().active_set());
-  eval_set.request_values(request_values);
-  dakotaModel.evaluate(eval_set);
   if (auto* optimizer = Dakota::ROLOptimizer::active_instance())
-    optimizer->record_evaluated_point();
-  lastEvaluatedX = x_dakota;
-  hasEvaluatedPoint = true;
-  lastRequestValues = request_values;
+    optimizer->evaluate_model_if_needed(dakotaModel, x_dakota, request_values);
+  else {
+    Dakota::ModelUtils::continuous_variables(dakotaModel, x_dakota);
+
+    Dakota::ActiveSet eval_set(dakotaModel.current_response().active_set());
+    eval_set.request_values(request_values);
+    dakotaModel.evaluate(eval_set);
+  }
 }
 
 void Objective::cacheGradientIfNeeded()

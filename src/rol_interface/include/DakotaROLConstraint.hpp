@@ -56,7 +56,7 @@ public:
 
 private:
   void evaluateIfNeeded(const ROL::Vector<Dakota::Real>& x, short request_values);
-  void copy_response_data();
+  void copy_response_data(short request_values);
 
   Dakota::Model& dakotaModel;
   std::size_t numOpt, numCon;
@@ -64,9 +64,6 @@ private:
   Dakota::RealVector targetView;     // Target values are static, view is OK
   Dakota::RealMatrix jacobianCopy;   // Stores a COPY of Jacobian data (not a view)
   Dakota::RealSymMatrixArray hessianView;
-  Dakota::RealVector lastEvaluatedX;
-  bool hasEvaluatedPoint{false};
-  short lastRequestValues{0};
   BoolDispatch isLinear, isEquality, hasJacobian, hasHessian;
 };        
 

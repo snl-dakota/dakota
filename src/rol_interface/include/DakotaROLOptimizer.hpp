@@ -85,6 +85,11 @@ public:
   /// Record the best fully evaluated Dakota point encountered during the run
   void record_evaluated_point();
 
+  // Share Dakota model evaluations across ROL objective/constraint callbacks
+  void evaluate_model_if_needed(Model& model,
+                                const RealVector& x,
+                                short request_values);
+
 protected:
 
   //
