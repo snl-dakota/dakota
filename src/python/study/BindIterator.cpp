@@ -10,7 +10,9 @@
 #include "DakotaStudyPython.hpp"
 
 #include "ConcurrentMetaIterator.hpp"
+#ifdef HAVE_DOT
 #include "DOTOptimizer.hpp"
+#endif
 #include "DakotaIterator.hpp"
 #include "DakotaResponse.hpp"
 #include "NonDLHSSampling.hpp"
@@ -42,8 +44,10 @@ void bind_iterators(py::module_& m)
 
            return first_response.function_value(0);
          });
+#ifdef HAVE_DOT
   py::class_<DOTOptimizer, Iterator, std::shared_ptr<DOTOptimizer>>(
     m, "DOTOptimizer", py::module_local());
+#endif
   py::class_<ConcurrentMetaIterator, Iterator,
              std::shared_ptr<ConcurrentMetaIterator>>(
     m, "ConcurrentMetaIterator", py::module_local());

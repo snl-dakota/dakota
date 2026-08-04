@@ -11,7 +11,9 @@
 
 #include "IRState.hpp"
 #include "ConcurrentMetaIterator.hpp"
+#ifdef HAVE_DOT
 #include "DOTOptimizer.hpp"
+#endif
 #include "NestedModel.hpp"
 #include "NonDLHSSampling.hpp"
 #include "SimulationModel.hpp"
@@ -33,7 +35,8 @@ namespace Dakota::python {
 
 void bind_study_factories(py::module_& m)
 {
-  py::class_<Study::MethodFactory>(m, "MethodFactory")
+  auto method_factory = py::class_<Study::MethodFactory>(m, "MethodFactory");
+  method_factory
     .def("sampling",
          [](const Study::MethodFactory& factory,
             const nlohmann::json& method_json,
@@ -42,7 +45,9 @@ void bind_study_factories(py::module_& m)
            return factory.sampling(materialize_method(method_json),
                                    std::move(model));
          },
-         py::arg("method"), py::arg("model"))
+         py::arg("method"), py::arg("model"));
+#ifdef HAVE_DOT
+  method_factory
     .def("dot_bfgs",
          [](const Study::MethodFactory& factory,
             const nlohmann::json& method_json,
@@ -51,7 +56,9 @@ void bind_study_factories(py::module_& m)
            return factory.dot_bfgs(materialize_method(method_json),
                                    std::move(model));
          },
-         py::arg("method"), py::arg("model"))
+         py::arg("method"), py::arg("model"));
+#endif
+  method_factory
     .def("multi_start",
          [](const Study::MethodFactory& factory,
             const nlohmann::json& method_json,

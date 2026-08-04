@@ -17,7 +17,11 @@
 #include "DakotaModel.hpp"
 #include "DakotaResponse.hpp"
 #include "DakotaVariables.hpp"
+#ifndef _WIN32
 #include "ForkApplicInterface.hpp"
+#else
+#include "SpawnApplicInterface.hpp"
+#endif
 #include "IRState.hpp"
 #include "MPIManager.hpp"
 #include "NestedModel.hpp"
@@ -162,9 +166,15 @@ std::shared_ptr<Interface> Study::interface(const IRStore& interface_store) cons
   const unsigned short interface_type =
     interface_store.get<unsigned short>("type");
 
-  if (interface_type == FORK_INTERFACE)
+  if (interface_type == FORK_INTERFACE) {
+#ifndef _WIN32
     return std::make_shared<ForkApplicInterface>(
       interface_store, studyServices);
+#else
+    return std::make_shared<SpawnApplicInterface>(
+      interface_store, studyServices);
+#endif
+  }
 
   throw std::runtime_error(
     "Study::interface currently supports only fork interfaces.");
@@ -202,8 +212,14 @@ std::shared_ptr<DOTOptimizer>
 Study::MethodFactory::dot_bfgs(const IRStore& method_store,
                                std::shared_ptr<Model> model) const
 {
+#ifdef HAVE_DOT
   return std::make_shared<DOTOptimizer>(
     method_store, std::move(model), study.services());
+#else
+  (void)method_store;
+  (void)model;
+  throw std::runtime_error("Study::method().dot_bfgs requires Dakota to be built with DOT.");
+#endif
 }
 
 std::shared_ptr<ConcurrentMetaIterator>

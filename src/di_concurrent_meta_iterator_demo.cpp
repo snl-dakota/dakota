@@ -11,7 +11,6 @@
 #include "DOTOptimizer.hpp"
 #include "DakotaVariables.hpp"
 #include "DakotaResponse.hpp"
-#include "ForkApplicInterface.hpp"
 #include "InstructionMaterializer.hpp"
 #include "Study.hpp"
 #include "SimulationModel.hpp"

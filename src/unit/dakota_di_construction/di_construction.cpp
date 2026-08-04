@@ -2,7 +2,11 @@
 #include "DakotaResponse.hpp"
 #include "DOTOptimizer.hpp"
 #include "ConcurrentMetaIterator.hpp"
+#ifndef _WIN32
 #include "ForkApplicInterface.hpp"
+#else
+#include "SpawnApplicInterface.hpp"
+#endif
 #include "InstructionMaterializer.hpp"
 #include "LibraryRuntimeSupport.hpp"
 #include "MPIManager.hpp"
@@ -21,6 +25,7 @@
 #include <nlohmann/json.hpp>
 #include <memory>
 #include <stdexcept>
+#include <utility>
 
 using json = nlohmann::json;
 
@@ -55,6 +60,16 @@ struct ExplicitRuntime {
   std::shared_ptr<ParallelLibrary> parallelLibrary;
   std::shared_ptr<StudyServices> services;
 };
+
+std::shared_ptr<Interface> make_test_interface(
+  const IRStore& interface_store, std::shared_ptr<StudyServices> services)
+{
+#ifndef _WIN32
+  return std::make_shared<ForkApplicInterface>(interface_store, std::move(services));
+#else
+  return std::make_shared<SpawnApplicInterface>(interface_store, std::move(services));
+#endif
+}
 
 void materialize_pilot_blocks(InstructionMaterializer& materializer,
                               IRStore& method_store,
@@ -187,7 +202,7 @@ TEST(di_construction_tests, can_construct_pilot_components_from_irstores_with_de
   auto services = std::make_shared<StudyServices>();
   Variables variables(variables_store);
   Response response(responses_store, variables);
-  std::shared_ptr<Interface> interface = std::make_shared<ForkApplicInterface>(
+  std::shared_ptr<Interface> interface = make_test_interface(
     interface_store, services);
   auto model = std::make_shared<SimulationModel>(
     model_store, variables, interface, response, services);
@@ -253,7 +268,7 @@ TEST(di_construction_tests, study_config_run_preserves_explicit_phase_selection)
   EXPECT_EQ(run_options.preRunOutput, "pre.out");
 }
 
-TEST(di_construction_tests, study_factory_constructs_fork_interface)
+TEST(di_construction_tests, study_factory_constructs_process_interface)
 {
   InstructionMaterializer materializer;
   IRStore method_store, variables_store, responses_store, interface_store, model_store;
@@ -264,7 +279,11 @@ TEST(di_construction_tests, study_factory_constructs_fork_interface)
   auto interface = study.interface(interface_store);
 
   ASSERT_TRUE(interface);
+#ifndef _WIN32
   EXPECT_TRUE(std::dynamic_pointer_cast<ForkApplicInterface>(interface));
+#else
+  EXPECT_TRUE(std::dynamic_pointer_cast<SpawnApplicInterface>(interface));
+#endif
   EXPECT_EQ(interface->parallel_library_ptr(), study.parallel_library().get());
   EXPECT_EQ(interface->output_manager_ptr(), study.output_manager().get());
 }
@@ -305,7 +324,7 @@ TEST(di_construction_tests, can_construct_pilot_components_from_irstores_with_ex
 
   Variables variables(variables_store);
   Response response(responses_store, variables);
-  std::shared_ptr<Interface> interface = std::make_shared<ForkApplicInterface>(
+  std::shared_ptr<Interface> interface = make_test_interface(
     interface_store, runtime.services);
   auto model = std::make_shared<SimulationModel>(
     model_store, variables, interface, response, runtime.services);
@@ -330,7 +349,7 @@ TEST(di_construction_tests, throws_on_inconsistent_parent_child_runtime_services
 
   Variables variables(variables_store);
   Response response(responses_store, variables);
-  auto interface = std::make_shared<ForkApplicInterface>(
+  auto interface = make_test_interface(
     interface_store, runtime_a.services);
 
   EXPECT_THROW(
@@ -399,7 +418,7 @@ TEST(di_construction_tests, can_construct_concurrent_meta_iterator_from_irstore)
 
   Variables variables(variables_store);
   Response response(responses_store, variables);
-  auto interface = std::make_shared<ForkApplicInterface>(
+  auto interface = make_test_interface(
     interface_store, runtime.services);
   auto simulation_model = std::make_shared<SimulationModel>(
     model_store, variables, interface, response, runtime.services);
@@ -427,7 +446,7 @@ TEST(di_construction_tests, can_construct_dot_optimizer_from_irstore)
 
   Variables variables(variables_store);
   Response response(responses_store, variables);
-  auto interface = std::make_shared<ForkApplicInterface>(
+  auto interface = make_test_interface(
     interface_store, runtime.services);
   auto simulation_model = std::make_shared<SimulationModel>(
     model_store, variables, interface, response, runtime.services);
@@ -451,7 +470,7 @@ TEST(di_construction_tests, can_construct_nested_model_from_irstore_without_opti
 
   Variables variables(variables_store);
   Response response(responses_store, variables);
-  auto interface = std::make_shared<ForkApplicInterface>(
+  auto interface = make_test_interface(
     interface_store, runtime.services);
   auto simulation_model = std::make_shared<SimulationModel>(
     model_store, variables, interface, response, runtime.services);
@@ -480,9 +499,9 @@ TEST(di_construction_tests, can_construct_nested_model_from_irstore_with_optiona
 
   Variables variables(variables_store);
   Response response(responses_store, variables);
-  auto simulation_interface = std::make_shared<ForkApplicInterface>(
+  auto simulation_interface = make_test_interface(
     interface_store, runtime.services);
-  auto optional_interface = std::make_shared<ForkApplicInterface>(
+  auto optional_interface = make_test_interface(
     interface_store, runtime.services);
   auto simulation_model = std::make_shared<SimulationModel>(
     model_store, variables, simulation_interface, response, runtime.services);
@@ -528,9 +547,9 @@ TEST(di_construction_tests, nested_model_throws_on_inconsistent_runtime_services
 
   Variables variables(variables_store);
   Response response(responses_store, variables);
-  auto simulation_interface = std::make_shared<ForkApplicInterface>(
+  auto simulation_interface = make_test_interface(
     interface_store, runtime_a.services);
-  auto optional_interface = std::make_shared<ForkApplicInterface>(
+  auto optional_interface = make_test_interface(
     interface_store, runtime_b.services);
   auto simulation_model = std::make_shared<SimulationModel>(
     model_store, variables, simulation_interface, response, runtime_a.services);
