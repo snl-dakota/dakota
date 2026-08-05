@@ -3191,10 +3191,12 @@ int TestDriverInterface::text_book()
   }
 
   text_book1(); // objective fn val/grad/Hessian
-  if (numFns > 1)
+  if (numFns > 1) {
     text_book2(); // constraint 1 val/grad/Hessian
-  if (numFns > 2)
+  }
+  if (numFns > 2) {
     text_book3(); // constraint 2 val/grad/Hessian
+  }
 
   // Test failure capturing for Direct case
   //int r = rand();
