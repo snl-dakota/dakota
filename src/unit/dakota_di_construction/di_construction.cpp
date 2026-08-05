@@ -18,6 +18,12 @@
 #ifdef HAVE_NCSU
 #include "NCSUOptimizer.hpp"
 #endif
+#ifdef HAVE_NPSOL
+#include "NPSOLOptimizer.hpp"
+#endif
+#ifdef HAVE_NL2SOL
+#include "NL2SOLLeastSq.hpp"
+#endif
 #include "NonlinearCGOptimizer.hpp"
 #ifdef HAVE_NOWPAC
 #include "NOWPACOptimizer.hpp"
@@ -182,6 +188,44 @@ void materialize_default_opt_blocks(InstructionMaterializer& materializer,
   const json responses_json = {
     {"response_type", {{"objective_functions", {{"count", 1}}}}},
     {"descriptors", {"f"}},
+    {"gradient_type", {{"analytic_gradients", true}}},
+    {"hessian_type", {{"no_hessians", true}}}
+  };
+
+  const json interface_json = {
+    {"analysis_drivers", {
+      {"drivers", {"text_book"}},
+      {"interface_type", {{"fork", json::object()}}}
+    }}
+  };
+
+  const json model_json = json::object();
+
+  variables_store = materializer.materialize_block(variables_json, irgen::BlockType::Variables);
+  responses_store = materializer.materialize_block(responses_json, irgen::BlockType::Responses);
+  interface_store = materializer.materialize_block(interface_json, irgen::BlockType::Interface);
+  model_store = materializer.materialize_block(model_json, irgen::BlockType::Model);
+}
+
+void materialize_default_lsq_blocks(InstructionMaterializer& materializer,
+                                    IRStore& variables_store,
+                                    IRStore& responses_store,
+                                    IRStore& interface_store,
+                                    IRStore& model_store)
+{
+  const json variables_json = {
+    {"continuous_design", {
+      {"count", 2},
+      {"descriptors", {"x1", "x2"}},
+      {"initial_point", {0.9, 1.1}},
+      {"lower_bounds", {0.5, 0.5}},
+      {"upper_bounds", {5.8, 2.9}}
+    }}
+  };
+
+  const json responses_json = {
+    {"response_type", {{"calibration_terms", {{"count", 1}}}}},
+    {"descriptors", {"r1"}},
     {"gradient_type", {{"analytic_gradients", true}}},
     {"hessian_type", {{"no_hessians", true}}}
   };
@@ -559,6 +603,28 @@ struct NCSUTestTraits {
 };
 #endif
 
+#ifdef HAVE_NPSOL
+struct NPSOLTestTraits {
+  using OptimizerT = NPSOLOptimizer;
+
+  static IRStore make_method_store(InstructionMaterializer& materializer) {
+    const json method_json = {
+      {"npsol_sqp", {
+        {"verify_level", -1},
+        {"function_precision", 1.e-10},
+        {"linesearch_tolerance", 0.9},
+        {"max_iterations", 10},
+        {"convergence_tolerance", 1.e-4}
+      }}
+    };
+
+    return materializer.materialize_block(method_json, irgen::BlockType::Method);
+  }
+
+  static constexpr const char* name = "NPSOL";
+};
+#endif
+
 struct NonlinearCGTestTraits {
   using OptimizerT = NonlinearCGOptimizer;
 
@@ -650,6 +716,9 @@ using OptimizerTraits =
 #ifdef HAVE_NCSU
                 NCSUTestTraits,
 #endif
+#ifdef HAVE_NPSOL
+                NPSOLTestTraits,
+#endif
 #ifdef HAVE_NOWPAC
                 NOWPACTestTraits,
 #endif
@@ -689,6 +758,108 @@ TYPED_TEST(di_construction_tests_typed, can_construct_optimizer_from_irstore)
   EXPECT_EQ(optimizer.output_manager_ptr(), runtime.outputManager.get());
   EXPECT_EQ(optimizer.iterated_model().get(), simulation_model.get());
 }
+
+#ifdef HAVE_NPSOL
+TEST(di_construction_tests, npsol_optimizer_throws_on_inconsistent_runtime_services)
+{
+  InstructionMaterializer materializer;
+  IRStore method_store, variables_store, responses_store, interface_store, model_store;
+
+  method_store = NPSOLTestTraits::make_method_store(materializer);
+  materialize_default_opt_blocks(materializer, variables_store,
+                                 responses_store, interface_store, model_store);
+
+  ExplicitRuntime runtime_a;
+  ExplicitRuntime runtime_b;
+
+  Variables variables(variables_store);
+  Response response(responses_store, variables);
+  auto interface = make_test_interface(interface_store, runtime_a.services);
+  auto simulation_model = std::make_shared<SimulationModel>(
+    model_store, variables, interface, response, runtime_a.services);
+
+  EXPECT_THROW(
+    NPSOLOptimizer(method_store, simulation_model, runtime_b.services),
+    std::runtime_error);
+}
+#endif
+
+#ifdef HAVE_NL2SOL
+TEST(di_construction_tests, can_construct_nl2sol_leastsq_from_irstore)
+{
+  InstructionMaterializer materializer;
+  IRStore method_store, variables_store, responses_store, interface_store, model_store;
+
+  const json method_json = {
+    {"nl2sol", {
+      {"function_precision", 1.e-10},
+      {"absolute_conv_tol", -1.0},
+      {"x_conv_tol", -1.0},
+      {"singular_conv_tol", -1.0},
+      {"singular_radius", -1.0},
+      {"false_conv_tol", -1.0},
+      {"initial_trust_radius", -1.0},
+      {"covariance", 0},
+      {"max_iterations", 10},
+      {"convergence_tolerance", 1.e-4}
+    }}
+  };
+  method_store = materializer.materialize_block(method_json, irgen::BlockType::Method);
+  materialize_default_lsq_blocks(materializer, variables_store,
+                                 responses_store, interface_store, model_store);
+
+  ExplicitRuntime runtime;
+
+  Variables variables(variables_store);
+  Response response(responses_store, variables);
+  auto interface = make_test_interface(interface_store, runtime.services);
+  auto simulation_model = std::make_shared<SimulationModel>(
+    model_store, variables, interface, response, runtime.services);
+
+  NL2SOLLeastSq solver(method_store, simulation_model, runtime.services);
+
+  EXPECT_EQ(solver.parallel_library_ptr(), runtime.parallelLibrary.get());
+  EXPECT_EQ(solver.output_manager_ptr(), runtime.outputManager.get());
+  EXPECT_EQ(solver.iterated_model().get(), simulation_model.get());
+}
+
+TEST(di_construction_tests, nl2sol_leastsq_throws_on_inconsistent_runtime_services)
+{
+  InstructionMaterializer materializer;
+  IRStore method_store, variables_store, responses_store, interface_store, model_store;
+
+  const json method_json = {
+    {"nl2sol", {
+      {"function_precision", 1.e-10},
+      {"absolute_conv_tol", -1.0},
+      {"x_conv_tol", -1.0},
+      {"singular_conv_tol", -1.0},
+      {"singular_radius", -1.0},
+      {"false_conv_tol", -1.0},
+      {"initial_trust_radius", -1.0},
+      {"covariance", 0},
+      {"max_iterations", 10},
+      {"convergence_tolerance", 1.e-4}
+    }}
+  };
+  method_store = materializer.materialize_block(method_json, irgen::BlockType::Method);
+  materialize_default_lsq_blocks(materializer, variables_store,
+                                 responses_store, interface_store, model_store);
+
+  ExplicitRuntime runtime_a;
+  ExplicitRuntime runtime_b;
+
+  Variables variables(variables_store);
+  Response response(responses_store, variables);
+  auto interface = make_test_interface(interface_store, runtime_a.services);
+  auto simulation_model = std::make_shared<SimulationModel>(
+    model_store, variables, interface, response, runtime_a.services);
+
+  EXPECT_THROW(
+    NL2SOLLeastSq(method_store, simulation_model, runtime_b.services),
+    std::runtime_error);
+}
+#endif
 
 TEST(di_construction_tests, can_construct_nested_model_from_irstore_without_optional_interface)
 {

@@ -12,6 +12,7 @@
 #include "DakotaResponse.hpp"
 #include "NPSOLOptimizer.hpp"
 #include "ProblemDescDB.hpp"
+#include "IRStore.hpp"
 #include <algorithm>
 #include <sstream>
 
@@ -60,14 +61,24 @@ NPSOLOptimizer::NPSOLOptimizer(ProblemDescDB& problem_db, ParallelLibrary& paral
   Optimizer(problem_db, parallel_lib, model, std::shared_ptr<TraitsBase>(new NPSOLTraits())),
   SOLBase(model), setUpType("model")
 {
-  // invoke SOLBase set function (shared with NLSSOLLeastSq)
-  set_options(speculativeFlag, vendorNumericalGradFlag, outputLevel,
-              probDescDB.get<int>("method.npsol.verify_level"),
-              probDescDB.get<const Real>("method.function_precision"),
-              probDescDB.get<const Real>("method.npsol.linesearch_tolerance"),
-              maxIterations, constraintTol, convergenceTol,
-	      iteratedModel->gradient_type(),
-	      iteratedModel->fd_gradient_step_size());
+  initialize_model_mode_options(
+    probDescDB.get<int>("method.npsol.verify_level"),
+    probDescDB.get<const Real>("method.function_precision"),
+    probDescDB.get<const Real>("method.npsol.linesearch_tolerance"));
+}
+
+
+NPSOLOptimizer::NPSOLOptimizer(const IRStore& method_store,
+                               std::shared_ptr<Model> model,
+                               std::shared_ptr<StudyServices> services):
+  Optimizer(std::move(services), method_store, model,
+            std::shared_ptr<TraitsBase>(new NPSOLTraits())),
+  SOLBase(model), setUpType("model")
+{
+  initialize_model_mode_options(
+    method_store.get<int>("npsol.verify_level"),
+    method_store.get<Real>("function_precision"),
+    method_store.get<Real>("npsol.linesearch_tolerance"));
 }
 
 
@@ -181,6 +192,18 @@ NPSOLOptimizer(const RealVector& cv_initial,
   if (nonlin_feas_tol > 0.)
     send_sol_option("Nonlinear Feasibility Tolerance = " +
 		    std::to_string(nonlin_feas_tol));
+}
+
+
+void NPSOLOptimizer::initialize_model_mode_options(int verify_level,
+                                                   Real fn_precision,
+                                                   Real linesearch_tolerance)
+{
+  set_options(speculativeFlag, vendorNumericalGradFlag, outputLevel,
+              verify_level, fn_precision, linesearch_tolerance,
+              maxIterations, constraintTol, convergenceTol,
+              iteratedModel->gradient_type(),
+              iteratedModel->fd_gradient_step_size());
 }
 
 

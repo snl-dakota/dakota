@@ -82,6 +82,45 @@ LeastSq(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_pt
 
 
 LeastSq::
+LeastSq(std::shared_ptr<StudyServices> services,
+	const IRStore& method_store, std::shared_ptr<Model> model,
+	std::shared_ptr<TraitsBase> traits):
+  Minimizer(std::move(services), method_store, model, traits),
+  numLeastSqTerms(numUserPrimaryFns),
+  weightFlag(!iteratedModel->primary_response_fn_weights().empty()),
+  retrievedIterPriFns(false)
+{
+  optimizationFlag = false;
+
+  bool err_flag = false;
+  if (model->primary_fn_type() != CALIB_TERMS) {
+    Cerr << "\nError: model must have calibration terms to apply least squares "
+         << "methods." << std::endl;
+    err_flag = true;
+  }
+  if ( !(methodName & LEASTSQ_BIT) ) {
+    Cerr << "\nError: least squares bit not activated for method instantiation "
+         << "within LeastSq branch." << std::endl;
+    err_flag = true;
+  }
+
+  if (err_flag)
+    abort_handler(-1);
+
+  bestVariablesArray.push_back(iteratedModel->current_variables().copy());
+
+  if (calibrationDataFlag) {
+    data_transform_model();
+    numLeastSqTerms = numTotalCalibTerms;
+  }
+  if (scaleFlag)
+    scale_model();
+  if (weightFlag)
+    weight_model();
+}
+
+
+LeastSq::
 LeastSq(unsigned short method_name, std::shared_ptr<Model> model,
 	std::shared_ptr<TraitsBase> traits):
   Minimizer(method_name, model, traits),
