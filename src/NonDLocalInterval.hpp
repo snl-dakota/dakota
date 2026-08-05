@@ -36,6 +36,8 @@ public:
   //
 
   NonDLocalInterval(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model); ///< constructor
+  NonDLocalInterval(std::shared_ptr<StudyServices> services,
+                    const IRStore& method_store, std::shared_ptr<Model> model); ///< DI constructor
   ~NonDLocalInterval() override;                                       ///< destructor
 
   //

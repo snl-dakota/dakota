@@ -12,6 +12,7 @@
 #include "NonDLocalInterval.hpp"
 #include "RecastModel.hpp"
 #include "ProblemDescDB.hpp"
+#include "IRStore.hpp"
 #ifdef HAVE_NPSOL
 #include "NPSOLOptimizer.hpp"
 #endif // HAVE_NPSOL
@@ -76,6 +77,58 @@ NonDLocalInterval::NonDLocalInterval(ProblemDescDB& problem_db, ParallelLibrary&
 			       ("optpp_q_newton", minMaxModel);
 //#elif // handled within NonD::sub_optimizer_select()
 #endif // HAVE_OPTPP
+    break;
+  default:
+    err_flag = true;  break;
+  }
+
+  if (err_flag)
+    abort_handler(METHOD_ERROR);
+}
+
+
+NonDLocalInterval::NonDLocalInterval(std::shared_ptr<StudyServices> services,
+                                     const IRStore& method_store,
+                                     std::shared_ptr<Model> model):
+  NonDInterval(std::move(services), method_store, model), npsolFlag(false)
+{
+  bool err_flag = false;
+
+  if (numDiscreteIntVars || numDiscreteStringVars || numDiscreteRealVars) {
+    Cerr << "\nError: discrete variables are not currently supported in "
+         << "NonDLocalInterval." << std::endl;
+    err_flag = true;
+  }
+  if (numContinuousVars != numContIntervalVars) {
+    Cerr << "\nError: only continuous interval distributions are currently "
+         << "supported in NonDLocalInterval." << std::endl;
+    err_flag = true;
+  }
+
+  SizetArray recast_vars_comps_total;
+  BitArray all_relax_di, all_relax_dr;
+  short recast_resp_order = 3;
+  const ShortShortPair& recast_view = iteratedModel->current_variables().view();
+  minMaxModel = std::make_shared<RecastModel>(
+    iteratedModel, recast_vars_comps_total, all_relax_di, all_relax_dr,
+    recast_view, 1, 0, 0, recast_resp_order);
+
+  switch (sub_optimizer_select(
+          method_store.get<unsigned short>("nond.opt_subproblem_solver"))) {
+  case SUBMETHOD_NPSOL: {
+#ifdef HAVE_NPSOL
+    int deriv_level = 3;
+    minMaxOptimizer = std::make_unique<NPSOLOptimizer>(
+      minMaxModel, deriv_level, convergenceTol);
+    npsolFlag = true;
+#endif
+    break;
+  }
+  case SUBMETHOD_OPTPP:
+#ifdef HAVE_OPTPP
+    minMaxOptimizer = std::make_unique<SNLLOptimizer>(
+      "optpp_q_newton", minMaxModel);
+#endif
     break;
   default:
     err_flag = true;  break;
