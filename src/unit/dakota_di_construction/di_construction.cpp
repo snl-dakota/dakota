@@ -31,6 +31,7 @@
 #include "NonDGlobalSingleInterval.hpp"
 #include "NonDLHSSingleInterval.hpp"
 #include "NonDLocalSingleInterval.hpp"
+#include "RichExtrapVerification.hpp"
 #include "NonlinearCGOptimizer.hpp"
 #ifdef HAVE_NOWPAC
 #include "NOWPACOptimizer.hpp"
@@ -310,6 +311,42 @@ void materialize_default_local_interval_blocks(InstructionMaterializer& material
     {"response_type", {{"response_functions", {{"count", 1}}}}},
     {"descriptors", {"f"}},
     {"gradient_type", {{"analytic_gradients", true}}},
+    {"hessian_type", {{"no_hessians", true}}}
+  };
+
+  const json interface_json = {
+    {"analysis_drivers", {
+      {"drivers", {"text_book"}},
+      {"interface_type", {{"fork", json::object()}}}
+    }}
+  };
+
+  const json model_json = json::object();
+
+  variables_store = materializer.materialize_block(variables_json, irgen::BlockType::Variables);
+  responses_store = materializer.materialize_block(responses_json, irgen::BlockType::Responses);
+  interface_store = materializer.materialize_block(interface_json, irgen::BlockType::Interface);
+  model_store = materializer.materialize_block(model_json, irgen::BlockType::Model);
+}
+
+void materialize_default_verification_blocks(InstructionMaterializer& materializer,
+                                             IRStore& variables_store,
+                                             IRStore& responses_store,
+                                             IRStore& interface_store,
+                                             IRStore& model_store)
+{
+  const json variables_json = {
+    {"continuous_state", {
+      {"count", 2},
+      {"descriptors", {"h1", "h2"}},
+      {"initial_state", {0.25, 0.125}}
+    }}
+  };
+
+  const json responses_json = {
+    {"response_type", {{"response_functions", {{"count", 1}}}}},
+    {"descriptors", {"f"}},
+    {"gradient_type", {{"no_gradients", true}}},
     {"hessian_type", {{"no_hessians", true}}}
   };
 
@@ -1022,6 +1059,69 @@ TEST(di_construction_tests, nond_local_single_interval_throws_on_inconsistent_ru
     std::runtime_error);
 }
 #endif
+
+TEST(di_construction_tests, can_construct_rich_extrap_verification_from_irstore)
+{
+  InstructionMaterializer materializer;
+  IRStore method_store, variables_store, responses_store, interface_store, model_store;
+
+  const json method_json = {
+    {"richardson_extrap", {
+      {"mode", {{"estimate_order", true}}},
+      {"refinement_rate", 2.0},
+      {"convergence_tolerance", 1.e-4},
+      {"max_iterations", 4}
+    }}
+  };
+  method_store = materializer.materialize_block(method_json, irgen::BlockType::Method);
+  materialize_default_verification_blocks(materializer, variables_store,
+                                          responses_store, interface_store, model_store);
+
+  ExplicitRuntime runtime;
+
+  Variables variables(variables_store);
+  Response response(responses_store, variables);
+  auto interface = make_test_interface(interface_store, runtime.services);
+  auto simulation_model = std::make_shared<SimulationModel>(
+    model_store, variables, interface, response, runtime.services);
+
+  RichExtrapVerification verification(method_store, simulation_model, runtime.services);
+
+  EXPECT_EQ(verification.parallel_library_ptr(), runtime.parallelLibrary.get());
+  EXPECT_EQ(verification.output_manager_ptr(), runtime.outputManager.get());
+  EXPECT_EQ(verification.iterated_model().get(), simulation_model.get());
+}
+
+TEST(di_construction_tests, rich_extrap_verification_throws_on_inconsistent_runtime_services)
+{
+  InstructionMaterializer materializer;
+  IRStore method_store, variables_store, responses_store, interface_store, model_store;
+
+  const json method_json = {
+    {"richardson_extrap", {
+      {"mode", {{"estimate_order", true}}},
+      {"refinement_rate", 2.0},
+      {"convergence_tolerance", 1.e-4},
+      {"max_iterations", 4}
+    }}
+  };
+  method_store = materializer.materialize_block(method_json, irgen::BlockType::Method);
+  materialize_default_verification_blocks(materializer, variables_store,
+                                          responses_store, interface_store, model_store);
+
+  ExplicitRuntime runtime_a;
+  ExplicitRuntime runtime_b;
+
+  Variables variables(variables_store);
+  Response response(responses_store, variables);
+  auto interface = make_test_interface(interface_store, runtime_a.services);
+  auto simulation_model = std::make_shared<SimulationModel>(
+    model_store, variables, interface, response, runtime_a.services);
+
+  EXPECT_THROW(
+    RichExtrapVerification(method_store, simulation_model, runtime_b.services),
+    std::runtime_error);
+}
 
 TEST(di_construction_tests, can_construct_nond_lhs_single_interval_from_irstore)
 {

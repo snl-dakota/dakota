@@ -10,6 +10,7 @@
 #include "dakota_system_defs.hpp"
 #include "RichExtrapVerification.hpp"
 #include "ProblemDescDB.hpp"
+#include "IRStore.hpp"
 
 static const char rcsId[]="@(#) $Id: RichExtrapVerification.cpp 6972 2010-09-17 22:18:50Z briadam $";
 
@@ -27,6 +28,17 @@ RichExtrapVerification(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
   // one iter with 3 pts, possibly followed by iters. with 1 addtnl pt
   //numEvals = 3;
   maxEvalConcurrency *= 3; //numEvals;
+}
+
+
+RichExtrapVerification::
+RichExtrapVerification(const IRStore& method_store, std::shared_ptr<Model> model,
+                       std::shared_ptr<StudyServices> services):
+  Verification(std::move(services), method_store, model),
+  studyType(method_store.get<unsigned short>("sub_method")),
+  refinementRate(method_store.get<Real>("verification.refinement_rate"))
+{
+  maxEvalConcurrency *= 3;
 }
 
 
