@@ -67,10 +67,8 @@ public:
   /// ROL Solver
   ROL::Ptr<ROL::Solver<Real>> rolSolver;
 
-  // Shared callback evaluation cache
-  RealVector lastEvaluatedX;
-  bool hasEvaluatedPoint;
-  short lastRequestValues;
+  // Shared callback context for objective/constraint evaluations
+  std::unique_ptr<ROLCallbackContext> callbackContext;
 
   /// Best fully evaluated incumbent seen during the run
   std::shared_ptr<Variables> bestEvaluatedVars;
@@ -87,9 +85,7 @@ public:
       upperBounds(ROL::nullPtr),
       rolProblem(ROL::nullPtr),
       rolSolver(ROL::nullPtr),
-      lastEvaluatedX(),
-      hasEvaluatedPoint(false),
-      lastRequestValues(0),
+      callbackContext(),
       bestEvaluatedVars(),
       bestEvaluatedResp(),
       bestEvaluatedObjective(std::numeric_limits<Real>::infinity()),
@@ -154,21 +150,23 @@ void ROLOptimizer::initialize_run()
 }
 
 
-ROLOptimizer* ROLOptimizer::active_instance()
+ROLCallbackContext::ROLCallbackContext(Model& model_in, ROLOptimizer* optimizer_in)
+  : model(model_in),
+    optimizer(optimizer_in),
+    lastEvaluatedX(),
+    hasEvaluatedPoint(false),
+    lastRequestValues(0)
 {
-  return dynamic_cast<ROLOptimizer*>(optimizerInstance);
 }
 
-
-void ROLOptimizer::evaluate_model_if_needed(Model& model,
-                                            const RealVector& x,
-                                            short request_values)
+bool ROLCallbackContext::evaluate_model_if_needed(const RealVector& x,
+                                                  short request_values)
 {
-  const bool can_reuse = pimpl_->hasEvaluatedPoint &&
-                         x == pimpl_->lastEvaluatedX &&
-                         pimpl_->lastRequestValues >= request_values;
+  const bool can_reuse = hasEvaluatedPoint &&
+                         x == lastEvaluatedX &&
+                         lastRequestValues >= request_values;
   if (can_reuse)
-    return;
+    return false;
 
   ModelUtils::continuous_variables(model, x);
 
@@ -176,11 +174,14 @@ void ROLOptimizer::evaluate_model_if_needed(Model& model,
   eval_set.request_values(request_values);
   model.evaluate(eval_set);
 
-  pimpl_->lastEvaluatedX = x;
-  pimpl_->hasEvaluatedPoint = true;
-  pimpl_->lastRequestValues = request_values;
+  lastEvaluatedX = x;
+  hasEvaluatedPoint = true;
+  lastRequestValues = request_values;
 
-  record_evaluated_point();
+  if (optimizer)
+    optimizer->record_evaluated_point();
+
+  return true;
 }
 
 
@@ -335,9 +336,6 @@ void ROLOptimizer::core_run()
 {
   using namespace rol_interface;
 
-  pimpl_->hasEvaluatedPoint = false;
-  pimpl_->lastRequestValues = 0;
-  pimpl_->lastEvaluatedX.resize(0);
   pimpl_->bestEvaluatedVars.reset();
   pimpl_->bestEvaluatedResp.reset();
   pimpl_->bestEvaluatedObjective = std::numeric_limits<Real>::infinity();
@@ -433,7 +431,9 @@ void ROLOptimizer::set_problem()
   get_initial_values(*iteratedModel, x_dakota);
 
   // Create objective and ROL Problem with initial guess
-  auto obj = Objective::createFromModel(*iteratedModel);
+  pimpl_->callbackContext = std::make_unique<ROLCallbackContext>(*iteratedModel, this);
+
+  auto obj = Objective::createFromModel(*iteratedModel, pimpl_->callbackContext.get());
   pimpl_->rolProblem = ROL::makePtr<ROL::Problem<Real>>(obj, pimpl_->rolX);
 
   // Set variable bounds if needed
@@ -465,7 +465,7 @@ void ROLOptimizer::set_problem()
   }
 
   // Add constraints using the new interface
-  auto constraints = Constraint::createSetFromModel(*iteratedModel);
+  auto constraints = Constraint::createSetFromModel(*iteratedModel, pimpl_->callbackContext.get());
 
   // Add linear equality constraints
   if (constraints.linearEquality != ROL::nullPtr) {

@@ -11,8 +11,8 @@ void Constraint::evaluateIfNeeded(const ROL::Vector<Dakota::Real>& x,
       const auto& x_dakota =
         as_dakota_vector(const_cast<ROL::Vector<Dakota::Real>&>(x));
 
-      if (auto* optimizer = Dakota::ROLOptimizer::active_instance())
-        optimizer->evaluate_model_if_needed(dakotaModel, x_dakota, request_values);
+      if (context)
+        context->evaluate_model_if_needed(x_dakota, request_values);
       else {
         Dakota::ModelUtils::continuous_variables(dakotaModel, x_dakota);
 
@@ -123,12 +123,14 @@ void Constraint::copy_response_data(short request_values) {
 }
 
 
-Constraint::Constraint( BoolDispatch   IsLinear,
-                        BoolDispatch   IsEquality,
-                        BoolDispatch   HasJacobian,
-                        BoolDispatch   HasHessian,
-                        Dakota::Model& model )
+Constraint::Constraint( BoolDispatch          IsLinear,
+                        BoolDispatch          IsEquality,
+                        BoolDispatch          HasJacobian,
+                        BoolDispatch          HasHessian,
+                        Dakota::Model&        model,
+                        Dakota::ROLCallbackContext* context_in )
 : dakotaModel{model},
+  context{context_in},
   numOpt{Dakota::ModelUtils::cv(model)},
   numCon{0},
   valueCopy(1, true),
@@ -278,7 +280,8 @@ void Constraint::applyAdjointHessian(       ROL::Vector<Dakota::Real>& ahuv,
   });
 }
 
-ConstraintSet Constraint::createSetFromModel( Dakota::Model& model ) {
+ConstraintSet Constraint::createSetFromModel( Dakota::Model& model,
+                                               Dakota::ROLCallbackContext* context ) {
 
   auto grad_type  = model.gradient_type();
   auto hess_type  = model.hessian_type();
@@ -297,7 +300,8 @@ ConstraintSet Constraint::createSetFromModel( Dakota::Model& model ) {
                                                           is_equality,
                                                           have_jacobian,
                                                           have_hessian,
-                                                          model);
+                                                          model,
+                                                          context);
   }
   if( Dakota::ModelUtils::num_linear_ineq_constraints(model) ) {
     constexpr BoolDispatch is_linear{true}, is_equality{false};
@@ -305,7 +309,8 @@ ConstraintSet Constraint::createSetFromModel( Dakota::Model& model ) {
                                                             is_equality,
                                                             have_jacobian,
                                                             have_hessian,
-                                                            model);
+                                                            model,
+                                                            context);
   }
   if( Dakota::ModelUtils::num_nonlinear_eq_constraints(model) ) {
     constexpr BoolDispatch is_linear{false}, is_equality{true};
@@ -313,7 +318,8 @@ ConstraintSet Constraint::createSetFromModel( Dakota::Model& model ) {
                                                              is_equality,
                                                              have_jacobian,
                                                              have_hessian,
-                                                             model);
+                                                             model,
+                                                             context);
   }
   if( Dakota::ModelUtils::num_nonlinear_ineq_constraints(model) ) {
     constexpr BoolDispatch is_linear{false}, is_equality{false};
@@ -321,7 +327,8 @@ ConstraintSet Constraint::createSetFromModel( Dakota::Model& model ) {
                                                                is_equality,
                                                                have_jacobian,
                                                                have_hessian,
-                                                               model);
+                                                               model,
+                                                               context);
   }
   return constraints;
 }

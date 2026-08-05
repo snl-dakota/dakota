@@ -3,14 +3,16 @@
 
 namespace rol_interface {
 
-Objective::Objective( BoolDispatch   HasGradient,
-                      BoolDispatch   HasHessian,
-                      Dakota::Model& model )
+Objective::Objective( BoolDispatch          HasGradient,
+                      BoolDispatch          HasHessian,
+                      Dakota::Model&        model,
+                      Dakota::ROLCallbackContext* context_in )
   : numOpt{Dakota::ModelUtils::cv(model)},
     gradientCopy(static_cast<int>(numOpt), true),
     hasGradient{HasGradient},
     hasHessian{HasHessian},
-    dakotaModel{model} {
+    dakotaModel{model},
+    context{context_in} {
 }
 
 void Objective::evaluateIfNeeded(const ROL::Vector<Dakota::Real>& x,
@@ -19,8 +21,8 @@ void Objective::evaluateIfNeeded(const ROL::Vector<Dakota::Real>& x,
   const auto& x_dakota =
     as_dakota_vector(const_cast<ROL::Vector<Dakota::Real>&>(x));
 
-  if (auto* optimizer = Dakota::ROLOptimizer::active_instance())
-    optimizer->evaluate_model_if_needed(dakotaModel, x_dakota, request_values);
+  if (context)
+    context->evaluate_model_if_needed(x_dakota, request_values);
   else {
     Dakota::ModelUtils::continuous_variables(dakotaModel, x_dakota);
 
@@ -117,7 +119,8 @@ void Objective::hessVec(       ROL::Vector<Dakota::Real>& hv,
 }
 
 
-ROL::Ptr<ROL::Objective<Dakota::Real>> Objective::createFromModel( Dakota::Model& model ) {
+ROL::Ptr<ROL::Objective<Dakota::Real>> Objective::createFromModel( Dakota::Model& model,
+                                                      Dakota::ROLCallbackContext* context ) {
   auto grad_type  = model.gradient_type();
   auto hess_type  = model.hessian_type();
   auto method_src = model.method_source();
@@ -127,7 +130,7 @@ ROL::Ptr<ROL::Objective<Dakota::Real>> Objective::createFromModel( Dakota::Model
 
   BoolDispatch have_hessian{hess_type != "none"};
 
-  return ROL::makePtr<Objective>(have_gradient, have_hessian, model);
+  return ROL::makePtr<Objective>(have_gradient, have_hessian, model, context);
 }
 
 } // namespace rol_interface

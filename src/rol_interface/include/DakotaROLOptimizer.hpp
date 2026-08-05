@@ -32,6 +32,23 @@
 
 namespace Dakota {
 
+class ROLOptimizer;
+
+class ROLCallbackContext
+{
+public:
+  ROLCallbackContext(Model& model, ROLOptimizer* optimizer);
+
+  bool evaluate_model_if_needed(const RealVector& x, short request_values);
+
+private:
+  Model& model;
+  ROLOptimizer* optimizer;
+  RealVector lastEvaluatedX;
+  bool hasEvaluatedPoint;
+  short lastRequestValues;
+};
+
 // Forward declaration for pIMPL idiom
 namespace rol_optimizer_impl {
   class ROLOptimizerImpl;
@@ -79,16 +96,8 @@ public:
   /// Support resetting ROL solver options
   void reset_solver_options(const Teuchos::ParameterList&); // ROL solver settings
 
-  /// Return the active ROL optimizer instance when ROL callbacks are executing
-  static ROLOptimizer* active_instance();
-
   /// Record the best fully evaluated Dakota point encountered during the run
   void record_evaluated_point();
-
-  // Share Dakota model evaluations across ROL objective/constraint callbacks
-  void evaluate_model_if_needed(Model& model,
-                                const RealVector& x,
-                                short request_values);
 
 protected:
 
