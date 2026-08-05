@@ -22,6 +22,13 @@ NonDLHSSingleInterval(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, 
 { }
 
 
+NonDLHSSingleInterval::
+NonDLHSSingleInterval(const IRStore& method_store, std::shared_ptr<Model> model,
+                      std::shared_ptr<StudyServices> services):
+  NonDLHSInterval(std::move(services), method_store, model)
+{ }
+
+
 NonDLHSSingleInterval::~NonDLHSSingleInterval()
 { }
 

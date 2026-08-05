@@ -29,6 +29,7 @@
 #endif
 #include "ParamStudy.hpp"
 #include "NonDGlobalSingleInterval.hpp"
+#include "NonDLHSSingleInterval.hpp"
 #include "NonlinearCGOptimizer.hpp"
 #ifdef HAVE_NOWPAC
 #include "NOWPACOptimizer.hpp"
@@ -903,6 +904,65 @@ TEST(di_construction_tests, nl2sol_leastsq_throws_on_inconsistent_runtime_servic
     std::runtime_error);
 }
 #endif
+
+TEST(di_construction_tests, can_construct_nond_lhs_single_interval_from_irstore)
+{
+  InstructionMaterializer materializer;
+  IRStore method_store, variables_store, responses_store, interface_store, model_store;
+
+  const json method_json = {
+    {"local_interval_est", {
+      {"samples", 4},
+      {"seed", 1234}
+    }}
+  };
+  method_store = materializer.materialize_block(method_json, irgen::BlockType::Method);
+  materialize_default_interval_blocks(materializer, variables_store,
+                                      responses_store, interface_store, model_store);
+
+  ExplicitRuntime runtime;
+
+  Variables variables(variables_store);
+  Response response(responses_store, variables);
+  auto interface = make_test_interface(interface_store, runtime.services);
+  auto simulation_model = std::make_shared<SimulationModel>(
+    model_store, variables, interface, response, runtime.services);
+
+  NonDLHSSingleInterval interval(method_store, simulation_model, runtime.services);
+
+  EXPECT_EQ(interval.parallel_library_ptr(), runtime.parallelLibrary.get());
+  EXPECT_EQ(interval.output_manager_ptr(), runtime.outputManager.get());
+  EXPECT_EQ(interval.iterated_model().get(), simulation_model.get());
+}
+
+TEST(di_construction_tests, nond_lhs_single_interval_throws_on_inconsistent_runtime_services)
+{
+  InstructionMaterializer materializer;
+  IRStore method_store, variables_store, responses_store, interface_store, model_store;
+
+  const json method_json = {
+    {"local_interval_est", {
+      {"samples", 4},
+      {"seed", 1234}
+    }}
+  };
+  method_store = materializer.materialize_block(method_json, irgen::BlockType::Method);
+  materialize_default_interval_blocks(materializer, variables_store,
+                                      responses_store, interface_store, model_store);
+
+  ExplicitRuntime runtime_a;
+  ExplicitRuntime runtime_b;
+
+  Variables variables(variables_store);
+  Response response(responses_store, variables);
+  auto interface = make_test_interface(interface_store, runtime_a.services);
+  auto simulation_model = std::make_shared<SimulationModel>(
+    model_store, variables, interface, response, runtime_a.services);
+
+  EXPECT_THROW(
+    NonDLHSSingleInterval(method_store, simulation_model, runtime_b.services),
+    std::runtime_error);
+}
 
 TEST(di_construction_tests, can_construct_param_study_from_irstore)
 {
