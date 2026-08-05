@@ -34,6 +34,10 @@ protected:
   /// constructor
   SurrBasedMinimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model,
 		     std::shared_ptr<TraitsBase> traits);
+  /// DI constructor
+  SurrBasedMinimizer(std::shared_ptr<StudyServices> services,
+                     const IRStore& method_store, std::shared_ptr<Model> model,
+                     std::shared_ptr<TraitsBase> traits);
   /// alternate constructor for instantiations "on the fly"
   SurrBasedMinimizer(std::shared_ptr<Model> model, size_t max_iter, size_t max_eval,
 		     Real conv_tol, std::shared_ptr<TraitsBase> traits);

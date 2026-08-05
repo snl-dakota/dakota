@@ -62,6 +62,9 @@ public:
 
   /// standard constructor
   EffGlobalMinimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
+  /// DI constructor
+  EffGlobalMinimizer(const IRStore& method_store, std::shared_ptr<Model> model,
+                     std::shared_ptr<StudyServices> services);
   /// alternate constructor for instantiations "on the fly"
   EffGlobalMinimizer(std::shared_ptr<Model> model, const String& approx_type, int samples,
 		     int seed, bool use_derivs, size_t max_iter,

@@ -24,6 +24,9 @@
 #ifdef HAVE_NL2SOL
 #include "NL2SOLLeastSq.hpp"
 #endif
+#ifdef HAVE_NCSU
+#include "EffGlobalMinimizer.hpp"
+#endif
 #include "NonlinearCGOptimizer.hpp"
 #ifdef HAVE_NOWPAC
 #include "NOWPACOptimizer.hpp"
@@ -857,6 +860,75 @@ TEST(di_construction_tests, nl2sol_leastsq_throws_on_inconsistent_runtime_servic
 
   EXPECT_THROW(
     NL2SOLLeastSq(method_store, simulation_model, runtime_b.services),
+    std::runtime_error);
+}
+#endif
+
+#ifdef HAVE_NCSU
+TEST(di_construction_tests, can_construct_effglobal_minimizer_from_irstore)
+{
+  InstructionMaterializer materializer;
+  IRStore method_store, variables_store, responses_store, interface_store, model_store;
+
+  const json method_json = {
+    {"efficient_global", {
+      {"initial_samples", 3},
+      {"seed", 1234},
+      {"batch_size", {{"count", 1}, {"exploration", 0}}},
+      {"convergence_tolerance", 1.e-4},
+      {"x_conv_tol", 1.e-8},
+      {"gaussian_process", {{"dakota", true}}}
+    }}
+  };
+  method_store = materializer.materialize_block(method_json, irgen::BlockType::Method);
+  materialize_default_opt_blocks(materializer, variables_store,
+                                 responses_store, interface_store, model_store);
+
+  ExplicitRuntime runtime;
+
+  Variables variables(variables_store);
+  Response response(responses_store, variables);
+  auto interface = make_test_interface(interface_store, runtime.services);
+  auto simulation_model = std::make_shared<SimulationModel>(
+    model_store, variables, interface, response, runtime.services);
+
+  EffGlobalMinimizer minimizer(method_store, simulation_model, runtime.services);
+
+  EXPECT_EQ(minimizer.parallel_library_ptr(), runtime.parallelLibrary.get());
+  EXPECT_EQ(minimizer.output_manager_ptr(), runtime.outputManager.get());
+  EXPECT_EQ(minimizer.iterated_model().get(), simulation_model.get());
+}
+
+TEST(di_construction_tests, effglobal_minimizer_throws_on_inconsistent_runtime_services)
+{
+  InstructionMaterializer materializer;
+  IRStore method_store, variables_store, responses_store, interface_store, model_store;
+
+  const json method_json = {
+    {"efficient_global", {
+      {"initial_samples", 3},
+      {"seed", 1234},
+      {"batch_size", {{"count", 1}, {"exploration", 0}}},
+      {"convergence_tolerance", 1.e-4},
+      {"x_conv_tol", 1.e-8},
+      {"gaussian_process", {{"dakota", true}}}
+    }}
+  };
+  method_store = materializer.materialize_block(method_json, irgen::BlockType::Method);
+  materialize_default_opt_blocks(materializer, variables_store,
+                                 responses_store, interface_store, model_store);
+
+  ExplicitRuntime runtime_a;
+  ExplicitRuntime runtime_b;
+
+  Variables variables(variables_store);
+  Response response(responses_store, variables);
+  auto interface = make_test_interface(interface_store, runtime_a.services);
+  auto simulation_model = std::make_shared<SimulationModel>(
+    model_store, variables, interface, response, runtime_a.services);
+
+  EXPECT_THROW(
+    EffGlobalMinimizer(method_store, simulation_model, runtime_b.services),
     std::runtime_error);
 }
 #endif

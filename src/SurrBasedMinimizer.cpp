@@ -63,6 +63,16 @@ SurrBasedMinimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std
 
 
 SurrBasedMinimizer::
+SurrBasedMinimizer(std::shared_ptr<StudyServices> services,
+                   const IRStore& method_store, std::shared_ptr<Model> model,
+                   std::shared_ptr<TraitsBase> traits):
+  Minimizer(std::move(services), method_store, model, traits), globalIterCount(0),
+  penaltyParameter(5.), eta(1.), alphaEta(0.1), betaEta(0.9),
+  etaSequence(eta*std::pow(2.*penaltyParameter, -alphaEta))
+{ initialize_from_model(*iteratedModel); }
+
+
+SurrBasedMinimizer::
 SurrBasedMinimizer(std::shared_ptr<Model> model, size_t max_iter, size_t max_eval,
 		   Real conv_tol, std::shared_ptr<TraitsBase> traits):
   Minimizer(model, max_iter, max_eval, conv_tol, traits), globalIterCount(0),
