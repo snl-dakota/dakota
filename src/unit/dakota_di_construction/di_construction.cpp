@@ -28,6 +28,7 @@
 #include "EffGlobalMinimizer.hpp"
 #endif
 #include "ParamStudy.hpp"
+#include "NonDGlobalSingleInterval.hpp"
 #include "NonlinearCGOptimizer.hpp"
 #ifdef HAVE_NOWPAC
 #include "NOWPACOptimizer.hpp"
@@ -231,6 +232,44 @@ void materialize_default_lsq_blocks(InstructionMaterializer& materializer,
     {"response_type", {{"calibration_terms", {{"count", 1}}}}},
     {"descriptors", {"r1"}},
     {"gradient_type", {{"analytic_gradients", true}}},
+    {"hessian_type", {{"no_hessians", true}}}
+  };
+
+  const json interface_json = {
+    {"analysis_drivers", {
+      {"drivers", {"text_book"}},
+      {"interface_type", {{"fork", json::object()}}}
+    }}
+  };
+
+  const json model_json = json::object();
+
+  variables_store = materializer.materialize_block(variables_json, irgen::BlockType::Variables);
+  responses_store = materializer.materialize_block(responses_json, irgen::BlockType::Responses);
+  interface_store = materializer.materialize_block(interface_json, irgen::BlockType::Interface);
+  model_store = materializer.materialize_block(model_json, irgen::BlockType::Model);
+}
+
+void materialize_default_interval_blocks(InstructionMaterializer& materializer,
+                                         IRStore& variables_store,
+                                         IRStore& responses_store,
+                                         IRStore& interface_store,
+                                         IRStore& model_store)
+{
+  const json variables_json = {
+    {"continuous_interval_uncertain", {
+      {"count", 2},
+      {"descriptors", {"x1", "x2"}},
+      {"lower_bounds", {0.0, 0.0}},
+      {"upper_bounds", {1.0, 1.0}},
+      {"interval_probabilities", {1.0, 1.0}}
+    }}
+  };
+
+  const json responses_json = {
+    {"response_type", {{"response_functions", {{"count", 1}}}}},
+    {"descriptors", {"f"}},
+    {"gradient_type", {{"no_gradients", true}}},
     {"hessian_type", {{"no_hessians", true}}}
   };
 
@@ -925,6 +964,71 @@ TEST(di_construction_tests, param_study_throws_on_inconsistent_runtime_services)
 }
 
 #ifdef HAVE_NCSU
+TEST(di_construction_tests, can_construct_nond_global_single_interval_from_irstore)
+{
+  InstructionMaterializer materializer;
+  IRStore method_store, variables_store, responses_store, interface_store, model_store;
+
+  const json method_json = {
+    {"global_interval_est", {
+      {"solution_approach", {{"ego", {{"gaussian_process", {{"dakota", true}}}}}}},
+      {"samples", 3},
+      {"seed", 1234},
+      {"max_iterations", 5},
+      {"convergence_tolerance", 1.e-4}
+    }}
+  };
+  method_store = materializer.materialize_block(method_json, irgen::BlockType::Method);
+  materialize_default_interval_blocks(materializer, variables_store,
+                                      responses_store, interface_store, model_store);
+
+  ExplicitRuntime runtime;
+
+  Variables variables(variables_store);
+  Response response(responses_store, variables);
+  auto interface = make_test_interface(interface_store, runtime.services);
+  auto simulation_model = std::make_shared<SimulationModel>(
+    model_store, variables, interface, response, runtime.services);
+
+  NonDGlobalSingleInterval interval(method_store, simulation_model, runtime.services);
+
+  EXPECT_EQ(interval.parallel_library_ptr(), runtime.parallelLibrary.get());
+  EXPECT_EQ(interval.output_manager_ptr(), runtime.outputManager.get());
+  EXPECT_EQ(interval.iterated_model().get(), simulation_model.get());
+}
+
+TEST(di_construction_tests, nond_global_single_interval_throws_on_inconsistent_runtime_services)
+{
+  InstructionMaterializer materializer;
+  IRStore method_store, variables_store, responses_store, interface_store, model_store;
+
+  const json method_json = {
+    {"global_interval_est", {
+      {"solution_approach", {{"ego", {{"gaussian_process", {{"dakota", true}}}}}}},
+      {"samples", 3},
+      {"seed", 1234},
+      {"max_iterations", 5},
+      {"convergence_tolerance", 1.e-4}
+    }}
+  };
+  method_store = materializer.materialize_block(method_json, irgen::BlockType::Method);
+  materialize_default_interval_blocks(materializer, variables_store,
+                                      responses_store, interface_store, model_store);
+
+  ExplicitRuntime runtime_a;
+  ExplicitRuntime runtime_b;
+
+  Variables variables(variables_store);
+  Response response(responses_store, variables);
+  auto interface = make_test_interface(interface_store, runtime_a.services);
+  auto simulation_model = std::make_shared<SimulationModel>(
+    model_store, variables, interface, response, runtime_a.services);
+
+  EXPECT_THROW(
+    NonDGlobalSingleInterval(method_store, simulation_model, runtime_b.services),
+    std::runtime_error);
+}
+
 TEST(di_construction_tests, can_construct_effglobal_minimizer_from_irstore)
 {
   InstructionMaterializer materializer;

@@ -12,6 +12,7 @@
 #include "dakota_system_defs.hpp"
 //#include "DakotaResponse.hpp"
 #include "ProblemDescDB.hpp"
+#include "IRStore.hpp"
 #include "NonDLHSSampling.hpp"
 #include "NormalRandomVariable.hpp"
 #include "MarginalsCorrDistribution.hpp"
@@ -69,6 +70,58 @@ NonDInterval::NonDInterval(ProblemDescDB& problem_db, ParallelLibrary& parallel_
 	computedProbLevels[i].resize(2*rl_len);
       else
 	computedGenRelLevels[i].resize(2*rl_len);
+    }
+  }
+
+  if (err_flag)
+    abort_handler(-1);
+}
+
+
+NonDInterval::NonDInterval(std::shared_ptr<StudyServices> services,
+                           const IRStore& method_store,
+                           std::shared_ptr<Model> model):
+  NonD(std::move(services), method_store, model),
+  singleIntervalFlag(methodName ==  LOCAL_INTERVAL_EST ||
+                     methodName == GLOBAL_INTERVAL_EST)
+{
+  bool err_flag = false;
+
+  const SharedVariablesData& svd = model->current_variables().shared_data();
+  const SizetArray& ac_totals = svd.active_components_totals();
+  numContIntervalVars   = ac_totals[TOTAL_CEUV];
+  numDiscIntervalVars   = svd.vc_lookup(DISCRETE_INTERVAL_UNCERTAIN);
+  numDiscSetIntUncVars  = svd.vc_lookup(DISCRETE_UNCERTAIN_SET_INT);
+  numDiscSetRealUncVars = ac_totals[TOTAL_DEURV];
+
+  initialize_final_statistics();
+
+  if (singleIntervalFlag) {
+    if (totalLevelRequests) {
+      Cerr << "Error: level mappings not supported in NonDInterval single "
+           << "interval mode." << std::endl;
+      err_flag = true;
+    }
+  }
+  else {
+    if (!method_store.get<RealVectorArray>("nond.reliability_levels").empty()) {
+      Cerr << "Error: reliability_levels not supported in NonDInterval "
+           << "evidence mode." << std::endl;
+      err_flag = true;
+    }
+
+    computedRespLevels.resize(numFunctions);
+    computedProbLevels.resize(numFunctions);
+    computedGenRelLevels.resize(numFunctions);
+    size_t i, j;
+    for (i=0; i<numFunctions; ++i) {
+      size_t rl_len = requestedRespLevels[i].length(), pl_gl_len
+        = requestedProbLevels[i].length() + requestedGenRelLevels[i].length();
+      computedRespLevels[i].resize(2*pl_gl_len);
+      if (respLevelTarget == PROBABILITIES)
+        computedProbLevels[i].resize(2*rl_len);
+      else
+        computedGenRelLevels[i].resize(2*rl_len);
     }
   }
 
