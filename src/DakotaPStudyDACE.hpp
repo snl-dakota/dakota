@@ -40,6 +40,9 @@ protected:
 
   /// constructor
   PStudyDACE(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
+  /// DI constructor
+  PStudyDACE(std::shared_ptr<StudyServices> services,
+             const IRStore& method_store, std::shared_ptr<Model> model);
   /// alternate constructor for instantiations "on the fly"
   PStudyDACE(unsigned short method_name, std::shared_ptr<Model> model);
   /// destructor

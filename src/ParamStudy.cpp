@@ -17,6 +17,7 @@
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
 #include "PolynomialApproximation.hpp"
+#include "IRStore.hpp"
 #include "model_utils.hpp"
 
 static const char rcsId[]="@(#) $Id: ParamStudy.cpp 7024 2010-10-16 01:24:42Z mseldre $";
@@ -124,6 +125,97 @@ ParamStudy::ParamStudy(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
   default:
     Cerr << "\nError: bad methodName (" << method_enum_to_string(methodName)
 	 << ") in ParamStudy constructor." << std::endl;
+    err_flag = true;
+  }
+  if (err_flag)
+    abort_handler(METHOD_ERROR);
+
+  maxEvalConcurrency *= numEvals;
+}
+
+ParamStudy::ParamStudy(const IRStore& method_store,
+                       std::shared_ptr<Model> model,
+                       std::shared_ptr<StudyServices> services):
+  PStudyDACE(std::move(services), method_store, model)
+{
+  compactMode = false;
+
+  bool err_flag = false;
+  switch (methodName) {
+  case LIST_PARAMETER_STUDY: {
+    const RealVector& pt_list
+      = method_store.get<RealVector>("parameter_study.list_of_points");
+    if (pt_list.empty()) {
+      const String& pt_fname = method_store.get<String>("pstudy.import_file");
+      unsigned short tabular_format
+        = method_store.get<unsigned short>("pstudy.import_format");
+      bool active_only = method_store.get<bool>("pstudy.import_active_only");
+      if (load_distribute_points(pt_fname, tabular_format, active_only))
+        err_flag = true;
+    }
+    else if (distribute_list_of_points(pt_list))
+      err_flag = true;
+    break;
+  }
+  case VECTOR_PARAMETER_STUDY: {
+    const RealVector& step_vector
+      = method_store.get<RealVector>("parameter_study.step_vector");
+    if (step_vector.empty()) {
+      if (check_final_point(
+            method_store.get<RealVector>("parameter_study.final_point")))
+        err_flag = true;
+      if (check_num_steps(method_store.get<int>("parameter_study.num_steps")))
+        err_flag = true;
+      if (numSteps && parallelLib.command_line_check()) {
+        initialCVPoint  = ModelUtils::continuous_variables(*iteratedModel);
+        initialDIVPoint = ModelUtils::discrete_int_variables(*iteratedModel);
+        initialDSVPoint.resize(boost::extents[numDiscreteStringVars]);
+        initialDSVPoint = ModelUtils::discrete_string_variables(*iteratedModel);
+        initialDRVPoint = ModelUtils::discrete_real_variables(*iteratedModel);
+        final_point_to_step_vector();
+      }
+    }
+    else {
+      if (check_step_vector(step_vector))
+        err_flag = true;
+      if (check_num_steps(method_store.get<int>("parameter_study.num_steps")))
+        err_flag = true;
+      initialDIVPoint = ModelUtils::discrete_int_variables(*iteratedModel);
+      initialDSVPoint.resize(boost::extents[numDiscreteStringVars]);
+      initialDSVPoint = ModelUtils::discrete_string_variables(*iteratedModel);
+      initialDRVPoint = ModelUtils::discrete_real_variables(*iteratedModel);
+      if (check_ranges_sets(numSteps))
+        err_flag = true;
+    }
+    break;
+  }
+  case CENTERED_PARAMETER_STUDY:
+    if (check_step_vector(
+          method_store.get<RealVector>("parameter_study.step_vector")))
+      err_flag = true;
+    if (check_steps_per_variable(
+          method_store.get<IntVector>("parameter_study.steps_per_variable")))
+      err_flag = true;
+    initialDIVPoint = ModelUtils::discrete_int_variables(*iteratedModel);
+    initialDSVPoint.resize(boost::extents[numDiscreteStringVars]);
+    initialDSVPoint = ModelUtils::discrete_string_variables(*iteratedModel);
+    initialDRVPoint = ModelUtils::discrete_real_variables(*iteratedModel);
+    if (check_ranges_sets(contStepsPerVariable, discIntStepsPerVariable,
+                          discStringStepsPerVariable, discRealStepsPerVariable))
+      err_flag = true;
+    break;
+  case MULTIDIM_PARAMETER_STUDY:
+    if (check_variable_partitions(
+          method_store.get<UShortArray>("partitions")))
+      err_flag = true;
+    if (check_finite_bounds())
+      err_flag = true;
+    if (parallelLib.command_line_check())
+      distribute_partitions();
+    break;
+  default:
+    Cerr << "\nError: bad methodName (" << method_enum_to_string(methodName)
+         << ") in ParamStudy constructor." << std::endl;
     err_flag = true;
   }
   if (err_flag)

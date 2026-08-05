@@ -27,6 +27,7 @@
 #ifdef HAVE_NCSU
 #include "EffGlobalMinimizer.hpp"
 #endif
+#include "ParamStudy.hpp"
 #include "NonlinearCGOptimizer.hpp"
 #ifdef HAVE_NOWPAC
 #include "NOWPACOptimizer.hpp"
@@ -863,6 +864,65 @@ TEST(di_construction_tests, nl2sol_leastsq_throws_on_inconsistent_runtime_servic
     std::runtime_error);
 }
 #endif
+
+TEST(di_construction_tests, can_construct_param_study_from_irstore)
+{
+  InstructionMaterializer materializer;
+  IRStore method_store, variables_store, responses_store, interface_store, model_store;
+
+  const json method_json = {
+    {"vector_parameter_study", {
+      {"step_control", {{"final_point", {1.1, 1.3}}}},
+      {"num_steps", 2}
+    }}
+  };
+  method_store = materializer.materialize_block(method_json, irgen::BlockType::Method);
+  materialize_default_opt_blocks(materializer, variables_store,
+                                 responses_store, interface_store, model_store);
+
+  ExplicitRuntime runtime;
+
+  Variables variables(variables_store);
+  Response response(responses_store, variables);
+  auto interface = make_test_interface(interface_store, runtime.services);
+  auto simulation_model = std::make_shared<SimulationModel>(
+    model_store, variables, interface, response, runtime.services);
+
+  ParamStudy study(method_store, simulation_model, runtime.services);
+
+  EXPECT_EQ(study.parallel_library_ptr(), runtime.parallelLibrary.get());
+  EXPECT_EQ(study.output_manager_ptr(), runtime.outputManager.get());
+  EXPECT_EQ(study.iterated_model().get(), simulation_model.get());
+}
+
+TEST(di_construction_tests, param_study_throws_on_inconsistent_runtime_services)
+{
+  InstructionMaterializer materializer;
+  IRStore method_store, variables_store, responses_store, interface_store, model_store;
+
+  const json method_json = {
+    {"vector_parameter_study", {
+      {"step_control", {{"final_point", {1.1, 1.3}}}},
+      {"num_steps", 2}
+    }}
+  };
+  method_store = materializer.materialize_block(method_json, irgen::BlockType::Method);
+  materialize_default_opt_blocks(materializer, variables_store,
+                                 responses_store, interface_store, model_store);
+
+  ExplicitRuntime runtime_a;
+  ExplicitRuntime runtime_b;
+
+  Variables variables(variables_store);
+  Response response(responses_store, variables);
+  auto interface = make_test_interface(interface_store, runtime_a.services);
+  auto simulation_model = std::make_shared<SimulationModel>(
+    model_store, variables, interface, response, runtime_a.services);
+
+  EXPECT_THROW(
+    ParamStudy(method_store, simulation_model, runtime_b.services),
+    std::runtime_error);
+}
 
 #ifdef HAVE_NCSU
 TEST(di_construction_tests, can_construct_effglobal_minimizer_from_irstore)
