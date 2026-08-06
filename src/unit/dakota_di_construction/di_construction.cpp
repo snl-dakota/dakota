@@ -7,6 +7,7 @@
 #else
 #include "SpawnApplicInterface.hpp"
 #endif
+#include "dakota_input_reader.hpp"
 #include "InstructionMaterializer.hpp"
 #include "LibraryRuntimeSupport.hpp"
 #include "MPIManager.hpp"
@@ -212,6 +213,102 @@ TEST(di_construction_tests, can_construct_pilot_components_from_irstores_with_de
   EXPECT_EQ(response.num_functions(), 1);
   EXPECT_EQ(model->current_response().num_functions(), 1);
   EXPECT_EQ(sampling.sampling_scheme(), SUBMETHOD_LHS);
+}
+
+TEST(di_construction_tests, parser_validates_unwrapped_method_json_for_materialization)
+{
+  const json method_fragment = {
+    {"sampling", {
+      {"sample_type", {{"lhs", true}}},
+      {"samples", 10},
+      {"seed", 1234}
+    }}
+  };
+
+  const json validated_method =
+    dakota::validate_method_block_json_to_json(method_fragment);
+
+  ASSERT_TRUE(validated_method.is_object());
+  ASSERT_TRUE(validated_method.contains("sampling"));
+
+  InstructionMaterializer materializer;
+  const IRStore method_store =
+    materializer.materialize_block(validated_method, irgen::BlockType::Method);
+
+  EXPECT_EQ(method_store.get<int>("samples"), 10);
+  EXPECT_EQ(method_store.get<int>("random_seed"), 1234);
+}
+
+TEST(di_construction_tests, parser_validates_unwrapped_variables_json_for_materialization)
+{
+  const json variables_fragment = {
+    {"active", {{"all", true}}},
+    {"uniform_uncertain", {
+      {"count", 2},
+      {"descriptors", {"x1", "x2"}},
+      {"lower_bounds", {0.0, 0.0}},
+      {"upper_bounds", {1.0, 1.0}}
+    }}
+  };
+
+  const json validated_variables =
+    dakota::validate_variables_block_json_to_json(variables_fragment);
+
+  ASSERT_TRUE(validated_variables.is_object());
+  ASSERT_TRUE(validated_variables.contains("uniform_uncertain"));
+
+  InstructionMaterializer materializer;
+  const IRStore variables_store =
+    materializer.materialize_block(validated_variables, irgen::BlockType::Variables);
+  Variables variables(variables_store);
+
+  EXPECT_EQ(variables.tv(), 2);
+}
+
+TEST(di_construction_tests, study_factories_construct_components_from_json_fragments)
+{
+  const json method_json = {
+    {"sample_type", {{"lhs", true}}},
+    {"samples", 10},
+    {"seed", 1234}
+  };
+
+  const json variables_json = {
+    {"active", {{"all", true}}},
+    {"uniform_uncertain", {
+      {"count", 2},
+      {"descriptors", {"x1", "x2"}},
+      {"lower_bounds", {0.0, 0.0}},
+      {"upper_bounds", {1.0, 1.0}}
+    }}
+  };
+
+  const json responses_json = {
+    {"response_type", {{"response_functions", {{"count", 1}}}}},
+    {"descriptors", {"f"}},
+    {"gradient_type", {{"no_gradients", true}}},
+    {"hessian_type", {{"no_hessians", true}}}
+  };
+
+  const json interface_json = {
+    {"analysis_drivers", {
+      {"drivers", {"text_book"}},
+      {"interface_type", {{"fork", json::object()}}}
+    }}
+  };
+
+  Study study;
+
+  Variables variables = study.variables(variables_json);
+  Response response = study.responses(responses_json, variables);
+  auto interface = study.interface(interface_json);
+  auto model = study.model().simulation(json::object(), variables, interface, response);
+  auto sampling = study.method().sampling(method_json, model);
+
+  EXPECT_EQ(variables.tv(), 2);
+  EXPECT_EQ(response.num_functions(), 1);
+  EXPECT_EQ(model->current_response().num_functions(), 1);
+  EXPECT_EQ(sampling->sampling_scheme(), SUBMETHOD_LHS);
 }
 
 TEST(di_construction_tests, default_study_constructs_coherent_services)

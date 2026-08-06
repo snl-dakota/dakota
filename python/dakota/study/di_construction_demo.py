@@ -10,8 +10,8 @@
 """DI construction demo using the :mod:`dakota.study` Python bindings.
 
 This mirrors ``src/di_construction_demo.cpp``: it assembles a small sampling
-study from keyword-wrapped JSON-shaped dictionaries, constructs Dakota
-components through a ``Study`` context, and runs the resulting method.
+study from block-fragment dictionaries, constructs Dakota components
+through a ``Study`` context, and runs the resulting method.
 """
 
 from __future__ import annotations
@@ -25,11 +25,9 @@ except ImportError:
 
 
 METHOD = {
-    "sampling": {
-        "sample_type": {"lhs": True},
-        "samples": 10,
-        "seed": 1234,
-    }
+    "sample_type": {"lhs": True},
+    "samples": 10,
+    "seed": 1234,
 }
 
 VARIABLES = {
@@ -80,8 +78,8 @@ def main() -> None:
     print("Constructing DI study components...")
     print(f"Configured output precision: {config.output.precision}")
 
-    variables = Variables(VARIABLES)
-    response = Response(RESPONSES, variables)
+    variables = study.variables(VARIABLES)
+    response = study.responses(RESPONSES, variables)
     interface = study.interface(INTERFACE)
     model = study.model.simulation(MODEL, variables, interface, response)
     sampling = study.method.sampling(METHOD, model)

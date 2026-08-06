@@ -39,10 +39,9 @@ void bind_study_factories(py::module_& m)
   method_factory
     .def("sampling",
          [](const Study::MethodFactory& factory,
-            const nlohmann::json& method_json,
+            const py::object& method_json,
             std::shared_ptr<Model> model) {
-           require_keyword(method_json, "sampling", "study.method.sampling");
-           return factory.sampling(materialize_method(method_json),
+           return factory.sampling(validate_sampling_fragment(method_json),
                                    std::move(model));
          },
          py::arg("method"), py::arg("model"));
@@ -50,10 +49,9 @@ void bind_study_factories(py::module_& m)
   method_factory
     .def("dot_bfgs",
          [](const Study::MethodFactory& factory,
-            const nlohmann::json& method_json,
+            const py::object& method_json,
             std::shared_ptr<Model> model) {
-           require_keyword(method_json, "dot_bfgs", "study.method.dot_bfgs");
-           return factory.dot_bfgs(materialize_method(method_json),
+           return factory.dot_bfgs(validate_dot_bfgs_fragment(method_json),
                                    std::move(model));
          },
          py::arg("method"), py::arg("model"));
@@ -61,11 +59,9 @@ void bind_study_factories(py::module_& m)
   method_factory
     .def("multi_start",
          [](const Study::MethodFactory& factory,
-            const nlohmann::json& method_json,
+            const py::object& method_json,
             std::shared_ptr<Iterator> sub_iterator) {
-           require_keyword(method_json, "multi_start",
-                           "study.method.multi_start");
-           return factory.multi_start(materialize_method(method_json),
+           return factory.multi_start(validate_multi_start_fragment(method_json),
                                       std::move(sub_iterator));
          },
          py::arg("method"), py::arg("sub_iterator"));
@@ -73,24 +69,23 @@ void bind_study_factories(py::module_& m)
   py::class_<Study::ModelFactory>(m, "ModelFactory")
     .def("simulation",
          [](const Study::ModelFactory& factory,
-            const nlohmann::json& model_json,
+            const py::object& model_json,
             const Variables& variables,
             std::shared_ptr<Interface> interface,
             const Response& response) {
-           return factory.simulation(materialize_model(model_json), variables,
-                                     std::move(interface), response);
+           return factory.simulation(validate_simulation_model_fragment(model_json),
+                                     variables, std::move(interface), response);
          },
          py::arg("model"), py::arg("variables"), py::arg("interface"),
          py::arg("response"))
     .def("nested",
          [](const Study::ModelFactory& factory,
-            const nlohmann::json& model_json,
+            const py::object& model_json,
             std::shared_ptr<Iterator> sub_iterator,
             std::shared_ptr<Interface> optional_interface,
             const Variables& variables,
             const Response& response) {
-           require_keyword(model_json, "nested", "study.model.nested");
-           return factory.nested(materialize_model(model_json),
+           return factory.nested(validate_nested_model_fragment(model_json),
                                  std::move(sub_iterator),
                                  std::move(optional_interface), variables,
                                  response);
@@ -104,9 +99,21 @@ void bind_study(py::module_& m)
 {
   py::class_<Study>(m, "Study")
     .def(py::init<const StudyConfig&>(), py::arg("config") = StudyConfig{})
+    .def("variables",
+         [](const Study& study, const py::object& variables_json) {
+           return study.variables(validate_variables_fragment(variables_json));
+         },
+         py::arg("variables"))
+    .def("responses",
+         [](const Study& study, const py::object& responses_json,
+            const Variables& variables) {
+           return study.responses(validate_responses_fragment(responses_json),
+                                  variables);
+         },
+         py::arg("responses"), py::arg("variables"))
     .def("interface",
-         [](const Study& study, const nlohmann::json& interface_json) {
-           return study.interface(materialize_interface(interface_json));
+         [](const Study& study, const py::object& interface_json) {
+           return study.interface(validate_interface_fragment(interface_json));
          },
          py::arg("interface"))
     .def_property_readonly(

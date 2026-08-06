@@ -7,26 +7,43 @@
     For more information, see the README file in the top Dakota directory.
     _______________________________________________________________________ */
 
-/** \file
-    Python module wrapping DI/library-mode Dakota study construction.
- */
-
 #include "DakotaStudyPython.hpp"
 
+#include <pybind11_json/pybind11_json.hpp>
+
 namespace Dakota::python {
+namespace {
 
-PYBIND11_MODULE(_study, m)
+nlohmann::json validate_fragment(const py::object& value, const char* function_name)
 {
-  m.doc() = "Dependency-injection/library-mode Dakota study construction";
-
-  bind_study_config(m);
-  bind_variables(m);
-  bind_response(m);
-  bind_interface(m);
-  bind_models(m);
-  bind_iterators(m);
-  bind_study_factories(m);
-  bind_study(m);
+  py::module_ validation = py::module_::import("dakota.study._validation");
+  return validation.attr(function_name)(value).cast<nlohmann::json>();
 }
+
+} // namespace
+
+nlohmann::json validate_variables_fragment(const py::object& value)
+{ return validate_fragment(value, "validate_variables_fragment"); }
+
+nlohmann::json validate_responses_fragment(const py::object& value)
+{ return validate_fragment(value, "validate_responses_fragment"); }
+
+nlohmann::json validate_interface_fragment(const py::object& value)
+{ return validate_fragment(value, "validate_interface_fragment"); }
+
+nlohmann::json validate_sampling_fragment(const py::object& value)
+{ return validate_fragment(value, "validate_sampling_fragment"); }
+
+nlohmann::json validate_dot_bfgs_fragment(const py::object& value)
+{ return validate_fragment(value, "validate_dot_bfgs_fragment"); }
+
+nlohmann::json validate_multi_start_fragment(const py::object& value)
+{ return validate_fragment(value, "validate_multi_start_fragment"); }
+
+nlohmann::json validate_simulation_model_fragment(const py::object& value)
+{ return validate_fragment(value, "validate_simulation_model_fragment"); }
+
+nlohmann::json validate_nested_model_fragment(const py::object& value)
+{ return validate_fragment(value, "validate_nested_model_fragment"); }
 
 } // namespace Dakota::python

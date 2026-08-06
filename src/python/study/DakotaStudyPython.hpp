@@ -24,14 +24,14 @@ namespace python {
 namespace py = pybind11;
 namespace irgen = dakota::irgen;
 
-IRStore materialize_method(const nlohmann::json& method_json);
-IRStore materialize_model(const nlohmann::json& model_json);
-IRStore materialize_variables(const nlohmann::json& variables_json);
-IRStore materialize_interface(const nlohmann::json& interface_json);
-IRStore materialize_responses(const nlohmann::json& responses_json);
-
-void require_keyword(const nlohmann::json& block_json, const char* keyword,
-                     const char* factory_name);
+nlohmann::json validate_variables_fragment(const py::object& value);
+nlohmann::json validate_responses_fragment(const py::object& value);
+nlohmann::json validate_interface_fragment(const py::object& value);
+nlohmann::json validate_sampling_fragment(const py::object& value);
+nlohmann::json validate_dot_bfgs_fragment(const py::object& value);
+nlohmann::json validate_multi_start_fragment(const py::object& value);
+nlohmann::json validate_simulation_model_fragment(const py::object& value);
+nlohmann::json validate_nested_model_fragment(const py::object& value);
 
 void bind_study_config(py::module_& m);
 void bind_variables(py::module_& m);

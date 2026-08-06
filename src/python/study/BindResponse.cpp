@@ -9,22 +9,13 @@
 
 #include "DakotaStudyPython.hpp"
 
-#include "IRState.hpp"
 #include "DakotaResponse.hpp"
-#include "DakotaVariables.hpp"
-
-#include <nlohmann/json.hpp>
-#include <pybind11_json/pybind11_json.hpp>
 
 namespace Dakota::python {
 
 void bind_response(py::module_& m)
 {
   py::class_<Response>(m, "Response", py::module_local())
-    .def(py::init([](const nlohmann::json& responses_json,
-                     const Variables& variables) {
-      return Response(materialize_responses(responses_json), variables);
-    }), py::arg("responses"), py::arg("variables"))
     .def("function_value",
          static_cast<const Real& (Response::*)(size_t) const>(
            &Response::function_value),
