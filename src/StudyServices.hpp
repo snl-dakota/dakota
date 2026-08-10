@@ -61,8 +61,8 @@ private:
 
   std::shared_ptr<MPIManager> mpiManager;
   std::shared_ptr<ProgramOptions> programOptions;
-  std::shared_ptr<ParallelLibrary> parallelLibrary;
   std::shared_ptr<OutputManager> outputManager;
+  std::shared_ptr<ParallelLibrary> parallelLibrary;
   std::shared_ptr<RunOptions> runOptions;
   bool outputTagActive = false;
 };
