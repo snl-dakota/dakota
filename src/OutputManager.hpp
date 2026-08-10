@@ -17,6 +17,8 @@
 #include "dakota_tabular_io.hpp"
 #include "DakotaGraphics.hpp"
 #include "RestartVersion.hpp"
+#include "ResultsManager.hpp"
+#include "EvaluationStore.hpp"
 #include <memory>
 
 
@@ -327,9 +329,23 @@ public:
   // Results DB outputs
   // -----
 
-  /// At runtime, initialize the global ResultsManager, tagging
+  /// At runtime, initialize the study-specific ResultsManager, tagging
   /// filename with MPI worldRank + 1 if needed
   void init_results_db();
+
+  /// Close the study-specific results databases and evaluation store
+  void close_results_db();
+
+  /// Access the study-specific iterator results database
+  ResultsManager& results_manager();
+  const ResultsManager& results_manager() const;
+
+  /// Access the study-specific evaluations database
+  EvaluationStore& evaluation_store();
+  const EvaluationStore& evaluation_store() const;
+
+  /// Close all live study-specific results databases during abnormal abort
+  static void close_all_results_db();
 
   /// Archive the input file to the results database
   void archive_input(const ProgramOptions &prog_opts) const;
@@ -447,8 +463,25 @@ private:
 
   /// Output results  format
   unsigned short resultsOutputFormat;
+
+  /// study-specific iterator results database
+  ResultsManager resultsDB;
+
+  /// study-specific evaluation storage database
+  EvaluationStore evaluationsDB;
 };
 
+inline ResultsManager& OutputManager::results_manager()
+{ return resultsDB; }
+
+inline const ResultsManager& OutputManager::results_manager() const
+{ return resultsDB; }
+
+inline EvaluationStore& OutputManager::evaluation_store()
+{ return evaluationsDB; }
+
+inline const EvaluationStore& OutputManager::evaluation_store() const
+{ return evaluationsDB; }
 
 template<class T> 
 void OutputManager::add_tabular_scalar(T val)

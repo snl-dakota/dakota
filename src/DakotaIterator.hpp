@@ -559,10 +559,10 @@ protected:
   /// but false for on-the-fly (helper) iterators and sub-iterator use cases
   bool summaryOutputFlag;
 
-  /// reference to the global iterator results database
+  /// reference to the study-specific iterator results database
   ResultsManager& resultsDB;
 
-  /// reference to the global evaluation database
+  /// reference to the study-specific evaluation database
   EvaluationStore& evaluationsDB;
 
   /// State of evaluations DB for this iterator

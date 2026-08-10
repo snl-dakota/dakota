@@ -33,10 +33,8 @@ static const char rcsId[]="@(#) $Id: DakotaIterator.cpp 7029 2010-10-22 00:17:02
 namespace Dakota {
 
 // defined in dakota_global_defs.cpp
-extern ProblemDescDB   dummy_db;        
+extern ProblemDescDB   dummy_db;
 extern ParallelLibrary dummy_lib;
-extern ResultsManager  iterator_results_db;
-extern EvaluationStore evaluation_store_db;
 
 // Initialization of static method ID counters
 size_t Iterator::noSpecIdNum = 0;
@@ -76,8 +74,8 @@ Iterator::Iterator(ProblemDescDB& problem_db,
   // "normal" is the default for no user specification.  Note that iterators
   // and interfaces have the most granularity in verbosity.
   outputLevel(problem_db.get<short>("method.output")), summaryOutputFlag(true),
-  topLevel(false), resultsDB(iterator_results_db),
-  evaluationsDB(evaluation_store_db),
+  topLevel(false), resultsDB(parallelLib.output_manager().results_manager()),
+  evaluationsDB(parallelLib.output_manager().evaluation_store()),
   evaluationsDBState(EvaluationsDBState::UNINITIALIZED),
   methodId(problem_db.get<const String>("method.id")), execNum(0),
   methodTraits(traits), exportSurrogate(problem_db.get<bool>("method.export_surrogate")),
@@ -110,8 +108,8 @@ Iterator::Iterator(std::shared_ptr<StudyServices> services,
   subIteratorFlag(false),
   numFinalSolutions(method_store.get<size_t>("final_solutions")),
   outputLevel(method_store.get<short>("output")), summaryOutputFlag(true),
-  topLevel(false), resultsDB(iterator_results_db),
-  evaluationsDB(evaluation_store_db),
+  topLevel(false), resultsDB(services->output_manager_ptr()->results_manager()),
+  evaluationsDB(services->output_manager_ptr()->evaluation_store()),
   evaluationsDBState(EvaluationsDBState::UNINITIALIZED),
   methodId(method_store.get<String>("id")), execNum(0),
   methodTraits(traits),
@@ -141,7 +139,7 @@ Iterator(unsigned short method_name, std::shared_ptr<Model> model,
   convergenceTol(0.0001), maxIterations(100), maxFunctionEvals(1000),
   maxEvalConcurrency(1), subIteratorFlag(false), numFinalSolutions(1),
   outputLevel(model->output_level()), summaryOutputFlag(false), topLevel(false),
-  resultsDB(iterator_results_db), evaluationsDB(evaluation_store_db),
+  resultsDB(parallelLib.output_manager().results_manager()), evaluationsDB(parallelLib.output_manager().evaluation_store()),
   evaluationsDBState(EvaluationsDBState::UNINITIALIZED), methodId(no_spec_id()),
   execNum(0), methodTraits(traits)
 {
@@ -163,10 +161,10 @@ Iterator::Iterator(unsigned short method_name,
   convergenceTol(0.0001), maxIterations(100), maxFunctionEvals(1000),
   maxEvalConcurrency(1), subIteratorFlag(false), numFinalSolutions(1),
   outputLevel(NORMAL_OUTPUT), summaryOutputFlag(false), topLevel(false),
-  resultsDB(iterator_results_db), evaluationsDB(evaluation_store_db), 
+  resultsDB(parallelLib.output_manager().results_manager()), evaluationsDB(parallelLib.output_manager().evaluation_store()),
   evaluationsDBState(EvaluationsDBState::UNINITIALIZED),
   methodId(no_spec_id()), execNum(0), methodTraits(traits)
-{ 
+{
 }
 
 
@@ -183,7 +181,7 @@ Iterator(std::shared_ptr<Model> model, size_t max_iter, size_t max_eval,
   convergenceTol(conv_tol), maxIterations(max_iter), maxFunctionEvals(max_eval),
   maxEvalConcurrency(1), subIteratorFlag(false), numFinalSolutions(1),
   outputLevel(model->output_level()), summaryOutputFlag(false), topLevel(false),
-  resultsDB(iterator_results_db), evaluationsDB(evaluation_store_db),
+  resultsDB(parallelLib.output_manager().results_manager()), evaluationsDB(parallelLib.output_manager().evaluation_store()),
   evaluationsDBState(EvaluationsDBState::UNINITIALIZED), methodId(no_spec_id()),
   execNum(0), methodTraits(traits)
 {
@@ -198,7 +196,7 @@ Iterator(std::shared_ptr<Model> model, size_t max_iter, size_t max_eval,
 Iterator::Iterator(std::shared_ptr<TraitsBase> traits):
   probDescDB(dummy_db), parallelLib(dummy_lib),
   runOptions(const_cast<RunOptions&>(dummy_lib.user_modes())),
-  resultsDB(iterator_results_db), evaluationsDB(evaluation_store_db), 
+  resultsDB(parallelLib.output_manager().results_manager()), evaluationsDB(parallelLib.output_manager().evaluation_store()),
   evaluationsDBState(EvaluationsDBState::UNINITIALIZED),
   myModelLayers(0), methodName(DEFAULT_METHOD),
   execNum(0), methodTraits(traits)
@@ -213,7 +211,7 @@ Iterator::Iterator(std::shared_ptr<TraitsBase> traits):
 //		   std::shared_ptr<TraitsBase> traits):
 //  // same as default ctor above
 //  probDescDB(dummy_db), parallelLib(dummy_lib),
-//  resultsDB(iterator_results_db), evaluationsDB(evaluation_store_db), 
+//  resultsDB(parallelLib.output_manager().results_manager()), evaluationsDB(parallelLib.output_manager().evaluation_store()),
 //  myModelLayers(0), methodName(DEFAULT_METHOD),
 //  iteratorRep(iterator_rep), methodTraits(traits)
 //{ /* empty ctor */ }
@@ -229,7 +227,7 @@ bool Iterator::resize()
 
 
 void Iterator::declare_sources() {
-  evaluationsDB.declare_source(method_id(), 
+  evaluationsDB.declare_source(method_id(),
                                "iterator",
                                iterated_model()->model_id(),
                                iterated_model()->model_type());
@@ -457,7 +455,7 @@ std::shared_ptr<Iterator> Iterator::get_iterator(ProblemDescDB& problem_db, Para
 }
 
 
-std::shared_ptr<Iterator> Iterator::get_iterator( 
+std::shared_ptr<Iterator> Iterator::get_iterator(
   const String& method_name, std::shared_ptr<Model> model) {
 
   auto i_it
@@ -566,7 +564,7 @@ Cout << "\n>>>>> " << method_string <<": post-run phase.\n";
     Cout << "\n<<<<< Iterator " << method_string <<" completed.\n";
   finalize_run();
   resultsDB.flush();
-  
+
 }
 
 
@@ -742,7 +740,7 @@ void Iterator::set_communicators(ParLevLIter pl_iter)
   // is therefore not that useful (misleading in MetaIterators).
   //miPLIndex = methodPCIter->mi_parallel_level_index(pl_iter);
 
-  // Unlike init_comms, set_comms DOES need to be recursed each time to 
+  // Unlike init_comms, set_comms DOES need to be recursed each time to
   // activate the correct comms at each level of the recursion.
   derived_set_communicators(pl_iter);
 }
@@ -1301,6 +1299,9 @@ ParallelLibrary* Iterator::parallel_library_ptr() const
 
 OutputManager* Iterator::output_manager_ptr() const
 {
+  if (sharedStudyServices)
+    return sharedStudyServices->output_manager_ptr();
+
   ParallelLibrary* parallel_lib = parallel_library_ptr();
   return parallel_lib ? &parallel_lib->output_manager() : nullptr;
 }

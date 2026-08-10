@@ -728,7 +728,6 @@ void initialize_distribution_parameters_from_variables(
 }
 
 extern PRPCache        data_pairs;
-extern EvaluationStore evaluation_store_db; // defined in dakota_global_defs.cpp
 
 // These globals defined here rather than in dakota_global_defs.cpp in order to
 // minimize dakota_restart_util object file dependencies
@@ -801,7 +800,7 @@ Model::Model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
   ),
   numFns(currentResponse.num_functions()),
   userDefinedConstraints(problem_db, currentVariables.shared_data()),
-  evaluationsDB(evaluation_store_db),
+  evaluationsDB(parallelLib.output_manager().evaluation_store()),
   modelType(problem_db.get<const String>("model.type")),
   surrogateType(problem_db.get<const String>("model.surrogate.type")),
   gradientType(to_legacy_string(currentResponse.gradient_config().type)),
@@ -1010,7 +1009,7 @@ Model::Model(std::shared_ptr<StudyServices> services,
   currentResponse(response),
   numFns(currentResponse.num_functions()),
   userDefinedConstraints(currentVariables.shared_data()),
-  evaluationsDB(evaluation_store_db),
+  evaluationsDB(services->output_manager_ptr()->evaluation_store()),
   modelType(model_store.get<String>("type")),
   surrogateType(model_store.get<String>("surrogate.type")),
   gradientType(to_legacy_string(currentResponse.gradient_config().type)),
@@ -1084,7 +1083,7 @@ Model(const ShortShortPair& vars_view,
       const ActiveSet& set, short output_level, ProblemDescDB& problem_db,
       ParallelLibrary& parallel_lib):
   numDerivVars(set.derivative_vector().size()),
-  numFns(set.request_vector().size()), evaluationsDB(evaluation_store_db),
+  numFns(set.request_vector().size()), evaluationsDB(parallelLib.output_manager().evaluation_store()),
   fdGradStepType("relative"), fdHessStepType("relative"), warmStartFlag(false), 
   supportsEstimDerivs(true), mappingInitialized(false), probDescDB(problem_db),
   parallelLib(parallel_lib),
@@ -1130,6 +1129,9 @@ ParallelLibrary* Model::parallel_library_ptr() const
 
 OutputManager* Model::output_manager_ptr() const
 {
+  if (sharedStudyServices)
+    return sharedStudyServices->output_manager_ptr();
+
   ParallelLibrary* parallel_lib = parallel_library_ptr();
   return parallel_lib ? &parallel_lib->output_manager() : nullptr;
 }
@@ -1163,7 +1165,7 @@ Model::Model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, Model::Mo
   warmStartFlag(false), supportsEstimDerivs(true), mappingInitialized(false),
   probDescDB(problem_db), parallelLib(parallel_lib),
   runOptions(const_cast<RunOptions&>(parallelLib.user_modes())),
-  evaluationsDB(evaluation_store_db),
+  evaluationsDB(parallelLib.output_manager().evaluation_store()),
   modelPCIter(parallel_lib.parallel_configuration_iterator()),
   componentParallelMode(NO_PARALLEL_MODE), asynchEvalFlag(false),
   evaluationCapacity(1), outputLevel(NORMAL_OUTPUT),
@@ -1182,14 +1184,14 @@ Model::Model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, Model::Mo
 Model::Model():
   probDescDB(dummy_db), parallelLib(dummy_lib),
   runOptions(const_cast<RunOptions&>(dummy_lib.user_modes())),
-  evaluationsDB(evaluation_store_db)
+  evaluationsDB(parallelLib.output_manager().evaluation_store())
 { /* empty ctor */ }
 
 
 // /** Copy constructor manages sharing of modelRep. */
 // Model::Model(const Model& model): probDescDB(model.problem_description_db()),
 //   parallelLib(probDescDB.parallel_library()),
-//   evaluationsDB(evaluation_store_db)
+//   evaluationsDB(parallelLib.output_manager().evaluation_store())
 // { /* empty ctor */ }
 
 
