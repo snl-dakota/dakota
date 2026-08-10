@@ -347,6 +347,9 @@ public:
   /// Close all live study-specific results databases during abnormal abort
   static void close_all_results_db();
 
+  /// Resolve a stable per-study results output base name.
+  String resolved_results_output_file();
+
   /// Archive the input file to the results database
   void archive_input(const ProgramOptions &prog_opts) const;
 
@@ -463,6 +466,9 @@ private:
 
   /// Output results  format
   unsigned short resultsOutputFormat;
+
+  /// Resolved per-study results base name after collision handling
+  String resolvedResultsOutputFile;
 
   /// study-specific iterator results database
   ResultsManager resultsDB;

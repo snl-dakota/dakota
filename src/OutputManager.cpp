@@ -9,6 +9,7 @@
 
 #include <memory>
 #include <set>
+#include <stdexcept>
 #include <utility>
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/regex.hpp>
@@ -40,6 +41,24 @@ std::set<OutputManager*>& live_output_managers()
 {
   static std::set<OutputManager*> managers;
   return managers;
+}
+
+const String& default_results_output_file()
+{
+  static const String default_name("dakota_results");
+  return default_name;
+}
+
+size_t& default_results_output_file_counter()
+{
+  static size_t counter = 0;
+  return counter;
+}
+
+std::set<String>& active_results_output_files()
+{
+  static std::set<String> active_files;
+  return active_files;
 }
 
 } // namespace
@@ -94,6 +113,8 @@ OutputManager::~OutputManager()
 {
   close_results_db();
   close_streams();
+  if (!resolvedResultsOutputFile.empty())
+    active_results_output_files().erase(resolvedResultsOutputFile);
   live_output_managers().erase(this);
 }
 
@@ -718,13 +739,44 @@ int OutputManager::graphics_counter() const
 { return graphicsCntr; }
 
 
+String OutputManager::resolved_results_output_file()
+{
+  if (!resolvedResultsOutputFile.empty())
+    return resolvedResultsOutputFile;
+
+  std::set<String>& active_files = active_results_output_files();
+
+  if (resultsOutputFile != default_results_output_file()) {
+    if (active_files.count(resultsOutputFile))
+      throw std::runtime_error("Duplicate results_output_file for active studies: " +
+                               resultsOutputFile);
+
+    resolvedResultsOutputFile = resultsOutputFile;
+    active_files.insert(resolvedResultsOutputFile);
+    return resolvedResultsOutputFile;
+  }
+
+  size_t& counter = default_results_output_file_counter();
+  while (resolvedResultsOutputFile.empty()) {
+    ++counter;
+    String candidate = (counter == 1)
+      ? default_results_output_file()
+      : default_results_output_file() + "." + std::to_string(counter);
+
+    if (active_files.insert(candidate).second)
+      resolvedResultsOutputFile = candidate;
+  }
+
+  return resolvedResultsOutputFile;
+}
+
 void OutputManager::init_results_db()
 {
   String file_tag;
   if (mpirunFlag)
     file_tag = "." + std::to_string(worldRank + 1);
 
-  String filename = resultsOutputFile + file_tag;
+  String filename = resolved_results_output_file() + file_tag;
 
   close_results_db();
   resultsDB.clear_databases();
