@@ -11,6 +11,7 @@
 
 #include "ConcurrentMetaIterator.hpp"
 #include "DOTOptimizer.hpp"
+#include "EffGlobalMinimizer.hpp"
 #include "DakotaInterface.hpp"
 #include "DakotaInterfaceEnums.hpp"
 #include "DakotaIterator.hpp"
@@ -26,10 +27,17 @@
 #include "MPIManager.hpp"
 #include "NestedModel.hpp"
 #include "InstructionMaterializer.hpp"
+#include "NL2SOLLeastSq.hpp"
+#include "NPSOLOptimizer.hpp"
+#include "NonDGlobalSingleInterval.hpp"
+#include "NonDLHSSingleInterval.hpp"
+#include "NonDLocalSingleInterval.hpp"
+#include "ParamStudy.hpp"
 #include "NonDLHSSampling.hpp"
 #include "OutputManager.hpp"
 #include "ParallelLibrary.hpp"
 #include "ProgramOptions.hpp"
+#include "RichExtrapVerification.hpp"
 #include "RunOptions.hpp"
 #include "SimulationModel.hpp"
 #include "StudyRuntime.hpp"
@@ -325,6 +333,208 @@ Study::MethodFactory::multi_start(
   return multi_start(
     validate_and_materialize_selected_method(method_json, "multi_start"),
     std::move(sub_iterator));
+}
+
+std::shared_ptr<ParamStudy>
+Study::MethodFactory::vector_parameter_study(
+  const IRStore& method_store, std::shared_ptr<Model> model) const
+{
+  return std::make_shared<ParamStudy>(
+    method_store, std::move(model), study.services());
+}
+
+std::shared_ptr<ParamStudy>
+Study::MethodFactory::vector_parameter_study(
+  const nlohmann::json& method_json, std::shared_ptr<Model> model) const
+{
+  return vector_parameter_study(
+    validate_and_materialize_selected_method(method_json, "vector_parameter_study"),
+    std::move(model));
+}
+
+std::shared_ptr<ParamStudy>
+Study::MethodFactory::list_parameter_study(
+  const IRStore& method_store, std::shared_ptr<Model> model) const
+{
+  return std::make_shared<ParamStudy>(
+    method_store, std::move(model), study.services());
+}
+
+std::shared_ptr<ParamStudy>
+Study::MethodFactory::list_parameter_study(
+  const nlohmann::json& method_json, std::shared_ptr<Model> model) const
+{
+  return list_parameter_study(
+    validate_and_materialize_selected_method(method_json, "list_parameter_study"),
+    std::move(model));
+}
+
+std::shared_ptr<ParamStudy>
+Study::MethodFactory::centered_parameter_study(
+  const IRStore& method_store, std::shared_ptr<Model> model) const
+{
+  return std::make_shared<ParamStudy>(
+    method_store, std::move(model), study.services());
+}
+
+std::shared_ptr<ParamStudy>
+Study::MethodFactory::centered_parameter_study(
+  const nlohmann::json& method_json, std::shared_ptr<Model> model) const
+{
+  return centered_parameter_study(
+    validate_and_materialize_selected_method(method_json, "centered_parameter_study"),
+    std::move(model));
+}
+
+std::shared_ptr<ParamStudy>
+Study::MethodFactory::multidim_parameter_study(
+  const IRStore& method_store, std::shared_ptr<Model> model) const
+{
+  return std::make_shared<ParamStudy>(
+    method_store, std::move(model), study.services());
+}
+
+std::shared_ptr<ParamStudy>
+Study::MethodFactory::multidim_parameter_study(
+  const nlohmann::json& method_json, std::shared_ptr<Model> model) const
+{
+  return multidim_parameter_study(
+    validate_and_materialize_selected_method(method_json, "multidim_parameter_study"),
+    std::move(model));
+}
+
+std::shared_ptr<RichExtrapVerification>
+Study::MethodFactory::richardson_extrap(
+  const IRStore& method_store, std::shared_ptr<Model> model) const
+{
+  return std::make_shared<RichExtrapVerification>(
+    method_store, std::move(model), study.services());
+}
+
+std::shared_ptr<RichExtrapVerification>
+Study::MethodFactory::richardson_extrap(
+  const nlohmann::json& method_json, std::shared_ptr<Model> model) const
+{
+  return richardson_extrap(
+    validate_and_materialize_selected_method(method_json, "richardson_extrap"),
+    std::move(model));
+}
+
+std::shared_ptr<NonDLocalSingleInterval>
+Study::MethodFactory::local_interval_est(
+  const IRStore& method_store, std::shared_ptr<Model> model) const
+{
+#if !defined(HAVE_NPSOL) && !defined(HAVE_OPTPP)
+  (void)method_store;
+  (void)model;
+  throw std::runtime_error(
+    "Study::method().local_interval_est requires Dakota to be built with NPSOL or OPTPP.");
+#else
+  return std::make_shared<NonDLocalSingleInterval>(
+    method_store, std::move(model), study.services());
+#endif
+}
+
+std::shared_ptr<NonDLocalSingleInterval>
+Study::MethodFactory::local_interval_est(
+  const nlohmann::json& method_json, std::shared_ptr<Model> model) const
+{
+  return local_interval_est(
+    validate_and_materialize_selected_method(method_json, "local_interval_est"),
+    std::move(model));
+}
+
+std::shared_ptr<Iterator>
+Study::MethodFactory::global_interval_est(
+  const IRStore& method_store, std::shared_ptr<Model> model) const
+{
+  if (method_store.get<unsigned short>("nond.opt_subproblem_solver") == SUBMETHOD_LHS)
+    return std::make_shared<NonDLHSSingleInterval>(
+      method_store, std::move(model), study.services());
+
+  return std::make_shared<NonDGlobalSingleInterval>(
+    method_store, std::move(model), study.services());
+}
+
+std::shared_ptr<Iterator>
+Study::MethodFactory::global_interval_est(
+  const nlohmann::json& method_json, std::shared_ptr<Model> model) const
+{
+  return global_interval_est(
+    validate_and_materialize_selected_method(method_json, "global_interval_est"),
+    std::move(model));
+}
+
+std::shared_ptr<EffGlobalMinimizer>
+Study::MethodFactory::efficient_global(
+  const IRStore& method_store, std::shared_ptr<Model> model) const
+{
+#ifdef HAVE_NCSU
+  return std::make_shared<EffGlobalMinimizer>(
+    method_store, std::move(model), study.services());
+#else
+  (void)method_store;
+  (void)model;
+  throw std::runtime_error(
+    "Study::method().efficient_global requires Dakota to be built with NCSU.");
+#endif
+}
+
+std::shared_ptr<EffGlobalMinimizer>
+Study::MethodFactory::efficient_global(
+  const nlohmann::json& method_json, std::shared_ptr<Model> model) const
+{
+  return efficient_global(
+    validate_and_materialize_selected_method(method_json, "efficient_global"),
+    std::move(model));
+}
+
+std::shared_ptr<NPSOLOptimizer>
+Study::MethodFactory::npsol_sqp(
+  const IRStore& method_store, std::shared_ptr<Model> model) const
+{
+#ifdef HAVE_NPSOL
+  return std::make_shared<NPSOLOptimizer>(
+    method_store, std::move(model), study.services());
+#else
+  (void)method_store;
+  (void)model;
+  throw std::runtime_error(
+    "Study::method().npsol_sqp requires Dakota to be built with NPSOL.");
+#endif
+}
+
+std::shared_ptr<NPSOLOptimizer>
+Study::MethodFactory::npsol_sqp(
+  const nlohmann::json& method_json, std::shared_ptr<Model> model) const
+{
+  return npsol_sqp(
+    validate_and_materialize_selected_method(method_json, "npsol_sqp"),
+    std::move(model));
+}
+
+std::shared_ptr<NL2SOLLeastSq>
+Study::MethodFactory::nl2sol(
+  const IRStore& method_store, std::shared_ptr<Model> model) const
+{
+#ifdef HAVE_NL2SOL
+  return std::make_shared<NL2SOLLeastSq>(
+    method_store, std::move(model), study.services());
+#else
+  (void)method_store;
+  (void)model;
+  throw std::runtime_error(
+    "Study::method().nl2sol requires Dakota to be built with NL2SOL.");
+#endif
+}
+
+std::shared_ptr<NL2SOLLeastSq>
+Study::MethodFactory::nl2sol(
+  const nlohmann::json& method_json, std::shared_ptr<Model> model) const
+{
+  return nl2sol(
+    validate_and_materialize_selected_method(method_json, "nl2sol"),
+    std::move(model));
 }
 
 Study::ModelFactory::ModelFactory(const Study& study_ref):

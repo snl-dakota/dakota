@@ -34,6 +34,36 @@ nlohmann::json validate_interface_fragment(const py::object& value)
 nlohmann::json validate_sampling_fragment(const py::object& value)
 { return validate_fragment(value, "validate_sampling_fragment"); }
 
+nlohmann::json validate_vector_parameter_study_fragment(const py::object& value)
+{ return validate_fragment(value, "validate_vector_parameter_study_fragment"); }
+
+nlohmann::json validate_list_parameter_study_fragment(const py::object& value)
+{ return validate_fragment(value, "validate_list_parameter_study_fragment"); }
+
+nlohmann::json validate_centered_parameter_study_fragment(const py::object& value)
+{ return validate_fragment(value, "validate_centered_parameter_study_fragment"); }
+
+nlohmann::json validate_multidim_parameter_study_fragment(const py::object& value)
+{ return validate_fragment(value, "validate_multidim_parameter_study_fragment"); }
+
+nlohmann::json validate_richardson_extrap_fragment(const py::object& value)
+{ return validate_fragment(value, "validate_richardson_extrap_fragment"); }
+
+nlohmann::json validate_local_interval_est_fragment(const py::object& value)
+{ return validate_fragment(value, "validate_local_interval_est_fragment"); }
+
+nlohmann::json validate_global_interval_est_fragment(const py::object& value)
+{ return validate_fragment(value, "validate_global_interval_est_fragment"); }
+
+nlohmann::json validate_efficient_global_fragment(const py::object& value)
+{ return validate_fragment(value, "validate_efficient_global_fragment"); }
+
+nlohmann::json validate_npsol_sqp_fragment(const py::object& value)
+{ return validate_fragment(value, "validate_npsol_sqp_fragment"); }
+
+nlohmann::json validate_nl2sol_fragment(const py::object& value)
+{ return validate_fragment(value, "validate_nl2sol_fragment"); }
+
 nlohmann::json validate_dot_bfgs_fragment(const py::object& value)
 { return validate_fragment(value, "validate_dot_bfgs_fragment"); }
 

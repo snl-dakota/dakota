@@ -19,7 +19,12 @@ from ._study import (  # noqa: F401
     Model,
     ModelFactory,
     NestedModel,
+    NonDGlobalSingleInterval,
     NonDLHSSampling,
+    NonDLHSSingleInterval,
+    NonDLocalSingleInterval,
+    ParamStudy,
+    RichExtrapVerification,
     Response,
     SimulationModel,
     Study,
@@ -31,5 +36,20 @@ from ._study import (  # noqa: F401
 
 try:
     from ._study import DOTOptimizer  # noqa: F401
+except ImportError:
+    pass
+
+try:
+    from ._study import EffGlobalMinimizer  # noqa: F401
+except ImportError:
+    pass
+
+try:
+    from ._study import NPSOLOptimizer  # noqa: F401
+except ImportError:
+    pass
+
+try:
+    from ._study import NL2SOLLeastSq  # noqa: F401
 except ImportError:
     pass

@@ -23,16 +23,22 @@ namespace Dakota {
 
 class ConcurrentMetaIterator;
 class DOTOptimizer;
+class EffGlobalMinimizer;
 class Interface;
 class Iterator;
 class Model;
 class MPIManager;
+class NL2SOLLeastSq;
+class NPSOLOptimizer;
+class NonDLocalSingleInterval;
+class ParamStudy;
 class NestedModel;
 class NonDLHSSampling;
 class OutputManager;
 class ParallelLibrary;
 class ProgramOptions;
 class Response;
+class RichExtrapVerification;
 class RunOptions;
 class SimulationModel;
 class StudyRuntime;
@@ -92,6 +98,56 @@ public:
   sampling(const IRStore& method_store, std::shared_ptr<Model> model) const;
   std::shared_ptr<NonDLHSSampling>
   sampling(const nlohmann::json& method_json, std::shared_ptr<Model> model) const;
+
+  std::shared_ptr<ParamStudy>
+  vector_parameter_study(const IRStore& method_store, std::shared_ptr<Model> model) const;
+  std::shared_ptr<ParamStudy>
+  vector_parameter_study(const nlohmann::json& method_json, std::shared_ptr<Model> model) const;
+
+  std::shared_ptr<ParamStudy>
+  list_parameter_study(const IRStore& method_store, std::shared_ptr<Model> model) const;
+  std::shared_ptr<ParamStudy>
+  list_parameter_study(const nlohmann::json& method_json, std::shared_ptr<Model> model) const;
+
+  std::shared_ptr<ParamStudy>
+  centered_parameter_study(const IRStore& method_store, std::shared_ptr<Model> model) const;
+  std::shared_ptr<ParamStudy>
+  centered_parameter_study(const nlohmann::json& method_json, std::shared_ptr<Model> model) const;
+
+  std::shared_ptr<ParamStudy>
+  multidim_parameter_study(const IRStore& method_store, std::shared_ptr<Model> model) const;
+  std::shared_ptr<ParamStudy>
+  multidim_parameter_study(const nlohmann::json& method_json, std::shared_ptr<Model> model) const;
+
+  std::shared_ptr<RichExtrapVerification>
+  richardson_extrap(const IRStore& method_store, std::shared_ptr<Model> model) const;
+  std::shared_ptr<RichExtrapVerification>
+  richardson_extrap(const nlohmann::json& method_json, std::shared_ptr<Model> model) const;
+
+  std::shared_ptr<NonDLocalSingleInterval>
+  local_interval_est(const IRStore& method_store, std::shared_ptr<Model> model) const;
+  std::shared_ptr<NonDLocalSingleInterval>
+  local_interval_est(const nlohmann::json& method_json, std::shared_ptr<Model> model) const;
+
+  std::shared_ptr<Iterator>
+  global_interval_est(const IRStore& method_store, std::shared_ptr<Model> model) const;
+  std::shared_ptr<Iterator>
+  global_interval_est(const nlohmann::json& method_json, std::shared_ptr<Model> model) const;
+
+  std::shared_ptr<EffGlobalMinimizer>
+  efficient_global(const IRStore& method_store, std::shared_ptr<Model> model) const;
+  std::shared_ptr<EffGlobalMinimizer>
+  efficient_global(const nlohmann::json& method_json, std::shared_ptr<Model> model) const;
+
+  std::shared_ptr<NPSOLOptimizer>
+  npsol_sqp(const IRStore& method_store, std::shared_ptr<Model> model) const;
+  std::shared_ptr<NPSOLOptimizer>
+  npsol_sqp(const nlohmann::json& method_json, std::shared_ptr<Model> model) const;
+
+  std::shared_ptr<NL2SOLLeastSq>
+  nl2sol(const IRStore& method_store, std::shared_ptr<Model> model) const;
+  std::shared_ptr<NL2SOLLeastSq>
+  nl2sol(const nlohmann::json& method_json, std::shared_ptr<Model> model) const;
 
   std::shared_ptr<DOTOptimizer>
   dot_bfgs(const IRStore& method_store, std::shared_ptr<Model> model) const;

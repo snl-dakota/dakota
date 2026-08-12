@@ -11,10 +11,16 @@
 
 #include "IRState.hpp"
 #include "ConcurrentMetaIterator.hpp"
+#include "EffGlobalMinimizer.hpp"
 #ifdef HAVE_DOT
 #include "DOTOptimizer.hpp"
 #endif
 #include "NestedModel.hpp"
+#include "NL2SOLLeastSq.hpp"
+#include "NPSOLOptimizer.hpp"
+#include "NonDLocalSingleInterval.hpp"
+#include "ParamStudy.hpp"
+#include "RichExtrapVerification.hpp"
 #include "NonDLHSSampling.hpp"
 #include "SimulationModel.hpp"
 #include "DakotaInterface.hpp"
@@ -41,7 +47,7 @@ void bind_study_factories(py::module_& m)
          [](const Study::MethodFactory& factory,
             const py::object& method_json,
             std::shared_ptr<Model> model) {
-           return factory.sampling(validate_sampling_fragment(method_json),
+           return factory.sampling(method_json.cast<nlohmann::json>(),
                                    std::move(model));
          },
          py::arg("method"), py::arg("model"));
@@ -51,7 +57,7 @@ void bind_study_factories(py::module_& m)
          [](const Study::MethodFactory& factory,
             const py::object& method_json,
             std::shared_ptr<Model> model) {
-           return factory.dot_bfgs(validate_dot_bfgs_fragment(method_json),
+           return factory.dot_bfgs(method_json.cast<nlohmann::json>(),
                                    std::move(model));
          },
          py::arg("method"), py::arg("model"));
@@ -61,10 +67,100 @@ void bind_study_factories(py::module_& m)
          [](const Study::MethodFactory& factory,
             const py::object& method_json,
             std::shared_ptr<Iterator> sub_iterator) {
-           return factory.multi_start(validate_multi_start_fragment(method_json),
+           return factory.multi_start(method_json.cast<nlohmann::json>(),
                                       std::move(sub_iterator));
          },
-         py::arg("method"), py::arg("sub_iterator"));
+         py::arg("method"), py::arg("sub_iterator"))
+    .def("vector_parameter_study",
+         [](const Study::MethodFactory& factory,
+            const py::object& method_json,
+            std::shared_ptr<Model> model) {
+           return factory.vector_parameter_study(
+             method_json.cast<nlohmann::json>(),
+             std::move(model));
+         },
+         py::arg("method"), py::arg("model"))
+    .def("list_parameter_study",
+         [](const Study::MethodFactory& factory,
+            const py::object& method_json,
+            std::shared_ptr<Model> model) {
+           return factory.list_parameter_study(
+             method_json.cast<nlohmann::json>(),
+             std::move(model));
+         },
+         py::arg("method"), py::arg("model"))
+    .def("centered_parameter_study",
+         [](const Study::MethodFactory& factory,
+            const py::object& method_json,
+            std::shared_ptr<Model> model) {
+           return factory.centered_parameter_study(
+             method_json.cast<nlohmann::json>(),
+             std::move(model));
+         },
+         py::arg("method"), py::arg("model"))
+    .def("multidim_parameter_study",
+         [](const Study::MethodFactory& factory,
+            const py::object& method_json,
+            std::shared_ptr<Model> model) {
+           return factory.multidim_parameter_study(
+             method_json.cast<nlohmann::json>(),
+             std::move(model));
+         },
+         py::arg("method"), py::arg("model"))
+    .def("richardson_extrap",
+         [](const Study::MethodFactory& factory,
+            const py::object& method_json,
+            std::shared_ptr<Model> model) {
+           return factory.richardson_extrap(
+             method_json.cast<nlohmann::json>(),
+             std::move(model));
+         },
+         py::arg("method"), py::arg("model"))
+    .def("local_interval_est",
+         [](const Study::MethodFactory& factory,
+            const py::object& method_json,
+            std::shared_ptr<Model> model) {
+           return factory.local_interval_est(
+             method_json.cast<nlohmann::json>(),
+             std::move(model));
+         },
+         py::arg("method"), py::arg("model"))
+    .def("global_interval_est",
+         [](const Study::MethodFactory& factory,
+            const py::object& method_json,
+            std::shared_ptr<Model> model) {
+           return factory.global_interval_est(
+             method_json.cast<nlohmann::json>(),
+             std::move(model));
+         },
+         py::arg("method"), py::arg("model"))
+    .def("efficient_global",
+         [](const Study::MethodFactory& factory,
+            const py::object& method_json,
+            std::shared_ptr<Model> model) {
+           return factory.efficient_global(
+             method_json.cast<nlohmann::json>(),
+             std::move(model));
+         },
+         py::arg("method"), py::arg("model"))
+    .def("npsol_sqp",
+         [](const Study::MethodFactory& factory,
+            const py::object& method_json,
+            std::shared_ptr<Model> model) {
+           return factory.npsol_sqp(
+             method_json.cast<nlohmann::json>(),
+             std::move(model));
+         },
+         py::arg("method"), py::arg("model"))
+    .def("nl2sol",
+         [](const Study::MethodFactory& factory,
+            const py::object& method_json,
+            std::shared_ptr<Model> model) {
+           return factory.nl2sol(
+             method_json.cast<nlohmann::json>(),
+             std::move(model));
+         },
+         py::arg("method"), py::arg("model"));
 
   py::class_<Study::ModelFactory>(m, "ModelFactory")
     .def("simulation",
@@ -73,7 +169,7 @@ void bind_study_factories(py::module_& m)
             const Variables& variables,
             std::shared_ptr<Interface> interface,
             const Response& response) {
-           return factory.simulation(validate_simulation_model_fragment(model_json),
+           return factory.simulation(model_json.cast<nlohmann::json>(),
                                      variables, std::move(interface), response);
          },
          py::arg("model"), py::arg("variables"), py::arg("interface"),
@@ -85,7 +181,7 @@ void bind_study_factories(py::module_& m)
             std::shared_ptr<Interface> optional_interface,
             const Variables& variables,
             const Response& response) {
-           return factory.nested(validate_nested_model_fragment(model_json),
+           return factory.nested(model_json.cast<nlohmann::json>(),
                                  std::move(sub_iterator),
                                  std::move(optional_interface), variables,
                                  response);
@@ -101,19 +197,19 @@ void bind_study(py::module_& m)
     .def(py::init<const StudyConfig&>(), py::arg("config") = StudyConfig{})
     .def("variables",
          [](const Study& study, const py::object& variables_json) {
-           return study.variables(validate_variables_fragment(variables_json));
+           return study.variables(variables_json.cast<nlohmann::json>());
          },
          py::arg("variables"))
     .def("responses",
          [](const Study& study, const py::object& responses_json,
             const Variables& variables) {
-           return study.responses(validate_responses_fragment(responses_json),
+           return study.responses(responses_json.cast<nlohmann::json>(),
                                   variables);
          },
          py::arg("responses"), py::arg("variables"))
     .def("interface",
          [](const Study& study, const py::object& interface_json) {
-           return study.interface(validate_interface_fragment(interface_json));
+           return study.interface(interface_json.cast<nlohmann::json>());
          },
          py::arg("interface"))
     .def_property_readonly(
