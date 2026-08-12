@@ -338,6 +338,11 @@ bool expand_defaults(Document& doc) {
 
 namespace {
 
+struct JsonBlockValidationSpec {
+    const char* top_level_key;
+    bool wraps_in_array;
+};
+
 dakota::InputFormat detect_input_format(const std::string& filename,
                                         dakota::InputFormat format) {
     if (format != dakota::InputFormat::Auto) {
@@ -394,6 +399,149 @@ json throw_for_reader_errors(const std::string& context,
         }
     }
     throw std::runtime_error(message);
+}
+
+bool validate_json_block_input_to_json(const json& input,
+                                       json& output,
+                                       std::vector<std::string>& errors,
+                                       const JsonBlockValidationSpec& spec,
+                                       bool debug) {
+    if (!input.is_object()) {
+        errors.push_back(
+            std::string("Expected JSON object for block '") +
+            spec.top_level_key + "'.");
+        return false;
+    }
+
+    g_enable_debug = debug;
+    validation_metadata::g_validation_debug = debug;
+
+    json wrapped_input = json::object();
+    if (spec.wraps_in_array) {
+        wrapped_input[spec.top_level_key] = json::array({input});
+    } else {
+        wrapped_input[spec.top_level_key] = input;
+    }
+
+    if (!expand_json_defaults(wrapped_input, errors, debug)) {
+        return false;
+    }
+
+    const auto& block_defs = validation_metadata::get_block_definitions();
+    const auto block_it = block_defs.find(spec.top_level_key);
+    if (block_it == block_defs.end()) {
+        errors.push_back(
+            std::string("Unknown top-level block '") + spec.top_level_key + "'.");
+        return false;
+    }
+
+    auto wrapped_it = wrapped_input.find(spec.top_level_key);
+    if (wrapped_it == wrapped_input.end()) {
+        errors.push_back(
+            std::string("Expanded JSON is missing expected top-level block '") +
+            spec.top_level_key + "'.");
+        return false;
+    }
+
+    const auto& block_def = block_it->second;
+    auto validate_union_instance =
+        [&](json& instance, const std::string& path) {
+            if (!instance.is_object()) {
+                errors.push_back(path + ": expected object block instance");
+                return;
+            }
+
+            const auto& union_selector_map =
+                validation_metadata::get_union_block_selector_map();
+            const auto sel_map_it = union_selector_map.find(spec.top_level_key);
+            if (sel_map_it == union_selector_map.end()) {
+                errors.push_back(path + ": missing union selector metadata");
+                return;
+            }
+
+            const auto& selector_children = sel_map_it->second;
+            for (auto& [prop_name, prop_val] : instance.items()) {
+                const auto child_it = selector_children.find(prop_name);
+                if (child_it == selector_children.end()) {
+                    errors.push_back(path + ": unexpected property '" + prop_name + "'");
+                    continue;
+                }
+
+                if (!prop_val.is_object()) {
+                    errors.push_back(path + "." + prop_name + ": expected object");
+                    continue;
+                }
+
+                validation_metadata::walk_and_validate(
+                    prop_val, child_it->second, path + "." + prop_name, errors);
+            }
+        };
+
+    if (!block_def.is_union && !block_def.config_type.empty()) {
+        if (block_def.is_array) {
+            if (!wrapped_it->is_array()) {
+                errors.push_back(
+                    std::string("Top-level block '") + spec.top_level_key +
+                    "' must be an array.");
+                return false;
+            }
+            if (wrapped_it->size() != 1 || !(*wrapped_it)[0].is_object()) {
+                errors.push_back(
+                    std::string("Top-level block '") + spec.top_level_key +
+                    "' must contain exactly one object entry.");
+                return false;
+            }
+            validation_metadata::walk_and_validate(
+                (*wrapped_it)[0], block_def.config_type, spec.top_level_key + std::string("[0]"), errors);
+            if (errors.empty()) {
+                output = (*wrapped_it)[0];
+            }
+        } else {
+            if (!wrapped_it->is_object()) {
+                errors.push_back(
+                    std::string("Top-level block '") + spec.top_level_key +
+                    "' must be an object.");
+                return false;
+            }
+            validation_metadata::walk_and_validate(
+                *wrapped_it, block_def.config_type, spec.top_level_key, errors);
+            if (errors.empty()) {
+                output = *wrapped_it;
+            }
+        }
+    } else if (block_def.is_union) {
+        if (block_def.is_array) {
+            if (!wrapped_it->is_array()) {
+                errors.push_back(
+                    std::string("Top-level block '") + spec.top_level_key +
+                    "' must be an array.");
+                return false;
+            }
+            if (wrapped_it->size() != 1 || !(*wrapped_it)[0].is_object()) {
+                errors.push_back(
+                    std::string("Top-level block '") + spec.top_level_key +
+                    "' must contain exactly one object entry.");
+                return false;
+            }
+            validate_union_instance((*wrapped_it)[0], spec.top_level_key + std::string("[0]"));
+            if (errors.empty()) {
+                output = (*wrapped_it)[0];
+            }
+        } else {
+            if (!wrapped_it->is_object()) {
+                errors.push_back(
+                    std::string("Top-level block '") + spec.top_level_key +
+                    "' must be an object.");
+                return false;
+            }
+            validate_union_instance(*wrapped_it, spec.top_level_key);
+            if (errors.empty()) {
+                output = *wrapped_it;
+            }
+        }
+    }
+
+    return errors.empty();
 }
 
 } // namespace
@@ -473,6 +621,132 @@ json validate_json_input_to_json(const json& input,
     std::vector<std::string> errors;
     if (!validate_json_input_to_json(input, output, errors, debug)) {
         return throw_for_reader_errors("Failed to validate JSON input", errors);
+    }
+    return output;
+}
+
+bool validate_environment_block_json_to_json(const json& input,
+                                             json& output,
+                                             std::vector<std::string>& errors,
+                                             bool debug)
+{
+    return validate_json_block_input_to_json(
+        input, output, errors, {"environment", false}, debug);
+}
+
+json validate_environment_block_json_to_json(const json& input,
+                                             bool debug)
+{
+    json output;
+    std::vector<std::string> errors;
+    if (!validate_environment_block_json_to_json(input, output, errors, debug)) {
+        return throw_for_reader_errors("Failed to validate environment block JSON input",
+                                       errors);
+    }
+    return output;
+}
+
+bool validate_method_block_json_to_json(const json& input,
+                                        json& output,
+                                        std::vector<std::string>& errors,
+                                        bool debug)
+{
+    return validate_json_block_input_to_json(
+        input, output, errors, {"method", true}, debug);
+}
+
+json validate_method_block_json_to_json(const json& input,
+                                        bool debug)
+{
+    json output;
+    std::vector<std::string> errors;
+    if (!validate_method_block_json_to_json(input, output, errors, debug)) {
+        return throw_for_reader_errors("Failed to validate method block JSON input",
+                                       errors);
+    }
+    return output;
+}
+
+bool validate_model_block_json_to_json(const json& input,
+                                       json& output,
+                                       std::vector<std::string>& errors,
+                                       bool debug)
+{
+    return validate_json_block_input_to_json(
+        input, output, errors, {"model", true}, debug);
+}
+
+json validate_model_block_json_to_json(const json& input,
+                                       bool debug)
+{
+    json output;
+    std::vector<std::string> errors;
+    if (!validate_model_block_json_to_json(input, output, errors, debug)) {
+        return throw_for_reader_errors("Failed to validate model block JSON input",
+                                       errors);
+    }
+    return output;
+}
+
+bool validate_variables_block_json_to_json(const json& input,
+                                           json& output,
+                                           std::vector<std::string>& errors,
+                                           bool debug)
+{
+    return validate_json_block_input_to_json(
+        input, output, errors, {"variables", true}, debug);
+}
+
+json validate_variables_block_json_to_json(const json& input,
+                                           bool debug)
+{
+    json output;
+    std::vector<std::string> errors;
+    if (!validate_variables_block_json_to_json(input, output, errors, debug)) {
+        return throw_for_reader_errors("Failed to validate variables block JSON input",
+                                       errors);
+    }
+    return output;
+}
+
+bool validate_interface_block_json_to_json(const json& input,
+                                           json& output,
+                                           std::vector<std::string>& errors,
+                                           bool debug)
+{
+    return validate_json_block_input_to_json(
+        input, output, errors, {"interface", true}, debug);
+}
+
+json validate_interface_block_json_to_json(const json& input,
+                                           bool debug)
+{
+    json output;
+    std::vector<std::string> errors;
+    if (!validate_interface_block_json_to_json(input, output, errors, debug)) {
+        return throw_for_reader_errors("Failed to validate interface block JSON input",
+                                       errors);
+    }
+    return output;
+}
+
+bool validate_responses_block_json_to_json(const json& input,
+                                           json& output,
+                                           std::vector<std::string>& errors,
+                                           bool debug)
+{
+    return validate_json_block_input_to_json(
+        input, output, errors, {"responses", true}, debug);
+}
+
+json validate_responses_block_json_to_json(const json& input,
+                                           bool debug)
+{
+    json output;
+    std::vector<std::string> errors;
+    if (!validate_responses_block_json_to_json(input, output, errors, debug)) {
+        return throw_for_reader_errors("Failed to validate responses block JSON input",
+                                       errors);
     }
     return output;
 }

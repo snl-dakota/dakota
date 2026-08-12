@@ -13,6 +13,7 @@
 namespace Dakota {
   class ProblemDescDB;
   class Model;
+  class ROLOptimizer;
   using Real = double;
 }
 

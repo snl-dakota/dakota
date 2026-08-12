@@ -23,26 +23,26 @@ Test Number 1 succeeded
                       0.0000000000e+00
 <<<<< Best evaluation ID: 21
 Test Number 2 succeeded
-<<<<< Function evaluation summary: 460 total (190 new, 270 duplicate)
+<<<<< Function evaluation summary: 191 total (190 new, 1 duplicate)
 <<<<< Best parameters          =
                       2.0722719859e+00 intake_dia
-                      1.7685567802e+00 flatness
+                      1.7685567801e+00 flatness
 <<<<< Best objective functions =
                      -2.4391450638e+00
-                     -2.6570134504e-01
-                     -3.3471648297e-01
+                     -2.6570134514e-01
+                     -3.3471648298e-01
 <<<<< Best constraint values   =
-                      8.8872165183e-09
-<<<<< Best evaluation ID: 451
+                      8.8960343536e-09
+<<<<< Best evaluation ID: 157
 Test Number 3 succeeded
-<<<<< Function evaluation summary: 450 total (185 new, 265 duplicate)
+<<<<< Function evaluation summary: 186 total (185 new, 1 duplicate)
 <<<<< Best parameters          =
-                      2.0722719859e+00 intake_dia
-                      1.7685568596e+00 flatness
+                      2.0698805930e+00 intake_dia
+                      1.5389946166e+00 flatness
 <<<<< Best objective functions =
-                     -2.4391450519e+00
-                     -2.6570134505e-01
-                     -3.3471647106e-01
+                     -2.4725356817e+00
+                     -2.7285073273e-01
+                     -3.6915080751e-01
 <<<<< Best constraint values   =
-                     -4.4629744345e-09
-<<<<< Best evaluation ID: 441
+                      3.9554360130e-02
+<<<<< Best evaluation ID: 52

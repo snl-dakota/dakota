@@ -14,11 +14,11 @@ def main():
     assert study.model is not None
 
     try:
-        study.method.sampling({"samples": 2}, None)
+        study.variables({"bogus": 2})
     except Exception as exc:
-        assert "top-level 'sampling'" in str(exc)
+        assert "permit" in str(exc).lower() or "extra" in str(exc).lower()
     else:
-        raise AssertionError("sampling() accepted a missing top-level keyword")
+        raise AssertionError("study.variables() accepted an invalid fragment")
 
 
 if __name__ == "__main__":

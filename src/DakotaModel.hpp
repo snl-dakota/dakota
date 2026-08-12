@@ -1187,7 +1187,7 @@ protected:
   /// cached evalTag Prefix from parents to use at evaluate time
   String evalTagPrefix;
 
-  /// reference to the global evaluation database
+  /// reference to the study-specific evaluation database
   EvaluationStore &evaluationsDB;
 
 private:

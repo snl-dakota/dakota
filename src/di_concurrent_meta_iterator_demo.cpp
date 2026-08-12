@@ -11,7 +11,6 @@
 #include "DOTOptimizer.hpp"
 #include "DakotaVariables.hpp"
 #include "DakotaResponse.hpp"
-#include "InstructionMaterializer.hpp"
 #include "Study.hpp"
 #include "SimulationModel.hpp"
 #include "model_utils.hpp"
@@ -26,35 +25,29 @@ int main()
 {
   using namespace Dakota;
 
-  InstructionMaterializer materializer;
-
   const json multistart_method_json = {
-    {"multi_start", {
-      {"final_solutions", 0},
-      {"id_method", "MS"},
-      {"output", {{"normal", true}}},
-      {"random_starts", {{"count", 3}, {"seed", 123}}},
-      {"starting_points", {
-        -0.8, -0.8,
-        -0.8,  0.8,
-         0.8, -0.8,
-         0.8,  0.8,
-         0.0,  0.0
-      }},
-      {"sub_method", {{"method_pointer", "NLP"}}}
-    }}
+    {"final_solutions", 0},
+    {"id_method", "MS"},
+    {"output", {{"normal", true}}},
+    {"random_starts", {{"count", 3}, {"seed", 123}}},
+    {"starting_points", {
+      -0.8, -0.8,
+      -0.8,  0.8,
+       0.8, -0.8,
+       0.8,  0.8,
+       0.0,  0.0
+    }},
+    {"sub_method", {{"method_pointer", "NLP"}}}
   };
 
   const json dot_method_json = {
-    {"dot_bfgs", {
-      {"constraint_tolerance", 0.0},
-      {"convergence_tolerance", -1.7976931348623157e+308},
-      {"final_solutions", 0},
-      {"id_method", "NLP"},
-      {"max_function_evaluations", 9223372036854775807LL},
-      {"max_iterations", 9223372036854775807LL},
-      {"output", {{"normal", true}}}
-    }}
+    {"constraint_tolerance", 0.0},
+    {"convergence_tolerance", -1.7976931348623157e+308},
+    {"final_solutions", 0},
+    {"id_method", "NLP"},
+    {"max_function_evaluations", 9223372036854775807LL},
+    {"max_iterations", 9223372036854775807LL},
+    {"output", {{"normal", true}}}
   };
 
   const json variables_json = {
@@ -89,35 +82,21 @@ int main()
     {"failure_capture", {{"abort", true}}}
   };
 
-  const IRStore multistart_method_store =
-    materializer.materialize_block(multistart_method_json,
-                                   irgen::BlockType::Method);
-  const IRStore dot_method_store =
-    materializer.materialize_block(dot_method_json, irgen::BlockType::Method);
-  const IRStore variables_store =
-    materializer.materialize_block(variables_json, irgen::BlockType::Variables);
-  const IRStore responses_store =
-    materializer.materialize_block(responses_json, irgen::BlockType::Responses);
-  const IRStore interface_store =
-    materializer.materialize_block(interface_json, irgen::BlockType::Interface);
-  const IRStore model_store =
-    materializer.materialize_block(json::object(), irgen::BlockType::Model);
-
   Study study;
 
   std::cout << "Constructing DI concurrent meta-iterator study components...\n";
 
-  Variables variables(variables_store);
-  Response response(responses_store, variables);
-  auto interface = study.interface(interface_store);
+  Variables variables = study.variables(variables_json);
+  Response response = study.responses(responses_json, variables);
+  auto interface = study.interface(interface_json);
   auto model = study.model().simulation(
-    model_store, variables, interface, response);
+    json::object(), variables, interface, response);
   Cout << "[di_concurrent_meta_iterator_demo] simulation model bounds lower="
        << ModelUtils::continuous_lower_bounds(*model)
        << " upper=" << ModelUtils::continuous_upper_bounds(*model)
        << std::endl;
 
-  auto sub_optimizer = study.method().dot_bfgs(dot_method_store, model);
+  auto sub_optimizer = study.method().dot_bfgs(dot_method_json, model);
 
   Cout << "[di_concurrent_meta_iterator_demo] optimizer iterated model bounds lower="
        << ModelUtils::continuous_lower_bounds(*sub_optimizer->iterated_model())
@@ -126,7 +105,7 @@ int main()
        << std::endl;
 
   auto multistart = study.method().multi_start(
-    multistart_method_store, sub_optimizer);
+    multistart_method_json, sub_optimizer);
 
   std::cout << "Running DI multi_start study over DOTOptimizer...\n";
   study.run(multistart);

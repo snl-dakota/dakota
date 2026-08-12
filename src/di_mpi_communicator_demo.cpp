@@ -9,7 +9,6 @@
 
 #include "DakotaVariables.hpp"
 #include "DakotaResponse.hpp"
-#include "InstructionMaterializer.hpp"
 #include "NonDLHSSampling.hpp"
 #include "SimulationModel.hpp"
 #include "Study.hpp"
@@ -72,14 +71,10 @@ int main(int argc, char** argv)
   {
     using namespace Dakota;
 
-    InstructionMaterializer materializer;
-
     const json method_json = {
-      {"sampling", {
-        {"sample_type", {{"lhs", true}}},
-        {"samples", 10},
-        {"seed", 1234}
-      }}
+      {"sample_type", {{"lhs", true}}},
+      {"samples", 10},
+      {"seed", 1234}
     };
 
     const json variables_json = {
@@ -114,17 +109,6 @@ int main(int argc, char** argv)
 
     const json model_json = json::object();
 
-    const IRStore method_store =
-      materializer.materialize_block(method_json, irgen::BlockType::Method);
-    const IRStore variables_store =
-      materializer.materialize_block(variables_json, irgen::BlockType::Variables);
-    const IRStore responses_store =
-      materializer.materialize_block(responses_json, irgen::BlockType::Responses);
-    const IRStore interface_store =
-      materializer.materialize_block(interface_json, irgen::BlockType::Interface);
-    const IRStore model_store =
-      materializer.materialize_block(model_json, irgen::BlockType::Model);
-
     StudyConfig config;
     config.output.precision = 12;
     config.output.outputFile = "di_mpi_communicator_demo.out";
@@ -136,12 +120,12 @@ int main(int argc, char** argv)
     if (world_rank == 0)
       std::cout << "Constructing DI study on caller-supplied MPI_Comm...\n";
 
-    Variables variables(variables_store);
-    Response response(responses_store, variables);
-    auto interface = study.interface(interface_store);
+    Variables variables = study.variables(variables_json);
+    Response response = study.responses(responses_json, variables);
+    auto interface = study.interface(interface_json);
     auto model = study.model().simulation(
-      model_store, variables, interface, response);
-    auto sampling = study.method().sampling(method_store, model);
+      model_json, variables, interface, response);
+    auto sampling = study.method().sampling(method_json, model);
 
     if (world_rank == 0)
       std::cout << "Running sampling study through Study(MPI_Comm, config)...\n";

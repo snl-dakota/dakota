@@ -568,12 +568,6 @@ void Optimizer::objective_reduction(const Response& full_response,
     Cout << "Local single objective transformation:\n";
   // BMA TODO: review whether the model should provide all this information
   
-  for(int i = 0; i < full_response.function_values().length(); ++i)
-    Cout <<  full_response.function_values()[i] << std::endl;
- 
-  for(int i = 0; i < full_wts.length(); ++i)
-    Cout << full_wts[i] << std::endl;
- 
   size_t num_fns = full_response.num_functions() - numConstraints;
   short reduced_asv0 = reduced_response.active_set_request_vector()[0];
   if (reduced_asv0 & 1) { // build objective fn from full_response functions

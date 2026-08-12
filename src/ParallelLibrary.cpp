@@ -35,7 +35,6 @@ namespace Dakota {
 extern MPIManager     dummy_mpi_mgr; // defined in dakota_global_defs.cpp
 extern ProgramOptions dummy_prg_opt; // defined in dakota_global_defs.cpp
 extern OutputManager  dummy_out_mgr; // defined in dakota_global_defs.cpp
-extern ResultsManager iterator_results_db; // defined in DakotaIterator.cpp
 
 // A very bad, no good, temporary hack to give abort_handler() access to the
 // ParallelLibrary object, since it's been removed from ProblemDescDB.
@@ -1305,7 +1304,7 @@ void ParallelLibrary::output_timers()
       Cout << std::endl;
 #endif // DAKOTA_UTILIB
   }
-  iterator_results_db.add_metadata_to_study(time_attrs);
+  outputManager.results_manager().add_metadata_to_study(time_attrs);
 }
 
 const UserModes& ParallelLibrary::user_modes() const

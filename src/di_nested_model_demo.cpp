@@ -9,7 +9,6 @@
 
 #include "DakotaVariables.hpp"
 #include "DakotaResponse.hpp"
-#include "InstructionMaterializer.hpp"
 #include "Study.hpp"
 #include "NestedModel.hpp"
 #include "NonDLHSSampling.hpp"
@@ -25,32 +24,26 @@ int main()
 {
   using namespace Dakota;
 
-  InstructionMaterializer materializer;
-
   // This follows the same semantic shape as /workspace/nested.json:
   // an outer sampling study over design variables s1/s2, a NestedModel that
   // maps s1/s2 into the inner simulation model's state variables, and an
   // inner sampling study that returns eight statistics which are identity-
   // mapped into the NestedModel response.
   const json outer_method_json = {
-    {"sampling", {
-      {"final_moments", {{"standard", true}}},
-      {"final_solutions", 0},
-      {"sample_type", {{"lhs", true}}},
-      {"samples", 40},
-      {"seed", 1234}
-    }}
+    {"final_moments", {{"standard", true}}},
+    {"final_solutions", 0},
+    {"sample_type", {{"lhs", true}}},
+    {"samples", 40},
+    {"seed", 1234}
   };
 
   const json inner_method_json = {
-    {"sampling", {
-      {"final_moments", {{"standard", true}}},
-      {"final_solutions", 0},
-      {"probability_levels", {{"values", {0.25, 0.75, 0.25, 0.75}}}},
-      {"sample_type", {{"lhs", true}}},
-      {"samples", 40},
-      {"seed", 1234}
-    }}
+    {"final_moments", {{"standard", true}}},
+    {"final_solutions", 0},
+    {"probability_levels", {{"values", {0.25, 0.75, 0.25, 0.75}}}},
+    {"sample_type", {{"lhs", true}}},
+    {"samples", 40},
+    {"seed", 1234}
   };
 
   const json outer_variables_json = {
@@ -132,48 +125,25 @@ int main()
     }}
   };
 
-  const IRStore outer_method_store =
-    materializer.materialize_block(outer_method_json, irgen::BlockType::Method);
-  const IRStore inner_method_store =
-    materializer.materialize_block(inner_method_json, irgen::BlockType::Method);
-  const IRStore outer_variables_store =
-    materializer.materialize_block(outer_variables_json,
-                                   irgen::BlockType::Variables);
-  const IRStore inner_variables_store =
-    materializer.materialize_block(inner_variables_json,
-                                   irgen::BlockType::Variables);
-  const IRStore simulation_responses_store =
-    materializer.materialize_block(simulation_responses_json,
-                                   irgen::BlockType::Responses);
-  const IRStore nested_responses_store =
-    materializer.materialize_block(nested_responses_json,
-                                   irgen::BlockType::Responses);
-  const IRStore interface_store =
-    materializer.materialize_block(interface_json, irgen::BlockType::Interface);
-  const IRStore simulation_model_store =
-    materializer.materialize_block(json::object(), irgen::BlockType::Model);
-  const IRStore nested_model_store =
-    materializer.materialize_block(nested_model_json, irgen::BlockType::Model);
-
   Study study;
 
   std::cout << "Constructing DI nested-model study components...\n";
 
-  Variables outer_variables(outer_variables_store);
-  Variables inner_variables(inner_variables_store);
-  Response simulation_response(simulation_responses_store, inner_variables);
-  Response nested_response(nested_responses_store, outer_variables);
+  Variables outer_variables = study.variables(outer_variables_json);
+  Variables inner_variables = study.variables(inner_variables_json);
+  Response simulation_response = study.responses(simulation_responses_json, inner_variables);
+  Response nested_response = study.responses(nested_responses_json, outer_variables);
 
-  auto interface = study.interface(interface_store);
+  auto interface = study.interface(interface_json);
   auto simulation_model = study.model().simulation(
-    simulation_model_store, inner_variables, interface, simulation_response);
+    json::object(), inner_variables, interface, simulation_response);
   auto inner_sampling = study.method().sampling(
-    inner_method_store, simulation_model);
+    inner_method_json, simulation_model);
   auto nested_model = study.model().nested(
-    nested_model_store, inner_sampling, nullptr, outer_variables,
+    nested_model_json, inner_sampling, nullptr, outer_variables,
     nested_response);
   auto outer_sampling = study.method().sampling(
-    outer_method_store, nested_model);
+    outer_method_json, nested_model);
 
   std::cout << "Running outer sampling study over NestedModel...\n";
   study.run(outer_sampling);

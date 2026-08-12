@@ -25,6 +25,7 @@
 #include "IRState.hpp"
 #include "MPIManager.hpp"
 #include "NestedModel.hpp"
+#include "InstructionMaterializer.hpp"
 #include "NonDLHSSampling.hpp"
 #include "OutputManager.hpp"
 #include "ParallelLibrary.hpp"
@@ -34,9 +35,11 @@
 #include "StudyRuntime.hpp"
 #include "StudyServices.hpp"
 #include "WorkdirHelper.hpp"
+#include "dakota_input_reader.hpp"
 #include "dakota_global_defs.hpp"
 
 #include <stdexcept>
+#include <nlohmann/json.hpp>
 #include <utility>
 
 namespace Dakota {
@@ -106,6 +109,59 @@ void apply_run_options_to_program_options(ProgramOptions& program_options,
 
 } // namespace
 
+namespace {
+
+using json = nlohmann::json;
+
+IRStore materialize_validated_block(const json& validated_block_json,
+                                    irgen::BlockType block_type)
+{
+  return InstructionMaterializer().materialize_block(validated_block_json, block_type);
+}
+
+IRStore validate_and_materialize_variables(const json& variables_json)
+{
+  return materialize_validated_block(
+    dakota::validate_variables_block_json_to_json(variables_json),
+    irgen::BlockType::Variables);
+}
+
+IRStore validate_and_materialize_responses(const json& responses_json)
+{
+  return materialize_validated_block(
+    dakota::validate_responses_block_json_to_json(responses_json),
+    irgen::BlockType::Responses);
+}
+
+IRStore validate_and_materialize_interface(const json& interface_json)
+{
+  return materialize_validated_block(
+    dakota::validate_interface_block_json_to_json(interface_json),
+    irgen::BlockType::Interface);
+}
+
+IRStore validate_and_materialize_selected_method(const json& method_json,
+                                                 const char* selector)
+{
+  json wrapped = json::object();
+  wrapped[selector] = method_json;
+  return materialize_validated_block(
+    dakota::validate_method_block_json_to_json(wrapped),
+    irgen::BlockType::Method);
+}
+
+IRStore validate_and_materialize_selected_model(const json& model_json,
+                                                const char* selector)
+{
+  json wrapped = json::object();
+  wrapped[selector] = model_json;
+  return materialize_validated_block(
+    dakota::validate_model_block_json_to_json(wrapped),
+    irgen::BlockType::Model);
+}
+
+} // namespace
+
 Study::Study(const StudyConfig& config):
   Study(std::make_shared<MPIManager>(), config)
 { }
@@ -161,6 +217,17 @@ std::shared_ptr<OutputManager> Study::output_manager() const
 std::shared_ptr<RunOptions> Study::run_options() const
 { return runOptions; }
 
+Variables Study::variables(const nlohmann::json& variables_json) const
+{
+  return Variables(validate_and_materialize_variables(variables_json));
+}
+
+Response Study::responses(const nlohmann::json& responses_json,
+                          const Variables& variables) const
+{
+  return Response(validate_and_materialize_responses(responses_json), variables);
+}
+
 std::shared_ptr<Interface> Study::interface(const IRStore& interface_store) const
 {
   const unsigned short interface_type =
@@ -178,6 +245,11 @@ std::shared_ptr<Interface> Study::interface(const IRStore& interface_store) cons
 
   throw std::runtime_error(
     "Study::interface currently supports only fork interfaces.");
+}
+
+std::shared_ptr<Interface> Study::interface(const nlohmann::json& interface_json) const
+{
+  return interface(validate_and_materialize_interface(interface_json));
 }
 
 Study::MethodFactory Study::method() const
@@ -208,6 +280,14 @@ Study::MethodFactory::sampling(const IRStore& method_store,
     method_store, std::move(model), study.services());
 }
 
+std::shared_ptr<NonDLHSSampling>
+Study::MethodFactory::sampling(const nlohmann::json& method_json,
+                               std::shared_ptr<Model> model) const
+{
+  return sampling(validate_and_materialize_selected_method(method_json, "sampling"),
+                  std::move(model));
+}
+
 std::shared_ptr<DOTOptimizer>
 Study::MethodFactory::dot_bfgs(const IRStore& method_store,
                                std::shared_ptr<Model> model) const
@@ -222,12 +302,29 @@ Study::MethodFactory::dot_bfgs(const IRStore& method_store,
 #endif
 }
 
+std::shared_ptr<DOTOptimizer>
+Study::MethodFactory::dot_bfgs(const nlohmann::json& method_json,
+                               std::shared_ptr<Model> model) const
+{
+  return dot_bfgs(validate_and_materialize_selected_method(method_json, "dot_bfgs"),
+                  std::move(model));
+}
+
 std::shared_ptr<ConcurrentMetaIterator>
 Study::MethodFactory::multi_start(
   const IRStore& method_store, std::shared_ptr<Iterator> sub_iterator) const
 {
   return std::make_shared<ConcurrentMetaIterator>(
     method_store, std::move(sub_iterator), study.services());
+}
+
+std::shared_ptr<ConcurrentMetaIterator>
+Study::MethodFactory::multi_start(
+  const nlohmann::json& method_json, std::shared_ptr<Iterator> sub_iterator) const
+{
+  return multi_start(
+    validate_and_materialize_selected_method(method_json, "multi_start"),
+    std::move(sub_iterator));
 }
 
 Study::ModelFactory::ModelFactory(const Study& study_ref):
@@ -244,6 +341,16 @@ Study::ModelFactory::simulation(const IRStore& model_store,
     model_store, variables, std::move(interface), response, study.services());
 }
 
+std::shared_ptr<SimulationModel>
+Study::ModelFactory::simulation(const nlohmann::json& model_json,
+                                const Variables& variables,
+                                std::shared_ptr<Interface> interface,
+                                const Response& response) const
+{
+  return simulation(validate_and_materialize_selected_model(model_json, "single"),
+                    variables, std::move(interface), response);
+}
+
 std::shared_ptr<NestedModel>
 Study::ModelFactory::nested(const IRStore& model_store,
                             std::shared_ptr<Iterator> sub_iterator,
@@ -254,6 +361,18 @@ Study::ModelFactory::nested(const IRStore& model_store,
   return std::make_shared<NestedModel>(
     model_store, std::move(sub_iterator), std::move(optional_interface),
     variables, response, study.services());
+}
+
+std::shared_ptr<NestedModel>
+Study::ModelFactory::nested(const nlohmann::json& model_json,
+                            std::shared_ptr<Iterator> sub_iterator,
+                            std::shared_ptr<Interface> optional_interface,
+                            const Variables& variables,
+                            const Response& response) const
+{
+  return nested(validate_and_materialize_selected_model(model_json, "nested"),
+                std::move(sub_iterator), std::move(optional_interface),
+                variables, response);
 }
 
 } // namespace Dakota

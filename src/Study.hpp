@@ -10,19 +10,20 @@
 #pragma once
 
 #include "StudyConfig.hpp"
+#include "IRStore.hpp"
 
 #ifdef DAKOTA_HAVE_MPI
 #include <mpi.h>
 #endif
 
 #include <memory>
+#include <nlohmann/json_fwd.hpp>
 
 namespace Dakota {
 
 class ConcurrentMetaIterator;
 class DOTOptimizer;
 class Interface;
-class IRStore;
 class Iterator;
 class Model;
 class MPIManager;
@@ -57,7 +58,12 @@ public:
   std::shared_ptr<OutputManager> output_manager() const;
   std::shared_ptr<RunOptions> run_options() const;
 
+  Variables variables(const nlohmann::json& variables_json) const;
+  Response responses(const nlohmann::json& responses_json,
+                     const Variables& variables) const;
+
   std::shared_ptr<Interface> interface(const IRStore& interface_store) const;
+  std::shared_ptr<Interface> interface(const nlohmann::json& interface_json) const;
 
   MethodFactory method() const;
   ModelFactory model() const;
@@ -84,12 +90,19 @@ public:
 
   std::shared_ptr<NonDLHSSampling>
   sampling(const IRStore& method_store, std::shared_ptr<Model> model) const;
+  std::shared_ptr<NonDLHSSampling>
+  sampling(const nlohmann::json& method_json, std::shared_ptr<Model> model) const;
 
   std::shared_ptr<DOTOptimizer>
   dot_bfgs(const IRStore& method_store, std::shared_ptr<Model> model) const;
+  std::shared_ptr<DOTOptimizer>
+  dot_bfgs(const nlohmann::json& method_json, std::shared_ptr<Model> model) const;
 
   std::shared_ptr<ConcurrentMetaIterator>
   multi_start(const IRStore& method_store,
+              std::shared_ptr<Iterator> sub_iterator) const;
+  std::shared_ptr<ConcurrentMetaIterator>
+  multi_start(const nlohmann::json& method_json,
               std::shared_ptr<Iterator> sub_iterator) const;
 
 private:
@@ -105,9 +118,17 @@ public:
   simulation(const IRStore& model_store, const Variables& variables,
              std::shared_ptr<Interface> interface,
              const Response& response) const;
+  std::shared_ptr<SimulationModel>
+  simulation(const nlohmann::json& model_json, const Variables& variables,
+             std::shared_ptr<Interface> interface,
+             const Response& response) const;
 
   std::shared_ptr<NestedModel>
   nested(const IRStore& model_store, std::shared_ptr<Iterator> sub_iterator,
+         std::shared_ptr<Interface> optional_interface,
+         const Variables& variables, const Response& response) const;
+  std::shared_ptr<NestedModel>
+  nested(const nlohmann::json& model_json, std::shared_ptr<Iterator> sub_iterator,
          std::shared_ptr<Interface> optional_interface,
          const Variables& variables, const Response& response) const;
 
