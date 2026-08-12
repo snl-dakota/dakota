@@ -81,7 +81,7 @@ def main() -> None:
     variables = study.variables(VARIABLES)
     response = study.responses(RESPONSES, variables)
     interface = study.interface(INTERFACE)
-    model = study.model.simulation(MODEL, variables, interface, response)
+    model = study.model.single(MODEL, variables, interface, response)
     sampling = study.method.sampling(METHOD, model)
 
     print("Running sampling study...")

@@ -135,7 +135,7 @@ int main()
   Response nested_response = study.responses(nested_responses_json, outer_variables);
 
   auto interface = study.interface(interface_json);
-  auto simulation_model = study.model().simulation(
+  auto simulation_model = study.model().single(
     json::object(), inner_variables, interface, simulation_response);
   auto inner_sampling = study.method().sampling(
     inner_method_json, simulation_model);

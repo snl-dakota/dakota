@@ -542,7 +542,7 @@ Study::ModelFactory::ModelFactory(const Study& study_ref):
 { }
 
 std::shared_ptr<SimulationModel>
-Study::ModelFactory::simulation(const IRStore& model_store,
+Study::ModelFactory::single(const IRStore& model_store,
                                 const Variables& variables,
                                 std::shared_ptr<Interface> interface,
                                 const Response& response) const
@@ -552,12 +552,12 @@ Study::ModelFactory::simulation(const IRStore& model_store,
 }
 
 std::shared_ptr<SimulationModel>
-Study::ModelFactory::simulation(const nlohmann::json& model_json,
+Study::ModelFactory::single(const nlohmann::json& model_json,
                                 const Variables& variables,
                                 std::shared_ptr<Interface> interface,
                                 const Response& response) const
 {
-  return simulation(validate_and_materialize_selected_model(model_json, "single"),
+  return single(validate_and_materialize_selected_model(model_json, "single"),
                     variables, std::move(interface), response);
 }
 

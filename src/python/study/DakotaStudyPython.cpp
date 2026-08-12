@@ -70,11 +70,11 @@ nlohmann::json validate_dot_bfgs_fragment(const py::object& value)
 nlohmann::json validate_multi_start_fragment(const py::object& value)
 { return validate_fragment(value, "validate_multi_start_fragment"); }
 
-nlohmann::json validate_simulation_model_fragment(const py::object& value)
-{ return validate_fragment(value, "validate_simulation_model_fragment"); }
+nlohmann::json validate_single_fragment(const py::object& value)
+{ return validate_fragment(value, "validate_single_fragment"); }
 
-nlohmann::json validate_nested_model_fragment(const py::object& value)
-{ return validate_fragment(value, "validate_nested_model_fragment"); }
+nlohmann::json validate_nested_fragment(const py::object& value)
+{ return validate_fragment(value, "validate_nested_fragment"); }
 
 PYBIND11_MODULE(_study, m) {
   m.doc() = "Dependency-injection/library-mode Dakota study construction.";

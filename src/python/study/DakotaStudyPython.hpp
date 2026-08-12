@@ -40,8 +40,8 @@ nlohmann::json validate_npsol_sqp_fragment(const py::object& value);
 nlohmann::json validate_nl2sol_fragment(const py::object& value);
 nlohmann::json validate_dot_bfgs_fragment(const py::object& value);
 nlohmann::json validate_multi_start_fragment(const py::object& value);
-nlohmann::json validate_simulation_model_fragment(const py::object& value);
-nlohmann::json validate_nested_model_fragment(const py::object& value);
+nlohmann::json validate_single_fragment(const py::object& value);
+nlohmann::json validate_nested_fragment(const py::object& value);
 
 void bind_study_config(py::module_& m);
 void bind_variables(py::module_& m);

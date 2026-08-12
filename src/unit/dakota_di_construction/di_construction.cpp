@@ -475,7 +475,7 @@ TEST(di_construction_tests, study_factories_construct_components_from_json_fragm
   Variables variables = study.variables(variables_json);
   Response response = study.responses(responses_json, variables);
   auto interface = study.interface(interface_json);
-  auto model = study.model().simulation(json::object(), variables, interface, response);
+  auto model = study.model().single(json::object(), variables, interface, response);
   auto sampling = study.method().sampling(method_json, model);
 
   EXPECT_EQ(variables.tv(), 2);
@@ -570,7 +570,7 @@ TEST(di_construction_tests, study_factories_construct_components_with_shared_ser
   Variables variables(variables_store);
   Response response(responses_store, variables);
   auto interface = study.interface(interface_store);
-  auto model = study.model().simulation(model_store, variables, interface, response);
+  auto model = study.model().single(model_store, variables, interface, response);
   auto sampling = study.method().sampling(method_store, model);
 
   ASSERT_TRUE(model);

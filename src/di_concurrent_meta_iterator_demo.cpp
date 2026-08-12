@@ -89,7 +89,7 @@ int main()
   Variables variables = study.variables(variables_json);
   Response response = study.responses(responses_json, variables);
   auto interface = study.interface(interface_json);
-  auto model = study.model().simulation(
+  auto model = study.model().single(
     json::object(), variables, interface, response);
   Cout << "[di_concurrent_meta_iterator_demo] simulation model bounds lower="
        << ModelUtils::continuous_lower_bounds(*model)

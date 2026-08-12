@@ -171,13 +171,13 @@ public:
   explicit ModelFactory(const Study& study);
 
   std::shared_ptr<SimulationModel>
-  simulation(const IRStore& model_store, const Variables& variables,
-             std::shared_ptr<Interface> interface,
-             const Response& response) const;
+  single(const IRStore& model_store, const Variables& variables,
+         std::shared_ptr<Interface> interface,
+         const Response& response) const;
   std::shared_ptr<SimulationModel>
-  simulation(const nlohmann::json& model_json, const Variables& variables,
-             std::shared_ptr<Interface> interface,
-             const Response& response) const;
+  single(const nlohmann::json& model_json, const Variables& variables,
+         std::shared_ptr<Interface> interface,
+         const Response& response) const;
 
   std::shared_ptr<NestedModel>
   nested(const IRStore& model_store, std::shared_ptr<Iterator> sub_iterator,

@@ -163,13 +163,13 @@ void bind_study_factories(py::module_& m)
          py::arg("method"), py::arg("model"));
 
   py::class_<Study::ModelFactory>(m, "ModelFactory")
-    .def("simulation",
+    .def("single",
          [](const Study::ModelFactory& factory,
             const py::object& model_json,
             const Variables& variables,
             std::shared_ptr<Interface> interface,
             const Response& response) {
-           return factory.simulation(model_json.cast<nlohmann::json>(),
+           return factory.single(model_json.cast<nlohmann::json>(),
                                      variables, std::move(interface), response);
          },
          py::arg("model"), py::arg("variables"), py::arg("interface"),

@@ -46,7 +46,7 @@ def main():
         "gradient_type": {"analytic_gradients": True},
         "hessian_type": {"no_hessians": True},
     }, opt_variables)
-    opt_model = study.model.simulation({}, opt_variables, interface, opt_responses)
+    opt_model = study.model.single({}, opt_variables, interface, opt_responses)
     param_study = study.method.vector_parameter_study({
         "step_control": {"final_point": [1.1, 1.3]},
         "num_steps": 2,
@@ -66,7 +66,7 @@ def main():
         "gradient_type": {"no_gradients": True},
         "hessian_type": {"no_hessians": True},
     }, ver_variables)
-    ver_model = study.model.simulation({}, ver_variables, interface, ver_responses)
+    ver_model = study.model.single({}, ver_variables, interface, ver_responses)
     verification = study.method.richardson_extrap({
         "mode": {"estimate_order": True},
         "refinement_rate": 2.0,
@@ -90,7 +90,7 @@ def main():
         "gradient_type": {"no_gradients": True},
         "hessian_type": {"no_hessians": True},
     }, interval_variables)
-    interval_model = study.model.simulation({}, interval_variables, interface, interval_responses)
+    interval_model = study.model.single({}, interval_variables, interface, interval_responses)
     global_interval = study.method.global_interval_est({
         "solution_approach": {"lhs": True},
         "samples": 4,
