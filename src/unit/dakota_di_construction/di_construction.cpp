@@ -19,6 +19,9 @@
 #ifdef HAVE_NCSU
 #include "NCSUOptimizer.hpp"
 #endif
+#ifdef HAVE_NOMAD
+#include "NomadOptimizer.hpp"
+#endif
 #ifdef HAVE_NPSOL
 #include "NPSOLOptimizer.hpp"
 #endif
@@ -837,6 +840,22 @@ struct NCSUTestTraits {
 };
 #endif
 
+#ifdef HAVE_NOMAD
+struct NomadTestTraits {
+  using OptimizerT = NomadOptimizer;
+
+  static IRStore make_method_store(InstructionMaterializer& materializer) {
+    const json method_json = {
+      {"mesh_adaptive_search", {} }
+    };
+
+    return materializer.materialize_block(method_json, irgen::BlockType::Method);
+  }
+
+  static constexpr const char* name = "Nomad";
+};
+#endif
+
 #ifdef HAVE_NPSOL
 struct NPSOLTestTraits {
   using OptimizerT = NPSOLOptimizer;
@@ -950,6 +969,9 @@ using OptimizerTraits =
 #endif
 #ifdef HAVE_NCSU
                 NCSUTestTraits,
+#endif
+#ifdef HAVE_NOMAD
+                NomadTestTraits,
 #endif
 #ifdef HAVE_NPSOL
                 NPSOLTestTraits,

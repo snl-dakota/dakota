@@ -97,6 +97,85 @@ NomadOptimizer::NomadOptimizer(ProblemDescDB& problem_db, ParallelLibrary& paral
   useSurrogate = probDescDB.get<const String>("method.mesh_adaptive_search.use_surrogate");
 }
 
+NomadOptimizer::NomadOptimizer(const IRStore& method_store, std::shared_ptr<Model> model,
+               std::shared_ptr<StudyServices> services):
+  Optimizer(std::move(services), method_store, model, std::shared_ptr<TraitsBase>(new NomadTraits()))
+{
+  const auto& vars_store_ptr = model->current_variables().variables_store_ptr();
+  if (!vars_store_ptr) {
+    Cerr << "Error: Model in NomadOptimizer constructor does not have a "
+         << "valid Variables IRStore." << std::endl;
+    abort_handler(-1);
+  }
+
+  // Set initial mesh size
+  initMesh = method_store.get<Real>("mesh_adaptive_search.initial_delta");
+
+  // Set minimum mesh size
+  minMesh = method_store.get<Real>("mesh_adaptive_search.variable_tolerance");
+
+  // Set Rnd Seed
+  randomSeed = method_store.get<int>("random_seed");
+
+  // Set Max # of BB Evaluations
+  //maxBlackBoxEvals = method_store.get<size_t>("max_function_evaluations");
+
+  // STATS_FILE -- File Output
+  outputFormat =
+    method_store.get<String>("mesh_adaptive_search.display_format");
+
+  // DISPLAY_ALL_EVAL -- If set, shows all evaluation points during
+  // Outputs, instead of just improvements
+  displayAll =
+    method_store.get<bool>("mesh_adaptive_search.display_all_evaluations");
+
+  // Expected precision of the function.  Any differences less than
+  // this are noise.
+  epsilon = method_store.get<Real>("function_precision");
+
+  // Maximum number of iterations.
+  //maxIterations = method_store.get<size_t>("max_iterations");
+
+  // VNS = Variable Neighbor Search, it is used to escape local minima
+  // if VNS >0.0, the NOMAD Parameter must be set with a Real number.
+  vns =
+    method_store.get<Real>("mesh_adaptive_search.variable_neighborhood_search");
+
+  // Number of dimensions up to which should be perturbed (according
+  // to adjacency matrices) to determine categorical neighbors.
+  numHops = method_store.get<int>("mesh_adaptive_search.neighbor_order");
+
+  // Set the History File, which will contain all the evaluations history
+  historyFile =
+    method_store.get<String>("mesh_adaptive_search.history_file");
+
+  // ----------------------------------------------------------
+  // ------- These queries require the Variables IRStore ------
+  // ----------------------------------------------------------
+  // Identify which integer set variables are categorical.
+  discreteSetIntCat =
+    vars_store_ptr->get<BitArray>("discrete_design_set_int.categorical");
+
+  // Identify which real set variables are categorical.
+  discreteSetRealCat =
+    vars_store_ptr->get<BitArray>("discrete_design_set_real.categorical");
+
+  // Adjacency matrices for integer categorical variables.
+  discreteSetIntAdj =
+    vars_store_ptr->get<RealMatrixArray>("discrete_design_set_int.adjacency_matrix");
+
+  // Adjacency matrices for real categorical variables.
+  discreteSetRealAdj =
+    vars_store_ptr->get<RealMatrixArray>("discrete_design_set_real.adjacency_matrix");
+
+  // Adjacency matrices for string variables.
+  discreteSetStrAdj =
+    vars_store_ptr->get<RealMatrixArray>("discrete_design_set_str.adjacency_matrix");
+
+  // Definition for how to use surrogate model.
+  useSurrogate = method_store.get<String>("mesh_adaptive_search.use_surrogate");
+}
+
 NomadOptimizer::NomadOptimizer(std::shared_ptr<Model> model):
   Optimizer(MESH_ADAPTIVE_SEARCH, model, std::shared_ptr<TraitsBase>(new NomadTraits()))
 {
