@@ -5,6 +5,7 @@
 #endif
 #ifdef HAVE_ACRO
 #include "COLINOptimizer.hpp"
+#include "PEBBLMinimizer.hpp"
 #endif
 #ifdef HAVE_CONMIN
 #include "CONMINOptimizer.hpp"
@@ -764,6 +765,22 @@ struct COLINTestTraits {
 
   static constexpr const char* name = "COLIN";
 };
+
+struct PebblTestTraits {
+  using OptimizerT = PebbldMinimizer;
+
+  static IRStore make_method_store(InstructionMaterializer& materializer) {
+    const json method_json = {
+      {"branch_and_bound", {
+        {"sub_method_pointer", "empty"}
+      }}
+    };
+
+    return materializer.materialize_block(method_json, irgen::BlockType::Method);
+  }
+
+  static constexpr const char* name = "Pebbl";
+};
 #endif
 
 #ifdef HAVE_CONMIN
@@ -923,6 +940,7 @@ using OptimizerTraits =
 #endif
 #ifdef HAVE_ACRO
                 COLINTestTraits,
+                PebblTestTraits,
 #endif
 #ifdef HAVE_CONMIN
                 CONMINTestTraits,
