@@ -25,11 +25,17 @@
 #ifdef HAVE_NPSOL
 #include "NPSOLOptimizer.hpp"
 #endif
+#ifdef HAVE_NLPQL
+#include "NLPQLPOptimizer.hpp"
+#endif
 #ifdef HAVE_NL2SOL
 #include "NL2SOLLeastSq.hpp"
 #endif
 #ifdef HAVE_NCSU
 #include "EffGlobalMinimizer.hpp"
+#endif
+#ifdef HAVE_ROL
+#include "DakotaROLOptimizer.hpp"
 #endif
 #include "ParamStudy.hpp"
 #include "NonDGlobalSingleInterval.hpp"
@@ -840,6 +846,27 @@ struct NCSUTestTraits {
 };
 #endif
 
+#ifdef HAVE_ROL
+struct ROLTestTraits {
+  using OptimizerT = ROLOptimizer;
+
+  static IRStore make_method_store(InstructionMaterializer& materializer) {
+    const json method_json = {
+      {"rol", {
+        {"gradient_tolerance",   1.0e-3},
+        {"constraint_tolerance", 1.0e-3},
+        {"variable_tolerance",   1.0e-3},
+        {"max_iterations",       10    }
+      }}
+    };
+
+    return materializer.materialize_block(method_json, irgen::BlockType::Method);
+  }
+
+  static constexpr const char* name = "ROL";
+};
+#endif
+
 #ifdef HAVE_NOMAD
 struct NomadTestTraits {
   using OptimizerT = NomadOptimizer;
@@ -875,6 +902,22 @@ struct NPSOLTestTraits {
   }
 
   static constexpr const char* name = "NPSOL";
+};
+#endif
+
+#ifdef HAVE_NLPQL
+struct NLPQLPTestTraits {
+  using OptimizerT = NLPQLPOptimizer;
+
+  static IRStore make_method_store(InstructionMaterializer& materializer) {
+    const json method_json = {
+      {"npsol_sqp", {} }
+    };
+
+    return materializer.materialize_block(method_json, irgen::BlockType::Method);
+  }
+
+  static constexpr const char* name = "NLPQL";
 };
 #endif
 
@@ -970,11 +1013,17 @@ using OptimizerTraits =
 #ifdef HAVE_NCSU
                 NCSUTestTraits,
 #endif
+#ifdef HAVE_ROL
+                ROLTestTraits,
+#endif
 #ifdef HAVE_NOMAD
                 NomadTestTraits,
 #endif
 #ifdef HAVE_NPSOL
                 NPSOLTestTraits,
+#endif
+#ifdef HAVE_NLPQL
+                NLPQLPTestTraits,
 #endif
 #ifdef HAVE_NOWPAC
                 NOWPACTestTraits,

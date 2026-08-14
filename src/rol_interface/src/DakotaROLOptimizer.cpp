@@ -116,6 +116,19 @@ ROLOptimizer::ROLOptimizer(ProblemDescDB& problem_db,
   set_rol_parameters();
 }
 
+// DI constructor for ROLOptimizer. Sets up ROL solver based on
+// information from the iIRStore
+ROLOptimizer::ROLOptimizer(const IRStore& method_store, std::shared_ptr<Model> model,
+                 std::shared_ptr<StudyServices> services)
+  : Optimizer(std::move(services), method_store, model, std::shared_ptr<TraitsBase>(new ROLTraits())),
+    pimpl_(std::make_unique<rol_optimizer_impl::ROLOptimizerImpl>())
+{
+  // Determine problem type now; defer full ROL problem construction until
+  // core_run(), after communicator initialization for nested iterator cases.
+  determine_problem_type();
+  set_rol_parameters(&method_store);
+}
+
 
 // Alternate constructor for Iterator instantiations by name. Sets up
 // ROL solver based on information passed as arguments.
@@ -574,7 +587,7 @@ void ROLOptimizer::reset_solver_options(const Teuchos::ParameterList& params)
 
 // Helper function to set ROL solver parameters. This function uses
 // ProblemDescDB and therefore should be called at construct time.
-void ROLOptimizer::set_rol_parameters()
+void ROLOptimizer::set_rol_parameters(const IRStore* irstore)
 {
   // PRECEDENCE 1: hard-wired default settings per ROL developers'
   // suggestions
@@ -634,13 +647,24 @@ void ROLOptimizer::set_rol_parameters()
     set("Print Verbosity", outputLevel < VERBOSE_OUTPUT ? 0 : 1);
 
   // Set the stopping criteria.
-  pimpl_->solverParams.sublist("Status Test").
-    set("Gradient Tolerance", probDescDB.get<const Real>("method.gradient_tolerance"));
-  pimpl_->solverParams.sublist("Status Test").
-    set("Constraint Tolerance",
-        probDescDB.get<const Real>("method.constraint_tolerance"));
-  pimpl_->solverParams.sublist("Status Test").
-    set("Step Tolerance", probDescDB.get<const Real>("method.variable_tolerance"));
+  if (irstore) {
+    pimpl_->solverParams.sublist("Status Test").
+      set("Gradient Tolerance", irstore->get<Real>("gradient_tolerance"));
+    pimpl_->solverParams.sublist("Status Test").
+      set("Constraint Tolerance",
+          irstore->get<Real>("constraint_tolerance"));
+    pimpl_->solverParams.sublist("Status Test").
+      set("Step Tolerance", irstore->get<Real>("variable_tolerance"));
+  }
+  else {
+    pimpl_->solverParams.sublist("Status Test").
+      set("Gradient Tolerance", probDescDB.get<const Real>("method.gradient_tolerance"));
+    pimpl_->solverParams.sublist("Status Test").
+      set("Constraint Tolerance",
+          probDescDB.get<const Real>("method.constraint_tolerance"));
+    pimpl_->solverParams.sublist("Status Test").
+      set("Step Tolerance", probDescDB.get<const Real>("method.variable_tolerance"));
+  }
   // ROL enforces an int; cast is Ok since SZ_MAX default removed at Minimizer
   pimpl_->solverParams.sublist("Status Test").
     set("Iteration Limit", (int)maxIterations);
@@ -648,7 +672,11 @@ void ROLOptimizer::set_rol_parameters()
   // PRECEDENCE 3: power-user advanced options
 
   // Check for ROL XML input file.
-  String adv_opts_file = probDescDB.get<const String>("method.advanced_options_file");
+  String adv_opts_file;
+  if (irstore)
+    adv_opts_file = irstore->get<String>("advanced_options_file");
+  else
+    adv_opts_file = probDescDB.get<const String>("method.advanced_options_file");
   if (!adv_opts_file.empty()) {
     if (std::filesystem::exists(adv_opts_file)) {
       if (outputLevel >= NORMAL_OUTPUT)
