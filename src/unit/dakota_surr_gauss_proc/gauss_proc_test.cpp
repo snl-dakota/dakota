@@ -343,7 +343,7 @@ TEST(gauss_proc_test_tests, test_efficient_global_dakota_gp_results_output)
     "    initial_point    0.35  0.35 \n"
     "    upper_bounds     1.5   1.5 \n"
     "    lower_bounds     0.35  0.35 \n"
-    "    descriptors      'X0'  'X1' \n"
+    "    descriptors      'x1'  'x2' \n"
     "interface \n"
     "  direct \n"
     "    analysis_driver = 'rosenbrock' \n"
