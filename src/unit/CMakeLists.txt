@@ -32,6 +32,9 @@ link_directories(${Dakota_LIBRARY_DIRS})
 # Demo: minimal Dakota unit test example using header-only Boost.Test
 add_subdirectory(dakota_min_unit)
 
+# Regression test for EGO state-variable convergence corruption
+add_subdirectory(dakota_ego_state_variable)
+
 # Unit test: work directory utilities
 # Copy workdir unit_test helper script into the build tree at build time
 # NOTE:  at runtime the workdir test will look for the script in the parent dir
@@ -225,18 +228,6 @@ if(DAKOTA_PYTHON_WRAPPER)
       ENVIRONMENT "PYTHONPATH=${DAKOTA_PYTHON_PATH};$ENV{PYTHONPATH}")
   else()
     set_property(TEST dakota_python_env PROPERTY
-      ENVIRONMENT "PYTHONPATH=${DAKOTA_PYTHON_PATH}:$ENV{PYTHONPATH}")
-  endif()
-
-  add_test(NAME dakota_ego_state_variable
-    COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_dakota_ego_state_variable.py
-    )
-  set_property(TEST dakota_ego_state_variable PROPERTY LABELS Unit)
-  if(WIN32)
-    set_property(TEST dakota_ego_state_variable PROPERTY
-      ENVIRONMENT "PYTHONPATH=${DAKOTA_PYTHON_PATH};$ENV{PYTHONPATH}")
-  else()
-    set_property(TEST dakota_ego_state_variable PROPERTY
       ENVIRONMENT "PYTHONPATH=${DAKOTA_PYTHON_PATH}:$ENV{PYTHONPATH}")
   endif()
 endif()
