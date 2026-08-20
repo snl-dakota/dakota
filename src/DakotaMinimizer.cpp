@@ -1144,6 +1144,11 @@ void Minimizer::print_residuals(size_t num_terms, const RealVector& best_terms,
 void Minimizer::archive_best_results()
 {
   if(!resultsDB.active()) return;
+  // Minimizers in "user functions" mode (e.g. the NCSUOptimizer that
+  // GaussProcApproximation runs to fit GP hyperparameters) have no Model, so
+  // there is no evaluation cache to search and no user-level results to
+  // archive; original_model() would return null and be dereferenced below.
+  if(!iteratedModel) return;
   size_t i, num_best = bestVariablesArray.size();
   if (num_best != bestResponseArray.size()) {
     Cerr << "\nError: mismatch in lengths of bestVariables and bestResponses."
