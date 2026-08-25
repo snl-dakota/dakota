@@ -1518,12 +1518,20 @@ namespace Dakota {
             return std::make_shared<SimulationModel>(problem_db, parallel_lib);
           else if ( model_type == "nested")
             return std::make_shared<NestedModel>(problem_db, parallel_lib);
-          else if ( model_type == "surrogate") {
-            const String& surr_type = problem_db.get<const String>("model.surrogate.type");
-            if (surr_type == "ensemble")
+          else if ( model_type == "ensemble_surrogate" )
+            return std::make_shared<EnsembleSurrModel>(problem_db, parallel_lib);
+          else if ( model_type == "global_surrogate" ||
+                    model_type == "multipoint_surrogate" ||
+                    model_type == "local_surrogate" )
+            return std::make_shared<DataFitSurrModel>(problem_db, parallel_lib);
+          // Legacy Dakota text input still materializes the generic
+          // "surrogate" model type. JSON input uses the promoted types above.
+          else if ( model_type == "surrogate" ) {
+            const String& surrogate_type =
+              problem_db.get<const String>("model.surrogate.type");
+            if ( surrogate_type == "ensemble" )
               return std::make_shared<EnsembleSurrModel>(problem_db, parallel_lib);
-            else // all other surrogates (local/multipt/global) managed by DataFitSurr
-              return std::make_shared<DataFitSurrModel>(problem_db, parallel_lib);
+            return std::make_shared<DataFitSurrModel>(problem_db, parallel_lib);
           }
           else if ( model_type == "active_subspace" )
             return std::make_shared<ActiveSubspaceModel>(problem_db, parallel_lib);

@@ -9,12 +9,16 @@
 
 #include "dakota_system_defs.hpp"
 #include "SurrogateModel.hpp"
+#include "StudyServices.hpp"
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
 #include "ParamResponsePair.hpp"
 #include "PRPMultiIndex.hpp"
 #include "dakota_data_io.hpp"
 #include "SurrogateData.hpp"
+
+#include <stdexcept>
+#include <utility>
 
 static const char rcsId[]="@(#) $Id: SurrogateModel.cpp 7024 2010-10-16 01:24:42Z mseldre $";
 
@@ -46,6 +50,28 @@ SurrogateModel::SurrogateModel(ProblemDescDB& problem_db, ParallelLibrary& paral
 }
 
 
+SurrogateModel::SurrogateModel(const IRStore& model_store,
+                               const Variables& variables,
+                               const Response& response,
+                               std::shared_ptr<StudyServices> services):
+  Model(std::move(services), model_store, variables, response),
+  surrogateFnIndices(model_store.get<SizetSet>("surrogate.function_indices")),
+  responseMode(DEFAULT_SURROGATE_RESP_MODE),
+  corrType(model_store.get<short>("surrogate.correction_type")),
+  corrOrder(model_store.get<short>("surrogate.correction_order")),
+  surrModelEvalCntr(0), approxBuilds(0)
+{
+  if (surrogateFnIndices.empty()) {
+    for (size_t i = 0; i < numFns; ++i)
+      surrogateFnIndices.insert(i);
+  }
+  else if (*surrogateFnIndices.begin() < 0 ||
+           *(--surrogateFnIndices.end()) >= numFns) {
+    throw std::runtime_error("SurrogateModel: id_surrogates out of range.");
+  }
+}
+
+
 SurrogateModel::
 SurrogateModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
 	       const ShortShortPair& surr_view,
@@ -58,8 +84,6 @@ SurrogateModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
   responseMode(DEFAULT_SURROGATE_RESP_MODE), corrType(corr_type), corrOrder(0),
   surrModelEvalCntr(0), approxBuilds(0)
 {
-  modelType = "surrogate";
-
   // set up surrogateFnIndices to use default (all fns are approximated)
   for (size_t i=0; i<numFns; ++i)
     surrogateFnIndices.insert(i);

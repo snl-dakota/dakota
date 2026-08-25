@@ -18,12 +18,14 @@
 
 #include <memory>
 #include <nlohmann/json_fwd.hpp>
+#include <vector>
 
 namespace Dakota {
 
 class ConcurrentMetaIterator;
 class DOTOptimizer;
 class EffGlobalMinimizer;
+class EnsembleSurrModel;
 class Interface;
 class Iterator;
 class Model;
@@ -187,6 +189,26 @@ public:
   nested(const nlohmann::json& model_json, std::shared_ptr<Iterator> sub_iterator,
          std::shared_ptr<Interface> optional_interface,
          const Variables& variables, const Response& response) const;
+
+  std::shared_ptr<EnsembleSurrModel>
+  ensemble_surrogate(const IRStore& model_store,
+                     std::shared_ptr<Model> truth_model,
+                     std::vector<std::shared_ptr<Model>> approximation_models,
+                     const Variables& variables, const Response& response) const;
+  std::shared_ptr<EnsembleSurrModel>
+  ensemble_surrogate(const nlohmann::json& model_json,
+                     std::shared_ptr<Model> truth_model,
+                     std::vector<std::shared_ptr<Model>> approximation_models,
+                     const Variables& variables, const Response& response) const;
+
+  std::shared_ptr<EnsembleSurrModel>
+  ensemble_surrogate(const IRStore& model_store,
+                     std::vector<std::shared_ptr<Model>> ordered_models,
+                     const Variables& variables, const Response& response) const;
+  std::shared_ptr<EnsembleSurrModel>
+  ensemble_surrogate(const nlohmann::json& model_json,
+                     std::vector<std::shared_ptr<Model>> ordered_models,
+                     const Variables& variables, const Response& response) const;
 
 private:
   const Study& study;

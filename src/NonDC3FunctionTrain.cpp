@@ -170,7 +170,7 @@ size_t NonDC3FunctionTrain::regression_size()
 
 void NonDC3FunctionTrain::check_surrogate()
 {
-  if (iteratedModel->model_type()     == "surrogate" &&
+  if (iteratedModel->model_type()     == "global_surrogate" &&
       iteratedModel->surrogate_type() == "global_function_train") {
     Cerr << "Error: use 'surrogate_based_uq' for UQ using a Model-based "
 	 << "function train specification." << std::endl;

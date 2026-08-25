@@ -12,6 +12,7 @@
 #include "ConcurrentMetaIterator.hpp"
 #include "DOTOptimizer.hpp"
 #include "EffGlobalMinimizer.hpp"
+#include "EnsembleSurrModel.hpp"
 #include "DakotaInterface.hpp"
 #include "DakotaInterfaceEnums.hpp"
 #include "DakotaIterator.hpp"
@@ -583,6 +584,56 @@ Study::ModelFactory::nested(const nlohmann::json& model_json,
   return nested(validate_and_materialize_selected_model(model_json, "nested"),
                 std::move(sub_iterator), std::move(optional_interface),
                 variables, response);
+}
+
+std::shared_ptr<EnsembleSurrModel>
+Study::ModelFactory::ensemble_surrogate(
+  const IRStore& model_store, std::shared_ptr<Model> truth_model,
+  std::vector<std::shared_ptr<Model>> approximation_models,
+  const Variables& variables, const Response& response) const
+{
+  return std::make_shared<EnsembleSurrModel>(
+    model_store, std::move(truth_model), std::move(approximation_models),
+    variables, response, study.services());
+}
+
+std::shared_ptr<EnsembleSurrModel>
+Study::ModelFactory::ensemble_surrogate(
+  const nlohmann::json& model_json, std::shared_ptr<Model> truth_model,
+  std::vector<std::shared_ptr<Model>> approximation_models,
+  const Variables& variables, const Response& response) const
+{
+  return ensemble_surrogate(
+    validate_and_materialize_selected_model(model_json, "ensemble_surrogate"),
+    std::move(truth_model), std::move(approximation_models), variables, response);
+}
+
+std::shared_ptr<EnsembleSurrModel>
+Study::ModelFactory::ensemble_surrogate(
+  const IRStore& model_store, std::vector<std::shared_ptr<Model>> ordered_models,
+  const Variables& variables, const Response& response) const
+{
+  if (ordered_models.empty()) {
+    throw std::runtime_error(
+      "Study::model().ensemble_surrogate requires at least one ordered model.");
+  }
+
+  std::shared_ptr<Model> truth_model = std::move(ordered_models.back());
+  ordered_models.pop_back();
+  return ensemble_surrogate(
+    model_store, std::move(truth_model), std::move(ordered_models),
+    variables, response);
+}
+
+std::shared_ptr<EnsembleSurrModel>
+Study::ModelFactory::ensemble_surrogate(
+  const nlohmann::json& model_json,
+  std::vector<std::shared_ptr<Model>> ordered_models,
+  const Variables& variables, const Response& response) const
+{
+  return ensemble_surrogate(
+    validate_and_materialize_selected_model(model_json, "ensemble_surrogate"),
+    std::move(ordered_models), variables, response);
 }
 
 } // namespace Dakota

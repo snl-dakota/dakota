@@ -8,8 +8,13 @@
     _______________________________________________________________________ */
 
 #include "EnsembleSurrModel.hpp"
+#include "LibraryRuntimeSupport.hpp"
 #include "ParallelLibrary.hpp"
 #include "ProblemDescDB.hpp"
+#include "StudyServices.hpp"
+
+#include <stdexcept>
+#include <utility>
 
 static const char rcsId[]=
   "@(#) $Id: EnsembleSurrModel.cpp 6656 2010-02-26 05:20:48Z mseldre $";
@@ -86,6 +91,58 @@ EnsembleSurrModel::EnsembleSurrModel(ProblemDescDB& problem_db, ParallelLibrary&
   ignoreBounds = problem_db.get<bool>("responses.ignore_bounds");
   // initialize centralHess even though it's irrelevant for pass through
   centralHess = problem_db.get<bool>("responses.central_hess");
+}
+
+
+EnsembleSurrModel::EnsembleSurrModel(
+  const IRStore& model_store, std::shared_ptr<Model> truth_model,
+  std::vector<std::shared_ptr<Model>> approximation_models,
+  const Variables& variables, const Response& response,
+  std::shared_ptr<StudyServices> services):
+  SurrogateModel(model_store, variables, response, std::move(services)),
+  truthModel(std::move(truth_model)), approxModels(std::move(approximation_models)),
+  sameModelInstance(false), sameInterfaceInstance(false),
+  ensemblePrecedence(DEFAULT_PRECEDENCE), modeKeyBufferSize(0),
+  correctionMode(SINGLE_CORRECTION)
+{
+  initialize_subordinate_models();
+}
+
+
+void EnsembleSurrModel::initialize_subordinate_models()
+{
+  detail::validate_services(
+    "EnsembleSurrModel", study_services(),
+    {detail::runtime_dependency("truth model", truthModel)});
+
+  if (!truthModel)
+    throw std::runtime_error(
+      "EnsembleSurrModel requires a non-null truth model in DI construction.");
+
+  for (const auto& approximation_model: approxModels) {
+    detail::validate_services(
+      "EnsembleSurrModel", study_services(),
+      {detail::runtime_dependency("approximation model", approximation_model)});
+    if (!approximation_model)
+      throw std::runtime_error(
+        "EnsembleSurrModel requires non-null approximation models in DI construction.");
+    check_submodel_compatibility(*approximation_model);
+    approximation_model->serialize_threshold(0);
+  }
+
+  check_submodel_compatibility(*truthModel);
+  truthModel->serialize_threshold(0);
+
+  responseMode = AGGREGATED_MODELS;
+  assign_default_keys(responseMode);
+  if (parallelLib.mpirun_flag())
+    modeKeyBufferSize = server_buffer_size(responseMode, activeKey);
+
+  initialize_correction();
+  supportsEstimDerivs = false;
+  ignoreBounds = currentResponse.gradient_config().ignore_bounds;
+  centralHess = (currentResponse.hessian_config().interval_type ==
+                 Response::IntervalType::Central);
 }
 
 

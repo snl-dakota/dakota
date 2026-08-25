@@ -39,11 +39,11 @@ DataFitSurrBasedLocalMinimizer(ProblemDescDB& problem_db, ParallelLibrary& paral
   // and responseStarTruth (which would otherwise involve an approximation).
   if ( probDescDB.get<bool>("method.sbl.truth_surrogate_bypass") == true ) {
     Model& truth_model = *model->truth_model();
-    if (truth_model.model_type() == "surrogate")
+    if (truth_model.is_surrogate_model())
       multiLayerBypassFlag = true;
     ModelList& ml = truth_model.subordinate_models();
     for (auto& m : ml)
-      if (m->model_type() == "surrogate")
+	if (m->is_surrogate_model())
 	multiLayerBypassFlag = true;
   }
 

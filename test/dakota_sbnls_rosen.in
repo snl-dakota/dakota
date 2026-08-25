@@ -56,12 +56,12 @@ method,						#s0,#s1,#s2,#s4,#s5,#s6,#s7
 
 model,
 	id_model = 'SURROGATE'
-	surrogate global		      	#s0
+	global_surrogate		      	#s0
 	  responses_pointer = 'SURROGATE_RESP'
 	  dace_method_pointer = 'SAMPLING' 	#s0
 	  correction additive first_order 	#s0
 	  polynomial quadratic 			#s0
-# 	surrogate local taylor_series		#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9
+# 	local_surrogate taylor_series		#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9
 #	  truth_model_pointer = 'TRUTH' 	#s1,#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9
 
 variables,

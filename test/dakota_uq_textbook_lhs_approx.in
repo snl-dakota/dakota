@@ -14,7 +14,7 @@ method,
 
 model,
 	id_model = 'UQ_M'
-	surrogate global
+	global_surrogate
 	  dace_method_pointer = 'DACE'
 	  polynomial quadratic		#s0
 # 	  neural_network		#s1

@@ -475,7 +475,7 @@ void NonDQUESOBayesCalibration::cache_chain()
 	acc_chain_i[j] = qv[j]; // trailing hyperparams are not transformed
 
       // surrogate needs u-space variables for eval
-      if (mcmcModel->model_type() == "surrogate")
+	if (mcmcModel->is_surrogate_model())
 	lookup_vars.continuous_variables(u_rv);
       else
 	lookup_vars.continuous_variables(x_rv);

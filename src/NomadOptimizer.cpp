@@ -198,7 +198,7 @@ void NomadOptimizer::core_run()
 
   // Verify that user has requested surrogate model construction
   // when use_surrogate is defined.
-  if ((iteratedModel->model_type() != "surrogate") && 
+  if (!iteratedModel->is_datafit_surrogate_model() &&
     ((useSurrogate.compare("inform_search") == 0) || (useSurrogate.compare("optimize") == 0))) {
   Cerr << "Error: Specified use_surrogate without requesting surrogate model "
     << "construction." << std::endl;
@@ -212,7 +212,7 @@ void NomadOptimizer::core_run()
      
   // If model is a surrogate, build it. Subsequently, tell NOMAD to make
   // use of it if use_surrogate is set to inform_search
-  if (iteratedModel->model_type() == "surrogate") {
+  if (iteratedModel->is_datafit_surrogate_model()) {
     iteratedModel->build_approximation();
 
     if (useSurrogate.compare("inform_search") == 0){
@@ -597,7 +597,8 @@ void NomadOptimizer::Evaluator::set_variables(const NOMAD::Eval_Point &x) const
 void NomadOptimizer::Evaluator::eval_model(bool allow_asynch, const NOMAD::Eval_Point& x) const
 {
   // Compute the Response using Dakota Interface
-  if ((_model.model_type() == "surrogate") && (x.get_eval_type() != NOMAD::SGTE) &&
+  if (_model.is_datafit_surrogate_model() &&
+      (x.get_eval_type() != NOMAD::SGTE) &&
       (useSgte.compare("inform_search") == 0)) {
     short orig_resp_mode = _model.surrogate_response_mode();
     _model.surrogate_response_mode(BYPASS_SURROGATE);
@@ -922,5 +923,3 @@ void NomadOptimizer::load_parameters(Model &model, NOMAD::Parameters &p)
 NomadOptimizer::~NomadOptimizer() {};
 
 }
-
-

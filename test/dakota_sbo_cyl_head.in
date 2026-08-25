@@ -24,11 +24,11 @@ method,
 
 model,
 	id_model = 'SURROGATE'
-	surrogate global
+	global_surrogate
 	  dace_method_pointer = 'SAMPLING'
 	  correction additive first_order
 	  polynomial quadratic
-# 	surrogate local taylor_series
+# 	local_surrogate taylor_series
 #	  truth_model_pointer = 'TRUTH'
 
 method,

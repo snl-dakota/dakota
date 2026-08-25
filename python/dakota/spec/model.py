@@ -2366,24 +2366,6 @@ class MultipointConfig(DakotaBaseModel):
     )
 
 
-class Local(DakotaBaseModel):
-    "Build a locally accurate surrogate from data at a single point"
-
-    local: LocalConfig = DakotaField(
-        description="Build a locally accurate surrogate from data at a single point",
-        dakota={
-            "materialization": [
-                {
-                    "ir_key": "model.surrogate.type",
-                    "storage_type": "PRESENCE_LITERAL",
-                    "stored_value": "local_taylor",
-                    "ir_value_type": "String",
-                }
-            ]
-        },
-    )
-
-
 class OrderedModelFidelities(DakotaBaseModel):
     "Specification of an hierarchy of model fidelities, ordered from low to high."
 
@@ -2822,32 +2804,6 @@ class ImportChallengePointsFileCustomAnnotated(DakotaBaseModel):
                     "ir_value_type": "unsigned short",
                 }
             ],
-        },
-    )
-
-
-class Multipoint(DakotaBaseModel):
-    "Construct a surrogate from multiple existing training points"
-
-    multipoint: MultipointConfig = DakotaField(
-        description="Construct a surrogate from multiple existing training points"
-    )
-
-
-class Ensemble(DakotaBaseModel):
-    "Ensemble surrogates employ a collection of lower-fidelity models to approximate a truth reference model at reduced cost."
-
-    ensemble: Union[OrderedModelFidelities, EnsembleTruthModelPointer] = DakotaField(
-        description="Ensemble surrogates employ a collection of lower-fidelity models to approximate a truth reference model at reduced cost.",
-        dakota={
-            "materialization": [
-                {
-                    "ir_key": "model.surrogate.type",
-                    "storage_type": "PRESENCE_LITERAL",
-                    "stored_value": "ensemble",
-                    "ir_value_type": "String",
-                }
-            ]
         },
     )
 
@@ -3429,19 +3385,13 @@ class GlobalApproxConfig(SurrogateCorrectionMixin):
     )
 
 
-class GlobalApprox(DakotaBaseModel):
-    "Select a surrogate model with global support"
-
-    global_approx: GlobalApproxConfig = DakotaField(
-        description="Select a surrogate model with global support"
-    )
-
-
-class SurrogateConfig(ModelFourOptionalKeywordsMixin):
-    "An empirical model that is created from data or the results of a submodel"
+class SurrogateFunctionIndicesMixin(DakotaBaseModel):
+    "Shared response-function selection for data-fit surrogate models"
 
     _VALIDATION_RULES: ClassVar[List[ValidationRule]] = [
-        CheckPositiveList(context="surrogateconfig", list_field="id_surrogates"),
+        CheckPositiveList(
+            context="surrogatefunctionindicesmixin", list_field="id_surrogates"
+        ),
     ]
 
     id_surrogates: list[int] | None = DakotaField(
@@ -3457,22 +3407,117 @@ class SurrogateConfig(ModelFourOptionalKeywordsMixin):
             ]
         },
     )
-    category: Union[GlobalApprox, Multipoint, Local, Ensemble] = DakotaField(
-        description="Surrogate Category", dakota={"anchor": True, "union_pattern": 4}
-    )
 
 
-class SurrogateSelection(ModelSelection):
-    "An empirical model that is created from data or the results of a submodel"
+class GlobalSurrogateConfig(
+    ModelFourOptionalKeywordsMixin, SurrogateFunctionIndicesMixin, GlobalApproxConfig
+):
+    "An empirical model with global support, created from data or a submodel"
 
-    surrogate: SurrogateConfig = DakotaField(
-        description="An empirical model that is created from data or the results of a submodel",
+
+class GlobalSurrogateSelection(ModelSelection):
+    "An empirical model with global support, created from data or a submodel"
+
+    global_surrogate: GlobalSurrogateConfig = DakotaField(
+        description="An empirical model with global support, created from data or a submodel",
         dakota={
             "materialization": [
                 {
                     "ir_key": "model.type",
                     "storage_type": "PRESENCE_LITERAL",
-                    "stored_value": "surrogate",
+                    "stored_value": "global_surrogate",
+                    "ir_value_type": "String",
+                }
+            ]
+        },
+    )
+
+
+class MultipointSurrogateConfig(
+    ModelFourOptionalKeywordsMixin, SurrogateFunctionIndicesMixin, MultipointConfig
+):
+    "A surrogate constructed from multiple existing training points"
+
+
+class MultipointSurrogateSelection(ModelSelection):
+    "A surrogate constructed from multiple existing training points"
+
+    multipoint_surrogate: MultipointSurrogateConfig = DakotaField(
+        description="A surrogate constructed from multiple existing training points",
+        dakota={
+            "materialization": [
+                {
+                    "ir_key": "model.type",
+                    "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "multipoint_surrogate",
+                    "ir_value_type": "String",
+                }
+            ]
+        },
+    )
+
+
+class LocalSurrogateConfig(
+    ModelFourOptionalKeywordsMixin, SurrogateFunctionIndicesMixin, LocalConfig
+):
+    "A locally accurate surrogate constructed from data at a single point"
+
+
+class LocalSurrogateSelection(ModelSelection):
+    "A locally accurate surrogate constructed from data at a single point"
+
+    local_surrogate: LocalSurrogateConfig = DakotaField(
+        description="A locally accurate surrogate constructed from data at a single point",
+        dakota={
+            "materialization": [
+                {
+                    "ir_key": "model.surrogate.type",
+                    "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "local_taylor",
+                    "ir_value_type": "String",
+                },
+                {
+                    "ir_key": "model.type",
+                    "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "local_surrogate",
+                    "ir_value_type": "String",
+                }
+            ]
+        },
+    )
+
+
+class EnsembleSurrogateConfig(ModelFourOptionalKeywordsMixin):
+    "A surrogate ensemble of lower-fidelity models and a truth model"
+
+    ensemble: Union[OrderedModelFidelities, EnsembleTruthModelPointer] = DakotaField(
+        description="Specification of the ensemble model hierarchy",
+        dakota={
+            "anchor": True,
+            "union_pattern": 4,
+            "materialization": [
+                {
+                    "ir_key": "model.surrogate.type",
+                    "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "ensemble",
+                    "ir_value_type": "String",
+                }
+            ]
+        },
+    )
+
+
+class EnsembleSurrogateSelection(ModelSelection):
+    "An ensemble surrogate of lower-fidelity models and a truth model"
+
+    ensemble_surrogate: EnsembleSurrogateConfig = DakotaField(
+        description="An ensemble surrogate of lower-fidelity models and a truth model",
+        dakota={
+            "materialization": [
+                {
+                    "ir_key": "model.type",
+                    "storage_type": "PRESENCE_LITERAL",
+                    "stored_value": "ensemble_surrogate",
                     "ir_value_type": "String",
                 }
             ]

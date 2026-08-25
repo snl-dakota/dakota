@@ -1180,7 +1180,7 @@ recover_submodel_responses(std::ostream& s,
 
       // If model is a data fit surrogate, re-evaluate it if needed.
       // Didn't use != "ensemble" in case other surrogate types are added.
-      if ( subModel->model_type() == "surrogate" &&
+      if ( subModel->is_datafit_surrogate_model() &&
            (strbegins(subModel->surrogate_type(), "global_") ||
             strbegins(subModel->surrogate_type(), "local_") ||
             strbegins(subModel->surrogate_type(), "multipoint_")) ) {
@@ -1322,7 +1322,7 @@ archive_submodel_responses(const ResultsManager &results_db,
 
       // If model is a data fit surrogate, re-evaluate it if needed.
       // Didn't use != "ensemble" in case other surrogate types are added.
-      if ( subModel->model_type() == "surrogate" &&
+      if ( subModel->is_datafit_surrogate_model() &&
            (strbegins(subModel->surrogate_type(), "global_") ||
             strbegins(subModel->surrogate_type(), "local_") ||
             strbegins(subModel->surrogate_type(), "multipoint_")) ) {

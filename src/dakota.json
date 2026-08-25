@@ -22349,11 +22349,95 @@
             "title": "Energy",
             "type": "object"
         },
-        "Ensemble": {
+        "EnsembleSurrogateConfig": {
             "additionalProperties": false,
-            "description": "Ensemble surrogates employ a collection of lower-fidelity models to approximate a truth reference model at reduced cost.",
+            "description": "A surrogate ensemble of lower-fidelity models and a truth model",
             "properties": {
+                "id_model": {
+                    "anyOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Give the model block an identifying name, in case of multiple model blocks",
+                    "title": "Id Model",
+                    "x-materialization": [
+                        {
+                            "ir_key": "model.id",
+                            "ir_value_type": "String",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "variables_pointer": {
+                    "anyOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Specify which variables block will be included with this model block",
+                    "title": "Variables Pointer",
+                    "x-block-pointer": "variables",
+                    "x-materialization": [
+                        {
+                            "ir_key": "model.variables_pointer",
+                            "ir_value_type": "String",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "responses_pointer": {
+                    "anyOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Specify which reponses block will be used by this model block",
+                    "title": "Responses Pointer",
+                    "x-block-pointer": "responses",
+                    "x-materialization": [
+                        {
+                            "ir_key": "model.responses_pointer",
+                            "ir_value_type": "String",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "hierarchical_tagging": {
+                    "anyOf": [
+                        {
+                            "const": true,
+                            "type": "boolean"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Enables hierarchical evaluation tagging",
+                    "title": "Hierarchical Tagging",
+                    "x-materialization": [
+                        {
+                            "ir_key": "model.hierarchical_tags",
+                            "ir_value_type": "bool",
+                            "storage_type": "PRESENCE_TRUE"
+                        }
+                    ]
+                },
                 "ensemble": {
+                    "anchor": true,
                     "anyOf": [
                         {
                             "$ref": "#/$defs/OrderedModelFidelities"
@@ -22362,7 +22446,7 @@
                             "$ref": "#/$defs/EnsembleTruthModelPointer"
                         }
                     ],
-                    "description": "Ensemble surrogates employ a collection of lower-fidelity models to approximate a truth reference model at reduced cost.",
+                    "description": "Specification of the ensemble model hierarchy",
                     "title": "Ensemble",
                     "x-materialization": [
                         {
@@ -22371,13 +22455,37 @@
                             "storage_type": "PRESENCE_LITERAL",
                             "stored_value": "ensemble"
                         }
-                    ]
+                    ],
+                    "x-union-pattern": 4
                 }
             },
             "required": [
                 "ensemble"
             ],
-            "title": "Ensemble",
+            "title": "EnsembleSurrogateConfig",
+            "type": "object"
+        },
+        "EnsembleSurrogateSelection": {
+            "additionalProperties": false,
+            "description": "An ensemble surrogate of lower-fidelity models and a truth model",
+            "properties": {
+                "ensemble_surrogate": {
+                    "$ref": "#/$defs/EnsembleSurrogateConfig",
+                    "description": "An ensemble surrogate of lower-fidelity models and a truth model",
+                    "x-materialization": [
+                        {
+                            "ir_key": "model.type",
+                            "ir_value_type": "String",
+                            "storage_type": "PRESENCE_LITERAL",
+                            "stored_value": "ensemble_surrogate"
+                        }
+                    ]
+                }
+            },
+            "required": [
+                "ensemble_surrogate"
+            ],
+            "title": "EnsembleSurrogateSelection",
             "type": "object"
         },
         "EnsembleTruthModelPointer": {
@@ -30256,240 +30364,6 @@
                 }
             ]
         },
-        "GlobalApprox": {
-            "additionalProperties": false,
-            "description": "Select a surrogate model with global support",
-            "properties": {
-                "global_approx": {
-                    "$ref": "#/$defs/GlobalApproxConfig"
-                }
-            },
-            "required": [
-                "global_approx"
-            ],
-            "title": "GlobalApprox",
-            "type": "object"
-        },
-        "GlobalApproxConfig": {
-            "additionalProperties": false,
-            "description": "Select a surrogate model with global support",
-            "properties": {
-                "correction": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/Correction"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "default": null,
-                    "description": "Correction approaches for surrogate models"
-                },
-                "type": {
-                    "anchor": true,
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/ExperimentalGP"
-                        },
-                        {
-                            "$ref": "#/$defs/GlobalApproxGP"
-                        },
-                        {
-                            "$ref": "#/$defs/Mars"
-                        },
-                        {
-                            "$ref": "#/$defs/MovingLeastSquares"
-                        },
-                        {
-                            "$ref": "#/$defs/Ft"
-                        },
-                        {
-                            "$ref": "#/$defs/NeuralNetwork"
-                        },
-                        {
-                            "$ref": "#/$defs/RadialBasis"
-                        },
-                        {
-                            "$ref": "#/$defs/GlobalApproxPolynomial"
-                        },
-                        {
-                            "$ref": "#/$defs/ExperimentalPolynomial"
-                        },
-                        {
-                            "$ref": "#/$defs/ExperimentalPython"
-                        }
-                    ],
-                    "description": "Global Surrogate Type",
-                    "title": "Type",
-                    "x-union-pattern": 4
-                },
-                "domain_decomposition": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/DomainDecomposition"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "default": null,
-                    "description": "Piecewise Domain Decomposition for Global Surrogate Models",
-                    "x-materialization": [
-                        {
-                            "ir_key": "model.surrogate.domain_decomp",
-                            "ir_value_type": "bool",
-                            "storage_type": "PRESENCE_TRUE"
-                        }
-                    ]
-                },
-                "build_points": {
-                    "anchor": true,
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/TotalPoints"
-                        },
-                        {
-                            "$ref": "#/$defs/MinimumPoints"
-                        },
-                        {
-                            "$ref": "#/$defs/RecommendedPoints"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "default": null,
-                    "description": "Number of Build Points",
-                    "title": "Build Points",
-                    "x-union-pattern": 2
-                },
-                "build_data": {
-                    "anchor": true,
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/GlobalApproxDaceMethodPointer"
-                        },
-                        {
-                            "$ref": "#/$defs/GlobalApproxTruthModelPointer"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "default": null,
-                    "description": "Build Data Source",
-                    "title": "Build Data",
-                    "x-union-pattern": 2
-                },
-                "reuse_points": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/ReusePoints"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "default": null,
-                    "description": "Surrogate model training data reuse control",
-                    "x-aliases": [
-                        "reuse_samples"
-                    ]
-                },
-                "import_build_points_file": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/GlobalApproxImportBuildPointsFile"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "filename",
-                    "default": null,
-                    "description": "File containing points you wish to use to build a surrogate",
-                    "x-aliases": [
-                        "import_points_file",
-                        "samples_file"
-                    ]
-                },
-                "export_approx_points_file": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/GlobalApproxExportApproxPointsFile"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "filename",
-                    "default": null,
-                    "description": "Output file for surrogate model value evaluations",
-                    "x-aliases": [
-                        "export_points_file"
-                    ]
-                },
-                "use_derivatives": {
-                    "anyOf": [
-                        {
-                            "const": true,
-                            "type": "boolean"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "default": null,
-                    "description": "Use derivative data to construct surrogate models",
-                    "title": "Use Derivatives",
-                    "x-materialization": [
-                        {
-                            "ir_key": "model.surrogate.derivative_usage",
-                            "ir_value_type": "bool",
-                            "storage_type": "PRESENCE_TRUE"
-                        }
-                    ]
-                },
-                "metrics": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/Metrics"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "metrics",
-                    "default": null,
-                    "description": "Compute surrogate quality metrics",
-                    "x-aliases": [
-                        "diagnostics"
-                    ]
-                },
-                "import_challenge_points_file": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/ImportChallengePointsFile"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "filename",
-                    "default": null,
-                    "description": "Datafile of points to assess surrogate quality",
-                    "x-aliases": [
-                        "challenge_points_file"
-                    ]
-                }
-            },
-            "required": [
-                "type"
-            ],
-            "title": "GlobalApproxConfig",
-            "type": "object"
-        },
         "GlobalApproxDaceMethodPointer": {
             "additionalProperties": false,
             "description": "Specify a method to gather training data",
@@ -32328,6 +32202,365 @@
                 "surfpack"
             ],
             "title": "GlobalReliabilitySurfpack",
+            "type": "object"
+        },
+        "GlobalSurrogateConfig": {
+            "additionalProperties": false,
+            "description": "An empirical model with global support, created from data or a submodel",
+            "properties": {
+                "correction": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/Correction"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Correction approaches for surrogate models"
+                },
+                "type": {
+                    "anchor": true,
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/ExperimentalGP"
+                        },
+                        {
+                            "$ref": "#/$defs/GlobalApproxGP"
+                        },
+                        {
+                            "$ref": "#/$defs/Mars"
+                        },
+                        {
+                            "$ref": "#/$defs/MovingLeastSquares"
+                        },
+                        {
+                            "$ref": "#/$defs/Ft"
+                        },
+                        {
+                            "$ref": "#/$defs/NeuralNetwork"
+                        },
+                        {
+                            "$ref": "#/$defs/RadialBasis"
+                        },
+                        {
+                            "$ref": "#/$defs/GlobalApproxPolynomial"
+                        },
+                        {
+                            "$ref": "#/$defs/ExperimentalPolynomial"
+                        },
+                        {
+                            "$ref": "#/$defs/ExperimentalPython"
+                        }
+                    ],
+                    "description": "Global Surrogate Type",
+                    "title": "Type",
+                    "x-union-pattern": 4
+                },
+                "domain_decomposition": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/DomainDecomposition"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Piecewise Domain Decomposition for Global Surrogate Models",
+                    "x-materialization": [
+                        {
+                            "ir_key": "model.surrogate.domain_decomp",
+                            "ir_value_type": "bool",
+                            "storage_type": "PRESENCE_TRUE"
+                        }
+                    ]
+                },
+                "build_points": {
+                    "anchor": true,
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/TotalPoints"
+                        },
+                        {
+                            "$ref": "#/$defs/MinimumPoints"
+                        },
+                        {
+                            "$ref": "#/$defs/RecommendedPoints"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Number of Build Points",
+                    "title": "Build Points",
+                    "x-union-pattern": 2
+                },
+                "build_data": {
+                    "anchor": true,
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/GlobalApproxDaceMethodPointer"
+                        },
+                        {
+                            "$ref": "#/$defs/GlobalApproxTruthModelPointer"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Build Data Source",
+                    "title": "Build Data",
+                    "x-union-pattern": 2
+                },
+                "reuse_points": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/ReusePoints"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Surrogate model training data reuse control",
+                    "x-aliases": [
+                        "reuse_samples"
+                    ]
+                },
+                "import_build_points_file": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/GlobalApproxImportBuildPointsFile"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "filename",
+                    "default": null,
+                    "description": "File containing points you wish to use to build a surrogate",
+                    "x-aliases": [
+                        "import_points_file",
+                        "samples_file"
+                    ]
+                },
+                "export_approx_points_file": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/GlobalApproxExportApproxPointsFile"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "filename",
+                    "default": null,
+                    "description": "Output file for surrogate model value evaluations",
+                    "x-aliases": [
+                        "export_points_file"
+                    ]
+                },
+                "use_derivatives": {
+                    "anyOf": [
+                        {
+                            "const": true,
+                            "type": "boolean"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Use derivative data to construct surrogate models",
+                    "title": "Use Derivatives",
+                    "x-materialization": [
+                        {
+                            "ir_key": "model.surrogate.derivative_usage",
+                            "ir_value_type": "bool",
+                            "storage_type": "PRESENCE_TRUE"
+                        }
+                    ]
+                },
+                "metrics": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/Metrics"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "metrics",
+                    "default": null,
+                    "description": "Compute surrogate quality metrics",
+                    "x-aliases": [
+                        "diagnostics"
+                    ]
+                },
+                "import_challenge_points_file": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/ImportChallengePointsFile"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "argument": "filename",
+                    "default": null,
+                    "description": "Datafile of points to assess surrogate quality",
+                    "x-aliases": [
+                        "challenge_points_file"
+                    ]
+                },
+                "id_surrogates": {
+                    "anyOf": [
+                        {
+                            "items": {
+                                "type": "integer"
+                            },
+                            "type": "array"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Identifies the subset of the response functions by number that are to be approximated (the default is all functions).",
+                    "title": "Id Surrogates",
+                    "x-materialization": [
+                        {
+                            "ir_key": "model.surrogate.function_indices",
+                            "ir_value_type": "SizetSet",
+                            "storage_type": "ID_TO_INDEX_SET"
+                        }
+                    ]
+                },
+                "id_model": {
+                    "anyOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Give the model block an identifying name, in case of multiple model blocks",
+                    "title": "Id Model",
+                    "x-materialization": [
+                        {
+                            "ir_key": "model.id",
+                            "ir_value_type": "String",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "variables_pointer": {
+                    "anyOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Specify which variables block will be included with this model block",
+                    "title": "Variables Pointer",
+                    "x-block-pointer": "variables",
+                    "x-materialization": [
+                        {
+                            "ir_key": "model.variables_pointer",
+                            "ir_value_type": "String",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "responses_pointer": {
+                    "anyOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Specify which reponses block will be used by this model block",
+                    "title": "Responses Pointer",
+                    "x-block-pointer": "responses",
+                    "x-materialization": [
+                        {
+                            "ir_key": "model.responses_pointer",
+                            "ir_value_type": "String",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "hierarchical_tagging": {
+                    "anyOf": [
+                        {
+                            "const": true,
+                            "type": "boolean"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Enables hierarchical evaluation tagging",
+                    "title": "Hierarchical Tagging",
+                    "x-materialization": [
+                        {
+                            "ir_key": "model.hierarchical_tags",
+                            "ir_value_type": "bool",
+                            "storage_type": "PRESENCE_TRUE"
+                        }
+                    ]
+                }
+            },
+            "required": [
+                "type"
+            ],
+            "title": "GlobalSurrogateConfig",
+            "type": "object",
+            "x-model-validations": [
+                {
+                    "validationContext": "surrogatefunctionindicesmixin",
+                    "validationErrorMessage": "For surrogatefunctionindicesmixin, all elements of id_surrogates must be > 0.",
+                    "validationFields": [
+                        "id_surrogates"
+                    ],
+                    "validationLiterals": [],
+                    "validationRuleName": "check_positive_list"
+                }
+            ]
+        },
+        "GlobalSurrogateSelection": {
+            "additionalProperties": false,
+            "description": "An empirical model with global support, created from data or a submodel",
+            "properties": {
+                "global_surrogate": {
+                    "$ref": "#/$defs/GlobalSurrogateConfig",
+                    "x-materialization": [
+                        {
+                            "ir_key": "model.type",
+                            "ir_value_type": "String",
+                            "storage_type": "PRESENCE_LITERAL",
+                            "stored_value": "global_surrogate"
+                        }
+                    ]
+                }
+            },
+            "required": [
+                "global_surrogate"
+            ],
+            "title": "GlobalSurrogateSelection",
             "type": "object"
         },
         "GpaisConfig": {
@@ -39198,61 +39431,6 @@
             "title": "ListParameterStudySelection",
             "type": "object"
         },
-        "Local": {
-            "additionalProperties": false,
-            "description": "Build a locally accurate surrogate from data at a single point",
-            "properties": {
-                "local": {
-                    "$ref": "#/$defs/LocalConfig",
-                    "x-materialization": [
-                        {
-                            "ir_key": "model.surrogate.type",
-                            "ir_value_type": "String",
-                            "storage_type": "PRESENCE_LITERAL",
-                            "stored_value": "local_taylor"
-                        }
-                    ]
-                }
-            },
-            "required": [
-                "local"
-            ],
-            "title": "Local",
-            "type": "object"
-        },
-        "LocalConfig": {
-            "additionalProperties": false,
-            "description": "Build a locally accurate surrogate from data at a single point",
-            "properties": {
-                "taylor_series": {
-                    "description": "Construct a Taylor Series expansion around a point",
-                    "title": "Taylor Series",
-                    "type": "boolean"
-                },
-                "truth_model_pointer": {
-                    "description": "Pointer to specify a \"truth\" model, from which to construct a surrogate",
-                    "title": "Truth Model Pointer",
-                    "type": "string",
-                    "x-aliases": [
-                        "actual_model_pointer"
-                    ],
-                    "x-block-pointer": "model",
-                    "x-materialization": [
-                        {
-                            "ir_key": "model.surrogate.truth_model_pointer",
-                            "ir_value_type": "String",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                }
-            },
-            "required": [
-                "taylor_series",
-                "truth_model_pointer"
-            ],
-            "title": "LocalConfig",
-            "type": "object"
-        },
         "LocalEvaluationSchedulingDynamic": {
             "additionalProperties": false,
             "description": "Dynamic local scheduling (sequential)",
@@ -40019,6 +40197,184 @@
                 "local_reliability"
             ],
             "title": "LocalReliabilitySelection",
+            "type": "object"
+        },
+        "LocalSurrogateConfig": {
+            "additionalProperties": false,
+            "description": "A locally accurate surrogate constructed from data at a single point",
+            "properties": {
+                "taylor_series": {
+                    "description": "Construct a Taylor Series expansion around a point",
+                    "title": "Taylor Series",
+                    "type": "boolean"
+                },
+                "truth_model_pointer": {
+                    "description": "Pointer to specify a \"truth\" model, from which to construct a surrogate",
+                    "title": "Truth Model Pointer",
+                    "type": "string",
+                    "x-aliases": [
+                        "actual_model_pointer"
+                    ],
+                    "x-block-pointer": "model",
+                    "x-materialization": [
+                        {
+                            "ir_key": "model.surrogate.truth_model_pointer",
+                            "ir_value_type": "String",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "id_surrogates": {
+                    "anyOf": [
+                        {
+                            "items": {
+                                "type": "integer"
+                            },
+                            "type": "array"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Identifies the subset of the response functions by number that are to be approximated (the default is all functions).",
+                    "title": "Id Surrogates",
+                    "x-materialization": [
+                        {
+                            "ir_key": "model.surrogate.function_indices",
+                            "ir_value_type": "SizetSet",
+                            "storage_type": "ID_TO_INDEX_SET"
+                        }
+                    ]
+                },
+                "id_model": {
+                    "anyOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Give the model block an identifying name, in case of multiple model blocks",
+                    "title": "Id Model",
+                    "x-materialization": [
+                        {
+                            "ir_key": "model.id",
+                            "ir_value_type": "String",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "variables_pointer": {
+                    "anyOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Specify which variables block will be included with this model block",
+                    "title": "Variables Pointer",
+                    "x-block-pointer": "variables",
+                    "x-materialization": [
+                        {
+                            "ir_key": "model.variables_pointer",
+                            "ir_value_type": "String",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "responses_pointer": {
+                    "anyOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Specify which reponses block will be used by this model block",
+                    "title": "Responses Pointer",
+                    "x-block-pointer": "responses",
+                    "x-materialization": [
+                        {
+                            "ir_key": "model.responses_pointer",
+                            "ir_value_type": "String",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "hierarchical_tagging": {
+                    "anyOf": [
+                        {
+                            "const": true,
+                            "type": "boolean"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Enables hierarchical evaluation tagging",
+                    "title": "Hierarchical Tagging",
+                    "x-materialization": [
+                        {
+                            "ir_key": "model.hierarchical_tags",
+                            "ir_value_type": "bool",
+                            "storage_type": "PRESENCE_TRUE"
+                        }
+                    ]
+                }
+            },
+            "required": [
+                "taylor_series",
+                "truth_model_pointer"
+            ],
+            "title": "LocalSurrogateConfig",
+            "type": "object",
+            "x-model-validations": [
+                {
+                    "validationContext": "surrogatefunctionindicesmixin",
+                    "validationErrorMessage": "For surrogatefunctionindicesmixin, all elements of id_surrogates must be > 0.",
+                    "validationFields": [
+                        "id_surrogates"
+                    ],
+                    "validationLiterals": [],
+                    "validationRuleName": "check_positive_list"
+                }
+            ]
+        },
+        "LocalSurrogateSelection": {
+            "additionalProperties": false,
+            "description": "A locally accurate surrogate constructed from data at a single point",
+            "properties": {
+                "local_surrogate": {
+                    "$ref": "#/$defs/LocalSurrogateConfig",
+                    "x-materialization": [
+                        {
+                            "ir_key": "model.surrogate.type",
+                            "ir_value_type": "String",
+                            "storage_type": "PRESENCE_LITERAL",
+                            "stored_value": "local_taylor"
+                        },
+                        {
+                            "ir_key": "model.type",
+                            "ir_value_type": "String",
+                            "storage_type": "PRESENCE_LITERAL",
+                            "stored_value": "local_surrogate"
+                        }
+                    ]
+                }
+            },
+            "required": [
+                "local_surrogate"
+            ],
+            "title": "LocalSurrogateSelection",
             "type": "object"
         },
         "LognormalUncertain": {
@@ -57673,23 +58029,9 @@
             "title": "Multiplicative",
             "type": "object"
         },
-        "Multipoint": {
+        "MultipointSurrogateConfig": {
             "additionalProperties": false,
-            "description": "Construct a surrogate from multiple existing training points",
-            "properties": {
-                "multipoint": {
-                    "$ref": "#/$defs/MultipointConfig"
-                }
-            },
-            "required": [
-                "multipoint"
-            ],
-            "title": "Multipoint",
-            "type": "object"
-        },
-        "MultipointConfig": {
-            "additionalProperties": false,
-            "description": "Construct a surrogate from multiple existing training points",
+            "description": "A surrogate constructed from multiple existing training points",
             "properties": {
                 "type": {
                     "anchor": true,
@@ -57720,13 +58062,152 @@
                             "storage_type": "DIRECT_VALUE"
                         }
                     ]
+                },
+                "id_surrogates": {
+                    "anyOf": [
+                        {
+                            "items": {
+                                "type": "integer"
+                            },
+                            "type": "array"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Identifies the subset of the response functions by number that are to be approximated (the default is all functions).",
+                    "title": "Id Surrogates",
+                    "x-materialization": [
+                        {
+                            "ir_key": "model.surrogate.function_indices",
+                            "ir_value_type": "SizetSet",
+                            "storage_type": "ID_TO_INDEX_SET"
+                        }
+                    ]
+                },
+                "id_model": {
+                    "anyOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Give the model block an identifying name, in case of multiple model blocks",
+                    "title": "Id Model",
+                    "x-materialization": [
+                        {
+                            "ir_key": "model.id",
+                            "ir_value_type": "String",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "variables_pointer": {
+                    "anyOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Specify which variables block will be included with this model block",
+                    "title": "Variables Pointer",
+                    "x-block-pointer": "variables",
+                    "x-materialization": [
+                        {
+                            "ir_key": "model.variables_pointer",
+                            "ir_value_type": "String",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "responses_pointer": {
+                    "anyOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Specify which reponses block will be used by this model block",
+                    "title": "Responses Pointer",
+                    "x-block-pointer": "responses",
+                    "x-materialization": [
+                        {
+                            "ir_key": "model.responses_pointer",
+                            "ir_value_type": "String",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "hierarchical_tagging": {
+                    "anyOf": [
+                        {
+                            "const": true,
+                            "type": "boolean"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Enables hierarchical evaluation tagging",
+                    "title": "Hierarchical Tagging",
+                    "x-materialization": [
+                        {
+                            "ir_key": "model.hierarchical_tags",
+                            "ir_value_type": "bool",
+                            "storage_type": "PRESENCE_TRUE"
+                        }
+                    ]
                 }
             },
             "required": [
                 "type",
                 "truth_model_pointer"
             ],
-            "title": "MultipointConfig",
+            "title": "MultipointSurrogateConfig",
+            "type": "object",
+            "x-model-validations": [
+                {
+                    "validationContext": "surrogatefunctionindicesmixin",
+                    "validationErrorMessage": "For surrogatefunctionindicesmixin, all elements of id_surrogates must be > 0.",
+                    "validationFields": [
+                        "id_surrogates"
+                    ],
+                    "validationLiterals": [],
+                    "validationRuleName": "check_positive_list"
+                }
+            ]
+        },
+        "MultipointSurrogateSelection": {
+            "additionalProperties": false,
+            "description": "A surrogate constructed from multiple existing training points",
+            "properties": {
+                "multipoint_surrogate": {
+                    "$ref": "#/$defs/MultipointSurrogateConfig",
+                    "x-materialization": [
+                        {
+                            "ir_key": "model.type",
+                            "ir_value_type": "String",
+                            "storage_type": "PRESENCE_LITERAL",
+                            "stored_value": "multipoint_surrogate"
+                        }
+                    ]
+                }
+            },
+            "required": [
+                "multipoint_surrogate"
+            ],
+            "title": "MultipointSurrogateSelection",
             "type": "object"
         },
         "Muq": {
@@ -78055,176 +78536,6 @@
             "title": "SurrogateBasedUqSelection",
             "type": "object"
         },
-        "SurrogateConfig": {
-            "additionalProperties": false,
-            "description": "An empirical model that is created from data or the results of a submodel",
-            "properties": {
-                "id_model": {
-                    "anyOf": [
-                        {
-                            "type": "string"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "default": null,
-                    "description": "Give the model block an identifying name, in case of multiple model blocks",
-                    "title": "Id Model",
-                    "x-materialization": [
-                        {
-                            "ir_key": "model.id",
-                            "ir_value_type": "String",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
-                "variables_pointer": {
-                    "anyOf": [
-                        {
-                            "type": "string"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "default": null,
-                    "description": "Specify which variables block will be included with this model block",
-                    "title": "Variables Pointer",
-                    "x-block-pointer": "variables",
-                    "x-materialization": [
-                        {
-                            "ir_key": "model.variables_pointer",
-                            "ir_value_type": "String",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
-                "responses_pointer": {
-                    "anyOf": [
-                        {
-                            "type": "string"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "default": null,
-                    "description": "Specify which reponses block will be used by this model block",
-                    "title": "Responses Pointer",
-                    "x-block-pointer": "responses",
-                    "x-materialization": [
-                        {
-                            "ir_key": "model.responses_pointer",
-                            "ir_value_type": "String",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
-                "hierarchical_tagging": {
-                    "anyOf": [
-                        {
-                            "const": true,
-                            "type": "boolean"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "default": null,
-                    "description": "Enables hierarchical evaluation tagging",
-                    "title": "Hierarchical Tagging",
-                    "x-materialization": [
-                        {
-                            "ir_key": "model.hierarchical_tags",
-                            "ir_value_type": "bool",
-                            "storage_type": "PRESENCE_TRUE"
-                        }
-                    ]
-                },
-                "id_surrogates": {
-                    "anyOf": [
-                        {
-                            "items": {
-                                "type": "integer"
-                            },
-                            "type": "array"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "default": null,
-                    "description": "Identifies the subset of the response functions by number that are to be approximated (the default is all functions).",
-                    "title": "Id Surrogates",
-                    "x-materialization": [
-                        {
-                            "ir_key": "model.surrogate.function_indices",
-                            "ir_value_type": "SizetSet",
-                            "storage_type": "ID_TO_INDEX_SET"
-                        }
-                    ]
-                },
-                "category": {
-                    "anchor": true,
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/GlobalApprox"
-                        },
-                        {
-                            "$ref": "#/$defs/Multipoint"
-                        },
-                        {
-                            "$ref": "#/$defs/Local"
-                        },
-                        {
-                            "$ref": "#/$defs/Ensemble"
-                        }
-                    ],
-                    "description": "Surrogate Category",
-                    "title": "Category",
-                    "x-union-pattern": 4
-                }
-            },
-            "required": [
-                "category"
-            ],
-            "title": "SurrogateConfig",
-            "type": "object",
-            "x-model-validations": [
-                {
-                    "validationContext": "surrogateconfig",
-                    "validationErrorMessage": "For surrogateconfig, all elements of id_surrogates must be > 0.",
-                    "validationFields": [
-                        "id_surrogates"
-                    ],
-                    "validationLiterals": [],
-                    "validationRuleName": "check_positive_list"
-                }
-            ]
-        },
-        "SurrogateSelection": {
-            "additionalProperties": false,
-            "description": "An empirical model that is created from data or the results of a submodel",
-            "properties": {
-                "surrogate": {
-                    "$ref": "#/$defs/SurrogateConfig",
-                    "x-materialization": [
-                        {
-                            "ir_key": "model.type",
-                            "ir_value_type": "String",
-                            "storage_type": "PRESENCE_LITERAL",
-                            "stored_value": "surrogate"
-                        }
-                    ]
-                }
-            },
-            "required": [
-                "surrogate"
-            ],
-            "title": "SurrogateSelection",
-            "type": "object"
-        },
         "System": {
             "additionalProperties": false,
             "description": "(Not recommended) Launch analysis drivers with a system call",
@@ -82439,7 +82750,16 @@
                                 "$ref": "#/$defs/AdaptedBasisSelection"
                             },
                             {
-                                "$ref": "#/$defs/SurrogateSelection"
+                                "$ref": "#/$defs/GlobalSurrogateSelection"
+                            },
+                            {
+                                "$ref": "#/$defs/MultipointSurrogateSelection"
+                            },
+                            {
+                                "$ref": "#/$defs/LocalSurrogateSelection"
+                            },
+                            {
+                                "$ref": "#/$defs/EnsembleSurrogateSelection"
                             }
                         ]
                     },

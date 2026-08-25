@@ -56,7 +56,7 @@ method
 
 #model,					                          #s2
 #  id_model = 'SURROGATE'		              #s2
-#  surrogate global			                  #s2
+#  global_surrogate			                  #s2
 #    dace_method_pointer = 'SAMPLING'	    #s2
 #    polynomial quadratic		              #s2
 
