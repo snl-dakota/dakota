@@ -14,27 +14,37 @@ include(DakotaUnitTest)
 
 dakota_add_unit_test(NAME DataScalerTest
   SOURCES DataScalerTest.cpp
-  LINK_LIBS dakota_util 
+  LINK_LIBS dakota_util
   )
 
 dakota_add_unit_test(NAME MathToolsTest
   SOURCES MathToolsTest.cpp
-  LINK_LIBS dakota_util 
+  LINK_LIBS dakota_util
   )
 
 dakota_add_unit_test(NAME MetricsTest
   SOURCES MetricsTest.cpp
-  LINK_LIBS dakota_util 
+  LINK_LIBS dakota_util
   )
 
 dakota_add_unit_test(NAME TeuchosEigenConversionTest
   SOURCES TeuchosEigenConversion.cpp
-  LINK_LIBS dakota_util 
+  LINK_LIBS dakota_util
   )
 
 dakota_add_unit_test(NAME LinearSolverTest
   SOURCES LinearSolverTest.cpp
-  LINK_LIBS dakota_util 
+  LINK_LIBS dakota_util
+  )
+
+dakota_add_unit_test(NAME FunctionalTest
+  SOURCES FunctionalTest.cpp
+  LINK_LIBS dakota_util
+  )
+
+dakota_add_unit_test(NAME GenericFactoryTest
+  SOURCES GenericFactoryTest.cpp
+  LINK_LIBS dakota_util
   )
 
 #target_include_directories(DataScalerTest PRIVATE
