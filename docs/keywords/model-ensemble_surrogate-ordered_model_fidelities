@@ -33,7 +33,7 @@ Examples::
 
     model,
      id_model = 'HIERARCH'
-     surrogate ensemble
+     ensemble_surrogate
        ordered_model_fidelities = 'LF' 'MF 'HF'
        correction additive zeroth_order
     

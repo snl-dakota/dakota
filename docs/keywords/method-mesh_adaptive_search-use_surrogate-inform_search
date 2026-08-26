@@ -43,7 +43,7 @@ The following example shows the syntax used to set ``use_surrogate`` to
     
     model,
      id_model = 'SURROGATE'
-     surrogate global
+     global_surrogate
      polynomial quadratic
      dace_method_pointer = 'SAMPLING'
     

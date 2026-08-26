@@ -37,7 +37,7 @@ examples.)
 .. code-block::
 
     model
-      surrogate global
+      global_surrogate
         polynomial quadratic
         metrics = "root_mean_squared" "sum_abs" "mean_abs" "max_abs"
         cross_validation folds = 5

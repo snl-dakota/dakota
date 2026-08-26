@@ -23,7 +23,7 @@ block via:
 
   model,
       id_model = 'SURR'
-      surrogate global,
+      global_surrogate,
       dace_method_pointer = 'DACE'
       experimental_python
           class_path_and_name = "surrogate_polynomial.Surrogate"

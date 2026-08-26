@@ -22,7 +22,7 @@ Examples::
 
     model,
      id_model = 'NONHIERARCH'
-     surrogate ensemble
+     ensemble_surrogate
        unordered_model_fidelities = 'LF1' 'LF2'
        truth_model_pointer = 'HF'
     

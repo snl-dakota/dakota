@@ -25,7 +25,7 @@ will follow the patterns ``my_surrogate``.{response_descriptor}.alg
 
 .. code-block::
 
-    surrogate global gaussian_process surfpack
+    global_surrogate gaussian_process surfpack
       export_model
         filename_prefix = 'my_surrogate'
           formats

@@ -2,7 +2,7 @@ Blurb::
 Multilevel uncertainty quantification using function train expansions
 Description::
 As described in the :dakkw:`method-function_train` method and the
-:dakkw:`model-surrogate-global-function_train` model,
+:dakkw:`model-global_surrogate-function_train` model,
 the function train (FT) approximation is a polynomial expansion that exploits low rank
 structure within the mapping from input random variables to output quantities of interest
 (QoI).  For multilevel and multifidelity function train approximations, we decompose this
