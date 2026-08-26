@@ -12,6 +12,7 @@
 #include "IRState.hpp"
 #include "ConcurrentMetaIterator.hpp"
 #include "EffGlobalMinimizer.hpp"
+#include "EnsembleSurrModel.hpp"
 #ifdef HAVE_DOT
 #include "DOTOptimizer.hpp"
 #endif
@@ -33,6 +34,7 @@
 
 #include <nlohmann/json.hpp>
 #include <pybind11_json/pybind11_json.hpp>
+#include <pybind11/stl.h>
 
 #include <memory>
 #include <utility>
@@ -188,7 +190,33 @@ void bind_study_factories(py::module_& m)
          },
          py::arg("model"), py::arg("sub_iterator"),
          py::arg("optional_interface"), py::arg("variables"),
-         py::arg("response"));
+         py::arg("response"))
+    .def("ensemble_surrogate",
+         [](const Study::ModelFactory& factory,
+            const py::object& model_json,
+            std::shared_ptr<Model> truth_model,
+            std::vector<std::shared_ptr<Model>> approximation_models,
+            const Variables& variables,
+            const Response& response) {
+           return factory.ensemble_surrogate(
+             model_json.cast<nlohmann::json>(), std::move(truth_model),
+             std::move(approximation_models), variables, response);
+         },
+         py::arg("model"), py::arg("truth_model"),
+         py::arg("approximation_models"), py::arg("variables"),
+         py::arg("response"))
+    .def("ensemble_surrogate",
+         [](const Study::ModelFactory& factory,
+            const py::object& model_json,
+            std::vector<std::shared_ptr<Model>> ordered_models,
+            const Variables& variables,
+            const Response& response) {
+           return factory.ensemble_surrogate(
+             model_json.cast<nlohmann::json>(), std::move(ordered_models),
+             variables, response);
+         },
+         py::arg("model"), py::arg("ordered_models"),
+         py::arg("variables"), py::arg("response"));
 }
 
 void bind_study(py::module_& m)
