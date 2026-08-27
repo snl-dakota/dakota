@@ -41,7 +41,8 @@ T get_or_default(const IRStore& store, const String& key, T default_value)
 size_t Interface::noSpecIdNum = 0;
 
 std::shared_ptr<Interface> Interface::get_interface(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib) {
-  return interfaceCache[&problem_db].get_interface(problem_db, parallel_lib);
+  ProblemDescDB* const study_ptr = problem_db.get_rep().get();
+  return interfaceCache[study_ptr].get_interface(problem_db, parallel_lib);
 }
 
 const std::unordered_map<std::string, std::shared_ptr<Interface>> &
