@@ -71,7 +71,7 @@ private:
   void serialize(Archive& ar, const unsigned int version);
 
   /// experimental operator== for use in unit testing
-  bool operator==(const SharedResponseDataRep& other);
+  bool operator==(const SharedResponseDataRep& other) const;
 
   /// populate functionLabels with scalar and unrolled field labels
   /// based on fieldLabels and group lengths
@@ -180,7 +180,7 @@ public:
   SharedResponseData& operator=(const SharedResponseData& srd);
  
   /// experimental operator== for use in unit testing
-  bool operator==(const SharedResponseData& other);
+  bool operator==(const SharedResponseData& other) const;
 
 
   //

@@ -205,7 +205,7 @@ void SharedResponseDataRep::serialize(Archive& ar, const unsigned int version)
 }
 
 
-bool SharedResponseDataRep::operator==(const SharedResponseDataRep& other)
+bool SharedResponseDataRep::operator==(const SharedResponseDataRep& other) const
 {
   return (responseType == other.responseType &&
 	  primaryFnType == other.primaryFnType &&
@@ -429,7 +429,7 @@ void SharedResponseData::primary_fn_type(short type)
 }
 
 
-bool SharedResponseData::operator==(const SharedResponseData& other)
+bool SharedResponseData::operator==(const SharedResponseData& other) const
 {
   // test pointer equality
   //  return(srdRep->get() == other.srdRep->get());
