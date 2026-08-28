@@ -49,6 +49,9 @@ class EvaluationStore {
     void set_database(std::shared_ptr<HDF5IOHelper> db_ptr);
 #endif
 
+    /// Reset database connection and cached allocation state
+    void clear();
+
     /// Database is open for writing
     bool active();
     

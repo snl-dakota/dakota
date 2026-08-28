@@ -17,6 +17,7 @@
 #include "ParallelLibrary.hpp"
 #include "ProblemDescDB.hpp"
 #include "DakotaIterator.hpp"
+#include "StudyRuntime.hpp"
 #include "UsageTracker.hpp"
 
 /// The primary namespace for DAKOTA
@@ -151,6 +152,7 @@ protected:
 
   ParallelLibrary parallelLib; ///< the parallel library instance
   ProblemDescDB   probDescDB;  ///< the parser database instance
+  StudyRuntime    studyRuntime; ///< shared execution runtime
 
   std::shared_ptr<Iterator> topLevelIterator;  ///< the top level (meta-)iterator
 
@@ -214,21 +216,21 @@ inline const Response& Environment::response_results() const
 inline bool Environment::assign_model_pointer() const
 {
   // meta-iterators may need to activate a default model spec
-  if (probDescDB.get_ushort("method.algorithm") & PARALLEL_BIT)
+  if (probDescDB.get<unsigned short>("method.algorithm") & PARALLEL_BIT)
 
     /* MetaIterators now handle default Model spec within their ctors/init_comms
     return
       ( ( // ConcurrentMI:
-         !probDescDB.get_string("method.sub_method_name").empty() &&
-          probDescDB.get_string("method.sub_model_pointer").empty() )
+         !probDescDB.get<const String>("method.sub_method_name").empty() &&
+          probDescDB.get<const String>("method.sub_model_pointer").empty() )
      || ( // SeqHybridMI, CollabHybridMI:
-	 !probDescDB.get_sa("method.hybrid.method_names").empty() &&
-	  probDescDB.get_sa("method.hybrid.model_pointers").empty() )
+	 !probDescDB.get<const StringArray>("method.hybrid.method_names").empty() &&
+	  probDescDB.get<const StringArray>("method.hybrid.model_pointers").empty() )
      || ( // EmbedHybridMI:
-	 !probDescDB.get_string("method.hybrid.global_method_name").empty() &&
-	  probDescDB.get_string("method.hybrid.global_model_pointer").empty() )
-     || (!probDescDB.get_string("method.hybrid.local_method_name").empty() &&
-	  probDescDB.get_string("method.hybrid.local_model_pointer").empty()) );
+	 !probDescDB.get<const String>("method.hybrid.global_method_name").empty() &&
+	  probDescDB.get<const String>("method.hybrid.global_model_pointer").empty() )
+     || (!probDescDB.get<const String>("method.hybrid.local_method_name").empty() &&
+	  probDescDB.get<const String>("method.hybrid.local_model_pointer").empty()) );
     */
 
     return false;

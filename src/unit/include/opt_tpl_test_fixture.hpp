@@ -12,8 +12,6 @@
 
 #include "APPSOptimizer.hpp"
 
-#include "ParallelLibrary.hpp"
-#include "ProblemDescDB.hpp"
 #include "LibraryEnvironment.hpp"
 #include "DakotaModel.hpp"
 #include "DakotaInterface.hpp"
@@ -22,7 +20,8 @@
 #include <string>
 #include <map>
 
-#include <Teuchos_UnitTestHarness.hpp> 
+#include <Teuchos_UnitTestHarness.hpp>
+#include <nlohmann/json.hpp>
 
 
 namespace Dakota {
@@ -38,6 +37,47 @@ namespace Opt_TPL_Test_Fixture {
 //----------------------------------------------------------------
 
 namespace {
+
+  nlohmann::json default_opt_tpl_study_json(unsigned short method_name)
+  {
+    using json = nlohmann::json;
+
+    json method_config;
+    switch (method_name) {
+    case Dakota::ASYNCH_PATTERN_SEARCH:
+      method_config = json{{"asynch_pattern_search", json::object()}};
+      break;
+    case Dakota::OPTPP_PDS:
+      method_config = json{{"optpp_pds", json::object()}};
+      break;
+    default:
+      Cerr << "Error: unsupported method in default_opt_tpl_study_json()."
+           << std::endl;
+      Dakota::abort_handler(-1);
+    }
+
+    return json{
+      {"method", json::array({method_config})},
+      {"model", json::array({json::object()})},
+      {"variables", json::array({{
+        {"continuous_design", {
+          {"count", 2},
+          {"initial_point", {0.0, 0.0}}
+        }}
+      }})},
+      {"interface", json::array({{
+        {"analysis_drivers", {
+          {"drivers", {"simple_quad"}},
+          {"interface_type", {{"direct", json::object()}}}
+        }}
+      }})},
+      {"responses", json::array({{
+        {"response_type", {{"objective_functions", {{"count", 1}}}}},
+        {"gradient_type", {{"analytic_gradients", true}}},
+        {"hessian_type", {{"no_hessians", true}}}
+      }})}
+    };
+  }
 
   class OptTestDirectApplicInterface: public Dakota::DirectApplicInterface
   {
@@ -63,7 +103,7 @@ namespace {
 
         int fail_code = 0;
         if (ac_name == "simple_quad") {
-          Dakota::RealVector fn_grad; 
+          Dakota::RealVector fn_grad;
           Dakota::RealSymMatrix fn_hess;
           if (directFnASV[0] & 2)
             fn_grad = Teuchos::getCol(Teuchos::View, fnGrads, 0);
@@ -175,8 +215,8 @@ namespace {
     instance. Memory ownership is transferred to the appropriate
     interface envelope in the environment. */
   void serial_interface_plugin(Dakota::LibraryEnvironment& env,
-			       const std::string an_driver,
-			       std::shared_ptr<Dakota::Interface> serial_iface)
+                               const std::string an_driver,
+                               std::shared_ptr<Dakota::Interface> serial_iface)
   {
     std::string model_type(""); // demo: empty string will match any model type
     std::string interf_type("direct");
@@ -199,45 +239,20 @@ namespace {
 static
 Dakota::LibraryEnvironment * Dakota::Opt_TPL_Test_Fixture::create_default_env(unsigned short method_name, bool finalize)
 {
-  // No input file set --> no parsing.  Could set other command line
-  // options such as restart in opts:
-  Dakota::ProgramOptions opts;
-  opts.echo_input(false);
-  opts.write_restart_file("");
+  const auto study_json = default_opt_tpl_study_json(method_name);
 
-  // delay validation/sync of the Dakota database and iterator
-  // construction to allow update after all data is populated
+  // Delay validation and construction so this helper keeps its existing
+  // lifecycle while sourcing the study from JSON/IR instead of Data* objects.
   bool check_bcast_construct = false;
 
-  // set up a Dakota instance
-  Dakota::LibraryEnvironment * p_env = new Dakota::LibraryEnvironment(MPI_COMM_WORLD, opts, check_bcast_construct);
+  Dakota::LibraryEnvironment * p_env =
+    new Dakota::LibraryEnvironment(MPI_COMM_WORLD, study_json,
+                                   check_bcast_construct);
   Dakota::LibraryEnvironment & env = *p_env;
   Dakota::ParallelLibrary& parallel_lib = env.parallel_library();
 
   // configure Dakota to throw a std::runtime_error instead of calling exit
   env.exit_mode("throw");
-
-  // Now set the various data to specify the Dakota study
-  Dakota::DataMethod   dme; Dakota::DataModel    dmo;
-  Dakota::DataVariables dv; Dakota::DataInterface di; Dakota::DataResponses dr;
-  if (parallel_lib.world_rank() == 0) {
-    // This version uses direct Data instance population.  Initial instantiation
-    // populates all the defaults.  Default Environment and Model data are used.
-    Dakota::DataMethodRep& dmr = *dme.data_rep();
-    Dakota::DataVariablesRep& dvr = *dv.data_rep();
-    Dakota::DataInterfaceRep& dir = *di.data_rep();
-    Dakota::DataResponsesRep& drr = *dr.data_rep();
-    // Set any non-default values: mimic default_input
-    dmr.methodOutput = SILENT_OUTPUT;
-    dmr.methodName = method_name;
-    dvr.numContinuousDesVars = 2;
-    dir.interfaceType = Dakota::TEST_INTERFACE;
-    dir.analysisDrivers.push_back("simple_quad");
-    drr.numObjectiveFunctions = 1;
-    drr.gradientType = "analytic";
-    drr.hessianType  = "none";
-  }
-  env.insert_nodes(dme, dmo, dv, di, dr);
 
   if( !finalize )
     return p_env;

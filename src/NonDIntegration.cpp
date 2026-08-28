@@ -26,7 +26,7 @@ namespace Dakota {
     separate nond_quadrature/nond_sparse_grid method specifications. */
 NonDIntegration::NonDIntegration(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
   NonD(problem_db, parallel_lib, model), numIntegrations(0),
-  dimPrefSpec(probDescDB.get_rv("method.nond.dimension_preference"))
+  dimPrefSpec(probDescDB.get<const RealVector>("method.nond.dimension_preference"))
   //standAloneMode(true)
 {
   /*

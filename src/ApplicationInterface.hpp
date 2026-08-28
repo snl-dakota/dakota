@@ -15,6 +15,7 @@
 #include "PRPMultiIndex.hpp"
 #include "DataMethod.hpp"
 #include <DataInterface.hpp>
+#include <memory>
 
 namespace Dakota {
 
@@ -23,7 +24,10 @@ namespace Dakota {
 
 class ParamResponsePair;
 class ActiveSet;
+class OutputManager;
 class ParallelLibrary;
+class RunOptions;
+class StudyServices;
 
 
 
@@ -51,6 +55,11 @@ public:
 
 protected:
 
+  /// constructor for DI assembly from interface-local config
+  ApplicationInterface(const IRStore& interface_store,
+                       std::shared_ptr<StudyServices> services);
+
+
   //
   //- Heading: Member functions
   //
@@ -73,6 +82,14 @@ protected:
   void serialize_threshold(size_t thresh) override;
   /// return whether interface supports synchronous or asynchronous jobs
   short interface_synchronization() const override;
+  /// estimate processor bounds for one interface evaluation level
+  IntIntPair estimate_partition_bounds(int max_eval_concurrency) const override;
+
+  ParallelLibrary* parallel_library_ptr() const override;
+  OutputManager* output_manager_ptr() const override;
+  RunOptions* run_options_ptr() const override;
+  StudyServices* study_services_ptr() const override;
+  std::shared_ptr<StudyServices> study_services() const;
 
   /// return evalCacheFlag
   bool evaluation_cache() const override;
@@ -210,9 +227,16 @@ protected:
   //- Heading: Data
   //
 
+  /// optional owned runtime state for default-constructed library services
+  /// shared runtime services for DI/library-mode construction
+  std::shared_ptr<StudyServices> sharedStudyServices;
+
   /// reference to the ParallelLibrary object used to manage MPI partitions for
   /// the concurrent evaluations and concurrent analyses parallelism levels
   ParallelLibrary& parallelLib;
+
+  /// run-phase options inherited from the resolved study services
+  RunOptions& runOptions;
 
   /// flag indicating usage of batch evaluation facilities, where a set of
   /// jobs is launched and scheduled as a unit rather than individually
@@ -288,10 +312,6 @@ private:
   bool duplication_detect(const Variables& vars, Response& response,
 			  bool asynch_flag);
 
-  /// initialize default ASV if needed; this is done at run time due
-  /// to post-construct time Response size changes.
-  void init_default_asv(size_t num_fns);
-
   // Scheduling routines employed by synchronize():
 
   /// blocking dynamic schedule of all evaluations in beforeSynchCorePRPQueue
@@ -329,9 +349,6 @@ private:
 
   /// convenience function for broadcasting an evaluation over an evalComm
   void broadcast_evaluation(const ParamResponsePair& pair);
-  /// convenience function for broadcasting an evaluation over an evalComm
-  void broadcast_evaluation(int fn_eval_id, const Variables& vars,
-			    const ActiveSet& set);
 
   /// helper function for sending sendBuffers[buff_index] to server
   void send_evaluation(PRPQueueIter& prp_it, size_t buff_index, int server_id,
@@ -499,24 +516,6 @@ private:
   /// used to manage a user request to deactivate the restart file (i.e., 
   /// insertions into write_restart).
   bool restartFileFlag;
-
-  /// SharedResponseData of associated Response
-  SharedResponseData sharedRespData;
-
-  /// type of gradients present in associated Response
-  String gradientType;
-
-  /// type of Hessians present in associated Response
-  String hessianType;
-
-  /// IDs of analytic gradients when mixed gradients present
-  IntSet gradMixedAnalyticIds;
-
-  /// IDs of analytic gradients when mixed gradients present
-  IntSet hessMixedAnalyticIds;
-
-  /// the static ASV values used when the user has selected asvControl = off
-  ShortArray defaultASV;
 
   // Failure capture settings:
 
@@ -691,7 +690,21 @@ synchronous_local_analysis(int analysis_id)
 
 inline void ApplicationInterface::
 broadcast_evaluation(const ParamResponsePair& pair)
-{ broadcast_evaluation(pair.eval_id(), pair.variables(), pair.active_set()); }
+{
+  // match bcast_e()'s in serve_evaluations_{synch,asynch,peer}
+  int fn_eval_id = pair.eval_id();
+  parallelLib.bcast_e(fn_eval_id);
+  MPIPackBuffer send_buffer(lenPRPairMessage);
+  send_buffer << pair;
+
+#ifdef MPI_DEBUG
+  Cout << "broadcast_evaluation() for eval " << fn_eval_id
+       << " with send_buffer size = " << send_buffer.size()
+       << " and ActiveSet:\n" << pair.active_set() << std::endl;
+#endif // MPI_DEBUG
+
+  parallelLib.bcast_e(send_buffer);
+}
 
 
 //inline void ApplicationInterface::clear_bookkeeping()

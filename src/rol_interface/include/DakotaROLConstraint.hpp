@@ -6,6 +6,8 @@
 #include "DakotaModel.hpp"
 #include "BoolDispatch.hpp"
 
+namespace Dakota { class ROLCallbackContext; }
+
 namespace rol_interface {
 
 struct ConstraintSet {
@@ -46,18 +48,22 @@ public:
                             const ROL::Vector<Dakota::Real>& x,
                                   Dakota::Real&              tol ) override final;
 
-  static ConstraintSet createSetFromModel( Dakota::Model& model );
+  static ConstraintSet createSetFromModel( Dakota::Model& model,
+                                      Dakota::ROLCallbackContext* context );
 
-  Constraint( BoolDispatch   isLinear, 
-              BoolDispatch   isEquality,
-              BoolDispatch   hasJacobian,
-              BoolDispatch   hasHessian,
-              Dakota::Model& model );
+  Constraint( BoolDispatch          isLinear,
+              BoolDispatch          isEquality,
+              BoolDispatch          hasJacobian,
+              BoolDispatch          hasHessian,
+              Dakota::Model&        model,
+              Dakota::ROLCallbackContext* context );
 
 private:
-  void copy_response_data();
+  void evaluateIfNeeded(const ROL::Vector<Dakota::Real>& x, short request_values);
+  void copy_response_data(short request_values);
 
   Dakota::Model& dakotaModel;
+  Dakota::ROLCallbackContext* context;
   std::size_t numOpt, numCon;
   Dakota::RealVector valueCopy;      // Stores a COPY of constraint values (not a view)
   Dakota::RealVector targetView;     // Target values are static, view is OK
@@ -69,4 +75,3 @@ private:
 } // namespace rol_interface
 
 #endif // DAKOTA_ROL_CONSTRAINT
-

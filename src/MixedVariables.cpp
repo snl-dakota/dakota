@@ -32,13 +32,13 @@ int len(const int& v) { return 1; }
 int len(const StringArray& v) { return v.size(); }
 
 const RealVector& get_rv(const ProblemDescDB& db, const char* key) {
-  return db.get_rv(key);
+  return db.get<const RealVector>(key);
 }
 const IntVector& get_iv(const ProblemDescDB& db, const char* key) {
-  return db.get_iv(key);
+  return db.get<const IntVector>(key);
 }
 const StringArray& get_sa(const ProblemDescDB& db, const char* key) {
-  return db.get_sa(key);
+  return db.get<const StringArray>(key);
 }
 
 template <typename Vec, typename Getter>

@@ -18,6 +18,11 @@
 
 namespace Dakota {
 
+class StudyServices;
+
+class IRStore;
+class OutputManager;
+
 /// Derived model class which utilizes a simulation-based application
 /// interface to map variables into responses.
 
@@ -36,6 +41,9 @@ public:
   //
 
   SimulationModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib); ///< constructor
+  SimulationModel(const IRStore& model_store, const Variables& variables,
+                  std::shared_ptr<Interface> interface, const Response& response,
+                  std::shared_ptr<StudyServices> services); ///< DI constructor
   
   /// Return the "default" or maximal ActiveSet for the model
   //ActiveSet default_active_set();

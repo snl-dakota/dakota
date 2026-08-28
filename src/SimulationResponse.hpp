@@ -17,6 +17,7 @@
 namespace Dakota {
 
 class ProblemDescDB;
+class IRStore;
 
 
 /// Container class for response functions and their derivatives.  
@@ -49,6 +50,8 @@ public:
   SimulationResponse();
   /// standard constructor built from problem description database
   SimulationResponse(const Variables& vars, const ProblemDescDB& problem_db);
+  /// DI constructor from a materialized responses IR store
+  SimulationResponse(const Variables& vars, const IRStore& responses_store);
   /// alternate constructor that shares a SharedResponseData instance
   SimulationResponse(const SharedResponseData& srd, const ActiveSet& set);
   /// alternate constructor that shares a SharedResponseData instance

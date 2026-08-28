@@ -20,11 +20,17 @@
 
 namespace Dakota {
 
+class OutputManager;
+class StudyRuntime;
+class RunOptions;
+class StudyServices;
+
 class ParallelLib;
 class ProblemDescDB;
 class Variables;
 class Response;
 class EvaluationStore;
+class IRStore;
 
 /// Base class for the iterator class hierarchy.
 
@@ -159,24 +165,24 @@ public:
   virtual void nested_response_mappings(const RealMatrix& primary_coeffs,
 					const RealMatrix& secondary_coeffs);
 
-  /// used by IteratorScheduler to set the starting data for a run
+  /// used by IteratorExecutor to set the starting data for a run
   virtual void initialize_iterator(int job_index);
-  /// used by IteratorScheduler to pack starting data for an iterator run
+  /// used by IteratorExecutor to pack starting data for an iterator run
   virtual void pack_parameters_buffer(MPIPackBuffer& send_buffer,
 				      int job_index);
-  /// used by IteratorScheduler to unpack starting data for an iterator run
+  /// used by IteratorExecutor to unpack starting data for an iterator run
   virtual void unpack_parameters_buffer(MPIUnpackBuffer& recv_buffer,
 					int job_index);
-  /// used by IteratorScheduler to unpack starting data and initialize
+  /// used by IteratorExecutor to unpack starting data and initialize
   /// an iterator run
   virtual void unpack_parameters_initialize(MPIUnpackBuffer& recv_buffer,
 					    int job_index);
-  /// used by IteratorScheduler to pack results data from an iterator run
+  /// used by IteratorExecutor to pack results data from an iterator run
   virtual void pack_results_buffer(MPIPackBuffer& send_buffer, int job_index);
-  /// used by IteratorScheduler to unpack results data from an iterator run
+  /// used by IteratorExecutor to unpack results data from an iterator run
   virtual void unpack_results_buffer(MPIUnpackBuffer& recv_buffer,
 				     int job_index);
-  /// used by IteratorScheduler to update local results arrays
+  /// used by IteratorExecutor to update local results arrays
   virtual void update_local_results(int job_index);
 
   /// return a single final iterator solution (variables)
@@ -330,6 +336,12 @@ public:
   ProblemDescDB& problem_description_db() const;
   /// return the parallel library (parallelLib)
   ParallelLibrary& parallel_library() const;
+  ParallelLibrary* parallel_library_ptr() const;
+  OutputManager* output_manager_ptr() const;
+  RunOptions* run_options_ptr() const;
+  StudyServices* study_services_ptr() const;
+  std::shared_ptr<StudyServices> study_services() const;
+  StudyRuntime study_runtime() const;
 
   /// set the method name to an enumeration value
   void method_name(unsigned short m_name);
@@ -424,6 +436,12 @@ protected:
   Iterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, 
 	   std::shared_ptr<TraitsBase> traits =
 	   std::shared_ptr<TraitsBase>(new TraitsBase()));
+  /// DI constructor using a method IR store plus study services
+  Iterator(std::shared_ptr<StudyServices> services,
+           const IRStore& method_store,
+	   std::shared_ptr<TraitsBase> traits =
+	   std::shared_ptr<TraitsBase>(new TraitsBase()));
+
 
   /// alternate constructor for base iterator classes constructed on the fly
   Iterator(unsigned short method_name, std::shared_ptr<Model> model,
@@ -481,6 +499,9 @@ protected:
   /// employing a single model instance)
   std::shared_ptr<Model> iteratedModel;
 
+  /// shared runtime services for DI/library-mode construction
+  std::shared_ptr<StudyServices> sharedStudyServices;
+
   /// class member reference to the problem description database
   /** Iterator and Model cannot use a shallow copy of ProblemDescDB
       due to circular destruction dependency (reference counts can't
@@ -489,6 +510,9 @@ protected:
 
   /// class member reference to the parallel library
   ParallelLibrary& parallelLib;
+
+  /// run-phase options used by Iterator::run and pre/post helpers
+  RunOptions& runOptions;
 
   /// the active ParallelConfiguration used by this Iterator instance
   ParConfigLIter methodPCIter;
@@ -535,10 +559,10 @@ protected:
   /// but false for on-the-fly (helper) iterators and sub-iterator use cases
   bool summaryOutputFlag;
 
-  /// reference to the global iterator results database
+  /// reference to the study-specific iterator results database
   ResultsManager& resultsDB;
 
-  /// reference to the global evaluation database
+  /// reference to the study-specific evaluation database
   EvaluationStore& evaluationsDB;
 
   /// State of evaluations DB for this iterator

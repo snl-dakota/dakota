@@ -8,11 +8,16 @@
     _______________________________________________________________________ */
 
 #include "ConcurrentMetaIterator.hpp"
+#include "StudyServices.hpp"
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
 #include "ParamResponsePair.hpp"
 #include "NonDLHSSampling.hpp"
 #include "EvaluationStore.hpp"
+#include "StudyRuntime.hpp"
+#include "IRStore.hpp"
+#include "LibraryRuntimeSupport.hpp"
+#include <stdexcept>
 
 static const char rcsId[]="@(#) $Id: ConcurrentMetaIterator.cpp 7018 2010-10-12 02:25:22Z mseldre $";
 
@@ -21,8 +26,8 @@ namespace Dakota {
 
 ConcurrentMetaIterator::ConcurrentMetaIterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
   MetaIterator(problem_db, parallel_lib),
-  numRandomJobs(probDescDB.get_int("method.concurrent.random_jobs")),
-  randomSeed(probDescDB.get_int("method.random_seed"))
+  numRandomJobs(probDescDB.get<int>("method.concurrent.random_jobs")),
+  randomSeed(probDescDB.get<int>("method.random_seed"))
 {
   // ***************************************************************************
   // TO DO: support concurrent meta-iteration for both Minimizer & Analyzer:
@@ -32,20 +37,20 @@ ConcurrentMetaIterator::ConcurrentMetaIterator(ProblemDescDB& problem_db, Parall
   // ***************************************************************************
 
   // ***************************************************************************
-  // TO DO: once NestedModel has been updated to use IteratorScheduler, consider
+  // TO DO: once NestedModel has been updated to use IteratorExecutor, consider
   // design using NestedModel lightweight ctor for Iterator concurrency.
   // Iterators define available I/O and the meta-iterator checks compatibility.
   // ***************************************************************************
 
   // pull these from the DB before any resetting of DB nodes
   const RealVector& raw_param_sets
-    = problem_db.get_rv("method.concurrent.parameter_sets");
+    = problem_db.get<const RealVector>("method.concurrent.parameter_sets");
 
   const String& sub_meth_ptr
-    = problem_db.get_string("method.sub_method_pointer");
-  const String& sub_meth_name = problem_db.get_string("method.sub_method_name");
+    = problem_db.get<const String>("method.sub_method_pointer");
+  const String& sub_meth_name = problem_db.get<const String>("method.sub_method_name");
   const String& sub_model_ptr
-    = problem_db.get_string("method.sub_model_pointer");
+    = problem_db.get<const String>("method.sub_model_pointer");
 
   // store/restore the method/model indices separately (the current state of the
   // iterator/model DB nodes may not be synched due to Model ctor recursions in
@@ -84,7 +89,7 @@ ConcurrentMetaIterator::ConcurrentMetaIterator(ProblemDescDB& problem_db, Parall
 
   // estimation of paramSetLen is dependent on the iteratedModel
   // --> concurrent iterator partitioning is pushed downstream a bit
-  maxIteratorConcurrency = iterSched.numIteratorJobs
+  maxIteratorConcurrency = iterSched.numIteratorJobs()
     = parameterSets.size() + numRandomJobs;
   if (!maxIteratorConcurrency) { // verify at least 1 job has been specified
     if (print_rank)
@@ -103,15 +108,15 @@ ConcurrentMetaIterator::ConcurrentMetaIterator(ProblemDescDB& problem_db, Parall
 ConcurrentMetaIterator::
 ConcurrentMetaIterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
   MetaIterator(problem_db, parallel_lib, model),
-  numRandomJobs(probDescDB.get_int("method.concurrent.random_jobs")),
-  randomSeed(probDescDB.get_int("method.random_seed"))
+  numRandomJobs(probDescDB.get<int>("method.concurrent.random_jobs")),
+  randomSeed(probDescDB.get<int>("method.random_seed"))
 {
   const RealVector& raw_param_sets
-    = problem_db.get_rv("method.concurrent.parameter_sets");
+    = problem_db.get<const RealVector>("method.concurrent.parameter_sets");
 
   // ensure consistency between model and any method/model pointers
-  check_model(problem_db.get_string("method.sub_method_pointer"),
-	      problem_db.get_string("method.sub_model_pointer"));
+  check_model(problem_db.get<const String>("method.sub_method_pointer"),
+	      problem_db.get<const String>("method.sub_model_pointer"));
   // For this ctor with an incoming model, we can simplify DB node assignment
   // and mirror logic in check_model()
   size_t model_index = problem_db.get_db_model_node();  // for restoration
@@ -122,7 +127,7 @@ ConcurrentMetaIterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
   // user-specified jobs
   copy_data(raw_param_sets, parameterSets, 0, paramSetLen);
 
-  maxIteratorConcurrency = iterSched.numIteratorJobs
+  maxIteratorConcurrency = iterSched.numIteratorJobs()
     = parameterSets.size() + numRandomJobs;
   if (!maxIteratorConcurrency) { // verify at least 1 job has been specified
     if (parallelLib.world_rank() == 0) // prior to lead_rank()
@@ -135,6 +140,46 @@ ConcurrentMetaIterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
   // restore list nodes
   problem_db.set_db_model_nodes(model_index);
 }
+
+
+ConcurrentMetaIterator::
+ConcurrentMetaIterator(const IRStore& method_store,
+                       std::shared_ptr<Iterator> sub_iterator,
+                       std::shared_ptr<StudyServices> services):
+  MetaIterator(std::move(services), method_store,
+               sub_iterator ? sub_iterator->iterated_model() : nullptr),
+  numRandomJobs(method_store.get<int>("concurrent.random_jobs")),
+  randomSeed(method_store.get<int>("random_seed"))
+{
+  detail::validate_services(
+    "ConcurrentMetaIterator", study_services(),
+    {detail::runtime_dependency("Iterator", sub_iterator),
+     detail::runtime_dependency("Model",
+                                sub_iterator ? sub_iterator->iterated_model() : nullptr)});
+
+  if (!sub_iterator)
+    throw std::runtime_error(
+      "ConcurrentMetaIterator requires a non-null sub_iterator in DI construction.");
+
+  if (!iteratedModel)
+    throw std::runtime_error(
+      "ConcurrentMetaIterator requires sub_iterator->iterated_model() in DI construction.");
+
+  selectedIterator = std::move(sub_iterator);
+
+  const RealVector& raw_param_sets =
+    method_store.get<RealVector>("concurrent.parameter_sets");
+
+  initialize_model();
+  copy_data(raw_param_sets, parameterSets, 0, paramSetLen);
+
+  maxIteratorConcurrency = iterSched.numIteratorJobs()
+    = parameterSets.size() + numRandomJobs;
+  if (!maxIteratorConcurrency)
+    throw std::runtime_error(
+      "ConcurrentMetaIterator requires at least one parameter set or random job.");
+}
+
 
 
 void ConcurrentMetaIterator::declare_sources() {
@@ -150,108 +195,86 @@ ConcurrentMetaIterator::~ConcurrentMetaIterator()
 
 void ConcurrentMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
 {
-  const String& sub_meth_ptr
-    = probDescDB.get_string("method.sub_method_pointer");
-  const String& sub_meth_name = probDescDB.get_string("method.sub_method_name");
-  //const String& sub_model_ptr
-  //  = probDescDB.get_string("method.sub_model_pointer");
+  bool db_backed = (&probDescDB != &dummy_db);
+  String sub_meth_ptr, sub_meth_name;
+  size_t method_index = 0, model_index = 0;
+  bool restore_method = false, restore_model = false;
+  bool lightwt_ctor = false;
 
-  // Model recursions may update method or model nodes and restoration may not
-  // occur until the recursion completes, so don't assume that method and
-  // model indices are in sync.
-  size_t method_index, model_index; // Note: _NPOS is a valid restoration value
-  bool restore_method = false, restore_model = false,
+  if (db_backed) {
+    sub_meth_ptr = probDescDB.get<const String>("method.sub_method_pointer");
+    sub_meth_name = probDescDB.get<const String>("method.sub_method_name");
     lightwt_ctor = sub_meth_ptr.empty();
-  if (lightwt_ctor) {
-    restore_model = true;
-    model_index = probDescDB.get_db_model_node(); // for restoration
-    probDescDB.set_db_model_nodes(iteratedModel->model_id());
-  }
-  else {
-    restore_method = restore_model = true;
-    method_index = probDescDB.get_db_method_node(); // for restoration
-    model_index  = probDescDB.get_db_model_node();  // for restoration
-    probDescDB.set_db_list_nodes(sub_meth_ptr);
-  }
-
-  iterSched.update(methodPCIter);
-
-  // It is not practical to estimate the evaluation concurrency without 
-  // instantiating the iterator (see, e.g., NonDPolynomialChaos), and here we
-  // have a circular dependency: we need the evaluation concurrency from the
-  // iterator to estimate the max_ppi for input to the mi_pl partition, but
-  // we want to segregate iterator construction based on the mi_pl partition.
-  // To resolve this dependency, we instantiate the iterator based on the
-  // previous parallel level and then augment it below based on the mi_pl level.
-  // We avoid repeated instantiations by the check on iterator.is_null() as well
-  // as through the lookup in problem_db_get_iterator() (method_ptr case); this
-  // requires that no calls to init_comms occur at construct time, since the
-  // mi_pl basis for this is not yet available.
-  IntIntPair ppi_pr = (lightwt_ctor) ?
-    iterSched.configure(probDescDB, sub_meth_name, selectedIterator,
-			iteratedModel) :
-    iterSched.configure(probDescDB, selectedIterator, iteratedModel);
-  iterSched.partition(maxIteratorConcurrency, ppi_pr);
-  summaryOutputFlag = iterSched.lead_rank();
-
-  // from this point on, we can specialize logic in terms of iterator servers.
-  // An idle partition need not instantiate iterators (empty selectedIterator
-  // envelope is adequate) or initialize, so return now.  A dedicated
-  // scheduler processor is managed in IteratorScheduler::init_iterator().
-  if (iterSched.iteratorServerId <= iterSched.numIteratorServers) {
-    // Instantiate the iterator
     if (lightwt_ctor) {
-      iterSched.init_iterator(sub_meth_name, selectedIterator,
-			      iteratedModel);
-      if (summaryOutputFlag && outputLevel >= VERBOSE_OUTPUT)
-	Cout << "Concurrent Iterator = " << sub_meth_name << std::endl;
+      restore_model = true;
+      model_index = probDescDB.get_db_model_node();
+      probDescDB.set_db_model_nodes(iteratedModel->model_id());
     }
     else {
-      iterSched.init_iterator(probDescDB, selectedIterator, iteratedModel);
-      if (summaryOutputFlag && outputLevel >= VERBOSE_OUTPUT)
-	Cout << "Concurrent Iterator = "
-	     << method_enum_to_string(probDescDB.get_ushort("method.algorithm"))
-	     << std::endl;
+      restore_method = restore_model = true;
+      method_index = probDescDB.get_db_method_node();
+      model_index  = probDescDB.get_db_model_node();
+      probDescDB.set_db_list_nodes(sub_meth_ptr);
     }
   }
 
-  // restore list nodes
+  if (db_backed) {
+    iterSched.update(methodPCIter);
+    IntIntPair ppi_pr = (lightwt_ctor) ?
+      iterSched.configure(probDescDB, sub_meth_name, selectedIterator,
+                          iteratedModel) :
+      iterSched.configure(probDescDB, selectedIterator, iteratedModel);
+    iterSched.partition(maxIteratorConcurrency, ppi_pr);
+    summaryOutputFlag = iterSched.lead_rank();
+
+    if (iterSched.active_server()) {
+      if (lightwt_ctor) {
+        iterSched.initialize_iterator(sub_meth_name, selectedIterator,
+                                      iteratedModel);
+        if (summaryOutputFlag && outputLevel >= VERBOSE_OUTPUT)
+          Cout << "Concurrent Iterator = " << sub_meth_name << std::endl;
+      }
+      else {
+        iterSched.initialize_iterator(probDescDB, selectedIterator, iteratedModel);
+        if (summaryOutputFlag && outputLevel >= VERBOSE_OUTPUT)
+          Cout << "Concurrent Iterator = "
+               << method_enum_to_string(probDescDB.get<unsigned short>("method.algorithm"))
+               << std::endl;
+      }
+    }
+  }
+  else {
+    iterSched.prepare_child_iterator(
+      selectedIterator, methodPCIter, maxIteratorConcurrency);
+    summaryOutputFlag = iterSched.lead_rank();
+    if (iterSched.active_server() && summaryOutputFlag &&
+        outputLevel >= VERBOSE_OUTPUT)
+      Cout << "Concurrent Iterator = "
+           << selectedIterator->method_string() << std::endl;
+  }
+
   if (restore_method) probDescDB.set_db_method_node(method_index);
   if (restore_model)  probDescDB.set_db_model_nodes(model_index);
 }
 
 
+
 void ConcurrentMetaIterator::derived_set_communicators(ParLevLIter pl_iter)
 {
-  size_t mi_pl_index = methodPCIter->mi_parallel_level_index(pl_iter) + 1;
-  iterSched.update(methodPCIter, mi_pl_index);
-  if (iterSched.iteratorServerId <= iterSched.numIteratorServers) {
-    ParLevLIter si_pl_iter
-      = methodPCIter->mi_parallel_level_iterator(mi_pl_index);
-    iterSched.set_iterator(*selectedIterator, si_pl_iter);
-  }
+  iterSched.set_child_iterator(*selectedIterator, methodPCIter, pl_iter);
 }
 
 
 void ConcurrentMetaIterator::derived_free_communicators(ParLevLIter pl_iter)
 {
-  size_t mi_pl_index = methodPCIter->mi_parallel_level_index(pl_iter) + 1;
-  iterSched.update(methodPCIter, mi_pl_index);
-  if (iterSched.iteratorServerId <= iterSched.numIteratorServers) {
-    ParLevLIter si_pl_iter
-      = methodPCIter->mi_parallel_level_iterator(mi_pl_index);
-    iterSched.free_iterator(*selectedIterator, si_pl_iter);
-  }
-
-  // deallocate the mi_pl parallelism level
-  iterSched.free_iterator_parallelism();
+  iterSched.free_child_iterator(*selectedIterator, methodPCIter, pl_iter);
 }
 
 
 IntIntPair ConcurrentMetaIterator::estimate_partition_bounds()
 {
   // Note: ConcurrentMetaIterator::derived_init_communicators() calls
-  // IteratorScheduler::configure() to estimate_partition_bounds() on the
+  // IteratorExecutor::configure() to estimate_partition_bounds() on the
   // subIterator, not the MetaIterator.  When ConcurrentMetaIterator is a
   // sub-iterator, we augment the subIterator concurrency with the MetaIterator
   // concurrency.  [Thus, this is not redundant with configure().]
@@ -259,18 +282,19 @@ IntIntPair ConcurrentMetaIterator::estimate_partition_bounds()
   // This function is already rank protected as far as partitioning has occurred
   // to this point.  However, this call may precede derived_init_communicators
   // when the ConcurrentMetaIterator is a sub-iterator.
-  iterSched.construct_sub_iterator(probDescDB, parallelLib, selectedIterator, iteratedModel,
-    probDescDB.get_string("method.sub_method_pointer"),
-    probDescDB.get_string("method.sub_method_name"),
-    probDescDB.get_string("method.sub_model_pointer"));
+  if (&probDescDB != &dummy_db)
+    iterSched.construct_sub_iterator(probDescDB, parallelLib, selectedIterator, iteratedModel,
+      probDescDB.get<const String>("method.sub_method_pointer"),
+      probDescDB.get<const String>("method.sub_method_name"),
+      probDescDB.get<const String>("method.sub_model_pointer"));
   IntIntPair min_max, si_min_max = selectedIterator->estimate_partition_bounds();
 
   // now apply scheduling data for this level (recursion is complete)
   min_max.first = ProblemDescDB::min_procs_per_level(si_min_max.first,
-    iterSched.procsPerIterator, iterSched.numIteratorServers);
+    iterSched.procsPerIterator(), iterSched.numIteratorServers());
   min_max.second = ProblemDescDB::max_procs_per_level(si_min_max.second,
-    iterSched.procsPerIterator, iterSched.numIteratorServers,
-    iterSched.iteratorScheduling, 1, false, maxIteratorConcurrency);
+    iterSched.procsPerIterator(), iterSched.numIteratorServers(),
+    iterSched.iteratorScheduling(), 1, false, maxIteratorConcurrency);
   return min_max;
 }
 
@@ -278,7 +302,7 @@ IntIntPair ConcurrentMetaIterator::estimate_partition_bounds()
 void ConcurrentMetaIterator::initialize_model()
 {
   if (methodName == PARETO_SET) {
-    paramSetLen = probDescDB.get_sizet("responses.num_objective_functions");
+    paramSetLen = iteratedModel->num_primary_fns();
     // define dummy weights to trigger model recasting in iterator construction
     // (replaced at run-time with weight sets from specification)
     if (iteratedModel->primary_response_fn_weights().empty()) {
@@ -294,24 +318,23 @@ void ConcurrentMetaIterator::initialize_model()
 
 void ConcurrentMetaIterator::pre_run()
 {
-  if (iterSched.iteratorCommRank > 0 ||
-      iterSched.iteratorServerId > iterSched.numIteratorServers)
+  if (!iterSched.iterator_comm_lead() || iterSched.idle_partition())
     return;
 
   // initialize initialPt
   if (methodName != MULTI_START)
     copy_data(ModelUtils::continuous_variables(*iteratedModel), initialPt); // view->copy
 
-  // estimate params_msg_len & results_msg_len and publish to IteratorScheduler
+  // estimate params_msg_len & results_msg_len and publish to IteratorExecutor
   int params_msg_len = 0, results_msg_len; // peer sched doesn't send params
-  if (iterSched.iteratorScheduling == DEDICATED_SCHEDULER_DYNAMIC) {
+  if (iterSched.dedicated_scheduler()) {
     // define params_msg_len
     RealVector rv(paramSetLen);
     MPIPackBuffer send_buffer;
     send_buffer << rv;
     params_msg_len = send_buffer.size();
     // define results_msg_len
-    if (iterSched.iteratorServerId == 0)// scheduler proc: init_comms not called
+    if (iterSched.scheduler_rank())// scheduler proc: init_comms not called
       iteratedModel->estimate_message_lengths();
   }
   results_msg_len = iteratedModel->message_lengths()[3];
@@ -320,8 +343,8 @@ void ConcurrentMetaIterator::pre_run()
   // -------------------------------------------------------------------------
   // Define parameterSets from the combination of user-specified & random jobs
   // -------------------------------------------------------------------------
-  if ( iterSched.iteratorServerId   == 0 ||                // ded scheduler
-       iterSched.iteratorScheduling == PEER_SCHEDULING ) { // peer server
+  if ( iterSched.scheduler_rank() ||                // ded scheduler
+       iterSched.peer_scheduling() ) { // peer server
 
     // random jobs
     if (numRandomJobs) { // random jobs specified
@@ -333,6 +356,10 @@ void ConcurrentMetaIterator::pre_run()
 	if (methodName == MULTI_START) {
 	  lower_bnds = ModelUtils::continuous_lower_bounds(*iteratedModel); // view OK
 	  upper_bnds = ModelUtils::continuous_upper_bounds(*iteratedModel); // view OK
+	  if (iterSched.lead_rank()) {
+	    Cout << "[ConcurrentMetaIterator] random-start bounds lower="
+	         << lower_bnds << " upper=" << upper_bnds << std::endl;
+	  }
 	}
 	else {
 	  lower_bnds.sizeUninitialized(paramSetLen); lower_bnds = 0.;
@@ -353,10 +380,10 @@ void ConcurrentMetaIterator::pre_run()
 	  copy_data(all_samples[i], paramSetLen, random_jobs[i]);
       }
 
-      if (iterSched.iteratorScheduling == PEER_SCHEDULING &&
-	  iterSched.numIteratorServers > 1) {
+      if (iterSched.peer_scheduling() &&
+	  iterSched.multiple_iterator_servers()) {
 	const ParallelLevel& mi_pl
-	  = methodPCIter->mi_parallel_level(iterSched.miPLIndex);
+	  = methodPCIter->mi_parallel_level(iterSched.miPLIndex());
 	// For static scheduling, bcast all random jobs over mi_intra_comm (not 
 	// necessary for dedicated-scheduler as jobs are assigned from the
 	// scheduler).
@@ -378,7 +405,7 @@ void ConcurrentMetaIterator::pre_run()
 
       // rescale (if needed) and append to parameterSets
       size_t cntr = parameterSets.size();
-      parameterSets.resize(iterSched.numIteratorJobs);
+      parameterSets.resize(iterSched.numIteratorJobs());
       for (i=0; i<numRandomJobs; ++i, ++cntr) {
         if (methodName == MULTI_START)
           parameterSets[cntr] = random_jobs[i];
@@ -405,7 +432,7 @@ void ConcurrentMetaIterator::pre_run()
 
   // all iterator schedulers bookkeep on the full results list, even if
   // only some entries are defined locally
-  prpResults.resize(iterSched.numIteratorJobs);
+  prpResults.resize(iterSched.numIteratorJobs());
 }
 
 
@@ -414,11 +441,8 @@ void ConcurrentMetaIterator::core_run()
   // For graphics data, limit to iterator server comm leaders; this is further
   // segregated within initialize_graphics(): all iterator schedulers stream
   // tabular data, but only iterator server 1 generates a graphics window.
-  if (iterSched.iteratorCommRank == 0) {
-    int server_id = iterSched.iteratorServerId;
-    if (server_id > 0 && server_id <= iterSched.numIteratorServers)
-      selectedIterator->initialize_graphics(server_id);
-  }
+  if (iterSched.graphics_server())
+    selectedIterator->initialize_graphics(iterSched.iteratorServerId());
 
   iterSched.schedule_iterators(*this, *selectedIterator);
 }

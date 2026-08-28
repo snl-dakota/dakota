@@ -27,7 +27,7 @@ namespace Dakota {
 SurrBasedGlobalMinimizer::
 SurrBasedGlobalMinimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
   SurrBasedMinimizer(problem_db, parallel_lib, model, std::shared_ptr<TraitsBase>(new SurrBasedGlobalTraits())),
-  replacePoints(probDescDB.get_bool("method.sbg.replace_points"))
+  replacePoints(probDescDB.get<bool>("method.sbg.replace_points"))
 {
   // Verify that iteratedModel is a surrogate model so that
   // approximation-related functions are defined.
@@ -56,12 +56,12 @@ SurrBasedGlobalMinimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_li
 
   // Instantiate the approximate sub-problem minimizer
   const String& approx_method_ptr
-    = probDescDB.get_string("method.sub_method_pointer");
+    = probDescDB.get<const String>("method.sub_method_pointer");
   const String& approx_method_name
-    = probDescDB.get_string("method.sub_method_name");
+    = probDescDB.get<const String>("method.sub_method_name");
   if (!approx_method_ptr.empty()) {
     // Approach 1: method spec support for approxSubProbMinimizer
-    const String& model_ptr = probDescDB.get_string("method.model_pointer");
+    const String& model_ptr = probDescDB.get<const String>("method.model_pointer");
     size_t method_index = probDescDB.get_db_method_node(); // for restoration
     probDescDB.set_db_method_node(approx_method_ptr); // method only
     // sub-problem minimizer will use shallow copy of iteratedModel
@@ -70,7 +70,7 @@ SurrBasedGlobalMinimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_li
     // suppress DB ctor default and don't output summary info
     approxSubProbMinimizer->summary_output(false);
     // verify approx method's modelPointer is empty or consistent
-    const String& am_model_ptr = probDescDB.get_string("method.model_pointer");
+    const String& am_model_ptr = probDescDB.get<const String>("method.model_pointer");
     if (!am_model_ptr.empty() && am_model_ptr != model_ptr)
       Cerr << "Warning: SBO approx_method_pointer specification includes an\n"
 	   << "         inconsistent model_pointer that will be ignored."

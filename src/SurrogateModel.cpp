@@ -25,10 +25,10 @@ namespace Dakota {
 
 SurrogateModel::SurrogateModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
   Model(problem_db, parallel_lib),
-  surrogateFnIndices(problem_db.get_szs("model.surrogate.function_indices")),
+  surrogateFnIndices(problem_db.get<const SizetSet>("model.surrogate.function_indices")),
   responseMode(DEFAULT_SURROGATE_RESP_MODE),
-  corrType(problem_db.get_short("model.surrogate.correction_type")),
-  corrOrder(problem_db.get_short("model.surrogate.correction_order")),
+  corrType(problem_db.get<short>("model.surrogate.correction_type")),
+  corrOrder(problem_db.get<short>("model.surrogate.correction_order")),
   surrModelEvalCntr(0), approxBuilds(0)
 {
   // process surrogateFnIndices. IntSets are sorted and unique.

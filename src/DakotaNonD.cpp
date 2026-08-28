@@ -11,6 +11,8 @@
 #include "DakotaNonD.hpp"
 #include "NonDLHSSampling.hpp"
 #include "ProblemDescDB.hpp"
+#include "IRStore.hpp"
+#include "LibraryRuntimeSupport.hpp"
 #include "dakota_tabular_io.hpp"
 #include "NormalRandomVariable.hpp"
 #include "ParallelLibrary.hpp"
@@ -28,18 +30,18 @@ NonD* NonD::nondInstance(NULL);
 
 NonD::NonD(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
   Analyzer(problem_db, parallel_lib, model),
-  respLevelTarget(problem_db.get_short("method.nond.response_level_target")),
+  respLevelTarget(problem_db.get<short>("method.nond.response_level_target")),
   respLevelTargetReduce(
-    problem_db.get_short("method.nond.response_level_target_reduce")),
-  requestedRespLevels(problem_db.get_rva("method.nond.response_levels")),
-  requestedProbLevels(problem_db.get_rva("method.nond.probability_levels")),
-  requestedRelLevels(problem_db.get_rva("method.nond.reliability_levels")),
+    problem_db.get<short>("method.nond.response_level_target_reduce")),
+  requestedRespLevels(problem_db.get<const RealVectorArray>("method.nond.response_levels")),
+  requestedProbLevels(problem_db.get<const RealVectorArray>("method.nond.probability_levels")),
+  requestedRelLevels(problem_db.get<const RealVectorArray>("method.nond.reliability_levels")),
   requestedGenRelLevels(
-    problem_db.get_rva("method.nond.gen_reliability_levels")),
+    problem_db.get<const RealVectorArray>("method.nond.gen_reliability_levels")),
   totalLevelRequests(0),
-  cdfFlag(problem_db.get_short("method.nond.distribution") != COMPLEMENTARY),
+  cdfFlag(problem_db.get<short>("method.nond.distribution") != COMPLEMENTARY),
   pdfOutput(false),
-  finalMomentsType(problem_db.get_short("method.nond.final_moments"))
+  finalMomentsType(problem_db.get<short>("method.nond.final_moments"))
 {
   initialize_counts();
 
@@ -65,6 +67,39 @@ NonD::NonD(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared
   if (totalLevelRequests && outputLevel >= NORMAL_OUTPUT)
     pdfOutput = true;
 }
+
+
+NonD::NonD(std::shared_ptr<StudyServices> services,
+	   const IRStore& method_store, std::shared_ptr<Model> model):
+  Analyzer(std::move(services), method_store, model),
+  respLevelTarget(method_store.get<short>("nond.response_level_target")),
+  respLevelTargetReduce(
+    method_store.get<short>("nond.response_level_target_reduce")),
+  requestedRespLevels(method_store.get<RealVectorArray>("nond.response_levels")),
+  requestedProbLevels(method_store.get<RealVectorArray>("nond.probability_levels")),
+  requestedRelLevels(method_store.get<RealVectorArray>("nond.reliability_levels")),
+  requestedGenRelLevels(
+    method_store.get<RealVectorArray>("nond.gen_reliability_levels")),
+  totalLevelRequests(0),
+  cdfFlag(method_store.get<short>("nond.distribution") != COMPLEMENTARY),
+  pdfOutput(false),
+  finalMomentsType(method_store.get<short>("nond.final_moments"))
+{
+  initialize_counts();
+  distribute_levels(requestedRespLevels);
+  distribute_levels(requestedProbLevels);
+  distribute_levels(requestedRelLevels);
+  distribute_levels(requestedGenRelLevels);
+
+  for (size_t i=0; i<numFunctions; i++)
+    totalLevelRequests += requestedRespLevels[i].length() +
+      requestedProbLevels[i].length() + requestedRelLevels[i].length() +
+      requestedGenRelLevels[i].length();
+
+  if (totalLevelRequests && outputLevel >= NORMAL_OUTPUT)
+    pdfOutput = true;
+}
+
 
 
 NonD::NonD(unsigned short method_name, std::shared_ptr<Model> model):

@@ -162,8 +162,8 @@ Test Number 4 succeeded
 <<<<< Function evaluation summary (I1): 13 total (13 new, 0 duplicate)
        obj_fn_1: 13 val (13 n, 0 d), 13 grad (13 n, 0 d), 13 Hess (13 n, 0 d)
 <<<<< Best parameters          =
-                      1.0008396107e+00 x1
-                      1.0008389994e+00 x2
+                      1.0012179105e+00 x1
+                      1.0011980668e+00 x2
 <<<<< Best objective function  =
-                      9.9245234789e-13
+                      4.2604666733e-12
 <<<<< Best evaluation ID: 653

@@ -14,9 +14,12 @@
 #include "DakotaResponse.hpp"
 #include "DigitalNet.hpp"
 #include "LDDriverAdapter.hpp"
+#include "StudyServices.hpp"
 #include "LHSDriverAdapter.hpp"
 #include "NonDSampling.hpp"
 #include "ProblemDescDB.hpp"
+#include "IRStore.hpp"
+#include "LibraryRuntimeSupport.hpp"
 #include "Rank1Lattice.hpp"
 #include "SamplerDriver.hpp"
 #include "SensAnalysisGlobal.hpp"
@@ -39,20 +42,20 @@ namespace Dakota {
     instantiation.  In this case, set_db_list_nodes has been called and
     probDescDB can be queried for settings from the method specification. */
 NonDSampling::NonDSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
-  NonD(problem_db, parallel_lib, model), seedSpec(probDescDB.get_int("method.random_seed")),
-  randomSeed(seedSpec), samplesSpec(probDescDB.get_int("method.samples")),
+  NonD(problem_db, parallel_lib, model), seedSpec(probDescDB.get<int>("method.random_seed")),
+  randomSeed(seedSpec), samplesSpec(probDescDB.get<int>("method.samples")),
   samplesRef(samplesSpec), numSamples(samplesSpec),
-  rngName(probDescDB.get_string("method.random_number_generator")),
-  sampleType(probDescDB.get_ushort("method.sample_type")), samplesIncrement(0),
-  stdRegressionCoeffs(probDescDB.get_bool("method.std_regression_coeffs")),
-  toleranceIntervalsFlag(probDescDB.get_bool("method.tolerance_intervals")),
+  rngName(probDescDB.get<const String>("method.random_number_generator")),
+  sampleType(probDescDB.get<unsigned short>("method.sample_type")), samplesIncrement(0),
+  stdRegressionCoeffs(probDescDB.get<bool>("method.std_regression_coeffs")),
+  toleranceIntervalsFlag(probDescDB.get<bool>("method.tolerance_intervals")),
   statsFlag(true), allDataFlag(false), samplingVarsMode(ACTIVE),
   sampleRanksMode(IGNORE_RANKS),
-  varyPattern(!probDescDB.get_bool("method.fixed_seed")), 
-  backfillDuplicates(probDescDB.get_bool("method.backfill")),
-  wilksFlag(probDescDB.get_bool("method.wilks")), numLHSRuns(0),
+  varyPattern(!probDescDB.get<bool>("method.fixed_seed")), 
+  backfillDuplicates(probDescDB.get<bool>("method.backfill")),
+  wilksFlag(probDescDB.get<bool>("method.wilks")), numLHSRuns(0),
   samplerDriver(
-    ( problem_db.get_ushort("method.sample_type") == SUBMETHOD_LOW_DISCREPANCY_SAMPLING ) ?
+    ( problem_db.get<unsigned short>("method.sample_type") == SUBMETHOD_LOW_DISCREPANCY_SAMPLING ) ?
     std::unique_ptr<SamplerDriver>(std::make_unique<LDDriverAdapter>(problem_db)) :
     std::unique_ptr<SamplerDriver>(std::make_unique<LHSDriverAdapter>()) )
 {
@@ -92,9 +95,9 @@ NonDSampling::NonDSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_
     }
 
     // Wilks order statistics
-    wilksOrder = probDescDB.get_ushort("method.order");
+    wilksOrder = probDescDB.get<unsigned short>("method.order");
     // Wilks interval sidedness
-    wilksSidedness = probDescDB.get_short("method.wilks.sided_interval");
+    wilksSidedness = probDescDB.get<short>("method.wilks.sided_interval");
     bool wilks_twosided = (wilksSidedness == TWO_SIDED);
 
     // Support multiple probability_levels
@@ -110,7 +113,7 @@ NonDSampling::NonDSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_
     if (wilksAlpha <= 0.0) // Assign a default if probability_levels unspecified
       wilksAlpha = 0.95;
 
-    wilksBeta = probDescDB.get_real("method.confidence_level");
+    wilksBeta = probDescDB.get<const Real>("method.confidence_level");
     if (wilksBeta <= 0.0) // Assign a default if probability_levels unspecified
       wilksBeta = 0.95;
     numSamples = compute_wilks_sample_size(wilksOrder, wilksAlpha,
@@ -119,8 +122,8 @@ NonDSampling::NonDSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_
   }
 
   if (toleranceIntervalsFlag) {
-    tiCoverage = probDescDB.get_real("method.ti_coverage");
-    tiConfidenceLevel = probDescDB.get_real("method.ti_confidence_level");
+    tiCoverage = probDescDB.get<const Real>("method.ti_coverage");
+    tiConfidenceLevel = probDescDB.get<const Real>("method.ti_confidence_level");
 
     tiNumValidSamples = 0;
   }
@@ -129,6 +132,88 @@ NonDSampling::NonDSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_
   if (numSamples) // samples is optional (default = 0)
     maxEvalConcurrency *= numSamples;
 }
+
+
+NonDSampling::NonDSampling(std::shared_ptr<StudyServices> services,
+                           const IRStore& method_store, std::shared_ptr<Model> model):
+  NonD(std::move(services), method_store, model),
+  seedSpec(method_store.get<int>("random_seed")),
+  randomSeed(seedSpec), samplesSpec(method_store.get<int>("samples")),
+  samplesRef(samplesSpec), numSamples(samplesSpec),
+  rngName(method_store.get<String>("random_number_generator")),
+  sampleType(method_store.get<unsigned short>("sample_type")), samplesIncrement(0),
+  stdRegressionCoeffs(method_store.get<bool>("std_regression_coeffs")),
+  toleranceIntervalsFlag(method_store.get<bool>("tolerance_intervals")),
+  statsFlag(true), allDataFlag(false), samplingVarsMode(ACTIVE),
+  sampleRanksMode(IGNORE_RANKS),
+  varyPattern(!method_store.get<bool>("fixed_seed")),
+  backfillDuplicates(method_store.get<bool>("backfill")),
+  wilksFlag(method_store.get<bool>("wilks")), numLHSRuns(0),
+  samplerDriver(
+    ( method_store.get<unsigned short>("sample_type") == SUBMETHOD_LOW_DISCREPANCY_SAMPLING ) ?
+    std::unique_ptr<SamplerDriver>(std::make_unique<LDDriverAdapter>(method_store)) :
+    std::unique_ptr<SamplerDriver>(std::make_unique<LHSDriverAdapter>()) )
+{
+  if (epistemicStats && totalLevelRequests) {
+    Cerr << "\nError: sampling does not support level requests for "
+	 << "analyses containing epistemic uncertainties." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+
+#ifndef HAVE_DAKOTA_SURROGATES
+  if (stdRegressionCoeffs) {
+    Cerr << "Warning: Standardized Regression Coefficients are not available"
+         << " for Dakota builds without the surrogates module enabled."
+         << " Disabling requested output.\n";
+  }
+#endif
+
+  if (wilksFlag) {
+    if (sampleType != SUBMETHOD_RANDOM) {
+      Cerr << "Error: Wilks sample sizes require use of \"random\" sample_type."
+	   << std::endl;
+      abort_handler(METHOD_ERROR);
+    }
+    if (numSamples > 0) {
+      Cerr << "Error: Cannot specify both \"samples\" and \"wilks\"."
+	   << std::endl;
+      abort_handler(METHOD_ERROR);
+    }
+    wilksOrder = method_store.get<unsigned short>("order");
+    wilksSidedness = method_store.get<short>("wilks.sided_interval");
+    bool wilks_twosided = (wilksSidedness == TWO_SIDED);
+
+    Real max_prob_level = 0.0;
+    for (size_t i=0; i<numFunctions; ++i) {
+      size_t pl_len = requestedProbLevels[i].length();
+      for (size_t j=0; j<pl_len; ++j)
+        if (requestedProbLevels[i][j] > max_prob_level)
+          max_prob_level = requestedProbLevels[i][j];
+    }
+    wilksAlpha = max_prob_level;
+    if (wilksAlpha <= 0.0)
+      wilksAlpha = 0.95;
+
+    wilksBeta = method_store.get<Real>("confidence_level");
+    if (wilksBeta <= 0.0)
+      wilksBeta = 0.95;
+    numSamples = compute_wilks_sample_size(wilksOrder, wilksAlpha,
+					   wilksBeta, wilks_twosided);
+    samplesRef = numSamples;
+  }
+
+  if (toleranceIntervalsFlag) {
+    tiCoverage = method_store.get<Real>("ti_coverage");
+    tiConfidenceLevel = method_store.get<Real>("ti_confidence_level");
+    tiNumValidSamples = 0;
+  }
+
+  if (numSamples)
+    maxEvalConcurrency *= numSamples;
+}
+
+
+
 
 
 /** This alternate constructor is used for generation and evaluation

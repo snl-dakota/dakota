@@ -1513,13 +1513,13 @@ namespace Dakota {
           // These instantiations will NOT recurse on the Model(problem_db)
           // constructor due to the use of BaseConstructor.
 
-          const String& model_type = problem_db.get_string("model.type");
+          const String& model_type = problem_db.get<const String>("model.type");
           if ( model_type == "simulation" )
             return std::make_shared<SimulationModel>(problem_db, parallel_lib);
           else if ( model_type == "nested")
             return std::make_shared<NestedModel>(problem_db, parallel_lib);
           else if ( model_type == "surrogate") {
-            const String& surr_type = problem_db.get_string("model.surrogate.type");
+            const String& surr_type = problem_db.get<const String>("model.surrogate.type");
             if (surr_type == "ensemble")
               return std::make_shared<EnsembleSurrModel>(problem_db, parallel_lib);
             else // all other surrogates (local/multipt/global) managed by DataFitSurr

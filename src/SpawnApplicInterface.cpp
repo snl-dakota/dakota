@@ -17,6 +17,7 @@
 #include <process.h>
 #include <algorithm>
 #include <thread>
+#include <utility>
 
 namespace Dakota {
 
@@ -24,6 +25,13 @@ namespace Dakota {
 SpawnApplicInterface::
 SpawnApplicInterface(const ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
 	ProcessHandleApplicInterface(problem_db, parallel_lib)
+{ }
+
+
+SpawnApplicInterface::
+SpawnApplicInterface(const IRStore& interface_store,
+                    std::shared_ptr<StudyServices> services):
+  ProcessHandleApplicInterface(interface_store, std::move(services))
 { }
 
 

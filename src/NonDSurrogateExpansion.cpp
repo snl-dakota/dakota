@@ -31,7 +31,7 @@ NonDSurrogateExpansion(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
   // Resolve settings
   // ----------------
   //short data_order,
-  //  u_space_type = probDescDB.get_short("method.nond.expansion_type");
+  //  u_space_type = probDescDB.get<short>("method.nond.expansion_type");
   //resolve_inputs(u_space_type, data_order);
 
   if (iteratedModel->model_type() != "surrogate") {
@@ -91,13 +91,13 @@ NonDSurrogateExpansion(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
   // -------------------------------
   // Construct expSampler, if needed
   // -------------------------------
-  construct_expansion_sampler(problem_db.get_ushort("method.sample_type"),
-    problem_db.get_string("method.random_number_generator"),
-    problem_db.get_ushort("method.nond.integration_refinement"),
-    problem_db.get_iv("method.nond.refinement_samples"),
-    probDescDB.get_string("method.import_approx_points_file"),
-    probDescDB.get_ushort("method.import_approx_format"), 
-    probDescDB.get_bool("method.import_approx_active_only"));
+  construct_expansion_sampler(problem_db.get<unsigned short>("method.sample_type"),
+    problem_db.get<const String>("method.random_number_generator"),
+    problem_db.get<unsigned short>("method.nond.integration_refinement"),
+    problem_db.get<const IntVector>("method.nond.refinement_samples"),
+    probDescDB.get<const String>("method.import_approx_points_file"),
+    probDescDB.get<unsigned short>("method.import_approx_format"), 
+    probDescDB.get<bool>("method.import_approx_active_only"));
 
   // update concurrency
   //if (numSamples) // samples is optional (default = 0)

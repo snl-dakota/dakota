@@ -28,6 +28,12 @@ class ActiveKey;
 
 namespace Dakota {
 
+class OutputManager;
+class StudyRuntime;
+class ParallelLibrary;
+class RunOptions;
+class StudyServices;
+
 // define special values for serve_init_mapping()
 #define FREE_COMMS 1
 #define INIT_COMMS 2
@@ -38,6 +44,7 @@ namespace Dakota {
 class Iterator;
 class ParallelLibrary;
 class ProblemDescDB;
+class IRStore;
 class Approximation;
 class SharedApproxData;
 class DiscrepancyCorrection;
@@ -136,17 +143,17 @@ public:
   /// returns true if the variables size has changed
   virtual bool finalize_mapping();
 
-  /// called from IteratorScheduler::run_iterator() for iteratorComm rank 0 to
+  /// called from IteratorExecutor::run_iterator() for iteratorComm rank 0 to
   /// terminate serve_init_mapping() on other iteratorComm processors
   virtual void stop_init_mapping(ParLevLIter pl_iter);
-  /// called from IteratorScheduler::run_iterator() for iteratorComm rank != 0
+  /// called from IteratorExecutor::run_iterator() for iteratorComm rank != 0
   /// to balance resize() calls on iteratorComm rank 0
   virtual int serve_init_mapping(ParLevLIter pl_iter);
 
-  /// called from IteratorScheduler::run_iterator() for iteratorComm rank 0 to
+  /// called from IteratorExecutor::run_iterator() for iteratorComm rank 0 to
   /// terminate serve_finalize_mapping() on other iteratorComm processors
   virtual void stop_finalize_mapping(ParLevLIter pl_iter);
-  /// called from IteratorScheduler::run_iterator() for iteratorComm rank != 0
+  /// called from IteratorExecutor::run_iterator() for iteratorComm rank != 0
   /// to balance resize() calls on iteratorComm rank 0
   virtual int serve_finalize_mapping(ParLevLIter pl_iter);
 
@@ -653,10 +660,10 @@ public:
   /// conduct function evaluation analyses (provided for library clients)
   MPI_Comm analysis_comm() const;
 
-  /// called from IteratorScheduler::init_iterator() for iteratorComm rank 0 to
+  /// called from IteratorExecutor::init_iterator() for iteratorComm rank 0 to
   /// terminate serve_init_communicators() on other iteratorComm processors
   void stop_init_communicators(ParLevLIter pl_iter);
-  /// called from IteratorScheduler::init_iterator() for iteratorComm rank != 0
+  /// called from IteratorExecutor::init_iterator() for iteratorComm rank != 0
   /// to balance init_communicators() calls on iteratorComm rank 0
   int serve_init_communicators(ParLevLIter pl_iter);
 
@@ -842,6 +849,13 @@ public:
   static void evaluate(const VariablesArray& sample_vars,
 		       Model& model, RealMatrix& resp_matrix);
 
+  ParallelLibrary* parallel_library_ptr() const;
+  OutputManager* output_manager_ptr() const;
+  RunOptions* run_options_ptr() const;
+  StudyServices* study_services_ptr() const;
+  std::shared_ptr<StudyServices> study_services() const;
+  StudyRuntime study_runtime() const;
+
   /// Return the model ID of the "innermost" model. 
   /// For all derived Models except RecastModels, return modelId.
   /// The RecastModel override returns the root_model_id() of the subModel.
@@ -850,6 +864,13 @@ public:
   virtual ActiveSet default_active_set();
 
 protected:
+
+  /// DI constructor using injected variables/response and study services.
+  Model(std::shared_ptr<StudyServices> services,
+        const IRStore& model_store,
+	const Variables& variables,
+	const Response& response);
+
 
   //
   //- Heading: Constructors
@@ -1092,6 +1113,9 @@ protected:
   /// track use of initialize_mapping() and finalize_mapping()
   bool mappingInitialized;
 
+  /// shared runtime services for DI/library-mode construction
+  std::shared_ptr<StudyServices> sharedStudyServices;
+
   /// class member reference to the problem description database
   /** Iterator and Model cannot use a shallow copy of ProblemDescDB
       due to circular destruction dependency (reference counts can't
@@ -1100,6 +1124,9 @@ protected:
 
   /// class member reference to the parallel library
   ParallelLibrary& parallelLib;
+
+  /// run-phase options inherited from the resolved study services
+  RunOptions& runOptions;
 
   /// the ParallelConfiguration node used by this Model instance
   ParConfigLIter modelPCIter;
@@ -1160,7 +1187,7 @@ protected:
   /// cached evalTag Prefix from parents to use at evaluate time
   String evalTagPrefix;
 
-  /// reference to the global evaluation database
+  /// reference to the study-specific evaluation database
   EvaluationStore &evaluationsDB;
 
 private:
@@ -1241,7 +1268,7 @@ private:
   std::map<SizetIntPair, ParConfigLIter> modelPCIterMap;
 
   /// flag for determining need to bcast the max concurrency from
-  /// init_communicators(); set from IteratorScheduler::init_iterator()
+  /// init_communicators(); set from IteratorExecutor::init_iterator()
   bool initCommsBcastFlag;
 
   /// flag for posting of graphics data within evaluate()

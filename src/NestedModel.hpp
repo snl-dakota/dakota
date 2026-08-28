@@ -17,10 +17,12 @@
 #include "DataInterface.hpp"
 #include "DataInterface.hpp"
 #include "PRPMultiIndex.hpp"
-#include "IteratorScheduler.hpp"
+#include "StudyRuntime.hpp"
 
 
 namespace Dakota {
+
+class StudyServices;
 
 class ParallelLibrary;
 
@@ -42,8 +44,8 @@ class NestedModel: public Model
   //- Heading: Friends
   //
 
-  /// protect scheduler callback functions from general access
-  friend class IteratorScheduler;
+  /// protect executor callback functions from general access
+  friend class IteratorExecutor;
 
 public:
   
@@ -52,6 +54,12 @@ public:
   //
 
   NestedModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib); ///< constructor
+  NestedModel(const IRStore& model_store,
+              std::shared_ptr<Iterator> sub_iterator,
+              std::shared_ptr<Interface> optional_interface,
+              const Variables& variables,
+              const Response& response,
+              std::shared_ptr<StudyServices> services);
 
   void declare_sources() override;
 
@@ -97,7 +105,7 @@ protected:
   /// optionalInterface and subModel
   void component_parallel_mode(short mode) override;
 
-  /// return subIteratorSched.miPLIndex
+  /// return subIteratorSched.miPLIndex()
   size_t mi_parallel_level_index() const override;
 
   /// return optionalInterface synchronization setting
@@ -175,6 +183,18 @@ private:
 
   /// init subIterator-based counts and init subModel with mapping data
   void init_sub_iterator();
+  void initialize_runtime_execution_context(int iterator_servers,
+                                            int processors_per_iterator,
+                                            short iterator_scheduling);
+  void initialize_optional_interface_state(const String& oi_resp_ptr);
+  void initialize_subordinate_study_state(std::shared_ptr<Iterator> sub_iterator,
+                                          std::shared_ptr<Model> sub_model,
+                                          const String& sub_method_pointer);
+  void initialize_variable_mappings(const StringArray& primary_var_mapping,
+                                    const StringArray& secondary_var_mapping);
+  void initialize_response_mapping_inputs(bool identity_resp_map,
+                                          const RealVector& primary_resp_mapping,
+                                          const RealVector& secondary_resp_mapping);
 
   /// convert job_index to an eval_id through subIteratorIdMap and
   /// eval_id to a subIteratorPRPQueue queue iterator
@@ -289,7 +309,13 @@ private:
   /// job queue for asynchronous execution of subIterator jobs
   PRPQueue subIteratorPRPQueue;
   /// scheduling object for concurrent iterator parallelism
-  IteratorScheduler subIteratorSched;
+  StudyRuntime::IteratorContext subIteratorSched;
+  /// configured number of iterator servers for nested execution
+  int nestedIteratorServers = 0;
+  /// configured processors per iterator for nested execution
+  int nestedProcessorsPerIterator = 0;
+  /// configured iterator scheduling mode for nested execution
+  short nestedIteratorScheduling = DEFAULT_SCHEDULING;
   /// the sub-method pointer from the nested model specification
   String subMethodPointer;
   /// subIterator job counter since last synchronize()
@@ -410,6 +436,10 @@ private:
   //
   /// whether identity response mapping is active
   bool identityRespMap = false;
+  /// raw primary response mapping values captured at construction time
+  RealVector primaryRespMappingSpec;
+  /// raw secondary response mapping values captured at construction time
+  RealVector secondaryRespMappingSpec;
   /// number of sub-iterator results functions mapped to nested model
   /// primary functions (cached for use with identity case)
   size_t subIterMappedPri = 0;
@@ -534,14 +564,13 @@ inline bool NestedModel::derived_scheduler_overload() const
   bool oi_overload = ( optionalInterface &&
 		       optionalInterface->iterator_eval_dedicated_scheduler() &&
 		       optionalInterface->multi_proc_eval() ),
-    si_overload = ( subIterator && subIteratorSched.iteratorScheduling ==
-		    DEDICATED_SCHEDULER_DYNAMIC && 
-		    subIteratorSched.procsPerIterator > 1 );
+    si_overload = ( subIterator && subIteratorSched.dedicated_scheduler() && 
+		    subIteratorSched.procsPerIterator() > 1 );
   return (oi_overload || si_overload);
 }
 
 inline size_t NestedModel::mi_parallel_level_index() const
-{ return subIteratorSched.miPLIndex; }
+{ return subIteratorSched.miPLIndex(); }
 
 
 inline void NestedModel::stop_servers()

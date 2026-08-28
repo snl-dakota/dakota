@@ -44,6 +44,10 @@ class InstructionMaterializer
 public:
   InstructionMaterializer() = default;
 
+  /// Build and return a fully materialized IR store for one block instance.
+  IRStore materialize_block(const nlohmann::json& validated_block_json,
+                            irgen::BlockType block) const;
+
   /// Build and return a fully materialized IR state.
   IRState materialize(const nlohmann::json& validated_json) const;
 
@@ -68,6 +72,8 @@ private:
 
   /// Initialize all IR keys from generated contract defaults.
   void initialize_defaults(IRState& state) const;
+  static void initialize_store_defaults(const irgen::BlockTables& tables,
+                                        IRStore& store);
 
   /// Execute instruction writes for a single block instance.
   void materialize_block(const nlohmann::json& block_json,

@@ -24,39 +24,37 @@ namespace Dakota {
 SharedC3ApproxData::
 SharedC3ApproxData(ProblemDescDB& problem_db, size_t num_vars):
   SharedApproxData(BaseConstructor(), problem_db, num_vars),
-  respScaling(problem_db.get_bool("model.surrogate.response_scaling")),
-  kickOrder(problem_db.get_ushort("model.c3function_train.kick_order")),
-  maxOrder(problem_db.get_ushort("model.c3function_train.max_order")),
-  adaptOrder(problem_db.get_bool("model.c3function_train.adapt_order")),
-  startRank(problem_db.get_sizet("model.c3function_train.start_rank")),
-  kickRank(problem_db.get_sizet("model.c3function_train.kick_rank")),
-  maxRank(problem_db.get_sizet("model.c3function_train.max_rank")),
-  adaptRank(problem_db.get_bool("model.c3function_train.adapt_rank")),
-  regressType(problem_db.get_short("model.surrogate.regression_type")),
-  regressRegParam(problem_db.get_real("model.surrogate.regression_penalty")),
-  solverTol(problem_db.get_real("model.c3function_train.solver_tolerance")),
+  respScaling(problem_db.get<bool>("model.surrogate.response_scaling")),
+  kickOrder(problem_db.get<unsigned short>("model.c3function_train.kick_order")),
+  maxOrder(problem_db.get<unsigned short>("model.c3function_train.max_order")),
+  adaptOrder(problem_db.get<bool>("model.c3function_train.adapt_order")),
+  startRank(problem_db.get<size_t>("model.c3function_train.start_rank")),
+  kickRank(problem_db.get<size_t>("model.c3function_train.kick_rank")),
+  maxRank(problem_db.get<size_t>("model.c3function_train.max_rank")),
+  adaptRank(problem_db.get<bool>("model.c3function_train.adapt_rank")),
+  regressType(problem_db.get<short>("model.surrogate.regression_type")),
+  regressRegParam(problem_db.get<const Real>("model.surrogate.regression_penalty")),
+  solverTol(problem_db.get<const Real>("model.c3function_train.solver_tolerance")),
   solverRoundingTol(
-    problem_db.get_real("model.c3function_train.solver_rounding_tolerance")),
+    problem_db.get<const Real>("model.c3function_train.solver_rounding_tolerance")),
   statsRoundingTol(
-    problem_db.get_real("model.c3function_train.stats_rounding_tolerance")),
-  maxSolverIterations(problem_db.get_sizet("model.max_solver_iterations")),
+    problem_db.get<const Real>("model.c3function_train.stats_rounding_tolerance")),
+  maxSolverIterations(problem_db.get<size_t>("model.max_solver_iterations")),
   crossMaxIter(
-    problem_db.get_int("model.c3function_train.max_cross_iterations")),
+    problem_db.get<int>("model.c3function_train.max_cross_iterations")),
   //adaptConstruct(false),
   c3AdvancementType(NO_C3_ADVANCEMENT),
-  maxCVRankCandidates(problem_db.get_sizet(
-    "model.c3function_train.cross_validation.max_rank_candidates")),
-  maxCVOrderCandidates(problem_db.get_ushort(
-    "model.c3function_train.cross_validation.max_order_candidates"))
+  maxCVRankCandidates(problem_db.get<size_t>("model.c3function_train.cross_validation.max_rank_candidates")),
+  maxCVOrderCandidates(problem_db.get<unsigned short>("model.c3function_train.cross_validation.max_order_candidates"))
 {
   // This ctor used for user-spec of DataFitSurrModel (surrogate global FT
   // used by generic surrogate-based UQ in NonDSurrogateExpansion)
 
   RealVector dim_pref_spec; // isotropic for now, prior to XML support
   unsigned short start_o
-    = problem_db.get_ushort("model.c3function_train.start_order");
+    = problem_db.get<unsigned short>("model.c3function_train.start_order");
   Pecos::dimension_preference_to_anisotropic_order(start_o,
-    dim_pref_spec,//problem_db.get_rv("model.dimension_preference"),
+    dim_pref_spec,//problem_db.get<const RealVector>("model.dimension_preference"),
     numVars, startOrders);
 
   multiApproxOpts = multi_approx_opts_alloc(num_vars);

@@ -8,6 +8,7 @@
     _______________________________________________________________________ */
 
 #include "DakotaResponse.hpp"
+#include "IRStore.hpp"
 #include "SimulationResponse.hpp"
 #include "ExperimentResponse.hpp"
 #include "DakotaVariables.hpp"
@@ -16,6 +17,7 @@
 #include "JSONResultsParser.hpp"
 #include <algorithm>
 #include <sstream>
+#include <stdexcept>
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/serialization/vector.hpp>
@@ -26,6 +28,208 @@ static const char rcsId[]="@(#) $Id: DakotaResponse.cpp 7029 2010-10-22 00:17:02
 BOOST_CLASS_EXPORT(Dakota::Response)
 
 namespace Dakota {
+
+namespace {
+
+Response::GradientType to_gradient_type(const String& value)
+{
+  if (value == "none")      return Response::GradientType::None;
+  if (value == "analytic")  return Response::GradientType::Analytic;
+  if (value == "numerical") return Response::GradientType::Numerical;
+  if (value == "mixed")     return Response::GradientType::Mixed;
+  throw std::runtime_error("Unknown responses.gradient_type value: " + value);
+}
+
+Response::HessianType to_hessian_type(const String& value)
+{
+  if (value == "none")      return Response::HessianType::None;
+  if (value == "analytic")  return Response::HessianType::Analytic;
+  if (value == "numerical") return Response::HessianType::Numerical;
+  if (value == "mixed")     return Response::HessianType::Mixed;
+  if (value == "quasi")     return Response::HessianType::Quasi;
+  throw std::runtime_error("Unknown responses.hessian_type value: " + value);
+}
+
+Response::MethodSource to_method_source(const String& value)
+{
+  if (value.empty() || value == "dakota")
+    return Response::MethodSource::Dakota;
+  if (value == "vendor")
+    return Response::MethodSource::Vendor;
+  throw std::runtime_error("Unknown responses.method_source value: " + value);
+}
+
+Response::IntervalType to_interval_type(const String& value)
+{
+  if (value.empty() || value == "forward")
+    return Response::IntervalType::Forward;
+  if (value == "central")
+    return Response::IntervalType::Central;
+  throw std::runtime_error("Unknown responses.interval_type value: " + value);
+}
+
+Response::StepType to_step_type(const String& value, const char* key)
+{
+  if (value.empty() || value == "relative")
+    return Response::StepType::Relative;
+  if (value == "absolute")
+    return Response::StepType::Absolute;
+  if (value == "bounds")
+    return Response::StepType::Bounds;
+  throw std::runtime_error("Unknown " + String(key) + " value: " + value);
+}
+
+Response::QuasiHessianType to_quasi_hessian_type(const String& value)
+{
+  if (value.empty())             return Response::QuasiHessianType::None;
+  if (value == "bfgs")           return Response::QuasiHessianType::BFGS;
+  if (value == "damped_bfgs")    return Response::QuasiHessianType::DampedBFGS;
+  if (value == "sr1")            return Response::QuasiHessianType::SR1;
+  throw std::runtime_error("Unknown responses.quasi_hessian_type value: " + value);
+}
+
+Response::GradientConfig build_gradient_config(const ProblemDescDB& problem_db)
+{
+  Response::GradientConfig cfg;
+  cfg.type = to_gradient_type(problem_db.get<const String>("responses.gradient_type"));
+  cfg.method_source =
+    to_method_source(problem_db.get<const String>("responses.method_source"));
+  cfg.interval_type =
+    to_interval_type(problem_db.get<const String>("responses.interval_type"));
+  cfg.fd_step_size = problem_db.get<const RealVector>("responses.fd_gradient_step_size");
+  cfg.fd_step_type = to_step_type(
+    problem_db.get<const String>("responses.fd_gradient_step_type"),
+    "responses.fd_gradient_step_type");
+  cfg.id_analytic = problem_db.get<const IntSet>("responses.gradients.mixed.id_analytic");
+  cfg.id_numerical = problem_db.get<const IntSet>("responses.gradients.mixed.id_numerical");
+  cfg.ignore_bounds = problem_db.get<bool>("responses.ignore_bounds");
+  return cfg;
+}
+
+Response::GradientConfig build_gradient_config(const IRStore& responses_store)
+{
+  Response::GradientConfig cfg;
+  cfg.type = to_gradient_type(responses_store.get<String>("gradient_type"));
+  cfg.method_source =
+    to_method_source(responses_store.get<String>("method_source"));
+  cfg.interval_type =
+    to_interval_type(responses_store.get<String>("interval_type"));
+  cfg.fd_step_size = responses_store.get<RealVector>("fd_gradient_step_size");
+  cfg.fd_step_type = to_step_type(
+    responses_store.get<String>("fd_gradient_step_type"),
+    "responses.fd_gradient_step_type");
+  cfg.id_analytic =
+    responses_store.get<IntSet>("gradients.mixed.id_analytic");
+  cfg.id_numerical =
+    responses_store.get<IntSet>("gradients.mixed.id_numerical");
+  cfg.ignore_bounds = responses_store.get<bool>("ignore_bounds");
+  return cfg;
+}
+
+Response::HessianConfig build_hessian_config(const ProblemDescDB& problem_db)
+{
+  Response::HessianConfig cfg;
+  cfg.type = to_hessian_type(problem_db.get<const String>("responses.hessian_type"));
+  cfg.quasi_type = to_quasi_hessian_type(
+    problem_db.get<const String>("responses.quasi_hessian_type"));
+  cfg.interval_type = problem_db.get<bool>("responses.central_hess") ?
+    Response::IntervalType::Central : Response::IntervalType::Forward;
+  cfg.fd_step_size = problem_db.get<const RealVector>("responses.fd_hessian_step_size");
+  cfg.fd_step_type = to_step_type(
+    problem_db.get<const String>("responses.fd_hessian_step_type"),
+    "responses.fd_hessian_step_type");
+  cfg.id_analytic = problem_db.get<const IntSet>("responses.hessians.mixed.id_analytic");
+  cfg.id_numerical = problem_db.get<const IntSet>("responses.hessians.mixed.id_numerical");
+  cfg.id_quasi = problem_db.get<const IntSet>("responses.hessians.mixed.id_quasi");
+  return cfg;
+}
+
+Response::HessianConfig build_hessian_config(const IRStore& responses_store)
+{
+  Response::HessianConfig cfg;
+  cfg.type = to_hessian_type(responses_store.get<String>("hessian_type"));
+  cfg.quasi_type = to_quasi_hessian_type(
+    responses_store.get<String>("quasi_hessian_type"));
+  cfg.interval_type = responses_store.get<bool>("central_hess") ?
+    Response::IntervalType::Central : Response::IntervalType::Forward;
+  cfg.fd_step_size = responses_store.get<RealVector>("fd_hessian_step_size");
+  cfg.fd_step_type = to_step_type(
+    responses_store.get<String>("fd_hessian_step_type"),
+    "responses.fd_hessian_step_type");
+  cfg.id_analytic =
+    responses_store.get<IntSet>("hessians.mixed.id_analytic");
+  cfg.id_numerical =
+    responses_store.get<IntSet>("hessians.mixed.id_numerical");
+  cfg.id_quasi = responses_store.get<IntSet>("hessians.mixed.id_quasi");
+  return cfg;
+}
+
+RealVector build_primary_response_fn_weights(const SharedResponseData& srd,
+                                             const RealVector& raw_weights)
+{
+  RealVector expanded_weights;
+  expand_for_fields_sdv(srd, raw_weights, "primary response weights", false,
+                        expanded_weights);
+  return expanded_weights;
+}
+
+RealVector build_primary_response_fn_weights(const ProblemDescDB& problem_db,
+                                             const SharedResponseData& srd)
+{
+  return build_primary_response_fn_weights(
+    srd, problem_db.get<const RealVector>("responses.primary_response_fn_weights"));
+}
+
+RealVector build_primary_response_fn_weights(const IRStore& responses_store,
+                                             const SharedResponseData& srd)
+{
+  return build_primary_response_fn_weights(
+    srd, responses_store.get<RealVector>("primary_response_fn_weights"));
+}
+
+BoolDeque build_primary_response_fn_sense(const SharedResponseData& srd,
+                                          const StringArray& raw_sense)
+{
+  BoolDeque sense;
+
+  if (raw_sense.empty())
+    return sense;
+
+  size_t num_sense = raw_sense.size();
+  size_t num_primary = srd.num_primary_functions();
+  sense.resize(num_primary);
+
+  if (num_sense == num_primary) {
+    for (size_t i = 0; i < num_primary; ++i)
+      sense[i] = strbegins(strtolower(raw_sense[i]), "max");
+  }
+  else if (num_sense == 1) {
+    sense.assign(num_primary, strbegins(strtolower(raw_sense[0]), "max"));
+  }
+  else {
+    Cerr << "Error: wrong length in sense array.  Expected 0, 1, or "
+         << num_primary << " but saw " << num_sense << "." << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+
+  return sense;
+}
+
+BoolDeque build_primary_response_fn_sense(const ProblemDescDB& problem_db,
+                                          const SharedResponseData& srd)
+{
+  return build_primary_response_fn_sense(
+    srd, problem_db.get<const StringArray>("responses.primary_response_fn_sense"));
+}
+
+BoolDeque build_primary_response_fn_sense(const IRStore& responses_store,
+                                          const SharedResponseData& srd)
+{
+  return build_primary_response_fn_sense(
+    srd, responses_store.get<StringArray>("primary_response_fn_sense"));
+}
+
+} // namespace
 
   const Response& Dakota::Response::get_response(ProblemDescDB& problem_db, short type, const Variables& vars) {
 
@@ -80,7 +284,11 @@ namespace Dakota {
 Response::
 Response(BaseConstructor, const Variables& vars,
 	 const ProblemDescDB& problem_db):
-  sharedRespData(problem_db)
+  sharedRespData(problem_db),
+  gradientConfig(build_gradient_config(problem_db)),
+  hessianConfig(build_hessian_config(problem_db)),
+  primaryRespFnWts(build_primary_response_fn_weights(problem_db, sharedRespData)),
+  primaryRespFnSense(build_primary_response_fn_sense(problem_db, sharedRespData))
 {
   // the derivative arrays must accomodate either active or inactive variables,
   // but the default is active variables.  Derivative arrays are resized if a
@@ -89,8 +297,8 @@ Response(BaseConstructor, const Variables& vars,
 
   // Resize & initialize response data
   // Conserve memory by checking DB info prior to sizing grad/hessian arrays
-  bool grad_flag = (problem_db.get_string("responses.gradient_type") != "none");
-  bool hess_flag = (problem_db.get_string("responses.hessian_type")  != "none");
+  bool grad_flag = (gradientConfig.type != GradientType::None);
+  bool hess_flag = (hessianConfig.type  != HessianType::None);
   functionValues.size(num_fns); // init to 0
   short asv_value = 1;
   if (grad_flag) {
@@ -111,10 +319,10 @@ Response(BaseConstructor, const Variables& vars,
   responseActiveSet.request_vector(asv);
   responseActiveSet.derivative_vector(vars.continuous_variable_ids());
 
-  if (problem_db.get_bool("responses.read_field_coordinates")) {
+  if (problem_db.get<bool>("responses.read_field_coordinates")) {
     size_t num_fields = shared_data().num_field_response_groups(); 
     const StringArray& field_labels = shared_data().field_group_labels();
-    std::filesystem::path data_path_prefix = problem_db.get_string("responses.data_directory");
+    std::filesystem::path data_path_prefix = problem_db.get<const String>("responses.data_directory");
 
     for (size_t field_index = 0; field_index < num_fields; ++field_index) {
       const String& field_name = field_labels[field_index];
@@ -126,6 +334,60 @@ Response(BaseConstructor, const Variables& vars,
     //Cout << "coord_file " << coord_file << " coord_values:" << coord_values;
         field_coords(coord_values,field_index);
       }  
+    }
+  }
+
+  metaData.resize(sharedRespData.metadata_labels().size());
+}
+
+
+Response::
+Response(BaseConstructor, const Variables& vars,
+         const IRStore& responses_store):
+  sharedRespData(responses_store),
+  gradientConfig(build_gradient_config(responses_store)),
+  hessianConfig(build_hessian_config(responses_store)),
+  primaryRespFnWts(build_primary_response_fn_weights(responses_store,
+                                                     sharedRespData)),
+  primaryRespFnSense(build_primary_response_fn_sense(responses_store,
+                                                     sharedRespData))
+{
+  size_t num_params = vars.cv(), num_fns = sharedRespData.num_functions();
+
+  bool grad_flag = (gradientConfig.type != GradientType::None);
+  bool hess_flag = (hessianConfig.type  != HessianType::None);
+  functionValues.size(num_fns);
+  short asv_value = 1;
+  if (grad_flag) {
+    asv_value |= 2;
+    functionGradients.shape(num_params, num_fns);
+  }
+  if (hess_flag) {
+    asv_value |= 4;
+    functionHessians.resize(num_fns);
+    for (size_t i=0; i<num_fns; i++)
+      functionHessians[i].shape(num_params);
+  }
+
+  ShortArray asv(num_fns, asv_value);
+  responseActiveSet.request_vector(asv);
+  responseActiveSet.derivative_vector(vars.continuous_variable_ids());
+
+  if (responses_store.get<bool>("read_field_coordinates")) {
+    size_t num_fields = shared_data().num_field_response_groups();
+    const StringArray& field_labels = shared_data().field_group_labels();
+    std::filesystem::path data_path_prefix =
+      responses_store.get<String>("data_directory");
+
+    for (size_t field_index = 0; field_index < num_fields; ++field_index) {
+      const String& field_name = field_labels[field_index];
+      std::string coord_file = field_name + ".coords";
+      std::filesystem::path coord_path_and_file = data_path_prefix / coord_file;
+      if (std::filesystem::is_regular_file(coord_path_and_file)) {
+        RealMatrix coord_values;
+        read_coord_values(coord_path_and_file.string(), coord_values);
+        field_coords(coord_values, field_index);
+      }
     }
   }
 
@@ -190,6 +452,14 @@ Response(short type, const Variables& vars, const ProblemDescDB& problem_db):
   responseRep(get_response(type, vars, problem_db))
 {
   if (!responseRep) // bad type or insufficient memory
+    abort_handler(-1);
+}
+
+
+Response::Response(const IRStore& responses_store, const Variables& vars):
+  responseRep(get_response(SIMULATION_RESPONSE, vars, responses_store))
+{
+  if (!responseRep)
     abort_handler(-1);
 }
 
@@ -267,6 +537,25 @@ get_response(short type, const Variables& vars,
   default:
     Cerr << "Response type " << type << " not currently supported in derived "
 	 << "Response classes." << std::endl;
+    return std::shared_ptr<Response>(); break;
+  }
+}
+
+
+std::shared_ptr<Response> Response::
+get_response(short type, const Variables& vars,
+             const IRStore& responses_store) const
+{
+  switch (type) {
+  case SIMULATION_RESPONSE:
+    return std::make_shared<SimulationResponse>(vars, responses_store); break;
+  case BASE_RESPONSE:
+    return std::shared_ptr<Response>(
+      new Response(BaseConstructor(), vars, responses_store));
+    break;
+  default:
+    Cerr << "Response type " << type << " not currently supported in IRStore "
+         << "Response construction." << std::endl;
     return std::shared_ptr<Response>(); break;
   }
 }
@@ -374,12 +663,16 @@ Response Response::copy(bool deep_srd) const
 
 void Response::copy_rep(std::shared_ptr<Response> source_resp_rep)
 {
-  functionValues    = source_resp_rep->functionValues;
-  functionGradients = source_resp_rep->functionGradients;
-  functionHessians  = source_resp_rep->functionHessians;
-  fieldCoords       = source_resp_rep->fieldCoords;
-  responseActiveSet = source_resp_rep->responseActiveSet;
-  metaData          = source_resp_rep->metaData;
+  gradientConfig     = source_resp_rep->gradientConfig;
+  hessianConfig      = source_resp_rep->hessianConfig;
+  primaryRespFnWts   = source_resp_rep->primaryRespFnWts;
+  primaryRespFnSense = source_resp_rep->primaryRespFnSense;
+  functionValues     = source_resp_rep->functionValues;
+  functionGradients  = source_resp_rep->functionGradients;
+  functionHessians   = source_resp_rep->functionHessians;
+  fieldCoords        = source_resp_rep->fieldCoords;
+  responseActiveSet  = source_resp_rep->responseActiveSet;
+  metaData           = source_resp_rep->metaData;
 }
 
 

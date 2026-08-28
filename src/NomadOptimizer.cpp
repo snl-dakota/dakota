@@ -33,68 +33,68 @@ NomadOptimizer::NomadOptimizer(ProblemDescDB& problem_db, ParallelLibrary& paral
   Optimizer(problem_db, parallel_lib, model, std::shared_ptr<TraitsBase>(new NomadTraits()))
 {     
   // Set initial mesh size
-  initMesh = probDescDB.get_real("method.mesh_adaptive_search.initial_delta");
+  initMesh = probDescDB.get<const Real>("method.mesh_adaptive_search.initial_delta");
 
   // Set minimum mesh size
-  minMesh = probDescDB.get_real("method.mesh_adaptive_search.variable_tolerance");
+  minMesh = probDescDB.get<const Real>("method.mesh_adaptive_search.variable_tolerance");
 
   // Set Rnd Seed
-  randomSeed = probDescDB.get_int("method.random_seed");
+  randomSeed = probDescDB.get<int>("method.random_seed");
           
   // Set Max # of BB Evaluations
-  //maxBlackBoxEvals = probDescDB.get_sizet("method.max_function_evaluations");
+  //maxBlackBoxEvals = probDescDB.get<size_t>("method.max_function_evaluations");
           
   // STATS_FILE -- File Output    
   outputFormat = 
-    probDescDB.get_string("method.mesh_adaptive_search.display_format");
+    probDescDB.get<const String>("method.mesh_adaptive_search.display_format");
 
   // DISPLAY_ALL_EVAL -- If set, shows all evaluation points during
   // Outputs, instead of just improvements
   displayAll = 
-    probDescDB.get_bool("method.mesh_adaptive_search.display_all_evaluations");
+    probDescDB.get<bool>("method.mesh_adaptive_search.display_all_evaluations");
      
   // Expected precision of the function.  Any differences less than
   // this are noise.
-  epsilon = probDescDB.get_real("method.function_precision");
+  epsilon = probDescDB.get<const Real>("method.function_precision");
 
   // Maximum number of iterations.
-  //maxIterations = probDescDB.get_sizet("method.max_iterations");
+  //maxIterations = probDescDB.get<size_t>("method.max_iterations");
           
   // VNS = Variable Neighbor Search, it is used to escape local minima
   // if VNS >0.0, the NOMAD Parameter must be set with a Real number.
   vns = 
-    probDescDB.get_real("method.mesh_adaptive_search.variable_neighborhood_search");
+    probDescDB.get<const Real>("method.mesh_adaptive_search.variable_neighborhood_search");
 
   // Number of dimensions up to which should be perturbed (according
   // to adjacency matrices) to determine categorical neighbors.
-  numHops = probDescDB.get_int("method.mesh_adaptive_search.neighbor_order");
+  numHops = probDescDB.get<int>("method.mesh_adaptive_search.neighbor_order");
           
   // Set the History File, which will contain all the evaluations history
   historyFile =  
-    probDescDB.get_string("method.mesh_adaptive_search.history_file"); 
+    probDescDB.get<const String>("method.mesh_adaptive_search.history_file"); 
 
   // Identify which integer set variables are categorical.
   discreteSetIntCat = 
-    probDescDB.get_ba("variables.discrete_design_set_int.categorical");
+    probDescDB.get<const BitArray>("variables.discrete_design_set_int.categorical");
 
   // Identify which real set variables are categorical.
   discreteSetRealCat = 
-    probDescDB.get_ba("variables.discrete_design_set_real.categorical");
+    probDescDB.get<const BitArray>("variables.discrete_design_set_real.categorical");
 
   // Adjacency matrices for integer categorical variables.
   discreteSetIntAdj = 
-    probDescDB.get_rma("variables.discrete_design_set_int.adjacency_matrix");
+    probDescDB.get<RealMatrixArray>("variables.discrete_design_set_int.adjacency_matrix");
 
   // Adjacency matrices for real categorical variables.
   discreteSetRealAdj = 
-    probDescDB.get_rma("variables.discrete_design_set_real.adjacency_matrix");
+    probDescDB.get<RealMatrixArray>("variables.discrete_design_set_real.adjacency_matrix");
 
   // Adjacency matrices for string variables.
   discreteSetStrAdj = 
-    probDescDB.get_rma("variables.discrete_design_set_str.adjacency_matrix");
+    probDescDB.get<RealMatrixArray>("variables.discrete_design_set_str.adjacency_matrix");
 
   // Definition for how to use surrogate model.
-  useSurrogate = probDescDB.get_string("method.mesh_adaptive_search.use_surrogate");
+  useSurrogate = probDescDB.get<const String>("method.mesh_adaptive_search.use_surrogate");
 }
 
 NomadOptimizer::NomadOptimizer(std::shared_ptr<Model> model):

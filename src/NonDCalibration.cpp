@@ -21,8 +21,8 @@ namespace Dakota {
     probDescDB can be queried for settings from the method specification. */
 NonDCalibration::NonDCalibration(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
   NonD(problem_db, parallel_lib, model),
-  calibrationData(probDescDB.get_bool("responses.calibration_data") ||
-    !probDescDB.get_string("responses.scalar_data_filename").empty()),
+  calibrationData(probDescDB.get<bool>("responses.calibration_data") ||
+    !probDescDB.get<const String>("responses.scalar_data_filename").empty()),
   expData(problem_db, iteratedModel->current_response().shared_data(), 
 	  outputLevel)
 { 

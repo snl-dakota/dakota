@@ -22,9 +22,9 @@ namespace Dakota {
 
 NonDLHSInterval::NonDLHSInterval(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
   NonDInterval(problem_db, parallel_lib, model),
-  seedSpec(probDescDB.get_int("method.random_seed")),
-  numSamples(probDescDB.get_int("method.samples")),
-  rngName(probDescDB.get_string("method.random_number_generator"))
+  seedSpec(probDescDB.get<int>("method.random_seed")),
+  numSamples(probDescDB.get<int>("method.samples")),
+  rngName(probDescDB.get<const String>("method.random_number_generator"))
 {
   // if the user does not specify the number of samples, 
   // perform at least 10000 to get accurate assessments of belief and plaus.

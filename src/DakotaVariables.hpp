@@ -15,10 +15,13 @@
 #include "SharedVariablesData.hpp"
 #include "dakota_data_io.hpp"
 
+namespace Pecos { class MultivariateDistribution; }
+
 namespace Dakota {
 
 // forward declarations
 class ProblemDescDB;
+class IRStore;
 class MPIPackBuffer;
 class MPIUnpackBuffer;
 
@@ -158,6 +161,15 @@ private:
   /// hash_value
   friend std::size_t hash_value(const Variables& vars);
 
+  /// initialize a multivariate distribution from Variables-owned config
+  friend void initialize_multivariate_distribution_from_variables(
+    const Variables& vars, Pecos::MultivariateDistribution& mv_dist,
+    bool active_only);
+  /// initialize multivariate distribution parameters from Variables-owned config
+  friend void initialize_distribution_parameters_from_variables(
+    const Variables& vars, Pecos::MultivariateDistribution& mv_dist,
+    bool active_only);
+
 public:
 
   //
@@ -169,6 +181,8 @@ public:
   /// standard constructor (explicit disallows its use for implicit
   /// type conversion)
   explicit Variables(const ProblemDescDB& problem_db);
+  /// DI constructor from a materialized variables IR store
+  explicit Variables(const IRStore& variables_store);
   /// alternate constructor for instantiations on the fly (explicit
   /// disallows its use for implicit type conversion)
   explicit Variables(const SharedVariablesData& svd);
@@ -591,6 +605,7 @@ public:
   const ShortShortPair& view() const;
   /// defines variablesView from problem_db attributes
   ShortShortPair get_view(const ProblemDescDB& problem_db) const;
+  ShortShortPair get_view(const IRStore& variables_store) const;
   /// overrides the active view
   void active_view(short view1);
   /// sets the inactive view based on higher level (nested) context
@@ -604,6 +619,9 @@ public:
 
   /// function to check variablesRep (does this envelope contain a letter)
   bool is_null() const;
+
+  /// return DI-backed variables configuration when available
+  const std::shared_ptr<IRStore>& variables_store_ptr() const;
 
 protected:
 
@@ -647,6 +665,9 @@ protected:
   StringMultiArray allDiscreteStringVars;
   /// array combining all of the discrete real variables
   RealVector allDiscreteRealVars;
+
+  /// temporary storage of materialized variables config for DI helpers
+  std::shared_ptr<IRStore> variablesStore;
 
   //
   //- Heading: Data views
@@ -716,6 +737,14 @@ private:
   std::shared_ptr<Variables> variablesRep;
 };
 
+void initialize_multivariate_distribution_from_variables(
+  const Variables& vars, Pecos::MultivariateDistribution& mv_dist,
+  bool active_only = false);
+
+void initialize_distribution_parameters_from_variables(
+  const Variables& vars, Pecos::MultivariateDistribution& mv_dist,
+  bool active_only = false);
+
 
 inline const SharedVariablesData& Variables::shared_data() const
 { return (variablesRep) ? variablesRep->sharedVarsData : sharedVarsData; }
@@ -723,6 +752,12 @@ inline const SharedVariablesData& Variables::shared_data() const
 
 inline SharedVariablesData& Variables::shared_data()
 { return (variablesRep) ? variablesRep->sharedVarsData : sharedVarsData; }
+
+
+inline const std::shared_ptr<IRStore>& Variables::variables_store_ptr() const
+{
+  return (variablesRep) ? variablesRep->variablesStore : variablesStore;
+}
 
 
 // nonvirtual functions can access letter attributes directly (only need to fwd

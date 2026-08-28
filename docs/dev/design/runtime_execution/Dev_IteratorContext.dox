@@ -1,0 +1,80 @@
+namespace Dakota {
+
+/** \page IteratorContextDesign IteratorContext Design Intent
+
+\section IteratorContextPurpose Purpose
+
+IteratorContext exists to package the runtime execution state for one
+subordinate iterator relationship. It is the object stored by components
+such as NestedModel and MetaIterator when they need to manage the execution
+of a child iterator.
+
+Its purpose is not to define what the child iterator means. Its purpose is
+to remember how that child iterator should be configured and executed in the
+current runtime environment.
+
+\section IteratorContextResponsibilities Responsibilities
+
+IteratorContext is responsible for carrying the execution state that must be
+preserved across communicator lifecycle phases and execution phases.
+Examples include partitioning-related state, scheduling mode, server
+identity, active/idle rank role, and the executor configuration associated
+with the subordinate iterator.
+
+It provides the call surface used by orchestration components during the
+lifecycle of subordinate execution. In current code this includes calls such
+as update(), configure(), partition(), initialize_iterator(),
+set_iterator(), free_iterator(), execute_iterator(), and
+schedule_iterators().
+
+This lets callers such as NestedModel keep ownership of semantic timing and
+control flow while delegating the mechanics of subordinate execution to a
+single helper object.
+
+\section IteratorContextStable Stable Intent
+
+The stable design intent is:
+
+<ul>
+<li>A component that owns a subordinate iterator should store a reusable
+execution helper rather than re-deriving execution state ad hoc.</li>
+<li>Execution state for subordinate iterator orchestration should survive
+across init/set/free/evaluate-style phases.</li>
+<li>Callers such as NestedModel should own semantic decisions and timing,
+while IteratorContext owns subordinate execution state.</li>
+</ul>
+
+\section IteratorContextExpectedChange Expected Evolution
+
+The exact distribution of behavior between IteratorContext, StudyRuntime,
+and IteratorExecutor is expected to evolve.
+
+Today IteratorContext is partly a state holder and partly a forwarding API.
+Some of its methods directly call IteratorExecutor, while others route
+through StudyRuntime. That layering is not yet perfectly regularized.
+Future refactoring may simplify or rebalance those boundaries.
+
+What is expected to remain stable is the role of IteratorContext as the
+per-subordinate execution handle.
+
+\section IteratorContextRelationship Relationship To NestedModel And MetaIterators
+
+NestedModel and the meta-iterators still own the meaning of their
+sub-studies. They decide when communicator initialization happens, when a
+sub-iterator should execute synchronously, when jobs should be queued, and
+how results are mapped back into their own semantics.
+
+IteratorContext does not replace those responsibilities. Instead, it gives
+those components one object that captures the execution setup for the child
+iterator across the communicator lifecycle.
+
+In this sense, IteratorContext is a runtime helper for orchestration code,
+not a semantic study component in its own right.
+
+\section IteratorContextSeeAlso See Also
+
+See \ref RuntimeExecutionDesign for the subsystem overview.
+
+*/
+
+} // namespace Dakota

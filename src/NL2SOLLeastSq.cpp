@@ -31,18 +31,18 @@ NL2SOLLeastSq::NL2SOLLeastSq(ProblemDescDB& problem_db, ParallelLibrary& paralle
   mxfcal(maxFunctionEvals), mxiter(maxIterations),
   // convergence tolerances (-1.0 triggers NL2SOL default tolerances)
   rfctol( (convergenceTol < -1.0) ? 1.0e-4 : convergenceTol ),
-  afctol( probDescDB.get_real("method.nl2sol.absolute_conv_tol") ),
-  xctol(  probDescDB.get_real("method.x_conv_tol") ),
-  sctol(  probDescDB.get_real("method.nl2sol.singular_conv_tol") ),
-  lmaxs(  probDescDB.get_real("method.nl2sol.singular_radius") ),
-  xftol(  probDescDB.get_real("method.nl2sol.false_conv_tol") ),
+  afctol( probDescDB.get<const Real>("method.nl2sol.absolute_conv_tol") ),
+  xctol(  probDescDB.get<const Real>("method.x_conv_tol") ),
+  sctol(  probDescDB.get<const Real>("method.nl2sol.singular_conv_tol") ),
+  lmaxs(  probDescDB.get<const Real>("method.nl2sol.singular_radius") ),
+  xftol(  probDescDB.get<const Real>("method.nl2sol.false_conv_tol") ),
   // post-processing options
-  covreq( probDescDB.get_int ("method.nl2sol.covariance") ),
-  rdreq(  probDescDB.get_bool("method.nl2sol.regression_diagnostics") ),
+  covreq( probDescDB.get<int>("method.nl2sol.covariance") ),
+  rdreq(  probDescDB.get<bool>("method.nl2sol.regression_diagnostics") ),
   // function precision
-  fprec(  probDescDB.get_real("method.function_precision") ),
+  fprec(  probDescDB.get<const Real>("method.function_precision") ),
   // initial TR radius
-  lmax0(  probDescDB.get_real("method.nl2sol.initial_trust_radius") )
+  lmax0(  probDescDB.get<const Real>("method.nl2sol.initial_trust_radius") )
 {
   const RealVector&   fd_g_ss = iteratedModel->fd_gradient_step_size();
   const RealVector& fd_hbg_ss = iteratedModel->fd_hessian_by_grad_step_size();

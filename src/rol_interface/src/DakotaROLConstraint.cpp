@@ -3,7 +3,30 @@
 
 namespace rol_interface {
 
-void Constraint::copy_response_data() {
+void Constraint::evaluateIfNeeded(const ROL::Vector<Dakota::Real>& x,
+                                  short request_values)
+{
+  isLinear.receive([&](auto is_linear) {
+    if constexpr (!is_linear) {
+      const auto& x_dakota =
+        as_dakota_vector(const_cast<ROL::Vector<Dakota::Real>&>(x));
+
+      if (context)
+        context->evaluate_model_if_needed(x_dakota, request_values);
+      else {
+        Dakota::ModelUtils::continuous_variables(dakotaModel, x_dakota);
+
+        Dakota::ActiveSet eval_set(dakotaModel.current_response().active_set());
+        eval_set.request_values(request_values);
+        dakotaModel.evaluate(eval_set);
+      }
+
+      copy_response_data(request_values);
+    }
+  });
+}
+
+void Constraint::copy_response_data(short request_values) {
   const_pointer val_ptr{nullptr}, jac_ptr{nullptr}, target_ptr{nullptr};
   std::ptrdiff_t val_offset{0}, jac_offset{0};
 
@@ -41,23 +64,20 @@ void Constraint::copy_response_data() {
       hessianView.clear();
       hasHessian.receive([&,this](auto has_hessian) {
         if constexpr( has_hessian ) {
-        std::size_t offset = isEquality ? Dakota::ModelUtils::num_nonlinear_eq_constraints(dakotaModel) : 0;
+          if (!(request_values & 4))
+            return;
+
+          std::size_t offset = static_cast<std::size_t>(val_offset);
           for(std::size_t i=0; i<numCon; ++i) {
-            Dakota::RealSymMatrix H(Teuchos::View,
-                                    resp.function_hessian(i+offset),
-                                    static_cast<int>(numOpt) /* stride */,
-                                    static_cast<int>(numOpt) /* size */ );
-            hessianView.push_back(std::move(H));
+            hessianView.push_back(resp.function_hessian(i+offset));
           }
         }
       });
     }
   });
 
-  // Copy constraint values (not a view - the underlying data can change)
   isLinear.receive([&,this](auto is_linear) {
     if constexpr( !is_linear ) {
-      // Nonlinear constraints: copy values from response
       valueCopy.sizeUninitialized(static_cast<int>(numCon));
       for (std::size_t i = 0; i < numCon; ++i) {
         valueCopy[static_cast<int>(i)] = val_ptr[val_offset + i];
@@ -65,39 +85,33 @@ void Constraint::copy_response_data() {
     }
   });
 
-  // Set up target view (static data, view is OK)
   isEquality.receive([&,this](auto is_equality){
     if constexpr( is_equality ) {
       targetView = Dakota::RealVector(Teuchos::View,
                                       const_cast<pointer>(target_ptr),
-                                      static_cast<int>(numCon) /* length */ );
+                                      static_cast<int>(numCon));
     }
   });
 
-  // Copy Jacobian data (not a view - the underlying data can change)
   hasJacobian.receive([&,this](auto has_jacobian){
     if constexpr( has_jacobian ) {
+      if (!(request_values & 2))
+        return;
+
       isLinear.receive([&,this](auto is_linear) {
         if constexpr( is_linear ) {
-          // Linear constraint Jacobian - use coefficient matrix directly (stored differently)
           jacobianCopy.shapeUninitialized(static_cast<int>(numCon), static_cast<int>(numOpt));
           for (std::size_t row = 0; row < numCon; ++row) {
             for (std::size_t col = 0; col < numOpt; ++col) {
-              // Linear constraint coefficients stored as (numCon x numOpt) matrix
               jacobianCopy(static_cast<int>(row), static_cast<int>(col)) =
                 jac_ptr[row + col * numCon];
             }
           }
         } else {
-          // Nonlinear constraint Jacobian - from response gradients
-          // Dakota's function_gradients() is indexed as (variable_idx, response_idx)
-          // ROL needs Jacobian as (constraint_idx, variable_idx) = J(j, i)
-          // So we read gradient_matrix(i, offset+j) and store in jacobianCopy(j, i)
           const auto& gradient_matrix = dakotaModel.current_response().function_gradients();
           jacobianCopy.shapeUninitialized(static_cast<int>(numCon), static_cast<int>(numOpt));
           for (std::size_t conIdx = 0; conIdx < numCon; ++conIdx) {
             for (std::size_t varIdx = 0; varIdx < numOpt; ++varIdx) {
-              // gradient_matrix(varIdx, val_offset + conIdx) gives dc_conIdx/dx_varIdx
               jacobianCopy(static_cast<int>(conIdx), static_cast<int>(varIdx)) =
                 gradient_matrix(static_cast<int>(varIdx), static_cast<int>(val_offset + conIdx));
             }
@@ -109,21 +123,22 @@ void Constraint::copy_response_data() {
 }
 
 
-Constraint::Constraint( BoolDispatch   IsLinear,
-                        BoolDispatch   IsEquality,
-                        BoolDispatch   HasJacobian,
-                        BoolDispatch   HasHessian,
-                        Dakota::Model& model )
-: numOpt{Dakota::ModelUtils::cv(model)},
+Constraint::Constraint( BoolDispatch          IsLinear,
+                        BoolDispatch          IsEquality,
+                        BoolDispatch          HasJacobian,
+                        BoolDispatch          HasHessian,
+                        Dakota::Model&        model,
+                        Dakota::ROLCallbackContext* context_in )
+: dakotaModel{model},
+  context{context_in},
+  numOpt{Dakota::ModelUtils::cv(model)},
   numCon{0},
-  valueCopy(1, true),        // Allocate initial storage
-  jacobianCopy(1, 1, true),  // Allocate initial storage
+  valueCopy(1, true),
+  jacobianCopy(1, 1, true),
   isLinear{IsLinear},
   isEquality{IsEquality},
   hasJacobian{HasJacobian},
-  hasHessian{HasHessian},
-  dakotaModel{model}  {
-  // Determine numCon from model based on constraint type
+  hasHessian{HasHessian}  {
   isLinear.receive([&,this](auto is_linear) {
     if constexpr( is_linear ) {
       isEquality.receive([&,this](auto is_equality) {
@@ -143,7 +158,6 @@ Constraint::Constraint( BoolDispatch   IsLinear,
       });
     }
   });
-  // Resize storage appropriately
   valueCopy.sizeUninitialized(static_cast<int>(numCon));
   jacobianCopy.shapeUninitialized(static_cast<int>(numCon), static_cast<int>(numOpt));
 }
@@ -154,30 +168,20 @@ void Constraint::update( const ROL::Vector<Dakota::Real>& x,
                                int                        iter ) {
   std::ignore = iter;
   if (type == ROL::UpdateType::Temp || type == ROL::UpdateType::Trial || type == ROL::UpdateType::Initial) {
-    isLinear.receive([&]( auto is_true ) {
-      if constexpr( !is_true ) {
-        const auto& x_dakota = as_dakota_vector(const_cast<ROL::Vector<Dakota::Real>&>(x));
-        Dakota::ModelUtils::continuous_variables(dakotaModel, x_dakota);
+    short request_values = 7;
+    if (dakotaModel.gradient_type() == "numerical" && dakotaModel.method_source() == "vendor")
+      request_values = 1;
+    else if (dakotaModel.hessian_type() == "none")
+      request_values = 3;
 
-        Dakota::ActiveSet eval_set(dakotaModel.current_response().active_set());
-        if (dakotaModel.gradient_type() == "numerical" && dakotaModel.method_source() == "vendor")
-          eval_set.request_values(1);
-        else if (dakotaModel.hessian_type() == "none")
-          eval_set.request_values(3);
-        else
-          eval_set.request_values(7);
-        dakotaModel.evaluate(eval_set);
-
-        copy_response_data();
-      }
-    });
+    evaluateIfNeeded(x, request_values);
   }
 }
 
 void Constraint::value(       ROL::Vector<Dakota::Real>& c,
                         const ROL::Vector<Dakota::Real>& x,
                               Dakota::Real&              tol ) {
-  // First, compute the constraint values
+  evaluateIfNeeded(x, 1);
   isLinear.receive([&,this]( auto is_true ) {
     if constexpr( is_true ) {
       applyJacobian(c,x,x,tol);
@@ -202,9 +206,9 @@ void Constraint::applyJacobian(       ROL::Vector<Dakota::Real>& jv,
 
   hasJacobian.receive([&,this]( auto is_true ) {
     if constexpr( is_true ) {
+      evaluateIfNeeded(x, 3);
       const auto& v_vector  = as_dakota_vector(const_cast<ROL::Vector<Dakota::Real>&>(v));
       auto& jv_vector = as_dakota_vector(jv);
-      // jv = 0*jv + 1*J*v
 
       int err_code = jv_vector.multiply(Teuchos::NO_TRANS,
                                         Teuchos::NO_TRANS,
@@ -227,9 +231,9 @@ void Constraint::applyAdjointJacobian(       ROL::Vector<Dakota::Real>& ajv,
 
   hasJacobian.receive([&,this]( auto is_true ) {
     if constexpr( is_true ) {
+      evaluateIfNeeded(x, 3);
       const auto& v_vector  = as_dakota_vector(const_cast<ROL::Vector<Dakota::Real>&>(v));
       auto& ajv_vector = as_dakota_vector(ajv);
-      // ajv = 0*ajv + 1*trans(J)*v
       int err_code = ajv_vector.multiply(Teuchos::TRANS,
                                          Teuchos::NO_TRANS,
                                          1,
@@ -238,7 +242,7 @@ void Constraint::applyAdjointJacobian(       ROL::Vector<Dakota::Real>& ajv,
                                          0);
       TEUCHOS_ASSERT_EQUALITY(err_code,0);
     }
-    else { // Use ROL's finite difference approximation
+    else {
       ROL::Constraint<Dakota::Real>::applyAdjointJacobian(ajv,v,x,tol);
     }
   });
@@ -250,32 +254,34 @@ void Constraint::applyAdjointHessian(       ROL::Vector<Dakota::Real>& ahuv,
                                       const ROL::Vector<Dakota::Real>& v,
                                       const ROL::Vector<Dakota::Real>& x,
                                             Dakota::Real&              tol ) {
-  isLinear.receive([&,this]( auto is_true ) {
-    if constexpr(is_true) {
+  isLinear.receive([&,this]( auto is_linear ) {
+    if constexpr(is_linear) {
       ahuv.zero();
-    }
-  });
-
-  hasHessian.receive([&,this]( auto is_true ) {
-    if constexpr ( is_true ) {
-      auto& ahuv_vector    = as_dakota_vector(ahuv);
-      const auto& v_vector = as_dakota_vector(const_cast<ROL::Vector<Dakota::Real>&>(v));
-      const auto& u_vector = as_dakota_vector(const_cast<ROL::Vector<Dakota::Real>&>(u));
-      for(std::size_t i = 0; i < numCon; ++i) {
-        int err_code = ahuv_vector.multiply(Teuchos::LEFT_SIDE,
-                                            u_vector[i],
-                                            hessianView.at(i),
-                                            v_vector,
-                                            static_cast<Dakota::Real>(i>0));
-        TEUCHOS_ASSERT_EQUALITY(err_code,0);
-      }
     } else {
-      ROL::Constraint<Dakota::Real>::applyAdjointHessian(ahuv,u,v,x,tol);
+      hasHessian.receive([&,this]( auto has_hessian ) {
+        if constexpr ( has_hessian ) {
+          evaluateIfNeeded(x, 7);
+          auto& ahuv_vector    = as_dakota_vector(ahuv);
+          const auto& v_vector = as_dakota_vector(const_cast<ROL::Vector<Dakota::Real>&>(v));
+          const auto& u_vector = as_dakota_vector(const_cast<ROL::Vector<Dakota::Real>&>(u));
+          for(std::size_t i = 0; i < numCon; ++i) {
+            int err_code = ahuv_vector.multiply(Teuchos::LEFT_SIDE,
+                                                u_vector[i],
+                                                hessianView.at(i),
+                                                v_vector,
+                                                static_cast<Dakota::Real>(i>0));
+            TEUCHOS_ASSERT_EQUALITY(err_code,0);
+          }
+        } else {
+          ROL::Constraint<Dakota::Real>::applyAdjointHessian(ahuv,u,v,x,tol);
+        }
+      });
     }
   });
 }
 
-ConstraintSet Constraint::createSetFromModel( Dakota::Model& model ) {
+ConstraintSet Constraint::createSetFromModel( Dakota::Model& model,
+                                               Dakota::ROLCallbackContext* context ) {
 
   auto grad_type  = model.gradient_type();
   auto hess_type  = model.hessian_type();
@@ -294,7 +300,8 @@ ConstraintSet Constraint::createSetFromModel( Dakota::Model& model ) {
                                                           is_equality,
                                                           have_jacobian,
                                                           have_hessian,
-                                                          model);
+                                                          model,
+                                                          context);
   }
   if( Dakota::ModelUtils::num_linear_ineq_constraints(model) ) {
     constexpr BoolDispatch is_linear{true}, is_equality{false};
@@ -302,7 +309,8 @@ ConstraintSet Constraint::createSetFromModel( Dakota::Model& model ) {
                                                             is_equality,
                                                             have_jacobian,
                                                             have_hessian,
-                                                            model);
+                                                            model,
+                                                            context);
   }
   if( Dakota::ModelUtils::num_nonlinear_eq_constraints(model) ) {
     constexpr BoolDispatch is_linear{false}, is_equality{true};
@@ -310,7 +318,8 @@ ConstraintSet Constraint::createSetFromModel( Dakota::Model& model ) {
                                                              is_equality,
                                                              have_jacobian,
                                                              have_hessian,
-                                                             model);
+                                                             model,
+                                                             context);
   }
   if( Dakota::ModelUtils::num_nonlinear_ineq_constraints(model) ) {
     constexpr BoolDispatch is_linear{false}, is_equality{false};
@@ -318,7 +327,8 @@ ConstraintSet Constraint::createSetFromModel( Dakota::Model& model ) {
                                                                is_equality,
                                                                have_jacobian,
                                                                have_hessian,
-                                                               model);
+                                                               model,
+                                                               context);
   }
   return constraints;
 }

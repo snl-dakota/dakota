@@ -33,20 +33,20 @@ NonDMultilevBLUESampling(ProblemDescDB& problem_db,
 			 ParallelLibrary& parallel_lib,
 			 std::shared_ptr<Model> model):
   NonDNumericAllocSampling(problem_db, parallel_lib, model),
-  pilotGroupSampling(problem_db.get_short("method.nond.pilot_samples.mode")),
-  groupThrottleType(problem_db.get_short("method.nond.group_throttle_type")),
-  groupSizeThrottle(problem_db.get_ushort("method.nond.group_size_throttle")),
-  rCondBestThrottle(problem_db.get_sizet("method.nond.rcond_best_throttle")),
-  rCondTolThrottle(problem_db.get_real("method.nond.rcond_tol_throttle"))
+  pilotGroupSampling(problem_db.get<short>("method.nond.pilot_samples.mode")),
+  groupThrottleType(problem_db.get<short>("method.nond.group_throttle_type")),
+  groupSizeThrottle(problem_db.get<unsigned short>("method.nond.group_size_throttle")),
+  rCondBestThrottle(problem_db.get<size_t>("method.nond.rcond_best_throttle")),
+  rCondTolThrottle(problem_db.get<const Real>("method.nond.rcond_tol_throttle"))
 {
   //analyticEstVarDerivs = true; // now adopted for all numerical estimators
   //hardenNumericSoln    = true; // now adopted for all numerical estimators
 
-  mlmfSubMethod = problem_db.get_ushort("method.sub_method");
+  mlmfSubMethod = problem_db.get<unsigned short>("method.sub_method");
 
   // SDP versus conventional NLP handled by optSubProblemSolver
   //optSubProblemSolver = sub_optimizer_select(
-  //  probDescDB.get_ushort("method.nond.opt_subproblem_solver"),SUBMETHOD_SDP);
+  //  probDescDB.get<unsigned short>("method.nond.opt_subproblem_solver"),SUBMETHOD_SDP);
 
   if (maxFunctionEvals == SZ_MAX) // accuracy constraint (convTol)
     optSubProblemForm = N_GROUP_LINEAR_OBJECTIVE;
@@ -179,7 +179,7 @@ NonDMultilevBLUESampling(ProblemDescDB& problem_db,
       groupThrottleType != RCOND_BEST_COUNT_THROTTLE)
     update_search_algorithm();
 
-  load_pilot_sample(problem_db.get_sza("method.nond.pilot_samples"),
+  load_pilot_sample(problem_db.get<const SizetArray>("method.nond.pilot_samples"),
 		    numGroups, pilotSamples);
 
   size_t max_ps = find_max(pilotSamples);

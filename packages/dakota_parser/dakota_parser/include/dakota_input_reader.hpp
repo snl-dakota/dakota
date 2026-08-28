@@ -50,6 +50,48 @@ bool validate_json_input_to_json(const json& input,
 json validate_json_input_to_json(const json& input,
                                  bool debug = false);
 
+bool validate_environment_block_json_to_json(const json& input,
+                                             json& output,
+                                             std::vector<std::string>& errors,
+                                             bool debug = false);
+json validate_environment_block_json_to_json(const json& input,
+                                             bool debug = false);
+
+bool validate_method_block_json_to_json(const json& input,
+                                        json& output,
+                                        std::vector<std::string>& errors,
+                                        bool debug = false);
+json validate_method_block_json_to_json(const json& input,
+                                        bool debug = false);
+
+bool validate_model_block_json_to_json(const json& input,
+                                       json& output,
+                                       std::vector<std::string>& errors,
+                                       bool debug = false);
+json validate_model_block_json_to_json(const json& input,
+                                       bool debug = false);
+
+bool validate_variables_block_json_to_json(const json& input,
+                                           json& output,
+                                           std::vector<std::string>& errors,
+                                           bool debug = false);
+json validate_variables_block_json_to_json(const json& input,
+                                           bool debug = false);
+
+bool validate_interface_block_json_to_json(const json& input,
+                                           json& output,
+                                           std::vector<std::string>& errors,
+                                           bool debug = false);
+json validate_interface_block_json_to_json(const json& input,
+                                           bool debug = false);
+
+bool validate_responses_block_json_to_json(const json& input,
+                                           json& output,
+                                           std::vector<std::string>& errors,
+                                           bool debug = false);
+json validate_responses_block_json_to_json(const json& input,
+                                           bool debug = false);
+
 // Compatibility entry points that auto-detect `.json` for file input.
 bool read_input_file_to_json(const std::string& filename,
                              json& output,

@@ -10,6 +10,7 @@
 // #define SERIALIZE_DEBUG 1
 
 #include "SharedResponseData.hpp"
+#include "IRStore.hpp"
 #include "ProblemDescDB.hpp"
 #include "DakotaActiveSet.hpp"
 #include "dakota_data_util.hpp"
@@ -33,50 +34,50 @@ SharedResponseDataRep::
 SharedResponseDataRep(const ProblemDescDB& problem_db):
   responseType(BASE_RESPONSE), // overridden in derived class ctors
   primaryFnType(GENERIC_FNS),
-  responsesId(problem_db.get_string("responses.id")), 
-  simulationVariance(problem_db.get_rv("responses.simulation_variance")),
-  metadataLabels(problem_db.get_sa("responses.metadata_labels"))
+  responsesId(problem_db.get<const String>("responses.id")), 
+  simulationVariance(problem_db.get<const RealVector>("responses.simulation_variance")),
+  metadataLabels(problem_db.get<const StringArray>("responses.metadata_labels"))
 {
   // scalar-specific response counts
   size_t num_scalar_primary = std::max
-    ( problem_db.get_sizet("responses.num_scalar_objectives"),
-      std::max ( problem_db.get_sizet("responses.num_scalar_calibration_terms"),
-		 problem_db.get_sizet("responses.num_scalar_responses") )
+    ( problem_db.get<size_t>("responses.num_scalar_objectives"),
+      std::max ( problem_db.get<size_t>("responses.num_scalar_calibration_terms"),
+		 problem_db.get<size_t>("responses.num_scalar_responses") )
       );
   size_t num_scalar_responses = num_scalar_primary +
     // secondary counts will always be zero as not exposed in input spec
-    problem_db.get_sizet("responses.num_scalar_nonlinear_inequality_constraints") +
-    problem_db.get_sizet("responses.num_scalar_nonlinear_equality_constraints");
+    problem_db.get<size_t>("responses.num_scalar_nonlinear_inequality_constraints") +
+    problem_db.get<size_t>("responses.num_scalar_nonlinear_equality_constraints");
 
   // field-specific response counts
   size_t num_field_primary = std::max
-    ( problem_db.get_sizet("responses.num_field_objectives"),
-      std::max ( problem_db.get_sizet("responses.num_field_calibration_terms"),
-		 problem_db.get_sizet("responses.num_field_responses") )
+    ( problem_db.get<size_t>("responses.num_field_objectives"),
+      std::max ( problem_db.get<size_t>("responses.num_field_calibration_terms"),
+		 problem_db.get<size_t>("responses.num_field_responses") )
       );
   size_t num_field_responses = num_field_primary +
     // secondary counts will always be zero as not exposed in input spec
-    problem_db.get_sizet("responses.num_field_nonlinear_inequality_constraints") +
-    problem_db.get_sizet("responses.num_field_nonlinear_equality_constraints");
+    problem_db.get<size_t>("responses.num_field_nonlinear_inequality_constraints") +
+    problem_db.get<size_t>("responses.num_field_nonlinear_equality_constraints");
 
   // parent (aggregate/total) response counts
   size_t num_total_primary = std::max
-    ( problem_db.get_sizet("responses.num_objective_functions"),
-      std::max( problem_db.get_sizet("responses.num_calibration_terms"),
-		problem_db.get_sizet("responses.num_response_functions") )
+    ( problem_db.get<size_t>("responses.num_objective_functions"),
+      std::max( problem_db.get<size_t>("responses.num_calibration_terms"),
+		problem_db.get<size_t>("responses.num_response_functions") )
       );
   size_t num_total_secondary =
-    problem_db.get_sizet("responses.num_nonlinear_inequality_constraints") +
-    problem_db.get_sizet("responses.num_nonlinear_equality_constraints");
+    problem_db.get<size_t>("responses.num_nonlinear_inequality_constraints") +
+    problem_db.get<size_t>("responses.num_nonlinear_equality_constraints");
   size_t num_total_responses = num_total_primary + num_total_secondary;
 
   // update primary response type based on user specified type
-  if (problem_db.get_sizet("responses.num_objective_functions") > 0) 
+  if (problem_db.get<size_t>("responses.num_objective_functions") > 0) 
     primaryFnType = OBJECTIVE_FNS;
-  else if (problem_db.get_sizet("responses.num_calibration_terms") > 0)
+  else if (problem_db.get<size_t>("responses.num_calibration_terms") > 0)
     primaryFnType = CALIB_TERMS;
 
-  const StringArray& user_labels = problem_db.get_sa("responses.labels");
+  const StringArray& user_labels = problem_db.get<const StringArray>("responses.labels");
 
   if (num_field_responses) {
     // validate required apportionment of total = scalar + field
@@ -92,7 +93,7 @@ SharedResponseDataRep(const ProblemDescDB& problem_db):
     // can't use num_scalar_responses, as constraints are only specified via total
     numScalarResponses = num_scalar_primary + num_total_secondary;
 
-    priFieldLengths = problem_db.get_iv("responses.lengths");
+    priFieldLengths = problem_db.get<const IntVector>("responses.lengths");
     if (num_field_primary != priFieldLengths.length()) {
       Cerr << "Error: For each field in " << primary_fn_name()
 	   << ", you must specify the length of that field."
@@ -133,6 +134,110 @@ SharedResponseDataRep(const ProblemDescDB& problem_db):
   // BMA: In reviewing, this may be wrong for cases with fields or constraints
   if (  simulationVariance.length() != 0 && simulationVariance.length() != 1 && 
         simulationVariance.length() != num_total_responses) {
+    Cerr << "Error: simulation_variance must have length equal to 1 or "
+         << "the total number of calibration terms." << std::endl;
+    abort_handler(-1);
+  }
+}
+
+
+SharedResponseDataRep::
+SharedResponseDataRep(const IRStore& responses_store):
+  responseType(BASE_RESPONSE), // overridden in derived class ctors
+  primaryFnType(GENERIC_FNS),
+  responsesId(responses_store.get<String>("id")),
+  simulationVariance(responses_store.get<RealVector>(
+    "simulation_variance")),
+  metadataLabels(responses_store.get<StringArray>("metadata_labels"))
+{
+  size_t num_scalar_primary = std::max(
+    responses_store.get<size_t>("num_scalar_objectives"),
+    std::max(
+      responses_store.get<size_t>("num_scalar_calibration_terms"),
+      responses_store.get<size_t>("num_scalar_responses")));
+  size_t num_scalar_responses = num_scalar_primary +
+    responses_store.get<size_t>(
+      "num_scalar_nonlinear_inequality_constraints") +
+    responses_store.get<size_t>(
+      "num_scalar_nonlinear_equality_constraints");
+
+  size_t num_field_primary = std::max(
+    responses_store.get<size_t>("num_field_objectives"),
+    std::max(
+      responses_store.get<size_t>("num_field_calibration_terms"),
+      responses_store.get<size_t>("num_field_responses")));
+  size_t num_field_responses = num_field_primary +
+    responses_store.get<size_t>(
+      "num_field_nonlinear_inequality_constraints") +
+    responses_store.get<size_t>(
+      "num_field_nonlinear_equality_constraints");
+
+  size_t num_total_primary = std::max(
+    responses_store.get<size_t>("num_objective_functions"),
+    std::max(
+      responses_store.get<size_t>("num_calibration_terms"),
+      responses_store.get<size_t>("num_response_functions")));
+  size_t num_total_secondary =
+    responses_store.get<size_t>(
+      "num_nonlinear_inequality_constraints") +
+    responses_store.get<size_t>(
+      "num_nonlinear_equality_constraints");
+  size_t num_total_responses = num_total_primary + num_total_secondary;
+
+  if (responses_store.get<size_t>("num_objective_functions") > 0)
+    primaryFnType = OBJECTIVE_FNS;
+  else if (responses_store.get<size_t>("num_calibration_terms") > 0)
+    primaryFnType = CALIB_TERMS;
+
+  const StringArray& user_labels = responses_store.get<StringArray>(
+    "labels");
+
+  if (num_field_responses) {
+    if (num_scalar_primary + num_field_primary != num_total_primary) {
+      Cerr << "Error: number of scalar (" << num_scalar_primary
+	   << ") and field (" << num_field_primary
+	   << ") " << primary_fn_name() << " must sum to total number ("
+	   << num_total_primary << ") of " << primary_fn_name() << "."
+           << std::endl;
+      abort_handler(-1);
+    }
+    numScalarPrimary = num_scalar_primary;
+    numScalarResponses = num_scalar_primary + num_total_secondary;
+
+    priFieldLengths = responses_store.get<IntVector>("lengths");
+    if (num_field_primary != priFieldLengths.length()) {
+      Cerr << "Error: For each field in " << primary_fn_name()
+	   << ", you must specify the length of that field."
+	   << "\n  The number of elements in the 'lengths' vector must "
+           << "equal the number (" << num_field_primary << ") of field "
+	   << primary_fn_name() << "."  << std::endl;
+      abort_handler(-1);
+    }
+    build_field_labels(user_labels);
+  }
+  else if (num_scalar_responses) {
+    if (num_scalar_primary != num_total_primary) {
+      Cerr << "Error: number of scalar (" << num_scalar_primary
+	   << ") and field (0) " << primary_fn_name()
+	   << " must sum to total number (" << num_total_primary
+	   << ") of " << primary_fn_name() << "." << std::endl;
+      abort_handler(-1);
+    }
+    numScalarPrimary = num_scalar_primary;
+    numScalarResponses = num_scalar_primary + num_total_secondary;
+    functionLabels = user_labels;
+  }
+  else if (num_total_responses) {
+    numScalarPrimary = num_total_primary;
+    numScalarResponses = num_total_responses;
+    functionLabels = user_labels;
+  }
+  else
+    Cerr << "Warning: total number of response functions is zero.  This is "
+	 << "admissible in rare cases (e.g., nested overlays)." << std::endl;
+
+  if (simulationVariance.length() != 0 && simulationVariance.length() != 1 &&
+      simulationVariance.length() != num_total_responses) {
     Cerr << "Error: simulation_variance must have length equal to 1 or "
          << "the total number of calibration terms." << std::endl;
     abort_handler(-1);

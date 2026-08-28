@@ -18,6 +18,11 @@
 
 namespace Dakota {
 
+class StudyServices;
+
+class IRStore;
+class OutputManager;
+
 /// Meta-iterator for multi-start iteration or pareto set optimization.
 
 /** This meta-iterator maintains two concurrent iterator capabilities.
@@ -35,8 +40,8 @@ class ConcurrentMetaIterator: public MetaIterator
   //- Heading: Friends
   //
 
-  /// protect scheduler callback functions from general access
-  friend class IteratorScheduler;
+  /// protect executor callback functions from general access
+  friend class IteratorExecutor;
 
 public:
 
@@ -48,6 +53,10 @@ public:
   ConcurrentMetaIterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
   /// alternate constructor
   ConcurrentMetaIterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
+  /// DI constructor using method IR plus injected sub-iterator
+  ConcurrentMetaIterator(const IRStore& method_store,
+                         std::shared_ptr<Iterator> sub_iterator,
+                         std::shared_ptr<StudyServices> services);
   /// destructor
   ~ConcurrentMetaIterator() override;
 

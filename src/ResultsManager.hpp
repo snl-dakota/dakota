@@ -169,19 +169,19 @@ public:
 
   /// Associate key:value metadata with all the results and executions of a method
   void add_metadata_to_method(const StrStrSizet& iterator_id,
-                               const AttributeArray &attrs);
+                               const AttributeArray &attrs) const;
 
   /// Associate key:value metadata with all the results for this execution of a method
   void add_metadata_to_execution(const StrStrSizet& iterator_id,
-                                  const AttributeArray &attrs);
+                                  const AttributeArray &attrs) const;
 
   /// Associate key:value metadata with the object at the location
   void add_metadata_to_object(const StrStrSizet& iterator_id,
                                const StringArray &location,
-                               const AttributeArray &attrs);
+                               const AttributeArray &attrs) const;
 
   /// Associate key:value metadata with the object at the location
-  void add_metadata_to_study(const AttributeArray &attrs);
+  void add_metadata_to_study(const AttributeArray &attrs) const;
 
 
   // ##############################################################

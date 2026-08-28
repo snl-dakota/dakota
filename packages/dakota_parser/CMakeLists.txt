@@ -29,17 +29,17 @@ endif()
 # Find Python FIRST (before pybind11) to ensure consistent paths
 # =============================================================================
 if(BUILD_PYTHON_BINDINGS)
-    find_package(Python REQUIRED COMPONENTS Interpreter Development)
-    message(STATUS "Python executable: ${Python_EXECUTABLE}")
-    message(STATUS "Python include dirs: ${Python_INCLUDE_DIRS}")
+    find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
+    message(STATUS "Python executable: ${Python3_EXECUTABLE}")
+    message(STATUS "Python include dirs: ${Python3_INCLUDE_DIRS}")
     
     # Validate Python include path exists
-    if(Python_INCLUDE_DIRS)
-        list(GET Python_INCLUDE_DIRS 0 _first_include_dir)
+    if(Python3_INCLUDE_DIRS)
+        list(GET Python3_INCLUDE_DIRS 0 _first_include_dir)
         if(NOT EXISTS "${_first_include_dir}")
             message(WARNING "Python include directory does not exist: ${_first_include_dir}")
             execute_process(
-                COMMAND "${Python_EXECUTABLE}" -c 
+                COMMAND "${Python3_EXECUTABLE}" -c 
                     "import sysconfig; print(sysconfig.get_path('include'))"
                 OUTPUT_VARIABLE _python_include_from_sysconfig
                 OUTPUT_STRIP_TRAILING_WHITESPACE
@@ -47,12 +47,17 @@ if(BUILD_PYTHON_BINDINGS)
             )
             if(_sysconfig_result EQUAL 0 AND EXISTS "${_python_include_from_sysconfig}")
                 message(STATUS "Found valid Python include path: ${_python_include_from_sysconfig}")
-                set(Python_INCLUDE_DIRS "${_python_include_from_sysconfig}" CACHE PATH "" FORCE)
+                set(Python3_INCLUDE_DIRS "${_python_include_from_sysconfig}" CACHE PATH "" FORCE)
             else()
                 message(FATAL_ERROR "Cannot find valid Python include directory.")
             endif()
         endif()
     endif()
+
+    # Preserve legacy variable names for nested third-party CMake logic.
+    set(Python_EXECUTABLE "${Python3_EXECUTABLE}" CACHE FILEPATH "" FORCE)
+    set(Python_INCLUDE_DIRS "${Python3_INCLUDE_DIRS}" CACHE PATH "" FORCE)
+    set(Python_LIBRARIES "${Python3_LIBRARIES}" CACHE STRING "" FORCE)
 endif()
 
 # =============================================================================
@@ -92,8 +97,8 @@ if(BUILD_PYTHON_BINDINGS)
     message(STATUS "Fetching pybind11 from GitHub...")
     set(pybind11_DIR "" CACHE PATH "" FORCE)
     set(PYBIND11_FINDPYTHON OFF CACHE BOOL "" FORCE)
-    set(PYTHON_EXECUTABLE "${Python_EXECUTABLE}" CACHE FILEPATH "" FORCE)
-    list(GET Python_INCLUDE_DIRS 0 _py_include_dir)
+    set(PYTHON_EXECUTABLE "${Python3_EXECUTABLE}" CACHE FILEPATH "" FORCE)
+    list(GET Python3_INCLUDE_DIRS 0 _py_include_dir)
     set(PYTHON_INCLUDE_DIR "${_py_include_dir}" CACHE PATH "" FORCE)
     
     FetchContent_Declare(

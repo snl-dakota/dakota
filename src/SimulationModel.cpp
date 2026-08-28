@@ -9,6 +9,8 @@
 
 #include "dakota_system_defs.hpp"
 #include "SimulationModel.hpp"
+#include "StudyServices.hpp"
+#include "LibraryRuntimeSupport.hpp"
 #include "ProblemDescDB.hpp"
 #include "MarginalsCorrDistribution.hpp"
 
@@ -27,19 +29,48 @@ SimulationModel::SimulationModel(ProblemDescDB& problem_db, ParallelLibrary& par
   simModelEvalCntr(0)
 {
   componentParallelMode = INTERFACE_MODE;
-  ignoreBounds = problem_db.get_bool("responses.ignore_bounds");
-  centralHess  = problem_db.get_bool("responses.central_hess");
+  ignoreBounds = currentResponse.gradient_config().ignore_bounds;
+  centralHess  = (currentResponse.hessian_config().interval_type ==
+                  Response::IntervalType::Central);
 
   initialize_solution_control(
-    problem_db.get_string("model.simulation.solution_level_control"),
-    problem_db.get_rv("model.simulation.solution_level_cost"));
+    problem_db.get<const String>("model.simulation.solution_level_control"),
+    problem_db.get<const RealVector>("model.simulation.solution_level_cost"));
 
   initialize_solution_recovery(
-    probDescDB.get_string("model.simulation.cost_recovery_metadata"));
+    probDescDB.get<const String>("model.simulation.cost_recovery_metadata"));
 
   // Error checks can encompass a model ensemble at a higher level
   //if (solnCntlCostMap.empty() && costMetadataIndex == _NPOS)
   //  Cerr << "Error: insufficient cost data provided." << std::endl;
+}
+
+
+SimulationModel::SimulationModel(const IRStore& model_store,
+                                 const Variables& variables,
+                                 std::shared_ptr<Interface> interface,
+                                 const Response& response,
+                                 std::shared_ptr<StudyServices> services):
+  Model(std::move(services), model_store, variables, response),
+  userDefinedInterface(std::move(interface)), solnCntlVarType(EMPTY_TYPE),
+  solnCntlADVIndex(_NPOS), solnCntlAVIndex(_NPOS), costMetadataIndex(_NPOS),
+  simModelEvalCntr(0)
+{
+  detail::validate_services(
+    "SimulationModel", study_services(),
+    {detail::runtime_dependency("Interface", userDefinedInterface)});
+
+  componentParallelMode = INTERFACE_MODE;
+  ignoreBounds = currentResponse.gradient_config().ignore_bounds;
+  centralHess  = (currentResponse.hessian_config().interval_type ==
+                  Response::IntervalType::Central);
+
+  initialize_solution_control(
+    model_store.get<String>("simulation.solution_level_control"),
+    model_store.get<RealVector>("simulation.solution_level_cost"));
+
+  initialize_solution_recovery(
+    model_store.get<String>("simulation.cost_recovery_metadata"));
 }
 
 
@@ -524,11 +555,7 @@ derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 IntIntPair SimulationModel::
 estimate_partition_bounds(int max_eval_concurrency)
 {
-  // Note: accesses DB data
-  // > for use at construct/init_comms time
-  // > DB list nodes set by calling context
-  return IntIntPair(probDescDB.min_procs_per_ie(), 
-		    probDescDB.max_procs_per_ie(max_eval_concurrency));
+  return userDefinedInterface->estimate_partition_bounds(max_eval_concurrency);
 }
 
 void SimulationModel::declare_sources()

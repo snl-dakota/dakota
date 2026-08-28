@@ -88,11 +88,11 @@ NonDDREAMBayesCalibration* NonDDREAMBayesCalibration::nonDDREAMInstance(NULL);
 NonDDREAMBayesCalibration::
 NonDDREAMBayesCalibration(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
   NonDBayesCalibration(problem_db, parallel_lib, model),
-  numChains(probDescDB.get_int("method.dream.num_chains")),
-  numCR(probDescDB.get_int("method.dream.num_cr")),
-  crossoverChainPairs(probDescDB.get_int("method.dream.crossover_chain_pairs")),
-  grThreshold(probDescDB.get_real("method.dream.gr_threshold")),
-  jumpStep(probDescDB.get_int("method.dream.jump_step"))
+  numChains(probDescDB.get<int>("method.dream.num_chains")),
+  numCR(probDescDB.get<int>("method.dream.num_cr")),
+  crossoverChainPairs(probDescDB.get<int>("method.dream.crossover_chain_pairs")),
+  grThreshold(probDescDB.get<const Real>("method.dream.gr_threshold")),
+  jumpStep(probDescDB.get<int>("method.dream.jump_step"))
 { 
   // don't use max_function_evaluations, since we have num_samples
   // consider max_iterations = generations, and adjust as needed?

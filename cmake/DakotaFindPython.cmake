@@ -8,9 +8,12 @@ macro(dakota_find_python)
     if(DAKOTA_GENERATE_JSON_SCHEMA)
       set(_dakota_python_minimum_version 3.9)
     endif()
+    if(DAKOTA_PYTHON_STUDY)
+      set(_dakota_python_minimum_version 3.10)
+    endif()
 
     if(DAKOTA_PYTHON_DIRECT_INTERFACE OR DAKOTA_PYTHON_SURROGATES OR
-	DAKOTA_PYTHON_WRAPPER OR DAKOTA_PYBIND11)
+	DAKOTA_PYTHON_WRAPPER OR DAKOTA_PYTHON_STUDY OR DAKOTA_PYBIND11)
       message(STATUS
         "Dakota enabling Python3 Development.Module and Development.Embed "
         "for Python modules and embedded interpreter support")
@@ -56,7 +59,7 @@ macro(dakota_find_python)
       add_subdirectory(packages/external/pybind11)
     endif()
 
-    if(DAKOTA_GENERATE_JSON_SCHEMA)
+    if(DAKOTA_GENERATE_JSON_SCHEMA OR DAKOTA_PYTHON_STUDY)
       execute_process(
         COMMAND ${Python3_EXECUTABLE} -c
           "import re, sys; import pydantic; parts = [int(x) for x in re.findall(r'\\d+', pydantic.__version__)[:3]]; sys.exit(0 if tuple(parts) >= (2, 12, 0) else 1)"
@@ -64,8 +67,13 @@ macro(dakota_find_python)
         OUTPUT_QUIET
         ERROR_QUIET)
       if(NOT dakota_pydantic_version_ok EQUAL 0)
-        message(FATAL_ERROR
-          "DAKOTA_GENERATE_JSON_SCHEMA requires Pydantic >= 2.12 in ${Python3_EXECUTABLE}")
+        if(DAKOTA_PYTHON_STUDY)
+          message(FATAL_ERROR
+            "DAKOTA_PYTHON_STUDY requires Python >= 3.10 and Pydantic >= 2.12 in ${Python3_EXECUTABLE}")
+        else()
+          message(FATAL_ERROR
+            "DAKOTA_GENERATE_JSON_SCHEMA requires Pydantic >= 2.12 in ${Python3_EXECUTABLE}")
+        endif()
       endif()
     endif()
 

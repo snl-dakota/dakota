@@ -31,10 +31,10 @@ NonDGenACVSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
 		   std::shared_ptr<Model> model):
   NonDACVSampling(problem_db, parallel_lib, model),
   dagRecursionType(
-    problem_db.get_short("method.nond.search_model_graphs.recursion")),
-  dagDepthLimit(problem_db.get_ushort("method.nond.graph_depth_limit")),
+    problem_db.get<short>("method.nond.search_model_graphs.recursion")),
+  dagDepthLimit(problem_db.get<unsigned short>("method.nond.graph_depth_limit")),
   modelSelectType(
-    problem_db.get_short("method.nond.search_model_graphs.selection")),
+    problem_db.get<short>("method.nond.search_model_graphs.selection")),
   meritFnStar(DBL_MAX)
 {
   // Support constrained DAG ensembles for method promotions (hierarchical
@@ -50,16 +50,16 @@ NonDGenACVSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
     mlmfSubMethod = SUBMETHOD_ACV_RD;
     // check for unsupported allocation targets from MLMC spec
     bool err_flag = false;
-    if (problem_db.get_short("method.nond.allocation_target") != TARGET_MEAN) {
+    if (problem_db.get<short>("method.nond.allocation_target") != TARGET_MEAN) {
       Cerr << "Error: unsupported allocation target specification.\n";
       err_flag = true;
     }
-    if (problem_db.get_short("method.nond.qoi_aggregation") !=
+    if (problem_db.get<short>("method.nond.qoi_aggregation") !=
 	QOI_AGGREGATION_SUM) {
       Cerr << "Error: unsupported qoi aggregation specification.\n";
       err_flag = true;
     }
-    if (problem_db.get_short("method.nond.convergence_tolerance_target") !=
+    if (problem_db.get<short>("method.nond.convergence_tolerance_target") !=
 	VARIANCE_CONSTRAINT_TARGET) {
       Cerr << "Error: unsupported convergence tol target specification.\n";
       err_flag = true;

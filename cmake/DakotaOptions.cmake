@@ -106,7 +106,18 @@ option(DAKOTA_PYTHON_DIRECT_INTERFACE_NUMPY
 option(DAKOTA_PYTHON_WRAPPER
   "Top-level Dakota Python interface (dakota.environment wrapper)" OFF)
 
-if(DAKOTA_PYTHON_DIRECT_INTERFACE OR DAKOTA_PYTHON_WRAPPER)
+# DI/library-mode dakota.study bindings depend on the generated Pydantic
+# specification package, whose generated typing syntax requires Python 3.10+.
+option(DAKOTA_PYTHON_STUDY
+  "Dakota DI/library-mode Python interface (dakota.study wrapper; requires Python >= 3.10 and Pydantic >= 2.12)" OFF)
+
+if(DAKOTA_PYTHON_STUDY AND NOT DAKOTA_PYTHON)
+  message(FATAL_ERROR
+    "DAKOTA_PYTHON_STUDY requires DAKOTA_PYTHON=ON")
+endif()
+
+if(DAKOTA_PYTHON_DIRECT_INTERFACE OR DAKOTA_PYTHON_WRAPPER OR
+   DAKOTA_PYTHON_STUDY)
   set(DAKOTA_PYBIND11 ON CACHE BOOL
     "Dakota using Pybind11 for interfaces.")
 endif()

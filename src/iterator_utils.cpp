@@ -138,7 +138,7 @@ namespace Dakota {
         the use of BaseConstructor. */
         std::shared_ptr<Iterator> get_iterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib)
         {
-        unsigned short method_name = problem_db.get_ushort("method.algorithm");
+        unsigned short method_name = problem_db.get<unsigned short>("method.algorithm");
 
         // Meta-iterators support special constructors that are not bound to a Model
         // instance for top-level instantiation of general meta-iteration.  However,
@@ -146,7 +146,7 @@ namespace Dakota {
         // component within an Iterator recursion.
         switch (method_name) {
             case HYBRID:
-                switch (problem_db.get_ushort("method.sub_method")) {
+                switch (problem_db.get<unsigned short>("method.sub_method")) {
                 case SUBMETHOD_COLLABORATIVE:
                 return std::make_shared<CollabHybridMetaIterator>(problem_db, parallel_lib); break;
                 case SUBMETHOD_EMBEDDED:
@@ -179,11 +179,11 @@ namespace Dakota {
         std::shared_ptr<Iterator>
         get_iterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model)
         {
-        unsigned short method_name = problem_db.get_ushort("method.algorithm");
+        unsigned short method_name = problem_db.get<unsigned short>("method.algorithm");
 
         switch (method_name) {
         case HYBRID:
-        switch (problem_db.get_ushort("method.sub_method")) {
+        switch (problem_db.get<unsigned short>("method.sub_method")) {
             case SUBMETHOD_COLLABORATIVE:
             return std::make_shared<CollabHybridMetaIterator>(problem_db, parallel_lib, model); break;
             case SUBMETHOD_EMBEDDED:
@@ -211,7 +211,7 @@ namespace Dakota {
         case GLOBAL_RELIABILITY:
             return std::make_shared<NonDGlobalReliability>(problem_db, parallel_lib, model); break;
         case GLOBAL_INTERVAL_EST:
-            switch (problem_db.get_ushort("method.nond.opt_subproblem_solver")) {
+            switch (problem_db.get<unsigned short>("method.nond.opt_subproblem_solver")) {
             case SUBMETHOD_LHS:
             return std::make_shared<NonDLHSSingleInterval>(problem_db, parallel_lib, model); break;
             default:
@@ -220,7 +220,7 @@ namespace Dakota {
             }
             break;
         case GLOBAL_EVIDENCE:
-            switch (problem_db.get_ushort("method.nond.opt_subproblem_solver")) {
+            switch (problem_db.get<unsigned short>("method.nond.opt_subproblem_solver")) {
             case SUBMETHOD_LHS:
             return std::make_shared<NonDLHSEvidence>(problem_db, parallel_lib, model); break;
             default:
@@ -248,7 +248,7 @@ namespace Dakota {
             return std::make_shared<NonDSurrogateExpansion>(problem_db, parallel_lib, model); break;
         case BAYES_CALIBRATION:
             // TO DO: add sub_method to bayes_calibration specification
-            switch (problem_db.get_ushort("method.sub_method")) {
+            switch (problem_db.get<unsigned short>("method.sub_method")) {
             case SUBMETHOD_GPMSA:
         #ifdef HAVE_QUESO_GPMSA
             return std::make_shared<NonDGPMSABayesCalibration>(problem_db, parallel_lib, model);
@@ -286,7 +286,7 @@ namespace Dakota {
             default:
             Cerr << "\nError: Bayesian calibration method '"
             << Iterator::submethod_enum_to_string(
-                problem_db.get_ushort("method.sub_method")) << "' unavailable.\n";
+                problem_db.get<unsigned short>("method.sub_method")) << "' unavailable.\n";
             return std::shared_ptr<Iterator>(); break;
             }
             break;
@@ -320,14 +320,14 @@ namespace Dakota {
             // Similar to MFMC below, spec options could trigger promotion to GenACV
             // (which is then restricted to hierarchical DAGs for MLMC consistency)
             // Note that recursion/selection is not available w/o weighting.
-            if (problem_db.get_ushort("method.sub_method") == SUBMETHOD_WEIGHTED_MLMC)
+            if (problem_db.get<unsigned short>("method.sub_method") == SUBMETHOD_WEIGHTED_MLMC)
             return std::make_shared<NonDGenACVSampling>(problem_db, parallel_lib, model);
             else
             return std::make_shared<NonDMultilevelSampling>(problem_db, parallel_lib, model);
             break;
         case MULTIFIDELITY_SAMPLING:
-            if (problem_db.get_short("method.nond.search_model_graphs.recursion") ||
-            problem_db.get_short("method.nond.search_model_graphs.selection"))
+            if (problem_db.get<short>("method.nond.search_model_graphs.recursion") ||
+            problem_db.get<short>("method.nond.search_model_graphs.selection"))
             return std::make_shared<NonDGenACVSampling>(problem_db, parallel_lib, model);
             else // Note that numerical MFMC reorders models on the fly, similar to
                 // enumeration of hierarchical DAGs (more efficient, less smooth?)
@@ -337,9 +337,9 @@ namespace Dakota {
             return std::make_shared<NonDMultilevControlVarSampling>(problem_db, parallel_lib, model);
             break;
         case APPROX_CONTROL_VARIATE:
-            if (problem_db.get_short("method.nond.search_model_graphs.recursion") ||
-            problem_db.get_short("method.nond.search_model_graphs.selection") ||
-            problem_db.get_ushort("method.sub_method") == SUBMETHOD_ACV_RD)
+            if (problem_db.get<short>("method.nond.search_model_graphs.recursion") ||
+            problem_db.get<short>("method.nond.search_model_graphs.selection") ||
+            problem_db.get<unsigned short>("method.sub_method") == SUBMETHOD_ACV_RD)
             // RD is promoted since we want MLMC hierarch rather than ACV peer DAG
             return std::make_shared<NonDGenACVSampling>(problem_db, parallel_lib, model);
             else

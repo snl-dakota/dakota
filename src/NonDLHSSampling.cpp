@@ -8,7 +8,9 @@
     _______________________________________________________________________ */
 
 #include "NonDLHSSampling.hpp"
+#include "StudyServices.hpp"
 #include "DakotaResponse.hpp"
+#include "LibraryRuntimeSupport.hpp"
 #include "ProblemDescDB.hpp"
 #include "DakotaApproximation.hpp"
 #include "ProbabilityTransformModel.hpp"
@@ -44,15 +46,15 @@ RealArray NonDLHSSampling::rawData;
     probDescDB can be queried for settings from the method specification. */
 NonDLHSSampling::NonDLHSSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
   NonDSampling(problem_db, parallel_lib, model), numResponseFunctions(0),
-  refineSamples(probDescDB.get_iv("method.nond.refinement_samples")),
-  dOptimal(probDescDB.get_bool("method.nond.d_optimal")),
-  numCandidateDesigns(probDescDB.get_sizet("method.num_candidate_designs")),
-  oversampleRatio(probDescDB.get_real("method.nond.collocation_ratio")),
-  pcaFlag(probDescDB.get_bool("method.principal_components")),
-  vbdViaSamplingMethod(probDescDB.get_ushort("method.vbd_via_sampling_method")),
-  vbdViaSamplingNumBins(probDescDB.get_int("method.vbd_via_sampling_num_bins")),
+  refineSamples(probDescDB.get<const IntVector>("method.nond.refinement_samples")),
+  dOptimal(probDescDB.get<bool>("method.nond.d_optimal")),
+  numCandidateDesigns(probDescDB.get<size_t>("method.num_candidate_designs")),
+  oversampleRatio(probDescDB.get<const Real>("method.nond.collocation_ratio")),
+  pcaFlag(probDescDB.get<bool>("method.principal_components")),
+  vbdViaSamplingMethod(probDescDB.get<unsigned short>("method.vbd_via_sampling_method")),
+  vbdViaSamplingNumBins(probDescDB.get<int>("method.vbd_via_sampling_num_bins")),
   percentVarianceExplained(
-    probDescDB.get_real("method.percent_variance_explained"))
+    probDescDB.get<const Real>("method.percent_variance_explained"))
 {
   // sampleType default in DataMethod.cpp is SUBMETHOD_DEFAULT (0).
   // Enforce an LHS default for this method.
@@ -108,6 +110,76 @@ NonDLHSSampling::NonDLHSSampling(ProblemDescDB& problem_db, ParallelLibrary& par
 
   initialize_final_statistics();
 }
+
+
+NonDLHSSampling::NonDLHSSampling(const IRStore& method_store,
+			 std::shared_ptr<Model> model,
+			 std::shared_ptr<StudyServices> services):
+  NonDSampling(std::move(services), method_store, model),
+  numResponseFunctions(0),
+  refineSamples(method_store.get<IntVector>("nond.refinement_samples")),
+  dOptimal(method_store.get<bool>("nond.d_optimal")),
+  numCandidateDesigns(method_store.get<size_t>("num_candidate_designs")),
+  oversampleRatio(method_store.get<Real>("nond.collocation_ratio")),
+  pcaFlag(method_store.get<bool>("principal_components")),
+  vbdViaSamplingMethod(method_store.get<unsigned short>("vbd_via_sampling_method")),
+  vbdViaSamplingNumBins(method_store.get<int>("vbd_via_sampling_num_bins")),
+  percentVarianceExplained(
+    method_store.get<Real>("percent_variance_explained"))
+{
+  if (sampleType == SUBMETHOD_DEFAULT)
+    sampleType = SUBMETHOD_LHS;
+
+  if (model->primary_fn_type() == GENERIC_FNS)
+    numResponseFunctions = model->num_primary_fns();
+
+  if (dOptimal) {
+    const SharedVariablesData& svd = model->current_variables().shared_data();
+    const SizetArray& ac_totals = svd.active_components_totals();
+    if (ac_totals[TOTAL_CDV]   || ac_totals[TOTAL_DDIV]  ||
+	ac_totals[TOTAL_DDSV]  || ac_totals[TOTAL_DDRV]  ||
+	ac_totals[TOTAL_CEUV]  || ac_totals[TOTAL_DEUIV] ||
+	ac_totals[TOTAL_DEUSV] || ac_totals[TOTAL_DEURV] ||
+	ac_totals[TOTAL_CSV]   || ac_totals[TOTAL_DSIV]  ||
+	ac_totals[TOTAL_DSSV]  || ac_totals[TOTAL_DSRV]) {
+      Cerr << "\nError: 'd_optimal' sampling not supported for design, "
+	   << "epistemic, or state\n       variables. Consider aleatory "
+	   << "uncertain variables instead.\n";
+      abort_handler(METHOD_ERROR);
+    }
+    bool leja = (oversampleRatio > 0.);
+    if (leja) {
+      if (oversampleRatio < 1.) {
+        Cerr << "\nError: 'leja_oversample_ratio' must be at least 1.0\n";
+        abort_handler(METHOD_ERROR);
+      }
+      if (numDiscreteIntVars || numDiscreteStringVars || numDiscreteRealVars) {
+        Cerr << "\nError: 'd_optimal', 'leja_oversample_ratio' does not "
+             << "support discrete variables.\n";
+        abort_handler(METHOD_ERROR);
+      }
+    }
+    else if (numCandidateDesigns == 0)
+      numCandidateDesigns = 100;
+
+    if ((sampleType == SUBMETHOD_LHS ||
+         sampleType == SUBMETHOD_LOW_DISCREPANCY_SAMPLING) &&
+        outputLevel > SILENT_OUTPUT) {
+      if (refineSamples.length())
+        Cout << "Warning: 'd_optimal' currently has no effect for incrementally"
+             << " refined LHS \n         sampling" << std::endl;
+      else if (leja)
+        Cout << "Warning: 'd_optimal', 'leja_oversample_ratio' specified with "
+	     << "LHS sampling;\n         candidate design will be Latin, but "
+	     << "final design will not." << std::endl;
+    }
+  }
+  qoiSamplesMatrix.shape(numFunctions, 0);
+  initialize_final_statistics();
+}
+
+
+
 
 
 /** This alternate constructor is used for generation and evaluation

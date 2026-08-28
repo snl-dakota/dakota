@@ -8,8 +8,12 @@
     _______________________________________________________________________ */
 
 #include "MetaIterator.hpp"
+#include "StudyServices.hpp"
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
+#include "StudyRuntime.hpp"
+#include "LibraryRuntimeSupport.hpp"
+#include "IRStore.hpp"
 
 static const char rcsId[]="@(#) $Id: MetaIterator.cpp 6715 2010-04-02 21:58:15Z wjbohnh $";
 
@@ -18,11 +22,12 @@ namespace Dakota {
 
 MetaIterator::MetaIterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
   Iterator(problem_db, parallel_lib),
-  iterSched(parallel_lib,
-	    false, // peers can manage local jobs (initial extracted from DB)
-	    problem_db.get_int("method.iterator_servers"),
-	    problem_db.get_int("method.processors_per_iterator"),
-	    problem_db.get_short("method.iterator_scheduling"))
+  iterSched(StudyRuntime(parallel_lib, &parallel_lib.output_manager())
+              .create_iterator_context(
+                false, // peers can manage local jobs (initial extracted from DB)
+                problem_db.get<int>("method.iterator_servers"),
+                problem_db.get<int>("method.processors_per_iterator"),
+                problem_db.get<short>("method.iterator_scheduling")))
 {
   // historical default convergence tolerance
   if (convergenceTol < 0.0) convergenceTol = 1.0e-4;
@@ -34,11 +39,12 @@ MetaIterator::MetaIterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_
 
 MetaIterator::MetaIterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
   Iterator(problem_db, parallel_lib),
-  iterSched(parallel_lib,
-	    false, // peers can manage local jobs (initial extracted from DB)
-	    problem_db.get_int("method.iterator_servers"),
-	    problem_db.get_int("method.processors_per_iterator"),
-	    problem_db.get_short("method.iterator_scheduling"))
+  iterSched(StudyRuntime(parallel_lib, &parallel_lib.output_manager())
+              .create_iterator_context(
+                false, // peers can manage local jobs (initial extracted from DB)
+                problem_db.get<int>("method.iterator_servers"),
+                problem_db.get<int>("method.processors_per_iterator"),
+                problem_db.get<short>("method.iterator_scheduling")))
 {
   iteratedModel = model;
   //update_from_model(iteratedModel);
@@ -48,6 +54,27 @@ MetaIterator::MetaIterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_
 
   if (!numFinalSolutions)  // default is zero
     numFinalSolutions = 1; // for now...  (TO DO: hybrids, concurrent)
+}
+
+
+MetaIterator::MetaIterator(std::shared_ptr<StudyServices> services,
+                           const IRStore& method_store,
+                           std::shared_ptr<Model> model):
+  Iterator(std::move(services), method_store),
+  iterSched(study_runtime().create_iterator_context(
+              false,
+              method_store.get<int>("iterator_servers"),
+              method_store.get<int>("processors_per_iterator"),
+              method_store.get<short>("iterator_scheduling")))
+{
+  detail::validate_services(
+    "MetaIterator", study_services(),
+    {detail::runtime_dependency("Model", model)});
+
+  iteratedModel = model;
+
+  if (!numFinalSolutions)  // default is zero
+    numFinalSolutions = 1; // iterator-specific default assignment
 }
 
 
@@ -74,7 +101,7 @@ check_model(const String& method_ptr, const String& model_ptr)
   if (!method_ptr.empty()) {
     size_t restore_index = probDescDB.get_db_method_node(); // for restoration
     probDescDB.set_db_method_node(method_ptr);
-    if (probDescDB.get_string("method.model_pointer") !=
+    if (probDescDB.get<const String>("method.model_pointer") !=
 	iteratedModel->model_id())
       warn_flag = true;
     probDescDB.set_db_method_node(restore_index);           // restore
@@ -102,7 +129,7 @@ allocate_by_pointer(const String& method_ptr, std::shared_ptr<Iterator>& the_ite
 
   if (!the_model)
     the_model = Model::get_model(probDescDB, parallelLib);
-  iterSched.init_iterator(probDescDB, the_iterator, the_model);
+  iterSched.initialize_iterator(probDescDB, the_iterator, the_model);
 
   probDescDB.set_db_method_node(method_index);          // restore
   probDescDB.set_db_model_nodes(model_index);           // restore
@@ -126,7 +153,7 @@ allocate_by_name(const String& method_string, const String& model_ptr,
 
   if (!the_model)
     the_model = Model::get_model(probDescDB, parallelLib);
-  iterSched.init_iterator(method_string, the_iterator, the_model);
+  iterSched.initialize_iterator(method_string, the_iterator, the_model);
 
   //if (set)
     probDescDB.set_db_model_nodes(model_index);   // restore

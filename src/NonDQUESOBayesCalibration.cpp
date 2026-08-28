@@ -42,12 +42,12 @@ NonDQUESOBayesCalibration* NonDQUESOBayesCalibration::nonDQUESOInstance(NULL);
 NonDQUESOBayesCalibration::
 NonDQUESOBayesCalibration(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
   NonDBayesCalibration(problem_db, parallel_lib, model),
-  mcmcType(probDescDB.get_string("method.nond.mcmc_type")),
-  propCovUpdatePeriod(probDescDB.get_int("method.nond.prop_cov_update_period")),
+  mcmcType(probDescDB.get<const String>("method.nond.mcmc_type")),
+  propCovUpdatePeriod(probDescDB.get<int>("method.nond.prop_cov_update_period")),
   precondRequestValue(0),
-  logitTransform(probDescDB.get_bool("method.nond.logit_transform")),
-  priorPropCovMult(probDescDB.get_real("method.prior_prop_cov_mult")),
-  advancedOptionsFile(probDescDB.get_string("method.advanced_options_file"))
+  logitTransform(probDescDB.get<bool>("method.nond.logit_transform")),
+  priorPropCovMult(probDescDB.get<const Real>("method.prior_prop_cov_mult")),
+  advancedOptionsFile(probDescDB.get<const String>("method.advanced_options_file"))
 {
   bool found_error = false;
 

@@ -14,8 +14,11 @@
 #include "RecastModel.hpp"
 #include "DakotaAnalyzer.hpp"
 #include "ProblemDescDB.hpp"
+#include "IRStore.hpp"
+#include "LibraryRuntimeSupport.hpp"
 #include "ParallelLibrary.hpp"
-#include "IteratorScheduler.hpp"
+#include "OutputManager.hpp"
+#include "StudyServices.hpp"
 #include "PRPMultiIndex.hpp"
 
 static const char rcsId[]="@(#) $Id: DakotaAnalyzer.cpp 7035 2010-10-22 21:45:39Z mseldre $";
@@ -31,8 +34,8 @@ Analyzer::
 Analyzer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
   Iterator(problem_db, parallel_lib), compactMode(true),
   numObjFns(0), numLSqTerms(0), // default: no best data tracking
-  vbdFlag(problem_db.get_bool("method.variance_based_decomp")),
-  writePrecision(problem_db.get_int("environment.output_precision"))
+  vbdFlag(problem_db.get<bool>("method.variance_based_decomp")),
+  writePrecision(problem_db.get<int>("environment.output_precision"))
 {
   // set_db_list_nodes() is set by a higher context
   iteratedModel = model;
@@ -53,11 +56,47 @@ Analyzer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_p
   }
   
   if (vbdFlag) 
-    vbdDropTol = probDescDB.get_real("method.vbd_drop_tolerance");
+    vbdDropTol = probDescDB.get<const Real>("method.vbd_drop_tolerance");
 
   if (!numFinalSolutions)  // default is zero
     numFinalSolutions = 1; // iterator-specific default assignment
 }
+
+
+Analyzer::
+Analyzer(std::shared_ptr<StudyServices> services,
+         const IRStore& method_store, std::shared_ptr<Model> model):
+  Iterator(std::move(services), method_store),
+  compactMode(true),
+  numObjFns(0), numLSqTerms(0),
+  vbdFlag(method_store.get<bool>("variance_based_decomp")),
+  writePrecision(output_manager_ptr()->write_precision())
+{
+  detail::validate_services(
+    "Analyzer", study_services(),
+    {detail::runtime_dependency("Model", model)});
+
+  iteratedModel = model;
+  update_from_model(*iteratedModel);
+
+  if (convergenceTol < 0.) convergenceTol = 1.e-4;
+
+  if (model->primary_fn_type() == OBJECTIVE_FNS)
+    numObjFns = model->num_primary_fns();
+  else if (model->primary_fn_type() == CALIB_TERMS)
+    numLSqTerms = model->num_primary_fns();
+  else if (model->primary_fn_type() != GENERIC_FNS) {
+    Cerr << "\nError: Unknown primary function type in Analyzer." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+
+  if (vbdFlag)
+    vbdDropTol = method_store.get<Real>("vbd_drop_tolerance");
+
+  if (!numFinalSolutions)
+    numFinalSolutions = 1;
+}
+
 
 
 Analyzer::
@@ -173,7 +212,7 @@ void Analyzer::initialize_run()
     //iteratedModel.db_scope_reset(); // TO DO: need better name?
 
     // This is to catch un-initialized models used by local iterators that
-    // are not called through IteratorScheduler::run_iterator().  Within a
+    // are not called through IteratorExecutor::run_iterator().  Within a
     // recursion, it will correspond to the first initialize_run() with an
     // uninitialized mapping, such as the outer-iterator on the first pass
     // of a recursion.  On subsequent passes, it may correspond to the inner
@@ -545,10 +584,10 @@ void Analyzer::get_vbd_parameter_sets(std::shared_ptr<Model> model, size_t num_s
 void Analyzer::pre_output()
 {
   // distinguish between defaulted pre-run and user-specified
-  if (!parallelLib.user_modes().requestedUserModes)
+  if (!runOptions.requestedUserModes)
     return;
 
-  const String& filename = parallelLib.user_modes().preRunOutput;
+  const String& filename = runOptions.preRunOutput;
   if (filename.empty()) {
     if (outputLevel > QUIET_OUTPUT)
       Cout << "\nPre-run phase complete: no output requested.\n" << std::endl;
@@ -581,7 +620,7 @@ void Analyzer::pre_output()
   // use sample_to_variables to set the discrete variables not treated
   // by allSamples.
   unsigned short tabular_format = 
-    parallelLib.program_options().user_modes().preRunOutputFormat;
+    runOptions.preRunOutputFormat;
   TabularIO::write_header_tabular(tabular_file,
 				  iteratedModel->current_variables(), 
 				  iteratedModel->current_response(),
@@ -624,10 +663,10 @@ void Analyzer::pre_output()
 void Analyzer::read_variables_responses(int num_evals, size_t num_vars)
 {
   // distinguish between defaulted post-run and user-specified
-  if (!parallelLib.user_modes().requestedUserModes)
+  if (!runOptions.requestedUserModes)
     return;
 
-  const String& filename = parallelLib.user_modes().postRunInput;
+  const String& filename = runOptions.postRunInput;
   if (filename.empty()) {
     if (outputLevel > QUIET_OUTPUT)
       Cout << "\nPost-run phase initialized: no input requested.\n" 
@@ -644,7 +683,7 @@ void Analyzer::read_variables_responses(int num_evals, size_t num_vars)
 
   // pre/post only supports annotated; could detect
   unsigned short tabular_format = 
-    parallelLib.program_options().user_modes().postRunInputFormat;
+    runOptions.postRunInputFormat;
 
   // Define modelList and recastFlags to support any recastings within
   // a model recursion

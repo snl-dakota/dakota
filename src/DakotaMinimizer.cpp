@@ -13,7 +13,9 @@
 #include "dakota_tabular_io.hpp"
 #include "DakotaModel.hpp"
 #include "ProblemDescDB.hpp"
-#include "IteratorScheduler.hpp"
+#include "LibraryRuntimeSupport.hpp"
+#include "IRStore.hpp"
+#include "ParallelLibrary.hpp"
 #include "ParamResponsePair.hpp"
 #include "PRPMultiIndex.hpp"
 #include "RecastModel.hpp"
@@ -43,16 +45,16 @@ Minimizer::
 Minimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model,
 	  std::shared_ptr<TraitsBase> traits): 
   Iterator(problem_db, parallel_lib, traits),
-  constraintTol(probDescDB.get_real("method.constraint_tolerance")),
+  constraintTol(probDescDB.get<const Real>("method.constraint_tolerance")),
   bigRealBoundSize(BIG_REAL_BOUND), bigIntBoundSize(1000000000),
   boundConstraintFlag(false),
-  speculativeFlag(probDescDB.get_bool("method.speculative")),
+  speculativeFlag(probDescDB.get<bool>("method.speculative")),
   optimizationFlag(true),
-  calibrationDataFlag(probDescDB.get_bool("responses.calibration_data") ||
-    !probDescDB.get_string("responses.scalar_data_filename").empty()),
+  calibrationDataFlag(probDescDB.get<bool>("responses.calibration_data") ||
+    !probDescDB.get<const String>("responses.scalar_data_filename").empty()),
   expData(probDescDB, model->current_response().shared_data(), outputLevel),
   numExperiments(0), numTotalCalibTerms(0),
-  scaleFlag(probDescDB.get_bool("method.scaling"))
+  scaleFlag(probDescDB.get<bool>("method.scaling"))
 {
   iteratedModel = model;
   update_from_model(*iteratedModel); // variable,response counts & checks
@@ -67,6 +69,36 @@ Minimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_
   if (!numFinalSolutions && methodName != MOGA)
     numFinalSolutions = 1;
 }
+
+
+Minimizer::
+Minimizer(std::shared_ptr<StudyServices> services,
+          const IRStore& method_store, std::shared_ptr<Model> model,
+          std::shared_ptr<TraitsBase> traits):
+  Iterator(std::move(services), method_store, traits),
+  constraintTol(method_store.get<Real>("constraint_tolerance")),
+  bigRealBoundSize(BIG_REAL_BOUND), bigIntBoundSize(1000000000),
+  boundConstraintFlag(false),
+  speculativeFlag(method_store.get<bool>("speculative")),
+  optimizationFlag(true),
+  calibrationDataFlag(false),
+  expData(),
+  numExperiments(0), numTotalCalibTerms(0),
+  scaleFlag(method_store.get<bool>("scaling"))
+{
+  detail::validate_services(
+    "Minimizer", study_services(),
+    {detail::runtime_dependency("Model", model)});
+
+  iteratedModel = model;
+  update_from_model(*iteratedModel);
+
+  if (maxIterations == SZ_MAX)    maxIterations = 100;
+  if (maxFunctionEvals == SZ_MAX) maxFunctionEvals = 1000;
+  if (!numFinalSolutions && methodName != MOGA)
+    numFinalSolutions = 1;
+}
+
 
 
 Minimizer::
@@ -299,7 +331,7 @@ void Minimizer::initialize_run()
     //iteratedModel.db_scope_reset(); // TO DO: need better name?
 
     // This is to catch un-initialized models used by local iterators that
-    // are not called through IteratorScheduler::run_iterator().  Within a
+    // are not called through IteratorExecutor::run_iterator().  Within a
     // recursion, it will correspond to the first initialize_run() with an
     // uninitialized mapping, such as the outer-iterator on the first pass
     // of a recursion.  On subsequent passes, it may correspond to the inner
@@ -405,7 +437,7 @@ void Minimizer::data_transform_model()
     Cout << "Initializing calibration data transformation" << std::endl;
   
   // TODO: need better validation of these sizes and data with error msgs
-  numExperiments = probDescDB.get_sizet("responses.num_experiments");
+  numExperiments = probDescDB.get<size_t>("responses.num_experiments");
   if (numExperiments < 1) {
       Cerr << "Error in number of experiments" << std::endl;
       abort_handler(-1);

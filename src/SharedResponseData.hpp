@@ -21,6 +21,7 @@ namespace Dakota {
 
 // forward declarations
 class ProblemDescDB;
+class IRStore;
 
 
 /// The representation of a SharedResponseData instance.  This representation,
@@ -55,6 +56,8 @@ private:
   SharedResponseDataRep();
   /// standard constructor
   SharedResponseDataRep(const ProblemDescDB& problem_db);
+  /// DI constructor from a materialized responses IR store
+  SharedResponseDataRep(const IRStore& responses_store);
   /// alternate on-the-fly constructor
   SharedResponseDataRep(const ActiveSet& set);
 
@@ -168,6 +171,8 @@ public:
   SharedResponseData();
   /// standard constructor
   explicit SharedResponseData(const ProblemDescDB& problem_db);
+  /// DI constructor from a materialized responses IR store
+  explicit SharedResponseData(const IRStore& responses_store);
   /// alternate on-the-fly constructor (explicit disallows its use for implicit
   /// type conversion so that instantiations of Response(set) are invalid)
   explicit SharedResponseData(const ActiveSet& set);
@@ -296,6 +301,11 @@ inline SharedResponseData::SharedResponseData()
 
 inline SharedResponseData::SharedResponseData(const ProblemDescDB& problem_db):
   srdRep(new SharedResponseDataRep(problem_db))
+{ /* empty ctor */ }
+
+
+inline SharedResponseData::SharedResponseData(const IRStore& responses_store):
+  srdRep(new SharedResponseDataRep(responses_store))
 { /* empty ctor */ }
 
 

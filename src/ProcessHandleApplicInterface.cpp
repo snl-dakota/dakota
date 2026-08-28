@@ -11,6 +11,7 @@
 #include "ParamResponsePair.hpp"
 #include "ProcessHandleApplicInterface.hpp"
 #include "ProblemDescDB.hpp"
+#include "LibraryRuntimeSupport.hpp"
 #include "ParallelLibrary.hpp"
 #include "WorkdirHelper.hpp"
 #include <algorithm>
@@ -25,6 +26,13 @@ namespace Dakota {
 ProcessHandleApplicInterface::
 ProcessHandleApplicInterface(const ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
   ProcessApplicInterface(problem_db, parallel_lib), argList(3)
+{ }
+
+
+ProcessHandleApplicInterface::
+ProcessHandleApplicInterface(const IRStore& interface_store,
+                             std::shared_ptr<StudyServices> services):
+  ProcessApplicInterface(interface_store, std::move(services)), argList(3)
 { }
 
 

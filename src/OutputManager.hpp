@@ -17,14 +17,18 @@
 #include "dakota_tabular_io.hpp"
 #include "DakotaGraphics.hpp"
 #include "RestartVersion.hpp"
+#include "ResultsManager.hpp"
+#include "EvaluationStore.hpp"
 #include <memory>
 
 
 namespace Dakota {
 
 class ProgramOptions;
+class IRStore;
 class ProblemDescDB;
 class ParamResponsePair;
+struct StudyOutputConfig;
 
 
 /** Component to manage a redirected output or error stream */
@@ -200,6 +204,9 @@ public:
   /// retrieve the graphics handler object
   Graphics& graphics() { return dakotaGraphics; }
 
+  /// retrieve the current global write precision used for Dakota output
+  int write_precision() const;
+
 
   // -----
   // Modify output settings
@@ -208,6 +215,13 @@ public:
   /// Extract environment options from ProblemDescDB and update from
   /// late updates to ProgramOptions
   void parse(const ProgramOptions& prog_opts, const ProblemDescDB& problem_db);
+
+  /// Extract environment options from an IR store and update from
+  /// late updates to ProgramOptions
+  void parse(const ProgramOptions& prog_opts, const IRStore& environment_store);
+
+  /// Apply typed DI/library-mode output configuration.
+  void apply(const StudyOutputConfig& output_config);
 
   /// Set the Dakota startup message ("Running on...")
   void startup_message(const String& start_msg);
@@ -315,9 +329,26 @@ public:
   // Results DB outputs
   // -----
 
-  /// At runtime, initialize the global ResultsManager, tagging
+  /// At runtime, initialize the study-specific ResultsManager, tagging
   /// filename with MPI worldRank + 1 if needed
   void init_results_db();
+
+  /// Close the study-specific results databases and evaluation store
+  void close_results_db();
+
+  /// Access the study-specific iterator results database
+  ResultsManager& results_manager();
+  const ResultsManager& results_manager() const;
+
+  /// Access the study-specific evaluations database
+  EvaluationStore& evaluation_store();
+  const EvaluationStore& evaluation_store() const;
+
+  /// Close all live study-specific results databases during abnormal abort
+  static void close_all_results_db();
+
+  /// Resolve a stable per-study results output base name.
+  String resolved_results_output_file();
 
   /// Archive the input file to the results database
   void archive_input(const ProgramOptions &prog_opts) const;
@@ -435,8 +466,28 @@ private:
 
   /// Output results  format
   unsigned short resultsOutputFormat;
+
+  /// Resolved per-study results base name after collision handling
+  String resolvedResultsOutputFile;
+
+  /// study-specific iterator results database
+  ResultsManager resultsDB;
+
+  /// study-specific evaluation storage database
+  EvaluationStore evaluationsDB;
 };
 
+inline ResultsManager& OutputManager::results_manager()
+{ return resultsDB; }
+
+inline const ResultsManager& OutputManager::results_manager() const
+{ return resultsDB; }
+
+inline EvaluationStore& OutputManager::evaluation_store()
+{ return evaluationsDB; }
+
+inline const EvaluationStore& OutputManager::evaluation_store() const
+{ return evaluationsDB; }
 
 template<class T> 
 void OutputManager::add_tabular_scalar(T val)

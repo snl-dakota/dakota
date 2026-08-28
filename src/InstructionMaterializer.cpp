@@ -99,6 +99,28 @@ InstructionMaterializer::op_handlers()
   return handlers;
 }
 
+void InstructionMaterializer::initialize_store_defaults(
+  const irgen::BlockTables& tables, IRStore& store)
+{
+  for (const auto& [local_key, contract] : tables.contracts)
+    store.set_value(local_key, contract.default_value);
+}
+
+IRStore InstructionMaterializer::materialize_block(
+  const nlohmann::json& validated_block_json, irgen::BlockType block) const
+{
+  if (!validated_block_json.is_object()) {
+    throw std::runtime_error(
+      "InstructionMaterializer::materialize_block expected validated block object.");
+  }
+
+  IRStore store;
+  initialize_store_defaults(irgen::tables_for_block(block), store);
+  WriteTracker writes;
+  materialize_block(validated_block_json, block, store, writes);
+  return store;
+}
+
 IRState InstructionMaterializer::materialize(const nlohmann::json& validated_json) const
 {
   if (!validated_json.is_object()) {
@@ -237,12 +259,6 @@ IRState InstructionMaterializer::materialize(const nlohmann::json& validated_jso
 
 void InstructionMaterializer::initialize_defaults(IRState& state) const
 {
-  auto initialize_store_defaults =
-    [](const irgen::BlockTables& tables, IRStore& store) {
-      for (const auto& [local_key, contract] : tables.contracts)
-        store.set_value(local_key, contract.default_value);
-    };
-
   initialize_store_defaults(
     irgen::tables_for_block(irgen::BlockType::Environment), state.environment);
 

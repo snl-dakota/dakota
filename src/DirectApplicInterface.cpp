@@ -18,11 +18,11 @@ namespace Dakota {
 DirectApplicInterface::
 DirectApplicInterface(const ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
   ApplicationInterface(problem_db, parallel_lib),
-  iFilterName(problem_db.get_string("interface.application.input_filter")),
-  oFilterName(problem_db.get_string("interface.application.output_filter")),
+  iFilterName(problem_db.get<const String>("interface.application.input_filter")),
+  oFilterName(problem_db.get<const String>("interface.application.output_filter")),
   gradFlag(false), hessFlag(false), numFns(0), numVars(0), numDerivVars(0),
   analysisDrivers(
-    problem_db.get_sa("interface.application.analysis_drivers")),
+    problem_db.get<const StringArray>("interface.application.analysis_drivers")),
   prevVarsId("NO_MATCH_DUMMY_ID"), prevRespId("NO_MATCH_DUMMY_ID")
 {
   // "interface direct" always instantiates a TestDriverInterface, but
@@ -132,14 +132,19 @@ derived_map(const Variables& vars, const ActiveSet& set, Response& response,
 	 << " numAnalysisServers = " << numAnalysisServers << std::endl;
 #endif // MPI_DEBUG
 
+    // A zero value means the serial direct-interface case has not been
+    // normalized yet; iterate one driver at a time in that case.
+    const size_t analysis_server_stride = std::max(1, numAnalysisServers);
+
     // For execution of local jobs on a dedicated scheduler (e.g., for a serial
     // value computation amongst parallel numerical gradient computations),
     // ApplicationInterface::init_serial_analyses() updates numAnalysisServers
     // from its default (0) to a serial setting (1).
     for (analysisDriverIndex =  analysisServerId-1;
 	 analysisDriverIndex <  numAnalysisDrivers;
-	 analysisDriverIndex += numAnalysisServers)
+	 analysisDriverIndex += analysis_server_stride) {
       derived_map_ac(analysisDrivers[analysisDriverIndex]);
+    }
     // NOTE: no synchronization enforced in static case (some procs may lag)
   }
 
@@ -439,8 +444,7 @@ set_local_data(const Variables& vars, const ActiveSet& set)
   //directFnActSet = set;                // copy
   directFnASV = set.request_vector();    // copy
   directFnDVV = set.derivative_vector(); // copy
-  numDerivVars = directFnDVV.size();
-  if (localDataView & VARIABLES_MAP) {
+  numDerivVars = directFnDVV.size();  if (localDataView & VARIABLES_MAP) {
     SizetMultiArrayConstView acv_ids = vars.all_continuous_variable_ids();
     varTypeDVV.resize(numDerivVars);
     for (size_t i=0; i<numDerivVars; ++i) {
@@ -474,8 +478,7 @@ void DirectApplicInterface::set_local_data(const Response& response)
       hessFlag = true;
   }
 
-  // Resize and clear required data constructs
-  if (fnVals.length() != numFns)
+  // Resize and clear required data constructs  if (fnVals.length() != numFns)
     fnVals.resize(numFns);
   fnVals = 0.;
 

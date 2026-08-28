@@ -30,22 +30,22 @@ Constraints(BaseConstructor, const ProblemDescDB& problem_db,
 	    const SharedVariablesData& svd):
   sharedVarsData(svd),
   numNonlinearIneqCons(
-    problem_db.get_sizet("responses.num_nonlinear_inequality_constraints")),
+    problem_db.get<size_t>("responses.num_nonlinear_inequality_constraints")),
   nonlinearIneqConLowerBnds(
-    problem_db.get_rv("responses.nonlinear_inequality_lower_bounds")),
+    problem_db.get<const RealVector>("responses.nonlinear_inequality_lower_bounds")),
   nonlinearIneqConUpperBnds(
-    problem_db.get_rv("responses.nonlinear_inequality_upper_bounds")),
+    problem_db.get<const RealVector>("responses.nonlinear_inequality_upper_bounds")),
   numNonlinearEqCons(
-    problem_db.get_sizet("responses.num_nonlinear_equality_constraints")),
+    problem_db.get<size_t>("responses.num_nonlinear_equality_constraints")),
   nonlinearEqConTargets(
-    problem_db.get_rv("responses.nonlinear_equality_targets")), 
+    problem_db.get<const RealVector>("responses.nonlinear_equality_targets")), 
   numLinearIneqCons(0), numLinearEqCons(0),
   linearIneqConLowerBnds(
-    problem_db.get_rv("variables.linear_inequality_lower_bounds")),
+    problem_db.get<const RealVector>("variables.linear_inequality_lower_bounds")),
   linearIneqConUpperBnds(
-    problem_db.get_rv("variables.linear_inequality_upper_bounds")),
+    problem_db.get<const RealVector>("variables.linear_inequality_upper_bounds")),
   linearEqConTargets(
-    problem_db.get_rv("variables.linear_equality_targets"))
+    problem_db.get<const RealVector>("variables.linear_equality_targets"))
 {
   shape_bounds(); // size all*{Lower,Upper}Bnds arrays
   build_views(); // construct active/inactive views of all arrays
@@ -639,9 +639,9 @@ reshape_update_linear(const SharedVariablesData& prev_svd,
 void Constraints::manage_linear_constraints(const ProblemDescDB& problem_db)
 {
   const RealVector& linear_ineq_cons
-    = problem_db.get_rv("variables.linear_inequality_constraints");
+    = problem_db.get<const RealVector>("variables.linear_inequality_constraints");
   const RealVector& linear_eq_cons
-    = problem_db.get_rv("variables.linear_equality_constraints");
+    = problem_db.get<const RealVector>("variables.linear_equality_constraints");
   size_t lin_ineq_len = linear_ineq_cons.length(),
          lin_eq_len   = linear_eq_cons.length();
   // get number of active variables to which linear constraints are applied.

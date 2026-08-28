@@ -12,6 +12,7 @@
     redirection options. */
 
 #include "OutputManager.hpp"
+#include "StudyConfig.hpp"
 
 #include <gtest/gtest.h>
 
@@ -88,6 +89,35 @@ error_file
 )";
 // for syntax highlighting: '
 
+namespace {
+
+std::string next_default_name(const std::string& resolved_name)
+{
+  const std::string prefix = "dakota_results";
+  if (resolved_name == prefix)
+    return prefix + ".2";
+
+  const std::string dotted_prefix = prefix + ".";
+  if (resolved_name.rfind(dotted_prefix, 0) != 0)
+    throw std::runtime_error("Unexpected default results filename: " + resolved_name);
+
+  const auto suffix = resolved_name.substr(dotted_prefix.size());
+  const auto next_index = std::stoul(suffix) + 1;
+  return dotted_prefix + std::to_string(next_index);
+}
+
+std::unique_ptr<Dakota::OutputManager> make_output_manager(const std::string& results_output_file = "dakota_results")
+{
+  auto mgr = std::make_unique<Dakota::OutputManager>();
+  Dakota::StudyOutputConfig config;
+  config.resultsOutput = true;
+  config.resultsOutputFile = results_output_file;
+  mgr->apply(config);
+  return mgr;
+}
+
+} // namespace
+
 TEST(redirect_regexs_tests, test_valid_redirs)
 {
   // TODO: Parameterized test
@@ -113,6 +143,40 @@ TEST(redirect_regexs_tests, test_valid_redirs)
     EXPECT_TRUE((outfile == ""));
     EXPECT_TRUE((errfile == ""));
   }
+}
+
+TEST(output_manager_results_output_tests, auto_suffixes_default_results_output_files)
+{
+  auto first_mgr = make_output_manager();
+  auto second_mgr = make_output_manager();
+
+  const auto first_name = first_mgr->resolved_results_output_file();
+  const auto second_name = second_mgr->resolved_results_output_file();
+
+  EXPECT_EQ("dakota_results", first_name);
+  EXPECT_EQ(next_default_name(first_name), second_name);
+}
+
+TEST(output_manager_results_output_tests, throws_on_duplicate_explicit_results_output_files)
+{
+  auto first_mgr = make_output_manager("explicit_results_output_test");
+  EXPECT_EQ("explicit_results_output_test", first_mgr->resolved_results_output_file());
+
+  auto second_mgr = make_output_manager("explicit_results_output_test");
+  EXPECT_THROW(second_mgr->resolved_results_output_file(), std::runtime_error);
+}
+
+TEST(output_manager_results_output_tests, reuses_explicit_results_output_file_after_owner_destructs)
+{
+  {
+    auto first_mgr = make_output_manager("reusable_explicit_results_output_test");
+    EXPECT_EQ("reusable_explicit_results_output_test",
+              first_mgr->resolved_results_output_file());
+  }
+
+  auto second_mgr = make_output_manager("reusable_explicit_results_output_test");
+  EXPECT_EQ("reusable_explicit_results_output_test",
+            second_mgr->resolved_results_output_file());
 }
 
 int main(int argc, char **argv) {
