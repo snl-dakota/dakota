@@ -12,7 +12,10 @@ macro(dakota_find_boost)
 
   # Dakota requires the specified compiled Boost library components
   # Dakota requires Boost 1.70 or newer ; enforce for all libs in the build
-  set(dakota_boost_libs program_options regex serialization system)
+  # NOTE: Boost.System is header-only since Boost 1.69, so it is not
+  # listed here. A Boost::system INTERFACE target is created below when
+  # the package manager does not provide one.
+  set(dakota_boost_libs program_options regex serialization)
 
   if(DAKOTA_APPLE_FIX_BOOSTLIBS)
     # This approach requires separate include and lib dirs
@@ -37,6 +40,17 @@ macro(dakota_find_boost)
 
   find_package(Boost 1.70 REQUIRED COMPONENTS ${dakota_boost_libs})
   #message(STATUS "Found Boost version ${Boost_VERSION}")
+
+  # Boost.System is header-only since 1.69 (Dakota requires >= 1.70).
+  # Some package managers (e.g. Homebrew >= 1.87) no longer ship a
+  # separate libboost_system library, so FindBoost cannot locate it as
+  # a component.  Create the imported target when it is not already
+  # provided so that downstream targets can still link Boost::system.
+  if(NOT TARGET Boost::system)
+    add_library(Boost::system INTERFACE IMPORTED)
+    set_target_properties(Boost::system PROPERTIES
+      INTERFACE_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIRS}")
+  endif()
 
   set(DAKOTA_BOOST_TARGETS Boost::boost Boost::program_options
     Boost::regex Boost::serialization Boost::system)
