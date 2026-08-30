@@ -539,7 +539,8 @@ void EffGlobalMinimizer::evaluate_batch(bool rebuild)
     fHatModel->append_approximation(varsAcquisitionMap, truth_resp_map, rebuild);
 
     // update constraints (truth resp only, not for liar resp)
-    if (numNonlinearConstraints)
+    // skipped once converged, so the best-sample ranking isn't corrupted
+    if (numNonlinearConstraints && !converged())
       update_constraints(truth_resp_map);
   }
   else {
@@ -556,7 +557,8 @@ void EffGlobalMinimizer::evaluate_batch(bool rebuild)
     fHatModel->append_approximation(vars_star, truth_resp_pr, rebuild);
 
     // update constraints (truth resp only, not for liar resp)
-    if (numNonlinearConstraints)
+    // skipped once converged, same reason as above
+    if (numNonlinearConstraints && !converged())
       update_constraints(truth_resp.function_values());
   }
 
