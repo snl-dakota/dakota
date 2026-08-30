@@ -323,6 +323,42 @@ TEST(gauss_proc_test_tests, test_surrogates_gp_reduced_quadratic)
     }
   }
 }
+
+// Regression test: EGO's "dakota" gaussian_process backend crashed when combined with results_output.
+TEST(gauss_proc_test_tests, test_efficient_global_dakota_gp_results_output)
+{
+  // Dakota input string:
+  static const char dakota_input[] =
+    "environment \n"
+    "  results_output \n"
+    "  tabular_data \n"
+    "    tabular_data_file 'dak_ego_gp_results_output.dat' \n"
+    "method \n"
+    "  efficient_global \n"
+    "    gaussian_process dakota \n"
+    "    seed = 123456 \n"
+    "    max_iterations = 3 \n"
+    "variables \n"
+    "  continuous_design = 2 \n"
+    "    initial_point    0.35  0.35 \n"
+    "    upper_bounds     1.5   1.5 \n"
+    "    lower_bounds     0.35  0.35 \n"
+    "    descriptors      'x1'  'x2' \n"
+    "interface \n"
+    "  direct \n"
+    "    analysis_driver = 'rosenbrock' \n"
+    "responses \n"
+    "  objective_functions = 1 \n"
+    "  no_gradients \n"
+    "  no_hessians \n";
+
+  std::shared_ptr<Dakota::LibraryEnvironment> p_env(Opt_TPL_Test::create_env(dakota_input));
+  Dakota::LibraryEnvironment & env = *p_env;
+
+  env.execute();
+
+  data_pairs.clear();
+}
 }
 
 int main(int argc, char **argv) {
