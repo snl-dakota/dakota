@@ -11,6 +11,7 @@
 #include "dakota_data_util.hpp"  // for strcontains
 #include "dakota_global_defs.hpp"
 #include <boost/array.hpp>
+#include <boost/filesystem/exception.hpp>
 #include <boost/tokenizer.hpp>
 #include <cassert>
 #include <random>
