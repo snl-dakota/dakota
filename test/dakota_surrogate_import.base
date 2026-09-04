@@ -8,20 +8,20 @@ Surrogate quality metrics at challenge (test) points for response_fn_1:
             mean_abs  3.0833254425e+02
             rsquared  9.9204163247e-01
 Surrogate quality metrics at build (training) points for response_fn_2:
-   root_mean_squared  3.2735173535e-10
-            mean_abs  2.4040561844e-10
+   root_mean_squared  3.2735179820e-10
+            mean_abs  2.4040560940e-10
             rsquared  1.0000000000e+00
 Surrogate quality metrics at challenge (test) points for response_fn_2:
-   root_mean_squared  3.2735173535e-10
-            mean_abs  2.4040561844e-10
+   root_mean_squared  3.2735179820e-10
+            mean_abs  2.4040560940e-10
             rsquared  1.0000000000e+00
 Surrogate quality metrics at build (training) points for response_fn_3:
-   root_mean_squared  4.0369304686e-10
-            mean_abs  3.1434549894e-10
+   root_mean_squared  4.0369307013e-10
+            mean_abs  3.1434552189e-10
             rsquared  1.0000000000e+00
 Surrogate quality metrics at challenge (test) points for response_fn_3:
-   root_mean_squared  4.0369304686e-10
-            mean_abs  3.1434549894e-10
+   root_mean_squared  4.0369307013e-10
+            mean_abs  3.1434552189e-10
             rsquared  1.0000000000e+00
 <<<<< Function evaluation summary (APPROX_INTERFACE_1): 100 total (100 new, 0 duplicate)
   response_fn_1: 100 val (100 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
@@ -33,7 +33,7 @@ Sample moment statistics for each response function:
  response_fn_2  3.1060194332e-01  5.9261877662e-01  4.1898622352e-01 -8.0606693310e-01
  response_fn_3  5.2960284948e-01  6.6099510629e-01  3.8120695592e-01 -1.0507852865e+00
 95% confidence intervals for each response function:
-                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
  response_fn_1  5.5447676945e+03  7.2044474138e+03  3.6720030880e+03  4.8583620356e+03
  response_fn_2  1.9301352108e-01  4.2819036556e-01  5.2032334258e-01  6.8843056862e-01
  response_fn_3  3.9844708000e-01  6.6075861896e-01  5.8035822810e-01  7.6786165885e-01
@@ -117,68 +117,68 @@ Surrogate quality metrics at challenge (test) points for response_fn_1:
              max_abs  1.0764853114e+03
             rsquared  9.9204163247e-01
 Surrogate quality metrics at build (training) points for response_fn_2:
-         sum_squared  1.0715915864e-17
-        mean_squared  1.0715915864e-19
-   root_mean_squared  3.2735173535e-10
-             sum_abs  2.4040561844e-08
-            mean_abs  2.4040561844e-10
-             max_abs  1.0076469659e-09
+         sum_squared  1.0715919978e-17
+        mean_squared  1.0715919978e-19
+   root_mean_squared  3.2735179820e-10
+             sum_abs  2.4040560940e-08
+            mean_abs  2.4040560940e-10
+             max_abs  1.0076476320e-09
             rsquared  1.0000000000e+00
 Surrogate quality metrics (5-fold CV) for response_fn_2:
-         sum_squared    5.7414778154e-17
-        mean_squared    5.7414778154e-19
-   root_mean_squared    7.5772539982e-10
-             sum_abs    5.6578881713e-08
-            mean_abs    5.6578881713e-10
-             max_abs    2.2609669692e-09
+         sum_squared    5.7414778414e-17
+        mean_squared    5.7414778414e-19
+   root_mean_squared    7.5772540154e-10
+             sum_abs    5.6578876286e-08
+            mean_abs    5.6578876286e-10
+             max_abs    2.2609663031e-09
             rsquared                 nan  (n/a for cross-validation)
 Surrogate quality metrics (PRESS/leave-one-out) for response_fn_2:
-         sum_squared    4.0362752645e-17
-        mean_squared    4.0362752645e-19
-   root_mean_squared    6.3531687090e-10
-             sum_abs    4.6257125266e-08
-            mean_abs    4.6257125266e-10
-             max_abs    2.1188637511e-09
+         sum_squared    4.0362745288e-17
+        mean_squared    4.0362745288e-19
+   root_mean_squared    6.3531681300e-10
+             sum_abs    4.6257115603e-08
+            mean_abs    4.6257115603e-10
+             max_abs    2.1188628629e-09
             rsquared                 nan  (n/a for PRESS)
 Surrogate quality metrics at challenge (test) points for response_fn_2:
-         sum_squared  1.0715915864e-17
-        mean_squared  1.0715915864e-19
-   root_mean_squared  3.2735173535e-10
-             sum_abs  2.4040561844e-08
-            mean_abs  2.4040561844e-10
-             max_abs  1.0076469659e-09
+         sum_squared  1.0715919978e-17
+        mean_squared  1.0715919978e-19
+   root_mean_squared  3.2735179820e-10
+             sum_abs  2.4040560940e-08
+            mean_abs  2.4040560940e-10
+             max_abs  1.0076476320e-09
             rsquared  1.0000000000e+00
 Surrogate quality metrics at build (training) points for response_fn_3:
-         sum_squared  1.6296807608e-17
-        mean_squared  1.6296807608e-19
-   root_mean_squared  4.0369304686e-10
-             sum_abs  3.1434549894e-08
-            mean_abs  3.1434549894e-10
-             max_abs  1.1688530144e-09
+         sum_squared  1.6296809487e-17
+        mean_squared  1.6296809487e-19
+   root_mean_squared  4.0369307013e-10
+             sum_abs  3.1434552189e-08
+            mean_abs  3.1434552189e-10
+             max_abs  1.1688539026e-09
             rsquared  1.0000000000e+00
 Surrogate quality metrics (5-fold CV) for response_fn_3:
-         sum_squared    7.9125139201e-17
-        mean_squared    7.9125139201e-19
-   root_mean_squared    8.8952312618e-10
-             sum_abs    6.6814057255e-08
-            mean_abs    6.6814057255e-10
-             max_abs    2.8583826417e-09
+         sum_squared    7.9125138159e-17
+        mean_squared    7.9125138159e-19
+   root_mean_squared    8.8952312032e-10
+             sum_abs    6.6814054749e-08
+            mean_abs    6.6814054749e-10
+             max_abs    2.8583837519e-09
             rsquared                 nan  (n/a for cross-validation)
 Surrogate quality metrics (PRESS/leave-one-out) for response_fn_3:
-         sum_squared    6.2047503985e-17
-        mean_squared    6.2047503985e-19
-   root_mean_squared    7.8770238025e-10
-             sum_abs    6.0566966384e-08
-            mean_abs    6.0566966384e-10
-             max_abs    2.3492219281e-09
+         sum_squared    6.2047488610e-17
+        mean_squared    6.2047488610e-19
+   root_mean_squared    7.8770228265e-10
+             sum_abs    6.0566959515e-08
+            mean_abs    6.0566959515e-10
+             max_abs    2.3492190415e-09
             rsquared                 nan  (n/a for PRESS)
 Surrogate quality metrics at challenge (test) points for response_fn_3:
-         sum_squared  1.6296807608e-17
-        mean_squared  1.6296807608e-19
-   root_mean_squared  4.0369304686e-10
-             sum_abs  3.1434549894e-08
-            mean_abs  3.1434549894e-10
-             max_abs  1.1688530144e-09
+         sum_squared  1.6296809487e-17
+        mean_squared  1.6296809487e-19
+   root_mean_squared  4.0369307013e-10
+             sum_abs  3.1434552189e-08
+            mean_abs  3.1434552189e-10
+             max_abs  1.1688539026e-09
             rsquared  1.0000000000e+00
 <<<<< Function evaluation summary (APPROX_INTERFACE_1): 100 total (100 new, 0 duplicate)
   response_fn_1: 100 val (100 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
@@ -190,7 +190,7 @@ Sample moment statistics for each response function:
  response_fn_2  3.1060194332e-01  5.9261877662e-01  4.1898622352e-01 -8.0606693310e-01
  response_fn_3  5.2960284948e-01  6.6099510629e-01  3.8120695592e-01 -1.0507852865e+00
 95% confidence intervals for each response function:
-                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
  response_fn_1  5.5447676945e+03  7.2044474138e+03  3.6720030880e+03  4.8583620356e+03
  response_fn_2  1.9301352108e-01  4.2819036556e-01  5.2032334258e-01  6.8843056862e-01
  response_fn_3  3.9844708000e-01  6.6075861896e-01  5.8035822810e-01  7.6786165885e-01
@@ -266,52 +266,52 @@ Surrogate quality metrics at challenge (test) points for response_fn_1:
              max_abs  1.0764853114e+03
             rsquared  9.9204163247e-01
 Surrogate quality metrics at build (training) points for response_fn_2:
-         sum_squared  1.0715915864e-17
-        mean_squared  1.0715915864e-19
-   root_mean_squared  3.2735173535e-10
-             sum_abs  2.4040561844e-08
-            mean_abs  2.4040561844e-10
-             max_abs  1.0076469659e-09
+         sum_squared  1.0715919978e-17
+        mean_squared  1.0715919978e-19
+   root_mean_squared  3.2735179820e-10
+             sum_abs  2.4040560940e-08
+            mean_abs  2.4040560940e-10
+             max_abs  1.0076476320e-09
             rsquared  1.0000000000e+00
 Surrogate quality metrics (PRESS/leave-one-out) for response_fn_2:
-         sum_squared    4.0362752645e-17
-        mean_squared    4.0362752645e-19
-   root_mean_squared    6.3531687090e-10
-             sum_abs    4.6257125266e-08
-            mean_abs    4.6257125266e-10
-             max_abs    2.1188637511e-09
+         sum_squared    4.0362745288e-17
+        mean_squared    4.0362745288e-19
+   root_mean_squared    6.3531681300e-10
+             sum_abs    4.6257115603e-08
+            mean_abs    4.6257115603e-10
+             max_abs    2.1188628629e-09
             rsquared                 nan  (n/a for PRESS)
 Surrogate quality metrics at challenge (test) points for response_fn_2:
-         sum_squared  1.0715915864e-17
-        mean_squared  1.0715915864e-19
-   root_mean_squared  3.2735173535e-10
-             sum_abs  2.4040561844e-08
-            mean_abs  2.4040561844e-10
-             max_abs  1.0076469659e-09
+         sum_squared  1.0715919978e-17
+        mean_squared  1.0715919978e-19
+   root_mean_squared  3.2735179820e-10
+             sum_abs  2.4040560940e-08
+            mean_abs  2.4040560940e-10
+             max_abs  1.0076476320e-09
             rsquared  1.0000000000e+00
 Surrogate quality metrics at build (training) points for response_fn_3:
-         sum_squared  1.6296807608e-17
-        mean_squared  1.6296807608e-19
-   root_mean_squared  4.0369304686e-10
-             sum_abs  3.1434549894e-08
-            mean_abs  3.1434549894e-10
-             max_abs  1.1688530144e-09
+         sum_squared  1.6296809487e-17
+        mean_squared  1.6296809487e-19
+   root_mean_squared  4.0369307013e-10
+             sum_abs  3.1434552189e-08
+            mean_abs  3.1434552189e-10
+             max_abs  1.1688539026e-09
             rsquared  1.0000000000e+00
 Surrogate quality metrics (PRESS/leave-one-out) for response_fn_3:
-         sum_squared    6.2047503985e-17
-        mean_squared    6.2047503985e-19
-   root_mean_squared    7.8770238025e-10
-             sum_abs    6.0566966384e-08
-            mean_abs    6.0566966384e-10
-             max_abs    2.3492219281e-09
+         sum_squared    6.2047488610e-17
+        mean_squared    6.2047488610e-19
+   root_mean_squared    7.8770228265e-10
+             sum_abs    6.0566959515e-08
+            mean_abs    6.0566959515e-10
+             max_abs    2.3492190415e-09
             rsquared                 nan  (n/a for PRESS)
 Surrogate quality metrics at challenge (test) points for response_fn_3:
-         sum_squared  1.6296807608e-17
-        mean_squared  1.6296807608e-19
-   root_mean_squared  4.0369304686e-10
-             sum_abs  3.1434549894e-08
-            mean_abs  3.1434549894e-10
-             max_abs  1.1688530144e-09
+         sum_squared  1.6296809487e-17
+        mean_squared  1.6296809487e-19
+   root_mean_squared  4.0369307013e-10
+             sum_abs  3.1434552189e-08
+            mean_abs  3.1434552189e-10
+             max_abs  1.1688539026e-09
             rsquared  1.0000000000e+00
 <<<<< Function evaluation summary (APPROX_INTERFACE_1): 100 total (100 new, 0 duplicate)
   response_fn_1: 100 val (100 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
@@ -323,7 +323,7 @@ Sample moment statistics for each response function:
  response_fn_2  3.1060194332e-01  5.9261877662e-01  4.1898622352e-01 -8.0606693310e-01
  response_fn_3  5.2960284948e-01  6.6099510629e-01  3.8120695592e-01 -1.0507852865e+00
 95% confidence intervals for each response function:
-                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
  response_fn_1  5.5447676945e+03  7.2044474138e+03  3.6720030880e+03  4.8583620356e+03
  response_fn_2  1.9301352108e-01  4.2819036556e-01  5.2032334258e-01  6.8843056862e-01
  response_fn_3  3.9844708000e-01  6.6075861896e-01  5.8035822810e-01  7.6786165885e-01
@@ -393,40 +393,40 @@ Surrogate quality metrics at challenge (test) points for response_fn_1:
              max_abs  1.0764853114e+03
             rsquared  9.9204163247e-01
 Surrogate quality metrics at build (training) points for response_fn_2:
-         sum_squared  1.0715915864e-17
-   root_mean_squared  3.2735173535e-10
-            mean_abs  2.4040561844e-10
-             max_abs  1.0076469659e-09
+         sum_squared  1.0715919978e-17
+   root_mean_squared  3.2735179820e-10
+            mean_abs  2.4040560940e-10
+             max_abs  1.0076476320e-09
             rsquared  1.0000000000e+00
 Surrogate quality metrics (5-fold CV) for response_fn_2:
-         sum_squared    5.7414778154e-17
-   root_mean_squared    7.5772539982e-10
-            mean_abs    5.6578881713e-10
-             max_abs    2.2609669692e-09
+         sum_squared    5.7414778414e-17
+   root_mean_squared    7.5772540154e-10
+            mean_abs    5.6578876286e-10
+             max_abs    2.2609663031e-09
             rsquared                 nan  (n/a for cross-validation)
 Surrogate quality metrics at challenge (test) points for response_fn_2:
-         sum_squared  1.0715915864e-17
-   root_mean_squared  3.2735173535e-10
-            mean_abs  2.4040561844e-10
-             max_abs  1.0076469659e-09
+         sum_squared  1.0715919978e-17
+   root_mean_squared  3.2735179820e-10
+            mean_abs  2.4040560940e-10
+             max_abs  1.0076476320e-09
             rsquared  1.0000000000e+00
 Surrogate quality metrics at build (training) points for response_fn_3:
-         sum_squared  1.6296807608e-17
-   root_mean_squared  4.0369304686e-10
-            mean_abs  3.1434549894e-10
-             max_abs  1.1688530144e-09
+         sum_squared  1.6296809487e-17
+   root_mean_squared  4.0369307013e-10
+            mean_abs  3.1434552189e-10
+             max_abs  1.1688539026e-09
             rsquared  1.0000000000e+00
 Surrogate quality metrics (5-fold CV) for response_fn_3:
-         sum_squared    7.9125139201e-17
-   root_mean_squared    8.8952312618e-10
-            mean_abs    6.6814057255e-10
-             max_abs    2.8583826417e-09
+         sum_squared    7.9125138159e-17
+   root_mean_squared    8.8952312032e-10
+            mean_abs    6.6814054749e-10
+             max_abs    2.8583837519e-09
             rsquared                 nan  (n/a for cross-validation)
 Surrogate quality metrics at challenge (test) points for response_fn_3:
-         sum_squared  1.6296807608e-17
-   root_mean_squared  4.0369304686e-10
-            mean_abs  3.1434549894e-10
-             max_abs  1.1688530144e-09
+         sum_squared  1.6296809487e-17
+   root_mean_squared  4.0369307013e-10
+            mean_abs  3.1434552189e-10
+             max_abs  1.1688539026e-09
             rsquared  1.0000000000e+00
 <<<<< Function evaluation summary (APPROX_INTERFACE_1): 100 total (100 new, 0 duplicate)
   response_fn_1: 100 val (100 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
@@ -438,7 +438,7 @@ Sample moment statistics for each response function:
  response_fn_2  3.1060194332e-01  5.9261877662e-01  4.1898622352e-01 -8.0606693310e-01
  response_fn_3  5.2960284948e-01  6.6099510629e-01  3.8120695592e-01 -1.0507852865e+00
 95% confidence intervals for each response function:
-                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
  response_fn_1  5.5447676945e+03  7.2044474138e+03  3.6720030880e+03  4.8583620356e+03
  response_fn_2  1.9301352108e-01  4.2819036556e-01  5.2032334258e-01  6.8843056862e-01
  response_fn_3  3.9844708000e-01  6.6075861896e-01  5.8035822810e-01  7.6786165885e-01
@@ -508,16 +508,16 @@ Surrogate quality metrics at challenge (test) points for response_fn_1:
              max_abs  1.7261580373e+04
             rsquared  1.5229227976e+00
 Surrogate quality metrics at build (training) points for response_fn_2:
-         sum_squared  2.9419735458e-29
-   root_mean_squared  6.1414664016e-16
-            mean_abs  5.9247478718e-16
-             max_abs  1.1379786002e-15
-            rsquared  1.2045641026e+01
+         sum_squared  1.8396482829e-29
+   root_mean_squared  4.8564631571e-16
+            mean_abs  4.6757469691e-16
+             max_abs  8.8817841970e-16
+            rsquared  6.5076923077e+00
 Surrogate quality metrics (PRESS/leave-one-out) for response_fn_2:
-         sum_squared    3.3503477313e-30
-   root_mean_squared    2.0725148019e-16
-            mean_abs    1.8966310004e-16
-             max_abs    4.9960036108e-16
+         sum_squared    2.4058716865e-30
+   root_mean_squared    1.7562604819e-16
+            mean_abs    1.6404256870e-16
+             max_abs    4.1633363423e-16
             rsquared                 nan  (n/a for PRESS)
 Surrogate quality metrics at challenge (test) points for response_fn_2:
          sum_squared  3.5311260950e+01
@@ -526,16 +526,16 @@ Surrogate quality metrics at challenge (test) points for response_fn_2:
              max_abs  1.5239970610e+00
             rsquared  4.2332268069e-02
 Surrogate quality metrics at build (training) points for response_fn_3:
-         sum_squared  2.2192875935e-29
-   root_mean_squared  5.3340795874e-16
-            mean_abs  5.1098726390e-16
-             max_abs  1.0547118734e-15
-            rsquared  3.3288461538e+01
+         sum_squared  5.5066188970e-30
+   root_mean_squared  2.6570223591e-16
+            mean_abs  2.5264690624e-16
+             max_abs  4.9960036108e-16
+            rsquared  1.1278846154e+01
 Surrogate quality metrics (PRESS/leave-one-out) for response_fn_3:
-         sum_squared    8.3292618235e-30
-   root_mean_squared    3.2678036660e-16
-            mean_abs    3.0388796892e-16
-             max_abs    7.2164496601e-16
+         sum_squared    4.2586162930e-30
+   root_mean_squared    2.3366138916e-16
+            mean_abs    2.0638761355e-16
+             max_abs    6.1062266354e-16
             rsquared                 nan  (n/a for PRESS)
 Surrogate quality metrics at challenge (test) points for response_fn_3:
          sum_squared  4.3180881055e+01
@@ -550,39 +550,39 @@ Surrogate quality metrics at challenge (test) points for response_fn_3:
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  3.2249929280e+03  2.9038503632e+03  8.2684326991e-01 -3.5888974764e-02
- response_fn_2  1.9000000000e-01  1.7613909435e-16 -4.7504044808e-01  2.8408432918e-02
- response_fn_3  4.1000000000e-01  3.1372098481e-16  1.1384928694e+00 -1.6152049021e+00
+ response_fn_2  1.9000000000e-01  1.3922573040e-16 -1.0816403822e+00  9.8191867952e-01
+ response_fn_3  4.1000000000e-01  4.2386328345e-16  1.0693778766e+00 -1.8974311317e+00
 95% confidence intervals for each response function:
-                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
  response_fn_1  2.6488060164e+03  3.8011798395e+03  2.5496004969e+03  3.3733311120e+03
- response_fn_2  1.9000000000e-01  1.9000000000e-01  1.5465133058e-16  2.0461642740e-16
- response_fn_3  4.1000000000e-01  4.1000000000e-01  2.7544917221e-16  3.6444190512e-16
+ response_fn_2  1.9000000000e-01  1.9000000000e-01  1.2224114435e-16  1.6173508591e-16
+ response_fn_3  4.1000000000e-01  4.1000000000e-01  3.7215486438e-16  4.9239148801e-16
 Simple Correlation Matrix among all inputs and outputs:
                        d1           d2           d3 response_fn_1 response_fn_2 response_fn_3 
           d1  1.00000e+00 
           d2 -3.20612e-02  1.00000e+00 
           d3 -3.56235e-03 -3.00000e-02  1.00000e+00 
 response_fn_1  1.00004e-01  7.42464e-01  4.43989e-01  1.00000e+00 
-response_fn_2  5.21803e-01 -2.16132e-01  2.59806e-01  1.55559e-01  1.00000e+00 
-response_fn_3  2.85800e-01 -9.93416e-02  1.49641e-01  1.10406e-01  7.08327e-01  1.00000e+00 
+response_fn_2  4.76439e-01 -1.65762e-01  2.47934e-01  2.22284e-01  1.00000e+00 
+response_fn_3  9.61516e-02 -3.25754e-02  5.58436e-02  3.58732e-02  2.25220e-01  1.00000e+00 
 Partial Correlation Matrix between input and output:
              response_fn_1 response_fn_2 response_fn_3 
-          d1  2.62044e-01  5.47558e-01  2.87984e-01 
-          d2  8.53448e-01 -2.36110e-01 -9.05822e-02 
-          d3  7.09425e-01  3.08379e-01  1.55140e-01 
+          d1  2.62044e-01  4.94352e-01  9.56007e-02 
+          d2  8.53448e-01 -1.69755e-01 -2.80018e-02 
+          d3  7.09425e-01  2.83078e-01  5.56044e-02 
 Simple Rank Correlation Matrix among all inputs and outputs:
                        d1           d2           d3 response_fn_1 response_fn_2 response_fn_3 
           d1  1.00000e+00 
           d2 -3.25456e-02  1.00000e+00 
           d3 -3.21744e-03 -3.00000e-02  1.00000e+00 
 response_fn_1  9.25054e-02  7.27102e-01  4.68157e-01  1.00000e+00 
-response_fn_2  4.52446e-01 -1.44134e-01  2.69590e-01  1.62919e-01  1.00000e+00 
-response_fn_3  4.66199e-01 -1.31059e-01  2.81300e-01  1.78397e-01  9.08894e-01  1.00000e+00 
+response_fn_2  3.84011e-01 -8.47972e-02  2.44546e-01  2.13537e-01  1.00000e+00 
+response_fn_3  4.28129e-01 -1.01961e-01  2.80423e-01  1.60937e-01  8.68317e-01  1.00000e+00 
 Partial Rank Correlation Matrix between input and output:
              response_fn_1 response_fn_2 response_fn_3 
-          d1  2.46098e-01  4.71108e-01  4.86839e-01 
-          d2  8.47851e-01 -1.42853e-01 -1.28215e-01 
-          d3  7.25199e-01  3.02908e-01  3.18609e-01 
+          d1  2.46098e-01  3.95716e-01  4.46145e-01 
+          d2  8.47851e-01 -7.29920e-02 -9.27281e-02 
+          d3  7.25199e-01  2.64766e-01  3.10508e-01 
 Test Number 5 succeeded
 Surrogate quality metrics at build (training) points for response_fn_1:
          sum_squared  2.6182093464e+05
@@ -609,52 +609,52 @@ Surrogate quality metrics at challenge (test) points for response_fn_1:
              max_abs  1.6922429085e+04
             rsquared  1.5311322509e+00
 Surrogate quality metrics at build (training) points for response_fn_2:
-         sum_squared  1.1346702192e-17
-        mean_squared  1.1346702192e-19
-   root_mean_squared  3.3684866322e-10
-             sum_abs  2.2117790635e-08
-            mean_abs  2.2117790635e-10
-             max_abs  1.4188732411e-09
+         sum_squared  1.1346700557e-17
+        mean_squared  1.1346700557e-19
+   root_mean_squared  3.3684863896e-10
+             sum_abs  2.2117794898e-08
+            mean_abs  2.2117794898e-10
+             max_abs  1.4188741293e-09
             rsquared  1.0000000000e+00
 Surrogate quality metrics (5-fold CV) for response_fn_2:
-         sum_squared    1.3425703352e-17
-        mean_squared    1.3425703352e-19
-   root_mean_squared    3.6641101720e-10
-             sum_abs    2.4107641635e-08
-            mean_abs    2.4107641635e-10
-             max_abs    1.5376424578e-09
+         sum_squared    1.3425706858e-17
+        mean_squared    1.3425706858e-19
+   root_mean_squared    3.6641106503e-10
+             sum_abs    2.4107646695e-08
+            mean_abs    2.4107646695e-10
+             max_abs    1.5376429019e-09
             rsquared                 nan  (n/a for cross-validation)
 Surrogate quality metrics at challenge (test) points for response_fn_2:
-         sum_squared  2.4052595052e-17
-        mean_squared  2.4052595052e-19
-   root_mean_squared  4.9043445079e-10
-             sum_abs  3.0781678854e-08
-            mean_abs  3.0781678854e-10
-             max_abs  1.8176347094e-09
+         sum_squared  2.4052601858e-17
+        mean_squared  2.4052601858e-19
+   root_mean_squared  4.9043452017e-10
+             sum_abs  3.0781682744e-08
+            mean_abs  3.0781682744e-10
+             max_abs  1.8176358196e-09
             rsquared  1.0000000003e+00
 Surrogate quality metrics at build (training) points for response_fn_3:
-         sum_squared  3.0177629378e-17
-        mean_squared  3.0177629378e-19
-   root_mean_squared  5.4934169128e-10
-             sum_abs  3.3115531420e-08
-            mean_abs  3.3115531420e-10
-             max_abs  1.8664347845e-09
+         sum_squared  3.0177630958e-17
+        mean_squared  3.0177630958e-19
+   root_mean_squared  5.4934170566e-10
+             sum_abs  3.3115534606e-08
+            mean_abs  3.3115534606e-10
+             max_abs  1.8664354506e-09
             rsquared  1.0000000000e+00
 Surrogate quality metrics (5-fold CV) for response_fn_3:
-         sum_squared    3.8386336163e-17
-        mean_squared    3.8386336163e-19
-   root_mean_squared    6.1956707597e-10
-             sum_abs    3.7445875858e-08
-            mean_abs    3.7445875858e-10
-             max_abs    2.3947361871e-09
+         sum_squared    3.8386334297e-17
+        mean_squared    3.8386334297e-19
+   root_mean_squared    6.1956706091e-10
+             sum_abs    3.7445873437e-08
+            mean_abs    3.7445873437e-10
+             max_abs    2.3947352989e-09
             rsquared                 nan  (n/a for cross-validation)
 Surrogate quality metrics at challenge (test) points for response_fn_3:
-         sum_squared  3.5598321263e-17
-        mean_squared  3.5598321263e-19
-   root_mean_squared  5.9664328759e-10
-             sum_abs  3.8772753707e-08
-            mean_abs  3.8772753707e-10
-             max_abs  1.6666066305e-09
+         sum_squared  3.5598305681e-17
+        mean_squared  3.5598305681e-19
+   root_mean_squared  5.9664315701e-10
+             sum_abs  3.8772741556e-08
+            mean_abs  3.8772741556e-10
+             max_abs  1.6666072966e-09
             rsquared  1.0000000001e+00
 <<<<< Function evaluation summary (APPROX_INTERFACE_1): 100 total (100 new, 0 duplicate)
   response_fn_1: 100 val (100 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
@@ -666,7 +666,7 @@ Sample moment statistics for each response function:
  response_fn_2  3.0966768937e-01  6.0204792236e-01  4.1223452368e-01 -9.3440549161e-01
  response_fn_3  5.2976953830e-01  6.6966570332e-01  3.2931433491e-01 -1.2197548314e+00
 95% confidence intervals for each response function:
-                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
  response_fn_1  9.4753396995e+02  1.0173249775e+03  1.5441099414e+02  2.0429844252e+02
  response_fn_2  1.9020832004e-01  4.2912705869e-01  5.2860219710e-01  6.9938417391e-01
  response_fn_3  3.9689333425e-01  6.6264574234e-01  5.8797107165e-01  7.7793407687e-01
@@ -722,52 +722,52 @@ Surrogate quality metrics at challenge (test) points for response_fn_1:
              max_abs  1.1656949283e+04
             rsquared  2.9050707467e-02
 Surrogate quality metrics at build (training) points for response_fn_2:
-         sum_squared  2.0820063464e-17
-        mean_squared  2.0820063464e-19
-   root_mean_squared  4.5629007730e-10
-             sum_abs  2.9407378467e-08
-            mean_abs  2.9407378467e-10
-             max_abs  1.5533065945e-09
+         sum_squared  2.0820066280e-17
+        mean_squared  2.0820066280e-19
+   root_mean_squared  4.5629010816e-10
+             sum_abs  2.9407379469e-08
+            mean_abs  2.9407379469e-10
+             max_abs  1.5533070385e-09
             rsquared  1.0000000000e+00
 Surrogate quality metrics (PRESS/leave-one-out) for response_fn_2:
-         sum_squared    2.7650654566e-17
-        mean_squared    2.7650654566e-19
-   root_mean_squared    5.2583889706e-10
-             sum_abs    3.3479313852e-08
-            mean_abs    3.3479313852e-10
-             max_abs    1.9199715151e-09
+         sum_squared    2.7650660123e-17
+        mean_squared    2.7650660123e-19
+   root_mean_squared    5.2583894989e-10
+             sum_abs    3.3479317056e-08
+            mean_abs    3.3479317056e-10
+             max_abs    1.9199719592e-09
             rsquared                 nan  (n/a for PRESS)
 Surrogate quality metrics at challenge (test) points for response_fn_2:
-         sum_squared  2.0820063464e-17
-        mean_squared  2.0820063464e-19
-   root_mean_squared  4.5629007730e-10
-             sum_abs  2.9407378467e-08
-            mean_abs  2.9407378467e-10
-             max_abs  1.5533065945e-09
+         sum_squared  2.0820066280e-17
+        mean_squared  2.0820066280e-19
+   root_mean_squared  4.5629010816e-10
+             sum_abs  2.9407379469e-08
+            mean_abs  2.9407379469e-10
+             max_abs  1.5533070385e-09
             rsquared  1.0000000000e+00
 Surrogate quality metrics at build (training) points for response_fn_3:
-         sum_squared  2.5963067159e-17
-        mean_squared  2.5963067159e-19
-   root_mean_squared  5.0953966636e-10
-             sum_abs  3.3757721111e-08
-            mean_abs  3.3757721111e-10
-             max_abs  1.4914540714e-09
+         sum_squared  2.5963069132e-17
+        mean_squared  2.5963069132e-19
+   root_mean_squared  5.0953968572e-10
+             sum_abs  3.3757725299e-08
+            mean_abs  3.3757725299e-10
+             max_abs  1.4914538493e-09
             rsquared  1.0000000000e+00
 Surrogate quality metrics (PRESS/leave-one-out) for response_fn_3:
-         sum_squared    3.3954675469e-17
-        mean_squared    3.3954675469e-19
-   root_mean_squared    5.8270640522e-10
-             sum_abs    3.8182925337e-08
-            mean_abs    3.8182925337e-10
-             max_abs    1.8605188501e-09
+         sum_squared    3.3954668661e-17
+        mean_squared    3.3954668661e-19
+   root_mean_squared    5.8270634681e-10
+             sum_abs    3.8182926017e-08
+            mean_abs    3.8182926017e-10
+             max_abs    1.8605181840e-09
             rsquared                 nan  (n/a for PRESS)
 Surrogate quality metrics at challenge (test) points for response_fn_3:
-         sum_squared  2.5963067159e-17
-        mean_squared  2.5963067159e-19
-   root_mean_squared  5.0953966636e-10
-             sum_abs  3.3757721111e-08
-            mean_abs  3.3757721111e-10
-             max_abs  1.4914540714e-09
+         sum_squared  2.5963069132e-17
+        mean_squared  2.5963069132e-19
+   root_mean_squared  5.0953968572e-10
+             sum_abs  3.3757725299e-08
+            mean_abs  3.3757725299e-10
+             max_abs  1.4914538493e-09
             rsquared  1.0000000000e+00
 <<<<< Function evaluation summary (APPROX_INTERFACE_1): 100 total (100 new, 0 duplicate)
   response_fn_1: 100 val (100 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
@@ -779,7 +779,7 @@ Sample moment statistics for each response function:
  response_fn_2  3.0966768930e-01  6.0204792228e-01  4.1223452333e-01 -9.3440549185e-01
  response_fn_3  5.2976953829e-01  6.6966570329e-01  3.2931433497e-01 -1.2197548316e+00
 95% confidence intervals for each response function:
-                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
  response_fn_1  6.1693148208e+03  6.4727952089e+03  6.7144335701e+02  8.8837477436e+02
  response_fn_2  1.9020831999e-01  4.2912705861e-01  5.2860219703e-01  6.9938417382e-01
  response_fn_3  3.9689333426e-01  6.6264574233e-01  5.8797107162e-01  7.7793407683e-01
@@ -815,12 +815,12 @@ Surrogate quality metrics at build (training) points for response_fn_1:
             mean_abs  1.5971241314e+02
             rsquared  9.9593051553e-01
 Surrogate quality metrics at build (training) points for response_fn_2:
-   root_mean_squared  6.6993933624e-15
-            mean_abs  4.5380366132e-15
+   root_mean_squared  6.7548768953e-15
+            mean_abs  5.3082538365e-15
             rsquared  1.0000000000e+00
 Surrogate quality metrics at build (training) points for response_fn_3:
-   root_mean_squared  2.3716972894e-14
-            mean_abs  1.8124390877e-14
+   root_mean_squared  1.2523886564e-14
+            mean_abs  8.6874951677e-15
             rsquared  1.0000000000e+00
 <<<<< Function evaluation summary (APPROX_INTERFACE_1): 100 total (100 new, 0 duplicate)
   response_fn_1: 100 val (100 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
@@ -832,7 +832,7 @@ Sample moment statistics for each response function:
  response_fn_2  9.9400000000e+00  1.2565641788e+01  6.4774103522e-01 -9.2168200208e-01
  response_fn_3  4.2500000000e+01  3.4812992466e+01  4.6697755494e-01 -1.1844767284e+00
 95% confidence intervals for each response function:
-                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
  response_fn_1  2.7529939450e+03  3.9141344436e+03  2.5689965641e+03  3.3989937038e+03
  response_fn_2  7.4467040557e+00  1.2433295944e+01  1.1032719506e+01  1.4597195132e+01
  response_fn_3  3.5592347021e+01  4.9407652979e+01  3.0566045694e+01  4.0441391911e+01
@@ -855,25 +855,25 @@ Simple Rank Correlation Matrix among all inputs and outputs:
           d2 -3.25456e-02  1.00000e+00 
           d3 -3.21744e-03 -3.00000e-02  1.00000e+00 
 response_fn_1  1.58018e-01  7.11913e-01  4.19161e-01  1.00000e+00 
-response_fn_2  9.66891e-01 -2.45968e-01  1.22494e-04 -7.57419e-03  1.00000e+00 
-response_fn_3 -2.13106e-01  9.80054e-01  6.12534e-04  6.69028e-01 -4.14794e-01  1.00000e+00 
+response_fn_2  9.68798e-01 -2.39249e-01 -1.10253e-02 -4.38760e-03  1.00000e+00 
+response_fn_3 -2.13113e-01  9.80086e-01 -1.15160e-02  6.60130e-01 -4.08187e-01  1.00000e+00 
 Partial Rank Correlation Matrix between input and output:
              response_fn_1 response_fn_2 response_fn_3 
-          d1  3.34945e-01  9.89808e-01 -9.22269e-01 
-          d2  8.17180e-01 -8.41070e-01  9.96975e-01 
-          d3  6.50706e-01 -2.34121e-02  3.59621e-01 
+          d1  3.34945e-01  9.90385e-01 -9.16429e-01 
+          d2  8.17180e-01 -8.40295e-01  9.96713e-01 
+          d3  6.50706e-01 -1.04963e-01  2.11583e-01 
 Test Number 8 succeeded
 Surrogate quality metrics at build (training) points for response_fn_1:
    root_mean_squared  1.3202777748e+01
             mean_abs  1.0615101081e+01
             rsquared  9.9156045004e-01
 Surrogate quality metrics at build (training) points for response_fn_2:
-   root_mean_squared  3.1871929729e-10
-            mean_abs  1.8763736745e-10
+   root_mean_squared  3.1871929422e-10
+            mean_abs  1.8763730372e-10
             rsquared  1.0000000000e+00
 Surrogate quality metrics at build (training) points for response_fn_3:
-   root_mean_squared  3.1042677245e-10
-            mean_abs  2.2911504076e-10
+   root_mean_squared  3.1042674078e-10
+            mean_abs  2.2911509621e-10
             rsquared  1.0000000000e+00
 <<<<< Function evaluation summary (APPROX_INTERFACE_1): 100 total (100 new, 0 duplicate)
   response_fn_1: 100 val (100 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
@@ -885,7 +885,7 @@ Sample moment statistics for each response function:
  response_fn_2  3.0966768944e-01  6.0204792248e-01  4.1223452336e-01 -9.3440549191e-01
  response_fn_3  5.2976953824e-01  6.6966570354e-01  3.2931433544e-01 -1.2197548310e+00
 95% confidence intervals for each response function:
-                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
  response_fn_1  4.3544106094e+01  9.9346252883e+01  1.2346096235e+02  1.6334900542e+02
  response_fn_2  1.9020832010e-01  4.2912705879e-01  5.2860219720e-01  6.9938417404e-01
  response_fn_3  3.9689333416e-01  6.6264574233e-01  5.8797107184e-01  7.7793407712e-01
@@ -921,12 +921,12 @@ Surrogate quality metrics at build (training) points for response_fn_1:
             mean_abs  3.5233892153e+02
             rsquared  9.8975233787e-01
 Surrogate quality metrics at build (training) points for response_fn_2:
-   root_mean_squared  2.8999205600e-10
-            mean_abs  1.8491196541e-10
+   root_mean_squared  2.8999205012e-10
+            mean_abs  1.8491199863e-10
             rsquared  1.0000000000e+00
 Surrogate quality metrics at build (training) points for response_fn_3:
-   root_mean_squared  3.3706531416e-10
-            mean_abs  2.1493007861e-10
+   root_mean_squared  3.3706524910e-10
+            mean_abs  2.1493011941e-10
             rsquared  1.0000000000e+00
 <<<<< Function evaluation summary (APPROX_INTERFACE_1): 100 total (100 new, 0 duplicate)
   response_fn_1: 100 val (100 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
@@ -942,7 +942,7 @@ Sample moment statistics for each response function:
  response_fn_2  3.1060194335e-01  5.9261877675e-01  4.1898622350e-01 -8.0606693297e-01
  response_fn_3  5.2960284950e-01  6.6099510629e-01  3.8120695583e-01 -1.0507852864e+00
 95% confidence intervals for each response function:
-                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
  response_fn_1  5.5433492599e+03  7.1940719153e+03  3.6521857908e+03  4.8321421218e+03
  response_fn_2  1.9301352108e-01  4.2819036561e-01  5.2032334270e-01  6.8843056877e-01
  response_fn_3  3.9844708002e-01  6.6075861898e-01  5.8035822810e-01  7.6786165885e-01
@@ -998,12 +998,12 @@ Surrogate quality metrics at build (training) points for response_fn_1:
             mean_abs  3.5233892153e+02
             rsquared  9.8975233787e-01
 Surrogate quality metrics at build (training) points for response_fn_2:
-   root_mean_squared  2.8999205600e-10
-            mean_abs  1.8491196541e-10
+   root_mean_squared  2.8999205012e-10
+            mean_abs  1.8491199863e-10
             rsquared  1.0000000000e+00
 Surrogate quality metrics at build (training) points for response_fn_3:
-   root_mean_squared  3.3706531416e-10
-            mean_abs  2.1493007861e-10
+   root_mean_squared  3.3706524910e-10
+            mean_abs  2.1493011941e-10
             rsquared  1.0000000000e+00
 <<<<< Function evaluation summary (APPROX_INTERFACE_1): 100 total (100 new, 0 duplicate)
   response_fn_1: 100 val (100 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
@@ -1019,7 +1019,7 @@ Sample moment statistics for each response function:
  response_fn_2  3.1060194335e-01  5.9261877675e-01  4.1898622350e-01 -8.0606693297e-01
  response_fn_3  5.2960284950e-01  6.6099510629e-01  3.8120695583e-01 -1.0507852864e+00
 95% confidence intervals for each response function:
-                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
  response_fn_1  5.5433492599e+03  7.1940719153e+03  3.6521857908e+03  4.8321421218e+03
  response_fn_2  1.9301352108e-01  4.2819036561e-01  5.2032334270e-01  6.8843056877e-01
  response_fn_3  3.9844708002e-01  6.6075861898e-01  5.8035822810e-01  7.6786165885e-01
@@ -1079,20 +1079,20 @@ Surrogate quality metrics at challenge (test) points for response_fn_1:
             mean_abs  3.0833254425e+02
             rsquared  9.9204163247e-01
 Surrogate quality metrics at build (training) points for response_fn_2:
-   root_mean_squared  3.2735173535e-10
-            mean_abs  2.4040561844e-10
+   root_mean_squared  3.2735179820e-10
+            mean_abs  2.4040560940e-10
             rsquared  1.0000000000e+00
 Surrogate quality metrics at challenge (test) points for response_fn_2:
-   root_mean_squared  3.2735173535e-10
-            mean_abs  2.4040561844e-10
+   root_mean_squared  3.2735179820e-10
+            mean_abs  2.4040560940e-10
             rsquared  1.0000000000e+00
 Surrogate quality metrics at build (training) points for response_fn_3:
-   root_mean_squared  4.0369304686e-10
-            mean_abs  3.1434549894e-10
+   root_mean_squared  4.0369307013e-10
+            mean_abs  3.1434552189e-10
             rsquared  1.0000000000e+00
 Surrogate quality metrics at challenge (test) points for response_fn_3:
-   root_mean_squared  4.0369304686e-10
-            mean_abs  3.1434549894e-10
+   root_mean_squared  4.0369307013e-10
+            mean_abs  3.1434552189e-10
             rsquared  1.0000000000e+00
 <<<<< Function evaluation summary (APPROX_INTERFACE_1): 100 total (100 new, 0 duplicate)
   response_fn_1: 100 val (100 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
@@ -1104,7 +1104,7 @@ Sample moment statistics for each response function:
  response_fn_2  3.1060194332e-01  5.9261877662e-01  4.1898622352e-01 -8.0606693310e-01
  response_fn_3  5.2960284948e-01  6.6099510629e-01  3.8120695592e-01 -1.0507852865e+00
 95% confidence intervals for each response function:
-                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
  response_fn_1  5.5447676945e+03  7.2044474138e+03  3.6720030880e+03  4.8583620356e+03
  response_fn_2  1.9301352108e-01  4.2819036556e-01  5.2032334258e-01  6.8843056862e-01
  response_fn_3  3.9844708000e-01  6.6075861896e-01  5.8035822810e-01  7.6786165885e-01
@@ -1174,40 +1174,40 @@ Surrogate quality metrics at challenge (test) points for response_fn_1:
              max_abs  1.0764853114e+03
             rsquared  9.9204163247e-01
 Surrogate quality metrics at build (training) points for response_fn_2:
-         sum_squared  1.0715917885e-17
-   root_mean_squared  3.2735176622e-10
-            mean_abs  2.4040565636e-10
-             max_abs  1.0076399715e-09
+         sum_squared  1.0715917266e-17
+   root_mean_squared  3.2735175678e-10
+            mean_abs  2.4040568409e-10
+             max_abs  1.0076384171e-09
             rsquared  1.0000000000e+00
 Surrogate quality metrics (5-fold CV) for response_fn_2:
-         sum_squared  1.3305622260e-17
-   root_mean_squared  7.9822597026e-10
-            mean_abs  5.9302645581e-10
-             max_abs  1.9226438164e-09
+         sum_squared  1.3305596201e-17
+   root_mean_squared  7.9822499948e-10
+            mean_abs  5.9302505803e-10
+             max_abs  1.9226398973e-09
             rsquared  1.0000000003e+00
 Surrogate quality metrics at challenge (test) points for response_fn_2:
-         sum_squared  1.0715917885e-17
-   root_mean_squared  3.2735176622e-10
-            mean_abs  2.4040565636e-10
-             max_abs  1.0076399715e-09
+         sum_squared  1.0715917266e-17
+   root_mean_squared  3.2735175678e-10
+            mean_abs  2.4040568409e-10
+             max_abs  1.0076384171e-09
             rsquared  1.0000000000e+00
 Surrogate quality metrics at build (training) points for response_fn_3:
-         sum_squared  1.6296809346e-17
-   root_mean_squared  4.0369306839e-10
-            mean_abs  3.1434541380e-10
-             max_abs  1.1688554569e-09
+         sum_squared  1.6296810874e-17
+   root_mean_squared  4.0369308731e-10
+            mean_abs  3.1434556802e-10
+             max_abs  1.1688552348e-09
             rsquared  1.0000000000e+00
 Surrogate quality metrics (5-fold CV) for response_fn_3:
-         sum_squared  1.7361135689e-17
-   root_mean_squared  9.2420355837e-10
-            mean_abs  7.3606743137e-10
-             max_abs  2.0997467015e-09
+         sum_squared  1.7361224779e-17
+   root_mean_squared  9.2420599077e-10
+            mean_abs  7.3606918681e-10
+             max_abs  2.0997609929e-09
             rsquared  9.9999999987e-01
 Surrogate quality metrics at challenge (test) points for response_fn_3:
-         sum_squared  1.6296809346e-17
-   root_mean_squared  4.0369306839e-10
-            mean_abs  3.1434541380e-10
-             max_abs  1.1688554569e-09
+         sum_squared  1.6296810874e-17
+   root_mean_squared  4.0369308731e-10
+            mean_abs  3.1434556802e-10
+             max_abs  1.1688552348e-09
             rsquared  1.0000000000e+00
 <<<<< Function evaluation summary (APPROX_INTERFACE_1): 100 total (100 new, 0 duplicate)
   response_fn_1: 100 val (100 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
@@ -1219,7 +1219,7 @@ Sample moment statistics for each response function:
  response_fn_2  3.1060194332e-01  5.9261877662e-01  4.1898622352e-01 -8.0606693310e-01
  response_fn_3  5.2960284948e-01  6.6099510629e-01  3.8120695592e-01 -1.0507852865e+00
 95% confidence intervals for each response function:
-                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
  response_fn_1  5.5447676945e+03  7.2044474138e+03  3.6720030880e+03  4.8583620356e+03
  response_fn_2  1.9301352108e-01  4.2819036556e-01  5.2032334258e-01  6.8843056862e-01
  response_fn_3  3.9844708000e-01  6.6075861896e-01  5.8035822810e-01  7.6786165885e-01

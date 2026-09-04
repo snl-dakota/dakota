@@ -4,7 +4,7 @@ Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  4.6360019071e+02  6.5409006962e+02  2.0001403285e+00  3.6198196213e+00
 95% confidence intervals for each response function:
-                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
  response_fn_1  3.3381453031e+02  5.9338585111e+02  5.7429555864e+02  7.5984024862e+02
           Bin Lower          Bin Upper      Density Value
           ---------          ---------      -------------
@@ -42,7 +42,7 @@ Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  4.6245714206e+02  6.1334880879e+02  2.0256582573e+00  4.1143084402e+00
 95% confidence intervals for each response function:
-                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
  response_fn_1  4.5043427096e+02  4.7448001316e+02  6.0496508959e+02  6.2196982422e+02
           Bin Lower          Bin Upper      Density Value
           ---------          ---------      -------------
@@ -80,17 +80,17 @@ Test Number 2 succeeded
 <<<<< Function evaluation summary (I1): 100 total (100 new, 0 duplicate)
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  4.6248407227e+02  6.1331700696e+02  2.0250459666e+00  4.1100310366e+00
+ response_fn_1  4.6248407219e+02  6.1331700702e+02  2.0250459677e+00  4.1100310432e+00
 95% confidence intervals for each response function:
-                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
- response_fn_1  4.5046182455e+02  4.7450631999e+02  6.0493372245e+02  6.2193757540e+02
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
+ response_fn_1  4.5046182447e+02  4.7450631991e+02  6.0493372252e+02  6.2193757546e+02
           Bin Lower          Bin Upper      Density Value
           ---------          ---------      -------------
-   1.0036953324e-02   1.0000000000e-01   2.2231350248e-02
+   1.0036943253e-02   1.0000000000e-01   2.2231347759e-02
    1.0000000000e-01   1.0000000000e+00   1.5000000000e-02
    1.0000000000e+00   1.0000000000e+01   9.9222222222e-03
    1.0000000000e+01   1.0000000000e+02   2.6811111111e-03
-   1.0000000000e+02   3.5516640326e+03   1.8944485727e-04
+   1.0000000000e+02   3.5516640333e+03   1.8944485723e-04
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   2.0000000000e-03
@@ -120,17 +120,17 @@ Test Number 3 succeeded
 <<<<< Function evaluation summary (I1): 100 total (100 new, 0 duplicate)
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  4.6248407227e+02  6.1331700696e+02  2.0250459666e+00  4.1100310366e+00
+ response_fn_1  4.6248407219e+02  6.1331700702e+02  2.0250459677e+00  4.1100310432e+00
 95% confidence intervals for each response function:
-                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
- response_fn_1  4.5046182455e+02  4.7450631999e+02  6.0493372245e+02  6.2193757540e+02
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
+ response_fn_1  4.5046182447e+02  4.7450631991e+02  6.0493372252e+02  6.2193757546e+02
           Bin Lower          Bin Upper      Density Value
           ---------          ---------      -------------
-   1.0036953324e-02   1.0000000000e-01   2.2231350248e-02
+   1.0036943253e-02   1.0000000000e-01   2.2231347759e-02
    1.0000000000e-01   1.0000000000e+00   1.5000000000e-02
    1.0000000000e+00   1.0000000000e+01   9.9222222222e-03
    1.0000000000e+01   1.0000000000e+02   2.6811111111e-03
-   1.0000000000e+02   3.5516640326e+03   1.8944485727e-04
+   1.0000000000e+02   3.5516640333e+03   1.8944485723e-04
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   2.0000000000e-03
@@ -160,17 +160,17 @@ Test Number 4 succeeded
 <<<<< Function evaluation summary (I1): 100 total (100 new, 0 duplicate)
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  4.6250743108e+02  6.1323178370e+02  2.0235641475e+00  4.0999582071e+00
+ response_fn_1  4.6250743093e+02  6.1323178345e+02  2.0235641457e+00  4.0999581971e+00
 95% confidence intervals for each response function:
-                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
- response_fn_1  4.5048685391e+02  4.7452800825e+02  6.0484966409e+02  6.2185115427e+02
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
+ response_fn_1  4.5048685376e+02  4.7452800809e+02  6.0484966384e+02  6.2185115401e+02
           Bin Lower          Bin Upper      Density Value
           ---------          ---------      -------------
-  -1.4163792725e-02   1.0000000000e-01   1.6642754718e-02
+  -1.4163928362e-02   1.0000000000e-01   1.6642734945e-02
    1.0000000000e-01   1.0000000000e+00   1.5111111111e-02
    1.0000000000e+00   1.0000000000e+01   9.9333333333e-03
    1.0000000000e+01   1.0000000000e+02   2.6800000000e-03
-   1.0000000000e+02   3.5468678092e+03   1.8970846467e-04
+   1.0000000000e+02   3.5468678088e+03   1.8970846469e-04
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   1.9000000000e-03
@@ -200,17 +200,17 @@ Test Number 5 succeeded
 <<<<< Function evaluation summary (I1): 100 total (100 new, 0 duplicate)
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  4.6247582197e+02  6.1328465326e+02  2.0243553060e+00  4.1055124665e+00
+ response_fn_1  4.6247582204e+02  6.1328465328e+02  2.0243553059e+00  4.1055124657e+00
 95% confidence intervals for each response function:
-                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
- response_fn_1  4.5045420845e+02  4.7449743549e+02  6.0490181099e+02  6.2190476694e+02
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
+ response_fn_1  4.5045420852e+02  4.7449743556e+02  6.0490181101e+02  6.2190476696e+02
           Bin Lower          Bin Upper      Density Value
           ---------          ---------      -------------
-  -1.9507508864e-01   1.0000000000e-01   9.4891100867e-03
+  -1.9507314558e-01   1.0000000000e-01   9.4891725729e-03
    1.0000000000e-01   1.0000000000e+00   1.4666666667e-02
    1.0000000000e+00   1.0000000000e+01   9.8666666667e-03
    1.0000000000e+01   1.0000000000e+02   2.6811111111e-03
-   1.0000000000e+02   3.5496061825e+03   1.8955786991e-04
+   1.0000000000e+02   3.5496061807e+03   1.8955787001e-04
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   2.8000000000e-03
@@ -240,17 +240,17 @@ Test Number 6 succeeded
 <<<<< Function evaluation summary (I1): 100 total (100 new, 0 duplicate)
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  4.6248406756e+02  6.1331704541e+02  2.0250458938e+00  4.1100310114e+00
+ response_fn_1  4.6248406746e+02  6.1331704550e+02  2.0250458948e+00  4.1100310177e+00
 95% confidence intervals for each response function:
-                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
- response_fn_1  4.5046181908e+02  4.7450631603e+02  6.0493376038e+02  6.2193761439e+02
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
+ response_fn_1  4.5046181899e+02  4.7450631594e+02  6.0493376047e+02  6.2193761448e+02
           Bin Lower          Bin Upper      Density Value
           ---------          ---------      -------------
-   1.0040797177e-02   1.0000000000e-01   2.2232300168e-02
+   1.0040793527e-02   1.0000000000e-01   2.2232299265e-02
    1.0000000000e-01   1.0000000000e+00   1.5000000000e-02
    1.0000000000e+00   1.0000000000e+01   9.9222222222e-03
    1.0000000000e+01   1.0000000000e+02   2.6811111111e-03
-   1.0000000000e+02   3.5516614828e+03   1.8944499722e-04
+   1.0000000000e+02   3.5516614832e+03   1.8944499720e-04
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   2.0000000000e-03
@@ -280,17 +280,17 @@ Test Number 7 succeeded
 <<<<< Function evaluation summary (I1): 100 total (100 new, 0 duplicate)
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  4.6248311481e+02  6.1331608832e+02  2.0250343175e+00  4.1099658677e+00
+ response_fn_1  4.6248311490e+02  6.1331608841e+02  2.0250343182e+00  4.1099658722e+00
 95% confidence intervals for each response function:
-                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
- response_fn_1  4.5046088510e+02  4.7450534453e+02  6.0493281637e+02  6.2193664384e+02
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
+ response_fn_1  4.5046088519e+02  4.7450534462e+02  6.0493281646e+02  6.2193664394e+02
           Bin Lower          Bin Upper      Density Value
           ---------          ---------      -------------
-   9.9078900362e-03   1.0000000000e-01   2.2199502274e-02
+   9.9080382652e-03   1.0000000000e-01   2.2199538799e-02
    1.0000000000e-01   1.0000000000e+00   1.5000000000e-02
    1.0000000000e+00   1.0000000000e+01   9.9222222222e-03
    1.0000000000e+01   1.0000000000e+02   2.6811111111e-03
-   1.0000000000e+02   3.5516654972e+03   1.8944477688e-04
+   1.0000000000e+02   3.5516654975e+03   1.8944477687e-04
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   2.0000000000e-03
@@ -320,17 +320,17 @@ Test Number 8 succeeded
 <<<<< Function evaluation summary (I1): 100 total (100 new, 0 duplicate)
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  4.6249152077e+02  6.1328190445e+02  2.0244599036e+00  4.1060221634e+00
+ response_fn_1  4.6249152088e+02  6.1328190452e+02  2.0244599034e+00  4.1060221617e+00
 95% confidence intervals for each response function:
-                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
- response_fn_1  4.5046996113e+02  4.7451308041e+02  6.0489909975e+02  6.2190197950e+02
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
+ response_fn_1  4.5046996124e+02  4.7451308052e+02  6.0489909982e+02  6.2190197957e+02
           Bin Lower          Bin Upper      Density Value
           ---------          ---------      -------------
-  -1.5629099858e-02   1.0000000000e-01   1.6431849788e-02
+  -1.5629053588e-02   1.0000000000e-01   1.6431856363e-02
    1.0000000000e-01   1.0000000000e+00   1.5111111111e-02
    1.0000000000e+00   1.0000000000e+01   9.9222222222e-03
    1.0000000000e+01   1.0000000000e+02   2.6822222222e-03
-   1.0000000000e+02   3.5503881527e+03   1.8948592769e-04
+   1.0000000000e+02   3.5503881503e+03   1.8948592782e-04
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   1.9000000000e-03
@@ -360,17 +360,17 @@ Test Number 9 succeeded
 <<<<< Function evaluation summary (I1): 100 total (100 new, 0 duplicate)
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  4.6238524613e+02  6.1309122405e+02  2.0245669628e+00  4.1064118983e+00
+ response_fn_1  4.6238524622e+02  6.1309122356e+02  2.0245669609e+00  4.1064118846e+00
 95% confidence intervals for each response function:
-                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
- response_fn_1  4.5036742421e+02  4.7440306806e+02  6.0471102572e+02  6.2170861896e+02
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
+ response_fn_1  4.5036742431e+02  4.7440306814e+02  6.0471102524e+02  6.2170861847e+02
           Bin Lower          Bin Upper      Density Value
           ---------          ---------      -------------
-  -4.0038607053e-02   1.0000000000e-01   1.4995864670e-02
+  -4.0038609791e-02   1.0000000000e-01   1.4995864377e-02
    1.0000000000e-01   1.0000000000e+00   1.4777777778e-02
    1.0000000000e+00   1.0000000000e+01   9.9333333333e-03
    1.0000000000e+01   1.0000000000e+02   2.6822222222e-03
-   1.0000000000e+02   3.5491586470e+03   1.8955347287e-04
+   1.0000000000e+02   3.5491586429e+03   1.8955347309e-04
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   2.1000000000e-03
@@ -381,10 +381,10 @@ Simple Correlation Matrix among all inputs and outputs:
                        x1           x2 response_fn_1 
           x1  1.00000e+00 
           x2  3.19706e-03  1.00000e+00 
-response_fn_1 -2.14228e-03 -5.14143e-01  1.00000e+00 
+response_fn_1 -2.14227e-03 -5.14143e-01  1.00000e+00 
 Partial Correlation Matrix between input and output:
              response_fn_1 
-          x1 -5.81242e-04 
+          x1 -5.81241e-04 
           x2 -5.14140e-01 
 Simple Rank Correlation Matrix among all inputs and outputs:
                        x1           x2 response_fn_1 
@@ -402,11 +402,11 @@ Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  4.6155336227e+02  6.0503817751e+02  1.9644896676e+00  3.7446900826e+00
 95% confidence intervals for each response function:
-                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
  response_fn_1  4.4969339627e+02  4.7341332827e+02  5.9676805436e+02  6.1354238162e+02
           Bin Lower          Bin Upper      Density Value
           ---------          ---------      -------------
-  -6.7820043634e+00   1.0000000000e-01   1.8453926108e-03
+  -6.7820043635e+00   1.0000000000e-01   1.8453926108e-03
    1.0000000000e-01   1.0000000000e+00   6.5555555556e-03
    1.0000000000e+00   1.0000000000e+01   9.3111111111e-03
    1.0000000000e+01   1.0000000000e+02   2.7055555556e-03
@@ -440,17 +440,17 @@ Test Number 11 succeeded
 <<<<< Function evaluation summary (I1): 100 total (100 new, 0 duplicate)
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  4.6226823156e+02  6.1019512611e+02  2.0050553077e+00  3.9813040466e+00
+ response_fn_1  4.6226823157e+02  6.1019512611e+02  2.0050553075e+00  3.9813040458e+00
 95% confidence intervals for each response function:
-                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
- response_fn_1  4.5030717899e+02  4.7422928413e+02  6.0185451385e+02  6.1877181448e+02
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
+ response_fn_1  4.5030717900e+02  4.7422928414e+02  6.0185451385e+02  6.1877181448e+02
           Bin Lower          Bin Upper      Density Value
           ---------          ---------      -------------
-  -1.1110405670e+00   1.0000000000e-01   4.7892697884e-03
+  -1.1110405615e+00   1.0000000000e-01   4.7892698102e-03
    1.0000000000e-01   1.0000000000e+00   1.0888888889e-02
    1.0000000000e+00   1.0000000000e+01   9.5333333333e-03
    1.0000000000e+01   1.0000000000e+02   2.7022222222e-03
-   1.0000000000e+02   3.5174141383e+03   1.9178243358e-04
+   1.0000000000e+02   3.5174141387e+03   1.9178243356e-04
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
    1.0000000000e-01   5.8000000000e-03

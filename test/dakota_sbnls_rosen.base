@@ -5,8 +5,8 @@ Test Number 0 succeeded
                       1.0000000000e+00 x1
                       1.0000000000e+00 x2
 <<<<< Best residual terms =
-                      0.0000000000e+00
-                     -6.6613381478e-16
+                     -5.5511151231e-15
+                      1.1102230246e-16
 <<<<< Best evaluation ID not available
 Test Number 1 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE_1): 88 total (88 new, 0 duplicate)
@@ -55,7 +55,7 @@ Test Number 5 succeeded
                       9.9999690460e-01 x1
                       9.9999375735e-01 x2
 <<<<< Best residual terms =
-                     -5.1857539152e-07
+                     -5.1857539374e-07
                       3.0954012098e-06
 <<<<< Best evaluation ID not available
 Test Number 6 succeeded
@@ -65,8 +65,8 @@ Test Number 6 succeeded
                       9.9999995014e-01 x1
                       9.9999979735e-01 x2
 <<<<< Best residual terms =
-                     -1.0292703034e-06
-                      4.9862252105e-08
+                     -1.0292703068e-06
+                      4.9862252216e-08
 <<<<< Best evaluation ID not available
 Test Number 7 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE_1): 248 total (248 new, 0 duplicate)

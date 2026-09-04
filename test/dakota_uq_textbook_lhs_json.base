@@ -6,7 +6,7 @@ Sample moment statistics for each response function:
  response_fn_2  6.1791347600e+04  6.1426765735e+03  1.2619015132e-01 -9.7944997689e-02
  response_fn_3  3.5243745292e+05  3.5957710811e+04 -7.9683460229e-02  3.4031655353e-01
 95% confidence intervals for each response function:
-                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
  response_fn_1  3.6840556934e+11  3.9496352816e+11  5.8758871169e+10  7.7742818321e+10
  response_fn_2  6.0572507301e+04  6.3010187898e+04  5.3933120806e+03  7.1357953767e+03
  response_fn_3  3.4530266299e+05  3.5957224285e+05  3.1571116237e+04  4.1771182886e+04
@@ -85,10 +85,10 @@ Partial Rank Correlation Matrix between input and output:
              response_fn_1 response_fn_2 response_fn_3 
         TF1n -3.93662e-03  1.00000e+00         -nan 
         TF2n  8.92974e-01         -nan  1.00000e+00 
-        TF1u  6.46343e-02  1.62321e-09         -nan 
-        TF2u  9.79188e-01 -8.98597e-11         -nan 
-        TF1w  1.02214e-01         -nan         -nan 
-        TF2w  8.39609e-01 -4.15119e-09  7.75125e-10 
-        TF1h -4.96308e-02  4.97572e-10         -nan 
-        TF2h  3.55102e-03  7.04443e-10 -4.14173e-10 
-        TF3h -1.19136e-01         -nan         -nan 
+        TF1u  6.46343e-02 -3.47191e-10         -nan 
+        TF2u  9.79188e-01         -nan         -nan 
+        TF1w  1.02214e-01 -1.22415e-09  2.05959e-09 
+        TF2w  8.39609e-01 -1.81117e-09  1.23621e-09 
+        TF1h -4.96308e-02  1.08732e-09         -nan 
+        TF2h  3.55102e-03         -nan         -nan 
+        TF3h -1.19136e-01  5.91237e-09         -nan 

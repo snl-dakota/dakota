@@ -13,7 +13,7 @@ response_fn_1_8  1.3793967794e-01  7.2137714426e-02  1.7286721284e+00 -3.0000000
 response_fn_1_9  1.3835178452e-01  1.6424348278e-01  1.5017845010e+00 -3.0000000000e+00
 response_fn_1_10 -6.3673115866e-02  1.1885529338e-01  1.6907241623e+00 -3.0000000000e+00
 95% confidence intervals for each response function:
-                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
 response_fn_1_1  6.7740413897e-02  6.3931670888e-01  5.9899240212e-02  7.2302862997e-01
 response_fn_1_2 -4.1888428452e-01  7.6955906915e-01  1.2454479751e-01  1.5033488571e+00
 response_fn_1_3 -5.0540906091e-01  1.8949407651e-01  7.2823471368e-02  8.7903376649e-01

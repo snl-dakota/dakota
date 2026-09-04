@@ -1,5 +1,5 @@
 Test Number 0 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE_1): 52 total (52 new, 0 duplicate)
+<<<<< Function evaluation summary (APPROX_INTERFACE_1): 51 total (51 new, 0 duplicate)
 <<<<< Function evaluation summary (TRUE_FN): 97 total (97 new, 0 duplicate)
 <<<<< Best parameters          =
                       2.1224189248e+00 intake_dia
@@ -9,31 +9,31 @@ Test Number 0 succeeded
 <<<<< Best constraint values   =
                       8.1817880981e-07
                      -3.3471647490e-01
-                     -1.5356205196e-10
+                     -1.5356227401e-10
 <<<<< Best evaluation ID: 97
 Test Number 1 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE_1): 65 total (65 new, 0 duplicate)
-<<<<< Function evaluation summary (TRUE_FN): 108 total (101 new, 7 duplicate)
+<<<<< Function evaluation summary (APPROX_INTERFACE_1): 59 total (59 new, 0 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 108 total (105 new, 3 duplicate)
 <<<<< Best parameters          =
-                      1.9314431689e+00 intake_dia
-                      1.7685568311e+00 flatness
+                      1.9314431688e+00 intake_dia
+                      1.7685568312e+00 flatness
 <<<<< Best objective function  =
-                     -2.3776813063e+00
+                     -2.3776813062e+00
 <<<<< Best constraint values   =
-                     -4.4086847942e-01
-                     -3.3471647533e-01
-                      3.2697178298e-10
-<<<<< Best evaluation ID: 61
+                     -4.4086847947e-01
+                     -3.3471647532e-01
+                      3.0721358790e-10
+<<<<< Best evaluation ID: 97
 Test Number 2 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE_1): 137 total (137 new, 0 duplicate)
-<<<<< Function evaluation summary (TRUE_FN): 168 total (166 new, 2 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 168 total (167 new, 1 duplicate)
 <<<<< Best parameters          =
-                      1.5314432703e+00 intake_dia
-                      1.7685567297e+00 flatness
+                      1.5314432671e+00 intake_dia
+                      1.7685567329e+00 flatness
 <<<<< Best objective function  =
-                     -2.2031041699e+00
+                     -2.2031041680e+00
 <<<<< Best constraint values   =
-                     -4.9178929263e-01
-                     -3.3471649055e-01
-                      1.7376697858e-08
-<<<<< Best evaluation ID: 168
+                     -4.9178929272e-01
+                     -3.3471649006e-01
+                      1.6831713356e-08
+<<<<< Best evaluation ID: 157

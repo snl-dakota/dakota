@@ -277,7 +277,7 @@ response_fn_1  7.48479e-02  2.81893e-18  2.08263e-01  8.66037e-01  4.33018e-01  
 Partial Rank Correlation Matrix between input and output:
              response_fn_1 
        puv_1  9.71282e-01 
-      biuv_1  0.00000e+00 
+      biuv_1 -0.00000e+00 
       nbuv_1  9.96147e-01 
       geuv_1  9.99776e-01 
       hguv_1  9.99105e-01 

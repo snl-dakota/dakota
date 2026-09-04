@@ -4,7 +4,7 @@ Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  1.1308360176e+04  7.4433893442e+03  7.7723693337e-01  2.2176255876e-01
 95% confidence intervals for each response function:
-                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
  response_fn_1  8.5289529162e+03  1.4087767435e+04  5.9279668770e+03  1.0006261280e+04
 Simple Correlation Matrix among all inputs and outputs:
                      TF1n         TF2n         TF1u         TF2u         TF1e response_fn_1 
@@ -42,7 +42,7 @@ Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  1.1308360176e+04  7.4433893442e+03  7.7723693337e-01  2.2176255876e-01
 95% confidence intervals for each response function:
-                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
  response_fn_1  8.5289529162e+03  1.4087767435e+04  5.9279668770e+03  1.0006261280e+04
 Simple Correlation Matrix among all inputs and outputs:
                      TF1n         TF2n         TF1u         TF2u         TF1e response_fn_1 
@@ -78,7 +78,7 @@ Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  1.1223528211e+04  7.3481244348e+03  1.1868790131e+00  1.5975944570e+00
 95% confidence intervals for each response function:
-                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
  response_fn_1  9.3253063864e+03  1.3121750036e+04  6.2285204845e+03  8.9622276840e+03
 Simple Correlation Matrix among all inputs and outputs:
                      TF1n         TF2n         TF1u         TF2u         TF1e response_fn_1 

@@ -12,9 +12,9 @@ Test Number 2 succeeded
 <<<<< Function evaluation summary (UQ_I): 407 total (407 new, 0 duplicate)
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-   4.8171820541e-06   6.2100004482e-03   2.4858252977e+00   2.4999808815e+00
+   4.8171820544e-06   6.2100004482e-03   2.4858252977e+00   2.4999808815e+00
 Test Number 3 succeeded
 <<<<< Function evaluation summary (UQ_I): 407 total (407 new, 0 duplicate)
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
-  -7.5139000799e-08   6.2096657751e-03   2.4858443720e+00   2.4999999744e+00
+  -7.5139001132e-08   6.2096657751e-03   2.4858443720e+00   2.4999999744e+00

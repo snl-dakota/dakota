@@ -101,24 +101,24 @@ Test Number 5 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE_1): 12 total (12 new, 0 duplicate)
 <<<<< Function evaluation summary: 100 total (100 new, 0 duplicate)
 <<<<< Best parameters          =
-                      4.0011629191e+00 x1
-                      1.9766149369e+00 x2
+                      4.0011629190e+00 x1
+                      1.9766149368e+00 x2
 <<<<< Best model responses =
-                      8.2035014711e+01
-                      1.5020997237e+01
-                      1.9064251491e+00
+                      8.2035014709e+01
+                      1.5020997236e+01
+                      1.9064251488e+00
 <<<<< Best residual terms =
-                      3.5014711341e-02
-                     -4.7900276346e-01
-                     -9.3574850918e-02
+                      3.5014708573e-02
+                     -4.7900276412e-01
+                     -9.3574851169e-02
 <<<<< Best residual terms =
-                      3.5014711341e-02
-                     -4.7900276346e-01
-                     -9.3574850918e-02
+                      3.5014708573e-02
+                     -4.7900276412e-01
+                     -9.3574851169e-02
 <<<<< Best evaluation ID not available
 Confidence Intervals on Calibrated Parameters:
-            x1: [ 3.9238384579e+00, 4.0784873802e+00 ]
-            x2: [ 4.3950626739e-01, 3.5137236063e+00 ]
+            x1: [ 3.9238384576e+00, 4.0784873804e+00 ]
+            x2: [ 4.3950626580e-01, 3.5137236078e+00 ]
 Test Number 6 succeeded
 <<<<< Function evaluation summary: 11 total (11 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -143,18 +143,18 @@ Confidence Intervals on Calibrated Parameters:
 Test Number 7 succeeded
 <<<<< Function evaluation summary: 32 total (32 new, 0 duplicate)
 <<<<< Best parameters          =
-                      4.0011599480e+00 x1
-                      1.9766102418e+00 x2
+                      4.0011599476e+00 x1
+                      1.9766102615e+00 x2
 <<<<< Best model responses =
-                      8.2035019631e+01
-                      1.5020975809e+01
-                      1.9064080739e+00
+                      8.2035019652e+01
+                      1.5020975795e+01
+                      1.9064081523e+00
 <<<<< Best residual terms =
-                      3.5019630515e-02
-                     -4.7902419103e-01
-                     -9.3591926149e-02
+                      3.5019651956e-02
+                     -4.7902420478e-01
+                     -9.3591847747e-02
 <<<<< Best residual terms =
-                      3.5019630515e-02
-                     -4.7902419103e-01
-                     -9.3591926149e-02
-<<<<< Best evaluation ID: 32
+                      3.5019651956e-02
+                     -4.7902420478e-01
+                     -9.3591847747e-02
+<<<<< Best evaluation ID: 30

@@ -4,7 +4,7 @@ Test Number 0 succeeded
                       1.0000000115e+00 x1
                       1.0000000229e+00 x2
 <<<<< Best objective function  =
-                      1.3209461836e-16
+                      1.3209463503e-16
 <<<<< Best evaluation ID: 44
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 29 total (29 new, 0 duplicate)
@@ -46,7 +46,7 @@ Test Number 4 succeeded
 <<<<< Best objective function  =
                      -2.4610312954e+00
 <<<<< Best constraint values   =
-                      1.8407497748e-13
+                      1.9184653866e-13
                      -3.3471647504e-01
                       0.0000000000e+00
 <<<<< Best evaluation ID: 51
@@ -63,5 +63,5 @@ Test Number 5 succeeded
                       7.8235203313e+00
 <<<<< Best constraint values   =
                      -1.6009000260e-02
-                     -3.7083558446e-11
+                     -3.7082004134e-11
 <<<<< Best evaluation ID: 31

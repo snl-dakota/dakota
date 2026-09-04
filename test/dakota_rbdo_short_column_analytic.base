@@ -6,7 +6,7 @@ Test Number 0 succeeded
 <<<<< Best objective function  =
                       2.1729941416e+02
 <<<<< Best constraint values   =
-                      5.9278151435e-03
+                      5.9278151437e-03
 <<<<< Best evaluation ID not available
 Test Number 1 succeeded
 <<<<< Function evaluation summary (UQ_I): 111 total (91 new, 20 duplicate)
@@ -19,14 +19,14 @@ Test Number 1 succeeded
                       5.9278154510e-03
 <<<<< Best evaluation ID not available
 Test Number 2 succeeded
-<<<<< Function evaluation summary (UQ_I): 156 total (133 new, 23 duplicate)
+<<<<< Function evaluation summary (UQ_I): 156 total (132 new, 24 duplicate)
 <<<<< Best parameters          =
                       8.6919765674e+00 b
                       2.5000000000e+01 h
 <<<<< Best objective function  =
-                      2.1729941419e+02
+                      2.1729941418e+02
 <<<<< Best constraint values   =
-                      5.9278151329e-03
+                      5.9278151334e-03
 <<<<< Best evaluation ID not available
 Test Number 3 succeeded
 <<<<< Function evaluation summary (UQ_I): 69 total (55 new, 14 duplicate)
@@ -76,17 +76,17 @@ Test Number 7 succeeded
 <<<<< Best objective function  =
                       2.1670107204e+02
 <<<<< Best constraint values   =
-                     -7.6720726235e-05
+                     -7.6720726234e-05
 <<<<< Best evaluation ID not available
 Test Number 8 succeeded
-<<<<< Function evaluation summary (UQ_I): 172 total (156 new, 16 duplicate)
+<<<<< Function evaluation summary (UQ_I): 169 total (153 new, 16 duplicate)
 <<<<< Best parameters          =
                       8.6680428930e+00 b
                       2.5000000000e+01 h
 <<<<< Best objective function  =
                       2.1670107232e+02
 <<<<< Best constraint values   =
-                     -7.6718692336e-05
+                     -7.6718692549e-05
 <<<<< Best evaluation ID not available
 Test Number 9 succeeded
 <<<<< Function evaluation summary (UQ_I): 93 total (77 new, 16 duplicate)
@@ -106,15 +106,15 @@ Test Number 10 succeeded
 <<<<< Best objective function  =
                       2.1670174948e+02
 <<<<< Best constraint values   =
-                     -7.6754849124e-05
+                     -7.6754849126e-05
 <<<<< Best evaluation ID not available
 Test Number 11 succeeded
-<<<<< Function evaluation summary (UQ_I): 167 total (151 new, 16 duplicate)
+<<<<< Function evaluation summary (UQ_I): 175 total (159 new, 16 duplicate)
 <<<<< Best parameters          =
                       8.6680699907e+00 b
                       2.5000000000e+01 h
 <<<<< Best objective function  =
                       2.1670174977e+02
 <<<<< Best constraint values   =
-                     -7.6752818487e-05
+                     -7.6752815112e-05
 <<<<< Best evaluation ID not available

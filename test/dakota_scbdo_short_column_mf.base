@@ -51,12 +51,12 @@ Test Number 3 succeeded
   response_fn_1: 375 val (268 n, 107 d), 240 grad (187 n, 53 d), 0 Hess (0 n, 0 d)
   response_fn_2: 375 val (268 n, 107 d), 240 grad (187 n, 53 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      8.1106928240e+00 b
+                      8.1104003919e+00 b
                       2.5000000000e+01 h
 <<<<< Best objective function  =
-                      2.0276732060e+02
+                      2.0276000980e+02
 <<<<< Best constraint values   =
-                      2.4957686358e+00
+                      2.4954407947e+00
 <<<<< Best evaluation ID not available
 Test Number 4 succeeded
 <<<<< Function evaluation summary (UQ_I): 651 total (651 new, 0 duplicate)
@@ -111,10 +111,10 @@ Test Number 7 succeeded
   response_fn_1: 411 val (296 n, 115 d), 256 grad (203 n, 53 d), 0 Hess (0 n, 0 d)
   response_fn_2: 411 val (296 n, 115 d), 256 grad (203 n, 53 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      8.1113131117e+00 b
+                      8.1105819505e+00 b
                       2.5000000000e+01 h
 <<<<< Best objective function  =
-                      2.0278282779e+02
+                      2.0276454876e+02
 <<<<< Best constraint values   =
-                      2.4963333027e+00
+                      2.4955136242e+00
 <<<<< Best evaluation ID not available

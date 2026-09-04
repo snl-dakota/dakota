@@ -58,7 +58,7 @@ Sample moment statistics for each response function:
         stress  5.7470381483e+04  1.2805775878e+04  3.6443592448e-01 -1.0488803321e-01
   displacement  6.2499533793e+00  2.9983550534e+00  9.6636215626e-01  2.9740555126e-01
 95% confidence intervals for each response function:
-                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
           area  4.3760845130e+00  4.4440935557e+00  1.5046843788e-01  1.9908211640e-01
         stress  5.4929437726e+04  6.0011325241e+04  1.1243558882e+04  1.4876152962e+04
   displacement  5.6550146869e+00  6.8448920717e+00  2.6325762619e+00  3.4831148722e+00
@@ -108,7 +108,7 @@ Sample moment statistics for each response function:
         stress  1.7607262021e+04  5.7918362835e+03 -1.9609607207e-03 -9.6992857575e-02
   displacement  1.7203417623e+00  4.0615749906e-01  6.2871293160e-02 -1.0739303860e-01
 95% confidence intervals for each response function:
-                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
           area  6.2500000000e+00  6.2500000000e+00  0.0000000000e+00  0.0000000000e+00
         stress  1.7142888814e+04  1.8071635227e+04  5.4816330197e+03  6.1395347491e+03
   displacement  1.6877771920e+00  1.7529063327e+00  3.8440422849e-01  4.3054015291e-01
@@ -200,7 +200,7 @@ displacement  2.27751e-03 -4.90897e-01  3.85775e-01  7.77451e-01         -nan  7
 Partial Correlation Matrix between input and output:
                      area       stress displacement 
            R         -nan -1.00000e+00  1.17559e-02 
-           E         -nan  1.64485e-09 -9.88304e-01 
+           E         -nan  1.55078e-09 -9.88304e-01 
            X         -nan  1.00000e+00  9.81230e-01 
            Y         -nan  1.00000e+00  9.95280e-01 
 Simple Rank Correlation Matrix among all inputs and outputs:
@@ -219,7 +219,7 @@ Partial Rank Correlation Matrix between input and output:
            X         -nan  9.41307e-01  8.45480e-01 
            Y         -nan  9.40889e-01  9.55994e-01 
 Test Number 5 succeeded
-<<<<< Function evaluation summary: 442 total (440 new, 2 duplicate)
+<<<<< Function evaluation summary: 469 total (467 new, 2 duplicate)
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
   -2.8366322205e+02   1.0000000000e-03   3.0902323062e+00   3.0902323062e+00
@@ -230,7 +230,7 @@ Test Number 5 succeeded
    1.2729404779e+04   2.0000000000e-01   8.4162123357e-01   8.4162123357e-01
    1.4565211274e+04   3.0000000000e-01   5.2440051271e-01   5.2440051271e-01
    1.6133840235e+04   4.0000000000e-01   2.5334710314e-01   2.5334710314e-01
-   1.7262045095e+04   4.7668480754e-01   5.8475829165e-02   5.8475829165e-02
+   1.7234820844e+04   4.7480657851e-01   6.3192575290e-02   6.3192575290e-02
    1.9066159765e+04   6.0000000000e-01  -2.5334710314e-01  -2.5334710314e-01
    2.0634788726e+04   7.0000000000e-01  -5.2440051271e-01  -5.2440051271e-01
    2.2470595221e+04   8.0000000000e-01  -8.4162123357e-01  -8.4162123357e-01

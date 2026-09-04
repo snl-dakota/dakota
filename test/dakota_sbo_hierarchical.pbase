@@ -3,7 +3,7 @@ Test Number 0 succeeded
 <<<<< Function evaluation summary (HIFI_FN): 23 total (23 new, 0 duplicate)
 <<<<< Best parameters          =
                       1.0000000128e+00 x1
-                      1.0000000224e+00 x2
+                      1.0000000223e+00 x2
 <<<<< Best objective function  =
-                      1.1816927162e-15
+                      1.1812142224e-15
 <<<<< Best evaluation ID: 21

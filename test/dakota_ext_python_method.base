@@ -13,7 +13,7 @@ Sample moment statistics for each response function::
 Test Number 2 succeeded
 Sample moment statistics for each response function::
                             Mean           Std Dev          Skewness          Kurtosis
-        obj_fn  1.1478872371e+04  9.1248094576e+03  5.1608062732e-01 -2.9584166393e+00
+      obj_fn_1  1.1478872371e+04  9.1248094576e+03  5.1608062732e-01 -2.9584166393e+00
 Test Number 3 succeeded
 <<<<< Best parameters          =
 		1.0603693829429037 x1

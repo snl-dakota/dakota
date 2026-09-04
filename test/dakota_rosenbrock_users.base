@@ -68,7 +68,7 @@ Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  4.5540183516e+02  5.3682678089e+02  1.6661798252e+00  2.7925726822e+00
 95% confidence intervals for each response function:
-                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
  response_fn_1  3.8054757609e+02  5.3025609422e+02  4.8886795789e+02  5.9530059589e+02
           Bin Lower          Bin Upper      Density Value
           ---------          ---------      -------------
@@ -117,7 +117,7 @@ Confidence Intervals on Calibrated Parameters:
             x2: [ 1.0000000000e+00, 1.0000000000e+00 ]
 Test Number 9 succeeded
 <<<<< Function evaluation summary: 109 total (109 new, 0 duplicate)
-         obj_fn: 82 val (82 n, 0 d), 27 grad (27 n, 0 d), 0 Hess (0 n, 0 d)
+       obj_fn_1: 82 val (82 n, 0 d), 27 grad (27 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                       9.9200161373e-01 x1
                       9.8371783275e-01 x2
