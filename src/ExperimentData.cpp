@@ -42,6 +42,25 @@ ExperimentData(const ProblemDescDB& pddb,
 
 
 ExperimentData::
+ExperimentData(const IRStore& method_store,
+               const SharedResponseData& srd, short output_level):
+  calibrationDataFlag(method_store.get<bool>("responses.calibration_data")),
+  numExperiments(method_store.get<size_t>("responses.num_experiments")), 
+  numConfigVars(method_store.get<size_t>("responses.num_config_vars")),
+  covarianceDeterminant(1.0), logCovarianceDeterminant(0.0),
+  dataPathPrefix(method_store.get<String>("responses.data_directory")),
+  scalarDataFilename(method_store.get<String>("responses.scalar_data_filename")),
+  scalarDataFormat(method_store.get<unsigned short>("responses.scalar_data_format")),
+  scalarSigmaPerRow(0), 
+  readSimFieldCoords(method_store.get<bool>("responses.read_field_coordinates")), 
+  interpolateFlag(method_store.get<bool>("responses.interpolate")),
+  outputLevel(output_level)
+{
+  initialize(method_store.get<StringArray>("responses.variance_type"), srd);
+}
+
+
+ExperimentData::
 ExperimentData(size_t num_experiments, size_t num_config_vars, 
                const std::filesystem::path& data_prefix,
                const SharedResponseData& srd,

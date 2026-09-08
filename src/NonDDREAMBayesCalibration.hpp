@@ -33,6 +33,9 @@ public:
 
   /// standard constructor
   NonDDREAMBayesCalibration(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
+  /// DI constructor
+  NonDDREAMBayesCalibration(std::shared_ptr<StudyServices> services,
+             const IRStore& method_store, std::shared_ptr<Model> model);
   /// destructor
   ~NonDDREAMBayesCalibration() override;
 
@@ -71,6 +74,8 @@ protected:
   //
   //- Heading: Virtual function redefinitions
   //
+
+  void initialize();
 
   void calibrate() override;
   //void print_results(std::ostream& s, short results_state = FINAL_RESULTS);

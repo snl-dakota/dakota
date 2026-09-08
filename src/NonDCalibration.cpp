@@ -38,6 +38,31 @@ NonDCalibration::NonDCalibration(ProblemDescDB& problem_db, ParallelLibrary& par
 }
 
 
+/** This is the IRStore based constructor */
+NonDCalibration::NonDCalibration(std::shared_ptr<StudyServices> services,
+                  const IRStore& method_store,
+                  std::shared_ptr<Model> model):
+  NonD(std::move(services), method_store, model),
+  calibrationData( (method_store.contains("responses.calibration_data")
+                      ? method_store.get<bool>("responses.calibration_data") : false)
+                  ||
+                   (method_store.contains("responses.scalar_data_filename")
+                      ? !method_store.get<String>("responses.scalar_data_filename").empty() : false)
+                   ),
+  expData(method_store, iteratedModel->current_response().shared_data(), outputLevel)
+{ 
+  // Read in all of the experimental data, including any x configuration 
+  // variables, y observations, and covariance information if available 
+  //if (outputLevel > NORMAL_OUTPUT)
+  //  Cout << "Read data from file " << calibrationData << '\n';
+  if (calibrationData)
+    expData.load_data("NonDCalibration", iteratedModel->current_variables());
+  else if (outputLevel > SILENT_OUTPUT)
+    Cout << "No experiment data from files.\nCalibration is assuming the "
+	 << "simulation is returning the residuals" << std::endl;
+}
+
+
 bool NonDCalibration::resize()
 {
   bool parent_reinit_comms = NonD::resize();

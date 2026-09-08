@@ -39,6 +39,8 @@ public:
 
   /// standard constructor
   NonDBayesCalibration(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
+  /// IRStore constructor
+  NonDBayesCalibration(std::shared_ptr<StudyServices> services, const IRStore& method_store, std::shared_ptr<Model> model);
   /// destructor
   ~NonDBayesCalibration() override;
 
@@ -123,6 +125,7 @@ protected:
   /// construct mcmcModel (no emulation, GP, PCE, or SC) that wraps
   /// inbound Model
   void construct_mcmc_model();
+  void construct_mcmc_model(const IRStore& method_store);
 
   /// initialize the hyper-parameter priors
   void init_hyper_parameters();

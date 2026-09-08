@@ -72,6 +72,10 @@ public:
   ExperimentData(const ProblemDescDB& prob_desc_db, 
                  const SharedResponseData& srd, short output_level);
 
+  /// IRStore-based constructor
+  ExperimentData(const IRStore& method_store, 
+                 const SharedResponseData& srd, short output_level);
+
   /// temporary? constructor for testing
   ExperimentData(size_t num_experiments, size_t num_config_vars, 
                  const std::filesystem::path& data_prefix,
