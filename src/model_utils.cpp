@@ -68,7 +68,7 @@ namespace Dakota {
                 // discrete aleatory uncertain
                 if (active_totals[TOTAL_DAUIV]) {
                     size_t num_dausiv = svd.vc_lookup(HISTOGRAM_POINT_UNCERTAIN_INT),
-                        num_dauriv = all_totals[TOTAL_DAUIV] - num_dausiv; 
+                        num_dauriv = all_totals[TOTAL_DAUIV] - num_dausiv;
                     for (i=0; i<num_dauriv; ++i, ++ardi_cntr)
                         if (!all_relax_di[ardi_cntr]) // part of active discrete vars
                             ++di_cntr;                  // leave bit as false
@@ -141,17 +141,17 @@ namespace Dakota {
 
         IntSetArray discrete_set_int_values(const Model &model, short active_view) {
 
-            
+
             // aggregation of the admissible value sets for all active discrete
             // set integer variables
             IntSetArray adsi_vals;
-            
+
             const auto &mvd = model.multivariate_distribution();
             const auto &cv = model.current_variables();
 
             std::shared_ptr<Pecos::MarginalsCorrDistribution> mvd_rep =
                 std::static_pointer_cast<Pecos::MarginalsCorrDistribution>(mvd.multivar_dist_rep());
-                
+
             const SharedVariablesData& svd = cv.shared_data();
             switch (active_view) {
                 case MIXED_DESIGN: {
@@ -245,7 +245,7 @@ namespace Dakota {
                     const SizetArray&    all_totals = svd.components_totals();
                     const SizetArray& active_totals = svd.active_components_totals();
                     size_t i, num_cv, num_div, num_dsv, num_drv,
-                        di_cntr = 0, ardi_cntr = 0, rv_cntr = 0;      
+                        di_cntr = 0, ardi_cntr = 0, rv_cntr = 0;
                     // discrete design
                     svd.design_counts(num_cv, num_div, num_dsv, num_drv);
                     if (active_totals[TOTAL_DDIV]) {
@@ -271,7 +271,7 @@ namespace Dakota {
                         IntRealMapArray h_pt_prs;
                         mvd_rep->pull_parameters<IntRealMap>(Pecos::HISTOGRAM_PT_INT,
                             Pecos::H_PT_INT_PAIRS, h_pt_prs);
-                        size_t num_dausi = h_pt_prs.size(), num_dauri = num_div - num_dausi; 
+                        size_t num_dausi = h_pt_prs.size(), num_dauri = num_div - num_dausi;
                         for (i=0; i<num_dauri; ++i, ++ardi_cntr)
                             if (!all_relax_di[ardi_cntr]) // part of active discrete vars
                                 ++di_cntr;
@@ -339,7 +339,7 @@ namespace Dakota {
             const SharedVariablesData& svd = cv.shared_data();
             switch (active_view) {
                 case MIXED_DESIGN: case RELAXED_DESIGN: {
-                    size_t num_cv, num_div, num_dsv, num_drv;      
+                    size_t num_cv, num_div, num_dsv, num_drv;
                     svd.design_counts(num_cv, num_div, num_dsv, num_drv);
                     mvd_rep->pull_parameters<StringSet>(num_cv + num_div, num_dsv,
                     Pecos::DSS_VALUES, adss_vals);
@@ -457,7 +457,7 @@ namespace Dakota {
             const SharedVariablesData& svd = cv.shared_data();
             switch (active_view) {
                 case MIXED_DESIGN: {
-                    size_t num_cv, num_div, num_dsv, num_drv;      
+                    size_t num_cv, num_div, num_dsv, num_drv;
                     svd.design_counts(num_cv, num_div, num_dsv, num_drv);
                     mvd_rep->pull_parameters<RealSet>(num_cv + num_div + num_dsv, num_drv,
                     Pecos::DSR_VALUES, adsr_vals);
@@ -566,7 +566,7 @@ namespace Dakota {
                         RealRealMapArray h_pt_prs;
                         mvd_rep->pull_parameters<RealRealMap>(Pecos::HISTOGRAM_PT_REAL,
                             Pecos::H_PT_REAL_PAIRS, h_pt_prs);
-                        size_t num_dausr = h_pt_prs.size(); 
+                        size_t num_dausr = h_pt_prs.size();
                         for (i=0; i<num_dausr; ++i, ++ardr_cntr)
                             if (!all_relax_dr[ardr_cntr]) // part of active discrete vars
                                 map_keys_to_set(h_pt_prs[i], adsr_vals[dr_cntr++]);
@@ -1041,7 +1041,7 @@ namespace Dakota {
             model.user_defined_constraints().continuous_lower_bounds(c_l_bnds);
             auto & mvd = model.multivariate_distribution();
             if (mvd.global_bounds())
-                mvd.lower_bounds(c_l_bnds, 
+                mvd.lower_bounds(c_l_bnds,
                     model.current_variables().shared_data().cv_to_all_mask());
         }
 
@@ -1203,9 +1203,9 @@ namespace Dakota {
         }
 
 
-        void 
+        void
         inactive_continuous_lower_bounds(Model &model, const RealVector& i_c_l_bnds) {
-        
+
             model.user_defined_constraints().inactive_continuous_lower_bounds(i_c_l_bnds);
             auto & mvd = model.multivariate_distribution();
             if (mvd.global_bounds())
@@ -1219,7 +1219,7 @@ namespace Dakota {
         }
 
 
-        void 
+        void
         inactive_continuous_upper_bounds(Model &model, const RealVector& i_c_u_bnds) {
             model.user_defined_constraints().inactive_continuous_upper_bounds(i_c_u_bnds);
             auto & mvd = model.multivariate_distribution();
@@ -1234,7 +1234,7 @@ namespace Dakota {
         }
 
 
-        void 
+        void
         inactive_discrete_int_lower_bounds(Model &model, const IntVector& i_d_l_bnds) {
             model.user_defined_constraints().inactive_discrete_int_lower_bounds(i_d_l_bnds);
             auto & mvd = model.multivariate_distribution();
@@ -1249,14 +1249,14 @@ namespace Dakota {
         }
 
 
-        void 
+        void
         inactive_discrete_int_upper_bounds(Model &model, const IntVector& i_d_u_bnds) {
             model.user_defined_constraints().inactive_discrete_int_upper_bounds(i_d_u_bnds);
             auto & mvd = model.multivariate_distribution();
             if (mvd.global_bounds())
                 mvd.upper_bounds(i_d_u_bnds,
                     model.current_variables().shared_data().idiv_to_all_mask());
-        
+
         }
 
 
@@ -1265,7 +1265,7 @@ namespace Dakota {
         }
 
 
-        void 
+        void
         inactive_discrete_real_lower_bounds(Model &model, const RealVector& i_d_l_bnds) {
             model.user_defined_constraints().inactive_discrete_real_lower_bounds(i_d_l_bnds);
             auto & mvd = model.multivariate_distribution();
@@ -1280,7 +1280,7 @@ namespace Dakota {
         }
 
 
-        void 
+        void
         inactive_discrete_real_upper_bounds(Model &model, const RealVector& i_d_u_bnds) {
             model.user_defined_constraints().inactive_discrete_real_upper_bounds(i_d_u_bnds);
             auto & mvd = model.multivariate_distribution();
@@ -1508,34 +1508,39 @@ namespace Dakota {
             model.user_defined_constraints().nonlinear_eq_constraint_targets(nln_eq_targets);
         }
 
-        std::shared_ptr<Model> get_model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib)
-        {
-          // These instantiations will NOT recurse on the Model(problem_db)
-          // constructor due to the use of BaseConstructor.
-
-          const String& model_type = problem_db.get<const String>("model.type");
-          if ( model_type == "simulation" )
-            return std::make_shared<SimulationModel>(problem_db, parallel_lib);
-          else if ( model_type == "nested")
-            return std::make_shared<NestedModel>(problem_db, parallel_lib);
-          else if ( model_type == "surrogate") {
-            const String& surr_type = problem_db.get<const String>("model.surrogate.type");
-            if (surr_type == "ensemble")
-              return std::make_shared<EnsembleSurrModel>(problem_db, parallel_lib);
-            else // all other surrogates (local/multipt/global) managed by DataFitSurr
-              return std::make_shared<DataFitSurrModel>(problem_db, parallel_lib);
-          }
-          else if ( model_type == "active_subspace" )
-            return std::make_shared<ActiveSubspaceModel>(problem_db, parallel_lib);
-          else if ( model_type == "adapted_basis" )
-            return std::make_shared<AdaptedBasisModel>(problem_db, parallel_lib);
-          else if ( model_type == "random_field" )
-            return std::make_shared<RandomFieldModel>(problem_db, parallel_lib);
-          else
-            Cerr << "Invalid model type: " << model_type << std::endl;
-
-          return std::shared_ptr<Model>();
+        std::unique_ptr<Model> ModelRegistryErrorPolicy::on_unknown_key(
+            const std::string& model_type, ProblemDescDB& problem_db,
+            ParallelLibrary& parallel_lib) const {
+          Cerr << "Invalid model type: " << model_type << std::endl;
+          return {};
         }
 
+        ModelRegistry::ModelRegistry()
+        {
+          m_factory.register_key("simulation", &default_factory_fun<SimulationModel>);
+          m_factory.register_key("nested", &default_factory_fun<NestedModel>);
+          m_factory.register_key("surrogate", [](ProblemDescDB& problem_db, ParallelLibrary& parallel_lib) -> std::unique_ptr<SurrogateModel> {
+            const String& surr_type = problem_db.get<const String>("model.surrogate.type");
+            if (surr_type == "ensemble")
+              return std::make_unique<EnsembleSurrModel>(problem_db, parallel_lib);
+            else // all other surrogates (local/multipt/global) managed by DataFitSurr
+              return std::make_unique<DataFitSurrModel>(problem_db, parallel_lib);
+          } );
+          m_factory.register_key("active_subspace", &default_factory_fun<ActiveSubspaceModel>);
+          m_factory.register_key("adapted_basis", &default_factory_fun<AdaptedBasisModel>);
+          m_factory.register_key("random_field", &default_factory_fun<RandomFieldModel>);
+        }
+
+        std::shared_ptr<Model>
+        ModelRegistry::get_model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib)
+        {
+          auto id = std::string(problem_db.model_id());
+          auto pos = m_cache.find(id);
+          if (pos == m_cache.end()) {
+            const String& model_type = problem_db.get<const String>("model.type");
+            pos = m_cache.try_emplace(id, m_factory.create(model_type, problem_db, parallel_lib)).first;
+          }
+          return pos->second;
+        }
     }
 }

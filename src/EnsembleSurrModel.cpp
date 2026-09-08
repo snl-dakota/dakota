@@ -48,7 +48,7 @@ EnsembleSurrModel::EnsembleSurrModel(ProblemDescDB& problem_db, ParallelLibrary&
 
   if (truth_model_spec) problem_db.set_db_model_nodes(truth_model_ptr);
   else problem_db.set_db_model_nodes(ensemble_model_ptrs[num_approx]);
-  truthModel = ModelUtils::get_model(problem_db, parallel_lib);
+  truthModel = Model::get_model(problem_db, parallel_lib);
 
   // honor an asynchronous local specification and perform local scheduling
   // even if the concurrency is 1.  This avoid blocking other models within
@@ -325,7 +325,7 @@ derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
     switch (responseMode) {
 
       // CASES WITH A SINGLE ACTIVE MODEL:
-  
+
       case UNCORRECTED_SURROGATE: {
         auto lf_model = active_surrogate_model(0);
         lf_model->set_communicators(pl_iter, max_eval_concurrency);
@@ -494,7 +494,7 @@ void EnsembleSurrModel::init_model_mapped_variables(Model& model)
       m_index = find_index(ModelUtils::all_continuous_variable_labels(model), surr_label);
       // push value from currentVariables to sub-ordinate variables
       if (m_index != _NPOS)
-	ModelUtils::all_continuous_variable(model, 
+	ModelUtils::all_continuous_variable(model,
 	  currentVariables.all_continuous_variables()[ac_index1], m_index);
     }
     else if (adi_index1 != _NPOS) {
@@ -502,7 +502,7 @@ void EnsembleSurrModel::init_model_mapped_variables(Model& model)
 	= currentVariables.all_discrete_int_variable_labels()[adi_index1];
       m_index = find_index(ModelUtils::all_discrete_int_variable_labels(model),surr_label);
       if (m_index != _NPOS)
-	ModelUtils::all_discrete_int_variable(model, 
+	ModelUtils::all_discrete_int_variable(model,
 	  currentVariables.all_discrete_int_variables()[adi_index1], m_index);
     }
     else if (ads_index1 != _NPOS) {
@@ -511,7 +511,7 @@ void EnsembleSurrModel::init_model_mapped_variables(Model& model)
       m_index = find_index(ModelUtils::all_discrete_string_variable_labels(model),
 			   surr_label);
       if (m_index != _NPOS)
-	ModelUtils::all_discrete_string_variable(model, 
+	ModelUtils::all_discrete_string_variable(model,
 	  currentVariables.all_discrete_string_variables()[ads_index1],m_index);
     }
     else if (adr_index1 != _NPOS) {
@@ -520,7 +520,7 @@ void EnsembleSurrModel::init_model_mapped_variables(Model& model)
       m_index = find_index(ModelUtils::all_discrete_real_variable_labels(model),
 			   surr_label);
       if (m_index != _NPOS)
-	ModelUtils::all_discrete_real_variable(model, 
+	ModelUtils::all_discrete_real_variable(model,
 	  currentVariables.all_discrete_real_variables()[adr_index1], m_index);
     }
     else {
@@ -1500,7 +1500,7 @@ void EnsembleSurrModel::active_model_key(const Pecos::ActiveKey& key)
 
   // Pull inactive variable change up into top-level currentVariables,
   // so that data flows correctly within Model recursions?  No, current
-  // design is that forward pushes are automated, but inverse pulls are 
+  // design is that forward pushes are automated, but inverse pulls are
   // generally special case invocations from Iterator code (e.g., with
   // locally-managed Model recursions).
   //update_from_model(truthModel);
@@ -2017,7 +2017,7 @@ void EnsembleSurrModel::component_parallel_mode(short model_id)
 	}
       }
     }
- 
+
     // componentParallelKey is not necessary for case where either all models
     // are active for a set of samples (AGGREGATED_MODELS mode for which any
     // drop outs are managed by ASV) or only one model is active

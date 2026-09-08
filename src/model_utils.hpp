@@ -9,13 +9,14 @@
 
 #pragma once
 #include "dakota_data_types.hpp"
+#include "util/generic_factory.hpp"
 
 
 namespace Dakota {
     class Model;
     class ProblemDescDB;
     class ParallelLibrary;
-    
+
     namespace ModelUtils {
         /// define and return discreteIntSets using active view from currentVariables
         BitArray discrete_int_sets(const Model &model);
@@ -528,7 +529,7 @@ namespace Dakota {
         void all_discrete_real_upper_bound(Model &model, Real a_d_u_bnd, size_t i);
 
 
-        /// return the number of linear inequality constraints   
+        /// return the number of linear inequality constraints
         size_t num_linear_ineq_constraints(const Model &model);
 
         /// return the number of linear equality constraints
@@ -588,8 +589,36 @@ namespace Dakota {
         /// set the nonlinear equality constraint targets
         void nonlinear_eq_constraint_targets(Model &model, const RealVector& nln_eq_targets);
 
-        /// construct the appropriate derived model type as given by the modelType attribute
-        std::shared_ptr<Model> get_model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
+        struct ModelRegistryErrorPolicy
+        {
+          std::unique_ptr<Model> on_unknown_key(const std::string& model_type,
+                                                ProblemDescDB& problem_db,
+                                                ParallelLibrary& parallel_lib) const;
+        };
+
+        class ModelRegistry {
+         public:
+          using registry_fun = std::unique_ptr<Model>(ProblemDescDB&,
+                                                      ParallelLibrary&);
+          ModelRegistry();
+
+          std::shared_ptr<Model> get_model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
+
+          const std::unordered_map<std::string, std::shared_ptr<Model>> &cache() const noexcept { return m_cache; }
+
+         private:
+          template <typename T>
+          static std::unique_ptr<Model> default_factory_fun(
+              ProblemDescDB& db, ParallelLibrary& par) {
+            return std::make_unique<T>(db, par);
+          }
+
+          Util::GenericFactory<std::string, registry_fun,
+                               ModelRegistryErrorPolicy>
+              m_factory;
+
+          std::unordered_map<std::string, std::shared_ptr<Model>> m_cache;
+        };
 
         /// dummy default empty string
         static const String empty_string = "";
