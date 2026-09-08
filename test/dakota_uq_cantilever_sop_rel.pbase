@@ -1,5 +1,5 @@
 Test Number 0 succeeded
-<<<<< Function evaluation summary (ALEAT_I): 8036 total (8036 new, 0 duplicate)
+<<<<< Function evaluation summary (ALEAT_I): 8027 total (8027 new, 0 duplicate)
 mean_wt:  Min = 9.5209117200e+00  Max = 9.5209117200e+00
 ccdf_beta_s:  Min = 1.7627715524e+00  Max = 4.2949468386e+00
 ccdf_beta_d:  Min = 2.0125192955e+00  Max = 3.9385559339e+00
@@ -7,13 +7,13 @@ Simple Correlation Matrix among all inputs and outputs:
                    X_mean       Y_mean      mean_wt  ccdf_beta_s  ccdf_beta_d 
       X_mean  1.00000e+00 
       Y_mean -4.15171e-03  1.00000e+00 
-     mean_wt  4.68375e-16 -5.82867e-16  1.00000e+00 
- ccdf_beta_s -6.19328e-01 -7.82554e-01  4.23273e-16  1.00000e+00 
- ccdf_beta_d -9.13854e-01 -4.01386e-01 -3.15720e-16  8.84098e-01  1.00000e+00 
+     mean_wt  4.55179e-16 -6.04499e-16  1.00000e+00 
+ ccdf_beta_s -6.19328e-01 -7.82554e-01  5.51750e-16  1.00000e+00 
+ ccdf_beta_d -9.13854e-01 -4.01386e-01  5.84492e-16  8.84098e-01  1.00000e+00 
 Partial Correlation Matrix between input and output:
                   mean_wt  ccdf_beta_s  ccdf_beta_d 
-      X_mean  4.63977e-16 -1.00000e+00 -9.99584e-01 
-      Y_mean -5.90297e-16 -1.00000e+00 -9.97881e-01 
+      X_mean  4.50838e-16 -1.00000e+00 -9.99584e-01 
+      Y_mean -5.90352e-16 -1.00000e+00 -9.97881e-01 
 Simple Rank Correlation Matrix among all inputs and outputs:
                    X_mean       Y_mean      mean_wt  ccdf_beta_s  ccdf_beta_d 
       X_mean  1.00000e+00 

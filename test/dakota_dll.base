@@ -3,7 +3,7 @@ Test Number 0 succeeded
 Simple Correlation Matrix among all inputs and outputs:
                        x1           x2 response_fn_1 
           x1  1.00000e+00 
-          x2  1.73472e-17  1.00000e+00 
+          x2 -1.56701e-18  1.00000e+00 
 response_fn_1 -3.00705e-03 -5.01176e-01  1.00000e+00 
 Partial Correlation Matrix between input and output:
              response_fn_1 
@@ -12,7 +12,7 @@ Partial Correlation Matrix between input and output:
 Simple Rank Correlation Matrix among all inputs and outputs:
                        x1           x2 response_fn_1 
           x1  1.00000e+00 
-          x2 -1.38778e-17  1.00000e+00 
+          x2 -4.89585e-19  1.00000e+00 
 response_fn_1 -4.07034e-02 -5.01532e-01  1.00000e+00 
 Partial Rank Correlation Matrix between input and output:
              response_fn_1 

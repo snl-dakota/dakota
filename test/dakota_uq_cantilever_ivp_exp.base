@@ -4,16 +4,16 @@ Test Number 0 succeeded
          stress: 294 val (294 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
           displ: 294 val (294 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Surrogate quality metrics at build (training) points for function 1:
-   root_mean_squared  1.1140717584e-12
-            mean_abs  1.0806170773e-12
+   root_mean_squared  1.1694410653e-12
+            mean_abs  9.9890466269e-13
             rsquared  1.0000000000e+00
 Surrogate quality metrics at build (training) points for function 2:
-   root_mean_squared  4.4969743158e-14
-            mean_abs  3.5157062446e-14
+   root_mean_squared  2.9096599412e-14
+            mean_abs  2.5387099830e-14
             rsquared  1.0000000000e+00
 Surrogate quality metrics at build (training) points for function 3:
-   root_mean_squared  5.5044915782e-13
-            mean_abs  3.7429318904e-13
+   root_mean_squared  6.0322608983e-13
+            mean_abs  5.1373720093e-13
             rsquared  1.0000000000e+00
 <<<<< Function evaluation summary (ALEAT_I): 3724 total (3724 new, 0 duplicate)
          weight: 637 val (637 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
@@ -28,16 +28,16 @@ Test Number 1 succeeded
          stress: 2381 val (2381 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
           displ: 2381 val (2381 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Surrogate quality metrics at build (training) points for function 1:
-   root_mean_squared  1.3902199297e-12
-            mean_abs  1.0254019855e-12
+   root_mean_squared  1.3000036365e-12
+            mean_abs  1.1532996780e-12
             rsquared  1.0000000000e+00
 Surrogate quality metrics at build (training) points for function 2:
-   root_mean_squared  9.3556004913e-14
-            mean_abs  7.1701903674e-14
+   root_mean_squared  3.5845621176e-14
+            mean_abs  2.7885101635e-14
             rsquared  1.0000000000e+00
 Surrogate quality metrics at build (training) points for function 3:
-   root_mean_squared  9.8639801323e-14
-            mean_abs  9.0298139336e-14
+   root_mean_squared  8.6784318951e-14
+            mean_abs  7.4310927782e-14
             rsquared  1.0000000000e+00
 <<<<< Function evaluation summary (ALEAT_I): 2381 total (2381 new, 0 duplicate)
          weight: 2381 val (2381 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
@@ -52,16 +52,16 @@ Test Number 2 succeeded
          stress: 294 val (294 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
           displ: 294 val (294 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Surrogate quality metrics at build (training) points for function 1:
-   root_mean_squared  5.7765292680e-13
-            mean_abs  4.5356311299e-13
+   root_mean_squared  9.0941779245e-13
+            mean_abs  6.8152890738e-13
             rsquared  1.0000000000e+00
 Surrogate quality metrics at build (training) points for function 2:
-   root_mean_squared  4.0749873687e-14
-            mean_abs  3.7303493627e-14
+   root_mean_squared  5.3519659443e-14
+            mean_abs  4.6777396771e-14
             rsquared  1.0000000000e+00
 Surrogate quality metrics at build (training) points for function 3:
-   root_mean_squared  5.5612287755e-13
-            mean_abs  4.8109664400e-13
+   root_mean_squared  6.6838027618e-13
+            mean_abs  5.3320311129e-13
             rsquared  1.0000000000e+00
 <<<<< Function evaluation summary (ALEAT_I): 3724 total (3724 new, 0 duplicate)
          weight: 637 val (637 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
@@ -76,16 +76,16 @@ Test Number 3 succeeded
          stress: 2381 val (2381 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
           displ: 2381 val (2381 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Surrogate quality metrics at build (training) points for function 1:
-   root_mean_squared  9.4442285175e-13
-            mean_abs  7.4488563466e-13
+   root_mean_squared  7.7667499855e-13
+            mean_abs  5.9804013593e-13
             rsquared  1.0000000000e+00
 Surrogate quality metrics at build (training) points for function 2:
-   root_mean_squared  8.2608551237e-14
-            mean_abs  6.6317322004e-14
+   root_mean_squared  9.4850912860e-14
+            mean_abs  9.0890258283e-14
             rsquared  1.0000000000e+00
 Surrogate quality metrics at build (training) points for function 3:
-   root_mean_squared  1.1079603956e+35
-            mean_abs  1.0211517155e+35
+   root_mean_squared  3.4441800960e+34
+            mean_abs  2.4230718673e+34
             rsquared  1.0000000000e+00
 <<<<< Function evaluation summary (ALEAT_I): 2381 total (2381 new, 0 duplicate)
          weight: 2381 val (2381 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)

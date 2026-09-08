@@ -14,8 +14,8 @@ Test Number 0 succeeded
 <<<<< Best evaluation ID (full match) not available
 <<<<< Best evaluation ID (partial match): 27
 Test Number 1 succeeded
-<<<<< Function evaluation summary (OPTIONAL_I): 11 total (9 new, 2 duplicate)
- nln_ineq_con_1: 7 val (5 n, 2 d), 4 grad (4 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (OPTIONAL_I): 11 total (10 new, 1 duplicate)
+ nln_ineq_con_1: 7 val (6 n, 1 d), 4 grad (4 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary (UQ_I): 68 total (68 new, 0 duplicate)
   response_fn_1: 57 val (57 n, 0 d), 68 grad (68 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
@@ -38,7 +38,7 @@ Test Number 2 succeeded
                       1.7499999888e+01 d
                       1.0000000000e+02 h
 <<<<< Best objective function  =
-                     -5.2202096314e-03
+                     -5.2202096313e-03
 <<<<< Best constraint values   =
                       3.9999999776e+03
 <<<<< Best evaluation ID (full match) not available

@@ -55,7 +55,7 @@ Test Number 4 succeeded
                      -2.1065732047e+00
 <<<<< Best constraint values   =
                      -2.5000000000e-01
-                     -1.4517306677e-06
+                     -1.4517306766e-06
                      -2.4999999774e-01
 <<<<< Best evaluation ID: 16
 Test Number 5 succeeded
@@ -212,7 +212,7 @@ Test Number 17 succeeded
 <<<<< Best constraint values   =
                      -4.4086848093e-01
                      -3.3471647482e-01
-                     -2.4559565492e-10
+                     -2.4559554390e-10
 <<<<< Best evaluation ID: 13
 Test Number 18 succeeded
 <<<<< Function evaluation summary: 12 total (12 new, 0 duplicate)

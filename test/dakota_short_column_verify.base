@@ -5,7 +5,7 @@ Sample moment statistics for each response function:
  response_fn_1  7.5000000000e+01  0.0000000000e+00  0.0000000000e+00 -3.0000000000e+00
  response_fn_2 -2.3413946117e+00  1.0706795645e+00 -7.8081580484e-01  1.1150791229e+00
 95% confidence intervals for each response function:
-                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
  response_fn_1  7.5000000000e+01  7.5000000000e+01  0.0000000000e+00  0.0000000000e+00
  response_fn_2 -2.3480307108e+00 -2.3347585126e+00  1.0660077902e+00  1.0753927524e+00
      Response Level  Probability Level  Reliability Index  General Rel Index

@@ -22,7 +22,7 @@
 
 //#include "Eigen/Dense"
 
-//#include <pybind11/eigen.h> 
+//#include <pybind11/eigen.h>
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
@@ -88,14 +88,14 @@ namespace python {
     return result;
   }
 #endif
-    
+
 
   Real get_response_fn_val(const Dakota::LibraryEnvironment & env) {
     // retrieve the final response values
     const Response& resp  = env.response_results();
     return resp.function_value(0);
   }
-  
+
   Dakota::LibraryEnvironment* create_libEnv( const std::string& input_string) {
 
       assert(!input_string.empty());
@@ -173,7 +173,7 @@ PYBIND11_MODULE(environment, m) {
     .def(py::init
 	 ([]()
 	  {
-	    return new Dakota::Variables(); 
+	    return new Dakota::Variables();
 	  }))
 
     .def("num_active_cv", &Dakota::Variables::cv
@@ -186,7 +186,7 @@ PYBIND11_MODULE(environment, m) {
     .def(py::init
 	 ([]()
 	  {
-	    return new Dakota::Response(); 
+	    return new Dakota::Response();
 	  }))
 
     .def("function_value", static_cast<const Dakota::Real & (Dakota::Response::*)(size_t) const>(&Dakota::Response::function_value)
@@ -204,12 +204,12 @@ PYBIND11_MODULE(environment, m) {
             auto p_libEnv = Dakota::python::create_libEnv(input_string);
 
             // Associate the single python callback with all Pybind11Interface interfaces
-            Dakota::InterfaceList & interfaces = Dakota::Interface::interface_cache(p_libEnv->problem_description_db());
-            for( auto & interface : interfaces )
+            const auto & interfaces = Dakota::Interface::interface_cache(p_libEnv->problem_description_db());
+            for( auto & [_, interface] : interfaces )
             {
               auto py11_int = std::dynamic_pointer_cast<Dakota::Pybind11Interface>(
                                 interface);
-              
+
               if( py11_int )
                 py11_int->register_pybind11_callback_fn(callback);
             }
@@ -227,8 +227,8 @@ PYBIND11_MODULE(environment, m) {
 
             // Associate callbacks with interface specs
             auto callbacks_map = callbacks.cast< std::map<std::string,py::function> >();
-            Dakota::InterfaceList & interfaces = Dakota::Interface::interface_cache(p_libEnv->problem_description_db());
-            for( auto & interface : interfaces )
+            const auto & interfaces = Dakota::Interface::interface_cache(p_libEnv->problem_description_db());
+            for( auto & [_, interface] : interfaces )
             {
               auto py11_int = std::dynamic_pointer_cast<Dakota::Pybind11Interface>(
                                 interface);
@@ -259,8 +259,8 @@ PYBIND11_MODULE(environment, m) {
             auto p_libEnv = Dakota::python::create_libEnv(input_json);
 
             // Associate the single python callback with all Pybind11Interface interfaces
-            Dakota::InterfaceList & interfaces = Dakota::Interface::interface_cache(p_libEnv->problem_description_db());
-            for( auto & interface : interfaces )
+            const auto & interfaces = Dakota::Interface::interface_cache(p_libEnv->problem_description_db());
+            for( auto & [_, interface] : interfaces )
             {
               auto py11_int = std::dynamic_pointer_cast<Dakota::Pybind11Interface>(
                                 interface);
@@ -282,8 +282,8 @@ PYBIND11_MODULE(environment, m) {
 
             // Associate callbacks with interface specs
             auto callbacks_map = callbacks.cast< std::map<std::string,py::function> >();
-            Dakota::InterfaceList & interfaces = Dakota::Interface::interface_cache(p_libEnv->problem_description_db());
-            for( auto & interface : interfaces )
+            const auto & interfaces = Dakota::Interface::interface_cache(p_libEnv->problem_description_db());
+            for( auto & [_, interface] : interfaces )
             {
               auto py11_int = std::dynamic_pointer_cast<Dakota::Pybind11Interface>(
                                 interface);

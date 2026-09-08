@@ -80,8 +80,8 @@ Test Number 4 succeeded
 <<<<< Best objective function  =
                       1.2500162357e-01
 <<<<< Best constraint values   =
-                     -8.1177681033e-07
-                     -8.1177681033e-07
+                     -8.1177681027e-07
+                     -8.1177681052e-07
 <<<<< Best evaluation ID: 25
 Test Number 5 succeeded
 <<<<< Function evaluation summary: 487 total (487 new, 0 duplicate)

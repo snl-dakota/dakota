@@ -4,15 +4,15 @@ Test Number 0 succeeded
                       1.0013529993e+00 x1
                       1.0026805414e+00 x2
 <<<<< Best objective function  =
-                      1.9050696338e-06
+                      1.9050696339e-06
 <<<<< Best evaluation ID: 38
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 56 total (56 new, 0 duplicate)
 <<<<< Best parameters          =
                       9.9794883625e-01 x1
-                      9.9572819760e-01 x2
+                      9.9572819761e-01 x2
 <<<<< Best objective function  =
-                      7.2238223384e-06
+                      7.2238222984e-06
 <<<<< Best evaluation ID: 54
 Test Number 2 succeeded
 <<<<< Function evaluation summary: 23 total (23 new, 0 duplicate)
@@ -90,10 +90,10 @@ Test Number 10 succeeded
 <<<<< Function evaluation summary: 130 total (130 new, 0 duplicate)
 <<<<< Best parameters          =
                       1.0000000000e+00 x1
-                      9.9995626394e-01 x2
+                      9.9995626396e-01 x2
 <<<<< Best residual terms =
-                     -4.3736061737e-04
-                     -2.6645352591e-15
+                     -4.3736042053e-04
+                     -4.2188474936e-15
 <<<<< Best evaluation ID: 128
 Test Number 11 succeeded
 <<<<< Function evaluation summary: 14 total (14 new, 0 duplicate)
@@ -152,8 +152,8 @@ Test Number 16 succeeded
                       9.9999713984e-01 x1
                       9.9999402239e-01 x2
 <<<<< Best residual terms =
-                     -2.5729995123e-06
-                      2.8601579213e-06
+                     -2.5729995889e-06
+                      2.8601573548e-06
 <<<<< Best evaluation ID: 34
 Test Number 17 succeeded
 <<<<< Function evaluation summary: 188 total (188 new, 0 duplicate)

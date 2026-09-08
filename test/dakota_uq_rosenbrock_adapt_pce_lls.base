@@ -45,4 +45,4 @@ Moment statistics for each response function:
 <<<<< Function evaluation summary: 81 total (80 new, 1 duplicate)
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  4.0199996741e+02  1.0499552537e+03
+ response_fn_1  4.0199960451e+02  1.0499533632e+03

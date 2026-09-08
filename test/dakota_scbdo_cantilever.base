@@ -32,13 +32,13 @@ Test Number 2 succeeded
   response_fn_2: 4455 val (4455 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
   response_fn_3: 4455 val (4455 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.4459894479e+00 w
-                      3.8921865246e+00 t
+                      2.4459894485e+00 w
+                      3.8921865237e+00 t
 <<<<< Best objective function  =
                       9.5202471684e+00
 <<<<< Best constraint values   =
                       2.9999999998e+00
-                      3.2770343526e+00
+                      3.2770343552e+00
 <<<<< Best evaluation ID not available
 Test Number 3 succeeded
 <<<<< Function evaluation summary (UQ_I): 729 total (729 new, 0 duplicate)
@@ -47,11 +47,11 @@ Test Number 3 succeeded
   response_fn_3: 729 val (729 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                       1.0000000000e+00 w
-                      6.5431859218e+00 t
+                      6.5431859217e+00 t
 <<<<< Best objective function  =
-                      6.5431859218e+00
+                      6.5431859217e+00
 <<<<< Best constraint values   =
-                      6.8167850845e+00
+                      6.8167850844e+00
                       2.9999963241e+00
 <<<<< Best evaluation ID not available
 Test Number 4 succeeded
@@ -88,13 +88,13 @@ Test Number 6 succeeded
   response_fn_2: 2695 val (2695 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
   response_fn_3: 2695 val (2695 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.4459894522e+00 w
-                      3.8921865177e+00 t
+                      2.4459894526e+00 w
+                      3.8921865170e+00 t
 <<<<< Best objective function  =
                       9.5202471684e+00
 <<<<< Best constraint values   =
                       2.9999999997e+00
-                      3.2769802564e+00
+                      3.2769802583e+00
 <<<<< Best evaluation ID not available
 Test Number 7 succeeded
 <<<<< Function evaluation summary (UQ_I): 2381 total (2381 new, 0 duplicate)
@@ -102,11 +102,11 @@ Test Number 7 succeeded
   response_fn_2: 2381 val (2381 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
   response_fn_3: 2381 val (2381 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.8271074497e+00 w
-                      3.2112402229e+00 t
+                      2.8271073835e+00 w
+                      3.2112402981e+00 t
 <<<<< Best objective function  =
                       9.0785211569e+00
 <<<<< Best constraint values   =
-                      2.9999999976e+00
-                      6.0160556322e+00
+                      2.9999999975e+00
+                      6.0160548787e+00
 <<<<< Best evaluation ID not available

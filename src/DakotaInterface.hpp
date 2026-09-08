@@ -37,7 +37,7 @@ class Iterator;
 class Model;
 class Approximation;
 class SharedApproxData;
-
+class InterfaceRegistry;
 
 /// Base class for the interface class hierarchy.
 
@@ -57,9 +57,9 @@ public:
   static std::shared_ptr<Interface> get_interface(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
 
   /// @brief return the interface cache for the study
-  /// @param problem_db 
+  /// @param problem_db
   /// @return interface cache
-  static std::list<std::shared_ptr<Interface>>& interface_cache(ProblemDescDB& problem_db);
+  static const std::unordered_map<std::string, std::shared_ptr<Interface>> &interface_cache(ProblemDescDB& problem_db);
 
   /// @brief remove a cached Interface for the study
   static void remove_cached_interface(const ProblemDescDB& problem_db);
@@ -72,7 +72,7 @@ private:
   friend class CleanUpAllInterfacesAttorney;
 
   /// @brief Cache of Interfaces created for each study
-  static std::map<const ProblemDescDB*, std::list<std::shared_ptr<Interface>>> interfaceCache;
+  static std::unordered_map<const ProblemDescDB *, InterfaceRegistry> interfaceCache;
 
 public:
   //
@@ -103,9 +103,9 @@ public:
 		   Response& response, bool asynch_flag = false);
 
   /// recovers data from a series of asynchronous evaluations (blocking)
-  virtual const IntResponseMap& synchronize(); 
+  virtual const IntResponseMap& synchronize();
   /// recovers data from a series of asynchronous evaluations (nonblocking)
-  virtual const IntResponseMap& synchronize_nowait(); 
+  virtual const IntResponseMap& synchronize_nowait();
 
   /// evaluation server function for multiprocessor executions
   virtual void serve_evaluations();
@@ -115,7 +115,7 @@ public:
 
   /// allocate communicator partitions for concurrent evaluations within an
   /// iterator and concurrent multiprocessor analyses within an evaluation.
-  virtual void init_communicators(const IntArray& message_lengths, 
+  virtual void init_communicators(const IntArray& message_lengths,
 				  int max_eval_concurrency);
 
   /// set the local parallel partition data for an interface
@@ -230,7 +230,7 @@ public:
   virtual void formulation_updated(bool update);
 
   /// approximation cross-validation quality metrics per response function
-  virtual Real2DArray cv_diagnostics(const StringArray& metric_types, 
+  virtual Real2DArray cv_diagnostics(const StringArray& metric_types,
 				     unsigned num_folds);
   /// approximation challenge data metrics per response function
   virtual RealArray challenge_diagnostics(const String& metric_type,
@@ -486,7 +486,7 @@ private:
   /// set of function tags from AMPL stub.row
   StringArray algebraicFnTags;
   /// function type: > 0 = objective, < 0 = constraint
-  /// |value|-1 is the objective (constraint) index when making 
+  /// |value|-1 is the objective (constraint) index when making
   /// AMPL objval (conival) calls
   IntArray algebraicFnTypes;
   /// set of indices mapping AMPL algebraic objective functions to

@@ -7,7 +7,7 @@ Test Number 0 succeeded
 <<<<< Best objective function  =
                       5.7770087786e+00
 <<<<< Best constraint values   =
-                      4.3935877159e-09
+                      4.3935876048e-09
                      -8.9133560578e-02
 <<<<< Best evaluation ID not available
 Test Number 1 succeeded
@@ -19,6 +19,6 @@ Test Number 1 succeeded
 <<<<< Best objective function  =
                       5.6452441115e+00
 <<<<< Best constraint values   =
-                      8.0031536953e-12
+                      8.0035977845e-12
                      -1.2666925062e-01
 <<<<< Best evaluation ID not available

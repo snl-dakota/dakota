@@ -54,14 +54,14 @@ Test Number 4 succeeded
 <<<<< Function evaluation summary: 130 total (130 new, 0 duplicate)
 <<<<< Best parameters          =
                       6.0227588821e+00 x1
-                      5.3406950901e+00 x2
+                      5.3406950902e+00 x2
                       4.5607542530e+00 x3
                       3.5278837016e+00 x4
                       2.0377234953e+00 x5
 <<<<< Best objective function  =
                       1.3409644823e+00
 <<<<< Best constraint values   =
-                      1.4148692777e-07
+                      1.4148692748e-07
 <<<<< Best evaluation ID: 130
 Test Number 5 succeeded
 <<<<< Function evaluation summary: 13 total (13 new, 0 duplicate)
@@ -74,7 +74,7 @@ Test Number 5 succeeded
 <<<<< Best objective function  =
                       1.3399544846e+00
 <<<<< Best constraint values   =
-                      4.2224795632e-06
+                      4.2224795635e-06
 <<<<< Best evaluation ID: 13
 Test Number 6 succeeded
 <<<<< Function evaluation summary: 58 total (57 new, 1 duplicate)

@@ -70,7 +70,7 @@ Test Number 3 succeeded
    Equivalent   MFMC ratio:               6.5955513422886725e-01
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  1.0615645541288417e-02  1.0214874751008818e+00 -4.9158665883551771e-02  2.8434892618178971e+00
+ response_fn_1  1.0615645541288417e-02  1.0214874751008818e+00 -4.9158665883551798e-02  2.8434892618178971e+00
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean
  response_fn_1 -3.9569967424282426e-02  6.0801258506859260e-02

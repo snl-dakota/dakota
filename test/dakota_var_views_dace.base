@@ -16,25 +16,25 @@ Test Number 0 succeeded
                      -5.5333895071e-03
 <<<<< Best evaluation ID: 9
 Simple Correlation Matrix among all inputs and outputs:
-                       x1           x2       obj_fn nln_ineq_con_1 nln_ineq_con_2 
+                       x1           x2     obj_fn_1 nln_ineq_con_1 nln_ineq_con_2 
           x1  1.00000e+00 
           x2 -2.58590e-02  1.00000e+00 
-      obj_fn -5.01781e-01 -5.84006e-01  1.00000e+00 
+    obj_fn_1 -5.01781e-01 -5.84006e-01  1.00000e+00 
 nln_ineq_con_1  9.43702e-02 -4.78377e-01  5.91817e-01  1.00000e+00 
 nln_ineq_con_2 -4.06403e-01 -3.88954e-02  6.23911e-01  1.83103e-02  1.00000e+00 
 Partial Correlation Matrix between input and output:
-                   obj_fn nln_ineq_con_1 nln_ineq_con_2 
+                 obj_fn_1 nln_ineq_con_1 nln_ineq_con_2 
           x1 -6.36965e-01  9.34086e-02 -4.07854e-01 
           x2 -6.90387e-01 -4.78230e-01 -5.40893e-02 
 Simple Rank Correlation Matrix among all inputs and outputs:
-                       x1           x2       obj_fn nln_ineq_con_1 nln_ineq_con_2 
+                       x1           x2     obj_fn_1 nln_ineq_con_1 nln_ineq_con_2 
           x1  1.00000e+00 
           x2 -6.63265e-03  1.00000e+00 
-      obj_fn -5.71837e-01 -6.32449e-01  1.00000e+00 
+    obj_fn_1 -5.71837e-01 -6.32449e-01  1.00000e+00 
 nln_ineq_con_1  4.71429e-02 -4.76837e-01  5.45714e-01  1.00000e+00 
 nln_ineq_con_2 -3.97551e-01 -1.94898e-02  5.11122e-01 -2.81633e-02  1.00000e+00 
 Partial Rank Correlation Matrix between input and output:
-                   obj_fn nln_ineq_con_1 nln_ineq_con_2 
+                 obj_fn_1 nln_ineq_con_1 nln_ineq_con_2 
           x1 -7.43665e-01  5.00359e-02 -3.97765e-01 
           x2 -7.75574e-01 -4.77065e-01 -2.41146e-02 
 Test Number 1 succeeded
@@ -55,25 +55,25 @@ Test Number 1 succeeded
                      -7.8508420972e-02
 <<<<< Best evaluation ID: 49
 Simple Correlation Matrix among all inputs and outputs:
-                       x1           x2       obj_fn nln_ineq_con_1 nln_ineq_con_2 
+                       x1           x2     obj_fn_1 nln_ineq_con_1 nln_ineq_con_2 
           x1  1.00000e+00 
           x2 -4.68798e-02  1.00000e+00 
-      obj_fn -5.47362e-01 -5.34451e-01  1.00000e+00 
+    obj_fn_1 -5.47362e-01 -5.34451e-01  1.00000e+00 
 nln_ineq_con_1 -6.39311e-02 -4.05198e-01  6.27322e-01  1.00000e+00 
 nln_ineq_con_2 -4.57479e-01 -6.70269e-02  6.26561e-01  6.24026e-03  1.00000e+00 
 Partial Correlation Matrix between input and output:
-                   obj_fn nln_ineq_con_1 nln_ineq_con_2 
+                 obj_fn_1 nln_ineq_con_1 nln_ineq_con_2 
           x1 -6.78002e-01 -9.08065e-02 -4.62167e-01 
           x2 -6.70009e-01 -4.09482e-01 -9.96049e-02 
 Simple Rank Correlation Matrix among all inputs and outputs:
-                       x1           x2       obj_fn nln_ineq_con_1 nln_ineq_con_2 
+                       x1           x2     obj_fn_1 nln_ineq_con_1 nln_ineq_con_2 
           x1  1.00000e+00 
           x2 -4.79712e-02  1.00000e+00 
-      obj_fn -6.03457e-01 -5.83385e-01  1.00000e+00 
+    obj_fn_1 -6.03457e-01 -5.83385e-01  1.00000e+00 
 nln_ineq_con_1 -6.87155e-02 -4.44802e-01  5.77431e-01  1.00000e+00 
 nln_ineq_con_2 -4.53445e-01 -7.10204e-02  5.91549e-01  4.56182e-03  1.00000e+00 
 Partial Rank Correlation Matrix between input and output:
-                   obj_fn nln_ineq_con_1 nln_ineq_con_2 
+                 obj_fn_1 nln_ineq_con_1 nln_ineq_con_2 
           x1 -7.78348e-01 -1.00663e-01 -4.58537e-01 
           x2 -7.68803e-01 -4.49678e-01 -1.04209e-01 
 Test Number 2 succeeded
@@ -162,25 +162,25 @@ Test Number 6 succeeded
                       0.0000000000e+00
 <<<<< Best evaluation ID: 5
 Simple Correlation Matrix among all inputs and outputs:
-                       x1           x2       obj_fn nln_ineq_con_1 nln_ineq_con_2 
+                       x1           x2     obj_fn_1 nln_ineq_con_1 nln_ineq_con_2 
           x1  1.00000e+00 
           x2  0.00000e+00  1.00000e+00 
-      obj_fn -6.12372e-01 -6.12372e-01  1.00000e+00 
+    obj_fn_1 -6.12372e-01 -6.12372e-01  1.00000e+00 
 nln_ineq_con_1  0.00000e+00 -3.97360e-01  5.67775e-01  1.00000e+00 
 nln_ineq_con_2 -3.97360e-01  2.77556e-17  5.67775e-01  3.03577e-18  1.00000e+00 
 Partial Correlation Matrix between input and output:
-                   obj_fn nln_ineq_con_1 nln_ineq_con_2 
+                 obj_fn_1 nln_ineq_con_1 nln_ineq_con_2 
           x1 -7.74597e-01  0.00000e+00 -3.97360e-01 
           x2 -7.74597e-01 -3.97360e-01  3.20494e-17 
 Simple Rank Correlation Matrix among all inputs and outputs:
-                       x1           x2       obj_fn nln_ineq_con_1 nln_ineq_con_2 
+                       x1           x2     obj_fn_1 nln_ineq_con_1 nln_ineq_con_2 
           x1  1.00000e+00 
           x2  0.00000e+00  1.00000e+00 
-      obj_fn -6.06218e-01 -6.06218e-01  1.00000e+00 
+    obj_fn_1 -6.06218e-01 -6.06218e-01  1.00000e+00 
 nln_ineq_con_1  0.00000e+00 -5.33761e-01  6.05548e-01  1.00000e+00 
 nln_ineq_con_2 -5.33761e-01 -1.73472e-17  6.05548e-01  5.63785e-17  1.00000e+00 
 Partial Rank Correlation Matrix between input and output:
-                   obj_fn nln_ineq_con_1 nln_ineq_con_2 
+                 obj_fn_1 nln_ineq_con_1 nln_ineq_con_2 
           x1 -7.62252e-01  0.00000e+00 -5.33761e-01 
           x2 -7.62252e-01 -5.33761e-01  0.00000e+00 
 Test Number 7 succeeded
@@ -201,7 +201,7 @@ Test Number 7 succeeded
                      -6.3962345116e-02
 <<<<< Best evaluation ID: 9
 Simple Correlation Matrix among all inputs and outputs:
-                       x1           x2           x3           x4           x5           x6           x7           x8       obj_fn nln_ineq_con_1 nln_ineq_con_2 
+                       x1           x2           x3           x4           x5           x6           x7           x8     obj_fn_1 nln_ineq_con_1 nln_ineq_con_2 
           x1  1.00000e+00 
           x2 -2.21925e-02  1.00000e+00 
           x3  3.76064e-02 -3.06063e-02  1.00000e+00 
@@ -210,11 +210,11 @@ Simple Correlation Matrix among all inputs and outputs:
           x6  2.40616e-03 -7.48906e-03  4.73689e-03 -2.18886e-02  1.80483e-02  1.00000e+00 
           x7  4.71777e-02 -5.86820e-02 -6.65188e-03 -3.57621e-02 -4.35606e-02 -1.62395e-02  1.00000e+00 
           x8  3.84312e-02  3.42762e-02  2.14176e-02 -3.79411e-02 -1.38034e-02 -7.62371e-03  5.04743e-02  1.00000e+00 
-      obj_fn -3.31593e-01 -2.06114e-01 -2.94691e-01 -2.40872e-01 -2.09924e-01 -3.02290e-01 -3.01742e-01 -2.84991e-01  1.00000e+00 
+    obj_fn_1 -3.31593e-01 -2.06114e-01 -2.94691e-01 -2.40872e-01 -2.09924e-01 -3.02290e-01 -3.01742e-01 -2.84991e-01  1.00000e+00 
 nln_ineq_con_1 -3.22771e-02 -3.85949e-01  2.31538e-02 -1.16810e-02  1.58531e-02 -7.17023e-02  6.35383e-02 -2.85160e-02  3.31492e-01  1.00000e+00 
 nln_ineq_con_2 -4.73853e-01  5.65313e-02  2.67568e-02  6.63731e-02 -4.73580e-02  3.78139e-02 -1.17798e-01 -4.13621e-02  3.55799e-01 -7.28873e-02  1.00000e+00 
 Partial Correlation Matrix between input and output:
-                   obj_fn nln_ineq_con_1 nln_ineq_con_2 
+                 obj_fn_1 nln_ineq_con_1 nln_ineq_con_2 
           x1 -4.62213e-01 -4.85047e-02 -4.71229e-01 
           x2 -3.71435e-01 -3.85952e-01  5.02753e-02 
           x3 -4.15863e-01  1.66130e-02  4.97981e-02 
@@ -224,7 +224,7 @@ Partial Correlation Matrix between input and output:
           x7 -4.54867e-01  4.59863e-02 -1.04935e-01 
           x8 -3.87410e-01 -1.91123e-02 -2.33971e-02 
 Simple Rank Correlation Matrix among all inputs and outputs:
-                       x1           x2           x3           x4           x5           x6           x7           x8       obj_fn nln_ineq_con_1 nln_ineq_con_2 
+                       x1           x2           x3           x4           x5           x6           x7           x8     obj_fn_1 nln_ineq_con_1 nln_ineq_con_2 
           x1  1.00000e+00 
           x2 -3.45918e-02  1.00000e+00 
           x3  3.08163e-02 -3.16327e-02  1.00000e+00 
@@ -233,11 +233,11 @@ Simple Rank Correlation Matrix among all inputs and outputs:
           x6  5.81633e-03 -1.12245e-02  3.34694e-02 -3.31633e-02  2.20408e-02  1.00000e+00 
           x7  5.43878e-02 -6.79592e-02 -1.36735e-02 -2.29592e-02 -4.84694e-02 -6.73469e-03  1.00000e+00 
           x8  4.20408e-02  4.01020e-02  1.12245e-02 -3.57143e-02 -7.85714e-03 -7.65306e-03  5.73469e-02  1.00000e+00 
-      obj_fn -3.06735e-01 -2.78980e-01 -2.20000e-01 -2.92245e-01 -2.31122e-01 -2.75918e-01 -2.84286e-01 -2.05612e-01  1.00000e+00 
+    obj_fn_1 -3.06735e-01 -2.78980e-01 -2.20000e-01 -2.92245e-01 -2.31122e-01 -2.75918e-01 -2.84286e-01 -2.05612e-01  1.00000e+00 
 nln_ineq_con_1 -3.26531e-02 -4.24592e-01  1.93878e-02 -2.07143e-02 -5.91837e-03 -5.84694e-02  7.37755e-02 -7.30612e-02  3.47041e-01  1.00000e+00 
 nln_ineq_con_2 -5.02551e-01  2.93878e-02  3.12245e-02  8.13265e-02 -1.21429e-02  1.27551e-02 -6.80612e-02 -3.44898e-02  3.12755e-01 -9.70408e-02  1.00000e+00 
 Partial Rank Correlation Matrix between input and output:
-                   obj_fn nln_ineq_con_1 nln_ineq_con_2 
+                 obj_fn_1 nln_ineq_con_1 nln_ineq_con_2 
           x1 -4.45188e-01 -5.66848e-02 -4.98430e-01 
           x2 -4.60166e-01 -4.24426e-01  1.51521e-02 
           x3 -3.13952e-01  1.37965e-02  5.08948e-02 
@@ -264,7 +264,7 @@ Test Number 8 succeeded
                      -7.8508420972e-02
 <<<<< Best evaluation ID: 49
 Simple Correlation Matrix among all inputs and outputs:
-                       x1           x2           x3           x4           x5           x6           x7           x8       obj_fn nln_ineq_con_1 nln_ineq_con_2 
+                       x1           x2           x3           x4           x5           x6           x7           x8     obj_fn_1 nln_ineq_con_1 nln_ineq_con_2 
           x1  1.00000e+00 
           x2 -4.68798e-02  1.00000e+00 
           x3 -3.50869e-02 -4.93241e-02  1.00000e+00 
@@ -273,11 +273,11 @@ Simple Correlation Matrix among all inputs and outputs:
           x6 -9.97846e-02  2.92441e-02  5.97027e-04 -6.69592e-02 -1.42890e-01  1.00000e+00 
           x7  1.56725e-02  5.79909e-03 -3.82271e-02 -2.10578e-02  3.83047e-02 -1.39477e-02  1.00000e+00 
           x8 -5.86310e-02 -2.57929e-02 -5.78412e-02 -9.54938e-02 -1.15688e-01  1.49180e-01  3.05389e-01  1.00000e+00 
-      obj_fn -2.12212e-01 -1.73313e-01 -1.84072e-01 -1.53814e-01 -2.45640e-01 -2.73489e-01 -4.54428e-01 -2.41794e-01  1.00000e+00 
+    obj_fn_1 -2.12212e-01 -1.73313e-01 -1.84072e-01 -1.53814e-01 -2.45640e-01 -2.73489e-01 -4.54428e-01 -2.41794e-01  1.00000e+00 
 nln_ineq_con_1 -6.39311e-02 -4.05198e-01  9.11588e-02  1.33080e-01  1.33916e-01 -3.57117e-02  2.02921e-01  6.21275e-02 -2.31737e-02  1.00000e+00 
 nln_ineq_con_2 -4.57479e-01 -6.70269e-02 -3.01785e-02  6.43726e-02 -4.91374e-03 -3.39031e-03 -8.12060e-02  1.85826e-01  2.50220e-01  6.24026e-03  1.00000e+00 
 Partial Correlation Matrix between input and output:
-                   obj_fn nln_ineq_con_1 nln_ineq_con_2 
+                 obj_fn_1 nln_ineq_con_1 nln_ineq_con_2 
           x1 -4.32111e-01 -7.79086e-02 -4.62564e-01 
           x2 -3.44362e-01 -4.06804e-01 -9.16682e-02 
           x3 -4.04561e-01  1.08020e-01 -4.85919e-02 
@@ -287,7 +287,7 @@ Partial Correlation Matrix between input and output:
           x7 -5.20808e-01  2.14859e-01 -1.53411e-01 
           x8 -2.54698e-01  2.04685e-02  2.23320e-01 
 Simple Rank Correlation Matrix among all inputs and outputs:
-                       x1           x2           x3           x4           x5           x6           x7           x8       obj_fn nln_ineq_con_1 nln_ineq_con_2 
+                       x1           x2           x3           x4           x5           x6           x7           x8     obj_fn_1 nln_ineq_con_1 nln_ineq_con_2 
           x1  1.00000e+00 
           x2 -4.79712e-02  1.00000e+00 
           x3 -3.71188e-02 -4.77791e-02  1.00000e+00 
@@ -296,11 +296,11 @@ Simple Rank Correlation Matrix among all inputs and outputs:
           x6 -9.35894e-02  3.46218e-02  3.69748e-03 -5.69988e-02 -1.35558e-01  1.00000e+00 
           x7  1.20528e-02  1.56062e-02 -2.76110e-02 -1.43577e-02  5.49820e-02  1.38776e-02  1.00000e+00 
           x8 -6.08403e-02 -1.33013e-02 -5.05642e-02 -8.32173e-02 -9.89676e-02  1.64946e-01  3.68739e-01  1.00000e+00 
-      obj_fn -2.05186e-01 -1.97599e-01 -1.47755e-01 -1.16255e-01 -2.32365e-01 -2.81825e-01 -4.19352e-01 -2.08739e-01  1.00000e+00 
+    obj_fn_1 -2.05186e-01 -1.97599e-01 -1.47755e-01 -1.16255e-01 -2.32365e-01 -2.81825e-01 -4.19352e-01 -2.08739e-01  1.00000e+00 
 nln_ineq_con_1 -6.87155e-02 -4.44802e-01  1.07899e-01  1.15102e-01  1.70612e-01 -3.75990e-02  1.57071e-01  4.34574e-02  1.16687e-02  1.00000e+00 
 nln_ineq_con_2 -4.53445e-01 -7.10204e-02 -4.98920e-02  8.49460e-02  1.14766e-02 -1.68067e-03 -6.95798e-02  1.41609e-01  3.10252e-01  4.56182e-03  1.00000e+00 
 Partial Rank Correlation Matrix between input and output:
-                   obj_fn nln_ineq_con_1 nln_ineq_con_2 
+                 obj_fn_1 nln_ineq_con_1 nln_ineq_con_2 
           x1 -3.65677e-01 -8.86572e-02 -4.55799e-01 
           x2 -3.12816e-01 -4.49419e-01 -9.68943e-02 
           x3 -2.94992e-01  1.23221e-01 -7.10707e-02 
@@ -395,7 +395,7 @@ Test Number 13 succeeded
                       0.0000000000e+00
 <<<<< Best evaluation ID: 3281
 Simple Correlation Matrix among all inputs and outputs:
-                       x1           x2           x3           x4           x5           x6           x7           x8       obj_fn nln_ineq_con_1 nln_ineq_con_2 
+                       x1           x2           x3           x4           x5           x6           x7           x8     obj_fn_1 nln_ineq_con_1 nln_ineq_con_2 
           x1  1.00000e+00 
           x2  0.00000e+00  1.00000e+00 
           x3  0.00000e+00  0.00000e+00  1.00000e+00 
@@ -404,11 +404,11 @@ Simple Correlation Matrix among all inputs and outputs:
           x6  0.00000e+00  0.00000e+00  0.00000e+00  0.00000e+00  8.67362e-19  1.00000e+00 
           x7  0.00000e+00  0.00000e+00  0.00000e+00  0.00000e+00  8.67362e-19  8.67362e-19  1.00000e+00 
           x8  0.00000e+00  0.00000e+00  0.00000e+00  0.00000e+00  8.67362e-19  8.67362e-19  1.47451e-17  1.00000e+00 
-      obj_fn -3.06186e-01 -3.06186e-01 -3.06186e-01 -3.06186e-01 -3.06186e-01 -3.06186e-01 -3.06186e-01 -3.06186e-01  1.00000e+00 
+    obj_fn_1 -3.06186e-01 -3.06186e-01 -3.06186e-01 -3.06186e-01 -3.06186e-01 -3.06186e-01 -3.06186e-01 -3.06186e-01  1.00000e+00 
 nln_ineq_con_1  0.00000e+00 -3.97360e-01 -1.35525e-20 -1.35525e-20 -1.35525e-20 -1.35525e-20 -1.35525e-20 -1.35525e-20  2.83887e-01  1.00000e+00 
 nln_ineq_con_2 -3.97360e-01  1.35525e-20  1.35525e-20  1.35525e-20  1.35525e-20  1.35525e-20  1.35525e-20  1.35525e-20  2.83887e-01  7.11508e-20  1.00000e+00 
 Partial Correlation Matrix between input and output:
-                   obj_fn nln_ineq_con_1 nln_ineq_con_2 
+                 obj_fn_1 nln_ineq_con_1 nln_ineq_con_2 
           x1 -5.22233e-01  0.00000e+00 -3.97360e-01 
           x2 -5.22233e-01 -3.97360e-01  4.39635e-20 
           x3 -5.22233e-01 -4.39635e-20  4.39635e-20 
@@ -418,7 +418,7 @@ Partial Correlation Matrix between input and output:
           x7 -5.22233e-01 -4.39635e-20  4.39635e-20 
           x8 -5.22233e-01 -4.39635e-20  4.39635e-20 
 Simple Rank Correlation Matrix among all inputs and outputs:
-                       x1           x2           x3           x4           x5           x6           x7           x8       obj_fn nln_ineq_con_1 nln_ineq_con_2 
+                       x1           x2           x3           x4           x5           x6           x7           x8     obj_fn_1 nln_ineq_con_1 nln_ineq_con_2 
           x1  1.00000e+00 
           x2  0.00000e+00  1.00000e+00 
           x3  0.00000e+00 -5.42101e-20  1.00000e+00 
@@ -427,16 +427,16 @@ Simple Rank Correlation Matrix among all inputs and outputs:
           x6  0.00000e+00 -5.42101e-20 -1.62630e-19 -1.62630e-19  7.04731e-19  1.00000e+00 
           x7  0.00000e+00 -5.42101e-20 -1.62630e-19 -1.62630e-19  7.04731e-19 -2.76472e-18  1.00000e+00 
           x8  0.00000e+00 -5.42101e-20 -1.62630e-19 -1.62630e-19  7.04731e-19 -2.76472e-18  1.11131e-17  1.00000e+00 
-      obj_fn -3.00940e-01 -3.00940e-01 -3.00940e-01 -3.00940e-01 -3.00940e-01 -3.00940e-01 -3.00940e-01 -3.00940e-01  1.00000e+00 
+    obj_fn_1 -3.00940e-01 -3.00940e-01 -3.00940e-01 -3.00940e-01 -3.00940e-01 -3.00940e-01 -3.00940e-01 -3.00940e-01  1.00000e+00 
 nln_ineq_con_1  0.00000e+00 -5.33761e-01  6.77626e-21  6.77626e-21  6.77626e-21  6.77626e-21  6.77626e-21  6.77626e-21  3.04138e-01  1.00000e+00 
 nln_ineq_con_2 -5.33761e-01 -6.77626e-21 -6.77626e-21 -6.77626e-21 -6.77626e-21 -6.77626e-21 -6.77626e-21 -6.77626e-21  3.04138e-01  3.94963e-17  1.00000e+00 
 Partial Rank Correlation Matrix between input and output:
-                   obj_fn nln_ineq_con_1 nln_ineq_con_2 
-          x1 -4.97409e-01  0.00000e+00 -5.33761e-01 
-          x2 -4.97409e-01 -5.33761e-01  0.00000e+00 
-          x3 -4.97409e-01  0.00000e+00  0.00000e+00 
-          x4 -4.97409e-01  0.00000e+00  0.00000e+00 
-          x5 -4.97409e-01  0.00000e+00  0.00000e+00 
-          x6 -4.97409e-01  0.00000e+00  0.00000e+00 
-          x7 -4.97409e-01  0.00000e+00  0.00000e+00 
-          x8 -4.97409e-01  0.00000e+00  0.00000e+00 
+                 obj_fn_1 nln_ineq_con_1 nln_ineq_con_2 
+          x1 -4.97409e-01 -0.00000e+00 -5.33761e-01 
+          x2 -4.97409e-01 -5.33761e-01 -0.00000e+00 
+          x3 -4.97409e-01 -0.00000e+00 -0.00000e+00 
+          x4 -4.97409e-01 -0.00000e+00 -0.00000e+00 
+          x5 -4.97409e-01 -0.00000e+00 -0.00000e+00 
+          x6 -4.97409e-01 -0.00000e+00 -0.00000e+00 
+          x7 -4.97409e-01 -0.00000e+00 -0.00000e+00 
+          x8 -4.97409e-01 -0.00000e+00 -0.00000e+00 

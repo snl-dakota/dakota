@@ -67,7 +67,7 @@ Test Number 5 succeeded
                      -3.1636810428e+01
 <<<<< Best constraint values   =
                       3.8835075512e-01
-                     -2.9806264124e-09
+                     -2.9806259683e-09
                       3.8005658000e-01
 <<<<< Best evaluation ID: 9
 Test Number 6 succeeded
@@ -115,7 +115,7 @@ Test Number 9 succeeded
                      -3.1636803258e+01
 <<<<< Best constraint values   =
                       3.8835153255e-01
-                      1.9609059425e-06
+                      1.9609059430e-06
                       3.8005632047e-01
 <<<<< Best evaluation ID: 12
 Test Number 10 succeeded

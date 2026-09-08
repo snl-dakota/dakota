@@ -107,12 +107,12 @@ Test Number 4 succeeded
   response_fn_1: 6 val (6 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
   response_fn_2: 6 val (6 n, 0 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 Surrogate quality metrics at build (training) points for function 1:
-   root_mean_squared  9.2071391563e-16
-            mean_abs  6.8001160258e-16
+   root_mean_squared  1.0468535173e-15
+            mean_abs  9.9226182826e-16
             rsquared  1.0000000000e+00
 Surrogate quality metrics at build (training) points for function 2:
-   root_mean_squared  1.8234571762e-14
-            mean_abs  1.5677274294e-14
+   root_mean_squared  5.4386411237e-15
+            mean_abs  4.1402066960e-15
             rsquared  1.0000000000e+00
 <<<<< Function evaluation summary: 63 total (52 new, 11 duplicate)
   response_fn_1: 38 val (34 n, 4 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)

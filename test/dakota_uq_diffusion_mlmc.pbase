@@ -22,8 +22,8 @@ Test Number 0 succeeded
    Equivalent MLMC / MC ratio:          5.6826534536e-02
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5347265313e-02  6.3949368322e-03  7.1896519209e-01 -3.4059785009e-01
- response_fn_2  1.2789480489e-01  1.3319468165e-02  5.5261688836e-01 -7.7015986016e-01
+ response_fn_1  2.5347265314e-02  6.3949368322e-03  7.1896519216e-01 -3.4059784995e-01
+ response_fn_2  1.2789480489e-01  1.3319468165e-02  5.5261688838e-01 -7.7015986023e-01
  response_fn_3  2.5347265314e-02  6.3949368324e-03  7.1896519207e-01 -3.4059785005e-01
 95% confidence intervals for each response function:
                     LowerCI_Mean      UpperCI_Mean
@@ -54,8 +54,8 @@ Test Number 1 succeeded
    Equivalent MLMC / MC ratio:          5.6826534536e-02
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5347265313e-02  6.3949368322e-03  7.1896519209e-01 -3.4059785009e-01
- response_fn_2  1.2789480489e-01  1.3319468165e-02  5.5261688836e-01 -7.7015986016e-01
+ response_fn_1  2.5347265314e-02  6.3949368322e-03  7.1896519216e-01 -3.4059784995e-01
+ response_fn_2  1.2789480489e-01  1.3319468165e-02  5.5261688838e-01 -7.7015986023e-01
  response_fn_3  2.5347265314e-02  6.3949368324e-03  7.1896519207e-01 -3.4059785005e-01
 95% confidence intervals for each response function:
                     LowerCI_Mean      UpperCI_Mean

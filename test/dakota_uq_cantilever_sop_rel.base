@@ -7,13 +7,13 @@ Simple Correlation Matrix among all inputs and outputs:
                    X_mean       Y_mean      mean_wt  ccdf_beta_s  ccdf_beta_d 
       X_mean  1.00000e+00 
       Y_mean -4.15171e-03  1.00000e+00 
-     mean_wt  4.68375e-16 -5.82867e-16  1.00000e+00 
- ccdf_beta_s -6.19328e-01 -7.82554e-01  1.26288e-15  1.00000e+00 
- ccdf_beta_d -9.13854e-01 -4.01386e-01  1.38778e-16  8.84098e-01  1.00000e+00 
+     mean_wt  4.55179e-16 -6.04499e-16  1.00000e+00 
+ ccdf_beta_s -6.19328e-01 -7.82554e-01  1.17813e-15  1.00000e+00 
+ ccdf_beta_d -9.13854e-01 -4.01386e-01  8.75917e-17  8.84098e-01  1.00000e+00 
 Partial Correlation Matrix between input and output:
                   mean_wt  ccdf_beta_s  ccdf_beta_d 
-      X_mean  4.63977e-16 -1.00000e+00 -9.99584e-01 
-      Y_mean -5.90297e-16 -1.00000e+00 -9.97881e-01 
+      X_mean  4.50838e-16 -1.00000e+00 -9.99584e-01 
+      Y_mean -5.90352e-16 -1.00000e+00 -9.97881e-01 
 Simple Rank Correlation Matrix among all inputs and outputs:
                    X_mean       Y_mean      mean_wt  ccdf_beta_s  ccdf_beta_d 
       X_mean  1.00000e+00 
@@ -33,7 +33,7 @@ Sample moment statistics for each response function:
    ccdf_beta_s  2.9985433150e+00  6.6105285294e-01 -3.5226295680e-02 -7.2208427499e-01
    ccdf_beta_d  2.9990233766e+00  5.5096520701e-01  2.9005798756e-02 -8.7818256959e-01
 95% confidence intervals for each response function:
-                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
        mean_wt  9.5209117200e+00  9.5209117200e+00  4.4967484460e-15  6.7081528841e-15
    ccdf_beta_s  2.8106741729e+00  3.1864124571e+00  5.5219993068e-01  8.2376001284e-01
    ccdf_beta_d  2.8424407973e+00  3.1556059559e+00  4.6023997592e-01  6.8657612472e-01
@@ -61,13 +61,13 @@ Simple Correlation Matrix among all inputs and outputs:
                    X_mean       Y_mean      mean_wt  ccdf_beta_s  ccdf_beta_d 
       X_mean  1.00000e+00 
       Y_mean -4.15171e-03  1.00000e+00 
-     mean_wt -2.28983e-16  2.01228e-16  1.00000e+00 
- ccdf_beta_s -6.19328e-01 -7.82554e-01  8.25728e-16  1.00000e+00 
- ccdf_beta_d -9.13854e-01 -4.01386e-01  2.42861e-16  8.84098e-01  1.00000e+00 
+     mean_wt -2.30982e-16  1.98836e-16  1.00000e+00 
+ ccdf_beta_s -6.19328e-01 -7.82554e-01  9.87874e-16  1.00000e+00 
+ ccdf_beta_d -9.13854e-01 -4.01386e-01 -1.38602e-16  8.84098e-01  1.00000e+00 
 Partial Correlation Matrix between input and output:
                   mean_wt  ccdf_beta_s  ccdf_beta_d 
-      X_mean -2.35601e-16 -1.00000e+00 -9.99584e-01 
-      Y_mean  2.16171e-16 -1.00000e+00 -9.97881e-01 
+      X_mean -2.35683e-16 -1.00000e+00 -9.99584e-01 
+      Y_mean  1.96429e-16 -1.00000e+00 -9.97881e-01 
 Simple Rank Correlation Matrix among all inputs and outputs:
                    X_mean       Y_mean      mean_wt  ccdf_beta_s  ccdf_beta_d 
       X_mean  1.00000e+00 
