@@ -12,7 +12,6 @@ import json
 import numpy as np
 import random as rnd
 
-import ext_method
 import ext_py_helper
 
 
@@ -306,4 +305,3 @@ if __name__ == "__main__":
     print("Hello from external_methods module.")
 
     
-

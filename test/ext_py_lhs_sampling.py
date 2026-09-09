@@ -9,7 +9,6 @@
 
 from scipy.stats import qmc
 
-import ext_method
 import ext_py_helper
 
 
