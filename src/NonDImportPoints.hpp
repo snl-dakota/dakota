@@ -51,6 +51,9 @@ public:
   /// print the final statistics
   void print_results(std::ostream& s, short results_state = FINAL_RESULTS) override;
 
+  /// Archive all results
+  void archive_results(int num_samples);
+
   //
   //- Heading: Member functions
   //
