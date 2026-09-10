@@ -42,6 +42,24 @@ NonDMultilevControlVarSampling(ProblemDescDB& problem_db,
 }
 
 
+NonDMultilevControlVarSampling::
+NonDMultilevControlVarSampling(std::shared_ptr<StudyServices> services,
+			       const IRStore& method_store,
+			       std::shared_ptr<Model> model):
+  NonDMultilevelSampling(std::move(services), method_store, model),
+  //NonDMultifidelitySampling(problem_db, model),
+  delegateMethod(MULTILEVEL_MULTIFIDELITY_SAMPLING)
+{
+  // override MULTILEVEL_PRECEDENCE from NonDMultilevel ctor
+  iteratedModel->ensemble_precedence(MULTILEVEL_MULTIFIDELITY_PRECEDENCE);
+  // Note: only sequenceType is currently used by MLCV
+  configure_2d_sequence(numSteps, secondaryIndex, sequenceType);
+  numApprox  = numSteps - 1; // numSteps is total = num_cv_lev + num_hf_lev
+  costSource = configure_cost(numSteps, sequenceType, sequenceCost,
+                              costMetadataIndices);
+}
+
+
 void NonDMultilevControlVarSampling::pre_run()
 {
   NonDEnsembleSampling::pre_run();

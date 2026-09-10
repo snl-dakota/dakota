@@ -167,6 +167,141 @@ NonDEnsembleSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, s
 }
 
 
+NonDEnsembleSampling::
+NonDEnsembleSampling(std::shared_ptr<StudyServices> services, const IRStore& method_store,
+		     std::shared_ptr<Model> model):
+  NonDSampling(std::move(services), method_store, model),
+  //pilotSamples(problem_db.get<const SizetArray>("method.nond.pilot_samples")),
+  pilotMgmtMode(method_store.get<short>("nond.ensemble_pilot_solution_mode")),
+  optSubProblemForm(NO_OPTIMAL_ALLOCATION), optSubProblemSolver(SUBMETHOD_NONE),
+  randomSeedSeqSpec(method_store.get<SizetArray>("random_seed_sequence")),
+  backfillFailures(false), // inactive option for now
+  mlmfIter(0), equivHFEvals(0.), // also reset in pre_run()
+  //allocationTarget(problem_db.get<short>("method.nond.allocation_target")),
+  //qoiAggregation(problem_db.get<short>("method.nond.qoi_aggregation")),
+  convergenceTolType(method_store.get<short>("nond.convergence_tolerance_type")),
+  estVarMetricType(method_store.get<short>("nond.estimator_variance_metric")),
+  estVarMetricNormOrder(method_store.get<Real>("nond.estimator_variance_metric_norm_order")),
+  finalStatsType(method_store.get<short>("nond.final_statistics")),
+  exportSampleSets(method_store.get<bool>("nond.export_sample_sequence")),
+  exportSamplesFormat(method_store.get<unsigned short>("nond.export_samples_format")),
+  relaxFactor(1.), relaxIndex(0),
+  relaxFactorSequence(method_store.get<RealVector>("nond.relaxation.factor_sequence")),
+  relaxRecursiveFactor(method_store.get<Real>("nond.relaxation.recursive_factor")),
+  seedIndex(SZ_MAX)
+{
+  // check iteratedModel for model form hierarchy and/or discretization levels;
+  // set initial response mode for set_communicators() (precedes core_run()).
+  if (iteratedModel->surrogate_type() == "ensemble")
+    iteratedModel->surrogate_response_mode(AGGREGATED_MODELS);
+  else {
+    Cerr << "Error: ensemble sampling for multifidelity analysis requires an "
+         << "ensemble surrogate model specification." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+
+  ModelList& model_ensemble = iteratedModel->subordinate_models(false);
+  size_t num_mf = model_ensemble.size(), num_lev, prev_lev = SZ_MAX,
+    md_index, num_md;
+  int m;  ModelLRevIter ml_rit; // reverse iteration for prev_lev tracking
+  NLevActual.resize(num_mf);  NLevAlloc.resize(num_mf);
+  costMetadataIndices.resize(num_mf);
+  bool mlmf = (methodName == MULTILEVEL_MULTIFIDELITY_SAMPLING);
+  for (m=num_mf-1, ml_rit=model_ensemble.rbegin();
+       ml_rit!=model_ensemble.rend(); --m, ++ml_rit) { // high fid to low fid
+    // Only SimulationModel supports solution_{levels,costs} and cost metadata,
+    // and metadata indices only vary per response specification (model form).
+    // Note: definition of the number of solution levels only requires user
+    // specification of the solution level control string, which binds with the
+    // number of admissible values for that identified variable.  In the event
+    // that solution costs are not specified (and have to be recovered from
+    // response metadata), SimulationModel::initialize_solution_control() still
+    // sizes solnCntlCostMap such that the correct number of levels is returned.
+    num_lev  = (*ml_rit)->solution_levels(); // lower bound is 1 soln level
+    md_index = (*ml_rit)->cost_metadata_index();
+    num_md   = (*ml_rit)->current_response().metadata().size();
+
+    if (mlmf && num_lev > prev_lev) {
+      Cerr << "\nWarning: unused solution levels in multilevel-multifidelity "
+           << "sampling for model " << (*ml_rit)->model_id() << ".\n         "
+           << "Ignoring " << num_lev - prev_lev << " of " << num_lev
+           << " levels." << std::endl;
+      num_lev = prev_lev;
+    }
+
+    // Must manage N_actual vs. N_actual_proj in final roll ups:
+    // > "Actual" means succeeded --> no projection-based updates to actual
+    //    --> retains strict linkage with accumulated sums/stats.
+    // > Projections are allocations --> include in NLevAlloc
+    // > BUT, projected variance reduction calcs reuse best available varH in
+    //   combination with projected NLevActual, so:
+    //   >> Use NLevActual in multilevel_eval_summary();
+    //      use NLevActual + deltaNLevActual in print_variance_reduction(),
+    //      (for stats like varH, actual + proj is preferred to projected alloc)
+    //   >> use similar approach with equivHFEvals (tracks actual) + delta
+    //      (separated projection)
+    //Sizet2DArray& Nl_m = NLevActual[m];
+    NLevActual[m].resize(num_lev); //Nl_m.resize(num_lev);
+    //for (j=0; j<num_lev; ++j)
+    //  Nl_m[j].resize(numFunctions); // defer to pre_run()
+    NLevAlloc[m].resize(num_lev);
+
+    // Note: md_index is subject to updates downstream (precedence of user spec)
+    costMetadataIndices[m] = SizetSizetPair(md_index, num_md);
+    prev_lev = num_lev;
+  }
+
+  // Support multilevel LHS as a specification override.  The estimator variance
+  // is known/correct for MC and an assumption/approximation for LHS.  To get an
+  // accurate LHS estimator variance, one would need:
+  // (a) assumptions about separability -> analytic variance reduction by a
+  //     constant factor
+  // (b) similarly, assumptions about the form relative to MC (e.g., a constant
+  //     factor largely cancels out within the relative sample allocation.)
+  // (c) numerically-generated estimator variance (from, e.g., replicated LHS)
+  if (!sampleType) // SUBMETHOD_DEFAULT
+    sampleType = SUBMETHOD_RANDOM;
+
+  Real relax_fixed = method_store.get<Real>("nond.relaxation.fixed_factor");
+  if (relax_fixed > 0.) relaxFactor = relax_fixed; // else initialized to 1.
+
+  switch (pilotMgmtMode) {
+  case ONLINE_PILOT_PROJECTION:
+    maxIterations = 0; // no iteration
+    finalStatsType = ESTIMATOR_PERFORMANCE; // no mlmf_final_stats in spec
+    // mode-specific default: if we have reference estvar, use relative tol
+    if (convergenceTolType == DEFAULT_CONVERGENCE_TOLERANCE)
+      convergenceTolType   = RELATIVE_CONVERGENCE_TOLERANCE;
+    break;
+  case ONLINE_PILOT:
+    // MLMF-specific default: don't let allocator get stuck in fine-tuning
+    if (maxIterations == SZ_MAX) maxIterations = 25;
+    if (!finalStatsType) finalStatsType = QOI_STATISTICS; // mode default
+    // mode-specific default: if we have reference estvar, use relative tol
+    if (convergenceTolType == DEFAULT_CONVERGENCE_TOLERANCE)
+      convergenceTolType   = RELATIVE_CONVERGENCE_TOLERANCE;
+    break;
+  case OFFLINE_PILOT_PROJECTION:
+    maxIterations = 0; // no iteration
+    finalStatsType = ESTIMATOR_PERFORMANCE; // no mlmf_final_stats in spec
+    manage_offline_convergence_tolerance();
+    break;
+  case OFFLINE_PILOT:
+    maxIterations = 1;
+    if (!finalStatsType) finalStatsType = QOI_STATISTICS; // mode default
+    manage_offline_convergence_tolerance();
+    break;
+  default:
+    Cerr << "Error: unrecognized pilot solution mode in ensemble sampling."
+         << std::endl;
+    abort_handler(METHOD_ERROR);
+    break;
+  }
+
+  initialize_final_statistics();
+}
+
+
 NonDEnsembleSampling::~NonDEnsembleSampling()
 { }
 
