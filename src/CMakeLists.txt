@@ -814,8 +814,8 @@ if(HAVE_EXT_PYTHON_METHOD)
     list(APPEND DAKOTA_INCDIRS ${PYTHON_INCLUDE_DIRS})
   endif()
 
-  pybind11_add_module(ext_method DakotaExtPythonMethod.cpp)
-  add_dependencies(ext_method dakota_ir_generated_tables)
+  pybind11_add_module(ext_method python/ext_method/DakotaExtMethodPython.cpp)
+  add_dependencies(ext_method dakota_ir_generated_tables dakota_python_package)
   target_include_directories(ext_method PRIVATE
             ${DAKOTA_IR_GENERATED_DIR}
             ${Dakota_SOURCE_DIR}/src/generated_ir_tables
@@ -829,8 +829,34 @@ if(HAVE_EXT_PYTHON_METHOD)
     ${Dakota_LIBRARIES} ${Dakota_TPL_LIBRARIES}
     )
 
-    # The extra foo needed below for the python "environment" module
-    # may be needed here too (?) RWH
+  set(_dakota_python_ext_method_dir
+    "${DAKOTA_PYTHON_PATH}/dakota/ext_method")
+  set_target_properties(ext_method PROPERTIES
+    LIBRARY_OUTPUT_DIRECTORY "${_dakota_python_ext_method_dir}"
+    RUNTIME_OUTPUT_DIRECTORY "${_dakota_python_ext_method_dir}"
+    ARCHIVE_OUTPUT_DIRECTORY "${_dakota_python_ext_method_dir}")
+  foreach(_dakota_cfg ${CMAKE_CONFIGURATION_TYPES})
+    string(TOUPPER "${_dakota_cfg}" _dakota_cfg_upper)
+    set_target_properties(ext_method PROPERTIES
+      "LIBRARY_OUTPUT_DIRECTORY_${_dakota_cfg_upper}" "${_dakota_python_ext_method_dir}"
+      "RUNTIME_OUTPUT_DIRECTORY_${_dakota_cfg_upper}" "${_dakota_python_ext_method_dir}"
+      "ARCHIVE_OUTPUT_DIRECTORY_${_dakota_cfg_upper}" "${_dakota_python_ext_method_dir}")
+  endforeach()
+
+  if (APPLE)
+    set_target_properties(ext_method PROPERTIES
+      LINK_FLAGS "-undefined dynamic_lookup"
+      INSTALL_RPATH "@rpath;@rpath/../../../../../lib;@rpath/../../../../../lib64;@rpath/../../../../../bin")
+  elseif (UNIX)
+    set_target_properties(ext_method PROPERTIES INSTALL_RPATH
+      "\$ORIGIN;\$ORIGIN/../../../../../lib;\$ORIGIN/../../../../../lib64;\$ORIGIN/../../../../../bin")
+  endif()
+
+  install(TARGETS ext_method EXPORT ${ExportTarget}
+    DESTINATION share/dakota/Python/dakota/ext_method/)
+  install(FILES ${Dakota_SOURCE_DIR}/python/dakota/ext_method/__init__.py
+    DESTINATION share/dakota/Python/dakota/ext_method)
+
 endif(HAVE_EXT_PYTHON_METHOD)
 
 CheckPackage(PSUADE)

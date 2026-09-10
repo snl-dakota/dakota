@@ -1,12 +1,12 @@
 Test Number 0 succeeded
-<<<<< Function evaluation summary (OPTIONAL_I): 41 total (29 new, 12 duplicate)
- nln_ineq_con_1: 41 val (29 n, 12 d), 38 grad (29 n, 9 d), 0 Hess (0 n, 0 d)
-<<<<< Function evaluation summary (UQ_I): 905 total (863 new, 42 duplicate)
-  response_fn_1: 905 val (863 n, 42 d), 575 grad (533 n, 42 d), 0 Hess (0 n, 0 d)
-<<<<< Function evaluation summary (OPTIONAL_I): 41 total (29 new, 12 duplicate)
- nln_ineq_con_1: 41 val (29 n, 12 d), 38 grad (29 n, 9 d), 0 Hess (0 n, 0 d)
-<<<<< Function evaluation summary (UQ_I): 905 total (863 new, 42 duplicate)
-  response_fn_1: 905 val (863 n, 42 d), 575 grad (533 n, 42 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (OPTIONAL_I): 38 total (26 new, 12 duplicate)
+ nln_ineq_con_1: 38 val (26 n, 12 d), 35 grad (26 n, 9 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 884 total (842 new, 42 duplicate)
+  response_fn_1: 884 val (842 n, 42 d), 554 grad (512 n, 42 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (OPTIONAL_I): 38 total (26 new, 12 duplicate)
+ nln_ineq_con_1: 38 val (26 n, 12 d), 35 grad (26 n, 9 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 884 total (842 new, 42 duplicate)
+  response_fn_1: 884 val (842 n, 42 d), 554 grad (512 n, 42 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                       2.0000000000e+02 b
                       1.7500000000e+01 d
@@ -16,26 +16,26 @@ Test Number 0 succeeded
 <<<<< Best constraint values   =
                       4.0000000000e+03
 <<<<< Best evaluation ID (full match) not available
-<<<<< Best evaluation ID (partial match): 26
+<<<<< Best evaluation ID (partial match): 23
 Test Number 1 succeeded
-<<<<< Function evaluation summary (OPTIONAL_I): 44 total (33 new, 11 duplicate)
- nln_ineq_con_1: 44 val (33 n, 11 d), 41 grad (33 n, 8 d), 0 Hess (0 n, 0 d)
-<<<<< Function evaluation summary (UQ_I): 926 total (891 new, 35 duplicate)
-  response_fn_1: 926 val (891 n, 35 d), 596 grad (561 n, 35 d), 0 Hess (0 n, 0 d)
-<<<<< Function evaluation summary (OPTIONAL_I): 44 total (33 new, 11 duplicate)
- nln_ineq_con_1: 44 val (33 n, 11 d), 41 grad (33 n, 8 d), 0 Hess (0 n, 0 d)
-<<<<< Function evaluation summary (UQ_I): 926 total (891 new, 35 duplicate)
-  response_fn_1: 926 val (891 n, 35 d), 596 grad (561 n, 35 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (OPTIONAL_I): 42 total (31 new, 11 duplicate)
+ nln_ineq_con_1: 42 val (31 n, 11 d), 39 grad (31 n, 8 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 912 total (877 new, 35 duplicate)
+  response_fn_1: 912 val (877 n, 35 d), 582 grad (547 n, 35 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (OPTIONAL_I): 42 total (31 new, 11 duplicate)
+ nln_ineq_con_1: 42 val (31 n, 11 d), 39 grad (31 n, 8 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 912 total (877 new, 35 duplicate)
+  response_fn_1: 912 val (877 n, 35 d), 582 grad (547 n, 35 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                       2.0000000000e+02 b
-                      1.7499953516e+01 d
+                      1.7499904426e+01 d
                       1.0000000000e+02 h
 <<<<< Best objective function  =
-                     -3.2432137224e+00
+                     -3.2431917740e+00
 <<<<< Best constraint values   =
-                      3.9999907031e+03
+                      3.9999808852e+03
 <<<<< Best evaluation ID (full match) not available
-<<<<< Best evaluation ID (partial match): 33
+<<<<< Best evaluation ID (partial match): 31
 Test Number 2 succeeded
 <<<<< Function evaluation summary (OPTIONAL_I): 39 total (27 new, 12 duplicate)
  nln_ineq_con_1: 39 val (27 n, 12 d), 36 grad (27 n, 9 d), 0 Hess (0 n, 0 d)
