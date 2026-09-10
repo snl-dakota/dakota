@@ -45,47 +45,75 @@ NonDLocalReliability* NonDLocalReliability::nondLocRelInstance(NULL);
 
 
 NonDLocalReliability::
-NonDLocalReliability(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
-  NonDReliability(problem_db, parallel_lib, model), 
-  initialPtUserSpec(
-    probDescDB.get<bool>("variables.uncertain.initial_point_flag")),
+NonDLocalReliability(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
+		     std::shared_ptr<Model> model):
+  NonDReliability(problem_db, parallel_lib, model),
+  initialPtUserSpec(probDescDB.get<bool>("variables.uncertain.initial_point_flag")),
   npsolFlag(false), warmStartFlag(true), nipModeOverrideFlag(true),
   curvatureDataAvailable(false), kappaUpdated(false),
   secondOrderIntType(HOHENRACK), curvatureThresh(1.e-10), warningBits(0)
+{
+  initialize(probDescDB.get<const String>("method.nond.reliability_integration"),
+		    probDescDB.get<unsigned short>("method.nond.opt_subproblem_solver"),
+		    probDescDB.get<const IntVector>("method.nond.refinement_samples"),
+		    probDescDB.get<int>("method.random_seed"));
+}
+
+
+NonDLocalReliability::
+NonDLocalReliability(std::shared_ptr<StudyServices> services,
+		     const IRStore& method_store,
+		     std::shared_ptr<Model> model):
+  NonDReliability(std::move(services), method_store, model),
+  initialPtUserSpec(method_store.get<bool>("variables.uncertain.initial_point_flag")),
+  npsolFlag(false), warmStartFlag(true), nipModeOverrideFlag(true),
+  curvatureDataAvailable(false), kappaUpdated(false),
+  secondOrderIntType(HOHENRACK), curvatureThresh(1.e-10), warningBits(0)
+{
+  initialize(method_store.get<String>("nond.reliability_integration"),
+		    method_store.get<unsigned short>("nond.opt_subproblem_solver"),
+		    method_store.get<IntVector>("nond.refinement_samples"),
+		    method_store.get<int>("random_seed"));
+}
+
+
+void NonDLocalReliability::initialize(const String& integration_method,
+					     unsigned short opt_subproblem_solver,
+					     const IntVector& refine_samples_spec,
+					     int refine_seed)
 {
   bool err_flag = false;
 
   // check for suitable gradient and variables specifications
   if (iteratedModel->gradient_type() == "none") {
     Cerr << "\nError: local_reliability requires a gradient specification."
-	 << std::endl;
+         << std::endl;
     err_flag = true;
   }
 
   if (mppSearchType) { // default is MV = 0
 
-    switch (sub_optimizer_select(
-	    probDescDB.get<unsigned short>("method.nond.opt_subproblem_solver"))) {
+    switch (sub_optimizer_select(opt_subproblem_solver)) {
     case SUBMETHOD_NPSOL: npsolFlag =  true; break;
     case SUBMETHOD_OPTPP: npsolFlag = false; break;
     default:
       Cerr << "\nError: invalid MPP optimizer selection in NonDLocalReliability"
-	   << std::endl;
+           << std::endl;
       err_flag = true; break;
     }
 
     // Error check for a specification of at least 1 level for MPP methods
     if (!totalLevelRequests) {
       Cerr << "\nError: An MPP search method requires the specification of at "
-	   << "least one response, probability, or reliability level."
-	   << std::endl;
+           << "least one response, probability, or reliability level."
+           << std::endl;
       err_flag = true;
     }
   }
   else if (integrationRefinement) {
     // integration refinement requires an MPP, but it may be unconverged (AMV)
     Cerr << "\nError: integration refinement only supported for MPP methods."
-	 << std::endl;
+         << std::endl;
     err_flag = true;
   }
 
@@ -129,19 +157,17 @@ NonDLocalReliability(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, s
   // unconverged MPP's (AMV variants).  In addition, AMV variants only compute
   // verification function values at u* (no Hessians).  For an AMV-like
   // approach with 2nd-order integration, use AMV+ with max_iterations = 1.
-  const String& integration_method
-    = probDescDB.get<const String>("method.nond.reliability_integration");
   if (integration_method.empty() || integration_method == "first_order")
     integrationOrder = 1;
   else if (integration_method == "second_order") {
     if (hess_type == "none") {
       Cerr << "\nError: second-order integration requires Hessian "
-	   << "specification." << std::endl;
+           << "specification." << std::endl;
       err_flag = true;
     }
     else if (mppSearchType <= SUBMETHOD_AMV_U) {
       Cerr << "\nError: second-order integration only supported for fully "
-	   << "converged MPP methods." << std::endl;
+           << "converged MPP methods." << std::endl;
       err_flag = true;
     }
     else
@@ -149,7 +175,7 @@ NonDLocalReliability(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, s
   }
   else {
     Cerr << "Error: bad integration selection in NonDLocalReliability."
-	 << std::endl;
+         << std::endl;
     err_flag = true;
   }
 
@@ -165,7 +191,7 @@ NonDLocalReliability(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, s
   // since an SQP-based optimizer will not enforce the constraint immediately
   // and min +/-g has been observed to have significant excursions early on
   // prior to the u'u = beta^2 constraint enforcement bringing it back.  A
-  // large excursion can cause overflow; a medium excursion can cause poor 
+  // large excursion can cause overflow; a medium excursion can cause poor
   // performance since far-field info is introduced into the BFGS Hessian.
   short recast_resp_order = 3; // grad-based quasi-Newton opt on mppModel
   const ShortShortPair& orig_view = iteratedModel->current_variables().view();
@@ -234,9 +260,9 @@ NonDLocalReliability(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, s
     bool pma2_flag = false;
     if (integrationOrder == 2)
       for (size_t i=0; i<numFunctions; ++i)
-	if (!requestedProbLevels[i].empty() ||
-	    !requestedGenRelLevels[i].empty())
-	  { pma2_flag = true; break; }
+        if (!requestedProbLevels[i].empty() ||
+            !requestedGenRelLevels[i].empty())
+          { pma2_flag = true; break; }
     if (pma2_flag) // mirrors PMA2_set_mapping()
       recast_resp_order |= 4;
     break;
@@ -255,34 +281,14 @@ NonDLocalReliability(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, s
     SizetArray recast_vars_comps_total;  // default: empty; no change in size
     BitArray all_relax_di, all_relax_dr; // default: empty; no discrete relax
     mppModel = std::make_shared<RecastModel>
-			(uSpaceModel, recast_vars_comps_total, all_relax_di,
-			 all_relax_dr, orig_view, 1, 1, 0, recast_resp_order);
+                        (uSpaceModel, recast_vars_comps_total, all_relax_di,
+                         all_relax_dr, orig_view, 1, 1, 0, recast_resp_order);
     RealVector nln_eq_targets(1, false);
     nln_eq_targets = 0.;
     ModelUtils::nonlinear_eq_constraint_targets(*mppModel, nln_eq_targets);
 
     // Use NPSOL/OPT++ in "user_functions" mode to perform the MPP search
     if (npsolFlag) {
-      // NPSOL deriv level: 1 = supplied grads of objective fn, 2 = supplied
-      // grads of constraints, 3 = supplied grads of both.  Always use the
-      // supplied grads of u'u (deriv level = 1 for RIA, deriv level = 2 for
-      // PMA).  In addition, use supplied gradients of G(u) in most cases.
-      // Exception: deriv level = 3 results in a gradient-based line search,
-      // which could be too expensive for FORM with numerical grads unless
-      // seeking parallel load balance.
-      //int npsol_deriv_level;
-      //if (mppSearchType == SUBMETHOD_NO_APPROX && !iteratedModel.asynch_flag()
-      //    && iteratedModel.gradient_type() != "analytic")
-      //  npsol_deriv_level = (ria_flag) ? 1 : 2;
-      //else
-      //  npsol_deriv_level = 3;
-      //Cout << "Derivative level = " << npsol_deriv_level << '\n';
-
-      // The gradient-based line search (deriv. level = 3) appears to be
-      // outperforming the value-based line search in PMA testing.  In
-      // addition, the RIA warm start needs fnGradU so deriv. level = 3 has
-      // superior performance there as well.  Therefore, deriv level = 3 can
-      // be used for all cases.
       int npsol_deriv_level = 3;
 
       // run a tighter tolerance on approximation-based MPP searches
@@ -292,7 +298,7 @@ NonDLocalReliability(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, s
 #ifdef HAVE_NPSOL
       {
         mppOptimizer = std::make_shared<NPSOLOptimizer>
-			        (mppModel, npsol_deriv_level, conv_tol);
+                                (mppModel, npsol_deriv_level, conv_tol);
       }
 #endif
     }
@@ -300,7 +306,7 @@ NonDLocalReliability(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, s
     else
       {
         mppOptimizer = std::make_shared<SNLLOptimizer>
-			        ("optpp_q_newton", mppModel);
+                                ("optpp_q_newton", mppModel);
       }
 #endif
   }
@@ -311,10 +317,10 @@ NonDLocalReliability(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, s
     bool no_ria_override = true;
     for (size_t i=0; i<numFunctions; ++i)
       if (!requestedRespLevels[i].empty())
-	{ no_ria_override = false; break; }
+        { no_ria_override = false; break; }
     if (no_ria_override) {
       Cerr << "\nWarning: probability_refinement specification is ignored in "
-	   << "the absence of response_level mappings.\n";
+           << "the absence of response_level mappings.\n";
       integrationRefinement = NO_INT_REFINE;
     }
   }
@@ -323,17 +329,14 @@ NonDLocalReliability(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, s
 
     // For NonDLocal, integration refinement is applied to the original model
     int refine_samples = 1000; // context-specific default
-    const IntVector& db_refine_samples = 
-      probDescDB.get<const IntVector>("method.nond.refinement_samples");
-    if (db_refine_samples.length() == 1)
-      refine_samples = db_refine_samples[0];
-    else if (db_refine_samples.length() > 1) {
+    if (refine_samples_spec.length() == 1)
+      refine_samples = refine_samples_spec[0];
+    else if (refine_samples_spec.length() > 1) {
       Cerr << "\nError (NonDLocalReliability): refinement_samples must be "
            << "length 1 if specified." << std::endl;
       abort_handler(PARSE_ERROR);
     }
-    int refine_seed    = probDescDB.get<int>("method.random_seed");
-   
+
     unsigned short sample_type = SUBMETHOD_DEFAULT;
     String rng; // empty string: use default
 
@@ -352,11 +355,11 @@ NonDLocalReliability(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, s
     case SUBMETHOD_TANA_X: case SUBMETHOD_QMEA_X: {
       std::shared_ptr<Model> g_u_model;
       g_u_model = std::make_shared<ProbabilityTransformModel>(
-	      iteratedModel, STD_NORMAL_U); // original dist bnds
+              iteratedModel, STD_NORMAL_U); // original dist bnds
       import_sampler_rep = std::make_shared<NonDAdaptImpSampling>(g_u_model,
-	sample_type, refine_samples, refine_seed, rng, vary_pattern,
-	integrationRefinement, cdfFlag, x_model_flag, use_model_bounds,
-	track_extreme);
+        sample_type, refine_samples, refine_seed, rng, vary_pattern,
+        integrationRefinement, cdfFlag, x_model_flag, use_model_bounds,
+        track_extreme);
       break;
     }
     case SUBMETHOD_AMV_U:  case SUBMETHOD_AMV_PLUS_U:
@@ -384,7 +387,7 @@ NonDLocalReliability(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, s
   // direct correspondence).
   computedRelLevels.resize(numFunctions); // others sized in NonDReliability
   for (size_t i=0; i<numFunctions; i++) {
-    size_t num_levels = requestedRespLevels[i].length() + 
+    size_t num_levels = requestedRespLevels[i].length() +
       requestedProbLevels[i].length() + requestedRelLevels[i].length() +
       requestedGenRelLevels[i].length();
     computedRespLevels[i].resize(num_levels);
