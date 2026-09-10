@@ -36,6 +36,9 @@ public:
 
   /// standard constructor
   NonDGPImpSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
+  /// DI constructor
+  NonDGPImpSampling(std::shared_ptr<StudyServices> services,
+             const IRStore& method_store, std::shared_ptr<Model> model);
 
   // alternate constructor for sample generation and evaluation "on the fly"
   //NonDGPImpSampling(std::shared_ptr<Model> model, const String& sample_type,

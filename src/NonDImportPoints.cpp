@@ -35,6 +35,29 @@ NonDImportPoints::NonDImportPoints(ProblemDescDB& problem_db, ParallelLibrary& p
 }
 
 
+/** This constructor is called for a standard letter-envelope iterator
+    instantiation.  In this case, set_db_list_nodes has been called and
+    IRStore can be queried for settings from the method specification. */
+NonDImportPoints::
+NonDImportPoints(std::shared_ptr<StudyServices> services, const IRStore& method_store,
+		 std::shared_ptr<Model> model):
+  NonDSampling(std::move(services), method_store, model), numResponseFunctions(0),
+  vbdViaSamplingMethod(VBD_BINNED),
+  vbdViaSamplingNumBins(method_store.get<int>("vbd_via_sampling_num_bins")),
+  importPointsFile(method_store.get<String>("import_points_file")),
+  importPointsFormat(method_store.get<unsigned short>("import_points_format")),
+  importUseVariableLabels(method_store.get<bool>("import_points.use_variable_labels")),
+  importActiveVariablesOnly(method_store.get<bool>("import_points.active_only"))
+{
+
+  if (model->primary_fn_type() == GENERIC_FNS)
+    numResponseFunctions = model->num_primary_fns();
+
+  initialize_final_statistics();
+
+}
+
+
 NonDImportPoints::~NonDImportPoints()
 { }
 

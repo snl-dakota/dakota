@@ -1,11 +1,11 @@
 /*  _______________________________________________________________________
 
-Dakota: Explore and predict with confidence.
-Copyright 2014-2025
-National Technology & Engineering Solutions of Sandia, LLC (NTESS).
-This software is distributed under the GNU Lesser General Public License.
-For more information, see the README file in the top Dakota directory.
-_______________________________________________________________________ */
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2025
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    This software is distributed under the GNU Lesser General Public License.
+    For more information, see the README file in the top Dakota directory.
+    _______________________________________________________________________ */
 
 //- Edited by: Mohamed S. Ebeida on 11/26/2012
 
@@ -42,8 +42,6 @@ namespace Dakota
   probDescDB can be queried for settings from the method specification. */
 NonDAdaptiveSampling::NonDAdaptiveSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model): NonDSampling(problem_db, parallel_lib, model)
 {	
-#pragma region Class Constructor:
-
   // sampleType default in DataMethod.cpp is SUBMETHOD_DEFAULT (0).
   // Enforce an LHS default for this method.
   if (!sampleType)
@@ -166,9 +164,139 @@ NonDAdaptiveSampling::NonDAdaptiveSampling(ProblemDescDB& problem_db, ParallelLi
     gpEval = construct_fsu_sampler(gpModel, numEmulEval, randomSeed,sampleDesign);
     //gpEval->assign_rep(new FSUDesignCompExp(gpModel, numEmulEval, randomSeed, sampleDesign));
   }
-
-#pragma endregion
 }
+
+
+NonDAdaptiveSampling::
+NonDAdaptiveSampling(std::shared_ptr<StudyServices> services,
+		     const IRStore& method_store,
+		     std::shared_ptr<Model> model):
+  NonDSampling(std::move(services), method_store, model)
+{
+  // sampleType default in DataMethod.cpp is SUBMETHOD_DEFAULT (0).
+  // Enforce an LHS default for this method.
+  if (!sampleType)
+    sampleType = SUBMETHOD_LHS;
+
+  initialize_final_statistics();
+
+  AMSC = NULL;
+
+  //Defaults are set before parsing input parameters
+  validationSetSize = 0;
+  outputValidationData = false;
+  numKneighbors = 5;
+  numRounds = maxIterations;
+  if (numRounds == -1)
+    numRounds = 100;
+
+  numEmulEval = method_store.get<int>("nond.samples_on_emulator");
+  if (numEmulEval == 0)
+    numEmulEval = 400;
+  batchSize = 1;
+  const IntVector& db_refine_samples =
+    method_store.get<IntVector>("nond.refinement_samples");
+  if (db_refine_samples.length() == 1)
+    batchSize = db_refine_samples[0];
+  else if (db_refine_samples.length() > 1) {
+    Cerr << "\nError (NonDAdaptiveSampling): refinement_samples must be "
+      << "length 1 if specified." << std::endl;
+    abort_handler(PARSE_ERROR);
+  }
+  batchStrategy = method_store.get<String>("batch_selection");
+  if (batchStrategy.empty())
+    batchStrategy="naive";
+  scoringMetric = method_store.get<String>("fitness_metric");
+  if (scoringMetric == "predicted_variance")
+    scoringMetric = "alm";
+  if (scoringMetric.empty())
+    scoringMetric = "alm";
+
+  Cout << "numEmulEval " << numEmulEval << '\n';
+  Cout << "numRounds " << numRounds << '\n';
+  Cout << "batchSize " << batchSize << '\n';
+  Cout << "batchStrategy " << batchStrategy  << '\n';
+  Cout << "scoringMetric " << scoringMetric  << '\n';
+
+  ////***ATTENTION***
+  //// So, I hard-coded this directory, it only matters if you set
+  //// outputValidationData to true
+  ////***END ATTENTION***
+
+  outputDir = "adaptive.results";
+
+  //Now parse the inputs
+  const StringArray& misc_options = method_store.get<StringArray>("coliny.misc_options");
+  if (misc_options.size() > 0)
+    parse_options();
+
+  Cout << "misc options size " << misc_options.size()  << '\n';
+  String sample_reuse;
+  UShortArray approx_order; // not used by GP/kriging
+  short corr_order = -1, data_order = 1, corr_type = NO_CORRECTION;
+  if (method_store.get<bool>("derivative_usage"))
+  {
+    if (iteratedModel->gradient_type() != "none") data_order |= 2;
+    if (iteratedModel->hessian_type()  != "none") data_order |= 4;
+  }
+
+  bool vary_pattern = false;
+  const String& import_pts_file = method_store.get<String>("import_build_points_file");
+  int samples = numSamples;
+  if (!import_pts_file.empty())
+  {
+    samples = 0; sample_reuse = "all";
+  }
+
+  //**NOTE:  We are hardcoding the sample type to LHS and the approximation type to kriging for now
+  //if (sampleDesign == RANDOM_SAMPLING)
+  //{
+  std::shared_ptr<Iterator> gp_build = std::make_shared<NonDLHSSampling>(iteratedModel, SUBMETHOD_DEFAULT,
+      samples, randomSeed, rngName,
+      varyPattern, ACTIVE_UNIFORM);
+  //}
+  //else
+  //{
+  //    gpBuild.assign_rep(new FSUDesignCompExp(iteratedModel, samples, randomSeed,
+  //                                       sampleDesign));
+  //}
+  approx_type = "global_kriging";
+  ActiveSet gp_set = iteratedModel->current_response().active_set(); // copy
+  gp_set.request_values(1); // no surr deriv evals, but GP may be grad-enhanced
+  const ShortShortPair& gp_view = iteratedModel->current_variables().view();
+  gpModel = std::make_shared<DataFitSurrModel>
+    (gp_build, iteratedModel,
+     gp_set, gp_view, approx_type, approx_order, corr_type, corr_order, data_order,
+     outputLevel, sample_reuse, import_pts_file,
+     method_store.get<unsigned short>("import_build_format"),
+     method_store.get<bool>("import_build_active_only"),
+     method_store.get<String>("export_approx_points_file"),
+     method_store.get<unsigned short>("export_approx_format"));
+
+  vary_pattern = true; // allow seed to run among multiple approx sample sets
+  // need to add to input spec
+
+  ////***ATTENTION***
+  //// Until this starts working, we are forcing the candidates to be selected by
+  //// LHS
+  ////***END ATTENTION***
+  //if(sampleDesign == RANDOM_SAMPLING){
+  if(true)
+  {
+    construct_lhs(gpEval, gpModel, SUBMETHOD_DEFAULT, numEmulEval, randomSeed,
+        rngName, vary_pattern);
+
+    numFinalEmulEval = 10000; // may be we should add that as a paramter
+    construct_lhs(gpFinalEval, gpModel, SUBMETHOD_DEFAULT, numFinalEmulEval, randomSeed,
+        rngName, vary_pattern);
+  }
+  else
+  {
+    gpEval = construct_fsu_sampler(gpModel, numEmulEval, randomSeed,sampleDesign);
+    //gpEval->assign_rep(new FSUDesignCompExp(gpModel, numEmulEval, randomSeed, sampleDesign));
+  }
+}
+
 
 NonDAdaptiveSampling::~NonDAdaptiveSampling()
 { }
