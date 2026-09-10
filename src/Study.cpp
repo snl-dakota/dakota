@@ -431,7 +431,7 @@ Study::MethodFactory::local_interval_est(
     "Study::method().local_interval_est requires Dakota to be built with NPSOL or OPTPP.");
 #else
   return std::make_shared<NonDLocalSingleInterval>(
-    method_store, std::move(model), study.services());
+    study.services(), method_store, std::move(model));
 #endif
 }
 
@@ -450,10 +450,10 @@ Study::MethodFactory::global_interval_est(
 {
   if (method_store.get<unsigned short>("nond.opt_subproblem_solver") == SUBMETHOD_LHS)
     return std::make_shared<NonDLHSSingleInterval>(
-      method_store, std::move(model), study.services());
+      study.services(), method_store, std::move(model));
 
   return std::make_shared<NonDGlobalSingleInterval>(
-    method_store, std::move(model), study.services());
+    study.services(), method_store, std::move(model));
 }
 
 std::shared_ptr<Iterator>

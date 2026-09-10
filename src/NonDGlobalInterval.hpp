@@ -37,8 +37,8 @@ public:
   //
 
   NonDGlobalInterval(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model); ///< constructor
-  NonDGlobalInterval(const IRStore& method_store, std::shared_ptr<Model> model,
-                     std::shared_ptr<StudyServices> services); ///< DI constructor
+  NonDGlobalInterval(std::shared_ptr<StudyServices> services,
+                    const IRStore& method_store, std::shared_ptr<Model> model); ///< DI constructor
   ~NonDGlobalInterval() override;                                       ///< destructor
 
   //
@@ -61,6 +61,14 @@ protected:
   //- Heading: New virtual functions
   //
 
+  /// common constructor initialization
+  void class_initialize(unsigned short opt_alg, short emulator_type,
+                        bool deriv_usage, const String& import_pts_file,
+                        unsigned short import_build_format,
+                        bool import_build_active_only,
+                        const String& export_approx_points_file,
+                        unsigned short export_approx_format,
+                        const String& advanced_options_file);
   /// perform any required initialization
   virtual void initialize();
   /// set the optimization variable bounds for each cell

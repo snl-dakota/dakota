@@ -1200,7 +1200,7 @@ TEST(di_construction_tests, can_construct_nond_local_single_interval_from_irstor
   auto simulation_model = std::make_shared<SimulationModel>(
     model_store, variables, interface, response, runtime.services);
 
-  NonDLocalSingleInterval interval(method_store, simulation_model, runtime.services);
+  NonDLocalSingleInterval interval(runtime.services, method_store, simulation_model);
 
   EXPECT_EQ(interval.parallel_library_ptr(), runtime.parallelLibrary.get());
   EXPECT_EQ(interval.output_manager_ptr(), runtime.outputManager.get());
@@ -1241,7 +1241,7 @@ TEST(di_construction_tests, nond_local_single_interval_throws_on_inconsistent_ru
     model_store, variables, interface, response, runtime_a.services);
 
   EXPECT_THROW(
-    NonDLocalSingleInterval(method_store, simulation_model, runtime_b.services),
+    NonDLocalSingleInterval(runtime_b.services, method_store, simulation_model),
     std::runtime_error);
 }
 #endif
@@ -1332,7 +1332,7 @@ TEST(di_construction_tests, can_construct_nond_lhs_single_interval_from_irstore)
   auto simulation_model = std::make_shared<SimulationModel>(
     model_store, variables, interface, response, runtime.services);
 
-  NonDLHSSingleInterval interval(method_store, simulation_model, runtime.services);
+  NonDLHSSingleInterval interval(runtime.services, method_store, simulation_model);
 
   EXPECT_EQ(interval.parallel_library_ptr(), runtime.parallelLibrary.get());
   EXPECT_EQ(interval.output_manager_ptr(), runtime.outputManager.get());
@@ -1364,7 +1364,7 @@ TEST(di_construction_tests, nond_lhs_single_interval_throws_on_inconsistent_runt
     model_store, variables, interface, response, runtime_a.services);
 
   EXPECT_THROW(
-    NonDLHSSingleInterval(method_store, simulation_model, runtime_b.services),
+    NonDLHSSingleInterval(runtime_b.services, method_store, simulation_model),
     std::runtime_error);
 }
 
@@ -1454,7 +1454,7 @@ TEST(di_construction_tests, can_construct_nond_global_single_interval_from_irsto
   auto simulation_model = std::make_shared<SimulationModel>(
     model_store, variables, interface, response, runtime.services);
 
-  NonDGlobalSingleInterval interval(method_store, simulation_model, runtime.services);
+  NonDGlobalSingleInterval interval(runtime.services, method_store, simulation_model);
 
   EXPECT_EQ(interval.parallel_library_ptr(), runtime.parallelLibrary.get());
   EXPECT_EQ(interval.output_manager_ptr(), runtime.outputManager.get());
@@ -1489,7 +1489,7 @@ TEST(di_construction_tests, nond_global_single_interval_throws_on_inconsistent_r
     model_store, variables, interface, response, runtime_a.services);
 
   EXPECT_THROW(
-    NonDGlobalSingleInterval(method_store, simulation_model, runtime_b.services),
+    NonDGlobalSingleInterval(runtime_b.services, method_store, simulation_model),
     std::runtime_error);
 }
 

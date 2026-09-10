@@ -19,8 +19,8 @@ NonDLocalSingleInterval(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib
 
 
 NonDLocalSingleInterval::
-NonDLocalSingleInterval(const IRStore& method_store, std::shared_ptr<Model> model,
-                        std::shared_ptr<StudyServices> services):
+NonDLocalSingleInterval(std::shared_ptr<StudyServices> services,
+             const IRStore& method_store, std::shared_ptr<Model> model):
   NonDLocalInterval(std::move(services), method_store, model)
 { }
 

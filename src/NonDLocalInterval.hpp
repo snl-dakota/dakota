@@ -63,6 +63,8 @@ protected:
   //- Heading: New virtual functions
   //
 
+  /// common constructor initialization
+  void class_initialize(unsigned short opt_subproblem_solver);
   /// perform any required initialization
   virtual void initialize();
   /// set the optimization variable bounds for each cell
