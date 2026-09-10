@@ -1,11 +1,11 @@
 /*  _______________________________________________________________________
 
-    Dakota: Explore and predict with confidence.
-    Copyright 2014-2025
-    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
-    This software is distributed under the GNU Lesser General Public License.
-    For more information, see the README file in the top Dakota directory.
-    _______________________________________________________________________ */
+Dakota: Explore and predict with confidence.
+Copyright 2014-2025
+National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+This software is distributed under the GNU Lesser General Public License.
+For more information, see the README file in the top Dakota directory.
+_______________________________________________________________________ */
 
 //- Edited by: Mohamed S. Ebeida on 11/26/2012
 
@@ -32,585 +32,585 @@
 #endif
 
 static const char rcsId[]=
-  "@(#) $Id: NonDAdaptiveSampling.cpp 7035 2012-6-6 21:45:39Z mseldre $";
-
+"@(#) $Id: NonDAdaptiveSampling.cpp 7035 2012-6-6 21:45:39Z mseldre $";
 
 namespace Dakota
 {
-	/** This constructor is called for a standard letter-envelope iterator 
-    instantiation.  In this case, set_db_list_nodes has been called and 
-    probDescDB can be queried for settings from the method specification. */
-	NonDAdaptiveSampling::NonDAdaptiveSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model): NonDSampling(problem_db, parallel_lib, model)
-	{	
-		#pragma region Class Constructor:
-		
-	        // sampleType default in DataMethod.cpp is SUBMETHOD_DEFAULT (0).
-	        // Enforce an LHS default for this method.
-	        if (!sampleType)
-		  sampleType = SUBMETHOD_LHS;
 
-		initialize_final_statistics();
+/** This constructor is called for a standard letter-envelope iterator 
+  instantiation.  In this case, set_db_list_nodes has been called and 
+  probDescDB can be queried for settings from the method specification. */
+NonDAdaptiveSampling::NonDAdaptiveSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model): NonDSampling(problem_db, parallel_lib, model)
+{	
+#pragma region Class Constructor:
 
-		AMSC = NULL;
+  // sampleType default in DataMethod.cpp is SUBMETHOD_DEFAULT (0).
+  // Enforce an LHS default for this method.
+  if (!sampleType)
+    sampleType = SUBMETHOD_LHS;
 
-		//Defaults are set before parsing input parameters
-    validationSetSize = 0;
-		outputValidationData = false;
-		numKneighbors = 5;
-                numRounds = maxIterations;
-                if (numRounds == -1)
-                  numRounds = 100;
-                
-                numEmulEval = probDescDB.get<int>("method.nond.samples_on_emulator");
-                if (numEmulEval == 0)
-                  numEmulEval = 400; 
-		batchSize = 1;
-		const IntVector& db_refine_samples = 
-		  probDescDB.get<const IntVector>("method.nond.refinement_samples");
-		if (db_refine_samples.length() == 1)
-		  batchSize = db_refine_samples[0];
-		else if (db_refine_samples.length() > 1) {
-		  Cerr << "\nError (NonDAdaptiveSampling): refinement_samples must be "
-		       << "length 1 if specified." << std::endl;
-		  abort_handler(PARSE_ERROR);
-		}
-                batchStrategy = probDescDB.get<const String>("method.batch_selection");
-                if (batchStrategy.empty())
-		  batchStrategy="naive";
-                scoringMetric = probDescDB.get<const String>("method.fitness_metric");
-                if (scoringMetric == "predicted_variance") 
-                  scoringMetric = "alm";
-                if (scoringMetric.empty())
-                  scoringMetric = "alm";
-                
-                Cout << "numEmulEval " << numEmulEval << '\n';
-                Cout << "numRounds " << numRounds << '\n';
-                Cout << "batchSize " << batchSize << '\n';
-                Cout << "batchStrategy " << batchStrategy  << '\n';
-                Cout << "scoringMetric " << scoringMetric  << '\n';
-                
-      		////***ATTENTION***
-		//// So, I hard-coded this directory, it only matters if you set
-		//// outputValidationData to true
-		////***END ATTENTION***
+  initialize_final_statistics();
 
-		outputDir = "adaptive.results";
+  AMSC = NULL;
 
-		//Now parse the inputs
-		const StringArray& misc_options = probDescDB.get<const StringArray>("method.coliny.misc_options");
-                if (misc_options.size() > 0)
-                  parse_options();
+  //Defaults are set before parsing input parameters
+  validationSetSize = 0;
+  outputValidationData = false;
+  numKneighbors = 5;
+  numRounds = maxIterations;
+  if (numRounds == -1)
+    numRounds = 100;
 
-                Cout << "misc options size " << misc_options.size()  << '\n';
-		String sample_reuse;
-		UShortArray approx_order; // not used by GP/kriging
-		short corr_order = -1, data_order = 1, corr_type = NO_CORRECTION;
-		if (probDescDB.get<bool>("method.derivative_usage"))
-		{
-		  if (iteratedModel->gradient_type() != "none") data_order |= 2;
-		  if (iteratedModel->hessian_type()  != "none") data_order |= 4;
-		}
+  numEmulEval = probDescDB.get<int>("method.nond.samples_on_emulator");
+  if (numEmulEval == 0)
+    numEmulEval = 400; 
+  batchSize = 1;
+  const IntVector& db_refine_samples = 
+    probDescDB.get<const IntVector>("method.nond.refinement_samples");
+  if (db_refine_samples.length() == 1)
+    batchSize = db_refine_samples[0];
+  else if (db_refine_samples.length() > 1) {
+    Cerr << "\nError (NonDAdaptiveSampling): refinement_samples must be "
+      << "length 1 if specified." << std::endl;
+    abort_handler(PARSE_ERROR);
+  }
+  batchStrategy = probDescDB.get<const String>("method.batch_selection");
+  if (batchStrategy.empty())
+    batchStrategy="naive";
+  scoringMetric = probDescDB.get<const String>("method.fitness_metric");
+  if (scoringMetric == "predicted_variance") 
+    scoringMetric = "alm";
+  if (scoringMetric.empty())
+    scoringMetric = "alm";
 
-		bool vary_pattern = false;
-		const String& import_pts_file = probDescDB.get<const String>("method.import_build_points_file");
-		int samples = numSamples;
-		if (!import_pts_file.empty())
-		{
-			samples = 0; sample_reuse = "all";
-		}
-                 
-                //**NOTE:  We are hardcoding the sample type to LHS and the approximation type to kriging for now
-		//if (sampleDesign == RANDOM_SAMPLING)
-		//{
-		std::shared_ptr<Iterator> gp_build = std::make_shared<NonDLHSSampling>(iteratedModel, SUBMETHOD_DEFAULT,
-								     samples, randomSeed, rngName,
-								     varyPattern, ACTIVE_UNIFORM);
-		//}
-		//else
-		//{
-		//	gpBuild.assign_rep(new FSUDesignCompExp(iteratedModel, samples, randomSeed,
-		//					   sampleDesign));
-		//}
-                approx_type = "global_kriging";
-		ActiveSet gp_set = iteratedModel->current_response().active_set(); // copy
-		gp_set.request_values(1); // no surr deriv evals, but GP may be grad-enhanced
-		const ShortShortPair& gp_view = iteratedModel->current_variables().view();
-		gpModel = std::make_shared<DataFitSurrModel>
-				   (gp_build, iteratedModel,
-				    gp_set, gp_view, approx_type, approx_order, corr_type, corr_order, data_order,
-				    outputLevel, sample_reuse, import_pts_file,
-				    probDescDB.get<unsigned short>("method.import_build_format"),
-				    probDescDB.get<bool>("method.import_build_active_only"),
-				    probDescDB.get<const String>("method.export_approx_points_file"),
-				    probDescDB.get<unsigned short>("method.export_approx_format"));
+  Cout << "numEmulEval " << numEmulEval << '\n';
+  Cout << "numRounds " << numRounds << '\n';
+  Cout << "batchSize " << batchSize << '\n';
+  Cout << "batchStrategy " << batchStrategy  << '\n';
+  Cout << "scoringMetric " << scoringMetric  << '\n';
 
-		vary_pattern = true; // allow seed to run among multiple approx sample sets
-							 // need to add to input spec
+  ////***ATTENTION***
+  //// So, I hard-coded this directory, it only matters if you set
+  //// outputValidationData to true
+  ////***END ATTENTION***
 
-		////***ATTENTION***
-		//// Until this starts working, we are forcing the candidates to be selected by
-		//// LHS
-		////***END ATTENTION***
-		//if(sampleDesign == RANDOM_SAMPLING){
-		if(true)
-		{
-			construct_lhs(gpEval, gpModel, SUBMETHOD_DEFAULT, numEmulEval, randomSeed,
-						  rngName, vary_pattern);
+  outputDir = "adaptive.results";
 
-			numFinalEmulEval = 10000; // may be we should add that as a paramter
-			construct_lhs(gpFinalEval, gpModel, SUBMETHOD_DEFAULT, numFinalEmulEval, randomSeed,
-						  rngName, vary_pattern);
-		}
-		else
-		{
-			gpEval = construct_fsu_sampler(gpModel, numEmulEval, randomSeed,sampleDesign);
-			//gpEval->assign_rep(new FSUDesignCompExp(gpModel, numEmulEval, randomSeed, sampleDesign));
-		}
+  //Now parse the inputs
+  const StringArray& misc_options = probDescDB.get<const StringArray>("method.coliny.misc_options");
+  if (misc_options.size() > 0)
+    parse_options();
 
-		#pragma endregion
-	}
-
-  NonDAdaptiveSampling::~NonDAdaptiveSampling()
-  { }
-
-
-  bool NonDAdaptiveSampling::resize()
+  Cout << "misc options size " << misc_options.size()  << '\n';
+  String sample_reuse;
+  UShortArray approx_order; // not used by GP/kriging
+  short corr_order = -1, data_order = 1, corr_type = NO_CORRECTION;
+  if (probDescDB.get<bool>("method.derivative_usage"))
   {
-    bool parent_reinit_comms = NonDSampling::resize();
-
-    Cerr << "\nError: Resizing is not yet supported in method "
-         << method_enum_to_string(methodName) << "." << std::endl;
-    abort_handler(METHOD_ERROR);
-
-    return parent_reinit_comms;
+    if (iteratedModel->gradient_type() != "none") data_order |= 2;
+    if (iteratedModel->hessian_type()  != "none") data_order |= 4;
   }
 
-  void NonDAdaptiveSampling::derived_init_communicators(ParLevLIter pl_iter)
+  bool vary_pattern = false;
+  const String& import_pts_file = probDescDB.get<const String>("method.import_build_points_file");
+  int samples = numSamples;
+  if (!import_pts_file.empty())
   {
-    iteratedModel->init_communicators(pl_iter, maxEvalConcurrency);
-
-    // gpEval and gpFinalEval use NoDBBaseConstructor, so no need to
-    // manage DB list nodes at this level
-    gpEval->init_communicators(pl_iter);
-    gpFinalEval->init_communicators(pl_iter);
+    samples = 0; sample_reuse = "all";
   }
 
-  void NonDAdaptiveSampling::derived_set_communicators(ParLevLIter pl_iter)
-  {
-    NonD::derived_set_communicators(pl_iter);
+  //**NOTE:  We are hardcoding the sample type to LHS and the approximation type to kriging for now
+  //if (sampleDesign == RANDOM_SAMPLING)
+  //{
+  std::shared_ptr<Iterator> gp_build = std::make_shared<NonDLHSSampling>(iteratedModel, SUBMETHOD_DEFAULT,
+      samples, randomSeed, rngName,
+      varyPattern, ACTIVE_UNIFORM);
+  //}
+  //else
+  //{
+  //	gpBuild.assign_rep(new FSUDesignCompExp(iteratedModel, samples, randomSeed,
+  //					   sampleDesign));
+  //}
+  approx_type = "global_kriging";
+  ActiveSet gp_set = iteratedModel->current_response().active_set(); // copy
+  gp_set.request_values(1); // no surr deriv evals, but GP may be grad-enhanced
+  const ShortShortPair& gp_view = iteratedModel->current_variables().view();
+  gpModel = std::make_shared<DataFitSurrModel>
+    (gp_build, iteratedModel,
+     gp_set, gp_view, approx_type, approx_order, corr_type, corr_order, data_order,
+     outputLevel, sample_reuse, import_pts_file,
+     probDescDB.get<unsigned short>("method.import_build_format"),
+     probDescDB.get<bool>("method.import_build_active_only"),
+     probDescDB.get<const String>("method.export_approx_points_file"),
+     probDescDB.get<unsigned short>("method.export_approx_format"));
 
-    // gpEval and gpFinalEval use NoDBBaseConstructor, so no need to
-    // manage DB list nodes at this level
-    gpEval->set_communicators(pl_iter);
-    gpFinalEval->set_communicators(pl_iter);
+  vary_pattern = true; // allow seed to run among multiple approx sample sets
+  // need to add to input spec
+
+  ////***ATTENTION***
+  //// Until this starts working, we are forcing the candidates to be selected by
+  //// LHS
+  ////***END ATTENTION***
+  //if(sampleDesign == RANDOM_SAMPLING){
+  if(true)
+  {
+    construct_lhs(gpEval, gpModel, SUBMETHOD_DEFAULT, numEmulEval, randomSeed,
+        rngName, vary_pattern);
+
+    numFinalEmulEval = 10000; // may be we should add that as a paramter
+    construct_lhs(gpFinalEval, gpModel, SUBMETHOD_DEFAULT, numFinalEmulEval, randomSeed,
+        rngName, vary_pattern);
+  }
+  else
+  {
+    gpEval = construct_fsu_sampler(gpModel, numEmulEval, randomSeed,sampleDesign);
+    //gpEval->assign_rep(new FSUDesignCompExp(gpModel, numEmulEval, randomSeed, sampleDesign));
   }
 
-  void NonDAdaptiveSampling::derived_free_communicators(ParLevLIter pl_iter)
-  {
-    gpFinalEval->free_communicators(pl_iter);
-    gpEval->free_communicators(pl_iter);
+#pragma endregion
+}
 
-    iteratedModel->free_communicators(pl_iter, maxEvalConcurrency);
+NonDAdaptiveSampling::~NonDAdaptiveSampling()
+{ }
+
+
+bool NonDAdaptiveSampling::resize()
+{
+  bool parent_reinit_comms = NonDSampling::resize();
+
+  Cerr << "\nError: Resizing is not yet supported in method "
+    << method_enum_to_string(methodName) << "." << std::endl;
+  abort_handler(METHOD_ERROR);
+
+  return parent_reinit_comms;
+}
+
+void NonDAdaptiveSampling::derived_init_communicators(ParLevLIter pl_iter)
+{
+  iteratedModel->init_communicators(pl_iter, maxEvalConcurrency);
+
+  // gpEval and gpFinalEval use NoDBBaseConstructor, so no need to
+  // manage DB list nodes at this level
+  gpEval->init_communicators(pl_iter);
+  gpFinalEval->init_communicators(pl_iter);
+}
+
+void NonDAdaptiveSampling::derived_set_communicators(ParLevLIter pl_iter)
+{
+  NonD::derived_set_communicators(pl_iter);
+
+  // gpEval and gpFinalEval use NoDBBaseConstructor, so no need to
+  // manage DB list nodes at this level
+  gpEval->set_communicators(pl_iter);
+  gpFinalEval->set_communicators(pl_iter);
+}
+
+void NonDAdaptiveSampling::derived_free_communicators(ParLevLIter pl_iter)
+{
+  gpFinalEval->free_communicators(pl_iter);
+  gpEval->free_communicators(pl_iter);
+
+  iteratedModel->free_communicators(pl_iter, maxEvalConcurrency);
+}
+
+
+
+//This is where all the magic happens
+void NonDAdaptiveSampling::core_run() 
+{
+#pragma region Quantify Uncertainity:
+  numPtsTotal = numSamples + numRounds * batchSize;		
+
+  // Build initial GP model.  This will be built over the initial LHS sample set
+  // defined in the constructor.
+  gpModel->build_approximation();
+
+  gpCvars.resize(numEmulEval);
+  gpVar.resize(numEmulEval);
+  gpMeans.resize(numEmulEval);		
+
+  predictionErrors.resize(numRounds+1);
+
+
+#ifdef HAVE_MORSE_SMALE
+  for (int ifunc = 0; ifunc < numFunctions; ifunc++)
+  {
+    update_amsc(ifunc);
+  }
+#endif
+
+  ////***ATTENTION***
+  //// I do this all over the place, but there has to be a better way to obtain
+  //// the dimensionality of the domain under test search "dim ="
+  ////***END ATTENTION***
+
+  // BMA: you should just be able to use numContinuousVars for now, or this:
+  //  size_t dim = numContinuousVars + numDiscreteIntVars + numDiscreteStringVars + numDiscreteRealVars;
+  int dim = 0;
+  const Pecos::SurrogateData& gp_data = gpModel->approximation_data(0);
+  const Pecos::SDVArray& sdv_array = gp_data.variables_data();
+
+  if(!sdv_array.empty()) dim = sdv_array[0].continuous_variables().length();
+
+  int i,j;
+
+
+  // We have built the initial GP.  Now we need to go through, per response 
+  // function and response level and calculate the failure probability. 
+  // We will need to add error handling:  we will only be calculating 
+  // results per response level, not probability level or reliability index.
+
+  int iter;
+  RealVectorArray new_Xs;
+
+  ////***ATTENTION***
+  //// This is a bit clunky, but I am writing my own file called improvement.txt
+  //// which has just the information I am concerned with and then I post-process
+  //// these files with some python scripts
+  ////***END ATTENTION***
+  std::stringstream ss;
+  ss << "improvement.txt";
+  String improvementFile;
+  ss >> improvementFile;
+  std::ofstream fout(improvementFile.c_str());
+  fout << "Round\tTrue_Min\tTrue_Max\tTrue_Saddle\tModel_Min\tModel_Max"
+    << "\tModel_Saddle\tBottleneck\tRMSPE" << std::endl;
+
+  initialize_level_mappings();
+
+
+  for (int k = 0; k < numRounds; k++) 
+  { 
+    pick_new_candidates();
+
+    score_new_candidates();
+
+    new_Xs = drawNewX(k);
+    output_round_data(k);
+
+    ////***ATTENTION***
+    //// The following two lines will write data to improvement.txt a file for
+    //// measuring how much improvement your surrogate is making as we progress,
+    //// I have disabled a bunch of the output which compares the topologies.
+    ////***END ATTENTION***
+    fout << k << "\t";
+    compare_complices(dim, fout);
+
+    // add new_X to the build points and append approximation
+    VariablesArray points_to_add;
+    IntResponseMap responses_to_add;
+    for(int i = 0; i < new_Xs.size(); i++) 
+    {
+      ModelUtils::continuous_variables(*iteratedModel, new_Xs[i]);
+      iteratedModel->evaluate();
+      responses_to_add.insert(IntResponsePair(iteratedModel->evaluation_id(),
+            iteratedModel->current_response()));
+      points_to_add.push_back(iteratedModel->current_variables());
+    }
+
+    gpModel->append_approximation(points_to_add,responses_to_add, true);
+
+#ifdef HAVE_MORSE_SMALE
+    for (int ifunc = 0; ifunc < numFunctions; ifunc++)
+    {
+      update_amsc(ifunc);
+    }
+#endif
+
+    Cout << "Done with iteration  " << k << std::endl; 
   }
 
+  // Exploring the final Emulator:
+  for (int ifunc = 0; ifunc < numFunctions; ifunc++)
+  {
+    size_t num_levels = requestedRespLevels[ifunc].length();
+    for (int ilevel = 0; ilevel < num_levels; ilevel++) computedProbLevels[ifunc][ilevel] = 0.0;		
+  }
+
+  // Exploring Final Emulator
+  ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
+  gpFinalEval->run(pl_iter);
+  const IntResponseMap& all_resp = gpFinalEval->all_responses();
+  IntRespMCIter resp_it = all_resp.begin();
+
+  for (int icand = 0; icand < numFinalEmulEval; icand++) 
+  {
+    for (int ifunc = 0; ifunc < numFunctions; ifunc++)
+    {
+      Real response_value = resp_it->second.function_value(ifunc);
+
+      size_t num_levels = requestedRespLevels[ifunc].length();
+      for (int ilevel = 0; ilevel < num_levels; ilevel++) 
+      {
+        Real z = requestedRespLevels[ifunc][ilevel];						
+        if (response_value < z) computedProbLevels[ifunc][ilevel]+=1.0;
+      }
+    }
+    ++resp_it;
+  }
+
+  double sf = 1.0 / double(numFinalEmulEval);
+  for (int ifunc = 0; ifunc < numFunctions; ifunc++)
+  {
+    size_t num_levels = requestedRespLevels[ifunc].length();
+    for (int ilevel = 0; ilevel < num_levels; ilevel++) 
+    {
+      computedProbLevels[ifunc][ilevel] *= sf; 
+
+      Cout << "Fraction Fail IS " << computedProbLevels[ifunc][ilevel] << '\n';    
+    }
+  }
+
+  Cout << "Scoring Metric is " << scoringMetric << '\n';
+
+  predictionErrors(numRounds) = compute_rmspe();
+  ////***ATTENTION***
+  //// If you are performing the optimization pipeline this next line is 
+  //// uncommented
+  ////***END ATTENTION***
+  //output_for_optimization(dim);
+  fout.close();
+#pragma endregion
+}
+
+void NonDAdaptiveSampling::pick_new_candidates()
+{
+#pragma region Pick New Candidates from Emulator:
+  RealVector temp_cvars;
+
+  // generate new set of emulator samples.  Note this will have a different seed  each time.
+
+  ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
+  gpEval->run(pl_iter);
+
+  // obtain results 
+  const RealMatrix&  all_samples = gpEval->all_samples();
+  const IntResponseMap& all_resp = gpEval->all_responses();
+
+  for (int i = 0; i < numEmulEval; i++) 
+  {
+    temp_cvars = Teuchos::getCol(Teuchos::View,	const_cast<RealMatrix&>(all_samples), i);
+    gpCvars[i] = temp_cvars;
+    ModelUtils::continuous_variables(*gpModel, temp_cvars);
+    if(approx_type == "global_kriging")
+    {
+      gpVar[i] = gpModel->approximation_variances(gpModel->current_variables());
+    }
+    else
+    {
+      gpVar[i] = 0;
+    }
+  }
+
+  IntRespMCIter resp_it = all_resp.begin();
+  for (int j = 0; j < numEmulEval; ++j) 
+  {
+    RealVector temp_resp(numFunctions);
+    for (int i = 0; i < numFunctions; i++)
+      temp_resp(i) = resp_it->second.function_value(i);
+
+    gpMeans[j] = temp_resp; ++resp_it;
+  }
+#pragma endregion
+}
+
+void NonDAdaptiveSampling::score_new_candidates()
+{
+#pragma region Score New Candidates:
+  // calculate the scores
+  emulEvalScores.resize(0);
+  if(scoringMetric == "alm")
+    calc_score_alm();
+  else if(scoringMetric == "distance")
+    calc_score_delta_x( );
+  else if(scoringMetric == "gradient")
+    calc_score_delta_y( );
+  else if(scoringMetric == "bottleneck")
+    calc_score_topo_bottleneck( );
+  else if(scoringMetric == "avg_persistence")
+    calc_score_topo_avg_persistence(0);
+  else if(scoringMetric == "highest_persistence")
+    calc_score_topo_highest_persistence(0);
+  else if(scoringMetric == "alm_topo_hybrid")
+    calc_score_topo_alm_hybrid(0);
+#pragma endregion
+}
+
+void NonDAdaptiveSampling::calc_score_alm( ) 
+{
+#pragma region Score Emultor sample points based on their approximation variance:
+  emulEvalScores.resize(numEmulEval);
+  for (int i = 0; i < numEmulEval; i++)
+  {
+    Real max_score;
+    for (int respFnCount = 0; respFnCount < numFunctions; respFnCount++) 
+    {			
+      ModelUtils::continuous_variables(*gpModel, gpCvars[i]);
+      Real score = gpModel->approximation_variances(gpModel->current_variables())[respFnCount];
+      if (respFnCount == 0 || score > max_score) max_score = score;
+    }
+    emulEvalScores(i) = max_score;
+  }
+#pragma endregion
+}
+
+void NonDAdaptiveSampling::calc_score_delta_x( ) 
+{
+#pragma region Score Emulator sample points based on the closest data point:
+  emulEvalScores.resize(numEmulEval);
+  for (int i = 0; i < numEmulEval; i++) 
+  {
+    Real max_score;
+    for (int respFnCount = 0; respFnCount < numFunctions; respFnCount++) 
+    {			
+      const Pecos::SurrogateData& gp_data = gpModel->approximation_data(respFnCount);
+      const Pecos::SDVArray& sdv_array = gp_data.variables_data();
+      double min_sq_dist;
+      int min_index;
+      bool first = true;
+      for (int j = 0; j < sdv_array.size(); j++) // This is a Naiive way to retrieve closest data point. SHOULD BE RELACED IN THE FUTURE FOR BETTER PERFORMANCE!
+      {
+        double sq_dist = 0;
+        const RealVector& c_vars = sdv_array[j].continuous_variables();
+        for(int d = 0; d < c_vars.length(); d++)
+        {
+          sq_dist += pow(gpCvars[i][d] - c_vars[d],2);
+        }
+        if(first || sq_dist < min_sq_dist) 
+        {
+          min_sq_dist = sq_dist;
+          min_index = j;
+          first = false;
+        }
+      }
+      Real score = sqrt(min_sq_dist);
+      if (respFnCount == 0 || score > max_score) max_score = score;
+    }
+    emulEvalScores(i) = max_score;
+  }
+#pragma endregion
+}
+
+void NonDAdaptiveSampling::calc_score_delta_y( ) 
+{
+#pragma region Score Emulator sample points based on the response function difference of closest data point and current candidate:
+  emulEvalScores.resize(numEmulEval);
+  for (int i = 0; i < numEmulEval; i++) 
+  {
+    Real max_score;
+    for (int respFnCount = 0; respFnCount < numFunctions; respFnCount++) 
+    {	
+      const Pecos::SurrogateData& gp_data = gpModel->approximation_data(respFnCount);
+      const Pecos::SDVArray& sdv_array = gp_data.variables_data();
+      const Pecos::SDRArray& sdr_array = gp_data.response_data();
+      double min_sq_dist;
+      int min_index;
+      bool first = true;
+
+      for (int j = 0; j < sdv_array.size(); j++) // This is a Naiive way to retriev closet data point. SHOULD BE RELACED IN THE FUTURE FOR BETTER PERFORMANCE!
+      {
+        double sq_dist = 0;
+        const RealVector& c_vars = sdv_array[j].continuous_variables();
+        for(int d = 0; d < c_vars.length(); d++)
+        {
+          sq_dist += pow(gpCvars[i][d] - c_vars[d],2);
+        }
+        if(first || sq_dist < min_sq_dist) 
+        {
+          min_sq_dist = sq_dist;
+          min_index = j;
+          first = false;
+        }
+      }					
+      Real score = fabs(gpMeans[i][respFnCount] - sdr_array[min_index].response_function());
+      if (respFnCount == 0 || score > max_score) max_score = score;
+    }
+    emulEvalScores(i) = max_score;
+  }
+#pragma endregion
+}
 
 
-	//This is where all the magic happens
-	void NonDAdaptiveSampling::core_run() 
-	{
-		#pragma region Quantify Uncertainity:
-		numPtsTotal = numSamples + numRounds * batchSize;		
- 
-		// Build initial GP model.  This will be built over the initial LHS sample set
-		// defined in the constructor.
-		gpModel->build_approximation();
+void NonDAdaptiveSampling::calc_score_topo_bottleneck( )
+{
+#pragma region Score Emulator sample points based on Bottleneck distance:
 
-		gpCvars.resize(numEmulEval);
-		gpVar.resize(numEmulEval);
-		gpMeans.resize(numEmulEval);		
+#if defined(HAVE_MORSE_SMALE) && defined(HAVE_DIONYSUS)
+  emulEvalScores.resize(numEmulEval);
+  double *temp_x = NULL;
 
-		predictionErrors.resize(numRounds+1);
-
-		
-		#ifdef HAVE_MORSE_SMALE
-		for (int ifunc = 0; ifunc < numFunctions; ifunc++)
-		{
-			update_amsc(ifunc);
-		}
-		#endif
-
-		////***ATTENTION***
-		//// I do this all over the place, but there has to be a better way to obtain
-		//// the dimensionality of the domain under test search "dim ="
-		////***END ATTENTION***
-
-		// BMA: you should just be able to use numContinuousVars for now, or this:
-		//  size_t dim = numContinuousVars + numDiscreteIntVars + numDiscreteStringVars + numDiscreteRealVars;
-		int dim = 0;
-		const Pecos::SurrogateData& gp_data = gpModel->approximation_data(0);
-		const Pecos::SDVArray& sdv_array = gp_data.variables_data();
-
-		if(!sdv_array.empty()) dim = sdv_array[0].continuous_variables().length();
-
-		int i,j;
- 
-
-		// We have built the initial GP.  Now we need to go through, per response 
-		// function and response level and calculate the failure probability. 
-		// We will need to add error handling:  we will only be calculating 
-		// results per response level, not probability level or reliability index.
-   
-		int iter;
-		RealVectorArray new_Xs;
-
-		////***ATTENTION***
-		//// This is a bit clunky, but I am writing my own file called improvement.txt
-		//// which has just the information I am concerned with and then I post-process
-		//// these files with some python scripts
-		////***END ATTENTION***
-		std::stringstream ss;
-		ss << "improvement.txt";
-		String improvementFile;
-		ss >> improvementFile;
-		std::ofstream fout(improvementFile.c_str());
-		fout << "Round\tTrue_Min\tTrue_Max\tTrue_Saddle\tModel_Min\tModel_Max"
-			 << "\tModel_Saddle\tBottleneck\tRMSPE" << std::endl;
-
-		initialize_level_mappings();
+  if(numEmulEval > 0)
+    temp_x = new double[gpCvars[0].length()+1];
 
 
-		for (int k = 0; k < numRounds; k++) 
-		{ 
-			pick_new_candidates();
+  for (int i = 0; i < numEmulEval; i++)
+  {
 
-			score_new_candidates();
-					
-			new_Xs = drawNewX(k);
-			output_round_data(k);
+    for(int d = 0; d < gpCvars[i].length(); d++)
+    {
+      temp_x[d] = gpCvars[i][d];
+    }
 
-			////***ATTENTION***
-			//// The following two lines will write data to improvement.txt a file for
-			//// measuring how much improvement your surrogate is making as we progress,
-			//// I have disabled a bunch of the output which compares the topologies.
-			////***END ATTENTION***
-			fout << k << "\t";
-			compare_complices(dim, fout);
+    Real max_score;
+    for (int respFnCount = 0; respFnCount < numFunctions; respFnCount++)
+    {
+      temp_x[gpCvars[i].length()] = gpMeans[i][respFnCount];
+      Real score = ScoreTOPOB((*AMSC), temp_x);
+      if (respFnCount == 0 || score > max_score) max_score = score;
+    }
+    emulEvalScores(i) = max_score;
+  }
 
-			// add new_X to the build points and append approximation
-			VariablesArray points_to_add;
-			IntResponseMap responses_to_add;
-			for(int i = 0; i < new_Xs.size(); i++) 
-			{
-				ModelUtils::continuous_variables(*iteratedModel, new_Xs[i]);
-				iteratedModel->evaluate();
-				responses_to_add.insert(IntResponsePair(iteratedModel->evaluation_id(),
-										iteratedModel->current_response()));
-				points_to_add.push_back(iteratedModel->current_variables());
-			}
+  delete [] temp_x;
 
-			gpModel->append_approximation(points_to_add,responses_to_add, true);
-			
-			#ifdef HAVE_MORSE_SMALE
-			for (int ifunc = 0; ifunc < numFunctions; ifunc++)
-			{
-				update_amsc(ifunc);
-			}
-			#endif
+#else
+#ifdef HAVE_MORSE_SMALE
+  Cout << "Dionysus library not enabled, therefore cannot compute the "
+    << "bottleneck distance score, setting all scores to zero" << std::endl;
+#else
+  Cout << "ANN library not enabled, therefore cannot compute approximate "
+    << "Morse-Smale complex or bottleneck score, setting all scores to "
+    << "zero" << std::endl;
+#endif
+  abort_handler(-1);
+#endif
+#pragma endregion
+}
 
-			Cout << "Done with iteration  " << k << std::endl; 
-		}
+void NonDAdaptiveSampling::update_amsc(int respFnCount) 
+{
+#pragma region Update Morse Smale Complex using ANN
+#ifdef HAVE_MORSE_SMALE
+  delete AMSC;
+  AMSC = NULL;
 
-		// Exploring the final Emulator:
-		for (int ifunc = 0; ifunc < numFunctions; ifunc++)
-		{
-			size_t num_levels = requestedRespLevels[ifunc].length();
-			for (int ilevel = 0; ilevel < num_levels; ilevel++) computedProbLevels[ifunc][ilevel] = 0.0;		
-		}
-	
-		// Exploring Final Emulator
-		ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
-		gpFinalEval->run(pl_iter);
-		const IntResponseMap& all_resp = gpFinalEval->all_responses();
-		IntRespMCIter resp_it = all_resp.begin();
+  const Pecos::SurrogateData& gp_data = gpModel->approximation_data(respFnCount);
+  const Pecos::SDVArray& sdv_array = gp_data.variables_data();
+  const Pecos::SDRArray& sdr_array = gp_data.response_data();
+  if(sdv_array.empty()) return;
 
-		for (int icand = 0; icand < numFinalEmulEval; icand++) 
-		{
-			for (int ifunc = 0; ifunc < numFunctions; ifunc++)
-			{
-				Real response_value = resp_it->second.function_value(ifunc);
+  int n = sdv_array.size();
+  int d = sdv_array[0].continuous_variables().length();
+  double *data_resp_vector = new double[n*(d+1)];
 
-				size_t num_levels = requestedRespLevels[ifunc].length();
-				for (int ilevel = 0; ilevel < num_levels; ilevel++) 
-				{
-					Real z = requestedRespLevels[ifunc][ilevel];						
-					if (response_value < z) computedProbLevels[ifunc][ilevel]+=1.0;
-				}
-			}
-			++resp_it;
-		}
-
-		double sf = 1.0 / double(numFinalEmulEval);
-		for (int ifunc = 0; ifunc < numFunctions; ifunc++)
-		{
-			size_t num_levels = requestedRespLevels[ifunc].length();
-			for (int ilevel = 0; ilevel < num_levels; ilevel++) 
-			{
-				computedProbLevels[ifunc][ilevel] *= sf; 
-
-				Cout << "Fraction Fail IS " << computedProbLevels[ifunc][ilevel] << '\n';    
-			}
-		}
-
-		Cout << "Scoring Metric is " << scoringMetric << '\n';
-
-		predictionErrors(numRounds) = compute_rmspe();
-		////***ATTENTION***
-		//// If you are performing the optimization pipeline this next line is 
-		//// uncommented
-		////***END ATTENTION***
-		//output_for_optimization(dim);
-		fout.close();
-		#pragma endregion
-	}
-
-	void NonDAdaptiveSampling::pick_new_candidates()
-	{
-		#pragma region Pick New Candidates from Emulator:
-		RealVector temp_cvars;
-
-		// generate new set of emulator samples.  Note this will have a different seed  each time.
-
-		ParLevLIter pl_iter = methodPCIter->mi_parallel_level_iterator(miPLIndex);
-		gpEval->run(pl_iter);
-
-		// obtain results 
-		const RealMatrix&  all_samples = gpEval->all_samples();
-		const IntResponseMap& all_resp = gpEval->all_responses();
-
-		for (int i = 0; i < numEmulEval; i++) 
-		{
-			temp_cvars = Teuchos::getCol(Teuchos::View,	const_cast<RealMatrix&>(all_samples), i);
-			gpCvars[i] = temp_cvars;
-      		ModelUtils::continuous_variables(*gpModel, temp_cvars);
-			if(approx_type == "global_kriging")
-			{
-				gpVar[i] = gpModel->approximation_variances(gpModel->current_variables());
-			}
-			else
-			{
-				gpVar[i] = 0;
-			}
-		}
-
-		IntRespMCIter resp_it = all_resp.begin();
-		for (int j = 0; j < numEmulEval; ++j) 
-		{
-			RealVector temp_resp(numFunctions);
-			for (int i = 0; i < numFunctions; i++)
-				temp_resp(i) = resp_it->second.function_value(i);
-					
-			gpMeans[j] = temp_resp; ++resp_it;
-		}
-		#pragma endregion
-	}
-
-	void NonDAdaptiveSampling::score_new_candidates()
-	{
-		#pragma region Score New Candidates:
-		// calculate the scores
-		emulEvalScores.resize(0);
-		if(scoringMetric == "alm")
-			calc_score_alm();
-		else if(scoringMetric == "distance")
-			calc_score_delta_x( );
-		else if(scoringMetric == "gradient")
-			calc_score_delta_y( );
-		else if(scoringMetric == "bottleneck")
-			calc_score_topo_bottleneck( );
-		else if(scoringMetric == "avg_persistence")
-			calc_score_topo_avg_persistence(0);
-		else if(scoringMetric == "highest_persistence")
-			calc_score_topo_highest_persistence(0);
-		else if(scoringMetric == "alm_topo_hybrid")
-			calc_score_topo_alm_hybrid(0);
-		#pragma endregion
-	}
-
-	void NonDAdaptiveSampling::calc_score_alm( ) 
-	{
-		#pragma region Score Emultor sample points based on their approximation variance:
-		emulEvalScores.resize(numEmulEval);
-		for (int i = 0; i < numEmulEval; i++)
-		{
-			Real max_score;
-			for (int respFnCount = 0; respFnCount < numFunctions; respFnCount++) 
-			{			
-				ModelUtils::continuous_variables(*gpModel, gpCvars[i]);
-				Real score = gpModel->approximation_variances(gpModel->current_variables())[respFnCount];
-				if (respFnCount == 0 || score > max_score) max_score = score;
-			}
-			emulEvalScores(i) = max_score;
-		}
-		#pragma endregion
-	}
-
-	void NonDAdaptiveSampling::calc_score_delta_x( ) 
-	{
-		#pragma region Score Emulator sample points based on the closest data point:
-		emulEvalScores.resize(numEmulEval);
-		for (int i = 0; i < numEmulEval; i++) 
-		{
-			Real max_score;
-			for (int respFnCount = 0; respFnCount < numFunctions; respFnCount++) 
-			{			
-				const Pecos::SurrogateData& gp_data = gpModel->approximation_data(respFnCount);
-				const Pecos::SDVArray& sdv_array = gp_data.variables_data();
-				double min_sq_dist;
-				int min_index;
-				bool first = true;
-				for (int j = 0; j < sdv_array.size(); j++) // This is a Naiive way to retrieve closest data point. SHOULD BE RELACED IN THE FUTURE FOR BETTER PERFORMANCE!
-				{
-					double sq_dist = 0;
-					const RealVector& c_vars = sdv_array[j].continuous_variables();
-					for(int d = 0; d < c_vars.length(); d++)
-					{
-						sq_dist += pow(gpCvars[i][d] - c_vars[d],2);
-					}
-					if(first || sq_dist < min_sq_dist) 
-					{
-						min_sq_dist = sq_dist;
-						min_index = j;
-						first = false;
-					}
-				}
-				Real score = sqrt(min_sq_dist);
-				if (respFnCount == 0 || score > max_score) max_score = score;
-			}
-			emulEvalScores(i) = max_score;
-		}
-		#pragma endregion
-	}
-	
-	void NonDAdaptiveSampling::calc_score_delta_y( ) 
-	{
-		#pragma region Score Emulator sample points based on the response function difference of closest data point and current candidate:
-		emulEvalScores.resize(numEmulEval);
-		for (int i = 0; i < numEmulEval; i++) 
-		{
-			Real max_score;
-			for (int respFnCount = 0; respFnCount < numFunctions; respFnCount++) 
-			{	
-				const Pecos::SurrogateData& gp_data = gpModel->approximation_data(respFnCount);
-				const Pecos::SDVArray& sdv_array = gp_data.variables_data();
-				const Pecos::SDRArray& sdr_array = gp_data.response_data();
-				double min_sq_dist;
-				int min_index;
-				bool first = true;
-
-				for (int j = 0; j < sdv_array.size(); j++) // This is a Naiive way to retriev closet data point. SHOULD BE RELACED IN THE FUTURE FOR BETTER PERFORMANCE!
-				{
-					double sq_dist = 0;
-					const RealVector& c_vars = sdv_array[j].continuous_variables();
-					for(int d = 0; d < c_vars.length(); d++)
-					{
-						sq_dist += pow(gpCvars[i][d] - c_vars[d],2);
-					}
-					if(first || sq_dist < min_sq_dist) 
-					{
-						min_sq_dist = sq_dist;
-						min_index = j;
-						first = false;
-					}
-				}					
-				Real score = fabs(gpMeans[i][respFnCount] - sdr_array[min_index].response_function());
-				if (respFnCount == 0 || score > max_score) max_score = score;
-			}
-			emulEvalScores(i) = max_score;
-		}
-		#pragma endregion
-	}
-
-	
-	void NonDAdaptiveSampling::calc_score_topo_bottleneck( )
-	{
-		#pragma region Score Emulator sample points based on Bottleneck distance:
-
-		#if defined(HAVE_MORSE_SMALE) && defined(HAVE_DIONYSUS)
-		emulEvalScores.resize(numEmulEval);
-		double *temp_x = NULL;
-
-		if(numEmulEval > 0)
-			temp_x = new double[gpCvars[0].length()+1];
-
-
-		for (int i = 0; i < numEmulEval; i++)
-		{
-
-			for(int d = 0; d < gpCvars[i].length(); d++)
-			{
-				temp_x[d] = gpCvars[i][d];
-			}
-
-			Real max_score;
-			for (int respFnCount = 0; respFnCount < numFunctions; respFnCount++)
-			{
-				temp_x[gpCvars[i].length()] = gpMeans[i][respFnCount];
-				Real score = ScoreTOPOB((*AMSC), temp_x);
-				if (respFnCount == 0 || score > max_score) max_score = score;
-			}
-			emulEvalScores(i) = max_score;
-		}
-
-		delete [] temp_x;
-
-		#else
-	  	  #ifdef HAVE_MORSE_SMALE
-			Cout << "Dionysus library not enabled, therefore cannot compute the "
-				 << "bottleneck distance score, setting all scores to zero" << std::endl;
-	  	  #else
-			Cout << "ANN library not enabled, therefore cannot compute approximate "
-				 << "Morse-Smale complex or bottleneck score, setting all scores to "
-	             << "zero" << std::endl;
-	  	  #endif
-		  abort_handler(-1);
-		#endif
-		#pragma endregion
-	}
-
-	void NonDAdaptiveSampling::update_amsc(int respFnCount) 
-	{
-		#pragma region Update Morse Smale Complex using ANN
-		#ifdef HAVE_MORSE_SMALE
-		delete AMSC;
-		AMSC = NULL;
- 
-		const Pecos::SurrogateData& gp_data = gpModel->approximation_data(respFnCount);
-		const Pecos::SDVArray& sdv_array = gp_data.variables_data();
-		const Pecos::SDRArray& sdr_array = gp_data.response_data();
-		if(sdv_array.empty()) return;
-
-		int n = sdv_array.size();
-		int d = sdv_array[0].continuous_variables().length();
-		double *data_resp_vector = new double[n*(d+1)];
-
-		for (int i = 0; i < n; i++) 
-		{
-		        const RealVector& c_vars = sdv_array[i].continuous_variables();
-			for(int j = 0; j < d; j++)
-			{
-				data_resp_vector[i*(d+1)+j] = c_vars[j];
-			}
-			data_resp_vector[i*(d+1)+d] = sdr_array[i].response_function();
-		} 
-		AMSC = new MS_Complex(data_resp_vector, d + 1, n, numKneighbors);
-		delete [] data_resp_vector;
-		#else
-			Cout << "ANN library not enabled, therefore cannot compute approximate "
-				 << "Morse-Smale complex" << std::endl;
-			abort_handler(-1);
-		#endif
-		#pragma endregion
-	}
+  for (int i = 0; i < n; i++) 
+  {
+    const RealVector& c_vars = sdv_array[i].continuous_variables();
+    for(int j = 0; j < d; j++)
+    {
+      data_resp_vector[i*(d+1)+j] = c_vars[j];
+    }
+    data_resp_vector[i*(d+1)+d] = sdr_array[i].response_function();
+  } 
+  AMSC = new MS_Complex(data_resp_vector, d + 1, n, numKneighbors);
+  delete [] data_resp_vector;
+#else
+  Cout << "ANN library not enabled, therefore cannot compute approximate "
+    << "Morse-Smale complex" << std::endl;
+  abort_handler(-1);
+#endif
+#pragma endregion
+}
 
 ////***ATTENTION***
 //// This function should go away at some point. I use it every now and again
@@ -645,14 +645,14 @@ void NonDAdaptiveSampling::output_round_data(int round, int respFnCount)
 
     if(outputValidationData) {
       alm_set[i] = (approx_type == "global_kriging") ?
-          calc_score_alm(respFnCount, validationSet[i]) : 0;
+        calc_score_alm(respFnCount, validationSet[i]) : 0;
       delta_x_set[i] = calc_score_delta_x(respFnCount, validationSet[i]);
       delta_y_set[i] = calc_score_delta_y(respFnCount, validationSet[i]);
       topo_b_set[i] = calc_score_topo_bottleneck(respFnCount, validationSet[i]);
       topo_p_set[i] = 
         calc_score_topo_avg_persistence(respFnCount, validationSet[i]);
       hybrid_set[i] =(approx_type == "global_kriging") ? 
-          calc_score_topo_alm_hybrid(respFnCount, validationSet[i]) : 0;
+        calc_score_topo_alm_hybrid(respFnCount, validationSet[i]) : 0;
     }
   }
 
@@ -773,7 +773,7 @@ RealVectorArray NonDAdaptiveSampling::drawNewX(int this_k, int respFnCount)
       int max_index = 0;
       for(j=0; j < temp_length; j++) {
         if(emulEvalScores[max_index] < emulEvalScores[j] &&
-           selected_indices.count(j) == 0) {
+            selected_indices.count(j) == 0) {
           max_index = j;
         }
       }
@@ -803,7 +803,7 @@ RealVectorArray NonDAdaptiveSampling::drawNewX(int this_k, int respFnCount)
         temp_dist = 0;
         for(int k = 0; k < gpCvars[j].length(); k++) {
           temp_dist += pow((gpCvars[j][k] - 
-            selected_data[selected_data.size()-1][k]),2);
+                selected_data[selected_data.size()-1][k]),2);
         }
         temp_dist = sqrt(temp_dist);
         //If it is the first iteration i==1, then set the min_distances
@@ -843,7 +843,7 @@ RealVectorArray NonDAdaptiveSampling::drawNewX(int this_k, int respFnCount)
         Real temp_weighted_score = emulEvalScores[j] * rho;
 
         if(max_weighted_score < temp_weighted_score &&
-           selected_indices.count(j) == 0) {
+            selected_indices.count(j) == 0) {
           max_index = j;
           max_weighted_score = temp_weighted_score;
         }
@@ -853,10 +853,10 @@ RealVectorArray NonDAdaptiveSampling::drawNewX(int this_k, int respFnCount)
     }    
   }
   else if(batchStrategy == "cl") {
-////***ATTENTION***
-//// We may want to verify that this is doing the correct thing, also TODO:
-//// we will want to be able to do const_liar_{max,min,mean}
-////***END ATTENTION***
+    ////***ATTENTION***
+    //// We may want to verify that this is doing the correct thing, also TODO:
+    //// we will want to be able to do const_liar_{max,min,mean}
+    ////***END ATTENTION***
     //Constant Liar strategy
 
     //Find the mean response value
@@ -889,13 +889,13 @@ RealVectorArray NonDAdaptiveSampling::drawNewX(int this_k, int respFnCount)
       int max_index = 0;
       for(j=0; j < temp_length; j++) {
         if(emulEvalScores[max_index] < emulEvalScores[j] &&
-           selected_indices.count(j) == 0) {
+            selected_indices.count(j) == 0) {
           max_index = j;
         }
       }
       selected_data.push_back(gpCvars[max_index]);
       selected_indices.insert(max_index);
-      
+
       Cout << "Updaing surrogate" << std::endl;
       ModelUtils::continuous_variables(*gpModel, gpCvars[max_index]);
       gpModel->evaluate();
@@ -904,12 +904,12 @@ RealVectorArray NonDAdaptiveSampling::drawNewX(int this_k, int respFnCount)
       IntResponsePair response_to_add(gpModel->evaluation_id(),current_response);
       Variables point_to_add(gpModel->current_variables());
       gpModel->append_approximation(point_to_add,response_to_add, true);
-		#ifdef HAVE_MORSE_SMALE
-		for (int ifunc = 0; ifunc < numFunctions; ifunc++)
-		{
-			update_amsc(ifunc);
-		}
-		#endif
+#ifdef HAVE_MORSE_SMALE
+      for (int ifunc = 0; ifunc < numFunctions; ifunc++)
+      {
+        update_amsc(ifunc);
+      }
+#endif
     }
     gpModel->pop_approximation(false, true/*, batchSize*/);
   }
@@ -917,10 +917,10 @@ RealVectorArray NonDAdaptiveSampling::drawNewX(int this_k, int respFnCount)
 #ifdef HAVE_MORSE_SMALE
     //Compute topology of candidates and select only maxima first, and then
     // fall back to distance penalization strategy above
-////***ATTENTION***
-//// I do this all over the place, but there has to be a better way to obtain
-//// the dimensionality of the domain under test
-////***END ATTENTION***
+    ////***ATTENTION***
+    //// I do this all over the place, but there has to be a better way to obtain
+    //// the dimensionality of the domain under test
+    ////***END ATTENTION***
     // BMA: See note above
     int dim = 
       gpModel->approximation_data(respFnCount).continuous_variables(0).length();
@@ -933,20 +933,20 @@ RealVectorArray NonDAdaptiveSampling::drawNewX(int this_k, int respFnCount)
       raw_points[i*(dim+1)+dim] = emulEvalScores[i];
     } 
 
-////***ATTENTION***
-//// I have hard-coded the number of k-Nearest neighbors to be 25 in any 
-//// dimension higher than 2D. Anything higher can be prohibitively expensive 
-//// to compute. Thus, the following heuristic only applies in 2D.
-////***END ATTENTION***
+    ////***ATTENTION***
+    //// I have hard-coded the number of k-Nearest neighbors to be 25 in any 
+    //// dimension higher than 2D. Anything higher can be prohibitively expensive 
+    //// to compute. Thus, the following heuristic only applies in 2D.
+    ////***END ATTENTION***
     //Use this arbitrary heuristic for selecting k: if I have enough points,
     // assume a regular grid-like structure giving (3^d)-1 neighbors, but only 
     // if this is number is less than 40% of the total number of points.
     MS_Complex *score_complex = new MS_Complex(raw_points, dim+1, temp_length, 
-                  dim > 2 ? 25 : (int)(std::min(pow(3,dim)-1,0.4*temp_length)));
+        dim > 2 ? 25 : (int)(std::min(pow(3,dim)-1,0.4*temp_length)));
     delete [] raw_points;
 
     //Indices here will match indices in complex
-    
+
     //Put the data into a map, where the key is the score and the value is the
     // index.  In terms of coding effort this is probably the laziest way to 
     // sort the maximums. The largest score is at the end of the list, so we
@@ -990,7 +990,7 @@ RealVectorArray NonDAdaptiveSampling::drawNewX(int this_k, int respFnCount)
           temp_dist = 0;
           for(int k = 0; k < gpCvars[j].length(); k++) {
             temp_dist += pow((gpCvars[j][k] - 
-              selected_data[selected_data.size()-1][k]),2);
+                  selected_data[selected_data.size()-1][k]),2);
           }
           temp_dist = sqrt(temp_dist);
           //If it is the first iteration i==1, then set the min_distances
@@ -1030,7 +1030,7 @@ RealVectorArray NonDAdaptiveSampling::drawNewX(int this_k, int respFnCount)
           Real temp_weighted_score = emulEvalScores[j] * rho;
 
           if(max_weighted_score < temp_weighted_score &&
-             selected_indices.count(j) == 0) {
+              selected_indices.count(j) == 0) {
             max_index = j;
             max_weighted_score = temp_weighted_score;
           }
@@ -1042,19 +1042,19 @@ RealVectorArray NonDAdaptiveSampling::drawNewX(int this_k, int respFnCount)
 
     delete score_complex;
 #else
-  Cout << "Topology-based batch addition is disabled due to the ANN library "
-       << " being unavailable, defaulting to naive method" << std::endl;
-////***ATTENTION***
-//// I copy-and-pasted code from above. A terrible practice, I know, perhaps
-//// each of these strategies should be its own function to prevent this?
-////***END ATTENTION***
+    Cout << "Topology-based batch addition is disabled due to the ANN library "
+      << " being unavailable, defaulting to naive method" << std::endl;
+    ////***ATTENTION***
+    //// I copy-and-pasted code from above. A terrible practice, I know, perhaps
+    //// each of these strategies should be its own function to prevent this?
+    ////***END ATTENTION***
     //Naive batch selection will grab x highest scored candidates
     // where x=batchSize
     for(i = 0; i < batchSize; i++) {
       int max_index = 0;
       for(j=0; j < temp_length; j++) {
         if(emulEvalScores[max_index] < emulEvalScores[j] &&
-           selected_indices.count(j) == 0) {
+            selected_indices.count(j) == 0) {
           max_index = j;
         }
       }
@@ -1066,7 +1066,7 @@ RealVectorArray NonDAdaptiveSampling::drawNewX(int this_k, int respFnCount)
   return selected_data;
 }
 
-	
+
 
 
 
@@ -1084,15 +1084,15 @@ void NonDAdaptiveSampling::calc_score_topo_avg_persistence(int respFnCount)
 
   for (int i = 0; i<numEmulEval; i++) {   
     for(int d = 0; d < gpCvars[i].length(); d++)
-        temp_x[d] = gpCvars[i][d];
+      temp_x[d] = gpCvars[i][d];
     temp_x[gpCvars[i].length()] = gpMeans[i][respFnCount];
     emulEvalScores(i) = ScoreTOPOP((*AMSC), temp_x);
   }    
   delete [] temp_x;
 #else
   Cout << "ANN library not enabled, therefore cannot compute approximate "
-       << "Morse-Smale complex or avg_persistence score, setting all scores to " 
-       << "zero" << std::endl;
+    << "Morse-Smale complex or avg_persistence score, setting all scores to " 
+    << "zero" << std::endl;
   abort_handler(-1);
 #endif
 }
@@ -1107,12 +1107,12 @@ void NonDAdaptiveSampling::calc_score_topo_alm_hybrid(int respFnCount)
 
   for (int i = 0; i<numEmulEval; i++) {
     for(int d = 0; d < gpCvars[i].length(); d++)
-        temp_x[d] = gpCvars[i][d];
+      temp_x[d] = gpCvars[i][d];
     temp_x[gpCvars[i].length()] = gpMeans[i][respFnCount];
 
     Real score_val = ScoreTOPOP((*AMSC), temp_x);
 
-	  ModelUtils::continuous_variables(*gpModel, gpCvars[i]);
+    ModelUtils::continuous_variables(*gpModel, gpCvars[i]);
     temp_x[gpCvars[i].length()] = gpMeans[i][respFnCount] 
       + sqrt(gpModel->approximation_variances(gpModel->current_variables())[respFnCount]);
     Real score_val_plus_std = ScoreTOPOP((*AMSC), temp_x);
@@ -1124,8 +1124,8 @@ void NonDAdaptiveSampling::calc_score_topo_alm_hybrid(int respFnCount)
   delete [] temp_x;
 #else
   Cout << "ANN library not enabled, therefore cannot compute approximate "
-       << "Morse-Smale complex or hybrid score, setting all scores to " 
-       << "zero" << std::endl;
+    << "Morse-Smale complex or hybrid score, setting all scores to " 
+    << "zero" << std::endl;
   abort_handler(-1);
 #endif
 }
@@ -1148,10 +1148,10 @@ void NonDAdaptiveSampling::calc_score_topo_highest_persistence(int respFnCount)
   if(n_train == 0)
     return;
   int n_cand = numEmulEval;
-////***ATTENTION***
-//// I do this all over the place, but there has to be a better way to obtain
-//// the dimensionality of the domain under test
-////***END ATTENTION***
+  ////***ATTENTION***
+  //// I do this all over the place, but there has to be a better way to obtain
+  //// the dimensionality of the domain under test
+  ////***END ATTENTION***
   int dim = sdv_array[0].continuous_variables().length();
 
   double *train_x = new double[n_train*dim];
@@ -1171,11 +1171,11 @@ void NonDAdaptiveSampling::calc_score_topo_highest_persistence(int respFnCount)
     cand_y[i] = gpMeans[i][respFnCount];
   }
   std::vector<int> ordered_indices = ScoreTOPOHP(dim, numKneighbors, 
-    train_x, train_y, n_train, cand_x, cand_y, n_cand);
+      train_x, train_y, n_train, cand_x, cand_y, n_cand);
 
   if(ordered_indices.size() != numEmulEval)
     Cout << "\nWarning: Mismatch in size of ranked Morse-Smale points" 
-	 << std::endl;
+      << std::endl;
 
   //The score will just be the inverse of the ranked order
   // e.g. the first ranked point will be given a score of numEmulEval
@@ -1192,21 +1192,21 @@ void NonDAdaptiveSampling::calc_score_topo_highest_persistence(int respFnCount)
   delete [] cand_y;
 #else
   Cout << "ANN library not enabled, therefore cannot compute approximate "
-       << "Morse-Smale complex or highest_persistence score, setting all scores" 
-       << " to zero" << std::endl;
+    << "Morse-Smale complex or highest_persistence score, setting all scores" 
+    << " to zero" << std::endl;
   abort_handler(-1);
 #endif
 }
 
 Real NonDAdaptiveSampling::calc_score_alm(int respFnCount,
-  RealVector &test_point) { 
+    RealVector &test_point) { 
   ModelUtils::continuous_variables(*gpModel, test_point);
   return gpModel->approximation_variances(
-          gpModel->current_variables())[respFnCount];
+      gpModel->current_variables())[respFnCount];
 }
 
 Real NonDAdaptiveSampling::calc_score_delta_y(int respFnCount,
-  RealVector &test_point) 
+    RealVector &test_point) 
 { 
 
   const Pecos::SurrogateData& gp_data = gpModel->approximation_data(respFnCount);
@@ -1239,7 +1239,7 @@ Real NonDAdaptiveSampling::calc_score_delta_y(int respFnCount,
 }
 
 Real NonDAdaptiveSampling::calc_score_delta_x(int respFnCount,
-  RealVector &test_point) 
+    RealVector &test_point) 
 { 
   const Pecos::SurrogateData& gp_data = gpModel->approximation_data(respFnCount);
   const Pecos::SDVArray& sdv_array = gp_data.variables_data();
@@ -1261,13 +1261,13 @@ Real NonDAdaptiveSampling::calc_score_delta_x(int respFnCount,
 }
 
 Real NonDAdaptiveSampling::calc_score_topo_bottleneck(int respFnCount,
-  RealVector &test_point)
+    RealVector &test_point)
 { 
 #if defined(HAVE_MORSE_SMALE) && defined(HAVE_DIONYSUS)
   double *temp_x = new double[test_point.length()+1];
 
   for(int d = 0; d < test_point.length(); d++)
-      temp_x[d] = test_point[d];
+    temp_x[d] = test_point[d];
 
   Model& surrogate_model = *gpModel->surrogate_model();
   ModelUtils::continuous_variables(surrogate_model, test_point);
@@ -1278,28 +1278,28 @@ Real NonDAdaptiveSampling::calc_score_topo_bottleneck(int respFnCount,
   delete [] temp_x;
   return ret_value;
 #else
-  #ifdef HAVE_MORSE_SMALE
+#ifdef HAVE_MORSE_SMALE
   Cout << "Dionysus library not enabled, therefore cannot compute the "
-       << "bottleneck distance score, returning NaN" 
-       << std::endl;
-  #else
+    << "bottleneck distance score, returning NaN" 
+    << std::endl;
+#else
   Cout << "ANN library not enabled, therefore cannot compute approximate "
-       << "Morse-Smale complex or bottleneck distance score, returning NaN" 
-       << std::endl;
-  #endif
+    << "Morse-Smale complex or bottleneck distance score, returning NaN" 
+    << std::endl;
+#endif
   abort_handler(-1);
   return -DBL_MAX;
 #endif
 }
 
 Real NonDAdaptiveSampling::calc_score_topo_avg_persistence(int respFnCount, 
-  RealVector &test_point) 
+    RealVector &test_point) 
 { 
 #ifdef HAVE_MORSE_SMALE
   double *temp_x = new double[test_point.length()+1];
 
   for(int d = 0; d < test_point.length(); d++)
-      temp_x[d] = test_point[d];
+    temp_x[d] = test_point[d];
 
   Model& surrogate_model = *gpModel->surrogate_model();
   ModelUtils::continuous_variables(surrogate_model, test_point);
@@ -1311,8 +1311,8 @@ Real NonDAdaptiveSampling::calc_score_topo_avg_persistence(int respFnCount,
   return ret_value;
 #else
   Cout << "ANN library not enabled, therefore cannot compute approximate "
-       << "Morse-Smale complex or avg_persistence score, returning NaN" 
-       << std::endl;
+    << "Morse-Smale complex or avg_persistence score, returning NaN" 
+    << std::endl;
   abort_handler(-1);
   return -DBL_MAX;
 #endif
@@ -1321,13 +1321,13 @@ Real NonDAdaptiveSampling::calc_score_topo_avg_persistence(int respFnCount,
 
 
 Real NonDAdaptiveSampling::calc_score_topo_alm_hybrid(int respFnCount,
-  RealVector &test_point) 
+    RealVector &test_point) 
 { 
 #ifdef HAVE_MORSE_SMALE
   double *temp_x = new double[test_point.length()+1];
 
   for(int d = 0; d < test_point.length(); d++)
-      temp_x[d] = test_point[d];
+    temp_x[d] = test_point[d];
 
   Model& surrogate_model = *gpModel->surrogate_model();
   ModelUtils::continuous_variables(surrogate_model, test_point);
@@ -1347,7 +1347,7 @@ Real NonDAdaptiveSampling::calc_score_topo_alm_hybrid(int respFnCount,
   return ret_value/3.;
 #else
   Cout << "ANN library not enabled, therefore cannot compute approximate "
-       << "Morse-Smale complex or hybrid score, returning NaN" << std::endl;
+    << "Morse-Smale complex or hybrid score, returning NaN" << std::endl;
   abort_handler(-1);
   return -DBL_MAX;
 #endif
@@ -1374,297 +1374,297 @@ Real NonDAdaptiveSampling::compute_rmspe()
   return rms_prediction_error;
 }
 
-	void NonDAdaptiveSampling::parse_options()
-	{
-		#pragma region Parse Options:
-		const StringArray& db_opts = probDescDB.get<const StringArray>("method.coliny.misc_options");
-		StringArray::const_iterator db_it = db_opts.begin();
-		StringArray::const_iterator db_end = db_opts.end();
-		String::const_iterator delim;
+void NonDAdaptiveSampling::parse_options()
+{
+#pragma region Parse Options:
+  const StringArray& db_opts = probDescDB.get<const StringArray>("method.coliny.misc_options");
+  StringArray::const_iterator db_it = db_opts.begin();
+  StringArray::const_iterator db_end = db_opts.end();
+  String::const_iterator delim;
 
-		for ( ; db_it != db_end; ++db_it)
-			if ( (delim = find(db_it->begin(), db_it->end(), '=')) != db_it->end()) 
-			{
-				String opt(*db_it, 0, distance(db_it->begin(), delim));
-				String val(*db_it, distance(db_it->begin(), delim+1), distance(delim, db_it->end()));
+  for ( ; db_it != db_end; ++db_it)
+    if ( (delim = find(db_it->begin(), db_it->end(), '=')) != db_it->end()) 
+    {
+      String opt(*db_it, 0, distance(db_it->begin(), delim));
+      String val(*db_it, distance(db_it->begin(), delim+1), distance(delim, db_it->end()));
 
-				if (opt == "candidate_size")
-				  numEmulEval = std::stoi(val);
-				else if (opt == "batch_size") 
-				{
-				  batchSize = std::stoi(val);
-				  Cout << "BATCH SIZE: " << batchSize << std::endl;
-				}
-				else if (opt == "rounds")
-				  numRounds = std::stoi(val);
-				else if (opt == "approx_type") 
-				{
-					approx_type = val;
-				}
-				else if (opt == "batch_strategy") 
-				{
-					batchStrategy = val;
-				
-					if(!(batchStrategy == "naive" || 
-						 batchStrategy == "distance" ||
-						 batchStrategy == "topology" || 
-						 batchStrategy == "cl")) 
-					{
-						Cerr << "ERROR (NonDAdaptiveSampling): Bad Value for misc_option " 
-							 << opt << ": " << val << std::endl;
-						abort_handler(-1);
-					}
-				}
-				else if (opt == "sample_design") 
-				{
-				  if (val == "sampling_lhs")
-				    sampleDesign = RANDOM_SAMPLING;
-				  else if (val == "fsu_cvt")
-				    sampleDesign = FSU_CVT;
-				  else if (val == "fsu_halton")
-				    sampleDesign = FSU_HALTON;
-				  else if (val == "fsu_hammersley")
-				    sampleDesign = FSU_HAMMERSLEY;
-				}
-				else if (opt == "score_type") 
-				{
-					scoringMetric = val;
-					if(!(scoringMetric == "alm" || 
-						 scoringMetric == "distance" ||
-						 scoringMetric == "gradient" || 
-						 scoringMetric == "bottleneck" ||
-						 scoringMetric == "avg_persistence" || 
-						 scoringMetric == "highest_persistence" || 
-						 scoringMetric == "alm_topo_hybrid")) 
-					{
-						Cerr << "ERROR (NonDAdaptiveSampling): Bad Value for misc_option " 
-							 << opt << ": " << val << std::endl;
-						abort_handler(-1);
-					}
-				}
-				else if(opt == "validation_data") 
-				{
-				  outputValidationData = std::stoi(val);
-				}
-				else if(opt == "knn") 
-				{
-				  numKneighbors = std::stoi(val);
-				}
-				else 
-				{
-					Cerr << "ERROR (NonDAdaptiveSampling): Unknown misc_option: " 
-						 << opt << std::endl;
-					abort_handler(-1);
-				}
+      if (opt == "candidate_size")
+        numEmulEval = std::stoi(val);
+      else if (opt == "batch_size") 
+      {
+        batchSize = std::stoi(val);
+        Cout << "BATCH SIZE: " << batchSize << std::endl;
+      }
+      else if (opt == "rounds")
+        numRounds = std::stoi(val);
+      else if (opt == "approx_type") 
+      {
+        approx_type = val;
+      }
+      else if (opt == "batch_strategy") 
+      {
+        batchStrategy = val;
 
-				if (outputLevel > NORMAL_OUTPUT)
-					Cout << "INFO (NonDAdaptiveSampling): User parameter '" << opt << "': " << val << std::endl;
-			}
-			else 
-			{
-				Cerr << "ERROR (NonDAdaptiveSampling): Invalid misc_options format." << std::endl;
-				abort_handler(-1);
-			}
+        if(!(batchStrategy == "naive" || 
+              batchStrategy == "distance" ||
+              batchStrategy == "topology" || 
+              batchStrategy == "cl")) 
+        {
+          Cerr << "ERROR (NonDAdaptiveSampling): Bad Value for misc_option " 
+            << opt << ": " << val << std::endl;
+          abort_handler(-1);
+        }
+      }
+      else if (opt == "sample_design") 
+      {
+        if (val == "sampling_lhs")
+          sampleDesign = RANDOM_SAMPLING;
+        else if (val == "fsu_cvt")
+          sampleDesign = FSU_CVT;
+        else if (val == "fsu_halton")
+          sampleDesign = FSU_HALTON;
+        else if (val == "fsu_hammersley")
+          sampleDesign = FSU_HAMMERSLEY;
+      }
+      else if (opt == "score_type") 
+      {
+        scoringMetric = val;
+        if(!(scoringMetric == "alm" || 
+              scoringMetric == "distance" ||
+              scoringMetric == "gradient" || 
+              scoringMetric == "bottleneck" ||
+              scoringMetric == "avg_persistence" || 
+              scoringMetric == "highest_persistence" || 
+              scoringMetric == "alm_topo_hybrid")) 
+        {
+          Cerr << "ERROR (NonDAdaptiveSampling): Bad Value for misc_option " 
+            << opt << ": " << val << std::endl;
+          abort_handler(-1);
+        }
+      }
+      else if(opt == "validation_data") 
+      {
+        outputValidationData = std::stoi(val);
+      }
+      else if(opt == "knn") 
+      {
+        numKneighbors = std::stoi(val);
+      }
+      else 
+      {
+        Cerr << "ERROR (NonDAdaptiveSampling): Unknown misc_option: " 
+          << opt << std::endl;
+        abort_handler(-1);
+      }
 
-  
-		if(approx_type != "global_kriging" && scoringMetric == "alm") 
-		{
-			Cerr << "ERROR (NonDAdaptiveSampling): Cannot utilize alm scoring with " << approx_type << std::endl;
-			abort_handler(-1);  
-		}
-		if(batchSize > numEmulEval) 
-		{
-			Cerr << "ERROR (NonDAdaptiveSampling): Cannot use " 
-				 << batchSize << " as the batch size with only " << numEmulEval 
-				 << " candidates" << std::endl;
-			abort_handler(-1);  
-		}
+      if (outputLevel > NORMAL_OUTPUT)
+        Cout << "INFO (NonDAdaptiveSampling): User parameter '" << opt << "': " << val << std::endl;
+    }
+    else 
+    {
+      Cerr << "ERROR (NonDAdaptiveSampling): Invalid misc_options format." << std::endl;
+      abort_handler(-1);
+    }
 
-		#ifdef HAVE_MORSE_SMALE
-		if(numKneighbors > numSamples) 
-		{
-			Cerr << "ERROR (NonDAdaptiveSampling): Cannot use " 
-				 << numKneighbors << " as the number of neighbors in the Morse-Smale " 
-				 << " complex when only " << numSamples << " points exist" << std::endl;
-			abort_handler(-1);  
-		}
-		#endif
 
-		#ifndef HAVE_MORSE_SMALE
-		if(scoringMetric == "bottleneck" ||
-		   scoringMetric == "avg_persistence" || 
-		   scoringMetric == "alm_topo_hybrid") 
-		{
-			Cerr << "ERROR (NonDAdaptiveSampling): Cannot use " 
-				 << scoringMetric << " as the scoring metric because ANN is disabled" 
-				 << std::endl;
-			abort_handler(-1);  
-		}
-		#endif
+  if(approx_type != "global_kriging" && scoringMetric == "alm") 
+  {
+    Cerr << "ERROR (NonDAdaptiveSampling): Cannot utilize alm scoring with " << approx_type << std::endl;
+    abort_handler(-1);  
+  }
+  if(batchSize > numEmulEval) 
+  {
+    Cerr << "ERROR (NonDAdaptiveSampling): Cannot use " 
+      << batchSize << " as the batch size with only " << numEmulEval 
+      << " candidates" << std::endl;
+    abort_handler(-1);  
+  }
 
-		#ifndef HAVE_DIONYSUS
-		if(scoringMetric == "bottleneck") 
-		{
-			Cerr << "ERROR (NonDAdaptiveSampling): Cannot use " 
-				 << scoringMetric << " as the scoring metric because Dionysus is " 
-				 << "disabled" << std::endl;
-			abort_handler(-1);  
-		}
-		#endif
+#ifdef HAVE_MORSE_SMALE
+  if(numKneighbors > numSamples) 
+  {
+    Cerr << "ERROR (NonDAdaptiveSampling): Cannot use " 
+      << numKneighbors << " as the number of neighbors in the Morse-Smale " 
+      << " complex when only " << numSamples << " points exist" << std::endl;
+    abort_handler(-1);  
+  }
+#endif
 
-		#pragma endregion
-	}
+#ifndef HAVE_MORSE_SMALE
+  if(scoringMetric == "bottleneck" ||
+      scoringMetric == "avg_persistence" || 
+      scoringMetric == "alm_topo_hybrid") 
+  {
+    Cerr << "ERROR (NonDAdaptiveSampling): Cannot use " 
+      << scoringMetric << " as the scoring metric because ANN is disabled" 
+      << std::endl;
+    abort_handler(-1);  
+  }
+#endif
+
+#ifndef HAVE_DIONYSUS
+  if(scoringMetric == "bottleneck") 
+  {
+    Cerr << "ERROR (NonDAdaptiveSampling): Cannot use " 
+      << scoringMetric << " as the scoring metric because Dionysus is " 
+      << "disabled" << std::endl;
+    abort_handler(-1);  
+  }
+#endif
+
+#pragma endregion
+}
 
 void NonDAdaptiveSampling::compare_complices(int dim, std::ostream& output) 
 {
 
-////***ATTENTION***
-//// The majority of this function is commented out because constructing 
-//// Morse-Smale Complices can be time-consuming especially in high-dimension
-//// Also, I am not sure comparing topologies has proven fruitful to this point
-//// so it is a waste of time, instead we will just compute the RMSE between
-//// the surrogate and truth model and write zeros for the rest of the values
-////***END ATTENTION***
+  ////***ATTENTION***
+  //// The majority of this function is commented out because constructing 
+  //// Morse-Smale Complices can be time-consuming especially in high-dimension
+  //// Also, I am not sure comparing topologies has proven fruitful to this point
+  //// so it is a waste of time, instead we will just compute the RMSE between
+  //// the surrogate and truth model and write zeros for the rest of the values
+  ////***END ATTENTION***
 
-//#ifdef HAVE_MORSE_SMALE
-//  double *true_points = new double[validationSetSize*(dim+1)];
-//  double *model_points = new double[validationSetSize*(dim+1)];
-//  for(int i = 0; i < validationSetSize; i++) {
-//    for(int k = 0; k < dim; k++) {
-//      true_points[i*(dim+1)+k] = validationSet[i][k];
-//      model_points[i*(dim+1)+k] = validationSet[i][k];
-//    }
-//    true_points[i*(dim+1)+dim] = yTrue[i];
-//    model_points[i*(dim+1)+dim] = yModel[i];
-//  } 
+  //#ifdef HAVE_MORSE_SMALE
+  //  double *true_points = new double[validationSetSize*(dim+1)];
+  //  double *model_points = new double[validationSetSize*(dim+1)];
+  //  for(int i = 0; i < validationSetSize; i++) {
+  //    for(int k = 0; k < dim; k++) {
+  //      true_points[i*(dim+1)+k] = validationSet[i][k];
+  //      model_points[i*(dim+1)+k] = validationSet[i][k];
+  //    }
+  //    true_points[i*(dim+1)+dim] = yTrue[i];
+  //    model_points[i*(dim+1)+dim] = yModel[i];
+  //  } 
 
-////***ATTENTION***
-//// I have hard-coded the number of k-Nearest neighbors to be 25 in any 
-//// dimension higher than 2D. Anything higher can be prohibitively expensive 
-//// to compute.
-////***END ATTENTION***
-//  MS_Complex *trueComplex = new MS_Complex(true_points, dim+1, 
-//    validationSetSize, 
-//    dim > 2 ? 25 : (int)(std::min(pow(3,dim)-1,0.4*validationSetSize)));
+  ////***ATTENTION***
+  //// I have hard-coded the number of k-Nearest neighbors to be 25 in any 
+  //// dimension higher than 2D. Anything higher can be prohibitively expensive 
+  //// to compute.
+  ////***END ATTENTION***
+  //  MS_Complex *trueComplex = new MS_Complex(true_points, dim+1, 
+  //    validationSetSize, 
+  //    dim > 2 ? 25 : (int)(std::min(pow(3,dim)-1,0.4*validationSetSize)));
 
-////***ATTENTION***
-//// I have hard-coded the number of k-Nearest neighbors to be 25 in any 
-//// dimension higher than 2D. Anything higher can be prohibitively expensive 
-//// to compute.
-////***END ATTENTION***
-//  MS_Complex *modelComplex = new MS_Complex(model_points, dim+1, 
-//    validationSetSize, 
-//    dim > 2 ? 25 : (int)(std::min(pow(3,dim)-1,0.4*validationSetSize)));
+  ////***ATTENTION***
+  //// I have hard-coded the number of k-Nearest neighbors to be 25 in any 
+  //// dimension higher than 2D. Anything higher can be prohibitively expensive 
+  //// to compute.
+  ////***END ATTENTION***
+  //  MS_Complex *modelComplex = new MS_Complex(model_points, dim+1, 
+  //    validationSetSize, 
+  //    dim > 2 ? 25 : (int)(std::min(pow(3,dim)-1,0.4*validationSetSize)));
 
-//  delete [] true_points;
-//  delete [] model_points;
+  //  delete [] true_points;
+  //  delete [] model_points;
 
-//  int count_model_min = 0;
-//  int count_model_max = 0;
-//  int count_model_saddle = 0;
+  //  int count_model_min = 0;
+  //  int count_model_max = 0;
+  //  int count_model_saddle = 0;
 
-//  int count_true_min = 0;
-//  int count_true_max = 0;
-//  int count_true_saddle = 0;
+  //  int count_true_min = 0;
+  //  int count_true_max = 0;
+  //  int count_true_saddle = 0;
 
-//  std::map<int,double> true_mins;
-//  std::map<int,double> true_maxs;
-//  std::map<int,double> true_saddles;
+  //  std::map<int,double> true_mins;
+  //  std::map<int,double> true_maxs;
+  //  std::map<int,double> true_saddles;
 
-//  std::map<int,double> model_mins;
-//  std::map<int,double> model_maxs;
-//  std::map<int,double> model_saddles;
+  //  std::map<int,double> model_mins;
+  //  std::map<int,double> model_maxs;
+  //  std::map<int,double> model_saddles;
 
-//  std::map<int,double> true_min_values;
-//  std::map<int,double> model_min_values;
+  //  std::map<int,double> true_min_values;
+  //  std::map<int,double> model_min_values;
 
-//  for(int i = 0; i < trueComplex->numV; i++) {
-//    Vertex *true_vertex = trueComplex->GetVertex(i);
-//    Vertex *model_vertex = modelComplex->GetVertex(i);
+  //  for(int i = 0; i < trueComplex->numV; i++) {
+  //    Vertex *true_vertex = trueComplex->GetVertex(i);
+  //    Vertex *model_vertex = modelComplex->GetVertex(i);
 
-//    switch(true_vertex->classification)
-//    {
-//      case 0:
-//        count_true_min++;
-//        true_mins[i] = true_vertex->persistence;
-//        true_min_values[i] = true_vertex->Value();
-//      break;
-//      case 1:
-//        count_true_max++;
-//        true_maxs[i] = true_vertex->persistence;
-//      break;
-//      case 2:
-//        count_true_saddle++;
-//        true_saddles[i] = true_vertex->persistence;
-//      break;
-//    }
+  //    switch(true_vertex->classification)
+  //    {
+  //      case 0:
+  //        count_true_min++;
+  //        true_mins[i] = true_vertex->persistence;
+  //        true_min_values[i] = true_vertex->Value();
+  //      break;
+  //      case 1:
+  //        count_true_max++;
+  //        true_maxs[i] = true_vertex->persistence;
+  //      break;
+  //      case 2:
+  //        count_true_saddle++;
+  //        true_saddles[i] = true_vertex->persistence;
+  //      break;
+  //    }
 
-//    switch(model_vertex->classification)
-//    {
-//      case 0:
-//        count_model_min++;
-//        model_mins[i] = model_vertex->persistence;
-//        model_min_values[i] = model_vertex->Value();
-//      break;
-//      case 1:
-//        count_model_max++;
-//        model_maxs[i] = model_vertex->persistence;
-//      break;
-//      case 2:
-//        count_model_saddle++;
-//        model_saddles[i] = model_vertex->persistence;
-//      break;
-//    }
+  //    switch(model_vertex->classification)
+  //    {
+  //      case 0:
+  //        count_model_min++;
+  //        model_mins[i] = model_vertex->persistence;
+  //        model_min_values[i] = model_vertex->Value();
+  //      break;
+  //      case 1:
+  //        count_model_max++;
+  //        model_maxs[i] = model_vertex->persistence;
+  //      break;
+  //      case 2:
+  //        count_model_saddle++;
+  //        model_saddles[i] = model_vertex->persistence;
+  //      break;
+  //    }
 
-//  }
+  //  }
 
-//  double bottleneck_distance;
-//  #ifdef HAVE_DIONYSUS
-//    bottleneck_distance = trueComplex->CompareBottleneck((*modelComplex));
-//  #else
-//    bottleneck_distance = 0;
-//  #endif
-//  delete trueComplex;
-//  delete modelComplex;
-//  std::map<int,double>::iterator iter;
-//  Cout << "True Minimum indices and Persistences" << std::endl;
-//  for(iter = true_mins.begin(); iter != true_mins.end(); iter++)
-//    Cout << (*iter).first << " => " << iter->second << std::endl;
-//  Cout << "====================================" << std::endl;
-//  Cout << "True Maximum indices and Persistences" << std::endl;
-//  for(iter = true_maxs.begin(); iter != true_maxs.end(); iter++)
-//    Cout << (*iter).first << " => " << iter->second << std::endl;
-//  Cout << "====================================" << std::endl;
-//  Cout << "True Saddle indices and Persistences" << std::endl;
-//  for(iter = true_saddles.begin(); iter != true_saddles.end(); iter++)
-//    Cout << (*iter).first << " => " << iter->second << std::endl;
-//  Cout << "====================================" << std::endl;
-//  Cout << "====================================" << std::endl;
-//  Cout << "Model Minimum indices and Persistences" << std::endl;
-//  for(iter = model_mins.begin(); iter != model_mins.end(); iter++)
-//    Cout << (*iter).first << " => " << iter->second << std::endl;
-//  Cout << "====================================" << std::endl;
-//  Cout << "Model Maximum indices and Persistences" << std::endl;
-//  for(iter = model_maxs.begin(); iter != model_maxs.end(); iter++)
-//    Cout << (*iter).first << " => " << iter->second << std::endl;
-//  Cout << "====================================" << std::endl;
-//  Cout << "Model Saddle indices and Persistences" << std::endl;
-//  for(iter = model_saddles.begin(); iter != model_saddles.end(); iter++)
-//    Cout << (*iter).first << " => " << iter->second << std::endl;
-//  Cout << "====================================" << std::endl;
-//  Cout << "====================================" << std::endl;
+  //  double bottleneck_distance;
+  //  #ifdef HAVE_DIONYSUS
+  //    bottleneck_distance = trueComplex->CompareBottleneck((*modelComplex));
+  //  #else
+  //    bottleneck_distance = 0;
+  //  #endif
+  //  delete trueComplex;
+  //  delete modelComplex;
+  //  std::map<int,double>::iterator iter;
+  //  Cout << "True Minimum indices and Persistences" << std::endl;
+  //  for(iter = true_mins.begin(); iter != true_mins.end(); iter++)
+  //    Cout << (*iter).first << " => " << iter->second << std::endl;
+  //  Cout << "====================================" << std::endl;
+  //  Cout << "True Maximum indices and Persistences" << std::endl;
+  //  for(iter = true_maxs.begin(); iter != true_maxs.end(); iter++)
+  //    Cout << (*iter).first << " => " << iter->second << std::endl;
+  //  Cout << "====================================" << std::endl;
+  //  Cout << "True Saddle indices and Persistences" << std::endl;
+  //  for(iter = true_saddles.begin(); iter != true_saddles.end(); iter++)
+  //    Cout << (*iter).first << " => " << iter->second << std::endl;
+  //  Cout << "====================================" << std::endl;
+  //  Cout << "====================================" << std::endl;
+  //  Cout << "Model Minimum indices and Persistences" << std::endl;
+  //  for(iter = model_mins.begin(); iter != model_mins.end(); iter++)
+  //    Cout << (*iter).first << " => " << iter->second << std::endl;
+  //  Cout << "====================================" << std::endl;
+  //  Cout << "Model Maximum indices and Persistences" << std::endl;
+  //  for(iter = model_maxs.begin(); iter != model_maxs.end(); iter++)
+  //    Cout << (*iter).first << " => " << iter->second << std::endl;
+  //  Cout << "====================================" << std::endl;
+  //  Cout << "Model Saddle indices and Persistences" << std::endl;
+  //  for(iter = model_saddles.begin(); iter != model_saddles.end(); iter++)
+  //    Cout << (*iter).first << " => " << iter->second << std::endl;
+  //  Cout << "====================================" << std::endl;
+  //  Cout << "====================================" << std::endl;
 
-//  output << count_true_min;
-//  output << "\t" << count_true_max;
-//  output << "\t" << count_true_saddle;
-//  output << "\t" << count_model_min;
-//  output << "\t" << count_model_max;
-//  output << "\t" << count_model_saddle;
-//  output << "\t" << bottleneck_distance;
-//#else
+  //  output << count_true_min;
+  //  output << "\t" << count_true_max;
+  //  output << "\t" << count_true_saddle;
+  //  output << "\t" << count_model_min;
+  //  output << "\t" << count_model_max;
+  //  output << "\t" << count_model_saddle;
+  //  output << "\t" << bottleneck_distance;
+  //#else
   output << 0 << "\t" << 0 << "\t" << 0 << "\t" << 0 << "\t" << 0 << "\t" << 0 
-         << "\t" << 0;
-//#endif
+    << "\t" << 0;
+  //#endif
   output << "\t" << compute_rmspe() << std::endl;
 }
 
@@ -1674,10 +1674,10 @@ void NonDAdaptiveSampling::output_for_optimization(int dim)
   std::ofstream output("opt_topo.in");
 
   output << "strategy," << std::endl
-         << "\ttabular_graphics_data" << std::endl
-         << "\tmulti_start" << std::endl
-         << "\t\tmethod_pointer = \'Downhill\'" << std::endl
-         << "\t\t\tstarting_points" << std::endl;
+    << "\ttabular_graphics_data" << std::endl
+    << "\tmulti_start" << std::endl
+    << "\t\tmethod_pointer = \'Downhill\'" << std::endl
+    << "\t\t\tstarting_points" << std::endl;
 
   double *model_points = new double[validationSetSize*(dim+1)];
   for(int i = 0; i < validationSetSize; i++) {
@@ -1686,14 +1686,14 @@ void NonDAdaptiveSampling::output_for_optimization(int dim)
     }
     model_points[i*(dim+1)+dim] = yModel[i];
   } 
-////***ATTENTION***
-//// I have hard-coded the number of k-Nearest neighbors to be 25 in any 
-//// dimension higher than 2D. Anything higher can be prohibitively expensive 
-//// to compute.
-////***END ATTENTION***
+  ////***ATTENTION***
+  //// I have hard-coded the number of k-Nearest neighbors to be 25 in any 
+  //// dimension higher than 2D. Anything higher can be prohibitively expensive 
+  //// to compute.
+  ////***END ATTENTION***
   MS_Complex *modelComplex = new MS_Complex(model_points, dim+1, 
-    validationSetSize, dim > 2 ? 25 :
-    (int)(std::min(pow(3,dim)-1,0.4*validationSetSize)));
+      validationSetSize, dim > 2 ? 25 :
+      (int)(std::min(pow(3,dim)-1,0.4*validationSetSize)));
   delete [] model_points;
 
   std::map<int,double> model_saddles;
@@ -1709,11 +1709,11 @@ void NonDAdaptiveSampling::output_for_optimization(int dim)
       case 0:
         count_model_min++;
         model_mins[i] = model_vertex->Value();
-      break;
+        break;
       case 2:
         count_model_saddle++;
         model_saddles[i] = model_vertex->persistence;
-      break;
+        break;
     }
 
   }
@@ -1728,44 +1728,44 @@ void NonDAdaptiveSampling::output_for_optimization(int dim)
   }
 
   output  << std::endl
-          << "method,"<< std::endl
-      	  << "\tid_method = \'Downhill\'" << std::endl
-	        << "\tconmin_frcg" << std::endl
-	        << "\tconvergence_tolerance 1.0e-3" << std::endl
-          << std::endl
-          << "variables," << std::endl
-          << "\tcontinuous_design = " << dim << std::endl
-////***ATTENTION***
-//// Bounds should not be hard-coded
-////***END ATTENTION***
-// BMA: SHould be able to do continuous_lower/upper_)bounds from Model
-	        << "\t\tlower_bounds\t" << dim << "*-2.0" << std::endl
-          << "\t\tupper_bounds\t" << dim << "*2.0" << std::endl
-          << std::endl
-          << "interface," << std::endl
-          << "\tdirect" << std::endl
-          << "\t\tanalysis_driver = \'" 
-////***ATTENTION***
-//// Is there a way to extract the test function used from the database? 
-//// Something like, but not exactly the following because it does not work:
-//// probDescDB.interface_list().front().interface_id()
-//// In lieu of this, I am hard-coding the function name and other things like
-//// the domain boundaries, in a general framework this is inadequate
-////***END ATTENTION***
+    << "method,"<< std::endl
+    << "\tid_method = \'Downhill\'" << std::endl
+    << "\tconmin_frcg" << std::endl
+    << "\tconvergence_tolerance 1.0e-3" << std::endl
+    << std::endl
+    << "variables," << std::endl
+    << "\tcontinuous_design = " << dim << std::endl
+    ////***ATTENTION***
+    //// Bounds should not be hard-coded
+    ////***END ATTENTION***
+    // BMA: SHould be able to do continuous_lower/upper_)bounds from Model
+    << "\t\tlower_bounds\t" << dim << "*-2.0" << std::endl
+    << "\t\tupper_bounds\t" << dim << "*2.0" << std::endl
+    << std::endl
+    << "interface," << std::endl
+    << "\tdirect" << std::endl
+    << "\t\tanalysis_driver = \'" 
+    ////***ATTENTION***
+    //// Is there a way to extract the test function used from the database? 
+    //// Something like, but not exactly the following because it does not work:
+    //// probDescDB.interface_list().front().interface_id()
+    //// In lieu of this, I am hard-coding the function name and other things like
+    //// the domain boundaries, in a general framework this is inadequate
+    ////***END ATTENTION***
     // BMA: Should be able to do
     // iteratedModel.derived_interface().analysis_drivers()[0]\
     // to get the first driver in the list...
-          << "herbie\'" << std:: endl
-          << std::endl
-          << "responses," << std::endl
-	        << "\tobjective_functions = 1" << std::endl
-	        << "\tanalytic_gradients" << std::endl
-	        << "\tno_hessians";
+    << "herbie\'" << std:: endl
+    << std::endl
+    << "responses," << std::endl
+    << "\tobjective_functions = 1" << std::endl
+    << "\tanalytic_gradients" << std::endl
+    << "\tno_hessians";
 
   output.close();
 #else
   Cout << "ANN library disabled, unable to build approximate Morse-Smale "
-       << "complex" << std::endl;
+    << "complex" << std::endl;
 #endif
 }
 
@@ -1777,7 +1777,7 @@ construct_fsu_sampler(std::shared_ptr<Model> u_model,
   // sanity checks
   if (num_samples <= 0) {
     Cerr << "Error: bad samples specification (" << num_samples << ") in "
-	 << "NonD::construct_fsu_sampler()." << std::endl;
+      << "NonD::construct_fsu_sampler()." << std::endl;
     abort_handler(-1);
   }
   return std::make_shared<FSUDesignCompExp>(u_model, num_samples, seed, sample_type);
@@ -1791,6 +1791,5 @@ void NonDAdaptiveSampling::print_results(std::ostream& s, short results_state)
     print_level_mappings(s);
   }
 }
-
 
 } // namespace Dakota
