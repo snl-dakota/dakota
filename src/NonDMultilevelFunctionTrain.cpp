@@ -116,6 +116,101 @@ NonDMultilevelFunctionTrain(ProblemDescDB& problem_db,
 }
 
 
+/** This constructor is called for a standard letter-envelope iterator
+    instantiation using the IRStore. */
+NonDMultilevelFunctionTrain::
+NonDMultilevelFunctionTrain(std::shared_ptr<StudyServices> services,
+			    const IRStore& method_store,
+			    std::shared_ptr<Model> model):
+  NonDC3FunctionTrain(DEFAULT_METHOD, std::move(services), method_store, model),
+  startRankSeqSpec(
+    method_store.get<SizetArray>("nond.c3function_train.start_rank_sequence")),
+  startOrderSeqSpec(
+    method_store.get<UShortArray>("nond.c3function_train.start_order_sequence")),
+  sequenceIndex(0) //resizedFlag(false), callResize(false)
+{
+  randomSeedSeqSpec = method_store.get<SizetArray>("random_seed_sequence");
+
+  assign_modes();
+  configure_1d_sequence(numSteps, secondaryIndex, sequenceType);
+  costSource
+    = initialize_costs(sequenceCost, modelCostSpec, costMetadataIndices);
+
+  // ----------------
+  // Resolve settings
+  // ----------------
+  short data_order;
+  // See SharedC3ApproxData::construct_basis().  C3 won't support STD_{BETA,
+  // GAMMA,EXPONENTIAL} so use PARTIAL_ASKEY_U to map to STD_{NORMAL,UNIFORM}.
+  short u_space_type = PARTIAL_ASKEY_U;//probDescDB.get<short>("method.nond.expansion_type");
+  resolve_inputs(u_space_type, data_order);
+
+  // -------------------
+  // Recast g(x) to G(u)
+  // -------------------
+
+  auto g_u_model = std::make_shared<ProbabilityTransformModel>(
+    iteratedModel, u_space_type); // retain dist bounds
+
+  // -------------------------
+  // Construct u_space_sampler
+  // -------------------------
+  std::shared_ptr<Iterator> u_space_sampler; // evaluates truth model
+  if (!config_regression(collocation_points(), regression_size(sequenceIndex),
+                         random_seed(), u_space_sampler, g_u_model)) {
+    Cerr << "Error: incomplete configuration in NonDMultilevelFunctionTrain "
+         << "constructor." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+
+  // --------------------------------
+  // Construct G-hat(u) = uSpaceModel
+  // --------------------------------
+  // G-hat(u) uses an orthogonal polynomial approximation over the
+  // active/uncertain variables (using same view as iteratedModel/g_u_model:
+  // not the typical All view for DACE).  No correction is employed.
+  // *** Note: for PCBDO with polynomials over {u}+{d}, change view to All.
+  UShortArray start_orders;
+  configure_expansion_orders(start_order(), dimPrefSpec, start_orders);
+  short corr_order = -1, corr_type = NO_CORRECTION;
+  String pt_reuse = method_store.get<String>("nond.point_reuse");
+  if (!importBuildPointsFile.empty() && pt_reuse.empty())
+    pt_reuse = "all"; // reassign default if data import
+  String approx_type = "global_function_train";
+  const ActiveSet& recast_set = g_u_model->current_response().active_set();
+  // DFSModel consumes QoI aggregations; supports surrogate grad evals at most
+  ShortArray asv(g_u_model->qoi(), 3); // for stand alone mode
+  ActiveSet mlft_set(asv, recast_set.derivative_vector());
+  const ShortShortPair& mlft_view = g_u_model->current_variables().view();
+  uSpaceModel = std::make_shared<DataFitSurrModel>(u_space_sampler,
+    g_u_model, mlft_set, mlft_view, approx_type, start_orders, corr_type,
+    corr_order, data_order, outputLevel, pt_reuse, importBuildPointsFile,
+    method_store.get<unsigned short>("import_build_format"),
+    method_store.get<bool>("import_build_active_only"),
+    method_store.get<String>("export_approx_points_file"),
+    method_store.get<unsigned short>("export_approx_format"));
+  initialize_u_space_model();
+
+  // Configure settings for ML allocation (requires uSpaceModel)
+  assign_allocation_control();
+
+  // -------------------------------------
+  // Construct expansionSampler, if needed
+  // -------------------------------------
+  construct_expansion_sampler(method_store.get<unsigned short>("sample_type"),
+    method_store.get<String>("random_number_generator"),
+    method_store.get<unsigned short>("nond.integration_refinement"),
+    method_store.get<IntVector>("nond.refinement_samples"),
+    method_store.get<String>("import_approx_points_file"),
+    method_store.get<unsigned short>("import_approx_format"),
+    method_store.get<bool>("import_approx_active_only"));
+
+  if (parallelLib.command_line_check())
+    Cout << "\nFunction train construction completed: initial grid size of "
+         << numSamplesOnModel << " evaluations to be performed." << std::endl;
+}
+
+
 /** This constructor is used for helper iterator instantiation on the fly
     that employ regression.
 NonDMultilevelFunctionTrain::

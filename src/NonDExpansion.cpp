@@ -91,6 +91,52 @@ NonDExpansion(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
 
 
 NonDExpansion::
+NonDExpansion(std::shared_ptr<StudyServices> services, const IRStore& method_store,
+	     std::shared_ptr<Model> model):
+  NonD(std::move(services), method_store, model), expansionCoeffsApproach(-1),
+  expansionBasisType(method_store.get<short>("nond.expansion_basis_type")),
+  statsMetricMode(method_store.get<short>("nond.refinement_statistics_mode")),
+  relativeMetric(method_store.get<short>("nond.convergence_tolerance_type")
+                 != ABSOLUTE_CONVERGENCE_TOLERANCE), // include DEFAULT,RELATIVE
+  dimPrefSpec(method_store.get<RealVector>("nond.dimension_preference")),
+  collocPtsSeqSpec(method_store.get<SizetArray>("nond.collocation_points_sequence")),
+  collocRatio(method_store.get<Real>("nond.collocation_ratio")),
+  termsOrder(1.),
+  tensorRegression(method_store.get<bool>("nond.tensor_grid")),
+  randomSeed(method_store.get<int>("random_seed")),
+  fixedSeed(method_store.get<bool>("fixed_seed")), mlmfIter(0),
+  multilevAllocControl(method_store.get<short>("nond.multilevel_allocation_control")),
+  multilevDiscrepEmulation(method_store.get<short>("nond.multilevel_discrepancy_emulation")),
+  kappaEstimatorRate(method_store.get<Real>("nond.multilevel_estimator_rate")),
+  gammaEstimatorScale(1.), numSamplesOnModel(0),
+  numSamplesOnExpansion(method_store.get<int>("nond.samples_on_emulator")),
+  nestedRules(false),
+  piecewiseBasis(method_store.get<bool>("nond.piecewise_basis")),
+  useDerivs(method_store.get<bool>("derivative_usage")),
+  refineType(method_store.get<short>("nond.expansion_refinement_type")),
+  refineControl(method_store.get<short>("nond.expansion_refinement_control")),
+  refineMetric(method_store.get<short>("nond.expansion_refinement_metric")),
+  softConvLimit(method_store.get<unsigned short>("soft_convergence_limit")),
+  numUncertainQuant(0),
+  maxRefineIterations(method_store.get<size_t>("nond.max_refinement_iterations")),
+  maxSolverIterations(method_store.get<size_t>("nond.max_solver_iterations")),
+  ruleNestingOverride(method_store.get<short>("nond.nesting_override")),
+  ruleGrowthOverride(method_store.get<short>("nond.growth_override")),
+  // Note: minimum VBD order for variance-controlled refinement is enforced
+  //       in NonDExpansion::construct_{quadrature,sparse_grid}
+  vbdOrderLimit(method_store.get<unsigned short>("nond.vbd_interaction_order")),
+  covarianceControl(method_store.get<short>("nond.covariance_control"))
+  // For supporting construct_incremental_lhs():
+  //expansionSampleType(problem_db.get<const String>("method.expansion_sample_type"))
+{
+  check_dimension_preference(dimPrefSpec);
+  initialize_counts();
+  initialize_response_covariance();
+  initialize_final_statistics(); // level mappings are available
+}
+
+
+NonDExpansion::
 NonDExpansion(unsigned short method_name, std::shared_ptr<Model> model,
 	      const ShortShortPair& approx_view, short exp_coeffs_approach,
 	      const RealVector& dim_pref, int seed, short refine_type,

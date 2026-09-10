@@ -118,6 +118,88 @@ NonDC3FunctionTrain(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, st
 }
 
 
+/** This constructor is called for a standard letter-envelope iterator
+    instantiation using the IRStore. */
+NonDC3FunctionTrain::
+NonDC3FunctionTrain(std::shared_ptr<StudyServices> services,
+		    const IRStore& method_store,
+		    std::shared_ptr<Model> model):
+  NonDExpansion(std::move(services), method_store, model),
+  importBuildPointsFile(method_store.get<String>("import_build_points_file")),
+  startRankSpec(method_store.get<size_t>("nond.c3function_train.start_rank")),
+  maxRankSpec(method_store.get<size_t>("nond.c3function_train.max_rank")),
+  startOrderSpec(method_store.get<unsigned short>("nond.c3function_train.start_order")),
+  maxOrderSpec(method_store.get<unsigned short>("nond.c3function_train.max_order")),
+  collocPtsSpec(method_store.get<size_t>("nond.collocation_points"))
+{
+  // ----------------
+  // Resolve settings
+  // ----------------
+  check_surrogate();    // check for global surrogate function_train model
+  resolve_refinement(); // set c3AdvancementType
+  short data_order;
+  // See SharedC3ApproxData::construct_basis().  C3 won't support STD_{BETA,
+  // GAMMA,EXPONENTIAL} so use PARTIAL_ASKEY_U to map to STD_{NORMAL,UNIFORM}.
+  short u_space_type = PARTIAL_ASKEY_U;//probDescDB.get<short>("method.nond.expansion_type");
+  resolve_inputs(u_space_type, data_order);
+
+  // -------------------
+  // Recast g(x) to G(u)
+  // -------------------
+  auto g_u_model = std::make_shared<ProbabilityTransformModel>(
+    iteratedModel, u_space_type); // retain dist bnds
+
+  // -------------------------
+  // Construct u_space_sampler
+  // -------------------------
+  // configure u-space sampler and model
+  std::shared_ptr<Iterator> u_space_sampler; // evaluates truth model
+  if (!config_regression(collocPtsSpec, regression_size(), randomSeed,
+                         u_space_sampler, g_u_model)) {
+    Cerr << "Error: incomplete configuration in NonDC3FunctionTrain "
+         << "constructor." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+
+  // --------------------------------
+  // Construct G-hat(u) = uSpaceModel
+  // --------------------------------
+  // G-hat(u) uses an orthogonal polynomial approximation over the
+  // active/uncertain variables (using same view as iteratedModel/g_u_model:
+  // not the typical All view for DACE).  No correction is employed.
+  // *** Note: for SCBDO with polynomials over {u}+{d}, change view to All.
+  UShortArray start_orders;
+  configure_expansion_orders(startOrderSpec, dimPrefSpec, start_orders);
+  short corr_order = -1, corr_type = NO_CORRECTION;
+  String pt_reuse = method_store.get<String>("nond.point_reuse");
+  if (!importBuildPointsFile.empty() && pt_reuse.empty())
+    pt_reuse = "all"; // reassign default if data import
+  String approx_type = "global_function_train";
+  ActiveSet ft_set = g_u_model->current_response().active_set(); // copy
+  ft_set.request_values(3); // stand-alone mode: surrogate grad evals at most
+  const ShortShortPair& ft_view = g_u_model->current_variables().view();
+  uSpaceModel = std::make_shared<DataFitSurrModel>(u_space_sampler,
+    g_u_model, ft_set, ft_view, approx_type, start_orders, corr_type,
+    corr_order, data_order, outputLevel, pt_reuse, importBuildPointsFile,
+    method_store.get<unsigned short>("import_build_format"),
+    method_store.get<bool>("import_build_active_only"),
+    method_store.get<String>("export_approx_points_file"),
+    method_store.get<unsigned short>("export_approx_format"));
+  initialize_u_space_model();
+
+  // -------------------------------
+  // Construct expSampler, if needed
+  // -------------------------------
+  construct_expansion_sampler(method_store.get<unsigned short>("sample_type"),
+    method_store.get<String>("random_number_generator"),
+    method_store.get<unsigned short>("nond.integration_refinement"),
+    method_store.get<IntVector>("nond.refinement_samples"),
+    method_store.get<String>("import_approx_points_file"),
+    method_store.get<unsigned short>("import_approx_format"),
+    method_store.get<bool>("import_approx_active_only"));
+}
+
+
 /** This constructor is called by derived class constructors. */
 NonDC3FunctionTrain::
 NonDC3FunctionTrain(unsigned short method_name, ProblemDescDB& problem_db,
@@ -131,6 +213,25 @@ NonDC3FunctionTrain(unsigned short method_name, ProblemDescDB& problem_db,
   startOrderSpec(
     problem_db.get<unsigned short>("method.nond.c3function_train.start_order")),
   maxOrderSpec(probDescDB.get<unsigned short>("method.nond.c3function_train.max_order")),
+  collocPtsSpec(0) // in lieu of sequence specification
+{
+  check_surrogate();    // check for global surrogate function_train model
+  resolve_refinement(); // set c3AdvancementType
+
+  // Rest is in derived class...
+}
+
+
+/** This constructor is called by derived class constructors. */
+NonDC3FunctionTrain::
+NonDC3FunctionTrain(unsigned short method_name, std::shared_ptr<StudyServices> services,
+		    const IRStore& method_store, std::shared_ptr<Model> model):
+  NonDExpansion(std::move(services), method_store, model),
+  importBuildPointsFile(method_store.get<String>("import_build_points_file")),
+  startRankSpec(method_store.get<size_t>("nond.c3function_train.start_rank")),
+  maxRankSpec(method_store.get<size_t>("nond.c3function_train.max_rank")),
+  startOrderSpec(method_store.get<unsigned short>("nond.c3function_train.start_order")),
+  maxOrderSpec(method_store.get<unsigned short>("nond.c3function_train.max_order")),
   collocPtsSpec(0) // in lieu of sequence specification
 {
   check_surrogate();    // check for global surrogate function_train model
