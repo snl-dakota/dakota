@@ -16,6 +16,8 @@
 #include "dakota_data_io.hpp"
 #include "SurrogateData.hpp"
 
+#include <stdexcept>
+
 static const char rcsId[]="@(#) $Id: SurrogateModel.cpp 7024 2010-10-16 01:24:42Z mseldre $";
 
 //#define DEBUG
@@ -42,6 +44,29 @@ SurrogateModel::SurrogateModel(ProblemDescDB& problem_db, ParallelLibrary& paral
       Cerr << "Error: id_surrogates out of range." << std::endl;
       abort_handler(-1);
     }
+  }
+}
+
+
+SurrogateModel::SurrogateModel(const IRStore& model_store,
+                               const Variables& variables,
+                               const Response& response,
+                               std::shared_ptr<StudyServices> services):
+  Model(std::move(services), model_store, variables, response),
+  surrogateFnIndices(model_store.get<SizetSet>("surrogate.function_indices")),
+  responseMode(DEFAULT_SURROGATE_RESP_MODE),
+  corrType(model_store.get<short>("surrogate.correction_type")),
+  corrOrder(model_store.get<short>("surrogate.correction_order")),
+  surrModelEvalCntr(0), approxBuilds(0), miPLIndex(0)
+{
+  if (surrogateFnIndices.empty()) {
+    for (size_t i=0; i<numFns; ++i)
+      surrogateFnIndices.insert(i);
+  }
+  else if (*(surrogateFnIndices.rbegin()) >= numFns) {
+    throw std::runtime_error(
+      "SurrogateModel surrogate.function_indices contains an index that "
+      "is out of range for the current response specification.");
   }
 }
 

@@ -18,6 +18,7 @@
 
 #include <memory>
 #include <nlohmann/json_fwd.hpp>
+#include <vector>
 
 namespace Dakota {
 
@@ -64,7 +65,10 @@ public:
   std::shared_ptr<OutputManager> output_manager() const;
   std::shared_ptr<RunOptions> run_options() const;
 
+  Variables variables(const IRStore& variables_store) const;
   Variables variables(const nlohmann::json& variables_json) const;
+  Response responses(const IRStore& responses_store,
+                     const Variables& variables) const;
   Response responses(const nlohmann::json& responses_json,
                      const Variables& variables) const;
 
@@ -187,6 +191,15 @@ public:
   nested(const nlohmann::json& model_json, std::shared_ptr<Iterator> sub_iterator,
          std::shared_ptr<Interface> optional_interface,
          const Variables& variables, const Response& response) const;
+
+  std::shared_ptr<Model>
+  ensemble_surrogate(const IRStore& model_store, std::shared_ptr<Model> truth_model,
+            std::vector<std::shared_ptr<Model>> approx_models,
+            const Variables& variables, const Response& response) const;
+  std::shared_ptr<Model>
+  ensemble_surrogate(const nlohmann::json& model_json, std::shared_ptr<Model> truth_model,
+            std::vector<std::shared_ptr<Model>> approx_models,
+            const Variables& variables, const Response& response) const;
 
 private:
   const Study& study;

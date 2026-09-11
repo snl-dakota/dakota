@@ -22,6 +22,15 @@ nlohmann::json validate_fragment(const py::object& value, const char* function_n
 
 } // namespace
 
+nlohmann::json normalize_factory_config(const py::object& config,
+                                        const py::kwargs& kwargs,
+                                        const char* factory_name)
+{
+  py::module_ validation = py::module_::import("dakota.study._validation");
+  return validation.attr("normalize_factory_config")(
+    config, kwargs, factory_name).cast<nlohmann::json>();
+}
+
 nlohmann::json validate_variables_fragment(const py::object& value)
 { return validate_fragment(value, "validate_variables_fragment"); }
 
@@ -75,6 +84,9 @@ nlohmann::json validate_single_fragment(const py::object& value)
 
 nlohmann::json validate_nested_fragment(const py::object& value)
 { return validate_fragment(value, "validate_nested_fragment"); }
+
+nlohmann::json validate_ensemble_surrogate_fragment(const py::object& value)
+{ return validate_fragment(value, "validate_ensemble_surrogate_fragment"); }
 
 PYBIND11_MODULE(_study, m) {
   m.doc() = "Dependency-injection/library-mode Dakota study construction.";

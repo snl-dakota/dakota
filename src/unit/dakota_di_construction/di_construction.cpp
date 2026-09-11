@@ -65,6 +65,7 @@
 #include "OutputManager.hpp"
 #include "ParallelLibrary.hpp"
 #include "ProgramOptions.hpp"
+#include "EnsembleSurrModel.hpp"
 #include "SimulationModel.hpp"
 #include "Study.hpp"
 #include "StudyServices.hpp"
@@ -174,6 +175,20 @@ IRStore make_nested_model_store(const IRStore& base_model_store)
   IRStore nested_model_store = base_model_store;
   nested_model_store.set_value("type", String("nested"));
   return nested_model_store;
+}
+
+IRStore make_ensemble_surrogate_model_store(InstructionMaterializer& materializer)
+{
+  const json model_json = {
+    {"ensemble", {
+      {"truth_model_pointer", {
+        {"pointer", "truth_model"},
+        {"approximation_models", {"approx_model"}}
+      }}
+    }}
+  };
+
+  return materializer.materialize_block(model_json, irgen::BlockType::Model);
 }
 
 IRStore make_concurrent_multistart_store(InstructionMaterializer& materializer)
@@ -492,6 +507,27 @@ TEST(di_construction_tests, study_factories_construct_components_from_json_fragm
   EXPECT_EQ(response.num_functions(), 1);
   EXPECT_EQ(model->current_response().num_functions(), 1);
   EXPECT_EQ(sampling->sampling_scheme(), SUBMETHOD_LHS);
+}
+
+TEST(di_construction_tests, study_irstore_factories_accept_materialized_configuration)
+{
+  InstructionMaterializer materializer;
+  IRStore method_store, variables_store, responses_store, interface_store, model_store;
+  materialize_pilot_blocks(materializer, method_store, variables_store,
+                           responses_store, interface_store, model_store);
+  Study study;
+  const Variables variables = study.variables(variables_store);
+  const Response response = study.responses(responses_store, variables);
+  EXPECT_EQ(variables.tv(), Variables(variables_store).tv());
+  EXPECT_EQ(response.num_functions(),
+            Response(responses_store, variables).num_functions());
+
+  // Direct C++ JSON callers still receive input validation.
+  const json invalid_variables = {{"uniform_uncertain", {
+    {"count", 2}, {"lower_bounds", {0.0, 0.0}},
+    {"upper_bounds", {1.0, 1.0}}, {"initial_point_user_provided", false}
+  }}};
+  EXPECT_THROW(study.variables(invalid_variables), std::runtime_error);
 }
 
 TEST(di_construction_tests, default_study_constructs_coherent_services)
@@ -1661,6 +1697,82 @@ TEST(di_construction_tests, nested_model_throws_on_inconsistent_runtime_services
   EXPECT_THROW(
     NestedModel(make_nested_model_store(model_store), sub_iterator,
                 optional_interface, variables, response, runtime_a.services),
+    std::runtime_error);
+}
+
+TEST(di_construction_tests, can_construct_ensemble_surr_model_from_irstore)
+{
+  InstructionMaterializer materializer;
+  IRStore variables_store, responses_store, interface_store, model_store;
+  materialize_default_opt_blocks(materializer, variables_store, responses_store,
+                                 interface_store, model_store);
+  IRStore surrogate_store = make_ensemble_surrogate_model_store(materializer);
+
+  ExplicitRuntime runtime;
+
+  Variables variables(variables_store);
+  Response response(responses_store, variables);
+  auto truth_interface = make_test_interface(interface_store, runtime.services);
+  auto approx_interface = make_test_interface(interface_store, runtime.services);
+  auto truth_model = std::make_shared<SimulationModel>(
+    model_store, variables, truth_interface, response, runtime.services);
+  auto approx_model = std::make_shared<SimulationModel>(
+    model_store, variables, approx_interface, response, runtime.services);
+
+  EnsembleSurrModel ensemble_model(
+    surrogate_store, truth_model, {approx_model}, variables, response,
+    runtime.services);
+  Model& ensemble_as_model = ensemble_model;
+
+  EXPECT_EQ(ensemble_model.parallel_library_ptr(), runtime.parallelLibrary.get());
+  EXPECT_EQ(ensemble_model.output_manager_ptr(), runtime.outputManager.get());
+  EXPECT_EQ(ensemble_as_model.truth_model().get(), truth_model.get());
+  EXPECT_EQ(ensemble_as_model.surrogate_model(0).get(), approx_model.get());
+}
+
+TEST(di_construction_tests, ensemble_surr_model_throws_on_inconsistent_runtime_services)
+{
+  InstructionMaterializer materializer;
+  IRStore variables_store, responses_store, interface_store, model_store;
+  materialize_default_opt_blocks(materializer, variables_store, responses_store,
+                                 interface_store, model_store);
+  IRStore surrogate_store = make_ensemble_surrogate_model_store(materializer);
+
+  ExplicitRuntime runtime_a;
+  ExplicitRuntime runtime_b;
+
+  Variables variables(variables_store);
+  Response response(responses_store, variables);
+  auto truth_interface = make_test_interface(interface_store, runtime_a.services);
+  auto approx_interface = make_test_interface(interface_store, runtime_b.services);
+  auto truth_model = std::make_shared<SimulationModel>(
+    model_store, variables, truth_interface, response, runtime_a.services);
+  auto approx_model = std::make_shared<SimulationModel>(
+    model_store, variables, approx_interface, response, runtime_b.services);
+
+  EXPECT_THROW(
+    EnsembleSurrModel(surrogate_store, truth_model, {approx_model}, variables,
+                      response, runtime_a.services),
+    std::runtime_error);
+}
+
+TEST(di_construction_tests, study_model_factory_surrogate_throws_for_unsupported_datafit_type)
+{
+  InstructionMaterializer materializer;
+  IRStore variables_store, responses_store, interface_store, model_store;
+  materialize_default_opt_blocks(materializer, variables_store, responses_store,
+                                 interface_store, model_store);
+  IRStore surrogate_store = make_ensemble_surrogate_model_store(materializer);
+  surrogate_store.set_value("surrogate.type", String("global_gaussian"));
+
+  Study study;
+  Variables variables(variables_store);
+  Response response(responses_store, variables);
+  auto interface = study.interface(interface_store);
+  auto truth_model = study.model().single(model_store, variables, interface, response);
+
+  EXPECT_THROW(
+    study.model().ensemble_surrogate(surrogate_store, truth_model, {}, variables, response),
     std::runtime_error);
 }
 

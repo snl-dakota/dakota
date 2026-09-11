@@ -7,6 +7,7 @@ from typing import Literal, Union
 from typing import ClassVar
 from .base import SZ_MAX
 from typing import List
+from pydantic import model_validator
 from .validation import ValidationRule
 from .validation.rules import CheckPositiveList
 
@@ -2850,6 +2851,32 @@ class Ensemble(DakotaBaseModel):
             ]
         },
     )
+
+
+class EnsembleSurrogateConfig(DakotaBaseModel):
+    "DI/library API fragment for constructing an ensemble surrogate model."
+
+    truth_model_pointer: TruthModelPointerConfig | None = DakotaField(
+        default=None,
+        description='Pointer to specify a "truth" model, from which to construct a surrogate',
+        dakota={"argument": "pointer", "aliases": ["actual_model_pointer"]},
+    )
+    ordered_model_fidelities: OrderedModelFidelitiesConfig | None = DakotaField(
+        default=None,
+        description="Specification of an hierarchy of model fidelities, ordered from low to high.",
+        dakota={"argument": "pointers", "aliases": ["model_fidelity_sequence"]},
+    )
+
+    @model_validator(mode="after")
+    def _validate_dependency_group(self) -> "EnsembleSurrogateConfig":
+        if (self.truth_model_pointer is None) == (
+            self.ordered_model_fidelities is None
+        ):
+            raise ValueError(
+                "ensemble_surrogate requires exactly one of "
+                "truth_model_pointer or ordered_model_fidelities."
+            )
+        return self
 
 
 class NestedConfig(ModelFourOptionalKeywordsMixin):
