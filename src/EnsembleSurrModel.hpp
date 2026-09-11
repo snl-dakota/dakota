@@ -15,6 +15,8 @@
 
 namespace Dakota {
 
+class StudyServices;
+
 enum { DEFAULT_CORRECTION = 0, SINGLE_CORRECTION, FULL_MODEL_FORM_CORRECTION,
        FULL_SOLUTION_LEVEL_CORRECTION, SEQUENCE_CORRECTION };
 
@@ -39,6 +41,12 @@ public:
   //
 
   EnsembleSurrModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib); ///< constructor
+  EnsembleSurrModel(const IRStore& model_store,
+                    std::shared_ptr<Model> truth_model,
+                    std::vector<std::shared_ptr<Model>> approx_models,
+                    const Variables& variables,
+                    const Response& response,
+                    std::shared_ptr<StudyServices> services);
 
   //
   //- Heading: Member functions
@@ -257,6 +265,8 @@ protected:
 
   /// initialize truth and surrogate model keys to default values
   void assign_default_keys(short mode);
+  /// initialize common state once subordinate models are assigned
+  void initialize_subordinate_models();
   /// size id_maps and cached_resp_maps arrays according to responseMode
   void resize_maps();
   /// resize currentResponse based on responseMode

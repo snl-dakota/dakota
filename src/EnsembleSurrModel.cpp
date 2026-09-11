@@ -8,8 +8,12 @@
     _______________________________________________________________________ */
 
 #include "EnsembleSurrModel.hpp"
+#include "StudyServices.hpp"
+#include "LibraryRuntimeSupport.hpp"
 #include "ParallelLibrary.hpp"
 #include "ProblemDescDB.hpp"
+
+#include <stdexcept>
 
 static const char rcsId[]=
   "@(#) $Id: EnsembleSurrModel.cpp 6656 2010-02-26 05:20:48Z mseldre $";
@@ -86,6 +90,64 @@ EnsembleSurrModel::EnsembleSurrModel(ProblemDescDB& problem_db, ParallelLibrary&
   ignoreBounds = problem_db.get<bool>("responses.ignore_bounds");
   // initialize centralHess even though it's irrelevant for pass through
   centralHess = problem_db.get<bool>("responses.central_hess");
+}
+
+
+EnsembleSurrModel::EnsembleSurrModel(
+  const IRStore& model_store, std::shared_ptr<Model> truth_model,
+  std::vector<std::shared_ptr<Model>> approx_models,
+  const Variables& variables, const Response& response,
+  std::shared_ptr<StudyServices> services):
+  SurrogateModel(model_store, variables, response, std::move(services)),
+  truthModel(std::move(truth_model)), approxModels(std::move(approx_models)),
+  sameModelInstance(false), sameInterfaceInstance(false),
+  solnCntlAVIndex(_NPOS), ensemblePrecedence(DEFAULT_PRECEDENCE),
+  modeKeyBufferSize(0), correctionMode(SINGLE_CORRECTION)
+{
+  detail::validate_services(
+    "EnsembleSurrModel", study_services(),
+    {detail::runtime_dependency("TruthModel", truthModel)});
+  for (const auto& approx_model : approxModels) {
+    detail::validate_services(
+      "EnsembleSurrModel", study_services(),
+      {detail::runtime_dependency("ApproximationModel", approx_model)});
+  }
+
+  initialize_subordinate_models();
+}
+
+
+void EnsembleSurrModel::initialize_subordinate_models()
+{
+  if (!truthModel) {
+    throw std::runtime_error(
+      "EnsembleSurrModel requires a non-null truth model in DI construction.");
+  }
+
+  for (size_t i=0; i<approxModels.size(); ++i) {
+    if (!approxModels[i]) {
+      throw std::runtime_error(
+        "EnsembleSurrModel requires every approximation model to be non-null "
+        "in DI construction.");
+    }
+    check_submodel_compatibility(*approxModels[i]);
+  }
+  check_submodel_compatibility(*truthModel);
+
+  for (const auto& approx_model : approxModels)
+    approx_model->serialize_threshold(0);
+  truthModel->serialize_threshold(0);
+
+  responseMode = AGGREGATED_MODELS;
+  assign_default_keys(responseMode);
+  if (parallelLib.mpirun_flag())
+    modeKeyBufferSize = server_buffer_size(responseMode, activeKey);
+
+  initialize_correction();
+  supportsEstimDerivs = false;
+  ignoreBounds = currentResponse.gradient_config().ignore_bounds;
+  centralHess  = (currentResponse.hessian_config().interval_type ==
+                  Response::IntervalType::Central);
 }
 
 
