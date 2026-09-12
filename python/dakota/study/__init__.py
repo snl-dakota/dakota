@@ -13,6 +13,7 @@ Dependency-injection/library-mode Dakota study construction.
 
 from ._study import (  # noqa: F401
     ConcurrentMetaIterator,
+    EnsembleSurrModel,
     Interface,
     Iterator,
     MethodFactory,
@@ -53,3 +54,12 @@ try:
     from ._study import NL2SOLLeastSq  # noqa: F401
 except ImportError:
     pass
+
+# Optional iterator types are exported only when their native libraries are built.
+from . import _study as _native
+from ._iterator_bindings import ITERATOR_TYPES as _iterator_types
+
+for _type_name in _iterator_types:
+    if hasattr(_native, _type_name):
+        globals()[_type_name] = getattr(_native, _type_name)
+del _native, _iterator_types, _type_name

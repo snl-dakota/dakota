@@ -61,6 +61,7 @@ void bind_response(py::module_& m);
 void bind_interface(py::module_& m);
 void bind_models(py::module_& m);
 void bind_iterators(py::module_& m);
+void bind_iterator_factories(py::module_& m);
 void bind_study_factories(py::module_& m);
 void bind_study(py::module_& m);
 

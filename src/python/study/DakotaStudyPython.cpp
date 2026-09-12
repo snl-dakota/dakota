@@ -97,6 +97,7 @@ PYBIND11_MODULE(_study, m) {
   Dakota::python::bind_interface(m);
   Dakota::python::bind_models(m);
   Dakota::python::bind_iterators(m);
+  Dakota::python::bind_iterator_factories(m);
   Dakota::python::bind_study_factories(m);
   Dakota::python::bind_study(m);
 }

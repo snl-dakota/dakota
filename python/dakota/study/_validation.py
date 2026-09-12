@@ -25,10 +25,22 @@ _FACTORY_CONFIG_CLASSES = {
     "Study.interface": interface.InterfaceConfig,
     "ModelFactory.simulation": model.SingleConfig,
     "ModelFactory.nested": model.NestedConfig,
+    "ModelFactory.ensemble_surrogate": model.EnsembleSurrogateConfig,
     "MethodFactory.sampling": method.SamplingConfig,
     "MethodFactory.dot_bfgs": method.DotBfgsConfig,
     "MethodFactory.multi_start": method.MultiStartConfig,
 }
+
+
+# Read actual selector field names: class names can be abbreviated (e.g.
+# StochCollocConfig), so deriving a keyword from a class name is not reliable.
+for _name, _selection in inspect.getmembers(method, inspect.isclass):
+    if _selection is method.MethodSelection or not issubclass(_selection, method.MethodSelection):
+        continue
+    for _selector, _field in _selection.model_fields.items():
+        _schema = _field.annotation
+        if inspect.isclass(_schema) and issubclass(_schema, BaseModel):
+            _FACTORY_CONFIG_CLASSES[f"MethodFactory.{_selector}"] = _schema
 
 
 def _validated_config(value: Any, config_class: type[BaseModel], name: str) -> dict:

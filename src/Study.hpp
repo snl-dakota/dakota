@@ -98,6 +98,9 @@ class Study::MethodFactory
 public:
   explicit MethodFactory(const Study& study);
 
+  /// Runtime services for additional DI iterator factories.
+  std::shared_ptr<StudyServices> services() const { return study.services(); }
+
   std::shared_ptr<NonDLHSSampling>
   sampling(const IRStore& method_store, std::shared_ptr<Model> model) const;
   std::shared_ptr<NonDLHSSampling>

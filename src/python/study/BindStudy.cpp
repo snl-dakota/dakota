@@ -9,19 +9,7 @@
 
 #include "DakotaStudyPython.hpp"
 
-#include "IRState.hpp"
-#include "ConcurrentMetaIterator.hpp"
-#include "EffGlobalMinimizer.hpp"
-#ifdef HAVE_DOT
-#include "DOTOptimizer.hpp"
-#endif
 #include "NestedModel.hpp"
-#include "NL2SOLLeastSq.hpp"
-#include "NPSOLOptimizer.hpp"
-#include "NonDLocalSingleInterval.hpp"
-#include "ParamStudy.hpp"
-#include "RichExtrapVerification.hpp"
-#include "NonDLHSSampling.hpp"
 #include "SimulationModel.hpp"
 #include "DakotaInterface.hpp"
 #include "DakotaIterator.hpp"
@@ -67,149 +55,6 @@ nlohmann::json normalize_ensemble_surrogate_fragment(const py::object& model_fra
 
 void bind_study_factories(py::module_& m)
 {
-  auto method_factory = py::class_<Study::MethodFactory>(m, "MethodFactory");
-  method_factory
-    .def("sampling",
-         [](const Study::MethodFactory& factory,
-            std::shared_ptr<Model> model,
-            const py::object& config, py::kwargs kwargs) {
-           return factory.sampling(
-             materialize_method(nlohmann::json{{"sampling",
-               normalize_factory_config(config, kwargs, "MethodFactory.sampling")}}),
-             std::move(model));
-         },
-         py::arg("model").none(false), py::arg("config") = py::none(),
-         "Construct from a config fragment (dict or Pydantic model) or kwargs, "
-         "exclusively.");
-#ifdef HAVE_DOT
-  method_factory
-    .def("dot_bfgs",
-         [](const Study::MethodFactory& factory,
-            std::shared_ptr<Model> model,
-            const py::object& config, py::kwargs kwargs) {
-           return factory.dot_bfgs(
-             materialize_method(nlohmann::json{{"dot_bfgs",
-               normalize_factory_config(config, kwargs, "MethodFactory.dot_bfgs")}}),
-             std::move(model));
-         },
-         py::arg("model").none(false), py::arg("config") = py::none(),
-         "Construct from a config fragment (dict or Pydantic model) or kwargs, "
-         "exclusively.");
-#endif
-  method_factory
-    .def("multi_start",
-         [](const Study::MethodFactory& factory,
-            std::shared_ptr<Iterator> sub_iterator,
-            const py::object& config, py::kwargs kwargs) {
-           return factory.multi_start(
-             materialize_method(nlohmann::json{{"multi_start",
-               normalize_factory_config(config, kwargs, "MethodFactory.multi_start")}}),
-             std::move(sub_iterator));
-         },
-         py::arg("sub_iterator").none(false), py::arg("config") = py::none(),
-         "Construct from a config fragment (dict or Pydantic model) or kwargs, "
-         "exclusively.")
-    .def("vector_parameter_study",
-         [](const Study::MethodFactory& factory,
-            const py::object& method_json,
-            std::shared_ptr<Model> model) {
-           return factory.vector_parameter_study(
-             materialize_method(nlohmann::json{{"vector_parameter_study",
-               validate_vector_parameter_study_fragment(method_json)}}),
-             std::move(model));
-         },
-         py::arg("method"), py::arg("model"))
-    .def("list_parameter_study",
-         [](const Study::MethodFactory& factory,
-            const py::object& method_json,
-            std::shared_ptr<Model> model) {
-           return factory.list_parameter_study(
-             materialize_method(nlohmann::json{{"list_parameter_study",
-               validate_list_parameter_study_fragment(method_json)}}),
-             std::move(model));
-         },
-         py::arg("method"), py::arg("model"))
-    .def("centered_parameter_study",
-         [](const Study::MethodFactory& factory,
-            const py::object& method_json,
-            std::shared_ptr<Model> model) {
-           return factory.centered_parameter_study(
-             materialize_method(nlohmann::json{{"centered_parameter_study",
-               validate_centered_parameter_study_fragment(method_json)}}),
-             std::move(model));
-         },
-         py::arg("method"), py::arg("model"))
-    .def("multidim_parameter_study",
-         [](const Study::MethodFactory& factory,
-            const py::object& method_json,
-            std::shared_ptr<Model> model) {
-           return factory.multidim_parameter_study(
-             materialize_method(nlohmann::json{{"multidim_parameter_study",
-               validate_multidim_parameter_study_fragment(method_json)}}),
-             std::move(model));
-         },
-         py::arg("method"), py::arg("model"))
-    .def("richardson_extrap",
-         [](const Study::MethodFactory& factory,
-            const py::object& method_json,
-            std::shared_ptr<Model> model) {
-           return factory.richardson_extrap(
-             materialize_method(nlohmann::json{{"richardson_extrap",
-               validate_richardson_extrap_fragment(method_json)}}),
-             std::move(model));
-         },
-         py::arg("method"), py::arg("model"))
-    .def("local_interval_est",
-         [](const Study::MethodFactory& factory,
-            const py::object& method_json,
-            std::shared_ptr<Model> model) {
-           return factory.local_interval_est(
-             materialize_method(nlohmann::json{{"local_interval_est",
-               validate_local_interval_est_fragment(method_json)}}),
-             std::move(model));
-         },
-         py::arg("method"), py::arg("model"))
-    .def("global_interval_est",
-         [](const Study::MethodFactory& factory,
-            const py::object& method_json,
-            std::shared_ptr<Model> model) {
-           return factory.global_interval_est(
-             materialize_method(nlohmann::json{{"global_interval_est",
-               validate_global_interval_est_fragment(method_json)}}),
-             std::move(model));
-         },
-         py::arg("method"), py::arg("model"))
-    .def("efficient_global",
-         [](const Study::MethodFactory& factory,
-            const py::object& method_json,
-            std::shared_ptr<Model> model) {
-           return factory.efficient_global(
-             materialize_method(nlohmann::json{{"efficient_global",
-               validate_efficient_global_fragment(method_json)}}),
-             std::move(model));
-         },
-         py::arg("method"), py::arg("model"))
-    .def("npsol_sqp",
-         [](const Study::MethodFactory& factory,
-            const py::object& method_json,
-            std::shared_ptr<Model> model) {
-           return factory.npsol_sqp(
-             materialize_method(nlohmann::json{{"npsol_sqp",
-               validate_npsol_sqp_fragment(method_json)}}),
-             std::move(model));
-         },
-         py::arg("method"), py::arg("model"))
-    .def("nl2sol",
-         [](const Study::MethodFactory& factory,
-            const py::object& method_json,
-            std::shared_ptr<Model> model) {
-           return factory.nl2sol(
-             materialize_method(nlohmann::json{{"nl2sol",
-               validate_nl2sol_fragment(method_json)}}),
-             std::move(model));
-         },
-         py::arg("method"), py::arg("model"));
-
   py::class_<Study::ModelFactory>(m, "ModelFactory")
     .def("single",
          [](const Study::ModelFactory& factory,
@@ -256,6 +101,26 @@ void bind_study_factories(py::module_& m)
          "Construct from a config fragment (dict or Pydantic model) or kwargs, "
          "exclusively. optional_interface may be omitted or None; required "
          "configuration fields still apply.")
+    .def("ensemble_surrogate",
+         [](const Study::ModelFactory& factory,
+            std::shared_ptr<Model> truth_model,
+            std::vector<std::shared_ptr<Model>> approx_models,
+            const Variables& variables, const Response& response,
+            const py::object& config, py::kwargs kwargs) {
+           for (const auto& approximation : approx_models)
+             if (!approximation)
+               throw py::type_error("approx_models must contain non-null Model instances");
+           const auto fragment = normalize_factory_config(
+             config, kwargs, "ModelFactory.ensemble_surrogate");
+           return factory.ensemble_surrogate(
+             materialize_model(nlohmann::json{{"surrogate", {{"ensemble", fragment}}}}),
+             std::move(truth_model), std::move(approx_models), variables, response);
+         },
+         py::arg("truth_model").none(false), py::arg("approx_models").none(false),
+         py::arg("variables").none(false), py::arg("response").none(false),
+         py::arg("config") = py::none(),
+         "Construct an ensemble from truth/approximation models and either a "
+         "dict/Pydantic config or kwargs. The legacy config-first overload remains available.")
     .def("ensemble_surrogate",
          [](const Study::ModelFactory& factory,
             const py::object& model_json,
