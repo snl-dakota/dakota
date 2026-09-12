@@ -25,6 +25,7 @@ namespace Dakota {
 class ConcurrentMetaIterator;
 class DOTOptimizer;
 class EffGlobalMinimizer;
+class EnsembleSurrModel;
 class Interface;
 class Iterator;
 class Model;
@@ -195,11 +196,11 @@ public:
          std::shared_ptr<Interface> optional_interface,
          const Variables& variables, const Response& response) const;
 
-  std::shared_ptr<Model>
+  std::shared_ptr<EnsembleSurrModel>
   ensemble_surrogate(const IRStore& model_store, std::shared_ptr<Model> truth_model,
             std::vector<std::shared_ptr<Model>> approx_models,
             const Variables& variables, const Response& response) const;
-  std::shared_ptr<Model>
+  std::shared_ptr<EnsembleSurrModel>
   ensemble_surrogate(const nlohmann::json& model_json, std::shared_ptr<Model> truth_model,
             std::vector<std::shared_ptr<Model>> approx_models,
             const Variables& variables, const Response& response) const;

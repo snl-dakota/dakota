@@ -9,6 +9,7 @@
 
 #include "DakotaStudyPython.hpp"
 
+#include "EnsembleSurrModel.hpp"
 #include "NestedModel.hpp"
 #include "SimulationModel.hpp"
 #include "DakotaInterface.hpp"

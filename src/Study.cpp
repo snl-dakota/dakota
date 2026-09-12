@@ -597,7 +597,7 @@ Study::ModelFactory::nested(const nlohmann::json& model_json,
                 variables, response);
 }
 
-std::shared_ptr<Model>
+std::shared_ptr<EnsembleSurrModel>
 Study::ModelFactory::ensemble_surrogate(const IRStore& model_store,
                                std::shared_ptr<Model> truth_model,
                                std::vector<std::shared_ptr<Model>> approx_models,
@@ -617,7 +617,7 @@ Study::ModelFactory::ensemble_surrogate(const IRStore& model_store,
     "RecastModel refactor.");
 }
 
-std::shared_ptr<Model>
+std::shared_ptr<EnsembleSurrModel>
 Study::ModelFactory::ensemble_surrogate(const nlohmann::json& model_json,
                                std::shared_ptr<Model> truth_model,
                                std::vector<std::shared_ptr<Model>> approx_models,
