@@ -358,10 +358,11 @@ dakota::InputFormat detect_input_format(const std::string& filename,
 
 bool validate_json_document_in_place(json& doc,
                                      std::vector<std::string>& errors,
-                                     bool debug) {
+                                     bool debug,
+                                     bool api_mode = false) {
     validation_metadata::g_validation_debug = debug;
     std::vector<std::string> val_errors;
-    const int n_errors = validation_metadata::validate_json_document(doc, val_errors);
+    const int n_errors = validation_metadata::validate_json_document(doc, val_errors, api_mode);
     if (n_errors > 0) {
         errors.insert(errors.end(), val_errors.begin(), val_errors.end());
         return false;
@@ -406,7 +407,8 @@ bool validate_json_block_input_to_json(const json& input,
                                        json& output,
                                        std::vector<std::string>& errors,
                                        const JsonBlockValidationSpec& spec,
-                                       bool debug) {
+                                       bool debug,
+                                       bool api_mode = true) {
     if (!input.is_object()) {
         errors.push_back(
             std::string("Expected JSON object for block '") +
@@ -474,7 +476,7 @@ bool validate_json_block_input_to_json(const json& input,
                 }
 
                 validation_metadata::walk_and_validate(
-                    prop_val, child_it->second, path + "." + prop_name, errors);
+                    prop_val, child_it->second, path + "." + prop_name, errors, api_mode);
             }
         };
 
@@ -493,7 +495,7 @@ bool validate_json_block_input_to_json(const json& input,
                 return false;
             }
             validation_metadata::walk_and_validate(
-                (*wrapped_it)[0], block_def.config_type, spec.top_level_key + std::string("[0]"), errors);
+                (*wrapped_it)[0], block_def.config_type, spec.top_level_key + std::string("[0]"), errors, api_mode);
             if (errors.empty()) {
                 output = (*wrapped_it)[0];
             }
@@ -505,7 +507,7 @@ bool validate_json_block_input_to_json(const json& input,
                 return false;
             }
             validation_metadata::walk_and_validate(
-                *wrapped_it, block_def.config_type, spec.top_level_key, errors);
+                *wrapped_it, block_def.config_type, spec.top_level_key, errors, api_mode);
             if (errors.empty()) {
                 output = *wrapped_it;
             }
