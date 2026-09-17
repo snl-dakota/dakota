@@ -14,9 +14,53 @@ It provides:
 
 import os
 import math
+import contextvars
+from contextlib import contextmanager
 from dataclasses import dataclass
 from typing import Any, Type, get_origin, get_args, Union, Annotated
 from pydantic import BaseModel, ConfigDict, model_validator, Field
+
+
+
+# ---------------------------------------------------------------------------
+# API mode / input-file mode toggle
+# ---------------------------------------------------------------------------
+
+_input_file_mode: contextvars.ContextVar[bool] = contextvars.ContextVar(
+    '_input_file_mode', default=False
+)
+
+#: Sentinel value injected for missing required ``str`` pointer fields in API mode.
+POINTER_SENTINEL = "__dakota_api_unused_pointer__"
+
+
+@contextmanager
+def input_file_mode():
+    """Context manager that switches validation to input-file mode.
+
+    In input-file mode, required pointer fields are **not** auto-filled with
+    sentinels, so Pydantic enforces their presence as usual.
+
+    The default (outside this context manager) is API mode, where required
+    pointer fields are auto-filled with :data:`POINTER_SENTINEL` so callers
+    constructing components via dependency injection do not have to supply
+    pointer keywords that are meaningless outside of a freeform ``.in`` file.
+
+    Example::
+
+        from dakota.spec.base import input_file_mode
+        from pydantic import ValidationError
+        import pytest
+
+        with input_file_mode():
+            with pytest.raises(ValidationError):
+                GlobalApproxTruthModelPointer()
+    """
+    token = _input_file_mode.set(True)
+    try:
+        yield
+    finally:
+        _input_file_mode.reset(token)
 
 
 def DakotaField(*, dakota: dict | None = None, **field_kwargs):
@@ -196,6 +240,40 @@ class DakotaBaseModel(BaseModel):
     """
 
     model_config = ConfigDict(**base_model_config)
+
+    @model_validator(mode="before")
+    @classmethod
+    def _fill_api_mode_pointer_sentinels(cls, data):
+        """In API mode, fill missing required pointer fields with a sentinel.
+
+        This lets API users omit pointer keywords that are meaningless when the
+        study graph is assembled via dependency injection rather than a freeform
+        ``.in`` file.  The sentinel value :data:`POINTER_SENTINEL` is used for
+        ``str`` pointer fields; ``[POINTER_SENTINEL]`` for ``list[str]`` fields.
+
+        When :func:`input_file_mode` is active the sentinel is *not* injected,
+        so Pydantic enforces the field as required in the usual way.
+        """
+        if not isinstance(data, dict):
+            return data
+        if _input_file_mode.get():
+            return data  # input-file mode: enforce pointers as usual
+
+        for field_name, field_info in cls.model_fields.items():
+            if field_name in data:
+                continue  # user provided a value — keep it
+            extra = field_info.json_schema_extra or {}
+            if "x-block-pointer" not in extra:
+                continue  # not a pointer field
+            if not field_info.is_required():
+                continue  # optional — Pydantic handles it
+            # Determine scalar vs list annotation
+            annotation = field_info.annotation
+            if get_origin(annotation) is list:
+                data[field_name] = [POINTER_SENTINEL]
+            else:
+                data[field_name] = POINTER_SENTINEL
+        return data
 
     @model_validator(mode="before")
     @classmethod

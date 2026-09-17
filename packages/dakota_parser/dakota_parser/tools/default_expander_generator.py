@@ -23,7 +23,7 @@ class FieldInfo:
                  is_union=False, union_pattern=None, union_default_variant=None, 
                  union_default_child=None, field_type="unknown", ref_type=None, 
                  children=None, is_union_variant=False, is_discriminator=False, 
-                 argument_field=None, is_anchor=False):
+                 argument_field=None, is_anchor=False, is_pointer=False):
         self.name = name
         self.path = path
         self.default_value = default_value
@@ -40,6 +40,7 @@ class FieldInfo:
         self.is_discriminator = is_discriminator
         self.argument_field = argument_field
         self.is_anchor = is_anchor
+        self.is_pointer = is_pointer
 
 class DefaultExpansionSchemaExtractor:
     """Extract default expansion metadata from JSON Schema."""
@@ -241,6 +242,10 @@ class DefaultExpansionSchemaExtractor:
             info.is_anchor = True
             # Anchor fields are not required for DSL validation - they're synthesized
             info.is_required = False
+
+        # Detect block-pointer fields (x-block-pointer key in schema metadata)
+        if 'x-block-pointer' in schema:
+            info.is_pointer = True
         
         # Check for union pattern
         if 'x-union-pattern' in schema:
@@ -597,7 +602,23 @@ def generate_default_metadata_header(block_name: str, fields: Dict[str, FieldInf
     lines.append("    return fields;")
     lines.append("}")
     lines.append("")
-    
+
+    # Generate helper for required pointer fields (used for API-mode relaxation)
+    lines.append("// Get paths of required fields that are block pointers")
+    lines.append("// In API mode the freeform default expander skips these required-ness checks.")
+    lines.append("inline const std::set<std::string>& get_required_pointer_fields() {")
+    lines.append("    static const std::set<std::string> fields = {")
+
+    for path, info in sorted(fields.items()):
+        if info.is_required and info.is_pointer:
+            ast_path = strip_anchor_segments(path)
+            lines.append(f'        "{ast_path}",')
+
+    lines.append("    };")
+    lines.append("    return fields;")
+    lines.append("}")
+    lines.append("")
+
     lines.append(f"}} // namespace {block_name}_defaults")
     lines.append("} // namespace dakota")
     lines.append("")
@@ -642,8 +663,10 @@ public:
     using DefaultValue = defaults::DefaultValue;
     using FieldMetadata = defaults::FieldMetadata;
     
-    // Expand a document with defaults
-    static bool expand_document(Document& doc, std::vector<std::string>& errors);
+    // Expand a document with defaults.
+    // Pass api_mode=true to relax required-ness checks for block-pointer fields.
+    static bool expand_document(Document& doc, std::vector<std::string>& errors,
+                                bool api_mode = false);
     
     // Expand a single block with its defaults
     static bool expand_block(Block& block, 
@@ -652,7 +675,9 @@ public:
                              const std::map<std::string, std::pair<int, std::string>>& union_defaults,
                              const std::map<std::string, std::pair<std::string, std::vector<std::string>>>& anchor_union_defaults,
                              const std::set<std::string>& required_fields,
-                             std::vector<std::string>& errors);
+                             const std::set<std::string>& required_pointer_fields,
+                             std::vector<std::string>& errors,
+                             bool api_mode = false);
     
 private:
     // Expand a keyword node recursively
@@ -663,11 +688,14 @@ private:
                                const std::map<std::string, std::pair<int, std::string>>& union_defaults,
                                std::set<std::string>& populated_paths);
     
-    // Check required fields and report errors
+    // Check required fields and report errors.
+    // When api_mode is true, fields present in required_pointer_fields are skipped.
     static bool validate_required(const std::set<std::string>& populated_paths,
                                   const std::set<std::string>& required_fields,
+                                  const std::set<std::string>& required_pointer_fields,
                                   const std::string& block_name,
-                                  std::vector<std::string>& errors);
+                                  std::vector<std::string>& errors,
+                                  bool api_mode = false);
     
     // Create a keyword node with default value
     static std::shared_ptr<KeywordNode> create_default_node(
@@ -754,7 +782,8 @@ def generate_default_expander_cpp(output_dir: Path) -> None:
 
 namespace dakota {
 
-bool DefaultExpander::expand_document(Document& doc, std::vector<std::string>& errors) {
+bool DefaultExpander::expand_document(Document& doc, std::vector<std::string>& errors,
+                                      bool api_mode) {
     bool success = true;
     
     for (auto& block : doc.blocks) {
@@ -764,6 +793,7 @@ bool DefaultExpander::expand_document(Document& doc, std::vector<std::string>& e
         const std::map<std::string, std::pair<int, std::string>>* union_defaults = nullptr;
         const std::map<std::string, std::pair<std::string, std::vector<std::string>>>* anchor_union_defaults = nullptr;
         const std::set<std::string>* required_fields = nullptr;
+        const std::set<std::string>* required_pointer_fields = nullptr;
         
         if (block.name == "environment") {
             metadata = &environment_defaults::get_field_metadata();
@@ -771,41 +801,48 @@ bool DefaultExpander::expand_document(Document& doc, std::vector<std::string>& e
             union_defaults = &environment_defaults::get_union_defaults();
             anchor_union_defaults = &environment_defaults::get_anchor_union_defaults();
             required_fields = &environment_defaults::get_required_fields();
+            required_pointer_fields = &environment_defaults::get_required_pointer_fields();
         } else if (block.name == "method") {
             metadata = &method_defaults::get_field_metadata();
             auto_populate = &method_defaults::get_auto_populate_fields();
             union_defaults = &method_defaults::get_union_defaults();
             anchor_union_defaults = &method_defaults::get_anchor_union_defaults();
             required_fields = &method_defaults::get_required_fields();
+            required_pointer_fields = &method_defaults::get_required_pointer_fields();
         } else if (block.name == "model") {
             metadata = &model_defaults::get_field_metadata();
             auto_populate = &model_defaults::get_auto_populate_fields();
             union_defaults = &model_defaults::get_union_defaults();
             anchor_union_defaults = &model_defaults::get_anchor_union_defaults();
             required_fields = &model_defaults::get_required_fields();
+            required_pointer_fields = &model_defaults::get_required_pointer_fields();
         } else if (block.name == "variables") {
             metadata = &variables_defaults::get_field_metadata();
             auto_populate = &variables_defaults::get_auto_populate_fields();
             union_defaults = &variables_defaults::get_union_defaults();
             anchor_union_defaults = &variables_defaults::get_anchor_union_defaults();
             required_fields = &variables_defaults::get_required_fields();
+            required_pointer_fields = &variables_defaults::get_required_pointer_fields();
         } else if (block.name == "interface") {
             metadata = &interface_defaults::get_field_metadata();
             auto_populate = &interface_defaults::get_auto_populate_fields();
             union_defaults = &interface_defaults::get_union_defaults();
             anchor_union_defaults = &interface_defaults::get_anchor_union_defaults();
             required_fields = &interface_defaults::get_required_fields();
+            required_pointer_fields = &interface_defaults::get_required_pointer_fields();
         } else if (block.name == "responses") {
             metadata = &responses_defaults::get_field_metadata();
             auto_populate = &responses_defaults::get_auto_populate_fields();
             union_defaults = &responses_defaults::get_union_defaults();
             anchor_union_defaults = &responses_defaults::get_anchor_union_defaults();
             required_fields = &responses_defaults::get_required_fields();
+            required_pointer_fields = &responses_defaults::get_required_pointer_fields();
         }
         
         if (metadata) {
             if (!expand_block(block, *metadata, *auto_populate, *union_defaults, 
-                              *anchor_union_defaults, *required_fields, errors)) {
+                              *anchor_union_defaults, *required_fields,
+                              *required_pointer_fields, errors, api_mode)) {
                 success = false;
             }
         }
@@ -821,7 +858,9 @@ bool DefaultExpander::expand_block(
     const std::map<std::string, std::pair<int, std::string>>& union_defaults,
     const std::map<std::string, std::pair<std::string, std::vector<std::string>>>& anchor_union_defaults,
     const std::set<std::string>& required_fields,
-    std::vector<std::string>& errors) 
+    const std::set<std::string>& required_pointer_fields,
+    std::vector<std::string>& errors,
+    bool api_mode) 
 {
     (void)required_fields;
     (void)errors;
@@ -1145,19 +1184,26 @@ bool DefaultExpander::expand_block(
     }
     
     // Validate required fields
-    return validate_required(populated_paths, required_fields, block.name, errors);
+    return validate_required(populated_paths, required_fields, required_pointer_fields,
+                             block.name, errors, api_mode);
 }
 
 bool DefaultExpander::validate_required(
     const std::set<std::string>& populated_paths,
     const std::set<std::string>& required_fields,
+    const std::set<std::string>& required_pointer_fields,
     const std::string& block_name,
-    std::vector<std::string>& errors)
+    std::vector<std::string>& errors,
+    bool api_mode)
 {
     (void)block_name;  // Reserved for future use in error messages
     bool success = true;
     
     for (const auto& req_path : required_fields) {
+        // In API mode, skip required-ness checks for block-pointer fields.
+        if (api_mode && required_pointer_fields.count(req_path)) {
+            continue;
+        }
         // Only check if the parent is populated
         size_t last_dot = req_path.rfind('.');
         if (last_dot != std::string::npos) {

@@ -320,11 +320,12 @@ bool analyze_semantics(Document& doc) {
 // Default Expansion
 // =============================================================================
 
-// Expand defaults in Dakota document
-bool expand_defaults(Document& doc) {
+// Expand defaults in Dakota document.
+// api_mode=true relaxes required-ness checks for block-pointer fields.
+bool expand_defaults(Document& doc, bool api_mode) {
     std::vector<std::string> errors;
     
-    if (!DefaultExpander::expand_document(doc, errors)) {
+    if (!DefaultExpander::expand_document(doc, errors, api_mode)) {
         std::cerr << "\n=== Default Expansion Errors ===\n";
         for (const auto& error : errors) {
             std::cerr << "  " << error << "\n";
