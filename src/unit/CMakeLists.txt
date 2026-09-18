@@ -252,6 +252,23 @@ if(DAKOTA_PYTHON_STUDY)
 endif()
 
 
+if(DAKOTA_PYTHON_STUDY)
+  add_test(NAME dakota_python_spec_pointer_group_union
+    COMMAND ${Python3_EXECUTABLE} -m unittest
+            test_pointer_group_union -v
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+  )
+  set_property(TEST dakota_python_spec_pointer_group_union PROPERTY LABELS Unit)
+  if(WIN32)
+    set_property(TEST dakota_python_spec_pointer_group_union PROPERTY
+      ENVIRONMENT "PYTHONPATH=${DAKOTA_PYTHON_PATH};$ENV{PYTHONPATH}")
+  else()
+    set_property(TEST dakota_python_spec_pointer_group_union PROPERTY
+      ENVIRONMENT "PYTHONPATH=${DAKOTA_PYTHON_PATH}:$ENV{PYTHONPATH}")
+  endif()
+endif()
+
+
 # Pecos is an unconditional Dakota dependency
 include_directories(${Pecos_SOURCE_DIR}/src)
 

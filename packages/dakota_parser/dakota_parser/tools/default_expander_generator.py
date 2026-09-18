@@ -41,6 +41,8 @@ class FieldInfo:
         self.argument_field = argument_field
         self.is_anchor = is_anchor
         self.is_pointer = is_pointer
+        self.is_pointer_group = False
+        self.is_pointer_union = False
 
 class DefaultExpansionSchemaExtractor:
     """Extract default expansion metadata from JSON Schema."""
@@ -246,6 +248,12 @@ class DefaultExpansionSchemaExtractor:
         # Detect block-pointer fields (x-block-pointer key in schema metadata)
         if 'x-block-pointer' in schema:
             info.is_pointer = True
+
+        # Detect pointer-group and pointer-union fields
+        if schema.get('x-pointer-group', False):
+            info.is_pointer_group = True
+        if schema.get('x-pointer-union', False):
+            info.is_pointer_union = True
         
         # Check for union pattern
         if 'x-union-pattern' in schema:
@@ -611,6 +619,38 @@ def generate_default_metadata_header(block_name: str, fields: Dict[str, FieldInf
 
     for path, info in sorted(fields.items()):
         if info.is_required and info.is_pointer:
+            ast_path = strip_anchor_segments(path)
+            lines.append(f'        "{ast_path}",')
+
+    lines.append("    };")
+    lines.append("    return fields;")
+    lines.append("}")
+    lines.append("")
+
+    # Generate helper for required pointer-group fields
+    lines.append("// Get paths of required fields that are pointer groups")
+    lines.append("// In API mode the freeform default expander skips these required-ness checks.")
+    lines.append("inline const std::set<std::string>& get_required_pointer_group_fields() {")
+    lines.append("    static const std::set<std::string> fields = {")
+
+    for path, info in sorted(fields.items()):
+        if info.is_required and info.is_pointer_group:
+            ast_path = strip_anchor_segments(path)
+            lines.append(f'        "{ast_path}",')
+
+    lines.append("    };")
+    lines.append("    return fields;")
+    lines.append("}")
+    lines.append("")
+
+    # Generate helper for required pointer-union fields
+    lines.append("// Get paths of required fields that are pointer unions")
+    lines.append("// In API mode the freeform default expander skips these required-ness checks.")
+    lines.append("inline const std::set<std::string>& get_required_pointer_union_fields() {")
+    lines.append("    static const std::set<std::string> fields = {")
+
+    for path, info in sorted(fields.items()):
+        if info.is_required and info.is_pointer_union:
             ast_path = strip_anchor_segments(path)
             lines.append(f'        "{ast_path}",')
 

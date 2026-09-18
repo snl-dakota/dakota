@@ -101,6 +101,8 @@ def DakotaField(*, dakota: dict | None = None, **field_kwargs):
             "internal_only": "x-internal-only",
             "argument": "argument",
             "anchor": "anchor",
+            "pointer_group": "x-pointer-group",
+            "pointer_union": "x-pointer-union",
         }
         for k, v in dakota.items():
             if v is None:
@@ -232,6 +234,135 @@ if not SHOW_WARNINGS:
     base_model_config["protected_namespaces"] = ()
 
 
+# ---------------------------------------------------------------------------
+# Helper functions for pointer-union and pointer-group support
+# ---------------------------------------------------------------------------
+
+def _is_all_pointer_model(model_class, _visited=None) -> bool:
+    """Return True if every required field in *model_class* is pointer-related,
+    recursively.  "Pointer-related" means:
+
+    - ``x-block-pointer``: a plain str/list[str] block pointer ✓
+    - ``x-pointer-union``: a Union where at least one branch is all-pointer ✓
+    - ``x-pointer-group``: a model-typed field whose wrapped model is itself
+      all-pointer ✓ (checked recursively)
+
+    Fields that have a default are optional and do not count against the check.
+
+    The *_visited* set prevents infinite recursion via circular model references
+    (unusual but defensive).
+    """
+    if not hasattr(model_class, 'model_fields'):
+        return False
+    if _visited is None:
+        _visited = set()
+    if id(model_class) in _visited:
+        return True  # assume ok to break cycle
+    _visited = _visited | {id(model_class)}
+
+    for _fname, finfo in model_class.model_fields.items():
+        if not finfo.is_required():
+            continue  # optional fields are fine regardless of type
+        extra = finfo.json_schema_extra or {}
+
+        if extra.get("x-block-pointer"):
+            continue  # plain block pointer — ok
+
+        if extra.get("x-pointer-union"):
+            # Pointer-union: ok if at least one branch is all-pointer
+            from typing import Union, get_origin, get_args
+            annotation = finfo.annotation
+            if get_origin(annotation) is Union:
+                branch_variants = [a for a in get_args(annotation) if a is not type(None)]
+                if not any(_is_all_pointer_model(v, _visited) for v in branch_variants):
+                    return False
+            # else: non-Union pointer_union annotation — treat as ok
+            continue
+
+        if extra.get("x-pointer-group"):
+            # Pointer-group: ok only if the wrapped model is itself all-pointer
+            annotation = finfo.annotation
+            # Unwrap Optional/Union to get the concrete model type
+            from typing import Union, get_origin, get_args
+            if get_origin(annotation) is Union:
+                concrete = next(
+                    (a for a in get_args(annotation) if a is not type(None)),
+                    None,
+                )
+            else:
+                concrete = annotation
+            if concrete is None or not hasattr(concrete, 'model_fields'):
+                # Can't determine; conservatively return False
+                return False
+            if not _is_all_pointer_model(concrete, _visited):
+                return False
+            continue
+
+        # Required field with no pointer annotation — not an all-pointer model
+        return False
+
+    return True
+
+
+def _find_all_pointer_branch(variants: list):
+    """Return the first variant in *variants* that qualifies as an all-pointer
+    branch (i.e. every required field is pointer-related), or ``None`` if no
+    such branch exists.
+    """
+    for variant in variants:
+        if _is_all_pointer_model(variant):
+            return variant
+    return None
+
+
+def _build_pointer_branch_injection(branch_model) -> dict:
+    """Build a minimal injection dict for the given pointer branch model.
+
+    The branch is typically a single-field wrapper model whose sole field is:
+    - a ``str`` / ``list[str]`` with ``x-block-pointer``  → inject sentinel
+    - a model type with ``x-pointer-group``               → inject ``{}``
+    - another Union with ``x-pointer-union``              → recurse
+
+    Returns a dict that, when passed to the branch model's validator, will
+    produce a valid instance (with sentinels filled in by the child validators).
+    """
+    injection: dict = {}
+    for fname, finfo in branch_model.model_fields.items():
+        if not finfo.is_required():
+            continue
+        extra = finfo.json_schema_extra or {}
+        annotation = finfo.annotation
+
+        if extra.get("x-block-pointer"):
+            # Plain block pointer — inject sentinel directly
+            if get_origin(annotation) is list:
+                injection[fname] = [POINTER_SENTINEL]
+            else:
+                injection[fname] = POINTER_SENTINEL
+
+        elif extra.get("x-pointer-group"):
+            # Pointer-group — inject empty dict; child fills the sentinel
+            injection[fname] = {}
+
+        elif extra.get("x-pointer-union"):
+            # Nested pointer-union — recurse
+            if get_origin(annotation) is Union:
+                nested_variants = [a for a in get_args(annotation) if a is not type(None)]
+                nested_branch = _find_all_pointer_branch(nested_variants)
+                if nested_branch is not None:
+                    injection[fname] = _build_pointer_branch_injection(nested_branch)
+                else:
+                    injection[fname] = {}
+            else:
+                injection[fname] = {}
+
+        # Fields with no pointer annotation but required: omit — the child
+        # validator will handle them (they shouldn't exist on a pointer branch
+        # per the plan's design, but we are defensive here).
+
+    return injection
+
+
 class DakotaBaseModel(BaseModel):
     """Base model for all Dakota specification models
 
@@ -240,40 +371,6 @@ class DakotaBaseModel(BaseModel):
     """
 
     model_config = ConfigDict(**base_model_config)
-
-    @model_validator(mode="before")
-    @classmethod
-    def _fill_api_mode_pointer_sentinels(cls, data):
-        """In API mode, fill missing required pointer fields with a sentinel.
-
-        This lets API users omit pointer keywords that are meaningless when the
-        study graph is assembled via dependency injection rather than a freeform
-        ``.in`` file.  The sentinel value :data:`POINTER_SENTINEL` is used for
-        ``str`` pointer fields; ``[POINTER_SENTINEL]`` for ``list[str]`` fields.
-
-        When :func:`input_file_mode` is active the sentinel is *not* injected,
-        so Pydantic enforces the field as required in the usual way.
-        """
-        if not isinstance(data, dict):
-            return data
-        if _input_file_mode.get():
-            return data  # input-file mode: enforce pointers as usual
-
-        for field_name, field_info in cls.model_fields.items():
-            if field_name in data:
-                continue  # user provided a value — keep it
-            extra = field_info.json_schema_extra or {}
-            if "x-block-pointer" not in extra:
-                continue  # not a pointer field
-            if not field_info.is_required():
-                continue  # optional — Pydantic handles it
-            # Determine scalar vs list annotation
-            annotation = field_info.annotation
-            if get_origin(annotation) is list:
-                data[field_name] = [POINTER_SENTINEL]
-            else:
-                data[field_name] = POINTER_SENTINEL
-        return data
 
     @model_validator(mode="before")
     @classmethod
@@ -419,6 +516,103 @@ class DakotaBaseModel(BaseModel):
                 )
 
         return data
+    @model_validator(mode="before")
+    @classmethod
+    def _fill_api_mode_pointer_sentinels(cls, data):
+        """In API mode, fill missing required pointer fields with a sentinel.
+
+        This lets API users omit pointer keywords that are meaningless when the
+        study graph is assembled via dependency injection rather than a freeform
+        ``.in`` file.  The sentinel value :data:`POINTER_SENTINEL` is used for
+        ``str`` pointer fields; ``[POINTER_SENTINEL]`` for ``list[str]`` fields.
+
+        When :func:`input_file_mode` is active the sentinel is *not* injected,
+        so Pydantic enforces the field as required in the usual way.
+
+        Also handles two higher-level structural patterns:
+
+        * **pointer-union** (``x-pointer-union``): a required ``Union`` field
+          where at least one branch is a pointer-only or pointer-group wrapper.
+          In API mode, if absent, the first all-pointer branch is selected and
+          injected so that its own before-validator can fill in the sentinel.
+
+        * **pointer-group** (``x-pointer-group``): a required model-typed field
+          whose model contains required ``block_pointer`` (and/or
+          ``pointer_group``) fields plus optional configuration siblings.
+          In API mode, if absent, an empty dict ``{}`` is injected so that the
+          child model's before-validator fills in the pointer sentinel.
+        """
+        if not isinstance(data, dict):
+            return data
+        if _input_file_mode.get():
+            return data  # input-file mode: enforce pointers as usual
+
+        # ------------------------------------------------------------------
+        # Pass 1: pointer-union fields
+        # ------------------------------------------------------------------
+        for field_name, field_info in cls.model_fields.items():
+            if field_name in data:
+                continue  # user provided a value — keep it
+            extra = field_info.json_schema_extra or {}
+            if not extra.get("x-pointer-union"):
+                continue
+            if not field_info.is_required():
+                continue  # optional — Pydantic handles it
+
+            annotation = field_info.annotation
+            if get_origin(annotation) is not Union:
+                continue
+
+            args = get_args(annotation)
+            variants = [a for a in args if a is not type(None)]
+
+            # Find the first all-pointer branch.
+            pointer_branch = _find_all_pointer_branch(variants)
+            if pointer_branch is None:
+                raise ValueError(
+                    f"pointer_union field '{field_name}' on {cls.__name__} "
+                    f"has no all-pointer branch"
+                )
+
+            # Build the injection dict for the selected branch.
+            # A branch model is typically a single-field wrapper.
+            injection = _build_pointer_branch_injection(pointer_branch)
+            data[field_name] = injection
+
+        # ------------------------------------------------------------------
+        # Pass 2: pointer-group fields
+        # ------------------------------------------------------------------
+        for field_name, field_info in cls.model_fields.items():
+            if field_name in data:
+                continue  # user provided a value — keep it
+            extra = field_info.json_schema_extra or {}
+            if not extra.get("x-pointer-group"):
+                continue
+            if not field_info.is_required():
+                continue  # optional — Pydantic handles it
+            # Inject an empty dict; the child model's own validator fills in
+            # the pointer sentinel.
+            data[field_name] = {}
+
+        # ------------------------------------------------------------------
+        # Pass 3: plain block-pointer fields (existing logic, unchanged)
+        # ------------------------------------------------------------------
+        for field_name, field_info in cls.model_fields.items():
+            if field_name in data:
+                continue  # user provided a value — keep it
+            extra = field_info.json_schema_extra or {}
+            if "x-block-pointer" not in extra:
+                continue  # not a pointer field
+            if not field_info.is_required():
+                continue  # optional — Pydantic handles it
+            # Determine scalar vs list annotation
+            annotation = field_info.annotation
+            if get_origin(annotation) is list:
+                data[field_name] = [POINTER_SENTINEL]
+            else:
+                data[field_name] = POINTER_SENTINEL
+        return data
+
 
     @model_validator(mode="after")
     def universal_validator(self):

@@ -24,6 +24,11 @@ namespace Dakota {
     href="PydanticSpec.html#PydanticSpecValidation">Validation and computed
     fields</a>
 <li> <a href="PydanticSpec.html#PydanticSpecFloat">DakotaFloat</a>
+<li> <a href="PydanticSpec.html#PydanticSpecPointers">Block Pointers
+    and API Mode</a>
+<li> <a href="PydanticSpec.html#PydanticSpecPointerGroups">Pointer Groups</a>
+<li> <a href="PydanticSpec.html#PydanticSpecPointerUnions">Pointer Unions</a>
+<li> <a href="PydanticSpec.html#PydanticSpecPointerNesting">Nesting Limits</a>
 </ul>
 \endhtmlonly
 
@@ -542,6 +547,255 @@ def lower_bounds(self) -> List[str]:
 \c x-computed-fields in schema. Keep Python property names,
 \c ComputedFieldSpec function strings, and C++ registry entries in exact
 agreement.
+
+\section PydanticSpecPointers Block Pointers and API Mode
+
+\subsection PydanticSpecPointerOverview Overview
+
+Block pointers are string-valued keywords whose arguments name other
+blocks in a Dakota study.  For example, a method block may contain a
+\c model_pointer keyword whose value is the \c id_model of a model
+block.  In a freeform \c .in input file, these pointers define the
+study graph — they are how the user wires methods, models, variables,
+interfaces, and responses together.
+
+Dakota's Pydantic models serve two consumers:
+
+<ul>
+<li><b>Input-file mode</b> — Models export a JSON schema that drives
+    the C++ PEGTL-based freeform parser and the C++ JSON validation
+    path (\c validate_json_input_to_json, \c read_json_input_file_to_json).
+    In this mode, pointer keywords that the schema marks as required
+    must be present because the study graph cannot be constructed
+    without them.</li>
+<li><b>API mode</b> — The Python API and C++ per-block API
+    (\c validate_*_block_json_to_json) let users construct individual
+    components and assemble the study graph via dependency injection.
+    Pointer keywords are meaningless in this context because the graph
+    is defined programmatically, not by string references.</li>
+</ul>
+
+Because we maintain a single set of Pydantic models for both consumers,
+validation must distinguish between the two modes so that required
+pointers are enforced in input-file mode but relaxed in API mode.
+
+\subsection PydanticSpecPointerPython Python: input_file_mode()
+
+In Python, the default behavior is API mode.  A \c model_validator on
+\c DakotaBaseModel (\c _fill_api_mode_pointer_sentinels) inspects
+every field that has an \c x-block-pointer annotation.  When such a
+required field is missing from the user's input dict, the validator
+silently injects a sentinel value (\c POINTER_SENTINEL) so that
+Pydantic's normal required-field check passes.  Optional pointer
+fields need no sentinel — Pydantic accepts their absence already.
+
+To switch to input-file mode (where all required pointers are
+enforced), wrap the validation call in the \c input_file_mode context
+manager:
+
+\code
+from dakota.spec.base import input_file_mode
+
+with input_file_mode():
+    # This will raise ValidationError if truth_model_pointer is absent
+    config = ActiveSubspaceConfig(**user_dict)
+\endcode
+
+This is a Python \c contextvars-based context manager, so it is
+thread-safe and re-entrant.
+
+\subsection PydanticSpecPointerCpp C++: api_mode parameter
+
+The C++ JSON validation path threads a \c bool \c api_mode parameter
+through \c validate_json_document, \c walk_and_validate, and
+\c validate_definition.  When \c api_mode is true, the required-field
+check in \c validate_definition skips any field that the generated
+metadata identifies as a block pointer.
+
+The distinction is wired at the entry-point level:
+
+<ul>
+<li><b>Whole-file entry points</b>
+    (\c validate_json_input_to_json, \c read_json_input_file_to_json,
+    and all freeform \c read_*_to_json functions) use
+    \c api_mode=false.  All required fields including pointers must be
+    present.</li>
+<li><b>Per-block API entry points</b>
+    (\c validate_method_block_json_to_json,
+    \c validate_model_block_json_to_json, etc.) use
+    \c api_mode=true.  Required pointer fields are silently
+    skipped; all other required fields are still enforced.</li>
+</ul>
+
+The \c api_mode parameter is threaded as a function argument (not a
+global variable) so the validation path is thread-safe and re-entrant.
+
+\subsection PydanticSpecPointerMetadata How pointers are identified
+
+A field is recognized as a block pointer when it carries
+\c x-block-pointer metadata in the exported JSON schema.  In the
+Pydantic model, this is specified in the \c dakota dict of
+\c DakotaField:
+
+\code
+truth_model_pointer: str = DakotaField(
+    description="Pointer to a truth model",
+    dakota={
+        "block_pointer": "model",
+        ...
+    },
+)
+\endcode
+
+The \c block_pointer key is mapped to \c x-block-pointer in the
+exported JSON schema.  The code generator reads this annotation to
+build the set of pointer fields per definition, and the runtime
+required-field check consults it when \c api_mode is true.
+
+\subsection PydanticSpecPointerSubkeywords Pointers must not have sub-keywords
+
+<b>Do not add child keywords (sub-keywords) to a pointer field.</b>
+
+In API mode, required pointer fields may be omitted entirely.  If a
+pointer field carried child configuration keywords, that configuration
+would become inaccessible to API users who (correctly) omit the
+pointer.  The result would be features that are configurable from a
+freeform input file but unreachable from the Python or C++ API.
+
+If a pointer currently has associated sub-keywords, or a design calls
+for configuration that logically accompanies a pointer, factor the
+configuration into a sibling field or a separate model.  The pointer
+should remain a plain \c str (or \c list[str]) with no nested
+structure.
+
+Example of what NOT to do:
+
+\code
+# BAD: truth_model_pointer has child configuration
+truth_model_pointer: TruthModelPointerWithOptions = DakotaField(
+    description="...",
+    dakota={"block_pointer": "model"},
+)
+
+class TruthModelPointerWithOptions(DakotaBaseModel):
+    pointer: str = DakotaField(...)
+    some_option: int = DakotaField(default=5, ...)  # inaccessible in API mode!
+\endcode
+
+Instead, make the option a sibling field on the parent model:
+
+\code
+# GOOD: pointer is a plain str; option is a sibling
+truth_model_pointer: str = DakotaField(
+    description="...",
+    dakota={"block_pointer": "model"},
+)
+some_option: int = DakotaField(default=5, description="...")
+\endcode
+
+\subsection PydanticSpecPointerGroups Pointer Groups
+
+Some required model-typed fields wrap a config model that contains required
+pointer fields plus optional configuration siblings.  These are called
+<em>pointer groups</em>.  A typical example is
+\c NestedConfig.sub_method_pointer, whose type \c SubMethodPointer holds
+a required \c pointer: \c str block-pointer field and optional scheduling
+fields such as \c iterator_servers.
+
+<b>When to use:</b> A required field is a pointer group when its model
+contains required \c block_pointer fields (and optionally other fields with
+defaults) but the model as a whole must be omittable in API mode.
+
+<b>API-mode semantics:</b> If the pointer-group field is absent, the
+\c _fill_api_mode_pointer_sentinels validator injects an empty dict \c {}.
+The child model's own before-validator then fills in the pointer sentinel.
+If the field is present (because the user wants to configure optional
+fields like \c iterator_servers), no injection occurs and validation
+proceeds normally.
+
+<b>Annotation:</b> Add \c "pointer_group": True to the \c dakota dict of
+the \c DakotaField on the <em>parent</em> model's field:
+
+\code
+sub_method_pointer: SubMethodPointer = DakotaField(
+    default=...,
+    description="...",
+    dakota={"argument": "pointer", "pointer_group": True, ...},
+)
+\endcode
+
+<b>Origin:</b> In freeform input, these correspond to keywords that take a
+string argument (the pointer) and also have optional sub-keywords.  The
+Pydantic model splits this into a synthetic \c pointer field (annotated
+\c block_pointer) and sibling config fields.  The parent field on the
+containing model is annotated \c pointer_group so that API-mode injection
+can reach it.
+
+<b>Do not annotate</b> a field \c pointer_group if its wrapped model has
+required non-pointer fields (e.g., a required type-selection bool or a
+required method-name string).  Such models require real user input and
+cannot be meaningfully auto-filled with an empty dict.
+
+\subsection PydanticSpecPointerUnions Pointer Unions
+
+Some required \c Union fields have at least one branch that is a pointer-only
+or pointer-group wrapper.  These are called <em>pointer unions</em>.  A
+typical example is
+\c EmbeddedConfig.sub_method \c : \c Union[GlobalMethodName, GlobalMethodPointer],
+where \c GlobalMethodPointer is a pure pointer branch and
+\c GlobalMethodName has a real method-name string.
+
+<b>When to use:</b> A required Union field is a pointer union when at least
+one of its branches is all-pointer (i.e., every required field on the branch
+model is either a \c block_pointer, a \c pointer_group, or another
+\c pointer_union).
+
+<b>API-mode semantics:</b> If the pointer-union field is absent, the
+validator introspects the Union branches to find the first all-pointer
+branch.  It then builds a minimal injection dict for that branch (injecting
+the pointer sentinel into the branch's pointer fields) and injects it.
+Child validators fill in sentinels bottom-up.  If the user provides a
+branch (e.g., a method-name branch), that is real input and validates
+normally.
+
+<b>Annotation:</b> Add \c "pointer_union": True to the \c dakota dict of
+the \c DakotaField on the Union field:
+
+\code
+sub_method: Union[GlobalMethodName, GlobalMethodPointer] = DakotaField(
+    description="...",
+    dakota={"anchor": True, "union_pattern": 4, "pointer_union": True},
+)
+\endcode
+
+<b>Defensive check:</b> If no all-pointer branch is found, a \c ValueError
+is raised during validation with a message like:
+\c "pointer_union field 'sub_method' on EmbeddedConfig has no all-pointer branch".
+This catches developer annotation mistakes at validation time rather than
+silently misbehaving.
+
+<b>Do not annotate</b> \c SurrogateConfig.category or other real type-selection
+Unions as \c pointer_union.  Those Unions require the user to always pick a
+branch; they are not pointer plumbing.
+
+\subsection PydanticSpecPointerNesting Nesting Limits
+
+The full pointer-relaxation stack supports three levels of nesting:
+
+\verbatim
+pointer_union  ->  pointer_group  ->  block_pointer
+\endverbatim
+
+Deeper than three levels is administratively prohibited.  If a future
+design requires deeper nesting, the developer must find a flatter
+representation.  Deeply nested option hierarchies were tolerable for
+freeform input files but create ergonomic problems for API users and
+make automated injection brittle.
+
+<b>Guidance for new grammar:</b> Favor broad, flat specifications.  Prefer
+sibling fields over deeply nested option sub-models.  When a pointer and
+optional configuration must coexist, use the pointer-group pattern
+(pointer as a sibling of the configuration, not as a child of it).
 
 \section PydanticSpecFloat DakotaFloat
 

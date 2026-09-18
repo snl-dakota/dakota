@@ -349,7 +349,7 @@ class SurrogateBasedLocalConfig(
         SurrogateBasedLocalMethodPointer, SurrogateBasedLocalMethodName
     ] = DakotaField(
         description="Subproblem Optimizer Selection",
-        dakota={"anchor": True, "union_pattern": 4},
+        dakota={"anchor": True, "union_pattern": 4, "pointer_union": True},
     )
     model_pointer: str = DakotaField(
         description="Identifier for model block to be used by a method",
@@ -417,6 +417,7 @@ class SurrogateBasedLocalSelection(MethodSelection):
 
     surrogate_based_local: SurrogateBasedLocalConfig = DakotaField(
         dakota={
+            "pointer_group": True,
             "materialization": [
                 {
                     "ir_key": "method.algorithm",

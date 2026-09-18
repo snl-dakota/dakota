@@ -5,6 +5,7 @@
 //   Suite 1 - JsonRequiredFieldsWholeFile  (api_mode=false, all required fields enforced)
 //   Suite 2 - JsonRequiredFieldsPerBlock   (api_mode=true, pointer fields relaxed)
 //   Suite 3 - JsonRequiredFieldsRegression (existing JSON test files still pass)
+//   Suite 4 - JsonPointerGroupUnion        (pointer-group and pointer-union API-mode relaxation)
 
 #include <gtest/gtest.h>
 #include <dakota_input_reader.hpp>
@@ -249,9 +250,9 @@ TEST(JsonRequiredFieldsPerBlock, MissingRequiredNonPointerErrorsInApiMode)
 }
 
 // 2.3  When both a required pointer and a required non-pointer are absent,
-//      only the non-pointer should produce an error in API mode.
-//      SurrogateBasedLocalConfig requires model_pointer (pointer) and
-//      sub_method (non-pointer anchor).
+//      all pointer-related fields are relaxed in API mode.
+//      SurrogateBasedLocalConfig requires model_pointer (block_pointer) and
+//      sub_method (pointer_union); both are relaxed, so the block validates ok.
 TEST(JsonRequiredFieldsPerBlock, MixedPointerAndNonPointerOnlyNonPointerErrors)
 {
     json input = {
@@ -261,11 +262,16 @@ TEST(JsonRequiredFieldsPerBlock, MixedPointerAndNonPointerOnlyNonPointerErrors)
     std::vector<std::string> errors;
     bool ok = dakota::validate_method_block_json_to_json(input, output, errors);
 
-    EXPECT_FALSE(ok);
-    EXPECT_TRUE(any_error_contains(errors, "sub_method"))
-        << "Expected error about missing 'sub_method'";
+    // Both model_pointer (block_pointer) and sub_method (pointer_union) are
+    // required fields of SurrogateBasedLocalConfig; both are relaxed in
+    // API mode, so there should be no errors.
+    EXPECT_TRUE(ok)
+        << "All required fields are pointer-type and should be relaxed; "
+        << "errors: " << (errors.empty() ? "(none)" : errors[0]);
     EXPECT_FALSE(any_error_contains(errors, "model_pointer"))
-        << "model_pointer should be skipped in API mode";
+        << "model_pointer (block_pointer) should be skipped in API mode";
+    EXPECT_FALSE(any_error_contains(errors, "sub_method"))
+        << "sub_method (pointer_union) should be skipped in API mode";
 }
 
 // 2.4  A fully specified per-block payload must succeed.
@@ -320,4 +326,101 @@ TEST(JsonRequiredFieldsRegression, ExistingJsonTestFiles)
             << name << " failed: "
             << (errors.empty() ? "(no detail)" : errors[0]);
     }
+}
+
+// ============================================================================
+// Suite 4: JsonPointerGroupUnion
+// Pointer-group and pointer-union relaxation in API mode (api_mode=true).
+// ============================================================================
+
+// 4.1  Pointer-group field (sub_method_pointer on NestedConfig) omitted in
+//      API mode must succeed.  sub_method_pointer is annotated pointer_group
+//      in the JSON schema, so the per-block entry point skips it.
+TEST(JsonPointerGroupUnion, PointerGroupSkippedInApiMode)
+{
+    // nested model without sub_method_pointer
+    json input = {
+        {"nested", {
+            {"id_model",           "my_model"},
+            {"variables_pointer",  "my_vars"},
+            {"responses_pointer",  "my_resp"}
+        }}
+    };
+    json output;
+    std::vector<std::string> errors;
+    bool ok = dakota::validate_model_block_json_to_json(input, output, errors);
+
+    EXPECT_TRUE(ok)
+        << "pointer_group sub_method_pointer should be relaxed in API mode; "
+        << "errors: " << (errors.empty() ? "(none)" : errors[0]);
+    EXPECT_FALSE(any_error_contains(errors, "sub_method_pointer"))
+        << "sub_method_pointer should not appear in errors";
+}
+
+// 4.2  Pointer-group field (sub_method_pointer on NestedConfig) omitted in
+//      whole-file mode must produce an error.
+TEST(JsonPointerGroupUnion, PointerGroupEnforcedInWholeFileMode)
+{
+    auto doc = base_doc();
+    // Insert a nested model block without sub_method_pointer
+    doc["model"] = json::array({
+        {{"nested", {
+            {"variables_pointer", "PS_V"},
+            {"responses_pointer", "PS_R"}
+        }}}
+    });
+
+    json output;
+    std::vector<std::string> errors;
+    bool ok = dakota::validate_json_input_to_json(doc, output, errors);
+
+    EXPECT_FALSE(ok);
+    EXPECT_TRUE(any_error_contains(errors, "sub_method_pointer"))
+        << "Expected 'sub_method_pointer' in whole-file mode errors; errors: "
+        << (errors.empty() ? "(none)" : errors[0]);
+}
+
+// 4.3  Pointer-union field (sub_method on EmbeddedConfig) omitted in API
+//      mode must succeed.  sub_method on SurrogateBasedLocalConfig is
+//      annotated pointer_union in the JSON schema, so the per-block entry
+//      point skips it.  surrogate_based_local is used because it is a direct
+//      top-level method selector (unlike 'embedded', which is nested under
+//      the 'hybrid' selector).
+TEST(JsonPointerGroupUnion, PointerUnionSkippedInApiMode)
+{
+    // surrogate_based_local method without sub_method (or model_pointer)
+    json input = {
+        {"surrogate_based_local", json::object()}
+    };
+    json output;
+    std::vector<std::string> errors;
+    bool ok = dakota::validate_method_block_json_to_json(input, output, errors);
+
+    EXPECT_TRUE(ok)
+        << "pointer_union sub_method should be relaxed in API mode; "
+        << "errors: " << (errors.empty() ? "(none)" : errors[0]);
+    EXPECT_FALSE(any_error_contains(errors, "sub_method"))
+        << "sub_method should not appear in errors in API mode";
+}
+
+// 4.4  Pointer-union field (sub_method on SurrogateBasedLocalConfig) omitted
+//      in whole-file mode must produce an error.
+TEST(JsonPointerGroupUnion, PointerUnionEnforcedInWholeFileMode)
+{
+    auto doc = base_doc();
+    // Insert a surrogate_based_local method block without sub_method.
+    // In whole-file mode all required fields are enforced, so sub_method
+    // (pointer_union) must be present.
+    doc["method"] = json::array({
+        {{"surrogate_based_local", json::object()}}
+    });
+
+    json output;
+    std::vector<std::string> errors;
+    bool ok = dakota::validate_json_input_to_json(doc, output, errors);
+
+    EXPECT_FALSE(ok);
+    EXPECT_TRUE(any_error_contains(errors, "sub_method"))
+        << "Expected 'sub_method' in whole-file mode errors; errors: "
+        << (errors.empty() ? "(none)" : errors[0]);
 }

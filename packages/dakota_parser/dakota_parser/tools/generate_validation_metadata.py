@@ -56,6 +56,8 @@ class ValidationMetadataGenerator:
         self.required_blocks: Set[str] = set(self.schema.get('required', []))
         self.required_fields: Dict[str, List[str]] = {}
         self.required_pointer_fields: Dict[str, Set[str]] = {}
+        self.required_pointer_group_fields: Dict[str, Set[str]] = {}
+        self.required_pointer_union_fields: Dict[str, Set[str]] = {}
 
     def process_all(self):
         """Scan all definitions and extract validation metadata."""
@@ -85,6 +87,16 @@ class ValidationMetadataGenerator:
                     if 'x-block-pointer' in props.get(r, {})}
         if pointers:
             self.required_pointer_fields[def_name] = pointers
+        # Identify pointer-group fields
+        groups = {r for r in filtered
+                  if props.get(r, {}).get('x-pointer-group', False)}
+        if groups:
+            self.required_pointer_group_fields[def_name] = groups
+        # Identify pointer-union fields
+        unions = {r for r in filtered
+                  if props.get(r, {}).get('x-pointer-union', False)}
+        if unions:
+            self.required_pointer_union_fields[def_name] = unions
 
     def _extract_numeric_constraints(self, def_name: str, defn: dict):
         constraints = []
@@ -806,19 +818,27 @@ struct FieldConstraint {{
         lines.append("struct RequiredFieldInfo {")
         lines.append("    std::set<std::string> fields;")
         lines.append("    std::set<std::string> pointer_fields;  // subset that are block pointers")
+        lines.append("    std::set<std::string> pointer_group_fields;  // subset that are pointer groups")
+        lines.append("    std::set<std::string> pointer_union_fields;  // subset that are pointer unions")
         lines.append("};")
         lines.append("")
         lines.append("inline const RequiredFieldInfo& get_required_fields(const std::string& def_name) {")
         lines.append("    static const std::map<std::string, RequiredFieldInfo> data = {")
 
         all_defs = sorted(set(self.required_fields.keys()) |
-                          set(self.required_pointer_fields.keys()))
+                          set(self.required_pointer_fields.keys()) |
+                          set(self.required_pointer_group_fields.keys()) |
+                          set(self.required_pointer_union_fields.keys()))
         for def_name in all_defs:
             fields = self.required_fields.get(def_name, [])
             pointers = self.required_pointer_fields.get(def_name, set())
+            groups = self.required_pointer_group_fields.get(def_name, set())
+            unions = self.required_pointer_union_fields.get(def_name, set())
             field_strs = ', '.join(f'"{f}"' for f in sorted(fields))
             pointer_strs = ', '.join(f'"{p}"' for p in sorted(pointers))
-            lines.append(f'        {{"{def_name}", {{{{{field_strs}}}, {{{pointer_strs}}}}}}},')
+            group_strs = ', '.join(f'"{g}"' for g in sorted(groups))
+            union_strs = ', '.join(f'"{u}"' for u in sorted(unions))
+            lines.append(f'        {{"{def_name}", {{{{{field_strs}}}, {{{pointer_strs}}}, {{{group_strs}}}, {{{union_strs}}}}}}},')
 
         lines.append("    };")
         lines.append("    static const RequiredFieldInfo empty;")
@@ -1019,6 +1039,12 @@ inline json validate_definition(const std::string& def_name, json instance,
             if (!instance.contains(field)) {
                 if (api_mode && req_info.pointer_fields.count(field)) {
                     continue;  // skip pointer in API mode
+                }
+                if (api_mode && req_info.pointer_group_fields.count(field)) {
+                    continue;  // skip pointer group in API mode
+                }
+                if (api_mode && req_info.pointer_union_fields.count(field)) {
+                    continue;  // skip pointer union in API mode
                 }
                 missing.push_back(field);
             }
