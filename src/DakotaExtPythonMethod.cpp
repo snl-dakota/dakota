@@ -353,30 +353,26 @@ ModelExecutor::value(VectorXd& x)
 
 // -----------------------------------------------------------------
 std::vector<double>
-ModelExecutor::value(py::dict & vars)
+ModelExecutor::value_mixed_vars(
+    const std::vector<double> & cv,
+    const std::vector<int>    & div,
+    const std::vector<String> & dsv,
+    const std::vector<Real>   & drv)
 {
-  if (vars.contains("cv")) {
-    auto cv = vars["cv"].cast<std::vector<double>>();
-    //Cout << "ModelExecutor::value: cv : " << cv << std::endl;
-    for (int i=0; i<cv.size(); ++i)
+  if (!cv.empty()) {
+    for (size_t i=0; i<cv.size(); ++i)
       ModelUtils::continuous_variable(*model_, cv[i], i);
   }
-  if (vars.contains("div")) {
-    auto div = vars["div"].cast<std::vector<int>>();
-    //Cout << "ModelExecutor::value: div : " << div << std::endl;
-    for (int i=0; i<div.size(); ++i)
+  if (!div.empty()) {
+    for (size_t i=0; i<div.size(); ++i)
       ModelUtils::discrete_int_variable(*model_, div[i], i);
   }
-  if (vars.contains("dsv")) {
-    auto dsv = vars["dsv"].cast<std::vector<String>>();
-    //Cout << "ModelExecutor::value: dsv : " << dsv << std::endl;
-    for (int i=0; i<dsv.size(); ++i)
+  if (!dsv.empty()) {
+    for (size_t i=0; i<dsv.size(); ++i)
       ModelUtils::discrete_string_variable(*model_, dsv[i], i);
   }
-  if (vars.contains("drv")) {
-    auto drv = vars["drv"].cast<std::vector<Real>>();
-    //Cout << "ModelExecutor::value: drv : " << drv << std::endl;
-    for (int i=0; i<drv.size(); ++i)
+  if (!drv.empty()) {
+    for (size_t i=0; i<drv.size(); ++i)
       ModelUtils::discrete_real_variable(*model_, drv[i], i);
   }
 

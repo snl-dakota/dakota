@@ -30,11 +30,28 @@ PYBIND11_MODULE(ext_method, m) {
          , py::arg("x"))
     
     .def("function_value"
-         , static_cast<std::vector<double> (Dakota::ModelExecutor::*)(py::dict &)>
-                        (&Dakota::ModelExecutor::value)
+         , [](Dakota::ModelExecutor &me, py::dict &vars) {
+             // Unpack the Python dict into standard C++ containers and
+             // delegate to value_mixed_vars(), which uses only standard-
+             // library types so its symbol is not hidden by pybind11's
+             // namespace-level visibility("hidden") attribute on GCC.
+             std::vector<double>      cv;
+             std::vector<int>         div;
+             std::vector<std::string> dsv;
+             std::vector<double>      drv;
+             if (vars.contains("cv"))
+               cv = vars["cv"].cast<std::vector<double>>();
+             if (vars.contains("div"))
+               div = vars["div"].cast<std::vector<int>>();
+             if (vars.contains("dsv"))
+               dsv = vars["dsv"].cast<std::vector<std::string>>();
+             if (vars.contains("drv"))
+               drv = vars["drv"].cast<std::vector<double>>();
+             return me.value_mixed_vars(cv, div, dsv, drv);
+           }
          , "Return function value for mixed parameter values"
          , py::arg("vars"))
-    
+
     .def("gradient_values", (&Dakota::ModelExecutor::gradient)
          , "Return function gradients for continuous values"
          , py::arg("x"))

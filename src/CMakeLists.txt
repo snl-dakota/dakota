@@ -807,12 +807,16 @@ endif(HAVE_DEMO_TPL)
 if(HAVE_EXT_PYTHON_METHOD)
   set(iterator_src ${iterator_src} ${Dakota_SOURCE_DIR}/src/DakotaExtPythonMethod.cpp)
   add_definitions("-DHAVE_EXT_PYTHON_METHOD")
-  list(APPEND DAKOTA_INCDIRS ${pybind11_INCLUDE_DIRS})
-  if(Python3_INCLUDE_DIRS)
-    list(APPEND DAKOTA_INCDIRS ${Python3_INCLUDE_DIRS})
-  elseif(PYTHON_INCLUDE_DIRS)
-    list(APPEND DAKOTA_INCDIRS ${PYTHON_INCLUDE_DIRS})
+
+  # pybind11_INCLUDE_DIRS (plural) is set by pybind11NewTools.cmake only when
+  # Python3_INCLUDE_DIRS is already defined at add_subdirectory(pybind11) time.
+  # On some toolchains (e.g. Anaconda Python on RHEL) the plural variable is
+  # empty, so use pybind11_INCLUDE_DIR (singular, always set by the vendored
+  # pybind11 CMakeLists.txt) plus an explicit Python include fallback.
+  if(NOT Python3_INCLUDE_DIRS)
+    set(Python3_INCLUDE_DIRS "${_Python3_INCLUDE_DIR}")
   endif()
+  list(APPEND DAKOTA_INCDIRS ${pybind11_INCLUDE_DIR} ${Python3_INCLUDE_DIRS})
 
   pybind11_add_module(ext_method python/ext_method/DakotaExtMethodPython.cpp)
   add_dependencies(ext_method dakota_ir_generated_tables dakota_python_package)
@@ -1007,6 +1011,22 @@ target_include_directories(dakota_src
 add_dependencies(dakota_src dakota_ir_generated_tables)
 if(TARGET dakota_generated_sources)
   add_dependencies(dakota_src dakota_generated_sources)
+endif()
+# Pybind11 and Python headers are needed when DakotaExtPythonMethod.cpp or
+# Pybind11Interface.cpp is compiled into dakota_src (e.g. py::dict in
+# ModelExecutor::value).  The directory-level include_directories() call above
+# should propagate them, but on some toolchains (Anaconda Python / RHEL) the
+# paths end up missing from the target's compile line.  Adding them directly
+# to the target guarantees they are always present.  PRIVATE is sufficient
+# because no public header of dakota_src exposes pybind11 types.
+if(HAVE_EXT_PYTHON_METHOD OR DAKOTA_PYTHON_DIRECT_INTERFACE)
+  if(NOT Python3_INCLUDE_DIRS)
+    set(Python3_INCLUDE_DIRS "${_Python3_INCLUDE_DIR}")
+  endif()
+  target_include_directories(dakota_src PRIVATE
+    ${pybind11_INCLUDE_DIR}
+    ${Python3_INCLUDE_DIRS}
+  )
 endif()
 # handle special case for gcc filesystem support
 if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9.0) OR DAKOTA_LINK_STDCPPFS)
