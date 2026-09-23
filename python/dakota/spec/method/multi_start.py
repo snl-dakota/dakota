@@ -109,7 +109,7 @@ class MultiStartConfig(
     "Multi-Start Optimization Method"
 
     sub_method: Union[MultiStartMethodName, MultiStartMethodPointer] = DakotaField(
-        description="Sub-method Selection", dakota={"anchor": True, "union_pattern": 4}
+        description="Sub-method Selection", dakota={"anchor": True, "union_pattern": 4, "pointer_union": True}
     )
     random_starts: RandomStarts | None = DakotaField(
         default=None,

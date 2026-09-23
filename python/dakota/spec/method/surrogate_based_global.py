@@ -58,7 +58,7 @@ class SurrogateBasedGlobalConfig(
     sub_method: Union[
         SurrogateBasedGlobalMethodPointer, SurrogateBasedGlobalMethodName
     ] = DakotaField(
-        description="Sub-method Selection", dakota={"anchor": True, "union_pattern": 4}
+        description="Sub-method Selection", dakota={"anchor": True, "union_pattern": 4, "pointer_union": True}
     )
     model_pointer: str = DakotaField(
         description="Identifier for model block to be used by a method",
@@ -94,6 +94,7 @@ class SurrogateBasedGlobalSelection(MethodSelection):
 
     surrogate_based_global: SurrogateBasedGlobalConfig = DakotaField(
         dakota={
+            "pointer_group": True,
             "materialization": [
                 {
                     "ir_key": "method.algorithm",

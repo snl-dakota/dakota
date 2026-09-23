@@ -993,7 +993,8 @@ json check_interface_block(
     json result = json::object();
 
     bool analysis_drivers = path_exists(instance, "analysis_drivers");
-    int num_analsyis_drivers = (analysis_drivers) ? instance["analysis_drivers"]["drivers"].size() : 0;
+    const json* drivers_ptr = resolve_path(instance, "analysis_drivers.drivers");
+    int num_analsyis_drivers = (drivers_ptr && drivers_ptr->is_array()) ? drivers_ptr->size() : 0;
 
 
     bool input_filter = path_exists(instance, "analysis_drivers.input_filter");
