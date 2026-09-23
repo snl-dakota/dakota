@@ -1776,6 +1776,7 @@ TEST(di_construction_tests, study_model_factory_surrogate_throws_for_unsupported
   EXPECT_THROW(
     study.model().ensemble_surrogate(surrogate_store, truth_model, {}, variables, response),
     std::runtime_error);
+}
 
 TEST(di_construction_tests, json_api_path_does_not_require_pointer_fields)
 {
