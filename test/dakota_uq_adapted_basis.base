@@ -2,7 +2,7 @@ Test Number 0 succeeded
 <<<<< Function evaluation summary (ID_I): 100 total (100 new, 0 duplicate)
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  1.2564044528e-01  5.3373027571e-03  6.8257725591e-01  5.8961536922e-01
+ response_fn_1  1.2564044528e-01  5.3373027571e-03  6.8257725591e-01  5.8961536926e-01
 95% confidence intervals for each response function:
                     LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
  response_fn_1  1.2458140862e-01  1.2669948194e-01  4.6861883568e-03  6.2002125430e-03
@@ -56,7 +56,7 @@ Test Number 1 succeeded
 <<<<< Function evaluation summary (ID_I): 100 total (100 new, 0 duplicate)
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  1.2563521648e-01  5.3461645797e-03  6.8285768043e-01  6.0253779388e-01
+ response_fn_1  1.2563521648e-01  5.3461645797e-03  6.8285768044e-01  6.0253779388e-01
 95% confidence intervals for each response function:
                     LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
  response_fn_1  1.2457442145e-01  1.2669601152e-01  4.6939690976e-03  6.2105071030e-03
@@ -82,7 +82,7 @@ Test Number 2 succeeded
 <<<<< Function evaluation summary (ID_I): 100 total (100 new, 0 duplicate)
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  1.2564044528e-01  5.3373027571e-03  6.8257725591e-01  5.8961536922e-01
+ response_fn_1  1.2564044528e-01  5.3373027571e-03  6.8257725591e-01  5.8961536926e-01
 95% confidence intervals for each response function:
                     LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
  response_fn_1  1.2458140862e-01  1.2669948194e-01  4.6861883568e-03  6.2002125430e-03
@@ -136,7 +136,7 @@ Test Number 3 succeeded
 <<<<< Function evaluation summary (ID_I): 100 total (100 new, 0 duplicate)
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  1.2563837558e-01  5.3381876313e-03  6.8339012465e-01  5.8980482679e-01
+ response_fn_1  1.2563837558e-01  5.3381876313e-03  6.8339012466e-01  5.8980482679e-01
 95% confidence intervals for each response function:
                     LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
  response_fn_1  1.2457916334e-01  1.2669758782e-01  4.6869652823e-03  6.2012404794e-03
@@ -166,7 +166,7 @@ Test Number 4 succeeded
 <<<<< Function evaluation summary (ID_I): 100 total (100 new, 0 duplicate)
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  1.2561769933e-01  5.2943147882e-03  6.7462659037e-01  5.7542136851e-01
+ response_fn_1  1.2561769933e-01  5.2943147882e-03  6.7462659037e-01  5.7542136849e-01
 95% confidence intervals for each response function:
                     LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
  response_fn_1  1.2456719242e-01  1.2666820625e-01  4.6484446258e-03  6.1502744832e-03
@@ -188,7 +188,7 @@ Test Number 5 succeeded
 <<<<< Function evaluation summary (ID_I): 100 total (100 new, 0 duplicate)
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  1.2564013406e-01  5.3408447558e-03  6.8785144590e-01  6.1379901244e-01
+ response_fn_1  1.2564013406e-01  5.3408447558e-03  6.8785144591e-01  6.1379901245e-01
 95% confidence intervals for each response function:
                     LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
  response_fn_1  1.2458039459e-01  1.2669987353e-01  4.6892982558e-03  6.2043271951e-03
@@ -218,7 +218,7 @@ Test Number 6 succeeded
 <<<<< Function evaluation summary (ID_I): 100 total (100 new, 0 duplicate)
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  1.2568653097e-01  5.3254539252e-03  7.1180246621e-01  8.1262934630e-01
+ response_fn_1  1.2568653097e-01  5.3254539252e-03  7.1180246622e-01  8.1262934631e-01
 95% confidence intervals for each response function:
                     LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
  response_fn_1  1.2462984537e-01  1.2674321656e-01  4.6757850012e-03  6.1864480481e-03
@@ -280,7 +280,7 @@ Test Number 7 succeeded
 <<<<< Function evaluation summary (ID_I): 100 total (100 new, 0 duplicate)
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  1.2568027679e-01  5.3437839900e-03  6.9090467941e-01  6.1292143879e-01
+ response_fn_1  1.2568027679e-01  5.3437839900e-03  6.9090467941e-01  6.1292143881e-01
 95% confidence intervals for each response function:
                     LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
  response_fn_1  1.2461995412e-01  1.2674059947e-01  4.6918789236e-03  6.2077416308e-03

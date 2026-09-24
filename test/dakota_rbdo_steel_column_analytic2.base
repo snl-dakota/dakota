@@ -98,7 +98,7 @@ Test Number 6 succeeded
                       1.7500000000e+01 d
                       1.0000000000e+02 h
 <<<<< Best objective function  =
-                      3.4964107355e-03
+                      3.4964107352e-03
 <<<<< Best constraint values   =
                       4.0000000000e+03
 <<<<< Best evaluation ID (full match) not available
@@ -128,7 +128,7 @@ Test Number 8 succeeded
                       1.7500000000e+01 d
                       1.0000000000e+02 h
 <<<<< Best objective function  =
-                      3.7311989364e-03
+                      3.7311989365e-03
 <<<<< Best constraint values   =
                       4.0000000000e+03
 <<<<< Best evaluation ID (full match) not available

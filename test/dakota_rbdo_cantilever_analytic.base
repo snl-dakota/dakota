@@ -69,10 +69,10 @@ Test Number 4 succeeded
                      -1.7393979910e-03
 <<<<< Best evaluation ID not available
 Test Number 5 succeeded
-<<<<< Function evaluation summary (UQ_I): 881 total (845 new, 36 duplicate)
+<<<<< Function evaluation summary (UQ_I): 883 total (846 new, 37 duplicate)
   response_fn_1: 31 val (20 n, 11 d), 40 grad (29 n, 11 d), 0 Hess (0 n, 0 d)
   response_fn_2: 342 val (331 n, 11 d), 351 grad (340 n, 11 d), 0 Hess (0 n, 0 d)
-  response_fn_3: 481 val (467 n, 14 d), 490 grad (476 n, 14 d), 0 Hess (0 n, 0 d)
+  response_fn_3: 483 val (468 n, 15 d), 492 grad (477 n, 15 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                       2.4521817159e+00 w
                       3.8826058833e+00 t

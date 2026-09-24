@@ -145,7 +145,7 @@ Test Number 15 succeeded
 <<<<< Best residual terms =
                      -2.7287821042e-04
                      -1.3529993038e-03
-<<<<< Best evaluation ID: 39
+<<<<< Best evaluation ID: 38
 Test Number 16 succeeded
 <<<<< Function evaluation summary: 34 total (34 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -172,7 +172,7 @@ Test Number 18 succeeded
 <<<<< Best residual terms =
                      -1.6598357466e-07
                       3.3186106982e-06
-<<<<< Best evaluation ID: 58
+<<<<< Best evaluation ID: 57
 Test Number 19 succeeded
 <<<<< Function evaluation summary: 74 total (74 new, 0 duplicate)
 <<<<< Best parameters          =
@@ -181,4 +181,4 @@ Test Number 19 succeeded
 <<<<< Best residual terms =
                      -4.1038226569e-04
                       2.7280103193e-04
-<<<<< Best evaluation ID: 74
+<<<<< Best evaluation ID: 73

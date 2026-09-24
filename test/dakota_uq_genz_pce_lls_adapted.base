@@ -32,22 +32,22 @@ Test Number 3 succeeded
 <<<<< Function evaluation summary: 70 total (70 new, 0 duplicate)
 Moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  7.1999640073371529e-01  1.3946993689819248e-01
-response_fn_1 Sobol' indices:
-                                  Main             Total
-                      9.9999998912007260e-01  9.9999998979993143e-01 x1
-                      1.0200068793426416e-08  1.0879927590007240e-08 x2
-                      6.7985879658082443e-10 x1 x2 
-Test Number 4 succeeded
-<<<<< Function evaluation summary: 70 total (70 new, 0 duplicate)
-Moment statistics for each response function:
-                                  Mean                 Std Dev                Skewness                Kurtosis
  response_fn_1  7.1999640073371574e-01  1.3946993689819251e-01
 response_fn_1 Sobol' indices:
                                   Main             Total
                       9.9999998912007249e-01  9.9999998979993132e-01 x1
                       1.0200068792160665e-08  1.0879927589146886e-08 x2
                       6.7985879698622193e-10 x1 x2 
+Test Number 4 succeeded
+<<<<< Function evaluation summary: 70 total (70 new, 0 duplicate)
+Moment statistics for each response function:
+                                  Mean                 Std Dev                Skewness                Kurtosis
+ response_fn_1  7.1999640073371529e-01  1.3946993689819248e-01
+response_fn_1 Sobol' indices:
+                                  Main             Total
+                      9.9999998912007260e-01  9.9999998979993143e-01 x1
+                      1.0200068793426416e-08  1.0879927590007240e-08 x2
+                      6.7985879658082443e-10 x1 x2 
 Test Number 5 succeeded
 <<<<< Function evaluation summary: 100 total (100 new, 0 duplicate)
 Moment statistics for each response function:

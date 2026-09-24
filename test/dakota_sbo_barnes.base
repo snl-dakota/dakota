@@ -8,7 +8,7 @@ Test Number 0 succeeded
                      -3.1636786252e+01
 <<<<< Best constraint values   =
                       3.8661090295e-01
-                     -3.8076328757e-09
+                     -3.8075995690e-09
                       3.8049656632e-01
 <<<<< Best evaluation ID: 96
 Test Number 1 succeeded
@@ -47,7 +47,7 @@ Test Number 3 succeeded
                      -3.1636786252e+01
 <<<<< Best constraint values   =
                       3.8661090295e-01
-                     -3.8076328757e-09
+                     -3.8075995690e-09
                       3.8049656632e-01
 <<<<< Best evaluation ID: 96
 Test Number 4 succeeded
@@ -86,7 +86,7 @@ Test Number 6 succeeded
                      -3.1636810125e+01
 <<<<< Best constraint values   =
                       3.8815965366e-01
-                     -4.5993431286e-11
+                     -4.5940140581e-11
                       3.8010488666e-01
 <<<<< Best evaluation ID: 120
 Test Number 7 succeeded
@@ -125,7 +125,7 @@ Test Number 9 succeeded
                      -3.1636810125e+01
 <<<<< Best constraint values   =
                       3.8815965366e-01
-                     -4.5993431286e-11
+                     -4.5940140581e-11
                       3.8010488666e-01
 <<<<< Best evaluation ID: 120
 Test Number 10 succeeded
@@ -205,7 +205,7 @@ Test Number 15 succeeded
                       3.8837485370e-01
                      -1.8368644383e-09
                       3.8005048866e-01
-<<<<< Best evaluation ID: 49
+<<<<< Best evaluation ID: 48
 Test Number 16 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE_1): 412 total (412 new, 0 duplicate)
 <<<<< Function evaluation summary (TRUE_FN): 287 total (287 new, 0 duplicate)

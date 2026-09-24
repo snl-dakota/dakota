@@ -200,7 +200,7 @@ displacement  2.27751e-03 -4.90897e-01  3.85775e-01  7.77451e-01         -nan  7
 Partial Correlation Matrix between input and output:
                      area       stress displacement 
            R         -nan -1.00000e+00  1.17559e-02 
-           E         -nan  1.55078e-09 -9.88304e-01 
+           E         -nan  9.59486e-10 -9.88304e-01 
            X         -nan  1.00000e+00  9.81230e-01 
            Y         -nan  1.00000e+00  9.95280e-01 
 Simple Rank Correlation Matrix among all inputs and outputs:

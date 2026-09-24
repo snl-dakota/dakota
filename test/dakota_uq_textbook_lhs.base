@@ -85,13 +85,13 @@ Partial Rank Correlation Matrix between input and output:
              response_fn_1 response_fn_2 response_fn_3 
         TF1n -3.93662e-03  1.00000e+00         -nan 
         TF2n  8.92974e-01         -nan  1.00000e+00 
-        TF1u  6.46343e-02 -3.47191e-10         -nan 
-        TF2u  9.79188e-01  1.46469e-10         -nan 
-        TF1w  1.02214e-01 -1.22415e-09  2.05959e-09 
-        TF2w  8.39609e-01         -nan  8.61452e-09 
-        TF1h -4.96308e-02  1.08732e-09         -nan 
-        TF2h  3.55102e-03  1.19845e-09         -nan 
-        TF3h -1.19136e-01  5.91237e-09         -nan 
+        TF1u  6.46343e-02 -1.44488e-09         -nan 
+        TF2u  9.79188e-01         -nan         -nan 
+        TF1w  1.02214e-01 -1.27315e-09  5.60207e-10 
+        TF2w  8.39609e-01         -nan         -nan 
+        TF1h -4.96308e-02  7.12325e-10         -nan 
+        TF2h  3.55102e-03  6.67904e-10 -2.25339e-09 
+        TF3h -1.19136e-01  2.94146e-09  5.84520e-09 
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 100 total (100 new, 0 duplicate)
 Sample moment statistics for each response function:
@@ -256,13 +256,13 @@ Partial Rank Correlation Matrix between input and output:
              response_fn_1 response_fn_2 response_fn_3 
         TF1n -3.93662e-03  1.00000e+00         -nan 
         TF2n  8.92974e-01         -nan  1.00000e+00 
-        TF1u  6.46343e-02 -3.47191e-10         -nan 
+        TF1u  6.46343e-02 -1.44488e-09         -nan 
         TF2u  9.79188e-01         -nan         -nan 
-        TF1w  1.02214e-01 -1.22415e-09  2.05959e-09 
-        TF2w  8.39609e-01 -1.81117e-09  1.23621e-09 
-        TF1h -4.96308e-02  1.08732e-09         -nan 
-        TF2h  3.55102e-03         -nan         -nan 
-        TF3h -1.19136e-01         -nan -2.08672e-08 
+        TF1w  1.02214e-01 -1.27315e-09  5.60207e-10 
+        TF2w  8.39609e-01         -nan         -nan 
+        TF1h -4.96308e-02  7.12325e-10         -nan 
+        TF2h  3.55102e-03  6.67904e-10 -2.25339e-09 
+        TF3h -1.19136e-01  2.94146e-09  5.84520e-09 
 Test Number 3 succeeded
 <<<<< Function evaluation summary: 100 total (100 new, 0 duplicate)
 Sample moment statistics for each response function:
@@ -428,13 +428,13 @@ Partial Rank Correlation Matrix between input and output:
              response_fn_1 response_fn_2 response_fn_3 
         TF1n -3.93662e-03  1.00000e+00         -nan 
         TF2n  8.92974e-01         -nan  1.00000e+00 
-        TF1u  6.46343e-02 -3.47191e-10         -nan 
-        TF2u  9.79188e-01  1.46469e-10         -nan 
-        TF1w  1.02214e-01 -1.22415e-09  2.05959e-09 
-        TF2w  8.39609e-01         -nan  8.61452e-09 
-        TF1h -4.96308e-02  1.08732e-09         -nan 
-        TF2h  3.55102e-03  1.19845e-09         -nan 
-        TF3h -1.19136e-01  5.91237e-09         -nan 
+        TF1u  6.46343e-02 -1.14524e-09         -nan 
+        TF2u  9.79188e-01         -nan         -nan 
+        TF1w  1.02214e-01 -1.27315e-09  5.60207e-10 
+        TF2w  8.39609e-01         -nan         -nan 
+        TF1h -4.96308e-02  7.12325e-10         -nan 
+        TF2h  3.55102e-03  6.67904e-10 -2.25339e-09 
+        TF3h -1.19136e-01  2.94146e-09  5.84520e-09 
 Test Number 5 succeeded
 <<<<< Function evaluation summary: 100 total (100 new, 0 duplicate)
 Sample moment statistics for each response function:
@@ -508,13 +508,13 @@ Partial Rank Correlation Matrix between input and output:
              response_fn_1 response_fn_2 response_fn_3 
         TF1n -3.93662e-03  1.00000e+00         -nan 
         TF2n  8.92974e-01         -nan  1.00000e+00 
-        TF1u  6.46343e-02 -3.47191e-10         -nan 
+        TF1u  6.46343e-02 -1.44488e-09         -nan 
         TF2u  9.79188e-01         -nan         -nan 
-        TF1w  1.02214e-01 -1.22415e-09  2.05959e-09 
-        TF2w  8.39609e-01 -1.81117e-09  1.23621e-09 
-        TF1h -4.96308e-02  1.08732e-09         -nan 
-        TF2h  3.55102e-03         -nan         -nan 
-        TF3h -1.19136e-01         -nan -2.08672e-08 
+        TF1w  1.02214e-01 -1.27315e-09  5.60207e-10 
+        TF2w  8.39609e-01         -nan         -nan 
+        TF1h -4.96308e-02  7.12325e-10         -nan 
+        TF2h  3.55102e-03  6.67904e-10 -2.25339e-09 
+        TF3h -1.19136e-01  2.94146e-09  5.84520e-09 
 Test Number 6 succeeded
 <<<<< Function evaluation summary: 100 total (100 new, 0 duplicate)
 Sample moment statistics for each response function:
@@ -546,14 +546,14 @@ Partial Correlation Matrix between input and output:
              response_fn_1 response_fn_2 response_fn_3 
         TF1p -1.59713e-02  1.00000e+00 -6.67679e-02 
         TF2p -9.34450e-02 -1.00000e+00  9.65308e-01 
-       TF1bi -8.01529e-03 -1.35757e-09  9.14653e-02 
-       TF2bi -2.58079e-02  2.17681e-09  1.23578e-01 
-       TF1nb  7.21802e-01  5.02747e-10 -1.89847e-02 
-       TF2nb  2.26816e-01 -9.80501e-11 -5.91764e-02 
-       TF1ge  4.89352e-01         -nan  2.65388e-01 
-       TF2ge  1.39005e-01  6.11711e-09 -1.42062e-01 
-       TF1hg -4.16430e-02  3.21975e-11 -4.91704e-02 
-       TF2hg  1.40479e-01  1.09579e-08 -1.09643e-01 
+       TF1bi -8.01529e-03 -2.93415e-09  9.14653e-02 
+       TF2bi -2.58079e-02         -nan  1.23578e-01 
+       TF1nb  7.21802e-01  5.84923e-09 -1.89847e-02 
+       TF2nb  2.26816e-01 -2.33281e-09 -5.91764e-02 
+       TF1ge  4.89352e-01  3.54215e-09  2.65388e-01 
+       TF2ge  1.39005e-01 -2.41059e-09 -1.42062e-01 
+       TF1hg -4.16430e-02 -2.75465e-09 -4.91704e-02 
+       TF2hg  1.40479e-01  2.79666e-09 -1.09643e-01 
 Simple Rank Correlation Matrix among all inputs and outputs:
                      TF1p         TF2p        TF1bi        TF2bi        TF1nb        TF2nb        TF1ge        TF2ge        TF1hg        TF2hg response_fn_1 response_fn_2 response_fn_3 
         TF1p  1.00000e+00 
@@ -664,25 +664,25 @@ response_fn_2  1.00000e+00 -5.24812e-02  2.76148e-02  6.85269e-03 -9.43294e-03 -
 response_fn_3 -5.24812e-02  1.00000e+00  7.52475e-03  3.65197e-02  1.56016e-02 -2.87429e-02 -2.63426e-02 -1.01650e-02  3.57642e-02 -4.31361e-04  3.97583e-02  5.21661e-02 -1.03697e-02 -1.25621e-02 -6.55262e-04 -2.80977e-02  2.67822e-02  1.68022e-02  4.84998e-02  3.78602e-01 -5.24812e-02  1.00000e+00 
 Partial Rank Correlation Matrix between input and output:
              response_fn_1 response_fn_2 response_fn_3 
-        TF1n  9.50868e-02  1.00000e+00 -2.15715e-09 
-        TF2n  9.13912e-01  4.82462e-10  1.00000e+00 
-        TF1u  1.30032e-01         -nan         -nan 
-        TF2u  9.82435e-01  4.74773e-09         -nan 
-        TF1w  1.80702e-01  1.26520e-09  2.74005e-09 
-        TF2w  8.54808e-01         -nan         -nan 
-        TF1h  1.81431e-01 -2.72635e-10         -nan 
-        TF2h  7.56509e-02         -nan  5.87153e-09 
-        TF1p  6.38796e-05         -nan  1.34045e-08 
-        TF2p  2.59405e-01  7.82414e-09         -nan 
-       TF1bi -2.01743e-01         -nan  8.19039e-10 
-       TF2bi -2.16684e-01         -nan -9.91792e-10 
-       TF1nb  9.89390e-02  6.15837e-09  3.09986e-10 
-       TF2nb -1.65440e-01  2.61099e-09         -nan 
-       TF1ge  1.32886e-01  3.65463e-09         -nan 
-       TF2ge  1.70719e-01  1.23883e-10         -nan 
-       TF1hg  5.48771e-02         -nan         -nan 
+        TF1n  9.50868e-02  1.00000e+00  2.57789e-09 
+        TF2n  9.13912e-01 -5.21271e-09  1.00000e+00 
+        TF1u  1.30032e-01         -nan -3.47434e-10 
+        TF2u  9.82435e-01         -nan         -nan 
+        TF1w  1.80702e-01 -6.36551e-10         -nan 
+        TF2w  8.54808e-01  3.04837e-09  4.22095e-10 
+        TF1h  1.81431e-01 -5.54297e-10  3.37277e-09 
+        TF2h  7.56509e-02         -nan  7.20653e-09 
+        TF1p  6.38796e-05         -nan  7.24977e-09 
+        TF2p  2.59405e-01  3.70117e-09         -nan 
+       TF1bi -2.01743e-01 -3.57471e-09 -4.23094e-11 
+       TF2bi -2.16684e-01         -nan         -nan 
+       TF1nb  9.89390e-02         -nan         -nan 
+       TF2nb -1.65440e-01         -nan         -nan 
+       TF1ge  1.32886e-01         -nan -3.45634e-10 
+       TF2ge  1.70719e-01  3.86185e-09  3.20966e-09 
+       TF1hg  5.48771e-02  3.10047e-09         -nan 
        TF2hg -1.76462e-01         -nan         -nan 
-        TF3h -1.00563e-01 -8.67622e-10         -nan 
+        TF3h -1.00563e-01  3.67109e-09  4.13460e-09 
 Test Number 8 succeeded
 <<<<< Function evaluation summary: 100 total (100 new, 0 duplicate)
 Sample moment statistics for each response function:
@@ -846,7 +846,7 @@ response_fn_2  9.33866e-02  2.84071e-02  1.00000e+00 -2.18422e-03  1.96580e-02  
 response_fn_3 -1.66305e-02 -8.72997e-02 -2.18422e-03  1.00000e+00  9.99448e-01 -2.18422e-03  1.00000e+00 
 Partial Rank Correlation Matrix between input and output:
              response_fn_1 response_fn_2 response_fn_3 
-     ddssv_1  1.92733e-01  2.88000e-09         -nan 
+     ddssv_1  1.92733e-01         -nan         -nan 
      ddssv_2  2.14703e-02         -nan         -nan 
         TF1n  6.54434e-01  1.00000e+00         -nan 
-        TF2n  9.99696e-01         -nan  1.00000e+00 
+        TF2n  9.99696e-01 -6.91154e-10  1.00000e+00 

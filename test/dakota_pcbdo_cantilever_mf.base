@@ -26,13 +26,13 @@ Test Number 1 succeeded
   response_fn_2: 660 val (660 n, 0 d), 120 grad (120 n, 0 d), 0 Hess (0 n, 0 d)
   response_fn_3: 660 val (660 n, 0 d), 120 grad (120 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      1.8242262768e+00 w
+                      1.8242262767e+00 w
                       4.7989584859e+00 t
 <<<<< Best objective function  =
-                      8.7543861713e+00
+                      8.7543861709e+00
 <<<<< Best constraint values   =
-                      1.5443128324e+00
-                     -4.6806303908e-01
+                      1.5443128317e+00
+                     -4.6806303964e-01
 <<<<< Best evaluation ID not available
 Test Number 2 succeeded
 <<<<< Function evaluation summary (UQ_I): 234 total (225 new, 9 duplicate)
@@ -53,22 +53,22 @@ Test Number 2 succeeded
                       3.2645012624e+00
 <<<<< Best evaluation ID not available
 Test Number 3 succeeded
-<<<<< Function evaluation summary (UQ_I): 4218 total (4197 new, 21 duplicate)
-  response_fn_1: 4218 val (4197 n, 21 d), 4098 grad (4077 n, 21 d), 0 Hess (0 n, 0 d)
-  response_fn_2: 4218 val (4197 n, 21 d), 4098 grad (4077 n, 21 d), 0 Hess (0 n, 0 d)
-  response_fn_3: 4218 val (4197 n, 21 d), 4098 grad (4077 n, 21 d), 0 Hess (0 n, 0 d)
-<<<<< Function evaluation summary (UQ_I): 4218 total (4197 new, 21 duplicate)
-  response_fn_1: 4218 val (4197 n, 21 d), 4098 grad (4077 n, 21 d), 0 Hess (0 n, 0 d)
-  response_fn_2: 4218 val (4197 n, 21 d), 4098 grad (4077 n, 21 d), 0 Hess (0 n, 0 d)
-  response_fn_3: 4218 val (4197 n, 21 d), 4098 grad (4077 n, 21 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 4647 total (4620 new, 27 duplicate)
+  response_fn_1: 4647 val (4620 n, 27 d), 4497 grad (4470 n, 27 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 4647 val (4620 n, 27 d), 4497 grad (4470 n, 27 d), 0 Hess (0 n, 0 d)
+  response_fn_3: 4647 val (4620 n, 27 d), 4497 grad (4470 n, 27 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 4647 total (4620 new, 27 duplicate)
+  response_fn_1: 4647 val (4620 n, 27 d), 4497 grad (4470 n, 27 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 4647 val (4620 n, 27 d), 4497 grad (4470 n, 27 d), 0 Hess (0 n, 0 d)
+  response_fn_3: 4647 val (4620 n, 27 d), 4497 grad (4470 n, 27 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.4458475062e+00 w
-                      3.8924130358e+00 t
+                      2.4458730072e+00 w
+                      3.8923718750e+00 t
 <<<<< Best objective function  =
-                      9.5202487169e+00
+                      9.5202473033e+00
 <<<<< Best constraint values   =
-                      3.0000024385e+00
-                      3.2638361812e+00
+                      3.0000002003e+00
+                      3.2639532513e+00
 <<<<< Best evaluation ID not available
 Test Number 4 succeeded
 <<<<< Function evaluation summary (UQ_I): 2675 total (2675 new, 0 duplicate)
