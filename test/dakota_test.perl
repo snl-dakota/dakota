@@ -620,6 +620,26 @@ sub manage_parallelism {
   if ( $parallelism eq "parallel" ) {
     $ENV{'OMPI_MCA_mpi_warn_on_fork'} = '0';
   }
+
+  # Force single-threaded BLAS to ensure deterministic floating-point results.
+  # Multi-threaded BLAS implementations (e.g. OpenBLAS or MKL) can produce
+  # non-deterministic results due to varying summation order across threads,
+  # which causes iterative solvers like NPSOL to follow different optimization
+  # paths across runs.  Only set these if the user hasn't explicitly configured
+  # them already.
+  # Note: threaded ATLAS (libtatlas) bakes its thread count in at ATLAS build
+  # time and has no runtime knob; the fix there is to link libsatlas instead.
+  if (!exists $ENV{'OPENBLAS_NUM_THREADS'}) {
+    $ENV{'OPENBLAS_NUM_THREADS'} = '1';
+  }
+  if (!exists $ENV{'MKL_NUM_THREADS'}) {
+    $ENV{'MKL_NUM_THREADS'} = '1';
+  }
+  # BLIS (another BLAS implementation) thread control
+  if (!exists $ENV{'BLIS_NUM_THREADS'}) {
+    $ENV{'BLIS_NUM_THREADS'} = '1';
+  }
+
   # Detect launch within a job on a Cray XC system. These systems
   # can run MOAB, PBS (only with MOAB?), or SLURM
   if (exists $ENV{CRAYPE_VERSION}) {
