@@ -591,14 +591,14 @@ namespace Dakota {
 
         struct ModelRegistryErrorPolicy
         {
-          std::unique_ptr<Model> on_unknown_key(const std::string& model_type,
+          std::shared_ptr<Model> on_unknown_key(const std::string& model_type,
                                                 ProblemDescDB& problem_db,
                                                 ParallelLibrary& parallel_lib) const;
         };
 
         class ModelRegistry {
          public:
-          using registry_fun = std::unique_ptr<Model>(ProblemDescDB&,
+          using registry_fun = std::shared_ptr<Model>(ProblemDescDB&,
                                                       ParallelLibrary&);
           ModelRegistry();
 
@@ -608,9 +608,9 @@ namespace Dakota {
 
          private:
           template <typename T>
-          static std::unique_ptr<Model> default_factory_fun(
+          static std::shared_ptr<Model> default_factory_fun(
               ProblemDescDB& db, ParallelLibrary& par) {
-            return std::make_unique<T>(db, par);
+            return std::make_shared<T>(db, par);
           }
 
           Util::GenericFactory<std::string, registry_fun,

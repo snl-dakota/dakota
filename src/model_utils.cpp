@@ -1508,7 +1508,7 @@ namespace Dakota {
             model.user_defined_constraints().nonlinear_eq_constraint_targets(nln_eq_targets);
         }
 
-        std::unique_ptr<Model> ModelRegistryErrorPolicy::on_unknown_key(
+        std::shared_ptr<Model> ModelRegistryErrorPolicy::on_unknown_key(
             const std::string& model_type, ProblemDescDB& problem_db,
             ParallelLibrary& parallel_lib) const {
           Cerr << "Invalid model type: " << model_type << std::endl;
@@ -1519,12 +1519,12 @@ namespace Dakota {
         {
           m_factory.register_key("simulation", &default_factory_fun<SimulationModel>);
           m_factory.register_key("nested", &default_factory_fun<NestedModel>);
-          m_factory.register_key("surrogate", [](ProblemDescDB& problem_db, ParallelLibrary& parallel_lib) -> std::unique_ptr<SurrogateModel> {
+          m_factory.register_key("surrogate", [](ProblemDescDB& problem_db, ParallelLibrary& parallel_lib) -> std::shared_ptr<SurrogateModel> {
             const String& surr_type = problem_db.get<const String>("model.surrogate.type");
             if (surr_type == "ensemble")
-              return std::make_unique<EnsembleSurrModel>(problem_db, parallel_lib);
+              return std::make_shared<EnsembleSurrModel>(problem_db, parallel_lib);
             else // all other surrogates (local/multipt/global) managed by DataFitSurr
-              return std::make_unique<DataFitSurrModel>(problem_db, parallel_lib);
+              return std::make_shared<DataFitSurrModel>(problem_db, parallel_lib);
           } );
           m_factory.register_key("active_subspace", &default_factory_fun<ActiveSubspaceModel>);
           m_factory.register_key("adapted_basis", &default_factory_fun<AdaptedBasisModel>);
