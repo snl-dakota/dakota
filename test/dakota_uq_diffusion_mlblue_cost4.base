@@ -3,663 +3,663 @@ Test Number 0 succeeded
 <<<<< Online number of equivalent high fidelity evaluations: 4.9982421875000000e+02
 <<<<< Variance for mean estimator:
  response_fn_1:
-     Online MC    (    22 HF samples):   2.3441047672837939e-06
-     Online ML BLUE  (sample profile):   8.6150748137190541e-10
-     Online ML BLUE ratio   (1 - R^2):   3.6752089471246967e-04
- Equivalent MC    (   500 HF samples):   1.0317688288337563e-07
- Equivalent ML BLUE ratio:               8.3498110942709612e-03
+     Online MC    (    22 HF samples):   2.3441047672166814e-06
+     Online ML BLUE  (sample profile):   8.6150748121302604e-10
+     Online ML BLUE ratio   (1 - R^2):   3.6752089465521366e-04
+ Equivalent MC    (   500 HF samples):   1.0317688288042163e-07
+ Equivalent ML BLUE ratio:               8.3498110929701459e-03
  response_fn_2:
-     Online MC    (    22 HF samples):   9.5424528158300162e-06
-     Online ML BLUE  (sample profile):   7.4168530039098691e-09
-     Online ML BLUE ratio   (1 - R^2):   7.7724806682889953e-04
- Equivalent MC    (   500 HF samples):   4.2001558562584225e-07
- Equivalent ML BLUE ratio:               1.7658518535350116e-02
+     Online MC    (    22 HF samples):   9.5424528157691925e-06
+     Online ML BLUE  (sample profile):   7.4168530048307065e-09
+     Online ML BLUE ratio   (1 - R^2):   7.7724806693035278e-04
+ Equivalent MC    (   500 HF samples):   4.2001558562316515e-07
+ Equivalent ML BLUE ratio:               1.7658518537655057e-02
  response_fn_3:
-     Online MC    (    22 HF samples):   2.3441047672133644e-06
-     Online ML BLUE  (sample profile):   8.6150748127068684e-10
-     Online ML BLUE ratio   (1 - R^2):   3.6752089468033191e-04
- Equivalent MC    (   500 HF samples):   1.0317688288027564e-07
- Equivalent ML BLUE ratio:               8.3498110935408144e-03
+     Online MC    (    22 HF samples):   2.3441047672078485e-06
+     Online ML BLUE  (sample profile):   8.6150748130115200e-10
+     Online ML BLUE ratio   (1 - R^2):   3.6752089469419322e-04
+ Equivalent MC    (   500 HF samples):   1.0317688288003284e-07
+ Equivalent ML BLUE ratio:               8.3498110938557343e-03
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  2.5295436266561649e-02  6.6030616853175869e-03  7.8834011867222820e-01 -9.3751661554471788e-02
- response_fn_2  1.2903170897450536e-01  1.3457783454853954e-02  7.2407700407330133e-01 -4.9357389412713992e-01
- response_fn_3  2.5295436266771987e-02  6.6030616853558774e-03  7.8834011895326950e-01 -9.3751660116905722e-02
+ response_fn_1  2.5295436266206006e-02  6.6030616849419455e-03  7.8834011910863599e-01 -9.3751661835023370e-02
+ response_fn_2  1.2903170897431487e-01  1.3457783454757278e-02  7.2407700414619935e-01 -4.9357389367004689e-01
+ response_fn_3  2.5295436266747476e-02  6.6030616853160430e-03  7.8834011902502665e-01 -9.3751660187855634e-02
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean
- response_fn_1  2.5237908486199376e-02  2.5352964046923922e-02
- response_fn_2  1.2886291461620608e-01  1.2920050333280464e-01
- response_fn_3  2.5237908486413094e-02  2.5352964047130881e-02
+ response_fn_1  2.5237908485849038e-02  2.5352964046562974e-02
+ response_fn_2  1.2886291461600513e-01  1.2920050333262462e-01
+ response_fn_3  2.5237908486387562e-02  2.5352964047107390e-02
 Test Number 1 succeeded
 <<<<< Function evaluation summary (HF_INT): 64303 total (64303 new, 0 duplicate)
 <<<<< Online number of equivalent high fidelity evaluations: 5.0003125000000000e+02
 <<<<< Variance for mean estimator:
  response_fn_1:
-  Pilot reference ( 25 indep samples):   2.0001812361284666e-07
-     Online MC    (    25 HF samples):   1.6961043955277539e-06
-     Online ML BLUE  (sample profile):   7.8593735454795374e-10
-     Online ML BLUE ratio   (1 - R^2):   4.6337793629937750e-04
- Equivalent MC    (   500 HF samples):   8.4799919781401356e-08
- Equivalent ML BLUE ratio:               9.2681379484079243e-03
+  Pilot reference ( 25 indep samples):   2.0001812373042926e-07
+     Online MC    (    25 HF samples):   1.6961043953698812e-06
+     Online ML BLUE  (sample profile):   7.8593735462225441e-10
+     Online ML BLUE ratio   (1 - R^2):   4.6337793638631517e-04
+ Equivalent MC    (   500 HF samples):   8.4799919773508227e-08
+ Equivalent ML BLUE ratio:               9.2681379501467851e-03
  response_fn_2:
-  Pilot reference ( 25 indep samples):   8.1624688181239315e-07
-     Online MC    (    25 HF samples):   7.0756316634585208e-06
-     Online ML BLUE  (sample profile):   4.9181710172268069e-09
-     Online ML BLUE ratio   (1 - R^2):   6.9508578896584872e-04
- Equivalent MC    (   500 HF samples):   3.5375947320585067e-07
- Equivalent ML BLUE ratio:               1.3902584636553183e-02
+  Pilot reference ( 25 indep samples):   8.1624688178207890e-07
+     Online MC    (    25 HF samples):   7.0756316632056899e-06
+     Online ML BLUE  (sample profile):   4.9181710159943003e-09
+     Online ML BLUE ratio   (1 - R^2):   6.9508578881649565e-04
+ Equivalent MC    (   500 HF samples):   3.5375947319320992e-07
+ Equivalent ML BLUE ratio:               1.3902584633565935e-02
  response_fn_3:
-  Pilot reference ( 25 indep samples):   2.0001812339989387e-07
-     Online MC    (    25 HF samples):   1.6961043953659448e-06
-     Online ML BLUE  (sample profile):   7.8593735456552781e-10
-     Online ML BLUE ratio   (1 - R^2):   4.6337793635394539e-04
- Equivalent MC    (   500 HF samples):   8.4799919773311411e-08
- Equivalent ML BLUE ratio:               9.2681379494993499e-03
+  Pilot reference ( 25 indep samples):   2.0001812343809667e-07
+     Online MC    (    25 HF samples):   1.6961043953460135e-06
+     Online ML BLUE  (sample profile):   7.8593735455383551e-10
+     Online ML BLUE ratio   (1 - R^2):   4.6337793635249701e-04
+ Equivalent MC    (   500 HF samples):   8.4799919772314903e-08
+ Equivalent ML BLUE ratio:               9.2681379494703817e-03
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  2.5312564466100057e-02  6.6034542861003950e-03  7.6145512297006368e-01 -2.2215944925761644e-01
- response_fn_2  1.2906219512332484e-01  1.3340433245327025e-02  6.0745663651718684e-01 -6.6135687423821832e-01
- response_fn_3  2.5312564466069824e-02  6.6034542863694159e-03  7.6145512344695687e-01 -2.2215944480497019e-01
+ response_fn_1  2.5312564466143883e-02  6.6034542865063810e-03  7.6145512332187004e-01 -2.2215944556008438e-01
+ response_fn_2  1.2906219512350012e-01  1.3340433245422601e-02  6.0745663656897742e-01 -6.6135687411353983e-01
+ response_fn_3  2.5312564466073960e-02  6.6034542865237682e-03  7.6145512315006536e-01 -2.2215944409223765e-01
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean
- response_fn_1  2.5257617710207271e-02  2.5367511221992843e-02
- response_fn_2  1.2892474349024685e-01  1.2919964675640283e-01
- response_fn_3  2.5257617710176424e-02  2.5367511221963224e-02
+ response_fn_1  2.5257617710248502e-02  2.5367511222039264e-02
+ response_fn_2  1.2892474349043934e-01  1.2919964675656090e-01
+ response_fn_3  2.5257617710180969e-02  2.5367511221966951e-02
 Test Number 2 succeeded
 <<<<< Function evaluation summary (HF_INT): 1200 total (1200 new, 0 duplicate)
 <<<<< Projected number of equivalent high fidelity evaluations: 4.9982421875000000e+02
 <<<<< Incurred cost in equivalent high fidelity evaluations: 0.0000000000000000e+00
 <<<<< Variance for mean estimator:
  response_fn_1:
-  Projected MC    (    22 HF samples):   2.3441047672837939e-06
-  Projected ML BLUE  (sample profile):   8.6150748137190541e-10
-  Projected ML BLUE ratio   (1 - R^2):   3.6752089471246967e-04
- Equivalent MC    (   500 HF samples):   1.0317688288337563e-07
- Equivalent ML BLUE ratio:               8.3498110942709612e-03
+  Projected MC    (    22 HF samples):   2.3441047672166814e-06
+  Projected ML BLUE  (sample profile):   8.6150748121302604e-10
+  Projected ML BLUE ratio   (1 - R^2):   3.6752089465521366e-04
+ Equivalent MC    (   500 HF samples):   1.0317688288042163e-07
+ Equivalent ML BLUE ratio:               8.3498110929701459e-03
  response_fn_2:
-  Projected MC    (    22 HF samples):   9.5424528158300162e-06
-  Projected ML BLUE  (sample profile):   7.4168530039098691e-09
-  Projected ML BLUE ratio   (1 - R^2):   7.7724806682889953e-04
- Equivalent MC    (   500 HF samples):   4.2001558562584225e-07
- Equivalent ML BLUE ratio:               1.7658518535350116e-02
+  Projected MC    (    22 HF samples):   9.5424528157691925e-06
+  Projected ML BLUE  (sample profile):   7.4168530048307065e-09
+  Projected ML BLUE ratio   (1 - R^2):   7.7724806693035278e-04
+ Equivalent MC    (   500 HF samples):   4.2001558562316515e-07
+ Equivalent ML BLUE ratio:               1.7658518537655057e-02
  response_fn_3:
-  Projected MC    (    22 HF samples):   2.3441047672133644e-06
-  Projected ML BLUE  (sample profile):   8.6150748127068684e-10
-  Projected ML BLUE ratio   (1 - R^2):   3.6752089468033191e-04
- Equivalent MC    (   500 HF samples):   1.0317688288027564e-07
- Equivalent ML BLUE ratio:               8.3498110935408144e-03
+  Projected MC    (    22 HF samples):   2.3441047672078485e-06
+  Projected ML BLUE  (sample profile):   8.6150748130115200e-10
+  Projected ML BLUE ratio   (1 - R^2):   3.6752089469419322e-04
+ Equivalent MC    (   500 HF samples):   1.0317688288003284e-07
+ Equivalent ML BLUE ratio:               8.3498110938557343e-03
 Test Number 3 succeeded
 <<<<< Function evaluation summary (HF_INT): 300 total (300 new, 0 duplicate)
 <<<<< Projected number of equivalent high fidelity evaluations: 5.0003125000000000e+02
 <<<<< Incurred cost in equivalent high fidelity evaluations: 1.0664062500000000e+02
 <<<<< Variance for mean estimator:
  response_fn_1:
-  Pilot reference ( 25 indep samples):   2.0001812361284666e-07
-  Projected MC    (    25 HF samples):   1.6961043955277539e-06
-  Projected ML BLUE  (sample profile):   7.8593735454795374e-10
-  Projected ML BLUE ratio   (1 - R^2):   4.6337793629937750e-04
- Equivalent MC    (   500 HF samples):   8.4799919781401356e-08
- Equivalent ML BLUE ratio:               9.2681379484079243e-03
+  Pilot reference ( 25 indep samples):   2.0001812373042926e-07
+  Projected MC    (    25 HF samples):   1.6961043953698812e-06
+  Projected ML BLUE  (sample profile):   7.8593735462225441e-10
+  Projected ML BLUE ratio   (1 - R^2):   4.6337793638631517e-04
+ Equivalent MC    (   500 HF samples):   8.4799919773508227e-08
+ Equivalent ML BLUE ratio:               9.2681379501467851e-03
  response_fn_2:
-  Pilot reference ( 25 indep samples):   8.1624688181239315e-07
-  Projected MC    (    25 HF samples):   7.0756316634585208e-06
-  Projected ML BLUE  (sample profile):   4.9181710172268069e-09
-  Projected ML BLUE ratio   (1 - R^2):   6.9508578896584872e-04
- Equivalent MC    (   500 HF samples):   3.5375947320585067e-07
- Equivalent ML BLUE ratio:               1.3902584636553183e-02
+  Pilot reference ( 25 indep samples):   8.1624688178207890e-07
+  Projected MC    (    25 HF samples):   7.0756316632056899e-06
+  Projected ML BLUE  (sample profile):   4.9181710159943003e-09
+  Projected ML BLUE ratio   (1 - R^2):   6.9508578881649565e-04
+ Equivalent MC    (   500 HF samples):   3.5375947319320992e-07
+ Equivalent ML BLUE ratio:               1.3902584633565935e-02
  response_fn_3:
-  Pilot reference ( 25 indep samples):   2.0001812339989387e-07
-  Projected MC    (    25 HF samples):   1.6961043953659448e-06
-  Projected ML BLUE  (sample profile):   7.8593735456552781e-10
-  Projected ML BLUE ratio   (1 - R^2):   4.6337793635394539e-04
- Equivalent MC    (   500 HF samples):   8.4799919773311411e-08
- Equivalent ML BLUE ratio:               9.2681379494993499e-03
+  Pilot reference ( 25 indep samples):   2.0001812343809667e-07
+  Projected MC    (    25 HF samples):   1.6961043953460135e-06
+  Projected ML BLUE  (sample profile):   7.8593735455383551e-10
+  Projected ML BLUE ratio   (1 - R^2):   4.6337793635249701e-04
+ Equivalent MC    (   500 HF samples):   8.4799919772314903e-08
+ Equivalent ML BLUE ratio:               9.2681379494703817e-03
 Test Number 4 succeeded
 <<<<< Function evaluation summary (HF_INT): 61992 total (61992 new, 0 duplicate)
 <<<<< Online number of equivalent high fidelity evaluations: 5.0014453125000000e+02
 <<<<< Variance for mean estimator:
  response_fn_1:
-     Online MC    (    22 HF samples):   2.3637840797657954e-06
-     Online ML BLUE  (sample profile):   9.2536664902517979e-10
-     Online ML BLUE ratio   (1 - R^2):   3.9147680913261142e-04
- Equivalent MC    (   500 HF samples):   1.0397644381890359e-07
- Equivalent ML BLUE ratio:               8.8997720544943485e-03
+     Online MC    (    22 HF samples):   2.3637840796506616e-06
+     Online ML BLUE  (sample profile):   9.2536664889851404e-10
+     Online ML BLUE ratio   (1 - R^2):   3.9147680909809324e-04
+ Equivalent MC    (   500 HF samples):   1.0397644381383918e-07
+ Equivalent ML BLUE ratio:               8.8997720537096169e-03
  response_fn_2:
-     Online MC    (    22 HF samples):   9.4758178635616990e-06
-     Online ML BLUE  (sample profile):   9.3136226537913306e-09
-     Online ML BLUE ratio   (1 - R^2):   9.8288324954048825e-04
- Equivalent MC    (   500 HF samples):   4.1681550026616902e-07
- Equivalent ML BLUE ratio:               2.2344712823404746e-02
+     Online MC    (    22 HF samples):   9.4758178634462636e-06
+     Online ML BLUE  (sample profile):   9.3136226522059447e-09
+     Online ML BLUE ratio   (1 - R^2):   9.8288324938515330e-04
+ Equivalent MC    (   500 HF samples):   4.1681550026109137e-07
+ Equivalent ML BLUE ratio:               2.2344712819873380e-02
  response_fn_3:
-     Online MC    (    22 HF samples):   2.3637840798404346e-06
-     Online ML BLUE  (sample profile):   9.2536664906679742e-10
-     Online ML BLUE ratio   (1 - R^2):   3.9147680913785641e-04
- Equivalent MC    (   500 HF samples):   1.0397644382218677e-07
- Equivalent ML BLUE ratio:               8.8997720546135882e-03
+     Online MC    (    22 HF samples):   2.3637840798298836e-06
+     Online ML BLUE  (sample profile):   9.2536664899562349e-10
+     Online ML BLUE ratio   (1 - R^2):   3.9147680910949368e-04
+ Equivalent MC    (   500 HF samples):   1.0397644382172266e-07
+ Equivalent ML BLUE ratio:               8.8997720539687932e-03
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  2.5320773030393259e-02  6.6113550357156424e-03  7.6922602949070262e-01 -1.4466202065837885e-01
- response_fn_2  1.2909613132382705e-01  1.3475856176262783e-02  7.6002633144654319e-01 -4.3217451894886549e-01
- response_fn_3  2.5320773029723301e-02  6.6113550353739184e-03  7.6922602966445186e-01 -1.4466202101490433e-01
+ response_fn_1  2.5320773028979060e-02  6.6113550355905420e-03  7.6922602947252272e-01 -1.4466202052178767e-01
+ response_fn_2  1.2909613132307182e-01  1.3475856176079088e-02  7.6002633154833288e-01 -4.3217451959788722e-01
+ response_fn_3  2.5320773029652525e-02  6.6113550353269022e-03  7.6922602962467967e-01 -1.4466202013561213e-01
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean
- response_fn_1  2.5261151240112575e-02  2.5380394820673943e-02
- response_fn_2  1.2890698086018496e-01  1.2928528178746915e-01
- response_fn_3  2.5261151239441275e-02  2.5380394820005328e-02
+ response_fn_1  2.5261151238702456e-02  2.5380394819255664e-02
+ response_fn_2  1.2890698085944582e-01  1.2928528178669782e-01
+ response_fn_3  2.5261151239372791e-02  2.5380394819932258e-02
 Test Number 5 succeeded
 <<<<< Function evaluation summary (HF_INT): 59855 total (59855 new, 0 duplicate)
 <<<<< Online number of equivalent high fidelity evaluations: 5.0000000000000000e+02
 <<<<< Variance for mean estimator:
  response_fn_1:
-  Pilot reference ( 25 share samples):   2.8501261507351838e-07
-     Online MC    (    25 HF samples):   1.9943203425547858e-06
-     Online ML BLUE  (sample profile):   8.0989886977051187e-10
-     Online ML BLUE ratio   (1 - R^2):   4.0610269698849208e-04
- Equivalent MC    (   500 HF samples):   9.9716017127739278e-08
- Equivalent ML BLUE ratio:               8.1220539397698424e-03
+  Pilot reference ( 25 share samples):   2.8501261516408759e-07
+     Online MC    (    25 HF samples):   1.9943203425820006e-06
+     Online ML BLUE  (sample profile):   8.0989886965500540e-10
+     Online ML BLUE ratio   (1 - R^2):   4.0610269692503264e-04
+ Equivalent MC    (   500 HF samples):   9.9716017129100024e-08
+ Equivalent ML BLUE ratio:               8.1220539385006528e-03
  response_fn_2:
-  Pilot reference ( 25 share samples):   1.2139163173666824e-06
-     Online MC    (    25 HF samples):   8.3134285397498793e-06
-     Online ML BLUE  (sample profile):   7.4546946933368301e-09
-     Online ML BLUE ratio   (1 - R^2):   8.9670521105617333e-04
- Equivalent MC    (   500 HF samples):   4.1567142698749399e-07
- Equivalent ML BLUE ratio:               1.7934104221123466e-02
+  Pilot reference ( 25 share samples):   1.2139163173814108e-06
+     Online MC    (    25 HF samples):   8.3134285398364935e-06
+     Online ML BLUE  (sample profile):   7.4546946913583977e-09
+     Online ML BLUE ratio   (1 - R^2):   8.9670521080885055e-04
+ Equivalent MC    (   500 HF samples):   4.1567142699182471e-07
+ Equivalent ML BLUE ratio:               1.7934104216177010e-02
  response_fn_3:
-  Pilot reference ( 25 share samples):   2.8501261512345271e-07
-     Online MC    (    25 HF samples):   1.9943203428631600e-06
-     Online ML BLUE  (sample profile):   8.0989886996991647e-10
-     Online ML BLUE ratio   (1 - R^2):   4.0610269702568417e-04
- Equivalent MC    (   500 HF samples):   9.9716017143158004e-08
- Equivalent ML BLUE ratio:               8.1220539405136832e-03
+  Pilot reference ( 25 share samples):   2.8501261527764696e-07
+     Online MC    (    25 HF samples):   1.9943203428582561e-06
+     Online ML BLUE  (sample profile):   8.0989886995619830e-10
+     Online ML BLUE ratio   (1 - R^2):   4.0610269701980416e-04
+ Equivalent MC    (   500 HF samples):   9.9716017142912815e-08
+ Equivalent ML BLUE ratio:               8.1220539403960828e-03
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  2.5326813822521901e-02  6.6292722043975400e-03  7.6903576411257124e-01 -1.5741857645383694e-01
- response_fn_2  1.2909785618515315e-01  1.3568823368167589e-02  6.9951690684858892e-01 -6.1958138130489937e-01
- response_fn_3  2.5326813822527525e-02  6.6292722050750198e-03  7.6903576392177908e-01 -1.5741857765667167e-01
+ response_fn_1  2.5326813822122811e-02  6.6292722043497752e-03  7.6903576395837947e-01 -1.5741857806007076e-01
+ response_fn_2  1.2909785618505698e-01  1.3568823368333023e-02  6.9951690670599831e-01 -6.1958138099079552e-01
+ response_fn_3  2.5326813822493969e-02  6.6292722051443063e-03  7.6903576366614490e-01 -1.5741857629622036e-01
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean
- response_fn_1  2.5271035751946180e-02  2.5382591893097623e-02
- response_fn_2  1.2892863176999594e-01  1.2926708060031036e-01
- response_fn_3  2.5271035751944938e-02  2.5382591893110113e-02
+ response_fn_1  2.5271035751551069e-02  2.5382591892694553e-02
+ response_fn_2  1.2892863176992223e-01  1.2926708060019174e-01
+ response_fn_3  2.5271035751911853e-02  2.5382591893076085e-02
 Test Number 6 succeeded
 <<<<< Function evaluation summary (HF_INT): 300 total (300 new, 0 duplicate)
 <<<<< Projected number of equivalent high fidelity evaluations: 5.0014453125000000e+02
 <<<<< Incurred cost in equivalent high fidelity evaluations: 0.0000000000000000e+00
 <<<<< Variance for mean estimator:
  response_fn_1:
-  Projected MC    (    22 HF samples):   2.3637840797657954e-06
-  Projected ML BLUE  (sample profile):   9.2536664902517979e-10
-  Projected ML BLUE ratio   (1 - R^2):   3.9147680913261142e-04
- Equivalent MC    (   500 HF samples):   1.0397644381890359e-07
- Equivalent ML BLUE ratio:               8.8997720544943485e-03
+  Projected MC    (    22 HF samples):   2.3637840796506616e-06
+  Projected ML BLUE  (sample profile):   9.2536664889851404e-10
+  Projected ML BLUE ratio   (1 - R^2):   3.9147680909809324e-04
+ Equivalent MC    (   500 HF samples):   1.0397644381383918e-07
+ Equivalent ML BLUE ratio:               8.8997720537096169e-03
  response_fn_2:
-  Projected MC    (    22 HF samples):   9.4758178635616990e-06
-  Projected ML BLUE  (sample profile):   9.3136226537913306e-09
-  Projected ML BLUE ratio   (1 - R^2):   9.8288324954048825e-04
- Equivalent MC    (   500 HF samples):   4.1681550026616902e-07
- Equivalent ML BLUE ratio:               2.2344712823404746e-02
+  Projected MC    (    22 HF samples):   9.4758178634462636e-06
+  Projected ML BLUE  (sample profile):   9.3136226522059447e-09
+  Projected ML BLUE ratio   (1 - R^2):   9.8288324938515330e-04
+ Equivalent MC    (   500 HF samples):   4.1681550026109137e-07
+ Equivalent ML BLUE ratio:               2.2344712819873380e-02
  response_fn_3:
-  Projected MC    (    22 HF samples):   2.3637840798404346e-06
-  Projected ML BLUE  (sample profile):   9.2536664906679742e-10
-  Projected ML BLUE ratio   (1 - R^2):   3.9147680913785641e-04
- Equivalent MC    (   500 HF samples):   1.0397644382218677e-07
- Equivalent ML BLUE ratio:               8.8997720546135882e-03
+  Projected MC    (    22 HF samples):   2.3637840798298836e-06
+  Projected ML BLUE  (sample profile):   9.2536664899562349e-10
+  Projected ML BLUE ratio   (1 - R^2):   3.9147680910949368e-04
+ Equivalent MC    (   500 HF samples):   1.0397644382172266e-07
+ Equivalent ML BLUE ratio:               8.8997720539687932e-03
 Test Number 7 succeeded
 <<<<< Function evaluation summary (HF_INT): 75 total (75 new, 0 duplicate)
 <<<<< Projected number of equivalent high fidelity evaluations: 4.9999218750000000e+02
 <<<<< Incurred cost in equivalent high fidelity evaluations: 2.6660156250000000e+01
 <<<<< Variance for mean estimator:
  response_fn_1:
-  Pilot reference ( 25 share samples):   2.8501261507351838e-07
-  Projected MC    (    25 HF samples):   1.9943203425547858e-06
-  Projected ML BLUE  (sample profile):   9.1801868341845914e-10
-  Projected ML BLUE ratio   (1 - R^2):   4.6031656190321406e-04
- Equivalent MC    (   500 HF samples):   9.9717575214852012e-08
- Equivalent ML BLUE ratio:               9.2061873891386876e-03
+  Pilot reference ( 25 share samples):   2.8501261516408759e-07
+  Projected MC    (    25 HF samples):   1.9943203425820006e-06
+  Projected ML BLUE  (sample profile):   9.1801868326572541e-10
+  Projected ML BLUE ratio   (1 - R^2):   4.6031656182034817e-04
+ Equivalent MC    (   500 HF samples):   9.9717575216212783e-08
+ Equivalent ML BLUE ratio:               9.2061873874813953e-03
  response_fn_2:
-  Pilot reference ( 25 share samples):   1.2139163173666824e-06
-  Projected MC    (    25 HF samples):   8.3134285397498793e-06
-  Projected ML BLUE  (sample profile):   9.6466574578609963e-09
-  Projected ML BLUE ratio   (1 - R^2):   1.1603705272423294e-03
- Equivalent MC    (   500 HF samples):   4.1567792195502452e-07
- Equivalent ML BLUE ratio:               2.3207047929056826e-02
+  Pilot reference ( 25 share samples):   1.2139163173814108e-06
+  Projected MC    (    25 HF samples):   8.3134285398364935e-06
+  Projected ML BLUE  (sample profile):   9.6466574557289051e-09
+  Projected ML BLUE ratio   (1 - R^2):   1.1603705269737764e-03
+ Equivalent MC    (   500 HF samples):   4.1567792195935534e-07
+ Equivalent ML BLUE ratio:               2.3207047923685848e-02
  response_fn_3:
-  Pilot reference ( 25 share samples):   2.8501261512345271e-07
-  Projected MC    (    25 HF samples):   1.9943203428631600e-06
-  Projected ML BLUE  (sample profile):   9.1801868363353530e-10
-  Projected ML BLUE ratio   (1 - R^2):   4.6031656193988140e-04
- Equivalent MC    (   500 HF samples):   9.9717575230270976e-08
- Equivalent ML BLUE ratio:               9.2061873898720212e-03
+  Pilot reference ( 25 share samples):   2.8501261527764696e-07
+  Projected MC    (    25 HF samples):   1.9943203428582561e-06
+  Projected ML BLUE  (sample profile):   9.1801868358042772e-10
+  Projected ML BLUE ratio   (1 - R^2):   4.6031656191438384e-04
+ Equivalent MC    (   500 HF samples):   9.9717575230025786e-08
+ Equivalent ML BLUE ratio:               9.2061873893620784e-03
 Test Number 8 succeeded
-<<<<< Function evaluation summary (HF_INT): 46503 total (46503 new, 0 duplicate)
-<<<<< Online number of equivalent high fidelity evaluations: 4.4702343750000000e+02
+<<<<< Function evaluation summary (HF_INT): 46188 total (46188 new, 0 duplicate)
+<<<<< Online number of equivalent high fidelity evaluations: 4.4333203125000000e+02
 <<<<< Variance for mean estimator:
  response_fn_1:
-  Pilot reference ( 25 indep samples):   2.0001812361284666e-07
-     Online MC    (    25 HF samples):   1.6961043955277539e-06
-     Online ML BLUE  (sample profile):   1.0378809616376587e-09
-     Online ML BLUE ratio   (1 - R^2):   6.1192044804218274e-04
- Equivalent MC    (   447 HF samples):   9.4855451260749265e-08
- Equivalent ML BLUE ratio:               1.0941711286414267e-02
+  Pilot reference ( 25 indep samples):   2.0001812373042926e-07
+     Online MC    (    25 HF samples):   1.6961043953698812e-06
+     Online ML BLUE  (sample profile):   1.0464847337570325e-09
+     Online ML BLUE ratio   (1 - R^2):   6.1699311470083090e-04
+ Equivalent MC    (   443 HF samples):   9.5645265614330751e-08
+ Equivalent ML BLUE ratio:               1.0941312432303342e-02
  response_fn_2:
-  Pilot reference ( 25 indep samples):   8.1624688181239315e-07
-     Online MC    (    25 HF samples):   7.0756316634585208e-06
-     Online ML BLUE  (sample profile):   1.0073792545182618e-08
-     Online ML BLUE ratio   (1 - R^2):   1.4237304914002005e-03
- Equivalent MC    (   447 HF samples):   3.9570809212092603e-07
- Equivalent ML BLUE ratio:               2.5457635933571275e-02
+  Pilot reference ( 25 indep samples):   8.1624688178207890e-07
+     Online MC    (    25 HF samples):   7.0756316632056899e-06
+     Online ML BLUE  (sample profile):   1.0041121020386545e-08
+     Online ML BLUE ratio   (1 - R^2):   1.4191130203401953e-03
+ Equivalent MC    (   443 HF samples):   3.9900295740280386e-07
+ Equivalent ML BLUE ratio:               2.5165530315229650e-02
  response_fn_3:
-  Pilot reference ( 25 indep samples):   2.0001812339989387e-07
-     Online MC    (    25 HF samples):   1.6961043953659448e-06
-     Online ML BLUE  (sample profile):   1.0378809616158217e-09
-     Online ML BLUE ratio   (1 - R^2):   6.1192044808768540e-04
- Equivalent MC    (   447 HF samples):   9.4855451251700015e-08
- Equivalent ML BLUE ratio:               1.0941711287227898e-02
+  Pilot reference ( 25 indep samples):   2.0001812343809667e-07
+     Online MC    (    25 HF samples):   1.6961043953460135e-06
+     Online ML BLUE  (sample profile):   1.0464847337078959e-09
+     Online ML BLUE ratio   (1 - R^2):   6.1699311468054298e-04
+ Equivalent MC    (   443 HF samples):   9.5645265612984816e-08
+ Equivalent ML BLUE ratio:               1.0941312431943573e-02
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  2.5327291658807226e-02  6.6375554543027055e-03  7.6339348003449436e-01 -2.8663255464296444e-01
- response_fn_2  1.2911025572281307e-01  1.3649171950201804e-02  6.6122675724759006e-01 -7.6893903337884817e-01
- response_fn_3  2.5327291658785923e-02  6.6375554544801452e-03  7.6339348097056503e-01 -2.8663255231513807e-01
+ response_fn_1  2.5344264499782658e-02  6.6295689371090325e-03  7.5607689392357691e-01 -2.7703630792499290e-01
+ response_fn_2  1.2911474137255419e-01  1.3512732939405438e-02  6.3592096284975541e-01 -7.5806247832136719e-01
+ response_fn_3  2.5344264499709657e-02  6.6295689371719058e-03  7.5607689374758791e-01 -2.7703630534325319e-01
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean
- response_fn_1  2.5264149145593755e-02  2.5390434172020696e-02
- response_fn_2  1.2891353749988865e-01  1.2930697394573748e-01
- response_fn_3  2.5264149145573116e-02  2.5390434171998731e-02
+ response_fn_1  2.5280860808949927e-02  2.5407668190615389e-02
+ response_fn_2  1.2891834240892805e-01  1.2931114033618032e-01
+ response_fn_3  2.5280860808878414e-02  2.5407668190540900e-02
 Test Number 9 succeeded
 <<<<< Function evaluation summary (HF_INT): 300 total (300 new, 0 duplicate)
-<<<<< Projected number of equivalent high fidelity evaluations: 3.1196484375000000e+02
+<<<<< Projected number of equivalent high fidelity evaluations: 3.1205859375000000e+02
 <<<<< Incurred cost in equivalent high fidelity evaluations: 1.0664062500000000e+02
 <<<<< Variance for mean estimator:
  response_fn_1:
-  Pilot reference ( 25 indep samples):   2.0001812361284666e-07
-  Projected MC    (    25 HF samples):   1.6961043955277539e-06
-  Projected ML BLUE  (sample profile):   1.4906173896934600e-09
-  Projected ML BLUE ratio   (1 - R^2):   8.7884766623085411e-04
- Equivalent MC    (   312 HF samples):   1.3592111655431958e-07
- Equivalent ML BLUE ratio:               1.0966782995030422e-02
+  Pilot reference ( 25 indep samples):   2.0001812373042926e-07
+  Projected MC    (    25 HF samples):   1.6961043953698812e-06
+  Projected ML BLUE  (sample profile):   1.4902319896025322e-09
+  Projected ML BLUE ratio   (1 - R^2):   8.7862043967968555e-04
+ Equivalent MC    (   312 HF samples):   1.3588028252866223e-07
+ Equivalent ML BLUE ratio:               1.0967242353857974e-02
  response_fn_2:
-  Pilot reference ( 25 indep samples):   8.1624688181239315e-07
-  Projected MC    (    25 HF samples):   7.0756316634585208e-06
-  Projected ML BLUE  (sample profile):   9.1862639046905807e-09
-  Projected ML BLUE ratio   (1 - R^2):   1.2982959460894827e-03
- Equivalent MC    (   312 HF samples):   5.6702155749388997e-07
- Equivalent ML BLUE ratio:               1.6200907678522555e-02
+  Pilot reference ( 25 indep samples):   8.1624688178207890e-07
+  Projected MC    (    25 HF samples):   7.0756316632056899e-06
+  Projected ML BLUE  (sample profile):   9.1823673104166312e-09
+  Projected ML BLUE ratio   (1 - R^2):   1.2977452399290754e-03
+ Equivalent MC    (   312 HF samples):   5.6685121039113268e-07
+ Equivalent ML BLUE ratio:               1.6198902184720945e-02
  response_fn_3:
-  Pilot reference ( 25 indep samples):   2.0001812339989387e-07
-  Projected MC    (    25 HF samples):   1.6961043953659448e-06
-  Projected ML BLUE  (sample profile):   1.4906173897096397e-09
-  Projected ML BLUE ratio   (1 - R^2):   8.7884766632423590e-04
- Equivalent MC    (   312 HF samples):   1.3592111654135264e-07
- Equivalent ML BLUE ratio:               1.0966782996195697e-02
+  Pilot reference ( 25 indep samples):   2.0001812343809667e-07
+  Projected MC    (    25 HF samples):   1.6961043953460135e-06
+  Projected ML BLUE  (sample profile):   1.4902319894869560e-09
+  Projected ML BLUE ratio   (1 - R^2):   8.7862043962390736e-04
+ Equivalent MC    (   312 HF samples):   1.3588028252675011e-07
+ Equivalent ML BLUE ratio:               1.0967242353161733e-02
 Test Number 10 succeeded
 <<<<< Function evaluation summary (HF_INT): 38043 total (38043 new, 0 duplicate)
 <<<<< Online number of equivalent high fidelity evaluations: 3.2684765625000000e+02
 <<<<< Variance for mean estimator:
  response_fn_1:
-  Pilot reference ( 25 share samples):   2.8501261507351838e-07
-     Online MC    (    25 HF samples):   1.9943203425547858e-06
-     Online ML BLUE  (sample profile):   1.2741961084495910e-09
-     Online ML BLUE ratio   (1 - R^2):   6.3891245616905581e-04
- Equivalent MC    (   327 HF samples):   1.5254204094929820e-07
- Equivalent ML BLUE ratio:               8.3530815539114706e-03
+  Pilot reference ( 25 share samples):   2.8501261516408759e-07
+     Online MC    (    25 HF samples):   1.9943203425820006e-06
+     Online ML BLUE  (sample profile):   1.2741961082974460e-09
+     Online ML BLUE ratio   (1 - R^2):   6.3891245608404797e-04
+ Equivalent MC    (   327 HF samples):   1.5254204095137981e-07
+ Equivalent ML BLUE ratio:               8.3530815528000870e-03
  response_fn_2:
-  Pilot reference ( 25 share samples):   1.2139163173666824e-06
-     Online MC    (    25 HF samples):   8.3134285397498793e-06
-     Online ML BLUE  (sample profile):   1.1635343005630646e-08
-     Online ML BLUE ratio   (1 - R^2):   1.3995841727630597e-03
- Equivalent MC    (   327 HF samples):   6.3587946714470888e-07
- Equivalent ML BLUE ratio:               1.8298032263688046e-02
+  Pilot reference ( 25 share samples):   1.2139163173814108e-06
+     Online MC    (    25 HF samples):   8.3134285398364935e-06
+     Online ML BLUE  (sample profile):   1.1635343003401967e-08
+     Online ML BLUE ratio   (1 - R^2):   1.3995841724803962e-03
+ Equivalent MC    (   327 HF samples):   6.3587946715133395e-07
+ Equivalent ML BLUE ratio:               1.8298032259992526e-02
  response_fn_3:
-  Pilot reference ( 25 share samples):   2.8501261512345271e-07
-     Online MC    (    25 HF samples):   1.9943203428631600e-06
-     Online ML BLUE  (sample profile):   1.2741961087288160e-09
-     Online ML BLUE ratio   (1 - R^2):   6.3891245621027328e-04
- Equivalent MC    (   327 HF samples):   1.5254204097288521e-07
- Equivalent ML BLUE ratio:               8.3530815544503433e-03
+  Pilot reference ( 25 share samples):   2.8501261527764696e-07
+     Online MC    (    25 HF samples):   1.9943203428582561e-06
+     Online ML BLUE  (sample profile):   1.2741961087094571e-09
+     Online ML BLUE ratio   (1 - R^2):   6.3891245620213732e-04
+ Equivalent MC    (   327 HF samples):   1.5254204097251013e-07
+ Equivalent ML BLUE ratio:               8.3530815543439735e-03
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  2.5342566666076486e-02  6.6352756304613823e-03  7.7430057401535579e-01 -1.4346776191339439e-01
- response_fn_2  1.2913536420646796e-01  1.3613186007220142e-02  6.6035397855982425e-01 -8.3810923392901815e-01
- response_fn_3  2.5342566666058254e-02  6.6352756312229467e-03  7.7430057359669435e-01 -1.4346776116735160e-01
+ response_fn_1  2.5342566665652710e-02  6.6352756305662680e-03  7.7430057345729475e-01 -1.4346776096168012e-01
+ response_fn_2  1.2913536420637339e-01  1.3613186007383380e-02  6.6035397839734100e-01 -8.3810923278412908e-01
+ response_fn_3  2.5342566666020118e-02  6.6352756313733073e-03  7.7430057310022316e-01 -1.4346775863843497e-01
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean
- response_fn_1  2.5272604019756482e-02  2.5412529312396490e-02
- response_fn_2  1.2892394828696144e-01  1.2934678012597448e-01
- response_fn_3  2.5272604019730586e-02  2.5412529312385922e-02
+ response_fn_1  2.5272604019336883e-02  2.5412529311968537e-02
+ response_fn_2  1.2892394828688714e-01  1.2934678012585965e-01
+ response_fn_3  2.5272604019692980e-02  2.5412529312347255e-02
 Test Number 11 succeeded
 <<<<< Function evaluation summary (HF_INT): 75 total (75 new, 0 duplicate)
 <<<<< Projected number of equivalent high fidelity evaluations: 3.2684765625000000e+02
 <<<<< Incurred cost in equivalent high fidelity evaluations: 2.6660156250000000e+01
 <<<<< Variance for mean estimator:
  response_fn_1:
-  Pilot reference ( 25 share samples):   2.8501261507351838e-07
-  Projected MC    (    25 HF samples):   1.9943203425547858e-06
-  Projected ML BLUE  (sample profile):   1.4444401465491843e-09
-  Projected ML BLUE ratio   (1 - R^2):   7.2427689560585439e-04
- Equivalent MC    (   327 HF samples):   1.5254204094929820e-07
- Equivalent ML BLUE ratio:               9.4691282321919777e-03
+  Pilot reference ( 25 share samples):   2.8501261516408759e-07
+  Projected MC    (    25 HF samples):   1.9943203425820006e-06
+  Projected ML BLUE  (sample profile):   1.4444401467693480e-09
+  Projected ML BLUE ratio   (1 - R^2):   7.2427689570636611e-04
+ Equivalent MC    (   327 HF samples):   1.5254204095137981e-07
+ Equivalent ML BLUE ratio:               9.4691282335060585e-03
  response_fn_2:
-  Pilot reference ( 25 share samples):   1.2139163173666824e-06
-  Projected MC    (    25 HF samples):   8.3134285397498793e-06
-  Projected ML BLUE  (sample profile):   1.4950535182234814e-08
-  Projected ML BLUE ratio   (1 - R^2):   1.7983597393963551e-03
- Equivalent MC    (   327 HF samples):   6.3587946714470888e-07
- Equivalent ML BLUE ratio:               2.3511586636642379e-02
+  Pilot reference ( 25 share samples):   1.2139163173814108e-06
+  Projected MC    (    25 HF samples):   8.3134285398364935e-06
+  Projected ML BLUE  (sample profile):   1.4950535184246610e-08
+  Projected ML BLUE ratio   (1 - R^2):   1.7983597396196123e-03
+ Equivalent MC    (   327 HF samples):   6.3587946715133395e-07
+ Equivalent ML BLUE ratio:               2.3511586639561217e-02
  response_fn_3:
-  Pilot reference ( 25 share samples):   2.8501261512345271e-07
-  Projected MC    (    25 HF samples):   1.9943203428631600e-06
-  Projected ML BLUE  (sample profile):   1.4444401468561291e-09
-  Projected ML BLUE ratio   (1 - R^2):   7.2427689564777170e-04
- Equivalent MC    (   327 HF samples):   1.5254204097288521e-07
- Equivalent ML BLUE ratio:               9.4691282327399994e-03
+  Pilot reference ( 25 share samples):   2.8501261527764696e-07
+  Projected MC    (    25 HF samples):   1.9943203428582561e-06
+  Projected ML BLUE  (sample profile):   1.4444401472177502e-09
+  Projected ML BLUE ratio   (1 - R^2):   7.2427689583087805e-04
+ Equivalent MC    (   327 HF samples):   1.5254204097251013e-07
+ Equivalent ML BLUE ratio:               9.4691282351339143e-03
 Test Number 12 succeeded
 <<<<< Function evaluation summary (HF_INT): 59855 total (59855 new, 0 duplicate)
 <<<<< Online number of equivalent high fidelity evaluations: 5.0000000000000000e+02
 <<<<< Variance for mean estimator:
  response_fn_1:
-  Pilot reference ( 25 share samples):   2.8501261507351838e-07
-     Online MC    (    25 HF samples):   1.9943203425547858e-06
-     Online ML BLUE  (sample profile):   8.0989886977051187e-10
-     Online ML BLUE ratio   (1 - R^2):   4.0610269698849208e-04
- Equivalent MC    (   500 HF samples):   9.9716017127739278e-08
- Equivalent ML BLUE ratio:               8.1220539397698424e-03
+  Pilot reference ( 25 share samples):   2.8501261516408759e-07
+     Online MC    (    25 HF samples):   1.9943203425820006e-06
+     Online ML BLUE  (sample profile):   8.0989886965500540e-10
+     Online ML BLUE ratio   (1 - R^2):   4.0610269692503264e-04
+ Equivalent MC    (   500 HF samples):   9.9716017129100024e-08
+ Equivalent ML BLUE ratio:               8.1220539385006528e-03
  response_fn_2:
-  Pilot reference ( 25 share samples):   1.2139163173666824e-06
-     Online MC    (    25 HF samples):   8.3134285397498793e-06
-     Online ML BLUE  (sample profile):   7.4546946933368102e-09
-     Online ML BLUE ratio   (1 - R^2):   8.9670521105617094e-04
- Equivalent MC    (   500 HF samples):   4.1567142698749399e-07
- Equivalent ML BLUE ratio:               1.7934104221123418e-02
+  Pilot reference ( 25 share samples):   1.2139163173814108e-06
+     Online MC    (    25 HF samples):   8.3134285398364935e-06
+     Online ML BLUE  (sample profile):   7.4546946913584291e-09
+     Online ML BLUE ratio   (1 - R^2):   8.9670521080885434e-04
+ Equivalent MC    (   500 HF samples):   4.1567142699182471e-07
+ Equivalent ML BLUE ratio:               1.7934104216177086e-02
  response_fn_3:
-  Pilot reference ( 25 share samples):   2.8501261512345271e-07
-     Online MC    (    25 HF samples):   1.9943203428631600e-06
-     Online ML BLUE  (sample profile):   8.0989886996991647e-10
-     Online ML BLUE ratio   (1 - R^2):   4.0610269702568417e-04
- Equivalent MC    (   500 HF samples):   9.9716017143158004e-08
- Equivalent ML BLUE ratio:               8.1220539405136832e-03
+  Pilot reference ( 25 share samples):   2.8501261527764696e-07
+     Online MC    (    25 HF samples):   1.9943203428582561e-06
+     Online ML BLUE  (sample profile):   8.0989886995619830e-10
+     Online ML BLUE ratio   (1 - R^2):   4.0610269701980416e-04
+ Equivalent MC    (   500 HF samples):   9.9716017142912815e-08
+ Equivalent ML BLUE ratio:               8.1220539403960828e-03
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  2.5326813822521901e-02  6.6292722043975400e-03  7.6903576411257124e-01 -1.5741857645383694e-01
- response_fn_2  1.2909785618515315e-01  1.3568823368167589e-02  6.9951690684858892e-01 -6.1958138130489937e-01
- response_fn_3  2.5326813822527525e-02  6.6292722050750198e-03  7.6903576392177908e-01 -1.5741857765667167e-01
+ response_fn_1  2.5326813822122811e-02  6.6292722043497752e-03  7.6903576395837947e-01 -1.5741857806007076e-01
+ response_fn_2  1.2909785618505698e-01  1.3568823368333023e-02  6.9951690670599831e-01 -6.1958138099079552e-01
+ response_fn_3  2.5326813822493969e-02  6.6292722051443063e-03  7.6903576366614490e-01 -1.5741857629622036e-01
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean
- response_fn_1  2.5271035751946180e-02  2.5382591893097623e-02
- response_fn_2  1.2892863176999594e-01  1.2926708060031036e-01
- response_fn_3  2.5271035751944938e-02  2.5382591893110113e-02
+ response_fn_1  2.5271035751551069e-02  2.5382591892694553e-02
+ response_fn_2  1.2892863176992223e-01  1.2926708060019174e-01
+ response_fn_3  2.5271035751911853e-02  2.5382591893076085e-02
 Test Number 13 succeeded
 <<<<< Function evaluation summary (HF_INT): 64002 total (64002 new, 0 duplicate)
 <<<<< Online number of equivalent high fidelity evaluations: 5.0002734375000000e+02
 <<<<< Variance for mean estimator:
  response_fn_1:
-  Pilot reference ( 25 share samples):   2.8501261507351838e-07
-     Online MC    (    25 HF samples):   1.9943203425547858e-06
-     Online ML BLUE  (sample profile):   7.4322732542222680e-10
-     Online ML BLUE ratio   (1 - R^2):   3.7267198732482952e-04
- Equivalent MC    (   500 HF samples):   9.9710564206259251e-08
- Equivalent ML BLUE ratio:               7.4538473564827274e-03
+  Pilot reference ( 25 share samples):   2.8501261516408759e-07
+     Online MC    (    25 HF samples):   1.9943203425820006e-06
+     Online ML BLUE  (sample profile):   7.4322722647162511e-10
+     Online ML BLUE ratio   (1 - R^2):   3.7267193770354164e-04
+ Equivalent MC    (   500 HF samples):   9.9710564207619917e-08
+ Equivalent ML BLUE ratio:               7.4538463640026961e-03
  response_fn_2:
-  Pilot reference ( 25 share samples):   1.2139163173666824e-06
-     Online MC    (    25 HF samples):   8.3134285397498793e-06
-     Online ML BLUE  (sample profile):   7.3790158384460731e-09
-     Online ML BLUE ratio   (1 - R^2):   8.8760200477624855e-04
- Equivalent MC    (   500 HF samples):   4.1564869619942054e-07
- Equivalent ML BLUE ratio:               1.7753010910217696e-02
+  Pilot reference ( 25 share samples):   1.2139163173814108e-06
+     Online MC    (    25 HF samples):   8.3134285398364935e-06
+     Online ML BLUE  (sample profile):   7.3790160341176579e-09
+     Online ML BLUE ratio   (1 - R^2):   8.8760202830381061e-04
+ Equivalent MC    (   500 HF samples):   4.1564869620375105e-07
+ Equivalent ML BLUE ratio:               1.7753011380794669e-02
  response_fn_3:
-  Pilot reference ( 25 share samples):   2.8501261512345271e-07
-     Online MC    (    25 HF samples):   1.9943203428631600e-06
-     Online ML BLUE  (sample profile):   7.4322732561024257e-10
-     Online ML BLUE ratio   (1 - R^2):   3.7267198736148027e-04
- Equivalent MC    (   500 HF samples):   9.9710564221677130e-08
- Equivalent ML BLUE ratio:               7.4538473572157817e-03
+  Pilot reference ( 25 share samples):   2.8501261527764696e-07
+     Online MC    (    25 HF samples):   1.9943203428582561e-06
+     Online ML BLUE  (sample profile):   7.4322722675853188e-10
+     Online ML BLUE ratio   (1 - R^2):   3.7267193779578058e-04
+ Equivalent MC    (   500 HF samples):   9.9710564221431954e-08
+ Equivalent ML BLUE ratio:               7.4538463658475754e-03
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  2.5265326536535505e-02  6.5839659060056852e-03  7.6788589986869593e-01 -1.5786491021964144e-01
- response_fn_2  1.2898613576934043e-01  1.3546766366504035e-02  6.7443072271104099e-01 -6.3595616222885232e-01
- response_fn_3  2.5265326536512828e-02  6.5839659067641696e-03  7.6788589943085639e-01 -1.5786490977308043e-01
+ response_fn_1  2.5265326536139162e-02  6.5839659060899156e-03  7.6788589938627583e-01 -1.5786490946828469e-01
+ response_fn_2  1.2898613576924320e-01  1.3546766366665897e-02  6.7443072259475811e-01 -6.3595616218248008e-01
+ response_fn_3  2.5265326536502923e-02  6.5839659067378218e-03  7.6788589936095308e-01 -1.5786490885631377e-01
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean
- response_fn_1  2.5211893614427276e-02  2.5318759458643734e-02
- response_fn_2  1.2881777251479645e-01  1.2915449902388440e-01
- response_fn_3  2.5211893614397841e-02  2.5318759458627816e-02
+ response_fn_1  2.5211893617587865e-02  2.5318759454690459e-02
+ response_fn_2  1.2881777251246695e-01  1.2915449902601944e-01
+ response_fn_3  2.5211893617941315e-02  2.5318759455064531e-02
 Test Number 14 succeeded
-<<<<< Function evaluation summary (HF_INT): 63083 total (63083 new, 0 duplicate)
-<<<<< Online number of equivalent high fidelity evaluations: 5.0153515625000000e+02
+<<<<< Function evaluation summary (HF_INT): 63141 total (63141 new, 0 duplicate)
+<<<<< Online number of equivalent high fidelity evaluations: 5.0000390625000000e+02
 <<<<< Variance for mean estimator:
  response_fn_1:
-  Pilot reference ( 25 share samples):   2.8501261507351838e-07
-     Online MC    (    25 HF samples):   1.9943203425547858e-06
-     Online ML BLUE  (sample profile):   7.6315292634818425e-10
-     Online ML BLUE ratio   (1 - R^2):   3.8266316100981143e-04
- Equivalent MC    (   502 HF samples):   9.9410794921456991e-08
- Equivalent ML BLUE ratio:               7.6767611299269883e-03
+  Pilot reference ( 25 share samples):   2.8501261516408759e-07
+     Online MC    (    25 HF samples):   1.9943203425820006e-06
+     Online ML BLUE  (sample profile):   7.6209168065102324e-10
+     Online ML BLUE ratio   (1 - R^2):   3.8213102698654756e-04
+ Equivalent MC    (   500 HF samples):   9.9715238103802332e-08
+ Equivalent ML BLUE ratio:               7.6426802477039188e-03
  response_fn_2:
-  Pilot reference ( 25 share samples):   1.2139163173666824e-06
-     Online MC    (    25 HF samples):   8.3134285397498793e-06
-     Online ML BLUE  (sample profile):   7.7082561845693419e-09
-     Online ML BLUE ratio   (1 - R^2):   9.2720544210045679e-04
- Equivalent MC    (   502 HF samples):   4.1439909227449494e-07
- Equivalent ML BLUE ratio:               1.8601045051188116e-02
+  Pilot reference ( 25 share samples):   1.2139163173814108e-06
+     Online MC    (    25 HF samples):   8.3134285398364935e-06
+     Online ML BLUE  (sample profile):   7.6710558424632614e-09
+     Online ML BLUE ratio   (1 - R^2):   9.2273071281059372e-04
+ Equivalent MC    (   500 HF samples):   4.1566817958417170e-07
+ Equivalent ML BLUE ratio:               1.8454758432885750e-02
  response_fn_3:
-  Pilot reference ( 25 share samples):   2.8501261512345271e-07
-     Online MC    (    25 HF samples):   1.9943203428631600e-06
-     Online ML BLUE  (sample profile):   7.6315292654651807e-10
-     Online ML BLUE ratio   (1 - R^2):   3.8266316105009095e-04
- Equivalent MC    (   502 HF samples):   9.9410794936828521e-08
- Equivalent ML BLUE ratio:               7.6767611307350520e-03
+  Pilot reference ( 25 share samples):   2.8501261527764696e-07
+     Online MC    (    25 HF samples):   1.9943203428582561e-06
+     Online ML BLUE  (sample profile):   7.6209168095319697e-10
+     Online ML BLUE ratio   (1 - R^2):   3.8213102708513146e-04
+ Equivalent MC    (   500 HF samples):   9.9715238117615018e-08
+ Equivalent ML BLUE ratio:               7.6426802496756116e-03
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  2.5317166765768378e-02  6.6142136695183842e-03  7.8948232828056664e-01 -9.0708662253334182e-02
- response_fn_2  1.2908876265191546e-01  1.3667291301404129e-02  6.7724953679321753e-01 -7.1817916559223383e-01
- response_fn_3  2.5317166765751561e-02  6.6142136702733592e-03  7.8948232790428907e-01 -9.0708662139352025e-02
+ response_fn_1  2.5321110757281502e-02  6.6126553453569482e-03  7.8709813310354571e-01 -9.2355811520576481e-02
+ response_fn_2  1.2908828826141572e-01  1.3660327473765617e-02  6.8371092669554367e-01 -7.3026377613925364e-01
+ response_fn_3  2.5321110757637735e-02  6.6126553461270292e-03  7.8709813292502939e-01 -9.2355810102828784e-02
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean
- response_fn_1  2.5263022324313517e-02  2.5371311207223239e-02
- response_fn_2  1.2891668433046741e-01  1.2926084097336352e-01
- response_fn_3  2.5263022324289664e-02  2.5371311207213459e-02
+ response_fn_1  2.5267003975739680e-02  2.5375217538823325e-02
+ response_fn_2  1.2891662567047038e-01  1.2925995085236106e-01
+ response_fn_3  2.5267003976085185e-02  2.5375217539190285e-02
 Test Number 15 succeeded
 <<<<< Function evaluation summary (HF_INT): 63861 total (63861 new, 0 duplicate)
 <<<<< Online number of equivalent high fidelity evaluations: 5.0000390625000000e+02
 <<<<< Variance for mean estimator:
  response_fn_1:
-  Pilot reference ( 25 share samples):   2.8501261507351838e-07
-     Online MC    (    25 HF samples):   1.9943203425547858e-06
-     Online ML BLUE  (sample profile):   7.4490507011440965e-10
-     Online ML BLUE ratio   (1 - R^2):   3.7351324870916341e-04
- Equivalent MC    (   500 HF samples):   9.9715238102441613e-08
- Equivalent ML BLUE ratio:               7.4703233356283785e-03
+  Pilot reference ( 25 share samples):   2.8501261516408759e-07
+     Online MC    (    25 HF samples):   1.9943203425820006e-06
+     Online ML BLUE  (sample profile):   7.4490506997199200e-10
+     Online ML BLUE ratio   (1 - R^2):   3.7351324863265473e-04
+ Equivalent MC    (   500 HF samples):   9.9715238103802332e-08
+ Equivalent ML BLUE ratio:               7.4703233340981945e-03
  response_fn_2:
-  Pilot reference ( 25 share samples):   1.2139163173666824e-06
-     Online MC    (    25 HF samples):   8.3134285397498793e-06
-     Online ML BLUE  (sample profile):   7.4247604633354287e-09
-     Online ML BLUE ratio   (1 - R^2):   8.9310450289367769e-04
- Equivalent MC    (   500 HF samples):   4.1566817957984098e-07
- Equivalent ML BLUE ratio:               1.7862229605452130e-02
+  Pilot reference ( 25 share samples):   1.2139163173814108e-06
+     Online MC    (    25 HF samples):   8.3134285398364935e-06
+     Online ML BLUE  (sample profile):   7.4247604613855423e-09
+     Online ML BLUE ratio   (1 - R^2):   8.9310450264982620e-04
+ Equivalent MC    (   500 HF samples):   4.1566817958417170e-07
+ Equivalent ML BLUE ratio:               1.7862229600575062e-02
  response_fn_3:
-  Pilot reference ( 25 share samples):   2.8501261512345271e-07
-     Online MC    (    25 HF samples):   1.9943203428631600e-06
-     Online ML BLUE  (sample profile):   7.4490507030334422e-10
-     Online ML BLUE ratio   (1 - R^2):   3.7351324874614479e-04
- Equivalent MC    (   500 HF samples):   9.9715238117860207e-08
- Equivalent ML BLUE ratio:               7.4703233363680116e-03
+  Pilot reference ( 25 share samples):   2.8501261527764696e-07
+     Online MC    (    25 HF samples):   1.9943203428582561e-06
+     Online ML BLUE  (sample profile):   7.4490507026042430e-10
+     Online ML BLUE ratio   (1 - R^2):   3.7351324872554213e-04
+ Equivalent MC    (   500 HF samples):   9.9715238117615018e-08
+ Equivalent ML BLUE ratio:               7.4703233359559558e-03
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  2.5270381770222498e-02  6.5862275113492885e-03  7.6767190183261336e-01 -1.5515742480863581e-01
- response_fn_2  1.2902055723201111e-01  1.3548480286584052e-02  6.8289138796986915e-01 -6.3464959420927736e-01
- response_fn_3  2.5270381770218679e-02  6.5862275120475997e-03  7.6767190148562769e-01 -1.5515742439855895e-01
+ response_fn_1  2.5270381769862064e-02  6.5862275112285170e-03  7.6767190184020329e-01 -1.5515742640725394e-01
+ response_fn_2  1.2902055723191205e-01  1.3548480286744741e-02  6.8289138782803871e-01 -6.3464959342053096e-01
+ response_fn_3  2.5270381770203059e-02  6.5862275120409991e-03  7.6767190144575315e-01 -1.5515742457379567e-01
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean
- response_fn_1  2.5216888572971160e-02  2.5323874967473837e-02
- response_fn_2  1.2885167291783889e-01  1.2918944154618334e-01
- response_fn_3  2.5216888572960554e-02  2.5323874967476803e-02
+ response_fn_1  2.5216888572615836e-02  2.5323874967108292e-02
+ response_fn_2  1.2885167291776201e-01  1.2918944154606210e-01
+ response_fn_3  2.5216888572946475e-02  2.5323874967459643e-02
 Test Number 16 succeeded
 <<<<< Function evaluation summary (HF_INT): 75 total (75 new, 0 duplicate)
 <<<<< Projected number of equivalent high fidelity evaluations: 4.9996875000000000e+02
 <<<<< Incurred cost in equivalent high fidelity evaluations: 2.6660156250000000e+01
 <<<<< Variance for mean estimator:
  response_fn_1:
-  Pilot reference ( 25 share samples):   2.8501261507351838e-07
-  Projected MC    (    25 HF samples):   1.9943203425547858e-06
-  Projected ML BLUE  (sample profile):   1.0305942312252643e-09
-  Projected ML BLUE ratio   (1 - R^2):   5.1676463867637292e-04
- Equivalent MC    (   500 HF samples):   9.9722249768349808e-08
- Equivalent ML BLUE ratio:               1.0334646817729115e-02
+  Pilot reference ( 25 share samples):   2.8501261516408759e-07
+  Projected MC    (    25 HF samples):   1.9943203425820006e-06
+  Projected ML BLUE  (sample profile):   1.0305942310778435e-09
+  Projected ML BLUE ratio   (1 - R^2):   5.1676463859540080e-04
+ Equivalent MC    (   500 HF samples):   9.9722249769710633e-08
+ Equivalent ML BLUE ratio:               1.0334646816109773e-02
  response_fn_2:
-  Pilot reference ( 25 share samples):   1.2139163173666824e-06
-  Projected MC    (    25 HF samples):   8.3134285397498793e-06
-  Projected ML BLUE  (sample profile):   9.5464670508224085e-09
-  Projected ML BLUE ratio   (1 - R^2):   1.1483188921606617e-03
- Equivalent MC    (   500 HF samples):   4.1569740807549871e-07
- Equivalent ML BLUE ratio:               2.2964942444598031e-02
+  Pilot reference ( 25 share samples):   1.2139163173814108e-06
+  Projected MC    (    25 HF samples):   8.3134285398364935e-06
+  Projected ML BLUE  (sample profile):   9.5464670486891759e-09
+  Projected ML BLUE ratio   (1 - R^2):   1.1483188918920970e-03
+ Equivalent MC    (   500 HF samples):   4.1569740807982970e-07
+ Equivalent ML BLUE ratio:               2.2964942439227073e-02
  response_fn_3:
-  Pilot reference ( 25 share samples):   2.8501261512345271e-07
-  Projected MC    (    25 HF samples):   1.9943203428631600e-06
-  Projected ML BLUE  (sample profile):   1.0305942314545422e-09
-  Projected ML BLUE ratio   (1 - R^2):   5.1676463871143310e-04
- Equivalent MC    (   500 HF samples):   9.9722249783769487e-08
- Equivalent ML BLUE ratio:               1.0334646818430271e-02
+  Pilot reference ( 25 share samples):   2.8501261527764696e-07
+  Projected MC    (    25 HF samples):   1.9943203428582561e-06
+  Projected ML BLUE  (sample profile):   1.0305942313974769e-09
+  Projected ML BLUE ratio   (1 - R^2):   5.1676463868408984e-04
+ Equivalent MC    (   500 HF samples):   9.9722249783524284e-08
+ Equivalent ML BLUE ratio:               1.0334646817883441e-02
 Test Number 17 succeeded
 <<<<< Function evaluation summary (HF_INT): 75 total (75 new, 0 duplicate)
 <<<<< Projected number of equivalent high fidelity evaluations: 5.0001953125000000e+02
 <<<<< Incurred cost in equivalent high fidelity evaluations: 2.6660156250000000e+01
 <<<<< Variance for mean estimator:
  response_fn_1:
-  Pilot reference ( 25 share samples):   2.8501261507351838e-07
-  Projected MC    (    25 HF samples):   1.9943203425547858e-06
-  Projected ML BLUE  (sample profile):   1.0145474657453997e-09
-  Projected ML BLUE ratio   (1 - R^2):   5.0871840601381677e-04
- Equivalent MC    (   500 HF samples):   9.9712122122968847e-08
- Equivalent ML BLUE ratio:               1.0174765556531035e-02
+  Pilot reference ( 25 share samples):   2.8501261516408759e-07
+  Projected MC    (    25 HF samples):   1.9943203425820006e-06
+  Projected ML BLUE  (sample profile):   1.0145474655969696e-09
+  Projected ML BLUE ratio   (1 - R^2):   5.0871840593244837e-04
+ Equivalent MC    (   500 HF samples):   9.9712122124329540e-08
+ Equivalent ML BLUE ratio:               1.0174765554903603e-02
  response_fn_2:
-  Pilot reference ( 25 share samples):   1.2139163173666824e-06
-  Projected MC    (    25 HF samples):   8.3134285397498793e-06
-  Projected ML BLUE  (sample profile):   9.5481478377353423e-09
-  Projected ML BLUE ratio   (1 - R^2):   1.1485210695060129e-03
- Equivalent MC    (   500 HF samples):   4.1565519045661675e-07
- Equivalent ML BLUE ratio:               2.2971318672205809e-02
+  Pilot reference ( 25 share samples):   1.2139163173814108e-06
+  Projected MC    (    25 HF samples):   8.3134285398364935e-06
+  Projected ML BLUE  (sample profile):   9.5481478356025133e-09
+  Projected ML BLUE ratio   (1 - R^2):   1.1485210692374946e-03
+ Equivalent MC    (   500 HF samples):   4.1565519046094731e-07
+ Equivalent ML BLUE ratio:               2.2971318666835234e-02
  response_fn_3:
-  Pilot reference ( 25 share samples):   2.8501261512345271e-07
-  Projected MC    (    25 HF samples):   1.9943203428631600e-06
-  Projected ML BLUE  (sample profile):   1.0145474659728537e-09
-  Projected ML BLUE ratio   (1 - R^2):   5.0871840604920643e-04
- Equivalent MC    (   500 HF samples):   9.9712122138386978e-08
- Equivalent ML BLUE ratio:               1.0174765557238855e-02
+  Pilot reference ( 25 share samples):   2.8501261527764696e-07
+  Projected MC    (    25 HF samples):   1.9943203428582561e-06
+  Projected ML BLUE  (sample profile):   1.0145474659140474e-09
+  Projected ML BLUE ratio   (1 - R^2):   5.0871840602097044e-04
+ Equivalent MC    (   500 HF samples):   9.9712122138141788e-08
+ Equivalent ML BLUE ratio:               1.0174765556674112e-02
 Test Number 18 succeeded
 <<<<< Function evaluation summary (HF_INT): 75 total (75 new, 0 duplicate)
 <<<<< Projected number of equivalent high fidelity evaluations: 3.9504687500000000e+02
 <<<<< Incurred cost in equivalent high fidelity evaluations: 2.6660156250000000e+01
 <<<<< Variance for mean estimator:
  response_fn_1:
-  Pilot reference ( 25 share samples):   2.8501261507351838e-07
-  Projected MC    (    25 HF samples):   1.9943203425547858e-06
-  Projected ML BLUE  (sample profile):   1.3233321811490447e-09
-  Projected ML BLUE ratio   (1 - R^2):   6.6355046023038370e-04
- Equivalent MC    (   395 HF samples):   1.2620782929587695e-07
- Equivalent ML BLUE ratio:               1.0485341428752997e-02
+  Pilot reference ( 25 share samples):   2.8501261516408759e-07
+  Projected MC    (    25 HF samples):   1.9943203425820006e-06
+  Projected ML BLUE  (sample profile):   1.3233321812576882e-09
+  Projected ML BLUE ratio   (1 - R^2):   6.6355046027580526e-04
+ Equivalent MC    (   395 HF samples):   1.2620782929759921e-07
+ Equivalent ML BLUE ratio:               1.0485341429470742e-02
  response_fn_2:
-  Pilot reference ( 25 share samples):   1.2139163173666824e-06
-  Projected MC    (    25 HF samples):   8.3134285397498793e-06
-  Projected ML BLUE  (sample profile):   1.2139850853610343e-08
-  Projected ML BLUE ratio   (1 - R^2):   1.4602700673452336e-03
- Equivalent MC    (   395 HF samples):   5.2610393005576102e-07
- Equivalent ML BLUE ratio:               2.3075005070430966e-02
+  Pilot reference ( 25 share samples):   1.2139163173814108e-06
+  Projected MC    (    25 HF samples):   8.3134285398364935e-06
+  Projected ML BLUE  (sample profile):   1.2139850853778382e-08
+  Projected ML BLUE ratio   (1 - R^2):   1.4602700673502327e-03
+ Equivalent MC    (   395 HF samples):   5.2610393006124238e-07
+ Equivalent ML BLUE ratio:               2.3075005070509955e-02
  response_fn_3:
-  Pilot reference ( 25 share samples):   2.8501261512345271e-07
-  Projected MC    (    25 HF samples):   1.9943203428631600e-06
-  Projected ML BLUE  (sample profile):   1.3233321814275311e-09
-  Projected ML BLUE ratio   (1 - R^2):   6.6355046026742124e-04
- Equivalent MC    (   395 HF samples):   1.2620782931539201e-07
- Equivalent ML BLUE ratio:               1.0485341429338256e-02
+  Pilot reference ( 25 share samples):   2.8501261527764696e-07
+  Projected MC    (    25 HF samples):   1.9943203428582561e-06
+  Projected ML BLUE  (sample profile):   1.3233321816465489e-09
+  Projected ML BLUE ratio   (1 - R^2):   6.6355046037887364e-04
+ Equivalent MC    (   395 HF samples):   1.2620782931508167e-07
+ Equivalent ML BLUE ratio:               1.0485341431099414e-02
 Test Number 19 succeeded
 <<<<< Function evaluation summary (HF_INT): 75 total (75 new, 0 duplicate)
 <<<<< Projected number of equivalent high fidelity evaluations: 3.7981640625000000e+02
 <<<<< Incurred cost in equivalent high fidelity evaluations: 2.6660156250000000e+01
 <<<<< Variance for mean estimator:
  response_fn_1:
-  Pilot reference ( 25 share samples):   2.8501261507351838e-07
-  Projected MC    (    25 HF samples):   1.9943203425547858e-06
-  Projected ML BLUE  (sample profile):   1.3584325343284051e-09
-  Projected ML BLUE ratio   (1 - R^2):   6.8115061825434284e-04
- Equivalent MC    (   380 HF samples):   1.3126870704751090e-07
- Equivalent ML BLUE ratio:               1.0348487197613207e-02
+  Pilot reference ( 25 share samples):   2.8501261516408759e-07
+  Projected MC    (    25 HF samples):   1.9943203425820006e-06
+  Projected ML BLUE  (sample profile):   1.3584325344869125e-09
+  Projected ML BLUE ratio   (1 - R^2):   6.8115061832452715e-04
+ Equivalent MC    (   380 HF samples):   1.3126870704930222e-07
+ Equivalent ML BLUE ratio:               1.0348487198679493e-02
  response_fn_2:
-  Pilot reference ( 25 share samples):   1.2139163173666824e-06
-  Projected MC    (    25 HF samples):   8.3134285397498793e-06
-  Projected ML BLUE  (sample profile):   1.2646456442311712e-08
-  Projected ML BLUE ratio   (1 - R^2):   1.5212082935270167e-03
- Equivalent MC    (   380 HF samples):   5.4720046336531040e-07
- Equivalent ML BLUE ratio:               2.3111194688205064e-02
+  Pilot reference ( 25 share samples):   1.2139163173814108e-06
+  Projected MC    (    25 HF samples):   8.3134285398364935e-06
+  Projected ML BLUE  (sample profile):   1.2646456442981123e-08
+  Projected ML BLUE ratio   (1 - R^2):   1.5212082935916894e-03
+ Equivalent MC    (   380 HF samples):   5.4720046337101156e-07
+ Equivalent ML BLUE ratio:               2.3111194689187611e-02
  response_fn_3:
-  Pilot reference ( 25 share samples):   2.8501261512345271e-07
-  Projected MC    (    25 HF samples):   1.9943203428631600e-06
-  Projected ML BLUE  (sample profile):   1.3584325346170640e-09
-  Projected ML BLUE ratio   (1 - R^2):   6.8115061829375956e-04
- Equivalent MC    (   380 HF samples):   1.3126870706780851e-07
- Equivalent ML BLUE ratio:               1.0348487198212049e-02
+  Pilot reference ( 25 share samples):   2.8501261527764696e-07
+  Projected MC    (    25 HF samples):   1.9943203428582561e-06
+  Projected ML BLUE  (sample profile):   1.3584325348859856e-09
+  Projected ML BLUE ratio   (1 - R^2):   6.8115061843027817e-04
+ Equivalent MC    (   380 HF samples):   1.3126870706748574e-07
+ Equivalent ML BLUE ratio:               1.0348487200286130e-02
 Test Number 20 succeeded
 <<<<< Function evaluation summary (HF_INT): 22388 total (22388 new, 0 duplicate)
 <<<<< Online number of equivalent high fidelity evaluations: 2.0282421875000000e+02
 <<<<< Variance for mean estimator:
  response_fn_1:
-  Pilot reference ( 25 share samples):   2.8501261507351838e-07
-     Online MC    (    25 HF samples):   1.9943203425547858e-06
-     Online ML BLUE  (sample profile):   2.1674440512362559e-09
-     Online ML BLUE ratio   (1 - R^2):   1.0868083752581560e-03
- Equivalent MC    (   203 HF samples):   2.4581881232499330e-07
- Equivalent ML BLUE ratio:               8.8172423857076944e-03
+  Pilot reference ( 25 share samples):   2.8501261516408759e-07
+     Online MC    (    25 HF samples):   1.9943203425820006e-06
+     Online ML BLUE  (sample profile):   2.1674440509958863e-09
+     Online ML BLUE ratio   (1 - R^2):   1.0868083751227981e-03
+ Equivalent MC    (   203 HF samples):   2.4581881232834781e-07
+ Equivalent ML BLUE ratio:               8.8172423846095398e-03
  response_fn_2:
-  Pilot reference ( 25 share samples):   1.2139163173666824e-06
-     Online MC    (    25 HF samples):   8.3134285397498793e-06
-     Online ML BLUE  (sample profile):   1.9258701808160628e-08
-     Online ML BLUE ratio   (1 - R^2):   2.3165775367018494e-03
- Equivalent MC    (   203 HF samples):   1.0247085618011137e-06
- Equivalent ML BLUE ratio:               1.8794321162214082e-02
+  Pilot reference ( 25 share samples):   1.2139163173814108e-06
+     Online MC    (    25 HF samples):   8.3134285398364935e-06
+     Online ML BLUE  (sample profile):   1.9258701805521975e-08
+     Online ML BLUE ratio   (1 - R^2):   2.3165775363603175e-03
+ Equivalent MC    (   203 HF samples):   1.0247085618117897e-06
+ Equivalent ML BLUE ratio:               1.8794321159443243e-02
  response_fn_3:
-  Pilot reference ( 25 share samples):   2.8501261512345271e-07
-     Online MC    (    25 HF samples):   1.9943203428631600e-06
-     Online ML BLUE  (sample profile):   2.1674440516674619e-09
-     Online ML BLUE ratio   (1 - R^2):   1.0868083753063239e-03
- Equivalent MC    (   203 HF samples):   2.4581881236300337e-07
- Equivalent ML BLUE ratio:               8.8172423860984773e-03
+  Pilot reference ( 25 share samples):   2.8501261527764696e-07
+     Online MC    (    25 HF samples):   1.9943203428582561e-06
+     Online ML BLUE  (sample profile):   2.1674440516487572e-09
+     Online ML BLUE ratio   (1 - R^2):   1.0868083752996174e-03
+ Equivalent MC    (   203 HF samples):   2.4581881236239896e-07
+ Equivalent ML BLUE ratio:               8.8172423860440659e-03
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  2.5333381115451688e-02  6.6437569020393987e-03  7.7401063198042497e-01 -1.5942200273313922e-01
- response_fn_2  1.2904984577688253e-01  1.3667974648899696e-02  6.4010537248672339e-01 -4.7822885345049526e-01
- response_fn_3  2.5333381115419443e-02  6.6437569029734562e-03  7.7401063118224267e-01 -1.5942200067314838e-01
+ response_fn_1  2.5333381115073460e-02  6.6437569019864679e-03  7.7401063161822037e-01 -1.5942200347702018e-01
+ response_fn_2  1.2904984577678916e-01  1.3667974649069006e-02  6.4010537230226050e-01 -4.7822885198328402e-01
+ response_fn_3  2.5333381115372297e-02  6.6437569030764294e-03  7.7401063088442412e-01 -1.5942199960846359e-01
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean
- response_fn_1  2.5242133391814425e-02  2.5424628839088952e-02
- response_fn_2  1.2877785035424444e-01  1.2932184119952062e-01
- response_fn_3  2.5242133391773103e-02  2.5424628839065783e-02
+ response_fn_1  2.5242133391441254e-02  2.5424628838705665e-02
+ response_fn_2  1.2877785035416969e-01  1.2932184119940862e-01
+ response_fn_3  2.5242133391726349e-02  2.5424628839018245e-02
 Test Number 21 succeeded
 <<<<< Function evaluation summary (HF_INT): 23255 total (23255 new, 0 duplicate)
 <<<<< Online number of equivalent high fidelity evaluations: 1.8593750000000000e+02
 <<<<< Variance for mean estimator:
  response_fn_1:
-     Online MC    (     8 HF samples):   6.5004062193559371e-06
-     Online ML BLUE  (sample profile):   2.4869754727293274e-09
-     Online ML BLUE ratio   (1 - R^2):   3.8258770126149716e-04
- Equivalent MC    (   186 HF samples):   2.7968134321934789e-07
- Equivalent ML BLUE ratio:               8.8921750879137028e-03
+     Online MC    (     8 HF samples):   6.5004062190393195e-06
+     Online ML BLUE  (sample profile):   2.4869754727212934e-09
+     Online ML BLUE ratio   (1 - R^2):   3.8258770127889605e-04
+ Equivalent MC    (   186 HF samples):   2.7968134320572533e-07
+ Equivalent ML BLUE ratio:               8.8921750883180928e-03
  response_fn_2:
-     Online MC    (     8 HF samples):   2.6058499124794670e-05
-     Online ML BLUE  (sample profile):   2.5026351383638624e-08
-     Online ML BLUE ratio   (1 - R^2):   9.6039112858292144e-04
- Equivalent MC    (   186 HF samples):   1.1211723993188968e-06
- Equivalent ML BLUE ratio:               2.2321590683860870e-02
+     Online MC    (     8 HF samples):   2.6058499124477226e-05
+     Online ML BLUE  (sample profile):   2.5026351383488917e-08
+     Online ML BLUE ratio   (1 - R^2):   9.6039112858887588e-04
+ Equivalent MC    (   186 HF samples):   1.1211723993052386e-06
+ Equivalent ML BLUE ratio:               2.2321590683999266e-02
  response_fn_3:
-     Online MC    (     8 HF samples):   6.5004062195611952e-06
-     Online ML BLUE  (sample profile):   2.4869754728403417e-09
-     Online ML BLUE ratio   (1 - R^2):   3.8258770126649457e-04
- Equivalent MC    (   186 HF samples):   2.7968134322817916e-07
- Equivalent ML BLUE ratio:               8.8921750880298529e-03
+     Online MC    (     8 HF samples):   6.5004062195321801e-06
+     Online ML BLUE  (sample profile):   2.4869754729826837e-09
+     Online ML BLUE ratio   (1 - R^2):   3.8258770129009966e-04
+ Equivalent MC    (   186 HF samples):   2.7968134322693080e-07
+ Equivalent ML BLUE ratio:               8.8921750885784870e-03
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  2.5357823665725598e-02  6.6574821517483172e-03  7.6019689027840665e-01 -2.0709389307565118e-01
- response_fn_2  1.2913688939749854e-01  1.3671843399123694e-02  6.9588160953388989e-01 -6.6193689002347567e-01
- response_fn_3  2.5357823664364482e-02  6.6574821523151086e-03  7.6019689046955907e-01 -2.0709389311685777e-01
+ response_fn_1  2.5357823665051807e-02  6.6574821518852693e-03  7.6019689021464765e-01 -2.0709389389591459e-01
+ response_fn_2  1.2913688939720419e-01  1.3671843399282296e-02  6.9588160942414146e-01 -6.6193688952064900e-01
+ response_fn_3  2.5357823664334572e-02  6.6574821522844187e-03  7.6019689051476036e-01 -2.0709389325146699e-01
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean
- response_fn_1  2.5260081075896158e-02  2.5455566255555038e-02
- response_fn_2  1.2882682859979513e-01  1.2944695019520194e-01
- response_fn_3  2.5260081074532859e-02  2.5455566254196104e-02
+ response_fn_1  2.5260081075222526e-02  2.5455566254881087e-02
+ response_fn_2  1.2882682859950173e-01  1.2944695019490665e-01
+ response_fn_3  2.5260081074500153e-02  2.5455566254168990e-02

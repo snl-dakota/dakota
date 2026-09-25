@@ -4,12 +4,12 @@ Surrogate quality metrics at build (training) points for response_fn_1:
             mean_abs  1.5076042843e+01
             rsquared  6.1015737228e-01
 Surrogate quality metrics at build (training) points for response_fn_2:
-   root_mean_squared  3.2207905885e-16
-            mean_abs  2.2516710718e-16
+   root_mean_squared  2.5308349218e-16
+            mean_abs  2.2145479894e-16
             rsquared  1.0000000000e+00
 Surrogate quality metrics at build (training) points for response_fn_3:
-   root_mean_squared  5.1502861996e-16
-            mean_abs  4.5741188615e-16
+   root_mean_squared  5.3475422218e-16
+            mean_abs  4.4853010195e-16
             rsquared  1.0000000000e+00
 Surrogate quality metrics at build (training) points for response_fn_4:
    root_mean_squared  1.4095397516e+00
@@ -50,7 +50,7 @@ Sample moment statistics for each response function:
  response_fn_3  2.0009028378e+00  1.1605536419e+00  3.7699240599e-03 -1.2016576148e+00
  response_fn_4  3.0366988359e+00  1.3969094825e-01  2.1485836389e-03 -1.0394380628e+00
  response_fn_5  5.3316176974e+00  3.6136073480e-02 -3.0389137004e-03 -1.1915764879e+00
- response_fn_6  6.3342187164e+00  1.3808874398e-01  6.1806547844e-04 -1.2413255735e+00
+ response_fn_6  6.3342187164e+00  1.3808874398e-01  6.1806547843e-04 -1.2413255735e+00
  response_fn_7  1.3443837632e+00  1.7572216365e+00 -6.9138341984e-04 -1.2338744519e+00
 95% confidence intervals for each response function:
                     LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
@@ -74,8 +74,8 @@ response_fn_6 -9.97318e-01  1.06083e-01  6.58772e-01 -9.97318e-01  1.06083e-01  
 response_fn_7  9.98243e-01 -9.21810e-02 -6.69218e-01  9.98243e-01 -9.21810e-02 -1.47830e-01  6.03851e-02 -9.99902e-01  1.00000e+00 
 Partial Correlation Matrix between input and output:
              response_fn_1 response_fn_2 response_fn_3 response_fn_4 response_fn_5 response_fn_6 response_fn_7 
-          x1 -1.00000e+00  1.00000e+00 -2.25268e-10 -1.00000e+00 -1.00000e+00 -1.00000e+00  1.00000e+00 
-          x2 -1.00000e+00  7.85546e-10  1.00000e+00 -1.00000e+00 -1.00000e+00  1.00000e+00 -1.00000e+00 
+          x1 -1.00000e+00  1.00000e+00  2.28521e-10 -1.00000e+00 -1.00000e+00 -1.00000e+00  1.00000e+00 
+          x2 -1.00000e+00 -1.05421e-09  1.00000e+00 -1.00000e+00 -1.00000e+00  1.00000e+00 -1.00000e+00 
 Simple Rank Correlation Matrix among all inputs and outputs:
                        x1           x2 response_fn_1 response_fn_2 response_fn_3 response_fn_4 response_fn_5 response_fn_6 response_fn_7 
           x1  1.00000e+00 
@@ -89,8 +89,8 @@ response_fn_6 -9.97516e-01  8.52925e-02  6.68251e-01 -9.97516e-01  8.52925e-02  
 response_fn_7  9.98500e-01 -7.13351e-02 -6.79100e-01  9.98500e-01 -7.13351e-02 -1.56388e-01  4.81608e-02 -9.99556e-01  1.00000e+00 
 Partial Rank Correlation Matrix between input and output:
              response_fn_1 response_fn_2 response_fn_3 response_fn_4 response_fn_5 response_fn_6 response_fn_7 
-          x1 -9.72966e-01  1.00000e+00 -5.17917e-10 -9.68887e-01 -7.39076e-01 -9.98989e-01  9.99312e-01 
-          x2 -9.69482e-01 -8.01216e-10  1.00000e+00 -9.98261e-01 -9.99777e-01  7.71689e-01 -7.37219e-01 
+          x1 -9.72966e-01  1.00000e+00 -7.15636e-10 -9.68887e-01 -7.39076e-01 -9.98989e-01  9.99312e-01 
+          x2 -9.69482e-01 -7.15636e-10  1.00000e+00 -9.98261e-01 -9.99777e-01  7.71689e-01 -7.37219e-01 
 Test Number 1 succeeded
 Surrogate quality metrics at build (training) points for response_fn_1:
    root_mean_squared  1.8671083949e+01
@@ -148,7 +148,7 @@ response_fn_4_3  9.98243e-01 -9.21810e-02 -6.69218e-01  9.98243e-01 -9.21810e-02
 Partial Correlation Matrix between input and output:
              response_fn_1 response_fn_2 response_fn_3_1 response_fn_3_2 response_fn_4_1 response_fn_4_2 response_fn_4_3 
           x1 -1.00000e+00  1.00000e+00  2.74226e-09 -1.00000e+00 -1.00000e+00 -1.00000e+00  1.00000e+00 
-          x2 -1.00000e+00 -3.65190e-09  1.00000e+00 -1.00000e+00 -1.00000e+00  1.00000e+00 -1.00000e+00 
+          x2 -1.00000e+00 -3.55064e-09  1.00000e+00 -1.00000e+00 -1.00000e+00  1.00000e+00 -1.00000e+00 
 Simple Rank Correlation Matrix among all inputs and outputs:
                        x1           x2 response_fn_1 response_fn_2 response_fn_3_1 response_fn_3_2 response_fn_4_1 response_fn_4_2 response_fn_4_3 
           x1  1.00000e+00 

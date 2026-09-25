@@ -27,7 +27,7 @@ Test Number 1 succeeded
        obj_fn_1: 416 val (291 n, 125 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                      -4.9999903012e-01 cdv_1
-                     -4.6509133650e-08 cdv_2
+                     -4.6509133649e-08 cdv_2
                       0.0000000000e+00 cdv_3
                      -1.0000000000e+00 cdv_4
                       2.5000000000e-01 cdv_5

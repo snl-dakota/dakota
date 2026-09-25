@@ -1,29 +1,29 @@
 Test Number 0 succeeded
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5146121230e-02  6.1214266628e-03
+ response_fn_1  2.5146121230e-02  6.1214266627e-03
  response_fn_2  1.2775234301e-01  1.9133758125e-02
  response_fn_3  2.5146121230e-02  6.1214266627e-03
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  1.2727805380e-04  5.5523157784e-04
- response_fn_2  1.2839633294e-03  7.5339037999e-03
- response_fn_3  1.2727805375e-04  5.5523157783e-04
+ response_fn_1  1.2727805406e-04  5.5523157784e-04
+ response_fn_2  1.2839633296e-03  7.5339037999e-03
+ response_fn_3  1.2727805377e-04  5.5523157783e-04
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  7.9221579433e-08  3.1101556393e-06
- response_fn_2  4.5504344859e-06  8.2518721450e-05
- response_fn_3  7.9225735105e-08  3.1101555225e-06
+ response_fn_1  7.9232421376e-08  3.1101547983e-06
+ response_fn_2  4.5504402109e-06  8.2518722323e-05
+ response_fn_3  7.9226314880e-08  3.1101554787e-06
 <<<<< Function evaluation summary: 1955 total (1737 new, 218 duplicate)
 <<<<< Equivalent number of high fidelity evaluations: 2.2825683594e+01
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-  expansion:    2.5273478505e-02  6.5975181280e-03
-  integration:  2.5273478505e-02  6.5974482063e-03  7.8291253385e-01 -1.3700870411e-01
+  expansion:    2.5273478517e-02  6.5975181292e-03
+  integration:  2.5273478517e-02  6.5974482075e-03  7.8291253457e-01 -1.3700870341e-01
   expansion:    1.2904085678e-01  1.3500465036e-02
-  integration:  1.2904085678e-01  1.3500457267e-02  7.2579238103e-01 -5.9411050457e-01
-  expansion:    2.5273478510e-02  6.5975181294e-03
-  integration:  2.5273478510e-02  6.5974482078e-03  7.8291253404e-01 -1.3700870418e-01
+  integration:  1.2904085678e-01  1.3500457268e-02  7.2579238120e-01 -5.9411050438e-01
+  expansion:    2.5273478510e-02  6.5975181295e-03
+  integration:  2.5273478510e-02  6.5974482079e-03  7.8291253407e-01 -1.3700870415e-01
 Test Number 1 succeeded
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
@@ -32,21 +32,21 @@ Moment statistics for each response function:
  response_fn_3  2.5146150269e-02  6.1218140936e-03
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  1.2707460867e-04  5.5549653989e-04
- response_fn_2  1.2848960619e-03  7.5482016136e-03
- response_fn_3  1.2707460850e-04  5.5549653988e-04
+ response_fn_1  1.2707460825e-04  5.5549653976e-04
+ response_fn_2  1.2848960617e-03  7.5482016135e-03
+ response_fn_3  1.2707460847e-04  5.5549653987e-04
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  8.8574416449e-08  3.8689848880e-06
- response_fn_2  6.9950336082e-06  1.0093031252e-04
- response_fn_3  8.8576964328e-08  3.8689832000e-06
+ response_fn_1  8.8558192398e-08  3.8689875140e-06
+ response_fn_2  6.9950250371e-06  1.0093030908e-04
+ response_fn_3  8.8576046419e-08  3.8689833465e-06
 <<<<< Function evaluation summary: 12875 total (11157 new, 1718 duplicate)
 <<<<< Equivalent number of high fidelity evaluations: 2.2851904297e+02
 Moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-  expansion:    2.5273313452e-02  6.5968685954e-03
-  integration:  2.5273313452e-02  6.5968663035e-03  7.8392479417e-01 -1.1976830209e-01
-  expansion:    1.2904423475e-01  1.3502661858e-02
-  integration:  1.2904423475e-01  1.3502661795e-02  7.3308176309e-01 -5.6680376221e-01
-  expansion:    2.5273313454e-02  6.5968685891e-03
-  integration:  2.5273313454e-02  6.5968662973e-03  7.8392479453e-01 -1.1976830034e-01
+  expansion:    2.5273313435e-02  6.5968685887e-03
+  integration:  2.5273313435e-02  6.5968662968e-03  7.8392479170e-01 -1.1976830579e-01
+  expansion:    1.2904423474e-01  1.3502661855e-02
+  integration:  1.2904423474e-01  1.3502661791e-02  7.3308176256e-01 -5.6680376291e-01
+  expansion:    2.5273313453e-02  6.5968685887e-03
+  integration:  2.5273313453e-02  6.5968662968e-03  7.8392479438e-01 -1.1976830055e-01

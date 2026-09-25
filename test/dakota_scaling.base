@@ -255,7 +255,7 @@ Test Number 19 succeeded
                       1.0201147308e-01
                       2.6392615300e-02
 <<<<< Best constraint values   =
-                     -1.1700255825e-07
+                     -1.1700255736e-07
 <<<<< Best evaluation ID: 178
 Confidence Intervals on Calibrated Parameters:
             x1: [ -6.4383109129e-01, 1.7108542160e+00 ]
