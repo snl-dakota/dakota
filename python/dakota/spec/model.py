@@ -2372,7 +2372,7 @@ class OrderedModelFidelities(DakotaBaseModel):
     ordered_model_fidelities: OrderedModelFidelitiesConfig = DakotaField(
         default=...,
         description="Specification of an hierarchy of model fidelities, ordered from low to high.",
-        dakota={"argument": "pointers", "aliases": ["model_fidelity_sequence"]},
+        dakota={"argument": "pointers", "aliases": ["model_fidelity_sequence"], "pointer_group": True},
     )
 
 
@@ -2382,7 +2382,7 @@ class EnsembleTruthModelPointer(DakotaBaseModel):
     truth_model_pointer: TruthModelPointerConfig = DakotaField(
         default=...,
         description='Pointer to specify a "truth" model, from which to construct a surrogate',
-        dakota={"argument": "pointer", "aliases": ["actual_model_pointer"]},
+        dakota={"argument": "pointer", "aliases": ["actual_model_pointer"], "pointer_group": True},
     )
 
 
@@ -2599,6 +2599,7 @@ class SingleSelection(ModelSelection):
     single: SingleConfig = DakotaField(
         description="A model with one of each block: variable, interface, and response",
         dakota={
+            "pointer_group": True,
             "aliases": ["simulation"],
             "materialization": [
                 {
@@ -2819,7 +2820,7 @@ class NestedConfig(ModelFourOptionalKeywordsMixin):
     sub_method_pointer: SubMethodPointer = DakotaField(
         default=...,
         description="The ``sub_method_pointer`` specifies the method block for the sub-iterator",
-        dakota={"argument": "pointer"},
+        dakota={"argument": "pointer", "pointer_group": True},
     )
 
 
@@ -3013,7 +3014,7 @@ class GlobalApproxDaceMethodPointer(DakotaBaseModel):
     dace_method_pointer: DaceMethodPointerConfig = DakotaField(
         default=...,
         description="Specify a method to gather training data",
-        dakota={"argument": "pointer"},
+        dakota={"argument": "pointer", "pointer_group": True},
     )
 
 
@@ -3218,7 +3219,7 @@ class AdaptedBasisConfig(ModelFourOptionalKeywordsMixin):
     truth_model_pointer: AdaptedBasisTruthModelPointer = DakotaField(
         default=...,
         description='Pointer to specify a "truth" model, from which to construct a surrogate',
-        dakota={"argument": "pointer", "aliases": ["actual_model_pointer"]},
+        dakota={"argument": "pointer", "aliases": ["actual_model_pointer"], "pointer_group": True},
     )
     truncation_tolerance: DakotaFloat = DakotaField(
         default=0.9,
@@ -3241,6 +3242,7 @@ class RandomFieldSelection(ModelSelection):
     random_field: RandomFieldConfig = DakotaField(
         description="Experimental capability to generate a random field representation. from data, from simulation runs, or from a covariance matrix.  The representation may then be sampled for use as a random field input to another simulation.  THIS IS AN EXPERIMENTAL CAPABILITY.",
         dakota={
+            "pointer_group": True,
             "materialization": [
                 {
                     "ir_key": "model.type",
@@ -3267,6 +3269,7 @@ class ActiveSubspaceSelection(ModelSelection):
     active_subspace: ActiveSubspaceConfig = DakotaField(
         description="Active (variable) subspace model",
         dakota={
+            "pointer_group": True,
             "aliases": ["subspace"],
             "materialization": [
                 {
@@ -3494,6 +3497,7 @@ class EnsembleSurrogateConfig(ModelFourOptionalKeywordsMixin):
         description="Specification of the ensemble model hierarchy",
         dakota={
             "anchor": True,
+            "pointer_union": True,
             "union_pattern": 4,
             "materialization": [
                 {

@@ -26,8 +26,8 @@ Test Number 0 succeeded
    Equivalent   MFMC ratio:               4.4954475627e-01
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  2.5316352058e-02  7.0281925940e-03  8.9929899267e-01 -3.7666938948e-01
- response_fn_2  1.2888142134e-01  1.4054420394e-02  5.1501289763e-01 -9.2616215485e-01
+ response_fn_1  2.5316352058e-02  7.0281925940e-03  8.9929899267e-01 -3.7666938949e-01
+ response_fn_2  1.2888142134e-01  1.4054420394e-02  5.1501289763e-01 -9.2616215486e-01
  response_fn_3  2.5176802596e-02  6.9505710878e-03  1.0784281114e+00 -1.0431662326e-01
 95% confidence intervals for each response function:
                     LowerCI_Mean      UpperCI_Mean

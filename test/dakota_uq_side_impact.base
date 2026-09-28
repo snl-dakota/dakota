@@ -13,7 +13,7 @@ Sample moment statistics for each response function:
  response_fn_9  9.2183166307e+00  1.8229818937e-01 -6.8752378681e-03  4.3039776042e-02
 response_fn_10  1.5377512332e+01  1.7913632474e-01 -1.6063637675e+00  5.0226475297e+00
 95% confidence intervals for each response function:
-                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
  response_fn_1  4.4968962075e-01  4.5020755753e-01  4.1600089755e-02  4.1966330295e-02
  response_fn_2  2.8516864226e+01  2.8527184876e+01  8.2894278111e-01  8.3624066082e-01
  response_fn_3  2.6877443146e+01  2.6897703368e+01  1.6272778702e+00  1.6416041644e+00
@@ -144,7 +144,7 @@ Sample moment statistics for each response function:
  response_fn_9  9.2183166307e+00  1.8229818937e-01 -6.8752378681e-03  4.3039776042e-02
 response_fn_10  1.5377512332e+01  1.7913632474e-01 -1.6063637675e+00  5.0226475297e+00
 95% confidence intervals for each response function:
-                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
  response_fn_1  4.4968962075e-01  4.5020755753e-01  4.1600089755e-02  4.1966330295e-02
  response_fn_2  2.8516864226e+01  2.8527184876e+01  8.2894278111e-01  8.3624066082e-01
  response_fn_3  2.6877443146e+01  2.6897703368e+01  1.6272778702e+00  1.6416041644e+00

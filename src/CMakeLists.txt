@@ -198,26 +198,6 @@ if(HAVE_PDB_H)
   add_definitions("-DHAVE_PDB_H")
 endif(HAVE_PDB_H)
 
-# WJB - ToDo: Improve logic to support WinDLL case
-option(DAKOTA_DL_SOLVER
-  "Toggle DAKOTA DL Solvers, default is disabled." OFF
-  )
-if(DAKOTA_DL_SOLVER)
-  check_include_file(dlfcn.h DAKOTA_HAVE_DLFCN_H)
-
-  if(DAKOTA_HAVE_DLFCN_H)
-    message(STATUS "DAKOTA DL Solver enabled, LibDL = ${CMAKE_DL_LIBS}")
-    add_definitions("-DDAKOTA_DL_SOLVER")
-    add_definitions("-DDAKOTA_HAVE_DLFCN_H")
-    list(APPEND EXT_TPL_LIBS ${CMAKE_DL_LIBS})
-  else()
-    message(WARNING "DL solver requested, but dlfcn.h not found; disabling.")
-    add_definitions("-DNO_NIDR_DYNLIB")
-    set(DAKOTA_DL_SOLVER OFF CACHE BOOL 
-      "DAKOTA DL solver is disabled due to no dlfcn.h" FORCE)
-  endif(DAKOTA_HAVE_DLFCN_H)
-endif(DAKOTA_DL_SOLVER)
-
 option(DAKOTA_USAGE_TRACKING
   "Toggle DAKOTA usage tracking, default is disabled." OFF
   )
@@ -397,10 +377,6 @@ endif()
 if(DAKOTA_PYTHON_DIRECT_INTERFACE)
   list(APPEND util_src python_utils.cpp )
 endif()
-
-if(DAKOTA_DL_SOLVER)
-  list(APPEND util_src DLSolver.cpp)
-endif(DAKOTA_DL_SOLVER)
 
 if(DAKOTA_USAGE_TRACKING)
   list(APPEND util_src TrackerHTTP.cpp)
@@ -807,15 +783,19 @@ endif(HAVE_DEMO_TPL)
 if(HAVE_EXT_PYTHON_METHOD)
   set(iterator_src ${iterator_src} ${Dakota_SOURCE_DIR}/src/DakotaExtPythonMethod.cpp)
   add_definitions("-DHAVE_EXT_PYTHON_METHOD")
-  list(APPEND DAKOTA_INCDIRS ${pybind11_INCLUDE_DIRS})
-  if(Python3_INCLUDE_DIRS)
-    list(APPEND DAKOTA_INCDIRS ${Python3_INCLUDE_DIRS})
-  elseif(PYTHON_INCLUDE_DIRS)
-    list(APPEND DAKOTA_INCDIRS ${PYTHON_INCLUDE_DIRS})
-  endif()
 
-  pybind11_add_module(ext_method DakotaExtPythonMethod.cpp)
-  add_dependencies(ext_method dakota_ir_generated_tables)
+  # pybind11_INCLUDE_DIRS (plural) is set by pybind11NewTools.cmake only when
+  # Python3_INCLUDE_DIRS is already defined at add_subdirectory(pybind11) time.
+  # On some toolchains (e.g. Anaconda Python on RHEL) the plural variable is
+  # empty, so use pybind11_INCLUDE_DIR (singular, always set by the vendored
+  # pybind11 CMakeLists.txt) plus an explicit Python include fallback.
+  if(NOT Python3_INCLUDE_DIRS)
+    set(Python3_INCLUDE_DIRS "${_Python3_INCLUDE_DIR}")
+  endif()
+  list(APPEND DAKOTA_INCDIRS ${pybind11_INCLUDE_DIR} ${Python3_INCLUDE_DIRS})
+
+  pybind11_add_module(ext_method python/ext_method/DakotaExtMethodPython.cpp)
+  add_dependencies(ext_method dakota_ir_generated_tables dakota_python_package)
   target_include_directories(ext_method PRIVATE
             ${DAKOTA_IR_GENERATED_DIR}
             ${Dakota_SOURCE_DIR}/src/generated_ir_tables
@@ -829,8 +809,34 @@ if(HAVE_EXT_PYTHON_METHOD)
     ${Dakota_LIBRARIES} ${Dakota_TPL_LIBRARIES}
     )
 
-    # The extra foo needed below for the python "environment" module
-    # may be needed here too (?) RWH
+  set(_dakota_python_ext_method_dir
+    "${DAKOTA_PYTHON_PATH}/dakota/ext_method")
+  set_target_properties(ext_method PROPERTIES
+    LIBRARY_OUTPUT_DIRECTORY "${_dakota_python_ext_method_dir}"
+    RUNTIME_OUTPUT_DIRECTORY "${_dakota_python_ext_method_dir}"
+    ARCHIVE_OUTPUT_DIRECTORY "${_dakota_python_ext_method_dir}")
+  foreach(_dakota_cfg ${CMAKE_CONFIGURATION_TYPES})
+    string(TOUPPER "${_dakota_cfg}" _dakota_cfg_upper)
+    set_target_properties(ext_method PROPERTIES
+      "LIBRARY_OUTPUT_DIRECTORY_${_dakota_cfg_upper}" "${_dakota_python_ext_method_dir}"
+      "RUNTIME_OUTPUT_DIRECTORY_${_dakota_cfg_upper}" "${_dakota_python_ext_method_dir}"
+      "ARCHIVE_OUTPUT_DIRECTORY_${_dakota_cfg_upper}" "${_dakota_python_ext_method_dir}")
+  endforeach()
+
+  if (APPLE)
+    set_target_properties(ext_method PROPERTIES
+      LINK_FLAGS "-undefined dynamic_lookup"
+      INSTALL_RPATH "@rpath;@rpath/../../../../../lib;@rpath/../../../../../lib64;@rpath/../../../../../bin")
+  elseif (UNIX)
+    set_target_properties(ext_method PROPERTIES INSTALL_RPATH
+      "\$ORIGIN;\$ORIGIN/../../../../../lib;\$ORIGIN/../../../../../lib64;\$ORIGIN/../../../../../bin")
+  endif()
+
+  install(TARGETS ext_method EXPORT ${ExportTarget}
+    DESTINATION share/dakota/Python/dakota/ext_method/)
+  install(FILES ${Dakota_SOURCE_DIR}/python/dakota/ext_method/__init__.py
+    DESTINATION share/dakota/Python/dakota/ext_method)
+
 endif(HAVE_EXT_PYTHON_METHOD)
 
 CheckPackage(PSUADE)
@@ -981,6 +987,22 @@ target_include_directories(dakota_src
 add_dependencies(dakota_src dakota_ir_generated_tables)
 if(TARGET dakota_generated_sources)
   add_dependencies(dakota_src dakota_generated_sources)
+endif()
+# Pybind11 and Python headers are needed when DakotaExtPythonMethod.cpp or
+# Pybind11Interface.cpp is compiled into dakota_src (e.g. py::dict in
+# ModelExecutor::value).  The directory-level include_directories() call above
+# should propagate them, but on some toolchains (Anaconda Python / RHEL) the
+# paths end up missing from the target's compile line.  Adding them directly
+# to the target guarantees they are always present.  PRIVATE is sufficient
+# because no public header of dakota_src exposes pybind11 types.
+if(HAVE_EXT_PYTHON_METHOD OR DAKOTA_PYTHON_DIRECT_INTERFACE)
+  if(NOT Python3_INCLUDE_DIRS)
+    set(Python3_INCLUDE_DIRS "${_Python3_INCLUDE_DIR}")
+  endif()
+  target_include_directories(dakota_src PRIVATE
+    ${pybind11_INCLUDE_DIR}
+    ${Python3_INCLUDE_DIRS}
+  )
 endif()
 # handle special case for gcc filesystem support
 if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9.0) OR DAKOTA_LINK_STDCPPFS)

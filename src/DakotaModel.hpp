@@ -19,6 +19,7 @@
 #include "DakotaResponse.hpp"
 #include "MultivariateDistribution.hpp"
 #include "ScalingOptions.hpp"
+#include <unordered_map>
 
 namespace Pecos { /* forward declarations */
 class SurrogateData;
@@ -77,16 +78,16 @@ public:
   static std::shared_ptr<Model> get_model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
 
   /// @brief return the model cache for the study
-  /// @param problem_db 
+  /// @param problem_db
   /// @return model cache
-  static std::list<std::shared_ptr<Model>>& model_cache(ProblemDescDB& problem_db);
+  static const std::unordered_map<std::string, std::shared_ptr<Model>>& model_cache(ProblemDescDB& problem_db);
 
   /// @brief remove a cached Model for the study
   static void remove_cached_model(const ProblemDescDB& problem_db);
 
 private:
   /// @brief Cache of Models created for each study
-  static std::map<const ProblemDescDB*, std::list<std::shared_ptr<Model>>> modelCache;
+  static std::unordered_map<const ProblemDescDB*, ModelUtils::ModelRegistry> modelCache;
 
 public:
 
@@ -133,7 +134,7 @@ public:
 
   /// set the relative weightings for multiple objective functions or least
   /// squares terms
-  virtual void primary_response_fn_weights(const RealVector& wts, 
+  virtual void primary_response_fn_weights(const RealVector& wts,
 					   bool recurse_flag = true);
 
   /// Perform any global updates prior to individual evaluate() calls;
@@ -242,7 +243,7 @@ public:
   /// search the eval database (during derivative estimation); derived
   /// may need to reimplement due to problem transformations
   /// (RecastModel); return true if found in DB
-  virtual bool db_lookup(const Variables& search_vars, 
+  virtual bool db_lookup(const Variables& search_vars,
 			 const ActiveSet& search_set, Response& found_resp);
 
   /// set the warm start flag (warmStartFlag)
@@ -406,7 +407,7 @@ public:
   /// based on data updates propagated elsewhere
   virtual void update_approximation(bool rebuild_flag);
   /// replace the anchor point data within an existing surrogate
-  virtual void update_approximation(const Variables& vars, 
+  virtual void update_approximation(const Variables& vars,
 				    const IntResponsePair& response_pr,
 				    bool rebuild_flag);
   /// replace the data points within an existing surrogate
@@ -422,7 +423,7 @@ public:
   /// based on data updates propagated elsewhere
   virtual void append_approximation(bool rebuild_flag);
   /// append a single point to an existing surrogate's data
-  virtual void append_approximation(const Variables& vars, 
+  virtual void append_approximation(const Variables& vars,
 				    const IntResponsePair& response_pr,
 				    bool rebuild_flag);
   /// append multiple points to an existing surrogate's data
@@ -544,7 +545,7 @@ public:
   /// an EnsembleSurrModel
   virtual void single_apply(const Variables& vars, Response& resp,
 			    const Pecos::ActiveKey& paired_key);
-  /// apply a sequence of DiscrepancyCorrections to recursively correct an 
+  /// apply a sequence of DiscrepancyCorrections to recursively correct an
   /// approximation within an EnsembleSurrModel
   virtual void recursive_apply(const Variables& vars, Response& resp);
 
@@ -617,10 +618,10 @@ public:
   /// Compute the Response at currentVariables (specified ActiveSet).
   void evaluate(const ActiveSet& set);
 
-  /// Spawn an asynchronous job (or jobs) that computes the value of the 
+  /// Spawn an asynchronous job (or jobs) that computes the value of the
   /// Response at currentVariables (default ActiveSet).
   void evaluate_nowait();
-  /// Spawn an asynchronous job (or jobs) that computes the value of the 
+  /// Spawn an asynchronous job (or jobs) that computes the value of the
   /// Response at currentVariables (specified ActiveSet).
   void evaluate_nowait(const ActiveSet& set);
 
@@ -656,7 +657,7 @@ public:
   void free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 			  bool recurse_flag = true);
 
-  /// retrieve the MPI communicator on which this model is configured to 
+  /// retrieve the MPI communicator on which this model is configured to
   /// conduct function evaluation analyses (provided for library clients)
   MPI_Comm analysis_comm() const;
 
@@ -691,7 +692,7 @@ public:
   void iterator_space_to_user_space(const Variables& iter_vars,
 				    const Response&  iter_resp,
 				    Variables& user_vars, Response& user_resp);
- 
+
   /// return mvDist
   Pecos::MultivariateDistribution& multivariate_distribution();
   /// return mvDist
@@ -860,7 +861,7 @@ public:
   std::shared_ptr<StudyServices> study_services() const;
   StudyRuntime study_runtime() const;
 
-  /// Return the model ID of the "innermost" model. 
+  /// Return the model ID of the "innermost" model.
   /// For all derived Models except RecastModels, return modelId.
   /// The RecastModel override returns the root_model_id() of the subModel.
   virtual String root_model_id();
@@ -968,7 +969,7 @@ protected:
   /// Initialize data needed for computing finite differences
   /// (active/inactive, center point, and bounds)
   SizetMultiArrayConstView
-  initialize_x0_bounds(const SizetArray& original_dvv, bool& active_derivs, 
+  initialize_x0_bounds(const SizetArray& original_dvv, bool& active_derivs,
                        bool& inactive_derivs, RealVector& x0, RealVector& fd_lb,
                        RealVector& fd_ub) const;
 
@@ -1074,11 +1075,11 @@ protected:
   /// absolute - step length is what is specified
   /// bounds   - step length is relative to range of x
   String fdGradStepType;
-  /// relative finite difference step size for numerical Hessians estimated 
+  /// relative finite difference step size for numerical Hessians estimated
   /// using first-order differences of gradients
   /** For vendor numerical Hessian algorithms, a scalar value is used. */
   RealVector fdHessByGradStepSize;
-  /// relative finite difference step size for numerical Hessians estimated 
+  /// relative finite difference step size for numerical Hessians estimated
   /// using second-order differences of function values
   /** For vendor numerical Hessian algorithms, a scalar value is used. */
   RealVector fdHessByFnStepSize;
@@ -1195,7 +1196,7 @@ protected:
   EvaluationStore &evaluationsDB;
 
 private:
- 
+
   //
   //- Heading: Member functions
   //
@@ -1215,7 +1216,7 @@ private:
   /// combine results from an array of finite difference response
   /// objects (fd_grad_responses) into a single response (new_response)
   void synchronize_derivatives(const Variables& vars,
-			       const IntResponseMap& fd_responses, 
+			       const IntResponseMap& fd_responses,
 			       Response& new_response,
 			       const ShortArray& fd_grad_asv,
 			       const ShortArray& fd_hess_asv,
@@ -1237,7 +1238,7 @@ private:
 			     const ActiveSet& original_set);
 
   /// Coordinates usage of estimate_derivatives() calls based on asv_in
-  bool manage_asv(const ActiveSet& original_set, ShortArray& map_asv_out, 
+  bool manage_asv(const ActiveSet& original_set, ShortArray& map_asv_out,
 		  ShortArray& fd_grad_asv_out, ShortArray& fd_hess_asv_out,
 		  ShortArray& quasi_hess_asv_out);
 
@@ -1425,7 +1426,7 @@ inline const String& Model::model_id() const
 inline size_t Model::num_secondary_fns() const
 {
   return
-    ModelUtils::num_nonlinear_ineq_constraints(*this) + 
+    ModelUtils::num_nonlinear_ineq_constraints(*this) +
     ModelUtils::num_nonlinear_eq_constraints(*this);
 }
 
@@ -1524,9 +1525,9 @@ inline const ScalingOptions& Model::scaling_options() const
 
 
 inline short Model::primary_fn_type() const
-{ 
+{
   return
-    currentResponse.shared_data().primary_fn_type(); 
+    currentResponse.shared_data().primary_fn_type();
 }
 
 inline void Model::primary_fn_type(short type)
@@ -1550,7 +1551,7 @@ inline void Model::supports_derivative_estimation(bool sed_flag)
 }
 
 
-inline void Model::init_comms_bcast_flag(bool icb_flag) 
+inline void Model::init_comms_bcast_flag(bool icb_flag)
 {
   initCommsBcastFlag = icb_flag;
 }
@@ -1660,7 +1661,7 @@ rekey_response_map(const IntResponseMap& resp_map, IntIntMap& id_map,
       cached_resp_map[r_cit->first] = r_cit->second;
       // Approach 2: virtual fn approach could accomplish a migration and
       // avoid duplication, but it lacks level clarity (SimulationModel:
-      // augment its own cache or delegate to userDefinedInterface?) 
+      // augment its own cache or delegate to userDefinedInterface?)
       //cache_unmatched_response(r_cit->first); // virtual fn
       // Approach 3: resolve level clarity by passing a meta-object in a
       // template.  Consistency: use meta-object to synchronize and cache,
@@ -1700,7 +1701,7 @@ rekey_response_map(MetaType& meta_object, IntIntMapArray& id_maps,
 	if (evaluations_db_state(meta_object) == EvaluationsDBState::ACTIVE)
 	  asynch_eval_store(meta_object, id_it->first, resp);
 	id_map.erase(id_it++);      // postfix increment
-	orig_resp_map.erase(r_it++);// postfix increment 
+	orig_resp_map.erase(r_it++);// postfix increment
 	found = true;
       }
       //if (found) break;// interferes with active_id_maps and only defers ++it

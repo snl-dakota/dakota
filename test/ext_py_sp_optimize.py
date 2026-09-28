@@ -2,7 +2,6 @@
 import numpy as np
 from scipy.optimize import minimize
 
-import ext_method
 import ext_py_helper
 
 class Standalone:

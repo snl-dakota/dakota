@@ -61,7 +61,7 @@ Test Number 4 succeeded
 <<<<< Best objective function  =
                       1.3409644823e+00
 <<<<< Best constraint values   =
-                      1.4148692777e-07
+                      1.4148692754e-07
 <<<<< Best evaluation ID: 130
 Test Number 5 succeeded
 <<<<< Function evaluation summary: 13 total (13 new, 0 duplicate)

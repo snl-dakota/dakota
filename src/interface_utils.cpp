@@ -54,7 +54,7 @@ namespace Dakota {
           const unsigned short interface_type = problem_db.get<unsigned short>("interface.type");
 
           // In the case where a derived interface type has been selected for managing
-          // analysis_drivers, then this determines the instantiation and any 
+          // analysis_drivers, then this determines the instantiation and any
           // algebraic mappings are overlayed by ApplicationInterface.
           const String& algebraic_map_file
             = problem_db.get<const String>("interface.algebraic_mappings");
@@ -140,12 +140,111 @@ namespace Dakota {
           }
 
           else {
-            Cerr << "Invalid interface: " << interface_enum_to_string(interface_type) 
+            Cerr << "Invalid interface: " << interface_enum_to_string(interface_type)
                  << std::endl;
           }
 
           return std::shared_ptr<Interface>();
         }
+    }
 
+
+    InterfaceRegistry::InterfaceRegistry()
+    {
+      m_factory.register_key(SYSTEM_INTERFACE, &default_factory_fun<SysCallApplicInterface>);
+      m_factory.register_key(FORK_INTERFACE, [](ProblemDescDB &problem_db, ParallelLibrary &parallel_lib) {
+#if defined(HAVE_SYS_WAIT_H) && defined(HAVE_UNISTD_H) // includes CYGWIN/MINGW
+        return std::make_unique<ForkApplicInterface>(problem_db, parallel_lib);
+#elif defined(_WIN32) // or _MSC_VER (native MSVS compilers)
+        return std::make_unique<SpawnApplicInterface>(problem_db, parallel_lib);
+#else
+        Cerr << "Fork interface requested, but not enabled in this Dakota "
+              << "executable." << std::endl;
+        return std::unique_ptr<Interface>();
+#endif
+      } );
+
+      // Note: in the case of a plug-in direct interface, this object gets replaced
+      // using Interface::assign_rep().  Error checking in DirectApplicInterface::
+      // derived_map_ac() should catch if this replacement fails to occur properly.
+      m_factory.register_key(TEST_INTERFACE, &default_factory_fun<TestDriverInterface>);
+
+      m_factory.register_key(PLUGIN_INTERFACE, &default_factory_fun<PluginInterface>);
+#ifdef DAKOTA_GRID
+      m_factory.register_key(GRID_INTERFACE, &default_factory_fun<GridApplicInterface>);
+#endif
+      m_factory.register_key(MATLAB_INTERFACE, [](ProblemDescDB &problem_db, ParallelLibrary &parallel_lib) {
+#ifdef DAKOTA_MATLAB
+        return std::make_unique<MatlabInterface>(problem_db, parallel_lib);
+#else
+        Cerr << "Direct Matlab interface requested, but not enabled in this "
+              << "Dakota executable." << std::endl;
+        return std::unique_ptr<Interface>();
+#endif
+      } );
+
+      m_factory.register_key(PYTHON_INTERFACE, [](ProblemDescDB &problem_db, ParallelLibrary &parallel_lib) {
+#ifdef DAKOTA_PYBIND11
+        return std::make_unique<Pybind11Interface>(problem_db, parallel_lib);
+#else
+        Cerr << "Python interface requested, but not enabled in this "
+              << "Dakota executable." << std::endl;
+        return std::unique_ptr<Interface>();
+#endif
+      } );
+
+      m_factory.register_key(SCILAB_INTERFACE, [](ProblemDescDB &problem_db, ParallelLibrary &parallel_lib) {
+#ifdef DAKOTA_SCILAB
+        return std::make_unique<ScilabInterface>(problem_db, parallel_lib);
+#else
+        Cerr << "Direct Scilab interface requested, but not enabled in this "
+              << "Dakota executable." << std::endl;
+        return std::unique_ptr<Interface>();
+#endif
+      } );
+
+
+      m_factory.register_key(DEFAULT_INTERFACE, [](ProblemDescDB &problem_db, ParallelLibrary &parallel_lib) {
+        const String& algebraic_map_file
+          = problem_db.get<std::string>("interface.algebraic_mappings");
+        if (!algebraic_map_file.empty()) {
+  #ifdef DEBUG
+          Cout << ">>>>> new ApplicationInterface: " << algebraic_map_file
+              << std::endl;
+  #endif // DEBUG
+          return std::make_unique<ApplicationInterface>(problem_db, parallel_lib);
+        }
+
+        Cerr << "Warning: empty interface type in Interface::get_interface()."
+              << std::endl;
+        return std::make_unique<ApplicationInterface>(problem_db, parallel_lib);
+      } );
+    }
+
+
+    std::unique_ptr<Interface>
+    InterfaceRegistryErrorPolicy::on_unknown_key(unsigned short key, ProblemDescDB &problem_db, ParallelLibrary &parallel_lib) const
+    {
+      Cerr << "Invalid interface: " << interface_enum_to_string(key)
+            << std::endl;
+      return {};
+    }
+
+    std::shared_ptr<Interface> InterfaceRegistry::get_interface(
+        ProblemDescDB& db, ParallelLibrary& par) {
+      auto id = std::string(db.interface_id());
+      auto pos = m_cache.find(id);
+      if (pos == m_cache.end()) {
+        const auto interface_type = db.get<unsigned short>("interface.type");
+        pos = m_cache.try_emplace(id, m_factory.create(interface_type, db, par)).first;
+      }
+      return pos->second;
+    }
+
+    void
+    InterfaceRegistry::file_cleanup()
+    {
+      for ( auto &[_, iface] : m_cache )
+        iface->file_cleanup();
     }
 }

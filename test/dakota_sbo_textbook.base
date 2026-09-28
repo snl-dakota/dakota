@@ -45,7 +45,7 @@ Test Number 3 succeeded
 <<<<< Best constraint values   =
                       4.1050496336e-14
                      -8.2100992671e-14
-<<<<< Best evaluation ID: 49
+<<<<< Best evaluation ID: 48
 Test Number 4 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE_1): 176 total (176 new, 0 duplicate)
 <<<<< Function evaluation summary (TRUE_FN): 49 total (49 new, 0 duplicate)
@@ -57,7 +57,7 @@ Test Number 4 succeeded
 <<<<< Best constraint values   =
                       4.1050496336e-14
                      -8.2100992671e-14
-<<<<< Best evaluation ID: 49
+<<<<< Best evaluation ID: 48
 Test Number 5 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE_1): 176 total (176 new, 0 duplicate)
 <<<<< Function evaluation summary (TRUE_FN): 56 total (55 new, 1 duplicate)
@@ -96,25 +96,25 @@ Test Number 7 succeeded
 <<<<< Best evaluation ID: 49
 Test Number 8 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE_1): 176 total (176 new, 0 duplicate)
-<<<<< Function evaluation summary (TRUE_FN): 56 total (55 new, 1 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 56 total (56 new, 0 duplicate)
 <<<<< Best parameters          =
                       5.0000000000e-01 x1
-                      5.0000000652e-01 x2
+                      4.9999999938e-01 x2
 <<<<< Best objective function  =
-                      1.2499999674e-01
+                      1.2500000031e-01
 <<<<< Best constraint values   =
-                     -3.2575848685e-09
-                      6.5151697926e-09
-<<<<< Best evaluation ID: 45
+                      3.0790042738e-10
+                     -6.1580085475e-10
+<<<<< Best evaluation ID: 56
 Test Number 9 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE_1): 183 total (183 new, 0 duplicate)
-<<<<< Function evaluation summary (TRUE_FN): 56 total (55 new, 1 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 56 total (56 new, 0 duplicate)
 <<<<< Best parameters          =
                       5.0000000000e-01 x1
                       5.0000000000e-01 x2
 <<<<< Best objective function  =
                       1.2500000000e-01
 <<<<< Best constraint values   =
-                      1.0713652188e-14
-                     -2.1427304375e-14
-<<<<< Best evaluation ID: 45
+                      1.1324274851e-14
+                     -2.2648549702e-14
+<<<<< Best evaluation ID: 56

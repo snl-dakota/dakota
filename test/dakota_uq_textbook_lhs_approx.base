@@ -181,10 +181,10 @@ Test Number 5 succeeded
 <<<<< Function evaluation summary (I1): 20 total (16 new, 4 duplicate)
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
- response_fn_1  7.0242243161e+03  7.1669982166e+03  9.7683111723e-01  2.1402322292e-01
+ response_fn_1  7.0242243044e+03  7.1669982209e+03  9.7683111841e-01  2.1402322534e-01
 95% confidence intervals for each response function:
                     LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
- response_fn_1  6.8255208012e+03  7.2229278310e+03  7.0292369264e+03  7.3103065392e+03
+ response_fn_1  6.8255207894e+03  7.2229278195e+03  7.0292369306e+03  7.3103065436e+03
 Simple Correlation Matrix among all inputs and outputs:
                   hpruv_1      hpruv_2 response_fn_1 
      hpruv_1  1.00000e+00 
@@ -198,11 +198,11 @@ Simple Rank Correlation Matrix among all inputs and outputs:
                   hpruv_1      hpruv_2 response_fn_1 
      hpruv_1  1.00000e+00 
      hpruv_2  3.00223e-03  1.00000e+00 
-response_fn_1  6.61378e-01  6.40160e-01  1.00000e+00 
+response_fn_1  6.62703e-01  6.38836e-01  1.00000e+00 
 Partial Rank Correlation Matrix between input and output:
              response_fn_1 
-     hpruv_1  8.58401e-01 
-     hpruv_2  8.50844e-01 
+     hpruv_1  8.58899e-01 
+     hpruv_2  8.50399e-01 
 Test Number 6 succeeded
 <<<<< Function evaluation summary (APPROX_INTERFACE_1): 5000 total (5000 new, 0 duplicate)
 <<<<< Function evaluation summary (I1): 0 total (0 new, 0 duplicate)

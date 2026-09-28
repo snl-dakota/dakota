@@ -108,16 +108,10 @@ void NonDImportPoints::post_run(std::ostream& s)
                                                   numSamples,
                                                   allSamples,
                                                   allResponses);
-
-      nonDSampCorr.archive_sobol_indices(run_identifier(),
-                                         resultsDB,
-                                         iteratedModel->current_variables().ordered_labels(ACTIVE_VARS),
-                                         ModelUtils::response_labels(*iteratedModel),
-                                         vbdDropTol); // set in DakotaAnalyzer constructor
     }
 
     compute_statistics(allSamples, allResponses);
-
+    archive_results(numSamples);
     Analyzer::post_run(s);
 
 }
@@ -135,5 +129,50 @@ void NonDImportPoints::print_results(std::ostream& s, short results_state)
     int actual_samples = allSamples.numCols();
     print_header_and_statistics(s, actual_samples);
 } 
+
+void NonDImportPoints::archive_results(int num_samples) {
+
+    // Pass index zero for increment ID since import_points doesn't
+    // support incremental studies.
+    int increment_id = 0;
+    // Archive moments
+    if(functionMomentsComputed) {
+      archive_moments(increment_id);
+      archive_moment_confidence_intervals(increment_id);
+    }
+    // Archive level mappings and pdfs
+    if(totalLevelRequests) {
+      for(int i = 0; i < numFunctions; ++i) {
+        archive_from_resp(i,increment_id);
+        archive_to_resp(i,increment_id);
+        if(pdfOutput && pdfComputed[i]) {
+          archive_pdf(i, increment_id);
+          pdfComputed[i] = false; // reset for next increment
+        }
+      }
+    }
+
+  nonDSampCorr.archive_correlations(run_identifier(), resultsDB, iteratedModel->current_variables().ordered_labels(ACTIVE_VARS),
+                                      ModelUtils::response_labels(*iteratedModel),increment_id);
+
+  // Archive Standardized Regression Coefficients
+  if (stdRegressionCoeffs) {
+    nonDSampCorr.archive_std_regress_coeffs(run_identifier(), resultsDB,
+                                            iteratedModel->current_variables().ordered_labels(ACTIVE_VARS),
+                                            ModelUtils::response_labels(*iteratedModel), increment_id);
+  }
+
+  if(vbdFlag) {
+      nonDSampCorr.archive_sobol_indices(run_identifier(),
+                                         resultsDB,
+                                         iteratedModel->current_variables().ordered_labels(ACTIVE_VARS),
+                                         ModelUtils::response_labels(*iteratedModel),
+                                         vbdDropTol); // set in DakotaAnalyzer constructor
+    }
+
+  if (toleranceIntervalsFlag) {
+    archive_tolerance_intervals(increment_id);
+  }
+}
 
 } // namespace Dakota

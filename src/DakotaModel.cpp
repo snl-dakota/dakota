@@ -33,7 +33,7 @@
 static const char rcsId[]="@(#) $Id: DakotaModel.cpp 7029 2010-10-22 00:17:02Z mseldre $";
 
 
-namespace Dakota 
+namespace Dakota
 {
 namespace {
 
@@ -740,38 +740,14 @@ Iterator  dummy_iterator;  ///< dummy Iterator object used for mandatory
 size_t Model::noSpecIdNum = 0;
 
 std::shared_ptr<Model> Model::get_model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib) {
-  // Check for a cached Model
-  ProblemDescDB* const study_ptr = problem_db.get_rep().get();
-  auto& study_cache = Model::modelCache[study_ptr];
-
-  // A model specification identifies its variables, interface, and responses.
-  // Have to worry about loss of encapsulation and use of context _above_ this
-  // specification, i.e., any dependence on an iterator specification
-  // (dependence on the environment spec is OK since there is only one).
-  // > method.output
-  // > Constraints: variables view
-
-  // The DB list nodes are set prior to calling get_model():
-  // >    model_ptr spec -> id_model must be defined
-  // > no model_ptr spec -> id_model is ignored, model spec is last parsed
-  auto id_model = problem_db.model_id();
-  if(id_model.empty()) {
-    id_model = "NO_MODEL_ID";
-  }
-  auto m_it
-    = std::find_if(study_cache.begin(), study_cache.end(),
-                   [&id_model](std::shared_ptr<Model> m) {return m->model_id() == id_model;});
-  if (m_it == study_cache.end()) {
-    study_cache.push_back(ModelUtils::get_model(problem_db, parallel_lib));
-    m_it = --study_cache.end();
-  }
-  return *m_it;
+  const ProblemDescDB* const study_ptr = problem_db.get_rep().get();
+  return modelCache[study_ptr].get_model(problem_db, parallel_lib);
 }
 
-std::list<std::shared_ptr<Model>>& Model::model_cache(ProblemDescDB& problem_db) {
+const std::unordered_map<std::string, std::shared_ptr<Model>>& Model::model_cache(ProblemDescDB& problem_db) {
   const ProblemDescDB* const study_ptr = problem_db.get_rep().get();
   try {
-    return Model::modelCache.at(study_ptr);
+    return Model::modelCache.at(study_ptr).cache();
   } catch(std::out_of_range) {
     Cerr << "Model::model_cache() called with nonexistent study!\n";
     throw;
@@ -783,7 +759,7 @@ void Model::remove_cached_model(const ProblemDescDB& problem_db) {
   Model::modelCache.erase(study_ptr);
 }
 
-std::map<const ProblemDescDB*, std::list<std::shared_ptr<Model>>> Model::modelCache{};
+std::unordered_map<const ProblemDescDB*, ModelUtils::ModelRegistry> Model::modelCache{};
 
 
 /** This constructor builds the base class data for all inherited
@@ -823,7 +799,7 @@ Model::Model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
   runOptions(const_cast<RunOptions&>(parallelLib.user_modes())),
   modelPCIter(parallelLib.parallel_configuration_iterator()),
   componentParallelMode(NO_PARALLEL_MODE), asynchEvalFlag(false),
-  evaluationCapacity(1), 
+  evaluationCapacity(1),
   // See base constructor in DakotaIterator.cpp for full discussion of output
   // verbosity.  For models, QUIET_OUTPUT turns off response reporting and
   // SILENT_OUTPUT additionally turns off fd_gradient parameter set reporting.
@@ -1084,7 +1060,7 @@ Model(const ShortShortPair& vars_view,
       ParallelLibrary& parallel_lib):
   numDerivVars(set.derivative_vector().size()),
   numFns(set.request_vector().size()), evaluationsDB(parallelLib.output_manager().evaluation_store()),
-  fdGradStepType("relative"), fdHessStepType("relative"), warmStartFlag(false), 
+  fdGradStepType("relative"), fdHessStepType("relative"), warmStartFlag(false),
   supportsEstimDerivs(true), mappingInitialized(false), probDescDB(problem_db),
   parallelLib(parallel_lib),
   runOptions(const_cast<RunOptions&>(parallel_lib.user_modes())),
@@ -1902,9 +1878,9 @@ initialize_distribution_parameters(Pecos::MultivariateDistribution& mv_dist,
 
 
 SizetMultiArrayConstView
-Model::initialize_x0_bounds(const SizetArray& original_dvv, 
-			    bool& active_derivs, bool& inactive_derivs, 
-			    RealVector& x0, 
+Model::initialize_x0_bounds(const SizetArray& original_dvv,
+			    bool& active_derivs, bool& inactive_derivs,
+			    RealVector& x0,
 			    RealVector& fd_lb, RealVector& fd_ub) const
 {
   // Are derivatives w.r.t. active or inactive variables?
@@ -1930,11 +1906,11 @@ Model::initialize_x0_bounds(const SizetArray& original_dvv,
       ModelUtils::all_continuous_upper_bounds(*this) );
   SizetMultiArrayConstView cv_ids = (active_derivs) ?
     current_variables().continuous_variable_ids() :
-    ( (inactive_derivs) ? current_variables().inactive_continuous_variable_ids() : 
+    ( (inactive_derivs) ? current_variables().inactive_continuous_variable_ids() :
       current_variables().all_continuous_variable_ids() );
-  UShortMultiArrayConstView cv_types = (active_derivs) ? 
-    current_variables().continuous_variable_types() : 
-    ( (inactive_derivs) ? current_variables().inactive_continuous_variable_types() : 
+  UShortMultiArrayConstView cv_types = (active_derivs) ?
+    current_variables().continuous_variable_types() :
+    ( (inactive_derivs) ? current_variables().inactive_continuous_variable_types() :
       current_variables().all_continuous_variable_types() );
 
   // if not respecting bounds, leave at +/- infinity
@@ -2002,7 +1978,7 @@ void Model::evaluate()
     if (modelEvaluationsDBState == EvaluationsDBState::ACTIVE)
       declare_sources();
   }
-  
+
   // Define default ActiveSet for iterators which don't pass one
   ActiveSet temp_set = currentResponse.active_set(); // copy
   temp_set.request_values(1); // function values only
@@ -2025,7 +2001,7 @@ void Model::evaluate()
   if (modelEvaluationsDBState == EvaluationsDBState::ACTIVE)
     evaluationsDB.store_model_response(modelId, modelType, modelEvalCntr,
           currentResponse);
-  
+
 }
 
 
@@ -2110,7 +2086,7 @@ void Model::evaluate_nowait()
   // history of vars must be catalogued for use in synchronize()
   if (modelAutoGraphicsFlag)
     varsMap[modelEvalCntr] = currentVariables.copy();
-  
+
 }
 
 
@@ -2162,7 +2138,7 @@ void Model::evaluate_nowait(const ActiveSet& set)
   // history of vars must be catalogued for use in synchronize
   if (modelAutoGraphicsFlag || num_fd_evals >= 0)
     varsMap[modelEvalCntr] = currentVariables.copy();
-  
+
 }
 
 
@@ -2259,11 +2235,11 @@ varsMap.erase(v_it);
   if(modelEvaluationsDBState == EvaluationsDBState::ACTIVE) {
     for(const auto  &id_r : responseMap)
       evaluationsDB.store_model_response(modelId, modelType, id_r.first,
-            id_r.second); 
+            id_r.second);
   }
   // return final map
   return responseMap;
-  
+
 }
 
 
@@ -2345,7 +2321,7 @@ else {
 
 /** Auxiliary function to determine initial finite difference h
     (before step length adjustment) based on type of step desired. */
-Real Model::initialize_h(Real x_j, Real lb_j, Real ub_j, Real step_size, 
+Real Model::initialize_h(Real x_j, Real lb_j, Real ub_j, Real step_size,
 			 String step_type) const
 {
   Real h;
@@ -2389,7 +2365,7 @@ Real Model::FDstep1(Real x0_j, Real lb_j, Real ub_j, Real h_mag)
       }
     }
   }
-  
+
   if (shortStep) {
     // take the step to the furthest boundary
     Real h1 = x0_j - lb_j;
@@ -2589,7 +2565,7 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
     // define lower/upper bounds for finite differencing and cv_ids
     RealVector x0, fd_lb, fd_ub;
     bool active_derivs, inactive_derivs; // derivs w.r.t. {active,inactive} vars
-    SizetMultiArrayConstView cv_ids = 
+    SizetMultiArrayConstView cv_ids =
       initialize_x0_bounds(orig_dvv, active_derivs, inactive_derivs, x0,
 			   fd_lb, fd_ub);
 
@@ -2599,7 +2575,7 @@ estimate_derivatives(const ShortArray& map_asv, const ShortArray& fd_grad_asv,
     // ------------------------
     // Loop over num_deriv_vars
     // ------------------------
-    RealVector x = x0; 
+    RealVector x = x0;
     for (j=0; j<num_deriv_vars; j++) { // difference the 1st num_deriv_vars vars
 
       size_t xj_index = find_index(cv_ids, orig_dvv[j]);
@@ -3183,11 +3159,11 @@ synchronize_derivatives(const Variables& vars,
   Response initial_map_response;
   IntRespMCIter fd_resp_cit = fd_responses.begin();
   if (initial_map) {
-    initial_map_response = fd_resp_cit->second; 
+    initial_map_response = fd_resp_cit->second;
     ++fd_resp_cit;
   }
   else if (db_capture) {
-    initial_map_response = dbResponseList.front(); 
+    initial_map_response = dbResponseList.front();
     dbResponseList.pop_front();
   }
   else { // construct an empty initial_map_response
@@ -3283,8 +3259,8 @@ synchronize_derivatives(const Variables& vars,
               // prevent erroneous difference of vals present in fn_vals_x0 but
               // not in fn_vals_x_(plus/minus)_2h due to map/fd_hess asv diffs
               if (fd_hess_asv[i] & 1)
-                new_fn_hessians[i](j,j) = 
-                  (fn_vals_x_plus_2h[i] - 2.*fn_vals_x0[i] + 
+                new_fn_hessians[i](j,j) =
+                  (fn_vals_x_plus_2h[i] - 2.*fn_vals_x0[i] +
                    fn_vals_x_minus_2h[i])/(4.*h*h);
 
             // off-diagonal terms
@@ -3489,7 +3465,7 @@ update_response(const Variables& vars, Response& new_response,
   // perform quasi-Newton updates if quasi_hessians have been specified by the
   // user, the response data is uncorrected, and the DVV is set to the active
   // continuous variables (the default).
-  if ( supportsEstimDerivs && 
+  if ( supportsEstimDerivs &&
        surrogate_response_mode() != AUTO_CORRECTED_SURROGATE &&
        original_set.derivative_vector() ==
        currentVariables.continuous_variable_ids() &&
@@ -3895,7 +3871,7 @@ bool Model::manage_asv(const ActiveSet& original_set, ShortArray& map_asv_out,
     // define lower/upper bounds for finite differencing and cv_ids
     RealVector x0, fd_lb, fd_ub;
     bool active_derivs, inactive_derivs; // derivs w.r.t. {active,inactive} vars
-    SizetMultiArrayConstView cv_ids = 
+    SizetMultiArrayConstView cv_ids =
       initialize_x0_bounds(orig_dvv, active_derivs, inactive_derivs, x0,
 			   fd_lb, fd_ub);
 
@@ -3904,19 +3880,19 @@ bool Model::manage_asv(const ActiveSet& original_set, ShortArray& map_asv_out,
     for (size_t j=0; j<num_deriv_vars; j++) {
       size_t xj_index = find_index(cv_ids, orig_dvv[j]);
       Real x0_j = x0[xj_index], lb_j = fd_lb[j], ub_j = fd_ub[j];
-      
+
       // NOTE: resets shortStep to false for each variable
       Real h = forward_grad_step(num_deriv_vars, xj_index, x0_j, lb_j, ub_j);
       if (intervalType == "central")
         Real h2 = FDstep2(x0_j, lb_j, ub_j, h);
-      
+
       if (shortStep)
         short_step = true;
     }
-    
+
     // update ASV with f(x0) requests needed for shortStep
     for (i=0; i<asv_len; ++i)
-      if ( (fd_grad_asv_out[i] & 1) && short_step) 
+      if ( (fd_grad_asv_out[i] & 1) && short_step)
         map_asv_out[i] |= 1; // activate 1st bit
   }
 
@@ -3933,7 +3909,7 @@ bool Model::manage_data_recastings()
   //     within the transformed space.  Transform imported data at run time
   //     in order to capture latest initialize() calls to RecastModels.
   // (2) stop the recursion if a nested model is encountered: we will apply
-  //     any recastings that occur following the last nesting. 
+  //     any recastings that occur following the last nesting.
   // (3) Additional surrogates in this recursion hierarchy are ignored.
   ModelList& sub_models = subordinate_models(); // populates/returns modelList
   bool manage_recasting = false;
@@ -4423,7 +4399,7 @@ Real Model::solution_level_cost() const
 
 short Model::solution_control_variable_type() const
 {
-  
+
   Cerr << "Error: Letter lacking redefinition of virtual solution_control_"
       << "variable_type() function.\n       solution_control_variable_"
       << "type() is not supported by this Model class." << std::endl;
@@ -4844,7 +4820,7 @@ void Model::run_dace()
 {
   Cerr << "Error: Letter lacking redefinition of virtual run_dace() function."
       << "\n       This model does not support DACE executions."<< std::endl;
-  abort_handler(MODEL_ERROR); 
+  abort_handler(MODEL_ERROR);
 }
 
 
@@ -4893,7 +4869,7 @@ SharedApproxData& Model::shared_approximation()
 
 
 std::vector<Approximation>& Model::approximations()
-{  
+{
   Cerr << "Error: Letter lacking redefinition of virtual approximations() "
       << "function.\nThis model does not support approximations."
       << std::endl;
@@ -5157,7 +5133,7 @@ init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
   // Note for updated design: could replace with check miPLIters.size() <= 1,
   // but w_pl has now been expanded to be a sufficient starting pt for ie/ea
   // (meta-iterator partitioning is no longer required) --> leave commented
-  // out for now. 
+  // out for now.
 
   // matches bcast in Model::serve_init() called from
   // IteratorExecutor::init_iterator().  bcastFlag assures that, when Model
@@ -5616,7 +5592,7 @@ ActiveSet Model::default_active_set()
   // This member fn is called from Model::evaluate(_no_wait) and the
   // ActiveSet returned is used to allocate evaluation storage in HDF5
 
-  ActiveSet set; 
+  ActiveSet set;
   set.derivative_vector(currentVariables.all_continuous_variable_ids());
   ShortArray asv(numFns, 1);
   if (!set.derivative_vector().empty()) {
@@ -5645,8 +5621,8 @@ void Model::active_view(short view, bool recurse_flag)
   numDerivVars = currentVariables.cv(); // update
   if (!quasiHessians.empty()) {
     size_t i, num_qh = quasiHessians.size();
-    for (i=0; i<num_qh; ++i) { 
-      quasiHessians[i].reshape(numDerivVars);  quasiHessians[i] = 0.; 
+    for (i=0; i<num_qh; ++i) {
+      quasiHessians[i].reshape(numDerivVars);  quasiHessians[i] = 0.;
     }
   }
 }
@@ -5694,7 +5670,7 @@ int Model::derived_evaluation_id() const
 
 
 /** Only Models including ApplicationInterfaces support an evaluation cache:
-    surrogate, nested, and recast mappings are not stored in the cache. 
+    surrogate, nested, and recast mappings are not stored in the cache.
     Possible exceptions: EnsembleSurrModel, NestedModel::optionalInterface. */
 bool Model::evaluation_cache(bool recurse_flag) const
 {
@@ -5702,8 +5678,8 @@ bool Model::evaluation_cache(bool recurse_flag) const
 }
 
 
-/** Only Models including ApplicationInterfaces interact with the restart 
-    file: surrogate, nested, and recast mappings are not stored in restart. 
+/** Only Models including ApplicationInterfaces interact with the restart
+    file: surrogate, nested, and recast mappings are not stored in restart.
     Possible exceptions: DataFitSurrModel::import_points(),
     NestedModel::optionalInterface. */
 bool Model::restart_file(bool recurse_flag) const
@@ -5785,7 +5761,7 @@ void Model::active_variables(const RealVector& config_vars, Model& model)
   RealVector dscv(Teuchos::View, config_vars.values() + offset, ModelUtils::dsv(model));
   const StringSetArray& discrete_str_vals = ModelUtils::discrete_set_string_values(model);
   for (size_t i=0; i<ModelUtils::dsv(model); ++i) {
-    String str_value = 
+    String str_value =
       set_index_to_value(boost::math::iround(dscv[i]), discrete_str_vals[i]);
     ModelUtils::discrete_string_variable(model, str_value, i);
   }
@@ -5830,7 +5806,7 @@ void Model::inactive_variables(const RealVector& config_vars, Model& model,
   const StringSetArray& discrete_str_vals =
     ModelUtils::discrete_set_string_values(model, model.current_variables().view().second);
   for (size_t i=0; i<ModelUtils::idsv(model); ++i) {
-    String str_value = 
+    String str_value =
       set_index_to_value(boost::math::iround(dscv[i]), discrete_str_vals[i]);
     vars.inactive_discrete_string_variable(str_value, i);
   }
@@ -5930,11 +5906,11 @@ EvaluationsDBState Model::evaluations_db_state(const Model &model) {
 /** Rationale: The parser allows multiple user-specified models with
     empty (unspecified) ID. However, only a single Model with empty
     ID can be constructed (if it's the only one present, or the "last
-    one parsed"). Therefore decided to prefer NO_MODEL_ID over 
-    NO_MODEL_ID_<num> for (some) consistency with interface 
+    one parsed"). Therefore decided to prefer NO_MODEL_ID over
+    NO_MODEL_ID_<num> for (some) consistency with interface
     NO_ID convention. _MODEL_ was inserted in the middle to distinguish
-    "anonymous" MODELS from methods and interfaces in the hdf5 output. 
-    Note that this function is not used to name recast models; see their 
+    "anonymous" MODELS from methods and interfaces in the hdf5 output.
+    Note that this function is not used to name recast models; see their
     constructors for how its done. */
 String Model::user_auto_id()
 {
@@ -5947,8 +5923,8 @@ String Model::user_auto_id()
     id="NO_SPECIFICATION" used for internally-constructed
     Models. Longer-term, consider auto-generating an ID that
     includes the context from which the method is constructed, e.g.,
-    the parent method or model's ID, together with its name. 
-    Note that this function is not used to name recast models; see 
+    the parent method or model's ID, together with its name.
+    Note that this function is not used to name recast models; see
     their constructors for how its done.
 **/
 String Model::no_spec_id()
@@ -5957,7 +5933,7 @@ String Model::no_spec_id()
   return String("NOSPEC_MODEL_ID_") + std::to_string(++noSpecIdNum);
 }
 
-// This is overridden by RecastModel so that it and its derived classes return 
+// This is overridden by RecastModel so that it and its derived classes return
 // the root_model_id() of their subModels. The base Model class version terminates
 // the "recursion" for models of other types.
 String Model::root_model_id() {

@@ -6,7 +6,7 @@ Test Number 0 succeeded
 <<<<< Best objective function  =
                       2.1729941416e+02
 <<<<< Best constraint values   =
-                      5.9278151435e-03
+                      5.9278151436e-03
 <<<<< Best evaluation ID not available
 Test Number 1 succeeded
 <<<<< Function evaluation summary (UQ_I): 111 total (91 new, 20 duplicate)

@@ -354,7 +354,8 @@
                             "storage_type": "PRESENCE_LITERAL",
                             "stored_value": "active_subspace"
                         }
-                    ]
+                    ],
+                    "x-pointer-group": true
                 }
             },
             "required": [
@@ -534,7 +535,8 @@
                     "description": "Pointer to specify a \"truth\" model, from which to construct a surrogate",
                     "x-aliases": [
                         "actual_model_pointer"
-                    ]
+                    ],
+                    "x-pointer-group": true
                 },
                 "truncation_tolerance": {
                     "default": 0.9,
@@ -4708,6 +4710,7 @@
                     ],
                     "description": "Local Optimizer Selection",
                     "title": "Sub Method",
+                    "x-pointer-union": true,
                     "x-union-pattern": 4
                 }
             },
@@ -18118,6 +18121,7 @@
                     ],
                     "description": "Global Sub-method Selection",
                     "title": "Sub Method",
+                    "x-pointer-union": true,
                     "x-union-pattern": 4
                 },
                 "local_sub_method": {
@@ -18132,6 +18136,7 @@
                     ],
                     "description": "Local Sub-method Selection",
                     "title": "Local Sub Method",
+                    "x-pointer-union": true,
                     "x-union-pattern": 4
                 },
                 "local_search_probability": {
@@ -22456,6 +22461,7 @@
                             "stored_value": "ensemble"
                         }
                     ],
+                    "x-pointer-union": true,
                     "x-union-pattern": 4
                 }
             },
@@ -22498,7 +22504,8 @@
                     "description": "Pointer to specify a \"truth\" model, from which to construct a surrogate",
                     "x-aliases": [
                         "actual_model_pointer"
-                    ]
+                    ],
+                    "x-pointer-group": true
                 }
             },
             "required": [
@@ -30370,7 +30377,8 @@
             "properties": {
                 "dace_method_pointer": {
                     "$ref": "#/$defs/DaceMethodPointerConfig",
-                    "argument": "pointer"
+                    "argument": "pointer",
+                    "x-pointer-group": true
                 }
             },
             "required": [
@@ -53463,6 +53471,7 @@
                     ],
                     "description": "Sub-method Selection",
                     "title": "Sub Method",
+                    "x-pointer-union": true,
                     "x-union-pattern": 4
                 },
                 "random_starts": {
@@ -59220,7 +59229,8 @@
                 },
                 "sub_method_pointer": {
                     "$ref": "#/$defs/SubMethodPointer",
-                    "argument": "pointer"
+                    "argument": "pointer",
+                    "x-pointer-group": true
                 }
             },
             "required": [
@@ -65158,7 +65168,8 @@
                     "argument": "pointers",
                     "x-aliases": [
                         "model_fidelity_sequence"
-                    ]
+                    ],
+                    "x-pointer-group": true
                 }
             },
             "required": [
@@ -65610,6 +65621,7 @@
                     ],
                     "description": "Sub-method Selection",
                     "title": "Sub Method",
+                    "x-pointer-union": true,
                     "x-union-pattern": 4
                 },
                 "random_weight_sets": {
@@ -71187,7 +71199,8 @@
                             "storage_type": "PRESENCE_LITERAL",
                             "stored_value": "random_field"
                         }
-                    ]
+                    ],
+                    "x-pointer-group": true
                 }
             },
             "required": [
@@ -75432,7 +75445,8 @@
                             "storage_type": "PRESENCE_LITERAL",
                             "stored_value": "simulation"
                         }
-                    ]
+                    ],
+                    "x-pointer-group": true
                 }
             },
             "required": [
@@ -77702,6 +77716,7 @@
                     ],
                     "description": "Sub-method Selection",
                     "title": "Sub Method",
+                    "x-pointer-union": true,
                     "x-union-pattern": 4
                 },
                 "model_pointer": {
@@ -77815,7 +77830,8 @@
                             "storage_type": "PRESENCE_ENUM",
                             "stored_value": "SURROGATE_BASED_GLOBAL"
                         }
-                    ]
+                    ],
+                    "x-pointer-group": true
                 }
             },
             "required": [
@@ -77954,6 +77970,7 @@
                     ],
                     "description": "Subproblem Optimizer Selection",
                     "title": "Sub Method",
+                    "x-pointer-union": true,
                     "x-union-pattern": 4
                 },
                 "model_pointer": {
@@ -78138,7 +78155,8 @@
                             "storage_type": "PRESENCE_ENUM",
                             "stored_value": "SURROGATE_BASED_LOCAL"
                         }
-                    ]
+                    ],
+                    "x-pointer-group": true
                 }
             },
             "required": [

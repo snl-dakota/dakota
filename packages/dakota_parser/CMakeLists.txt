@@ -1,8 +1,10 @@
 cmake_minimum_required(VERSION 3.15)
 project(dakota_json_validation VERSION 0.1.0 LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+# Enable default C++ standard
+include(DakotaCxxOptions)
+dakota_cxx_standard()
+
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -10,7 +12,12 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # Options
 # =============================================================================
 option(BUILD_PYTHON_BINDINGS "Build Python bindings" ON)
-option(BUILD_TESTS "Build tests" OFF)
+# When built as part of Dakota, default BUILD_TESTS to match DAKOTA_ENABLE_TESTS.
+# When built standalone (top-level or via scikit-build) default to OFF.
+include(CMakeDependentOption)
+cmake_dependent_option(BUILD_TESTS "Build tests"
+    ON  "DAKOTA_ENABLE_TESTS;NOT CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR;NOT SKBUILD"
+    OFF)
 option(BUILD_EXAMPLES "Build example programs" OFF)
 
 # Detect scikit-build-core

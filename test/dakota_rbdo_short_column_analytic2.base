@@ -131,14 +131,14 @@ Test Number 10 succeeded
                      -8.4687353958e-05
 <<<<< Best evaluation ID not available
 Test Number 11 succeeded
-<<<<< Function evaluation summary (UQ_I): 3292 total (3271 new, 21 duplicate)
+<<<<< Function evaluation summary (UQ_I): 4103 total (4083 new, 20 duplicate)
   response_fn_1: 20 val (12 n, 8 d), 26 grad (18 n, 8 d), 0 Hess (0 n, 0 d)
-  response_fn_2: 3260 val (3247 n, 13 d), 3266 grad (3253 n, 13 d), 3260 Hess (3247 n, 13 d)
+  response_fn_2: 4071 val (4059 n, 12 d), 4077 grad (4065 n, 12 d), 4071 Hess (4059 n, 12 d)
 <<<<< Best parameters          =
-                      8.6478058122e+00 b
+                      8.6478058116e+00 b
                       2.5000000000e+01 h
 <<<<< Best objective function  =
-                      2.1619514531e+02
+                      2.1619514529e+02
 <<<<< Best constraint values   =
-                     -8.4517006436e-05
+                     -8.4530890639e-05
 <<<<< Best evaluation ID not available

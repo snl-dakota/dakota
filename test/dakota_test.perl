@@ -22,6 +22,8 @@ my $DTP_DEBUG = 0;  # set to 1 to debug
 # set default options (global to this script)
 my $baseline_indir ="";      # default reference baselines are in pwd
 my $baseline_overwrite = 0;  # default is dakota_[p]base.test.new
+my $baseline_run_new = 0;       # write *.base.new alongside .tst during a normal run
+my $baseline_run_overwrite = 0; # overwrite baseline in-place during a normal run
 my $bin_dir = "";            # default binary location is pwd (none)
 my $bin_ext = "";            # default extension is empty
 my @dakota_config = ();      # CMake/#define configuration of Dakota itself
@@ -100,6 +102,31 @@ if ($mode eq "base" || $mode eq "run") {
   @dakota_config = check_dakota_config();
 }
 
+# honour environment-variable baseline controls (run-mode only)
+# These allow baselines to be updated from within a normal ctest run,
+# which means disabled subtests (DakotaConfig) are naturally skipped
+# (recorded as "skipped") rather than being missing or overwritten.
+# DAKOTA_TEST_BASELINE_OVERWRITE -- write directly to the source baseline
+#   file (in baseline_indir, which CMake substitutes at configure time).
+#   Has no effect if baseline_indir is empty (falls back to _NEW behavior).
+# DAKOTA_TEST_BASELINE_NEW       -- write a *.base.new / *.pbase.new file
+#   in output_dir, leaving the authoritative baseline unchanged.
+if ($mode eq "run") {
+  if ($ENV{'DAKOTA_TEST_BASELINE_OVERWRITE'}) {
+    $baseline_run_overwrite = 1;
+    if (!$baseline_indir) {
+      # baseline_indir is empty (e.g. manual / installed use without
+      # --baseline-indir).  Fall back gracefully to writing .new files.
+      print "Warning: DAKOTA_TEST_BASELINE_OVERWRITE set but " .
+            "baseline_indir is empty; writing *.base.new instead.\n";
+      $baseline_run_overwrite = 0;
+      $baseline_run_new = 1;
+    }
+  } elsif ($ENV{'DAKOTA_TEST_BASELINE_NEW'}) {
+    $baseline_run_new = 1;
+  }
+}
+
 if ($mode eq "test_props") {
   open (PROPERTIES_OUT, ">${test_props_dir}/dakota_tests.props");
   open (USEREXAMPLES_OUT, ">${test_props_dir}/dakota_usersexamples.props");
@@ -166,6 +193,19 @@ foreach my $file (@test_inputs) {
   elsif ($mode eq "run") { 
     # if normal test mode, open individual test output file
     open (TEST_OUT, ">$test") || die "cannot open output file $test\n$!";
+
+    # optionally also open a parallel baseline output file
+    if ( ($baseline_run_new || $baseline_run_overwrite) && ${last_test} >= 0 ) {
+      my $fq_baseline_run_filename;
+      if ($baseline_run_overwrite) {
+        $fq_baseline_run_filename = "${baseline_indir}${baseline_filename}";
+      } else {
+        $fq_baseline_run_filename = "${output_dir}${baseline_filename}.new";
+      }
+      open (BASELINE_OUT, ">${fq_baseline_run_filename}") ||
+        die "Error: cannot open ${fq_baseline_run_filename}\n$!";
+      print "Writing run-mode baseline to ${fq_baseline_run_filename}\n";
+    }
   }
 
   # Multiple tests are defined within one input file.  A specific test
@@ -319,7 +359,7 @@ foreach my $file (@test_inputs) {
     my $enable_test = check_required_configs($cnt);
     if (! $enable_test) {
       print "skipped\n";
-      print TEST_OUT "Test Number $cnt skipped\n";
+      tee_test_out("Test Number $cnt skipped\n");
       next;
     }
 
@@ -376,13 +416,13 @@ foreach my $file (@test_inputs) {
     # iff the test succeeded, parse out the results subset of interest
     if ($exit_value == 0) {
       print "succeeded\n";
-      print TEST_OUT "Test Number $cnt succeeded\n";
+      tee_test_out("Test Number $cnt succeeded\n");
       parse_test_output($check_output);
     }
     else {
       # if the test failed, don't parse out any results
       print "failed with exit code $exit_value";
-      print TEST_OUT "Test Number $cnt failed with exit code $exit_value";
+      tee_test_out("Test Number $cnt failed with exit code $exit_value");
       append_error_message($exit_value);
     }
 
@@ -399,6 +439,11 @@ foreach my $file (@test_inputs) {
 
   # close .tst or .[p]base file
   close(TEST_OUT);
+
+  # close the run-mode baseline file if one was opened
+  if ( ($baseline_run_new || $baseline_run_overwrite) && ${last_test} >= 0 ) {
+    close(BASELINE_OUT);
+  }
 
   if ($mode eq "run" && -e $test) { 
     # if normal mode, generate diffs
@@ -620,6 +665,26 @@ sub manage_parallelism {
   if ( $parallelism eq "parallel" ) {
     $ENV{'OMPI_MCA_mpi_warn_on_fork'} = '0';
   }
+
+  # Force single-threaded BLAS to ensure deterministic floating-point results.
+  # Multi-threaded BLAS implementations (e.g. OpenBLAS or MKL) can produce
+  # non-deterministic results due to varying summation order across threads,
+  # which causes iterative solvers like NPSOL to follow different optimization
+  # paths across runs.  Only set these if the user hasn't explicitly configured
+  # them already.
+  # Note: threaded ATLAS (libtatlas) bakes its thread count in at ATLAS build
+  # time and has no runtime knob; the fix there is to link libsatlas instead.
+  if (!exists $ENV{'OPENBLAS_NUM_THREADS'}) {
+    $ENV{'OPENBLAS_NUM_THREADS'} = '1';
+  }
+  if (!exists $ENV{'MKL_NUM_THREADS'}) {
+    $ENV{'MKL_NUM_THREADS'} = '1';
+  }
+  # BLIS (another BLAS implementation) thread control
+  if (!exists $ENV{'BLIS_NUM_THREADS'}) {
+    $ENV{'BLIS_NUM_THREADS'} = '1';
+  }
+
   # Detect launch within a job on a Cray XC system. These systems
   # can run MOAB, PBS (only with MOAB?), or SLURM
   if (exists $ENV{CRAYPE_VERSION}) {
@@ -1360,6 +1425,22 @@ sub fork_dakota
 # -------------------------
 
 
+# Write $_ (or an explicit string argument) to TEST_OUT and, when a
+# run-mode baseline is being collected, also to BASELINE_OUT.
+# Centralises the "mirror to baseline" logic so call sites stay clean.
+sub tee_test_out {
+  if (@_) {
+    # explicit string argument
+    my ($str) = @_;
+    print TEST_OUT $str;
+    print BASELINE_OUT $str if ($baseline_run_new || $baseline_run_overwrite);
+  } else {
+    # no argument: mirror $_ (the current line), same as bare "print TEST_OUT;"
+    print TEST_OUT;
+    print BASELINE_OUT if ($baseline_run_new || $baseline_run_overwrite);
+  }
+}
+
 # Process the test output, matching on relevant content on which to diff
 sub parse_test_output {
 
@@ -1381,12 +1462,12 @@ sub parse_test_output {
       # and DAKOTA still returns with exit code 0
       # ($numevals) = /summary: (\d+)/;
       print;
-      print TEST_OUT;
+      tee_test_out();
       $_ = <OUTPUT>; # grab next line
       # Capture detailed summaries (if output set to verbose)
       while (/^\s*\w+: $ui val/) {
 	print;
-	print TEST_OUT;
+	tee_test_out();
 	$_ = <OUTPUT>; # grab next line
       }
     }
@@ -1395,17 +1476,17 @@ sub parse_test_output {
     # Also grab Bayesian optimal design points
     while (/^(<<<<< Best [ \w\(\)]+=|Optimal design:)$/) {
       print;
-      print TEST_OUT;
+      tee_test_out();
       $_ = <OUTPUT>; # grab next line
       while (/^\s+($e|$i|$s)/) {
 	print;
-	print TEST_OUT;
+	tee_test_out();
 	$_ = <OUTPUT>; # grab next line
       }
     }
     if (/^<<<<< Best (evaluation ID[: s]|parameters\/responses)/) {
       print;
-      print TEST_OUT;
+      tee_test_out();
     }
 
     # *********************************
@@ -1429,14 +1510,14 @@ sub parse_test_output {
     # ********************************************
     if (/^<<<<< Results summary:$/) {
       print;
-      print TEST_OUT;
+      tee_test_out();
       $_ = <OUTPUT>; # grab header
       print;
-      print TEST_OUT;
+      tee_test_out();
       $_ = <OUTPUT>; # grab next line
       while (/^\s+$ui(\s+($e|$f)){2,}/) {
         print;
-        print TEST_OUT;
+        tee_test_out();
         $_ = <OUTPUT>; # grab next line
       }
     }
@@ -1450,20 +1531,20 @@ sub parse_test_output {
     # ***********************************************
     if (/^<<<<< (Equivalent number of|Online number of equivalent|Projected number of equivalent|Incurred cost in equivalent) high fidelity evaluations:/) {
       print;
-      print TEST_OUT;
+      tee_test_out();
     }
 
     if (/^<<<<< Variance for mean estimator/) {
       print;
-      print TEST_OUT;
+      tee_test_out();
       $_ = <OUTPUT>; # grab next line (table data)
       while (/^\s+\w+:$/) {
         print;
-        print TEST_OUT;
+        tee_test_out();
         $_ = <OUTPUT>; # grab next line (table data)
         while (/\s+$e/) {
           print;
-          print TEST_OUT;
+          tee_test_out();
           $_ = <OUTPUT>; # grab next line
         }
       }
@@ -1471,12 +1552,12 @@ sub parse_test_output {
 
     if (/(Mean =|Approximate Mean Response|Approximate Standard Deviation of Response|Importance Factor for|Si =|Information gained from prior to posterior|Mutual information =|Model evidence \()/) {
       print;
-      print TEST_OUT;
+      tee_test_out();
     }
 
     if (/^\w+:\s+Min =\s+$e\s+Max =\s+$e$/) {
       print;
-      print TEST_OUT;
+      tee_test_out();
     }
 
     #if (/^Condition number for LLS using LAPACK/) {
@@ -1486,17 +1567,17 @@ sub parse_test_output {
     
     if (/(Moment|Sample moment|Double-sided tolerance interval equivalent normal) statistics for each (response function|posterior variable):/) {
       print;
-      print TEST_OUT;
+      tee_test_out();
       $_ = <OUTPUT>; # grab next line (Mean/StdDev/Skew/Kurt header)
       print;
-      print TEST_OUT;
+      tee_test_out();
       $_ = <OUTPUT>; # grab next line (secondary tag header or table data)
       if (/^\s*\w+$/) { # 2 sets of moments (e.g. PCE/SC w/ exp _and_ numerical)
         while (/^\s*\w+$/) {
           $_ = <OUTPUT>; # grab next line (table data)
           while (/\s+$e/) {
     	  print;
-    	  print TEST_OUT;
+    	  tee_test_out();
     	  $_ = <OUTPUT>; # grab next line
           }
         }
@@ -1504,7 +1585,7 @@ sub parse_test_output {
       else { # 1 set of moments (e.g. PCE/SC w/ expansion _or_ numerical)
         while (/\s+$e/) {
     	print;
-          print TEST_OUT;
+          tee_test_out();
           $_ = <OUTPUT>; # grab next line
         }
       }
@@ -1512,28 +1593,28 @@ sub parse_test_output {
 
     if (/95% confidence intervals for each response function:/) {
       print;
-      print TEST_OUT;
+      tee_test_out();
       $_ = <OUTPUT>; #grab next line(LowerCI_mean/UpperCI_mean/LowerCI_stdev/UpperCI_stdev)
       print;
-      print TEST_OUT;
+      tee_test_out();
       $_ = <OUTPUT>; # grab next line (secondary tag header or table data)
       while (/\s+$e/) {
         print;
-        print TEST_OUT;
+        tee_test_out();
         $_ = <OUTPUT>; # grab next line
       }
     }
 
     while (/^\w+ Sobol' indices:/) {
       print;
-      print TEST_OUT;
+      tee_test_out();
       $_ = <OUTPUT>; # grab next line (header)
       print;
-      print TEST_OUT;
+      tee_test_out();
       $_ = <OUTPUT>; # grab next line (table data)
       while (/^\s+$e/) {
         print;
-        print TEST_OUT;
+        tee_test_out();
         $_ = <OUTPUT>; # grab next line
       }
       if (/Interaction/) { # header of optional section
@@ -1542,7 +1623,7 @@ sub parse_test_output {
         $_ = <OUTPUT>; # grab next line (table data)
         while (/^\s+$e/) {
           print;
-          print TEST_OUT;
+          tee_test_out();
           $_ = <OUTPUT>; # grab next line
         }
       }
@@ -1550,13 +1631,13 @@ sub parse_test_output {
     
     while (/of Polynomial Chaos Expansion for/) {
       print;
-      print TEST_OUT;
+      tee_test_out();
       $_ = <OUTPUT>; # grab next line (header)
       $_ = <OUTPUT>; # grab next line (header)
       $_ = <OUTPUT>; # grab next line
       while (/^\s+$e/) {
         print;
-        print TEST_OUT;
+        tee_test_out();
         $_ = <OUTPUT>; # grab next line
       }
     }
@@ -1565,14 +1646,14 @@ sub parse_test_output {
     # so Reliability Index  General Rel Index is optional
     while (/^(Standardized Regression Coefficients and Coefficients of Determination \(R\^2\):|\s+(Response Level|Resp Level Set)\s+Probability Level(\s+Reliability Index\s+General Rel Index)?|\s+Response Level\s+Belief (Prob Level|Gen Rel Lev)\s+Plaus (Prob Level|Gen Rel Lev)|\s+(Probability|General Rel) Level\s+Belief Resp Level\s+Plaus Resp Level|\s+Bin Lower\s+Bin Upper\s+Density Value|[ \w]+Correlation Matrix[ \w]+input[ \w]+output\w*:)$/) {
       print;
-      print TEST_OUT;
+      tee_test_out();
       $_ = <OUTPUT>; # grab next line
       print;
-      print TEST_OUT;
+      tee_test_out();
       $_ = <OUTPUT>; # grab next line
       while (/\s+($e|$naninf)/) {  # correlations may contain nan/inf
         print;
-        print TEST_OUT;
+        tee_test_out();
         $_ = <OUTPUT>; # grab next line
       }
     }
@@ -1594,40 +1675,40 @@ sub parse_test_output {
 
     while (/^Surrogate quality metrics/) {
       print;
-      print TEST_OUT;
+      tee_test_out();
       $_ = <OUTPUT>; # grab next line
       while (/^\s*${s}\s*($e|$naninf).*/) {  # may contain nan/inf
         print;
-        print TEST_OUT;
+        tee_test_out();
         $_ = <OUTPUT>; # grab next line
       }
     }
 
     while (/^Wilks Statistics for/) {
       print;
-      print TEST_OUT;
+      tee_test_out();
       $_ = <OUTPUT>; # grab next line
       $_ = <OUTPUT>; # grab next line
-      print TEST_OUT;
+      tee_test_out();
       $_ = <OUTPUT>; # grab next line
-      print TEST_OUT;
+      tee_test_out();
       $_ = <OUTPUT>; # grab next line
-      print TEST_OUT;
+      tee_test_out();
       while (/\s+$e/) {
 #      while (/\s*${s}\s*($e|$naninf)/) {  # may contain nan/inf
         print;
-        print TEST_OUT;
+        tee_test_out();
         $_ = <OUTPUT>; # grab next line
       }
     }
 
     while (/^Confidence Intervals/) {
       print;
-      print TEST_OUT;
+      tee_test_out();
       $_ = <OUTPUT>; # grab next line
       while (/^\s*${s}:\s*\[\s*($e|$naninf),\s*($e|$naninf)\s*\]/) {  # may contain nan/inf
         print;
-        print TEST_OUT;
+        tee_test_out();
         $_ = <OUTPUT>; # grab next line
       }
     }
@@ -1671,7 +1752,7 @@ sub append_error_message {
     $error_msg = "\n";
   }
   print "$error_msg";
-  print TEST_OUT "$error_msg";
+  tee_test_out("$error_msg");
 }
 
 
@@ -1769,6 +1850,26 @@ prepend Dakota command with valgrind executable and default options;
 alternately set environment variable DAKOTA_TEST_VALGRIND.
 DAKOTA_TEST_VALGRIND_EXTRA_ARGS will append args to valgrind,
 overriding the defaults.
+
+=item B<DAKOTA_TEST_BASELINE_NEW> (environment variable)
+
+When set (to any non-empty value) and the script is running in the
+default run mode, a new baseline file (C<dakota_name.[p]base.new>) is
+written to C<output-dir> alongside the normal C<.tst> diff file.  This
+lets ctest regenerate candidate baselines in a single pass without a
+separate C<--base> invocation.  Subtests that are disabled by
+C<DakotaConfig> are recorded as C<skipped> in the baseline, exactly as
+they appear in a normal run, so disabled tests are never inadvertently
+erased from the baseline.
+
+=item B<DAKOTA_TEST_BASELINE_OVERWRITE> (environment variable)
+
+Like C<DAKOTA_TEST_BASELINE_NEW> but writes the baseline directly to the
+authoritative source file (C<baseline-indir/dakota_name.[p]base>),
+overwriting it in place.  C<baseline-indir> must be set (either via
+C<--baseline-indir> or the CMake-substituted default) for this to work;
+if it is empty the script falls back to writing C<.new> files and prints
+a warning.  Review changes with C<git diff> before committing.
 
 =back
 

@@ -33,7 +33,7 @@ Sample moment statistics for each response function:
    ccdf_beta_s  2.9985433150e+00  6.6105285294e-01 -3.5226295680e-02 -7.2208427499e-01
    ccdf_beta_d  2.9990233766e+00  5.5096520701e-01  2.9005798756e-02 -8.7818256959e-01
 95% confidence intervals for each response function:
-                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
        mean_wt  9.5209117200e+00  9.5209117200e+00  4.4967484460e-15  6.7081528841e-15
    ccdf_beta_s  2.8106741729e+00  3.1864124571e+00  5.5219993068e-01  8.2376001284e-01
    ccdf_beta_d  2.8424407973e+00  3.1556059559e+00  4.6023997592e-01  6.8657612472e-01
