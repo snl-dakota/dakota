@@ -56,7 +56,7 @@ NonDLHSSampling::NonDLHSSampling(ProblemDescDB& problem_db, ParallelLibrary& par
   percentVarianceExplained(
     probDescDB.get<const Real>("method.percent_variance_explained"))
 {
-  // sampleType default in DataMethod.cpp is SUBMETHOD_DEFAULT (0).
+  // sampleType IR default is SUBMETHOD_DEFAULT (0).
   // Enforce an LHS default for this method.
   if (sampleType == SUBMETHOD_DEFAULT)
     sampleType = SUBMETHOD_LHS;

@@ -135,7 +135,7 @@ void DOTOptimizer::initialize()
   }
 
   // convergenceTol is an optional parameter in dakota.input.nspec, but
-  // defining our own default (in the DataMethod constructor) and
+  // defining our own default (in the generated method defaults) and
   // always assigning it applies some consistency across methods.
   // Therefore, the DOT default is not used.
   realCntlParmArray[2] = convergenceTol; // RPRM(3) =DABOBJ=MAX(0.0001*ABS(F0),1.E-20)

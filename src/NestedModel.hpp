@@ -13,9 +13,8 @@
 #include "DakotaModel.hpp"
 #include "DakotaInterface.hpp"
 #include "DakotaIterator.hpp"
-#include "DataModel.hpp"
-#include "DataInterface.hpp"
-#include "DataInterface.hpp"
+#include "DakotaModelEnums.hpp"
+#include "DakotaInterfaceEnums.hpp"
 #include "PRPMultiIndex.hpp"
 #include "StudyRuntime.hpp"
 

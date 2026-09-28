@@ -13,8 +13,8 @@
 #include "GumbelRandomVariable.hpp"
 #include "FrechetRandomVariable.hpp"
 #include "WeibullRandomVariable.hpp"
-#include "DataModel.hpp"
-#include "DataMethod.hpp"
+#include "DakotaModelEnums.hpp"
+#include "DakotaMethodEnums.hpp"
 
 static const char rcsId[]="@(#) $Id$";
 

@@ -12,7 +12,7 @@
 
 #include "dakota_data_types.hpp"
 #include "DakotaModel.hpp"
-#include "DataMethod.hpp"
+#include "DakotaMethodEnums.hpp"
 #include "ResultsManager.hpp"
 #include "DakotaTraitsBase.hpp"
 #include <memory>

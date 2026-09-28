@@ -10,7 +10,7 @@
 #ifndef DAKOTA_RESPONSE_H
 #define DAKOTA_RESPONSE_H
 
-#include "DataResponses.hpp"
+#include "DakotaResponseEnums.hpp"
 #include "DakotaActiveSet.hpp"
 #include "SharedResponseData.hpp"
 #include "Teuchos_SerialDenseHelpers.hpp"

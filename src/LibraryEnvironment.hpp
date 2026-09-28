@@ -77,11 +77,6 @@ public:
   //- Heading: Member functions
   //
 
-  /// Insert DB nodes for a {Method,Model,Variables,Interface,Responses} set
-  void insert_nodes(Dakota::DataMethod&   dme, Dakota::DataModel&    dmo,
-		    Dakota::DataVariables& dv, Dakota::DataInterface& di,
-		    Dakota::DataResponses& dr);
-
   /// Check database contents, broadcast, and construct iterators
   void done_modifying_db();
 

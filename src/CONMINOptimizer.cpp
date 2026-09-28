@@ -85,7 +85,7 @@ void CONMINOptimizer::initialize()
   }
 
   // convergenceTol is an optional parameter in dakota.input.nspec, but
-  // defining our own default (in the DataMethod constructor) and
+  // defining our own default (in the generated method defaults) and
   // always assigning it applies some consistency across methods.
   // Therefore, the CONMIN default is not used.
   DELFUN = DABFUN = convergenceTol; // needed in CONMIN

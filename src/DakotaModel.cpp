@@ -8,6 +8,7 @@
     _______________________________________________________________________ */
 
 #include "dakota_system_defs.hpp"
+#include "DakotaInterfaceEnums.hpp"
 #include "ParamResponsePair.hpp"
 #include "model_utils.hpp"
 #include "PRPMultiIndex.hpp"

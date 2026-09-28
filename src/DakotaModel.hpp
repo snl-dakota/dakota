@@ -11,6 +11,7 @@
 #define DAKOTA_MODEL_H
 
 #include "dakota_data_types.hpp"
+#include "DakotaModelEnums.hpp"
 #include "model_utils.hpp"
 #include "MPIManager.hpp"
 #include "DakotaVariables.hpp"

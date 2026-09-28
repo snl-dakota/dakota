@@ -9,7 +9,7 @@
 
 #include "TestDriverInterface.hpp"
 #include "ParallelLibrary.hpp"
-#include "DataMethod.hpp"  // for output levels
+#include "DakotaMethodEnums.hpp"  // for output levels
 //#include <thread> // for sleep_for
 #ifdef DAKOTA_MODELCENTER
 #include "PHXCppApi.h"

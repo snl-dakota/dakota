@@ -13,7 +13,7 @@
 #include "SharedApproxData.hpp"
 #include "DakotaApproximation.hpp"
 #include "DakotaModel.hpp"
-#include "DataModel.hpp"
+#include "DakotaModelEnums.hpp"
 #include "DiscrepancyCalculator.hpp"
 
 

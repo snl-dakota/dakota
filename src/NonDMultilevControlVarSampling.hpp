@@ -12,7 +12,7 @@
 
 #include "NonDMultilevelSampling.hpp"
 //#include "NonDMultifidelitySampling.hpp"
-#include "DataMethod.hpp"
+#include "DakotaMethodEnums.hpp"
 
 namespace Dakota {
 

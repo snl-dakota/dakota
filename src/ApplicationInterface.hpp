@@ -13,8 +13,8 @@
 #include "ParallelLibrary.hpp"
 #include "DakotaInterface.hpp"
 #include "PRPMultiIndex.hpp"
-#include "DataMethod.hpp"
-#include <DataInterface.hpp>
+#include "DakotaMethodEnums.hpp"
+#include "DakotaInterfaceEnums.hpp"
 #include <memory>
 
 namespace Dakota {
@@ -567,7 +567,7 @@ private:
 };
 
 
-/** DataInterface.cpp defaults of 0 servers are needed to distinguish an
+/** interface IR defaults of 0 servers are needed to distinguish an
     explicit user request for 1 server (serialization of a parallelism
     level) from no user request (use parallel auto-config).  This
     default causes problems when init_communicators() is not called

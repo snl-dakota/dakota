@@ -11,7 +11,7 @@
 #define SHARED_VARIABLES_DATA_H
 
 #include "dakota_data_types.hpp"
-#include "DataVariables.hpp"
+#include "DakotaVariablesEnums.hpp"
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/split_member.hpp>
 #include <boost/serialization/tracking.hpp>

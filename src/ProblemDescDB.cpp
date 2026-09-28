@@ -8,29 +8,28 @@
     _______________________________________________________________________ */
 
 // Class:        ProblemDescDB
-//- Description: Implementation code for the ProblemDescDB class.
-//-              It provides storage for problem description database entries
-//-              and defines the keyword handlers that yacc calls to populate
-//-              the database based on the parsed input.
+//- Description: IR-backed problem description database implementation.
 //- Owner:       Mike Eldred
 //- Checked by:
 
 #include "dakota_system_defs.hpp"
 #include "dakota_data_util.hpp"
 #include "ProblemDescDB.hpp"
+#include "DakotaInterfaceEnums.hpp"
 #include "ParallelLibrary.hpp"
 #include "InstructionMaterializer.hpp"
 #include "DakotaIterator.hpp"
 #include "DakotaInterface.hpp"
 #include "WorkdirHelper.hpp"  // bfs utils and prepend_preferred_env_path
-#include <boost/bind.hpp>
-#include <boost/function.hpp>
 #include <string>
 #include "delete_study_components.hpp"
 #include <cstdlib>
 #include <fstream>
 #include <nlohmann/json.hpp>
 #include <iostream>
+#include <algorithm>
+#include <numeric>
+#include <set>
 #include <string_view>
 
 //#define DEBUG
@@ -99,7 +98,7 @@ void log_top_level_json_shape(const json& j, const String& filename)
     calling get_db() again).  Since the letter IS the representation, its
     representation pointer is set to NULL. */
 ProblemDescDB::ProblemDescDB(BaseConstructor, int world_size, int world_rank):
-  environmentCntr(0), methodDBLocked(true),
+  methodDBLocked(true),
   modelDBLocked(true), variablesDBLocked(true), interfaceDBLocked(true),
   responsesDBLocked(true), worldSize(world_size), worldRank(world_rank)
 { /* empty ctor */ }
@@ -157,46 +156,6 @@ ProblemDescDB::~ProblemDescDB()
 }
 
 
-/** DB setup phase 1: parse the input file and execute callback
-    functions if present.  Rank 0 only.
-
-    DB setup phase 2: optionally insert additional data via late sets.
-    Rank 0 only. */
-void ProblemDescDB::
-parse_inputs(const std::string_view input_string, const std::string_view parser_options, bool command_line_run,
-	     DbCallbackFunctionPtr callback, void *callback_data)
-{
-  if (dbRep) {
-    dbRep->parse_inputs(input_string, parser_options, command_line_run, callback, callback_data);
-    // BMA TODO: Temporary workaround; can't get callback to work on
-    // letter yet. Need to replace Null_rep* with forward to letter
-    // and remove dbRep->, but initial cut didn't work.
-    if (callback && dbRep->worldRank == 0)
-      (*callback)(this, callback_data);
-  }
-  else {
-
-    // Only world rank 0 parses the input file.
-    if (worldRank == 0) {
-        irState.reset();
-        validatedStudyJson = json();
-    }
-
-    // Allow user input by callback function.
-
-    // BMA TODO: Is this comment true?
-    // Note: the DB is locked and the list iterators are not defined.  Thus,
-    // the user function must do something to put the DB in a usable set/get
-    // state (e.g., resolve_top_method() or set_db_list_nodes()).
-
-    // if (callback)
-    // 	(*callback)(this, callback_data);
-  }
-  //Cout << "ProblemDescDB::parse_inputs: using data from input ..."
-  //     << " dataMethodList is " << String(dataMethodList.empty() ? "" : "NOT")
-  //     << " empty." << std::endl;
-}
-
 void ProblemDescDB::enable_json_input(const String & json_file)
 {
   if (ir_debug_logging_enabled())
@@ -224,18 +183,9 @@ void ProblemDescDB::enable_json_input(const nlohmann::json& study_json)
     throw;
   }
 
-  if (dbRep) {
-    dbRep->validatedStudyJson = study_json;
-    dbRep->irState = std::move(materialized);
-    if (dbRep->dataMethodList.empty())
-      dbRep->populate_skeleton_data_from_ir();
-  }
-  else {
-    validatedStudyJson = study_json;
-    irState = std::move(materialized);
-    if (dataMethodList.empty())
-      populate_skeleton_data_from_ir();
-  }
+  ProblemDescDB* db = dbRep ? dbRep.get() : this;
+  db->validatedStudyJson = study_json;
+  db->irState = std::move(materialized);
 
   if (ir_debug_logging_enabled()) {
     const ProblemDescDB* db = dbRep ? dbRep.get() : this;
@@ -250,824 +200,443 @@ void ProblemDescDB::enable_json_input(const nlohmann::json& study_json)
   }
 }
 
-/** DB setup phase 3: perform basic checks on keywords counts in
-    current DB state, then sync to all processors. */
-void ProblemDescDB::check_and_broadcast(const UserModes& user_modes) {
 
-  if (dbRep)
-    dbRep->check_and_broadcast(user_modes);
-  else {
+namespace {
 
-    // Check to make sure at least one of each of the keywords was found
-    // in the problem specification file; checks only happen on Dakota rank 0
-    if (worldRank == 0)
-      check_input(user_modes);
-
-    // bcast a minimal MPI buffer containing the input specification
-    // data prior to post-processing
-    broadcast();
-
-    // After broadcast, perform post-processing on all processors to
-    // size default variables/responses specification vectors (avoid
-    // sending large vectors over an MPI buffer).
-    post_process();
-
-  }
+const String& ir_id(const IRStore& store)
+{
+  static const String empty;
+  return store.contains("id") ? store.get<String>("id") : empty;
 }
 
-
-void ProblemDescDB::populate_skeleton_data_from_ir()
+const String& ir_string(const IRStore& store, const String& key)
 {
-  ProblemDescDB* db = dbRep ? dbRep.get() : this;
-  if (!db->irState)
-    return;
-
-  db->environmentCntr = 0;
-  db->environmentSpec = DataEnvironment();
-  if (db->irState->environment.contains("top_method_pointer"))
-    db->environmentSpec.data_rep()->topMethodPointer =
-      db->irState->environment.get<String>("top_method_pointer");
-  if (!db->irState->environment.values().empty())
-    db->environmentCntr = 1;
-
-  db->dataMethodList.clear();
-  for (const auto& store : db->irState->method) {
-    DataMethod method;
-    if (store.contains("algorithm"))
-      method.data_rep()->methodName = store.get<unsigned short>("algorithm");
-    if (store.contains("id"))
-      method.data_rep()->idMethod = store.get<String>("id");
-    if (store.contains("sub_method"))
-      method.data_rep()->subMethod = store.get<unsigned short>("sub_method");
-    if (store.contains("sub_method_name"))
-      method.data_rep()->subMethodName = store.get<String>("sub_method_name");
-    if (store.contains("sub_model_pointer"))
-      method.data_rep()->subModelPointer = store.get<String>("sub_model_pointer");
-    if (store.contains("model_pointer"))
-      method.data_rep()->modelPointer = store.get<String>("model_pointer");
-    if (store.contains("sub_method_pointer"))
-      method.data_rep()->subMethodPointer = store.get<String>("sub_method_pointer");
-    db->dataMethodList.push_back(method);
-  }
-
-  db->dataModelList.clear();
-  for (const auto& store : db->irState->model) {
-    DataModel model;
-    if (store.contains("id"))
-      model.data_rep()->idModel = store.get<String>("id");
-    if (store.contains("variables_pointer"))
-      model.data_rep()->variablesPointer = store.get<String>("variables_pointer");
-    if (store.contains("interface_pointer"))
-      model.data_rep()->interfacePointer = store.get<String>("interface_pointer");
-    if (store.contains("responses_pointer"))
-      model.data_rep()->responsesPointer = store.get<String>("responses_pointer");
-    if (store.contains("sub_method_pointer"))
-      model.data_rep()->subMethodPointer = store.get<String>("sub_method_pointer");
-    if (store.contains("type"))
-      model.data_rep()->modelType = store.get<String>("type");
-    if (store.contains("surrogate.type"))
-      model.data_rep()->surrogateType = store.get<String>("surrogate.type");
-    db->dataModelList.push_back(model);
-  }
-
-  db->dataVariablesList.clear();
-  for (const auto& store : db->irState->variables) {
-    DataVariables variables;
-    if (store.contains("id"))
-      variables.data_rep()->idVariables = store.get<String>("id");
-    db->dataVariablesList.push_back(variables);
-  }
-
-  db->dataInterfaceList.clear();
-  for (const auto& store : db->irState->interface) {
-    DataInterface interface;
-    if (store.contains("id"))
-      interface.data_rep()->idInterface = store.get<String>("id");
-    db->dataInterfaceList.push_back(interface);
-  }
-
-  db->dataResponsesList.clear();
-  for (const auto& store : db->irState->responses) {
-    DataResponses responses;
-    if (store.contains("id"))
-      responses.data_rep()->idResponses = store.get<String>("id");
-    db->dataResponsesList.push_back(responses);
-  }
+  static const String empty;
+  return store.contains(key) ? store.get<String>(key) : empty;
 }
 
-
-
-void ProblemDescDB::broadcast()
+size_t select_ir_store(const std::vector<IRStore>& stores, String tag,
+                       const char* block_name, int world_rank,
+                       bool warn_for_default = true)
 {
-  if (dbRep)
-    dbRep->broadcast();
-  else {
-    // DAKOTA's old design for reading the input file was for world rank 0 to
-    // get the input filename from cmd_line_handler (after MPI_Init) and bcast
-    // the character buffer to all other processors (having every processor
-    // query the cmd_line_handler was failing because of the effect of MPI_Init
-    // on argc and argv).  Then every processor yyparsed.  This worked fine but
-    // was not scalable for MP machines with a limited number of I/O devices.
+  if (stores.empty()) {
+    Cerr << "\nError: no " << block_name << " specifications are available."
+         << std::endl;
+    abort_handler(PARSE_ERROR);
+    throw PARSE_ERROR;
+  }
 
-    // Now, world rank 0 yyparse's and sends all the parsed data in a single
-    // buffer to all other ranks.
-    if (worldSize > 1) {
-      if (worldRank == 0) {
-	enforce_unique_ids();
-	send_db_buffer();
-#ifdef MPI_DEBUG
-	Cout << "DB buffer to send on world rank " << worldRank
-	     << ":\n" << environmentSpec << dataMethodList << dataVariablesList
-	     << dataInterfaceList << dataResponsesList << std::endl;
-#endif // MPI_DEBUG
-      }
-      else {
-	receive_db_buffer();
-#ifdef MPI_DEBUG
-	Cout << "DB buffer received on world rank " << worldRank
-	     << ":\n" << environmentSpec << dataMethodList << dataVariablesList
-	     << dataInterfaceList << dataResponsesList << std::endl;
-#endif // MPI_DEBUG
-      }
+  if (tag == "NO_ID" || tag == "NO_MODEL_ID")
+    tag.clear();
+
+  if (tag.empty()) {
+    if (stores.size() == 1)
+      return 0;
+
+    auto first = std::find_if(stores.begin(), stores.end(),
+      [](const IRStore& store) { return ir_id(store).empty(); });
+    if (first == stores.end()) {
+      if (world_rank == 0 && warn_for_default)
+        Cerr << "\nWarning: empty " << block_name
+             << " id string not found.\n         Last " << block_name
+             << " specification parsed will be used.\n";
+      return stores.size() - 1;
     }
-    else {
-#ifdef DEBUG
-      Cout << "DB parsed data:\n" << environmentSpec << dataMethodList
-	   << dataVariablesList << dataInterfaceList << dataResponsesList
-	   << std::endl;
-#endif // DEBUG
-      enforce_unique_ids();
-    }
+
+    if (world_rank == 0 && warn_for_default &&
+        std::count_if(stores.begin(), stores.end(),
+          [](const IRStore& store) { return ir_id(store).empty(); }) > 1)
+      Cerr << "\nWarning: empty " << block_name
+           << " id string is ambiguous.\n         First matching "
+           << block_name << " specification will be used.\n";
+    return static_cast<size_t>(std::distance(stores.begin(), first));
   }
+
+  auto match = std::find_if(stores.begin(), stores.end(),
+    [&tag](const IRStore& store) { return ir_id(store) == tag; });
+  if (match == stores.end()) {
+    Cerr << "\nError: " << tag << " is not a valid " << block_name
+         << " identifier string." << std::endl;
+    abort_handler(PARSE_ERROR);
+    throw PARSE_ERROR;
+  }
+  return static_cast<size_t>(std::distance(stores.begin(), match));
 }
 
+} // namespace
 
-/** When using library mode in a parallel application, post_process()
-    should be called on all processors following broadcast() of a
-    minimal problem specification. */
-void ProblemDescDB::post_process()
-{
-}
-
-
-/** NOTE: when using library mode in a parallel application,
-    check_input() should either be called only on worldRank 0, or it
-    should follow a matched send_db_buffer()/receive_db_buffer() pair. */
 void ProblemDescDB::check_input(const UserModes& user_modes)
 {
-  if (dbRep)
+  if (dbRep) {
     dbRep->check_input(user_modes);
-  else {
+    return;
+  }
 
-    int num_errors = 0;
-    //if (!environmentCntr) { // Allow environment omission
-    //  Cerr << "No environment specification found in input file.\n";
-    //  ++num_errors;
-    //}
-    if (environmentCntr > 1) {
-      Cerr << "Multiple environment specifications not allowed in input "
-	   << "file.\n";
-      ++num_errors;
-    }
-    if (dataMethodList.empty()) {
-      Cerr << "No method specification found in input file.\n";
-      ++num_errors;
-    }
-    if (dataVariablesList.empty()) {
-      Cerr << "No variables specification found in input file.\n";
-      ++num_errors;
-    }
-    if (dataInterfaceList.empty()) {
-      // interface spec may be omitted in case of global data fits
-      bool interface_reqd = true;
-      // global surrogate with data reuse from either restart or points_file
-      for (std::list<DataModel>::iterator dm_iter = dataModelList.begin();
-	   dm_iter!=dataModelList.end(); ++dm_iter)
-	if ( strbegins(dm_iter->dataModelRep->surrogateType, "global_") &&
-	     ( ( !dm_iter->dataModelRep->approxPointReuse.empty() &&
-		  dm_iter->dataModelRep->approxPointReuse != "none" ) ||
-	       !dm_iter->dataModelRep->importBuildPtsFile.empty() ) )
-	  interface_reqd = false;
-      if (interface_reqd)
-	for (std::list<DataMethod>::iterator dm_iter = dataMethodList.begin();
-	     dm_iter != dataMethodList.end(); ++dm_iter)
-	  if (!dm_iter->dataMethodRep->importBuildPtsFile.empty())
-	    interface_reqd = false;
-      if (interface_reqd) {
-	Cerr << "No interface specification found in input file.\n";
-	++num_errors;
+  if (!irState) {
+    Cerr << "No materialized input study is available." << std::endl;
+    abort_handler(PARSE_ERROR);
+    throw PARSE_ERROR;
+  }
+
+  int num_errors = 0;
+  if (irState->method.empty()) {
+    Cerr << "No method specification found in input file.\n";
+    ++num_errors;
+  }
+  if (irState->variables.empty()) {
+    Cerr << "No variables specification found in input file.\n";
+    ++num_errors;
+  }
+  if (irState->responses.empty()) {
+    Cerr << "No responses specification found in input file.\n";
+    ++num_errors;
+  }
+
+  if (user_modes.requestedUserModes) {
+    if (!user_modes.preRunInput.empty())
+      Cerr << "Warning: pre-run input not implemented; ignored.\n";
+
+    const auto validate_io_method = [&](const char* mode) {
+      if (irState->method.size() > 1) {
+        Cerr << "Error: " << mode << " only allowed for single method.\n";
+        ++num_errors;
       }
-      else {
-	// needed for setting DB interface node to something; prevents errors
-	// in any interface spec data lookups (e.g., Interface base class ctor
-	// called from ApproximationInterface ctor)
-	DataInterface data_interface; // use defaults
-	dataInterfaceList.push_back(data_interface);
+      else if (!irState->method.empty()) {
+        const unsigned short method_name =
+          irState->method.front().get<unsigned short>("algorithm");
+        if (!(method_name & PSTUDYDACE_BIT) && method_name != RANDOM_SAMPLING) {
+          Cerr << "Error: " << mode << " not supported for method "
+               << method_name << "\n       (supported for sampling, "
+               << "parameter study, DDACE, FSUDACE, and PSUADE methods)\n";
+          ++num_errors;
+        }
       }
-    }
-    if (dataResponsesList.empty()) {
-      Cerr << "No responses specification found in input file.\n";
-      ++num_errors;
-    }
-    if (dataModelList.empty()) { // Allow model omission
-      DataModel data_model; // use defaults: modelType == "simulation"
-      dataModelList.push_back(data_model);
-    }
+    };
 
-    if (user_modes.requestedUserModes) {
+    if (!user_modes.preRunOutput.empty())
+      validate_io_method("pre-run output");
+    if (!user_modes.runInput.empty())
+      Cerr << "Warning: run input not implemented; ignored.\n";
+    if (!user_modes.runOutput.empty())
+      Cerr << "Warning: run output not implemented; ignored.\n";
+    if (!user_modes.postRunInput.empty())
+      validate_io_method("post-run input");
+    if (!user_modes.postRunOutput.empty())
+      Cerr << "Warning: post-run output not implemented; ignored.\n";
+  }
 
-      if (!user_modes.postRunInput.empty())
-	Cerr << "Warning: pre-run input not implemented; ignored.\n";
-
-      if (!user_modes.preRunOutput.empty()) {
-	if (dataMethodList.size() > 1) {
-	  Cerr << "Error: pre-run output only allowed for single method.\n";
-	  ++num_errors;
-	}
-	else if (!dataMethodList.empty()) {
-	  // exactly one method
-	  // TODO: Test for iterator concurrency
-	  std::list<DataMethod>::iterator dm = dataMethodList.begin();
-	  unsigned short method_name = dm->dataMethodRep->methodName;
-	  if ( !(method_name & PSTUDYDACE_BIT) &&
-	       !(method_name == RANDOM_SAMPLING) ) {
-	    Cerr << "Error: pre-run output not supported for method "
-		 << method_name << "\n       (supported for sampling, "
-		 << "parameter study, DDACE, FSUDACE, and PSUADE methods)\n";
-	    ++num_errors;
-	  }
-	}
-      }
-
-      if (!user_modes.runInput.empty())
-	Cerr << "Warning: run input not implemented; ignored.\n";
-
-      if (!user_modes.runOutput.empty())
-	Cerr << "Warning: run output not implemented; ignored.\n";
-
-      if (!user_modes.postRunInput.empty()) {
-	if (dataMethodList.size() > 1) {
-	  Cerr << "Error: post-run input only allowed for single method.\n";
-	  ++num_errors;
-	}
-	else if (!dataMethodList.empty()) {
-	  // exactly one method
-	  // TODO: Test for iterator concurrency
-	  std::list<DataMethod>::iterator dm = dataMethodList.begin();
-	  unsigned short method_name = dm->dataMethodRep->methodName;
-	  if ( !(method_name & PSTUDYDACE_BIT) &&
-	       !(method_name == RANDOM_SAMPLING) ) {
-	    Cerr << "Error: post-run input not supported for method "
-		 << method_name << "\n       (supported for sampling, "
-		 << "parameter study, DDACE, FSUDACE, and PSUADE methods)\n";
-	    ++num_errors;
-	  }
-	}
-      }
-
-      if (!user_modes.postRunOutput.empty())
-	Cerr << "Warning: post-run output not implemented; ignored.\n";
-
-    }
-
-    if (num_errors) {
-      Cerr << num_errors << " input specification errors detected." <<std::endl;
-      abort_handler(PARSE_ERROR);
-    }
+  if (num_errors) {
+    Cerr << num_errors << " input specification errors detected." << std::endl;
+    abort_handler(PARSE_ERROR);
+    throw PARSE_ERROR;
   }
 }
 
 
 void ProblemDescDB::set_db_list_nodes(const String& method_tag)
 {
-  if (dbRep)
+  if (dbRep) {
     dbRep->set_db_list_nodes(method_tag);
-  // for simplicity in client logic, allow NO_SPECIFICATION case to fall
-  // through: do not update iterators or locks, such that previous
-  // specification settings remain active (NO_SPECIFICATION instances
-  // within a recursion do not alter list node sequencing).
-  else if (!strbegins(method_tag, "NOSPEC_METHOD_ID_")) {
-    set_db_method_node(method_tag);
-    if (methodDBLocked) {
-      modelDBLocked = variablesDBLocked = interfaceDBLocked
-	= responsesDBLocked = true;
-      // ensure consistency in get_db_{method,model}_node():
-      //dataModelIter = dataModelList.end();
-    }
-    else
-      set_db_model_nodes(dataMethodIter->dataMethodRep->modelPointer);
+    return;
   }
+  if (strbegins(method_tag, "NOSPEC_METHOD_ID_"))
+    return;
+
+  set_db_method_node(method_tag);
+  if (methodDBLocked) {
+    modelDBLocked = variablesDBLocked = interfaceDBLocked =
+      responsesDBLocked = true;
+    return;
+  }
+  set_db_model_nodes(
+    ir_string(irState->method[irState->active.method], "model_pointer"));
 }
 
 
 void ProblemDescDB::set_db_list_nodes(size_t method_index)
 {
-  if (dbRep)
+  if (dbRep) {
     dbRep->set_db_list_nodes(method_index);
-  else {
-    // Set the correct Index values for all Data class lists.
-    set_db_method_node(method_index);
-    if (methodDBLocked) {
-      modelDBLocked = variablesDBLocked = interfaceDBLocked
-	= responsesDBLocked = true;
-      // ensure consistency in get_db_{method,model}_node():
-      //dataModelIter = dataModelList.end();
-    }
-    else
-      set_db_model_nodes(dataMethodIter->dataMethodRep->modelPointer);
+    return;
   }
+
+  set_db_method_node(method_index);
+  if (methodDBLocked) {
+    modelDBLocked = variablesDBLocked = interfaceDBLocked =
+      responsesDBLocked = true;
+    return;
+  }
+  set_db_model_nodes(
+    ir_string(irState->method[irState->active.method], "model_pointer"));
 }
+
 
 void ProblemDescDB::resolve_top_method(bool set_model_nodes)
 {
-  if (dbRep)
+  if (dbRep) {
     dbRep->resolve_top_method(set_model_nodes);
-  else { // deduce which method spec sits on top
-    String& top_meth_ptr = environmentSpec.dataEnvRep->topMethodPointer;
-    size_t num_method_spec = dataMethodList.size();
-    if (num_method_spec == 1)
-      dataMethodIter = dataMethodList.begin();
-    else if (!top_meth_ptr.empty())
-      dataMethodIter =
-	std::find_if( dataMethodList.begin(), dataMethodList.end(),
-		      boost::bind(DataMethod::id_compare, _1, top_meth_ptr) );
-    else { // identify which id_method does not appear in a method_pointer
-      // Collect list of all method id's (including empty ids)
-      StringList method_ids;
-      for (std::list<DataMethod>::iterator it=dataMethodList.begin();
-	   it!=dataMethodList.end(); it++)
-	method_ids.push_back(it->dataMethodRep->idMethod);
-      // Eliminate sub-method pointers from method specs
-      for (std::list<DataMethod>::iterator it=dataMethodList.begin();
-	   it!=dataMethodList.end(); it++)
-	if (!it->dataMethodRep->subMethodPointer.empty()) {
-          StringList::iterator slit
-            = std::find(method_ids.begin(), method_ids.end(),
-                        it->dataMethodRep->subMethodPointer);
-          if (slit != method_ids.end()) method_ids.erase(slit);
-	}
-      // Eliminate method_pointers from model specs
-      for (std::list<DataModel>::iterator it=dataModelList.begin();
-	   it!=dataModelList.end(); it++)
-	if (!it->dataModelRep->subMethodPointer.empty()) {
-          StringList::iterator slit
-            = std::find(method_ids.begin(), method_ids.end(),
-                        it->dataModelRep->subMethodPointer);
-          if (slit != method_ids.end()) method_ids.erase(slit);
-	}
-      // by process of elimination, select the top method
-      if (method_ids.empty() || method_ids.size() > 1) {
-	Cerr << "\nError: ProblemDescDB::resolve_top_method() failed to "
-	     << "determine active method specification.\n       Please resolve "
-	     << "method pointer ambiguities." << std::endl;
-	abort_handler(PARSE_ERROR);
-      }
-      else {
-	const String& method_id = *method_ids.begin();
-	dataMethodIter
-	  = std::find_if( dataMethodList.begin(), dataMethodList.end(),
-              boost::bind(DataMethod::id_compare, _1, method_id) );
-      }
-    }
-    methodDBLocked = false; // unlock
-
-    // set all subordinate list nodes for this method
-    if (set_model_nodes)
-      set_db_model_nodes(dataMethodIter->dataMethodRep->modelPointer);
-
-    if (irState && !methodDBLocked)
-      irState->active.method =
-        static_cast<size_t>(std::distance(dataMethodList.begin(), dataMethodIter));
+    return;
   }
+  if (!irState || irState->method.empty()) {
+    Cerr << "\nError: ProblemDescDB::resolve_top_method() has no method "
+         << "specification." << std::endl;
+    abort_handler(PARSE_ERROR);
+    throw PARSE_ERROR;
+  }
+
+  const String& top_method =
+    ir_string(irState->environment, "top_method_pointer");
+  size_t method_index = 0;
+  if (irState->method.size() == 1)
+    method_index = 0;
+  else if (!top_method.empty())
+    method_index = select_ir_store(irState->method, top_method, "method",
+                                   worldRank);
+  else {
+    std::vector<size_t> candidates(irState->method.size());
+    std::iota(candidates.begin(), candidates.end(), 0);
+
+    const auto remove_pointer = [&](const String& pointer) {
+      if (pointer.empty())
+        return;
+      candidates.erase(std::remove_if(candidates.begin(), candidates.end(),
+        [&](size_t index) { return ir_id(irState->method[index]) == pointer; }),
+        candidates.end());
+    };
+
+    for (const auto& method : irState->method)
+      remove_pointer(ir_string(method, "sub_method_pointer"));
+    for (const auto& model : irState->model) {
+      String pointer = ir_string(model, "sub_method_pointer");
+      if (pointer.empty())
+        pointer = ir_string(model, "nested.sub_method_pointer");
+      remove_pointer(pointer);
+    }
+
+    if (candidates.size() != 1) {
+      Cerr << "\nError: ProblemDescDB::resolve_top_method() failed to "
+           << "determine active method specification.\n       Please resolve "
+           << "method pointer ambiguities." << std::endl;
+      abort_handler(PARSE_ERROR);
+      throw PARSE_ERROR;
+    }
+    method_index = candidates.front();
+  }
+
+  irState->active.method = method_index;
+  methodDBLocked = false;
+  if (set_model_nodes)
+    set_db_model_nodes(
+      ir_string(irState->method[method_index], "model_pointer"));
 }
+
 
 void ProblemDescDB::set_db_method_node(const String& method_tag)
 {
-  if (dbRep)
+  if (dbRep) {
     dbRep->set_db_method_node(method_tag);
-  // for simplicity in client logic, allow NO_SPECIFICATION case to fall
-  // through: do not update dataMethodIter or methodDBLocked, such that
-  // previous specification settings remain active (NO_SPECIFICATION
-  // instances within a recursion do not alter list node sequencing).
-  else if (!strbegins(method_tag, "NOSPEC_METHOD_ID_")) {
-    // set the correct Index values for all Data class lists.
-    if (method_tag.empty()) { // no pointer specification
-      if (dataMethodList.size() == 1) // no ambiguity if only one spec
-	dataMethodIter = dataMethodList.begin();
-      else { // try to match to a method without an id
-	dataMethodIter
-	  = std::find_if( dataMethodList.begin(), dataMethodList.end(),
-              boost::bind(DataMethod::id_compare, _1, method_tag) );
-	if (dataMethodIter == dataMethodList.end()) {
-	  if (worldRank == 0)
-	    Cerr << "\nWarning: empty method id string not found.\n         "
-		 << "Last method specification parsed will be used.\n";
-	  --dataMethodIter; // last entry in list
-	}
-	else if (worldRank == 0 &&
-		 std::count_if(dataMethodList.begin(), dataMethodList.end(),
-                   boost::bind(DataMethod::id_compare, _1, method_tag)) > 1)
-	  Cerr << "\nWarning: empty method id string is ambiguous.\n         "
-	       << "First matching method specification will be used.\n";
-      }
-      methodDBLocked = false; // unlock
-    }
-    else {
-      std::list<DataMethod>::iterator dm_it
-	= std::find_if( dataMethodList.begin(), dataMethodList.end(),
-            boost::bind(DataMethod::id_compare, _1, method_tag) );
-      if (dm_it == dataMethodList.end()) {
-	methodDBLocked = true; // lock (moot)
-	Cerr << "\nError: " << method_tag
-	     << " is not a valid method identifier string." << std::endl;
-	abort_handler(PARSE_ERROR);
-      }
-      else {
-	methodDBLocked = false; // unlock
-	dataMethodIter = dm_it;
-	if (worldRank == 0 &&
-	    std::count_if(dataMethodList.begin(), dataMethodList.end(),
-			  boost::bind(DataMethod::id_compare,_1,method_tag))>1)
-	  Cerr << "\nWarning: method id string " << method_tag
-	       << " is ambiguous.\n         First matching method "
-	       << "specification will be used.\n";
-      }
-    }
-    if (irState && !methodDBLocked)
-      irState->active.method =
-        static_cast<size_t>(std::distance(dataMethodList.begin(), dataMethodIter));
+    return;
   }
+  if (strbegins(method_tag, "NOSPEC_METHOD_ID_"))
+    return;
+  if (!irState) {
+    methodDBLocked = true;
+    Cerr << "\nError: no materialized study is available." << std::endl;
+    abort_handler(PARSE_ERROR);
+    throw PARSE_ERROR;
+  }
+
+  irState->active.method =
+    select_ir_store(irState->method, method_tag, "method", worldRank);
+  methodDBLocked = false;
 }
 
 
 void ProblemDescDB::set_db_method_node(size_t method_index)
 {
-  if (dbRep)
+  if (dbRep) {
     dbRep->set_db_method_node(method_index);
-  else if (method_index == _NPOS)
-    methodDBLocked = true;
-  else {
-    size_t num_meth_spec = dataMethodList.size();
-    // allow advancement up to but not past end()
-    if (method_index > num_meth_spec) {
-      Cerr << "\nError: method_index sent to set_db_method_node is out of "
-	   << "range." << std::endl;
-      abort_handler(PARSE_ERROR);
-    }
-    dataMethodIter = dataMethodList.begin();
-    std::advance(dataMethodIter, method_index);
-    // unlock if not advanced to end()
-    methodDBLocked = (method_index == num_meth_spec);
-    if (irState && method_index < irState->method.size())
-      irState->active.method = method_index;
+    return;
   }
+  if (method_index == _NPOS) {
+    methodDBLocked = true;
+    return;
+  }
+  if (!irState || method_index > irState->method.size()) {
+    Cerr << "\nError: method_index sent to set_db_method_node is out of range."
+         << std::endl;
+    abort_handler(PARSE_ERROR);
+    throw PARSE_ERROR;
+  }
+
+  methodDBLocked = (method_index == irState->method.size());
+  if (!methodDBLocked)
+    irState->active.method = method_index;
 }
 
 
 void ProblemDescDB::set_db_model_nodes(size_t model_index)
 {
-  if (dbRep)
+  if (dbRep) {
     dbRep->set_db_model_nodes(model_index);
-  else if (model_index == _NPOS)
-    modelDBLocked = variablesDBLocked = interfaceDBLocked
-      = responsesDBLocked = true;
-  else {
-    size_t num_model_spec = dataModelList.size();
-    // allow advancement up to but not past end()
-    if (model_index > num_model_spec) {
-      Cerr << "\nError: model_index sent to set_db_model_nodes is out of range."
-	   << std::endl;
-      abort_handler(PARSE_ERROR);
-    }
-    dataModelIter = dataModelList.begin();
-    std::advance(dataModelIter, model_index);
-    // unlock if not advanced to end()
-    if (model_index == num_model_spec)
-      modelDBLocked = variablesDBLocked = interfaceDBLocked = responsesDBLocked
-	= true;
-    else {
-      if (irState && model_index < irState->model.size())
-        irState->active.model = model_index;
-      const DataModelRep& MoRep = *dataModelIter->dataModelRep;
-      set_db_variables_node(MoRep.variablesPointer);
-      if (model_has_interface(MoRep))
-	set_db_interface_node(MoRep.interfacePointer);
-      else
-	interfaceDBLocked = true;
-      set_db_responses_node(MoRep.responsesPointer);
-    }
+    return;
   }
+  if (model_index == _NPOS) {
+    modelDBLocked = variablesDBLocked = interfaceDBLocked =
+      responsesDBLocked = true;
+    return;
+  }
+  if (!irState || model_index > irState->model.size()) {
+    Cerr << "\nError: model_index sent to set_db_model_nodes is out of range."
+         << std::endl;
+    abort_handler(PARSE_ERROR);
+    throw PARSE_ERROR;
+  }
+  if (model_index == irState->model.size()) {
+    modelDBLocked = variablesDBLocked = interfaceDBLocked =
+      responsesDBLocked = true;
+    return;
+  }
+
+  irState->active.model = model_index;
+  modelDBLocked = false;
+  const IRStore& model = irState->model[model_index];
+  set_db_variables_node(ir_string(model, "variables_pointer"));
+  if (model_has_interface(model))
+    set_db_interface_node(ir_string(model, "interface_pointer"));
+  else
+    interfaceDBLocked = true;
+  set_db_responses_node(ir_string(model, "responses_pointer"));
 }
 
 
 void ProblemDescDB::set_db_model_nodes(const String& model_tag)
 {
-  if (dbRep)
+  if (dbRep) {
     dbRep->set_db_model_nodes(model_tag);
-  // for simplicity in client logic, allow NO_SPECIFICATION case to fall
-  // through: do not update model iterators or locks, such that previous
-  // specification settings remain active (NO_SPECIFICATION instances
-  // within a recursion do not alter list node sequencing).
-  else if (! (model_tag == "NO_SPECIFICATION" ||
-        strbegins(model_tag, "NOSPEC_MODEL_ID_") ||
-        strbegins(model_tag, "RECAST_"))) {
-    // set dataModelIter from model_tag
-    if (model_tag.empty() || model_tag == "NO_MODEL_ID") { // no pointer specification
-      if (dataModelList.empty()) { // Note: check_input() prevents this
-	DataModel data_model; // for library mode
-	dataModelList.push_back(data_model);
-      }
-      if (dataModelList.size() == 1) // no ambiguity if only one spec
-	dataModelIter = dataModelList.begin();
-      else { // try to match to a model without an id
-	dataModelIter
-	  = std::find_if( dataModelList.begin(), dataModelList.end(),
-              boost::bind(DataModel::id_compare, _1, model_tag) );
-	if (dataModelIter == dataModelList.end()) {
-	  if (worldRank == 0)
-	    Cerr << "\nWarning: empty model id string not found.\n         "
-		 << "Last model specification parsed will be used.\n";
-	  --dataModelIter; // last entry in list
-	}
-	else if (worldRank == 0 &&
-		 std::count_if(dataModelList.begin(), dataModelList.end(),
-                   boost::bind(DataModel::id_compare, _1, model_tag)) > 1)
-	  Cerr << "\nWarning: empty model id string is ambiguous.\n         "
-	       << "First matching model specification will be used.\n";
-      }
-      modelDBLocked = false; // unlock
-    }
-    else {
-      std::list<DataModel>::iterator dm_it
-	= std::find_if( dataModelList.begin(), dataModelList.end(),
-            boost::bind(DataModel::id_compare, _1, model_tag) );
-      if (dm_it == dataModelList.end()) {
-	modelDBLocked = true; // lock (moot)
-	Cerr << "\nError: " << model_tag
-	     << " is not a valid model identifier string." << std::endl;
-	abort_handler(PARSE_ERROR);
-      }
-      else {
-	modelDBLocked = false; // unlock
-	dataModelIter = dm_it;
-	if (worldRank == 0 &&
-	    std::count_if(dataModelList.begin(), dataModelList.end(),
-			  boost::bind(DataModel::id_compare, _1, model_tag))>1)
-	  Cerr << "\nWarning: model id string " << model_tag << " is ambiguous."
-	       << "\n         First matching model specification will be used."
-	       << '\n';
-      }
-    }
-
-    if (modelDBLocked)
-      variablesDBLocked = interfaceDBLocked = responsesDBLocked	= true;
-    else {
-      if (irState)
-        irState->active.model =
-          static_cast<size_t>(std::distance(dataModelList.begin(), dataModelIter));
-      const DataModelRep& MoRep = *dataModelIter->dataModelRep;
-      set_db_variables_node(MoRep.variablesPointer);
-      if (model_has_interface(MoRep))
-	set_db_interface_node(MoRep.interfacePointer);
-      else
-	interfaceDBLocked = true;
-      set_db_responses_node(MoRep.responsesPointer);
-    }
+    return;
   }
+  if (model_tag == "NO_SPECIFICATION" ||
+      strbegins(model_tag, "NOSPEC_MODEL_ID_") ||
+      strbegins(model_tag, "RECAST_"))
+    return;
+  if (!irState) {
+    modelDBLocked = variablesDBLocked = interfaceDBLocked =
+      responsesDBLocked = true;
+    Cerr << "\nError: no materialized study is available." << std::endl;
+    abort_handler(PARSE_ERROR);
+    throw PARSE_ERROR;
+  }
+
+  const size_t model_index =
+    select_ir_store(irState->model, model_tag, "model", worldRank);
+  set_db_model_nodes(model_index);
 }
 
 
 void ProblemDescDB::set_db_variables_node(const String& variables_tag)
 {
-  if (dbRep)
+  if (dbRep) {
     dbRep->set_db_variables_node(variables_tag);
-  // for simplicity in client logic, allow NO_SPECIFICATION case to fall
-  // through: do not update dataVariablesIter or variablesDBLocked, such
-  // that previous specification remains active (NO_SPECIFICATION
-  // instances within a recursion do not alter list node sequencing).
-  else if (variables_tag != "NO_SPECIFICATION") { // not currently in use
-    // set dataVariablesIter from variables_tag
-    if (variables_tag.empty()) { // no pointer specification
-      if (dataVariablesList.size() == 1) // no ambiguity if only one spec
-	dataVariablesIter = dataVariablesList.begin();
-      else { // try to match to a variables without an id
-	dataVariablesIter
-	  = std::find_if( dataVariablesList.begin(), dataVariablesList.end(),
-              boost::bind(DataVariables::id_compare, _1, variables_tag) );
-	if (dataVariablesIter == dataVariablesList.end()) {
-	  if (worldRank == 0)
-	    Cerr << "\nWarning: empty variables id string not found.\n         "
-		 << "Last variables specification parsed will be used.\n";
-	  --dataVariablesIter; // last entry in list
-	}
-	else if (worldRank == 0 &&
-		 std::count_if(dataVariablesList.begin(),
-			       dataVariablesList.end(),
-			       boost::bind(DataVariables::id_compare, _1,
-					   variables_tag)) > 1)
-	  Cerr << "\nWarning: empty variables id string is ambiguous."
-	       << "\n         First matching variables specification will be "
-	       << "used.\n";
-      }
-      variablesDBLocked = false; // unlock
-    }
-    else {
-      std::list<DataVariables>::iterator dv_it
-	= std::find_if( dataVariablesList.begin(), dataVariablesList.end(),
-            boost::bind(DataVariables::id_compare, _1, variables_tag) );
-      if (dv_it == dataVariablesList.end()) {
-	variablesDBLocked = true; // lock (moot)
-	Cerr << "\nError: " << variables_tag
-	     << " is not a valid variables identifier string." << std::endl;
-	abort_handler(PARSE_ERROR);
-      }
-      else {
-	variablesDBLocked = false; // unlock
-	dataVariablesIter = dv_it;
-	if (worldRank == 0 &&
-	    std::count_if(dataVariablesList.begin(), dataVariablesList.end(),
-			  boost::bind(DataVariables::id_compare, _1,
-				      variables_tag)) > 1)
-	  Cerr << "\nWarning: variables id string " << variables_tag
-	       << " is ambiguous.\n         First matching variables "
-	       << "specification will be used.\n";
-      }
-    }
-    if (irState && !variablesDBLocked)
-      irState->active.variables =
-        static_cast<size_t>(std::distance(dataVariablesList.begin(), dataVariablesIter));
+    return;
   }
+  if (variables_tag == "NO_SPECIFICATION")
+    return;
+  if (!irState) {
+    variablesDBLocked = true;
+    Cerr << "\nError: no materialized study is available." << std::endl;
+    abort_handler(PARSE_ERROR);
+    throw PARSE_ERROR;
+  }
+
+  irState->active.variables =
+    select_ir_store(irState->variables, variables_tag, "variables", worldRank);
+  variablesDBLocked = false;
 }
 
 
 void ProblemDescDB::set_db_interface_node(const String& interface_tag)
 {
-  if (dbRep)
+  if (dbRep) {
     dbRep->set_db_interface_node(interface_tag);
-  // for simplicity in client logic, allow NO_SPECIFICATION case to fall
-  // through: do not update dataInterfaceIter or interfaceDBLocked, such
-  // that previous specification remains active (NO_SPECIFICATION
-  // instances within a recursion do not alter list node sequencing).
-  else if (!strbegins(interface_tag, "NOSPEC_INTERFACE_ID_")) {
-    const DataModelRep& MoRep = *dataModelIter->dataModelRep;
-    // set dataInterfaceIter from interface_tag
-    if (interface_tag.empty() || interface_tag == "NO_ID") { // no pointer specification
-      if (dataInterfaceList.size() == 1) // no ambiguity if only one spec
-	dataInterfaceIter = dataInterfaceList.begin();
-      else { // try to match to a interface without an id
-	dataInterfaceIter
-	  = std::find_if( dataInterfaceList.begin(), dataInterfaceList.end(),
-              boost::bind(DataInterface::id_compare, _1, interface_tag) );
-	// echo warning if a default interface list entry will be used and more
-	// than 1 interface specification is present.  Currently this can only
-	// happen for simulation models, since surrogate model specifications
-	// do not contain interface ptrs and the omission of an optional
-	// interface ptr in nested models indicates the omission of an optional
-	// interface (rather than the presence of an unidentified interface).
-	if (dataInterfaceIter == dataInterfaceList.end()) {
-	  if (worldRank == 0 &&
-	      MoRep.modelType == "simulation")
-	    Cerr << "\nWarning: empty interface id string not found.\n         "
-		 << "Last interface specification parsed will be used.\n";
-	  --dataInterfaceIter; // last entry in list
-	}
-	else if (worldRank == 0 &&
-		 MoRep.modelType == "simulation"  &&
-		 std::count_if(dataInterfaceList.begin(),
-			       dataInterfaceList.end(),
-			       boost::bind(DataInterface::id_compare, _1,
-					   interface_tag)) > 1)
-	  Cerr << "\nWarning: empty interface id string is ambiguous."
-	       << "\n         First matching interface specification will be "
-	       << "used.\n";
-      }
-      interfaceDBLocked = false; // unlock
-    }
-    else {
-      std::list<DataInterface>::iterator di_it
-	= std::find_if( dataInterfaceList.begin(), dataInterfaceList.end(),
-            boost::bind(DataInterface::id_compare, _1, interface_tag) );
-      if (di_it == dataInterfaceList.end()) {
-	interfaceDBLocked = true; // lock (moot)
-	Cerr << "\nError: " << interface_tag
-	     << " is not a valid interface identifier string." << std::endl;
-	abort_handler(PARSE_ERROR);
-      }
-      else {
-	interfaceDBLocked = false; // unlock
-	dataInterfaceIter = di_it;
-	if (worldRank == 0 &&
-	    std::count_if(dataInterfaceList.begin(), dataInterfaceList.end(),
-			  boost::bind(DataInterface::id_compare, _1,
-				      interface_tag)) > 1)
-	  Cerr << "\nWarning: interface id string " << interface_tag
-	       << " is ambiguous.\n         First matching interface "
-	       << "specification will be used.\n";
-      }
-    }
-    if (irState && !interfaceDBLocked)
-      irState->active.interface =
-        static_cast<size_t>(std::distance(dataInterfaceList.begin(), dataInterfaceIter));
+    return;
   }
+  if (strbegins(interface_tag, "NOSPEC_INTERFACE_ID_"))
+    return;
+  if (!irState) {
+    interfaceDBLocked = true;
+    Cerr << "\nError: no materialized study is available." << std::endl;
+    abort_handler(PARSE_ERROR);
+    throw PARSE_ERROR;
+  }
+
+  bool warn_for_default = true;
+  if (!modelDBLocked && irState->active.model < irState->model.size())
+    warn_for_default =
+      ir_string(irState->model[irState->active.model], "type") == "simulation";
+  irState->active.interface =
+    select_ir_store(irState->interface, interface_tag, "interface", worldRank,
+                    warn_for_default);
+  interfaceDBLocked = false;
 }
 
 
 void ProblemDescDB::set_db_responses_node(const String& responses_tag)
 {
-  if (dbRep)
+  if (dbRep) {
     dbRep->set_db_responses_node(responses_tag);
-  // for simplicity in client logic, allow NO_SPECIFICATION case to fall
-  // through: do not update dataResponsesIter or responsesDBLocked,
-  // such that previous specification remains active (NO_SPECIFICATION
-  // instances within a recursion do not alter list node sequencing).
-  else if (responses_tag != "NO_SPECIFICATION") {
-    // set dataResponsesIter from responses_tag
-    if (responses_tag.empty()) { // no pointer specification
-      if (dataResponsesList.size() == 1) // no ambiguity if only one spec
-	dataResponsesIter = dataResponsesList.begin();
-      else { // try to match to a responses without an id
-	dataResponsesIter
-	  = std::find_if( dataResponsesList.begin(), dataResponsesList.end(),
-              boost::bind(DataResponses::id_compare, _1, responses_tag) );
-	if (dataResponsesIter == dataResponsesList.end()) {
-	  if (worldRank == 0)
-	    Cerr << "\nWarning: empty responses id string not found.\n         "
-		 << "Last responses specification parsed will be used.\n";
-	  --dataResponsesIter; // last entry in list
-	}
-	else if (worldRank == 0 &&
-		 std::count_if(dataResponsesList.begin(),
-			       dataResponsesList.end(),
-			       boost::bind(DataResponses::id_compare, _1,
-					   responses_tag)) > 1)
-	  Cerr << "\nWarning: empty responses id string is ambiguous."
-	       << "\n         First matching responses specification will be "
-	       << "used.\n";
-      }
-      responsesDBLocked = false; // unlock
-    }
-    else {
-      std::list<DataResponses>::iterator dr_it
-	= std::find_if( dataResponsesList.begin(), dataResponsesList.end(),
-            boost::bind(DataResponses::id_compare, _1, responses_tag) );
-      if (dr_it == dataResponsesList.end()) {
-	responsesDBLocked = true; // lock (moot)
-	Cerr << "\nError: " << responses_tag
-	     << " is not a valid responses identifier string." << std::endl;
-	abort_handler(PARSE_ERROR);
-      }
-      else {
-	responsesDBLocked = false; // unlock
-	dataResponsesIter = dr_it;
-	if (worldRank == 0 &&
-	    std::count_if(dataResponsesList.begin(), dataResponsesList.end(),
-			  boost::bind(DataResponses::id_compare, _1,
-				      responses_tag)) > 1)
-	  Cerr << "\nWarning: responses id string " << responses_tag
-	       << " is ambiguous.\n         First matching responses "
-	       << "specification will be used.\n";
-      }
-    }
-    if (irState && !responsesDBLocked)
-      irState->active.responses =
-        static_cast<size_t>(std::distance(dataResponsesList.begin(), dataResponsesIter));
+    return;
   }
+  if (responses_tag == "NO_SPECIFICATION")
+    return;
+  if (!irState) {
+    responsesDBLocked = true;
+    Cerr << "\nError: no materialized study is available." << std::endl;
+    abort_handler(PARSE_ERROR);
+    throw PARSE_ERROR;
+  }
+
+  irState->active.responses =
+    select_ir_store(irState->responses, responses_tag, "responses", worldRank);
+  responsesDBLocked = false;
 }
 
 
-void ProblemDescDB::send_db_buffer()
+size_t ProblemDescDB::get_db_variables_node(const String& variables_tag) const
 {
-  MPIPackBuffer send_buffer;
-  send_buffer << environmentSpec   << dataMethodList    << dataModelList
-	      << dataVariablesList << dataInterfaceList << dataResponsesList;
-
-  // Broadcast length of buffer so that servers can allocate MPIUnpackBuffer
-  int buffer_len = send_buffer.size();
-  //parallelLib.bcast_w(buffer_len);
-
-  // Broadcast actual buffer
-  //parallelLib.bcast_w(send_buffer);
+  const ProblemDescDB* db = dbRep ? dbRep.get() : this;
+  if (!db->irState)
+    return abort_handler_t<size_t>(PARSE_ERROR);
+  return select_ir_store(db->irState->variables, variables_tag, "variables",
+                         db->worldRank);
 }
 
 
-void ProblemDescDB::receive_db_buffer()
+size_t ProblemDescDB::get_db_interface_node(const String& interface_tag) const
 {
-  // receive length of incoming buffer and allocate space for MPIUnpackBuffer
-  int buffer_len;
-  //parallelLib.bcast_w(buffer_len);
-
-  // receive incoming buffer
-  MPIUnpackBuffer recv_buffer(buffer_len);
-  //parallelLib.bcast_w(recv_buffer);
-  recv_buffer >> environmentSpec   >> dataMethodList    >> dataModelList
-	      >> dataVariablesList >> dataInterfaceList >> dataResponsesList;
+  const ProblemDescDB* db = dbRep ? dbRep.get() : this;
+  if (!db->irState)
+    return abort_handler_t<size_t>(PARSE_ERROR);
+  return select_ir_store(db->irState->interface, interface_tag, "interface",
+                         db->worldRank);
 }
+
+
+size_t ProblemDescDB::get_db_responses_node(const String& responses_tag) const
+{
+  const ProblemDescDB* db = dbRep ? dbRep.get() : this;
+  if (!db->irState)
+    return abort_handler_t<size_t>(PARSE_ERROR);
+  return select_ir_store(db->irState->responses, responses_tag, "responses",
+                         db->worldRank);
+}
+
 
 inline int ProblemDescDB::min_procs_per_ea()
 {
   // Note: get_*() requires envelope execution (throws error if !dbRep)
 
-  // Note: DataInterfaceRep::procsPerAnalysis defaults to zero, which is used
+  // Note: interface processors_per_analysis defaults to zero, which is used
   // when the processors_per_analysis spec is unreachable (system/fork/spawn)
   return min_procs_per_level(1, // min_ppa
     get<int>("interface.direct.processors_per_analysis"), // 0 for non-direct
@@ -1085,7 +654,7 @@ int ProblemDescDB::max_procs_per_ea()
 
   int max_ppa = (get<unsigned short>("interface.type") & DIRECT_INTERFACE_BIT) ?
     world_size : 1; // system/fork/spawn
-  // Note: DataInterfaceRep::procsPerAnalysis defaults to zero, which is used
+  // Note: interface processors_per_analysis defaults to zero, which is used
   // when the processors_per_analysis spec is unreachable (system/fork/spawn)
   return max_procs_per_level(max_ppa,
     get<int>("interface.direct.processors_per_analysis"), // 0 for non-direct
@@ -1136,138 +705,38 @@ int ProblemDescDB::max_procs_per_ie(int max_eval_concurrency)
 }
 
 
-static void Bad_name(const String& entry_name, const String& where)
-{
-  Cerr << "\nBad entry_name '" << entry_name << "' in ProblemDescDB::"
-       << where << std::endl;
-  abort_handler(PARSE_ERROR);
-  throw PARSE_ERROR;
-}
-
-static void Locked_db()
-{
-  Cerr << "\nError: database is locked.  You must first unlock the database\n"
-       << "       by setting the list nodes." << std::endl;
-  abort_handler(PARSE_ERROR);
-  throw PARSE_ERROR;
-}
-
-static void Null_rep(const String& who)
-{
-  Cerr << "\nError: ProblemDescDB::" << who
-       << " called with NULL representation." << std::endl;
-  abort_handler(PARSE_ERROR);
-  throw PARSE_ERROR;
-}
-
-// split the entry name on the first period into block.entry
-std::pair<std::string, std::string>
-split_entry_name(const std::string& entry_name, const std::string& context_msg)
-{
-  auto first_dot = entry_name.find(".");
-  // must find a split point and have trailing lookup entry content
-  if (first_dot == std::string::npos || first_dot == entry_name.size()-1)
-    Bad_name(entry_name, context_msg);
-  const std::string block = entry_name.substr(0, first_dot);
-  const std::string entry = entry_name.substr(first_dot + 1,
-					      entry_name.size() - first_dot - 1);
-  return std::make_pair(block, entry);
-}
-
-template <typename T>
-const T& ProblemDescDB::
-get(const std::string& context_msg,
-    const std::string& entry_name,
-    const std::shared_ptr<ProblemDescDB>& db_rep) const
-{
-  if (!db_rep)
-    Null_rep(context_msg);
-
-  std::string block, entry;
-  std::tie(block, entry) = split_entry_name(entry_name, context_msg);
-
-  if (block == "method" && db_rep->methodDBLocked)
-    Locked_db();
-  else if (block == "model" && db_rep->modelDBLocked)
-    Locked_db();
-  else if (block == "variables" && db_rep->variablesDBLocked)
-    Locked_db();
-  else if (block == "interface" && db_rep->interfaceDBLocked)
-    Locked_db();
-  else if (block == "responses" && db_rep->responsesDBLocked)
-    Locked_db();
-
-  using QueryT = std::remove_const_t<T>;
-  if constexpr (variant_contains_v<QueryT, IRValue>) {
-    if (db_rep->irState) {
-      try {
-        return ir_query::get<QueryT>(*db_rep->irState, entry_name);
-      }
-      catch (const std::exception& e) {
-        Cerr << "\nParser failed with exception: " << e.what() << std::endl;
-        abort_handler(PARSE_ERROR);
-      }
-    }
-  }
-
-  Bad_name(entry_name, context_msg);
-  return abort_handler_t<const T&>(PARSE_ERROR);
-}
-
-
-/** Require string idenfitiers id_* to be unique across all blocks of
-    each type (method, model, variables, interface, responses
-
-    For now, this allows duplicate empty ID strings. Would be better
-    to require unique IDs when more than one block of a given type
-    appears in the input file (instead of use-the-last-parsed)
-*/
 void ProblemDescDB::enforce_unique_ids()
 {
-  bool found_error = false;
-  std::multiset<String> block_ids;
+  if (!irState) {
+    Cerr << "No materialized input study is available." << std::endl;
+    abort_handler(PARSE_ERROR);
+    throw PARSE_ERROR;
+  }
 
-  // Lambda to detect duplicate for the passed id, issuing error
-  // message for the specified block_type. Modifies set of block_ids
-  // and found_error status.
-  auto check_unique = [&block_ids, &found_error] (String block_type, String id) {
-    if (!id.empty()) {
-      block_ids.insert(id);
-      // (Only warn once per unique ID name)
-      if (block_ids.count(id) == 2) {
-	Cerr << "Error: id_" << block_type << " '" << id
-	     << "' appears more than once.\n";
-	found_error = true;
+  bool found_error = false;
+  const auto check_block = [&](const char* block_name,
+                               const std::vector<IRStore>& stores) {
+    std::set<String> ids;
+    for (const auto& store : stores) {
+      const String& id = ir_id(store);
+      if (!id.empty() && !ids.insert(id).second) {
+        Cerr << "Error: id_" << block_name << " " << id
+             << " appears more than once.\n";
+        found_error = true;
       }
     }
   };
 
-  // This could be written more generically if the member was always
-  // called idString instead of a different name (idMethod, idModel,
-  // etc.) for each Data* class...; then the same code could apply to
-  // all data*List
-  for (auto data_cont : dataMethodList)
-    check_unique("method", data_cont.data_rep()->idMethod);
-  block_ids.clear();
+  check_block("method", irState->method);
+  check_block("model", irState->model);
+  check_block("variables", irState->variables);
+  check_block("interface", irState->interface);
+  check_block("responses", irState->responses);
 
-  for (auto data_cont : dataModelList)
-    check_unique("model", data_cont.data_rep()->idModel);
-  block_ids.clear();
-
-  for (auto data_cont : dataVariablesList)
-    check_unique("variables", data_cont.data_rep()->idVariables);
-  block_ids.clear();
-
-  for (auto data_cont : dataInterfaceList)
-    check_unique("interface", data_cont.data_rep()->idInterface);
-  block_ids.clear();
-
-  for (auto data_cont : dataResponsesList)
-    check_unique("responses", data_cont.data_rep()->idResponses);
-  block_ids.clear();
-
-  if (found_error)
+  if (found_error) {
     abort_handler(PARSE_ERROR);
+    throw PARSE_ERROR;
+  }
 }
 
 

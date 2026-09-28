@@ -12,7 +12,7 @@
 
 #include "RecastModel.hpp"
 #include "dakota_results_types.hpp"
-#include "DataMethod.hpp"
+#include "DakotaMethodEnums.hpp"
 namespace Dakota {
 
 /// forward declarations

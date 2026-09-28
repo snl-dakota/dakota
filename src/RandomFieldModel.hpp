@@ -14,7 +14,7 @@
 #include "DakotaApproximation.hpp"
 #include "RecastModel.hpp"
 #include "DakotaIterator.hpp"
-#include "DataModel.hpp"
+#include "DakotaModelEnums.hpp"
 
 namespace Dakota {
 

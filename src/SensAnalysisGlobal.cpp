@@ -15,7 +15,7 @@
 #include "dakota_stat_util.hpp"
 #include <algorithm>
 #include <boost/iterator/counting_iterator.hpp>
-#include "DataMethod.hpp" 
+#include "DakotaMethodEnums.hpp"
 
 static const char rcsId[]="@(#) $Id: SensAnalysisGlobal.cpp 6170 2009-10-06 22:42:15Z lpswile $";
 

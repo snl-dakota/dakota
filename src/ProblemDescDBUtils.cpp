@@ -91,105 +91,53 @@ void echo_input_helper(std::string_view input_string, bool template_flag) {
     Cout << "----------------\n" << std::endl;
 }
 
-void check_and_broadcast_pdb(ProblemDescDB& problem_db, const std::string& dump_ir_path,
-                             const UserModes& user_modes, ParallelLibrary& parallel_lib) {
+void check_and_broadcast_pdb(ProblemDescDB& problem_db,
+                             const std::string& dump_ir_path,
+                             const UserModes& user_modes,
+                             ParallelLibrary& parallel_lib)
+{
+  const int world_rank = parallel_lib.world_rank();
 
-    auto rep = problem_db.get_rep();
-    // Check to make sure at least one of each of the keywords was found
-    // in the problem specification file; checks only happen on Dakota rank 0
-    if (parallel_lib.world_rank() == 0)
-      problem_db.check_input(user_modes);
+  if (world_rank == 0) {
+    problem_db.check_input(user_modes);
+    problem_db.enforce_unique_ids();
+  }
 
-    // bcast a minimal MPI buffer containing the input specification
-    // data prior to post-processing
-
-    // DAKOTA's old design for reading the input file was for world rank 0 to
-    // get the input filename from cmd_line_handler (after MPI_Init) and bcast
-    // the character buffer to all other processors (having every processor
-    // query the cmd_line_handler was failing because of the effect of MPI_Init
-    // on argc and argv).  Then every processor yyparsed.  This worked fine but
-    // was not scalable for MP machines with a limited number of I/O devices.
-
-    // Now, world rank 0 yyparse's and sends all the parsed data in a single
-    // buffer to all other ranks.
-    if (parallel_lib.world_size() > 1) {
-      int has_validated_json = 0;
-      if (parallel_lib.world_rank() == 0) {
-        has_validated_json = problem_db.has_validated_json() ? 1 : 0;
-      }
-      parallel_lib.bcast_w(has_validated_json);
-
-      if (has_validated_json) {
-        if (parallel_lib.world_rank() == 0) {
-          std::vector<std::uint8_t> json_cbor =
-            nlohmann::json::to_cbor(problem_db.validated_json());
-          MPIPackBuffer json_send_buffer;
-          json_send_buffer << json_cbor;
-          int json_buffer_len = json_send_buffer.size();
-          parallel_lib.bcast_w(json_buffer_len);
-          parallel_lib.bcast_w(json_send_buffer);
-        } else {
-          int json_buffer_len;
-          parallel_lib.bcast_w(json_buffer_len);
-          MPIUnpackBuffer json_recv_buffer(json_buffer_len);
-          parallel_lib.bcast_w(json_recv_buffer);
-          std::vector<std::uint8_t> json_cbor;
-          json_recv_buffer >> json_cbor;
-          problem_db.enable_json_input(nlohmann::json::from_cbor(json_cbor));
-        }
-      }
-
-      if (parallel_lib.world_rank() == 0) {
-	    problem_db.enforce_unique_ids();
-        MPIPackBuffer send_buffer;
-        send_buffer << rep->environmentSpec   << rep->dataMethodList    << rep->dataModelList
-                << rep->dataVariablesList << rep->dataInterfaceList << rep->dataResponsesList;
-      
-        // Broadcast length of buffer so that servers can allocate MPIUnpackBuffer
-        int buffer_len = send_buffer.size();
-        parallel_lib.bcast_w(buffer_len);
-      
-        // Broadcast actual buffer
-        parallel_lib.bcast_w(send_buffer);
-#ifdef MPI_DEBUG
-	Cout << "DB buffer to send on world rank " << parallel_lib.world_rank()
-	     << ":\n" << rep->environmentSpec << rep->dataMethodList << rep->dataVariablesList
-	     << rep->dataInterfaceList << rep->dataResponsesList << std::endl;
-#endif // MPI_DEBUG
-      } else {
-	      // receive length of incoming buffer and allocate space for MPIUnpackBuffer
-        int buffer_len;
-        parallel_lib.bcast_w(buffer_len);
-
-        // receive incoming buffer
-        MPIUnpackBuffer recv_buffer(buffer_len);
-        parallel_lib.bcast_w(recv_buffer);
-        recv_buffer >> rep->environmentSpec   >> rep->dataMethodList    >> rep->dataModelList
-	      >> rep->dataVariablesList >> rep->dataInterfaceList >> rep->dataResponsesList;
-#ifdef MPI_DEBUG
-	Cout << "DB buffer received on world rank " << parallel_lib.world_rank()
-	     << ":\n" << rep->environmentSpec << rep->dataMethodList << rep->dataVariablesList
-	     << rep->dataInterfaceList << rep->dataResponsesList << std::endl;
-#endif // MPI_DEBUG
-      }
-    } else {
-#ifdef DEBUG
-      Cout << "DB parsed data:\n" << rep->environmentSpec << rep->dataMethodList
-	   << rep->dataVariablesList << rep->dataInterfaceList << rep->dataResponsesList
-	   << std::endl;
-#endif // DEBUG
-      problem_db.enforce_unique_ids();
+  if (parallel_lib.world_size() > 1) {
+    int has_validated_json =
+      (world_rank == 0 && problem_db.has_validated_json()) ? 1 : 0;
+    parallel_lib.bcast_w(has_validated_json);
+    if (!has_validated_json) {
+      if (world_rank == 0)
+        Cerr << "Cannot broadcast a study without validated JSON input."
+             << std::endl;
+      abort_handler(PARSE_ERROR);
+      throw PARSE_ERROR;
     }
 
-    // After broadcast, perform post-processing on all processors to
-    // size default variables/responses specification vectors (avoid
-    // sending large vectors over an MPI buffer).
-    problem_db.post_process();
+    if (world_rank == 0) {
+      std::vector<std::uint8_t> json_cbor =
+        nlohmann::json::to_cbor(problem_db.validated_json());
+      MPIPackBuffer json_send_buffer;
+      json_send_buffer << json_cbor;
+      int json_buffer_len = json_send_buffer.size();
+      parallel_lib.bcast_w(json_buffer_len);
+      parallel_lib.bcast_w(json_send_buffer);
+    }
+    else {
+      int json_buffer_len;
+      parallel_lib.bcast_w(json_buffer_len);
+      MPIUnpackBuffer json_recv_buffer(json_buffer_len);
+      parallel_lib.bcast_w(json_recv_buffer);
+      std::vector<std::uint8_t> json_cbor;
+      json_recv_buffer >> json_cbor;
+      problem_db.enable_json_input(nlohmann::json::from_cbor(json_cbor));
+    }
+  }
 
-    if (!dump_ir_path.empty() && parallel_lib.world_rank() == 0)
-      problem_db.write_json_dump(dump_ir_path);
+  if (!dump_ir_path.empty() && world_rank == 0)
+    problem_db.write_json_dump(dump_ir_path);
 }
-
 
 } // namespace ProblemDescDBUtils
 } // namespace Dakota

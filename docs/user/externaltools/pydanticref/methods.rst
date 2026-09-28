@@ -20,7 +20,6 @@ Methods
     methods/conmin_mfd
     methods/dace
     methods/demo_tpl
-    methods/dl_solver
     methods/dot_bfgs
     methods/dot_frcg
     methods/dot_mmfd

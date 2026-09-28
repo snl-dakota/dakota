@@ -37,7 +37,7 @@ NonDAdaptImpSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, s
   initLHS(true), useModelBounds(false), invertProb(false),
   trackExtremeValues(pdfOutput) // used for defining PDF bounds
 {
-  // sampleType default in DataMethod.cpp is SUBMETHOD_DEFAULT (0).
+  // sampleType IR default is SUBMETHOD_DEFAULT (0).
   // Enforce an LHS default for this method.
   if (!sampleType)
     sampleType = SUBMETHOD_LHS;

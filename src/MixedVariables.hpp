@@ -11,7 +11,7 @@
 #define MIXED_VARS_H
 
 #include "DakotaVariables.hpp"
-#include "DataVariables.hpp"
+#include "DakotaVariablesEnums.hpp"
 
 namespace Dakota {
 

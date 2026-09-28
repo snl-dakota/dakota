@@ -12,7 +12,7 @@
 
 #include "NonDNumericAllocSampling.hpp"
 #include "dakota_linear_algebra.hpp"
-//#include "DataMethod.hpp"
+//#include "DakotaMethodEnums.hpp"
 
 
 namespace Dakota {

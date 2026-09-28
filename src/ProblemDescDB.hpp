@@ -12,12 +12,7 @@
 
 #include "dakota_system_defs.hpp"
 #include "dakota_data_types.hpp"
-#include "DataEnvironment.hpp"
-#include "DataMethod.hpp"
-#include "DataModel.hpp"
-#include "DataVariables.hpp"
-#include "DataInterface.hpp"
-#include "DataResponses.hpp"
+#include "DakotaMethodEnums.hpp"
 #include "IRQuery.hpp"
 #include "IRState.hpp"
 #include "UserModes.hpp"
@@ -92,11 +87,8 @@ typedef void(*DbCallbackFunctionPtr)(Dakota::ProblemDescDB* db, void *data_ptr);
 
 /// The database containing information parsed from the DAKOTA input file.
 
-/** The ProblemDescDB class is a database for DAKOTA input file data
-    that is populated by a parser defined in a derived class.  When
-    the parser reads a complete keyword, it populates a data class
-    object (DataEnvironment, DataMethod, DataVariables, DataInterface, or
-    DataResponses) */
+/** Database facade over the materialized intermediate representation of a
+    Dakota study. */
 
 class ProblemDescDB
 {
@@ -129,29 +121,13 @@ public:
   //- Heading: Member methods
   //
 
-  /// Parses the input file or input string if present and executes
-  /// callbacks.  Does not perform any validation.
-  void parse_inputs(const std::string_view input_string,
-        const std::string_view parser_options,
-        bool command_line_run,
-		    DbCallbackFunctionPtr callback = NULL,
-		    void* callback_data = NULL);
   /// Enables JSON input
   void enable_json_input(const String &);
   /// Enables validated JSON input from an in-memory study object
   void enable_json_input(const nlohmann::json&);
-  /// performs check_input, broadcast, and post_process, but for now,
-  /// allowing separate invocation through the public API as well
-  void check_and_broadcast(const UserModes& user_modes);
   /// verifies that there is at least one of each of the required
   /// keywords in the dakota input file
   void check_input(const UserModes& user_modes);
-  /// invokes send_db_buffer() and receive_db_buffer() to broadcast DB
-  /// data across the processor allocation.  Used by manage_inputs().
-  void broadcast();
-  /// post-processes the (minimal) input specification to assign default
-  /// variables/responses specification arrays.  Used by manage_inputs().
-  void post_process();
   /// Locks the database in order to prevent data access when the list nodes
   /// may not be set properly.  Unlocked by a set nodes operation.
   void lock();
@@ -171,37 +147,37 @@ public:
   
 
 
-  /// set dataMethodIter based on a method identifier string to activate a
-  /// particular method specification in dataMethodList and use pointers from
-  /// this method specification to set all other list iterators.
+  /// set method selection based on a method identifier string to activate a
+  /// particular method specification in method blocks and use pointers from
+  /// this method specification to set all other subordinate block selections.
   void set_db_list_nodes(const String& method_tag);
-  /// set dataMethodIter based on an index within dataMethodList to activate a
+  /// set method selection based on an index within method blocks to activate a
   /// particular method specification and use pointers from this method
-  /// specification to set all other list iterators.
+  /// specification to set all other subordinate block selections.
   void set_db_list_nodes(size_t method_index);
   /// For a (default) environment lacking a top method pointer, this function
   /// is used to determine which of several potential method specifications
   /// corresponds to the top method and then sets the list nodes accordingly.
   void resolve_top_method(bool set_model_nodes = true);
 
-  /// set dataMethodIter based on a method identifier string to activate a
+  /// set method selection based on a method identifier string to activate a
   /// particular method specification (only).
   void set_db_method_node(const String& method_tag);
-  /// set dataMethodIter based on an index within dataMethodList to activate a
+  /// set method selection based on an index within method blocks to activate a
   /// particular method specification (only).
   void set_db_method_node(size_t method_index);
-  /// return the index of the active node in dataMethodList
+  /// return the index of the active node in method blocks
   size_t get_db_method_node(); // restoration usage: return by value
 
-  /// set the model list iterators (dataModelIter, dataVariablesIter,
-  /// dataInterfaceIter, and dataResponsesIter) based on the model
+  /// set the model subordinate block selections (model selection, variables selection,
+  /// interface selection, and responses selection) based on the model
   /// identifier string
   void set_db_model_nodes(const String& model_tag);
-  /// set the model list iterators (dataModelIter, dataVariablesIter,
-  /// dataInterfaceIter, and dataResponsesIter) based on an index
-  /// within dataModelList
+  /// set the model subordinate block selections (model selection, variables selection,
+  /// interface selection, and responses selection) based on an index
+  /// within model blocks
   void set_db_model_nodes(size_t model_index);
-  /// return the index of the active node in dataModelList
+  /// return the index of the active node in model blocks
   size_t get_db_model_node(); // restoration usage: return by value
 
   size_t get_db_responses_node(const String& responses_tag) const;
@@ -210,7 +186,7 @@ public:
 
   size_t get_db_variables_node(const String& variables_tag) const;
 
-  /// Return the active indices of each top-level specification list.
+  /// Return the active indices of each top-level specification block.
   /// These are primarily used to synchronize state with the IR runtime.
   int get_active_method_index() const;
   int get_active_model_index() const;
@@ -218,11 +194,11 @@ public:
   int get_active_interface_index() const;
   int get_active_responses_index() const;
 
-  /// set dataVariablesIter based on the variables identifier string
+  /// set variables selection based on the variables identifier string
   void set_db_variables_node(const String& variables_tag);
-  /// set dataInterfaceIter based on the interface identifier string
+  /// set interface selection based on the interface identifier string
   void set_db_interface_node(const String& interface_tag);
-  /// set dataResponsesIter based on the responses identifier string
+  /// set responses selection based on the responses identifier string
   void set_db_responses_node(const String& responses_tag);
 
   //
@@ -254,22 +230,6 @@ public:
   /// write the full stored ProblemDescDB contents to a JSON file for debugging
   void write_json_dump(const String& output_path) const;
 
-  // These functions support a library mode with external parsing.  Rather
-  // than using manage_inputs() to parse an input file, Data objects
-  // populated elsewhere can be inserted into the Data object lists.
-
-  /// set the DataEnvironment object
-  void insert_node(const DataEnvironment& data_env);
-  /// add a DataMethod object to the dataMethodList
-  void insert_node(const DataMethod& data_method);
-  /// add a DataModel object to the dataModelList
-  void insert_node(const DataModel& data_model);
-  /// add a DataVariables object to the dataVariablesList
-  void insert_node(DataVariables& data_variables);
-  /// add a DataInterface object to the dataInterfaceList
-  void insert_node(const DataInterface& data_interface);
-  /// add a DataResponses object to the dataResponsesList
-  void insert_node(const DataResponses& data_responses);
 
   // These functions are more convenient to locate within the DB in
   // terms of data access, parallel existence, and code reuse:
@@ -336,46 +296,8 @@ protected:
   //- Heading: Data
   //
  
-  // The data objects that comprise the problem specification resulting
-  // either from kwhandler (parser) or insert_node (library mode) calls.
-
-  /// the environment specification (only one allowed) resulting from a call
-  /// to environment_kwhandler() or insert_node()
-  DataEnvironment environmentSpec;
-  /// list of method specifications, one for each call to method_kwhandler()
-  /// or insert_node()
-  std::list<DataMethod> dataMethodList;
-  /// list of model specifications, one for each call to model_kwhandler()
-  /// or insert_node()
-  std::list<DataModel> dataModelList;
-  /// list of variables specifications, one for each call to
-  /// variables_kwhandler() or insert_node()
-  std::list<DataVariables> dataVariablesList;
-  /// list of interface specifications, one for each call to
-  /// interface_kwhandler() or insert_node()
-  std::list<DataInterface> dataInterfaceList;
-  /// list of responses specifications, one for each call to
-  /// responses_kwhandler() or insert_node()
-  std::list<DataResponses> dataResponsesList;
-
-  /// counter for environment specifications used in check_input
-  size_t environmentCntr;
 
 private:
-
-  // helpers to map keys to class member data values
-
-  /// Encapsulate lookups across Data*Rep types: given lookup tables
-  /// mapping strings to pointers to Data*Rep members, and an
-  /// entry_name = block.entry_key, return the corresponding member
-  /// value from the appropriate Data*Rep in the ProblemDescDB rep.
-  template<typename T>
-  const T& get(const std::string& context_msg,
-	 const std::string& entry_name,
-	 const std::shared_ptr<ProblemDescDB>& db_rep) const;
-
-//     void set(const std::string& entry_name,
-// 	     std::shared_ptr<ProblemDescDB>& db_rep, const T entry_value) const;
 
   //
   //- Heading: Private convenience functions
@@ -386,42 +308,19 @@ private:
   /// Used by the envelope constructor to instantiate the correct letter class
   std::shared_ptr<ProblemDescDB> get_db(int world_size, int world_rank);
 
-  /// MPI send of a large buffer containing environmentSpec and all objects
-  /// in dataMethodList, dataModelList, dataVariablesList, dataInterfaceList,
-  /// and dataResponsesList.  Used by manage_inputs().
-  void send_db_buffer();
-  /// MPI receive of a large buffer containing environmentSpec and all objects
-  /// in dataMethodList, dataModelList, dataVariablesList, dataInterfaceList,
-  /// and dataResponsesList.  Used by manage_inputs().
-  void receive_db_buffer();
   /// helper function for determining whether an interface specification
   /// should be active, based on model type
-  bool model_has_interface(const DataModelRep& model_rep) const;
+  bool model_has_interface(const IRStore& model_store) const;
 
   /// require user-specified block identifiers to be unique
   void enforce_unique_ids();
 
-  /// Build minimal Data* list nodes from IR ids/pointers so existing list
-  /// selection logic can keep working while getters read from IR.
-  void populate_skeleton_data_from_ir();
 
 
   //
   //- Heading: Data
   //
  
-  // Iterators for identifying active list nodes in data object linked lists
-
-  /// iterator identifying the active list node in dataMethodList
-  std::list<DataMethod>::iterator dataMethodIter;
-  /// iterator identifying the active list node in dataModelList
-  std::list<DataModel>::iterator dataModelIter;
-  /// iterator identifying the active list node in dataVariablesList
-  std::list<DataVariables>::iterator dataVariablesIter;
-  /// iterator identifying the active list node in dataInterfaceList
-  std::list<DataInterface>::iterator dataInterfaceIter;
-  /// iterator identifying the active list node in dataResponsesList
-  std::list<DataResponses>::iterator dataResponsesIter;
 
   /// prevents use of get_<type> retrieval and set_<type> update functions 
   /// prior to setting the list node for the active method specification
@@ -447,12 +346,6 @@ private:
   /// validated JSON study for broadcast/re-materialization
   nlohmann::json validatedStudyJson;
 
-  // default data objects to use for json-only (when nidr is not used)
-  DataMethod    defaultDataMethod;
-  DataModel     defaultDataModel;
-  DataVariables defaultDataVariables;
-  DataInterface defaultDataInterface;
-  DataResponses defaultDataResponses;
 
   /// MPI world rank
   int worldRank;
@@ -529,12 +422,7 @@ inline std::string_view ProblemDescDB::method_id() const {
       db->irState->active.method < db->irState->method.size() &&
       db->irState->method[db->irState->active.method].contains("id"))
     return db->irState->method[db->irState->active.method].get<String>("id");
-  if (db->method_locked()) {
-    if (db->dataMethodList.size() == 1)
-      return db->dataMethodList.begin()->dataMethodRep->idMethod;
-    return empty_id;
-  }
-  return db->dataMethodIter->dataMethodRep->idMethod;
+  return empty_id;
 }
 
 inline std::string_view ProblemDescDB::model_id() const {
@@ -544,12 +432,7 @@ inline std::string_view ProblemDescDB::model_id() const {
       db->irState->active.model < db->irState->model.size() &&
       db->irState->model[db->irState->active.model].contains("id"))
     return db->irState->model[db->irState->active.model].get<String>("id");
-  if (db->model_locked()) {
-    if (db->dataModelList.size() == 1)
-      return db->dataModelList.begin()->dataModelRep->idModel;
-    return empty_id;
-  }
-  return db->dataModelIter->dataModelRep->idModel;
+  return empty_id;
 }
 
 inline std::string_view ProblemDescDB::interface_id() const {
@@ -559,12 +442,7 @@ inline std::string_view ProblemDescDB::interface_id() const {
       db->irState->active.interface < db->irState->interface.size() &&
       db->irState->interface[db->irState->active.interface].contains("id"))
     return db->irState->interface[db->irState->active.interface].get<String>("id");
-  if (db->interface_locked()) {
-    if (db->dataInterfaceList.size() == 1)
-      return db->dataInterfaceList.begin()->dataIfaceRep->idInterface;
-    return empty_id;
-  }
-  return db->dataInterfaceIter->dataIfaceRep->idInterface;
+  return empty_id;
 }
 
 inline std::shared_ptr<ProblemDescDB> ProblemDescDB::get_rep() const {
@@ -575,9 +453,7 @@ inline size_t ProblemDescDB::get_db_method_node()
 {
   if (dbRep)
     return dbRep->get_db_method_node();
-  else
-    return (methodDBLocked) ? _NPOS :
-      std::distance(dataMethodList.begin(), dataMethodIter);
+  return (!irState || methodDBLocked) ? _NPOS : irState->active.method;
 }
 
 
@@ -585,67 +461,7 @@ inline size_t ProblemDescDB::get_db_model_node()
 {
   if (dbRep)
     return dbRep->get_db_model_node();
-  else
-    return (modelDBLocked) ? _NPOS :
-      std::distance(dataModelList.begin(), dataModelIter);
-}
-
-
-inline void ProblemDescDB::insert_node(const DataEnvironment& data_env)
-{
-  if (dbRep) {
-    dbRep->environmentSpec = data_env;
-    dbRep->environmentCntr++;
-  }
-  else {
-    environmentSpec = data_env;
-    environmentCntr++;
-  }
-}
-
-
-inline void ProblemDescDB::insert_node(const DataMethod& data_method)
-{
-  if (dbRep)
-    dbRep->dataMethodList.push_back(data_method);
-  else
-    dataMethodList.push_back(data_method);
-}
-
-
-inline void ProblemDescDB::insert_node(const DataModel& data_model)
-{
-  if (dbRep)
-    dbRep->dataModelList.push_back(data_model);
-  else
-    dataModelList.push_back(data_model);
-}
-
-
-inline void ProblemDescDB::insert_node(DataVariables& data_variables)
-{
-  if (dbRep)
-    dbRep->dataVariablesList.push_back(data_variables);
-  else
-    dataVariablesList.push_back(data_variables);
-}
-
-
-inline void ProblemDescDB::insert_node(const DataInterface& data_interface)
-{
-  if (dbRep)
-    dbRep->dataInterfaceList.push_back(data_interface);
-  else
-    dataInterfaceList.push_back(data_interface);
-}
-
-
-inline void ProblemDescDB::insert_node(const DataResponses& data_responses)
-{
-  if (dbRep)
-    dbRep->dataResponsesList.push_back(data_responses);
-  else
-    dataResponsesList.push_back(data_responses);
+  return (!irState || modelDBLocked) ? _NPOS : irState->active.model;
 }
 
 
@@ -699,56 +515,36 @@ inline const nlohmann::json& ProblemDescDB::validated_json() const
 inline int ProblemDescDB::get_active_method_index() const
 {
   const ProblemDescDB* db = dbRep ? dbRep.get() : this;
-  if (db->irState)
-    return static_cast<int>(db->irState->active.method);
-  return db->methodDBLocked ? 0 :
-    static_cast<int>(std::distance(
-      db->dataMethodList.cbegin(),
-      std::list<DataMethod>::const_iterator(db->dataMethodIter)));
+  return (db->irState && !db->methodDBLocked) ?
+    static_cast<int>(db->irState->active.method) : 0;
 }
 
 inline int ProblemDescDB::get_active_model_index() const
 {
   const ProblemDescDB* db = dbRep ? dbRep.get() : this;
-  if (db->irState)
-    return static_cast<int>(db->irState->active.model);
-  return db->modelDBLocked ? 0 :
-    static_cast<int>(std::distance(
-      db->dataModelList.cbegin(),
-      std::list<DataModel>::const_iterator(db->dataModelIter)));
+  return (db->irState && !db->modelDBLocked) ?
+    static_cast<int>(db->irState->active.model) : 0;
 }
 
 inline int ProblemDescDB::get_active_variables_index() const
 {
   const ProblemDescDB* db = dbRep ? dbRep.get() : this;
-  if (db->irState)
-    return static_cast<int>(db->irState->active.variables);
-  return db->variablesDBLocked ? 0 :
-    static_cast<int>(std::distance(
-      db->dataVariablesList.cbegin(),
-      std::list<DataVariables>::const_iterator(db->dataVariablesIter)));
+  return (db->irState && !db->variablesDBLocked) ?
+    static_cast<int>(db->irState->active.variables) : 0;
 }
 
 inline int ProblemDescDB::get_active_interface_index() const
 {
   const ProblemDescDB* db = dbRep ? dbRep.get() : this;
-  if (db->irState)
-    return static_cast<int>(db->irState->active.interface);
-  return db->interfaceDBLocked ? 0 :
-    static_cast<int>(std::distance(
-      db->dataInterfaceList.cbegin(),
-      std::list<DataInterface>::const_iterator(db->dataInterfaceIter)));
+  return (db->irState && !db->interfaceDBLocked) ?
+    static_cast<int>(db->irState->active.interface) : 0;
 }
 
 inline int ProblemDescDB::get_active_responses_index() const
 {
   const ProblemDescDB* db = dbRep ? dbRep.get() : this;
-  if (db->irState)
-    return static_cast<int>(db->irState->active.responses);
-  return db->responsesDBLocked ? 0 :
-    static_cast<int>(std::distance(
-      db->dataResponsesList.cbegin(),
-      std::list<DataResponses>::const_iterator(db->dataResponsesIter)));
+  return (db->irState && !db->responsesDBLocked) ?
+    static_cast<int>(db->irState->active.responses) : 0;
 }
 
 
@@ -798,16 +594,12 @@ max_procs_per_level(int max_procs_per_server, int pps_spec, int num_serv_spec,
 }
 
 
-inline bool ProblemDescDB::model_has_interface(const DataModelRep& model_rep) const
+inline bool ProblemDescDB::model_has_interface(const IRStore& model_store) const
 {
-  // The following Models pull from the interface specification:
-  //   SimulationModel (userDefinedInterface)
-  //   NestedModel (optionalInterface)
-  //   DataFitSurrModel (approxInterface)
-  return ( model_rep.modelType == "simulation" ||
-	   model_rep.modelType == "nested" ||
-	   ( model_rep.modelType == "surrogate" &&
-	     model_rep.surrogateType != "ensemble") );
+  const String& model_type = model_store.get<String>("type");
+  const String& surrogate_type = model_store.get<String>("surrogate.type");
+  return (model_type == "simulation" || model_type == "nested" ||
+          (model_type == "surrogate" && surrogate_type != "ensemble"));
 }
 
 /// A minimal letter (Rep) class to preserve the existing LO setup

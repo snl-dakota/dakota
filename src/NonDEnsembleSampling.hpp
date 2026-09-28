@@ -11,7 +11,7 @@
 #define NOND_ENSEMBLE_SAMPLING_H
 
 #include "NonDSampling.hpp"
-#include "DataMethod.hpp"
+#include "DakotaMethodEnums.hpp"
 #include "DakotaResponseContainer.hpp"
 
 namespace Dakota {
@@ -264,9 +264,9 @@ protected:
   /// index into relaxFactorSequence
   size_t relaxIndex;
   /// a sequence of relaxation factors to use across ML/MF iterations
-  /// (see DataMethod.hpp for usage notes)
+  /// (see DakotaMethodEnums.hpp for usage notes)
   RealVector relaxFactorSequence;
-  /// a recursive relaxation factor (see DataMethod.hpp for usage notes)
+  /// a recursive relaxation factor (see DakotaMethodEnums.hpp for usage notes)
   Real relaxRecursiveFactor;
 
   // store the allocation_target input specification, prior to run-time

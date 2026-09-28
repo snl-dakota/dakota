@@ -11,7 +11,7 @@
 #define RELAXED_VARIABLES_H
 
 #include "DakotaVariables.hpp"
-#include "DataVariables.hpp"
+#include "DakotaVariablesEnums.hpp"
 
 namespace Dakota {
 

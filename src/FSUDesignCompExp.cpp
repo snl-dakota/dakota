@@ -333,7 +333,7 @@ get_parameter_sets(std::shared_ptr<Model> model, const size_t num_samples,
     if (numCVTTrials < num_samples)
       numCVTTrials = num_samples *10;
 
-    // assign default maxIterations (DataMethod default is SZ_MAX)
+    // assign default maxIterations (generated method default is SZ_MAX)
     if (maxIterations == SZ_MAX)
       maxIterations = 25;
 

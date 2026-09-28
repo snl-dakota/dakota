@@ -119,7 +119,7 @@ NonDLocalReliability(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, s
     = (hess_type != "none" && mppSearchType <= SUBMETHOD_AMV_PLUS_U) ? 2 : 1;
 
   // assign iterator-specific defaults for approximation-based MPP searches
-  if (maxIterations == SZ_MAX               && // DataMethod default
+  if (maxIterations == SZ_MAX               && // method IR default
       mppSearchType >= SUBMETHOD_AMV_PLUS_X &&
       mppSearchType <  SUBMETHOD_NO_APPROX) // approx-based
     maxIterations = 25;

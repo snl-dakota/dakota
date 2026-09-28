@@ -11,7 +11,7 @@
 #define NOND_MULTIFIDELITY_SAMPLING_H
 
 #include "NonDNumericAllocSampling.hpp"
-//#include "DataMethod.hpp"
+//#include "DakotaMethodEnums.hpp"
 
 
 namespace Dakota {

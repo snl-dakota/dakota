@@ -8,7 +8,7 @@
     _______________________________________________________________________ */
 
 #include "ScalingModel.hpp"
-#include "DataMethod.hpp"
+#include "DakotaMethodEnums.hpp"
 
 static const char rcsId[]="@(#) $Id$";
 

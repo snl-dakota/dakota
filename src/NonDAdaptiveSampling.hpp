@@ -11,7 +11,7 @@
 #define NOND_ADAPTIVE_SAMPLING_H
 
 #include "NonDSampling.hpp"
-#include "DataMethod.hpp"
+#include "DakotaMethodEnums.hpp"
 
 // forward declaration so class size doesn't change conditionally
 class MS_Complex;

@@ -240,7 +240,7 @@ TEST(reduced_bases_tests, test_reduced_basis_simple_api2)
 //----------------------------------------------------------------
 
 #include "DakotaApproximation.hpp"
-#include "DataMethod.hpp"
+#include "DakotaMethodEnums.hpp"
 
 // test construction and evaluation of a GP surrogate from data
 // matrices; one approximation per response

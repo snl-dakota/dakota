@@ -60,7 +60,7 @@ Minimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_
   update_from_model(*iteratedModel); // variable,response counts & checks
 
   // Re-assign Iterator defaults specialized to Minimizer branch
-  // DataMethod defaults are assigned a special value of SZ_MAX, for
+  // method IR defaults are assigned a special value of SZ_MAX, for
   // reassignment in different contexts
   if (maxIterations    == SZ_MAX)    maxIterations =  100;
   if (maxFunctionEvals == SZ_MAX) maxFunctionEvals = 1000;

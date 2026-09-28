@@ -2954,13 +2954,6 @@
           &method_three_optional_keywords;
           &method_conmin_common_opts;
         </keyword>
-        <keyword code="{N_mdm(utype_lit,TYPE_DATA_methodName_DL_SOLVER)}" group="Optimization: Other" id="dl_solver" label="(Experimental) Dynamically-loaded solver" name="dl_solver" argument='name' type_data_argument='dlDetails'>
-          <param type="STRING" />
-          &method_three_optional_keywords;
-          &method_max_function_evaluations_context_1;
-          &default_scaling;
-          &method_optional_model_pointer;
-        </keyword>
         <keyword  id="external_python" name="external_python" code="{N_mdm(utype,methodName_EXTERNAL_PYTHON)}" label="Use the external python methods interface" help="" >
           &method_three_optional_keywords;
           <keyword  id="class_path_and_name" name="class_path_and_name" code="{N_mdm(str,moduleAndClassName)}" label="Specify the module and class name of the external python method"  minOccurs="1" >

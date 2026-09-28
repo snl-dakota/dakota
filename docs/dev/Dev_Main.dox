@@ -486,17 +486,12 @@ routines for the levels are part of
 in \ref ProgramOptions, with the help of command-line option
 parsing in \ref CommandLineHandler.</li>
 
-<li> Parsing: %Dakota employs NIDR (New Input Deck Reader) via \ref
-Dakota::ProblemDescDB::parse_inputs to parse user input files.  NIDR
-uses the keyword handlers in the \ref Dakota::NIDRProblemDescDB
-"NIDRProblemDescDB" derived class to populate data within the \ref
-Dakota::ProblemDescDB "ProblemDescDB" base class, which maintains a
-\ref Dakota::DataEnvironment "DataEnvironment" specification and lists
-of \ref Dakota::DataMethod "DataMethod", \ref Dakota::DataModel
-"DataModel", \ref Dakota::DataVariables "DataVariables", \ref
-Dakota::DataInterface "DataInterface", and \ref Dakota::DataResponses
-"DataResponses" specifications.  Procedures for modifying the parsing
-subsystem are described in \ref SpecChange.
+<li> Parsing: %Dakota validates input with the parser under
+<tt>packages/dakota_parser/dakota_parser</tt> and materializes it into an
+IRState. ProblemDescDB provides typed access to that intermediate
+representation for existing runtime components. The canonical grammar is
+maintained in the Pydantic models under <tt>python/dakota/spec</tt>; see the
+Pydantic input grammar guide.
 
 <li> Failure capturing: Simulation failures can be trapped and managed
 using exception handling in 
@@ -521,15 +516,9 @@ Dakota::Iterator "Iterator", \ref Dakota::Model "Model", \ref
 Dakota::Variables "Variables", \ref Dakota::Constraints "Constraints", 
 \ref Dakota::Interface "Interface", 
 \ref Dakota::ProblemDescDB "ProblemDescDB", and 
-\ref Dakota::Approximation "Approximation".  The latter 
-idiom provides for memory efficiency in data-intensive classes which
-do not involve a class hierarchy.  The \ref Dakota::Response "Response"
-and parser data (\ref Dakota::DataEnvironment "DataEnvironment", 
-\ref Dakota::DataMethod "DataMethod", \ref Dakota::DataModel "DataModel", 
-\ref Dakota::DataVariables "DataVariables",
-\ref Dakota::DataInterface "DataInterface", and
-\ref Dakota::DataResponses "DataResponses") classes use
-this idiom.  When managing reference-counted data containers (e.g.,
+\ref Dakota::Approximation "Approximation".  The latter idiom provides for memory efficiency in data-intensive
+classes that do not involve a class hierarchy, including Response.
+  When managing reference-counted data containers (e.g.,
 \ref Dakota::Variables "Variables" or \ref Dakota::Response "Response"
 objects), it is important to properly manage shallow and deep copies,
 to allow for both efficiency and data independence as needed in a
@@ -557,8 +546,7 @@ specific development activities:
     development team.
 \li \ref PydanticSpec - maintain the authoritative Pydantic grammar in
     \c dakota/python/dakota/spec.
-\li \ref SpecChange - how to interact with NIDR and the associated %Dakota
-    classes.
+\li \ref SpecChange - a concise entry point for input grammar changes.
 \li \ref DakLibrary - embed %Dakota as a service within your application.
 \li \ref IteratorFlow - explanation of the full granularity of steps in 
     Iterator execution.

@@ -111,7 +111,7 @@ def _schema_default_targets(m: dict, default_value: Any) -> List[Tuple[str, Any,
     if storage_type == "METHOD_PIECEWISE":
         # Wrapper defaults like Literal[True] on the "piecewise" selector do not
         # mean Dakota's effective IR default is piecewise-selected. The actual
-        # defaults come from the DataMethod constructor (e.g. expansionType and
+        # defaults come from the override registry (e.g. expansionType and
         # piecewiseBasis initializers), so do not synthesize schema defaults here.
         return []
 

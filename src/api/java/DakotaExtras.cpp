@@ -9,11 +9,6 @@
 
 #include "DakotaExtras.hpp"
 
-Dakota::DataMethodRep* Dakota::dataMethodRep(Dakota::DataMethod &dm) { return dm.dataMethodRep; }
-Dakota::DataVariablesRep* Dakota::dataVarsRep(Dakota::DataVariables &dm) { return dm.dataVarsRep; }
-Dakota::DataInterfaceRep* Dakota::dataIfaceRep(Dakota::DataInterface &dm) { return dm.dataIfaceRep; }
-Dakota::DataResponsesRep* Dakota::dataRespRep(Dakota::DataResponses &dm) { return dm.dataRespRep; }
-
 std::vector<std::string> Dakota::active_cr_variable_labels(const Variables& vars) {
   StringMultiArrayConstView view = vars.continuous_variable_labels();
   std::vector<std::string> result;

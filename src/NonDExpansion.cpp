@@ -1021,7 +1021,7 @@ void NonDExpansion::refine_expansion()
   // --------------------------------------
   // Uniform/adaptive refinement approaches
   // --------------------------------------
-  // DataMethod default for maxRefineIterations is SZ_MAX, indicating no user
+  // method IR default for maxRefineIterations is SZ_MAX, indicating no user
   // spec.  Iteration counts are unconstrained in this case.
   size_t candidate, iter = 1;
   bool converged = (iter > maxRefineIterations),

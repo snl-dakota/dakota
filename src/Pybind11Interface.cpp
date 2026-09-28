@@ -12,7 +12,7 @@
 
 #include "Pybind11Interface.hpp"
 #include "dakota_global_defs.hpp"
-#include "DataMethod.hpp"
+#include "DakotaMethodEnums.hpp"
 #include "ProblemDescDB.hpp"
 #include "python_utils.hpp"
 

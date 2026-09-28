@@ -310,7 +310,6 @@ static UShortStrBimap method_map =
   (BRANCH_AND_BOUND,                "branch_and_bound")
   (MOGA,                            "moga")
   (SOGA,                            "soga")
-  (DL_SOLVER,                       "dl_solver")
   (MESH_ADAPTIVE_SEARCH,            "mesh_adaptive_search")
   (MIT_NOWPAC,                      "nowpac")
   (MIT_SNOWPAC,                     "snowpac")
@@ -1153,7 +1152,7 @@ IntIntPair Iterator::estimate_partition_bounds()
 
 void Iterator::sub_iterator_flag(bool si_flag)
 {
-  // Implementation in .cpp due to need for DataMethod.hpp
+  // Implementation in .cpp to keep the enum mapping out of the header
   // If outputLevel were to change after call to this function, would
   // need to recheck/set status of summaryOyutputFlag
   subIteratorFlag = si_flag;

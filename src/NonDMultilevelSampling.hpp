@@ -11,7 +11,7 @@
 #define NOND_MULTILEVEL_SAMPLING_H
 
 #include "NonDEnsembleSampling.hpp"
-#include "DataMethod.hpp"
+#include "DakotaMethodEnums.hpp"
 
 #ifdef HAVE_NPSOL
 #include "NPSOLOptimizer.hpp"

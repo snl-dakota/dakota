@@ -71,8 +71,6 @@ enum { DEFAULT_METHOD=0,
        NPSOL_SQP, NLPQL_SQP, //REDUCED_SQP,
        DOT_BFGS, DOT_FRCG, DOT_MMFD, DOT_SLP, DOT_SQP, CONMIN_FRCG, CONMIN_MFD,
        ROL,
-       // Generic Optimizers / Minimizers:
-       DL_SOLVER,
        // Minimizers that are both opt & least sq
        BRANCH_AND_BOUND=(MINIMIZER_BIT | OPTIMIZER_BIT | LEASTSQ_BIT) };
 
@@ -166,7 +164,6 @@ REGISTER_DAKOTA_ENUM( DOT_SQP,                            DOT_SQP)
 REGISTER_DAKOTA_ENUM( CONMIN_FRCG,                        CONMIN_FRCG)
 REGISTER_DAKOTA_ENUM( CONMIN_MFD,                         CONMIN_MFD)
 REGISTER_DAKOTA_ENUM( ROL,                                ROL)
-REGISTER_DAKOTA_ENUM( DL_SOLVER,                          DL_SOLVER)
 REGISTER_DAKOTA_ENUM( BRANCH_AND_BOUND,                   BRANCH_AND_BOUND)
 
 /// Sub-methods, including sampling, inference algorithm, opt algorithm types

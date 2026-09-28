@@ -399,7 +399,7 @@ sub gui_groups {
         $desc =~ s/(method\/$_")/$1 GROUP "Optimization: Global"/g;                                                                          
         }                                                                                                                                    
 
-    @methods = ("dl_solver", "coliny_beta");
+    @methods = ("coliny_beta");
     foreach (@methods) {
         $desc =~ s/(method\/$_")/$1 GROUP "Optimization: Other"/g;                                                                          
         }                                                                                                                                    

@@ -224,7 +224,7 @@ IRState InstructionMaterializer::materialize(const nlohmann::json& validated_jso
     [](const auto& stores, auto& map) {
       for (size_t i = 0; i < stores.size(); ++i) {
         if (stores[i].contains("id"))
-          map[stores[i].template get<String>("id")] = i;
+          map.emplace(stores[i].template get<String>("id"), i);
       }
     };
 

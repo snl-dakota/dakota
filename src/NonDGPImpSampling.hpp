@@ -11,7 +11,7 @@
 #define NOND_GP_IMP_SAMPLING_H
 
 #include "NonDSampling.hpp"
-#include "DataMethod.hpp"
+#include "DakotaMethodEnums.hpp"
 
 namespace Dakota {
 

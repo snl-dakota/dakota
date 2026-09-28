@@ -13,7 +13,7 @@
 #include "ParamResponsePair.hpp"
 #include "PRPMultiIndex.hpp"
 #include "SurrogateData.hpp"
-#include "DataMethod.hpp"
+#include "DakotaMethodEnums.hpp"
 
 static const char rcsId[]="@(#) $Id: DiscrepancyCorrection.cpp 7024 2010-10-16 01:24:42Z mseldre $";
 

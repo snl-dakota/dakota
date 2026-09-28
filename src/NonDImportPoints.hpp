@@ -11,7 +11,7 @@
 #define NOND_IMPORT_POINTS_H
 
 #include "NonDSampling.hpp"
-#include "DataMethod.hpp"
+#include "DakotaMethodEnums.hpp"
 
 namespace Dakota {
 

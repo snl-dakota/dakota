@@ -11,7 +11,7 @@
 #define NOND_ML_BLUE_SAMPLING_H
 
 #include "NonDNumericAllocSampling.hpp"
-//#include "DataMethod.hpp"
+//#include "DakotaMethodEnums.hpp"
 
 #define DIRECT_DIMENSION_LIMIT 64
 

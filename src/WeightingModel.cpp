@@ -8,7 +8,7 @@
     _______________________________________________________________________ */
 
 #include "WeightingModel.hpp"
-#include "DataMethod.hpp"
+#include "DakotaMethodEnums.hpp"
 
 namespace Dakota {
 

@@ -13,6 +13,7 @@
 #include "dakota_system_defs.hpp"
 #include "dakota_global_defs.hpp"
 #include "dakota_data_types.hpp"
+#include "DakotaInterfaceEnums.hpp"
 
 // forward declarations
 

@@ -148,7 +148,7 @@ inline int NonDMultilevelFunctionTrain::first_seed() const
 inline size_t NonDMultilevelFunctionTrain::start_rank(size_t index) const
 {
   if (startRankSeqSpec.empty())
-    return startRankSpec; // use single-level default provided by DataMethod
+    return startRankSpec; // use single-level default provided by the method IR
   else
     return (index < startRankSeqSpec.size()) ?
       startRankSeqSpec[index] : startRankSeqSpec.back();
@@ -163,7 +163,7 @@ inline unsigned short NonDMultilevelFunctionTrain::
 start_order(size_t index) const
 {
   if (startOrderSeqSpec.empty())
-    return startOrderSpec; // use single-level default provided by DataMethod
+    return startOrderSpec; // use single-level default provided by the method IR
   else
     return (index < startOrderSeqSpec.size()) ?
       startOrderSeqSpec[index] : startOrderSeqSpec.back();

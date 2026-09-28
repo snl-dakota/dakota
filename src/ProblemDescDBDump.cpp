@@ -11,7 +11,6 @@
 
 #include "ProblemDescDB.hpp"
 #include "IRState.hpp"
-#include "ProblemDescDBLegacyDumpRegistry.hpp"
 
 #include <cmath>
 #include <fstream>
@@ -158,28 +157,6 @@ json dump_ir_value(const IRValue& value)
   return std::visit([](const auto& alt) { return dump_json_value(alt); }, value);
 }
 
-std::string indexed_key(const std::string_view full_key, size_t index)
-{
-  const auto dot = full_key.find('.');
-  if (dot == std::string_view::npos)
-    throw std::runtime_error("ProblemDescDB dump key missing block prefix");
-
-  std::string out;
-  out.reserve(full_key.size() + 8);
-  out.append(full_key.substr(0, dot));
-  out.push_back('[');
-  out.append(std::to_string(index));
-  out.push_back(']');
-  out.append(full_key.substr(dot));
-  return out;
-}
-
-template <class Value>
-void set_dump_value(json& values, const std::string& output_key, const Value& value)
-{
-  values[output_key] = dump_json_value(value);
-}
-
 void write_json_file(const json& document, const String& output_path)
 {
   std::ofstream out(output_path);
@@ -192,84 +169,14 @@ void write_json_file(const json& document, const String& output_path)
 
 nlohmann::json dump_problem_desc_db_json(const ProblemDescDB& db)
 {
-  ProblemDescDB* const storage =
-    db.dbRep ? db.dbRep.get() : const_cast<ProblemDescDB*>(&db);
-  json values = json::object();
-
-  const auto& environment_rep = *storage->environmentSpec.data_rep();
-  for (const auto& key : problem_desc_db_dump::k_environment_entries)
-    problem_desc_db_dump::try_emit_environment_entry(
-      environment_rep, key, [&](const auto& value) {
-        set_dump_value(values, std::string(key), value);
-      });
-
-  size_t index = 0;
-  for (auto& method : storage->dataMethodList) {
-    const auto& rep = *method.data_rep();
-    for (const auto& key : problem_desc_db_dump::k_method_entries)
-      problem_desc_db_dump::try_emit_method_entry(
-        rep, key, [&](const auto& value) {
-          set_dump_value(values, indexed_key(key, index), value);
-        });
-    ++index;
-  }
-
-  index = 0;
-  for (auto& model : storage->dataModelList) {
-    const auto& rep = *model.data_rep();
-    for (const auto& key : problem_desc_db_dump::k_model_entries)
-      problem_desc_db_dump::try_emit_model_entry(
-        rep, key, [&](const auto& value) {
-          set_dump_value(values, indexed_key(key, index), value);
-        });
-    ++index;
-  }
-
-  index = 0;
-  for (auto& variables : storage->dataVariablesList) {
-    const auto& rep = *variables.data_rep();
-    for (const auto& key : problem_desc_db_dump::k_variables_entries)
-      problem_desc_db_dump::try_emit_variables_entry(
-        rep, key, [&](const auto& value) {
-          set_dump_value(values, indexed_key(key, index), value);
-        });
-    ++index;
-  }
-
-  index = 0;
-  for (auto& interface : storage->dataInterfaceList) {
-    const auto& rep = *interface.data_rep();
-    for (const auto& key : problem_desc_db_dump::k_interface_entries)
-      problem_desc_db_dump::try_emit_interface_entry(
-        rep, key, [&](const auto& value) {
-          set_dump_value(values, indexed_key(key, index), value);
-        });
-    ++index;
-  }
-
-  index = 0;
-  for (auto& responses : storage->dataResponsesList) {
-    const auto& rep = *responses.data_rep();
-    for (const auto& key : problem_desc_db_dump::k_responses_entries)
-      problem_desc_db_dump::try_emit_responses_entry(
-        rep, key, [&](const auto& value) {
-          set_dump_value(values, indexed_key(key, index), value);
-        });
-    ++index;
-  }
-
-  return json{
-    {"_meta",
-     {
-       {"format", "problem_desc_db_dump_v1"},
-       {"implementation", "legacy_data_class"},
-       {"omitted_keys", json::array({std::string(problem_desc_db_dump::kExcludedLegacyVoidKey)})},
-     }},
-    {"values", std::move(values)},
-  };
+  const ProblemDescDB* storage = db.dbRep ? db.dbRep.get() : &db;
+  if (!storage->irState)
+    throw std::runtime_error("Cannot dump an uninitialized ProblemDescDB");
+  return dump_ir_state_json(*storage->irState);
 }
 
-void write_problem_desc_db_json(const ProblemDescDB& db, const String& output_path)
+void write_problem_desc_db_json(const ProblemDescDB& db,
+                                const String& output_path)
 {
   write_json_file(dump_problem_desc_db_json(db), output_path);
 }
@@ -313,14 +220,6 @@ void write_ir_state_json(const IRState& state, const String& output_path)
 
 void ProblemDescDB::write_json_dump(const String& output_path) const
 {
-  const ProblemDescDB* const storage =
-    dbRep ? dbRep.get() : this;
-
-  if (storage->irState) {
-    write_ir_state_json(*storage->irState, output_path);
-    return;
-  }
-
   write_problem_desc_db_json(*this, output_path);
 }
 

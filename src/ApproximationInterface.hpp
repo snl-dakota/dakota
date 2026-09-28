@@ -16,7 +16,7 @@
 #include "DakotaVariables.hpp"
 #include "DakotaResponse.hpp"
 #include "PRPMultiIndex.hpp"
-#include "DataMethod.hpp"
+#include "DakotaMethodEnums.hpp"
 
 
 namespace Dakota {

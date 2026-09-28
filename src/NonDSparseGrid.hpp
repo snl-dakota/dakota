@@ -11,7 +11,7 @@
 #define NOND_SPARSE_GRID_H
 
 #include "dakota_data_types.hpp"
-#include "DataMethod.hpp"
+#include "DakotaMethodEnums.hpp"
 #include "NonDIntegration.hpp"
 #include "SparseGridDriver.hpp"
 

@@ -8,7 +8,7 @@
     _______________________________________________________________________ */
 
 #include "ScilabInterface.hpp"
-#include "DataMethod.hpp"
+#include "DakotaMethodEnums.hpp"
 
 #include <api_scilab.h>
 #include <call_scilab.h>

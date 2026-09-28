@@ -33,7 +33,7 @@ namespace Dakota {
 NonDGPImpSampling::NonDGPImpSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
   NonDSampling(problem_db, parallel_lib, model)
 {
-  // sampleType default in DataMethod.cpp is SUBMETHOD_DEFAULT (0).
+  // sampleType IR default is SUBMETHOD_DEFAULT (0).
   // Enforce an LHS default for this method.
   if (!sampleType)
     sampleType = SUBMETHOD_LHS;

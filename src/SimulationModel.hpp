@@ -14,7 +14,7 @@
 #include "DakotaInterface.hpp"
 #include "ParallelLibrary.hpp"
 #include "EvaluationStore.hpp"
-#include "DataInterface.hpp"
+#include "DakotaInterfaceEnums.hpp"
 
 namespace Dakota {
 

@@ -10,8 +10,8 @@
 #include "dakota_system_defs.hpp"
 #include "RecastModel.hpp"
 #include "EvaluationStore.hpp"
-#include "DataModel.hpp"
-#include "DataMethod.hpp"
+#include "DakotaModelEnums.hpp"
+#include "DakotaMethodEnums.hpp"
 
 static const char rcsId[]="@(#) $Id: RecastModel.cpp 7029 2010-10-22 00:17:02Z mseldre $";
 

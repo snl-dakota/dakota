@@ -8,7 +8,7 @@
     _______________________________________________________________________ */
 
 #include "ExperimentData.hpp"
-#include "DataMethod.hpp"
+#include "DakotaMethodEnums.hpp"
 #include "ProblemDescDB.hpp"
 #include "DakotaVariables.hpp"
 

@@ -338,12 +338,6 @@ Key features of the input specification and the associated user input files incl
     	  [ model_pointer STRING ]
     	  )
     	|
-    	( dl_solver STRING
-    	  [ max_function_evaluations INTEGER >= 0 ]
-    	  [ scaling ]
-    	  [ model_pointer STRING ]
-    	  )
-    	|
     	( npsol_sqp
     	  [ verify_level INTEGER ]
     	  [ function_precision REAL ]

@@ -11,7 +11,7 @@
 #define ENSEMBLE_SURR_MODEL_H
 
 #include "SurrogateModel.hpp"
-#include "DataModel.hpp"
+#include "DakotaModelEnums.hpp"
 
 namespace Dakota {
 

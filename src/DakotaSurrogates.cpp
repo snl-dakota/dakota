@@ -12,7 +12,7 @@
 
 #include "ProblemDescDB.hpp"
 #include "DakotaVariables.hpp"
-#include "DataMethod.hpp"
+#include "DakotaMethodEnums.hpp"
 #include "SharedSurfpackApproxData.hpp"
 
 // Headers from Surrogates module

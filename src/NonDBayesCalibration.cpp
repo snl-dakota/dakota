@@ -212,7 +212,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, s
     }
   }
 
-  // assign default maxIterations (DataMethod default is SZ_MAX)
+  // assign default maxIterations (generated method default is SZ_MAX)
   if (adaptPosteriorRefine) {
     // BMA --> MSE: Why 5? Fix magic constant
     batchSize = 5;

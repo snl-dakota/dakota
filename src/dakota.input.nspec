@@ -482,25 +482,6 @@ KEYWORD method {N_mdm3(start,0,stop)}
     [ model_pointer STRING {N_mdm(str,modelPointer)} ]
    )
   |
-  ( dl_solver STRING {N_mdm(utype_lit,TYPE_DATA_methodName_DL_SOLVER)}
-    [ id_method STRING {N_mdm(str,idMethod)} ]
-    [ output {0}
-      debug {N_mdm(type,methodOutput_DEBUG_OUTPUT)}
-      |
-      verbose {N_mdm(type,methodOutput_VERBOSE_OUTPUT)}
-      |
-      normal {N_mdm(type,methodOutput_NORMAL_OUTPUT)}
-      |
-      quiet {N_mdm(type,methodOutput_QUIET_OUTPUT)}
-      |
-      silent {N_mdm(type,methodOutput_SILENT_OUTPUT)}
-     ]
-    [ final_solutions INTEGER >= 0 {N_mdm(sizet,numFinalSolutions)} ]
-    [ max_function_evaluations INTEGER >= 0 {N_mdm(sizet,maxFunctionEvals)} ]
-    [ scaling {N_mdm(true,methodScaling)} ]
-    [ model_pointer STRING {N_mdm(str,modelPointer)} ]
-   )
-  |
   ( external_python {N_mdm(utype,methodName_EXTERNAL_PYTHON)}
     [ id_method STRING {N_mdm(str,idMethod)} ]
     [ output {0}

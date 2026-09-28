@@ -8,7 +8,7 @@
     _______________________________________________________________________ */
 
 #include "iterator_utils.hpp"
-#include "DataMethod.hpp"
+#include "DakotaMethodEnums.hpp"
 
 #include "DakotaIterator.hpp"
 #include "MetaIterator.hpp"

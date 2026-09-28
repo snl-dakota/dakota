@@ -1,5 +1,6 @@
 #pragma once
 
+#include "dakota_data_types.hpp"
 #include "dakota_global_defs.hpp"
 
 namespace Dakota {
@@ -27,5 +28,30 @@ DAKOTA_INTERFACE_TYPE_ENUMS
 #undef X
 
 #undef DAKOTA_INTERFACE_TYPE_ENUMS
+
+/// Interface synchronization modes.
+enum { SYNCHRONOUS_INTERFACE, ASYNCHRONOUS_INTERFACE };
+
+/// Algebraic function categories.
+enum { OBJECTIVE, INEQUALITY_CONSTRAINT, EQUALITY_CONSTRAINT };
+
+inline String interface_enum_to_string(unsigned short interface_type)
+{
+  switch (interface_type) {
+  case DEFAULT_INTERFACE: return String("default");
+  case APPROX_INTERFACE:  return String("approximation");
+  case FORK_INTERFACE:    return String("fork");
+  case SYSTEM_INTERFACE:  return String("system");
+  case GRID_INTERFACE:    return String("grid");
+  case TEST_INTERFACE:    return String("direct");
+  case MATLAB_INTERFACE:  return String("matlab");
+  case PYTHON_INTERFACE:  return String("pybind11");
+  case SCILAB_INTERFACE:  return String("scilab");
+  default:
+    Cerr << "\nError: Unknown interface enum " << interface_type << std::endl;
+    abort_handler(-1);
+    return String();
+  }
+}
 
 } // namespace Dakota
