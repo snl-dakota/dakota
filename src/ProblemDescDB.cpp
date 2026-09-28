@@ -707,6 +707,11 @@ int ProblemDescDB::max_procs_per_ie(int max_eval_concurrency)
 
 void ProblemDescDB::enforce_unique_ids()
 {
+  if (dbRep) {
+    dbRep->enforce_unique_ids();
+    return;
+  }
+
   if (!irState) {
     Cerr << "No materialized input study is available." << std::endl;
     abort_handler(PARSE_ERROR);
