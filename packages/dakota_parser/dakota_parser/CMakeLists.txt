@@ -66,7 +66,15 @@ list(APPEND GENERATED_SOURCES
     ${GENERATED_DIR}/dakota_default_expander.cpp
 )
 
-set(GENERATED_ARTIFACTS ${GENERATED_SOURCES} ${EMBEDDED_SCHEMA_HEADER})
+# Also list generated headers that are consumed by dakota_parser.cpp / tests.
+# Without listing them here CMake never knows to re-run the generator when
+# only these headers are stale (e.g. after editing generate_validation_metadata.py).
+set(GENERATED_HEADERS
+    ${GENERATED_DIR}/dakota_validation_metadata.hpp
+    ${GENERATED_DIR}/dakota_ast_metadata.hpp
+)
+
+set(GENERATED_ARTIFACTS ${GENERATED_SOURCES} ${GENERATED_HEADERS} ${EMBEDDED_SCHEMA_HEADER})
 
 # Single command to generate ALL blocks at once
 # (If we generate each block separately with --block, each one creates stubs for the others)
@@ -182,11 +190,22 @@ endif()
 # Testing Support
 # =============================================================================
 
-if(BUILD_TESTS)
-    enable_testing()
-    
+# When built as part of Dakota, DAKOTA_ENABLE_TESTS drives test registration.
+# When built standalone, fall back to BUILD_TESTS.
+if(DAKOTA_ENABLE_TESTS OR BUILD_TESTS)
     # Find Dakota input test files
     set(DAKOTA_TEST_INPUT_FILES)
+
+    # C++ unit tests for JSON required-field enforcement
+    add_executable(test_json_required_fields
+        test/test_json_required_fields.cpp
+    )
+    target_link_libraries(test_json_required_fields PRIVATE
+        dakota_parser_lib
+        GTest::gtest_main
+    )
+    add_test(NAME test_json_required_fields COMMAND test_json_required_fields)
+    set_tests_properties(test_json_required_fields PROPERTIES LABELS Unit)
     
     file(GLOB SOURCE_TEST_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.in")
     list(APPEND DAKOTA_TEST_INPUT_FILES ${SOURCE_TEST_FILES})

@@ -61,9 +61,6 @@
 #ifdef HAVE_CONMIN
 #include "CONMINOptimizer.hpp"
 #endif
-#ifdef DAKOTA_DL_SOLVER
-#include "DLSolver.hpp"
-#endif
 #ifdef HAVE_NOMAD
 #include "NomadOptimizer.hpp"
 #endif
@@ -397,9 +394,6 @@ namespace Dakota {
         case MOGA: case SOGA:
             return std::make_shared<JEGAOptimizer>(problem_db, parallel_lib, model); break;
         #endif
-        #ifdef DAKOTA_DL_SOLVER
-        case DL_SOLVER: return std::make_shared<DLSolver>(problem_db, parallel_lib, model); break;
-        #endif
         #ifdef HAVE_NOMAD
         case MESH_ADAPTIVE_SEARCH:
             return std::make_shared<NomadOptimizer>(problem_db, parallel_lib, model); break;
@@ -529,10 +523,6 @@ namespace Dakota {
         #ifdef HAVE_JEGA
         //else if (method_string == "moga" || method_string == "soga")
         //  return std::make_shared<JEGAOptimizer>(model);
-        #endif
-        #ifdef DAKOTA_DL_SOLVER
-        //else if (method_string == "dl_solver")
-        //  return std::make_shared<DLSolver>(model);
         #endif
         #ifdef HAVE_NOMAD
         else if (method_string == "mesh_adaptive_search")

@@ -247,12 +247,20 @@ lookup_by_val(PRPMultiIndexCache& prp_cache, const ParamResponsePair& search_pr)
   // equal_range returns a small sequence of possibilities resulting from
   // hashing with ONLY interfaceId and variables.  Post-processing is then
   // applied to this sequence using set_compare().
+  // When multiple entries match (same variables/interface but different
+  // ActiveSets), return the one with the lowest eval_id to ensure
+  // deterministic behavior regardless of hash bucket iteration order
+  // (which can vary across processes due to Boost hash randomization).
+  PRPCacheHIter best_match = prp_cache.get<hashed>().end();
   while (prp_hash_it0 != prp_hash_it1) {
-    if (set_compare(*prp_hash_it0, search_pr.active_set()))
-      return prp_hash_it0;
+    if (set_compare(*prp_hash_it0, search_pr.active_set())) {
+      if (best_match == prp_cache.get<hashed>().end() ||
+          prp_hash_it0->eval_id() < best_match->eval_id())
+        best_match = prp_hash_it0;
+    }
     ++prp_hash_it0;
   }
-  return prp_cache.get<hashed>().end();
+  return best_match;
 }
 
 
@@ -459,12 +467,19 @@ lookup_by_val(PRPMultiIndexQueue& prp_queue, const ParamResponsePair& search_pr)
   // equal_range returns a small sequence of possibilities resulting from
   // hashing with ONLY interfaceId and variables.  Post-processing is then
   // applied to this sequence using set_compare().
+  // When multiple entries match (same variables/interface but different
+  // ActiveSets), return the one with the lowest eval_id to ensure
+  // deterministic behavior regardless of hash bucket iteration order.
+  PRPQueueHIter best_match = prp_queue.get<hashed>().end();
   while (prp_hash_it0 != prp_hash_it1) {
-    if (set_compare(*prp_hash_it0, search_pr.active_set()))
-      return prp_hash_it0;
+    if (set_compare(*prp_hash_it0, search_pr.active_set())) {
+      if (best_match == prp_queue.get<hashed>().end() ||
+          prp_hash_it0->eval_id() < best_match->eval_id())
+        best_match = prp_hash_it0;
+    }
     ++prp_hash_it0;
   }
-  return prp_queue.get<hashed>().end();
+  return best_match;
 }
 
 
@@ -574,4 +589,3 @@ lookup_by_eval_id(PRPMultiIndexQueue& prp_queue,
 } // namespace Dakota
 
 #endif // PRP_MULTI_INDEX_H
-

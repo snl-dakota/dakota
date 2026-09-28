@@ -251,8 +251,6 @@ public:
   // entry_name. Need a HashTable or other container with an efficient lookup
   // function here.
 
-  /// for getting a void**, e.g., &dlLib
-  void** get_voidss(const String& entry_name) const;
   /// write the full stored ProblemDescDB contents to a JSON file for debugging
   void write_json_dump(const String& output_path) const;
 

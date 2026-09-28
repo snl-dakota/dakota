@@ -1,7 +1,7 @@
 Test Number 0 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE_1): 54 total (54 new, 0 duplicate)
-       obj_fn_1: 54 val (54 n, 0 d), 54 grad (54 n, 0 d), 0 Hess (0 n, 0 d)
- nln_ineq_con_1: 54 val (54 n, 0 d), 54 grad (54 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (APPROX_INTERFACE_1): 53 total (53 new, 0 duplicate)
+       obj_fn_1: 53 val (53 n, 0 d), 53 grad (53 n, 0 d), 0 Hess (0 n, 0 d)
+ nln_ineq_con_1: 53 val (53 n, 0 d), 53 grad (53 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary (OPTIONAL_I): 9 total (9 new, 0 duplicate)
  nln_ineq_con_1: 9 val (9 n, 0 d), 5 grad (5 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary (UQ_I): 44 total (44 new, 0 duplicate)
@@ -17,9 +17,9 @@ Test Number 0 succeeded
 <<<<< Best evaluation ID (full match) not available
 <<<<< Best evaluation IDs (partial matches): 8, 9
 Test Number 1 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE_1): 53 total (53 new, 0 duplicate)
-       obj_fn_1: 53 val (53 n, 0 d), 53 grad (53 n, 0 d), 0 Hess (0 n, 0 d)
- nln_ineq_con_1: 53 val (53 n, 0 d), 53 grad (53 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (APPROX_INTERFACE_1): 56 total (56 new, 0 duplicate)
+       obj_fn_1: 56 val (56 n, 0 d), 56 grad (56 n, 0 d), 0 Hess (0 n, 0 d)
+ nln_ineq_con_1: 56 val (56 n, 0 d), 56 grad (56 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary (OPTIONAL_I): 9 total (9 new, 0 duplicate)
  nln_ineq_con_1: 9 val (9 n, 0 d), 5 grad (5 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary (UQ_I): 44 total (44 new, 0 duplicate)
@@ -119,7 +119,7 @@ Test Number 6 succeeded
                       1.7500000000e+01 d
                       1.0000000000e+02 h
 <<<<< Best objective function  =
-                      3.5134174476e-03
+                      3.5134174477e-03
 <<<<< Best constraint values   =
                       4.0000000000e+03
 <<<<< Best evaluation ID (full match) not available
@@ -137,7 +137,7 @@ Test Number 7 succeeded
                       1.7500000000e+01 d
                       1.0000000000e+02 h
 <<<<< Best objective function  =
-                      3.5134173688e-03
+                      3.5134173689e-03
 <<<<< Best constraint values   =
                       4.0000000000e+03
 <<<<< Best evaluation ID (full match) not available

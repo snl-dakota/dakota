@@ -1,6 +1,6 @@
 Test Number 0 succeeded
-<<<<< Function evaluation summary: 756 total (617 new, 139 duplicate)
-              d: 756 val (617 n, 139 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 756 total (620 new, 136 duplicate)
+              d: 756 val (620 n, 136 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                       6.9795797242e+10 E
 <<<<< Best misfit              =
@@ -11,7 +11,7 @@ Test Number 0 succeeded
                      -2.0949814740e+01
 Sample moment statistics for each posterior variable:
                             Mean           Std Dev          Skewness          Kurtosis
-             E  7.3683759760e+10  9.2438970134e+09  7.8313371028e-01  5.2517806663e+00
+             E  7.7091840267e+10  9.8908352938e+09 -6.8735670058e-02  3.0337453707e+00
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-           d_1  8.5281874050e-03  1.1633329445e-03  2.5011269984e+00  1.6710608395e+01
+           d_1  8.1700060499e-03  1.2350635537e-03  2.7432141567e+00  1.5540370535e+01

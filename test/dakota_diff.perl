@@ -48,6 +48,10 @@ $s = "[a-zA-Z0-9_-]+";
 # Tolerance below which absolute numerical diff will be used
 # Also used as PCE coefficient and Sobol index absolute ignore tolerance
 $SMALL       = 1.e-8;
+# Tolerance below which a correlation coefficient is treated as noise.
+# Correlations are bounded to [-1, 1], so anything this small is numerically
+# zero.  Used to match NaN-vs-noise and noise-vs-noise in correlation matrices.
+$CORR_NOISE  = 1.e-4;
 # trap division by zero for cases where small values are allowed
 $ZERO        = 0.;
 # Allow up to a quarter of the total abs() interval in abs diff
@@ -528,7 +532,13 @@ sub compare_output {
             }
             else {
               for ($count=0; $count<=$#t_val; $count++) {
-                if (diff($t_val[$count], $b_val[$count])) {
+                if ($t_hdr1 =~ /Correlation Matrix/) {
+                  if (diff_correlation($t_val[$count], $b_val[$count])) {
+                    $test_diff = 1;
+                    $row_diff = 1;
+                  }
+                }
+                elsif (diff($t_val[$count], $b_val[$count])) {
                   $test_diff = 1;
                   $row_diff = 1;
                 }
@@ -831,6 +841,47 @@ sub ignore_small_value_single {
   # For now, just make sure it's a numerical value, and not NaN/Inf
   if ( ($val =~ /$expo/) && abs($val) < $SMALL) {
       ${$ref_line} = shift @{$ref_excerpt}; # grab next line
+    return 1;
+  }
+  return 0;
+}
+
+
+# subroutine diff_correlation compares two correlation coefficient values.
+# Since correlations are bounded to [-1, 1], values at or near zero are
+# unambiguously noise.  When both values are "noise" (NaN, Inf, or
+# magnitude < $CORR_NOISE), they are treated as matching regardless of
+# their specific values.  For non-noise values the standard diff() is used.
+# Returns 1 if diff, 0 otherwise.
+sub diff_correlation {
+  # $_[0] = test value
+  # $_[1] = baseline value
+
+  my $t_is_noise = _is_corr_noise($_[0]);
+  my $b_is_noise = _is_corr_noise($_[1]);
+
+  # Both noise (NaN/Inf/tiny) -- not a meaningful diff
+  if ($t_is_noise && $b_is_noise) {
+    return 0;
+  }
+  # One noise, one not -- genuine diff
+  if ($t_is_noise || $b_is_noise) {
+    return 1;
+  }
+  # Both non-noise -- fall through to standard diff
+  return diff($_[0], $_[1]);
+}
+
+
+# Helper: returns 1 if a correlation value is "noise" (NaN, Inf, or
+# magnitude below $CORR_NOISE), 0 otherwise.
+sub _is_corr_noise {
+  my ($val) = @_;
+  if ($val =~ /$naninf/) {
+    return 1;
+  }
+  # Must be a number at this point (not a string label)
+  if ($val =~ /$expo/ && abs($val) < $CORR_NOISE) {
     return 1;
   }
   return 0;

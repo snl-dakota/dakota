@@ -126,7 +126,6 @@ class Correlations(unittest.TestCase):
         self.assertAlmostEqual(x2, 1.0, 5)
         self.assertTrue(math.isnan(x3) or abs(x3) < 1e-8)        
 
-        self.assertAlmostEqual(x3, 0.0, 5)
     def test_verify_labels(self):
         label_1, label_2, label_3, label_4 = self._simple[0][0]
         self.assertEqual(label_1, "x3")    

@@ -38,8 +38,15 @@ class ModelExecutor
     /// model evaluator response value, continuous vars, numpy/Eigen format
     VectorXd value(VectorXd & x);
 
-    /// model evaluator response value, mixed vars
-    std::vector<double> value(py::dict & vars);
+    /// model evaluator response value, mixed variable types.
+    /// Takes optional vectors for each variable type; empty vectors are
+    /// skipped.  Uses only standard-library types so the symbol is not
+    /// subject to pybind11's hidden-visibility namespace on GCC.
+    std::vector<double> value_mixed_vars(
+        const std::vector<double> & cv,
+        const std::vector<int>    & div,
+        const std::vector<String> & dsv,
+        const std::vector<Real>   & drv);
 
     /// model evaluator response gradient, continuous vars
     std::vector<std::vector<double>> gradient(std::vector<double> & x);

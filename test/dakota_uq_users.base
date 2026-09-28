@@ -129,7 +129,7 @@ response_fn_3 -3.00000e-01  7.00000e-01  3.00000e-01 -3.00000e-01  1.00000e+00
 Partial Rank Correlation Matrix between input and output:
              response_fn_1 response_fn_2 response_fn_3 
           x1 -1.00000e+00  1.00000e+00 -4.20084e-01 
-          x2 -0.00000e+00  0.00000e+00  7.33799e-01 
+          x2  0.00000e+00  0.00000e+00  7.33799e-01 
 Test Number 2 succeeded
 <<<<< Function evaluation summary (I1): 10 total (10 new, 0 duplicate)
 Sample moment statistics for each response function:

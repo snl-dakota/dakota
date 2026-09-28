@@ -7,7 +7,6 @@
 #  For more information, see the README file in the top Dakota directory.
 #  _______________________________________________________________________
 
-import ext_method
 
 #####################################
 #       External Method Helper      #

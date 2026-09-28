@@ -8,6 +8,8 @@
 #include "SpawnApplicInterface.hpp"
 #endif
 #include "dakota_input_reader.hpp"
+#include "dakota_parser.hpp"
+#include "dakota_default_expander.hpp"
 #include "InstructionMaterializer.hpp"
 #include "LibraryRuntimeSupport.hpp"
 #include "MPIManager.hpp"
@@ -657,6 +659,48 @@ TEST(di_construction_tests, nested_model_throws_on_inconsistent_runtime_services
     NestedModel(make_nested_model_store(model_store), sub_iterator,
                 optional_interface, variables, response, runtime_a.services),
     std::runtime_error);
+}
+
+
+TEST(di_construction_tests, json_api_path_does_not_require_pointer_fields)
+{
+  // surrogate_based_local has a required model_pointer — omit it.
+  // The JSON/API validation path never enforces required-ness at the field
+  // level, so this should succeed even without model_pointer.
+  const json method_fragment = {
+    {"surrogate_based_local", {
+      {"sub_method", {{"method_name", "dot_bfgs"}}},
+      {"max_iterations", 100}
+      // no model_pointer — must be fine on the JSON/API path
+    }}
+  };
+
+  json validated;
+  std::vector<std::string> errors;
+  const bool ok = dakota::validate_method_block_json_to_json(
+    method_fragment, validated, errors);
+
+  EXPECT_TRUE(ok) << "Errors: " << [&]{ std::string s; for (auto& e : errors) s += e + "\n"; return s; }();
+  EXPECT_TRUE(validated.contains("surrogate_based_local"));
+}
+
+TEST(di_construction_tests, freeform_expand_defaults_api_mode_skips_pointer_required)
+{
+  // Parse a minimal surrogate_based_local block that omits model_pointer.
+  // With api_mode=true, expand_defaults must not flag the missing pointer.
+  const std::string input =
+    "method\n"
+    "  surrogate_based_local\n"
+    "    approx_method_name = 'dot_bfgs'\n";
+
+  dakota::Document doc;
+  ASSERT_TRUE(dakota::parse_dakota_string(input, "<test>", doc, false));
+  ASSERT_TRUE(dakota::validate_document(doc));
+  ASSERT_TRUE(dakota::analyze_semantics(doc));
+
+  // api_mode=true — missing model_pointer must not be an error
+  const bool ok = dakota::expand_defaults(doc, /*api_mode=*/true);
+  EXPECT_TRUE(ok);
 }
 
 } // namespace
