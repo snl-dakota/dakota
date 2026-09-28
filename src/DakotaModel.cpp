@@ -740,7 +740,8 @@ Iterator  dummy_iterator;  ///< dummy Iterator object used for mandatory
 size_t Model::noSpecIdNum = 0;
 
 std::shared_ptr<Model> Model::get_model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib) {
-  return modelCache[&problem_db].get_model(problem_db, parallel_lib);
+  const ProblemDescDB* const study_ptr = problem_db.get_rep().get();
+  return modelCache[study_ptr].get_model(problem_db, parallel_lib);
 }
 
 const std::unordered_map<std::string, std::shared_ptr<Model>>& Model::model_cache(ProblemDescDB& problem_db) {
