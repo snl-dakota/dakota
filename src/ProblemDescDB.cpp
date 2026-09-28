@@ -1215,18 +1215,6 @@ get(const std::string& context_msg,
 }
 
 
-/** This special case involving pointers doesn't use generic lookups */
-void** ProblemDescDB::get_voidss(const String& entry_name) const
-{
-  if (entry_name == "method.dl_solver.dlLib") {
-    if (dbRep->methodDBLocked)
-      Locked_db();
-    return &dbRep->dataMethodIter->dataMethodRep->dlLib;
-  }
-  Bad_name(entry_name, "get_voidss");
-  return abort_handler_t<void**>(PARSE_ERROR);
-}
-
 /** Require string idenfitiers id_* to be unique across all blocks of
     each type (method, model, variables, interface, responses
 

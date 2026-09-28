@@ -198,26 +198,6 @@ if(HAVE_PDB_H)
   add_definitions("-DHAVE_PDB_H")
 endif(HAVE_PDB_H)
 
-# WJB - ToDo: Improve logic to support WinDLL case
-option(DAKOTA_DL_SOLVER
-  "Toggle DAKOTA DL Solvers, default is disabled." OFF
-  )
-if(DAKOTA_DL_SOLVER)
-  check_include_file(dlfcn.h DAKOTA_HAVE_DLFCN_H)
-
-  if(DAKOTA_HAVE_DLFCN_H)
-    message(STATUS "DAKOTA DL Solver enabled, LibDL = ${CMAKE_DL_LIBS}")
-    add_definitions("-DDAKOTA_DL_SOLVER")
-    add_definitions("-DDAKOTA_HAVE_DLFCN_H")
-    list(APPEND EXT_TPL_LIBS ${CMAKE_DL_LIBS})
-  else()
-    message(WARNING "DL solver requested, but dlfcn.h not found; disabling.")
-    add_definitions("-DNO_NIDR_DYNLIB")
-    set(DAKOTA_DL_SOLVER OFF CACHE BOOL 
-      "DAKOTA DL solver is disabled due to no dlfcn.h" FORCE)
-  endif(DAKOTA_HAVE_DLFCN_H)
-endif(DAKOTA_DL_SOLVER)
-
 option(DAKOTA_USAGE_TRACKING
   "Toggle DAKOTA usage tracking, default is disabled." OFF
   )
@@ -397,10 +377,6 @@ endif()
 if(DAKOTA_PYTHON_DIRECT_INTERFACE)
   list(APPEND util_src python_utils.cpp )
 endif()
-
-if(DAKOTA_DL_SOLVER)
-  list(APPEND util_src DLSolver.cpp)
-endif(DAKOTA_DL_SOLVER)
 
 if(DAKOTA_USAGE_TRACKING)
   list(APPEND util_src TrackerHTTP.cpp)
