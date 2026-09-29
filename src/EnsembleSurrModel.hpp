@@ -15,8 +15,6 @@
 
 namespace Dakota {
 
-class StudyServices;
-
 enum { DEFAULT_CORRECTION = 0, SINGLE_CORRECTION, FULL_MODEL_FORM_CORRECTION,
        FULL_SOLUTION_LEVEL_CORRECTION, SEQUENCE_CORRECTION };
 
@@ -265,8 +263,6 @@ protected:
 
   /// initialize truth and surrogate model keys to default values
   void assign_default_keys(short mode);
-  /// initialize common state once subordinate models are assigned
-  void initialize_subordinate_models();
   /// size id_maps and cached_resp_maps arrays according to responseMode
   void resize_maps();
   /// resize currentResponse based on responseMode
