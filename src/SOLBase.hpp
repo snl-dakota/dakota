@@ -234,11 +234,9 @@ inline SOLBase::~SOLBase() {
 
 inline void SOLBase::size_bounds_array(size_t new_bnds_size)
 {
-  if (boundsArraySize != new_bnds_size) {
-    boundsArraySize = new_bnds_size;
-    cLambda.resize(boundsArraySize);          // clambda[bnd_size]
-    constraintState.resize(boundsArraySize);  // istate[bnd_size]
-  }
+  boundsArraySize = new_bnds_size;
+  cLambda.assign(boundsArraySize, 0.0);       // clambda[bnd_size]
+  constraintState.assign(boundsArraySize, 0); // istate[bnd_size]
 }
 
 

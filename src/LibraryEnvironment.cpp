@@ -68,11 +68,11 @@ LibraryEnvironment(const nlohmann::json& study_json,
     performing check/bcast of database and iterator construction.  MPI
     Comm is first argument so client doesn't have to pass all args */
 LibraryEnvironment::
-LibraryEnvironment(MPI_Comm dakota_mpi_comm, 
+LibraryEnvironment(MPI_Comm dakota_mpi_comm,
 		   ProgramOptions prog_opts, bool check_bcast_construct,
 		   DbCallbackFunctionPtr callback, void* callback_data):
   Environment(BaseConstructor(), prog_opts, dakota_mpi_comm)
-{ 
+{
   preprocess_inputs();
 
   // TODO: support run modes help, version, check
@@ -116,10 +116,10 @@ insert_nodes(Dakota::DataMethod&   dme, Dakota::DataModel&    dmo,
 
 
 void LibraryEnvironment::done_modifying_db()
-{  
+{
   // always check and broadcast before construction
   ProblemDescDBUtils::check_and_broadcast_pdb(probDescDB, programOptions.dump_ir_file(),
-    programOptions.user_modes(), parallelLib); 
+    programOptions.user_modes(), parallelLib);
   construct();
 }
 
@@ -173,13 +173,13 @@ InterfaceList LibraryEnvironment::
 filtered_interface_list(const String& interf_type, const String& an_driver)
 {
   InterfaceList filt_interf_list;
-  ModelList& models = Model::model_cache(probDescDB);
-  for (auto& m : models) {
+  auto& models = Model::model_cache(probDescDB);
+  for (auto& [_, m] : models) {
     std::shared_ptr<Interface> model_interface = m->derived_interface();
-    if ( ( interf_type.empty() || 
-	   interface_enum_to_string(model_interface->interface_type()) == 
+    if ( ( interf_type.empty() ||
+	   interface_enum_to_string(model_interface->interface_type()) ==
 	   interf_type ) &&
-	 ( an_driver.empty() || 
+	 ( an_driver.empty() ||
 	   //interface.analysis_drivers().size() == 1  &&
 	   contains(model_interface->analysis_drivers(), an_driver) ) )
       filt_interf_list.push_back(model_interface);
@@ -197,14 +197,14 @@ filtered_model_list(const String& model_type, const String& interf_type,
 		    const String& an_driver)
 {
   ModelList filt_model_list;
-  ModelList& models = Model::model_cache(probDescDB);
-  for(auto& m : models) {
+  auto& models = Model::model_cache(probDescDB);
+  for(auto& [_, m] : models) {
     if (model_type.empty() || m->model_type() == model_type) {
       std::shared_ptr<Interface> model_interface = m->derived_interface();
-      if ( ( interf_type.empty() || 
-	     interface_enum_to_string(model_interface->interface_type()) == 
+      if ( ( interf_type.empty() ||
+	     interface_enum_to_string(model_interface->interface_type()) ==
 	     interf_type ) &&
-	   ( an_driver.empty() || 
+	   ( an_driver.empty() ||
 	     //interface.analysis_drivers().size() == 1  &&
 	     contains(model_interface->analysis_drivers(), an_driver) ) )
 	filt_model_list.push_back(m);

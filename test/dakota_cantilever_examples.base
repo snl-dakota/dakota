@@ -200,7 +200,7 @@ displacement  2.27751e-03 -4.90897e-01  3.85775e-01  7.77451e-01         -nan  7
 Partial Correlation Matrix between input and output:
                      area       stress displacement 
            R         -nan -1.00000e+00  1.17559e-02 
-           E         -nan  1.55078e-09 -9.88304e-01 
+           E         -nan  1.64485e-09 -9.88304e-01 
            X         -nan  1.00000e+00  9.81230e-01 
            Y         -nan  1.00000e+00  9.95280e-01 
 Simple Rank Correlation Matrix among all inputs and outputs:
@@ -219,7 +219,7 @@ Partial Rank Correlation Matrix between input and output:
            X         -nan  9.41307e-01  8.45480e-01 
            Y         -nan  9.40889e-01  9.55994e-01 
 Test Number 5 succeeded
-<<<<< Function evaluation summary: 469 total (467 new, 2 duplicate)
+<<<<< Function evaluation summary: 442 total (440 new, 2 duplicate)
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
   -2.8366322205e+02   1.0000000000e-03   3.0902323062e+00   3.0902323062e+00
@@ -230,7 +230,7 @@ Test Number 5 succeeded
    1.2729404779e+04   2.0000000000e-01   8.4162123357e-01   8.4162123357e-01
    1.4565211274e+04   3.0000000000e-01   5.2440051271e-01   5.2440051271e-01
    1.6133840235e+04   4.0000000000e-01   2.5334710314e-01   2.5334710314e-01
-   1.7234820844e+04   4.7480657851e-01   6.3192575290e-02   6.3192575290e-02
+   1.7262045095e+04   4.7668480754e-01   5.8475829165e-02   5.8475829165e-02
    1.9066159765e+04   6.0000000000e-01  -2.5334710314e-01  -2.5334710314e-01
    2.0634788726e+04   7.0000000000e-01  -5.2440051271e-01  -5.2440051271e-01
    2.2470595221e+04   8.0000000000e-01  -8.4162123357e-01  -8.4162123357e-01

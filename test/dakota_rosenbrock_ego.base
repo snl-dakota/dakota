@@ -1,24 +1,24 @@
 Test Number 0 succeeded
-<<<<< Function evaluation summary: 54 total (53 new, 1 duplicate)
+<<<<< Function evaluation summary: 62 total (60 new, 2 duplicate)
 <<<<< Best parameters          =
                       9.8765432099e-01 x1
-                      9.7519009636e-01 x2
+                      9.7524780110e-01 x2
 <<<<< Best objective function  =
-                      1.5975779857e-04
-<<<<< Best evaluation ID: 31
+                      1.5696363063e-04
+<<<<< Best evaluation ID: 29
 Test Number 1 succeeded
-<<<<< Function evaluation summary: 54 total (53 new, 1 duplicate)
+<<<<< Function evaluation summary: 62 total (60 new, 2 duplicate)
 <<<<< Best parameters          =
                       9.8765432099e-01 x1
-                      9.7519009636e-01 x2
+                      9.7524780110e-01 x2
 <<<<< Best objective function  =
-                      1.5975779857e-04
-<<<<< Best evaluation ID: 31
+                      1.5696363063e-04
+<<<<< Best evaluation ID: 29
 Test Number 2 succeeded
-<<<<< Function evaluation summary: 38 total (34 new, 4 duplicate)
+<<<<< Function evaluation summary: 106 total (62 new, 44 duplicate)
 <<<<< Best parameters          =
-                      1.0391746215e+00 x1
-                      1.0790661616e+00 x2
+                      1.0401606199e+00 x1
+                      1.0811962193e+00 x2
 <<<<< Best objective function  =
-                      1.6015195691e-03
+                      1.6673244198e-03
 <<<<< Best evaluation ID: 27

@@ -12,6 +12,7 @@
 #include "DakotaMinimizer.hpp"
 #include "DataMethod.hpp"
 #include <sstream>
+#include <algorithm>
 
 static const char rcsId[]="@(#) $Id: SOLBase.cpp 7004 2010-10-04 17:55:00Z wjbohnh $";
 
@@ -87,8 +88,9 @@ allocate_linear_arrays(int num_cv, const RealMatrix& lin_ineq_coeffs,
   linConstraintArraySize = (num_lin_con) ? num_lin_con : 1;
 
   // Matrix memory passed to Fortran must be contiguous
-  if (linConstraintMatrixF77) delete [] linConstraintMatrixF77;
-  linConstraintMatrixF77 = new double[linConstraintArraySize * num_cv];
+ if (linConstraintMatrixF77) delete [] linConstraintMatrixF77;
+ linConstraintMatrixF77 = new double[linConstraintArraySize * num_cv];
+  std::fill_n(linConstraintMatrixF77, linConstraintArraySize * num_cv, 0.0);
 
   // Populate linConstraintMatrixF77 with linear coefficients from PDDB. Loop
   // order is reversed (j, then i) since Fortran matrix ordering is reversed 
@@ -112,8 +114,9 @@ allocate_nonlinear_arrays(int num_cv, size_t num_nln_con)
   nlnConstraintArraySize = (num_nln_con) ? num_nln_con : 1;
 
   // Matrix memory passed to Fortran must be contiguous
-  if (constraintJacMatrixF77) delete [] constraintJacMatrixF77;
-  constraintJacMatrixF77 = new double[nlnConstraintArraySize * num_cv];
+ if (constraintJacMatrixF77) delete [] constraintJacMatrixF77;
+ constraintJacMatrixF77 = new double[nlnConstraintArraySize * num_cv];
+  std::fill_n(constraintJacMatrixF77, nlnConstraintArraySize * num_cv, 0.0);
 }
 
 
@@ -126,8 +129,9 @@ allocate_arrays(int num_cv, size_t num_nln_con,
   allocate_nonlinear_arrays(num_cv, num_nln_con);
 
   // Matrix memory passed to Fortran must be contiguous
-  if (upperFactorHessianF77)  delete [] upperFactorHessianF77;
-  upperFactorHessianF77  = new double[num_cv * num_cv];
+ if (upperFactorHessianF77)  delete [] upperFactorHessianF77;
+ upperFactorHessianF77  = new double[num_cv * num_cv];
+  std::fill_n(upperFactorHessianF77, num_cv * num_cv, 0.0);
 
   size_bounds_array(num_cv + lin_ineq_coeffs.numRows() +
 		    lin_eq_coeffs.numRows() + num_nln_con);
@@ -169,6 +173,13 @@ void SOLBase::allocate_workspace(int num_cv, int num_nln_con,
 
   realWorkSpace.resize(realWorkSpaceSize);  // work[lwork]
   intWorkSpace.resize(intWorkSpaceSize);    // iwork[liwork]
+
+  // Explicitly zero workspace arrays to prevent residual state from a
+  // previous NPSOL call (e.g. within SBLM trust-region iterations) from
+  // affecting the current call.  std::vector::resize() only zero-initializes
+  // *new* elements; when the size is unchanged it is a no-op.
+  std::fill(realWorkSpace.begin(), realWorkSpace.end(), 0.0);
+  std::fill(intWorkSpace.begin(), intWorkSpace.end(), 0);
 }
 
 
