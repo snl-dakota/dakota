@@ -54,7 +54,7 @@ method
 
 model
   id_model = 'SURROGATE'
-  surrogate global                      #s0,#s1,#s2,#s3,#s4,#s7,#s8,#s9,#s10,#s11
+  global_surrogate                      #s0,#s1,#s2,#s3,#s4,#s7,#s8,#s9,#s10,#s11
 #	  reuse_samples region
 #	  use_derivatives			#s10,#s11
     correction additive zeroth_order 		#s0,#s1,#s2,#s3,#s4,#s7,#s8,#s9,#s10,#s11
@@ -67,7 +67,7 @@ model
 #	  mars                                #s4
 #	  moving_least_squares			          #s7
 #	  radial_basis				                #s8
-# 	surrogate local taylor_series		    #s5,#s6
+# 	local_surrogate taylor_series		    #s5,#s6
     dace_method_pointer = 'SAMPLING'		#s0,#s1,#s2,#s3,#s4,#s7,#s8,#s9,#s10,#s11
 #	  truth_model_pointer = 'TRUTH' 	    #s5,#s6
   responses_pointer = 'SURROGATE_RESP'

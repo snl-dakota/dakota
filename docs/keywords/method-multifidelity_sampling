@@ -138,7 +138,7 @@ discretization level:
 
     model,
      id_model = 'NONHIER'
-     surrogate ensemble
+     ensemble_surrogate
        truth_model = 'HF'
        unordered_model_fidelities = 'LF1' 'LF2'
     

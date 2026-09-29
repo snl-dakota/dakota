@@ -3,7 +3,7 @@ Choice of error metric to satisfy
 Description::
 The cross-validation score that the auto-refinement routine seeks
 to satisfy is based on an error metric. Any of the surrogate diagnostic
-:dakkw:`model-surrogate-global-metrics` may be used. These include:
+:dakkw:`model-global_surrogate-metrics` may be used. These include:
 
 
 - root_mean_squared

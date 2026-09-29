@@ -30,7 +30,7 @@ method,
 
 model,
 	id_model = 'OPTIM_M'
-	surrogate local taylor_series
+	local_surrogate taylor_series
 	  variables_pointer = 'OPTIM_V'
 	  truth_model_pointer = 'OPTIM_TRUTH'
 	  responses_pointer = 'OPTIM_R'

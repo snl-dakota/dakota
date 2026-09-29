@@ -59,7 +59,7 @@ model
   id_model = 'SURROGATE_MINUS_DATA'		      
   # difference the surrogate with the data via the responses spec
   responses_pointer = 'TEXTBOOK_MINUS_DATA'
-  surrogate global		      
+  global_surrogate		      
     dace_method_pointer = 'DACE'	       
     gaussian_process surfpack
 

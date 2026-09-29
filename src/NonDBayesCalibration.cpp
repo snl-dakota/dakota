@@ -153,8 +153,7 @@ NonDBayesCalibration(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, s
        << subSamplingPeriod << "-th sample will be kept in the final chain. "
        << "The \nfinal chain will have length " << num_filtered << ".\n";
 
-  bool ensemble_model = (iteratedModel->model_type()     == "surrogate" &&
-			 iteratedModel->surrogate_type() == "ensemble");
+  bool ensemble_model = (iteratedModel->surrogate_type() == "ensemble");
   short corr_type = iteratedModel->correction_type(),
     mode = (corr_type) ? AUTO_CORRECTED_SURROGATE : UNCORRECTED_SURROGATE;
   switch (emulatorType) {
@@ -538,7 +537,7 @@ void NonDBayesCalibration::construct_mcmc_model()
   }
 
   case NO_EMULATOR:
-    mcmcModelHasSurrogate = (inbound_model->model_type() == "surrogate");
+    mcmcModelHasSurrogate = ModelUtils::is_surrogate_model(*inbound_model);
     // ASKEY_U is currently the best option for scaling the probability space
     // (but could be expanded when the intent is not orthogonal polynomials).
     // If an override is needed to decorrelate priors be transforming to

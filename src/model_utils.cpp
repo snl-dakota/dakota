@@ -23,6 +23,24 @@
 namespace Dakota {
     namespace ModelUtils {
 
+        bool is_datafit_surrogate_model(const Model& model) {
+            const String& model_type = model.model_type();
+            const String& surrogate_type = model.surrogate_type();
+            return model_type == "global_surrogate" ||
+                model_type == "multipoint_surrogate" ||
+                model_type == "local_surrogate" ||
+                strbegins(surrogate_type, "global_") ||
+                strbegins(surrogate_type, "multipoint_") ||
+                strbegins(surrogate_type, "local_");
+        }
+
+
+        bool is_surrogate_model(const Model& model) {
+            return is_datafit_surrogate_model(model) ||
+                model.model_type() == "ensemble_surrogate" ||
+                model.surrogate_type() == "ensemble";
+        }
+
         BitArray discrete_int_sets(const Model &model) {
             const Variables &cv = model.current_variables();
             return discrete_int_sets(model, cv.view().first);
@@ -1519,6 +1537,10 @@ namespace Dakota {
         {
           m_factory.register_key("simulation", &default_factory_fun<SimulationModel>);
           m_factory.register_key("nested", &default_factory_fun<NestedModel>);
+          m_factory.register_key("ensemble_surrogate", &default_factory_fun<EnsembleSurrModel>);
+          m_factory.register_key("global_surrogate", &default_factory_fun<DataFitSurrModel>);
+          m_factory.register_key("multipoint_surrogate", &default_factory_fun<DataFitSurrModel>);
+          m_factory.register_key("local_surrogate", &default_factory_fun<DataFitSurrModel>);
           m_factory.register_key("surrogate", [](ProblemDescDB& problem_db, ParallelLibrary& parallel_lib) -> std::shared_ptr<SurrogateModel> {
             const String& surr_type = problem_db.get<const String>("model.surrogate.type");
             if (surr_type == "ensemble")

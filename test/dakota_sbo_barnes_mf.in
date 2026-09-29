@@ -51,7 +51,7 @@ method,
 
 model,
 	id_model = 'SURROGATE'
-	surrogate ensemble
+	ensemble_surrogate
           ordered_model_fidelities = 'LOFI' 'HIFI'
 #         SECOND ORDER REQUIRES HESSIAN INFO
 #         correction additive       second_order

@@ -51,6 +51,7 @@
 #include "SNLLOptimizer.hpp"
 #endif
 #include "ConcurrentMetaIterator.hpp"
+#include "EnsembleSurrModel.hpp"
 #ifndef _WIN32
 #include "ForkApplicInterface.hpp"
 #else
@@ -79,6 +80,7 @@
 #include <memory>
 #include <stdexcept>
 #include <utility>
+#include <vector>
 
 using json = nlohmann::json;
 
@@ -182,15 +184,19 @@ IRStore make_nested_model_store(const IRStore& base_model_store)
 IRStore make_ensemble_surrogate_model_store(InstructionMaterializer& materializer)
 {
   const json model_json = {
-    {"ensemble", {
-      {"truth_model_pointer", {
-        {"pointer", "truth_model"},
-        {"approximation_models", {"approx_model"}}
+    {"ensemble_surrogate", {
+      {"ensemble", {
+        {"truth_model_pointer", {
+          {"pointer", "truth_model"},
+          {"approximation_models", {"approximation_model"}}
+        }}
       }}
     }}
   };
 
-  return materializer.materialize_block(model_json, irgen::BlockType::Model);
+  return materializer.materialize_block(
+    dakota::validate_model_block_json_to_json(model_json),
+    irgen::BlockType::Model);
 }
 
 IRStore make_concurrent_multistart_store(InstructionMaterializer& materializer)
@@ -1598,6 +1604,92 @@ TEST(di_construction_tests, effglobal_minimizer_throws_on_inconsistent_runtime_s
     std::runtime_error);
 }
 #endif
+
+TEST(di_construction_tests, can_construct_ensemble_surrogate_from_irstore)
+{
+  InstructionMaterializer materializer;
+  IRStore method_store, variables_store, responses_store, interface_store, model_store;
+  materialize_pilot_blocks(materializer, method_store, variables_store,
+                           responses_store, interface_store, model_store);
+
+  ExplicitRuntime runtime;
+
+  Variables variables(variables_store);
+  Response response(responses_store, variables);
+  auto truth_interface = make_test_interface(interface_store, runtime.services);
+  auto approximation_interface = make_test_interface(
+    interface_store, runtime.services);
+  auto truth_model = std::make_shared<SimulationModel>(
+    model_store, variables, truth_interface, response, runtime.services);
+  auto approximation_model = std::make_shared<SimulationModel>(
+    model_store, variables, approximation_interface, response, runtime.services);
+
+  EnsembleSurrModel ensemble_model(
+    make_ensemble_surrogate_model_store(materializer), truth_model,
+    {approximation_model}, variables, response, runtime.services);
+  Model& ensemble_as_model = ensemble_model;
+
+  EXPECT_EQ(ensemble_model.parallel_library_ptr(), runtime.parallelLibrary.get());
+  EXPECT_EQ(ensemble_as_model.truth_model().get(), truth_model.get());
+  EXPECT_EQ(ensemble_as_model.surrogate_model(0).get(), approximation_model.get());
+}
+
+TEST(di_construction_tests, study_model_factory_constructs_ordered_ensemble_surrogate)
+{
+  InstructionMaterializer materializer;
+  IRStore method_store, variables_store, responses_store, interface_store, model_store;
+  materialize_pilot_blocks(materializer, method_store, variables_store,
+                           responses_store, interface_store, model_store);
+
+  Study study;
+  Variables variables(variables_store);
+  Response response(responses_store, variables);
+  auto approximation_interface = study.interface(interface_store);
+  auto truth_interface = study.interface(interface_store);
+  auto approximation_model = std::make_shared<SimulationModel>(
+    model_store, variables, approximation_interface, response, study.services());
+  auto truth_model = std::make_shared<SimulationModel>(
+    model_store, variables, truth_interface, response, study.services());
+
+  const json ensemble_json = {
+    {"ensemble", {
+      {"ordered_model_fidelities", {
+        {"pointers", {"approximation_model", "truth_model"}}
+      }}
+    }}
+  };
+  auto ensemble_model = study.model().ensemble_surrogate(
+    ensemble_json,
+    std::vector<std::shared_ptr<Model>>{approximation_model, truth_model},
+    variables, response);
+  Model& ensemble_as_model = *ensemble_model;
+
+  EXPECT_EQ(ensemble_as_model.truth_model().get(), truth_model.get());
+  EXPECT_EQ(ensemble_as_model.surrogate_model(0).get(), approximation_model.get());
+}
+
+TEST(di_construction_tests,
+     ensemble_surrogate_throws_on_inconsistent_runtime_services)
+{
+  InstructionMaterializer materializer;
+  IRStore method_store, variables_store, responses_store, interface_store, model_store;
+  materialize_pilot_blocks(materializer, method_store, variables_store,
+                           responses_store, interface_store, model_store);
+
+  ExplicitRuntime runtime_a;
+  ExplicitRuntime runtime_b;
+
+  Variables variables(variables_store);
+  Response response(responses_store, variables);
+  auto truth_interface = make_test_interface(interface_store, runtime_a.services);
+  auto truth_model = std::make_shared<SimulationModel>(
+    model_store, variables, truth_interface, response, runtime_a.services);
+
+  EXPECT_THROW(
+    EnsembleSurrModel(make_ensemble_surrogate_model_store(materializer),
+                      truth_model, {}, variables, response, runtime_b.services),
+    std::runtime_error);
+}
 
 TEST(di_construction_tests, can_construct_nested_model_from_irstore_without_optional_interface)
 {

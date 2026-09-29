@@ -47,6 +47,25 @@ def main():
         "hessian_type": {"no_hessians": True},
     }, opt_variables)
     opt_model = study.model.single({}, opt_variables, interface, opt_responses)
+    low_fidelity_model = study.model.single(
+        {}, opt_variables, interface, opt_responses
+    )
+    high_fidelity_model = study.model.single(
+        {}, opt_variables, interface, opt_responses
+    )
+    ensemble_model = study.model.ensemble_surrogate({
+        "ensemble": {
+            "ordered_model_fidelities": {"pointers": ["LO", "HI"]},
+        },
+    }, [low_fidelity_model, high_fidelity_model], opt_variables, opt_responses)
+    assert ensemble_model.__class__.__name__ == "EnsembleSurrModel"
+    explicit_ensemble_model = study.model.ensemble_surrogate({
+        "ensemble": {
+            "truth_model_pointer": {"pointer": "HI"},
+        },
+    }, high_fidelity_model, [low_fidelity_model], opt_variables, opt_responses)
+    assert explicit_ensemble_model.__class__.__name__ == "EnsembleSurrModel"
+
     param_study = study.method.vector_parameter_study({
         "step_control": {"final_point": [1.1, 1.3]},
         "num_steps": 2,

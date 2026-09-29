@@ -31,7 +31,7 @@ method,
 
 model,
 	id_model = 'OPTIM_M'
-	surrogate global
+	global_surrogate
 	  variables_pointer = 'OPTIM_V'
 	  responses_pointer = 'OPTIM_R'
 	  polynomial quadratic
@@ -102,7 +102,7 @@ method,
 
 model,
 	id_model = 'UQ_M'
-	surrogate global
+	global_surrogate
 	  variables_pointer = 'UQ_V'
 	  responses_pointer = 'UQ_R'
 	  dace_method_pointer = 'UQ_DACE'

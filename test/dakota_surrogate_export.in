@@ -40,7 +40,7 @@ method
 
 model
   id_model = 'SURR_M'
-  surrogate global
+  global_surrogate
     dace_method_pointer = 'DACE'
     experimental_gaussian_process
       metrics 'root_mean_squared'

@@ -28,7 +28,7 @@ method,
 model,
 	id_model = 'HIERARCH'
 	variables_pointer = 'HF_VARS'
-	surrogate ensemble
+	ensemble_surrogate
 	  ordered_model_fidelities = 'LF' 'HF'
 
 model,

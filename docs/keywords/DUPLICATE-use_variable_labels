@@ -42,7 +42,7 @@ This example enforces variable labels for both build and challenge points
 
     model
       id_model = 'SURR'
-      surrogate global
+      global_surrogate
         polynomial quadratic
         import_build_points_file = 'dakota_surrogate_import.unc_fixedothers.dat'
           annotated  use_variable_labels

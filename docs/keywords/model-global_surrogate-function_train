@@ -79,7 +79,7 @@ Examples::
 
     model,
      id_model = 'FT'
-     surrogate global function_train
+     global_surrogate function_train
        start_order = 2
        start_rank  = 2  kick_rank = 2  max_rank = 10
        adapt_rank

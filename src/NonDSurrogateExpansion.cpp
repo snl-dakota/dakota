@@ -34,7 +34,7 @@ NonDSurrogateExpansion(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
   //  u_space_type = probDescDB.get<short>("method.nond.expansion_type");
   //resolve_inputs(u_space_type, data_order);
 
-  if (iteratedModel->model_type() != "surrogate") {
+  if (!ModelUtils::is_surrogate_model(*iteratedModel)) {
     Cerr << "Error: NonDSurrogateExpansion requires a surrogate model "
 	 << "specification." << std::endl;
     abort_handler(METHOD_ERROR);

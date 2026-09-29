@@ -9,6 +9,7 @@
 
 #include "dakota_system_defs.hpp"
 #include "SurrogateModel.hpp"
+#include "StudyServices.hpp"
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
 #include "ParamResponsePair.hpp"
@@ -17,6 +18,7 @@
 #include "SurrogateData.hpp"
 
 #include <stdexcept>
+#include <utility>
 
 static const char rcsId[]="@(#) $Id: SurrogateModel.cpp 7024 2010-10-16 01:24:42Z mseldre $";
 
@@ -57,16 +59,15 @@ SurrogateModel::SurrogateModel(const IRStore& model_store,
   responseMode(DEFAULT_SURROGATE_RESP_MODE),
   corrType(model_store.get<short>("surrogate.correction_type")),
   corrOrder(model_store.get<short>("surrogate.correction_order")),
-  surrModelEvalCntr(0), approxBuilds(0), miPLIndex(0)
+  surrModelEvalCntr(0), approxBuilds(0)
 {
   if (surrogateFnIndices.empty()) {
-    for (size_t i=0; i<numFns; ++i)
+    for (size_t i = 0; i < numFns; ++i)
       surrogateFnIndices.insert(i);
   }
-  else if (*(surrogateFnIndices.rbegin()) >= numFns) {
-    throw std::runtime_error(
-      "SurrogateModel surrogate.function_indices contains an index that "
-      "is out of range for the current response specification.");
+  else if (*surrogateFnIndices.begin() < 0 ||
+           *(--surrogateFnIndices.end()) >= numFns) {
+    throw std::runtime_error("SurrogateModel: id_surrogates out of range.");
   }
 }
 
@@ -83,8 +84,6 @@ SurrogateModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
   responseMode(DEFAULT_SURROGATE_RESP_MODE), corrType(corr_type), corrOrder(0),
   surrModelEvalCntr(0), approxBuilds(0)
 {
-  modelType = "surrogate";
-
   // set up surrogateFnIndices to use default (all fns are approximated)
   for (size_t i=0; i<numFns; ++i)
     surrogateFnIndices.insert(i);

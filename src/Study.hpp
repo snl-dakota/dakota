@@ -197,13 +197,24 @@ public:
          const Variables& variables, const Response& response) const;
 
   std::shared_ptr<EnsembleSurrModel>
-  ensemble_surrogate(const IRStore& model_store, std::shared_ptr<Model> truth_model,
-            std::vector<std::shared_ptr<Model>> approx_models,
-            const Variables& variables, const Response& response) const;
+  ensemble_surrogate(const IRStore& model_store,
+                     std::shared_ptr<Model> truth_model,
+                     std::vector<std::shared_ptr<Model>> approximation_models,
+                     const Variables& variables, const Response& response) const;
   std::shared_ptr<EnsembleSurrModel>
-  ensemble_surrogate(const nlohmann::json& model_json, std::shared_ptr<Model> truth_model,
-            std::vector<std::shared_ptr<Model>> approx_models,
-            const Variables& variables, const Response& response) const;
+  ensemble_surrogate(const nlohmann::json& model_json,
+                     std::shared_ptr<Model> truth_model,
+                     std::vector<std::shared_ptr<Model>> approximation_models,
+                     const Variables& variables, const Response& response) const;
+
+  std::shared_ptr<EnsembleSurrModel>
+  ensemble_surrogate(const IRStore& model_store,
+                     std::vector<std::shared_ptr<Model>> ordered_models,
+                     const Variables& variables, const Response& response) const;
+  std::shared_ptr<EnsembleSurrModel>
+  ensemble_surrogate(const nlohmann::json& model_json,
+                     std::vector<std::shared_ptr<Model>> ordered_models,
+                     const Variables& variables, const Response& response) const;
 
 private:
   const Study& study;

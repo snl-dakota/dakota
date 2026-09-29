@@ -8,10 +8,13 @@
     _______________________________________________________________________ */
 
 #include "EnsembleSurrModel.hpp"
-#include "StudyServices.hpp"
 #include "LibraryRuntimeSupport.hpp"
 #include "ParallelLibrary.hpp"
 #include "ProblemDescDB.hpp"
+#include "StudyServices.hpp"
+
+#include <stdexcept>
+#include <utility>
 
 #include <stdexcept>
 
@@ -95,47 +98,41 @@ EnsembleSurrModel::EnsembleSurrModel(ProblemDescDB& problem_db, ParallelLibrary&
 
 EnsembleSurrModel::EnsembleSurrModel(
   const IRStore& model_store, std::shared_ptr<Model> truth_model,
-  std::vector<std::shared_ptr<Model>> approx_models,
+  std::vector<std::shared_ptr<Model>> approximation_models,
   const Variables& variables, const Response& response,
   std::shared_ptr<StudyServices> services):
   SurrogateModel(model_store, variables, response, std::move(services)),
-  truthModel(std::move(truth_model)), approxModels(std::move(approx_models)),
+  truthModel(std::move(truth_model)), approxModels(std::move(approximation_models)),
   sameModelInstance(false), sameInterfaceInstance(false),
-  solnCntlAVIndex(_NPOS), ensemblePrecedence(DEFAULT_PRECEDENCE),
-  modeKeyBufferSize(0), correctionMode(SINGLE_CORRECTION)
+  ensemblePrecedence(DEFAULT_PRECEDENCE), modeKeyBufferSize(0),
+  correctionMode(SINGLE_CORRECTION)
 {
-  detail::validate_services(
-    "EnsembleSurrModel", study_services(),
-    {detail::runtime_dependency("TruthModel", truthModel)});
-  for (const auto& approx_model : approxModels) {
-    detail::validate_services(
-      "EnsembleSurrModel", study_services(),
-      {detail::runtime_dependency("ApproximationModel", approx_model)});
-  }
-
   initialize_subordinate_models();
 }
 
 
 void EnsembleSurrModel::initialize_subordinate_models()
 {
-  if (!truthModel) {
+  detail::validate_services(
+    "EnsembleSurrModel", study_services(),
+    {detail::runtime_dependency("truth model", truthModel)});
+
+  if (!truthModel)
     throw std::runtime_error(
       "EnsembleSurrModel requires a non-null truth model in DI construction.");
-  }
 
-  for (size_t i=0; i<approxModels.size(); ++i) {
-    if (!approxModels[i]) {
+  for (const auto& approximation_model: approxModels) {
+    detail::validate_services(
+      "EnsembleSurrModel", study_services(),
+      {detail::runtime_dependency("approximation model", approximation_model)});
+    if (!approximation_model)
       throw std::runtime_error(
-        "EnsembleSurrModel requires every approximation model to be non-null "
-        "in DI construction.");
-    }
-    check_submodel_compatibility(*approxModels[i]);
+        "EnsembleSurrModel requires non-null approximation models in DI construction.");
+    check_submodel_compatibility(*approximation_model);
+    approximation_model->serialize_threshold(0);
   }
-  check_submodel_compatibility(*truthModel);
 
-  for (const auto& approx_model : approxModels)
-    approx_model->serialize_threshold(0);
+  check_submodel_compatibility(*truthModel);
   truthModel->serialize_threshold(0);
 
   responseMode = AGGREGATED_MODELS;
@@ -146,8 +143,8 @@ void EnsembleSurrModel::initialize_subordinate_models()
   initialize_correction();
   supportsEstimDerivs = false;
   ignoreBounds = currentResponse.gradient_config().ignore_bounds;
-  centralHess  = (currentResponse.hessian_config().interval_type ==
-                  Response::IntervalType::Central);
+  centralHess = (currentResponse.hessian_config().interval_type ==
+                 Response::IntervalType::Central);
 }
 
 

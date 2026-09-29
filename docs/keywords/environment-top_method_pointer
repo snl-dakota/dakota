@@ -19,8 +19,10 @@ with additional sub-method pointers in the case of "meta-iteration"
 (see :dakkw:`method`) or may specify a single method without
 recursion. Either case will ultimately result in identification of one
 or more model specifications using ``model_pointer``, which again may
-or may not involve further recursion (see :dakkw:`model-nested` and
-:dakkw:`model-surrogate` for recursion cases). Each of the model specifications
+or may not involve further recursion (see :dakkw:`model-nested`,
+:dakkw:`model-global_surrogate`, :dakkw:`model-local_surrogate`,
+:dakkw:`model-multipoint_surrogate`, and :dakkw:`model-ensemble_surrogate`
+for recursion cases). Each of the model specifications
 identify the variables and responses specifications (using
 :dakkw:`model-variables_pointer` and :dakkw:`model-responses_pointer`) that are
 used to build the model, and depending on the type of model, may also

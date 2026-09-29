@@ -598,35 +598,53 @@ Study::ModelFactory::nested(const nlohmann::json& model_json,
 }
 
 std::shared_ptr<EnsembleSurrModel>
-Study::ModelFactory::ensemble_surrogate(const IRStore& model_store,
-                               std::shared_ptr<Model> truth_model,
-                               std::vector<std::shared_ptr<Model>> approx_models,
-                               const Variables& variables,
-                               const Response& response) const
+Study::ModelFactory::ensemble_surrogate(
+  const IRStore& model_store, std::shared_ptr<Model> truth_model,
+  std::vector<std::shared_ptr<Model>> approximation_models,
+  const Variables& variables, const Response& response) const
 {
-  const String& surrogate_type = model_store.get<String>("surrogate.type");
-  if (surrogate_type == "ensemble") {
-    return std::make_shared<EnsembleSurrModel>(
-      model_store, std::move(truth_model), std::move(approx_models),
-      variables, response, study.services());
-  }
-
-  throw std::runtime_error(
-    "Study::model().ensemble_surrogate currently supports only ensemble surrogate "
-    "models. Data-fit surrogate DI construction is deferred pending the "
-    "RecastModel refactor.");
+  return std::make_shared<EnsembleSurrModel>(
+    model_store, std::move(truth_model), std::move(approximation_models),
+    variables, response, study.services());
 }
 
 std::shared_ptr<EnsembleSurrModel>
-Study::ModelFactory::ensemble_surrogate(const nlohmann::json& model_json,
-                               std::shared_ptr<Model> truth_model,
-                               std::vector<std::shared_ptr<Model>> approx_models,
-                               const Variables& variables,
-                               const Response& response) const
+Study::ModelFactory::ensemble_surrogate(
+  const nlohmann::json& model_json, std::shared_ptr<Model> truth_model,
+  std::vector<std::shared_ptr<Model>> approximation_models,
+  const Variables& variables, const Response& response) const
 {
   return ensemble_surrogate(
-    validate_and_materialize_selected_model(model_json, "surrogate"),
-    std::move(truth_model), std::move(approx_models), variables, response);
+    validate_and_materialize_selected_model(model_json, "ensemble_surrogate"),
+    std::move(truth_model), std::move(approximation_models), variables, response);
+}
+
+std::shared_ptr<EnsembleSurrModel>
+Study::ModelFactory::ensemble_surrogate(
+  const IRStore& model_store, std::vector<std::shared_ptr<Model>> ordered_models,
+  const Variables& variables, const Response& response) const
+{
+  if (ordered_models.empty()) {
+    throw std::runtime_error(
+      "Study::model().ensemble_surrogate requires at least one ordered model.");
+  }
+
+  std::shared_ptr<Model> truth_model = std::move(ordered_models.back());
+  ordered_models.pop_back();
+  return ensemble_surrogate(
+    model_store, std::move(truth_model), std::move(ordered_models),
+    variables, response);
+}
+
+std::shared_ptr<EnsembleSurrModel>
+Study::ModelFactory::ensemble_surrogate(
+  const nlohmann::json& model_json,
+  std::vector<std::shared_ptr<Model>> ordered_models,
+  const Variables& variables, const Response& response) const
+{
+  return ensemble_surrogate(
+    validate_and_materialize_selected_model(model_json, "ensemble_surrogate"),
+    std::move(ordered_models), variables, response);
 }
 
 } // namespace Dakota

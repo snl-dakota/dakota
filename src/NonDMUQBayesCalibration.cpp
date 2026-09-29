@@ -879,7 +879,7 @@ void NonDMUQBayesCalibration::cache_chain()
 
       }
       // surrogate needs u-space variables for eval
-      if (mcmcModel->model_type() == "surrogate")
+      if (ModelUtils::is_surrogate_model(*mcmcModel))
         lookup_vars.continuous_variables(u_rv);
       else
         lookup_vars.continuous_variables(x_rv);

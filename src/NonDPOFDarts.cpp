@@ -95,7 +95,7 @@ void NonDPOFDarts::initialize()
         emulatorSamples = 1E6;         // number of samples to evaluate surrogate
 
 
-    if (iteratedModel->model_type() != "surrogate") {
+    if (!ModelUtils::is_datafit_surrogate_model(*iteratedModel)) {
       Cerr << "Error: NonDPOFDarts::iteratedModel must be a "
            << "surrogate model." << std::endl;
       abort_handler(-1);
@@ -2286,4 +2286,3 @@ void NonDPOFDarts::core_run()
     }
 
 } // namespace Dakota
-

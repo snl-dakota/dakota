@@ -36,7 +36,7 @@ Examples::
     
     model
       id_model 'surr'
-      surrogate global gaussian_process surfpack
+      global_surrogate gaussian_process surfpack
       dace_method_pointer 'training'
     
     method
