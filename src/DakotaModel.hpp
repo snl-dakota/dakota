@@ -722,10 +722,6 @@ public:
   ParallelLibrary& parallel_library() const;
   /// return the model type (modelType)
   const String& model_type() const;
-  /// return whether this is one of the supported surrogate model types
-  bool is_surrogate_model() const;
-  /// return whether this is one of the supported data-fit surrogate model types
-  bool is_datafit_surrogate_model() const;
   /// return the surrogate type (surrogateType)
   const String& surrogate_type() const;
   /// return the model identifier (modelId)
@@ -1399,20 +1395,6 @@ inline ParallelLibrary& Model::parallel_library() const
 
 inline const String& Model::model_type() const
 { return modelType; }
-
-
-inline bool Model::is_surrogate_model() const
-{
-  return is_datafit_surrogate_model() || modelType == "ensemble_surrogate";
-}
-
-
-inline bool Model::is_datafit_surrogate_model() const
-{
-  return (modelType == "global_surrogate" ||
-          modelType == "multipoint_surrogate" ||
-          modelType == "local_surrogate");
-}
 
 
 inline const String& Model::surrogate_type() const
