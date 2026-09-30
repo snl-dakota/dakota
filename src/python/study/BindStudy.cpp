@@ -11,6 +11,7 @@
 
 #include "IRState.hpp"
 #include "ConcurrentMetaIterator.hpp"
+#include "DataFitSurrModel.hpp"
 #include "EffGlobalMinimizer.hpp"
 #include "EnsembleSurrModel.hpp"
 #ifdef HAVE_DOT
@@ -31,35 +32,9 @@
 #include <pybind11/stl.h>
 
 #include <memory>
-#include <stdexcept>
 #include <utility>
 
 namespace Dakota::python {
-
-namespace {
-
-nlohmann::json normalize_ensemble_surrogate_fragment(const py::object& model_fragment)
-{
-  const nlohmann::json validated =
-    validate_ensemble_surrogate_fragment(model_fragment);
-
-  nlohmann::json ensemble_body = nlohmann::json::object();
-  if (validated.contains("truth_model_pointer"))
-    ensemble_body["truth_model_pointer"] = validated.at("truth_model_pointer");
-  if (validated.contains("ordered_model_fidelities"))
-    ensemble_body["ordered_model_fidelities"] =
-      validated.at("ordered_model_fidelities");
-
-  if (ensemble_body.empty()) {
-    throw std::runtime_error(
-      "ensemble_surrogate requires either truth_model_pointer or "
-      "ordered_model_fidelities.");
-  }
-
-  return nlohmann::json{{"ensemble", std::move(ensemble_body)}};
-}
-
-} // namespace
 
 void bind_study_factories(py::module_& m)
 {
@@ -109,6 +84,61 @@ void bind_study_factories(py::module_& m)
          "Construct from a config fragment (dict or Pydantic model) or kwargs, "
          "exclusively. optional_interface may be omitted or None; required "
          "configuration fields still apply.")
+    .def("global_surrogate",
+         [](const Study::ModelFactory& factory,
+            const Variables& variables, const Response& response,
+            std::shared_ptr<Model> truth_model,
+            std::shared_ptr<Iterator> dace_iterator,
+            const py::object& config, py::kwargs kwargs) {
+           const auto fragment = normalize_factory_config(
+             config, kwargs, "ModelFactory.global_surrogate");
+           return factory.global_surrogate(
+             materialize_model(
+               nlohmann::json{{"global_surrogate", fragment}}),
+             variables, response, std::move(truth_model),
+             std::move(dace_iterator));
+         },
+         py::arg("variables").none(false), py::arg("response").none(false),
+         py::arg("truth_model") = py::none(),
+         py::arg("dace_iterator") = py::none(),
+         py::arg("config") = py::none(),
+         "Construct a global data-fit surrogate from required variables and "
+         "response objects, optional injected dependencies, and either a "
+         "dict/Pydantic config or kwargs.")
+    .def("local_surrogate",
+         [](const Study::ModelFactory& factory,
+            std::shared_ptr<Model> truth_model,
+            const Variables& variables, const Response& response,
+            const py::object& config, py::kwargs kwargs) {
+           const auto fragment = normalize_factory_config(
+             config, kwargs, "ModelFactory.local_surrogate");
+           return factory.local_surrogate(
+             materialize_model(
+               nlohmann::json{{"local_surrogate", fragment}}),
+             std::move(truth_model), variables, response);
+         },
+         py::arg("truth_model").none(false),
+         py::arg("variables").none(false), py::arg("response").none(false),
+         py::arg("config") = py::none(),
+         "Construct a local data-fit surrogate from a truth model, variables, "
+         "response, and either a dict/Pydantic config or kwargs.")
+    .def("multipoint_surrogate",
+         [](const Study::ModelFactory& factory,
+            std::shared_ptr<Model> truth_model,
+            const Variables& variables, const Response& response,
+            const py::object& config, py::kwargs kwargs) {
+           const auto fragment = normalize_factory_config(
+             config, kwargs, "ModelFactory.multipoint_surrogate");
+           return factory.multipoint_surrogate(
+             materialize_model(
+               nlohmann::json{{"multipoint_surrogate", fragment}}),
+             std::move(truth_model), variables, response);
+         },
+         py::arg("truth_model").none(false),
+         py::arg("variables").none(false), py::arg("response").none(false),
+         py::arg("config") = py::none(),
+         "Construct a multipoint data-fit surrogate from a truth model, "
+         "variables, response, and either a dict/Pydantic config or kwargs.")
     .def("ensemble_surrogate",
          [](const Study::ModelFactory& factory,
             std::shared_ptr<Model> truth_model,
@@ -121,7 +151,7 @@ void bind_study_factories(py::module_& m)
            const auto fragment = normalize_factory_config(
              config, kwargs, "ModelFactory.ensemble_surrogate");
            return factory.ensemble_surrogate(
-             materialize_model(nlohmann::json{{"surrogate", {{"ensemble", fragment}}}}),
+             materialize_model(nlohmann::json{{"ensemble_surrogate", fragment}}),
              std::move(truth_model), std::move(approx_models), variables, response);
          },
          py::arg("truth_model").none(false), py::arg("approx_models").none(false),
@@ -131,33 +161,40 @@ void bind_study_factories(py::module_& m)
          "dict/Pydantic config or kwargs. The legacy config-first overload remains available.")
     .def("ensemble_surrogate",
          [](const Study::ModelFactory& factory,
+            std::vector<std::shared_ptr<Model>> ordered_models,
+            const Variables& variables, const Response& response,
+            const py::object& config, py::kwargs kwargs) {
+           for (const auto& model : ordered_models)
+             if (!model)
+               throw py::type_error("ordered_models must contain non-null Model instances");
+           const auto fragment = normalize_factory_config(
+             config, kwargs, "ModelFactory.ensemble_surrogate");
+           return factory.ensemble_surrogate(
+             materialize_model(nlohmann::json{{"ensemble_surrogate", fragment}}),
+             std::move(ordered_models), variables, response);
+         },
+         py::arg("ordered_models").none(false), py::arg("variables").none(false),
+         py::arg("response").none(false), py::arg("config") = py::none(),
+         "Construct an ensemble from models ordered low-to-high and either a "
+         "dict/Pydantic config or kwargs. The final model is the truth model.")
+    .def("ensemble_surrogate",
+         [](const Study::ModelFactory& factory,
             const py::object& model_json,
             std::shared_ptr<Model> truth_model,
             std::vector<std::shared_ptr<Model>> approx_models,
             const Variables& variables,
             const Response& response) {
+           for (const auto& approximation : approx_models)
+             if (!approximation)
+               throw py::type_error("approx_models must contain non-null Model instances");
            return factory.ensemble_surrogate(
-             materialize_model(nlohmann::json{{"surrogate",
-               normalize_ensemble_surrogate_fragment(model_json)}}),
+             materialize_model(nlohmann::json{{"ensemble_surrogate",
+               validate_ensemble_surrogate_fragment(model_json)}}),
              std::move(truth_model),
              std::move(approx_models), variables, response);
          },
-         py::arg("model"), py::arg("sub_iterator"),
-         py::arg("optional_interface"), py::arg("variables"),
-         py::arg("response"))
-    .def("ensemble_surrogate",
-         [](const Study::ModelFactory& factory,
-            const py::object& model_json,
-            std::shared_ptr<Model> truth_model,
-            std::vector<std::shared_ptr<Model>> approximation_models,
-            const Variables& variables,
-            const Response& response) {
-           return factory.ensemble_surrogate(
-             model_json.cast<nlohmann::json>(), std::move(truth_model),
-             std::move(approximation_models), variables, response);
-         },
          py::arg("model"), py::arg("truth_model"),
-         py::arg("approximation_models"), py::arg("variables"),
+         py::arg("approx_models"), py::arg("variables"),
          py::arg("response"))
     .def("ensemble_surrogate",
          [](const Study::ModelFactory& factory,
@@ -165,8 +202,13 @@ void bind_study_factories(py::module_& m)
             std::vector<std::shared_ptr<Model>> ordered_models,
             const Variables& variables,
             const Response& response) {
+           for (const auto& model : ordered_models)
+             if (!model)
+               throw py::type_error("ordered_models must contain non-null Model instances");
            return factory.ensemble_surrogate(
-             model_json.cast<nlohmann::json>(), std::move(ordered_models),
+             materialize_model(nlohmann::json{{"ensemble_surrogate",
+               validate_ensemble_surrogate_fragment(model_json)}}),
+             std::move(ordered_models),
              variables, response);
          },
          py::arg("model"), py::arg("ordered_models"),

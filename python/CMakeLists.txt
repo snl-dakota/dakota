@@ -54,15 +54,6 @@ if(DAKOTA_ENABLE_TESTS AND Python_Interpreter_FOUND AND
   endif()
 endif()
 
-if(DAKOTA_ENABLE_TESTS AND DAKOTA_PYTHON_STUDY)
-  add_test(NAME dakota_study_factory_signatures
-    COMMAND ${Python3_EXECUTABLE} -B -m unittest discover
-            -s "${CMAKE_CURRENT_SOURCE_DIR}/tests" -p "test_study*.py" -v)
-  set_tests_properties(dakota_study_factory_signatures PROPERTIES
-    LABELS "Unit;Python"
-    ENVIRONMENT "PYTHONPATH=${DAKOTA_PYTHON_BUILD_DIR};DAKOTA_REQUIRE_STUDY=1")
-endif()
-
 install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/dakota/"
   DESTINATION "share/dakota/Python/dakota"
   PATTERN "__pycache__" EXCLUDE

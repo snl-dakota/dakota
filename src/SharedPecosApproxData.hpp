@@ -43,6 +43,9 @@ public:
   SharedPecosApproxData(const String& approx_type,
 			const UShortArray& approx_order, size_t num_vars,
 			short data_order, short output_level);
+  SharedPecosApproxData(const IRStore& model_store,
+                        const UShortArray& approx_order, size_t num_vars,
+                        short data_order, short output_level);
   /// standard ProblemDescDB-driven constructor
   SharedPecosApproxData(ProblemDescDB& problem_db, size_t num_vars);
   /// destructor

@@ -10,9 +10,9 @@
 #include "DakotaStudyPython.hpp"
 
 #include "DakotaModel.hpp"
+#include "DataFitSurrModel.hpp"
 #include "EnsembleSurrModel.hpp"
 #include "NestedModel.hpp"
-#include "EnsembleSurrModel.hpp"
 #include "SimulationModel.hpp"
 
 #include <memory>
@@ -25,12 +25,12 @@ void bind_models(py::module_& m)
     m, "Model", py::module_local());
   py::class_<SimulationModel, Model, std::shared_ptr<SimulationModel>>(
     m, "SimulationModel", py::module_local());
+  py::class_<DataFitSurrModel, Model, std::shared_ptr<DataFitSurrModel>>(
+    m, "DataFitSurrModel", py::module_local());
   py::class_<EnsembleSurrModel, Model, std::shared_ptr<EnsembleSurrModel>>(
     m, "EnsembleSurrModel", py::module_local());
   py::class_<NestedModel, Model, std::shared_ptr<NestedModel>>(
     m, "NestedModel", py::module_local());
-  py::class_<EnsembleSurrModel, Model, std::shared_ptr<EnsembleSurrModel>>(
-    m, "EnsembleSurrModel", py::module_local());
 }
 
 } // namespace Dakota::python

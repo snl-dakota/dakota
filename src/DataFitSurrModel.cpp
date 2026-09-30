@@ -21,6 +21,13 @@
 #include <boost/accumulators/statistics/stats.hpp>
 #include <boost/accumulators/statistics/rolling_mean.hpp>
 #include "EvaluationStore.hpp"
+#include "IRStore.hpp"
+#include "LibraryRuntimeSupport.hpp"
+#include "StudyServices.hpp"
+#include "StudyRuntime.hpp"
+
+#include <stdexcept>
+#include <utility>
 
 static const char rcsId[]="@(#) $Id: DataFitSurrModel.cpp 7034 2010-10-22 20:16:32Z mseldre $";
 
@@ -215,6 +222,147 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db, ParallelLibrary& p
     else                                     update_local_reference();
   }
 
+  currentResponse.reshape_metadata(0);
+}
+
+
+DataFitSurrModel::DataFitSurrModel(
+  const IRStore& model_store, std::shared_ptr<Model> truth_model,
+  std::shared_ptr<Iterator> dace_iterator, const Variables& variables,
+  const Response& response, std::shared_ptr<StudyServices> services):
+  SurrogateModel(model_store, variables, response, std::move(services)),
+  exportSurrogate(model_store.get<bool>("surrogate.export_surrogate")),
+  autoRefine(model_store.get<bool>("surrogate.auto_refine")),
+  maxIterations(model_store.get<size_t>("max_iterations")),
+  maxFuncEvals(model_store.get<size_t>("max_function_evals")),
+  convergenceTolerance(model_store.get<Real>("convergence_tolerance")),
+  softConvergenceLimit(model_store.get<int>("soft_convergence_limit")),
+  refineCVMetric(model_store.get<String>("surrogate.refine_cv_metric")),
+  refineCVFolds(model_store.get<int>("surrogate.refine_cv_folds")),
+  actualModel(std::move(truth_model)), daceIterator(std::move(dace_iterator)),
+  approxMinConcurrency(0),
+  pointsTotal(model_store.get<int>("surrogate.points_total")),
+  pointsManagement(model_store.get<short>("surrogate.points_management")),
+  pointReuse(model_store.get<String>("surrogate.point_reuse")),
+  importPointsFile(
+    model_store.get<String>("surrogate.import_build_points_file")),
+  exportPointsFile(
+    model_store.get<String>("surrogate.export_approx_points_file")),
+  exportFormat(model_store.get<unsigned short>("surrogate.export_approx_format")),
+  exportVarianceFile(
+    model_store.get<String>("surrogate.export_approx_variance_file")),
+  exportVarianceFormat(
+    model_store.get<unsigned short>("surrogate.export_approx_variance_format"))
+{
+  // TODO(recast-function-train-di): remove this guard after the RecastModel
+  // refactor establishes ownership of the probability transformation.
+  if (surrogateType == "global_function_train" ||
+      strends(surrogateType, "_orthogonal_polynomial") ||
+      strends(surrogateType, "_interpolation_polynomial"))
+    throw std::runtime_error(
+      "DataFitSurrModel DI construction does not yet support probability-"
+      "transformed approximation type '" + surrogateType +
+      "'; support is deferred pending the RecastModel refactor.");
+
+  if (model_store.get<bool>("surrogate.import_surrogate"))
+    throw std::runtime_error(
+      "DataFitSurrModel DI construction cannot yet import a serialized "
+      "surrogate model because the approximation backend import path still "
+      "requires ProblemDescDB.");
+  if (model_store.get<bool>("surrogate.domain_decomp"))
+    throw std::runtime_error(
+      "DataFitSurrModel DI construction cannot yet create a domain-"
+      "decomposed surrogate because VPSApproximation still requires "
+      "ProblemDescDB configuration.");
+
+  const bool global_approx = strbegins(surrogateType, "global_");
+  if (daceIterator) {
+    if (!global_approx)
+      throw std::invalid_argument(
+        "DataFitSurrModel accepts a DACE iterator only for global surrogates.");
+    if (actualModel)
+      throw std::invalid_argument(
+        "DataFitSurrModel global construction accepts either truth_model or "
+        "dace_iterator, not both.");
+    actualModel = daceIterator->iterated_model();
+    if (!actualModel)
+      throw std::invalid_argument(
+        "DataFitSurrModel requires the injected DACE iterator to have a "
+        "non-null iterated model.");
+  }
+  else if (!global_approx && !actualModel)
+    throw std::invalid_argument(
+      "DataFitSurrModel local and multipoint construction requires a non-null "
+      "truth model.");
+
+  detail::validate_services(
+    "DataFitSurrModel", study_services(),
+    {detail::runtime_dependency("Model", actualModel),
+     detail::runtime_dependency("Iterator", daceIterator)});
+
+  ignoreBounds = true;
+  responseMode = corrType ? AUTO_CORRECTED_SURROGATE : UNCORRECTED_SURROGATE;
+  if (pointsManagement == DEFAULT_POINTS)
+    pointsManagement = pointsTotal > 0 ? TOTAL_POINTS : RECOMMENDED_POINTS;
+
+  const bool import_pts = !importPointsFile.empty();
+  const bool export_pts = !exportPointsFile.empty() || !exportVarianceFile.empty();
+  if (pointReuse.empty())
+    pointReuse = import_pts ? "all" : "none";
+  if (!actualModel && pointReuse == "none" && !import_pts)
+    throw std::invalid_argument(
+      "DataFitSurrModel global construction requires a truth model, a DACE "
+      "iterator, imported build points, or reusable points.");
+
+  if (actualModel) {
+    mvDist = actualModel->multivariate_distribution().copy();
+    update_from_model(actualModel);
+    check_submodel_compatibility(*actualModel);
+  }
+
+  short data_order = 1;
+  const Response& build_response = actualModel ? actualModel->current_response()
+                                                : response;
+  const bool use_derivatives =
+    !global_approx || model_store.get<bool>("surrogate.derivative_usage");
+  if (use_derivatives &&
+      build_response.gradient_config().type != Response::GradientType::None)
+    data_order |= 2;
+  if (use_derivatives &&
+      build_response.hessian_config().type != Response::HessianType::None &&
+      (surrogateType == "local_taylor" ||
+       surrogateType == "global_polynomial"))
+    data_order |= 4;
+
+  const Variables& vars = actualModel ? actualModel->current_variables()
+                                      : currentVariables;
+  const bool cache = actualModel && actualModel->evaluation_cache(false) &&
+                     !actualModel->derivative_estimation();
+  const String interface_id = actualModel ? actualModel->interface_id() : String();
+  if (currentResponse.field_lengths().length())
+    throw std::runtime_error(
+      "DataFitSurrModel DI construction does not yet support field responses.");
+  approxInterface = std::make_shared<ApproximationInterface>(
+    model_store, vars, cache, interface_id,
+    currentResponse.function_labels(), data_order, outputLevel);
+
+  if (daceIterator)
+    daceIterator->sub_iterator_flag(true);
+  if (daceIterator && outputLevel > NORMAL_OUTPUT)
+    actualModel->fine_grained_evaluation_counters();
+  if (corrType && (responseMode == MODEL_DISCREPANCY ||
+                   responseMode == AUTO_CORRECTED_SURROGATE))
+    deltaCorr.initialize(this, surrogateFnIndices, corrType, corrOrder);
+
+  if (import_pts)
+    import_points(
+      model_store.get<unsigned short>("surrogate.import_build_format"),
+      model_store.get<bool>("surrogate.import_use_variable_labels"),
+      model_store.get<bool>("surrogate.import_build_active_only"));
+  if (export_pts)
+    initialize_export();
+  if (import_pts || export_pts)
+    manage_data_recastings();
   currentResponse.reshape_metadata(0);
 }
 
@@ -485,6 +633,18 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
     // will vary, and min_points must remain constant among ctor/run/dtor.
     approxMinConcurrency = approxInterface->minimum_points(false)
                  * actualModel->derivative_concurrency();
+    if (study_services()) {
+      if (!daceIterator)
+        actualModel->init_communicators(pl_iter, approxMinConcurrency);
+      else {
+        if (approxMinConcurrency >
+            daceIterator->maximum_evaluation_concurrency())
+          daceIterator->maximum_evaluation_concurrency(approxMinConcurrency);
+        daceIterator->init_communicators(pl_iter);
+      }
+      return;
+    }
+
     // as for constructors, we recursively set and restore DB list nodes
     // (initiated from the restored starting point following construction)
     size_t model_index = probDescDB.get_db_model_node(); // for restoration
@@ -1358,7 +1518,10 @@ void DataFitSurrModel::run_dace()
 
   // run the iterator
   ParLevLIter pl_iter = modelPCIter->mi_parallel_level_iterator(miPLIndex);
-  daceIterator->run(pl_iter);
+  if (study_services())
+    study_runtime().execute_iterator(*daceIterator, pl_iter);
+  else
+    daceIterator->run(pl_iter);
 }
 
 
@@ -2334,13 +2497,15 @@ estimate_partition_bounds(int max_eval_concurrency)
 {
   // support DB-based and on-the-fly instantiations for DataFitSurrModel
   if (daceIterator) {
-    probDescDB.set_db_list_nodes(daceIterator->method_id());
+    if (!study_services())
+      probDescDB.set_db_list_nodes(daceIterator->method_id());
     return daceIterator->estimate_partition_bounds();
   }
   else if (actualModel) {
     int am_max_conc = approxInterface->minimum_points(false)
                     * actualModel->derivative_concurrency(); // local/multipt
-    probDescDB.set_db_model_nodes(actualModel->model_id());
+    if (!study_services())
+      probDescDB.set_db_model_nodes(actualModel->model_id());
     return actualModel->estimate_partition_bounds(am_max_conc);
   }
   else

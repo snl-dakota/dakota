@@ -9,6 +9,7 @@
 
 #include "SharedApproxData.hpp"
 #include "ProblemDescDB.hpp"
+#include "IRStore.hpp"
 #include "SharedPecosApproxData.hpp"
 #ifdef HAVE_C3
 #include "SharedC3ApproxData.hpp"
@@ -125,6 +126,20 @@ SharedApproxData(NoDBBaseConstructor, const String& approx_type,
 }
 
 
+SharedApproxData::
+SharedApproxData(NoDBBaseConstructor, const IRStore& model_store,
+                 size_t num_vars, short data_order, short output_level):
+  SharedApproxData(NoDBBaseConstructor(),
+                   model_store.get<String>("surrogate.type"), num_vars,
+                   data_order, output_level)
+{
+  modelExportPrefix =
+    model_store.get<String>("surrogate.model_export_prefix");
+  modelExportFormat =
+    model_store.get<unsigned short>("surrogate.model_export_format");
+}
+
+
 /** For the default constructor, dataRep is NULL. */
 SharedApproxData::SharedApproxData() //:
   //buildDataOrder(1), outputLevel(NORMAL_OUTPUT),
@@ -140,6 +155,17 @@ SharedApproxData::SharedApproxData(ProblemDescDB& problem_db, size_t num_vars):
   dataRep(get_shared_data(problem_db, num_vars))
 {
   if ( !dataRep ) // bad type or insufficient memory
+    abort_handler(APPROX_ERROR);
+}
+
+
+SharedApproxData::
+SharedApproxData(const IRStore& model_store, const UShortArray& approx_order,
+                 size_t num_vars, short data_order, short output_level):
+  dataRep(get_shared_data(model_store, approx_order, num_vars, data_order,
+                          output_level))
+{
+  if (!dataRep)
     abort_handler(APPROX_ERROR);
 }
 
@@ -247,6 +273,41 @@ get_shared_data(const String& approx_type, const UShortArray& approx_order,
 			    data_order, output_level));
   }
   return std::shared_ptr<SharedApproxData>();
+}
+
+
+std::shared_ptr<SharedApproxData> SharedApproxData::
+get_shared_data(const IRStore& model_store, const UShortArray& approx_order,
+                size_t num_vars, short data_order, short output_level)
+{
+  const String& approx_type = model_store.get<String>("surrogate.type");
+  if (strends(approx_type, "_orthogonal_polynomial") ||
+      strends(approx_type, "_interpolation_polynomial"))
+    return std::make_shared<SharedPecosApproxData>
+      (model_store, approx_order, num_vars, data_order, output_level);
+#ifdef HAVE_C3
+  else if (approx_type == "global_function_train")
+    return std::make_shared<SharedC3ApproxData>
+      (model_store, approx_order, num_vars, data_order, output_level);
+#endif
+#ifdef HAVE_SURFPACK
+  else if (approx_type == "global_polynomial"     ||
+           approx_type == "global_kriging"        ||
+           approx_type == "global_neural_network" ||
+           approx_type == "global_radial_basis"   ||
+           approx_type == "global_mars"           ||
+           approx_type == "global_moving_least_squares" ||
+           approx_type == "global_voronoi_surrogate" ||
+           approx_type == "global_exp_gauss_proc" ||
+           approx_type == "global_exp_poly"       ||
+           approx_type == "global_exp_python")
+    return std::make_shared<SharedSurfpackApproxData>
+      (model_store, approx_order, num_vars, data_order, output_level);
+#endif
+  else
+    return std::shared_ptr<SharedApproxData>
+      (new SharedApproxData(NoDBBaseConstructor(), model_store, num_vars,
+                            data_order, output_level));
 }
 
 

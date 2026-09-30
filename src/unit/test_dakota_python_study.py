@@ -66,6 +66,39 @@ def main():
     }, high_fidelity_model, [low_fidelity_model], opt_variables, opt_responses)
     assert explicit_ensemble_model.__class__.__name__ == "EnsembleSurrModel"
 
+    local_model = study.model.local_surrogate(
+        opt_model, opt_variables, opt_responses, taylor_series=True
+    )
+    assert local_model.__class__.__name__ == "DataFitSurrModel"
+
+    multipoint_model = study.model.multipoint_surrogate(
+        opt_model,
+        opt_variables,
+        opt_responses,
+        type={"tana": {}},
+    )
+    assert multipoint_model.__class__.__name__ == "DataFitSurrModel"
+
+    global_model = study.model.global_surrogate(
+        opt_variables,
+        opt_responses,
+        truth_model=opt_model,
+        type={"polynomial": {"order": {"quadratic": {}}}},
+    )
+    assert global_model.__class__.__name__ == "DataFitSurrModel"
+
+    try:
+        study.model.global_surrogate(
+            opt_variables,
+            opt_responses,
+            truth_model=opt_model,
+            type={"function_train": {}},
+        )
+    except RuntimeError as exc:
+        assert "RecastModel refactor" in str(exc)
+    else:
+        raise AssertionError("global_function_train DI construction was accepted")
+
     param_study = study.method.vector_parameter_study({
         "step_control": {"final_point": [1.1, 1.3]},
         "num_steps": 2,

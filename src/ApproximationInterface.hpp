@@ -21,6 +21,8 @@
 
 namespace Dakota {
 
+class IRStore;
+
 /// Derived class within the interface class hierarchy for supporting
 /// approximations to simulation-based results.
 
@@ -41,6 +43,11 @@ public:
   ApproximationInterface(ProblemDescDB& problem_db, const Variables& am_vars,
 			 bool am_cache, const String& am_interface_id,
 			 const StringArray& fn_labels);
+  ApproximationInterface(const IRStore& model_store,
+                         const Variables& am_vars, bool am_cache,
+                         const String& am_interface_id,
+                         const StringArray& fn_labels,
+                         short data_order, short output_level);
   /// alternate constructor for instantiations on the fly
   ApproximationInterface(const String& approx_type,
 			 const UShortArray& approx_order,

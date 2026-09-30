@@ -23,6 +23,7 @@
 namespace Dakota {
 
 class ConcurrentMetaIterator;
+class DataFitSurrModel;
 class DOTOptimizer;
 class EffGlobalMinimizer;
 class EnsembleSurrModel;
@@ -206,6 +207,37 @@ public:
                      std::shared_ptr<Model> truth_model,
                      std::vector<std::shared_ptr<Model>> approximation_models,
                      const Variables& variables, const Response& response) const;
+
+  std::shared_ptr<DataFitSurrModel>
+  global_surrogate(const IRStore& model_store, const Variables& variables,
+                   const Response& response,
+                   std::shared_ptr<Model> truth_model = nullptr,
+                   std::shared_ptr<Iterator> dace_iterator = nullptr) const;
+  std::shared_ptr<DataFitSurrModel>
+  global_surrogate(const nlohmann::json& model_json,
+                   const Variables& variables, const Response& response,
+                   std::shared_ptr<Model> truth_model = nullptr,
+                   std::shared_ptr<Iterator> dace_iterator = nullptr) const;
+
+  std::shared_ptr<DataFitSurrModel>
+  local_surrogate(const IRStore& model_store,
+                  std::shared_ptr<Model> truth_model,
+                  const Variables& variables, const Response& response) const;
+  std::shared_ptr<DataFitSurrModel>
+  local_surrogate(const nlohmann::json& model_json,
+                  std::shared_ptr<Model> truth_model,
+                  const Variables& variables, const Response& response) const;
+
+  std::shared_ptr<DataFitSurrModel>
+  multipoint_surrogate(const IRStore& model_store,
+                       std::shared_ptr<Model> truth_model,
+                       const Variables& variables,
+                       const Response& response) const;
+  std::shared_ptr<DataFitSurrModel>
+  multipoint_surrogate(const nlohmann::json& model_json,
+                       std::shared_ptr<Model> truth_model,
+                       const Variables& variables,
+                       const Response& response) const;
 
   std::shared_ptr<EnsembleSurrModel>
   ensemble_surrogate(const IRStore& model_store,

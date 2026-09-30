@@ -13,6 +13,7 @@ Dependency-injection/library-mode Dakota study construction.
 
 from ._study import (  # noqa: F401
     ConcurrentMetaIterator,
+    DataFitSurrModel,
     EnsembleSurrModel,
     Interface,
     Iterator,

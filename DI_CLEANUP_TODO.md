@@ -44,3 +44,13 @@ construction for Dakota components.
    branches on string comparisons. A later cleanup should convert that
    consuming `Model` code to use enums directly and remove the
    `to_legacy_string()` bridge.
+
+6. **TODO(recast-function-train-di):** enable
+   `Study::ModelFactory::global_surrogate` for
+   `global_function_train` after the RecastModel refactor lands.
+   The follow-up must establish ownership of the probability transformation,
+   ensure an injected DACE iterator samples the transformed model, initialize
+   the transformed distribution and basis, and pass function-train
+   configuration through the IR-backed approximation path. Remove the
+   constructor guard and replace its rejection regression test with successful
+   truth-model and DACE construction/execution tests.

@@ -51,6 +51,7 @@
 #include "SNLLOptimizer.hpp"
 #endif
 #include "ConcurrentMetaIterator.hpp"
+#include "DataFitSurrModel.hpp"
 #include "EnsembleSurrModel.hpp"
 #ifndef _WIN32
 #include "ForkApplicInterface.hpp"
@@ -515,6 +516,96 @@ TEST(di_construction_tests, study_factories_construct_components_from_json_fragm
   EXPECT_EQ(response.num_functions(), 1);
   EXPECT_EQ(model->current_response().num_functions(), 1);
   EXPECT_EQ(sampling->sampling_scheme(), SUBMETHOD_LHS);
+}
+
+TEST(di_construction_tests, study_factory_constructs_data_fit_surrogates)
+{
+  const json variables_json = {
+    {"continuous_design", {
+      {"count", 2}, {"descriptors", {"x1", "x2"}},
+      {"initial_point", {0.0, 0.0}},
+      {"lower_bounds", {-1.0, -1.0}},
+      {"upper_bounds", {1.0, 1.0}}
+    }}
+  };
+  const json responses_json = {
+    {"response_type", {{"response_functions", {{"count", 1}}}}},
+    {"descriptors", {"f"}},
+    {"gradient_type", {{"analytic_gradients", true}}},
+    {"hessian_type", {{"analytic_hessians", true}}}
+  };
+  const json interface_json = {
+    {"analysis_drivers", {
+      {"drivers", {"text_book"}},
+      {"interface_type", {{"fork", json::object()}}}
+    }}
+  };
+
+  Study study;
+  const Variables variables = study.variables(variables_json);
+  const Response response = study.responses(responses_json, variables);
+  auto interface = study.interface(interface_json);
+  auto truth = study.model().single(
+    json::object(), variables, interface, response);
+
+  auto local = study.model().local_surrogate(
+    {{"taylor_series", true}, {"truth_model_pointer", "DI"}},
+    truth, variables, response);
+  auto multipoint = study.model().multipoint_surrogate(
+    {{"type", {{"tana", json::object()}}},
+     {"truth_model_pointer", "DI"}},
+    truth, variables, response);
+  auto global = study.model().global_surrogate(
+    {{"type", {{"polynomial", {
+       {"order", {{"quadratic", json::object()}}}
+     }}}},
+     {"build_data", {{"truth_model_pointer", {{"pointer", "DI"}}}}}},
+    variables, response, truth);
+
+  auto dace = study.method().sampling(
+    {{"sample_type", {{"lhs", true}}}, {"samples", 4}, {"seed", 17}},
+    truth);
+  auto dace_global = study.model().global_surrogate(
+    {{"type", {{"polynomial", {
+       {"order", {{"linear", json::object()}}}
+     }}}},
+     {"build_data", {{"dace_method_pointer", {{"pointer", "DI"}}}}}},
+    variables, response, nullptr, dace);
+
+  EXPECT_EQ(local->surrogate_type(), "local_taylor");
+  EXPECT_EQ(multipoint->surrogate_type(), "multipoint_tana");
+  EXPECT_EQ(global->surrogate_type(), "global_polynomial");
+  EXPECT_EQ(dace_global->truth_model(), truth);
+
+  EXPECT_THROW(
+    study.model().local_surrogate(
+      {{"taylor_series", true}, {"truth_model_pointer", "DI"}},
+      nullptr, variables, response),
+    std::invalid_argument);
+  EXPECT_THROW(
+    study.model().global_surrogate(
+      {{"type", {{"polynomial", {
+         {"order", {{"linear", json::object()}}}
+       }}}},
+       {"build_data", {{"dace_method_pointer", {{"pointer", "DI"}}}}}},
+      variables, response, truth, dace),
+    std::invalid_argument);
+
+  // TODO(recast-function-train-di): replace this rejection with successful
+  // truth-model and DACE execution coverage after the RecastModel refactor.
+  EXPECT_THROW(
+    study.model().global_surrogate(
+      {{"type", {{"function_train", json::object()}}},
+       {"build_data", {{"truth_model_pointer", {{"pointer", "DI"}}}}}},
+      variables, response, truth),
+    std::runtime_error);
+
+  Study other_study;
+  EXPECT_THROW(
+    other_study.model().local_surrogate(
+      {{"taylor_series", true}, {"truth_model_pointer", "DI"}},
+      truth, variables, response),
+    std::runtime_error);
 }
 
 TEST(di_construction_tests, study_irstore_factories_accept_materialized_configuration)

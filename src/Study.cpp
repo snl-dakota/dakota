@@ -10,6 +10,7 @@
 #include "Study.hpp"
 
 #include "ConcurrentMetaIterator.hpp"
+#include "DataFitSurrModel.hpp"
 #include "DOTOptimizer.hpp"
 #include "EffGlobalMinimizer.hpp"
 #include "EnsembleSurrModel.hpp"
@@ -606,6 +607,68 @@ Study::ModelFactory::ensemble_surrogate(
   return std::make_shared<EnsembleSurrModel>(
     model_store, std::move(truth_model), std::move(approximation_models),
     variables, response, study.services());
+}
+
+std::shared_ptr<DataFitSurrModel>
+Study::ModelFactory::global_surrogate(
+  const IRStore& model_store, const Variables& variables,
+  const Response& response, std::shared_ptr<Model> truth_model,
+  std::shared_ptr<Iterator> dace_iterator) const
+{
+  return std::make_shared<DataFitSurrModel>(
+    model_store, std::move(truth_model), std::move(dace_iterator),
+    variables, response, study.services());
+}
+
+std::shared_ptr<DataFitSurrModel>
+Study::ModelFactory::global_surrogate(
+  const nlohmann::json& model_json, const Variables& variables,
+  const Response& response, std::shared_ptr<Model> truth_model,
+  std::shared_ptr<Iterator> dace_iterator) const
+{
+  return global_surrogate(
+    validate_and_materialize_selected_model(model_json, "global_surrogate"),
+    variables, response, std::move(truth_model), std::move(dace_iterator));
+}
+
+std::shared_ptr<DataFitSurrModel>
+Study::ModelFactory::local_surrogate(
+  const IRStore& model_store, std::shared_ptr<Model> truth_model,
+  const Variables& variables, const Response& response) const
+{
+  return std::make_shared<DataFitSurrModel>(
+    model_store, std::move(truth_model), nullptr, variables, response,
+    study.services());
+}
+
+std::shared_ptr<DataFitSurrModel>
+Study::ModelFactory::local_surrogate(
+  const nlohmann::json& model_json, std::shared_ptr<Model> truth_model,
+  const Variables& variables, const Response& response) const
+{
+  return local_surrogate(
+    validate_and_materialize_selected_model(model_json, "local_surrogate"),
+    std::move(truth_model), variables, response);
+}
+
+std::shared_ptr<DataFitSurrModel>
+Study::ModelFactory::multipoint_surrogate(
+  const IRStore& model_store, std::shared_ptr<Model> truth_model,
+  const Variables& variables, const Response& response) const
+{
+  return std::make_shared<DataFitSurrModel>(
+    model_store, std::move(truth_model), nullptr, variables, response,
+    study.services());
+}
+
+std::shared_ptr<DataFitSurrModel>
+Study::ModelFactory::multipoint_surrogate(
+  const nlohmann::json& model_json, std::shared_ptr<Model> truth_model,
+  const Variables& variables, const Response& response) const
+{
+  return multipoint_surrogate(
+    validate_and_materialize_selected_model(model_json, "multipoint_surrogate"),
+    std::move(truth_model), variables, response);
 }
 
 std::shared_ptr<EnsembleSurrModel>
