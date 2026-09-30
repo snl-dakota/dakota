@@ -559,7 +559,7 @@ TEST(di_construction_tests, study_factory_constructs_data_fit_surrogates)
     {{"type", {{"polynomial", {
        {"order", {{"quadratic", json::object()}}}
      }}}},
-     {"build_data", {{"truth_model_pointer", {{"pointer", "DI"}}}}}},
+     {"build_data", {{"truth_model_pointer", "DI"}}}},
     variables, response, truth);
 
   auto dace = study.method().sampling(
@@ -596,7 +596,7 @@ TEST(di_construction_tests, study_factory_constructs_data_fit_surrogates)
   EXPECT_THROW(
     study.model().global_surrogate(
       {{"type", {{"function_train", json::object()}}},
-       {"build_data", {{"truth_model_pointer", {{"pointer", "DI"}}}}}},
+       {"build_data", {{"truth_model_pointer", "DI"}}}},
       variables, response, truth),
     std::runtime_error);
 

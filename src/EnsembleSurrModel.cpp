@@ -107,6 +107,11 @@ EnsembleSurrModel::EnsembleSurrModel(
   ensemblePrecedence(DEFAULT_PRECEDENCE), modeKeyBufferSize(0),
   correctionMode(SINGLE_CORRECTION)
 {
+  if (surrogateType != "ensemble")
+    throw std::runtime_error(
+      "EnsembleSurrModel DI construction requires surrogate.type 'ensemble', "
+      "not '" + surrogateType + "'.");
+
   initialize_subordinate_models();
 }
 
