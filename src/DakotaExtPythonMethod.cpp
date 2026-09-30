@@ -42,6 +42,30 @@ ExtPythonMethod::ExtPythonMethod(ProblemDescDB& problem_db,
 
 // -----------------------------------------------------------------
 
+ExtPythonMethod::
+ExtPythonMethod(std::shared_ptr<StudyServices> services, const IRStore& method_store,
+                std::shared_ptr<Dakota::Model> model):
+  Iterator(std::move(services), method_store,
+           std::shared_ptr<TraitsBase>(new ExtPythonTraits())),
+  ownPython(false),
+  py11Active(false)
+{
+  iteratedModel = model;
+  update_from_model(*iteratedModel);
+
+  // Create the callback executor (model wrapper)
+  executor_ = std::make_shared<ModelExecutor>(iteratedModel);
+
+  // Support optional configuration file
+  optionsFilename = method_store.get<String>("advanced_options_file");
+
+  moduleAndClassName = method_store.get<String>("class_path_and_name");
+  initialize_python();
+
+}
+
+// -----------------------------------------------------------------
+
 void ExtPythonMethod::initialize_python()
 {
   if (!Py_IsInitialized()) {

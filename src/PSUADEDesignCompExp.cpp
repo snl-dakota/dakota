@@ -48,6 +48,34 @@ PSUADEDesignCompExp(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, st
 }
 
 
+/** This constructor is called for a standard iterator built with data from
+    the IRStore. */
+PSUADEDesignCompExp::
+PSUADEDesignCompExp(std::shared_ptr<StudyServices> services,
+		    const IRStore& method_store,
+		    std::shared_ptr<Model> model):
+  PStudyDACE(std::move(services), method_store, model),
+  samplesSpec(method_store.get<int>("samples")), numSamples(samplesSpec),
+  varPartitionsSpec(method_store.get<UShortArray>("partitions")),
+  numPartitions(0), allDataFlag(false), numDACERuns(0), varyPattern(true),
+  seedSpec(method_store.get<int>("random_seed")), randomSeed(seedSpec)
+{
+  if (methodName != PSUADE_MOAT) {
+    Cerr << "\nError: PSUADE method \"" << method_string()
+         << "\" is not an option." << std::endl;
+    abort_handler(-1);
+  }
+  if (numDiscreteIntVars > 0 || numDiscreteStringVars > 0 ||
+      numDiscreteRealVars > 0) {
+    Cerr << "\nError: psuade_* methods do not support discrete variables.\n";
+    abort_handler(-1);
+  }
+
+  if (numSamples) // samples is optional (default = 0)
+    maxEvalConcurrency *= numSamples;
+}
+
+
 PSUADEDesignCompExp::~PSUADEDesignCompExp()
 { }
 

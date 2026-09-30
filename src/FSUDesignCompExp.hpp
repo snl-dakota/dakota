@@ -36,6 +36,9 @@ public:
     
   /// primary constructor for building a standard DACE iterator
   FSUDesignCompExp(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
+  /// DI constructor
+  FSUDesignCompExp(std::shared_ptr<StudyServices> services,
+      const IRStore& method_store, std::shared_ptr<Model> model);
   /// alternate constructor for building a DACE iterator on-the-fly
   FSUDesignCompExp(std::shared_ptr<Model> model, int samples, int seed,
 		   unsigned short sampling_method);
