@@ -1176,6 +1176,8 @@ void Minimizer::print_residuals(size_t num_terms, const RealVector& best_terms,
 void Minimizer::archive_best_results()
 {
   if(!resultsDB.active()) return;
+  // Minimizers in "user functions" mode (e.g. GaussProcApproximation's NCSUOptimizer) have no Model to dereference below.
+  if(!iteratedModel) return;
   size_t i, num_best = bestVariablesArray.size();
   if (num_best != bestResponseArray.size()) {
     Cerr << "\nError: mismatch in lengths of bestVariables and bestResponses."
