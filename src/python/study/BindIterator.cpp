@@ -384,119 +384,58 @@ This method is present only when Dakota is built with DOT. See
 :rtype: dakota.study.ConcurrentMetaIterator
 :raises TypeError: If the dependency is null or both configuration forms are used.
 
-See :ref:`multi-start options <method-multi_start>`.)doc")
-    .def("vector_parameter_study",
-         [](const Study::MethodFactory& factory,
-            const py::object& method_json,
-            std::shared_ptr<Model> model) {
-           return factory.vector_parameter_study(
-             materialize_method(nlohmann::json{{"vector_parameter_study",
-               validate_vector_parameter_study_fragment(method_json)}}),
-             std::move(model));
-         },
-         py::arg("method"), py::arg("model"),
-         "Construct a vector parameter study from its configuration fragment and model.")
-    .def("list_parameter_study",
-         [](const Study::MethodFactory& factory,
-            const py::object& method_json,
-            std::shared_ptr<Model> model) {
-           return factory.list_parameter_study(
-             materialize_method(nlohmann::json{{"list_parameter_study",
-               validate_list_parameter_study_fragment(method_json)}}),
-             std::move(model));
-         },
-         py::arg("method"), py::arg("model"),
-         "Construct a list parameter study from its configuration fragment and model.")
-    .def("centered_parameter_study",
-         [](const Study::MethodFactory& factory,
-            const py::object& method_json,
-            std::shared_ptr<Model> model) {
-           return factory.centered_parameter_study(
-             materialize_method(nlohmann::json{{"centered_parameter_study",
-               validate_centered_parameter_study_fragment(method_json)}}),
-             std::move(model));
-         },
-         py::arg("method"), py::arg("model"),
-         "Construct a centered parameter study from its configuration fragment and model.")
-    .def("multidim_parameter_study",
-         [](const Study::MethodFactory& factory,
-            const py::object& method_json,
-            std::shared_ptr<Model> model) {
-           return factory.multidim_parameter_study(
-             materialize_method(nlohmann::json{{"multidim_parameter_study",
-               validate_multidim_parameter_study_fragment(method_json)}}),
-             std::move(model));
-         },
-         py::arg("method"), py::arg("model"),
-         "Construct a multidimensional parameter study from its configuration fragment and model.")
-    .def("richardson_extrap",
-         [](const Study::MethodFactory& factory,
-            const py::object& method_json,
-            std::shared_ptr<Model> model) {
-           return factory.richardson_extrap(
-             materialize_method(nlohmann::json{{"richardson_extrap",
-               validate_richardson_extrap_fragment(method_json)}}),
-             std::move(model));
-         },
-         py::arg("method"), py::arg("model"),
-         "Construct Richardson extrapolation from its configuration fragment and model.")
-    .def("local_interval_est",
-         [](const Study::MethodFactory& factory,
-            const py::object& method_json,
-            std::shared_ptr<Model> model) {
-           return factory.local_interval_est(
-             materialize_method(nlohmann::json{{"local_interval_est",
-               validate_local_interval_est_fragment(method_json)}}),
-             std::move(model));
-         },
-         py::arg("method"), py::arg("model"),
-         "Construct local interval estimation from its configuration fragment and model.")
-    .def("global_interval_est",
-         [](const Study::MethodFactory& factory,
-            const py::object& method_json,
-            std::shared_ptr<Model> model) {
-           return factory.global_interval_est(
-             materialize_method(nlohmann::json{{"global_interval_est",
-               validate_global_interval_est_fragment(method_json)}}),
-             std::move(model));
-         },
-         py::arg("method"), py::arg("model"),
-         "Construct global interval estimation from its configuration fragment and model.")
-    .def("efficient_global",
-         [](const Study::MethodFactory& factory,
-            const py::object& method_json,
-            std::shared_ptr<Model> model) {
-           return factory.efficient_global(
-             materialize_method(nlohmann::json{{"efficient_global",
-               validate_efficient_global_fragment(method_json)}}),
-             std::move(model));
-         },
-         py::arg("method"), py::arg("model"),
-         "Construct efficient global optimization from its configuration fragment and model.")
-    .def("npsol_sqp",
-         [](const Study::MethodFactory& factory,
-            const py::object& method_json,
-            std::shared_ptr<Model> model) {
-           return factory.npsol_sqp(
-             materialize_method(nlohmann::json{{"npsol_sqp",
-               validate_npsol_sqp_fragment(method_json)}}),
-             std::move(model));
-         },
-         py::arg("method"), py::arg("model"),
-         "Construct NPSOL SQP from its configuration fragment and model. "
-         "Available only in builds with NPSOL.")
-    .def("nl2sol",
-         [](const Study::MethodFactory& factory,
-            const py::object& method_json,
-            std::shared_ptr<Model> model) {
-           return factory.nl2sol(
-             materialize_method(nlohmann::json{{"nl2sol",
-               validate_nl2sol_fragment(method_json)}}),
-             std::move(model));
-         },
-         py::arg("method"), py::arg("model"),
-         "Construct NL2SOL from its configuration fragment and model. "
-         "Available only in builds with NL2SOL.");
+See :ref:`multi-start options <method-multi_start>`.)doc");
+
+  bind_method(factory, "vector_parameter_study",
+    [](const Study::MethodFactory& f, const IRStore& store,
+       std::shared_ptr<Model> model) {
+      return f.vector_parameter_study(store, std::move(model));
+    });
+  bind_method(factory, "list_parameter_study",
+    [](const Study::MethodFactory& f, const IRStore& store,
+       std::shared_ptr<Model> model) {
+      return f.list_parameter_study(store, std::move(model));
+    });
+  bind_method(factory, "centered_parameter_study",
+    [](const Study::MethodFactory& f, const IRStore& store,
+       std::shared_ptr<Model> model) {
+      return f.centered_parameter_study(store, std::move(model));
+    });
+  bind_method(factory, "multidim_parameter_study",
+    [](const Study::MethodFactory& f, const IRStore& store,
+       std::shared_ptr<Model> model) {
+      return f.multidim_parameter_study(store, std::move(model));
+    });
+  bind_method(factory, "richardson_extrap",
+    [](const Study::MethodFactory& f, const IRStore& store,
+       std::shared_ptr<Model> model) {
+      return f.richardson_extrap(store, std::move(model));
+    });
+  bind_method(factory, "local_interval_est",
+    [](const Study::MethodFactory& f, const IRStore& store,
+       std::shared_ptr<Model> model) {
+      return f.local_interval_est(store, std::move(model));
+    });
+  bind_method(factory, "global_interval_est",
+    [](const Study::MethodFactory& f, const IRStore& store,
+       std::shared_ptr<Model> model) {
+      return f.global_interval_est(store, std::move(model));
+    });
+  bind_method(factory, "efficient_global",
+    [](const Study::MethodFactory& f, const IRStore& store,
+       std::shared_ptr<Model> model) {
+      return f.efficient_global(store, std::move(model));
+    });
+  bind_method(factory, "npsol_sqp",
+    [](const Study::MethodFactory& f, const IRStore& store,
+       std::shared_ptr<Model> model) {
+      return f.npsol_sqp(store, std::move(model));
+    });
+  bind_method(factory, "nl2sol",
+    [](const Study::MethodFactory& f, const IRStore& store,
+       std::shared_ptr<Model> model) {
+      return f.nl2sol(store, std::move(model));
+    });
 
   bind_method(factory, "local_reliability", &construct<NonDLocalReliability>);
   bind_method(factory, "global_reliability", &construct<NonDGlobalReliability>);

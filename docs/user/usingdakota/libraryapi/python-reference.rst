@@ -57,13 +57,13 @@ API map
      - A :class:`dakota.study.Model` specialization
      - :class:`ModelFactory <dakota.study.ModelFactory>` should not be directly instantiated. The
        :attr:`model <dakota.study.Study.model>` member variable of :class:`Study <dakota.study.Study>`
-       objects are a ModelFactory.
+       is a ModelFactory.
        Some Models have method/iterator or model sub-components
    * - Select an algorithm
      - :class:`dakota.study.MethodFactory`
      - An :class:`dakota.study.Iterator` specialization
      - :class:`MethodFactory <dakota.study.MethodFactory>` should not be directly instantiated. The
-       :attr:`method <dakota.study.Study.method>` member variable of Study objects are a Methodactory.
+       :attr:`method <dakota.study.Study.method>` member variable of a Study is a MethodFactory.
    * - Execute the study
      - :meth:`dakota.study.Study.run`
      - Results retained by the returned iterator handle
@@ -97,6 +97,19 @@ directly. Access the factory instances owned by a study through
 :attr:`dakota.study.Study.model` and :attr:`dakota.study.Study.method`. This
 ensures that constructed models and methods use the correct runtime services
 and ownership context.
+
+Factory calls put object dependencies first, followed by configuration. For
+example, method factories consistently use ``factory(model, config=None,
+**kwargs)``. Supply Dakota options either as a dictionary or Pydantic model
+through ``config``, or directly as keyword arguments::
+
+   study.method.centered_parameter_study(model, config=method_options)
+   study.method.centered_parameter_study(
+       model, step_vector=[0.1, 0.1], steps_per_variable=[2, 2])
+
+Do not pass both ``config`` and configuration keyword arguments. Object
+dependencies such as ``model`` are not configuration fields and replace the
+corresponding input-file pointer when one exists.
 
 .. autoclass:: dakota.study.ModelFactory
    :members:

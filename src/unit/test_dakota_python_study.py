@@ -100,10 +100,10 @@ def main():
     else:
         raise AssertionError("global_function_train DI construction was accepted")
 
-    param_study = study.method.vector_parameter_study({
+    param_study = study.method.vector_parameter_study(opt_model, config={
         "step_control": {"final_point": [1.1, 1.3]},
         "num_steps": 2,
-    }, opt_model)
+    })
     assert param_study.__class__.__name__ == "ParamStudy"
 
     ver_variables = study.variables({
@@ -120,12 +120,12 @@ def main():
         "hessian_type": {"no_hessians": True},
     })
     ver_model = study.model.single({}, ver_variables, interface, ver_responses)
-    verification = study.method.richardson_extrap({
+    verification = study.method.richardson_extrap(ver_model, config={
         "mode": {"estimate_order": True},
         "refinement_rate": 2.0,
         "convergence_tolerance": 1.0e-4,
         "max_iterations": 4,
-    }, ver_model)
+    })
     assert verification.__class__.__name__ == "RichExtrapVerification"
 
     interval_variables = study.variables({
@@ -144,11 +144,11 @@ def main():
         "hessian_type": {"no_hessians": True},
     })
     interval_model = study.model.single({}, interval_variables, interface, interval_responses)
-    global_interval = study.method.global_interval_est({
+    global_interval = study.method.global_interval_est(interval_model, config={
         "solution_approach": {"lhs": True},
         "samples": 4,
         "seed": 1234,
-    }, interval_model)
+    })
     assert global_interval is not None
 
 
