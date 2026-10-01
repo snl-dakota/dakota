@@ -29,6 +29,7 @@ except ImportError:
 
 
 def main() -> None:
+    # [docs-library-api-start]
     config = StudyConfig()
     config.output.precision = 12
     config.output.output_file = "di_construction_demo.out"
@@ -91,6 +92,7 @@ def main() -> None:
     print(f"Samples evaluated: {sampling.num_responses()}")
     if sampling.num_responses() > 0:
         print(f"First response value: {sampling.first_response_value()}")
+    # [docs-library-api-end]
 
 
 if __name__ == "__main__":

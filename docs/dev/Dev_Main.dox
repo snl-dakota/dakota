@@ -559,6 +559,8 @@ specific development activities:
     \c dakota/python/dakota/spec.
 \li \ref PythonBindings - expose a C++ class through the dependency-injection
     Python API.
+\li \ref StudyAPI - public C++ classes for constructing and running a study
+    without a complete input file.
 \li \ref SpecChange - how to interact with NIDR and the associated %Dakota
     classes.
 \li \ref DakLibrary - embed %Dakota as a service within your application.

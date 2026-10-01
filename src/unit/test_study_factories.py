@@ -1,6 +1,7 @@
 """Native Study factory contract tests. CTest requires an importable module."""
 
 import copy
+import inspect
 import os
 from pathlib import Path
 import shutil
@@ -67,6 +68,40 @@ class FactoryTests(unittest.TestCase):
             model = s.model.simulation(v, self.interface, r)
             cases.append((s.method.dot_bfgs, (model,), {}, DotBfgsConfig, ds.DOTOptimizer))
         return cases
+
+    def test_public_api_documentation_and_signatures(self):
+        for public_type in (
+            ds.Study,
+            ds.StudyConfig,
+            ds.StudyOutputConfig,
+            ds.StudyRunConfig,
+            ds.MethodFactory,
+            ds.ModelFactory,
+            ds.Variables,
+            ds.Response,
+            ds.Interface,
+            ds.Model,
+            ds.Iterator,
+            ds.NonDLHSSampling,
+        ):
+            with self.subTest(public_type=public_type.__name__):
+                self.assertTrue(inspect.getdoc(public_type))
+
+        documented_callables = {
+            ds.Study.variables: ("config", "kwargs"),
+            ds.Study.responses: ("variables", "config", "kwargs"),
+            ds.Study.interface: ("config", "kwargs"),
+            ds.Study.run: ("method",),
+            ds.MethodFactory.sampling: ("model", "config", "kwargs"),
+            ds.ModelFactory.simulation: (
+                "variables", "interface", "response", "config", "kwargs"),
+        }
+        for function, parameters in documented_callables.items():
+            with self.subTest(function=function.__qualname__):
+                self.assertTrue(inspect.getdoc(function))
+                signature = str(inspect.signature(function))
+                for parameter in parameters:
+                    self.assertIn(parameter, signature)
 
     def test_all_configuration_forms(self):
         for factory, dependencies, data, schema, result_type in self.cases():

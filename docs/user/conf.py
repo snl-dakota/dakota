@@ -16,8 +16,11 @@ from pathlib import Path
 sys.path[:0] = [
     os.path.abspath("./_extensions"),
     os.path.abspath("./_pygments"),
-    str(Path('..', '..', 'python').resolve())
 ]
+# Prefer a complete build-tree or installed package supplied through
+# PYTHONPATH.  The source tree remains a fallback for pure-Python modules, but
+# it does not contain the compiled dakota.study extension.
+sys.path.append(str(Path('..', '..', 'python').resolve()))
 
 from lexer.dakota import DakotaLexer
 
@@ -50,6 +53,7 @@ release = ''
 # ones.
 extensions = ['myst_parser', 'sphinxcontrib.bibtex', 'sphinx_dakota',
               'sphinx.ext.imgmath',
+              'sphinx.ext.autodoc',
               'sphinx_copybutton',
               'sphinxcontrib.autodoc_pydantic']
 #              'sphinx.ext.mathjax']
@@ -116,3 +120,4 @@ autodoc_pydantic_model_show_validator_members = False
 autodoc_pydantic_field_list_validators = False
 
 autodoc_default_options = {"inherited-members": "BaseModel"}
+autodoc_member_order = "bysource"

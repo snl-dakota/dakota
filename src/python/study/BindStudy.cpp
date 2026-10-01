@@ -38,7 +38,12 @@ namespace Dakota::python {
 
 void bind_study_factories(py::module_& m)
 {
-  py::class_<Study::ModelFactory>(m, "ModelFactory")
+  py::class_<Study::ModelFactory>(
+    m, "ModelFactory",
+    "Construct models that share the owning Study's runtime services.\n\n"
+    "Access this factory through Study.model. Inject variables, responses, "
+    "interfaces, sub-iterators, and child models as objects rather than "
+    "resolving input-file pointer strings.")
     .def("single",
          [](const Study::ModelFactory& factory,
             const py::object& model_json,
@@ -50,7 +55,8 @@ void bind_study_factories(py::module_& m)
                                      variables, std::move(interface), response);
          },
          py::arg("model"), py::arg("variables"), py::arg("interface"),
-         py::arg("response"))
+         py::arg("response"),
+         "Construct a simulation model using the legacy config-first calling convention.")
     .def("simulation",
          [](const Study::ModelFactory& factory,
             const Variables& variables, std::shared_ptr<Interface> interface,
@@ -63,8 +69,9 @@ void bind_study_factories(py::module_& m)
          },
          py::arg("variables").none(false), py::arg("interface").none(false),
          py::arg("response").none(false), py::arg("config") = py::none(),
-         "Construct a simulation from a config fragment (dict or Pydantic model) "
-         "or kwargs, exclusively. An omitted config uses single-model defaults.")
+         "Construct a simulation model from injected components.\n\n"
+         "Pass a dict, SingleConfig, or configuration keyword arguments, "
+         "exclusively. An omitted config uses single-model defaults.")
     .def("nested",
          [](const Study::ModelFactory& factory,
             std::shared_ptr<Iterator> sub_iterator, const Variables& variables,
@@ -81,7 +88,8 @@ void bind_study_factories(py::module_& m)
          py::arg("response").none(false),
          py::arg("optional_interface") = py::none(),
          py::arg("config") = py::none(),
-         "Construct from a config fragment (dict or Pydantic model) or kwargs, "
+         "Construct a nested model from an injected sub-iterator.\n\n"
+         "Pass a dict, NestedConfig, or configuration keyword arguments, "
          "exclusively. optional_interface may be omitted or None; required "
          "configuration fields still apply.")
     .def("global_surrogate",
@@ -102,9 +110,10 @@ void bind_study_factories(py::module_& m)
          py::arg("truth_model") = py::none(),
          py::arg("dace_iterator") = py::none(),
          py::arg("config") = py::none(),
-         "Construct a global data-fit surrogate from required variables and "
-         "response objects, optional injected dependencies, and either a "
-         "dict/Pydantic config or kwargs.")
+         "Construct a global data-fit surrogate.\n\n"
+         "truth_model and dace_iterator are optional injected dependencies. "
+         "Pass a dict, GlobalSurrogateConfig, or configuration keyword "
+         "arguments, exclusively.")
     .def("local_surrogate",
          [](const Study::ModelFactory& factory,
             std::shared_ptr<Model> truth_model,
@@ -120,8 +129,9 @@ void bind_study_factories(py::module_& m)
          py::arg("truth_model").none(false),
          py::arg("variables").none(false), py::arg("response").none(false),
          py::arg("config") = py::none(),
-         "Construct a local data-fit surrogate from a truth model, variables, "
-         "response, and either a dict/Pydantic config or kwargs.")
+         "Construct a local data-fit surrogate from an injected truth model.\n\n"
+         "Pass a dict, LocalSurrogateConfig, or configuration keyword "
+         "arguments, exclusively.")
     .def("multipoint_surrogate",
          [](const Study::ModelFactory& factory,
             std::shared_ptr<Model> truth_model,
@@ -137,8 +147,9 @@ void bind_study_factories(py::module_& m)
          py::arg("truth_model").none(false),
          py::arg("variables").none(false), py::arg("response").none(false),
          py::arg("config") = py::none(),
-         "Construct a multipoint data-fit surrogate from a truth model, "
-         "variables, response, and either a dict/Pydantic config or kwargs.")
+         "Construct a multipoint surrogate from an injected truth model.\n\n"
+         "Pass a dict, MultipointSurrogateConfig, or configuration keyword "
+         "arguments, exclusively.")
     .def("ensemble_surrogate",
          [](const Study::ModelFactory& factory,
             std::shared_ptr<Model> truth_model,
@@ -157,8 +168,9 @@ void bind_study_factories(py::module_& m)
          py::arg("truth_model").none(false), py::arg("approx_models").none(false),
          py::arg("variables").none(false), py::arg("response").none(false),
          py::arg("config") = py::none(),
-         "Construct an ensemble from truth/approximation models and either a "
-         "dict/Pydantic config or kwargs. The legacy config-first overload remains available.")
+         "Construct an ensemble from a truth model and approximation models.\n\n"
+         "Pass a dict, EnsembleSurrogateConfig, or configuration keyword "
+         "arguments, exclusively. The legacy config-first overload remains available.")
     .def("ensemble_surrogate",
          [](const Study::ModelFactory& factory,
             std::vector<std::shared_ptr<Model>> ordered_models,
@@ -175,8 +187,9 @@ void bind_study_factories(py::module_& m)
          },
          py::arg("ordered_models").none(false), py::arg("variables").none(false),
          py::arg("response").none(false), py::arg("config") = py::none(),
-         "Construct an ensemble from models ordered low-to-high and either a "
-         "dict/Pydantic config or kwargs. The final model is the truth model.")
+         "Construct an ensemble from models ordered from low to high fidelity.\n\n"
+         "The final model is the truth model. Pass a dict, "
+         "EnsembleSurrogateConfig, or configuration keyword arguments, exclusively.")
     .def("ensemble_surrogate",
          [](const Study::ModelFactory& factory,
             const py::object& model_json,
@@ -195,7 +208,8 @@ void bind_study_factories(py::module_& m)
          },
          py::arg("model"), py::arg("truth_model"),
          py::arg("approx_models"), py::arg("variables"),
-         py::arg("response"))
+         py::arg("response"),
+         "Construct an ensemble using the legacy config-first calling convention.")
     .def("ensemble_surrogate",
          [](const Study::ModelFactory& factory,
             const py::object& model_json,
@@ -212,21 +226,27 @@ void bind_study_factories(py::module_& m)
              variables, response);
          },
          py::arg("model"), py::arg("ordered_models"),
-         py::arg("variables"), py::arg("response"));
+         py::arg("variables"), py::arg("response"),
+         "Construct an ordered ensemble using the legacy config-first calling convention.");
 }
 
 void bind_study(py::module_& m)
 {
-  py::class_<Study>(m, "Study")
-    .def(py::init<const StudyConfig&>(), py::arg("config") = StudyConfig{})
+  py::class_<Study>(
+    m, "Study",
+    "Own the runtime services and factories for a library-mode Dakota study.\n\n"
+    "Keep the Study alive while using components created from it. Construct "
+    "components from the leaves inward, then pass the top-level method to run().")
+    .def(py::init<const StudyConfig&>(), py::arg("config") = StudyConfig{},
+         "Create a Study with optional output and run-phase configuration.")
     .def("variables",
          [](const Study& study, const py::object& config, py::kwargs kwargs) {
            return study.variables(
              materialize_variables(normalize_factory_config(config, kwargs, "Study.variables")));
          },
          py::arg("config") = py::none(),
-         "Construct from a config fragment (dict or Pydantic model) or kwargs, "
-         "exclusively.")
+         "Construct variables from the children of a variables block.\n\n"
+         "Pass a dict, VariablesConfig, or configuration keyword arguments, exclusively.")
     .def("responses",
          [](const Study& study, const Variables& variables,
             const py::object& config, py::kwargs kwargs) {
@@ -235,27 +255,31 @@ void bind_study(py::module_& m)
              variables);
          },
          py::arg("variables").none(false), py::arg("config") = py::none(),
-         "Construct from variables and a config fragment (dict or Pydantic "
-         "model) or kwargs, exclusively.")
+         "Construct a response definition associated with variables.\n\n"
+         "Pass a dict, ResponsesConfig, or configuration keyword arguments, exclusively.")
     .def("interface",
          [](const Study& study, const py::object& config, py::kwargs kwargs) {
            return study.interface(
              materialize_interface(normalize_factory_config(config, kwargs, "Study.interface")));
          },
          py::arg("config") = py::none(),
-         "Construct from a config fragment (dict or Pydantic model) or kwargs, "
-         "exclusively.")
+         "Construct a simulation interface from the children of an interface block.\n\n"
+         "Pass a dict, InterfaceConfig, or configuration keyword arguments, exclusively.")
     .def_property_readonly(
       "method", &Study::method, py::return_value_policy::move,
-      py::keep_alive<0, 1>())
+      py::keep_alive<0, 1>(),
+      "Method factory tied to this Study's runtime services.")
     .def_property_readonly(
       "model", &Study::model, py::return_value_policy::move,
-      py::keep_alive<0, 1>())
+      py::keep_alive<0, 1>(),
+      "Model factory tied to this Study's runtime services.")
     .def("run",
          [](const Study& study, const std::shared_ptr<Iterator>& iterator) {
            study.run(iterator);
          },
-         py::arg("method"));
+         py::arg("method"),
+         "Execute method as the top-level iterator.\n\n"
+         "The method and its dependencies must remain valid and use compatible Study services.");
 }
 
 } // namespace Dakota::python

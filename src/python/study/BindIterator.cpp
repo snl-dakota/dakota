@@ -153,8 +153,10 @@ void bind_method(py::class_<Study::MethodFactory>& factory, const char* name,
       const auto store = materialize_method(nlohmann::json{{name, fragment}});
       return constructor(self, store, std::move(model));
     }, py::arg("model").none(false), py::arg("config") = py::none(),
-    "Construct from a model and either a dict/Pydantic config or kwargs. "
-    "Configuration is validated once in Python, then materialized to IRStore.");
+    "Construct the method from a model and one configuration fragment. "
+    "Pass either a dict, the matching dakota.spec.method configuration "
+    "model, or configuration keyword arguments. Do not combine config with "
+    "configuration keyword arguments.");
 }
 
 } // namespace
@@ -163,13 +165,16 @@ void bind_method(py::class_<Study::MethodFactory>& factory, const char* name,
 void bind_iterators(py::module_& m)
 {
   py::class_<Iterator, std::shared_ptr<Iterator>>(
-    m, "Iterator", py::module_local());
+    m, "Iterator", py::module_local(),
+    "Base method/iterator handle returned by MethodFactory.");
   py::class_<NonDLHSSampling, Iterator, std::shared_ptr<NonDLHSSampling>>(
-    m, "NonDLHSSampling", py::module_local())
+    m, "NonDLHSSampling", py::module_local(),
+    "Sampling iterator returned by MethodFactory.sampling().")
     .def("num_responses",
          [](const NonDLHSSampling& sampling) {
            return sampling.all_responses().size();
-         })
+         },
+         "Return the number of responses produced by the completed sampling run.")
     .def("first_response_value",
          [](const NonDLHSSampling& sampling) {
            const auto& responses = sampling.all_responses();
@@ -181,7 +186,9 @@ void bind_iterators(py::module_& m)
              throw std::runtime_error("First response has no functions.");
 
            return first_response.function_value(0);
-         });
+         },
+         "Return the first function value from the first response.\n\n"
+         "Raises RuntimeError if the iterator has no responses or functions.");
   py::class_<ParamStudy, Iterator, std::shared_ptr<ParamStudy>>(
     m, "ParamStudy", py::module_local());
   py::class_<RichExtrapVerification, Iterator, std::shared_ptr<RichExtrapVerification>>(
@@ -287,7 +294,11 @@ void bind_iterators(py::module_& m)
 
 void bind_iterator_factories(py::module_& m)
 {
-  auto factory = py::class_<Study::MethodFactory>(m, "MethodFactory");
+  auto factory = py::class_<Study::MethodFactory>(
+    m, "MethodFactory",
+    "Construct methods that share the owning Study's runtime services.\n\n"
+    "Access this factory through Study.method. Factory availability depends "
+    "on the capabilities enabled in the Dakota build.");
   factory
     .def("sampling",
          [](const Study::MethodFactory& factory,
@@ -299,8 +310,9 @@ void bind_iterator_factories(py::module_& m)
              std::move(model));
          },
          py::arg("model").none(false), py::arg("config") = py::none(),
-         "Construct from a config fragment (dict or Pydantic model) or kwargs, "
-         "exclusively.");
+         "Construct a sampling method for model.\n\n"
+         "Configuration is the child content of the method-sampling keyword. "
+         "Pass a dict, SamplingConfig, or keyword arguments, exclusively.");
 #ifdef HAVE_DOT
   factory
     .def("dot_bfgs",
@@ -313,8 +325,9 @@ void bind_iterator_factories(py::module_& m)
              std::move(model));
          },
          py::arg("model").none(false), py::arg("config") = py::none(),
-         "Construct from a config fragment (dict or Pydantic model) or kwargs, "
-         "exclusively.");
+         "Construct a DOT BFGS method for model.\n\n"
+         "Pass a dict, DotBfgsConfig, or keyword arguments, exclusively. "
+         "This method exists only when Dakota is built with DOT.");
 #endif
   factory
     .def("multi_start",
@@ -327,8 +340,8 @@ void bind_iterator_factories(py::module_& m)
              std::move(sub_iterator));
          },
          py::arg("sub_iterator").none(false), py::arg("config") = py::none(),
-         "Construct from a config fragment (dict or Pydantic model) or kwargs, "
-         "exclusively.")
+         "Construct a multi-start method around sub_iterator.\n\n"
+         "Pass a dict, MultiStartConfig, or keyword arguments, exclusively.")
     .def("vector_parameter_study",
          [](const Study::MethodFactory& factory,
             const py::object& method_json,
@@ -338,7 +351,8 @@ void bind_iterator_factories(py::module_& m)
                validate_vector_parameter_study_fragment(method_json)}}),
              std::move(model));
          },
-         py::arg("method"), py::arg("model"))
+         py::arg("method"), py::arg("model"),
+         "Construct a vector parameter study from its configuration fragment and model.")
     .def("list_parameter_study",
          [](const Study::MethodFactory& factory,
             const py::object& method_json,
@@ -348,7 +362,8 @@ void bind_iterator_factories(py::module_& m)
                validate_list_parameter_study_fragment(method_json)}}),
              std::move(model));
          },
-         py::arg("method"), py::arg("model"))
+         py::arg("method"), py::arg("model"),
+         "Construct a list parameter study from its configuration fragment and model.")
     .def("centered_parameter_study",
          [](const Study::MethodFactory& factory,
             const py::object& method_json,
@@ -358,7 +373,8 @@ void bind_iterator_factories(py::module_& m)
                validate_centered_parameter_study_fragment(method_json)}}),
              std::move(model));
          },
-         py::arg("method"), py::arg("model"))
+         py::arg("method"), py::arg("model"),
+         "Construct a centered parameter study from its configuration fragment and model.")
     .def("multidim_parameter_study",
          [](const Study::MethodFactory& factory,
             const py::object& method_json,
@@ -368,7 +384,8 @@ void bind_iterator_factories(py::module_& m)
                validate_multidim_parameter_study_fragment(method_json)}}),
              std::move(model));
          },
-         py::arg("method"), py::arg("model"))
+         py::arg("method"), py::arg("model"),
+         "Construct a multidimensional parameter study from its configuration fragment and model.")
     .def("richardson_extrap",
          [](const Study::MethodFactory& factory,
             const py::object& method_json,
@@ -378,7 +395,8 @@ void bind_iterator_factories(py::module_& m)
                validate_richardson_extrap_fragment(method_json)}}),
              std::move(model));
          },
-         py::arg("method"), py::arg("model"))
+         py::arg("method"), py::arg("model"),
+         "Construct Richardson extrapolation from its configuration fragment and model.")
     .def("local_interval_est",
          [](const Study::MethodFactory& factory,
             const py::object& method_json,
@@ -388,7 +406,8 @@ void bind_iterator_factories(py::module_& m)
                validate_local_interval_est_fragment(method_json)}}),
              std::move(model));
          },
-         py::arg("method"), py::arg("model"))
+         py::arg("method"), py::arg("model"),
+         "Construct local interval estimation from its configuration fragment and model.")
     .def("global_interval_est",
          [](const Study::MethodFactory& factory,
             const py::object& method_json,
@@ -398,7 +417,8 @@ void bind_iterator_factories(py::module_& m)
                validate_global_interval_est_fragment(method_json)}}),
              std::move(model));
          },
-         py::arg("method"), py::arg("model"))
+         py::arg("method"), py::arg("model"),
+         "Construct global interval estimation from its configuration fragment and model.")
     .def("efficient_global",
          [](const Study::MethodFactory& factory,
             const py::object& method_json,
@@ -408,7 +428,8 @@ void bind_iterator_factories(py::module_& m)
                validate_efficient_global_fragment(method_json)}}),
              std::move(model));
          },
-         py::arg("method"), py::arg("model"))
+         py::arg("method"), py::arg("model"),
+         "Construct efficient global optimization from its configuration fragment and model.")
     .def("npsol_sqp",
          [](const Study::MethodFactory& factory,
             const py::object& method_json,
@@ -418,7 +439,9 @@ void bind_iterator_factories(py::module_& m)
                validate_npsol_sqp_fragment(method_json)}}),
              std::move(model));
          },
-         py::arg("method"), py::arg("model"))
+         py::arg("method"), py::arg("model"),
+         "Construct NPSOL SQP from its configuration fragment and model. "
+         "Available only in builds with NPSOL.")
     .def("nl2sol",
          [](const Study::MethodFactory& factory,
             const py::object& method_json,
@@ -428,7 +451,9 @@ void bind_iterator_factories(py::module_& m)
                validate_nl2sol_fragment(method_json)}}),
              std::move(model));
          },
-         py::arg("method"), py::arg("model"));
+         py::arg("method"), py::arg("model"),
+         "Construct NL2SOL from its configuration fragment and model. "
+         "Available only in builds with NL2SOL.");
 
   bind_method(factory, "local_reliability", &construct<NonDLocalReliability>);
   bind_method(factory, "global_reliability", &construct<NonDGlobalReliability>);
