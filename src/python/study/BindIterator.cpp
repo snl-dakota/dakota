@@ -144,6 +144,17 @@ template<class Constructor>
 void bind_method(py::class_<Study::MethodFactory>& factory, const char* name,
                  Constructor constructor)
 {
+  const std::string doc =
+    std::string("Construct ``") + name + "`` for an injected model.\n\n"
+    ":param model: Model evaluated by the method.\n"
+    ":type model: dakota.study.Model\n"
+    ":param config: The matching ``dakota.spec.method`` configuration model "
+    "or an equivalent dictionary.\n"
+    ":param kwargs: Configuration fields used instead of ``config``.\n"
+    ":returns: The constructed method/iterator.\n"
+    ":rtype: dakota.study.Iterator\n"
+    ":raises TypeError: If ``model`` is null or both configuration forms are used.\n\n"
+    "See :ref:`" + name + " options <method-" + name + ">`.";
   factory.def(name,
     [name, constructor](const Study::MethodFactory& self,
                         std::shared_ptr<Model> model,
@@ -153,10 +164,7 @@ void bind_method(py::class_<Study::MethodFactory>& factory, const char* name,
       const auto store = materialize_method(nlohmann::json{{name, fragment}});
       return constructor(self, store, std::move(model));
     }, py::arg("model").none(false), py::arg("config") = py::none(),
-    "Construct the method from a model and one configuration fragment. "
-    "Pass either a dict, the matching dakota.spec.method configuration "
-    "model, or configuration keyword arguments. Do not combine config with "
-    "configuration keyword arguments.");
+    doc.c_str());
 }
 
 } // namespace
@@ -174,7 +182,10 @@ void bind_iterators(py::module_& m)
          [](const NonDLHSSampling& sampling) {
            return sampling.all_responses().size();
          },
-         "Return the number of responses produced by the completed sampling run.")
+         R"doc(Return the number of responses produced by a completed run.
+
+:returns: Number of evaluated responses.
+:rtype: int)doc")
     .def("first_response_value",
          [](const NonDLHSSampling& sampling) {
            const auto& responses = sampling.all_responses();
@@ -187,8 +198,12 @@ void bind_iterators(py::module_& m)
 
            return first_response.function_value(0);
          },
-         "Return the first function value from the first response.\n\n"
-         "Raises RuntimeError if the iterator has no responses or functions.");
+         R"doc(Return the first function value from the first response.
+
+:returns: The first recorded scalar function value.
+:rtype: float
+:raises RuntimeError: If the iterator has no responses or the first response
+    has no functions.)doc");
   py::class_<ParamStudy, Iterator, std::shared_ptr<ParamStudy>>(
     m, "ParamStudy", py::module_local());
   py::class_<RichExtrapVerification, Iterator, std::shared_ptr<RichExtrapVerification>>(
@@ -297,7 +312,9 @@ void bind_iterator_factories(py::module_& m)
   auto factory = py::class_<Study::MethodFactory>(
     m, "MethodFactory",
     "Construct methods that share the owning Study's runtime services.\n\n"
-    "Access this factory through Study.method. Factory availability depends "
+    "This factory is an implementation detail of Study and ordinarily should "
+    "not be instantiated directly. Access it through Study.method. Factory "
+    "availability depends "
     "on the capabilities enabled in the Dakota build.");
   factory
     .def("sampling",
@@ -310,9 +327,17 @@ void bind_iterator_factories(py::module_& m)
              std::move(model));
          },
          py::arg("model").none(false), py::arg("config") = py::none(),
-         "Construct a sampling method for model.\n\n"
-         "Configuration is the child content of the method-sampling keyword. "
-         "Pass a dict, SamplingConfig, or keyword arguments, exclusively.");
+         R"doc(Construct a sampling method for an injected model.
+
+:param model: Model evaluated by the sampling method.
+:type model: dakota.study.Model
+:param config: A ``SamplingConfig`` or equivalent dictionary.
+:param kwargs: Configuration fields used instead of ``config``.
+:returns: The constructed sampling iterator.
+:rtype: dakota.study.NonDLHSSampling
+:raises TypeError: If ``model`` is null or both configuration forms are used.
+
+See :ref:`sampling options <method-sampling>`.)doc");
 #ifdef HAVE_DOT
   factory
     .def("dot_bfgs",
@@ -325,9 +350,18 @@ void bind_iterator_factories(py::module_& m)
              std::move(model));
          },
          py::arg("model").none(false), py::arg("config") = py::none(),
-         "Construct a DOT BFGS method for model.\n\n"
-         "Pass a dict, DotBfgsConfig, or keyword arguments, exclusively. "
-         "This method exists only when Dakota is built with DOT.");
+         R"doc(Construct a DOT BFGS method for an injected model.
+
+:param model: Model optimized by DOT BFGS.
+:type model: dakota.study.Model
+:param config: A ``DotBfgsConfig`` or equivalent dictionary.
+:param kwargs: Configuration fields used instead of ``config``.
+:returns: The constructed optimizer.
+:rtype: dakota.study.DOTOptimizer
+:raises TypeError: If ``model`` is null or both configuration forms are used.
+
+This method is present only when Dakota is built with DOT. See
+:ref:`DOT BFGS options <method-dot_bfgs>`.)doc");
 #endif
   factory
     .def("multi_start",
@@ -340,8 +374,17 @@ void bind_iterator_factories(py::module_& m)
              std::move(sub_iterator));
          },
          py::arg("sub_iterator").none(false), py::arg("config") = py::none(),
-         "Construct a multi-start method around sub_iterator.\n\n"
-         "Pass a dict, MultiStartConfig, or keyword arguments, exclusively.")
+         R"doc(Construct a multi-start method around an injected sub-iterator.
+
+:param sub_iterator: Method executed from each starting point.
+:type sub_iterator: dakota.study.Iterator
+:param config: A ``MultiStartConfig`` or equivalent dictionary.
+:param kwargs: Configuration fields used instead of ``config``.
+:returns: The constructed meta-iterator.
+:rtype: dakota.study.ConcurrentMetaIterator
+:raises TypeError: If the dependency is null or both configuration forms are used.
+
+See :ref:`multi-start options <method-multi_start>`.)doc")
     .def("vector_parameter_study",
          [](const Study::MethodFactory& factory,
             const py::object& method_json,

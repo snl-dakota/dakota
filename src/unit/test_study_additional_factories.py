@@ -54,6 +54,19 @@ class AdditionalConfigTests(unittest.TestCase):
         # In API mode the injected models replace input-file pointers, so the
         # pointer union is populated with a sentinel when omitted.
         self.assertIn("ensemble", normalize({}, {}, name))
+        correction = {
+            "ensemble": {"ordered_model_fidelities": {
+                "correction": {
+                    "correction_order": {"zeroth_order": True},
+                    "correction_type": {"additive": True},
+                }
+            }}
+        }
+        normalized = normalize(correction, {}, name)
+        ordered = normalized["ensemble"]["ordered_model_fidelities"]
+        self.assertIn("pointers", ordered)
+        self.assertEqual(ordered["correction"], correction["ensemble"]
+                         ["ordered_model_fidelities"]["correction"])
         with self.assertRaises(ValidationError):
             normalize(dict(data, ordered_model_fidelities={"pointers": ["approx", "truth"]}), {}, name)
 

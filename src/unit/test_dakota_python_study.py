@@ -53,17 +53,18 @@ def main():
     high_fidelity_model = study.model.single(
         {}, opt_variables, interface, opt_responses
     )
-    ensemble_model = study.model.ensemble_surrogate({
-        "ensemble": {
-            "ordered_model_fidelities": {"pointers": ["LO", "HI"]},
-        },
-    }, [low_fidelity_model, high_fidelity_model], opt_variables, opt_responses)
+    ensemble_model = study.model.ensemble_surrogate(
+        opt_variables,
+        opt_responses,
+        ordered_models=[low_fidelity_model, high_fidelity_model],
+    )
     assert ensemble_model.__class__.__name__ == "EnsembleSurrModel"
-    explicit_ensemble_model = study.model.ensemble_surrogate({
-        "ensemble": {
-            "truth_model_pointer": {"pointer": "HI"},
-        },
-    }, high_fidelity_model, [low_fidelity_model], opt_variables, opt_responses)
+    explicit_ensemble_model = study.model.ensemble_surrogate(
+        opt_variables,
+        opt_responses,
+        truth_model=high_fidelity_model,
+        approximation_models=[low_fidelity_model],
+    )
     assert explicit_ensemble_model.__class__.__name__ == "EnsembleSurrModel"
 
     local_model = study.model.local_surrogate(

@@ -22,7 +22,12 @@ void bind_response(py::module_& m)
          static_cast<const Real& (Response::*)(size_t) const>(
            &Response::function_value),
          py::arg("i"),
-         "Return function value i from an evaluated response.");
+         R"doc(Return one function value from an evaluated response.
+
+:param i: Zero-based function index.
+:type i: int
+:returns: The selected function value.
+:rtype: float)doc");
 }
 
 } // namespace Dakota::python

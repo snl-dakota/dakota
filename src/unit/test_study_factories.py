@@ -95,6 +95,9 @@ class FactoryTests(unittest.TestCase):
             ds.MethodFactory.sampling: ("model", "config", "kwargs"),
             ds.ModelFactory.simulation: (
                 "variables", "interface", "response", "config", "kwargs"),
+            ds.ModelFactory.ensemble_surrogate: (
+                "variables", "response", "ordered_models", "truth_model",
+                "approximation_models", "config", "kwargs"),
         }
         for function, parameters in documented_callables.items():
             with self.subTest(function=function.__qualname__):
@@ -102,6 +105,18 @@ class FactoryTests(unittest.TestCase):
                 signature = str(inspect.signature(function))
                 for parameter in parameters:
                     self.assertIn(parameter, signature)
+
+        ensemble_signature = inspect.signature(
+            ds.ModelFactory.ensemble_surrogate)
+        for name in ("ordered_models", "truth_model", "approximation_models",
+                     "config"):
+            self.assertEqual(
+                ensemble_signature.parameters[name].kind,
+                inspect.Parameter.KEYWORD_ONLY)
+        ensemble_doc = inspect.getdoc(ds.ModelFactory.ensemble_surrogate)
+        self.assertEqual(ensemble_doc.count("ensemble_surrogate("), 1)
+        self.assertIn(":param truth_model:", ensemble_doc)
+        self.assertIn(":ref:`ensemble surrogate options", ensemble_doc)
 
     def test_all_configuration_forms(self):
         for factory, dependencies, data, schema, result_type in self.cases():
@@ -224,29 +239,50 @@ class FactoryTests(unittest.TestCase):
 
     def test_ensemble_construction(self):
         from dakota.spec.model import EnsembleSurrogateConfig
-        data = {"ensemble": {"truth_model_pointer": {
-            "pointer": "truth", "approximation_models": ["approx"]}}}
+        data = {"hierarchical_tagging": True}
         factory = self.study.model.ensemble_surrogate
-        for style in ("dict", "pydantic", "kwargs", "legacy"):
-            with self.subTest(style=style):
-                # Fresh component models keep native ensemble state independent.
-                truth = self.study.model.simulation(self.variables, self.interface, self.response)
-                approx = self.study.model.simulation(self.variables, self.interface, self.response)
-                dependencies = (truth, [approx], self.variables, self.response)
-                if style == "legacy":
-                    result = factory(data, *dependencies)
-                elif style == "kwargs":
-                    result = factory(*dependencies, **data)
-                else:
-                    config = (EnsembleSurrogateConfig.model_validate(
-                        copy.deepcopy(data)) if style == "pydantic" else data)
-                    result = factory(*dependencies, config=config)
-                self.assertIsInstance(result, ds.EnsembleSurrModel)
-                self.assertIsInstance(result, ds.Model)
-        with self.assertRaises(TypeError):
-            factory(None, [], self.variables, self.response, config=data)
-        with self.assertRaises(TypeError):
-            factory(self.model, [None], self.variables, self.response, config=data)
+        for dependency_form in ("ordered", "explicit"):
+            for style in ("dict", "pydantic", "kwargs"):
+                with self.subTest(dependency_form=dependency_form, style=style):
+                    # Fresh models keep native ensemble state independent.
+                    truth = self.study.model.simulation(
+                        self.variables, self.interface, self.response)
+                    approx = self.study.model.simulation(
+                        self.variables, self.interface, self.response)
+                    dependencies = ({"ordered_models": [approx, truth]}
+                                    if dependency_form == "ordered" else
+                                    {"truth_model": truth,
+                                     "approximation_models": [approx]})
+                    if style == "kwargs":
+                        result = factory(self.variables, self.response,
+                                         **dependencies, **data)
+                    else:
+                        config = (EnsembleSurrogateConfig.model_validate(
+                            copy.deepcopy(data))
+                            if style == "pydantic" else data)
+                        result = factory(self.variables, self.response,
+                                         **dependencies, config=config)
+                    self.assertIsInstance(result, ds.EnsembleSurrModel)
+                    self.assertIsInstance(result, ds.Model)
+
+        truth = self.study.model.simulation(self.variables, self.interface, self.response)
+        with self.assertRaisesRegex(TypeError, "exactly one"):
+            factory(self.variables, self.response, config=data)
+        with self.assertRaisesRegex(TypeError, "exactly one"):
+            factory(self.variables, self.response, ordered_models=[truth],
+                    truth_model=truth, config=data)
+        with self.assertRaisesRegex(ValueError, "must not be empty"):
+            factory(self.variables, self.response, ordered_models=[], config=data)
+        with self.assertRaisesRegex(TypeError, "non-null"):
+            factory(self.variables, self.response, ordered_models=[None], config=data)
+        with self.assertRaisesRegex(TypeError, "truth_model"):
+            factory(self.variables, self.response, approximation_models=[], config=data)
+        with self.assertRaisesRegex(TypeError, "non-null"):
+            factory(self.variables, self.response, truth_model=truth,
+                    approximation_models=[None], config=data)
+        with self.assertRaisesRegex(TypeError, "pass config"):
+            factory(self.variables, self.response, ordered_models=[truth],
+                    config={}, hierarchical_tagging=True)
 
     def test_dot_feature(self):
         if not hasattr(self.study.method, "dot_bfgs"):

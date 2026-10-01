@@ -20,6 +20,14 @@ _validation = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(_validation)
 normalize = _validation.normalize_factory_config
 
+_signature_spec = importlib.util.spec_from_file_location(
+    "study_signature_under_test",
+    Path(__file__).resolve().parents[2] /
+    "docs/user/_extensions/study_signature.py",
+)
+_study_signature = importlib.util.module_from_spec(_signature_spec)
+_signature_spec.loader.exec_module(_study_signature)
+
 
 class ConfigNormalizationTests(unittest.TestCase):
     def test_dict_kwargs_validate_once_and_models_are_not_revalidated(self):
@@ -126,6 +134,31 @@ class ConfigNormalizationTests(unittest.TestCase):
             self.assertEqual(_validation.validate_sampling_fragment(config),
                              config.model_dump(mode="json", exclude_none=True))
         self.assertTrue(callable(_validation.validate_vector_parameter_study_fragment))
+
+
+class StudySignatureDocumentationTests(unittest.TestCase):
+    def test_bound_self_and_private_module_are_hidden(self):
+        result = _study_signature.normalize_study_signature(
+            None, "method", "dakota.study.Study.interface", None, None,
+            "(self: dakota.study._study.Study, config: object = None, **kwargs)",
+            "dakota.study._study.Interface")
+        self.assertEqual(
+            result,
+            ("(config: object = None, **kwargs)", "dakota.study.Interface"))
+
+    def test_non_study_signatures_are_unchanged(self):
+        self.assertIsNone(_study_signature.normalize_study_signature(
+            None, "method", "dakota.spec.Model.method", None, None,
+            "(self: dakota.spec.Model)", "dakota.spec.Result"))
+
+    def test_classes_keep_first_parameter_but_use_public_types(self):
+        result = _study_signature.normalize_study_signature(
+            None, "class", "dakota.study.Wrapper", None, None,
+            "(value: dakota.study._study.Model)",
+            "dakota.study._study.Wrapper")
+        self.assertEqual(
+            result,
+            ("(value: dakota.study.Model)", "dakota.study.Wrapper"))
 
 
 if __name__ == "__main__":

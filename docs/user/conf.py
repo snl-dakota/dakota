@@ -51,9 +51,10 @@ release = ''
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['myst_parser', 'sphinxcontrib.bibtex', 'sphinx_dakota',
+extensions = ['myst_parser', 'sphinxcontrib.bibtex',
               'sphinx.ext.imgmath',
               'sphinx.ext.autodoc',
+              'sphinx_dakota',
               'sphinx_copybutton',
               'sphinxcontrib.autodoc_pydantic']
 #              'sphinx.ext.mathjax']
