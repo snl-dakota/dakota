@@ -19,22 +19,30 @@ most readable form when translating a small freeform input.
    :end-before: [docs-library-api-end]
    :dedent: 4
 
-The dictionaries passed as keyword values follow the JSON hierarchy.  For
-example, ``sample_type={"lhs": True}`` represents the freeform ``sample_type
-lhs`` choice.  The same method could instead be constructed with a dictionary
-or a Pydantic configuration object:
+The call to ``sampling`` passes its top-level configuration fields as keyword
+arguments. Dictionaries are still used for nested keyword groups: for example,
+``sample_type={"lhs": True}`` represents the freeform ``sample_type lhs``
+choice. The keyword-argument and Pydantic forms for that call are:
 
 .. code-block:: python
 
    from dakota.spec.method import SamplingConfig
 
    sampling = study.method.sampling(
-       model, {"sample_type": {"lhs": True}, "samples": 10, "seed": 1234})
+       model,
+       sample_type={"lhs": True},
+       samples=10,
+       seed=1234,
+   )
 
    sampling = study.method.sampling(
        model,
-       SamplingConfig(
-           sample_type={"lhs": True}, samples=10, seed=1234))
+       config=SamplingConfig(
+           sample_type={"lhs": True},
+           samples=10,
+           seed=1234,
+       ),
+   )
 
 C++
 ---

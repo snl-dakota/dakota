@@ -36,27 +36,38 @@ API map
 
 .. list-table::
    :header-rows: 1
-   :widths: 24 32 44
+   :widths: 19 25 28 28
 
    * - Task
      - Entry point
      - Result
+     - Notes
    * - Establish runtime ownership
      - :class:`dakota.study.Study`
      - A study with model and method factories
-   * - Define leaf components
+     - A Study object provides an execution context for a single study. Instantiate only
+       one Study at a time.
+   * - Define Model sub-components
      - ``Study.variables``, ``Study.responses``, ``Study.interface``
      - :class:`dakota.study.Variables`, :class:`dakota.study.Response`, and
        :class:`dakota.study.Interface`
+     - Not every Model requires an interface
    * - Assemble a model
      - :class:`dakota.study.ModelFactory`
      - A :class:`dakota.study.Model` specialization
+     - :class:`ModelFactory <dakota.study.ModelFactory>` should not be directly instantiated. The
+       :attr:`model <dakota.study.Study.model>` member variable of :class:`Study <dakota.study.Study>`
+       objects are a ModelFactory.
+       Some Models have method/iterator or model sub-components
    * - Select an algorithm
      - :class:`dakota.study.MethodFactory`
      - An :class:`dakota.study.Iterator` specialization
+     - :class:`MethodFactory <dakota.study.MethodFactory>` should not be directly instantiated. The
+       :attr:`method <dakota.study.Study.method>` member variable of Study objects are a Methodactory.
    * - Execute the study
      - :meth:`dakota.study.Study.run`
      - Results retained by the returned iterator handle
+     - None
 
 Study and configuration
 -----------------------
