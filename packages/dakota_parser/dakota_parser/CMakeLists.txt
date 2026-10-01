@@ -206,6 +206,17 @@ if(DAKOTA_ENABLE_TESTS OR BUILD_TESTS)
     )
     add_test(NAME test_json_required_fields COMMAND test_json_required_fields)
     set_tests_properties(test_json_required_fields PROPERTIES LABELS Unit)
+
+    # C++ unit tests for repeat/range value expansion
+    add_executable(test_value_expansion
+        test/test_value_expansion.cpp
+    )
+    target_link_libraries(test_value_expansion PRIVATE
+        dakota_parser_lib
+        GTest::gtest_main
+    )
+    add_test(NAME test_value_expansion COMMAND test_value_expansion)
+    set_tests_properties(test_value_expansion PROPERTIES LABELS Unit)
     
     file(GLOB SOURCE_TEST_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.in")
     list(APPEND DAKOTA_TEST_INPUT_FILES ${SOURCE_TEST_FILES})

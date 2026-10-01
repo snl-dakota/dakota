@@ -170,6 +170,18 @@ struct range_value_step : pegtl::seq<
     range_real_component
 > {};
 
+// repeat_range_value: N*range, e.g. "3*-1:0.2:1" or "2 * 1:3".
+// The range is expanded first and the whole sequence is repeated N times.
+// Actions are disabled for the range body so action<range_value_step> /
+// action<range_value> do not append the unrepeated range on their own.
+struct repeat_range_value : pegtl::seq<
+    repeat_count,
+    pegtl::star<pegtl::blank>,  // Allow optional spaces/tabs before *
+    repeat_operator,
+    pegtl::star<pegtl::blank>,  // Allow optional spaces/tabs after *
+    pegtl::disable<pegtl::sor<range_value_step, range_value>>
+> {};
+
 // ============================================================================
 // TYPE-SPECIFIC VALUE ITEMS
 // ============================================================================
@@ -252,7 +264,7 @@ struct string_list : string_list_items {};
 
 // Integer list: one or more integers (with repeat support)
 // Note: repeat_real_value handles integers too (9*0 parses as 9*0.0 which converts to int)
-struct integer_or_repeat : pegtl::sor<range_value_step, range_value, repeat_real_value, real_value, integer_value> {};
+struct integer_or_repeat : pegtl::sor<repeat_range_value, range_value_step, range_value, repeat_real_value, real_value, integer_value> {};
 
 struct integer_list_items : pegtl::seq<
     opt_value_separator,   // skip leading whitespace/comments before first value
@@ -273,7 +285,7 @@ struct integer_list_items : pegtl::seq<
 struct integer_list : integer_list_items {};
 
 // Real list: one or more real numbers (with repeat support)
-struct real_or_repeat : pegtl::sor<range_value_step, range_value, repeat_real_value, real_value> {};
+struct real_or_repeat : pegtl::sor<repeat_range_value, range_value_step, range_value, repeat_real_value, real_value> {};
 
 struct real_list_items : pegtl::seq<
     opt_value_separator,   // skip leading whitespace/comments before first value
@@ -296,6 +308,7 @@ struct real_list : real_list_items {};
 // Generic value item (for backwards compatibility or unknown types)
 // NOTE: This includes identifier which can cause ambiguity - use type-specific rules when possible
 struct value_item : pegtl::sor<
+    repeat_range_value,
     range_value_step,
     range_value,
     repeat_value,

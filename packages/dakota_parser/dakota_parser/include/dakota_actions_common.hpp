@@ -195,6 +195,46 @@ inline void add_repeat_value_to_current_keyword(const std::string &repeat_text,
   }
 }
 
+// Expand "start:end" (integer endpoints, colon at position colon) into a
+// sequence of doubles with step +1 or -1.
+inline std::vector<double> expand_integer_range(const std::string &range_text,
+                                                size_t colon) {
+  int64_t start_val = std::strtoll(range_text.c_str(), nullptr, 10);
+  int64_t end_val   = std::strtoll(range_text.c_str() + colon + 1, nullptr, 10);
+
+  // Expand: always produces doubles to match Dakota's ordered-output format
+  std::vector<double> values;
+  int64_t step = (end_val >= start_val) ? 1 : -1;
+  for (int64_t v = start_val; step > 0 ? v <= end_val : v >= end_val; v += step) {
+    values.push_back(static_cast<double>(v));
+  }
+  return values;
+}
+
+// Expand "start:step:end" (real components, colons at positions c1 and c2).
+inline std::vector<double> expand_step_range(const std::string &range_text,
+                                             size_t c1, size_t c2) {
+  double start_val = std::strtod(range_text.c_str(), nullptr);
+  double step_val  = std::strtod(range_text.c_str() + c1 + 1, nullptr);
+  double end_val   = std::strtod(range_text.c_str() + c2 + 1, nullptr);
+
+  std::vector<double> values;
+  if (step_val == 0.0) {
+    values.push_back(start_val);
+    return values;
+  }
+  // Expand with a small epsilon guard to handle floating-point edge cases.
+  double eps = std::abs(step_val) * 1e-9;
+  if (step_val > 0) {
+    for (double v = start_val; v <= end_val + eps; v += step_val)
+      values.push_back(v);
+  } else {
+    for (double v = start_val; v >= end_val - eps; v += step_val)
+      values.push_back(v);
+  }
+  return values;
+}
+
 // Expand a range literal "start:end" into a sequence of double values.
 // Dakota range syntax: 5:50 → 5.0 6.0 7.0 ... 50.0 (step 1, always doubles).
 inline void add_range_value_to_current_keyword(const std::string &range_text,
@@ -207,19 +247,13 @@ inline void add_range_value_to_current_keyword(const std::string &range_text,
     return;
   }
 
-  int64_t start_val = std::strtoll(range_text.c_str(), nullptr, 10);
-  int64_t end_val   = std::strtoll(range_text.c_str() + colon + 1, nullptr, 10);
-
   // Store the original range text once for round-trip purposes
   state.current_keyword->original_value_strings.push_back(range_text);
 
-  DEBUG_OUT("[DEBUG] Range value: " << start_val << ":" << end_val << "\n");
+  DEBUG_OUT("[DEBUG] Range value: " << range_text << "\n");
 
-  // Expand: always produces doubles to match Dakota's ordered-output format
-  int64_t step = (end_val >= start_val) ? 1 : -1;
-  for (int64_t v = start_val; step > 0 ? v <= end_val : v >= end_val; v += step) {
-    state.current_keyword->param_values.push_back(static_cast<double>(v));
-  }
+  for (double v : expand_integer_range(range_text, colon))
+    state.current_keyword->param_values.push_back(v);
 }
 
 inline void add_range_step_value_to_current_keyword(const std::string &range_text,
@@ -234,25 +268,56 @@ inline void add_range_step_value_to_current_keyword(const std::string &range_tex
     return;
   }
 
-  double start_val = std::strtod(range_text.c_str(), nullptr);
-  double step_val  = std::strtod(range_text.c_str() + c1 + 1, nullptr);
-  double end_val   = std::strtod(range_text.c_str() + c2 + 1, nullptr);
-
   state.current_keyword->original_value_strings.push_back(range_text);
-  DEBUG_OUT("[DEBUG] Range-step value: " << start_val << ":" << step_val << ":" << end_val << "\n");
+  DEBUG_OUT("[DEBUG] Range-step value: " << range_text << "\n");
 
-  if (step_val == 0.0) {
-    state.current_keyword->param_values.push_back(start_val);
+  for (double v : expand_step_range(range_text, c1, c2))
+    state.current_keyword->param_values.push_back(v);
+}
+
+// Helper to add a repeated range "N*start:end" or "N*start:step:end" to the
+// current keyword: the range is expanded once and the whole sequence is
+// appended N times (3*1:2 -> 1 2 1 2 1 2).
+inline void add_repeat_range_value_to_current_keyword(const std::string &repeat_text,
+                                                      ParserState &state) {
+  if (!state.current_keyword)
+    return;
+
+  size_t star_pos = repeat_text.find('*');
+  if (star_pos == std::string::npos) {
+    add_value_to_current_keyword(repeat_text, state);
     return;
   }
-  // Expand with a small epsilon guard to handle floating-point edge cases.
-  double eps = std::abs(step_val) * 1e-9;
-  if (step_val > 0) {
-    for (double v = start_val; v <= end_val + eps; v += step_val)
-      state.current_keyword->param_values.push_back(v);
-  } else {
-    for (double v = start_val; v >= end_val - eps; v += step_val)
-      state.current_keyword->param_values.push_back(v);
+
+  int count = std::atoi(repeat_text.substr(0, star_pos).c_str());
+  if (count <= 0) {
+    count = 1; // Safety fallback
+  }
+
+  std::string range_text = repeat_text.substr(star_pos + 1);
+  size_t range_start = range_text.find_first_not_of(" \t");
+  if (range_start != std::string::npos) {
+    range_text = range_text.substr(range_start);
+  }
+
+  size_t c1 = range_text.find(':');
+  if (c1 == std::string::npos) {
+    add_value_to_current_keyword(repeat_text, state);
+    return;
+  }
+  size_t c2 = range_text.find(':', c1 + 1);
+  std::vector<double> values = (c2 == std::string::npos)
+      ? expand_integer_range(range_text, c1)
+      : expand_step_range(range_text, c1, c2);
+
+  // Save original string representation once
+  state.current_keyword->original_value_strings.push_back(repeat_text);
+
+  DEBUG_OUT("[DEBUG] Repeat range value: " << count << " x '" << range_text << "'\n");
+
+  for (int i = 0; i < count; ++i) {
+    state.current_keyword->param_values.insert(
+        state.current_keyword->param_values.end(), values.begin(), values.end());
   }
 }
 
@@ -374,6 +439,16 @@ template <> struct action<integer_value> {
   static void apply(const ActionInput &in, ParserState &state) {
     if (state.in_param_value && state.current_keyword) {
       add_value_to_current_keyword(in.string(), state);
+    }
+  }
+};
+
+// Repeated range action (N*start:end or N*start:step:end)
+template <> struct action<repeat_range_value> {
+  template <typename ActionInput>
+  static void apply(const ActionInput &in, ParserState &state) {
+    if (state.in_param_value && state.current_keyword) {
+      add_repeat_range_value_to_current_keyword(in.string(), state);
     }
   }
 };
