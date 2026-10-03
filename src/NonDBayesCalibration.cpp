@@ -9,6 +9,7 @@
 
 #include "NonDBayesCalibration.hpp"
 #include "ProblemDescDB.hpp"
+#include "IRStore.hpp"
 #include "DataFitSurrModel.hpp"
 #include "ProbabilityTransformModel.hpp"
 #include "DataTransformModel.hpp"
@@ -570,7 +571,8 @@ NonDBayesCalibration(std::shared_ptr<StudyServices> services, const IRStore& met
   mcmcDerivOrder(1), batchSize(1),
   adaptExpDesign(method_store.get<bool>("nond.adapt_exp_design")),
   initHifiSamples (method_store.get<int>("adapt_exp_design_samples")),
-  scalarDataFilename(method_store.get<String>("responses.scalar_data_filename")),
+  scalarDataFilename(model->current_response().responses_store_ptr()->
+                   get<String>("scalar_data_filename")),
   importCandPtsFile(method_store.get<String>("import_candidate_points_file")),
   importCandFormat(method_store.get<unsigned short>("import_candidate_format")),
   numCandidates(method_store.get<size_t>("num_candidates")),
@@ -578,7 +580,8 @@ NonDBayesCalibration(std::shared_ptr<StudyServices> services, const IRStore& met
   batchEvals(method_store.get<int>("batch_size")),
   mutualInfoAlg(method_store.get<bool>("nond.mutual_info_ksg2") ?
 		MI_ALG_KSG2 : MI_ALG_KSG1),
-  readFieldCoords(method_store.get<bool>("responses.read_field_coordinates")),
+  readFieldCoords(model->current_response().responses_store_ptr()->
+                   get<bool>("read_field_coordinates")),
   calModelDiscrepancy(method_store.get<bool>("nond.model_discrepancy")),
   discrepancyType(method_store.get<String>("nond.discrepancy_type")),
   numPredConfigs(method_store.get<size_t>("num_prediction_configs")),
@@ -593,8 +596,10 @@ NonDBayesCalibration(std::shared_ptr<StudyServices> services, const IRStore& met
   exportCorrVarFormat(method_store.get<unsigned short>("nond.export_corrected_variance_format")),
   discrepPolyOrder(method_store.get<short>("nond.model_discrepancy.polynomial_order")),
   // BMA: This is probably wrong as config vars need not be continuous!
-  configLowerBnds(method_store.get<RealVector>("variables.continuous_state.lower_bounds")),
-  configUpperBnds(method_store.get<RealVector>("variables.continuous_state.upper_bounds")),
+  configLowerBnds(model->current_variables().variables_store_ptr()->
+                   get<RealVector>("continuous_state.lower_bounds")),
+  configUpperBnds(model->current_variables().variables_store_ptr()->
+                   get<RealVector>("continuous_state.upper_bounds")),
   obsErrorMultiplierMode(method_store.get<unsigned short>("nond.calibrate_error_mode")),
   numHyperparams(0),
   invGammaAlphas(method_store.get<RealVector>("nond.hyperprior_alphas")),
@@ -605,9 +610,9 @@ NonDBayesCalibration(std::shared_ptr<StudyServices> services, const IRStore& met
   proposalCovarFilename(method_store.get<String>("nond.proposal_covariance_filename")),
   proposalCovarInputType(method_store.get<String>("nond.proposal_covariance_input_type")),
   burnInSamples(method_store.get<int>("burn_in_samples")),
-  posteriorStatsKL(method_store.get<bool>("nond.posterior_stats.kl_divergence")),
-  posteriorStatsMutual(method_store.get<bool>("nond.posterior_stats.mutual_info")),
-  posteriorStatsKDE(method_store.get<bool>("nond.posterior_stats.kde")),
+  posteriorStatsKL(method_store.get<bool>("posterior_stats.kl_divergence")),
+  posteriorStatsMutual(method_store.get<bool>("posterior_stats.mutual_info")),
+  posteriorStatsKDE(method_store.get<bool>("posterior_stats.kde")),
   chainDiagnostics(method_store.get<bool>("chain_diagnostics")),
   chainDiagnosticsCI(method_store.get<bool>("chain_diagnostics.confidence_intervals")),
   calModelEvidence(method_store.get<bool>("model_evidence")),

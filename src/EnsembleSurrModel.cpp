@@ -246,14 +246,16 @@ estimate_partition_bounds(int max_eval_concurrency)
   // responseMode is a run-time setting, so we are conservative on usage of
   // max_eval_concurrency as in derived_init_communicators()
 
-  probDescDB.set_db_model_nodes(truthModel->model_id());
+  if (!study_services())
+    probDescDB.set_db_model_nodes(truthModel->model_id());
   IntIntPair min_max_i,
     min_max = truthModel->estimate_partition_bounds(max_eval_concurrency);
 
   size_t i, num_approx = approxModels.size();
   for (i=0; i<num_approx; ++i) {
     Model& model_i = *approxModels[i];
-    probDescDB.set_db_model_nodes(model_i.model_id());
+    if (!study_services())
+      probDescDB.set_db_model_nodes(model_i.model_id());
     min_max_i = model_i.estimate_partition_bounds(max_eval_concurrency);
     if (min_max_i.first  < min_max.first)  min_max.first  = min_max_i.first;
     if (min_max_i.second > min_max.second) min_max.second = min_max_i.second;
@@ -277,6 +279,15 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
   // and free and a more aggressive approach with set.
 
   if (recurse_flag) {
+    if (study_services()) {
+      for (const auto& model : approxModels) {
+        model->init_communicators(pl_iter, max_eval_concurrency);
+        model->init_communicators(pl_iter, model->derivative_concurrency());
+      }
+      truthModel->init_communicators(pl_iter, max_eval_concurrency);
+      truthModel->init_communicators(pl_iter, truthModel->derivative_concurrency());
+      return;
+    }
     size_t i, model_index = probDescDB.get_db_model_node(), // for restoration
               num_models  = approxModels.size();
     if (truthModel) ++num_models;

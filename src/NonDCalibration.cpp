@@ -10,6 +10,7 @@
 #include "NonDCalibration.hpp"
 #include "DakotaModel.hpp"
 #include "ProblemDescDB.hpp"
+#include "IRStore.hpp"
 
 static const char rcsId[]="@(#) $Id$";
 
@@ -43,13 +44,10 @@ NonDCalibration::NonDCalibration(std::shared_ptr<StudyServices> services,
                   const IRStore& method_store,
                   std::shared_ptr<Model> model):
   NonD(std::move(services), method_store, model),
-  calibrationData( (method_store.contains("responses.calibration_data")
-                      ? method_store.get<bool>("responses.calibration_data") : false)
-                  ||
-                   (method_store.contains("responses.scalar_data_filename")
-                      ? !method_store.get<String>("responses.scalar_data_filename").empty() : false)
-                   ),
-  expData(method_store, iteratedModel->current_response().shared_data(), outputLevel)
+  calibrationData(model->current_response().responses_store_ptr()->get<bool>("calibration_data") ||
+                  !model->current_response().responses_store_ptr()->get<String>("scalar_data_filename").empty()),
+  expData(*model->current_response().responses_store_ptr(),
+          iteratedModel->current_response().shared_data(), outputLevel)
 { 
   // Read in all of the experimental data, including any x configuration 
   // variables, y observations, and covariance information if available 

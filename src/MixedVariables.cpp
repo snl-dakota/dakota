@@ -10,6 +10,7 @@
 #include <nlohmann/json.hpp>
 #include "MixedVariables.hpp"
 #include "ProblemDescDB.hpp"
+#include "IRStore.hpp"
 #include "dakota_data_io.hpp"
 #include "dakota_data_util.hpp"
 #include "dakota_tabular_io.hpp"
@@ -31,18 +32,26 @@ int len(const T& v) { return v.length(); }
 int len(const int& v) { return 1; }
 int len(const StringArray& v) { return v.size(); }
 
-const RealVector& get_rv(const ProblemDescDB& db, const char* key) {
-  return db.get<const RealVector>(key);
-}
-const IntVector& get_iv(const ProblemDescDB& db, const char* key) {
-  return db.get<const IntVector>(key);
-}
-const StringArray& get_sa(const ProblemDescDB& db, const char* key) {
-  return db.get<const StringArray>(key);
-}
+template <typename T>
+const T& initial_value(const ProblemDescDB& db, const char* key)
+{ return db.get<const T>(key); }
 
-template <typename Vec, typename Getter>
-void copy_from_db(const ProblemDescDB& db,
+template <typename T>
+const T& initial_value(const IRStore& store, const char* key)
+{ return store.get<T>(String(key).substr(String("variables.").size())); }
+
+template <typename Database>
+const RealVector& get_rv(const Database& db, const char* key)
+{ return initial_value<RealVector>(db, key); }
+template <typename Database>
+const IntVector& get_iv(const Database& db, const char* key)
+{ return initial_value<IntVector>(db, key); }
+template <typename Database>
+const StringArray& get_sa(const Database& db, const char* key)
+{ return initial_value<StringArray>(db, key); }
+
+template <typename Database, typename Vec, typename Getter>
+void copy_from_db(const Database& db,
     const std::initializer_list<const char*>& keys,
     Vec& dest, size_t& offset, Getter get)
 {
@@ -61,6 +70,17 @@ void copy_from_db(const ProblemDescDB& db,
 MixedVariables::
 MixedVariables(const ProblemDescDB& problem_db, const ShortShortPair& view):
   Variables(BaseConstructor(), problem_db, view)
+{ initialize_initial_values(problem_db); }
+
+
+MixedVariables::
+MixedVariables(const IRStore& variables_store, const SharedVariablesData& svd):
+  Variables(BaseConstructor(), svd)
+{ initialize_initial_values(variables_store); }
+
+
+template <typename Database>
+void MixedVariables::initialize_initial_values(const Database& problem_db)
 {
  size_t acv_offset = 0, adiv_offset = 0, adsv_offset = 0, adrv_offset = 0;
 
@@ -84,7 +104,7 @@ MixedVariables(const ProblemDescDB& problem_db, const ShortShortPair& view):
     "variables.continuous_interval_uncertain.initial_point",
     // continuous state
     "variables.continuous_state.initial_state"
-  }, allContinuousVars, acv_offset, get_rv);
+  }, allContinuousVars, acv_offset, get_rv<Database>);
 
   // --- Discrete integer variables ---
   copy_from_db(problem_db, {
@@ -103,7 +123,7 @@ MixedVariables(const ProblemDescDB& problem_db, const ShortShortPair& view):
     // discrete state int
     "variables.discrete_state_range.initial_state",
     "variables.discrete_state_set_int.initial_state"
-  }, allDiscreteIntVars, adiv_offset, get_iv);
+  }, allDiscreteIntVars, adiv_offset, get_iv<Database>);
 
   // --- Discrete string variables ---
   copy_from_db(problem_db, {
@@ -114,7 +134,7 @@ MixedVariables(const ProblemDescDB& problem_db, const ShortShortPair& view):
     "variables.discrete_uncertain_set_string.initial_point",
     // discrete state string
     "variables.discrete_state_set_string.initial_state"
-  }, allDiscreteStringVars, adsv_offset, get_sa);
+  }, allDiscreteStringVars, adsv_offset, get_sa<Database>);
 
   // --- Discrete real variables ---
   copy_from_db(problem_db, {
@@ -125,7 +145,7 @@ MixedVariables(const ProblemDescDB& problem_db, const ShortShortPair& view):
     "variables.discrete_uncertain_set_real.initial_point",
     // discrete state real
     "variables.discrete_state_set_real.initial_state"
-  }, allDiscreteRealVars, adrv_offset, get_rv);
+  }, allDiscreteRealVars, adrv_offset, get_rv<Database>);
 }
 
 

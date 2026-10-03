@@ -401,6 +401,9 @@ DataFitSurrModel(std::shared_ptr<Iterator> dace_iterator, std::shared_ptr<Model>
     abort_handler(MODEL_ERROR);
   }
 
+  // Internal surrogates must retain the injected runtime, just like factory models.
+  sharedStudyServices = actualModel->study_services();
+
   surrogateType = approx_type;
 
   // assign default responseMode based on correction specification;

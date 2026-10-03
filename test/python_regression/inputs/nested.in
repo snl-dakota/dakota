@@ -1,0 +1,56 @@
+environment
+  method_pointer 'outer'
+method
+  id_method 'outer'
+  model_pointer 'target'
+  vector_parameter_study
+    step_vector 0.1 0.1
+    num_steps 2
+model
+  id_model 'target'
+  variables_pointer 'outer_vars'
+  responses_pointer 'outer_resp'
+  nested
+    sub_method_pointer 'inner'
+      primary_variable_mapping 'x1' 'x2'
+      primary_response_mapping 1.0 0.0
+variables
+  id_variables 'outer_vars'
+  continuous_design = 2
+    initial_point 1.0 1.0
+    lower_bounds 0.5 0.5
+    upper_bounds 1.5 1.5
+    descriptors 'x1' 'x2'
+responses
+  id_responses 'outer_resp'
+  objective_functions 1
+  no_gradients
+  no_hessians
+method
+  id_method 'inner'
+  model_pointer 'inner_model'
+  sampling samples 10 seed 1234 fixed_seed sample_type lhs
+model
+  id_model 'inner_model'
+  variables_pointer 'inner_vars'
+  responses_pointer 'inner_resp'
+  simulation interface_pointer 'driver'
+variables
+  id_variables 'inner_vars'
+  active uncertain
+  continuous_design 2
+    initial_point 1.0 1.0
+    lower_bounds 0.5 0.5
+    upper_bounds 1.5 1.5
+    descriptors 'x1' 'x2'
+  uniform_uncertain 1
+    lower_bounds 0.5
+    upper_bounds 1.5
+interface
+  id_interface 'driver'
+  analysis_drivers 'text_book' fork
+responses
+  id_responses 'inner_resp'
+  response_functions 1
+  no_gradients
+  no_hessians

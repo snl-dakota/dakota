@@ -12,6 +12,7 @@
 #include "ParamResponsePair.hpp"
 #include "PRPMultiIndex.hpp"
 #include "ProblemDescDB.hpp"
+#include "IRStore.hpp"
 #include "DakotaGraphics.hpp"
 #include "NonDLocalReliability.hpp"
 #include "NonDAdaptImpSampling.hpp"
@@ -65,7 +66,8 @@ NonDLocalReliability(std::shared_ptr<StudyServices> services,
 		     const IRStore& method_store,
 		     std::shared_ptr<Model> model):
   NonDReliability(std::move(services), method_store, model),
-  initialPtUserSpec(method_store.get<bool>("variables.uncertain.initial_point_flag")),
+  initialPtUserSpec(model->current_variables().variables_store_ptr()->
+                    get<bool>("uncertain.initial_point_flag")),
   npsolFlag(false), warmStartFlag(true), nipModeOverrideFlag(true),
   curvatureDataAvailable(false), kappaUpdated(false),
   secondOrderIntType(HOHENRACK), curvatureThresh(1.e-10), warningBits(0)

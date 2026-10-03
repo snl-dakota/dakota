@@ -1,0 +1,14 @@
+method
+  nonlinear_cg
+    max_iterations 5
+    convergence_tolerance 1.e-4
+variables
+  continuous_design 2
+    initial_point 0.9 1.1
+    descriptors 'x1' 'x2'
+interface
+  analysis_drivers 'text_book' fork
+responses
+  objective_functions 1
+  analytic_gradients
+  no_hessians

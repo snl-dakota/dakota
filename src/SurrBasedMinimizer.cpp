@@ -132,6 +132,11 @@ void SurrBasedMinimizer::derived_init_communicators(ParLevLIter pl_iter)
   // For DataFitSurrModel, concurrency is from daceIterator evals (global) or
   // numerical derivs (local/multipt) on actualModel.  For EnsembleSurrModel,
   // concurrency is from approxSubProbMinimizer on an active approxModel.
+  if (study_services()) {
+    approxSubProbMinimizer->init_communicators(pl_iter);
+    return;
+  }
+
   // As for constructors, we recursively set and restore DB list nodes
   // (initiated from the restored starting point following construction).
   size_t method_index = probDescDB.get_db_method_node(),

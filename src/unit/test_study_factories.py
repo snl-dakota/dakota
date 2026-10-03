@@ -3,8 +3,11 @@
 import copy
 import inspect
 import os
+import re
 from pathlib import Path
 import shutil
+import shlex
+import sys
 import tempfile
 import unittest
 
@@ -63,6 +66,14 @@ class FactoryTests(unittest.TestCase):
         self.interface = self.study.interface(INTERFACE)
         self.model = self.study.model.simulation(self.variables, self.interface, self.response)
         self.iterator = self.study.method.sampling(self.model, METHOD)
+
+    def test_asynchronous_system_interface(self):
+        interface = self.study.interface(
+            analysis_drivers={"drivers": ["text_book"],
+                              "interface_type": {"system": {}}},
+            concurrency={"asynchronous": {"evaluation_concurrency": 5}})
+        model = self.study.model.simulation(self.variables, interface, self.response)
+        self.assertIsInstance(model, ds.SimulationModel)
 
     def cases(self):
         s = self.study
@@ -359,6 +370,52 @@ class FactoryTests(unittest.TestCase):
         if not hasattr(self.study.method, "dot_bfgs"):
             self.skipTest("Dakota was built without DOT")
         self.assertTrue(hasattr(ds, "DOTOptimizer"))
+
+    def test_initial_point_and_nonlinear_response_layout(self):
+        driver = os.environ.get("DAKOTA_TEXT_BOOK") or shutil.which("text_book")
+        if not driver:
+            self.skipTest("text_book driver not available; set DAKOTA_TEXT_BOOK or PATH")
+        for domain in ("mixed", "relaxed"):
+            with self.subTest(domain=domain):
+                config = ds.StudyConfig()
+                config.output.output_file = str(Path(domain + ".out").resolve())
+                config.output.error_file = str(Path(domain + ".err").resolve())
+                config.output.precision = 10
+                study = ds.Study(config)
+                variables = study.variables(domain={domain: True}, continuous_design={
+                    "count": 3, "initial_point": [1., 1., 1.]})
+                interface = study.interface(analysis_drivers={
+                    "drivers": [str(Path(driver).resolve())], "interface_type": {"fork": {}}})
+                response = study.responses(variables, response_type={"objective_functions": {
+                    "count": 1, "nonlinear_inequality_constraints": {"count": 2}}},
+                    gradient_type={"no_gradients": True}, hessian_type={"no_hessians": True})
+                model = study.model.simulation(variables, interface, response)
+                method = study.method.vector_parameter_study(model,
+                    step_control={"step_vector": [0.1, 0.1, 0.1]}, num_steps=1)
+                study.run(method)
+                output = Path(config.output.output_file).read_text()
+                for title, expected in (("parameters", [1., 1., 1.]),
+                                        ("objective function", [0.]), ("constraint values", [0.5, 0.5])):
+                    match = re.search(r"^<<<<< Best " + title +
+                                      r"\s*=\n((?:[ \t]+[^\n]+\n)+)", output, re.M)
+                    self.assertIsNotNone(match, title)
+                    self.assertEqual([float(line.split()[0]) for line in match[1].splitlines()], expected)
+
+    def test_ensemble_does_not_resize_child_responses(self):
+        driver = Path("one_response.py").resolve()
+        driver.write_text("import sys\nfrom pathlib import Path\n"
+                          "Path(sys.argv[2]).write_text('1.0\\n')\n")
+        interface = self.study.interface(analysis_drivers={
+            "drivers": [shlex.quote(sys.executable) + " " + shlex.quote(str(driver))],
+            "interface_type": {"fork": {}}})
+        children = [self.study.model.simulation(self.variables, interface, self.response)
+                    for _ in range(2)]
+        ensemble = self.study.model.ensemble_surrogate(
+            self.variables, self.response, ordered_models=children)
+        sampling = self.study.method.sampling(children[0], samples=2, seed=1234)
+        self.study.run(sampling)
+        self.assertEqual(sampling.num_responses(), 2)
+        self.assertEqual(sampling.first_response_value(), 1.0)
 
     def test_seeded_sampling_equivalence(self):
         driver = os.environ.get("DAKOTA_TEXT_BOOK") or shutil.which("text_book")

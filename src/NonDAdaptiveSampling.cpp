@@ -97,7 +97,7 @@ NonDAdaptiveSampling::NonDAdaptiveSampling(ProblemDescDB& problem_db, ParallelLi
   //Now parse the inputs
   const StringArray& misc_options = probDescDB.get<const StringArray>("method.coliny.misc_options");
   if (misc_options.size() > 0)
-    parse_options();
+    parse_options(misc_options);
 
   Cout << "misc options size " << misc_options.size()  << '\n';
   String sample_reuse;
@@ -228,7 +228,7 @@ NonDAdaptiveSampling(std::shared_ptr<StudyServices> services,
   //Now parse the inputs
   const StringArray& misc_options = method_store.get<StringArray>("coliny.misc_options");
   if (misc_options.size() > 0)
-    parse_options();
+    parse_options(misc_options);
 
   Cout << "misc options size " << misc_options.size()  << '\n';
   String sample_reuse;
@@ -1502,10 +1502,9 @@ Real NonDAdaptiveSampling::compute_rmspe()
   return rms_prediction_error;
 }
 
-void NonDAdaptiveSampling::parse_options()
+void NonDAdaptiveSampling::parse_options(const StringArray& db_opts)
 {
 #pragma region Parse Options:
-  const StringArray& db_opts = probDescDB.get<const StringArray>("method.coliny.misc_options");
   StringArray::const_iterator db_it = db_opts.begin();
   StringArray::const_iterator db_end = db_opts.end();
   String::const_iterator delim;

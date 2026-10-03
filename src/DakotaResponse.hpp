@@ -181,6 +181,8 @@ public:
   const HessianConfig& hessian_config() const;
   /// return primary response weights expanded for field responses
   const RealVector& primary_response_fn_weights() const;
+  /// Materialized response configuration retained for DI model constraints.
+  const std::shared_ptr<IRStore>& responses_store_ptr() const;
   /// return primary response maximize/minimize sense flags
   const BoolDeque& primary_response_fn_sense() const;
 
@@ -496,6 +498,7 @@ protected:
 
   /// reference-counted instance of shared response data: id's, labels
   SharedResponseData sharedRespData;
+  std::shared_ptr<IRStore> responsesStore;
 
   /// typed gradient-related configuration owned by this response
   GradientConfig gradientConfig;
@@ -685,6 +688,9 @@ inline const Response::GradientConfig& Response::gradient_config() const
 inline const Response::HessianConfig& Response::hessian_config() const
 { return (responseRep) ? responseRep->hessianConfig : hessianConfig; }
 
+
+inline const std::shared_ptr<IRStore>& Response::responses_store_ptr() const
+{ return responseRep ? responseRep->responsesStore : responsesStore; }
 
 inline const RealVector& Response::primary_response_fn_weights() const
 { return (responseRep) ? responseRep->primaryRespFnWts : primaryRespFnWts; }

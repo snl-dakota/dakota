@@ -16,7 +16,9 @@ function(dakota_create_diff_file _build_path _results_file _diff_filename )
 
   # create list of files named ${_diff_filename} in any subdirectory
   # of ${_build_path}/test
-  file( GLOB diff_file_list "${diff_file_path}/*/${_diff_filename}" ) 
+  file( GLOB diff_file_list
+    "${diff_file_path}/*/${_diff_filename}"
+    "${diff_file_path}/python_regression/*/${_diff_filename}" )
   #message ("diff_file_list: [${diff_file_list}]" )
 
   # sort the diff_file_list

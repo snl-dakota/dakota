@@ -72,8 +72,8 @@ public:
   ExperimentData(const ProblemDescDB& prob_desc_db, 
                  const SharedResponseData& srd, short output_level);
 
-  /// IRStore-based constructor
-  ExperimentData(const IRStore& method_store, 
+  /// Constructor from a materialized responses block
+  ExperimentData(const IRStore& responses_store,
                  const SharedResponseData& srd, short output_level);
 
   /// temporary? constructor for testing

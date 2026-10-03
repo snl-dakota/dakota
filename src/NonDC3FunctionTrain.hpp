@@ -13,6 +13,7 @@
 // #include "DakotaNonD.hpp
 
 #include "NonDExpansion.hpp"
+#include <type_traits>
 
 namespace Dakota {
 
@@ -137,6 +138,9 @@ protected:
 
 private:
 
+  template <typename T>
+  const std::remove_const_t<T>& method_parameter(const String& key) const;
+
   //
   //- Heading: Member function definitions
   //
@@ -155,6 +159,9 @@ private:
 
   /// user specification for collocation_points
   size_t collocPtsSpec;
+
+  /// Method options retained for injected construction and refinement.
+  std::shared_ptr<const IRStore> methodStore;
 
   // for decremented order without recomputation from previous ranks
   //int prevSamplesOnModel;

@@ -209,7 +209,7 @@ private:
   /// over the validationSet, and output some topological comparisons
   void compare_complices(int dim, std::ostream& output);
   /// Parse misc_options specified in a user input deck
-  void parse_options();
+  void parse_options(const StringArray& options);
 
   /// function to pick the next X value to be evaluated by the Iterated model
   RealVectorArray drawNewX(int this_k, int respFnCount=0);

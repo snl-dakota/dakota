@@ -20,6 +20,7 @@
 #include "DakotaModel.hpp"
 #include "DakotaResponse.hpp"
 #include "DakotaVariables.hpp"
+#include "SysCallApplicInterface.hpp"
 #ifndef _WIN32
 #include "ForkApplicInterface.hpp"
 #else
@@ -254,6 +255,10 @@ std::shared_ptr<Interface> Study::interface(const IRStore& interface_store) cons
   const unsigned short interface_type =
     interface_store.get<unsigned short>("type");
 
+  if (interface_type == SYSTEM_INTERFACE)
+    return std::make_shared<SysCallApplicInterface>(
+      interface_store, studyServices);
+
   if (interface_type == FORK_INTERFACE) {
 #ifndef _WIN32
     return std::make_shared<ForkApplicInterface>(
@@ -265,7 +270,7 @@ std::shared_ptr<Interface> Study::interface(const IRStore& interface_store) cons
   }
 
   throw std::runtime_error(
-    "Study::interface currently supports only fork interfaces.");
+    "Study::interface currently supports only system and fork interfaces.");
 }
 
 std::shared_ptr<Interface> Study::interface(const nlohmann::json& interface_json) const

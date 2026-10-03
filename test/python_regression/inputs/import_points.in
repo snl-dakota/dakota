@@ -1,0 +1,12 @@
+method
+  import_points import_points_file 'dakota_import_points.dat'
+variables
+  uniform_uncertain 2
+    lower_bounds 0.0 0.0
+    upper_bounds 1.0 1.0
+interface
+  analysis_drivers 'text_book' fork
+responses
+  response_functions 1
+  no_gradients
+  no_hessians

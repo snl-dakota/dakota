@@ -1,0 +1,25 @@
+environment
+  method_pointer 'main'
+method
+  id_method 'main'
+  model_pointer 'target'
+  coliny_beta
+    beta_solver_name 'sco:PatternSearch'
+    max_iterations 3
+    max_function_evaluations 16
+    seed 1234
+model
+  id_model 'target'
+  simulation
+variables
+  continuous_design 2
+    initial_point 0.9 1.1
+    descriptors 'x1' 'x2'
+    lower_bounds 0.5 0.5
+    upper_bounds 1.5 1.5
+responses
+  objective_functions 1
+  no_gradients
+  no_hessians
+interface
+  analysis_drivers 'python3 response_driver.py optimization' fork

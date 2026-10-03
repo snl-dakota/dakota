@@ -1,0 +1,18 @@
+method
+  asynch_pattern_search
+    max_function_evaluations 25
+    initial_delta 0.1
+    variable_tolerance 0.0001
+    synchronization blocking
+variables
+  continuous_design 2
+    initial_point 0.9 1.1
+    lower_bounds 0.5 0.5
+    upper_bounds 1.5 1.5
+    descriptors 'x1' 'x2'
+interface
+  analysis_drivers 'text_book' fork
+responses
+  objective_functions 1
+  no_gradients
+  no_hessians

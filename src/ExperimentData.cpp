@@ -10,6 +10,7 @@
 #include "ExperimentData.hpp"
 #include "DataMethod.hpp"
 #include "ProblemDescDB.hpp"
+#include "IRStore.hpp"
 #include "DakotaVariables.hpp"
 
 namespace Dakota {
@@ -42,21 +43,21 @@ ExperimentData(const ProblemDescDB& pddb,
 
 
 ExperimentData::
-ExperimentData(const IRStore& method_store,
+ExperimentData(const IRStore& responses_store,
                const SharedResponseData& srd, short output_level):
-  calibrationDataFlag(method_store.get<bool>("responses.calibration_data")),
-  numExperiments(method_store.get<size_t>("responses.num_experiments")), 
-  numConfigVars(method_store.get<size_t>("responses.num_config_vars")),
+  calibrationDataFlag(responses_store.get<bool>("calibration_data")),
+  numExperiments(responses_store.get<size_t>("num_experiments")),
+  numConfigVars(responses_store.get<size_t>("num_config_vars")),
   covarianceDeterminant(1.0), logCovarianceDeterminant(0.0),
-  dataPathPrefix(method_store.get<String>("responses.data_directory")),
-  scalarDataFilename(method_store.get<String>("responses.scalar_data_filename")),
-  scalarDataFormat(method_store.get<unsigned short>("responses.scalar_data_format")),
-  scalarSigmaPerRow(0), 
-  readSimFieldCoords(method_store.get<bool>("responses.read_field_coordinates")), 
-  interpolateFlag(method_store.get<bool>("responses.interpolate")),
+  dataPathPrefix(responses_store.get<String>("data_directory")),
+  scalarDataFilename(responses_store.get<String>("scalar_data_filename")),
+  scalarDataFormat(responses_store.get<unsigned short>("scalar_data_format")),
+  scalarSigmaPerRow(0),
+  readSimFieldCoords(responses_store.get<bool>("read_field_coordinates")),
+  interpolateFlag(responses_store.get<bool>("interpolate")),
   outputLevel(output_level)
 {
-  initialize(method_store.get<StringArray>("responses.variance_type"), srd);
+  initialize(responses_store.get<StringArray>("variance_type"), srd);
 }
 
 
