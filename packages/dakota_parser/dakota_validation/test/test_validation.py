@@ -4,7 +4,8 @@ These tests verify both the C++ backend (via pybind11) and the Python fallback
 implementations produce identical results.
 """
 
-import pytest
+import unittest
+from unittest import mock
 import math
 import importlib
 from typing import ClassVar, List
@@ -292,7 +293,7 @@ class ResponsesConfig(BaseModel):
 # CompareLength tests
 # ============================================================================
 
-class TestCompareLength:
+class TestCompareLength(unittest.TestCase):
     """Tests for CompareLength validation rule."""
     
     def test_passes_when_length_matches(self):
@@ -313,11 +314,11 @@ class TestCompareLength:
         rule = CompareLength(context="test", list_field="values", target_field="count")
         instance = SimpleModel(count=3, values=[1.0, 2.0])
         
-        with pytest.raises(ValueError) as exc_info:
+        with self.assertRaises(ValueError) as exc_info:
             rule(instance)
         
-        assert "2" in str(exc_info.value)
-        assert "3" in str(exc_info.value)
+        assert "2" in str(exc_info.exception)
+        assert "3" in str(exc_info.exception)
     
     def test_schema_data(self):
         rule = CompareLength(context="my_context", list_field="my_list", target_field="my_count")
@@ -332,7 +333,7 @@ class TestCompareLength:
 # CompareLengthOne tests
 # ============================================================================
 
-class TestCompareLengthOne:
+class TestCompareLengthOne(unittest.TestCase):
     """Tests for CompareLengthOne validation rule."""
     
     def test_passes_when_length_matches(self):
@@ -360,7 +361,7 @@ class TestCompareLengthOne:
         rule = CompareLengthOne(context="test", list_field="scale_types", target_field="count")
         instance = DesignModel(count=3, scale_types=["auto", "log"])
         
-        with pytest.raises(ValueError):
+        with self.assertRaises(ValueError):
             rule(instance)
     
     def test_skips_none_field(self):
@@ -375,7 +376,7 @@ class TestCompareLengthOne:
 # DefaultBoundsReal tests
 # ============================================================================
 
-class TestDefaultBoundsReal:
+class TestDefaultBoundsReal(unittest.TestCase):
     """Tests for DefaultBoundsReal validation rule."""
     
     def test_sets_lower_when_none(self):
@@ -431,7 +432,7 @@ class TestDefaultBoundsReal:
 # DefaultInitialPointReal tests
 # ============================================================================
 
-class TestDefaultInitialPointReal:
+class TestDefaultInitialPointReal(unittest.TestCase):
     """Tests for DefaultInitialPointReal validation rule."""
     
     def test_sets_midpoint_when_none(self):
@@ -447,9 +448,9 @@ class TestDefaultInitialPointReal:
         
         assert instance.initial_point is not None
         assert len(instance.initial_point) == 3
-        assert instance.initial_point[0] == pytest.approx(5.0)   # (0 + 10) / 2
-        assert instance.initial_point[1] == pytest.approx(0.0)   # (-10 + 10) / 2
-        assert instance.initial_point[2] == pytest.approx(10.0)  # (5 + 15) / 2
+        self.assertAlmostEqual(instance.initial_point[0], 5.0)   # (0 + 10) / 2
+        self.assertAlmostEqual(instance.initial_point[1], 0.0)   # (-10 + 10) / 2
+        self.assertAlmostEqual(instance.initial_point[2], 10.0)  # (5 + 15) / 2
     
     def test_uses_finite_bound_when_one_infinite(self):
         rule = DefaultInitialPointReal(context="test")
@@ -462,8 +463,8 @@ class TestDefaultInitialPointReal:
         
         rule(instance)
         
-        assert instance.initial_point[0] == pytest.approx(10.0)  # Uses upper
-        assert instance.initial_point[1] == pytest.approx(5.0)   # Uses lower
+        self.assertAlmostEqual(instance.initial_point[0], 10.0)  # Uses upper
+        self.assertAlmostEqual(instance.initial_point[1], 5.0)   # Uses lower
     
     def test_uses_zero_when_both_infinite(self):
         rule = DefaultInitialPointReal(context="test")
@@ -476,7 +477,7 @@ class TestDefaultInitialPointReal:
         
         rule(instance)
         
-        assert instance.initial_point[0] == pytest.approx(0.0)
+        self.assertAlmostEqual(instance.initial_point[0], 0.0)
     
     def test_clamps_to_lower_bound(self):
         rule = DefaultInitialPointReal(context="test")
@@ -489,8 +490,8 @@ class TestDefaultInitialPointReal:
         
         rule(instance)
         
-        assert instance.initial_point[0] == pytest.approx(0.0)   # Clamped
-        assert instance.initial_point[1] == pytest.approx(10.0)  # Unchanged
+        self.assertAlmostEqual(instance.initial_point[0], 0.0)   # Clamped
+        self.assertAlmostEqual(instance.initial_point[1], 10.0)  # Unchanged
     
     def test_clamps_to_upper_bound(self):
         rule = DefaultInitialPointReal(context="test")
@@ -503,8 +504,8 @@ class TestDefaultInitialPointReal:
         
         rule(instance)
         
-        assert instance.initial_point[0] == pytest.approx(5.0)   # Unchanged
-        assert instance.initial_point[1] == pytest.approx(15.0)  # Clamped
+        self.assertAlmostEqual(instance.initial_point[0], 5.0)   # Unchanged
+        self.assertAlmostEqual(instance.initial_point[1], 15.0)  # Clamped
     
     def test_no_change_when_within_bounds(self):
         rule = DefaultInitialPointReal(context="test")
@@ -525,7 +526,7 @@ class TestDefaultInitialPointReal:
 # CheckNonnegativeList tests
 # ============================================================================
 
-class TestCheckNonnegativeList:
+class TestCheckNonnegativeList(unittest.TestCase):
     """Tests for CheckNonnegativeList validation rule."""
     
     def test_passes_all_positive(self):
@@ -550,20 +551,20 @@ class TestCheckNonnegativeList:
         rule = CheckNonnegativeList(context="test", list_field="values")
         instance = ListModel(values=[1.0, -2.0, 3.0])
         
-        with pytest.raises(ValueError) as exc_info:
+        with self.assertRaises(ValueError) as exc_info:
             rule(instance)
         
-        assert "element 1" in str(exc_info.value)
-        assert "negative" in str(exc_info.value)
+        assert "element 1" in str(exc_info.exception)
+        assert "negative" in str(exc_info.exception)
     
     def test_raises_on_first_negative(self):
         rule = CheckNonnegativeList(context="test", list_field="values")
         instance = ListModel(values=[-1.0, 2.0, 3.0])
         
-        with pytest.raises(ValueError) as exc_info:
+        with self.assertRaises(ValueError) as exc_info:
             rule(instance)
         
-        assert "element 0" in str(exc_info.value)
+        assert "element 0" in str(exc_info.exception)
     
     def test_schema_data(self):
         rule = CheckNonnegativeList(context="my_context", list_field="my_list")
@@ -578,7 +579,7 @@ class TestCheckNonnegativeList:
 # CheckPositiveList tests
 # ============================================================================
 
-class TestCheckPositiveList:
+class TestCheckPositiveList(unittest.TestCase):
     """Tests for CheckPositiveList validation rule."""
     
     def test_passes_all_positive(self):
@@ -597,27 +598,27 @@ class TestCheckPositiveList:
         rule = CheckPositiveList(context="test", list_field="int_values")
         instance = ListModel(int_values=[1, 0, 3])
         
-        with pytest.raises(ValueError) as exc_info:
+        with self.assertRaises(ValueError) as exc_info:
             rule(instance)
         
-        assert "element 1" in str(exc_info.value)
-        assert "not positive" in str(exc_info.value)
+        assert "element 1" in str(exc_info.exception)
+        assert "not positive" in str(exc_info.exception)
     
     def test_raises_on_negative(self):
         rule = CheckPositiveList(context="test", list_field="int_values")
         instance = ListModel(int_values=[1, -2, 3])
         
-        with pytest.raises(ValueError) as exc_info:
+        with self.assertRaises(ValueError) as exc_info:
             rule(instance)
         
-        assert "element 1" in str(exc_info.value)
+        assert "element 1" in str(exc_info.exception)
 
 
 # ============================================================================
 # CheckProbabilityList tests
 # ============================================================================
 
-class TestCheckProbabilityList:
+class TestCheckProbabilityList(unittest.TestCase):
     """Tests for CheckProbabilityList validation rule."""
     
     def test_passes_valid_probabilities(self):
@@ -636,28 +637,28 @@ class TestCheckProbabilityList:
         rule = CheckProbabilityList(context="test", list_field="probabilities")
         instance = ListModel(probabilities=[0.5, -0.1, 0.8])
         
-        with pytest.raises(ValueError) as exc_info:
+        with self.assertRaises(ValueError) as exc_info:
             rule(instance)
         
-        assert "element 1" in str(exc_info.value)
-        assert "not in [0, 1]" in str(exc_info.value)
+        assert "element 1" in str(exc_info.exception)
+        assert "not in [0, 1]" in str(exc_info.exception)
     
     def test_raises_on_greater_than_one(self):
         rule = CheckProbabilityList(context="test", list_field="probabilities")
         instance = ListModel(probabilities=[0.5, 1.1, 0.8])
         
-        with pytest.raises(ValueError) as exc_info:
+        with self.assertRaises(ValueError) as exc_info:
             rule(instance)
         
-        assert "element 1" in str(exc_info.value)
-        assert "not in [0, 1]" in str(exc_info.value)
+        assert "element 1" in str(exc_info.exception)
+        assert "not in [0, 1]" in str(exc_info.exception)
 
 
 # ============================================================================
 # CheckRealLowerBound tests
 # ============================================================================
 
-class TestCheckRealLowerBound:
+class TestCheckRealLowerBound(unittest.TestCase):
     """Tests for CheckRealLowerBound validation rule."""
     
     def test_passes_above_bound(self):
@@ -676,20 +677,20 @@ class TestCheckRealLowerBound:
         rule = CheckRealLowerBound(context="test", list_field="values", lower_bound=0.0)
         instance = ListModel(values=[1.0, 0.0, 2.0])  # 0.0 is not > 0.0
         
-        with pytest.raises(ValueError) as exc_info:
+        with self.assertRaises(ValueError) as exc_info:
             rule(instance)
         
-        assert "element 1" in str(exc_info.value)
-        assert "not > 0" in str(exc_info.value)
+        assert "element 1" in str(exc_info.exception)
+        assert "not > 0" in str(exc_info.exception)
     
     def test_raises_on_below_bound(self):
         rule = CheckRealLowerBound(context="test", list_field="values", lower_bound=0.0)
         instance = ListModel(values=[1.0, -0.5, 2.0])
         
-        with pytest.raises(ValueError) as exc_info:
+        with self.assertRaises(ValueError) as exc_info:
             rule(instance)
         
-        assert "element 1" in str(exc_info.value)
+        assert "element 1" in str(exc_info.exception)
     
     def test_schema_data(self):
         rule = CheckRealLowerBound(context="test", list_field="values", lower_bound=0.0)
@@ -709,11 +710,11 @@ class TestCheckRealLowerBound:
         rule = CheckRealLowerBound(context="test", list_field="values", lower_bound=0.0, inclusive=True)
         instance = ListModel(values=[1.0, -0.1, 2.0])
         
-        with pytest.raises(ValueError) as exc_info:
+        with self.assertRaises(ValueError) as exc_info:
             rule(instance)
         
-        assert "element 1" in str(exc_info.value)
-        assert "not >= 0" in str(exc_info.value)
+        assert "element 1" in str(exc_info.exception)
+        assert "not >= 0" in str(exc_info.exception)
 
     def test_inclusive_schema_data(self):
         rule = CheckRealLowerBound(context="test", list_field="values", lower_bound=0.0, inclusive=True)
@@ -726,7 +727,7 @@ class TestCheckRealLowerBound:
 # CheckRealUpperBound tests
 # ============================================================================
 
-class TestCheckRealUpperBound:
+class TestCheckRealUpperBound(unittest.TestCase):
     """Tests for CheckRealUpperBound validation rule."""
     
     def test_passes_below_bound(self):
@@ -745,20 +746,20 @@ class TestCheckRealUpperBound:
         rule = CheckRealUpperBound(context="test", list_field="values", upper_bound=1.0)
         instance = ListModel(values=[0.5, 1.0, 0.8])  # 1.0 is not < 1.0
         
-        with pytest.raises(ValueError) as exc_info:
+        with self.assertRaises(ValueError) as exc_info:
             rule(instance)
         
-        assert "element 1" in str(exc_info.value)
-        assert "not < 1" in str(exc_info.value)
+        assert "element 1" in str(exc_info.exception)
+        assert "not < 1" in str(exc_info.exception)
     
     def test_raises_on_above_bound(self):
         rule = CheckRealUpperBound(context="test", list_field="values", upper_bound=1.0)
         instance = ListModel(values=[0.5, 1.5, 0.8])
         
-        with pytest.raises(ValueError) as exc_info:
+        with self.assertRaises(ValueError) as exc_info:
             rule(instance)
         
-        assert "element 1" in str(exc_info.value)
+        assert "element 1" in str(exc_info.exception)
 
     def test_inclusive_passes_on_equal(self):
         rule = CheckRealUpperBound(context="test", list_field="values", upper_bound=1.0, inclusive=True)
@@ -770,18 +771,18 @@ class TestCheckRealUpperBound:
         rule = CheckRealUpperBound(context="test", list_field="values", upper_bound=1.0, inclusive=True)
         instance = ListModel(values=[0.5, 1.1, 0.8])
         
-        with pytest.raises(ValueError) as exc_info:
+        with self.assertRaises(ValueError) as exc_info:
             rule(instance)
         
-        assert "element 1" in str(exc_info.value)
-        assert "not <= 1" in str(exc_info.value)
+        assert "element 1" in str(exc_info.exception)
+        assert "not <= 1" in str(exc_info.exception)
 
 
 # ============================================================================
 # CheckIntLowerBound tests
 # ============================================================================
 
-class TestCheckIntLowerBound:
+class TestCheckIntLowerBound(unittest.TestCase):
     """Tests for CheckIntLowerBound validation rule."""
     
     def test_passes_above_bound(self):
@@ -800,27 +801,27 @@ class TestCheckIntLowerBound:
         rule = CheckIntLowerBound(context="test", list_field="int_values", lower_bound=0)
         instance = ListModel(int_values=[1, 0, 3])  # 0 is not > 0
         
-        with pytest.raises(ValueError) as exc_info:
+        with self.assertRaises(ValueError) as exc_info:
             rule(instance)
         
-        assert "element 1" in str(exc_info.value)
-        assert "not > 0" in str(exc_info.value)
+        assert "element 1" in str(exc_info.exception)
+        assert "not > 0" in str(exc_info.exception)
     
     def test_raises_on_below_bound(self):
         rule = CheckIntLowerBound(context="test", list_field="int_values", lower_bound=0)
         instance = ListModel(int_values=[1, -5, 3])
         
-        with pytest.raises(ValueError) as exc_info:
+        with self.assertRaises(ValueError) as exc_info:
             rule(instance)
         
-        assert "element 1" in str(exc_info.value)
+        assert "element 1" in str(exc_info.exception)
 
 
 # ============================================================================
 # CheckSumEqualsLength tests
 # ============================================================================
 
-class TestCheckSumEqualsLength:
+class TestCheckSumEqualsLength(unittest.TestCase):
     """Tests for CheckSumEqualsLength validation rule."""
     
     def test_passes_when_sum_matches_length(self):
@@ -873,11 +874,11 @@ class TestCheckSumEqualsLength:
             response_levels=[0.1, 0.2, 0.3]  # length = 3
         )
         
-        with pytest.raises(ValueError) as exc_info:
+        with self.assertRaises(ValueError) as exc_info:
             rule(instance)
         
-        assert "5" in str(exc_info.value)
-        assert "3" in str(exc_info.value)
+        assert "5" in str(exc_info.exception)
+        assert "3" in str(exc_info.exception)
     
     def test_schema_data(self):
         rule = CheckSumEqualsLength(
@@ -895,7 +896,7 @@ class TestCheckSumEqualsLength:
 # TrustRegionValidate tests
 # ============================================================================
 
-class TestTrustRegionValidate:
+class TestTrustRegionValidate(unittest.TestCase):
     """Tests for TrustRegionValidate validation rule."""
     
     def test_passes_valid_params(self):
@@ -928,11 +929,11 @@ class TestTrustRegionValidate:
             expand_threshold=0.75
         )
         
-        with pytest.raises(ValueError) as exc_info:
+        with self.assertRaises(ValueError) as exc_info:
             rule(instance)
         
-        assert "initial_size[1]" in str(exc_info.value)
-        assert "(0, 1]" in str(exc_info.value)
+        assert "initial_size[1]" in str(exc_info.exception)
+        assert "(0, 1]" in str(exc_info.exception)
     
     def test_raises_initial_size_greater_than_one(self):
         rule = TrustRegionValidate(context="test")
@@ -942,10 +943,10 @@ class TestTrustRegionValidate:
             expand_threshold=0.75
         )
         
-        with pytest.raises(ValueError) as exc_info:
+        with self.assertRaises(ValueError) as exc_info:
             rule(instance)
         
-        assert "initial_size[1]" in str(exc_info.value)
+        assert "initial_size[1]" in str(exc_info.exception)
     
     def test_raises_initial_size_less_than_minimum(self):
         rule = TrustRegionValidate(context="test")
@@ -956,11 +957,11 @@ class TestTrustRegionValidate:
             expand_threshold=0.75
         )
         
-        with pytest.raises(ValueError) as exc_info:
+        with self.assertRaises(ValueError) as exc_info:
             rule(instance)
         
-        assert "initial_size[1]" in str(exc_info.value)
-        assert "minimum_size" in str(exc_info.value)
+        assert "initial_size[1]" in str(exc_info.exception)
+        assert "minimum_size" in str(exc_info.exception)
     
     def test_raises_minimum_size_negative(self):
         rule = TrustRegionValidate(context="test")
@@ -970,11 +971,11 @@ class TestTrustRegionValidate:
             expand_threshold=0.75
         )
         
-        with pytest.raises(ValueError) as exc_info:
+        with self.assertRaises(ValueError) as exc_info:
             rule(instance)
         
-        assert "minimum_size" in str(exc_info.value)
-        assert "[0, 1]" in str(exc_info.value)
+        assert "minimum_size" in str(exc_info.exception)
+        assert "[0, 1]" in str(exc_info.exception)
     
     def test_raises_contract_threshold_zero(self):
         rule = TrustRegionValidate(context="test")
@@ -983,11 +984,11 @@ class TestTrustRegionValidate:
             expand_threshold=0.75
         )
         
-        with pytest.raises(ValueError) as exc_info:
+        with self.assertRaises(ValueError) as exc_info:
             rule(instance)
         
-        assert "contract_threshold" in str(exc_info.value)
-        assert "> 0" in str(exc_info.value)
+        assert "contract_threshold" in str(exc_info.exception)
+        assert "> 0" in str(exc_info.exception)
     
     def test_raises_contract_greater_than_expand(self):
         rule = TrustRegionValidate(context="test")
@@ -996,11 +997,11 @@ class TestTrustRegionValidate:
             expand_threshold=0.5  # 0.8 > 0.5
         )
         
-        with pytest.raises(ValueError) as exc_info:
+        with self.assertRaises(ValueError) as exc_info:
             rule(instance)
         
-        assert "contract_threshold" in str(exc_info.value)
-        assert "expand_threshold" in str(exc_info.value)
+        assert "contract_threshold" in str(exc_info.exception)
+        assert "expand_threshold" in str(exc_info.exception)
     
     def test_raises_expand_threshold_greater_than_one(self):
         rule = TrustRegionValidate(context="test")
@@ -1009,11 +1010,11 @@ class TestTrustRegionValidate:
             expand_threshold=1.5  # must be <= 1
         )
         
-        with pytest.raises(ValueError) as exc_info:
+        with self.assertRaises(ValueError) as exc_info:
             rule(instance)
         
-        assert "expand_threshold" in str(exc_info.value)
-        assert "<= 1" in str(exc_info.value)
+        assert "expand_threshold" in str(exc_info.exception)
+        assert "<= 1" in str(exc_info.exception)
     
     def test_raises_contraction_factor_zero(self):
         rule = TrustRegionValidate(context="test")
@@ -1023,11 +1024,11 @@ class TestTrustRegionValidate:
             contraction_factor=0.0  # must be in (0, 1]
         )
         
-        with pytest.raises(ValueError) as exc_info:
+        with self.assertRaises(ValueError) as exc_info:
             rule(instance)
         
-        assert "contraction_factor" in str(exc_info.value)
-        assert "(0, 1]" in str(exc_info.value)
+        assert "contraction_factor" in str(exc_info.exception)
+        assert "(0, 1]" in str(exc_info.exception)
     
     def test_raises_contraction_factor_greater_than_one(self):
         rule = TrustRegionValidate(context="test")
@@ -1037,10 +1038,10 @@ class TestTrustRegionValidate:
             contraction_factor=1.5  # must be in (0, 1]
         )
         
-        with pytest.raises(ValueError) as exc_info:
+        with self.assertRaises(ValueError) as exc_info:
             rule(instance)
         
-        assert "contraction_factor" in str(exc_info.value)
+        assert "contraction_factor" in str(exc_info.exception)
     
     def test_raises_expansion_factor_less_than_one(self):
         rule = TrustRegionValidate(context="test")
@@ -1050,11 +1051,11 @@ class TestTrustRegionValidate:
             expansion_factor=0.5  # must be >= 1
         )
         
-        with pytest.raises(ValueError) as exc_info:
+        with self.assertRaises(ValueError) as exc_info:
             rule(instance)
         
-        assert "expansion_factor" in str(exc_info.value)
-        assert ">= 1" in str(exc_info.value)
+        assert "expansion_factor" in str(exc_info.exception)
+        assert ">= 1" in str(exc_info.exception)
     
     def test_contraction_factor_one_is_valid(self):
         """contraction_factor = 1.0 is valid (though Dakota warns about it)."""
@@ -1119,7 +1120,7 @@ class DeeplyNestedModel(BaseModel):
     model_config = {'extra': 'forbid'}
 
 
-class TestNestedMutations:
+class TestNestedMutations(unittest.TestCase):
     """Tests for nested field mutation support."""
     
     def test_simple_nested_mutation(self):
@@ -1202,11 +1203,11 @@ class TestNestedMutations:
         )
         
         # Attempting to replace the entire 'inner' model should fail
-        with pytest.raises(RuntimeError) as exc_info:
+        with self.assertRaises(RuntimeError) as exc_info:
             _apply_mutations(instance, {"inner": {"value": 1.0, "count": 2}})
         
-        assert "nested model type" in str(exc_info.value)
-        assert "InnerModel" in str(exc_info.value)
+        assert "nested model type" in str(exc_info.exception)
+        assert "InnerModel" in str(exc_info.exception)
     
     def test_rejects_invalid_intermediate_path(self):
         """Test that invalid intermediate path components are rejected."""
@@ -1217,11 +1218,11 @@ class TestNestedMutations:
         )
         
         # 'nonexistent' is not a field
-        with pytest.raises(RuntimeError) as exc_info:
+        with self.assertRaises(RuntimeError) as exc_info:
             _apply_mutations(instance, {"nonexistent.value": 1.0})
         
-        assert "not found" in str(exc_info.value)
-        assert "nonexistent" in str(exc_info.value)
+        assert "not found" in str(exc_info.exception)
+        assert "nonexistent" in str(exc_info.exception)
     
     def test_rejects_null_intermediate(self):
         """Test that null intermediate fields are handled."""
@@ -1234,10 +1235,10 @@ class TestNestedMutations:
         
         instance = OptionalNestedModel(inner=None)
         
-        with pytest.raises(RuntimeError) as exc_info:
+        with self.assertRaises(RuntimeError) as exc_info:
             _apply_mutations(instance, {"inner.value": 1.0})
         
-        assert "is None" in str(exc_info.value)
+        assert "is None" in str(exc_info.exception)
     
     def test_rejects_non_model_intermediate(self):
         """Test that navigating through non-model fields is rejected."""
@@ -1248,10 +1249,10 @@ class TestNestedMutations:
             inner=InnerModel(count=1)
         )
         
-        with pytest.raises(RuntimeError) as exc_info:
+        with self.assertRaises(RuntimeError) as exc_info:
             _apply_mutations(instance, {"name.something": 1.0})
         
-        assert "not a model instance" in str(exc_info.value)
+        assert "not a model instance" in str(exc_info.exception)
     
     def test_rejects_invalid_leaf_field(self):
         """Test that invalid leaf field names are rejected."""
@@ -1261,18 +1262,18 @@ class TestNestedMutations:
             inner=InnerModel(count=1)
         )
         
-        with pytest.raises(RuntimeError) as exc_info:
+        with self.assertRaises(RuntimeError) as exc_info:
             _apply_mutations(instance, {"inner.nonexistent": 1.0})
         
-        assert "not found" in str(exc_info.value)
-        assert "nonexistent" in str(exc_info.value)
+        assert "not found" in str(exc_info.exception)
+        assert "nonexistent" in str(exc_info.exception)
 
 
 # ============================================================================
 # Integration tests
 # ============================================================================
 
-class TestIntegration:
+class TestIntegration(unittest.TestCase):
     """Integration tests using multiple rules together."""
     
     def test_full_design_variable_validation(self):
@@ -1381,7 +1382,7 @@ class InterfaceModel(BaseModel):
 # CheckInterfaceBlock tests
 # ============================================================================
 
-class TestCheckInterfaceBlock:
+class TestCheckInterfaceBlock(unittest.TestCase):
     """Tests for CheckInterfaceBlock validation rule."""
     
     def test_passes_with_analysis_drivers(self):
@@ -1414,11 +1415,11 @@ class TestCheckInterfaceBlock:
         rule = CheckInterfaceBlock(context="interface")
         instance = InterfaceModel()
         
-        with pytest.raises(ValueError) as exc_info:
+        with self.assertRaises(ValueError) as exc_info:
             rule(instance)
         
-        assert "analysis_drivers" in str(exc_info.value)
-        assert "algebraic_mappings" in str(exc_info.value)
+        assert "analysis_drivers" in str(exc_info.exception)
+        assert "algebraic_mappings" in str(exc_info.exception)
     
     def test_batch_rejects_multiple_drivers(self):
         """Batch mode rejects multiple analysis drivers."""
@@ -1428,10 +1429,10 @@ class TestCheckInterfaceBlock:
             concurrency=ConcurrencyModel(batch=BatchConcurrencyModel())
         )
         
-        with pytest.raises(ValueError) as exc_info:
+        with self.assertRaises(ValueError) as exc_info:
             rule(instance)
         
-        assert "multiple analysis drivers" in str(exc_info.value).lower()
+        assert "multiple analysis drivers" in str(exc_info.exception).lower()
     
     def test_batch_rejects_input_filter(self):
         """Batch mode rejects input filters."""
@@ -1444,10 +1445,10 @@ class TestCheckInterfaceBlock:
             concurrency=ConcurrencyModel(batch=BatchConcurrencyModel())
         )
         
-        with pytest.raises(ValueError) as exc_info:
+        with self.assertRaises(ValueError) as exc_info:
             rule(instance)
         
-        assert "input filter" in str(exc_info.value).lower()
+        assert "input filter" in str(exc_info.exception).lower()
     
     def test_batch_rejects_output_filter(self):
         """Batch mode rejects output filters."""
@@ -1460,10 +1461,10 @@ class TestCheckInterfaceBlock:
             concurrency=ConcurrencyModel(batch=BatchConcurrencyModel())
         )
         
-        with pytest.raises(ValueError) as exc_info:
+        with self.assertRaises(ValueError) as exc_info:
             rule(instance)
         
-        assert "output filter" in str(exc_info.value).lower()
+        assert "output filter" in str(exc_info.exception).lower()
     
     # def test_batch_rejects_size_one(self):
     #     """Batch mode rejects batch size of 1."""
@@ -1473,11 +1474,11 @@ class TestCheckInterfaceBlock:
     #         concurrency=ConcurrencyModel(batch=BatchConcurrencyModel(size=1))
     #     )
         
-    #     with pytest.raises(ValueError) as exc_info:
+    #     with self.assertRaises(ValueError) as exc_info:
     #         rule(instance)
         
-    #     assert "size" in str(exc_info.value).lower()
-    #     assert "1" in str(exc_info.value)
+    #     assert "size" in str(exc_info.exception).lower()
+    #     assert "1" in str(exc_info.exception)
     
     def test_batch_allows_larger_size(self):
         """Batch mode allows batch size > 1."""
@@ -1497,11 +1498,11 @@ class TestCheckInterfaceBlock:
             failure_capture=FailureCaptureContinuation()
         )
         
-        with pytest.raises(ValueError) as exc_info:
+        with self.assertRaises(ValueError) as exc_info:
             rule(instance)
         
-        assert "failure_capture" in str(exc_info.value)
-        assert "continuation" in str(exc_info.value)
+        assert "failure_capture" in str(exc_info.exception)
+        assert "continuation" in str(exc_info.exception)
     
     def test_batch_rejects_retry_failure_capture(self):
         """Batch mode rejects retry failure capture mode."""
@@ -1512,10 +1513,10 @@ class TestCheckInterfaceBlock:
             failure_capture=FailureCaptureRetry()
         )
         
-        with pytest.raises(ValueError) as exc_info:
+        with self.assertRaises(ValueError) as exc_info:
             rule(instance)
         
-        assert "retry" in str(exc_info.value)
+        assert "retry" in str(exc_info.exception)
     
     def test_batch_allows_abort(self):
         """Batch mode allows abort failure capture."""
@@ -1550,11 +1551,11 @@ class TestCheckInterfaceBlock:
     #         )
     #     )
         
-    #     with pytest.raises(ValueError) as exc_info:
+    #     with self.assertRaises(ValueError) as exc_info:
     #         rule(instance)
         
-    #     assert "evaluation_concurrency" in str(exc_info.value)
-    #     assert "analysis_concurrency" in str(exc_info.value)
+    #     assert "evaluation_concurrency" in str(exc_info.exception)
+    #     assert "analysis_concurrency" in str(exc_info.exception)
     
     def test_async_allows_higher_concurrency(self):
         """Async allows concurrency values > 1."""
@@ -1585,7 +1586,7 @@ class TestCheckInterfaceBlock:
         rule(instance)  # Should not raise
 
 
-class TestCheckAnalysisDrivers:
+class TestCheckAnalysisDrivers(unittest.TestCase):
     """Tests for CheckAnalysisDrivers validation rule."""
 
     def test_passes_with_one_driver(self):
@@ -1597,10 +1598,10 @@ class TestCheckAnalysisDrivers:
         rule = CheckAnalysisDrivers(context="analysis_drivers")
         instance = AnalysisDriversModel(drivers=[])
 
-        with pytest.raises(ValueError) as exc_info:
+        with self.assertRaises(ValueError) as exc_info:
             rule(instance)
 
-        assert "at least one driver" in str(exc_info.value).lower()
+        assert "at least one driver" in str(exc_info.exception).lower()
 
     def test_passes_with_even_analysis_components(self):
         rule = CheckAnalysisDrivers(context="analysis_drivers")
@@ -1617,17 +1618,17 @@ class TestCheckAnalysisDrivers:
             analysis_components=["c1", "c2", "c3"]
         )
 
-        with pytest.raises(ValueError) as exc_info:
+        with self.assertRaises(ValueError) as exc_info:
             rule(instance)
 
-        assert "evenly divisible" in str(exc_info.value).lower()
+        assert "evenly divisible" in str(exc_info.exception).lower()
 
 
 # ============================================================================
 # CheckResponseDescriptors tests
 # ============================================================================
 
-class TestCheckResponseDescriptors:
+class TestCheckResponseDescriptors(unittest.TestCase):
     """Tests for CheckResponseDescriptors validation rule."""
     
     def test_skips_when_descriptors_provided(self):
@@ -1715,7 +1716,7 @@ class TestCheckResponseDescriptors:
 # CheckFdGradientStepSize tests
 # ============================================================================
 
-class TestCheckFdGradientStepSize:
+class TestCheckFdGradientStepSize(unittest.TestCase):
     """Tests for CheckFdGradientStepSize validation rule."""
     
     def test_passes_for_dakota_source(self):
@@ -1767,17 +1768,17 @@ class TestCheckFdGradientStepSize:
             )
         )
         
-        with pytest.raises(ValueError) as exc_info:
+        with self.assertRaises(ValueError) as exc_info:
             rule(instance)
         
-        assert "vendor" in str(exc_info.value)
+        assert "vendor" in str(exc_info.exception)
 
 
 # ============================================================================
 # CheckMixedGradients tests
 # ============================================================================
 
-class TestCheckMixedGradients:
+class TestCheckMixedGradients(unittest.TestCase):
     """Tests for CheckMixedGradients validation rule."""
     
     def test_skips_when_not_mixed(self):
@@ -1826,10 +1827,10 @@ class TestCheckMixedGradients:
             )
         )
         
-        with pytest.raises(ValueError) as exc_info:
+        with self.assertRaises(ValueError) as exc_info:
             rule(instance)
         
-        assert "1 and 3" in str(exc_info.value)
+        assert "1 and 3" in str(exc_info.exception)
     
     def test_raises_on_missing_function(self):
         """Missing function in coverage should raise."""
@@ -1847,11 +1848,11 @@ class TestCheckMixedGradients:
             )
         )
         
-        with pytest.raises(ValueError) as exc_info:
+        with self.assertRaises(ValueError) as exc_info:
             rule(instance)
         
-        assert "Function 3" in str(exc_info.value)
-        assert "missing" in str(exc_info.value)
+        assert "Function 3" in str(exc_info.exception)
+        assert "missing" in str(exc_info.exception)
     
     def test_raises_on_duplicate_function(self):
         """Duplicate function in coverage should raise."""
@@ -1868,18 +1869,18 @@ class TestCheckMixedGradients:
             )
         )
         
-        with pytest.raises(ValueError) as exc_info:
+        with self.assertRaises(ValueError) as exc_info:
             rule(instance)
         
-        assert "Function 2" in str(exc_info.value)
-        assert "replicated" in str(exc_info.value)
+        assert "Function 2" in str(exc_info.exception)
+        assert "replicated" in str(exc_info.exception)
 
 
 # ============================================================================
 # CheckMixedHessians tests
 # ============================================================================
 
-class TestCheckMixedHessians:
+class TestCheckMixedHessians(unittest.TestCase):
     """Tests for CheckMixedHessians validation rule."""
     
     def test_skips_when_not_mixed(self):
@@ -1928,18 +1929,18 @@ class TestCheckMixedHessians:
             )
         )
         
-        with pytest.raises(ValueError) as exc_info:
+        with self.assertRaises(ValueError) as exc_info:
             rule(instance)
         
-        assert "Function 3" in str(exc_info.value)
-        assert "missing" in str(exc_info.value)
+        assert "Function 3" in str(exc_info.exception)
+        assert "missing" in str(exc_info.exception)
 
 
 # ============================================================================
 # DefaultInequalityBounds tests
 # ============================================================================
 
-class TestDefaultInequalityBounds:
+class TestDefaultInequalityBounds(unittest.TestCase):
     """Tests for DefaultInequalityBounds validation rule."""
     
     def test_sets_inequality_bounds(self):
@@ -1981,7 +1982,7 @@ class TestDefaultInequalityBounds:
 # DefaultEqualityTargets tests
 # ============================================================================
 
-class TestDefaultEqualityTargets:
+class TestDefaultEqualityTargets(unittest.TestCase):
     """Tests for DefaultEqualityTargets validation rule."""
     
     def test_sets_equality_targets(self):
@@ -2019,7 +2020,7 @@ class TestDefaultEqualityTargets:
 # CheckResponseDescriptorsLength tests
 # ============================================================================
 
-class TestCheckResponseDescriptorsLength:
+class TestCheckResponseDescriptorsLength(unittest.TestCase):
     """Tests for CheckResponseDescriptorsLength validation rule."""
     
     def test_skips_when_no_descriptors(self):
@@ -2070,18 +2071,18 @@ class TestCheckResponseDescriptorsLength:
             )
         )
         
-        with pytest.raises(ValueError) as exc_info:
+        with self.assertRaises(ValueError) as exc_info:
             rule(instance)
         
-        assert "2" in str(exc_info.value)
-        assert "3" in str(exc_info.value)
+        assert "2" in str(exc_info.exception)
+        assert "3" in str(exc_info.exception)
 
 
 # ============================================================================
 # CheckResponseDescriptorsValid tests
 # ============================================================================
 
-class TestCheckDescriptorsValid:
+class TestCheckDescriptorsValid(unittest.TestCase):
     """Tests for CheckDescriptorsValid unified validation rule."""
     
     def test_skips_when_no_descriptors(self):
@@ -2141,11 +2142,11 @@ class TestCheckDescriptorsValid:
             )
         )
         
-        with pytest.raises(ValueError) as exc_info:
+        with self.assertRaises(ValueError) as exc_info:
             rule(instance)
         
-        assert "Duplicate" in str(exc_info.value)
-        assert "f1" in str(exc_info.value)
+        assert "Duplicate" in str(exc_info.exception)
+        assert "f1" in str(exc_info.exception)
     
     def test_allows_duplicate_when_uniqueness_not_checked(self):
         """Should allow duplicates when check_uniqueness=False."""
@@ -2167,11 +2168,11 @@ class TestCheckDescriptorsValid:
             )
         )
         
-        with pytest.raises(ValueError) as exc_info:
+        with self.assertRaises(ValueError) as exc_info:
             rule(instance)
         
-        assert "123" in str(exc_info.value)
-        assert "number" in str(exc_info.value)
+        assert "123" in str(exc_info.exception)
+        assert "number" in str(exc_info.exception)
     
     def test_raises_on_float_number(self):
         """Should raise when descriptor is a floating-point number."""
@@ -2183,11 +2184,11 @@ class TestCheckDescriptorsValid:
             )
         )
         
-        with pytest.raises(ValueError) as exc_info:
+        with self.assertRaises(ValueError) as exc_info:
             rule(instance)
         
-        assert "3.14159" in str(exc_info.value)
-        assert "number" in str(exc_info.value)
+        assert "3.14159" in str(exc_info.exception)
+        assert "number" in str(exc_info.exception)
     
     def test_raises_on_scientific_notation(self):
         """Should raise when descriptor is scientific notation."""
@@ -2199,11 +2200,11 @@ class TestCheckDescriptorsValid:
             )
         )
         
-        with pytest.raises(ValueError) as exc_info:
+        with self.assertRaises(ValueError) as exc_info:
             rule(instance)
         
-        assert "1e10" in str(exc_info.value)
-        assert "number" in str(exc_info.value)
+        assert "1e10" in str(exc_info.exception)
+        assert "number" in str(exc_info.exception)
     
     def test_raises_on_nan_inf(self):
         """Should raise when descriptor is nan or inf."""
@@ -2217,10 +2218,10 @@ class TestCheckDescriptorsValid:
                 )
             )
             
-            with pytest.raises(ValueError) as exc_info:
+            with self.assertRaises(ValueError) as exc_info:
                 rule(instance)
             
-            assert "number" in str(exc_info.value)
+            assert "number" in str(exc_info.exception)
     
     def test_raises_on_whitespace(self):
         """Should raise when descriptor contains whitespace."""
@@ -2232,17 +2233,17 @@ class TestCheckDescriptorsValid:
             )
         )
         
-        with pytest.raises(ValueError) as exc_info:
+        with self.assertRaises(ValueError) as exc_info:
             rule(instance)
         
-        assert "whitespace" in str(exc_info.value)
+        assert "whitespace" in str(exc_info.exception)
 
 
 # ============================================================================
 # CheckPermittedValues tests
 # ============================================================================
 
-class TestCheckPermittedValues:
+class TestCheckPermittedValues(unittest.TestCase):
     """Tests for CheckPermittedValues generic validation rule."""
     
     def test_skips_when_not_provided(self):
@@ -2282,11 +2283,11 @@ class TestCheckPermittedValues:
             primary_scale_types=["value", "invalid"]
         )
         
-        with pytest.raises(ValueError) as exc_info:
+        with self.assertRaises(ValueError) as exc_info:
             rule(instance)
         
-        assert "invalid" in str(exc_info.value)
-        assert "primary_scale_types[1]" in str(exc_info.value)
+        assert "invalid" in str(exc_info.exception)
+        assert "primary_scale_types[1]" in str(exc_info.exception)
     
     def test_constraint_scale_types(self):
         """Should validate constraint scale types."""
@@ -2314,17 +2315,17 @@ class TestCheckPermittedValues:
             scale_types=["value", "bad"]
         )
         
-        with pytest.raises(ValueError) as exc_info:
+        with self.assertRaises(ValueError) as exc_info:
             rule(instance)
         
-        assert "bad" in str(exc_info.value)
+        assert "bad" in str(exc_info.exception)
 
 
 # ============================================================================
 # CheckScalesRequired tests
 # ============================================================================
 
-class TestCheckScalesRequired:
+class TestCheckScalesRequired(unittest.TestCase):
     """Tests for CheckScalesRequired generic validation rule."""
     
     def test_skips_when_no_scale_types(self):
@@ -2379,18 +2380,18 @@ class TestCheckScalesRequired:
             scale_types=["value", "auto"]
         )
         
-        with pytest.raises(ValueError) as exc_info:
+        with self.assertRaises(ValueError) as exc_info:
             rule(instance)
         
-        assert "value" in str(exc_info.value)
-        assert "scales" in str(exc_info.value)
+        assert "value" in str(exc_info.exception)
+        assert "scales" in str(exc_info.exception)
 
 
 # ============================================================================
 # CheckConstraintBoundsOrdering tests
 # ============================================================================
 
-class TestCheckConstraintBoundsOrdering:
+class TestCheckConstraintBoundsOrdering(unittest.TestCase):
     """Tests for CheckConstraintBoundsOrdering validation rule."""
     
     def test_skips_when_no_bounds(self):
@@ -2431,12 +2432,12 @@ class TestCheckConstraintBoundsOrdering:
             upper_bounds=[0.0, 5.0, 10.0]
         )
         
-        with pytest.raises(ValueError) as exc_info:
+        with self.assertRaises(ValueError) as exc_info:
             rule(instance)
         
-        assert "lower_bounds[1]" in str(exc_info.value)
-        assert "10" in str(exc_info.value)
-        assert "exceeds" in str(exc_info.value)
+        assert "lower_bounds[1]" in str(exc_info.exception)
+        assert "10" in str(exc_info.exception)
+        assert "exceeds" in str(exc_info.exception)
 
 
 # ============================================================================
@@ -2459,7 +2460,7 @@ class ContinuousDesignModel(BaseModel):
 # CheckVariableDescriptorsLength tests
 # ============================================================================
 
-class TestCheckVariableDescriptorsLength:
+class TestCheckVariableDescriptorsLength(unittest.TestCase):
     """Tests for CheckVariableDescriptorsLength validation rule."""
     
     def test_skips_when_no_descriptors(self):
@@ -2487,18 +2488,18 @@ class TestCheckVariableDescriptorsLength:
             descriptors=["x1", "x2"]  # Only 2, but count is 3
         )
         
-        with pytest.raises(ValueError) as exc_info:
+        with self.assertRaises(ValueError) as exc_info:
             rule(instance)
         
-        assert "2" in str(exc_info.value)
-        assert "3" in str(exc_info.value)
+        assert "2" in str(exc_info.exception)
+        assert "3" in str(exc_info.exception)
 
 
 # ============================================================================
 # DefaultVariableDescriptors tests
 # ============================================================================
 
-class TestDefaultVariableDescriptors:
+class TestDefaultVariableDescriptors(unittest.TestCase):
     """Tests for DefaultVariableDescriptors validation rule."""
     
     def test_skips_when_already_set(self):
@@ -2525,7 +2526,7 @@ class TestDefaultVariableDescriptors:
 # CheckVariableBoundsOrdering tests
 # ============================================================================
 
-class TestCheckVariableBoundsOrdering:
+class TestCheckVariableBoundsOrdering(unittest.TestCase):
     """Tests for CheckVariableBoundsOrdering validation rule."""
     
     def test_skips_when_no_bounds(self):
@@ -2555,11 +2556,11 @@ class TestCheckVariableBoundsOrdering:
             upper_bounds=[0.0, 5.0, 10.0]
         )
         
-        with pytest.raises(ValueError) as exc_info:
+        with self.assertRaises(ValueError) as exc_info:
             rule(instance)
         
-        assert "lower_bounds[1]" in str(exc_info.value)
-        assert "exceeds" in str(exc_info.value)
+        assert "lower_bounds[1]" in str(exc_info.exception)
+        assert "exceeds" in str(exc_info.exception)
 
 
 # ============================================================================
@@ -2599,7 +2600,7 @@ class DiscreteSetStrModel(BaseModel):
     model_config = {'extra': 'forbid'}
 
 
-class TestComputedFields:
+class TestComputedFields(unittest.TestCase):
     """Tests for computed field helpers and schema metadata."""
 
     def test_computed_field_schema(self):
@@ -2612,8 +2613,8 @@ class TestComputedFields:
             }
         }
 
-    def test_histogram_bin_bounds_python_fallback(self, monkeypatch):
-        monkeypatch.setattr(computed_fields_module, "_USE_CPP", False)
+    @mock.patch.object(computed_fields_module, "_USE_CPP", False)
+    def test_histogram_bin_bounds_python_fallback(self):
         instance = HistogramBinModel(
             count=2,
             pairs_per_variable=[2, 3],
@@ -2623,8 +2624,8 @@ class TestComputedFields:
         assert HistogramBinBounds.lower_bounds(instance) == [0.1, 1.0]
         assert HistogramBinBounds.upper_bounds(instance) == [0.4, 2.0]
 
-    def test_histogram_point_real_bounds_python_fallback_with_equal_partition(self, monkeypatch):
-        monkeypatch.setattr(computed_fields_module, "_USE_CPP", False)
+    @mock.patch.object(computed_fields_module, "_USE_CPP", False)
+    def test_histogram_point_real_bounds_python_fallback_with_equal_partition(self):
         instance = HistogramPointRealModel(
             count=2,
             pairs_per_variable=None,
@@ -2634,8 +2635,8 @@ class TestComputedFields:
         assert HistogramPointRealBounds.lower_bounds(instance) == [1.0, 7.0]
         assert HistogramPointRealBounds.upper_bounds(instance) == [3.0, 10.0]
 
-    def test_continuous_interval_bounds_python_fallback(self, monkeypatch):
-        monkeypatch.setattr(computed_fields_module, "_USE_CPP", False)
+    @mock.patch.object(computed_fields_module, "_USE_CPP", False)
+    def test_continuous_interval_bounds_python_fallback(self):
         instance = ContinuousIntervalModel(
             count=2,
             num_intervals=[2, 3],
@@ -2646,8 +2647,8 @@ class TestComputedFields:
         assert ContinuousIntervalBounds.inferred_lower_bounds(instance) == [-3.0, 8.0]
         assert ContinuousIntervalBounds.inferred_upper_bounds(instance) == [4.0, 14.0]
 
-    def test_discrete_set_string_bounds_python_fallback(self, monkeypatch):
-        monkeypatch.setattr(computed_fields_module, "_USE_CPP", False)
+    @mock.patch.object(computed_fields_module, "_USE_CPP", False)
+    def test_discrete_set_string_bounds_python_fallback(self):
         instance = DiscreteSetStrModel(
             count=2,
             elements_per_variable=[3, 2],
@@ -2662,7 +2663,7 @@ class TestComputedFields:
 # Backend status test
 # ============================================================================
 
-class TestBackendStatus:
+class TestBackendStatus(unittest.TestCase):
     """Tests for verifying backend status."""
     
     def test_cpp_backend_status(self):
@@ -2675,55 +2676,56 @@ class TestBackendStatus:
             assert _USE_CPP is False
 
 
-def test_generated_models_reject_internal_only_fields():
-    install_python = os.path.normpath(
-        os.path.join(os.path.dirname(__file__), "..", "..", "install", "lib", "python")
-    )
-    original_path = list(sys.path)
-    dakota_modules = {
-        name: module
-        for name, module in sys.modules.items()
-        if name == "dakota" or name.startswith("dakota.")
-    }
+class TestGeneratedModels(unittest.TestCase):
+    def test_reject_internal_only_fields(self):
+        install_python = os.path.normpath(
+            os.path.join(os.path.dirname(__file__), "..", "..", "install", "lib", "python")
+        )
+        original_path = list(sys.path)
+        dakota_modules = {
+            name: module
+            for name, module in sys.modules.items()
+            if name == "dakota" or name.startswith("dakota.")
+        }
 
-    try:
-        for name in list(dakota_modules):
-            sys.modules.pop(name, None)
-        sys.path.insert(0, install_python)
-        generated_variables = importlib.import_module("dakota.spec.variables")
-        NormalUncertain = generated_variables.NormalUncertain
-
-        with pytest.raises(ValueError, match="internal-only"):
-            NormalUncertain(
-                count=1,
-                means=[1.0],
-                std_deviations=[0.5],
-                initial_point_user_provided=True,
-            )
-
-        with pytest.raises(ValueError, match="internal-only"):
-            NormalUncertain(
-                count=1,
-                means=[1.0],
-                std_deviations=[0.5],
-                inferred_lower_bounds=[0.0],
-            )
-
-        LognormalUncertain = generated_variables.LognormalUncertain
-
-        with pytest.raises(ValueError, match="internal-only"):
-            LognormalUncertain(
-                count=1,
-                parameters={"option_1": {"means": [1.0], "std_deviations": [0.5]}},
-                inferred_upper_bounds=[2.0],
-            )
-    finally:
-        sys.path[:] = original_path
-        for name in list(sys.modules):
-            if name == "dakota" or name.startswith("dakota."):
+        try:
+            for name in list(dakota_modules):
                 sys.modules.pop(name, None)
-        sys.modules.update(dakota_modules)
+            sys.path.insert(0, install_python)
+            generated_variables = importlib.import_module("dakota.spec.variables")
+            NormalUncertain = generated_variables.NormalUncertain
+
+            with self.assertRaisesRegex(ValueError, "internal-only"):
+                NormalUncertain(
+                    count=1,
+                    means=[1.0],
+                    std_deviations=[0.5],
+                    initial_point_user_provided=True,
+                )
+
+            with self.assertRaisesRegex(ValueError, "internal-only"):
+                NormalUncertain(
+                    count=1,
+                    means=[1.0],
+                    std_deviations=[0.5],
+                    inferred_lower_bounds=[0.0],
+                )
+
+            LognormalUncertain = generated_variables.LognormalUncertain
+
+            with self.assertRaisesRegex(ValueError, "internal-only"):
+                LognormalUncertain(
+                    count=1,
+                    parameters={"option_1": {"means": [1.0], "std_deviations": [0.5]}},
+                    inferred_upper_bounds=[2.0],
+                )
+        finally:
+            sys.path[:] = original_path
+            for name in list(sys.modules):
+                if name == "dakota" or name.startswith("dakota."):
+                    sys.modules.pop(name, None)
+            sys.modules.update(dakota_modules)
 
 
 if __name__ == "__main__":
-    pytest.main([__file__, "-v"])
+    unittest.main(verbosity=2)

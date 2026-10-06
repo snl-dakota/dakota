@@ -172,6 +172,69 @@ def test_lib_json_object():
 
     print("\n+++ Done JSON LibEnv.\n")
 
+
+def test_lib_restart():
+    """Test the read_restart parameter of the study constructor.
+
+    1. Run a small sampling study that writes a restart file.
+    2. Re-run with read_restart pointing at that file; the evaluator
+       raises an error so any *new* evaluation would fail.  If all
+       evaluations come from the restart file the study succeeds.
+    """
+    import tempfile, shutil
+
+    workdir = tempfile.mkdtemp(prefix='dak_restart_')
+    rst_file = os.path.join(workdir, 'dakota.rst')
+
+    sampling_input = """
+        method,
+          sampling
+            sample_type lhs
+            samples = 5
+            seed = 42
+        variables,
+          uniform_uncertain = 2
+            lower_bounds  -2.0  -2.0
+            upper_bounds   2.0   2.0
+            descriptors   'x1'  'x2'
+        interface,
+          python
+            analysis_driver = 'tb'
+        responses,
+          response_functions = 1
+          no_gradients
+          no_hessians
+"""
+
+    call_count = [0]
+
+    def tb(params):
+        call_count[0] += 1
+        x = params['cv']
+        fn = sum((v - 1.0)**4 for v in x)
+        return {'fns': [fn]}
+
+    print("\n+++ Restart test: initial run (should evaluate 5 points)...\n")
+    env1 = dakenv.study(callback=tb, input_string=sampling_input)
+    env1.execute()
+    assert(call_count[0] == 5), f"Expected 5 evaluations, got {call_count[0]}"
+
+    # The restart file is written to cwd; move it to our workdir
+    if os.path.exists('dakota.rst'):
+        shutil.move('dakota.rst', rst_file)
+
+    def tb_fail(params):
+        raise RuntimeError('Should not be called -- all evals from restart')
+
+    print("\n+++ Restart test: restart run (no new evaluations expected)...\n")
+    env2 = dakenv.study(callback=tb_fail, input_string=sampling_input,
+                        read_restart=rst_file)
+    env2.execute()
+
+    # Clean up
+    shutil.rmtree(workdir, ignore_errors=True)
+    print("\n+++ Restart test passed.\n")
+
 if __name__ == "__main__":
 
     print("\n+++ Dakota version:\n")
@@ -182,3 +245,4 @@ if __name__ == "__main__":
     test_cmd()
     test_lib()
     test_lib_json_object()
+    test_lib_restart()

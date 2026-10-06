@@ -199,7 +199,10 @@ endif()
 # =============================================================================
 # Tests
 # =============================================================================
-if(BUILD_TESTS)
+# A Dakota build uses DAKOTA_ENABLE_TESTS, while a standalone parser build uses
+# BUILD_TESTS.  Do not rely on BUILD_TESTS inheriting the Dakota setting: it is
+# a cache option and may retain an older OFF value when reconfiguring.
+if(DAKOTA_ENABLE_TESTS OR BUILD_TESTS)
     if(DAKOTA_VALIDATION_STANDALONE)
         enable_testing()
     endif()
@@ -210,20 +213,9 @@ if(BUILD_TESTS)
         GTest::gtest_main
     )
     add_test(NAME test_validation COMMAND test_validation)
+    set_tests_properties(test_validation PROPERTIES LABELS Unit)
 
     if(BUILD_PYTHON_BINDINGS)
-        # Check Python test requirements before registering pytest-based tests.
-        execute_process(
-            COMMAND ${Python_EXECUTABLE} -c
-                    "import importlib.util, sys; sys.exit(0 if importlib.util.find_spec('pytest') else 1)"
-            RESULT_VARIABLE _pytest_result
-        )
-        if(_pytest_result EQUAL 0)
-            set(PYTEST_AVAILABLE TRUE)
-        else()
-            set(PYTEST_AVAILABLE FALSE)
-        endif()
-
         execute_process(
             COMMAND ${Python_EXECUTABLE} -c
                     "import pydantic, sys; sys.stdout.write(pydantic.__version__)"
@@ -247,13 +239,6 @@ if(BUILD_TESTS)
             endif()
         endif()
 
-        # Report status
-        if(PYTEST_AVAILABLE)
-            message(STATUS "pytest is available")
-        else()
-            message(WARNING "pytest is not available - Python validation tests will be skipped")
-        endif()
-
         if(PYDANTIC_AVAILABLE)
             message(STATUS "Pydantic ${PYDANTIC_VERSION} is available")
         else()
@@ -264,25 +249,39 @@ if(BUILD_TESTS)
             endif()
         endif()
 
-        # Only add Python tests if both pytest and pydantic are available
-        if(PYTEST_AVAILABLE AND PYDANTIC_AVAILABLE)
+        if(PYDANTIC_AVAILABLE)
             add_test(
                 NAME python_validation_tests
-                COMMAND ${Python_EXECUTABLE} -m pytest ${CMAKE_CURRENT_SOURCE_DIR}/test -v
+                COMMAND ${Python_EXECUTABLE} -m unittest discover
+                        -s ${CMAKE_CURRENT_SOURCE_DIR}/test
+                        -p test_validation.py
+                        -v
                 WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
             )
 
-            # PYTHONPATH needs:
-            # 1. Combined package (for dakota.spec.* modules) - when model generation is enabled
-            # 2. Current build dir (for the compiled dakota_validation_cpp.so)
-            # The combined package also contains the .so after the combine step
-            set(_PYTEST_PYTHONPATH "${CMAKE_BINARY_DIR}/dakota_package:${CMAKE_CURRENT_BINARY_DIR}")
+            # A Dakota build assembles the in-tree Python package here and the
+            # copy_dakota_validation target places the extension in it.  Keep
+            # the validation binary directory as a fallback for standalone
+            # builds, where the extension is emitted directly there.
+            if(DAKOTA_ENABLE_TESTS)
+                set(_VALIDATION_PYTHON_PACKAGE "${CMAKE_BINARY_DIR}/python")
+            else()
+                set(_VALIDATION_PYTHON_PACKAGE "${CMAKE_BINARY_DIR}/dakota_package")
+            endif()
+            if(WIN32)
+                set(_VALIDATION_TEST_PYTHONPATH
+                    "${_VALIDATION_PYTHON_PACKAGE};${CMAKE_CURRENT_BINARY_DIR}")
+            else()
+                set(_VALIDATION_TEST_PYTHONPATH
+                    "${_VALIDATION_PYTHON_PACKAGE}:${CMAKE_CURRENT_BINARY_DIR}")
+            endif()
 
             set_tests_properties(python_validation_tests PROPERTIES
-                ENVIRONMENT "PYTHONPATH=${_PYTEST_PYTHONPATH}"
+                ENVIRONMENT "PYTHONPATH=${_VALIDATION_TEST_PYTHONPATH}"
+                LABELS "Unit;Python"
             )
         else()
-            message(STATUS "Skipping Python validation tests due to missing dependencies")
+            message(STATUS "Skipping Python validation tests because Pydantic is unavailable")
         endif()
     endif()
 endif()
