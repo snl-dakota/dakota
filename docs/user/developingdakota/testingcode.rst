@@ -370,7 +370,7 @@ exercise method and model factories using small evaluation budgets. The
 Python scripts construct bound objects and execute them with ``Study.run()``;
 they do not parse or generate Dakota input. No saved baseline is read or
 updated. The scripts, inputs, helpers, and manifest are in
-:file:`test/python_regression/` in the source tree.
+:file:`test/python_parity/` in the source tree.
 
 Each case has its own Python script and constructs one ``Study`` in a fresh
 process. Its models and sub-iterators belong to that study. Shared helpers
@@ -391,15 +391,15 @@ Configure with ``BUILD_TESTING``, ``DAKOTA_ENABLE_TESTS``, and
 
    cmake -S <source> -B <build>
    cmake --build <build> -j 3
-   ctest --test-dir <build> -L PythonRegression --output-on-failure -j 3
+   ctest --test-dir <build> -L PythonParity --output-on-failure -j 3
 
-Each case registers as ``python_regression_<case-id>`` with the labels
-``PythonRegression`` and ``SerialTest``. For example, to run only the POF
+Each case registers as ``python_parity_<case-id>`` with the labels
+``PythonParity`` and ``SerialTest``. For example, to run only the POF
 DARTS pair:
 
 .. code-block:: sh
 
-   ctest --test-dir <build> -R '^python_regression_method_pof_darts$' --output-on-failure
+   ctest --test-dir <build> -R '^python_parity_method_pof_darts$' --output-on-failure
 
 The manifest contains 70 cases covering parameter studies, sampling,
 optimization, reliability, interval estimation and evidence, expansions,
@@ -427,7 +427,7 @@ reduced sections also use the comparator's tolerances. These additions do
 not change regular saved-baseline selection or comparison.
 
 Artifacts remain in
-``<build>/test/python_regression/<case-id>/``. Its ``freeform/`` and
+``<build>/test/python_parity/<case-id>/``. Its ``freeform/`` and
 ``python/`` directories contain the extracted input where applicable,
 native output and error files, captured process stdout and stderr, and
 reduced ``results.tst`` files. Comparison diagnostics and a per-case
@@ -454,29 +454,32 @@ freeform regression reports:
 
    cmake --build <build> --target dakota-diffs
 
-The combined report is ``<build>/test/dakota_diffs.out``. Unlike the regular
-regressions described above, paired reruns reset their reports, comparison
-logs, and both working directories. Different cases can run concurrently;
-concurrent invocations of the same case in one build directory are
-unsupported.
+Per-case ``dakota_diffs.out`` files are written under
+``<build>/test/python_parity/<case-id>/``. These are kept separate from the
+regular freeform regression ``<build>/test/dakota_diffs.out`` collected by the
+``dakota-diffs`` target; the ``python_parity_results.log`` in the build root
+summarises the PythonParity PASS/FAIL/DIFF counts independently. Paired
+reruns reset their per-case reports, comparison logs, and both working
+directories. Different cases can run concurrently; concurrent invocations of
+the same case in one build directory are unsupported.
 
 Adding a Paired Test
 ^^^^^^^^^^^^^^^^^^^^^^
 
 #. Write an independent freeform study or select a serial subtest from an
    existing regression input. Dedicated paired fixtures live in
-   :file:`test/python_regression/inputs/` and register only as paired tests.
+   :file:`test/python_parity/inputs/` and register only as paired tests.
 
 #. Write a separate Python script that constructs one ``Study`` and executes
    the bound method/model objects with ``Study.run()``. Configure native
    output as ``dakota.out`` and ``dakota.err``. Prefer short runs with fixed
    seeds and small iteration or evaluation budgets.
 
-#. Add an entry to :file:`test/python_regression/cases.json` with the case
+#. Add an entry to :file:`test/python_parity/cases.json` with the case
    ``id``, ``input`` path, serial ``subtest`` number, ``script``,
    ``required_files``, covered ``factories`` and ``classes``, and any
    ``requires_features``. Input and required-file paths are relative to
-   :file:`test/`; script paths are relative to :file:`test/python_regression/`.
+   :file:`test/`; script paths are relative to :file:`test/python_parity/`.
    Required files are copied into each working directory using their
    basenames. The special ``text_book`` entry resolves to the configured
    build target. Manifest edits trigger reconfiguration on the next build.
@@ -484,11 +487,11 @@ Adding a Paired Test
 #. Build and run the pair, inspect its output and diff report, and measure
    the runtime in a compatible native build.
 
-For example, ``python_regression_method_pof_darts`` maps to
-:file:`test/python_regression/method_pof_darts.py` and
-:file:`test/python_regression/inputs/pof_darts.in`. The manifest records this
+For example, ``python_parity_method_pof_darts`` maps to
+:file:`test/python_parity/method_pof_darts.py` and
+:file:`test/python_parity/inputs/pof_darts.in`. The manifest records this
 mapping for every case. Many UQ cases share
-:file:`test/python_regression/response_driver.py`, a smooth numerical fixture
+:file:`test/python_parity/response_driver.py`, a smooth numerical fixture
 with analytic derivatives, residuals, fidelity differences, and resolution
 error. The driver is shared between the executable and Python runs, while
 the two study configurations remain independent.
@@ -496,19 +499,19 @@ the two study configurations remain independent.
 Coverage and Harness Checks
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-:file:`test/python_regression/COVERAGE.md` maps method/model factory
+:file:`test/python_parity/COVERAGE.md` maps method/model factory
 entry points to paired cases. All 71 declared entry points have authored
 execution pairs, including the ``single`` alias for ``simulation``. This
 inventory records factory execution coverage, not verified passes in every
 build or coverage of every configuration or solver backend. Factory
 construction alone does not count as execution. Proposed additional cases
-are recorded in :file:`test/python_regression/TODO.md`.
+are recorded in :file:`test/python_parity/TODO.md`.
 
 Regenerate the inventory with:
 
 .. code-block:: sh
 
-   python3 <source>/test/python_regression/coverage.py --output <source>/test/python_regression/COVERAGE.md
+   python3 <source>/test/python_parity/coverage.py --output <source>/test/python_parity/COVERAGE.md
 
 Use ``coverage.py --native`` with the built extension on ``PYTHONPATH`` to
 filter the inventory to factories available in that build.
@@ -518,7 +521,7 @@ extension:
 
 .. code-block:: sh
 
-   python3 -m unittest discover -s <source>/test/python_regression -p 'test_*.py' -v
+   python3 -m unittest discover -s <source>/test/python_parity -p 'test_*.py' -v
 
 Native parity and runtime verification require an executable and Python
 extension compatible with the test environment.

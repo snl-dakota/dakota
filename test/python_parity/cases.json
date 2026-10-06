@@ -173,7 +173,7 @@
   },
   {
     "id": "sampling_small",
-    "input": "python_regression/inputs/sampling.in",
+    "input": "python_parity/inputs/sampling.in",
     "subtest": 0,
     "script": "sampling.py",
     "required_files": [
@@ -193,7 +193,7 @@
   },
   {
     "id": "import_points",
-    "input": "python_regression/inputs/import_points.in",
+    "input": "python_parity/inputs/import_points.in",
     "subtest": 0,
     "script": "import_points.py",
     "required_files": [
@@ -214,11 +214,11 @@
   },
   {
     "id": "model_global",
-    "input": "python_regression/inputs/global.in",
+    "input": "python_parity/inputs/global.in",
     "subtest": 0,
     "script": "model_global.py",
     "required_files": [
-      "python_regression/inputs/build_points.dat"
+      "python_parity/inputs/build_points.dat"
     ],
     "factories": [
       "Study.variables",
@@ -234,7 +234,7 @@
   },
   {
     "id": "model_local",
-    "input": "python_regression/inputs/local.in",
+    "input": "python_parity/inputs/local.in",
     "subtest": 0,
     "script": "model_local.py",
     "required_files": [
@@ -256,7 +256,7 @@
   },
   {
     "id": "model_multipoint",
-    "input": "python_regression/inputs/multipoint.in",
+    "input": "python_parity/inputs/multipoint.in",
     "subtest": 0,
     "script": "model_multipoint.py",
     "required_files": [
@@ -278,7 +278,7 @@
   },
   {
     "id": "model_ensemble",
-    "input": "python_regression/inputs/ensemble.in",
+    "input": "python_parity/inputs/ensemble.in",
     "subtest": 0,
     "script": "ensemble.py",
     "required_files": [
@@ -300,7 +300,7 @@
   },
   {
     "id": "model_nested",
-    "input": "python_regression/inputs/nested.in",
+    "input": "python_parity/inputs/nested.in",
     "subtest": 0,
     "script": "nested.py",
     "required_files": [
@@ -324,7 +324,7 @@
   },
   {
     "id": "method_dot_bfgs",
-    "input": "python_regression/inputs/dot_bfgs.in",
+    "input": "python_parity/inputs/dot_bfgs.in",
     "subtest": 0,
     "script": "method_dot_bfgs.py",
     "required_files": [
@@ -347,7 +347,7 @@
   },
   {
     "id": "method_dot_frcg",
-    "input": "python_regression/inputs/dot_frcg.in",
+    "input": "python_parity/inputs/dot_frcg.in",
     "subtest": 0,
     "script": "method_dot_frcg.py",
     "required_files": [
@@ -370,7 +370,7 @@
   },
   {
     "id": "method_dot_slp",
-    "input": "python_regression/inputs/dot_slp.in",
+    "input": "python_parity/inputs/dot_slp.in",
     "subtest": 0,
     "script": "method_dot_slp.py",
     "required_files": [
@@ -393,7 +393,7 @@
   },
   {
     "id": "method_dot_sqp",
-    "input": "python_regression/inputs/dot_sqp.in",
+    "input": "python_parity/inputs/dot_sqp.in",
     "subtest": 0,
     "script": "method_dot_sqp.py",
     "required_files": [
@@ -416,7 +416,7 @@
   },
   {
     "id": "method_conmin_frcg",
-    "input": "python_regression/inputs/conmin_frcg.in",
+    "input": "python_parity/inputs/conmin_frcg.in",
     "subtest": 0,
     "script": "method_conmin_frcg.py",
     "required_files": [
@@ -439,7 +439,7 @@
   },
   {
     "id": "method_conmin_mfd",
-    "input": "python_regression/inputs/conmin_mfd.in",
+    "input": "python_parity/inputs/conmin_mfd.in",
     "subtest": 0,
     "script": "method_conmin_mfd.py",
     "required_files": [
@@ -462,7 +462,7 @@
   },
   {
     "id": "method_nonlinear_cg",
-    "input": "python_regression/inputs/nonlinear_cg.in",
+    "input": "python_parity/inputs/nonlinear_cg.in",
     "subtest": 0,
     "script": "method_nonlinear_cg.py",
     "required_files": [
@@ -482,7 +482,7 @@
   },
   {
     "id": "method_genie_direct",
-    "input": "python_regression/inputs/genie_direct.in",
+    "input": "python_parity/inputs/genie_direct.in",
     "subtest": 0,
     "script": "method_genie_direct.py",
     "required_files": [
@@ -502,7 +502,7 @@
   },
   {
     "id": "method_genie_opt_darts",
-    "input": "python_regression/inputs/genie_opt_darts.in",
+    "input": "python_parity/inputs/genie_opt_darts.in",
     "subtest": 0,
     "script": "method_genie_opt_darts.py",
     "required_files": [
@@ -522,7 +522,7 @@
   },
   {
     "id": "method_coliny_cobyla",
-    "input": "python_regression/inputs/coliny_cobyla.in",
+    "input": "python_parity/inputs/coliny_cobyla.in",
     "subtest": 0,
     "script": "method_coliny_cobyla.py",
     "required_files": [
@@ -545,7 +545,7 @@
   },
   {
     "id": "method_coliny_pattern_search",
-    "input": "python_regression/inputs/coliny_pattern_search.in",
+    "input": "python_parity/inputs/coliny_pattern_search.in",
     "subtest": 0,
     "script": "method_coliny_pattern_search.py",
     "required_files": [
@@ -590,7 +590,7 @@
   },
   {
     "id": "method_coliny_direct",
-    "input": "python_regression/inputs/coliny_direct.in",
+    "input": "python_parity/inputs/coliny_direct.in",
     "subtest": 0,
     "script": "method_coliny_direct.py",
     "required_files": [
@@ -613,7 +613,7 @@
   },
   {
     "id": "method_coliny_ea",
-    "input": "python_regression/inputs/coliny_ea.in",
+    "input": "python_parity/inputs/coliny_ea.in",
     "subtest": 0,
     "script": "method_coliny_ea.py",
     "required_files": [
@@ -636,7 +636,7 @@
   },
   {
     "id": "method_coliny_solis_wets",
-    "input": "python_regression/inputs/coliny_solis_wets.in",
+    "input": "python_parity/inputs/coliny_solis_wets.in",
     "subtest": 0,
     "script": "method_coliny_solis_wets.py",
     "required_files": [
@@ -659,7 +659,7 @@
   },
   {
     "id": "method_optpp_cg",
-    "input": "python_regression/inputs/optpp_cg.in",
+    "input": "python_parity/inputs/optpp_cg.in",
     "subtest": 0,
     "script": "method_optpp_cg.py",
     "required_files": [
@@ -682,7 +682,7 @@
   },
   {
     "id": "method_optpp_pds",
-    "input": "python_regression/inputs/optpp_pds.in",
+    "input": "python_parity/inputs/optpp_pds.in",
     "subtest": 0,
     "script": "method_optpp_pds.py",
     "required_files": [
@@ -705,7 +705,7 @@
   },
   {
     "id": "method_ncsu_direct",
-    "input": "python_regression/inputs/ncsu_direct.in",
+    "input": "python_parity/inputs/ncsu_direct.in",
     "subtest": 0,
     "script": "method_ncsu_direct.py",
     "required_files": [
@@ -728,7 +728,7 @@
   },
   {
     "id": "method_nlpql_sqp",
-    "input": "python_regression/inputs/nlpql_sqp.in",
+    "input": "python_parity/inputs/nlpql_sqp.in",
     "subtest": 0,
     "script": "method_nlpql_sqp.py",
     "required_files": [
@@ -751,7 +751,7 @@
   },
   {
     "id": "method_npsol_sqp",
-    "input": "python_regression/inputs/npsol_sqp.in",
+    "input": "python_parity/inputs/npsol_sqp.in",
     "subtest": 0,
     "script": "method_npsol_sqp.py",
     "required_files": [
@@ -774,7 +774,7 @@
   },
   {
     "id": "method_mesh_adaptive_search",
-    "input": "python_regression/inputs/mesh_adaptive_search.in",
+    "input": "python_parity/inputs/mesh_adaptive_search.in",
     "subtest": 0,
     "script": "method_mesh_adaptive_search.py",
     "required_files": [
@@ -797,7 +797,7 @@
   },
   {
     "id": "method_asynch_pattern_search",
-    "input": "python_regression/inputs/asynch_pattern_search.in",
+    "input": "python_parity/inputs/asynch_pattern_search.in",
     "subtest": 0,
     "script": "method_asynch_pattern_search.py",
     "required_files": [
@@ -820,7 +820,7 @@
   },
   {
     "id": "method_soga",
-    "input": "python_regression/inputs/soga.in",
+    "input": "python_parity/inputs/soga.in",
     "subtest": 0,
     "script": "method_soga.py",
     "required_files": [
@@ -843,7 +843,7 @@
   },
   {
     "id": "method_moga",
-    "input": "python_regression/inputs/moga.in",
+    "input": "python_parity/inputs/moga.in",
     "subtest": 0,
     "script": "method_moga.py",
     "required_files": [
@@ -866,11 +866,11 @@
   },
   {
     "id": "method_local_reliability",
-    "input": "python_regression/inputs/local_reliability.in",
+    "input": "python_parity/inputs/local_reliability.in",
     "subtest": 0,
     "script": "method_local_reliability.py",
     "required_files": [
-      "python_regression/response_driver.py"
+      "python_parity/response_driver.py"
     ],
     "factories": [
       "Study.variables",
@@ -886,11 +886,11 @@
   },
   {
     "id": "method_global_reliability",
-    "input": "python_regression/inputs/global_reliability.in",
+    "input": "python_parity/inputs/global_reliability.in",
     "subtest": 0,
     "script": "method_global_reliability.py",
     "required_files": [
-      "python_regression/response_driver.py"
+      "python_parity/response_driver.py"
     ],
     "factories": [
       "Study.variables",
@@ -909,11 +909,11 @@
   },
   {
     "id": "method_global_interval_est",
-    "input": "python_regression/inputs/global_interval_est.in",
+    "input": "python_parity/inputs/global_interval_est.in",
     "subtest": 0,
     "script": "method_global_interval_est.py",
     "required_files": [
-      "python_regression/response_driver.py"
+      "python_parity/response_driver.py"
     ],
     "factories": [
       "Study.variables",
@@ -929,11 +929,11 @@
   },
   {
     "id": "method_global_evidence",
-    "input": "python_regression/inputs/global_evidence.in",
+    "input": "python_parity/inputs/global_evidence.in",
     "subtest": 0,
     "script": "method_global_evidence.py",
     "required_files": [
-      "python_regression/response_driver.py"
+      "python_parity/response_driver.py"
     ],
     "factories": [
       "Study.variables",
@@ -949,11 +949,11 @@
   },
   {
     "id": "method_local_interval_est",
-    "input": "python_regression/inputs/local_interval_est.in",
+    "input": "python_parity/inputs/local_interval_est.in",
     "subtest": 0,
     "script": "method_local_interval_est.py",
     "required_files": [
-      "python_regression/response_driver.py"
+      "python_parity/response_driver.py"
     ],
     "factories": [
       "Study.variables",
@@ -972,11 +972,11 @@
   },
   {
     "id": "method_local_evidence",
-    "input": "python_regression/inputs/local_evidence.in",
+    "input": "python_parity/inputs/local_evidence.in",
     "subtest": 0,
     "script": "method_local_evidence.py",
     "required_files": [
-      "python_regression/response_driver.py"
+      "python_parity/response_driver.py"
     ],
     "factories": [
       "Study.variables",
@@ -995,11 +995,11 @@
   },
   {
     "id": "method_importance_sampling",
-    "input": "python_regression/inputs/importance_sampling.in",
+    "input": "python_parity/inputs/importance_sampling.in",
     "subtest": 0,
     "script": "method_importance_sampling.py",
     "required_files": [
-      "python_regression/response_driver.py"
+      "python_parity/response_driver.py"
     ],
     "factories": [
       "Study.variables",
@@ -1015,11 +1015,11 @@
   },
   {
     "id": "method_gpais",
-    "input": "python_regression/inputs/gpais.in",
+    "input": "python_parity/inputs/gpais.in",
     "subtest": 0,
     "script": "method_gpais.py",
     "required_files": [
-      "python_regression/response_driver.py"
+      "python_parity/response_driver.py"
     ],
     "factories": [
       "Study.variables",
@@ -1038,11 +1038,11 @@
   },
   {
     "id": "method_pof_darts",
-    "input": "python_regression/inputs/pof_darts.in",
+    "input": "python_parity/inputs/pof_darts.in",
     "subtest": 0,
     "script": "method_pof_darts.py",
     "required_files": [
-      "python_regression/response_driver.py"
+      "python_parity/response_driver.py"
     ],
     "factories": [
       "Study.variables",
@@ -1058,11 +1058,11 @@
   },
   {
     "id": "method_rkd_darts",
-    "input": "python_regression/inputs/rkd_darts.in",
+    "input": "python_parity/inputs/rkd_darts.in",
     "subtest": 0,
     "script": "method_rkd_darts.py",
     "required_files": [
-      "python_regression/response_driver.py"
+      "python_parity/response_driver.py"
     ],
     "factories": [
       "Study.variables",
@@ -1078,11 +1078,11 @@
   },
   {
     "id": "method_adaptive_sampling",
-    "input": "python_regression/inputs/adaptive_sampling.in",
+    "input": "python_parity/inputs/adaptive_sampling.in",
     "subtest": 0,
     "script": "method_adaptive_sampling.py",
     "required_files": [
-      "python_regression/response_driver.py"
+      "python_parity/response_driver.py"
     ],
     "factories": [
       "Study.variables",
@@ -1101,11 +1101,11 @@
   },
   {
     "id": "method_polynomial_chaos",
-    "input": "python_regression/inputs/polynomial_chaos.in",
+    "input": "python_parity/inputs/polynomial_chaos.in",
     "subtest": 0,
     "script": "method_polynomial_chaos.py",
     "required_files": [
-      "python_regression/response_driver.py"
+      "python_parity/response_driver.py"
     ],
     "factories": [
       "Study.variables",
@@ -1121,11 +1121,11 @@
   },
   {
     "id": "method_stoch_collocation",
-    "input": "python_regression/inputs/stoch_collocation.in",
+    "input": "python_parity/inputs/stoch_collocation.in",
     "subtest": 0,
     "script": "method_stoch_collocation.py",
     "required_files": [
-      "python_regression/response_driver.py"
+      "python_parity/response_driver.py"
     ],
     "factories": [
       "Study.variables",
@@ -1141,11 +1141,11 @@
   },
   {
     "id": "method_function_train",
-    "input": "python_regression/inputs/function_train.in",
+    "input": "python_parity/inputs/function_train.in",
     "subtest": 0,
     "script": "method_function_train.py",
     "required_files": [
-      "python_regression/response_driver.py"
+      "python_parity/response_driver.py"
     ],
     "factories": [
       "Study.variables",
@@ -1164,11 +1164,11 @@
   },
   {
     "id": "method_surrogate_based_uq",
-    "input": "python_regression/inputs/surrogate_based_uq.in",
+    "input": "python_parity/inputs/surrogate_based_uq.in",
     "subtest": 0,
     "script": "method_surrogate_based_uq.py",
     "required_files": [
-      "python_regression/response_driver.py"
+      "python_parity/response_driver.py"
     ],
     "factories": [
       "Study.variables",
@@ -1191,11 +1191,11 @@
   },
   {
     "id": "method_multilevel_polynomial_chaos",
-    "input": "python_regression/inputs/multilevel_polynomial_chaos.in",
+    "input": "python_parity/inputs/multilevel_polynomial_chaos.in",
     "subtest": 0,
     "script": "method_multilevel_polynomial_chaos.py",
     "required_files": [
-      "python_regression/response_driver.py"
+      "python_parity/response_driver.py"
     ],
     "factories": [
       "Study.variables",
@@ -1213,11 +1213,11 @@
   },
   {
     "id": "method_multifidelity_polynomial_chaos",
-    "input": "python_regression/inputs/multifidelity_polynomial_chaos.in",
+    "input": "python_parity/inputs/multifidelity_polynomial_chaos.in",
     "subtest": 0,
     "script": "method_multifidelity_polynomial_chaos.py",
     "required_files": [
-      "python_regression/response_driver.py"
+      "python_parity/response_driver.py"
     ],
     "factories": [
       "Study.variables",
@@ -1235,11 +1235,11 @@
   },
   {
     "id": "method_multifidelity_stoch_collocation",
-    "input": "python_regression/inputs/multifidelity_stoch_collocation.in",
+    "input": "python_parity/inputs/multifidelity_stoch_collocation.in",
     "subtest": 0,
     "script": "method_multifidelity_stoch_collocation.py",
     "required_files": [
-      "python_regression/response_driver.py"
+      "python_parity/response_driver.py"
     ],
     "factories": [
       "Study.variables",
@@ -1257,11 +1257,11 @@
   },
   {
     "id": "method_multilevel_function_train",
-    "input": "python_regression/inputs/multilevel_function_train.in",
+    "input": "python_parity/inputs/multilevel_function_train.in",
     "subtest": 0,
     "script": "method_multilevel_function_train.py",
     "required_files": [
-      "python_regression/response_driver.py"
+      "python_parity/response_driver.py"
     ],
     "factories": [
       "Study.variables",
@@ -1282,11 +1282,11 @@
   },
   {
     "id": "method_multifidelity_function_train",
-    "input": "python_regression/inputs/multifidelity_function_train.in",
+    "input": "python_parity/inputs/multifidelity_function_train.in",
     "subtest": 0,
     "script": "method_multifidelity_function_train.py",
     "required_files": [
-      "python_regression/response_driver.py"
+      "python_parity/response_driver.py"
     ],
     "factories": [
       "Study.variables",
@@ -1307,11 +1307,11 @@
   },
   {
     "id": "method_multilevel_sampling",
-    "input": "python_regression/inputs/multilevel_sampling.in",
+    "input": "python_parity/inputs/multilevel_sampling.in",
     "subtest": 0,
     "script": "method_multilevel_sampling.py",
     "required_files": [
-      "python_regression/response_driver.py"
+      "python_parity/response_driver.py"
     ],
     "factories": [
       "Study.variables",
@@ -1329,11 +1329,11 @@
   },
   {
     "id": "method_multifidelity_sampling",
-    "input": "python_regression/inputs/multifidelity_sampling.in",
+    "input": "python_parity/inputs/multifidelity_sampling.in",
     "subtest": 0,
     "script": "method_multifidelity_sampling.py",
     "required_files": [
-      "python_regression/response_driver.py"
+      "python_parity/response_driver.py"
     ],
     "factories": [
       "Study.variables",
@@ -1351,11 +1351,11 @@
   },
   {
     "id": "method_approximate_control_variate",
-    "input": "python_regression/inputs/approximate_control_variate.in",
+    "input": "python_parity/inputs/approximate_control_variate.in",
     "subtest": 0,
     "script": "method_approximate_control_variate.py",
     "required_files": [
-      "python_regression/response_driver.py"
+      "python_parity/response_driver.py"
     ],
     "factories": [
       "Study.variables",
@@ -1376,11 +1376,11 @@
   },
   {
     "id": "method_multilevel_blue",
-    "input": "python_regression/inputs/multilevel_blue.in",
+    "input": "python_parity/inputs/multilevel_blue.in",
     "subtest": 0,
     "script": "method_multilevel_blue.py",
     "required_files": [
-      "python_regression/response_driver.py"
+      "python_parity/response_driver.py"
     ],
     "factories": [
       "Study.variables",
@@ -1401,11 +1401,11 @@
   },
   {
     "id": "method_multilevel_multifidelity_sampling",
-    "input": "python_regression/inputs/multilevel_multifidelity_sampling.in",
+    "input": "python_parity/inputs/multilevel_multifidelity_sampling.in",
     "subtest": 0,
     "script": "method_multilevel_multifidelity_sampling.py",
     "required_files": [
-      "python_regression/response_driver.py"
+      "python_parity/response_driver.py"
     ],
     "factories": [
       "Study.variables",
@@ -1423,11 +1423,11 @@
   },
   {
     "id": "method_efficient_global",
-    "input": "python_regression/inputs/efficient_global.in",
+    "input": "python_parity/inputs/efficient_global.in",
     "subtest": 0,
     "script": "method_efficient_global.py",
     "required_files": [
-      "python_regression/response_driver.py"
+      "python_parity/response_driver.py"
     ],
     "factories": [
       "Study.variables",
@@ -1447,11 +1447,11 @@
   },
   {
     "id": "method_coliny_beta",
-    "input": "python_regression/inputs/coliny_beta.in",
+    "input": "python_parity/inputs/coliny_beta.in",
     "subtest": 0,
     "script": "method_coliny_beta.py",
     "required_files": [
-      "python_regression/response_driver.py"
+      "python_parity/response_driver.py"
     ],
     "factories": [
       "Study.variables",
@@ -1470,11 +1470,11 @@
   },
   {
     "id": "method_nl2sol",
-    "input": "python_regression/inputs/nl2sol.in",
+    "input": "python_parity/inputs/nl2sol.in",
     "subtest": 0,
     "script": "method_nl2sol.py",
     "required_files": [
-      "python_regression/response_driver.py"
+      "python_parity/response_driver.py"
     ],
     "factories": [
       "Study.variables",
@@ -1493,11 +1493,11 @@
   },
   {
     "id": "method_branch_and_bound",
-    "input": "python_regression/inputs/branch_and_bound.in",
+    "input": "python_parity/inputs/branch_and_bound.in",
     "subtest": 0,
     "script": "method_branch_and_bound.py",
     "required_files": [
-      "python_regression/response_driver.py"
+      "python_parity/response_driver.py"
     ],
     "factories": [
       "Study.variables",
@@ -1517,11 +1517,11 @@
   },
   {
     "id": "method_richardson_extrap",
-    "input": "python_regression/inputs/richardson_extrap.in",
+    "input": "python_parity/inputs/richardson_extrap.in",
     "subtest": 0,
     "script": "method_richardson_extrap.py",
     "required_files": [
-      "python_regression/response_driver.py"
+      "python_parity/response_driver.py"
     ],
     "factories": [
       "Study.variables",
@@ -1537,11 +1537,11 @@
   },
   {
     "id": "method_bayes_calibration",
-    "input": "python_regression/inputs/bayes_calibration.in",
+    "input": "python_parity/inputs/bayes_calibration.in",
     "subtest": 0,
     "script": "method_bayes_calibration.py",
     "required_files": [
-      "python_regression/response_driver.py"
+      "python_parity/response_driver.py"
     ],
     "factories": [
       "Study.variables",

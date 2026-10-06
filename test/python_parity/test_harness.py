@@ -144,7 +144,7 @@ Estimated integral of response_fn_1 = 1.0000000000e-01
         (self.work / "comparison.stdout").write_text("PASS test 0")
         command = [
             sys.executable,
-            str(SOURCE / "python_regression/run_pair.py"),
+            str(SOURCE / "python_parity/run_pair.py"),
             "--case",
             "pstudy_s0",
             "--source",
@@ -191,7 +191,7 @@ Estimated integral of response_fn_1 = 1.0000000000e-01
                 )
 
     def test_extract_all_manifest_cases(self):
-        cases = json.loads((SOURCE / "python_regression/cases.json").read_text())
+        cases = json.loads((SOURCE / "python_parity/cases.json").read_text())
         for case in cases:
             with self.subTest(case=case["id"]):
                 path = self.work / (case["id"] + ".in")
@@ -208,7 +208,7 @@ Estimated integral of response_fn_1 = 1.0000000000e-01
                 )
                 self.assertTrue(path.read_text().strip())
                 self.assertTrue(
-                    (SOURCE / "python_regression" / case["script"]).is_file()
+                    (SOURCE / "python_parity" / case["script"]).is_file()
                 )
                 for file in case["required_files"]:
                     if file != "text_book":
@@ -233,11 +233,11 @@ Estimated integral of response_fn_1 = 1.0000000000e-01
     @unittest.skipUnless(shutil.which("cmake"), "CMake required")
     def test_diff_collection_includes_pairs(self):
         legacy = self.work / "test/dakota_legacy"
-        pair = self.work / "test/python_regression/pair"
+        pair = self.work / "test/python_parity/pair"
         legacy.mkdir(parents=True)
         pair.mkdir(parents=True)
         (legacy / "dakota_diffs.out").write_text("legacy\nPASS test 0\n")
-        (pair / "dakota_diffs.out").write_text("python_regression_pair\nDIFF test 0\n")
+        (pair / "dakota_diffs.out").write_text("python_parity_pair\nDIFF test 0\n")
         subprocess.run(
             [
                 "cmake",
@@ -251,7 +251,7 @@ Estimated integral of response_fn_1 = 1.0000000000e-01
         )
         report = (self.work / "test/dakota_diffs.out").read_text()
         self.assertIn("legacy", report)
-        self.assertIn("python_regression_pair", report)
+        self.assertIn("python_parity_pair", report)
 
     @unittest.skipUnless(
         shutil.which("cmake") and shutil.which("ctest"), "CMake required"
@@ -262,12 +262,12 @@ Estimated integral of response_fn_1 = 1.0000000000e-01
         end = cmake.index("  # Create one CTest per Dakota input", start)
         project = self.work / "project"
         project.mkdir()
-        (project / "python_regression").mkdir()
+        (project / "python_parity").mkdir()
         shutil.copy2(
-            SOURCE / "python_regression/cases.json",
-            project / "python_regression/cases.json",
+            SOURCE / "python_parity/cases.json",
+            project / "python_parity/cases.json",
         )
-        cases = json.loads((SOURCE / "python_regression/cases.json").read_text())
+        cases = json.loads((SOURCE / "python_parity/cases.json").read_text())
         feature_names = sorted(
             {feature for case in cases for feature in case.get("requires_features", [])}
         )
@@ -310,7 +310,7 @@ Estimated integral of response_fn_1 = 1.0000000000e-01
             self.assertEqual(len(tests), count)
             for test in tests:
                 props = {p["name"]: p["value"] for p in test["properties"]}
-                self.assertEqual(props["LABELS"], ["PythonRegression", "SerialTest"])
+                self.assertEqual(props["LABELS"], ["PythonParity", "SerialTest"])
                 self.assertEqual(props["TIMEOUT"], 120)
 
     def test_extract_original_subtests(self):

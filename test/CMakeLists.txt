@@ -66,8 +66,8 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
   if(DAKOTA_PYTHON_STUDY)
     # Keep registration tied to the explicit paired-case manifest.
     set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
-      "${CMAKE_CURRENT_SOURCE_DIR}/python_regression/cases.json")
-    file(READ "${CMAKE_CURRENT_SOURCE_DIR}/python_regression/cases.json" python_cases)
+      "${CMAKE_CURRENT_SOURCE_DIR}/python_parity/cases.json")
+    file(READ "${CMAKE_CURRENT_SOURCE_DIR}/python_parity/cases.json" python_cases)
     string(JSON python_case_count LENGTH "${python_cases}")
     math(EXPR python_case_last "${python_case_count} - 1")
     foreach(index RANGE ${python_case_last})
@@ -87,12 +87,12 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
       if(NOT case_enabled)
         continue()
       endif()
-      add_test(NAME python_regression_${case_id}
+      add_test(NAME python_parity_${case_id}
         COMMAND "${Python3_EXECUTABLE}"
-          "${CMAKE_CURRENT_SOURCE_DIR}/python_regression/run_pair.py"
+          "${CMAKE_CURRENT_SOURCE_DIR}/python_parity/run_pair.py"
           --case "${case_id}"
           --source "${CMAKE_CURRENT_SOURCE_DIR}"
-          --work "${CMAKE_CURRENT_BINARY_DIR}/python_regression/${case_id}"
+          --work "${CMAKE_CURRENT_BINARY_DIR}/python_parity/${case_id}"
           --dakota "$<TARGET_FILE:dakota>"
           --driver "$<TARGET_FILE:text_book>"
           --python "${Python3_EXECUTABLE}"
@@ -100,8 +100,8 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
           --perl "${PERL_EXECUTABLE}"
           --runner "${CMAKE_CURRENT_BINARY_DIR}/dakota_test.perl"
           --diff "${CMAKE_CURRENT_SOURCE_DIR}/dakota_diff.perl")
-      set_tests_properties(python_regression_${case_id} PROPERTIES
-        LABELS "PythonRegression;SerialTest" TIMEOUT 120)
+      set_tests_properties(python_parity_${case_id} PROPERTIES
+        LABELS "PythonParity;SerialTest" TIMEOUT 120)
     endforeach()
   endif()
 

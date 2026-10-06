@@ -44,7 +44,7 @@ def compare_outputs(command, paths, work, case_id, subtest):
     try:
         execute(command, work, "comparison", {**os.environ, "DAKDIFF_ALL_NUMERIC": "1"})
     finally:
-        diagnostics = f"python_regression_{case_id}: executable vs Python\n"
+        diagnostics = f"python_parity_{case_id}: executable vs Python\n"
         for name in ("comparison.stdout", "comparison.stderr"):
             path = work / name
             if path.exists():
@@ -81,7 +81,7 @@ def main():
         parser.add_argument("--" + name, required=True)
     args = parser.parse_args()
     source = Path(args.source).resolve()
-    cases = json.loads((source / "python_regression/cases.json").read_text())
+    cases = json.loads((source / "python_parity/cases.json").read_text())
     case = next(c for c in cases if c["id"] == args.case)
     work = Path(args.work).resolve()
     work.mkdir(parents=True, exist_ok=True)
@@ -89,7 +89,7 @@ def main():
         (work / name).unlink(missing_ok=True)
     # Replaced after comparison; remains a FAIL if execution is interrupted.
     (work / "dakota_diffs.out").write_text(
-        f"python_regression_{case['id']}: executable vs Python\nFAIL test {case['subtest']} (pair incomplete)\n"
+        f"python_parity_{case['id']}: executable vs Python\nFAIL test {case['subtest']} (pair incomplete)\n"
     )
     for kind in ("freeform", "python"):
         directory = work / kind
@@ -133,7 +133,7 @@ def main():
             )
         else:
             execute(
-                [args.python, str(source / "python_regression" / case["script"])],
+                [args.python, str(source / "python_parity" / case["script"])],
                 directory,
                 "run",
                 env,
