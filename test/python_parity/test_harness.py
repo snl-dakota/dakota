@@ -231,7 +231,7 @@ Estimated integral of response_fn_1 = 1.0000000000e-01
             )
 
     @unittest.skipUnless(shutil.which("cmake"), "CMake required")
-    def test_diff_collection_includes_pairs(self):
+    def test_diff_collection_excludes_pairs(self):
         legacy = self.work / "test/dakota_legacy"
         pair = self.work / "test/python_parity/pair"
         legacy.mkdir(parents=True)
@@ -251,7 +251,7 @@ Estimated integral of response_fn_1 = 1.0000000000e-01
         )
         report = (self.work / "test/dakota_diffs.out").read_text()
         self.assertIn("legacy", report)
-        self.assertIn("python_parity_pair", report)
+        self.assertNotIn("python_parity_pair", report)
 
     @unittest.skipUnless(
         shutil.which("cmake") and shutil.which("ctest"), "CMake required"

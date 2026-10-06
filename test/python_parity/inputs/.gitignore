@@ -1,0 +1,2 @@
+# The top-level .gitignore has a build* pattern that would exclude this file.
+!build_points.dat
