@@ -22,6 +22,8 @@ namespace Dakota {
 
 class ProblemDescDB;
 class ParallelLibrary;
+class IRStore;
+class StudyServices;
 
 
 /// Derived model class within the surrogate model branch for managing
@@ -51,6 +53,11 @@ public:
 
   /// constructor
   DataFitSurrModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
+  DataFitSurrModel(const IRStore& model_store,
+                   std::shared_ptr<Model> truth_model,
+                   std::shared_ptr<Iterator> dace_iterator,
+                   const Variables& variables, const Response& response,
+                   std::shared_ptr<StudyServices> services);
   /// alternate constructor for instantiations on the fly
   DataFitSurrModel(std::shared_ptr<Iterator> dace_iterator, std::shared_ptr<Model> actual_model,
 		   const ActiveSet& dfs_set, const ShortShortPair& dfs_view,

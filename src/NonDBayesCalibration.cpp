@@ -9,6 +9,7 @@
 
 #include "NonDBayesCalibration.hpp"
 #include "ProblemDescDB.hpp"
+#include "IRStore.hpp"
 #include "DataFitSurrModel.hpp"
 #include "ProbabilityTransformModel.hpp"
 #include "DataTransformModel.hpp"
@@ -555,6 +556,506 @@ void NonDBayesCalibration::construct_mcmc_model()
   }
 }
 
+
+/** This constructor obtains method specification settings from an
+    IRStore object. */
+NonDBayesCalibration::
+NonDBayesCalibration(std::shared_ptr<StudyServices> services, const IRStore& method_store,
+		     std::shared_ptr<Model> model):
+  NonDCalibration(std::move(services), method_store, model),
+  emulatorType(method_store.get<short>("nond.emulator")),
+  mcmcModelHasSurrogate(false),
+  mapOptAlgOverride(method_store.get<unsigned short>("nond.opt_subproblem_solver")),
+  chainSamples(method_store.get<int>("nond.chain_samples")),
+  randomSeed(method_store.get<int>("random_seed")),
+  mcmcDerivOrder(1), batchSize(1),
+  adaptExpDesign(method_store.get<bool>("nond.adapt_exp_design")),
+  initHifiSamples (method_store.get<int>("adapt_exp_design_samples")),
+  scalarDataFilename(model->current_response().responses_store_ptr()->
+                   get<String>("scalar_data_filename")),
+  importCandPtsFile(method_store.get<String>("import_candidate_points_file")),
+  importCandFormat(method_store.get<unsigned short>("import_candidate_format")),
+  numCandidates(method_store.get<size_t>("num_candidates")),
+  maxHifiEvals(method_store.get<int>("max_hifi_evaluations")),
+  batchEvals(method_store.get<int>("batch_size")),
+  mutualInfoAlg(method_store.get<bool>("nond.mutual_info_ksg2") ?
+		MI_ALG_KSG2 : MI_ALG_KSG1),
+  readFieldCoords(model->current_response().responses_store_ptr()->
+                   get<bool>("read_field_coordinates")),
+  calModelDiscrepancy(method_store.get<bool>("nond.model_discrepancy")),
+  discrepancyType(method_store.get<String>("nond.discrepancy_type")),
+  numPredConfigs(method_store.get<size_t>("num_prediction_configs")),
+  predictionConfigList(method_store.get<RealVector>("nond.prediction_configs")),
+  importPredConfigs(method_store.get<String>("import_prediction_configs")),
+  importPredConfigFormat(method_store.get<unsigned short>("import_prediction_configs_format")),
+  exportCorrModelFile(method_store.get<String>("nond.export_corrected_model_file")),
+  exportCorrModelFormat(method_store.get<unsigned short>("nond.export_corrected_model_format")),
+  exportDiscrepFile(method_store.get<String>("nond.export_discrepancy_file")),
+  exportDiscrepFormat(method_store.get<unsigned short>("nond.export_discrep_format")),
+  exportCorrVarFile(method_store.get<String>("nond.export_corrected_variance_file")),
+  exportCorrVarFormat(method_store.get<unsigned short>("nond.export_corrected_variance_format")),
+  discrepPolyOrder(method_store.get<short>("nond.model_discrepancy.polynomial_order")),
+  // BMA: This is probably wrong as config vars need not be continuous!
+  configLowerBnds(model->current_variables().variables_store_ptr()->
+                   get<RealVector>("continuous_state.lower_bounds")),
+  configUpperBnds(model->current_variables().variables_store_ptr()->
+                   get<RealVector>("continuous_state.upper_bounds")),
+  obsErrorMultiplierMode(method_store.get<unsigned short>("nond.calibrate_error_mode")),
+  numHyperparams(0),
+  invGammaAlphas(method_store.get<RealVector>("nond.hyperprior_alphas")),
+  invGammaBetas(method_store.get<RealVector>("nond.hyperprior_betas")),
+  adaptPosteriorRefine(method_store.get<bool>("nond.adaptive_posterior_refinement")),
+  proposalCovarType(method_store.get<String>("nond.proposal_covariance_type")),
+  proposalCovarData(method_store.get<RealVector>("nond.proposal_covariance_data")),
+  proposalCovarFilename(method_store.get<String>("nond.proposal_covariance_filename")),
+  proposalCovarInputType(method_store.get<String>("nond.proposal_covariance_input_type")),
+  burnInSamples(method_store.get<int>("burn_in_samples")),
+  posteriorStatsKL(method_store.get<bool>("posterior_stats.kl_divergence")),
+  posteriorStatsMutual(method_store.get<bool>("posterior_stats.mutual_info")),
+  posteriorStatsKDE(method_store.get<bool>("posterior_stats.kde")),
+  chainDiagnostics(method_store.get<bool>("chain_diagnostics")),
+  chainDiagnosticsCI(method_store.get<bool>("chain_diagnostics.confidence_intervals")),
+  calModelEvidence(method_store.get<bool>("model_evidence")),
+  calModelEvidMC(method_store.get<bool>("mc_approx")),
+  calModelEvidLaplace(method_store.get<bool>("laplace_approx")),
+  evidenceSamples(method_store.get<int>("evidence_samples")),
+  subSamplingPeriod(method_store.get<int>("sub_sampling_period")),
+  exportMCMCFilename(method_store.get<String>("nond.export_mcmc_points_file")),
+  exportMCMCFormat(method_store.get<unsigned short>("nond.export_samples_format")),
+  scaleFlag(method_store.get<bool>("scaling")),
+  weightFlag(!iteratedModel->primary_response_fn_weights().empty())
+{
+  if (randomSeed)
+    Cout << "NonDBayes Seed (user-specified) = "   << randomSeed << std::endl;
+  else {
+    randomSeed = generate_system_seed();
+    Cout << "NonDBayes Seed (system-generated) = " << randomSeed << std::endl;
+  }
+
+  // NOTE: Burn-in defaults to 0 and sub-sampling to 1. We want to
+  // allow chain_samples == 0 to perform map pre-solve only, so
+  // account for that case here.
+  if (burnInSamples > 0 && burnInSamples >= chainSamples) {
+    Cerr << "\nError: burn_in_samples must be less than chain_samples.\n";
+    abort_handler(PARSE_ERROR);
+  }
+  int num_filtered = 1 + (chainSamples - burnInSamples - 1)/subSamplingPeriod;
+  Cout << "\nA chain of length " << chainSamples << " has been specified. "
+       << burnInSamples << " burn in samples will be \ndiscarded and every "
+       << subSamplingPeriod << "-th sample will be kept in the final chain. "
+       << "The \nfinal chain will have length " << num_filtered << ".\n";
+
+  bool ensemble_model = (iteratedModel->model_type()     == "surrogate" &&
+			 iteratedModel->surrogate_type() == "ensemble");
+  short corr_type = iteratedModel->correction_type(),
+    mode = (corr_type) ? AUTO_CORRECTED_SURROGATE : UNCORRECTED_SURROGATE;
+  switch (emulatorType) {
+  case PCE_EMULATOR: case  SC_EMULATOR:
+    standardizedSpace = true; // nataf defined w/i ProbTransformModel
+    break;
+  case MF_PCE_EMULATOR:  case ML_PCE_EMULATOR:  case  MF_SC_EMULATOR:
+    standardizedSpace = true; // nataf defined w/i ProbTransformModel
+    mode = AGGREGATED_MODEL_PAIR;
+    break;
+  default:
+    standardizedSpace = method_store.get<bool>("nond.standardized_space");
+    // This choice caches RAW_WITH_REDUCTION (overkill for now)
+    //mode = MODEL_DISCREPANCY;
+    //if (!corr_type) iteratedModel.correction_type(ADDITIVE_CORRECTION);
+    break;
+  }
+
+  // Errors if there are correlations and the user hasn't specified
+  // standardized_space, since this is currently unsupported.  Note that gamma
+  // distribution should be supported but currently results in a seg fault.
+  if ( !standardizedSpace &&
+       iteratedModel->multivariate_distribution().correlation() ){
+    Cerr << "Error: correlation is only supported if user specifies "
+	 << "standardized_space.\n    Only the following types of correlated "
+	 << "random variables are supported:\n    unbounded normal, "
+	 << "untruncated lognormal, uniform, exponential, gumbel, \n    "
+	 << "frechet, and weibull." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+
+  // update from the default responseMode:
+  if (ensemble_model)
+    iteratedModel->surrogate_response_mode(mode);
+
+  if (adaptExpDesign) {
+    if (!ensemble_model) {
+      Cerr << "\nError: Adaptive Bayesian experiment design requires an "
+	   << "ensemble surrogate model.\n";
+      abort_handler(PARSE_ERROR);
+    }
+    // TODO: instead of pulling these models out, change modes on iteratedModel
+    hifiModel = iteratedModel->truth_model(); // not dependent on active key
+
+    int num_exp = expData.num_experiments();
+    int num_lhs_samples = std::max(initHifiSamples - num_exp, 0);
+    // construct a hi-fi LHS sampler only if needed
+    if (num_lhs_samples > 0) {
+      unsigned short sample_type = SUBMETHOD_LHS;
+      bool vary_pattern = true;
+      String rng("mt19937");
+      hifiSampler = std::make_shared<NonDLHSSampling>
+	      (hifiModel, sample_type, num_lhs_samples, randomSeed, rng,
+	       vary_pattern, ACTIVE_UNIFORM);
+    }
+  }
+
+  // assign default maxIterations (DataMethod default is SZ_MAX)
+  if (adaptPosteriorRefine) {
+    // BMA --> MSE: Why 5? Fix magic constant
+    batchSize = 5;
+    if (maxIterations == SZ_MAX) // default
+      maxIterations = 25;
+  }
+
+  // Construct emulator objects for raw QoI, prior to data residual recast
+  construct_mcmc_model(method_store);
+  // define variable augmentation within residualModel
+  init_hyper_parameters();
+
+  // expand initial point by numHyperparams for use in negLogPostModel
+  const Variables& orig_vars = iteratedModel->current_variables();
+  size_t i, orig_cv_start = orig_vars.cv_start(), num_orig_cv = orig_vars.cv(),
+    num_augment_cv = num_orig_cv + numHyperparams;
+  mapSoln.sizeUninitialized(num_augment_cv);
+  // allow mcmcModel to be in either distinct or all view
+  copy_data_partial(ModelUtils::all_continuous_variables(*mcmcModel),
+		    (int)orig_cv_start, (int)num_orig_cv, mapSoln, 0);
+  for (i=0; i<numHyperparams; ++i)
+    mapSoln[num_orig_cv + i] = invGammaDists[i].mode();
+
+  // Now the underlying simulation model mcmcModel is setup; wrap it
+  // in a data transformation, making sure to allocate gradient/Hessian space
+  const ShortShortPair& orig_view = orig_vars.view();
+  if (calibrationData) {
+    residualModel = std::make_shared<DataTransformModel>
+			     (mcmcModel, expData, orig_view, numHyperparams,
+			      obsErrorMultiplierMode, mcmcDerivOrder);
+    // update bounds for hyper-parameters
+    Real dbl_inf = std::numeric_limits<Real>::infinity();
+    for (i=0; i<numHyperparams; ++i) {
+      ModelUtils::continuous_lower_bound(*residualModel, 0.0,
+					 numContinuousVars + i);
+      ModelUtils::continuous_upper_bound(*residualModel, dbl_inf,
+					 numContinuousVars + i);
+    }
+  }
+  else if (orig_view == mcmcModel->current_variables().view())
+    residualModel = mcmcModel;  // shallow copy
+  else // convert back from surrogate view to iteratedModel view for use in MCMC
+    residualModel = std::make_shared<RecastModel>(mcmcModel, orig_view);
+
+  // Order is important: data transform, then scale, then weights
+  if (scaleFlag)   scale_model();
+  if (weightFlag)  weight_model();
+
+  init_map_optimizer();
+  construct_map_model();
+
+  //Cout << "\n  iteratedModel num cv = " << ModelUtils::cv(iteratedModel) << " mvd active = " << iteratedModel.multivariate_distribution().active_variables().count()
+  //     << "\n  mcmcModel     num cv = " << ModelUtils::cv(mcmcModel) << " mvd active = " << mcmcModel->multivariate_distribution().active_variables().count()
+  //     << "\n  residualModel num cv = " << ModelUtils::cv(residualModel) << " mvd active = " << residualModel->multivariate_distribution().active_variables().count() << std::endl;
+  //if (mapOptAlgOverride != SUBMETHOD_NONE)
+  //  Cout << "\n  negLogPostModel num cv = "<< ModelUtils::cv(negLogPostModel)<<std::endl;
+
+  int mcmc_concurrency = 1; // prior to concurrent chains
+  maxEvalConcurrency *= mcmc_concurrency;
+}
+
+
+void NonDBayesCalibration::construct_mcmc_model(const IRStore& method_store)
+{
+  // for adaptive experiment design, the surrogate model is the low-fi
+  // model which should be calibrated
+  // TODO: could avoid this lightweight copy entirely, but less clean
+  std::shared_ptr<Model> inbound_model =
+    adaptExpDesign ? iteratedModel->surrogate_model() : iteratedModel;
+
+  switch (emulatorType) {
+
+  case PCE_EMULATOR: case ML_PCE_EMULATOR: case MF_PCE_EMULATOR:
+  case  SC_EMULATOR: case  MF_SC_EMULATOR: {
+    mcmcModelHasSurrogate = true;
+    short u_space_type = method_store.get<short>("nond.expansion_type");
+    const RealVector& dim_pref
+      = method_store.get<RealVector>("nond.dimension_preference");
+    short refine_type
+        = method_store.get<short>("nond.expansion_refinement_type"),
+      refine_cntl
+        = method_store.get<short>("nond.expansion_refinement_control"),
+      cov_cntl
+        = method_store.get<short>("nond.covariance_control"),
+      rule_nest = method_store.get<short>("nond.nesting_override"),
+      rule_growth = method_store.get<short>("nond.growth_override");
+    bool pw_basis = method_store.get<bool>("nond.piecewise_basis"),
+       use_derivs = method_store.get<bool>("derivative_usage");
+
+    if (emulatorType == SC_EMULATOR) { // SC sparse grid interpolation
+      unsigned short ssg_level
+	= method_store.get<unsigned short>("nond.sparse_grid_level");
+      unsigned short tpq_order
+	= method_store.get<unsigned short>("nond.quadrature_order");
+      if (ssg_level != USHRT_MAX) {
+	short exp_coeff_approach = Pecos::COMBINED_SPARSE_GRID;
+	if (method_store.get<short>("nond.expansion_basis_type") ==
+	    Pecos::HIERARCHICAL_INTERPOLANT)
+	  exp_coeff_approach = Pecos::HIERARCHICAL_SPARSE_GRID;
+	else if (refine_cntl)
+	  exp_coeff_approach = Pecos::INCREMENTAL_SPARSE_GRID;
+	stochExpIterator = std::make_shared<NonDStochCollocation>(inbound_model,
+	  exp_coeff_approach, ssg_level, dim_pref, u_space_type, refine_type,
+	  refine_cntl, cov_cntl, rule_nest, rule_growth, pw_basis, use_derivs);
+      }
+      else if (tpq_order != USHRT_MAX)
+        stochExpIterator = std::make_shared<NonDStochCollocation>(inbound_model,
+	  Pecos::QUADRATURE, tpq_order, dim_pref, u_space_type, refine_type,
+	  refine_cntl, cov_cntl, rule_nest, rule_growth, pw_basis, use_derivs);
+      mcmcDerivOrder = 3; // Hessian computations not yet implemented for SC
+    }
+
+    else if (emulatorType == PCE_EMULATOR) {
+      const String& exp_import_file
+	= method_store.get<String>("nond.import_expansion_file");
+      const String& exp_export_file
+        = method_store.get<String>("nond.export_expansion_file");
+      unsigned short ssg_level
+	= method_store.get<unsigned short>("nond.sparse_grid_level");
+      unsigned short tpq_order
+	= method_store.get<unsigned short>("nond.quadrature_order");
+      unsigned short cub_int
+	= method_store.get<unsigned short>("nond.cubature_integrand");
+      if (!exp_import_file.empty()) {
+	// While upstream update allows NonD ctor chain to use updated number
+	// of active CV, we should avoid modifying the original calibration
+	// configuration provided by the incoming iteratedModel.  Rather, we
+	// must adjust downstream within the PCE ctor.
+	//if (expData.num_config_vars())
+	//  inbound_model.active_view(MIXED_ALL); // allow recursion
+
+	// Imported surrogate will include state config vars for now.
+	// TO DO: expand this override to non-imported cases.
+	ShortShortPair approx_view(MIXED_ALL, EMPTY_VIEW);
+	stochExpIterator = std::make_shared<NonDPolynomialChaos>(inbound_model,
+	  exp_import_file, u_space_type, approx_view);//no export since imported
+      }
+      else if (ssg_level != USHRT_MAX) { // PCE sparse grid
+	short exp_coeff_approach = (refine_cntl) ?
+	  Pecos::INCREMENTAL_SPARSE_GRID : Pecos::COMBINED_SPARSE_GRID;
+	stochExpIterator = std::make_shared<NonDPolynomialChaos>(inbound_model,
+	  exp_coeff_approach, ssg_level, dim_pref, u_space_type, refine_type,
+	  refine_cntl, cov_cntl, rule_nest, rule_growth, pw_basis, use_derivs,
+	  exp_export_file);
+      }
+      else if (tpq_order != USHRT_MAX)
+        stochExpIterator = std::make_shared<NonDPolynomialChaos>(inbound_model,
+	  Pecos::QUADRATURE, tpq_order, dim_pref, u_space_type, refine_type,
+	  refine_cntl, cov_cntl, rule_nest, rule_growth, pw_basis, use_derivs,
+	  exp_export_file);
+      else if (cub_int != USHRT_MAX)
+	stochExpIterator = std::make_shared<NonDPolynomialChaos>(inbound_model,
+	  Pecos::CUBATURE, cub_int, dim_pref, u_space_type, refine_type,
+	  refine_cntl, cov_cntl, rule_nest, rule_growth, pw_basis, use_derivs,
+	  exp_export_file);
+      else { // regression PCE: LeastSq/CS, OLI
+	stochExpIterator = std::make_shared<NonDPolynomialChaos>(inbound_model,
+	  method_store.get<short>("nond.regression_type"),
+	  method_store.get<unsigned short>("nond.expansion_order"), dim_pref,
+	  method_store.get<size_t>("nond.collocation_points"),
+	  method_store.get<Real>("nond.collocation_ratio"), // single scalar
+	  randomSeed, u_space_type, refine_type, refine_cntl, cov_cntl,
+	  /* rule_nest, rule_growth, */ pw_basis, use_derivs,
+	  method_store.get<bool>("nond.cross_validation"),
+	  method_store.get<String>("import_build_points_file"),
+	  method_store.get<unsigned short>("import_build_format"),
+	  method_store.get<bool>("import_build_active_only"),
+	  exp_export_file);
+      }
+      mcmcDerivOrder = 7; // Hessian computations implemented for PCE
+    }
+
+    else if (emulatorType == MF_SC_EMULATOR) {
+      const UShortArray& ssg_level_seq
+	= method_store.get<UShortArray>("nond.sparse_grid_level_sequence");
+      const UShortArray& tpq_order_seq
+	= method_store.get<UShortArray>("nond.quadrature_order_sequence");
+      short ml_alloc_cntl
+	= method_store.get<short>("nond.multilevel_allocation_control"),
+	ml_discrep
+	= method_store.get<short>("nond.multilevel_discrepancy_emulation");
+      if (!ssg_level_seq.empty()) {
+	short exp_coeff_approach = Pecos::COMBINED_SPARSE_GRID;
+	if (method_store.get<short>("nond.expansion_basis_type") ==
+	    Pecos::HIERARCHICAL_INTERPOLANT)
+	  exp_coeff_approach = Pecos::HIERARCHICAL_SPARSE_GRID;
+	else if (refine_cntl)
+	  exp_coeff_approach = Pecos::INCREMENTAL_SPARSE_GRID;
+	stochExpIterator =
+	  std::make_shared<NonDMultilevelStochCollocation>(inbound_model,
+	    exp_coeff_approach, ssg_level_seq, dim_pref, u_space_type,
+	    refine_type, refine_cntl, cov_cntl, ml_alloc_cntl, ml_discrep,
+	    rule_nest, rule_growth, pw_basis, use_derivs);
+      }
+      else if (!tpq_order_seq.empty())
+	stochExpIterator =
+	  std::make_shared<NonDMultilevelStochCollocation>(inbound_model,
+	    Pecos::QUADRATURE, tpq_order_seq, dim_pref, u_space_type, refine_type,
+	    refine_cntl, cov_cntl, ml_alloc_cntl, ml_discrep, rule_nest,
+	    rule_growth, pw_basis, use_derivs);
+      mcmcDerivOrder = 3; // Hessian computations not yet implemented for SC
+    }
+
+    else if (emulatorType == MF_PCE_EMULATOR) {
+      const UShortArray& ssg_level_seq
+	= method_store.get<UShortArray>("nond.sparse_grid_level_sequence");
+      const UShortArray& tpq_order_seq
+	= method_store.get<UShortArray>("nond.quadrature_order_sequence");
+      short ml_alloc_cntl
+	= method_store.get<short>("nond.multilevel_allocation_control"),
+	ml_discrep
+	= method_store.get<short>("nond.multilevel_discrepancy_emulation");
+      if (!ssg_level_seq.empty()) {
+	short exp_coeff_approach = (refine_cntl) ?
+	  Pecos::INCREMENTAL_SPARSE_GRID : Pecos::COMBINED_SPARSE_GRID;
+	stochExpIterator =
+	  std::make_shared<NonDMultilevelPolynomialChaos>(inbound_model,
+	    exp_coeff_approach, ssg_level_seq, dim_pref, u_space_type,
+	    refine_type, refine_cntl, cov_cntl, ml_alloc_cntl, ml_discrep,
+	    rule_nest, rule_growth, pw_basis, use_derivs);
+      }
+      else if (!tpq_order_seq.empty())
+	stochExpIterator =
+	  std::make_shared<NonDMultilevelPolynomialChaos>(inbound_model,
+	    Pecos::QUADRATURE, tpq_order_seq, dim_pref, u_space_type, refine_type,
+	    refine_cntl, cov_cntl, ml_alloc_cntl, ml_discrep, rule_nest,
+	    rule_growth, pw_basis, use_derivs);
+      else { // regression PCE: LeastSq/CS, OLI
+        SizetArray seed_seq(1, randomSeed); // reuse bayes_calib scalar spec
+        stochExpIterator = std::make_shared<NonDMultilevelPolynomialChaos>(
+          MULTIFIDELITY_POLYNOMIAL_CHAOS, inbound_model,
+          method_store.get<short>("nond.regression_type"),
+          method_store.get<UShortArray>("nond.expansion_order_sequence"),
+	  dim_pref,
+          method_store.get<SizetArray>("nond.collocation_points_sequence"), // sequence
+          method_store.get<Real>("nond.collocation_ratio"), // scalar
+          seed_seq, u_space_type, refine_type, refine_cntl, cov_cntl,
+          ml_alloc_cntl, ml_discrep, /* rule_nest, rule_growth, */ pw_basis,
+          use_derivs, method_store.get<bool>("nond.cross_validation"),
+          method_store.get<String>("import_build_points_file"),
+          method_store.get<unsigned short>("import_build_format"),
+          method_store.get<bool>("import_build_active_only"));
+      }
+      mcmcDerivOrder = 7; // Hessian computations implemented for PCE
+    }
+
+    else if (emulatorType == ML_PCE_EMULATOR) {
+      SizetArray seed_seq(1, randomSeed); // reuse bayes_calib scalar spec
+      stochExpIterator = std::make_shared<NonDMultilevelPolynomialChaos>(
+        MULTILEVEL_POLYNOMIAL_CHAOS, inbound_model,
+        method_store.get<short>("nond.regression_type"),
+        method_store.get<UShortArray>("nond.expansion_order_sequence"),
+	dim_pref,
+        method_store.get<SizetArray>("nond.collocation_points_sequence"), // sequence
+        method_store.get<Real>("nond.collocation_ratio"), // scalar
+        seed_seq, u_space_type, refine_type, refine_cntl, cov_cntl,
+        method_store.get<short>("nond.multilevel_allocation_control"),
+        method_store.get<short>("nond.multilevel_discrepancy_emulation"),
+        /* rule_nest, rule_growth, */ pw_basis, use_derivs,
+        method_store.get<bool>("nond.cross_validation"),
+        method_store.get<String>("import_build_points_file"),
+        method_store.get<unsigned short>("import_build_format"),
+        method_store.get<bool>("import_build_active_only"));
+      mcmcDerivOrder = 7; // Hessian computations implemented for PCE
+    }
+
+    // for adaptive exp refinement, propagate controls from Bayes method spec:
+    stochExpIterator->maximum_iterations(maxIterations);
+    stochExpIterator->maximum_refinement_iterations(
+      method_store.get<size_t>("nond.max_refinement_iterations"));
+    stochExpIterator->convergence_tolerance(convergenceTol);
+
+    // no CDF or PDF level mappings
+    RealVectorArray empty_rv_array; // empty
+    stochExpIterator->requested_levels(empty_rv_array, empty_rv_array,
+      empty_rv_array, empty_rv_array, respLevelTarget, respLevelTargetReduce,
+      cdfFlag, false);
+    // extract NonDExpansion's uSpaceModel for use in likelihood evals
+    mcmcModel = stochExpIterator->algorithm_space_model(); // shared rep
+    break;
+  }
+
+  case GP_EMULATOR: case KRIGING_EMULATOR: {
+    mcmcModelHasSurrogate = true;
+    String sample_reuse; String approx_type;
+    if (emulatorType == GP_EMULATOR)
+      { approx_type = "global_gaussian"; mcmcDerivOrder = 3; } // grad support
+    else
+      { approx_type = "global_kriging";  mcmcDerivOrder = 7; } // grad,Hess
+    UShortArray approx_order; // not used by GP/kriging
+    short corr_order = -1, data_order = 1, corr_type = NO_CORRECTION;
+    if (method_store.get<bool>("derivative_usage")) {
+      // derivatives for emulator construction (not emulator evaluation)
+      if (inbound_model->gradient_type() != "none") data_order |= 2;
+      if (inbound_model->hessian_type()  != "none") data_order |= 4;
+    }
+    unsigned short sample_type = SUBMETHOD_DEFAULT;
+    int samples = method_store.get<int>("build_samples");
+    // get point samples file
+    const String& import_pts_file
+      = method_store.get<String>("import_build_points_file");
+    if (!import_pts_file.empty())
+      { samples = 0; sample_reuse = "all"; }
+
+    // Consider elevating lhsSampler from NonDGPMSABayesCalibration:
+    std::shared_ptr<Iterator> lhs_iterator;
+    std::shared_ptr<Model> lhs_model;
+    // NKM requires finite bounds for scaling and init of correlation lengths.
+    // Default truncation is +/-10 sigma, which may be overly conservative for
+    // these purposes, but +/-3 sigma has little to no effect in current tests.
+    bool truncate_bnds = (emulatorType == KRIGING_EMULATOR);
+    if (standardizedSpace)
+      lhs_model = std::make_shared<ProbabilityTransformModel>(
+	      inbound_model, ASKEY_U, truncate_bnds); //, 3.)
+    else
+      lhs_model = inbound_model; // shared rep
+    // Unlike EGO-based approaches, use ACTIVE sampling mode to concentrate
+    // samples in regions of higher prior density
+    lhs_iterator = std::make_shared<NonDLHSSampling>(lhs_model, sample_type,
+      samples, randomSeed,
+      method_store.get<String>("random_number_generator"));
+
+    ActiveSet gp_set = lhs_model->current_response().active_set(); // copy
+    gp_set.request_values(mcmcDerivOrder); // for misfit Hessian
+    const ShortShortPair& gp_view = lhs_model->current_variables().view();
+    mcmcModel = std::make_shared<DataFitSurrModel>(lhs_iterator,
+      lhs_model, gp_set, gp_view, approx_type, approx_order, corr_type,
+      corr_order, data_order, outputLevel, sample_reuse, import_pts_file,
+      method_store.get<unsigned short>("import_build_format"),
+      method_store.get<bool>("import_build_active_only"));
+    break;
+  }
+
+  case NO_EMULATOR:
+    mcmcModelHasSurrogate = (inbound_model->model_type() == "surrogate");
+    // ASKEY_U is currently the best option for scaling the probability space
+    // (but could be expanded when the intent is not orthogonal polynomials).
+    // If an override is needed to decorrelate priors be transforming to
+    // STD_NORMAL space, this is managed by ProbabilityTransformModel::
+    // verify_correlation_support() on a variable-by-variable basis.
+    if (standardizedSpace)
+      mcmcModel = std::make_shared<ProbabilityTransformModel>(
+	      inbound_model, ASKEY_U);
+    else
+      mcmcModel = inbound_model; // shared rep
+
+    if (mcmcModel->gradient_type() != "none") mcmcDerivOrder |= 2;
+    if (mcmcModel->hessian_type()  != "none") mcmcDerivOrder |= 4;
+    break;
+  }
+}
 
 void NonDBayesCalibration::init_hyper_parameters()
 {

@@ -18,7 +18,8 @@ namespace Dakota::python {
 void bind_interface(py::module_& m)
 {
   py::class_<Interface, std::shared_ptr<Interface>>(
-    m, "Interface", py::module_local());
+    m, "Interface", py::module_local(),
+    "Simulation-interface handle returned by Study.interface().");
 }
 
 } // namespace Dakota::python

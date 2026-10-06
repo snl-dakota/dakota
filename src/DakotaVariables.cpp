@@ -130,12 +130,30 @@ Variables::Variables(const ProblemDescDB& problem_db):
 
 
 Variables::Variables(const IRStore& variables_store):
-  Variables(SharedVariablesData(variables_store, get_view(variables_store)))
+  variablesRep(get_variables(variables_store))
 {
   if (variablesRep)
     variablesRep->variablesStore = std::make_shared<IRStore>(variables_store);
   else
     variablesStore = std::make_shared<IRStore>(variables_store);
+}
+
+
+/** Instantiate a fully populated variables representation from IR data. */
+std::shared_ptr<Variables>
+Variables::get_variables(const IRStore& variables_store)
+{
+  SharedVariablesData svd(variables_store, get_view(variables_store));
+  switch (svd.view().first) {
+  case MIXED_ALL: case MIXED_DESIGN: case MIXED_ALEATORY_UNCERTAIN:
+  case MIXED_EPISTEMIC_UNCERTAIN: case MIXED_UNCERTAIN: case MIXED_STATE:
+    return std::make_shared<MixedVariables>(variables_store, svd);
+  case RELAXED_ALL: case RELAXED_DESIGN: case RELAXED_ALEATORY_UNCERTAIN:
+  case RELAXED_EPISTEMIC_UNCERTAIN: case RELAXED_UNCERTAIN: case RELAXED_STATE:
+    return std::make_shared<RelaxedVariables>(variables_store, svd);
+  default:
+    throw std::runtime_error("Unsupported DI variables view");
+  }
 }
 
 

@@ -702,6 +702,8 @@ private:
   /// Used by the standard envelope constructor to instantiate the
   /// correct letter class
   std::shared_ptr<Variables> get_variables(const ProblemDescDB& problem_db);
+  /// Used by the IR envelope constructor to instantiate a populated letter class
+  std::shared_ptr<Variables> get_variables(const IRStore& variables_store);
   /// Used by the alternate envelope constructors, by read functions,
   /// and by copy() to instantiate a new letter class
   std::shared_ptr<Variables> get_variables(const SharedVariablesData& svd) const;

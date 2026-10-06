@@ -10,6 +10,7 @@
 #include "NonDCalibration.hpp"
 #include "DakotaModel.hpp"
 #include "ProblemDescDB.hpp"
+#include "IRStore.hpp"
 
 static const char rcsId[]="@(#) $Id$";
 
@@ -25,6 +26,28 @@ NonDCalibration::NonDCalibration(ProblemDescDB& problem_db, ParallelLibrary& par
     !probDescDB.get<const String>("responses.scalar_data_filename").empty()),
   expData(problem_db, iteratedModel->current_response().shared_data(), 
 	  outputLevel)
+{ 
+  // Read in all of the experimental data, including any x configuration 
+  // variables, y observations, and covariance information if available 
+  //if (outputLevel > NORMAL_OUTPUT)
+  //  Cout << "Read data from file " << calibrationData << '\n';
+  if (calibrationData)
+    expData.load_data("NonDCalibration", iteratedModel->current_variables());
+  else if (outputLevel > SILENT_OUTPUT)
+    Cout << "No experiment data from files.\nCalibration is assuming the "
+	 << "simulation is returning the residuals" << std::endl;
+}
+
+
+/** This is the IRStore based constructor */
+NonDCalibration::NonDCalibration(std::shared_ptr<StudyServices> services,
+                  const IRStore& method_store,
+                  std::shared_ptr<Model> model):
+  NonD(std::move(services), method_store, model),
+  calibrationData(model->current_response().responses_store_ptr()->get<bool>("calibration_data") ||
+                  !model->current_response().responses_store_ptr()->get<String>("scalar_data_filename").empty()),
+  expData(*model->current_response().responses_store_ptr(),
+          iteratedModel->current_response().shared_data(), outputLevel)
 { 
   // Read in all of the experimental data, including any x configuration 
   // variables, y observations, and covariance information if available 

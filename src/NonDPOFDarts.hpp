@@ -44,6 +44,8 @@ public:
   //
 
   NonDPOFDarts(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model); ///< constructor
+  NonDPOFDarts(std::shared_ptr<StudyServices> services, const IRStore& method_store,
+                        std::shared_ptr<Model> model); ///< DI constructor
   ~NonDPOFDarts() override;                                       ///< destructor
 
   //
@@ -61,6 +63,8 @@ protected:
   //- Heading: Convenience functions
   //
     
+    void initialize();
+
     void initiate_random_number_generator(unsigned long x);
     
     double generate_a_random_number();

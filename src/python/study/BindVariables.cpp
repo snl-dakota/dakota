@@ -15,9 +15,14 @@ namespace Dakota::python {
 
 void bind_variables(py::module_& m)
 {
-  py::class_<Variables>(m, "Variables", py::module_local())
+  py::class_<Variables>(
+    m, "Variables", py::module_local(),
+    "Variables handle returned by Study.variables().")
     .def("num_active_cv", &Variables::cv,
-         "Return number of active continuous variables");
+         R"doc(Return the number of active continuous variables.
+
+:returns: Number of active continuous variables.
+:rtype: int)doc");
 }
 
 } // namespace Dakota::python

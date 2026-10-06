@@ -66,6 +66,8 @@ protected:
   //- Heading: Virtual member function redefinitions
   //
 
+  void initialize(bool reliability_levels_nonempty);
+
   /// initialize finalStatistics for belief/plausibility results sets
   void initialize_final_statistics() override;
 

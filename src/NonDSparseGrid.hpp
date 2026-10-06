@@ -109,6 +109,8 @@ protected:
   //
 
   NonDSparseGrid(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model); ///< constructor
+  /// DI constructor
+  NonDSparseGrid(std::shared_ptr<StudyServices> services, const IRStore& method_store, std::shared_ptr<Model> model);
 
   //
   //- Heading: Virtual function redefinitions
@@ -133,6 +135,11 @@ private:
   //
   //- Heading: Data
   //
+
+  void initialize_ssg_driver(const Pecos::MultivariateDistribution& u_dist,
+			     const Pecos::ExpansionConfigOptions& ec_options,
+			     Pecos::BasisConfigOptions& bc_options,
+			     short refine_control, bool piecewise_basis);
 
   /// type of sparse grid driver: combined, incremental, hierarchical, ...
   short ssgDriverType;

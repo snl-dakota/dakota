@@ -132,6 +132,7 @@ Iterator::Iterator(std::shared_ptr<StudyServices> services,
 Iterator::
 Iterator(unsigned short method_name, std::shared_ptr<Model> model,
 	 std::shared_ptr<TraitsBase> traits):
+  sharedStudyServices(model->study_services()),
   probDescDB(dummy_db), parallelLib(model->parallel_library()),
   runOptions(*model->run_options_ptr()),
   methodPCIter(parallelLib.parallel_configuration_iterator()),
@@ -174,6 +175,7 @@ Iterator::Iterator(unsigned short method_name,
 Iterator::
 Iterator(std::shared_ptr<Model> model, size_t max_iter, size_t max_eval,
 	 Real conv_tol, std::shared_ptr<TraitsBase> traits):
+  sharedStudyServices(model->study_services()),
   probDescDB(dummy_db), parallelLib(model->parallel_library()),
   runOptions(*model->run_options_ptr()),
   methodPCIter(parallelLib.parallel_configuration_iterator()),

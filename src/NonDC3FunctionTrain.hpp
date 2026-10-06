@@ -13,6 +13,7 @@
 // #include "DakotaNonD.hpp
 
 #include "NonDExpansion.hpp"
+#include <type_traits>
 
 namespace Dakota {
 
@@ -30,6 +31,9 @@ public:
 
   /// standard constructor
   NonDC3FunctionTrain(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
+  /// DI constructor
+  NonDC3FunctionTrain(std::shared_ptr<StudyServices> services,
+             const IRStore& method_store, std::shared_ptr<Model> model);
   /// destructor
   ~NonDC3FunctionTrain();
 
@@ -45,6 +49,9 @@ protected:
   NonDC3FunctionTrain(unsigned short method_name, ProblemDescDB& problem_db,
 		      ParallelLibrary& parallel_lib,
 		      std::shared_ptr<Model> model);
+  /// DI base constructor for IRStore construction
+  NonDC3FunctionTrain(unsigned short method_name, std::shared_ptr<StudyServices> services,
+             const IRStore& method_store, std::shared_ptr<Model> model);
 
   //
   //- Heading: Virtual function redefinitions
@@ -131,6 +138,9 @@ protected:
 
 private:
 
+  template <typename T>
+  const std::remove_const_t<T>& method_parameter(const String& key) const;
+
   //
   //- Heading: Member function definitions
   //
@@ -149,6 +159,9 @@ private:
 
   /// user specification for collocation_points
   size_t collocPtsSpec;
+
+  /// Method options retained for injected construction and refinement.
+  std::shared_ptr<const IRStore> methodStore;
 
   // for decremented order without recomputation from previous ranks
   //int prevSamplesOnModel;

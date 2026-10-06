@@ -10,6 +10,7 @@
 #include <nlohmann/json.hpp>
 #include "RelaxedVariables.hpp"
 #include "ProblemDescDB.hpp"
+#include "IRStore.hpp"
 #include "dakota_data_io.hpp"
 #include "dakota_data_util.hpp"
 
@@ -33,18 +34,26 @@ int len(const T& v) { return v.length(); }
 int len(const int& v) { return 1; }
 int len(const StringArray& v) { return v.size(); }
 
-const RealVector& get_rv(const ProblemDescDB& db, const char* key) {
-  return db.get<const RealVector>(key);
-}
-const IntVector& get_iv(const ProblemDescDB& db, const char* key) {
-  return db.get<const IntVector>(key);
-}
-const StringArray& get_sa(const ProblemDescDB& db, const char* key) {
-  return db.get<const StringArray>(key);
-}
+template <typename T>
+const T& initial_value(const ProblemDescDB& db, const char* key)
+{ return db.get<const T>(key); }
 
-template <typename Vec, typename Getter>
-void copy_from_db(const ProblemDescDB& db,
+template <typename T>
+const T& initial_value(const IRStore& store, const char* key)
+{ return store.get<T>(String(key).substr(String("variables.").size())); }
+
+template <typename Database>
+const RealVector& get_rv(const Database& db, const char* key)
+{ return initial_value<RealVector>(db, key); }
+template <typename Database>
+const IntVector& get_iv(const Database& db, const char* key)
+{ return initial_value<IntVector>(db, key); }
+template <typename Database>
+const StringArray& get_sa(const Database& db, const char* key)
+{ return initial_value<StringArray>(db, key); }
+
+template <typename Database, typename Vec, typename Getter>
+void copy_from_db(const Database& db,
     const std::initializer_list<const char*>& keys,
     Vec& dest, size_t& offset, Getter get)
 {
@@ -55,8 +64,8 @@ void copy_from_db(const ProblemDescDB& db,
   }
 }
 
-template <typename DiscVec, typename Getter>
-void relax_from_db(const ProblemDescDB& db,
+template <typename Database, typename DiscVec, typename Getter>
+void relax_from_db(const Database& db,
     const std::initializer_list<const char*>& keys,
     const BitArray& relax, size_t& relax_cntr,
     RealVector& cont, size_t& acv_offset,
@@ -88,6 +97,17 @@ void relax_from_db(const ProblemDescDB& db,
 RelaxedVariables::
 RelaxedVariables(const ProblemDescDB& problem_db, const ShortShortPair& view):
   Variables(BaseConstructor(), problem_db, view)
+{ initialize_initial_values(problem_db); }
+
+
+RelaxedVariables::
+RelaxedVariables(const IRStore& variables_store, const SharedVariablesData& svd):
+  Variables(BaseConstructor(), svd)
+{ initialize_initial_values(variables_store); }
+
+
+template <typename Database>
+void RelaxedVariables::initialize_initial_values(const Database& problem_db)
 {
   const BitArray& all_relax_di = sharedVarsData.all_relaxed_discrete_int();
   const BitArray& all_relax_dr = sharedVarsData.all_relaxed_discrete_real();
@@ -98,22 +118,22 @@ RelaxedVariables(const ProblemDescDB& problem_db, const ShortShortPair& view):
   // --- Design ---
   copy_from_db(problem_db, {
     "variables.continuous_design.initial_point"
-  }, allContinuousVars, acv_offset, get_rv);
+  }, allContinuousVars, acv_offset, get_rv<Database>);
 
   relax_from_db(problem_db, {
     "variables.discrete_design_range.initial_point",
     "variables.discrete_design_set_int.initial_point"
   }, all_relax_di, ardi_cntr,
-     allContinuousVars, acv_offset, allDiscreteIntVars, adiv_offset, get_iv);
+     allContinuousVars, acv_offset, allDiscreteIntVars, adiv_offset, get_iv<Database>);
 
   copy_from_db(problem_db, {
     "variables.discrete_design_set_string.initial_point"
-  }, allDiscreteStringVars, adsv_offset, get_sa);
+  }, allDiscreteStringVars, adsv_offset, get_sa<Database>);
 
   relax_from_db(problem_db, {
     "variables.discrete_design_set_real.initial_point"
   }, all_relax_dr, ardr_cntr,
-     allContinuousVars, acv_offset, allDiscreteRealVars, adrv_offset, get_rv);
+     allContinuousVars, acv_offset, allDiscreteRealVars, adrv_offset, get_rv<Database>);
 
   // --- Aleatory ---
   copy_from_db(problem_db, {
@@ -129,7 +149,7 @@ RelaxedVariables(const ProblemDescDB& problem_db, const ShortShortPair& view):
     "variables.frechet_uncertain.initial_point",
     "variables.weibull_uncertain.initial_point",
     "variables.histogram_bin_uncertain.initial_point"
-  }, allContinuousVars, acv_offset, get_rv);
+  }, allContinuousVars, acv_offset, get_rv<Database>);
 
   relax_from_db(problem_db, {
     "variables.poisson_uncertain.initial_point",
@@ -139,56 +159,56 @@ RelaxedVariables(const ProblemDescDB& problem_db, const ShortShortPair& view):
     "variables.hypergeometric_uncertain.initial_point",
     "variables.histogram_uncertain.point_int.initial_point"
   }, all_relax_di, ardi_cntr,
-     allContinuousVars, acv_offset, allDiscreteIntVars, adiv_offset, get_iv);
+     allContinuousVars, acv_offset, allDiscreteIntVars, adiv_offset, get_iv<Database>);
 
   copy_from_db(problem_db, {
     "variables.histogram_uncertain.point_string.initial_point"
-  }, allDiscreteStringVars, adsv_offset, get_sa);
+  }, allDiscreteStringVars, adsv_offset, get_sa<Database>);
 
   relax_from_db(problem_db, {
     "variables.histogram_uncertain.point_real.initial_point"
   }, all_relax_dr, ardr_cntr,
-     allContinuousVars, acv_offset, allDiscreteRealVars, adrv_offset, get_rv);
+     allContinuousVars, acv_offset, allDiscreteRealVars, adrv_offset, get_rv<Database>);
 
   // --- Epistemic ---
   copy_from_db(problem_db, {
     "variables.continuous_interval_uncertain.initial_point"
-  }, allContinuousVars, acv_offset, get_rv);
+  }, allContinuousVars, acv_offset, get_rv<Database>);
 
   relax_from_db(problem_db, {
     "variables.discrete_interval_uncertain.initial_point",
     "variables.discrete_uncertain_set_int.initial_point"
   }, all_relax_di, ardi_cntr,
-     allContinuousVars, acv_offset, allDiscreteIntVars, adiv_offset, get_iv);
+     allContinuousVars, acv_offset, allDiscreteIntVars, adiv_offset, get_iv<Database>);
 
   copy_from_db(problem_db, {
     "variables.discrete_uncertain_set_string.initial_point"
-  }, allDiscreteStringVars, adsv_offset, get_sa);
+  }, allDiscreteStringVars, adsv_offset, get_sa<Database>);
 
   relax_from_db(problem_db, {
     "variables.discrete_uncertain_set_real.initial_point"
   }, all_relax_dr, ardr_cntr,
-     allContinuousVars, acv_offset, allDiscreteRealVars, adrv_offset, get_rv);
+     allContinuousVars, acv_offset, allDiscreteRealVars, adrv_offset, get_rv<Database>);
 
   // --- State ---
   copy_from_db(problem_db, {
     "variables.continuous_state.initial_state"
-  }, allContinuousVars, acv_offset, get_rv);
+  }, allContinuousVars, acv_offset, get_rv<Database>);
 
   relax_from_db(problem_db, {
     "variables.discrete_state_range.initial_state",
     "variables.discrete_state_set_int.initial_state"
   }, all_relax_di, ardi_cntr,
-     allContinuousVars, acv_offset, allDiscreteIntVars, adiv_offset, get_iv);
+     allContinuousVars, acv_offset, allDiscreteIntVars, adiv_offset, get_iv<Database>);
 
   copy_from_db(problem_db, {
     "variables.discrete_state_set_string.initial_state"
-  }, allDiscreteStringVars, adsv_offset, get_sa);
+  }, allDiscreteStringVars, adsv_offset, get_sa<Database>);
 
   relax_from_db(problem_db, {
     "variables.discrete_state_set_real.initial_state"
   }, all_relax_dr, ardr_cntr,
-     allContinuousVars, acv_offset, allDiscreteRealVars, adrv_offset, get_rv);
+     allContinuousVars, acv_offset, allDiscreteRealVars, adrv_offset, get_rv<Database>);
 }
 
 

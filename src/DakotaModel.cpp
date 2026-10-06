@@ -916,73 +916,76 @@ void initialize_constraints_from_variables(
 
   const IRStore& store = *store_ptr;
   const SharedVariablesData& svd = vars.shared_data();
-  bool cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv;
-  svd.active_subsets(cdv, ddv, cauv, dauv, ceuv, deuv, csv, dsv);
-
-  const size_t num_cdv = ir_get<size_t>(store, "continuous_design");
-  if (cdv && num_cdv) {
-    const RealVector& lower = ir_get<RealVector>(store,
-      "continuous_design.lower_bounds");
-    const RealVector& upper = ir_get<RealVector>(store,
-      "continuous_design.upper_bounds");
-    constraints.continuous_lower_bounds(lower);
-    constraints.continuous_upper_bounds(upper);
-    if (svd.acv() == num_cdv) {
-      constraints.all_continuous_lower_bounds(lower);
-      constraints.all_continuous_upper_bounds(upper);
+  RealVector lower(svd.acv()), upper(svd.acv());
+  IntVector int_lower(svd.adiv()), int_upper(svd.adiv());
+  RealVector real_lower(svd.adrv()), real_upper(svd.adrv());
+  size_t cv = 0, div = 0, drv = 0, di = 0, dr = 0;
+  const auto& relax_di = svd.all_relaxed_discrete_int();
+  const auto& relax_dr = svd.all_relaxed_discrete_real();
+  auto continuous = [&](const String& base, const String& lb = "lower_bounds",
+                        const String& ub = "upper_bounds") {
+    const auto& l = ir_get<RealVector>(store, base + "." + lb);
+    const auto& u = ir_get<RealVector>(store, base + "." + ub);
+    for (size_t i = 0; i < l.length(); ++i, ++cv) {
+      lower[cv] = l[i]; upper[cv] = u[i];
     }
-  }
-
-  const size_t num_csv = ir_get<size_t>(store, "continuous_state");
-  if (csv && num_csv) {
-    const RealVector& lower = ir_get<RealVector>(store,
-      "continuous_state.lower_bounds");
-    const RealVector& upper = ir_get<RealVector>(store,
-      "continuous_state.upper_bounds");
-    constraints.continuous_lower_bounds(lower);
-    constraints.continuous_upper_bounds(upper);
-    if (svd.acv() == num_csv) {
-      constraints.all_continuous_lower_bounds(lower);
-      constraints.all_continuous_upper_bounds(upper);
+  };
+  auto integer = [&](const String& base) {
+    const auto& l = ir_get<IntVector>(store, base + ".lower_bounds");
+    const auto& u = ir_get<IntVector>(store, base + ".upper_bounds");
+    for (size_t i = 0; i < l.length(); ++i, ++di) {
+      if (!relax_di.empty() && relax_di[di]) {
+        lower[cv] = l[i]; upper[cv++] = u[i];
+      } else {
+        int_lower[div] = l[i]; int_upper[div++] = u[i];
+      }
     }
-  }
-
-  const size_t num_ddr = ir_get<size_t>(store, "discrete_design_range");
-  if (ddv && num_ddr) {
-    const IntVector& lower = ir_get<IntVector>(store,
-      "discrete_design_range.lower_bounds");
-    const IntVector& upper = ir_get<IntVector>(store,
-      "discrete_design_range.upper_bounds");
-    constraints.discrete_int_lower_bounds(lower);
-    constraints.discrete_int_upper_bounds(upper);
-    if (svd.adiv() == num_ddr) {
-      constraints.all_discrete_int_lower_bounds(lower);
-      constraints.all_discrete_int_upper_bounds(upper);
+  };
+  auto real = [&](const String& base) {
+    const auto& l = ir_get<RealVector>(store, base + ".lower_bounds");
+    const auto& u = ir_get<RealVector>(store, base + ".upper_bounds");
+    for (size_t i = 0; i < l.length(); ++i, ++dr) {
+      if (!relax_dr.empty() && relax_dr[dr]) {
+        lower[cv] = l[i]; upper[cv++] = u[i];
+      } else {
+        real_lower[drv] = l[i]; real_upper[drv++] = u[i];
+      }
     }
-  }
-
-  const size_t num_dsr = ir_get<size_t>(store, "discrete_state_range");
-  if (dsv && num_dsr) {
-    const IntVector& lower = ir_get<IntVector>(store,
-      "discrete_state_range.lower_bounds");
-    const IntVector& upper = ir_get<IntVector>(store,
-      "discrete_state_range.upper_bounds");
-    constraints.discrete_int_lower_bounds(lower);
-    constraints.discrete_int_upper_bounds(upper);
-    if (svd.adiv() == num_dsr) {
-      constraints.all_discrete_int_lower_bounds(lower);
-      constraints.all_discrete_int_upper_bounds(upper);
-    }
-  }
+  };
+  continuous("continuous_design");
+  integer("discrete_design_range"); integer("discrete_design_set_int");
+  real("discrete_design_set_real");
+  continuous("normal_uncertain", "inferred_lower_bounds", "inferred_upper_bounds");
+  continuous("lognormal_uncertain", "lower_bounds", "inferred_upper_bounds");
+  for (const char* base : {"uniform_uncertain", "loguniform_uncertain",
+       "triangular_uncertain", "exponential_uncertain", "beta_uncertain",
+       "gamma_uncertain", "gumbel_uncertain", "frechet_uncertain",
+       "weibull_uncertain", "histogram_bin_uncertain"}) continuous(base);
+  for (const char* base : {"poisson_uncertain", "binomial_uncertain",
+       "negative_binomial_uncertain", "geometric_uncertain",
+       "hypergeometric_uncertain", "histogram_uncertain.point_int"}) integer(base);
+  real("histogram_uncertain.point_real");
+  continuous("continuous_interval_uncertain");
+  integer("discrete_interval_uncertain"); integer("discrete_uncertain_set_int");
+  real("discrete_uncertain_set_real");
+  continuous("continuous_state");
+  integer("discrete_state_range"); integer("discrete_state_set_int");
+  real("discrete_state_set_real");
+  constraints.all_continuous_lower_bounds(lower);
+  constraints.all_continuous_upper_bounds(upper);
+  constraints.all_discrete_int_lower_bounds(int_lower);
+  constraints.all_discrete_int_upper_bounds(int_upper);
+  constraints.all_discrete_real_lower_bounds(real_lower);
+  constraints.all_discrete_real_upper_bounds(real_upper);
 }
 
 Model::Model(std::shared_ptr<StudyServices> services,
 	     const IRStore& model_store,
 	     const Variables& variables,
 	     const Response& response):
-  currentVariables(variables),
+  currentVariables(variables.copy(true)),
   numDerivVars(currentVariables.cv()),
-  currentResponse(response),
+  currentResponse(response.copy(true)),
   numFns(currentResponse.num_functions()),
   userDefinedConstraints(currentVariables.shared_data()),
   evaluationsDB(sharedStudyServices->output_manager_ptr()->evaluation_store()),
@@ -1021,6 +1024,17 @@ Model::Model(std::shared_ptr<StudyServices> services,
   estDerivsFlag(false), initCommsBcastFlag(false), modelAutoGraphicsFlag(false)
 {
   initialize_constraints_from_variables(currentVariables, userDefinedConstraints);
+  if (const auto& responses = currentResponse.responses_store_ptr()) {
+    userDefinedConstraints.reshape_nonlinear(
+      responses->get<size_t>("num_nonlinear_inequality_constraints"),
+      responses->get<size_t>("num_nonlinear_equality_constraints"));
+    userDefinedConstraints.nonlinear_ineq_constraint_lower_bounds(
+      responses->get<RealVector>("nonlinear_inequality_lower_bounds"));
+    userDefinedConstraints.nonlinear_ineq_constraint_upper_bounds(
+      responses->get<RealVector>("nonlinear_inequality_upper_bounds"));
+    userDefinedConstraints.nonlinear_eq_constraint_targets(
+      responses->get<RealVector>("nonlinear_equality_targets"));
+  }
   initialize_multivariate_distribution_from_variables(currentVariables, mvDist);
   initialize_distribution_parameters_from_variables(currentVariables, mvDist);
 

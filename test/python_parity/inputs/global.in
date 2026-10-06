@@ -1,0 +1,24 @@
+environment
+  method_pointer 'outer'
+method
+  id_method 'outer'
+  model_pointer 'target'
+  vector_parameter_study
+    step_vector 0.1 0.1
+    num_steps 2
+model
+  id_model 'target'
+  responses_pointer 'outer_resp'
+  global_surrogate polynomial quadratic
+    import_build_points_file 'build_points.dat' freeform
+variables
+  continuous_design = 2
+    initial_point 1.0 1.0
+    lower_bounds 0.5 0.5
+    upper_bounds 1.5 1.5
+    descriptors 'x1' 'x2'
+responses
+  id_responses 'outer_resp'
+  objective_functions 1
+  no_gradients
+  no_hessians

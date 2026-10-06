@@ -44,11 +44,32 @@ static const char rcsId[] = "@(#) $Id: NonDPOFDart.cpp 6080 2009-09-08 19:03:20Z
 
 namespace Dakota {
 
-NonDPOFDarts::NonDPOFDarts(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+NonDPOFDarts::
+NonDPOFDarts(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
+	     std::shared_ptr<Model> model):
   NonD(problem_db, parallel_lib, model), seed(probDescDB.get<int>("method.random_seed")),
   emulatorSamples(probDescDB.get<int>("method.nond.samples_on_emulator")),
   lipschitzType(probDescDB.get<const String>("method.lipschitz")),
   samples(probDescDB.get<int>("method.build_samples"))
+{
+    initialize();
+}
+
+
+NonDPOFDarts::
+NonDPOFDarts(std::shared_ptr<StudyServices> services, const IRStore& method_store,
+	     std::shared_ptr<Model> model):
+  NonD(std::move(services), method_store, model),
+  seed(method_store.get<int>("random_seed")),
+  emulatorSamples(method_store.get<int>("nond.samples_on_emulator")),
+  lipschitzType(method_store.get<String>("lipschitz")),
+  samples(method_store.get<int>("build_samples"))
+{
+    initialize();
+}
+
+
+void NonDPOFDarts::initialize()
 {
     // any initialization is done here.   For now, you should just specify
     // the number of samples, but eventually we will get that from the input spec
@@ -69,21 +90,21 @@ NonDPOFDarts::NonDPOFDarts(ProblemDescDB& problem_db, ParallelLibrary& parallel_
         _use_local_L = false;       // Global Lipschitz: less sampling time - less accuracy
         std::cout<< "pof: using global Lipschitz" << std::endl;
     }
-  
+
     if (emulatorSamples==0)
         emulatorSamples = 1E6;         // number of samples to evaluate surrogate
 
 
     if (!ModelUtils::is_datafit_surrogate_model(*iteratedModel)) {
       Cerr << "Error: NonDPOFDarts::iteratedModel must be a "
-	   << "surrogate model." << std::endl;
+           << "surrogate model." << std::endl;
       abort_handler(-1);
     }
-    
+
     //Cout << "in initialize loop" << '\n';
 
 }
-    
+
 
 NonDPOFDarts::~NonDPOFDarts()
 { }

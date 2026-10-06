@@ -782,6 +782,26 @@ sub compare_output {
       }
     }
 
+    elsif ($ENV{'DAKDIFF_ALL_NUMERIC'}) {
+      # Paired studies also compare numerical fields in newly reduced result
+      # sections, using the existing tolerances. Match complete tokens so
+      # digits in response/variable labels remain labels.
+      my $number = qr/[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?|$naninf/;
+      my @t_values = grep { /^(?:$number)$/ } split /\s+/, $test;
+      my @b_values = grep { /^(?:$number)$/ } split /\s+/, $base;
+      my $different = scalar(@t_values) != scalar(@b_values);
+      if (!$different) {
+        for my $index (0 .. $#t_values) {
+          $different = 1 if diff($t_values[$index], $b_values[$index]);
+        }
+      }
+      if ($different) {
+        $test_diff = 1;
+        push @base_diffs, $base;
+        push @test_diffs, $test;
+      }
+    }
+
   }   # end while test content
 
   # if we didn't already fail, and there's unexpected additional data

@@ -18,6 +18,7 @@
 #include <memory>
 #include <nlohmann/json.hpp>
 
+// [docs-library-api-start]
 using json = nlohmann::json;
 
 int main()
@@ -101,6 +102,6 @@ int main()
       std::cout << "First response value: "
                 << first_response.function_value(0) << '\n';
   }
-
   return 0;
 }
+// [docs-library-api-end]

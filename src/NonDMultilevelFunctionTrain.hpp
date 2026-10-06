@@ -34,6 +34,9 @@ public:
  
   /// standard constructor
   NonDMultilevelFunctionTrain(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
+  /// DI constructor
+  NonDMultilevelFunctionTrain(std::shared_ptr<StudyServices> services,
+             const IRStore& method_store, std::shared_ptr<Model> model);
   /*
   /// alternate constructor for helper iterator
   NonDMultilevelFunctionTrain(unsigned short method_name, std::shared_ptr<Model> model,

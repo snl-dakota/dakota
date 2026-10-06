@@ -1,0 +1,34 @@
+environment
+  method_pointer 'outer'
+method
+  id_method 'outer'
+  model_pointer 'target'
+  vector_parameter_study
+    step_vector 0.1 0.1
+    num_steps 2
+model
+  id_model 'target'
+  ensemble_surrogate
+    model_fidelity_sequence 'low' 'high'
+variables
+  continuous_design = 2
+    initial_point 1.0 1.0
+    lower_bounds 0.5 0.5
+    upper_bounds 1.5 1.5
+    descriptors 'x1' 'x2'
+responses
+  objective_functions 1
+  no_gradients
+  no_hessians
+model
+  id_model 'low'
+  simulation interface_pointer 'low_driver'
+interface
+  id_interface 'low_driver'
+  analysis_drivers 'text_book' fork
+model
+  id_model 'high'
+  simulation interface_pointer 'high_driver'
+interface
+  id_interface 'high_driver'
+  analysis_drivers 'text_book' fork

@@ -1,0 +1,30 @@
+environment
+  method_pointer 'main'
+method
+  id_method 'main'
+  model_pointer 'target'
+  bayes_calibration
+    wasabi
+    emulator gaussian_process surfpack
+      build_samples 8
+    pushforward_samples 16
+    seed 1234
+    generate_posterior_samples posterior_samples_export_filename 'posterior_samples.dat'
+    evaluate_posterior_density posterior_density_export_filename 'posterior_density.dat'
+    data_distribution gaussian
+    means 0.0
+    covariance 0.25 diagonal
+model
+  id_model 'target'
+  simulation
+variables
+  uniform_uncertain 2
+    lower_bounds -1.0 -1.0
+    upper_bounds 1.0 1.0
+responses
+  response_functions 1
+  no_gradients
+  no_hessians
+interface
+  analysis_drivers 'python3 response_driver.py high' fork
+

@@ -36,6 +36,9 @@ public:
 
   /// standard constructor
   NonDPolynomialChaos(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
+  /// DI constructor
+  NonDPolynomialChaos(std::shared_ptr<StudyServices> services,
+             const IRStore& method_store, std::shared_ptr<Model> model);
   /// alternate constructor for numerical integration (tensor, sparse, cubature)
   NonDPolynomialChaos(std::shared_ptr<Model> model, short exp_coeffs_approach,
 		      unsigned short num_int, const RealVector& dim_pref,
@@ -80,6 +83,9 @@ protected:
   /// allowing the derived ML PCE class to bypass the standard PCE ctor)
   NonDPolynomialChaos(unsigned short method_name, ProblemDescDB& problem_db,
           ParallelLibrary& parallel_lib, std::shared_ptr<Model> model);
+  /// DI short-cut ctor
+  NonDPolynomialChaos(unsigned short method_name, std::shared_ptr<StudyServices> services,
+             const IRStore& method_store, std::shared_ptr<Model> model);
   /// base constructor for lightweight construction of multifidelity PCE
   /// using numerical integration
   NonDPolynomialChaos(unsigned short method_name, std::shared_ptr<Model> model,

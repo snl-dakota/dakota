@@ -51,6 +51,7 @@
 #include "SNLLOptimizer.hpp"
 #endif
 #include "ConcurrentMetaIterator.hpp"
+#include "DataFitSurrModel.hpp"
 #include "EnsembleSurrModel.hpp"
 #ifndef _WIN32
 #include "ForkApplicInterface.hpp"
@@ -68,6 +69,7 @@
 #include "OutputManager.hpp"
 #include "ParallelLibrary.hpp"
 #include "ProgramOptions.hpp"
+#include "EnsembleSurrModel.hpp"
 #include "SimulationModel.hpp"
 #include "Study.hpp"
 #include "StudyServices.hpp"
@@ -514,6 +516,117 @@ TEST(di_construction_tests, study_factories_construct_components_from_json_fragm
   EXPECT_EQ(response.num_functions(), 1);
   EXPECT_EQ(model->current_response().num_functions(), 1);
   EXPECT_EQ(sampling->sampling_scheme(), SUBMETHOD_LHS);
+}
+
+TEST(di_construction_tests, study_factory_constructs_data_fit_surrogates)
+{
+  const json variables_json = {
+    {"continuous_design", {
+      {"count", 2}, {"descriptors", {"x1", "x2"}},
+      {"initial_point", {0.0, 0.0}},
+      {"lower_bounds", {-1.0, -1.0}},
+      {"upper_bounds", {1.0, 1.0}}
+    }}
+  };
+  const json responses_json = {
+    {"response_type", {{"response_functions", {{"count", 1}}}}},
+    {"descriptors", {"f"}},
+    {"gradient_type", {{"analytic_gradients", true}}},
+    {"hessian_type", {{"analytic_hessians", true}}}
+  };
+  const json interface_json = {
+    {"analysis_drivers", {
+      {"drivers", {"text_book"}},
+      {"interface_type", {{"fork", json::object()}}}
+    }}
+  };
+
+  Study study;
+  const Variables variables = study.variables(variables_json);
+  const Response response = study.responses(responses_json, variables);
+  auto interface = study.interface(interface_json);
+  auto truth = study.model().single(
+    json::object(), variables, interface, response);
+
+  auto local = study.model().local_surrogate(
+    {{"taylor_series", true}, {"truth_model_pointer", "DI"}},
+    truth, variables, response);
+  auto multipoint = study.model().multipoint_surrogate(
+    {{"type", {{"tana", json::object()}}},
+     {"truth_model_pointer", "DI"}},
+    truth, variables, response);
+  auto global = study.model().global_surrogate(
+    {{"type", {{"polynomial", {
+       {"order", {{"quadratic", json::object()}}}
+     }}}},
+     {"build_data", {{"truth_model_pointer", "DI"}}}},
+    variables, response, truth);
+
+  auto dace = study.method().sampling(
+    {{"sample_type", {{"lhs", true}}}, {"samples", 4}, {"seed", 17}},
+    truth);
+  auto dace_global = study.model().global_surrogate(
+    {{"type", {{"polynomial", {
+       {"order", {{"linear", json::object()}}}
+     }}}},
+     {"build_data", {{"dace_method_pointer", {{"pointer", "DI"}}}}}},
+    variables, response, nullptr, dace);
+
+  EXPECT_EQ(local->surrogate_type(), "local_taylor");
+  EXPECT_EQ(multipoint->surrogate_type(), "multipoint_tana");
+  EXPECT_EQ(global->surrogate_type(), "global_polynomial");
+  EXPECT_EQ(dace_global->truth_model(), truth);
+
+  EXPECT_THROW(
+    study.model().local_surrogate(
+      {{"taylor_series", true}, {"truth_model_pointer", "DI"}},
+      nullptr, variables, response),
+    std::invalid_argument);
+  EXPECT_THROW(
+    study.model().global_surrogate(
+      {{"type", {{"polynomial", {
+         {"order", {{"linear", json::object()}}}
+       }}}},
+       {"build_data", {{"dace_method_pointer", {{"pointer", "DI"}}}}}},
+      variables, response, truth, dace),
+    std::invalid_argument);
+
+  // TODO(recast-function-train-di): replace this rejection with successful
+  // truth-model and DACE execution coverage after the RecastModel refactor.
+  EXPECT_THROW(
+    study.model().global_surrogate(
+      {{"type", {{"function_train", json::object()}}},
+       {"build_data", {{"truth_model_pointer", "DI"}}}},
+      variables, response, truth),
+    std::runtime_error);
+
+  Study other_study;
+  EXPECT_THROW(
+    other_study.model().local_surrogate(
+      {{"taylor_series", true}, {"truth_model_pointer", "DI"}},
+      truth, variables, response),
+    std::runtime_error);
+}
+
+TEST(di_construction_tests, study_irstore_factories_accept_materialized_configuration)
+{
+  InstructionMaterializer materializer;
+  IRStore method_store, variables_store, responses_store, interface_store, model_store;
+  materialize_pilot_blocks(materializer, method_store, variables_store,
+                           responses_store, interface_store, model_store);
+  Study study;
+  const Variables variables = study.variables(variables_store);
+  const Response response = study.responses(responses_store, variables);
+  EXPECT_EQ(variables.tv(), Variables(variables_store).tv());
+  EXPECT_EQ(response.num_functions(),
+            Response(responses_store, variables).num_functions());
+
+  // Direct C++ JSON callers still receive input validation.
+  const json invalid_variables = {{"uniform_uncertain", {
+    {"count", 2}, {"lower_bounds", {0.0, 0.0}},
+    {"upper_bounds", {1.0, 1.0}}, {"initial_point_user_provided", false}
+  }}};
+  EXPECT_THROW(study.variables(invalid_variables), std::runtime_error);
 }
 
 TEST(di_construction_tests, default_study_constructs_coherent_services)
@@ -1222,7 +1335,7 @@ TEST(di_construction_tests, can_construct_nond_local_single_interval_from_irstor
   auto simulation_model = std::make_shared<SimulationModel>(
     model_store, variables, interface, response, runtime.services);
 
-  NonDLocalSingleInterval interval(method_store, simulation_model, runtime.services);
+  NonDLocalSingleInterval interval(runtime.services, method_store, simulation_model);
 
   EXPECT_EQ(interval.parallel_library_ptr(), runtime.parallelLibrary.get());
   EXPECT_EQ(interval.output_manager_ptr(), runtime.outputManager.get());
@@ -1263,7 +1376,7 @@ TEST(di_construction_tests, nond_local_single_interval_throws_on_inconsistent_ru
     model_store, variables, interface, response, runtime_a.services);
 
   EXPECT_THROW(
-    NonDLocalSingleInterval(method_store, simulation_model, runtime_b.services),
+    NonDLocalSingleInterval(runtime_b.services, method_store, simulation_model),
     std::runtime_error);
 }
 #endif
@@ -1354,7 +1467,7 @@ TEST(di_construction_tests, can_construct_nond_lhs_single_interval_from_irstore)
   auto simulation_model = std::make_shared<SimulationModel>(
     model_store, variables, interface, response, runtime.services);
 
-  NonDLHSSingleInterval interval(method_store, simulation_model, runtime.services);
+  NonDLHSSingleInterval interval(runtime.services, method_store, simulation_model);
 
   EXPECT_EQ(interval.parallel_library_ptr(), runtime.parallelLibrary.get());
   EXPECT_EQ(interval.output_manager_ptr(), runtime.outputManager.get());
@@ -1386,7 +1499,7 @@ TEST(di_construction_tests, nond_lhs_single_interval_throws_on_inconsistent_runt
     model_store, variables, interface, response, runtime_a.services);
 
   EXPECT_THROW(
-    NonDLHSSingleInterval(method_store, simulation_model, runtime_b.services),
+    NonDLHSSingleInterval(runtime_b.services, method_store, simulation_model),
     std::runtime_error);
 }
 
@@ -1476,7 +1589,7 @@ TEST(di_construction_tests, can_construct_nond_global_single_interval_from_irsto
   auto simulation_model = std::make_shared<SimulationModel>(
     model_store, variables, interface, response, runtime.services);
 
-  NonDGlobalSingleInterval interval(method_store, simulation_model, runtime.services);
+  NonDGlobalSingleInterval interval(runtime.services, method_store, simulation_model);
 
   EXPECT_EQ(interval.parallel_library_ptr(), runtime.parallelLibrary.get());
   EXPECT_EQ(interval.output_manager_ptr(), runtime.outputManager.get());
@@ -1511,7 +1624,7 @@ TEST(di_construction_tests, nond_global_single_interval_throws_on_inconsistent_r
     model_store, variables, interface, response, runtime_a.services);
 
   EXPECT_THROW(
-    NonDGlobalSingleInterval(method_store, simulation_model, runtime_b.services),
+    NonDGlobalSingleInterval(runtime_b.services, method_store, simulation_model),
     std::runtime_error);
 }
 
@@ -1772,6 +1885,81 @@ TEST(di_construction_tests, nested_model_throws_on_inconsistent_runtime_services
     std::runtime_error);
 }
 
+TEST(di_construction_tests, can_construct_ensemble_surr_model_from_irstore)
+{
+  InstructionMaterializer materializer;
+  IRStore variables_store, responses_store, interface_store, model_store;
+  materialize_default_opt_blocks(materializer, variables_store, responses_store,
+                                 interface_store, model_store);
+  IRStore surrogate_store = make_ensemble_surrogate_model_store(materializer);
+
+  ExplicitRuntime runtime;
+
+  Variables variables(variables_store);
+  Response response(responses_store, variables);
+  auto truth_interface = make_test_interface(interface_store, runtime.services);
+  auto approx_interface = make_test_interface(interface_store, runtime.services);
+  auto truth_model = std::make_shared<SimulationModel>(
+    model_store, variables, truth_interface, response, runtime.services);
+  auto approx_model = std::make_shared<SimulationModel>(
+    model_store, variables, approx_interface, response, runtime.services);
+
+  EnsembleSurrModel ensemble_model(
+    surrogate_store, truth_model, {approx_model}, variables, response,
+    runtime.services);
+  Model& ensemble_as_model = ensemble_model;
+
+  EXPECT_EQ(ensemble_model.parallel_library_ptr(), runtime.parallelLibrary.get());
+  EXPECT_EQ(ensemble_model.output_manager_ptr(), runtime.outputManager.get());
+  EXPECT_EQ(ensemble_as_model.truth_model().get(), truth_model.get());
+  EXPECT_EQ(ensemble_as_model.surrogate_model(0).get(), approx_model.get());
+}
+
+TEST(di_construction_tests, ensemble_surr_model_throws_on_inconsistent_runtime_services)
+{
+  InstructionMaterializer materializer;
+  IRStore variables_store, responses_store, interface_store, model_store;
+  materialize_default_opt_blocks(materializer, variables_store, responses_store,
+                                 interface_store, model_store);
+  IRStore surrogate_store = make_ensemble_surrogate_model_store(materializer);
+
+  ExplicitRuntime runtime_a;
+  ExplicitRuntime runtime_b;
+
+  Variables variables(variables_store);
+  Response response(responses_store, variables);
+  auto truth_interface = make_test_interface(interface_store, runtime_a.services);
+  auto approx_interface = make_test_interface(interface_store, runtime_b.services);
+  auto truth_model = std::make_shared<SimulationModel>(
+    model_store, variables, truth_interface, response, runtime_a.services);
+  auto approx_model = std::make_shared<SimulationModel>(
+    model_store, variables, approx_interface, response, runtime_b.services);
+
+  EXPECT_THROW(
+    EnsembleSurrModel(surrogate_store, truth_model, {approx_model}, variables,
+                      response, runtime_a.services),
+    std::runtime_error);
+}
+
+TEST(di_construction_tests, study_model_factory_surrogate_throws_for_unsupported_datafit_type)
+{
+  InstructionMaterializer materializer;
+  IRStore variables_store, responses_store, interface_store, model_store;
+  materialize_default_opt_blocks(materializer, variables_store, responses_store,
+                                 interface_store, model_store);
+  IRStore surrogate_store = make_ensemble_surrogate_model_store(materializer);
+  surrogate_store.set_value("surrogate.type", String("global_gaussian"));
+
+  Study study;
+  Variables variables(variables_store);
+  Response response(responses_store, variables);
+  auto interface = study.interface(interface_store);
+  auto truth_model = study.model().single(model_store, variables, interface, response);
+
+  EXPECT_THROW(
+    study.model().ensemble_surrogate(surrogate_store, truth_model, {}, variables, response),
+    std::runtime_error);
+}
 
 TEST(di_construction_tests, json_api_path_does_not_require_pointer_fields)
 {

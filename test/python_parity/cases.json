@@ -1,0 +1,1558 @@
+[
+  {
+    "id": "pstudy_s0",
+    "input": "dakota_pstudy.in",
+    "subtest": 0,
+    "script": "vector.py",
+    "required_files": [
+      "text_book"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.vector_parameter_study"
+    ],
+    "classes": [
+      "SimulationModel",
+      "ParamStudy"
+    ]
+  },
+  {
+    "id": "pstudy_s3",
+    "input": "dakota_pstudy.in",
+    "subtest": 3,
+    "script": "list.py",
+    "required_files": [
+      "text_book"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.list_parameter_study"
+    ],
+    "classes": [
+      "SimulationModel",
+      "ParamStudy"
+    ]
+  },
+  {
+    "id": "pstudy_s4",
+    "input": "dakota_pstudy.in",
+    "subtest": 4,
+    "script": "centered.py",
+    "required_files": [
+      "text_book"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.centered_parameter_study"
+    ],
+    "classes": [
+      "SimulationModel",
+      "ParamStudy"
+    ]
+  },
+  {
+    "id": "pstudy_s5",
+    "input": "dakota_pstudy.in",
+    "subtest": 5,
+    "script": "multidim.py",
+    "required_files": [
+      "text_book"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.multidim_parameter_study"
+    ],
+    "classes": [
+      "SimulationModel",
+      "ParamStudy"
+    ]
+  },
+  {
+    "id": "textbook_s0",
+    "input": "dakota_textbook.in",
+    "subtest": 0,
+    "script": "textbook_s0.py",
+    "required_files": [
+      "text_book"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.dot_mmfd"
+    ],
+    "classes": [
+      "SimulationModel",
+      "DOTOptimizer"
+    ],
+    "requires_features": [
+      "HAVE_DOT"
+    ]
+  },
+  {
+    "id": "textbook_nips_s0",
+    "input": "dakota_textbook_nips.in",
+    "subtest": 0,
+    "script": "textbook_nips_s0.py",
+    "required_files": [
+      "text_book"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.optpp_q_newton"
+    ],
+    "classes": [
+      "SimulationModel",
+      "SNLLOptimizer"
+    ],
+    "requires_features": [
+      "HAVE_OPTPP"
+    ]
+  },
+  {
+    "id": "textbook_nips_s2",
+    "input": "dakota_textbook_nips.in",
+    "subtest": 2,
+    "script": "textbook_nips_s2.py",
+    "required_files": [
+      "text_book"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.optpp_fd_newton"
+    ],
+    "classes": [
+      "SimulationModel",
+      "SNLLOptimizer"
+    ],
+    "requires_features": [
+      "HAVE_OPTPP"
+    ]
+  },
+  {
+    "id": "textbook_nips_s4",
+    "input": "dakota_textbook_nips.in",
+    "subtest": 4,
+    "script": "textbook_nips_s4.py",
+    "required_files": [
+      "text_book"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.optpp_newton"
+    ],
+    "classes": [
+      "SimulationModel",
+      "SNLLOptimizer"
+    ],
+    "requires_features": [
+      "HAVE_OPTPP"
+    ]
+  },
+  {
+    "id": "sampling_small",
+    "input": "python_parity/inputs/sampling.in",
+    "subtest": 0,
+    "script": "sampling.py",
+    "required_files": [
+      "text_book"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.sampling"
+    ],
+    "classes": [
+      "SimulationModel",
+      "NonDLHSSampling"
+    ]
+  },
+  {
+    "id": "import_points",
+    "input": "python_parity/inputs/import_points.in",
+    "subtest": 0,
+    "script": "import_points.py",
+    "required_files": [
+      "text_book",
+      "dakota_import_points.dat"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.import_points"
+    ],
+    "classes": [
+      "SimulationModel",
+      "NonDImportPoints"
+    ]
+  },
+  {
+    "id": "model_global",
+    "input": "python_parity/inputs/global.in",
+    "subtest": 0,
+    "script": "model_global.py",
+    "required_files": [
+      "python_parity/inputs/build_points.dat"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.global_surrogate",
+      "MethodFactory.vector_parameter_study"
+    ],
+    "classes": [
+      "DataFitSurrModel",
+      "ParamStudy"
+    ]
+  },
+  {
+    "id": "model_local",
+    "input": "python_parity/inputs/local.in",
+    "subtest": 0,
+    "script": "model_local.py",
+    "required_files": [
+      "text_book"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.local_surrogate",
+      "MethodFactory.vector_parameter_study",
+      "ModelFactory.simulation"
+    ],
+    "classes": [
+      "DataFitSurrModel",
+      "ParamStudy",
+      "SimulationModel"
+    ]
+  },
+  {
+    "id": "model_multipoint",
+    "input": "python_parity/inputs/multipoint.in",
+    "subtest": 0,
+    "script": "model_multipoint.py",
+    "required_files": [
+      "text_book"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.multipoint_surrogate",
+      "MethodFactory.vector_parameter_study",
+      "ModelFactory.simulation"
+    ],
+    "classes": [
+      "DataFitSurrModel",
+      "ParamStudy",
+      "SimulationModel"
+    ]
+  },
+  {
+    "id": "model_ensemble",
+    "input": "python_parity/inputs/ensemble.in",
+    "subtest": 0,
+    "script": "ensemble.py",
+    "required_files": [
+      "text_book"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.ensemble_surrogate",
+      "MethodFactory.vector_parameter_study",
+      "ModelFactory.simulation"
+    ],
+    "classes": [
+      "EnsembleSurrModel",
+      "ParamStudy",
+      "SimulationModel"
+    ]
+  },
+  {
+    "id": "model_nested",
+    "input": "python_parity/inputs/nested.in",
+    "subtest": 0,
+    "script": "nested.py",
+    "required_files": [
+      "text_book"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.nested",
+      "MethodFactory.vector_parameter_study",
+      "ModelFactory.simulation",
+      "MethodFactory.sampling"
+    ],
+    "classes": [
+      "NestedModel",
+      "ParamStudy",
+      "SimulationModel",
+      "NonDLHSSampling"
+    ]
+  },
+  {
+    "id": "method_dot_bfgs",
+    "input": "python_parity/inputs/dot_bfgs.in",
+    "subtest": 0,
+    "script": "method_dot_bfgs.py",
+    "required_files": [
+      "text_book"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.dot_bfgs"
+    ],
+    "classes": [
+      "SimulationModel",
+      "DOTOptimizer"
+    ],
+    "requires_features": [
+      "HAVE_DOT"
+    ]
+  },
+  {
+    "id": "method_dot_frcg",
+    "input": "python_parity/inputs/dot_frcg.in",
+    "subtest": 0,
+    "script": "method_dot_frcg.py",
+    "required_files": [
+      "text_book"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.dot_frcg"
+    ],
+    "classes": [
+      "SimulationModel",
+      "DOTOptimizer"
+    ],
+    "requires_features": [
+      "HAVE_DOT"
+    ]
+  },
+  {
+    "id": "method_dot_slp",
+    "input": "python_parity/inputs/dot_slp.in",
+    "subtest": 0,
+    "script": "method_dot_slp.py",
+    "required_files": [
+      "text_book"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.dot_slp"
+    ],
+    "classes": [
+      "SimulationModel",
+      "DOTOptimizer"
+    ],
+    "requires_features": [
+      "HAVE_DOT"
+    ]
+  },
+  {
+    "id": "method_dot_sqp",
+    "input": "python_parity/inputs/dot_sqp.in",
+    "subtest": 0,
+    "script": "method_dot_sqp.py",
+    "required_files": [
+      "text_book"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.dot_sqp"
+    ],
+    "classes": [
+      "SimulationModel",
+      "DOTOptimizer"
+    ],
+    "requires_features": [
+      "HAVE_DOT"
+    ]
+  },
+  {
+    "id": "method_conmin_frcg",
+    "input": "python_parity/inputs/conmin_frcg.in",
+    "subtest": 0,
+    "script": "method_conmin_frcg.py",
+    "required_files": [
+      "text_book"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.conmin_frcg"
+    ],
+    "classes": [
+      "SimulationModel",
+      "CONMINOptimizer"
+    ],
+    "requires_features": [
+      "HAVE_CONMIN"
+    ]
+  },
+  {
+    "id": "method_conmin_mfd",
+    "input": "python_parity/inputs/conmin_mfd.in",
+    "subtest": 0,
+    "script": "method_conmin_mfd.py",
+    "required_files": [
+      "text_book"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.conmin_mfd"
+    ],
+    "classes": [
+      "SimulationModel",
+      "CONMINOptimizer"
+    ],
+    "requires_features": [
+      "HAVE_CONMIN"
+    ]
+  },
+  {
+    "id": "method_nonlinear_cg",
+    "input": "python_parity/inputs/nonlinear_cg.in",
+    "subtest": 0,
+    "script": "method_nonlinear_cg.py",
+    "required_files": [
+      "text_book"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.nonlinear_cg"
+    ],
+    "classes": [
+      "SimulationModel",
+      "NonlinearCGOptimizer"
+    ]
+  },
+  {
+    "id": "method_genie_direct",
+    "input": "python_parity/inputs/genie_direct.in",
+    "subtest": 0,
+    "script": "method_genie_direct.py",
+    "required_files": [
+      "text_book"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.genie_direct"
+    ],
+    "classes": [
+      "SimulationModel",
+      "OptDartsOptimizer"
+    ]
+  },
+  {
+    "id": "method_genie_opt_darts",
+    "input": "python_parity/inputs/genie_opt_darts.in",
+    "subtest": 0,
+    "script": "method_genie_opt_darts.py",
+    "required_files": [
+      "text_book"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.genie_opt_darts"
+    ],
+    "classes": [
+      "SimulationModel",
+      "OptDartsOptimizer"
+    ]
+  },
+  {
+    "id": "method_coliny_cobyla",
+    "input": "python_parity/inputs/coliny_cobyla.in",
+    "subtest": 0,
+    "script": "method_coliny_cobyla.py",
+    "required_files": [
+      "text_book"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.coliny_cobyla"
+    ],
+    "classes": [
+      "SimulationModel",
+      "COLINOptimizer"
+    ],
+    "requires_features": [
+      "HAVE_ACRO"
+    ]
+  },
+  {
+    "id": "method_coliny_pattern_search",
+    "input": "python_parity/inputs/coliny_pattern_search.in",
+    "subtest": 0,
+    "script": "method_coliny_pattern_search.py",
+    "required_files": [
+      "text_book"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.coliny_pattern_search"
+    ],
+    "classes": [
+      "SimulationModel",
+      "COLINOptimizer"
+    ],
+    "requires_features": [
+      "HAVE_ACRO"
+    ]
+  },
+  {
+    "id": "multistart_ie_s0",
+    "input": "dakota_multistart_ie.in",
+    "subtest": 0,
+    "script": "multi_start.py",
+    "required_files": [
+      "text_book"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.vector_parameter_study",
+      "MethodFactory.multi_start"
+    ],
+    "classes": [
+      "SimulationModel",
+      "ParamStudy",
+      "ConcurrentMetaIterator"
+    ]
+  },
+  {
+    "id": "method_coliny_direct",
+    "input": "python_parity/inputs/coliny_direct.in",
+    "subtest": 0,
+    "script": "method_coliny_direct.py",
+    "required_files": [
+      "text_book"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.coliny_direct"
+    ],
+    "classes": [
+      "SimulationModel",
+      "COLINOptimizer"
+    ],
+    "requires_features": [
+      "HAVE_ACRO"
+    ]
+  },
+  {
+    "id": "method_coliny_ea",
+    "input": "python_parity/inputs/coliny_ea.in",
+    "subtest": 0,
+    "script": "method_coliny_ea.py",
+    "required_files": [
+      "text_book"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.coliny_ea"
+    ],
+    "classes": [
+      "SimulationModel",
+      "COLINOptimizer"
+    ],
+    "requires_features": [
+      "HAVE_ACRO"
+    ]
+  },
+  {
+    "id": "method_coliny_solis_wets",
+    "input": "python_parity/inputs/coliny_solis_wets.in",
+    "subtest": 0,
+    "script": "method_coliny_solis_wets.py",
+    "required_files": [
+      "text_book"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.coliny_solis_wets"
+    ],
+    "classes": [
+      "SimulationModel",
+      "COLINOptimizer"
+    ],
+    "requires_features": [
+      "HAVE_ACRO"
+    ]
+  },
+  {
+    "id": "method_optpp_cg",
+    "input": "python_parity/inputs/optpp_cg.in",
+    "subtest": 0,
+    "script": "method_optpp_cg.py",
+    "required_files": [
+      "text_book"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.optpp_cg"
+    ],
+    "classes": [
+      "SimulationModel",
+      "SNLLOptimizer"
+    ],
+    "requires_features": [
+      "HAVE_OPTPP"
+    ]
+  },
+  {
+    "id": "method_optpp_pds",
+    "input": "python_parity/inputs/optpp_pds.in",
+    "subtest": 0,
+    "script": "method_optpp_pds.py",
+    "required_files": [
+      "text_book"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.optpp_pds"
+    ],
+    "classes": [
+      "SimulationModel",
+      "SNLLOptimizer"
+    ],
+    "requires_features": [
+      "HAVE_OPTPP"
+    ]
+  },
+  {
+    "id": "method_ncsu_direct",
+    "input": "python_parity/inputs/ncsu_direct.in",
+    "subtest": 0,
+    "script": "method_ncsu_direct.py",
+    "required_files": [
+      "text_book"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.ncsu_direct"
+    ],
+    "classes": [
+      "SimulationModel",
+      "NCSUOptimizer"
+    ],
+    "requires_features": [
+      "HAVE_NCSUOPT"
+    ]
+  },
+  {
+    "id": "method_nlpql_sqp",
+    "input": "python_parity/inputs/nlpql_sqp.in",
+    "subtest": 0,
+    "script": "method_nlpql_sqp.py",
+    "required_files": [
+      "text_book"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.nlpql_sqp"
+    ],
+    "classes": [
+      "SimulationModel",
+      "NLPQLPOptimizer"
+    ],
+    "requires_features": [
+      "HAVE_NLPQL"
+    ]
+  },
+  {
+    "id": "method_npsol_sqp",
+    "input": "python_parity/inputs/npsol_sqp.in",
+    "subtest": 0,
+    "script": "method_npsol_sqp.py",
+    "required_files": [
+      "text_book"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.npsol_sqp"
+    ],
+    "classes": [
+      "SimulationModel",
+      "NPSOLOptimizer"
+    ],
+    "requires_features": [
+      "HAVE_NPSOL"
+    ]
+  },
+  {
+    "id": "method_mesh_adaptive_search",
+    "input": "python_parity/inputs/mesh_adaptive_search.in",
+    "subtest": 0,
+    "script": "method_mesh_adaptive_search.py",
+    "required_files": [
+      "text_book"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.mesh_adaptive_search"
+    ],
+    "classes": [
+      "SimulationModel",
+      "NomadOptimizer"
+    ],
+    "requires_features": [
+      "HAVE_NOMAD"
+    ]
+  },
+  {
+    "id": "method_asynch_pattern_search",
+    "input": "python_parity/inputs/asynch_pattern_search.in",
+    "subtest": 0,
+    "script": "method_asynch_pattern_search.py",
+    "required_files": [
+      "text_book"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.asynch_pattern_search"
+    ],
+    "classes": [
+      "SimulationModel",
+      "APPSOptimizer"
+    ],
+    "requires_features": [
+      "HAVE_HOPSPACK"
+    ]
+  },
+  {
+    "id": "method_soga",
+    "input": "python_parity/inputs/soga.in",
+    "subtest": 0,
+    "script": "method_soga.py",
+    "required_files": [
+      "text_book"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.soga"
+    ],
+    "classes": [
+      "SimulationModel",
+      "JEGAOptimizer"
+    ],
+    "requires_features": [
+      "HAVE_JEGA"
+    ]
+  },
+  {
+    "id": "method_moga",
+    "input": "python_parity/inputs/moga.in",
+    "subtest": 0,
+    "script": "method_moga.py",
+    "required_files": [
+      "text_book"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.moga"
+    ],
+    "classes": [
+      "SimulationModel",
+      "JEGAOptimizer"
+    ],
+    "requires_features": [
+      "HAVE_JEGA"
+    ]
+  },
+  {
+    "id": "method_local_reliability",
+    "input": "python_parity/inputs/local_reliability.in",
+    "subtest": 0,
+    "script": "method_local_reliability.py",
+    "required_files": [
+      "python_parity/response_driver.py"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.local_reliability"
+    ],
+    "classes": [
+      "SimulationModel",
+      "NonDLocalReliability"
+    ]
+  },
+  {
+    "id": "method_global_reliability",
+    "input": "python_parity/inputs/global_reliability.in",
+    "subtest": 0,
+    "script": "method_global_reliability.py",
+    "required_files": [
+      "python_parity/response_driver.py"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.global_reliability"
+    ],
+    "classes": [
+      "SimulationModel",
+      "NonDGlobalReliability"
+    ],
+    "requires_features": [
+      "HAVE_SURFPACK"
+    ]
+  },
+  {
+    "id": "method_global_interval_est",
+    "input": "python_parity/inputs/global_interval_est.in",
+    "subtest": 0,
+    "script": "method_global_interval_est.py",
+    "required_files": [
+      "python_parity/response_driver.py"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.global_interval_est"
+    ],
+    "classes": [
+      "SimulationModel",
+      "NonDLHSSingleInterval"
+    ]
+  },
+  {
+    "id": "method_global_evidence",
+    "input": "python_parity/inputs/global_evidence.in",
+    "subtest": 0,
+    "script": "method_global_evidence.py",
+    "required_files": [
+      "python_parity/response_driver.py"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.global_evidence"
+    ],
+    "classes": [
+      "SimulationModel",
+      "NonDLHSEvidence"
+    ]
+  },
+  {
+    "id": "method_local_interval_est",
+    "input": "python_parity/inputs/local_interval_est.in",
+    "subtest": 0,
+    "script": "method_local_interval_est.py",
+    "required_files": [
+      "python_parity/response_driver.py"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.local_interval_est"
+    ],
+    "classes": [
+      "SimulationModel",
+      "NonDLocalSingleInterval"
+    ],
+    "requires_features": [
+      "HAVE_OPTPP"
+    ]
+  },
+  {
+    "id": "method_local_evidence",
+    "input": "python_parity/inputs/local_evidence.in",
+    "subtest": 0,
+    "script": "method_local_evidence.py",
+    "required_files": [
+      "python_parity/response_driver.py"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.local_evidence"
+    ],
+    "classes": [
+      "SimulationModel",
+      "NonDLocalEvidence"
+    ],
+    "requires_features": [
+      "HAVE_OPTPP"
+    ]
+  },
+  {
+    "id": "method_importance_sampling",
+    "input": "python_parity/inputs/importance_sampling.in",
+    "subtest": 0,
+    "script": "method_importance_sampling.py",
+    "required_files": [
+      "python_parity/response_driver.py"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.importance_sampling"
+    ],
+    "classes": [
+      "SimulationModel",
+      "NonDAdaptImpSampling"
+    ]
+  },
+  {
+    "id": "method_gpais",
+    "input": "python_parity/inputs/gpais.in",
+    "subtest": 0,
+    "script": "method_gpais.py",
+    "required_files": [
+      "python_parity/response_driver.py"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.gpais"
+    ],
+    "classes": [
+      "SimulationModel",
+      "NonDGPImpSampling"
+    ],
+    "requires_features": [
+      "HAVE_SURFPACK"
+    ]
+  },
+  {
+    "id": "method_pof_darts",
+    "input": "python_parity/inputs/pof_darts.in",
+    "subtest": 0,
+    "script": "method_pof_darts.py",
+    "required_files": [
+      "python_parity/response_driver.py"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.pof_darts"
+    ],
+    "classes": [
+      "SimulationModel",
+      "NonDPOFDarts"
+    ]
+  },
+  {
+    "id": "method_rkd_darts",
+    "input": "python_parity/inputs/rkd_darts.in",
+    "subtest": 0,
+    "script": "method_rkd_darts.py",
+    "required_files": [
+      "python_parity/response_driver.py"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.rkd_darts"
+    ],
+    "classes": [
+      "SimulationModel",
+      "NonDRKDDarts"
+    ]
+  },
+  {
+    "id": "method_adaptive_sampling",
+    "input": "python_parity/inputs/adaptive_sampling.in",
+    "subtest": 0,
+    "script": "method_adaptive_sampling.py",
+    "required_files": [
+      "python_parity/response_driver.py"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.adaptive_sampling"
+    ],
+    "classes": [
+      "SimulationModel",
+      "NonDAdaptiveSampling"
+    ],
+    "requires_features": [
+      "HAVE_ADAPTIVE_SAMPLING"
+    ]
+  },
+  {
+    "id": "method_polynomial_chaos",
+    "input": "python_parity/inputs/polynomial_chaos.in",
+    "subtest": 0,
+    "script": "method_polynomial_chaos.py",
+    "required_files": [
+      "python_parity/response_driver.py"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.polynomial_chaos"
+    ],
+    "classes": [
+      "SimulationModel",
+      "NonDPolynomialChaos"
+    ]
+  },
+  {
+    "id": "method_stoch_collocation",
+    "input": "python_parity/inputs/stoch_collocation.in",
+    "subtest": 0,
+    "script": "method_stoch_collocation.py",
+    "required_files": [
+      "python_parity/response_driver.py"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.stoch_collocation"
+    ],
+    "classes": [
+      "SimulationModel",
+      "NonDStochCollocation"
+    ]
+  },
+  {
+    "id": "method_function_train",
+    "input": "python_parity/inputs/function_train.in",
+    "subtest": 0,
+    "script": "method_function_train.py",
+    "required_files": [
+      "python_parity/response_driver.py"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.function_train"
+    ],
+    "classes": [
+      "SimulationModel",
+      "NonDC3FunctionTrain"
+    ],
+    "requires_features": [
+      "HAVE_C3"
+    ]
+  },
+  {
+    "id": "method_surrogate_based_uq",
+    "input": "python_parity/inputs/surrogate_based_uq.in",
+    "subtest": 0,
+    "script": "method_surrogate_based_uq.py",
+    "required_files": [
+      "python_parity/response_driver.py"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.surrogate_based_uq",
+      "ModelFactory.global_surrogate",
+      "MethodFactory.sampling"
+    ],
+    "classes": [
+      "SimulationModel",
+      "NonDSurrogateExpansion",
+      "DataFitSurrModel",
+      "NonDLHSSampling"
+    ],
+    "requires_features": [
+      "HAVE_C3"
+    ]
+  },
+  {
+    "id": "method_multilevel_polynomial_chaos",
+    "input": "python_parity/inputs/multilevel_polynomial_chaos.in",
+    "subtest": 0,
+    "script": "method_multilevel_polynomial_chaos.py",
+    "required_files": [
+      "python_parity/response_driver.py"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.multilevel_polynomial_chaos",
+      "ModelFactory.ensemble_surrogate"
+    ],
+    "classes": [
+      "SimulationModel",
+      "NonDMultilevelPolynomialChaos",
+      "EnsembleSurrModel"
+    ]
+  },
+  {
+    "id": "method_multifidelity_polynomial_chaos",
+    "input": "python_parity/inputs/multifidelity_polynomial_chaos.in",
+    "subtest": 0,
+    "script": "method_multifidelity_polynomial_chaos.py",
+    "required_files": [
+      "python_parity/response_driver.py"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.multifidelity_polynomial_chaos",
+      "ModelFactory.ensemble_surrogate"
+    ],
+    "classes": [
+      "SimulationModel",
+      "NonDMultilevelPolynomialChaos",
+      "EnsembleSurrModel"
+    ]
+  },
+  {
+    "id": "method_multifidelity_stoch_collocation",
+    "input": "python_parity/inputs/multifidelity_stoch_collocation.in",
+    "subtest": 0,
+    "script": "method_multifidelity_stoch_collocation.py",
+    "required_files": [
+      "python_parity/response_driver.py"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.multifidelity_stoch_collocation",
+      "ModelFactory.ensemble_surrogate"
+    ],
+    "classes": [
+      "SimulationModel",
+      "NonDMultilevelStochCollocation",
+      "EnsembleSurrModel"
+    ]
+  },
+  {
+    "id": "method_multilevel_function_train",
+    "input": "python_parity/inputs/multilevel_function_train.in",
+    "subtest": 0,
+    "script": "method_multilevel_function_train.py",
+    "required_files": [
+      "python_parity/response_driver.py"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.multilevel_function_train",
+      "ModelFactory.ensemble_surrogate"
+    ],
+    "classes": [
+      "SimulationModel",
+      "NonDMultilevelFunctionTrain",
+      "EnsembleSurrModel"
+    ],
+    "requires_features": [
+      "HAVE_C3"
+    ]
+  },
+  {
+    "id": "method_multifidelity_function_train",
+    "input": "python_parity/inputs/multifidelity_function_train.in",
+    "subtest": 0,
+    "script": "method_multifidelity_function_train.py",
+    "required_files": [
+      "python_parity/response_driver.py"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.multifidelity_function_train",
+      "ModelFactory.ensemble_surrogate"
+    ],
+    "classes": [
+      "SimulationModel",
+      "NonDMultilevelFunctionTrain",
+      "EnsembleSurrModel"
+    ],
+    "requires_features": [
+      "HAVE_C3"
+    ]
+  },
+  {
+    "id": "method_multilevel_sampling",
+    "input": "python_parity/inputs/multilevel_sampling.in",
+    "subtest": 0,
+    "script": "method_multilevel_sampling.py",
+    "required_files": [
+      "python_parity/response_driver.py"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.multilevel_sampling",
+      "ModelFactory.ensemble_surrogate"
+    ],
+    "classes": [
+      "SimulationModel",
+      "NonDMultilevelSampling",
+      "EnsembleSurrModel"
+    ]
+  },
+  {
+    "id": "method_multifidelity_sampling",
+    "input": "python_parity/inputs/multifidelity_sampling.in",
+    "subtest": 0,
+    "script": "method_multifidelity_sampling.py",
+    "required_files": [
+      "python_parity/response_driver.py"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.multifidelity_sampling",
+      "ModelFactory.ensemble_surrogate"
+    ],
+    "classes": [
+      "SimulationModel",
+      "NonDMultifidelitySampling",
+      "EnsembleSurrModel"
+    ]
+  },
+  {
+    "id": "method_approximate_control_variate",
+    "input": "python_parity/inputs/approximate_control_variate.in",
+    "subtest": 0,
+    "script": "method_approximate_control_variate.py",
+    "required_files": [
+      "python_parity/response_driver.py"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.approximate_control_variate",
+      "ModelFactory.ensemble_surrogate"
+    ],
+    "classes": [
+      "SimulationModel",
+      "NonDACVSampling",
+      "EnsembleSurrModel"
+    ],
+    "requires_features": [
+      "HAVE_NPSOL"
+    ]
+  },
+  {
+    "id": "method_multilevel_blue",
+    "input": "python_parity/inputs/multilevel_blue.in",
+    "subtest": 0,
+    "script": "method_multilevel_blue.py",
+    "required_files": [
+      "python_parity/response_driver.py"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.multilevel_blue",
+      "ModelFactory.ensemble_surrogate"
+    ],
+    "classes": [
+      "SimulationModel",
+      "NonDMultilevBLUESampling",
+      "EnsembleSurrModel"
+    ],
+    "requires_features": [
+      "HAVE_NPSOL"
+    ]
+  },
+  {
+    "id": "method_multilevel_multifidelity_sampling",
+    "input": "python_parity/inputs/multilevel_multifidelity_sampling.in",
+    "subtest": 0,
+    "script": "method_multilevel_multifidelity_sampling.py",
+    "required_files": [
+      "python_parity/response_driver.py"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.multilevel_multifidelity_sampling",
+      "ModelFactory.ensemble_surrogate"
+    ],
+    "classes": [
+      "SimulationModel",
+      "NonDMultilevControlVarSampling",
+      "EnsembleSurrModel"
+    ]
+  },
+  {
+    "id": "method_efficient_global",
+    "input": "python_parity/inputs/efficient_global.in",
+    "subtest": 0,
+    "script": "method_efficient_global.py",
+    "required_files": [
+      "python_parity/response_driver.py"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.efficient_global"
+    ],
+    "classes": [
+      "SimulationModel",
+      "EffGlobalMinimizer"
+    ],
+    "requires_features": [
+      "HAVE_SURFPACK",
+      "HAVE_ACRO"
+    ]
+  },
+  {
+    "id": "method_coliny_beta",
+    "input": "python_parity/inputs/coliny_beta.in",
+    "subtest": 0,
+    "script": "method_coliny_beta.py",
+    "required_files": [
+      "python_parity/response_driver.py"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.coliny_beta"
+    ],
+    "classes": [
+      "SimulationModel",
+      "COLINOptimizer"
+    ],
+    "requires_features": [
+      "HAVE_ACRO"
+    ]
+  },
+  {
+    "id": "method_nl2sol",
+    "input": "python_parity/inputs/nl2sol.in",
+    "subtest": 0,
+    "script": "method_nl2sol.py",
+    "required_files": [
+      "python_parity/response_driver.py"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.nl2sol"
+    ],
+    "classes": [
+      "SimulationModel",
+      "NL2SOLLeastSq"
+    ],
+    "requires_features": [
+      "HAVE_NL2SOL"
+    ]
+  },
+  {
+    "id": "method_branch_and_bound",
+    "input": "python_parity/inputs/branch_and_bound.in",
+    "subtest": 0,
+    "script": "method_branch_and_bound.py",
+    "required_files": [
+      "python_parity/response_driver.py"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.branch_and_bound"
+    ],
+    "classes": [
+      "SimulationModel",
+      "PebbldMinimizer"
+    ],
+    "requires_features": [
+      "HAVE_ACRO",
+      "HAVE_OPTPP"
+    ]
+  },
+  {
+    "id": "method_richardson_extrap",
+    "input": "python_parity/inputs/richardson_extrap.in",
+    "subtest": 0,
+    "script": "method_richardson_extrap.py",
+    "required_files": [
+      "python_parity/response_driver.py"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.richardson_extrap"
+    ],
+    "classes": [
+      "SimulationModel",
+      "RichExtrapVerification"
+    ]
+  },
+  {
+    "id": "method_bayes_calibration",
+    "input": "python_parity/inputs/bayes_calibration.in",
+    "subtest": 0,
+    "script": "method_bayes_calibration.py",
+    "required_files": [
+      "python_parity/response_driver.py"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.bayes_calibration"
+    ],
+    "classes": [
+      "SimulationModel",
+      "NonDWASABIBayesCalibration"
+    ]
+  }
+]

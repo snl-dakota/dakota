@@ -32,6 +32,9 @@ public:
 
   /// standard constructor
   NonDEnsembleSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
+  /// DI constructor
+  NonDEnsembleSampling(std::shared_ptr<StudyServices> services,
+             const IRStore& method_store, std::shared_ptr<Model> model);
   /// destructor (virtual declaration should be redundant with ~Iterator,
   /// but this is top of MLMF diamond so doesn't hurt to be explicit)
   ~NonDEnsembleSampling() override;

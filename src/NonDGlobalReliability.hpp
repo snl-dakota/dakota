@@ -35,6 +35,9 @@ public:
 
   /// constructor
   NonDGlobalReliability(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
+  /// DI constructor
+  NonDGlobalReliability(std::shared_ptr<StudyServices> services, const IRStore& method_store,
+                        std::shared_ptr<Model> model);
   /// destructor
   ~NonDGlobalReliability() override;
 
@@ -56,6 +59,18 @@ private:
   //
   //- Heading: Convenience functions
   //
+
+  /// common class initialization
+  void initialize(short emulator_type, bool deriv_usage,
+                  bool rel_levels_nonempty, bool prob_levels_nonempty,
+                  bool gen_rel_levels_nonempty, int db_samples,
+                  int lhs_seed, const String& rng,
+                  const String& import_pts_file,
+                  unsigned short import_build_format,
+                  bool import_build_active_only,
+                  const String& export_approx_points_file,
+                  unsigned short export_approx_format,
+                  const String& advanced_options_file);
 
   /// construct the GP using EGO/SKO
   void optimize_gaussian_process();

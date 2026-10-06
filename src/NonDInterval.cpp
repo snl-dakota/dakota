@@ -23,14 +23,35 @@ static const char rcsId[] = "@(#) $Id: NonDInterval.cpp 6080 2009-09-08 19:03:20
 
 namespace Dakota {
 
-NonDInterval::NonDInterval(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+NonDInterval::
+NonDInterval(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
+	     std::shared_ptr<Model> model):
   NonD(problem_db, parallel_lib, model),
   singleIntervalFlag(methodName ==  LOCAL_INTERVAL_EST ||
-		     methodName == GLOBAL_INTERVAL_EST)
+                     methodName == GLOBAL_INTERVAL_EST)
+{
+  initialize(!probDescDB.get<const RealVectorArray>(
+    "method.nond.reliability_levels").empty());
+}
+
+
+NonDInterval::
+NonDInterval(std::shared_ptr<StudyServices> services, const IRStore& method_store,
+	     std::shared_ptr<Model> model):
+  NonD(std::move(services), method_store, model),
+  singleIntervalFlag(methodName ==  LOCAL_INTERVAL_EST ||
+                     methodName == GLOBAL_INTERVAL_EST)
+{
+  initialize(!method_store.get<RealVectorArray>(
+    "nond.reliability_levels").empty());
+}
+
+
+void NonDInterval::initialize(bool reliability_levels_nonempty)
 {
   bool err_flag = false;
 
-  const SharedVariablesData& svd = model->current_variables().shared_data();
+  const SharedVariablesData& svd = iteratedModel->current_variables().shared_data();
   const SizetArray&    ac_totals = svd.active_components_totals();
   numContIntervalVars   = ac_totals[TOTAL_CEUV];
   numDiscIntervalVars   = svd.vc_lookup(DISCRETE_INTERVAL_UNCERTAIN);
@@ -39,61 +60,6 @@ NonDInterval::NonDInterval(ProblemDescDB& problem_db, ParallelLibrary& parallel_
 
   // initialize finalStatistics using non-default definition (there is no mean
   // or standard deviation and each level mapping involves lower/upper bounds).
-  initialize_final_statistics();
-	
-  if (singleIntervalFlag) {
-    if (totalLevelRequests) {
-      Cerr << "Error: level mappings not supported in NonDInterval single "
-	   << "interval mode." << std::endl;
-      err_flag = true;
-    }
-  }
-  else {
-    // reliability_levels not currently supported, but could be
-    if (!probDescDB.get<const RealVectorArray>("method.nond.reliability_levels").empty()) {
-      Cerr << "Error: reliability_levels not supported in NonDInterval "
-	   << "evidence mode." << std::endl;
-      err_flag = true;
-    }
-
-    // size output arrays.  Note that for each response or probability level
-    // request, we get two values from the belief and plausibility functions.
-    computedRespLevels.resize(numFunctions);
-    computedProbLevels.resize(numFunctions);
-    computedGenRelLevels.resize(numFunctions);
-    size_t i, j;
-    for (i=0; i<numFunctions; ++i) {
-      size_t rl_len = requestedRespLevels[i].length(), pl_gl_len
-	= requestedProbLevels[i].length() + requestedGenRelLevels[i].length();
-      computedRespLevels[i].resize(2*pl_gl_len);
-      if (respLevelTarget == PROBABILITIES)
-	computedProbLevels[i].resize(2*rl_len);
-      else
-	computedGenRelLevels[i].resize(2*rl_len);
-    }
-  }
-
-  if (err_flag)
-    abort_handler(-1);
-}
-
-
-NonDInterval::NonDInterval(std::shared_ptr<StudyServices> services,
-                           const IRStore& method_store,
-                           std::shared_ptr<Model> model):
-  NonD(std::move(services), method_store, model),
-  singleIntervalFlag(methodName ==  LOCAL_INTERVAL_EST ||
-                     methodName == GLOBAL_INTERVAL_EST)
-{
-  bool err_flag = false;
-
-  const SharedVariablesData& svd = model->current_variables().shared_data();
-  const SizetArray& ac_totals = svd.active_components_totals();
-  numContIntervalVars   = ac_totals[TOTAL_CEUV];
-  numDiscIntervalVars   = svd.vc_lookup(DISCRETE_INTERVAL_UNCERTAIN);
-  numDiscSetIntUncVars  = svd.vc_lookup(DISCRETE_UNCERTAIN_SET_INT);
-  numDiscSetRealUncVars = ac_totals[TOTAL_DEURV];
-
   initialize_final_statistics();
 
   if (singleIntervalFlag) {
@@ -104,12 +70,15 @@ NonDInterval::NonDInterval(std::shared_ptr<StudyServices> services,
     }
   }
   else {
-    if (!method_store.get<RealVectorArray>("nond.reliability_levels").empty()) {
+    // reliability_levels not currently supported, but could be
+    if (reliability_levels_nonempty) {
       Cerr << "Error: reliability_levels not supported in NonDInterval "
            << "evidence mode." << std::endl;
       err_flag = true;
     }
 
+    // size output arrays.  Note that for each response or probability level
+    // request, we get two values from the belief and plausibility functions.
     computedRespLevels.resize(numFunctions);
     computedProbLevels.resize(numFunctions);
     computedGenRelLevels.resize(numFunctions);

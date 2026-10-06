@@ -9,6 +9,7 @@ Using Dakota
    examples
    introduction/couplingtosimulations
    inputfile
+   libraryapi
    running
    output
    studytypes

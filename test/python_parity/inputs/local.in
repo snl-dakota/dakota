@@ -1,0 +1,36 @@
+environment
+  method_pointer 'outer'
+method
+  id_method 'outer'
+  model_pointer 'target'
+  vector_parameter_study
+    step_vector 0.1 0.1
+    num_steps 2
+model
+  id_model 'target'
+  responses_pointer 'outer_resp'
+  local_surrogate taylor_series truth_model_pointer 'truth'
+variables
+  continuous_design = 2
+    initial_point 1.0 1.0
+    lower_bounds 0.5 0.5
+    upper_bounds 1.5 1.5
+    descriptors 'x1' 'x2'
+responses
+  id_responses 'outer_resp'
+  objective_functions 1
+  no_gradients
+  no_hessians
+model
+  id_model 'truth'
+  simulation
+    interface_pointer 'driver'
+  responses_pointer 'truth_resp'
+interface
+  id_interface 'driver'
+  analysis_drivers 'text_book' fork
+responses
+  id_responses 'truth_resp'
+  objective_functions 1
+  analytic_gradients
+  no_hessians

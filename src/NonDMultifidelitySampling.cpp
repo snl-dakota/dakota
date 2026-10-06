@@ -62,6 +62,38 @@ NonDMultifidelitySampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_l
 }
 
 
+NonDMultifidelitySampling::
+NonDMultifidelitySampling(std::shared_ptr<StudyServices> services,
+			  const IRStore& method_store,
+			  std::shared_ptr<Model> model):
+  NonDNumericAllocSampling(std::move(services), method_store, model),
+  numericalSolveMode(method_store.get<unsigned short>("nond.numerical_solve_mode"))
+{
+  //analyticEstVarDerivs = true; // now adopted for all numerical estimators
+  //hardenNumericSoln    = true; // now adopted for all numerical estimators
+  mlmfSubMethod          = SUBMETHOD_MFMC; // if needed for numerical solves
+
+  // reorderModelsOnTheFly affects finite_solution_bounds() so restrict
+  // activation to MFMC:
+  reorderModelsOnTheFly = (method_store.get<unsigned short>("nond.model_reordering")
+                           == REORDER_MODELS_ON_THE_FLY); // on by default
+
+  // defining fullApproxSet allows reuse of fns that support model selection
+  fullApproxSet.resize(numApprox);
+  for (size_t i=0; i<numApprox; ++i)
+    fullApproxSet[i] = i;
+
+  // model{Groups,GroupCost} have run-time dependency on approx sequence
+  //if (costSource == USER_COST_SPEC) update_model_group_costs();
+
+  load_pilot_sample(method_store.get<SizetArray>("nond.pilot_samples"),
+                    numGroups, pilotSamples);
+
+  size_t max_ps = find_max(pilotSamples);
+  if (max_ps) maxEvalConcurrency *= max_ps;
+}
+
+
 NonDMultifidelitySampling::~NonDMultifidelitySampling()
 { }
 
