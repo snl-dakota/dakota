@@ -11,6 +11,7 @@
 #include <dakota_parser.hpp>
 #include <dakota_input_reader.hpp>
 #include <nlohmann/json.hpp>
+#include <cmath>
 #include <map>
 #include <memory>
 #include <string>
@@ -194,6 +195,46 @@ TEST(ExistingForms, StepRange)
     const std::vector<double> v = points("1000.:1000.:3000.");
     EXPECT_EQ(v, (std::vector<double>{1000., 2000., 3000.}));
     EXPECT_EQ(points("-1:0.2:1").size(), 11u);
+}
+
+TEST(ExistingForms, StepRangeNoAccumulatedDrift)
+{
+    // Values are computed from the index, not a running sum, so the value
+    // that lands on zero is exactly zero.
+    const std::vector<double> v = points("-1:0.2:1");
+    ASSERT_EQ(v.size(), 11u);
+    for (size_t i = 1; i < v.size(); ++i) {
+        const double steps = static_cast<double>(i) - 5.0;
+        EXPECT_EQ(v[i], steps * 0.2) << "i = " << i;
+    }
+    EXPECT_EQ(v[5], 0.0);
+    EXPECT_EQ(v[10], 1.0);
+    EXPECT_EQ(points("2*-1:0.2:1"), repeated(v, 2));
+}
+
+TEST(ExistingForms, StepRangeEndpointWithinRounding)
+{
+    // 3*0.1 is 0.30000000000000004; the endpoint is kept and set to end.
+    EXPECT_EQ(points("0:0.1:0.3"), (std::vector<double>{0.0, 0.1, 0.2, 0.3}));
+    const std::vector<double> down = points("1:-0.1:0");
+    ASSERT_EQ(down.size(), 11u);
+    EXPECT_EQ(down.back(), 0.0);
+}
+
+TEST(ExistingForms, StepRangeStartAsWritten)
+{
+    // (0.7/0.3)*0.3 is 0.70000000000000007; the first value is start itself.
+    const std::vector<double> v = points("0.7:0.3:2");
+    ASSERT_EQ(v.size(), 5u);
+    EXPECT_EQ(v.front(), 0.7);
+}
+
+TEST(ExistingForms, StepRangeNegativeStepCrossesPositiveZero)
+{
+    const std::vector<double> v = points("1:-0.5:-1");
+    ASSERT_EQ(v.size(), 5u);
+    EXPECT_EQ(v, (std::vector<double>{1.0, 0.5, 0.0, -0.5, -1.0}));
+    EXPECT_FALSE(std::signbit(v[2]));
 }
 
 TEST(ExistingForms, RepeatString)

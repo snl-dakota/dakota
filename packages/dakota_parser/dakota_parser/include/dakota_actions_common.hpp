@@ -5,6 +5,7 @@
 #include "dakota_grammar_common.hpp"
 #include <algorithm>
 #include <cerrno>
+#include <cmath>
 #include <cstdlib>
 #include <limits>
 #include <optional>
@@ -223,15 +224,30 @@ inline std::vector<double> expand_step_range(const std::string &range_text,
     values.push_back(start_val);
     return values;
   }
-  // Expand with a small epsilon guard to handle floating-point edge cases.
-  double eps = std::abs(step_val) * 1e-9;
-  if (step_val > 0) {
-    for (double v = start_val; v <= end_val + eps; v += step_val)
-      values.push_back(v);
-  } else {
-    for (double v = start_val; v >= end_val - eps; v += step_val)
-      values.push_back(v);
+  // Compute each value from its index rather than accumulating v += step,
+  // which drifts (-1:0.2:1 gave -5.55e-17 instead of 0).  The form
+  // (start/step + i)*step, unlike start + i*step, cannot be contracted into an
+  // FMA, so results do not depend on compiler or platform, and a value that
+  // lands on zero comes out exactly zero.  A small relative tolerance
+  // keeps an endpoint that falls a few ulps past end (0:0.1:0.3).
+  const double count = std::floor((end_val - start_val) / step_val + 1e-9);
+  // Empty when end lies behind start; the NaN/huge checks keep the size_t
+  // conversion below defined.
+  if (!(count >= 0) ||
+      count >= static_cast<double>(std::numeric_limits<size_t>::max()))
+    return values;
+  const double eps = std::abs(step_val) * 1e-9;
+  const auto n = static_cast<size_t>(count);
+  const double start_steps = start_val / step_val;
+  values.reserve(n + 1);
+  values.push_back(start_val);  // as written; (start/step)*step may not round-trip
+  for (size_t i = 1; i <= n; ++i) {
+    double v = (start_steps + static_cast<double>(i)) * step_val;
+    if (v == 0.0) v = 0.0;  // a negative step would otherwise give -0
+    values.push_back(v);
   }
+  // Use end exactly when the last value only misses it by rounding.
+  if (n > 0 && std::abs(values.back() - end_val) <= eps) values.back() = end_val;
   return values;
 }
 
