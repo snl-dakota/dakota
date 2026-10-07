@@ -286,7 +286,9 @@ model is very nonlinear, the confidence intervals reported are likely
 inaccurate as well.  Further, confidence intervals cannot be
 calculated when the number of least-squares terms is less than the
 number of parameters to be estimated, when using vendor numerical
-gradients, or where there are replicate experiments.  See
+gradients, or where there are replicate experiments.  The derivation,
+numerical computation, and assumptions are discussed in more detail in
+:ref:`theory:nls:ci`.  See
 :cite:p:`Vug07` for more details about confidence intervals, and note
 that there are alternative approaches such as Bonferroni confidence
 intervals and joint confidence intervals based on linear
