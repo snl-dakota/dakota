@@ -581,34 +581,6 @@ inline bool load_json_file(const std::string& filename,
 // Convenience entry point
 // ============================================================================
 
-// Load schema from `schema_path`, then expand defaults in `doc`.
-// Returns false on schema load failure or doc structural error.
-inline bool expand_json_defaults(json& doc,
-                                 const std::string& schema_path,
-                                 std::vector<std::string>& errors,
-                                 bool debug = false) {
-    json schema;
-    {
-        std::ifstream sf(schema_path);
-        if (!sf.is_open()) {
-            errors.push_back("Cannot open schema file: " + schema_path);
-            return false;
-        }
-        try {
-            std::string sc((std::istreambuf_iterator<char>(sf)),
-                            std::istreambuf_iterator<char>());
-            schema = json::parse(sanitize_json_for_parse(sc));
-            restore_inf_sentinels(schema);
-        } catch (const json::parse_error& e) {
-            errors.push_back(std::string("Schema parse error: ") + e.what());
-            return false;
-        }
-    }
-
-    JsonDefaultExpander expander(schema);
-    return expander.expand(doc, debug);
-}
-
 inline const json& embedded_schema_json() {
     static const json schema = json::from_cbor(
         embedded_schema::kDakotaSchemaCbor,
