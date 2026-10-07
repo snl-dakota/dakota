@@ -11,7 +11,7 @@ macro(dakota_find_boost)
   endif()
 
   # Dakota requires the specified compiled Boost library components
-  # Dakota requires Boost 1.70 or newer ; enforce for all libs in the build
+  # Dakota requires Boost 1.75 or newer ; enforce for all libs in the build
   # NOTE: Boost.System is header-only since Boost 1.69, so it is not
   # listed here. A Boost::system INTERFACE target is created below when
   # the package manager does not provide one.
@@ -38,7 +38,7 @@ macro(dakota_find_boost)
   endif()
 
 
-  find_package(Boost 1.70 REQUIRED COMPONENTS ${dakota_boost_libs})
+  find_package(Boost 1.75 REQUIRED COMPONENTS ${dakota_boost_libs})
   #message(STATUS "Found Boost version ${Boost_VERSION}")
 
   # Boost.System is header-only since 1.69 (Dakota requires >= 1.70).
