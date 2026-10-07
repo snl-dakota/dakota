@@ -664,7 +664,7 @@ void LeastSq::get_confidence_intervals(const Variables& native_vars,
   tau = work + N;
 
   la.GEQRF(M,N,Jmatrix,LDA,tau,work,N,&info);
-  bool error_flag = info;
+  bool error_flag = (info != 0);
   delete[] work;
 
   // if you add these three lines right after DGEQRF, then the upper triangular
@@ -673,10 +673,11 @@ void LeastSq::get_confidence_intervals(const Variables& native_vars,
   char uplo = 'U'; // upper triangular
   char unitdiag = 'N'; // non-unit trangular
   la.TRTRI(uplo, unitdiag, N, Jmatrix, LDA, &info); 
-  error_flag &= info;
+  error_flag |= (info != 0);
 
   if (error_flag) {
     Cout << "\nWarning: LAPACK error computing confidence intervals.\n\n";
+    delete[] Jmatrix;
     return;
   }
 
